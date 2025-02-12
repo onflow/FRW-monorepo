@@ -36,9 +36,9 @@ import RecentList from './RecentList';
 import SearchList from './SearchList';
 
 export enum SendPageTabOptions {
-  Accounts = 'Accounts',
   Recent = 'Recent',
   AddressBook = 'AddressBook',
+  Accounts = 'Accounts',
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -516,24 +516,6 @@ const Send = () => {
                 style={{ height: '100%', width: '100%' }}
               >
                 <TabPanel value={tabValue} index={0} dir={theme.direction}>
-                  <AccountsList
-                    filteredContacts={filteredContacts}
-                    isLoading={isLoading}
-                    handleClick={(eachgroup) => {
-                      const isEvmAddress = isValidEthereumAddress(eachgroup.address);
-
-                      const pathname = isEvmAddress
-                        ? '/dashboard/wallet/sendeth'
-                        : '/dashboard/wallet/sendAmount';
-
-                      history.push({
-                        pathname: pathname,
-                        state: { contact: eachgroup },
-                      });
-                    }}
-                  />
-                </TabPanel>
-                <TabPanel value={tabValue} index={1} dir={theme.direction}>
                   <RecentList
                     filteredContacts={recentContacts}
                     isLoading={isLoading}
@@ -551,8 +533,26 @@ const Send = () => {
                     }}
                   />
                 </TabPanel>
-                <TabPanel value={tabValue} index={2} dir={theme.direction}>
+                <TabPanel value={tabValue} index={1} dir={theme.direction}>
                   <AddressBookList
+                    filteredContacts={filteredContacts}
+                    isLoading={isLoading}
+                    handleClick={(eachgroup) => {
+                      const isEvmAddress = isValidEthereumAddress(eachgroup.address);
+
+                      const pathname = isEvmAddress
+                        ? '/dashboard/wallet/sendeth'
+                        : '/dashboard/wallet/sendAmount';
+
+                      history.push({
+                        pathname: pathname,
+                        state: { contact: eachgroup },
+                      });
+                    }}
+                  />
+                </TabPanel>
+                <TabPanel value={tabValue} index={2} dir={theme.direction}>
+                  <AccountsList
                     filteredContacts={filteredContacts}
                     isLoading={isLoading}
                     handleClick={(eachgroup) => {
