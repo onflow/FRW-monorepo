@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
-import { makeStyles } from '@mui/styles';
 import { Box, Typography, IconButton, Button } from '@mui/material';
-import { useWallet } from 'ui/utils';
+import { makeStyles } from '@mui/styles';
+import React, { useState, useEffect } from 'react';
+
 import { LLHeader, LLSpinner } from '@/ui/FRWComponent';
-import IconGoogleDrive from '../../../../components/iconfont/IconGoogleDrive';
-import CheckCircleIcon from '../../../../components/iconfont/IconCheckmark';
 import { LLDeleteBackupPopup } from '@/ui/FRWComponent/LLDeleteBackupPopup';
+import { useWallet } from 'ui/utils';
+
+import CheckCircleIcon from '../../../../components/iconfont/IconCheckmark';
+import IconGoogleDrive from '../../../../components/iconfont/IconGoogleDrive';
 
 const useStyles = makeStyles(() => ({
   arrowback: {
@@ -56,27 +57,16 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const orange = {
-  500: '#41CC5D',
-};
-
-const grey = {
-  400: '#BABABA',
-  500: '#787878',
-  600: '#5E5E5E',
-};
-
 const ManageBackups = () => {
   const wallet = useWallet();
   const classes = useStyles();
-  const history = useHistory();
   const [hasPermission, setHasPermission] = useState(false);
   const [hasBackup, setHasBackup] = useState(false);
   const [loading, setLoading] = useState(true);
   const [deleteBackupPop, setDeleteBackupPop] = useState(false);
   const [deleteAllBackupPop, setDeleteAllBackupPop] = useState(false);
 
-  const checkPresmissions = async () => {
+  const checkPermissions = async () => {
     const permissions = await wallet.hasGooglePremission();
     setHasPermission(permissions);
     if (permissions) {
@@ -91,6 +81,7 @@ const ManageBackups = () => {
       setHasBackup(hasBackup);
       setLoading(false);
     } catch (e) {
+      console.error(e);
       setLoading(false);
     }
   };
@@ -98,10 +89,11 @@ const ManageBackups = () => {
   const syncBackup = async () => {
     try {
       setLoading(true);
-      const hasBackup = await wallet.syncBackup();
+      await wallet.syncBackup();
       await checkBackup();
       setLoading(false);
     } catch (e) {
+      console.error(e);
       setLoading(false);
     }
   };
@@ -113,6 +105,7 @@ const ManageBackups = () => {
       await checkBackup();
       setLoading(false);
     } catch (e) {
+      console.error(e);
       setLoading(false);
     }
   };
@@ -124,12 +117,27 @@ const ManageBackups = () => {
       await checkBackup();
       setLoading(false);
     } catch (e) {
+      console.error(e);
+      setLoading(false);
+    }
+  };
+
+  const getGoogle = async () => {
+    setLoading(true);
+
+    try {
+      const accounts = await wallet.loadBackupAccounts();
+
+      localStorage.setItem('backupAccounts', JSON.stringify(accounts));
+    } catch (e) {
+      console.error(e);
+    } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    checkPresmissions();
+    checkPermissions();
   }, []);
 
   return (
@@ -154,7 +162,9 @@ const ManageBackups = () => {
             </Button>
           )
         ) : (
-          <Button variant="text">{chrome.i18n.getMessage('Link')}</Button>
+          <Button variant="text" onClick={getGoogle}>
+            {chrome.i18n.getMessage('Link')}
+          </Button>
         )}
       </Box>
 
