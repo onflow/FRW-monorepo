@@ -18,7 +18,7 @@ import erc20ABI from 'background/utils/erc20.abi.json';
 import IconNext from 'ui/FRWAssets/svg/next.svg';
 import { LLSpinner } from 'ui/FRWComponent';
 import { Profile } from 'ui/FRWComponent/Send/Profile';
-import { useWallet, isEmoji, stripFinalAmount } from 'ui/utils';
+import { useWallet } from 'ui/utils';
 
 interface TransferConfirmationProps {
   transactionState: TransactionState;
@@ -118,34 +118,28 @@ const TransferConfirmation = ({
   }, []);
 
   const transferTokensOnCadence = useCallback(async () => {
-    const amount = new BN(transactionState.amount).decimalPlaces(8, BN.ROUND_DOWN).toString();
     return wallet.transferInboxTokens(
       transactionState.selectedToken.symbol,
       transactionState.toAddress,
-      amount
+      transactionState.amount
     );
   }, [transactionState, wallet]);
 
   const transferTokensFromChildToCadence = useCallback(async () => {
-    // TODO: We should check the amount
-    const amount = new BN(transactionState.amount).decimalPlaces(8, BN.ROUND_DOWN).toString();
-
     return wallet.sendFTfromChild(
       transactionState.fromAddress,
       transactionState.toAddress,
       'flowTokenProvider',
-      amount,
+      transactionState.amount,
       transactionState.selectedToken.symbol
     );
   }, [transactionState, wallet]);
 
   const transferFlowFromEvmToCadence = useCallback(async () => {
-    // TODO: We should check the amount
     return wallet.withdrawFlowEvm(transactionState.amount, transactionState.toAddress);
   }, [wallet, transactionState]);
 
   const transferFTFromEvmToCadence = useCallback(async () => {
-    // TODO: We should check the amount, and flowIdentifier
     return wallet.transferFTFromEvm(
       transactionState.selectedToken['flowIdentifier'],
       transactionState.amount,
@@ -194,28 +188,17 @@ const TransferConfirmation = ({
   }, [transactionState, erc20Contract, wallet]);
 
   const transferFlowFromCadenceToEvm = useCallback(async () => {
-    // Check that the amount is valid for this sort of transfer
-
-    const amount = new BN(transactionState.amount).decimalPlaces(8, BN.ROUND_DOWN).toString();
-    if (stripFinalAmount(amount, 8) !== stripFinalAmount(transactionState.amount, 8)) {
-      throw new Error('Amount entered does not match required precision');
-    }
-    return wallet.transferFlowEvm(transactionState.toAddress, amount);
+    return wallet.transferFlowEvm(transactionState.toAddress, transactionState.amount);
   }, [transactionState, wallet]);
 
   const transferFTFromCadenceToEvm = useCallback(async () => {
-    // Check that the amount is valid for this sort of transfer
-    const amount = new BN(transactionState.amount).decimalPlaces(8, BN.ROUND_DOWN).toString();
-    if (stripFinalAmount(amount, 8) !== stripFinalAmount(transactionState.amount, 8)) {
-      throw new Error('Amount entered does not match required precision');
-    }
     const address = transactionState.selectedToken!.address.startsWith('0x')
       ? transactionState.selectedToken!.address.slice(2)
       : transactionState.selectedToken!.address;
 
     return wallet.transferFTToEvmV2(
       `A.${address}.${transactionState.selectedToken!.contractName}.Vault`,
-      amount,
+      transactionState.amount,
       transactionState.toAddress
     );
   }, [transactionState, wallet]);
@@ -322,189 +305,6 @@ const TransferConfirmation = ({
     };
   }, [getPending, startCount, transactionDoneHandler]);
 
-  const renderContent = () => (
-    <Box
-      px="18px"
-      sx={{
-        width: '100%',
-        height: '100%',
-        background: 'rgba(0, 0, 0, 0.5)',
-        flexDirection: 'column',
-        display: 'flex',
-      }}
-    >
-      <Grid
-        container
-        sx={{
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <Grid item xs={1}></Grid>
-        <Grid item xs={10}>
-          {tid ? (
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
-            >
-              <Typography variant="h1" align="center" py="14px" fontSize="20px">
-                {chrome.i18n.getMessage('Transaction_created')}
-              </Typography>
-            </Box>
-          ) : (
-            <Typography variant="h1" align="center" py="14px" fontWeight="bold" fontSize="20px">
-              {!sending
-                ? chrome.i18n.getMessage('Confirmation')
-                : chrome.i18n.getMessage('Processing')}
-            </Typography>
-          )}
-        </Grid>
-        <Grid item xs={1}>
-          <IconButton onClick={handleCloseIconClicked}>
-            <CloseIcon fontSize="medium" sx={{ color: 'icon.navi', cursor: 'pointer' }} />
-          </IconButton>
-        </Grid>
-      </Grid>
-      <Box
-        sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: '16px' }}
-      >
-        {/* Need some generic card here that renders the contact card based on the network */}
-
-        <Profile contact={fromContactData} />
-        <Box
-          sx={{
-            marginLeft: '-15px',
-            marginRight: '-15px',
-            marginTop: '-32px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          {colorArray.map((color, index) => (
-            <Box sx={{ mx: '5px' }} key={index}>
-              {count === index ? (
-                <CardMedia sx={{ width: '8px', height: '12px' }} image={IconNext} />
-              ) : (
-                <Box
-                  key={index}
-                  sx={{ height: '5px', width: '5px', borderRadius: '5px', backgroundColor: color }}
-                />
-              )}
-            </Box>
-          ))}
-        </Box>
-        <Profile contact={toContactData} />
-      </Box>
-
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          px: '13px',
-          py: '16px',
-          backgroundColor: '#333333',
-          borderRadius: '16px',
-          my: '10px',
-        }}
-      >
-        <Stack direction="row" sx={{ alignItems: 'center' }} spacing={1}>
-          <CardMedia
-            sx={{ width: '24px', height: '24px' }}
-            image={transactionState.coinInfo.icon}
-          />
-          <Typography variant="body1" sx={{ fontSize: '18px', fontWeight: 'semi-bold' }}>
-            {transactionState.coinInfo.coin}
-          </Typography>
-          <Box sx={{ flexGrow: 1 }} />
-          <Typography
-            variant="body1"
-            sx={{ fontSize: '18px', fontWeight: '400', textAlign: 'end' }}
-          >
-            {transactionState.amount} {transactionState.coinInfo.unit}
-          </Typography>
-        </Stack>
-        <Stack direction="column" spacing={1}>
-          <Typography
-            variant="body1"
-            color="info"
-            sx={{ fontSize: '14px', fontWeight: 'semi-bold', textAlign: 'end' }}
-          >
-            $ {transactionState.fiatAmount}
-          </Typography>
-        </Stack>
-      </Box>
-
-      <Box sx={{ flexGrow: 1 }} />
-      <SlideRelative direction="down" show={occupied}>
-        <Box
-          sx={{
-            width: '95%',
-            backgroundColor: 'error.light',
-            mx: 'auto',
-            borderRadius: '12px 12px 0 0',
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            py: '8px',
-          }}
-        >
-          {/* <CardMedia style={{ color:'#E54040', width:'24px',height:'24px', margin: '0 12px 0' }} image={empty} />   */}
-          <InfoIcon fontSize="medium" color="primary" style={{ margin: '0px 12px auto 12px' }} />
-          <Typography variant="body1" color="text.secondary" sx={{ fontSize: '12px' }}>
-            {chrome.i18n.getMessage('Your_address_is_currently_processing_another_transaction')}
-          </Typography>
-        </Box>
-      </SlideRelative>
-      <WarningStorageLowSnackbar
-        isLowStorage={isLowStorage}
-        isLowStorageAfterAction={isLowStorageAfterAction}
-      />
-
-      <Button
-        onClick={transferTokens}
-        disabled={sending || occupied}
-        variant="contained"
-        color="success"
-        size="large"
-        sx={{
-          height: '50px',
-          width: '100%',
-          borderRadius: '12px',
-          textTransform: 'capitalize',
-          display: 'flex',
-          gap: '12px',
-          marginBottom: '33px',
-        }}
-      >
-        {sending ? (
-          <>
-            <LLSpinner size={28} />
-            <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }} color="text.primary">
-              {chrome.i18n.getMessage('Sending')}
-            </Typography>
-          </>
-        ) : (
-          <>
-            {failed ? (
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }} color="text.primary">
-                {chrome.i18n.getMessage('Transaction__failed')}
-              </Typography>
-            ) : (
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }} color="text.primary">
-                {chrome.i18n.getMessage('Send')}
-              </Typography>
-            )}
-          </>
-        )}
-      </Button>
-    </Box>
-  );
-
   return (
     <>
       <Drawer
@@ -520,7 +320,200 @@ const TransferConfirmation = ({
           },
         }}
       >
-        {renderContent()}
+        <Box
+          px="18px"
+          sx={{
+            width: '100%',
+            height: '100%',
+            background: 'rgba(0, 0, 0, 0.5)',
+            flexDirection: 'column',
+            display: 'flex',
+          }}
+        >
+          <Grid
+            container
+            sx={{
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <Grid item xs={1}></Grid>
+            <Grid item xs={10}>
+              {tid ? (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Typography variant="h1" align="center" py="14px" fontSize="20px">
+                    {chrome.i18n.getMessage('Transaction_created')}
+                  </Typography>
+                </Box>
+              ) : (
+                <Typography variant="h1" align="center" py="14px" fontWeight="bold" fontSize="20px">
+                  {!sending
+                    ? chrome.i18n.getMessage('Confirmation')
+                    : chrome.i18n.getMessage('Processing')}
+                </Typography>
+              )}
+            </Grid>
+            <Grid item xs={1}>
+              <IconButton onClick={handleCloseIconClicked}>
+                <CloseIcon fontSize="medium" sx={{ color: 'icon.navi', cursor: 'pointer' }} />
+              </IconButton>
+            </Grid>
+          </Grid>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              py: '16px',
+            }}
+          >
+            {/* Need some generic card here that renders the contact card based on the network */}
+
+            <Profile contact={fromContactData} />
+            <Box
+              sx={{
+                marginLeft: '-15px',
+                marginRight: '-15px',
+                marginTop: '-32px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              {colorArray.map((color, index) => (
+                <Box sx={{ mx: '5px' }} key={index}>
+                  {count === index ? (
+                    <CardMedia sx={{ width: '8px', height: '12px' }} image={IconNext} />
+                  ) : (
+                    <Box
+                      key={index}
+                      sx={{
+                        height: '5px',
+                        width: '5px',
+                        borderRadius: '5px',
+                        backgroundColor: color,
+                      }}
+                    />
+                  )}
+                </Box>
+              ))}
+            </Box>
+            <Profile contact={toContactData} />
+          </Box>
+
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              px: '13px',
+              py: '16px',
+              backgroundColor: '#333333',
+              borderRadius: '16px',
+              my: '10px',
+            }}
+          >
+            <Stack direction="row" sx={{ alignItems: 'center' }} spacing={1}>
+              <CardMedia
+                sx={{ width: '24px', height: '24px' }}
+                image={transactionState.coinInfo.icon}
+              />
+              <Typography variant="body1" sx={{ fontSize: '18px', fontWeight: 'semi-bold' }}>
+                {transactionState.coinInfo.coin}
+              </Typography>
+              <Box sx={{ flexGrow: 1 }} />
+              <Typography
+                variant="body1"
+                sx={{ fontSize: '18px', fontWeight: '400', textAlign: 'end' }}
+              >
+                {transactionState.amount} {transactionState.coinInfo.unit}
+              </Typography>
+            </Stack>
+            <Stack direction="column" spacing={1}>
+              <Typography
+                variant="body1"
+                color="info"
+                sx={{ fontSize: '14px', fontWeight: 'semi-bold', textAlign: 'end' }}
+              >
+                $ {transactionState.fiatAmount}
+              </Typography>
+            </Stack>
+          </Box>
+
+          <Box sx={{ flexGrow: 1 }} />
+          <SlideRelative direction="down" show={occupied}>
+            <Box
+              sx={{
+                width: '95%',
+                backgroundColor: 'error.light',
+                mx: 'auto',
+                borderRadius: '12px 12px 0 0',
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                py: '8px',
+              }}
+            >
+              {/* <CardMedia style={{ color:'#E54040', width:'24px',height:'24px', margin: '0 12px 0' }} image={empty} />   */}
+              <InfoIcon
+                fontSize="medium"
+                color="primary"
+                style={{ margin: '0px 12px auto 12px' }}
+              />
+              <Typography variant="body1" color="text.secondary" sx={{ fontSize: '12px' }}>
+                {chrome.i18n.getMessage('Your_address_is_currently_processing_another_transaction')}
+              </Typography>
+            </Box>
+          </SlideRelative>
+          <WarningStorageLowSnackbar
+            isLowStorage={isLowStorage}
+            isLowStorageAfterAction={isLowStorageAfterAction}
+          />
+
+          <Button
+            onClick={transferTokens}
+            disabled={sending || occupied}
+            variant="contained"
+            color="success"
+            size="large"
+            sx={{
+              height: '50px',
+              width: '100%',
+              borderRadius: '12px',
+              textTransform: 'capitalize',
+              display: 'flex',
+              gap: '12px',
+              marginBottom: '33px',
+            }}
+          >
+            {sending ? (
+              <>
+                <LLSpinner size={28} />
+                <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }} color="text.primary">
+                  {chrome.i18n.getMessage('Sending')}
+                </Typography>
+              </>
+            ) : (
+              <>
+                {failed ? (
+                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }} color="text.primary">
+                    {chrome.i18n.getMessage('Transaction__failed')}
+                  </Typography>
+                ) : (
+                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }} color="text.primary">
+                    {chrome.i18n.getMessage('Send')}
+                  </Typography>
+                )}
+              </>
+            )}
+          </Button>
+        </Box>
       </Drawer>
       <StorageExceededAlert open={errorCode === 1103} onClose={() => setErrorCode(null)} />
     </>
