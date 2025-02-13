@@ -6,7 +6,9 @@ import { useHistory } from 'react-router-dom';
 import { type TransactionState } from '@/shared/types/transaction-types';
 import { isValidAddress, isValidEthereumAddress } from '@/shared/utils/address';
 import { LLHeader } from '@/ui/FRWComponent';
+import { ContactCard } from '@/ui/FRWComponent/Send/ContactCard';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
+import { useContactHook } from '@/ui/hooks/useContactHook';
 import { useNetworkStore } from '@/ui/stores/networkStore';
 import { useWallet } from 'ui/utils';
 
@@ -33,6 +35,9 @@ const SendToCadenceOrEvm = ({
   const history = useHistory();
   const wallet = useWallet();
   const { currentNetwork: network } = useNetworkStore();
+  const { useContact } = useContactHook();
+  const contactData =
+    useContact(transactionState.toContact?.address || '') || transactionState.toContact || null;
   const [isConfirmationOpen, setConfirmationOpen] = useState(false);
   const [validated, setValidated] = useState<boolean | null>(null);
 
@@ -73,11 +78,9 @@ const SendToCadenceOrEvm = ({
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px', px: '16px' }}>
             <Box>
               <Box sx={{ zIndex: 999, backgroundColor: '#121212' }}>
-                {/* <LLContactCard
-                  contact={transactionState.toContact}
-                  hideCloseButton={false}
-                  isSend={true}
-                /> */}
+                {transactionState.toContact && (
+                  <ContactCard contact={contactData} coinInfo={transactionState.coinInfo} />
+                )}
               </Box>
 
               <SlideRelative show={validated !== null && !validated} direction="down">
