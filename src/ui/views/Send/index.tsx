@@ -109,18 +109,9 @@ const SendAddress = () => {
   const classes = useStyles();
   const theme = useTheme();
   const history = useHistory();
-  const usewallet = useWallet();
-  const {
-    filteredContacts,
-    searchContacts,
-    recentContacts,
-    sortedContacts,
-    hasNoFilteredContacts,
-    setFilteredContacts,
-    setSearchContacts,
-    setHasNoFilteredContacts,
-  } = useContactStore();
-  const { fetchAddressBook } = useContactHook();
+  const { filteredContacts, searchContacts, recentContacts, hasNoFilteredContacts } =
+    useContactStore();
+  const { searchUser, fetchAddressBook, filterContacts } = useContactHook();
 
   const [tabValue, setTabValue] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -128,56 +119,15 @@ const SendAddress = () => {
   const [searchKey, setSearchKey] = useState<string>('');
   const [searched, setSearched] = useState<boolean>(false);
 
-  const location = useLocation();
   const mounted = useRef(false);
   const { id: token } = useParams<{ id: string }>();
 
-  const checkContain = (searchResult: Contact) => {
-    if (sortedContacts.some((e) => e.contact_name === searchResult.username)) {
-      return true;
-    }
-    return false;
-  };
-
-  const searchUser = async () => {
-    let result = await usewallet.openapi.searchUser(searchKey);
-    result = result.data.users;
-    const fArray = searchContacts;
-    const reg = /^((0x))/g;
-    const lilicoResult = {
-      address: '',
-      contact_name: '',
-      avatar: '',
-      domain: {
-        domain_type: 0,
-        value: '',
-      },
-    } as Contact;
-    if (result) {
-      result.map((data) => {
-        let address = data.address;
-        if (!reg.test(data.address)) {
-          address = '0x' + data.address;
-        }
-        lilicoResult['group'] = 'Flow Wallet user';
-        lilicoResult.address = address;
-        lilicoResult.contact_name = data.username;
-        lilicoResult.domain!.domain_type = 999;
-        lilicoResult.avatar = data.avatar;
-        lilicoResult.type! = checkContain(data) ? 1 : 4;
-        fArray.push(lilicoResult);
-      });
-      setSearchContacts(fArray);
-    }
-    return;
-  };
   const searchAll = async () => {
     // await resetSearch();
     setSearching(true);
     setIsLoading(true);
-    await searchUser();
+    await searchUser(searchKey);
     // await searchUser();
-    setHasNoFilteredContacts(false);
     setSearched(true);
     setIsLoading(false);
   };
@@ -198,27 +148,13 @@ const SendAddress = () => {
     if (keyword.length === 0) {
       setSearching(false);
     }
-
-    const filtered = sortedContacts.filter((item) => {
-      for (const key in item) {
-        if (typeof item[key] === 'string') {
-          if (item[key].includes(keyword)) return true;
-        }
-      }
-      if (item.domain?.value.includes(keyword)) return true;
-      return false;
-    });
-
     const trimmedSearchTerm = keyword.trim();
-    // Check if they've entered a valid address
     if (isValidAddress(trimmedSearchTerm)) {
-      // Yep, they've entered a valid address
       const address = trimmedSearchTerm as WalletAddress;
       handleTransactionRedirect(address);
     }
-    setFilteredContacts(filtered);
-    setHasNoFilteredContacts(isEmpty(filtered));
-    console.log('recentContacts', filtered);
+
+    filterContacts(keyword);
   };
 
   const handleTransactionRedirect = useCallback(

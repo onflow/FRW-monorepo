@@ -1,6 +1,8 @@
+import { isEmpty } from 'lodash';
 import { useCallback } from 'react';
 
 import { type Contact } from '@/shared/types/network-types';
+import { type WalletAddress } from '@/shared/types/wallet-types';
 import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
 import { useContactStore } from '@/ui/stores/contactStore';
 import { useProfileStore } from '@/ui/stores/profileStore';
@@ -150,6 +152,67 @@ export function useContactHook() {
     [contactStore]
   );
 
+  const filterContacts = useCallback(
+    (keyword: string) => {
+      const filtered = contactStore.sortedContacts.filter((item) => {
+        for (const key in item) {
+          if (typeof item[key] === 'string') {
+            if (item[key].includes(keyword)) return true;
+          }
+        }
+        if (item.domain?.value.includes(keyword)) return true;
+        return false;
+      });
+
+      contactStore.setFilteredContacts(filtered);
+      contactStore.setHasNoFilteredContacts(isEmpty(filtered));
+
+      return filtered;
+    },
+    [contactStore]
+  );
+
+  const searchUser = useCallback(
+    async (searchKey: string) => {
+      let result = await usewallet.openapi.searchUser(searchKey);
+      result = result.data.users;
+      const fArray = contactStore.searchContacts;
+      const reg = /^((0x))/g;
+      const lilicoResult = {
+        address: '',
+        contact_name: '',
+        avatar: '',
+        domain: {
+          domain_type: 0,
+          value: '',
+        },
+      } as Contact;
+
+      if (result) {
+        result.map((data) => {
+          let address = data.address;
+          if (!reg.test(data.address)) {
+            address = '0x' + data.address;
+          }
+          lilicoResult['group'] = 'Flow Wallet user';
+          lilicoResult.address = address;
+          lilicoResult.contact_name = data.username;
+          lilicoResult.domain!.domain_type = 999;
+          lilicoResult.avatar = data.avatar;
+          lilicoResult.type! = contactStore.sortedContacts.some(
+            (e) => e.contact_name === data.username
+          )
+            ? 1
+            : 4;
+          fArray.push(lilicoResult);
+        });
+        contactStore.setSearchContacts(fArray);
+      }
+      return;
+    },
+    [usewallet, contactStore]
+  );
+
   return {
     toContact: contactStore.toContact,
     fromContact: contactStore.fromContact,
@@ -158,5 +221,7 @@ export function useContactHook() {
     fetchAddressBook,
     setupAccounts,
     useContact,
+    filterContacts,
+    searchUser,
   };
 }
