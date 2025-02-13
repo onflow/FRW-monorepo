@@ -1,7 +1,8 @@
 import { Box, Typography, IconButton, Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
+import BrowserWarning from '@/ui/component/BrowserWarning';
 import { LLHeader, LLSpinner } from '@/ui/FRWComponent';
 import { LLDeleteBackupPopup } from '@/ui/FRWComponent/LLDeleteBackupPopup';
 import { useWallet } from 'ui/utils';
@@ -66,15 +67,7 @@ const ManageBackups = () => {
   const [deleteBackupPop, setDeleteBackupPop] = useState(false);
   const [deleteAllBackupPop, setDeleteAllBackupPop] = useState(false);
 
-  const checkPermissions = async () => {
-    const permissions = await wallet.hasGooglePremission();
-    setHasPermission(permissions);
-    if (permissions) {
-      checkBackup();
-    }
-  };
-
-  const checkBackup = async () => {
+  const checkBackup = useCallback(async () => {
     try {
       setLoading(true);
       const hasBackup = await wallet.hasCurrentUserBackup();
@@ -84,7 +77,15 @@ const ManageBackups = () => {
       console.error(e);
       setLoading(false);
     }
-  };
+  }, [setLoading, setHasBackup, wallet]);
+
+  const checkPermissions = useCallback(async () => {
+    const permissions = await wallet.hasGooglePremission();
+    setHasPermission(permissions);
+    if (permissions) {
+      checkBackup();
+    }
+  }, [checkBackup, wallet]);
 
   const syncBackup = async () => {
     try {
@@ -138,7 +139,7 @@ const ManageBackups = () => {
 
   useEffect(() => {
     checkPermissions();
-  }, []);
+  }, [checkPermissions]);
 
   return (
     <div className="page" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -167,6 +168,7 @@ const ManageBackups = () => {
           </Button>
         )}
       </Box>
+      <BrowserWarning />
 
       <Box sx={{ flexGrow: 1 }} />
 
