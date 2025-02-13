@@ -309,16 +309,29 @@ export class WalletController extends BaseController {
 
   // lockadd here
   resetPwd = async () => {
-    const switchingTo = 'mainnet';
+    // WARNING: This resets absolutely everything
+    // This is used when the user forgets their password
+    // It should only be called from the landing page when the user is logged out
+    // And the user should be redirected to the landing page
+    // After calling this function
+
+    // TODO: I believe the user should be logged out here
+    // e.g. call signOutCurrentUser
+
+    // This clears local storage but a lot is still kept in memory
     await storage.clear();
 
+    // Note that this does not clear the 'booted' state
+    // We should fix this, but it would involve making changes to keyringService
     await keyringService.resetKeyRing();
     await keyringService.setLocked();
+
     await passwordService.clear();
+
     sessionService.broadcastEvent('accountsChanged', []);
     sessionService.broadcastEvent('lock');
-    openIndexPage('reset');
-    await this.switchNetwork(switchingTo);
+    // Redirect to welcome so that users can import their account again
+    openIndexPage('/welcome');
   };
 
   // lockadd here
@@ -1180,7 +1193,7 @@ export class WalletController extends BaseController {
         const tokenId = `A.${token.address.slice(2)}.${token.contractName}`;
         return {
           coin: token.name,
-          unit: token.symbol,
+          unit: token.symbol.toLowerCase(),
           icon: token['logoURI'] || '',
           balance: parseFloat(parseFloat(allBalanceMap[tokenId]).toFixed(8)),
           price: allPrice[index] === null ? 0 : new BN(allPrice[index].price.last).toNumber(),
@@ -1253,7 +1266,7 @@ export class WalletController extends BaseController {
         const tokenId = `A.${token.address.slice(2)}.${token.contractName}`;
         return {
           coin: token.name,
-          unit: token.symbol,
+          unit: token.symbol.toLowerCase(),
           icon: token['logoURI'] || '',
           balance: parseFloat(parseFloat(allBalanceMap[tokenId]).toFixed(8)),
           price: allPrice[index] === null ? 0 : new BN(allPrice[index].price.last).toNumber(),
@@ -1290,23 +1303,6 @@ export class WalletController extends BaseController {
     }
   };
 
-  fetchCoinList = async (_expiry = 5000, { signal } = { signal: new AbortController().signal }) => {
-    const network = await this.getNetwork();
-    try {
-      await this.fetchBalance({ signal });
-
-      const coinListResult = coinListService.listCoins(network);
-      return coinListResult;
-    } catch (err) {
-      if (err.message === 'Operation aborted') {
-        console.log('refreshCoinList operation aborted.');
-      } else {
-        console.error('fetch coinlist encountered an error:', err);
-      }
-      throw err;
-    }
-  };
-
   refreshEvmList = async (_expiry = 60000) => {
     const now = new Date();
     const exp = _expiry + now.getTime();
@@ -1315,7 +1311,7 @@ export class WalletController extends BaseController {
     const network = await this.getNetwork();
     const evmCustomToken = (await storage.get(`${network}evmCustomToken`)) || [];
 
-    const tokenList = await openapiService.getTokenListFromGithub(network);
+    const tokenList = await openapiService.getTokenList(network);
 
     const address = await this.getRawEvmAddressWithPrefix();
     if (!isValidEthereumAddress(address)) {
@@ -1384,7 +1380,7 @@ export class WalletController extends BaseController {
     const coins: CoinItem[] = mergedList.map((token, index) => {
       return {
         coin: token.name,
-        unit: token.symbol,
+        unit: token.symbol.toLowerCase(),
         icon: token['logoURI'] || placeholder,
         balance: token.balance,
         price: allPrice[index] === null ? 0 : new BN(allPrice[index].price.last).toNumber(),
@@ -1428,32 +1424,6 @@ export class WalletController extends BaseController {
         const nftList = await openapiService.evmNFTList();
         // Cache the nftList with a one-hour expiry (3600000 milliseconds)
         await storage.setExpiry('evmnftList', nftList, 3600000);
-        return nftList;
-      }
-    } catch (error) {
-      console.error('Error fetching NFT list:', error);
-      throw error;
-    }
-  };
-
-  fetchPreviewNetNft = async () => {
-    try {
-      // Check if the nftList is already in storage and not expired
-      const cachedNFTList = await storage.getExpiry('previewNetNftList');
-      if (cachedNFTList) {
-        return cachedNFTList;
-      } else {
-        // Fetch the nftList from the API
-
-        const network = await this.getNetwork();
-        const response = await fetch(
-          `https://raw.githubusercontent.com/Outblock/token-list-jsons/outblock/jsons/${network}/flow/nfts.json`
-        );
-        const res = await response.json();
-        console.log('nftList ', res);
-        const nftList = res.tokens;
-        // Cache the nftList with a one-hour expiry (3600000 milliseconds)
-        await storage.setExpiry('previewNetNftList', nftList, 3600000);
         return nftList;
       }
     } catch (error) {
@@ -3249,7 +3219,6 @@ export class WalletController extends BaseController {
         console.log('No active tab found');
         return;
       }
-      console.log('tabs', tabs);
       if (tabs[0].id) {
         chrome.tabs.sendMessage(tabs[0].id, {
           type: 'FCW:NETWORK',
