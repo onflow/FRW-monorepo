@@ -11,11 +11,13 @@ import { ensureEvmAddressPrefix, isValidEthereumAddress } from '@/shared/utils/a
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
 import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
+import { useContactHook } from '@/ui/hooks/useContactHook';
 import { useWeb3 } from '@/ui/hooks/useWeb3';
 import { useStorageCheck } from '@/ui/utils/useStorageCheck';
 import erc20ABI from 'background/utils/erc20.abi.json';
 import IconNext from 'ui/FRWAssets/svg/next.svg';
 import { LLSpinner, LLProfile, FRWProfile, FRWTargetProfile } from 'ui/FRWComponent';
+import { Profile } from 'ui/FRWComponent/Send/Profile';
 import { useWallet, isEmoji, stripFinalAmount } from 'ui/utils';
 
 interface TransferConfirmationProps {
@@ -31,6 +33,11 @@ const TransferConfirmation = ({
 }: TransferConfirmationProps) => {
   const wallet = useWallet();
   const history = useHistory();
+  const { useContact } = useContactHook();
+  const fromContactData =
+    useContact(transactionState.fromContact?.address || '') || transactionState.fromContact;
+  const toContactData =
+    useContact(transactionState.toContact?.address || '') || transactionState.toContact;
   const [sending, setSending] = useState(false);
   const [failed, setFailed] = useState(false);
   const [, setErrorMessage] = useState<string | null>(null);
@@ -523,18 +530,8 @@ const TransferConfirmation = ({
         sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: '16px' }}
       >
         {/* Need some generic card here that renders the contact card based on the network */}
-        {transactionState.fromNetwork === 'Evm' ? (
-          <FRWProfile
-            contact={transactionState.fromContact}
-            isLoading={false}
-            isEvm={true}
-            fromEvm={'yes'}
-          />
-        ) : transactionState.fromNetwork === 'Child' ? (
-          <LLProfile contact={transactionState.fromContact} />
-        ) : (
-          <FRWProfile contact={transactionState.fromContact} fromEvm={'no'} />
-        )}
+
+        <Profile contact={fromContactData} />
         <Box
           sx={{
             marginLeft: '-15px',
@@ -558,18 +555,7 @@ const TransferConfirmation = ({
             </Box>
           ))}
         </Box>
-        {transactionState.toNetwork === 'Evm' ? (
-          <FRWProfile
-            contact={transactionState.toContact}
-            isLoading={false}
-            isEvm={true}
-            fromEvm={'yes'}
-          />
-        ) : isEmoji(transactionState.toContact?.avatar) ? (
-          <FRWTargetProfile contact={transactionState.toContact} fromEvm={'to'} />
-        ) : (
-          <LLProfile contact={transactionState.toContact} />
-        )}
+        <Profile contact={toContactData} />
       </Box>
 
       <Box
