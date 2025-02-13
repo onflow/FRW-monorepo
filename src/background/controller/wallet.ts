@@ -26,7 +26,11 @@ import {
 import eventBus from '@/eventBus';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
 import { type TrackingEvents } from '@/shared/types/tracking-types';
-import { type ActiveChildType, type LoggedInAccount } from '@/shared/types/wallet-types';
+import {
+  type ActiveChildType,
+  type LoggedInAccount,
+  type PublicKeyTuple,
+} from '@/shared/types/wallet-types';
 import { ensureEvmAddressPrefix, isValidEthereumAddress, withPrefix } from '@/shared/utils/address';
 import { getHashAlgo, getSignAlgo } from '@/shared/utils/algo';
 import { retryOperation } from '@/shared/utils/retryOperation';
@@ -531,7 +535,7 @@ export class WalletController extends BaseController {
     return privateKey;
   };
 
-  getPubKey = async () => {
+  getPubKey = async (): Promise<PublicKeyTuple> => {
     let privateKey;
     let pubKTuple;
     const keyrings = await keyringService.getKeyring();
@@ -565,7 +569,14 @@ export class WalletController extends BaseController {
       const error = new Error('No mnemonic or private key found in any of the keyrings.');
       throw error;
     }
-    return pubKTuple;
+    return {
+      P256: {
+        pubK: pubKTuple.P256.pubK,
+      },
+      SECP256K1: {
+        pubK: pubKTuple.SECP256K1.pubK,
+      },
+    };
   };
 
   importPrivateKey = async (data) => {
