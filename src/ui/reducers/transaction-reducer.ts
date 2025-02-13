@@ -131,12 +131,19 @@ export const transactionReducer = (
     case 'setSelectedToken': {
       // Set the token type based on the token symbol
       const tokenType = action.payload.tokenInfo.symbol.toLowerCase() !== 'flow' ? 'FT' : 'Flow';
-      return updateTxState({
-        ...state,
-        selectedToken: action.payload.tokenInfo,
-        tokenType,
-        coinInfo: action.payload.coinInfo,
-      });
+      // Set the amount to the current amount so that we can truncate and adjust the amount based on the token decimals and / or price
+      return transactionReducer(
+        {
+          ...state,
+          selectedToken: action.payload.tokenInfo,
+          tokenType,
+          coinInfo: action.payload.coinInfo,
+        },
+        {
+          type: 'setAmount',
+          payload: state.amount,
+        }
+      );
     }
     case 'setToAddress': {
       const { address, contact } = action.payload;
