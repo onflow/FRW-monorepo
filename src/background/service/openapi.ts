@@ -1483,14 +1483,15 @@ class OpenApiService {
       WEB_NEXT_URL
     );
 
-    return data.tokens;
+    return this.addFlowTokenIfMissing(data.tokens);
   };
 
   addFlowTokenIfMissing = (tokens) => {
     const hasFlowToken = tokens.some((token) => token.symbol.toLowerCase() === 'flow');
     if (!hasFlowToken) {
-      tokens.push(defaultFlowToken);
+      return [defaultFlowToken, ...tokens];
     }
+    return tokens;
   };
 
   mergeCustomTokens = (tokens, customTokens) => {
