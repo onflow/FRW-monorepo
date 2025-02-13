@@ -5,24 +5,30 @@ import BN from 'bignumber.js';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
+import { type TransactionState } from '@/shared/types/transaction-types';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
 import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
-import { useTransactionStore } from '@/ui/stores/transactionStore';
 import { useStorageCheck } from '@/ui/utils/useStorageCheck';
 import IconNext from 'ui/FRWAssets/svg/next.svg';
-import { LLSpinner, LLProfile, FRWProfile, FRWTargetProfile } from 'ui/FRWComponent';
-import { useWallet } from 'ui/utils';
+import { LLSpinner, LLProfile, FRWTargetProfile } from 'ui/FRWComponent';
+import { stripFinalAmount, useWallet } from 'ui/utils';
 
 interface ToEthConfirmationProps {
   isConfirmationOpen: boolean;
-  data: any;
+  transactionState: TransactionState;
   handleCloseIconClicked: () => void;
   handleCancelBtnClicked: () => void;
   handleAddBtnClicked: () => void;
 }
 
-const FlowToEVMConfirmation = (props: ToEthConfirmationProps) => {
+const FlowToEVMConfirmation = ({
+  transactionState,
+  isConfirmationOpen,
+  handleCloseIconClicked,
+  handleCancelBtnClicked,
+  handleAddBtnClicked,
+}: ToEthConfirmationProps) => {
   const wallet = useWallet();
   const history = useHistory();
   const [sending, setSending] = useState(false);
@@ -35,7 +41,7 @@ const FlowToEVMConfirmation = (props: ToEthConfirmationProps) => {
   const [count, setCount] = useState(0);
   const { sufficient: isSufficient, sufficientAfterAction } = useStorageCheck({
     transferAmount: 0,
-    coin: props.data?.coinInfo?.coin,
+    coin: transactionState?.coinInfo?.coin,
     // the transfer is within the EVM network, the flag should be false
     movingBetweenEVMAndFlow: false,
   });
@@ -56,7 +62,7 @@ const FlowToEVMConfirmation = (props: ToEthConfirmationProps) => {
   const startCount = useCallback(() => {
     let count = 0;
     let intervalId;
-    if (props.data.contact.address) {
+    if (transactionState.toAddress) {
       intervalId = setInterval(function () {
         count++;
         if (count === 7) {
@@ -64,10 +70,10 @@ const FlowToEVMConfirmation = (props: ToEthConfirmationProps) => {
         }
         setCount(count);
       }, 500);
-    } else if (!props.data.contact.address) {
+    } else if (!transactionState.toAddress) {
       clearInterval(intervalId);
     }
-  }, [props?.data?.contact?.address]);
+  }, [transactionState.toAddress]);
 
   const getPending = useCallback(async () => {
     const pending = await wallet.getPendingTx();
@@ -81,20 +87,22 @@ const FlowToEVMConfirmation = (props: ToEthConfirmationProps) => {
   }, []);
 
   const transferFlowFromCadenceToEvm = useCallback(async () => {
-    const amount = new BN(props.data.amount).decimalPlaces(8, BN.ROUND_DOWN).toString();
-
+    const amount = new BN(transactionState.amount).decimalPlaces(8, BN.ROUND_DOWN).toString();
+    if (stripFinalAmount(amount, 8) !== stripFinalAmount(transactionState.amount, 8)) {
+      throw new Error('Amount entered does not match required precision');
+    }
     wallet
-      .transferFlowEvm(props.data.contact.address, amount)
+      .transferFlowEvm(transactionState.toAddress, amount)
       .then(async (txId) => {
-        await wallet.setRecent(props.data.contact);
+        await wallet.setRecent(transactionState.toContact);
         wallet.listenTransaction(
           txId,
           true,
-          `${props.data.amount} ${props.data.coinInfo.coin} Sent`,
-          `You have sent ${props.data.amount} ${props.data.tokenSymbol} to ${props.data.contact.contact_name}. \nClick to view this transaction.`,
-          props.data.coinInfo.icon
+          `${transactionState.amount} ${transactionState.coinInfo.coin} Sent`,
+          `You have sent ${transactionState.amount} ${transactionState.selectedToken?.symbol} to ${transactionState.toContact?.contact_name}. \nClick to view this transaction.`,
+          transactionState.coinInfo.icon
         );
-        props.handleCloseIconClicked();
+        handleCloseIconClicked();
         await wallet.setDashIndex(0);
         setSending(false);
         setTid(txId);
@@ -105,33 +113,35 @@ const FlowToEVMConfirmation = (props: ToEthConfirmationProps) => {
         setFailed(true);
       });
     // Depending on history is probably not great
-  }, [history, props, wallet]);
+  }, [history, transactionState, wallet, handleCloseIconClicked]);
 
   const transferFTFromCadenceToEvm = useCallback(async () => {
     setSending(true);
 
-    const value = new BN(props.data.amount).decimalPlaces(8, BN.ROUND_DOWN).toString();
-
-    const address = props.data.selectedToken!.address.startsWith('0x')
-      ? props.data.selectedToken!.address.slice(2)
-      : props.data.selectedToken!.address;
+    const amount = new BN(transactionState.amount).decimalPlaces(8, BN.ROUND_DOWN).toString();
+    if (stripFinalAmount(amount, 8) !== stripFinalAmount(transactionState.amount, 8)) {
+      throw new Error('Amount entered does not match required precision');
+    }
+    const address = transactionState.selectedToken!.address.startsWith('0x')
+      ? transactionState.selectedToken!.address.slice(2)
+      : transactionState.selectedToken!.address;
 
     wallet
       .transferFTToEvmV2(
-        `A.${address}.${props.data.selectedToken!.contractName}.Vault`,
-        value,
-        props.data.contact.address
+        `A.${address}.${transactionState.selectedToken!.contractName}.Vault`,
+        amount,
+        transactionState.toAddress
       )
       .then(async (txId) => {
-        await wallet.setRecent(props.data.contact);
+        await wallet.setRecent(transactionState.toContact);
         wallet.listenTransaction(
           txId,
           true,
-          `${props.data.amount} ${props.data.coinInfo.coin} Sent`,
-          `You have sent ${props.data.amount} ${props.data.tokenSymbol} to ${props.data.contact.contact_name}. \nClick to view this transaction.`,
-          props.data.coinInfo.icon
+          `${transactionState.amount} ${transactionState.coinInfo.coin} Sent`,
+          `You have sent ${transactionState.amount} ${transactionState.selectedToken?.symbol} to ${transactionState.toContact?.contact_name}. \nClick to view this transaction.`,
+          transactionState.coinInfo.icon
         );
-        props.handleCloseIconClicked();
+        handleCloseIconClicked();
         await wallet.setDashIndex(0);
         setSending(false);
         setTid(txId);
@@ -143,12 +153,22 @@ const FlowToEVMConfirmation = (props: ToEthConfirmationProps) => {
         setFailed(true);
       });
     // Depending on history is probably not great
-  }, [history, props, wallet]);
+  }, [
+    handleCloseIconClicked,
+    history,
+    transactionState.amount,
+    transactionState.coinInfo.coin,
+    transactionState.coinInfo.icon,
+    transactionState.selectedToken,
+    transactionState.toAddress,
+    transactionState.toContact,
+    wallet,
+  ]);
 
   const transferTokens = useCallback(async () => {
     try {
       setSending(true);
-      switch (props.data.currentTxState) {
+      switch (transactionState.currentTxState) {
         case 'FlowFromCadenceToEvm':
           await transferFlowFromCadenceToEvm();
           break;
@@ -156,13 +176,13 @@ const FlowToEVMConfirmation = (props: ToEthConfirmationProps) => {
           await transferFTFromCadenceToEvm();
           break;
         default:
-          throw new Error(`Unsupported transaction state: ${props.data.currentTxState}`);
+          throw new Error(`Unsupported transaction state: ${transactionState.currentTxState}`);
       }
     } catch (error) {
       console.error('Transaction failed:', error);
       setFailed(true);
     }
-  }, [transferFlowFromCadenceToEvm, transferFTFromCadenceToEvm, props.data.currentTxState]);
+  }, [transferFlowFromCadenceToEvm, transferFTFromCadenceToEvm, transactionState.currentTxState]);
 
   const transactionDoneHandler = useCallback(
     (request) => {
@@ -232,7 +252,7 @@ const FlowToEVMConfirmation = (props: ToEthConfirmationProps) => {
           )}
         </Grid>
         <Grid item xs={1}>
-          <IconButton onClick={props.handleCloseIconClicked}>
+          <IconButton onClick={handleCloseIconClicked}>
             <CloseIcon fontSize="medium" sx={{ color: 'icon.navi', cursor: 'pointer' }} />
           </IconButton>
         </Grid>
@@ -240,10 +260,10 @@ const FlowToEVMConfirmation = (props: ToEthConfirmationProps) => {
       <Box
         sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: '16px' }}
       >
-        {props.data.childType && props.data.childType !== 'evm' ? (
-          <LLProfile contact={props.data.userContact} />
+        {transactionState.fromNetwork === 'Evm' ? (
+          <FRWTargetProfile contact={transactionState.fromContact} fromEvm={'sendEth'} />
         ) : (
-          <FRWTargetProfile contact={props.data.userContact} fromEvm={'sendEth'} />
+          <LLProfile contact={transactionState.fromContact} />
         )}
         <Box
           sx={{
@@ -268,7 +288,7 @@ const FlowToEVMConfirmation = (props: ToEthConfirmationProps) => {
             </Box>
           ))}
         </Box>
-        <LLProfile contact={props.data.contact} />
+        <LLProfile contact={transactionState.toContact} />
       </Box>
 
       <Box
@@ -283,16 +303,21 @@ const FlowToEVMConfirmation = (props: ToEthConfirmationProps) => {
         }}
       >
         <Stack direction="row" sx={{ alignItems: 'center' }} spacing={1}>
-          <CardMedia sx={{ width: '24px', height: '24px' }} image={props.data.coinInfo.icon} />
+          {transactionState.coinInfo.icon && (
+            <CardMedia
+              sx={{ width: '24px', height: '24px' }}
+              image={transactionState.coinInfo.icon}
+            />
+          )}
           <Typography variant="body1" sx={{ fontSize: '18px', fontWeight: 'semi-bold' }}>
-            {props.data.coinInfo.coin}
+            {transactionState.coinInfo.coin}
           </Typography>
           <Box sx={{ flexGrow: 1 }} />
           <Typography
             variant="body1"
             sx={{ fontSize: '18px', fontWeight: '400', textAlign: 'end' }}
           >
-            {props.data.amount} {props.data.coinInfo.unit}
+            {transactionState.amount} {transactionState.coinInfo.unit}
           </Typography>
         </Stack>
         <Stack direction="column" spacing={1}>
@@ -301,7 +326,7 @@ const FlowToEVMConfirmation = (props: ToEthConfirmationProps) => {
             color="info"
             sx={{ fontSize: '14px', fontWeight: 'semi-bold', textAlign: 'end' }}
           >
-            $ {props.data.secondAmount}
+            $ {transactionState.fiatAmount}
           </Typography>
         </Stack>
       </Box>
@@ -375,7 +400,7 @@ const FlowToEVMConfirmation = (props: ToEthConfirmationProps) => {
     <>
       <Drawer
         anchor="bottom"
-        open={props.isConfirmationOpen}
+        open={isConfirmationOpen}
         transitionDuration={300}
         PaperProps={{
           sx: {

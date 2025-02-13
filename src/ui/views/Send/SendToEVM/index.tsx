@@ -61,34 +61,11 @@ const SendEth = ({
   handleSwitchFiatOrCoin: () => void;
   handleMaxClick: () => void;
 }) => {
-  console.log('SendEth ');
   const history = useHistory();
   const wallet = useWallet();
   const { currentNetwork: network } = useNetworkStore();
   const [isConfirmationOpen, setConfirmationOpen] = useState(false);
   const [validated, setValidated] = useState<any>(null);
-
-  // TODO: move this to some store
-  const web3Instance = useMemo(() => {
-    const provider = new Web3.providers.HttpProvider(EVM_ENDPOINT[network]);
-    return new Web3(provider);
-  }, [network]);
-
-  const [erc20Contract, setErc20Contract] = useState<any>(null);
-
-  const updateContractInfo = useCallback(
-    async (address: string, symbol: string) => {
-      // Update the contract instance
-      let contractAddress = '0x7cd84a6b988859202cbb3e92830fff28813b9341';
-      if (symbol.toLowerCase() !== 'flow') {
-        contractAddress = address;
-      }
-      const contractInstance = new web3Instance.eth.Contract(erc20ABI, contractAddress);
-
-      setErc20Contract(contractInstance);
-    },
-    [web3Instance]
-  );
 
   const checkAddress = useCallback(async () => {
     //wallet controller api
@@ -103,18 +80,8 @@ const SendEth = ({
   }, [transactionState.toAddress]);
 
   useEffect(() => {
-    console.log('SendEth useEffect ');
-    updateContractInfo(
-      transactionState.selectedToken.address,
-      transactionState.selectedToken.symbol
-    );
     checkAddress();
-  }, [
-    updateContractInfo,
-    checkAddress,
-    transactionState.selectedToken.address,
-    transactionState.selectedToken.symbol,
-  ]);
+  }, [checkAddress]);
 
   return (
     <div className="page">
@@ -131,7 +98,7 @@ const SendEth = ({
                 /> */}
               </Box>
               <SlideRelative direction="down" show={validated !== null}>
-                {validated ? (
+                {validated !== null && validated ? (
                   <></>
                 ) : (
                   <Box
@@ -274,16 +241,7 @@ const SendEth = ({
           ) : (
             <FlowToEVMConfirmation
               isConfirmationOpen={isConfirmationOpen}
-              data={{
-                contact: transactionState.toContact,
-                amount: transactionState.amount,
-                secondAmount: transactionState.fiatAmount,
-                userContact: transactionState.fromContact,
-                tokenSymbol: transactionState.selectedToken.symbol,
-                coinInfo: transactionState.coinInfo,
-                currentTxState: transactionState.currentTxState,
-                erc20Contract,
-              }}
+              transactionState={transactionState}
               handleCloseIconClicked={() => setConfirmationOpen(false)}
               handleCancelBtnClicked={() => setConfirmationOpen(false)}
               handleAddBtnClicked={() => {

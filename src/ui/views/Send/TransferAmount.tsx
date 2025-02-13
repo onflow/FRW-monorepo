@@ -110,7 +110,6 @@ const useStyles = makeStyles(() => ({
     height: '25px',
   },
 }));
-
 const TransferAmount = ({
   transactionState,
   handleAmountChange,
@@ -132,17 +131,11 @@ const TransferAmount = ({
     (option) => {
       const selectCoin = coinStore.coins.find((coin) => coin.unit === option);
       if (selectCoin) {
-        // Debounce only the state updates, not the render
-        const updateStates = debounce(() => {
-          handleTokenChange(option);
-        }, 300);
-
-        updateStates();
         return <img src={selectCoin.icon} style={{ height: '24px', width: '24px' }} />;
       }
       return null;
     },
-    [coinStore, handleTokenChange]
+    [coinStore]
   );
 
   return (
@@ -215,9 +208,10 @@ const TransferAmount = ({
             <Box sx={{ width: '100%', display: 'flex' }}>
               <Select
                 renderValue={renderValue}
-                onChange={(e) => renderValue(e.target.value)}
+                onChange={(e) => handleTokenChange(e.target.value)}
                 className={classes.selectRoot}
-                defaultValue={transactionState.coinInfo.unit}
+                value={transactionState.selectedToken.symbol}
+                defaultValue={transactionState.selectedToken.symbol}
                 MenuProps={{
                   MenuListProps: { disablePadding: true },
                   PaperProps: {

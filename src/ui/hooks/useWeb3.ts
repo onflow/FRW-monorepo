@@ -1,16 +1,17 @@
-import { useEffect } from 'react';
+import { useMemo } from 'react';
+import Web3 from 'web3';
+
+import { EVM_ENDPOINT } from '@/constant';
 
 import { useNetworkStore } from '../stores/networkStore';
-import { useProviderStore } from '../stores/providerStore';
 
 export const useWeb3 = () => {
-  const { currentNetwork: network } = useNetworkStore();
+  const { currentNetwork } = useNetworkStore();
+  const network = currentNetwork || 'mainnet';
+  const web3instance = useMemo(() => {
+    const provider = new Web3.providers.HttpProvider(EVM_ENDPOINT[network]);
+    return new Web3(provider);
+  }, [network]);
 
-  const providerStore = useProviderStore();
-
-  useEffect(() => {
-    providerStore.setWeb3Instance(network);
-  }, [network, providerStore]);
-
-  return providerStore.web3Instance;
+  return web3instance;
 };

@@ -14,34 +14,19 @@ import SendToEvm from '../SendToEVM';
 
 export const SendTo = () => {
   // Remove or use only in development
-  console.log('SendTo');
-
   const wallet = useWallet();
+
   const { mainAddress, currentWallet, userInfo } = useProfileStore();
   const coinStore = useCoinStore();
   const { toAddress } = useParams<{ toAddress: string }>();
 
-  // Move coins to a separate memoized value
-  const coins = React.useMemo(() => coinStore.coins, [coinStore.coins]);
-
-  const [transactionState, dispatch] = useReducer(transactionReducer, {
-    ...INITIAL_TRANSACTION_STATE,
-    toAddress: toAddress as WalletAddress,
-    toContact: {
-      id: 0,
-      address: toAddress as WalletAddress,
-      contact_name: '',
-      username: '',
-      avatar: '',
-    },
-    toNetwork: isValidEthereumAddress(toAddress) ? 'Evm' : 'Cadence',
-  });
+  const [transactionState, dispatch] = useReducer(transactionReducer, INITIAL_TRANSACTION_STATE);
 
   const handleTokenChange = useCallback(
     async (address: string) => {
       const tokenInfo = await wallet.openapi.getTokenInfo(address);
       if (tokenInfo) {
-        const coinInfo = coins.find(
+        const coinInfo = coinStore.coins.find(
           (coin) => coin.unit.toLowerCase() === tokenInfo.symbol.toLowerCase()
         );
         if (coinInfo) {
@@ -55,11 +40,10 @@ export const SendTo = () => {
         }
       }
     },
-    [wallet, coins] // Add coins as dependency
+    [coinStore, wallet]
   );
 
   useEffect(() => {
-    console.log('useEffect', mainAddress, currentWallet?.address);
     if (isValidFlowAddress(mainAddress) && isValidAddress(currentWallet?.address)) {
       dispatch({
         type: 'initTransactionState',
@@ -98,31 +82,28 @@ export const SendTo = () => {
     userInfo?.nickname,
     userInfo?.username,
     userInfo?.avatar,
-    handleTokenChange,
     toAddress,
+    handleTokenChange,
   ]);
 
-  const handleAmountChange = useCallback(
-    (amount: string) => {
-      dispatch({
-        type: 'setAmount',
-        payload: amount,
-      });
-    },
-    [dispatch]
-  );
+  const handleAmountChange = (amount: string) => {
+    dispatch({
+      type: 'setAmount',
+      payload: amount,
+    });
+  };
 
-  const handleSwitchFiatOrCoin = useCallback(() => {
+  const handleSwitchFiatOrCoin = () => {
     dispatch({
       type: 'switchFiatOrCoin',
     });
-  }, [dispatch]);
+  };
 
-  const handleMaxClick = useCallback(() => {
+  const handleMaxClick = () => {
     dispatch({
       type: 'setAmountToMax',
     });
-  }, [dispatch]);
+  };
 
   if (isValidEthereumAddress(toAddress)) {
     return (
@@ -146,6 +127,7 @@ export const SendTo = () => {
     );
   } else {
     // Should never happen...
+    console.log('Should never happen...');
     return null;
   }
 };

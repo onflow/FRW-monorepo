@@ -6,7 +6,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { type TransactionState } from '@/shared/types/transaction-types';
-import { ensureEvmAddressPrefix } from '@/shared/utils/address';
+import { ensureEvmAddressPrefix, isValidEthereumAddress } from '@/shared/utils/address';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
 import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
@@ -24,6 +24,7 @@ interface EvmConfirmationProps {
   handleCancelBtnClicked: () => void;
   handleAddBtnClicked: () => void;
 }
+const returnNothing = { doit: true };
 
 const EvmToEvmConfirmation = ({
   transactionState,
@@ -48,7 +49,11 @@ const EvmToEvmConfirmation = ({
   const web3Instance = useWeb3();
 
   useEffect(() => {
-    if (isConfirmationOpen && web3Instance) {
+    if (
+      isConfirmationOpen &&
+      web3Instance &&
+      isValidEthereumAddress(transactionState.selectedToken?.address)
+    ) {
       const contractInstance = new web3Instance.eth.Contract(
         erc20ABI,
         transactionState.selectedToken.address
@@ -82,7 +87,7 @@ const EvmToEvmConfirmation = ({
   const startCount = useCallback(() => {
     let count = 0;
     let intervalId;
-    if (transactionState.toAddress) {
+    if (isConfirmationOpen && transactionState.toAddress) {
       intervalId = setInterval(function () {
         count++;
         if (count === 7) {
@@ -90,10 +95,10 @@ const EvmToEvmConfirmation = ({
         }
         setCount(count);
       }, 500);
-    } else if (!transactionState.toAddress) {
+    } else if (!isConfirmationOpen || !transactionState.toAddress) {
       clearInterval(intervalId);
     }
-  }, [transactionState.toAddress]);
+  }, [transactionState.toAddress, isConfirmationOpen]);
 
   const getPending = useCallback(async () => {
     const pending = await wallet.getPendingTx();
@@ -126,7 +131,7 @@ const EvmToEvmConfirmation = ({
 
     let address, gas, value, data;
 
-    if (transactionState.coinInfo.unit.toLowerCase() === 'flow') {
+    if (transactionState.selectedToken.symbol.toLowerCase() === 'flow') {
       address = transactionState.toAddress;
       gas = '1';
       // const amountBN = new BN(transactionState.amount).multipliedBy(new BN(10).pow(18));
@@ -164,21 +169,7 @@ const EvmToEvmConfirmation = ({
       setFailed(true);
       setErrorMessage(err.message);
     }
-  }, [
-    transactionState.amount,
-    transactionState.selectedToken.decimals,
-    transactionState.selectedToken.address,
-    transactionState.selectedToken.symbol,
-    transactionState.coinInfo.unit,
-    transactionState.coinInfo.coin,
-    transactionState.coinInfo.icon,
-    transactionState.toAddress,
-    transactionState.toContact,
-    erc20Contract?.methods,
-    wallet,
-    handleCloseIconClicked,
-    history,
-  ]);
+  }, [transactionState, erc20Contract, wallet, handleCloseIconClicked, history]);
 
   const transferTokens = useCallback(async () => {
     try {
@@ -229,212 +220,224 @@ const EvmToEvmConfirmation = ({
     }
   }, [transactionState]);
 
-  const renderContent = () => (
-    <Box
-      px="18px"
-      sx={{
-        width: '100%',
-        height: '100%',
-        background: 'rgba(0, 0, 0, 0.5)',
-        flexDirection: 'column',
-        display: 'flex',
-      }}
-    >
-      <Grid
-        container
-        sx={{
-          justifyContent: 'space-between',
-          alignItems: 'center',
+  const isDisabled =
+    sending ||
+    occupied ||
+    (transactionState.selectedToken.symbol.toLowerCase() !== 'flow' && !erc20Contract);
+  return (
+    <>
+      <Drawer
+        anchor="bottom"
+        open={isConfirmationOpen}
+        transitionDuration={300}
+        PaperProps={{
+          sx: {
+            width: '100%',
+            height: '65%',
+            bgcolor: 'background.paper',
+            borderRadius: '18px 18px 0px 0px',
+          },
         }}
       >
-        <Grid item xs={1}></Grid>
-        <Grid item xs={10}>
-          {tid ? (
+        <Box
+          px="18px"
+          sx={{
+            width: '100%',
+            height: '100%',
+            background: 'rgba(0, 0, 0, 0.5)',
+            flexDirection: 'column',
+            display: 'flex',
+          }}
+        >
+          <Grid
+            container
+            sx={{
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <Grid item xs={1}></Grid>
+            <Grid item xs={10}>
+              {tid ? (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Typography variant="h1" align="center" py="14px" fontSize="20px">
+                    {chrome.i18n.getMessage('Transaction_created')}
+                  </Typography>
+                </Box>
+              ) : (
+                <Typography variant="h1" align="center" py="14px" fontWeight="bold" fontSize="20px">
+                  {!sending
+                    ? chrome.i18n.getMessage('Confirmation')
+                    : chrome.i18n.getMessage('Processing')}
+                </Typography>
+              )}
+            </Grid>
+            <Grid item xs={1}>
+              <IconButton onClick={handleCloseIconClicked}>
+                <CloseIcon fontSize="medium" sx={{ color: 'icon.navi', cursor: 'pointer' }} />
+              </IconButton>
+            </Grid>
+          </Grid>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              py: '16px',
+            }}
+          >
+            <FRWProfile
+              contact={transactionState.fromContact}
+              isLoading={false}
+              isEvm={true}
+              fromEvm={'evmConfirm'}
+            />
             <Box
               sx={{
+                marginLeft: '-15px',
+                marginRight: '-15px',
+                marginTop: '-32px',
                 display: 'flex',
-                flexDirection: 'column',
                 justifyContent: 'space-between',
                 alignItems: 'center',
               }}
             >
-              <Typography variant="h1" align="center" py="14px" fontSize="20px">
-                {chrome.i18n.getMessage('Transaction_created')}
-              </Typography>
+              {colorArray.map((color, index) => (
+                <Box sx={{ mx: '5px' }} key={index}>
+                  {count === index ? (
+                    <CardMedia sx={{ width: '8px', height: '12px' }} image={IconNext} />
+                  ) : (
+                    <Box
+                      key={index}
+                      sx={{
+                        height: '5px',
+                        width: '5px',
+                        borderRadius: '5px',
+                        backgroundColor: color,
+                      }}
+                    />
+                  )}
+                </Box>
+              ))}
             </Box>
-          ) : (
-            <Typography variant="h1" align="center" py="14px" fontWeight="bold" fontSize="20px">
-              {!sending
-                ? chrome.i18n.getMessage('Confirmation')
-                : chrome.i18n.getMessage('Processing')}
-            </Typography>
-          )}
-        </Grid>
-        <Grid item xs={1}>
-          <IconButton onClick={handleCloseIconClicked}>
-            <CloseIcon fontSize="medium" sx={{ color: 'icon.navi', cursor: 'pointer' }} />
-          </IconButton>
-        </Grid>
-      </Grid>
-      <Box
-        sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: '16px' }}
-      >
-        <FRWProfile
-          contact={transactionState.fromContact}
-          isLoading={false}
-          isEvm={true}
-          fromEvm={'evmConfirm'}
-        />
-        <Box
-          sx={{
-            marginLeft: '-15px',
-            marginRight: '-15px',
-            marginTop: '-32px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          {colorArray.map((color, index) => (
-            <Box sx={{ mx: '5px' }} key={index}>
-              {count === index ? (
-                <CardMedia sx={{ width: '8px', height: '12px' }} image={IconNext} />
-              ) : (
-                <Box
-                  key={index}
-                  sx={{ height: '5px', width: '5px', borderRadius: '5px', backgroundColor: color }}
-                />
-              )}
-            </Box>
-          ))}
-        </Box>
-        <LLProfile contact={transactionState.toContact} />
-      </Box>
+            <LLProfile contact={transactionState.toContact} />
+          </Box>
 
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          px: '13px',
-          py: '16px',
-          backgroundColor: '#333333',
-          borderRadius: '16px',
-          my: '10px',
-        }}
-      >
-        <Stack direction="row" sx={{ alignItems: 'center' }} spacing={1}>
-          <CardMedia
-            sx={{ width: '24px', height: '24px' }}
-            image={transactionState.coinInfo.icon}
-          />
-          <Typography variant="body1" sx={{ fontSize: '18px', fontWeight: 'semi-bold' }}>
-            {transactionState.coinInfo.coin}
-          </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              px: '13px',
+              py: '16px',
+              backgroundColor: '#333333',
+              borderRadius: '16px',
+              my: '10px',
+            }}
+          >
+            <Stack direction="row" sx={{ alignItems: 'center' }} spacing={1}>
+              <CardMedia
+                sx={{ width: '24px', height: '24px' }}
+                image={transactionState.coinInfo.icon}
+              />
+              <Typography variant="body1" sx={{ fontSize: '18px', fontWeight: 'semi-bold' }}>
+                {transactionState.coinInfo.coin}
+              </Typography>
+              <Box sx={{ flexGrow: 1 }} />
+              <Typography
+                variant="body1"
+                sx={{ fontSize: '18px', fontWeight: '400', textAlign: 'end' }}
+              >
+                {transactionState.amount} {transactionState.coinInfo.unit}
+              </Typography>
+            </Stack>
+            <Stack direction="column" spacing={1}>
+              <Typography
+                variant="body1"
+                color="info"
+                sx={{ fontSize: '14px', fontWeight: 'semi-bold', textAlign: 'end' }}
+              >
+                $ {transactionState.fiatAmount}
+              </Typography>
+            </Stack>
+          </Box>
+
           <Box sx={{ flexGrow: 1 }} />
-          <Typography
-            variant="body1"
-            sx={{ fontSize: '18px', fontWeight: '400', textAlign: 'end' }}
-          >
-            {transactionState.amount} {transactionState.coinInfo.unit}
-          </Typography>
-        </Stack>
-        <Stack direction="column" spacing={1}>
-          <Typography
-            variant="body1"
-            color="info"
-            sx={{ fontSize: '14px', fontWeight: 'semi-bold', textAlign: 'end' }}
-          >
-            $ {transactionState.fiatAmount}
-          </Typography>
-        </Stack>
-      </Box>
-
-      <Box sx={{ flexGrow: 1 }} />
-      <SlideRelative direction="down" show={occupied}>
-        <Box
-          sx={{
-            width: '95%',
-            backgroundColor: 'error.light',
-            mx: 'auto',
-            borderRadius: '12px 12px 0 0',
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            py: '8px',
-          }}
-        >
-          {/* <CardMedia style={{ color:'#E54040', width:'24px',height:'24px', margin: '0 12px 0' }} image={empty} />   */}
-          <InfoIcon fontSize="medium" color="primary" style={{ margin: '0px 12px auto 12px' }} />
-          <Typography variant="body1" color="text.secondary" sx={{ fontSize: '12px' }}>
-            {chrome.i18n.getMessage('Your_address_is_currently_processing_another_transaction')}
-          </Typography>
-        </Box>
-      </SlideRelative>
-      <WarningStorageLowSnackbar
-        isLowStorage={isLowStorage}
-        isLowStorageAfterAction={isLowStorageAfterAction}
-      />
-      <Button
-        onClick={transferTokens}
-        disabled={sending || occupied || !erc20Contract}
-        variant="contained"
-        color="success"
-        size="large"
-        sx={{
-          height: '50px',
-          width: '100%',
-          borderRadius: '12px',
-          textTransform: 'capitalize',
-          display: 'flex',
-          gap: '12px',
-          marginBottom: '33px',
-        }}
-      >
-        {sending ? (
-          <>
-            <LLSpinner size={28} />
-            <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }} color="text.primary">
-              {chrome.i18n.getMessage('Sending')}
-            </Typography>
-          </>
-        ) : (
-          <>
-            {failed ? (
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }} color="text.primary">
-                {chrome.i18n.getMessage('Transaction__failed')}
+          <SlideRelative direction="down" show={occupied}>
+            <Box
+              sx={{
+                width: '95%',
+                backgroundColor: 'error.light',
+                mx: 'auto',
+                borderRadius: '12px 12px 0 0',
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                py: '8px',
+              }}
+            >
+              {/* <CardMedia style={{ color:'#E54040', width:'24px',height:'24px', margin: '0 12px 0' }} image={empty} />   */}
+              <InfoIcon
+                fontSize="medium"
+                color="primary"
+                style={{ margin: '0px 12px auto 12px' }}
+              />
+              <Typography variant="body1" color="text.secondary" sx={{ fontSize: '12px' }}>
+                {chrome.i18n.getMessage('Your_address_is_currently_processing_another_transaction')}
               </Typography>
-            ) : (
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }} color="text.primary">
-                {chrome.i18n.getMessage('Send')}
-              </Typography>
-            )}
-          </>
-        )}
-      </Button>
-    </Box>
-  );
-
-  return (
-    isConfirmationOpen && (
-      <>
-        <Drawer
-          anchor="bottom"
-          open={isConfirmationOpen}
-          transitionDuration={300}
-          PaperProps={{
-            sx: {
+            </Box>
+          </SlideRelative>
+          <WarningStorageLowSnackbar
+            isLowStorage={isLowStorage}
+            isLowStorageAfterAction={isLowStorageAfterAction}
+          />
+          <Button
+            onClick={transferTokens}
+            disabled={isDisabled}
+            variant="contained"
+            color="success"
+            size="large"
+            sx={{
+              height: '50px',
               width: '100%',
-              height: '65%',
-              bgcolor: 'background.paper',
-              borderRadius: '18px 18px 0px 0px',
-            },
-          }}
-        >
-          {renderContent()}
-        </Drawer>
-        <StorageExceededAlert open={errorCode === 1103} onClose={() => setErrorCode(null)} />
-      </>
-    )
+              borderRadius: '12px',
+              textTransform: 'capitalize',
+              display: 'flex',
+              gap: '12px',
+              marginBottom: '33px',
+            }}
+          >
+            {sending ? (
+              <>
+                <LLSpinner size={28} />
+                <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }} color="text.primary">
+                  {chrome.i18n.getMessage('Sending')}
+                </Typography>
+              </>
+            ) : (
+              <>
+                {failed ? (
+                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }} color="text.primary">
+                    {chrome.i18n.getMessage('Transaction__failed')}
+                  </Typography>
+                ) : (
+                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }} color="text.primary">
+                    {chrome.i18n.getMessage('Send')}
+                  </Typography>
+                )}
+              </>
+            )}
+          </Button>
+        </Box>
+      </Drawer>
+      <StorageExceededAlert open={errorCode === 1103} onClose={() => setErrorCode(null)} />
+    </>
   );
 };
 
