@@ -15,19 +15,13 @@ import {
 } from '@mui/material';
 import { StyledEngineProvider } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
-import BN from 'bignumber.js';
-import { debounce } from 'lodash';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback } from 'react';
 
 import { type TransactionState } from '@/shared/types/transaction-types';
-import { type CoinItem } from '@/shared/types/wallet-types';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import { useCoinHook } from '@/ui/hooks/useCoinHook';
-import { useTransactionStore } from '@/ui/stores/transactionStore';
-import { getMaxDecimals } from '@/ui/utils/number';
 
 import CancelIcon from '../../../components/iconfont/IconClose';
-import IconFlow from '../../../components/iconfont/IconFlow';
 import IconSwitch from '../../../components/iconfont/IconSwitch';
 
 const useStyles = makeStyles(() => ({
@@ -269,7 +263,7 @@ const TransferAmount = ({
           >
             <Typography>≈</Typography>
             {transactionState.fiatOrCoin === 'fiat' ? (
-              <IconFlow size={16} />
+              <img src={transactionState.coinInfo.icon} style={{ height: '18px', width: '18px' }} />
             ) : (
               <AttachMoneyRoundedIcon style={{ fontSize: '16px' }} color="secondary" />
             )}
