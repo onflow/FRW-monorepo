@@ -109,8 +109,13 @@ const SendAddress = () => {
   const classes = useStyles();
   const theme = useTheme();
   const history = useHistory();
-  const { filteredContacts, searchContacts, recentContacts, hasNoFilteredContacts } =
-    useContactStore();
+  // const { filteredContacts, searchContacts, recentContacts, hasNoFilteredContacts } =
+  //   useContactStore();
+  const filteredContacts = useContactStore((state) => state.filteredContacts);
+  const searchContacts = useContactStore((state) => state.searchContacts);
+  const recentContacts = useContactStore((state) => state.recentContacts);
+  const hasNoFilteredContacts = useContactStore((state) => state.hasNoFilteredContacts);
+
   const { searchUser, fetchAddressBook, filterContacts } = useContactHook();
 
   const [tabValue, setTabValue] = useState(0);
