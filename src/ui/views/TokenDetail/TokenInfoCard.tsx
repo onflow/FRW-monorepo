@@ -55,7 +55,7 @@ const TokenInfoCard = ({
   const toSend = () => {
     console.log('tokenInfo ', tokenInfo);
     setSelectedToken(tokenInfo);
-    history.push('/dashboard/wallet/send');
+    history.push(`/dashboard/token/${tokenInfo.symbol}/send`);
   };
 
   const moveToken = () => {

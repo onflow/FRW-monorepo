@@ -69,13 +69,15 @@ const SendEth = ({
 
   const checkAddress = useCallback(async () => {
     //wallet controller api
-    try {
-      const validatedResult = isValidEthereumAddress(transactionState.toAddress);
-      setValidated(validatedResult);
-      return validatedResult;
-    } catch (err) {
-      console.error('validatedResult err ', err);
-      setValidated(false);
+    if (transactionState.toAddress) {
+      try {
+        const validatedResult = isValidEthereumAddress(transactionState.toAddress);
+        setValidated(validatedResult);
+        return validatedResult;
+      } catch (err) {
+        console.error('validatedResult err ', err);
+        setValidated(false);
+      }
     }
   }, [transactionState.toAddress]);
 
@@ -97,34 +99,35 @@ const SendEth = ({
                   isSend={true}
                 /> */}
               </Box>
-              <SlideRelative direction="down" show={validated !== null}>
-                {validated !== null && validated ? (
+              {validated !== null &&
+                (validated ? (
                   <></>
                 ) : (
-                  <Box
-                    sx={{
-                      width: '95%',
-                      backgroundColor: 'error.light',
-                      mx: 'auto',
-                      borderRadius: '0 0 12px 12px',
-                    }}
-                  >
+                  <SlideRelative direction="down" show={validated !== null}>
                     <Box
                       sx={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        alignItems: 'center',
+                        width: '95%',
+                        backgroundColor: 'error.light',
+                        mx: 'auto',
+                        borderRadius: '0 0 12px 12px',
                       }}
                     >
-                      <CancelIcon size={24} color={'#E54040'} style={{ margin: '8px' }} />
-                      <Typography variant="body1" color="text.secondary">
-                        {chrome.i18n.getMessage('Invalid_address_in')}
-                        {` ${network}`}
-                      </Typography>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <CancelIcon size={24} color={'#E54040'} style={{ margin: '8px' }} />
+                        <Typography variant="body1" color="text.secondary">
+                          {chrome.i18n.getMessage('Invalid_address_in')}
+                          {` ${network}`}
+                        </Typography>
+                      </Box>
                     </Box>
-                  </Box>
-                )}
-              </SlideRelative>
+                  </SlideRelative>
+                ))}
             </Box>
 
             <Typography

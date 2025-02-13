@@ -286,7 +286,7 @@ const WalletTab = ({ network }) => {
                 variant="contained"
                 onMouseEnter={() => setSendHover(true)}
                 onMouseLeave={() => setSendHover(false)}
-                onClick={() => history.push('/dashboard/wallet/send')}
+                onClick={() => history.push('/dashboard/token/flow/send')}
                 sx={{
                   height: '36px',
                   borderTopLeftRadius: '24px',

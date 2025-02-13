@@ -8,7 +8,6 @@ import { useWallet } from 'ui/utils';
 
 import Deposit from '../views/Deposit';
 import Enable from '../views/Enable';
-import Send from '../views/Send';
 
 import Dashboard from './Dashboard';
 import Header from './Dashboard/Header';
@@ -20,9 +19,10 @@ import SendToAddress from './NFT/SendNFT/SendToAddress';
 import EvmCollectionDetail from './NftEvm/CollectionDetail';
 import NftEvmDetail from './NftEvm/Detail';
 import SendNftEvm from './NftEvm/SendNFT/SendToAddress';
-import SendTo from './Send/[toAddress]';
-import SendToCadence from './Send/SendToCadence';
-import SendToEVM from './Send/SendToEVM';
+import SendAddress from './Send';
+import SendTo from './SendTo';
+import SendToCadence from './SendTo/SendToCadence';
+import SendToEVM from './SendTo/SendToEVM';
 import SettingTab from './Setting';
 import About from './Setting/About/About';
 import Account from './Setting/Account';
@@ -161,19 +161,20 @@ const InnerRoute = (props: RouteComponentProps) => {
             <PrivateRoute path={`${props.match.url}/nftevm/send`}>
               <SendNftEvm />
             </PrivateRoute>
-            <PrivateRoute path={`${props.match.url}/wallet/send/:toAddress`}>
-              <SendTo />
-            </PrivateRoute>
-            <PrivateRoute path={`${props.match.url}/wallet/send`} exact>
-              <Send />
-            </PrivateRoute>
             <PrivateRoute path={`${props.match.url}/wallet/deposit`}>
               <Deposit />
             </PrivateRoute>
 
-            <PrivateRoute path={`${props.match.url}/token/:id`}>
+            <PrivateRoute path={`${props.match.url}/token/:id`} exact>
               <TokenDetail />
             </PrivateRoute>
+            <PrivateRoute path={`${props.match.url}/token/:id/send`} exact>
+              <SendAddress />
+            </PrivateRoute>
+            <PrivateRoute path={`${props.match.url}/token/:id/send/:toAddress`} exact>
+              <SendTo />
+            </PrivateRoute>
+
             <PrivateRoute path={`${props.match.url}/tokenlist`}>
               <TokenList />
             </PrivateRoute>

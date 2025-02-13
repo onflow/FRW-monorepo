@@ -342,10 +342,12 @@ const EvmToEvmConfirmation = ({
             }}
           >
             <Stack direction="row" sx={{ alignItems: 'center' }} spacing={1}>
-              <CardMedia
-                sx={{ width: '24px', height: '24px' }}
-                image={transactionState.coinInfo.icon}
-              />
+              {transactionState.coinInfo.icon && (
+                <CardMedia
+                  sx={{ width: '24px', height: '24px' }}
+                  image={transactionState.coinInfo.icon}
+                />
+              )}
               <Typography variant="body1" sx={{ fontSize: '18px', fontWeight: 'semi-bold' }}>
                 {transactionState.coinInfo.coin}
               </Typography>

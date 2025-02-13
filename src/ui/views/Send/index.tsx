@@ -1,10 +1,8 @@
-import { ChangeHistory } from '@mui/icons-material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import HelpOutlineRoundedIcon from '@mui/icons-material/HelpOutlineRounded';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
-  InputBase,
   Tab,
   Tabs,
   Typography,
@@ -18,24 +16,18 @@ import {
   IconButton,
   Tooltip,
 } from '@mui/material';
-import { useTheme, styled, StyledEngineProvider } from '@mui/material/styles';
+import { useTheme, StyledEngineProvider } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
 import { isEmpty } from 'lodash';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation, useParams } from 'react-router-dom';
 import SwipeableViews from 'react-swipeable-views';
 
 import { type Contact } from '@/shared/types/network-types';
 import { type WalletAddress } from '@/shared/types/wallet-types';
-import {
-  withPrefix,
-  isValidEthereumAddress,
-  isValidAddress,
-  isValidFlowAddress,
-} from '@/shared/utils/address';
+import { isValidAddress } from '@/shared/utils/address';
 import { useContactHook } from '@/ui/hooks/useContactHook';
 import { useContactStore } from '@/ui/stores/contactStore';
-import { useTransactionStore } from '@/ui/stores/transactionStore';
 import { useWallet } from 'ui/utils';
 
 import IconAbout from '../../../components/iconfont/IconAbout';
@@ -90,16 +82,6 @@ interface TabPanelProps {
   value: number;
 }
 
-const searchResult = {
-  address: '',
-  contact_name: '',
-  avatar: '',
-  domain: {
-    domain_type: 0,
-    value: '',
-  },
-} as Contact;
-
 const TabPanel = (props: TabPanelProps) => {
   const { children, value, index, ...other } = props;
 
@@ -123,12 +105,11 @@ const a11yProps = (index: number) => {
   };
 };
 
-const Send = () => {
+const SendAddress = () => {
   const classes = useStyles();
   const theme = useTheme();
   const history = useHistory();
   const usewallet = useWallet();
-  const transactionStore = useTransactionStore();
   const {
     filteredContacts,
     searchContacts,
@@ -147,7 +128,9 @@ const Send = () => {
   const [searchKey, setSearchKey] = useState<string>('');
   const [searched, setSearched] = useState<boolean>(false);
 
+  const location = useLocation();
   const mounted = useRef(false);
+  const { id: token } = useParams<{ id: string }>();
 
   const checkContain = (searchResult: Contact) => {
     if (sortedContacts.some((e) => e.contact_name === searchResult.username)) {
@@ -241,8 +224,8 @@ const Send = () => {
   const handleTransactionRedirect = useCallback(
     (address: string) => {
       if (isValidAddress(address)) {
-        const pathname = `/dashboard/wallet/send/${address}`;
-
+        // Check if there was a token in the search params
+        const pathname = `/dashboard/token/${token}/send/${address}`;
         history.push({
           pathname,
         });
@@ -250,7 +233,7 @@ const Send = () => {
         console.error('Invalid address', address);
       }
     },
-    [history]
+    [history, token]
   );
   // Handle the click of a contact
   const handleContactClick = useCallback(
@@ -463,4 +446,4 @@ const Send = () => {
   );
 };
 
-export default Send;
+export default SendAddress;
