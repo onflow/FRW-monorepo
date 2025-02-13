@@ -12,8 +12,6 @@ import { useWallet } from 'ui/utils';
 
 import CancelIcon from '../../../components/iconfont/IconClose';
 
-import EvmToEvmConfirmation from './EvmToEvmConfirmation';
-import FlowToEVMConfirmation from './FlowToEVMConfirmation';
 import TransferAmount from './TransferAmount';
 import TransferConfirmation from './TransferConfirmation';
 
@@ -207,41 +205,13 @@ const SendToCadenceOrEvm = ({
               </Typography>
             </Button>
           </Box>
-          {validated !== null &&
-            validated &&
-            (transactionState.toNetwork === 'Evm' ? (
-              transactionState.fromNetwork === 'Evm' ? (
-                <EvmToEvmConfirmation
-                  isConfirmationOpen={isConfirmationOpen}
-                  transactionState={transactionState}
-                  handleCloseIconClicked={() => setConfirmationOpen(false)}
-                  handleCancelBtnClicked={() => setConfirmationOpen(false)}
-                  handleAddBtnClicked={() => {
-                    setConfirmationOpen(false);
-                  }}
-                />
-              ) : (
-                <FlowToEVMConfirmation
-                  isConfirmationOpen={isConfirmationOpen}
-                  transactionState={transactionState}
-                  handleCloseIconClicked={() => setConfirmationOpen(false)}
-                  handleCancelBtnClicked={() => setConfirmationOpen(false)}
-                  handleAddBtnClicked={() => {
-                    setConfirmationOpen(false);
-                  }}
-                />
-              )
-            ) : (
-              <TransferConfirmation
-                isConfirmationOpen={isConfirmationOpen}
-                transactionState={transactionState}
-                handleCloseIconClicked={() => setConfirmationOpen(false)}
-                handleCancelBtnClicked={() => setConfirmationOpen(false)}
-                handleAddBtnClicked={() => {
-                  setConfirmationOpen(false);
-                }}
-              />
-            ))}
+          {validated !== null && validated && (
+            <TransferConfirmation
+              isConfirmationOpen={isConfirmationOpen}
+              transactionState={transactionState}
+              handleCloseIconClicked={() => setConfirmationOpen(false)}
+            />
+          )}
         </Box>
       </>
     </div>
