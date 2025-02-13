@@ -1,53 +1,23 @@
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { Box, Button, Typography, IconButton, CardMedia } from '@mui/material';
+import { Box, Button, Typography, CardMedia } from '@mui/material';
 import BN from 'bignumber.js';
-import React, { useState, useEffect, useCallback } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
 
-import { type Contact } from '@/shared/types/network-types';
 import { type TransactionState } from '@/shared/types/transaction-types';
-import { type ActiveChildType, type CoinItem } from '@/shared/types/wallet-types';
-import { withPrefix } from '@/shared/utils/address';
+import { isValidAddress, isValidEthereumAddress } from '@/shared/utils/address';
 import { LLHeader } from '@/ui/FRWComponent';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
-import { useTransactionHook } from '@/ui/hooks/useTransactionHook';
-import { useCoinStore } from '@/ui/stores/coinStore';
 import { useNetworkStore } from '@/ui/stores/networkStore';
-import { useProfileStore } from '@/ui/stores/profileStore';
-import { useTransactionStore } from '@/ui/stores/transactionStore';
-import { LLContactCard } from 'ui/FRWComponent';
 import { useWallet } from 'ui/utils';
 
-import CancelIcon from '../../../../components/iconfont/IconClose';
-import TransferAmount from '../TransferAmount';
+import CancelIcon from '../../../components/iconfont/IconClose';
 
+import EvmToEvmConfirmation from './EvmToEvmConfirmation';
+import FlowToEVMConfirmation from './FlowToEVMConfirmation';
+import TransferAmount from './TransferAmount';
 import TransferConfirmation from './TransferConfirmation';
 
-interface ContactState {
-  contact: Contact;
-}
-const USER_CONTACT = {
-  address: '',
-  id: 0,
-  contact_name: '',
-  avatar: '',
-  domain: {
-    domain_type: 999,
-    value: '',
-  },
-} as unknown as Contact;
-
-const EMPTY_COIN: CoinItem = {
-  coin: '',
-  unit: '',
-  balance: 0,
-  price: 0,
-  change24h: 0,
-  total: 0,
-  icon: '',
-};
-
-const SendToCadence = ({
+const SendToCadenceOrEvm = ({
   transactionState,
   handleAmountChange,
   handleTokenChange,
@@ -60,33 +30,40 @@ const SendToCadence = ({
   handleSwitchFiatOrCoin: () => void;
   handleMaxClick: () => void;
 }) => {
-  console.log('SendToCadence ');
   const history = useHistory();
   const wallet = useWallet();
   const { currentNetwork: network } = useNetworkStore();
   const [isConfirmationOpen, setConfirmationOpen] = useState(false);
-  const [validated, setValidated] = useState<any>(null);
+  const [validated, setValidated] = useState<boolean | null>(null);
 
-  const checkAddress = useCallback(
-    async (toAddress: string) => {
+  useEffect(() => {
+    // validate the address when the to address changes
+    let mounted = true;
+    const checkAddress = async () => {
       //wallet controller api
       try {
-        const address = withPrefix(toAddress);
-        const validatedResult = await wallet.checkAddress(address!);
-        setValidated(validatedResult);
-        return validatedResult;
+        if (transactionState.toNetwork === 'Evm') {
+          // We're sending to an EVM network. Check the address format
+          setValidated(!!isValidEthereumAddress(transactionState.toAddress));
+        } else {
+          // We're sending to a Flow network. Check the network itself
+          const isValidFlowAddress = await wallet.checkAddress(transactionState.toAddress);
+          if (mounted) {
+            setValidated(!!isValidFlowAddress);
+          }
+        }
       } catch (err) {
         console.error('checkAddress error', err);
         setValidated(false);
       }
-    },
-    [wallet]
-  );
-
-  useEffect(() => {
-    // validate the address when the to address changes
-    checkAddress(transactionState.toAddress);
-  }, [transactionState.toAddress, checkAddress]);
+    };
+    if (isValidAddress(transactionState.toAddress)) {
+      checkAddress();
+    }
+    return () => {
+      mounted = false;
+    };
+  }, [transactionState.toAddress, transactionState.toNetwork, wallet]);
 
   return (
     <div className="page">
@@ -102,35 +79,31 @@ const SendToCadence = ({
                   isSend={true}
                 /> */}
               </Box>
-              {validated !== null &&
-                (validated ? (
-                  <></>
-                ) : (
-                  <SlideRelative show={true} direction="up">
-                    <Box
-                      sx={{
-                        width: '95%',
-                        backgroundColor: 'error.light',
-                        mx: 'auto',
-                        borderRadius: '0 0 12px 12px',
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                        }}
-                      >
-                        <CancelIcon size={24} color={'#E54040'} style={{ margin: '8px' }} />
-                        <Typography variant="body1" color="text.secondary">
-                          {chrome.i18n.getMessage('Invalid_address_in')}
-                          {` ${network}`}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </SlideRelative>
-                ))}
+
+              <SlideRelative show={validated !== null && !validated} direction="down">
+                <Box
+                  sx={{
+                    width: '95%',
+                    backgroundColor: 'error.light',
+                    mx: 'auto',
+                    borderRadius: '0 0 12px 12px',
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <CancelIcon size={24} color={'#E54040'} style={{ margin: '8px' }} />
+                    <Typography variant="body1" color="text.secondary">
+                      {chrome.i18n.getMessage('Invalid_address_in')}
+                      {` ${network}`}
+                    </Typography>
+                  </Box>
+                </Box>
+              </SlideRelative>
             </Box>
 
             <Typography
@@ -213,7 +186,6 @@ const SendToCadence = ({
               onClick={() => {
                 setConfirmationOpen(true);
               }}
-              // disabled={true}
               variant="contained"
               color="success"
               size="large"
@@ -235,21 +207,45 @@ const SendToCadence = ({
               </Typography>
             </Button>
           </Box>
-          {validated && (
-            <TransferConfirmation
-              isConfirmationOpen={isConfirmationOpen}
-              transactionState={transactionState}
-              handleCloseIconClicked={() => setConfirmationOpen(false)}
-              handleCancelBtnClicked={() => setConfirmationOpen(false)}
-              handleAddBtnClicked={() => {
-                setConfirmationOpen(false);
-              }}
-            />
-          )}
+          {validated !== null &&
+            validated &&
+            (transactionState.toNetwork === 'Evm' ? (
+              transactionState.fromNetwork === 'Evm' ? (
+                <EvmToEvmConfirmation
+                  isConfirmationOpen={isConfirmationOpen}
+                  transactionState={transactionState}
+                  handleCloseIconClicked={() => setConfirmationOpen(false)}
+                  handleCancelBtnClicked={() => setConfirmationOpen(false)}
+                  handleAddBtnClicked={() => {
+                    setConfirmationOpen(false);
+                  }}
+                />
+              ) : (
+                <FlowToEVMConfirmation
+                  isConfirmationOpen={isConfirmationOpen}
+                  transactionState={transactionState}
+                  handleCloseIconClicked={() => setConfirmationOpen(false)}
+                  handleCancelBtnClicked={() => setConfirmationOpen(false)}
+                  handleAddBtnClicked={() => {
+                    setConfirmationOpen(false);
+                  }}
+                />
+              )
+            ) : (
+              <TransferConfirmation
+                isConfirmationOpen={isConfirmationOpen}
+                transactionState={transactionState}
+                handleCloseIconClicked={() => setConfirmationOpen(false)}
+                handleCancelBtnClicked={() => setConfirmationOpen(false)}
+                handleAddBtnClicked={() => {
+                  setConfirmationOpen(false);
+                }}
+              />
+            ))}
         </Box>
       </>
     </div>
   );
 };
 
-export default SendToCadence;
+export default SendToCadenceOrEvm;

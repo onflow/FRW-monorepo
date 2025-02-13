@@ -2,14 +2,13 @@ import React, { useCallback, useEffect, useReducer } from 'react';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
 
 import { type FlowAddress, type WalletAddress } from '@/shared/types/wallet-types';
-import { isValidAddress, isValidEthereumAddress, isValidFlowAddress } from '@/shared/utils/address';
+import { isValidAddress, isValidFlowAddress } from '@/shared/utils/address';
 import { transactionReducer, INITIAL_TRANSACTION_STATE } from '@/ui/reducers/transaction-reducer';
 import { useCoinStore } from '@/ui/stores/coinStore';
 import { useProfileStore } from '@/ui/stores/profileStore';
 import { useWallet } from '@/ui/utils/WalletContext';
 
-import SendToCadence from './SendToCadence';
-import SendToEvm from './SendToEVM';
+import SendToCadenceOrEvm from './SendToCadenceOrEvm';
 
 export const SendTo = () => {
   // Remove or use only in development
@@ -115,31 +114,15 @@ export const SendTo = () => {
     });
   };
 
-  if (isValidEthereumAddress(toAddress)) {
-    return (
-      <SendToEvm
-        transactionState={transactionState}
-        handleAmountChange={handleAmountChange}
-        handleTokenChange={handleTokenChange}
-        handleSwitchFiatOrCoin={handleSwitchFiatOrCoin}
-        handleMaxClick={handleMaxClick}
-      />
-    );
-  } else if (isValidFlowAddress(toAddress)) {
-    return (
-      <SendToCadence
-        transactionState={transactionState}
-        handleAmountChange={handleAmountChange}
-        handleTokenChange={handleTokenChange}
-        handleSwitchFiatOrCoin={handleSwitchFiatOrCoin}
-        handleMaxClick={handleMaxClick}
-      />
-    );
-  } else {
-    // Should never happen...
-    console.log('Should never happen...');
-    return null;
-  }
+  return (
+    <SendToCadenceOrEvm
+      transactionState={transactionState}
+      handleAmountChange={handleAmountChange}
+      handleTokenChange={handleTokenChange}
+      handleSwitchFiatOrCoin={handleSwitchFiatOrCoin}
+      handleMaxClick={handleMaxClick}
+    />
+  );
 };
 
 export default SendTo;

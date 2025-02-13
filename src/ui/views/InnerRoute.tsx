@@ -21,8 +21,6 @@ import NftEvmDetail from './NftEvm/Detail';
 import SendNftEvm from './NftEvm/SendNFT/SendToAddress';
 import SendAddress from './Send';
 import SendTo from './SendTo';
-import SendToCadence from './SendTo/SendToCadence';
-import SendToEVM from './SendTo/SendToEVM';
 import SettingTab from './Setting';
 import About from './Setting/About/About';
 import Account from './Setting/Account';
