@@ -16,7 +16,7 @@ import { useWeb3 } from '@/ui/hooks/useWeb3';
 import { useStorageCheck } from '@/ui/utils/useStorageCheck';
 import erc20ABI from 'background/utils/erc20.abi.json';
 import IconNext from 'ui/FRWAssets/svg/next.svg';
-import { LLSpinner, LLProfile, FRWProfile, FRWTargetProfile } from 'ui/FRWComponent';
+import { LLSpinner } from 'ui/FRWComponent';
 import { Profile } from 'ui/FRWComponent/Send/Profile';
 import { useWallet, isEmoji, stripFinalAmount } from 'ui/utils';
 
@@ -119,153 +119,40 @@ const TransferConfirmation = ({
 
   const transferTokensOnCadence = useCallback(async () => {
     const amount = new BN(transactionState.amount).decimalPlaces(8, BN.ROUND_DOWN).toString();
-    try {
-      const txId = await wallet.transferInboxTokens(
-        transactionState.selectedToken.symbol,
-        transactionState.toAddress,
-        amount
-      );
-      await wallet.setRecent(transactionState.toContact);
-      wallet.listenTransaction(
-        txId,
-        true,
-        `${transactionState.amount} ${transactionState.coinInfo.coin} Sent`,
-        `You have sent ${transactionState.amount} ${transactionState.selectedToken.symbol} to ${transactionState.toContact?.contact_name}. \nClick to view this transaction.`,
-        transactionState.coinInfo.icon
-      );
-      handleCloseIconClicked();
-      await wallet.setDashIndex(0);
-      setSending(false);
-      setTid(txId);
-      history.push(`/dashboard?activity=1&txId=${txId}`);
-    } catch {
-      setSending(false);
-      setFailed(true);
-    }
-  }, [
-    transactionState.amount,
-    transactionState.selectedToken.symbol,
-    transactionState.toAddress,
-    transactionState.toContact,
-    transactionState.coinInfo.coin,
-    transactionState.coinInfo.icon,
-    wallet,
-    handleCloseIconClicked,
-    history,
-  ]);
+    return wallet.transferInboxTokens(
+      transactionState.selectedToken.symbol,
+      transactionState.toAddress,
+      amount
+    );
+  }, [transactionState, wallet]);
 
   const transferTokensFromChildToCadence = useCallback(async () => {
+    // TODO: We should check the amount
     const amount = new BN(transactionState.amount).decimalPlaces(8, BN.ROUND_DOWN).toString();
-    try {
-      const txId = await wallet.sendFTfromChild(
-        transactionState.fromAddress,
-        transactionState.toAddress,
-        'flowTokenProvider',
-        amount,
-        transactionState.selectedToken.symbol
-      );
-      await wallet.setRecent(transactionState.toContact);
-      wallet.listenTransaction(
-        txId,
-        true,
-        `${transactionState.amount} ${transactionState.coinInfo.coin} Sent`,
-        `You have sent ${transactionState.amount} ${transactionState.selectedToken.symbol} to ${transactionState.toContact?.contact_name}. \nClick to view this transaction.`,
-        transactionState.coinInfo.icon
-      );
-      handleCloseIconClicked();
-      await wallet.setDashIndex(0);
-      setSending(false);
-      setTid(txId);
-      history.push(`/dashboard?activity=1&txId=${txId}`);
-    } catch (err) {
-      console.error('transferTokensFromChildToCadence error ', err);
-      setSending(false);
-      setFailed(true);
-    }
-  }, [
-    transactionState.amount,
-    transactionState.fromAddress,
-    transactionState.toAddress,
-    transactionState.toContact,
-    transactionState.coinInfo.coin,
-    transactionState.coinInfo.icon,
-    transactionState.selectedToken.symbol,
-    wallet,
-    handleCloseIconClicked,
-    history,
-  ]);
+
+    return wallet.sendFTfromChild(
+      transactionState.fromAddress,
+      transactionState.toAddress,
+      'flowTokenProvider',
+      amount,
+      transactionState.selectedToken.symbol
+    );
+  }, [transactionState, wallet]);
 
   const transferFlowFromEvmToCadence = useCallback(async () => {
-    try {
-      const txId = await wallet.withdrawFlowEvm(
-        transactionState.amount,
-        transactionState.toAddress
-      );
-      await wallet.setRecent(transactionState.toContact);
-      wallet.listenTransaction(
-        txId,
-        true,
-        `${transactionState.amount} ${transactionState.coinInfo.coin} Sent`,
-        `You have sent ${transactionState.amount} ${transactionState.selectedToken.symbol} to ${transactionState.toContact?.contact_name}. \nClick to view this transaction.`,
-        transactionState.coinInfo.icon
-      );
-      handleCloseIconClicked();
-      await wallet.setDashIndex(0);
-      setSending(false);
-      setTid(txId);
-      history.push(`/dashboard?activity=1&txId=${txId}`);
-    } catch {
-      setSending(false);
-      setFailed(true);
-    }
-  }, [
-    wallet,
-    transactionState.amount,
-    transactionState.toAddress,
-    transactionState.toContact,
-    transactionState.coinInfo.coin,
-    transactionState.coinInfo.icon,
-    transactionState.selectedToken.symbol,
-    handleCloseIconClicked,
-    history,
-  ]);
+    // TODO: We should check the amount
+    return wallet.withdrawFlowEvm(transactionState.amount, transactionState.toAddress);
+  }, [wallet, transactionState]);
 
   const transferFTFromEvmToCadence = useCallback(async () => {
-    try {
-      const txId = await wallet.transferFTFromEvm(
-        transactionState.selectedToken['flowIdentifier'],
-        transactionState.amount,
-        transactionState.toAddress,
-        transactionState.selectedToken
-      );
-      await wallet.setRecent(transactionState.toContact);
-      wallet.listenTransaction(
-        txId,
-        true,
-        `${transactionState.amount} ${transactionState.coinInfo.coin} Sent`,
-        `You have sent ${transactionState.amount} ${transactionState.selectedToken.symbol} to ${transactionState.toContact?.contact_name}. \nClick to view this transaction.`,
-        transactionState.coinInfo.icon
-      );
-      handleCloseIconClicked();
-      await wallet.setDashIndex(0);
-      setSending(false);
-      setTid(txId);
-      history.push(`/dashboard?activity=1&txId=${txId}`);
-    } catch {
-      setSending(false);
-      setFailed(true);
-    }
-  }, [
-    wallet,
-    transactionState.selectedToken,
-    transactionState.amount,
-    transactionState.toAddress,
-    transactionState.toContact,
-    transactionState.coinInfo.coin,
-    transactionState.coinInfo.icon,
-    handleCloseIconClicked,
-    history,
-  ]);
+    // TODO: We should check the amount, and flowIdentifier
+    return wallet.transferFTFromEvm(
+      transactionState.selectedToken['flowIdentifier'],
+      transactionState.amount,
+      transactionState.toAddress,
+      transactionState.selectedToken
+    );
+  }, [wallet, transactionState]);
 
   const transferTokensOnEvm = useCallback(async () => {
     // the amount is always stored as a string in the transaction state
@@ -282,8 +169,6 @@ const TransferConfirmation = ({
     const scaleFactor = new BN(10).pow(decimalDifference);
     const integerAmount = amountBN.multipliedBy(scaleFactor);
     const integerAmountStr = integerAmount.integerValue(BN.ROUND_DOWN).toFixed();
-
-    setSending(true);
 
     let address, gas, value, data;
 
@@ -304,60 +189,22 @@ const TransferConfirmation = ({
       data = encodedData.startsWith('0x') ? encodedData : `0x${encodedData}`;
     }
 
-    try {
-      const txId = await wallet.sendEvmTransaction(address, gas, value, data);
-      await wallet.setRecent(transactionState.toContact);
-      wallet.listenTransaction(
-        txId,
-        true,
-        `${transactionState.amount} ${transactionState.coinInfo.coin} Sent`,
-        `You have sent ${transactionState.amount} ${transactionState.selectedToken.symbol} to ${transactionState.toContact?.contact_name}. \nClick to view this transaction.`,
-        transactionState.coinInfo.icon
-      );
-      handleCloseIconClicked();
-      await wallet.setDashIndex(0);
-      setSending(false);
-      setTid(txId);
-      history.push(`/dashboard?activity=1&txId=${txId}`);
-    } catch (err) {
-      console.error('sendEvmTransaction transfer error: ', err);
-      setSending(false);
-      setFailed(true);
-      setErrorMessage(err.message);
-    }
-  }, [transactionState, erc20Contract, wallet, handleCloseIconClicked, history]);
+    // Send the transaction
+    return wallet.sendEvmTransaction(address, gas, value, data);
+  }, [transactionState, erc20Contract, wallet]);
+
   const transferFlowFromCadenceToEvm = useCallback(async () => {
+    // Check that the amount is valid for this sort of transfer
+
     const amount = new BN(transactionState.amount).decimalPlaces(8, BN.ROUND_DOWN).toString();
     if (stripFinalAmount(amount, 8) !== stripFinalAmount(transactionState.amount, 8)) {
       throw new Error('Amount entered does not match required precision');
     }
-    wallet
-      .transferFlowEvm(transactionState.toAddress, amount)
-      .then(async (txId) => {
-        await wallet.setRecent(transactionState.toContact);
-        wallet.listenTransaction(
-          txId,
-          true,
-          `${transactionState.amount} ${transactionState.coinInfo.coin} Sent`,
-          `You have sent ${transactionState.amount} ${transactionState.selectedToken?.symbol} to ${transactionState.toContact?.contact_name}. \nClick to view this transaction.`,
-          transactionState.coinInfo.icon
-        );
-        handleCloseIconClicked();
-        await wallet.setDashIndex(0);
-        setSending(false);
-        setTid(txId);
-        history.push(`/dashboard?activity=1&txId=${txId}`);
-      })
-      .catch(() => {
-        setSending(false);
-        setFailed(true);
-      });
-    // Depending on history is probably not great
-  }, [history, transactionState, wallet, handleCloseIconClicked]);
+    return wallet.transferFlowEvm(transactionState.toAddress, amount);
+  }, [transactionState, wallet]);
 
   const transferFTFromCadenceToEvm = useCallback(async () => {
-    setSending(true);
-
+    // Check that the amount is valid for this sort of transfer
     const amount = new BN(transactionState.amount).decimalPlaces(8, BN.ROUND_DOWN).toString();
     if (stripFinalAmount(amount, 8) !== stripFinalAmount(transactionState.amount, 8)) {
       throw new Error('Amount entered does not match required precision');
@@ -366,83 +213,81 @@ const TransferConfirmation = ({
       ? transactionState.selectedToken!.address.slice(2)
       : transactionState.selectedToken!.address;
 
-    wallet
-      .transferFTToEvmV2(
-        `A.${address}.${transactionState.selectedToken!.contractName}.Vault`,
-        amount,
-        transactionState.toAddress
-      )
-      .then(async (txId) => {
-        await wallet.setRecent(transactionState.toContact);
-        wallet.listenTransaction(
-          txId,
-          true,
-          `${transactionState.amount} ${transactionState.coinInfo.coin} Sent`,
-          `You have sent ${transactionState.amount} ${transactionState.selectedToken?.symbol} to ${transactionState.toContact?.contact_name}. \nClick to view this transaction.`,
-          transactionState.coinInfo.icon
-        );
-        handleCloseIconClicked();
-        await wallet.setDashIndex(0);
-        setSending(false);
-        setTid(txId);
-        history.push(`/dashboard?activity=1&txId=${txId}`);
-      })
-      .catch((err) => {
-        console.error('transfer error: ', err);
-        setSending(false);
-        setFailed(true);
-      });
-    // Depending on history is probably not great
-  }, [
-    handleCloseIconClicked,
-    history,
-    transactionState.amount,
-    transactionState.coinInfo.coin,
-    transactionState.coinInfo.icon,
-    transactionState.selectedToken,
-    transactionState.toAddress,
-    transactionState.toContact,
-    wallet,
-  ]);
+    return wallet.transferFTToEvmV2(
+      `A.${address}.${transactionState.selectedToken!.contractName}.Vault`,
+      amount,
+      transactionState.toAddress
+    );
+  }, [transactionState, wallet]);
 
   const transferTokens = useCallback(async () => {
     try {
+      // Set the sending state to true
       setSending(true);
 
+      // Initialize the transaction ID
+      let txId: string;
+
+      // Switch on the current transaction state
       switch (transactionState.currentTxState) {
         case 'FTFromEvmToCadence':
-          await transferFTFromEvmToCadence();
+          txId = await transferFTFromEvmToCadence();
           break;
         case 'FlowFromEvmToCadence':
-          await transferFlowFromEvmToCadence();
+          txId = await transferFlowFromEvmToCadence();
           break;
         case 'FTFromChildToCadence':
         case 'FlowFromChildToCadence':
-          await transferTokensFromChildToCadence();
+          txId = await transferTokensFromChildToCadence();
           break;
         case 'FTFromCadenceToCadence':
         case 'FlowFromCadenceToCadence':
-          await transferTokensOnCadence();
+          txId = await transferTokensOnCadence();
           break;
         case 'FlowFromEvmToEvm':
         case 'FTFromEvmToEvm':
-          await transferTokensOnEvm();
+          txId = await transferTokensOnEvm();
           break;
         case 'FlowFromCadenceToEvm':
-          await transferFlowFromCadenceToEvm();
+          txId = await transferFlowFromCadenceToEvm();
           break;
         case 'FTFromCadenceToEvm':
-          await transferFTFromCadenceToEvm();
+          txId = await transferFTFromCadenceToEvm();
           break;
         default:
           throw new Error(`Unsupported transaction state: ${transactionState.currentTxState}`);
       }
+      // Set the transaction ID so we can show that we're processing
+      setTid(txId);
+
+      // Listen for the transaction - this is async but don't wait for it to be completed
+      wallet.listenTransaction(
+        txId,
+        true,
+        `${transactionState.amount} ${transactionState.coinInfo.coin} Sent`,
+        `You have sent ${transactionState.amount} ${transactionState.selectedToken?.symbol} to ${transactionState.toContact?.contact_name}. \nClick to view this transaction.`,
+        transactionState.coinInfo.icon
+      );
+      // Record the recent contact
+      await wallet.setRecent(transactionState.toContact);
+
+      // Update the dash index
+      await wallet.setDashIndex(0);
+
+      // Redirect to the dashboard activity tab
+      history.push(`/dashboard?activity=1&txId=${txId}`);
     } catch (error) {
       console.error('Transaction failed:', error);
+      // Set the failed state to true so we can show the error message
       setFailed(true);
+    } finally {
+      // Set the sending state to false regardless of whether the transaction was successful or not
+      setSending(false);
     }
   }, [
-    transactionState.currentTxState,
+    transactionState,
+    wallet,
+    history,
     transferFTFromEvmToCadence,
     transferFlowFromEvmToCadence,
     transferTokensFromChildToCadence,
@@ -450,8 +295,6 @@ const TransferConfirmation = ({
     transferTokensOnEvm,
     transferFlowFromCadenceToEvm,
     transferFTFromCadenceToEvm,
-    setSending,
-    setFailed,
   ]);
 
   const transactionDoneHandler = useCallback(
