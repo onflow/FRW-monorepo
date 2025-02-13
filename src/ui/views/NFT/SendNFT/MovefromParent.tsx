@@ -8,7 +8,7 @@ import { ensureEvmAddressPrefix, isValidEthereumAddress } from '@/shared/utils/a
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
 import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
-import { useProfileStore } from '@/ui/stores/profileStore';
+import { useProfileHook } from '@/ui/hooks/useProfileHook';
 import { MatchMediaType } from '@/ui/utils/url';
 import { LLSpinner, FRWProfileCard, FRWDropdownProfileCard } from 'ui/FRWComponent';
 import { useWallet } from 'ui/utils';
@@ -27,7 +27,7 @@ interface SendNFTConfirmationProps {
 const MovefromParent = (props: SendNFTConfirmationProps) => {
   const usewallet = useWallet();
   const history = useHistory();
-  const { childAccounts } = useProfileStore();
+  const { childAccounts } = useProfileHook();
   const [sending, setSending] = useState(false);
   const [failed, setFailed] = useState(false);
   const [, setErrorMessage] = useState<string | null>(null);

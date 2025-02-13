@@ -6,30 +6,46 @@ import type {
   WalletResponse,
 } from '@/shared/types/network-types';
 import { ensureEvmAddressPrefix, withPrefix } from '@/shared/utils/address';
-import { useNetworkStore } from '@/ui/stores/networkStore';
+import { useNetworkHook } from '@/ui/hooks/useNetworkHook';
 import { useProfileStore } from '@/ui/stores/profileStore';
 import { useWallet, useWalletLoaded } from '@/ui/utils/WalletContext';
 
 export const useProfileHook = () => {
   const usewallet = useWallet();
   const walletLoaded = useWalletLoaded();
-  const { currentNetwork } = useNetworkStore();
-  const {
-    setMainAddress,
-    setEvmAddress,
-    setInitial,
-    setChildAccount,
-    setCurrent,
-    setEvmWallet,
-    setMainLoading,
-    setEvmLoading,
-    setUserInfo,
-    setOtherAccounts,
-    setLoggedInAccounts,
-    setWalletList,
-    setParentWallet,
-    initialStart,
-  } = useProfileStore();
+  const { currentNetwork } = useNetworkHook();
+
+  // Action selectors
+  const setMainAddress = useProfileStore((state) => state.setMainAddress);
+  const setEvmAddress = useProfileStore((state) => state.setEvmAddress);
+  const setInitial = useProfileStore((state) => state.setInitial);
+  const setChildAccount = useProfileStore((state) => state.setChildAccount);
+  const setCurrent = useProfileStore((state) => state.setCurrent);
+  const setEvmWallet = useProfileStore((state) => state.setEvmWallet);
+  const setMainLoading = useProfileStore((state) => state.setMainLoading);
+  const setEvmLoading = useProfileStore((state) => state.setEvmLoading);
+  const setUserInfo = useProfileStore((state) => state.setUserInfo);
+  const setOtherAccounts = useProfileStore((state) => state.setOtherAccounts);
+  const setLoggedInAccounts = useProfileStore((state) => state.setLoggedInAccounts);
+  const setWalletList = useProfileStore((state) => state.setWalletList);
+  const setParentWallet = useProfileStore((state) => state.setParentWallet);
+  const clearProfileData = useProfileStore((state) => state.clearProfileData);
+
+  // State selectors
+  const initialStart = useProfileStore((state) => state.initialStart);
+  const currentWallet = useProfileStore((state) => state.currentWallet);
+  const mainAddress = useProfileStore((state) => state.mainAddress);
+  const evmAddress = useProfileStore((state) => state.evmAddress);
+  const childAccounts = useProfileStore((state) => state.childAccounts);
+  const evmWallet = useProfileStore((state) => state.evmWallet);
+  const userInfo = useProfileStore((state) => state.userInfo);
+  const otherAccounts = useProfileStore((state) => state.otherAccounts);
+  const loggedInAccounts = useProfileStore((state) => state.loggedInAccounts);
+  const walletList = useProfileStore((state) => state.walletList);
+  const parentWallet = useProfileStore((state) => state.parentWallet);
+  const currentWalletIndex = useProfileStore((state) => state.currentWalletIndex);
+  const evmLoading = useProfileStore((state) => state.evmLoading);
+  const mainAddressLoading = useProfileStore((state) => state.mainAddressLoading);
 
   // Helper function for formatWallets
   const formatWallets = useCallback(
@@ -200,6 +216,21 @@ export const useProfileHook = () => {
     fetchProfileData,
     freshUserWallet,
     fetchUserWallet,
+    clearProfileData,
+    initialStart,
+    currentWallet,
+    mainAddress,
+    evmAddress,
+    childAccounts,
+    evmWallet,
+    userInfo,
+    otherAccounts,
+    loggedInAccounts,
+    walletList,
+    parentWallet,
+    currentWalletIndex,
+    evmLoading,
+    mainAddressLoading,
   };
 };
 

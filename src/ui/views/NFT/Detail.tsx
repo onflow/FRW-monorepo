@@ -8,7 +8,7 @@ import { saveAs } from 'file-saver';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
-import { useProfileStore } from '@/ui/stores/profileStore';
+import { useProfileHook } from '@/ui/hooks/useProfileHook';
 import { type PostMedia, MatchMediaType } from '@/ui/utils/url';
 import fallback from 'ui/FRWAssets/image/errorImage.png';
 import DetailMove from 'ui/FRWAssets/svg/detailMove.svg';
@@ -98,7 +98,7 @@ const Detail = () => {
   const location = useLocation();
   const history = useHistory();
   const usewallet = useWallet();
-  const { childAccounts, mainAddress, currentWallet, userInfo } = useProfileStore();
+  const { childAccounts, mainAddress, currentWallet, userInfo } = useProfileHook();
   const [nftDetail, setDetail] = useState<any>(null);
   const [metadata, setMetadata] = useState<any>(null);
   const [mediaLoading, setMediaLoading] = useState(true);

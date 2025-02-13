@@ -11,7 +11,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 import { LLHeader } from '@/ui/FRWComponent';
-import { useProfileStore } from '@/ui/stores/profileStore';
+import { useProfileHook } from '@/ui/hooks/useProfileHook';
 import EmptyStateImage from 'ui/FRWAssets/image/search_user.png';
 
 import IconEnd from '../../../../components/iconfont/IconAVector11Stroke';
@@ -44,7 +44,7 @@ const useStyles = makeStyles(() => ({
 const Linked = () => {
   const classes = useStyles();
 
-  const { childAccounts } = useProfileStore();
+  const { childAccounts } = useProfileHook();
 
   return (
     <div className="page">

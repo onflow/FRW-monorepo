@@ -27,8 +27,6 @@ import { type Contact } from '@/shared/types/network-types';
 import { type WalletAddress } from '@/shared/types/wallet-types';
 import { isValidAddress } from '@/shared/utils/address';
 import { useContactHook } from '@/ui/hooks/useContactHook';
-import { useContactStore } from '@/ui/stores/contactStore';
-import { useWallet } from 'ui/utils';
 
 import IconAbout from '../../../components/iconfont/IconAbout';
 
@@ -109,14 +107,16 @@ const SendAddress = () => {
   const classes = useStyles();
   const theme = useTheme();
   const history = useHistory();
-  // const { filteredContacts, searchContacts, recentContacts, hasNoFilteredContacts } =
-  //   useContactStore();
-  const filteredContacts = useContactStore((state) => state.filteredContacts);
-  const searchContacts = useContactStore((state) => state.searchContacts);
-  const recentContacts = useContactStore((state) => state.recentContacts);
-  const hasNoFilteredContacts = useContactStore((state) => state.hasNoFilteredContacts);
 
-  const { searchUser, fetchAddressBook, filterContacts } = useContactHook();
+  const {
+    hasNoFilteredContacts,
+    recentContacts,
+    searchContacts,
+    filteredContacts,
+    searchUser,
+    fetchAddressBook,
+    filterContacts,
+  } = useContactHook();
 
   const [tabValue, setTabValue] = useState(0);
   const [isLoading, setIsLoading] = useState(false);

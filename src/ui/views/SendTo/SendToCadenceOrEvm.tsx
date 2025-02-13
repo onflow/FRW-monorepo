@@ -9,7 +9,7 @@ import { LLHeader } from '@/ui/FRWComponent';
 import { ContactCard } from '@/ui/FRWComponent/Send/ContactCard';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import { useContactHook } from '@/ui/hooks/useContactHook';
-import { useNetworkStore } from '@/ui/stores/networkStore';
+import { useNetworkHook } from '@/ui/hooks/useNetworkHook';
 import { useWallet } from 'ui/utils';
 
 import CancelIcon from '../../../components/iconfont/IconClose';
@@ -32,7 +32,7 @@ const SendToCadenceOrEvm = ({
 }) => {
   const history = useHistory();
   const wallet = useWallet();
-  const { currentNetwork: network } = useNetworkStore();
+  const { currentNetwork: network } = useNetworkHook();
   const { useContact } = useContactHook();
   const contactData =
     useContact(transactionState.toContact?.address || '') || transactionState.toContact || null;

@@ -8,7 +8,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 import { storage } from '@/background/webapi';
 import { ensureEvmAddressPrefix } from '@/shared/utils/address';
-import { useProfileStore } from '@/ui/stores/profileStore';
+import { useProfileHook } from '@/ui/hooks/useProfileHook';
 import { useWallet } from 'ui/utils';
 
 import GridTab from './GridTab';
@@ -16,7 +16,7 @@ import ListTab from './ListTab';
 
 const NftEvm = () => {
   const wallet = useWallet();
-  const { mainAddress } = useProfileStore();
+  const { mainAddress } = useProfileHook();
   const [address, setAddress] = useState<string | null>(null);
   const [value, setValue] = useState(0);
   const [nftCount, setCount] = useState<number>(0);

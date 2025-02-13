@@ -12,7 +12,7 @@ import type { PriceProvider } from '@/shared/types/network-types';
 import { type ActiveChildType } from '@/shared/types/wallet-types';
 import LLComingSoon from '@/ui/FRWComponent/LLComingSoonWarning';
 import StorageUsageCard from '@/ui/FRWComponent/StorageUsageCard';
-import { useProfileStore } from '@/ui/stores/profileStore';
+import { useProfileHook } from '@/ui/hooks/useProfileHook';
 import tips from 'ui/FRWAssets/svg/tips.svg';
 import { useWallet } from 'ui/utils';
 
@@ -47,7 +47,7 @@ const TokenDetail = () => {
   const classes = useStyles();
   const usewallet = useWallet();
   const history = useHistory();
-  const { childAccounts, currentWallet } = useProfileStore();
+  const { childAccounts, currentWallet } = useProfileHook();
   const [price, setPrice] = useState(0);
   const [accessible, setAccessible] = useState(true);
   const token = useParams<{ id: string }>().id.toLowerCase();

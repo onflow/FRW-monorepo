@@ -15,7 +15,7 @@ import { Link, useRouteMatch } from 'react-router-dom';
 
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { LLHeader } from '@/ui/FRWComponent';
-import { useProfileStore } from '@/ui/stores/profileStore';
+import { useProfileHook } from '@/ui/hooks/useProfileHook';
 import { useWallet } from '@/ui/utils';
 import { storage } from 'background/webapi';
 import { formatAddress } from 'ui/utils';
@@ -38,7 +38,7 @@ const tempEmoji = [
 const Wallet = () => {
   const { url } = useRouteMatch();
   const usewallet = useWallet();
-  const { currentWallet } = useProfileStore();
+  const { currentWallet } = useProfileHook();
   const [isLoading, setLoading] = useState(true);
   const [userWallet, setWallet] = useState<any>([]);
   const [evmList, setEvmList] = useState<any>([]);
