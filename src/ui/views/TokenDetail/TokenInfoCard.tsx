@@ -5,7 +5,6 @@ import { useHistory } from 'react-router-dom';
 
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { LLPrimaryButton } from '@/ui/FRWComponent';
-import { useTransactionStore } from '@/ui/stores/transactionStore';
 import iconMove from 'ui/FRWAssets/svg/moveIcon.svg';
 import { useWallet } from 'ui/utils';
 import { addDotSeparators } from 'ui/utils/number';
@@ -16,26 +15,12 @@ import { TokenPrice } from './TokenValue';
 
 // import tips from 'ui/FRWAssets/svg/tips.svg';
 
-const TokenInfoCard = ({
-  price,
-  token,
-  setAccessible,
-  accessible,
-  setMoveOpen,
-  tokenInfo,
-  network,
-  childType,
-  childAccount,
-  setAlertOpen,
-}) => {
+const TokenInfoCard = ({ price, token, setAccessible, accessible, tokenInfo, childType }) => {
   const wallet = useWallet();
   const history = useHistory();
   const isMounted = useRef(true);
-  const { setSelectedToken } = useTransactionStore();
   const [balance, setBalance] = useState(0);
-  const [active, setIsActive] = useState(true);
   const [data, setData] = useState<TokenInfo | undefined>(undefined);
-  const [evmEnabled, setEvmEnabled] = useState<boolean>(false);
 
   const [canMoveChild, setCanMoveChild] = useState(true);
 
@@ -53,31 +38,15 @@ const TokenInfoCard = ({
   }, [balance, tokenInfo.custom, wallet]);
 
   const toSend = () => {
-    console.log('tokenInfo ', tokenInfo);
-    setSelectedToken(tokenInfo);
     history.push(`/dashboard/token/${tokenInfo.symbol}/send`);
   };
 
-  const moveToken = () => {
-    if (childType && childType !== 'evm') {
-      setAlertOpen(true);
-    } else if (data) {
-      console.log('data setCurrentCoin ', data);
-      setSelectedToken(data);
-      setMoveOpen(true);
-    }
-  };
-
   const getActive = useCallback(async () => {
-    const evmEnabled = await wallet.getEvmEnabled();
-    setEvmEnabled(evmEnabled);
     const isChild = await wallet.getActiveWallet();
 
     const timerId = setTimeout(async () => {
       if (!isMounted.current) return; // Early exit if component is not mounted
       setData(tokenInfo!);
-      console.log('tokenInfo ', tokenInfo);
-      setIsActive(true);
       setAccessible(true);
       if (isChild === 'evm') {
         const coins = await wallet.getCoinList();
@@ -189,7 +158,7 @@ const TokenInfoCard = ({
 
             <Box sx={{ flex: 1 }} />
             {canMoveChild && (
-              <ButtonBase onClick={() => moveToken()}>
+              <ButtonBase onClick={() => toSend()}>
                 <Box
                   sx={{
                     display: 'flex',
