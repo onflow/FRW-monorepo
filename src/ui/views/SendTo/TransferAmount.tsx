@@ -1,4 +1,3 @@
-import AttachMoneyRoundedIcon from '@mui/icons-material/AttachMoneyRounded';
 import {
   Box,
   Typography,
@@ -20,6 +19,7 @@ import React, { useCallback } from 'react';
 import { type TransactionState } from '@/shared/types/transaction-types';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import { useCoinHook } from '@/ui/hooks/useCoinHook';
+import { TokenValue } from '@/ui/views/TokenDetail/TokenValue';
 
 import CancelIcon from '../../../components/iconfont/IconClose';
 import IconSwitch from '../../../components/iconfont/IconSwitch';
@@ -263,14 +263,15 @@ const TransferAmount = ({
           >
             <Typography>≈</Typography>
             {transactionState.fiatOrCoin === 'fiat' ? (
-              <img src={transactionState.coinInfo.icon} style={{ height: '18px', width: '18px' }} />
+              <>
+                <img
+                  src={transactionState.coinInfo.icon}
+                  style={{ height: '18px', width: '18px' }}
+                />{' '}
+                <TokenValue value={amount} />
+              </>
             ) : (
-              <AttachMoneyRoundedIcon style={{ fontSize: '16px' }} color="secondary" />
-            )}
-            {transactionState.fiatOrCoin === 'fiat' ? (
-              <Typography>{amount}</Typography>
-            ) : (
-              <Typography>{fiatAmount}</Typography>
+              <TokenValue value={fiatAmount} prefix={'$'} />
             )}
             <IconButton onClick={handleSwitchFiatOrCoin}>
               <IconSwitch size={14} />
