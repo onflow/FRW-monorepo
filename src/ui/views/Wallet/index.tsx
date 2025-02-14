@@ -9,6 +9,7 @@ import SwipeableViews from 'react-swipeable-views';
 import { IconNfts } from '@/components/iconfont';
 import eventBus from '@/eventBus';
 import { type ActiveChildType } from '@/shared/types/wallet-types';
+import { formatLargeNumber } from '@/shared/utils/number';
 import buyIcon from '@/ui/FRWAssets/svg/buyIcon.svg';
 import iconMove from '@/ui/FRWAssets/svg/homeMove.svg';
 import receiveIcon from '@/ui/FRWAssets/svg/receiveIcon.svg';
@@ -17,10 +18,9 @@ import swapIcon from '@/ui/FRWAssets/svg/swapIcon.svg';
 import LLComingSoon from '@/ui/FRWComponent/LLComingSoonWarning';
 import { NumberTransition } from '@/ui/FRWComponent/NumberTransition';
 import { useInitHook } from '@/ui/hooks';
-import { useCoinStore } from '@/ui/stores/coinStore';
-import { useProfileStore } from '@/ui/stores/profileStore';
+import { useCoins } from '@/ui/hooks/useCoinHook';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from '@/ui/utils';
-import { formatLargeNumber } from '@/ui/utils/number';
 
 import { withPrefix } from '../../../shared/utils/address';
 import theme from '../../style/LLTheme';
@@ -53,8 +53,8 @@ const WalletTab = ({ network }) => {
   const history = useHistory();
   const location = useLocation();
   const { initializeStore } = useInitHook();
-  const { childAccounts, evmWallet, currentWallet } = useProfileStore();
-  const { coins, balance } = useCoinStore();
+  const { childAccounts, evmWallet, currentWallet } = useProfiles();
+  const { coins, balance } = useCoins();
   const [value, setValue] = React.useState(0);
 
   const [coinLoading, setCoinLoading] = useState<boolean>(false);
@@ -286,7 +286,7 @@ const WalletTab = ({ network }) => {
                 variant="contained"
                 onMouseEnter={() => setSendHover(true)}
                 onMouseLeave={() => setSendHover(false)}
-                onClick={() => history.push('/dashboard/wallet/send')}
+                onClick={() => history.push('/dashboard/token/flow/send')}
                 sx={{
                   height: '36px',
                   borderTopLeftRadius: '24px',

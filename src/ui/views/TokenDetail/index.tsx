@@ -10,15 +10,10 @@ import { useHistory, useParams } from 'react-router-dom';
 import { storage } from '@/background/webapi';
 import type { PriceProvider } from '@/shared/types/network-types';
 import { type ActiveChildType } from '@/shared/types/wallet-types';
-import LLComingSoon from '@/ui/FRWComponent/LLComingSoonWarning';
 import StorageUsageCard from '@/ui/FRWComponent/StorageUsageCard';
-import { useProfileStore } from '@/ui/stores/profileStore';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import tips from 'ui/FRWAssets/svg/tips.svg';
 import { useWallet } from 'ui/utils';
-
-import MoveFromChild from '../EvmMove/MoveFromChild';
-import MoveFromEvm from '../EvmMove/MoveFromEvm';
-import MoveFromFlow from '../EvmMove/MoveFromFlow';
 
 import ClaimTokenCard from './ClaimTokenCard';
 import PriceCard from './PriceCard';
@@ -47,18 +42,15 @@ const TokenDetail = () => {
   const classes = useStyles();
   const usewallet = useWallet();
   const history = useHistory();
-  const { childAccounts, currentWallet } = useProfileStore();
+  const { currentWallet } = useProfiles();
   const [price, setPrice] = useState(0);
   const [accessible, setAccessible] = useState(true);
   const token = useParams<{ id: string }>().id.toLowerCase();
   const [network, setNetwork] = useState('mainnet');
   const [walletName, setCurrentWallet] = useState({ name: '' });
-  const [moveOpen, setMoveOpen] = useState<boolean>(false);
   const [tokenInfo, setTokenInfo] = useState<TokenInfo | undefined>(undefined);
   const [providers, setProviders] = useState<PriceProvider[]>([]);
-  const [childAccount, setChildAccount] = useState<any>({});
   const [childType, setChildType] = useState<ActiveChildType>(null);
-  const [alertOpen, setAlertOpen] = useState<boolean>(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleMenuToggle = () => {
@@ -151,49 +143,11 @@ const TokenDetail = () => {
 
   const requestChildType = useCallback(async () => {
     const result = await usewallet.getActiveWallet();
-    setChildAccount(childAccounts);
     setChildType(result);
-  }, [usewallet, childAccounts]);
+  }, [usewallet]);
 
-  const renderMoveComponent = () => {
-    if (childType === 'evm') {
-      return (
-        <MoveFromEvm
-          isConfirmationOpen={moveOpen}
-          data={{ amount: 0 }}
-          handleCloseIconClicked={() => setMoveOpen(false)}
-          handleCancelBtnClicked={() => setMoveOpen(false)}
-          handleAddBtnClicked={() => {
-            setMoveOpen(false);
-          }}
-        />
-      );
-    } else if (childType) {
-      // We are moving from a FLOW child account
-      return (
-        <MoveFromChild
-          isConfirmationOpen={moveOpen}
-          data={{ amount: 0 }}
-          handleCloseIconClicked={() => setMoveOpen(false)}
-          handleCancelBtnClicked={() => setMoveOpen(false)}
-          handleAddBtnClicked={() => {
-            setMoveOpen(false);
-          }}
-        />
-      );
-    } else {
-      return (
-        <MoveFromFlow
-          isConfirmationOpen={moveOpen}
-          data={{ amount: 0 }}
-          handleCloseIconClicked={() => setMoveOpen(false)}
-          handleCancelBtnClicked={() => setMoveOpen(false)}
-          handleAddBtnClicked={() => {
-            setMoveOpen(false);
-          }}
-        />
-      );
-    }
+  const handleMoveOpen = () => {
+    history.push(`/dashboard/token/${token}/send`);
   };
 
   useEffect(() => {
@@ -236,12 +190,8 @@ const TokenDetail = () => {
               token={token}
               setAccessible={setAccessible}
               accessible={accessible}
-              setMoveOpen={setMoveOpen}
               tokenInfo={tokenInfo}
-              network={network}
               childType={childType}
-              childAccount={childAccount}
-              setAlertOpen={setAlertOpen}
             />
           )}
           {token === 'flow' && <StackingCard />}
@@ -249,13 +199,7 @@ const TokenDetail = () => {
           {providers?.length > 0 && (
             <PriceCard token={token} price={price} setPrice={setPrice} providers={providers} />
           )}
-          {moveOpen && renderMoveComponent()}
-          {network === 'mainnet' && (
-            <LLComingSoon
-              alertOpen={alertOpen}
-              handleCloseIconClicked={() => setAlertOpen(false)}
-            />
-          )}
+
           {token === 'flow' && <StorageUsageCard />}
         </div>
       </div>

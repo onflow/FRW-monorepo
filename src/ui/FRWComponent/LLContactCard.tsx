@@ -31,7 +31,6 @@ export const LLContactCard = ({ contact, hideCloseButton, isSend = false, isLoad
   const [contactAdd, setContactAdd] = useState(false);
 
   const getName = (name: string) => {
-    console.log('contact ', contact);
     if (name.startsWith('0')) {
       return '0x';
     } else if (name.length > 0) {
@@ -150,7 +149,7 @@ export const LLContactCard = ({ contact, hideCloseButton, isSend = false, isLoad
           <IconButton
             onClick={(e) => {
               e.stopPropagation();
-              history.push('/dashboard/wallet/send');
+              history.push(`/dashboard/token/flow/send/${contact.address}`);
             }}
           >
             <CardMedia sx={{ width: '11px', height: '11px' }} image={closex} />

@@ -21,15 +21,15 @@ import SwipeableViews from 'react-swipeable-views';
 import { type Contact } from '@/shared/types/network-types';
 import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
 import { LLHeader } from '@/ui/FRWComponent';
-import { useProfileStore } from '@/ui/stores/profileStore';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { type MatchMedia } from '@/ui/utils/url';
 import { useWallet } from 'ui/utils';
 
 import IconAbout from '../../../../components/iconfont/IconAbout';
-import AccountsList from '../../Send/AccountsList';
-import AddressBookList from '../../Send/AddressBookList';
-import RecentList from '../../Send/RecentList';
-import SearchList from '../../Send/SearchList';
+import AccountsList from '../../Send/AddressLists/AccountsList';
+import AddressBookList from '../../Send/AddressLists/AddressBookList';
+import RecentList from '../../Send/AddressLists/RecentList';
+import SearchList from '../../Send/AddressLists/SearchList';
 
 import SendNFTConfirmation from './SendNFTConfirmation';
 
@@ -134,7 +134,7 @@ const SendToAddress = () => {
   const theme = useTheme();
   const usewallet = useWallet();
   const location = useLocation();
-  const { childAccounts, currentWallet } = useProfileStore();
+  const { childAccounts, currentWallet } = useProfiles();
 
   const [tabValue, setTabValue] = useState(0);
   const [isLoading, setIsLoading] = useState(false);

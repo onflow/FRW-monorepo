@@ -222,7 +222,7 @@ const dataConfig: Record<string, OpenApiConfigValue> = {
     params: ['nickname', 'avatar'],
   },
   get_transfers: {
-    path: '/v1/account/transfers',
+    path: '/api/v1/account/transfers',
     method: 'get',
     params: ['address', 'after', 'limit'],
   },
@@ -1004,11 +1004,17 @@ class OpenApiService {
 
   getTransfers = async (address: string, after = '', limit: number) => {
     const config = this.store.config.get_transfers;
-    const data = await this.sendRequest(config.method, config.path, {
-      address,
-      after,
-      limit,
-    });
+    const data = await this.sendRequest(
+      config.method,
+      config.path,
+      {
+        address,
+        after,
+        limit,
+      },
+      {},
+      WEB_NEXT_URL
+    );
 
     return data;
   };
@@ -1228,14 +1234,15 @@ class OpenApiService {
       WEB_NEXT_URL
     );
 
-    return data.tokens;
+    return this.addFlowTokenIfMissing(data.tokens);
   };
 
   addFlowTokenIfMissing = (tokens) => {
     const hasFlowToken = tokens.some((token) => token.symbol.toLowerCase() === 'flow');
     if (!hasFlowToken) {
-      tokens.push(defaultFlowToken);
+      return [defaultFlowToken, ...tokens];
     }
+    return tokens;
   };
 
   mergeCustomTokens = (tokens, customTokens) => {

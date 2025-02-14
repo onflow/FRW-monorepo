@@ -4,36 +4,23 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { isValidEthereumAddress } from '@/shared/utils/address';
+import { addDotSeparators } from '@/shared/utils/number';
 import { LLPrimaryButton } from '@/ui/FRWComponent';
 import iconMove from 'ui/FRWAssets/svg/moveIcon.svg';
 import { useWallet } from 'ui/utils';
-import { addDotSeparators } from 'ui/utils/number';
 
 import IconChevronRight from '../../../components/iconfont/IconChevronRight';
 
-import { TokenPrice } from './TokenValue';
+import { TokenValue } from './TokenValue';
 
 // import tips from 'ui/FRWAssets/svg/tips.svg';
 
-const TokenInfoCard = ({
-  price,
-  token,
-  setAccessible,
-  accessible,
-  setMoveOpen,
-  tokenInfo,
-  network,
-  childType,
-  childAccount,
-  setAlertOpen,
-}) => {
+const TokenInfoCard = ({ price, token, setAccessible, accessible, tokenInfo, childType }) => {
   const wallet = useWallet();
   const history = useHistory();
   const isMounted = useRef(true);
   const [balance, setBalance] = useState(0);
-  const [active, setIsActive] = useState(true);
   const [data, setData] = useState<TokenInfo | undefined>(undefined);
-  const [evmEnabled, setEvmEnabled] = useState<boolean>(false);
 
   const [canMoveChild, setCanMoveChild] = useState(true);
 
@@ -50,21 +37,16 @@ const TokenInfoCard = ({
     checkPermission();
   }, [balance, tokenInfo.custom, wallet]);
 
-  const toSend = async () => {
-    await wallet.setCurrentCoin(token);
-    history.push('/dashboard/wallet/send');
+  const toSend = () => {
+    history.push(`/dashboard/token/${tokenInfo.symbol}/send`);
   };
 
   const getActive = useCallback(async () => {
-    const evmEnabled = await wallet.getEvmEnabled();
-    setEvmEnabled(evmEnabled);
     const isChild = await wallet.getActiveWallet();
 
     const timerId = setTimeout(async () => {
       if (!isMounted.current) return; // Early exit if component is not mounted
       setData(tokenInfo!);
-      console.log('tokenInfo ', tokenInfo);
-      setIsActive(true);
       setAccessible(true);
       if (isChild === 'evm') {
         const coins = await wallet.getCoinList();
@@ -90,15 +72,6 @@ const TokenInfoCard = ({
       clearTimeout(timerId); // Clear the timer
     };
   }, [setAccessible, token, tokenInfo, wallet]);
-
-  const moveToken = () => {
-    if (childType && childType !== 'evm') {
-      setAlertOpen(true);
-    } else if (data) {
-      wallet.setCurrentCoin(data?.symbol);
-      setMoveOpen(true);
-    }
-  };
 
   const getUrl = (data) => {
     if (data.extensions?.website?.trim()) {
@@ -185,7 +158,7 @@ const TokenInfoCard = ({
 
             <Box sx={{ flex: 1 }} />
             {canMoveChild && (
-              <ButtonBase onClick={() => moveToken()}>
+              <ButtonBase onClick={() => toSend()}>
                 <Box
                   sx={{
                     display: 'flex',
@@ -223,7 +196,7 @@ const TokenInfoCard = ({
           </Box>
           <Typography variant="body1" color="text.secondary" sx={{ fontSize: '16px' }}>
             <Box component="span" sx={{ marginRight: '0.25rem' }}>
-              <TokenPrice
+              <TokenValue
                 value={balance * price}
                 prefix="$"
                 postFix={chrome.i18n.getMessage('USD')}
