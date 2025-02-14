@@ -30,9 +30,6 @@ const configs: Record<'dev' | 'pro' | 'none', webpack.Configuration> = {
     ],
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx'],
-      extensionAlias: {
-        '.js': ['.tsx', '.ts', '.js'],
-      },
       fallback: {
         buffer: require.resolve('buffer'),
         url: require.resolve('url/'),

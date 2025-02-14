@@ -31,6 +31,7 @@ import { type TransactionState } from '@/shared/types/transaction-types';
 import { type LoggedInAccount } from '@/shared/types/wallet-types';
 import { ensureEvmAddressPrefix, isValidEthereumAddress, withPrefix } from '@/shared/utils/address';
 import { getSignAlgo } from '@/shared/utils/algo';
+import { convertToIntegerAmount, validateAmount } from '@/shared/utils/number';
 import {
   keyringService,
   preferenceService,
@@ -55,7 +56,7 @@ import {
 import i18n from 'background/service/i18n';
 import { type DisplayedKeryring, KEYRING_CLASS } from 'background/service/keyring';
 import type { CacheState } from 'background/service/pageStateCache';
-import { findKeyAndInfo, getScripts } from 'background/utils';
+import { getScripts } from 'background/utils';
 import emoji from 'background/utils/emoji.json';
 import fetchConfig from 'background/utils/remoteConfig';
 import { notification, storage } from 'background/webapi';
@@ -1195,7 +1196,8 @@ export class WalletController extends BaseController {
           coin: token.name,
           unit: token.symbol.toLowerCase(),
           icon: token['logoURI'] || '',
-          balance: parseFloat(parseFloat(allBalanceMap[tokenId]).toFixed(8)),
+          // Keep the balance as a string to avoid precision loss
+          balance: allBalanceMap[tokenId],
           price: allPrice[index] === null ? 0 : new BN(allPrice[index].price.last).toNumber(),
           change24h:
             allPrice[index] === null || !allPrice[index].price || !allPrice[index].price.change
@@ -1268,7 +1270,8 @@ export class WalletController extends BaseController {
           coin: token.name,
           unit: token.symbol.toLowerCase(),
           icon: token['logoURI'] || '',
-          balance: parseFloat(parseFloat(allBalanceMap[tokenId]).toFixed(8)),
+          // Keep the balance as a string to avoid precision loss
+          balance: allBalanceMap[tokenId],
           price: allPrice[index] === null ? 0 : new BN(allPrice[index].price.last).toNumber(),
           change24h:
             allPrice[index] === null || !allPrice[index].price || !allPrice[index].price.change
@@ -1775,7 +1778,6 @@ export class WalletController extends BaseController {
     };
 
     const transferFlowFromEvmToCadence = async () => {
-      console.log('transferFlowFromEvmToCadence');
       return this.withdrawFlowEvm(transactionState.amount, transactionState.toAddress);
     };
 
@@ -1856,6 +1858,11 @@ export class WalletController extends BaseController {
       );
     };
 
+    // Validate the amount. Just to be sure!
+    if (!validateAmount(transactionState.amount, transactionState.selectedToken.decimals)) {
+      throw new Error('Invalid amount or decimal places');
+    }
+
     // Switch on the current transaction state
     switch (transactionState.currentTxState) {
       case 'FTFromEvmToCadence':
@@ -1885,9 +1892,6 @@ export class WalletController extends BaseController {
     amount = '1.0',
     gasLimit = 30000000
   ): Promise<string> => {
-    await this.getNetwork();
-    const formattedAmount = parseFloat(amount).toFixed(8);
-
     const script = await getScripts('evm', 'transferFlowToEvmAddress');
     if (recipientEVMAddressHex.startsWith('0x')) {
       recipientEVMAddressHex = recipientEVMAddressHex.substring(2);
@@ -1895,14 +1899,14 @@ export class WalletController extends BaseController {
 
     const txID = await userWalletService.sendTransaction(script, [
       fcl.arg(recipientEVMAddressHex, t.String),
-      fcl.arg(formattedAmount, t.UFix64),
+      fcl.arg(amount, t.UFix64),
       fcl.arg(gasLimit, t.UInt64),
     ]);
 
     mixpanelTrack.track('ft_transfer', {
       from_address: (await this.getCurrentAddress()) || '',
       to_address: recipientEVMAddressHex,
-      amount: parseFloat(formattedAmount),
+      amount: amount,
       ft_identifier: 'FLOW',
       type: 'evm',
     });
@@ -1917,9 +1921,6 @@ export class WalletController extends BaseController {
     contractEVMAddress: string,
     data
   ): Promise<string> => {
-    await this.getNetwork();
-    const formattedAmount = parseFloat(amount).toFixed(8);
-
     const script = await getScripts('bridge', 'bridgeTokensToEvmAddress');
     if (contractEVMAddress.startsWith('0x')) {
       contractEVMAddress = contractEVMAddress.substring(2);
@@ -1932,7 +1933,7 @@ export class WalletController extends BaseController {
     const txID = await userWalletService.sendTransaction(script, [
       fcl.arg(tokenContractAddress, t.Address),
       fcl.arg(tokenContractName, t.String),
-      fcl.arg(formattedAmount, t.UFix64),
+      fcl.arg(amount, t.UFix64),
       fcl.arg(contractEVMAddress, t.String),
       fcl.arg(regularArray, t.Array(t.UInt8)),
       fcl.arg(gasLimit, t.UInt64),
@@ -1940,7 +1941,7 @@ export class WalletController extends BaseController {
     mixpanelTrack.track('ft_transfer', {
       from_address: (await this.getCurrentAddress()) || '',
       to_address: tokenContractAddress,
-      amount: parseFloat(formattedAmount),
+      amount: amount,
       ft_identifier: tokenContractName,
       type: 'evm',
     });
@@ -1952,21 +1953,18 @@ export class WalletController extends BaseController {
     amount = '0.0',
     recipient: string
   ): Promise<string> => {
-    await this.getNetwork();
-    const formattedAmount = new BN(amount).decimalPlaces(8, BN.ROUND_DOWN).toString();
-
     const script = await getScripts('bridge', 'bridgeTokensToEvmAddressV2');
 
     const txID = await userWalletService.sendTransaction(script, [
       fcl.arg(vaultIdentifier, t.String),
-      fcl.arg(formattedAmount, t.UFix64),
+      fcl.arg(amount, t.UFix64),
       fcl.arg(recipient, t.String),
     ]);
 
     mixpanelTrack.track('ft_transfer', {
       from_address: (await this.getCurrentAddress()) || '',
       to_address: recipient,
-      amount: parseFloat(formattedAmount),
+      amount: amount,
       ft_identifier: vaultIdentifier,
       type: 'evm',
     });
@@ -1980,23 +1978,14 @@ export class WalletController extends BaseController {
     receiver: string,
     tokenResult: TokenInfo
   ): Promise<string> => {
-    await this.getNetwork();
-    const amountStr = amount.toString();
-
-    const amountBN = new BN(amountStr);
-
     const decimals = tokenResult.decimals ?? 18;
     if (decimals < 0 || decimals > 77) {
       // 77 is BN.js max safe decimals
       throw new Error('Invalid decimals');
     }
-    const scaleFactor = new BN(10).pow(new BN(decimals));
 
-    // Multiply amountBN by scaleFactor
-    const integerAmount = amountBN.multipliedBy(scaleFactor);
-    const integerAmountStr = integerAmount.integerValue(BN.ROUND_DOWN).toFixed();
+    const integerAmountStr = convertToIntegerAmount(amount, decimals);
 
-    console.log('integerAmountStr amount ', integerAmountStr, amount);
     const script = await getScripts('bridge', 'bridgeTokensFromEvmToFlowV3');
     const txID = await userWalletService.sendTransaction(script, [
       fcl.arg(flowidentifier, t.String),
@@ -2007,7 +1996,7 @@ export class WalletController extends BaseController {
     mixpanelTrack.track('ft_transfer', {
       from_address: (await this.getCurrentAddress()) || '',
       to_address: receiver,
-      amount: parseFloat(integerAmountStr),
+      amount: amount,
       ft_identifier: flowidentifier,
       type: 'evm',
     });
@@ -2016,11 +2005,10 @@ export class WalletController extends BaseController {
   };
 
   withdrawFlowEvm = async (amount = '0.0', address: string): Promise<string> => {
-    const formattedAmount = new BN(amount).decimalPlaces(8, BN.ROUND_DOWN).toString();
     const script = await getScripts('evm', 'withdrawCoa');
 
     const txID = await userWalletService.sendTransaction(script, [
-      fcl.arg(formattedAmount, t.UFix64),
+      fcl.arg(amount, t.UFix64),
       fcl.arg(address, t.Address),
     ]);
 
@@ -2028,10 +2016,9 @@ export class WalletController extends BaseController {
   };
 
   fundFlowEvm = async (amount = '1.0'): Promise<string> => {
-    const formattedAmount = new BN(amount).decimalPlaces(8, BN.ROUND_DOWN).toString();
     const script = await getScripts('evm', 'fundCoa');
 
-    return await userWalletService.sendTransaction(script, [fcl.arg(formattedAmount, t.UFix64)]);
+    return await userWalletService.sendTransaction(script, [fcl.arg(amount, t.UFix64)]);
   };
 
   coaLink = async (): Promise<string> => {
@@ -2066,19 +2053,17 @@ export class WalletController extends BaseController {
   };
 
   bridgeToEvm = async (flowIdentifier, amount = '1.0'): Promise<string> => {
-    const formattedAmount = new BN(amount).decimalPlaces(8, BN.ROUND_DOWN).toString();
-
     const script = await getScripts('bridge', 'bridgeTokensToEvmV2');
 
     const txID = await userWalletService.sendTransaction(script, [
       fcl.arg(flowIdentifier, t.String),
-      fcl.arg(formattedAmount, t.UFix64),
+      fcl.arg(amount, t.UFix64),
     ]);
 
     mixpanelTrack.track('ft_transfer', {
       from_address: (await this.getCurrentAddress()) || '',
       to_address: await this.getRawEvmAddressWithPrefix(),
-      amount: parseFloat(formattedAmount),
+      amount: amount,
       ft_identifier: flowIdentifier,
       type: 'evm',
     });
@@ -2087,19 +2072,12 @@ export class WalletController extends BaseController {
   };
 
   bridgeToFlow = async (flowIdentifier, amount = '1.0', tokenResult): Promise<string> => {
-    const amountStr = amount.toString();
-
-    const amountBN = new BN(amountStr);
     const decimals = tokenResult.decimals ?? 18;
     if (decimals < 0 || decimals > 77) {
       // 77 is BN.js max safe decimals
       throw new Error('Invalid decimals');
     }
-    const scaleFactor = new BN(10).pow(new BN(decimals));
-
-    // Multiply amountBN by scaleFactor
-    const integerAmount = amountBN.multipliedBy(scaleFactor);
-    const integerAmountStr = integerAmount.integerValue(BN.ROUND_DOWN).toFixed();
+    const integerAmountStr = convertToIntegerAmount(amount, decimals);
 
     const script = await getScripts('bridge', 'bridgeTokensFromEvmV2');
     const txID = await userWalletService.sendTransaction(script, [
@@ -2110,7 +2088,7 @@ export class WalletController extends BaseController {
     mixpanelTrack.track('ft_transfer', {
       from_address: await this.getRawEvmAddressWithPrefix(),
       to_address: (await this.getCurrentAddress()) || '',
-      amount: parseFloat(integerAmountStr),
+      amount: amount,
       ft_identifier: flowIdentifier,
       type: 'flow',
     });
@@ -2212,7 +2190,7 @@ export class WalletController extends BaseController {
     mixpanelTrack.track('ft_transfer', {
       from_address: await this.getRawEvmAddressWithPrefix(),
       to_address: to,
-      amount: Number(transactionValue),
+      amount: value,
       ft_identifier: 'FLOW',
       type: 'evm',
     });
@@ -2261,7 +2239,7 @@ export class WalletController extends BaseController {
     // Convert hex to BigInt directly to avoid potential number overflow
     const transactionValue = value === '0x' ? BigInt(0) : BigInt(value);
 
-    const result = await userWalletService.sendTransaction(script, [
+    await userWalletService.sendTransaction(script, [
       fcl.arg(to, t.String),
       fcl.arg(transactionValue.toString(), t.UInt256),
       fcl.arg(regularArray, t.Array(t.UInt8)),
@@ -2273,7 +2251,7 @@ export class WalletController extends BaseController {
     mixpanelTrack.track('ft_transfer', {
       from_address: evmAddress,
       to_address: to,
-      amount: parseFloat(transactionValue.toString()),
+      amount: transactionValue.toString(),
       ft_identifier: 'FLOW',
       type: 'evm',
     });
@@ -2406,6 +2384,11 @@ export class WalletController extends BaseController {
     if (!token) {
       throw new Error(`Invaild token name - ${symbol}`);
     }
+    // Validate the amount just to be safe
+    if (!validateAmount(amount, token.decimals)) {
+      throw new Error(`Invalid amount - ${amount}`);
+    }
+
     await this.getNetwork();
 
     const txID = await userWalletService.sendTransaction(
@@ -2421,7 +2404,7 @@ export class WalletController extends BaseController {
     mixpanelTrack.track('ft_transfer', {
       from_address: (await this.getCurrentAddress()) || '',
       to_address: address,
-      amount: parseFloat(amount),
+      amount: amount,
       ft_identifier: token.contractName,
       type: 'flow',
     });
@@ -2570,7 +2553,7 @@ export class WalletController extends BaseController {
     mixpanelTrack.track('ft_transfer', {
       from_address: (await this.getCurrentAddress()) || '',
       to_address: childAddress,
-      amount: parseFloat(amount),
+      amount: amount,
       ft_identifier: token.contractName,
       type: 'flow',
     });
@@ -2587,6 +2570,10 @@ export class WalletController extends BaseController {
     const token = await openapiService.getTokenInfo(symbol);
     if (!token) {
       throw new Error(`Invaild token name - ${symbol}`);
+    }
+    // Validate the amount just to be safe
+    if (!validateAmount(amount, token.decimals)) {
+      throw new Error(`Invalid amount - ${amount}`);
     }
 
     const script = await getScripts('hybridCustody', 'sendChildFT');
@@ -2608,7 +2595,7 @@ export class WalletController extends BaseController {
     mixpanelTrack.track('ft_transfer', {
       from_address: childAddress,
       to_address: receiver,
-      amount: parseFloat(amount),
+      amount: amount,
       ft_identifier: token.contractName,
       type: 'flow',
     });
@@ -2923,66 +2910,6 @@ export class WalletController extends BaseController {
       from_type: 'flow',
       to_type: 'evm',
       isMove: false,
-    });
-    return txID;
-  };
-
-  bridgeChildFTToEvm = async (
-    childAddr: string,
-    identifier: string,
-    amount: number,
-    token
-  ): Promise<string> => {
-    const script = await getScripts('hybridCustody', 'bridgeChildFTToEvm');
-
-    const txID = await userWalletService.sendTransaction(
-      script
-        .replaceAll('<NFT>', token.contract_name)
-        .replaceAll('<NFTAddress>', token.address)
-        .replaceAll('<CollectionStoragePath>', token.path.storage_path)
-        .replaceAll('<CollectionPublicType>', token.path.public_type)
-        .replaceAll('<CollectionPublicPath>', token.path.public_path),
-      [fcl.arg(identifier, t.String), fcl.arg(childAddr, t.Address), fcl.arg(amount, t.UFix64)]
-    );
-    mixpanelTrack.track('ft_transfer', {
-      from_address: childAddr,
-      to_address: (await this.getCurrentAddress()) || '',
-      ft_identifier: identifier,
-      type: 'evm',
-      amount: amount,
-    });
-    return txID;
-  };
-
-  bridgeChildFTFromEvm = async (
-    childAddr: string,
-    vaultIdentifier: string,
-    ids: Array<number>,
-    token,
-    amount: number
-  ): Promise<string> => {
-    const script = await getScripts('hybridCustody', 'bridgeChildFTFromEvm');
-
-    const txID = await userWalletService.sendTransaction(
-      script
-        .replaceAll('<NFT>', token.contract_name)
-        .replaceAll('<NFTAddress>', token.address)
-        .replaceAll('<CollectionStoragePath>', token.path.storage_path)
-        .replaceAll('<CollectionPublicType>', token.path.public_type)
-        .replaceAll('<CollectionPublicPath>', token.path.public_path),
-      [
-        fcl.arg(vaultIdentifier, t.String),
-        fcl.arg(childAddr, t.Address),
-        fcl.arg(ids, t.Array(t.UInt256)),
-        fcl.arg(amount, t.UFix64),
-      ]
-    );
-    mixpanelTrack.track('ft_transfer', {
-      from_address: childAddr,
-      to_address: (await this.getCurrentAddress()) || '',
-      ft_identifier: vaultIdentifier,
-      type: 'evm',
-      amount: amount,
     });
     return txID;
   };
@@ -3654,21 +3581,8 @@ export class WalletController extends BaseController {
   };
 
   getNftCatalog = async () => {
-    const catStorage = await storage.get('catalogData');
-
-    const now = new Date();
-    const exp = 1000 * 60 * 60 * 1 + now.getTime();
-    if (catStorage && catStorage['expiry'] && now.getTime() <= catStorage['expiry']) {
-      return catStorage['data'];
-    }
-
     const data = (await openapiService.nftCatalog()) ?? [];
 
-    // TODO: check if data is empty
-    const catalogData = {
-      data: data,
-      expiry: exp,
-    };
     return data;
   };
 

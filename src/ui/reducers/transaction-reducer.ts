@@ -11,7 +11,7 @@ import type {
 import { type CoinItem, type WalletAddress } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 
-import { getMaxDecimals, stripEnteredAmount, stripFinalAmount } from '../utils/number';
+import { stripEnteredAmount, stripFinalAmount } from '../../shared/utils/number';
 
 export const INITIAL_TRANSACTION_STATE: TransactionState = {
   currentTxState: '',
@@ -212,7 +212,7 @@ export const transactionReducer = (
           amountInCoin = '0.0';
         } else {
           amountInCoin = calculatedAmountInCoin.toFixed(
-            getMaxDecimals(state.currentTxState!),
+            state.selectedToken.decimals,
             BN.ROUND_DOWN
           );
         }

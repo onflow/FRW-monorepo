@@ -4,10 +4,10 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { isValidEthereumAddress } from '@/shared/utils/address';
+import { addDotSeparators } from '@/shared/utils/number';
 import { LLPrimaryButton } from '@/ui/FRWComponent';
 import iconMove from 'ui/FRWAssets/svg/moveIcon.svg';
 import { useWallet } from 'ui/utils';
-import { addDotSeparators } from 'ui/utils/number';
 
 import IconChevronRight from '../../../components/iconfont/IconChevronRight';
 

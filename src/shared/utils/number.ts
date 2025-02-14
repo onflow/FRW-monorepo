@@ -1,42 +1,10 @@
-import BigNumber from 'bignumber.js';
-
-import { DecimalMappingValues } from '@/shared/types/transaction-types';
-
-export const splitNumberByStep = (
-  num: number | string,
-  step = 3,
-  symbol = ',',
-  forceInt = false
-) => {
-  let [int, float] = (num + '').split('.');
-  const reg = new RegExp(`(\\d)(?=(\\d{${step}})+(?!\\d))`, 'g');
-
-  int = int.replace(reg, `$1${symbol}`);
-  if (Number(num) > 1000000 || forceInt) {
-    // hide the after-point part if number is more than 1000000
-    float = '';
-  }
-  if (float) {
-    return `${int}.${float}`;
-  }
-  return int;
-};
-
-export const formatTokenAmount = (amount: number | string, decimals = 4) => {
-  if (!amount) return '0';
-  const bn = new BigNumber(amount);
-  const str = bn.toFixed();
-  const split = str.split('.');
-  if (!split[1] || split[1].length < decimals) {
-    return splitNumberByStep(bn.toFixed());
-  }
-  return splitNumberByStep(bn.toFixed(decimals));
-};
+// TODO: remove this function. It's called from CoinList and Wallet
 
 export const formatLargeNumber = (num) => {
   if (typeof num === 'string' && num.startsWith('$')) {
     num = num.slice(1);
   }
+
   if (num >= 1e12) {
     return (num / 1e12).toFixed(3) + 'T'; // Trillions
   } else if (num >= 1e9) {
@@ -48,6 +16,7 @@ export const formatLargeNumber = (num) => {
   }
 };
 
+// TODO: remove this function. It's called from TokenInfoCard.tsx
 export const addDotSeparators = (num) => {
   // replace with http://numeraljs.com/ if more requirements
   const [integerPart, decimalPart] = parseFloat(num).toFixed(8).split('.');
@@ -59,16 +28,6 @@ export const addDotSeparators = (num) => {
   const formattedDecimal = trimmedDecimal.length > 0 ? trimmedDecimal : decimalPart.slice(-3);
 
   return `${newIntegerPart}.${formattedDecimal}`;
-};
-
-export const checkDecimals = (value: string, maxDecimals: number) => {
-  const decimals = value.includes('.') ? value.split('.')[1]?.length || 0 : 0;
-  return decimals <= maxDecimals;
-};
-
-export const getMaxDecimals = (currentTxState: string | undefined) => {
-  if (!currentTxState) return 8;
-  return DecimalMappingValues[currentTxState as keyof typeof DecimalMappingValues];
 };
 
 export const stripEnteredAmount = (value: string, maxDecimals: number) => {
@@ -115,4 +74,33 @@ export const stripFinalAmount = (value: string, maxDecimals: number) => {
   }
 
   return strippedValue;
+};
+
+// Validate that a string is a valid transaction amount with the given max decimal places
+// If exact is true, the amount must have exactly maxDecimals decimal places
+export const validateAmount = (amount: string, maxDecimals: number, exact = false): boolean => {
+  const regex =
+    maxDecimals === 0
+      ? `^(0|[1-9]\\d*)$`
+      : exact
+        ? `^(0|[1-9]\\d*)\\.\\d{${maxDecimals}}$`
+        : `^(0|[1-9]\\d*)(\\.\\d{1,${maxDecimals}})?$`;
+  return new RegExp(regex).test(amount);
+};
+
+export const convertToIntegerAmount = (amount: string, decimals: number): string => {
+  // Check if the amount is valid
+  if (!validateAmount(amount, decimals)) {
+    throw new Error('Invalid amount or decimal places');
+  }
+
+  // Create an integer string based on the required token decimals
+  const parts = amount.split('.');
+  const hasDecimal = parts.length > 1;
+  const integerPart = parts[0];
+  const decimalPart = hasDecimal ? parts[1] : '';
+  // Pad the decimal part with zeros
+  const paddedDecimal = decimalPart.padEnd(decimals, '0');
+  // Remove leading zeros
+  return `${integerPart}${paddedDecimal}`.replace(/^0+/, '') || '0';
 };
