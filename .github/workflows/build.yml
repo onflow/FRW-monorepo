@@ -112,7 +112,8 @@ jobs:
       ${{
         github.ref_type == 'tag' && 'production' ||
         github.ref_name == 'master' && 'production' ||
-        github.ref_name == 'dev' && 'staging'
+        github.ref_name == 'dev' && 'staging' ||
+        'development'
       }}
     steps:
       - uses: actions/checkout@v4
