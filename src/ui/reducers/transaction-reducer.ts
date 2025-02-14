@@ -17,7 +17,7 @@ export const INITIAL_TRANSACTION_STATE: TransactionState = {
   currentTxState: '',
   rootAddress: '',
   fromAddress: '',
-  tokenType: 'FT',
+  tokenType: 'Flow',
   fromNetwork: 'Evm',
   toNetwork: 'Evm',
   toAddress: '',

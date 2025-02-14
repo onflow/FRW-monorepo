@@ -1,20 +1,15 @@
 import CloseIcon from '@mui/icons-material/Close';
 import InfoIcon from '@mui/icons-material/Info';
 import { Box, Typography, Drawer, Stack, Grid, CardMedia, IconButton, Button } from '@mui/material';
-import BN from 'bignumber.js';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
-import { type Contract } from 'web3';
 
 import { type TransactionState } from '@/shared/types/transaction-types';
-import { ensureEvmAddressPrefix, isValidEthereumAddress } from '@/shared/utils/address';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
 import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
 import { useContactHook } from '@/ui/hooks/useContactHook';
-import { useWeb3 } from '@/ui/hooks/useWeb3';
 import { useStorageCheck } from '@/ui/utils/useStorageCheck';
-import erc20ABI from 'background/utils/erc20.abi.json';
 import IconNext from 'ui/FRWAssets/svg/next.svg';
 import { LLSpinner } from 'ui/FRWComponent';
 import { Profile } from 'ui/FRWComponent/Send/Profile';
@@ -46,23 +41,6 @@ const TransferConfirmation = ({
   const [occupied, setOccupied] = useState(false);
   const [tid, setTid] = useState<string>('');
   const [count, setCount] = useState(0);
-
-  const web3Instance = useWeb3();
-  const [erc20Contract, setErc20Contract] = useState<Contract<typeof erc20ABI> | null>(null);
-
-  useEffect(() => {
-    if (
-      isConfirmationOpen &&
-      web3Instance &&
-      isValidEthereumAddress(transactionState.selectedToken?.address)
-    ) {
-      const contractInstance = new web3Instance.eth.Contract(
-        erc20ABI,
-        transactionState.selectedToken.address
-      );
-      setErc20Contract(contractInstance);
-    }
-  }, [web3Instance, transactionState.selectedToken.address, isConfirmationOpen]);
 
   const transferAmount = transactionState.amount ? parseFloat(transactionState.amount) : undefined;
 
@@ -117,129 +95,14 @@ const TransferConfirmation = ({
     setOccupied(false);
   }, []);
 
-  const transferTokensOnCadence = useCallback(async () => {
-    return wallet.transferInboxTokens(
-      transactionState.selectedToken.symbol,
-      transactionState.toAddress,
-      transactionState.amount
-    );
-  }, [transactionState, wallet]);
-
-  const transferTokensFromChildToCadence = useCallback(async () => {
-    return wallet.sendFTfromChild(
-      transactionState.fromAddress,
-      transactionState.toAddress,
-      'flowTokenProvider',
-      transactionState.amount,
-      transactionState.selectedToken.symbol
-    );
-  }, [transactionState, wallet]);
-
-  const transferFlowFromEvmToCadence = useCallback(async () => {
-    return wallet.withdrawFlowEvm(transactionState.amount, transactionState.toAddress);
-  }, [wallet, transactionState]);
-
-  const transferFTFromEvmToCadence = useCallback(async () => {
-    return wallet.transferFTFromEvm(
-      transactionState.selectedToken['flowIdentifier'],
-      transactionState.amount,
-      transactionState.toAddress,
-      transactionState.selectedToken
-    );
-  }, [wallet, transactionState]);
-
-  const transferTokensOnEvm = useCallback(async () => {
-    // the amount is always stored as a string in the transaction state
-    const amountStr: string = transactionState.amount;
-    // TODO: check if the amount is a valid number
-    // Create an integer string based on the required token decimals
-    const amountBN = new BN(amountStr.replace('.', ''));
-
-    const decimalsCount = amountStr.split('.')[1]?.length || 0;
-    const decimalDifference = transactionState.selectedToken.decimals - decimalsCount;
-    if (decimalDifference < 0) {
-      throw new Error('Too many decimal places have been provided');
-    }
-    const scaleFactor = new BN(10).pow(decimalDifference);
-    const integerAmount = amountBN.multipliedBy(scaleFactor);
-    const integerAmountStr = integerAmount.integerValue(BN.ROUND_DOWN).toFixed();
-
-    let address, gas, value, data;
-
-    if (transactionState.selectedToken.symbol.toLowerCase() === 'flow') {
-      address = transactionState.toAddress;
-      gas = '1';
-      // const amountBN = new BN(transactionState.amount).multipliedBy(new BN(10).pow(18));
-      // the amount is always stored as a string in the transaction state
-      value = integerAmount.toString(16);
-      data = '0x';
-    } else {
-      const encodedData = erc20Contract!.methods
-        .transfer(ensureEvmAddressPrefix(transactionState.toAddress), integerAmountStr)
-        .encodeABI();
-      gas = '1312d00';
-      address = ensureEvmAddressPrefix(transactionState.selectedToken.address);
-      value = '0x0'; // Zero value as hex
-      data = encodedData.startsWith('0x') ? encodedData : `0x${encodedData}`;
-    }
-
-    // Send the transaction
-    return wallet.sendEvmTransaction(address, gas, value, data);
-  }, [transactionState, erc20Contract, wallet]);
-
-  const transferFlowFromCadenceToEvm = useCallback(async () => {
-    return wallet.transferFlowEvm(transactionState.toAddress, transactionState.amount);
-  }, [transactionState, wallet]);
-
-  const transferFTFromCadenceToEvm = useCallback(async () => {
-    const address = transactionState.selectedToken!.address.startsWith('0x')
-      ? transactionState.selectedToken!.address.slice(2)
-      : transactionState.selectedToken!.address;
-
-    return wallet.transferFTToEvmV2(
-      `A.${address}.${transactionState.selectedToken!.contractName}.Vault`,
-      transactionState.amount,
-      transactionState.toAddress
-    );
-  }, [transactionState, wallet]);
-
   const transferTokens = useCallback(async () => {
     try {
       // Set the sending state to true
       setSending(true);
 
       // Initialize the transaction ID
-      let txId: string;
+      const txId: string = await wallet.transferTokens(transactionState);
 
-      // Switch on the current transaction state
-      switch (transactionState.currentTxState) {
-        case 'FTFromEvmToCadence':
-          txId = await transferFTFromEvmToCadence();
-          break;
-        case 'FlowFromEvmToCadence':
-          txId = await transferFlowFromEvmToCadence();
-          break;
-        case 'FTFromChildToCadence':
-        case 'FlowFromChildToCadence':
-          txId = await transferTokensFromChildToCadence();
-          break;
-        case 'FTFromCadenceToCadence':
-        case 'FlowFromCadenceToCadence':
-          txId = await transferTokensOnCadence();
-          break;
-        case 'FlowFromEvmToEvm':
-        case 'FTFromEvmToEvm':
-          txId = await transferTokensOnEvm();
-          break;
-        case 'FlowFromCadenceToEvm':
-          txId = await transferFlowFromCadenceToEvm();
-          break;
-        case 'FTFromCadenceToEvm':
-          txId = await transferFTFromCadenceToEvm();
-          break;
-        default:
-          throw new Error(`Unsupported transaction state: ${transactionState.currentTxState}`);
-      }
       // Set the transaction ID so we can show that we're processing
       setTid(txId);
 
@@ -267,18 +130,7 @@ const TransferConfirmation = ({
       // Set the sending state to false regardless of whether the transaction was successful or not
       setSending(false);
     }
-  }, [
-    transactionState,
-    wallet,
-    history,
-    transferFTFromEvmToCadence,
-    transferFlowFromEvmToCadence,
-    transferTokensFromChildToCadence,
-    transferTokensOnCadence,
-    transferTokensOnEvm,
-    transferFlowFromCadenceToEvm,
-    transferFTFromCadenceToEvm,
-  ]);
+  }, [transactionState, wallet, history]);
 
   const transactionDoneHandler = useCallback(
     (request) => {

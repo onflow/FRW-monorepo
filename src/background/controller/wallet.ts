@@ -11,7 +11,7 @@ import { getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth/web-extension';
 import type { TokenInfo } from 'flow-native-token-registry';
 import { encode } from 'rlp';
-import web3, { TransactionError } from 'web3';
+import web3, { TransactionError, Web3 } from 'web3';
 
 import {
   findAddressWithNetwork,
@@ -27,10 +27,10 @@ import {
 import eventBus from '@/eventBus';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
 import { type TrackingEvents } from '@/shared/types/tracking-types';
-import { type ActiveChildType, type LoggedInAccount } from '@/shared/types/wallet-types';
+import { type TransactionState } from '@/shared/types/transaction-types';
+import { type LoggedInAccount } from '@/shared/types/wallet-types';
 import { ensureEvmAddressPrefix, isValidEthereumAddress, withPrefix } from '@/shared/utils/address';
-import { getHashAlgo, getSignAlgo } from '@/shared/utils/algo';
-import { retryOperation } from '@/shared/utils/retryOperation';
+import { getSignAlgo } from '@/shared/utils/algo';
 import {
   keyringService,
   preferenceService,
@@ -60,7 +60,7 @@ import emoji from 'background/utils/emoji.json';
 import fetchConfig from 'background/utils/remoteConfig';
 import { notification, storage } from 'background/webapi';
 import { openIndexPage } from 'background/webapi/tab';
-import { INTERNAL_REQUEST_ORIGIN, EVENTS, KEYRING_TYPE } from 'consts';
+import { INTERNAL_REQUEST_ORIGIN, EVENTS, KEYRING_TYPE, EVM_ENDPOINT } from 'consts';
 
 import type {
   BlockchainResponse,
@@ -76,6 +76,7 @@ import type { PreferenceAccount } from '../service/preference';
 import { type EvaluateStorageResult, StorageEvaluator } from '../service/storage-evaluator';
 import type { UserInfoStore } from '../service/user';
 import defaultConfig from '../utils/defaultConfig.json';
+import erc20ABI from '../utils/erc20.abi.json';
 import { getLoggedInAccount } from '../utils/getLoggedInAccount';
 
 import BaseController from './base';
@@ -308,16 +309,29 @@ export class WalletController extends BaseController {
 
   // lockadd here
   resetPwd = async () => {
-    const switchingTo = 'mainnet';
+    // WARNING: This resets absolutely everything
+    // This is used when the user forgets their password
+    // It should only be called from the landing page when the user is logged out
+    // And the user should be redirected to the landing page
+    // After calling this function
+
+    // TODO: I believe the user should be logged out here
+    // e.g. call signOutCurrentUser
+
+    // This clears local storage but a lot is still kept in memory
     await storage.clear();
 
+    // Note that this does not clear the 'booted' state
+    // We should fix this, but it would involve making changes to keyringService
     await keyringService.resetKeyRing();
     await keyringService.setLocked();
+
     await passwordService.clear();
+
     sessionService.broadcastEvent('accountsChanged', []);
     sessionService.broadcastEvent('lock');
-    openIndexPage('reset');
-    await this.switchNetwork(switchingTo);
+    // Redirect to welcome so that users can import their account again
+    openIndexPage('/welcome');
   };
 
   // lockadd here
@@ -775,27 +789,6 @@ export class WalletController extends BaseController {
     const keyring = await keyringService.getKeyringForAccount(from, type);
     const res = await keyringService.signTransaction(keyring, data, options);
 
-    /*
-    cadence_transaction_signed: {
-      cadence: string; // SHA256 Hashed Cadence that was signed.
-      tx_id: string; // String of the transaction ID.
-      authorizers: string[]; // Comma separated list of authorizer account address in the transaction
-      proposer: string; // Address of the transactions proposer.
-      payer: string; // Payer of the transaction.
-      success: boolean; // Boolean of if the transaction was sent successful or not. true/false
-    };
-    evm_transaction_signed: {
-      success: boolean; // Boolean of if the transaction was sent successful or not. true/false
-      flow_address: string; // Address of the account that signed the transaction
-      evm_address: string; // EVM Address of the account that signed the transaction
-      tx_id: string; // transaction id
-    };
-    mixpanelTrack.track('transaction_signed', {
-      address: from,
-      type,
-      ...res,
-    });
-    */
     return res;
   };
 
@@ -880,16 +873,7 @@ export class WalletController extends BaseController {
   updateAlianName = (address: string, name: string) =>
     preferenceService.updateAlianName(address, name);
   getAllAlianName = () => preferenceService.getAllAlianName();
-  // getInitAlianNameStatus = () => preferenceService.getInitAlianNameStatus();
-  // updateInitAlianNameStatus = () =>
-  //   preferenceService.changeInitAlianNameStatus();
-  // getLastTimeGasSelection = (chainId) => {
-  //   return preferenceService.getLastTimeGasSelection(chainId);
-  // };
 
-  // updateLastTimeGasSelection = (chainId: string, gas: ChainGas) => {
-  //   return preferenceService.updateLastTimeGasSelection(chainId, gas);
-  // };
   getIsFirstOpen = () => {
     return preferenceService.getIsFirstOpen();
   };
@@ -899,14 +883,6 @@ export class WalletController extends BaseController {
   listChainAssets = async (address: string) => {
     return await openapiService.getCoinList(address);
   };
-  // getAddedToken = (address: string) => {
-  //   return preferenceService.getAddedToken(address);
-  // };
-  // updateAddedToken = (address: string, tokenList: []) => {
-  //   return preferenceService.updateAddedToken(address, tokenList);
-  // };
-
-  // lilico new service
 
   // userinfo
   getUserInfo = async (forceRefresh: boolean) => {
@@ -1002,17 +978,7 @@ export class WalletController extends BaseController {
 
   checkAccessibleNft = async (childAccount) => {
     try {
-      // const res = await openapiService.checkChildAccount(address);
-      // const nfts = await openapiService.queryAccessible(
-      //   '0x84221fe0294044d7',
-      //   '0x16c41a2b76dee69b'
-      // );
       const nfts = await openapiService.checkChildAccountNFT(childAccount);
-      // openapiService.checkChildAccountNFT(address).then((res) => {
-      //   console.log(res)
-      // }).catch((err) => {
-      //   console.log(err)
-      // })
 
       return nfts;
     } catch (error) {
@@ -1025,13 +991,7 @@ export class WalletController extends BaseController {
     const network = await this.getNetwork();
 
     const address = await userWalletService.getMainWallet(network);
-    // const res = await openapiService.checkChildAccount(address);
     const result = await openapiService.queryAccessibleFt(address, childAccount);
-    // openapiService.checkChildAccountNFT(address).then((res) => {
-    //   console.log(res)
-    // }).catch((err) => {
-    //   console.log(err)
-    // })
 
     return result;
   };
@@ -1233,7 +1193,7 @@ export class WalletController extends BaseController {
         const tokenId = `A.${token.address.slice(2)}.${token.contractName}`;
         return {
           coin: token.name,
-          unit: token.symbol,
+          unit: token.symbol.toLowerCase(),
           icon: token['logoURI'] || '',
           balance: parseFloat(parseFloat(allBalanceMap[tokenId]).toFixed(8)),
           price: allPrice[index] === null ? 0 : new BN(allPrice[index].price.last).toNumber(),
@@ -1306,7 +1266,7 @@ export class WalletController extends BaseController {
         const tokenId = `A.${token.address.slice(2)}.${token.contractName}`;
         return {
           coin: token.name,
-          unit: token.symbol,
+          unit: token.symbol.toLowerCase(),
           icon: token['logoURI'] || '',
           balance: parseFloat(parseFloat(allBalanceMap[tokenId]).toFixed(8)),
           price: allPrice[index] === null ? 0 : new BN(allPrice[index].price.last).toNumber(),
@@ -1343,29 +1303,6 @@ export class WalletController extends BaseController {
     }
   };
 
-  fetchCoinList = async (_expiry = 5000, { signal } = { signal: new AbortController().signal }) => {
-    const network = await this.getNetwork();
-    try {
-      await this.fetchBalance({ signal });
-
-      // const allTokens = await openapiService.getAllTokenInfo();
-      // const enabledSymbols = tokenList.map((token) => token.symbol);
-      // const disableSymbols = allTokens.map((token) => token.symbol).filter((symbol) => !enabledSymbols.includes(symbol));
-      // console.log('disableSymbols are these ', disableSymbols, enabledSymbols, coins)
-      // disableSymbols.forEach((coin) => coinListService.removeCoin(coin, network));
-
-      const coinListResult = coinListService.listCoins(network);
-      return coinListResult;
-    } catch (err) {
-      if (err.message === 'Operation aborted') {
-        console.log('refreshCoinList operation aborted.');
-      } else {
-        console.error('fetch coinlist encountered an error:', err);
-      }
-      throw err;
-    }
-  };
-
   refreshEvmList = async (_expiry = 60000) => {
     const now = new Date();
     const exp = _expiry + now.getTime();
@@ -1374,7 +1311,7 @@ export class WalletController extends BaseController {
     const network = await this.getNetwork();
     const evmCustomToken = (await storage.get(`${network}evmCustomToken`)) || [];
 
-    const tokenList = await openapiService.getTokenListFromGithub(network);
+    const tokenList = await openapiService.getTokenList(network);
 
     const address = await this.getRawEvmAddressWithPrefix();
     if (!isValidEthereumAddress(address)) {
@@ -1443,7 +1380,7 @@ export class WalletController extends BaseController {
     const coins: CoinItem[] = mergedList.map((token, index) => {
       return {
         coin: token.name,
-        unit: token.symbol,
+        unit: token.symbol.toLowerCase(),
         icon: token['logoURI'] || placeholder,
         balance: token.balance,
         price: allPrice[index] === null ? 0 : new BN(allPrice[index].price.last).toNumber(),
@@ -1487,32 +1424,6 @@ export class WalletController extends BaseController {
         const nftList = await openapiService.evmNFTList();
         // Cache the nftList with a one-hour expiry (3600000 milliseconds)
         await storage.setExpiry('evmnftList', nftList, 3600000);
-        return nftList;
-      }
-    } catch (error) {
-      console.error('Error fetching NFT list:', error);
-      throw error;
-    }
-  };
-
-  fetchPreviewNetNft = async () => {
-    try {
-      // Check if the nftList is already in storage and not expired
-      const cachedNFTList = await storage.getExpiry('previewNetNftList');
-      if (cachedNFTList) {
-        return cachedNFTList;
-      } else {
-        // Fetch the nftList from the API
-
-        const network = await this.getNetwork();
-        const response = await fetch(
-          `https://raw.githubusercontent.com/Outblock/token-list-jsons/outblock/jsons/${network}/flow/nfts.json`
-        );
-        const res = await response.json();
-        console.log('nftList ', res);
-        const nftList = res.tokens;
-        // Cache the nftList with a one-hour expiry (3600000 milliseconds)
-        await storage.setExpiry('previewNetNftList', nftList, 3600000);
         return nftList;
       }
     } catch (error) {
@@ -1841,6 +1752,132 @@ export class WalletController extends BaseController {
       flow_address: (await this.getCurrentAddress()) || '',
       error_message: errorMessage,
     });
+  };
+
+  // Master send token function that takes a transaction state from the front end and returns the transaction ID
+  transferTokens = async (transactionState: TransactionState): Promise<string> => {
+    const transferTokensOnCadence = async () => {
+      return this.transferCadenceTokens(
+        transactionState.selectedToken.symbol,
+        transactionState.toAddress,
+        transactionState.amount
+      );
+    };
+
+    const transferTokensFromChildToCadence = async () => {
+      return this.sendFTfromChild(
+        transactionState.fromAddress,
+        transactionState.toAddress,
+        'flowTokenProvider',
+        transactionState.amount,
+        transactionState.selectedToken.symbol
+      );
+    };
+
+    const transferFlowFromEvmToCadence = async () => {
+      console.log('transferFlowFromEvmToCadence');
+      return this.withdrawFlowEvm(transactionState.amount, transactionState.toAddress);
+    };
+
+    const transferFTFromEvmToCadence = async () => {
+      return this.transferFTFromEvm(
+        transactionState.selectedToken['flowIdentifier'],
+        transactionState.amount,
+        transactionState.toAddress,
+        transactionState.selectedToken
+      );
+    };
+
+    // Returns the transaction ID
+    const transferTokensOnEvm = async () => {
+      // the amount is always stored as a string in the transaction state
+      const amountStr: string = transactionState.amount;
+      // TODO: check if the amount is a valid number
+      // Create an integer string based on the required token decimals
+      const amountBN = new BN(amountStr.replace('.', ''));
+
+      const decimalsCount = amountStr.split('.')[1]?.length || 0;
+      const decimalDifference = transactionState.selectedToken.decimals - decimalsCount;
+      if (decimalDifference < 0) {
+        throw new Error('Too many decimal places have been provided');
+      }
+      const scaleFactor = new BN(10).pow(decimalDifference);
+      const integerAmount = amountBN.multipliedBy(scaleFactor);
+      const integerAmountStr = integerAmount.integerValue(BN.ROUND_DOWN).toFixed();
+
+      let address, gas, value, data;
+
+      if (transactionState.selectedToken.symbol.toLowerCase() === 'flow') {
+        address = transactionState.toAddress;
+        gas = '1';
+        // const amountBN = new BN(transactionState.amount).multipliedBy(new BN(10).pow(18));
+        // the amount is always stored as a string in the transaction state
+        value = integerAmount.toString(16);
+        data = '0x';
+      } else {
+        // Get the current network
+        const network = await this.getNetwork();
+        // Get the Web3 provider
+        const provider = new Web3.providers.HttpProvider(EVM_ENDPOINT[network]);
+        // Get the web3 instance
+        const web3Instance = new Web3(provider);
+        // Get the erc20 contract
+        const erc20Contract = new web3Instance.eth.Contract(
+          erc20ABI,
+          transactionState.selectedToken.address
+        );
+        // Encode the data
+        const encodedData = erc20Contract.methods
+          .transfer(ensureEvmAddressPrefix(transactionState.toAddress), integerAmountStr)
+          .encodeABI();
+        gas = '1312d00';
+        address = ensureEvmAddressPrefix(transactionState.selectedToken.address);
+        value = '0x0'; // Zero value as hex
+        data = encodedData.startsWith('0x') ? encodedData : `0x${encodedData}`;
+      }
+
+      // Send the transaction
+      return this.sendEvmTransaction(address, gas, value, data);
+    };
+
+    const transferFlowFromCadenceToEvm = async () => {
+      return this.transferFlowEvm(transactionState.toAddress, transactionState.amount);
+    };
+
+    const transferFTFromCadenceToEvm = async () => {
+      const address = transactionState.selectedToken!.address.startsWith('0x')
+        ? transactionState.selectedToken!.address.slice(2)
+        : transactionState.selectedToken!.address;
+
+      return this.transferFTToEvmV2(
+        `A.${address}.${transactionState.selectedToken!.contractName}.Vault`,
+        transactionState.amount,
+        transactionState.toAddress
+      );
+    };
+
+    // Switch on the current transaction state
+    switch (transactionState.currentTxState) {
+      case 'FTFromEvmToCadence':
+        return await transferFTFromEvmToCadence();
+      case 'FlowFromEvmToCadence':
+        return await transferFlowFromEvmToCadence();
+      case 'FTFromChildToCadence':
+      case 'FlowFromChildToCadence':
+        return await transferTokensFromChildToCadence();
+      case 'FTFromCadenceToCadence':
+      case 'FlowFromCadenceToCadence':
+        return await transferTokensOnCadence();
+      case 'FlowFromEvmToEvm':
+      case 'FTFromEvmToEvm':
+        return await transferTokensOnEvm();
+      case 'FlowFromCadenceToEvm':
+        return await transferFlowFromCadenceToEvm();
+      case 'FTFromCadenceToEvm':
+        return await transferFTFromCadenceToEvm();
+      default:
+        throw new Error(`Unsupported transaction state: ${transactionState.currentTxState}`);
+    }
   };
 
   transferFlowEvm = async (
@@ -2358,37 +2395,7 @@ export class WalletController extends BaseController {
   };
 
   // TODO: Replace with generic token
-  transferTokens = async (symbol: string, address: string, amount: string): Promise<string> => {
-    const token = await openapiService.getTokenInfo(symbol);
-    if (!token) {
-      throw new Error(`Invaild token name - ${symbol}`);
-    }
-    await this.getNetwork();
-    const script = await getScripts('ft', 'transferTokensV3');
-
-    const txID = await userWalletService.sendTransaction(
-      script
-        .replaceAll('<Token>', token.contractName)
-        .replaceAll('<TokenBalancePath>', token.path.balance)
-        .replaceAll('<TokenReceiverPath>', token.path.receiver)
-        .replaceAll('<TokenStoragePath>', token.path.vault)
-        .replaceAll('<TokenAddress>', token.address),
-      [fcl.arg(amount, t.UFix64), fcl.arg(address, t.Address)]
-    );
-
-    mixpanelTrack.track('ft_transfer', {
-      from_address: (await this.getCurrentAddress()) || '',
-      to_address: address,
-      amount: parseFloat(amount),
-      ft_identifier: token.contractName,
-      type: 'flow',
-    });
-
-    return txID;
-  };
-
-  // TODO: Replace with generic token
-  transferInboxTokens = async (
+  transferCadenceTokens = async (
     symbol: string,
     address: string,
     amount: string
@@ -3212,7 +3219,6 @@ export class WalletController extends BaseController {
         console.log('No active tab found');
         return;
       }
-      console.log('tabs', tabs);
       if (tabs[0].id) {
         chrome.tabs.sendMessage(tabs[0].id, {
           type: 'FCW:NETWORK',
