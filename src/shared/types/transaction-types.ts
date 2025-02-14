@@ -57,34 +57,3 @@ export type TransactionState = {
   // The transaction if of the transaction
   txId?: string;
 };
-
-// Type for the mapping
-export type DecimalMapping = {
-  [K in TransactionStateString]: number;
-};
-
-export const DecimalMappingValues: DecimalMapping = {
-  // To Evm
-  FTFromEvmToEvm: 16,
-  FTFromCadenceToEvm: 8,
-  FTFromChildToEvm: 8,
-  FlowFromEvmToEvm: 16,
-  FlowFromCadenceToEvm: 8,
-  FlowFromChildToEvm: 8,
-
-  // To Cadence
-  FTFromEvmToCadence: 18,
-  FTFromCadenceToCadence: 8,
-  FTFromChildToCadence: 8,
-  FlowFromEvmToCadence: 8,
-  FlowFromCadenceToCadence: 8,
-  FlowFromChildToCadence: 8,
-
-  // To Child unused for now
-  FTFromEvmToChild: 18,
-  FTFromCadenceToChild: 18,
-  FTFromChildToChild: 18,
-  FlowFromEvmToChild: 18,
-  FlowFromCadenceToChild: 18,
-  FlowFromChildToChild: 18,
-} as const;
