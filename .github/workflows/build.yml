@@ -76,6 +76,8 @@ jobs:
           TEST_SEED_PHRASE_SENDER="${{ secrets.TEST_SEED_PHRASE_SENDER }}"
           TEST_SENDER_ADDR="${{ secrets.TEST_SENDER_ADDR }}"
           TEST_RECEIVER_ADDR="${{ secrets.TEST_RECEIVER_ADDR }}"
+          TEST_RECEIVER_EVM_ADDR="${{ secrets.TEST_RECEIVER_EVM_ADDR }}"
+          TEST_RECEIVER_METAMASK_EVM_ADDR="${{ secrets.TEST_RECEIVER_METAMASK_EVM_ADDR }}"
           EOF
 
       - name: Run tests
@@ -138,6 +140,7 @@ jobs:
           TEST_RECEIVER_ADDR="${{ secrets.TEST_RECEIVER_ADDR }}"
           TEST_SENDER_EVM_ADDR="${{ secrets.TEST_SENDER_EVM_ADDR }}"
           TEST_RECEIVER_EVM_ADDR="${{ secrets.TEST_RECEIVER_EVM_ADDR }}"
+          TEST_RECEIVER_METAMASK_EVM_ADDR="${{ secrets.TEST_RECEIVER_METAMASK_EVM_ADDR }}"
           EOF
       - name: Install pnpm
         uses: pnpm/action-setup@v4
