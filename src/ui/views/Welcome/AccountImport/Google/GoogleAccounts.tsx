@@ -45,8 +45,7 @@ const GoogleAccounts = ({ handleSwitchTab, accounts, setUsername }) => {
         <Typography variant="h4">
           {chrome.i18n.getMessage('We__ve__found') + ' '}
           <Box display="inline" color="primary.main">
-            {accounts.length}
-            {chrome.i18n.getMessage('matching__accounts')}
+            {accounts.length} {chrome.i18n.getMessage('matching__accounts')}
           </Box>
         </Typography>
         <Typography variant="body1" color="text.secondary">
