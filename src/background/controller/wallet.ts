@@ -1792,31 +1792,25 @@ export class WalletController extends BaseController {
 
     // Returns the transaction ID
     const transferTokensOnEvm = async () => {
-      // the amount is always stored as a string in the transaction state
-      const amountStr: string = transactionState.amount;
-      // TODO: check if the amount is a valid number
-      // Create an integer string based on the required token decimals
-      const amountBN = new BN(amountStr.replace('.', ''));
-
-      const decimalsCount = amountStr.split('.')[1]?.length || 0;
-      const decimalDifference = transactionState.selectedToken.decimals - decimalsCount;
-      if (decimalDifference < 0) {
-        throw new Error('Too many decimal places have been provided');
-      }
-      const scaleFactor = new BN(10).pow(decimalDifference);
-      const integerAmount = amountBN.multipliedBy(scaleFactor);
-      const integerAmountStr = integerAmount.integerValue(BN.ROUND_DOWN).toFixed();
-
       let address, gas, value, data;
 
       if (transactionState.selectedToken.symbol.toLowerCase() === 'flow') {
         address = transactionState.toAddress;
         gas = '1';
-        // const amountBN = new BN(transactionState.amount).multipliedBy(new BN(10).pow(18));
         // the amount is always stored as a string in the transaction state
-        value = integerAmount.toString(16);
+        const integerAmountStr = convertToIntegerAmount(
+          transactionState.amount,
+          // Flow needs 18 digits always for EVM
+          18
+        );
+        value = new BN(integerAmountStr).toString(16);
         data = '0x';
       } else {
+        const integerAmountStr = convertToIntegerAmount(
+          transactionState.amount,
+          transactionState.selectedToken.decimals
+        );
+
         // Get the current network
         const network = await this.getNetwork();
         // Get the Web3 provider

@@ -21,7 +21,6 @@ const DEFAULT_CONTACT: Contact = {
 
 export function useContactHook() {
   const usewallet = useWallet();
-  const contactStore = useContactStore();
   const {
     mainAddress,
     evmAddress,
@@ -181,11 +180,11 @@ export function useContactHook() {
   const useContact = useCallback(
     (address: string): Contact | null => {
       return (
-        recentContacts.find((c) => c.address === address) ||
         accountList.find((c) => c.address === address) ||
         evmAccounts.find((c) => c.address === address) ||
         childAccounts.find((c) => c.address === address) ||
         filteredContacts.find((c) => c.address === address) ||
+        recentContacts.find((c) => c.address === address) ||
         null
       );
     },

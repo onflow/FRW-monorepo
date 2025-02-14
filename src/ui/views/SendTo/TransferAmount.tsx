@@ -123,7 +123,7 @@ const TransferAmount = ({
 
   const renderValue = useCallback(
     (option) => {
-      const selectCoin = coins.find((coin) => coin.unit === option);
+      const selectCoin = coins.find((coin) => coin.unit.toLowerCase() === option.toLowerCase());
       if (selectCoin) {
         return <img src={selectCoin.icon} style={{ height: '24px', width: '24px' }} />;
       }

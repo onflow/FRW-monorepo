@@ -452,9 +452,9 @@ export const waitForTransaction = async ({
   const progressBar = page.getByRole('progressbar');
   await expect(progressBar).toBeVisible();
   // Get the pending item with the cadence txId that was put in the url and status is pending
-  const pendingItem = page
-    .getByTestId(new RegExp(`^.*${txId}.*${ingoreFlowCharge ? '(?<!FlowToken)' : ''}$`))
-    .filter({ hasText: 'Pending' });
+
+  const activityItemRegexp = new RegExp(`^.*${txId}.*${ingoreFlowCharge ? '(?<!FlowToken)' : ''}$`);
+  const pendingItem = page.getByTestId(activityItemRegexp).filter({ hasText: 'Pending' });
 
   await expect(pendingItem).toBeVisible({
     timeout: 60_000,
@@ -462,17 +462,17 @@ export const waitForTransaction = async ({
   await expect(progressBar).not.toBeVisible({ timeout: 60_000 });
 
   // Get the executed item with the cadence txId that was put in the url and status is success
-  const executedItem = page
-    .getByTestId(new RegExp(`^.*${txId}.*${ingoreFlowCharge ? '(?<!FlowToken)' : ''}$`))
-    .filter({ hasText: successtext });
+  const executedItem = page.getByTestId(activityItemRegexp).filter({ hasText: successtext });
 
   await expect(executedItem).toBeVisible({
     timeout: 60_000,
   });
 
-  // if (amount) {
-  //   await expect(executedItem).toContainText(amount);
-  // }
+  if (amount) {
+    await expect(
+      page.getByTestId(activityItemRegexp).getByTestId(`token-value-${amount}`)
+    ).toBeVisible();
+  }
 };
 
 export const expect = test.expect;
