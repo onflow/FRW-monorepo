@@ -105,8 +105,20 @@ export const convertToIntegerAmount = (amount: string, decimals: number): string
   return `${integerPart}${paddedDecimal}`.replace(/^0+/, '') || '0';
 };
 
-export const numberWithCommas = (x: number | string): string => {
-  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+export const numberWithCommas = (x: string) => {
+  // Split string into integer and decimal parts (if any)
+  const parts = x.split('.');
+  const integerPart = parts[0];
+
+  // Only add commas if the integer part is between 4 and 6 digits
+  if (integerPart.length >= 4 && integerPart.length <= 6) {
+    // Add commas every 3 digits from the right
+    const withCommas = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    // Reconstruct number with decimal part if it exists
+    return parts.length > 1 ? `${withCommas}.${parts[1]}` : withCommas;
+  }
+
+  return x;
 };
 
 export const getDecimalBalance = (value: string, decimals: number): string => {

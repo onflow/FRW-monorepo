@@ -230,7 +230,7 @@ export const transactionReducer = (
         remainingBalance = balance.minus(amountBN);
         // Calculate fiat amount
         const calculatedFiatAmount = amountBN.times(price);
-        amountInFiat = calculatedFiatAmount.toFixed(3, BN.ROUND_DOWN);
+        amountInFiat = calculatedFiatAmount.toFixed(8, BN.ROUND_DOWN);
       } else {
         console.error('Not specified if entering in coin or fiat');
         return state;

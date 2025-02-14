@@ -160,6 +160,8 @@ const TransferConfirmation = ({
     };
   }, [getPending, startCount, transactionDoneHandler]);
 
+  console.log('transactionState', transactionState);
+
   return (
     <>
       <Drawer
@@ -337,7 +339,7 @@ const TransferConfirmation = ({
 
           <Button
             onClick={transferTokens}
-            disabled={sending || occupied}
+            disabled={false}
             variant="contained"
             color="success"
             size="large"

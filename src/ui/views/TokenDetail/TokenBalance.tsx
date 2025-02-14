@@ -30,7 +30,7 @@ export const TokenBalance: React.FC<TokenBalanceProps> = ({
     return (
       <span className={className} data-testid={`token-balance-${value}`}>
         {prefix}
-        <span>{numberWithCommas(decimalBalance)}</span>
+        <span>{numberWithCommas(value)}</span>
         {postFix && <span style={{ marginLeft: '0.25rem' }}>{postFix}</span>}
       </span>
     );
