@@ -24,7 +24,6 @@ import {
   type LoggedInAccount,
   type FlowAddress,
   type ActiveChildType,
-  type PublicKeyTuple,
 } from '@/shared/types/wallet-types';
 import { isValidFlowAddress, isValidEthereumAddress } from '@/shared/utils/address';
 import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
@@ -2350,7 +2349,7 @@ class OpenApiService {
   freshUserInfo = async (
     currentWallet: BlockchainResponse,
     keys: FclAccount,
-    pubKTuple: PublicKeyTuple,
+    pubKTuple,
     wallet,
     isChild: ActiveChildType
   ) => {

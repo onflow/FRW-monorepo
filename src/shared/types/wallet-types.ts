@@ -52,12 +52,3 @@ export type LoggedInAccount = {
 export type LoggedInAccountWithIndex = LoggedInAccount & {
   indexInLoggedInAccounts: number;
 };
-
-export type PublicKeyTuple = {
-  P256: {
-    pubK: string;
-  };
-  SECP256K1: {
-    pubK: string;
-  };
-};
