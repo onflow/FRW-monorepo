@@ -1,23 +1,11 @@
 import { isEmpty } from 'lodash';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 import { type Contact } from '@/shared/types/network-types';
-import { type WalletAddress } from '@/shared/types/wallet-types';
 import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useContactStore } from '@/ui/stores/contactStore';
 import { useWallet } from '@/ui/utils';
-
-const DEFAULT_CONTACT: Contact = {
-  address: '',
-  id: 0,
-  contact_name: '',
-  avatar: '',
-  domain: {
-    domain_type: 999,
-    value: '',
-  },
-};
 
 export function useContacts() {
   const usewallet = useWallet();
@@ -32,22 +20,23 @@ export function useContacts() {
   // Individual selectors for actions
   const setRecentContacts = useContactStore((state) => state.setRecentContacts);
   const setSortedContacts = useContactStore((state) => state.setSortedContacts);
-  const setFilteredContacts = useContactStore((state) => state.setFilteredContacts);
   const setChildAccounts = useContactStore((state) => state.setChildAccounts);
   const setAccountList = useContactStore((state) => state.setAccountList);
   const setEvmAccounts = useContactStore((state) => state.setEvmAccounts);
-  const setHasNoFilteredContacts = useContactStore((state) => state.setHasNoFilteredContacts);
   const setSearchContacts = useContactStore((state) => state.setSearchContacts);
+  const setContactTabValue = useContactStore((state) => state.setContactTabValue);
 
   // Individual selectors for state values
   const sortedContacts = useContactStore((state) => state.sortedContacts);
   const recentContacts = useContactStore((state) => state.recentContacts);
-  const filteredContacts = useContactStore((state) => state.filteredContacts);
   const searchContacts = useContactStore((state) => state.searchContacts);
-  const hasNoFilteredContacts = useContactStore((state) => state.hasNoFilteredContacts);
   const accountList = useContactStore((state) => state.accountList);
   const evmAccounts = useContactStore((state) => state.evmAccounts);
   const childAccounts = useContactStore((state) => state.childAccounts);
+  const contactTabValue = useContactStore((state) => state.contactTabValue);
+
+  const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
+  const [hasNoFilteredContacts, setHasNoFilteredContacts] = useState(false);
 
   const fetchAddressBook = useCallback(async () => {
     await usewallet.setDashIndex(0);
@@ -188,7 +177,7 @@ export function useContacts() {
 
       return filtered;
     },
-    [sortedContacts, setFilteredContacts, setHasNoFilteredContacts]
+    [sortedContacts]
   );
 
   const searchUser = useCallback(
@@ -228,6 +217,13 @@ export function useContacts() {
     [usewallet, searchContacts, setSearchContacts, sortedContacts]
   );
 
+  const setContactTab = useCallback(
+    (value: number) => {
+      setContactTabValue(value);
+    },
+    [setContactTabValue]
+  );
+
   return {
     fetchAddressBook,
     setupAccounts,
@@ -242,5 +238,7 @@ export function useContacts() {
     accountList,
     evmAccounts,
     childAccounts,
+    contactTabValue,
+    setContactTab,
   };
 }

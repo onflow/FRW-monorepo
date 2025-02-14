@@ -116,9 +116,10 @@ const SendAddress = () => {
     searchUser,
     fetchAddressBook,
     filterContacts,
+    contactTabValue,
+    setContactTab,
   } = useContacts();
 
-  const [tabValue, setTabValue] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   const [searchKey, setSearchKey] = useState<string>('');
@@ -240,9 +241,9 @@ const SendAddress = () => {
         {!searching ? (
           <div className={classes.listWrapper}>
             <Tabs
-              value={tabValue}
+              value={contactTabValue}
               sx={{ width: '100%' }}
-              onChange={(_, newValue: number) => setTabValue(newValue)}
+              onChange={(_, newValue: number) => setContactTab(newValue)}
               TabIndicatorProps={{
                 style: {
                   backgroundColor: '#5a5a5a',
@@ -287,25 +288,25 @@ const SendAddress = () => {
             >
               <SwipeableViews
                 axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
-                index={tabValue}
-                onChangeIndex={(index: number) => setTabValue(index)}
+                index={contactTabValue}
+                onChangeIndex={(index: number) => setContactTab(index)}
                 style={{ height: '100%', width: '100%' }}
               >
-                <TabPanel value={tabValue} index={0} dir={theme.direction}>
+                <TabPanel value={contactTabValue} index={0} dir={theme.direction}>
                   <RecentList
                     filteredContacts={recentContacts}
                     isLoading={isLoading}
                     handleClick={handleContactClick}
                   />
                 </TabPanel>
-                <TabPanel value={tabValue} index={1} dir={theme.direction}>
+                <TabPanel value={contactTabValue} index={1} dir={theme.direction}>
                   <AddressBookList
                     filteredContacts={filteredContacts}
                     isLoading={isLoading}
                     handleClick={handleContactClick}
                   />
                 </TabPanel>
-                <TabPanel value={tabValue} index={2} dir={theme.direction}>
+                <TabPanel value={contactTabValue} index={2} dir={theme.direction}>
                   <AccountsList
                     filteredContacts={filteredContacts}
                     isLoading={isLoading}

@@ -5,6 +5,7 @@ import { useHistory } from 'react-router-dom';
 
 import { type ActiveChildType } from '@/shared/types/wallet-types';
 import LLComingSoon from '@/ui/FRWComponent/LLComingSoonWarning';
+import { useContacts } from '@/ui/hooks/useContactHook';
 import moveft from 'ui/FRWAssets/image/moveft.png';
 import movenft from 'ui/FRWAssets/image/movenft.png';
 import moveftbg from 'ui/FRWAssets/svg/moveftbg.svg';
@@ -25,6 +26,7 @@ interface MoveBoardProps {
 const MoveBoard = (props: MoveBoardProps) => {
   const usewallet = useWallet();
   const history = useHistory();
+  const { setContactTab } = useContacts();
   const [showSelectNft, setSelectBoard] = useState<boolean>(false);
   const [childType, setChildType] = useState<ActiveChildType>(null);
   const [network, setNetwork] = useState<string>('');
@@ -215,6 +217,7 @@ const MoveBoard = (props: MoveBoardProps) => {
             },
           }}
           onClick={() => {
+            setContactTab(2);
             history.push('/dashboard/token/flow/send');
           }}
         >
