@@ -36,7 +36,7 @@ export const TokenValue: React.FC<TokenPriceProps> = ({
   const { leadingPart, zeroPart, endingPart } = formattedPrice;
 
   return (
-    <span className={className}>
+    <span className={className} data-testid={`token-value-${value}`}>
       {prefix}
       <span style={leadingPart === '' ? { padding: '0 0.25rem' } : undefined}>
         {numberWithCommas(leadingPart)}

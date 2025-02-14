@@ -1792,19 +1792,25 @@ export class WalletController extends BaseController {
 
     // Returns the transaction ID
     const transferTokensOnEvm = async () => {
-      const integerAmountStr = convertToIntegerAmount(
-        transactionState.amount,
-        transactionState.selectedToken.decimals
-      );
-
       let address, gas, value, data;
 
       if (transactionState.selectedToken.symbol.toLowerCase() === 'flow') {
         address = transactionState.toAddress;
         gas = '1';
+        // the amount is always stored as a string in the transaction state
+        const integerAmountStr = convertToIntegerAmount(
+          transactionState.amount,
+          // Flow needs 18 digits always for EVM
+          18
+        );
         value = new BN(integerAmountStr).toString(16);
         data = '0x';
       } else {
+        const integerAmountStr = convertToIntegerAmount(
+          transactionState.amount,
+          transactionState.selectedToken.decimals
+        );
+
         // Get the current network
         const network = await this.getNetwork();
         // Get the Web3 provider

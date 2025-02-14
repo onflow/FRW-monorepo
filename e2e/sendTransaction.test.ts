@@ -73,6 +73,7 @@ test('send Flow COA to COA', async ({ page }) => {
     tokenname: /^FLOW \$/i,
     receiver: process.env.TEST_RECEIVER_EVM_ADDR!,
     successtext: 'success',
+    amount: '0.12345678', // 8 decimal places
   });
 });
 
@@ -95,6 +96,7 @@ test('send Flow COA to FLOW', async ({ page }) => {
     tokenname: /^FLOW \$/i,
     receiver: process.env.TEST_RECEIVER_ADDR!,
     successtext: 'success',
+    amount: '0.00123456', // 8 decimal places
   });
 });
 
@@ -105,6 +107,7 @@ test('send USDC token COA to FLOW', async ({ page }) => {
     tokenname: 'Bridged USDC (Celer) $',
     receiver: process.env.TEST_RECEIVER_ADDR!,
     successtext: 'success',
+    amount: '0.002468', // 6 decimal places
   });
 });
 
@@ -117,6 +120,7 @@ test('send Flow COA to EOA', async ({ page }) => {
     tokenname: /^FLOW \$/i,
     receiver: process.env.TEST_RECEIVER_METAMASK_EVM_ADDR!,
     successtext: 'success',
+    amount: '0.00123456', // 8 decimal places
   });
 });
 
@@ -127,6 +131,7 @@ test('send BETA token COA to EOA', async ({ page }) => {
     tokenname: 'BETA $',
     receiver: process.env.TEST_RECEIVER_METAMASK_EVM_ADDR!,
     successtext: 'success',
+    amount: '0.001234567890123456', // 8 decimal places
   });
 });
 /* //Move FTs from COA to FLOW

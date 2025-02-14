@@ -74,6 +74,7 @@ test('send FLOW flow to flow', async ({ page }) => {
     page,
     tokenname: /^FLOW \$/i,
     receiver: process.env.TEST_RECEIVER_ADDR!,
+    amount: '0.00123456',
   });
 });
 
@@ -83,6 +84,7 @@ test('send stFlow flow to flow', async ({ page }) => {
     page,
     tokenname: 'Liquid Staked Flow $',
     receiver: process.env.TEST_RECEIVER_ADDR!,
+    amount: '0.00123456',
   });
 });
 
@@ -93,6 +95,7 @@ test('send FLOW flow to COA', async ({ page }) => {
     page,
     tokenname: /^FLOW \$/i,
     receiver: process.env.TEST_RECEIVER_EVM_ADDR!,
+    amount: '0.00123456',
   });
 });
 //Send USDC from Flow to Flow
@@ -102,6 +105,7 @@ test('send USDC flow to COA', async ({ page }) => {
     tokenname: 'USDC.e (Flow) $',
     receiver: process.env.TEST_RECEIVER_EVM_ADDR!,
     ingoreFlowCharge: true,
+    amount: '0.00123456',
   });
 });
 
@@ -112,6 +116,7 @@ test('send FLOW flow to EOA', async ({ page }) => {
     page,
     tokenname: /^FLOW \$/i,
     receiver: process.env.TEST_RECEIVER_METAMASK_EVM_ADDR!,
+    amount: '0.00123456',
   });
 });
 
@@ -122,6 +127,7 @@ test('send BETA flow to EOA', async ({ page }) => {
     tokenname: 'BETA $',
     receiver: process.env.TEST_RECEIVER_METAMASK_EVM_ADDR!,
     ingoreFlowCharge: true,
+    amount: '0.00123456',
   });
 });
 /* //Move FTs from  Flow to COA
