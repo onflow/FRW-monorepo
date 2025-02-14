@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import closex from 'ui/assets/closex.svg';
-import { useWallet, formatAddress } from 'ui/utils';
+import { useWallet, formatAddress, isEmoji } from 'ui/utils';
 
 const useStyles = makeStyles(() => ({
   ContactCardAvatar: {
@@ -23,54 +23,18 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export const LLContactEth = ({ contact, hideCloseButton, isSend = false, isLoading = false }) => {
-  const classes = useStyles();
-  const wallet = useWallet();
-
+export const ContactCard = ({ contact, coinInfo, isLoading = false }) => {
   const history = useHistory();
-  const [contactAdd, setContactAdd] = useState(false);
-
-  const DomainLogo = () => {
-    if (contact.domain?.value === '') {
-      return undefined;
-    }
-  };
 
   const getName = (name: string) => {
     if (name.startsWith('0')) {
       return '0x';
-    } else {
+    } else if (name.length > 0) {
       return name[0].toUpperCase();
-    }
-  };
-
-  const addAddressBook = async (contact) => {
-    if (!contact.domain.value) {
-      wallet.openapi
-        .addAddressBook(contact.contact_name, contact.address, contact.contact_name)
-        .then((response) => {
-          if (response.status === 200) {
-            setContactAdd(true);
-            wallet.refreshAddressBook();
-          }
-        });
     } else {
-      wallet.openapi
-        .addExternalAddressBook(
-          contact.domain.value,
-          contact.address,
-          contact.domain.value,
-          contact.domain.domain_type
-        )
-        .then((response) => {
-          if (response.status === 200) {
-            setContactAdd(true);
-            wallet.refreshAddressBook();
-          }
-        });
+      return '0x';
     }
   };
-
   return (
     <>
       <Box
@@ -88,20 +52,38 @@ export const LLContactEth = ({ contact, hideCloseButton, isSend = false, isLoadi
         }}
       >
         {!isLoading ? (
-          <Box
-            sx={{
-              display: 'flex',
-              mr: '13px',
-              height: '40px',
-              width: '40px',
-              borderRadius: '32px',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: contact['bgcolor'],
-            }}
-          >
-            <Typography sx={{ fontSize: '28px', fontWeight: '600' }}>{contact.avatar}</Typography>
-          </Box>
+          isEmoji(contact.avatar) ? (
+            <Typography
+              sx={{
+                mr: '13px',
+                color: 'primary.main',
+                backgroundColor: '#484848',
+                width: '40px',
+                height: '40px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '50%',
+                fontSize: '24px', // Adjust font size to fit within the box
+              }}
+            >
+              {contact.avatar}
+            </Typography>
+          ) : (
+            <Avatar
+              alt={contact.contact_name}
+              src={contact.avatar}
+              sx={{
+                mr: '13px',
+                color: 'primary.main',
+                backgroundColor: '#484848',
+                width: '40px',
+                height: '40px',
+              }}
+            >
+              {getName(contact.contact_name)}
+            </Avatar>
+          )
         ) : (
           <Skeleton variant="circular" width={40} height={40} />
         )}
@@ -131,27 +113,14 @@ export const LLContactEth = ({ contact, hideCloseButton, isSend = false, isLoadi
           )}
         </Box>
         <Box sx={{ flexGrow: 1 }} />
-        {isSend ? (
-          <IconButton
-            onClick={(e) => {
-              e.stopPropagation();
-              history.push(`/dashboard/token/flow/send/${contact.address}`);
-            }}
-          >
-            <CardMedia sx={{ width: '11px', height: '11px' }} image={closex} />
-          </IconButton>
-        ) : contact.type === 4 && !contactAdd ? (
-          <IconButton
-            onClick={(e) => {
-              e.stopPropagation();
-              addAddressBook(contact);
-            }}
-          >
-            <PersonAddAltIcon color="info" />
-          </IconButton>
-        ) : (
-          <div />
-        )}
+        <IconButton
+          onClick={(e) => {
+            e.stopPropagation();
+            history.push(`/dashboard/token/${coinInfo.unit}/send`);
+          }}
+        >
+          <CardMedia sx={{ width: '11px', height: '11px' }} image={closex} />
+        </IconButton>
       </Box>
     </>
   );

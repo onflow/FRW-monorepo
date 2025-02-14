@@ -30,7 +30,7 @@ export type TrackingEvents = {
   delegation_created: {
     address: string; // Address of the account that delegated
     node_id: string; // ID of the node that was delegated to
-    amount: number; // Amount of FLOW. e.g. 200.12
+    amount: string; // Amount as a string
   };
   on_ramp_clicked: {
     source: OnRampSourceType; // The on ramp platform the user choose e.g. moonpay or coinbase
@@ -74,7 +74,7 @@ export type TrackingEvents = {
     from_address: string; // Address of the account that transferred the FT
     to_address: string; // Address of the account that received the FT
     type: string; // Type of FT sent (e.g., "FLOW", "USDf")
-    amount: number; // The amount of FT
+    amount: string; // The amount of FT as a fixed string
     ft_identifier: string; // The identifier of fungible token
   };
   nft_transfer: {

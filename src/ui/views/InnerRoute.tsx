@@ -8,7 +8,6 @@ import { useWallet } from 'ui/utils';
 
 import Deposit from '../views/Deposit';
 import Enable from '../views/Enable';
-import Send from '../views/Send';
 
 import Dashboard from './Dashboard';
 import Header from './Dashboard/Header';
@@ -20,8 +19,8 @@ import SendToAddress from './NFT/SendNFT/SendToAddress';
 import EvmCollectionDetail from './NftEvm/CollectionDetail';
 import NftEvmDetail from './NftEvm/Detail';
 import SendNftEvm from './NftEvm/SendNFT/SendToAddress';
-import SendAmount from './Send/SendAmount';
-import SendEth from './Send/SendEth';
+import SendAddress from './Send';
+import SendTo from './SendTo';
 import SettingTab from './Setting';
 import About from './Setting/About/About';
 import Account from './Setting/Account';
@@ -160,21 +159,20 @@ const InnerRoute = (props: RouteComponentProps) => {
             <PrivateRoute path={`${props.match.url}/nftevm/send`}>
               <SendNftEvm />
             </PrivateRoute>
-            <PrivateRoute path={`${props.match.url}/wallet/send`}>
-              <Send />
-            </PrivateRoute>
             <PrivateRoute path={`${props.match.url}/wallet/deposit`}>
               <Deposit />
             </PrivateRoute>
-            <PrivateRoute path={`${props.match.url}/wallet/sendAmount`}>
-              <SendAmount />
-            </PrivateRoute>
-            <PrivateRoute path={`${props.match.url}/wallet/sendeth`}>
-              <SendEth />
-            </PrivateRoute>
-            <PrivateRoute path={`${props.match.url}/token/:id`}>
+
+            <PrivateRoute path={`${props.match.url}/token/:id`} exact>
               <TokenDetail />
             </PrivateRoute>
+            <PrivateRoute path={`${props.match.url}/token/:id/send`} exact>
+              <SendAddress />
+            </PrivateRoute>
+            <PrivateRoute path={`${props.match.url}/token/:id/send/:toAddress`} exact>
+              <SendTo />
+            </PrivateRoute>
+
             <PrivateRoute path={`${props.match.url}/tokenlist`}>
               <TokenList />
             </PrivateRoute>

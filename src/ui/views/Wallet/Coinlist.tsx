@@ -13,7 +13,7 @@ import { Box } from '@mui/system';
 import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import { formatLargeNumber } from 'ui/utils/number';
+import { formatLargeNumber } from '@/shared/utils/number';
 
 import IconCreate from '../../../components/iconfont/IconCreate';
 import { TokenValue } from '../TokenDetail/TokenValue';

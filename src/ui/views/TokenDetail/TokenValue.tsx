@@ -16,7 +16,7 @@ export const TokenValue: React.FC<TokenPriceProps> = ({
   prefix = '',
   postFix = '',
 }) => {
-  if (value === 0 || value === null || value === undefined) {
+  if (value === 0 || value === null || value === undefined || value === '') {
     return <span className={className}>{''}</span>;
   }
 
@@ -36,7 +36,7 @@ export const TokenValue: React.FC<TokenPriceProps> = ({
   const { leadingPart, zeroPart, endingPart } = formattedPrice;
 
   return (
-    <span className={className}>
+    <span className={className} data-testid={`token-value-${value}`}>
       {prefix}
       <span style={leadingPart === '' ? { padding: '0 0.25rem' } : undefined}>
         {numberWithCommas(leadingPart)}

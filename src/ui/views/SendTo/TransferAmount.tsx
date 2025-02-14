@@ -14,15 +14,14 @@ import {
 } from '@mui/material';
 import { StyledEngineProvider } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
-import BN from 'bignumber.js';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback } from 'react';
 
+import { type TransactionState } from '@/shared/types/transaction-types';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import { useCoinStore } from '@/ui/stores/coinStore';
 import { TokenValue } from '@/ui/views/TokenDetail/TokenValue';
 
 import CancelIcon from '../../../components/iconfont/IconClose';
-import IconFlow from '../../../components/iconfont/IconFlow';
 import IconSwitch from '../../../components/iconfont/IconSwitch';
 
 const useStyles = makeStyles(() => ({
@@ -105,88 +104,35 @@ const useStyles = makeStyles(() => ({
     height: '25px',
   },
 }));
-
 const TransferAmount = ({
-  amount,
-  setAmount,
-  secondAmount,
-  setSecondAmount,
-  exceed,
-  setExceed,
-  coinInfo,
-  setCurrentCoin,
-  coinList,
+  transactionState,
+  handleAmountChange,
+  handleTokenChange,
+  handleSwitchFiatOrCoin,
+  handleMaxClick,
+}: {
+  transactionState: TransactionState;
+  handleAmountChange: (amount: string) => void;
+  handleTokenChange: (tokenAddress: string) => void;
+  handleSwitchFiatOrCoin: () => void;
+  handleMaxClick: () => void;
 }) => {
   const classes = useStyles();
-  const { availableFlow } = useCoinStore();
-  const [coin, setCoin] = useState<string>('flow');
-  const [coinType, setCoinType] = useState<any>(0);
-  const handleMaxClick = () => {
-    if (coinInfo) {
-      if (coinInfo.unit.toLowerCase() === 'flow') {
-        setAmount(availableFlow);
-      } else {
-        // Retain this as a string to avoid floating point precision issues
-        const newAmount = coinInfo.balance;
-        setAmount(newAmount);
+  const { amount, fiatAmount } = transactionState;
+  const coinStore = useCoinStore();
+
+  const renderValue = useCallback(
+    (option) => {
+      const selectCoin = coinStore.coins.find(
+        (coin) => coin.unit.toLowerCase() === option.toLowerCase()
+      );
+      if (selectCoin) {
+        return <img src={selectCoin.icon} style={{ height: '24px', width: '24px' }} />;
       }
-    }
-  };
-
-  const renderValue = (option) => {
-    setCurrentCoin(option);
-    setCoin(option);
-    const selectCoin = coinList.find((coin) => coin.unit === option);
-    return selectCoin && <img src={selectCoin.icon} style={{ height: '24px', width: '24px' }} />;
-  };
-
-  const swap = () => {
-    setCoinType(!coinType);
-  };
-
-  const currentCoinType = useCallback(() => {
-    setCoin(coinInfo.unit);
-  }, [coinInfo.unit]);
-
-  useEffect(() => {
-    currentCoinType();
-  }, [currentCoinType]);
-
-  useEffect(() => {
-    if (coinType) {
-      const secondInt = parseInt(secondAmount);
-      const value = new BN(secondInt).dividedBy(new BN(coinInfo.price)).toNumber();
-      if (coinInfo.balance - value < 0) {
-        setExceed(true);
-      } else {
-        setExceed(false);
-      }
-      if (isNaN(value)) {
-        setAmount(0);
-      } else {
-        setAmount(parseFloat(value.toFixed(3)));
-      }
-    }
-  }, [coinInfo.balance, coinInfo.price, coinType, secondAmount, setAmount, setExceed]);
-
-  useEffect(() => {
-    if (!coinType) {
-      if (coinInfo && amount) {
-        const result = parseFloat((coinInfo.amountbalance - amount).toPrecision());
-        if (coinInfo.balance - amount < 0) {
-          setExceed(true);
-        } else {
-          if (coin === 'flow' && result < 0.001) {
-            setExceed(true);
-          } else {
-            setExceed(false);
-          }
-        }
-        const value = new BN(amount).times(new BN(coinInfo.price)).toFixed(18);
-        setSecondAmount(value);
-      }
-    }
-  }, [amount, coin, coinInfo, coinType, setExceed, setSecondAmount]);
+      return null;
+    },
+    [coinStore]
+  );
 
   return (
     <StyledEngineProvider injectFirst>
@@ -207,7 +153,7 @@ const TransferAmount = ({
             zIndex: 1000,
           }}
         >
-          {coinType ? (
+          {transactionState.fiatOrCoin === 'fiat' ? (
             <Box sx={{ width: '100%', display: 'flex' }}>
               <Box
                 sx={{
@@ -228,19 +174,14 @@ const TransferAmount = ({
                   fullWidth
                   disableUnderline
                   autoComplete="off"
-                  value={secondAmount}
+                  value={fiatAmount}
                   type="number"
-                  onChange={(event) => {
-                    // let value = event.target.value;
-                    // value = (Math.round(value * 100) / 100).toFixed(2)
-                    setExceed(false);
-                    setSecondAmount(event.target.value);
-                  }}
+                  onChange={(event) => handleAmountChange(event.target.value)}
                   inputProps={{ sx: { fontSize: '24px' } }}
                   endAdornment={
                     <Tooltip
                       title={
-                        coin === 'flow'
+                        transactionState.coinInfo.unit === 'flow'
                           ? chrome.i18n.getMessage('on_Flow_the_balance_cant_less_than_0001_FLOW')
                           : ''
                       }
@@ -263,8 +204,10 @@ const TransferAmount = ({
             <Box sx={{ width: '100%', display: 'flex' }}>
               <Select
                 renderValue={renderValue}
+                onChange={(e) => handleTokenChange(e.target.value)}
                 className={classes.selectRoot}
-                defaultValue={coinInfo.unit}
+                value={transactionState.selectedToken.symbol}
+                defaultValue={transactionState.selectedToken.symbol}
                 MenuProps={{
                   MenuListProps: { disablePadding: true },
                   PaperProps: {
@@ -275,7 +218,7 @@ const TransferAmount = ({
                 }}
                 sx={{ zIndex: 2000 }}
               >
-                {coinList.map((coin) => (
+                {coinStore.coins.map((coin) => (
                   <MenuItem value={coin.unit} key={coin.unit} sx={{ zIndex: 2000 }}>
                     <ListItemIcon>
                       <img src={coin.icon} style={{ height: '24px', width: '24px' }} />
@@ -294,13 +237,7 @@ const TransferAmount = ({
                   disableUnderline
                   autoComplete="off"
                   value={amount}
-                  type="number"
-                  onChange={(event) => {
-                    // let value = event.target.value;
-                    // value = (Math.round(value * 100) / 100).toFixed(2)
-                    setExceed(false);
-                    setAmount(event.target.value);
-                  }}
+                  onChange={(event) => handleAmountChange(event.target.value)}
                   inputProps={{ sx: { fontSize: '24px' } }}
                   endAdornment={
                     <InputAdornment position="end">
@@ -327,19 +264,23 @@ const TransferAmount = ({
             }}
           >
             <Typography>≈</Typography>
-            {coinType ? (
+            {transactionState.fiatOrCoin === 'fiat' ? (
               <>
-                <IconFlow size={16} /> <TokenValue value={amount} />
+                <img
+                  src={transactionState.coinInfo.icon}
+                  style={{ height: '18px', width: '18px' }}
+                />{' '}
+                <TokenValue value={amount} />
               </>
             ) : (
-              <TokenValue value={secondAmount} prefix={'$'} />
+              <TokenValue value={fiatAmount} prefix={'$'} />
             )}
-            <IconButton onClick={swap}>
+            <IconButton onClick={handleSwitchFiatOrCoin}>
               <IconSwitch size={14} />
             </IconButton>
           </Box>
         </Box>
-        <SlideRelative direction="down" show={exceed}>
+        <SlideRelative direction="down" show={transactionState.balanceExceeded}>
           <Box
             sx={{
               display: 'flex',
@@ -355,10 +296,10 @@ const TransferAmount = ({
             <Typography
               variant="body1"
               color="text.secondary"
-              sx={{ fontSize: coin === 'flow' ? '0.7rem' : '1rem' }}
+              sx={{ fontSize: transactionState.coinInfo.unit === 'flow' ? '0.7rem' : '1rem' }}
             >
               {chrome.i18n.getMessage('Insufficient_balance') +
-                (coin === 'flow'
+                (transactionState.coinInfo.unit === 'flow'
                   ? chrome.i18n.getMessage('on_Flow_the_balance_cant_less_than_0001_FLOW')
                   : '')}
             </Typography>

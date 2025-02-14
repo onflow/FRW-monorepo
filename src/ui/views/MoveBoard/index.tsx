@@ -11,9 +11,6 @@ import moveftbg from 'ui/FRWAssets/svg/moveftbg.svg';
 import movenftbg from 'ui/FRWAssets/svg/movenftbg.svg';
 import { useWallet } from 'ui/utils';
 
-import MoveFromEvm from '../EvmMove/MoveFromEvm';
-import MoveFromFlow from '../EvmMove/MoveFromFlow';
-
 import MoveEvm from './MoveEvm';
 import MoveFromChild from './MoveFromChild';
 import MoveToChild from './MoveToChild';
@@ -27,8 +24,8 @@ interface MoveBoardProps {
 
 const MoveBoard = (props: MoveBoardProps) => {
   const usewallet = useWallet();
+  const history = useHistory();
   const [showSelectNft, setSelectBoard] = useState<boolean>(false);
-  const [moveFtOpen, setMoveFt] = useState<boolean>(false);
   const [childType, setChildType] = useState<ActiveChildType>(null);
   const [network, setNetwork] = useState<string>('');
   const [alertOpen, setAlertOpen] = useState<boolean>(false);
@@ -41,11 +38,6 @@ const MoveBoard = (props: MoveBoardProps) => {
     setNetwork(currentNetwork);
     setChildType(result);
   }, [usewallet]);
-
-  const closeFullPage = () => {
-    setMoveFt(false);
-    props.handleCancelBtnClicked();
-  };
 
   useEffect(() => {
     requestChildType();
@@ -88,34 +80,6 @@ const MoveBoard = (props: MoveBoardProps) => {
         handleReturnHome={() => props.handleCancelBtnClicked()}
       />
     );
-  };
-
-  const renderMoveFT = () => {
-    if (childType === 'evm') {
-      return (
-        <MoveFromEvm
-          isConfirmationOpen={moveFtOpen}
-          data={{ amount: 0 }}
-          handleCloseIconClicked={() => closeFullPage()}
-          handleCancelBtnClicked={() => setMoveFt(false)}
-          handleAddBtnClicked={() => {
-            setMoveFt(false);
-          }}
-        />
-      );
-    } else {
-      return (
-        <MoveFromFlow
-          isConfirmationOpen={moveFtOpen}
-          data={{ amount: 0 }}
-          handleCloseIconClicked={() => closeFullPage()}
-          handleCancelBtnClicked={() => setMoveFt(false)}
-          handleAddBtnClicked={() => {
-            setMoveFt(false);
-          }}
-        />
-      );
-    }
   };
 
   return (
@@ -251,11 +215,7 @@ const MoveBoard = (props: MoveBoardProps) => {
             },
           }}
           onClick={() => {
-            if (childType && childType !== 'evm') {
-              setAlertOpen(true);
-            } else {
-              setMoveFt(true);
-            }
+            history.push('/dashboard/token/flow/send');
           }}
         >
           <CardMedia
@@ -275,8 +235,6 @@ const MoveBoard = (props: MoveBoardProps) => {
         <LLComingSoon alertOpen={alertOpen} handleCloseIconClicked={() => setAlertOpen(false)} />
       )}
       {showSelectNft && renderMoveComponent()}
-
-      {moveFtOpen && renderMoveFT()}
     </Drawer>
   );
 };
