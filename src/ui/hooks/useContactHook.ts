@@ -141,11 +141,11 @@ export function useContactHook() {
   const useContact = useCallback(
     (address: string): Contact | null => {
       return (
-        contactStore.recentContacts.find((c) => c.address === address) ||
         contactStore.accountList.find((c) => c.address === address) ||
         contactStore.evmAccounts.find((c) => c.address === address) ||
         contactStore.childAccounts.find((c) => c.address === address) ||
         contactStore.filteredContacts.find((c) => c.address === address) ||
+        contactStore.recentContacts.find((c) => c.address === address) ||
         null
       );
     },
