@@ -15,6 +15,7 @@ import { LLSpinner } from 'ui/FRWComponent';
 import { Profile } from 'ui/FRWComponent/Send/Profile';
 import { useWallet } from 'ui/utils';
 
+import { TokenBalance } from '../TokenDetail/TokenBalance';
 import { TokenValue } from '../TokenDetail/TokenValue';
 
 interface TransferConfirmationProps {
@@ -286,7 +287,8 @@ const TransferConfirmation = ({
                 variant="body1"
                 sx={{ fontSize: '18px', fontWeight: '400', textAlign: 'end' }}
               >
-                <TokenValue
+                <TokenBalance
+                  showFull={true}
                   value={transactionState.amount}
                   postFix={transactionState.coinInfo.unit.toUpperCase()}
                 />

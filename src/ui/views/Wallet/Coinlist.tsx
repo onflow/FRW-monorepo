@@ -110,7 +110,7 @@ const CoinList = ({ data, ableFt, isActive, childType, coinLoading }) => {
                     }}
                   >
                     {props.change === null ? '-' : ''}
-                    <TokenValue value={props.price} prefix="$" />
+                    <TokenValue value={String(props.price)} prefix="$" />
                   </Typography>
                   {props.change !== 0 && (
                     <Typography
@@ -191,7 +191,9 @@ const CoinList = ({ data, ableFt, isActive, childType, coinLoading }) => {
                   secondaryAction={
                     <EndListItemText
                       primary={parseFloat(coin.balance).toFixed(3)}
-                      secondary={<TokenValue value={coin.balance * coin.price} prefix="$" />}
+                      secondary={
+                        <TokenValue value={String(coin.balance * coin.price)} prefix="$" />
+                      }
                       unit={coin.unit}
                       change={parseFloat(coin.change24h.toFixed(2))}
                     />

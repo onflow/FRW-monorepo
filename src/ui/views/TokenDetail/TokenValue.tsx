@@ -3,7 +3,7 @@ import React from 'react';
 import { formatPrice } from '@/shared/utils/formatTokenValue';
 
 interface TokenPriceProps {
-  value: number | string;
+  value: string;
   className?: string;
   showPrefix?: boolean;
   prefix?: string;
@@ -16,23 +16,27 @@ export const TokenValue: React.FC<TokenPriceProps> = ({
   prefix = '',
   postFix = '',
 }) => {
-  if (value === 0 || value === null || value === undefined || value === '') {
+  if (!value || value === '0' || value === '') {
     return <span className={className}>{''}</span>;
   }
 
   const numberWithCommas = (x: string) => {
-    // Check if the number is between 1000 and 999999
-    const num = parseFloat(x);
-    if (num >= 1000 && num <= 999999) {
-      return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    // Split string into integer and decimal parts (if any)
+    const parts = x.split('.');
+    const integerPart = parts[0];
+
+    // Only add commas if the integer part is between 4 and 6 digits
+    if (integerPart.length >= 4 && integerPart.length <= 6) {
+      // Add commas every 3 digits from the right
+      const withCommas = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      // Reconstruct number with decimal part if it exists
+      return parts.length > 1 ? `${withCommas}.${parts[1]}` : withCommas;
     }
+
     return x;
   };
 
-  // convert value to number if it's a string
-  const valueNumber = typeof value === 'string' ? parseFloat(value) : value;
-
-  const { formattedPrice } = formatPrice(valueNumber);
+  const { formattedPrice } = formatPrice(value);
   const { leadingPart, zeroPart, endingPart } = formattedPrice;
 
   return (

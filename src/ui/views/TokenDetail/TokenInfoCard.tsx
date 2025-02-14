@@ -197,7 +197,7 @@ const TokenInfoCard = ({ price, token, setAccessible, accessible, tokenInfo, chi
           <Typography variant="body1" color="text.secondary" sx={{ fontSize: '16px' }}>
             <Box component="span" sx={{ marginRight: '0.25rem' }}>
               <TokenValue
-                value={balance * price}
+                value={String(balance * price)}
                 prefix="$"
                 postFix={chrome.i18n.getMessage('USD')}
               />

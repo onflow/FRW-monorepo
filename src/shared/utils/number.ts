@@ -104,3 +104,20 @@ export const convertToIntegerAmount = (amount: string, decimals: number): string
   // Remove leading zeros
   return `${integerPart}${paddedDecimal}`.replace(/^0+/, '') || '0';
 };
+
+export const numberWithCommas = (x: number | string): string => {
+  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+};
+
+export const getDecimalBalance = (value: string, decimals: number): string => {
+  // wrap try catch so components don't blow up if the value is invalid
+  try {
+    const integerValue = convertToIntegerAmount(value, decimals);
+    const factor = BigInt(10 ** decimals);
+    const result = BigInt(integerValue) / factor;
+    return result.toString();
+  } catch (error) {
+    console.error('Error converting to integer amount:', error);
+    return '0';
+  }
+};
