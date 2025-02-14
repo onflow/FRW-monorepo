@@ -9,6 +9,7 @@ import SwipeableViews from 'react-swipeable-views';
 import { IconNfts } from '@/components/iconfont';
 import eventBus from '@/eventBus';
 import { type ActiveChildType } from '@/shared/types/wallet-types';
+import { formatLargeNumber } from '@/shared/utils/number';
 import buyIcon from '@/ui/FRWAssets/svg/buyIcon.svg';
 import iconMove from '@/ui/FRWAssets/svg/homeMove.svg';
 import receiveIcon from '@/ui/FRWAssets/svg/receiveIcon.svg';
@@ -20,7 +21,6 @@ import { useInitHook } from '@/ui/hooks';
 import { useCoinStore } from '@/ui/stores/coinStore';
 import { useProfileStore } from '@/ui/stores/profileStore';
 import { useWallet } from '@/ui/utils';
-import { formatLargeNumber } from '@/ui/utils/number';
 
 import { withPrefix } from '../../../shared/utils/address';
 import theme from '../../style/LLTheme';
