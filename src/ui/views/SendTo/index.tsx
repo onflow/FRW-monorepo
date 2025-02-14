@@ -3,9 +3,9 @@ import { useHistory, useLocation, useParams } from 'react-router-dom';
 
 import { type FlowAddress, type WalletAddress } from '@/shared/types/wallet-types';
 import { isValidAddress, isValidFlowAddress } from '@/shared/utils/address';
+import { useCoins } from '@/ui/hooks/useCoinHook';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { transactionReducer, INITIAL_TRANSACTION_STATE } from '@/ui/reducers/transaction-reducer';
-import { useCoinStore } from '@/ui/stores/coinStore';
-import { useProfileStore } from '@/ui/stores/profileStore';
 import { useWallet } from '@/ui/utils/WalletContext';
 
 import SendToCadenceOrEvm from './SendToCadenceOrEvm';
@@ -14,8 +14,8 @@ export const SendTo = () => {
   // Remove or use only in development
   const wallet = useWallet();
 
-  const { mainAddress, currentWallet, userInfo } = useProfileStore();
-  const coinStore = useCoinStore();
+  const { mainAddress, currentWallet, userInfo } = useProfiles();
+  const { coins } = useCoins();
   const { id: token, toAddress } = useParams<{ id: string; toAddress: string }>();
   const location = useLocation();
   const history = useHistory();
@@ -26,7 +26,7 @@ export const SendTo = () => {
     async (symbol: string) => {
       const tokenInfo = await wallet.openapi.getTokenInfo(symbol);
       if (tokenInfo) {
-        const coinInfo = coinStore.coins.find(
+        const coinInfo = coins.find(
           (coin) => coin.unit.toLowerCase() === tokenInfo.symbol.toLowerCase()
         );
         if (coinInfo) {
@@ -42,7 +42,7 @@ export const SendTo = () => {
         }
       }
     },
-    [coinStore, wallet, history, toAddress]
+    [coins, wallet, history, toAddress]
   );
 
   useEffect(() => {

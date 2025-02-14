@@ -30,9 +30,9 @@ import { storage } from '@/background/webapi';
 import { type LoggedInAccountWithIndex } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
-import { useCoinStore } from '@/ui/stores/coinStore';
-import { useNetworkStore } from '@/ui/stores/networkStore';
-import { useProfileStore } from '@/ui/stores/profileStore';
+import { useCoins } from '@/ui/hooks/useCoinHook';
+import { useNetworks } from '@/ui/hooks/useNetworkHook';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useNews } from '@/ui/utils/NewsContext';
 import { useWallet, formatAddress, useWalletLoaded } from 'ui/utils';
 
@@ -74,8 +74,8 @@ const Header = ({ loading = false }) => {
   const history = useHistory();
   const location = useLocation();
 
-  const { clearCoins } = useCoinStore();
-  const { currentNetwork, setNetwork, developerMode } = useNetworkStore();
+  const { clearCoins } = useCoins();
+  const { currentNetwork, setNetwork, developerMode } = useNetworks();
   const {
     mainAddress,
     currentWallet,
@@ -89,7 +89,7 @@ const Header = ({ loading = false }) => {
     loggedInAccounts,
     mainAddressLoading,
     clearProfileData,
-  } = useProfileStore();
+  } = useProfiles();
 
   const [drawer, setDrawer] = useState(false);
 

@@ -18,9 +18,8 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import React, { useEffect } from 'react';
 
 import { formatString } from '@/shared/utils/address';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
-import { useProfileStore } from '@/ui/stores/profileStore';
-import { useTransferListStore } from '@/ui/stores/transferListStore';
 import activity from 'ui/FRWAssets/svg/activity.svg';
 import { useWallet } from 'ui/utils';
 
@@ -29,10 +28,16 @@ import { TokenValue } from '../TokenDetail/TokenValue';
 dayjs.extend(relativeTime);
 
 const TransferList = () => {
-  const { fetchTransactions } = useTransferList();
-  const { transactions, monitor, flowscanURL, viewSourceURL, loading, showButton } =
-    useTransferListStore();
-  const { currentWallet } = useProfileStore();
+  const {
+    fetchTransactions,
+    transactions,
+    monitor,
+    flowscanURL,
+    viewSourceURL,
+    loading,
+    showButton,
+  } = useTransferList();
+  const { currentWallet } = useProfiles();
 
   useEffect(() => {
     fetchTransactions();

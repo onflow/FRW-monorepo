@@ -18,8 +18,8 @@ import swapIcon from '@/ui/FRWAssets/svg/swapIcon.svg';
 import LLComingSoon from '@/ui/FRWComponent/LLComingSoonWarning';
 import { NumberTransition } from '@/ui/FRWComponent/NumberTransition';
 import { useInitHook } from '@/ui/hooks';
-import { useCoinStore } from '@/ui/stores/coinStore';
-import { useProfileStore } from '@/ui/stores/profileStore';
+import { useCoins } from '@/ui/hooks/useCoinHook';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from '@/ui/utils';
 
 import { withPrefix } from '../../../shared/utils/address';
@@ -53,8 +53,8 @@ const WalletTab = ({ network }) => {
   const history = useHistory();
   const location = useLocation();
   const { initializeStore } = useInitHook();
-  const { childAccounts, evmWallet, currentWallet } = useProfileStore();
-  const coinStore = useCoinStore();
+  const { childAccounts, evmWallet, currentWallet } = useProfiles();
+  const { coins, balance } = useCoins();
   const [value, setValue] = React.useState(0);
 
   const [coinLoading, setCoinLoading] = useState<boolean>(false);
@@ -186,7 +186,7 @@ const WalletTab = ({ network }) => {
     setMoveBoard(true);
   };
 
-  const filteredCoinData = coinStore.coins.filter((coin) => {
+  const filteredCoinData = coins.filter((coin) => {
     if (childType === 'evm' && coin.unit !== 'flow' && Number(coin.balance) === 0 && !coin.custom) {
       return false;
     }
@@ -266,7 +266,7 @@ const WalletTab = ({ network }) => {
             }}
             component="span"
           >
-            {`$${formatLargeNumber(coinStore.balance)}`.split('').map((n, i) => (
+            {`$${formatLargeNumber(balance)}`.split('').map((n, i) => (
               <NumberTransition key={`${n}-${i}`} number={n} delay={i * 20} />
             ))}
           </Typography>
@@ -489,7 +489,7 @@ const WalletTab = ({ network }) => {
                 fontWeight: 'semi-bold',
               }}
             >
-              {childType === 'evm' ? filteredCoinData?.length || '' : coinStore.coins?.length || ''}{' '}
+              {childType === 'evm' ? filteredCoinData?.length || '' : coins?.length || ''}{' '}
               {chrome.i18n.getMessage('coins')}
             </Typography>
           }
@@ -546,7 +546,7 @@ const WalletTab = ({ network }) => {
             <Box sx={{ height: '100%', overflow: 'auto' }}>
               {value === 0 && (
                 <CoinList
-                  data={coinStore.coins}
+                  data={coins}
                   ableFt={accessible}
                   isActive={isActive}
                   childType={childType}

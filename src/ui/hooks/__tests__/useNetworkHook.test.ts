@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { useNetworkStore } from '@/ui/stores/networkStore';
+import { useWallet, useWalletLoaded } from '@/ui/utils/WalletContext';
 
-import { useNetworkHook } from '../useNetworkHook';
+import { useNetworks } from '../useNetworkHook';
 
 // Mock React
 vi.mock('react', async () => {
@@ -15,15 +16,21 @@ vi.mock('react', async () => {
 
 // Mock the store
 vi.mock('@/ui/stores/networkStore', () => ({
-  useNetworkStore: vi.fn().mockReturnValue({
-    setNetwork: vi.fn(),
-  }),
+  useNetworkStore: vi.fn((selector) =>
+    selector({
+      currentNetwork: 'mainnet',
+      developerMode: false,
+      emulatorModeOn: false,
+      setNetwork: vi.fn(),
+      setDeveloperMode: vi.fn(),
+      setEmulatorModeOn: vi.fn(),
+    })
+  ),
 }));
 
 // Mock the wallet context
 vi.mock('@/ui/utils/WalletContext', () => ({
-  useWalletLoaded: vi.fn().mockResolvedValue(true),
-
+  useWalletLoaded: vi.fn().mockReturnValue(true),
   useWallet: vi.fn().mockReturnValue({
     getNetwork: vi.fn().mockResolvedValue('mainnet'),
   }),
@@ -34,17 +41,24 @@ describe('useNetworkHook', () => {
 
   beforeEach(() => {
     mockSetNetwork = vi.fn();
-    vi.mocked(useNetworkStore).mockReturnValue({
-      setNetwork: mockSetNetwork,
-    });
+    vi.mocked(useNetworkStore).mockImplementation((selector) =>
+      selector({
+        currentNetwork: 'mainnet',
+        developerMode: false,
+        emulatorModeOn: false,
+        setNetwork: mockSetNetwork,
+        setDeveloperMode: vi.fn(),
+        setEmulatorModeOn: vi.fn(),
+      })
+    );
   });
 
   describe('fetchNetwork', () => {
     it('should correctly identify network type', async () => {
-      const { fetchNetwork } = useNetworkHook();
-      await fetchNetwork();
+      const hook = useNetworks();
+      await hook.fetchNetwork();
 
-      expect(mockSetNetwork).toHaveBeenCalledWith(expect.stringMatching(/^(mainnet|testnet)$/));
+      expect(mockSetNetwork).toHaveBeenCalledWith('mainnet');
     });
   });
 });

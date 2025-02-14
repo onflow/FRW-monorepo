@@ -18,7 +18,7 @@ import React, { useCallback } from 'react';
 
 import { type TransactionState } from '@/shared/types/transaction-types';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
-import { useCoinStore } from '@/ui/stores/coinStore';
+import { useCoins } from '@/ui/hooks/useCoinHook';
 import { TokenValue } from '@/ui/views/TokenDetail/TokenValue';
 
 import CancelIcon from '../../../components/iconfont/IconClose';
@@ -119,19 +119,17 @@ const TransferAmount = ({
 }) => {
   const classes = useStyles();
   const { amount, fiatAmount } = transactionState;
-  const coinStore = useCoinStore();
+  const { coins } = useCoins();
 
   const renderValue = useCallback(
     (option) => {
-      const selectCoin = coinStore.coins.find(
-        (coin) => coin.unit.toLowerCase() === option.toLowerCase()
-      );
+      const selectCoin = coins.find((coin) => coin.unit.toLowerCase() === option.toLowerCase());
       if (selectCoin) {
         return <img src={selectCoin.icon} style={{ height: '24px', width: '24px' }} />;
       }
       return null;
     },
-    [coinStore]
+    [coins]
   );
 
   return (
@@ -218,7 +216,7 @@ const TransferAmount = ({
                 }}
                 sx={{ zIndex: 2000 }}
               >
-                {coinStore.coins.map((coin) => (
+                {coins.map((coin) => (
                   <MenuItem value={coin.unit} key={coin.unit} sx={{ zIndex: 2000 }}>
                     <ListItemIcon>
                       <img src={coin.icon} style={{ height: '24px', width: '24px' }} />

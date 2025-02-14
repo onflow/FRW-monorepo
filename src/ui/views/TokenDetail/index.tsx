@@ -11,7 +11,7 @@ import { storage } from '@/background/webapi';
 import type { PriceProvider } from '@/shared/types/network-types';
 import { type ActiveChildType } from '@/shared/types/wallet-types';
 import StorageUsageCard from '@/ui/FRWComponent/StorageUsageCard';
-import { useProfileStore } from '@/ui/stores/profileStore';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import tips from 'ui/FRWAssets/svg/tips.svg';
 import { useWallet } from 'ui/utils';
 
@@ -42,7 +42,7 @@ const TokenDetail = () => {
   const classes = useStyles();
   const usewallet = useWallet();
   const history = useHistory();
-  const { currentWallet } = useProfileStore();
+  const { currentWallet } = useProfiles();
   const [price, setPrice] = useState(0);
   const [accessible, setAccessible] = useState(true);
   const token = useParams<{ id: string }>().id.toLowerCase();

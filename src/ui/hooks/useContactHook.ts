@@ -1,44 +1,40 @@
 import { isEmpty } from 'lodash';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 import { type Contact } from '@/shared/types/network-types';
-import { type WalletAddress } from '@/shared/types/wallet-types';
 import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useContactStore } from '@/ui/stores/contactStore';
-import { useProfileStore } from '@/ui/stores/profileStore';
 import { useWallet } from '@/ui/utils';
 
-const DEFAULT_CONTACT: Contact = {
-  address: '',
-  id: 0,
-  contact_name: '',
-  avatar: '',
-  domain: {
-    domain_type: 999,
-    value: '',
-  },
-};
-
-export function useContactHook() {
+export function useContacts() {
   const usewallet = useWallet();
-  const contactStore = useContactStore();
-  const { mainAddress, evmAddress, walletList, evmWallet, childAccounts } = useProfileStore();
+  const {
+    mainAddress,
+    evmAddress,
+    walletList,
+    evmWallet,
+    childAccounts: childAccountsProfile,
+  } = useProfiles();
 
-  const updateToContact = (contact: Partial<Contact> & { address: string }) => {
-    contactStore.setToContact(
-      contact.address === contactStore.toContact.address
-        ? { ...contactStore.toContact, ...contact }
-        : { ...DEFAULT_CONTACT, ...contact }
-    );
-  };
+  // Individual selectors for actions
+  const setRecentContacts = useContactStore((state) => state.setRecentContacts);
+  const setSortedContacts = useContactStore((state) => state.setSortedContacts);
+  const setChildAccounts = useContactStore((state) => state.setChildAccounts);
+  const setAccountList = useContactStore((state) => state.setAccountList);
+  const setEvmAccounts = useContactStore((state) => state.setEvmAccounts);
+  const setSearchContacts = useContactStore((state) => state.setSearchContacts);
 
-  const updateFromContact = (contact: Partial<Contact> & { address: string }) => {
-    contactStore.setFromContact(
-      contact.address === contactStore.fromContact.address
-        ? { ...contactStore.fromContact, ...contact }
-        : { ...DEFAULT_CONTACT, ...contact }
-    );
-  };
+  // Individual selectors for state values
+  const sortedContacts = useContactStore((state) => state.sortedContacts);
+  const recentContacts = useContactStore((state) => state.recentContacts);
+  const searchContacts = useContactStore((state) => state.searchContacts);
+  const accountList = useContactStore((state) => state.accountList);
+  const evmAccounts = useContactStore((state) => state.evmAccounts);
+  const childAccounts = useContactStore((state) => state.childAccounts);
+
+  const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
+  const [hasNoFilteredContacts, setHasNoFilteredContacts] = useState(false);
 
   const fetchAddressBook = useCallback(async () => {
     await usewallet.setDashIndex(0);
@@ -67,16 +63,16 @@ export function useContactHook() {
         );
       }
 
-      contactStore.setRecentContacts(recent);
-      contactStore.setSortedContacts(sortedContacts);
-      contactStore.setFilteredContacts(sortedContacts);
+      setRecentContacts(recent);
+      setSortedContacts(sortedContacts);
+      setFilteredContacts(sortedContacts);
 
       return { recent, sortedContacts };
     } catch (err) {
       console.error('Error fetching address book:', err);
       return { recent: [], sortedContacts: [] };
     }
-  }, [usewallet, contactStore]);
+  }, [usewallet, setFilteredContacts, setRecentContacts, setSortedContacts]);
 
   const convertObjectToContactArray = (
     data: Record<
@@ -120,11 +116,11 @@ export function useContactHook() {
   const setupAccounts = useCallback(async () => {
     const wdArray = convertArrayToContactArray(walletList);
     if (childAccounts) {
-      const cAccountArray = convertObjectToContactArray(childAccounts);
-      contactStore.setChildAccounts(cAccountArray);
+      const cAccountArray = convertObjectToContactArray(childAccountsProfile);
+      setChildAccounts(cAccountArray);
     }
 
-    contactStore.setAccountList(wdArray);
+    setAccountList(wdArray);
 
     if (mainAddress && isValidEthereumAddress(evmAddress) && evmWallet) {
       const evmData = {
@@ -134,27 +130,37 @@ export function useContactHook() {
         contact_name: evmWallet.name,
         bgcolor: evmWallet.color,
       };
-      contactStore.setEvmAccounts([evmData]);
+      setEvmAccounts([evmData]);
     }
-  }, [walletList, childAccounts, mainAddress, evmAddress, evmWallet, contactStore]);
+  }, [
+    walletList,
+    childAccountsProfile,
+    setAccountList,
+    setChildAccounts,
+    setEvmAccounts,
+    childAccounts,
+    evmAddress,
+    evmWallet,
+    mainAddress,
+  ]);
 
   const useContact = useCallback(
     (address: string): Contact | null => {
       return (
-        contactStore.accountList.find((c) => c.address === address) ||
-        contactStore.evmAccounts.find((c) => c.address === address) ||
-        contactStore.childAccounts.find((c) => c.address === address) ||
-        contactStore.filteredContacts.find((c) => c.address === address) ||
-        contactStore.recentContacts.find((c) => c.address === address) ||
+        accountList.find((c) => c.address === address) ||
+        evmAccounts.find((c) => c.address === address) ||
+        childAccounts.find((c) => c.address === address) ||
+        filteredContacts.find((c) => c.address === address) ||
+        recentContacts.find((c) => c.address === address) ||
         null
       );
     },
-    [contactStore]
+    [accountList, childAccounts, evmAccounts, filteredContacts, recentContacts]
   );
 
   const filterContacts = useCallback(
     (keyword: string) => {
-      const filtered = contactStore.sortedContacts.filter((item) => {
+      const filtered = sortedContacts.filter((item) => {
         for (const key in item) {
           if (typeof item[key] === 'string') {
             if (item[key].includes(keyword)) return true;
@@ -164,19 +170,19 @@ export function useContactHook() {
         return false;
       });
 
-      contactStore.setFilteredContacts(filtered);
-      contactStore.setHasNoFilteredContacts(isEmpty(filtered));
+      setFilteredContacts(filtered);
+      setHasNoFilteredContacts(isEmpty(filtered));
 
       return filtered;
     },
-    [contactStore]
+    [sortedContacts]
   );
 
   const searchUser = useCallback(
     async (searchKey: string) => {
       let result = await usewallet.openapi.searchUser(searchKey);
       result = result.data.users;
-      const fArray = contactStore.searchContacts;
+      const fArray = searchContacts;
       const reg = /^((0x))/g;
       const lilicoResult = {
         address: '',
@@ -199,29 +205,29 @@ export function useContactHook() {
           lilicoResult.contact_name = data.username;
           lilicoResult.domain!.domain_type = 999;
           lilicoResult.avatar = data.avatar;
-          lilicoResult.type! = contactStore.sortedContacts.some(
-            (e) => e.contact_name === data.username
-          )
-            ? 1
-            : 4;
+          lilicoResult.type! = sortedContacts.some((e) => e.contact_name === data.username) ? 1 : 4;
           fArray.push(lilicoResult);
         });
-        contactStore.setSearchContacts(fArray);
+        setSearchContacts(fArray);
       }
       return;
     },
-    [usewallet, contactStore]
+    [usewallet, searchContacts, setSearchContacts, sortedContacts]
   );
 
   return {
-    toContact: contactStore.toContact,
-    fromContact: contactStore.fromContact,
-    updateToContact,
-    updateFromContact,
     fetchAddressBook,
     setupAccounts,
     useContact,
     filterContacts,
     searchUser,
+    sortedContacts,
+    recentContacts,
+    filteredContacts,
+    searchContacts,
+    hasNoFilteredContacts,
+    accountList,
+    evmAccounts,
+    childAccounts,
   };
 }
