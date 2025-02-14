@@ -13,6 +13,7 @@ import { useNetworkStore } from '@/ui/stores/networkStore';
 import { useWallet } from 'ui/utils';
 
 import CancelIcon from '../../../components/iconfont/IconClose';
+import { TokenValue } from '../TokenDetail/TokenValue';
 
 import TransferAmount from './TransferAmount';
 import TransferConfirmation from './TransferConfirmation';
@@ -150,12 +151,12 @@ const SendToCadenceOrEvm = ({
                       fontSize: '15px',
                     }}
                   >
-                    {(Math.round(transactionState.coinInfo.balance * 100) / 100).toFixed(2) +
-                      ' ' +
-                      transactionState.coinInfo.unit.toUpperCase() +
-                      ' ≈ ' +
-                      '$ ' +
-                      transactionState.coinInfo.total}
+                    <TokenValue
+                      value={transactionState.coinInfo.balance}
+                      postFix={transactionState.coinInfo.unit.toUpperCase()}
+                    />
+                    {' ≈ '}
+                    <TokenValue value={transactionState.coinInfo.total} prefix={'$'} />
                   </Typography>
                 </Box>
               </>
