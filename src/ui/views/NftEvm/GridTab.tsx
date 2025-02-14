@@ -1,15 +1,17 @@
-/* eslint-disable indent */
-import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
-import { useWallet } from 'ui/utils';
-import { makeStyles } from '@mui/styles';
-import { StyledEngineProvider } from '@mui/material/styles';
 import { Card, CardMedia, CardContent, Grid, Skeleton, Typography, Box } from '@mui/material';
+import { StyledEngineProvider } from '@mui/material/styles';
+import { makeStyles } from '@mui/styles';
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import InfiniteScroll from 'react-infinite-scroll-component';
+
+import { LLSpinner } from '@/ui/FRWComponent';
+import { useWallet } from 'ui/utils';
+
+import EmptyStatus from './EmptyStatus';
 import GridView from './GridView';
+
 // import InfiniteScroll from 'react-infinite-scroll-component';
 // import InfiniteScroll from 'react-infinite-scroller';
-import { LLSpinner } from '@/ui/FRWComponent';
-import InfiniteScroll from 'react-infinite-scroll-component';
-import EmptyStatus from './EmptyStatus';
 
 interface GridTabProps {
   data: Data;
@@ -173,7 +175,7 @@ const GridTab = forwardRef((props: GridTabProps, ref) => {
       const newList: any[] = [];
       list.nfts.forEach((item) => {
         const result = nfts.filter((nft) => nft.unique_id === item.unique_id);
-        if (result.length == 0) {
+        if (result.length === 0) {
           newList.push(item);
         }
       });
@@ -198,7 +200,7 @@ const GridTab = forwardRef((props: GridTabProps, ref) => {
         const newList: any[] = [];
         response.nfts.forEach((item) => {
           const result = nfts.filter((nft) => nft.unique_id === item.unique_id);
-          if (result.length == 0) {
+          if (result.length === 0) {
             newList.push(item);
           }
         });
@@ -224,7 +226,7 @@ const GridTab = forwardRef((props: GridTabProps, ref) => {
       props.setCount(nftCount);
       setTotal(nftCount);
       setNFTs(nfts);
-      if (nfts.length == 0) {
+      if (nfts.length === 0) {
         // setNFTLoading(false);
         fetchNFT(address);
       }
@@ -311,7 +313,7 @@ const GridTab = forwardRef((props: GridTabProps, ref) => {
         >
           <Grid container className={classes.grid}>
             {nfts && nfts.map(createGridCard)}
-            {nfts.length % 2 != 0 && <Card className={classes.cardNoHover} elevation={0} />}
+            {nfts.length % 2 !== 0 && <Card className={classes.cardNoHover} elevation={0} />}
           </Grid>
         </InfiniteScroll>
       ) : (

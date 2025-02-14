@@ -6,7 +6,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import SwipeableViews from 'react-swipeable-views';
 
-import { IconNfts } from '@/components/iconfont';
+import { IconActivity, IconCoins, IconNfts } from '@/components/iconfont';
 import eventBus from '@/eventBus';
 import { type ActiveChildType } from '@/shared/types/wallet-types';
 import { formatLargeNumber } from '@/shared/utils/number';
@@ -15,6 +15,7 @@ import iconMove from '@/ui/FRWAssets/svg/homeMove.svg';
 import receiveIcon from '@/ui/FRWAssets/svg/receiveIcon.svg';
 import sendIcon from '@/ui/FRWAssets/svg/sendIcon.svg';
 import swapIcon from '@/ui/FRWAssets/svg/swapIcon.svg';
+import { ButtonRow } from '@/ui/FRWComponent/ButtonRow';
 import LLComingSoon from '@/ui/FRWComponent/LLComingSoonWarning';
 import { NumberTransition } from '@/ui/FRWComponent/NumberTransition';
 import { useInitHook } from '@/ui/hooks';
@@ -250,7 +251,7 @@ const WalletTab = ({ network }) => {
             width="30%"
             sx={{
               py: '25px',
-              my: '18px',
+              my: '8px',
               borderRadius: '8px',
               alignSelf: 'center',
             }}
@@ -259,7 +260,7 @@ const WalletTab = ({ network }) => {
           <Typography
             variant="body1"
             sx={{
-              py: '30px',
+              py: '8px',
               alignSelf: 'center',
               fontSize: '32px',
               fontWeight: 'semi-bold',
@@ -457,6 +458,16 @@ const WalletTab = ({ network }) => {
             </Box>
           )}
         </Box>
+
+        <ButtonRow
+          isActive={isActive}
+          onSendClick={() => history.push('/dashboard/wallet/send')}
+          onReceiveClick={() => history.push('/dashboard/wallet/deposit')}
+          onSwapClick={() => window.open(incLink, '_blank', 'noopener,noreferrer')}
+          onBuyClick={() => setOnRamp(true)}
+          onMoveClick={() => goMoveBoard()}
+          canMoveChild={canMoveChild}
+        />
       </Box>
       <Tabs
         value={value}
@@ -477,7 +488,7 @@ const WalletTab = ({ network }) => {
         aria-label="full width tabs example"
       >
         <Tab
-          icon={<SavingsRoundedIcon sx={{ color: 'text.secondary' }} fontSize="small" />}
+          icon={<IconCoins fontSize="small" />}
           iconPosition="start"
           label={
             <Typography
@@ -514,7 +525,7 @@ const WalletTab = ({ network }) => {
           style={{ color: '#F9F9F9', minHeight: '25px' }}
         />
         <Tab
-          icon={<FlashOnRoundedIcon sx={{ color: 'text.secondary' }} fontSize="small" />}
+          icon={<IconActivity fontSize="small" />}
           iconPosition="start"
           label={
             <Typography

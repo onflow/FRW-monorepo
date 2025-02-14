@@ -1,7 +1,6 @@
 import { TabPanel, TabsList, Tabs, Tab } from '@mui/base';
 import { buttonClasses } from '@mui/base/Button';
 import { tabClasses } from '@mui/base/Tab';
-import ReplayRoundedIcon from '@mui/icons-material/ReplayRounded';
 import { Typography, Button, Box, ButtonBase, IconButton, Tooltip } from '@mui/material';
 import { styled } from '@mui/system';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -65,11 +64,6 @@ const NFTTab = () => {
     if (tab) {
       setValue(tab);
     }
-  };
-
-  const refreshButtonClicked = () => {
-    if (value === 0) gridRef?.current?.reload();
-    if (value === 1) listRef?.current?.reload();
   };
 
   const colors = {
@@ -146,22 +140,6 @@ const NFTTab = () => {
             alignItems: 'center',
           }}
         >
-          <Tooltip title={chrome.i18n.getMessage('Refresh')} arrow>
-            <ButtonBase
-              sx={{ flexGrow: 1, justifyContent: 'flex-start' }}
-              onClick={refreshButtonClicked}
-            >
-              <Typography component="div" variant="h5">
-                {nftCount > 0 ? `${nftCount} NFTs` : 'NFT'}
-              </Typography>
-              <ReplayRoundedIcon
-                fontSize="small"
-                color="primary"
-                sx={{ ml: 1 }} // Adds margin left to icon
-              />
-            </ButtonBase>
-          </Tooltip>
-
           <TabsListStyle
             sx={{
               backgroundColor: 'rgb(250, 250, 250, 0.24)',

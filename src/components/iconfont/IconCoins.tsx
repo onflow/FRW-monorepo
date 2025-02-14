@@ -1,9 +1,9 @@
 import { CardMedia } from '@mui/material';
 import React from 'react';
 
-import nftsIcon from '@/ui/FRWAssets/svg/nftsIcon.svg';
+import coinsIcon from '@/ui/FRWAssets/svg/coinsIcon.svg';
 
-const IconNfts = (props) => (
+const IconCoins = (props) => (
   <CardMedia
     sx={{
       width: '20px',
@@ -11,9 +11,9 @@ const IconNfts = (props) => (
       color: '#FFFFFF',
       ...props.sx,
     }}
-    image={nftsIcon}
+    image={coinsIcon}
     {...props}
   />
 );
 
-export default IconNfts;
+export default IconCoins;
