@@ -30,10 +30,6 @@ interface ContactStore {
   setAccountList: (accounts: Contact[]) => void;
   setEvmAccounts: (accounts: Contact[]) => void;
   setChildAccounts: (accounts: Contact[]) => void;
-
-  //Contact Tab value
-  contactTabValue: number;
-  setContactTabValue: (value: number) => void;
 }
 
 export const useContactStore = create<ContactStore>((set) => ({
@@ -56,10 +52,6 @@ export const useContactStore = create<ContactStore>((set) => ({
   setAccountList: (accounts) => set({ accountList: accounts }),
   setEvmAccounts: (accounts) => set({ evmAccounts: accounts }),
   setChildAccounts: (accounts) => set({ childAccounts: accounts }),
-
-  //Contact Tab value
-  contactTabValue: 0,
-  setContactTabValue: (value) => set({ contactTabValue: value }),
 
   // Reset all lists
   resetContactLists: () =>

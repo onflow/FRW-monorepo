@@ -24,7 +24,6 @@ export function useContacts() {
   const setAccountList = useContactStore((state) => state.setAccountList);
   const setEvmAccounts = useContactStore((state) => state.setEvmAccounts);
   const setSearchContacts = useContactStore((state) => state.setSearchContacts);
-  const setContactTabValue = useContactStore((state) => state.setContactTabValue);
 
   // Individual selectors for state values
   const sortedContacts = useContactStore((state) => state.sortedContacts);
@@ -33,7 +32,6 @@ export function useContacts() {
   const accountList = useContactStore((state) => state.accountList);
   const evmAccounts = useContactStore((state) => state.evmAccounts);
   const childAccounts = useContactStore((state) => state.childAccounts);
-  const contactTabValue = useContactStore((state) => state.contactTabValue);
 
   const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
   const [hasNoFilteredContacts, setHasNoFilteredContacts] = useState(false);
@@ -217,13 +215,6 @@ export function useContacts() {
     [usewallet, searchContacts, setSearchContacts, sortedContacts]
   );
 
-  const setContactTab = useCallback(
-    (value: number) => {
-      setContactTabValue(value);
-    },
-    [setContactTabValue]
-  );
-
   return {
     fetchAddressBook,
     setupAccounts,
@@ -238,7 +229,5 @@ export function useContacts() {
     accountList,
     evmAccounts,
     childAccounts,
-    contactTabValue,
-    setContactTab,
   };
 }

@@ -6,7 +6,6 @@ import { useHistory } from 'react-router-dom';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { addDotSeparators } from '@/shared/utils/number';
 import { LLPrimaryButton } from '@/ui/FRWComponent';
-import { useContacts } from '@/ui/hooks/useContactHook';
 import iconMove from 'ui/FRWAssets/svg/moveIcon.svg';
 import { useWallet } from 'ui/utils';
 
@@ -19,7 +18,6 @@ import { TokenValue } from './TokenValue';
 const TokenInfoCard = ({ price, token, setAccessible, accessible, tokenInfo, childType }) => {
   const wallet = useWallet();
   const history = useHistory();
-  const { setContactTab } = useContacts();
   const isMounted = useRef(true);
   const [balance, setBalance] = useState(0);
   const [data, setData] = useState<TokenInfo | undefined>(undefined);
@@ -40,7 +38,6 @@ const TokenInfoCard = ({ price, token, setAccessible, accessible, tokenInfo, chi
   }, [balance, tokenInfo.custom, wallet]);
 
   const toSend = () => {
-    setContactTab(2);
     history.push(`/dashboard/token/${tokenInfo.symbol}/send`);
   };
 
