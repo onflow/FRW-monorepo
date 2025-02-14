@@ -13,7 +13,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useProfileStore } from '@/ui/stores/profileStore';
 import { useWallet, useWalletLoaded } from '@/ui/utils/WalletContext';
 
-import { useProfileHook } from '../useProfileHook';
+import { useProfiles } from '../useProfileHook';
 
 // Mock the store
 vi.mock('@/ui/stores/profileStore', () => ({
@@ -115,7 +115,7 @@ describe('useProfileHook', () => {
   });
 
   it('should fetch and set profile data', async () => {
-    const hook = useProfileHook();
+    const hook = useProfiles();
     await hook.fetchProfileData();
     expect(vi.mocked(useProfileStore).mock.calls[0][0]).toBeDefined();
   });

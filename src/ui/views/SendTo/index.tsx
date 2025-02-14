@@ -3,8 +3,8 @@ import { useHistory, useLocation, useParams } from 'react-router-dom';
 
 import { type FlowAddress, type WalletAddress } from '@/shared/types/wallet-types';
 import { isValidAddress, isValidFlowAddress } from '@/shared/utils/address';
-import { useCoinHook } from '@/ui/hooks/useCoinHook';
-import { useProfileHook } from '@/ui/hooks/useProfileHook';
+import { useCoins } from '@/ui/hooks/useCoinHook';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { transactionReducer, INITIAL_TRANSACTION_STATE } from '@/ui/reducers/transaction-reducer';
 import { useWallet } from '@/ui/utils/WalletContext';
 
@@ -14,8 +14,8 @@ export const SendTo = () => {
   // Remove or use only in development
   const wallet = useWallet();
 
-  const { mainAddress, currentWallet, userInfo } = useProfileHook();
-  const { coins } = useCoinHook();
+  const { mainAddress, currentWallet, userInfo } = useProfiles();
+  const { coins } = useCoins();
   const { id: token, toAddress } = useParams<{ id: string; toAddress: string }>();
   const location = useLocation();
   const history = useHistory();

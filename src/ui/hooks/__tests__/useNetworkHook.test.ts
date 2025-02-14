@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useNetworkStore } from '@/ui/stores/networkStore';
 import { useWallet, useWalletLoaded } from '@/ui/utils/WalletContext';
 
-import { useNetworkHook } from '../useNetworkHook';
+import { useNetworks } from '../useNetworkHook';
 
 // Mock React
 vi.mock('react', async () => {
@@ -55,7 +55,7 @@ describe('useNetworkHook', () => {
 
   describe('fetchNetwork', () => {
     it('should correctly identify network type', async () => {
-      const hook = useNetworkHook();
+      const hook = useNetworks();
       await hook.fetchNetwork();
 
       expect(mockSetNetwork).toHaveBeenCalledWith('mainnet');

@@ -21,7 +21,7 @@ import SwipeableViews from 'react-swipeable-views';
 import { type Contact } from '@/shared/types/network-types';
 import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
 import { LLHeader } from '@/ui/FRWComponent';
-import { useProfileHook } from '@/ui/hooks/useProfileHook';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { type MatchMedia } from '@/ui/utils/url';
 import { useWallet } from 'ui/utils';
 
@@ -134,7 +134,7 @@ const SendToAddress = () => {
   const theme = useTheme();
   const usewallet = useWallet();
   const location = useLocation();
-  const { childAccounts, currentWallet } = useProfileHook();
+  const { childAccounts, currentWallet } = useProfiles();
 
   const [tabValue, setTabValue] = useState(0);
   const [isLoading, setIsLoading] = useState(false);

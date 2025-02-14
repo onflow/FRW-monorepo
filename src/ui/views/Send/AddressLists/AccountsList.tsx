@@ -5,10 +5,10 @@ import { useHistory } from 'react-router-dom';
 
 import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
 import { LLContactCard, LLContactEth, FWContactCard } from '@/ui/FRWComponent';
-import { useContactHook } from '@/ui/hooks/useContactHook';
+import { useContacts } from '@/ui/hooks/useContactHook';
 
 const AccountsList = ({ filteredContacts, isLoading, handleClick, isSend = true }) => {
-  const { accountList, evmAccounts, childAccounts, setupAccounts } = useContactHook();
+  const { accountList, evmAccounts, childAccounts, setupAccounts } = useContacts();
   const mounted = useRef(false);
 
   useEffect(() => {

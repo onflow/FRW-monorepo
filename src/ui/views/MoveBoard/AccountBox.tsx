@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 import { storage } from '@/background/webapi';
 import { ensureEvmAddressPrefix, formatString } from '@/shared/utils/address';
-import { useProfileHook } from '@/ui/hooks/useProfileHook';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import emoji from 'background/utils/emoji.json';
 import accountMove from 'ui/FRWAssets/svg/accountMove.svg';
 import { FRWProfileCard, FWMoveDropdown } from 'ui/FRWComponent';
@@ -17,7 +17,7 @@ const USER_CONTACT = {
 
 function AccountBox({ isChild, setSelectedChildAccount, selectedAccount, isEvm = false }) {
   const usewallet = useWallet();
-  const { mainAddress, evmAddress, childAccounts, currentWallet } = useProfileHook();
+  const { mainAddress, evmAddress, childAccounts, currentWallet } = useProfiles();
   const [first, setFirst] = useState<string>('');
   const [second, setSecond] = useState<string>('');
   const [userInfo, setUser] = useState<any>(USER_CONTACT);

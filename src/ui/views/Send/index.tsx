@@ -26,7 +26,7 @@ import SwipeableViews from 'react-swipeable-views';
 import { type Contact } from '@/shared/types/network-types';
 import { type WalletAddress } from '@/shared/types/wallet-types';
 import { isValidAddress } from '@/shared/utils/address';
-import { useContactHook } from '@/ui/hooks/useContactHook';
+import { useContacts } from '@/ui/hooks/useContactHook';
 
 import IconAbout from '../../../components/iconfont/IconAbout';
 
@@ -116,7 +116,7 @@ const SendAddress = () => {
     searchUser,
     fetchAddressBook,
     filterContacts,
-  } = useContactHook();
+  } = useContacts();
 
   const [tabValue, setTabValue] = useState(0);
   const [isLoading, setIsLoading] = useState(false);

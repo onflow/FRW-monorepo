@@ -3,7 +3,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
 import React, { useState, useEffect, useCallback } from 'react';
 
-import { useProfileHook } from '@/ui/hooks/useProfileHook';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet, formatAddress, isEmoji } from 'ui/utils';
 
 import theme from '../style/LLTheme';
@@ -16,7 +16,7 @@ const tempEmoji = {
 
 export const FRWTargetProfile = ({ contact, isLoading = false, isEvm = false, fromEvm = '1' }) => {
   const usewallet = useWallet();
-  const { currentWallet } = useProfileHook();
+  const { currentWallet } = useProfiles();
   const [emoji, setEmoji] = useState(tempEmoji);
   const [isload, setLoad] = useState(true);
 

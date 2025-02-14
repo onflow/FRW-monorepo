@@ -6,7 +6,7 @@ import { useNetworkStore } from '@/ui/stores/networkStore';
 import { useProfileStore } from '@/ui/stores/profileStore';
 import { useWallet, useWalletLoaded } from '@/ui/utils/WalletContext';
 
-import { useCoinHook } from '../useCoinHook';
+import { useCoins } from '../useCoinHook';
 
 // Mock React
 vi.mock('react', async () => {
@@ -109,7 +109,7 @@ describe('useCoinHook', () => {
 
   describe('handleStorageData', () => {
     it('should handle empty data', async () => {
-      const { handleStorageData } = useCoinHook();
+      const { handleStorageData } = useCoins();
       await handleStorageData(null);
       expect(mockSetCoinData).not.toHaveBeenCalled();
     });
@@ -121,7 +121,7 @@ describe('useCoinHook', () => {
         { unit: 'WFLOW', total: '2.0', balance: '2.0' },
       ];
 
-      const { handleStorageData } = useCoinHook();
+      const { handleStorageData } = useCoins();
       await handleStorageData(mockData);
 
       expect(mockSetTotalFlow).toHaveBeenCalledWith('5');
@@ -140,7 +140,7 @@ describe('useCoinHook', () => {
         { unit: 'ETH', total: '2.0', balance: '2.0' },
       ];
 
-      const { handleStorageData } = useCoinHook();
+      const { handleStorageData } = useCoins();
       await handleStorageData(mockData);
 
       expect(mockSetBalance).toHaveBeenCalledWith('$ 2.00');
@@ -177,7 +177,7 @@ describe('useCoinHook', () => {
     });
 
     it('should handle empty data', async () => {
-      const { refreshCoinData } = useCoinHook();
+      const { refreshCoinData } = useCoins();
       await refreshCoinData();
       expect(mockSetCoinData).not.toHaveBeenCalled();
     });
@@ -189,7 +189,7 @@ describe('useCoinHook', () => {
         { unit: 'WFLOW', total: '2.0', balance: '2.0' },
       ];
 
-      const { refreshCoinData } = useCoinHook();
+      const { refreshCoinData } = useCoins();
 
       await act(async () => {
         await refreshCoinData();

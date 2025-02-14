@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import { useProfileHook } from '@/ui/hooks/useProfileHook';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useTransferListStore } from '@/ui/stores/transferListStore';
 import { useWallet } from '@/ui/utils';
 
@@ -23,7 +23,7 @@ export const useTransferList = () => {
   const showButton = useTransferListStore((state) => state.showButton);
   const count = useTransferListStore((state) => state.count);
 
-  const { currentWallet } = useProfileHook();
+  const { currentWallet } = useProfiles();
 
   const fetchTransactions = useCallback(
     async (forceRefresh = false) => {

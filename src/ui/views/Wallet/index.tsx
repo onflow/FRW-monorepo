@@ -18,8 +18,8 @@ import swapIcon from '@/ui/FRWAssets/svg/swapIcon.svg';
 import LLComingSoon from '@/ui/FRWComponent/LLComingSoonWarning';
 import { NumberTransition } from '@/ui/FRWComponent/NumberTransition';
 import { useInitHook } from '@/ui/hooks';
-import { useCoinHook } from '@/ui/hooks/useCoinHook';
-import { useProfileHook } from '@/ui/hooks/useProfileHook';
+import { useCoins } from '@/ui/hooks/useCoinHook';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from '@/ui/utils';
 
 import { withPrefix } from '../../../shared/utils/address';
@@ -53,8 +53,8 @@ const WalletTab = ({ network }) => {
   const history = useHistory();
   const location = useLocation();
   const { initializeStore } = useInitHook();
-  const { childAccounts, evmWallet, currentWallet } = useProfileHook();
-  const { coins, balance } = useCoinHook();
+  const { childAccounts, evmWallet, currentWallet } = useProfiles();
+  const { coins, balance } = useCoins();
   const [value, setValue] = React.useState(0);
 
   const [coinLoading, setCoinLoading] = useState<boolean>(false);

@@ -25,7 +25,7 @@ import { useHistory, useParams } from 'react-router-dom';
 import { type UserInfoResponse } from '@/shared/types/network-types';
 import IconNext from '@/ui/FRWAssets/svg/nextgray.svg';
 import { LLSecondaryButton } from '@/ui/FRWComponent';
-import { useProfileHook } from '@/ui/hooks/useProfileHook';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from 'ui/utils';
 
 import CheckCircleIcon from '../../../../components/iconfont/IconCheckmark';
@@ -99,7 +99,7 @@ const LinkedDetail = () => {
 
   const history = useHistory();
   const usewallet = useWallet();
-  const { childAccounts } = useProfileHook();
+  const { childAccounts } = useProfiles();
   const [childAccount, setChildAccount] = useState<ChildAccount | null>(null);
   const [unlinking, setUnlinking] = useState<boolean>(false);
   const [active, setIsActive] = useState<boolean>(false);

@@ -8,7 +8,7 @@ import { type TransactionState } from '@/shared/types/transaction-types';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
 import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
-import { useContactHook } from '@/ui/hooks/useContactHook';
+import { useContacts } from '@/ui/hooks/useContactHook';
 import { useStorageCheck } from '@/ui/utils/useStorageCheck';
 import IconNext from 'ui/FRWAssets/svg/next.svg';
 import { LLSpinner } from 'ui/FRWComponent';
@@ -30,7 +30,7 @@ const TransferConfirmation = ({
 }: TransferConfirmationProps) => {
   const wallet = useWallet();
   const history = useHistory();
-  const { useContact } = useContactHook();
+  const { useContact } = useContacts();
   const fromContactData =
     useContact(transactionState.fromContact?.address || '') || transactionState.fromContact;
   const toContactData =

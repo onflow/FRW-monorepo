@@ -2,7 +2,7 @@ import { Box, Typography, Skeleton } from '@mui/material';
 import React, { useState, useEffect, useCallback } from 'react';
 
 import { isValidEthereumAddress } from '@/shared/utils/address';
-import { useProfileHook } from '@/ui/hooks/useProfileHook';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { formatAddress } from 'ui/utils';
 
 const tempEmoji = {
@@ -12,7 +12,7 @@ const tempEmoji = {
 };
 
 export const FRWProfileCard = ({ contact, isEvm = false, isLoading = false }) => {
-  const { currentWallet } = useProfileHook();
+  const { currentWallet } = useProfiles();
   const [emoji, setEmoji] = useState(tempEmoji);
 
   const getEmoji = useCallback(async () => {

@@ -2,16 +2,16 @@ import BN from 'bignumber.js';
 import { useCallback, useEffect } from 'react';
 
 import { withPrefix } from '@/shared/utils/address';
-import { useProfileHook } from '@/ui/hooks/useProfileHook';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useCoinStore } from '@/ui/stores/coinStore';
 import { useWallet, useWalletLoaded } from '@/ui/utils/WalletContext';
 
 const DEFAULT_MIN_AMOUNT = '0.001';
 
-export const useCoinHook = () => {
+export const useCoins = () => {
   const usewallet = useWallet();
   const walletLoaded = useWalletLoaded();
-  const { mainAddress } = useProfileHook();
+  const { mainAddress } = useProfiles();
 
   // Action selectors
   const setCoinData = useCoinStore((state) => state.setCoinData);

@@ -4,7 +4,7 @@ import { useCallback } from 'react';
 import { type Contact } from '@/shared/types/network-types';
 import { type WalletAddress } from '@/shared/types/wallet-types';
 import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
-import { useProfileHook } from '@/ui/hooks/useProfileHook';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useContactStore } from '@/ui/stores/contactStore';
 import { useWallet } from '@/ui/utils';
 
@@ -19,7 +19,7 @@ const DEFAULT_CONTACT: Contact = {
   },
 };
 
-export function useContactHook() {
+export function useContacts() {
   const usewallet = useWallet();
   const {
     mainAddress,
@@ -27,11 +27,9 @@ export function useContactHook() {
     walletList,
     evmWallet,
     childAccounts: childAccountsProfile,
-  } = useProfileHook();
+  } = useProfiles();
 
   // Individual selectors for actions
-  const setToContact = useContactStore((state) => state.setToContact);
-  const setFromContact = useContactStore((state) => state.setFromContact);
   const setRecentContacts = useContactStore((state) => state.setRecentContacts);
   const setSortedContacts = useContactStore((state) => state.setSortedContacts);
   const setFilteredContacts = useContactStore((state) => state.setFilteredContacts);
@@ -42,8 +40,6 @@ export function useContactHook() {
   const setSearchContacts = useContactStore((state) => state.setSearchContacts);
 
   // Individual selectors for state values
-  const toContact = useContactStore((state) => state.toContact);
-  const fromContact = useContactStore((state) => state.fromContact);
   const sortedContacts = useContactStore((state) => state.sortedContacts);
   const recentContacts = useContactStore((state) => state.recentContacts);
   const filteredContacts = useContactStore((state) => state.filteredContacts);
@@ -52,22 +48,6 @@ export function useContactHook() {
   const accountList = useContactStore((state) => state.accountList);
   const evmAccounts = useContactStore((state) => state.evmAccounts);
   const childAccounts = useContactStore((state) => state.childAccounts);
-
-  const updateToContact = (contact: Partial<Contact> & { address: string }) => {
-    setToContact(
-      contact.address === toContact.address
-        ? { ...toContact, ...contact }
-        : { ...DEFAULT_CONTACT, ...contact }
-    );
-  };
-
-  const updateFromContact = (contact: Partial<Contact> & { address: string }) => {
-    setFromContact(
-      contact.address === fromContact.address
-        ? { ...fromContact, ...contact }
-        : { ...DEFAULT_CONTACT, ...contact }
-    );
-  };
 
   const fetchAddressBook = useCallback(async () => {
     await usewallet.setDashIndex(0);
@@ -249,15 +229,11 @@ export function useContactHook() {
   );
 
   return {
-    updateToContact,
-    updateFromContact,
     fetchAddressBook,
     setupAccounts,
     useContact,
     filterContacts,
     searchUser,
-    toContact,
-    fromContact,
     sortedContacts,
     recentContacts,
     filteredContacts,

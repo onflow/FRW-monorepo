@@ -6,14 +6,14 @@ import type {
   WalletResponse,
 } from '@/shared/types/network-types';
 import { ensureEvmAddressPrefix, withPrefix } from '@/shared/utils/address';
-import { useNetworkHook } from '@/ui/hooks/useNetworkHook';
+import { useNetworks } from '@/ui/hooks/useNetworkHook';
 import { useProfileStore } from '@/ui/stores/profileStore';
 import { useWallet, useWalletLoaded } from '@/ui/utils/WalletContext';
 
-export const useProfileHook = () => {
+export const useProfiles = () => {
   const usewallet = useWallet();
   const walletLoaded = useWalletLoaded();
-  const { currentNetwork } = useNetworkHook();
+  const { currentNetwork } = useNetworks();
 
   // Action selectors
   const setMainAddress = useProfileStore((state) => state.setMainAddress);

@@ -4,7 +4,7 @@ import { useHistory } from 'react-router-dom';
 
 import { NFTDrawer } from '@/ui/FRWComponent/GeneralPages';
 import WarningSnackbar from '@/ui/FRWComponent/WarningSnackbar';
-import { useProfileHook } from '@/ui/hooks/useProfileHook';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useStorageCheck } from '@/ui/utils/useStorageCheck';
 import alertMark from 'ui/FRWAssets/svg/alertMark.svg';
 import { useWallet } from 'ui/utils';
@@ -23,7 +23,7 @@ interface MoveBoardProps {
 const MoveEvm = (props: MoveBoardProps) => {
   const usewallet = useWallet();
   const history = useHistory();
-  const { mainAddress } = useProfileHook();
+  const { mainAddress } = useProfiles();
   const [cadenceNft, setCadenceNft] = useState<any>(null);
   const [collectionList, setCollectionList] = useState<any>(null);
   const [selectedCollection, setSelected] = useState<string>('');

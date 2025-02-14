@@ -18,7 +18,7 @@ import React, { useCallback } from 'react';
 
 import { type TransactionState } from '@/shared/types/transaction-types';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
-import { useCoinHook } from '@/ui/hooks/useCoinHook';
+import { useCoins } from '@/ui/hooks/useCoinHook';
 import { TokenValue } from '@/ui/views/TokenDetail/TokenValue';
 
 import CancelIcon from '../../../components/iconfont/IconClose';
@@ -119,7 +119,7 @@ const TransferAmount = ({
 }) => {
   const classes = useStyles();
   const { amount, fiatAmount } = transactionState;
-  const { coins } = useCoinHook();
+  const { coins } = useCoins();
 
   const renderValue = useCallback(
     (option) => {
