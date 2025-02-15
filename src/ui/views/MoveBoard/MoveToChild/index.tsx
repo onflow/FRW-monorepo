@@ -191,7 +191,7 @@ const MoveToChild = (props: MoveBoardProps) => {
           history.push(`/dashboard?activity=1&txId=${txId}`);
         })
         .catch((err) => {
-          console.log('err ', err);
+          console.error(err);
           setSending(false);
           setFailed(true);
         });
@@ -216,6 +216,7 @@ const MoveToChild = (props: MoveBoardProps) => {
         history.push(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch(() => {
+        console.error(err);
         setSending(false);
         setFailed(true);
       });
