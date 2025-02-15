@@ -76,6 +76,8 @@ jobs:
           TEST_SEED_PHRASE_SENDER="${{ secrets.TEST_SEED_PHRASE_SENDER }}"
           TEST_SENDER_ADDR="${{ secrets.TEST_SENDER_ADDR }}"
           TEST_RECEIVER_ADDR="${{ secrets.TEST_RECEIVER_ADDR }}"
+          TEST_RECEIVER_EVM_ADDR="${{ secrets.TEST_RECEIVER_EVM_ADDR }}"
+          TEST_RECEIVER_METAMASK_EVM_ADDR="${{ secrets.TEST_RECEIVER_METAMASK_EVM_ADDR }}"
           EOF
 
       - name: Run tests
@@ -104,7 +106,6 @@ jobs:
 
   test:
     needs: build
-    if: github.ref_type == 'tag' || github.ref_name == 'dev' || github.ref_name == 'master'
     runs-on: ubuntu-latest
     concurrency:
       group: tests-${{ github.workflow }}
@@ -113,7 +114,8 @@ jobs:
       ${{
         github.ref_type == 'tag' && 'production' ||
         github.ref_name == 'master' && 'production' ||
-        github.ref_name == 'dev' && 'staging'
+        github.ref_name == 'dev' && 'staging' ||
+        'development'
       }}
     steps:
       - uses: actions/checkout@v4
@@ -138,6 +140,7 @@ jobs:
           TEST_RECEIVER_ADDR="${{ secrets.TEST_RECEIVER_ADDR }}"
           TEST_SENDER_EVM_ADDR="${{ secrets.TEST_SENDER_EVM_ADDR }}"
           TEST_RECEIVER_EVM_ADDR="${{ secrets.TEST_RECEIVER_EVM_ADDR }}"
+          TEST_RECEIVER_METAMASK_EVM_ADDR="${{ secrets.TEST_RECEIVER_METAMASK_EVM_ADDR }}"
           EOF
       - name: Install pnpm
         uses: pnpm/action-setup@v4

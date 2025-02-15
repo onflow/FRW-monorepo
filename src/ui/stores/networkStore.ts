@@ -3,7 +3,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 
 import { storage } from '@/background/webapi';
 
-import { useProfileHook } from '../hooks/useProfileHook';
+import { useProfiles } from '../hooks/useProfileHook';
 
 interface NetworkState {
   currentNetwork: string;
@@ -41,7 +41,7 @@ useNetworkStore.subscribe(
   (state) => state.currentNetwork,
   async () => {
     // Trigger profile updates when network changes
-    const { fetchProfileData, freshUserWallet, fetchUserWallet } = useProfileHook();
+    const { fetchProfileData, freshUserWallet, fetchUserWallet } = useProfiles();
 
     await fetchProfileData();
     await freshUserWallet();

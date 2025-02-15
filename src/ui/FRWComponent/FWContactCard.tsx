@@ -145,7 +145,7 @@ export const FWContactCard = ({ contact, hideCloseButton, isSend = false, isLoad
           <IconButton
             onClick={(e) => {
               e.stopPropagation();
-              history.push('/dashboard/wallet/send');
+              history.push(`/dashboard/token/flow/send/${contact.address}`);
             }}
           >
             <CardMedia sx={{ width: '11px', height: '11px' }} image={closex} />

@@ -10,15 +10,24 @@ interface TokenPriceProps {
   postFix?: string;
 }
 
-export const TokenPrice: React.FC<TokenPriceProps> = ({
+export const TokenValue: React.FC<TokenPriceProps> = ({
   value,
   className = '',
-  prefix = '$',
+  prefix = '',
   postFix = '',
 }) => {
-  if (value === 0 || value === null || value === undefined) {
+  if (value === 0 || value === null || value === undefined || value === '') {
     return <span className={className}>{''}</span>;
   }
+
+  const numberWithCommas = (x: string) => {
+    // Check if the number is between 1000 and 999999
+    const num = parseFloat(x);
+    if (num >= 1000 && num <= 999999) {
+      return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+    return x;
+  };
 
   // convert value to number if it's a string
   const valueNumber = typeof value === 'string' ? parseFloat(value) : value;
@@ -27,9 +36,11 @@ export const TokenPrice: React.FC<TokenPriceProps> = ({
   const { leadingPart, zeroPart, endingPart } = formattedPrice;
 
   return (
-    <span className={className}>
+    <span className={className} data-testid={`token-value-${value}`}>
       {prefix}
-      <span style={leadingPart === '' ? { padding: '0 0.25rem' } : undefined}>{leadingPart}</span>
+      <span style={leadingPart === '' ? { padding: '0 0.25rem' } : undefined}>
+        {numberWithCommas(leadingPart)}
+      </span>
       {zeroPart !== null && (
         <sub
           style={{

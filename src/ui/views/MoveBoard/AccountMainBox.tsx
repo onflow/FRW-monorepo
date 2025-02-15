@@ -3,7 +3,7 @@ import { makeStyles } from '@mui/styles';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { ensureEvmAddressPrefix } from '@/shared/utils/address';
-import { useProfileStore } from '@/ui/stores/profileStore';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import accountMove from 'ui/FRWAssets/svg/accountMove.svg';
 import { FWMoveDropdown } from 'ui/FRWComponent';
 import { useWallet } from 'ui/utils';
@@ -15,7 +15,7 @@ const USER_CONTACT = {
 
 function AccountMainBox({ isChild, setSelectedChildAccount, selectedAccount, isEvm = false }) {
   const usewallet = useWallet();
-  const { mainAddress, evmAddress, childAccounts, currentWallet } = useProfileStore();
+  const { mainAddress, evmAddress, childAccounts, currentWallet } = useProfiles();
   const [first, setFirst] = useState<string>('');
   const [userInfo, setUser] = useState<any>(USER_CONTACT);
   const [firstEmoji, setFirstEmoji] = useState<any>(null);

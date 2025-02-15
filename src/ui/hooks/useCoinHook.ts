@@ -2,17 +2,29 @@ import BN from 'bignumber.js';
 import { useCallback, useEffect } from 'react';
 
 import { withPrefix } from '@/shared/utils/address';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useCoinStore } from '@/ui/stores/coinStore';
-import { useProfileStore } from '@/ui/stores/profileStore';
 import { useWallet, useWalletLoaded } from '@/ui/utils/WalletContext';
 
 const DEFAULT_MIN_AMOUNT = '0.001';
 
-export const useCoinHook = () => {
+export const useCoins = () => {
   const usewallet = useWallet();
   const walletLoaded = useWalletLoaded();
-  const { setCoinData, setBalance, setTotalFlow, totalFlow, setAvailableFlow } = useCoinStore();
-  const { mainAddress } = useProfileStore();
+  const { mainAddress } = useProfiles();
+
+  // Action selectors
+  const setCoinData = useCoinStore((state) => state.setCoinData);
+  const setBalance = useCoinStore((state) => state.setBalance);
+  const setTotalFlow = useCoinStore((state) => state.setTotalFlow);
+  const setAvailableFlow = useCoinStore((state) => state.setAvailableFlow);
+  const clearCoins = useCoinStore((state) => state.clearCoins);
+
+  // State selectors
+  const coins = useCoinStore((state) => state.coins);
+  const balance = useCoinStore((state) => state.balance);
+  const totalFlow = useCoinStore((state) => state.totalFlow);
+  const availableFlow = useCoinStore((state) => state.availableFlow);
 
   const handleStorageData = useCallback(
     async (storageData) => {
@@ -109,5 +121,10 @@ export const useCoinHook = () => {
   return {
     refreshCoinData,
     handleStorageData,
+    clearCoins,
+    coins,
+    balance,
+    totalFlow,
+    availableFlow,
   };
 };

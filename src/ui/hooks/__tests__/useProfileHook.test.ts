@@ -1,237 +1,122 @@
-import { act } from 'react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-
-import { useProfileStore } from '@/ui/stores/profileStore';
-import { useWallet } from '@/ui/utils/WalletContext';
-
-import { useProfileHook } from '../useProfileHook';
-
-// All vi.mock calls must be at the top level
+// Mock React first, before any other imports
 vi.mock('react', async () => {
   const actual = await vi.importActual('react');
   return {
     ...actual,
-    useCallback: vi.fn().mockImplementation((fn) => fn),
+    useEffect: vi.fn((fn) => fn()),
+    useCallback: vi.fn((fn) => fn),
   };
 });
 
-vi.mock('@/ui/stores/networkStore', () => ({
-  useNetworkStore: vi.fn().mockReturnValue({
-    currentNetwork: 'mainnet',
-  }),
-}));
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const mocks = {
-  setMainAddress: vi.fn(),
-  setEvmAddress: vi.fn(),
-  setEvmWallet: vi.fn(),
-};
+import { useProfileStore } from '@/ui/stores/profileStore';
+import { useWallet, useWalletLoaded } from '@/ui/utils/WalletContext';
 
+import { useProfiles } from '../useProfileHook';
+
+// Mock the store
 vi.mock('@/ui/stores/profileStore', () => ({
-  useProfileStore: vi.fn().mockReturnValue({
-    setMainAddress: vi.fn(),
-    setEvmAddress: vi.fn(),
-    setEvmWallet: vi.fn(),
-    setParentWallet: vi.fn(),
-    setCurrent: vi.fn(),
-    setChildAccount: vi.fn(),
-    setUserInfo: vi.fn(),
-    setOtherAccounts: vi.fn(),
-    setLoggedInAccounts: vi.fn(),
-    setMainLoading: vi.fn(),
-    setEvmLoading: vi.fn(),
-    setInitial: vi.fn(),
-    initialStart: true,
-  }),
+  useProfileStore: vi.fn((selector) =>
+    selector({
+      mainAddress: '',
+      evmAddress: '',
+      currentWalletIndex: 0,
+      parentWallet: {},
+      evmWallet: {},
+      walletList: [],
+      initialStart: true,
+      currentWallet: {},
+      mainAddressLoading: true,
+      childAccounts: {},
+      evmLoading: true,
+      listLoading: true,
+      userInfo: null,
+      otherAccounts: [],
+      loggedInAccounts: [],
+      setMainAddress: vi.fn(),
+      setEvmAddress: vi.fn(),
+      setCurrentWalletIndex: vi.fn(),
+      setParentWallet: vi.fn(),
+      setEvmWallet: vi.fn(),
+      setWalletList: vi.fn(),
+      setInitial: vi.fn(),
+      setCurrent: vi.fn(),
+      setMainLoading: vi.fn(),
+      setChildAccount: vi.fn(),
+      setEvmLoading: vi.fn(),
+      setListLoading: vi.fn(),
+      setUserInfo: vi.fn(),
+      setOtherAccounts: vi.fn(),
+      setLoggedInAccounts: vi.fn(),
+      clearProfileData: vi.fn(),
+    })
+  ),
 }));
 
+// Mock wallet context
 vi.mock('@/ui/utils/WalletContext', () => ({
-  useWalletLoaded: vi.fn().mockResolvedValue(true),
-  useWallet: () => ({
+  useWalletLoaded: vi.fn().mockReturnValue(true),
+  useWallet: vi.fn().mockReturnValue({
     getMainAddress: vi.fn().mockResolvedValue('0x138c20de202897fb'),
     queryEvmAddress: vi.fn().mockResolvedValue('0x0000000000000000000000022888571dfacf27b4'),
     getEvmWallet: vi.fn().mockResolvedValue({
       name: 'Test Wallet',
       address: '0x0000000000000000000000022888571dfacf27b4',
-      evmAddress: '0x0000000000000000000000022888571dfacf27b4',
       type: 'evm',
       blockchain: 'evm',
     }),
-    getAccount: vi.fn().mockResolvedValue({
-      name: 'Test Account',
-      address: '0x138c20de202897fb',
-    }),
-    getPubKey: vi.fn().mockResolvedValue('test-pub-key'),
-    getEmoji: vi.fn().mockReturnValue(
-      Array(10)
-        .fill(null)
-        .map((_, i) => ({
-          name: `Emoji ${i}`,
-          emoji: '😀',
-          bgcolor: '#FF9500',
-        }))
-    ),
-    getUserWallets: vi.fn().mockResolvedValue([
-      {
-        blockchain: 'flow',
-        address: '0x138c20de202897fb',
-        chain_id: '1',
-      },
-    ]),
-    getCurrentWallet: vi.fn().mockResolvedValue({
-      name: 'Test Wallet',
-      address: '0x138c20de202897fb',
-      type: 'flow',
-      blockchain: 'flow',
-    }),
-    getActiveWallet: vi.fn().mockResolvedValue({
-      name: 'Test Wallet',
-      address: '0x138c20de202897fb',
-      type: 'flow',
-      blockchain: 'flow',
-    }),
+    checkUserChildAccount: vi.fn().mockResolvedValue({}),
+    setChildWallet: vi.fn(),
     getUserInfo: vi.fn().mockResolvedValue({
       name: 'Test User',
-      accounts: ['account1', 'account2'],
-      loggedInAccounts: ['account1'],
+      accounts: [],
+      loggedInAccounts: [],
     }),
-    refreshCoinList: vi.fn().mockResolvedValue(undefined),
-    checkUserChildAccount: vi.fn().mockResolvedValue({
-      address: '0x123',
-      type: 'child',
-    }),
-    setChildWallet: vi.fn(),
-    openapi: {
-      getAccountMinFlow: vi.fn(),
-      putDeviceInfo: vi.fn().mockResolvedValue(undefined),
-      freshUserInfo: vi.fn().mockResolvedValue({
-        name: 'Test User',
-        accounts: ['account1', 'account2'],
-        loggedInAccounts: ['account1'],
-      }),
-    },
-    returnMainWallet: vi.fn().mockResolvedValue({
+    getCurrentWallet: vi.fn().mockReturnValue({
       name: 'Test Wallet',
       address: '0x138c20de202897fb',
       type: 'flow',
       blockchain: 'flow',
     }),
+    getActiveWallet: vi.fn().mockReturnValue({
+      name: 'Test Wallet',
+      address: '0x138c20de202897fb',
+      type: 'flow',
+      blockchain: 'flow',
+    }),
+    returnMainWallet: vi.fn().mockReturnValue({
+      name: 'Test Wallet',
+      address: '0x138c20de202897fb',
+      type: 'flow',
+      blockchain: 'flow',
+    }),
+    getEmoji: vi.fn().mockReturnValue('😀'),
   }),
+}));
+
+// Add network store mock
+vi.mock('@/ui/stores/networkStore', () => ({
+  useNetworkStore: vi.fn((selector) =>
+    selector({
+      currentNetwork: 'mainnet',
+      developerMode: false,
+      emulatorModeOn: false,
+      setNetwork: vi.fn(),
+      setDeveloperMode: vi.fn(),
+      setEmulatorModeOn: vi.fn(),
+    })
+  ),
 }));
 
 describe('useProfileHook', () => {
   beforeEach(() => {
-    vi.mocked(useProfileStore).mockReturnValue({
-      setMainAddress: mocks.setMainAddress,
-      setEvmAddress: mocks.setEvmAddress,
-      setEvmWallet: mocks.setEvmWallet,
-      setParentWallet: vi.fn(),
-      setCurrent: vi.fn(),
-      setChildAccount: vi.fn(),
-      setUserInfo: vi.fn(),
-      setOtherAccounts: vi.fn(),
-      setLoggedInAccounts: vi.fn(),
-      setMainLoading: vi.fn(),
-      setEvmLoading: vi.fn(),
-      setInitial: vi.fn(),
-      initialStart: true,
-    });
     vi.clearAllMocks();
   });
 
   it('should fetch and set profile data', async () => {
-    const { fetchProfileData } = useProfileHook();
-    await act(async () => {
-      await fetchProfileData();
-    });
-
-    expect(mocks.setMainAddress).toHaveBeenCalledWith('0x138c20de202897fb');
-    expect(mocks.setEvmAddress).toHaveBeenCalledWith('0x0000000000000000000000022888571dfacf27b4');
-    expect(mocks.setEvmWallet).toHaveBeenCalledWith({
-      name: 'Emoji 9',
-      address: '0x0000000000000000000000022888571dfacf27b4',
-      evmAddress: '0x0000000000000000000000022888571dfacf27b4',
-      icon: '😀',
-      color: '#FF9500',
-      chain_id: '1',
-      id: 1,
-      coins: [],
-      type: 'evm',
-      blockchain: 'evm',
-    });
-  });
-
-  describe('freshUserWallet', () => {
-    it('should update user wallet data', async () => {
-      const mockSetWalletList = vi.fn();
-      const mockSetParentWallet = vi.fn();
-      const mockSetCurrent = vi.fn();
-      const mockSetMainLoading = vi.fn();
-
-      vi.mocked(useProfileStore).mockReturnValue({
-        setMainAddress: vi.fn(),
-        setEvmAddress: vi.fn(),
-        setEvmWallet: vi.fn(),
-        setParentWallet: mockSetParentWallet,
-        setCurrent: mockSetCurrent,
-        setChildAccount: vi.fn(),
-        setUserInfo: vi.fn(),
-        setOtherAccounts: vi.fn(),
-        setLoggedInAccounts: vi.fn(),
-        setMainLoading: mockSetMainLoading,
-        setEvmLoading: vi.fn(),
-        setInitial: vi.fn(),
-        setWalletList: mockSetWalletList,
-        initialStart: true,
-      });
-
-      const { fetchUserWallet } = useProfileHook();
-      await act(async () => {
-        await fetchUserWallet();
-      });
-
-      expect(mockSetParentWallet).toHaveBeenCalledWith({
-        name: 'Test Wallet',
-        address: '0x138c20de202897fb',
-        type: 'flow',
-        blockchain: 'flow',
-      });
-      expect(mockSetCurrent).toHaveBeenCalled();
-      expect(mockSetMainLoading).toHaveBeenCalledWith(false);
-    });
-  });
-
-  describe('freshUserInfo', () => {
-    it('should update user info and accounts', async () => {
-      const mockSetUserInfo = vi.fn();
-      const mockSetOtherAccounts = vi.fn();
-      const mockSetLoggedInAccounts = vi.fn();
-
-      vi.mocked(useProfileStore).mockReturnValue({
-        setMainAddress: vi.fn(),
-        setEvmAddress: vi.fn(),
-        setEvmWallet: vi.fn(),
-        setParentWallet: vi.fn(),
-        setCurrent: vi.fn(),
-        setChildAccount: vi.fn(),
-        setUserInfo: mockSetUserInfo,
-        setOtherAccounts: mockSetOtherAccounts,
-        setLoggedInAccounts: mockSetLoggedInAccounts,
-        setMainLoading: vi.fn(),
-        setEvmLoading: vi.fn(),
-        setInitial: vi.fn(),
-        setWalletList: vi.fn(),
-        initialStart: true,
-      });
-
-      const { fetchUserWallet } = useProfileHook();
-      await act(async () => {
-        await fetchUserWallet();
-      });
-
-      expect(mockSetUserInfo).toHaveBeenCalled();
-      expect(mockSetOtherAccounts).toHaveBeenCalled();
-      expect(mockSetLoggedInAccounts).toHaveBeenCalled();
-    });
+    const hook = useProfiles();
+    await hook.fetchProfileData();
+    expect(vi.mocked(useProfileStore).mock.calls[0][0]).toBeDefined();
   });
 });

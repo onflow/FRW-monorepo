@@ -1,10 +1,9 @@
-import { Box, Typography, Avatar, Skeleton } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { Box, Typography, Skeleton } from '@mui/material';
 import React, { useState, useEffect, useCallback } from 'react';
 
 import { isValidEthereumAddress } from '@/shared/utils/address';
-import { useProfileStore } from '@/ui/stores/profileStore';
-import { useWallet, formatAddress } from 'ui/utils';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
+import { formatAddress } from 'ui/utils';
 
 const tempEmoji = {
   emoji: '🥥',
@@ -13,20 +12,8 @@ const tempEmoji = {
 };
 
 export const FRWProfileCard = ({ contact, isEvm = false, isLoading = false }) => {
-  const usewallet = useWallet();
-  const { currentWallet } = useProfileStore();
+  const { currentWallet } = useProfiles();
   const [emoji, setEmoji] = useState(tempEmoji);
-
-  const getName = (name: string) => {
-    if (!name) {
-      return '0x';
-    }
-    if (name.startsWith('0')) {
-      return '0x';
-    } else {
-      return name[0].toUpperCase();
-    }
-  };
 
   const getEmoji = useCallback(async () => {
     if (isValidEthereumAddress(contact.address)) {

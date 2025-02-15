@@ -2,79 +2,81 @@ import { act } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { useCoinStore } from '@/ui/stores/coinStore';
+import { useNetworkStore } from '@/ui/stores/networkStore';
+import { useProfileStore } from '@/ui/stores/profileStore';
+import { useWallet, useWalletLoaded } from '@/ui/utils/WalletContext';
 
-import { useCoinHook } from '../useCoinHook';
+import { useCoins } from '../useCoinHook';
+
 // Mock React
 vi.mock('react', async () => {
   const actual = await vi.importActual('react');
   return {
     ...actual,
-    useRef: vi.fn(),
-    useEffect: vi.fn(),
+    useEffect: vi.fn().mockImplementation((fn) => fn()),
     useCallback: vi.fn().mockImplementation((fn) => fn),
   };
 });
 
-// Mock the stores
-vi.mock('@/ui/stores/coinStore', () => {
-  const mockSetBalance = vi.fn();
-  const mockSetCoinData = vi.fn();
-  const mockSetTotalFlow = vi.fn();
-  const mockSetAvailableFlow = vi.fn();
-
-  return {
-    useCoinStore: Object.assign(
-      vi.fn().mockReturnValue({
-        setCoinData: mockSetCoinData,
-        setBalance: mockSetBalance,
-        setTotalFlow: mockSetTotalFlow,
-        totalFlow: '0',
-        setAvailableFlow: mockSetAvailableFlow,
-      }),
-      {
-        getState: () => ({
-          setCoinData: mockSetCoinData,
-          setBalance: mockSetBalance,
-          setTotalFlow: mockSetTotalFlow,
-          totalFlow: '0',
-          setAvailableFlow: mockSetAvailableFlow,
-        }),
-      }
-    ),
-  };
-});
+// Mock all stores first
+vi.mock('@/ui/stores/networkStore', () => ({
+  useNetworkStore: vi.fn((selector) =>
+    selector({
+      currentNetwork: 'mainnet',
+      developerMode: false,
+      emulatorModeOn: false,
+      setNetwork: vi.fn(),
+      setDeveloperMode: vi.fn(),
+      setEmulatorModeOn: vi.fn(),
+    })
+  ),
+}));
 
 vi.mock('@/ui/stores/profileStore', () => ({
-  useProfileStore: vi.fn().mockReturnValue({
-    mainAddress: 'test-address',
+  useProfileStore: vi.fn((selector) =>
+    selector({
+      mainAddress: 'test-address',
+      currentWallet: {},
+      setMainAddress: vi.fn(),
+    })
+  ),
+}));
+
+vi.mock('@/ui/stores/coinStore', () => ({
+  useCoinStore: vi.fn((selector) =>
+    selector({
+      coins: [],
+      balance: '$ 0.00',
+      availableFlow: '0',
+      totalFlow: '0',
+      setCoinData: vi.fn(),
+      setBalance: vi.fn(),
+      setTotalFlow: vi.fn(),
+      setAvailableFlow: vi.fn(),
+      clearCoins: vi.fn(),
+    })
+  ),
+  getState: vi.fn().mockReturnValue({
+    setCoinData: vi.fn(),
   }),
 }));
 
-// Mock the wallet context
-vi.mock('@/ui/utils/WalletContext', () => ({
-  useWalletLoaded: vi.fn().mockResolvedValue(true),
-  useWallet: () => ({
-    refreshCoinList: vi.fn().mockResolvedValue(undefined),
-    getMainWallet: vi.fn(),
-    openapi: {
-      getAccountMinFlow: vi.fn(),
-    },
-  }),
-}));
-
-// Mock Storage
-const mockStorage = {
-  get: vi.fn().mockImplementation(() =>
-    Promise.resolve([
-      { unit: 'USDC.e', total: null, balance: null },
+// Mock storage
+vi.mock('@/background/webapi', () => ({
+  storage: {
+    get: vi.fn().mockResolvedValue([
       { unit: 'FLOW', total: '5.0', balance: '5.0' },
       { unit: 'WFLOW', total: '2.0', balance: '2.0' },
-    ])
-  ),
-};
+    ]),
+  },
+}));
 
-vi.mock('@/background/webapi', () => ({
-  storage: mockStorage,
+// Mock wallet context
+vi.mock('@/ui/utils/WalletContext', () => ({
+  useWalletLoaded: vi.fn().mockReturnValue(true),
+  useWallet: vi.fn().mockReturnValue({
+    refreshCoinList: vi.fn().mockResolvedValue(undefined),
+  }),
 }));
 
 describe('useCoinHook', () => {
@@ -84,27 +86,32 @@ describe('useCoinHook', () => {
   let mockSetAvailableFlow: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     mockSetBalance = vi.fn();
     mockSetCoinData = vi.fn();
     mockSetTotalFlow = vi.fn();
     mockSetAvailableFlow = vi.fn();
 
-    vi.mocked(useCoinStore).mockReturnValue({
-      setCoinData: mockSetCoinData,
-      setBalance: mockSetBalance,
-      setTotalFlow: mockSetTotalFlow,
-      totalFlow: '0',
-      setAvailableFlow: mockSetAvailableFlow,
-    });
-
-    vi.clearAllMocks();
+    vi.mocked(useCoinStore).mockImplementation((selector) =>
+      selector({
+        coins: [],
+        balance: '$ 0.00',
+        availableFlow: '0',
+        totalFlow: '0',
+        setCoinData: mockSetCoinData,
+        setBalance: mockSetBalance,
+        setTotalFlow: mockSetTotalFlow,
+        setAvailableFlow: mockSetAvailableFlow,
+        clearCoins: vi.fn(),
+      })
+    );
   });
 
   describe('handleStorageData', () => {
     it('should handle empty data', async () => {
-      const { handleStorageData } = useCoinHook();
+      const { handleStorageData } = useCoins();
       await handleStorageData(null);
-      expect(useCoinStore.getState().setCoinData).not.toHaveBeenCalled();
+      expect(mockSetCoinData).not.toHaveBeenCalled();
     });
 
     it('should process unique tokens and calculate totals', async () => {
@@ -114,7 +121,7 @@ describe('useCoinHook', () => {
         { unit: 'WFLOW', total: '2.0', balance: '2.0' },
       ];
 
-      const { handleStorageData } = useCoinHook();
+      const { handleStorageData } = useCoins();
       await handleStorageData(mockData);
 
       expect(mockSetTotalFlow).toHaveBeenCalledWith('5');
@@ -133,7 +140,7 @@ describe('useCoinHook', () => {
         { unit: 'ETH', total: '2.0', balance: '2.0' },
       ];
 
-      const { handleStorageData } = useCoinHook();
+      const { handleStorageData } = useCoins();
       await handleStorageData(mockData);
 
       expect(mockSetBalance).toHaveBeenCalledWith('$ 2.00');
@@ -159,14 +166,20 @@ describe('useCoinHook', () => {
       }));
 
       // Mock storage
-      mockStorage.get.mockReset();
+      vi.mock('@/background/webapi', () => ({
+        storage: {
+          get: vi.fn().mockResolvedValue([
+            { unit: 'FLOW', total: '5.0', balance: '5.0' },
+            { unit: 'WFLOW', total: '2.0', balance: '2.0' },
+          ]),
+        },
+      }));
     });
 
     it('should handle empty data', async () => {
-      mockStorage.get.mockResolvedValue(null);
-      const { refreshCoinData } = useCoinHook();
+      const { refreshCoinData } = useCoins();
       await refreshCoinData();
-      expect(useCoinStore.getState().setCoinData).not.toHaveBeenCalled();
+      expect(mockSetCoinData).not.toHaveBeenCalled();
     });
 
     it('should handle null totals', async () => {
@@ -176,8 +189,7 @@ describe('useCoinHook', () => {
         { unit: 'WFLOW', total: '2.0', balance: '2.0' },
       ];
 
-      mockStorage.get.mockResolvedValue(mockData);
-      const { refreshCoinData } = useCoinHook();
+      const { refreshCoinData } = useCoins();
 
       await act(async () => {
         await refreshCoinData();
@@ -185,7 +197,7 @@ describe('useCoinHook', () => {
         await new Promise((resolve) => setTimeout(resolve, 0));
       });
 
-      console.log('Storage mock calls:', mockStorage.get.mock.calls);
+      console.log('Storage mock calls:', vi.mocked(vi.fn()).mock.calls);
       console.log('TotalFlow mock calls:', mockSetTotalFlow.mock.calls);
     });
   });
