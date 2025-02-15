@@ -1190,7 +1190,7 @@ export class WalletController extends BaseController {
         result.status === 'fulfilled' ? result.value : null
       );
 
-      const coins = tokenList.map((token, index) => {
+      const coins = tokenList.map((token, index): CoinItem => {
         const tokenId = `A.${token.address.slice(2)}.${token.contractName}`;
         return {
           coin: token.name,
@@ -1211,7 +1211,8 @@ export class WalletController extends BaseController {
       });
       coins.sort((a, b) => {
         if (b.total === a.total) {
-          return b.balance - a.balance;
+          // Balance is a string, so we need to convert it to a number for comparison
+          return new BN(b.balance).minus(new BN(a.balance)).toNumber();
         } else {
           return b.total - a.total;
         }
