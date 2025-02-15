@@ -215,7 +215,7 @@ const MoveToChild = (props: MoveBoardProps) => {
         setSending(false);
         history.push(`/dashboard?activity=1&txId=${txId}`);
       })
-      .catch(() => {
+      .catch((err) => {
         console.error(err);
         setSending(false);
         setFailed(true);
