@@ -191,9 +191,7 @@ const CoinList = ({ data, ableFt, isActive, childType, coinLoading }) => {
                   secondaryAction={
                     <EndListItemText
                       primary={parseFloat(coin.balance).toFixed(3)}
-                      secondary={
-                        <TokenValue value={String(coin.balance * coin.price)} prefix="$" />
-                      }
+                      secondary={<TokenValue value={String(coin.total)} prefix="$" />}
                       unit={coin.unit}
                       change={parseFloat(coin.change24h.toFixed(2))}
                     />
