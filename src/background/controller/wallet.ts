@@ -874,10 +874,6 @@ export class WalletController extends BaseController {
   updateIsFirstOpen = () => {
     return preferenceService.updateIsFirstOpen();
   };
-  listChainAssets = async (address: string) => {
-    return await openapiService.getCoinList(address);
-  };
-
   // userinfo
   getUserInfo = async (forceRefresh: boolean) => {
     const data = await userInfoService.getUserInfo();
