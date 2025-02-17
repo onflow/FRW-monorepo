@@ -464,7 +464,7 @@ export const waitForTransaction = async ({
 
   if (amount) {
     await expect(
-      page.getByTestId(activityItemRegexp).getByTestId(`token-value-${amount}`)
+      page.getByTestId(activityItemRegexp).getByTestId(`token-balance-${amount}`)
     ).toBeVisible();
   }
 };

@@ -20,10 +20,12 @@ export const TokenBalance: React.FC<TokenBalanceProps> = ({
   prefix = '',
   postFix = '',
 }) => {
-  if (!value || value === '0' || value === '') {
+  if (!value || value === '') {
+    return <span className={className}>{''}</span>;
+  }
+  if (value === '0') {
     return <span className={className}>{'0'}</span>;
   }
-
   if (showFull) {
     return (
       <span className={className} data-testid={`token-balance-${value}`}>
