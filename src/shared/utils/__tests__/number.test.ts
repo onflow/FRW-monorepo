@@ -38,7 +38,7 @@ describe('addDotSeparators', () => {
   });
 });
 
-describe('stripEnteredAmount', () => {
+describe('trimDecimalAmount', () => {
   it('should handle real-time input correctly', () => {
     // Basic cases
     expect(trimDecimalAmount('123', 2, 'entering')).toBe('123');
@@ -61,7 +61,7 @@ describe('stripEnteredAmount', () => {
   });
 });
 
-describe('stripFinalAmount', () => {
+describe('trimDecimalAmount clean', () => {
   it('should handle empty and invalid inputs', () => {
     expect(trimDecimalAmount('', 2, 'clean')).toBe('0');
     expect(trimDecimalAmount('   ', 2, 'clean')).toBe('0');

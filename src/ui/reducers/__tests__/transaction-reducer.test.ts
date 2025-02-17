@@ -102,7 +102,7 @@ describe('Transaction Reducer', () => {
       const mockCoinInfo: CoinItem = {
         coin: 'test',
         unit: 'TEST',
-        balance: 100,
+        balance: '100',
         price: 1,
         change24h: 0,
         total: 100,
@@ -225,7 +225,7 @@ describe('Transaction Reducer', () => {
         ...INITIAL_TRANSACTION_STATE,
         coinInfo: {
           ...INITIAL_TRANSACTION_STATE.coinInfo,
-          balance: 100,
+          balance: '100',
           price: 2,
         },
         selectedToken: {
@@ -323,7 +323,7 @@ describe('Transaction Reducer', () => {
         ...INITIAL_TRANSACTION_STATE,
         coinInfo: {
           ...INITIAL_TRANSACTION_STATE.coinInfo,
-          balance: 100,
+          balance: '100',
           price: 2,
         },
         tokenType: 'Flow' as TokenType,
