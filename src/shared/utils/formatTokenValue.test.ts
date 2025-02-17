@@ -11,11 +11,13 @@ describe('formatPrice', () => {
     });
   });
 
-  it('should format numbers >= 1 with two decimal places', () => {
+  it('should format numbers >= 1 by truncating to two decimal places', () => {
     const testCases = [
-      { input: '1.23456', expected: '1.23456' },
-      { input: '123.456789', expected: '123.456789' },
-      { input: '1000', expected: '1000' },
+      { input: '1.23456', expected: '1.23' },
+      { input: '123.456789', expected: '123.45' },
+      { input: '1000.999', expected: '1000.99' },
+      { input: '1000', expected: '1000.00' },
+      { input: '9.999999', expected: '9.99' },
     ];
 
     testCases.forEach(({ input, expected }) => {

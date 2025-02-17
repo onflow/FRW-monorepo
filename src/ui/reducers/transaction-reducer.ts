@@ -38,7 +38,7 @@ export const INITIAL_TRANSACTION_STATE: TransactionState = {
   coinInfo: {
     coin: '',
     unit: '',
-    balance: 0,
+    balance: '0',
     price: 0,
     change24h: 0,
     total: 0,
@@ -168,6 +168,8 @@ export const transactionReducer = (
       // Check if entering in coin or fiat
 
       if (state.fiatOrCoin === 'coin') {
+        // Note that this will truncate the balance to the max number of decimals allowed by the token
+        // It should not be possible to have a balance that is greater than the max number of decimals allowed by the token
         return transactionReducer(state, {
           type: 'setAmount',
           payload: state.coinInfo.balance.toString(),
@@ -201,10 +203,10 @@ export const transactionReducer = (
       const price = new BN(state.coinInfo.price || '0.0');
 
       if (state.fiatOrCoin === 'fiat') {
-        // Strip the amount entered to 3 decimal places
-        amountInFiat = trimDecimalAmount(action.payload, 3, 'entering');
+        // Strip the amount entered to 8 decimal places
+        amountInFiat = trimDecimalAmount(action.payload, 8, 'entering');
         // Check if the balance is exceeded
-        const fiatAmountAsBN = new BN(trimDecimalAmount(amountInFiat, 3, 'clean'));
+        const fiatAmountAsBN = new BN(trimDecimalAmount(amountInFiat, 8, 'clean'));
         const calculatedAmountInCoin = price.isZero() ? new BN(0) : fiatAmountAsBN.dividedBy(price);
 
         // Figure out the amount in coin trimmed to the max decimals

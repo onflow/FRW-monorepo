@@ -1,3 +1,5 @@
+import { trimDecimalAmount } from './number';
+
 interface PriceParts {
   leadingPart: string;
   zeroPart: number | null;
@@ -58,7 +60,7 @@ export function formatPrice(priceStr: string, zeroCondenseThreshold = 4): Format
     return {
       price: decimalStr,
       formattedPrice: {
-        leadingPart: decimalStr,
+        leadingPart: trimDecimalAmount(decimalStr, 2, 'exact'),
         zeroPart: null,
         endingPart: null,
       },

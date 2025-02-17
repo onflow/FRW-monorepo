@@ -17,8 +17,6 @@ export const TokenValue: React.FC<TokenPriceProps> = ({
   prefix = '',
   postFix = '',
 }) => {
-  console.log('value', value, prefix, postFix);
-
   if (!value || value === '0' || value === '') {
     return <span className={className}>{''}</span>;
   }
