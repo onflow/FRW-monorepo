@@ -265,7 +265,6 @@ const GoogleRecoverPassword = ({ handleSwitchTab, mnemonic, username, lastPasswo
                 className={classes.inputBox}
                 fullWidth
                 disableUnderline
-                readOnly={!(password.length < 8)}
                 onChange={(event) => {
                   setPassword(event.target.value);
                 }}
