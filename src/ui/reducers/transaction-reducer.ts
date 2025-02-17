@@ -11,7 +11,7 @@ import type {
 import { type CoinItem, type WalletAddress } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 
-import { stripEnteredAmount, stripFinalAmount } from '../../shared/utils/number';
+import { trimDecimalAmount } from '../../shared/utils/number';
 
 export const INITIAL_TRANSACTION_STATE: TransactionState = {
   currentTxState: '',
@@ -202,9 +202,9 @@ export const transactionReducer = (
 
       if (state.fiatOrCoin === 'fiat') {
         // Strip the amount entered to 3 decimal places
-        amountInFiat = stripEnteredAmount(action.payload, 3);
+        amountInFiat = trimDecimalAmount(action.payload, 3, 'entering');
         // Check if the balance is exceeded
-        const fiatAmountAsBN = new BN(stripFinalAmount(amountInFiat, 3));
+        const fiatAmountAsBN = new BN(trimDecimalAmount(amountInFiat, 3, 'clean'));
         const calculatedAmountInCoin = price.isZero() ? new BN(0) : fiatAmountAsBN.dividedBy(price);
 
         // Figure out the amount in coin trimmed to the max decimals
@@ -220,11 +220,11 @@ export const transactionReducer = (
         remainingBalance = balance.minus(new BN(amountInCoin));
       } else if (state.fiatOrCoin === 'coin') {
         // Check if the amount entered has too many decimal places
-        amountInCoin = stripEnteredAmount(action.payload, state.selectedToken.decimals);
+        amountInCoin = trimDecimalAmount(action.payload, state.selectedToken.decimals, 'entering');
 
         // Check if the balance is exceeded
         const amountBN = new BN(
-          stripFinalAmount(amountInCoin, state.selectedToken.decimals) || '0'
+          trimDecimalAmount(amountInCoin, state.selectedToken.decimals, 'clean') || '0'
         );
         // Calculate the remaining balance after the transaction
         remainingBalance = balance.minus(amountBN);

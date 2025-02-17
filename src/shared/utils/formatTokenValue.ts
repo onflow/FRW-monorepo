@@ -34,6 +34,7 @@ function scientificToDecimal(numStr: string): string {
  * @param priceStr - The price string to format.
  * @param zeroCondenseThreshold - The number of zeros to condense. example: 4 would condense 0.0000123 to 0.0(3)12.
  * First zero after decimal point is maintained for readability.
+ * @param decimals - The number of decimals to display.
  * @returns The formatted price.
  */
 export function formatPrice(priceStr: string, zeroCondenseThreshold = 4): FormattedPrice {

@@ -30,12 +30,25 @@ export const addDotSeparators = (num) => {
   return `${newIntegerPart}.${formattedDecimal}`;
 };
 
-export const stripEnteredAmount = (value: string, maxDecimals: number) => {
+/**
+ * Trims the decimal part of an amount to the given max decimal places
+ * @param value - The amount to trim
+ * @param decimals - The maximum number of decimal places
+ * @param mode - Whether the user is in the process of entering the amount (entering),
+ *              should we clean the amount (clean), or should we return the exact decimal places (exact)
+ *              Always rounds down to the nearest decimal place
+ */
+export const trimDecimalAmount = (
+  value: string,
+  decimals: number,
+  mode: 'entering' | 'clean' | 'exact'
+) => {
   // Remove minus signs and non-digit/non-decimal characters
   const cleanValue = value.replace(/[^\d.]/g, '');
 
   // Find the first decimal point and ignore everything after a second one
   const firstDecimalIndex = cleanValue.indexOf('.');
+  let trimmedValue = '';
   if (firstDecimalIndex !== -1) {
     const beforeDecimal = cleanValue.slice(0, firstDecimalIndex).replace(/^0+/, '');
     const afterDecimalParts = cleanValue.slice(firstDecimalIndex + 1).split('.');
@@ -45,35 +58,63 @@ export const stripEnteredAmount = (value: string, maxDecimals: number) => {
     const integerPart = beforeDecimal === '' ? '0' : beforeDecimal;
 
     // Handle decimal part
-    const trimmedDecimal = afterDecimal.slice(0, maxDecimals);
+    const trimmedDecimal = afterDecimal.slice(0, decimals);
 
-    return trimmedDecimal ? `${integerPart}.${trimmedDecimal}` : `${integerPart}.`;
+    trimmedValue = trimmedDecimal ? `${integerPart}.${trimmedDecimal}` : `${integerPart}.`;
+  } else {
+    // No decimal point case
+    trimmedValue =
+      cleanValue === '' ? '' : cleanValue === '0' ? '0' : cleanValue.replace(/^0+/, '');
   }
 
-  // No decimal point case
-  return cleanValue === '' ? '' : cleanValue === '0' ? '0' : cleanValue.replace(/^0+/, '');
-};
-
-export const stripFinalAmount = (value: string, maxDecimals: number) => {
-  const strippedValue = stripEnteredAmount(value, maxDecimals);
-
-  // Return '0' for empty string
-  if (strippedValue === '') {
-    return '0';
-  }
-
-  // Remove trailing decimal point and zeros after decimal
-  if (strippedValue.includes('.')) {
-    const [integerPart, decimalPart] = strippedValue.split('.');
-    if (!decimalPart) {
-      return integerPart;
+  if (mode === 'entering') {
+    // If it's an empty string, return an empty string
+    if (trimmedValue === '') {
+      return '';
     }
-
-    const trimmedDecimal = decimalPart.replace(/0+$/, '');
-    return trimmedDecimal ? `${integerPart}.${trimmedDecimal}` : integerPart;
   }
 
-  return strippedValue;
+  // Are we displaying or passing the value to a function. i.e. clean up trailing zeros
+  if (mode === 'clean') {
+    // If the value is an empty string, return '0'
+    if (trimmedValue === '') {
+      return '0';
+    }
+    // The user is not in the process of entering the amount, clean the amount to remove trailing zeros
+    if (trimmedValue.includes('.')) {
+      const [integerPart, decimalPart] = trimmedValue.split('.');
+      if (!decimalPart) {
+        return integerPart;
+      }
+
+      const trimmedDecimal = decimalPart.replace(/0+$/, '');
+      trimmedValue = trimmedDecimal ? `${integerPart}.${trimmedDecimal}` : integerPart;
+    }
+    return trimmedValue;
+  }
+
+  // Do we want to show the exact number of decimal places?
+  if (mode === 'exact') {
+    // We want an exact number of decimal places
+
+    const splitValue = trimmedValue.split('.');
+    const integerPart = splitValue[0] === '' ? '0' : splitValue[0];
+
+    const decimalPart = splitValue.length > 1 ? splitValue[1] : '';
+    if (decimals <= 0) {
+      trimmedValue = integerPart;
+    } else if (decimalPart.length > decimals) {
+      // We need to round down to the nearest decimal place
+      const roundedDecimal = decimalPart.slice(0, decimals);
+      trimmedValue = `${integerPart}.${roundedDecimal}`;
+    } else {
+      // We need to pad the decimal part with zeros
+      const paddedDecimal = decimalPart.padEnd(decimals, '0');
+      trimmedValue = `${integerPart}.${paddedDecimal}`;
+    }
+  }
+
+  return trimmedValue;
 };
 
 // Validate that a string is a valid transaction amount with the given max decimal places
@@ -91,7 +132,9 @@ export const validateAmount = (amount: string, maxDecimals: number, exact = fals
 export const convertToIntegerAmount = (amount: string, decimals: number): string => {
   // Check if the amount is valid
   if (!validateAmount(amount, decimals)) {
-    throw new Error('Invalid amount or decimal places');
+    throw new Error(
+      `Invalid amount or decimal places - amount: \'${amount}\', decimals: ${decimals}`
+    );
   }
 
   // Create an integer string based on the required token decimals
@@ -119,17 +162,4 @@ export const numberWithCommas = (x: string) => {
   }
 
   return x;
-};
-
-export const getDecimalBalance = (value: string, decimals: number): string => {
-  // wrap try catch so components don't blow up if the value is invalid
-  try {
-    const integerValue = convertToIntegerAmount(value, decimals);
-    const factor = BigInt(10 ** decimals);
-    const result = BigInt(integerValue) / factor;
-    return result.toString();
-  } catch (error) {
-    console.error('Error converting to integer amount:', error);
-    return '0';
-  }
 };

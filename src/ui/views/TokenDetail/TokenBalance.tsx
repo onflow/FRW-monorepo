@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { formatPrice } from '@/shared/utils/formatTokenValue';
-import { numberWithCommas, getDecimalBalance } from '@/shared/utils/number';
+import { numberWithCommas, trimDecimalAmount } from '@/shared/utils/number';
 
 interface TokenBalanceProps {
   value: string;
@@ -24,8 +24,6 @@ export const TokenBalance: React.FC<TokenBalanceProps> = ({
     return <span className={className}>{'0'}</span>;
   }
 
-  const decimalBalance = getDecimalBalance(value, decimals);
-
   if (showFull) {
     return (
       <span className={className} data-testid={`token-balance-${value}`}>
@@ -35,6 +33,7 @@ export const TokenBalance: React.FC<TokenBalanceProps> = ({
       </span>
     );
   }
+  const decimalBalance = trimDecimalAmount(value, decimals, 'exact');
 
   const { formattedPrice } = formatPrice(decimalBalance);
   const { leadingPart, zeroPart, endingPart } = formattedPrice;
