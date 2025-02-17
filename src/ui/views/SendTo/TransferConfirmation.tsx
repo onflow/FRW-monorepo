@@ -160,8 +160,6 @@ const TransferConfirmation = ({
     };
   }, [getPending, startCount, transactionDoneHandler]);
 
-  console.log('transactionState', transactionState);
-
   return (
     <>
       <Drawer
