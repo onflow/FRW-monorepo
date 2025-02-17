@@ -288,10 +288,9 @@ export class WalletController extends BaseController {
     await keyringService.setLocked();
     await passwordService.clear();
     await userWalletService.signOutCurrentUser();
+    await userWalletService.clear();
     sessionService.broadcastEvent('accountsChanged', []);
     sessionService.broadcastEvent('lock');
-    // Switch to mainnet
-    await this.switchNetwork('mainnet');
   };
 
   // lockadd here
