@@ -96,9 +96,7 @@ const GoogleBackup: React.FC<GoogleBackupProps> = ({
           <IconGoogleDrive size={36} style={{ marginBottom: '12px' }} />
           <Typography variant="body1" sx={{ color: '#fff' }}>
             {chrome.i18n.getMessage('Connect__To')}
-            <Typography display="inline" sx={{ fontWeight: 'bold' }} variant="body1">
-              {chrome.i18n.getMessage('Google__Drive')}
-            </Typography>
+            <span style={{ fontWeight: 'bold' }}>{chrome.i18n.getMessage('Google__Drive')}</span>
             {chrome.i18n.getMessage('to_back_up_your_wallet')}
           </Typography>
         </Box>

@@ -17,7 +17,6 @@ const Dashboard = ({ value, setValue }) => {
   const { currentNetwork, emulatorModeOn, setEmulatorModeOn, setNetwork } = useNetworks();
 
   useEffect(() => {
-    console.log('useEffect - fetchAll');
     let isMounted = true;
 
     const fetchAll = async () => {

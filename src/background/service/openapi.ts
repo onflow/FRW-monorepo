@@ -1342,7 +1342,10 @@ class OpenApiService {
       network = await userWalletService.getNetwork();
     }
     const address = await userWalletService.getCurrentAddress();
-
+    if (!address) {
+      // If we haven't loaded an address yet, return an empty array
+      return [];
+    }
     const tokenList = await this.getTokenList(network);
     let values;
     const isChild = await userWalletService.getActiveWallet();
