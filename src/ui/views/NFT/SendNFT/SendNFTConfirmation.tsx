@@ -125,7 +125,6 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
             props.data.contact.address
           );
         }
-        console.log('containsKey', props.data);
 
         let txId = '';
         if (containsKey) {
