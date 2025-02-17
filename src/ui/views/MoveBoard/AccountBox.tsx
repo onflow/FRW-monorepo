@@ -17,7 +17,7 @@ const USER_CONTACT = {
 
 function AccountBox({ isChild, setSelectedChildAccount, selectedAccount, isEvm = false }) {
   const usewallet = useWallet();
-  const { mainAddress, evmAddress, childAccounts, currentWallet } = useProfiles();
+  const { mainAddress, evmAddress, childAccounts, parentWallet } = useProfiles();
   const [first, setFirst] = useState<string>('');
   const [second, setSecond] = useState<string>('');
   const [userInfo, setUser] = useState<any>(USER_CONTACT);
@@ -28,12 +28,13 @@ function AccountBox({ isChild, setSelectedChildAccount, selectedAccount, isEvm =
     const address = await usewallet.getCurrentAddress();
     const eWallet = await usewallet.getEvmWallet();
 
+    // should use contact hook later
     const newWallet = {
       [mainAddress!]: {
-        name: currentWallet.name,
-        description: currentWallet.name,
+        name: parentWallet.name,
+        description: parentWallet.name,
         thumbnail: {
-          url: currentWallet.icon,
+          url: parentWallet.icon,
         },
       },
     };
@@ -67,7 +68,7 @@ function AccountBox({ isChild, setSelectedChildAccount, selectedAccount, isEvm =
     usewallet,
     setSelectedChildAccount,
     childAccounts,
-    currentWallet,
+    parentWallet,
   ]);
 
   useEffect(() => {
