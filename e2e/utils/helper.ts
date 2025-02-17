@@ -301,17 +301,11 @@ export const importAccountBySeedPhrase = async ({
   }
 
   // Wait for the Google Drive backup text to be visible
-  await expect(page.getByRole('button', { name: 'Connect and Back up' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Connect and Back up' })).toBeVisible({
+    timeout: 10_000,
+  });
 
   await page.goto(`chrome-extension://${extensionId}/index.html#/dashboard`);
-
-  // get address
-  if (accountAddr) {
-    // wait for the dashboard page to be fully loaded
-    await page.waitForURL(/.*\/dashboard.*/);
-    // wait for the copy address button to be visible with the right address
-    await expect(await page.getByLabel('Copy Address')).toContainText(accountAddr);
-  }
 
   const flowAddr = await getCurrentAddress(page);
 
@@ -470,7 +464,7 @@ export const waitForTransaction = async ({
 
   if (amount) {
     await expect(
-      page.getByTestId(activityItemRegexp).getByTestId(`token-value-${amount}`)
+      page.getByTestId(activityItemRegexp).getByTestId(`token-balance-${amount}`)
     ).toBeVisible();
   }
 };

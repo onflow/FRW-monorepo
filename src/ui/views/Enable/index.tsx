@@ -1,12 +1,12 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { Typography, IconButton, Box, Link, CardMedia } from '@mui/material';
+import BN from 'bignumber.js';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import enableBg from 'ui/FRWAssets/image/enableBg.png';
 import { LLPrimaryButton, LLSpinner } from 'ui/FRWComponent';
 import { useWallet } from 'ui/utils';
-
 const Enable = () => {
   const expiry_time = 60000;
   const history = useHistory();
@@ -41,7 +41,7 @@ const Enable = () => {
   const getUsername = useCallback(async () => {
     const storageData = await wallet.getCoinList(expiry_time);
     const flowToken = storageData.find((token) => token.unit === 'flow');
-    if (flowToken!.balance >= 0.002) {
+    if (new BN(flowToken!.balance).gte(new BN('0.002'))) {
       setEnough(true);
     }
   }, [wallet]);

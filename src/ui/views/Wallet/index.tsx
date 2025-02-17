@@ -550,7 +550,6 @@ const WalletTab = ({ network }) => {
                   ableFt={accessible}
                   isActive={isActive}
                   childType={childType}
-                  coinLoading={coinLoading}
                 />
               )}
             </Box>

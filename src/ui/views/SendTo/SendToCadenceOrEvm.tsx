@@ -13,6 +13,7 @@ import { useNetworks } from '@/ui/hooks/useNetworkHook';
 import { useWallet } from 'ui/utils';
 
 import CancelIcon from '../../../components/iconfont/IconClose';
+import { TokenBalance } from '../TokenDetail/TokenBalance';
 import { TokenValue } from '../TokenDetail/TokenValue';
 
 import TransferAmount from './TransferAmount';
@@ -151,12 +152,13 @@ const SendToCadenceOrEvm = ({
                       fontSize: '15px',
                     }}
                   >
-                    <TokenValue
-                      value={transactionState.coinInfo.balance}
+                    <TokenBalance
+                      value={String(transactionState.coinInfo.balance)}
+                      showFull={true}
                       postFix={transactionState.coinInfo.unit.toUpperCase()}
                     />
                     {' ≈ '}
-                    <TokenValue value={transactionState.coinInfo.total} prefix={'$'} />
+                    <TokenValue value={String(transactionState.coinInfo.total)} prefix={'$'} />
                   </Typography>
                 </Box>
               </>

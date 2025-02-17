@@ -252,7 +252,6 @@ const RecoveryPassword = ({ handleSwitchTab, mnemonic, pk, tempPassword, goLast,
               placeholder={chrome.i18n.getMessage('Confirm__Password')}
               value={password}
               className={classes.inputBox}
-              readOnly={!(password.length < 8)}
               fullWidth
               disableUnderline
               onChange={(event) => {

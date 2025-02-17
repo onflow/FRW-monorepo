@@ -3,8 +3,7 @@ import { describe, it, expect } from 'vitest';
 import {
   formatLargeNumber,
   addDotSeparators,
-  stripEnteredAmount,
-  stripFinalAmount,
+  trimDecimalAmount,
   validateAmount,
   convertToIntegerAmount,
 } from '../number';
@@ -39,64 +38,64 @@ describe('addDotSeparators', () => {
   });
 });
 
-describe('stripEnteredAmount', () => {
+describe('trimDecimalAmount', () => {
   it('should handle real-time input correctly', () => {
     // Basic cases
-    expect(stripEnteredAmount('123', 2)).toBe('123');
-    expect(stripEnteredAmount('123.', 2)).toBe('123.');
-    expect(stripEnteredAmount('123.4', 2)).toBe('123.4');
+    expect(trimDecimalAmount('123', 2, 'entering')).toBe('123');
+    expect(trimDecimalAmount('123.', 2, 'entering')).toBe('123.');
+    expect(trimDecimalAmount('123.4', 2, 'entering')).toBe('123.4');
 
     // Multiple decimal points
-    expect(stripEnteredAmount('12..34.56', 2)).toBe('12.');
-    expect(stripEnteredAmount('12.34.56', 2)).toBe('12.34');
+    expect(trimDecimalAmount('12..34.56', 2, 'entering')).toBe('12.');
+    expect(trimDecimalAmount('12.34.56', 2, 'entering')).toBe('12.34');
 
     // Leading zeros
-    expect(stripEnteredAmount('000123', 2)).toBe('123');
-    expect(stripEnteredAmount('0', 2)).toBe('0');
-    expect(stripEnteredAmount('00.123', 2)).toBe('0.12');
+    expect(trimDecimalAmount('000123', 2, 'entering')).toBe('123');
+    expect(trimDecimalAmount('0', 2, 'entering')).toBe('0');
+    expect(trimDecimalAmount('00.123', 2, 'entering')).toBe('0.12');
 
     // Decimal cases
-    expect(stripEnteredAmount('.123', 2)).toBe('0.12');
-    expect(stripEnteredAmount('.', 2)).toBe('0.');
-    expect(stripEnteredAmount('', 2)).toBe('');
+    expect(trimDecimalAmount('.123', 2, 'entering')).toBe('0.12');
+    expect(trimDecimalAmount('.', 2, 'entering')).toBe('0.');
+    expect(trimDecimalAmount('', 2, 'entering')).toBe('');
   });
 });
 
-describe('stripFinalAmount', () => {
+describe('trimDecimalAmount clean', () => {
   it('should handle empty and invalid inputs', () => {
-    expect(stripFinalAmount('', 2)).toBe('0');
-    expect(stripFinalAmount('   ', 2)).toBe('0');
-    expect(stripFinalAmount('.', 2)).toBe('0');
-    expect(stripFinalAmount('..', 2)).toBe('0');
+    expect(trimDecimalAmount('', 2, 'clean')).toBe('0');
+    expect(trimDecimalAmount('   ', 2, 'clean')).toBe('0');
+    expect(trimDecimalAmount('.', 2, 'clean')).toBe('0');
+    expect(trimDecimalAmount('..', 2, 'clean')).toBe('0');
   });
 
   it('should format final amounts correctly', () => {
     // Basic cases
-    expect(stripFinalAmount('123', 2)).toBe('123');
-    expect(stripFinalAmount('123.', 2)).toBe('123');
-    expect(stripFinalAmount('123.4', 2)).toBe('123.4');
-    expect(stripFinalAmount('123.40', 2)).toBe('123.4');
+    expect(trimDecimalAmount('123', 2, 'clean')).toBe('123');
+    expect(trimDecimalAmount('123.', 2, 'clean')).toBe('123');
+    expect(trimDecimalAmount('123.4', 2, 'clean')).toBe('123.4');
+    expect(trimDecimalAmount('123.40', 2, 'clean')).toBe('123.4');
     // Removes extra zeros even when truncating
-    expect(stripFinalAmount('123.401', 2)).toBe('123.4');
-    expect(stripFinalAmount('123.471', 2)).toBe('123.47');
+    expect(trimDecimalAmount('123.401', 2, 'clean')).toBe('123.4');
+    expect(trimDecimalAmount('123.471', 2, 'clean')).toBe('123.47');
     // Truncates doesn't round up
-    expect(stripFinalAmount('123.479', 2)).toBe('123.47');
+    expect(trimDecimalAmount('123.479', 2, 'clean')).toBe('123.47');
 
     // Multiple decimal points
-    expect(stripFinalAmount('12..34.56', 2)).toBe('12');
-    expect(stripFinalAmount('12.34.56', 2)).toBe('12.34');
+    expect(trimDecimalAmount('12..34.56', 2, 'clean')).toBe('12');
+    expect(trimDecimalAmount('12.34.56', 2, 'clean')).toBe('12.34');
 
     // Leading zeros
-    expect(stripFinalAmount('000123', 2)).toBe('123');
-    expect(stripFinalAmount('0', 2)).toBe('0');
-    expect(stripFinalAmount('00.123', 2)).toBe('0.12');
+    expect(trimDecimalAmount('000123', 2, 'clean')).toBe('123');
+    expect(trimDecimalAmount('0', 2, 'clean')).toBe('0');
+    expect(trimDecimalAmount('00.123', 2, 'clean')).toBe('0.12');
 
     // Decimal cases
-    expect(stripFinalAmount('.123', 2)).toBe('0.12');
-    expect(stripFinalAmount('.', 2)).toBe('0');
-    expect(stripFinalAmount('', 2)).toBe('0');
+    expect(trimDecimalAmount('.123', 2, 'clean')).toBe('0.12');
+    expect(trimDecimalAmount('.', 2, 'clean')).toBe('0');
+    expect(trimDecimalAmount('', 2, 'clean')).toBe('0');
     // Handle getting rid of trailing zeros
-    expect(stripFinalAmount('123.000', 2)).toBe('123');
+    expect(trimDecimalAmount('123.000', 2, 'clean')).toBe('123');
   });
 });
 

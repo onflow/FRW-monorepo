@@ -115,7 +115,7 @@ const MoveNftConfirmation = (props: SendNFTConfirmationProps) => {
         history.push(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
-        console.error('err ', err);
+        console.error(err);
         setSending(false);
         setFailed(true);
       });
@@ -146,7 +146,7 @@ const MoveNftConfirmation = (props: SendNFTConfirmationProps) => {
         history.push(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
-        console.error('err ', err);
+        console.error(err);
         setSending(false);
         setFailed(true);
       });

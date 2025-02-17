@@ -13,12 +13,13 @@ import { Box } from '@mui/system';
 import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
+import { type CoinItem } from '@/shared/types/wallet-types';
 import { formatLargeNumber } from '@/shared/utils/number';
 
 import IconCreate from '../../../components/iconfont/IconCreate';
 import { TokenValue } from '../TokenDetail/TokenValue';
 
-const CoinList = ({ data, ableFt, isActive, childType, coinLoading }) => {
+const CoinList = ({ data, ableFt, isActive, childType }) => {
   // const wallet = useWallet();
   const [isLoading, setLoading] = useState(true);
   const history = useHistory();
@@ -110,7 +111,7 @@ const CoinList = ({ data, ableFt, isActive, childType, coinLoading }) => {
                     }}
                   >
                     {props.change === null ? '-' : ''}
-                    <TokenValue value={props.price} prefix="$" />
+                    <TokenValue value={String(props.price)} prefix="$" />
                   </Typography>
                   {props.change !== 0 && (
                     <Typography
@@ -176,7 +177,7 @@ const CoinList = ({ data, ableFt, isActive, childType, coinLoading }) => {
 
       <List sx={{ paddingTop: '0px', paddingBottom: '0px' }}>
         {!isLoading
-          ? (coinList || []).map((coin: any) => {
+          ? (coinList || []).map((coin: CoinItem) => {
               if (
                 childType === 'evm' &&
                 coin.unit !== 'flow' &&
@@ -191,9 +192,9 @@ const CoinList = ({ data, ableFt, isActive, childType, coinLoading }) => {
                   secondaryAction={
                     <EndListItemText
                       primary={parseFloat(coin.balance).toFixed(3)}
-                      secondary={<TokenValue value={coin.balance * coin.price} prefix="$" />}
+                      secondary={<TokenValue value={String(coin.total)} prefix="$" />}
                       unit={coin.unit}
-                      change={parseFloat(coin.change24h.toFixed(2))}
+                      change={parseFloat(coin.change24h?.toFixed(2) || '0')}
                     />
                   }
                   disablePadding
@@ -218,7 +219,7 @@ const CoinList = ({ data, ableFt, isActive, childType, coinLoading }) => {
                     <StartListItemText
                       primary={coin.coin}
                       price={coin.price}
-                      change={parseFloat(coin.change24h.toFixed(2))}
+                      change={parseFloat(coin.change24h?.toFixed(2) || '0')}
                     />
                   </ListItemButton>
                 </ListItem>

@@ -23,6 +23,7 @@ import { TokenValue } from '@/ui/views/TokenDetail/TokenValue';
 
 import CancelIcon from '../../../components/iconfont/IconClose';
 import IconSwitch from '../../../components/iconfont/IconSwitch';
+import { TokenBalance } from '../TokenDetail/TokenBalance';
 
 const useStyles = makeStyles(() => ({
   customInputLabel: {
@@ -268,7 +269,7 @@ const TransferAmount = ({
                   src={transactionState.coinInfo.icon}
                   style={{ height: '18px', width: '18px' }}
                 />{' '}
-                <TokenValue value={amount} />
+                <TokenBalance showFull={true} value={amount} />
               </>
             ) : (
               <TokenValue value={fiatAmount} prefix={'$'} />

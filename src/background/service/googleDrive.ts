@@ -13,10 +13,6 @@ interface DriveItem {
   uid: string | null;
   time: string | null;
 }
-interface DriveData {
-  address: string;
-  data: string;
-}
 
 // https://developers.google.com/drive/api/v3/reference/files/list
 class GoogleDriveService {
@@ -46,6 +42,7 @@ class GoogleDriveService {
       const token = await this.getAuthTokenWrapper(false);
       return token !== undefined && token !== null;
     } catch (err) {
+      console.error(err);
       return false;
     }
   };
@@ -102,11 +99,12 @@ class GoogleDriveService {
     uid: string,
     password: string
   ) => {
-    // TODO: FIX this
     const item = this.encodeToDriveItem(mnemonic, username, uid, password);
     const files = await this.listFiles();
     if (!files) {
-      return [];
+      const newContent = this.encrypt(JSON.stringify([item]), this.AES_KEY);
+      const file = await this.createFile(newContent);
+      return [file];
     }
     const fileId = files.id;
     this.fileId = fileId;
@@ -180,7 +178,7 @@ class GoogleDriveService {
     const { files } = await this.sendRequest('drive/v3/files/', 'GET', {
       spaces: 'appDataFolder',
     }).then((response) => response.json());
-    const firstOutblockBackup = files.find((file) => file.name === 'outblock_backup');
+    const firstOutblockBackup = files.find((file) => file.name === this.backupName);
     return firstOutblockBackup;
   };
 
@@ -279,13 +277,13 @@ class GoogleDriveService {
   ) => {
     const token = await this.getAuthTokenWrapper();
     const init = {
-      method: method,
+      method,
       async: true,
       headers: {
         Authorization: 'Bearer ' + token,
         Accept: '*/*',
       },
-      contentType: 'json',
+      contentType: 'application/json',
     };
 
     if (method.toUpperCase() !== 'GET') {
@@ -332,33 +330,6 @@ class GoogleDriveService {
     const decryptedText = aesjs.utils.utf8.fromBytes(decryptedBytes);
     return decryptedText.trim();
   };
-
-  // makeXMLRequest = async (method, url, data) => {
-  //   const token = await this.getAuthTokenWrapper();
-  //   return new Promise(function (resolve, reject) {
-  //     const xhr = new XMLHttpRequest();
-  //     xhr.open(method, url);
-  //     xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-  //     xhr.responseType = 'json';
-  //     xhr.onload = function () {
-  //       if (this.status >= 200 && this.status < 300) {
-  //         resolve(xhr.response);
-  //       } else {
-  //         reject({
-  //           status: this.status,
-  //           statusText: xhr.statusText
-  //         });
-  //       }
-  //     };
-  //     xhr.onerror = function () {
-  //       reject({
-  //         status: this.status,
-  //         statusText: xhr.statusText
-  //       });
-  //     };
-  //     xhr.send(data);
-  //   })
-  // }
 
   getAuthTokenWrapper = async (interactive = true) => {
     return new Promise(function (resolve, reject) {

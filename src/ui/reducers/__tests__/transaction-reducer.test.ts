@@ -102,7 +102,7 @@ describe('Transaction Reducer', () => {
       const mockCoinInfo: CoinItem = {
         coin: 'test',
         unit: 'TEST',
-        balance: 100,
+        balance: '100',
         price: 1,
         change24h: 0,
         total: 100,
@@ -225,7 +225,7 @@ describe('Transaction Reducer', () => {
         ...INITIAL_TRANSACTION_STATE,
         coinInfo: {
           ...INITIAL_TRANSACTION_STATE.coinInfo,
-          balance: 100,
+          balance: '100',
           price: 2,
         },
         selectedToken: {
@@ -242,7 +242,7 @@ describe('Transaction Reducer', () => {
 
         const newState = transactionReducer(stateWithBalance, action);
         expect(newState.amount).toBe('50');
-        expect(newState.fiatAmount).toBe('100.000');
+        expect(newState.fiatAmount).toBe('100.00000000');
         expect(newState.balanceExceeded).toBe(false);
       });
 
@@ -323,7 +323,7 @@ describe('Transaction Reducer', () => {
         ...INITIAL_TRANSACTION_STATE,
         coinInfo: {
           ...INITIAL_TRANSACTION_STATE.coinInfo,
-          balance: 100,
+          balance: '100',
           price: 2,
         },
         tokenType: 'Flow' as TokenType,
@@ -338,7 +338,7 @@ describe('Transaction Reducer', () => {
 
         const newState = transactionReducer(stateWithBalance, action);
         expect(newState.amount).toBe('100');
-        expect(newState.fiatAmount).toBe('200.000');
+        expect(newState.fiatAmount).toBe('200.00000000');
       });
 
       it('should set maximum amount in fiat mode', () => {
@@ -353,7 +353,7 @@ describe('Transaction Reducer', () => {
 
         const newState = transactionReducer(stateInFiat, action);
         expect(newState.amount).toBe('100');
-        expect(newState.fiatAmount).toBe('200.000');
+        expect(newState.fiatAmount).toBe('200.00000000');
         expect(newState.fiatOrCoin).toBe('fiat');
       });
     });

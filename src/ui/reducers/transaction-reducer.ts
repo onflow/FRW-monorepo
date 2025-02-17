@@ -11,7 +11,7 @@ import type {
 import { type CoinItem, type WalletAddress } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 
-import { stripEnteredAmount, stripFinalAmount } from '../../shared/utils/number';
+import { trimDecimalAmount } from '../../shared/utils/number';
 
 export const INITIAL_TRANSACTION_STATE: TransactionState = {
   currentTxState: '',
@@ -38,7 +38,7 @@ export const INITIAL_TRANSACTION_STATE: TransactionState = {
   coinInfo: {
     coin: '',
     unit: '',
-    balance: 0,
+    balance: '0',
     price: 0,
     change24h: 0,
     total: 0,
@@ -168,6 +168,8 @@ export const transactionReducer = (
       // Check if entering in coin or fiat
 
       if (state.fiatOrCoin === 'coin') {
+        // Note that this will truncate the balance to the max number of decimals allowed by the token
+        // It should not be possible to have a balance that is greater than the max number of decimals allowed by the token
         return transactionReducer(state, {
           type: 'setAmount',
           payload: state.coinInfo.balance.toString(),
@@ -201,10 +203,10 @@ export const transactionReducer = (
       const price = new BN(state.coinInfo.price || '0.0');
 
       if (state.fiatOrCoin === 'fiat') {
-        // Strip the amount entered to 3 decimal places
-        amountInFiat = stripEnteredAmount(action.payload, 3);
+        // Strip the amount entered to 8 decimal places
+        amountInFiat = trimDecimalAmount(action.payload, 8, 'entering');
         // Check if the balance is exceeded
-        const fiatAmountAsBN = new BN(stripFinalAmount(amountInFiat, 3));
+        const fiatAmountAsBN = new BN(trimDecimalAmount(amountInFiat, 8, 'clean'));
         const calculatedAmountInCoin = price.isZero() ? new BN(0) : fiatAmountAsBN.dividedBy(price);
 
         // Figure out the amount in coin trimmed to the max decimals
@@ -220,17 +222,17 @@ export const transactionReducer = (
         remainingBalance = balance.minus(new BN(amountInCoin));
       } else if (state.fiatOrCoin === 'coin') {
         // Check if the amount entered has too many decimal places
-        amountInCoin = stripEnteredAmount(action.payload, state.selectedToken.decimals);
+        amountInCoin = trimDecimalAmount(action.payload, state.selectedToken.decimals, 'entering');
 
         // Check if the balance is exceeded
         const amountBN = new BN(
-          stripFinalAmount(amountInCoin, state.selectedToken.decimals) || '0'
+          trimDecimalAmount(amountInCoin, state.selectedToken.decimals, 'clean') || '0'
         );
         // Calculate the remaining balance after the transaction
         remainingBalance = balance.minus(amountBN);
         // Calculate fiat amount
         const calculatedFiatAmount = amountBN.times(price);
-        amountInFiat = calculatedFiatAmount.toFixed(3, BN.ROUND_DOWN);
+        amountInFiat = calculatedFiatAmount.toFixed(8, BN.ROUND_DOWN);
       } else {
         console.error('Not specified if entering in coin or fiat');
         return state;
