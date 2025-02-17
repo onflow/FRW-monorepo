@@ -45,10 +45,6 @@ const WalletProvider = ({
     const checkWalletInitialized = async () => {
       const walletInitialized = await wallet.isLoaded();
       if (walletInitialized) {
-        console.log(
-          'WalletProvider - checkWalletInitialized - setWalletInitialized ->',
-          walletInitialized
-        );
         setWalletInitialized(true);
       }
     };
@@ -57,8 +53,6 @@ const WalletProvider = ({
 
   const walletInitializedListener = (msg: any, sender: any, sendResponse: any) => {
     if (msg.type === 'walletInitialized') {
-      // eslint-disable-next-line no-console
-      console.log('WalletProvider - got the message!! ->', msg);
       setWalletInitialized(true);
     }
   };

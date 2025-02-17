@@ -63,11 +63,6 @@ export const useApproval = () => {
   );
 
   useEffect(() => {
-    console.log('useApproval', getUiType(), getUiType().isNotification);
-
-    // if (!getUiType().isNotification) {
-    //   return;
-    // }
     window.addEventListener('beforeunload', rejectApproval);
 
     return () => window.removeEventListener('beforeunload', rejectApproval);
