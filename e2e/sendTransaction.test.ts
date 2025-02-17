@@ -84,6 +84,7 @@ test('send Staked Flow COA to COA', async ({ page }) => {
     tokenname: 'Liquid Staked Flow $',
     receiver: process.env.TEST_RECEIVER_EVM_ADDR!,
     successtext: 'success',
+    amount: '0.00000112134354678',
   });
 });
 

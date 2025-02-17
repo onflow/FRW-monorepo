@@ -83,9 +83,9 @@ export const useCoins = () => {
     (data) => {
       const sorted = data.sort((a, b) => {
         if (b.total === a.total) {
-          return b.balance - a.balance;
+          return new BN(b.balance).minus(new BN(a.balance)).toNumber();
         } else {
-          return b.total - a.total;
+          return new BN(b.total).minus(new BN(a.total)).toNumber();
         }
       });
       handleStorageData(sorted);
