@@ -10,6 +10,7 @@ vi.mock('react', async () => {
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+import emojiList from '@/background/utils/emoji.json';
 import { useProfileStore } from '@/ui/stores/profileStore';
 import { useWallet, useWalletLoaded } from '@/ui/utils/WalletContext';
 
@@ -91,7 +92,7 @@ vi.mock('@/ui/utils/WalletContext', () => ({
       type: 'flow',
       blockchain: 'flow',
     }),
-    getEmoji: vi.fn().mockReturnValue('😀'),
+    getEmoji: vi.fn().mockReturnValue(emojiList.emojis),
   }),
 }));
 

@@ -6,6 +6,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import lilo from '@/ui/FRWAssets/image/lilo.png';
 import { LLPrimaryButton, LLResetPopup } from '@/ui/FRWComponent';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet, useApproval, useWalletRequest, useWalletLoaded } from '@/ui/utils';
 import { openInternalPageInTab } from '@/ui/utils/webapi';
 
@@ -62,6 +63,7 @@ const Unlock = () => {
   const [showError, setShowError] = useState(false);
   const [password, setPassword] = useState(DEFAULT_PASSWORD);
   const [resetPop, setResetPop] = useState<boolean>(false);
+  const { clearProfileData } = useProfiles();
 
   useEffect(() => {
     if (!inputEl.current) return;
@@ -71,8 +73,9 @@ const Unlock = () => {
   const restPass = useCallback(async () => {
     // setResetPop(true);
     await wallet.lockWallet();
+    clearProfileData();
     openInternalPageInTab('forgot');
-  }, [wallet]);
+  }, [wallet, clearProfileData]);
 
   const [run] = useWalletRequest(wallet.unlock, {
     onSuccess() {
