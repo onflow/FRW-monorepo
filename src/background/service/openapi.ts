@@ -1024,14 +1024,20 @@ class OpenApiService {
       return nftList;
     }
     const config = this.store.config.get_nft_list;
-    const data = await this.sendRequest(config.method, config.path, {
-      network,
-      chain_type: chainType,
-    });
+    const { tokens } = await this.sendRequest(
+      config.method,
+      config.path,
+      {
+        network,
+        chain_type: chainType,
+      },
+      {},
+      WEB_NEXT_URL
+    );
 
-    storage.setExpiry(`NFTList${network}${chainType}`, data, 600000);
+    storage.setExpiry(`NFTList${network}${chainType}`, tokens, 600000);
 
-    return data;
+    return tokens;
   };
 
   getNFTMetadata = async (
