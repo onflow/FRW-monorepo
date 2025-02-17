@@ -11,7 +11,6 @@ import Enable from '../views/Enable';
 
 import Dashboard from './Dashboard';
 import Header from './Dashboard/Header';
-import Flowns from './Flowns';
 import CollectionDetail from './NFT/CollectionDetail';
 import Detail from './NFT/Detail';
 import AddList from './NFT/NFTList/AddList';
@@ -215,9 +214,6 @@ const InnerRoute = (props: RouteComponentProps) => {
             </PrivateRoute>
             <PrivateRoute path={`${props.match.url}/setting/backups`}>
               <ManageBackups />
-            </PrivateRoute>
-            <PrivateRoute path={`${props.match.url}/flowns`}>
-              <Flowns />
             </PrivateRoute>
             <PrivateRoute path={`${props.match.url}/enable`}>
               <Enable />
