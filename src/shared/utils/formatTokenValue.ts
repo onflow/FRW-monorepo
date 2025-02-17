@@ -1,3 +1,5 @@
+import { trimDecimalAmount } from './number';
+
 interface PriceParts {
   leadingPart: string;
   zeroPart: number | null;
@@ -5,21 +7,43 @@ interface PriceParts {
 }
 
 interface FormattedPrice {
-  price: number;
+  price: string;
   formattedPrice: PriceParts;
 }
 
 /**
+ * Converts scientific notation to decimal string
+ * @param numStr - Number in scientific notation (e.g., "1e-7")
+ * @returns Decimal string (e.g., "0.0000001")
+ */
+function scientificToDecimal(numStr: string): string {
+  // Convert string to number to handle scientific notation
+  const num = Number(numStr);
+
+  // Check if the number is in scientific notation
+  if (Math.abs(num) < 1e-6 || /e/i.test(numStr)) {
+    // Convert to decimal string without scientific notation
+    const str = num.toFixed(20);
+    // Remove trailing zeros after decimal point
+    return str.replace(/\.?0+$/, '');
+  }
+
+  return numStr;
+}
+
+/**
  * Condenses the price to a more readable format.
- * @param price - The price to format.
+ * @param priceStr - The price string to format.
  * @param zeroCondenseThreshold - The number of zeros to condense. example: 4 would condense 0.0000123 to 0.0(3)12.
  * First zero after decimal point is maintained for readability.
+ * @param decimals - The number of decimals to display.
  * @returns The formatted price.
  */
-export function formatPrice(price: number, zeroCondenseThreshold = 4): FormattedPrice {
-  if (price === 0 || price === null || price === undefined) {
+export function formatPrice(priceStr: string, zeroCondenseThreshold = 4): FormattedPrice {
+  // Handle empty or invalid input
+  if (!priceStr || priceStr === '0') {
     return {
-      price,
+      price: priceStr,
       formattedPrice: {
         leadingPart: '',
         zeroPart: null,
@@ -28,41 +52,36 @@ export function formatPrice(price: number, zeroCondenseThreshold = 4): Formatted
     };
   }
 
-  if (price >= 1) {
+  // Convert scientific notation to decimal string
+  const decimalStr = scientificToDecimal(priceStr);
+
+  // Handle numbers >= 1
+  if (!decimalStr.startsWith('0.')) {
     return {
-      price,
+      price: decimalStr,
       formattedPrice: {
-        leadingPart: price.toFixed(2),
+        leadingPart: trimDecimalAmount(decimalStr, 2, 'exact'),
         zeroPart: null,
         endingPart: null,
       },
     };
   }
 
-  // Convert to non-scientific notation string
-  const priceStr = price.toFixed(20);
-  const parts = priceStr.split('.');
-  const decimal = parts.length > 1 ? parts[1] : '0';
+  // Count zeros after decimal point
+  let zeroCount = 0;
+  let firstNonZeroIndex = 2; // Start after "0."
 
-  // Count total zeros after the decimal point
-  let totalZeros = 0;
-  let firstNonZeroIndex = 0;
-
-  for (let i = 0; i < decimal.length; i++) {
-    if (decimal[i] === '0') {
-      totalZeros++;
-    } else {
-      firstNonZeroIndex = i;
-      break;
-    }
+  while (decimalStr[firstNonZeroIndex] === '0' && firstNonZeroIndex < decimalStr.length) {
+    zeroCount++;
+    firstNonZeroIndex++;
   }
 
-  // If we don't have enough total zeros to meet threshold, format with 2 significant digits
-  if (totalZeros < zeroCondenseThreshold) {
-    const significantPart = decimal.slice(firstNonZeroIndex, firstNonZeroIndex + 2);
-    const formattedNumber = `0.${'0'.repeat(firstNonZeroIndex)}${significantPart}`;
+  // If we don't have enough zeros to meet threshold, return formatted number
+  if (zeroCount < zeroCondenseThreshold) {
+    const significantPart = decimalStr.slice(firstNonZeroIndex, firstNonZeroIndex + 2);
+    const formattedNumber = `0.${'0'.repeat(zeroCount)}${significantPart}`;
     return {
-      price,
+      price: decimalStr,
       formattedPrice: {
         leadingPart: formattedNumber,
         zeroPart: null,
@@ -72,13 +91,12 @@ export function formatPrice(price: number, zeroCondenseThreshold = 4): Formatted
   }
 
   // Break up the price into parts for condensed format
-  // zeroPart should be totalZeros - 1 since first zero is in leadingPart
-  const significantDigits = decimal.slice(firstNonZeroIndex, firstNonZeroIndex + 2);
+  const significantDigits = decimalStr.slice(firstNonZeroIndex, firstNonZeroIndex + 2);
   return {
-    price,
+    price: decimalStr,
     formattedPrice: {
       leadingPart: '0.0',
-      zeroPart: totalZeros,
+      zeroPart: zeroCount,
       endingPart: significantDigits,
     },
   };

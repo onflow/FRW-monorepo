@@ -21,8 +21,8 @@ import { formatString } from '@/shared/utils/address';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
 import activity from 'ui/FRWAssets/svg/activity.svg';
-import { useWallet } from 'ui/utils';
 
+import { TokenBalance } from '../TokenDetail/TokenBalance';
 import { TokenValue } from '../TokenDetail/TokenValue';
 
 dayjs.extend(relativeTime);
@@ -92,7 +92,8 @@ const TransferList = () => {
               }}
             >
               {props.type === 1 ? (
-                <TokenValue
+                <TokenBalance
+                  showFull={true}
                   value={`${props.amount}`.replace(/^-/, '')}
                   prefix={!isContractCall ? (isReceive ? '+' : '-') : ''}
                 />

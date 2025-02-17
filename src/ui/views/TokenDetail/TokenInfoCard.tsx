@@ -4,7 +4,6 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { isValidEthereumAddress } from '@/shared/utils/address';
-import { addDotSeparators } from '@/shared/utils/number';
 import { LLPrimaryButton } from '@/ui/FRWComponent';
 import iconMove from 'ui/FRWAssets/svg/moveIcon.svg';
 import { useWallet } from 'ui/utils';
@@ -19,7 +18,7 @@ const TokenInfoCard = ({ price, token, setAccessible, accessible, tokenInfo, chi
   const wallet = useWallet();
   const history = useHistory();
   const isMounted = useRef(true);
-  const [balance, setBalance] = useState(0);
+  const [balance, setBalance] = useState<string>('0');
   const [data, setData] = useState<TokenInfo | undefined>(undefined);
 
   const [canMoveChild, setCanMoveChild] = useState(true);
@@ -27,7 +26,7 @@ const TokenInfoCard = ({ price, token, setAccessible, accessible, tokenInfo, chi
   useEffect(() => {
     const checkPermission = async () => {
       const result = await wallet.checkCanMoveChild();
-      if (balance > 0 || !tokenInfo.custom) {
+      if (Number(balance) > 0 || !tokenInfo.custom) {
         setCanMoveChild(result);
       } else {
         setCanMoveChild(false);
@@ -52,13 +51,13 @@ const TokenInfoCard = ({ price, token, setAccessible, accessible, tokenInfo, chi
         const coins = await wallet.getCoinList();
         const thisCoin = coins.filter((coin) => coin.unit.toLowerCase() === token);
         const balance = thisCoin[0].balance;
-        setBalance(Number(balance));
+        setBalance(balance);
       } else {
         wallet.openapi
           .getWalletTokenBalance(token)
           .then((response) => {
             if (isMounted.current) {
-              setBalance(parseFloat(response));
+              setBalance(response);
             }
           })
           .catch((err) => {
@@ -182,14 +181,36 @@ const TokenInfoCard = ({ price, token, setAccessible, accessible, tokenInfo, chi
               </ButtonBase>
             )}
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'baseline', gap: '6px', pt: '18px' }}>
-            <Typography variant="body1" sx={{ fontWeight: '700', fontSize: '32px' }}>
-              {addDotSeparators(balance)}
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'baseline',
+              gap: '6px',
+              pt: '18px',
+              width: '100%',
+            }}
+          >
+            <Typography
+              variant="body1"
+              sx={{
+                fontWeight: '700',
+                fontSize: 'clamp(16px, 5vw, 32px)',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {balance}
             </Typography>
             <Typography
               variant="caption"
               color="neutral2.main"
-              sx={{ fontWeight: 'medium', fontSize: '14px', textTransform: 'uppercase' }}
+              sx={{
+                fontWeight: 'medium',
+                fontSize: '14px',
+                textTransform: 'uppercase',
+                flexShrink: 0,
+              }}
             >
               {data.symbol}
             </Typography>
@@ -197,7 +218,7 @@ const TokenInfoCard = ({ price, token, setAccessible, accessible, tokenInfo, chi
           <Typography variant="body1" color="text.secondary" sx={{ fontSize: '16px' }}>
             <Box component="span" sx={{ marginRight: '0.25rem' }}>
               <TokenValue
-                value={balance * price}
+                value={String(Number(balance) * price)}
                 prefix="$"
                 postFix={chrome.i18n.getMessage('USD')}
               />

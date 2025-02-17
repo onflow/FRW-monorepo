@@ -19,6 +19,7 @@ import { useHistory } from 'react-router-dom';
 
 import type { UserInfoResponse } from '@/shared/types/network-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import importIcon from 'ui/FRWAssets/svg/importIcon.svg';
 import popLock from 'ui/FRWAssets/svg/popLock.svg';
 import { useWallet } from 'ui/utils';
@@ -68,6 +69,8 @@ const MenuDrawer = (props: MenuDrawerProps) => {
   const [evmMode, setEvmMode] = useState(true);
   const [isEvm, setIsEvm] = useState(false);
   const [evmBalance, setEvmBalance] = useState(0);
+  const { clearProfileData } = useProfiles();
+
   interface EvmADDComponentProps {
     myString: string | number;
   }
@@ -552,9 +555,11 @@ const MenuDrawer = (props: MenuDrawerProps) => {
           </ListItem>
           <ListItem
             disablePadding
-            onClick={async () => {
-              await usewallet.lockWallet();
-              history.push('/unlock');
+            onClick={() => {
+              usewallet.lockWallet().then(() => {
+                clearProfileData();
+                history.push('/unlock');
+              });
             }}
           >
             <ListItemButton sx={{ padding: '8px 16px', margin: '0', borderRadius: '0' }}>
