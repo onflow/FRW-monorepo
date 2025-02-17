@@ -178,7 +178,6 @@ const Popup = (props: TransferConfirmationProps) => {
                           size={'16px'}
                           thickness={5}
                           value={10}
-                          {...props}
                         />
                       )}
                     </ListItemButton>

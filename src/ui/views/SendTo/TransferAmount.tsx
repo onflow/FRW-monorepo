@@ -205,8 +205,8 @@ const TransferAmount = ({
                 renderValue={renderValue}
                 onChange={(e) => handleTokenChange(e.target.value)}
                 className={classes.selectRoot}
-                value={transactionState.selectedToken.symbol}
-                defaultValue={transactionState.selectedToken.symbol}
+                value={transactionState.selectedToken.symbol.toLowerCase()}
+                defaultValue={transactionState.selectedToken.symbol.toLowerCase()}
                 MenuProps={{
                   MenuListProps: { disablePadding: true },
                   PaperProps: {
