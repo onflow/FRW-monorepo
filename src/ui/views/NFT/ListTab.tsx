@@ -31,6 +31,7 @@ const useStyles = makeStyles(() => ({
   collectionContainer: {
     width: '100%',
     justifyContent: 'center',
+    padding: '0 8px',
   },
   collectionCard: {
     display: 'flex',
@@ -38,15 +39,20 @@ const useStyles = makeStyles(() => ({
     height: '64px',
     margin: '12px auto',
     boxShadow: 'none',
+    border: '1px solid rgba(255, 255, 255, 0.12)',
+    borderRadius: '12px',
+    backgroundColor: 'transparent',
   },
   skeletonCard: {
     display: 'flex',
-    backgroundColor: '#000000',
+    backgroundColor: 'transparent',
     width: '100%',
     height: '72px',
     margin: '12px auto',
     boxShadow: 'none',
     padding: 'auto',
+    border: '1px solid rgba(255, 255, 255, 0.12)',
+    borderRadius: '12px',
   },
   collectionImg: {
     borderRadius: '12px',
@@ -60,10 +66,9 @@ const useStyles = makeStyles(() => ({
   actionarea: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#282828',
+    backgroundColor: 'transparent',
     '&:hover': {
-      color: '#787878',
-      backgroundColor: '#787878',
+      backgroundColor: 'rgba(255, 255, 255, 0.08)',
     },
   },
 }));
@@ -171,7 +176,11 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
     return (
       <Card sx={{ borderRadius: '12px' }} className={classes.collectionCard}>
         <CardActionArea
-          sx={{ backgroundColor: 'background.paper', borderRadius: '12px', paddingRight: '8px' }}
+          sx={{
+            backgroundColor: 'transparent',
+            borderRadius: '12px',
+            paddingRight: '8px',
+          }}
           className={classes.actionarea}
           onClick={data.isAccessible && handleClick}
         >
@@ -190,8 +199,8 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
               alt={data.name}
             />
             <CardContent sx={{ flex: '1 0 auto', padding: '8px 4px' }}>
-              <Grid container>
-                <Grid item sx={{ width: '260px' }}>
+              <Grid container justifyContent="space-between" alignItems="center" sx={{ pr: 2 }}>
+                <Grid item sx={{ flex: 1 }}>
                   <Typography component="div" variant="body1" color="#fff" sx={{ mb: 0 }}>
                     {data.name}
                   </Typography>
@@ -224,7 +233,7 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
                   )}
                 </Grid>
                 <Grid item>
-                  <ArrowForwardIcon color="primary" sx={{ mt: '12px' }} />
+                  <ArrowForwardIcon color="primary" />
                 </Grid>
               </Grid>
             </CardContent>

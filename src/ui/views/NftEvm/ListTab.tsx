@@ -1,7 +1,4 @@
-/* eslint-disable indent */
-import React, { forwardRef, useImperativeHandle } from 'react';
-import { Box } from '@mui/system';
-import { makeStyles } from '@mui/styles';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import {
   Typography,
   Card,
@@ -12,12 +9,15 @@ import {
   Grid,
   Skeleton,
 } from '@mui/material';
-import { Link, useHistory } from 'react-router-dom';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import { useEffect, useState } from 'react';
+import { makeStyles } from '@mui/styles';
+import { Box } from '@mui/system';
+import React, { forwardRef, useImperativeHandle, useEffect, useState, useCallback } from 'react';
+import { useHistory } from 'react-router-dom';
+
 import { useWallet } from '@/ui/utils/WalletContext';
-import EmptyStatus from './EmptyStatus';
 import placeholder from 'ui/FRWAssets/image/placeholder.png';
+
+import EmptyStatus from './EmptyStatus';
 
 interface ListTabProps {
   data: any;
@@ -30,6 +30,7 @@ const useStyles = makeStyles(() => ({
   collectionContainer: {
     width: '100%',
     justifyContent: 'center',
+    padding: '0 8px',
   },
   collectionCard: {
     display: 'flex',
@@ -37,15 +38,20 @@ const useStyles = makeStyles(() => ({
     height: '64px',
     margin: '12px auto',
     boxShadow: 'none',
+    border: '1px solid rgba(255, 255, 255, 0.12)',
+    borderRadius: '12px',
+    backgroundColor: 'transparent',
   },
   skeletonCard: {
     display: 'flex',
-    backgroundColor: '#000000',
+    backgroundColor: 'transparent',
     width: '100%',
     height: '72px',
     margin: '12px auto',
     boxShadow: 'none',
     padding: 'auto',
+    border: '1px solid rgba(255, 255, 255, 0.12)',
+    borderRadius: '12px',
   },
   collectionImg: {
     borderRadius: '12px',
@@ -59,15 +65,15 @@ const useStyles = makeStyles(() => ({
   actionarea: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#282828',
+    backgroundColor: 'transparent',
     '&:hover': {
-      color: '#787878',
-      backgroundColor: '#787878',
+      backgroundColor: 'rgba(255, 255, 255, 0.08)',
     },
   },
 }));
 
 const ListTab = forwardRef((props: ListTabProps, ref) => {
+  const { accessible, setCount, data } = props;
   const history = useHistory();
   const classes = useStyles();
   const usewallet = useWallet();
@@ -86,52 +92,57 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
     },
   }));
 
-  const fetchCollectionCache = async (address: string) => {
-    setAccessible(props.accessible);
-    try {
-      setCollectionLoading(true);
-      const list = await usewallet.openapi.EvmNFTID(address);
-      if (list && list.length > 0) {
-        setCollectionEmpty(false);
-        setCollections(list);
-        const count = list.reduce((acc, item) => acc + item.count, 0);
-        props.setCount(count);
-      } else {
+  const fetchLatestCollection = useCallback(
+    async (addr: string) => {
+      try {
+        const list = await usewallet.openapi.EvmNFTID(addr);
+        setCollectionLoading(false);
+        if (list && list.length > 0) {
+          setCollectionEmpty(false);
+          setCollections(list);
+        } else {
+          setCollectionEmpty(true);
+        }
+      } catch (err) {
+        console.log(err);
+        setCollectionLoading(false);
+        setCollectionEmpty(true);
+      }
+    },
+    [usewallet.openapi]
+  );
+
+  const fetchCollectionCache = useCallback(
+    async (address: string) => {
+      setAccessible(accessible);
+      try {
+        setCollectionLoading(true);
+        const list = await usewallet.openapi.EvmNFTID(address);
+        if (list && list.length > 0) {
+          setCollectionEmpty(false);
+          setCollections(list);
+          const count = list.reduce((acc, item) => acc + item.count, 0);
+          setCount(count);
+        } else {
+          setCollectionEmpty(true);
+          fetchLatestCollection(address);
+        }
+      } catch {
         setCollectionEmpty(true);
         fetchLatestCollection(address);
+      } finally {
+        setCollectionLoading(false);
       }
-    } catch {
-      setCollectionEmpty(true);
-      fetchLatestCollection(address);
-    } finally {
-      setCollectionLoading(false);
-    }
-  };
-
-  const fetchLatestCollection = async (address: string) => {
-    try {
-      const list = await usewallet.openapi.EvmNFTID(address);
-      setCollectionLoading(false);
-      if (list && list.length > 0) {
-        setCollectionEmpty(false);
-        setCollections(list);
-      } else {
-        setCollectionEmpty(true);
-      }
-    } catch (err) {
-      console.log(err);
-      setCollectionLoading(false);
-      setCollectionEmpty(true);
-    }
-  };
+    },
+    [accessible, setCount, usewallet.openapi, fetchLatestCollection]
+  );
 
   useEffect(() => {
-    console.log('props.data.ownerAddress ', props.data.ownerAddress);
-    if (props.data.ownerAddress) {
-      fetchCollectionCache(props.data.ownerAddress);
-      setAddress(props.data.ownerAddress);
+    if (data.ownerAddress) {
+      fetchCollectionCache(data.ownerAddress);
+      setAddress(data.ownerAddress);
     }
-  }, [props.data.ownerAddress]);
+  }, [data.ownerAddress, fetchCollectionCache]);
 
   const CollectionView = (data) => {
     const handleClick = () => {
@@ -140,14 +151,18 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
         state: {
           collection: data,
           ownerAddress: data.ownerAddress,
-          accessible: props.accessible,
+          accessible: accessible,
         },
       });
     };
     return (
       <Card sx={{ borderRadius: '12px' }} className={classes.collectionCard}>
         <CardActionArea
-          sx={{ backgroundColor: 'background.paper', borderRadius: '12px', paddingRight: '8px' }}
+          sx={{
+            backgroundColor: 'transparent',
+            borderRadius: '12px',
+            paddingRight: '8px',
+          }}
           className={classes.actionarea}
           onClick={handleClick}
         >
@@ -166,8 +181,8 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
               alt={data.name}
             />
             <CardContent sx={{ flex: '1 0 auto', padding: '8px 4px' }}>
-              <Grid container>
-                <Grid item sx={{ width: '260px' }}>
+              <Grid container justifyContent="space-between" alignItems="center" sx={{ pr: 2 }}>
+                <Grid item sx={{ flex: 1 }}>
                   <Typography component="div" variant="body1" color="#fff" sx={{ mb: 0 }}>
                     {data.name}
                   </Typography>
@@ -181,7 +196,7 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
                   </Typography>
                 </Grid>
                 <Grid item>
-                  <ArrowForwardIcon color="primary" sx={{ mt: '12px' }} />
+                  <ArrowForwardIcon color="primary" />
                 </Grid>
               </Grid>
             </CardContent>
