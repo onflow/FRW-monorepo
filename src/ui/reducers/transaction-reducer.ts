@@ -199,7 +199,8 @@ export const transactionReducer = (
       let amountInFiat = '0.0';
       let balanceExceeded = false;
       let remainingBalance = new BN(0);
-      const balance = new BN(state.coinInfo.balance || '0.0');
+      // Check available balance as some token may have a storage allocation
+      const balance = new BN(state.coinInfo.availableBalance || state.coinInfo.balance || '0.0');
       const price = new BN(state.coinInfo.price || '0.0');
 
       if (state.fiatOrCoin === 'fiat') {
@@ -239,9 +240,6 @@ export const transactionReducer = (
       }
       // Check the remaining balance to see if it's exceeded
       if (remainingBalance.isLessThan(0)) {
-        balanceExceeded = true;
-      } else if (state.coinInfo.coin === 'flow' && remainingBalance.isLessThan(0.001)) {
-        // If we're less than the minimum allowed flow balance then that's also exceeding balance
         balanceExceeded = true;
       } else {
         balanceExceeded = false;
