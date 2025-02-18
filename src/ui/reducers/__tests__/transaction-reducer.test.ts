@@ -1,11 +1,10 @@
 import { type TokenInfo } from 'flow-native-token-registry';
 import { describe, expect, it } from 'vitest';
 
-import { type Contact } from '@/shared/types/network-types';
 import {
   type NetworkType,
   type TokenType,
-  type TransactionStateString,
+  type TransactionState,
 } from '@/shared/types/transaction-types';
 import { type CoinItem, type WalletAddress } from '@/shared/types/wallet-types';
 
@@ -315,6 +314,71 @@ describe('Transaction Reducer', () => {
         );
         // Should preserve trailing zeros for precision in crypto transactions
         expect(newState.amount).toBe('100.100000');
+      });
+
+      describe('network decimals handling', () => {
+        it('should handle EVM to EVM transfers with up to 18 decimals', () => {
+          const stateWithEvmNetworks: TransactionState = {
+            ...stateWithBalance,
+            fromNetwork: 'Evm' as NetworkType,
+            toNetwork: 'Evm' as NetworkType,
+            selectedToken: {
+              ...stateWithBalance.selectedToken,
+              decimals: 18,
+            },
+            fiatOrCoin: 'coin',
+          };
+
+          const action = {
+            type: 'setAmount' as const,
+            payload: '1.123456789012345678', // 18 decimals
+          };
+
+          const newState = transactionReducer(stateWithEvmNetworks, action);
+          expect(newState.amount).toBe('1.123456789012345678');
+        });
+
+        it('should limit non-EVM transfers to 8 decimals', () => {
+          const stateWithMixedNetworks: TransactionState = {
+            ...stateWithBalance,
+            fromNetwork: 'Evm' as NetworkType,
+            toNetwork: 'Cadence' as NetworkType,
+            selectedToken: {
+              ...stateWithBalance.selectedToken,
+              decimals: 18,
+            },
+            fiatOrCoin: 'coin',
+          };
+
+          const action = {
+            type: 'setAmount' as const,
+            payload: '1.123456789012345678', // 18 decimals
+          };
+
+          const newState = transactionReducer(stateWithMixedNetworks, action);
+          expect(newState.amount).toBe('1.12345678'); // Should be truncated to 8 decimals
+        });
+
+        it('should respect token decimals even if less than network maximum', () => {
+          const stateWithLowDecimalToken: TransactionState = {
+            ...stateWithBalance,
+            fromNetwork: 'Evm' as NetworkType,
+            toNetwork: 'Evm' as NetworkType,
+            selectedToken: {
+              ...stateWithBalance.selectedToken,
+              decimals: 6,
+            },
+            fiatOrCoin: 'coin',
+          };
+
+          const action = {
+            type: 'setAmount' as const,
+            payload: '1.123456789012345678', // 18 decimals
+          };
+
+          const newState = transactionReducer(stateWithLowDecimalToken, action);
+          expect(newState.amount).toBe('1.123456'); // Should be truncated to 6 decimals
+        });
       });
     });
 
