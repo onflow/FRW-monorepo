@@ -169,17 +169,17 @@ const GridTab = forwardRef((props: GridTabProps, ref) => {
 
   const handleScroll = useCallback(
     (e: Event) => {
+      if (loading) return;
       const target = e.target as HTMLElement;
       const scrollTop = target.scrollTop;
       const direction = scrollTop > lastScrollTop.current ? 'down' : 'up';
 
       if (direction !== scrollDirection) {
-        console.log('🔄 NFT: Scroll direction changed:', direction);
         setScrollDirection(direction);
       }
       lastScrollTop.current = scrollTop;
     },
-    [scrollDirection]
+    [loading, scrollDirection]
   );
 
   useImperativeHandle(ref, () => ({
@@ -192,15 +192,7 @@ const GridTab = forwardRef((props: GridTabProps, ref) => {
   }));
 
   const nextPage = useCallback(async () => {
-    console.log('📥 NFT: Attempting to load next page', {
-      loadingMore,
-      hasMore,
-      currentCount: nfts.length,
-      total,
-    });
-
     if (loadingMore || !hasMore) {
-      console.log('⏭️ NFT: Skipping next page - loading or no more items');
       return;
     }
 
@@ -208,34 +200,21 @@ const GridTab = forwardRef((props: GridTabProps, ref) => {
     const offset = nfts.length;
 
     try {
-      console.log('🔄 NFT: Fetching next page with offset:', offset);
       const response = await usewallet.refreshNft(ownerAddress, offset);
-
-      if (!response || !response.nfts) {
-        console.log('⚠️ NFT: No response for next page');
-        return;
-      }
+      if (!response || !response.nfts) return;
 
       const newList = response.nfts.filter(
         (item) => !nfts.some((nft) => nft.unique_id === item.unique_id)
       );
 
-      console.log('✨ NFT: New items found:', newList.length);
-
       if (newList.length > 0) {
         const mergedList = [...nfts, ...newList];
         setNFTs(mergedList);
         setHasMore(mergedList.length < total);
-        console.log('✅ NFT: Updated list', {
-          newTotal: mergedList.length,
-          hasMore: mergedList.length < total,
-        });
       } else {
         setHasMore(false);
-        console.log('⏹️ NFT: No new items, stopping infinite scroll');
       }
     } catch (e) {
-      console.error('❌ NFT: Next page fetch failed:', e);
       setHasMore(false);
     } finally {
       setLoadingMore(false);

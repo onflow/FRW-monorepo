@@ -174,7 +174,6 @@ const GridTab = forwardRef((props: GridTabProps, ref) => {
       const direction = scrollTop > lastScrollTop.current ? 'down' : 'up';
 
       if (direction !== scrollDirection) {
-        console.log('🔄 EVM: Scroll direction changed:', direction);
         setScrollDirection(direction);
       }
       lastScrollTop.current = scrollTop;
@@ -191,14 +190,14 @@ const GridTab = forwardRef((props: GridTabProps, ref) => {
     },
   }));
 
-  const nextPage = async () => {
-    if (loadingMore) {
+  const nextPage = useCallback(async () => {
+    if (loadingMore || !hasMore) {
       return;
     }
 
     setLoadingMore(true);
     const offset = nfts.length;
-    // pageIndex * 24;
+
     try {
       const list = await usewallet.openapi.EvmNFTList(ownerAddress);
       const newList: any[] = [];
@@ -210,12 +209,11 @@ const GridTab = forwardRef((props: GridTabProps, ref) => {
       });
       const mergedList = [...nfts, ...newList];
       setNFTs(mergedList);
-      const hasMore = mergedList.length > 0 && mergedList.length < total;
-      setHasMore(hasMore);
+      setHasMore(mergedList.length < total);
     } finally {
       setLoadingMore(false);
     }
-  };
+  }, [loadingMore, hasMore, nfts, ownerAddress, total, usewallet]);
 
   const { setCount } = props;
 
