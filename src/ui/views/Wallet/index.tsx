@@ -475,70 +475,109 @@ const WalletTab = ({ network }) => {
           top: '0',
           zIndex: 1100,
           backgroundColor: 'black',
+          '& .MuiTab-root': {
+            minHeight: '48px',
+            color: '#777E90',
+            opacity: 1,
+            position: 'relative',
+            gap: '8px',
+            '&.Mui-selected': {
+              color: '#FFFFFF',
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                width: '100%',
+                height: '2px',
+                backgroundColor: '#FFFFFF',
+              },
+            },
+          },
         }}
         onChange={handleChange}
         TabIndicatorProps={{
           style: {
-            backgroundColor: '#5a5a5a',
+            display: 'none',
           },
         }}
         variant="fullWidth"
         aria-label="full width tabs example"
       >
         <Tab
-          icon={<IconCoins fontSize="small" />}
+          icon={
+            <IconCoins
+              sx={{
+                width: '20px',
+                height: '20px',
+              }}
+              color={value === 0 ? '#FFFFFF' : '#777E90'}
+            />
+          }
           iconPosition="start"
           label={
             <Typography
               variant="body1"
-              color="text.secondary"
               sx={{
                 textTransform: 'capitalize',
-                fontSize: '10',
-                fontWeight: 'semi-bold',
+                fontSize: '14px',
+                fontWeight: 500,
+                color: value === 0 ? '#FFFFFF' : '#777E90',
               }}
             >
-              {childType === 'evm' ? filteredCoinData?.length || '' : coins?.length || ''}{' '}
               {chrome.i18n.getMessage('coins')}
             </Typography>
           }
-          style={{ color: '#F9F9F9', minHeight: '25px' }}
         />
         <Tab
-          icon={<IconNfts fontSize="small" />}
+          icon={
+            <IconNfts
+              sx={{
+                width: '20px',
+                height: '20px',
+              }}
+              color={value === 1 ? '#FFFFFF' : '#777E90'}
+            />
+          }
           iconPosition="start"
           label={
             <Typography
               variant="body1"
-              color="text.secondary"
               sx={{
                 textTransform: 'capitalize',
-                fontSize: '10',
-                fontWeight: 'semi-bold',
+                fontSize: '14px',
+                fontWeight: 500,
+                color: value === 1 ? '#FFFFFF' : '#777E90',
               }}
             >
               {chrome.i18n.getMessage('NFTs')}
             </Typography>
           }
-          style={{ color: '#F9F9F9', minHeight: '25px' }}
         />
         <Tab
-          icon={<IconActivity fontSize="small" />}
+          icon={
+            <IconActivity
+              sx={{
+                width: '20px',
+                height: '20px',
+              }}
+              color={value === 2 ? '#FFFFFF' : '#777E90'}
+            />
+          }
           iconPosition="start"
           label={
             <Typography
               variant="body1"
-              color="text.secondary"
               sx={{
                 textTransform: 'capitalize',
-                fontSize: '10',
-                fontWeight: 'semi-bold',
+                fontSize: '14px',
+                fontWeight: 500,
+                color: value === 2 ? '#FFFFFF' : '#777E90',
               }}
             >
               {chrome.i18n.getMessage('Activity')}
             </Typography>
           }
-          style={{ color: '#F9F9F9', minHeight: '25px' }}
         />
       </Tabs>
       <Box sx={{ flex: 1, overflow: 'hidden' }}>
