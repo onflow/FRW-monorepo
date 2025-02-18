@@ -154,7 +154,7 @@ const GridTab = forwardRef((props: GridTabProps, ref) => {
 
   const [nfts, setNFTs] = useState<any[]>([]);
 
-  const [total, setTotal] = useState(0);
+  const [total, setTotal] = useState(1);
 
   const [hasMore, setHasMore] = useState(true);
 
@@ -380,7 +380,7 @@ const GridTab = forwardRef((props: GridTabProps, ref) => {
           <InfiniteScroll
             dataLength={nfts.length}
             next={nextPage}
-            hasMore={hasMore}
+            hasMore={hasMore && scrollDirection === 'down'}
             loader={<LLSpinner />}
             height="calc(100vh - 160px)"
             style={{
@@ -389,6 +389,13 @@ const GridTab = forwardRef((props: GridTabProps, ref) => {
               marginTop: '-16px',
             }}
             scrollThreshold="100px"
+            onScroll={(e: any) => {
+              const target = e.target as HTMLElement;
+              const scrollTop = target.scrollTop;
+              const direction = scrollTop > lastScrollTop.current ? 'down' : 'up';
+              setScrollDirection(direction);
+              lastScrollTop.current = scrollTop;
+            }}
           >
             <Grid container className={classes.grid}>
               {nfts && nfts.map(createGridCard)}
