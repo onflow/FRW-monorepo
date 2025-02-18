@@ -1,7 +1,14 @@
 import { Card, CardMedia, CardContent, Grid, Skeleton, Typography, Box } from '@mui/material';
 import { StyledEngineProvider } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
-import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  forwardRef,
+  useImperativeHandle,
+  useCallback,
+} from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 
 import { LLSpinner } from '@/ui/FRWComponent';
@@ -147,11 +154,32 @@ const GridTab = forwardRef((props: GridTabProps, ref) => {
 
   const [nfts, setNFTs] = useState<any[]>([]);
 
-  const [total, setTotal] = useState(0);
+  const [total, setTotal] = useState(1);
 
   const [hasMore, setHasMore] = useState(true);
 
   const [blockList, setBlockList] = useState<string[]>([]);
+
+  const mountedRef = useRef(true);
+  const initialFetchDone = useRef(false);
+  const addressRef = useRef('');
+  const [scrollDirection, setScrollDirection] = useState('down');
+  const lastScrollTop = useRef(0);
+
+  const handleScroll = useCallback(
+    (e: Event) => {
+      if (loading) return;
+      const target = e.target as HTMLElement;
+      const scrollTop = target.scrollTop;
+      const direction = scrollTop > lastScrollTop.current ? 'down' : 'up';
+
+      if (direction !== scrollDirection) {
+        setScrollDirection(direction);
+      }
+      lastScrollTop.current = scrollTop;
+    },
+    [loading, scrollDirection]
+  );
 
   useImperativeHandle(ref, () => ({
     reload: () => {
@@ -162,14 +190,14 @@ const GridTab = forwardRef((props: GridTabProps, ref) => {
     },
   }));
 
-  const nextPage = async () => {
-    if (loadingMore) {
+  const nextPage = useCallback(async () => {
+    if (loadingMore || !hasMore) {
       return;
     }
 
     setLoadingMore(true);
     const offset = nfts.length;
-    // pageIndex * 24;
+
     try {
       const list = await usewallet.openapi.EvmNFTList(ownerAddress);
       const newList: any[] = [];
@@ -181,100 +209,143 @@ const GridTab = forwardRef((props: GridTabProps, ref) => {
       });
       const mergedList = [...nfts, ...newList];
       setNFTs(mergedList);
-      const hasMore = mergedList.length > 0 && mergedList.length < total;
-      setHasMore(hasMore);
+      setHasMore(mergedList.length < total);
     } finally {
       setLoadingMore(false);
     }
-  };
+  }, [loadingMore, hasMore, nfts, ownerAddress, total, usewallet]);
 
-  const fetchNFT = async (address: string, reload = true) => {
-    if (loading) {
-      return;
-    }
+  const { setCount } = props;
 
-    setNFTLoading(true);
-    try {
-      const response = await usewallet.openapi.EvmNFTList(ownerAddress);
-      if (response.nfts) {
-        const newList: any[] = [];
-        response.nfts.forEach((item) => {
-          const result = nfts.filter((nft) => nft.unique_id === item.unique_id);
-          if (result.length === 0) {
-            newList.push(item);
-          }
+  const fetchNFT = useCallback(
+    async (address: string, reload = true) => {
+      if (loading) {
+        return;
+      }
+
+      setNFTLoading(true);
+      try {
+        const response = await usewallet.openapi.EvmNFTList(ownerAddress);
+        if (response.nfts) {
+          const newList: any[] = [];
+          response.nfts.forEach((item) => {
+            const result = nfts.filter((nft) => nft.unique_id === item.unique_id);
+            if (result.length === 0) {
+              newList.push(item);
+            }
+          });
+          const mergedList = [...nfts, ...newList];
+          setNFTs(mergedList);
+
+          const hasMore = mergedList.length > 0 && mergedList.length < total;
+          setHasMore(hasMore);
+        }
+
+        setCount(response.nftCount);
+        setTotal(response.nftCount);
+      } finally {
+        setNFTLoading(false);
+        setHasMore(false);
+      }
+    },
+    [
+      loading,
+      ownerAddress,
+      nfts,
+      total,
+      usewallet,
+      setNFTs,
+      setNFTLoading,
+      setCount,
+      setTotal,
+      setHasMore,
+    ]
+  );
+
+  const fetchNFTCache = useCallback(
+    async (address: string) => {
+      if (loading) {
+        console.log('⚠️ EVM: Skipping cache fetch - already loading');
+        return;
+      }
+
+      console.log('🔍 EVM: Starting NFT cache fetch for:', address);
+      setNFTLoading(true);
+
+      try {
+        console.log('📡 EVM: Making API call to fetch NFTs');
+        const response = await usewallet.openapi.EvmNFTList(address);
+        console.log('📦 EVM: Received response:', {
+          hasNFTs: !!response?.nfts,
+          nftCount: response?.nftCount,
         });
-        const mergedList = [...nfts, ...newList];
-        setNFTs(mergedList);
 
-        const hasMore = mergedList.length > 0 && mergedList.length < total;
-        setHasMore(hasMore);
+        if (!response) {
+          console.log('⚠️ EVM: No response from cache, falling back to direct fetch');
+          await fetchNFT(address);
+          return;
+        }
+
+        const { nfts, nftCount } = response;
+
+        if (nfts?.length) {
+          console.log('✅ EVM: Setting NFTs:', {
+            count: nfts.length,
+            total: nftCount,
+          });
+          setNFTs(nfts);
+          setTotal(nftCount);
+          setCount(nftCount);
+          setHasMore(nfts.length < nftCount);
+        } else {
+          console.log('⚠️ EVM: No NFTs in cache, falling back to direct fetch');
+          await fetchNFT(address);
+        }
+      } catch (e) {
+        console.error('❌ EVM: Cache fetch failed:', e);
+        await fetchNFT(address);
+      } finally {
+        console.log('🏁 EVM: Completing cache fetch');
+        setNFTLoading(false);
       }
-
-      props.setCount(response.nftCount);
-      setTotal(response.nftCount);
-    } finally {
-      setNFTLoading(false);
-      setHasMore(false);
-    }
-  };
-
-  const fetchNFTCache = async (address: string, reload = true) => {
-    // setNFTLoading(true);
-    try {
-      const { nfts, nftCount } = await usewallet.openapi.EvmNFTList(address);
-      props.setCount(nftCount);
-      setTotal(nftCount);
-      setNFTs(nfts);
-      if (nfts.length === 0) {
-        // setNFTLoading(false);
-        fetchNFT(address);
-      }
-    } catch (e) {
-      console.log('e ->', e);
-    } finally {
-      setNFTLoading(false);
-      setHasMore(false);
-    }
-  };
-
-  const loader = (
-    <Grid container className={classes.grid}>
-      {[...Array(2).keys()].map((key) => (
-        <Card className={classes.card} elevation={0} key={key}>
-          <CardMedia className={classes.cardmedia}>
-            <Skeleton
-              variant="rectangular"
-              width={150}
-              height={150}
-              sx={{ margin: '0 auto', borderRadius: '8px' }}
-            />
-          </CardMedia>
-          <CardContent className={classes.content}>
-            <Skeleton variant="text" width={150} sx={{ margin: '0 auto' }} />
-          </CardContent>
-        </Card>
-      ))}
-    </Grid>
+    },
+    [loading, usewallet, fetchNFT, setNFTs, setTotal, setCount, setHasMore]
   );
 
   useEffect(() => {
-    if (props.data.ownerAddress) {
-      fetchNFTCache(props.data.ownerAddress);
-      setAddress(props.data.ownerAddress);
-    }
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
   }, []);
 
-  const extractContractAddress = (collection) => {
-    return collection.split('.')[2];
-  };
+  useEffect(() => {
+    const currentAddress = props.data.ownerAddress;
+    if (
+      !currentAddress ||
+      !mountedRef.current ||
+      initialFetchDone.current ||
+      currentAddress === addressRef.current
+    ) {
+      return;
+    }
 
-  const createGridCard = (data, index) => {
+    const initFetch = async () => {
+      initialFetchDone.current = true;
+      addressRef.current = currentAddress;
+      await fetchNFTCache(currentAddress);
+      setAddress(currentAddress);
+    };
+
+    initFetch();
+  }, [props.data.ownerAddress, fetchNFTCache]);
+
+  const createGridCard = (data: any, index: number) => {
     return (
       <GridView
         data={data}
         blockList={blockList}
-        key={data.unique_id}
+        key={`${data.unique_id}-${index}`}
         accessible={props.accessible}
         index={index}
         ownerAddress={ownerAddress}
@@ -284,41 +355,55 @@ const GridTab = forwardRef((props: GridTabProps, ref) => {
 
   return (
     <StyledEngineProvider injectFirst>
-      {loading ? (
-        <Grid container className={classes.grid}>
-          {[...Array(4).keys()].map((key) => (
-            <Card className={classes.card} elevation={0} key={key}>
-              <CardMedia className={classes.cardmedia}>
-                <Skeleton
-                  variant="rectangular"
-                  width={150}
-                  height={150}
-                  sx={{ margin: '0 auto', borderRadius: '8px' }}
-                />
-              </CardMedia>
-              <CardContent className={classes.content}>
-                <Skeleton variant="text" width={150} sx={{ margin: '0 auto' }} />
-              </CardContent>
-            </Card>
-          ))}
-        </Grid>
-      ) : total !== 0 ? (
-        <InfiniteScroll
-          dataLength={nfts.length} //This is important field to render the next data
-          next={nextPage}
-          hasMore={hasMore}
-          loader={loader}
-          height={485}
-          scrollableTarget="scrollableTab"
-        >
+      <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        {loading ? (
           <Grid container className={classes.grid}>
-            {nfts && nfts.map(createGridCard)}
-            {nfts.length % 2 !== 0 && <Card className={classes.cardNoHover} elevation={0} />}
+            {[...Array(4).keys()].map((key) => (
+              <Card className={classes.card} elevation={0} key={key}>
+                <CardMedia className={classes.cardmedia}>
+                  <Skeleton
+                    variant="rectangular"
+                    width={150}
+                    height={150}
+                    sx={{ margin: '0 auto', borderRadius: '8px' }}
+                  />
+                </CardMedia>
+                <CardContent className={classes.content}>
+                  <Skeleton variant="text" width={150} sx={{ margin: '0 auto' }} />
+                </CardContent>
+              </Card>
+            ))}
           </Grid>
-        </InfiniteScroll>
-      ) : (
-        <EmptyStatus />
-      )}
+        ) : total !== 0 ? (
+          <InfiniteScroll
+            dataLength={nfts.length}
+            next={nextPage}
+            hasMore={hasMore && scrollDirection === 'down'}
+            loader={<LLSpinner />}
+            height="calc(100vh - 160px)"
+            style={{
+              overflow: 'auto',
+              paddingTop: '16px',
+              marginTop: '-16px',
+            }}
+            scrollThreshold="100px"
+            onScroll={(e: any) => {
+              const target = e.target as HTMLElement;
+              const scrollTop = target.scrollTop;
+              const direction = scrollTop > lastScrollTop.current ? 'down' : 'up';
+              setScrollDirection(direction);
+              lastScrollTop.current = scrollTop;
+            }}
+          >
+            <Grid container className={classes.grid}>
+              {nfts && nfts.map(createGridCard)}
+              {nfts.length % 2 !== 0 && <Card className={classes.cardNoHover} elevation={0} />}
+            </Grid>
+          </InfiniteScroll>
+        ) : !loading && total === 0 ? (
+          <EmptyStatus />
+        ) : null}
+      </Box>
     </StyledEngineProvider>
   );
 });
