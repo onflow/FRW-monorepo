@@ -1,30 +1,19 @@
 import { Button, CardMedia, Typography } from '@mui/material';
 import React, { useState } from 'react';
 
-// Import icons
-import receiveIcon from '@/ui/FRWAssets/svg/arrowDownLeftIcon.svg';
-import sendIcon from '@/ui/FRWAssets/svg/arrowUpRightIcon.svg';
-import moveIcon from '@/ui/FRWAssets/svg/moveIcon.svg';
-import buyIcon from '@/ui/FRWAssets/svg/plusIcon.svg';
-import swapIcon from '@/ui/FRWAssets/svg/transferIcon.svg';
-
-const iconMap = {
-  Buy: buyIcon,
-  Send: sendIcon,
-  Receive: receiveIcon,
-  Swap: swapIcon,
-  Move: moveIcon,
-} as const;
-
-type IconButtonKey = keyof typeof iconMap;
-
 interface IconButtonProps {
-  buttonKey: IconButtonKey;
+  messageKey: string;
   onClick: () => void;
   showLabel?: boolean;
+  icon: string;
 }
 
-export const IconButton: React.FC<IconButtonProps> = ({ buttonKey, onClick, showLabel = true }) => {
+export const IconButton: React.FC<IconButtonProps> = ({
+  messageKey,
+  onClick,
+  showLabel = true,
+  icon,
+}) => {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -67,18 +56,18 @@ export const IconButton: React.FC<IconButtonProps> = ({ buttonKey, onClick, show
               color: '#000000', // This will make the SVG black on hover
             },
           }}
-          image={iconMap[buttonKey]}
+          image={icon}
         />
       </Button>
       {showLabel && (
         <Typography
           sx={{
-            fontSize: '10px',
+            fontSize: '12px',
             color: '#777E90',
             textAlign: 'center',
           }}
         >
-          {chrome.i18n.getMessage(buttonKey)}
+          {chrome.i18n.getMessage(messageKey)}
         </Typography>
       )}
     </div>

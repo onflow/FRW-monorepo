@@ -1,5 +1,3 @@
-import FlashOnRoundedIcon from '@mui/icons-material/FlashOnRounded';
-import SavingsRoundedIcon from '@mui/icons-material/SavingsRounded';
 import { Typography, Button, Skeleton, Drawer, CardMedia, Tabs, Tab } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { useCallback, useEffect, useState } from 'react';

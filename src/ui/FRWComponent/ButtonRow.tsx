@@ -1,6 +1,12 @@
 import { Box } from '@mui/material';
 import React from 'react';
 
+import buyIcon from '@/ui/FRWAssets/svg/buyIcon.svg';
+import moveIcon from '@/ui/FRWAssets/svg/homeMove.svg';
+import receiveIcon from '@/ui/FRWAssets/svg/receiveIcon.svg';
+import sendIcon from '@/ui/FRWAssets/svg/sendIcon.svg';
+import swapIcon from '@/ui/FRWAssets/svg/swapIcon.svg';
+
 import { IconButton } from './IconButton';
 
 interface ButtonRowProps {
@@ -34,11 +40,11 @@ export const ButtonRow: React.FC<ButtonRowProps> = ({
         margin: '0 auto',
       }}
     >
-      <IconButton buttonKey="Send" onClick={onSendClick} />
-      <IconButton buttonKey="Receive" onClick={onReceiveClick} />
-      <IconButton buttonKey="Swap" onClick={onSwapClick} />
-      <IconButton buttonKey="Buy" onClick={onBuyClick} />
-      {canMoveChild && <IconButton buttonKey="Move" onClick={onMoveClick} />}
+      <IconButton messageKey="Send" onClick={onSendClick} icon={sendIcon} />
+      <IconButton messageKey="Receive" onClick={onReceiveClick} icon={receiveIcon} />
+      <IconButton messageKey="Swap" onClick={onSwapClick} icon={swapIcon} />
+      <IconButton messageKey="Buy" onClick={onBuyClick} icon={buyIcon} />
+      {canMoveChild && <IconButton messageKey="Move" onClick={onMoveClick} icon={moveIcon} />}
     </Box>
   );
 };
