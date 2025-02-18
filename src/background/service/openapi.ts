@@ -295,7 +295,7 @@ const defaultFlowToken = {
   },
   logoURI:
     'https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.1654653399040a61.FlowToken/logo.svg',
-  decimals: 18,
+  decimals: 8,
   symbol: 'flow',
 };
 
