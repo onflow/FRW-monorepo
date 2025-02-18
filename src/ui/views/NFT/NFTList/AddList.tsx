@@ -101,7 +101,6 @@ const AddList = () => {
       setStatusLoading(true);
       try {
         const enabledList = await usewallet.openapi.getEnabledNFTList();
-        console.log('🔄 NFT: Enabled list:', enabledList, data);
         if (enabledList.length > 0) {
           data.map((item) => {
             item.added =

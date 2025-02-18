@@ -355,66 +355,50 @@ const GridTab = forwardRef((props: GridTabProps, ref) => {
     );
   };
 
-  const loader = (
-    <Grid container className={classes.grid}>
-      {[...Array(2).keys()].map((key) => (
-        <Card className={classes.card} elevation={0} key={key}>
-          <CardMedia className={classes.cardmedia}>
-            <Skeleton
-              variant="rectangular"
-              width={150}
-              height={150}
-              sx={{ margin: '0 auto', borderRadius: '8px' }}
-            />
-          </CardMedia>
-          <CardContent className={classes.content}>
-            <Skeleton variant="text" width={150} sx={{ margin: '0 auto' }} />
-          </CardContent>
-        </Card>
-      ))}
-    </Grid>
-  );
-
   return (
     <StyledEngineProvider injectFirst>
-      {loading ? (
-        <Grid container className={classes.grid}>
-          {[...Array(4).keys()].map((key) => (
-            <Card className={classes.card} elevation={0} key={key}>
-              <CardMedia className={classes.cardmedia}>
-                <Skeleton
-                  variant="rectangular"
-                  width={150}
-                  height={150}
-                  sx={{ margin: '0 auto', borderRadius: '8px' }}
-                />
-              </CardMedia>
-              <CardContent className={classes.content}>
-                <Skeleton variant="text" width={150} sx={{ margin: '0 auto' }} />
-              </CardContent>
-            </Card>
-          ))}
-        </Grid>
-      ) : total !== 0 ? (
-        <InfiniteScroll
-          dataLength={nfts.length}
-          next={nextPage}
-          hasMore={hasMore && scrollDirection === 'down'}
-          loader={loader}
-          height={485}
-          scrollableTarget="scrollableTab"
-          onScroll={handleScroll}
-        >
+      <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        {loading ? (
           <Grid container className={classes.grid}>
-            {nfts && nfts.map(createGridCard)}
-            {nfts.length % 2 !== 0 && (
-              <Card className={classes.cardNoHover} elevation={0} key="spacer" />
-            )}
+            {[...Array(4).keys()].map((key) => (
+              <Card className={classes.card} elevation={0} key={key}>
+                <CardMedia className={classes.cardmedia}>
+                  <Skeleton
+                    variant="rectangular"
+                    width={150}
+                    height={150}
+                    sx={{ margin: '0 auto', borderRadius: '8px' }}
+                  />
+                </CardMedia>
+                <CardContent className={classes.content}>
+                  <Skeleton variant="text" width={150} sx={{ margin: '0 auto' }} />
+                </CardContent>
+              </Card>
+            ))}
           </Grid>
-        </InfiniteScroll>
-      ) : (
-        <EmptyStatus />
-      )}
+        ) : total !== 0 ? (
+          <InfiniteScroll
+            dataLength={nfts.length}
+            next={nextPage}
+            hasMore={hasMore}
+            loader={<LLSpinner />}
+            height="calc(100vh - 160px)"
+            style={{
+              overflow: 'auto',
+              paddingTop: '16px',
+              marginTop: '-16px',
+            }}
+            scrollThreshold="100px"
+          >
+            <Grid container className={classes.grid}>
+              {nfts && nfts.map(createGridCard)}
+              {nfts.length % 2 !== 0 && <Card className={classes.cardNoHover} elevation={0} />}
+            </Grid>
+          </InfiniteScroll>
+        ) : !loading && total === 0 ? (
+          <EmptyStatus />
+        ) : null}
+      </Box>
     </StyledEngineProvider>
   );
 });
