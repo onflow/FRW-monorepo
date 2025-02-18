@@ -178,23 +178,23 @@ const TransferAmount = ({
                   onChange={(event) => handleAmountChange(event.target.value)}
                   inputProps={{ sx: { fontSize: '24px' } }}
                   endAdornment={
-                    <Tooltip
-                      title={
-                        transactionState.coinInfo.unit === 'flow'
-                          ? chrome.i18n.getMessage('on_Flow_the_balance_cant_less_than_0001_FLOW')
-                          : ''
-                      }
-                      arrow
-                    >
-                      <InputAdornment position="end">
+                    <InputAdornment position="end">
+                      <Tooltip
+                        title={
+                          transactionState.coinInfo.unit === 'flow'
+                            ? chrome.i18n.getMessage('on_Flow_the_balance_cant_less_than_0001_FLOW')
+                            : ''
+                        }
+                        arrow
+                      >
                         <Chip
-                          label={chrome.i18n.getMessage('Inbox')}
+                          label={chrome.i18n.getMessage('Max')}
                           size="small"
                           onClick={handleMaxClick}
                           sx={{ padding: '2px 5px' }}
                         />
-                      </InputAdornment>
-                    </Tooltip>
+                      </Tooltip>
+                    </InputAdornment>
                   }
                 />
               </FormControl>
@@ -217,14 +217,16 @@ const TransferAmount = ({
                 }}
                 sx={{ zIndex: 2000 }}
               >
-                {coins.map((coin) => (
-                  <MenuItem value={coin.unit} key={coin.unit} sx={{ zIndex: 2000 }}>
-                    <ListItemIcon>
-                      <img src={coin.icon} style={{ height: '24px', width: '24px' }} />
-                    </ListItemIcon>
-                    <ListItemText>{coin.coin}</ListItemText>
-                  </MenuItem>
-                ))}
+                {coins
+                  .filter((coin) => Number(coin.balance) > 0)
+                  .map((coin) => (
+                    <MenuItem value={coin.unit} key={coin.unit} sx={{ zIndex: 2000 }}>
+                      <ListItemIcon>
+                        <img src={coin.icon} style={{ height: '24px', width: '24px' }} />
+                      </ListItemIcon>
+                      <ListItemText>{coin.coin}</ListItemText>
+                    </MenuItem>
+                  ))}
               </Select>
               <FormControl sx={{ flex: '1', display: 'flex' }}>
                 <Input
@@ -240,12 +242,21 @@ const TransferAmount = ({
                   inputProps={{ sx: { fontSize: '24px' } }}
                   endAdornment={
                     <InputAdornment position="end">
-                      <Chip
-                        label={chrome.i18n.getMessage('Max')}
-                        size="small"
-                        onClick={handleMaxClick}
-                        sx={{ padding: '2px 5px' }}
-                      />
+                      <Tooltip
+                        title={
+                          transactionState.coinInfo.unit === 'flow'
+                            ? chrome.i18n.getMessage('on_Flow_the_balance_cant_less_than_0001_FLOW')
+                            : ''
+                        }
+                        arrow
+                      >
+                        <Chip
+                          label={chrome.i18n.getMessage('Max')}
+                          size="small"
+                          onClick={handleMaxClick}
+                          sx={{ padding: '2px 5px' }}
+                        />
+                      </Tooltip>
                     </InputAdornment>
                   }
                 />
@@ -297,10 +308,9 @@ const TransferAmount = ({
               color="text.secondary"
               sx={{ fontSize: transactionState.coinInfo.unit === 'flow' ? '0.7rem' : '1rem' }}
             >
-              {chrome.i18n.getMessage('Insufficient_balance') +
-                (transactionState.coinInfo.unit === 'flow'
-                  ? chrome.i18n.getMessage('on_Flow_the_balance_cant_less_than_0001_FLOW')
-                  : '')}
+              {transactionState.coinInfo.unit === 'flow'
+                ? chrome.i18n.getMessage('Insufficient_balance_on_Flow')
+                : chrome.i18n.getMessage('Insufficient_balance')}
             </Typography>
           </Box>
         </SlideRelative>

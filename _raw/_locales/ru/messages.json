@@ -343,6 +343,9 @@
   "Insufficient_balance": {
     "message": "Недостаточный баланс"
   },
+  "Insufficient_balance_on_Flow": {
+    "message": "Недостаточный баланс, на Flow остаток не может быть меньше 0,001 FLOW"
+  },
   "on_Flow_the_balance_cant_less_than_0001_FLOW": {
     "message": "на Flow остаток не может быть меньше 0,001 FLOW"
   },

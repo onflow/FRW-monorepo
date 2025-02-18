@@ -349,8 +349,11 @@
   "Insufficient_balance": {
     "message": "Insufficient balance"
   },
+  "Insufficient_balance_on_Flow": {
+    "message": "Insufficient balance, on Flow the balance can't be less than 0.001 FLOW"
+  },
   "on_Flow_the_balance_cant_less_than_0001_FLOW": {
-    "message": ", on Flow the balance can't less than 0.001 FLOW"
+    "message": "The Flow balance can't be less than 0.001 FLOW"
   },
   "Approve": {
     "message": "Approve"

@@ -16,6 +16,7 @@ export interface CoinItem {
   coin: string;
   unit: string;
   balance: string;
+  availableBalance?: string;
   price: number;
   change24h: number | null;
   total: number;

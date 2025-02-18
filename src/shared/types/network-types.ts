@@ -126,6 +126,15 @@ export interface StorageInfo {
   used: number;
   capacity: number;
 }
+
+// All UFix64 decimal values
+export interface AccountInfo {
+  address: string;
+  balance: string;
+  availableBalance: string;
+  storageUsed: string;
+  storageCapacity: string;
+}
 export interface AccountKey {
   hash_algo: number;
   public_key: string;
