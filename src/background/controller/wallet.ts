@@ -2939,17 +2939,17 @@ export class WalletController extends BaseController {
 
     const txID = await userWalletService.sendTransaction(
       script
-        .replaceAll('<NFT>', token.contract_name)
+        .replaceAll('<NFT>', token.contractName)
         .replaceAll('<NFTAddress>', token.address)
-        .replaceAll('<CollectionStoragePath>', token.path.storage_path)
-        .replaceAll('<CollectionPublicPath>', token.path.public_path),
+        .replaceAll('<CollectionStoragePath>', token.path.storage)
+        .replaceAll('<CollectionPublicPath>', token.path.public),
       [fcl.arg(recipient, t.Address), fcl.arg(parseInt(id), t.UInt64)]
     );
     mixpanelTrack.track('nft_transfer', {
       tx_id: txID,
       from_address: (await this.getCurrentAddress()) || '',
       to_address: recipient,
-      nft_identifier: token.contract_name,
+      nft_identifier: token.contractName,
       from_type: 'flow',
       to_type: 'flow',
       isMove: false,

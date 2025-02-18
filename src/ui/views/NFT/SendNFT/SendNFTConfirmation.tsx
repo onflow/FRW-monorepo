@@ -134,7 +134,7 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
             parseInt(props.data.nft.id),
             props.data.contract
           );
-        } else if (props.data.contract.contract_name.trim() === 'TopShot') {
+        } else if (props.data.contract.contractName.trim() === 'TopShot') {
           txId = await wallet.sendNBANFT(
             props.data.contact.address,
             parseInt(props.data.nft.id),
