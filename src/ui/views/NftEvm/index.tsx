@@ -47,7 +47,7 @@ const NftEvm = () => {
         sx={{
           display: 'flex',
           justifyContent: 'center',
-          mt: '32px',
+          mt: '8px',
           mb: 2,
         }}
       >

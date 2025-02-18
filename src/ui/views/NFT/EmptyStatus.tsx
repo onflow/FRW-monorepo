@@ -43,7 +43,7 @@ function EmptyStatus() {
           fontSize: '16px',
           lineHeight: '24px',
           fontWeight: 600,
-          marginTop: '16px',
+          marginTop: '8px',
           marginBottom: '4px',
           width: '100%',
           color: '#8C8C8C',
