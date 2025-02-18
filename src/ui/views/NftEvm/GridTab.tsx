@@ -160,15 +160,15 @@ const GridTab = forwardRef((props: GridTabProps, ref) => {
 
   const [blockList, setBlockList] = useState<string[]>([]);
 
-  const initRef = useRef(false);
-  const [initialLoading, setInitialLoading] = useState(false);
+  const mountedRef = useRef(true);
+  const initialFetchDone = useRef(false);
   const addressRef = useRef('');
   const [scrollDirection, setScrollDirection] = useState('down');
   const lastScrollTop = useRef(0);
 
   const handleScroll = useCallback(
     (e: Event) => {
-      if (initialLoading) return;
+      if (loading) return;
       const target = e.target as HTMLElement;
       const scrollTop = target.scrollTop;
       const direction = scrollTop > lastScrollTop.current ? 'down' : 'up';
@@ -179,7 +179,7 @@ const GridTab = forwardRef((props: GridTabProps, ref) => {
       }
       lastScrollTop.current = scrollTop;
     },
-    [scrollDirection, initialLoading]
+    [loading, scrollDirection]
   );
 
   useImperativeHandle(ref, () => ({
@@ -272,7 +272,7 @@ const GridTab = forwardRef((props: GridTabProps, ref) => {
       }
 
       console.log('🔍 EVM: Starting NFT cache fetch for:', address);
-      setInitialLoading(true);
+      setNFTLoading(true);
 
       try {
         console.log('📡 EVM: Making API call to fetch NFTs');
@@ -308,11 +308,52 @@ const GridTab = forwardRef((props: GridTabProps, ref) => {
         await fetchNFT(address);
       } finally {
         console.log('🏁 EVM: Completing cache fetch');
-        setInitialLoading(false);
+        setNFTLoading(false);
       }
     },
-    [loading, setInitialLoading, usewallet, fetchNFT, setNFTs, setTotal, setCount, setHasMore]
+    [loading, usewallet, fetchNFT, setNFTs, setTotal, setCount, setHasMore]
   );
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const currentAddress = props.data.ownerAddress;
+    if (
+      !currentAddress ||
+      !mountedRef.current ||
+      initialFetchDone.current ||
+      currentAddress === addressRef.current
+    ) {
+      return;
+    }
+
+    const initFetch = async () => {
+      initialFetchDone.current = true;
+      addressRef.current = currentAddress;
+      await fetchNFTCache(currentAddress);
+      setAddress(currentAddress);
+    };
+
+    initFetch();
+  }, [props.data.ownerAddress, fetchNFTCache]);
+
+  const createGridCard = (data: any, index: number) => {
+    return (
+      <GridView
+        data={data}
+        blockList={blockList}
+        key={`${data.unique_id}-${index}`}
+        accessible={props.accessible}
+        index={index}
+        ownerAddress={ownerAddress}
+      />
+    );
+  };
 
   const loader = (
     <Grid container className={classes.grid}>
@@ -333,35 +374,6 @@ const GridTab = forwardRef((props: GridTabProps, ref) => {
       ))}
     </Grid>
   );
-
-  useEffect(() => {
-    if (
-      !props.data.ownerAddress ||
-      initialLoading ||
-      props.data.ownerAddress === addressRef.current
-    ) {
-      console.log('⏭️ EVM: Skipping - already fetched or same address');
-      return;
-    }
-
-    console.log('🔄 EVM: Initial load for address:', props.data.ownerAddress);
-    addressRef.current = props.data.ownerAddress;
-    fetchNFTCache(props.data.ownerAddress);
-    setAddress(props.data.ownerAddress);
-  }, [props.data.ownerAddress, fetchNFTCache, initialLoading]);
-
-  const createGridCard = (data: any, index: number) => {
-    return (
-      <GridView
-        data={data}
-        blockList={blockList}
-        key={`${data.unique_id}-${index}`}
-        accessible={props.accessible}
-        index={index}
-        ownerAddress={ownerAddress}
-      />
-    );
-  };
 
   return (
     <StyledEngineProvider injectFirst>
