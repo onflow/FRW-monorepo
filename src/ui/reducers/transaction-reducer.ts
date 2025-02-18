@@ -222,8 +222,15 @@ export const transactionReducer = (
         // Calculate the remaining balance after the transaction
         remainingBalance = balance.minus(new BN(amountInCoin));
       } else if (state.fiatOrCoin === 'coin') {
+        // Should limit non-evm networks to 8 decimals
+        const maxNetworkDecimals =
+          state.fromNetwork === 'Evm' && state.toNetwork === 'Evm' ? 18 : 8;
         // Check if the amount entered has too many decimal places
-        amountInCoin = trimDecimalAmount(action.payload, state.selectedToken.decimals, 'entering');
+        amountInCoin = trimDecimalAmount(
+          action.payload,
+          Math.min(maxNetworkDecimals, state.selectedToken.decimals),
+          'entering'
+        );
 
         // Check if the balance is exceeded
         const amountBN = new BN(

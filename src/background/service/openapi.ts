@@ -295,7 +295,8 @@ const defaultFlowToken = {
   },
   logoURI:
     'https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.1654653399040a61.FlowToken/logo.svg',
-  decimals: 8,
+  // On Evm networks we can use up to 18 decimals
+  decimals: 18,
   symbol: 'flow',
 };
 
