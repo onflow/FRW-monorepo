@@ -343,6 +343,9 @@
   "Insufficient_balance": {
     "message": "残高不足"
   },
+  "Insufficient_balance_on_Flow": {
+    "message": "残高不足、Flow 上では 0.001 FLOW 未満にはできません。"
+  },
   "on_Flow_the_balance_cant_less_than_0001_FLOW": {
     "message": "Flow 上での残高は 0.001FLOW 未満にはできません。"
   },
