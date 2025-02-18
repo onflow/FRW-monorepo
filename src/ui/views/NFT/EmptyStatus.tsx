@@ -6,11 +6,12 @@ import empty_status from '../../FRWAssets/image/empty_status.svg';
 
 const useStyles = makeStyles(() => ({
   emptyBox: {
-    margin: '48px auto 84px auto',
+    margin: '24px auto 32px auto',
     height: '249px',
     justifyContent: 'center',
     alignContent: 'center',
     textAlign: 'center',
+    color: '#777E90',
   },
   emptyImg: {
     margin: '0 auto auto auto',
@@ -18,7 +19,6 @@ const useStyles = makeStyles(() => ({
   title: {
     fontSize: '16px',
     lineHeight: '24px',
-    color: '#777E90',
     fontWeight: 600,
     marginTop: '16px',
     marginBottom: '4px',
@@ -27,7 +27,6 @@ const useStyles = makeStyles(() => ({
   subtitle: {
     fontSize: '14px',
     lineHeight: '20px',
-    color: '#777E90',
     width: '100%',
   },
 }));
