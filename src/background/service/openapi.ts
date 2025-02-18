@@ -1,5 +1,5 @@
 import * as fcl from '@onflow/fcl';
-import type { Account as FclAccount } from '@onflow/typedefs';
+import type { Account, Account as FclAccount } from '@onflow/typedefs';
 import type { Method } from 'axios';
 import dayjs from 'dayjs';
 import { initializeApp, getApp } from 'firebase/app';
@@ -46,6 +46,7 @@ import {
   Period,
   PriceProvider,
   type BlockchainResponse,
+  type AccountInfo,
 } from '../../shared/types/network-types';
 
 import {
@@ -294,7 +295,7 @@ const defaultFlowToken = {
   },
   logoURI:
     'https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.1654653399040a61.FlowToken/logo.svg',
-  decimals: 8,
+  decimals: 18,
   symbol: 'flow',
 };
 
@@ -1212,6 +1213,22 @@ class OpenApiService {
     };
   };
 
+  getFlowAccountInfo = async (address: string): Promise<AccountInfo> => {
+    const script = await getScripts('basic', 'getAccountInfo');
+
+    const result = await fcl.query({
+      cadence: script,
+      args: (arg, t) => [arg(address, t.Address)],
+    });
+
+    return {
+      address: result['address'],
+      balance: result['balance'],
+      availableBalance: result['availableBalance'],
+      storageUsed: result['storageUsed'],
+      storageCapacity: result['storageCapacity'],
+    };
+  };
   getTokenBalanceWithModel = async (address: string, token: TokenInfo) => {
     const script = await getScripts('basic', 'getTokenBalanceWithModel');
     const network = await userWalletService.getNetwork();

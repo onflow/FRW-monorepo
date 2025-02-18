@@ -217,14 +217,16 @@ const TransferAmount = ({
                 }}
                 sx={{ zIndex: 2000 }}
               >
-                {coins.map((coin) => (
-                  <MenuItem value={coin.unit} key={coin.unit} sx={{ zIndex: 2000 }}>
-                    <ListItemIcon>
-                      <img src={coin.icon} style={{ height: '24px', width: '24px' }} />
-                    </ListItemIcon>
-                    <ListItemText>{coin.coin}</ListItemText>
-                  </MenuItem>
-                ))}
+                {coins
+                  .filter((coin) => Number(coin.balance) > 0)
+                  .map((coin) => (
+                    <MenuItem value={coin.unit} key={coin.unit} sx={{ zIndex: 2000 }}>
+                      <ListItemIcon>
+                        <img src={coin.icon} style={{ height: '24px', width: '24px' }} />
+                      </ListItemIcon>
+                      <ListItemText>{coin.coin}</ListItemText>
+                    </MenuItem>
+                  ))}
               </Select>
               <FormControl sx={{ flex: '1', display: 'flex' }}>
                 <Input

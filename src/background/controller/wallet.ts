@@ -1158,15 +1158,26 @@ export class WalletController extends BaseController {
       const allPrice = pricesResults.map((result) =>
         result.status === 'fulfilled' ? result.value : null
       );
+      // Get available flow balance if
+      let availableFlowBalance: string | undefined = undefined;
+      if (!isChild) {
+        const accountInfo = await openapiService.getFlowAccountInfo(address!);
+        availableFlowBalance = accountInfo.availableBalance;
+      }
 
       const coins = tokenList.map((token, index): CoinItem => {
         const tokenId = `A.${token.address.slice(2)}.${token.contractName}`;
+
+        const isFlow = token.symbol.toLowerCase() === 'flow';
+
         return {
           coin: token.name,
           unit: token.symbol.toLowerCase(),
           icon: token['logoURI'] || '',
           // Keep the balance as a string to avoid precision loss
           balance: allBalanceMap[tokenId],
+          // If it's flow and not child account, add the available balance to the flow coin item
+          availableBalance: isFlow && !isChild ? availableFlowBalance : undefined,
           price: allPrice[index] === null ? 0 : new BN(allPrice[index].price.last).toNumber(),
           change24h:
             allPrice[index] === null || !allPrice[index].price || !allPrice[index].price.change

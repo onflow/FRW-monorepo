@@ -172,7 +172,7 @@ export const transactionReducer = (
         // It should not be possible to have a balance that is greater than the max number of decimals allowed by the token
         return transactionReducer(state, {
           type: 'setAmount',
-          payload: state.coinInfo.balance.toString(),
+          payload: state.coinInfo.availableBalance || state.coinInfo.balance,
         });
       } else if (state.fiatOrCoin !== 'fiat') {
         throw new Error('Not specified if entering in coin or fiat');
@@ -185,7 +185,7 @@ export const transactionReducer = (
         },
         {
           type: 'setAmount',
-          payload: state.coinInfo.balance.toString(),
+          payload: state.coinInfo.availableBalance || state.coinInfo.balance,
         }
       );
       return {

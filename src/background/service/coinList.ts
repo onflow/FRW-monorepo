@@ -4,6 +4,7 @@ export interface CoinItem {
   coin: string;
   unit: string;
   balance: string; // Should be a fixed point number with the correct number of decimals
+  availableBalance?: string; // Should be a fixed point number with the correct number of decimals
   price: number; // This can be a number as it can fluctuate quite a bit
   change24h: number | null;
   total: number; // This can be a number as it can fluctuate quite a bit
