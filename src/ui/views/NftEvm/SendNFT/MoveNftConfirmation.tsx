@@ -28,7 +28,7 @@ const MoveNftConfirmation = (props: SendNFTConfirmationProps) => {
   console.log('MoveNftConfirmation - NftEvm');
   const usewallet = useWallet();
   const history = useHistory();
-  const { mainAddress, childAccounts, currentWallet } = useProfiles();
+  const { mainAddress, childAccounts, parentWallet } = useProfiles();
   const [sending, setSending] = useState(false);
   const [failed, setFailed] = useState(false);
   const [, setErrorMessage] = useState<string | null>(null);
@@ -155,10 +155,10 @@ const MoveNftConfirmation = (props: SendNFTConfirmationProps) => {
   const getChildResp = useCallback(async () => {
     const newWallet = {
       [mainAddress!]: {
-        name: currentWallet.name,
-        description: currentWallet.name,
+        name: parentWallet.name,
+        description: parentWallet.name,
         thumbnail: {
-          url: currentWallet.icon,
+          url: parentWallet.icon,
         },
       },
     };
@@ -170,7 +170,7 @@ const MoveNftConfirmation = (props: SendNFTConfirmationProps) => {
     if (firstWalletAddress) {
       setSelectedChildAccount(walletList[firstWalletAddress]);
     }
-  }, [mainAddress, currentWallet, childAccounts]);
+  }, [mainAddress, parentWallet, childAccounts]);
 
   useEffect(() => {
     getChildResp();
