@@ -57,3 +57,28 @@ export type TransactionState = {
   // The transaction if of the transaction
   txId?: string;
 };
+
+// The activity item type
+export interface TransferItem {
+  coin: string;
+  status: string;
+  sender: string;
+  receiver: string;
+  hash: string;
+  time: number;
+  interaction: string;
+  amount: string;
+  error: boolean;
+  token: string;
+  title: string;
+  additionalMessage: string;
+  type: number;
+  transferType: number;
+  image: string;
+  // If true, the transaction is indexed
+  indexed: boolean;
+  // The cadence transaction id
+  cadenceTxId?: string;
+  // The EVM transaction ids
+  evmTxIds?: string[];
+}
