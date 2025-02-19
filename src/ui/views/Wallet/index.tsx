@@ -8,11 +8,6 @@ import { IconActivity, IconCoins, IconNfts } from '@/components/iconfont';
 import eventBus from '@/eventBus';
 import { type ActiveChildType } from '@/shared/types/wallet-types';
 import { formatLargeNumber } from '@/shared/utils/number';
-import buyIcon from '@/ui/FRWAssets/svg/buyIcon.svg';
-import iconMove from '@/ui/FRWAssets/svg/homeMove.svg';
-import receiveIcon from '@/ui/FRWAssets/svg/receiveIcon.svg';
-import sendIcon from '@/ui/FRWAssets/svg/sendIcon.svg';
-import swapIcon from '@/ui/FRWAssets/svg/swapIcon.svg';
 import { ButtonRow } from '@/ui/FRWComponent/ButtonRow';
 import LLComingSoon from '@/ui/FRWComponent/LLComingSoonWarning';
 import { NumberTransition } from '@/ui/FRWComponent/NumberTransition';
@@ -272,7 +267,7 @@ const WalletTab = ({ network }) => {
         )}
         <ButtonRow
           isActive={isActive}
-          onSendClick={() => history.push('/dashboard/wallet/send')}
+          onSendClick={() => history.push('/dashboard/token/flow/send')}
           onReceiveClick={() => history.push('/dashboard/wallet/deposit')}
           onSwapClick={() => window.open(incLink, '_blank', 'noopener,noreferrer')}
           onBuyClick={() => setOnRamp(true)}
