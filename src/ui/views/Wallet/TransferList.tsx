@@ -216,7 +216,6 @@ const TransferList = () => {
                       onClick={() => {
                         // Link to the first evm tx if there are multiple. Once the indexer updates, it'll show all the evm transactions
                         // This is a temporary solution until the indexer updates
-                        console.log('tx', tx);
                         if (!tx.indexed) {
                           return;
                         }

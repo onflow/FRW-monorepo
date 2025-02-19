@@ -3289,6 +3289,7 @@ export class WalletController extends BaseController {
       return;
     }
     const address = (await this.getCurrentAddress()) || '0x';
+
     const network = await this.getNetwork();
     let txHash = txId;
     try {
@@ -3317,8 +3318,28 @@ export class WalletController extends BaseController {
       try {
         // Send a notification to the user only on success
         if (sendNotification) {
-          const baseURL = this.getFlowscanUrl();
-          notification.create(`${baseURL}/transaction/${txId}`, title, body, icon);
+          const baseURL = await this.getFlowscanUrl();
+          if (baseURL.includes('evm')) {
+            // It's an EVM transaction
+            // Look through the events in txStatus
+            const evmEvent = txStatus.events.find(
+              (event) => event.type.includes('EVM') && !!event.data?.hash
+            );
+            if (evmEvent) {
+              const hashBytes = evmEvent.data.hash.map((byte) => parseInt(byte));
+              const hash = '0x' + Buffer.from(hashBytes).toString('hex');
+              // Link to the account page on EVM otherwise we'll have to look up the EVM tx
+              notification.create(`${baseURL}/tx/${hash}`, title, body, icon);
+            } else {
+              const evmAddress = await this.getEvmAddress();
+
+              // Link to the account page on EVM as we don't have a tx hash
+              notification.create(`${baseURL}/address/${evmAddress}`, title, body, icon);
+            }
+          } else {
+            // It's a Flow transaction
+            notification.create(`${baseURL}/tx/${txId}`, title, body, icon);
+          }
         }
       } catch (err: unknown) {
         // We don't want to throw an error if the notification fails
