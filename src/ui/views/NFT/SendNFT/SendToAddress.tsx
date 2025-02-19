@@ -240,7 +240,9 @@ const SendToAddress = () => {
   }, [usewallet, state.nft, state.media]);
 
   const returnFilteredCollections = (contractList, NFT) => {
-    return contractList.filter((collection) => collection.name === NFT.collectionName);
+    return contractList.filter(
+      (collection) => collection.contractName === NFT.collectionContractName
+    );
   };
 
   useEffect(() => {

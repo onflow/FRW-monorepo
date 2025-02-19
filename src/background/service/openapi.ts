@@ -1494,66 +1494,6 @@ class OpenApiService {
     return isEnabledList;
   };
 
-  // checkNFTListEnabledNew = async (
-  //   address: string,
-  //   allTokens
-  // ): Promise<NFTModel[]> => {
-  //   const tokenImports = allTokens
-  //     .map((token) =>
-  //       'import <Token> from <TokenAddress>'
-  //         .replaceAll('<Token>', token.contract_name)
-  //         .replaceAll('<TokenAddress>', token.address)
-  //     )
-  //     .join('\r\n');
-  //   const tokenFunctions = allTokens
-  //     .map((token) =>
-  //       `
-  //     pub fun check<Token>Vault(address: Address) : Bool {
-  //       let account = getAccount(address)
-
-  //       let vaultRef = account
-  //       .getCapability<&{NonFungibleToken.CollectionPublic}>(<TokenCollectionPublicPath>)
-  //       .check()
-
-  //       return vaultRef
-  //     }
-  //     `
-  //         .replaceAll('<TokenCollectionPublicPath>', token.path.public_path)
-  //         .replaceAll('<Token>', token.contract_name)
-  //         .replaceAll('<TokenAddress>', token.address)
-  //     )
-  //     .join('\r\n');
-
-  //   const tokenCalls = allTokens
-  //     .map((token) =>
-  //       `
-  //     check<Token>Vault(address: address)
-  //     `.replaceAll('<Token>', token.contract_name)
-  //     )
-  //     .join(',');
-
-  //   const cadence = `
-  //     import NonFungibleToken from 0xNonFungibleToken
-  //     <TokenImports>
-
-  //     <TokenFunctions>
-
-  //     pub fun main(address: Address) : [Bool] {
-  //       return [<TokenCall>]
-  //     }
-  //   `
-  //     .replaceAll('<TokenFunctions>', tokenFunctions)
-  //     .replaceAll('<TokenImports>', tokenImports)
-  //     .replaceAll('<TokenCall>', tokenCalls);
-
-  //   const enabledList = await fcl.query({
-  //     cadence: cadence,
-  //     args: (arg, t) => [arg(address, t.Address)],
-  //   });
-
-  //   return enabledList;
-  // };
-
   checkNFTListEnabled = async (address: string, allTokens: NFTModel[]): Promise<NFTModel[]> => {
     const tokens = allTokens;
     const tokenImports = tokens
