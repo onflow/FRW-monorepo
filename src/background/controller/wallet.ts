@@ -27,7 +27,7 @@ import {
 import eventBus from '@/eventBus';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
 import { type TrackingEvents } from '@/shared/types/tracking-types';
-import { type TransactionState } from '@/shared/types/transaction-types';
+import { type TransferItem, type TransactionState } from '@/shared/types/transaction-types';
 import { type LoggedInAccount } from '@/shared/types/wallet-types';
 import { ensureEvmAddressPrefix, isValidEthereumAddress, withPrefix } from '@/shared/utils/address';
 import { getSignAlgo } from '@/shared/utils/algo';
@@ -3000,7 +3000,10 @@ export class WalletController extends BaseController {
     offset: number,
     _expiry = 60000,
     forceRefresh = false
-  ) => {
+  ): Promise<{
+    count: number;
+    list: TransferItem[];
+  }> => {
     const network = await this.getNetwork();
     const now = new Date();
     const expiry = transactionService.getExpiry();
@@ -3014,6 +3017,7 @@ export class WalletController extends BaseController {
     const pending = await transactionService.listPending(network);
 
     return {
+      // NOTE: count is the total number of INDEXED transactions
       count: await transactionService.getCount(),
       list: pending?.length ? [...pending, ...sealed] : sealed,
     };

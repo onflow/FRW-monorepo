@@ -1,5 +1,6 @@
 import type { TransactionStatus } from '@onflow/typedefs';
 
+import { type TransferItem } from '@/shared/types/transaction-types';
 import createPersistStore from 'background/utils/persisitStore';
 import createSessionStore from 'background/utils/sessionStore';
 
@@ -8,30 +9,6 @@ interface TransactionStore {
   total: number;
   transactionItem: Record<string, TransferItem[]>;
   pendingItem: Record<string, TransferItem[]>;
-}
-
-interface TransferItem {
-  coin: string;
-  status: string;
-  sender: string;
-  receiver: string;
-  hash: string;
-  time: number;
-  interaction: string;
-  amount: string;
-  error: boolean;
-  token: string;
-  title: string;
-  additionalMessage: string;
-  type: number;
-  transferType: number;
-  image: string;
-  // If true, the transaction is indexed
-  indexed: boolean;
-  // The cadence transaction id
-  cadenceTxId?: string;
-  // The EVM transaction ids
-  evmTxIds?: string[];
 }
 
 const now = new Date();
@@ -273,7 +250,6 @@ class Transaction {
           // Store the cadence transaction id
           transactionHolder.cadenceTxId = pendingItem.cadenceTxId;
           transactionHolder.evmTxIds = pendingItem.evmTxIds;
-          transactionHolder.hash = pendingItem.hash;
         } else {
           // see if there's an existing transaction with cadenceId in the store
           const existingTx = this.store.transactionItem[network]?.find(
@@ -286,7 +262,6 @@ class Transaction {
             // Found existing cadence transaction id
             transactionHolder.cadenceTxId = existingTx.cadenceTxId;
             transactionHolder.evmTxIds = existingTx.evmTxIds;
-            transactionHolder.hash = existingTx.hash;
           }
         }
 

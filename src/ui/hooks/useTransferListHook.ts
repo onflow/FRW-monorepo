@@ -44,11 +44,11 @@ export const useTransferList = () => {
         );
 
         setLoading(false);
-        if (data['count'] > 0) {
-          setCount(data['count'].toString());
-          setShowButton(data['count'] > 15);
+        if (data.count > 0) {
+          setCount(data.count.toString());
+          setShowButton(data.count > 15);
         }
-        setTransactions(data['list']);
+        setTransactions(data.list);
       } catch {
         setLoading(false);
       }
