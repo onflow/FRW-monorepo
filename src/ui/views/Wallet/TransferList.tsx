@@ -15,66 +15,41 @@ import {
 } from '@mui/material';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 
 import { formatString } from '@/shared/utils/address';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
+import { useTransferList } from '@/ui/hooks/useTransferListHook';
 import activity from 'ui/FRWAssets/svg/activity.svg';
-import { useWallet } from 'ui/utils';
-// import IconExec from '../../../components/iconfont/IconExec';
-// import ExpandLessRoundedIcon from '@mui/icons-material/ExpandLessRounded';
+
+import { TokenBalance } from '../TokenDetail/TokenBalance';
+
 dayjs.extend(relativeTime);
 
-const TransferList = ({ setCount }) => {
-  const wallet = useWallet();
-  const [isLoading, setLoading] = useState(true);
-  const [transaction, setTx] = useState([]);
-  const [monitor, setMonitor] = useState('flowscan');
-  const [flowscanURL, setFlowscanURL] = useState('https://www.flowscan.io');
-  const [viewSource, setViewSourceUrl] = useState('https://f.dnz.dev');
-  const [address, setAddress] = useState<string | null>('0x');
-  const [showButton, setShowButton] = useState(false);
-
-  const fetchTransaction = useCallback(async () => {
-    setLoading(true);
-    const monitor = await wallet.getMonitor();
-    setMonitor(monitor);
-    try {
-      const url = await wallet.getFlowscanUrl();
-      const viewSourceUrl = await wallet.getViewSourceUrl();
-      setFlowscanURL(url);
-      setViewSourceUrl(viewSourceUrl);
-      const address = await wallet.getCurrentAddress();
-      setAddress(address);
-      const data = await wallet.getTransaction(address!, 15, 0, 60000);
-      setLoading(false);
-      if (data['count'] > 0) {
-        setCount(data['count'].toString());
-        setShowButton(data['count'] > 15);
-      }
-      setTx(data['list']);
-    } catch {
-      setLoading(false);
-    }
-  }, [wallet, setCount]);
-
-  const extMessageHandler = useCallback(
-    (req) => {
-      if (req.msg === 'transferListReceived') {
-        fetchTransaction();
-      }
-      return true;
-    },
-    [fetchTransaction]
-  );
+const TransferList = () => {
+  const {
+    fetchTransactions,
+    transactions,
+    monitor,
+    flowscanURL,
+    viewSourceURL,
+    loading,
+    showButton,
+  } = useTransferList();
+  const { currentWallet } = useProfiles();
 
   useEffect(() => {
-    fetchTransaction();
-    chrome.runtime.onMessage.addListener(extMessageHandler);
-
-    return () => {
-      chrome.runtime.onMessage.removeListener(extMessageHandler);
+    fetchTransactions();
+    const handler = (req) => {
+      if (req.msg === 'transferListUpdated') {
+        fetchTransactions();
+      }
+      return true;
     };
-  }, [extMessageHandler, fetchTransaction]);
+
+    chrome.runtime.onMessage.addListener(handler);
+    return () => chrome.runtime.onMessage.removeListener(handler);
+  }, [fetchTransactions]);
 
   const timeConverter = (timeStamp: number) => {
     let time = dayjs.unix(timeStamp);
@@ -87,6 +62,7 @@ const TransferList = ({ setCount }) => {
   const EndListItemText = (props) => {
     const isReceive = props.txType === 2;
     const isFT = props.type === 1;
+    const isContractCall = props.type === 1 && props.token === '';
 
     const calculateMaxWidth = () => {
       const textLength =
@@ -95,11 +71,12 @@ const TransferList = ({ setCount }) => {
       const additionalWidth = textLength * 8;
       return `${Math.min(baseWidth + additionalWidth, 70)}px`;
     };
+
     return (
       <ListItemText
         disableTypography={true}
         primary={
-          !isLoading ? (
+          !loading ? (
             <Typography
               variant="body1"
               sx={{
@@ -113,16 +90,22 @@ const TransferList = ({ setCount }) => {
                 textOverflow: 'ellipsis',
               }}
             >
-              {props.type === 1
-                ? (isReceive ? '+' : '-') + `${props.amount}`.replace(/^-/, '')
-                : `${props.token}`}
+              {props.type === 1 ? (
+                <TokenBalance
+                  showFull={true}
+                  value={`${props.amount}`.replace(/^-/, '')}
+                  prefix={!isContractCall ? (isReceive ? '+' : '-') : ''}
+                />
+              ) : (
+                `${props.token}`
+              )}
             </Typography>
           ) : (
             <Skeleton variant="text" width={35} height={15} />
           )
         }
         secondary={
-          !isLoading ? (
+          !loading ? (
             <Typography
               variant="body1"
               sx={{
@@ -147,7 +130,7 @@ const TransferList = ({ setCount }) => {
       <ListItemText
         disableTypography={true}
         primary={
-          !isLoading ? (
+          !loading ? (
             <Box sx={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
               {props.txType === 1 ? (
                 <CallMadeRoundedIcon sx={{ color: 'info.main', width: '18px' }} />
@@ -172,7 +155,7 @@ const TransferList = ({ setCount }) => {
           )
         }
         secondary={
-          !isLoading ? (
+          !loading ? (
             <Box sx={{ display: 'flex', gap: '3px' }}>
               <Typography
                 variant="body1"
@@ -204,15 +187,17 @@ const TransferList = ({ setCount }) => {
 
   return (
     <>
-      {!isLoading ? (
+      {!loading ? (
         <Box>
-          {transaction && transaction.length ? (
+          {transactions && transactions.length ? (
             <>
               {' '}
-              {(transaction || []).map((tx: any, index) => {
+              {(transactions || []).map((tx) => {
+                const txCombinedKey = `${tx.cadenceTxId || tx.hash}${tx.evmTxIds ? `_${tx.evmTxIds.join('_')}` : ''}_${tx.transferType}_${tx.interaction}`;
                 return (
                   <ListItem
-                    key={index}
+                    key={txCombinedKey}
+                    data-testid={txCombinedKey}
                     secondaryAction={
                       <EndListItemText
                         status={tx.status}
@@ -229,13 +214,17 @@ const TransferList = ({ setCount }) => {
                       sx={{ paddingRight: '0px' }}
                       dense={true}
                       onClick={() => {
-                        {
-                          const url =
-                            monitor === 'flowscan'
-                              ? `${flowscanURL}/tx/${tx.hash}`
-                              : `${viewSource}/${tx.hash}`;
-                          window.open(url);
+                        // Link to the first evm tx if there are multiple. Once the indexer updates, it'll show all the evm transactions
+                        // This is a temporary solution until the indexer updates
+                        if (!tx.indexed) {
+                          return;
                         }
+                        const txHash = tx.hash;
+                        const url =
+                          monitor === 'flowscan'
+                            ? `${flowscanURL}/tx/${txHash}`
+                            : `${viewSourceURL}/${txHash}`;
+                        window.open(url);
                       }}
                     >
                       <ListItemIcon
@@ -245,10 +234,14 @@ const TransferList = ({ setCount }) => {
                         fontSize="medium"
                         sx={{ color: '#fff', cursor: 'pointer', border: '1px solid', borderRadius: '35px' }}
                       /> */}
-                        <CardMedia
-                          sx={{ width: '30px', height: '30px', borderRadius: '15px' }}
-                          image={tx.image}
-                        />
+                        {tx.image ? (
+                          <CardMedia
+                            sx={{ width: '30px', height: '30px', borderRadius: '15px' }}
+                            image={tx.image}
+                          />
+                        ) : (
+                          <Skeleton variant="circular" width={30} height={30} />
+                        )}
                       </ListItemIcon>
                       <StartListItemText
                         time={tx.time}
@@ -270,7 +263,7 @@ const TransferList = ({ setCount }) => {
                     variant="text"
                     endIcon={<ChevronRightRoundedIcon />}
                     onClick={() => {
-                      window.open(`${flowscanURL}/account/${address}`, '_blank');
+                      window.open(`${flowscanURL}/account/${currentWallet.address}`, '_blank');
                     }}
                   >
                     <Typography variant="overline" color="text.secondary">

@@ -106,7 +106,7 @@ const AddList = () => {
             item.added =
               enabledList.filter(
                 (enabled) =>
-                  enabled.contract_name === item.contract_name && enabled.address === item.address
+                  enabled.contract_name === item.contractName && enabled.address === item.address
               ).length > 0;
           });
         }

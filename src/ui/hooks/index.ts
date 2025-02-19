@@ -1,13 +1,13 @@
 import { useCallback } from 'react';
 
-import { useCoinHook } from './useCoinHook';
-import { useNetworkHook } from './useNetworkHook';
-import { useProfileHook } from './useProfileHook';
+import { useCoins } from './useCoinHook';
+import { useNetworks } from './useNetworkHook';
+import { useProfiles } from './useProfileHook';
 
 export const useInitHook = () => {
-  const { fetchProfileData, freshUserWallet, fetchUserWallet } = useProfileHook();
-  const { fetchNetwork } = useNetworkHook();
-  const { refreshCoinData } = useCoinHook();
+  const { fetchProfileData, freshUserWallet, fetchUserWallet } = useProfiles();
+  const { fetchNetwork } = useNetworks();
+  const { refreshCoinData } = useCoins();
 
   const initializeStore = useCallback(async () => {
     await fetchNetwork();

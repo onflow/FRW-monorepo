@@ -1,40 +1,14 @@
 import { Box, Button, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
 
+import BrowserWarning from '@/ui/component/BrowserWarning';
 import { LLSpinner } from '@/ui/FRWComponent';
 import { useWallet } from '@/ui/utils';
 
 import IconGoogleDrive from '../../../../../components/iconfont/IconGoogleDrive';
 
-const useStyles = makeStyles(() => ({
-  form: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  textarea: {
-    width: '100%',
-    borderRadius: '16px',
-    backgroundColor: '#2C2C2C',
-    padding: '20px',
-    color: '#fff',
-    marginBottom: '16px',
-    resize: 'none',
-    fontSize: '16px',
-    fontFamily: 'Inter',
-  },
-  button: {
-    width: '100%',
-    fontWeight: 'bold',
-  },
-}));
-
 const Googledrive = ({ setErrorMessage, setShowError, handleGoogleAccountsFound }) => {
-  const classes = useStyles();
   const wallets = useWallet();
-  const history = useHistory();
 
   const [loading, setLoading] = useState(false);
 
@@ -112,6 +86,7 @@ const Googledrive = ({ setErrorMessage, setShowError, handleGoogleAccountsFound 
             {chrome.i18n.getMessage('Connect')}
           </Typography>
         </Button>
+        <BrowserWarning />
       </Box>
     </Box>
   );

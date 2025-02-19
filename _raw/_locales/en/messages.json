@@ -43,9 +43,6 @@
   "Edit": {
     "message": "Edit"
   },
-  "Pending": {
-    "message": "Pending"
-  },
   "From": {
     "message": "From"
   },
@@ -352,8 +349,11 @@
   "Insufficient_balance": {
     "message": "Insufficient balance"
   },
+  "Insufficient_balance_on_Flow": {
+    "message": "Insufficient balance, on Flow the balance can't be less than 0.001 FLOW"
+  },
   "on_Flow_the_balance_cant_less_than_0001_FLOW": {
-    "message": ", on Flow the balance can't less than 0.001 FLOW"
+    "message": "The Flow balance can't be less than 0.001 FLOW"
   },
   "Approve": {
     "message": "Approve"
@@ -674,7 +674,7 @@
     "message": "We've found"
   },
   "matching__accounts": {
-    "message": "matching accounts"
+    "message": "matching account(-s)"
   },
   "Select__the__account__which__you__want__to__restore__back": {
     "message": "Select the account which you want to restore back."
@@ -958,8 +958,23 @@
   "Error": {
     "message": "Error"
   },
+  "UNKNOWN": {
+    "message": "Unknown"
+  },
   "PENDING": {
-    "message": "PENDING"
+    "message": "Pending"
+  },
+  "FINALIZED": {
+    "message": "Finalized"
+  },
+  "EXECUTED": {
+    "message": "Executed"
+  },
+  "SEALED": {
+    "message": "Sealed"
+  },
+  "EXPIRED": {
+    "message": "Expired"
   },
   "Transaction__Sealed": {
     "message": "Transaction Sealed"

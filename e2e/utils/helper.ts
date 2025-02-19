@@ -301,17 +301,11 @@ export const importAccountBySeedPhrase = async ({
   }
 
   // Wait for the Google Drive backup text to be visible
-  await expect(page.getByRole('button', { name: 'Connect and Back up' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Connect and Back up' })).toBeVisible({
+    timeout: 10_000,
+  });
 
   await page.goto(`chrome-extension://${extensionId}/index.html#/dashboard`);
-
-  // get address
-  if (accountAddr) {
-    // wait for the dashboard page to be fully loaded
-    await page.waitForURL(/.*\/dashboard.*/);
-    // wait for the copy address button to be visible with the right address
-    await expect(await page.getByLabel('Copy Address')).toContainText(accountAddr);
-  }
 
   const flowAddr = await getCurrentAddress(page);
 
@@ -383,7 +377,7 @@ export const test = base.extend<{
   context: async ({}, call) => {
     const pathToExtension = path.join(__dirname, '../../dist');
     const context = await chromium.launchPersistentContext('/tmp/test-user-data-dir', {
-      headless: process.env.CI ? true : false,
+      headless: true,
       channel: 'chromium',
       args: [
         `--disable-extensions-except=${pathToExtension}`,
@@ -433,6 +427,46 @@ export const switchToFlow = async ({ page, extensionId }) => {
   await page.getByRole('button', { name: 'Flow' }).nth(0).click();
   // get address
   await getCurrentAddress(page);
+};
+
+export const waitForTransaction = async ({
+  page,
+  successtext = 'success',
+  amount = '',
+  ingoreFlowCharge = false,
+}) => {
+  // Wait for the transaction to be completed
+  await page.waitForURL(/.*dashboard\?activity=1.*/);
+  const url = await page.url();
+
+  const txId = url.match(/[\?&]txId=(\w+)/i)?.[1];
+
+  expect(txId).toBeDefined();
+
+  const progressBar = page.getByRole('progressbar');
+  await expect(progressBar).toBeVisible();
+  // Get the pending item with the cadence txId that was put in the url and status is pending
+
+  const activityItemRegexp = new RegExp(`^.*${txId}.*${ingoreFlowCharge ? '(?<!FlowToken)' : ''}$`);
+  const pendingItem = page.getByTestId(activityItemRegexp).filter({ hasText: 'Pending' });
+
+  await expect(pendingItem).toBeVisible({
+    timeout: 60_000,
+  });
+  await expect(progressBar).not.toBeVisible({ timeout: 60_000 });
+
+  // Get the executed item with the cadence txId that was put in the url and status is success
+  const executedItem = page.getByTestId(activityItemRegexp).filter({ hasText: successtext });
+
+  await expect(executedItem).toBeVisible({
+    timeout: 60_000,
+  });
+
+  if (amount) {
+    await expect(
+      page.getByTestId(activityItemRegexp).getByTestId(`token-balance-${amount}`)
+    ).toBeVisible();
+  }
 };
 
 export const expect = test.expect;

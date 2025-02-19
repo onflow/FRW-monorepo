@@ -6,7 +6,7 @@ import { isValidEthereumAddress } from '@/shared/utils/address';
 import { NFTDrawer } from '@/ui/FRWComponent/GeneralPages';
 import WarningSnackbar from '@/ui/FRWComponent/WarningSnackbar';
 import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
-import { useProfileStore } from '@/ui/stores/useProfileStore';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useStorageCheck } from '@/ui/utils/useStorageCheck';
 import alertMark from 'ui/FRWAssets/svg/alertMark.svg';
 import { useWallet } from 'ui/utils';
@@ -39,7 +39,7 @@ const checkContractAddressInCollections = (nft, activec) => {
 const MoveFromChild = (props: MoveBoardProps) => {
   const usewallet = useWallet();
   const history = useHistory();
-  const { mainAddress } = useProfileStore();
+  const { mainAddress } = useProfiles();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [collectionList, setCollectionList] = useState<any>(null);
   const [selectedCollection, setSelected] = useState<string>('');
@@ -199,9 +199,9 @@ const MoveFromChild = (props: MoveBoardProps) => {
     const address = await usewallet.getCurrentAddress();
     usewallet
       .batchTransferChildNft(address!, '', nftIdArray, collectionDetail.collection)
-      .then(async (txID) => {
+      .then(async (txId) => {
         usewallet.listenTransaction(
-          txID,
+          txId,
           true,
           `Move complete`,
           `You have moved ${nftIdArray.length} ${collectionDetail.collection.contract_name} to your evm address. \nClick to view this transaction.`
@@ -210,10 +210,10 @@ const MoveFromChild = (props: MoveBoardProps) => {
         props.handleCloseIconClicked();
         await usewallet.setDashIndex(0);
         setSending(false);
-        history.push('/dashboard?activity=1');
+        history.push(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
-        console.log('err ', err);
+        console.error(err);
         setSending(false);
         setFailed(true);
       });
@@ -230,9 +230,9 @@ const MoveFromChild = (props: MoveBoardProps) => {
         nftIdArray,
         collectionDetail.collection
       )
-      .then(async (txID) => {
+      .then(async (txId) => {
         usewallet.listenTransaction(
-          txID,
+          txId,
           true,
           `Move complete`,
           `You have moved ${nftIdArray.length} ${collectionDetail.collection.contract_name} to your evm address. \nClick to view this transaction.`
@@ -241,10 +241,10 @@ const MoveFromChild = (props: MoveBoardProps) => {
         props.handleCloseIconClicked();
         await usewallet.setDashIndex(0);
         setSending(false);
-        history.push('/dashboard?activity=1');
+        history.push(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
-        console.log('err ', err);
+        console.error(err);
         setSending(false);
         setFailed(true);
       });
@@ -261,9 +261,9 @@ const MoveFromChild = (props: MoveBoardProps) => {
         nftIdArray,
         collectionDetail.collection
       )
-      .then(async (txID) => {
+      .then(async (txId) => {
         usewallet.listenTransaction(
-          txID,
+          txId,
           true,
           `Move complete`,
           `You have moved ${nftIdArray.length} ${collectionDetail.collection.contract_name} to your evm address. \nClick to view this transaction.`
@@ -272,10 +272,10 @@ const MoveFromChild = (props: MoveBoardProps) => {
         props.handleCloseIconClicked();
         await usewallet.setDashIndex(0);
         setSending(false);
-        history.push('/dashboard?activity=1');
+        history.push(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
-        console.log('err ', err);
+        console.error(err);
         setSending(false);
         setFailed(true);
       });

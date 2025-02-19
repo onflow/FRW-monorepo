@@ -43,9 +43,6 @@
   "Edit": {
     "message": "編集"
   },
-  "Pending": {
-    "message": "保留中"
-  },
   "From": {
     "message": "から"
   },
@@ -345,6 +342,9 @@
   },
   "Insufficient_balance": {
     "message": "残高不足"
+  },
+  "Insufficient_balance_on_Flow": {
+    "message": "残高不足、Flow 上では 0.001 FLOW 未満にはできません。"
   },
   "on_Flow_the_balance_cant_less_than_0001_FLOW": {
     "message": "Flow 上での残高は 0.001FLOW 未満にはできません。"
@@ -961,8 +961,23 @@
   "Error": {
     "message": "エラー"
   },
+  "UNKNOWN": {
+    "message": "不明"
+  },
   "PENDING": {
     "message": "保留中"
+  },
+  "FINALIZED": {
+    "message": "確定済み"
+  },
+  "EXECUTED": {
+    "message": "実行済み"
+  },
+  "SEALED": {
+    "message": "封印済み"
+  },
+  "EXPIRED": {
+    "message": "期限切れ"
   },
   "Transaction__Sealed": {
     "message": "トランザクションが封印されました"

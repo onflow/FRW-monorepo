@@ -15,7 +15,8 @@ export type ActiveChildType = 'evm' | FlowAddress | null;
 export interface CoinItem {
   coin: string;
   unit: string;
-  balance: number;
+  balance: string;
+  availableBalance?: string;
   price: number;
   change24h: number | null;
   total: number;

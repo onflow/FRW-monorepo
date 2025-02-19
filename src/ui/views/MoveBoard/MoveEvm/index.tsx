@@ -4,7 +4,7 @@ import { useHistory } from 'react-router-dom';
 
 import { NFTDrawer } from '@/ui/FRWComponent/GeneralPages';
 import WarningSnackbar from '@/ui/FRWComponent/WarningSnackbar';
-import { useProfileStore } from '@/ui/stores/useProfileStore';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useStorageCheck } from '@/ui/utils/useStorageCheck';
 import alertMark from 'ui/FRWAssets/svg/alertMark.svg';
 import { useWallet } from 'ui/utils';
@@ -23,7 +23,7 @@ interface MoveBoardProps {
 const MoveEvm = (props: MoveBoardProps) => {
   const usewallet = useWallet();
   const history = useHistory();
-  const { mainAddress } = useProfileStore();
+  const { mainAddress } = useProfiles();
   const [cadenceNft, setCadenceNft] = useState<any>(null);
   const [collectionList, setCollectionList] = useState<any>(null);
   const [selectedCollection, setSelected] = useState<string>('');
@@ -132,9 +132,9 @@ const MoveEvm = (props: MoveBoardProps) => {
         collection.flowIdentifier,
         nftIdArray
       )
-      .then(async (txID) => {
+      .then(async (txId) => {
         usewallet.listenTransaction(
-          txID,
+          txId,
           true,
           `Move complete`,
           `You have moved ${nftIdArray.length} ${collection.CollectionName} from evm to your flow address. \nClick to view this transaction.`
@@ -143,10 +143,10 @@ const MoveEvm = (props: MoveBoardProps) => {
         props.handleCloseIconClicked();
         await usewallet.setDashIndex(0);
         setSending(false);
-        history.push('/dashboard?activity=1');
+        history.push(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
-        console.log(err);
+        console.error(err);
         setSending(false);
         setFailed(true);
       });
@@ -158,9 +158,9 @@ const MoveEvm = (props: MoveBoardProps) => {
     console.log('collectionDetail ', collectionDetail);
     usewallet
       .batchBridgeNftFromEvm(collection.flowIdentifier, nftIdArray)
-      .then(async (txID) => {
+      .then(async (txId) => {
         usewallet.listenTransaction(
-          txID,
+          txId,
           true,
           `Move complete`,
           `You have moved ${nftIdArray.length} ${collection.CollectionName} from evm to your flow address. \nClick to view this transaction.`
@@ -169,10 +169,10 @@ const MoveEvm = (props: MoveBoardProps) => {
         props.handleCloseIconClicked();
         await usewallet.setDashIndex(0);
         setSending(false);
-        history.push('/dashboard?activity=1');
+        history.push(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
-        console.log(err);
+        console.error(err);
         setSending(false);
         setFailed(true);
       });

@@ -18,6 +18,7 @@ import { useHistory } from 'react-router-dom';
 
 import type { UserInfoResponse } from '@/shared/types/network-types';
 import { type LoggedInAccountWithIndex, type LoggedInAccount } from '@/shared/types/wallet-types';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import iconCheck from 'ui/FRWAssets/svg/iconCheck.svg';
 import popAdd from 'ui/FRWAssets/svg/popAdd.svg';
 import popLock from 'ui/FRWAssets/svg/popLock.svg';
@@ -42,6 +43,7 @@ const Popup = (props: TransferConfirmationProps) => {
   const history = useHistory();
   const [viewmore, setMore] = useState<boolean>(false);
   const [loadingIndex, setLoadingIndex] = useState<number | null>(null);
+  const { clearProfileData } = useProfiles();
 
   return (
     <Drawer
@@ -176,7 +178,6 @@ const Popup = (props: TransferConfirmationProps) => {
                           size={'16px'}
                           thickness={5}
                           value={10}
-                          {...props}
                         />
                       )}
                     </ListItemButton>
@@ -268,9 +269,11 @@ const Popup = (props: TransferConfirmationProps) => {
           <ListItem
             sx={{ marginTop: '16px' }}
             disablePadding
-            onClick={async () => {
-              await usewallet.lockWallet();
-              history.push('/unlock');
+            onClick={() => {
+              usewallet.lockWallet().then(() => {
+                clearProfileData();
+                history.push('/unlock');
+              });
             }}
           >
             <ListItemButton sx={{ padding: '8px 20px', margin: '0', borderRadius: '5px' }}>

@@ -2,7 +2,7 @@ import { Box, Typography, Avatar, Skeleton } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { useState, useEffect, useCallback } from 'react';
 
-import { useProfileStore } from '@/ui/stores/useProfileStore';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet, formatAddress, isEmoji } from 'ui/utils';
 
 const tempEmoji = {
@@ -13,7 +13,7 @@ const tempEmoji = {
 
 export const FRWProfile = ({ contact, isLoading = false, isEvm = false, fromEvm = '1' }) => {
   const usewallet = useWallet();
-  const { currentWallet, evmWallet } = useProfileStore();
+  const { currentWallet, evmWallet } = useProfiles();
   const [emoji, setEmoji] = useState(tempEmoji);
   const [isload, setLoad] = useState(true);
 

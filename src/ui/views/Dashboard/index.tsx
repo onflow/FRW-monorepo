@@ -5,7 +5,7 @@ import { fetchAndActivate, getRemoteConfig } from 'firebase/remote-config';
 import React, { useEffect, useState } from 'react';
 
 import { NetworkIndicator } from '@/ui/FRWComponent/NetworkIndicator';
-import { useNetworkStore } from '@/ui/stores/useNetworkStore';
+import { useNetworks } from '@/ui/hooks/useNetworkHook';
 import { getFirbaseConfig } from 'background/utils/firebaseConfig';
 import { useWallet } from 'ui/utils';
 
@@ -14,10 +14,9 @@ import WalletTab from '../Wallet';
 const Dashboard = ({ value, setValue }) => {
   // const [value, setValue] = React.useState('wallet');
   const usewallet = useWallet();
-  const { currentNetwork, emulatorModeOn, setEmulatorModeOn, setNetwork } = useNetworkStore();
+  const { currentNetwork, emulatorModeOn, setEmulatorModeOn, setNetwork } = useNetworks();
 
   useEffect(() => {
-    console.log('useEffect - fetchAll');
     let isMounted = true;
 
     const fetchAll = async () => {

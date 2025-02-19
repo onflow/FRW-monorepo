@@ -13,11 +13,13 @@ import { Box } from '@mui/system';
 import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import { formatLargeNumber } from 'ui/utils/number';
+import { type CoinItem } from '@/shared/types/wallet-types';
+import { formatLargeNumber } from '@/shared/utils/number';
 
 import IconCreate from '../../../components/iconfont/IconCreate';
+import { TokenValue } from '../TokenDetail/TokenValue';
 
-const CoinList = ({ data, ableFt, isActive, childType, coinLoading }) => {
+const CoinList = ({ data, ableFt, isActive, childType }) => {
   // const wallet = useWallet();
   const [isLoading, setLoading] = useState(true);
   const history = useHistory();
@@ -53,8 +55,7 @@ const CoinList = ({ data, ableFt, isActive, childType, coinLoading }) => {
               variant="body1"
               sx={{ fontSize: 12, fontWeight: '500', textAlign: 'end', color: 'text.secondary' }}
             >
-              {props.change === null ? '-' : '$'}
-              {props.secondary}
+              {props.secondary === null || props.secondary === 0 ? '' : props.secondary}
             </Typography>
           ) : (
             <Skeleton variant="text" width={35} height={15} />
@@ -109,8 +110,8 @@ const CoinList = ({ data, ableFt, isActive, childType, coinLoading }) => {
                       marginRight: '6px',
                     }}
                   >
-                    {props.change === null ? '-' : '$'}
-                    {props.price}
+                    {props.change === null ? '-' : ''}
+                    <TokenValue value={String(props.price)} prefix="$" />
                   </Typography>
                   {props.change !== 0 && (
                     <Typography
@@ -176,7 +177,7 @@ const CoinList = ({ data, ableFt, isActive, childType, coinLoading }) => {
 
       <List sx={{ paddingTop: '0px', paddingBottom: '0px' }}>
         {!isLoading
-          ? (coinList || []).map((coin: any) => {
+          ? (coinList || []).map((coin: CoinItem) => {
               if (
                 childType === 'evm' &&
                 coin.unit !== 'flow' &&
@@ -191,9 +192,9 @@ const CoinList = ({ data, ableFt, isActive, childType, coinLoading }) => {
                   secondaryAction={
                     <EndListItemText
                       primary={parseFloat(coin.balance).toFixed(3)}
-                      secondary={parseFloat(coin.total.toFixed(2))}
+                      secondary={<TokenValue value={String(coin.total)} prefix="$" />}
                       unit={coin.unit}
-                      change={parseFloat(coin.change24h.toFixed(2))}
+                      change={parseFloat(coin.change24h?.toFixed(2) || '0')}
                     />
                   }
                   disablePadding
@@ -217,12 +218,8 @@ const CoinList = ({ data, ableFt, isActive, childType, coinLoading }) => {
                     </ListItemIcon>
                     <StartListItemText
                       primary={coin.coin}
-                      price={
-                        typeof coin.price === 'number' && !isNaN(coin.price)
-                          ? coin.price.toFixed(3)
-                          : 'N/A'
-                      }
-                      change={parseFloat(coin.change24h.toFixed(2))}
+                      price={coin.price}
+                      change={parseFloat(coin.change24h?.toFixed(2) || '0')}
                     />
                   </ListItemButton>
                 </ListItem>

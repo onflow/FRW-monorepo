@@ -32,8 +32,6 @@ import {
   nftService,
   googleSafeHostService,
   passwordService,
-  flownsService,
-  stakingService,
   mixpanelTrack,
 } from './service';
 import { getFirbaseConfig } from './utils/firebaseConfig';
@@ -125,8 +123,6 @@ async function restoreAppState() {
   await nftService.init();
   await googleSafeHostService.init();
   await passwordService.init();
-  await flownsService.init();
-  await stakingService.init();
   await mixpanelTrack.init();
   // rpcCache.start();
 
@@ -431,15 +427,15 @@ console.log('Is fetch native?', fetch.toString().includes('[native code]'));
 
 // Set environment badge based on branch
 const setEnvironmentBadge = () => {
-  const branch = process.env.BRANCH_NAME;
+  const deploymentEnv = process.env.DEPLOYMENT_ENV;
 
-  if (branch === 'master') {
+  if (deploymentEnv === 'production') {
     // No badge for production
     chrome.action.setBadgeText({ text: '' });
-  } else if (branch === 'dev') {
+  } else if (deploymentEnv === 'staging') {
     chrome.action.setBadgeText({ text: 'stg' });
     chrome.action.setBadgeBackgroundColor({ color: process.env.BUILD_BACKGROUND || '#bf360c' });
-  } else if (branch !== undefined) {
+  } else if (deploymentEnv === 'development') {
     chrome.action.setBadgeText({ text: '#' });
     chrome.action.setBadgeBackgroundColor({ color: process.env.BUILD_BACKGROUND || '#666666' });
   } else {

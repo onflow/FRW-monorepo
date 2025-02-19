@@ -7,7 +7,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { withPrefix } from '@/shared/utils/address';
 import alertMark from '@/ui/FRWAssets/svg/alertMark.svg';
 import { NetworkIndicator } from '@/ui/FRWComponent/NetworkIndicator';
-import { useProfileStore } from '@/ui/stores/useProfileStore';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { LLHeader } from 'ui/FRWComponent';
 import { useWallet } from 'ui/utils';
 
@@ -104,7 +104,7 @@ const Deposit = () => {
   const classes = useStyles();
   const usewallet = useWallet();
   const ref = useRef<HTMLDivElement>(null);
-  const { childAccounts, currentWallet, currentWalletIndex } = useProfileStore();
+  const { childAccounts, currentWallet, currentWalletIndex } = useProfiles();
 
   const [userWallets, setUserWallets] = useState<any>(null);
   const [localWalletIndex, setLocalWalletIndex] = useState<number>(currentWalletIndex);
