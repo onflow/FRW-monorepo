@@ -114,7 +114,7 @@ const TransferConfirmation = ({
         txId,
         true,
         `${transactionState.amount} ${transactionState.coinInfo.coin} Sent`,
-        `You have sent ${transactionState.amount} ${transactionState.selectedToken?.symbol} to ${transactionState.toContact?.contact_name}. \nClick to view this transaction.`,
+        `You have sent ${transactionState.amount} ${transactionState.selectedToken?.symbol} to ${transactionState.toAddress}. \nClick to view this transaction.`,
         transactionState.coinInfo.icon
       );
       // Record the recent contact

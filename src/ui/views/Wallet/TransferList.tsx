@@ -23,7 +23,6 @@ import { useTransferList } from '@/ui/hooks/useTransferListHook';
 import activity from 'ui/FRWAssets/svg/activity.svg';
 
 import { TokenBalance } from '../TokenDetail/TokenBalance';
-import { TokenValue } from '../TokenDetail/TokenValue';
 
 dayjs.extend(relativeTime);
 
@@ -215,17 +214,17 @@ const TransferList = () => {
                       sx={{ paddingRight: '0px' }}
                       dense={true}
                       onClick={() => {
-                        {
-                          // Link to the first evm tx if there are multiple. Once the indexer updates, it'll show all the evm transactions
-                          // This is a temporary solution until the indexer updates
-                          const txHash =
-                            (tx.evmTxIds && tx.evmTxIds.length) === 1 ? tx.evmTxIds[0] : tx.hash;
-                          const url =
-                            monitor === 'flowscan'
-                              ? `${flowscanURL}/tx/${txHash}`
-                              : `${viewSourceURL}/${txHash}`;
-                          window.open(url);
+                        // Link to the first evm tx if there are multiple. Once the indexer updates, it'll show all the evm transactions
+                        // This is a temporary solution until the indexer updates
+                        if (!tx.indexed) {
+                          return;
                         }
+                        const txHash = tx.hash;
+                        const url =
+                          monitor === 'flowscan'
+                            ? `${flowscanURL}/tx/${txHash}`
+                            : `${viewSourceURL}/${txHash}`;
+                        window.open(url);
                       }}
                     >
                       <ListItemIcon
@@ -235,10 +234,14 @@ const TransferList = () => {
                         fontSize="medium"
                         sx={{ color: '#fff', cursor: 'pointer', border: '1px solid', borderRadius: '35px' }}
                       /> */}
-                        <CardMedia
-                          sx={{ width: '30px', height: '30px', borderRadius: '15px' }}
-                          image={tx.image}
-                        />
+                        {tx.image ? (
+                          <CardMedia
+                            sx={{ width: '30px', height: '30px', borderRadius: '15px' }}
+                            image={tx.image}
+                          />
+                        ) : (
+                          <Skeleton variant="circular" width={30} height={30} />
+                        )}
                       </ListItemIcon>
                       <StartListItemText
                         time={tx.time}

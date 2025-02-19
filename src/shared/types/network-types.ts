@@ -42,6 +42,30 @@ export interface NFTPath {
   private_type: string;
 }
 
+export interface NFTModelV2 {
+  chainId: number;
+  address: string;
+  contractName: string;
+  path: NFTPathV2;
+  evmAddress: string;
+  flowAddress: string;
+  name: string;
+  description: string | null;
+  logoURI: string | null;
+  bannerURI: string | null;
+  tags: string[];
+  extensions: {
+    discord?: string;
+    instagram?: string;
+    twitter?: string;
+    website?: string;
+  };
+}
+export interface NFTPathV2 {
+  storage: string;
+  public: string;
+}
+
 export interface SecureCadenceCompatible {
   mainnet: boolean;
   testnet: boolean;

@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 
+import { type TransferItem } from '@/shared/types/transaction-types';
 interface TransferListState {
-  transactions: any[];
+  transactions: TransferItem[];
   monitor: string;
   flowscanURL: string;
   viewSourceURL: string;
