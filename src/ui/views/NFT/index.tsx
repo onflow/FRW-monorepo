@@ -1,4 +1,4 @@
-import { Typography, Button, Box } from '@mui/material';
+import { Button, Box } from '@mui/material';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -9,6 +9,8 @@ import ListTab from './ListTab';
 
 const NFTTab = () => {
   const wallet = useWallet();
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasNFTs, setHasNFTs] = useState(false);
 
   const [address, setAddress] = useState<string | null>('');
   const [isEdit] = useState<boolean>(false);
@@ -42,12 +44,26 @@ const NFTTab = () => {
     }
     // setAddress(address);
   }, [wallet]);
+
+  const fetchCollection = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const collection = await wallet.fetchLatestCollection();
+      setHasNFTs(collection && collection.length > 0);
+    } catch (error) {
+      console.error('Error fetching collection:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [wallet]);
+
   useEffect(() => {
     loadNFTs();
-  }, [loadNFTs]);
+    fetchCollection();
+  }, [loadNFTs, fetchCollection]);
 
   return (
-    <div className="page" id="scrollableTab">
+    <div id="scrollableTab">
       <ListTab
         setCount={setCount}
         data={{ ownerAddress: address }}

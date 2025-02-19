@@ -40,11 +40,9 @@ const useStyles = makeStyles(() => ({
     boxShadow: 'none',
     border: '1px solid rgba(255, 255, 255, 0.12)',
     borderRadius: '12px',
-    backgroundColor: 'transparent',
   },
   skeletonCard: {
     display: 'flex',
-    backgroundColor: 'transparent',
     width: '100%',
     height: '72px',
     margin: '12px auto',
@@ -65,7 +63,6 @@ const useStyles = makeStyles(() => ({
   actionarea: {
     width: '100%',
     height: '100%',
-    backgroundColor: 'transparent',
     '&:hover': {
       backgroundColor: 'rgba(255, 255, 255, 0.08)',
     },
@@ -83,41 +80,11 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
   const [accesibleArray, setAccessible] = useState([{ id: '' }]);
   const [ownerAddress, setAddress] = useState('');
 
-  useImperativeHandle(ref, () => ({
-    reload: () => {
-      usewallet.clearNFTCollection();
-      setCollections([]);
-      setCollectionLoading(true);
-      fetchLatestCollection(ownerAddress);
-    },
-  }));
-
   const fetchLatestCollection = useCallback(
     async (addr: string) => {
       try {
-        const list = await usewallet.openapi.EvmNFTID(addr);
-        setCollectionLoading(false);
-        if (list && list.length > 0) {
-          setCollectionEmpty(false);
-          setCollections(list);
-        } else {
-          setCollectionEmpty(true);
-        }
-      } catch (err) {
-        console.log(err);
-        setCollectionLoading(false);
-        setCollectionEmpty(true);
-      }
-    },
-    [usewallet.openapi]
-  );
-
-  const fetchCollectionCache = useCallback(
-    async (address: string) => {
-      setAccessible(accessible);
-      try {
         setCollectionLoading(true);
-        const list = await usewallet.openapi.EvmNFTID(address);
+        const list = await usewallet.openapi.EvmNFTID(addr);
         if (list && list.length > 0) {
           setCollectionEmpty(false);
           setCollections(list);
@@ -125,24 +92,36 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
           setCount(count);
         } else {
           setCollectionEmpty(true);
-          fetchLatestCollection(address);
         }
-      } catch {
+      } catch (err) {
+        console.log(err);
         setCollectionEmpty(true);
-        fetchLatestCollection(address);
       } finally {
         setCollectionLoading(false);
       }
     },
-    [accessible, setCount, usewallet.openapi, fetchLatestCollection]
+    [usewallet.openapi, setCount]
   );
 
+  // Only fetch when ownerAddress changes
   useEffect(() => {
-    if (data.ownerAddress) {
-      fetchCollectionCache(data.ownerAddress);
+    if (data.ownerAddress && data.ownerAddress !== ownerAddress) {
       setAddress(data.ownerAddress);
+      setAccessible(accessible);
+      fetchLatestCollection(data.ownerAddress);
     }
-  }, [data.ownerAddress, fetchCollectionCache]);
+  }, [data.ownerAddress, accessible, ownerAddress, fetchLatestCollection]);
+
+  // Expose reload method through ref
+  useImperativeHandle(ref, () => ({
+    reload: () => {
+      if (ownerAddress) {
+        usewallet.clearNFTCollection();
+        setCollections([]);
+        fetchLatestCollection(ownerAddress);
+      }
+    },
+  }));
 
   const CollectionView = (data) => {
     const handleClick = () => {
@@ -156,10 +135,12 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
       });
     };
     return (
-      <Card sx={{ borderRadius: '12px' }} className={classes.collectionCard}>
+      <Card
+        sx={{ borderRadius: '12px', backgroundColor: '#000000' }}
+        className={classes.collectionCard}
+      >
         <CardActionArea
           sx={{
-            backgroundColor: 'transparent',
             borderRadius: '12px',
             paddingRight: '8px',
           }}
@@ -227,7 +208,6 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
           <Card
             sx={{
               borderRadius: '12px',
-              backgroundColor: '#000000',
               padding: '12px',
             }}
             className={classes.skeletonCard}
@@ -252,7 +232,6 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
           <Card
             sx={{
               borderRadius: '12px',
-              backgroundColor: '#000000',
               padding: '12px',
             }}
             className={classes.skeletonCard}
@@ -277,7 +256,6 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
           <Card
             sx={{
               borderRadius: '12px',
-              backgroundColor: '#000000',
               padding: '12px',
             }}
             className={classes.skeletonCard}
@@ -302,7 +280,6 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
           <Card
             sx={{
               borderRadius: '12px',
-              backgroundColor: '#000000',
               padding: '12px',
             }}
             className={classes.skeletonCard}

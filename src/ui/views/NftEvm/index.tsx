@@ -1,5 +1,4 @@
-import ReplayRoundedIcon from '@mui/icons-material/ReplayRounded';
-import { Typography, Box, ButtonBase, IconButton, Tooltip, Button } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 import { ensureEvmAddressPrefix } from '@/shared/utils/address';
@@ -32,7 +31,7 @@ const NftEvm = () => {
   };
 
   return (
-    <div className="page" id="scrollableTab">
+    <div id="scrollableTab">
       {address && (
         <ListTab
           setCount={setCount}

@@ -41,11 +41,9 @@ const useStyles = makeStyles(() => ({
     boxShadow: 'none',
     border: '1px solid rgba(255, 255, 255, 0.12)',
     borderRadius: '12px',
-    backgroundColor: 'transparent',
   },
   skeletonCard: {
     display: 'flex',
-    backgroundColor: 'transparent',
     width: '100%',
     height: '72px',
     margin: '12px auto',
@@ -66,7 +64,6 @@ const useStyles = makeStyles(() => ({
   actionarea: {
     width: '100%',
     height: '100%',
-    backgroundColor: 'transparent',
     '&:hover': {
       backgroundColor: 'rgba(255, 255, 255, 0.08)',
     },
@@ -174,10 +171,12 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
       });
     };
     return (
-      <Card sx={{ borderRadius: '12px' }} className={classes.collectionCard}>
+      <Card
+        sx={{ borderRadius: '12px', backgroundColor: '#000000' }}
+        className={classes.collectionCard}
+      >
         <CardActionArea
           sx={{
-            backgroundColor: 'transparent',
             borderRadius: '12px',
             paddingRight: '8px',
           }}
@@ -225,7 +224,6 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
                         fontSize: '10px',
                         width: '80px',
                         fontFamily: 'Inter, sans-serif',
-                        backgroundColor: 'neutral1.light',
                       }}
                     >
                       {chrome.i18n.getMessage('Inaccessible')}
@@ -266,7 +264,6 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
           <Card
             sx={{
               borderRadius: '12px',
-              backgroundColor: '#000000',
               padding: '12px',
             }}
             className={classes.skeletonCard}
@@ -291,7 +288,6 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
           <Card
             sx={{
               borderRadius: '12px',
-              backgroundColor: '#000000',
               padding: '12px',
             }}
             className={classes.skeletonCard}
@@ -316,7 +312,6 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
           <Card
             sx={{
               borderRadius: '12px',
-              backgroundColor: '#000000',
               padding: '12px',
             }}
             className={classes.skeletonCard}
@@ -341,7 +336,6 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
           <Card
             sx={{
               borderRadius: '12px',
-              backgroundColor: '#000000',
               padding: '12px',
             }}
             className={classes.skeletonCard}

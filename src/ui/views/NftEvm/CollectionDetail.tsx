@@ -142,7 +142,6 @@ const useStyles = makeStyles(() => ({
   },
   collectionCard: {
     display: 'flex',
-    // backgroundColor: '#282828',
     width: '100%',
     height: '64px',
     margin: '11px auto',
@@ -196,24 +195,27 @@ const CollectionDetail = (props) => {
   const collection_name = collection_info[1];
   const nftCount = collection_info[2];
 
-  const fetchCollection = async () => {
-    // const { collection, ownerAddress } = await getInfo();
+  const getCollection = useCallback(
+    async (ownerAddress, collection, offset = 0) => {
+      return await usewallet.openapi.EvmNFTcollectionList(ownerAddress, collection, offset);
+    },
+    [usewallet.openapi]
+  );
+
+  const fetchCollection = useCallback(async () => {
     setOwnerAddress(address);
     setLoading(true);
-
     try {
       const res = await getCollection(address, collection_name);
-      console.log('res   ', res);
       setInfo(res.collection);
       setTotal(res.nftCount);
       setLists(res.nfts);
     } catch (err) {
       console.log('err   ', err);
-      // Handle the error if needed
     } finally {
       setLoading(false);
     }
-  };
+  }, [address, collection_name, getCollection]);
 
   const nextPage = async () => {
     if (loadingMore) {
@@ -246,10 +248,6 @@ const CollectionDetail = (props) => {
     }
   };
 
-  const getCollection = async (ownerAddress, collection, offset = 0) => {
-    return await usewallet.openapi.EvmNFTcollectionList(ownerAddress, collection, offset);
-  };
-
   function truncate(str, n) {
     return str.length > n ? str.slice(0, n - 1) + '...' : str;
   }
@@ -269,7 +267,7 @@ const CollectionDetail = (props) => {
 
   useEffect(() => {
     fetchCollection();
-  }, []);
+  }, [fetchCollection]);
 
   const createGridCard = (data, index) => {
     return (
