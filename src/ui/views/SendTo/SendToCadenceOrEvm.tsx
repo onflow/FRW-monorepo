@@ -25,12 +25,14 @@ const SendToCadenceOrEvm = ({
   handleTokenChange,
   handleSwitchFiatOrCoin,
   handleMaxClick,
+  handleFinalizeAmount,
 }: {
   transactionState: TransactionState;
   handleAmountChange: (amountString: string) => void;
   handleTokenChange: (tokenAddress: string) => void;
   handleSwitchFiatOrCoin: () => void;
   handleMaxClick: () => void;
+  handleFinalizeAmount: () => void;
 }) => {
   const history = useHistory();
   const wallet = useWallet();
@@ -188,6 +190,8 @@ const SendToCadenceOrEvm = ({
 
             <Button
               onClick={() => {
+                // Finalize the transfer amount
+                handleFinalizeAmount();
                 setConfirmationOpen(true);
               }}
               variant="contained"
