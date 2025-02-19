@@ -12,12 +12,12 @@ import {
 import { makeStyles } from '@mui/styles';
 import { Box } from '@mui/system';
 import React, { forwardRef, useImperativeHandle, useEffect, useState, useCallback } from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 
 import { useWallet } from '@/ui/utils/WalletContext';
 import placeholder from 'ui/FRWAssets/image/placeholder.png';
 
-import EmptyStatus from './EmptyStatus';
+import EmptyStatus from '../EmptyStatus';
 
 interface ListTabProps {
   data: any;

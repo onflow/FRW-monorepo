@@ -2,11 +2,10 @@ import { Typography, Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React from 'react';
 
-import empty_status from '../../FRWAssets/image/empty_status.svg';
+import empty_status from '@/ui/FRWAssets/image/empty_status.svg';
 
 const useStyles = makeStyles(() => ({
   emptyBox: {
-    margin: '24px auto 24px auto',
     height: '249px',
     justifyContent: 'center',
     alignContent: 'center',
