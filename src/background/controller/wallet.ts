@@ -60,7 +60,7 @@ import emoji from 'background/utils/emoji.json';
 import fetchConfig from 'background/utils/remoteConfig';
 import { notification, storage } from 'background/webapi';
 import { openIndexPage } from 'background/webapi/tab';
-import { INTERNAL_REQUEST_ORIGIN, EVENTS, KEYRING_TYPE, EVM_ENDPOINT } from 'consts';
+import { INTERNAL_REQUEST_ORIGIN, EVENTS, KEYRING_TYPE, EVM_ENDPOINT, WEB_NEXT_URL } from 'consts';
 
 import type {
   BlockchainResponse,
@@ -3819,6 +3819,46 @@ export class WalletController extends BaseController {
     if (userId) {
       await storage.set('currentId', userId);
     }
+  };
+
+  getEvmNFTID = async (address: string) => {
+    if (!isValidEthereumAddress(address)) {
+      throw new Error('Invalid Ethereum address');
+    }
+    let result = await storage.getExpiry(`evmNFTID_${address}`);
+    if (result) {
+      return result;
+    }
+    result = await openapiService.EvmNFTID(address);
+    await storage.setExpiry(`evmNFTID_${address}`, result, 1000 * 60);
+
+    return result;
+  };
+
+  getEvmNFTCollectionList = async (
+    address: string,
+    collectionIdentifier: string,
+    limit = 24,
+    offset = 0
+  ) => {
+    if (!isValidEthereumAddress(address)) {
+      throw new Error('Invalid Ethereum address');
+    }
+
+    const storageKey = `EvmNFTCollectionList_${collectionIdentifier}_${address}_${offset}_${limit}`;
+    let result = await storage.getExpiry(storageKey);
+
+    if (!result) {
+      result = await openapiService.EvmNFTcollectionList(
+        address,
+        collectionIdentifier,
+        limit,
+        offset
+      );
+      await storage.setExpiry(storageKey, result, 1000 * 60);
+    }
+
+    return result;
   };
 }
 
