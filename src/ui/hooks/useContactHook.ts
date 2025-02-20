@@ -1,7 +1,8 @@
 import { isEmpty } from 'lodash';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { type Contact } from '@/shared/types/network-types';
+import { type WalletAddress } from '@/shared/types/wallet-types';
 import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useContactStore } from '@/ui/stores/contactStore';
@@ -144,20 +145,6 @@ export function useContacts() {
     mainAddress,
   ]);
 
-  const useContact = useCallback(
-    (address: string): Contact | null => {
-      return (
-        accountList.find((c) => c.address === address) ||
-        evmAccounts.find((c) => c.address === address) ||
-        childAccounts.find((c) => c.address === address) ||
-        filteredContacts.find((c) => c.address === address) ||
-        recentContacts.find((c) => c.address === address) ||
-        null
-      );
-    },
-    [accountList, childAccounts, evmAccounts, filteredContacts, recentContacts]
-  );
-
   const filterContacts = useCallback(
     (keyword: string) => {
       const filtered = sortedContacts.filter((item) => {
@@ -231,3 +218,22 @@ export function useContacts() {
     childAccounts,
   };
 }
+
+export const useContact = (address: WalletAddress | string) => {
+  const sortedContacts = useContactStore((state) => state.sortedContacts);
+  const recentContacts = useContactStore((state) => state.recentContacts);
+  const searchContacts = useContactStore((state) => state.searchContacts);
+  const accountList = useContactStore((state) => state.accountList);
+  const evmAccounts = useContactStore((state) => state.evmAccounts);
+  const childAccounts = useContactStore((state) => state.childAccounts);
+
+  return (
+    accountList.find((c) => c.address === address) ||
+    evmAccounts.find((c) => c.address === address) ||
+    childAccounts.find((c) => c.address === address) ||
+    sortedContacts.find((c) => c.address === address) ||
+    searchContacts.find((c) => c.address === address) ||
+    recentContacts.find((c) => c.address === address) ||
+    null
+  );
+};
