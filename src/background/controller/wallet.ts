@@ -3864,6 +3864,10 @@ export class WalletController extends BaseController {
     await evmNftService.setSingleCollection(result, collectionIdentifier, offset, network);
     return result;
   };
+
+  clearEvmNFTList = async () => {
+    await evmNftService.clearEvmNfts();
+  };
 }
 
 export default new WalletController();

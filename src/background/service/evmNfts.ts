@@ -55,7 +55,6 @@ class EvmNfts {
   };
 
   getNftIds = (network: string): EvmNFTIds[] | null => {
-    console.log('getNftIds', this.store);
     const nftIds = this.store.NftIds[network];
     if (!nftIds || Date.now() > nftIds.expiry) {
       return null;
@@ -69,8 +68,11 @@ class EvmNfts {
   };
 
   //return null if expired, get based on the offset and collectionIdentifier
-  getSingleCollection = (network: string, collectionIdentifier: string, offset: number) => {
-    console.log('getSingleCollection', this.store, collectionIdentifier, offset, network);
+  getSingleCollection = (
+    network: string,
+    collectionIdentifier: string,
+    offset: number
+  ): EvmNFTCollectionList | null => {
     const collection = this.store.collectionList[network][collectionIdentifier]?.[offset];
     if (!collection || Date.now() > collection.expiry) {
       return null;
