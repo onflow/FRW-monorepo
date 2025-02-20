@@ -51,6 +51,7 @@ import {
   proxyService,
   newsService,
   mixpanelTrack,
+  evmNftService,
 } from 'background/service';
 import i18n from 'background/service/i18n';
 import { type DisplayedKeryring, KEYRING_CLASS } from 'background/service/keyring';
@@ -3825,12 +3826,13 @@ export class WalletController extends BaseController {
     if (!isValidEthereumAddress(address)) {
       throw new Error('Invalid Ethereum address');
     }
-    let result = await storage.getExpiry(`evmNFTID_${address}`);
-    if (result) {
-      return result;
+    const network = await this.getNetwork();
+    const cacheData = await evmNftService.getNftIds(network);
+    if (cacheData) {
+      return cacheData;
     }
-    result = await openapiService.EvmNFTID(address);
-    await storage.setExpiry(`evmNFTID_${address}`, result, 1000 * 60);
+    const result = await openapiService.EvmNFTID(address);
+    await evmNftService.setNftIds(result, network);
 
     return result;
   };
@@ -3844,20 +3846,22 @@ export class WalletController extends BaseController {
     if (!isValidEthereumAddress(address)) {
       throw new Error('Invalid Ethereum address');
     }
-
-    const storageKey = `EvmNFTCollectionList_${collectionIdentifier}_${address}_${offset}_${limit}`;
-    let result = await storage.getExpiry(storageKey);
-
-    if (!result) {
-      result = await openapiService.EvmNFTcollectionList(
-        address,
-        collectionIdentifier,
-        limit,
-        offset
-      );
-      await storage.setExpiry(storageKey, result, 1000 * 60);
+    const network = await this.getNetwork();
+    const cacheData = await evmNftService.getSingleCollection(
+      network,
+      collectionIdentifier,
+      offset
+    );
+    if (cacheData) {
+      return cacheData;
     }
-
+    const result = await openapiService.EvmNFTcollectionList(
+      address,
+      collectionIdentifier,
+      limit,
+      offset
+    );
+    await evmNftService.setSingleCollection(result, collectionIdentifier, offset, network);
     return result;
   };
 }
