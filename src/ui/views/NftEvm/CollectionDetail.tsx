@@ -18,7 +18,7 @@ import {
 import { StyledEngineProvider } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
 import { has } from 'lodash';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useHistory, useParams, useLocation } from 'react-router-dom';
 
@@ -195,11 +195,14 @@ const CollectionDetail = (props) => {
   const collection_name = collection_info[1];
   const nftCount = collection_info[2];
 
+  //Todo: call the openapi from wallet controller, add cache in the evm nft list in background service
+  const openapi = useMemo(() => usewallet.openapi, [usewallet]);
+
   const getCollection = useCallback(
     async (ownerAddress, collection, offset = 0) => {
-      return await usewallet.openapi.EvmNFTcollectionList(ownerAddress, collection, offset);
+      return await openapi.EvmNFTcollectionList(ownerAddress, collection, offset);
     },
-    [usewallet.openapi]
+    [openapi]
   );
 
   const fetchCollection = useCallback(async () => {
