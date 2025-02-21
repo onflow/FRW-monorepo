@@ -30,11 +30,10 @@ import { useContacts } from '@/ui/hooks/useContactHook';
 import { useWallet } from '@/ui/utils/WalletContext';
 
 import IconAbout from '../../../components/iconfont/IconAbout';
-
-import AccountsList from './AddressLists/AccountsList';
-import AddressBookList from './AddressLists/AddressBookList';
-import RecentList from './AddressLists/RecentList';
-import SearchList from './AddressLists/SearchList';
+import AccountsList from '../../FRWComponent/AddressLists/AccountsList';
+import AddressBookList from '../../FRWComponent/AddressLists/AddressBookList';
+import RecentList from '../../FRWComponent/AddressLists/RecentList';
+import SearchList from '../../FRWComponent/AddressLists/SearchList';
 
 export enum SendPageTabOptions {
   Recent = 'Recent',
