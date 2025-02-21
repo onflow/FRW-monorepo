@@ -1362,5 +1362,8 @@
   },
   "Deposit_warning_content": {
     "message": "请确保您的存款是在 FLOW EVM 网络上进行的，如果通过其他网络存款，您的资产可能会丢失。"
+  },
+  "NFT_Not_onboarded": {
+    "message": "无法移动，NFT需要先上链"
   }
 }
