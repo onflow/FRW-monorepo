@@ -1,4 +1,4 @@
-interface NFTCollection {
+type NFTCollection = {
   id: string;
   address: string;
   contractName: string;
@@ -9,15 +9,15 @@ interface NFTCollection {
   banner: string | null;
   description: string | null;
   flowIdentifier: string;
-}
+};
 
-export interface EvmNFTIds {
+export type EvmNFTIds = {
   collection: NFTCollection;
   ids: string[];
   count: number;
-}
+};
 
-interface NFTItem {
+type NFTItem = {
   id: string;
   name: string;
   description: string;
@@ -31,10 +31,10 @@ interface NFTItem {
     description: string;
     title: string;
   };
-}
+};
 
-export interface EvmNFTCollectionList {
+export type EvmNFTCollectionList = {
   nfts: NFTItem[];
   nftCount: number;
   collection: NFTCollection;
-}
+};

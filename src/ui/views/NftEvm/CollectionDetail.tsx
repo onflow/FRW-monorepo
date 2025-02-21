@@ -197,7 +197,7 @@ const CollectionDetail = (props) => {
 
   const getCollection = useCallback(
     async (ownerAddress, collection, offset = 0) => {
-      return await usewallet.getEvmNFTCollectionList(ownerAddress, collection, offset);
+      return await usewallet.getEvmNftCollectionList(ownerAddress, collection, offset);
     },
     [usewallet]
   );

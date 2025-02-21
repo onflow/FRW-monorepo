@@ -61,7 +61,7 @@ import emoji from 'background/utils/emoji.json';
 import fetchConfig from 'background/utils/remoteConfig';
 import { notification, storage } from 'background/webapi';
 import { openIndexPage } from 'background/webapi/tab';
-import { INTERNAL_REQUEST_ORIGIN, EVENTS, KEYRING_TYPE, EVM_ENDPOINT, WEB_NEXT_URL } from 'consts';
+import { INTERNAL_REQUEST_ORIGIN, EVENTS, KEYRING_TYPE, EVM_ENDPOINT } from 'consts';
 
 import type {
   BlockchainResponse,
@@ -3822,7 +3822,7 @@ export class WalletController extends BaseController {
     }
   };
 
-  getEvmNFTID = async (address: string) => {
+  getEvmNftId = async (address: string) => {
     if (!isValidEthereumAddress(address)) {
       throw new Error('Invalid Ethereum address');
     }
@@ -3837,7 +3837,7 @@ export class WalletController extends BaseController {
     return result;
   };
 
-  getEvmNFTCollectionList = async (
+  getEvmNftCollectionList = async (
     address: string,
     collectionIdentifier: string,
     limit = 24,
