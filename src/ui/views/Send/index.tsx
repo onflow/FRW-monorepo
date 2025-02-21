@@ -18,15 +18,16 @@ import {
 } from '@mui/material';
 import { useTheme, StyledEngineProvider } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
-import { isEmpty } from 'lodash';
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useHistory, useLocation, useParams } from 'react-router-dom';
+import React, { useState, useCallback } from 'react';
+import { useHistory, useParams } from 'react-router-dom';
 import SwipeableViews from 'react-swipeable-views';
 
 import { type Contact } from '@/shared/types/network-types';
 import { type WalletAddress } from '@/shared/types/wallet-types';
 import { isValidAddress } from '@/shared/utils/address';
+import { filterContacts, checkAddressBookContacts } from '@/shared/utils/contact-utils';
 import { useContacts } from '@/ui/hooks/useContactHook';
+import { useWallet } from '@/ui/utils/WalletContext';
 
 import IconAbout from '../../../components/iconfont/IconAbout';
 
@@ -41,7 +42,7 @@ export enum SendPageTabOptions {
   Accounts = 'Accounts',
 }
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles((_theme) => ({
   page: {
     display: 'flex',
     flexDirection: 'column',
@@ -108,40 +109,42 @@ const SendAddress = () => {
   const theme = useTheme();
   const history = useHistory();
 
-  const {
-    hasNoFilteredContacts,
-    recentContacts,
-    searchContacts,
-    filteredContacts,
-    searchUser,
-    fetchAddressBook,
-    filterContacts,
-  } = useContacts();
+  const { recentContacts, addressBookContacts } = useContacts();
+
+  const wallet = useWallet();
 
   const [tabValue, setTabValue] = useState(2);
   const [isLoading, setIsLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   const [searchKey, setSearchKey] = useState<string>('');
   const [searched, setSearched] = useState<boolean>(false);
-
-  const mounted = useRef(false);
+  const [searchContacts, setSearchContacts] = useState<Contact[]>([]);
+  const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
   const { id: token } = useParams<{ id: string }>();
 
-  const searchAll = async () => {
-    // await resetSearch();
-    setSearching(true);
-    setIsLoading(true);
-    await searchUser(searchKey);
-    // await searchUser();
-    setSearched(true);
-    setIsLoading(false);
-  };
+  const searchAll = useCallback(async () => {
+    try {
+      setSearching(true);
+      setIsLoading(true);
+      const contacts = await wallet.searchByUsername(searchKey);
 
-  const checkKey = async (e) => {
-    if (e.code === 'Enter') {
-      searchAll();
+      setSearchContacts(checkAddressBookContacts(contacts, addressBookContacts));
+    } catch (error) {
+      console.error('Error searching for username', error);
+    } finally {
+      setSearched(true);
+      setIsLoading(false);
     }
-  };
+  }, [searchKey, wallet, addressBookContacts]);
+
+  const checkKey = useCallback(
+    async (e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+      if (e.code === 'Enter') {
+        searchAll();
+      }
+    },
+    [searchAll]
+  );
 
   const handleFilterAndSearch = async (
     e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
@@ -158,8 +161,7 @@ const SendAddress = () => {
       const address = trimmedSearchTerm as WalletAddress;
       handleTransactionRedirect(address);
     }
-
-    filterContacts(keyword);
+    setFilteredContacts(filterContacts(keyword, addressBookContacts));
   };
 
   const handleTransactionRedirect = useCallback(
@@ -183,13 +185,6 @@ const SendAddress = () => {
     },
     [handleTransactionRedirect]
   );
-
-  useEffect(() => {
-    if (!mounted.current) {
-      mounted.current = true;
-      fetchAddressBook();
-    }
-  }, [fetchAddressBook]);
 
   return (
     <StyledEngineProvider injectFirst>
@@ -347,7 +342,7 @@ const SendAddress = () => {
               </ListItem>
             )}
 
-            {!searched && !hasNoFilteredContacts && (
+            {!searched && filteredContacts.length > 0 && (
               <AddressBookList
                 filteredContacts={filteredContacts}
                 isLoading={isLoading}
@@ -373,7 +368,7 @@ const SendAddress = () => {
                 </ListItemText>
               </ListItem>
             )}
-            {searched && !hasNoFilteredContacts && (
+            {searched && searchContacts.length > 0 && (
               <SearchList
                 searchContacts={searchContacts}
                 isLoading={isLoading}

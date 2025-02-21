@@ -1,27 +1,17 @@
 import { List, ListSubheader, ButtonBase, Box } from '@mui/material';
-import { groupBy, isEmpty } from 'lodash';
-import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { useHistory } from 'react-router-dom';
+import { isEmpty } from 'lodash';
+import React from 'react';
 
-import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
 import { LLContactCard, LLContactEth, FWContactCard } from '@/ui/FRWComponent';
 import { useContacts } from '@/ui/hooks/useContactHook';
 
 const AccountsList = ({ filteredContacts, isLoading, handleClick, isSend = true }) => {
-  const { accountList, evmAccounts, childAccounts, setupAccounts } = useContacts();
-  const mounted = useRef(false);
-
-  useEffect(() => {
-    if (!mounted.current) {
-      mounted.current = true;
-      setupAccounts();
-    }
-  }, [setupAccounts]);
+  const { addressBookContacts, cadenceAccounts, evmAccounts, childAccounts } = useContacts();
 
   return (
     <Box sx={{ height: '100%' }}>
-      {!isEmpty(accountList) &&
-        accountList.map((eachgroup, index) => (
+      {!isEmpty(addressBookContacts) &&
+        addressBookContacts.map((eachgroup, index) => (
           <List dense={false} sx={{ paddingTop: '0px', paddingBottom: '0px' }} key={index}>
             <Box>
               <ButtonBase
