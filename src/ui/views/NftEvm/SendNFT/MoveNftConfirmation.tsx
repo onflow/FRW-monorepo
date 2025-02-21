@@ -86,7 +86,7 @@ const MoveNftConfirmation = (props: SendNFTConfirmationProps) => {
           txId,
           true,
           `Move complete`,
-          `You have moved 1 ${props.data.nft.collectionContractName} from evm to your flow address. \nClick to view this transaction.`
+          `You have moved 1 ${props.data.nft.contractName} from evm to your flow address. \nClick to view this transaction.`
         );
         props.handleCloseIconClicked();
         await usewallet.setDashIndex(0);
@@ -112,7 +112,7 @@ const MoveNftConfirmation = (props: SendNFTConfirmationProps) => {
           true,
           `Move complete`,
           `You have moved ${[props.data.nft.id].length} ${
-            props.data.nft.collectionContractName
+            props.data.nft.contractName
           } from evm to your flow address. \nClick to view this transaction.`
         );
         props.handleCloseIconClicked();
