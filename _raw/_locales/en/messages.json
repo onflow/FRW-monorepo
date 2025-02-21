@@ -1364,6 +1364,6 @@
     "message": "Please make sure you deposit is ON FLOW EVM network, if your deposit via another network your assets may be lost."
   },
   "NFT_Not_onboarded": {
-    "message": "This NFT collection needs to be onboarded before you can move an NFT."
+    "message": "This NFT Collection has not yet been onboarded to Cadence. Use Flow Port to move and onboard NFTs from this NFT collection"
   }
 }

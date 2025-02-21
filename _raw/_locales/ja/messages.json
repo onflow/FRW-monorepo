@@ -1364,6 +1364,6 @@
     "message": "Please make sure you deposit is ON FLOW EVM network, if your deposit via another network your assets may be lost."
   },
   "NFT_Not_onboarded": {
-    "message": "移動できません。NFTのオンボーディングが必要です"
+    "message": "このNFTコレクションはまだCadenceに搭載されていません。Flow Portを使用してこのNFTコレクションからNFTを移動およびオンボードしてください"
   }
 }

@@ -26,6 +26,9 @@ export default function WarningSnackbar({
       sx={{
         zIndex: '2000',
         pointerEvents: 'none', // Allow clicks to pass through
+        width: '100%',
+        maxWidth: 'calc(100% - 36px)', // 18px padding on each side to match button
+        margin: '0 auto',
         ...sx, // Spread additional styles
       }}
     >
@@ -45,6 +48,7 @@ export default function WarningSnackbar({
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
+          width: '100%', // Take full width of constrained Snackbar
           '& .MuiAlert-icon': {
             marginRight: 0,
             padding: 0,
