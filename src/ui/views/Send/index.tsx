@@ -301,11 +301,7 @@ const SendAddress = () => {
                   />
                 </TabPanel>
                 <TabPanel value={tabValue} index={2} dir={theme.direction}>
-                  <AccountsList
-                    filteredContacts={filteredContacts}
-                    isLoading={isLoading}
-                    handleClick={handleContactClick}
-                  />
+                  <AccountsList handleClick={handleContactClick} />
                 </TabPanel>
               </SwipeableViews>
             </Box>

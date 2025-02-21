@@ -20,7 +20,7 @@ const SearchList = ({ searchContacts, isLoading, handleClick }) => {
 
   return (
     <Box sx={{ height: '100%' }}>
-      {!isEmpty(grouped) ? (
+      {grouped?.length > 0 ? (
         Object.keys(grouped).map((key) => (
           <List dense={false} sx={{ paddingTop: '0px', paddingBottom: '0px' }} key={key}>
             <ListSubheader

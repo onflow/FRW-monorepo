@@ -10,7 +10,7 @@ import { LLContactCard, FWContactCard } from '../../../FRWComponent';
 const RecentList = ({ filteredContacts, isLoading, handleClick }) => {
   return (
     <Box sx={{ height: '100%' }}>
-      {!isEmpty(filteredContacts) ? (
+      {filteredContacts?.length > 0 ? (
         filteredContacts.map((eachgroup, index) => (
           <List dense={false} sx={{ paddingTop: '0px', paddingBottom: '0px' }} key={index}>
             <Box>

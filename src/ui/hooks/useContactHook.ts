@@ -73,7 +73,7 @@ export function useContacts() {
         ? walletList.map((item) => ({
             id: item.id,
             contact_name: item.name,
-            username: item.name,
+            username: '', // We don't have the proper username from this call
             avatar: item.icon,
             address: withPrefix(item.address) || '',
             contact_type: ContactType.AddressBook,
@@ -91,7 +91,7 @@ export function useContacts() {
         ? Object.entries(childAccountsProfile).map(([address, accountDetails], index) => ({
             id: index,
             contact_name: accountDetails.name || address,
-            username: accountDetails.name.toLowerCase().replace(/\s+/g, ''),
+            username: '', // We don't have the proper username from this call
             avatar: accountDetails.thumbnail.url,
             address: address,
             contact_type: ContactType.AddressBook,

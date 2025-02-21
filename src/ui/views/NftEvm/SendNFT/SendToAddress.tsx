@@ -524,13 +524,10 @@ const SendToAddress = () => {
                 </TabPanel>
                 <TabPanel value={tabValue} index={2} dir={theme.direction}>
                   <AccountsList
-                    filteredContacts={filteredContacts}
-                    isLoading={isLoading}
                     handleClick={(eachgroup) => {
                       searchResult = eachgroup;
                       setConfirmationOpen(true);
                     }}
-                    isSend={false}
                   />
                 </TabPanel>
               </SwipeableViews>
