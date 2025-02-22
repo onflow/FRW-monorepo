@@ -2571,7 +2571,7 @@ export class WalletController extends BaseController {
 
     const txID = await userWalletService.sendTransaction(
       script
-        .replaceAll('<NFT>', token.contract_name)
+        .replaceAll('<NFT>', token.contractName)
         .replaceAll('<NFTAddress>', token.address)
         .replaceAll('<CollectionStoragePath>', token.path.storage_path)
         .replaceAll('<CollectionPublicType>', token.path.public_type)
@@ -2605,7 +2605,7 @@ export class WalletController extends BaseController {
 
     const txID = await userWalletService.sendTransaction(
       script
-        .replaceAll('<NFT>', token.contract_name)
+        .replaceAll('<NFT>', token.contractName)
         .replaceAll('<NFTAddress>', token.address)
         .replaceAll('<CollectionStoragePath>', token.path.storage_path)
         .replaceAll('<CollectionPublicType>', token.path.public_type)
@@ -2638,7 +2638,7 @@ export class WalletController extends BaseController {
     const script = await getScripts('hybridCustody', 'transferNFTToChild');
     const txID = await userWalletService.sendTransaction(
       script
-        .replaceAll('<NFT>', token.contract_name)
+        .replaceAll('<NFT>', token.contractName)
         .replaceAll('<NFTAddress>', token.address)
         .replaceAll('<CollectionStoragePath>', token.path.storage_path)
         .replaceAll('<CollectionPublicType>', token.path.public_type)
