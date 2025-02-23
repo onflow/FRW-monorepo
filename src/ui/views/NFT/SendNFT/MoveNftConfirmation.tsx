@@ -126,10 +126,11 @@ const MoveNftConfirmation = (props: SendNFTConfirmationProps) => {
     const address = await usewallet.getCurrentAddress();
     const contractList = await usewallet.openapi.getAllNft();
     const filteredCollections = returnFilteredCollections(contractList, props.data.nft);
+    const flowIdentifier = props.data.contract.flowIdentifier || props.data.nft.flowIdentifier;
     usewallet
       .batchBridgeChildNFTToEvm(
         address!,
-        props.data.contract.flowIdentifier,
+        flowIdentifier,
         [props.data.nft.id],
         filteredCollections[0]
       )
