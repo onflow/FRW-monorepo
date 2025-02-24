@@ -122,8 +122,7 @@ const AddList = () => {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const nftList = await usewallet.openapi.getAllNft();
-      console.log('nftList', nftList);
+      const nftList = await usewallet.openapi.getAllNftV2();
       setCollections(nftList);
       return nftList;
     } finally {

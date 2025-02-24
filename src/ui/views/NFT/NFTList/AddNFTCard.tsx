@@ -27,6 +27,7 @@ const CollectionCard = ({
   isLoading: boolean;
   onClick: any;
 }) => {
+  console.log(item, 'item');
   const { name, description, official_website: officialWebsite, logo, added } = item || {};
   const getDescriptionWordWrapped = (desc) => {
     if (desc.length < 60) return desc;
@@ -43,70 +44,83 @@ const CollectionCard = ({
         overflow: 'hidden',
         display: 'flex',
         width: '100%',
-        height: '64px',
+        height: '84px',
         boxShadow: 'none',
         marginTop: '8px',
         position: 'relative',
         border: '1px solid rgba(255, 255, 255, 0.12)',
       }}
     >
-      {logo && (
-        <Box
-          sx={{
-            width: '48px',
-            height: '100%',
-            display: 'flex',
-            padding: '8px',
-          }}
-        >
-          <CardMedia
-            component="img"
-            sx={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '12px',
-              objectFit: 'cover',
-            }}
-            image={logo}
-          />
-        </Box>
-      )}
       <CardActionArea
         sx={{
-          position: 'absolute',
-          width: '100%',
           height: '100%',
           padding: '8px 4px',
           backgroundColor: 'transparent',
+          display: 'flex',
           '&:hover': {
             backgroundColor: 'rgba(255, 255, 255, 0.08)',
           },
+          overflow: 'hidden',
         }}
       >
+        {logo ? (
+          <img
+            width="48px"
+            height="48px"
+            style={{
+              marginLeft: '4px',
+              marginRight: '4px',
+              borderRadius: '12px',
+            }}
+            src={logo}
+          />
+        ) : (
+          <Box
+            sx={{
+              width: '48px',
+              height: '48px',
+              marginLeft: '4px',
+              marginRight: '4px',
+              backgroundColor: 'rgba(255, 255, 255, 0.08)',
+              borderRadius: '12px',
+            }}
+          />
+        )}
         <Box
           sx={{
             display: 'flex',
             height: '100%',
+            width: '100%',
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'center',
             paddingLeft: '8px',
             paddingRight: '8px',
+            overflow: 'hidden',
           }}
         >
           <Box
             sx={{
               display: 'flex',
               height: '100%',
+              width: '100%',
               flexDirection: 'column',
               justifyContent: 'center',
+              overflow: 'hidden',
             }}
           >
             <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
               <Typography
                 component="div"
                 color="#fff"
-                sx={{ fontWeight: 600, fontSize: '16px', lineHeight: '26px' }}
+                sx={{
+                  fontWeight: 600,
+                  fontSize: '16px',
+                  lineHeight: '26px',
+                  textWrapMode: 'nowrap',
+                  textOverflow: 'ellipsis',
+                  overflow: 'hidden',
+                }}
                 onClick={() => officialWebsite && window.open(officialWebsite, '_blank')}
               >
                 {name}
@@ -121,7 +135,13 @@ const CollectionCard = ({
                 <Typography
                   color="#5E5E5E"
                   component="div"
-                  sx={{ fontWeight: 400, fontSize: '12px', lineHeight: '18px', width: '200px' }}
+                  sx={{
+                    fontWeight: 400,
+                    fontSize: '12px',
+                    lineHeight: '18px',
+                    width: '200px',
+                    overflow: 'hidden',
+                  }}
                 >
                   {getDescriptionWordWrapped(description)}
                 </Typography>
