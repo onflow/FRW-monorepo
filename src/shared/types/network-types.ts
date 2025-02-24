@@ -129,17 +129,6 @@ export interface NFTData {
   nftCount: number;
 }
 
-export interface NFTCollectionData {
-  name: string;
-  nfts: any[];
-  nftCount: number;
-}
-export interface NFTCollectionList {
-  collection: any;
-  count: number;
-  ids: number[];
-}
-
 export interface Domain {
   domain_type: FlowDomain;
   value: string;

@@ -113,7 +113,7 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
       setAccessible(props.accessible);
       try {
         setCollectionLoading(true);
-        const list = await usewallet.getCollectionCache();
+        const list = await usewallet.getCollectionCache(address);
         if (list && list.length > 0) {
           setCollectionEmpty(false);
           setCollections(list);

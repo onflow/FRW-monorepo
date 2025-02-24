@@ -202,6 +202,13 @@ const CollectionDetail = (props) => {
     [usewallet]
   );
 
+  const refreshCollection = useCallback(async () => {
+    const res = await usewallet.refreshSingleCollection(address, collection_name);
+    setInfo(res.collection);
+    setTotal(res.nftCount);
+    setLists(res.nfts);
+  }, [address, collection_name, usewallet]);
+
   const fetchCollection = useCallback(async () => {
     setOwnerAddress(address);
     setLoading(true);
@@ -324,7 +331,7 @@ const CollectionDetail = (props) => {
                       aria-label="close"
                       color="primary"
                       size="small"
-                      // onClick={onCloseBtnClicked}
+                      onClick={refreshCollection}
                     >
                       <ReplayRoundedIcon fontSize="inherit" />
                     </IconButton>

@@ -3408,47 +3408,38 @@ export class WalletController extends BaseController {
     transactionService.clearPending(network);
   };
 
-  getNFTListCache = async (): Promise<NFTData> => {
-    const network = await this.getNetwork();
-    // const list =
-    // if (!list.length){
-    // const data = this.refreshNft(address);
-    // return data;
-    // }
-    return await nftService.getNft(network);
-  };
+  // getNFTListCache = async (): Promise<NFTData> => {
+  //   const network = await this.getNetwork();
+  //   return await nftService.getNft(network);
+  // };
 
-  refreshNft = async (address: string, offset = 0): Promise<NFTData> => {
-    // change the address to real address after testing complete
-    // const address = await this.getCurrentAddress();
-    const limit = 24;
-    const network = await this.getNetwork();
-    const data = await openapiService.nftCatalogList(address!, limit, offset, network);
-    const nfts = data.nfts;
-    if (!nfts) {
-      return {
-        nfts: [],
-        nftCount: data.nftCount,
-      };
-    }
-    nfts.map((nft) => {
-      nft.unique_id = nft.collectionName + '_' + nft.id;
-    });
-    function getUniqueListBy(arr, key) {
-      return [...new Map(arr.map((item) => [item[key], item])).values()];
-    }
-    const unique_nfts = getUniqueListBy(nfts, 'unique_id');
-    const result = { nfts: unique_nfts, nftCount: data.nftCount };
-    nftService.setNft(result, network);
-    return result;
-  };
+  // refreshNft = async (address: string, offset = 0): Promise<NFTData> => {
+  //   // change the address to real address after testing complete
+  //   // const address = await this.getCurrentAddress();
+  //   const limit = 24;
+  //   const network = await this.getNetwork();
+  //   const data = await openapiService.nftCatalogList(address!, limit, offset, network);
+  //   const nfts = data.nfts;
+  //   if (!nfts) {
+  //     return {
+  //       nfts: [],
+  //       nftCount: data.nftCount,
+  //     };
+  //   }
+  //   nfts.map((nft) => {
+  //     nft.unique_id = nft.collectionName + '_' + nft.id;
+  //   });
+  //   function getUniqueListBy(arr, key) {
+  //     return [...new Map(arr.map((item) => [item[key], item])).values()];
+  //   }
+  //   const unique_nfts = getUniqueListBy(nfts, 'unique_id');
+  //   const result = { nfts: unique_nfts, nftCount: data.nftCount };
+  //   nftService.setNft(result, network);
+  //   return result;
+  // };
 
   clearNFT = () => {
     nftService.clear();
-  };
-
-  clearNFTList = async () => {
-    await nftService.clearNFTList();
   };
 
   clearNFTCollection = async () => {
@@ -3472,30 +3463,20 @@ export class WalletController extends BaseController {
     await storage.clear();
   };
 
-  getCollectionCache = async () => {
+  getSingleCollection = async (address: string, collectionId: string, offset = 0) => {
     const network = await this.getNetwork();
-    const list = await nftService.getCollectionList(network);
+    const list = await nftService.getSingleCollection(network, collectionId, offset);
     if (!list) {
-      return [];
-    }
-    const sortedList = list.sort((a, b) => b.count - a.count);
-    return sortedList;
-  };
-
-  getSingleCollectionCache = async (collectionId: string) => {
-    const network = await this.getNetwork();
-    const list = await nftService.getSingleCollection(collectionId, network);
-    if (!list) {
-      return [];
+      return this.refreshSingleCollection(address, collectionId, offset);
     }
     return list;
   };
 
-  getSingleCollection = async (address: string, contract: string, offset = 0) => {
+  refreshSingleCollection = async (address: string, collectionId: string, offset = 0) => {
     const network = await this.getNetwork();
     const data = await openapiService.nftCatalogCollectionList(
       address!,
-      contract,
+      collectionId,
       24,
       offset,
       network
@@ -3509,18 +3490,30 @@ export class WalletController extends BaseController {
     }
     const unique_nfts = getUniqueListBy(data.nfts, 'unique_id');
     data.nfts = unique_nfts;
+
+    nftService.setSingleCollection(data, collectionId, offset, network);
     return data;
   };
 
+  getCollectionCache = async (address: string) => {
+    const network = await this.getNetwork();
+    const list = await nftService.getCollectionList(network);
+    if (!list || list.length === 0) {
+      return await this.refreshCollection(address);
+    }
+    // Sort by count, maintaining the new collection structure
+    const sortedList = [...list].sort((a, b) => b.count - a.count);
+    return sortedList;
+  };
+
   refreshCollection = async (address: string) => {
-    // change the address to real address after testing complete
-    // const address = await this.getCurrentAddress();
     const network = await this.getNetwork();
     const data = await openapiService.nftCatalogCollections(address!, network);
-    if (!data) {
+    if (!data || !Array.isArray(data)) {
       return [];
     }
-    const sortedList = data.sort((a, b) => b.count - a.count);
+    // Sort by count, maintaining the new collection structure
+    const sortedList = [...data].sort((a, b) => b.count - a.count);
     nftService.setCollectionList(sortedList, network);
     return sortedList;
   };
@@ -3822,6 +3815,16 @@ export class WalletController extends BaseController {
     }
   };
 
+  refreshEvmNftIds = async (address: string) => {
+    if (!isValidEthereumAddress(address)) {
+      throw new Error('Invalid Ethereum address');
+    }
+    const network = await this.getNetwork();
+    const result = await openapiService.EvmNFTID(address);
+    await evmNftService.setNftIds(result, network);
+    return result;
+  };
+
   getEvmNftId = async (address: string) => {
     if (!isValidEthereumAddress(address)) {
       throw new Error('Invalid Ethereum address');
@@ -3831,9 +3834,26 @@ export class WalletController extends BaseController {
     if (cacheData) {
       return cacheData;
     }
-    const result = await openapiService.EvmNFTID(address);
-    await evmNftService.setNftIds(result, network);
+    return this.refreshEvmNftIds(address);
+  };
 
+  refreshEvmNftCollectionList = async (
+    address: string,
+    collectionIdentifier: string,
+    limit = 24,
+    offset = 0
+  ) => {
+    if (!isValidEthereumAddress(address)) {
+      throw new Error('Invalid Ethereum address');
+    }
+    const network = await this.getNetwork();
+    const result = await openapiService.EvmNFTcollectionList(
+      address,
+      collectionIdentifier,
+      limit,
+      offset
+    );
+    await evmNftService.setSingleCollection(result, collectionIdentifier, offset, network);
     return result;
   };
 
@@ -3855,14 +3875,7 @@ export class WalletController extends BaseController {
     if (cacheData) {
       return cacheData;
     }
-    const result = await openapiService.EvmNFTcollectionList(
-      address,
-      collectionIdentifier,
-      limit,
-      offset
-    );
-    await evmNftService.setSingleCollection(result, collectionIdentifier, offset, network);
-    return result;
+    return this.refreshEvmNftCollectionList(address, collectionIdentifier, limit, offset);
   };
 
   clearEvmNFTList = async () => {

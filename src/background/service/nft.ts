@@ -1,30 +1,39 @@
 import { createPersistStore } from 'background/utils';
 import { storage } from 'background/webapi';
 
-import {
-  type NFTData,
-  type NFTCollectionData,
-  type NFTCollectionList,
-} from '../../shared/types/network-types';
+import { type NFTCollectionData, type NFTCollectionList } from '../../shared/types/nft-types';
 interface NftStore {
-  nft: NFTNetwork;
-  collection: NFTCollectionNetwork;
-  collectionList: NFTCollectionListNetwork;
-  expiry: number;
-}
-interface NFTCollectionNetwork {
-  mainnet: NFTCollectionData[];
-  testnet: NFTCollectionData[];
+  collectionList: {
+    mainnet: {
+      [collectionIdentifier: string]: {
+        [offset: number]: {
+          data: NFTCollectionData;
+          expiry: number;
+        };
+      };
+    };
+    testnet: {
+      [collectionIdentifier: string]: {
+        [offset: number]: {
+          data: NFTCollectionData;
+          expiry: number;
+        };
+      };
+    };
+  };
+  collections: {
+    mainnet: {
+      data: NFTCollectionList[];
+      expiry: number;
+    };
+    testnet: {
+      data: NFTCollectionList[];
+      expiry: number;
+    };
+  };
 }
 
-interface NFTCollectionListNetwork {
-  mainnet: NFTCollectionList[];
-  testnet: NFTCollectionList[];
-}
-interface NFTNetwork {
-  mainnet: NFTData;
-  testnet: NFTData;
-}
+const EXPIRY_TIME = 60 * 1000; // 60 seconds in milliseconds
 
 class NFT {
   store!: NftStore;
@@ -33,128 +42,91 @@ class NFT {
     this.store = await createPersistStore<NftStore>({
       name: 'nftv2',
       template: {
-        nft: {
+        collections: {
           testnet: {
-            nfts: [],
-            nftCount: 0,
+            data: [],
+            expiry: 0,
           },
           mainnet: {
-            nfts: [],
-            nftCount: 0,
+            data: [],
+            expiry: 0,
           },
         },
         collectionList: {
-          testnet: [],
-          mainnet: [],
+          testnet: {},
+          mainnet: {},
         },
-        collection: {
-          testnet: [],
-          mainnet: [],
-        },
-        expiry: 2648570077405,
       },
     });
   };
 
-  getExpiry = () => {
-    return this.store.expiry;
+  getSingleCollection = (
+    network: string,
+    collectionIdentifier: string,
+    offset: number
+  ): NFTCollectionData | null => {
+    const collection = this.store.collectionList[network][collectionIdentifier]?.[offset];
+    if (!collection || Date.now() > collection.expiry) {
+      return null;
+    }
+    return collection.data;
   };
 
-  setExpiry = (expiry: number) => {
-    this.store.expiry = expiry;
+  setSingleCollection = (
+    data: NFTCollectionData,
+    collectionIdentifier: string,
+    offset: number,
+    network: string
+  ) => {
+    const expiry = Date.now() + EXPIRY_TIME;
+    if (!this.store.collectionList[network][collectionIdentifier]) {
+      this.store.collectionList[network][collectionIdentifier] = {};
+    }
+    this.store.collectionList[network][collectionIdentifier][offset] = { data, expiry };
   };
 
-  getNft = (network: string): NFTData => {
-    return this.store.nft[network];
+  deleteSingleCollection = (collectionIdentifier: string, offset: number, network: string) => {
+    if (this.store.collectionList[network][collectionIdentifier]) {
+      delete this.store.collectionList[network][collectionIdentifier][offset];
+    }
   };
 
-  setNft = (data: NFTData, network: string) => {
-    const list = this.store.nft[network];
-    data.nfts.forEach((nft) => {
-      const result = list.nfts.filter((i) => i.unique_id === nft.unique_id);
-      if (result.length === 0) {
-        list.nfts.push(nft);
-      }
-    });
-    this.store.nft[network] = {
-      nfts: list.nfts,
-      nftCount: data.nftCount,
-    };
-  };
-
-  getSingleCollection = (network: string, collectionId: string) => {
-    return this.store.collection[network].find((i) => i.name === collectionId);
-  };
-
-  setSingleCollection = (data: NFTCollectionData, network: string) => {
-    const list = this.store.collection[network].find((i) => i.name === data.name);
-    data.nfts.forEach((nft) => {
-      const result = list.filter((i) => i.unique_id === nft.unique_id);
-      if (result.length === 0) {
-        list.push(nft);
-      }
-    });
-    this.deleteSingleCollection(data.name, network);
-    this.store.collection[network].push({
-      name: data.name,
-      nfts: list,
-      nfrCount: data.nftCount,
-    });
-  };
-
-  deleteSingleCollection = (collectionId: string, network: string) => {
-    const result = this.store.collection[network].filter((i) => i.name !== collectionId);
-    this.store.collection[network] = result;
-  };
-
-  getCollectionList = (network: string) => {
-    return this.store.collectionList[network];
+  getCollectionList = (network: string): NFTCollectionList[] | null => {
+    const collections = this.store.collections[network];
+    if (!collections || Date.now() > collections.expiry) {
+      return null;
+    }
+    return collections.data;
   };
 
   setCollectionList = (data: Array<any>, network: string) => {
-    this.store.collectionList[network] = data;
+    const expiry = Date.now() + EXPIRY_TIME;
+    this.store.collections[network] = { data, expiry };
   };
 
   clear = async () => {
     if (!this.store) {
       await this.init();
     }
-    this.store.nft = {
-      testnet: {
-        nfts: [],
-        nftCount: 0,
-      },
-      mainnet: {
-        nfts: [],
-        nftCount: 0,
-      },
-    };
-
-    this.store.collection = {
-      testnet: [],
-      mainnet: [],
-    };
 
     this.store.collectionList = {
-      testnet: [],
-      mainnet: [],
+      testnet: {},
+      mainnet: {},
+    };
+
+    this.store.collections = {
+      testnet: {
+        data: [],
+        expiry: 0,
+      },
+      mainnet: {
+        data: [],
+        expiry: 0,
+      },
     };
 
     storage.remove('nftv2');
     storage.remove('nft');
-  };
-
-  clearNFTList = () => {
-    this.store.nft = {
-      testnet: {
-        nfts: [],
-        nftCount: 0,
-      },
-      mainnet: {
-        nfts: [],
-        nftCount: 0,
-      },
-    };
   };
 
   clearNFTCollection = () => {
