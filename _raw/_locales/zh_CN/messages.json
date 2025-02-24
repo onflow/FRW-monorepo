@@ -1366,6 +1366,9 @@
   "Deposit_warning_content": {
     "message": "请确保您的存款是在 FLOW EVM 网络上进行的，如果通过其他网络存款，您的资产可能会丢失。"
   },
+  "NFT_Not_onboarded": {
+    "message": "此NFT收藏尚未接入Cadence。请使用Flow Port来移动和接入此NFT收藏中的NFT"
+  },
   "Could_not_enable_this_collection": {
     "message": "无法启用此收藏"
   }
