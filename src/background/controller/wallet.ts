@@ -2088,8 +2088,11 @@ export class WalletController extends BaseController {
       });
 
       if (result) {
-        await this.setEvmAddress(result);
-        return result;
+        // This is the COA address we get straight from the script
+        // This is where we encode the address in ERC-55 format
+        const checksummedAddress = ethUtil.toChecksumAddress(ensureEvmAddressPrefix(result));
+        await this.setEvmAddress(checksummedAddress);
+        return checksummedAddress;
       } else {
         return '';
       }
