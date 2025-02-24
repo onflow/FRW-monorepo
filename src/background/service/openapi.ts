@@ -1469,7 +1469,6 @@ class OpenApiService {
     const address = await userWalletService.getCurrentAddress();
 
     const promiseResult = await this.checkNFTListEnabledNew(address);
-    console.log(promiseResult, 'promiseResult');
 
     // const network = await userWalletService.getNetwork();
     // const notEmptyTokenList = tokenList.filter(value => value.address[network] !== null && value.address[network] !== '' )
@@ -1483,14 +1482,12 @@ class OpenApiService {
           contract_name: contractName,
         };
       });
-    console.log(promiseResult, 'values', resultArray);
 
     return resultArray;
   };
 
   checkNFTListEnabledNew = async (address: string) => {
     const script = await getScripts('nft', 'checkNFTListEnabled');
-    console.log('script checkNFTListEnabledNew ', script);
 
     const isEnabledList = await fcl.query({
       cadence: script,
