@@ -1,7 +1,7 @@
 import { createPersistStore } from 'background/utils';
 import { storage } from 'background/webapi';
 
-import { type NFTCollectionData, type NFTCollectionList } from '../../shared/types/nft-types';
+import { type NFTCollectionData, type NFTCollections } from '../../shared/types/nft-types';
 interface NftStore {
   collectionList: {
     mainnet: {
@@ -23,11 +23,11 @@ interface NftStore {
   };
   collections: {
     mainnet: {
-      data: NFTCollectionList[];
+      data: NFTCollections[];
       expiry: number;
     };
     testnet: {
-      data: NFTCollectionList[];
+      data: NFTCollections[];
       expiry: number;
     };
   };
@@ -91,7 +91,7 @@ class NFT {
     }
   };
 
-  getCollectionList = (network: string): NFTCollectionList[] | null => {
+  getCollectionList = (network: string): NFTCollections[] | null => {
     const collections = this.store.collections[network];
     if (!collections || Date.now() > collections.expiry) {
       return null;

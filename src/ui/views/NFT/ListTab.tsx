@@ -14,6 +14,8 @@ import { Box } from '@mui/system';
 import React, { forwardRef, useImperativeHandle, useEffect, useState, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
+import { type NFTCollections } from '@/shared/types/nft-types';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from '@/ui/utils/WalletContext';
 import placeholder from 'ui/FRWAssets/image/placeholder.png';
 
@@ -25,6 +27,13 @@ interface ListTabProps {
   accessible: any;
   isActive: boolean;
   activeCollection: any;
+}
+
+interface State {
+  collectionLoading: boolean;
+  collections: NFTCollections[];
+  isCollectionEmpty: boolean;
+  ownerAddress: string;
 }
 
 const useStyles = makeStyles(() => ({
@@ -74,71 +83,96 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
   const history = useHistory();
   const classes = useStyles();
   const usewallet = useWallet();
-  const [collectionLoading, setCollectionLoading] = useState(true);
-  const [collections, setCollections] = useState<any[]>([]);
-  const [isCollectionEmpty, setCollectionEmpty] = useState(true);
-  const [accesibleArray, setAccessible] = useState([{ id: '' }]);
-  const [ownerAddress, setAddress] = useState('');
-
-  useImperativeHandle(ref, () => ({
-    reload: () => {
-      usewallet.clearNFTCollection();
-      setCollections([]);
-      setCollectionLoading(true);
-      fetchLatestCollection(ownerAddress);
-    },
-  }));
+  const { currentWallet } = useProfiles();
+  const [state, setState] = useState<State>({
+    collectionLoading: true,
+    collections: [],
+    isCollectionEmpty: true,
+    ownerAddress: '',
+  });
 
   const fetchLatestCollection = useCallback(
     async (address: string) => {
+      if (!address) return;
+
       try {
         const list = await usewallet.refreshCollection(address);
-        setCollectionLoading(false);
-        if (list && list.length > 0) {
-          setCollectionEmpty(false);
-          setCollections(list);
-        } else {
-          setCollectionEmpty(true);
-        }
+        setState((prev) => ({
+          ...prev,
+          collectionLoading: false,
+          collections: list || [],
+          isCollectionEmpty: !list || list.length === 0,
+        }));
       } catch (err) {
-        console.log(err);
-        setCollectionLoading(false);
-        setCollectionEmpty(true);
+        setState((prev) => ({
+          ...prev,
+          collectionLoading: false,
+          collections: [],
+          isCollectionEmpty: true,
+        }));
       }
     },
     [usewallet]
   );
+
   const fetchCollectionCache = useCallback(
     async (address: string) => {
-      setAccessible(props.accessible);
+      if (!address || address === state.ownerAddress) return;
+
       try {
-        setCollectionLoading(true);
+        setState((prev) => ({ ...prev, collectionLoading: true, ownerAddress: address }));
+
         const list = await usewallet.getCollectionCache(address);
+
         if (list && list.length > 0) {
-          setCollectionEmpty(false);
-          setCollections(list);
-          const count = list.reduce((acc, item) => acc + item.count, 0);
-          props.setCount(count);
+          setState((prev) => ({
+            ...prev,
+            collections: list,
+            isCollectionEmpty: false,
+            collectionLoading: false,
+          }));
         } else {
-          setCollectionEmpty(true);
-          fetchLatestCollection(address);
+          await fetchLatestCollection(address);
         }
-      } catch {
-        setCollectionEmpty(true);
-        fetchLatestCollection(address);
-      } finally {
-        setCollectionLoading(false);
+      } catch (error) {
+        await fetchLatestCollection(address);
       }
     },
-    [props, usewallet, fetchLatestCollection]
+    [fetchLatestCollection, usewallet, state.ownerAddress]
   );
 
   useEffect(() => {
-    if (props.data.ownerAddress) {
-      fetchCollectionCache(props.data.ownerAddress);
-      setAddress(props.data.ownerAddress);
+    const newAddress = currentWallet.address;
+    let mounted = true;
+
+    if (newAddress && newAddress !== state.ownerAddress) {
+      fetchCollectionCache(newAddress).then(() => {
+        if (!mounted) return;
+      });
     }
-  }, [props.data.ownerAddress, fetchCollectionCache]);
+
+    return () => {
+      mounted = false;
+    };
+  }, [currentWallet, state.ownerAddress, fetchCollectionCache]);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      reload: () => {
+        usewallet.clearNFTCollection();
+        setState((prev) => ({
+          ...prev,
+          collections: [],
+          collectionLoading: true,
+        }));
+        if (state.ownerAddress) {
+          fetchLatestCollection(state.ownerAddress);
+        }
+      },
+    }),
+    [usewallet, fetchLatestCollection, state.ownerAddress]
+  );
 
   const extractContractAddress = (collection) => {
     return collection.split('.')[2];
@@ -251,7 +285,7 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
         count={props.count}
         index={index}
         contract_name={props.collection ? props.collection.id : props.id}
-        ownerAddress={ownerAddress}
+        ownerAddress={state.ownerAddress}
         isAccessible={isAccessible}
       />
     );
@@ -259,7 +293,7 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
 
   return (
     <Container className={classes.collectionContainer}>
-      {collectionLoading ? (
+      {state.collectionLoading ? (
         <div>
           <Card
             sx={{
@@ -357,13 +391,13 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
             </Box>
           </Card>
         </div>
-      ) : isCollectionEmpty ? (
+      ) : state.isCollectionEmpty ? (
         <EmptyStatus />
       ) : (
-        collections.map(createListCard)
+        state.collections.map(createListCard)
       )}
     </Container>
   );
 });
 
-export default ListTab;
+export default React.memo(ListTab);
