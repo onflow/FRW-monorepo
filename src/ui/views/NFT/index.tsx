@@ -45,22 +45,9 @@ const NFTTab = () => {
     // setAddress(address);
   }, [wallet]);
 
-  const fetchCollection = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const collection = await wallet.fetchLatestCollection();
-      setHasNFTs(collection && collection.length > 0);
-    } catch (error) {
-      console.error('Error fetching collection:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [wallet]);
-
   useEffect(() => {
     loadNFTs();
-    fetchCollection();
-  }, [loadNFTs, fetchCollection]);
+  }, [loadNFTs]);
 
   return (
     <div id="scrollableTab">
