@@ -1365,5 +1365,8 @@
   },
   "NFT_Not_onboarded": {
     "message": "Эта коллекция NFT еще не интегрирована в Cadence. Используйте Flow Port для перемещения и интеграции NFT из этой коллекции"
+  },
+  "Could_not_enable_this_collection": {
+    "message": "Не удалось включить эту коллекцию"
   }
 }

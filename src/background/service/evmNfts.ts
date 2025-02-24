@@ -1,13 +1,12 @@
 import { createPersistStore } from 'background/utils';
-import { storage } from 'background/webapi';
 
-import { type NFTCollectionData, type NFTCollectionList } from '../../shared/types/nft-types';
-interface NftStore {
+import { type EvmNFTIds, type EvmNFTCollectionList } from '../../shared/types/nft-types';
+interface EvmNftsStore {
   collectionList: {
     mainnet: {
       [collectionIdentifier: string]: {
         [offset: number]: {
-          data: NFTCollectionData;
+          data: EvmNFTCollectionList;
           expiry: number;
         };
       };
@@ -15,19 +14,19 @@ interface NftStore {
     testnet: {
       [collectionIdentifier: string]: {
         [offset: number]: {
-          data: NFTCollectionData;
+          data: EvmNFTCollectionList;
           expiry: number;
         };
       };
     };
   };
-  collections: {
+  NftIds: {
     mainnet: {
-      data: NFTCollectionList[];
+      data: EvmNFTIds[];
       expiry: number;
     };
     testnet: {
-      data: NFTCollectionList[];
+      data: EvmNFTIds[];
       expiry: number;
     };
   };
@@ -35,36 +34,45 @@ interface NftStore {
 
 const EXPIRY_TIME = 60 * 1000; // 60 seconds in milliseconds
 
-class NFT {
-  store!: NftStore;
+class EvmNfts {
+  store!: EvmNftsStore;
 
   init = async () => {
-    this.store = await createPersistStore<NftStore>({
-      name: 'nftv2',
+    const currentTime = Date.now();
+    this.store = await createPersistStore<EvmNftsStore>({
+      name: 'evmNfts',
       template: {
-        collections: {
-          testnet: {
-            data: [],
-            expiry: 0,
-          },
-          mainnet: {
-            data: [],
-            expiry: 0,
-          },
-        },
         collectionList: {
-          testnet: {},
           mainnet: {},
+          testnet: {},
+        },
+        NftIds: {
+          mainnet: { data: [], expiry: currentTime },
+          testnet: { data: [], expiry: currentTime },
         },
       },
     });
   };
 
+  getNftIds = (network: string): EvmNFTIds[] | null => {
+    const nftIds = this.store.NftIds[network];
+    if (!nftIds || Date.now() > nftIds.expiry) {
+      return null;
+    }
+    return nftIds.data;
+  };
+
+  setNftIds = (data: EvmNFTIds[], network: string) => {
+    const expiry = Date.now() + EXPIRY_TIME;
+    this.store.NftIds[network] = { data, expiry };
+  };
+
+  //return null if expired, get based on the offset and collectionIdentifier
   getSingleCollection = (
     network: string,
     collectionIdentifier: string,
     offset: number
-  ): NFTCollectionData | null => {
+  ): EvmNFTCollectionList | null => {
     const collection = this.store.collectionList[network][collectionIdentifier]?.[offset];
     if (!collection || Date.now() > collection.expiry) {
       return null;
@@ -73,7 +81,7 @@ class NFT {
   };
 
   setSingleCollection = (
-    data: NFTCollectionData,
+    data: EvmNFTCollectionList,
     collectionIdentifier: string,
     offset: number,
     network: string
@@ -91,47 +99,19 @@ class NFT {
     }
   };
 
-  getCollectionList = (network: string): NFTCollectionList[] | null => {
-    const collections = this.store.collections[network];
-    if (!collections || Date.now() > collections.expiry) {
-      return null;
-    }
-    return collections.data;
-  };
-
-  setCollectionList = (data: Array<any>, network: string) => {
-    const expiry = Date.now() + EXPIRY_TIME;
-    this.store.collections[network] = { data, expiry };
-  };
-
-  clear = async () => {
+  clearEvmNfts = async () => {
     if (!this.store) {
       await this.init();
     }
-
+    this.store.NftIds = {
+      testnet: { data: [], expiry: 0 },
+      mainnet: { data: [], expiry: 0 },
+    };
     this.store.collectionList = {
       testnet: {},
       mainnet: {},
     };
-
-    this.store.collections = {
-      testnet: {
-        data: [],
-        expiry: 0,
-      },
-      mainnet: {
-        data: [],
-        expiry: 0,
-      },
-    };
-
-    storage.remove('nftv2');
-    storage.remove('nft');
-  };
-
-  clearNFTCollection = () => {
-    this.clear();
   };
 }
 
-export default new NFT();
+export default new EvmNfts();

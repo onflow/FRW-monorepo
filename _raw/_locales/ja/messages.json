@@ -1365,5 +1365,8 @@
   },
   "NFT_Not_onboarded": {
     "message": "このNFTコレクションはまだCadenceに搭載されていません。Flow Portを使用してこのNFTコレクションからNFTを移動およびオンボードしてください"
+  },
+  "Could_not_enable_this_collection": {
+    "message": "このコレクションを有効にできませんでした"
   }
 }

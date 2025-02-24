@@ -25,10 +25,10 @@ interface SendNFTConfirmationProps {
   handleAddBtnClicked: () => void;
 }
 
-const MoveNftConfirmation = (props: SendNFTConfirmationProps) => {
+const MoveFromChild = (props: SendNFTConfirmationProps) => {
   console.log('MoveNftConfirmation');
   const usewallet = useWallet();
-  const { mainAddress, childAccounts, currentWallet } = useProfiles();
+  const { mainAddress, childAccounts, evmWallet, parentWallet } = useProfiles();
   const history = useHistory();
   const [sending, setSending] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -126,10 +126,11 @@ const MoveNftConfirmation = (props: SendNFTConfirmationProps) => {
     const address = await usewallet.getCurrentAddress();
     const contractList = await usewallet.openapi.getAllNft();
     const filteredCollections = returnFilteredCollections(contractList, props.data.nft);
+    const flowIdentifier = props.data.contract.flowIdentifier || props.data.nft.flowIdentifier;
     usewallet
       .batchBridgeChildNFTToEvm(
         address!,
-        props.data.contract.flowIdentifier,
+        flowIdentifier,
         [props.data.nft.id],
         filteredCollections[0]
       )
@@ -177,42 +178,36 @@ const MoveNftConfirmation = (props: SendNFTConfirmationProps) => {
   }, [getPending, props.data.contact, transactionDoneHandler]);
 
   const getChildResp = useCallback(async () => {
-    const eWallet = await usewallet.getEvmWallet();
-    let evmAddress;
-    if (eWallet.address) {
-      evmAddress = ensureEvmAddressPrefix(eWallet.address);
-    }
-
     const newWallet = {
       [mainAddress!]: {
-        name: currentWallet.name,
-        description: currentWallet.name,
+        name: parentWallet.name,
+        description: parentWallet.name,
         thumbnail: {
-          url: currentWallet.icon,
+          url: parentWallet.icon,
         },
       },
     };
 
-    let evmWallet = {};
-    if (evmAddress) {
-      evmWallet = {
-        [evmAddress!]: {
-          name: eWallet.name,
-          description: eWallet.name,
+    let ewallet = {};
+    if (evmWallet.address) {
+      ewallet = {
+        [evmWallet.address!]: {
+          name: evmWallet.name,
+          description: evmWallet.name,
           thumbnail: {
-            url: eWallet.icon,
+            url: evmWallet.icon,
           },
         },
       };
     }
     // Merge usewallet lists
-    const walletList = { ...newWallet, ...childAccounts, ...evmWallet };
+    const walletList = { ...newWallet, ...childAccounts, ...ewallet };
     setChildWallets(walletList);
     const firstWalletAddress = Object.keys(walletList)[0];
     if (firstWalletAddress) {
       setSelectedChildAccount(walletList[firstWalletAddress]);
     }
-  }, [usewallet, mainAddress, childAccounts, currentWallet]);
+  }, [mainAddress, childAccounts, evmWallet, parentWallet]);
 
   const getUserContact = useCallback(async () => {
     if (props.data.userContact) {
@@ -452,4 +447,4 @@ const MoveNftConfirmation = (props: SendNFTConfirmationProps) => {
   );
 };
 
-export default MoveNftConfirmation;
+export default MoveFromChild;

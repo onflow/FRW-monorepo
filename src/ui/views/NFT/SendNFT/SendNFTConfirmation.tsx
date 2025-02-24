@@ -32,7 +32,7 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
   console.log('SendNFTConfirmation');
   const wallet = useWallet();
   const history = useHistory();
-  const { childAccounts } = useProfiles();
+  const { childAccounts, currentWallet } = useProfiles();
   const [sending, setSending] = useState(false);
   const [failed, setFailed] = useState(false);
   const [, setErrorMessage] = useState<string | null>(null);
@@ -111,8 +111,12 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
     const { address } = props.data.contact;
     const isEvm = activeChild === 'evm';
     const isEvmAddress = address.length > 20;
-    if (!isEvm && isEvmAddress && !isChild) {
-      await flowToEvm();
+    if (!isEvm && isEvmAddress) {
+      if (isChild) {
+        await sendChildNftToEvm();
+      } else {
+        await flowToEvm();
+      }
     } else if (isChild || props.data.linked) {
       sendChildNft();
     } else {
@@ -198,6 +202,40 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
     } finally {
       setSending(false);
     }
+  };
+
+  const sendChildNftToEvm = async () => {
+    const contractList = await wallet.openapi.getAllNftV2();
+    const filteredCollection = contractList.find(
+      (collection) => collection.name === props.data.nft.collectionName
+    );
+    const flowIdentifier = props.data.contract.flowIdentifier || props.data.nft.flowIdentifier;
+    setSending(true);
+    wallet
+      .bridgeChildNFTToEvmAddress(
+        currentWallet.address,
+        props.data.contact.address,
+        flowIdentifier,
+        props.data.nft.id,
+        filteredCollection
+      )
+      .then(async (txId) => {
+        wallet.listenTransaction(
+          txId,
+          true,
+          `Move complete`,
+          `You have moved 1 ${props.data.nft.collectionContractName} to your evm address. \nClick to view this transaction.`
+        );
+        props.handleCloseIconClicked();
+        await wallet.setDashIndex(0);
+        setSending(false);
+        history.push(`/dashboard?activity=1&txId=${txId}`);
+      })
+      .catch((err) => {
+        console.error('send flow NFT to evm encounter error: ', err);
+        setSending(false);
+        setFailed(true);
+      });
   };
 
   const flowToEvm = async () => {

@@ -102,7 +102,7 @@ const GridView = ({
     if (accessible) {
       accessible.forEach((item) => {
         const parts = item.id.split('.');
-        if (parts[2] === data.collectionContractName && item.idList.includes(data.id)) {
+        if (parts[2] === data.contractName && item.idList.includes(data.id)) {
           setAccessible(true);
         } else {
           setAccessible(false);

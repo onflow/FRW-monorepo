@@ -9,15 +9,15 @@ import {
   CardMedia,
   Grid,
   Skeleton,
-  ButtonGroup,
   Button,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { useEffect, useState, useCallback } from 'react';
-import { useHistory } from 'react-router-dom';
 
 import { type NFTModel } from '@/shared/types/network-types';
+import alertMark from '@/ui/FRWAssets/svg/alert.svg';
 import { LLHeader } from '@/ui/FRWComponent';
+import WarningSnackbar from '@/ui/FRWComponent/WarningSnackbar';
 import { useWallet } from 'ui/utils';
 
 import CollectionCard from './AddNFTCard';
@@ -59,28 +59,16 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export interface CollectionItem {
-  name?: string;
-  description?: string;
-  official_website?: string;
-  logo?: string;
-  address?: {
-    mainnet?: string;
-    testnet?: string;
-    crescendo?: string;
-  };
-  contract_name?: string;
-  banner?: string;
-  marketplace?: string;
+export interface CollectionItem extends NFTModel {
+  contractName?: string;
   hidden?: boolean;
   added?: boolean;
 }
 
 const AddList = () => {
   const classes = useStyles();
-  const history = useHistory();
   const usewallet = useWallet();
-  const [collections, setCollections] = useState<Array<any>>([]);
+  const [collections, setCollections] = useState<Array<CollectionItem>>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [statusLoading, setStatusLoading] = useState<boolean>(true);
   const [alertOpen, setAlertOpen] = useState<boolean>(false);
@@ -97,21 +85,30 @@ const AddList = () => {
   });
 
   const fetchList = useCallback(
-    async (data) => {
+    async (data: NFTModel[]) => {
       setStatusLoading(true);
       try {
         const enabledList = await usewallet.openapi.getEnabledNFTList();
-        if (enabledList.length > 0) {
-          data.map((item) => {
-            item.added =
-              enabledList.filter(
-                (enabled) =>
-                  enabled.contract_name === item.contractName && enabled.address === item.address
-              ).length > 0;
-          });
-        }
 
-        setCollections(data);
+        if (enabledList.length > 0) {
+          setCollections(
+            data.map((item) => {
+              return {
+                ...item,
+                added:
+                  enabledList.filter(
+                    (enabled) =>
+                      enabled.contract_name === item.contract_name &&
+                      enabled.address === item.address
+                  ).length > 0,
+              };
+            })
+          );
+        } else {
+          setCollections(data);
+        }
+      } catch (error) {
+        console.error('Error fetching enabled NFT list:', error);
       } finally {
         setStatusLoading(false);
       }
@@ -122,8 +119,7 @@ const AddList = () => {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const nftList = await usewallet.openapi.getAllNft();
-      console.log('nftList', nftList);
+      const nftList = await usewallet.openapi.getAllNftV2();
       setCollections(nftList);
       return nftList;
     } finally {
@@ -316,6 +312,12 @@ const AddList = () => {
         handleAddBtnClicked={() => {
           setConfirmationOpen(false);
         }}
+      />
+      <WarningSnackbar
+        open={alertOpen}
+        onClose={() => setAlertOpen(false)}
+        alertIcon={alertMark}
+        message={chrome.i18n.getMessage('Could_not_enable_this_collection')}
       />
     </div>
   );

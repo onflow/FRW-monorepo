@@ -106,6 +106,20 @@ export enum PeriodFrequency {
   oneWeek = 604800,
 }
 
+/**
+ * 0: External - an external address
+ * 1: Address Book - a contact in the address book
+ * 2: Domain - from a domain name
+ * 4: User - a flow wallet user
+ */
+
+export const ContactType = {
+  External: 0,
+  AddressBook: 1,
+  Domain: 2,
+  User: 4,
+} as const;
+
 export interface Contact {
   id: number;
   address: string;
@@ -113,8 +127,8 @@ export interface Contact {
   domain?: Domain;
   contact_name: string;
   username?: string;
-  type?: number;
-  contact_type?: number;
+  contact_type?: (typeof ContactType)[keyof typeof ContactType];
+  group?: string;
 }
 
 export enum FlowDomain {
@@ -127,17 +141,6 @@ export enum FlowDomain {
 export interface NFTData {
   nfts: any[];
   nftCount: number;
-}
-
-export interface NFTCollectionData {
-  name: string;
-  nfts: any[];
-  nftCount: number;
-}
-export interface NFTCollectionList {
-  collection: any;
-  count: number;
-  ids: number[];
 }
 
 export interface Domain {

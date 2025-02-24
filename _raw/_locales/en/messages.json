@@ -1365,5 +1365,8 @@
   },
   "NFT_Not_onboarded": {
     "message": "This NFT Collection has not yet been onboarded to Cadence. Use Flow Port to move and onboard NFTs from this NFT collection"
+  },
+  "Could_not_enable_this_collection": {
+    "message": "Could not enable this collection"
   }
 }
