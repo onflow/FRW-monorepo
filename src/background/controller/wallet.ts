@@ -3437,36 +3437,6 @@ export class WalletController extends BaseController {
     transactionService.clearPending(network);
   };
 
-  // getNFTListCache = async (): Promise<NFTData> => {
-  //   const network = await this.getNetwork();
-  //   return await nftService.getNft(network);
-  // };
-
-  // refreshNft = async (address: string, offset = 0): Promise<NFTData> => {
-  //   // change the address to real address after testing complete
-  //   // const address = await this.getCurrentAddress();
-  //   const limit = 24;
-  //   const network = await this.getNetwork();
-  //   const data = await openapiService.nftCatalogList(address!, limit, offset, network);
-  //   const nfts = data.nfts;
-  //   if (!nfts) {
-  //     return {
-  //       nfts: [],
-  //       nftCount: data.nftCount,
-  //     };
-  //   }
-  //   nfts.map((nft) => {
-  //     nft.unique_id = nft.collectionName + '_' + nft.id;
-  //   });
-  //   function getUniqueListBy(arr, key) {
-  //     return [...new Map(arr.map((item) => [item[key], item])).values()];
-  //   }
-  //   const unique_nfts = getUniqueListBy(nfts, 'unique_id');
-  //   const result = { nfts: unique_nfts, nftCount: data.nftCount };
-  //   nftService.setNft(result, network);
-  //   return result;
-  // };
-
   clearNFT = () => {
     nftService.clear();
   };
