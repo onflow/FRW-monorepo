@@ -232,8 +232,7 @@ const CollectionDetail = (props) => {
     const offset = pageIndex * 24;
     try {
       const res = await getCollection(address, collection_name, offset);
-
-      setInfo(res.info);
+      setInfo(res.collection);
       setTotal(res.nftCount);
 
       if (res.nfts) {
