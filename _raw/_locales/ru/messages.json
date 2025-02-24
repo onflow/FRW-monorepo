@@ -1327,6 +1327,9 @@
   "enable_the_path_to_evm_on_flow": {
     "message": "Включить путь к EVM на Flow"
   },
+  "What_type_of_assets_would_you_like_to_move": {
+    "message": "Какой тип активов вы хотите переместить?"
+  },
   "Would_you_like_to_move": {
     "message": "Хотите переместить ваши активы в"
   },

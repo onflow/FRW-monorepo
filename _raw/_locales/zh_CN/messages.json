@@ -1327,6 +1327,9 @@
   "enable_the_path_to_evm_on_flow": {
     "message": "启用路径到Flow上的EVM"
   },
+  "What_type_of_assets_would_you_like_to_move": {
+    "message": "您想要移动什么类型的资产？"
+  },
   "Would_you_like_to_move": {
     "message": "您是否想要将您的资产转移到"
   },

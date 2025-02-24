@@ -1327,6 +1327,9 @@
   "enable_the_path_to_evm_on_flow": {
     "message": "Flow上のEVMへのパスを有効にする"
   },
+  "What_type_of_assets_would_you_like_to_move": {
+    "message": "移動したい資産の種類は何ですか？"
+  },
   "Would_you_like_to_move": {
     "message": "資産を移動しますか"
   },
