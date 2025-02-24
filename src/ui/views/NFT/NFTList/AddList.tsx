@@ -15,7 +15,9 @@ import { makeStyles } from '@mui/styles';
 import React, { useEffect, useState, useCallback } from 'react';
 
 import { type NFTModel } from '@/shared/types/network-types';
+import alertMark from '@/ui/FRWAssets/svg/alert.svg';
 import { LLHeader } from '@/ui/FRWComponent';
+import WarningSnackbar from '@/ui/FRWComponent/WarningSnackbar';
 import { useWallet } from 'ui/utils';
 
 import CollectionCard from './AddNFTCard';
@@ -84,17 +86,13 @@ const AddList = () => {
 
   const fetchList = useCallback(
     async (data: NFTModel[]) => {
-      console.log('fetchList', data);
-
       setStatusLoading(true);
       try {
         const enabledList = await usewallet.openapi.getEnabledNFTList();
-        console.log('enabledList', enabledList);
 
         if (enabledList.length > 0) {
           setCollections(
             data.map((item) => {
-              console.log(item);
               return {
                 ...item,
                 added:
@@ -314,6 +312,12 @@ const AddList = () => {
         handleAddBtnClicked={() => {
           setConfirmationOpen(false);
         }}
+      />
+      <WarningSnackbar
+        open={alertOpen}
+        onClose={() => setAlertOpen(false)}
+        alertIcon={alertMark}
+        message={chrome.i18n.getMessage('Could_not_enable_this_collection')}
       />
     </div>
   );
