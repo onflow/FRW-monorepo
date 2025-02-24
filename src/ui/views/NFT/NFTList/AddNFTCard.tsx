@@ -23,11 +23,10 @@ const CollectionCard = ({
   onClick,
 }: {
   item: CollectionItem;
-  setAlertOpen: any;
+  setAlertOpen: (open: boolean) => void;
   isLoading: boolean;
-  onClick: any;
+  onClick: (item: CollectionItem) => void;
 }) => {
-  console.log(item, 'item');
   const { name, description, official_website: officialWebsite, logo, added } = item || {};
   const getDescriptionWordWrapped = (desc) => {
     if (desc.length < 60) return desc;
@@ -62,17 +61,22 @@ const CollectionCard = ({
           },
           overflow: 'hidden',
         }}
+        onClick={() => officialWebsite && window.open(officialWebsite, '_blank')}
       >
         {logo ? (
-          <img
-            width="48px"
-            height="48px"
-            style={{
-              marginLeft: '4px',
-              marginRight: '4px',
+          <CardMedia
+            component="img"
+            sx={{
+              width: '48px',
+              height: '48px',
               borderRadius: '12px',
+              backgroundColor: 'rgba(255, 255, 255, 0.08)',
             }}
-            src={logo}
+            image={logo}
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = `https://www.google.com/s2/favicons?sz=256&domain_url=${officialWebsite}`;
+            }}
           />
         ) : (
           <Box
@@ -121,7 +125,6 @@ const CollectionCard = ({
                   textOverflow: 'ellipsis',
                   overflow: 'hidden',
                 }}
-                onClick={() => officialWebsite && window.open(officialWebsite, '_blank')}
               >
                 {name}
               </Typography>
@@ -148,42 +151,43 @@ const CollectionCard = ({
               </Box>
             )}
           </Box>
-
-          <IconButton
-            onClick={() => {
-              if (!added && !isLoading) onClick(item);
-            }}
-          >
-            <Box
-              sx={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                background: added ? '#FFFFFF' : 'black',
-                padding: '2px',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              {isLoading ? (
-                <CircularProgress color="primary" size={24} />
-              ) : added ? (
-                <DoneIcon sx={{ color: 'black', fontSize: '20px' }} />
-              ) : (
-                <AddIcon
-                  sx={{ fontSize: '20px', color: 'white' }}
-                  onClick={() => {
-                    if (!added && !isLoading) {
-                      setAlertOpen(true);
-                    }
-                  }}
-                />
-              )}
-            </Box>
-          </IconButton>
         </Box>
       </CardActionArea>
+
+      <IconButton
+        onClick={(event) => {
+          event.stopPropagation();
+          if (!added && !isLoading) onClick(item);
+        }}
+      >
+        <Box
+          sx={{
+            width: '32px',
+            height: '32px',
+            borderRadius: '50%',
+            background: added ? '#FFFFFF' : 'black',
+            padding: '2px',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          {isLoading ? (
+            <CircularProgress color="primary" size={24} />
+          ) : added ? (
+            <DoneIcon sx={{ color: 'black', fontSize: '20px' }} />
+          ) : (
+            <AddIcon
+              sx={{ fontSize: '20px', color: 'white' }}
+              onClick={() => {
+                if (!added && !isLoading) {
+                  setAlertOpen(true);
+                }
+              }}
+            />
+          )}
+        </Box>
+      </IconButton>
     </Card>
   );
 };

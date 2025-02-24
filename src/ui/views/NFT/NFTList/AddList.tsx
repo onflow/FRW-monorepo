@@ -9,12 +9,10 @@ import {
   CardMedia,
   Grid,
   Skeleton,
-  ButtonGroup,
   Button,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { useEffect, useState, useCallback } from 'react';
-import { useHistory } from 'react-router-dom';
 
 import { type NFTModel } from '@/shared/types/network-types';
 import { LLHeader } from '@/ui/FRWComponent';
@@ -59,28 +57,16 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export interface CollectionItem {
-  name?: string;
-  description?: string;
-  official_website?: string;
-  logo?: string;
-  address?: {
-    mainnet?: string;
-    testnet?: string;
-    crescendo?: string;
-  };
-  contract_name?: string;
-  banner?: string;
-  marketplace?: string;
+export interface CollectionItem extends NFTModel {
+  contractName?: string;
   hidden?: boolean;
   added?: boolean;
 }
 
 const AddList = () => {
   const classes = useStyles();
-  const history = useHistory();
   const usewallet = useWallet();
-  const [collections, setCollections] = useState<Array<any>>([]);
+  const [collections, setCollections] = useState<Array<CollectionItem>>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [statusLoading, setStatusLoading] = useState<boolean>(true);
   const [alertOpen, setAlertOpen] = useState<boolean>(false);
@@ -97,21 +83,34 @@ const AddList = () => {
   });
 
   const fetchList = useCallback(
-    async (data) => {
+    async (data: NFTModel[]) => {
+      console.log('fetchList', data);
+
       setStatusLoading(true);
       try {
         const enabledList = await usewallet.openapi.getEnabledNFTList();
-        if (enabledList.length > 0) {
-          data.map((item) => {
-            item.added =
-              enabledList.filter(
-                (enabled) =>
-                  enabled.contract_name === item.contractName && enabled.address === item.address
-              ).length > 0;
-          });
-        }
+        console.log('enabledList', enabledList);
 
-        setCollections(data);
+        if (enabledList.length > 0) {
+          setCollections(
+            data.map((item) => {
+              console.log(item);
+              return {
+                ...item,
+                added:
+                  enabledList.filter(
+                    (enabled) =>
+                      enabled.contract_name === item.contract_name &&
+                      enabled.address === item.address
+                  ).length > 0,
+              };
+            })
+          );
+        } else {
+          setCollections(data);
+        }
+      } catch (error) {
+        console.error('Error fetching enabled NFT list:', error);
       } finally {
         setStatusLoading(false);
       }
