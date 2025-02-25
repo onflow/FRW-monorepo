@@ -170,7 +170,7 @@ const SendToAddress = () => {
       }
 
       if (recent.length < 1) {
-        setTabValue(1);
+        setTabValue(2);
       }
 
       const sortedContacts = response.sort((a, b) =>
