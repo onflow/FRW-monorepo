@@ -1,11 +1,14 @@
 import { storage } from '@/background/webapi';
+import { type NFTModelV2, type NFTModel_depreciated } from '@/shared/types/network-types';
 
 import { userWalletService } from '../service';
 import openapi from '../service/openapi';
 
 import defaultConfig from './defaultConfig.json';
-import mainnetNftList from './defaultNftList.mainnet.json';
-import testnetNftList from './defaultNftList.testnet.json';
+import mainnetNftList_depreciated from './defaultNftList.mainnet.json';
+import testnetNftList_depreciated from './defaultNftList.testnet.json';
+import mainnetNftListV2 from './defaultNftListV2.mainnet.json';
+import testnetNftListV2 from './defaultNftListV2.testnet.json';
 import defaultTokenList from './defaultTokenList.json';
 
 interface CacheState {
@@ -50,14 +53,14 @@ class fetchRemoteConfig {
     }
   }
 
-  async nftCollection() {
+  async nftCollection(): Promise<NFTModelV2[]> {
     const network = await userWalletService.getNetwork();
     const expire = this.nftState[network].expireTime;
     const now = new Date();
     const exp = 1000 * 60 * 60 * 1 + now.getTime();
-    let defaultNftList = testnetNftList;
+    let defaultNftList: NFTModelV2[] = testnetNftListV2.tokens;
     if (network === 'mainnet') {
-      defaultNftList = mainnetNftList;
+      defaultNftList = mainnetNftListV2.tokens;
     }
     if (expire < now.getTime()) {
       try {
@@ -76,15 +79,15 @@ class fetchRemoteConfig {
     }
   }
 
-  async nftv2Collection() {
+  async nftv2Collection(): Promise<NFTModel_depreciated[]> {
     const network = await userWalletService.getNetwork();
     const address = await userWalletService.getCurrentAddress();
     const expire = this.nftState[network].expireTime;
     const now = new Date();
     const exp = 1000 * 60 * 60 * 1 + now.getTime();
-    let defaultNftList = testnetNftList;
+    let defaultNftList = testnetNftList_depreciated;
     if (network === 'mainnet') {
-      defaultNftList = mainnetNftList;
+      defaultNftList = mainnetNftList_depreciated;
     }
     if (expire < now.getTime()) {
       try {
