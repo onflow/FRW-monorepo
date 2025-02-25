@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import { useTheme, StyledEngineProvider } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import SwipeableViews from 'react-swipeable-views';
 
@@ -121,6 +121,13 @@ const SendAddress = () => {
   const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
   const { id: token } = useParams<{ id: string }>();
 
+  useEffect(() => {
+    // Update filtered contacts when the search key changes
+    const newFilteredContacts =
+      searchKey !== '' ? filterContacts(searchKey, addressBookContacts) : addressBookContacts;
+    setFilteredContacts(newFilteredContacts);
+  }, [searchKey, addressBookContacts]);
+
   const searchAll = useCallback(async () => {
     try {
       setSearching(true);
@@ -160,7 +167,6 @@ const SendAddress = () => {
       const address = trimmedSearchTerm as WalletAddress;
       handleTransactionRedirect(address);
     }
-    setFilteredContacts(filterContacts(keyword, addressBookContacts));
   };
 
   const handleTransactionRedirect = useCallback(
