@@ -38,6 +38,7 @@ const useStyles = makeStyles(() => ({
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
+    paddingBottom: '8px',
   },
   listItem: {
     height: '66px',
