@@ -46,6 +46,7 @@ const CollectionCard = ({
         height: '84px',
         boxShadow: 'none',
         marginTop: '8px',
+        alignItems: 'center',
         position: 'relative',
         border: '1px solid rgba(255, 255, 255, 0.12)',
       }}
@@ -69,6 +70,8 @@ const CollectionCard = ({
             sx={{
               width: '48px',
               height: '48px',
+              marginLeft: '4px',
+              marginRight: '4px',
               borderRadius: '12px',
               backgroundColor: 'rgba(255, 255, 255, 0.08)',
             }}
@@ -155,6 +158,10 @@ const CollectionCard = ({
       </CardActionArea>
 
       <IconButton
+        sx={{
+          maxHeight: 'fit-content',
+          maxWidth: 'fit-content',
+        }}
         onClick={(event) => {
           event.stopPropagation();
           if (!added && !isLoading) onClick(item);
@@ -177,14 +184,7 @@ const CollectionCard = ({
           ) : added ? (
             <DoneIcon sx={{ color: 'black', fontSize: '20px' }} />
           ) : (
-            <AddIcon
-              sx={{ fontSize: '20px', color: 'white' }}
-              onClick={() => {
-                if (!added && !isLoading) {
-                  setAlertOpen(true);
-                }
-              }}
-            />
+            <AddIcon sx={{ fontSize: '20px', color: 'white' }} />
           )}
         </Box>
       </IconButton>
