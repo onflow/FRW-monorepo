@@ -16,7 +16,7 @@ import erc721 from 'background/utils/erc721.abi.json';
 import { EVM_ENDPOINT } from 'consts';
 import IconNext from 'ui/FRWAssets/svg/next.svg';
 import { LLSpinner, LLProfile, FRWProfile, FRWTargetProfile } from 'ui/FRWComponent';
-import { useWallet, isEmoji } from 'ui/utils';
+import { useWallet, isEmoji, returnFilteredCollections } from 'ui/utils';
 
 import IconFlow from '../../../../components/iconfont/IconFlow';
 
@@ -206,9 +206,8 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
 
   const sendChildNftToEvm = async () => {
     const contractList = await wallet.openapi.getAllNftV2();
-    const filteredCollection = contractList.find(
-      (collection) => collection.name === props.data.nft.collectionName
-    );
+
+    const filteredCollection = returnFilteredCollections(contractList, props.data.nft);
     const flowIdentifier = props.data.contract.flowIdentifier || props.data.nft.flowIdentifier;
     setSending(true);
     wallet
