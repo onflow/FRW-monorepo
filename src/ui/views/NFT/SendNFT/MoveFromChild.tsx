@@ -86,7 +86,9 @@ const MoveFromChild = (props: SendNFTConfirmationProps) => {
   };
 
   const returnFilteredCollections = (contractList, NFT) => {
-    return contractList.filter((collection) => collection.name === NFT.collectionName);
+    return contractList.find(
+      (collection) => collection.contractName === NFT.collectionContractName
+    );
   };
 
   const moveNFTToFlow = async () => {
@@ -94,14 +96,8 @@ const MoveFromChild = (props: SendNFTConfirmationProps) => {
     // setSending(true);
     const contractList = await usewallet.openapi.getAllNft();
     const filteredCollections = returnFilteredCollections(contractList, props.data.nft);
-
     usewallet
-      .moveNFTfromChild(
-        props.data.userContact.address,
-        '',
-        props.data.nft.id,
-        filteredCollections[0]
-      )
+      .moveNFTfromChild(props.data.userContact.address, '', props.data.nft.id, filteredCollections)
       .then(async (txId) => {
         usewallet.listenTransaction(
           txId,
