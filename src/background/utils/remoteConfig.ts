@@ -65,32 +65,7 @@ class fetchRemoteConfig {
   async nftCollection(): Promise<NFTModelV2[]> {
     const network = await userWalletService.getNetwork();
     // TODO: currently the nft is cached in storage, so we don't need a cache state here
-    // const expire = this.nftState[network].expireTime;
-    // const now = new Date();
-    // const exp = 1000 * 60 * 60 * 1 + now.getTime();
-    // let defaultNftList: NFTModelV2[] = testnetNftList;
-    // if (network === 'mainnet') {
-    //   defaultNftList = mainnetNftList;
-    // }
-    // if (expire < now.getTime()) {
-    //   try {
-    //     const result = await openapi.getNFTList(network);
 
-    //     if (network === 'mainnet') {
-    //       this.nftState.mainnet.result = result;
-    //       this.nftState.mainnet.expireTime = exp;
-    //     } else {
-    //       this.nftState.testnet.result = result;
-    //       this.nftState.testnet.expireTime = exp;
-    //     }
-    //     return result;
-    //   } catch (err) {
-    //     console.error(err);
-    //     return defaultNftList;
-    //   }
-    // } else {
-    //   return this.nftState[network].result;
-    // }
     return await openapi.getNFTList(network);
   }
 
