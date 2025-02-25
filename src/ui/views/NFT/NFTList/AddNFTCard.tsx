@@ -27,7 +27,13 @@ const CollectionCard = ({
   isLoading: boolean;
   onClick: (item: CollectionItem) => void;
 }) => {
-  const { name, description, official_website: officialWebsite, logo, added } = item || {};
+  const {
+    name,
+    description,
+    extensions: { website: officialWebsite },
+    logoURI: logo,
+    added,
+  } = item || {};
   const getDescriptionWordWrapped = (desc) => {
     if (desc.length < 60) return desc;
     const res = desc.split(' ').reduce((prev, curr) => {

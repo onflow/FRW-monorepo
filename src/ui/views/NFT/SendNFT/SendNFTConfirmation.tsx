@@ -205,7 +205,7 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
   };
 
   const sendChildNftToEvm = async () => {
-    const contractList = await wallet.openapi.getAllNftV2();
+    const contractList = await wallet.openapi.getAllNft();
     const filteredCollection = contractList.find(
       (collection) => collection.name === props.data.nft.collectionName
     );

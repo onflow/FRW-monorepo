@@ -22,7 +22,7 @@ export interface TokenModel {
   symbol: string;
   website: string | null;
 }
-export interface NFTModel {
+export interface NFTModel_depreciated {
   name: string;
   id: string;
   address: string;
@@ -32,9 +32,9 @@ export interface NFTModel {
   official_website: string | null;
   marketplace: string | null;
   description: string | null;
-  path: NFTPath;
+  path: NFTPath_depreciated;
 }
-export interface NFTPath {
+export interface NFTPath_depreciated {
   storage_path: string;
   public_path: string;
   public_collection_name: string;
@@ -47,7 +47,7 @@ export interface NFTModelV2 {
   address: string;
   contractName: string;
   path: NFTPathV2;
-  evmAddress: string;
+  evmAddress?: string;
   flowAddress: string;
   name: string;
   description: string | null;

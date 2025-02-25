@@ -68,7 +68,7 @@ import type {
   BlockchainResponse,
   Contact,
   NFTData,
-  NFTModel,
+  NFTModel_depreciated,
   NFTModelV2,
   WalletResponse,
 } from '../../shared/types/network-types';
@@ -2497,20 +2497,16 @@ export class WalletController extends BaseController {
     );
   };
 
-  enableNFTStorageLocal = async (token: NFTModel) => {
+  enableNFTStorageLocal = async (token: NFTModelV2) => {
     const script = await getScripts('collection', 'enableNFTStorage');
-    if (token['contractName']) {
-      token.contract_name = token['contractName'];
-      token.path.storage_path = token['path']['storage'];
-      token.path.public_path = token['path']['public'];
-    }
+
     return await userWalletService.sendTransaction(
       script
-        .replaceAll('<NFT>', token.contract_name)
+        .replaceAll('<NFT>', token.contractName)
         .replaceAll('<NFTAddress>', token.address)
-        .replaceAll('<CollectionStoragePath>', token.path.storage_path)
-        .replaceAll('<CollectionPublicType>', token.path.public_type)
-        .replaceAll('<CollectionPublicPath>', token.path.public_path),
+        .replaceAll('<CollectionStoragePath>', token.path.storage)
+        .replaceAll('<CollectionPublicType>', token.path.public)
+        .replaceAll('<CollectionPublicPath>', token.path.public),
       []
     );
   };
