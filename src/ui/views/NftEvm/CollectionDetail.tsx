@@ -259,6 +259,13 @@ const CollectionDetail = (props) => {
     return list.length < total;
   };
 
+  const refreshCollection = useCallback(async () => {
+    const res = await usewallet.refreshEvmNftCollectionList(address, collection_name);
+    setInfo(res.collection);
+    setTotal(res.nftCount);
+    setLists(res.nfts);
+  }, [address, collection_name, usewallet]);
+
   const loader = (
     <Box sx={{ display: 'flex', py: '8px', justifyContent: 'center' }}>
       <LLSpinner size={28} />
@@ -323,7 +330,7 @@ const CollectionDetail = (props) => {
                       aria-label="close"
                       color="primary"
                       size="small"
-                      // onClick={onCloseBtnClicked}
+                      onClick={refreshCollection}
                     >
                       <ReplayRoundedIcon fontSize="inherit" />
                     </IconButton>

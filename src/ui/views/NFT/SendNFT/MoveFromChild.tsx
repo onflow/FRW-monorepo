@@ -13,7 +13,7 @@ import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { MatchMediaType } from '@/ui/utils/url';
 import { useStorageCheck } from '@/ui/utils/useStorageCheck';
 import { LLSpinner, FRWChildProfile, FRWDropdownProfileCard } from 'ui/FRWComponent';
-import { useWallet } from 'ui/utils';
+import { useWallet, returnFilteredCollections } from 'ui/utils';
 
 import IconFlow from '../../../../components/iconfont/IconFlow';
 
@@ -83,12 +83,6 @@ const MoveFromChild = (props: SendNFTConfirmationProps) => {
     } else {
       moveNFTToFlow();
     }
-  };
-
-  const returnFilteredCollections = (contractList, NFT) => {
-    return contractList.find(
-      (collection) => collection.contractName === NFT.collectionContractName
-    );
   };
 
   const moveNFTToFlow = async () => {

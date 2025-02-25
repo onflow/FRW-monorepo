@@ -23,7 +23,7 @@ import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
 import { LLHeader } from '@/ui/FRWComponent';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { type MatchMedia } from '@/ui/utils/url';
-import { useWallet } from 'ui/utils';
+import { useWallet, returnFilteredCollections } from 'ui/utils';
 
 import IconAbout from '../../../../components/iconfont/IconAbout';
 import AccountsList from '../../../FRWComponent/AddressLists/AccountsList';
@@ -234,16 +234,10 @@ const SendToAddress = () => {
     console.log('NFT ', NFT);
     const filteredCollections = returnFilteredCollections(contractList, NFT);
     console.log('filteredCollections ', filteredCollections);
-    if (filteredCollections.length > 0) {
-      setContractInfo(filteredCollections[0]);
+    if (filteredCollections) {
+      setContractInfo(filteredCollections);
     }
   }, [usewallet, state.nft, state.media]);
-
-  const returnFilteredCollections = (contractList, NFT) => {
-    return contractList.filter(
-      (collection) => collection.contractName === NFT.collectionContractName
-    );
-  };
 
   useEffect(() => {
     fetchNFTInfo();
