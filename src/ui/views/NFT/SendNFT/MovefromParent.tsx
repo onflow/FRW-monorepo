@@ -82,7 +82,7 @@ const MovefromParent = (props: SendNFTConfirmationProps) => {
   const moveNFTToFlow = async () => {
     setSending(true);
     // setSending(true);
-    const contractList = await usewallet.openapi.getAllNft_depreciated();
+    const contractList = await usewallet.openapi.getAllNft();
     const filteredCollections = returnFilteredCollections(contractList, props.data.nft);
 
     if (isValidEthereumAddress(selectedAccount!['address'])) {

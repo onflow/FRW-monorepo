@@ -15,18 +15,26 @@ interface CacheState {
   result: any;
   expireTime: number;
 }
+type NFTNetworkCacheState = {
+  result: NFTModelV2[];
+  expireTime: number;
+};
+type NFTCacheState = {
+  mainnet: NFTNetworkCacheState;
+  testnet: NFTNetworkCacheState;
+};
 
 const BASE_FUNCTIONS_URL = process.env.FB_FUNCTIONS;
 
 class fetchRemoteConfig {
   coinState: CacheState = { result: {}, expireTime: 0 };
-  nftState = {
+  nftState: NFTCacheState = {
     mainnet: {
-      result: {},
+      result: [],
       expireTime: 0,
     },
     testnet: {
-      result: {},
+      result: [],
       expireTime: 0,
     },
   };
@@ -65,37 +73,14 @@ class fetchRemoteConfig {
     if (expire < now.getTime()) {
       try {
         const result = await openapi.getNFTList(network);
-        // fetch(`${baseURL}/fetchNFTList`);
-        // const result = await coins.json();
-        this.nftState[network].result = result;
-        this.nftState[network].expireTime = exp;
-        return result;
-      } catch (err) {
-        console.error(err);
-        return defaultNftList;
-      }
-    } else {
-      return this.nftState[network].result;
-    }
-  }
 
-  async nftv2Collection(): Promise<NFTModel_depreciated[]> {
-    const network = await userWalletService.getNetwork();
-    const address = await userWalletService.getCurrentAddress();
-    const expire = this.nftState[network].expireTime;
-    const now = new Date();
-    const exp = 1000 * 60 * 60 * 1 + now.getTime();
-    let defaultNftList = testnetNftList_depreciated;
-    if (network === 'mainnet') {
-      defaultNftList = mainnetNftList_depreciated;
-    }
-    if (expire < now.getTime()) {
-      try {
-        const result = await openapi.getNFTV2CollectionList(address, network);
-        // fetch(`${baseURL}/fetchNFTList`);
-        // const result = await coins.json();
-        this.nftState[network].result = result;
-        this.nftState[network].expireTime = exp;
+        if (network === 'mainnet') {
+          this.nftState.mainnet.result = result;
+          this.nftState.mainnet.expireTime = exp;
+        } else {
+          this.nftState.testnet.result = result;
+          this.nftState.testnet.expireTime = exp;
+        }
         return result;
       } catch (err) {
         console.error(err);

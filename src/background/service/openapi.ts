@@ -1170,12 +1170,6 @@ class OpenApiService {
     return list;
   };
 
-  getAllNft_depreciated = async (filterNetwork = true): Promise<NFTModel_depreciated[]> => {
-    const list = await remoteFetch.nftv2Collection();
-    // const network = await userWalletService.getNetwork();
-    return list;
-  };
-
   isWalletTokenStorageEnabled = async (tokenSymbol: string) => {
     // FIX ME: Get defaultTokenList from firebase remote config
     const address = await userWalletService.getCurrentAddress();
