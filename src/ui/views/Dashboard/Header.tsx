@@ -569,7 +569,7 @@ const Header = ({ loading = false }) => {
                     <Typography
                       variant="caption"
                       color="text.secondary"
-                      sx={{ textTransform: 'lowercase' }}
+                      sx={{ textTransform: 'none' }}
                     >
                       {formatAddress(props.address)}
                     </Typography>

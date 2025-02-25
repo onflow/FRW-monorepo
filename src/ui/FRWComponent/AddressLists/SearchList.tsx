@@ -2,13 +2,13 @@ import { List, ListSubheader, CardMedia, Typography, ButtonBase, Box } from '@mu
 import { groupBy, isEmpty } from 'lodash';
 import React, { useEffect, useState } from 'react';
 
+import { type Contact } from '@/shared/types/network-types';
 import emptyAddress from 'ui/assets/emptyAddress.svg';
 
-import { LLContactCard } from '../../../FRWComponent';
+import { LLContactCard } from '..';
 
 const SearchList = ({ searchContacts, isLoading, handleClick }) => {
-  const [grouped, setGrouped] = useState<any>([]);
-
+  const [grouped, setGrouped] = useState<Record<string, Contact[]>>({});
   useEffect(() => {
     const filterContacts = searchContacts.filter((element) => {
       return element.group !== undefined;
@@ -18,10 +18,11 @@ const SearchList = ({ searchContacts, isLoading, handleClick }) => {
     setGrouped(group);
   }, [searchContacts]);
 
+  const groups = Object.keys(grouped);
   return (
     <Box sx={{ height: '100%' }}>
-      {!isEmpty(grouped) ? (
-        Object.keys(grouped).map((key) => (
+      {groups.length > 0 ? (
+        groups.map((key) => (
           <List dense={false} sx={{ paddingTop: '0px', paddingBottom: '0px' }} key={key}>
             <ListSubheader
               sx={{

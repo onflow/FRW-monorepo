@@ -26,6 +26,7 @@ import {
 } from '@/background/utils/modules/publicPrivateKey';
 import eventBus from '@/eventBus';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
+import { ContactType } from '@/shared/types/network-types';
 import { type TrackingEvents } from '@/shared/types/tracking-types';
 import { type TransferItem, type TransactionState } from '@/shared/types/transaction-types';
 import { type LoggedInAccount } from '@/shared/types/wallet-types';
@@ -51,11 +52,12 @@ import {
   proxyService,
   newsService,
   mixpanelTrack,
+  evmNftService,
 } from 'background/service';
 import i18n from 'background/service/i18n';
 import { type DisplayedKeryring, KEYRING_CLASS } from 'background/service/keyring';
 import type { CacheState } from 'background/service/pageStateCache';
-import { getScripts } from 'background/utils';
+import { getScripts, replaceNftKeywords } from 'background/utils';
 import emoji from 'background/utils/emoji.json';
 import fetchConfig from 'background/utils/remoteConfig';
 import { notification, storage } from 'background/webapi';
@@ -64,8 +66,9 @@ import { INTERNAL_REQUEST_ORIGIN, EVENTS, KEYRING_TYPE, EVM_ENDPOINT } from 'con
 
 import type {
   BlockchainResponse,
+  Contact,
   NFTData,
-  NFTModel,
+  NFTModel_depreciated,
   NFTModelV2,
   WalletResponse,
 } from '../../shared/types/network-types';
@@ -1450,14 +1453,14 @@ export class WalletController extends BaseController {
     addressBookService.setRecent(data, network);
   };
 
-  getRecent = async () => {
+  getRecent = async (): Promise<Contact[]> => {
     const network = await this.getNetwork();
     return addressBookService.getRecent(network);
   };
 
-  getAddressBook = async () => {
+  getAddressBook = async (): Promise<Contact[]> => {
     const network = await this.getNetwork();
-    const addressBook = await addressBookService.getAddresBook(network);
+    const addressBook = await addressBookService.getAddressBook(network);
     if (!addressBook) {
       return await this.refreshAddressBook();
     } else if (!addressBook[0]) {
@@ -1466,19 +1469,43 @@ export class WalletController extends BaseController {
     return addressBook;
   };
 
-  refreshAddressBook = async () => {
+  refreshAddressBook = async (): Promise<Contact[]> => {
     const network = await this.getNetwork();
     const { data } = await openapiService.getAddressBook();
     const list = data.contacts;
     if (list && list.length > 0) {
       list.forEach((addressBook, index) => {
-        if (list[index] && list[index].avatar) {
+        if (addressBook && addressBook.avatar) {
           list[index].avatar = this.addTokenForFirebaseImage(addressBook.avatar);
         }
       });
     }
     addressBookService.setAddressBook(list, network);
     return list;
+  };
+
+  searchByUsername = async (searchKey: string) => {
+    const apiResponse = await openapiService.searchUser(searchKey);
+    console.log('searchByUsername -apiResponse', apiResponse);
+
+    return (
+      apiResponse?.data?.users?.map((user, index): Contact => {
+        const address = withPrefix(user.address) || '';
+        return {
+          group: 'Flow Wallet User',
+          address: address,
+          contact_name: user.nickname,
+          username: user.username,
+          avatar: user.avatar,
+          domain: {
+            domain_type: 999,
+            value: '',
+          },
+          contact_type: ContactType.User,
+          id: index,
+        };
+      }) || []
+    );
   };
 
   checkAddress = async (address: string) => {
@@ -2087,8 +2114,11 @@ export class WalletController extends BaseController {
       });
 
       if (result) {
-        await this.setEvmAddress(result);
-        return result;
+        // This is the COA address we get straight from the script
+        // This is where we encode the address in ERC-55 format
+        const checksummedAddress = ethUtil.toChecksumAddress(ensureEvmAddressPrefix(result));
+        await this.setEvmAddress(checksummedAddress);
+        return checksummedAddress;
       } else {
         return '';
       }
@@ -2467,20 +2497,16 @@ export class WalletController extends BaseController {
     );
   };
 
-  enableNFTStorageLocal = async (token: NFTModel) => {
+  enableNFTStorageLocal = async (token: NFTModelV2) => {
     const script = await getScripts('collection', 'enableNFTStorage');
-    if (token['contractName']) {
-      token.contract_name = token['contractName'];
-      token.path.storage_path = token['path']['storage'];
-      token.path.public_path = token['path']['public'];
-    }
+
     return await userWalletService.sendTransaction(
       script
-        .replaceAll('<NFT>', token.contract_name)
+        .replaceAll('<NFT>', token.contractName)
         .replaceAll('<NFTAddress>', token.address)
-        .replaceAll('<CollectionStoragePath>', token.path.storage_path)
-        .replaceAll('<CollectionPublicType>', token.path.public_type)
-        .replaceAll('<CollectionPublicPath>', token.path.public_path),
+        .replaceAll('<CollectionStoragePath>', token.path.storage)
+        .replaceAll('<CollectionPublicType>', token.path.public)
+        .replaceAll('<CollectionPublicPath>', token.path.public),
       []
     );
   };
@@ -2496,16 +2522,13 @@ export class WalletController extends BaseController {
       throw new Error(`Invaild token name - ${symbol}`);
     }
     const script = await getScripts('hybridCustody', 'transferChildFT');
+    const replacedScript = replaceNftKeywords(script, token);
 
-    const result = await userWalletService.sendTransaction(
-      script
-        .replaceAll('<Token>', token.contractName)
-        .replaceAll('<TokenBalancePath>', token.path.balance)
-        .replaceAll('<TokenReceiverPath>', token.path.receiver)
-        .replaceAll('<TokenStoragePath>', token.path.vault)
-        .replaceAll('<TokenAddress>', token.address),
-      [fcl.arg(childAddress, t.Address), fcl.arg(path, t.String), fcl.arg(amount, t.UFix64)]
-    );
+    const result = await userWalletService.sendTransaction(replacedScript, [
+      fcl.arg(childAddress, t.Address),
+      fcl.arg(path, t.String),
+      fcl.arg(amount, t.UFix64),
+    ]);
     mixpanelTrack.track('ft_transfer', {
       from_address: (await this.getCurrentAddress()) || '',
       to_address: childAddress,
@@ -2533,21 +2556,14 @@ export class WalletController extends BaseController {
     }
 
     const script = await getScripts('hybridCustody', 'sendChildFT');
+    const replacedScript = replaceNftKeywords(script, token);
 
-    const result = await userWalletService.sendTransaction(
-      script
-        .replaceAll('<Token>', token.contractName)
-        .replaceAll('<TokenBalancePath>', token.path.balance)
-        .replaceAll('<TokenReceiverPath>', token.path.receiver)
-        .replaceAll('<TokenStoragePath>', token.path.vault)
-        .replaceAll('<TokenAddress>', token.address),
-      [
-        fcl.arg(childAddress, t.Address),
-        fcl.arg(receiver, t.Address),
-        fcl.arg(path, t.String),
-        fcl.arg(amount, t.UFix64),
-      ]
-    );
+    const result = await userWalletService.sendTransaction(replacedScript, [
+      fcl.arg(childAddress, t.Address),
+      fcl.arg(receiver, t.Address),
+      fcl.arg(path, t.String),
+      fcl.arg(amount, t.UFix64),
+    ]);
     mixpanelTrack.track('ft_transfer', {
       from_address: childAddress,
       to_address: receiver,
@@ -2567,20 +2583,12 @@ export class WalletController extends BaseController {
     console.log('script is this ', nftContractAddress);
 
     const script = await getScripts('hybridCustody', 'transferChildNFT');
-
-    const txID = await userWalletService.sendTransaction(
-      script
-        .replaceAll('<NFT>', token.contract_name)
-        .replaceAll('<NFTAddress>', token.address)
-        .replaceAll('<CollectionStoragePath>', token.path.storage_path)
-        .replaceAll('<CollectionPublicType>', token.path.public_type)
-        .replaceAll('<CollectionPublicPath>', token.path.public_path),
-      [
-        fcl.arg(nftContractAddress, t.Address),
-        fcl.arg(nftContractName, t.String),
-        fcl.arg(ids, t.UInt64),
-      ]
-    );
+    const replacedScript = replaceNftKeywords(script, token);
+    const txID = await userWalletService.sendTransaction(replacedScript, [
+      fcl.arg(nftContractAddress, t.Address),
+      fcl.arg(nftContractName, t.String),
+      fcl.arg(ids, t.UInt64),
+    ]);
     mixpanelTrack.track('nft_transfer', {
       tx_id: txID,
       from_address: nftContractAddress,
@@ -2601,21 +2609,40 @@ export class WalletController extends BaseController {
     token
   ): Promise<string> => {
     const script = await getScripts('hybridCustody', 'sendChildNFT');
+    const replacedScript = replaceNftKeywords(script, token);
+    const txID = await userWalletService.sendTransaction(replacedScript, [
+      fcl.arg(linkedAddress, t.Address),
+      fcl.arg(receiverAddress, t.Address),
+      fcl.arg(nftContractName, t.String),
+      fcl.arg(ids, t.UInt64),
+    ]);
+    mixpanelTrack.track('nft_transfer', {
+      tx_id: txID,
+      from_address: linkedAddress,
+      to_address: receiverAddress,
+      nft_identifier: token.contractName,
+      from_type: 'flow',
+      to_type: 'flow',
+      isMove: false,
+    });
+    return txID;
+  };
 
-    const txID = await userWalletService.sendTransaction(
-      script
-        .replaceAll('<NFT>', token.contract_name)
-        .replaceAll('<NFTAddress>', token.address)
-        .replaceAll('<CollectionStoragePath>', token.path.storage_path)
-        .replaceAll('<CollectionPublicType>', token.path.public_type)
-        .replaceAll('<CollectionPublicPath>', token.path.public_path),
-      [
-        fcl.arg(linkedAddress, t.Address),
-        fcl.arg(receiverAddress, t.Address),
-        fcl.arg(nftContractName, t.String),
-        fcl.arg(ids, t.UInt64),
-      ]
-    );
+  bridgeChildNFTToEvmAddress = async (
+    linkedAddress: string,
+    receiverAddress: string,
+    nftContractName: string,
+    id: number,
+    token
+  ): Promise<string> => {
+    const script = await getScripts('hybridCustody', 'bridgeChildNFTToEvmAddress');
+    const replacedScript = replaceNftKeywords(script, token);
+    const txID = await userWalletService.sendTransaction(replacedScript, [
+      fcl.arg(nftContractName, t.String),
+      fcl.arg(linkedAddress, t.Address),
+      fcl.arg(id, t.UInt64),
+      fcl.arg(receiverAddress, t.String),
+    ]);
     mixpanelTrack.track('nft_transfer', {
       tx_id: txID,
       from_address: linkedAddress,
@@ -2635,15 +2662,13 @@ export class WalletController extends BaseController {
     token
   ): Promise<string> => {
     const script = await getScripts('hybridCustody', 'transferNFTToChild');
-    const txID = await userWalletService.sendTransaction(
-      script
-        .replaceAll('<NFT>', token.contract_name)
-        .replaceAll('<NFTAddress>', token.address)
-        .replaceAll('<CollectionStoragePath>', token.path.storage_path)
-        .replaceAll('<CollectionPublicType>', token.path.public_type)
-        .replaceAll('<CollectionPublicPath>', token.path.public_path),
-      [fcl.arg(linkedAddress, t.Address), fcl.arg(path, t.String), fcl.arg(ids, t.UInt64)]
-    );
+    const replacedScript = replaceNftKeywords(script, token);
+    const txID = await userWalletService.sendTransaction(replacedScript, [
+      fcl.arg(linkedAddress, t.Address),
+      fcl.arg(path, t.String),
+      fcl.arg(ids, t.UInt64),
+    ]);
+
     mixpanelTrack.track('nft_transfer', {
       tx_id: txID,
       from_address: linkedAddress,
@@ -2720,20 +2745,13 @@ export class WalletController extends BaseController {
     token
   ): Promise<string> => {
     const script = await getScripts('hybridCustody', 'batchTransferNFTToChild');
+    const replacedScript = replaceNftKeywords(script, token);
 
-    const txID = await userWalletService.sendTransaction(
-      script
-        .replaceAll('<NFT>', token.contract_name)
-        .replaceAll('<NFTAddress>', token.address)
-        .replaceAll('<CollectionStoragePath>', token.path.storage_path)
-        .replaceAll('<CollectionPublicType>', token.path.public_type)
-        .replaceAll('<CollectionPublicPath>', token.path.public_path),
-      [
-        fcl.arg(childAddr, t.Address),
-        fcl.arg(identifier, t.String),
-        fcl.arg(ids, t.Array(t.UInt64)),
-      ]
-    );
+    const txID = await userWalletService.sendTransaction(replacedScript, [
+      fcl.arg(childAddr, t.Address),
+      fcl.arg(identifier, t.String),
+      fcl.arg(ids, t.Array(t.UInt64)),
+    ]);
     mixpanelTrack.track('nft_transfer', {
       tx_id: txID,
       from_address: childAddr,
@@ -2753,19 +2771,13 @@ export class WalletController extends BaseController {
     token
   ): Promise<string> => {
     const script = await getScripts('hybridCustody', 'batchTransferChildNFT');
-    const txID = await userWalletService.sendTransaction(
-      script
-        .replaceAll('<NFT>', token.contract_name)
-        .replaceAll('<NFTAddress>', token.address)
-        .replaceAll('<CollectionStoragePath>', token.path.storage_path)
-        .replaceAll('<CollectionPublicType>', token.path.public_type)
-        .replaceAll('<CollectionPublicPath>', token.path.public_path),
-      [
-        fcl.arg(childAddr, t.Address),
-        fcl.arg(identifier, t.String),
-        fcl.arg(ids, t.Array(t.UInt64)),
-      ]
-    );
+    const replacedScript = replaceNftKeywords(script, token);
+
+    const txID = await userWalletService.sendTransaction(replacedScript, [
+      fcl.arg(childAddr, t.Address),
+      fcl.arg(identifier, t.String),
+      fcl.arg(ids, t.Array(t.UInt64)),
+    ]);
     mixpanelTrack.track('nft_transfer', {
       tx_id: txID,
       from_address: childAddr,
@@ -2786,21 +2798,14 @@ export class WalletController extends BaseController {
     token
   ): Promise<string> => {
     const script = await getScripts('hybridCustody', 'batchSendChildNFTToChild');
+    const replacedScript = replaceNftKeywords(script, token);
 
-    const txID = await userWalletService.sendTransaction(
-      script
-        .replaceAll('<NFT>', token.contract_name)
-        .replaceAll('<NFTAddress>', token.address)
-        .replaceAll('<CollectionStoragePath>', token.path.storage_path)
-        .replaceAll('<CollectionPublicType>', token.path.public_type)
-        .replaceAll('<CollectionPublicPath>', token.path.public_path),
-      [
-        fcl.arg(childAddr, t.Address),
-        fcl.arg(receiver, t.Address),
-        fcl.arg(identifier, t.String),
-        fcl.arg(ids, t.Array(t.UInt64)),
-      ]
-    );
+    const txID = await userWalletService.sendTransaction(replacedScript, [
+      fcl.arg(childAddr, t.Address),
+      fcl.arg(receiver, t.Address),
+      fcl.arg(identifier, t.String),
+      fcl.arg(ids, t.Array(t.UInt64)),
+    ]);
     mixpanelTrack.track('nft_transfer', {
       tx_id: txID,
       from_address: childAddr,
@@ -2820,20 +2825,12 @@ export class WalletController extends BaseController {
     token
   ): Promise<string> => {
     const script = await getScripts('hybridCustody', 'batchBridgeChildNFTToEvm');
-
-    const txID = await userWalletService.sendTransaction(
-      script
-        .replaceAll('<NFT>', token.contract_name)
-        .replaceAll('<NFTAddress>', token.address)
-        .replaceAll('<CollectionStoragePath>', token.path.storage_path)
-        .replaceAll('<CollectionPublicType>', token.path.public_type)
-        .replaceAll('<CollectionPublicPath>', token.path.public_path),
-      [
-        fcl.arg(identifier, t.String),
-        fcl.arg(childAddr, t.Address),
-        fcl.arg(ids, t.Array(t.UInt64)),
-      ]
-    );
+    const replacedScript = replaceNftKeywords(script, token);
+    const txID = await userWalletService.sendTransaction(replacedScript, [
+      fcl.arg(identifier, t.String),
+      fcl.arg(childAddr, t.Address),
+      fcl.arg(ids, t.Array(t.UInt64)),
+    ]);
     mixpanelTrack.track('nft_transfer', {
       tx_id: txID,
       from_address: childAddr,
@@ -3407,47 +3404,8 @@ export class WalletController extends BaseController {
     transactionService.clearPending(network);
   };
 
-  getNFTListCache = async (): Promise<NFTData> => {
-    const network = await this.getNetwork();
-    // const list =
-    // if (!list.length){
-    // const data = this.refreshNft(address);
-    // return data;
-    // }
-    return await nftService.getNft(network);
-  };
-
-  refreshNft = async (address: string, offset = 0): Promise<NFTData> => {
-    // change the address to real address after testing complete
-    // const address = await this.getCurrentAddress();
-    const limit = 24;
-    const network = await this.getNetwork();
-    const data = await openapiService.nftCatalogList(address!, limit, offset, network);
-    const nfts = data.nfts;
-    if (!nfts) {
-      return {
-        nfts: [],
-        nftCount: data.nftCount,
-      };
-    }
-    nfts.map((nft) => {
-      nft.unique_id = nft.collectionName + '_' + nft.id;
-    });
-    function getUniqueListBy(arr, key) {
-      return [...new Map(arr.map((item) => [item[key], item])).values()];
-    }
-    const unique_nfts = getUniqueListBy(nfts, 'unique_id');
-    const result = { nfts: unique_nfts, nftCount: data.nftCount };
-    nftService.setNft(result, network);
-    return result;
-  };
-
   clearNFT = () => {
     nftService.clear();
-  };
-
-  clearNFTList = async () => {
-    await nftService.clearNFTList();
   };
 
   clearNFTCollection = async () => {
@@ -3471,30 +3429,20 @@ export class WalletController extends BaseController {
     await storage.clear();
   };
 
-  getCollectionCache = async () => {
+  getSingleCollection = async (address: string, collectionId: string, offset = 0) => {
     const network = await this.getNetwork();
-    const list = await nftService.getCollectionList(network);
+    const list = await nftService.getSingleCollection(network, collectionId, offset);
     if (!list) {
-      return [];
-    }
-    const sortedList = list.sort((a, b) => b.count - a.count);
-    return sortedList;
-  };
-
-  getSingleCollectionCache = async (collectionId: string) => {
-    const network = await this.getNetwork();
-    const list = await nftService.getSingleCollection(collectionId, network);
-    if (!list) {
-      return [];
+      return this.refreshSingleCollection(address, collectionId, offset);
     }
     return list;
   };
 
-  getSingleCollection = async (address: string, contract: string, offset = 0) => {
+  refreshSingleCollection = async (address: string, collectionId: string, offset = 0) => {
     const network = await this.getNetwork();
     const data = await openapiService.nftCatalogCollectionList(
       address!,
-      contract,
+      collectionId,
       24,
       offset,
       network
@@ -3508,18 +3456,30 @@ export class WalletController extends BaseController {
     }
     const unique_nfts = getUniqueListBy(data.nfts, 'unique_id');
     data.nfts = unique_nfts;
+
+    nftService.setSingleCollection(data, collectionId, offset, network);
     return data;
   };
 
+  getCollectionCache = async (address: string) => {
+    const network = await this.getNetwork();
+    const list = await nftService.getCollectionList(network);
+    if (!list || list.length === 0) {
+      return await this.refreshCollection(address);
+    }
+    // Sort by count, maintaining the new collection structure
+    const sortedList = [...list].sort((a, b) => b.count - a.count);
+    return sortedList;
+  };
+
   refreshCollection = async (address: string) => {
-    // change the address to real address after testing complete
-    // const address = await this.getCurrentAddress();
     const network = await this.getNetwork();
     const data = await openapiService.nftCatalogCollections(address!, network);
-    if (!data) {
+    if (!data || !Array.isArray(data)) {
       return [];
     }
-    const sortedList = data.sort((a, b) => b.count - a.count);
+    // Sort by count, maintaining the new collection structure
+    const sortedList = [...data].sort((a, b) => b.count - a.count);
     nftService.setCollectionList(sortedList, network);
     return sortedList;
   };
@@ -3819,6 +3779,73 @@ export class WalletController extends BaseController {
     if (userId) {
       await storage.set('currentId', userId);
     }
+  };
+
+  refreshEvmNftIds = async (address: string) => {
+    if (!isValidEthereumAddress(address)) {
+      throw new Error('Invalid Ethereum address');
+    }
+    const network = await this.getNetwork();
+    const result = await openapiService.EvmNFTID(address);
+    await evmNftService.setNftIds(result, network);
+    return result;
+  };
+
+  getEvmNftId = async (address: string) => {
+    if (!isValidEthereumAddress(address)) {
+      throw new Error('Invalid Ethereum address');
+    }
+    const network = await this.getNetwork();
+    const cacheData = await evmNftService.getNftIds(network);
+    if (cacheData) {
+      return cacheData;
+    }
+    return this.refreshEvmNftIds(address);
+  };
+
+  refreshEvmNftCollectionList = async (
+    address: string,
+    collectionIdentifier: string,
+    limit = 24,
+    offset = 0
+  ) => {
+    if (!isValidEthereumAddress(address)) {
+      throw new Error('Invalid Ethereum address');
+    }
+    const network = await this.getNetwork();
+    const result = await openapiService.EvmNFTcollectionList(
+      address,
+      collectionIdentifier,
+      limit,
+      offset
+    );
+    await evmNftService.setSingleCollection(result, collectionIdentifier, offset, network);
+    return result;
+  };
+
+  getEvmNftCollectionList = async (
+    address: string,
+    collectionIdentifier: string,
+    limit = 24,
+    offset = 0
+  ) => {
+    if (!isValidEthereumAddress(address)) {
+      throw new Error('Invalid Ethereum address');
+    }
+    const network = await this.getNetwork();
+    const cacheData = await evmNftService.getSingleCollection(
+      network,
+      collectionIdentifier,
+      offset
+    );
+    if (cacheData) {
+      return cacheData;
+    }
+    return this.refreshEvmNftCollectionList(address, collectionIdentifier, limit, offset);
+  };
+
+  clearEvmNFTList = async () => {
+    await evmNftService.clearEvmNfts();
   };
 }
 
