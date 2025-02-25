@@ -1214,10 +1214,10 @@
     "message": "Reset Your Wallet "
   },
   "Confirm_to_reset_Wallet": {
-    "message": "Confirm to reset Wallet "
+    "message": "Reset EVERY WALLET?"
   },
   "This_action_will_remove": {
-    "message": "This action will remove all your local data including your private key. Please make sure you have your private keys backed up. "
+    "message": "This action will remove ALL YOUR LOCAL DATA including your private key for ALL WALLETS - not just the current one. Please make sure you have your private keys backed up."
   },
   "Reveal_Private_Key": {
     "message": "Reveal Private Key "

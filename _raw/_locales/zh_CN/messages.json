@@ -1214,10 +1214,10 @@
     "message": "重置您的钱包"
   },
   "Confirm_to_reset_Wallet": {
-    "message": "确认重置钱包"
+    "message": "重置每个钱包?"
   },
   "This_action_will_remove": {
-    "message": "此操作将删除所有包括私钥在内的本地数据。请确保您的私钥已备份。"
+    "message": "此操作将删除您的所有本地数据，包括您所有钱包的私钥 - 而不仅仅是当前的钱包。请确保您已备份私钥。"
   },
   "Reveal_Private_Key": {
     "message": "揭示私钥"
