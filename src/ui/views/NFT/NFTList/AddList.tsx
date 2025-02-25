@@ -14,7 +14,7 @@ import {
 import { makeStyles } from '@mui/styles';
 import React, { useEffect, useState, useCallback } from 'react';
 
-import { type NFTModel } from '@/shared/types/network-types';
+import { type NFTModelV2, type NFTModel_depreciated } from '@/shared/types/network-types';
 import alertMark from '@/ui/FRWAssets/svg/alert.svg';
 import { LLHeader } from '@/ui/FRWComponent';
 import WarningSnackbar from '@/ui/FRWComponent/WarningSnackbar';
@@ -59,8 +59,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export interface CollectionItem extends NFTModel {
-  contractName?: string;
+export interface CollectionItem extends NFTModelV2 {
   hidden?: boolean;
   added?: boolean;
 }
@@ -75,7 +74,7 @@ const AddList = () => {
   const [filter, setFilter] = useState('all');
 
   const [isConfirmationOpen, setConfirmationOpen] = useState(false);
-  const [selectedNFT, setSelectedNFT] = useState<NFTModel | null>(null);
+  const [selectedNFT, setSelectedNFT] = useState<NFTModelV2 | null>(null);
 
   const filteredCollections = collections.filter((ele) => {
     if (filter === 'all') return true;
@@ -85,7 +84,7 @@ const AddList = () => {
   });
 
   const fetchList = useCallback(
-    async (data: NFTModel[]) => {
+    async (data: NFTModelV2[]) => {
       setStatusLoading(true);
       try {
         const enabledList = await usewallet.openapi.getEnabledNFTList();
@@ -98,8 +97,7 @@ const AddList = () => {
                 added:
                   enabledList.filter(
                     (enabled) =>
-                      enabled.contract_name === item.contract_name &&
-                      enabled.address === item.address
+                      enabled.contractName === item.contractName && enabled.address === item.address
                   ).length > 0,
               };
             })
@@ -116,10 +114,10 @@ const AddList = () => {
     [usewallet, setStatusLoading, setCollections]
   );
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (): Promise<NFTModelV2[]> => {
     try {
       setLoading(true);
-      const nftList = await usewallet.openapi.getAllNftV2();
+      const nftList = await usewallet.openapi.getAllNft();
       setCollections(nftList);
       return nftList;
     } finally {
@@ -306,7 +304,7 @@ const AddList = () => {
 
       <AddNFTConfirmation
         isConfirmationOpen={isConfirmationOpen}
-        data={selectedNFT}
+        nftCollection={selectedNFT}
         handleCloseIconClicked={() => setConfirmationOpen(false)}
         handleCancelBtnClicked={() => setConfirmationOpen(false)}
         handleAddBtnClicked={() => {
