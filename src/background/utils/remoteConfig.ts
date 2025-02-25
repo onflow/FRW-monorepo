@@ -1,15 +1,16 @@
 import { storage } from '@/background/webapi';
-import { type NFTModelV2, type NFTModel_depreciated } from '@/shared/types/network-types';
+import { type NFTModelV2 } from '@/shared/types/network-types';
 
 import { userWalletService } from '../service';
 import openapi from '../service/openapi';
 
 import defaultConfig from './defaultConfig.json';
-import mainnetNftList_depreciated from './defaultNftList.mainnet.json';
-import testnetNftList_depreciated from './defaultNftList.testnet.json';
-import mainnetNftListV2 from './defaultNftListV2.mainnet.json';
-import testnetNftListV2 from './defaultNftListV2.testnet.json';
+import defaultNftListMainnet from './defaultNftList.mainnet.json';
+import defaultNftListTestnet from './defaultNftList.testnet.json';
 import defaultTokenList from './defaultTokenList.json';
+
+const { tokens: mainnetNftList } = defaultNftListMainnet;
+const { tokens: testnetNftList } = defaultNftListTestnet;
 
 interface CacheState {
   result: any;
@@ -66,9 +67,9 @@ class fetchRemoteConfig {
     const expire = this.nftState[network].expireTime;
     const now = new Date();
     const exp = 1000 * 60 * 60 * 1 + now.getTime();
-    let defaultNftList: NFTModelV2[] = testnetNftListV2.tokens;
+    let defaultNftList: NFTModelV2[] = testnetNftList;
     if (network === 'mainnet') {
-      defaultNftList = mainnetNftListV2.tokens;
+      defaultNftList = mainnetNftList;
     }
     if (expire < now.getTime()) {
       try {
