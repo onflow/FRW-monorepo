@@ -86,7 +86,9 @@ const MoveFromChild = (props: SendNFTConfirmationProps) => {
   };
 
   const returnFilteredCollections = (contractList, NFT) => {
-    return contractList.filter((collection) => collection.name === NFT.collectionName);
+    return contractList.find(
+      (collection) => collection.contractName === NFT.collectionContractName
+    );
   };
 
   const moveNFTToFlow = async () => {
@@ -94,14 +96,8 @@ const MoveFromChild = (props: SendNFTConfirmationProps) => {
     // setSending(true);
     const contractList = await usewallet.openapi.getAllNft();
     const filteredCollections = returnFilteredCollections(contractList, props.data.nft);
-
     usewallet
-      .moveNFTfromChild(
-        props.data.userContact.address,
-        '',
-        props.data.nft.id,
-        filteredCollections[0]
-      )
+      .moveNFTfromChild(props.data.userContact.address, '', props.data.nft.id, filteredCollections)
       .then(async (txId) => {
         usewallet.listenTransaction(
           txId,
@@ -128,18 +124,13 @@ const MoveFromChild = (props: SendNFTConfirmationProps) => {
     const filteredCollections = returnFilteredCollections(contractList, props.data.nft);
     const flowIdentifier = props.data.contract.flowIdentifier || props.data.nft.flowIdentifier;
     usewallet
-      .batchBridgeChildNFTToEvm(
-        address!,
-        flowIdentifier,
-        [props.data.nft.id],
-        filteredCollections[0]
-      )
+      .batchBridgeChildNFTToEvm(address!, flowIdentifier, [props.data.nft.id], filteredCollections)
       .then(async (txId) => {
         usewallet.listenTransaction(
           txId,
           true,
           `Move complete`,
-          `You have moved ${props.data.nft.id} ${filteredCollections[0].contract_name} to your evm address. \nClick to view this transaction.`
+          `You have moved 1 ${props.data.nft.collectionContractName} from linked account to your evm address. \nClick to view this transaction.`
         );
         props.handleCloseIconClicked();
         await usewallet.setDashIndex(0);

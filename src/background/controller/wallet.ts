@@ -2749,20 +2749,13 @@ export class WalletController extends BaseController {
     token
   ): Promise<string> => {
     const script = await getScripts('hybridCustody', 'batchTransferNFTToChild');
+    const replacedScript = replaceNftKeywords(script, token);
 
-    const txID = await userWalletService.sendTransaction(
-      script
-        .replaceAll('<NFT>', token.contract_name)
-        .replaceAll('<NFTAddress>', token.address)
-        .replaceAll('<CollectionStoragePath>', token.path.storage_path)
-        .replaceAll('<CollectionPublicType>', token.path.public_type)
-        .replaceAll('<CollectionPublicPath>', token.path.public_path),
-      [
-        fcl.arg(childAddr, t.Address),
-        fcl.arg(identifier, t.String),
-        fcl.arg(ids, t.Array(t.UInt64)),
-      ]
-    );
+    const txID = await userWalletService.sendTransaction(replacedScript, [
+      fcl.arg(childAddr, t.Address),
+      fcl.arg(identifier, t.String),
+      fcl.arg(ids, t.Array(t.UInt64)),
+    ]);
     mixpanelTrack.track('nft_transfer', {
       tx_id: txID,
       from_address: childAddr,
@@ -2782,19 +2775,13 @@ export class WalletController extends BaseController {
     token
   ): Promise<string> => {
     const script = await getScripts('hybridCustody', 'batchTransferChildNFT');
-    const txID = await userWalletService.sendTransaction(
-      script
-        .replaceAll('<NFT>', token.contract_name)
-        .replaceAll('<NFTAddress>', token.address)
-        .replaceAll('<CollectionStoragePath>', token.path.storage_path)
-        .replaceAll('<CollectionPublicType>', token.path.public_type)
-        .replaceAll('<CollectionPublicPath>', token.path.public_path),
-      [
-        fcl.arg(childAddr, t.Address),
-        fcl.arg(identifier, t.String),
-        fcl.arg(ids, t.Array(t.UInt64)),
-      ]
-    );
+    const replacedScript = replaceNftKeywords(script, token);
+
+    const txID = await userWalletService.sendTransaction(replacedScript, [
+      fcl.arg(childAddr, t.Address),
+      fcl.arg(identifier, t.String),
+      fcl.arg(ids, t.Array(t.UInt64)),
+    ]);
     mixpanelTrack.track('nft_transfer', {
       tx_id: txID,
       from_address: childAddr,
@@ -2815,21 +2802,14 @@ export class WalletController extends BaseController {
     token
   ): Promise<string> => {
     const script = await getScripts('hybridCustody', 'batchSendChildNFTToChild');
+    const replacedScript = replaceNftKeywords(script, token);
 
-    const txID = await userWalletService.sendTransaction(
-      script
-        .replaceAll('<NFT>', token.contract_name)
-        .replaceAll('<NFTAddress>', token.address)
-        .replaceAll('<CollectionStoragePath>', token.path.storage_path)
-        .replaceAll('<CollectionPublicType>', token.path.public_type)
-        .replaceAll('<CollectionPublicPath>', token.path.public_path),
-      [
-        fcl.arg(childAddr, t.Address),
-        fcl.arg(receiver, t.Address),
-        fcl.arg(identifier, t.String),
-        fcl.arg(ids, t.Array(t.UInt64)),
-      ]
-    );
+    const txID = await userWalletService.sendTransaction(replacedScript, [
+      fcl.arg(childAddr, t.Address),
+      fcl.arg(receiver, t.Address),
+      fcl.arg(identifier, t.String),
+      fcl.arg(ids, t.Array(t.UInt64)),
+    ]);
     mixpanelTrack.track('nft_transfer', {
       tx_id: txID,
       from_address: childAddr,
@@ -2849,20 +2829,12 @@ export class WalletController extends BaseController {
     token
   ): Promise<string> => {
     const script = await getScripts('hybridCustody', 'batchBridgeChildNFTToEvm');
-
-    const txID = await userWalletService.sendTransaction(
-      script
-        .replaceAll('<NFT>', token.contract_name)
-        .replaceAll('<NFTAddress>', token.address)
-        .replaceAll('<CollectionStoragePath>', token.path.storage_path)
-        .replaceAll('<CollectionPublicType>', token.path.public_type)
-        .replaceAll('<CollectionPublicPath>', token.path.public_path),
-      [
-        fcl.arg(identifier, t.String),
-        fcl.arg(childAddr, t.Address),
-        fcl.arg(ids, t.Array(t.UInt64)),
-      ]
-    );
+    const replacedScript = replaceNftKeywords(script, token);
+    const txID = await userWalletService.sendTransaction(replacedScript, [
+      fcl.arg(identifier, t.String),
+      fcl.arg(childAddr, t.Address),
+      fcl.arg(ids, t.Array(t.UInt64)),
+    ]);
     mixpanelTrack.track('nft_transfer', {
       tx_id: txID,
       from_address: childAddr,
