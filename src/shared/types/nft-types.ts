@@ -68,7 +68,7 @@ type Collection = {
   nftTypeId: string;
 };
 
-export type NFTCollectionList = {
+export type NFTCollections = {
   collection: Collection;
   ids: string[];
   count: number;
