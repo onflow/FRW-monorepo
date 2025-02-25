@@ -159,10 +159,11 @@ const SendToAddress = () => {
   const [media, setMedia] = useState<MatchMedia | null>(null);
 
   const fetchAddressBook = useCallback(async () => {
-    await usewallet.setDashIndex(0);
+    let recent: Contact[] = [];
+    let sortedContacts: Contact[] = [];
     try {
       const response = await usewallet.getAddressBook();
-      let recent = await usewallet.getRecent();
+      recent = await usewallet.getRecent();
       if (recent) {
         recent.forEach((c) => {
           if (response) {
@@ -177,22 +178,21 @@ const SendToAddress = () => {
         recent = [];
       }
 
-      if (recent.length < 1) {
-        setTabValue(1);
-      }
-      let sortedContacts: Contact[] = [];
       if (response) {
         sortedContacts = response.sort((a, b) =>
           a.contact_name.toLowerCase().localeCompare(b.contact_name.toLowerCase())
         );
       }
-
+    } catch (err) {
+      console.error('err: ', err);
+    } finally {
+      if (recent.length < 1) {
+        setTabValue(2);
+      }
       setRecentContacts(recent);
       setSortedContacts(sortedContacts);
       setFilteredContacts(sortedContacts);
       setIsLoading(false);
-    } catch (err) {
-      console.log('err: ', err);
     }
   }, [usewallet]);
 
