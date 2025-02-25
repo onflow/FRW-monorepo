@@ -130,7 +130,7 @@ const MoveFromChild = (props: SendNFTConfirmationProps) => {
           txId,
           true,
           `Move complete`,
-          `You have moved ${props.data.nft.id} ${filteredCollections[0].contract_name} to your evm address. \nClick to view this transaction.`
+          `You have moved 1 ${props.data.nft.collectionContractName} from linked account to your evm address. \nClick to view this transaction.`
         );
         props.handleCloseIconClicked();
         await usewallet.setDashIndex(0);
