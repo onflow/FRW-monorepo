@@ -448,3 +448,14 @@ const setEnvironmentBadge = () => {
 
 // Call it when extension starts
 setEnvironmentBadge();
+
+function saveTimestamp() {
+  const timestamp = new Date().toISOString();
+
+  chrome.storage.session.set({ timestamp });
+}
+
+const SAVE_TIMESTAMP_INTERVAL_MS = 2 * 1000;
+
+saveTimestamp();
+setInterval(saveTimestamp, SAVE_TIMESTAMP_INTERVAL_MS);
