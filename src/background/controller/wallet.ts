@@ -215,6 +215,17 @@ export class WalletController extends BaseController {
   //   }
   // };
 
+  switchAccount = async () => {
+    const password = keyringService.getPassword();
+    if (!password) {
+      throw new Error('No password found');
+    }
+    await keyringService.unlockKeyrings(password);
+    const pubKey = await this.getPubKey();
+    await userWalletService.switchLogin(pubKey);
+    return true;
+  };
+
   unlock = async (password: string) => {
     await keyringService.submitPassword(password);
 
@@ -294,6 +305,13 @@ export class WalletController extends BaseController {
     await userWalletService.clear();
     sessionService.broadcastEvent('accountsChanged', []);
     sessionService.broadcastEvent('lock');
+  };
+
+  signOutWallet = async () => {
+    await keyringService.updateKeyring();
+    await userWalletService.signOutCurrentUser();
+    await userWalletService.clear();
+    sessionService.broadcastEvent('accountsChanged', []);
   };
 
   // lockadd here

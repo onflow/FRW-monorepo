@@ -154,16 +154,18 @@ const Header = ({ loading = false }) => {
           await storage.set('currentId', '');
         }
 
-        await usewallet.lockWallet();
+        await usewallet.signOutWallet();
         await usewallet.clearWallet();
         await usewallet.switchNetwork(switchingTo);
         setNetwork(switchingTo);
         clearCoins();
         clearProfileData();
-        history.push('/unlock');
+        await usewallet.switchAccount();
       } catch (error) {
         console.error('Error during account switch:', error);
-        // Handle any additional error reporting or user feedback here if needed
+        //if cannot login directly with current password switch to unlock page
+        await usewallet.lockWallet();
+        history.push('/unlock');
       } finally {
         setSwitchLoading(false);
       }

@@ -295,7 +295,7 @@ class KeyringService extends EventEmitter {
 
   /**
    * Set Locked
-   * This method deallocates all secrets, and effectively locks MetaMask.
+   * This method deallocates all secrets.
    *
    * @emits KeyringController#lock
    * @returns {Promise<Object>} A Promise that resolves to the state.
@@ -309,6 +309,17 @@ class KeyringService extends EventEmitter {
     await this._updateMemStoreKeyrings();
     this.emit('lock');
     return this.fullUpdate();
+  }
+
+  /**
+   * Update Keyring
+   * Update the keyring based on the one save in localstorage
+   *
+   */
+  async updateKeyring() {
+    // remove keyrings
+    this.keyrings = [];
+    await this._updateMemStoreKeyrings();
   }
 
   getPassword(): string | null {
