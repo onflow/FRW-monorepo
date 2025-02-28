@@ -166,8 +166,21 @@ export class WalletController extends BaseController {
     await passwordService.setPassword(password);
     const pubKey = await this.getPubKey();
     await userWalletService.switchLogin(pubKey);
+    // Set up all the wallet data
+    await this.refreshWallets();
 
     sessionService.broadcastEvent('unlock');
+  };
+
+  refreshWallets = async () => {
+    // Refresh all the wallets after unlocking or switching profiles
+    const mainAddress = await this.getMainAddress();
+    // Refresh the EVM wallet
+    await this.queryEvmAddress(mainAddress);
+    // Refresh the user wallets
+    await this.refreshUserWallets();
+    // Refresh the child wallets
+    await this.setChildWallet(await this.checkUserChildAccount());
   };
 
   retrievePk = async (password: string) => {
@@ -1632,12 +1645,12 @@ export class WalletController extends BaseController {
     const address = await userWalletService.getMainWallet(network);
     if (!address) {
       const data = await this.refreshUserWallets();
-      return withPrefix(data[0].blockchain[0].address);
+      return withPrefix(data[0].blockchain[0].address) || '';
     } else if (address.length < 3) {
       const data = await this.refreshUserWallets();
-      return withPrefix(data[0].blockchain[0].address);
+      return withPrefix(data[0].blockchain[0].address) || '';
     }
-    return withPrefix(address);
+    return withPrefix(address) || '';
   };
 
   sendTransaction = async (cadence: string, args: any[]): Promise<string> => {
