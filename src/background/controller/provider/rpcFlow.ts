@@ -46,29 +46,7 @@ const flowContext = flow
 
     return next();
   })
-  .use(async (ctx, next) => {
-    const {
-      request: {
-        session: { origin },
-      },
-      mapMethod,
-    } = ctx;
-    if (!Reflect.getMetadata('SAFE', providerController, mapMethod)) {
-      const mainwallet = await Wallet.getMainWallet();
-      const evmAddress = await Wallet.queryEvmAddress(mainwallet);
-      const currentNetwork = await Wallet.getNetwork();
-      if (!isValidEthereumAddress(evmAddress)) {
-        throw new Error('evm must has at least one account.');
-      }
-      const isUnlock = keyringService.memStore.getState().isUnlocked;
-      const site = permissionService.getConnectedSite(origin);
-      if (mapMethod === 'ethAccounts' && (!site || !isUnlock)) {
-        throw new Error('Origin not connected. Please connect first.');
-      }
-    }
 
-    return next();
-  })
   .use(async (ctx, next) => {
     const {
       request: {
