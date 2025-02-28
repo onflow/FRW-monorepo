@@ -233,18 +233,26 @@ export class WalletController extends BaseController {
     await passwordService.setPassword(password);
     const pubKey = await this.getPubKey();
     await userWalletService.switchLogin(pubKey);
+    // Set up all the wallet data
+    await this.refreshWallets();
 
     sessionService.broadcastEvent('unlock');
   };
 
+  refreshWallets = async () => {
+    // Refresh all the wallets after unlocking or switching profiles
+    const mainAddress = await this.getMainAddress();
+    // Refresh the EVM wallet
+    await this.queryEvmAddress(mainAddress);
+    // Refresh the user wallets
+    await this.refreshUserWallets();
+    // Refresh the child wallets
+    await this.setChildWallet(await this.checkUserChildAccount());
+  };
+
   retrievePk = async (password: string) => {
-    // const alianNameInited = await preferenceService.getInitAlianNameStatus();
-    // const alianNames = await preferenceService.getAllAlianName();
     const pk = await keyringService.retrievePk(password);
     return pk;
-    // if (!alianNameInited && Object.values(alianNames).length === 0) {
-    //   this.initAlianNames();
-    // }
   };
 
   extractKeys = (keyrings) => {
@@ -276,11 +284,15 @@ export class WalletController extends BaseController {
   };
 
   isUnlocked = async () => {
+    if (!this.isBooted()) {
+      return false;
+    }
+
     const isUnlocked = keyringService.memStore.getState().isUnlocked;
-    // TODO: Below probably never unlocks anything as the password is encrypted
     if (!isUnlocked) {
       let password = '';
       try {
+        // This uses google drive to decrypt the password
         password = await passwordService.getPassword();
       } catch {
         password = '';
@@ -1652,12 +1664,12 @@ export class WalletController extends BaseController {
 
   hasCurrentWallet = async () => {
     const wallet = await userWalletService.getCurrentWallet();
-    return wallet.address !== '';
+    return wallet?.address !== '';
   };
 
   getCurrentWallet = async (): Promise<BlockchainResponse | undefined> => {
     const wallet = await userWalletService.getCurrentWallet();
-    if (!wallet.address) {
+    if (!wallet?.address) {
       const network = await this.getNetwork();
       await this.refreshUserWallets();
       const data = await userWalletService.getUserWallets(network);
@@ -1678,7 +1690,7 @@ export class WalletController extends BaseController {
 
   getRawEvmAddressWithPrefix = async () => {
     const wallet = userWalletService.getEvmWallet();
-    return withPrefix(wallet.address) || '';
+    return withPrefix(wallet?.address) || '';
   };
 
   getEvmAddress = async () => {
@@ -1707,12 +1719,12 @@ export class WalletController extends BaseController {
     const address = await userWalletService.getMainWallet(network);
     if (!address) {
       const data = await this.refreshUserWallets();
-      return withPrefix(data[0].blockchain[0].address);
+      return withPrefix(data[0].blockchain[0].address) || '';
     } else if (address.length < 3) {
       const data = await this.refreshUserWallets();
-      return withPrefix(data[0].blockchain[0].address);
+      return withPrefix(data[0].blockchain[0].address) || '';
     }
-    return withPrefix(address);
+    return withPrefix(address) || '';
   };
 
   sendTransaction = async (cadence: string, args: any[]): Promise<string> => {
@@ -2106,11 +2118,13 @@ export class WalletController extends BaseController {
     return txID;
   };
 
-  queryEvmAddress = async (address: string): Promise<string | null> => {
+  queryEvmAddress = async (address: string): Promise<string> => {
     if (address.length > 20) {
       return '';
     }
-
+    if (!(await this.isUnlocked())) {
+      return '';
+    }
     let evmAddress = '';
     try {
       evmAddress = await this.getRawEvmAddressWithPrefix();
