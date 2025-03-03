@@ -56,9 +56,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Create .env.pro file
+      - name: Create environment files
         run: |
-          cat << EOF > .env.pro
+          # Function to create environment file with given name
+          create_env_file() {
+            local file_name=$1
+            cat << EOF > $file_name
           # Git info
           COMMIT_SHA="${{ github.sha }}"
           BRANCH_NAME="${{ github.ref_name }}"
@@ -103,6 +106,15 @@ jobs:
           TEST_RECEIVER_EVM_ADDR="${{ secrets.TEST_RECEIVER_EVM_ADDR }}"
           TEST_RECEIVER_METAMASK_EVM_ADDR="${{ secrets.TEST_RECEIVER_METAMASK_EVM_ADDR }}"
           EOF
+          }
+
+          # Always create .env.pro
+          create_env_file ".env.pro"
+
+          # Create .env.dev if environment is development
+          if [[ "${{ needs.determine-env.outputs.env_name }}" == "development" ]]; then
+            create_env_file ".env.dev"
+          fi
 
       - name: Run tests
         run: pnpm test
@@ -151,6 +163,7 @@ jobs:
         with:
           name: extension-build
           path: dist/
+
       - name: Create .env.test file
         run: |
           cat << EOF > .env.test
@@ -166,6 +179,7 @@ jobs:
           TEST_RECEIVER_EVM_ADDR="${{ secrets.TEST_RECEIVER_EVM_ADDR }}"
           TEST_RECEIVER_METAMASK_EVM_ADDR="${{ secrets.TEST_RECEIVER_METAMASK_EVM_ADDR }}"
           EOF
+
       - name: Install pnpm
         uses: pnpm/action-setup@v4
       - name: Install dependencies
