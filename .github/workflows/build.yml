@@ -92,6 +92,7 @@ jobs:
           API_CONFIG_PATH="${{ vars.API_CONFIG_PATH }}"
           API_BASE_URL="${{ vars.API_BASE_URL }}"
           # manifest
+          MANIFEST_KEY="${{ secrets.MANIFEST_KEY }}"
           OAUTH2_CLIENT_ID="${{ secrets.OAUTH2_CLIENT_ID }}"
           OAUTH2_SCOPES="${{ vars.OAUTH2_SCOPES }}"
           WC_PROJECTID="${{ secrets.WC_PROJECTID }}"
