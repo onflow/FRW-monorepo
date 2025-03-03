@@ -58,7 +58,11 @@ const flowContext = flow
     console.log('flow - use #2 - check connect', mapMethod, origin, name, icon);
 
     // check connect
-    if (!Reflect.getMetadata('SAFE', providerController, mapMethod)) {
+    // TODO: create a whitelist and list of safe methods to remove the need for Reflect.getMetadata
+    if (
+      mapMethod !== 'ethAccounts' &&
+      !Reflect.getMetadata('SAFE', providerController, mapMethod)
+    ) {
       if (!permissionService.hasPermission(origin)) {
         ctx.request.requestedApproval = true;
         const { defaultChain, signPermission } = await notificationService.requestApproval(
