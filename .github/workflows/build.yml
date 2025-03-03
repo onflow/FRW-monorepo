@@ -20,6 +20,22 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for tags
+
+      - name: Get latest tag
+        id: latest_tag
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
+          echo "Latest tag: $LATEST_TAG"
+
+      - name: Get repository URL
+        id: repo_url
+        run: |
+          REPO_URL="https://github.com/${{ github.repository }}"
+          echo "REPO_URL=$REPO_URL" >> $GITHUB_ENV
+          echo "Repository URL: $REPO_URL"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -43,6 +59,8 @@ jobs:
           PR_NUMBER="${{ github.event.pull_request.number || '' }}"
           BUILD_BACKGROUND="${{ vars.BUILD_BACKGROUND }}"
           DEPLOYMENT_ENV="${{ github.ref_type == 'tag' && 'production' || github.ref_name == 'master' && 'production' || github.ref_name == 'dev' && 'staging' || 'development' }}"
+          LATEST_TAG="${{ env.LATEST_TAG }}"
+          REPO_URL="${{ env.REPO_URL }}"
 
           # Google drive
           GD_BACKUP_NAME="${{ vars.GD_BACKUP_NAME }}"

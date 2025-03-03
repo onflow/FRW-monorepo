@@ -18,6 +18,7 @@ import {
   Skeleton,
   CircularProgress,
   Icon,
+  Chip,
 } from '@mui/material';
 import Box from '@mui/material/Box';
 import { StyledEngineProvider } from '@mui/material/styles';
@@ -284,6 +285,19 @@ const Header = ({ loading = false }) => {
     [usewallet, toggleUsernameDrawer, history, setNetwork]
   );
 
+  // Function to construct GitHub comparison URL
+  const getComparisonUrl = useCallback(() => {
+    const repoUrl = process.env.REPO_URL || 'https://github.com/onflow/FRW-Extension';
+    const latestTag = process.env.LATEST_TAG || '';
+    const commitSha = process.env.COMMIT_SHA || '';
+
+    if (latestTag && commitSha) {
+      return `${repoUrl}/compare/${latestTag}...${commitSha}`;
+    }
+
+    return `${repoUrl}/commits`;
+  }, []);
+
   const AccountFunction = (props) => {
     return (
       <ListItem
@@ -490,11 +504,11 @@ const Header = ({ loading = false }) => {
       </Drawer>
     );
   };
-
+  const deploymentEnv = process.env.DEPLOYMENT_ENV || 'local';
   const appBarLabel = (props) => {
     return (
       <Toolbar sx={{ height: '56px', width: '100%', display: 'flex', px: '0px' }}>
-        <Box sx={{ flex: '0 0 68px', position: 'relative' }}>
+        <Box sx={{ flex: '0 0 68px', position: 'relative', display: 'flex', alignItems: 'center' }}>
           {isPending && (
             <CircularProgress
               size={'28px'}
@@ -532,6 +546,61 @@ const Header = ({ loading = false }) => {
               height="20px"
             />
           </IconButton>
+          {deploymentEnv !== 'production' && (
+            <Box sx={{ position: 'absolute', left: '30px', top: '-8px', zIndex: 10 }}>
+              <Tooltip
+                title={
+                  <Box>
+                    <Typography variant="caption">
+                      {`Build: ${process.env.DEPLOYMENT_ENV}`}
+                    </Typography>
+                    {process.env.LATEST_TAG && process.env.COMMIT_SHA && (
+                      <Typography variant="caption" display="block">
+                        {`Compare: ${process.env.LATEST_TAG}...${process.env.COMMIT_SHA?.substring(0, 7)}`}
+                      </Typography>
+                    )}
+                    <Typography variant="caption" display="block">
+                      {`Repo: ${process.env.REPO_URL?.replace('https://github.com/', '') || 'onflow/FRW-Extension'}`}
+                    </Typography>
+                    <Typography variant="caption" display="block">
+                      Click to view changes
+                    </Typography>
+                  </Box>
+                }
+                arrow
+              >
+                <Chip
+                  label={deploymentEnv}
+                  size="small"
+                  color={
+                    deploymentEnv === 'staging'
+                      ? 'default'
+                      : deploymentEnv === 'development'
+                        ? 'warning'
+                        : 'error'
+                  }
+                  sx={{
+                    height: '18px',
+                    fontSize: '10px',
+                    fontWeight: 'bold',
+                    minWidth: '16px',
+                    maxWidth: '90px',
+                    cursor: 'pointer',
+                    '& .MuiChip-label': {
+                      padding: '0 8px',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    },
+                  }}
+                  onClick={() => {
+                    const url = getComparisonUrl();
+                    window.open(url, '_blank');
+                  }}
+                />
+              </Tooltip>
+            </Box>
+          )}
         </Box>
 
         <Box
