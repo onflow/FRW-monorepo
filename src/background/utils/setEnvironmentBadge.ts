@@ -13,4 +13,5 @@ export const setEnvironmentBadge = () => {
   } else {
     chrome.action.setBadgeText({ text: 'lcl' });
   }
+  chrome.action.setBadgeBackgroundColor({ color: '#121212' });
 };
