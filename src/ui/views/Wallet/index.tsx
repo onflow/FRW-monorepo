@@ -4,11 +4,12 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import SwipeableViews from 'react-swipeable-views';
 
-import { IconActivity, IconCoins, IconNfts } from '@/components/iconfont';
+import { IconActivity, IconNfts } from '@/components/iconfont';
 import eventBus from '@/eventBus';
 import { type ActiveChildType } from '@/shared/types/wallet-types';
 import { formatLargeNumber } from '@/shared/utils/number';
 import { ButtonRow } from '@/ui/FRWComponent/ButtonRow';
+import CoinsIcon from '@/ui/FRWComponent/CoinsIcon';
 import LLComingSoon from '@/ui/FRWComponent/LLComingSoonWarning';
 import { NumberTransition } from '@/ui/FRWComponent/NumberTransition';
 import { useInitHook } from '@/ui/hooks';
@@ -314,13 +315,7 @@ const WalletTab = ({ network }) => {
       >
         <Tab
           icon={
-            <IconCoins
-              sx={{
-                width: '20px',
-                height: '20px',
-              }}
-              color={value === 0 ? '#FFFFFF' : '#777E90'}
-            />
+            <CoinsIcon width="20px" height="20px" color={value === 0 ? '#FFFFFF' : '#777E90'} />
           }
           iconPosition="start"
           label={
