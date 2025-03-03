@@ -29,6 +29,8 @@ const flowContext = flow
     const {
       data: { method },
     } = ctx.request;
+    console.log('flow - use #1', method);
+
     ctx.mapMethod = underline2Camelcase(method);
     if (!providerController[ctx.mapMethod]) {
       // TODO: make rpc whitelist
@@ -46,7 +48,6 @@ const flowContext = flow
 
     return next();
   })
-
   .use(async (ctx, next) => {
     const {
       request: {
@@ -54,8 +55,14 @@ const flowContext = flow
       },
       mapMethod,
     } = ctx;
+    console.log('flow - use #2 - check connect', mapMethod, origin, name, icon);
+
     // check connect
-    if (!Reflect.getMetadata('SAFE', providerController, mapMethod)) {
+    // TODO: create a whitelist and list of safe methods to remove the need for Reflect.getMetadata
+    if (
+      mapMethod !== 'ethAccounts' &&
+      !Reflect.getMetadata('SAFE', providerController, mapMethod)
+    ) {
       if (!permissionService.hasPermission(origin)) {
         ctx.request.requestedApproval = true;
         const { defaultChain, signPermission } = await notificationService.requestApproval(
@@ -80,6 +87,8 @@ const flowContext = flow
       },
       mapMethod,
     } = ctx;
+    console.log('flow - use #3 - check approval', mapMethod, origin, name, icon);
+
     const [approvalType, condition, { height = 599 } = {}] =
       Reflect.getMetadata('APPROVAL', providerController, mapMethod) || [];
     if (mapMethod === 'ethSendTransaction' || mapMethod === 'personalSign') {
@@ -107,6 +116,8 @@ const flowContext = flow
   })
   .use(async (ctx) => {
     const { approvalRes, mapMethod, request } = ctx;
+    console.log('flow - use #4 - process request', mapMethod, request);
+
     // process request
     const [approvalType] = Reflect.getMetadata('APPROVAL', providerController, mapMethod) || [];
     const { uiRequestComponent, ...rest } = approvalRes || {};
@@ -122,6 +133,7 @@ const flowContext = flow
 
     requestDefer
       .then((result) => {
+        console.log('flow - process result', mapMethod, result);
         if (isSignApproval(approvalType)) {
           eventBus.emit(EVENTS.broadcastToUI, {
             method: EVENTS.SIGN_FINISHED,
@@ -134,6 +146,8 @@ const flowContext = flow
         return result;
       })
       .catch((e: any) => {
+        console.log('flow - process error', mapMethod, e);
+
         if (isSignApproval(approvalType)) {
           eventBus.emit(EVENTS.broadcastToUI, {
             method: EVENTS.SIGN_FINISHED,

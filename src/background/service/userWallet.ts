@@ -151,7 +151,6 @@ class UserWallet {
     network: string,
     index = null
   ) => {
-    console.log('setCurrentWallet', wallet, key, network, index);
     if (key && key !== 'evm') {
       this.store.currentWallet = wallet;
     } else if (key === 'evm') {
@@ -282,14 +281,10 @@ class UserWallet {
     if (this.isLocked()) {
       return null;
     }
-    console.log('getEvmWallet', this.store.evmWallet, storage.get('evmWallet'));
     return this.store.evmWallet;
-
-    //   return { ...this.store.evmWallet };
   };
 
   setEvmAddress = (address: string, emoji) => {
-    console.log('setEvmAddress', address, emoji);
     if (address.length > 20) {
       this.store.evmWallet.address = address;
       this.store.evmWallet.name = emoji[9].name;

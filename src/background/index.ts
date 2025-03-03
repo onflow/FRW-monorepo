@@ -36,6 +36,7 @@ import {
   mixpanelTrack,
 } from './service';
 import { getFirbaseConfig } from './utils/firebaseConfig';
+import { setEnvironmentBadge } from './utils/setEnvironmentBadge';
 import { storage } from './webapi';
 const { PortMessage } = Message;
 
@@ -426,25 +427,6 @@ function onMessage(msg, port) {
 }
 
 console.log('Is fetch native?', fetch.toString().includes('[native code]'));
-
-// Set environment badge based on branch
-const setEnvironmentBadge = () => {
-  const deploymentEnv = process.env.DEPLOYMENT_ENV;
-
-  if (deploymentEnv === 'production') {
-    // No badge for production
-    chrome.action.setBadgeText({ text: '' });
-  } else if (deploymentEnv === 'staging') {
-    chrome.action.setBadgeText({ text: 'stg' });
-    chrome.action.setBadgeBackgroundColor({ color: process.env.BUILD_BACKGROUND || '#bf360c' });
-  } else if (deploymentEnv === 'development') {
-    chrome.action.setBadgeText({ text: '#' });
-    chrome.action.setBadgeBackgroundColor({ color: process.env.BUILD_BACKGROUND || '#666666' });
-  } else {
-    chrome.action.setBadgeText({ text: 'dev' });
-    chrome.action.setBadgeBackgroundColor({ color: process.env.BUILD_BACKGROUND || '#666666' });
-  }
-};
 
 // Call it when extension starts
 setEnvironmentBadge();
