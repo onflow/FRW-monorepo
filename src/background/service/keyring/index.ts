@@ -692,6 +692,7 @@ class KeyringService extends EventEmitter {
     if (!this.password || typeof this.password !== 'string') {
       return Promise.reject(new Error('KeyringController - password is not a string'));
     }
+    console.log('this.keyring is this', this.keyrings);
     return Promise.all(
       this.keyrings.map((keyring) => {
         return Promise.all([keyring.type, keyring.serialize()]).then((serializedKeyringArray) => {
@@ -801,9 +802,8 @@ class KeyringService extends EventEmitter {
    * @returns {Promise<Array<Keyring>>} The keyrings.
    */
   async unlockKeyrings(password: string): Promise<any[]> {
-    // Note that currentAccountIndex is only used in keyring for old accounts that don't have an id stored in the keyring
+    // Note that currentAccountIndex is only used in keyring for old accounts that don't have an id stored in the keyring removing in 2.7.6
     // currentId always takes precedence
-    let accountIndex = await storage.get('currentAccountIndex');
     const currentId = await storage.get('currentId');
     let vaultArray = this.store.getState().vault;
     let encryptedVault;
@@ -811,36 +811,13 @@ class KeyringService extends EventEmitter {
     // Ensure vaultArray is an array and filter out null/undefined entries
     vaultArray = Array.isArray(vaultArray) ? vaultArray.filter(Boolean) : [vaultArray];
 
-    // Initialize accountIndex to 0 if it is undefined
-    if (accountIndex === undefined) {
-      accountIndex = 0;
-    }
+    console.log('this.vaultArray is this', vaultArray);
 
     // If currentId is provided, look for the encryptedString with currentId as the key
     if (currentId !== undefined) {
       const foundEntry = vaultArray.find((entry) => entry && entry[currentId]);
       if (foundEntry) {
         encryptedVault = foundEntry[currentId];
-      }
-    }
-
-    // If haven't found an encrypted vault yet, try fallback options
-    if (!encryptedVault) {
-      // Try to get a valid entry using accountIndex
-      const validEntries = vaultArray.filter(Boolean);
-      if (validEntries.length > 0) {
-        if (validEntries[accountIndex]) {
-          encryptedVault =
-            typeof validEntries[accountIndex] === 'string'
-              ? validEntries[accountIndex]
-              : Object.values(validEntries[accountIndex])[0];
-        } else {
-          // Fallback to first valid entry
-          encryptedVault =
-            typeof validEntries[0] === 'string'
-              ? validEntries[0]
-              : Object.values(validEntries[0])[0];
-        }
       }
     }
 
@@ -853,6 +830,8 @@ class KeyringService extends EventEmitter {
     this.password = password;
 
     // Fix: Cast vault to any[] to handle the array of keyring objects
+
+    console.log('this.vault is this', vault);
     await Promise.all(
       (vault as unknown as any[]).map(async (keyring) => {
         try {
@@ -864,6 +843,8 @@ class KeyringService extends EventEmitter {
         }
       })
     );
+
+    console.log('this.keyrings is this', this.keyrings);
 
     await this._updateMemStoreKeyrings();
     return this.keyrings;
@@ -1216,6 +1197,31 @@ class KeyringService extends EventEmitter {
   loadStore(initState) {
     this.store = new SimpleStore(initState || { booted: false });
     return this.store.subscribe((value) => storage.set('keyringState', value));
+  }
+
+  async decryptVaultArray(vaultArray, password) {
+    const decryptedKeyrings: any = [];
+
+    for (const entry of vaultArray) {
+      const id = Object.keys(entry)[0]; // Get UUID
+      const encryptedData = entry[id];
+
+      try {
+        // Decrypt the entry
+        const decryptedData = await this.encryptor.decrypt(password, encryptedData);
+
+        // Store in keyrings array with ID
+        decryptedKeyrings.push({
+          id,
+          ...decryptedData, // Contains keyring data
+        });
+      } catch (err) {
+        console.error(`Failed to decrypt entry ${id}:`, err);
+      }
+    }
+
+    // Store in keyrings array
+    this.keyrings = decryptedKeyrings;
   }
 }
 
