@@ -22,11 +22,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Fetch all history for tags
+          fetch-tags: true # Explicitly fetch all tags
 
       - name: Get latest tag
         id: latest_tag
         run: |
-          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          LATEST_TAG=$(git tag --sort=-committerdate | head -n 1 || echo "v0.0.0")
           echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
           echo "Latest tag: $LATEST_TAG"
 
@@ -57,7 +58,6 @@ jobs:
           BRANCH_NAME="${{ github.ref_name }}"
           PR_TITLE="${{ github.event.pull_request.title || '' }}"
           PR_NUMBER="${{ github.event.pull_request.number || '' }}"
-          BUILD_BACKGROUND="${{ vars.BUILD_BACKGROUND }}"
           DEPLOYMENT_ENV="${{ github.ref_type == 'tag' && 'production' || github.ref_name == 'master' && 'production' || github.ref_name == 'dev' && 'staging' || 'development' }}"
           LATEST_TAG="${{ env.LATEST_TAG }}"
           REPO_URL="${{ env.REPO_URL }}"
