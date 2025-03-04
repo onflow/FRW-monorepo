@@ -474,7 +474,16 @@ class UserWallet {
   };
 
   reSign = async () => {
+    // Try to re-establish the session if the user's wallet is unlocked
+    if (this.isLocked()) {
+      // If the wallet is locked, we can't sign in
+      return;
+    }
     const password = keyringService.password;
+    if (!password) {
+      // No password means the wallet is not unlocked
+      return;
+    }
     const privateKey = await wallet.getPrivateKeyForCurrentAccount(password);
     return await this.sigInWithPk(privateKey);
   };

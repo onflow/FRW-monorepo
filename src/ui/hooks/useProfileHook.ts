@@ -6,6 +6,7 @@ import type {
   WalletResponse,
 } from '@/shared/types/network-types';
 import { ensureEvmAddressPrefix, withPrefix } from '@/shared/utils/address';
+import { retryOperation } from '@/shared/utils/retryOperation';
 import { useNetworks } from '@/ui/hooks/useNetworkHook';
 import { useProfileStore } from '@/ui/stores/profileStore';
 import { useWallet, useWalletLoaded } from '@/ui/utils/WalletContext';
@@ -117,7 +118,8 @@ export const useProfiles = () => {
       ]);
 
       if (!currentWallet) {
-        throw new Error('Current wallet is undefined');
+        // We may not be logged in yet
+        return;
       }
       const mainwallet = await usewallet.returnMainWallet();
       setParentWallet(mainwallet!);
@@ -232,16 +234,4 @@ export const useProfiles = () => {
     evmLoading,
     mainAddressLoading,
   };
-};
-
-const retryOperation = async (operation: () => Promise<any>, maxAttempts = 3, delay = 1000) => {
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      return await operation();
-    } catch (error) {
-      if (attempt === maxAttempts) throw error;
-      console.log(`Attempt ${attempt} failed, retrying in ${delay}ms...`);
-      await new Promise((resolve) => setTimeout(resolve, delay));
-    }
-  }
 };
