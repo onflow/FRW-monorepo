@@ -33,6 +33,7 @@ import { type LoggedInAccount } from '@/shared/types/wallet-types';
 import { ensureEvmAddressPrefix, isValidEthereumAddress, withPrefix } from '@/shared/utils/address';
 import { getSignAlgo } from '@/shared/utils/algo';
 import { convertToIntegerAmount, validateAmount } from '@/shared/utils/number';
+import { retryOperation } from '@/shared/utils/retryOperation';
 import {
   keyringService,
   preferenceService,
@@ -243,6 +244,24 @@ export class WalletController extends BaseController {
     await this.refreshUserWallets();
     // Refresh the child wallets
     await this.setChildWallet(await this.checkUserChildAccount());
+    // Refresh the logged in account
+    const [keys, pubKTuple] = await Promise.all([this.getAccount(), this.getPubKey()]);
+    // Check if a child wallet is active (it shouldn't be...)
+    const anyActiveChild = await this.getActiveWallet();
+    // Get the current wallet
+    const currentWallet = await this.getCurrentWallet();
+    if (!currentWallet) {
+      throw new Error('Current wallet is undefined');
+    }
+    // Refresh the user info
+    let userInfo = {};
+    try {
+      userInfo = await retryOperation(async () => this.getUserInfo(true), 3, 1000);
+    } catch (error) {
+      console.error('Error refreshing user info:', error);
+    }
+    // Refresh the user info
+    await openapiService.freshUserInfo(currentWallet, keys, pubKTuple, userInfo, anyActiveChild);
   };
 
   retrievePk = async (password: string) => {
@@ -904,17 +923,14 @@ export class WalletController extends BaseController {
     return preferenceService.updateIsFirstOpen();
   };
   // userinfo
-  getUserInfo = async (forceRefresh: boolean) => {
-    const data = await userInfoService.getUserInfo();
-
-    if (forceRefresh) {
-      return await this.fetchUserInfo();
+  getUserInfo = async (forceRefresh: boolean = false) => {
+    if (!forceRefresh) {
+      const data = userInfoService.getUserInfo();
+      if (data.username.length) {
+        return data;
+      }
     }
-
-    if (data.username.length) {
-      return data;
-    }
-
+    // Either force refresh or the user info is not set
     return await this.fetchUserInfo();
   };
 
@@ -1024,14 +1040,6 @@ export class WalletController extends BaseController {
     const network = await this.getNetwork();
     const domain = await userInfoService.getMeow(network);
     return domain;
-  };
-
-  updateUserInfo = (data: UserInfoStore) => {
-    userInfoService.updateUserInfo(data);
-  };
-
-  removeUserInfo = () => {
-    userInfoService.removeUserInfo();
   };
 
   getDashIndex = async () => {
@@ -1663,6 +1671,9 @@ export class WalletController extends BaseController {
   };
 
   getCurrentWallet = async (): Promise<BlockchainResponse | undefined> => {
+    if (!this.isBooted() || userWalletService.isLocked()) {
+      return;
+    }
     const wallet = await userWalletService.getCurrentWallet();
     if (!wallet?.address) {
       const network = await this.getNetwork();
@@ -1710,6 +1721,9 @@ export class WalletController extends BaseController {
   };
 
   getMainAddress = async () => {
+    if (!this.isBooted() || userWalletService.isLocked()) {
+      return '';
+    }
     const network = await this.getNetwork();
     const address = await userWalletService.getMainWallet(network);
     if (!address) {
@@ -3140,8 +3154,9 @@ export class WalletController extends BaseController {
   };
 
   checkNetwork = async () => {
-    const network = await this.getNetwork();
-    await this.switchNetwork(network);
+    if (!this.isBooted() || userWalletService.isLocked()) {
+      return;
+    }
   };
 
   switchMonitor = async (monitor: string) => {
@@ -3153,6 +3168,7 @@ export class WalletController extends BaseController {
   };
 
   refreshAll = async () => {
+    console.trace('refreshAll trace');
     console.log('refreshAll');
     await this.refreshUserWallets();
     this.clearNFT();
