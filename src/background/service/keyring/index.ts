@@ -863,13 +863,10 @@ class KeyringService extends EventEmitter {
    * @returns {Promise<Array<Keyring>>} The keyring.
    */
   async switchKeyring(currentId: string): Promise<any[]> {
-    // Note that currentAccountIndex is only used in keyring for old accounts that don't have an id stored in the keyring removing in 2.7.6
-    // currentId always takes precedence
+    // useCurrentId to find the keyring in the keyringList
     const selectedKeyring = this.keyringList.find((keyring) => keyring.id === currentId);
-
+    // remove the keyring of the previous account
     await this.clearKeyrings();
-
-    // Fix: Cast vault to any[] to handle the array of keyring objects
 
     console.log('selectedKeyring is this', selectedKeyring);
     await Promise.all(
@@ -1252,6 +1249,7 @@ class KeyringService extends EventEmitter {
           ...decryptedData, // Contains keyring data
         });
       } catch (err) {
+        // maybe update the password for the keyring
         console.error(`Failed to decrypt entry ${id}:`, err);
       }
     }
