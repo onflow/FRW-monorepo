@@ -203,6 +203,14 @@ const WalletTab = ({ network }) => {
 
   useEffect(() => {
     const checkPermission = async () => {
+      if (!(await usewallet.isUnlocked())) {
+        console.log('Wallet is locked');
+        return;
+      }
+      if (!(await usewallet.getMainWallet())) {
+        console.log('Wallet Tab - No main wallet yet');
+        return;
+      }
       const result = await usewallet.checkCanMoveChild();
       setCanMoveChild(result);
     };

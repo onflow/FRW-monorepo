@@ -110,6 +110,11 @@ export const useProfiles = () => {
   const freshUserInfo = useCallback(async () => {
     if (!usewallet || !walletLoaded) return;
     try {
+      // Make sure the wallet is unlocked and has a main wallet
+      if (!(await usewallet.getMainWallet())) {
+        console.log('freshUserInfo - No main wallet yet');
+        return;
+      }
       //TODO: should rethink the wording of the wallet functions, have it be parent evm and child or something similar. State name and should be the same frontend and background.
       const [currentWallet, isChild, mainAddress] = await Promise.all([
         usewallet.getCurrentWallet(),
