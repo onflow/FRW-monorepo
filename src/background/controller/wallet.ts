@@ -215,12 +215,8 @@ export class WalletController extends BaseController {
   //   }
   // };
 
-  switchAccount = async () => {
-    const password = keyringService.getPassword();
-    if (!password) {
-      throw new Error('No password found');
-    }
-    await keyringService.unlockKeyrings(password);
+  switchAccount = async (currentId: string) => {
+    await keyringService.switchKeyring(currentId);
     const pubKey = await this.getPubKey();
     await userWalletService.switchLogin(pubKey);
     return true;
@@ -724,7 +720,7 @@ export class WalletController extends BaseController {
 
   getTypedAccounts = async (type) => {
     return Promise.all(
-      keyringService.keyrings
+      keyringService.keyring
         .filter((keyring) => !type || keyring.type === type)
         .map((keyring) => keyringService.displayForKeyring(keyring))
     );

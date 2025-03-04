@@ -854,6 +854,43 @@ class KeyringService extends EventEmitter {
   }
 
   /**
+   * Switch Keyrings
+   *
+   * Attempts to switch the keyring based on the given id,
+   * Set the new keyring to ram.
+   *
+   * @param {string} currentId - The id of the keyring to switch to.
+   * @returns {Promise<Array<Keyring>>} The keyring.
+   */
+  async switchKeyring(currentId: string): Promise<any[]> {
+    // Note that currentAccountIndex is only used in keyring for old accounts that don't have an id stored in the keyring removing in 2.7.6
+    // currentId always takes precedence
+    const selectedKeyring = this.keyringList.find((keyring) => keyring.id === currentId);
+
+    await this.clearKeyrings();
+
+    // Fix: Cast vault to any[] to handle the array of keyring objects
+
+    console.log('selectedKeyring is this', selectedKeyring);
+    await Promise.all(
+      [selectedKeyring].map(async (keyring) => {
+        try {
+          await this._restoreKeyring(keyring[0]); // Access the first property which contains type and data
+          console.log('Successfully restored keyring:', keyring[0].type);
+        } catch (error) {
+          console.error('Failed to restore keyring:', error);
+          throw error;
+        }
+      })
+    );
+
+    console.log('this.keyring is this', this.keyring);
+
+    await this._updateMemStoreKeyrings();
+    return this.keyring;
+  }
+
+  /**
    * Retrieve privatekey from vault
    *
    * Attempts to unlock the persisted encrypted storage,
@@ -1073,10 +1110,6 @@ class KeyringService extends EventEmitter {
         });
         return accounts.includes(hexed);
       });
-      if (winners && winners.length > 0) {
-        return winners[0][0];
-      }
-      throw new Error('No keyring found for the requested account.');
     });
   }
 
@@ -1224,7 +1257,7 @@ class KeyringService extends EventEmitter {
     }
 
     // Store in keyrings array
-    this.keyring = decryptedKeyrings;
+    this.keyringList = decryptedKeyrings;
   }
 }
 

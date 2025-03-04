@@ -161,13 +161,14 @@ const Header = ({ loading = false }) => {
         setNetwork(switchingTo);
         clearCoins();
         clearProfileData();
-        await usewallet.switchAccount();
+        await usewallet.switchAccount(account.id);
       } catch (error) {
         console.error('Error during account switch:', error);
         //if cannot login directly with current password switch to unlock page
         await usewallet.lockWallet();
         history.push('/unlock');
       } finally {
+        setPop(false);
         setSwitchLoading(false);
       }
     },
