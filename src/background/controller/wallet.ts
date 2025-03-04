@@ -219,7 +219,6 @@ export class WalletController extends BaseController {
     await keyringService.switchKeyring(currentId);
     const pubKey = await this.getPubKey();
     await userWalletService.switchLogin(pubKey);
-    return true;
   };
 
   unlock = async (password: string) => {
