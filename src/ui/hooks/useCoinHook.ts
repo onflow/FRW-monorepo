@@ -65,6 +65,16 @@ export const useCoins = () => {
 
   const calculateAvailableBalance = useCallback(async () => {
     try {
+      // Make sure the wallet is unlocked
+      if (!(await usewallet.isUnlocked())) {
+        console.log('calculateAvailableBalance - Wallet is locked');
+        return;
+      }
+      if (!(await usewallet.getMainWallet())) {
+        console.log('calculateAvailableBalance - No main wallet yet');
+        return;
+      }
+
       const address = withPrefix(mainAddress) || '';
       // TODO: need a controller for this
       const minAmount = new BN(
@@ -95,6 +105,16 @@ export const useCoins = () => {
 
   const refreshCoinData = useCallback(async () => {
     if (!usewallet || !walletLoaded) return;
+
+    // Make sure the wallet is unlocked
+    if (!(await usewallet.isUnlocked())) {
+      console.log('Wallet is locked');
+      return;
+    }
+    if (!(await usewallet.getMainWallet())) {
+      console.log('No main wallet yet');
+      return;
+    }
 
     try {
       const refreshedCoinlist = await usewallet.refreshCoinList(60000);
