@@ -86,7 +86,10 @@ class NotificationService extends Events {
     } else {
       this.approval?.resolve(data);
     }
-    this.approval = null;
+    // Handle the case where the approval is not unlocked
+    if (data !== 'unlocked') {
+      this.approval = null;
+    }
     this.emit('resolve', data);
   };
 
