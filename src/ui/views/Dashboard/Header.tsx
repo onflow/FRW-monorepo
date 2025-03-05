@@ -616,6 +616,7 @@ const Header = ({ loading = false }) => {
         >
           <Tooltip title={chrome.i18n.getMessage('Copy__Address')} arrow>
             <Button
+              disabled={!haveAddress}
               onClick={() => {
                 if (haveAddress) {
                   navigator.clipboard.writeText(props.address);
