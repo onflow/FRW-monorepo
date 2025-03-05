@@ -254,7 +254,6 @@ const WalletTab = ({ network }) => {
             fontSize: '32px',
             fontWeight: 'semi-bold',
           }}
-          component="span"
         >
           {coinsLoaded ? `$${formatLargeNumber(balance)}` : <Skeleton variant="text" width={100} />}
         </Typography>

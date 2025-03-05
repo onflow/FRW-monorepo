@@ -727,7 +727,7 @@ const Header = ({ loading = false }) => {
         <Toolbar sx={{ px: '12px', backgroundColor: '#282828' }}>
           {walletList && (
             <MenuDrawer
-              userInfo={userInfo!}
+              userInfo={userInfo}
               drawer={drawer}
               toggleDrawer={toggleDrawer}
               otherAccounts={otherAccounts}
