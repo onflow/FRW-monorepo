@@ -808,49 +808,16 @@ class KeyringService extends EventEmitter {
     // currentId always takes precedence
     const currentId = await storage.get('currentId');
     let vaultArray = this.store.getState().vault;
-    let encryptedVault;
 
     // Ensure vaultArray is an array and filter out null/undefined entries
     vaultArray = Array.isArray(vaultArray) ? vaultArray.filter(Boolean) : [vaultArray];
 
     console.log('this.vaultArray is this', vaultArray);
 
-    // If currentId is provided, look for the encryptedString with currentId as the key
-    if (currentId !== undefined) {
-      const foundEntry = vaultArray.find((entry) => entry && entry[currentId]);
-      if (foundEntry) {
-        encryptedVault = foundEntry[currentId];
-      }
-    }
-
-    if (!encryptedVault) {
-      throw new Error(i18n.t('Cannot unlock without a previous vault'));
-    }
     await this.decryptVaultArray(vaultArray, password);
-
-    await this.clearKeyrings();
-    const vault = await this.encryptor.decrypt(password, encryptedVault);
     this.password = password;
-
-    // Fix: Cast vault to any[] to handle the array of keyring objects
-
-    console.log('this.vault is this', vault);
-    await Promise.all(
-      (vault as unknown as any[]).map(async (keyring) => {
-        try {
-          await this._restoreKeyring(keyring);
-          console.log('Successfully restored keyring:', keyring.type);
-        } catch (error) {
-          console.error('Failed to restore keyring:', error);
-          throw error;
-        }
-      })
-    );
-
-    console.log('this.keyring is this', this.keyring);
-
-    await this._updateMemStoreKeyrings();
-    return this.keyring;
+    const keyrings = await this.switchKeyring(currentId);
+    return keyrings;
   }
 
   /**
