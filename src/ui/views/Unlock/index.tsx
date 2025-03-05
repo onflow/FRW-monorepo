@@ -1,5 +1,5 @@
 // import { useTranslation } from 'react-i18next';
-import { Input, Typography, Box, FormControl } from '@mui/material';
+import { Input, Typography, Box, FormControl, CircularProgress } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
@@ -64,6 +64,7 @@ const Unlock = () => {
   const [showError, setShowError] = useState(false);
   const [password, setPassword] = useState(DEFAULT_PASSWORD);
   const [resetPop, setResetPop] = useState<boolean>(false);
+  const [unlocking, setUnlocking] = useState<boolean>(false);
   const { clearProfileData } = useProfiles();
 
   useEffect(() => {
@@ -78,30 +79,27 @@ const Unlock = () => {
     openInternalPageInTab('forgot');
   }, [wallet, clearProfileData]);
 
-  const [run] = useWalletRequest(wallet.unlock, {
-    onSuccess() {
-      // Always go to the index page so that SortHat can figure out any approvals
-      // Resolving an approval here will not work because the user has not yet approved the request
+  const handleUnlock = useCallback(async () => {
+    try {
+      setUnlocking(true);
+      await wallet.unlock(password);
       history.replace('/');
-    },
-    onError(err) {
-      console.error('onError', err);
+    } catch (err) {
+      console.error(err);
       setShowError(true);
-    },
-  });
+    } finally {
+      setUnlocking(false);
+    }
+  }, [wallet, history, password]);
 
   const handleKeyDown = useCallback(
     (event) => {
       if (event.key === 'Enter') {
-        run(password);
+        handleUnlock();
       }
     },
-    [run, password]
+    [handleUnlock]
   );
-
-  const handleUnlock = useCallback(() => {
-    run(password);
-  }, [run, password]);
 
   return (
     <Box
@@ -184,8 +182,10 @@ const Unlock = () => {
           type="submit"
           onClick={handleUnlock}
           fullWidth
-          label={chrome.i18n.getMessage('Unlock_Wallet')}
-          disabled={!walletIsLoaded}
+          label={
+            unlocking ? <CircularProgress size={18} /> : chrome.i18n.getMessage('Unlock_Wallet')
+          }
+          disabled={!walletIsLoaded || unlocking}
 
           // sx={{marginTop: '40px', height: '48px'}}
           // type="primary"
