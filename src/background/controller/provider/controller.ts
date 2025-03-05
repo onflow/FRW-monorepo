@@ -206,7 +206,7 @@ class ProviderController extends BaseController {
   };
 
   ethRequestAccounts = async ({ session: { origin, name, icon } }) => {
-    if (!permissionService.hasPermission(origin) || !Wallet.isUnlocked()) {
+    if (!permissionService.hasPermission(origin) || !(await Wallet.isUnlocked())) {
       const { defaultChain, signPermission } = await notificationService.requestApproval(
         {
           params: { origin, name, icon },
@@ -289,7 +289,7 @@ class ProviderController extends BaseController {
   };
 
   ethAccounts = async ({ session: { origin } }) => {
-    if (!permissionService.hasPermission(origin) || !Wallet.isUnlocked()) {
+    if (!permissionService.hasPermission(origin) || !(await Wallet.isUnlocked())) {
       return [];
     }
 

@@ -61,9 +61,16 @@ const flowContext = flow
     // TODO: create a whitelist and list of safe methods to remove the need for Reflect.getMetadata
     if (
       mapMethod !== 'ethAccounts' &&
+      mapMethod !== 'walletRequestPermissions' &&
+      mapMethod !== 'walletRevokePermissions' &&
+      mapMethod !== 'walletSwitchEthereumChain' &&
+      mapMethod !== 'walletWatchAsset' &&
+      mapMethod !== 'walletConnect' &&
+      mapMethod !== 'walletDisconnect' &&
+      mapMethod !== 'walletConnect' &&
       !Reflect.getMetadata('SAFE', providerController, mapMethod)
     ) {
-      if (!permissionService.hasPermission(origin)) {
+      if (!permissionService.hasPermission(origin) || !(await Wallet.isUnlocked())) {
         ctx.request.requestedApproval = true;
         const { defaultChain, signPermission } = await notificationService.requestApproval(
           {
