@@ -87,15 +87,16 @@ class NotificationService extends Events {
       this.approval?.resolve(data);
     }
     // Handle the case where the approval is not unlocked
-    if (data !== 'unlocked') {
-      this.approval = null;
-    }
+    this.approval = null;
     this.emit('resolve', data);
   };
 
   rejectApproval = async (err?: string) => {
-    // this.approval?.reject(ethErrors.provider.userRejectedRequest<any>(err));
+    // Reject the approval
+    this.approval?.reject(ethErrors.provider.userRejectedRequest<any>(err));
+    // Clear the approval
     await this.clear();
+    // Emit the reject event
     this.emit('reject', err);
   };
 

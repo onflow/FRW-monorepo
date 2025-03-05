@@ -2,6 +2,7 @@
 import { Input, Typography, Box, FormControl } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useHistory } from 'react-router-dom';
 
 import lilo from '@/ui/FRWAssets/image/lilo.png';
 import { LLPrimaryButton, LLResetPopup } from '@/ui/FRWComponent';
@@ -56,8 +57,8 @@ const DEFAULT_PASSWORD =
 const Unlock = () => {
   const wallet = useWallet();
   const walletIsLoaded = useWalletLoaded();
+  const history = useHistory();
   const classes = useStyles();
-  const [, resolveApproval] = useApproval();
   const inputEl = useRef<any>(null);
   // const { t } = useTranslation();
   const [showError, setShowError] = useState(false);
@@ -79,7 +80,9 @@ const Unlock = () => {
 
   const [run] = useWalletRequest(wallet.unlock, {
     onSuccess() {
-      resolveApproval('unlocked');
+      // Always go to the index page so that SortHat can figure out any approvals
+      // Resolving an approval here will not work because the user has not yet approved the request
+      history.replace('/');
     },
     onError(err) {
       console.error('onError', err);
