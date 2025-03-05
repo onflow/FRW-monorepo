@@ -1,5 +1,5 @@
 import BN from 'bignumber.js';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { withPrefix } from '@/shared/utils/address';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -12,6 +12,8 @@ export const useCoins = () => {
   const usewallet = useWallet();
   const walletLoaded = useWalletLoaded();
   const { mainAddress } = useProfiles();
+
+  const [coinsLoaded, setCoinsLoaded] = useState(false);
 
   // Action selectors
   const setCoinData = useCoinStore((state) => state.setCoinData);
@@ -120,6 +122,7 @@ export const useCoins = () => {
       const refreshedCoinlist = await usewallet.refreshCoinList(60000);
       if (Array.isArray(refreshedCoinlist) && refreshedCoinlist.length > 0) {
         sortWallet(refreshedCoinlist);
+        setCoinsLoaded(true);
       }
     } catch (error) {
       console.error('Error refreshing coin data:', error);
@@ -146,5 +149,6 @@ export const useCoins = () => {
     balance,
     totalFlow,
     availableFlow,
+    coinsLoaded,
   };
 };

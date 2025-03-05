@@ -49,10 +49,9 @@ const WalletTab = ({ network }) => {
   const location = useLocation();
   const { initializeStore } = useInitHook();
   const { childAccounts, evmWallet, currentWallet } = useProfiles();
-  const { coins, balance } = useCoins();
+  const { coins, balance, coinsLoaded } = useCoins();
   const [value, setValue] = React.useState(0);
 
-  const [coinLoading, setCoinLoading] = useState<boolean>(false);
   const [address, setAddress] = useState<string>('');
   const [accessible, setAccessible] = useState<any>([]);
   const [childType, setChildType] = useState<ActiveChildType>(null);
@@ -189,13 +188,10 @@ const WalletTab = ({ network }) => {
   });
 
   useEffect(() => {
-    setCoinLoading(address === '');
-    if (address) {
-      setCoinLoading(true);
-      setCoinLoading(false);
+    if (address && coinsLoaded) {
       fetchWallet();
     }
-  }, [address, fetchWallet]);
+  }, [address, coinsLoaded, fetchWallet]);
 
   useEffect(() => {
     setUserAddress();
@@ -245,35 +241,24 @@ const WalletTab = ({ network }) => {
           display: 'flex',
           flexDirection: 'column',
           width: '100%',
+          // Fix the height to prevent small pixel scrolling issue
+          height: '151px',
           backgroundColor: 'background.default',
         }}
       >
-        {coinLoading ? (
-          <Skeleton
-            width="30%"
-            sx={{
-              py: '25px',
-              my: '8px',
-              borderRadius: '8px',
-              alignSelf: 'center',
-            }}
-          />
-        ) : (
-          <Typography
-            variant="body1"
-            sx={{
-              py: '8px',
-              alignSelf: 'center',
-              fontSize: '32px',
-              fontWeight: 'semi-bold',
-            }}
-            component="span"
-          >
-            {`$${formatLargeNumber(balance)}`.split('').map((n, i) => (
-              <NumberTransition key={`${n}-${i}`} number={n} delay={i * 20} />
-            ))}
-          </Typography>
-        )}
+        <Typography
+          variant="body1"
+          sx={{
+            py: '8px',
+            alignSelf: 'center',
+            fontSize: '32px',
+            fontWeight: 'semi-bold',
+          }}
+          component="span"
+        >
+          {coinsLoaded ? `$${formatLargeNumber(balance)}` : <Skeleton variant="text" width={100} />}
+        </Typography>
+
         <ButtonRow
           isActive={isActive}
           onSendClick={() => history.push('/dashboard/token/flow/send')}
