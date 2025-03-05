@@ -52,6 +52,59 @@ export interface DisplayedKeryring {
   keyring: any;
 }
 
+interface KeyringData {
+  0: {
+    type: 'HD Key Tree' | 'Simple Key Pair';
+    data:
+      | {
+          mnemonic?: string;
+          activeIndexes?: number[];
+          publicKey?: string;
+        }
+      | string[];
+  };
+  id: string;
+}
+
+interface HDWallet {
+  provider: null;
+  address: string;
+  publicKey: string;
+  fingerprint: string;
+  parentFingerprint: string;
+  mnemonic: {
+    phrase: string;
+    password: string;
+    wordlist: {
+      locale: string;
+    };
+    entropy: string;
+  };
+  chainCode: string;
+  path: string;
+  index: number;
+  depth: number;
+}
+
+interface SimpleKeyPairWallet {
+  privateKey: {
+    type: 'Buffer';
+    data: number[];
+  };
+}
+
+interface Keyring {
+  type: 'HD Key Tree' | 'Simple Key Pair';
+  hdWallet?: HDWallet;
+  wallets?: SimpleKeyPairWallet[];
+  mnemonic?: string;
+  activeIndexes?: number[];
+  getAccounts(): Promise<string[]>;
+  addAccounts(n: number): Promise<string[]>;
+  removeAccount(address: string, brand?: string): void;
+  serialize(): Promise<any>;
+}
+
 class SimpleStore<T> {
   private state: T;
   private listeners: ((state: T) => void)[] = [];
@@ -88,8 +141,8 @@ class KeyringService extends EventEmitter {
   keyringTypes: any[];
   store!: SimpleStore<any>;
   memStore: SimpleStore<MemStoreState>;
-  keyring: any[];
-  keyringList: any[];
+  keyring: Keyring[];
+  keyringList: KeyringData[];
   encryptor: typeof encryptor = encryptor;
   password: string | null = null;
 
@@ -397,7 +450,7 @@ class KeyringService extends EventEmitter {
    * (usually after removing the last / only account) from a keyring
    */
   async removeEmptyKeyrings(): Promise<undefined> {
-    const validKeyrings: unknown[] = [];
+    const validKeyrings: Keyring[] = [];
 
     // Since getAccounts returns a Promise
     // We need to wait to hear back form each keyring
@@ -831,6 +884,7 @@ class KeyringService extends EventEmitter {
    */
   async switchKeyring(currentId: string): Promise<any[]> {
     // useCurrentId to find the keyring in the keyringList
+    console.log('this.keyringList is this', this.keyringList);
     const selectedKeyring = this.keyringList.find((keyring) => keyring.id === currentId);
     // remove the keyring of the previous account
     await this.clearKeyrings();
@@ -839,8 +893,8 @@ class KeyringService extends EventEmitter {
     await Promise.all(
       [selectedKeyring].map(async (keyring) => {
         try {
-          await this._restoreKeyring(keyring[0]); // Access the first property which contains type and data
-          console.log('Successfully restored keyring:', keyring[0].type);
+          await this._restoreKeyring(keyring?.[0]); // Access the first property which contains type and data
+          console.log('Successfully restored keyring:', keyring?.[0].type);
         } catch (error) {
           console.error('Failed to restore keyring:', error);
           throw error;
