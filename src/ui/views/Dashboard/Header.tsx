@@ -507,7 +507,10 @@ const Header = ({ loading = false }) => {
     );
   };
   const deploymentEnv = process.env.DEPLOYMENT_ENV || 'local';
+
   const appBarLabel = (props) => {
+    const haveAddress = !mainAddressLoading && props && props.address;
+
     return (
       <Toolbar sx={{ height: '56px', width: '100%', display: 'flex', px: '0px' }}>
         <Box sx={{ flex: '0 0 68px', position: 'relative', display: 'flex', alignItems: 'center' }}>
@@ -613,102 +616,105 @@ const Header = ({ loading = false }) => {
             alignItems: 'center',
           }}
         >
-          {!mainAddressLoading && props && props.address ? (
-            <Tooltip title={chrome.i18n.getMessage('Copy__Address')} arrow>
-              <Button
-                onClick={() => {
+          <Tooltip title={chrome.i18n.getMessage('Copy__Address')} arrow>
+            <Button
+              disabled={!haveAddress}
+              onClick={() => {
+                if (haveAddress) {
                   navigator.clipboard.writeText(props.address);
-                }}
-                variant="text"
+                }
+              }}
+              variant="text"
+            >
+              <Box
+                component="div"
+                sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
               >
-                <Box
-                  component="div"
-                  sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+                <Typography
+                  variant="overline"
+                  color="text"
+                  align="center"
+                  display="block"
+                  sx={{ lineHeight: '1.5' }}
                 >
-                  <Typography
-                    variant="overline"
-                    color="text"
-                    align="center"
-                    display="block"
-                    sx={{ lineHeight: '1.5' }}
-                  >
-                    {`${props.name === 'Flow' ? 'Wallet' : props.name}${
+                  {haveAddress ? (
+                    `${props.name === 'Flow' ? 'Wallet' : props.name}${
                       isValidEthereumAddress(props.address) ? ' EVM' : ''
-                    }`}
+                    }`
+                  ) : (
+                    <Skeleton variant="text" width={40} />
+                  )}
+                </Typography>
+                <Box sx={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ textTransform: 'none' }}
+                  >
+                    {haveAddress ? (
+                      formatAddress(props.address)
+                    ) : (
+                      <Skeleton variant="text" width={120} />
+                    )}
                   </Typography>
-                  <Box sx={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{ textTransform: 'none' }}
-                    >
-                      {formatAddress(props.address)}
-                    </Typography>
-                    <IconCopy fill="icon.navi" width="12px" />
-                  </Box>
+                  <IconCopy fill="icon.navi" width="12px" />
                 </Box>
-              </Button>
-            </Tooltip>
-          ) : (
-            <Skeleton variant="rectangular" width={78} height={33} sx={{ borderRadius: '8px' }} />
-          )}
+              </Box>
+            </Button>
+          </Tooltip>
         </Box>
 
         <Box sx={{ flex: '0 0 68px' }}>
-          {userInfo && props ? (
-            <Tooltip title={isPending ? chrome.i18n.getMessage('Pending__Transaction') : ''} arrow>
-              <Box style={{ position: 'relative' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <IconButton
-                    edge="end"
-                    color="inherit"
-                    aria-label="notification"
-                    onClick={toggleNewsDrawer}
-                  >
-                    <NotificationsIcon />
-                    {unreadCount > 0 && (
-                      <Box
-                        sx={{
-                          position: 'absolute',
-                          top: '-2px',
-                          right: '-2px',
-                          backgroundColor: '#4CAF50',
-                          color: 'black',
-                          borderRadius: '50%',
-                          minWidth: '18px',
-                          height: '18px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '12px',
-                          padding: '2px',
-                          border: 'none',
-                          fontWeight: 'bold',
-                        }}
-                      >
-                        {unreadCount}
-                      </Box>
-                    )}
-                  </IconButton>
-                  <IconButton
-                    edge="end"
-                    color="inherit"
-                    aria-label="avatar"
-                    onClick={() => goToSettings()}
-                    sx={{
-                      padding: '3px',
-                      marginRight: '0px',
-                      position: 'relative',
-                    }}
-                  >
-                    <SettingsIcon />
-                  </IconButton>
-                </Box>
+          <Tooltip title={isPending ? chrome.i18n.getMessage('Pending__Transaction') : ''} arrow>
+            <Box style={{ position: 'relative' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <IconButton
+                  edge="end"
+                  color="inherit"
+                  aria-label="notification"
+                  onClick={toggleNewsDrawer}
+                >
+                  <NotificationsIcon />
+                  {unreadCount > 0 && (
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: '-2px',
+                        right: '-2px',
+                        backgroundColor: '#4CAF50',
+                        color: 'black',
+                        borderRadius: '50%',
+                        minWidth: '18px',
+                        height: '18px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '12px',
+                        padding: '2px',
+                        border: 'none',
+                        fontWeight: 'bold',
+                      }}
+                    >
+                      {unreadCount}
+                    </Box>
+                  )}
+                </IconButton>
+                <IconButton
+                  edge="end"
+                  color="inherit"
+                  aria-label="avatar"
+                  onClick={() => goToSettings()}
+                  sx={{
+                    padding: '3px',
+                    marginRight: '0px',
+                    position: 'relative',
+                  }}
+                >
+                  <SettingsIcon />
+                </IconButton>
               </Box>
-            </Tooltip>
-          ) : (
-            <Skeleton variant="circular" width={20} height={20} />
-          )}
+            </Box>
+          </Tooltip>
         </Box>
       </Toolbar>
     );
@@ -724,7 +730,7 @@ const Header = ({ loading = false }) => {
         <Toolbar sx={{ px: '12px', backgroundColor: '#282828' }}>
           {walletList && (
             <MenuDrawer
-              userInfo={userInfo!}
+              userInfo={userInfo}
               drawer={drawer}
               toggleDrawer={toggleDrawer}
               otherAccounts={otherAccounts}
