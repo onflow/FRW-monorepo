@@ -898,6 +898,7 @@ class KeyringService extends EventEmitter {
    * @returns {Promise<Array<Keyring>>} The keyrings.
    */
   async retrievePk(password: string): Promise<any[]> {
+    // TODO: this can be updated to use the new vault structure, since it's retrieve from frontend, password is required
     let vaultArray = this.store.getState().vault;
 
     // If vault is unavailable or empty, retrieve from deepVault
@@ -1233,7 +1234,7 @@ class KeyringService extends EventEmitter {
     return this.store.subscribe((value) => storage.set('keyringState', value));
   }
 
-  async decryptVaultArray(vaultArray, password) {
+  private async decryptVaultArray(vaultArray, password) {
     const decryptedKeyrings: any = [];
 
     for (const entry of vaultArray) {
