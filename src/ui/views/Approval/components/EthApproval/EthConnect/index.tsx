@@ -75,6 +75,8 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
         chain_id: currentNetwork,
         coins: ['flow'],
         id: 1,
+        icon: icon,
+        color: '#282828',
       };
       await usewallet.setActiveWallet(walletInfo, 'evm');
     }

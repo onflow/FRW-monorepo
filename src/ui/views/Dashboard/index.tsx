@@ -1,8 +1,7 @@
 import Box from '@mui/material/Box';
-import { useTheme } from '@mui/material/styles';
 import { initializeApp } from 'firebase/app';
 import { fetchAndActivate, getRemoteConfig } from 'firebase/remote-config';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 
 import { NetworkIndicator } from '@/ui/FRWComponent/NetworkIndicator';
 import { useNetworks } from '@/ui/hooks/useNetworkHook';
@@ -11,7 +10,7 @@ import { useWallet } from 'ui/utils';
 
 import WalletTab from '../Wallet';
 
-const Dashboard = ({ value, setValue }) => {
+const Dashboard = () => {
   // const [value, setValue] = React.useState('wallet');
   const usewallet = useWallet();
   const { currentNetwork, emulatorModeOn, setEmulatorModeOn, setNetwork } = useNetworks();
@@ -32,15 +31,16 @@ const Dashboard = ({ value, setValue }) => {
 
       const app = initializeApp(firebaseConfig, env);
       const remoteConfig = getRemoteConfig(app);
-      console.log('remoteConfig ', app);
+      // Firebase remote config
       fetchAndActivate(remoteConfig)
-        .then((res) => {
-          console.log('res ', remoteConfig);
-
-          console.log('Remote Config values fetched and activated');
+        .then((_res) => {
+          // Remote config activated successfully
         })
         .catch((error) => {
-          console.error('Error fetching remote config:', error);
+          // Handle error silently or log to a monitoring service
+          if (process.env.NODE_ENV !== 'production') {
+            console.error('Error fetching remote config:', error);
+          }
         });
 
       return { network, emulatorMode };

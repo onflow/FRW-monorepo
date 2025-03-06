@@ -17,7 +17,12 @@ import { makeStyles } from '@mui/styles';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import type { UserInfoResponse } from '@/shared/types/network-types';
+import type { ChildAccount, UserInfoResponse, WalletType } from '@/shared/types/network-types';
+import {
+  type LoggedInAccount,
+  type LoggedInAccountWithIndex,
+  type ActiveChildType,
+} from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import importIcon from 'ui/FRWAssets/svg/importIcon.svg';
@@ -45,18 +50,22 @@ const useStyles = makeStyles(() => ({
 interface MenuDrawerProps {
   userInfo: UserInfoResponse | null;
   drawer: boolean;
-  toggleDrawer: any;
-  otherAccounts: any;
-  switchAccount: any;
-  togglePop: any;
-  walletList: any;
-  childAccounts: any;
-  current: any;
-  createWalletList: any;
-  setWallets: any;
+  toggleDrawer: () => void;
+  otherAccounts: LoggedInAccount[];
+  switchAccount: (account: LoggedInAccountWithIndex) => Promise<void>;
+  togglePop: () => void;
+  walletList: WalletType[];
+  childAccounts: ChildAccount | null;
+  current: WalletType;
+  createWalletList: (props: WalletType) => React.ReactNode;
+  setWallets: (
+    walletInfo: WalletType,
+    key: ActiveChildType | null,
+    index?: number | null
+  ) => Promise<void>;
   currentNetwork: string;
-  evmWallet: any;
-  networkColor: any;
+  evmWallet: WalletType;
+  networkColor: (network: string) => string;
   evmLoading: boolean;
   modeOn: boolean;
   mainAddressLoading: boolean;
@@ -279,6 +288,8 @@ const MenuDrawer = (props: MenuDrawerProps) => {
                       chain_id: props.currentNetwork,
                       coins: ['flow'],
                       id: 1,
+                      icon: props.evmWallet.icon,
+                      color: props.evmWallet.color,
                     },
                     'evm'
                   )
@@ -368,6 +379,7 @@ const MenuDrawer = (props: MenuDrawerProps) => {
                   }}
                   key={index}
                   onClick={() =>
+                    props.childAccounts &&
                     props.setWallets(
                       {
                         name: props.childAccounts[key]?.name ?? key,
@@ -375,8 +387,12 @@ const MenuDrawer = (props: MenuDrawerProps) => {
                         chain_id: props.currentNetwork,
                         coins: ['flow'],
                         id: 1,
+                        icon:
+                          props.childAccounts?.[key]?.thumbnail?.url ??
+                          'https://lilico.app/placeholder-2.0.png',
+                        color: '#282828',
                       },
-                      key
+                      key as ActiveChildType | null
                     )
                   }
                 >
@@ -393,7 +409,7 @@ const MenuDrawer = (props: MenuDrawerProps) => {
                     <CardMedia
                       component="img"
                       image={
-                        props.childAccounts[key]?.thumbnail?.url ??
+                        props.childAccounts?.[key]?.thumbnail?.url ??
                         'https://lilico.app/placeholder-2.0.png'
                       }
                       sx={{
@@ -419,7 +435,7 @@ const MenuDrawer = (props: MenuDrawerProps) => {
                           color="#E6E6E6"
                           fontSize={'12px'}
                         >
-                          {props.childAccounts[key]?.name ?? key}
+                          {props.childAccounts?.[key]?.name ?? key}
                         </Typography>
                         {props.current['address'] === key && (
                           <ListItemIcon sx={{ display: 'flex', alignItems: 'center' }}>

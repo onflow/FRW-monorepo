@@ -1,5 +1,4 @@
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
-import MenuIcon from '@mui/icons-material/Menu';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import SettingsIcon from '@mui/icons-material/Settings';
 import {
@@ -17,7 +16,6 @@ import {
   Avatar,
   Skeleton,
   CircularProgress,
-  Icon,
   Chip,
 } from '@mui/material';
 import Box from '@mui/material/Box';
@@ -28,7 +26,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
 import { storage } from '@/background/webapi';
-import { type LoggedInAccountWithIndex } from '@/shared/types/wallet-types';
+import { type UserInfoResponse, type WalletType } from '@/shared/types/network-types';
+import {
+  type WalletAddress,
+  type ActiveChildType,
+  type LoggedInAccountWithIndex,
+} from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
 import { useCoins } from '@/ui/hooks/useCoinHook';
@@ -38,7 +41,6 @@ import { useNews } from '@/ui/utils/NewsContext';
 import { useWallet, formatAddress, useWalletLoaded } from 'ui/utils';
 
 import IconCopy from '../../../components/iconfont/IconCopy';
-import EyeOff from '../../FRWAssets/svg/EyeOff.svg';
 
 import MenuDrawer from './Components/MenuDrawer';
 import NewsView from './Components/NewsView';
@@ -58,17 +60,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-type ChildAccount = {
-  [key: string]: {
-    name: string;
-    description: string;
-    thumbnail: {
-      url: string;
-    };
-  };
-};
-
-const Header = ({ loading = false }) => {
+const Header = ({ _loading = false }) => {
   const usewallet = useWallet();
   const walletLoaded = useWalletLoaded();
   const classes = useStyles();
@@ -172,7 +164,11 @@ const Header = ({ loading = false }) => {
     [usewallet, history, setNetwork, clearCoins, clearProfileData]
   );
 
-  const setWallets = async (walletInfo, key, index = null) => {
+  const setWallets = async (
+    walletInfo: WalletType,
+    key: ActiveChildType | null,
+    index: number | null = null
+  ) => {
     await usewallet.setActiveWallet(walletInfo, key, index);
     // Clear collections
     usewallet.clearNFTCollection();
@@ -236,6 +232,7 @@ const Header = ({ loading = false }) => {
       case 'crescendo':
         return '#CCAF21';
     }
+    return '#41CC5D';
   };
 
   const checkAuthStatus = useCallback(async () => {
@@ -298,7 +295,12 @@ const Header = ({ loading = false }) => {
     return `${repoUrl}/commits`;
   }, []);
 
-  const AccountFunction = (props) => {
+  interface AccountFunctionProps {
+    username: string;
+    avatar: string;
+  }
+
+  const AccountFunction = (props: AccountFunctionProps) => {
     return (
       <ListItem
         disablePadding
@@ -434,13 +436,13 @@ const Header = ({ loading = false }) => {
     );
   };
 
-  const createWalletList = (props) => {
+  const createWalletList = (props: WalletType) => {
     return (
       <List component="nav" key={props.id} sx={{ mb: '0', padding: 0 }}>
         <WalletFunction
           props_id={props.id}
           name={props.name}
-          address={props.address}
+          address={props.address as WalletAddress}
           icon={props.icon}
           color={props.color}
           setWallets={setWallets}
@@ -455,7 +457,7 @@ const Header = ({ loading = false }) => {
     );
   };
 
-  const createAccountList = (props) => {
+  const createAccountList = (props: UserInfoResponse) => {
     return (
       props && (
         <List component="nav" key={props.username}>
@@ -506,7 +508,12 @@ const Header = ({ loading = false }) => {
   };
   const deploymentEnv = process.env.DEPLOYMENT_ENV || 'local';
 
-  const appBarLabel = (props) => {
+  interface AppBarLabelProps {
+    address: string;
+    name: string;
+  }
+
+  const appBarLabel = (props: AppBarLabelProps) => {
     const haveAddress = !mainAddressLoading && props && props.address;
 
     return (
@@ -753,14 +760,13 @@ const Header = ({ loading = false }) => {
           {userInfo && (
             <Popup
               isConfirmationOpen={ispop}
-              data={{ amount: 0 }}
               handleCloseIconClicked={() => setPop(false)}
               handleCancelBtnClicked={() => setPop(false)}
               handleAddBtnClicked={() => {
                 setPop(false);
               }}
               userInfo={userInfo!}
-              current={currentWallet!}
+              current={currentWallet}
               switchAccount={switchAccount}
               loggedInAccounts={loggedInAccounts}
               switchLoading={switchLoading}

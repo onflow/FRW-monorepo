@@ -108,7 +108,7 @@ const InnerRoute = (props: RouteComponentProps) => {
         <div className="route-wrapper" id="scrollableTab">
           <Switch>
             <PrivateRoute exact path={`${props.match.url}/`}>
-              <Dashboard value={value} setValue={setValue} />
+              <Dashboard />
             </PrivateRoute>
             <PrivateRoute path={`${props.match.url}/setting/addressbook`}>
               <AddressBook />
