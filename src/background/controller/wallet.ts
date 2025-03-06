@@ -29,7 +29,7 @@ import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-t
 import { ContactType } from '@/shared/types/network-types';
 import { type TrackingEvents } from '@/shared/types/tracking-types';
 import { type TransferItem, type TransactionState } from '@/shared/types/transaction-types';
-import { type LoggedInAccount } from '@/shared/types/wallet-types';
+import { type ActiveChildType, type LoggedInAccount } from '@/shared/types/wallet-types';
 import { ensureEvmAddressPrefix, isValidEthereumAddress, withPrefix } from '@/shared/utils/address';
 import { getSignAlgo } from '@/shared/utils/algo';
 import { convertToIntegerAmount, validateAmount } from '@/shared/utils/number';
@@ -1658,11 +1658,33 @@ export class WalletController extends BaseController {
     return activeWallet;
   };
 
-  setActiveWallet = async (wallet: any, key: any, index = null) => {
-    await userWalletService.setActiveWallet(key);
+  /*
+   * Sets the active main wallet and current child wallet
+   * This is used to switch between main accounts or switch from main to child wallet
+   *
+   * wallet: BlockchainResponse, // The wallet to set as active
+   * key: ActiveChildType | null, // null for main wallet
+   * index: number | null = null // The index of the main wallet in the array to switch to
+   */
+  setActiveWallet = async (
+    wallet: BlockchainResponse,
+    key: ActiveChildType | null,
+    index: number | null = null
+  ) => {
+    userWalletService.setActiveWallet(key);
 
     const network = await this.getNetwork();
     await userWalletService.setCurrentWallet(wallet, key, network, index);
+
+    // Clear collections
+    this.clearNFTCollection();
+    this.clearCoinList();
+
+    // If switching main wallet, refresh the EVM wallet
+    if (key === null) {
+      this.refreshEvmWallets();
+      await this.queryEvmAddress(wallet.address);
+    }
   };
 
   hasCurrentWallet = async () => {

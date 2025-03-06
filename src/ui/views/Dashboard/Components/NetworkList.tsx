@@ -8,7 +8,12 @@ import mainnetIndicator from '../../../FRWAssets/svg/mainnetArrow.svg';
 import networkLink from '../../../FRWAssets/svg/networkLink.svg';
 import testnetIndicator from '../../../FRWAssets/svg/testnetArrow.svg';
 
-const NetworkList = ({ networkColor, currentNetwork }) => {
+interface NetworkListProps {
+  networkColor: (network: string) => string;
+  currentNetwork: string;
+}
+
+const NetworkList = ({ networkColor, currentNetwork }: NetworkListProps) => {
   const usewallet = useWallet();
 
   const history = useHistory();

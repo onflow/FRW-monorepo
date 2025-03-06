@@ -147,9 +147,9 @@ class UserWallet {
 
   setCurrentWallet = async (
     wallet: BlockchainResponse,
-    key: string,
+    key: ActiveChildType | null,
     network: string,
-    index = null
+    index: number | null = null
   ) => {
     if (key && key !== 'evm') {
       this.store.currentWallet = wallet;
