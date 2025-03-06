@@ -1589,6 +1589,14 @@ export class WalletController extends BaseController {
     return activeWallet;
   };
 
+  /*
+   * Sets the active main wallet and current child wallet
+   * This is used to switch between main accounts or switch from main to child wallet
+   *
+   * wallet: BlockchainResponse, // The wallet to set as active
+   * key: ActiveChildType | null, // null for main wallet
+   * index: number | null = null // The index of the main wallet in the array to switch to
+   */
   setActiveWallet = async (
     wallet: BlockchainResponse,
     key: ActiveChildType | null,
@@ -1598,6 +1606,16 @@ export class WalletController extends BaseController {
 
     const network = await this.getNetwork();
     await userWalletService.setCurrentWallet(wallet, key, network, index);
+
+    // Clear collections
+    this.clearNFTCollection();
+    this.clearCoinList();
+
+    // If switching main wallet, refresh the EVM wallet
+    if (key === null) {
+      this.refreshEvmWallets();
+      await this.queryEvmAddress(wallet.address);
+    }
   };
 
   hasCurrentWallet = async () => {

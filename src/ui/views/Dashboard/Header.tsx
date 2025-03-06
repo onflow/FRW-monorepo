@@ -170,9 +170,7 @@ const Header = ({ _loading = false }) => {
     index: number | null = null
   ) => {
     await usewallet.setActiveWallet(walletInfo, key, index);
-    // Clear collections
-    usewallet.clearNFTCollection();
-    usewallet.clearCoinList();
+
     // Navigate if needed
     history.push('/dashboard');
     window.location.reload();
