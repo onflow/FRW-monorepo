@@ -1,5 +1,4 @@
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
-import MenuIcon from '@mui/icons-material/Menu';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import SettingsIcon from '@mui/icons-material/Settings';
 import {
@@ -17,7 +16,7 @@ import {
   Avatar,
   Skeleton,
   CircularProgress,
-  Icon,
+  Chip,
 } from '@mui/material';
 import Box from '@mui/material/Box';
 import { StyledEngineProvider } from '@mui/material/styles';
@@ -27,7 +26,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
 import { storage } from '@/background/webapi';
-import { type LoggedInAccountWithIndex } from '@/shared/types/wallet-types';
+import { type UserInfoResponse, type WalletType } from '@/shared/types/network-types';
+import {
+  type WalletAddress,
+  type ActiveChildType,
+  type LoggedInAccountWithIndex,
+} from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
 import { useCoins } from '@/ui/hooks/useCoinHook';
@@ -37,7 +41,6 @@ import { useNews } from '@/ui/utils/NewsContext';
 import { useWallet, formatAddress, useWalletLoaded } from 'ui/utils';
 
 import IconCopy from '../../../components/iconfont/IconCopy';
-import EyeOff from '../../FRWAssets/svg/EyeOff.svg';
 
 import MenuDrawer from './Components/MenuDrawer';
 import NewsView from './Components/NewsView';
@@ -57,17 +60,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-type ChildAccount = {
-  [key: string]: {
-    name: string;
-    description: string;
-    thumbnail: {
-      url: string;
-    };
-  };
-};
-
-const Header = ({ loading = false }) => {
+const Header = ({ _loading = false }) => {
   const usewallet = useWallet();
   const walletLoaded = useWalletLoaded();
   const classes = useStyles();
@@ -171,11 +164,13 @@ const Header = ({ loading = false }) => {
     [usewallet, history, setNetwork, clearCoins, clearProfileData]
   );
 
-  const setWallets = async (walletInfo, key, index = null) => {
+  const setWallets = async (
+    walletInfo: WalletType,
+    key: ActiveChildType | null,
+    index: number | null = null
+  ) => {
     await usewallet.setActiveWallet(walletInfo, key, index);
-    // Clear collections
-    usewallet.clearNFTCollection();
-    usewallet.clearCoinList();
+
     // Navigate if needed
     history.push('/dashboard');
     window.location.reload();
@@ -235,6 +230,7 @@ const Header = ({ loading = false }) => {
       case 'crescendo':
         return '#CCAF21';
     }
+    return '#41CC5D';
   };
 
   const checkAuthStatus = useCallback(async () => {
@@ -284,7 +280,25 @@ const Header = ({ loading = false }) => {
     [usewallet, toggleUsernameDrawer, history, setNetwork]
   );
 
-  const AccountFunction = (props) => {
+  // Function to construct GitHub comparison URL
+  const getComparisonUrl = useCallback(() => {
+    const repoUrl = process.env.REPO_URL || 'https://github.com/onflow/FRW-Extension';
+    const latestTag = process.env.LATEST_TAG || '';
+    const commitSha = process.env.COMMIT_SHA || '';
+
+    if (latestTag && commitSha) {
+      return `${repoUrl}/compare/${latestTag}...${commitSha}`;
+    }
+
+    return `${repoUrl}/commits`;
+  }, []);
+
+  interface AccountFunctionProps {
+    username: string;
+    avatar: string;
+  }
+
+  const AccountFunction = (props: AccountFunctionProps) => {
     return (
       <ListItem
         disablePadding
@@ -420,13 +434,13 @@ const Header = ({ loading = false }) => {
     );
   };
 
-  const createWalletList = (props) => {
+  const createWalletList = (props: WalletType) => {
     return (
       <List component="nav" key={props.id} sx={{ mb: '0', padding: 0 }}>
         <WalletFunction
           props_id={props.id}
           name={props.name}
-          address={props.address}
+          address={props.address as WalletAddress}
           icon={props.icon}
           color={props.color}
           setWallets={setWallets}
@@ -441,7 +455,7 @@ const Header = ({ loading = false }) => {
     );
   };
 
-  const createAccountList = (props) => {
+  const createAccountList = (props: UserInfoResponse) => {
     return (
       props && (
         <List component="nav" key={props.username}>
@@ -490,11 +504,19 @@ const Header = ({ loading = false }) => {
       </Drawer>
     );
   };
+  const deploymentEnv = process.env.DEPLOYMENT_ENV || 'local';
 
-  const appBarLabel = (props) => {
+  interface AppBarLabelProps {
+    address: string;
+    name: string;
+  }
+
+  const appBarLabel = (props: AppBarLabelProps) => {
+    const haveAddress = !mainAddressLoading && props && props.address;
+
     return (
       <Toolbar sx={{ height: '56px', width: '100%', display: 'flex', px: '0px' }}>
-        <Box sx={{ flex: '0 0 68px', position: 'relative' }}>
+        <Box sx={{ flex: '0 0 68px', position: 'relative', display: 'flex', alignItems: 'center' }}>
           {isPending && (
             <CircularProgress
               size={'28px'}
@@ -532,6 +554,61 @@ const Header = ({ loading = false }) => {
               height="20px"
             />
           </IconButton>
+          {deploymentEnv !== 'production' && (
+            <Box sx={{ position: 'absolute', left: '30px', top: '-8px', zIndex: 10 }}>
+              <Tooltip
+                title={
+                  <Box>
+                    <Typography variant="caption">
+                      {`Build: ${process.env.DEPLOYMENT_ENV}`}
+                    </Typography>
+                    {process.env.LATEST_TAG && process.env.COMMIT_SHA && (
+                      <Typography variant="caption" display="block">
+                        {`Compare: ${process.env.LATEST_TAG}...${process.env.COMMIT_SHA?.substring(0, 7)}`}
+                      </Typography>
+                    )}
+                    <Typography variant="caption" display="block">
+                      {`Repo: ${process.env.REPO_URL?.replace('https://github.com/', '') || 'onflow/FRW-Extension'}`}
+                    </Typography>
+                    <Typography variant="caption" display="block">
+                      Click to view changes
+                    </Typography>
+                  </Box>
+                }
+                arrow
+              >
+                <Chip
+                  label={deploymentEnv}
+                  size="small"
+                  color={
+                    deploymentEnv === 'staging'
+                      ? 'default'
+                      : deploymentEnv === 'development'
+                        ? 'warning'
+                        : 'error'
+                  }
+                  sx={{
+                    height: '18px',
+                    fontSize: '10px',
+                    fontWeight: 'bold',
+                    minWidth: '16px',
+                    maxWidth: '90px',
+                    cursor: 'pointer',
+                    '& .MuiChip-label': {
+                      padding: '0 8px',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    },
+                  }}
+                  onClick={() => {
+                    const url = getComparisonUrl();
+                    window.open(url, '_blank');
+                  }}
+                />
+              </Tooltip>
+            </Box>
+          )}
         </Box>
 
         <Box
@@ -542,102 +619,105 @@ const Header = ({ loading = false }) => {
             alignItems: 'center',
           }}
         >
-          {!mainAddressLoading && props && props.address ? (
-            <Tooltip title={chrome.i18n.getMessage('Copy__Address')} arrow>
-              <Button
-                onClick={() => {
+          <Tooltip title={chrome.i18n.getMessage('Copy__Address')} arrow>
+            <Button
+              disabled={!haveAddress}
+              onClick={() => {
+                if (haveAddress) {
                   navigator.clipboard.writeText(props.address);
-                }}
-                variant="text"
+                }
+              }}
+              variant="text"
+            >
+              <Box
+                component="div"
+                sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
               >
-                <Box
-                  component="div"
-                  sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+                <Typography
+                  variant="overline"
+                  color="text"
+                  align="center"
+                  display="block"
+                  sx={{ lineHeight: '1.5' }}
                 >
-                  <Typography
-                    variant="overline"
-                    color="text"
-                    align="center"
-                    display="block"
-                    sx={{ lineHeight: '1.5' }}
-                  >
-                    {`${props.name === 'Flow' ? 'Wallet' : props.name}${
+                  {haveAddress ? (
+                    `${props.name === 'Flow' ? 'Wallet' : props.name}${
                       isValidEthereumAddress(props.address) ? ' EVM' : ''
-                    }`}
+                    }`
+                  ) : (
+                    <Skeleton variant="text" width={40} />
+                  )}
+                </Typography>
+                <Box sx={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ textTransform: 'none' }}
+                  >
+                    {haveAddress ? (
+                      formatAddress(props.address)
+                    ) : (
+                      <Skeleton variant="text" width={120} />
+                    )}
                   </Typography>
-                  <Box sx={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{ textTransform: 'none' }}
-                    >
-                      {formatAddress(props.address)}
-                    </Typography>
-                    <IconCopy fill="icon.navi" width="12px" />
-                  </Box>
+                  <IconCopy fill="icon.navi" width="12px" />
                 </Box>
-              </Button>
-            </Tooltip>
-          ) : (
-            <Skeleton variant="rectangular" width={78} height={33} sx={{ borderRadius: '8px' }} />
-          )}
+              </Box>
+            </Button>
+          </Tooltip>
         </Box>
 
         <Box sx={{ flex: '0 0 68px' }}>
-          {userInfo && props ? (
-            <Tooltip title={isPending ? chrome.i18n.getMessage('Pending__Transaction') : ''} arrow>
-              <Box style={{ position: 'relative' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <IconButton
-                    edge="end"
-                    color="inherit"
-                    aria-label="notification"
-                    onClick={toggleNewsDrawer}
-                  >
-                    <NotificationsIcon />
-                    {unreadCount > 0 && (
-                      <Box
-                        sx={{
-                          position: 'absolute',
-                          top: '-2px',
-                          right: '-2px',
-                          backgroundColor: '#4CAF50',
-                          color: 'black',
-                          borderRadius: '50%',
-                          minWidth: '18px',
-                          height: '18px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '12px',
-                          padding: '2px',
-                          border: 'none',
-                          fontWeight: 'bold',
-                        }}
-                      >
-                        {unreadCount}
-                      </Box>
-                    )}
-                  </IconButton>
-                  <IconButton
-                    edge="end"
-                    color="inherit"
-                    aria-label="avatar"
-                    onClick={() => goToSettings()}
-                    sx={{
-                      padding: '3px',
-                      marginRight: '0px',
-                      position: 'relative',
-                    }}
-                  >
-                    <SettingsIcon />
-                  </IconButton>
-                </Box>
+          <Tooltip title={isPending ? chrome.i18n.getMessage('Pending__Transaction') : ''} arrow>
+            <Box style={{ position: 'relative' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <IconButton
+                  edge="end"
+                  color="inherit"
+                  aria-label="notification"
+                  onClick={toggleNewsDrawer}
+                >
+                  <NotificationsIcon />
+                  {unreadCount > 0 && (
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: '-2px',
+                        right: '-2px',
+                        backgroundColor: '#4CAF50',
+                        color: 'black',
+                        borderRadius: '50%',
+                        minWidth: '18px',
+                        height: '18px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '12px',
+                        padding: '2px',
+                        border: 'none',
+                        fontWeight: 'bold',
+                      }}
+                    >
+                      {unreadCount}
+                    </Box>
+                  )}
+                </IconButton>
+                <IconButton
+                  edge="end"
+                  color="inherit"
+                  aria-label="avatar"
+                  onClick={() => goToSettings()}
+                  sx={{
+                    padding: '3px',
+                    marginRight: '0px',
+                    position: 'relative',
+                  }}
+                >
+                  <SettingsIcon />
+                </IconButton>
               </Box>
-            </Tooltip>
-          ) : (
-            <Skeleton variant="circular" width={20} height={20} />
-          )}
+            </Box>
+          </Tooltip>
         </Box>
       </Toolbar>
     );
@@ -653,7 +733,7 @@ const Header = ({ loading = false }) => {
         <Toolbar sx={{ px: '12px', backgroundColor: '#282828' }}>
           {walletList && (
             <MenuDrawer
-              userInfo={userInfo!}
+              userInfo={userInfo}
               drawer={drawer}
               toggleDrawer={toggleDrawer}
               otherAccounts={otherAccounts}
@@ -678,14 +758,13 @@ const Header = ({ loading = false }) => {
           {userInfo && (
             <Popup
               isConfirmationOpen={ispop}
-              data={{ amount: 0 }}
               handleCloseIconClicked={() => setPop(false)}
               handleCancelBtnClicked={() => setPop(false)}
               handleAddBtnClicked={() => {
                 setPop(false);
               }}
               userInfo={userInfo!}
-              current={currentWallet!}
+              current={currentWallet}
               switchAccount={switchAccount}
               loggedInAccounts={loggedInAccounts}
               switchLoading={switchLoading}
