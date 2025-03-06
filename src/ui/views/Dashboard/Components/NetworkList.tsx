@@ -48,10 +48,6 @@ const NetworkList = ({ networkColor, currentNetwork }: NetworkListProps) => {
   };
 
   const switchNetwork = async (network: string) => {
-    // if (network === 'crescendo' && !isSandboxEnabled) {
-    //   return;
-    // }
-
     usewallet.switchNetwork(network);
 
     if (currentNetwork !== network) {

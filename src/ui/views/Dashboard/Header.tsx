@@ -1,4 +1,3 @@
-import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import SettingsIcon from '@mui/icons-material/Settings';
 import {
@@ -8,12 +7,7 @@ import {
   IconButton,
   Drawer,
   List,
-  ListItemText,
-  ListItemIcon,
-  ListItem,
-  ListItemButton,
   Button,
-  Avatar,
   Skeleton,
   CircularProgress,
   Chip,
@@ -26,7 +20,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
 import { storage } from '@/background/webapi';
-import { type UserInfoResponse, type WalletType } from '@/shared/types/network-types';
+import { type WalletType } from '@/shared/types/network-types';
 import {
   type WalletAddress,
   type ActiveChildType,
@@ -86,9 +80,6 @@ const Header = ({ _loading = false }) => {
 
   const [drawer, setDrawer] = useState(false);
 
-  const [mainnetAvailable, setMainnetAvailable] = useState(true);
-  const [testnetAvailable, setTestnetAvailable] = useState(true);
-
   const [isPending, setIsPending] = useState(false);
 
   const [ispop, setPop] = useState(false);
@@ -100,7 +91,6 @@ const Header = ({ _loading = false }) => {
 
   // News Drawer
   const [showNewsDrawer, setShowNewsDrawer] = useState(false);
-  const [usernameDrawer, setUsernameDrawer] = useState(false);
 
   // const { unreadCount } = useNotificationStore();
   // TODO: add notification count
@@ -117,11 +107,6 @@ const Header = ({ _loading = false }) => {
   const toggleNewsDrawer = useCallback(() => {
     // Avoids unnecessary re-renders using a function to toggle the state
     setShowNewsDrawer((prevShowNewsDrawer) => !prevShowNewsDrawer);
-  }, []);
-
-  const toggleUsernameDrawer = useCallback(() => {
-    // Avoids unnecessary re-renders using a function to toggle the state
-    setUsernameDrawer((prevUsernameDrawer) => !prevUsernameDrawer);
   }, []);
 
   const goToSettings = useCallback(() => {
@@ -251,35 +236,6 @@ const Header = ({ _loading = false }) => {
     };
   }, [checkAuthStatus, checkPendingTx, currentNetwork]);
 
-  const checkNetwork = useCallback(async () => {
-    const mainnetAvailable = await usewallet.openapi.pingNetwork('mainnet');
-    setMainnetAvailable(mainnetAvailable);
-    const testnetAvailable = await usewallet.openapi.pingNetwork('testnet');
-    setTestnetAvailable(testnetAvailable);
-  }, [usewallet]);
-
-  useEffect(() => {
-    if (usernameDrawer) {
-      checkNetwork();
-    }
-  }, [usernameDrawer, checkNetwork]);
-
-  const switchNetwork = useCallback(
-    async (network: string) => {
-      // Update local states
-      setNetwork(network);
-
-      // Switch network in wallet
-      await usewallet.switchNetwork(network);
-
-      toggleUsernameDrawer();
-
-      // Navigate if needed
-      history.push('/dashboard');
-    },
-    [usewallet, toggleUsernameDrawer, history, setNetwork]
-  );
-
   // Function to construct GitHub comparison URL
   const getComparisonUrl = useCallback(() => {
     const repoUrl = process.env.REPO_URL || 'https://github.com/onflow/FRW-Extension';
@@ -292,147 +248,6 @@ const Header = ({ _loading = false }) => {
 
     return `${repoUrl}/commits`;
   }, []);
-
-  interface AccountFunctionProps {
-    username: string;
-    avatar: string;
-  }
-
-  const AccountFunction = (props: AccountFunctionProps) => {
-    return (
-      <ListItem
-        disablePadding
-        key={props.username}
-        onClick={() => {
-          toggleUsernameDrawer();
-        }}
-      >
-        <ListItemButton
-          onClick={() => {
-            navigator.clipboard.writeText(props.username);
-          }}
-        >
-          <ListItemIcon>
-            <Avatar
-              component="span"
-              src={props.avatar}
-              sx={{ width: '24px', height: '24px', ml: '4px' }}
-              alt="avatar"
-            />
-          </ListItemIcon>
-          <ListItemText>
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-              }}
-            >
-              <Tooltip title={chrome.i18n.getMessage('Copy__username')} arrow>
-                <Typography variant="body1" component="div" display="inline" color="text">
-                  {'@' + props.username}
-                </Typography>
-              </Tooltip>
-            </Box>
-          </ListItemText>
-        </ListItemButton>
-      </ListItem>
-    );
-  };
-
-  const NetworkFunction = () => {
-    return (
-      <>
-        <Typography variant="h5" color="text" padding="18px 0 0 18px" fontWeight="semi-bold">
-          {chrome.i18n.getMessage('Network')}
-        </Typography>
-        <List>
-          <ListItem
-            disablePadding
-            key="mainnet"
-            secondaryAction={
-              !mainnetAvailable && (
-                <ListItemText>
-                  <Typography
-                    variant="caption"
-                    component="span"
-                    display="inline"
-                    color="error.main"
-                  >
-                    {chrome.i18n.getMessage('Unavailable')}
-                  </Typography>
-                </ListItemText>
-              )
-            }
-            onClick={() => {
-              switchNetwork('mainnet');
-            }}
-          >
-            <ListItemButton>
-              <ListItemIcon>
-                <FiberManualRecordIcon
-                  style={{
-                    color: networkColor('mainnet'),
-                    fontSize: '10px',
-                    marginLeft: '10px',
-                    marginRight: '10px',
-                    opacity: currentNetwork === 'mainnet' ? '1' : '0.1',
-                  }}
-                />
-              </ListItemIcon>
-              <ListItemText>
-                <Typography variant="body1" component="span" display="inline" color="text">
-                  {chrome.i18n.getMessage('Mainnet')}
-                </Typography>
-              </ListItemText>
-            </ListItemButton>
-          </ListItem>
-
-          <ListItem
-            disablePadding
-            key="testnet"
-            secondaryAction={
-              !testnetAvailable && (
-                <ListItemText>
-                  <Typography
-                    variant="caption"
-                    component="span"
-                    display="inline"
-                    color="error.main"
-                  >
-                    {chrome.i18n.getMessage('Unavailable')}
-                  </Typography>
-                </ListItemText>
-              )
-            }
-            onClick={() => {
-              switchNetwork('testnet');
-            }}
-          >
-            <ListItemButton>
-              <ListItemIcon>
-                <FiberManualRecordIcon
-                  style={{
-                    color: networkColor('testnet'),
-                    fontSize: '10px',
-                    marginLeft: '10px',
-                    marginRight: '10px',
-                    fontFamily: 'Inter,sans-serif',
-                    opacity: currentNetwork === 'testnet' ? '1' : '0.1',
-                  }}
-                />
-              </ListItemIcon>
-              <ListItemText>
-                <Typography variant="body1" component="span" display="inline" color="text">
-                  {chrome.i18n.getMessage('Testnet')}
-                </Typography>
-              </ListItemText>
-            </ListItemButton>
-          </ListItem>
-        </List>
-      </>
-    );
-  };
 
   const createWalletList = (props: WalletType) => {
     return (
@@ -455,35 +270,6 @@ const Header = ({ _loading = false }) => {
     );
   };
 
-  const createAccountList = (props: UserInfoResponse) => {
-    return (
-      props && (
-        <List component="nav" key={props.username}>
-          <AccountFunction username={props.username} avatar={props.avatar} />
-        </List>
-      )
-    );
-  };
-
-  const usernameSelect = () => {
-    return (
-      <Drawer
-        open={usernameDrawer}
-        anchor="top"
-        onClose={toggleUsernameDrawer}
-        classes={{ paper: classes.paper }}
-        PaperProps={{
-          sx: { width: '100%', marginTop: '56px', bgcolor: 'background.paper' },
-        }}
-      >
-        <Typography variant="h5" color="text" padding="18px 0 0 18px" fontWeight="semi-bold">
-          {chrome.i18n.getMessage('Account')}
-        </Typography>
-        {userInfo && createAccountList(userInfo)}
-        {developerMode && NetworkFunction()}
-      </Drawer>
-    );
-  };
   const NewsDrawer = () => {
     return (
       <Drawer
@@ -753,7 +539,6 @@ const Header = ({ _loading = false }) => {
             />
           )}
           {appBarLabel(currentWallet)}
-          {usernameSelect()}
           <NewsDrawer />
           {userInfo && (
             <Popup
