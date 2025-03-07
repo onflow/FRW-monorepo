@@ -17,13 +17,17 @@ export const useNetwork = () => {
       if (namespace === 'local') {
         // Changes is to local storage
         // Check network change
-        if (changes['userWallets']) {
+        if (changes['userWallets'] && changes['userWallets'].newValue) {
           const userWallets = changes['userWallets'].newValue;
-          setNetwork(userWallets.network);
-          setEmulatorModeOn(userWallets.emulatorMode);
+          if (userWallets.network) {
+            setNetwork(userWallets.network);
+          }
+          if (userWallets.emulatorMode !== undefined) {
+            setEmulatorModeOn(userWallets.emulatorMode);
+          }
         }
         // Check developer mode change
-        if (changes['developerMode']) {
+        if (changes['developerMode'] !== undefined) {
           setDeveloperMode(changes['developerMode'].newValue);
         }
       }
@@ -35,9 +39,15 @@ export const useNetwork = () => {
       const emulatorModeValue = await storage.get('emulatorMode');
       const userWalletsStorage = await storage.get('userWallets');
       if (mounted) {
-        setDeveloperMode(developerModeValue);
-        setEmulatorModeOn(emulatorModeValue);
-        setNetwork(userWalletsStorage.network);
+        if (developerModeValue !== undefined) {
+          setDeveloperMode(developerModeValue);
+        }
+        if (emulatorModeValue !== undefined) {
+          setEmulatorModeOn(emulatorModeValue);
+        }
+        if (userWalletsStorage && userWalletsStorage.network) {
+          setNetwork(userWalletsStorage.network);
+        }
       }
     };
 

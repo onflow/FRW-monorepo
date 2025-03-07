@@ -1,8 +1,6 @@
 import { act, useState, useEffect } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { useNetwork } from '../useNetworkHook';
-
 // Mock React
 vi.mock('react', async () => {
   const actual = await vi.importActual('react');
@@ -16,20 +14,35 @@ vi.mock('react', async () => {
   };
 });
 
-// Mock chrome API
-const mockChromeStorage = {
-  local: {
-    get: vi.fn(),
-  },
-  onChanged: {
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-  },
-};
-
-vi.stubGlobal('chrome', {
-  storage: mockChromeStorage,
+// Mock storage module - must be defined before the vi.mock call
+vi.mock('@/background/webapi/storage', () => {
+  return {
+    default: {
+      get: vi.fn().mockImplementation((key) => {
+        if (key === 'developerMode') {
+          return Promise.resolve(false);
+        }
+        if (key === 'emulatorMode') {
+          return Promise.resolve(false);
+        }
+        if (key === 'userWallets') {
+          return Promise.resolve({ network: 'mainnet' });
+        }
+        return Promise.resolve({});
+      }),
+      addStorageListener: vi.fn(),
+      removeStorageListener: vi.fn(),
+    },
+    __esModule: true,
+  };
 });
+
+import storage from '@/background/webapi/storage';
+
+import { useNetwork } from '../useNetworkHook';
+
+// Get the mocked storage
+const mockStorage = vi.mocked(storage);
 
 describe('useNetworkHook', () => {
   let setNetworkMock: ReturnType<typeof vi.fn>;
@@ -48,16 +61,16 @@ describe('useNetworkHook', () => {
     vi.mocked(useState).mockImplementationOnce(() => [false, setDeveloperModeMock]);
     vi.mocked(useState).mockImplementationOnce(() => [false, setEmulatorModeOnMock]);
 
-    // Reset chrome storage mock with default values
-    mockChromeStorage.local.get.mockImplementation((key) => {
+    // Reset storage mock with default values
+    mockStorage.get.mockImplementation((key) => {
       if (key === 'developerMode') {
-        return Promise.resolve({ developerMode: false });
+        return Promise.resolve(false);
       }
       if (key === 'emulatorMode') {
-        return Promise.resolve({ emulatorMode: false });
+        return Promise.resolve(false);
       }
       if (key === 'userWallets') {
-        return Promise.resolve({ userWallets: { network: 'mainnet' } });
+        return Promise.resolve({ network: 'mainnet' });
       }
       return Promise.resolve({});
     });
@@ -69,20 +82,20 @@ describe('useNetworkHook', () => {
     expect(network).toBe('mainnet');
     expect(developerMode).toBe(false);
     expect(emulatorModeOn).toBe(false);
-    expect(mockChromeStorage.onChanged.addListener).toHaveBeenCalled();
+    expect(mockStorage.addStorageListener).toHaveBeenCalled();
   });
 
   it('should load initial data from storage', async () => {
     // Mock storage returns for initial load
-    mockChromeStorage.local.get.mockImplementation((key) => {
+    mockStorage.get.mockImplementation((key) => {
       if (key === 'developerMode') {
-        return Promise.resolve({ developerMode: true });
+        return Promise.resolve(true);
       }
       if (key === 'emulatorMode') {
-        return Promise.resolve({ emulatorMode: true });
+        return Promise.resolve(true);
       }
       if (key === 'userWallets') {
-        return Promise.resolve({ userWallets: { network: 'testnet' } });
+        return Promise.resolve({ network: 'testnet' });
       }
       return Promise.resolve({});
     });
@@ -94,16 +107,19 @@ describe('useNetworkHook', () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
-    expect(mockChromeStorage.local.get).toHaveBeenCalledWith('developerMode');
-    expect(mockChromeStorage.local.get).toHaveBeenCalledWith('emulatorMode');
-    expect(mockChromeStorage.local.get).toHaveBeenCalledWith('userWallets');
+    expect(mockStorage.get).toHaveBeenCalledWith('developerMode');
+    expect(mockStorage.get).toHaveBeenCalledWith('emulatorMode');
+    expect(mockStorage.get).toHaveBeenCalledWith('userWallets');
+    expect(setDeveloperModeMock).toHaveBeenCalledWith(true);
+    expect(setEmulatorModeOnMock).toHaveBeenCalledWith(true);
+    expect(setNetworkMock).toHaveBeenCalledWith('testnet');
   });
 
   it('should handle storage changes for userWallets', () => {
     useNetwork();
 
     // Simulate storage change event for userWallets
-    const handleStorageChange = mockChromeStorage.onChanged.addListener.mock.calls[0][0];
+    const handleStorageChange = mockStorage.addStorageListener.mock.calls[0][0];
 
     handleStorageChange(
       {
@@ -123,7 +139,7 @@ describe('useNetworkHook', () => {
     useNetwork();
 
     // Simulate storage change event for developerMode
-    const handleStorageChange = mockChromeStorage.onChanged.addListener.mock.calls[0][0];
+    const handleStorageChange = mockStorage.addStorageListener.mock.calls[0][0];
 
     handleStorageChange(
       {
@@ -148,7 +164,7 @@ describe('useNetworkHook', () => {
       // Call the cleanup function
       cleanupFn();
 
-      expect(mockChromeStorage.onChanged.removeListener).toHaveBeenCalled();
+      expect(mockStorage.removeStorageListener).toHaveBeenCalled();
     }
   });
 
@@ -186,15 +202,15 @@ describe('useNetworkHook', () => {
     ]);
 
     // Mock storage to return delayed promises
-    mockChromeStorage.local.get.mockImplementation((key) => {
+    mockStorage.get.mockImplementation((key) => {
       return new Promise((resolve) => {
         setTimeout(() => {
           if (key === 'developerMode') {
-            resolve({ developerMode: true });
+            resolve(true);
           } else if (key === 'emulatorMode') {
-            resolve({ emulatorMode: true });
+            resolve(true);
           } else if (key === 'userWallets') {
-            resolve({ userWallets: { network: 'testnet' } });
+            resolve({ network: 'testnet' });
           } else {
             resolve({});
           }
