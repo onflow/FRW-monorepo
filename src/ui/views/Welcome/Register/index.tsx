@@ -1,7 +1,7 @@
 import { Box } from '@mui/material';
 import * as bip39 from 'bip39';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 import { getAccountKey } from '@/shared/utils/address';
 import AllSet from '@/ui/FRWComponent/LandingPages/AllSet';
@@ -28,6 +28,10 @@ type StepType = (typeof STEPS)[keyof typeof STEPS];
 const Register = () => {
   const history = useHistory();
   const usewallet = useWallet();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const isAddWallet = params.get('add') === 'true';
+
   const [activeTab, setActiveTab] = useState<StepType>(STEPS.USERNAME);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -141,6 +145,7 @@ const Register = () => {
             username={username}
             showTerms={true}
             autoFocus={true}
+            isLogin={isAddWallet}
           />
         )}
 

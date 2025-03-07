@@ -140,7 +140,9 @@ const SetPassword: React.FC<SetPasswordProps> = ({
     <>
       <Box className="registerBox">
         <Typography variant="h4">
-          {title || (
+          {isLogin ? (
+            chrome.i18n.getMessage('Confirm__Password')
+          ) : (
             <>
               {chrome.i18n.getMessage('Create')}
               <Box display="inline" color="primary.main">
@@ -170,19 +172,21 @@ const SetPassword: React.FC<SetPasswordProps> = ({
               <Box style={{ marginBottom: '24px' }}>{helperText}</Box>
             </SlideRelative>
 
-            <Box sx={{ pb: '30px', marginTop: password ? '0px' : '24px' }}>
-              <PasswordInput
-                value={confirmPassword}
-                onChange={setConfirmPassword}
-                isVisible={isConfirmPasswordVisible}
-                setVisible={setConfirmPasswordVisible}
-                placeholder={chrome.i18n.getMessage('Confirm__your__password')}
-                className={classes.inputBox}
-              />
-              <SlideRelative show={!!confirmPassword} direction="down">
-                {helperMatch}
-              </SlideRelative>
-            </Box>
+            {!isLogin && (
+              <Box sx={{ pb: '30px', marginTop: password ? '0px' : '24px' }}>
+                <PasswordInput
+                  value={confirmPassword}
+                  onChange={setConfirmPassword}
+                  isVisible={isConfirmPasswordVisible}
+                  setVisible={setConfirmPasswordVisible}
+                  placeholder={chrome.i18n.getMessage('Confirm__your__password')}
+                  className={classes.inputBox}
+                />
+                <SlideRelative show={!!confirmPassword} direction="down">
+                  {helperMatch}
+                </SlideRelative>
+              </Box>
+            )}
           </FormGroup>
         </Box>
 
@@ -191,7 +195,7 @@ const SetPassword: React.FC<SetPasswordProps> = ({
         <SubmitButton
           onClick={handleSubmit}
           isLoading={isLoading}
-          disabled={!(isMatch && isCharacters && isCheck)}
+          disabled={isLogin ? !isCharacters : !(isMatch && isCharacters && isCheck)}
           isLogin={isLogin}
         />
       </Box>

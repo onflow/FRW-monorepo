@@ -285,7 +285,7 @@ export class WalletController extends BaseController {
     await passwordService.clear();
     sessionService.broadcastEvent('accountsChanged', []);
     sessionService.broadcastEvent('lock');
-    openIndexPage('welcome');
+    openIndexPage('welcome?add=true');
     await this.switchNetwork(switchingTo);
   };
 
