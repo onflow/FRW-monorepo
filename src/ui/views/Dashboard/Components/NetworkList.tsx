@@ -1,8 +1,6 @@
 import {
   Box,
   Typography,
-  ListItemIcon,
-  CardMedia,
   Select,
   MenuItem,
   FormControl,
@@ -14,20 +12,7 @@ import { useHistory } from 'react-router-dom';
 
 import { useWallet } from 'ui/utils';
 
-import mainnetIndicator from '../../../FRWAssets/svg/mainnetArrow.svg';
 import networkLink from '../../../FRWAssets/svg/networkLink.svg';
-import testnetIndicator from '../../../FRWAssets/svg/testnetArrow.svg';
-
-const getIndicatorImage = (network: string) => {
-  switch (network) {
-    case 'mainnet':
-      return mainnetIndicator;
-    case 'testnet':
-      return testnetIndicator;
-    default:
-      return mainnetIndicator; // Default to mainnet if no match
-  }
-};
 
 const bgColor = (network: string) => {
   switch (network) {
