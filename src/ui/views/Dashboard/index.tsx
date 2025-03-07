@@ -4,7 +4,7 @@ import { fetchAndActivate, getRemoteConfig } from 'firebase/remote-config';
 import React, { useEffect } from 'react';
 
 import { NetworkIndicator } from '@/ui/FRWComponent/NetworkIndicator';
-import { useNetworks } from '@/ui/hooks/useNetworkHook';
+import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { getFirbaseConfig } from 'background/utils/firebaseConfig';
 import { useWallet } from 'ui/utils';
 
@@ -13,50 +13,28 @@ import WalletTab from '../Wallet';
 const Dashboard = () => {
   // const [value, setValue] = React.useState('wallet');
   const usewallet = useWallet();
-  const { currentNetwork, emulatorModeOn, setEmulatorModeOn, setNetwork } = useNetworks();
-
+  const { network, emulatorModeOn } = useNetwork();
   useEffect(() => {
-    let isMounted = true;
-
     const fetchAll = async () => {
       //todo fix cadence loading
       await usewallet.getCadenceScripts();
-      const [network, emulatorMode] = await Promise.all([
-        usewallet.getNetwork(),
-        usewallet.getEmulatorMode(),
-      ]);
+      try {
+        const env: string = process.env.NODE_ENV!;
+        const firebaseConfig = getFirbaseConfig();
 
-      const env: string = process.env.NODE_ENV!;
-      const firebaseConfig = getFirbaseConfig();
-
-      const app = initializeApp(firebaseConfig, env);
-      const remoteConfig = getRemoteConfig(app);
-      // Firebase remote config
-      fetchAndActivate(remoteConfig)
-        .then((_res) => {
-          // Remote config activated successfully
-        })
-        .catch((error) => {
-          // Handle error silently or log to a monitoring service
-          if (process.env.NODE_ENV !== 'production') {
-            console.error('Error fetching remote config:', error);
-          }
-        });
-
-      return { network, emulatorMode };
-    };
-
-    fetchAll().then(({ network, emulatorMode }) => {
-      if (isMounted) {
-        setNetwork(network);
-        setEmulatorModeOn(emulatorMode);
+        const app = initializeApp(firebaseConfig, env);
+        const remoteConfig = getRemoteConfig(app);
+        // Firebase remote config
+        fetchAndActivate(remoteConfig);
+      } catch (error) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.error('Error fetching remote config:', error);
+        }
       }
-    });
-
-    return () => {
-      isMounted = false;
     };
-  }, [usewallet, setEmulatorModeOn, setNetwork]);
+
+    fetchAll();
+  }, [usewallet]);
 
   return (
     <div className="page">
@@ -68,10 +46,10 @@ const Dashboard = () => {
           flexDirection: 'column',
         }}
       >
-        <NetworkIndicator network={currentNetwork} emulatorMode={emulatorModeOn} />
+        <NetworkIndicator network={network} emulatorMode={emulatorModeOn} />
         <div test-id="x-overflow" style={{ overflowX: 'hidden', height: '100%' }}>
           <div style={{ display: 'block', width: '100%' }}>
-            <WalletTab network={currentNetwork} />
+            <WalletTab network={network} />
           </div>
         </div>
       </Box>

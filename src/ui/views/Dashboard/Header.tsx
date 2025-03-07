@@ -29,7 +29,7 @@ import {
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
 import { useCoins } from '@/ui/hooks/useCoinHook';
-import { useNetworks } from '@/ui/hooks/useNetworkHook';
+import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useNews } from '@/ui/utils/NewsContext';
 import { useWallet, formatAddress, useWalletLoaded } from 'ui/utils';
@@ -62,7 +62,7 @@ const Header = ({ _loading = false }) => {
   const location = useLocation();
 
   const { clearCoins } = useCoins();
-  const { currentNetwork, setNetwork, developerMode } = useNetworks();
+  const { network, developerMode } = useNetwork();
   const {
     mainAddress,
     currentWallet,
@@ -135,7 +135,6 @@ const Header = ({ _loading = false }) => {
         await usewallet.lockWallet();
         await usewallet.clearWallet();
         await usewallet.switchNetwork(switchingTo);
-        setNetwork(switchingTo);
         clearCoins();
         clearProfileData();
         history.push('/unlock');
@@ -146,7 +145,7 @@ const Header = ({ _loading = false }) => {
         setSwitchLoading(false);
       }
     },
-    [usewallet, history, setNetwork, clearCoins, clearProfileData]
+    [usewallet, history, clearCoins, clearProfileData]
   );
 
   const setWallets = async (
@@ -234,7 +233,7 @@ const Header = ({ _loading = false }) => {
     return () => {
       chrome.runtime.onMessage.removeListener(transactionHandler);
     };
-  }, [checkAuthStatus, checkPendingTx, currentNetwork]);
+  }, [checkAuthStatus, checkPendingTx, network]);
 
   // Function to construct GitHub comparison URL
   const getComparisonUrl = useCallback(() => {
@@ -312,7 +311,7 @@ const Header = ({ _loading = false }) => {
                 height: '28px',
                 left: '-1px',
                 top: '-1px',
-                color: networkColor(currentNetwork),
+                color: networkColor(network),
               }}
             />
           )}
@@ -327,8 +326,8 @@ const Header = ({ _loading = false }) => {
               position: 'relative',
               border: isPending
                 ? ''
-                : currentNetwork !== 'mainnet'
-                  ? `2px solid ${networkColor(currentNetwork)}`
+                : network !== 'mainnet'
+                  ? `2px solid ${networkColor(network)}`
                   : '2px solid #282828',
               marginRight: '0px',
             }}
@@ -530,7 +529,7 @@ const Header = ({ _loading = false }) => {
               current={currentWallet}
               createWalletList={createWalletList}
               setWallets={setWallets}
-              currentNetwork={currentNetwork}
+              currentNetwork={network}
               evmWallet={evmWallet}
               networkColor={networkColor}
               evmLoading={evmLoading}

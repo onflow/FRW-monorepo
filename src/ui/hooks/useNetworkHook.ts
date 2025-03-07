@@ -1,34 +1,55 @@
-import { useCallback } from 'react';
+import { useEffect, useState } from 'react';
 
-import { useNetworkStore } from '@/ui/stores/networkStore';
-import { useWallet, useWalletLoaded } from '@/ui/utils';
+export const useNetwork = () => {
+  const [network, setNetwork] = useState<string>('mainnet');
+  const [developerMode, setDeveloperMode] = useState<boolean>(false);
+  const [emulatorModeOn, setEmulatorModeOn] = useState<boolean>(false);
 
-export const useNetworks = () => {
-  const usewallet = useWallet();
-  const walletLoaded = useWalletLoaded();
+  useEffect(() => {
+    let mounted = true;
+    // Set up storage change listener
+    const handleStorageChange = (
+      changes: { [key: string]: chrome.storage.StorageChange },
+      namespace: chrome.storage.AreaName
+    ) => {
+      if (namespace === 'local') {
+        // Changes is to local storage
+        // Check network change
+        if (changes['userWallets']) {
+          const userWallets = changes['userWallets'].newValue;
+          setNetwork(userWallets.network);
+          setEmulatorModeOn(userWallets.emulatorMode);
+        }
+        // Check developer mode change
+        if (changes['developerMode']) {
+          setDeveloperMode(changes['developerMode'].newValue);
+        }
+      }
+    };
 
-  // Action selectors
-  const setNetwork = useNetworkStore((state) => state.setNetwork);
-  const setDeveloperMode = useNetworkStore((state) => state.setDeveloperMode);
-  const setEmulatorModeOn = useNetworkStore((state) => state.setEmulatorModeOn);
+    // Initial load from storage
+    const loadInitialData = async () => {
+      const developerModeValue = await chrome.storage.local.get('developerMode');
+      const emulatorModeValue = await chrome.storage.local.get('emulatorMode');
+      const userWallets = await chrome.storage.local.get('userWallets');
+      if (mounted) {
+        setDeveloperMode(developerModeValue.developerMode);
+        setEmulatorModeOn(emulatorModeValue.emulatorMode);
+        setNetwork(userWallets.network);
+      }
+    };
 
-  // State selectors
-  const currentNetwork = useNetworkStore((state) => state.currentNetwork);
-  const developerMode = useNetworkStore((state) => state.developerMode);
-  const emulatorModeOn = useNetworkStore((state) => state.emulatorModeOn);
+    loadInitialData();
+    chrome.storage.onChanged.addListener(handleStorageChange);
 
-  const fetchNetwork = useCallback(async () => {
-    if (!usewallet || !walletLoaded) return;
-    const network = await usewallet.getNetwork();
-    setNetwork(network);
-  }, [usewallet, setNetwork, walletLoaded]);
+    return () => {
+      mounted = false;
+      chrome.storage.onChanged.removeListener(handleStorageChange);
+    };
+  }, []);
 
   return {
-    fetchNetwork,
-    setNetwork,
-    setDeveloperMode,
-    setEmulatorModeOn,
-    currentNetwork,
+    network: network,
     developerMode,
     emulatorModeOn,
   };
