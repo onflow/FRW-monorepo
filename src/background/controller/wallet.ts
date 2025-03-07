@@ -124,8 +124,14 @@ export class WalletController extends BaseController {
 
   /* wallet */
   boot = async (password) => {
-    const result = await keyringService.boot(password);
-    return result;
+    const isBooted = await keyringService.isBooted();
+    console.log('boot', password, await keyringService.isBooted());
+    if (isBooted) {
+      await keyringService.verifyPassword(password);
+      await keyringService.boot(password);
+    } else {
+      await keyringService.boot(password);
+    }
   };
   isBooted = () => keyringService.isBooted();
   loadMemStore = () => keyringService.loadMemStore();
@@ -275,8 +281,6 @@ export class WalletController extends BaseController {
   lockAdd = async () => {
     const switchingTo = 'mainnet';
 
-    const password = keyringService.getPassword();
-    await storage.set('tempPassword', password);
     await keyringService.setLocked();
     await passwordService.clear();
     sessionService.broadcastEvent('accountsChanged', []);
@@ -316,8 +320,6 @@ export class WalletController extends BaseController {
   restoreWallet = async () => {
     const switchingTo = 'mainnet';
 
-    const password = keyringService.getPassword();
-    await storage.set('tempPassword', password);
     await keyringService.setLocked();
     await passwordService.clear();
 
