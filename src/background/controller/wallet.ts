@@ -1622,6 +1622,7 @@ export class WalletController extends BaseController {
 
     // Clear collections
     this.clearNFTCollection();
+    this.clearEvmNFTList();
     this.clearCoinList();
 
     // If switching main wallet, refresh the EVM wallet
