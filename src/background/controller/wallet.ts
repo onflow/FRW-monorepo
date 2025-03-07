@@ -175,6 +175,9 @@ export class WalletController extends BaseController {
 
   refreshWallets = async () => {
     // Refresh all the wallets after unlocking or switching profiles
+    // Refresh the cadence scripts first
+    await this.getCadenceScripts();
+    // Refresh the main address
     const mainAddress = await this.getMainAddress();
     // Refresh the EVM wallet
     await this.queryEvmAddress(mainAddress);
@@ -2117,6 +2120,8 @@ export class WalletController extends BaseController {
         return '';
       }
     } catch (error) {
+      console.trace('queryEvmAddress error', address);
+
       console.error('Error querying the script or setting EVM address:', error);
       return '';
     }

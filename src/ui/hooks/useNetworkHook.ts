@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 
+import storage, { type StorageChange, type AreaName } from '@/background/webapi/storage';
+
 export const useNetwork = () => {
   const [network, setNetwork] = useState<string>('mainnet');
   const [developerMode, setDeveloperMode] = useState<boolean>(false);
@@ -9,8 +11,8 @@ export const useNetwork = () => {
     let mounted = true;
     // Set up storage change listener
     const handleStorageChange = (
-      changes: { [key: string]: chrome.storage.StorageChange },
-      namespace: chrome.storage.AreaName
+      changes: { [key: string]: StorageChange },
+      namespace: AreaName
     ) => {
       if (namespace === 'local') {
         // Changes is to local storage
@@ -29,27 +31,27 @@ export const useNetwork = () => {
 
     // Initial load from storage
     const loadInitialData = async () => {
-      const developerModeValue = await chrome.storage.local.get('developerMode');
-      const emulatorModeValue = await chrome.storage.local.get('emulatorMode');
-      const userWallets = await chrome.storage.local.get('userWallets');
+      const developerModeValue = await storage.get('developerMode');
+      const emulatorModeValue = await storage.get('emulatorMode');
+      const userWalletsStorage = await storage.get('userWallets');
       if (mounted) {
-        setDeveloperMode(developerModeValue.developerMode);
-        setEmulatorModeOn(emulatorModeValue.emulatorMode);
-        setNetwork(userWallets.network);
+        setDeveloperMode(developerModeValue);
+        setEmulatorModeOn(emulatorModeValue);
+        setNetwork(userWalletsStorage.network);
       }
     };
 
     loadInitialData();
-    chrome.storage.onChanged.addListener(handleStorageChange);
+    storage.addStorageListener(handleStorageChange);
 
     return () => {
       mounted = false;
-      chrome.storage.onChanged.removeListener(handleStorageChange);
+      storage.removeStorageListener(handleStorageChange);
     };
   }, []);
 
   return {
-    network: network,
+    network,
     developerMode,
     emulatorModeOn,
   };

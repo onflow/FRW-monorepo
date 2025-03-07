@@ -8,7 +8,6 @@ import {
   CircularProgress,
 } from '@mui/material';
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
 
 import { useWallet } from 'ui/utils';
 
@@ -32,16 +31,15 @@ interface NetworkListProps {
 
 const NetworkList = ({ networkColor, currentNetwork }: NetworkListProps) => {
   const usewallet = useWallet();
-  const history = useHistory();
 
   const [isSwitchingNetwork, setIsSwitchingNetwork] = useState(false);
   const switchNetwork = async (network: string) => {
     setIsSwitchingNetwork(true);
     try {
       if (currentNetwork !== network) {
-        await usewallet.switchNetwork(network);
-        // TODO: replace it with better UX
-        history.push('/dashboard');
+        // Don't await it, because it will block the main thread
+        usewallet.switchNetwork(network);
+
         window.location.reload();
       }
     } catch (error) {
