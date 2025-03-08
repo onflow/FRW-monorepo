@@ -2,7 +2,6 @@ import { act } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { useCoinStore } from '@/ui/stores/coinStore';
-import { useNetworkStore } from '@/ui/stores/networkStore';
 import { useProfileStore } from '@/ui/stores/profileStore';
 import { useWallet, useWalletLoaded } from '@/ui/utils/WalletContext';
 
@@ -18,20 +17,6 @@ vi.mock('react', async () => {
     useState: vi.fn().mockImplementation((initialValue) => [initialValue, vi.fn()]),
   };
 });
-
-// Mock all stores first
-vi.mock('@/ui/stores/networkStore', () => ({
-  useNetworkStore: vi.fn((selector) =>
-    selector({
-      currentNetwork: 'mainnet',
-      developerMode: false,
-      emulatorModeOn: false,
-      setNetwork: vi.fn(),
-      setDeveloperMode: vi.fn(),
-      setEmulatorModeOn: vi.fn(),
-    })
-  ),
-}));
 
 vi.mock('@/ui/stores/profileStore', () => ({
   useProfileStore: vi.fn((selector) =>

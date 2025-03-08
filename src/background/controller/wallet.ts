@@ -175,6 +175,9 @@ export class WalletController extends BaseController {
 
   refreshWallets = async () => {
     // Refresh all the wallets after unlocking or switching profiles
+    // Refresh the cadence scripts first
+    await this.getCadenceScripts();
+    // Refresh the main address
     const mainAddress = await this.getMainAddress();
     // Refresh the EVM wallet
     await this.queryEvmAddress(mainAddress);
@@ -2118,6 +2121,8 @@ export class WalletController extends BaseController {
         return '';
       }
     } catch (error) {
+      console.trace('queryEvmAddress error', address);
+
       console.error('Error querying the script or setting EVM address:', error);
       return '';
     }
@@ -3091,7 +3096,10 @@ export class WalletController extends BaseController {
 
     // setup fcl for the new network
     await userWalletService.setupFcl();
-    this.refreshAll();
+    await this.refreshAll();
+
+    // Reload everything
+    await this.refreshWallets();
 
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       if (!tabs || tabs.length === 0) {
@@ -3124,6 +3132,9 @@ export class WalletController extends BaseController {
   refreshAll = async () => {
     console.trace('refreshAll trace');
     console.log('refreshAll');
+    // Clear the active wallet if any
+    // If we don't do this, the user wallets will not be refreshed
+    userWalletService.setActiveWallet(null);
     await this.refreshUserWallets();
     this.clearNFT();
     this.refreshAddressBook();

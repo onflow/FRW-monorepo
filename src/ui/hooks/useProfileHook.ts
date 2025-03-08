@@ -7,14 +7,14 @@ import type {
 } from '@/shared/types/network-types';
 import { ensureEvmAddressPrefix, withPrefix } from '@/shared/utils/address';
 import { retryOperation } from '@/shared/utils/retryOperation';
-import { useNetworks } from '@/ui/hooks/useNetworkHook';
+import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfileStore } from '@/ui/stores/profileStore';
 import { useWallet, useWalletLoaded } from '@/ui/utils/WalletContext';
 
 export const useProfiles = () => {
   const usewallet = useWallet();
   const walletLoaded = useWalletLoaded();
-  const { currentNetwork } = useNetworks();
+  const { network } = useNetwork();
 
   // Action selectors
   const setMainAddress = useProfileStore((state) => state.setMainAddress);
@@ -54,7 +54,7 @@ export const useProfiles = () => {
       if (!Array.isArray(data)) return [];
 
       const filteredData = data.filter((wallet) => {
-        return wallet.chain_id === currentNetwork;
+        return wallet.chain_id === network;
       });
 
       return filteredData.map((wallet, index) => ({
@@ -66,7 +66,7 @@ export const useProfiles = () => {
         color: wallet.color || '',
       }));
     },
-    [currentNetwork]
+    [network]
   );
 
   // Helper function to handle EVM wallet setup
