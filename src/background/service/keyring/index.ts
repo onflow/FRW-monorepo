@@ -361,6 +361,7 @@ class KeyringService extends EventEmitter {
     this.memStore.updateState({ isUnlocked: false });
     // remove keyrings
     this.keyring = [];
+    this.keyringList = [];
     await this._updateMemStoreKeyrings();
     this.emit('lock');
     return this.fullUpdate();
@@ -1177,6 +1178,7 @@ class KeyringService extends EventEmitter {
 
   async resetKeyRing() {
     await this.clearKeyrings();
+    await this.clearKeyringList();
     await this.clearVault();
   }
 
@@ -1193,6 +1195,18 @@ class KeyringService extends EventEmitter {
     this.memStore.updateState({
       keyrings: [],
     });
+  }
+
+  /**
+   * Clear Keyring list
+   *
+   * Deallocates all decrypted keyringList in state.
+   *
+   */
+
+  async clearKeyringList(): Promise<void> {
+    // clear keyringList from state
+    this.keyringList = [];
   }
 
   /**
