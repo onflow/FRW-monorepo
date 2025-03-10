@@ -464,59 +464,6 @@ const MenuDrawer = (props: MenuDrawerProps) => {
               ))}
           </Box>
         </Box>
-        {/* <ListItem disablePadding>
-          <ListItemButton onClick={() => {
-            toggleDrawer();
-            toggleUnread();
-            goToInbox();
-          }}>
-            <ListItemIcon>
-              <InboxIcon style={{
-                marginLeft: '4px',
-              }} />
-            </ListItemIcon>
-            <ListItemText primary={domain ? chrome.i18n.getMessage('Inbox') : chrome.i18n.getMessage('Enable__Inbox')} />
-            {unread ?
-              <Box
-                sx={{
-                  width: '32px',
-                  color: '#fff',
-                  textAlign: 'center',
-                  background: '#41CC5D',
-                  borderRadius: '12px',
-                }}
-              >
-                {unread}
-              </Box>
-              :
-              <Box></Box>
-            }
-          </ListItemButton>
-        </ListItem> */}
-        {/* <ListItem disablePadding>
-          <ListItemButton onClick={() => setAlertOpen(true)}>
-            <ListItemIcon
-              sx={{
-                width: '24px',
-                minWidth: '24px',
-                marginRight: '12px',
-              }}
-            >
-              <AddIcon style={{
-                marginLeft: '4px',
-              }} />
-            </ListItemIcon>
-            <ListItemText primary={chrome.i18n.getMessage('Import__Wallet')} />
-          </ListItemButton>
-        </ListItem> */}
-        {/* <ListItem disablePadding>
-          <ListItemButton component="a" href="/">
-            <ListItemIcon>
-              <LoginIcon />
-            </ListItemIcon>
-            <ListItemText primary="Import wallet" />
-          </ListItemButton>
-        </ListItem> */}
         <Box
           sx={{
             justifyContent: 'space-between',
