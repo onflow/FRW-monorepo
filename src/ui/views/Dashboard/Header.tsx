@@ -130,13 +130,12 @@ const Header = ({ _loading = false }) => {
         } else {
           await storage.set('currentId', '');
         }
-
         await usewallet.signOutWallet();
         await usewallet.clearWallet();
+        await usewallet.switchAccount(account.id);
         await usewallet.switchNetwork(switchingTo);
         clearCoins();
         clearProfileData();
-        await usewallet.switchAccount(account.id);
       } catch (error) {
         console.error('Error during account switch:', error);
         //if cannot login directly with current password switch to unlock page
