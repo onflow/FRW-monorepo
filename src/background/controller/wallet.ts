@@ -704,7 +704,7 @@ export class WalletController extends BaseController {
 
   getTypedAccounts = async (type) => {
     return Promise.all(
-      keyringService.keyring
+      keyringService.currentKeyring
         .filter((keyring) => !type || keyring.type === type)
         .map((keyring) => keyringService.displayForKeyring(keyring))
     );

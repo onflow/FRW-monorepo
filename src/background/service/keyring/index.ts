@@ -150,7 +150,7 @@ class KeyringService extends EventEmitter {
   keyringTypes: any[];
   store!: SimpleStore<any>;
   memStore: SimpleStore<MemStoreState>;
-  keyring: Keyring[];
+  currentKeyring: Keyring[];
   keyringList: KeyringData[];
   encryptor: typeof encryptor = encryptor;
   password: string | null = null;
@@ -165,7 +165,7 @@ class KeyringService extends EventEmitter {
       keyrings: [],
       preMnemonics: '',
     });
-    this.keyring = [];
+    this.currentKeyring = [];
     this.keyringList = [];
   }
 
@@ -281,7 +281,7 @@ class KeyringService extends EventEmitter {
   }
 
   getKeyringByType(type: string) {
-    const keyring = this.keyring.find((keyring) => keyring.type === type);
+    const keyring = this.currentKeyring.find((keyring) => keyring.type === type);
 
     return keyring;
   }
@@ -347,7 +347,7 @@ class KeyringService extends EventEmitter {
         return this.checkForDuplicate(keyring.type, accounts);
       })
       .then(() => {
-        this.keyring.push(keyring);
+        this.currentKeyring.push(keyring);
         return this.persistAllKeyrings();
       })
       .then(() => this._updateMemStoreKeyrings())
@@ -369,7 +369,7 @@ class KeyringService extends EventEmitter {
     this.password = null;
     this.memStore.updateState({ isUnlocked: false });
     // remove keyrings
-    this.keyring = [];
+    this.currentKeyring = [];
     this.keyringList = [];
     await this._updateMemStoreKeyrings();
     this.emit('lock');
@@ -383,7 +383,7 @@ class KeyringService extends EventEmitter {
    */
   async updateKeyring() {
     // remove keyrings
-    this.keyring = [];
+    this.currentKeyring = [];
     await this._updateMemStoreKeyrings();
   }
 
@@ -408,7 +408,7 @@ class KeyringService extends EventEmitter {
     await this.verifyPassword(password);
     this.password = password;
     try {
-      this.keyring = await this.unlockKeyrings(password);
+      this.currentKeyring = await this.unlockKeyrings(password);
     } catch {
       //
     } finally {
@@ -467,14 +467,14 @@ class KeyringService extends EventEmitter {
     // in order to decide which ones are now valid (accounts.length > 0)
 
     await Promise.all(
-      this.keyring.map(async (keyring) => {
+      this.currentKeyring.map(async (keyring) => {
         const accounts = await keyring.getAccounts();
         if (accounts.length > 0) {
           validKeyrings.push(keyring);
         }
       })
     );
-    this.keyring = validKeyrings;
+    this.currentKeyring = validKeyrings;
     return;
   }
 
@@ -758,7 +758,7 @@ class KeyringService extends EventEmitter {
       return Promise.reject(new Error('KeyringController - password is not a string'));
     }
     return Promise.all(
-      this.keyring.map((keyring) => {
+      this.currentKeyring.map((keyring) => {
         return Promise.all([keyring.type, keyring.serialize()]).then((serializedKeyringArray) => {
           // Label the output values on each serialized Keyring:
           return {
@@ -895,7 +895,7 @@ class KeyringService extends EventEmitter {
     );
 
     await this._updateMemStoreKeyrings();
-    return this.keyring;
+    return this.currentKeyring;
   }
 
   /**
@@ -1018,7 +1018,7 @@ class KeyringService extends EventEmitter {
       }
 
       await keyring.getAccounts();
-      this.keyring.push(keyring);
+      this.currentKeyring.push(keyring);
       return keyring;
     } catch (error) {
       console.error('Restore keyring error:', error);
@@ -1050,7 +1050,7 @@ class KeyringService extends EventEmitter {
    * @returns {Array<Keyring>} The keyrings.
    */
   getKeyringsByType(type: string): any[] {
-    return this.keyring.filter((keyring) => keyring.type === type);
+    return this.currentKeyring.filter((keyring) => keyring.type === type);
   }
 
   /**
@@ -1062,7 +1062,7 @@ class KeyringService extends EventEmitter {
    * @returns {Promise<Array<string>>} The array of accounts.
    */
   async getAccounts(): Promise<string[]> {
-    const keyrings = this.keyring || [];
+    const keyrings = this.currentKeyring || [];
     const addrs = await Promise.all(keyrings.map((kr) => kr.getAccounts())).then(
       (keyringArrays) => {
         return keyringArrays.reduce((res, arr) => {
@@ -1082,7 +1082,7 @@ class KeyringService extends EventEmitter {
    * @returns {Promise<Array<string>>} The array of accounts.
    */
   async getKeyring(): Promise<any[]> {
-    const keyrings = this.keyring || [];
+    const keyrings = this.currentKeyring || [];
     return keyrings;
   }
 
@@ -1104,7 +1104,9 @@ class KeyringService extends EventEmitter {
   ): Promise<any> {
     const hexed = normalizeAddress(address).toLowerCase();
     log.debug(`KeyringController - getKeyringForAccount: ${hexed}`);
-    let keyrings = type ? this.keyring.filter((keyring) => keyring.type === type) : this.keyring;
+    let keyrings = type
+      ? this.currentKeyring.filter((keyring) => keyring.type === type)
+      : this.currentKeyring;
     if (!includeWatchKeyring) {
       keyrings = keyrings.filter((keyring) => keyring.type !== KEYRING_TYPE.WatchAddressKeyring);
     }
@@ -1158,12 +1160,12 @@ class KeyringService extends EventEmitter {
   }
 
   getAllTypedAccounts(): Promise<DisplayedKeryring[]> {
-    return Promise.all(this.keyring.map((keyring) => this.displayForKeyring(keyring)));
+    return Promise.all(this.currentKeyring.map((keyring) => this.displayForKeyring(keyring)));
   }
 
   async getAllTypedVisibleAccounts(): Promise<DisplayedKeryring[]> {
     const keyrings = await Promise.all(
-      this.keyring.map((keyring) => this.displayForKeyring(keyring, false))
+      this.currentKeyring.map((keyring) => this.displayForKeyring(keyring, false))
     );
 
     return keyrings.filter((keyring) => keyring.accounts.length > 0);
@@ -1200,7 +1202,7 @@ class KeyringService extends EventEmitter {
 
   async clearKeyrings(): Promise<void> {
     // clear keyrings from memory
-    this.keyring = [];
+    this.currentKeyring = [];
     this.memStore.updateState({
       keyrings: [],
     });
@@ -1235,7 +1237,7 @@ class KeyringService extends EventEmitter {
    */
   async _updateMemStoreKeyrings(): Promise<void> {
     const keyrings = await Promise.all(
-      this.keyring.map((keyring) => this.displayForKeyring(keyring))
+      this.currentKeyring.map((keyring) => this.displayForKeyring(keyring))
     );
     return this.memStore.updateState({ keyrings });
   }
