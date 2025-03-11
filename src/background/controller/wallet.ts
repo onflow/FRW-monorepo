@@ -124,7 +124,6 @@ export class WalletController extends BaseController {
   /* wallet */
   boot = async (password) => {
     const isBooted = await keyringService.isBooted();
-    console.log('boot', password, await keyringService.isBooted());
     if (isBooted) {
       await keyringService.verifyPassword(password);
       await keyringService.boot(password);
