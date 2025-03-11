@@ -166,6 +166,12 @@ export class WalletController extends BaseController {
   resolveApproval = notificationService.resolveApproval;
   rejectApproval = notificationService.rejectApproval;
 
+  switchAccount = async (currentId: string) => {
+    await keyringService.switchKeyring(currentId);
+    const pubKey = await this.getPubKey();
+    await userWalletService.switchLogin(pubKey);
+  };
+
   unlock = async (password: string) => {
     await keyringService.submitPassword(password);
 
@@ -278,6 +284,13 @@ export class WalletController extends BaseController {
     await userWalletService.clear();
     sessionService.broadcastEvent('accountsChanged', []);
     sessionService.broadcastEvent('lock');
+  };
+
+  signOutWallet = async () => {
+    await keyringService.updateKeyring();
+    await userWalletService.signOutCurrentUser();
+    await userWalletService.clear();
+    sessionService.broadcastEvent('accountsChanged', []);
   };
 
   // lockadd here
@@ -674,7 +687,7 @@ export class WalletController extends BaseController {
 
   getTypedAccounts = async (type) => {
     return Promise.all(
-      keyringService.keyrings
+      keyringService.currentKeyring
         .filter((keyring) => !type || keyring.type === type)
         .map((keyring) => keyringService.displayForKeyring(keyring))
     );
