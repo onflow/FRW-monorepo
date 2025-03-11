@@ -831,6 +831,9 @@ class KeyringService extends EventEmitter {
           await storage.set('deepVault', deepVaultArray); // Save deepVault in storage
         }
 
+        //update the keyringlist for switching account after everything is done
+        await this.decryptVaultArray(vaultArray, this.password);
+
         return true;
       });
   }
