@@ -69,8 +69,8 @@ const Sync = () => {
   const [loadingString, setLoadingString] = useState<string | null>(null);
   const [secondLine, setSecondLine] = useState<string>('');
   const [isSwitchingAccount, setIsSwitchingAccount] = useState<boolean>(true);
-  const [currentNetwork, setNetwork] = useState('mainnet');
 
+  // Check if user is already logged in and redirect if necessary
   const loadView = useCallback(async () => {
     usewallet
       .getCurrentAccount()
@@ -84,68 +84,11 @@ const Sync = () => {
       });
   }, [usewallet, history]);
 
-  const loadNetwork = useCallback(async () => {
-    const currentNetwork = await usewallet.getNetwork();
-    setNetwork(currentNetwork);
-  }, [usewallet]);
-
-  useEffect(() => {
-    loadNetwork();
-  }, [loadNetwork]);
-
   useEffect(() => {
     loadView();
   }, [loadView]);
 
-  const submitPassword = useCallback(
-    async (password: string) => {
-      console.log('submitPassword ', password, isSwitchingAccount);
-      if (isSwitchingAccount) {
-        try {
-          await usewallet.unlock(password);
-          setActiveTab(STEPS.ALL_SET);
-        } catch (error) {
-          console.error('Error in submitPassword:', error);
-        }
-      } else {
-        try {
-          console.log('signInV3 ', mnemonic, accountKey, deviceInfo);
-          await usewallet.signInV3(mnemonic, accountKey, deviceInfo);
-          const userInfo = await usewallet.getUserInfo(true);
-          setUsername(userInfo.username);
-          await usewallet.saveIndex(userInfo.username);
-          await usewallet.boot(password);
-          const formatted = mnemonic.trim().split(/\s+/g).join(' ');
-          await usewallet.createKeyringWithMnemonics(formatted);
-          setActiveTab(STEPS.ALL_SET);
-        } catch (error) {
-          console.error('Error in submitPassword:', error);
-        }
-      }
-    },
-    [usewallet, mnemonic, accountKey, deviceInfo, isSwitchingAccount, setUsername]
-  );
-
-  const onSessionConnected = useCallback(async (_session: SessionTypes.Struct) => {
-    setLoadingString(chrome.i18n.getMessage('Scan_Successfully'));
-    setSecondLine(chrome.i18n.getMessage('Sync_in_Process'));
-  }, []);
-
-  const _subscribeToEvents = useCallback(
-    async (client: SignClient) => {
-      if (!client) {
-        throw new Error('WalletConnect is not initialized');
-      }
-
-      client.on('session_update', ({ topic, params }) => {
-        const { namespaces } = params;
-        const session = client.session.get(topic);
-        onSessionConnected({ ...session, namespaces });
-      });
-    },
-    [onSessionConnected]
-  );
-
+  // 1. Initial Setup Functions - These are created once when component mounts
   const getAccountKey = useCallback(() => {
     const hdwallet = HDWallet.fromMnemonic(mnemonic);
     const publicKey = hdwallet.derive("m/44'/539'/0'/0/0").getPublicKey().toString('hex');
@@ -189,15 +132,35 @@ const Sync = () => {
     };
   }, [usewallet]);
 
+  // 2. WalletConnect Event Handlers
+  const onSessionConnected = useCallback(async (_session: SessionTypes.Struct) => {
+    setLoadingString(chrome.i18n.getMessage('Scan_Successfully'));
+    setSecondLine(chrome.i18n.getMessage('Sync_in_Process'));
+  }, []);
+
+  const _subscribeToEvents = useCallback(
+    async (client: SignClient) => {
+      if (!client) {
+        throw new Error('WalletConnect is not initialized');
+      }
+
+      client.on('session_update', ({ topic, params }) => {
+        const { namespaces } = params;
+        const session = client.session.get(topic);
+        onSessionConnected({ ...session, namespaces });
+      });
+    },
+    [onSessionConnected]
+  );
+
+  // 3. Account and device info handlers, check if account is available based on userid, if not, generate account key and device info
   const handleAccountInfo = useCallback(
     async (wallet: SignClient, topic: string, jsonObject: any) => {
       try {
         await usewallet.checkAvailableAccount(jsonObject.data.userId);
-        console.log('Successfully switched to account:', jsonObject.data.userId);
         setIsSwitchingAccount(true);
         setActiveTab(STEPS.PASSWORD);
       } catch (error) {
-        console.error('Failed to switch account:', error);
         setLoadingString('New account login');
         setSecondLine('Waiting for client sync');
         setIsSwitchingAccount(false);
@@ -218,7 +181,7 @@ const Sync = () => {
           try {
             await wallet.request({
               topic,
-              chainId: `flow:${currentNetwork}`,
+              chainId: 'flow:mainnet',
               request: {
                 method: FCLWalletConnectMethod.addDeviceInfo,
                 params: {
@@ -239,15 +202,16 @@ const Sync = () => {
         }
       }
     },
-    [currentNetwork, getAccountKey, getDeviceInfo, usewallet]
+    [getAccountKey, getDeviceInfo, usewallet]
   );
 
+  // 4. Wallet request to fetch account info from client
   const sendRequest = useCallback(
     async (wallet: SignClient, topic: string) => {
       try {
         const result = await wallet.request({
           topic,
-          chainId: `flow:${currentNetwork}`,
+          chainId: 'flow:mainnet',
           request: {
             method: FCLWalletConnectMethod.accountInfo,
             params: [],
@@ -265,20 +229,21 @@ const Sync = () => {
         console.error('Error in account info request:', error);
       }
     },
-    [currentNetwork, handleAccountInfo]
+    [handleAccountInfo]
   );
 
+  // 5. Main Initialization Effect
   useEffect(() => {
     let wallet: SignClient | null = null;
 
     const createWeb3Wallet = async () => {
       try {
+        // Initialize WalletConnect
         const extensionOrigin = chrome.runtime.id
           ? `chrome-extension://${chrome.runtime.id}`
           : 'https://fcw-link.lilico.app';
 
         wallet = await SignClient.init({
-          // @ts-ignore: Unreachable code error
           core: new Core({
             projectId: process.env.WC_PROJECTID,
           }),
@@ -294,13 +259,15 @@ const Sync = () => {
           },
         });
 
+        // Subscribe to events
         await _subscribeToEvents(wallet);
 
+        // Connect and get URI
         const { uri, approval } = await wallet.connect({
           requiredNamespaces: {
             flow: {
               methods: [FCLWalletConnectMethod.accountInfo, FCLWalletConnectMethod.addDeviceInfo],
-              chains: [`flow:${currentNetwork}`],
+              chains: ['flow:mainnet'],
               events: [],
             },
           },
@@ -320,7 +287,36 @@ const Sync = () => {
     };
 
     createWeb3Wallet();
-  }, [_subscribeToEvents, currentNetwork, onSessionConnected, sendRequest]);
+  }, [_subscribeToEvents, onSessionConnected, sendRequest]);
+
+  const submitPassword = useCallback(
+    async (password: string) => {
+      console.log('submitPassword ', password, isSwitchingAccount);
+      if (isSwitchingAccount) {
+        try {
+          await usewallet.unlock(password);
+          setActiveTab(STEPS.ALL_SET);
+        } catch (error) {
+          console.error('Error in submitPassword:', error);
+        }
+      } else {
+        try {
+          console.log('signInV3 ', mnemonic, accountKey, deviceInfo);
+          await usewallet.signInV3(mnemonic, accountKey, deviceInfo);
+          const userInfo = await usewallet.getUserInfo(true);
+          setUsername(userInfo.username);
+          await usewallet.saveIndex(userInfo.username);
+          await usewallet.boot(password);
+          const formatted = mnemonic.trim().split(/\s+/g).join(' ');
+          await usewallet.createKeyringWithMnemonics(formatted);
+          setActiveTab(STEPS.ALL_SET);
+        } catch (error) {
+          console.error('Error in submitPassword:', error);
+        }
+      }
+    },
+    [usewallet, mnemonic, accountKey, deviceInfo, isSwitchingAccount, setUsername]
+  );
 
   const goBack = () => {
     switch (activeTab) {
