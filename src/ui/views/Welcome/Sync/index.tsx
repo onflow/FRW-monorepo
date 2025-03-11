@@ -71,10 +71,6 @@ const Sync = () => {
   const [isSwitchingAccount, setIsSwitchingAccount] = useState<boolean>(true);
   const [currentNetwork, setNetwork] = useState('mainnet');
 
-  const getUsername = (username: string) => {
-    setUsername(username.toLowerCase());
-  };
-
   const loadView = useCallback(async () => {
     usewallet
       .getCurrentAccount()
@@ -130,38 +126,22 @@ const Sync = () => {
     [usewallet, mnemonic, accountKey, deviceInfo, isSwitchingAccount, setUsername]
   );
 
-  const goBack = () => {
-    switch (activeTab) {
-      case STEPS.PASSWORD:
-        setActiveTab(STEPS.QR);
-        break;
-      case STEPS.ALL_SET:
-        setActiveTab(STEPS.PASSWORD);
-        break;
-      default:
-        history.goBack();
-    }
-  };
-
   const onSessionConnected = useCallback(async (_session: SessionTypes.Struct) => {
     setLoadingString(chrome.i18n.getMessage('Scan_Successfully'));
     setSecondLine(chrome.i18n.getMessage('Sync_in_Process'));
   }, []);
 
   const _subscribeToEvents = useCallback(
-    async (_client: SignClient) => {
-      if (typeof _client === 'undefined') {
+    async (client: SignClient) => {
+      if (!client) {
         throw new Error('WalletConnect is not initialized');
       }
 
-      _client.on('session_update', ({ topic, params }) => {
-        console.log('EVENT', 'session_update', { topic, params });
+      client.on('session_update', ({ topic, params }) => {
         const { namespaces } = params;
-        const _session = _client.session.get(topic);
-        const updatedSession = { ..._session, namespaces };
-        onSessionConnected(updatedSession);
+        const session = client.session.get(topic);
+        onSessionConnected({ ...session, namespaces });
       });
-      console.log('EVENT _client ', _client);
     },
     [onSessionConnected]
   );
@@ -169,128 +149,135 @@ const Sync = () => {
   const getAccountKey = useCallback(() => {
     const hdwallet = HDWallet.fromMnemonic(mnemonic);
     const publicKey = hdwallet.derive("m/44'/539'/0'/0/0").getPublicKey().toString('hex');
-    const key: AccountKey = {
+
+    return {
       hashAlgo: 1,
       signAlgo: 2,
       weight: 1000,
-      publicKey: publicKey,
+      publicKey,
     };
-    return key;
   }, [mnemonic]);
 
   const getDeviceInfo = useCallback(async (): Promise<DeviceInfoRequest> => {
-    const result = await usewallet.openapi.getLocation();
-    const installationId = await usewallet.openapi.getInstallationId();
-    // console.log('location ', userlocation);
-    const userlocation = result.data;
-    const deviceInfo: DeviceInfoRequest = {
-      city: userlocation.city,
-      continent: userlocation.country,
-      continentCode: userlocation.countryCode,
-      country: userlocation.country,
-      countryCode: userlocation.countryCode,
-      currency: userlocation.countryCode,
+    const [locationResult, installationId] = await Promise.all([
+      usewallet.openapi.getLocation(),
+      usewallet.openapi.getInstallationId(),
+    ]);
+
+    const location = locationResult.data;
+
+    return {
+      city: location.city,
+      continent: location.country,
+      continentCode: location.countryCode,
+      country: location.country,
+      countryCode: location.countryCode,
+      currency: location.countryCode,
       deviceId: installationId,
       device_id: installationId,
       district: '',
-      ip: userlocation.query,
-      isp: userlocation.as,
-      lat: userlocation.lat,
-      lon: userlocation.lon,
+      ip: location.query,
+      isp: location.as,
+      lat: location.lat,
+      lon: location.lon,
       name: 'FRW Chrome Extension',
-      org: userlocation.org,
-      regionName: userlocation.regionName,
+      org: location.org,
+      regionName: location.regionName,
       type: '2',
       userAgent: 'Chrome',
-      zip: userlocation.zip,
+      zip: location.zip,
     };
-    return deviceInfo;
   }, [usewallet]);
+
+  const handleAccountInfo = useCallback(
+    async (wallet: SignClient, topic: string, jsonObject: any) => {
+      try {
+        await usewallet.checkAvailableAccount(jsonObject.data.userId);
+        console.log('Successfully switched to account:', jsonObject.data.userId);
+        setIsSwitchingAccount(true);
+        setActiveTab(STEPS.PASSWORD);
+      } catch (error) {
+        console.error('Failed to switch account:', error);
+        setLoadingString('New account login');
+        setSecondLine('Waiting for client sync');
+        setIsSwitchingAccount(false);
+
+        if (jsonObject.method === FCLWalletConnectMethod.accountInfo) {
+          const accountKey = getAccountKey();
+          const deviceInfo = await getDeviceInfo();
+          const ak = {
+            public_key: accountKey.publicKey,
+            hash_algo: accountKey.hashAlgo,
+            sign_algo: accountKey.signAlgo,
+            weight: accountKey.weight,
+          };
+
+          setAccountKey(ak);
+          setDeviceInfo(deviceInfo);
+
+          try {
+            await wallet.request({
+              topic,
+              chainId: `flow:${currentNetwork}`,
+              request: {
+                method: FCLWalletConnectMethod.addDeviceInfo,
+                params: {
+                  method: '',
+                  data: {
+                    username: '',
+                    accountKey,
+                    deviceInfo,
+                  },
+                },
+              },
+            });
+
+            setActiveTab(STEPS.PASSWORD);
+          } catch (error) {
+            console.error('Error in device info request:', error);
+          }
+        }
+      }
+    },
+    [currentNetwork, getAccountKey, getDeviceInfo, usewallet]
+  );
 
   const sendRequest = useCallback(
     async (wallet: SignClient, topic: string) => {
-      console.log(wallet);
-      wallet
-        .request({
-          topic: topic,
+      try {
+        const result = await wallet.request({
+          topic,
           chainId: `flow:${currentNetwork}`,
           request: {
             method: FCLWalletConnectMethod.accountInfo,
             params: [],
           },
-        })
-        .then(async (result: any) => {
-          setLoadingString('Account info receivded');
-          setSecondLine('Checking account availability');
-          console.log('result ', result);
-          const jsonObject = JSON.parse(result);
-          console.log('jsonObject ', jsonObject);
-          console.log('FCLWalletConnectMethod.accountInfo ', jsonObject.data.userId);
-
-          try {
-            await usewallet.checkAvailableAccount(jsonObject.data.userId);
-            console.log('Successfully switched to account:', jsonObject.data.userId);
-            setIsSwitchingAccount(true);
-            console.log('Set isSwitchingAccount to true');
-            setActiveTab(STEPS.PASSWORD);
-          } catch (error) {
-            console.error('Failed to switch account:', error);
-            setLoadingString('New account login');
-            setSecondLine('Waiting for client sync');
-            setIsSwitchingAccount(false);
-            if (jsonObject.method === FCLWalletConnectMethod.accountInfo) {
-              const accountKey: AccountKey = getAccountKey();
-              const deviceInfo: DeviceInfoRequest = await getDeviceInfo();
-              const ak = {
-                public_key: accountKey.publicKey,
-                hash_algo: accountKey.hashAlgo,
-                sign_algo: accountKey.signAlgo,
-                weight: accountKey.weight,
-              };
-              console.log('sent ->', accountKey);
-              console.log('mnemonic ->', mnemonic);
-              setAccountKey(ak);
-              setDeviceInfo(deviceInfo);
-              wallet
-                .request({
-                  topic: topic,
-                  chainId: `flow:${currentNetwork}`,
-                  request: {
-                    method: FCLWalletConnectMethod.addDeviceInfo,
-                    params: {
-                      method: '',
-                      data: {
-                        username: '',
-                        accountKey: accountKey,
-                        deviceInfo: deviceInfo,
-                      },
-                    },
-                  },
-                })
-                .then(async (sent) => {
-                  setActiveTab(STEPS.PASSWORD);
-                })
-                .catch((error) => {
-                  console.error('Error in second wallet request:', error);
-                });
-            }
-          }
-        })
-        .catch((error) => {
-          console.error('Error in first wallet request:', error);
         });
+
+        setLoadingString('Account info received');
+        setSecondLine('Checking account availability');
+
+        const jsonObject = JSON.parse(result as string);
+        console.log('FCLWalletConnectMethod.accountInfo', jsonObject.data.userId);
+
+        await handleAccountInfo(wallet, topic, jsonObject);
+      } catch (error) {
+        console.error('Error in account info request:', error);
+      }
     },
-    [currentNetwork, getAccountKey, getDeviceInfo, mnemonic, usewallet]
+    [currentNetwork, handleAccountInfo]
   );
 
   useEffect(() => {
+    let wallet: SignClient | null = null;
+
     const createWeb3Wallet = async () => {
       try {
         const extensionOrigin = chrome.runtime.id
           ? `chrome-extension://${chrome.runtime.id}`
           : 'https://fcw-link.lilico.app';
 
-        const wallet = await SignClient.init({
+        wallet = await SignClient.init({
           // @ts-ignore: Unreachable code error
           core: new Core({
             projectId: process.env.WC_PROJECTID,
@@ -306,46 +293,47 @@ const Sync = () => {
             },
           },
         });
+
         await _subscribeToEvents(wallet);
 
-        try {
-          const { uri, approval } = await wallet.connect({
-            requiredNamespaces: {
-              flow: {
-                methods: [FCLWalletConnectMethod.accountInfo, FCLWalletConnectMethod.addDeviceInfo],
-                chains: [`flow:${currentNetwork}`],
-                events: [],
-              },
+        const { uri, approval } = await wallet.connect({
+          requiredNamespaces: {
+            flow: {
+              methods: [FCLWalletConnectMethod.accountInfo, FCLWalletConnectMethod.addDeviceInfo],
+              chains: [`flow:${currentNetwork}`],
+              events: [],
             },
-          });
+          },
+        });
 
-          if (uri) {
-            console.log('uri ', uri);
-            await setUri(uri);
-            const session = await approval();
-            setLoadingString('Scan approved by client');
-            setSecondLine('Generating account info');
-            await onSessionConnected(session);
-            console.log('session ', session);
-            sendRequest(wallet, session.topic);
-          }
-        } catch (e) {
-          console.error(e);
+        if (uri) {
+          setUri(uri);
+          const session = await approval();
+          setLoadingString('Scan approved by client');
+          setSecondLine('Generating account info');
+          await onSessionConnected(session);
+          await sendRequest(wallet, session.topic);
         }
-
-        return wallet;
-      } catch (e) {
-        console.error(e);
-        return null;
+      } catch (error) {
+        console.error('Error in wallet setup:', error);
       }
     };
 
-    let wallet: SignClient | null = null;
-
-    createWeb3Wallet().then((w) => {
-      wallet = w;
-    });
+    createWeb3Wallet();
   }, [_subscribeToEvents, currentNetwork, onSessionConnected, sendRequest]);
+
+  const goBack = () => {
+    switch (activeTab) {
+      case STEPS.PASSWORD:
+        setActiveTab(STEPS.QR);
+        break;
+      case STEPS.ALL_SET:
+        setActiveTab(STEPS.PASSWORD);
+        break;
+      default:
+        history.goBack();
+    }
+  };
 
   return (
     <LandingComponents
