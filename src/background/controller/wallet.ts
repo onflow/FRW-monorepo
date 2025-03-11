@@ -49,7 +49,6 @@ import {
   transactionService,
   nftService,
   googleDriveService,
-  passwordService,
   proxyService,
   newsService,
   mixpanelTrack,
@@ -176,7 +175,6 @@ export class WalletController extends BaseController {
     await keyringService.submitPassword(password);
 
     // only password is correct then we store it
-    await passwordService.setPassword(password);
     const pubKey = await this.getPubKey();
     await userWalletService.switchLogin(pubKey);
     // Set up all the wallet data
@@ -256,30 +254,11 @@ export class WalletController extends BaseController {
     }
 
     const isUnlocked = keyringService.memStore.getState().isUnlocked;
-    if (!isUnlocked) {
-      let password = '';
-      try {
-        // This uses google drive to decrypt the password
-        password = await passwordService.getPassword();
-      } catch {
-        password = '';
-      }
-      if (password && password.length > 0) {
-        try {
-          await this.unlock(password);
-          return keyringService.memStore.getState().isUnlocked;
-        } catch {
-          passwordService.clear();
-          return false;
-        }
-      }
-    }
     return isUnlocked;
   };
 
   lockWallet = async () => {
     await keyringService.setLocked();
-    await passwordService.clear();
     await userWalletService.signOutCurrentUser();
     await userWalletService.clear();
     sessionService.broadcastEvent('accountsChanged', []);
@@ -298,7 +277,6 @@ export class WalletController extends BaseController {
     const switchingTo = 'mainnet';
 
     await keyringService.setLocked();
-    await passwordService.clear();
     sessionService.broadcastEvent('accountsChanged', []);
     sessionService.broadcastEvent('lock');
     openIndexPage('welcome?add=true');
@@ -324,8 +302,6 @@ export class WalletController extends BaseController {
     await keyringService.resetKeyRing();
     await keyringService.setLocked();
 
-    await passwordService.clear();
-
     sessionService.broadcastEvent('accountsChanged', []);
     sessionService.broadcastEvent('lock');
     // Redirect to welcome so that users can import their account again
@@ -337,7 +313,6 @@ export class WalletController extends BaseController {
     const switchingTo = 'mainnet';
 
     await keyringService.setLocked();
-    await passwordService.clear();
 
     sessionService.broadcastEvent('accountsChanged', []);
     sessionService.broadcastEvent('lock');
