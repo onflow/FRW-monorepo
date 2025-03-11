@@ -167,9 +167,22 @@ export class WalletController extends BaseController {
   rejectApproval = notificationService.rejectApproval;
 
   switchAccount = async (currentId: string) => {
-    await keyringService.switchKeyring(currentId);
-    const pubKey = await this.getPubKey();
-    await userWalletService.switchLogin(pubKey);
+    try {
+      await keyringService.switchKeyring(currentId);
+      const pubKey = await this.getPubKey();
+      await userWalletService.switchLogin(pubKey);
+    } catch (error) {
+      throw new Error('Failed to switch account: ' + (error.message || 'Unknown error'));
+    }
+  };
+
+  checkAvailableAccount = async (currentId: string) => {
+    try {
+      await keyringService.checkAvailableAccount(currentId);
+    } catch (error) {
+      console.error('Error finding available account:', error);
+      throw new Error('Failed to find available account: ' + (error.message || 'Unknown error'));
+    }
   };
 
   unlock = async (password: string) => {
@@ -183,6 +196,10 @@ export class WalletController extends BaseController {
     await this.refreshWallets();
 
     sessionService.broadcastEvent('unlock');
+  };
+
+  submitPassword = async (password: string) => {
+    await keyringService.submitPassword(password);
   };
 
   refreshWallets = async () => {
