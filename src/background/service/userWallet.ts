@@ -45,6 +45,10 @@ interface UserWalletStore {
   activeChild: ActiveChildType;
   evmEnabled: boolean;
   emulatorMode: boolean;
+
+  currentPubkey: string;
+  currentAddress: string;
+  parentAddress: string;
 }
 
 const USER_WALLET_TEMPLATE: UserWalletStore = {
@@ -80,15 +84,12 @@ const USER_WALLET_TEMPLATE: UserWalletStore = {
   monitor: 'flowscan',
   network: 'mainnet',
   emulatorMode: false,
+  currentPubkey: '',
+  currentAddress: '',
+  parentAddress: '',
 };
 class UserWallet {
   store!: UserWalletStore;
-
-  currentPubkey: string;
-
-  constructor() {
-    this.currentPubkey = '';
-  }
 
   init = async () => {
     this.store = await createPersistStore<UserWalletStore>({
@@ -147,11 +148,11 @@ class UserWallet {
   };
 
   setCurrentPubkey = (pubkey: string) => {
-    this.currentPubkey = pubkey;
+    this.store.currentPubkey = pubkey;
   };
 
   getCurrentPubkey = (): string => {
-    return this.currentPubkey;
+    return this.store.currentPubkey;
   };
 
   // Helper method to find account in current accounts
@@ -166,7 +167,7 @@ class UserWallet {
 
     // First try to find account group using currentPubkey
     let accountGroupIndex = currentAccounts.findIndex(
-      (group) => group.publicKey === this.currentPubkey
+      (group) => group.publicKey === this.store.currentPubkey
     );
 
     // If not found with currentPubkey, fallback to searching by address
