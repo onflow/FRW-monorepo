@@ -1,4 +1,5 @@
 import { type HashAlgoType, type SignAlgoType } from './algo-types';
+import { type ChildAccount } from './network-types';
 
 // Matches exactly 16 hex characters, with optional 0x prefix
 export type FlowAddress = `0x${string & { length: 16 }}` | `${string & { length: 16 }}`;
@@ -52,4 +53,22 @@ export type LoggedInAccount = {
 
 export type LoggedInAccountWithIndex = LoggedInAccount & {
   indexInLoggedInAccounts: number;
+};
+
+export type AccountDetails = {
+  address: string;
+  keyIndex: number;
+  weight: number;
+  pubK: string;
+  sigAlgo: SignAlgoType;
+  hashAlgo: HashAlgoType;
+  chain?: number;
+  childAccount?: ChildAccount;
+  evmAddress?: string;
+};
+
+export type PublicKeyAccounts = {
+  publicKey: string;
+  currentId?: string;
+  accounts: AccountDetails[];
 };

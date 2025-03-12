@@ -29,7 +29,11 @@ import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-t
 import { ContactType } from '@/shared/types/network-types';
 import { type TrackingEvents } from '@/shared/types/tracking-types';
 import { type TransferItem, type TransactionState } from '@/shared/types/transaction-types';
-import { type ActiveChildType, type LoggedInAccount } from '@/shared/types/wallet-types';
+import {
+  type ActiveChildType,
+  type LoggedInAccount,
+  type AccountDetails,
+} from '@/shared/types/wallet-types';
 import { ensureEvmAddressPrefix, isValidEthereumAddress, withPrefix } from '@/shared/utils/address';
 import { getSignAlgo } from '@/shared/utils/algo';
 import { convertToIntegerAmount, validateAmount } from '@/shared/utils/number';
@@ -945,7 +949,7 @@ export class WalletController extends BaseController {
         return {}; // Return an empty object in case of an error
       }
     }
-
+    userWalletService.setChildAccounts(meta, address, network);
     return meta;
   };
 
@@ -1569,8 +1573,10 @@ export class WalletController extends BaseController {
 
     const active = await userWalletService.getActiveWallet();
     if (!active) {
-      // userInfoService.addUserId(v2data.data.id);
+      const cleanAddresses: AccountDetails[] = address.map(({ pk, ...rest }) => rest);
+
       userWalletService.setUserWallets(transformedArray, network);
+      userWalletService.setUserAccounts(cleanAddresses, address[0].pubK, network);
     }
 
     return transformedArray;

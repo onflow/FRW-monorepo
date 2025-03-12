@@ -22,6 +22,7 @@ import type {
   DeviceInfoRequest,
   FlowNetwork,
 } from '../../shared/types/network-types';
+import { type PublicKeyAccounts, type AccountDetails } from '../../shared/types/wallet-types';
 import { fclConfig } from '../fclConfig';
 import {
   findAddressWithSeed,
@@ -32,6 +33,10 @@ import { storage } from '../webapi';
 
 interface UserWalletStore {
   wallets: Record<string, WalletResponse[]>;
+  accounts: {
+    mainnet: PublicKeyAccounts[];
+    testnet: PublicKeyAccounts[];
+  };
   currentWallet: BlockchainResponse;
   evmWallet: BlockchainResponse;
   childAccount: ChildAccount;
@@ -43,10 +48,13 @@ interface UserWalletStore {
 }
 
 const USER_WALLET_TEMPLATE: UserWalletStore = {
+  accounts: {
+    mainnet: [],
+    testnet: [],
+  },
   wallets: {
     mainnet: [],
     testnet: [],
-    crescendo: [],
   },
   childAccount: {},
   currentWallet: {
@@ -75,6 +83,12 @@ const USER_WALLET_TEMPLATE: UserWalletStore = {
 };
 class UserWallet {
   store!: UserWalletStore;
+
+  currentPubkey: string;
+
+  constructor() {
+    this.currentPubkey = '';
+  }
 
   init = async () => {
     this.store = await createPersistStore<UserWalletStore>({
@@ -106,6 +120,100 @@ class UserWallet {
     } else {
       console.error(`No wallet found for network: ${network}`);
     }
+  };
+
+  setUserAccounts = async (accountData: AccountDetails[], pubKey: string, network: string) => {
+    const currentAccounts: PublicKeyAccounts[] = this.store.accounts[network];
+    const accountIndex = currentAccounts.findIndex((account) => account.publicKey === pubKey);
+    this.setCurrentPubkey(pubKey);
+    if (accountIndex !== -1) {
+      currentAccounts[accountIndex] = {
+        accounts: accountData.map((account) => ({
+          ...account,
+          chain: network === 'testnet' ? 545 : 747,
+        })),
+        publicKey: pubKey,
+      };
+    } else {
+      currentAccounts.push({
+        accounts: accountData.map((account) => ({
+          ...account,
+          chain: network === 'testnet' ? 545 : 747,
+        })),
+        publicKey: pubKey,
+      });
+    }
+    this.store.accounts[network] = currentAccounts;
+  };
+
+  setCurrentPubkey = (pubkey: string) => {
+    this.currentPubkey = pubkey;
+  };
+
+  getCurrentPubkey = (): string => {
+    return this.currentPubkey;
+  };
+
+  // Helper method to find account in current accounts
+  private findAccount = (
+    address: string,
+    network: string
+  ): {
+    account: AccountDetails | null;
+    currentAccounts: PublicKeyAccounts[];
+  } => {
+    const currentAccounts = this.store.accounts[network];
+
+    // First try to find account group using currentPubkey
+    let accountGroupIndex = currentAccounts.findIndex(
+      (group) => group.publicKey === this.currentPubkey
+    );
+
+    // If not found with currentPubkey, fallback to searching by address
+    if (accountGroupIndex === -1) {
+      accountGroupIndex = currentAccounts.findIndex((group) =>
+        group.accounts.some((account) => account.address === address)
+      );
+    }
+
+    if (accountGroupIndex === -1) {
+      console.warn(`No account group found containing address ${address}`);
+      return { account: null, currentAccounts };
+    }
+
+    const accountIndex = currentAccounts[accountGroupIndex].accounts.findIndex(
+      (account) => account.address === address
+    );
+
+    if (accountIndex === -1) {
+      console.warn(`Address ${address} not found in account group`);
+      return { account: null, currentAccounts };
+    }
+
+    return {
+      account: currentAccounts[accountGroupIndex].accounts[accountIndex] as AccountDetails,
+      currentAccounts,
+    };
+  };
+
+  // Simplified setChildAccounts using the helper
+  setChildAccounts = (childAccount: ChildAccount, address: string, network: string) => {
+    const { account, currentAccounts } = this.findAccount(address, network);
+
+    if (!account) return;
+
+    account.childAccount = childAccount;
+    this.store.accounts[network] = currentAccounts;
+  };
+
+  // Simplified setAccountEvmAddress using the helper
+  setAccountEvmAddress = (address: string, evmAddress: string, network: string) => {
+    const { account, currentAccounts } = this.findAccount(address, network);
+
+    if (!account) return;
+
+    account.evmAddress = evmAddress;
+    this.store.accounts[network] = currentAccounts;
   };
 
   setChildWallet = (wallet: ChildAccount) => {
