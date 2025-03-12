@@ -11,8 +11,13 @@ import { getLoggedInAccount } from '@/background/utils/getLoggedInAccount';
 import { signWithKey, seed2PubKey } from '@/background/utils/modules/publicPrivateKey';
 import createPersistStore from '@/background/utils/persisitStore';
 import { type HashAlgoType, type SignAlgoType } from '@/shared/types/algo-types';
-import { type LoggedInAccount, type ActiveChildType } from '@/shared/types/wallet-types';
-import { withPrefix } from '@/shared/utils/address';
+import {
+  type LoggedInAccount,
+  type ActiveChildType,
+  type FlowAddress,
+  type EvmAddress,
+} from '@/shared/types/wallet-types';
+import { isValidEthereumAddress, withPrefix } from '@/shared/utils/address';
 import { getHashAlgo, getSignAlgo } from '@/shared/utils/algo';
 
 import type {
@@ -49,6 +54,7 @@ interface UserWalletStore {
   currentPubkey: string;
   currentAddress: string;
   parentAddress: string;
+  currentEvmAddress: string;
 }
 
 const USER_WALLET_TEMPLATE: UserWalletStore = {
@@ -87,6 +93,7 @@ const USER_WALLET_TEMPLATE: UserWalletStore = {
   currentPubkey: '',
   currentAddress: '',
   parentAddress: '',
+  currentEvmAddress: '',
 };
 class UserWallet {
   store!: UserWalletStore;
@@ -107,20 +114,6 @@ class UserWallet {
   };
   isLocked = () => {
     return !keyringService.isBooted() || !keyringService.memStore.getState().isUnlocked;
-  };
-  setUserWallets = async (filteredData: WalletResponse[], network: string) => {
-    this.store.wallets[network] = filteredData;
-    let walletIndex = (await storage.get('currentWalletIndex')) || 0;
-    if (this.store.wallets[network] && this.store.wallets[network].length > 0) {
-      if (walletIndex >= filteredData.length) {
-        walletIndex = 0; // Reset walletIndex to 0 if it exceeds the array length
-        await storage.set('currentWalletIndex', 0);
-      }
-      const current = this.store.wallets[network][walletIndex].blockchain[0];
-      this.store.currentWallet = current;
-    } else {
-      console.error(`No wallet found for network: ${network}`);
-    }
   };
 
   setUserAccounts = async (accountData: AccountDetails[], pubKey: string, network: string) => {
@@ -197,7 +190,6 @@ class UserWallet {
     };
   };
 
-  // Simplified setChildAccounts using the helper
   setChildAccounts = (childAccount: ChildAccount, address: string, network: string) => {
     const { account, currentAccounts } = this.findAccount(address, network);
 
@@ -207,26 +199,76 @@ class UserWallet {
     this.store.accounts[network] = currentAccounts;
   };
 
-  // Simplified setAccountEvmAddress using the helper
   setAccountEvmAddress = (address: string, evmAddress: string, network: string) => {
     const { account, currentAccounts } = this.findAccount(address, network);
 
     if (!account) return;
-
+    this.store.currentEvmAddress = evmAddress;
     account.evmAddress = evmAddress;
     this.store.accounts[network] = currentAccounts;
   };
 
-  setChildWallet = (wallet: ChildAccount) => {
-    this.store.childAccount = wallet;
-  };
-
-  setActiveWallet = (key: ActiveChildType) => {
-    this.store.activeChild = key;
+  setCurrentAccount = async (wallet: BlockchainResponse, key: ActiveChildType) => {
+    this.store.currentAddress = wallet.address;
+    if (key === 'evm') {
+      this.store.currentEvmAddress = wallet.address;
+    }
   };
 
   getActiveWallet = (): ActiveChildType => {
-    return this.store.activeChild;
+    const parentAddress = this.store.parentAddress;
+    const currentAddress = this.store.currentAddress;
+
+    if (parentAddress === currentAddress) {
+      return null;
+    }
+
+    // Check if it satisfies the FlowAddress type
+    const isFlow = (address: string): address is FlowAddress => {
+      return (
+        (address.startsWith('0x') && address.length === 18) ||
+        (!address.startsWith('0x') && address.length === 16)
+      );
+    };
+
+    // Check if it satisfies the EvmAddress type
+    const isEvm = (address: string): address is EvmAddress => {
+      return (
+        (address.startsWith('0x') && address.length === 42) ||
+        (!address.startsWith('0x') && address.length === 40)
+      );
+    };
+
+    if (isEvm(currentAddress)) {
+      return 'evm';
+    } else if (isFlow(currentAddress)) {
+      return currentAddress;
+    }
+
+    return null;
+  };
+
+  /*
+  New store for accounts are above
+  */
+
+  setUserWallets = async (filteredData: WalletResponse[], network: string) => {
+    this.store.wallets[network] = filteredData;
+    let walletIndex = (await storage.get('currentWalletIndex')) || 0;
+    if (this.store.wallets[network] && this.store.wallets[network].length > 0) {
+      if (walletIndex >= filteredData.length) {
+        walletIndex = 0; // Reset walletIndex to 0 if it exceeds the array length
+        await storage.set('currentWalletIndex', 0);
+      }
+      const current = this.store.wallets[network][walletIndex].blockchain[0];
+      this.store.currentWallet = current;
+    } else {
+      console.error(`No wallet found for network: ${network}`);
+    }
+  };
+
+  setChildWallet = (wallet: ChildAccount) => {
+    this.store.childAccount = wallet;
   };
 
   setCurrentWallet = async (
@@ -251,10 +293,6 @@ class UserWallet {
 
   getUserWallets = (network: string) => {
     return this.store.wallets[network];
-  };
-
-  checkCrescendo = () => {
-    return this.store.wallets['crescendo'];
   };
 
   setNetwork = async (network: string) => {

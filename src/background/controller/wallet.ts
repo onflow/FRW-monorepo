@@ -1624,10 +1624,9 @@ export class WalletController extends BaseController {
     key: ActiveChildType | null,
     index: number | null = null
   ) => {
-    userWalletService.setActiveWallet(key);
-
     const network = await this.getNetwork();
     await userWalletService.setCurrentWallet(wallet, key, network, index);
+    await userWalletService.setCurrentAccount(wallet, key);
 
     // Clear collections
     this.clearNFTCollection();
@@ -3153,7 +3152,6 @@ export class WalletController extends BaseController {
     console.log('refreshAll');
     // Clear the active wallet if any
     // If we don't do this, the user wallets will not be refreshed
-    userWalletService.setActiveWallet(null);
     await this.refreshUserWallets();
     this.clearNFT();
     this.refreshAddressBook();
