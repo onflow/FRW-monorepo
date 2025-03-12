@@ -291,17 +291,15 @@ const Sync = () => {
 
   const submitPassword = useCallback(
     async (password: string) => {
-      console.log('submitPassword ', password, isSwitchingAccount);
       if (isSwitchingAccount) {
         try {
           await usewallet.unlock(password);
           setActiveTab(STEPS.ALL_SET);
         } catch (error) {
-          console.error('Error in submitPassword:', error);
+          throw new Error(error.message);
         }
       } else {
         try {
-          console.log('signInV3 ', mnemonic, accountKey, deviceInfo);
           await usewallet.signInV3(mnemonic, accountKey, deviceInfo);
           const userInfo = await usewallet.getUserInfo(true);
           setUsername(userInfo.username);
@@ -311,7 +309,7 @@ const Sync = () => {
           await usewallet.createKeyringWithMnemonics(formatted);
           setActiveTab(STEPS.ALL_SET);
         } catch (error) {
-          console.error('Error in submitPassword:', error);
+          throw new Error(error.message);
         }
       }
     },

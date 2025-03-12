@@ -109,7 +109,6 @@ const SetPassword: React.FC<SetPasswordProps> = ({
       await onSubmit(password);
       setLoading(false);
     } catch (error) {
-      console.log('error', error);
       setErrorMessage(error.message || errMessage);
       setShowError(true);
       setLoading(false);
