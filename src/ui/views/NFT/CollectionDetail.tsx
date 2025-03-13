@@ -360,21 +360,28 @@ const CollectionDetail = (props) => {
               </Grid>
             ) : (
               info && (
-                <Grid container className={classes.grid}>
-                  {filteredList && filteredList.length > 0
-                    ? filteredList.map(createGridCard)
-                    : list.map(createGridCard)}
-                  {filteredList.length % 2 !== 0 && (
-                    <Card className={classes.cardNoHover} elevation={0} />
-                  )}
-                  {isLoadingAll && (
-                    <Box
-                      sx={{ display: 'flex', py: '8px', justifyContent: 'center', width: '100%' }}
-                    >
-                      <LLSpinner size={28} />
+                <>
+                  {searchTerm && filteredList.length === 0 ? (
+                    <Box sx={{ p: 4, textAlign: 'center' }}>
+                      <Typography variant="body1" color="text.secondary">
+                        No NFTs found matching "{searchTerm}"
+                      </Typography>
+                    </Box>
+                  ) : list && list.length > 0 ? (
+                    <Grid container className={classes.grid}>
+                      {searchTerm ? filteredList.map(createGridCard) : list.map(createGridCard)}
+                      {(searchTerm ? filteredList.length : list.length) % 2 !== 0 && (
+                        <Card className={classes.cardNoHover} elevation={0} />
+                      )}
+                    </Grid>
+                  ) : (
+                    <Box sx={{ p: 4, textAlign: 'center' }}>
+                      <Typography variant="body1" color="text.secondary">
+                        No NFTs found in this collection
+                      </Typography>
                     </Box>
                   )}
-                </Grid>
+                </>
               )
             )}
           </>
