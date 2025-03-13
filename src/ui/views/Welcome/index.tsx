@@ -137,7 +137,7 @@ const Welcome = () => {
               variant="contained"
               color="secondary"
               component={Link}
-              to={isAddWallet ? '/welcome/sync?add=true' : '/welcome/sync'}
+              to="/welcome/sync"
               size="large"
               sx={{
                 display: 'flex',

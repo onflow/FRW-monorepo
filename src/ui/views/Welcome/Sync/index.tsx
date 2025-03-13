@@ -5,7 +5,7 @@ import { type SessionTypes } from '@walletconnect/types';
 import * as bip39 from 'bip39';
 import HDWallet from 'ethereum-hdwallet';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 
 import { FCLWalletConnectMethod } from '@/shared/utils/type';
 import AllSet from '@/ui/FRWComponent/LandingPages/AllSet';
@@ -57,9 +57,6 @@ interface DeviceInfoRequest {
 const Sync = () => {
   const history = useHistory();
   const usewallet = useWallet();
-  const location = useLocation();
-  const params = new URLSearchParams(location.search);
-  const isAddWallet = params.get('add') === 'true';
   const [activeTab, setActiveTab] = useState<StepType>(STEPS.QR);
   const [username, setUsername] = useState('');
   const [mnemonic, setMnemonic] = useState(bip39.generateMnemonic());
@@ -69,6 +66,16 @@ const Sync = () => {
   const [loadingString, setLoadingString] = useState<string | null>(null);
   const [secondLine, setSecondLine] = useState<string>('');
   const [isSwitchingAccount, setIsSwitchingAccount] = useState<boolean>(true);
+  const [isAddWallet, setIsAddWallet] = useState<boolean>(false);
+
+  useEffect(() => {
+    const checkWalletStatus = async () => {
+      const isBooted = await usewallet.isBooted();
+      setIsAddWallet(isBooted);
+    };
+
+    checkWalletStatus();
+  }, [usewallet]);
 
   // Check if user is already logged in and redirect if necessary
   const loadView = useCallback(async () => {
