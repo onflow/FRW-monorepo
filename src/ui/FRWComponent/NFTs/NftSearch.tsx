@@ -1,5 +1,5 @@
 import SearchIcon from '@mui/icons-material/Search';
-import { Box, InputAdornment, TextField } from '@mui/material';
+import { Box, InputAdornment, Input } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 
@@ -8,26 +8,20 @@ import { type NFTItem } from '@/shared/types/nft-types';
 const useStyles = makeStyles(() => ({
   searchBox: {
     width: '100%',
-    marginBottom: '20px',
+    marginBottom: '8px',
+    padding: '8px',
   },
   searchInput: {
-    '& .MuiOutlinedInput-root': {
-      borderRadius: '12px',
-      backgroundColor: 'var(--color-bg)',
-      '& fieldset': {
-        borderColor: 'var(--color-border)',
-      },
-      '&:hover fieldset': {
-        borderColor: 'var(--color-border-hover)',
-      },
-    },
-    '& .MuiOutlinedInput-input': {
-      color: 'var(--color-text)',
-      '&::placeholder': {
-        color: 'var(--color-text-secondary)',
-        opacity: 1,
-      },
-    },
+    minHeight: '56px',
+    // borderRadius: theme.spacing(2),
+    backgroundColor: '#282828',
+    zIndex: '999',
+    // width: '100%',
+    borderRadius: '16px',
+    boxSizing: 'border-box',
+    // margin: '2px 18px 10px 18px',
+    width: '100%',
+    padding: '19px 16px',
   },
 }));
 
@@ -74,20 +68,19 @@ const NftSearch: React.FC<NftSearchProps> = ({
 
   return (
     <Box className={classes.searchBox}>
-      <TextField
+      <Input
         fullWidth
-        variant="outlined"
         placeholder={placeholder}
         value={searchTerm}
         onChange={handleSearch}
         className={classes.searchInput}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <SearchIcon sx={{ color: 'var(--color-text-secondary)' }} />
-            </InputAdornment>
-          ),
-        }}
+        autoFocus
+        disableUnderline
+        endAdornment={
+          <InputAdornment position="end">
+            <SearchIcon color="primary" sx={{ ml: '10px', my: '5px', fontSize: '24px' }} />
+          </InputAdornment>
+        }
       />
     </Box>
   );
