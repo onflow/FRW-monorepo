@@ -230,7 +230,7 @@ const LinkedCollection = (props) => {
     try {
       const res = await getCollection(address, collection_name, offset);
 
-      setInfo(res.info);
+      setInfo(res.collection);
       setTotal(res.nftCount);
 
       if (res.nfts) {
@@ -238,7 +238,7 @@ const LinkedCollection = (props) => {
         setPage(newPage);
         const newList: any[] = [];
         res.nfts.forEach((item) => {
-          const result = list.filter((nft) => nft.unique_id === item.unique_id);
+          const result = list.filter((nft) => nft.id === item.id);
           if (result.length === 0) {
             newList.push(item);
           }

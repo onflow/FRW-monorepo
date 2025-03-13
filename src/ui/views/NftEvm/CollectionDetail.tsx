@@ -18,17 +18,15 @@ import {
 import { StyledEngineProvider } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
 import { has } from 'lodash';
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import InfiniteScroll from 'react-infinite-scroll-component';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useHistory, useParams, useLocation } from 'react-router-dom';
 
-import { storage } from '@/background/webapi';
-import { LLSpinner } from '@/ui/FRWComponent';
+import NftSearch from '@/ui/FRWComponent/NFTs/NftSearch';
+import { useNftHook } from '@/ui/hooks/useNftHook';
 import { type PostMedia, MatchMediaType } from '@/ui/utils/url';
 import { useWallet } from 'ui/utils';
 
 import GridView from './GridView';
-// import InfiniteScroll from 'react-infinite-scroller';
 
 interface CollectionDisplay {
   name: string;
@@ -176,20 +174,18 @@ interface CollectionDetailState {
 
 const CollectionDetail = (props) => {
   const usewallet = useWallet();
-
   const classes = useStyles();
   const location = useParams();
-
   const uselocation = useLocation<CollectionDetailState>();
-
   const history = useHistory();
-  const [list, setLists] = useState<any[]>([]);
+
   const [ownerAddress, setOwnerAddress] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [info, setInfo] = useState<any>(null);
-  const [total, setTotal] = useState(0);
-  const [pageIndex, setPage] = useState(1);
-  const [loadingMore, setLoadingMore] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredList, setFilteredList] = useState<any[]>([]);
+
+  // Add a useRef to track if we've initialized the filtered list
+  const initializedRef = useRef(false);
+
   const collection_info = location['collection_address_name'].split('.');
   const address = collection_info[0];
   const collection_name = collection_info[1];
@@ -202,79 +198,37 @@ const CollectionDetail = (props) => {
     [usewallet]
   );
 
-  const fetchCollection = useCallback(async () => {
+  const refreshCollection = useCallback(
+    async (ownerAddress, collection, offset = 0) => {
+      return await usewallet.refreshEvmNftCollectionList(ownerAddress, collection, offset);
+    },
+    [usewallet]
+  );
+
+  // Use the useNftHook
+  const { list, allNfts, info, total, loading, loadingMore, isLoadingAll, refreshCollectionImpl } =
+    useNftHook({
+      getCollection,
+      refreshCollection,
+      ownerAddress: address,
+      collectionName: collection_name,
+    });
+
+  // Add this useEffect to initialize the filtered list only once
+  useEffect(() => {
+    if (!initializedRef.current && allNfts && allNfts.length > 0) {
+      setFilteredList(allNfts);
+      initializedRef.current = true;
+    }
+  }, [allNfts]);
+
+  useEffect(() => {
     setOwnerAddress(address);
-    setLoading(true);
-    try {
-      const res = await getCollection(address, collection_name);
-      setInfo(res.collection);
-      setTotal(res.nftCount);
-      setLists(res.nfts);
-    } catch (err) {
-      console.log('err   ', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [address, collection_name, getCollection]);
-
-  const nextPage = async () => {
-    if (loadingMore) {
-      return;
-    }
-    setLoadingMore(true);
-    const offset = pageIndex * 24;
-    try {
-      const res = await getCollection(address, collection_name, offset);
-
-      setInfo(res.info);
-      setTotal(res.nftCount);
-
-      if (res.nfts) {
-        const newPage = pageIndex + 1;
-        setPage(newPage);
-        const newList: any[] = [];
-        res.nfts.forEach((item) => {
-          const result = list.filter((nft) => nft.unique_id === item.unique_id);
-          if (result.length === 0) {
-            newList.push(item);
-          }
-        });
-
-        const mergedList = [...list, ...newList];
-        setLists(mergedList);
-      }
-    } finally {
-      setLoadingMore(false);
-    }
-  };
+  }, [address]);
 
   function truncate(str, n) {
     return str.length > n ? str.slice(0, n - 1) + '...' : str;
   }
-
-  const hasMore = (): boolean => {
-    if (list && list.length === 0) {
-      return true;
-    }
-    return list.length < total;
-  };
-
-  const refreshCollection = useCallback(async () => {
-    const res = await usewallet.refreshEvmNftCollectionList(address, collection_name);
-    setInfo(res.collection);
-    setTotal(res.nftCount);
-    setLists(res.nfts);
-  }, [address, collection_name, usewallet]);
-
-  const loader = (
-    <Box sx={{ display: 'flex', py: '8px', justifyContent: 'center' }}>
-      <LLSpinner size={28} />
-    </Box>
-  );
-
-  useEffect(() => {
-    fetchCollection();
-  }, [fetchCollection]);
 
   const createGridCard = (data, index) => {
     return (
@@ -330,7 +284,7 @@ const CollectionDetail = (props) => {
                       aria-label="close"
                       color="primary"
                       size="small"
-                      onClick={refreshCollection}
+                      onClick={refreshCollectionImpl}
                     >
                       <ReplayRoundedIcon fontSize="inherit" />
                     </IconButton>
@@ -399,6 +353,28 @@ const CollectionDetail = (props) => {
               </Grid>
             </Grid>
 
+            {/* Add search component */}
+            {!loading && list && list.length > 0 && (
+              <Box sx={{ mb: 2, px: 2 }}>
+                <NftSearch
+                  items={allNfts && allNfts.length > 0 ? allNfts : list}
+                  onFilteredResults={(results) => {
+                    // Only update if there's a search term or if we're clearing results
+                    if (searchTerm || results.length !== filteredList.length) {
+                      console.log('Filtered results received:', results.length);
+                      setFilteredList(results);
+                    }
+                  }}
+                  searchTerm={searchTerm}
+                  setSearchTerm={(term) => {
+                    console.log('Setting search term:', term);
+                    setSearchTerm(term);
+                  }}
+                  placeholder="Search collection NFTs"
+                />
+              </Box>
+            )}
+
             {loading ? (
               <Grid container className={classes.grid}>
                 {[...Array(4).keys()].map((key) => (
@@ -419,24 +395,26 @@ const CollectionDetail = (props) => {
               </Grid>
             ) : (
               info && (
-                <InfiniteScroll
-                  dataLength={list.length} //This is important field to render the next data
-                  next={nextPage}
-                  hasMore={hasMore()}
-                  loader={loader}
-                  scrollableTarget="scrollableDiv"
-                  style={{
-                    backgroundColor: '#1B1B1B',
-                    borderRadius: '16px 16px 0 0',
-                  }}
-                >
-                  <Grid container className={classes.grid}>
-                    {list && list.map(createGridCard)}
-                    {list.length % 2 !== 0 && (
-                      <Card className={classes.cardNoHover} elevation={0} />
-                    )}
-                  </Grid>
-                </InfiniteScroll>
+                <>
+                  {list && list.length > 0 ? (
+                    <Grid container className={classes.grid}>
+                      {filteredList && filteredList.length > 0
+                        ? filteredList.map(createGridCard)
+                        : list.map(createGridCard)}
+                      {filteredList.length % 2 !== 0 && (
+                        <Card className={classes.cardNoHover} elevation={0} />
+                      )}
+                    </Grid>
+                  ) : (
+                    searchTerm && (
+                      <Box sx={{ p: 4, textAlign: 'center' }}>
+                        <Typography variant="body1" color="text.secondary">
+                          No NFTs found matching "{searchTerm}"
+                        </Typography>
+                      </Box>
+                    )
+                  )}
+                </>
               )
             )}
           </>

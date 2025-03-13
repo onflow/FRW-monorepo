@@ -101,7 +101,7 @@ type NFTPostMedia = {
   title: string;
 };
 
-type NFTItem = {
+export type NFTItem = {
   id: string;
   name: string;
   description: string;

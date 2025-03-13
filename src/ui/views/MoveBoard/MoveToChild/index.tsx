@@ -6,12 +6,15 @@ import { isValidEthereumAddress } from '@/shared/utils/address';
 import { NFTDrawer } from '@/ui/FRWComponent/GeneralPages';
 import WarningSnackbar from '@/ui/FRWComponent/WarningSnackbar';
 import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
+import { useNftHook } from '@/ui/hooks/useNftHook';
 import { useStorageCheck } from '@/ui/utils/useStorageCheck';
 import alertMark from 'ui/FRWAssets/svg/alertMark.svg';
 import { useWallet } from 'ui/utils';
 
 import AccountMainBox from '../AccountMainBox';
 import MoveCollectionSelect from '../MoveCollectionSelect';
+
+import NFTLoader from './NFTLoader';
 
 interface MoveBoardProps {
   showMoveBoard: boolean;
@@ -42,6 +45,8 @@ const MoveToChild = (props: MoveBoardProps) => {
     address: '',
     logo: '',
   });
+  const [loadedNFTs, setLoadedNFTs] = useState<any[]>([]);
+  const [activeLoader, setActiveLoader] = useState<string | null>(null);
   const { sufficient: isSufficient, sufficientAfterAction } = useStorageCheck({
     transferAmount: 0,
     movingBetweenEVMAndFlow: selectedAccount
@@ -237,6 +242,20 @@ const MoveToChild = (props: MoveBoardProps) => {
     findCollectionByContractName();
   }, [collectionList, findCollectionByContractName, selectedCollection]);
 
+  useEffect(() => {
+    if (selectedCollection) {
+      // First, set activeLoader to null to unmount the previous loader
+      setActiveLoader(null);
+      setLoadedNFTs([]);
+
+      // Then, after a small delay, set the new loader
+      setTimeout(() => {
+        console.log(`Mounting new loader for ${selectedCollection}`);
+        setActiveLoader(selectedCollection);
+      }, 100);
+    }
+  }, [selectedCollection]);
+
   const replaceIPFS = (url: string | null): string => {
     if (!url) {
       return '';
@@ -253,8 +272,28 @@ const MoveToChild = (props: MoveBoardProps) => {
     return replacedURL;
   };
 
+  // Callbacks for NFTLoader
+  const handleNFTsLoaded = useCallback((nfts) => {
+    console.log(`Parent received ${nfts.length} NFTs`);
+    setLoadedNFTs(nfts);
+  }, []);
+
+  const handleLoadingChange = useCallback((loading) => {
+    console.log(`NFT loading state changed to: ${loading}`);
+    setIsLoading(loading);
+  }, []);
+
   return (
     <Box>
+      {activeLoader && (
+        <NFTLoader
+          key={`loader-${activeLoader}`}
+          selectedCollection={activeLoader}
+          onNFTsLoaded={handleNFTsLoaded}
+          onLoadingChange={handleLoadingChange}
+        />
+      )}
+
       <NFTDrawer
         showMoveBoard={props.showMoveBoard}
         handleCancelBtnClicked={props.handleCancelBtnClicked}
@@ -275,7 +314,7 @@ const MoveToChild = (props: MoveBoardProps) => {
             selectedAccount={selectedAccount || null}
           />
         }
-        nfts={collectionDetail?.nfts || []}
+        nfts={loadedNFTs.length > 0 ? loadedNFTs : collectionDetail?.nfts || []}
         replaceIPFS={replaceIPFS}
       />
       {selectCollection && (
