@@ -103,7 +103,6 @@ const CollectionDetailGrid: React.FC<CollectionDetailProps> = ({
       onFilteredResults={(results) => setFilteredList(results)}
       searchTerm={searchTerm}
       setSearchTerm={setSearchTerm}
-      placeholder="Search collection NFTs"
     />
   );
 

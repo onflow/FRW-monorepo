@@ -161,14 +161,13 @@ export const NFTMoveDrawer: React.FC<NFTMoveDrawerProps> = ({
         onFilteredResults={(results) => setFilteredList(results)}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
-        placeholder="Search collection NFTs"
       />
 
       {!isLoading ? (
         <Box
           sx={{
             display: 'flex',
-            mb: '18px',
+            mb: '0',
             padding: '16px',
             gap: '4px',
             flexWrap: 'wrap',

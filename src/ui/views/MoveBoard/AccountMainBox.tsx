@@ -105,8 +105,6 @@ function AccountMainBox({ isChild, setSelectedChildAccount, selectedAccount, isE
 
   return (
     <Box sx={{ padding: '0 18px' }}>
-      <Typography sx={{ mb: '8px' }}>{chrome.i18n.getMessage('Account')}</Typography>
-
       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
         <Box
           sx={{
