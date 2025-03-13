@@ -225,6 +225,7 @@ const NftEvmCollectionDetail = () => {
         if (parsedState.searchTerm && setSearchTerm) {
           setSearchTerm(parsedState.searchTerm);
         }
+        localStorage.setItem('nftDetailState', '');
       } catch (e) {
         console.error('Error parsing saved state:', e);
       }
