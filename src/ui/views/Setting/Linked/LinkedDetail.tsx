@@ -132,7 +132,7 @@ const LinkedDetail = () => {
       setKey(key);
       const catalog = await usewallet.getNftCatalog();
 
-      const parentaddress = await usewallet.getMainWallet();
+      const parentaddress = await usewallet.getParentAddress();
 
       const activec = await usewallet.getChildAccountAllowTypes(parentaddress, key!);
       setActiveCollection(activec);

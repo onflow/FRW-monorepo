@@ -111,7 +111,7 @@ export const useProfiles = () => {
     if (!usewallet || !walletLoaded) return;
     try {
       // Make sure the wallet is unlocked and has a main wallet
-      if (!(await usewallet.getMainWallet())) {
+      if (!(await usewallet.getParentAddress())) {
         console.log('freshUserInfo - No main wallet yet');
         return;
       }

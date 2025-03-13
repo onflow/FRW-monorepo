@@ -88,7 +88,7 @@ async function signMessage(msgParams, opts = {}) {
   // Retrieve the private key from the wallet (assuming Ethereum wallet)
   const password = keyringService.password;
   const privateKey = await Wallet.getPrivateKeyForCurrentAccount(password);
-  const currentWallet = await Wallet.getMainWallet();
+  const currentWallet = await Wallet.getParentAddress();
   const account = await fcl.account(currentWallet);
   const hashAlgo = await storage.get('hashAlgo');
   const signAlgo = await storage.get('signAlgo');
@@ -130,7 +130,7 @@ async function signTypeData(msgParams, opts = {}) {
   console.log('keyindex ', keyindex);
   // const wallet = new ethers.Wallet(privateKey);
   const signature = await signWithKey(signableData, signAlgo, hashAlgo, privateKey);
-  const currentWallet = await Wallet.getMainWallet();
+  const currentWallet = await Wallet.getParentAddress();
 
   const addressHex = currentWallet;
   const addressBuffer = Buffer.from(addressHex.slice(2), 'hex');
@@ -217,7 +217,7 @@ class ProviderController extends BaseController {
       permissionService.addConnectedSite(origin, name, icon, defaultChain);
     }
 
-    const currentWallet = await Wallet.getMainWallet();
+    const currentWallet = await Wallet.getParentAddress();
     let evmAddress: string = '';
     try {
       // Attempt to query the EVM address
@@ -296,7 +296,7 @@ class ProviderController extends BaseController {
     let currentWallet;
     try {
       // Attempt to query the currentNetwork address
-      currentWallet = await Wallet.getMainWallet();
+      currentWallet = await Wallet.getParentAddress();
     } catch (error) {
       // If an error occurs, request approval
       console.error('Error querying EVM address:', error);
@@ -504,7 +504,7 @@ class ProviderController extends BaseController {
     );
 
     const network = await Wallet.getNetwork();
-    const currentWallet = await Wallet.getMainWallet();
+    const currentWallet = await Wallet.getParentAddress();
     const evmaddress = await Wallet.queryEvmAddress(currentWallet);
 
     if (network === 'testnet') {
@@ -564,7 +564,7 @@ class ProviderController extends BaseController {
     );
 
     const network = await Wallet.getNetwork();
-    const currentWallet = await Wallet.getMainWallet();
+    const currentWallet = await Wallet.getParentAddress();
     const evmaddress = await Wallet.queryEvmAddress(currentWallet);
 
     if (network === 'testnet') {

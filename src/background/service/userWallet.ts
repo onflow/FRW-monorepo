@@ -122,21 +122,25 @@ class UserWallet {
     this.setCurrentPubkey(pubKey);
     if (accountIndex !== -1) {
       currentAccounts[accountIndex] = {
-        accounts: accountData.map((account) => ({
+        accounts: accountData.map((account, index) => ({
           ...account,
           chain: network === 'testnet' ? 545 : 747,
+          id: index,
         })),
         publicKey: pubKey,
       };
     } else {
       currentAccounts.push({
-        accounts: accountData.map((account) => ({
+        accounts: accountData.map((account, index) => ({
           ...account,
           chain: network === 'testnet' ? 545 : 747,
+          id: index,
         })),
         publicKey: pubKey,
       });
     }
+    this.store.currentAddress = currentAccounts[0].accounts[0].address;
+    this.store.parentAddress = currentAccounts[0].accounts[0].address;
     this.store.accounts[network] = currentAccounts;
   };
 
@@ -212,6 +216,8 @@ class UserWallet {
     this.store.currentAddress = wallet.address;
     if (key === 'evm') {
       this.store.currentEvmAddress = wallet.address;
+    } else if (key === null) {
+      this.store.parentAddress = wallet.address;
     }
   };
 
@@ -246,6 +252,20 @@ class UserWallet {
     }
 
     return null;
+  };
+
+  getParentAddress = async (network: string) => {
+    if (!keyringService.isBooted() || !keyringService.memStore.getState().isUnlocked) {
+      return '';
+    }
+    const address = this.store.parentAddress;
+    return withPrefix(address) || '';
+  };
+
+  getCurrentAddress = (): string => {
+    const address = this.store.currentAddress;
+
+    return withPrefix(address) || '';
   };
 
   /*
@@ -438,18 +458,6 @@ class UserWallet {
     return wallet;
   };
 
-  getMainWallet = async (network: string) => {
-    if (!keyringService.isBooted() || !keyringService.memStore.getState().isUnlocked) {
-      return '';
-    }
-    const wallet = await this.returnMainWallet(network);
-    return withPrefix(wallet?.address) || '';
-  };
-
-  getCurrentAddress = (): string => {
-    return withPrefix(this.store.currentWallet.address) || '';
-  };
-
   private extractScriptName = (cadence: string): string => {
     const scriptLines = cadence.split('\n');
     for (const line of scriptLines) {
@@ -510,6 +518,7 @@ class UserWallet {
       pubKey: string;
       weight: number;
     };
+    await this.setCurrentPubkey(pubKey);
     try {
       // Try to get the account from  loggedInAccounts
       account = await getLoggedInAccount();

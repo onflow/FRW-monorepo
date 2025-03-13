@@ -31,7 +31,7 @@ const NFTTab = () => {
     if (isChild) {
       setChildType(isChild);
 
-      const parentaddress = await wallet.getMainWallet();
+      const parentaddress = await wallet.getParentAddress();
 
       const activec = await wallet.getChildAccountAllowTypes(parentaddress, address!);
       setActiveCollection(activec);

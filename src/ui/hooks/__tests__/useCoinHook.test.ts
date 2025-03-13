@@ -63,7 +63,7 @@ vi.mock('@/ui/utils/WalletContext', () => ({
   useWallet: vi.fn().mockReturnValue({
     refreshCoinList: vi.fn().mockResolvedValue(undefined),
     isUnlocked: vi.fn().mockResolvedValue(true),
-    getMainWallet: vi.fn().mockResolvedValue('test-address'),
+    getParentAddress: vi.fn().mockResolvedValue('test-address'),
   }),
 }));
 
@@ -146,7 +146,7 @@ describe('useCoinHook', () => {
 
         useWallet: () => ({
           refreshCoinList: vi.fn().mockResolvedValue(undefined),
-          getMainWallet: vi.fn(),
+          getParentAddress: vi.fn(),
           isUnlocked: vi.fn().mockResolvedValue(true),
           openapi: {
             getAccountMinFlow: vi.fn(),

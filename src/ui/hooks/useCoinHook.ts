@@ -72,7 +72,7 @@ export const useCoins = () => {
         console.log('calculateAvailableBalance - Wallet is locked');
         return;
       }
-      if (!(await usewallet.getMainWallet())) {
+      if (!(await usewallet.getParentAddress())) {
         console.log('calculateAvailableBalance - No main wallet yet');
         return;
       }
@@ -113,7 +113,7 @@ export const useCoins = () => {
       console.log('Wallet is locked');
       return;
     }
-    if (!(await usewallet.getMainWallet())) {
+    if (!(await usewallet.getParentAddress())) {
       console.log('No main wallet yet');
       return;
     }

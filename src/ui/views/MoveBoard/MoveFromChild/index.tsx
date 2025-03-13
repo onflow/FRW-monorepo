@@ -120,7 +120,7 @@ const MoveFromChild = (props: MoveBoardProps) => {
     setIsLoading(true);
     try {
       const address = await usewallet.getCurrentAddress();
-      const parentaddress = await usewallet.getMainWallet();
+      const parentaddress = await usewallet.getParentAddress();
 
       const activec = await usewallet.getChildAccountAllowTypes(parentaddress, address!);
       const cadenceResult = await fetchCollectionCache(address!);

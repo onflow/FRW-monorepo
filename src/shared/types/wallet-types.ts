@@ -56,6 +56,7 @@ export type LoggedInAccountWithIndex = LoggedInAccount & {
 };
 
 export type AccountDetails = {
+  id: number;
   address: string;
   keyIndex: number;
   weight: number;
@@ -65,6 +66,9 @@ export type AccountDetails = {
   chain?: number;
   childAccount?: ChildAccount;
   evmAddress?: string;
+  name?: string;
+  icon?: string;
+  color?: string;
 };
 
 export type PublicKeyAccounts = {

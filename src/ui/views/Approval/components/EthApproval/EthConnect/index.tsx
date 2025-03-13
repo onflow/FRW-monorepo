@@ -59,7 +59,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
     let currentWallet;
     try {
       // Attempt to query the address
-      currentWallet = await usewallet.getMainWallet();
+      currentWallet = await usewallet.getParentAddress();
     } catch (error) {
       // If an error occurs, request approval
       console.error('Error querying EVM address:', error);

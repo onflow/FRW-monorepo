@@ -927,7 +927,7 @@ export class WalletController extends BaseController {
 
   checkUserChildAccount = async () => {
     const network = await this.getNetwork();
-    const address = await userWalletService.getMainWallet(network);
+    const address = await userWalletService.getParentAddress(network);
     const cacheKey = `checkUserChildAccount${address}`;
     const ttl = 5 * 60 * 1000; // 5 minutes in milliseconds
 
@@ -967,15 +967,15 @@ export class WalletController extends BaseController {
   checkAccessibleFt = async (childAccount) => {
     const network = await this.getNetwork();
 
-    const address = await userWalletService.getMainWallet(network);
+    const address = await userWalletService.getParentAddress(network);
     const result = await openapiService.queryAccessibleFt(address, childAccount);
 
     return result;
   };
 
-  getMainWallet = async () => {
+  getParentAddress = async () => {
     const network = await this.getNetwork();
-    const address = await userWalletService.getMainWallet(network);
+    const address = await userWalletService.getParentAddress(network);
 
     return address;
   };
@@ -1700,7 +1700,7 @@ export class WalletController extends BaseController {
       return '';
     }
     const network = await this.getNetwork();
-    const address = await userWalletService.getMainWallet(network);
+    const address = await userWalletService.getParentAddress(network);
     if (!address) {
       const data = await this.refreshUserWallets();
       return withPrefix(data[0].blockchain[0].address) || '';
@@ -2042,7 +2042,7 @@ export class WalletController extends BaseController {
     const checkedAddress = await storage.get('coacheckAddress');
 
     const script = await getScripts('evm', 'checkCoaLink');
-    const mainAddress = await this.getMainWallet();
+    const mainAddress = await this.getParentAddress();
     console.log('getscript script ', mainAddress);
     if (checkedAddress === mainAddress) {
       return true;
