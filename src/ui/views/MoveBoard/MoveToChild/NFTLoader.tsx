@@ -38,6 +38,7 @@ const NFTLoader: React.FC<NFTLoaderProps> = ({
     getCollection,
     ownerAddress: '0x37a7e864611c7a85',
     collectionName: collectionToUse,
+    isEvm: false,
   });
 
   useEffect(() => {

@@ -1,32 +1,12 @@
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import PublicOutlinedIcon from '@mui/icons-material/PublicOutlined';
-import ReplayRoundedIcon from '@mui/icons-material/ReplayRounded';
-import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
-import {
-  Typography,
-  Card,
-  Grid,
-  Button,
-  Box,
-  IconButton,
-  CardMedia,
-  CardContent,
-  Skeleton,
-  ButtonBase,
-  Tooltip,
-} from '@mui/material';
-import { StyledEngineProvider } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
-import { has } from 'lodash';
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useHistory, useParams, useLocation } from 'react-router-dom';
 
 import CollectionDetailGrid from '@/ui/FRWComponent/NFTs/CollectionDetailGrid';
+import GridView from '@/ui/FRWComponent/NFTs/GridView';
 import { useNftHook } from '@/ui/hooks/useNftHook';
-import { type PostMedia, MatchMediaType } from '@/ui/utils/url';
+import { type PostMedia } from '@/ui/utils/url';
 import { useWallet } from 'ui/utils';
-
-import GridView from './GridView';
 
 interface CollectionDisplay {
   name: string;
@@ -180,7 +160,6 @@ const NftEvmCollectionDetail = () => {
   const history = useHistory();
 
   const [ownerAddress, setOwnerAddress] = useState<any>(null);
-  const [searchTerm, setSearchTerm] = useState('');
   const [filteredList, setFilteredList] = useState<any[]>([]);
 
   // Add a useRef to track if we've initialized the filtered list
@@ -193,26 +172,37 @@ const NftEvmCollectionDetail = () => {
 
   const getCollection = useCallback(
     async (ownerAddress, collection, offset = 0) => {
-      return await usewallet.getEvmNftCollectionList(ownerAddress, collection, offset);
+      return await usewallet.getEvmNftCollectionList(ownerAddress, collection, 24, offset);
     },
     [usewallet]
   );
 
   const refreshCollection = useCallback(
     async (ownerAddress, collection, offset = 0) => {
-      return await usewallet.refreshEvmNftCollectionList(ownerAddress, collection, offset);
+      return await usewallet.refreshEvmNftCollectionList(ownerAddress, collection, 24, offset);
     },
     [usewallet]
   );
 
   // Use the useNftHook
-  const { list, allNfts, info, total, loading, loadingMore, isLoadingAll, refreshCollectionImpl } =
-    useNftHook({
-      getCollection,
-      refreshCollection,
-      ownerAddress: address,
-      collectionName: collection_name,
-    });
+  const {
+    list,
+    allNfts,
+    info,
+    total,
+    loading,
+    loadingMore,
+    isLoadingAll,
+    refreshCollectionImpl,
+    searchTerm,
+    setSearchTerm,
+  } = useNftHook({
+    getCollection,
+    refreshCollection,
+    ownerAddress: address,
+    collectionName: collection_name,
+    isEvm: true,
+  });
 
   // Add this useEffect to initialize the filtered list only once
   useEffect(() => {
@@ -226,6 +216,21 @@ const NftEvmCollectionDetail = () => {
     setOwnerAddress(address);
   }, [address]);
 
+  // Check for saved state when returning from NFT detail view
+  useEffect(() => {
+    const savedState = localStorage.getItem('nftDetailState');
+    if (savedState) {
+      try {
+        const parsedState = JSON.parse(savedState);
+        if (parsedState.searchTerm && setSearchTerm) {
+          setSearchTerm(parsedState.searchTerm);
+        }
+      } catch (e) {
+        console.error('Error parsing saved state:', e);
+      }
+    }
+  }, [setSearchTerm]);
+
   const createGridCard = (data, index) => {
     return (
       <GridView
@@ -235,6 +240,8 @@ const NftEvmCollectionDetail = () => {
         key={data.unique_id}
         index={index}
         ownerAddress={ownerAddress}
+        isEvm={true}
+        searchTerm={searchTerm}
       />
     );
   };
@@ -244,12 +251,13 @@ const NftEvmCollectionDetail = () => {
       info={info}
       list={list}
       allNfts={allNfts}
-      total={total}
+      total={list.length}
       loading={loading}
       isLoadingAll={isLoadingAll}
       refreshCollectionImpl={refreshCollectionImpl}
       createGridCard={createGridCard}
-      wrapSearchInBox={true}
+      searchTerm={searchTerm}
+      setSearchTerm={setSearchTerm}
     />
   );
 };

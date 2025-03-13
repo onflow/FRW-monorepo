@@ -76,7 +76,8 @@ interface CollectionDetailProps {
   isLoadingAll?: boolean;
   refreshCollectionImpl: () => void;
   createGridCard: (item: any, index: number) => JSX.Element;
-  wrapSearchInBox?: boolean; // Optional prop to determine if search should be wrapped in a Box
+  searchTerm: string;
+  setSearchTerm: (term: string) => void;
 }
 
 const CollectionDetailGrid: React.FC<CollectionDetailProps> = ({
@@ -88,11 +89,11 @@ const CollectionDetailGrid: React.FC<CollectionDetailProps> = ({
   isLoadingAll = false,
   refreshCollectionImpl,
   createGridCard,
-  wrapSearchInBox = false,
+  searchTerm,
+  setSearchTerm,
 }) => {
   const classes = useStyles();
   const history = useHistory();
-  const [searchTerm, setSearchTerm] = useState('');
   const [filteredList, setFilteredList] = useState<any[]>([]);
 
   // Search component with optional Box wrapper
@@ -215,9 +216,7 @@ const CollectionDetailGrid: React.FC<CollectionDetailProps> = ({
                 </Box>
               </Grid>
             </Grid>
-
-            {/* Render search with or without Box wrapper based on prop */}
-            {wrapSearchInBox ? <Box sx={{ mb: 2, px: 2 }}>{searchComponent}</Box> : searchComponent}
+            {searchComponent}
 
             {loading ? (
               <Grid container className={classes.grid}>

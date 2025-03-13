@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { makeStyles } from '@mui/styles';
 import { Typography, Card, CardActionArea, CardMedia, CardContent, Box } from '@mui/material';
-import { PostMedia } from '@/ui/utils/url';
+import { makeStyles } from '@mui/styles';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+
+import type { PostMedia } from '@/ui/utils/url';
 import fallback from 'ui/FRWAssets/image/errorImage.png';
-import { isNull } from 'util';
 
 const useStyles = makeStyles(() => ({
   titleWrapper: {
@@ -27,14 +27,12 @@ const useStyles = makeStyles(() => ({
     borderRadius: '8px',
     padding: '0 13px',
     '&:hover': {
-      // borderRadius: '8px',
       color: '#222222',
       backgroundColor: '#222222',
     },
   },
   card: {
     flex: '0 0 50%',
-    // height: '211px',
     backgroundColor: 'inherit',
     boxShadow: 'none',
     margin: 0,
@@ -42,7 +40,6 @@ const useStyles = makeStyles(() => ({
     padding: '13px 0',
     display: 'inline-block',
     '&:hover': {
-      // borderRadius: '8px',
       color: '#222222',
       backgroundColor: '#222222',
     },
@@ -50,13 +47,11 @@ const useStyles = makeStyles(() => ({
   grid: {
     width: '100%',
     margin: 0,
-    // paddingLeft: '15px',
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'center',
     alignContent: 'flex-start',
     padding: '10px 13px',
-    // marginLeft: 'auto'
   },
   cardmedia: {
     height: '159px',
@@ -72,7 +67,6 @@ const useStyles = makeStyles(() => ({
     objectFit: 'cover',
   },
   content: {
-    // height: '40px',
     padding: '5px 0',
     backgroundColor: 'inherit',
     borderRadius: '0 0 8px 8px',
@@ -88,51 +82,58 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const GridView = ({
-  data,
-  accessible,
-  blockList,
-  index,
-  ownerAddress,
-  isAccessibleNft = true,
-  fromLinked = false,
-  collectionInfo,
-}) => {
+interface GridViewProps {
+  data: any;
+  accessible?: any[];
+  blockList?: any[];
+  index: number;
+  ownerAddress: string;
+  isAccessibleNft?: boolean;
+  fromLinked?: boolean;
+  collectionInfo?: any;
+  isEvm?: boolean;
+  searchTerm?: string;
+}
+
+const GridView = (props: GridViewProps) => {
+  const {
+    data,
+    accessible,
+    blockList = [],
+    index,
+    ownerAddress,
+    isAccessibleNft = true,
+    fromLinked = false,
+    collectionInfo,
+    isEvm = false,
+    searchTerm,
+  } = props;
+
   const classes = useStyles();
   const [loaded, setLoaded] = useState(false);
   const [isAccessible, setAccessible] = useState(true);
   const [media, setGetMediea] = useState<PostMedia | null>(null);
+  const fetchMedia = useCallback(async () => {
+    setGetMediea(data.postMedia || data.media);
 
-  const fecthMedia = async () => {
-    // const bestMedia = await findBestMedia(data, blockList)
-    setGetMediea(data.postMedia);
     if (accessible) {
       accessible.forEach((item) => {
         const parts = item.id.split('.');
-        if (parts[2] === data.collectionContractName && item.idList.includes(data.id)) {
+        // Check both possible contract name fields
+        const contractName = data.contractName || data.collectionContractName;
+
+        if (parts[2] === contractName && item.idList.includes(data.id)) {
           setAccessible(true);
         } else {
           setAccessible(false);
         }
       });
     }
-  };
-
-  const navigateWithState = (data, media, index, ownerAddress, isAccessibleNft) => {
-    const state = {
-      nft: data,
-      media: media,
-      index: index,
-      ownerAddress: ownerAddress,
-      isAccessibleNft,
-      collectionInfo,
-    };
-    localStorage.setItem('nftDetailState', JSON.stringify(state));
-  };
+  }, [data, accessible]);
 
   useEffect(() => {
-    fecthMedia();
-  }, []);
+    fetchMedia();
+  }, [fetchMedia]);
 
   const TilteWordWrapped = (desc) => {
     if (!desc) return null;
@@ -211,21 +212,56 @@ const GridView = ({
     );
   };
 
+  // Determine the correct path and state based on NFT type
+  const detailPath = isEvm
+    ? `/dashboard/nftevm/detail/${index}`
+    : `/dashboard/nested/${fromLinked ? 'linkednftdetail' : 'nftdetail'}/${index}`;
+
+  const navigateState = {
+    nft: data,
+    media: media,
+    index: index,
+    ownerAddress: ownerAddress,
+  };
+
+  // Handle navigation state saving for both NFT types
+  const navigateWithState = () => {
+    const state: Record<string, any> = {
+      nft: data,
+      media: media,
+      index: index,
+      ownerAddress: ownerAddress,
+      isAccessibleNft,
+    };
+
+    // Only add collectionInfo if it's available
+    if (collectionInfo) {
+      state.collectionInfo = collectionInfo;
+    }
+
+    // Save search term if available
+    if (searchTerm) {
+      state.searchTerm = searchTerm;
+    }
+
+    localStorage.setItem('nftDetailState', JSON.stringify(state));
+  };
+
   return (
     <Card className={classes.card} elevation={0}>
       <CardActionArea
         component={Link}
         className={classes.actionarea}
         to={{
-          pathname: `/dashboard/nested/${fromLinked ? 'linkednftdetail' : 'nftdetail'}/${index}`,
-          state: { nft: data, media: media, index: index, ownerAddress: ownerAddress },
+          pathname: detailPath,
+          state: navigateState,
         }}
-        onClick={() => navigateWithState(data, media, index, ownerAddress, isAccessibleNft)}
+        onClick={navigateWithState}
       >
         <CardMedia className={classes.cardmedia}>{getUri()}</CardMedia>
         <CardContent className={classes.content}>
           <Typography className={classes.nftname}>
-            {TilteWordWrapped(media?.title) || ''}
+            {TilteWordWrapped(media?.title || data?.name) || ''}
             {!isAccessibleNft && (
               <Box
                 sx={{
@@ -245,7 +281,6 @@ const GridView = ({
               </Box>
             )}
           </Typography>
-          {/* <Typography className={classes.nftprice}>{props.price}</Typography> */}
         </CardContent>
       </CardActionArea>
     </Card>

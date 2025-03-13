@@ -5,7 +5,7 @@ interface EvmNftsStore {
   collectionList: {
     mainnet: {
       [collectionIdentifier: string]: {
-        [offset: number]: {
+        [offset: number | string]: {
           data: EvmNFTCollectionList;
           expiry: number;
         };
@@ -13,7 +13,7 @@ interface EvmNftsStore {
     };
     testnet: {
       [collectionIdentifier: string]: {
-        [offset: number]: {
+        [offset: number | string]: {
           data: EvmNFTCollectionList;
           expiry: number;
         };
@@ -71,7 +71,7 @@ class EvmNfts {
   getSingleCollection = (
     network: string,
     collectionIdentifier: string,
-    offset: number
+    offset: number | string
   ): EvmNFTCollectionList | null => {
     const collection = this.store.collectionList[network][collectionIdentifier]?.[offset];
     if (!collection || Date.now() > collection.expiry) {
@@ -83,7 +83,7 @@ class EvmNfts {
   setSingleCollection = (
     data: EvmNFTCollectionList,
     collectionIdentifier: string,
-    offset: number,
+    offset: number | string,
     network: string
   ) => {
     const expiry = Date.now() + EXPIRY_TIME;
@@ -93,7 +93,11 @@ class EvmNfts {
     this.store.collectionList[network][collectionIdentifier][offset] = { data, expiry };
   };
 
-  deleteSingleCollection = (collectionIdentifier: string, offset: number, network: string) => {
+  deleteSingleCollection = (
+    collectionIdentifier: string,
+    offset: number | string,
+    network: string
+  ) => {
     if (this.store.collectionList[network][collectionIdentifier]) {
       delete this.store.collectionList[network][collectionIdentifier][offset];
     }

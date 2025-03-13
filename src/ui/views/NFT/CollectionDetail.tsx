@@ -1,35 +1,12 @@
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import PublicOutlinedIcon from '@mui/icons-material/PublicOutlined';
-import ReplayRoundedIcon from '@mui/icons-material/ReplayRounded';
-import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
-import {
-  Typography,
-  Card,
-  Grid,
-  Button,
-  Box,
-  IconButton,
-  CardMedia,
-  CardContent,
-  Skeleton,
-  ButtonBase,
-  Tooltip,
-} from '@mui/material';
-import { StyledEngineProvider } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
-import { has } from 'lodash';
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import InfiniteScroll from 'react-infinite-scroll-component';
+import React, { useCallback, useEffect } from 'react';
 import { useHistory, useParams, useLocation } from 'react-router-dom';
 
-import { type NFTItem } from '@/shared/types/nft-types';
-import { LLSpinner } from '@/ui/FRWComponent';
 import CollectionDetailGrid from '@/ui/FRWComponent/NFTs/CollectionDetailGrid';
+import GridView from '@/ui/FRWComponent/NFTs/GridView';
 import { useNftHook } from '@/ui/hooks/useNftHook';
-import { type PostMedia, MatchMediaType } from '@/ui/utils/url';
 import { useWallet } from 'ui/utils';
 
-import GridView from './GridView';
 // import InfiniteScroll from 'react-infinite-scroller';
 
 interface CollectionDisplay {
@@ -190,21 +167,35 @@ const NFTCollectionDetail = () => {
   const {
     list,
     allNfts,
-    filteredList,
     info,
     total,
     loading,
     isLoadingAll,
+    refreshCollectionImpl,
     searchTerm,
     setSearchTerm,
-    setFilteredList,
-    refreshCollectionImpl,
   } = useNftHook({
     getCollection,
     refreshCollection,
     ownerAddress: address,
     collectionName: collection_name,
+    isEvm: false,
   });
+
+  // Check for saved state when returning from NFT detail view
+  useEffect(() => {
+    const savedState = localStorage.getItem('nftDetailState');
+    if (savedState) {
+      try {
+        const parsedState = JSON.parse(savedState);
+        if (parsedState.searchTerm && setSearchTerm) {
+          setSearchTerm(parsedState.searchTerm);
+        }
+      } catch (e) {
+        console.error('Error parsing saved state:', e);
+      }
+    }
+  }, [setSearchTerm]);
 
   const createGridCard = (data, index) => {
     return (
@@ -216,6 +207,8 @@ const NFTCollectionDetail = () => {
         index={index}
         ownerAddress={address}
         collectionInfo={info}
+        isEvm={false}
+        searchTerm={searchTerm}
       />
     );
   };
@@ -230,7 +223,8 @@ const NFTCollectionDetail = () => {
       isLoadingAll={isLoadingAll}
       refreshCollectionImpl={refreshCollectionImpl}
       createGridCard={createGridCard}
-      wrapSearchInBox={false}
+      searchTerm={searchTerm}
+      setSearchTerm={setSearchTerm}
     />
   );
 };

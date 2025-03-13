@@ -7,6 +7,7 @@ interface UseNftHookProps {
   refreshCollection?: (ownerAddress: string, collection: string, offset?: number) => Promise<any>;
   ownerAddress: string;
   collectionName: string;
+  isEvm: boolean;
 }
 
 interface UseNftHookResult {
@@ -32,6 +33,7 @@ export const useNftHook = ({
   refreshCollection,
   ownerAddress,
   collectionName,
+  isEvm,
 }: UseNftHookProps): UseNftHookResult => {
   const [list, setLists] = useState<NFTItem[]>([]);
   const [allNfts, setAllNfts] = useState<NFTItem[]>([]);
@@ -44,10 +46,9 @@ export const useNftHook = ({
   const [isLoadingAll, setIsLoadingAll] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Create a ref to store all NFTs
   const allNftsRef = useRef<NFTItem[]>([]);
-  // Add a ref to track if we've attempted to load all pages
   const hasAttemptedLoadAll = useRef(false);
+  const currentOffsetRef = useRef<string | null>(null);
 
   // Reset the ref when collection changes
   useEffect(() => {
@@ -62,17 +63,14 @@ export const useNftHook = ({
       setLoading(true);
       try {
         const res = await getCollection(ownerAddress, collectionName);
-        console.log('res', res);
         setInfo(res.collection);
         setTotal(res.nftCount);
         setLists(res.nfts);
-        if (res.nftCount === res.nfts.length) {
-          console.log('All NFTs loaded in initial fetch, count:', res.nftCount);
-          setAllNfts(res.nfts);
+        if (isEvm && res.offset === null) {
           hasAttemptedLoadAll.current = true;
         }
       } catch (err) {
-        // Error handling
+        console.error('Error in initial fetch:', err);
       } finally {
         setLoading(false);
       }
@@ -81,9 +79,8 @@ export const useNftHook = ({
     if (ownerAddress && collectionName) {
       fetchCollection();
     }
-  }, [ownerAddress, collectionName, getCollection]);
+  }, [ownerAddress, collectionName, getCollection, isEvm]);
 
-  // Wrap nextPage in useCallback
   const nextPage = useCallback(
     async (currentPage: number): Promise<{ newItemsCount: number; nextPage: number } | null> => {
       if (loadingMore) {
@@ -93,63 +90,43 @@ export const useNftHook = ({
       setLoadingMore(true);
 
       try {
-        const offset = currentPage * 24;
-        const res = await getCollection(ownerAddress, collectionName, offset);
+        const offsetToUse =
+          currentOffsetRef.current !== null ? currentOffsetRef.current : currentPage * 24;
+        const res = await getCollection(ownerAddress, collectionName, offsetToUse as any);
 
         if (!res.nfts || res.nfts.length === 0) {
-          return { newItemsCount: 0, nextPage: currentPage };
+          return null;
         }
 
-        // Update page index
         setPage(currentPage + 1);
 
-        // Update the list for the current page view
-        setLists(res.nfts);
+        if (currentPage === 0) {
+          setLists(res.nfts);
+        } else {
+          setLists((prev) => [...prev, ...res.nfts]);
+        }
 
-        // Add new NFTs to complete collection
-        const existingMap = new Map<string, NFTItem>(
-          allNftsRef.current.map((nft) => [nft.id, nft])
-        );
+        if (isEvm && res.offset) {
+          currentOffsetRef.current = res.offset;
+        }
 
-        // Add new NFTs that don't exist yet
-        res.nfts.forEach((nft) => {
-          if (nft.id && !existingMap.has(nft.id)) {
-            existingMap.set(nft.id, nft);
-          }
-        });
-
-        // Update the ref
-        allNftsRef.current = Array.from(existingMap.values());
-
-        // Also update the state for components that need it
-        setAllNfts(allNftsRef.current);
-
-        // Update other state
-        setTotal(res.nftCount);
-        setInfo(res.collection);
+        if (res.offset === null && isEvm && currentPage > 0) {
+          hasAttemptedLoadAll.current = true;
+          return null;
+        }
 
         return {
           newItemsCount: res.nfts.length,
           nextPage: currentPage + 1,
         };
       } catch (error) {
-        console.error(error);
+        console.error('Error in nextPage:', error);
         return null;
       } finally {
         setLoadingMore(false);
       }
     },
-    [
-      getCollection,
-      ownerAddress,
-      collectionName,
-      loadingMore,
-      setLists,
-      setPage,
-      setAllNfts,
-      setTotal,
-      setInfo,
-    ]
+    [getCollection, ownerAddress, collectionName, loadingMore, setLists, setPage, isEvm]
   );
 
   const loadAllPages = useCallback(async (): Promise<void> => {
@@ -161,43 +138,38 @@ export const useNftHook = ({
     hasAttemptedLoadAll.current = true;
 
     try {
-      let currentPage = 0; // Start from the beginning
+      let currentPage = 0;
       const maxPages = 999;
+      const allLoadedNfts = [...list];
 
       for (let i = 0; i < maxPages; i++) {
         const result = await nextPage(currentPage);
 
-        if (!result || result.newItemsCount === 0) {
+        if (!result) {
           break;
         }
 
         currentPage = result.nextPage;
 
-        // Add a delay between requests
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 10));
       }
 
-      // After loading all pages, explicitly update the list with all NFTs
-      setLists(allNftsRef.current);
-      setFilteredList(allNftsRef.current);
+      setFilteredList(list);
     } catch (err) {
-      console.error(err);
+      console.error('Error in loadAllPages:', err);
     } finally {
       setIsLoadingAll(false);
     }
-  }, [loadingMore, nextPage, isLoadingAll]);
+  }, [loadingMore, nextPage, isLoadingAll, list]);
 
-  // Update filteredList when list changes
   useEffect(() => {
     if (!searchTerm) {
       setFilteredList(list);
     }
   }, [list, searchTerm]);
 
-  // Update filteredList when allNfts changes
   useEffect(() => {
     if (isLoadingAll && allNfts.length > 0) {
-      // When loading all and we have NFTs, update filtered list based on search
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase();
         const filtered = allNfts.filter(
@@ -233,7 +205,7 @@ export const useNftHook = ({
       setTotal(res.nftCount);
       setLists(res.nfts);
     } catch (err) {
-      console.error(err);
+      console.error('Error in refreshCollectionImpl:', err);
     } finally {
       setLoading(false);
     }

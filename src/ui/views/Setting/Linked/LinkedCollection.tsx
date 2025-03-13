@@ -17,18 +17,15 @@ import {
 } from '@mui/material';
 import { StyledEngineProvider } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
-import { has } from 'lodash';
 import React, { useState, useEffect, useCallback } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useHistory, useParams, useLocation } from 'react-router-dom';
 
 import { storage } from '@/background/webapi';
 import { LLSpinner } from '@/ui/FRWComponent';
-import { type PostMedia, MatchMediaType } from '@/ui/utils/url';
+import GridView from '@/ui/FRWComponent/NFTs/GridView';
+import { type PostMedia } from '@/ui/utils/url';
 import { useWallet } from 'ui/utils';
-
-import GridView from '../../NFT/GridView';
-// import InfiniteScroll from 'react-infinite-scroller';
 
 interface CollectionDisplay {
   name: string;
