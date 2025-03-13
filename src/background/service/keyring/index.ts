@@ -177,6 +177,15 @@ class KeyringService extends EventEmitter {
     this.store.updateState({ booted: encryptBooted });
   }
 
+  /**
+   * Unlock Keyrings without emitting event because the new keyring is not added yet
+   *
+   */
+  updateUnlocked(password: string): void {
+    this.password = password;
+    this.memStore.updateState({ isUnlocked: true });
+  }
+
   isBooted() {
     return !!this.store.getState().booted;
   }

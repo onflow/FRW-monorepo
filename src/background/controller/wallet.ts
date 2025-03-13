@@ -123,10 +123,11 @@ export class WalletController extends BaseController {
 
   /* wallet */
   boot = async (password) => {
+    // When wallet first initializes through install, it will add a encrypted password to boot state. If is boot is false, it means there's no password set.
     const isBooted = await keyringService.isBooted();
     if (isBooted) {
       await keyringService.verifyPassword(password);
-      await keyringService.boot(password);
+      await keyringService.updateUnlocked(password);
     } else {
       await keyringService.boot(password);
     }

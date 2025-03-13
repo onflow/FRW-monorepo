@@ -28,14 +28,21 @@ type StepType = (typeof STEPS)[keyof typeof STEPS];
 const Register = () => {
   const history = useHistory();
   const usewallet = useWallet();
-  const location = useLocation();
-  const params = new URLSearchParams(location.search);
-  const isAddWallet = params.get('add') === 'true';
 
   const [activeTab, setActiveTab] = useState<StepType>(STEPS.USERNAME);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [mnemonic] = useState(bip39.generateMnemonic());
+  const [isAddWallet, setIsAddWallet] = useState<boolean>(false);
+
+  useEffect(() => {
+    const checkWalletStatus = async () => {
+      const isBooted = await usewallet.isBooted();
+      setIsAddWallet(isBooted);
+    };
+
+    checkWalletStatus();
+  }, [usewallet]);
 
   const getUsername = (username: string) => {
     setUsername(username.toLowerCase());
