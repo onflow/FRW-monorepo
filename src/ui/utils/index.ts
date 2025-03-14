@@ -164,3 +164,7 @@ export const returnFilteredCollections = (contractList, NFT) => {
       collection.contractName === searchName || collection.contract_name === searchName
   );
 };
+
+export const truncate = (str, n) => {
+  return str.length > n ? str.slice(0, n - 1) + '...' : str;
+};
