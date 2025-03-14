@@ -32,6 +32,7 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     justifyContent: 'space-between',
     padding: '22px 18px 0',
+    alignItems: 'center',
   },
   arrowback: {
     padding: '0',
@@ -115,6 +116,7 @@ const CollectionDetailGrid: React.FC<CollectionDetailProps> = ({
               backgroundColor: 'rgba(0, 0, 0, 0.05)',
               borderRadius: '12px',
               padding: '0',
+              height: '20px',
             }}
           >
             <SearchIcon />
