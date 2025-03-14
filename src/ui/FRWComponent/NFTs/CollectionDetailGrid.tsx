@@ -31,7 +31,7 @@ const useStyles = makeStyles((theme) => ({
   iconbox: {
     display: 'flex',
     justifyContent: 'space-between',
-    padding: '22px 18px 0',
+    padding: '12px 18px 0',
     alignItems: 'center',
   },
   arrowback: {
