@@ -150,7 +150,7 @@ const SearchDialog: React.FC<SearchDialogProps> = ({
                 {searchTerm ? filteredList.length : total} NFTs
               </Typography>
             </Box>
-            <Box sx={{ maxHeight: '100vh', overflowY: 'auto' }}>
+            <Box sx={{ maxHeight: '100vh' }}>
               {filteredList.length === 0 && searchTerm ? (
                 <Box
                   sx={{
