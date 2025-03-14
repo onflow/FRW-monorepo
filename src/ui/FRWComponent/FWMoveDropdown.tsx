@@ -104,7 +104,7 @@ export const FWMoveDropdown = ({
                   {contacts[address].name}
                 </Typography>
                 <Typography
-                  sx={{ lineHeight: '1', textAlign: 'start', fontSize: '10px', fontWeight: '400' }}
+                  sx={{ lineHeight: '1', textAlign: 'start', fontSize: '12px', fontWeight: '400' }}
                   color="#FFFFFFCC"
                 >
                   {formatAddress(address)}

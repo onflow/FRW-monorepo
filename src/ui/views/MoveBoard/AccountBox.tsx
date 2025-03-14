@@ -85,9 +85,12 @@ function AccountBox({ isChild, setSelectedChildAccount, selectedAccount, isEvm =
             flex: '1',
             backgroundColor: '#2C2C2C',
             borderRadius: '12px',
+            flexDirection: 'column',
+            display: 'flex',
+            gap: '5px',
           }}
         >
-          <Box sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Box
               sx={{
                 display: 'flex',
@@ -121,7 +124,15 @@ function AccountBox({ isChild, setSelectedChildAccount, selectedAccount, isEvm =
           <Typography sx={{ fontSize: '14px', fontWeight: '600' }}>
             {firstEmoji ? firstEmoji.name : userInfo.contact_name}
           </Typography>
-          <Typography sx={{ fontSize: '10px', fontWeight: '400' }}>
+          <Typography
+            sx={{
+              color: '#FFFFFFCC',
+              lineHeight: '1',
+              textAlign: 'start',
+              fontSize: '12px',
+              fontWeight: '400',
+            }}
+          >
             {first && formatString(first)}
           </Typography>
         </Box>
