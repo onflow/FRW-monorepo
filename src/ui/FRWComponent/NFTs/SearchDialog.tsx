@@ -152,9 +152,17 @@ const SearchDialog: React.FC<SearchDialogProps> = ({
             </Box>
             <Box sx={{ maxHeight: '100vh', overflowY: 'auto' }}>
               {filteredList.length === 0 && searchTerm ? (
-                <Box sx={{ p: 4, textAlign: 'center' }}>
+                <Box
+                  sx={{
+                    p: 4,
+                    mt: '119px',
+                    textAlign: 'center',
+                    fontWeight: '700',
+                    color: 'rgba(255, 255, 255, 0.60))',
+                  }}
+                >
                   <Typography variant="body1" color="text.secondary">
-                    No NFTs found matching "{searchTerm}"
+                    No relevent NFT found
                   </Typography>
                 </Box>
               ) : (
