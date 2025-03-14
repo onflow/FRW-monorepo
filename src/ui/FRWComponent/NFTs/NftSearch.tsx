@@ -82,22 +82,24 @@ const NftSearch: React.FC<NftSearchProps> = ({
           </InputAdornment>
         }
         endAdornment={
-          <InputAdornment position="end">
-            <IconButton
-              onClick={handleClearSearch}
-              sx={{
-                width: '20px',
-                height: '20px',
-                borderRadius: '20px',
-                backgroundColor: '#FFFFFF0F',
-                cursor: 'pointer',
-              }}
-            >
-              <CloseIcon
-                sx={{ color: 'icon.navi', cursor: 'pointer', width: '14px', height: '14px' }}
-              />
-            </IconButton>
-          </InputAdornment>
+          searchTerm && (
+            <InputAdornment position="end">
+              <IconButton
+                onClick={handleClearSearch}
+                sx={{
+                  width: '20px',
+                  height: '20px',
+                  borderRadius: '20px',
+                  backgroundColor: '#FFFFFF0F',
+                  cursor: 'pointer',
+                }}
+              >
+                <CloseIcon
+                  sx={{ color: 'icon.navi', cursor: 'pointer', width: '14px', height: '14px' }}
+                />
+              </IconButton>
+            </InputAdornment>
+          )
         }
       />
     </Box>

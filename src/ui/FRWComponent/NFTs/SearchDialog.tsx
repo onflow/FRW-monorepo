@@ -67,6 +67,7 @@ const SearchDialog: React.FC<SearchDialogProps> = ({
             setSearchTerm={setSearchTerm}
             sx={{
               height: '56px',
+              borderRadius: '16px',
             }}
           />
           <Typography
