@@ -66,7 +66,7 @@ const SearchDialog: React.FC<SearchDialogProps> = ({
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
             sx={{
-              height: '56px',
+              height: '52px',
               borderRadius: '16px',
             }}
           />
