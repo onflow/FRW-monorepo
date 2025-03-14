@@ -62,7 +62,7 @@ const SearchDialog: React.FC<SearchDialogProps> = ({
           variant="body1"
           color="text.secondary"
           onClick={onClose}
-          sx={{ cursor: 'pointer' }}
+          sx={{ cursor: 'pointer', paddingRight: '8px' }}
         >
           Cancel
         </Typography>
