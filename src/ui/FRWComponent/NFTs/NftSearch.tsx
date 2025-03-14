@@ -51,7 +51,7 @@ const NftSearch: React.FC<NftSearchProps> = ({
   }, [filterNFTs, onFilteredResults]);
 
   return (
-    <Box sx={{ width: '100%', mb: '8px', p: '8px' }}>
+    <Box sx={{ width: '100%', p: '8px' }}>
       <Input
         fullWidth
         placeholder={placeholder}

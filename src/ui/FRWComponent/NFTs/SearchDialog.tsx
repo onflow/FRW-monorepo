@@ -35,9 +35,9 @@ const SearchDialog: React.FC<SearchDialogProps> = ({
       sx={{
         '& .MuiDialog-paper': {
           backgroundColor: 'background.default',
-          padding: '18px',
+          padding: '8px',
           overflowY: 'auto',
-          marginTop: '90px',
+          marginTop: '100px',
           boxShadow: 'none',
           backgroundImage: 'none',
         },
@@ -62,12 +62,34 @@ const SearchDialog: React.FC<SearchDialogProps> = ({
           variant="body1"
           color="text.secondary"
           onClick={onClose}
-          sx={{ cursor: 'pointer', mb: '8px' }}
+          sx={{ cursor: 'pointer' }}
         >
           Cancel
         </Typography>
       </Box>
-
+      <Box
+        sx={{
+          display: 'flex',
+          padding: '8px',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <Typography
+          variant="body1"
+          color="text.secondary"
+          sx={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.40)', fontWeight: '400' }}
+        >
+          {searchTerm ? 'Results' : 'Total'}
+        </Typography>
+        <Typography
+          variant="body1"
+          color="text.secondary"
+          sx={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.40)', fontWeight: '400' }}
+        >
+          {searchTerm ? filteredList.length : items.length} NFTs
+        </Typography>
+      </Box>
       <Box sx={{ maxHeight: '100vh', overflowY: 'auto' }}>
         {filteredList.length === 0 && searchTerm ? (
           <Box sx={{ p: 4, textAlign: 'center' }}>
