@@ -1,6 +1,7 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PublicOutlinedIcon from '@mui/icons-material/PublicOutlined';
 import ReplayRoundedIcon from '@mui/icons-material/ReplayRounded';
+import SearchIcon from '@mui/icons-material/Search';
 import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 import {
   Box,
@@ -14,6 +15,7 @@ import {
   ButtonBase,
   Tooltip,
   Skeleton,
+  Dialog,
 } from '@mui/material';
 import { StyledEngineProvider } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
@@ -23,6 +25,7 @@ import { useHistory } from 'react-router-dom';
 import { truncate } from '@/ui/utils';
 
 import NftSearch from './NftSearch';
+import SearchDialog from './SearchDialog';
 
 const useStyles = makeStyles((theme) => ({
   iconbox: {
@@ -95,16 +98,7 @@ const CollectionDetailGrid: React.FC<CollectionDetailProps> = ({
   const classes = useStyles();
   const history = useHistory();
   const [filteredList, setFilteredList] = useState<any[]>([]);
-
-  // Search component with optional Box wrapper
-  const searchComponent = (
-    <NftSearch
-      items={isLoadingAll ? allNfts : list}
-      onFilteredResults={(results) => setFilteredList(results)}
-      searchTerm={searchTerm}
-      setSearchTerm={setSearchTerm}
-    />
-  );
+  const [searchOpen, setSearchOpen] = useState(false);
 
   return (
     <StyledEngineProvider injectFirst>
@@ -112,6 +106,16 @@ const CollectionDetailGrid: React.FC<CollectionDetailProps> = ({
         <Box className={classes.iconbox}>
           <IconButton onClick={() => history.push('/dashboard')} className={classes.arrowback}>
             <ArrowBackIcon sx={{ color: 'icon.navi' }} />
+          </IconButton>
+          <IconButton
+            onClick={() => setSearchOpen(true)}
+            sx={{
+              backgroundColor: 'rgba(0, 0, 0, 0.05)',
+              borderRadius: '12px',
+              padding: '8px',
+            }}
+          >
+            <SearchIcon sx={{ color: 'icon.navi' }} />
           </IconButton>
         </Box>
 
@@ -215,7 +219,16 @@ const CollectionDetailGrid: React.FC<CollectionDetailProps> = ({
                 </Box>
               </Grid>
             </Grid>
-            {searchComponent}
+
+            <SearchDialog
+              open={searchOpen}
+              onClose={() => setSearchOpen(false)}
+              items={list}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              onFilteredResults={(results) => setFilteredList(results)}
+              createGridCard={createGridCard}
+            />
 
             {loading ? (
               <Grid container className={classes.grid}>
@@ -238,16 +251,10 @@ const CollectionDetailGrid: React.FC<CollectionDetailProps> = ({
             ) : (
               info && (
                 <>
-                  {searchTerm && filteredList.length === 0 ? (
-                    <Box sx={{ p: 4, textAlign: 'center' }}>
-                      <Typography variant="body1" color="text.secondary">
-                        No NFTs found matching "{searchTerm}"
-                      </Typography>
-                    </Box>
-                  ) : list && list.length > 0 ? (
+                  {list && list.length > 0 ? (
                     <Grid container className={classes.grid}>
-                      {searchTerm ? filteredList.map(createGridCard) : list.map(createGridCard)}
-                      {(searchTerm ? filteredList.length : list.length) % 2 !== 0 && (
+                      {list.map(createGridCard)}
+                      {list.length % 2 !== 0 && (
                         <Card className={classes.cardNoHover} elevation={0} />
                       )}
                     </Grid>

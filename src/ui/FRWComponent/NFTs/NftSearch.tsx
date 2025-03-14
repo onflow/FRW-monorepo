@@ -11,6 +11,7 @@ interface NftSearchProps {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   placeholder?: string;
+  sx?: object;
 }
 
 const NftSearch: React.FC<NftSearchProps> = ({
@@ -19,6 +20,7 @@ const NftSearch: React.FC<NftSearchProps> = ({
   searchTerm,
   setSearchTerm,
   placeholder = 'Search NFT',
+  sx = {},
 }) => {
   const filterNFTs = useMemo(() => {
     if (!searchTerm.trim()) {
@@ -72,6 +74,7 @@ const NftSearch: React.FC<NftSearchProps> = ({
           '& input::placeholder': {
             fontWeight: '400',
           },
+          ...sx,
         }}
         startAdornment={
           <InputAdornment position="start">
