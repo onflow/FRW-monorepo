@@ -155,13 +155,21 @@ export const NFTMoveDrawer: React.FC<NFTMoveDrawerProps> = ({
           </Button>
         )}
       </Box>
-
-      <NftSearch
-        items={nfts}
-        onFilteredResults={(results) => setFilteredList(results)}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-      />
+      <Box sx={{ padding: '0 8px' }}>
+        <NftSearch
+          items={nfts}
+          onFilteredResults={(results) => setFilteredList(results)}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          sx={{
+            fontSize: '14px',
+            '& .MuiSvgIcon-root': {
+              width: '14px',
+              height: '14px',
+            },
+          }}
+        />
+      </Box>
 
       {!isLoading ? (
         <Box

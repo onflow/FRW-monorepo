@@ -78,7 +78,9 @@ const NftSearch: React.FC<NftSearchProps> = ({
         }}
         startAdornment={
           <InputAdornment position="start">
-            <SearchIcon style={{ width: '20px', height: '20px' }} />
+            <SearchIcon
+              style={{ width: '20px', height: '20px', ...(sx?.['& .MuiSvgIcon-root'] || {}) }}
+            />
           </InputAdornment>
         }
         endAdornment={
