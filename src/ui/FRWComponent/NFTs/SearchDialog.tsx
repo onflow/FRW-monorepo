@@ -166,16 +166,12 @@ const SearchDialog: React.FC<SearchDialogProps> = ({
                   </Typography>
                 </Box>
               ) : (
-                <Grid container spacing={2} sx={{ p: 1 }}>
-                  {(searchTerm ? filteredList : items).map((item, index) => (
-                    <Grid item xs={6} key={index}>
-                      {createGridCard(item, index)}
-                    </Grid>
-                  ))}
+                <Grid container sx={{ padding: '0', justifyContent: 'space-between' }}>
+                  {(searchTerm ? filteredList : items).map((item, index) =>
+                    createGridCard(item, index)
+                  )}
                   {(searchTerm ? filteredList.length : items.length) % 2 !== 0 && (
-                    <Grid item xs={6}>
-                      <Box sx={{ height: '100%' }} />
-                    </Grid>
+                    <Box sx={{ height: '100%' }} />
                   )}
                 </Grid>
               )}

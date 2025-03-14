@@ -6,15 +6,14 @@ import { isValidEthereumAddress } from '@/shared/utils/address';
 import { NFTDrawer } from '@/ui/FRWComponent/GeneralPages';
 import WarningSnackbar from '@/ui/FRWComponent/WarningSnackbar';
 import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
-import { useNftHook } from '@/ui/hooks/useNftHook';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useStorageCheck } from '@/ui/utils/useStorageCheck';
 import alertMark from 'ui/FRWAssets/svg/alertMark.svg';
 import { useWallet } from 'ui/utils';
 
 import AccountMainBox from '../AccountMainBox';
 import MoveCollectionSelect from '../MoveCollectionSelect';
-
-import NFTLoader from './NFTLoader';
+import NFTLoader from '../NFTLoader';
 
 interface MoveBoardProps {
   showMoveBoard: boolean;
@@ -27,6 +26,7 @@ interface MoveBoardProps {
 const MoveToChild = (props: MoveBoardProps) => {
   const usewallet = useWallet();
   const history = useHistory();
+  const { currentWallet } = useProfiles();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [cadenceNft, setCadenceNft] = useState<any>(null);
   const [collectionList, setCollectionList] = useState<any>(null);
@@ -291,6 +291,7 @@ const MoveToChild = (props: MoveBoardProps) => {
           selectedCollection={activeLoader}
           onNFTsLoaded={handleNFTsLoaded}
           onLoadingChange={handleLoadingChange}
+          ownerAddress={currentWallet?.address}
         />
       )}
 

@@ -3442,8 +3442,9 @@ export class WalletController extends BaseController {
   refreshSingleCollection = async (
     address: string,
     collectionId: string,
-    offset = 0
+    offset: number | null
   ): Promise<NFTCollectionData> => {
+    offset = offset || 0;
     const network = await this.getNetwork();
     const data = await openapiService.nftCatalogCollectionList(
       address!,

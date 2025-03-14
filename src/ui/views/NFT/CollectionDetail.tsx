@@ -151,14 +151,14 @@ const NFTCollectionDetail = () => {
   const nftCount = collection_info[2];
 
   const getCollection = useCallback(
-    async (ownerAddress, collection, offset = 0) => {
+    async (ownerAddress, collection, offset) => {
       return await usewallet.getSingleCollection(ownerAddress, collection, offset);
     },
     [usewallet]
   );
 
   const refreshCollection = useCallback(
-    async (ownerAddress, collection, offset = 0) => {
+    async (ownerAddress, collection, offset) => {
       return await usewallet.refreshSingleCollection(ownerAddress, collection, offset);
     },
     [usewallet]

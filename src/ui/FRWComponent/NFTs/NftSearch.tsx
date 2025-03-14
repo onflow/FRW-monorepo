@@ -1,9 +1,9 @@
 import CloseIcon from '@mui/icons-material/Close';
-import SearchIcon from '@mui/icons-material/Search';
 import { Box, InputAdornment, Input, IconButton } from '@mui/material';
 import React, { useCallback, useEffect, useMemo } from 'react';
 
 import { type NFTItem } from '@/shared/types/nft-types';
+import { ReactComponent as SearchIcon } from '@/ui/FRWAssets/svg/searchIcon.svg';
 
 interface NftSearchProps {
   items: NFTItem[];
@@ -78,7 +78,7 @@ const NftSearch: React.FC<NftSearchProps> = ({
         }}
         startAdornment={
           <InputAdornment position="start">
-            <SearchIcon color="disabled" sx={{ ml: '10px', my: '5px', fontSize: '24px' }} />
+            <SearchIcon style={{ width: '20px', height: '20px' }} />
           </InputAdornment>
         }
         endAdornment={

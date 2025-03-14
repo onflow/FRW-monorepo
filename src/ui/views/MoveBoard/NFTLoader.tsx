@@ -7,12 +7,14 @@ interface NFTLoaderProps {
   selectedCollection: string;
   onNFTsLoaded: (nfts: any[]) => void;
   onLoadingChange: (loading: boolean) => void;
+  ownerAddress: string;
 }
 
 const NFTLoader: React.FC<NFTLoaderProps> = ({
   selectedCollection,
   onNFTsLoaded,
   onLoadingChange,
+  ownerAddress,
 }) => {
   const usewallet = useWallet();
   const initialCollectionRef = useRef(selectedCollection);
@@ -21,7 +23,7 @@ const NFTLoader: React.FC<NFTLoaderProps> = ({
   const collectionToUse = initialCollectionRef.current;
 
   const getCollection = useCallback(
-    async (ownerAddress, collection, offset = 0) => {
+    async (ownerAddress, collection, offset) => {
       // Only fetch if the collection matches the initial one
       if (collection !== collectionToUse) {
         console.log(`Skipping fetch for ${collection} (not ${collectionToUse})`);
@@ -36,7 +38,7 @@ const NFTLoader: React.FC<NFTLoaderProps> = ({
 
   const { allNfts, loading: hookLoading } = useNftHook({
     getCollection,
-    ownerAddress: '0x37a7e864611c7a85',
+    ownerAddress: ownerAddress,
     collectionName: collectionToUse,
     isEvm: false,
   });

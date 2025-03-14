@@ -1,7 +1,6 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PublicOutlinedIcon from '@mui/icons-material/PublicOutlined';
 import ReplayRoundedIcon from '@mui/icons-material/ReplayRounded';
-import SearchIcon from '@mui/icons-material/Search';
 import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 import {
   Box,
@@ -22,6 +21,7 @@ import { makeStyles } from '@mui/styles';
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
+import { ReactComponent as SearchIcon } from '@/ui/FRWAssets/svg/searchIcon.svg';
 import { truncate } from '@/ui/utils';
 
 import NftSearch from './NftSearch';
@@ -31,15 +31,15 @@ const useStyles = makeStyles((theme) => ({
   iconbox: {
     display: 'flex',
     justifyContent: 'space-between',
-    padding: '20px 25px 0 25px',
+    padding: '22px 18px 0',
   },
   arrowback: {
-    padding: '8px',
+    padding: '0',
     borderRadius: '12px',
     backgroundColor: 'rgba(0, 0, 0, 0.05)',
   },
   grid: {
-    padding: '0 25px',
+    padding: '0 8px',
     justifyContent: 'space-between',
   },
   card: {
@@ -114,10 +114,10 @@ const CollectionDetailGrid: React.FC<CollectionDetailProps> = ({
             sx={{
               backgroundColor: 'rgba(0, 0, 0, 0.05)',
               borderRadius: '12px',
-              padding: '8px',
+              padding: '0',
             }}
           >
-            <SearchIcon sx={{ color: 'icon.navi' }} />
+            <SearchIcon />
           </IconButton>
         </Box>
 

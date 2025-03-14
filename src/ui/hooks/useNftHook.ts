@@ -3,11 +3,20 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { type NFTItem } from '@/shared/types/nft-types';
 
 interface UseNftHookProps {
-  getCollection: (ownerAddress: string, collection: string, offset?: number) => Promise<any>;
-  refreshCollection?: (ownerAddress: string, collection: string, offset?: number) => Promise<any>;
+  getCollection: (
+    ownerAddress: string,
+    collection: string,
+    offset?: number | string
+  ) => Promise<any>;
+  refreshCollection?: (
+    ownerAddress: string,
+    collection: string,
+    offset?: number | string
+  ) => Promise<any>;
   ownerAddress: string;
   collectionName: string;
   isEvm: boolean;
+  nftCount?: number;
 }
 
 interface UseNftHookResult {
@@ -34,6 +43,7 @@ export const useNftHook = ({
   ownerAddress,
   collectionName,
   isEvm,
+  nftCount,
 }: UseNftHookProps): UseNftHookResult => {
   const [list, setLists] = useState<NFTItem[]>([]);
   const [allNfts, setAllNfts] = useState<NFTItem[]>([]);
@@ -46,6 +56,7 @@ export const useNftHook = ({
   const [searchTerm, setSearchTerm] = useState('');
 
   const allNftsRef = useRef<NFTItem[]>([]);
+  const evmOffset = useRef<string>('');
   const hasAttemptedLoadAll = useRef(false);
   const total = useRef<number>(0);
   const initialized = useRef(false);
@@ -63,27 +74,32 @@ export const useNftHook = ({
       setLoadingMore(true);
 
       try {
-        const offsetToUse = currentPage * 24;
+        const offsetToUse = evmOffset.current;
+        console.log('Fetching page:', currentPage, 'offset:', offsetToUse);
+
         const res = await getCollection(ownerAddress, collectionName, offsetToUse);
+        console.log('Response:', res);
 
-        if (res.nfts?.length > 0) {
-          setLists((prev) => {
-            const uniqueNfts = [
-              ...new Map([...prev, ...res.nfts].map((item) => [item.id, item])).values(),
-            ];
-            return uniqueNfts;
-          });
-          setPage(currentPage + 1);
-        }
+        setLists((prev) => {
+          // Simple array concat since each page has unique items
+          const newList = [...prev, ...res.nfts];
+          console.log('Updated list length:', newList.length);
+          return newList;
+        });
 
-        setLoadingMore(false);
-
-        if (total.current <= (currentPage + 1) * 24) {
+        if (!res.offset) {
+          console.log('No NFTs returned - ending pagination');
+          setLoadingMore(false);
           return null;
         }
+        evmOffset.current = res.offset;
 
+        setPage(currentPage + 1);
+        setLoadingMore(false);
+
+        // Continue if we got a full page
         return {
-          newItemsCount: res.nfts?.length || 0,
+          newItemsCount: res.nfts.length,
           nextPage: currentPage + 1,
         };
       } catch (error) {
@@ -92,7 +108,7 @@ export const useNftHook = ({
         return null;
       }
     },
-    [getCollection, ownerAddress, collectionName, loadingMore, setLists, setPage, total]
+    [getCollection, ownerAddress, collectionName, loadingMore]
   );
 
   const cadenceNextPage = useCallback(
@@ -134,9 +150,9 @@ export const useNftHook = ({
     try {
       const initialRes = await getCollection(ownerAddress, collectionName);
       setInfo(initialRes.collection);
-      total.current = initialRes.nftCount;
+      total.current = nftCount || initialRes.nftCount;
 
-      const maxPages = isEvm ? 9999 : Math.ceil(total.current / 50);
+      const maxPages = Math.ceil(total.current / 50);
       console.log('loadAllPages maxPages:', maxPages);
 
       if (!isEvm) {
@@ -172,6 +188,7 @@ export const useNftHook = ({
     isEvm,
     evmNextPage,
     cadenceNextPage,
+    nftCount,
     list,
   ]);
 

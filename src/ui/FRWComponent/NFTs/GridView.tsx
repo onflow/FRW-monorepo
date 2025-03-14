@@ -25,7 +25,6 @@ const useStyles = makeStyles(() => ({
     width: '100%',
     height: '100%',
     borderRadius: '8px',
-    padding: '0 13px',
     '&:hover': {
       color: '#222222',
       backgroundColor: '#222222',
@@ -37,7 +36,7 @@ const useStyles = makeStyles(() => ({
     boxShadow: 'none',
     margin: 0,
     borderRadius: '8px',
-    padding: '13px 0',
+    padding: '8px',
     display: 'inline-block',
     '&:hover': {
       color: '#222222',

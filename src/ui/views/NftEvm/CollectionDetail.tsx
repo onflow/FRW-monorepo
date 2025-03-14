@@ -171,14 +171,14 @@ const NftEvmCollectionDetail = () => {
   const nftCount = collection_info[2];
 
   const getCollection = useCallback(
-    async (ownerAddress, collection, offset = 0) => {
+    async (ownerAddress, collection, offset) => {
       return await usewallet.getEvmNftCollectionList(ownerAddress, collection, 50, offset);
     },
     [usewallet]
   );
 
   const refreshCollection = useCallback(
-    async (ownerAddress, collection, offset = 0) => {
+    async (ownerAddress, collection, offset) => {
       return await usewallet.refreshEvmNftCollectionList(ownerAddress, collection, 50, offset);
     },
     [usewallet]
@@ -202,6 +202,7 @@ const NftEvmCollectionDetail = () => {
     ownerAddress: address,
     collectionName: collection_name,
     isEvm: true,
+    nftCount: nftCount,
   });
 
   // Add this useEffect to initialize the filtered list only once
@@ -252,7 +253,7 @@ const NftEvmCollectionDetail = () => {
       info={info}
       list={list}
       allNfts={allNfts}
-      total={list.length}
+      total={nftCount}
       loading={loading}
       isLoadingAll={isLoadingAll}
       refreshCollectionImpl={refreshCollectionImpl}
