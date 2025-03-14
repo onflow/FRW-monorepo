@@ -24,7 +24,6 @@ import { useHistory } from 'react-router-dom';
 import { ReactComponent as SearchIcon } from '@/ui/FRWAssets/svg/searchIcon.svg';
 import { truncate } from '@/ui/utils';
 
-import NftSearch from './NftSearch';
 import SearchDialog from './SearchDialog';
 
 const useStyles = makeStyles((theme) => ({
@@ -119,7 +118,7 @@ const CollectionDetailGrid: React.FC<CollectionDetailProps> = ({
               height: '20px',
             }}
           >
-            <SearchIcon />
+            <SearchIcon style={{ width: '20px', height: '20px' }} />
           </IconButton>
         </Box>
 
