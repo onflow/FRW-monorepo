@@ -171,6 +171,7 @@ const NFTCollectionDetail = () => {
     total,
     loading,
     isLoadingAll,
+    loadingMore,
     refreshCollectionImpl,
     searchTerm,
     setSearchTerm,
@@ -221,6 +222,7 @@ const NFTCollectionDetail = () => {
       allNfts={allNfts}
       total={total}
       loading={loading}
+      loadingMore={loadingMore}
       isLoadingAll={isLoadingAll}
       refreshCollectionImpl={refreshCollectionImpl}
       createGridCard={createGridCard}

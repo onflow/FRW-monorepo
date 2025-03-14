@@ -3448,7 +3448,7 @@ export class WalletController extends BaseController {
     const data = await openapiService.nftCatalogCollectionList(
       address!,
       collectionId,
-      24,
+      50,
       offset,
       network
     );
@@ -3811,7 +3811,7 @@ export class WalletController extends BaseController {
   refreshEvmNftCollectionList = async (
     address: string,
     collectionIdentifier: string,
-    limit = 24,
+    limit = 50,
     offset = 0
   ) => {
     if (!isValidEthereumAddress(address)) {
@@ -3831,7 +3831,7 @@ export class WalletController extends BaseController {
   getEvmNftCollectionList = async (
     address: string,
     collectionIdentifier: string,
-    limit = 24,
+    limit = 50,
     offset = 0
   ) => {
     if (!isValidEthereumAddress(address)) {

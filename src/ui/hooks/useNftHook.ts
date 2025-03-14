@@ -40,7 +40,6 @@ export const useNftHook = ({
   const [filteredList, setFilteredList] = useState<NFTItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [info, setInfo] = useState<any>(null);
-  const [total, setTotal] = useState(0);
   const [pageIndex, setPage] = useState(1);
   const [loadingMore, setLoadingMore] = useState(false);
   const [isLoadingAll, setIsLoadingAll] = useState(false);
@@ -48,7 +47,8 @@ export const useNftHook = ({
 
   const allNftsRef = useRef<NFTItem[]>([]);
   const hasAttemptedLoadAll = useRef(false);
-  const currentOffsetRef = useRef<string | null>(null);
+  const total = useRef<number>(0);
+  const initialized = useRef(false);
 
   // Reset the ref when collection changes
   useEffect(() => {
@@ -57,76 +57,71 @@ export const useNftHook = ({
     hasAttemptedLoadAll.current = false;
   }, [ownerAddress, collectionName]);
 
-  // Initial fetch
-  useEffect(() => {
-    const fetchCollection = async () => {
-      setLoading(true);
-      try {
-        const res = await getCollection(ownerAddress, collectionName);
-        setInfo(res.collection);
-        setTotal(res.nftCount);
-        setLists(res.nfts);
-        if (isEvm && res.offset === null) {
-          hasAttemptedLoadAll.current = true;
-        }
-      } catch (err) {
-        console.error('Error in initial fetch:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (ownerAddress && collectionName) {
-      fetchCollection();
-    }
-  }, [ownerAddress, collectionName, getCollection, isEvm]);
-
-  const nextPage = useCallback(
+  const evmNextPage = useCallback(
     async (currentPage: number): Promise<{ newItemsCount: number; nextPage: number } | null> => {
-      if (loadingMore) {
-        return null;
-      }
-
+      if (loadingMore) return null;
       setLoadingMore(true);
 
       try {
-        const offsetToUse =
-          currentOffsetRef.current !== null ? currentOffsetRef.current : currentPage * 24;
-        const res = await getCollection(ownerAddress, collectionName, offsetToUse as any);
+        const offsetToUse = currentPage * 24;
+        const res = await getCollection(ownerAddress, collectionName, offsetToUse);
 
-        if (!res.nfts || res.nfts.length === 0) {
-          return null;
+        if (res.nfts?.length > 0) {
+          setLists((prev) => {
+            const uniqueNfts = [
+              ...new Map([...prev, ...res.nfts].map((item) => [item.id, item])).values(),
+            ];
+            return uniqueNfts;
+          });
+          setPage(currentPage + 1);
         }
 
-        setPage(currentPage + 1);
+        setLoadingMore(false);
 
-        if (currentPage === 0) {
-          setLists(res.nfts);
-        } else {
-          setLists((prev) => [...prev, ...res.nfts]);
-        }
-
-        if (isEvm && res.offset) {
-          currentOffsetRef.current = res.offset;
-        }
-
-        if (res.offset === null && isEvm && currentPage > 0) {
-          hasAttemptedLoadAll.current = true;
+        if (total.current <= (currentPage + 1) * 24) {
           return null;
         }
 
         return {
-          newItemsCount: res.nfts.length,
+          newItemsCount: res.nfts?.length || 0,
           nextPage: currentPage + 1,
         };
       } catch (error) {
-        console.error('Error in nextPage:', error);
-        return null;
-      } finally {
+        console.error('Error in evmNextPage:', error);
         setLoadingMore(false);
+        return null;
       }
     },
-    [getCollection, ownerAddress, collectionName, loadingMore, setLists, setPage, isEvm]
+    [getCollection, ownerAddress, collectionName, loadingMore, setLists, setPage, total]
+  );
+
+  const cadenceNextPage = useCallback(
+    async (currentPage: number): Promise<{ newItemsCount: number; nextPage: number } | null> => {
+      if (!hasAttemptedLoadAll.current) {
+        return null;
+      }
+
+      try {
+        const offsetToUse = currentPage * 50;
+        if (total.current <= offsetToUse) {
+          return null;
+        }
+
+        getCollection(ownerAddress, collectionName, offsetToUse as any)
+          .then((res) => {
+            if (res.nfts?.length > 0) {
+              setLists((prev) => [...prev, ...res.nfts]);
+            }
+          })
+          .catch((error) => console.error('Error in cadenceNextPage:', error));
+
+        return null;
+      } catch (error) {
+        console.error('Error in cadenceNextPage:', error);
+        return null;
+      }
+    },
+    [getCollection, ownerAddress, collectionName, setLists, total]
   );
 
   const loadAllPages = useCallback(async (): Promise<void> => {
@@ -135,23 +130,31 @@ export const useNftHook = ({
     }
 
     setIsLoadingAll(true);
-    hasAttemptedLoadAll.current = true;
 
     try {
-      let currentPage = 0;
-      const maxPages = 999;
-      const allLoadedNfts = [...list];
+      const initialRes = await getCollection(ownerAddress, collectionName);
+      setInfo(initialRes.collection);
+      total.current = initialRes.nftCount;
 
-      for (let i = 0; i < maxPages; i++) {
-        const result = await nextPage(currentPage);
+      const maxPages = isEvm ? 9999 : Math.ceil(total.current / 50);
+      console.log('loadAllPages maxPages:', maxPages);
 
-        if (!result) {
-          break;
+      if (!isEvm) {
+        hasAttemptedLoadAll.current = true;
+        const requests = Array.from({ length: maxPages }, (_, i) => i).map((page) =>
+          setTimeout(() => {
+            if (!hasAttemptedLoadAll.current) return;
+            cadenceNextPage(page);
+          }, page * 10)
+        );
+        await Promise.all(requests);
+      } else {
+        // For EVM, keep sequential loading
+        for (let i = 0; i < maxPages; i++) {
+          const result = await evmNextPage(i);
+          if (!result) break;
+          await new Promise((resolve) => setTimeout(resolve, 10));
         }
-
-        currentPage = result.nextPage;
-
-        await new Promise((resolve) => setTimeout(resolve, 10));
       }
 
       setFilteredList(list);
@@ -160,7 +163,17 @@ export const useNftHook = ({
     } finally {
       setIsLoadingAll(false);
     }
-  }, [loadingMore, nextPage, isLoadingAll, list]);
+  }, [
+    loadingMore,
+    isLoadingAll,
+    getCollection,
+    ownerAddress,
+    collectionName,
+    isEvm,
+    evmNextPage,
+    cadenceNextPage,
+    list,
+  ]);
 
   useEffect(() => {
     if (!searchTerm) {
@@ -184,16 +197,20 @@ export const useNftHook = ({
     }
   }, [isLoadingAll, allNfts, searchTerm]);
 
-  // Check if should load all pages
+  // Initialize and load all NFTs
   useEffect(() => {
-    const checkAndLoadAll = async () => {
-      if (info && list.length > 0 && total > 0 && pageIndex > 0 && !hasAttemptedLoadAll.current) {
-        await loadAllPages();
-      }
+    if (!ownerAddress || !collectionName || initialized.current) {
+      return;
+    }
+
+    const initialize = async () => {
+      initialized.current = true;
+      console.log('Initializing once');
+      await loadAllPages();
     };
 
-    checkAndLoadAll();
-  }, [info, list.length, loadAllPages, total, pageIndex]);
+    initialize();
+  }, [ownerAddress, collectionName, loadAllPages]);
 
   const refreshCollectionImpl = useCallback(async (): Promise<void> => {
     setLoading(true);
@@ -202,7 +219,7 @@ export const useNftHook = ({
       const fetchFunction = refreshCollection || getCollection;
       const res = await fetchFunction(ownerAddress, collectionName);
       setInfo(res.collection);
-      setTotal(res.nftCount);
+      total.current = res.nftCount;
       setLists(res.nfts);
     } catch (err) {
       console.error('Error in refreshCollectionImpl:', err);
@@ -216,7 +233,7 @@ export const useNftHook = ({
     allNfts,
     filteredList,
     info,
-    total,
+    total: total.current,
     loading,
     loadingMore,
     isLoadingAll,
@@ -224,7 +241,7 @@ export const useNftHook = ({
     searchTerm,
     setSearchTerm,
     setFilteredList,
-    nextPage,
+    nextPage: isEvm ? evmNextPage : cadenceNextPage,
     loadAllPages,
     refreshCollectionImpl,
   };

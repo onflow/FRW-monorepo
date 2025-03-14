@@ -81,6 +81,7 @@ interface CollectionDetailProps {
   createGridCard: (item: any, index: number) => JSX.Element;
   searchTerm: string;
   setSearchTerm: (term: string) => void;
+  loadingMore: boolean;
 }
 
 const CollectionDetailGrid: React.FC<CollectionDetailProps> = ({
@@ -94,6 +95,7 @@ const CollectionDetailGrid: React.FC<CollectionDetailProps> = ({
   createGridCard,
   searchTerm,
   setSearchTerm,
+  loadingMore,
 }) => {
   const classes = useStyles();
   const history = useHistory();
@@ -228,6 +230,9 @@ const CollectionDetailGrid: React.FC<CollectionDetailProps> = ({
               setSearchTerm={setSearchTerm}
               onFilteredResults={(results) => setFilteredList(results)}
               createGridCard={createGridCard}
+              isLoadingAll={isLoadingAll}
+              total={total}
+              loadingMore={loadingMore}
             />
 
             {loading ? (

@@ -14,6 +14,9 @@ interface SearchDialogProps {
   setSearchTerm: (term: string) => void;
   onFilteredResults: (results: NFTItem[]) => void;
   createGridCard: (item: any, index: number) => JSX.Element;
+  total: number;
+  isLoadingAll: boolean;
+  loadingMore: boolean;
 }
 
 const SearchDialog: React.FC<SearchDialogProps> = ({
@@ -24,6 +27,9 @@ const SearchDialog: React.FC<SearchDialogProps> = ({
   setSearchTerm,
   onFilteredResults,
   createGridCard,
+  total,
+  isLoadingAll,
+  loadingMore,
 }) => {
   const [filteredList, setFilteredList] = useState<NFTItem[]>([]);
 
@@ -37,7 +43,7 @@ const SearchDialog: React.FC<SearchDialogProps> = ({
           backgroundColor: 'background.default',
           padding: '8px',
           overflowY: 'auto',
-          marginTop: '100px',
+          paddingTop: '66px',
           boxShadow: 'none',
           backgroundImage: 'none',
         },
@@ -67,29 +73,74 @@ const SearchDialog: React.FC<SearchDialogProps> = ({
           Cancel
         </Typography>
       </Box>
-      <Box
-        sx={{
-          display: 'flex',
-          padding: '8px',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <Typography
-          variant="body1"
-          color="text.secondary"
-          sx={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.40)', fontWeight: '400' }}
+      {items.length < total ? (
+        <Box
+          sx={{
+            display: 'flex',
+            padding: '8px',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
         >
-          {searchTerm ? 'Results' : 'Total'}
-        </Typography>
-        <Typography
-          variant="body1"
-          color="text.secondary"
-          sx={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.40)', fontWeight: '400' }}
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.40)', fontWeight: '400' }}
+          >
+            Loading...
+          </Typography>
+          <Box
+            sx={{
+              width: '144px',
+              height: '8px',
+              backgroundColor: '#FFFFFF29',
+              borderRadius: '3px',
+              overflow: 'hidden',
+            }}
+          >
+            <Box
+              sx={{
+                width: `${(items.length / total) * 100}%`,
+                height: '100%',
+                backgroundColor: '#0AC26C',
+                borderRadius: '3px',
+                transition: 'width 0.3s ease',
+              }}
+            />
+          </Box>
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.40)', fontWeight: '400' }}
+          >
+            {items.length} / {total} NFTs
+          </Typography>
+        </Box>
+      ) : (
+        <Box
+          sx={{
+            display: 'flex',
+            padding: '8px',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
         >
-          {searchTerm ? filteredList.length : items.length} NFTs
-        </Typography>
-      </Box>
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.40)', fontWeight: '400' }}
+          >
+            {searchTerm ? 'Results' : 'Total'}
+          </Typography>
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.40)', fontWeight: '400' }}
+          >
+            {searchTerm ? filteredList.length : total} NFTs
+          </Typography>
+        </Box>
+      )}
       <Box sx={{ maxHeight: '100vh', overflowY: 'auto' }}>
         {filteredList.length === 0 && searchTerm ? (
           <Box sx={{ p: 4, textAlign: 'center' }}>

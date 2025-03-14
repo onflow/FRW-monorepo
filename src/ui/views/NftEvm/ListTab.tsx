@@ -14,6 +14,7 @@ import { Box } from '@mui/system';
 import React, { forwardRef, useImperativeHandle, useEffect, useState, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
+import ListSkeleton from '@/ui/FRWComponent/NFTs/ListSkeleton';
 import { useWallet } from '@/ui/utils/WalletContext';
 import placeholder from 'ui/FRWAssets/image/placeholder.png';
 
@@ -94,7 +95,6 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
           setCollectionEmpty(true);
         }
       } catch (err) {
-        console.log(err);
         setCollectionEmpty(true);
       } finally {
         setCollectionLoading(false);
@@ -114,11 +114,24 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
 
   // Expose reload method through ref
   useImperativeHandle(ref, () => ({
-    reload: () => {
+    reload: async () => {
       if (ownerAddress) {
-        usewallet.clearNFTCollection();
-        setCollections([]);
-        fetchLatestCollection(ownerAddress);
+        try {
+          setCollectionLoading(true);
+          const list = await usewallet.refreshEvmNftIds(ownerAddress);
+          if (list && list.length > 0) {
+            setCollectionEmpty(false);
+            setCollections(list);
+            const count = list.reduce((acc, item) => acc + item.count, 0);
+            setCount(count);
+          } else {
+            setCollectionEmpty(true);
+          }
+        } catch (err) {
+          setCollectionEmpty(true);
+        } finally {
+          setCollectionLoading(false);
+        }
       }
     },
   }));
@@ -204,8 +217,7 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
   return (
     <Container className={classes.collectionContainer}>
       {collectionLoading ? (
-        // Just show an empty box.. it's better that a skeleton
-        <Box height={249}></Box>
+        <ListSkeleton />
       ) : isCollectionEmpty ? (
         <EmptyStatus />
       ) : (

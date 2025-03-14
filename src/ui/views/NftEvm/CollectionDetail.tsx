@@ -172,14 +172,14 @@ const NftEvmCollectionDetail = () => {
 
   const getCollection = useCallback(
     async (ownerAddress, collection, offset = 0) => {
-      return await usewallet.getEvmNftCollectionList(ownerAddress, collection, 24, offset);
+      return await usewallet.getEvmNftCollectionList(ownerAddress, collection, 50, offset);
     },
     [usewallet]
   );
 
   const refreshCollection = useCallback(
     async (ownerAddress, collection, offset = 0) => {
-      return await usewallet.refreshEvmNftCollectionList(ownerAddress, collection, 24, offset);
+      return await usewallet.refreshEvmNftCollectionList(ownerAddress, collection, 50, offset);
     },
     [usewallet]
   );
@@ -259,6 +259,7 @@ const NftEvmCollectionDetail = () => {
       createGridCard={createGridCard}
       searchTerm={searchTerm}
       setSearchTerm={setSearchTerm}
+      loadingMore={loadingMore}
     />
   );
 };
