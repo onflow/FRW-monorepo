@@ -33,9 +33,16 @@ import { type TransferItem, type TransactionState } from '@/shared/types/transac
 import {
   type ActiveChildType,
   type LoggedInAccount,
-  type AccountDetails,
+  type PubKeyAccount,
+  type FlowAddress,
+  type EvmAddress,
 } from '@/shared/types/wallet-types';
-import { ensureEvmAddressPrefix, isValidEthereumAddress, withPrefix } from '@/shared/utils/address';
+import {
+  ensureEvmAddressPrefix,
+  isValidFlowAddress,
+  isValidEthereumAddress,
+  withPrefix,
+} from '@/shared/utils/address';
 import { getSignAlgo } from '@/shared/utils/algo';
 import { convertToIntegerAmount, validateAmount } from '@/shared/utils/number';
 import { retryOperation } from '@/shared/utils/retryOperation';
@@ -194,6 +201,9 @@ export class WalletController extends BaseController {
     await this.getCadenceScripts();
     // Refresh the main address
     const mainAddress = await this.getMainAddress();
+    if (!mainAddress) {
+      throw new Error('Main address not found');
+    }
     // Refresh the EVM wallet
     await this.queryEvmAddress(mainAddress);
     // Refresh the user wallets
@@ -217,7 +227,7 @@ export class WalletController extends BaseController {
       console.error('Error refreshing user info:', error);
     }
     // Refresh the user info
-    await openapiService.freshUserInfo(currentWallet, keys, pubKTuple, userInfo, anyActiveChild);
+    await openapiService.freshUserInfo(mainAddress, keys, pubKTuple, userInfo, anyActiveChild);
   };
 
   retrievePk = async (password: string) => {
@@ -906,6 +916,9 @@ export class WalletController extends BaseController {
   checkUserChildAccount = async () => {
     const network = await this.getNetwork();
     const address = await userWalletService.getParentAddress(network);
+    if (!address) {
+      throw new Error('Parent address not found');
+    }
     const cacheKey = `checkUserChildAccount${address}`;
     const ttl = 5 * 60 * 1000; // 5 minutes in milliseconds
 
@@ -946,6 +959,9 @@ export class WalletController extends BaseController {
     const network = await this.getNetwork();
 
     const address = await userWalletService.getParentAddress(network);
+    if (!address) {
+      throw new Error('Parent address not found');
+    }
     const result = await openapiService.queryAccessibleFt(address, childAccount);
 
     return result;
@@ -1551,7 +1567,7 @@ export class WalletController extends BaseController {
 
     const active = await userWalletService.getActiveWallet();
     if (!active) {
-      const cleanAddresses: AccountDetails[] = address.map(({ pk, ...rest }) => rest);
+      const cleanAddresses: PubKeyAccount[] = address.map(({ pk, ...rest }) => rest);
 
       userWalletService.setUserWallets(transformedArray, network);
       userWalletService.setUserAccounts(cleanAddresses, address[0].pubK, network);
@@ -1649,7 +1665,10 @@ export class WalletController extends BaseController {
 
   getRawEvmAddressWithPrefix = async () => {
     const wallet = userWalletService.getEvmWallet();
-    return withPrefix(wallet?.address) || '';
+    if (!wallet) {
+      throw new Error('EVM wallet not found');
+    }
+    return withPrefix(wallet.address);
   };
 
   getEvmAddress = async () => {
@@ -1673,20 +1692,20 @@ export class WalletController extends BaseController {
     return withPrefix(address);
   };
 
-  getMainAddress = async () => {
+  getMainAddress = async (): Promise<FlowAddress | null> => {
     if (!this.isBooted() || userWalletService.isLocked()) {
-      return '';
+      return null;
     }
     const network = await this.getNetwork();
     const address = await userWalletService.getParentAddress(network);
-    if (!address) {
+    if (!isValidFlowAddress(address)) {
       const data = await this.refreshUserWallets();
-      return withPrefix(data[0].blockchain[0].address) || '';
-    } else if (address.length < 3) {
-      const data = await this.refreshUserWallets();
-      return withPrefix(data[0].blockchain[0].address) || '';
+      const address = withPrefix(data[0].blockchain[0].address);
+      return isValidFlowAddress(address) ? address : null;
+    } else {
+      const prefixedAddress = withPrefix(address);
+      return isValidFlowAddress(prefixedAddress) ? prefixedAddress : null;
     }
-    return withPrefix(address) || '';
   };
 
   sendTransaction = async (cadence: string, args: any[]): Promise<string> => {
@@ -2046,7 +2065,7 @@ export class WalletController extends BaseController {
 
     mixpanelTrack.track('ft_transfer', {
       from_address: (await this.getCurrentAddress()) || '',
-      to_address: await this.getRawEvmAddressWithPrefix(),
+      to_address: (await this.getRawEvmAddressWithPrefix()) ?? '',
       amount: amount,
       ft_identifier: flowIdentifier,
       type: 'evm',
@@ -2070,7 +2089,7 @@ export class WalletController extends BaseController {
     ]);
 
     mixpanelTrack.track('ft_transfer', {
-      from_address: await this.getRawEvmAddressWithPrefix(),
+      from_address: (await this.getRawEvmAddressWithPrefix()) ?? '',
       to_address: (await this.getCurrentAddress()) || '',
       amount: amount,
       ft_identifier: flowIdentifier,
@@ -2087,7 +2106,7 @@ export class WalletController extends BaseController {
     if (!(await this.isUnlocked())) {
       return '';
     }
-    let evmAddress = '';
+    let evmAddress;
     try {
       evmAddress = await this.getRawEvmAddressWithPrefix();
     } catch (error) {
@@ -2179,7 +2198,7 @@ export class WalletController extends BaseController {
     ]);
 
     mixpanelTrack.track('ft_transfer', {
-      from_address: await this.getRawEvmAddressWithPrefix(),
+      from_address: (await this.getRawEvmAddressWithPrefix()) ?? '',
       to_address: to,
       amount: value,
       ft_identifier: 'FLOW',
@@ -2248,7 +2267,7 @@ export class WalletController extends BaseController {
     });
 
     if (evmAddress.startsWith('0x')) {
-      evmAddress = evmAddress.substring(2);
+      evmAddress = evmAddress.substring(2) as EvmAddress;
     }
 
     const addressNonce = await this.getNonce(evmAddress);
@@ -3666,7 +3685,7 @@ export class WalletController extends BaseController {
   };
 
   getAccount = async (): Promise<FclAccount> => {
-    const address = await this.getCurrentAddress();
+    const address = await this.getMainAddress();
     const account = await fcl.account(address!);
     return account;
   };

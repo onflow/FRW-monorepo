@@ -55,7 +55,7 @@ export type LoggedInAccountWithIndex = LoggedInAccount & {
   indexInLoggedInAccounts: number;
 };
 
-export type AccountDetails = {
+export type PubKeyAccount = {
   id: number;
   address: string;
   keyIndex: number;
@@ -74,5 +74,5 @@ export type AccountDetails = {
 export type PublicKeyAccounts = {
   publicKey: string;
   currentId?: string;
-  accounts: AccountDetails[];
+  accounts: PubKeyAccount[];
 };

@@ -73,17 +73,15 @@ export const useProfiles = () => {
   const setupEvmWallet = useCallback(
     async (mainAddress: string) => {
       try {
-        const [evmRes, emoji, evmWallet] = await Promise.all([
+        const [evmRes, emoji] = await Promise.all([
           usewallet.queryEvmAddress(mainAddress),
           usewallet.getEmoji(),
-          usewallet.getEvmWallet(),
         ]);
 
         const evmAddress = ensureEvmAddressPrefix(evmRes!);
 
         // Setup EVM wallet data
         const evmWalletData: BlockchainResponse = {
-          ...evmWallet,
           name: emoji[9].name,
           icon: emoji[9].emoji,
           address: evmAddress,
@@ -108,67 +106,87 @@ export const useProfiles = () => {
 
   // Helper function for fetchUserWallet
   const freshUserInfo = useCallback(async () => {
-    if (!usewallet || !walletLoaded) return;
+    console.log('Starting freshUserInfo');
+    if (!usewallet || !walletLoaded) {
+      console.log('No wallet or not loaded, returning');
+      return;
+    }
     try {
       // Make sure the wallet is unlocked and has a main wallet
-      if (!(await usewallet.getParentAddress())) {
+      const parentAddress = await usewallet.getParentAddress();
+      console.log('Parent address:', parentAddress);
+      if (!parentAddress) {
         console.log('freshUserInfo - No main wallet yet');
         return;
       }
-      //TODO: should rethink the wording of the wallet functions, have it be parent evm and child or something similar. State name and should be the same frontend and background.
+
       const [currentWallet, isChild, mainAddress] = await Promise.all([
         usewallet.getCurrentWallet(),
         usewallet.getActiveWallet(),
         usewallet.getMainAddress(),
       ]);
+      console.log('Current wallet info:', { currentWallet, isChild, mainAddress });
 
       if (!currentWallet) {
-        // We may not be logged in yet
+        console.log('No current wallet, may not be logged in');
         return;
       }
+      if (!mainAddress) {
+        console.log('No main address, may not be logged in');
+        return;
+      }
+
       const mainwallet = await usewallet.returnMainWallet();
+      console.log('Main wallet:', mainwallet);
       setParentWallet(mainwallet!);
+
       if (isChild === 'evm') {
+        console.log('Setting up EVM wallet');
         const evmWalletData = await setupEvmWallet(mainAddress!);
+        console.log('EVM wallet data:', evmWalletData);
         await setCurrent(evmWalletData);
       } else if (isChild) {
+        console.log('Setting child wallet as current');
         await setCurrent(currentWallet);
       } else {
+        console.log('Setting main wallet as current');
         await setCurrent(mainwallet);
       }
 
       const [keys, pubKTuple] = await Promise.all([usewallet.getAccount(), usewallet.getPubKey()]);
+      console.log('Keys and pubKey:', { keys, pubKTuple });
 
-      // Separate getUserInfo with retry since it depends on address from cadence and userinfo from openapi
       let walletData;
       try {
-        walletData = await retryOperation(
-          () => usewallet.getUserInfo(true),
-          3, // max attempts
-          1000 // delay between attempts
-        );
+        console.log('Getting user info with retry');
+        walletData = await retryOperation(() => usewallet.getUserInfo(true), 3, 1000);
+        console.log('Wallet data:', walletData);
       } catch (error) {
         console.error('All attempts failed to get user info:', error);
         throw error;
       }
 
+      console.log('Getting fresh user info from openapi');
       const { otherAccounts, wallet, loggedInAccounts } = await usewallet.openapi.freshUserInfo(
-        currentWallet,
+        mainAddress,
         keys,
         pubKTuple,
         walletData,
         isChild
       );
+      console.log('Fresh user info:', { otherAccounts, wallet, loggedInAccounts });
 
       await Promise.all([
         setOtherAccounts(otherAccounts),
         setUserInfo(wallet),
         setLoggedInAccounts(loggedInAccounts),
       ]);
+      console.log('State updated successfully');
     } catch (error) {
       console.error('Error in freshUserInfo:', error);
     } finally {
       setMainLoading(false);
+      console.log('freshUserInfo completed');
     }
   }, [
     usewallet,

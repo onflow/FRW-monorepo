@@ -32,7 +32,9 @@ const NFTTab = () => {
       setChildType(isChild);
 
       const parentaddress = await wallet.getParentAddress();
-
+      if (!parentaddress) {
+        throw new Error('Parent address not found');
+      }
       const activec = await wallet.getChildAccountAllowTypes(parentaddress, address!);
       setActiveCollection(activec);
       const nftResult = await wallet.checkAccessibleNft(parentaddress);

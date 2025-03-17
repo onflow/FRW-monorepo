@@ -1,15 +1,16 @@
 import HDWallet from 'ethereum-hdwallet';
 
 import { type AccountKey } from '@/shared/types/network-types';
+import { type FlowAddress, type EvmAddress } from '@/shared/types/wallet-types';
 
-export function sansPrefix(address) {
+export function sansPrefix(address: string): FlowAddress | EvmAddress | null {
   if (!address) return null;
-  return address.replace(/^0x/, '').replace(/^Fx/, '');
+  return address.replace(/^0x/, '').replace(/^Fx/, '') as FlowAddress | EvmAddress;
 }
 
-export function withPrefix(address): string | null {
+export function withPrefix(address: string): FlowAddress | EvmAddress | null {
   if (!address) return null;
-  return '0x' + sansPrefix(address);
+  return ('0x' + sansPrefix(address)) as FlowAddress | EvmAddress;
 }
 
 export function display(address) {
@@ -28,12 +29,12 @@ export const getAccountKey = (mnemonic) => {
   return key;
 };
 
-export const isValidEthereumAddress = (address) => {
+export const isValidEthereumAddress = (address): address is EvmAddress => {
   const regex = /^(0x)?[0-9a-fA-F]{40}$/;
   return regex.test(address);
 };
 
-export const isValidFlowAddress = (address) => {
+export const isValidFlowAddress = (address): address is FlowAddress => {
   const regex = /^(0x)?[0-9a-fA-F]{16}$/;
   return regex.test(address);
 };

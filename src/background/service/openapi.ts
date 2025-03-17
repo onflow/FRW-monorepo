@@ -1174,7 +1174,7 @@ class OpenApiService {
     // FIX ME: Get defaultTokenList from firebase remote config
     const address = await userWalletService.getCurrentAddress();
     const tokenInfo = await this.getTokenInfo(tokenSymbol);
-    if (!tokenInfo) {
+    if (!tokenInfo || !address) {
       return;
     }
     return await this.isTokenStorageEnabled(address, tokenInfo);
@@ -1184,7 +1184,7 @@ class OpenApiService {
     // FIX ME: Get defaultTokenList from firebase remote config
     const address = await userWalletService.getCurrentAddress();
     const tokenInfo = await this.getTokenInfo(tokenSymbol);
-    if (!tokenInfo) {
+    if (!tokenInfo || !address) {
       return;
     }
     return await this.getTokenBalanceWithModel(address, tokenInfo);
@@ -1462,6 +1462,7 @@ class OpenApiService {
 
   getEnabledNFTList = async (): Promise<{ address: string; contractName: string }[]> => {
     const address = await userWalletService.getCurrentAddress();
+    if (!address) return [];
 
     const promiseResult = await this.checkNFTListEnabled(address);
     // const network = await userWalletService.getNetwork();
@@ -1855,7 +1856,7 @@ class OpenApiService {
   };
 
   freshUserInfo = async (
-    currentWallet: BlockchainResponse,
+    mainAddress: FlowAddress,
     keys: FclAccount,
     pubKTuple,
     wallet,
@@ -1886,10 +1887,10 @@ class OpenApiService {
       await storage.set('pubKey', keyInfo.publicKey);
       // Make sure the address is a FlowAddress
 
-      if (!isValidFlowAddress(currentWallet.address)) {
+      if (!isValidFlowAddress(mainAddress)) {
         throw new Error('Invalid Flow address');
       }
-      const flowAddress: FlowAddress = currentWallet.address as FlowAddress;
+      const flowAddress: FlowAddress = mainAddress;
       const updatedWallet: LoggedInAccount = {
         ...wallet,
         address: flowAddress,

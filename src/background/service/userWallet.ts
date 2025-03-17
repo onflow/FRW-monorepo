@@ -17,7 +17,7 @@ import {
   type FlowAddress,
   type EvmAddress,
 } from '@/shared/types/wallet-types';
-import { isValidEthereumAddress, withPrefix } from '@/shared/utils/address';
+import { isValidEthereumAddress, isValidFlowAddress, withPrefix } from '@/shared/utils/address';
 import { getHashAlgo, getSignAlgo } from '@/shared/utils/algo';
 
 import type {
@@ -27,7 +27,7 @@ import type {
   DeviceInfoRequest,
   FlowNetwork,
 } from '../../shared/types/network-types';
-import { type PublicKeyAccounts, type AccountDetails } from '../../shared/types/wallet-types';
+import { type PublicKeyAccounts, type PubKeyAccount } from '../../shared/types/wallet-types';
 import { fclConfig } from '../fclConfig';
 import {
   findAddressWithSeed,
@@ -116,7 +116,7 @@ class UserWallet {
     return !keyringService.isBooted() || !keyringService.memStore.getState().isUnlocked;
   };
 
-  setUserAccounts = async (accountData: AccountDetails[], pubKey: string, network: string) => {
+  setUserAccounts = async (accountData: PubKeyAccount[], pubKey: string, network: string) => {
     const currentAccounts: PublicKeyAccounts[] = this.store.accounts[network];
     const accountIndex = currentAccounts.findIndex((account) => account.publicKey === pubKey);
     this.setCurrentPubkey(pubKey);
@@ -157,7 +157,7 @@ class UserWallet {
     address: string,
     network: string
   ): {
-    account: AccountDetails | null;
+    account: PubKeyAccount | null;
     currentAccounts: PublicKeyAccounts[];
   } => {
     const currentAccounts = this.store.accounts[network];
@@ -189,7 +189,7 @@ class UserWallet {
     }
 
     return {
-      account: currentAccounts[accountGroupIndex].accounts[accountIndex] as AccountDetails,
+      account: currentAccounts[accountGroupIndex].accounts[accountIndex] as PubKeyAccount,
       currentAccounts,
     };
   };
@@ -237,15 +237,7 @@ class UserWallet {
       );
     };
 
-    // Check if it satisfies the EvmAddress type
-    const isEvm = (address: string): address is EvmAddress => {
-      return (
-        (address.startsWith('0x') && address.length === 42) ||
-        (!address.startsWith('0x') && address.length === 40)
-      );
-    };
-
-    if (isEvm(currentAddress)) {
+    if (isValidEthereumAddress(currentAddress)) {
       return 'evm';
     } else if (isFlow(currentAddress)) {
       return currentAddress;
@@ -254,18 +246,19 @@ class UserWallet {
     return null;
   };
 
-  getParentAddress = async (network: string) => {
+  getParentAddress = async (network: string): Promise<FlowAddress | null> => {
     if (!keyringService.isBooted() || !keyringService.memStore.getState().isUnlocked) {
-      return '';
+      return null;
     }
     const address = this.store.parentAddress;
-    return withPrefix(address) || '';
+    const prefixedAddress = withPrefix(address);
+    return isValidFlowAddress(prefixedAddress) ? prefixedAddress : null;
   };
 
-  getCurrentAddress = (): string => {
+  getCurrentAddress = (): FlowAddress | EvmAddress | null => {
     const address = this.store.currentAddress;
 
-    return withPrefix(address) || '';
+    return withPrefix(address);
   };
 
   /*
