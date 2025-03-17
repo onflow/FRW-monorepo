@@ -122,6 +122,7 @@ const Header = ({ _loading = false }) => {
     async (account: LoggedInAccountWithIndex) => {
       setSwitchLoading(true);
       setPop(false);
+      setDrawer(false);
       try {
         const switchingTo = 'mainnet';
         // Note that currentAccountIndex is only used in keyring for old accounts that don't have an id stored in the keyring
