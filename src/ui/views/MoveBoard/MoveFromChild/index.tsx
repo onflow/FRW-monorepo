@@ -13,6 +13,7 @@ import { useWallet } from 'ui/utils';
 
 import AccountMainBox from '../AccountMainBox';
 import MoveCollectionSelect from '../MoveCollectionSelect';
+import NFTLoader from '../NFTLoader';
 
 interface MoveBoardProps {
   showMoveBoard: boolean;
@@ -39,7 +40,7 @@ const checkContractAddressInCollections = (nft, activec) => {
 const MoveFromChild = (props: MoveBoardProps) => {
   const usewallet = useWallet();
   const history = useHistory();
-  const { mainAddress } = useProfiles();
+  const { mainAddress, evmWallet } = useProfiles();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [collectionList, setCollectionList] = useState<any>(null);
   const [selectedCollection, setSelected] = useState<string>('');
@@ -57,7 +58,8 @@ const MoveFromChild = (props: MoveBoardProps) => {
     address: '',
     logo: '',
   });
-  // console.log('props.loggedInAccounts', props.current)
+  const [loadedNFTs, setLoadedNFTs] = useState<any[]>([]);
+  const [activeLoader, setActiveLoader] = useState<string | null>(null);
   const { sufficient: isSufficient, sufficientAfterAction } = useStorageCheck({
     transferAmount: 0,
     // Check if the selected account is an EVM address
@@ -312,8 +314,28 @@ const MoveFromChild = (props: MoveBoardProps) => {
     return replacedURL;
   };
 
+  // Callbacks for NFTLoader
+  const handleNFTsLoaded = useCallback((nfts) => {
+    setLoadedNFTs(nfts);
+  }, []);
+
+  const handleLoadingChange = useCallback((loading) => {
+    console.log(`NFT loading state changed to: ${loading}`);
+    setIsLoading(loading);
+  }, []);
+
   return (
     <Box>
+      {activeLoader && (
+        <NFTLoader
+          key={`loader-${activeLoader}`}
+          selectedCollection={activeLoader}
+          onNFTsLoaded={handleNFTsLoaded}
+          onLoadingChange={handleLoadingChange}
+          ownerAddress={evmWallet?.address}
+        />
+      )}
+
       <NFTDrawer
         showMoveBoard={props.showMoveBoard}
         handleCancelBtnClicked={props.handleCancelBtnClicked}
@@ -334,7 +356,7 @@ const MoveFromChild = (props: MoveBoardProps) => {
             selectedAccount={selectedAccount || null}
           />
         }
-        nfts={collectionDetail?.nfts || []}
+        nfts={loadedNFTs.length > 0 ? loadedNFTs : collectionDetail?.nfts || []}
         replaceIPFS={replaceIPFS}
       />
 

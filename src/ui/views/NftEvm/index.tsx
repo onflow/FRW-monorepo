@@ -14,7 +14,7 @@ const NftEvm = () => {
   const [nftCount, setCount] = useState<number>(0);
   const [accessible] = useState<any>([]);
   const [isActive, setIsActive] = useState(true);
-  const gridRef = useRef<any>(null);
+  const listTabRef = useRef<{ reload: () => void }>(null);
 
   const loadNFTs = useCallback(async () => {
     const address = await wallet.queryEvmAddress(mainAddress!);
@@ -27,7 +27,7 @@ const NftEvm = () => {
   }, [loadNFTs]);
 
   const refreshButtonClicked = () => {
-    gridRef?.current?.reload();
+    listTabRef.current?.reload();
   };
 
   return (
@@ -36,7 +36,7 @@ const NftEvm = () => {
         <ListTab
           setCount={setCount}
           data={{ ownerAddress: address }}
-          ref={gridRef}
+          ref={listTabRef}
           accessible={accessible}
           isActive={isActive}
         />
