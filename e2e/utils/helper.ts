@@ -107,10 +107,6 @@ export const loginToExtensionAccount = async ({ page, extensionId, addr, passwor
     // Switch to the correct account. Note doest not handle more than 3 accounts loaded
     await page.getByRole('button', { name: 'avatar' }).getByText(addr).click();
 
-    await page.getByPlaceholder('Enter your password').clear();
-    await page.getByPlaceholder('Enter your password').fill(password);
-    await page.getByRole('button', { name: 'Unlock Wallet' }).click();
-
     // get address
     flowAddr = await getCurrentAddress(page);
   }
