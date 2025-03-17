@@ -10,10 +10,6 @@ import qr from '@/ui/FRWAssets/svg/scanIcon.svg';
 import RegisterHeader from '@/ui/FRWComponent/LandingPages/RegisterHeader';
 
 const Welcome = () => {
-  const location = useLocation();
-  const params = new URLSearchParams(location.search);
-  const isAddWallet = params.get('add') === 'true';
-
   return (
     <Box
       sx={{
@@ -105,7 +101,7 @@ const Welcome = () => {
               variant="contained"
               color="primary"
               component={Link}
-              to={isAddWallet ? '/welcome/register?add=true' : '/welcome/register'}
+              to="/welcome/register"
               size="large"
               sx={{
                 display: 'flex',

@@ -39,6 +39,7 @@ import IconCopy from '../../../components/iconfont/IconCopy';
 import MenuDrawer from './Components/MenuDrawer';
 import NewsView from './Components/NewsView';
 import Popup from './Components/Popup';
+import SwitchAccountCover from './Components/SwitchAccountCover';
 import WalletFunction from './Components/WalletFunction';
 
 const useStyles = makeStyles(() => ({
@@ -120,6 +121,8 @@ const Header = ({ _loading = false }) => {
   const switchAccount = useCallback(
     async (account: LoggedInAccountWithIndex) => {
       setSwitchLoading(true);
+      setPop(false);
+      setDrawer(false);
       try {
         const switchingTo = 'mainnet';
         // Note that currentAccountIndex is only used in keyring for old accounts that don't have an id stored in the keyring
@@ -142,7 +145,6 @@ const Header = ({ _loading = false }) => {
         await usewallet.lockWallet();
         history.push('/unlock');
       } finally {
-        setPop(false);
         setSwitchLoading(false);
       }
     },
@@ -515,6 +517,7 @@ const Header = ({ _loading = false }) => {
 
   return (
     <StyledEngineProvider injectFirst>
+      <SwitchAccountCover open={switchLoading} />
       <AppBar position="relative" className={classes.appBar} elevation={0}>
         <Toolbar sx={{ px: '12px', backgroundColor: '#282828' }}>
           {walletList && (

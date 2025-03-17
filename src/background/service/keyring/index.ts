@@ -186,6 +186,15 @@ class KeyringService extends EventEmitter {
     this.store.updateState({ booted: encryptBooted });
   }
 
+  /**
+   * Unlock Keyrings without emitting event because the new keyring is not added yet
+   *
+   */
+  updateUnlocked(password: string): void {
+    this.password = password;
+    this.memStore.updateState({ isUnlocked: true });
+  }
+
   isBooted() {
     return !!this.store.getState().booted;
   }
@@ -839,6 +848,9 @@ class KeyringService extends EventEmitter {
         if (deepVaultArray && deepVaultArray.length > 0) {
           await storage.set('deepVault', deepVaultArray); // Save deepVault in storage
         }
+
+        //update the keyringlist for switching account after everything is done
+        await this.decryptVaultArray(vaultArray, this.password);
 
         return true;
       });

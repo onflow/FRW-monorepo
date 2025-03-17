@@ -27,6 +27,7 @@ import {
 import eventBus from '@/eventBus';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
 import { ContactType } from '@/shared/types/network-types';
+import { type NFTCollectionData } from '@/shared/types/nft-types';
 import { type TrackingEvents } from '@/shared/types/tracking-types';
 import { type TransferItem, type TransactionState } from '@/shared/types/transaction-types';
 import { type ActiveChildType, type LoggedInAccount } from '@/shared/types/wallet-types';
@@ -49,7 +50,6 @@ import {
   transactionService,
   nftService,
   googleDriveService,
-  passwordService,
   proxyService,
   newsService,
   mixpanelTrack,
@@ -124,10 +124,11 @@ export class WalletController extends BaseController {
 
   /* wallet */
   boot = async (password) => {
+    // When wallet first initializes through install, it will add a encrypted password to boot state. If is boot is false, it means there's no password set.
     const isBooted = await keyringService.isBooted();
     if (isBooted) {
       await keyringService.verifyPassword(password);
-      await keyringService.boot(password);
+      await keyringService.updateUnlocked(password);
     } else {
       await keyringService.boot(password);
     }
@@ -188,7 +189,6 @@ export class WalletController extends BaseController {
     await keyringService.submitPassword(password);
 
     // only password is correct then we store it
-    await passwordService.setPassword(password);
     const pubKey = await this.getPubKey();
     await userWalletService.switchLogin(pubKey);
     // Set up all the wallet data
@@ -272,30 +272,11 @@ export class WalletController extends BaseController {
     }
 
     const isUnlocked = keyringService.memStore.getState().isUnlocked;
-    if (!isUnlocked) {
-      let password = '';
-      try {
-        // This uses google drive to decrypt the password
-        password = await passwordService.getPassword();
-      } catch {
-        password = '';
-      }
-      if (password && password.length > 0) {
-        try {
-          await this.unlock(password);
-          return keyringService.memStore.getState().isUnlocked;
-        } catch {
-          passwordService.clear();
-          return false;
-        }
-      }
-    }
     return isUnlocked;
   };
 
   lockWallet = async () => {
     await keyringService.setLocked();
-    await passwordService.clear();
     await userWalletService.signOutCurrentUser();
     await userWalletService.clear();
     sessionService.broadcastEvent('accountsChanged', []);
@@ -314,7 +295,6 @@ export class WalletController extends BaseController {
     const switchingTo = 'mainnet';
 
     await keyringService.setLocked();
-    await passwordService.clear();
     sessionService.broadcastEvent('accountsChanged', []);
     sessionService.broadcastEvent('lock');
     openIndexPage('welcome?add=true');
@@ -340,8 +320,6 @@ export class WalletController extends BaseController {
     await keyringService.resetKeyRing();
     await keyringService.setLocked();
 
-    await passwordService.clear();
-
     sessionService.broadcastEvent('accountsChanged', []);
     sessionService.broadcastEvent('lock');
     // Redirect to welcome so that users can import their account again
@@ -353,7 +331,6 @@ export class WalletController extends BaseController {
     const switchingTo = 'mainnet';
 
     await keyringService.setLocked();
-    await passwordService.clear();
 
     sessionService.broadcastEvent('accountsChanged', []);
     sessionService.broadcastEvent('lock');
@@ -3468,7 +3445,11 @@ export class WalletController extends BaseController {
     await storage.clear();
   };
 
-  getSingleCollection = async (address: string, collectionId: string, offset = 0) => {
+  getSingleCollection = async (
+    address: string,
+    collectionId: string,
+    offset = 0
+  ): Promise<NFTCollectionData> => {
     const network = await this.getNetwork();
     const list = await nftService.getSingleCollection(network, collectionId, offset);
     if (!list) {
@@ -3477,12 +3458,17 @@ export class WalletController extends BaseController {
     return list;
   };
 
-  refreshSingleCollection = async (address: string, collectionId: string, offset = 0) => {
+  refreshSingleCollection = async (
+    address: string,
+    collectionId: string,
+    offset: number | null
+  ): Promise<NFTCollectionData> => {
+    offset = offset || 0;
     const network = await this.getNetwork();
     const data = await openapiService.nftCatalogCollectionList(
       address!,
       collectionId,
-      24,
+      50,
       offset,
       network
     );
@@ -3845,7 +3831,7 @@ export class WalletController extends BaseController {
   refreshEvmNftCollectionList = async (
     address: string,
     collectionIdentifier: string,
-    limit = 24,
+    limit = 50,
     offset = 0
   ) => {
     if (!isValidEthereumAddress(address)) {
@@ -3865,7 +3851,7 @@ export class WalletController extends BaseController {
   getEvmNftCollectionList = async (
     address: string,
     collectionIdentifier: string,
-    limit = 24,
+    limit = 50,
     offset = 0
   ) => {
     if (!isValidEthereumAddress(address)) {
