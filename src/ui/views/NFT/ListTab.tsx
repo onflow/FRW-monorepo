@@ -7,14 +7,14 @@ import {
   CardContent,
   Container,
   Grid,
-  Skeleton,
+  Box,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { Box } from '@mui/system';
 import React, { forwardRef, useImperativeHandle, useEffect, useState, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { type NFTCollections } from '@/shared/types/nft-types';
+import ListSkeleton from '@/ui/FRWComponent/NFTs/ListSkeleton';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from '@/ui/utils/WalletContext';
 import placeholder from 'ui/FRWAssets/image/placeholder.png';
@@ -294,8 +294,7 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
   return (
     <Container className={classes.collectionContainer}>
       {state.collectionLoading ? (
-        // Just show an empty box.. it's better that a skeleton
-        <Box height={249}></Box>
+        <ListSkeleton />
       ) : state.isCollectionEmpty ? (
         <EmptyStatus />
       ) : (

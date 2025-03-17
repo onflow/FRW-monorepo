@@ -2,7 +2,7 @@ import { Stack, Box, Typography, Divider, CardMedia } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { isValidEthereumAddress } from '@/shared/utils/address';
-import { useProfiles } from '@/ui/hooks/useProfileHook';
+import enableBg from 'ui/FRWAssets/image/enableBg.png';
 import flowgrey from 'ui/FRWAssets/svg/flow-grey.svg';
 import linkGlobe from 'ui/FRWAssets/svg/linkGlobe.svg';
 import { LLPrimaryButton, LLSecondaryButton, LLConnectLoading } from 'ui/FRWComponent';
@@ -10,7 +10,6 @@ import { useApproval, useWallet, formatAddress } from 'ui/utils';
 
 import CheckCircleIcon from '../../../../../../components/iconfont/IconCheckmark';
 import IconWithPlaceholder from '../EthApprovalComponents/IconWithPlaceholder';
-
 // import EthMove from '../EthMove';
 
 interface ConnectProps {
@@ -111,11 +110,11 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
   const transactionDoneHandler = useCallback(
     async (request) => {
       if (request.msg === 'transactionDone') {
-        const currentWallet = await usewallet.getCurrentWallet();
-        if (!currentWallet) {
-          throw new Error('Current wallet is undefined');
+        const mainWallet = await usewallet.getMainWallet();
+        if (!mainWallet) {
+          throw new Error('Main wallet is undefined');
         }
-        const res = await usewallet.queryEvmAddress(currentWallet.address);
+        const res = await usewallet.queryEvmAddress(mainWallet);
         setEvmAddress(res!);
         setIsEvm(isValidEthereumAddress(res));
       }
@@ -163,7 +162,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
             display: 'flex',
             flexDirection: 'column',
             borderRadius: '12px',
-            height: '100%',
+            height: '100vh',
             background: 'linear-gradient(0deg, #121212, #11271D)',
           }}
         >
@@ -295,13 +294,24 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
               sx={{
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'flex-start',
-                margin: '0 18px',
+                justifyContent: 'space-between',
+                padding: '24px 18px 24px',
                 gap: '8px',
+                alignItems: 'center',
               }}
             >
+              <CardMedia
+                component="img"
+                sx={{ width: '196px', height: '196px', padding: '18px' }}
+                image={enableBg}
+              />
               <Typography
-                sx={{ textTransform: 'uppercase', fontSize: '18px' }}
+                sx={{
+                  textTransform: 'uppercase',
+                  fontSize: '18px',
+                  textAlign: 'center',
+                  paddingTop: '56px',
+                }}
                 variant="body1"
                 color="text.secondary"
               >
@@ -312,9 +322,9 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
                 sx={{
                   fontWeight: 'bold',
                   color: '#FFFFFF',
-                  textAlign: 'Montserrat',
-                  fontFamily: 'Inter',
+                  fontFamily: 'Montserrat',
                   fontSize: '12px',
+                  textAlign: 'center',
                 }}
                 color="error"
               >
@@ -322,7 +332,12 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
               </Typography>
               <Typography
                 variant="subtitle1"
-                sx={{ fontWeight: 'normal', color: '#bababa', textAlign: 'left', fontSize: '12px' }}
+                sx={{
+                  fontWeight: 'normal',
+                  color: '#bababa',
+                  fontSize: '12px',
+                  textAlign: 'center',
+                }}
                 color="error"
               >
                 {chrome.i18n.getMessage('manage_multi_assets_seamlessly')}

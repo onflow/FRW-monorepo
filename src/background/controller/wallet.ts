@@ -27,6 +27,7 @@ import {
 import eventBus from '@/eventBus';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
 import { ContactType } from '@/shared/types/network-types';
+import { type NFTCollectionData } from '@/shared/types/nft-types';
 import { type TrackingEvents } from '@/shared/types/tracking-types';
 import { type TransferItem, type TransactionState } from '@/shared/types/transaction-types';
 import {
@@ -3454,7 +3455,11 @@ export class WalletController extends BaseController {
     await storage.clear();
   };
 
-  getSingleCollection = async (address: string, collectionId: string, offset = 0) => {
+  getSingleCollection = async (
+    address: string,
+    collectionId: string,
+    offset = 0
+  ): Promise<NFTCollectionData> => {
     const network = await this.getNetwork();
     const list = await nftService.getSingleCollection(network, collectionId, offset);
     if (!list) {
@@ -3463,12 +3468,17 @@ export class WalletController extends BaseController {
     return list;
   };
 
-  refreshSingleCollection = async (address: string, collectionId: string, offset = 0) => {
+  refreshSingleCollection = async (
+    address: string,
+    collectionId: string,
+    offset: number | null
+  ): Promise<NFTCollectionData> => {
+    offset = offset || 0;
     const network = await this.getNetwork();
     const data = await openapiService.nftCatalogCollectionList(
       address!,
       collectionId,
-      24,
+      50,
       offset,
       network
     );
@@ -3831,7 +3841,7 @@ export class WalletController extends BaseController {
   refreshEvmNftCollectionList = async (
     address: string,
     collectionIdentifier: string,
-    limit = 24,
+    limit = 50,
     offset = 0
   ) => {
     if (!isValidEthereumAddress(address)) {
@@ -3851,7 +3861,7 @@ export class WalletController extends BaseController {
   getEvmNftCollectionList = async (
     address: string,
     collectionIdentifier: string,
-    limit = 24,
+    limit = 50,
     offset = 0
   ) => {
     if (!isValidEthereumAddress(address)) {

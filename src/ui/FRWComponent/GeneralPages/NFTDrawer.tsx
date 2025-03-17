@@ -1,8 +1,9 @@
 // src/ui/views/MoveBoard/components/NFTMoveDrawer.tsx
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, Button, Typography, Drawer, IconButton, CardMedia, Skeleton } from '@mui/material';
-import React from 'react';
+import React, { useState } from 'react';
 
+import NftSearch from '@/ui/FRWComponent/NFTs/NftSearch';
 import moveSelectDrop from 'ui/FRWAssets/svg/moveSelectDrop.svg';
 import selected from 'ui/FRWAssets/svg/selected.svg';
 import { LLSpinner } from 'ui/FRWComponent';
@@ -42,6 +43,12 @@ export const NFTMoveDrawer: React.FC<NFTMoveDrawerProps> = ({
   nfts,
   replaceIPFS = (url) => url,
 }) => {
+  const [filteredList, setFilteredList] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Determine which NFTs to display based on search term
+  const displayNfts = searchTerm ? filteredList : nfts;
+
   return (
     <Drawer
       anchor="bottom"
@@ -148,12 +155,27 @@ export const NFTMoveDrawer: React.FC<NFTMoveDrawerProps> = ({
           </Button>
         )}
       </Box>
+      <Box sx={{ padding: '0 8px' }}>
+        <NftSearch
+          items={nfts}
+          onFilteredResults={(results) => setFilteredList(results)}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          sx={{
+            fontSize: '14px',
+            '& .MuiSvgIcon-root': {
+              width: '14px',
+              height: '14px',
+            },
+          }}
+        />
+      </Box>
 
       {!isLoading ? (
         <Box
           sx={{
             display: 'flex',
-            mb: '18px',
+            mb: '0',
             padding: '16px',
             gap: '4px',
             flexWrap: 'wrap',
@@ -162,8 +184,8 @@ export const NFTMoveDrawer: React.FC<NFTMoveDrawerProps> = ({
             overflowY: 'scroll',
           }}
         >
-          {nfts && nfts.length > 0 ? (
-            nfts.map((nft) => (
+          {displayNfts && displayNfts.length > 0 ? (
+            displayNfts.map((nft) => (
               <Box
                 key={nft.id}
                 sx={{
