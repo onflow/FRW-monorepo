@@ -107,8 +107,7 @@ const WalletConnect = (props: RevokePageProps) => {
   async function onSessionProposal({ id, params }: Web3WalletTypes.SessionProposal) {
     console.log('params ', params);
     try {
-      const wallet = await usewallet.getUserWallets();
-      const address = wallet[0].blockchain[0].address;
+      const address = await usewallet.getParentAddress();
       // ------- namespaces builder util ------------ //
       const namespaces = Object.entries(params.requiredNamespaces)
         .map(([key, namespace]) => {
@@ -139,8 +138,7 @@ const WalletConnect = (props: RevokePageProps) => {
     if (params.request.method === FCLWalletConnectMethod.accountInfo) {
       try {
         const userInfo = await usewallet.getUserInfo(false);
-        const wallet = await usewallet.getUserWallets();
-        const address = wallet[0].blockchain[0].address;
+        const address = await usewallet.getParentAddress();
 
         // Respond with an empty message
         const jsonString = {

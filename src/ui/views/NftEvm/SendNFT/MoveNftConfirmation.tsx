@@ -167,8 +167,8 @@ const MoveNftConfirmation = (props: SendNFTConfirmationProps) => {
     const walletList = { ...newWallet, ...childAccounts };
     setChildWallets(walletList);
     const firstWalletAddress = Object.keys(walletList)[0];
-    if (firstWalletAddress) {
-      setSelectedChildAccount(walletList[firstWalletAddress]);
+    if (firstWalletAddress && walletList[firstWalletAddress]?.name) {
+      setSelectedChildAccount(walletList[firstWalletAddress] as AccountDetails);
     }
   }, [mainAddress, parentWallet, childAccounts]);
 

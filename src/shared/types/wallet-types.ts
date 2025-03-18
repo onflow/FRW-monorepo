@@ -76,3 +76,9 @@ export type PublicKeyAccounts = {
   currentId?: string;
   accounts: PubKeyAccount[];
 };
+
+export type Emoji = {
+  emoji: string;
+  name: string;
+  bgcolor: string;
+};

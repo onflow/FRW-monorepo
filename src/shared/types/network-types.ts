@@ -394,3 +394,5 @@ export {
   type NewsDisplayType,
   type NewsConditionType,
 } from '@/shared/types/news-types';
+
+export type NetworkType = 'mainnet' | 'testnet';

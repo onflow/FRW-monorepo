@@ -86,7 +86,7 @@ vi.mock('@/ui/utils/WalletContext', () => ({
       type: 'flow',
       blockchain: 'flow',
     }),
-    returnMainWallet: vi.fn().mockReturnValue({
+    returnParentWallet: vi.fn().mockReturnValue({
       name: 'Test Wallet',
       address: '0x138c20de202897fb',
       type: 'flow',

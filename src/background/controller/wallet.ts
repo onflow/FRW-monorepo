@@ -36,6 +36,7 @@ import {
   type PubKeyAccount,
   type FlowAddress,
   type EvmAddress,
+  type PublicKeyAccounts,
 } from '@/shared/types/wallet-types';
 import {
   ensureEvmAddressPrefix,
@@ -991,9 +992,9 @@ export class WalletController extends BaseController {
     return address;
   };
 
-  returnMainWallet = async () => {
+  returnParentWallet = async () => {
     const network = await this.getNetwork();
-    const wallet = await userWalletService.returnMainWallet(network);
+    const wallet = await userWalletService.returnParentWallet(network);
 
     return wallet;
   };
@@ -1519,7 +1520,7 @@ export class WalletController extends BaseController {
 
   //user wallets
   // TODO: Move this to userWalletService
-  refreshUserWallets = async () => {
+  refreshUserWallets = async (): Promise<PublicKeyAccounts[] | null> => {
     const network = await this.getNetwork();
 
     const pubKey = await this.getPubKey();
@@ -1587,23 +1588,29 @@ export class WalletController extends BaseController {
       const cleanAddresses: PubKeyAccount[] = address.map(({ pk, ...rest }) => rest);
 
       userWalletService.setUserWallets(transformedArray, network);
-      userWalletService.setUserAccounts(cleanAddresses, address[0].pubK, network);
+      const currentAccount = userWalletService.setUserAccounts(
+        cleanAddresses,
+        address[0].pubK,
+        network,
+        emoji
+      );
+      if (currentAccount) {
+        return currentAccount;
+      }
     }
 
-    return transformedArray;
+    return null;
   };
 
-  getUserWallets = async (): Promise<WalletResponse[]> => {
+  getUserWallets = async (): Promise<PubKeyAccount[] | null> => {
     const network = await this.getNetwork();
     const wallets = await userWalletService.getUserWallets(network);
-    if (!wallets[0]) {
-      await this.refreshUserWallets();
-      const data = await userWalletService.getUserWallets(network);
-      return data;
-    } else if (!wallets[0].blockchain) {
-      await this.refreshUserWallets();
-      const data = await userWalletService.getUserWallets(network);
-      return data;
+    if (!wallets) {
+      const refreshData = await this.refreshUserWallets();
+      if (!refreshData) {
+        return null;
+      }
+      return refreshData[0].accounts;
     }
     return wallets;
   };
@@ -1636,7 +1643,6 @@ export class WalletController extends BaseController {
     index: number | null = null
   ) => {
     const network = await this.getNetwork();
-    await userWalletService.setCurrentWallet(wallet, key, network, index);
     await userWalletService.setCurrentAccount(wallet, key);
 
     // Clear collections
@@ -1656,16 +1662,17 @@ export class WalletController extends BaseController {
     return wallet?.address !== '';
   };
 
-  getCurrentWallet = async (): Promise<BlockchainResponse | undefined> => {
+  getCurrentWallet = async (): Promise<PubKeyAccount | undefined> => {
     if (!this.isBooted() || userWalletService.isLocked()) {
       return;
     }
     const wallet = await userWalletService.getCurrentWallet();
     if (!wallet?.address) {
-      const network = await this.getNetwork();
-      await this.refreshUserWallets();
-      const data = await userWalletService.getUserWallets(network);
-      return data[0].blockchain[0];
+      const data = await this.refreshUserWallets();
+      if (!data) {
+        return;
+      }
+      return data[0].accounts[0];
     }
     return wallet;
   };
@@ -1697,14 +1704,14 @@ export class WalletController extends BaseController {
     return address;
   };
 
-  getCurrentAddress = async () => {
+  getCurrentAddress = async (): Promise<FlowAddress | EvmAddress | null> => {
     const address = await userWalletService.getCurrentAddress();
     if (!address) {
       const data = await this.refreshUserWallets();
-      return withPrefix(data[0].blockchain[0].address);
-    } else if (address.length < 3) {
-      const data = await this.refreshUserWallets();
-      return withPrefix(data[0].blockchain[0].address);
+      if (!data) {
+        return null;
+      }
+      return withPrefix(data[0].accounts[0].address);
     }
     return withPrefix(address);
   };
@@ -1717,7 +1724,10 @@ export class WalletController extends BaseController {
     const address = await userWalletService.getParentAddress(network);
     if (!isValidFlowAddress(address)) {
       const data = await this.refreshUserWallets();
-      const address = withPrefix(data[0].blockchain[0].address);
+      if (!data) {
+        return null;
+      }
+      const address = withPrefix(data[0].accounts[0].address);
       return isValidFlowAddress(address) ? address : null;
     } else {
       const prefixedAddress = withPrefix(address);

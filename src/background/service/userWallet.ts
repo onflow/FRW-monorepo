@@ -16,6 +16,7 @@ import {
   type ActiveChildType,
   type FlowAddress,
   type EvmAddress,
+  type Emoji,
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress, isValidFlowAddress, withPrefix } from '@/shared/utils/address';
 import { getHashAlgo, getSignAlgo } from '@/shared/utils/algo';
@@ -42,7 +43,6 @@ interface UserWalletStore {
     mainnet: PublicKeyAccounts[];
     testnet: PublicKeyAccounts[];
   };
-  currentWallet: BlockchainResponse;
   evmWallet: BlockchainResponse;
   childAccount: ChildAccount;
   network: string;
@@ -67,15 +67,6 @@ const USER_WALLET_TEMPLATE: UserWalletStore = {
     testnet: [],
   },
   childAccount: {},
-  currentWallet: {
-    name: '',
-    icon: '',
-    address: '',
-    chain_id: 'mainnet',
-    id: 1,
-    coins: ['flow'],
-    color: '',
-  },
   evmWallet: {
     name: '',
     icon: '',
@@ -116,32 +107,59 @@ class UserWallet {
     return !keyringService.isBooted() || !keyringService.memStore.getState().isUnlocked;
   };
 
-  setUserAccounts = async (accountData: PubKeyAccount[], pubKey: string, network: string) => {
+  setUserAccounts = async (
+    accountData: PubKeyAccount[],
+    pubKey: string,
+    network: string,
+    emoji: Emoji[]
+  ) => {
     const currentAccounts: PublicKeyAccounts[] = this.store.accounts[network];
     const accountIndex = currentAccounts.findIndex((account) => account.publicKey === pubKey);
     this.setCurrentPubkey(pubKey);
     if (accountIndex !== -1) {
       currentAccounts[accountIndex] = {
-        accounts: accountData.map((account, index) => ({
-          ...account,
-          chain: network === 'testnet' ? 545 : 747,
-          id: index,
-        })),
+        accounts: accountData.map((account, index) => {
+          const defaultEmoji = emoji[index] || {
+            name: 'Default',
+            emoji: '🐾',
+            bgcolor: '#ffffff',
+          };
+          return {
+            ...account,
+            chain: network === 'testnet' ? 545 : 747,
+            id: index,
+            name: defaultEmoji.name,
+            icon: defaultEmoji.emoji,
+            color: defaultEmoji.bgcolor,
+          };
+        }),
         publicKey: pubKey,
       };
     } else {
       currentAccounts.push({
-        accounts: accountData.map((account, index) => ({
-          ...account,
-          chain: network === 'testnet' ? 545 : 747,
-          id: index,
-        })),
+        accounts: accountData.map((account, index) => {
+          const defaultEmoji = emoji[index] || {
+            name: 'Default',
+            emoji: '🐾',
+            bgcolor: '#ffffff',
+          };
+          return {
+            ...account,
+            chain: network === 'testnet' ? 545 : 747,
+            id: index,
+            name: defaultEmoji.name,
+            icon: defaultEmoji.emoji,
+            color: defaultEmoji.bgcolor,
+          };
+        }),
         publicKey: pubKey,
       });
     }
     this.store.currentAddress = currentAccounts[0].accounts[0].address;
     this.store.parentAddress = currentAccounts[0].accounts[0].address;
     this.store.accounts[network] = currentAccounts;
+
+    return currentAccounts;
   };
 
   setCurrentPubkey = (pubkey: string) => {
@@ -255,10 +273,78 @@ class UserWallet {
     return isValidFlowAddress(prefixedAddress) ? prefixedAddress : null;
   };
 
+  returnParentWallet = async (network: string): Promise<PubKeyAccount | null> => {
+    if (!keyringService.isBooted() || !keyringService.memStore.getState().isUnlocked) {
+      return null;
+    }
+    const address = this.store.parentAddress;
+    const pubkey = this.store.currentPubkey;
+    const currentAccounts = this.store.accounts[network] as PublicKeyAccounts[];
+    const account = currentAccounts.find((account) => account.publicKey === pubkey);
+    if (account) {
+      return account.accounts.find((account) => account.address === address) || null;
+    }
+    return null;
+  };
+
   getCurrentAddress = (): FlowAddress | EvmAddress | null => {
     const address = this.store.currentAddress;
 
     return withPrefix(address);
+  };
+
+  getCurrentWallet = (): PubKeyAccount | null => {
+    if (this.isLocked()) {
+      return null;
+    }
+    const activeType = this.getActiveWallet();
+
+    const network = this.store.network;
+    const address = this.store.parentAddress;
+    const pubkey = this.store.currentPubkey;
+    const currentAccounts = this.store.accounts[network] as PublicKeyAccounts[];
+    const accounts = currentAccounts.find((account) => account.publicKey === pubkey);
+    if (accounts) {
+      const account = accounts.accounts.find((account) => account.address === address) || null;
+      if (!account) {
+        return null;
+      }
+      if (activeType === 'evm') {
+        const evmWallet: PubKeyAccount = {
+          ...account,
+          address: this.store.currentEvmAddress,
+          name: 'Lemon',
+          icon: '🍋',
+          color: '#FFD700',
+          pubK: this.store.currentPubkey,
+        };
+        return evmWallet;
+      } else if (activeType === null) {
+        return account;
+      } else {
+        const childWallet: PubKeyAccount = {
+          ...account,
+          address: activeType,
+          name: this.store.childAccount[activeType].name,
+          icon: this.store.childAccount[activeType].thumbnail.url,
+          pubK: this.store.currentPubkey,
+        };
+        return childWallet;
+      }
+    }
+    return null;
+  };
+
+  getUserWallets = (network: string): PubKeyAccount[] | null => {
+    const currentPubKey = this.store.currentPubkey;
+    const currentAccounts = this.store.accounts[network] as PublicKeyAccounts[];
+
+    const currentAccount = currentAccounts.find((account) => account.publicKey === currentPubKey);
+    if (currentAccount) {
+      return currentAccount.accounts;
+    } else {
+      return null;
+    }
   };
 
   /*
@@ -273,8 +359,6 @@ class UserWallet {
         walletIndex = 0; // Reset walletIndex to 0 if it exceeds the array length
         await storage.set('currentWalletIndex', 0);
       }
-      const current = this.store.wallets[network][walletIndex].blockchain[0];
-      this.store.currentWallet = current;
     } else {
       console.error(`No wallet found for network: ${network}`);
     }
@@ -282,30 +366,6 @@ class UserWallet {
 
   setChildWallet = (wallet: ChildAccount) => {
     this.store.childAccount = wallet;
-  };
-
-  setCurrentWallet = async (
-    wallet: BlockchainResponse,
-    key: ActiveChildType | null,
-    network: string,
-    index: number | null = null
-  ) => {
-    if (key && key !== 'evm') {
-      this.store.currentWallet = wallet;
-    } else if (key === 'evm') {
-      this.store.evmWallet.address = wallet.address;
-    } else if (index !== null) {
-      await storage.set('currentWalletIndex', index);
-      const current = this.store.wallets[network][index].blockchain[0];
-      this.store.currentWallet = current;
-    } else {
-      const current = this.store.wallets[network][0].blockchain[0];
-      this.store.currentWallet = current;
-    }
-  };
-
-  getUserWallets = (network: string) => {
-    return this.store.wallets[network];
   };
 
   setNetwork = async (network: string) => {
@@ -387,30 +447,23 @@ class UserWallet {
     return this.store.monitor;
   };
 
-  switchWallet = (walletId: number, blockId: string, sortKey: string, network: string) => {
-    const wallets = this.store.wallets[network];
-    let chain = {
-      name: '',
-      address: '',
-      chain_id: 'testnet',
-      id: 1,
-      coins: ['flow'],
-    } as BlockchainResponse;
-    if (sortKey === 'id') {
-      const chains = wallets.find((x) => x.wallet_id === walletId);
-      chain = chains!.blockchain.find((y) => y.chain_id === blockId)!;
-    } else {
-      chain = wallets[walletId].blockchain[blockId];
-    }
-    this.store.currentWallet = chain;
-  };
-
-  getCurrentWallet = (): BlockchainResponse | null => {
-    if (this.isLocked()) {
-      return null;
-    }
-    return this.store.currentWallet;
-  };
+  // switchWallet = (walletId: number, blockId: string, sortKey: string, network: string) => {
+  //   const wallets = this.store.wallets[network];
+  //   let chain = {
+  //     name: '',
+  //     address: '',
+  //     chain_id: 'testnet',
+  //     id: 1,
+  //     coins: ['flow'],
+  //   } as BlockchainResponse;
+  //   if (sortKey === 'id') {
+  //     const chains = wallets.find((x) => x.wallet_id === walletId);
+  //     chain = chains!.blockchain.find((y) => y.chain_id === blockId)!;
+  //   } else {
+  //     chain = wallets[walletId].blockchain[blockId];
+  //   }
+  //   this.store.currentWallet = chain;
+  // };
 
   getEvmWallet = (): BlockchainResponse | null => {
     if (this.isLocked()) {
@@ -443,12 +496,6 @@ class UserWallet {
     this.store.wallets[network][id].blockchain[0].name = emoji.name;
     this.store.wallets[network][id].blockchain[0].icon = emoji.emoji;
     this.store.wallets[network][id].blockchain[0].color = emoji.bgcolor;
-  };
-
-  returnMainWallet = async (network: string): Promise<BlockchainResponse | undefined> => {
-    const walletIndex = (await storage.get('currentWalletIndex')) || 0;
-    const wallet = this.store.wallets?.[network]?.[walletIndex]?.blockchain?.[0];
-    return wallet;
   };
 
   private extractScriptName = (cadence: string): string => {
