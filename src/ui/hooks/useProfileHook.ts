@@ -14,7 +14,7 @@ import { useWallet, useWalletLoaded } from '@/ui/utils/WalletContext';
 export const useProfiles = () => {
   const profilesRef = useRef({
     initialized: false,
-    loading: true,
+    loading: false,
   });
 
   const usewallet = useWallet();
@@ -59,32 +59,24 @@ export const useProfiles = () => {
    * @returns Array of formatted wallet objects with UI-friendly properties
    * Used by freshUserWallet to standardize wallet display format
    */
-  const formatWallets = useCallback(
-    (data) => {
-      console.log('formatWallets called with:', data);
-      if (!Array.isArray(data)) {
-        console.log('Data is not an array, returning empty array');
-        return [];
-      }
+  const formatWallets = useCallback((data) => {
+    console.log('formatWallets called with:', data);
+    if (!Array.isArray(data)) {
+      console.log('Data is not an array, returning empty array');
+      return [];
+    }
 
-      const filteredData = data.filter((wallet) => {
-        return wallet.chain_id === network;
-      });
-      console.log('Filtered wallets:', filteredData);
-
-      const result = filteredData.map((wallet, index) => ({
-        id: index,
-        name: wallet.name || 'Wallet',
-        address: withPrefix(wallet.blockchain[0].address),
-        key: index,
-        icon: wallet.icon || '',
-        color: wallet.color || '',
-      }));
-      console.log('Formatted wallets:', result);
-      return result;
-    },
-    [network]
-  );
+    const result = data.map((wallet, index) => ({
+      id: index,
+      name: wallet.name || 'Wallet',
+      address: withPrefix(wallet.address),
+      key: index,
+      icon: wallet.icon || '',
+      color: wallet.color || '',
+    }));
+    console.log('Formatted wallets:', result);
+    return result;
+  }, []);
 
   /**
    * Sets up Ethereum Virtual Machine (EVM) wallet
