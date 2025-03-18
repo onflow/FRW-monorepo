@@ -5,6 +5,7 @@ import type {
   BlockchainResponse,
   WalletResponse,
 } from '@/shared/types/network-types';
+import { type PubKeyAccount } from '@/shared/types/wallet-types';
 import { ensureEvmAddressPrefix, withPrefix } from '@/shared/utils/address';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
@@ -59,7 +60,7 @@ export const useProfiles = () => {
    * @returns Array of formatted wallet objects with UI-friendly properties
    * Used by freshUserWallet to standardize wallet display format
    */
-  const formatWallets = useCallback((data) => {
+  const formatWallets = useCallback((data: PubKeyAccount[]) => {
     console.log('formatWallets called with:', data);
     if (!Array.isArray(data)) {
       console.log('Data is not an array, returning empty array');
