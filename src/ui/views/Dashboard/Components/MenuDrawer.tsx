@@ -22,6 +22,7 @@ import {
   type LoggedInAccount,
   type LoggedInAccountWithIndex,
   type ActiveChildType,
+  type PubKeyAccount,
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -64,7 +65,7 @@ interface MenuDrawerProps {
     index?: number | null
   ) => Promise<void>;
   currentNetwork: string;
-  evmWallet: WalletType;
+  evmWallet: PubKeyAccount;
   networkColor: (network: string) => string;
   evmLoading: boolean;
   modeOn: boolean;
@@ -292,8 +293,8 @@ const MenuDrawer = (props: MenuDrawerProps) => {
                       chain_id: props.currentNetwork,
                       coins: ['flow'],
                       id: 1,
-                      icon: props.evmWallet.icon,
-                      color: props.evmWallet.color,
+                      icon: props.evmWallet.icon || '',
+                      color: props.evmWallet.color || '',
                     },
                     'evm'
                   )

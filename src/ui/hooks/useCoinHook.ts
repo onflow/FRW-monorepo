@@ -77,7 +77,7 @@ export const useCoins = () => {
         return;
       }
 
-      const address = withPrefix(mainAddress) || '';
+      const address = withPrefix(mainAddress!) || '';
       // TODO: need a controller for this
       const minAmount = new BN(
         (await usewallet.openapi.getAccountMinFlow(address)) || DEFAULT_MIN_AMOUNT

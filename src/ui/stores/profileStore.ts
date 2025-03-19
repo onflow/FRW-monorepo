@@ -13,7 +13,7 @@ interface ProfileState {
   evmAddress: string;
   currentWalletIndex: number;
   parentWallet: PubKeyAccount;
-  evmWallet: WalletType;
+  evmWallet: PubKeyAccount;
   walletList: WalletType[];
   initialStart: boolean;
   currentWallet: WalletType;
@@ -28,7 +28,7 @@ interface ProfileState {
   setEvmAddress: (address: string) => void;
   setCurrentWalletIndex: (index: number) => void;
   setParentWallet: (wallet: PubKeyAccount) => void;
-  setEvmWallet: (wallet: WalletType) => void;
+  setEvmWallet: (wallet: PubKeyAccount) => void;
   setWalletList: (list: any[]) => void;
   setInitial: (initial: boolean) => void;
   setCurrent: (current: any) => void;
@@ -70,7 +70,7 @@ export const useProfileStore = create<ProfileState>((set) => ({
   evmAddress: '',
   currentWalletIndex: 0,
   parentWallet: { ...INITIAL_ACCOUNT },
-  evmWallet: { ...INITIAL_WALLET, chain_id: 'evm' },
+  evmWallet: { ...INITIAL_ACCOUNT },
   currentWallet: { ...INITIAL_WALLET },
   walletList: [],
   initialStart: true,
@@ -102,7 +102,7 @@ export const useProfileStore = create<ProfileState>((set) => ({
       evmAddress: '',
       currentWalletIndex: 0,
       parentWallet: { ...INITIAL_ACCOUNT },
-      evmWallet: { ...INITIAL_WALLET, chain_id: 'evm' },
+      evmWallet: { ...INITIAL_ACCOUNT },
       walletList: [],
       initialStart: true,
       currentWallet: { ...INITIAL_WALLET },

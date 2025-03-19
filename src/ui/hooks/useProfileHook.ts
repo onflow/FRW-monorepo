@@ -5,7 +5,7 @@ import type {
   BlockchainResponse,
   WalletResponse,
 } from '@/shared/types/network-types';
-import { type PubKeyAccount } from '@/shared/types/wallet-types';
+import { type FlowAddress, type PubKeyAccount } from '@/shared/types/wallet-types';
 import { ensureEvmAddressPrefix, withPrefix } from '@/shared/utils/address';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
@@ -86,7 +86,7 @@ export const useProfiles = () => {
    * Called during initial profile setup and wallet creation
    */
   const setupEvmWallet = useCallback(
-    async (mainAddress: string) => {
+    async (mainAddress: FlowAddress) => {
       console.log('Setting up EVM wallet for:', mainAddress);
       try {
         const [evmRes, emoji] = await Promise.all([
@@ -98,14 +98,18 @@ export const useProfiles = () => {
         const evmAddress = ensureEvmAddressPrefix(evmRes!);
         console.log('Formatted EVM address:', evmAddress);
 
-        const evmWalletData: BlockchainResponse = {
+        const evmWalletData: PubKeyAccount = {
           name: emoji[9].name,
           icon: emoji[9].emoji,
           address: evmAddress,
-          chain_id: '1',
+          chain: network === 'testnet' ? 545 : 747,
           id: 1,
-          coins: [],
           color: emoji[9].bgcolor,
+          keyIndex: 0,
+          weight: 1,
+          pubK: '',
+          sigAlgo: 'ECDSA_P256',
+          hashAlgo: 'SHA3_256',
         };
         console.log('Created EVM wallet data:', evmWalletData);
 
@@ -119,7 +123,7 @@ export const useProfiles = () => {
         throw error;
       }
     },
-    [usewallet, setEvmWallet, setEvmAddress, setEvmLoading]
+    [usewallet, network, setEvmWallet, setEvmAddress, setEvmLoading]
   );
 
   /**
@@ -259,7 +263,6 @@ export const useProfiles = () => {
     const childresp: ChildAccount = await usewallet.checkUserChildAccount();
     console.log('Child account response:', childresp);
     setChildAccount(childresp);
-    usewallet.setChildWallet(childresp);
   }, [freshUserInfo, usewallet, setChildAccount, walletLoaded]);
 
   return {

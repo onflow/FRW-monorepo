@@ -263,7 +263,7 @@ const Header = ({ _loading = false }) => {
           setWallets={setWallets}
           currentWalletIndex={currentWalletIndex}
           currentWallet={currentWallet}
-          mainAddress={mainAddress}
+          mainAddress={mainAddress!}
           setExpandAccount={setExpandAccount}
           expandAccount={expandAccount}
           walletList={walletList}

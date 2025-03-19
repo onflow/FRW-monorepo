@@ -223,7 +223,7 @@ class ProviderController extends BaseController {
     }
 
     const currentWallet = await Wallet.getParentAddress();
-    let evmAddress: string = '';
+    let evmAddress;
 
     if (!currentWallet) {
       throw new Error('Current wallet not found');
@@ -246,6 +246,9 @@ class ProviderController extends BaseController {
         { height: 599 }
       );
       evmAddress = await Wallet.queryEvmAddress(currentWallet);
+      if (!isValidEthereumAddress(evmAddress)) {
+        throw new Error('Invalid EVM address');
+      }
     }
 
     const account = evmAddress ? [ensureEvmAddressPrefix(evmAddress)] : [];

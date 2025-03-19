@@ -38,13 +38,10 @@ import {
 import { storage } from '../webapi';
 
 interface UserWalletStore {
-  wallets: Record<string, WalletResponse[]>;
   accounts: {
     mainnet: PublicKeyAccounts[];
     testnet: PublicKeyAccounts[];
   };
-  evmWallet: BlockchainResponse;
-  childAccount: ChildAccount;
   network: string;
   monitor: string;
   activeChild: ActiveChildType;
@@ -54,27 +51,13 @@ interface UserWalletStore {
   currentPubkey: string;
   currentAddress: string;
   parentAddress: string;
-  currentEvmAddress: string;
+  currentEvmAddress: string | null;
 }
 
 const USER_WALLET_TEMPLATE: UserWalletStore = {
   accounts: {
     mainnet: [],
     testnet: [],
-  },
-  wallets: {
-    mainnet: [],
-    testnet: [],
-  },
-  childAccount: {},
-  evmWallet: {
-    name: '',
-    icon: '',
-    address: '',
-    chain_id: 'mainnet',
-    id: 1,
-    coins: ['flow'],
-    color: '',
   },
   activeChild: null,
   evmEnabled: false,
@@ -155,8 +138,8 @@ class UserWallet {
         publicKey: pubKey,
       });
     }
-    this.store.currentAddress = currentAccounts[0].accounts[0].address;
-    this.store.parentAddress = currentAccounts[0].accounts[0].address;
+    this.store.currentAddress = accountData[0].address;
+    this.store.parentAddress = accountData[0].address;
     this.store.accounts[network] = currentAccounts;
 
     return currentAccounts;
@@ -164,6 +147,30 @@ class UserWallet {
 
   setCurrentPubkey = (pubkey: string) => {
     this.store.currentPubkey = pubkey;
+  };
+
+  switchAccount = (pubkey: string) => {
+    if (!pubkey) {
+      console.warn('Invalid pubkey provided to switchAccount');
+      return;
+    }
+
+    const accounts = this.store.accounts[this.store.network];
+
+    const accountGroup = accounts.find((group) => {
+      const matches = group.publicKey === pubkey;
+
+      return matches;
+    });
+
+    if (!accountGroup || !accountGroup.accounts.length) {
+      console.warn(`No account found for pubkey: ${pubkey.slice(0, 10)}...`);
+      return;
+    }
+
+    this.store.currentPubkey = pubkey;
+    this.store.currentAddress = accountGroup.accounts[0].address;
+    this.store.parentAddress = accountGroup.accounts[0].address;
   };
 
   getCurrentPubkey = (): string => {
@@ -221,7 +228,9 @@ class UserWallet {
     this.store.accounts[network] = currentAccounts;
   };
 
-  setAccountEvmAddress = (address: string, evmAddress: string, network: string) => {
+  setAccountEvmAddress = (evmAddress: string) => {
+    const network = this.store.network;
+    const address = this.store.parentAddress;
     const { account, currentAccounts } = this.findAccount(address, network);
 
     if (!account) return;
@@ -231,6 +240,7 @@ class UserWallet {
   };
 
   setCurrentAccount = async (wallet: BlockchainResponse, key: ActiveChildType) => {
+    console.log('setCurrentAccount +++++++++++++++++++++++++++++++ ', wallet, key);
     this.store.currentAddress = wallet.address;
     if (key === 'evm') {
       this.store.currentEvmAddress = wallet.address;
@@ -312,7 +322,7 @@ class UserWallet {
       if (activeType === 'evm') {
         const evmWallet: PubKeyAccount = {
           ...account,
-          address: this.store.currentEvmAddress,
+          address: this.store.currentEvmAddress || '',
           name: 'Lemon',
           icon: '🍋',
           color: '#FFD700',
@@ -325,8 +335,8 @@ class UserWallet {
         const childWallet: PubKeyAccount = {
           ...account,
           address: activeType,
-          name: this.store.childAccount[activeType].name,
-          icon: this.store.childAccount[activeType].thumbnail.url,
+          name: account?.childAccount?.[activeType]?.name ?? 'Unknown',
+          icon: account?.childAccount?.[activeType]?.thumbnail?.url ?? '',
           pubK: this.store.currentPubkey,
         };
         return childWallet;
@@ -347,26 +357,83 @@ class UserWallet {
     }
   };
 
+  getEvmWallet = (): PubKeyAccount | null => {
+    if (this.isLocked()) {
+      return null;
+    }
+
+    const network = this.store.network;
+    const address = this.store.parentAddress;
+    const pubkey = this.store.currentPubkey;
+    const currentAccounts = this.store.accounts[network] as PublicKeyAccounts[];
+    const accounts = currentAccounts.find((account) => account.publicKey === pubkey);
+    if (accounts) {
+      const account = accounts.accounts.find((account) => account.address === address) || null;
+      if (!account) {
+        return null;
+      }
+      const evmWallet: PubKeyAccount = {
+        ...account,
+        address: this.store.currentEvmAddress || '',
+        name: 'Lemon',
+        icon: '🍋',
+        color: '#FFD700',
+        pubK: this.store.currentPubkey,
+      };
+      return evmWallet;
+    }
+    return null;
+  };
+
+  getChildAccount = (): ChildAccount | null => {
+    if (this.isLocked()) {
+      return null;
+    }
+
+    const network = this.store.network;
+    const address = this.store.parentAddress;
+    const pubkey = this.store.currentPubkey;
+    const currentAccounts = this.store.accounts[network] as PublicKeyAccounts[];
+    const accounts = currentAccounts.find((account) => account.publicKey === pubkey);
+    if (accounts) {
+      const account = accounts.accounts.find((account) => account.address === address) || null;
+      if (!account || !account.childAccount) {
+        return null;
+      }
+      return account.childAccount;
+    }
+    return null;
+  };
+
+  setWalletEmoji = (emoji, network, id) => {
+    console.log('setWalletEmoji', emoji, network, id);
+    // this.store.wallets[network][id].name = emoji.name;
+    // this.store.wallets[network][id].icon = emoji.emoji;
+    // this.store.wallets[network][id].color = emoji.bgcolor;
+    // this.store.wallets[network][id].blockchain[0].name = emoji.name;
+    // this.store.wallets[network][id].blockchain[0].icon = emoji.emoji;
+    // this.store.wallets[network][id].blockchain[0].color = emoji.bgcolor;
+  };
+
+  refreshEvm = () => {
+    const network = this.store.network;
+    const address = this.store.parentAddress;
+    const pubkey = this.store.currentPubkey;
+    const currentAccounts = this.store.accounts[network] as PublicKeyAccounts[];
+    const accounts = currentAccounts.find((account) => account.publicKey === pubkey);
+    if (accounts) {
+      const account = accounts.accounts.find((account) => account.address === address);
+      if (account) {
+        account.evmAddress = undefined;
+        this.store.currentEvmAddress = null;
+      }
+    }
+    this.store.evmEnabled = false;
+  };
+
   /*
   New store for accounts are above
   */
-
-  setUserWallets = async (filteredData: WalletResponse[], network: string) => {
-    this.store.wallets[network] = filteredData;
-    let walletIndex = (await storage.get('currentWalletIndex')) || 0;
-    if (this.store.wallets[network] && this.store.wallets[network].length > 0) {
-      if (walletIndex >= filteredData.length) {
-        walletIndex = 0; // Reset walletIndex to 0 if it exceeds the array length
-        await storage.set('currentWalletIndex', 0);
-      }
-    } else {
-      console.error(`No wallet found for network: ${network}`);
-    }
-  };
-
-  setChildWallet = (wallet: ChildAccount) => {
-    this.store.childAccount = wallet;
-  };
 
   setNetwork = async (network: string) => {
     if (!this.store) {
@@ -390,19 +457,6 @@ class UserWallet {
 
   getEvmEnabled = () => {
     return this.store.evmEnabled;
-  };
-
-  refreshEvm = () => {
-    this.store.evmWallet = {
-      name: '',
-      address: '',
-      icon: '',
-      chain_id: 'mainnet',
-      id: 1,
-      coins: ['flow'],
-      color: '',
-    };
-    this.store.evmEnabled = false;
   };
 
   getNetwork = async (): Promise<string> => {
@@ -437,65 +491,23 @@ class UserWallet {
     await this.setupFcl();
   };
 
-  setupFcl = async () => {
-    const isEmulatorMode = await this.getEmulatorMode();
-    const network = (await this.getNetwork()) as FlowNetwork;
-    await fclConfig(network, isEmulatorMode);
-  };
-
   getMonitor = (): string => {
     return this.store.monitor;
   };
 
-  // switchWallet = (walletId: number, blockId: string, sortKey: string, network: string) => {
-  //   const wallets = this.store.wallets[network];
-  //   let chain = {
-  //     name: '',
-  //     address: '',
-  //     chain_id: 'testnet',
-  //     id: 1,
-  //     coins: ['flow'],
-  //   } as BlockchainResponse;
-  //   if (sortKey === 'id') {
-  //     const chains = wallets.find((x) => x.wallet_id === walletId);
-  //     chain = chains!.blockchain.find((y) => y.chain_id === blockId)!;
-  //   } else {
-  //     chain = wallets[walletId].blockchain[blockId];
-  //   }
-  //   this.store.currentWallet = chain;
-  // };
-
-  getEvmWallet = (): BlockchainResponse | null => {
-    if (this.isLocked()) {
-      return null;
-    }
-    return this.store.evmWallet;
-  };
-
-  setEvmAddress = (address: string, emoji) => {
-    if (address.length > 20) {
-      this.store.evmWallet.address = address;
-      this.store.evmWallet.name = emoji[9].name;
-      this.store.evmWallet.icon = emoji[9].emoji;
-      this.store.evmWallet.color = emoji[9].bgcolor;
-    } else {
-      this.store.evmWallet.address = '';
-    }
-  };
-
   setEvmEmoji = (emoji) => {
-    this.store.evmWallet.name = emoji.name;
-    this.store.evmWallet.icon = emoji.emoji;
-    this.store.evmWallet.color = emoji.bgcolor;
+    console.log('setEvmEmoji', emoji);
+    // this.store.evmWallet.name = emoji.name;
+    // this.store.evmWallet.icon = emoji.emoji;
+    // this.store.evmWallet.color = emoji.bgcolor;
   };
 
-  setWalletEmoji = (emoji, network, id) => {
-    this.store.wallets[network][id].name = emoji.name;
-    this.store.wallets[network][id].icon = emoji.emoji;
-    this.store.wallets[network][id].color = emoji.bgcolor;
-    this.store.wallets[network][id].blockchain[0].name = emoji.name;
-    this.store.wallets[network][id].blockchain[0].icon = emoji.emoji;
-    this.store.wallets[network][id].blockchain[0].color = emoji.bgcolor;
+  // transaction functions below
+
+  setupFcl = async () => {
+    const isEmulatorMode = await this.getEmulatorMode();
+    const network = (await this.getNetwork()) as FlowNetwork;
+    await fclConfig(network, isEmulatorMode);
   };
 
   private extractScriptName = (cadence: string): string => {
@@ -558,7 +570,6 @@ class UserWallet {
       pubKey: string;
       weight: number;
     };
-    await this.setCurrentPubkey(pubKey);
     try {
       // Try to get the account from  loggedInAccounts
       account = await getLoggedInAccount();
@@ -611,6 +622,11 @@ class UserWallet {
 
       result = foundResult;
     }
+    const hashAlgo = result[0].hashAlgo;
+    const signAlgo = result[0].signAlgo;
+    const publicKey = result[0].pubK;
+
+    await this.setCurrentPubkey(publicKey);
     const app = getApp(process.env.NODE_ENV!);
     const auth = getAuth(app);
     const idToken = await getAuth(app).currentUser?.getIdToken();
@@ -624,9 +640,6 @@ class UserWallet {
     const message = USER_DOMAIN_TAG + Buffer.from(idToken, 'utf8').toString('hex');
 
     // const messageHash = await secp.utils.sha256(Buffer.from(message, 'hex'));
-    const hashAlgo = result[0].hashAlgo;
-    const signAlgo = result[0].signAlgo;
-    const publicKey = result[0].pubK;
     const accountKey = {
       public_key: publicKey,
       hash_algo: typeof hashAlgo === 'string' ? getHashAlgo(hashAlgo) : hashAlgo,
