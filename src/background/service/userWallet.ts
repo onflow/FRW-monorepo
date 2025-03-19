@@ -314,16 +314,24 @@ class UserWallet {
     }
     return 'unknown_script';
   };
-  sendTransaction = async (cadence: string, args: any[]): Promise<string> => {
+  sendTransaction = async (
+    cadence: string,
+    args: any[],
+    shouldCoverFee: boolean = false
+  ): Promise<string> => {
     const scriptName = this.extractScriptName(cadence);
     //add proxy
     try {
-      const allowed = await wallet.allowLilicoPay();
+      const allowed = shouldCoverFee || (await wallet.allowLilicoPay());
       const txID = await fcl.mutate({
         cadence: cadence,
         args: (arg, t) => args,
         proposer: this.authorizationFunction,
-        authorizations: [this.authorizationFunction],
+        authorizations: [
+          this.authorizationFunction,
+          allowed ? this.payerAuthFunction : null,
+          // eslint-disable-next-line eqeqeq
+        ].filter((auth) => auth != null),
         payer: allowed ? this.payerAuthFunction : this.authorizationFunction,
         limit: 9999,
       });
