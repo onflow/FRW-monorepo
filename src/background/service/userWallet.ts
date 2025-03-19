@@ -42,78 +42,53 @@ interface UserWalletStore {
   emulatorMode: boolean;
 }
 
+const USER_WALLET_TEMPLATE: UserWalletStore = {
+  wallets: {
+    mainnet: [],
+    testnet: [],
+    crescendo: [],
+  },
+  childAccount: {},
+  currentWallet: {
+    name: '',
+    icon: '',
+    address: '',
+    chain_id: 'mainnet',
+    id: 1,
+    coins: ['flow'],
+    color: '',
+  },
+  evmWallet: {
+    name: '',
+    icon: '',
+    address: '',
+    chain_id: 'mainnet',
+    id: 1,
+    coins: ['flow'],
+    color: '',
+  },
+  activeChild: null,
+  evmEnabled: false,
+  monitor: 'flowscan',
+  network: 'mainnet',
+  emulatorMode: false,
+};
 class UserWallet {
   store!: UserWalletStore;
 
   init = async () => {
     this.store = await createPersistStore<UserWalletStore>({
       name: 'userWallets',
-      template: {
-        wallets: {
-          mainnet: [],
-          testnet: [],
-          crescendo: [],
-        },
-        childAccount: {},
-        currentWallet: {
-          name: '',
-          icon: '',
-          address: '',
-          chain_id: 'mainnet',
-          id: 1,
-          coins: ['flow'],
-          color: '',
-        },
-        evmWallet: {
-          name: '',
-          icon: '',
-          address: '',
-          chain_id: 'mainnet',
-          id: 1,
-          coins: ['flow'],
-          color: '',
-        },
-        activeChild: null,
-        evmEnabled: false,
-        monitor: 'flowscan',
-        network: 'mainnet',
-        emulatorMode: false,
-      },
+      template: USER_WALLET_TEMPLATE,
     });
   };
 
   clear = async () => {
-    this.store = {
-      wallets: {
-        mainnet: [],
-        testnet: [],
-        crescendo: [],
-      },
-      childAccount: {},
-      currentWallet: {
-        name: '',
-        address: '',
-        icon: '',
-        chain_id: 'mainnet',
-        id: 1,
-        coins: ['flow'],
-        color: '',
-      },
-      evmWallet: {
-        name: '',
-        address: '',
-        icon: '',
-        chain_id: 'mainnet',
-        id: 1,
-        coins: ['flow'],
-        color: '',
-      },
-      activeChild: null,
-      evmEnabled: false,
-      monitor: 'flowscan',
-      network: 'mainnet',
-      emulatorMode: false,
-    };
+    if (!this.store) {
+      await this.init();
+    } else {
+      Object.assign(this.store, USER_WALLET_TEMPLATE);
+    }
   };
   isLocked = () => {
     return !keyringService.isBooted() || !keyringService.memStore.getState().isUnlocked;

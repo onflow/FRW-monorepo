@@ -50,7 +50,6 @@ import {
   transactionService,
   nftService,
   googleDriveService,
-  passwordService,
   proxyService,
   newsService,
   mixpanelTrack,
@@ -125,8 +124,14 @@ export class WalletController extends BaseController {
 
   /* wallet */
   boot = async (password) => {
-    const result = await keyringService.boot(password);
-    return result;
+    // When wallet first initializes through install, it will add a encrypted password to boot state. If is boot is false, it means there's no password set.
+    const isBooted = await keyringService.isBooted();
+    if (isBooted) {
+      await keyringService.verifyPassword(password);
+      await keyringService.updateUnlocked(password);
+    } else {
+      await keyringService.boot(password);
+    }
   };
   isBooted = () => keyringService.isBooted();
   loadMemStore = () => keyringService.loadMemStore();
@@ -161,11 +166,29 @@ export class WalletController extends BaseController {
   resolveApproval = notificationService.resolveApproval;
   rejectApproval = notificationService.rejectApproval;
 
+  switchAccount = async (currentId: string) => {
+    try {
+      await keyringService.switchKeyring(currentId);
+      const pubKey = await this.getPubKey();
+      await userWalletService.switchLogin(pubKey);
+    } catch (error) {
+      throw new Error('Failed to switch account: ' + (error.message || 'Unknown error'));
+    }
+  };
+
+  checkAvailableAccount = async (currentId: string) => {
+    try {
+      await keyringService.checkAvailableAccount(currentId);
+    } catch (error) {
+      console.error('Error finding available account:', error);
+      throw new Error('Failed to find available account: ' + (error.message || 'Unknown error'));
+    }
+  };
+
   unlock = async (password: string) => {
     await keyringService.submitPassword(password);
 
     // only password is correct then we store it
-    await passwordService.setPassword(password);
     const pubKey = await this.getPubKey();
     await userWalletService.switchLogin(pubKey);
     // Set up all the wallet data
@@ -174,8 +197,15 @@ export class WalletController extends BaseController {
     sessionService.broadcastEvent('unlock');
   };
 
+  submitPassword = async (password: string) => {
+    await keyringService.submitPassword(password);
+  };
+
   refreshWallets = async () => {
     // Refresh all the wallets after unlocking or switching profiles
+    // Refresh the cadence scripts first
+    await this.getCadenceScripts();
+    // Refresh the main address
     const mainAddress = await this.getMainAddress();
     // Refresh the EVM wallet
     await this.queryEvmAddress(mainAddress);
@@ -242,47 +272,32 @@ export class WalletController extends BaseController {
     }
 
     const isUnlocked = keyringService.memStore.getState().isUnlocked;
-    if (!isUnlocked) {
-      let password = '';
-      try {
-        // This uses google drive to decrypt the password
-        password = await passwordService.getPassword();
-      } catch {
-        password = '';
-      }
-      if (password && password.length > 0) {
-        try {
-          await this.unlock(password);
-          return keyringService.memStore.getState().isUnlocked;
-        } catch {
-          passwordService.clear();
-          return false;
-        }
-      }
-    }
     return isUnlocked;
   };
 
   lockWallet = async () => {
     await keyringService.setLocked();
-    await passwordService.clear();
     await userWalletService.signOutCurrentUser();
     await userWalletService.clear();
     sessionService.broadcastEvent('accountsChanged', []);
     sessionService.broadcastEvent('lock');
   };
 
+  signOutWallet = async () => {
+    await keyringService.updateKeyring();
+    await userWalletService.signOutCurrentUser();
+    await userWalletService.clear();
+    sessionService.broadcastEvent('accountsChanged', []);
+  };
+
   // lockadd here
   lockAdd = async () => {
     const switchingTo = 'mainnet';
 
-    const password = keyringService.getPassword();
-    await storage.set('tempPassword', password);
     await keyringService.setLocked();
-    await passwordService.clear();
     sessionService.broadcastEvent('accountsChanged', []);
     sessionService.broadcastEvent('lock');
-    openIndexPage('welcome');
+    openIndexPage('welcome?add=true');
     await this.switchNetwork(switchingTo);
   };
 
@@ -305,8 +320,6 @@ export class WalletController extends BaseController {
     await keyringService.resetKeyRing();
     await keyringService.setLocked();
 
-    await passwordService.clear();
-
     sessionService.broadcastEvent('accountsChanged', []);
     sessionService.broadcastEvent('lock');
     // Redirect to welcome so that users can import their account again
@@ -317,10 +330,7 @@ export class WalletController extends BaseController {
   restoreWallet = async () => {
     const switchingTo = 'mainnet';
 
-    const password = keyringService.getPassword();
-    await storage.set('tempPassword', password);
     await keyringService.setLocked();
-    await passwordService.clear();
 
     sessionService.broadcastEvent('accountsChanged', []);
     sessionService.broadcastEvent('lock');
@@ -670,7 +680,7 @@ export class WalletController extends BaseController {
 
   getTypedAccounts = async (type) => {
     return Promise.all(
-      keyringService.keyrings
+      keyringService.currentKeyring
         .filter((keyring) => !type || keyring.type === type)
         .map((keyring) => keyringService.displayForKeyring(keyring))
     );
@@ -1610,6 +1620,7 @@ export class WalletController extends BaseController {
 
     // Clear collections
     this.clearNFTCollection();
+    this.clearEvmNFTList();
     this.clearCoinList();
 
     // If switching main wallet, refresh the EVM wallet
@@ -2118,6 +2129,8 @@ export class WalletController extends BaseController {
         return '';
       }
     } catch (error) {
+      console.trace('queryEvmAddress error', address);
+
       console.error('Error querying the script or setting EVM address:', error);
       return '';
     }
@@ -3091,7 +3104,10 @@ export class WalletController extends BaseController {
 
     // setup fcl for the new network
     await userWalletService.setupFcl();
-    this.refreshAll();
+    await this.refreshAll();
+
+    // Reload everything
+    await this.refreshWallets();
 
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       if (!tabs || tabs.length === 0) {
@@ -3124,6 +3140,9 @@ export class WalletController extends BaseController {
   refreshAll = async () => {
     console.trace('refreshAll trace');
     console.log('refreshAll');
+    // Clear the active wallet if any
+    // If we don't do this, the user wallets will not be refreshed
+    userWalletService.setActiveWallet(null);
     await this.refreshUserWallets();
     this.clearNFT();
     this.refreshAddressBook();
