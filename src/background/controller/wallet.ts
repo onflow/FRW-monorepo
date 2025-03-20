@@ -2942,7 +2942,7 @@ export class WalletController extends BaseController {
   ): Promise<string> => {
     const shouldCoverBridgeFee = await openapiService.getFeatureFlag('cover_bridge_fee');
     const scriptName = shouldCoverBridgeFee
-      ? 'bridgeNftFromEvmToFlowWithPayer'
+      ? 'bridgeNFTFromEvmToFlowWithPayer'
       : 'bridgeNFTFromEvmToFlowV3';
     const script = await getScripts('bridge', scriptName);
 
