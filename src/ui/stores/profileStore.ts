@@ -1,15 +1,16 @@
 import { create } from 'zustand';
 
-import {
-  type LoggedInAccountWithIndex,
-  type LoggedInAccount,
-  type PubKeyAccount,
+import type {
+  LoggedInAccountWithIndex,
+  LoggedInAccount,
+  PubKeyAccount,
+  FlowAddress,
 } from '@/shared/types/wallet-types';
 
 import type { ChildAccount, WalletType, UserInfoResponse } from '../../shared/types/network-types';
 
 interface ProfileState {
-  mainAddress: string;
+  mainAddress: FlowAddress | null;
   evmAddress: string;
   currentWalletIndex: number;
   parentWallet: PubKeyAccount;
@@ -24,7 +25,7 @@ interface ProfileState {
   userInfo: UserInfoResponse | null;
   otherAccounts: LoggedInAccountWithIndex[];
   loggedInAccounts: LoggedInAccount[];
-  setMainAddress: (address: string) => void;
+  setMainAddress: (address: FlowAddress) => void;
   setEvmAddress: (address: string) => void;
   setCurrentWalletIndex: (index: number) => void;
   setParentWallet: (wallet: PubKeyAccount) => void;
@@ -66,7 +67,7 @@ const INITIAL_ACCOUNT: PubKeyAccount = {
 };
 
 export const useProfileStore = create<ProfileState>((set) => ({
-  mainAddress: '',
+  mainAddress: null,
   evmAddress: '',
   currentWalletIndex: 0,
   parentWallet: { ...INITIAL_ACCOUNT },
@@ -98,7 +99,7 @@ export const useProfileStore = create<ProfileState>((set) => ({
   setListLoading: (listLoading) => set({ listLoading: listLoading }),
   clearProfileData: () =>
     set({
-      mainAddress: '',
+      mainAddress: null,
       evmAddress: '',
       currentWalletIndex: 0,
       parentWallet: { ...INITIAL_ACCOUNT },

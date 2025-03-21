@@ -7,7 +7,7 @@ import { useProfiles } from './useProfileHook';
 
 export const useInitHook = () => {
   const walletLoaded = useWalletLoaded();
-  const { fetchProfileData, freshUserWallet, fetchUserWallet } = useProfiles();
+  const { fetchProfileData } = useProfiles();
   const { refreshCoinData } = useCoins();
   const isInitializing = useRef(false);
 
@@ -19,18 +19,13 @@ export const useInitHook = () => {
 
     try {
       isInitializing.current = true;
-      console.log('Starting store initialization');
 
       await fetchProfileData();
-      await freshUserWallet();
-      await fetchUserWallet();
       await refreshCoinData();
-
-      console.log('Store initialization complete');
     } finally {
       isInitializing.current = false;
     }
-  }, [fetchProfileData, freshUserWallet, fetchUserWallet, refreshCoinData, walletLoaded]);
+  }, [fetchProfileData, refreshCoinData, walletLoaded]);
 
   return { initializeStore };
 };

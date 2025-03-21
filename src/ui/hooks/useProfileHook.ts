@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef } from 'react';
 
+import storage from '@/background/webapi/storage';
 import type {
   ChildAccount,
   BlockchainResponse,
   WalletResponse,
 } from '@/shared/types/network-types';
-import { type FlowAddress, type PubKeyAccount } from '@/shared/types/wallet-types';
+import { UserWalletStore, type FlowAddress, type PubKeyAccount } from '@/shared/types/wallet-types';
 import { ensureEvmAddressPrefix, withPrefix } from '@/shared/utils/address';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
@@ -61,9 +62,7 @@ export const useProfiles = () => {
    * Used by freshUserWallet to standardize wallet display format
    */
   const formatWallets = useCallback((data: PubKeyAccount[]) => {
-    console.log('formatWallets called with:', data);
     if (!Array.isArray(data)) {
-      console.log('Data is not an array, returning empty array');
       return [];
     }
 
@@ -75,7 +74,6 @@ export const useProfiles = () => {
       icon: wallet.icon || '',
       color: wallet.color || '',
     }));
-    console.log('Formatted wallets:', result);
     return result;
   }, []);
 
@@ -87,16 +85,13 @@ export const useProfiles = () => {
    */
   const setupEvmWallet = useCallback(
     async (mainAddress: FlowAddress) => {
-      console.log('Setting up EVM wallet for:', mainAddress);
       try {
         const [evmRes, emoji] = await Promise.all([
           usewallet.queryEvmAddress(mainAddress),
           usewallet.getEmoji(),
         ]);
-        console.log('EVM setup responses:', { evmRes, emoji });
 
         const evmAddress = ensureEvmAddressPrefix(evmRes!);
-        console.log('Formatted EVM address:', evmAddress);
 
         const evmWalletData: PubKeyAccount = {
           name: emoji[9].name,
@@ -111,164 +106,108 @@ export const useProfiles = () => {
           sigAlgo: 'ECDSA_P256',
           hashAlgo: 'SHA3_256',
         };
-        console.log('Created EVM wallet data:', evmWalletData);
 
         await Promise.all([setEvmWallet(evmWalletData), setEvmAddress(evmAddress)]);
         setEvmLoading(false);
-        console.log('EVM wallet state updated');
 
         return evmWalletData;
       } catch (error) {
-        console.error('Error setting up EVM wallet:', error);
         throw error;
       }
     },
     [usewallet, network, setEvmWallet, setEvmAddress, setEvmLoading]
   );
 
-  /**
-   * Refreshes all user information including wallet data and account details
-   * Core function that updates user's wallet state and related information
-   * Called by fetchUserWallet during profile updates
-   */
-  const freshUserInfo = useCallback(async () => {
-    console.log('Starting freshUserInfo');
-    if (!usewallet || !walletLoaded) return;
-
-    try {
-      const parentAddress = await usewallet.getParentAddress();
-      console.log('Parent address:', parentAddress);
-      if (!parentAddress) return;
-
-      const [currentWallet, isChild, mainAddress] = await Promise.all([
-        usewallet.getCurrentWallet(),
-        usewallet.getActiveWallet(),
-        usewallet.getMainAddress(),
-      ]);
-      console.log('Current wallet info:', { currentWallet, isChild, mainAddress });
-
-      if (!currentWallet || !mainAddress) return;
-
-      const mainwallet = await usewallet.returnParentWallet();
-      setParentWallet(mainwallet!);
-      console.log('Parent wallet set:', mainwallet);
-
-      await setCurrent(currentWallet);
-
-      const [keys, pubKTuple] = await Promise.all([usewallet.getAccount(), usewallet.getPubKey()]);
-      console.log('Account keys retrieved');
-
-      const walletData = await retryOperation(() => usewallet.getUserInfo(true), 3, 1000);
-      console.log('Wallet data retrieved:', walletData);
-
-      const { otherAccounts, wallet, loggedInAccounts } = await usewallet.openapi.freshUserInfo(
-        mainAddress,
-        keys,
-        pubKTuple,
-        walletData,
-        isChild
-      );
-      console.log('Fresh user info retrieved:', { otherAccounts, wallet, loggedInAccounts });
-
-      await Promise.all([
-        setOtherAccounts(otherAccounts),
-        setUserInfo(wallet),
-        setLoggedInAccounts(loggedInAccounts),
-      ]);
-      console.log('User info states updated');
-    } catch (error) {
-      console.error('Error in freshUserInfo:', error);
-    } finally {
-      setMainLoading(false);
-      console.log('Main loading set to false');
-    }
-  }, [
-    usewallet,
-    walletLoaded,
-    setLoggedInAccounts,
-    setOtherAccounts,
-    setUserInfo,
-    setCurrent,
-    setMainLoading,
-    setParentWallet,
-  ]);
-
-  /**
-   * First function called in profile initialization
-   * Fetches and sets up initial profile data including main address and EVM wallet
-   */
   const fetchProfileData = useCallback(async () => {
-    if (profilesRef.current.loading) {
+    if (profilesRef.current.loading || !usewallet || !walletLoaded) {
       return;
     }
 
     try {
       profilesRef.current.loading = true;
-      console.log('Starting fetchProfileData');
-      if (!usewallet || !walletLoaded) return;
-      try {
-        const mainAddress = await usewallet.getMainAddress();
-        console.log('Fetched main address:', mainAddress);
-        if (mainAddress) {
-          console.log('Setting main address');
-          setMainAddress(mainAddress);
-          console.log('Setting up EVM wallet');
-          await setupEvmWallet(mainAddress);
+      const mainAddress = await usewallet.getMainAddress();
+      if (mainAddress) {
+        setMainAddress(mainAddress);
+        await setupEvmWallet(mainAddress);
+
+        const childresp: ChildAccount = await usewallet.checkUserChildAccount();
+        setChildAccount(childresp);
+
+        const parentAddress = await usewallet.getParentAddress();
+        if (parentAddress) {
+          const [currentWallet, isChild] = await Promise.all([
+            usewallet.getCurrentWallet(),
+            usewallet.getActiveWallet(),
+          ]);
+
+          if (currentWallet) {
+            const mainwallet = await usewallet.returnParentWallet();
+            setParentWallet(mainwallet!);
+            await setCurrent(currentWallet);
+
+            const [keys, pubKTuple] = await Promise.all([
+              usewallet.getAccount(),
+              usewallet.getPubKey(),
+            ]);
+
+            const walletData = await retryOperation(() => usewallet.getUserInfo(true), 3, 1000);
+
+            const { otherAccounts, wallet, loggedInAccounts } =
+              await usewallet.openapi.freshUserInfo(
+                parentAddress,
+                keys,
+                pubKTuple,
+                walletData,
+                isChild
+              );
+
+            await Promise.all([
+              setOtherAccounts(otherAccounts),
+              setUserInfo(wallet),
+              setLoggedInAccounts(loggedInAccounts),
+            ]);
+          }
         }
-      } catch (err) {
-        console.error('fetchProfileData err', err);
-      } finally {
-        profilesRef.current.loading = false;
       }
+
+      const wallets = await usewallet.getUserWallets();
+      if (!wallets) {
+        throw new Error('No wallets found');
+      }
+
+      if (initialStart) {
+        await usewallet.openapi.putDeviceInfo(wallets);
+        setInitial(false);
+      }
+
+      const formattedWallets = formatWallets(wallets);
+      setWalletList(formattedWallets);
     } catch (error) {
       console.error('Error in fetchProfileData:', error);
+    } finally {
+      setMainLoading(false);
+      profilesRef.current.loading = false;
     }
-  }, [usewallet, setMainAddress, setupEvmWallet, walletLoaded]);
-
-  /**
-   * Second function called in profile initialization
-   * Retrieves and formats all user wallets for the current network
-   */
-  const freshUserWallet = useCallback(async () => {
-    console.log('Starting freshUserWallet');
-    if (!usewallet || !walletLoaded) return;
-    const wallet = await usewallet.getUserWallets();
-    console.log('User wallets:', wallet);
-    if (!wallet) {
-      throw new Error('No wallet found');
-    }
-    const fData = wallet.filter((item) => item.address !== null);
-    console.log('Filtered wallet data:', fData);
-
-    if (initialStart) {
-      console.log('Initial start, updating device info');
-      await usewallet.openapi.putDeviceInfo(fData);
-      setInitial(false);
-    }
-    const formattedWallets = formatWallets(fData);
-    console.log('Setting wallet list:', formattedWallets);
-    setWalletList(formattedWallets);
-  }, [usewallet, initialStart, setInitial, formatWallets, setWalletList, walletLoaded]);
-
-  /**
-   * Third function called in profile initialization
-   * Checks for child accounts and updates wallet information
-   */
-  const fetchUserWallet = useCallback(async () => {
-    console.log('Starting fetchUserWallet');
-    if (!usewallet || !walletLoaded) return;
-    console.log('Refreshing user info');
-    freshUserInfo();
-    console.log('Checking child account');
-    const childresp: ChildAccount = await usewallet.checkUserChildAccount();
-    console.log('Child account response:', childresp);
-    setChildAccount(childresp);
-  }, [freshUserInfo, usewallet, setChildAccount, walletLoaded]);
+  }, [
+    usewallet,
+    walletLoaded,
+    setMainAddress,
+    setupEvmWallet,
+    initialStart,
+    setInitial,
+    formatWallets,
+    setWalletList,
+    setChildAccount,
+    setCurrent,
+    setMainLoading,
+    setOtherAccounts,
+    setParentWallet,
+    setUserInfo,
+    setLoggedInAccounts,
+  ]);
 
   return {
     fetchProfileData,
-    freshUserWallet,
-    fetchUserWallet,
     clearProfileData,
     initialStart,
     currentWallet,

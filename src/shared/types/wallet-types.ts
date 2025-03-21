@@ -82,3 +82,20 @@ export type Emoji = {
   name: string;
   bgcolor: string;
 };
+
+export type UserWalletStore = {
+  accounts: {
+    mainnet: PublicKeyAccounts[];
+    testnet: PublicKeyAccounts[];
+  };
+  network: string;
+  monitor: string;
+  activeChild: ActiveChildType;
+  evmEnabled: boolean;
+  emulatorMode: boolean;
+
+  currentPubkey: string;
+  currentAddress: string;
+  parentAddress: string;
+  currentEvmAddress: string | null;
+};

@@ -17,18 +17,19 @@ import {
   type FlowAddress,
   type EvmAddress,
   type Emoji,
+  type PublicKeyAccounts,
+  type PubKeyAccount,
+  type UserWalletStore,
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress, isValidFlowAddress, withPrefix } from '@/shared/utils/address';
 import { getHashAlgo, getSignAlgo } from '@/shared/utils/algo';
 
 import type {
-  WalletResponse,
   BlockchainResponse,
   ChildAccount,
   DeviceInfoRequest,
   FlowNetwork,
 } from '../../shared/types/network-types';
-import { type PublicKeyAccounts, type PubKeyAccount } from '../../shared/types/wallet-types';
 import { fclConfig } from '../fclConfig';
 import {
   findAddressWithSeed,
@@ -36,23 +37,6 @@ import {
   findAddressWithNetwork,
 } from '../utils/modules/findAddressWithPK';
 import { storage } from '../webapi';
-
-interface UserWalletStore {
-  accounts: {
-    mainnet: PublicKeyAccounts[];
-    testnet: PublicKeyAccounts[];
-  };
-  network: string;
-  monitor: string;
-  activeChild: ActiveChildType;
-  evmEnabled: boolean;
-  emulatorMode: boolean;
-
-  currentPubkey: string;
-  currentAddress: string;
-  parentAddress: string;
-  currentEvmAddress: string | null;
-}
 
 const USER_WALLET_TEMPLATE: UserWalletStore = {
   accounts: {

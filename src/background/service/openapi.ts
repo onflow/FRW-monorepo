@@ -24,6 +24,7 @@ import {
   type LoggedInAccount,
   type FlowAddress,
   type ActiveChildType,
+  type PubKeyAccount,
 } from '@/shared/types/wallet-types';
 import { isValidFlowAddress, isValidEthereumAddress } from '@/shared/utils/address';
 import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
@@ -1779,16 +1780,14 @@ class OpenApiService {
     return data;
   };
 
-  putDeviceInfo = async (walletData) => {
+  putDeviceInfo = async (walletData: PubKeyAccount[]) => {
     try {
-      const testnetId = walletData.find((item) => item.chain_id === 'testnet')?.id;
-      const mainnetId = walletData.find((item) => item.chain_id === 'mainnet')?.id;
       const installationId = await this.getInstallationId();
       // console.log('location ', userlocation);
 
       await this.addDevice({
-        wallet_id: mainnetId ? mainnetId.toString() : '',
-        wallettest_id: testnetId ? testnetId.toString() : '',
+        wallet_id: '',
+        wallettest_id: '',
         device_info: {
           device_id: installationId,
           district: '',
