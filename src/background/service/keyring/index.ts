@@ -62,6 +62,7 @@ interface VaultEntry {
 }
 
 export type KeyringType = 'HD Key Tree' | 'Simple Key Pair';
+export type Keyring = SimpleKeyring | HDKeyring;
 
 interface KeyringData {
   0: {
@@ -76,47 +77,6 @@ interface KeyringData {
   };
   id: string;
 }
-
-interface HDWallet {
-  provider: null;
-  address: string;
-  publicKey: string;
-  fingerprint: string;
-  parentFingerprint: string;
-  mnemonic: {
-    phrase: string;
-    password: string;
-    wordlist: {
-      locale: string;
-    };
-    entropy: string;
-  };
-  chainCode: string;
-  path: string;
-  index: number;
-  depth: number;
-}
-
-interface SimpleKeyPairWallet {
-  privateKey: {
-    type: 'Buffer';
-    data: number[];
-  };
-}
-
-type Keyring = SimpleKeyring | HDKeyring;
-
-// interface Keyring {
-//   type: KeyringType;
-//   hdWallet?: HDWallet;
-//   wallets?: SimpleKeyPairWallet[];
-//   mnemonic?: string;
-//   activeIndexes?: number[];
-//   getAccounts(): Promise<string[]>;
-//   addAccounts(n: number): Promise<string[]>;
-//   removeAccount(address: string, brand?: string): void;
-//   serialize(): Promise<any>;
-// }
 
 class SimpleStore<T> {
   private state: T;

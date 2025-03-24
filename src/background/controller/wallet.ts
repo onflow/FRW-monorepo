@@ -33,10 +33,10 @@ import { type TransferItem, type TransactionState } from '@/shared/types/transac
 import {
   type ActiveChildType,
   type LoggedInAccount,
-  type PubKeyAccount,
+  type MainAccount,
   type FlowAddress,
   type EvmAddress,
-  type PublicKeyAccounts,
+  type BlockchainProfile,
 } from '@/shared/types/wallet-types';
 import {
   ensureEvmAddressPrefix,
@@ -68,7 +68,12 @@ import {
   evmNftService,
 } from 'background/service';
 import i18n from 'background/service/i18n';
-import { type DisplayedKeryring, KEYRING_CLASS } from 'background/service/keyring';
+import {
+  type DisplayedKeryring,
+  type Keyring,
+  KEYRING_CLASS,
+  type KeyringType,
+} from 'background/service/keyring';
 import type { CacheState } from 'background/service/pageStateCache';
 import { getScripts, replaceNftKeywords } from 'background/utils';
 import emoji from 'background/utils/emoji.json';
@@ -88,6 +93,8 @@ import type {
 import placeholder from '../images/placeholder.png';
 import { type CoinItem } from '../service/coinList';
 import DisplayKeyring from '../service/keyring/display';
+import { HDKeyring } from '../service/keyring/hdKeyring';
+import { SimpleKeyring } from '../service/keyring/simpleKeyring';
 import type { ConnectedSite } from '../service/permission';
 import type { PreferenceAccount } from '../service/preference';
 import { type EvaluateStorageResult, StorageEvaluator } from '../service/storage-evaluator';
@@ -98,15 +105,6 @@ import { getLoggedInAccount } from '../utils/getLoggedInAccount';
 
 import BaseController from './base';
 import provider from './provider';
-interface Keyring {
-  type: string;
-  getAccounts(): Promise<string[]>;
-  getAccountsWithBrand?(): Promise<{ address: string; brandName: string }[]>;
-  setHdPath?(path: string): void;
-  unlock?(): Promise<void>;
-  useWebUSB?(isWebUSB: boolean): void;
-  mnemonic?: string;
-}
 
 const stashKeyrings: Record<string, Keyring> = {};
 
@@ -253,6 +251,7 @@ export class WalletController extends BaseController {
     return pk;
   };
 
+  // This is not used anymore
   extractKeys = (keyrings) => {
     let privateKeyHex, publicKeyHex;
 
@@ -464,7 +463,7 @@ export class WalletController extends BaseController {
     const keyrings = await this.getKeyrings(password || '');
 
     for (const keyring of keyrings) {
-      if (keyring.mnemonic) {
+      if (keyring.type === 'HD Key Tree') {
         const mnemonic = await this.getMnemonics(password || '');
         const seed = await seed2PubKey(mnemonic);
         const PK1 = seed.P256.pk;
@@ -520,8 +519,13 @@ export class WalletController extends BaseController {
         }
 
         break;
-      } else if (keyring.wallets && keyring.wallets.length > 0 && keyring.wallets[0].privateKey) {
-        privateKey = keyrings[0].wallets[0].privateKey.toString('hex');
+      } else if (
+        keyring instanceof SimpleKeyring &&
+        keyring.wallets &&
+        keyring.wallets.length > 0 &&
+        keyring.wallets[0].privateKey
+      ) {
+        privateKey = keyring.wallets[0].privateKey.toString('hex');
         break;
       }
     }
@@ -533,32 +537,42 @@ export class WalletController extends BaseController {
   };
 
   getPubKey = async () => {
-    let privateKey;
-    let pubKTuple;
-    const keyrings = await keyringService.getKeyring();
+    let privateKey: string | undefined;
+    let pubKTuple: { P256: { pubK: string }; SECP256K1: { pubK: string } } | undefined = undefined;
+    const keyrings: Keyring[] = await keyringService.getKeyring();
     for (const keyring of keyrings) {
-      if (keyring.type === 'Simple Key Pair') {
+      if (keyring instanceof SimpleKeyring) {
         // If a private key is found, extract it and break the loop
         privateKey = keyring.wallets[0].privateKey.toString('hex');
-        pubKTuple = await pk2PubKey(privateKey);
-        break;
-      } else if (keyring.activeIndexes[0] === 1) {
-        // If publicKey is found, extract it and break the loop
+        if (privateKey) {
+          pubKTuple = await pk2PubKey(privateKey);
+          break;
+        }
+      } else if (keyring instanceof HDKeyring) {
+        // Get a copy of the serialized data
         const serialized = await keyring.serialize();
-        const publicKey = serialized.publicKey;
-        pubKTuple = await formPubKey(publicKey);
-        break;
-      } else if (keyring.mnemonic) {
-        // If mnemonic is found, extract it and break the loop
-        const serialized = await keyring.serialize();
-        const mnemonic = serialized.mnemonic;
-        pubKTuple = await seed2PubKey(mnemonic);
-        break;
-      } else if (keyring.wallets && keyring.wallets.length > 0 && keyring.wallets[0].privateKey) {
+        if (serialized.activeIndexes[0] === 1) {
+          // If publicKey is found, extract it and break the loop
+          const publicKey = serialized.publicKey;
+          pubKTuple = await formPubKey(publicKey);
+          break;
+        } else if (serialized.mnemonic) {
+          // If mnemonic is found, extract it and break the loop
+          const mnemonic = serialized.mnemonic;
+          pubKTuple = await seed2PubKey(mnemonic);
+          break;
+        }
+      } else if (
+        (keyring as any).wallets &&
+        (keyring as any).wallets.length > 0 &&
+        (keyring as any).wallets[0].privateKey
+      ) {
         // If a private key is found, extract it and break the loop
-        privateKey = keyring.wallets[0].privateKey.toString('hex');
-        pubKTuple = await pk2PubKey(privateKey);
-        break;
+        privateKey = (keyring as any).wallets[0].privateKey.toString('hex');
+        if (privateKey) {
+          pubKTuple = await pk2PubKey(privateKey);
+          break;
+        }
       }
     }
 
@@ -738,7 +752,7 @@ export class WalletController extends BaseController {
     needUnlock = false,
     isWebUSB = false,
   }: {
-    type: string;
+    type: KeyringType;
     hdPath?: string;
     needUnlock?: boolean;
     isWebUSB?: boolean;
@@ -749,6 +763,9 @@ export class WalletController extends BaseController {
       keyring = this._getKeyringByType(type);
     } catch {
       const Keyring = keyringService.getKeyringClassForType(type);
+      if (!Keyring) {
+        throw new Error(`No keyring class found for type: ${type}`);
+      }
       keyring = new Keyring();
       stashKeyringId = Object.values(stashKeyrings).length;
       stashKeyrings[stashKeyringId] = keyring;
@@ -800,6 +817,9 @@ export class WalletController extends BaseController {
         keyring = this._getKeyringByType(type);
       } catch {
         const Keyring = keyringService.getKeyringClassForType(type);
+        if (!Keyring) {
+          throw new Error(`No keyring class found for type: ${type}`);
+        }
         keyring = new Keyring();
       }
     }
@@ -1515,7 +1535,7 @@ export class WalletController extends BaseController {
 
   //user wallets
   // TODO: Move this to userWalletService
-  refreshUserWallets = async (): Promise<PublicKeyAccounts[] | null> => {
+  refreshUserWallets = async (): Promise<BlockchainProfile[] | null> => {
     const network = await this.getNetwork();
 
     const pubKey = await this.getPubKey();
@@ -1527,7 +1547,7 @@ export class WalletController extends BaseController {
 
     const active = await userWalletService.getActiveWallet();
     if (!active) {
-      const cleanAddresses: PubKeyAccount[] = address.map(({ pk, ...rest }) => rest);
+      const cleanAddresses: MainAccount[] = address.map(({ pk, ...rest }) => rest);
 
       const currentAccount = await userWalletService.setUserAccounts(
         cleanAddresses,
@@ -1543,7 +1563,7 @@ export class WalletController extends BaseController {
     return null;
   };
 
-  getUserWallets = async (): Promise<PubKeyAccount[] | null> => {
+  getUserWallets = async (): Promise<MainAccount[] | null> => {
     const network = await this.getNetwork();
     const wallets = await userWalletService.getUserWallets(network);
     if (!wallets) {
@@ -1599,7 +1619,7 @@ export class WalletController extends BaseController {
     return wallet?.address !== '';
   };
 
-  getCurrentWallet = async (): Promise<PubKeyAccount | undefined> => {
+  getCurrentWallet = async (): Promise<MainAccount | undefined> => {
     if (!this.isBooted() || userWalletService.isLocked()) {
       return;
     }
