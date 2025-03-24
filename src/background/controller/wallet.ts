@@ -1318,7 +1318,7 @@ export class WalletController extends BaseController {
     });
 
     const coinWithCustom = await customToken(coins, evmCustomToken);
-    coinWithCustom.map((coin) => coinListService.addCoin(coin, network, 'evm'));
+    coinListService.addCoins(coinWithCustom, network, 'evm');
     return coinWithCustom;
   };
 

@@ -2,7 +2,8 @@ import BN from 'bignumber.js';
 import { useCallback, useEffect, useState, useRef } from 'react';
 
 import storage, { type AreaName, type StorageChange } from '@/background/webapi/storage';
-import { withPrefix } from '@/shared/utils/address';
+import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
+import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useCoinStore } from '@/ui/stores/coinStore';
 import { debug } from '@/ui/utils';
@@ -12,7 +13,8 @@ const DEFAULT_MIN_AMOUNT = '0.001';
 export const useCoins = () => {
   const usewallet = useWallet();
   const walletLoaded = useWalletLoaded();
-  const { mainAddress } = useProfiles();
+  const { mainAddress, currentWallet } = useProfiles();
+  const { network } = useNetwork();
 
   const [coinsLoaded, setCoinsLoaded] = useState(false);
   const refreshInProgressRef = useRef(false);
@@ -35,7 +37,14 @@ export const useCoins = () => {
   const availableFlow = useCoinStore((state) => state.availableFlow);
 
   const handleStorageData = useCallback(
-    async (storageData) => {
+    async (data) => {
+      const storageData = data.sort((a, b) => {
+        if (b.total === a.total) {
+          return new BN(b.balance).minus(new BN(a.balance)).toNumber();
+        } else {
+          return new BN(b.total).minus(new BN(a.total)).toNumber();
+        }
+      });
       if (!storageData) return;
 
       // Create a map for faster lookups
@@ -71,35 +80,25 @@ export const useCoins = () => {
     [setCoinData, setTotalFlow, setBalance]
   );
 
-  const sortWallet = useCallback(
-    (data) => {
-      console.log('sortWallet', data);
-      const sorted = data.sort((a, b) => {
-        if (b.total === a.total) {
-          return new BN(b.balance).minus(new BN(a.balance)).toNumber();
-        } else {
-          return new BN(b.total).minus(new BN(a.total)).toNumber();
-        }
-      });
-      handleStorageData(sorted);
-    },
-    [handleStorageData]
-  );
-
   // Setup localStorage event listener
   useEffect(() => {
     // Function to check pending transactions
     const checkCoinList = async () => {
       try {
         const coinList = await storage.get('coinList');
+        const userWallet = await storage.get('userWallets');
         // check for nettwork type
-        const refreshedCoinlist = coinList.coinItem['mainnet'];
-        console.log('refreshedCoinlist', refreshedCoinlist);
+        let refreshedCoinlist;
+
+        if (isValidEthereumAddress(userWallet.currentAddress)) {
+          refreshedCoinlist = coinList['evm'][network];
+        } else {
+          refreshedCoinlist = coinList['coinItem'][network];
+        }
         if (Array.isArray(refreshedCoinlist) && refreshedCoinlist.length > 0) {
-          sortWallet(refreshedCoinlist);
+          handleStorageData(refreshedCoinlist);
           setCoinsLoaded(true);
         }
-        console.log('coinList', coinList);
       } catch (error) {
         console.error('Error checking pending transactions:', error);
       }
@@ -125,7 +124,7 @@ export const useCoins = () => {
       mountedRef.current = false;
       storage.removeStorageListener(handleStorageChange);
     };
-  }, [usewallet, sortWallet]);
+  }, [usewallet, network, handleStorageData]);
 
   const calculateAvailableBalance = useCallback(async () => {
     // Prevent concurrent calculations and duplicate calculations

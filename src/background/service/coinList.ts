@@ -59,7 +59,7 @@ class CoinList {
 
   addCoin = (data: CoinItem, network: string, listType = 'coinItem') => {
     if (this.store[listType][network] === undefined) {
-      this.store[listType][network] = {};
+      this.store[listType][network] = [];
     }
     this.store[listType][network][data.unit] = data;
   };
