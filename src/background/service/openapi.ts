@@ -14,10 +14,10 @@ import {
   type User,
 } from 'firebase/auth/web-extension';
 import { getInstallations, getId } from 'firebase/installations';
-import type { TokenInfo } from 'flow-native-token-registry';
 import log from 'loglevel';
 
 import { storage } from '@/background/webapi';
+import { type TokenInfo } from '@/shared/types/coin-types';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
 import {
   type LoggedInAccountWithIndex,

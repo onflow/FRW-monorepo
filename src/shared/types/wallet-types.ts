@@ -13,18 +13,6 @@ export type WalletAddress = EvmAddress | FlowAddress;
 // ActiveChildType is the type of the active child in the wallet. It can be 'evm', a FlowAddress, or null.
 export type ActiveChildType = 'evm' | FlowAddress | null;
 
-export interface CoinItem {
-  coin: string;
-  unit: string;
-  balance: string;
-  availableBalance?: string;
-  price: number;
-  change24h: number | null;
-  total: number;
-  icon: string;
-  custom?: boolean;
-}
-
 export type LoggedInAccount = {
   // The globally unique id of the account
   id: string;

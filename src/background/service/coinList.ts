@@ -1,16 +1,6 @@
+import { type CoinItem } from '@/shared/types/coin-types';
 import { createPersistStore } from 'background/utils';
 import { storage } from 'background/webapi';
-export interface CoinItem {
-  coin: string;
-  unit: string;
-  balance: string; // Should be a fixed point number with the correct number of decimals
-  availableBalance?: string; // Should be a fixed point number with the correct number of decimals
-  price: number; // This can be a number as it can fluctuate quite a bit
-  change24h: number | null;
-  total: number; // This can be a number as it can fluctuate quite a bit
-  icon: string;
-  custom?: boolean;
-}
 
 interface CoinListStore {
   expiry: number;
@@ -21,27 +11,38 @@ interface CoinListStore {
 
 const now = new Date();
 
+const COINLIST_TEMPLATE: CoinListStore = {
+  expiry: now.getTime(),
+  coinItem: {
+    testnet: [],
+    crescendo: [],
+    mainnet: [],
+  },
+  evm: {
+    testnet: [],
+    crescendo: [],
+    mainnet: [],
+  },
+  currentCoin: 'flow',
+};
 class CoinList {
   store!: CoinListStore;
 
   init = async () => {
+    console.log('init coinList');
     this.store = await createPersistStore<CoinListStore>({
       name: 'coinList',
-      template: {
-        expiry: now.getTime(),
-        coinItem: {
-          testnet: {},
-          crescendo: {},
-          mainnet: {},
-        },
-        evm: {
-          testnet: {},
-          crescendo: {},
-          mainnet: {},
-        },
-        currentCoin: 'flow',
-      },
+      template: COINLIST_TEMPLATE,
     });
+  };
+
+  clear = async () => {
+    console.log('clear coinList ----------------------');
+    if (!this.store) {
+      await this.init();
+    } else {
+      Object.assign(this.store, COINLIST_TEMPLATE);
+    }
   };
 
   getCoinByUnit = (unit: string) => {
@@ -64,15 +65,16 @@ class CoinList {
   };
 
   addCoins = (coins: CoinItem[], network: string, listType = 'coinItem') => {
-    if (coins.length === 0) {
-      this.store[listType][network] = {};
-      return;
-    }
-    this.store[listType][network] = {};
+    const newNetworkData = [...coins];
 
-    coins.forEach((coin) => {
-      this.store[listType][network][coin.unit] = coin;
-    });
+    const updatedListType = { ...this.store[listType] };
+    updatedListType[network] = newNetworkData;
+
+    this.store[listType] = updatedListType;
+
+    storage.set('coinList', this.store);
+
+    console.log('addCoins - after update', this.store, coins, network, listType);
   };
 
   removeCoin = (unit: string, network: string, listType = 'coinItem') => {
@@ -81,16 +83,6 @@ class CoinList {
 
   updateCoin = (network: string, data: CoinItem, listType = 'coinItem') => {
     this.store[listType][network][data.unit] = data;
-  };
-
-  clear = () => {
-    this.store = {
-      expiry: now.getTime(),
-      coinItem: {},
-      evm: {},
-      currentCoin: 'flow',
-    };
-    storage.remove('coinList');
   };
 
   setCurrentCoin = (coinName: string) => {
@@ -103,6 +95,11 @@ class CoinList {
     if (!this.store[listType] || !this.store[listType][network]) {
       return [];
     }
+
+    if (Array.isArray(this.store[listType][network])) {
+      return this.store[listType][network];
+    }
+
     const list = Object.values(this.store[listType][network]);
     return list.filter((item): item is CoinItem => !!item) || [];
   };

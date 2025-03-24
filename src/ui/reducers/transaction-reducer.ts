@@ -1,6 +1,7 @@
 import BN from 'bignumber.js';
 import type { TokenInfo } from 'flow-native-token-registry';
 
+import { type CoinItem } from '@/shared/types/coin-types';
 import { type Contact } from '@/shared/types/network-types';
 import type {
   NetworkType,
@@ -8,7 +9,7 @@ import type {
   TransactionState,
   TransactionStateString,
 } from '@/shared/types/transaction-types';
-import { type CoinItem, type WalletAddress } from '@/shared/types/wallet-types';
+import { type WalletAddress } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 
 import { trimDecimalAmount } from '../../shared/utils/number';

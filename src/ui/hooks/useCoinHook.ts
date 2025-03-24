@@ -1,6 +1,7 @@
 import BN from 'bignumber.js';
 import { useCallback, useEffect, useState, useRef } from 'react';
 
+import storage, { type AreaName, type StorageChange } from '@/background/webapi/storage';
 import { withPrefix } from '@/shared/utils/address';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useCoinStore } from '@/ui/stores/coinStore';
@@ -18,6 +19,7 @@ export const useCoins = () => {
   const calculationInProgressRef = useRef(false);
   const lastRefreshTimeRef = useRef(0);
   const lastTotalFlowRef = useRef('');
+  const mountedRef = useRef(true);
 
   // Action selectors
   const setCoinData = useCoinStore((state) => state.setCoinData);
@@ -35,7 +37,6 @@ export const useCoins = () => {
   const handleStorageData = useCallback(
     async (storageData) => {
       if (!storageData) return;
-      debug('useCoinHook', 'Processing storage data');
 
       // Create a map for faster lookups
       const uniqueTokenMap = new Map();
@@ -60,86 +61,19 @@ export const useCoins = () => {
         }
       }
 
-      debug('useCoinHook', 'Calculated balances', {
-        sum: sum.toString(),
-        flowBalance: flowBalance.toString(),
-      });
-
       // Batch updates
       await Promise.all([
         setCoinData(Array.from(uniqueTokenMap.values())),
         setTotalFlow(flowBalance.toString()),
         setBalance(`$ ${sum.toFixed(2)}`),
       ]);
-      debug('useCoinHook', 'Updated coin store');
     },
     [setCoinData, setTotalFlow, setBalance]
   );
 
-  const calculateAvailableBalance = useCallback(async () => {
-    // Prevent concurrent calculations and duplicate calculations
-    if (calculationInProgressRef.current) {
-      debug('useCoinHook', 'Calculation already in progress, skipping');
-      return;
-    }
-
-    if (lastTotalFlowRef.current === totalFlow) {
-      debug('useCoinHook', 'Total flow unchanged, skipping calculation');
-      return;
-    }
-
-    try {
-      calculationInProgressRef.current = true;
-      lastTotalFlowRef.current = totalFlow;
-
-      // Make sure the wallet is unlocked
-      if (!usewallet || !walletLoaded) {
-        debug('useCoinHook', 'Wallet not ready');
-        return;
-      }
-
-      if (!(await usewallet.isUnlocked())) {
-        debug('useCoinHook', 'Wallet is locked');
-        return;
-      }
-
-      if (!(await usewallet.getParentAddress())) {
-        debug('useCoinHook', 'No main wallet yet');
-        return;
-      }
-
-      if (!mainAddress) {
-        debug('useCoinHook', 'No main address available');
-        return;
-      }
-
-      const address = withPrefix(mainAddress) || '';
-      debug('Calculating available balance for', address);
-
-      // TODO: need a controller for this
-      const minAmount = new BN(
-        (await usewallet.openapi.getAccountMinFlow(address)) || DEFAULT_MIN_AMOUNT
-      );
-      const total = new BN(totalFlow);
-      const availableFlow = total.minus(minAmount).toString();
-      debug('useCoinHook', 'Available flow calculated', {
-        total: total.toString(),
-        minAmount: minAmount.toString(),
-        available: availableFlow,
-      });
-
-      setAvailableFlow(availableFlow);
-    } catch (error) {
-      console.error('Error calculating available balance:', error);
-      setAvailableFlow('0');
-    } finally {
-      calculationInProgressRef.current = false;
-    }
-  }, [usewallet, walletLoaded, totalFlow, mainAddress, setAvailableFlow]);
-
   const sortWallet = useCallback(
     (data) => {
-      debug('useCoinHook', 'Sorting wallet data');
+      console.log('sortWallet', data);
       const sorted = data.sort((a, b) => {
         if (b.total === a.total) {
           return new BN(b.balance).minus(new BN(a.balance)).toNumber();
@@ -152,22 +86,109 @@ export const useCoins = () => {
     [handleStorageData]
   );
 
+  // Setup localStorage event listener
+  useEffect(() => {
+    // Function to check pending transactions
+    const checkCoinList = async () => {
+      try {
+        const coinList = await storage.get('coinList');
+        // check for nettwork type
+        const refreshedCoinlist = coinList.coinItem['mainnet'];
+        console.log('refreshedCoinlist', refreshedCoinlist);
+        if (Array.isArray(refreshedCoinlist) && refreshedCoinlist.length > 0) {
+          sortWallet(refreshedCoinlist);
+          setCoinsLoaded(true);
+        }
+        console.log('coinList', coinList);
+      } catch (error) {
+        console.error('Error checking pending transactions:', error);
+      }
+    };
+
+    // Listen for storage events (when localStorage changes in other tabs)
+    const handleStorageChange = (
+      changes: { [key: string]: StorageChange },
+      namespace: AreaName
+    ) => {
+      if (namespace === 'local') {
+        if (changes['coinList'] || changes['coinList'] === null) {
+          debug('useCoinHook', 'useCoinHook storage changed, checking pending transactions');
+          checkCoinList();
+        }
+      }
+    };
+
+    storage.addStorageListener(handleStorageChange);
+
+    // Cleanup
+    return () => {
+      mountedRef.current = false;
+      storage.removeStorageListener(handleStorageChange);
+    };
+  }, [usewallet, sortWallet]);
+
+  const calculateAvailableBalance = useCallback(async () => {
+    // Prevent concurrent calculations and duplicate calculations
+    if (calculationInProgressRef.current) {
+      return;
+    }
+
+    if (lastTotalFlowRef.current === totalFlow) {
+      return;
+    }
+
+    try {
+      calculationInProgressRef.current = true;
+      lastTotalFlowRef.current = totalFlow;
+
+      // Make sure the wallet is unlocked
+      if (!usewallet || !walletLoaded) {
+        return;
+      }
+
+      if (!(await usewallet.isUnlocked())) {
+        return;
+      }
+
+      if (!(await usewallet.getParentAddress())) {
+        return;
+      }
+
+      if (!mainAddress) {
+        return;
+      }
+
+      const address = withPrefix(mainAddress) || '';
+
+      // TODO: need a controller for this
+      const minAmount = new BN(
+        (await usewallet.openapi.getAccountMinFlow(address)) || DEFAULT_MIN_AMOUNT
+      );
+      const total = new BN(totalFlow);
+      const availableFlow = total.minus(minAmount).toString();
+
+      setAvailableFlow(availableFlow);
+    } catch (error) {
+      console.error('Error calculating available balance:', error);
+      setAvailableFlow('0');
+    } finally {
+      calculationInProgressRef.current = false;
+    }
+  }, [usewallet, walletLoaded, totalFlow, mainAddress, setAvailableFlow]);
+
   const refreshCoinData = useCallback(async () => {
     // Prevent concurrent refreshes and throttle calls
     if (refreshInProgressRef.current) {
-      debug('useCoinHook', 'Refresh already in progress, skipping');
       return;
     }
 
     const now = Date.now();
     if (now - lastRefreshTimeRef.current < 5000) {
       // 5 second throttle
-      debug('useCoinHook', 'Refresh throttled, skipping');
       return;
     }
 
     if (!usewallet || !walletLoaded) {
-      debug('useCoinHook', 'Cannot refresh coin data - wallet not ready');
       return;
     }
 
@@ -177,44 +198,21 @@ export const useCoins = () => {
 
       // Make sure the wallet is unlocked
       if (!(await usewallet.isUnlocked())) {
-        debug('useCoinHook', 'Wallet is locked');
         return;
       }
 
       if (!(await usewallet.getParentAddress())) {
-        debug('useCoinHook', 'No main wallet yet');
         return;
       }
 
-      debug('useCoinHook', 'Refreshing coin list');
-      const refreshedCoinlist = await usewallet.refreshCoinList(60000);
-
-      if (Array.isArray(refreshedCoinlist) && refreshedCoinlist.length > 0) {
-        debug('useCoinHook', 'Refreshed coin list', { count: refreshedCoinlist.length });
-        sortWallet(refreshedCoinlist);
-        setCoinsLoaded(true);
-        debug('useCoinHook', 'Coins loaded successfully');
-      }
+      console.log('refreshedCoinlist');
+      await usewallet.refreshCoinList(60000);
     } catch (error) {
       console.error('Error refreshing coin data:', error);
     } finally {
       refreshInProgressRef.current = false;
     }
-  }, [usewallet, sortWallet, walletLoaded]);
-
-  // Initial load - only once when wallet is loaded
-  useEffect(() => {
-    let mounted = true;
-
-    if (usewallet && walletLoaded && !coinsLoaded && !refreshInProgressRef.current) {
-      debug('useCoinHook', 'Initial coin data refresh');
-      refreshCoinData();
-    }
-
-    return () => {
-      mounted = false;
-    };
-  }, [refreshCoinData, usewallet, walletLoaded, coinsLoaded]);
+  }, [usewallet, walletLoaded]);
 
   // Calculate available balance when totalFlow changes
   useEffect(() => {
@@ -226,7 +224,6 @@ export const useCoins = () => {
       !calculationInProgressRef.current &&
       lastTotalFlowRef.current !== totalFlow
     ) {
-      debug('useCoinHook', 'Total flow changed, recalculating available balance', { totalFlow });
       calculateAvailableBalance();
     }
 

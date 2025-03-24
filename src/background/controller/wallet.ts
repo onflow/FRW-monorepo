@@ -9,7 +9,6 @@ import { ethErrors } from 'eth-rpc-errors';
 import * as ethUtil from 'ethereumjs-util';
 import { getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth/web-extension';
-import type { TokenInfo } from 'flow-native-token-registry';
 import { encode } from 'rlp';
 import web3, { TransactionError, Web3 } from 'web3';
 
@@ -25,6 +24,7 @@ import {
   jsonToKey,
 } from '@/background/utils/modules/publicPrivateKey';
 import eventBus from '@/eventBus';
+import { type CoinItem, type TokenInfo } from '@/shared/types/coin-types';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
 import { ContactType } from '@/shared/types/network-types';
 import { type NFTCollectionData } from '@/shared/types/nft-types';
@@ -86,7 +86,6 @@ import type {
   WalletResponse,
 } from '../../shared/types/network-types';
 import placeholder from '../images/placeholder.png';
-import { type CoinItem } from '../service/coinList';
 import DisplayKeyring from '../service/keyring/display';
 import type { ConnectedSite } from '../service/permission';
 import type { PreferenceAccount } from '../service/preference';
@@ -1124,7 +1123,6 @@ export class WalletController extends BaseController {
 
       const address = await this.getCurrentAddress();
       const tokenList = await openapiService.getEnabledTokenList(network);
-
       let allBalanceMap;
       try {
         allBalanceMap = await openapiService.getTokenListBalance(address || '0x', tokenList);
@@ -1164,7 +1162,6 @@ export class WalletController extends BaseController {
         const tokenId = `A.${token.address.slice(2)}.${token.contractName}`;
 
         const isFlow = token.symbol.toLowerCase() === 'flow';
-
         return {
           coin: token.name,
           unit: token.symbol.toLowerCase(),
@@ -1182,6 +1179,25 @@ export class WalletController extends BaseController {
             allPrice[index] === null
               ? 0
               : this.currencyBalance(allBalanceMap[tokenId], allPrice[index].price.last),
+          chainId: token.chainId,
+          address: token.address,
+          contractName: token.contractName,
+          path: token.path
+            ? {
+                vault: token.path.vault,
+                receiver: token.path.receiver,
+                balance: token.path.balance,
+              }
+            : undefined,
+          symbol: token.symbol,
+          name: token.name,
+          description: token.description,
+          decimals: token.decimals,
+          logoURI: token.logoURI,
+          tags: token.tags,
+          evmAddress: token.evmAddress,
+          evm_address: token.evm_address, // Some tokens use this format instead of camelCase
+          flowAddress: token.flowAddress,
         };
       });
       coins.sort((a, b) => {
@@ -1195,6 +1211,7 @@ export class WalletController extends BaseController {
 
       // Add all coins at once
       if (signal.aborted) throw new Error('Operation aborted');
+
       coinListService.addCoins(coins, network);
       return coins;
     } catch (err) {
@@ -1202,81 +1219,6 @@ export class WalletController extends BaseController {
         console.error('refreshCoinList operation aborted.');
       } else {
         console.error('refreshCoinList encountered an error:', err);
-      }
-      throw err;
-    }
-  };
-
-  fetchBalance = async ({ signal } = { signal: new AbortController().signal }) => {
-    const network = await this.getNetwork();
-    const tokenList = await openapiService.getEnabledTokenList(network);
-    try {
-      const address = await this.getCurrentAddress();
-      let allBalanceMap;
-
-      try {
-        allBalanceMap = await openapiService.getTokenListBalance(address || '0x', tokenList);
-      } catch (error) {
-        console.error('Error fetching token list balance:', error);
-        throw new Error('Failed to fetch token list balance');
-      }
-
-      const data = await openapiService.getTokenPrices('pricesMap');
-
-      // Map over tokenList to get prices and handle errors individually
-      const pricesPromises = tokenList.map(async (token) => {
-        try {
-          return await this.tokenPrice(token.symbol, token.address, data, token.contractName);
-        } catch (error) {
-          console.error(`Error fetching price for token ${token.symbol}:`, error);
-          return null;
-        }
-      });
-
-      const pricesResults = await Promise.allSettled(pricesPromises);
-
-      // Extract fulfilled prices
-      const allPrice = pricesResults.map((result) =>
-        result.status === 'fulfilled' ? result.value : null
-      );
-
-      const coins = tokenList.map((token, index) => {
-        const tokenId = `A.${token.address.slice(2)}.${token.contractName}`;
-        return {
-          coin: token.name,
-          unit: token.symbol.toLowerCase(),
-          icon: token['logoURI'] || '',
-          // Keep the balance as a string to avoid precision loss
-          balance: allBalanceMap[tokenId],
-          price: allPrice[index] === null ? 0 : new BN(allPrice[index].price.last).toNumber(),
-          change24h:
-            allPrice[index] === null || !allPrice[index].price || !allPrice[index].price.change
-              ? 0
-              : new BN(allPrice[index].price.change.percentage).multipliedBy(100).toNumber(),
-          total:
-            allPrice[index] === null
-              ? 0
-              : this.currencyBalance(allBalanceMap[tokenId], allPrice[index].price.last),
-        };
-      });
-      coins.sort((a, b) => {
-        if (b.total === a.total) {
-          return new BN(b.balance).minus(new BN(a.balance)).toNumber();
-        } else {
-          return b.total - a.total;
-        }
-      });
-
-      // Add all coins at once
-      if (signal.aborted) throw new Error('Operation aborted');
-
-      coinListService.addCoins(coins, network);
-      return coins;
-    } catch (err) {
-      if (err.message === 'Operation aborted') {
-        console.log('fetchBalance operation aborted.');
-      } else {
-        console.error('fetchBalance encountered an error:', err);
       }
       throw err;
     }
