@@ -53,12 +53,10 @@ const EthConfirm = ({ params }: ConnectProps) => {
   const extractData = useCallback(
     async (obj) => {
       if (!obj) return;
-
+      const { method = '', data = [], session: { origin = '', name = '', icon = '' } = {} } = obj;
+      const params = { origin, name, icon, method, data };
+      setParams(params);
       try {
-        const { method = '', data = [], session: { origin = '', name = '', icon = '' } = {} } = obj;
-        const params = { origin, name, icon, method, data };
-        setParams(params);
-
         if (!data[0]?.data) return;
 
         const res = await usewallet.decodeEvmCall(data[0].data, data[0].to);
@@ -68,7 +66,6 @@ const EthConfirm = ({ params }: ConnectProps) => {
         }
       } catch (error) {
         console.error('Error extracting data:', error);
-        setParams({ origin: '', name: '', icon: '', method: '', data: [] });
       }
     },
     [usewallet]
