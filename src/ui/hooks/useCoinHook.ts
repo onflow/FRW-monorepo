@@ -2,10 +2,10 @@ import BN from 'bignumber.js';
 import { useCallback, useEffect, useState, useRef } from 'react';
 
 import storage, { type AreaName, type StorageChange } from '@/background/webapi/storage';
+import { type CoinItem } from '@/shared/types/coin-types';
 import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useCoinStore } from '@/ui/stores/coinStore';
 import { debug } from '@/ui/utils';
 import { useWallet, useWalletLoaded } from '@/ui/utils/WalletContext';
 const DEFAULT_MIN_AMOUNT = '0.001';
@@ -16,25 +16,18 @@ export const useCoins = () => {
   const { mainAddress, currentWallet } = useProfiles();
   const { network } = useNetwork();
 
-  const [coinsLoaded, setCoinsLoaded] = useState(false);
   const refreshInProgressRef = useRef(false);
   const calculationInProgressRef = useRef(false);
   const lastRefreshTimeRef = useRef(0);
   const lastTotalFlowRef = useRef('');
   const mountedRef = useRef(true);
 
-  // Action selectors
-  const setCoinData = useCoinStore((state) => state.setCoinData);
-  const setBalance = useCoinStore((state) => state.setBalance);
-  const setTotalFlow = useCoinStore((state) => state.setTotalFlow);
-  const setAvailableFlow = useCoinStore((state) => state.setAvailableFlow);
-  const clearCoins = useCoinStore((state) => state.clearCoins);
-
-  // State selectors
-  const coins = useCoinStore((state) => state.coins);
-  const balance = useCoinStore((state) => state.balance);
-  const totalFlow = useCoinStore((state) => state.totalFlow);
-  const availableFlow = useCoinStore((state) => state.availableFlow);
+  // Replace Zustand state with React state
+  const [coins, setCoins] = useState<CoinItem[]>([]);
+  const [balance, setBalance] = useState<string>('0');
+  const [totalFlow, setTotalFlow] = useState<string>('0');
+  const [availableFlow, setAvailableFlow] = useState<string>('0');
+  const [coinsLoaded, setCoinsLoaded] = useState(false);
 
   const handleStorageData = useCallback(
     async (data) => {
@@ -72,12 +65,12 @@ export const useCoins = () => {
 
       // Batch updates
       await Promise.all([
-        setCoinData(Array.from(uniqueTokenMap.values())),
+        setCoins(Array.from(uniqueTokenMap.values())),
         setTotalFlow(flowBalance.toString()),
         setBalance(`$ ${sum.toFixed(2)}`),
       ]);
     },
-    [setCoinData, setTotalFlow, setBalance]
+    [setCoins, setTotalFlow, setBalance]
   );
 
   // Setup localStorage event listener
@@ -234,7 +227,6 @@ export const useCoins = () => {
   return {
     refreshCoinData,
     handleStorageData,
-    clearCoins,
     coins,
     balance,
     totalFlow,

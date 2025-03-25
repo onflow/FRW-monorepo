@@ -37,6 +37,7 @@ export const INITIAL_TRANSACTION_STATE: TransactionState = {
     symbol: 'flow',
   },
   coinInfo: {
+    id: '',
     coin: '',
     unit: '',
     balance: '0',

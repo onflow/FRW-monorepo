@@ -1163,6 +1163,7 @@ export class WalletController extends BaseController {
 
         const isFlow = token.symbol.toLowerCase() === 'flow';
         return {
+          id: tokenId,
           coin: token.name,
           unit: token.symbol.toLowerCase(),
           icon: token['logoURI'] || '',
@@ -1299,7 +1300,9 @@ export class WalletController extends BaseController {
     const prices = tokenList.map((token) => this.evmtokenPrice(token, data));
     const allPrice = await Promise.all(prices);
     const coins: CoinItem[] = mergedList.map((token, index) => {
+      const tokenId = `A.${token.address.slice(2)}.${token.contractName || token.symbol}`;
       return {
+        id: token.flowIdentifier || tokenId,
         coin: token.name,
         unit: token.symbol.toLowerCase(),
         icon: token['logoURI'] || placeholder,

@@ -100,6 +100,7 @@ describe('Transaction Reducer', () => {
       };
 
       const mockCoinInfo: CoinItem = {
+        id: 'test',
         coin: 'test',
         unit: 'TEST',
         balance: '100',

@@ -73,8 +73,6 @@ class CoinList {
     this.store[listType] = updatedListType;
 
     storage.set('coinList', this.store);
-
-    console.log('addCoins - after update', this.store, coins, network, listType);
   };
 
   removeCoin = (unit: string, network: string, listType = 'coinItem') => {

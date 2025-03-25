@@ -1,6 +1,7 @@
 import type { TokenInfo as FlowTokenInfo } from 'flow-native-token-registry';
 
 export type CoinItem = {
+  id: string;
   coin: string;
   unit: string;
   balance: string;

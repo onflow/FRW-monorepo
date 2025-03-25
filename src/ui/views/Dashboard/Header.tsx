@@ -62,7 +62,6 @@ const Header = ({ _loading = false }) => {
   const history = useHistory();
   const location = useLocation();
 
-  const { clearCoins } = useCoins();
   const { network, developerMode } = useNetwork();
   const {
     mainAddress,
@@ -137,7 +136,6 @@ const Header = ({ _loading = false }) => {
         await usewallet.clearWallet();
         await usewallet.switchAccount(account.id);
         await usewallet.switchNetwork(switchingTo);
-        clearCoins();
         clearProfileData();
       } catch (error) {
         console.error('Error during account switch:', error);
@@ -148,7 +146,7 @@ const Header = ({ _loading = false }) => {
         setSwitchLoading(false);
       }
     },
-    [usewallet, history, clearCoins, clearProfileData]
+    [usewallet, history, clearProfileData]
   );
 
   const setWallets = async (
