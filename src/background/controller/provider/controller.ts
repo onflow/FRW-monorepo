@@ -8,6 +8,7 @@ import Web3 from 'web3';
 import { stringToHex } from 'web3-utils';
 
 import { signWithKey } from '@/background/utils/modules/publicPrivateKey';
+import { type FlowAddress } from '@/shared/types/wallet-types';
 import { ensureEvmAddressPrefix, isValidEthereumAddress } from '@/shared/utils/address';
 import {
   permissionService,
@@ -89,6 +90,9 @@ async function signMessage(msgParams, opts = {}) {
   const password = keyringService.password;
   const privateKey = await Wallet.getPrivateKeyForCurrentAccount(password);
   const currentWallet = await Wallet.getMainWallet();
+  if (!currentWallet) {
+    throw new Error('Current wallet not found');
+  }
   const account = await fcl.account(currentWallet);
   const hashAlgo = await storage.get('hashAlgo');
   const signAlgo = await storage.get('signAlgo');
@@ -133,6 +137,9 @@ async function signTypeData(msgParams, opts = {}) {
   const currentWallet = await Wallet.getMainWallet();
 
   const addressHex = currentWallet;
+  if (!addressHex) {
+    throw new Error('Current wallet not found');
+  }
   const addressBuffer = Buffer.from(addressHex.slice(2), 'hex');
   const addressArray = Uint8Array.from(addressBuffer);
 
@@ -219,6 +226,9 @@ class ProviderController extends BaseController {
 
     const currentWallet = await Wallet.getMainWallet();
     let evmAddress: string = '';
+    if (!currentWallet) {
+      throw new Error('Current wallet not found');
+    }
     try {
       // Attempt to query the EVM address
       evmAddress = await Wallet.queryEvmAddress(currentWallet);
@@ -505,7 +515,8 @@ class ProviderController extends BaseController {
 
     const network = await Wallet.getNetwork();
     const currentWallet = await Wallet.getMainWallet();
-    const evmaddress = await Wallet.queryEvmAddress(currentWallet);
+
+    const evmaddress = await Wallet.queryEvmAddress(currentWallet as FlowAddress);
 
     if (network === 'testnet') {
       currentChain = 545;
@@ -565,7 +576,7 @@ class ProviderController extends BaseController {
 
     const network = await Wallet.getNetwork();
     const currentWallet = await Wallet.getMainWallet();
-    const evmaddress = await Wallet.queryEvmAddress(currentWallet);
+    const evmaddress = await Wallet.queryEvmAddress(currentWallet as FlowAddress);
 
     if (network === 'testnet') {
       currentChain = 545;

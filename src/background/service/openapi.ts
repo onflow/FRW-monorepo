@@ -24,7 +24,7 @@ import {
   type LoggedInAccount,
   type FlowAddress,
   type ActiveChildType,
-  type MainAccount,
+  type PublicKeyAccount,
 } from '@/shared/types/wallet-types';
 import { isValidFlowAddress, isValidEthereumAddress } from '@/shared/utils/address';
 import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
@@ -46,7 +46,6 @@ import {
   type NewsConditionType,
   Period,
   PriceProvider,
-  type BlockchainResponse,
   type AccountBalanceInfo,
   type Contact,
   type NFTModelV2,
@@ -1780,7 +1779,7 @@ class OpenApiService {
     return data;
   };
 
-  putDeviceInfo = async (walletData: MainAccount[]) => {
+  putDeviceInfo = async (walletData: PublicKeyAccount[]) => {
     try {
       const installationId = await this.getInstallationId();
       // console.log('location ', userlocation);

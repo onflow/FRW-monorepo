@@ -1,5 +1,6 @@
 import { type HashAlgoString, type SignAlgoString } from './algo-types';
-import { type Account, type AccountKey, type ChildAccountMap } from './network-types';
+import { type PublicKeyTuple } from './key-types';
+import { type Account, type AccountKey } from './network-types';
 
 // Matches exactly 16 hex characters, with optional 0x prefix
 export type FlowAddress = `0x${string & { length: 16 }}` | `${string & { length: 16 }}`;
@@ -74,22 +75,21 @@ export type PublicKeyAccount = {
   hashAlgoString: HashAlgoString;
 };
 
-// This will replace loggedInAccount in the future
-export type MainAccount = PublicKeyAccount & {
-  // A unique id of the account
+export type WalletAccount = {
+  address: string;
+  chain: number; // testnet: 545, mainnet: 747
   id: number;
-  // The chain id of the account
-  chain?: number;
-  // A map of child accounts
-  childAccount?: ChildAccountMap;
-  // The evm address of the account
-  evmAddress?: string;
-  // The name of the account
-  name?: string;
-  // The icon of the account
-  icon?: string;
-  // The color of the account
-  color?: string;
+  name: string;
+  icon: string;
+  color: string;
+};
+
+export type MainAccount = WalletAccount & PublicKeyAccount;
+
+export type WalletProfile = {
+  publicKey: string;
+  currentId?: string;
+  accounts: MainAccount[];
 };
 
 export type Emoji = {
@@ -104,9 +104,22 @@ export type UserWalletStore = {
   activeChild: ActiveChildType;
   evmEnabled: boolean;
   emulatorMode: boolean;
-
-  currentPubkey: string;
+  currentPubkey: PublicKeyTuple;
   currentAddress: string;
   parentAddress: string;
   currentEvmAddress: string | null;
 };
+
+interface Thumbnail {
+  url: string;
+}
+
+export interface AccountDetails {
+  name: string;
+  description: string;
+  thumbnail: Thumbnail;
+}
+
+export interface ChildAccountMap {
+  [key: string]: AccountDetails;
+}

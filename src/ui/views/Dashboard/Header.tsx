@@ -20,8 +20,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
 import { storage } from '@/background/webapi';
-import { type WalletType } from '@/shared/types/network-types';
 import {
+  type WalletAccount,
   type WalletAddress,
   type ActiveChildType,
   type LoggedInAccountWithIndex,
@@ -152,7 +152,7 @@ const Header = ({ _loading = false }) => {
   );
 
   const setWallets = async (
-    walletInfo: WalletType,
+    walletInfo: WalletAccount,
     key: ActiveChildType | null,
     index: number | null = null
   ) => {
@@ -251,7 +251,7 @@ const Header = ({ _loading = false }) => {
     return `${repoUrl}/commits`;
   }, []);
 
-  const createWalletList = (props: WalletType) => {
+  const createWalletList = (props: WalletAccount) => {
     return (
       <List component="nav" key={props.id} sx={{ mb: '0', padding: 0 }}>
         <WalletFunction

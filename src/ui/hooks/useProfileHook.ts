@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useRef } from 'react';
 
-import storage from '@/background/webapi/storage';
-import type {
-  ChildAccountMap,
-  BlockchainResponse,
-  WalletResponse,
-} from '@/shared/types/network-types';
-import { UserWalletStore, type FlowAddress, type MainAccount } from '@/shared/types/wallet-types';
+import {
+  type FlowAddress,
+  type WalletAccount,
+  type ChildAccountMap,
+} from '@/shared/types/wallet-types';
 import { ensureEvmAddressPrefix, withPrefix } from '@/shared/utils/address';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
@@ -61,19 +59,21 @@ export const useProfiles = () => {
    * @returns Array of formatted wallet objects with UI-friendly properties
    * Used by freshUserWallet to standardize wallet display format
    */
-  const formatWallets = useCallback((data: MainAccount[]) => {
+  const formatWallets = useCallback((data: WalletAccount[]) => {
     if (!Array.isArray(data)) {
       return [];
     }
 
-    const result = data.map((wallet, index) => ({
-      id: index,
-      name: wallet.name || 'Wallet',
-      address: withPrefix(wallet.address),
-      key: index,
-      icon: wallet.icon || '',
-      color: wallet.color || '',
-    }));
+    const result = data.map(
+      (wallet, index): WalletAccount => ({
+        id: wallet.id || index,
+        name: wallet.name || 'Wallet',
+        address: withPrefix(wallet.address) || '',
+        chain: wallet.chain || 747,
+        icon: wallet.icon || '',
+        color: wallet.color || '',
+      })
+    );
     return result;
   }, []);
 
@@ -93,18 +93,13 @@ export const useProfiles = () => {
 
         const evmAddress = ensureEvmAddressPrefix(evmRes!);
 
-        const evmWalletData: MainAccount = {
+        const evmWalletData: WalletAccount = {
           name: emoji[9].name,
           icon: emoji[9].emoji,
           address: evmAddress,
           chain: network === 'testnet' ? 545 : 747,
           id: 1,
           color: emoji[9].bgcolor,
-          keyIndex: 0,
-          weight: 1,
-          pubK: '',
-          signing: 'ECDSA_P256',
-          hashing: 'SHA3_256',
         };
 
         await Promise.all([setEvmWallet(evmWalletData), setEvmAddress(evmAddress)]);
@@ -127,8 +122,8 @@ export const useProfiles = () => {
       profilesRef.current.loading = true;
       const mainAddress = await usewallet.getMainAddress();
       if (mainAddress) {
-        setMainAddress(mainAddress);
-        await setupEvmWallet(mainAddress);
+        setMainAddress(mainAddress as FlowAddress);
+        await setupEvmWallet(mainAddress as FlowAddress);
 
         const childresp: ChildAccountMap = await usewallet.checkUserChildAccount();
         setChildAccount(childresp);

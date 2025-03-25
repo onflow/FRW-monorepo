@@ -3,25 +3,24 @@ import { create } from 'zustand';
 import type {
   LoggedInAccountWithIndex,
   LoggedInAccount,
-  MainAccount,
   FlowAddress,
+  PublicKeyAccount,
+  WalletAccount,
+  ChildAccountMap,
+  MainAccount,
 } from '@/shared/types/wallet-types';
 
-import type {
-  ChildAccountMap,
-  WalletType,
-  UserInfoResponse,
-} from '../../shared/types/network-types';
+import type { UserInfoResponse } from '../../shared/types/network-types';
 
 interface ProfileState {
   mainAddress: FlowAddress | null;
   evmAddress: string;
   currentWalletIndex: number;
   parentWallet: MainAccount;
-  evmWallet: MainAccount;
-  walletList: WalletType[];
+  evmWallet: WalletAccount;
+  walletList: WalletAccount[];
   initialStart: boolean;
-  currentWallet: WalletType;
+  currentWallet: WalletAccount;
   mainAddressLoading: boolean;
   childAccounts: ChildAccountMap;
   evmLoading: boolean;
@@ -33,7 +32,7 @@ interface ProfileState {
   setEvmAddress: (address: string) => void;
   setCurrentWalletIndex: (index: number) => void;
   setParentWallet: (wallet: MainAccount) => void;
-  setEvmWallet: (wallet: MainAccount) => void;
+  setEvmWallet: (wallet: WalletAccount) => void;
   setWalletList: (list: any[]) => void;
   setInitial: (initial: boolean) => void;
   setCurrent: (current: any) => void;
@@ -55,9 +54,10 @@ const INITIAL_WALLET = {
   id: 1,
   coins: ['flow'],
   color: '',
+  chain: 747,
 };
 
-const INITIAL_ACCOUNT: MainAccount = {
+const INITIAL_ACCOUNT = {
   name: '',
   icon: '',
   address: '',
@@ -65,9 +65,12 @@ const INITIAL_ACCOUNT: MainAccount = {
   color: '',
   keyIndex: 0,
   weight: 0,
-  pubK: '',
-  signing: 'ECDSA_secp256k1',
-  hashing: 'SHA3_256',
+  publicKey: '',
+  signAlgo: 1,
+  hashAlgo: 1,
+  signAlgoString: 'ECDSA_secp256k1',
+  hashAlgoString: 'SHA3_256',
+  chain: 747,
 };
 
 export const useProfileStore = create<ProfileState>((set) => ({

@@ -213,30 +213,6 @@ export interface BlockchainResponse {
   color: string;
 }
 
-export interface WalletType {
-  name: string;
-  icon: string;
-  address: string;
-  chain_id: string;
-  id: number;
-  coins: string[];
-  color: string;
-}
-
-interface Thumbnail {
-  url: string;
-}
-
-export interface AccountDetails {
-  name: string;
-  description: string;
-  thumbnail: Thumbnail;
-}
-
-export interface ChildAccountMap {
-  [key: string]: AccountDetails;
-}
-
 export interface FlowArgument {
   type: string;
   value: string;

@@ -1,5 +1,6 @@
 import { initWasm } from '@trustwallet/wallet-core';
 
+import { type PublicPrivateKeyTuple, type PublicKeyTuple } from '@/shared/types/key-types';
 import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
 
 import { FLOW_BIP44_PATH, HASH_ALGO, SIGN_ALGO } from '../../../shared/utils/algo-constants';
@@ -20,7 +21,7 @@ const jsonToKey = async (json: string, password: string) => {
   }
 };
 
-const pk2PubKey = async (pk: string) => {
+const pk2PubKey = async (pk: string): Promise<PublicKeyTuple> => {
   const { PrivateKey } = await initWasm();
   const privateKey = PrivateKey.createWithData(Buffer.from(pk, 'hex'));
 
@@ -33,16 +34,14 @@ const pk2PubKey = async (pk: string) => {
   return {
     P256: {
       pubK: p256PubK,
-      pk,
     },
     SECP256K1: {
       pubK: secp256PubK,
-      pk,
     },
   };
 };
 
-const formPubKey = async (pubKey) => {
+const formPubKey = async (pubKey: string): Promise<PublicKeyTuple> => {
   return {
     P256: {
       pubK: pubKey,
@@ -53,7 +52,7 @@ const formPubKey = async (pubKey) => {
   };
 };
 
-const seed2PubKey = async (seed: string) => {
+const seed2PublicPrivateKey = async (seed: string): Promise<PublicPrivateKeyTuple> => {
   const { HDWallet, Curve } = await initWasm();
 
   const currentId = (await storage.get('currentId')) ?? 0;
@@ -93,7 +92,7 @@ const seed2PubKey = async (seed: string) => {
   };
 };
 
-const seed2PubKeyTemp = async (seed: string) => {
+const seed2PublicPrivateKeyTemp = async (seed: string): Promise<PublicPrivateKeyTuple> => {
   const { HDWallet, Curve } = await initWasm();
 
   const path = (await storage.get('temp_path')) || FLOW_BIP44_PATH;
@@ -148,9 +147,9 @@ const signWithKey = async (message, signAlgo, hashAlgo, pk) => {
 export {
   jsonToKey,
   pk2PubKey,
-  seed2PubKey,
+  seed2PublicPrivateKey,
   signMessageHash,
   signWithKey,
-  seed2PubKeyTemp,
+  seed2PublicPrivateKeyTemp,
   formPubKey,
 };
