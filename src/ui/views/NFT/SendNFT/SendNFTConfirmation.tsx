@@ -97,7 +97,7 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
     setOccupied(false);
   }, []);
 
-  const replaceIPFS = (url: string | null): string => {
+  const replaceIPFS = (url?: string | null): string => {
     if (!url) {
       return '';
     }
