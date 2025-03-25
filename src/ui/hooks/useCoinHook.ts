@@ -2,6 +2,7 @@ import BN from 'bignumber.js';
 import { useCallback, useEffect, useState, useRef } from 'react';
 
 import storage, { type AreaName, type StorageChange } from '@/background/webapi/storage';
+import { type CoinItem } from '@/shared/types/coin-types';
 import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -16,25 +17,18 @@ export const useCoins = () => {
   const { mainAddress, currentWallet } = useProfiles();
   const { network } = useNetwork();
 
-  const [coinsLoaded, setCoinsLoaded] = useState(false);
   const refreshInProgressRef = useRef(false);
   const calculationInProgressRef = useRef(false);
   const lastRefreshTimeRef = useRef(0);
   const lastTotalFlowRef = useRef('');
   const mountedRef = useRef(true);
 
-  // Action selectors
-  const setCoinData = useCoinStore((state) => state.setCoinData);
-  const setBalance = useCoinStore((state) => state.setBalance);
-  const setTotalFlow = useCoinStore((state) => state.setTotalFlow);
-  const setAvailableFlow = useCoinStore((state) => state.setAvailableFlow);
-  const clearCoins = useCoinStore((state) => state.clearCoins);
-
-  // State selectors
-  const coins = useCoinStore((state) => state.coins);
-  const balance = useCoinStore((state) => state.balance);
-  const totalFlow = useCoinStore((state) => state.totalFlow);
-  const availableFlow = useCoinStore((state) => state.availableFlow);
+  // Replace Zustand state with React state
+  const [coins, setCoins] = useState<CoinItem[]>([]);
+  const [balance, setBalance] = useState<string>('0');
+  const [totalFlow, setTotalFlow] = useState<string>('0');
+  const [availableFlow, setAvailableFlow] = useState<string>('0');
+  const [coinsLoaded, setCoinsLoaded] = useState(false);
 
   const handleStorageData = useCallback(
     async (data) => {
@@ -72,18 +66,18 @@ export const useCoins = () => {
 
       // Batch updates
       await Promise.all([
-        setCoinData(Array.from(uniqueTokenMap.values())),
+        setCoins(Array.from(uniqueTokenMap.values())),
         setTotalFlow(flowBalance.toString()),
         setBalance(`$ ${sum.toFixed(2)}`),
       ]);
     },
-    [setCoinData, setTotalFlow, setBalance]
+    [setCoins, setTotalFlow, setBalance]
   );
 
   // Setup localStorage event listener
   useEffect(() => {
     // Function to check pending transactions
-    const checkCoinList = async () => {
+    const loadCoinList = async () => {
       try {
         const coinList = await storage.get('coinList');
         const userWallet = await storage.get('userWallets');
@@ -112,10 +106,12 @@ export const useCoins = () => {
       if (namespace === 'local') {
         if (changes['coinList'] || changes['coinList'] === null) {
           debug('useCoinHook', 'useCoinHook storage changed, checking pending transactions');
-          checkCoinList();
+          loadCoinList();
         }
       }
     };
+
+    loadCoinList();
 
     storage.addStorageListener(handleStorageChange);
 
@@ -205,7 +201,6 @@ export const useCoins = () => {
       }
 
       console.log('refreshedCoinlist');
-      await usewallet.refreshCoinList(60000);
     } catch (error) {
       console.error('Error refreshing coin data:', error);
     } finally {
@@ -234,7 +229,6 @@ export const useCoins = () => {
   return {
     refreshCoinData,
     handleStorageData,
-    clearCoins,
     coins,
     balance,
     totalFlow,
