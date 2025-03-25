@@ -201,6 +201,7 @@ export const useCoins = () => {
       }
 
       console.log('refreshedCoinlist');
+      await usewallet.refreshCoinList(60000);
     } catch (error) {
       console.error('Error refreshing coin data:', error);
     } finally {
