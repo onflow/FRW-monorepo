@@ -1,4 +1,4 @@
-import { type CoinItem } from '@/shared/types/coin-types';
+import { type BalanceMap, type CoinItem } from '@/shared/types/coin-types';
 import { createPersistStore } from 'background/utils';
 import { storage } from 'background/webapi';
 
@@ -29,7 +29,6 @@ class CoinList {
   store!: CoinListStore;
 
   init = async () => {
-    console.log('init coinList');
     this.store = await createPersistStore<CoinListStore>({
       name: 'coinList',
       template: COINLIST_TEMPLATE,
@@ -37,7 +36,6 @@ class CoinList {
   };
 
   clear = async () => {
-    console.log('clear coinList ----------------------');
     if (!this.store) {
       await this.init();
     } else {
@@ -100,6 +98,52 @@ class CoinList {
 
     const list = Object.values(this.store[listType][network]);
     return list.filter((item): item is CoinItem => !!item) || [];
+  };
+
+  /**
+   * Updates only the balance of coins in the store
+   * @param balanceMap Object mapping token IDs to balance strings
+   * @param network The network to update balances for
+   * @param listType The list type to update
+   */
+  updateBalances = (balanceMap: BalanceMap, network: string, listType = 'coinItem') => {
+    // Check if the network exists in the store
+    if (!this.store[listType] || !this.store[listType][network]) {
+      console.log('No coins found for network:', network);
+      return;
+    }
+
+    // Get the current coins array
+    const currentCoins = [...this.store[listType][network]];
+
+    // Update only the balances
+    const updatedCoins = currentCoins.map((coin) => {
+      // Create the token ID in the format used in balanceMap
+      const tokenId = coin.id || `A.${coin.address?.slice(2)}.${coin.contractName}`;
+      const tokenIdVault = `${tokenId}.Vault`;
+      const isFlow = coin.symbol.toLowerCase() === 'flow';
+      const balance = isFlow ? balanceMap['availableFlowToken'] : balanceMap[tokenIdVault] || '';
+      // If this coin has a balance in the balanceMap, update it
+      if (balance) {
+        return {
+          ...coin,
+          balance: balance,
+        };
+      }
+
+      // Otherwise return the coin unchanged
+      return coin;
+    });
+
+    // Update the store with the new coins array
+    const updatedListType = { ...this.store[listType] };
+    updatedListType[network] = updatedCoins;
+    this.store[listType] = updatedListType;
+
+    // Persist to storage
+    storage.set('coinList', this.store);
+
+    console.log('Updated balances for', updatedCoins.length, 'coins on', network);
   };
 }
 

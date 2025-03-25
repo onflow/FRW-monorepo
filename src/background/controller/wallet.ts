@@ -24,7 +24,7 @@ import {
   jsonToKey,
 } from '@/background/utils/modules/publicPrivateKey';
 import eventBus from '@/eventBus';
-import { type CoinItem, type TokenInfo } from '@/shared/types/coin-types';
+import type { CoinItem, TokenInfo, BalanceMap } from '@/shared/types/coin-types';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
 import { ContactType } from '@/shared/types/network-types';
 import { type NFTCollectionData } from '@/shared/types/nft-types';
@@ -1123,9 +1123,10 @@ export class WalletController extends BaseController {
 
       const address = await this.getCurrentAddress();
       const tokenList = await openapiService.getEnabledTokenList(network);
-      let allBalanceMap;
+      let allBalanceMap: BalanceMap;
       try {
-        allBalanceMap = await openapiService.getTokenListBalance(address || '0x', tokenList);
+        allBalanceMap = await openapiService.getTokenBalanceStorage(address || '0x');
+        console.log('allBalanceMap is this ', allBalanceMap);
       } catch (error) {
         console.error('Error refresh token list balance:', error);
         throw new Error('Failed to refresh token list balance');
@@ -1160,15 +1161,18 @@ export class WalletController extends BaseController {
 
       const coins = tokenList.map((token, index): CoinItem => {
         const tokenId = `A.${token.address.slice(2)}.${token.contractName}`;
-
+        const tokenIdVault = `A.${token.address.slice(2)}.${token.contractName}.Vault`;
         const isFlow = token.symbol.toLowerCase() === 'flow';
+        const balance = isFlow
+          ? allBalanceMap['availableFlowToken']
+          : allBalanceMap[tokenIdVault] || '';
         return {
           id: tokenId,
           coin: token.name,
           unit: token.symbol.toLowerCase(),
           icon: token['logoURI'] || '',
           // Keep the balance as a string to avoid precision loss
-          balance: allBalanceMap[tokenId],
+          balance: balance,
           // If it's flow and not child account, add the available balance to the flow coin item
           availableBalance: isFlow && !isChild ? availableFlowBalance : undefined,
           price: allPrice[index] === null ? 0 : new BN(allPrice[index].price.last).toNumber(),
@@ -1179,7 +1183,7 @@ export class WalletController extends BaseController {
           total:
             allPrice[index] === null
               ? 0
-              : this.currencyBalance(allBalanceMap[tokenId], allPrice[index].price.last),
+              : this.currencyBalance(balance, allPrice[index].price.last),
           chainId: token.chainId,
           address: token.address,
           contractName: token.contractName,
@@ -1223,6 +1227,13 @@ export class WalletController extends BaseController {
       }
       throw err;
     }
+  };
+
+  refreshCadenceBalance = async () => {
+    const network = await this.getNetwork();
+    const address = await this.getCurrentAddress();
+    const allBalanceMap = await openapiService.getTokenBalanceStorage(address || '0x');
+    coinListService.updateBalances(allBalanceMap, network);
   };
 
   refreshEvmList = async (_expiry = 60000) => {
@@ -3235,6 +3246,7 @@ export class WalletController extends BaseController {
       // This will throw an error if there is an error with the transaction
       const txStatus = await fcl.tx(txId).onceExecuted();
       // Update the pending transaction with the transaction status
+      this.refreshCadenceBalance();
       txHash = transactionService.updatePending(txId, network, txStatus);
 
       // Track the transaction result

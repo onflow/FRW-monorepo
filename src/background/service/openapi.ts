@@ -17,7 +17,7 @@ import { getInstallations, getId } from 'firebase/installations';
 import log from 'loglevel';
 
 import { storage } from '@/background/webapi';
-import { type TokenInfo } from '@/shared/types/coin-types';
+import type { TokenInfo, BalanceMap } from '@/shared/types/coin-types';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
 import {
   type LoggedInAccountWithIndex,
@@ -1372,10 +1372,11 @@ class OpenApiService {
       if (isChild && isChild !== 'evm') {
         values = await this.isLinkedAccountTokenListEnabled(address);
       } else if (!isChild) {
-        values = await this.isTokenListEnabled(address);
+        values = await this.getTokenBalanceStorage(address);
+        console.log('values ->', values);
       }
     } catch (error) {
-      console.error('Error isTokenListEnabled token:');
+      console.error('Error getting enabled token list:');
       values = {};
     }
 
@@ -1383,22 +1384,12 @@ class OpenApiService {
     const tokenMap = {};
     if (isChild !== 'evm') {
       tokenList.forEach((token) => {
-        const tokenId = `A.${token.address.slice(2)}.${token.contractName}`;
-        // console.log(tokenMap,'tokenMap',values)
+        const tokenId = `A.${token.address.slice(2)}.${token.contractName}.Vault`;
         if (!!values[tokenId]) {
           tokenMap[token.name] = token;
         }
       });
     }
-
-    // const data = values.map((value, index) => ({isEnabled: value, token: tokenList[index]}))
-    // return values
-    //   .map((value, index) => {
-    //     if (value) {
-    //       return tokens[index];
-    //     }
-    //   })
-    //   .filter((item) => item);
 
     Object.keys(tokenMap).map((key, idx) => {
       const item = tokenMap[key];
@@ -1444,11 +1435,18 @@ class OpenApiService {
     return isEnabledList;
   };
 
-  getTokenListBalance = async (address: string, allTokens: TokenInfo[]) => {
-    const network = await userWalletService.getNetwork();
-
-    const tokens = allTokens.filter((token) => token.address);
+  getTokenListBalance = async (address: string, allTokens: TokenInfo[]): Promise<BalanceMap> => {
     const script = await getScripts('ft', 'getTokenListBalance');
+    const balanceList = await fcl.query({
+      cadence: script,
+      args: (arg, t) => [arg(address, t.Address)],
+    });
+
+    return balanceList;
+  };
+
+  getTokenBalanceStorage = async (address: string): Promise<BalanceMap> => {
+    const script = await getScripts('ft', 'getTokenBalanceStorage');
     const balanceList = await fcl.query({
       cadence: script,
       args: (arg, t) => [arg(address, t.Address)],

@@ -46,3 +46,7 @@ export type TokenInfo = FlowTokenInfo & {
     balance: string;
   };
 };
+
+export type BalanceMap = {
+  [tokenId: string]: string;
+};
