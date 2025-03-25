@@ -1,7 +1,9 @@
-import { findAddressWithKey, findAddressOnlyKey } from './findAddressWithPubKey';
+import { type PublicPrivateKeyTuple } from '@/shared/types/key-types';
+
+import { findAddressWithKey } from './findAddressWithPubKey';
 import { pk2PubKey, seed2PubKey, seed2PubKeyTemp } from './publicPrivateKey';
 
-export const findAddress = async (pubKTuple, address) => {
+export const findAddress = async (pubKTuple: PublicPrivateKeyTuple, address: string) => {
   const { P256, SECP256K1 } = pubKTuple;
   const p256Accounts = (await findAddressWithKey(P256.pubK, address)) || [];
   const sepc256k1Accounts = (await findAddressWithKey(SECP256K1.pubK, address)) || [];
@@ -19,47 +21,13 @@ export const findAddress = async (pubKTuple, address) => {
   return accounts;
 };
 
-export const findAddressWithNetwork = async (pubKTuple, network) => {
-  const { P256, SECP256K1 } = pubKTuple;
-  const p256Accounts = (await findAddressOnlyKey(P256.pubK, network)) || [];
-  const sepc256k1Accounts = (await findAddressOnlyKey(SECP256K1.pubK, network)) || [];
-  const pA = p256Accounts.map((s) => ({ ...s, pk: P256.pk }));
-  const pS = sepc256k1Accounts.map((s) => ({ ...s, pk: SECP256K1.pk }));
-  const accounts = pA.concat(pS);
-
-  // console.log('accounts 222 ==>', accounts);
-  if (!accounts || accounts.length === 0) {
-    return [
-      {
-        ...SECP256K1,
-        weight: 1000,
-        hashAlgo: 'SHA2_256',
-        signAlgo: 'ECDSA_secp256k1',
-        keyIndex: 0,
-      },
-    ];
-  }
-
-  const account = accounts.find((account) => account.weight >= 1000);
-  return account ? accounts : null;
-};
-
-export const findAddressWithPK = async (pk, address) => {
+export const findAddressWithPK = async (pk: string, address: string) => {
   const pubKTuple = await pk2PubKey(pk);
   return await findAddress(pubKTuple, address);
 };
 
-export const findAddressWithSeed = async (seed, address, isTemp = false) => {
-  let pubKTuple: {
-    P256: {
-      pubK: string;
-      pk: string;
-    };
-    SECP256K1: {
-      pubK: string;
-      pk: string;
-    };
-  };
+export const findAddressWithSeed = async (seed: string, address: string, isTemp = false) => {
+  let pubKTuple: PublicPrivateKeyTuple;
   if (isTemp) {
     pubKTuple = await seed2PubKeyTemp(seed);
   } else {

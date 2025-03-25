@@ -10,39 +10,32 @@ import openapiService from '@/background/service/openapi';
 import { getLoggedInAccount } from '@/background/utils/getLoggedInAccount';
 import { signWithKey, seed2PubKey } from '@/background/utils/modules/publicPrivateKey';
 import createPersistStore from '@/background/utils/persisitStore';
-import { type HashAlgoType, type SignAlgoType } from '@/shared/types/algo-types';
+import { type HashAlgoString, type SignAlgoString } from '@/shared/types/algo-types';
 import {
   type LoggedInAccount,
   type ActiveChildType,
   type FlowAddress,
   type EvmAddress,
   type Emoji,
-  type PublicKeyAccounts,
-  type PubKeyAccount,
+  type MainAccount,
   type UserWalletStore,
+  type PublicKeyAccount,
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress, isValidFlowAddress, withPrefix } from '@/shared/utils/address';
 import { getHashAlgo, getSignAlgo } from '@/shared/utils/algo';
 
 import type {
   BlockchainResponse,
-  ChildAccount,
+  ChildAccountMap,
   DeviceInfoRequest,
   FlowNetwork,
 } from '../../shared/types/network-types';
 import { fclConfig } from '../fclConfig';
-import {
-  findAddressWithSeed,
-  findAddressWithPK,
-  findAddressWithNetwork,
-} from '../utils/modules/findAddressWithPK';
+import { findAddressWithSeed, findAddressWithPK } from '../utils/modules/findAddressWithPK';
+import { getAccountsByPublicKeyTuple } from '../utils/modules/findAddressWithPubKey';
 import { storage } from '../webapi';
 
 const USER_WALLET_TEMPLATE: UserWalletStore = {
-  accounts: {
-    mainnet: [],
-    testnet: [],
-  },
   activeChild: null,
   evmEnabled: false,
   monitor: 'flowscan',
@@ -53,8 +46,16 @@ const USER_WALLET_TEMPLATE: UserWalletStore = {
   parentAddress: '',
   currentEvmAddress: '',
 };
+
 class UserWallet {
   store!: UserWalletStore;
+  accounts: {
+    mainnet: PublicKeyAccount[];
+    testnet: PublicKeyAccount[];
+  } = {
+    mainnet: [],
+    testnet: [],
+  };
 
   init = async () => {
     this.store = await createPersistStore<UserWalletStore>({
@@ -73,16 +74,21 @@ class UserWallet {
   isLocked = () => {
     return !keyringService.isBooted() || !keyringService.memStore.getState().isUnlocked;
   };
-
+  getCurrentAccounts = (network: string) => {
+    return network === 'mainnet' ? this.accounts.mainnet : this.accounts.testnet;
+  };
   setUserAccounts = async (
-    accountData: PubKeyAccount[],
+    accountData: PublicKeyAccount[],
     pubKey: string,
     network: string,
     emoji: Emoji[]
   ) => {
-    const currentAccounts: PublicKeyAccounts[] = this.store.accounts[network];
+    const currentAccounts = this.getCurrentAccounts(network);
+
+    // All of the accounts should have the same pubkey
     const accountIndex = currentAccounts.findIndex((account) => account.publicKey === pubKey);
     this.setCurrentPubkey(pubKey);
+
     if (accountIndex !== -1) {
       currentAccounts[accountIndex] = {
         accounts: accountData.map((account, index) => {
@@ -124,7 +130,7 @@ class UserWallet {
     }
     this.store.currentAddress = accountData[0].address;
     this.store.parentAddress = accountData[0].address;
-    this.store.accounts[network] = currentAccounts;
+    this.accounts[network] = currentAccounts;
 
     return currentAccounts;
   };
@@ -139,7 +145,7 @@ class UserWallet {
       return;
     }
 
-    const accounts = this.store.accounts[this.store.network];
+    const accounts = this.getCurrentAccounts(this.store.network);
 
     const accountGroup = accounts.find((group) => {
       const matches = group.publicKey === pubkey;
@@ -166,10 +172,10 @@ class UserWallet {
     address: string,
     network: string
   ): {
-    account: PubKeyAccount | null;
-    currentAccounts: PublicKeyAccounts[];
+    account: MainAccount | null;
+    currentAccounts: PublicKeyAccount[];
   } => {
-    const currentAccounts = this.store.accounts[network];
+    const currentAccounts = this.getCurrentAccounts(network);
 
     // First try to find account group using currentPubkey
     let accountGroupIndex = currentAccounts.findIndex(
@@ -198,18 +204,18 @@ class UserWallet {
     }
 
     return {
-      account: currentAccounts[accountGroupIndex].accounts[accountIndex] as PubKeyAccount,
+      account: currentAccounts[accountGroupIndex].accounts[accountIndex] as MainAccount,
       currentAccounts,
     };
   };
 
-  setChildAccounts = (childAccount: ChildAccount, address: string, network: string) => {
+  setChildAccounts = (childAccount: ChildAccountMap, address: string, network: string) => {
     const { account, currentAccounts } = this.findAccount(address, network);
 
     if (!account) return;
 
     account.childAccount = childAccount;
-    this.store.accounts[network] = currentAccounts;
+    this.accounts[network] = currentAccounts;
   };
 
   setAccountEvmAddress = (evmAddress: string) => {
@@ -220,7 +226,7 @@ class UserWallet {
     if (!account) return;
     this.store.currentEvmAddress = evmAddress;
     account.evmAddress = evmAddress;
-    this.store.accounts[network] = currentAccounts;
+    this.accounts[network] = currentAccounts;
   };
 
   setCurrentAccount = async (wallet: BlockchainResponse, key: ActiveChildType) => {
@@ -267,13 +273,14 @@ class UserWallet {
     return isValidFlowAddress(prefixedAddress) ? prefixedAddress : null;
   };
 
-  returnParentWallet = async (network: string): Promise<PubKeyAccount | null> => {
+  returnParentWallet = async (network: string): Promise<PublicKeyAccount | null> => {
     if (!keyringService.isBooted() || !keyringService.memStore.getState().isUnlocked) {
       return null;
     }
     const address = this.store.parentAddress;
     const pubkey = this.store.currentPubkey;
-    const currentAccounts = this.store.accounts[network] as PublicKeyAccounts[];
+    const currentAccounts = this.getCurrentAccounts(network);
+
     const account = currentAccounts.find((account) => account.publicKey === pubkey);
     if (account) {
       return account.accounts.find((account) => account.address === address) || null;
@@ -287,7 +294,7 @@ class UserWallet {
     return withPrefix(address);
   };
 
-  getCurrentWallet = (): PubKeyAccount | null => {
+  getCurrentWallet = (): PublicKeyAccount | null => {
     if (this.isLocked()) {
       return null;
     }
@@ -296,7 +303,8 @@ class UserWallet {
     const network = this.store.network;
     const address = this.store.parentAddress;
     const pubkey = this.store.currentPubkey;
-    const currentAccounts = this.store.accounts[network] as PublicKeyAccounts[];
+    const currentAccounts = this.getCurrentAccounts(network);
+
     const accounts = currentAccounts.find((account) => account.publicKey === pubkey);
     if (accounts) {
       const account = accounts.accounts.find((account) => account.address === address) || null;
@@ -304,7 +312,7 @@ class UserWallet {
         return null;
       }
       if (activeType === 'evm') {
-        const evmWallet: PubKeyAccount = {
+        const evmWallet = {
           ...account,
           address: this.store.currentEvmAddress || '',
           name: 'Lemon',
@@ -316,7 +324,7 @@ class UserWallet {
       } else if (activeType === null) {
         return account;
       } else {
-        const childWallet: PubKeyAccount = {
+        const childWallet = {
           ...account,
           address: activeType,
           name: account?.childAccount?.[activeType]?.name ?? 'Unknown',
@@ -329,9 +337,9 @@ class UserWallet {
     return null;
   };
 
-  getUserWallets = (network: string): PubKeyAccount[] | null => {
+  getUserWallets = (network: string): PublicKeyAccount[] | null => {
     const currentPubKey = this.store.currentPubkey;
-    const currentAccounts = this.store.accounts[network] as PublicKeyAccounts[];
+    const currentAccounts = this.getCurrentAccounts(network);
 
     const currentAccount = currentAccounts.find((account) => account.publicKey === currentPubKey);
     if (currentAccount) {
@@ -341,7 +349,7 @@ class UserWallet {
     }
   };
 
-  getEvmWallet = (): PubKeyAccount | null => {
+  getEvmWallet = () => {
     if (this.isLocked()) {
       return null;
     }
@@ -349,14 +357,15 @@ class UserWallet {
     const network = this.store.network;
     const address = this.store.parentAddress;
     const pubkey = this.store.currentPubkey;
-    const currentAccounts = this.store.accounts[network] as PublicKeyAccounts[];
+    const currentAccounts = this.getCurrentAccounts(network);
+
     const accounts = currentAccounts.find((account) => account.publicKey === pubkey);
     if (accounts) {
       const account = accounts.accounts.find((account) => account.address === address) || null;
       if (!account) {
         return null;
       }
-      const evmWallet: PubKeyAccount = {
+      const evmWallet = {
         ...account,
         address: this.store.currentEvmAddress || '',
         name: 'Lemon',
@@ -369,7 +378,7 @@ class UserWallet {
     return null;
   };
 
-  getChildAccount = (): ChildAccount | null => {
+  getChildAccount = (): ChildAccountMap | null => {
     if (this.isLocked()) {
       return null;
     }
@@ -377,10 +386,11 @@ class UserWallet {
     const network = this.store.network;
     const address = this.store.parentAddress;
     const pubkey = this.store.currentPubkey;
-    const currentAccounts = this.store.accounts[network] as PublicKeyAccounts[];
+    const currentAccounts = this.getCurrentAccounts(network);
+
     const accounts = currentAccounts.find((account) => account.publicKey === pubkey);
     if (accounts) {
-      const account = accounts.accounts.find((account) => account.address === address) || null;
+      const account = accounts.find((account) => account.address === address) || null;
       if (!account || !account.childAccount) {
         return null;
       }
@@ -403,7 +413,8 @@ class UserWallet {
     const network = this.store.network;
     const address = this.store.parentAddress;
     const pubkey = this.store.currentPubkey;
-    const currentAccounts = this.store.accounts[network] as PublicKeyAccounts[];
+    const currentAccounts = this.getCurrentAccounts(network);
+
     const accounts = currentAccounts.find((account) => account.publicKey === pubkey);
     if (accounts) {
       const account = accounts.accounts.find((account) => account.address === address);
@@ -549,8 +560,8 @@ class UserWallet {
 
     // The issue is here in using getStoragedAccount()
     let account: Partial<LoggedInAccount> & {
-      hashAlgo: HashAlgoType;
-      signAlgo: SignAlgoType;
+      hashAlgo: HashAlgoString;
+      signAlgo: SignAlgoString;
       pubKey: string;
       weight: number;
     };
@@ -563,11 +574,8 @@ class UserWallet {
       const network = (await this.getNetwork()) || 'mainnet';
       // Find the address associated with the pubKey
       // This should return an array of address information records
-      const addressAndKeyInfoArray = await findAddressWithNetwork(pubKey, network);
-      // Find which signAlgo and hashAlgo is used on the account
-      if (!Array.isArray(addressAndKeyInfoArray) || !addressAndKeyInfoArray.length) {
-        throw new Error('No address found');
-      }
+      const addressAndKeyInfoArray = await getAccountsByPublicKeyTuple(pubKey, network);
+
       // Follow the same logic as freshUserInfo in openapi.ts
       // Look for the P256 key first
 

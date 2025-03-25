@@ -3,23 +3,27 @@ import { create } from 'zustand';
 import type {
   LoggedInAccountWithIndex,
   LoggedInAccount,
-  PubKeyAccount,
+  MainAccount,
   FlowAddress,
 } from '@/shared/types/wallet-types';
 
-import type { ChildAccount, WalletType, UserInfoResponse } from '../../shared/types/network-types';
+import type {
+  ChildAccountMap,
+  WalletType,
+  UserInfoResponse,
+} from '../../shared/types/network-types';
 
 interface ProfileState {
   mainAddress: FlowAddress | null;
   evmAddress: string;
   currentWalletIndex: number;
-  parentWallet: PubKeyAccount;
-  evmWallet: PubKeyAccount;
+  parentWallet: MainAccount;
+  evmWallet: MainAccount;
   walletList: WalletType[];
   initialStart: boolean;
   currentWallet: WalletType;
   mainAddressLoading: boolean;
-  childAccounts: ChildAccount;
+  childAccounts: ChildAccountMap;
   evmLoading: boolean;
   listLoading: boolean;
   userInfo: UserInfoResponse | null;
@@ -28,13 +32,13 @@ interface ProfileState {
   setMainAddress: (address: FlowAddress) => void;
   setEvmAddress: (address: string) => void;
   setCurrentWalletIndex: (index: number) => void;
-  setParentWallet: (wallet: PubKeyAccount) => void;
-  setEvmWallet: (wallet: PubKeyAccount) => void;
+  setParentWallet: (wallet: MainAccount) => void;
+  setEvmWallet: (wallet: MainAccount) => void;
   setWalletList: (list: any[]) => void;
   setInitial: (initial: boolean) => void;
   setCurrent: (current: any) => void;
   setMainLoading: (mainAddressLoading: boolean) => void;
-  setChildAccount: (childAccount: ChildAccount) => void;
+  setChildAccount: (childAccount: ChildAccountMap) => void;
   setEvmLoading: (evmLoading: boolean) => void;
   setListLoading: (listLoading: boolean) => void;
   setUserInfo: (info: UserInfoResponse | null) => void;
@@ -53,7 +57,7 @@ const INITIAL_WALLET = {
   color: '',
 };
 
-const INITIAL_ACCOUNT: PubKeyAccount = {
+const INITIAL_ACCOUNT: MainAccount = {
   name: '',
   icon: '',
   address: '',
@@ -62,8 +66,8 @@ const INITIAL_ACCOUNT: PubKeyAccount = {
   keyIndex: 0,
   weight: 0,
   pubK: '',
-  sigAlgo: 'ECDSA_secp256k1',
-  hashAlgo: 'SHA3_256',
+  signing: 'ECDSA_secp256k1',
+  hashing: 'SHA3_256',
 };
 
 export const useProfileStore = create<ProfileState>((set) => ({

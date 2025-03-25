@@ -14,7 +14,6 @@ import { encode } from 'rlp';
 import web3, { TransactionError, Web3 } from 'web3';
 
 import {
-  findAddressWithNetwork,
   findAddressWithSeed,
   findAddressWithPK,
 } from '@/background/utils/modules/findAddressWithPK';
@@ -26,6 +25,7 @@ import {
 } from '@/background/utils/modules/publicPrivateKey';
 import eventBus from '@/eventBus';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
+import { type PublicKeyTuple } from '@/shared/types/key-types';
 import { ContactType } from '@/shared/types/network-types';
 import { type NFTCollectionData } from '@/shared/types/nft-types';
 import { type TrackingEvents } from '@/shared/types/tracking-types';
@@ -33,10 +33,9 @@ import { type TransferItem, type TransactionState } from '@/shared/types/transac
 import {
   type ActiveChildType,
   type LoggedInAccount,
-  type MainAccount,
   type FlowAddress,
   type EvmAddress,
-  type BlockchainProfile,
+  type PublicKeyAccount,
 } from '@/shared/types/wallet-types';
 import {
   ensureEvmAddressPrefix,
@@ -102,6 +101,7 @@ import type { UserInfoStore } from '../service/user';
 import defaultConfig from '../utils/defaultConfig.json';
 import erc20ABI from '../utils/erc20.abi.json';
 import { getLoggedInAccount } from '../utils/getLoggedInAccount';
+import { getAccountsByPublicKeyTuple } from '../utils/modules/findAddressWithPubKey';
 
 import BaseController from './base';
 import provider from './provider';
@@ -492,11 +492,8 @@ export class WalletController extends BaseController {
           const network = (await this.getNetwork()) || 'mainnet';
           // Find the address associated with the pubKey
           // This should return an array of address information records
-          const addressAndKeyInfoArray = await findAddressWithNetwork(seed, network);
-          // Find which signAlgo and hashAlgo is used on the account
-          if (!Array.isArray(addressAndKeyInfoArray) || !addressAndKeyInfoArray.length) {
-            throw new Error('No address found');
-          }
+          const addressAndKeyInfoArray = await getAccountsByPublicKeyTuple(seed, network);
+
           // Follow the same logic as freshUserInfo in openapi.ts
           // Look for the P256 key first
           let index = addressAndKeyInfoArray.findIndex((key) => key.publicKey === seed.P256.pubK);
@@ -510,10 +507,7 @@ export class WalletController extends BaseController {
             index = 0;
           }
 
-          const signAlgo =
-            typeof addressAndKeyInfoArray[index].signAlgo === 'string'
-              ? getSignAlgo(addressAndKeyInfoArray[index].signAlgo)
-              : addressAndKeyInfoArray[index].signAlgo;
+          const signAlgo: number = addressAndKeyInfoArray[index].signAlgo;
 
           privateKey = signAlgo === 1 ? PK1 : PK2;
         }
@@ -536,9 +530,9 @@ export class WalletController extends BaseController {
     return privateKey;
   };
 
-  getPubKey = async () => {
+  getPubKey = async (): Promise<PublicKeyTuple> => {
     let privateKey: string | undefined;
-    let pubKTuple: { P256: { pubK: string }; SECP256K1: { pubK: string } } | undefined = undefined;
+    let pubKTuple: PublicKeyTuple | undefined = undefined;
     const keyrings: Keyring[] = await keyringService.getKeyring();
     for (const keyring of keyrings) {
       if (keyring instanceof SimpleKeyring) {
@@ -953,13 +947,12 @@ export class WalletController extends BaseController {
 
   checkUserChildAccount = async () => {
     const network = await this.getNetwork();
-    const address = await userWalletService.getParentAddress(network);
-    if (!address) {
-      throw new Error('Parent address not found');
-    }
+    const address = await userWalletService.getMainWallet(network);
+    const cacheKey = `checkUserChildAccount${address}`;
+    const ttl = 5 * 60 * 1000; // 5 minutes in milliseconds
 
     // Try to get the cached result
-    let meta = await userWalletService.getChildAccount();
+    let meta = await storage.getExpiry(cacheKey);
     if (!meta) {
       try {
         let result = {};
@@ -967,13 +960,16 @@ export class WalletController extends BaseController {
 
         if (result) {
           meta = result;
-          userWalletService.setChildAccounts(meta, address, network);
+
+          // Store the result in the cache with an expiry
+          await storage.setExpiry(cacheKey, meta, ttl);
         }
       } catch (error) {
         console.error('Error occurred:', error);
         return {}; // Return an empty object in case of an error
       }
     }
+
     return meta;
   };
 
@@ -991,25 +987,22 @@ export class WalletController extends BaseController {
   checkAccessibleFt = async (childAccount) => {
     const network = await this.getNetwork();
 
-    const address = await userWalletService.getParentAddress(network);
-    if (!address) {
-      throw new Error('Parent address not found');
-    }
+    const address = await userWalletService.getMainWallet(network);
     const result = await openapiService.queryAccessibleFt(address, childAccount);
 
     return result;
   };
 
-  getParentAddress = async () => {
+  getMainWallet = async () => {
     const network = await this.getNetwork();
-    const address = await userWalletService.getParentAddress(network);
+    const address = await userWalletService.getMainWallet(network);
 
     return address;
   };
 
-  returnParentWallet = async () => {
+  returnMainWallet = async () => {
     const network = await this.getNetwork();
-    const wallet = await userWalletService.returnParentWallet(network);
+    const wallet = await userWalletService.returnMainWallet(network);
 
     return wallet;
   };
@@ -1535,43 +1528,61 @@ export class WalletController extends BaseController {
 
   //user wallets
   // TODO: Move this to userWalletService
-  refreshUserWallets = async (): Promise<BlockchainProfile[] | null> => {
+  refreshUserWallets = async () => {
     const network = await this.getNetwork();
 
-    const pubKey = await this.getPubKey();
-    const address = await findAddressWithNetwork(pubKey, network);
+    const pubKey: PublicKeyTuple = await this.getPubKey();
+    const accounts: PublicKeyAccount[] = await getAccountsByPublicKeyTuple(pubKey, network);
     const emoji = await this.getEmoji();
-    if (!address) {
-      throw new Error("Can't find address in chain");
-    }
+
+    // Transform the address array into blockchain objects
+    const transformedArray = accounts.map((item, index) => {
+      const defaultEmoji = emoji[index] || {
+        name: 'Default',
+        emoji: '🐾',
+        bgcolor: '#ffffff',
+      };
+
+      return {
+        id: 0,
+        name: defaultEmoji.name,
+        chain_id: network,
+        icon: defaultEmoji.emoji,
+        color: defaultEmoji.bgcolor,
+        blockchain: [
+          {
+            id: index,
+            name: defaultEmoji.name,
+            chain_id: network,
+            address: item.address,
+            coins: ['flow'],
+            icon: defaultEmoji.emoji,
+            color: defaultEmoji.bgcolor,
+          },
+        ],
+      };
+    });
 
     const active = await userWalletService.getActiveWallet();
     if (!active) {
-      const cleanAddresses: MainAccount[] = address.map(({ pk, ...rest }) => rest);
-
-      const currentAccount = await userWalletService.setUserAccounts(
-        cleanAddresses,
-        address[0].pubK,
-        network,
-        emoji
-      );
-      if (currentAccount) {
-        return currentAccount;
-      }
+      // userInfoService.addUserId(v2data.data.id);
+      userWalletService.setUserWallets(transformedArray, network);
     }
 
-    return null;
+    return transformedArray;
   };
 
-  getUserWallets = async (): Promise<MainAccount[] | null> => {
+  getUserWallets = async (): Promise<PublicKeyAccount[] | null> => {
     const network = await this.getNetwork();
     const wallets = await userWalletService.getUserWallets(network);
-    if (!wallets) {
-      const refreshData = await this.refreshUserWallets();
-      if (!refreshData) {
-        return null;
-      }
-      return refreshData[0].accounts;
+    if (!wallets[0]) {
+      await this.refreshUserWallets();
+      const data = await userWalletService.getUserWallets(network);
+      return data;
+    } else if (!wallets[0].blockchain) {
+      await this.refreshUserWallets();
+      const data = await userWalletService.getUserWallets(network);
+      return data;
     }
     return wallets;
   };
@@ -1619,7 +1630,7 @@ export class WalletController extends BaseController {
     return wallet?.address !== '';
   };
 
-  getCurrentWallet = async (): Promise<MainAccount | undefined> => {
+  getCurrentWallet = async (): Promise<PublicKeyAccount | undefined> => {
     if (!this.isBooted() || userWalletService.isLocked()) {
       return;
     }
@@ -2023,6 +2034,9 @@ export class WalletController extends BaseController {
 
     const script = await getScripts('evm', 'checkCoaLink');
     const mainAddress = await this.getParentAddress();
+    if (!mainAddress) {
+      return false;
+    }
     console.log('getscript script ', mainAddress);
     if (checkedAddress === mainAddress) {
       return true;

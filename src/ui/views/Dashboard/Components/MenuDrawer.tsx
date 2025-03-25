@@ -17,12 +17,12 @@ import { makeStyles } from '@mui/styles';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import type { ChildAccount, UserInfoResponse, WalletType } from '@/shared/types/network-types';
+import type { ChildAccountMap, UserInfoResponse, WalletType } from '@/shared/types/network-types';
 import {
   type LoggedInAccount,
   type LoggedInAccountWithIndex,
   type ActiveChildType,
-  type PubKeyAccount,
+  type MainAccount,
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -56,7 +56,7 @@ interface MenuDrawerProps {
   switchAccount: (account: LoggedInAccountWithIndex) => Promise<void>;
   togglePop: () => void;
   walletList: WalletType[];
-  childAccounts: ChildAccount | null;
+  childAccounts: ChildAccountMap | null;
   current: WalletType;
   createWalletList: (props: WalletType) => React.ReactNode;
   setWallets: (
@@ -65,7 +65,7 @@ interface MenuDrawerProps {
     index?: number | null
   ) => Promise<void>;
   currentNetwork: string;
-  evmWallet: PubKeyAccount;
+  evmWallet: MainAccount;
   networkColor: (network: string) => string;
   evmLoading: boolean;
   modeOn: boolean;

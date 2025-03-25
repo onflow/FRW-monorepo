@@ -2,11 +2,11 @@ import { useCallback, useEffect, useRef } from 'react';
 
 import storage from '@/background/webapi/storage';
 import type {
-  ChildAccount,
+  ChildAccountMap,
   BlockchainResponse,
   WalletResponse,
 } from '@/shared/types/network-types';
-import { UserWalletStore, type FlowAddress, type PubKeyAccount } from '@/shared/types/wallet-types';
+import { UserWalletStore, type FlowAddress, type MainAccount } from '@/shared/types/wallet-types';
 import { ensureEvmAddressPrefix, withPrefix } from '@/shared/utils/address';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
@@ -61,7 +61,7 @@ export const useProfiles = () => {
    * @returns Array of formatted wallet objects with UI-friendly properties
    * Used by freshUserWallet to standardize wallet display format
    */
-  const formatWallets = useCallback((data: PubKeyAccount[]) => {
+  const formatWallets = useCallback((data: MainAccount[]) => {
     if (!Array.isArray(data)) {
       return [];
     }
@@ -93,7 +93,7 @@ export const useProfiles = () => {
 
         const evmAddress = ensureEvmAddressPrefix(evmRes!);
 
-        const evmWalletData: PubKeyAccount = {
+        const evmWalletData: MainAccount = {
           name: emoji[9].name,
           icon: emoji[9].emoji,
           address: evmAddress,
@@ -103,8 +103,8 @@ export const useProfiles = () => {
           keyIndex: 0,
           weight: 1,
           pubK: '',
-          sigAlgo: 'ECDSA_P256',
-          hashAlgo: 'SHA3_256',
+          signing: 'ECDSA_P256',
+          hashing: 'SHA3_256',
         };
 
         await Promise.all([setEvmWallet(evmWalletData), setEvmAddress(evmAddress)]);
@@ -130,7 +130,7 @@ export const useProfiles = () => {
         setMainAddress(mainAddress);
         await setupEvmWallet(mainAddress);
 
-        const childresp: ChildAccount = await usewallet.checkUserChildAccount();
+        const childresp: ChildAccountMap = await usewallet.checkUserChildAccount();
         setChildAccount(childresp);
 
         const parentAddress = await usewallet.getParentAddress();

@@ -1,5 +1,5 @@
-import { type HashAlgoType, type SignAlgoType } from './algo-types';
-import { type ChildAccount } from './network-types';
+import { type HashAlgoString, type SignAlgoString } from './algo-types';
+import { type Account, type AccountKey, type ChildAccountMap } from './network-types';
 
 // Matches exactly 16 hex characters, with optional 0x prefix
 export type FlowAddress = `0x${string & { length: 16 }}` | `${string & { length: 16 }}`;
@@ -39,14 +39,14 @@ export type LoggedInAccount = {
   // The creation date of the account
   created: string;
   // The hash algorithm of the account
-  hashAlgo: HashAlgoType;
+  hashAlgo: HashAlgoString;
   // Anonymous mode of the account.
   // If 1, the account is NOT anonymous. If 2, the account is anonymous.
   private: number;
   // The public key of the account
   pubKey: string;
   // The signature algorithm of the account
-  signAlgo: SignAlgoType;
+  signAlgo: SignAlgoString;
   // The weight of the account. Usually 1000
   weight: number;
 };
@@ -55,26 +55,41 @@ export type LoggedInAccountWithIndex = LoggedInAccount & {
   indexInLoggedInAccounts: number;
 };
 
-export type PubKeyAccount = {
-  id: number;
+export type PublicKeyAccount = {
+  // The address of the account
   address: string;
+  // The public key of the account
+  publicKey: string;
+  // The index of the key in the account
   keyIndex: number;
+  // The weight of the key
   weight: number;
-  pubK: string;
-  sigAlgo: SignAlgoType;
-  hashAlgo: HashAlgoType;
-  chain?: number;
-  childAccount?: ChildAccount;
-  evmAddress?: string;
-  name?: string;
-  icon?: string;
-  color?: string;
+  // The signature algorithm of the key
+  signAlgo: number;
+  // The signature algorithm of the key
+  signAlgoString: SignAlgoString;
+  // The hash algorithm of the key
+  hashAlgo: number;
+  // The hash algorithm of the key
+  hashAlgoString: HashAlgoString;
 };
 
-export type PublicKeyAccounts = {
-  publicKey: string;
-  currentId?: string;
-  accounts: PubKeyAccount[];
+// This will replace loggedInAccount in the future
+export type MainAccount = PublicKeyAccount & {
+  // A unique id of the account
+  id: number;
+  // The chain id of the account
+  chain?: number;
+  // A map of child accounts
+  childAccount?: ChildAccountMap;
+  // The evm address of the account
+  evmAddress?: string;
+  // The name of the account
+  name?: string;
+  // The icon of the account
+  icon?: string;
+  // The color of the account
+  color?: string;
 };
 
 export type Emoji = {
@@ -84,10 +99,6 @@ export type Emoji = {
 };
 
 export type UserWalletStore = {
-  accounts: {
-    mainnet: PublicKeyAccounts[];
-    testnet: PublicKeyAccounts[];
-  };
   network: string;
   monitor: string;
   activeChild: ActiveChildType;

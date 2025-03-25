@@ -88,10 +88,8 @@ async function signMessage(msgParams, opts = {}) {
   // Retrieve the private key from the wallet (assuming Ethereum wallet)
   const password = keyringService.password;
   const privateKey = await Wallet.getPrivateKeyForCurrentAccount(password);
-  const currentWallet = await Wallet.getParentAddress();
-  if (!currentWallet) {
-    throw new Error('Current wallet not found');
-  }
+  const currentWallet = await Wallet.getMainWallet();
+  const account = await fcl.account(currentWallet);
   const hashAlgo = await storage.get('hashAlgo');
   const signAlgo = await storage.get('signAlgo');
   const keyindex = await storage.get('keyIndex');
@@ -132,12 +130,9 @@ async function signTypeData(msgParams, opts = {}) {
   console.log('keyindex ', keyindex);
   // const wallet = new ethers.Wallet(privateKey);
   const signature = await signWithKey(signableData, signAlgo, hashAlgo, privateKey);
-  const currentWallet = await Wallet.getParentAddress();
+  const currentWallet = await Wallet.getMainWallet();
 
   const addressHex = currentWallet;
-  if (!addressHex) {
-    throw new Error('Current wallet not found');
-  }
   const addressBuffer = Buffer.from(addressHex.slice(2), 'hex');
   const addressArray = Uint8Array.from(addressBuffer);
 
@@ -222,12 +217,8 @@ class ProviderController extends BaseController {
       permissionService.addConnectedSite(origin, name, icon, defaultChain);
     }
 
-    const currentWallet = await Wallet.getParentAddress();
-    let evmAddress;
-
-    if (!currentWallet) {
-      throw new Error('Current wallet not found');
-    }
+    const currentWallet = await Wallet.getMainWallet();
+    let evmAddress: string = '';
     try {
       // Attempt to query the EVM address
       evmAddress = await Wallet.queryEvmAddress(currentWallet);
@@ -245,10 +236,8 @@ class ProviderController extends BaseController {
         },
         { height: 599 }
       );
+
       evmAddress = await Wallet.queryEvmAddress(currentWallet);
-      if (!isValidEthereumAddress(evmAddress)) {
-        throw new Error('Invalid EVM address');
-      }
     }
 
     const account = evmAddress ? [ensureEvmAddressPrefix(evmAddress)] : [];
@@ -307,7 +296,7 @@ class ProviderController extends BaseController {
     let currentWallet;
     try {
       // Attempt to query the currentNetwork address
-      currentWallet = await Wallet.getParentAddress();
+      currentWallet = await Wallet.getMainWallet();
     } catch (error) {
       // If an error occurs, request approval
       console.error('Error querying EVM address:', error);
@@ -515,10 +504,7 @@ class ProviderController extends BaseController {
     );
 
     const network = await Wallet.getNetwork();
-    const currentWallet = await Wallet.getParentAddress();
-    if (!currentWallet) {
-      throw new Error('Current wallet not found');
-    }
+    const currentWallet = await Wallet.getMainWallet();
     const evmaddress = await Wallet.queryEvmAddress(currentWallet);
 
     if (network === 'testnet') {
@@ -578,10 +564,7 @@ class ProviderController extends BaseController {
     );
 
     const network = await Wallet.getNetwork();
-    const currentWallet = await Wallet.getParentAddress();
-    if (!currentWallet) {
-      throw new Error('Current wallet not found');
-    }
+    const currentWallet = await Wallet.getMainWallet();
     const evmaddress = await Wallet.queryEvmAddress(currentWallet);
 
     if (network === 'testnet') {
