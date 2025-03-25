@@ -68,6 +68,7 @@ export const useCoins = () => {
       await Promise.all([
         setCoins(Array.from(uniqueTokenMap.values())),
         setTotalFlow(flowBalance.toString()),
+        setAvailableFlow(flowBalance.toString()),
         setBalance(`$ ${sum.toFixed(2)}`),
       ]);
     },
@@ -122,55 +123,6 @@ export const useCoins = () => {
     };
   }, [usewallet, network, handleStorageData]);
 
-  const calculateAvailableBalance = useCallback(async () => {
-    // Prevent concurrent calculations and duplicate calculations
-    if (calculationInProgressRef.current) {
-      return;
-    }
-
-    if (lastTotalFlowRef.current === totalFlow) {
-      return;
-    }
-
-    try {
-      calculationInProgressRef.current = true;
-      lastTotalFlowRef.current = totalFlow;
-
-      // Make sure the wallet is unlocked
-      if (!usewallet || !walletLoaded) {
-        return;
-      }
-
-      if (!(await usewallet.isUnlocked())) {
-        return;
-      }
-
-      if (!(await usewallet.getParentAddress())) {
-        return;
-      }
-
-      if (!mainAddress) {
-        return;
-      }
-
-      const address = withPrefix(mainAddress) || '';
-
-      // TODO: need a controller for this
-      const minAmount = new BN(
-        (await usewallet.openapi.getAccountMinFlow(address)) || DEFAULT_MIN_AMOUNT
-      );
-      const total = new BN(totalFlow);
-      const availableFlow = total.minus(minAmount).toString();
-
-      setAvailableFlow(availableFlow);
-    } catch (error) {
-      console.error('Error calculating available balance:', error);
-      setAvailableFlow('0');
-    } finally {
-      calculationInProgressRef.current = false;
-    }
-  }, [usewallet, walletLoaded, totalFlow, mainAddress, setAvailableFlow]);
-
   const refreshCoinData = useCallback(async () => {
     // Prevent concurrent refreshes and throttle calls
     if (refreshInProgressRef.current) {
@@ -208,24 +160,6 @@ export const useCoins = () => {
       refreshInProgressRef.current = false;
     }
   }, [usewallet, walletLoaded]);
-
-  // Calculate available balance when totalFlow changes
-  useEffect(() => {
-    let mounted = true;
-
-    if (
-      walletLoaded &&
-      totalFlow &&
-      !calculationInProgressRef.current &&
-      lastTotalFlowRef.current !== totalFlow
-    ) {
-      calculateAvailableBalance();
-    }
-
-    return () => {
-      mounted = false;
-    };
-  }, [totalFlow, calculateAvailableBalance, walletLoaded]);
 
   return {
     refreshCoinData,
