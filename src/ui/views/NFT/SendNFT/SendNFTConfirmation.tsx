@@ -5,12 +5,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 import Web3 from 'web3';
 
+import { type Contact } from '@/shared/types/network-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
 import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { MatchMediaType } from '@/ui/utils/url';
+import { type MatchMedia, MatchMediaType } from '@/ui/utils/url';
 import { useStorageCheck } from '@/ui/utils/useStorageCheck';
 import erc721 from 'background/utils/erc721.abi.json';
 import { EVM_ENDPOINT } from 'consts';
@@ -22,7 +23,14 @@ import IconFlow from '../../../../components/iconfont/IconFlow';
 
 interface SendNFTConfirmationProps {
   isConfirmationOpen: boolean;
-  data: any;
+  data: {
+    contact: Contact;
+    contract: any;
+    media: MatchMedia | null;
+    nft: any;
+    userContact: Contact;
+    linked: any;
+  };
   handleCloseIconClicked: () => void;
   handleCancelBtnClicked: () => void;
   handleAddBtnClicked: () => void;
@@ -157,7 +165,7 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
           true,
           `${props.data.media?.title} Sent`,
           `The ${props.data.contract.name} NFT transaction has been sealed.\nClick to view this transaction.`,
-          props.data.media.url
+          props.data.media?.url
         );
         await wallet.setDashIndex(0);
         history.push(`/dashboard?activity=1&txId=${txId}`);
@@ -190,7 +198,7 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
         true,
         `${props.data.media?.title} Sent`,
         `The ${props.data.contract.name} NFT transaction has been sealed.\nClick to view this transaction.`,
-        props.data.media.url
+        props.data.media?.url
       );
       await wallet.setDashIndex(0);
       history.push(`/dashboard?activity=1&txId=${txId}`);
@@ -239,20 +247,14 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
 
   const flowToEvm = async () => {
     setSending(true);
-    const data = await wallet.getEvmAddress();
-    const encodedData = erc721Contract.methods
-      .safeTransferFrom(data, props.data.contact.address, props.data.nft.id)
-      .encodeABI();
     // NOTE: hardcoded gas limit and this is not used
     const gas = '1312d00';
     setSending(true);
     wallet
       .bridgeNftToEvmAddress(
-        props.data.nft.contractAddress,
-        props.data.nft.collectionContractName,
+        props.data.nft.flowIdentifier,
         props.data.nft.id,
-        props.data.contract.evmAddress,
-        encodedData
+        props.data.contract.evmAddress
       )
       .then(async (txId) => {
         wallet.listenTransaction(

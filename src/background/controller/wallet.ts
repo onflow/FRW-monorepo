@@ -2886,26 +2886,17 @@ export class WalletController extends BaseController {
   };
 
   bridgeNftToEvmAddress = async (
-    nftContractAddress: string,
-    nftContractName: string,
+    flowIdentifier: string,
     ids: number,
-    contractEVMAddress: string,
-    data: any
+    contractEVMAddress: string
   ): Promise<string> => {
     const shouldCoverBridgeFee = await openapiService.getFeatureFlag('cover_bridge_fee');
     const scriptName = shouldCoverBridgeFee
       ? 'bridgeNFTToEvmAddressWithPayer'
-      : 'bridgeNFTToEvmAddress';
+      : 'bridgeNFTToEvmAddressV2';
     const script = await getScripts('bridge', scriptName);
 
     const gasLimit = 30000000;
-    const dataBuffer = Buffer.from(data.slice(2), 'hex');
-    const dataArray = Uint8Array.from(dataBuffer);
-    const regularArray = Array.from(dataArray);
-
-    if (!nftContractAddress.startsWith('0x')) {
-      nftContractAddress = '0x' + nftContractAddress;
-    }
 
     if (contractEVMAddress.startsWith('0x')) {
       contractEVMAddress = contractEVMAddress.substring(2);
@@ -2914,20 +2905,17 @@ export class WalletController extends BaseController {
     const txID = await userWalletService.sendTransaction(
       script,
       [
-        fcl.arg(nftContractAddress, t.Address),
-        fcl.arg(nftContractName, t.String),
+        fcl.arg(flowIdentifier, t.String),
         fcl.arg(ids, t.UInt64),
         fcl.arg(contractEVMAddress, t.String),
-        fcl.arg(regularArray, t.Array(t.UInt8)),
-        fcl.arg(gasLimit, t.UInt64),
       ],
       shouldCoverBridgeFee
     );
     mixpanelTrack.track('nft_transfer', {
       tx_id: txID,
-      from_address: nftContractAddress,
+      from_address: flowIdentifier,
       to_address: (await this.getCurrentAddress()) || '',
-      nft_identifier: nftContractName,
+      nft_identifier: flowIdentifier,
       from_type: 'evm',
       to_type: 'evm',
       isMove: false,

@@ -5,10 +5,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 import Web3 from 'web3';
 
+import { type Contact } from '@/shared/types/network-types';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
 import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
-import { MatchMediaType } from '@/ui/utils/url';
+import { type MatchMedia, MatchMediaType } from '@/ui/utils/url';
 import { useStorageCheck } from '@/ui/utils/useStorageCheck';
 import erc721 from 'background/utils/erc721.abi.json';
 import { EVM_ENDPOINT } from 'consts';
@@ -20,7 +21,14 @@ import IconFlow from '../../../../components/iconfont/IconFlow';
 
 interface SendNFTConfirmationProps {
   isConfirmationOpen: boolean;
-  data: any;
+  data: {
+    contact: Contact;
+    contract: any;
+    media: MatchMedia | null;
+    nft: any;
+    userContact: Contact;
+    amount?: any;
+  };
   handleCloseIconClicked: () => void;
   handleCancelBtnClicked: () => void;
   handleAddBtnClicked: () => void;
@@ -221,6 +229,7 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
       return (
         <>
           {props.data.media &&
+            props.data.media.image &&
             (props.data.media.type !== MatchMediaType.VIDEO ? (
               <CardMedia
                 sx={{ width: '72px', height: '72px', borderRadius: '8px' }}
