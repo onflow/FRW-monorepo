@@ -1123,119 +1123,67 @@ export class WalletController extends BaseController {
     return this.calculateTokenPrice(token, price);
   }
 
-  refreshCoinList = async (
-    _expiry = 60000,
-    { signal } = { signal: new AbortController().signal }
-  ) => {
+  /**
+   * Refreshes coin list with updated balances and prices
+   * @param _expiry Expiry time in milliseconds
+   * @returns Array of coin items
+   */
+  refreshCoinList = async (_expiry = 60000): Promise<CoinItem[]> => {
     try {
       const isChild = await this.getActiveWallet();
+
+      // Handle EVM wallets
       if (isChild === 'evm') {
-        const data = await this.refreshEvmList(_expiry);
-        return data;
+        return await this.refreshEvmList(_expiry);
       }
 
-      const network = await this.getNetwork();
+      // Set expiry
       const now = new Date();
       const exp = _expiry + now.getTime();
       coinListService.setExpiry(exp);
 
+      // Get network and address
+      const network = await this.getNetwork();
       const address = await this.getCurrentAddress();
-      const tokenList = await openapiService.getEnabledTokenList(network);
-      let allBalanceMap: BalanceMap;
-      try {
-        allBalanceMap = await openapiService.getTokenBalanceStorage(address || '0x');
-        console.log('allBalanceMap is this ', allBalanceMap);
-      } catch (error) {
-        console.error('Error refresh token list balance:', error);
-        throw new Error('Failed to refresh token list balance');
-      }
-      const data = await openapiService.getTokenPrices('pricesMap');
-      // Map over tokenList to get prices and handle errors individually
-      const pricesPromises = tokenList.map(async (token) => {
-        try {
-          if (Object.keys(data).length === 0 && data.constructor === Object) {
-            return { price: { last: '0.0', change: { percentage: '0.0' } } };
-          } else {
-            return await this.tokenPrice(token.symbol, token.address, data, token.contractName);
+
+      // Fetch token list, balances and prices in parallel
+      const [tokenList, allBalanceMap, priceData] = await Promise.all([
+        openapiService.getEnabledTokenList(network),
+        openapiService.getTokenBalanceStorage(address || '0x'),
+        openapiService.getTokenPrices('pricesMap'),
+      ]);
+
+      // Check if price data is empty
+      const isPriceDataEmpty =
+        Object.keys(priceData).length === 0 && priceData.constructor === Object;
+      const defaultPrice = { price: { last: '0.0', change: { percentage: '0.0' } } };
+
+      // Process token prices in parallel with optimized error handling
+      const allPrice = await Promise.all(
+        tokenList.map(async (token) => {
+          try {
+            if (isPriceDataEmpty) {
+              return defaultPrice;
+            }
+            return await this.tokenPrice(
+              token.symbol,
+              token.address,
+              priceData,
+              token.contractName
+            );
+          } catch (error) {
+            console.error(`Error fetching price for token ${token.address}:`, error);
+            return null;
           }
-        } catch (error) {
-          console.error(`Error fetching price for token ${token.address}:`, error);
-          return null;
-        }
-      });
-
-      const pricesResults = await Promise.allSettled(pricesPromises);
-
-      // Extract fulfilled prices
-      const allPrice = pricesResults.map((result) =>
-        result.status === 'fulfilled' ? result.value : null
+        })
       );
-      // Get available flow balance if
-      let availableFlowBalance: string | undefined = undefined;
-      if (!isChild) {
-        const accountInfo = await openapiService.getFlowAccountInfo(address!);
-        availableFlowBalance = accountInfo.availableBalance;
-      }
 
-      const coins = tokenList.map((token, index): CoinItem => {
-        const tokenId = `A.${token.address.slice(2)}.${token.contractName}`;
-        const tokenIdVault = `A.${token.address.slice(2)}.${token.contractName}.Vault`;
-        const isFlow = token.symbol.toLowerCase() === 'flow';
-        const balance = isFlow
-          ? allBalanceMap['availableFlowToken']
-          : allBalanceMap[tokenIdVault] || '';
-        return {
-          id: tokenId,
-          coin: token.name,
-          unit: token.symbol.toLowerCase(),
-          icon: token['logoURI'] || '',
-          // Keep the balance as a string to avoid precision loss
-          balance: balance,
-          // If it's flow and not child account, add the available balance to the flow coin item
-          availableBalance: isFlow && !isChild ? availableFlowBalance : undefined,
-          price: allPrice[index] === null ? 0 : new BN(allPrice[index].price.last).toNumber(),
-          change24h:
-            allPrice[index] === null || !allPrice[index].price || !allPrice[index].price.change
-              ? 0
-              : new BN(allPrice[index].price.change.percentage).multipliedBy(100).toNumber(),
-          total:
-            allPrice[index] === null
-              ? 0
-              : this.currencyBalance(balance, allPrice[index].price.last),
-          chainId: token.chainId,
-          address: token.address,
-          contractName: token.contractName,
-          path: token.path
-            ? {
-                vault: token.path.vault,
-                receiver: token.path.receiver,
-                balance: token.path.balance,
-              }
-            : undefined,
-          symbol: token.symbol,
-          name: token.name,
-          description: token.description,
-          decimals: token.decimals,
-          logoURI: token.logoURI,
-          tags: token.tags,
-          evmAddress: token.evmAddress,
-          evm_address: token.evm_address, // Some tokens use this format instead of camelCase
-          flowAddress: token.flowAddress,
-        };
-      });
-      coins.sort((a, b) => {
-        if (b.total === a.total) {
-          // Balance is a string, so we need to convert it to a number for comparison
-          return new BN(b.balance).minus(new BN(a.balance)).toNumber();
-        } else {
-          return b.total - a.total;
-        }
-      });
+      // Map tokens to coin items
+      const coins = this.mapTokensBalancePrice(tokenList, allBalanceMap, allPrice, isChild);
 
-      // Add all coins at once
-      if (signal.aborted) throw new Error('Operation aborted');
+      // Update storage
+      await coinListService.addCoins(coins, network);
 
-      coinListService.addCoins(coins, network);
       return coins;
     } catch (err) {
       if (err.message === 'Operation aborted') {
@@ -1247,14 +1195,80 @@ export class WalletController extends BaseController {
     }
   };
 
-  refreshCadenceBalance = async () => {
-    const network = await this.getNetwork();
-    const address = await this.getCurrentAddress();
-    const allBalanceMap = await openapiService.getTokenBalanceStorage(address || '0x');
-    coinListService.updateBalances(allBalanceMap, network);
+  /**
+   * Maps token data with balances and prices to create CoinItem objects
+   * @param tokenList List of tokens
+   * @param balanceMap Map of token balances
+   * @param priceData Price data for tokens
+   * @param isChild Whether this is a child account
+   * @param availableFlowBalance Available flow balance for non-child accounts
+   * @returns Array of CoinItem objects
+   */
+  mapTokensBalancePrice = (
+    tokenList: any[],
+    balanceMap: { [key: string]: string },
+    priceData: any[],
+    isChild: FlowAddress | null
+  ): CoinItem[] => {
+    return tokenList.map((token, index): CoinItem => {
+      const tokenId = `A.${token.address.slice(2)}.${token.contractName}`;
+      const tokenIdVault = `A.${token.address.slice(2)}.${token.contractName}.Vault`;
+      const isFlow = token.symbol.toLowerCase() === 'flow';
+
+      // Get balance from balanceMap
+      const balance = isFlow
+        ? balanceMap['availableFlowToken'] || '0'
+        : balanceMap[tokenIdVault] || '0';
+
+      // Get price data
+      const priceInfo = priceData[index] || null;
+      const price = priceInfo && priceInfo.price ? new BN(priceInfo.price.last).toNumber() : 0;
+
+      // Calculate change percentage
+      const change24h =
+        priceInfo && priceInfo.price && priceInfo.price.change
+          ? new BN(priceInfo.price.change.percentage).multipliedBy(100).toNumber()
+          : 0;
+
+      // Calculate total value
+      const total = price > 0 ? this.currencyBalance(balance, priceInfo.price.last) : 0;
+
+      return {
+        id: tokenId,
+        coin: token.name,
+        unit: token.symbol.toLowerCase(),
+        icon: token['logoURI'] || '',
+        balance: balance,
+        availableBalance: isFlow && !isChild ? balance : undefined,
+        price: price,
+        change24h: change24h,
+        total: total,
+
+        // Token metadata
+        chainId: token.chainId,
+        address: token.address,
+        contractName: token.contractName,
+        path: token.path
+          ? {
+              vault: token.path.vault,
+              receiver: token.path.receiver,
+              balance: token.path.balance,
+            }
+          : undefined,
+        symbol: token.symbol,
+        name: token.name,
+        description: token.description,
+        decimals: token.decimals,
+        logoURI: token.logoURI,
+        tags: token.tags,
+        evmAddress: token.evmAddress,
+        evm_address: token.evm_address,
+        flowAddress: token.flowAddress,
+      };
+    });
   };
 
-  refreshEvmList = async (_expiry = 60000) => {
+  refreshEvmList = async (_expiry = 60000): Promise<CoinItem[]> => {
     const now = new Date();
     const exp = _expiry + now.getTime();
     coinListService.setExpiry(exp);
@@ -1266,7 +1280,7 @@ export class WalletController extends BaseController {
 
     const address = await this.getRawEvmAddressWithPrefix();
     if (!isValidEthereumAddress(address)) {
-      return new Error('Invalid Ethereum address in coinlist');
+      throw new Error('Invalid Ethereum address in coinlist');
     }
 
     const allBalanceMap = await openapiService.getEvmFT(address || '0x', network);
@@ -1295,7 +1309,7 @@ export class WalletController extends BaseController {
       });
     };
 
-    const customToken = (coins, evmCustomToken) => {
+    const customToken = (coins: CoinItem[], evmCustomToken: any): CoinItem[] => {
       const updatedList = [...coins];
 
       evmCustomToken.forEach((customToken) => {
@@ -1312,10 +1326,11 @@ export class WalletController extends BaseController {
             coin: customToken.coin,
             unit: customToken.unit,
             icon: '',
-            balance: 0,
+            balance: '0',
             price: 0,
             change24h: 0,
             total: 0,
+            id: '',
           });
         }
       });
@@ -3277,7 +3292,7 @@ export class WalletController extends BaseController {
       // This will throw an error if there is an error with the transaction
       const txStatus = await fcl.tx(txId).onceExecuted();
       // Update the pending transaction with the transaction status
-      this.refreshCadenceBalance();
+      this.refreshCoinList(6000);
       txHash = transactionService.updatePending(txId, network, txStatus);
 
       // Track the transaction result
