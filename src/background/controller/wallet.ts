@@ -174,7 +174,7 @@ export class WalletController extends BaseController {
   switchAccount = async (currentId: string) => {
     try {
       await keyringService.switchKeyring(currentId);
-      const pubKey = await this.getPubKey();
+      const pubKey = await keyringService.getCurrentPublicKeyTuple();
       await userWalletService.switchLogin(pubKey);
     } catch (error) {
       throw new Error('Failed to switch account: ' + (error.message || 'Unknown error'));
@@ -194,7 +194,7 @@ export class WalletController extends BaseController {
     await keyringService.submitPassword(password);
 
     // only password is correct then we store it
-    const pubKey = await this.getPubKey();
+    const pubKey = await keyringService.getCurrentPublicKeyTuple();
     await userWalletService.switchLogin(pubKey);
     // Set up all the wallet data
     await this.refreshWallets();
@@ -218,11 +218,14 @@ export class WalletController extends BaseController {
     // Refresh the EVM wallet
     await this.queryEvmAddress(mainAddress);
     // Refresh the user wallets
-    await this.refreshUserWallets();
+    await this.loadMainAccounts();
     // Refresh the child wallets
     await this.checkUserChildAccount();
     // Refresh the logged in account
-    const [keys, pubKTuple] = await Promise.all([this.getAccount(), this.getPubKey()]);
+    const [keys, pubKTuple] = await Promise.all([
+      this.getAccount(),
+      keyringService.getCurrentPublicKeyTuple(),
+    ]);
     // Check if a child wallet is active (it shouldn't be...)
     const anyActiveChild = await this.getActiveWallet();
     // Get the current wallet
@@ -531,53 +534,9 @@ export class WalletController extends BaseController {
     return privateKey;
   };
 
+  // Should probably not be exposed
   getPubKey = async (): Promise<PublicKeyTuple> => {
-    let privateKey: string | undefined;
-    let pubKTuple: PublicKeyTuple | undefined = undefined;
-    const keyrings: Keyring[] = await keyringService.getKeyring();
-    for (const keyring of keyrings) {
-      if (keyring instanceof SimpleKeyring) {
-        // If a private key is found, extract it and break the loop
-        privateKey = keyring.wallets[0].privateKey.toString('hex');
-        if (privateKey) {
-          pubKTuple = await pk2PubKey(privateKey);
-          break;
-        }
-      } else if (keyring instanceof HDKeyring) {
-        // Get a copy of the keyring data
-        const serialized = await keyring.serialize();
-        if (serialized.activeIndexes[0] === 1) {
-          // If publicKey is found, extract it and break the loop
-          const publicKey = serialized.publicKey;
-          if (publicKey) {
-            pubKTuple = await formPubKey(publicKey);
-            break;
-          }
-        } else if (serialized.mnemonic) {
-          // If mnemonic is found, extract it and break the loop
-          const mnemonic = serialized.mnemonic;
-          pubKTuple = await seed2PublicPrivateKey(mnemonic);
-          break;
-        }
-      } else if (
-        (keyring as any).wallets &&
-        (keyring as any).wallets.length > 0 &&
-        (keyring as any).wallets[0].privateKey
-      ) {
-        // If a private key is found, extract it and break the loop
-        privateKey = (keyring as any).wallets[0].privateKey.toString('hex');
-        if (privateKey) {
-          pubKTuple = await pk2PubKey(privateKey);
-          break;
-        }
-      }
-    }
-
-    if (!pubKTuple) {
-      const error = new Error('No mnemonic or private key found in any of the keyrings.');
-      throw error;
-    }
-    return pubKTuple;
+    return await keyringService.getCurrentPublicKeyTuple();
   };
 
   importPrivateKey = async (data) => {
@@ -1502,21 +1461,29 @@ export class WalletController extends BaseController {
     return account;
   };
 
-  //user wallets
-  // TODO: Move this to userWalletService
-  refreshUserWallets = async () => {
+  /*
+   * Load the main (flow) accounts for the current private key
+   */
+
+  loadMainAccounts = async () => {
     const network = await this.getNetwork();
 
-    const pubKey: PublicKeyTuple = await this.getPubKey();
+    // Get the current public key tuple
+    const pubKey: PublicKeyTuple = await keyringService.getCurrentPublicKeyTuple();
+    // Get the accounts for the current public key
     const accounts: PublicKeyAccount[] = await getAccountsByPublicKeyTuple(pubKey, network);
-    const emoji = await this.getEmoji();
+    // If there are no accounts, throw an error
     if (!accounts || accounts.length === 0) {
       throw new Error("Can't find address in chain");
     }
 
+    // Get the active wallet
     const active = await userWalletService.getActiveWallet();
     if (!active) {
-      // Transform the address array into blockchain objects
+      // Get the emoji list
+      const emoji = await this.getEmoji();
+
+      // Transform the address array into MainAccount objects
       const transformedArray: MainAccount[] = accounts.map((item, index): MainAccount => {
         const defaultEmoji = emoji[index] || {
           name: 'Default',
@@ -1534,12 +1501,12 @@ export class WalletController extends BaseController {
         };
       });
 
-      const currentAccount = userWalletService.setUserAccounts(
+      // Set the user accounts
+      const currentAccount = userWalletService.setMainAccounts(
         transformedArray,
         // Always use the first account's public key as the current public key
         accounts[0].publicKey,
-        network,
-        emoji
+        network
       );
       if (!currentAccount) {
         throw new Error('Current account not found');
@@ -1554,7 +1521,7 @@ export class WalletController extends BaseController {
     const network = await this.getNetwork();
     const wallets = await userWalletService.getUserWallets(network);
     if (!wallets) {
-      const refreshData = await this.refreshUserWallets();
+      const refreshData = await this.loadMainAccounts();
       if (!refreshData) {
         return null;
       }
@@ -1606,7 +1573,7 @@ export class WalletController extends BaseController {
     }
     const wallet = await userWalletService.getCurrentWallet();
     if (!wallet?.address) {
-      const data = await this.refreshUserWallets();
+      const data = await this.loadMainAccounts();
       if (!data) {
         return;
       }
@@ -1644,7 +1611,7 @@ export class WalletController extends BaseController {
   getCurrentAddress = async (): Promise<WalletAddress | null> => {
     const address = await userWalletService.getCurrentAddress();
     if (!address) {
-      const data = await this.refreshUserWallets();
+      const data = await this.loadMainAccounts();
       if (!data) {
         return null;
       }
@@ -1660,7 +1627,7 @@ export class WalletController extends BaseController {
     const network = await this.getNetwork();
     const address = await userWalletService.getParentAddress(network);
     if (!isValidFlowAddress(address)) {
-      const data = await this.refreshUserWallets();
+      const data = await this.loadMainAccounts();
       if (!data) {
         return null;
       }
@@ -3114,7 +3081,7 @@ export class WalletController extends BaseController {
     console.log('refreshAll');
     // Clear the active wallet if any
     // If we don't do this, the user wallets will not be refreshed
-    await this.refreshUserWallets();
+    await this.loadMainAccounts();
     this.clearNFT();
     this.refreshAddressBook();
     this.refreshEvmWallets();

@@ -15,50 +15,31 @@ import {
 } from '@/background/utils/modules/publicPrivateKey';
 import createPersistStore from '@/background/utils/persisitStore';
 import { type HashAlgoString, type SignAlgoString } from '@/shared/types/algo-types';
-import { type PublicKeyTuple, type PublicPrivateKeyTuple } from '@/shared/types/key-types';
+import { type PublicPrivateKeyTuple } from '@/shared/types/key-types';
 import {
   type LoggedInAccount,
   type ActiveChildType,
   type FlowAddress,
   type EvmAddress,
-  type Emoji,
   type WalletAccount,
   type ChildAccountMap,
+  type UserWalletStore,
+  type ProfileAccountStore,
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress, isValidFlowAddress, withPrefix } from '@/shared/utils/address';
 import { getHashAlgo, getSignAlgo } from '@/shared/utils/algo';
 
-import type {
-  WalletResponse,
-  BlockchainResponse,
-  DeviceInfoRequest,
-  FlowNetwork,
-} from '../../shared/types/network-types';
+import type { DeviceInfoRequest, FlowNetwork } from '../../shared/types/network-types';
 import {
   type WalletProfile,
   type PublicKeyAccount,
   type MainAccount,
 } from '../../shared/types/wallet-types';
 import { fclConfig } from '../fclConfig';
-import { findAddressWithSeed, findAddressWithPK } from '../utils/modules/findAddressWithPK';
-import {
-  getAccountsByPublicKeyTuple,
-  getOrCheckAddressByPublicKeyTuple,
-} from '../utils/modules/findAddressWithPubKey';
+import { createSessionStore } from '../utils';
+import { findAddressWithPK } from '../utils/modules/findAddressWithPK';
+import { getAccountsByPublicKeyTuple } from '../utils/modules/findAddressWithPubKey';
 import { storage } from '../webapi';
-
-interface UserWalletStore {
-  network: string;
-  monitor: string;
-  activeChild: ActiveChildType;
-  evmEnabled: boolean;
-  emulatorMode: boolean;
-
-  currentPubkey: string;
-  currentAddress: string;
-  parentAddress: string;
-  currentEvmAddress: string | null;
-}
 
 const USER_WALLET_TEMPLATE: UserWalletStore = {
   activeChild: null,
@@ -92,6 +73,7 @@ class UserWallet {
       name: 'userWallets',
       template: USER_WALLET_TEMPLATE,
     });
+
     this.accounts = {
       mainnet: [],
       testnet: [],
@@ -116,57 +98,27 @@ class UserWallet {
     return !keyringService.isBooted() || !keyringService.memStore.getState().isUnlocked;
   };
 
-  setUserAccounts = async (
-    accountData: MainAccount[],
-    pubKey: string,
-    network: string,
-    emoji: Emoji[]
-  ) => {
+  setMainAccounts = async (accounts: MainAccount[], pubKey: string, network: string) => {
     const profileList: WalletProfile[] = this.accounts[network];
     const accountIndex = profileList.findIndex((account) => account.publicKey === pubKey);
     this.setCurrentPubkey(pubKey);
     if (accountIndex !== -1) {
-      profileList[accountIndex] = {
-        accounts: accountData.map((account, index): MainAccount => {
-          const defaultEmoji = emoji[index] || {
-            name: 'Default',
-            emoji: '🐾',
-            bgcolor: '#ffffff',
-          };
-          return {
-            ...account,
-            chain: network === 'testnet' ? 545 : 747,
-            id: index,
-            name: defaultEmoji.name,
-            icon: defaultEmoji.emoji,
-            color: defaultEmoji.bgcolor,
-          };
-        }),
-        publicKey: pubKey,
-      };
+      // assign the accounts to the profile
+      profileList[accountIndex].accounts = accounts;
     } else {
-      profileList.push({
-        accounts: accountData.map((account, index) => {
-          const defaultEmoji = emoji[index] || {
-            name: 'Default',
-            emoji: '🐾',
-            bgcolor: '#ffffff',
-          };
-          return {
-            ...account,
-            chain: network === 'testnet' ? 545 : 747,
-            id: index,
-            name: defaultEmoji.name,
-            icon: defaultEmoji.emoji,
-            color: defaultEmoji.bgcolor,
-          };
-        }),
-        // TODO: This is a temporary fix to ensure the public key is always the P256 public key
-        publicKey: pubKey,
-      });
+      // Create a new session store and push it to the profile list
+      profileList.push(
+        await createSessionStore<ProfileAccountStore>({
+          name: `profile-accounts-${pubKey}`,
+          template: {
+            accounts: accounts,
+            publicKey: pubKey,
+          },
+        })
+      );
     }
-    this.store.currentAddress = accountData[0].address;
-    this.store.parentAddress = accountData[0].address;
+    this.store.currentAddress = accounts[0].address;
+    this.store.parentAddress = accounts[0].address;
     this.accounts[network] = profileList;
 
     return profileList;
@@ -182,22 +134,22 @@ class UserWallet {
       return;
     }
 
-    const accounts = this.accounts[this.store.network];
+    const profileList: WalletProfile[] = this.accounts[this.store.network];
 
-    const accountGroup = accounts.find((group) => {
+    const profile = profileList.find((group) => {
       const matches = group.publicKey === pubkey;
 
       return matches;
     });
 
-    if (!accountGroup || !accountGroup.accounts.length) {
+    if (!profile || !profile.accounts.length) {
       console.warn(`No account found for pubkey: ${pubkey.slice(0, 10)}...`);
       return;
     }
 
     this.store.currentPubkey = pubkey;
-    this.store.currentAddress = accountGroup.accounts[0].address;
-    this.store.parentAddress = accountGroup.accounts[0].address;
+    this.store.currentAddress = profile.accounts[0].address;
+    this.store.parentAddress = profile.accounts[0].address;
   };
 
   getCurrentPubkey = (): string => {
@@ -212,37 +164,37 @@ class UserWallet {
     account: PublicKeyAccount | null;
     currentAccounts: WalletProfile[];
   } => {
-    const currentAccounts = this.accounts[network];
+    const profileList: WalletProfile[] = this.accounts[network];
 
     // First try to find account group using currentPubkey
-    let accountGroupIndex = currentAccounts.findIndex(
+    let accountGroupIndex = profileList.findIndex(
       (group) => group.publicKey === this.store.currentPubkey
     );
 
     // If not found with currentPubkey, fallback to searching by address
     if (accountGroupIndex === -1) {
-      accountGroupIndex = currentAccounts.findIndex((group) =>
+      accountGroupIndex = profileList.findIndex((group) =>
         group.accounts.some((account) => account.address === address)
       );
     }
 
     if (accountGroupIndex === -1) {
       console.warn(`No account group found containing address ${address}`);
-      return { account: null, currentAccounts };
+      return { account: null, currentAccounts: profileList };
     }
 
-    const accountIndex = currentAccounts[accountGroupIndex].accounts.findIndex(
+    const accountIndex = profileList[accountGroupIndex].accounts.findIndex(
       (account) => account.address === address
     );
 
     if (accountIndex === -1) {
       console.warn(`Address ${address} not found in account group`);
-      return { account: null, currentAccounts };
+      return { account: null, currentAccounts: profileList };
     }
 
     return {
-      account: currentAccounts[accountGroupIndex].accounts[accountIndex] as PublicKeyAccount,
-      currentAccounts,
+      account: profileList[accountGroupIndex].accounts[accountIndex] as PublicKeyAccount,
+      currentAccounts: profileList,
     };
   };
 
@@ -317,10 +269,10 @@ class UserWallet {
     }
     const address = this.store.parentAddress;
     const pubkey = this.store.currentPubkey;
-    const currentAccounts = this.accounts[network] as WalletProfile[];
-    const account = currentAccounts.find((account) => account.publicKey === pubkey);
-    if (account) {
-      return account.accounts.find((account) => account.address === address) || null;
+    const profileList: WalletProfile[] = this.accounts[network];
+    const profile = profileList.find((account) => account.publicKey === pubkey);
+    if (profile) {
+      return profile.accounts.find((account) => account.address === address) || null;
     }
     return null;
   };
@@ -341,10 +293,9 @@ class UserWallet {
     const address = this.store.parentAddress;
     const pubkey = this.store.currentPubkey;
     const profileList: WalletProfile[] = this.accounts[network];
-    const currentProfile = profileList.find((profile) => profile.publicKey === pubkey);
-    if (currentProfile) {
-      const account =
-        currentProfile.accounts.find((account) => account.address === address) || null;
+    const profile = profileList.find((profile) => profile.publicKey === pubkey);
+    if (profile) {
+      const account = profile.accounts.find((account) => account.address === address) || null;
       if (!account) {
         return null;
       }
@@ -378,11 +329,11 @@ class UserWallet {
 
   getUserWallets = (network: string): MainAccount[] | null => {
     const currentPubKey = this.store.currentPubkey;
-    const currentAccounts = this.accounts[network] as WalletProfile[];
+    const profileList: WalletProfile[] = this.accounts[network];
 
-    const currentAccount = currentAccounts.find((account) => account.publicKey === currentPubKey);
-    if (currentAccount) {
-      return currentAccount.accounts;
+    const profile = profileList.find((account) => account.publicKey === currentPubKey);
+    if (profile) {
+      return profile.accounts;
     } else {
       return null;
     }
@@ -396,10 +347,10 @@ class UserWallet {
     const network = this.store.network;
     const address = this.store.parentAddress;
     const pubkey = this.store.currentPubkey;
-    const currentAccounts = this.accounts[network] as WalletProfile[];
-    const accounts = currentAccounts.find((account) => account.publicKey === pubkey);
-    if (accounts) {
-      const account = accounts.accounts.find((account) => account.address === address) || null;
+    const profileList: WalletProfile[] = this.accounts[network];
+    const profile = profileList.find((account) => account.publicKey === pubkey);
+    if (profile) {
+      const account = profile.accounts.find((account) => account.address === address) || null;
       if (!account) {
         return null;
       }
