@@ -1,5 +1,6 @@
-import { type HashAlgoType, type SignAlgoType } from './algo-types';
-import { type ChildAccount } from './network-types';
+import { type HashAlgoString, type SignAlgoString } from './algo-types';
+import { type PublicKeyTuple } from './key-types';
+import { type Account, type AccountKey } from './network-types';
 
 // Matches exactly 16 hex characters, with optional 0x prefix
 export type FlowAddress = `0x${string & { length: 16 }}` | `${string & { length: 16 }}`;
@@ -27,14 +28,14 @@ export type LoggedInAccount = {
   // The creation date of the account
   created: string;
   // The hash algorithm of the account
-  hashAlgo: HashAlgoType;
+  hashAlgo: HashAlgoString;
   // Anonymous mode of the account.
   // If 1, the account is NOT anonymous. If 2, the account is anonymous.
   private: number;
   // The public key of the account
   pubKey: string;
   // The signature algorithm of the account
-  signAlgo: SignAlgoType;
+  signAlgo: SignAlgoString;
   // The weight of the account. Usually 1000
   weight: number;
 };
@@ -43,26 +44,40 @@ export type LoggedInAccountWithIndex = LoggedInAccount & {
   indexInLoggedInAccounts: number;
 };
 
-export type PubKeyAccount = {
-  id: number;
+export type PublicKeyAccount = {
+  // The address of the account
   address: string;
+  // The public key of the account
+  publicKey: string;
+  // The index of the key in the account
   keyIndex: number;
+  // The weight of the key
   weight: number;
-  pubK: string;
-  sigAlgo: SignAlgoType;
-  hashAlgo: HashAlgoType;
-  chain?: number;
-  childAccount?: ChildAccount;
-  evmAddress?: string;
-  name?: string;
-  icon?: string;
-  color?: string;
+  // The signature algorithm of the key
+  signAlgo: number;
+  // The signature algorithm of the key
+  signAlgoString: SignAlgoString;
+  // The hash algorithm of the key
+  hashAlgo: number;
+  // The hash algorithm of the key
+  hashAlgoString: HashAlgoString;
 };
 
-export type PublicKeyAccounts = {
+export type WalletAccount = {
+  address: string;
+  chain: number; // testnet: 545, mainnet: 747
+  id: number;
+  name: string;
+  icon: string;
+  color: string;
+};
+
+export type MainAccount = WalletAccount & PublicKeyAccount;
+
+export type WalletProfile = {
   publicKey: string;
   currentId?: string;
-  accounts: PubKeyAccount[];
+  accounts: MainAccount[];
 };
 
 export type Emoji = {
@@ -72,18 +87,27 @@ export type Emoji = {
 };
 
 export type UserWalletStore = {
-  accounts: {
-    mainnet: PublicKeyAccounts[];
-    testnet: PublicKeyAccounts[];
-  };
   network: string;
   monitor: string;
   activeChild: ActiveChildType;
   evmEnabled: boolean;
   emulatorMode: boolean;
-
-  currentPubkey: string;
+  currentPubkey: PublicKeyTuple;
   currentAddress: string;
   parentAddress: string;
   currentEvmAddress: string | null;
 };
+
+interface Thumbnail {
+  url: string;
+}
+
+export interface AccountDetails {
+  name: string;
+  description: string;
+  thumbnail: Thumbnail;
+}
+
+export interface ChildAccountMap {
+  [key: string]: AccountDetails;
+}

@@ -3,23 +3,26 @@ import { create } from 'zustand';
 import type {
   LoggedInAccountWithIndex,
   LoggedInAccount,
-  PubKeyAccount,
   FlowAddress,
+  PublicKeyAccount,
+  WalletAccount,
+  ChildAccountMap,
+  MainAccount,
 } from '@/shared/types/wallet-types';
 
-import type { ChildAccount, WalletType, UserInfoResponse } from '../../shared/types/network-types';
+import type { UserInfoResponse } from '../../shared/types/network-types';
 
 interface ProfileState {
   mainAddress: FlowAddress | null;
   evmAddress: string;
   currentWalletIndex: number;
-  parentWallet: PubKeyAccount;
-  evmWallet: PubKeyAccount;
-  walletList: WalletType[];
+  parentWallet: MainAccount;
+  evmWallet: WalletAccount;
+  walletList: WalletAccount[];
   initialStart: boolean;
-  currentWallet: WalletType;
+  currentWallet: WalletAccount;
   mainAddressLoading: boolean;
-  childAccounts: ChildAccount;
+  childAccounts: ChildAccountMap;
   evmLoading: boolean;
   listLoading: boolean;
   userInfo: UserInfoResponse | null;
@@ -28,13 +31,13 @@ interface ProfileState {
   setMainAddress: (address: FlowAddress) => void;
   setEvmAddress: (address: string) => void;
   setCurrentWalletIndex: (index: number) => void;
-  setParentWallet: (wallet: PubKeyAccount) => void;
-  setEvmWallet: (wallet: PubKeyAccount) => void;
+  setParentWallet: (wallet: MainAccount) => void;
+  setEvmWallet: (wallet: WalletAccount) => void;
   setWalletList: (list: any[]) => void;
   setInitial: (initial: boolean) => void;
   setCurrent: (current: any) => void;
   setMainLoading: (mainAddressLoading: boolean) => void;
-  setChildAccount: (childAccount: ChildAccount) => void;
+  setChildAccount: (childAccount: ChildAccountMap) => void;
   setEvmLoading: (evmLoading: boolean) => void;
   setListLoading: (listLoading: boolean) => void;
   setUserInfo: (info: UserInfoResponse | null) => void;
@@ -51,9 +54,10 @@ const INITIAL_WALLET = {
   id: 1,
   coins: ['flow'],
   color: '',
+  chain: 747,
 };
 
-const INITIAL_ACCOUNT: PubKeyAccount = {
+const INITIAL_ACCOUNT = {
   name: '',
   icon: '',
   address: '',
@@ -61,9 +65,12 @@ const INITIAL_ACCOUNT: PubKeyAccount = {
   color: '',
   keyIndex: 0,
   weight: 0,
-  pubK: '',
-  sigAlgo: 'ECDSA_secp256k1',
-  hashAlgo: 'SHA3_256',
+  publicKey: '',
+  signAlgo: 1,
+  hashAlgo: 1,
+  signAlgoString: 'ECDSA_secp256k1',
+  hashAlgoString: 'SHA3_256',
+  chain: 747,
 };
 
 export const useProfileStore = create<ProfileState>((set) => ({

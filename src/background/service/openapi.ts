@@ -24,7 +24,7 @@ import {
   type LoggedInAccount,
   type FlowAddress,
   type ActiveChildType,
-  type PubKeyAccount,
+  type PublicKeyAccount,
 } from '@/shared/types/wallet-types';
 import { isValidFlowAddress, isValidEthereumAddress } from '@/shared/utils/address';
 import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
@@ -35,7 +35,7 @@ import fetchConfig from 'background/utils/remoteConfig';
 import { INITIAL_OPENAPI_URL, WEB_NEXT_URL } from 'consts';
 
 import {
-  type AccountKey,
+  type AccountKeyRequest,
   type CheckResponse,
   type SignInResponse,
   type UserInfoResponse,
@@ -46,8 +46,7 @@ import {
   type NewsConditionType,
   Period,
   PriceProvider,
-  type BlockchainResponse,
-  type AccountInfo,
+  type AccountBalanceInfo,
   type Contact,
   type NFTModelV2,
 } from '../../shared/types/network-types';
@@ -642,7 +641,7 @@ class OpenApiService {
     return data;
   };
 
-  register = async (account_key: AccountKey, username: string) => {
+  register = async (account_key: AccountKeyRequest, username: string) => {
     // Track the time until account_created is called
     mixpanelTrack.time('account_created');
 
@@ -1215,7 +1214,7 @@ class OpenApiService {
     };
   };
 
-  getFlowAccountInfo = async (address: string): Promise<AccountInfo> => {
+  getFlowAccountInfo = async (address: string): Promise<AccountBalanceInfo> => {
     const script = await getScripts('basic', 'getAccountInfo');
 
     const result = await fcl.query({
@@ -1778,7 +1777,7 @@ class OpenApiService {
     return data;
   };
 
-  putDeviceInfo = async (walletData: PubKeyAccount[]) => {
+  putDeviceInfo = async (walletData: PublicKeyAccount[]) => {
     try {
       const installationId = await this.getInstallationId();
       // console.log('location ', userlocation);

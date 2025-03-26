@@ -61,9 +61,12 @@ interface VaultEntry {
   [uuid: string]: string;
 }
 
+export type KeyringType = 'HD Key Tree' | 'Simple Key Pair';
+export type Keyring = SimpleKeyring | HDKeyring;
+
 interface KeyringData {
   0: {
-    type: 'HD Key Tree' | 'Simple Key Pair';
+    type: KeyringType;
     data:
       | {
           mnemonic?: string;
@@ -73,45 +76,6 @@ interface KeyringData {
       | string[];
   };
   id: string;
-}
-
-interface HDWallet {
-  provider: null;
-  address: string;
-  publicKey: string;
-  fingerprint: string;
-  parentFingerprint: string;
-  mnemonic: {
-    phrase: string;
-    password: string;
-    wordlist: {
-      locale: string;
-    };
-    entropy: string;
-  };
-  chainCode: string;
-  path: string;
-  index: number;
-  depth: number;
-}
-
-interface SimpleKeyPairWallet {
-  privateKey: {
-    type: 'Buffer';
-    data: number[];
-  };
-}
-
-interface Keyring {
-  type: 'HD Key Tree' | 'Simple Key Pair';
-  hdWallet?: HDWallet;
-  wallets?: SimpleKeyPairWallet[];
-  mnemonic?: string;
-  activeIndexes?: number[];
-  getAccounts(): Promise<string[]>;
-  addAccounts(n: number): Promise<string[]>;
-  removeAccount(address: string, brand?: string): void;
-  serialize(): Promise<any>;
 }
 
 class SimpleStore<T> {
@@ -147,7 +111,7 @@ class KeyringService extends EventEmitter {
   //
   // PUBLIC METHODS
   //
-  keyringTypes: any[];
+  keyringTypes: (typeof SimpleKeyring | typeof HDKeyring)[];
   store!: SimpleStore<any>;
   memStore: SimpleStore<MemStoreState>;
   currentKeyring: Keyring[];
@@ -349,7 +313,7 @@ class KeyringService extends EventEmitter {
       .then(() => keyring);
   }
 
-  async addKeyring(keyring) {
+  async addKeyring(keyring: SimpleKeyring | HDKeyring) {
     return keyring
       .getAccounts()
       .then((accounts) => {
@@ -456,9 +420,12 @@ class KeyringService extends EventEmitter {
    * @param {Object} opts - The constructor options for the keyring.
    * @returns {Promise<Keyring>} The new keyring.
    */
-  addNewKeyring(type: string, opts?: unknown): Promise<any> {
-    const Keyring = this.getKeyringClassForType(type);
-    const keyring = new Keyring(opts);
+  addNewKeyring(type: KeyringType, opts?: unknown): Promise<any> {
+    const KeyringClass = this.getKeyringClassForType(type);
+    if (!KeyringClass) {
+      throw new Error(`Keyring type ${type} not found`);
+    }
+    const keyring = new KeyringClass(opts as typeof KeyringClass.arguments);
     return this.addKeyring(keyring);
   }
 
@@ -1015,15 +982,17 @@ class KeyringService extends EventEmitter {
   async _restoreKeyring(serialized: any): Promise<any> {
     const { type, data } = serialized;
     const Keyring = this.getKeyringClassForType(type);
+    if (!Keyring) {
+      throw new Error(`Keyring type ${type} not found`);
+    }
     const keyring = new Keyring();
 
     try {
       // For HD Key Tree, initialize with just the mnemonic and indexes
       if (type === 'HD Key Tree' && data) {
-        await keyring.deserialize({
-          mnemonic: data.mnemonic,
-          activeIndexes: data.activeIndexes || [0],
-          hdPath: 'm',
+        await (keyring as HDKeyring).deserialize({
+          mnemonic: (data.mnemonic as string) || '',
+          activeIndexes: (data.activeIndexes as number[]) || [0],
         });
       } else {
         await keyring.deserialize(data);
@@ -1049,7 +1018,7 @@ class KeyringService extends EventEmitter {
    * @param {string} type - The type whose class to get.
    * @returns {Keyring|undefined} The class, if it exists.
    */
-  getKeyringClassForType(type: string): any {
+  getKeyringClassForType(type: KeyringType) {
     return this.keyringTypes.find((kr) => kr.type === type);
   }
 
@@ -1091,9 +1060,9 @@ class KeyringService extends EventEmitter {
    * Returns the key ring of current storage
    * managed by all currently unlocked keyrings.
    *
-   * @returns {Promise<Array<string>>} The array of accounts.
+   * @returns {Promise<Array<Keyring>>} The array of keyrings.
    */
-  async getKeyring(): Promise<any[]> {
+  async getKeyring(): Promise<Keyring[]> {
     const keyrings = this.currentKeyring || [];
     return keyrings;
   }

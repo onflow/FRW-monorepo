@@ -13,19 +13,19 @@ import { encode } from 'rlp';
 import web3, { TransactionError, Web3 } from 'web3';
 
 import {
-  findAddressWithNetwork,
   findAddressWithSeed,
   findAddressWithPK,
 } from '@/background/utils/modules/findAddressWithPK';
 import {
   pk2PubKey,
-  seed2PubKey,
   formPubKey,
   jsonToKey,
+  seed2PublicPrivateKey,
 } from '@/background/utils/modules/publicPrivateKey';
 import eventBus from '@/eventBus';
 import type { CoinItem, TokenInfo, BalanceMap } from '@/shared/types/coin-types';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
+import { type PublicKeyTuple } from '@/shared/types/key-types';
 import { ContactType } from '@/shared/types/network-types';
 import { type NFTCollectionData } from '@/shared/types/nft-types';
 import { type TrackingEvents } from '@/shared/types/tracking-types';
@@ -33,15 +33,18 @@ import { type TransferItem, type TransactionState } from '@/shared/types/transac
 import {
   type ActiveChildType,
   type LoggedInAccount,
-  type PubKeyAccount,
   type FlowAddress,
+  type PublicKeyAccount,
+  type MainAccount,
+  type ChildAccountMap,
+  type WalletAccount,
   type EvmAddress,
-  type PublicKeyAccounts,
+  type WalletAddress,
 } from '@/shared/types/wallet-types';
 import {
   ensureEvmAddressPrefix,
-  isValidFlowAddress,
   isValidEthereumAddress,
+  isValidFlowAddress,
   withPrefix,
 } from '@/shared/utils/address';
 import { getSignAlgo } from '@/shared/utils/algo';
@@ -68,7 +71,12 @@ import {
   evmNftService,
 } from 'background/service';
 import i18n from 'background/service/i18n';
-import { type DisplayedKeryring, KEYRING_CLASS } from 'background/service/keyring';
+import {
+  type DisplayedKeryring,
+  type Keyring,
+  KEYRING_CLASS,
+  type KeyringType,
+} from 'background/service/keyring';
 import type { CacheState } from 'background/service/pageStateCache';
 import { getScripts, replaceNftKeywords } from 'background/utils';
 import emoji from 'background/utils/emoji.json';
@@ -77,35 +85,21 @@ import { notification, storage } from 'background/webapi';
 import { openIndexPage } from 'background/webapi/tab';
 import { INTERNAL_REQUEST_ORIGIN, EVENTS, KEYRING_TYPE, EVM_ENDPOINT } from 'consts';
 
-import type {
-  BlockchainResponse,
-  Contact,
-  NFTData,
-  NFTModel_depreciated,
-  NFTModelV2,
-  WalletResponse,
-} from '../../shared/types/network-types';
+import type { BlockchainResponse, Contact, NFTModelV2 } from '../../shared/types/network-types';
 import placeholder from '../images/placeholder.png';
 import DisplayKeyring from '../service/keyring/display';
+import { HDKeyring } from '../service/keyring/hdKeyring';
+import { SimpleKeyring } from '../service/keyring/simpleKeyring';
 import type { ConnectedSite } from '../service/permission';
 import type { PreferenceAccount } from '../service/preference';
 import { type EvaluateStorageResult, StorageEvaluator } from '../service/storage-evaluator';
-import type { UserInfoStore } from '../service/user';
 import defaultConfig from '../utils/defaultConfig.json';
 import erc20ABI from '../utils/erc20.abi.json';
 import { getLoggedInAccount } from '../utils/getLoggedInAccount';
+import { getAccountsByPublicKeyTuple } from '../utils/modules/findAddressWithPubKey';
 
 import BaseController from './base';
 import provider from './provider';
-interface Keyring {
-  type: string;
-  getAccounts(): Promise<string[]>;
-  getAccountsWithBrand?(): Promise<{ address: string; brandName: string }[]>;
-  setHdPath?(path: string): void;
-  unlock?(): Promise<void>;
-  useWebUSB?(isWebUSB: boolean): void;
-  mnemonic?: string;
-}
 
 const stashKeyrings: Record<string, Keyring> = {};
 
@@ -244,7 +238,13 @@ export class WalletController extends BaseController {
       console.error('Error refreshing user info:', error);
     }
     // Refresh the user info
-    await openapiService.freshUserInfo(mainAddress, keys, pubKTuple, userInfo, anyActiveChild);
+    await openapiService.freshUserInfo(
+      mainAddress as FlowAddress,
+      keys,
+      pubKTuple,
+      userInfo,
+      anyActiveChild
+    );
   };
 
   retrievePk = async (password: string) => {
@@ -252,6 +252,7 @@ export class WalletController extends BaseController {
     return pk;
   };
 
+  // This is not used anymore
   extractKeys = (keyrings) => {
     let privateKeyHex, publicKeyHex;
 
@@ -463,9 +464,9 @@ export class WalletController extends BaseController {
     const keyrings = await this.getKeyrings(password || '');
 
     for (const keyring of keyrings) {
-      if (keyring.mnemonic) {
+      if (keyring instanceof HDKeyring) {
         const mnemonic = await this.getMnemonics(password || '');
-        const seed = await seed2PubKey(mnemonic);
+        const seed = await seed2PublicPrivateKey(mnemonic);
         const PK1 = seed.P256.pk;
         const PK2 = seed.SECP256K1.pk;
 
@@ -492,11 +493,8 @@ export class WalletController extends BaseController {
           const network = (await this.getNetwork()) || 'mainnet';
           // Find the address associated with the pubKey
           // This should return an array of address information records
-          const addressAndKeyInfoArray = await findAddressWithNetwork(seed, network);
-          // Find which signAlgo and hashAlgo is used on the account
-          if (!Array.isArray(addressAndKeyInfoArray) || !addressAndKeyInfoArray.length) {
-            throw new Error('No address found');
-          }
+          const addressAndKeyInfoArray = await getAccountsByPublicKeyTuple(seed, network);
+
           // Follow the same logic as freshUserInfo in openapi.ts
           // Look for the P256 key first
           let index = addressAndKeyInfoArray.findIndex((key) => key.publicKey === seed.P256.pubK);
@@ -510,17 +508,19 @@ export class WalletController extends BaseController {
             index = 0;
           }
 
-          const signAlgo =
-            typeof addressAndKeyInfoArray[index].signAlgo === 'string'
-              ? getSignAlgo(addressAndKeyInfoArray[index].signAlgo)
-              : addressAndKeyInfoArray[index].signAlgo;
+          const signAlgo: number = addressAndKeyInfoArray[index].signAlgo;
 
           privateKey = signAlgo === 1 ? PK1 : PK2;
         }
 
         break;
-      } else if (keyring.wallets && keyring.wallets.length > 0 && keyring.wallets[0].privateKey) {
-        privateKey = keyrings[0].wallets[0].privateKey.toString('hex');
+      } else if (
+        keyring instanceof SimpleKeyring &&
+        keyring.wallets &&
+        keyring.wallets.length > 0 &&
+        keyring.wallets[0].privateKey
+      ) {
+        privateKey = keyring.wallets[0].privateKey.toString('hex');
         break;
       }
     }
@@ -531,33 +531,45 @@ export class WalletController extends BaseController {
     return privateKey;
   };
 
-  getPubKey = async () => {
-    let privateKey;
-    let pubKTuple;
-    const keyrings = await keyringService.getKeyring();
+  getPubKey = async (): Promise<PublicKeyTuple> => {
+    let privateKey: string | undefined;
+    let pubKTuple: PublicKeyTuple | undefined = undefined;
+    const keyrings: Keyring[] = await keyringService.getKeyring();
     for (const keyring of keyrings) {
-      if (keyring.type === 'Simple Key Pair') {
+      if (keyring instanceof SimpleKeyring) {
         // If a private key is found, extract it and break the loop
         privateKey = keyring.wallets[0].privateKey.toString('hex');
-        pubKTuple = await pk2PubKey(privateKey);
-        break;
-      } else if (keyring.activeIndexes[0] === 1) {
-        // If publicKey is found, extract it and break the loop
+        if (privateKey) {
+          pubKTuple = await pk2PubKey(privateKey);
+          break;
+        }
+      } else if (keyring instanceof HDKeyring) {
+        // Get a copy of the keyring data
         const serialized = await keyring.serialize();
-        const publicKey = serialized.publicKey;
-        pubKTuple = await formPubKey(publicKey);
-        break;
-      } else if (keyring.mnemonic) {
-        // If mnemonic is found, extract it and break the loop
-        const serialized = await keyring.serialize();
-        const mnemonic = serialized.mnemonic;
-        pubKTuple = await seed2PubKey(mnemonic);
-        break;
-      } else if (keyring.wallets && keyring.wallets.length > 0 && keyring.wallets[0].privateKey) {
+        if (serialized.activeIndexes[0] === 1) {
+          // If publicKey is found, extract it and break the loop
+          const publicKey = serialized.publicKey;
+          if (publicKey) {
+            pubKTuple = await formPubKey(publicKey);
+            break;
+          }
+        } else if (serialized.mnemonic) {
+          // If mnemonic is found, extract it and break the loop
+          const mnemonic = serialized.mnemonic;
+          pubKTuple = await seed2PublicPrivateKey(mnemonic);
+          break;
+        }
+      } else if (
+        (keyring as any).wallets &&
+        (keyring as any).wallets.length > 0 &&
+        (keyring as any).wallets[0].privateKey
+      ) {
         // If a private key is found, extract it and break the loop
-        privateKey = keyring.wallets[0].privateKey.toString('hex');
-        pubKTuple = await pk2PubKey(privateKey);
-        break;
+        privateKey = (keyring as any).wallets[0].privateKey.toString('hex');
+        if (privateKey) {
+          pubKTuple = await pk2PubKey(privateKey);
+          break;
+        }
       }
     }
 
@@ -737,7 +749,7 @@ export class WalletController extends BaseController {
     needUnlock = false,
     isWebUSB = false,
   }: {
-    type: string;
+    type: KeyringType;
     hdPath?: string;
     needUnlock?: boolean;
     isWebUSB?: boolean;
@@ -748,6 +760,9 @@ export class WalletController extends BaseController {
       keyring = this._getKeyringByType(type);
     } catch {
       const Keyring = keyringService.getKeyringClassForType(type);
+      if (!Keyring) {
+        throw new Error(`No keyring class found for type: ${type}`);
+      }
       keyring = new Keyring();
       stashKeyringId = Object.values(stashKeyrings).length;
       stashKeyrings[stashKeyringId] = keyring;
@@ -799,6 +814,9 @@ export class WalletController extends BaseController {
         keyring = this._getKeyringByType(type);
       } catch {
         const Keyring = keyringService.getKeyringClassForType(type);
+        if (!Keyring) {
+          throw new Error(`No keyring class found for type: ${type}`);
+        }
         keyring = new Keyring();
       }
     }
@@ -930,7 +948,7 @@ export class WalletController extends BaseController {
     }
   };
 
-  checkUserChildAccount = async () => {
+  checkUserChildAccount = async (): Promise<ChildAccountMap> => {
     const network = await this.getNetwork();
     const address = await userWalletService.getParentAddress(network);
     if (!address) {
@@ -953,7 +971,7 @@ export class WalletController extends BaseController {
         return {}; // Return an empty object in case of an error
       }
     }
-    return meta;
+    return meta || {};
   };
 
   checkAccessibleNft = async (childAccount) => {
@@ -1471,35 +1489,53 @@ export class WalletController extends BaseController {
 
   //user wallets
   // TODO: Move this to userWalletService
-  refreshUserWallets = async (): Promise<PublicKeyAccounts[] | null> => {
+  refreshUserWallets = async () => {
     const network = await this.getNetwork();
 
-    const pubKey = await this.getPubKey();
-    const address = await findAddressWithNetwork(pubKey, network);
+    const pubKey: PublicKeyTuple = await this.getPubKey();
+    const accounts: PublicKeyAccount[] = await getAccountsByPublicKeyTuple(pubKey, network);
     const emoji = await this.getEmoji();
-    if (!address) {
+    if (!accounts || accounts.length === 0) {
       throw new Error("Can't find address in chain");
     }
 
     const active = await userWalletService.getActiveWallet();
     if (!active) {
-      const cleanAddresses: PubKeyAccount[] = address.map(({ pk, ...rest }) => rest);
+      // Transform the address array into blockchain objects
+      const transformedArray: MainAccount[] = accounts.map((item, index): MainAccount => {
+        const defaultEmoji = emoji[index] || {
+          name: 'Default',
+          emoji: '🐾',
+          bgcolor: '#ffffff',
+        };
 
-      const currentAccount = await userWalletService.setUserAccounts(
-        cleanAddresses,
-        address[0].pubK,
+        return {
+          ...item,
+          chain: network === 'mainnet' ? 747 : 545,
+          id: index,
+          name: defaultEmoji.name,
+          icon: defaultEmoji.emoji,
+          color: defaultEmoji.bgcolor,
+        };
+      });
+
+      const currentAccount = userWalletService.setUserAccounts(
+        transformedArray,
+        // Always use the first account's public key as the current public key
+        accounts[0].publicKey,
         network,
         emoji
       );
-      if (currentAccount) {
-        return currentAccount;
+      if (!currentAccount) {
+        throw new Error('Current account not found');
       }
+      return currentAccount;
     }
 
     return null;
   };
 
-  getUserWallets = async (): Promise<PubKeyAccount[] | null> => {
+  getUserWallets = async (): Promise<MainAccount[] | null> => {
     const network = await this.getNetwork();
     const wallets = await userWalletService.getUserWallets(network);
     if (!wallets) {
@@ -1511,11 +1547,6 @@ export class WalletController extends BaseController {
     }
     return wallets;
   };
-
-  // switchWallet = async (walletId:number, blockId:number, _sortKey = 'id' ) => {
-  //   const network = await this.getNetwork();
-  //   await userWalletService.switchWallet(walletId, blockId, _sortKey,network);
-  // }
 
   getActiveWallet = async () => {
     const activeWallet = await userWalletService.getActiveWallet();
@@ -1531,11 +1562,10 @@ export class WalletController extends BaseController {
    * index: number | null = null // The index of the main wallet in the array to switch to
    */
   setActiveWallet = async (
-    wallet: BlockchainResponse,
+    wallet: WalletAccount,
     key: ActiveChildType | null,
     index: number | null = null
   ) => {
-    const network = await this.getNetwork();
     await userWalletService.setCurrentAccount(wallet, key);
 
     // Clear collections
@@ -1555,7 +1585,7 @@ export class WalletController extends BaseController {
     return wallet?.address !== '';
   };
 
-  getCurrentWallet = async (): Promise<PubKeyAccount | undefined> => {
+  getCurrentWallet = async (): Promise<WalletAccount | undefined> => {
     if (!this.isBooted() || userWalletService.isLocked()) {
       return;
     }
@@ -1575,7 +1605,7 @@ export class WalletController extends BaseController {
     return wallet;
   };
 
-  setEvmAddress = async (address) => {
+  setEvmAddress = async (address: string) => {
     await userWalletService.setAccountEvmAddress(address);
   };
 
@@ -1596,7 +1626,7 @@ export class WalletController extends BaseController {
     return address;
   };
 
-  getCurrentAddress = async (): Promise<FlowAddress | EvmAddress | null> => {
+  getCurrentAddress = async (): Promise<WalletAddress | null> => {
     const address = await userWalletService.getCurrentAddress();
     if (!address) {
       const data = await this.refreshUserWallets();
@@ -1954,15 +1984,15 @@ export class WalletController extends BaseController {
     return result;
   };
 
-  checkCoaLink = async (): Promise<any> => {
+  checkCoaLink = async (): Promise<boolean> => {
     const checkedAddress = await storage.get('coacheckAddress');
 
     const script = await getScripts('evm', 'checkCoaLink');
-    const mainAddress = await this.getParentAddress();
+    const mainAddress = await this.getMainAddress();
     console.log('getscript script ', mainAddress);
     if (checkedAddress === mainAddress) {
       return true;
-    } else {
+    } else if (mainAddress) {
       const result = await fcl.query({
         cadence: script,
         args: (arg, t) => [arg(mainAddress, t.Address)],
@@ -1970,8 +2000,9 @@ export class WalletController extends BaseController {
       if (result) {
         await storage.set('coacheckAddress', mainAddress);
       }
-      return result;
+      return !!result;
     }
+    return false;
   };
 
   bridgeToEvm = async (flowIdentifier, amount = '1.0'): Promise<string> => {

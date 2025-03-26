@@ -6,6 +6,9 @@ vi.mock('react', async () => {
     useEffect: vi.fn((fn) => fn()),
     useCallback: vi.fn((fn) => fn),
     useState: vi.fn((initialValue) => [initialValue, vi.fn()]),
+    useRef: vi.fn((initialValue) => ({
+      current: initialValue,
+    })),
   };
 });
 
