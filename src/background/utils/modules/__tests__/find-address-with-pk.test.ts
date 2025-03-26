@@ -1,11 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import {
-  findAddress,
-  findAddressWithNetwork,
-  findAddressWithPK,
-  findAddressWithSeed,
-} from '../findAddressWithPK';
+import { findAddressWithPK, findAddressWithSeed } from '../findAddressWithPK';
 import * as findAddressWithPubKeyModule from '../findAddressWithPubKey';
 import * as publicPrivateKeyModule from '../publicPrivateKey';
 
@@ -35,163 +30,6 @@ describe('findAddressWithPK module', () => {
     vi.clearAllMocks();
   });
 
-  describe('findAddress', () => {
-    it('should combine results from both P256 and SECP256K1 keys when both return accounts', async () => {
-      const mockP256Accounts = [
-        {
-          address: mockAddress,
-          keyIndex: 0,
-          weight: 1000,
-          hashAlgo: 'SHA3_256',
-          signAlgo: 'ECDSA_P256',
-          pubK: mockP256PubKey,
-        },
-      ];
-
-      const mockSECP256K1Accounts = [
-        {
-          address: mockAddress,
-          keyIndex: 1,
-          weight: 1000,
-          hashAlgo: 'SHA2_256',
-          signAlgo: 'ECDSA_secp256k1',
-          pubK: mockSECP256K1PubKey,
-        },
-      ];
-
-      vi.mocked(findAddressWithPubKeyModule.findAddressWithKey)
-        .mockResolvedValueOnce(mockP256Accounts)
-        .mockResolvedValueOnce(mockSECP256K1Accounts);
-
-      const result = await findAddress(mockPubKeyTuple, mockAddress);
-
-      expect(findAddressWithPubKeyModule.findAddressWithKey).toHaveBeenCalledWith(
-        mockP256PubKey,
-        mockAddress
-      );
-      expect(findAddressWithPubKeyModule.findAddressWithKey).toHaveBeenCalledWith(
-        mockSECP256K1PubKey,
-        mockAddress
-      );
-      expect(result).toEqual([
-        { ...mockP256Accounts[0], pk: mockPubKeyTuple.P256.pk },
-        { ...mockSECP256K1Accounts[0], pk: mockPubKeyTuple.SECP256K1.pk },
-      ]);
-    });
-
-    it('should return default SECP256K1 config when no accounts found', async () => {
-      vi.mocked(findAddressWithPubKeyModule.findAddressWithKey)
-        .mockResolvedValueOnce(null)
-        .mockResolvedValueOnce(null);
-
-      const result = await findAddress(mockPubKeyTuple, mockAddress);
-
-      expect(result).toEqual([
-        {
-          ...mockPubKeyTuple.SECP256K1,
-          weight: 1000,
-          hashAlgo: 'SHA2_256',
-          signAlgo: 'ECDSA_secp256k1',
-          keyIndex: 0,
-        },
-      ]);
-    });
-  });
-
-  describe('findAddressWithNetwork', () => {
-    it('should combine results from both P256 and SECP256K1 keys when both return accounts', async () => {
-      const mockP256Accounts = [
-        {
-          address: mockAddress,
-          keyIndex: 0,
-          weight: 1000,
-          hashAlgo: 'SHA3_256',
-          signAlgo: 'ECDSA_P256',
-          pubK: mockP256PubKey,
-        },
-      ];
-
-      const mockSECP256K1Accounts = [
-        {
-          address: mockAddress,
-          keyIndex: 1,
-          weight: 1000,
-          hashAlgo: 'SHA2_256',
-          signAlgo: 'ECDSA_secp256k1',
-          pubK: mockSECP256K1PubKey,
-        },
-      ];
-
-      vi.mocked(findAddressWithPubKeyModule.findAddressOnlyKey)
-        .mockResolvedValueOnce(mockP256Accounts)
-        .mockResolvedValueOnce(mockSECP256K1Accounts);
-
-      const result = await findAddressWithNetwork(mockPubKeyTuple, 'testnet');
-
-      expect(findAddressWithPubKeyModule.findAddressOnlyKey).toHaveBeenCalledWith(
-        mockP256PubKey,
-        'testnet'
-      );
-      expect(findAddressWithPubKeyModule.findAddressOnlyKey).toHaveBeenCalledWith(
-        mockSECP256K1PubKey,
-        'testnet'
-      );
-      expect(result).toEqual([
-        { ...mockP256Accounts[0], pk: mockPubKeyTuple.P256.pk },
-        { ...mockSECP256K1Accounts[0], pk: mockPubKeyTuple.SECP256K1.pk },
-      ]);
-    });
-
-    it('should return default SECP256K1 config when no accounts found', async () => {
-      vi.mocked(findAddressWithPubKeyModule.findAddressOnlyKey)
-        .mockResolvedValueOnce(null)
-        .mockResolvedValueOnce(null);
-
-      const result = await findAddressWithNetwork(mockPubKeyTuple, 'testnet');
-
-      expect(result).toEqual([
-        {
-          ...mockPubKeyTuple.SECP256K1,
-          weight: 1000,
-          hashAlgo: 'SHA2_256',
-          signAlgo: 'ECDSA_secp256k1',
-          keyIndex: 0,
-        },
-      ]);
-    });
-
-    it('should return null when no account has sufficient weight', async () => {
-      const mockP256Accounts = [
-        {
-          address: mockAddress,
-          keyIndex: 0,
-          weight: 500, // Less than 1000
-          hashAlgo: 'SHA3_256',
-          signAlgo: 'ECDSA_P256',
-          pubK: mockP256PubKey,
-        },
-      ];
-
-      const mockSECP256K1Accounts = [
-        {
-          address: mockAddress,
-          keyIndex: 1,
-          weight: 500, // Less than 1000
-          hashAlgo: 'SHA2_256',
-          signAlgo: 'ECDSA_secp256k1',
-          pubK: mockSECP256K1PubKey,
-        },
-      ];
-
-      vi.mocked(findAddressWithPubKeyModule.findAddressOnlyKey)
-        .mockResolvedValueOnce(mockP256Accounts)
-        .mockResolvedValueOnce(mockSECP256K1Accounts);
-
-      const result = await findAddressWithNetwork(mockPubKeyTuple, 'testnet');
-      expect(result).toBeNull();
-    });
-  });
-
   describe('findAddressWithPK', () => {
     it('should convert PK to public keys and find address', async () => {
       vi.mocked(publicPrivateKeyModule.pk2PubKey).mockResolvedValueOnce(mockPubKeyTuple);
@@ -201,99 +39,118 @@ describe('findAddressWithPK module', () => {
           address: mockAddress,
           keyIndex: 0,
           weight: 1000,
-          hashAlgo: 'SHA2_256',
-          signAlgo: 'ECDSA_secp256k1',
-          pubK: mockSECP256K1PubKey,
-          pk: mockPubKeyTuple.SECP256K1.pk,
+          hashAlgo: 3,
+          signAlgo: 1,
+          hashAlgoString: 'SHA3_256',
+          signAlgoString: 'ECDSA_P256',
+          publicKey: mockP256PubKey,
         },
       ];
 
-      vi.mocked(findAddressWithPubKeyModule.findAddressWithKey)
-        .mockResolvedValueOnce(null)
-        .mockResolvedValueOnce(null);
+      vi.mocked(
+        findAddressWithPubKeyModule.getOrCheckAddressByPublicKeyTuple
+      ).mockResolvedValueOnce(mockAccounts);
 
       const result = await findAddressWithPK(mockPK, mockAddress);
 
       expect(publicPrivateKeyModule.pk2PubKey).toHaveBeenCalledWith(mockPK);
-      expect(result).toEqual([
-        {
-          ...mockPubKeyTuple.SECP256K1,
-          weight: 1000,
-          hashAlgo: 'SHA2_256',
-          signAlgo: 'ECDSA_secp256k1',
-          keyIndex: 0,
-        },
-      ]);
+      expect(findAddressWithPubKeyModule.getOrCheckAddressByPublicKeyTuple).toHaveBeenCalledWith(
+        mockPubKeyTuple,
+        mockAddress
+      );
+      expect(result).toEqual(mockAccounts);
+    });
+
+    it('should throw error when no accounts are found', async () => {
+      vi.mocked(publicPrivateKeyModule.pk2PubKey).mockResolvedValueOnce(mockPubKeyTuple);
+      vi.mocked(
+        findAddressWithPubKeyModule.getOrCheckAddressByPublicKeyTuple
+      ).mockRejectedValueOnce(new Error('No accounts found with the given public key'));
+
+      await expect(findAddressWithPK(mockPK, mockAddress)).rejects.toThrow(
+        'No accounts found with the given public key'
+      );
     });
   });
 
   describe('findAddressWithSeed', () => {
     it('should convert seed to public keys and find address (non-temp)', async () => {
-      vi.mocked(publicPrivateKeyModule.seed2PubKey).mockResolvedValueOnce(mockPubKeyTuple);
+      vi.mocked(publicPrivateKeyModule.seed2PublicPrivateKey).mockResolvedValueOnce(
+        mockPubKeyTuple
+      );
 
       const mockAccounts = [
         {
           address: mockAddress,
           keyIndex: 0,
           weight: 1000,
-          hashAlgo: 'SHA2_256',
-          signAlgo: 'ECDSA_secp256k1',
-          pubK: mockSECP256K1PubKey,
-          pk: mockPubKeyTuple.SECP256K1.pk,
+          hashAlgo: 3,
+          signAlgo: 1,
+          hashAlgoString: 'SHA3_256',
+          signAlgoString: 'ECDSA_P256',
+          publicKey: mockP256PubKey,
         },
       ];
 
-      vi.mocked(findAddressWithPubKeyModule.findAddressWithKey)
-        .mockResolvedValueOnce(null)
-        .mockResolvedValueOnce(null);
+      vi.mocked(
+        findAddressWithPubKeyModule.getOrCheckAddressByPublicKeyTuple
+      ).mockResolvedValueOnce(mockAccounts);
 
       const result = await findAddressWithSeed(mockSeed, mockAddress);
 
-      expect(publicPrivateKeyModule.seed2PubKey).toHaveBeenCalledWith(mockSeed);
-      expect(publicPrivateKeyModule.seed2PubKeyTemp).not.toHaveBeenCalled();
-      expect(result).toEqual([
-        {
-          ...mockPubKeyTuple.SECP256K1,
-          weight: 1000,
-          hashAlgo: 'SHA2_256',
-          signAlgo: 'ECDSA_secp256k1',
-          keyIndex: 0,
-        },
-      ]);
+      expect(publicPrivateKeyModule.seed2PublicPrivateKey).toHaveBeenCalledWith(mockSeed);
+      expect(publicPrivateKeyModule.seed2PublicPrivateKeyTemp).not.toHaveBeenCalled();
+      expect(findAddressWithPubKeyModule.getOrCheckAddressByPublicKeyTuple).toHaveBeenCalledWith(
+        mockPubKeyTuple,
+        mockAddress
+      );
+      expect(result).toEqual(mockAccounts);
     });
 
     it('should convert seed to public keys and find address (temp)', async () => {
-      vi.mocked(publicPrivateKeyModule.seed2PubKeyTemp).mockResolvedValueOnce(mockPubKeyTuple);
+      vi.mocked(publicPrivateKeyModule.seed2PublicPrivateKeyTemp).mockResolvedValueOnce(
+        mockPubKeyTuple
+      );
 
       const mockAccounts = [
         {
           address: mockAddress,
           keyIndex: 0,
           weight: 1000,
-          hashAlgo: 'SHA2_256',
-          signAlgo: 'ECDSA_secp256k1',
-          pubK: mockSECP256K1PubKey,
-          pk: mockPubKeyTuple.SECP256K1.pk,
+          hashAlgo: 3,
+          signAlgo: 1,
+          hashAlgoString: 'SHA3_256',
+          signAlgoString: 'ECDSA_P256',
+          publicKey: mockP256PubKey,
         },
       ];
 
-      vi.mocked(findAddressWithPubKeyModule.findAddressWithKey)
-        .mockResolvedValueOnce(null)
-        .mockResolvedValueOnce(null);
+      vi.mocked(
+        findAddressWithPubKeyModule.getOrCheckAddressByPublicKeyTuple
+      ).mockResolvedValueOnce(mockAccounts);
 
       const result = await findAddressWithSeed(mockSeed, mockAddress, true);
 
-      expect(publicPrivateKeyModule.seed2PubKeyTemp).toHaveBeenCalledWith(mockSeed);
-      expect(publicPrivateKeyModule.seed2PubKey).not.toHaveBeenCalled();
-      expect(result).toEqual([
-        {
-          ...mockPubKeyTuple.SECP256K1,
-          weight: 1000,
-          hashAlgo: 'SHA2_256',
-          signAlgo: 'ECDSA_secp256k1',
-          keyIndex: 0,
-        },
-      ]);
+      expect(publicPrivateKeyModule.seed2PublicPrivateKeyTemp).toHaveBeenCalledWith(mockSeed);
+      expect(publicPrivateKeyModule.seed2PublicPrivateKey).not.toHaveBeenCalled();
+      expect(findAddressWithPubKeyModule.getOrCheckAddressByPublicKeyTuple).toHaveBeenCalledWith(
+        mockPubKeyTuple,
+        mockAddress
+      );
+      expect(result).toEqual(mockAccounts);
+    });
+
+    it('should throw error when no accounts are found', async () => {
+      vi.mocked(publicPrivateKeyModule.seed2PublicPrivateKey).mockResolvedValueOnce(
+        mockPubKeyTuple
+      );
+      vi.mocked(
+        findAddressWithPubKeyModule.getOrCheckAddressByPublicKeyTuple
+      ).mockRejectedValueOnce(new Error('No accounts found with the given public key'));
+
+      await expect(findAddressWithSeed(mockSeed, mockAddress)).rejects.toThrow(
+        'No accounts found with the given public key'
+      );
     });
   });
 });

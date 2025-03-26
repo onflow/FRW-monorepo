@@ -5,9 +5,8 @@ import { userWalletService } from 'background/service';
 
 import {
   findAddressWithKey,
-  findAddressOnlyKey,
-  getAddressByIndexer,
-  getAddressTestnet,
+  getOrCheckAddressByPublicKeyTuple,
+  getAccountsByPublicKeyTuple,
 } from '../findAddressWithPubKey';
 
 // Mock FCL and userWalletService
@@ -21,6 +20,16 @@ vi.mock('background/service', () => ({
 describe('findAddressWithPubKey module', () => {
   const mockPubKey = '0x123456789abcdef';
   const mockAddress = '0x1234';
+  const mockPubKeyTuple = {
+    P256: {
+      pubK: '0x123456789abcdef_p256',
+      pk: 'mock-p256-pk',
+    },
+    SECP256K1: {
+      pubK: '0x123456789abcdef_secp256k1',
+      pk: 'mock-secp256k1-pk',
+    },
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -39,7 +48,7 @@ describe('findAddressWithPubKey module', () => {
       });
 
       const result = await findAddressWithKey(mockPubKey);
-      expect(result).toBeNull();
+      expect(result).toEqual([]);
     });
 
     it('should return account details when indexer finds matching accounts with SHA3_256/ECDSA_P256', async () => {
@@ -66,127 +75,18 @@ describe('findAddressWithPubKey module', () => {
       expect(result).toEqual([
         {
           address: mockAddress,
+          publicKey: mockPubKey,
           keyIndex: 0,
           weight: 1000,
-          hashAlgo: 'SHA3_256',
-          signAlgo: 'ECDSA_P256',
-          pubK: mockPubKey,
+          signAlgo: 1,
+          signAlgoString: 'ECDSA_P256',
+          hashAlgo: 3,
+          hashAlgoString: 'SHA3_256',
         },
       ]);
     });
 
-    it('should return account details when indexer finds matching accounts with SHA2_256/ECDSA_secp256k1', async () => {
-      const mockIndexerResponse = {
-        publicKey: mockPubKey,
-        accounts: [
-          {
-            address: mockAddress,
-            keyId: 0,
-            weight: 1000,
-            sigAlgo: 2, // ECDSA_secp256k1
-            hashAlgo: 1, // SHA2_256
-            signing: 'ECDSA_secp256k1',
-            hashing: 'SHA2_256',
-          },
-        ],
-      };
-
-      global.fetch = vi.fn().mockResolvedValueOnce({
-        json: () => Promise.resolve(mockIndexerResponse),
-      });
-
-      const result = await findAddressWithKey(mockPubKey);
-      expect(result).toEqual([
-        {
-          address: mockAddress,
-          keyIndex: 0,
-          weight: 1000,
-          hashAlgo: 'SHA2_256',
-          signAlgo: 'ECDSA_secp256k1',
-          pubK: mockPubKey,
-        },
-      ]);
-    });
-
-    it('should query FCL when address is provided with SHA3_256/ECDSA_P256', async () => {
-      const mockFclAccount = {
-        address: mockAddress,
-        balance: 0,
-        code: 0,
-        contracts: {},
-        keys: [
-          {
-            publicKey: mockPubKey,
-            index: 0,
-            weight: 1000,
-            revoked: false,
-            hashAlgoString: 'SHA3_256',
-            signAlgoString: 'ECDSA_P256',
-            hashAlgo: 3,
-            signAlgo: 1,
-            sequenceNumber: 0,
-          },
-        ],
-      };
-
-      vi.mocked(fcl.account).mockResolvedValueOnce(mockFclAccount);
-
-      const result = await findAddressWithKey(mockPubKey, mockAddress);
-
-      expect(userWalletService.setupFcl).toHaveBeenCalled();
-      expect(fcl.account).toHaveBeenCalledWith(mockAddress);
-      expect(result).toEqual([
-        {
-          address: mockAddress,
-          keyIndex: 0,
-          weight: 1000,
-          hashAlgo: 'SHA3_256',
-          signAlgo: 'ECDSA_P256',
-          pubK: mockPubKey,
-        },
-      ]);
-    });
-
-    it('should query FCL when address is provided with SHA2_256/ECDSA_secp256k1', async () => {
-      const mockFclAccount = {
-        address: mockAddress,
-        balance: 0,
-        code: 0,
-        contracts: {},
-        keys: [
-          {
-            publicKey: mockPubKey,
-            index: 0,
-            weight: 1000,
-            revoked: false,
-            hashAlgoString: 'SHA2_256',
-            signAlgoString: 'ECDSA_secp256k1',
-            hashAlgo: 1,
-            signAlgo: 2,
-            sequenceNumber: 0,
-          },
-        ],
-      };
-
-      vi.mocked(fcl.account).mockResolvedValueOnce(mockFclAccount);
-
-      const result = await findAddressWithKey(mockPubKey, mockAddress);
-
-      expect(userWalletService.setupFcl).toHaveBeenCalled();
-      expect(fcl.account).toHaveBeenCalledWith(mockAddress);
-      expect(result).toEqual([
-        {
-          address: mockAddress,
-          keyIndex: 0,
-          weight: 1000,
-          hashAlgo: 'SHA2_256',
-          signAlgo: 'ECDSA_secp256k1',
-          pubK: mockPubKey,
-        },
-      ]);
-    });
-
-    it('should return null when FCL finds no matching keys', async () => {
+    it('should query FCL when address is provided and return null if no matching keys', async () => {
       const mockFclAccount = {
         address: mockAddress,
         balance: 0,
@@ -212,49 +112,123 @@ describe('findAddressWithPubKey module', () => {
       const result = await findAddressWithKey(mockPubKey, mockAddress);
       expect(result).toBeNull();
     });
-  });
 
-  describe('findAddressOnlyKey', () => {
-    it('should use testnet indexer when network is testnet with SHA2_256/ECDSA_secp256k1', async () => {
-      const mockResponse = {
-        publicKey: mockPubKey,
-        accounts: [
+    it('should query FCL when address is provided and return matching keys', async () => {
+      const mockFclAccount = {
+        address: mockAddress,
+        balance: 0,
+        code: 0,
+        contracts: {},
+        keys: [
           {
-            address: mockAddress,
-            keyId: 0,
+            publicKey: mockPubKey,
+            index: 0,
             weight: 1000,
-            sigAlgo: 2,
-            hashAlgo: 1,
-            signing: 'ECDSA_secp256k1',
-            hashing: 'SHA2_256',
+            revoked: false,
+            hashAlgoString: 'SHA3_256',
+            signAlgoString: 'ECDSA_P256',
+            hashAlgo: 3,
+            signAlgo: 1,
+            sequenceNumber: 0,
           },
         ],
       };
 
-      global.fetch = vi.fn().mockResolvedValueOnce({
-        json: () => Promise.resolve(mockResponse),
-      });
+      vi.mocked(fcl.account).mockResolvedValueOnce(mockFclAccount);
 
-      const result = await findAddressOnlyKey(mockPubKey, 'testnet');
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        `https://staging.key-indexer.flow.com/key/${mockPubKey}`
-      );
+      const result = await findAddressWithKey(mockPubKey, mockAddress);
       expect(result).toEqual([
         {
+          ...mockFclAccount.keys[0],
           address: mockAddress,
           keyIndex: 0,
-          weight: 1000,
-          hashAlgo: 'SHA2_256',
-          signAlgo: 'ECDSA_secp256k1',
-          pubK: mockPubKey,
         },
       ]);
     });
+  });
 
-    it('should use production indexer when network is not testnet with SHA3_256/ECDSA_P256', async () => {
+  describe('getOrCheckAddressByPublicKeyTuple', () => {
+    it('should throw error when no accounts have sufficient weight', async () => {
+      // Mock fetch to return accounts with insufficient weight
+      global.fetch = vi.fn().mockImplementation((url) => {
+        return Promise.resolve({
+          json: () =>
+            Promise.resolve({
+              publicKey: url.includes('_p256')
+                ? mockPubKeyTuple.P256.pubK
+                : mockPubKeyTuple.SECP256K1.pubK,
+              accounts: [
+                {
+                  address: mockAddress,
+                  keyId: 0,
+                  weight: 500, // Less than required 1000
+                  sigAlgo: url.includes('_p256') ? 1 : 2,
+                  hashAlgo: url.includes('_p256') ? 3 : 1,
+                  signing: url.includes('_p256') ? 'ECDSA_P256' : 'ECDSA_secp256k1',
+                  hashing: url.includes('_p256') ? 'SHA3_256' : 'SHA2_256',
+                },
+              ],
+            }),
+        });
+      });
+
+      await expect(getOrCheckAddressByPublicKeyTuple(mockPubKeyTuple)).rejects.toThrow(
+        'No accounts found with the given public key'
+      );
+    });
+
+    it('should return combined accounts when both keys have valid accounts', async () => {
+      // Mock fetch to return valid accounts for both keys
+      global.fetch = vi.fn().mockImplementation((url) => {
+        return Promise.resolve({
+          json: () =>
+            Promise.resolve({
+              publicKey: url.includes('_p256')
+                ? mockPubKeyTuple.P256.pubK
+                : mockPubKeyTuple.SECP256K1.pubK,
+              accounts: [
+                {
+                  address: mockAddress,
+                  keyId: 0,
+                  weight: 1000,
+                  sigAlgo: url.includes('_p256') ? 1 : 2,
+                  hashAlgo: url.includes('_p256') ? 3 : 1,
+                  signing: url.includes('_p256') ? 'ECDSA_P256' : 'ECDSA_secp256k1',
+                  hashing: url.includes('_p256') ? 'SHA3_256' : 'SHA2_256',
+                },
+              ],
+            }),
+        });
+      });
+
+      const result = await getOrCheckAddressByPublicKeyTuple(mockPubKeyTuple);
+      expect(result).toHaveLength(2);
+      expect(result[0].signAlgoString).toBe('ECDSA_P256');
+      expect(result[1].signAlgoString).toBe('ECDSA_secp256k1');
+    });
+
+    it('should throw error when no accounts are found', async () => {
+      // Mock fetch to return no accounts
+      global.fetch = vi.fn().mockImplementation(() => {
+        return Promise.resolve({
+          json: () =>
+            Promise.resolve({
+              publicKey: mockPubKey,
+              accounts: [],
+            }),
+        });
+      });
+
+      await expect(getOrCheckAddressByPublicKeyTuple(mockPubKeyTuple)).rejects.toThrow(
+        'No accounts found with the given public key'
+      );
+    });
+  });
+
+  describe('getAccountsByPublicKeyTuple', () => {
+    it('should use testnet indexer when network is testnet', async () => {
       const mockResponse = {
-        publicKey: mockPubKey,
+        publicKey: mockPubKeyTuple.P256.pubK,
         accounts: [
           {
             address: mockAddress,
@@ -268,59 +242,20 @@ describe('findAddressWithPubKey module', () => {
         ],
       };
 
-      global.fetch = vi.fn().mockResolvedValueOnce({
+      global.fetch = vi.fn().mockResolvedValue({
         json: () => Promise.resolve(mockResponse),
       });
 
-      const result = await findAddressOnlyKey(mockPubKey, 'mainnet');
+      await getAccountsByPublicKeyTuple(mockPubKeyTuple, 'testnet');
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `https://production.key-indexer.flow.com/key/${mockPubKey}`
+        expect.stringContaining('staging.key-indexer.flow.com')
       );
-      expect(result).toEqual([
-        {
-          address: mockAddress,
-          keyIndex: 0,
-          weight: 1000,
-          hashAlgo: 'SHA3_256',
-          signAlgo: 'ECDSA_P256',
-          pubK: mockPubKey,
-        },
-      ]);
-    });
-  });
-
-  describe('getAddressByIndexer and getAddressTestnet', () => {
-    it('should fetch from production indexer with SHA2_256/ECDSA_secp256k1', async () => {
-      const mockResponse = {
-        publicKey: mockPubKey,
-        accounts: [
-          {
-            address: mockAddress,
-            keyId: 0,
-            weight: 1000,
-            sigAlgo: 2,
-            hashAlgo: 1,
-            signing: 'ECDSA_secp256k1',
-            hashing: 'SHA2_256',
-          },
-        ],
-      };
-      global.fetch = vi.fn().mockResolvedValueOnce({
-        json: () => Promise.resolve(mockResponse),
-      });
-
-      const result = await getAddressByIndexer(mockPubKey);
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        `https://production.key-indexer.flow.com/key/${mockPubKey}`
-      );
-      expect(result).toEqual(mockResponse);
     });
 
-    it('should fetch from testnet indexer with SHA3_256/ECDSA_P256', async () => {
+    it('should use mainnet indexer when network is not testnet', async () => {
       const mockResponse = {
-        publicKey: mockPubKey,
+        publicKey: mockPubKeyTuple.P256.pubK,
         accounts: [
           {
             address: mockAddress,
@@ -333,16 +268,41 @@ describe('findAddressWithPubKey module', () => {
           },
         ],
       };
-      global.fetch = vi.fn().mockResolvedValueOnce({
+
+      global.fetch = vi.fn().mockResolvedValue({
         json: () => Promise.resolve(mockResponse),
       });
 
-      const result = await getAddressTestnet(mockPubKey);
+      await getAccountsByPublicKeyTuple(mockPubKeyTuple, 'mainnet');
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `https://staging.key-indexer.flow.com/key/${mockPubKey}`
+        expect.stringContaining('production.key-indexer.flow.com')
       );
-      expect(result).toEqual(mockResponse);
+    });
+
+    it('should throw error when no accounts have sufficient weight', async () => {
+      const mockResponse = {
+        publicKey: mockPubKeyTuple.P256.pubK,
+        accounts: [
+          {
+            address: mockAddress,
+            keyId: 0,
+            weight: 500, // Less than required 1000
+            sigAlgo: 1,
+            hashAlgo: 3,
+            signing: 'ECDSA_P256',
+            hashing: 'SHA3_256',
+          },
+        ],
+      };
+
+      global.fetch = vi.fn().mockResolvedValue({
+        json: () => Promise.resolve(mockResponse),
+      });
+
+      await expect(getAccountsByPublicKeyTuple(mockPubKeyTuple, 'mainnet')).rejects.toThrow(
+        'No accounts found with the given public key'
+      );
     });
   });
 });
