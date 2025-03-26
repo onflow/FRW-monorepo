@@ -39,8 +39,14 @@ import {
   type ChildAccountMap,
   type WalletAccount,
   type EvmAddress,
+  type WalletAddress,
 } from '@/shared/types/wallet-types';
-import { ensureEvmAddressPrefix, isValidEthereumAddress, withPrefix } from '@/shared/utils/address';
+import {
+  ensureEvmAddressPrefix,
+  isValidEthereumAddress,
+  isValidFlowAddress,
+  withPrefix,
+} from '@/shared/utils/address';
 import { getSignAlgo } from '@/shared/utils/algo';
 import { convertToIntegerAmount, validateAmount } from '@/shared/utils/number';
 import { retryOperation } from '@/shared/utils/retryOperation';
@@ -459,7 +465,7 @@ export class WalletController extends BaseController {
     const keyrings = await this.getKeyrings(password || '');
 
     for (const keyring of keyrings) {
-      if (keyring.type === 'HD Key Tree') {
+      if (keyring instanceof HDKeyring) {
         const mnemonic = await this.getMnemonics(password || '');
         const seed = await seed2PublicPrivateKey(mnemonic);
         const PK1 = seed.P256.pk;
@@ -539,7 +545,7 @@ export class WalletController extends BaseController {
           break;
         }
       } else if (keyring instanceof HDKeyring) {
-        // Get a copy of the serialized data
+        // Get a copy of the keyring data
         const serialized = await keyring.serialize();
         if (serialized.activeIndexes[0] === 1) {
           // If publicKey is found, extract it and break the loop
@@ -947,33 +953,26 @@ export class WalletController extends BaseController {
     const network = await this.getNetwork();
     const address = await userWalletService.getParentAddress(network);
     if (!address) {
-      return {};
+      throw new Error('Parent address not found');
     }
-    const cacheKey = `checkUserChildAccount${address}`;
-    const ttl = 5 * 60 * 1000; // 5 minutes in milliseconds
 
     // Try to get the cached result
-    let meta: ChildAccountMap | null = await storage.getExpiry(cacheKey);
+    let meta = await userWalletService.getChildAccount();
     if (!meta) {
       try {
         let result = {};
-        result = await openapiService.checkChildAccountMeta(address!);
+        result = await openapiService.checkChildAccountMeta(address);
 
         if (result) {
           meta = result;
-
-          // Store the result in the cache with an expiry
-          await storage.setExpiry(cacheKey, meta, ttl);
+          userWalletService.setChildAccounts(meta, address, network);
         }
       } catch (error) {
         console.error('Error occurred:', error);
         return {}; // Return an empty object in case of an error
       }
     }
-    const childAccountMap = meta || {};
-    userWalletService.setChildAccounts(childAccountMap, address!, network);
-
-    return childAccountMap;
+    return meta || {};
   };
 
   checkAccessibleNft = async (childAccount) => {
@@ -991,19 +990,22 @@ export class WalletController extends BaseController {
     const network = await this.getNetwork();
 
     const address = await userWalletService.getParentAddress(network);
-    const result = await openapiService.queryAccessibleFt(address!, childAccount);
+    if (!address) {
+      throw new Error('Parent address not found');
+    }
+    const result = await openapiService.queryAccessibleFt(address, childAccount);
 
     return result;
   };
 
-  getMainWallet = async () => {
+  getParentAddress = async () => {
     const network = await this.getNetwork();
     const address = await userWalletService.getParentAddress(network);
 
     return address;
   };
 
-  returnMainWallet = async () => {
+  returnParentWallet = async () => {
     const network = await this.getNetwork();
     const wallet = await userWalletService.returnParentWallet(network);
 
@@ -1537,41 +1539,55 @@ export class WalletController extends BaseController {
     const pubKey: PublicKeyTuple = await this.getPubKey();
     const accounts: PublicKeyAccount[] = await getAccountsByPublicKeyTuple(pubKey, network);
     const emoji = await this.getEmoji();
-
-    // Transform the address array into blockchain objects
-    const transformedArray: MainAccount[] = accounts.map((item, index): MainAccount => {
-      const defaultEmoji = emoji[index] || {
-        name: 'Default',
-        emoji: '🐾',
-        bgcolor: '#ffffff',
-      };
-
-      return {
-        ...item,
-        chain: network === 'mainnet' ? 747 : 545,
-        id: index,
-        name: defaultEmoji.name,
-        icon: defaultEmoji.emoji,
-        color: defaultEmoji.bgcolor,
-      };
-    });
+    if (!accounts || accounts.length === 0) {
+      throw new Error("Can't find address in chain");
+    }
 
     const active = await userWalletService.getActiveWallet();
     if (!active) {
-      // userInfoService.addUserId(v2data.data.id);
-      userWalletService.setUserAccounts(transformedArray, pubKey, network, emoji);
+      // Transform the address array into blockchain objects
+      const transformedArray: MainAccount[] = accounts.map((item, index): MainAccount => {
+        const defaultEmoji = emoji[index] || {
+          name: 'Default',
+          emoji: '🐾',
+          bgcolor: '#ffffff',
+        };
+
+        return {
+          ...item,
+          chain: network === 'mainnet' ? 747 : 545,
+          id: index,
+          name: defaultEmoji.name,
+          icon: defaultEmoji.emoji,
+          color: defaultEmoji.bgcolor,
+        };
+      });
+
+      const currentAccount = userWalletService.setUserAccounts(
+        transformedArray,
+        // Always use the first account's public key as the current public key
+        accounts[0].publicKey,
+        network,
+        emoji
+      );
+      if (!currentAccount) {
+        throw new Error('Current account not found');
+      }
+      return currentAccount;
     }
 
-    return transformedArray;
+    return null;
   };
 
   getUserWallets = async (): Promise<MainAccount[] | null> => {
     const network = await this.getNetwork();
     const wallets = await userWalletService.getUserWallets(network);
-    if (!wallets || !wallets[0]) {
-      await this.refreshUserWallets();
-      const data = await userWalletService.getUserWallets(network);
-      return data;
+    if (!wallets) {
+      const refreshData = await this.refreshUserWallets();
+      if (!refreshData) {
+        return null;
+      }
+      return refreshData[0].accounts;
     }
     return wallets;
   };
@@ -1619,10 +1635,11 @@ export class WalletController extends BaseController {
     }
     const wallet = await userWalletService.getCurrentWallet();
     if (!wallet?.address) {
-      const network = await this.getNetwork();
-      await this.refreshUserWallets();
-      const data = await userWalletService.getUserWallets(network);
-      return data?.[0];
+      const data = await this.refreshUserWallets();
+      if (!data) {
+        return;
+      }
+      return data[0].accounts[0];
     }
     return wallet;
   };
@@ -1632,13 +1649,16 @@ export class WalletController extends BaseController {
     return wallet;
   };
 
-  setEvmAddress = async (address: EvmAddress) => {
+  setEvmAddress = async (address: string) => {
     await userWalletService.setAccountEvmAddress(address);
   };
 
   getRawEvmAddressWithPrefix = async () => {
     const wallet = userWalletService.getEvmWallet();
-    return wallet?.address ? withPrefix(wallet.address) : '';
+    if (!wallet) {
+      throw new Error('EVM wallet not found');
+    }
+    return withPrefix(wallet.address);
   };
 
   getEvmAddress = async () => {
@@ -1650,32 +1670,35 @@ export class WalletController extends BaseController {
     return address;
   };
 
-  getCurrentAddress = async () => {
+  getCurrentAddress = async (): Promise<WalletAddress | null> => {
     const address = await userWalletService.getCurrentAddress();
     if (!address) {
       const data = await this.refreshUserWallets();
-      return withPrefix(data[0].address);
-    } else if (address.length < 3) {
-      const data = await this.refreshUserWallets();
-      return withPrefix(data[0].address);
+      if (!data) {
+        return null;
+      }
+      return withPrefix(data[0].accounts[0].address);
     }
     return withPrefix(address);
   };
 
-  getMainAddress = async () => {
+  getMainAddress = async (): Promise<FlowAddress | null> => {
     if (!this.isBooted() || userWalletService.isLocked()) {
-      return '';
+      return null;
     }
     const network = await this.getNetwork();
     const address = await userWalletService.getParentAddress(network);
-    if (!address) {
+    if (!isValidFlowAddress(address)) {
       const data = await this.refreshUserWallets();
-      return withPrefix(data[0].address) || '';
-    } else if (address.length < 3) {
-      const data = await this.refreshUserWallets();
-      return withPrefix(data[0].address) || '';
+      if (!data) {
+        return null;
+      }
+      const address = withPrefix(data[0].accounts[0].address);
+      return isValidFlowAddress(address) ? address : null;
+    } else {
+      const prefixedAddress = withPrefix(address);
+      return isValidFlowAddress(prefixedAddress) ? prefixedAddress : null;
     }
-    return withPrefix(address) || '';
   };
 
   sendTransaction = async (cadence: string, args: any[]): Promise<string> => {
@@ -2005,11 +2028,11 @@ export class WalletController extends BaseController {
     return result;
   };
 
-  checkCoaLink = async (): Promise<any> => {
+  checkCoaLink = async (): Promise<boolean> => {
     const checkedAddress = await storage.get('coacheckAddress');
 
     const script = await getScripts('evm', 'checkCoaLink');
-    const mainAddress = await this.getMainWallet();
+    const mainAddress = await this.getMainAddress();
     console.log('getscript script ', mainAddress);
     if (checkedAddress === mainAddress) {
       return true;
@@ -2021,7 +2044,7 @@ export class WalletController extends BaseController {
       if (result) {
         await storage.set('coacheckAddress', mainAddress);
       }
-      return result;
+      return !!result;
     }
     return false;
   };
@@ -2036,7 +2059,7 @@ export class WalletController extends BaseController {
 
     mixpanelTrack.track('ft_transfer', {
       from_address: (await this.getCurrentAddress()) || '',
-      to_address: (await this.getRawEvmAddressWithPrefix()) || '',
+      to_address: (await this.getRawEvmAddressWithPrefix()) ?? '',
       amount: amount,
       ft_identifier: flowIdentifier,
       type: 'evm',
@@ -2060,7 +2083,7 @@ export class WalletController extends BaseController {
     ]);
 
     mixpanelTrack.track('ft_transfer', {
-      from_address: (await this.getRawEvmAddressWithPrefix()) || '',
+      from_address: (await this.getRawEvmAddressWithPrefix()) ?? '',
       to_address: (await this.getCurrentAddress()) || '',
       amount: amount,
       ft_identifier: flowIdentifier,
@@ -2070,16 +2093,16 @@ export class WalletController extends BaseController {
     return txID;
   };
 
-  queryEvmAddress = async (address: string): Promise<string> => {
+  queryEvmAddress = async (address: string | FlowAddress): Promise<string | null> => {
     if (address.length > 20) {
-      return '';
+      return null;
     }
     if (!(await this.isUnlocked())) {
-      return '';
+      return null;
     }
-    let evmAddress = '';
+    let evmAddress;
     try {
-      evmAddress = (await this.getRawEvmAddressWithPrefix()) || '';
+      evmAddress = await this.getRawEvmAddressWithPrefix();
     } catch (error) {
       evmAddress = '';
       console.error('Error getting EVM address:', error);
@@ -2101,16 +2124,16 @@ export class WalletController extends BaseController {
         // This is the COA address we get straight from the script
         // This is where we encode the address in ERC-55 format
         const checksummedAddress = ethUtil.toChecksumAddress(ensureEvmAddressPrefix(result));
-        await this.setEvmAddress(checksummedAddress as EvmAddress);
+        await this.setEvmAddress(checksummedAddress);
         return checksummedAddress;
       } else {
-        return '';
+        return null;
       }
     } catch (error) {
       console.trace('queryEvmAddress error', address);
 
       console.error('Error querying the script or setting EVM address:', error);
-      return '';
+      return null;
     }
   };
 
@@ -2169,7 +2192,7 @@ export class WalletController extends BaseController {
     ]);
 
     mixpanelTrack.track('ft_transfer', {
-      from_address: (await this.getRawEvmAddressWithPrefix()) || '',
+      from_address: (await this.getRawEvmAddressWithPrefix()) ?? '',
       to_address: to,
       amount: value,
       ft_identifier: 'FLOW',
@@ -3120,7 +3143,6 @@ export class WalletController extends BaseController {
     console.log('refreshAll');
     // Clear the active wallet if any
     // If we don't do this, the user wallets will not be refreshed
-    userWalletService.clear();
     await this.refreshUserWallets();
     this.clearNFT();
     this.refreshAddressBook();
@@ -3657,7 +3679,7 @@ export class WalletController extends BaseController {
   };
 
   getAccount = async (): Promise<FclAccount> => {
-    const address = await this.getCurrentAddress();
+    const address = await this.getMainAddress();
     const account = await fcl.account(address!);
     return account;
   };

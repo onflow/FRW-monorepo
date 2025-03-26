@@ -118,16 +118,13 @@ class UserWallet {
 
   setUserAccounts = async (
     accountData: MainAccount[],
-    pubKey: PublicKeyTuple,
+    pubKey: string,
     network: string,
     emoji: Emoji[]
   ) => {
     const profileList: WalletProfile[] = this.accounts[network];
-    const accountIndex = profileList.findIndex(
-      (account) =>
-        account.publicKey === pubKey.P256.pubK || account.publicKey === pubKey.SECP256K1.pubK
-    );
-    this.setCurrentPubkey(pubKey.P256.pubK);
+    const accountIndex = profileList.findIndex((account) => account.publicKey === pubKey);
+    this.setCurrentPubkey(pubKey);
     if (accountIndex !== -1) {
       profileList[accountIndex] = {
         accounts: accountData.map((account, index): MainAccount => {
@@ -145,8 +142,7 @@ class UserWallet {
             color: defaultEmoji.bgcolor,
           };
         }),
-        // TODO: This is a temporary fix to ensure the public key is set. There could be more than one public key for accounts in the list
-        publicKey: accountData[0].publicKey,
+        publicKey: pubKey,
       };
     } else {
       profileList.push({
@@ -166,7 +162,7 @@ class UserWallet {
           };
         }),
         // TODO: This is a temporary fix to ensure the public key is always the P256 public key
-        publicKey: pubKey.P256.pubK,
+        publicKey: pubKey,
       });
     }
     this.store.currentAddress = accountData[0].address;
@@ -251,26 +247,24 @@ class UserWallet {
   };
 
   setChildAccounts = (childAccount: ChildAccountMap, address: string, network: string) => {
-    const { account, currentAccounts } = this.findAccount(address, network);
+    const { account } = this.findAccount(address, network);
 
     if (!account) return;
 
     // Store the child accounts for address in the childAccountMap
     this.childAccountMap[address] = childAccount;
-    this.accounts[network] = currentAccounts;
   };
 
   setAccountEvmAddress = (evmAddress: string) => {
     const network = this.store.network;
     const address = this.store.parentAddress;
-    const { account, currentAccounts } = this.findAccount(address, network);
+    const { account } = this.findAccount(address, network);
 
     if (!account) return;
     this.store.currentEvmAddress = evmAddress;
 
     // Store the evm address for address in the evmAddressMap
     this.evmAddressMap[address] = evmAddress;
-    this.accounts[network] = currentAccounts;
   };
 
   setCurrentAccount = async (wallet: WalletAccount, key: ActiveChildType) => {
@@ -317,7 +311,7 @@ class UserWallet {
     return isValidFlowAddress(prefixedAddress) ? prefixedAddress : null;
   };
 
-  returnParentWallet = async (network: string): Promise<PublicKeyAccount | null> => {
+  returnParentWallet = async (network: string): Promise<MainAccount | null> => {
     if (!keyringService.isBooted() || !keyringService.memStore.getState().isUnlocked) {
       return null;
     }
@@ -797,6 +791,7 @@ class UserWallet {
   };
 
   signInWithMnemonic = async (mnemonic: string, replaceUser = true, isTemp = true) => {
+    // Seperate this out as the private key is not returned from the getAccountsByPublicKeyTuple
     const publicPrivateKey: PublicPrivateKeyTuple = isTemp
       ? await seed2PublicPrivateKeyTemp(mnemonic)
       : await seed2PublicPrivateKey(mnemonic);
