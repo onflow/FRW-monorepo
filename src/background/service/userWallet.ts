@@ -366,7 +366,7 @@ class UserWallet {
     return null;
   };
 
-  getUserWallets = (network: string): MainAccount[] | null => {
+  getMainAccounts = (network: string): MainAccount[] | null => {
     const currentPubKey = this.store.currentPubkey;
     const profileList: WalletProfile[] = this.accounts[network];
 

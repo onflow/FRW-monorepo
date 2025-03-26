@@ -121,32 +121,36 @@ export const useProfiles = () => {
     try {
       profilesRef.current.loading = true;
       const mainAddress = await usewallet.getMainAddress();
+      console.log('mainAddress ===', mainAddress);
       if (mainAddress) {
         setMainAddress(mainAddress as FlowAddress);
+        console.log('setupEvmWallet ===');
         await setupEvmWallet(mainAddress as FlowAddress);
 
-        const childresp: ChildAccountMap = await usewallet.checkUserChildAccount();
-        setChildAccount(childresp);
+        const childAccounts = await usewallet.getChildAccounts();
+        console.log('childAccounts ===', childAccounts);
+
+        setChildAccount(childAccounts || {});
 
         const parentAddress = await usewallet.getParentAddress();
+        console.log('parentAddress ===', parentAddress);
         if (parentAddress) {
           const [currentWallet, isChild] = await Promise.all([
             usewallet.getCurrentWallet(),
             usewallet.getActiveWallet(),
           ]);
+          console.log('currentWallet ===', currentWallet);
 
           if (currentWallet) {
             const mainwallet = await usewallet.returnParentWallet();
             setParentWallet(mainwallet!);
             await setCurrent(currentWallet);
 
-            const [keys, pubKTuple] = await Promise.all([
-              usewallet.getAccount(),
-              usewallet.getPubKey(),
-            ]);
+            const keys = await usewallet.getAccount();
+            const pubKTuple = await usewallet.getPubKey();
 
-            const walletData = await retryOperation(() => usewallet.getUserInfo(true), 3, 1000);
-
+            const walletData = usewallet.getUserInfo(true);
+            console.log('walletData ===', walletData);
             const { otherAccounts, wallet, loggedInAccounts } =
               await usewallet.openapi.freshUserInfo(
                 parentAddress,
@@ -157,7 +161,7 @@ export const useProfiles = () => {
               );
 
             await Promise.all([
-              setOtherAccounts(otherAccounts),
+              setOtherAccounts(usewallet.getMainAccounts()),
               setUserInfo(wallet),
               setLoggedInAccounts(loggedInAccounts),
             ]);
@@ -165,17 +169,25 @@ export const useProfiles = () => {
         }
       }
 
-      const wallets = await usewallet.getUserWallets();
+      const wallets = await usewallet.getMainAccounts();
+      console.log('wallets ===', wallets);
+
       if (!wallets) {
         throw new Error('No wallets found');
       }
 
       if (initialStart) {
         await usewallet.openapi.putDeviceInfo(wallets);
+        console.log('usewallet.openapi.putDeviceInfo ===', wallets);
+
         setInitial(false);
       }
 
+      // format the wallets
+
       const formattedWallets = formatWallets(wallets);
+      console.log('formattedWallets ===', formattedWallets);
+
       setWalletList(formattedWallets);
     } catch (error) {
       console.error('Error in fetchProfileData:', error);
@@ -186,19 +198,19 @@ export const useProfiles = () => {
   }, [
     usewallet,
     walletLoaded,
-    setMainAddress,
-    setupEvmWallet,
     initialStart,
-    setInitial,
     formatWallets,
     setWalletList,
+    setMainAddress,
+    setupEvmWallet,
     setChildAccount,
-    setCurrent,
-    setMainLoading,
-    setOtherAccounts,
     setParentWallet,
+    setCurrent,
+    setOtherAccounts,
     setUserInfo,
     setLoggedInAccounts,
+    setInitial,
+    setMainLoading,
   ]);
 
   return {

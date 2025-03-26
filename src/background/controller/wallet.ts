@@ -210,6 +210,10 @@ export class WalletController extends BaseController {
     // Refresh all the wallets after unlocking or switching profiles
     // Refresh the cadence scripts first
     await this.getCadenceScripts();
+
+    // Refresh the main wallets
+    await this.loadMainAccounts();
+
     // Refresh the main address
     const mainAddress = await this.getMainAddress();
     if (!mainAddress) {
@@ -217,15 +221,9 @@ export class WalletController extends BaseController {
     }
     // Refresh the EVM wallet
     await this.queryEvmAddress(mainAddress);
-    // Refresh the user wallets
-    await this.loadMainAccounts();
     // Refresh the child wallets
     await this.checkUserChildAccount();
-    // Refresh the logged in account
-    const [keys, pubKTuple] = await Promise.all([
-      this.getAccount(),
-      keyringService.getCurrentPublicKeyTuple(),
-    ]);
+
     // Check if a child wallet is active (it shouldn't be...)
     const anyActiveChild = await this.getActiveWallet();
     // Get the current wallet
@@ -240,10 +238,13 @@ export class WalletController extends BaseController {
     } catch (error) {
       console.error('Error refreshing user info:', error);
     }
+    // Refresh the logged in account
+    const pubKTuple = await keyringService.getCurrentPublicKeyTuple();
+    const fclAccount = await this.getAccount();
     // Refresh the user info
     await openapiService.freshUserInfo(
       mainAddress as FlowAddress,
-      keys,
+      fclAccount,
       pubKTuple,
       userInfo,
       anyActiveChild
@@ -907,30 +908,22 @@ export class WalletController extends BaseController {
     }
   };
 
-  checkUserChildAccount = async (): Promise<ChildAccountMap> => {
+  checkUserChildAccount = async (): Promise<void> => {
     const network = await this.getNetwork();
     const address = await userWalletService.getParentAddress(network);
     if (!address) {
       throw new Error('Parent address not found');
     }
 
-    // Try to get the cached result
-    let meta = await userWalletService.getChildAccounts();
-    if (!meta) {
-      try {
-        let result = {};
-        result = await openapiService.checkChildAccountMeta(address);
+    try {
+      const result: ChildAccountMap = await openapiService.checkChildAccountMeta(address);
 
-        if (result) {
-          meta = result;
-          await userWalletService.setChildAccounts(meta, address, network);
-        }
-      } catch (error) {
-        console.error('Error occurred:', error);
-        return {}; // Return an empty object in case of an error
+      if (result) {
+        await userWalletService.setChildAccounts(result, address, network);
       }
+    } catch (error) {
+      console.error('Error occurred:', error);
     }
-    return meta || {};
   };
 
   checkAccessibleNft = async (childAccount) => {
@@ -1477,49 +1470,43 @@ export class WalletController extends BaseController {
       throw new Error("Can't find address in chain");
     }
 
-    // Get the active wallet
-    const active = await userWalletService.getActiveWallet();
-    if (!active) {
-      // Get the emoji list
-      const emoji = await this.getEmoji();
+    // Get the emoji list
+    const emoji = await this.getEmoji();
 
-      // Transform the address array into MainAccount objects
-      const transformedArray: MainAccount[] = accounts.map((item, index): MainAccount => {
-        const defaultEmoji = emoji[index] || {
-          name: 'Default',
-          emoji: '🐾',
-          bgcolor: '#ffffff',
-        };
+    // Transform the address array into MainAccount objects
+    const transformedArray: MainAccount[] = accounts.map((item, index): MainAccount => {
+      const defaultEmoji = emoji[index] || {
+        name: 'Default',
+        emoji: '🐾',
+        bgcolor: '#ffffff',
+      };
 
-        return {
-          ...item,
-          chain: network === 'mainnet' ? 747 : 545,
-          id: index,
-          name: defaultEmoji.name,
-          icon: defaultEmoji.emoji,
-          color: defaultEmoji.bgcolor,
-        };
-      });
+      return {
+        ...item,
+        chain: network === 'mainnet' ? 747 : 545,
+        id: index,
+        name: defaultEmoji.name,
+        icon: defaultEmoji.emoji,
+        color: defaultEmoji.bgcolor,
+      };
+    });
 
-      // Set the user accounts
-      const currentAccount = userWalletService.setMainAccounts(
-        transformedArray,
-        // Always use the first account's public key as the current public key
-        accounts[0].publicKey,
-        network
-      );
-      if (!currentAccount) {
-        throw new Error('Current account not found');
-      }
-      return currentAccount;
+    // Set the main accounts in userWalletService
+    const currentAccount = userWalletService.setMainAccounts(
+      transformedArray,
+      // Always use the first account's public key as the current public key
+      accounts[0].publicKey,
+      network
+    );
+    if (!currentAccount) {
+      throw new Error('Current account not found');
     }
-
-    return null;
+    return currentAccount;
   };
 
-  getUserWallets = async (): Promise<MainAccount[] | null> => {
+  getMainAccounts = async (): Promise<MainAccount[] | null> => {
     const network = await this.getNetwork();
-    const wallets = await userWalletService.getUserWallets(network);
+    const wallets = await userWalletService.getMainAccounts(network);
     if (!wallets) {
       const refreshData = await this.loadMainAccounts();
       if (!refreshData) {
@@ -1589,10 +1576,7 @@ export class WalletController extends BaseController {
 
   getRawEvmAddressWithPrefix = async () => {
     const wallet = userWalletService.getEvmWallet();
-    if (!wallet) {
-      throw new Error('EVM wallet not found');
-    }
-    return withPrefix(wallet.address);
+    return withPrefix(wallet?.address || '');
   };
 
   getEvmAddress = async () => {
@@ -2279,6 +2263,10 @@ export class WalletController extends BaseController {
       args: (arg, t) => [arg(hexEncodedAddress, t.String)],
     });
     return result;
+  };
+
+  getChildAccounts = async (): Promise<ChildAccountMap | null> => {
+    return await userWalletService.getChildAccounts();
   };
 
   unlinkChildAccount = async (address: string): Promise<string> => {
@@ -3617,7 +3605,10 @@ export class WalletController extends BaseController {
 
   getAccount = async (): Promise<FclAccount> => {
     const address = await this.getMainAddress();
-    const account = await fcl.account(address!);
+    if (!address) {
+      throw new Error('No address found');
+    }
+    const account = await fcl.account(address, {}, {});
     return account;
   };
 
