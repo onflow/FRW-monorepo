@@ -1,10 +1,10 @@
 import * as fcl from '@onflow/fcl';
 import { type AccountKey } from '@onflow/typedefs';
 
+import { userWalletService } from '@/background/service';
 import { type SignAlgoString, type HashAlgoString } from '@/shared/types/algo-types';
 import type { PublicKeyTuple } from '@/shared/types/key-types';
 import { type PublicKeyAccount } from '@/shared/types/wallet-types';
-import { userWalletService } from 'background/service';
 
 /**
  * Get accounts with public key tuple

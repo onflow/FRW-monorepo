@@ -107,7 +107,9 @@ onAuthStateChanged(auth, (user: User | null) => {
     if (user.isAnonymous) {
       console.log('User is anonymous');
     } else {
-      mixpanelTrack.identify(user.uid, user.displayName ?? user.uid);
+      if (mixpanelTrack) {
+        mixpanelTrack.identify(user.uid, user.displayName ?? user.uid);
+      }
       console.log('User is signed in');
     }
   } else {
