@@ -243,9 +243,9 @@ class ProviderController extends BaseController {
     const account = evmAddress ? [ensureEvmAddressPrefix(evmAddress)] : [];
 
     sessionService.broadcastEvent('accountsChanged', account);
-    const connectSite = permissionService.getConnectedSite(origin);
     return account;
   };
+
   ethEstimateGas = async ({ data }) => {
     const network = await Wallet.getNetwork();
     const url = EVM_ENDPOINT[network];
@@ -304,18 +304,10 @@ class ProviderController extends BaseController {
       // If an error occurs, request approval
       console.error('Error querying EVM address:', error);
 
-      await notificationService.requestApproval(
-        {
-          params: { origin },
-          approvalComponent: 'EthConnect',
-        },
-        { height: 599 }
-      );
-
       return;
     }
 
-    let evmAccount: string | null;
+    let evmAccount: string | null = null;
     try {
       // Attempt to query the EVM address
       evmAccount = await Wallet.queryEvmAddress(currentWallet);
@@ -323,24 +315,19 @@ class ProviderController extends BaseController {
     } catch (error) {
       // If an error occurs, request approval
       console.error('Error querying EVM address:', error);
-
-      await notificationService.requestApproval(
-        {
-          params: { origin },
-          approvalComponent: 'EthConnect',
-        },
-        { height: 599 }
-      );
-
-      evmAccount = await Wallet.queryEvmAddress(currentWallet);
     }
 
-    const account = evmAccount ? [evmAccount] : [];
-    await sessionService.broadcastEvent('accountsChanged', account);
-    await permissionService.getConnectedSite(origin);
+    const account = evmAccount ? [evmAccount.toLowerCase()] : [];
+    try {
+      await sessionService.broadcastEvent('accountsChanged', account);
+    } catch (error) {
+      console.warn('Error broadcasting accountsChanged event:', error);
+      // Continue despite the error
+    }
+
     const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-    await delay(2000);
+    await delay(200);
 
     return account;
   };
@@ -445,51 +432,6 @@ class ProviderController extends BaseController {
     } else {
       return 747;
     }
-  };
-
-  ethGetBalance = async (request) => {
-    const result = await this.ethRpc(request.data);
-    return result.result;
-  };
-
-  ethGetCode = async (request) => {
-    const result = await this.ethRpc(request.data);
-    return result.result;
-  };
-
-  ethGasPrice = async (request) => {
-    const result = await this.ethRpc(request.data);
-    return result.result;
-  };
-
-  ethBlockNumber = async (request) => {
-    const result = await this.ethRpc(request.data);
-    return result.result;
-  };
-
-  ethCall = async (request) => {
-    const result = await this.ethRpc(request.data);
-    return result.result;
-  };
-
-  ethGetTransactionReceipt = async (request) => {
-    const result = await this.ethRpc(request.data);
-    return result.result;
-  };
-
-  ethSignTypedData = async (request) => {
-    const result = await this.signTypeDataV1(request);
-    return result;
-  };
-
-  ethSignTypedDataV3 = async (request) => {
-    const result = await this.signTypeData(request);
-    return result;
-  };
-
-  ethSignTypedDataV4 = async (request) => {
-    const result = await this.signTypeData(request);
-    return result;
   };
 
   signTypeData = async (request) => {
@@ -607,6 +549,56 @@ class ProviderController extends BaseController {
       origin: request.session.origin,
       type: 'ethSignTypedDataV1',
     });
+    return result;
+  };
+
+  ethGetTransactionByHash = async (request) => {
+    const result = await this.ethRpc(request.data);
+    return result.result;
+  };
+
+  ethGetBalance = async (request) => {
+    const result = await this.ethRpc(request.data);
+    return result.result;
+  };
+
+  ethGetCode = async (request) => {
+    const result = await this.ethRpc(request.data);
+    return result.result;
+  };
+
+  ethGasPrice = async (request) => {
+    const result = await this.ethRpc(request.data);
+    return result.result;
+  };
+
+  ethBlockNumber = async (request) => {
+    const result = await this.ethRpc(request.data);
+    return result.result;
+  };
+
+  ethCall = async (request) => {
+    const result = await this.ethRpc(request.data);
+    return result.result;
+  };
+
+  ethGetTransactionReceipt = async (request) => {
+    const result = await this.ethRpc(request.data);
+    return result.result;
+  };
+
+  ethSignTypedData = async (request) => {
+    const result = await this.signTypeDataV1(request);
+    return result;
+  };
+
+  ethSignTypedDataV3 = async (request) => {
+    const result = await this.signTypeData(request);
+    return result;
+  };
+
+  ethSignTypedDataV4 = async (request) => {
+    const result = await this.signTypeData(request);
     return result;
   };
 }
