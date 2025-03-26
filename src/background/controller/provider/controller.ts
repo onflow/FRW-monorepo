@@ -278,7 +278,10 @@ class ProviderController extends BaseController {
     const value = transactionParams.value || '0x0';
     const dataValue = transactionParams.data || '0x';
     // console.log('transactionParams ', transactionParams)
-    let result = await Wallet.dapSendEvmTX(to, gas, value, dataValue);
+    const cleanHex = gas.startsWith('0x') ? gas : `0x${gas}`;
+    const gasBigIntt = BigInt(cleanHex);
+
+    let result = await Wallet.dapSendEvmTX(to, gasBigIntt, value, dataValue);
     if (!result) {
       throw new Error('Transaction hash is null or undefined');
     }
