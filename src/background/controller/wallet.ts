@@ -915,7 +915,7 @@ export class WalletController extends BaseController {
     }
 
     // Try to get the cached result
-    let meta = await userWalletService.getChildAccount();
+    let meta = await userWalletService.getChildAccounts();
     if (!meta) {
       try {
         let result = {};
@@ -923,7 +923,7 @@ export class WalletController extends BaseController {
 
         if (result) {
           meta = result;
-          userWalletService.setChildAccounts(meta, address, network);
+          await userWalletService.setChildAccounts(meta, address, network);
         }
       } catch (error) {
         console.error('Error occurred:', error);
@@ -1587,10 +1587,6 @@ export class WalletController extends BaseController {
     return wallet;
   };
 
-  setEvmAddress = async (address: string) => {
-    await userWalletService.setAccountEvmAddress(address);
-  };
-
   getRawEvmAddressWithPrefix = async () => {
     const wallet = userWalletService.getEvmWallet();
     if (!wallet) {
@@ -2062,9 +2058,11 @@ export class WalletController extends BaseController {
         // This is the COA address we get straight from the script
         // This is where we encode the address in ERC-55 format
         const checksummedAddress = ethUtil.toChecksumAddress(ensureEvmAddressPrefix(result));
-        await this.setEvmAddress(checksummedAddress);
+        await userWalletService.setAccountEvmAddress(checksummedAddress as EvmAddress);
         return checksummedAddress;
       } else {
+        // If the script returns null, we need to clear the EVM address
+        await userWalletService.setAccountEvmAddress(null);
         return null;
       }
     } catch (error) {

@@ -25,6 +25,8 @@ import {
   type ChildAccountMap,
   type UserWalletStore,
   type ProfileAccountStore,
+  type ChildAccountStore,
+  type EvmAccountStore,
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress, isValidFlowAddress, withPrefix } from '@/shared/utils/address';
 import { getHashAlgo, getSignAlgo } from '@/shared/utils/algo';
@@ -63,7 +65,7 @@ class UserWallet {
   };
 
   // This is a map of the child accounts for each address
-  childAccountMap: Map<FlowNetwork, Map<FlowAddress, ChildAccountMap>> = new Map();
+  childAccountMap: Map<FlowNetwork, Map<FlowAddress, ChildAccountStore>> = new Map();
 
   // This is a map of the evm addresses for each address
   evmAddressMap: Map<FlowNetwork, Map<FlowAddress, string>> = new Map();
@@ -109,7 +111,7 @@ class UserWallet {
       // Create a new session store and push it to the profile list
       profileList.push(
         await createSessionStore<ProfileAccountStore>({
-          name: `profile-accounts-${pubKey}`,
+          name: `profile-accounts-${network}-${pubKey}`,
           template: {
             accounts: accounts,
             publicKey: pubKey,
@@ -148,6 +150,8 @@ class UserWallet {
     }
 
     this.store.currentPubkey = pubkey;
+    // Note we could support persisting the selected wallet for a given profile across sessions
+    // For now just use the first main account as the current wallet
     this.store.currentAddress = profile.accounts[0].address;
     this.store.parentAddress = profile.accounts[0].address;
   };
@@ -198,29 +202,63 @@ class UserWallet {
     };
   };
 
-  setChildAccounts = (childAccount: ChildAccountMap, address: string, network: string) => {
+  setChildAccounts = async (
+    childAccountMap: ChildAccountMap,
+    address: FlowAddress,
+    network: string
+  ) => {
     const { account } = this.findAccount(address, network);
 
     if (!account) return;
 
     // Store the child accounts for address in the childAccountMap
-    this.childAccountMap[address] = childAccount;
+    if (!!this.childAccountMap[address]) {
+      // Update the existing session store
+      this.childAccountMap[address].accounts = { ...childAccountMap };
+    } else {
+      // Create a new session store so the front end can access the child accounts
+      this.childAccountMap[address] = await createSessionStore<ChildAccountStore>({
+        name: `child-accounts-${network}-${address}`,
+        template: {
+          parentAddress: address,
+          accounts: childAccountMap,
+        },
+      });
+    }
   };
 
-  setAccountEvmAddress = (evmAddress: string) => {
+  /*
+   * Set the evm address for the main account
+   * This is invoked when loading the wallet
+   */
+  setAccountEvmAddress = async (evmAddress: EvmAddress | null) => {
     const network = this.store.network;
-    const address = this.store.parentAddress;
+    const address = this.store.parentAddress as FlowAddress;
     const { account } = this.findAccount(address, network);
 
     if (!account) return;
     this.store.currentEvmAddress = evmAddress;
 
+    if (!isValidFlowAddress(address)) {
+      throw new Error(`Invalid address: ${address}`);
+    }
+
     // Store the evm address for address in the evmAddressMap
-    this.evmAddressMap[address] = evmAddress;
+    if (!this.evmAddressMap[address]) {
+      this.evmAddressMap[address] = await createSessionStore<EvmAccountStore>({
+        name: `evm-account-${network}-${address}`,
+        template: {
+          parentAddress: address,
+          evmAddress: evmAddress,
+        },
+      });
+    } else {
+      this.evmAddressMap[address].evmAddress = evmAddress;
+    }
   };
 
+  // TODO: Verify what this does... it doesn't look right
   setCurrentAccount = async (wallet: WalletAccount, key: ActiveChildType) => {
-    console.log('setCurrentAccount +++++++++++++++++++++++++++++++ ', wallet, key);
     this.store.currentAddress = wallet.address;
     if (key === 'evm') {
       this.store.currentEvmAddress = wallet.address;
@@ -234,24 +272,17 @@ class UserWallet {
     const currentAddress = this.store.currentAddress;
 
     if (parentAddress === currentAddress) {
+      // If ActiveChildType is null, it means the active wallet is the main account
       return null;
     }
-
-    // Check if it satisfies the FlowAddress type
-    const isFlow = (address: string): address is FlowAddress => {
-      return (
-        (address.startsWith('0x') && address.length === 18) ||
-        (!address.startsWith('0x') && address.length === 16)
-      );
-    };
-
     if (isValidEthereumAddress(currentAddress)) {
+      // The evm account is the active wallet
       return 'evm';
-    } else if (isFlow(currentAddress)) {
+    } else if (isValidFlowAddress(currentAddress)) {
+      // If ActiveChildType is a flow address, it means the active wallet is a child account
       return currentAddress;
     }
-
-    return null;
+    throw new Error(`Invalid active wallet address: ${currentAddress}`);
   };
 
   getParentAddress = async (network: string): Promise<FlowAddress | null> => {
@@ -283,6 +314,11 @@ class UserWallet {
     return withPrefix(address);
   };
 
+  /*
+  This returns the currently selected wallet for the current profile and current network
+  Note in the future, we could support persisting the selected wallet for a given profile across sessions
+  */
+
   getCurrentWallet = (): WalletAccount | null => {
     if (this.isLocked()) {
       return null;
@@ -292,6 +328,7 @@ class UserWallet {
     const network = this.store.network;
     const address = this.store.parentAddress;
     const pubkey = this.store.currentPubkey;
+
     const profileList: WalletProfile[] = this.accounts[network];
     const profile = profileList.find((profile) => profile.publicKey === pubkey);
     if (profile) {
@@ -313,7 +350,9 @@ class UserWallet {
         return account;
       } else {
         // activeType is the address of the child account
-        const childAccountDetails = this.childAccountMap[network]?.[address]?.[activeType];
+        const networkChildAccountStore: ChildAccountStore | undefined =
+          this.childAccountMap[network]?.[address];
+        const childAccountDetails = networkChildAccountStore?.accounts[activeType];
         const childWallet = {
           ...account,
           address: activeType,
@@ -343,39 +382,35 @@ class UserWallet {
     if (this.isLocked()) {
       return null;
     }
-
-    const network = this.store.network;
-    const address = this.store.parentAddress;
-    const pubkey = this.store.currentPubkey;
-    const profileList: WalletProfile[] = this.accounts[network];
-    const profile = profileList.find((account) => account.publicKey === pubkey);
-    if (profile) {
-      const account = profile.accounts.find((account) => account.address === address) || null;
-      if (!account) {
-        return null;
-      }
-      const evmWallet = {
-        ...account,
-        address: this.store.currentEvmAddress || '',
-        name: 'Lemon',
-        icon: '🍋',
-        color: '#FFD700',
-        pubK: this.store.currentPubkey,
-      };
-      return evmWallet;
+    if (!this.store.currentEvmAddress) {
+      return null;
     }
-    return null;
+    const network = this.store.network;
+    const evmWallet: WalletAccount = {
+      address: this.store.currentEvmAddress || '',
+      name: 'Lemon',
+      icon: '🍋',
+      color: '#FFD700',
+      chain: network === 'mainnet' ? 747 : 545,
+      id: 0,
+    };
+    return evmWallet;
   };
 
-  getChildAccount = (): ChildAccountMap | null => {
+  getChildAccounts = (): ChildAccountMap | null => {
     if (this.isLocked()) {
       return null;
     }
 
     const network = this.store.network;
     const address = this.store.parentAddress;
-    const childAccount = this.childAccountMap[network]?.[address];
-    return childAccount;
+    const childAccountStore: ChildAccountStore | undefined =
+      this.childAccountMap[network]?.[address];
+    if (!childAccountStore) {
+      return null;
+    }
+    // Return a shallow copy of the child accounts
+    return { ...childAccountStore.accounts };
   };
 
   setWalletEmoji = (emoji, network, id) => {

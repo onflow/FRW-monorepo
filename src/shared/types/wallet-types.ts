@@ -84,38 +84,56 @@ export type Emoji = {
   bgcolor: string;
 };
 
-interface Thumbnail {
+type Thumbnail = {
   url: string;
-}
+};
 
-export interface AccountDetails {
+export type AccountDetails = {
   name: string;
   description: string;
   thumbnail: Thumbnail;
-}
+};
 
-export interface ChildAccountMap {
+export type ChildAccountMap = {
   [key: string]: AccountDetails;
-}
+};
 
 // Stored in local storage
 // key: `userWallets`
 export type UserWalletStore = {
-  network: string;
   monitor: string;
   activeChild: ActiveChildType;
   evmEnabled: boolean;
   emulatorMode: boolean;
-  // The current public key
+  // The currently selected network
+  network: string;
+  // The public key of the currently active profile
   currentPubkey: string;
-  currentAddress: string;
+  // The address of the active main account
   parentAddress: string;
+  // The address of the main account's evm account
   currentEvmAddress: string | null;
+  // Either null - meaning main account is active, the evm account address, or the child account address
+  currentAddress: string;
 };
 
 // Stored in the session store
-// key: `profile-accounts-${pubKey}`
+// key: `profile-accounts-${network}-${pubKey}`
 export type ProfileAccountStore = {
   accounts: MainAccount[];
   publicKey: string;
+};
+
+// Stored in the session store
+// key: `child-accounts-${network}-${address}`
+export type ChildAccountStore = {
+  parentAddress: FlowAddress;
+  accounts: ChildAccountMap;
+};
+
+// Stored in the session store
+// key: `evm-account-${network}-${address}`
+export type EvmAccountStore = {
+  parentAddress: FlowAddress;
+  evmAddress: EvmAddress | null;
 };
