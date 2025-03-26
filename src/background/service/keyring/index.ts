@@ -7,19 +7,19 @@ import encryptor from 'browser-passworder';
 import * as ethUtil from 'ethereumjs-util';
 import log from 'loglevel';
 
-import eventBus from '@/eventBus';
 import {
-  normalizeAddress,
-  setPageStateCacheWhenPopupClose,
-  hasWalletConnectPageStateCache,
-} from 'background/utils';
+  formPubKey,
+  seed2PublicPrivateKey,
+  pk2PubKey,
+} from '@/background/utils/modules/publicPrivateKey';
+import { type PublicKeyTuple } from '@/shared/types/key-types';
+import { normalizeAddress } from 'background/utils';
 import { KEYRING_TYPE } from 'consts';
 
 import { storage } from '../../webapi';
 import i18n from '../i18n';
 import preference from '../preference';
 
-import type DisplayKeyring from './display';
 import { HDKeyring } from './hdKeyring';
 import { SimpleKeyring } from './simpleKeyring';
 
@@ -149,6 +149,58 @@ class KeyringService extends EventEmitter {
     const encryptBooted = await this.encryptor.encrypt(password, 'true');
     this.store.updateState({ booted: encryptBooted });
   }
+  /**
+   * Get the public key tuple from the current keyring
+   * @returns {Promise<PublicKeyTuple>} The public key tuple
+   */
+  getCurrentPublicKeyTuple = async (): Promise<PublicKeyTuple> => {
+    let privateKey: string | undefined;
+    let pubKTuple: PublicKeyTuple | undefined = undefined;
+    const keyrings: Keyring[] = await this.getKeyring();
+    for (const keyring of keyrings) {
+      if (keyring instanceof SimpleKeyring) {
+        // If a private key is found, extract it and break the loop
+        privateKey = keyring.wallets[0].privateKey.toString('hex');
+        if (privateKey) {
+          pubKTuple = await pk2PubKey(privateKey);
+          break;
+        }
+      } else if (keyring instanceof HDKeyring) {
+        // Get a copy of the keyring data
+        const serialized = await keyring.serialize();
+        if (serialized.activeIndexes[0] === 1) {
+          // If publicKey is found, extract it and break the loop
+          const publicKey = serialized.publicKey;
+          if (publicKey) {
+            pubKTuple = await formPubKey(publicKey);
+            break;
+          }
+        } else if (serialized.mnemonic) {
+          // If mnemonic is found, extract it and break the loop
+          const mnemonic = serialized.mnemonic;
+          pubKTuple = await seed2PublicPrivateKey(mnemonic);
+          break;
+        }
+      } else if (
+        (keyring as any).wallets &&
+        (keyring as any).wallets.length > 0 &&
+        (keyring as any).wallets[0].privateKey
+      ) {
+        // If a private key is found, extract it and break the loop
+        privateKey = (keyring as any).wallets[0].privateKey.toString('hex');
+        if (privateKey) {
+          pubKTuple = await pk2PubKey(privateKey);
+          break;
+        }
+      }
+    }
+
+    if (!pubKTuple) {
+      const error = new Error('No mnemonic or private key found in any of the keyrings.');
+      throw error;
+    }
+    return pubKTuple;
+  };
 
   /**
    * Unlock Keyrings without emitting event because the new keyring is not added yet

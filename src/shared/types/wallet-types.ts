@@ -1,6 +1,4 @@
 import { type HashAlgoString, type SignAlgoString } from './algo-types';
-import { type PublicKeyTuple } from './key-types';
-import { type Account, type AccountKey } from './network-types';
 
 // Matches exactly 16 hex characters, with optional 0x prefix
 export type FlowAddress = `0x${string & { length: 16 }}` | `${string & { length: 16 }}`;
@@ -86,18 +84,6 @@ export type Emoji = {
   bgcolor: string;
 };
 
-export type UserWalletStore = {
-  network: string;
-  monitor: string;
-  activeChild: ActiveChildType;
-  evmEnabled: boolean;
-  emulatorMode: boolean;
-  currentPubkey: PublicKeyTuple;
-  currentAddress: string;
-  parentAddress: string;
-  currentEvmAddress: string | null;
-};
-
 interface Thumbnail {
   url: string;
 }
@@ -111,3 +97,25 @@ export interface AccountDetails {
 export interface ChildAccountMap {
   [key: string]: AccountDetails;
 }
+
+// Stored in local storage
+// key: `userWallets`
+export type UserWalletStore = {
+  network: string;
+  monitor: string;
+  activeChild: ActiveChildType;
+  evmEnabled: boolean;
+  emulatorMode: boolean;
+  // The current public key
+  currentPubkey: string;
+  currentAddress: string;
+  parentAddress: string;
+  currentEvmAddress: string | null;
+};
+
+// Stored in the session store
+// key: `profile-accounts-${pubKey}`
+export type ProfileAccountStore = {
+  accounts: MainAccount[];
+  publicKey: string;
+};
