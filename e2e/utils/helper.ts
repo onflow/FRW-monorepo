@@ -294,10 +294,15 @@ export const importAccountBySeedPhrase = async ({
     await page.getByRole('button', { name: 'Next' }).click();
 
     // fill in the password
-    await page.getByPlaceholder('Create a password').clear();
-    await page.getByPlaceholder('Create a password').fill(password);
-    await page.getByPlaceholder('Confirm your password').clear();
-    await page.getByPlaceholder('Confirm your password').fill(password);
+    if (await page.getByPlaceholder('Create a password').isVisible()) {
+      await page.getByPlaceholder('Create a password').clear();
+      await page.getByPlaceholder('Create a password').fill(password);
+    }
+    if (await page.getByPlaceholder('Confirm your password').isVisible()) {
+      await page.getByPlaceholder('Confirm your password').clear();
+      await page.getByPlaceholder('Confirm your password').fill(password);
+    }
+
     await page.getByRole('button', { name: 'Login' }).click();
   }
 
