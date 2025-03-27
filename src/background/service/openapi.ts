@@ -25,6 +25,7 @@ import {
   type FlowAddress,
   type ActiveChildType,
   type PublicKeyAccount,
+  isEvmAccountType,
 } from '@/shared/types/wallet-types';
 import { isValidFlowAddress, isValidEthereumAddress } from '@/shared/utils/address';
 import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
@@ -805,9 +806,9 @@ class OpenApiService {
   };
 
   getNFTList = async (network: string): Promise<NFTModelV2[]> => {
-    const childType = await userWalletService.getActiveWallet();
+    const childType = await userWalletService.getActiveAccountType();
     let chainType = 'flow';
-    if (childType === 'evm') {
+    if (isEvmAccountType(childType)) {
       chainType = 'evm';
     }
 
@@ -1299,8 +1300,8 @@ class OpenApiService {
   };
 
   getTokenList = async (network) => {
-    const childType = await userWalletService.getActiveWallet();
-    const chainType = childType === 'evm' ? 'evm' : 'flow';
+    const childType = await userWalletService.getActiveAccountType();
+    const chainType = isEvmAccountType(childType) ? 'evm' : 'flow';
 
     const ftList = await storage.getExpiry(`TokenList${network}${chainType}`);
     if (ftList) return ftList;
@@ -1368,7 +1369,7 @@ class OpenApiService {
     }
     const tokenList = await this.getTokenList(network);
     let values;
-    const isChild = await userWalletService.getActiveWallet();
+    const isChild = await userWalletService.getActiveAccountType();
     try {
       if (isChild && isChild !== 'evm') {
         values = await this.isLinkedAccountTokenListEnabled(address);

@@ -1,3 +1,5 @@
+import { isValidFlowAddress } from '../utils/address';
+
 import { type HashAlgoString, type SignAlgoString } from './algo-types';
 
 // Matches exactly 16 hex characters, with optional 0x prefix
@@ -11,6 +13,18 @@ export type WalletAddress = EvmAddress | FlowAddress;
 
 // ActiveChildType is the type of the active child in the wallet. It can be 'evm', a FlowAddress, or null.
 export type ActiveChildType = 'evm' | FlowAddress | null;
+
+export const isEvmAccountType = (type: ActiveChildType): type is 'evm' => {
+  return type === 'evm';
+};
+
+export const isChildAccountType = (type: ActiveChildType): type is FlowAddress => {
+  return isValidFlowAddress(type);
+};
+
+export const isMainAccountType = (type: ActiveChildType): type is null => {
+  return type === null;
+};
 
 export type LoggedInAccount = {
   // The globally unique id of the account
@@ -111,8 +125,6 @@ export type UserWalletStore = {
   currentPubkey: string;
   // The address of the active main account
   parentAddress: string;
-  // The address of the main account's evm account
-  currentEvmAddress: string | null;
   // Either null - meaning main account is active, the evm account address, or the child account address
   currentAddress: string;
 };

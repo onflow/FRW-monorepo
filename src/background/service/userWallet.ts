@@ -27,6 +27,8 @@ import {
   type ProfileAccountStore,
   type ChildAccountStore,
   type EvmAccountStore,
+  isEvmAccountType,
+  isMainAccountType,
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress, isValidFlowAddress, withPrefix } from '@/shared/utils/address';
 import { getHashAlgo, getSignAlgo } from '@/shared/utils/algo';
@@ -52,7 +54,6 @@ const USER_WALLET_TEMPLATE: UserWalletStore = {
   currentPubkey: '',
   currentAddress: '',
   parentAddress: '',
-  currentEvmAddress: '',
 };
 class UserWallet {
   store!: UserWalletStore;
@@ -121,7 +122,6 @@ class UserWallet {
     }
     this.store.currentAddress = accounts[0].address;
     this.store.parentAddress = accounts[0].address;
-    this.accounts[network] = profileList;
 
     return profileList;
   };
@@ -236,11 +236,16 @@ class UserWallet {
     const address = this.store.parentAddress as FlowAddress;
     const { account } = this.findAccount(address, network);
 
-    if (!account) return;
-    this.store.currentEvmAddress = evmAddress;
+    if (!account) {
+      throw new Error(`Account not found: ${address}`);
+    }
 
     if (!isValidFlowAddress(address)) {
       throw new Error(`Invalid address: ${address}`);
+    }
+
+    if (!isValidEthereumAddress(evmAddress)) {
+      throw new Error(`Invalid evm address: ${evmAddress}`);
     }
 
     // Store the evm address for address in the evmAddressMap
@@ -260,14 +265,13 @@ class UserWallet {
   // TODO: Verify what this does... it doesn't look right
   setCurrentAccount = async (wallet: WalletAccount, key: ActiveChildType) => {
     this.store.currentAddress = wallet.address;
-    if (key === 'evm') {
-      this.store.currentEvmAddress = wallet.address;
-    } else if (key === null) {
+    if (isMainAccountType(key)) {
+      // We're switching main accounts
       this.store.parentAddress = wallet.address;
     }
   };
 
-  getActiveWallet = (): ActiveChildType => {
+  getActiveAccountType = (): ActiveChildType => {
     const parentAddress = this.store.parentAddress;
     const currentAddress = this.store.currentAddress;
 
@@ -323,7 +327,7 @@ class UserWallet {
     if (this.isLocked()) {
       return null;
     }
-    const activeType = this.getActiveWallet();
+    const activeType = this.getActiveAccountType();
 
     const network = this.store.network;
     const address = this.store.parentAddress;
@@ -336,17 +340,17 @@ class UserWallet {
       if (!account) {
         return null;
       }
-      if (activeType === 'evm') {
+      if (isEvmAccountType(activeType)) {
         const evmWallet = {
           ...account,
-          address: this.store.currentEvmAddress || '',
+          address: this.getCurrentEvmAddress() || '',
           name: 'Lemon',
           icon: '🍋',
           color: '#FFD700',
           pubK: this.store.currentPubkey,
         };
         return evmWallet;
-      } else if (activeType === null) {
+      } else if (isMainAccountType(activeType)) {
         return account;
       } else {
         // activeType is the address of the child account
@@ -378,16 +382,36 @@ class UserWallet {
     }
   };
 
+  getEvmAddressOfParentAccount = (address: FlowAddress): EvmAddress | null => {
+    if (this.isLocked()) {
+      return null;
+    }
+    const evmAddress = this.evmAddressMap[address]?.evmAddress;
+    if (!evmAddress) {
+      return null;
+    }
+    return evmAddress;
+  };
+
+  getCurrentEvmAddress = (): EvmAddress | null => {
+    if (this.isLocked() || !this.store.parentAddress) {
+      return null;
+    }
+    const address = this.store.parentAddress as FlowAddress;
+    return this.getEvmAddressOfParentAccount(address);
+  };
+
   getEvmWallet = (): WalletAccount | null => {
     if (this.isLocked()) {
       return null;
     }
-    if (!this.store.currentEvmAddress) {
+    const evmAddress = this.getCurrentEvmAddress();
+    if (!evmAddress) {
       return null;
     }
     const network = this.store.network;
     const evmWallet: WalletAccount = {
-      address: this.store.currentEvmAddress || '',
+      address: evmAddress,
       name: 'Lemon',
       icon: '🍋',
       color: '#FFD700',
@@ -429,7 +453,6 @@ class UserWallet {
 
     // Remove the evm address from the map
     delete this.evmAddressMap[network]?.[address];
-    this.store.currentEvmAddress = null;
 
     this.store.evmEnabled = false;
   };

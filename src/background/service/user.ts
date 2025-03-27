@@ -75,6 +75,7 @@ class UserInfo {
   };
 
   removeUserInfo = () => {
+    // Note this removes the linkage to the store...
     this.store = template;
   };
 

@@ -149,7 +149,7 @@ export const useProfiles = () => {
             const keys = await usewallet.getAccount();
             const pubKTuple = await usewallet.getPubKey();
 
-            const walletData = usewallet.getUserInfo(true);
+            const walletData = await usewallet.getUserInfo(true);
             console.log('walletData ===', walletData);
             const { otherAccounts, wallet, loggedInAccounts } =
               await usewallet.openapi.freshUserInfo(

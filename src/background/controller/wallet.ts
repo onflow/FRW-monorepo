@@ -40,6 +40,7 @@ import {
   type WalletAccount,
   type EvmAddress,
   type WalletAddress,
+  isEvmAccountType,
 } from '@/shared/types/wallet-types';
 import {
   ensureEvmAddressPrefix,
@@ -214,23 +215,17 @@ export class WalletController extends BaseController {
     // Refresh the main wallets
     await this.loadMainAccounts();
 
-    // Refresh the main address
-    const mainAddress = await this.getMainAddress();
+    // Get the selected main address
+    const mainAddress = await this.getParentAddress();
     if (!mainAddress) {
       throw new Error('Main address not found');
     }
+
     // Refresh the EVM wallet
     await this.queryEvmAddress(mainAddress);
     // Refresh the child wallets
     await this.checkUserChildAccount();
 
-    // Check if a child wallet is active (it shouldn't be...)
-    const anyActiveChild = await this.getActiveWallet();
-    // Get the current wallet
-    const currentWallet = await this.getCurrentWallet();
-    if (!currentWallet) {
-      throw new Error('Current wallet is undefined');
-    }
     // Refresh the user info
     let userInfo = {};
     try {
@@ -247,7 +242,7 @@ export class WalletController extends BaseController {
       fclAccount,
       pubKTuple,
       userInfo,
-      anyActiveChild
+      null
     );
   };
 
@@ -986,7 +981,7 @@ export class WalletController extends BaseController {
       const expiry = coinListService.getExpiry();
 
       // Determine childType: use currentEnv if not empty, otherwise fallback to active wallet type
-      let childType = currentEnv || (await userWalletService.getActiveWallet());
+      let childType = currentEnv || (await userWalletService.getActiveAccountType());
       childType = childType === 'evm' ? 'evm' : 'coinItem';
 
       // Otherwise, fetch from the coinListService
@@ -1085,7 +1080,7 @@ export class WalletController extends BaseController {
       const isChild = await this.getActiveWallet();
 
       // Handle EVM wallets
-      if (isChild === 'evm') {
+      if (isEvmAccountType(isChild)) {
         return await this.refreshEvmList(_expiry);
       }
 
@@ -1518,7 +1513,7 @@ export class WalletController extends BaseController {
   };
 
   getActiveWallet = async () => {
-    const activeWallet = await userWalletService.getActiveWallet();
+    const activeWallet = await userWalletService.getActiveAccountType();
     return activeWallet;
   };
 
@@ -1574,9 +1569,13 @@ export class WalletController extends BaseController {
     return wallet;
   };
 
-  getRawEvmAddressWithPrefix = async () => {
-    const wallet = userWalletService.getEvmWallet();
-    return withPrefix(wallet?.address || '');
+  getRawEvmAddressWithPrefix = async (): Promise<EvmAddress | null> => {
+    // Get the current EVM address without throwing an error
+    const evmAddress = userWalletService.getCurrentEvmAddress();
+    if (!evmAddress) {
+      return null;
+    }
+    return withPrefix(evmAddress) as EvmAddress;
   };
 
   getEvmAddress = async () => {
@@ -2968,7 +2967,7 @@ export class WalletController extends BaseController {
     const isChild = await this.getActiveWallet();
     let dataResult = {};
     let evmAddress;
-    if (isChild === 'evm') {
+    if (isEvmAccountType(isChild)) {
       if (!isValidEthereumAddress(address)) {
         evmAddress = await this.queryEvmAddress(address);
         if (!evmAddress!.startsWith('0x')) {
@@ -3121,7 +3120,7 @@ export class WalletController extends BaseController {
     let baseURL = 'https://www.flowscan.io';
 
     // Check if it's an EVM wallet and update the base URL
-    if (isEvm === 'evm') {
+    if (isEvmAccountType(isEvm)) {
       switch (network) {
         case 'testnet':
           baseURL = 'https://evm-testnet.flowscan.io';
@@ -3619,7 +3618,7 @@ export class WalletController extends BaseController {
   setEmoji = async (emoji, type, index) => {
     const network = await this.getNetwork();
 
-    if (type === 'evm') {
+    if (isEvmAccountType(type)) {
       await userWalletService.setEvmEmoji(emoji);
     } else {
       await userWalletService.setWalletEmoji(emoji, network, index);
