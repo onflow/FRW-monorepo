@@ -52,7 +52,7 @@ const ImportTabs = ({
 
   const handleImport = async (accountKey?: any) => {
     setAccounts(accountKey);
-    const result = await usewallet.openapi.checkImport(accountKey[0].pubK);
+    const result = await usewallet.openapi.checkImport(accountKey[0].publicKey);
     if (result.status === 409) {
       goPassword();
     } else {

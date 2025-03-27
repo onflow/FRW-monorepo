@@ -149,36 +149,28 @@ class KeyringService extends EventEmitter {
     const encryptBooted = await this.encryptor.encrypt(password, 'true');
     this.store.updateState({ booted: encryptBooted });
   }
+
   /**
-   * Get the public key tuple from the current keyring
-   * @returns {Promise<PublicKeyTuple>} The public key tuple
+   * Get the private key from the current keyring
+   * @returns {Promise<string>} The private key as a hex string
+   * @throws {Error} If no private key is found
    */
-  getCurrentPublicKeyTuple = async (): Promise<PublicKeyTuple> => {
+  getCurrentPrivateKey = async (): Promise<string> => {
     let privateKey: string | undefined;
-    let pubKTuple: PublicKeyTuple | undefined = undefined;
     const keyrings: Keyring[] = await this.getKeyring();
+
     for (const keyring of keyrings) {
       if (keyring instanceof SimpleKeyring) {
         // If a private key is found, extract it and break the loop
         privateKey = keyring.wallets[0].privateKey.toString('hex');
-        if (privateKey) {
-          pubKTuple = await pk2PubKey(privateKey);
-          break;
-        }
+        if (privateKey) break;
       } else if (keyring instanceof HDKeyring) {
         // Get a copy of the keyring data
         const serialized = await keyring.serialize();
-        if (serialized.activeIndexes[0] === 1) {
-          // If publicKey is found, extract it and break the loop
-          const publicKey = serialized.publicKey;
-          if (publicKey) {
-            pubKTuple = await formPubKey(publicKey);
-            break;
-          }
-        } else if (serialized.mnemonic) {
-          // If mnemonic is found, extract it and break the loop
-          const mnemonic = serialized.mnemonic;
-          pubKTuple = await seed2PublicPrivateKey(mnemonic);
+        if (serialized.mnemonic) {
+          // If mnemonic is found, derive the private key
+          const { SECP256K1 } = await seed2PublicPrivateKey(serialized.mnemonic);
+          privateKey = SECP256K1.pk;
           break;
         }
       } else if (
@@ -188,18 +180,32 @@ class KeyringService extends EventEmitter {
       ) {
         // If a private key is found, extract it and break the loop
         privateKey = (keyring as any).wallets[0].privateKey.toString('hex');
-        if (privateKey) {
-          pubKTuple = await pk2PubKey(privateKey);
-          break;
-        }
+        if (privateKey) break;
       }
     }
 
-    if (!pubKTuple) {
-      const error = new Error('No mnemonic or private key found in any of the keyrings.');
+    if (!privateKey) {
+      throw new Error('No private key found in any of the keyrings.');
+    }
+
+    return privateKey;
+  };
+  /**
+   * Get the public key tuple from the current keyring
+   * @returns {Promise<PublicKeyTuple>} The public key tuple
+   */
+  getCurrentPublicKeyTuple = async (): Promise<PublicKeyTuple> => {
+    try {
+      // Get the private key
+      const privateKey = await this.getCurrentPrivateKey();
+
+      // Generate public key tuple from private key
+      const pubKTuple = await pk2PubKey(privateKey);
+      return pubKTuple;
+    } catch (error) {
+      console.error('Failed to get public key tuple:', error);
       throw error;
     }
-    return pubKTuple;
   };
 
   /**
