@@ -91,7 +91,7 @@ export const useProfiles = () => {
           usewallet.getEmoji(),
         ]);
 
-        const evmAddress = ensureEvmAddressPrefix(evmRes!);
+        const evmAddress = evmRes ? ensureEvmAddressPrefix(evmRes) : '';
 
         const evmWalletData: WalletAccount = {
           name: emoji[9].name,
@@ -102,12 +102,11 @@ export const useProfiles = () => {
           color: emoji[9].bgcolor,
         };
 
-        await Promise.all([setEvmWallet(evmWalletData), setEvmAddress(evmAddress)]);
-        setEvmLoading(false);
-
-        return evmWalletData;
+        await Promise.all([setEvmWallet(evmWalletData), setEvmAddress(evmAddress ?? '')]);
       } catch (error) {
-        throw error;
+        console.error('Error processing EVM address:', error);
+      } finally {
+        setEvmLoading(false);
       }
     },
     [usewallet, network, setEvmWallet, setEvmAddress, setEvmLoading]

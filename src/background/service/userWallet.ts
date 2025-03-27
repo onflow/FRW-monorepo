@@ -15,7 +15,7 @@ import {
 } from '@/background/utils/modules/publicPrivateKey';
 import createPersistStore from '@/background/utils/persisitStore';
 import { type HashAlgoString, type SignAlgoString } from '@/shared/types/algo-types';
-import { type PublicPrivateKeyTuple } from '@/shared/types/key-types';
+import { type PublicPrivateKeyTuple, type PublicKeyTuple } from '@/shared/types/key-types';
 import {
   type LoggedInAccount,
   type ActiveChildType,
@@ -585,7 +585,7 @@ class UserWallet {
     return realSignature;
   };
 
-  switchLogin = async (pubKey: any, replaceUser = true) => {
+  switchLogin = async (pubKey: PublicKeyTuple, replaceUser = true) => {
     const pubKeyP256 = pubKey.P256;
     const pubKeySECP256K1 = pubKey.SECP256K1;
 
@@ -644,11 +644,11 @@ class UserWallet {
         weight: account.weight!,
       },
     ];
-
+    const privateKey = await keyringService.getCurrentPrivateKey();
     if (!result[0].pubK) {
       console.log('No result found, creating a new result object');
       // Create a new result object with extension default setting
-      const foundResult = await findAddressWithPK(keys.pk, '');
+      const foundResult = await findAddressWithPK(privateKey, '');
       if (!foundResult) {
         throw new Error('Unable to find a address with the provided PK. Aborting login.');
       }
@@ -690,7 +690,7 @@ class UserWallet {
       Buffer.from(message, 'hex'),
       signAlgo,
       hashAlgo,
-      keys.pk
+      privateKey
     );
     return wallet.openapi.loginV3(accountKey, deviceInfo, realSignature, replaceUser);
   };
@@ -804,11 +804,12 @@ class UserWallet {
     const publicPrivateKey: PublicPrivateKeyTuple = isTemp
       ? await seed2PublicPrivateKeyTemp(mnemonic)
       : await seed2PublicPrivateKey(mnemonic);
-
+    console.log('publicPrivateKey ===', publicPrivateKey);
     const result = await getAccountsByPublicKeyTuple(publicPrivateKey, 'mainnet');
     if (!result) {
       throw new Error('No Address Found');
     }
+    console.log('result ===', result);
     const app = getApp(process.env.NODE_ENV!);
     const auth = getAuth(app);
     const idToken = await getAuth(app).currentUser?.getIdToken();
@@ -832,7 +833,7 @@ class UserWallet {
     const accountKey = {
       public_key: publicKey,
       hash_algo: hashAlgo,
-      sign_algo: hashAlgo,
+      sign_algo: signAlgo,
       weight: result[0].weight,
     };
     const deviceInfo = await this.getDeviceInfo();
