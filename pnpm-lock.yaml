@@ -51,11 +51,11 @@ importers:
         specifier: ^1.7.1
         version: 1.7.1
       '@onflow/fcl':
-        specifier: ^1.14.0
-        version: 1.14.0(@types/react@18.3.14)(google-protobuf@3.21.4)(jiti@2.4.1)(postcss@8.4.49)(react@18.3.1)
+        specifier: ^1.14.1
+        version: 1.14.1(@types/react@18.3.14)(google-protobuf@3.21.4)(jiti@2.4.1)(postcss@8.4.49)(react@18.3.1)
       '@onflow/fcl-wc':
-        specifier: ^5.6.2
-        version: 5.6.2(@onflow/fcl-core@1.15.0(google-protobuf@3.21.4))(@types/react@18.3.14)(jiti@2.4.1)(postcss@8.4.49)(react@18.3.1)
+        specifier: ^5.6.3
+        version: 5.6.3(@onflow/fcl-core@1.15.1(google-protobuf@3.21.4))(@types/react@18.3.14)(jiti@2.4.1)(postcss@8.4.49)(react@18.3.1)
       '@onflow/transport-http':
         specifier: 1.10.2
         version: 1.10.2
@@ -2180,16 +2180,16 @@ packages:
   '@onflow/config@1.5.1':
     resolution: {integrity: sha512-BmD67EhZEqMRePa3y/WIpC5hH/YF9gV9uv5bPSN39P3laYxd93Ojhdf6v0fXkjO/d3WaHylLPoXYgpW/g5seWA==}
 
-  '@onflow/fcl-core@1.15.0':
-    resolution: {integrity: sha512-yDhk03OimuOPMvUWGw1uD1Zf1SE0n56YXeGfUkBx7lxTNk1dDDSx/R0V45bHae5ycLYM5YZpm1XjuyG0oWWS/Q==}
+  '@onflow/fcl-core@1.15.1':
+    resolution: {integrity: sha512-niMxLUYLn0l+5bW9GJ1yUrT5pj6NI6OYdBoZxC3PRvH//cuPYGPlnM+hm7zcmmBE+JOHi7G76fq0pSB9TWylbA==}
 
-  '@onflow/fcl-wc@5.6.2':
-    resolution: {integrity: sha512-dhdCeFiHsfg3hY4jiJGYPRUE/cezcMUBPhuHnUyUAJZ7xMv6CVsxe6N5cEdAJ+Esdds9M/nB8kwCiWy/Xe5UCA==}
+  '@onflow/fcl-wc@5.6.3':
+    resolution: {integrity: sha512-fhoRq+XDqT911YNq09HzG2wMiXtwNOdrNl84hNU0iPrUGq3hN3cPyvlzSttNj+IljC9xLIJyiwsV1/5hD6dcPg==}
     peerDependencies:
-      '@onflow/fcl-core': 1.15.0
+      '@onflow/fcl-core': 1.15.1
 
-  '@onflow/fcl@1.14.0':
-    resolution: {integrity: sha512-OZl9QobopIpdmlbM2KEquzP98DRn1DDmeT63w+6+dfY88TQKuTbzIOqKLSbUp190mHvWORdyk/9RJyPd19yKUg==}
+  '@onflow/fcl@1.14.1':
+    resolution: {integrity: sha512-9kWlj02f7GKQuM2CivWXh0hDY/s8NvAJ3pFn6hVO6lQNH9VQB7f3zNNqu7hHQcG9HvXJ22ntpTFxA4j1m8CvUw==}
 
   '@onflow/interaction@0.0.11':
     resolution: {integrity: sha512-Xuq1Mmx6Wyba/F/L+QLQs0yJeQDsIDwy5SKk5vrCuVgIj0yD8k506g5L8ODrbM1LWll8i0tQsoOi0F85vNl5sA==}
@@ -2197,8 +2197,8 @@ packages:
   '@onflow/rlp@1.2.3':
     resolution: {integrity: sha512-Mm1jSzDhdTofMGhg3NtUD8uKntj7u1dSMr+Q4VwOw2YQhwGTGJrzsHc7qgkJxwDnjU0Ra8VQfqd54bZzX0R2aQ==}
 
-  '@onflow/sdk@1.6.0':
-    resolution: {integrity: sha512-9iizRs6e+q0/2RfFLs5U/pNWgrjdNUCv2MrxpCD2wGa5qkLELI8Ytrm4TrEAnEIj3aMM9PfXPaPG73EXpL7Xew==}
+  '@onflow/sdk@1.6.1':
+    resolution: {integrity: sha512-SVEjOMuyYDRcxosHyGmW7QHbUre3s0GAxuQC8xSsCFU5ZmYEGPfGAHWiIkemU4mhOprdoQYGOzDI4m6i0NpBfA==}
 
   '@onflow/transport-http@1.10.2':
     resolution: {integrity: sha512-dXi4pe1K29kJ4AbHH4eBIZ3JhYoo68sl5vlJzm5w1MMApHUWDIeDDDFh1opvqyvE3W8uBCe7+hVrigMZAZyHJA==}
@@ -12349,14 +12349,14 @@ snapshots:
       - '@onflow/util-config'
       - supports-color
 
-  '@onflow/fcl-core@1.15.0(google-protobuf@3.21.4)':
+  '@onflow/fcl-core@1.15.1(google-protobuf@3.21.4)':
     dependencies:
       '@babel/runtime': 7.26.0
       '@improbable-eng/grpc-web': 0.15.0(google-protobuf@3.21.4)
       '@onflow/config': 1.5.1
       '@onflow/interaction': 0.0.11
       '@onflow/rlp': 1.2.3
-      '@onflow/sdk': 1.6.0
+      '@onflow/sdk': 1.6.1
       '@onflow/transport-http': 1.11.0
       '@onflow/types': 1.4.1
       '@onflow/util-actor': 1.3.4
@@ -12376,11 +12376,11 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@onflow/fcl-wc@5.6.2(@onflow/fcl-core@1.15.0(google-protobuf@3.21.4))(@types/react@18.3.14)(jiti@2.4.1)(postcss@8.4.49)(react@18.3.1)':
+  '@onflow/fcl-wc@5.6.3(@onflow/fcl-core@1.15.1(google-protobuf@3.21.4))(@types/react@18.3.14)(jiti@2.4.1)(postcss@8.4.49)(react@18.3.1)':
     dependencies:
       '@babel/runtime': 7.26.0
       '@onflow/config': 1.5.1
-      '@onflow/fcl-core': 1.15.0(google-protobuf@3.21.4)
+      '@onflow/fcl-core': 1.15.1(google-protobuf@3.21.4)
       '@onflow/util-invariant': 1.2.4
       '@onflow/util-logger': 1.3.3
       '@walletconnect/modal': 2.7.0(@types/react@18.3.14)(react@18.3.1)
@@ -12416,15 +12416,15 @@ snapshots:
       - tsx
       - utf-8-validate
 
-  '@onflow/fcl@1.14.0(@types/react@18.3.14)(google-protobuf@3.21.4)(jiti@2.4.1)(postcss@8.4.49)(react@18.3.1)':
+  '@onflow/fcl@1.14.1(@types/react@18.3.14)(google-protobuf@3.21.4)(jiti@2.4.1)(postcss@8.4.49)(react@18.3.1)':
     dependencies:
       '@babel/runtime': 7.26.0
       '@onflow/config': 1.5.1
-      '@onflow/fcl-core': 1.15.0(google-protobuf@3.21.4)
-      '@onflow/fcl-wc': 5.6.2(@onflow/fcl-core@1.15.0(google-protobuf@3.21.4))(@types/react@18.3.14)(jiti@2.4.1)(postcss@8.4.49)(react@18.3.1)
+      '@onflow/fcl-core': 1.15.1(google-protobuf@3.21.4)
+      '@onflow/fcl-wc': 5.6.3(@onflow/fcl-core@1.15.1(google-protobuf@3.21.4))(@types/react@18.3.14)(jiti@2.4.1)(postcss@8.4.49)(react@18.3.1)
       '@onflow/interaction': 0.0.11
       '@onflow/rlp': 1.2.3
-      '@onflow/sdk': 1.6.0
+      '@onflow/sdk': 1.6.1
       '@onflow/types': 1.4.1
       '@onflow/util-actor': 1.3.4
       '@onflow/util-address': 1.2.3
@@ -12473,7 +12473,7 @@ snapshots:
       '@babel/runtime': 7.26.0
       buffer: 6.0.3
 
-  '@onflow/sdk@1.6.0':
+  '@onflow/sdk@1.6.1':
     dependencies:
       '@babel/runtime': 7.26.0
       '@onflow/config': 1.5.1
