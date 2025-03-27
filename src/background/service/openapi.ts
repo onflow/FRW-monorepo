@@ -1463,20 +1463,16 @@ class OpenApiService {
   getEnabledNFTList = async (): Promise<{ address: string; contractName: string }[]> => {
     const address = await userWalletService.getCurrentAddress();
 
-    const promiseResult = await this.checkNFTListEnabled(address);
-    // const network = await userWalletService.getNetwork();
-    // const notEmptyTokenList = tokenList.filter(value => value.address[network] !== null && value.address[network] !== '' )
-    // const data = values.map((value, index) => ({isEnabled: value, token: tokenList[index]}))
-    const resultArray = Object.entries(promiseResult)
-      .filter(([_key, value]) => value === true) // Only keep entries with a value of true
-      .map(([key]) => {
-        // ignore the prefix
-        const [, address, contractName] = key.split('.');
-        return {
-          address: `0x${address}`,
-          contractName: contractName,
-        };
-      });
+    const getNftBalanceStorage = await this.getNftBalanceStorage(address);
+
+    const resultArray = Object.entries(getNftBalanceStorage).map(([key]) => {
+      // ignore the prefix
+      const [, address, contractName] = key.split('.');
+      return {
+        address: `0x${address}`,
+        contractName: contractName,
+      };
+    });
 
     return resultArray;
   };
@@ -1484,6 +1480,17 @@ class OpenApiService {
   checkNFTListEnabled = async (address: string): Promise<Record<string, boolean>> => {
     // Returns a map of enabled NFTs for the address
     const script = await getScripts('nft', 'checkNFTListEnabled');
+
+    const isEnabledList = await fcl.query({
+      cadence: script,
+      args: (arg, t) => [arg(address, t.Address)],
+    });
+    return isEnabledList;
+  };
+
+  getNftBalanceStorage = async (address: string): Promise<Record<string, number>> => {
+    // Returns a map of enabled NFTs for the address
+    const script = await getScripts('collection', 'getNFTBalanceStorage');
 
     const isEnabledList = await fcl.query({
       cadence: script,
