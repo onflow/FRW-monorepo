@@ -3608,7 +3608,7 @@ export class WalletController extends BaseController {
     if (!address) {
       throw new Error('No address found');
     }
-    const account = await fcl.account(address, {}, {});
+    const account = await fcl.account(address);
     return account;
   };
 

@@ -188,10 +188,15 @@ export const registerAccount = async ({ page, extensionId, username, password })
     .click();
 
   // fill
-  await page.getByPlaceholder('Create a password').clear();
-  await page.getByPlaceholder('Create a password').fill(password);
-  await page.getByPlaceholder('Confirm your password').clear();
-  await page.getByPlaceholder('Confirm your password').fill(password);
+
+  if (await page.getByPlaceholder('Create a password').isVisible()) {
+    await page.getByPlaceholder('Create a password').clear();
+    await page.getByPlaceholder('Create a password').fill(password);
+  }
+  if (await page.getByPlaceholder('Confirm your password').isVisible()) {
+    await page.getByPlaceholder('Confirm your password').clear();
+    await page.getByPlaceholder('Confirm your password').fill(password);
+  }
 
   await page.getByLabel("I agree to Flow Wallet's").click();
 
