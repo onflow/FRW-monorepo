@@ -49,6 +49,7 @@ import {
   withPrefix,
 } from '@/shared/utils/address';
 import { getSignAlgo } from '@/shared/utils/algo';
+import { getCurrentProfileId } from '@/shared/utils/current-id';
 import { convertToIntegerAmount, validateAmount } from '@/shared/utils/number';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import {
@@ -86,7 +87,12 @@ import { notification, storage } from 'background/webapi';
 import { openIndexPage } from 'background/webapi/tab';
 import { INTERNAL_REQUEST_ORIGIN, EVENTS, KEYRING_TYPE, EVM_ENDPOINT } from 'consts';
 
-import type { BlockchainResponse, Contact, NFTModelV2 } from '../../shared/types/network-types';
+import type {
+  BlockchainResponse,
+  Contact,
+  NFTModelV2,
+  UserInfoResponse,
+} from '../../shared/types/network-types';
 import placeholder from '../images/placeholder.png';
 import DisplayKeyring from '../service/keyring/display';
 import { HDKeyring } from '../service/keyring/hdKeyring';
@@ -172,7 +178,7 @@ export class WalletController extends BaseController {
   resolveApproval = notificationService.resolveApproval;
   rejectApproval = notificationService.rejectApproval;
 
-  switchAccount = async (currentId: string) => {
+  switchProfile = async (currentId: string) => {
     try {
       await keyringService.switchKeyring(currentId);
       const pubKey = await keyringService.getCurrentPublicKeyTuple();
@@ -852,9 +858,9 @@ export class WalletController extends BaseController {
     return preferenceService.updateIsFirstOpen();
   };
   // userinfo
-  getUserInfo = async (forceRefresh: boolean = false) => {
+  getUserInfo = async (forceRefresh: boolean = false): Promise<UserInfoResponse> => {
     if (!forceRefresh) {
-      const data = userInfoService.getUserInfo();
+      const data = await userInfoService.getCurrentUserInfo();
       if (data.username.length) {
         return data;
       }
@@ -864,14 +870,13 @@ export class WalletController extends BaseController {
   };
 
   fetchUserInfo = async () => {
-    const result = await openapiService.userInfo();
-    const info = result['data'];
+    const info = await openapiService.userInfo();
     const avatar = this.addTokenForFirebaseImage(info.avatar);
 
     const updatedUrl = this.replaceAvatarUrl(avatar);
 
     info.avatar = updatedUrl;
-    userInfoService.addUserInfo(info);
+    userInfoService.setCurrentUserInfo(info);
     return info;
   };
 
@@ -956,12 +961,6 @@ export class WalletController extends BaseController {
     const wallet = await userWalletService.returnParentWallet(network);
 
     return wallet;
-  };
-
-  fetchUserDomain = async () => {
-    const network = await this.getNetwork();
-    const domain = await userInfoService.getMeow(network);
-    return domain;
   };
 
   getDashIndex = async () => {
@@ -3501,7 +3500,7 @@ export class WalletController extends BaseController {
   };
 
   deleteCurrentUserBackup = async () => {
-    const data = await userInfoService.getUserInfo();
+    const data = await userInfoService.getCurrentUserInfo();
     const username = data.username;
     return googleDriveService.deleteUserBackup(username);
   };
@@ -3511,7 +3510,7 @@ export class WalletController extends BaseController {
   };
 
   hasCurrentUserBackup = async () => {
-    const data = await userInfoService.getUserInfo();
+    const data = await userInfoService.getCurrentUserInfo();
     const username = data.username;
     return googleDriveService.hasUserBackup(username);
   };
@@ -3521,7 +3520,7 @@ export class WalletController extends BaseController {
   };
 
   syncBackup = async () => {
-    const data = await userInfoService.getUserInfo();
+    const data = await userInfoService.getCurrentUserInfo();
     const username = data.username;
     const password = keyringService.password;
     const mnemonic = await this.getMnemonics(password || '');
@@ -3706,6 +3705,7 @@ export class WalletController extends BaseController {
     return await openapiService.decodeEvmCall(callData, address);
   };
 
+  // Todo - I don't think this works as expected in any case
   saveIndex = async (username = '', userId = null) => {
     const loggedInAccounts: LoggedInAccount[] = (await storage.get('loggedInAccounts')) || [];
     let currentindex = 0;

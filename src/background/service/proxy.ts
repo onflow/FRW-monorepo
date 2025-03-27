@@ -1,6 +1,7 @@
 import { Core } from '@walletconnect/core';
 import SignClient from '@walletconnect/sign-client';
 
+import { getCurrentProfileId } from '@/shared/utils/current-id';
 import { FCLWalletConnectMethod } from '@/shared/utils/type';
 import wallet from 'background/controller/wallet';
 import { keyringService, openapiService } from 'background/service';
@@ -37,7 +38,7 @@ class Proxy {
   };
 
   proxySignRequest = async (cadence, args) => {
-    const currentId = await storage.get('currentId');
+    const currentId = await getCurrentProfileId();
     const topicId = await storage.get(`${currentId}Topic`);
     try {
       const signwallet = await SignClient.init({
@@ -100,7 +101,7 @@ class Proxy {
   };
 
   proxyLoginRequest = async () => {
-    const currentId = await storage.get('currentId');
+    const currentId = await getCurrentProfileId();
     const topicId = await storage.get(`${currentId}Topic`);
     try {
       const signwallet = await SignClient.init({

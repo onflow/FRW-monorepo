@@ -134,7 +134,7 @@ const Header = ({ _loading = false }) => {
         }
         await usewallet.signOutWallet();
         await usewallet.clearWallet();
-        await usewallet.switchAccount(account.id);
+        await usewallet.switchProfile(account.id);
         await usewallet.switchNetwork(switchingTo);
         clearProfileData();
       } catch (error) {

@@ -748,7 +748,8 @@ class OpenApiService {
 
   userInfo = async (): Promise<UserInfoResponse> => {
     const config = this.store.config.user_info;
-    return await this.sendRequest(config.method, config.path);
+    const { data } = await this.sendRequest(config.method, config.path);
+    return data;
   };
 
   createFlowAddress = async () => {

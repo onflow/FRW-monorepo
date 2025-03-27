@@ -185,6 +185,10 @@ export interface UserInfoResponse {
   avatar: string;
   nickname: string;
   username: string;
+  // 0: public, 1: private
+  private: number;
+  created: string;
+  id: string;
 }
 
 export interface UserWalletResponse {

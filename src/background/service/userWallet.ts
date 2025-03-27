@@ -799,17 +799,13 @@ class UserWallet {
     };
   };
 
-  signInWithMnemonic = async (mnemonic: string, replaceUser = true, isTemp = true) => {
+  signInWithMnemonic = async (mnemonic: string, replaceUser = true) => {
     // Seperate this out as the private key is not returned from the getAccountsByPublicKeyTuple
-    const publicPrivateKey: PublicPrivateKeyTuple = isTemp
-      ? await seed2PublicPrivateKeyTemp(mnemonic)
-      : await seed2PublicPrivateKey(mnemonic);
-    console.log('publicPrivateKey ===', publicPrivateKey);
+    const publicPrivateKey: PublicPrivateKeyTuple = await seed2PublicPrivateKey(mnemonic);
     const result = await getAccountsByPublicKeyTuple(publicPrivateKey, 'mainnet');
     if (!result) {
       throw new Error('No Address Found');
     }
-    console.log('result ===', result);
     const app = getApp(process.env.NODE_ENV!);
     const auth = getAuth(app);
     const idToken = await getAuth(app).currentUser?.getIdToken();

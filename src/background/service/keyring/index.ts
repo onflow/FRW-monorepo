@@ -7,12 +7,9 @@ import encryptor from 'browser-passworder';
 import * as ethUtil from 'ethereumjs-util';
 import log from 'loglevel';
 
-import {
-  formPubKey,
-  seed2PublicPrivateKey,
-  pk2PubKey,
-} from '@/background/utils/modules/publicPrivateKey';
+import { seed2PublicPrivateKey, pk2PubKey } from '@/background/utils/modules/publicPrivateKey';
 import { type PublicKeyTuple } from '@/shared/types/key-types';
+import { getCurrentProfileId } from '@/shared/utils/current-id';
 import { normalizeAddress } from 'background/utils';
 import { KEYRING_TYPE } from 'consts';
 
@@ -116,6 +113,7 @@ class KeyringService extends EventEmitter {
   memStore: SimpleStore<MemStoreState>;
   currentKeyring: Keyring[];
   keyringList: KeyringData[];
+  publicKeyCache: Map<string, PublicKeyTuple> = new Map();
   encryptor: typeof encryptor = encryptor;
   password: string | null = null;
 
@@ -149,15 +147,22 @@ class KeyringService extends EventEmitter {
     const encryptBooted = await this.encryptor.encrypt(password, 'true');
     this.store.updateState({ booted: encryptBooted });
   }
+  /**
+   * Get keyring ids
+   * @returns {Promise<string[]>} The keyring ids
+   */
+  getKeyringIds = async (): Promise<string[]> => {
+    const keyringIds = this.keyringList.map((keyring) => keyring.id);
+    return keyringIds;
+  };
 
   /**
    * Get the private key from the current keyring
    * @returns {Promise<string>} The private key as a hex string
    * @throws {Error} If no private key is found
    */
-  getCurrentPrivateKey = async (): Promise<string> => {
+  getKeyringPrivateKey = async (keyrings: Keyring[]): Promise<string> => {
     let privateKey: string | undefined;
-    const keyrings: Keyring[] = await this.getKeyring();
 
     for (const keyring of keyrings) {
       if (keyring instanceof SimpleKeyring) {
@@ -191,13 +196,22 @@ class KeyringService extends EventEmitter {
     return privateKey;
   };
   /**
+   * Get the private key from the current keyring
+   * @returns {Promise<string>} The private key as a hex string
+   * @throws {Error} If no private key is found
+   */
+  getCurrentPrivateKey = async (): Promise<string> => {
+    return this.getKeyringPrivateKey(this.currentKeyring);
+  };
+
+  /**
    * Get the public key tuple from the current keyring
    * @returns {Promise<PublicKeyTuple>} The public key tuple
    */
-  getCurrentPublicKeyTuple = async (): Promise<PublicKeyTuple> => {
+  getKeyringPublicKeyTuple = async (keyrings: Keyring[]): Promise<PublicKeyTuple> => {
     try {
       // Get the private key
-      const privateKey = await this.getCurrentPrivateKey();
+      const privateKey = await this.getKeyringPrivateKey(keyrings);
 
       // Generate public key tuple from private key
       const pubKTuple = await pk2PubKey(privateKey);
@@ -206,6 +220,14 @@ class KeyringService extends EventEmitter {
       console.error('Failed to get public key tuple:', error);
       throw error;
     }
+  };
+
+  /**
+   * Get the public key tuple from the current keyring
+   * @returns {Promise<PublicKeyTuple>} The public key tuple
+   */
+  getCurrentPublicKeyTuple = async (): Promise<PublicKeyTuple> => {
+    return this.getKeyringPublicKeyTuple(this.currentKeyring);
   };
 
   /**
@@ -893,7 +915,7 @@ class KeyringService extends EventEmitter {
   async unlockKeyrings(password: string): Promise<any[]> {
     // Note that currentAccountIndex is only used in keyring for old accounts that don't have an id stored in the keyring removing in 2.7.6
     // currentId always takes precedence
-    const currentId = await storage.get('currentId');
+    const currentId = await getCurrentProfileId();
     let vaultArray = this.store.getState().vault;
 
     // Ensure vaultArray is an array and filter out null/undefined entries

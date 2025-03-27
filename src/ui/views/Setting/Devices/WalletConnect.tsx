@@ -142,7 +142,7 @@ const WalletConnect = (props: RevokePageProps) => {
 
         // Respond with an empty message
         const jsonString = {
-          userId: userInfo.user_id,
+          userId: userInfo.id,
           userAvatar: userInfo.avatar,
           userName: userInfo.username,
           walletAddress: address,
