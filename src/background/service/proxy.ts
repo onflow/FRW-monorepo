@@ -12,10 +12,6 @@ import { storage } from '../webapi';
 import { HDKeyring } from './keyring/hdKeyring';
 
 class Proxy {
-  proxySign = async (token: string, userId: string) => {
-    return wallet.openapi.proxyKey(token, userId);
-  };
-
   requestJwt = async () => {
     return wallet.openapi.proxytoken();
   };
@@ -38,7 +34,7 @@ class Proxy {
   };
 
   proxySignRequest = async (cadence, args) => {
-    const currentId = await getCurrentProfileId();
+    const currentId = await storage.get('currentId');
     const topicId = await storage.get(`${currentId}Topic`);
     try {
       const signwallet = await SignClient.init({

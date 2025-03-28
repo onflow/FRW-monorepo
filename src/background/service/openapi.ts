@@ -693,14 +693,6 @@ class OpenApiService {
     return result;
   };
 
-  proxyKey = async (token: any, userId: any) => {
-    if (token) {
-      await this._signWithCustom(token);
-      await storage.set('currentId', userId);
-    }
-    return;
-  };
-
   proxytoken = async () => {
     // Default options are marked with *
 

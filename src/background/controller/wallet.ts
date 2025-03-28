@@ -44,6 +44,7 @@ import {
 } from '@/shared/types/wallet-types';
 import {
   ensureEvmAddressPrefix,
+  getAccountKey,
   isValidEthereumAddress,
   isValidFlowAddress,
   withPrefix,
@@ -149,20 +150,6 @@ export class WalletController extends BaseController {
   loadMemStore = () => keyringService.loadMemStore();
   verifyPassword = (password: string) => keyringService.verifyPassword(password);
 
-  // requestETHRpc = (data: { method: string; params: any }, chainId: string) => {
-  //   return providerController.ethRpc(
-  //     {
-  //       data,
-  //       session: {
-  //         name: 'Flow',
-  //         origin: INTERNAL_REQUEST_ORIGIN,
-  //         icon: './images/icon-128.png',
-  //       },
-  //     },
-  //     chainId
-  //   );
-  // };
-
   sendRequest = (data) => {
     return provider({
       data,
@@ -178,9 +165,42 @@ export class WalletController extends BaseController {
   resolveApproval = notificationService.resolveApproval;
   rejectApproval = notificationService.rejectApproval;
 
-  switchProfile = async (currentId: string) => {
+  /**
+   * Create a new wallet profile.
+   * This is called on first registration and when the user wants to add a profile
+   * @param password the password for the new profile, or confirmation of existing password
+   * @param username the username for the new profile
+   * @param mnemonic the mnemonic for the new private key
+   */
+  registerNewProfile = async (password: string, username: string, mnemonic: string) => {
+    // The account is the public key of the account. It's derived from the mnemonic. We do not support custom curves or passphrases for new accounts
+    const accountKey = getAccountKey(mnemonic);
+
+    // We're booting the keyring with the new password
+    // This does not update the vault, it simply sets the password / cypher methods we're going to use to store our private keys in the vault
+
+    await this.boot(password);
+    // We're then registering the account with the public key
+    // This calls our backend API which gives us back an account id
+    // This register call ALSO sets the currentId in local storage
+    // In addition, it will sign us in to the new account with our auth (Firebase) on our backend
+    // Note this auth is different to unlocking the wallet with the password.
+    await openapiService.register(accountKey, username);
+
+    // We're creating the keyring with the mnemonic. This will encypt the private keys and store them in the keyring vault and deepVault
+    await this.createKeyringWithMnemonics(mnemonic);
+    // We're creating the Flow address for the account
+    // Only after this, do we have a valid wallet with a Flow address
+    await openapiService.createFlowAddress();
+  };
+
+  /**
+   * Switch the wallet profile to a different profile
+   * @param id - The id of the keyring to switch to.
+   */
+  switchProfile = async (id: string) => {
     try {
-      await keyringService.switchKeyring(currentId);
+      await keyringService.switchKeyring(id);
       const pubKey = await keyringService.getCurrentPublicKeyTuple();
       await userWalletService.switchLogin(pubKey);
     } catch (error) {
@@ -2998,10 +3018,6 @@ export class WalletController extends BaseController {
 
   signInWithPrivatekey = async (pk: string, replaceUser = true) => {
     return userWalletService.sigInWithPk(pk, replaceUser);
-  };
-
-  signInWithProxy = async (token: string, user: string) => {
-    return proxyService.proxySign(token, user);
   };
 
   requestProxyToken = async () => {

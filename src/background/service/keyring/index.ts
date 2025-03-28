@@ -9,7 +9,7 @@ import log from 'loglevel';
 
 import { seed2PublicPrivateKey, pk2PubKey } from '@/background/utils/modules/publicPrivateKey';
 import { type PublicKeyTuple } from '@/shared/types/key-types';
-import { getCurrentProfileId } from '@/shared/utils/current-id';
+import { getCurrentProfileId, returnCurrentProfileId } from '@/shared/utils/current-id';
 import { normalizeAddress } from 'background/utils';
 import { KEYRING_TYPE } from 'consts';
 
@@ -156,6 +156,23 @@ class KeyringService extends EventEmitter {
     return keyringIds;
   };
 
+  /**
+   * Ensure valid currentId
+   * @param currentId - The id of the keyring to switch to.
+   * @returns {Promise<string>} The currentId
+   */
+  ensureValidKeyringId = async (id: string | null): Promise<string> => {
+    const keyringIds = await this.getKeyringIds();
+    if (keyringIds.length === 0) {
+      throw new Error('KeyringController - No keyrings found');
+    }
+    if (!id || !keyringIds.includes(id)) {
+      // Data has been corrupted somehow. Switch to the first keyring
+      const firstKeyringId = keyringIds[0];
+      return firstKeyringId;
+    }
+    return id;
+  };
   /**
    * Get the private key from the current keyring
    * @returns {Promise<string>} The private key as a hex string
@@ -913,9 +930,6 @@ class KeyringService extends EventEmitter {
    * @returns {Promise<Array<Keyring>>} The keyrings.
    */
   async unlockKeyrings(password: string): Promise<any[]> {
-    // Note that currentAccountIndex is only used in keyring for old accounts that don't have an id stored in the keyring removing in 2.7.6
-    // currentId always takes precedence
-    const currentId = await getCurrentProfileId();
     let vaultArray = this.store.getState().vault;
 
     // Ensure vaultArray is an array and filter out null/undefined entries
@@ -923,7 +937,18 @@ class KeyringService extends EventEmitter {
 
     await this.decryptVaultArray(vaultArray, password);
     this.password = password;
-    const keyrings = await this.switchKeyring(currentId);
+
+    // Validate currentId
+
+    // Note that currentAccountIndex is only used in keyring for old accounts that don't have an id stored in the keyring removing in 2.7.6
+    // currentId always takes precedence
+    const currentId = await returnCurrentProfileId();
+    // Validate the currentId to ensure it's a valid keyring id (Note switchKeyring also does this)
+    const validCurrentId = await this.ensureValidKeyringId(currentId);
+    // switch to the keyring with the currentId
+    const keyrings = await this.switchKeyring(validCurrentId);
+
+    // Return the current keyring
     return keyrings;
   }
 
@@ -933,12 +958,20 @@ class KeyringService extends EventEmitter {
    * Attempts to switch the keyring based on the given id,
    * Set the new keyring to ram.
    *
-   * @param {string} currentId - The id of the keyring to switch to.
+   * @param {string} id - The id of the keyring to switch to.
    * @returns {Promise<Array<Keyring>>} The keyring.
    */
-  async switchKeyring(currentId: string): Promise<any[]> {
-    // useCurrentId to find the keyring in the keyringList
-    const selectedKeyring = this.keyringList.find((keyring) => keyring.id === currentId);
+  async switchKeyring(id: string): Promise<Keyring[]> {
+    // Ensure the id is valid
+    const validKeyringId = await this.ensureValidKeyringId(id);
+    // Find the keyring in the keyringList
+    const selectedKeyring = this.keyringList.find((keyring) => keyring.id === validKeyringId);
+    // If the keyring is not found, throw an error
+    if (!selectedKeyring) {
+      throw new Error(
+        'somehow the keyring is not found in the keyringList when we have a valid id'
+      );
+    }
     // remove the keyring of the previous account
     await this.clearKeyrings();
 
@@ -954,6 +987,7 @@ class KeyringService extends EventEmitter {
     );
 
     await this._updateMemStoreKeyrings();
+    // Return the current keyring
     return this.currentKeyring;
   }
 
