@@ -41,12 +41,12 @@ interface SetPasswordProps {
 }
 
 const SetPassword: React.FC<SetPasswordProps> = ({
-  handleSwitchTab,
+  handleSwitchTab = () => {},
   onSubmit,
-  username,
+  username = '',
   showTerms = false,
-  title,
-  subtitle,
+  title = '',
+  subtitle = '',
   isLogin = false,
   autoFocus = false,
 }) => {

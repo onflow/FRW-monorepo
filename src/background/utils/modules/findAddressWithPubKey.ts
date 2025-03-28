@@ -133,18 +133,16 @@ export const findAddressWithKey = async (
 export const getOrCheckAddressByPublicKeyTuple = async (
   pubKTuple: PublicKeyTuple,
   address: string | null = null
-) => {
+): Promise<PublicKeyAccount[]> => {
   const { P256, SECP256K1 } = pubKTuple;
   const p256Accounts = (await findAddressWithKey(P256.pubK, address)) || [];
   const sepc256k1Accounts = (await findAddressWithKey(SECP256K1.pubK, address)) || [];
   // Combine the accounts
   const accounts = [...p256Accounts, ...sepc256k1Accounts];
 
-  // Check that at least one account has weight of 1000 or more
-  const hasWeight = accounts.some((account) => account.weight >= 1000);
-  if (!hasWeight || accounts.length === 0) {
-    throw new Error('No accounts found with the given public key');
-  }
-  // Otherwise, return the accounts
-  return accounts;
+  // Filter out accounts with weight of < 1000
+  const accountsOver1000 = accounts.filter((account) => account.weight >= 1000);
+
+  // Return the accounts
+  return accountsOver1000;
 };

@@ -44,10 +44,6 @@ const Register = () => {
     checkWalletStatus();
   }, [usewallet]);
 
-  const getUsername = (username: string) => {
-    setUsername(username.toLowerCase());
-  };
-
   const loadView = useCallback(async () => {
     usewallet
       .getCurrentAccount()
@@ -65,7 +61,7 @@ const Register = () => {
     async (newPassword: string) => {
       setPassword(newPassword);
       // We're registering the new profile with the password, username, and mnemonic
-      await usewallet.registerNewProfile(newPassword, username, mnemonic);
+      await usewallet.registerNewProfile(username, newPassword, mnemonic);
 
       // But after all this, we haven't updated loggedInAccounts so if we close the window before the account refreshes, we won't be able to login
       setActiveTab(STEPS.BACKUP);
@@ -109,8 +105,8 @@ const Register = () => {
         {activeTab === STEPS.USERNAME && (
           <PickUsername
             handleSwitchTab={() => setActiveTab(STEPS.RECOVERY)}
-            savedUsername={username}
-            getUsername={getUsername}
+            username={username}
+            setUsername={setUsername}
           />
         )}
 

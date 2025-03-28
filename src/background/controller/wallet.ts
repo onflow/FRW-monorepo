@@ -21,11 +21,13 @@ import {
   formPubKey,
   jsonToKey,
   seed2PublicPrivateKey,
+  seedWithPathAndPhrase2PublicPrivateKey,
+  formPubKeyTuple,
 } from '@/background/utils/modules/publicPrivateKey';
 import eventBus from '@/eventBus';
 import type { CoinItem, TokenInfo, BalanceMap } from '@/shared/types/coin-types';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
-import { type PublicKeyTuple } from '@/shared/types/key-types';
+import { type PublicPrivateKeyTuple, type PublicKeyTuple } from '@/shared/types/key-types';
 import { ContactType } from '@/shared/types/network-types';
 import { type NFTCollectionData } from '@/shared/types/nft-types';
 import { type TrackingEvents } from '@/shared/types/tracking-types';
@@ -49,7 +51,8 @@ import {
   isValidFlowAddress,
   withPrefix,
 } from '@/shared/utils/address';
-import { getSignAlgo } from '@/shared/utils/algo';
+import { getHashAlgo, getSignAlgo } from '@/shared/utils/algo';
+import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 import { getCurrentProfileId } from '@/shared/utils/current-id';
 import { convertToIntegerAmount, validateAmount } from '@/shared/utils/number';
 import { retryOperation } from '@/shared/utils/retryOperation';
@@ -104,7 +107,10 @@ import { type EvaluateStorageResult, StorageEvaluator } from '../service/storage
 import defaultConfig from '../utils/defaultConfig.json';
 import erc20ABI from '../utils/erc20.abi.json';
 import { getLoggedInAccount } from '../utils/getLoggedInAccount';
-import { getAccountsByPublicKeyTuple } from '../utils/modules/findAddressWithPubKey';
+import {
+  getAccountsByPublicKeyTuple,
+  getOrCheckAddressByPublicKeyTuple,
+} from '../utils/modules/findAddressWithPubKey';
 
 import BaseController from './base';
 import provider from './provider';
@@ -192,6 +198,134 @@ export class WalletController extends BaseController {
     // We're creating the Flow address for the account
     // Only after this, do we have a valid wallet with a Flow address
     await openapiService.createFlowAddress();
+  };
+
+  /**
+   * Sign in or create a new user by public key tuple
+   */
+  private signInOrCreateUserByPubKeyTuple = async (
+    pubKTuple: PublicKeyTuple,
+    username: string,
+    signInFunction: () => Promise<void>
+  ) => {
+    // Check if the account is registered on our backend (i.e. it's been created in wallet or used previously in wallet)
+    // Check if the seed phrase is valid and exists on the network
+    // Note we're not bothering to check against any address here. We're assuming that's been done in the front end. We use the indexer to get the accounts
+    const accounts = await getOrCheckAddressByPublicKeyTuple(pubKTuple);
+    if (accounts.length === 0) {
+      throw new Error('Invalid seed phrase');
+    }
+
+    // Now check if the account is registered on our backend (i.e. it's been created in wallet or used previously in wallet)
+    const importCheckResult = await openapiService.checkImport(accounts[0].publicKey);
+    if (importCheckResult.status === 409) {
+      // The account has been previously imported, so just retrieve the current user name
+      // Just login to the existing account using the private key
+
+      // Sign in with the mnemonic
+      await signInFunction();
+    } else {
+      // We have to create a new user on our backend
+
+      const accountKeyStruct = {
+        public_key: accounts[0].publicKey,
+        sign_algo: accounts[0].signAlgo,
+        hash_algo: accounts[0].hashAlgo,
+        weight: 1000,
+      };
+      // Get the device info so e can do analytics
+      const installationId = await openapiService.getInstallationId();
+
+      const device_info = {
+        device_id: installationId,
+        device_name: navigator.userAgent,
+        device_type: 'extension',
+        push_token: '',
+        platform: 'chrome',
+      };
+      // Import the account creating a new user on our backend
+      // Sign in as the new user
+      await openapiService.importKey(
+        accountKeyStruct,
+        device_info,
+        username,
+        {},
+        accounts[0].address
+      );
+    }
+  };
+
+  /**
+   * Import a profile using a mnemonic
+   * @param username
+   * @param password
+   * @param mnemonic
+   * @param address
+   * @param path
+   * @param phrase
+   */
+  importProfileUsingMnemonic = async (
+    username: string,
+    password: string,
+    mnemonic: string,
+    path: string = FLOW_BIP44_PATH,
+    phrase: string = ''
+  ) => {
+    // Boot the keyring with the password
+    // We should be validating the password as the first thing we do
+    await this.boot(password);
+    // Get the public key tuple from the mnemonic
+
+    const pubKTuple: PublicKeyTuple = formPubKeyTuple(
+      await seedWithPathAndPhrase2PublicPrivateKey(mnemonic, path, phrase)
+    );
+    const signInFunction = async () => {
+      await this.signInWithMnemonic(mnemonic, true, path, phrase);
+    };
+    // Sign in or create a new user by public key tuple
+    await this.signInOrCreateUserByPubKeyTuple(pubKTuple, username, signInFunction);
+
+    // TODO: Remove this
+    storage.remove('premnemonic');
+    await this.saveIndex(username);
+
+    // Now we can create the keyring with the mnemonic (and path and phrase)
+    await this.createKeyringWithMnemonics(mnemonic, path, phrase);
+  };
+
+  /**
+   * Import a profile using a private key
+   * @param username
+   * @param password
+   * @param pk
+   * @param address
+   */
+
+  importProfileByPrivateKey = async (
+    username: string,
+    password: string,
+    pk: string,
+    address: FlowAddress | null = null
+  ) => {
+    // Boot the keyring with the password
+    // We should be validating the password as the first thing we do
+    await this.boot(password);
+
+    // Get the public key tuple from the private key
+    const pubKTuple: PublicKeyTuple = await pk2PubKey(pk);
+
+    const signInFunction = async () => {
+      await this.signInWithPrivatekey(pk, true);
+    };
+    // Sign in or create a new user by public key tuple
+    await this.signInOrCreateUserByPubKeyTuple(pubKTuple, username, signInFunction);
+
+    // TODO: Remove this
+    storage.remove('premnemonic');
+    await this.saveIndex(username);
+
+    // Now we can create the keyring with the mnemonic (and path and phrase)
+    await this.importPrivateKey(pk);
   };
 
   /**
@@ -585,17 +719,30 @@ export class WalletController extends BaseController {
   findAddressWithPrivateKey = async (pk: string, address: string) => {
     return await findAddressWithPK(pk, address);
   };
-  findAddressWithSeedPhrase = async (seed: string, address: string, isTemp: boolean = false) => {
-    return await findAddressWithSeed(seed, address, isTemp);
+  findAddressWithSeedPhrase = async (
+    seed: string,
+    address: string | null = null,
+    derivationPath: string = FLOW_BIP44_PATH,
+    passphrase: string = ''
+  ): Promise<PublicKeyAccount[]> => {
+    return await findAddressWithSeed(seed, address, derivationPath, passphrase);
   };
   getPreMnemonics = () => keyringService.getPreMnemonics();
   generatePreMnemonic = () => keyringService.generatePreMnemonic();
   removePreMnemonics = () => keyringService.removePreMnemonics();
-  createKeyringWithMnemonics = async (mnemonic) => {
+  createKeyringWithMnemonics = async (
+    mnemonic,
+    derivationPath = FLOW_BIP44_PATH,
+    passphrase = ''
+  ) => {
     // TODO: NEED REVISIT HERE:
     await keyringService.clearKeyrings();
 
-    const keyring = await keyringService.createKeyringWithMnemonics(mnemonic);
+    const keyring = await keyringService.createKeyringWithMnemonics(
+      mnemonic,
+      derivationPath,
+      passphrase
+    );
     keyringService.removePreMnemonics();
     return this._setCurrentAccountFromKeyring(keyring);
   };
@@ -3012,8 +3159,13 @@ export class WalletController extends BaseController {
     transactionService.setTransaction(dataResult, network);
   };
 
-  signInWithMnemonic = async (mnemonic: string, replaceUser = true) => {
-    return userWalletService.signInWithMnemonic(mnemonic, replaceUser);
+  signInWithMnemonic = async (
+    mnemonic: string,
+    replaceUser = true,
+    derivationPath: string = FLOW_BIP44_PATH,
+    passphrase: string = ''
+  ) => {
+    return userWalletService.signInWithMnemonic(mnemonic, replaceUser, derivationPath, passphrase);
   };
 
   signInWithPrivatekey = async (pk: string, replaceUser = true) => {

@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
+
 import { findAddressWithPK, findAddressWithSeed } from '../findAddressWithPK';
 import * as findAddressWithPubKeyModule from '../findAddressWithPubKey';
 import * as publicPrivateKeyModule from '../publicPrivateKey';
@@ -80,9 +82,9 @@ describe('findAddressWithPK module', () => {
 
   describe('findAddressWithSeed', () => {
     it('should convert seed to public keys and find address (non-temp)', async () => {
-      vi.mocked(publicPrivateKeyModule.seed2PublicPrivateKey).mockResolvedValueOnce(
-        mockPubKeyTuple
-      );
+      vi.mocked(
+        publicPrivateKeyModule.seedWithPathAndPhrase2PublicPrivateKey
+      ).mockResolvedValueOnce(mockPubKeyTuple);
 
       const mockAccounts = [
         {
@@ -103,7 +105,11 @@ describe('findAddressWithPK module', () => {
 
       const result = await findAddressWithSeed(mockSeed, mockAddress);
 
-      expect(publicPrivateKeyModule.seed2PublicPrivateKey).toHaveBeenCalledWith(mockSeed);
+      expect(publicPrivateKeyModule.seedWithPathAndPhrase2PublicPrivateKey).toHaveBeenCalledWith(
+        mockSeed,
+        FLOW_BIP44_PATH,
+        ''
+      );
       expect(publicPrivateKeyModule.seed2PublicPrivateKeyTemp).not.toHaveBeenCalled();
       expect(findAddressWithPubKeyModule.getOrCheckAddressByPublicKeyTuple).toHaveBeenCalledWith(
         mockPubKeyTuple,
@@ -113,9 +119,9 @@ describe('findAddressWithPK module', () => {
     });
 
     it('should convert seed to public keys and find address (temp)', async () => {
-      vi.mocked(publicPrivateKeyModule.seed2PublicPrivateKeyTemp).mockResolvedValueOnce(
-        mockPubKeyTuple
-      );
+      vi.mocked(
+        publicPrivateKeyModule.seedWithPathAndPhrase2PublicPrivateKey
+      ).mockResolvedValueOnce(mockPubKeyTuple);
 
       const mockAccounts = [
         {
@@ -134,9 +140,8 @@ describe('findAddressWithPK module', () => {
         findAddressWithPubKeyModule.getOrCheckAddressByPublicKeyTuple
       ).mockResolvedValueOnce(mockAccounts);
 
-      const result = await findAddressWithSeed(mockSeed, mockAddress, true);
+      const result = await findAddressWithSeed(mockSeed, mockAddress);
 
-      expect(publicPrivateKeyModule.seed2PublicPrivateKeyTemp).toHaveBeenCalledWith(mockSeed);
       expect(publicPrivateKeyModule.seed2PublicPrivateKey).not.toHaveBeenCalled();
       expect(findAddressWithPubKeyModule.getOrCheckAddressByPublicKeyTuple).toHaveBeenCalledWith(
         mockPubKeyTuple,

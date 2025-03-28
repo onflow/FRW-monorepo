@@ -172,9 +172,7 @@ describe('findAddressWithPubKey module', () => {
         });
       });
 
-      await expect(getOrCheckAddressByPublicKeyTuple(mockPubKeyTuple)).rejects.toThrow(
-        'No accounts found with the given public key'
-      );
+      await expect(getOrCheckAddressByPublicKeyTuple(mockPubKeyTuple)).resolves.toEqual([]);
     });
 
     it('should return combined accounts when both keys have valid accounts', async () => {
@@ -219,9 +217,7 @@ describe('findAddressWithPubKey module', () => {
         });
       });
 
-      await expect(getOrCheckAddressByPublicKeyTuple(mockPubKeyTuple)).rejects.toThrow(
-        'No accounts found with the given public key'
-      );
+      await expect(getOrCheckAddressByPublicKeyTuple(mockPubKeyTuple)).resolves.toEqual([]);
     });
   });
 

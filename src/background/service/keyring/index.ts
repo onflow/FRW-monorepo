@@ -9,6 +9,7 @@ import log from 'loglevel';
 
 import { seed2PublicPrivateKey, pk2PubKey } from '@/background/utils/modules/publicPrivateKey';
 import { type PublicKeyTuple } from '@/shared/types/key-types';
+import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 import { getCurrentProfileId, returnCurrentProfileId } from '@/shared/utils/current-id';
 import { normalizeAddress } from 'background/utils';
 import { KEYRING_TYPE } from 'consts';
@@ -69,6 +70,8 @@ interface KeyringData {
           mnemonic?: string;
           activeIndexes?: number[];
           publicKey?: string;
+          derivationPath?: string;
+          passphrase?: string;
         }
       | string[];
   };
@@ -382,7 +385,11 @@ class KeyringService extends EventEmitter {
    * @param {string} seed - The BIP44-compliant seed phrase.
    * @returns {Promise<Object>} A Promise that resolves to the state.
    */
-  async createKeyringWithMnemonics(seed: string): Promise<any> {
+  async createKeyringWithMnemonics(
+    seed: string,
+    derivationPath = FLOW_BIP44_PATH,
+    passphrase = ''
+  ): Promise<any> {
     if (!bip39.validateMnemonic(seed)) {
       return Promise.reject(new Error(i18n.t('mnemonic phrase is invalid')));
     }
@@ -392,6 +399,8 @@ class KeyringService extends EventEmitter {
         return this.addNewKeyring('HD Key Tree', {
           mnemonic: seed,
           activeIndexes: [0],
+          derivationPath,
+          passphrase,
         });
       })
       .then((firstKeyring) => {
@@ -965,26 +974,52 @@ class KeyringService extends EventEmitter {
     // Ensure the id is valid
     const validKeyringId = await this.ensureValidKeyringId(id);
     // Find the keyring in the keyringList
-    const selectedKeyring = this.keyringList.find((keyring) => keyring.id === validKeyringId);
+    const selectedKeyringIndex = this.keyringList.findIndex(
+      (keyring) => keyring.id === validKeyringId
+    );
     // If the keyring is not found, throw an error
-    if (!selectedKeyring) {
+    if (selectedKeyringIndex === -1) {
       throw new Error(
         'somehow the keyring is not found in the keyringList when we have a valid id'
       );
     }
+    const selectedKeyring = this.keyringList[selectedKeyringIndex];
     // remove the keyring of the previous account
     await this.clearKeyrings();
 
-    await Promise.all(
-      [selectedKeyring].map(async (keyring) => {
-        try {
-          await this._restoreKeyring(keyring?.[0]); // Access the first property which contains type and data
-        } catch (error) {
-          console.error('Failed to restore keyring:', error);
-          throw error;
-        }
-      })
-    );
+    // Look for any legacy path and passphrase data and add it to the keyring
+    if (
+      selectedKeyring[0].data &&
+      typeof selectedKeyring[0].data === 'object' &&
+      'mnemonic' in selectedKeyring[0].data
+    ) {
+      const hdKeyringData = selectedKeyring[0].data;
+
+      if (!hdKeyringData.derivationPath) {
+        // Check legacy derivation path
+        const pathKeyIndex = `user${selectedKeyringIndex}_path`;
+        const pathKeyId = `user${id}_path`;
+
+        hdKeyringData.derivationPath =
+          (await storage.get(pathKeyId)) ?? (await storage.get(pathKeyIndex)) ?? FLOW_BIP44_PATH;
+      }
+
+      if (!hdKeyringData.passphrase) {
+        // Check legacy derivation path
+        const phraseKeyIndex = `user${selectedKeyringIndex}_phrase`;
+        const phraseKeyId = `user${id}_phrase`;
+
+        hdKeyringData.passphrase =
+          (await storage.get(phraseKeyId)) ?? (await storage.get(phraseKeyIndex)) ?? '';
+      }
+
+      await this._restoreKeyring({
+        type: selectedKeyring[0].type,
+        data: hdKeyringData,
+      });
+    } else {
+      await this._restoreKeyring(selectedKeyring[0]);
+    }
 
     await this._updateMemStoreKeyrings();
     // Return the current keyring
@@ -1107,6 +1142,8 @@ class KeyringService extends EventEmitter {
         await (keyring as HDKeyring).deserialize({
           mnemonic: (data.mnemonic as string) || '',
           activeIndexes: (data.activeIndexes as number[]) || [0],
+          derivationPath: data.derivationPath || FLOW_BIP44_PATH,
+          passphrase: data.passphrase || '',
         });
       } else {
         await keyring.deserialize(data);

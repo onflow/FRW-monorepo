@@ -12,6 +12,7 @@ import {
   signWithKey,
   seed2PublicPrivateKey,
   seed2PublicPrivateKeyTemp,
+  seedWithPathAndPhrase2PublicPrivateKey,
 } from '@/background/utils/modules/publicPrivateKey';
 import createPersistStore from '@/background/utils/persisitStore';
 import { type HashAlgoString, type SignAlgoString } from '@/shared/types/algo-types';
@@ -32,6 +33,7 @@ import {
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress, isValidFlowAddress, withPrefix } from '@/shared/utils/address';
 import { getHashAlgo, getSignAlgo } from '@/shared/utils/algo';
+import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 
 import type { DeviceInfoRequest, FlowNetwork } from '../../shared/types/network-types';
 import {
@@ -799,9 +801,18 @@ class UserWallet {
     };
   };
 
-  signInWithMnemonic = async (mnemonic: string, replaceUser = true) => {
+  signInWithMnemonic = async (
+    mnemonic: string,
+    replaceUser = true,
+    derivationPath: string = FLOW_BIP44_PATH,
+    passphrase: string = ''
+  ) => {
     // Seperate this out as the private key is not returned from the getAccountsByPublicKeyTuple
-    const publicPrivateKey: PublicPrivateKeyTuple = await seed2PublicPrivateKey(mnemonic);
+    const publicPrivateKey: PublicPrivateKeyTuple = await seedWithPathAndPhrase2PublicPrivateKey(
+      mnemonic,
+      derivationPath,
+      passphrase
+    );
     const result = await getAccountsByPublicKeyTuple(publicPrivateKey, 'mainnet');
     if (!result) {
       throw new Error('No Address Found');

@@ -39,7 +39,15 @@ const useStyles = makeStyles((_theme) => ({
   },
 }));
 
-const PickUsername = ({ handleSwitchTab, savedUsername, getUsername }) => {
+const PickUsername = ({
+  handleSwitchTab,
+  username,
+  setUsername,
+}: {
+  handleSwitchTab: () => void;
+  username: string;
+  setUsername: (username: string) => void;
+}) => {
   const classes = useStyles();
   const wallet = useWallet();
   const [isLoading, setLoading] = useState(false);
@@ -96,7 +104,6 @@ const PickUsername = ({ handleSwitchTab, savedUsername, getUsername }) => {
     []
   );
 
-  const [username, setUsername] = useState(savedUsername || '');
   const [helperText, setHelperText] = useState(<div />);
 
   const setErrorMessage = useCallback(
@@ -168,7 +175,7 @@ const PickUsername = ({ handleSwitchTab, savedUsername, getUsername }) => {
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [username]);
+  }, [username, runCheckUsername, setErrorMessage, usernameLoading]);
 
   const msgBgColor = useCallback(() => {
     if (isLoading) {
@@ -240,7 +247,6 @@ const PickUsername = ({ handleSwitchTab, savedUsername, getUsername }) => {
         <Button
           onClick={() => {
             handleSwitchTab();
-            getUsername(username);
           }}
           disabled={!usernameValid}
           variant="contained"
