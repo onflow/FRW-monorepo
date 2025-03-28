@@ -112,7 +112,9 @@ const PickUsername = ({
   const validateUsername = useCallback(
     (newUsername: string) => {
       const runCheckUsername = async () => {
-        setLoading(true);
+        if (isMounted.current) {
+          setLoading(true);
+        }
         try {
           const response = await wallet.openapi.checkUsername(newUsername.toLowerCase());
           if (response.data.username !== newUsername.toLowerCase()) {
@@ -165,9 +167,10 @@ const PickUsername = ({
         setUsernameValid(false);
         return;
       }
-
-      // Async check username
-      runCheckUsername();
+      if (isMounted.current) {
+        // Async check username
+        runCheckUsername();
+      }
     },
     [wallet.openapi]
   );

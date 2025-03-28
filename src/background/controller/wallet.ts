@@ -178,9 +178,11 @@ export class WalletController extends BaseController {
    * @param username the username for the new profile
    * @param mnemonic the mnemonic for the new private key
    */
-  registerNewProfile = async (password: string, username: string, mnemonic: string) => {
+  registerNewProfile = async (username: string, password: string, mnemonic: string) => {
     // The account is the public key of the account. It's derived from the mnemonic. We do not support custom curves or passphrases for new accounts
+
     const accountKey = getAccountKey(mnemonic);
+    console.log('accountKey', accountKey);
 
     // We're booting the keyring with the new password
     // This does not update the vault, it simply sets the password / cypher methods we're going to use to store our private keys in the vault
@@ -466,13 +468,10 @@ export class WalletController extends BaseController {
 
   // lockadd here
   lockAdd = async () => {
-    const switchingTo = 'mainnet';
-
     await keyringService.setLocked();
     sessionService.broadcastEvent('accountsChanged', []);
     sessionService.broadcastEvent('lock');
     openIndexPage('welcome?add=true');
-    await this.switchNetwork(switchingTo);
   };
 
   // lockadd here
@@ -1666,6 +1665,9 @@ export class WalletController extends BaseController {
   };
 
   getMainAccounts = async (): Promise<MainAccount[] | null> => {
+    if (!(await this.isUnlocked())) {
+      return null;
+    }
     const network = await this.getNetwork();
     const wallets = await userWalletService.getMainAccounts(network);
     if (!wallets) {
