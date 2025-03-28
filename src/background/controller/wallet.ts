@@ -2201,14 +2201,14 @@ export class WalletController extends BaseController {
     return result;
   };
 
-  dapSendEvmTX = async (to: string, gas: string | number, value: string, data: string) => {
+  dapSendEvmTX = async (to: string, gas: bigint, value: string, data: string) => {
     if (to.startsWith('0x')) {
       to = to.substring(2);
     }
     await this.getNetwork();
 
     const script = await getScripts('evm', 'callContractV2');
-    const gasLimit = 30000000;
+    const gasLimit = gas || 30000000;
     const dataBuffer = Buffer.from(data.slice(2), 'hex');
     const dataArray = Uint8Array.from(dataBuffer);
     const regularArray = Array.from(dataArray);
@@ -2246,7 +2246,7 @@ export class WalletController extends BaseController {
       fcl.arg(to, t.String),
       fcl.arg(transactionValue.toString(), t.UInt256),
       fcl.arg(regularArray, t.Array(t.UInt8)),
-      fcl.arg(gasLimit, t.UInt64),
+      fcl.arg(gasLimit.toString(), t.UInt64),
     ]);
 
     let evmAddress = await this.getEvmAddress();
@@ -2270,6 +2270,7 @@ export class WalletController extends BaseController {
     };
 
     // [nonce, gasPrice, gasLimit, to.addressData, value, data, v, r, s]
+
     const directCallTxType = 255;
     const contractCallSubType = 5;
     const noceNumber = Number(addressNonce);
