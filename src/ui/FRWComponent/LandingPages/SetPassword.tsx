@@ -50,6 +50,7 @@ const SetPassword: React.FC<SetPasswordProps> = ({
   isLogin = false,
   autoFocus = false,
 }) => {
+  console.log('isLogin', isLogin);
   const classes = useStyles();
 
   const [isPasswordVisible, setPasswordVisible] = useState(false);
@@ -166,6 +167,11 @@ const SetPassword: React.FC<SetPasswordProps> = ({
               setVisible={setPasswordVisible}
               className={classes.inputBox}
               autoFocus={autoFocus}
+              placeholder={
+                isLogin
+                  ? chrome.i18n.getMessage('Confirm__your__password')
+                  : chrome.i18n.getMessage('Create__a__password')
+              }
             />
             <SlideRelative show={!!password} direction="down">
               <Box style={{ marginBottom: '24px' }}>{helperText}</Box>

@@ -155,7 +155,11 @@ const AccountImport = () => {
               )}
 
               {(activeTab === STEPS.SET_PASSWORD || activeTab === STEPS.RECOVER_PASSWORD) && (
-                <SetPassword handleSwitchTab={() => {}} onSubmit={submitPassword} isLogin={true} />
+                <SetPassword
+                  handleSwitchTab={() => {}}
+                  onSubmit={submitPassword}
+                  isLogin={activeTab === STEPS.RECOVER_PASSWORD}
+                />
               )}
               {activeTab === STEPS.GOOGLE_BACKUP && (
                 <GoogleBackup

@@ -280,7 +280,7 @@ export const importAccountBySeedPhrase = async ({
 
   if (step.includes('4')) {
     // We've already imported the account before
-    const confirmPasswordField = await page.getByPlaceholder('Confirm Password');
+    const confirmPasswordField = await page.getByPlaceholder('Confirm your password');
     const confirmPasswordValue = await confirmPasswordField.inputValue();
     if (!confirmPasswordValue) {
       await confirmPasswordField.fill(password);
