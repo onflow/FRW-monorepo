@@ -9,6 +9,7 @@ import { ensureEvmAddressPrefix, withPrefix } from '@/shared/utils/address';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfileStore } from '@/ui/stores/profileStore';
+import { debug } from '@/ui/utils';
 import { useWallet, useWalletLoaded } from '@/ui/utils/WalletContext';
 
 export const useProfiles = () => {
@@ -120,25 +121,25 @@ export const useProfiles = () => {
     try {
       profilesRef.current.loading = true;
       const mainAddress = await usewallet.getMainAddress();
-      console.log('mainAddress ===', mainAddress);
+      debug('useProfileHook', 'mainAddress ===', mainAddress);
       if (mainAddress) {
         setMainAddress(mainAddress as FlowAddress);
-        console.log('setupEvmWallet ===');
+        debug('useProfileHook', 'setupEvmWallet ===');
         await setupEvmWallet(mainAddress as FlowAddress);
 
         const childAccounts = await usewallet.getChildAccounts();
-        console.log('childAccounts ===', childAccounts);
+        debug('useProfileHook', 'childAccounts ===', childAccounts);
 
         setChildAccount(childAccounts || {});
 
         const parentAddress = await usewallet.getParentAddress();
-        console.log('parentAddress ===', parentAddress);
+        debug('useProfileHook', 'parentAddress ===', parentAddress);
         if (parentAddress) {
           const [currentWallet, isChild] = await Promise.all([
             usewallet.getCurrentWallet(),
             usewallet.getActiveWallet(),
           ]);
-          console.log('currentWallet ===', currentWallet);
+          debug('useProfileHook', 'currentWallet ===', currentWallet);
 
           if (currentWallet) {
             const mainwallet = await usewallet.returnParentWallet();
@@ -149,7 +150,7 @@ export const useProfiles = () => {
             const pubKTuple = await usewallet.getPubKey();
 
             const walletData = await usewallet.getUserInfo(true);
-            console.log('walletData ===', walletData);
+            debug('useProfileHook', 'walletData ===', walletData);
             const { otherAccounts, wallet, loggedInAccounts } =
               await usewallet.openapi.freshUserInfo(
                 parentAddress,
@@ -169,7 +170,7 @@ export const useProfiles = () => {
       }
 
       const wallets = await usewallet.getMainAccounts();
-      console.log('wallets ===', wallets);
+      debug('useProfileHook', 'wallets ===', wallets);
 
       if (!wallets) {
         throw new Error('No wallets found');
@@ -177,7 +178,7 @@ export const useProfiles = () => {
 
       if (initialStart) {
         await usewallet.openapi.putDeviceInfo(wallets);
-        console.log('usewallet.openapi.putDeviceInfo ===', wallets);
+        debug('useProfileHook', 'usewallet.openapi.putDeviceInfo ===', wallets);
 
         setInitial(false);
       }
@@ -185,11 +186,11 @@ export const useProfiles = () => {
       // format the wallets
 
       const formattedWallets = formatWallets(wallets);
-      console.log('formattedWallets ===', formattedWallets);
+      debug('useProfileHook', 'formattedWallets ===', formattedWallets);
 
       setWalletList(formattedWallets);
     } catch (error) {
-      console.error('Error in fetchProfileData:', error);
+      debug('useProfileHook', 'Error in fetchProfileData:', error);
     } finally {
       setMainLoading(false);
       profilesRef.current.loading = false;
