@@ -1,4 +1,3 @@
-import { loginAsTestUser, registerTestUser } from './helper';
 import { test as setup } from './loader';
 
 // for user register and login

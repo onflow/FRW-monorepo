@@ -47,7 +47,10 @@ export const loginToExtensionAccount = async ({ page, extensionId, addr, passwor
   await closeOpenedPages(page);
 
   // Navigate and wait for network to be idle
-  await page.goto(`chrome-extension://${extensionId}/index.html#/unlock`);
+  await page.goto(`chrome-extension://${extensionId}/index.html#/dashboard`);
+
+  // Wait to be redirected to the unlock page
+  await page.waitForURL(/.*\/unlock.*/);
 
   await page.waitForSelector('.logoContainer', { state: 'visible' });
   await closeOpenedPages(page);
