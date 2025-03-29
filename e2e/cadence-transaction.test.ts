@@ -1,4 +1,10 @@
-import { loginToSenderAccount, getCurrentAddress, waitForTransaction } from './utils/helper';
+import {
+  getCurrentAddress,
+  waitForTransaction,
+  loginToSenderOrReceiver,
+  getReceiverEvmAccount,
+  getReceiverCadenceAccount,
+} from './utils/helper';
 import { test } from './utils/loader';
 export const sendTokenFlow = async ({
   page,
@@ -60,7 +66,7 @@ export const moveTokenFlowHomepage = async ({
 
 test.beforeEach(async ({ page, extensionId }) => {
   // Login to our sender account
-  await loginToSenderAccount({ page, extensionId });
+  await loginToSenderOrReceiver({ page, extensionId, parallelIndex: test.info().parallelIndex });
 });
 //Send FLOW token from Flow to Flow
 test('send FLOW flow to flow', async ({ page }) => {
@@ -68,7 +74,7 @@ test('send FLOW flow to flow', async ({ page }) => {
   await sendTokenFlow({
     page,
     tokenname: /^FLOW \$/i,
-    receiver: process.env.TEST_RECEIVER_ADDR!,
+    receiver: getReceiverCadenceAccount({ parallelIndex: test.info().parallelIndex }),
     amount: '0.00123456',
   });
 });
@@ -78,7 +84,7 @@ test('send stFlow flow to flow', async ({ page }) => {
   await sendTokenFlow({
     page,
     tokenname: 'Liquid Staked Flow $',
-    receiver: process.env.TEST_RECEIVER_ADDR!,
+    receiver: getReceiverCadenceAccount({ parallelIndex: test.info().parallelIndex }),
     amount: '0.00123456',
   });
 });
@@ -86,10 +92,11 @@ test('send stFlow flow to flow', async ({ page }) => {
 //Send FLOW token from Flow to COA
 test('send FLOW flow to COA', async ({ page }) => {
   // This can take a while
+
   await sendTokenFlow({
     page,
     tokenname: /^FLOW \$/i,
-    receiver: process.env.TEST_RECEIVER_EVM_ADDR!,
+    receiver: getReceiverEvmAccount({ parallelIndex: test.info().parallelIndex }),
     amount: '0.00123456',
   });
 });
@@ -98,7 +105,7 @@ test('send USDC flow to COA', async ({ page }) => {
   await sendTokenFlow({
     page,
     tokenname: 'USDC.e (Flow) $',
-    receiver: process.env.TEST_RECEIVER_EVM_ADDR!,
+    receiver: getReceiverEvmAccount({ parallelIndex: test.info().parallelIndex }),
     ingoreFlowCharge: true,
     amount: '0.00123456',
   });

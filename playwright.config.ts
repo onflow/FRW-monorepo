@@ -23,14 +23,14 @@ export default defineConfig({
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
   /* Use 2 workers for parallel execution. */
-  workers: 2,
+  workers: 4,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: process.env.CI ? 'github' : 'html',
   /* Stop after the first test failure */
   maxFailures: process.env.CI ? 1 : 0,
 
-  // set the timeout for each test to 60 seconds. We're sending transactions and waiting for them to be confirmed.
-  timeout: 60_000,
+  // set the timeout for each test to 90 seconds. We're sending transactions and waiting for them to be confirmed.
+  timeout: 90_000,
 
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {

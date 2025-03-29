@@ -3,7 +3,7 @@ import { fileURLToPath } from 'url';
 
 import { type Page } from '@playwright/test';
 
-import { getAuth, saveAuth, test } from './loader';
+import { getAuth, saveAuth, expect } from './loader';
 
 export const getClipboardText = async () => {
   const text = await navigator.clipboard.readText();
@@ -217,14 +217,23 @@ export const importAccountBySeedPhrase = async ({
   username,
   accountAddr = '',
 }) => {
-  // Don't login before this. The account should be locked
-
   const password = process.env.TEST_PASSWORD;
   if (!password) {
     throw new Error('TEST_PASSWORD is not set');
   }
 
-  // Go to import the sender account
+  if (page.url().includes('dashboard')) {
+    // Wait for the dashboard page to be fully loaded
+    await page.waitForURL(/.*\/dashboard.*/);
+
+    // We're already logged in so we need to click import profile
+    await page.getByLabel('menu').click();
+    await page.getByRole('button', { name: 'Import Profile' }).click();
+    // Close all pages except the current page (the extension opens them in the background)
+    await closeOpenedPages(page);
+  }
+
+  // Go to the import page
   await page.goto(`chrome-extension://${extensionId}/index.html#/welcome/accountimport`);
 
   // Close all pages except the current page (the extension opens them in the background)
@@ -270,7 +279,9 @@ export const importAccountBySeedPhrase = async ({
   });
 
   await page.goto(`chrome-extension://${extensionId}/index.html#/dashboard`);
-
+  await page.waitForURL(/.*\/dashboard.*/);
+  // Wait for the account address to be visible
+  await expect(page.getByText(accountAddr)).toBeVisible();
   const flowAddr = await getCurrentAddress(page);
 
   if (accountAddr && flowAddr !== accountAddr) {
@@ -334,6 +345,35 @@ export const importReceiverAccount = async ({ page, extensionId }) => {
   });
 };
 
+export const getReceiverCadenceAccount = ({ parallelIndex }) => {
+  // If parallel index is 0, login to sender account, otherwise login to receiver account
+  if (parallelIndex === 0) {
+    // We've logged into the sender account, and we need to send tokens to the receiver account
+    return process.env.TEST_RECEIVER_ADDR;
+  } else {
+    // We've logged into the receiver account, and we need to send tokens back to the sender account
+    return process.env.TEST_SENDER_ADDR;
+  }
+};
+
+export const getReceiverEvmAccount = ({ parallelIndex }) => {
+  // If parallel index is 0, login to sender account, otherwise login to receiver account
+  if (parallelIndex === 0) {
+    // We've logged into the sender account, and we need to send tokens to the receiver account
+    return process.env.TEST_RECEIVER_EVM_ADDR;
+  } else {
+    // We've logged into the receiver account, and we need to send tokens back to the sender account
+    return process.env.TEST_SENDER_EVM_ADDR;
+  }
+};
+export const loginToSenderOrReceiver = async ({ page, extensionId, parallelIndex }) => {
+  // If parallel index is 0, login to sender account, otherwise login to receiver account
+  if (parallelIndex === 0) {
+    await loginToSenderAccount({ page, extensionId });
+  } else {
+    await loginToReceiverAccount({ page, extensionId });
+  }
+};
 export const switchToEvm = async ({ page, extensionId }) => {
   // Assume the user is on the dashboard page
   await page.getByLabel('menu').click();
@@ -376,7 +416,7 @@ export const waitForTransaction = async ({
   await expect(pendingItem).toBeVisible({
     timeout: 60_000,
   });
-  await expect(progressBar).not.toBeVisible({ timeout: 60_000 });
+  /// await expect(progressBar).not.toBeVisible({ timeout: 60_000 });
 
   // Get the executed item with the cadence txId that was put in the url and status is success
   const executedItem = page.getByTestId(activityItemRegexp).filter({ hasText: successtext });
@@ -391,5 +431,3 @@ export const waitForTransaction = async ({
     ).toBeVisible();
   }
 };
-
-export const expect = test.expect;

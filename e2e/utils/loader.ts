@@ -33,6 +33,7 @@ export const test = base.extend<{
     if (!isSetup) {
       // Copy the base folder to a new folder with the parallel index
       dataDir = `${baseFolderName}-${process.env.TEST_PARALLEL_INDEX}`;
+
       fs.cpSync(baseFolderName, dataDir, { recursive: true });
     }
 
@@ -120,3 +121,5 @@ export const getAuth = async () => {
 export const cleanAuth = async () => {
   await saveAuth(null);
 };
+
+export const expect = test.expect;
