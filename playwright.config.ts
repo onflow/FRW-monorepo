@@ -17,20 +17,20 @@ dotenv.config({ path: ['.env.dev', '.env.pro', '.env.test'] });
 export default defineConfig({
   testDir: './e2e',
   /* Run tests in files in parallel */
-  fullyParallel: true,
+  fullyParallel: false,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests because we are using a data directory. */
-  workers: 1,
+  /* Use 2 workers for parallel execution. */
+  workers: 2,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: process.env.CI ? 'github' : 'html',
   /* Stop after the first test failure */
   maxFailures: process.env.CI ? 1 : 0,
 
-  // set the timeout for each test to 120 seconds. We're sending transactions and waiting for them to be confirmed.
-  timeout: 120_000,
+  // set the timeout for each test to 60 seconds. We're sending transactions and waiting for them to be confirmed.
+  timeout: 60_000,
 
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
@@ -53,18 +53,42 @@ export default defineConfig({
   // timeout: 3_600_000,
   /* Configure projects for major browsers */
   projects: [
+    // registration
     {
-      name: 'setup',
-      testMatch: /.*global\.setup\.ts/,
-      teardown: 'cleanup',
+      name: 'registration-setup',
+      testMatch: /.*registration\.setup\.ts/,
+      teardown: 'registration-teardown',
+      fullyParallel: false,
     },
     {
-      name: 'main',
-      dependencies: ['setup'],
+      name: 'registration-test',
+      testMatch: /.*login\.test\.ts/,
+      dependencies: ['registration-setup'],
+      fullyParallel: false,
     },
     {
-      name: 'cleanup',
-      testMatch: /.*global\.teardown\.ts/,
+      name: 'registration-teardown',
+      testMatch: /.*registration\.teardown\.ts/,
+      fullyParallel: false,
+    },
+
+    // transaction
+    {
+      name: 'transaction-setup',
+      testMatch: /.*transaction\.setup\.ts/,
+      teardown: 'transaction-teardown',
+      fullyParallel: false,
+    },
+    {
+      name: 'transaction-test',
+      testMatch: /.*transaction\.test\.ts/,
+      dependencies: ['transaction-setup'],
+      fullyParallel: false,
+    },
+    {
+      name: 'transaction-teardown',
+      testMatch: /.*transaction\.teardown\.ts/,
+      fullyParallel: false,
     },
 
     /* Test against mobile viewports. */

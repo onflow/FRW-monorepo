@@ -1,45 +1,13 @@
-import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import { test as base, chromium, type Page, type BrowserContext } from '@playwright/test';
+import { type Page } from '@playwright/test';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const keysFilePath = path.join(__dirname, '../../playwright/.auth/keys.json');
+import { getAuth, saveAuth, test } from './loader';
 
 export const getClipboardText = async () => {
   const text = await navigator.clipboard.readText();
   return text;
-};
-
-// save keys auth file
-export const saveAuth = async (auth) => {
-  if (auth) {
-    // Ensure directory exists
-    const dirPath = path.dirname(keysFilePath);
-    fs.mkdirSync(dirPath, { recursive: true });
-    fs.writeFileSync(keysFilePath, JSON.stringify(auth));
-  } else {
-    if (fs.existsSync(keysFilePath)) {
-      fs.unlinkSync(keysFilePath);
-    }
-  }
-};
-
-// get keys auth file
-export const getAuth = async () => {
-  const keysFileContent = fs.existsSync(keysFilePath)
-    ? fs.readFileSync(keysFilePath, 'utf8')
-    : null;
-  const keysFile = keysFileContent ? JSON.parse(keysFileContent) : null;
-  return keysFile || { password: '', addr: '' };
-};
-
-// delete keys file
-export const cleanAuth = async () => {
-  await saveAuth(null);
 };
 
 export const closeOpenedPages = async (page: Page) => {
@@ -364,46 +332,6 @@ export const importReceiverAccount = async ({ page, extensionId }) => {
     username: 'receiver',
     accountAddr: process.env.TEST_RECEIVER_ADDR,
   });
-};
-
-export const test = base.extend<{
-  context: BrowserContext;
-  extensionId: string;
-}>({
-  context: async ({}, call) => {
-    const pathToExtension = path.join(__dirname, '../../dist');
-    const context = await chromium.launchPersistentContext('/tmp/test-user-data-dir', {
-      channel: 'chromium',
-      args: [
-        `--disable-extensions-except=${pathToExtension}`,
-        `--load-extension=${pathToExtension}`,
-        '--allow-read-clipboard',
-        '--allow-write-clipboard',
-      ],
-      env: {
-        ...process.env,
-        TEST_MODE: 'true',
-      },
-      permissions: ['clipboard-read', 'clipboard-write'],
-    });
-
-    await call(context);
-    await context.close();
-  },
-  extensionId: async ({ context }, call) => {
-    // for manifest v3:
-    let [background] = context.serviceWorkers();
-    if (!background) background = await context.waitForEvent('serviceworker');
-    const extensionId = background.url().split('/')[2];
-    await call(extensionId);
-  },
-});
-
-export const cleanExtension = async () => {
-  const userDataDir = '/tmp/test-user-data-dir';
-  if (fs.existsSync(userDataDir)) {
-    fs.rmSync(userDataDir, { recursive: true, force: true });
-  }
 };
 
 export const switchToEvm = async ({ page, extensionId }) => {

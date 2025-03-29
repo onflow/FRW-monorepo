@@ -1,4 +1,5 @@
-import { test, loginAsTestUser } from './utils/helper';
+import { loginAsTestUser } from './utils/helper';
+import { test } from './utils/loader';
 
 test('Login test', async ({ page, extensionId }) => {
   await loginAsTestUser({ page, extensionId });

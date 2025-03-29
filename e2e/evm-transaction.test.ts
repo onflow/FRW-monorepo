@@ -1,10 +1,11 @@
 import {
-  test,
   loginToSenderAccount,
   getCurrentAddress,
   switchToEvm,
   waitForTransaction,
 } from './utils/helper';
+import { test } from './utils/loader';
+
 export const sendTokenCOA = async ({
   page,
   tokenname,
