@@ -3,11 +3,8 @@ import path from 'path';
 
 import base, { type BrowserContext, chromium } from '@playwright/test';
 
-const getKeysFilePath = (workerIndex: string | number | undefined) => {
-  if (!workerIndex) {
-    throw new Error('TEST_PARALLEL_INDEX is not set');
-  }
-  return path.join(import.meta.dirname, `../../playwright/.auth/keys-${workerIndex}.json`);
+const getKeysFilePath = () => {
+  return path.join(import.meta.dirname, `../../playwright/.auth/keys.json`);
 };
 
 export const test = base.extend<{
@@ -92,7 +89,7 @@ export const cleanExtension = async (projectName: string) => {
 // save keys auth file
 
 export const saveAuth = async (auth) => {
-  const keysFilePath = getKeysFilePath(process.env.TEST_PARALLEL_INDEX);
+  const keysFilePath = getKeysFilePath();
 
   if (auth) {
     // Ensure directory exists
@@ -109,7 +106,7 @@ export const saveAuth = async (auth) => {
 // get keys auth file
 
 export const getAuth = async () => {
-  const keysFilePath = getKeysFilePath(process.env.TEST_PARALLEL_INDEX);
+  const keysFilePath = getKeysFilePath();
   const keysFileContent = fs.existsSync(keysFilePath)
     ? fs.readFileSync(keysFilePath, 'utf8')
     : null;

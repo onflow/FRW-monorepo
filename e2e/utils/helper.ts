@@ -1,6 +1,3 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
-
 import { type Page } from '@playwright/test';
 
 import { getAuth, saveAuth, expect } from './loader';
@@ -80,6 +77,9 @@ export const loginToExtensionAccount = async ({ page, extensionId, addr, passwor
   }
 
   expect(flowAddr).toBe(addr);
+
+  // Wait for the coins to be loaded
+  await expect(page.getByRole('button', { name: 'Flow' }).first()).toBeVisible();
 };
 
 export const loginAsTestUser = async ({ page, extensionId }) => {
@@ -392,6 +392,27 @@ export const switchToFlow = async ({ page, extensionId }) => {
   await getCurrentAddress(page);
 };
 
+const getActivityItemRegexp = (txId: string, ingoreFlowCharge = false) => {
+  return new RegExp(`^.*${txId}.*${ingoreFlowCharge ? '(?<!FlowToken)' : ''}$`);
+};
+
+export const checkSentAmount = async ({
+  page,
+  sealedText,
+  amount,
+  txId,
+  ingoreFlowCharge = false,
+}) => {
+  const activityItemRegexp = getActivityItemRegexp(txId, ingoreFlowCharge);
+  const sealedItem = page.getByTestId(activityItemRegexp).filter({ hasText: sealedText });
+  await expect(sealedItem).toBeVisible({
+    timeout: 60_000,
+  });
+  await expect(
+    page.getByTestId(activityItemRegexp).getByTestId(`token-balance-${amount}`)
+  ).toBeVisible();
+};
+
 export const waitForTransaction = async ({
   page,
   successtext = 'success',
@@ -410,7 +431,7 @@ export const waitForTransaction = async ({
   await expect(progressBar).toBeVisible();
   // Get the pending item with the cadence txId that was put in the url and status is pending
 
-  const activityItemRegexp = new RegExp(`^.*${txId}.*${ingoreFlowCharge ? '(?<!FlowToken)' : ''}$`);
+  const activityItemRegexp = getActivityItemRegexp(txId, ingoreFlowCharge);
   const pendingItem = page.getByTestId(activityItemRegexp).filter({ hasText: 'Pending' });
 
   await expect(pendingItem).toBeVisible({
@@ -430,4 +451,6 @@ export const waitForTransaction = async ({
       page.getByTestId(activityItemRegexp).getByTestId(`token-balance-${amount}`)
     ).toBeVisible();
   }
+
+  return txId;
 };
