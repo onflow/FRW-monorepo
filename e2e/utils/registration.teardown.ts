@@ -6,5 +6,5 @@ import { cleanAuth, cleanExtension } from './loader';
 teardown('cleanup registration keys', async () => {
   //   Create a new page and navigate to extension
   await cleanAuth();
-  await cleanExtension();
+  await cleanExtension('registration');
 });

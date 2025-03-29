@@ -5,5 +5,5 @@ import { cleanExtension } from './loader';
 
 teardown('cleanup extension data', async () => {
   //   Create a new page and navigate to extension
-  await cleanExtension();
+  await cleanExtension('transaction');
 });
