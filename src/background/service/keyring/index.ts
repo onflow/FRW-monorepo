@@ -1274,27 +1274,118 @@ class KeyringService extends EventEmitter {
   private async decryptVaultArray(vaultArray, password) {
     const decryptedKeyrings: any = [];
 
-    for (const entry of vaultArray) {
-      const id = Object.keys(entry)[0]; // Get UUID
-      const encryptedData = entry[id];
+    const hasMissingIds = vaultArray.some((entry) => typeof entry === 'string');
 
+    if (hasMissingIds) {
+      console.log('Found entries missing IDs, attempting to fix...', vaultArray);
+      vaultArray = await this.checkVaultId(vaultArray);
+    }
+    for (const entry of vaultArray) {
       try {
+        // Validate entry is a proper object
+        if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+          console.error('Invalid vault entry format:', entry);
+          continue;
+        }
+
+        const keys = Object.keys(entry);
+        if (keys.length === 0) {
+          console.error('Empty vault entry (no keys):', entry);
+          continue;
+        }
+
+        const id = keys[0];
+        const encryptedData = entry[id];
+
+        if (!encryptedData) {
+          console.error(`No encrypted data found for entry with ID ${id}`);
+          continue;
+        }
+
         // Decrypt the entry
         const decryptedData = await this.encryptor.decrypt(password, encryptedData);
-
         // Store in keyrings array with ID
         decryptedKeyrings.push({
           id,
           ...decryptedData, // Contains keyring data
         });
       } catch (err) {
-        // maybe update the password for the keyring
-        console.error(`Failed to decrypt entry ${id}:`, err);
+        console.error(`Failed to process vault entry:`, err, entry);
+        // Continue with next entry
       }
     }
 
     // Store in keyrings array
     this.keyringList = decryptedKeyrings;
+  }
+
+  private async checkVaultId(vaultArray: VaultEntry[]) {
+    try {
+      const deepVault = (await storage.get('deepVault')) || [];
+      const loggedInAccounts = (await storage.get('loggedInAccounts')) || [];
+
+      // Create a map of encrypted data to IDs from deepVault
+      const dataToIdMap = new Map();
+
+      for (const entry of deepVault) {
+        if (!entry || typeof entry !== 'object') continue;
+
+        const keys = Object.keys(entry);
+        if (keys.length === 0) continue;
+
+        const id = keys[0];
+        const encryptedData = entry[id];
+        if (!encryptedData) continue;
+
+        dataToIdMap.set(encryptedData, id);
+      }
+
+      // Process vault entries to fix missing IDs
+      const updatedVaultArray = vaultArray.map((entry, index) => {
+        if (!entry) return entry;
+
+        if (typeof entry === 'string') {
+          // First try to find ID in deepVault
+          const id = dataToIdMap.get(entry);
+          if (id) {
+            const newEntry = {};
+            newEntry[id] = entry;
+            console.log(`Fixed string entry by adding ID ${id} from deepVault`);
+            return newEntry;
+          }
+
+          // If deepVault matching failed, try to use ID from loggedInAccounts based on index
+          if (loggedInAccounts && loggedInAccounts[index] && loggedInAccounts[index].id) {
+            const accountId = loggedInAccounts[index].id;
+            const newEntry = {};
+            newEntry[accountId] = entry;
+            console.log(
+              `Fixed string entry by adding ID ${accountId} from loggedInAccounts at index ${index}`
+            );
+            return newEntry;
+          }
+
+          console.log('Could not find matching ID for string entry');
+        }
+
+        return entry;
+      });
+
+      console.log('checkVaultId - updated vaultArray:', updatedVaultArray);
+
+      // If changes were made, update the vault in storage
+      if (JSON.stringify(updatedVaultArray) !== JSON.stringify(vaultArray)) {
+        console.log('Vault array was updated with proper IDs');
+        this.store.updateState({ vault: updatedVaultArray });
+      } else {
+        console.log('No changes needed to vault array');
+      }
+
+      return updatedVaultArray;
+    } catch (error) {
+      console.error('Error in checkVaultId:', error);
+      return vaultArray;
+    }
   }
 
   async checkAvailableAccount(currentId: string): Promise<VaultEntry[]> {
