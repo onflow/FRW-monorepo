@@ -109,7 +109,7 @@ import erc20ABI from '../utils/erc20.abi.json';
 import { getLoggedInAccount } from '../utils/getLoggedInAccount';
 import {
   getAccountsByPublicKeyTuple,
-  getOrCheckAccountsWithPublicKeyTuple,
+  getOrCheckAccountsByPublicKeyTuple,
 } from '../utils/modules/findAddressWithPubKey';
 
 import BaseController from './base';
@@ -213,7 +213,7 @@ export class WalletController extends BaseController {
     // Check if the account is registered on our backend (i.e. it's been created in wallet or used previously in wallet)
     // Check if the seed phrase is valid and exists on the network
     // Note we're not bothering to check against any address here. We're assuming that's been done in the front end. We use the indexer to get the accounts
-    const accounts = await getOrCheckAccountsWithPublicKeyTuple(pubKTuple);
+    const accounts = await getOrCheckAccountsByPublicKeyTuple(pubKTuple);
     if (accounts.length === 0) {
       throw new Error('Invalid seed phrase');
     }

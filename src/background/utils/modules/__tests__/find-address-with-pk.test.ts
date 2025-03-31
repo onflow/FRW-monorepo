@@ -55,13 +55,13 @@ describe('findAddressWithPK module', () => {
       ];
 
       vi.mocked(
-        findAddressWithPubKeyModule.getOrCheckAccountsWithPublicKeyTuple
+        findAddressWithPubKeyModule.getOrCheckAccountsByPublicKeyTuple
       ).mockResolvedValueOnce(mockAccounts);
 
       const result = await findAddressWithPK(mockPK, mockAddress);
 
       expect(publicPrivateKeyModule.pk2PubKey).toHaveBeenCalledWith(mockPK);
-      expect(findAddressWithPubKeyModule.getOrCheckAccountsWithPublicKeyTuple).toHaveBeenCalledWith(
+      expect(findAddressWithPubKeyModule.getOrCheckAccountsByPublicKeyTuple).toHaveBeenCalledWith(
         mockPubKeyTuple,
         mockAddress
       );
@@ -71,7 +71,7 @@ describe('findAddressWithPK module', () => {
     it('should throw error when no accounts are found', async () => {
       vi.mocked(publicPrivateKeyModule.pk2PubKey).mockResolvedValueOnce(mockPubKeyTuple);
       vi.mocked(
-        findAddressWithPubKeyModule.getOrCheckAccountsWithPublicKeyTuple
+        findAddressWithPubKeyModule.getOrCheckAccountsByPublicKeyTuple
       ).mockRejectedValueOnce(new Error('No accounts found with the given public key'));
 
       await expect(findAddressWithPK(mockPK, mockAddress)).rejects.toThrow(
@@ -100,7 +100,7 @@ describe('findAddressWithPK module', () => {
       ];
 
       vi.mocked(
-        findAddressWithPubKeyModule.getOrCheckAccountsWithPublicKeyTuple
+        findAddressWithPubKeyModule.getOrCheckAccountsByPublicKeyTuple
       ).mockResolvedValueOnce(mockAccounts);
 
       const result = await findAddressWithSeed(mockSeed, mockAddress);
@@ -111,7 +111,7 @@ describe('findAddressWithPK module', () => {
         ''
       );
       expect(publicPrivateKeyModule.seed2PublicPrivateKeyTemp).not.toHaveBeenCalled();
-      expect(findAddressWithPubKeyModule.getOrCheckAccountsWithPublicKeyTuple).toHaveBeenCalledWith(
+      expect(findAddressWithPubKeyModule.getOrCheckAccountsByPublicKeyTuple).toHaveBeenCalledWith(
         mockPubKeyTuple,
         mockAddress
       );
@@ -137,13 +137,13 @@ describe('findAddressWithPK module', () => {
       ];
 
       vi.mocked(
-        findAddressWithPubKeyModule.getOrCheckAccountsWithPublicKeyTuple
+        findAddressWithPubKeyModule.getOrCheckAccountsByPublicKeyTuple
       ).mockResolvedValueOnce(mockAccounts);
 
       const result = await findAddressWithSeed(mockSeed, mockAddress);
 
       expect(publicPrivateKeyModule.seed2PublicPrivateKey).not.toHaveBeenCalled();
-      expect(findAddressWithPubKeyModule.getOrCheckAccountsWithPublicKeyTuple).toHaveBeenCalledWith(
+      expect(findAddressWithPubKeyModule.getOrCheckAccountsByPublicKeyTuple).toHaveBeenCalledWith(
         mockPubKeyTuple,
         mockAddress
       );
@@ -155,7 +155,7 @@ describe('findAddressWithPK module', () => {
         mockPubKeyTuple
       );
       vi.mocked(
-        findAddressWithPubKeyModule.getOrCheckAccountsWithPublicKeyTuple
+        findAddressWithPubKeyModule.getOrCheckAccountsByPublicKeyTuple
       ).mockRejectedValueOnce(new Error('No accounts found with the given public key'));
 
       await expect(findAddressWithSeed(mockSeed, mockAddress)).rejects.toThrow(

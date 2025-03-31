@@ -2,12 +2,12 @@ import { type PublicPrivateKeyTuple } from '@/shared/types/key-types';
 import { type PublicKeyAccount } from '@/shared/types/wallet-types';
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 
-import { getOrCheckAccountsWithPublicKeyTuple } from './findAddressWithPubKey';
+import { getOrCheckAccountsByPublicKeyTuple } from './findAddressWithPubKey';
 import { pk2PubKey, seedWithPathAndPhrase2PublicPrivateKey } from './publicPrivateKey';
 
 export const findAddressWithPK = async (pk: string, address: string) => {
   const pubKTuple = await pk2PubKey(pk);
-  return await getOrCheckAccountsWithPublicKeyTuple(pubKTuple, address);
+  return await getOrCheckAccountsByPublicKeyTuple(pubKTuple, address);
 };
 
 export const findAddressWithSeed = async (
@@ -22,5 +22,5 @@ export const findAddressWithSeed = async (
     passphrase
   );
 
-  return await getOrCheckAccountsWithPublicKeyTuple(pubKTuple, address);
+  return await getOrCheckAccountsByPublicKeyTuple(pubKTuple, address);
 };

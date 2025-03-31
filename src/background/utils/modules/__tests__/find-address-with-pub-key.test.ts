@@ -5,7 +5,7 @@ import { userWalletService } from 'background/service';
 
 import {
   getOrCheckAccountsWithPublicKey,
-  getOrCheckAccountsWithPublicKeyTuple,
+  getOrCheckAccountsByPublicKeyTuple,
   getAccountsByPublicKeyTuple,
 } from '../findAddressWithPubKey';
 
@@ -172,7 +172,7 @@ describe('findAddressWithPubKey module', () => {
         });
       });
 
-      await expect(getOrCheckAccountsWithPublicKeyTuple(mockPubKeyTuple)).resolves.toEqual([]);
+      await expect(getOrCheckAccountsByPublicKeyTuple(mockPubKeyTuple)).resolves.toEqual([]);
     });
 
     it('should return combined accounts when both keys have valid accounts', async () => {
@@ -199,7 +199,7 @@ describe('findAddressWithPubKey module', () => {
         });
       });
 
-      const result = await getOrCheckAccountsWithPublicKeyTuple(mockPubKeyTuple);
+      const result = await getOrCheckAccountsByPublicKeyTuple(mockPubKeyTuple);
       expect(result).toHaveLength(2);
       expect(result[0].signAlgoString).toBe('ECDSA_P256');
       expect(result[1].signAlgoString).toBe('ECDSA_secp256k1');
@@ -217,7 +217,7 @@ describe('findAddressWithPubKey module', () => {
         });
       });
 
-      await expect(getOrCheckAccountsWithPublicKeyTuple(mockPubKeyTuple)).resolves.toEqual([]);
+      await expect(getOrCheckAccountsByPublicKeyTuple(mockPubKeyTuple)).resolves.toEqual([]);
     });
   });
 

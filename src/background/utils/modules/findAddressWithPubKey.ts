@@ -130,7 +130,7 @@ export const getOrCheckAccountsWithPublicKey = async (
     : await getAccountsWithPublicKey(pubKeyHex, 'mainnet');
 };
 
-export const getOrCheckAccountsWithPublicKeyTuple = async (
+export const getOrCheckAccountsByPublicKeyTuple = async (
   pubKTuple: PublicKeyTuple,
   address: string | null = null
 ): Promise<PublicKeyAccount[]> => {
