@@ -1277,7 +1277,7 @@ class KeyringService extends EventEmitter {
     const hasMissingIds = vaultArray.some((entry) => typeof entry === 'string');
 
     if (hasMissingIds) {
-      console.log('Found entries missing IDs, attempting to fix...', vaultArray);
+      console.log('Found entries missing IDs, attempting to fix...');
       vaultArray = await this.checkVaultId(vaultArray);
     }
     for (const entry of vaultArray) {
@@ -1370,8 +1370,6 @@ class KeyringService extends EventEmitter {
 
         return entry;
       });
-
-      console.log('checkVaultId - updated vaultArray:', updatedVaultArray);
 
       // If changes were made, update the vault in storage
       if (JSON.stringify(updatedVaultArray) !== JSON.stringify(vaultArray)) {
