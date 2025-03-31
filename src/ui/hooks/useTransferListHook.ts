@@ -34,7 +34,7 @@ export const useTransferList = () => {
     const checkPendingTransactions = async () => {
       try {
         const pending = await usewallet.getPendingTx();
-        debug('useTransferListHook', 'Checking pending transactions', { count: pending.length });
+        debug('Checking pending transactions', { count: pending.length });
 
         if (mountedRef.current) {
           setOccupied(pending.length > 0);
@@ -56,7 +56,7 @@ export const useTransferList = () => {
       namespace: AreaName
     ) => {
       if (namespace === 'local') {
-        debug('useTransferListHook', 'Storage change detected', {
+        debug('Storage change detected', {
           changes,
           namespace,
         });
