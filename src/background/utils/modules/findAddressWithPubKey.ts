@@ -4,7 +4,10 @@ import { type AccountKey } from '@onflow/typedefs';
 import { userWalletService } from '@/background/service';
 import { type SignAlgoString, type HashAlgoString } from '@/shared/types/algo-types';
 import type { PublicKeyTuple } from '@/shared/types/key-types';
+import { type AccountKeyRequest } from '@/shared/types/network-types';
 import { type PublicKeyAccount } from '@/shared/types/wallet-types';
+
+import { getPublicAccountForPK } from './findAddressWithPK';
 
 /**
  * Get accounts with public key tuple
@@ -145,4 +148,15 @@ export const getOrCheckAccountsByPublicKeyTuple = async (
 
   // Return the accounts
   return accountsOver1000;
+};
+
+export const accountKeyRequestForAccount = async (
+  account: PublicKeyAccount
+): Promise<AccountKeyRequest> => {
+  return {
+    public_key: account.publicKey,
+    hash_algo: account.hashAlgo,
+    sign_algo: account.signAlgo,
+    weight: account.weight,
+  };
 };

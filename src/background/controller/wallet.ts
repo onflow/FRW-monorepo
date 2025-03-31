@@ -51,7 +51,7 @@ import {
   withPrefix,
 } from '@/shared/utils/address';
 import { getSignAlgo } from '@/shared/utils/algo';
-import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
+import { FLOW_BIP44_PATH, SIGN_ALGO_NUM_ECDSA_P256 } from '@/shared/utils/algo-constants';
 import { convertToIntegerAmount, validateAmount } from '@/shared/utils/number';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import {
@@ -642,7 +642,9 @@ export class WalletController extends BaseController {
           const signAlgo =
             typeof account.signAlgo === 'string' ? getSignAlgo(account.signAlgo) : account.signAlgo;
           privateKey =
-            signAlgo === 1 ? publicPrivateKeyTuple.P256.pk : publicPrivateKeyTuple.SECP256K1.pk;
+            signAlgo === SIGN_ALGO_NUM_ECDSA_P256
+              ? publicPrivateKeyTuple.P256.pk
+              : publicPrivateKeyTuple.SECP256K1.pk;
         } catch {
           // Couldn't load from logged in accounts.
           // The signAlgo used to login isn't saved. We need to
@@ -674,7 +676,9 @@ export class WalletController extends BaseController {
           const signAlgo: number = addressAndKeyInfoArray[index].signAlgo;
 
           privateKey =
-            signAlgo === 1 ? publicPrivateKeyTuple.P256.pk : publicPrivateKeyTuple.SECP256K1.pk;
+            signAlgo === SIGN_ALGO_NUM_ECDSA_P256
+              ? publicPrivateKeyTuple.P256.pk
+              : publicPrivateKeyTuple.SECP256K1.pk;
         }
 
         break;

@@ -1,11 +1,19 @@
 import { type PublicPrivateKeyTuple } from '@/shared/types/key-types';
+import { type AccountKeyRequest, type AccountKey } from '@/shared/types/network-types';
 import { type PublicKeyAccount } from '@/shared/types/wallet-types';
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 
-import { getOrCheckAccountsByPublicKeyTuple } from './findAddressWithPubKey';
+import {
+  accountKeyRequestForAccount,
+  getAccountsByPublicKeyTuple,
+  getOrCheckAccountsByPublicKeyTuple,
+} from './findAddressWithPubKey';
 import { pk2PubKey, seedWithPathAndPhrase2PublicPrivateKey } from './publicPrivateKey';
 
-export const findAddressWithPK = async (pk: string, address: string) => {
+export const findAddressWithPK = async (
+  pk: string,
+  address: string
+): Promise<PublicKeyAccount[]> => {
   const pubKTuple = await pk2PubKey(pk);
   return await getOrCheckAccountsByPublicKeyTuple(pubKTuple, address);
 };
@@ -23,4 +31,18 @@ export const findAddressWithSeed = async (
   );
 
   return await getOrCheckAccountsByPublicKeyTuple(pubKTuple, address);
+};
+
+export const getPublicAccountForPK = async (pk: string): Promise<PublicKeyAccount> => {
+  const pubKTuple = await pk2PubKey(pk);
+  const accounts = await getAccountsByPublicKeyTuple(pubKTuple, 'mainnet');
+  if (accounts.length === 0) {
+    throw new Error('No accounts found');
+  }
+  return accounts[0];
+};
+
+export const getAccountKeyRequestForPK = async (pk: string): Promise<AccountKeyRequest> => {
+  const account = await getPublicAccountForPK(pk);
+  return accountKeyRequestForAccount(account);
 };

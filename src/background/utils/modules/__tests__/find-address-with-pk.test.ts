@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
+import {
+  FLOW_BIP44_PATH,
+  HASH_ALGO_NUM_SHA3_256,
+  SIGN_ALGO_NUM_ECDSA_P256,
+} from '@/shared/utils/algo-constants';
 
 import { findAddressWithPK, findAddressWithSeed } from '../findAddressWithPK';
 import * as findAddressWithPubKeyModule from '../findAddressWithPubKey';
@@ -46,8 +50,8 @@ describe('findAddressWithPK module', () => {
           address: mockAddress,
           keyIndex: 0,
           weight: 1000,
-          hashAlgo: 3,
-          signAlgo: 1,
+          hashAlgo: HASH_ALGO_NUM_SHA3_256,
+          signAlgo: SIGN_ALGO_NUM_ECDSA_P256,
           hashAlgoString: 'SHA3_256',
           signAlgoString: 'ECDSA_P256',
           publicKey: mockP256PubKey,
@@ -91,8 +95,8 @@ describe('findAddressWithPK module', () => {
           address: mockAddress,
           keyIndex: 0,
           weight: 1000,
-          hashAlgo: 3,
-          signAlgo: 1,
+          hashAlgo: HASH_ALGO_NUM_SHA3_256,
+          signAlgo: SIGN_ALGO_NUM_ECDSA_P256,
           hashAlgoString: 'SHA3_256',
           signAlgoString: 'ECDSA_P256',
           publicKey: mockP256PubKey,
@@ -128,8 +132,8 @@ describe('findAddressWithPK module', () => {
           address: mockAddress,
           keyIndex: 0,
           weight: 1000,
-          hashAlgo: 3,
-          signAlgo: 1,
+          hashAlgo: HASH_ALGO_NUM_SHA3_256,
+          signAlgo: SIGN_ALGO_NUM_ECDSA_P256,
           hashAlgoString: 'SHA3_256',
           signAlgoString: 'ECDSA_P256',
           publicKey: mockP256PubKey,
