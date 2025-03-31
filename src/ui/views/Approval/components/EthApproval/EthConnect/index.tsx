@@ -76,7 +76,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
         id: 1,
         icon: icon,
         color: '#282828',
-        chain: 747,
+        chain: currentNetwork === 'testnet' ? 545 : 747,
       };
       await usewallet.setActiveWallet(walletInfo, 'evm');
     }
