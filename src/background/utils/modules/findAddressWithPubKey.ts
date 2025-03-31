@@ -24,9 +24,9 @@ export const getAccountsByPublicKeyTuple = async (
   const { P256, SECP256K1 } = pubKTuple;
 
   // Check for P256 accounts first
-  const p256Accounts = await getAccountsByPublicKey(P256.pubK, network);
+  const p256Accounts = await getAccountsWithPublicKey(P256.pubK, network);
   // Otherwise, check for SECP256K1 accounts
-  const sepc256k1Accounts = await getAccountsByPublicKey(SECP256K1.pubK, network);
+  const sepc256k1Accounts = await getAccountsWithPublicKey(SECP256K1.pubK, network);
   // Combine the accounts
   const accounts = [...p256Accounts, ...sepc256k1Accounts];
 
@@ -62,7 +62,7 @@ type KeyIndexerProfileResponse = {
  * @returns {Promise<KeyIndexerProfile>} The accounts associated with the public key
  */
 
-async function getAccountsByPublicKey(
+async function getAccountsWithPublicKey(
   publicKey: string,
   network: string
 ): Promise<PublicKeyAccount[]> {
@@ -88,7 +88,7 @@ async function getAccountsByPublicKey(
   return accounts;
 }
 
-const checkAddressAgainstKey = async (
+const getPublicKeyInfoForAccount = async (
   address: string,
   pubKeyHex: string
 ): Promise<PublicKeyAccount[] | null> => {
@@ -120,23 +120,23 @@ const checkAddressAgainstKey = async (
   });
 };
 
-export const findAddressWithKey = async (
+export const getOrCheckAccountsWithPublicKey = async (
   pubKeyHex: string,
   address: string | null = null
 ): Promise<PublicKeyAccount[] | null> => {
   // If the address is not provided, get the accounts from the indexer
   return address
-    ? await checkAddressAgainstKey(address, pubKeyHex)
-    : await getAccountsByPublicKey(pubKeyHex, 'mainnet');
+    ? await getPublicKeyInfoForAccount(address, pubKeyHex)
+    : await getAccountsWithPublicKey(pubKeyHex, 'mainnet');
 };
 
-export const getOrCheckAddressByPublicKeyTuple = async (
+export const getOrCheckAccountsWithPublicKeyTuple = async (
   pubKTuple: PublicKeyTuple,
   address: string | null = null
 ): Promise<PublicKeyAccount[]> => {
   const { P256, SECP256K1 } = pubKTuple;
-  const p256Accounts = (await findAddressWithKey(P256.pubK, address)) || [];
-  const sepc256k1Accounts = (await findAddressWithKey(SECP256K1.pubK, address)) || [];
+  const p256Accounts = (await getOrCheckAccountsWithPublicKey(P256.pubK, address)) || [];
+  const sepc256k1Accounts = (await getOrCheckAccountsWithPublicKey(SECP256K1.pubK, address)) || [];
   // Combine the accounts
   const accounts = [...p256Accounts, ...sepc256k1Accounts];
 

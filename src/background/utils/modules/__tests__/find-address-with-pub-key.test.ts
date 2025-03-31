@@ -4,8 +4,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { userWalletService } from 'background/service';
 
 import {
-  findAddressWithKey,
-  getOrCheckAddressByPublicKeyTuple,
+  getOrCheckAccountsWithPublicKey,
+  getOrCheckAccountsWithPublicKeyTuple,
   getAccountsByPublicKeyTuple,
 } from '../findAddressWithPubKey';
 
@@ -47,7 +47,7 @@ describe('findAddressWithPubKey module', () => {
           }),
       });
 
-      const result = await findAddressWithKey(mockPubKey);
+      const result = await getOrCheckAccountsWithPublicKey(mockPubKey);
       expect(result).toEqual([]);
     });
 
@@ -71,7 +71,7 @@ describe('findAddressWithPubKey module', () => {
         json: () => Promise.resolve(mockIndexerResponse),
       });
 
-      const result = await findAddressWithKey(mockPubKey);
+      const result = await getOrCheckAccountsWithPublicKey(mockPubKey);
       expect(result).toEqual([
         {
           address: mockAddress,
@@ -109,7 +109,7 @@ describe('findAddressWithPubKey module', () => {
 
       vi.mocked(fcl.account).mockResolvedValueOnce(mockFclAccount);
 
-      const result = await findAddressWithKey(mockPubKey, mockAddress);
+      const result = await getOrCheckAccountsWithPublicKey(mockPubKey, mockAddress);
       expect(result).toBeNull();
     });
 
@@ -136,7 +136,7 @@ describe('findAddressWithPubKey module', () => {
 
       vi.mocked(fcl.account).mockResolvedValueOnce(mockFclAccount);
 
-      const result = await findAddressWithKey(mockPubKey, mockAddress);
+      const result = await getOrCheckAccountsWithPublicKey(mockPubKey, mockAddress);
       expect(result).toEqual([
         {
           ...mockFclAccount.keys[0],
@@ -172,7 +172,7 @@ describe('findAddressWithPubKey module', () => {
         });
       });
 
-      await expect(getOrCheckAddressByPublicKeyTuple(mockPubKeyTuple)).resolves.toEqual([]);
+      await expect(getOrCheckAccountsWithPublicKeyTuple(mockPubKeyTuple)).resolves.toEqual([]);
     });
 
     it('should return combined accounts when both keys have valid accounts', async () => {
@@ -199,7 +199,7 @@ describe('findAddressWithPubKey module', () => {
         });
       });
 
-      const result = await getOrCheckAddressByPublicKeyTuple(mockPubKeyTuple);
+      const result = await getOrCheckAccountsWithPublicKeyTuple(mockPubKeyTuple);
       expect(result).toHaveLength(2);
       expect(result[0].signAlgoString).toBe('ECDSA_P256');
       expect(result[1].signAlgoString).toBe('ECDSA_secp256k1');
@@ -217,7 +217,7 @@ describe('findAddressWithPubKey module', () => {
         });
       });
 
-      await expect(getOrCheckAddressByPublicKeyTuple(mockPubKeyTuple)).resolves.toEqual([]);
+      await expect(getOrCheckAccountsWithPublicKeyTuple(mockPubKeyTuple)).resolves.toEqual([]);
     });
   });
 
