@@ -170,8 +170,8 @@ export const truncate = (str, n) => {
 };
 
 // Frontend utility function
-export const debug = (fileName: string, message: string, data?: any) => {
+export const debug = (message: string, data?: any) => {
   if (process.env.NODE_ENV === 'development') {
-    console.log(`[${fileName}] ${message}`, data ? data : '');
+    console.log(`[${message}`, data ? data : '');
   }
 };

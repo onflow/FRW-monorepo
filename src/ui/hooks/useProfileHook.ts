@@ -121,25 +121,25 @@ export const useProfiles = () => {
     try {
       profilesRef.current.loading = true;
       const mainAddress = await usewallet.getMainAddress();
-      debug('useProfileHook', 'mainAddress ===', mainAddress);
+      debug('mainAddress ===', mainAddress);
       if (mainAddress) {
         setMainAddress(mainAddress as FlowAddress);
-        debug('useProfileHook', 'setupEvmWallet ===');
+        debug('setupEvmWallet ===');
         await setupEvmWallet(mainAddress as FlowAddress);
 
         const childAccounts = await usewallet.getChildAccounts();
-        debug('useProfileHook', 'childAccounts ===', childAccounts);
+        debug('childAccounts ===', childAccounts);
 
         setChildAccount(childAccounts || {});
 
         const parentAddress = await usewallet.getParentAddress();
-        debug('useProfileHook', 'parentAddress ===', parentAddress);
+        debug('parentAddress ===', parentAddress);
         if (parentAddress) {
           const [currentWallet, isChild] = await Promise.all([
             usewallet.getCurrentWallet(),
             usewallet.getActiveWallet(),
           ]);
-          debug('useProfileHook', 'currentWallet ===', currentWallet);
+          debug('currentWallet ===', currentWallet);
 
           if (currentWallet) {
             const mainwallet = await usewallet.returnParentWallet();
@@ -150,7 +150,7 @@ export const useProfiles = () => {
             const pubKTuple = await usewallet.getPubKey();
 
             const walletData = await usewallet.getUserInfo(true);
-            debug('useProfileHook', 'walletData ===', walletData);
+            debug('walletData ===', walletData);
             const { otherAccounts, wallet, loggedInAccounts } =
               await usewallet.openapi.freshUserInfo(
                 parentAddress,
@@ -170,7 +170,7 @@ export const useProfiles = () => {
       }
 
       const wallets = await usewallet.getMainAccounts();
-      debug('useProfileHook', 'wallets ===', wallets);
+      debug('wallets ===', wallets);
 
       if (!wallets) {
         throw new Error('No wallets found');
@@ -178,7 +178,7 @@ export const useProfiles = () => {
 
       if (initialStart) {
         await usewallet.openapi.putDeviceInfo(wallets);
-        debug('useProfileHook', 'usewallet.openapi.putDeviceInfo ===', wallets);
+        debug('usewallet.openapi.putDeviceInfo ===', wallets);
 
         setInitial(false);
       }
@@ -186,11 +186,11 @@ export const useProfiles = () => {
       // format the wallets
 
       const formattedWallets = formatWallets(wallets);
-      debug('useProfileHook', 'formattedWallets ===', formattedWallets);
+      debug('formattedWallets ===', formattedWallets);
 
       setWalletList(formattedWallets);
     } catch (error) {
-      debug('useProfileHook', 'Error in fetchProfileData:', error);
+      debug('Error in fetchProfileData:', error);
     } finally {
       setMainLoading(false);
       profilesRef.current.loading = false;
