@@ -8,6 +8,7 @@ import * as ethUtil from 'ethereumjs-util';
 import log from 'loglevel';
 
 import eventBus from '@/eventBus';
+import { type LoggedInAccount } from '@/shared/types/wallet-types';
 import {
   normalizeAddress,
   setPageStateCacheWhenPopupClose,
@@ -60,6 +61,9 @@ interface EncryptedData {
 interface VaultEntry {
   [uuid: string]: string;
 }
+
+// Handle old vault entries
+type CompatibleVaultEntry = string | VaultEntry;
 
 interface KeyringData {
   0: {
@@ -766,6 +770,7 @@ class KeyringService extends EventEmitter {
     if (!this.password || typeof this.password !== 'string') {
       return Promise.reject(new Error('KeyringController - password is not a string'));
     }
+    const currentPassword = this.password;
     return Promise.all(
       this.currentKeyring.map((keyring) => {
         return Promise.all([keyring.type, keyring.serialize()]).then((serializedKeyringArray) => {
@@ -778,10 +783,7 @@ class KeyringService extends EventEmitter {
       })
     )
       .then((serializedKeyrings) => {
-        return this.encryptor.encrypt(
-          this.password as string,
-          serializedKeyrings as unknown as Buffer
-        );
+        return this.encryptor.encrypt(currentPassword, serializedKeyrings as unknown as Buffer);
       })
       .then(async (encryptedString) => {
         // Note that currentAccountIndex is only used in keyring for old accounts that don't have an id stored in the keyring
@@ -792,8 +794,16 @@ class KeyringService extends EventEmitter {
         const deepVault = (await storage.get('deepVault')) || []; // Retrieve deepVault from storage
         // Check if oldVault is defined and not an array, if so convert it to an array
         // If undefined, set it to an empty array
-        let vaultArray = Array.isArray(oldVault) ? oldVault : oldVault ? [oldVault] : [];
-        const deepVaultArray = Array.isArray(deepVault) ? deepVault : deepVault ? [deepVault] : []; // Ensure deepVault is treated as array
+        let vaultArray: CompatibleVaultEntry[] = Array.isArray(oldVault)
+          ? oldVault
+          : oldVault
+            ? [oldVault]
+            : [];
+        const deepVaultArray: CompatibleVaultEntry[] = Array.isArray(deepVault)
+          ? deepVault
+          : deepVault
+            ? [deepVault]
+            : []; // Ensure deepVault is treated as array
 
         // Handle the case when currentId is available
         if (currentId !== null && currentId !== undefined) {
@@ -850,7 +860,7 @@ class KeyringService extends EventEmitter {
         }
 
         //update the keyringlist for switching account after everything is done
-        await this.decryptVaultArray(vaultArray, this.password);
+        await this.decryptVaultArray(vaultArray, currentPassword);
 
         return true;
       });
@@ -1271,7 +1281,7 @@ class KeyringService extends EventEmitter {
     return this.store.subscribe((value) => storage.set('keyringState', value));
   }
 
-  private async decryptVaultArray(vaultArray, password) {
+  private async decryptVaultArray(vaultArray: CompatibleVaultEntry[], password: string) {
     const decryptedKeyrings: any = [];
 
     const hasMissingIds = vaultArray.some((entry) => typeof entry === 'string');
@@ -1319,26 +1329,10 @@ class KeyringService extends EventEmitter {
     this.keyringList = decryptedKeyrings;
   }
 
-  private async checkVaultId(vaultArray: VaultEntry[]) {
+  private async checkVaultId(vaultArray: CompatibleVaultEntry[]) {
     try {
-      const deepVault = (await storage.get('deepVault')) || [];
-      const loggedInAccounts = (await storage.get('loggedInAccounts')) || [];
-
-      // Create a map of encrypted data to IDs from deepVault
-      const dataToIdMap = new Map();
-
-      for (const entry of deepVault) {
-        if (!entry || typeof entry !== 'object') continue;
-
-        const keys = Object.keys(entry);
-        if (keys.length === 0) continue;
-
-        const id = keys[0];
-        const encryptedData = entry[id];
-        if (!encryptedData) continue;
-
-        dataToIdMap.set(encryptedData, id);
-      }
+      const deepVault: CompatibleVaultEntry[] = (await storage.get('deepVault')) || [];
+      const loggedInAccounts: LoggedInAccount[] = (await storage.get('loggedInAccounts')) || [];
 
       // Process vault entries to fix missing IDs
       const updatedVaultArray = vaultArray.map((entry, index) => {
@@ -1346,10 +1340,18 @@ class KeyringService extends EventEmitter {
 
         if (typeof entry === 'string') {
           // First try to find ID in deepVault
-          const id = dataToIdMap.get(entry);
-          if (id) {
-            const newEntry = {};
-            newEntry[id] = entry;
+          const deepVaultEntry = deepVault.find((deepVaultEntry) => {
+            if (!deepVaultEntry || typeof deepVaultEntry !== 'object') return false;
+            const values = Object.values(deepVaultEntry);
+            const encryptedData = values[0];
+            if (!encryptedData) return false;
+            return entry === encryptedData;
+          });
+
+          if (deepVaultEntry) {
+            const keys = Object.keys(deepVaultEntry);
+            const id = keys[0];
+            const newEntry: VaultEntry = { [id]: entry };
             console.log(`Fixed string entry by adding ID ${id} from deepVault`);
             return newEntry;
           }
@@ -1365,6 +1367,7 @@ class KeyringService extends EventEmitter {
             return newEntry;
           }
 
+          // TODO: If no matching ID is found, then we 'could' decrypt the entry and use loginV3Api to get the ID but we can make that update if we need to another time.
           console.log('Could not find matching ID for string entry');
         }
 
