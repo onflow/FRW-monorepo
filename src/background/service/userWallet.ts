@@ -35,7 +35,11 @@ import { isValidEthereumAddress, isValidFlowAddress, withPrefix } from '@/shared
 import { getHashAlgo, getSignAlgo } from '@/shared/utils/algo';
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 
-import type { DeviceInfoRequest, FlowNetwork } from '../../shared/types/network-types';
+import type {
+  AccountKeyRequest,
+  DeviceInfoRequest,
+  FlowNetwork,
+} from '../../shared/types/network-types';
 import {
   type WalletProfile,
   type PublicKeyAccount,
@@ -43,8 +47,11 @@ import {
 } from '../../shared/types/wallet-types';
 import { fclConfig } from '../fclConfig';
 import { createSessionStore } from '../utils';
-import { findAddressWithPK } from '../utils/modules/findAddressWithPK';
-import { getAccountsByPublicKeyTuple } from '../utils/modules/findAddressWithPubKey';
+import { findAddressWithPK, getAccountKeyRequestForPK } from '../utils/modules/findAddressWithPK';
+import {
+  accountKeyRequestForAccount,
+  getAccountsByPublicKeyTuple,
+} from '../utils/modules/findAddressWithPubKey';
 import { storage } from '../webapi';
 
 const USER_WALLET_TEMPLATE: UserWalletStore = {
@@ -858,8 +865,9 @@ class UserWallet {
       derivationPath,
       passphrase
     );
-    const result = await getAccountsByPublicKeyTuple(publicPrivateKey, 'mainnet');
-    if (!result) {
+
+    const accounts = await getAccountsByPublicKeyTuple(publicPrivateKey, 'mainnet');
+    if (!accounts) {
       throw new Error('No Address Found');
     }
     const app = getApp(process.env.NODE_ENV!);
@@ -875,35 +883,33 @@ class UserWallet {
     const USER_DOMAIN_TAG = rightPaddedHexBuffer(Buffer.from('FLOW-V0.0-user').toString('hex'), 32);
     const message = USER_DOMAIN_TAG + Buffer.from(idToken, 'utf8').toString('hex');
 
-    const hashAlgo: number = result[0].hashAlgo;
-    const signAlgo: number = result[0].signAlgo;
-    const publicKey: string = result[0].publicKey;
+    // Get the account key request
+    const accountKeyRequest = await accountKeyRequestForAccount(accounts[0]);
+
+    // NOTE: The private key for each type should be the same
     const privateKey: string =
-      publicKey === publicPrivateKey.P256.pubK
+      accountKeyRequest.public_key === publicPrivateKey.P256.pubK
         ? publicPrivateKey.P256.pk
         : publicPrivateKey.SECP256K1.pk;
-    const accountKey = {
-      public_key: publicKey,
-      hash_algo: hashAlgo,
-      sign_algo: signAlgo,
-      weight: result[0].weight,
-    };
-    const deviceInfo = await this.getDeviceInfo();
-    // const signature = await secp.sign(messageHash, privateKey);
+
+    // Sign the message
     const realSignature = await signWithKey(
       Buffer.from(message, 'hex'),
-      signAlgo,
-      hashAlgo,
+      accountKeyRequest.sign_algo,
+      accountKeyRequest.hash_algo,
       privateKey
     );
-    return wallet.openapi.loginV3(accountKey, deviceInfo, realSignature, replaceUser);
+    // Get the device info
+    const deviceInfo = await this.getDeviceInfo();
+
+    // Login with the signed message
+    return wallet.openapi.loginV3(accountKeyRequest, deviceInfo, realSignature, replaceUser);
   };
 
   sigInWithPk = async (privateKey: string, replaceUser = true) => {
-    const result = await findAddressWithPK(privateKey, '');
-    if (!result) {
-      throw new Error('No Address Found');
-    }
+    const accountKeyRequest = await getAccountKeyRequestForPK(privateKey);
+
+    // Make sure we're signed in
     const app = getApp(process.env.NODE_ENV!);
     const auth = getAuth(app);
     const idToken = await getAuth(app).currentUser?.getIdToken();
@@ -912,33 +918,32 @@ class UserWallet {
       return;
     }
 
+    // Add the user domain tag
     const rightPaddedHexBuffer = (value, pad) =>
       Buffer.from(value.padEnd(pad * 2, 0), 'hex').toString('hex');
     const USER_DOMAIN_TAG = rightPaddedHexBuffer(Buffer.from('FLOW-V0.0-user').toString('hex'), 32);
     const message = USER_DOMAIN_TAG + Buffer.from(idToken, 'utf8').toString('hex');
 
-    // const messageHash = await secp.utils.sha256(Buffer.from(message, 'hex'));
-    const hashAlgo = result[0].hashAlgo;
-    const signAlgo = result[0].signAlgo;
-    const publicKey = result[0].publicKey;
-    const accountKey = {
-      public_key: publicKey,
-      hash_algo: hashAlgo,
-      sign_algo: hashAlgo,
-      weight: result[0].weight,
-    };
-    const deviceInfo = await this.getDeviceInfo();
-    // const signature = await secp.sign(messageHash, privateKey);
+    // Sign the message
     const realSignature = await signWithKey(
       Buffer.from(message, 'hex'),
-      signAlgo,
-      hashAlgo,
+      accountKeyRequest.sign_algo,
+      accountKeyRequest.hash_algo,
       privateKey
     );
-    return wallet.openapi.loginV3(accountKey, deviceInfo, realSignature, replaceUser);
+    // Get the device info
+    const deviceInfo = await this.getDeviceInfo();
+
+    // Login with the account key request
+    return wallet.openapi.loginV3(accountKeyRequest, deviceInfo, realSignature, replaceUser);
   };
 
-  signInv3 = async (mnemonic: string, accountKey: any, deviceInfo: any, replaceUser = true) => {
+  signInv3 = async (
+    mnemonic: string,
+    accountKey: AccountKeyRequest,
+    deviceInfo: DeviceInfoRequest,
+    replaceUser = true
+  ) => {
     const app = getApp(process.env.NODE_ENV!);
     const auth = getAuth(app);
     const idToken = await getAuth(app).currentUser?.getIdToken();
@@ -956,15 +961,15 @@ class UserWallet {
 
     const messageHash = await secp.utils.sha256(Buffer.from(message, 'hex'));
 
-    const tuple = await seed2PublicPrivateKey(mnemonic);
-    const PK1 = tuple.P256.pk;
-    const PK2 = tuple.SECP256K1.pk;
-    const signAlgo =
-      typeof accountKey.signAlgo === 'string'
-        ? getSignAlgo(accountKey.signAlgo)
-        : accountKey.signAlgo;
-    const privateKey = signAlgo === 1 ? PK1 : PK2;
+    // Get the private key tuple
+    const publicPrivateKeyTuple = await seed2PublicPrivateKey(mnemonic);
 
+    // NOTE: The private key for each type should be the same
+    const privateKey: string = publicPrivateKeyTuple.SECP256K1.pk;
+
+    // TODO: Look into the logic for this
+    // We want to us a secp256k1 public key in this logic
+    // We should be able to use the public key from the account key request...
     const publicKey = hex(secp.getPublicKey(privateKey).slice(1));
     if (accountKey.public_key === publicKey) {
       const signature = await secp.sign(messageHash, privateKey);

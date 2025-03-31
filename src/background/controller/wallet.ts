@@ -18,16 +18,15 @@ import {
 } from '@/background/utils/modules/findAddressWithPK';
 import {
   pk2PubKey,
-  formPubKey,
   jsonToKey,
   seed2PublicPrivateKey,
   seedWithPathAndPhrase2PublicPrivateKey,
   formPubKeyTuple,
 } from '@/background/utils/modules/publicPrivateKey';
 import eventBus from '@/eventBus';
-import type { CoinItem, TokenInfo, BalanceMap } from '@/shared/types/coin-types';
+import type { CoinItem, TokenInfo } from '@/shared/types/coin-types';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
-import { type PublicPrivateKeyTuple, type PublicKeyTuple } from '@/shared/types/key-types';
+import { type PublicKeyTuple } from '@/shared/types/key-types';
 import { ContactType } from '@/shared/types/network-types';
 import { type NFTCollectionData } from '@/shared/types/nft-types';
 import { type TrackingEvents } from '@/shared/types/tracking-types';
@@ -51,9 +50,8 @@ import {
   isValidFlowAddress,
   withPrefix,
 } from '@/shared/utils/address';
-import { getHashAlgo, getSignAlgo } from '@/shared/utils/algo';
-import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
-import { getCurrentProfileId } from '@/shared/utils/current-id';
+import { getSignAlgo } from '@/shared/utils/algo';
+import { FLOW_BIP44_PATH, SIGN_ALGO_NUM_ECDSA_P256 } from '@/shared/utils/algo-constants';
 import { convertToIntegerAmount, validateAmount } from '@/shared/utils/number';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import {
@@ -89,7 +87,13 @@ import emoji from 'background/utils/emoji.json';
 import fetchConfig from 'background/utils/remoteConfig';
 import { notification, storage } from 'background/webapi';
 import { openIndexPage } from 'background/webapi/tab';
-import { INTERNAL_REQUEST_ORIGIN, EVENTS, KEYRING_TYPE, EVM_ENDPOINT } from 'consts';
+import {
+  INTERNAL_REQUEST_ORIGIN,
+  EVENTS,
+  KEYRING_TYPE,
+  EVM_ENDPOINT,
+  HTTP_STATUS_CONFLICT,
+} from 'consts';
 
 import type {
   BlockchainResponse,
@@ -220,7 +224,7 @@ export class WalletController extends BaseController {
 
     // Now check if the account is registered on our backend (i.e. it's been created in wallet or used previously in wallet)
     const importCheckResult = await openapiService.checkImport(accounts[0].publicKey);
-    if (importCheckResult.status === 409) {
+    if (importCheckResult.status === HTTP_STATUS_CONFLICT) {
       // The account has been previously imported, so just retrieve the current user name
       // Just login to the existing account using the private key
 
@@ -263,15 +267,15 @@ export class WalletController extends BaseController {
    * @param password
    * @param mnemonic
    * @param address
-   * @param path
-   * @param phrase
+   * @param derivationPath
+   * @param passphrase
    */
   importProfileUsingMnemonic = async (
     username: string,
     password: string,
     mnemonic: string,
-    path: string = FLOW_BIP44_PATH,
-    phrase: string = ''
+    derivationPath: string = FLOW_BIP44_PATH,
+    passphrase: string = ''
   ) => {
     // Boot the keyring with the password
     // We should be validating the password as the first thing we do
@@ -279,10 +283,10 @@ export class WalletController extends BaseController {
     // Get the public key tuple from the mnemonic
 
     const pubKTuple: PublicKeyTuple = formPubKeyTuple(
-      await seedWithPathAndPhrase2PublicPrivateKey(mnemonic, path, phrase)
+      await seedWithPathAndPhrase2PublicPrivateKey(mnemonic, derivationPath, passphrase)
     );
     const signInFunction = async () => {
-      await this.signInWithMnemonic(mnemonic, true, path, phrase);
+      await this.signInWithMnemonic(mnemonic, true, derivationPath, passphrase);
     };
     // Sign in or create a new user by public key tuple
     await this.signInOrCreateUserByPubKeyTuple(pubKTuple, username, signInFunction);
@@ -292,7 +296,7 @@ export class WalletController extends BaseController {
     await this.saveIndex(username);
 
     // Now we can create the keyring with the mnemonic (and path and phrase)
-    await this.createKeyringWithMnemonics(mnemonic, path, phrase);
+    await this.createKeyringWithMnemonics(mnemonic, derivationPath, passphrase);
   };
 
   /**
@@ -624,9 +628,7 @@ export class WalletController extends BaseController {
     for (const keyring of keyrings) {
       if (keyring instanceof HDKeyring) {
         const mnemonic = await this.getMnemonics(password || '');
-        const seed = await seed2PublicPrivateKey(mnemonic);
-        const PK1 = seed.P256.pk;
-        const PK2 = seed.SECP256K1.pk;
+        const publicPrivateKeyTuple = await seed2PublicPrivateKey(mnemonic);
 
         // We need to know the signAlgo for the account, so we can use the correct private key
         // The signAlgo is stored in the account object for each public key return from fcl
@@ -639,7 +641,10 @@ export class WalletController extends BaseController {
           const account = await getLoggedInAccount();
           const signAlgo =
             typeof account.signAlgo === 'string' ? getSignAlgo(account.signAlgo) : account.signAlgo;
-          privateKey = signAlgo === 1 ? PK1 : PK2;
+          privateKey =
+            signAlgo === SIGN_ALGO_NUM_ECDSA_P256
+              ? publicPrivateKeyTuple.P256.pk
+              : publicPrivateKeyTuple.SECP256K1.pk;
         } catch {
           // Couldn't load from logged in accounts.
           // The signAlgo used to login isn't saved. We need to
@@ -651,24 +656,29 @@ export class WalletController extends BaseController {
           const network = (await this.getNetwork()) || 'mainnet';
           // Find the address associated with the pubKey
           // This should return an array of address information records
-          const addressAndKeyInfoArray = await getAccountsByPublicKeyTuple(seed, network);
+          const addressAndKeyInfoArray = await getAccountsByPublicKeyTuple(
+            publicPrivateKeyTuple,
+            network
+          );
 
           // Follow the same logic as freshUserInfo in openapi.ts
           // Look for the P256 key first
-          let index = addressAndKeyInfoArray.findIndex((key) => key.publicKey === seed.P256.pubK);
+          let index = addressAndKeyInfoArray.findIndex(
+            (key) => key.publicKey === publicPrivateKeyTuple.P256.pubK
+          );
           if (index === -1) {
             // If no P256 key is found, look for the SECP256K1 key
             index = addressAndKeyInfoArray.findIndex(
-              (key) => key.publicKey === seed.SECP256K1.pubK
+              (key) => key.publicKey === publicPrivateKeyTuple.SECP256K1.pubK
             );
-          } else {
-            // If a P256 key is found, use the first key
-            index = 0;
           }
 
           const signAlgo: number = addressAndKeyInfoArray[index].signAlgo;
 
-          privateKey = signAlgo === 1 ? PK1 : PK2;
+          privateKey =
+            signAlgo === SIGN_ALGO_NUM_ECDSA_P256
+              ? publicPrivateKeyTuple.P256.pk
+              : publicPrivateKeyTuple.SECP256K1.pk;
         }
 
         break;
@@ -689,7 +699,6 @@ export class WalletController extends BaseController {
     return privateKey;
   };
 
-  // Should probably not be exposed
   getPubKey = async (): Promise<PublicKeyTuple> => {
     return await keyringService.getCurrentPublicKeyTuple();
   };
@@ -1655,6 +1664,8 @@ export class WalletController extends BaseController {
     const currentAccount = userWalletService.setMainAccounts(
       transformedArray,
       // Always use the first account's public key as the current public key
+      // It's technically possible to have multiple public keys generated from the same private key. So it is possible
+      // that there could be two different public keys for a set of accounts, but we made the call not to support that.
       accounts[0].publicKey,
       network
     );
@@ -1724,7 +1735,7 @@ export class WalletController extends BaseController {
     const wallet = await userWalletService.getCurrentWallet();
     if (!wallet?.address) {
       const data = await this.loadMainAccounts();
-      if (!data) {
+      if (!data || !data[0] || !data[0].accounts || data[0].accounts.length === 0) {
         return;
       }
       return data[0].accounts[0];
@@ -1759,7 +1770,8 @@ export class WalletController extends BaseController {
     const address = await userWalletService.getCurrentAddress();
     if (!address) {
       const data = await this.loadMainAccounts();
-      if (!data) {
+      if (!data || !data[0] || !data[0].accounts || data[0].accounts.length === 0) {
+        // TODO: Check if we should throw an error here
         return null;
       }
       return withPrefix(data[0].accounts[0].address);
@@ -1775,7 +1787,8 @@ export class WalletController extends BaseController {
     const address = await userWalletService.getParentAddress(network);
     if (!isValidFlowAddress(address)) {
       const data = await this.loadMainAccounts();
-      if (!data) {
+      if (!data || !data[0] || !data[0].accounts || data[0].accounts.length === 0) {
+        // TODO: Check if we should throw an error here
         return null;
       }
       const address = withPrefix(data[0].accounts[0].address);

@@ -50,6 +50,7 @@ import {
   type AccountBalanceInfo,
   type Contact,
   type NFTModelV2,
+  type DeviceInfoRequest,
 } from '../../shared/types/network-types';
 
 import {
@@ -671,8 +672,8 @@ class OpenApiService {
   };
 
   loginV3 = async (
-    account_key: any,
-    device_info: any,
+    account_key: AccountKeyRequest,
+    device_info: DeviceInfoRequest,
     signature: string,
     replaceUser = true
   ): Promise<SignInResponse> => {

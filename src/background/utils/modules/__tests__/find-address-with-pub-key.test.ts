@@ -1,6 +1,12 @@
 import * as fcl from '@onflow/fcl';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+import {
+  HASH_ALGO_NUM_SHA2_256,
+  HASH_ALGO_NUM_SHA3_256,
+  SIGN_ALGO_NUM_ECDSA_P256,
+  SIGN_ALGO_NUM_ECDSA_secp256k1,
+} from '@/shared/utils/algo-constants';
 import { userWalletService } from 'background/service';
 
 import {
@@ -59,8 +65,8 @@ describe('findAddressWithPubKey module', () => {
             address: mockAddress,
             keyId: 0,
             weight: 1000,
-            sigAlgo: 1, // ECDSA_P256
-            hashAlgo: 3, // SHA3_256
+            sigAlgo: SIGN_ALGO_NUM_ECDSA_P256, // ECDSA_P256
+            hashAlgo: HASH_ALGO_NUM_SHA3_256, // SHA3_256
             signing: 'ECDSA_P256',
             hashing: 'SHA3_256',
           },
@@ -78,9 +84,9 @@ describe('findAddressWithPubKey module', () => {
           publicKey: mockPubKey,
           keyIndex: 0,
           weight: 1000,
-          signAlgo: 1,
+          signAlgo: HASH_ALGO_NUM_SHA2_256,
           signAlgoString: 'ECDSA_P256',
-          hashAlgo: 3,
+          hashAlgo: HASH_ALGO_NUM_SHA3_256,
           hashAlgoString: 'SHA3_256',
         },
       ]);
@@ -100,8 +106,8 @@ describe('findAddressWithPubKey module', () => {
             revoked: false,
             hashAlgoString: 'SHA3_256',
             signAlgoString: 'ECDSA_P256',
-            hashAlgo: 3,
-            signAlgo: 1,
+            hashAlgo: HASH_ALGO_NUM_SHA3_256,
+            signAlgo: SIGN_ALGO_NUM_ECDSA_P256,
             sequenceNumber: 0,
           },
         ],
@@ -127,8 +133,8 @@ describe('findAddressWithPubKey module', () => {
             revoked: false,
             hashAlgoString: 'SHA3_256',
             signAlgoString: 'ECDSA_P256',
-            hashAlgo: 3,
-            signAlgo: 1,
+            hashAlgo: HASH_ALGO_NUM_SHA3_256,
+            signAlgo: SIGN_ALGO_NUM_ECDSA_P256,
             sequenceNumber: 0,
           },
         ],
@@ -189,8 +195,10 @@ describe('findAddressWithPubKey module', () => {
                   address: mockAddress,
                   keyId: 0,
                   weight: 1000,
-                  sigAlgo: url.includes('_p256') ? 1 : 2,
-                  hashAlgo: url.includes('_p256') ? 3 : 1,
+                  sigAlgo: url.includes('_p256')
+                    ? SIGN_ALGO_NUM_ECDSA_P256
+                    : SIGN_ALGO_NUM_ECDSA_secp256k1,
+                  hashAlgo: url.includes('_p256') ? HASH_ALGO_NUM_SHA3_256 : HASH_ALGO_NUM_SHA2_256,
                   signing: url.includes('_p256') ? 'ECDSA_P256' : 'ECDSA_secp256k1',
                   hashing: url.includes('_p256') ? 'SHA3_256' : 'SHA2_256',
                 },
@@ -230,8 +238,8 @@ describe('findAddressWithPubKey module', () => {
             address: mockAddress,
             keyId: 0,
             weight: 1000,
-            sigAlgo: 1,
-            hashAlgo: 3,
+            sigAlgo: SIGN_ALGO_NUM_ECDSA_P256,
+            hashAlgo: HASH_ALGO_NUM_SHA3_256,
             signing: 'ECDSA_P256',
             hashing: 'SHA3_256',
           },
@@ -257,8 +265,8 @@ describe('findAddressWithPubKey module', () => {
             address: mockAddress,
             keyId: 0,
             weight: 1000,
-            sigAlgo: 1,
-            hashAlgo: 3,
+            sigAlgo: SIGN_ALGO_NUM_ECDSA_P256,
+            hashAlgo: HASH_ALGO_NUM_SHA3_256,
             signing: 'ECDSA_P256',
             hashing: 'SHA3_256',
           },
@@ -284,8 +292,8 @@ describe('findAddressWithPubKey module', () => {
             address: mockAddress,
             keyId: 0,
             weight: 500, // Less than required 1000
-            sigAlgo: 1,
-            hashAlgo: 3,
+            sigAlgo: SIGN_ALGO_NUM_ECDSA_P256,
+            hashAlgo: HASH_ALGO_NUM_SHA3_256,
             signing: 'ECDSA_P256',
             hashing: 'SHA3_256',
           },

@@ -7,6 +7,10 @@ import HDWallet from 'ethereum-hdwallet';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
+import {
+  SIGN_ALGO_NUM_ECDSA_secp256k1,
+  HASH_ALGO_NUM_SHA2_256,
+} from '@/shared/utils/algo-constants';
 import { FCLWalletConnectMethod } from '@/shared/utils/type';
 import AllSet from '@/ui/FRWComponent/LandingPages/AllSet';
 import LandingComponents from '@/ui/FRWComponent/LandingPages/LandingComponents';
@@ -94,8 +98,8 @@ const Sync = () => {
     const publicKey = hdwallet.derive("m/44'/539'/0'/0/0").getPublicKey().toString('hex');
 
     return {
-      hashAlgo: 1,
-      signAlgo: 2,
+      hashAlgo: HASH_ALGO_NUM_SHA2_256,
+      signAlgo: SIGN_ALGO_NUM_ECDSA_secp256k1,
       weight: 1000,
       publicKey,
     };
