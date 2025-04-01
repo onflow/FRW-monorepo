@@ -2297,6 +2297,18 @@ export class WalletController extends BaseController {
     }
   };
 
+  getAllAccountBalance = async (addresses: string[]): Promise<string> => {
+    await this.getNetwork();
+
+    const script = await getScripts('basic', 'getFlowBalanceForAnyAccounts');
+
+    const result = await fcl.query({
+      cadence: script,
+      args: (arg, t) => [arg(addresses, t.Array(t.String))],
+    });
+    return result;
+  };
+
   getBalance = async (hexEncodedAddress: string): Promise<string> => {
     await this.getNetwork();
 
