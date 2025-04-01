@@ -1,3 +1,5 @@
+import { type TokenInfo } from 'flow-native-token-registry';
+
 import { type HashAlgoType, type SignAlgoType } from './algo-types';
 
 // Matches exactly 16 hex characters, with optional 0x prefix
@@ -53,3 +55,6 @@ export type LoggedInAccount = {
 export type LoggedInAccountWithIndex = LoggedInAccount & {
   indexInLoggedInAccounts: number;
 };
+
+// ExtendedTokenInfo is a intermediate type that combines Token information and pricing data.
+export type ExtendedTokenInfo = TokenInfo & CoinItem;

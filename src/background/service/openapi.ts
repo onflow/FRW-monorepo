@@ -24,6 +24,7 @@ import {
   type LoggedInAccount,
   type FlowAddress,
   type ActiveChildType,
+  type ExtendedTokenInfo,
 } from '@/shared/types/wallet-types';
 import { isValidFlowAddress, isValidEthereumAddress } from '@/shared/utils/address';
 import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
@@ -64,6 +65,64 @@ import {
 // import { userInfo } from 'os';
 // import userWallet from './userWallet';
 // const axios = axiosOriginal.create({ adapter })
+
+// New type definitions for API responses
+interface FlowTokenResponse {
+  name: string;
+  symbol: string;
+  description: string;
+  logos: {
+    items: Array<{
+      file: {
+        url: string;
+      };
+      mediaType: string;
+    }>;
+  };
+  socials: {
+    x?: {
+      url: string;
+    };
+  };
+  balance: string;
+  contractAddress: string;
+  contractName: string;
+  storagePath: {
+    domain: string;
+    identifier: string;
+  };
+  receiverPath: {
+    domain: string;
+    identifier: string;
+  };
+  identifier: string;
+  isVerified: boolean;
+  priceInUSD: string;
+  balanceInUSD: string;
+  priceInFLOW: string;
+  balanceInFLOW: string;
+}
+
+interface EvmTokenResponse {
+  chainId: number;
+  address: string;
+  symbol: string;
+  name: string;
+  decimals: number;
+  logoURI: string;
+  flowIdentifier: string;
+  balance: string;
+  priceInUSD: string;
+  balanceInUSD: string;
+  priceInFLOW: string;
+  balanceInFLOW: string;
+}
+
+interface EvmApiResponse {
+  data: EvmTokenResponse[];
+}
+
+type FlowApiResponse = FlowTokenResponse[];
 
 export interface OpenApiConfigValue {
   path: string;
@@ -1943,6 +2002,152 @@ class OpenApiService {
     log.log('otherAccounts with index:', otherAccounts);
     return { otherAccounts, wallet, loggedInAccounts };
   };
+
+  async getUserTokens(address: string, network?: string): Promise<ExtendedTokenInfo[]> {
+    console.log('getUserTokens called for:', { address, network });
+
+    if (!address) {
+      throw new Error('Address is required');
+    }
+
+    // If network not provided, get current network
+    if (!network) {
+      network = await userWalletService.getNetwork();
+      console.log('Using current network:', network);
+    }
+
+    // Determine if address is EVM or Flow based on format
+    const isEvmAddress = isValidEthereumAddress(address);
+    const isFlowAddress = isValidFlowAddress(address);
+
+    if (!isEvmAddress && !isFlowAddress) {
+      throw new Error('Invalid address format');
+    }
+
+    try {
+      if (isEvmAddress) {
+        return await this.fetchUserEvmTokens(address, network);
+      } else {
+        return await this.fetchUserFlowTokens(address, network);
+      }
+    } catch (error) {
+      console.error('Error fetching user tokens:', error);
+      throw error;
+    }
+  }
+  private async fetchUserFlowTokens(
+    address: string,
+    network: string
+  ): Promise<ExtendedTokenInfo[]> {
+    const cacheKey = `flow_tokens_${address}_${network}`;
+    const cachedFlowData = await storage.getExpiry(cacheKey);
+
+    if (cachedFlowData !== null) {
+      console.log('Using cached Flow token data');
+      return cachedFlowData;
+    }
+
+    const userFlowTokenList: FlowApiResponse = await this.sendRequest(
+      'GET',
+      `/api/v4/cadence/tokens/ft/${address}`,
+      {},
+      {},
+      WEB_NEXT_URL
+    );
+
+    if (!userFlowTokenList?.length) {
+      return [];
+    }
+
+    // Convert FlowTokenResponse to ExtendedTokenInfo
+    const tokens = userFlowTokenList.map(
+      (token): ExtendedTokenInfo => ({
+        name: token.name,
+        address: token.contractAddress,
+        contractName: token.contractName,
+        symbol: token.symbol,
+        decimals: 8, // Default to 8 decimals for Flow tokens if not specified
+        path: {
+          vault: `/${token.storagePath.domain}/${token.storagePath.identifier}`,
+          receiver: `/${token.receiverPath.domain}/${token.receiverPath.identifier}`,
+          balance: ``, // todo: not sure what this property is used for
+        },
+        logoURI: token.logos?.items?.[0]?.file?.url || '',
+        extensions: {
+          description: token.description,
+          twitter: token.socials?.x?.url,
+        },
+        custom: false,
+        price: Number(token.priceInUSD || '0'), // todo: future will be a string
+        total: Number(token.balanceInUSD || '0'), // future will be a string
+        change24h: 0,
+        balance: token.balance || '0',
+        // Add CoinItem properties
+        coin: token.name, // redundant for compatibility
+        unit: token.symbol, // redundant for compatibility
+        icon: token.logos?.items?.[0]?.file?.url || '', // redundant for compatibility
+      })
+    );
+
+    storage.setExpiry(cacheKey, tokens, 5 * 60 * 1000); // Cache for 5 minutes
+    return tokens;
+  }
+
+  private async fetchUserEvmTokens(address: string, network: string): Promise<ExtendedTokenInfo[]> {
+    const cacheKey = `evm_tokens_${address}_${network}`;
+    const cachedEvmData = await storage.getExpiry(cacheKey);
+
+    if (cachedEvmData !== null) {
+      console.log('Using cached EVM token data');
+      return cachedEvmData;
+    }
+
+    const formattedEvmAddress = address.startsWith('0x') ? address : `0x${address}`;
+
+    const userEvmTokenList: EvmApiResponse = await this.sendRequest(
+      'GET',
+      `/api/v4/evm/tokens/ft/${formattedEvmAddress}`,
+      {},
+      {},
+      WEB_NEXT_URL
+    );
+
+    if (!userEvmTokenList?.data) {
+      return [];
+    }
+
+    console.log('Processing', userEvmTokenList.data.length, 'EVM tokens from API');
+
+    // Convert EvmTokenResponse to ExtendedTokenInfo
+    const tokens = userEvmTokenList.data.map(
+      (token): ExtendedTokenInfo => ({
+        name: token.name,
+        address: token.address,
+        contractName: token.name, // Use name as contractName for EVM tokens
+        symbol: token.symbol,
+        decimals: token.decimals,
+        path: {
+          vault: '', // EVM tokens don't use Flow paths
+          receiver: '',
+          balance: '',
+        },
+        logoURI: token.logoURI || '',
+        extensions: {},
+        custom: false,
+        price: Number(token.priceInUSD || '0'),
+        total: Number(token.balanceInUSD || '0'),
+        change24h: 0,
+        balance: token.balance || '0',
+        // Add CoinItem properties
+        coin: token.name, // redundant for compatibility
+        unit: token.symbol, // redundant for compatibility
+        icon: token.logoURI || '', // redundant for compatibility
+      })
+    );
+
+    storage.setExpiry(cacheKey, tokens, 5 * 60 * 1000); // Cache for 5 minutes
+    return tokens;
+  }
 
   getLatestVersion = async (): Promise<string> => {
     // Get latest version from storage cache first
