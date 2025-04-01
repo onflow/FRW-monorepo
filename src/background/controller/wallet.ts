@@ -3675,12 +3675,6 @@ export class WalletController extends BaseController {
       console.log(error, '=== get scripts error ===');
     }
   };
-
-  reset = async () => {
-    await keyringService.loadStore(undefined);
-    keyringService.store.subscribe((value) => storage.set('keyringState', value));
-  };
-
   // Google Drive - Backup
   getBackupFiles = async () => {
     return googleDriveService.listFiles();

@@ -91,11 +91,10 @@ async function firebaseSetup() {
 }
 
 async function restoreAppState() {
-  const keyringState = await storage.get('keyringState');
-  keyringService.loadStore(keyringState);
-  keyringService.store.subscribe((value) => storage.set('keyringState', value));
+  // Load keyring store
+  await keyringService.loadKeyringStore();
+  // Init openapi. This starts fcl
   await openapiService.init();
-
   // clear premnemonic in storage
   storage.remove('premnemonic');
   storage.remove('tempPassword');
