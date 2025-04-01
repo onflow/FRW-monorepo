@@ -7,16 +7,16 @@ import encryptor from 'browser-passworder';
 import * as ethUtil from 'ethereumjs-util';
 import log from 'loglevel';
 
+import { normalizeAddress } from '@/background/utils';
 import { seed2PublicPrivateKey, pk2PubKey } from '@/background/utils/modules/publicPrivateKey';
+import storage from '@/background/webapi/storage';
+import i18n from '@/i18n';
 import { type PublicKeyTuple } from '@/shared/types/key-types';
 import { type LoggedInAccount } from '@/shared/types/wallet-types';
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
-import { normalizeAddress } from 'background/utils';
 import { KEYRING_TYPE } from 'consts';
 
-import { storage } from '../../webapi';
-import i18n from '../i18n';
 import preference from '../preference';
 
 import { HDKeyring } from './hdKeyring';
