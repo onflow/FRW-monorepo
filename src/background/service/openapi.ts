@@ -24,6 +24,7 @@ import {
   type LoggedInAccount,
   type FlowAddress,
   type ActiveChildType,
+  type ExtendedTokenInfo,
   type PublicKeyAccount,
   isEvmAccountType,
 } from '@/shared/types/wallet-types';
@@ -63,9 +64,65 @@ import {
   googleSafeHostService,
   mixpanelTrack,
 } from './index';
-// import { userInfo } from 'os';
-// import userWallet from './userWallet';
-// const axios = axiosOriginal.create({ adapter })
+
+// New type definitions for API response for /v4/cadence/tokens/ft/{address}
+interface FlowTokenResponse {
+  name: string;
+  symbol: string;
+  description: string;
+  logos: {
+    items: Array<{
+      file: {
+        url: string;
+      };
+      mediaType: string;
+    }>;
+  };
+  socials: {
+    x?: {
+      url: string;
+    };
+  };
+  balance: string;
+  contractAddress: string;
+  contractName: string;
+  storagePath: {
+    domain: string;
+    identifier: string;
+  };
+  receiverPath: {
+    domain: string;
+    identifier: string;
+  };
+  identifier: string;
+  isVerified: boolean;
+  priceInUSD: string;
+  balanceInUSD: string;
+  priceInFLOW: string;
+  balanceInFLOW: string;
+}
+
+// New type definitions for API response for /v4/evm/tokens/ft/{address}
+interface EvmTokenResponse {
+  chainId: number;
+  address: string;
+  symbol: string;
+  name: string;
+  decimals: number;
+  logoURI: string;
+  flowIdentifier: string;
+  balance: string;
+  priceInUSD: string;
+  balanceInUSD: string;
+  priceInFLOW: string;
+  balanceInFLOW: string;
+}
+
+interface EvmApiResponse {
+  data: EvmTokenResponse[];
+}
+
+type FlowApiResponse = FlowTokenResponse[];
 
 export interface OpenApiConfigValue {
   path: string;
@@ -90,7 +147,6 @@ const auth = getAuth(app);
 // const remoteConfig = getRemoteConfig(app);
 
 const remoteFetch = fetchConfig;
-const pricesMap = {};
 
 const waitForAuthInit = async () => {
   let unsubscribe: Unsubscribe;
@@ -338,22 +394,6 @@ const recordFetch = async (response, responseData, ...args: Parameters<typeof fe
   return response;
 };
 
-// Override fetch in branches other than master
-const originalFetch = globalThis.fetch;
-
-const fetchCallRecorder = async (...args: Parameters<typeof originalFetch>) => {
-  const response = await originalFetch(...args);
-  try {
-    console.log('response', response);
-    const responseData = response.ok ? await response.clone().json() : null;
-    //  recordFetch(response, responseData, ...args);
-  } catch (err) {
-    console.error('Error recording fetch call:', err);
-  }
-  return response;
-};
-///const fetch = process.env.BRANCH_NAME === 'master' ? globalThis.fetch : fetchCallRecorder;
-
 class OpenApiService {
   store!: OpenApiStore;
 
@@ -444,6 +484,10 @@ class OpenApiService {
     // Record the response
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens has price information.
+   */
   private getUSDCPricePair = (provider: PriceProvider): string | null => {
     switch (provider) {
       case PriceProvider.binance:
@@ -457,6 +501,10 @@ class OpenApiService {
     }
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens has price information.
+   */
   getPriceProvider = (token: string): PriceProvider[] => {
     switch (token) {
       case 'usdc':
@@ -474,6 +522,10 @@ class OpenApiService {
     }
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens has price information.
+   */
   getUSDCPrice = async (provider = PriceProvider.binance): Promise<CheckResponse> => {
     const config = this.store.config.crypto_map;
     const data = await this.sendRequest(config.method, config.path, {
@@ -483,6 +535,10 @@ class OpenApiService {
     return data.data.result;
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens has price information.
+   */
   private getFlowPricePair = (provider: PriceProvider): string => {
     switch (provider) {
       case PriceProvider.binance:
@@ -500,6 +556,10 @@ class OpenApiService {
     }
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens instead. It will have token info and price.
+   */
   getTokenPrices = async (storageKey: string) => {
     const cachedPrices = await storage.getExpiry(storageKey);
     if (cachedPrices) {
@@ -537,21 +597,37 @@ class OpenApiService {
     return pricesMap;
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens instead. It will have token info and price.
+   */
   getPricesBySymbol = async (symbol: string, data) => {
     const key = symbol.toUpperCase();
     return data[key];
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens instead. It will have token info and price.
+   */
   getPricesByAddress = async (symbol: string, data) => {
     const key = symbol.toLowerCase();
     return data[key];
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens instead. It will have token info and price.
+   */
   getPricesByKey = async (symbol: string, data) => {
     const key = symbol.toLowerCase();
     return data[key];
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens instead. It will have token info and price.
+   */
   getPricesByEvmaddress = async (address: string, data) => {
     const key = address.toLowerCase();
     return data[key];
@@ -568,6 +644,10 @@ class OpenApiService {
     }
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens instead. It will have token info and price.
+   */
   getTokenPrice = async (token: string, provider = PriceProvider.binance) => {
     const config = this.store.config.crypto_flow;
     const pair = this.getTokenPair(token, provider);
@@ -1680,6 +1760,9 @@ class OpenApiService {
     return data;
   };
 
+  /** @deprecated
+   * Use getUserTokens has price information. It returns evm tokens with price information.
+   */
   getEvmFT = async (address: string, network: string) => {
     const { data } = await this.sendRequest(
       'GET',
@@ -1691,7 +1774,10 @@ class OpenApiService {
     return data;
   };
 
-  // TODO: remove this function, need to verify, doesn't look to be used anywhere
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens has price information.
+   */
   getEvmFTPrice = async () => {
     const gitPrice = await storage.getExpiry('EVMPrice');
 
@@ -1944,6 +2030,152 @@ class OpenApiService {
     log.log('otherAccounts with index:', otherAccounts);
     return { otherAccounts, wallet, loggedInAccounts };
   };
+
+  /**
+   * Get user tokens, handle both EVM and Flow tokens. Include price information.
+   * @param address - The address of the user
+   * @param network - The network of the user
+   * @returns The tokens of the user
+   */
+  async getUserTokens(address: string, network?: string): Promise<ExtendedTokenInfo[]> {
+    if (!address) {
+      throw new Error('Address is required');
+    }
+
+    // If network not provided, get current network
+    if (!network) {
+      network = await userWalletService.getNetwork();
+    }
+
+    // Determine if address is EVM or Flow based on format
+    const isEvmAddress = isValidEthereumAddress(address);
+    const isFlowAddress = isValidFlowAddress(address);
+
+    if (!isEvmAddress && !isFlowAddress) {
+      throw new Error('Invalid address format');
+    }
+
+    try {
+      if (isEvmAddress) {
+        return await this.fetchUserEvmTokens(address, network);
+      } else {
+        return await this.fetchUserFlowTokens(address, network);
+      }
+    } catch (error) {
+      console.error('Error fetching user tokens:', error);
+      throw error;
+    }
+  }
+
+  private async fetchUserFlowTokens(
+    address: string,
+    network: string
+  ): Promise<ExtendedTokenInfo[]> {
+    const cacheKey = `flow_tokens_${address}_${network}`;
+    const cachedFlowData = await storage.getExpiry(cacheKey);
+
+    if (cachedFlowData !== null) {
+      return cachedFlowData;
+    }
+
+    const userFlowTokenList: FlowApiResponse = await this.sendRequest(
+      'GET',
+      `/api/v4/cadence/tokens/ft/${address}`,
+      {},
+      {},
+      WEB_NEXT_URL
+    );
+
+    if (!userFlowTokenList?.length) {
+      return [];
+    }
+
+    // Convert FlowTokenResponse to ExtendedTokenInfo
+    const tokens = userFlowTokenList.map(
+      (token): ExtendedTokenInfo => ({
+        name: token.name,
+        address: token.contractAddress,
+        contractName: token.contractName,
+        symbol: token.symbol,
+        decimals: 8, // Default to 8 decimals for Flow tokens if not specified
+        path: {
+          vault: `/${token.storagePath.domain}/${token.storagePath.identifier}`,
+          receiver: `/${token.receiverPath.domain}/${token.receiverPath.identifier}`,
+          balance: ``, // todo: not sure what this property is used for
+        },
+        logoURI: token.logos?.items?.[0]?.file?.url || '',
+        extensions: {
+          description: token.description,
+          twitter: token.socials?.x?.url,
+        },
+        custom: false,
+        price: Number(token.priceInUSD || '0'), // todo: future will be a string
+        total: Number(token.balanceInUSD || '0'), // todo: future will be a string
+        change24h: 0,
+        balance: token.balance || '0',
+        // Add CoinItem properties
+        coin: token.name, // redundant for compatibility
+        unit: token.symbol, // redundant for compatibility
+        icon: token.logos?.items?.[0]?.file?.url || '', // redundant for compatibility
+      })
+    );
+
+    storage.setExpiry(cacheKey, tokens, 5 * 60 * 1000); // Cache for 5 minutes
+    return tokens;
+  }
+
+  private async fetchUserEvmTokens(address: string, network: string): Promise<ExtendedTokenInfo[]> {
+    const cacheKey = `evm_tokens_${address}_${network}`;
+    const cachedEvmData = await storage.getExpiry(cacheKey);
+
+    if (cachedEvmData !== null) {
+      return cachedEvmData;
+    }
+
+    const formattedEvmAddress = address.startsWith('0x') ? address : `0x${address}`;
+
+    const userEvmTokenList: EvmApiResponse = await this.sendRequest(
+      'GET',
+      `/api/v4/evm/tokens/ft/${formattedEvmAddress}`,
+      {},
+      {},
+      WEB_NEXT_URL
+    );
+
+    if (!userEvmTokenList?.data) {
+      return [];
+    }
+
+    // Convert EvmTokenResponse to ExtendedTokenInfo
+    const tokens = userEvmTokenList.data.map(
+      (token): ExtendedTokenInfo => ({
+        name: token.name,
+        address: token.address,
+        contractName: token.name, // Use name as contractName for EVM tokens
+        symbol: token.symbol,
+        decimals: token.decimals,
+        path: {
+          vault: '', // EVM tokens don't use Flow paths
+          receiver: '',
+          balance: '',
+        },
+        logoURI: token.logoURI || '',
+        extensions: {},
+        custom: false,
+        price: Number(token.priceInUSD || '0'),
+        total: Number(token.balanceInUSD || '0'),
+        change24h: 0,
+        balance: token.balance || '0',
+        // Add CoinItem properties
+        coin: token.name, // redundant for compatibility
+        unit: token.symbol, // redundant for compatibility
+        icon: token.logoURI || '', // redundant for compatibility
+      })
+    );
+
+    storage.setExpiry(cacheKey, tokens, 5 * 60 * 1000); // Cache for 5 minutes
+    return tokens;
+  }
 
   getLatestVersion = async (): Promise<string> => {
     // Get latest version from storage cache first

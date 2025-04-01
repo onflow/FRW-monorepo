@@ -116,6 +116,16 @@ export const createTestGroups = (commonParams: CommonParams): ApiTestGroups => {
       },
       { name: 'getNFTList', params: { network: commonParams.network } },
     ],
+    tokens: [
+      {
+        name: 'getUserTokens',
+        params: { address: commonParams.address, network: 'mainnet' },
+      },
+      {
+        name: 'getUserTokens',
+        params: { address: commonParams.addressEvm, network: 'mainnet' },
+      },
+    ],
     approval: [
       {
         name: 'signPayer',
