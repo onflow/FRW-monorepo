@@ -50,7 +50,6 @@ const SetPassword: React.FC<SetPasswordProps> = ({
   isLogin = false,
   autoFocus = false,
 }) => {
-  console.log('isLogin', isLogin);
   const classes = useStyles();
 
   const [isPasswordVisible, setPasswordVisible] = useState(false);

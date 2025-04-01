@@ -885,7 +885,7 @@ class KeyringService extends EventEmitter {
 
     // Get current ID and vaults
     const currentId = await storage.get('currentId');
-    const vaultArray = this.store.getState().vault;
+    const vaultArray = this.store.getState().vault || [];
 
     if (currentId === null || currentId === undefined) {
       throw new Error('KeyringController - currentId is not provided');
@@ -1375,7 +1375,6 @@ class KeyringService extends EventEmitter {
         // Decrypt the entry
         const decryptedData = await this.encryptor.decrypt(password, encryptedData);
 
-        log.debug('decryptedData', decryptedData);
         let keyringData = {
           id,
           0: decryptedData[0] as unknown as KeyringKeyData,
@@ -1401,7 +1400,6 @@ class KeyringService extends EventEmitter {
 
     for (const keyring of vaultArray) {
       const encryptedData = await this.encryptor.encrypt(password, keyring[0]);
-      console.log('encryptedData', typeof encryptedData, encryptedData);
       encryptedVaultArray.push({
         id: keyring.id,
         encryptedData,
