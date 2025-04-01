@@ -1757,6 +1757,9 @@ class OpenApiService {
     return data;
   };
 
+  /** @deprecated
+   * Use getUserTokens has price information. It returns evm tokens with price information.
+   */
   getEvmFT = async (address: string, network: string) => {
     const { data } = await this.sendRequest(
       'GET',

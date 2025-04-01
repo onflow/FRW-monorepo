@@ -1313,7 +1313,7 @@ export class WalletController extends BaseController {
       evmCustomToken.forEach((customToken) => {
         // Check if the customToken already exists in mergedList
         const existingToken = updatedList.find((token) => {
-          return token.unit.toLowerCase() === customToken.unit.toLowerCase();
+          return token?.unit?.toLowerCase() === customToken?.unit?.toLowerCase();
         });
 
         if (existingToken) {
@@ -1321,8 +1321,8 @@ export class WalletController extends BaseController {
         } else {
           updatedList.push({
             custom: true,
-            coin: customToken.coin,
-            unit: customToken.unit,
+            coin: customToken?.coin || '',
+            unit: customToken?.unit || '',
             icon: '',
             balance: 0,
             price: 0,
