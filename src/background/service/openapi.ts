@@ -393,22 +393,6 @@ const recordFetch = async (response, responseData, ...args: Parameters<typeof fe
   return response;
 };
 
-// Override fetch in branches other than master
-const originalFetch = globalThis.fetch;
-
-const fetchCallRecorder = async (...args: Parameters<typeof originalFetch>) => {
-  const response = await originalFetch(...args);
-  try {
-    console.log('response', response);
-    const responseData = response.ok ? await response.clone().json() : null;
-    //  recordFetch(response, responseData, ...args);
-  } catch (err) {
-    console.error('Error recording fetch call:', err);
-  }
-  return response;
-};
-///const fetch = process.env.BRANCH_NAME === 'master' ? globalThis.fetch : fetchCallRecorder;
-
 class OpenApiService {
   store!: OpenApiStore;
 
@@ -499,6 +483,10 @@ class OpenApiService {
     // Record the response
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens has price information.
+   */
   private getUSDCPricePair = (provider: PriceProvider): string | null => {
     switch (provider) {
       case PriceProvider.binance:
@@ -512,6 +500,10 @@ class OpenApiService {
     }
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens has price information.
+   */
   getPriceProvider = (token: string): PriceProvider[] => {
     switch (token) {
       case 'usdc':
@@ -529,6 +521,10 @@ class OpenApiService {
     }
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens has price information.
+   */
   getUSDCPrice = async (provider = PriceProvider.binance): Promise<CheckResponse> => {
     const config = this.store.config.crypto_map;
     const data = await this.sendRequest(config.method, config.path, {
@@ -538,6 +534,10 @@ class OpenApiService {
     return data.data.result;
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens has price information.
+   */
   private getFlowPricePair = (provider: PriceProvider): string => {
     switch (provider) {
       case PriceProvider.binance:
@@ -555,6 +555,10 @@ class OpenApiService {
     }
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens instead. It will have token info and price.
+   */
   getTokenPrices = async (storageKey: string) => {
     const cachedPrices = await storage.getExpiry(storageKey);
     if (cachedPrices) {
@@ -592,21 +596,37 @@ class OpenApiService {
     return pricesMap;
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens instead. It will have token info and price.
+   */
   getPricesBySymbol = async (symbol: string, data) => {
     const key = symbol.toUpperCase();
     return data[key];
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens instead. It will have token info and price.
+   */
   getPricesByAddress = async (symbol: string, data) => {
     const key = symbol.toLowerCase();
     return data[key];
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens instead. It will have token info and price.
+   */
   getPricesByKey = async (symbol: string, data) => {
     const key = symbol.toLowerCase();
     return data[key];
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens instead. It will have token info and price.
+   */
   getPricesByEvmaddress = async (address: string, data) => {
     const key = address.toLowerCase();
     return data[key];
@@ -623,6 +643,10 @@ class OpenApiService {
     }
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens instead. It will have token info and price.
+   */
   getTokenPrice = async (token: string, provider = PriceProvider.binance) => {
     const config = this.store.config.crypto_flow;
     const pair = this.getTokenPair(token, provider);
@@ -1747,7 +1771,10 @@ class OpenApiService {
     return data;
   };
 
-  // TODO: remove this function, need to verify, doesn't look to be used anywhere
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens has price information.
+   */
   getEvmFTPrice = async () => {
     const gitPrice = await storage.getExpiry('EVMPrice');
 
