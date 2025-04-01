@@ -2004,8 +2004,6 @@ class OpenApiService {
   };
 
   async getUserTokens(address: string, network?: string): Promise<ExtendedTokenInfo[]> {
-    console.log('getUserTokens called for:', { address, network });
-
     if (!address) {
       throw new Error('Address is required');
     }
@@ -2013,7 +2011,6 @@ class OpenApiService {
     // If network not provided, get current network
     if (!network) {
       network = await userWalletService.getNetwork();
-      console.log('Using current network:', network);
     }
 
     // Determine if address is EVM or Flow based on format
@@ -2043,7 +2040,6 @@ class OpenApiService {
     const cachedFlowData = await storage.getExpiry(cacheKey);
 
     if (cachedFlowData !== null) {
-      console.log('Using cached Flow token data');
       return cachedFlowData;
     }
 
@@ -2098,7 +2094,6 @@ class OpenApiService {
     const cachedEvmData = await storage.getExpiry(cacheKey);
 
     if (cachedEvmData !== null) {
-      console.log('Using cached EVM token data');
       return cachedEvmData;
     }
 
@@ -2115,8 +2110,6 @@ class OpenApiService {
     if (!userEvmTokenList?.data) {
       return [];
     }
-
-    console.log('Processing', userEvmTokenList.data.length, 'EVM tokens from API');
 
     // Convert EvmTokenResponse to ExtendedTokenInfo
     const tokens = userEvmTokenList.data.map(
