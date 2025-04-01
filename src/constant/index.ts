@@ -168,3 +168,5 @@ export const EVM_ENDPOINT = {
   mainnet: 'https://mainnet.evm.nodes.onflow.org',
   testnet: 'https://testnet.evm.nodes.onflow.org',
 };
+
+export const HTTP_STATUS_CONFLICT = 409;

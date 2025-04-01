@@ -41,12 +41,12 @@ interface SetPasswordProps {
 }
 
 const SetPassword: React.FC<SetPasswordProps> = ({
-  handleSwitchTab,
+  handleSwitchTab = () => {},
   onSubmit,
-  username,
+  username = '',
   showTerms = false,
-  title,
-  subtitle,
+  title = '',
+  subtitle = '',
   isLogin = false,
   autoFocus = false,
 }) => {
@@ -166,6 +166,11 @@ const SetPassword: React.FC<SetPasswordProps> = ({
               setVisible={setPasswordVisible}
               className={classes.inputBox}
               autoFocus={autoFocus}
+              placeholder={
+                isLogin
+                  ? chrome.i18n.getMessage('Confirm__your__password')
+                  : chrome.i18n.getMessage('Create__a__password')
+              }
             />
             <SlideRelative show={!!password} direction="down">
               <Box style={{ marginBottom: '24px' }}>{helperText}</Box>
