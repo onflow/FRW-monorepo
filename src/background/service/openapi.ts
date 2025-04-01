@@ -2079,7 +2079,7 @@ class OpenApiService {
         },
         custom: false,
         price: Number(token.priceInUSD || '0'), // todo: future will be a string
-        total: Number(token.balanceInUSD || '0'), // future will be a string
+        total: Number(token.balanceInUSD || '0'), // todo: future will be a string
         change24h: 0,
         balance: token.balance || '0',
         // Add CoinItem properties
