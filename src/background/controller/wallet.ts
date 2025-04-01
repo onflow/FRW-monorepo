@@ -1436,7 +1436,7 @@ export class WalletController extends BaseController {
       evmCustomToken.forEach((customToken) => {
         // Check if the customToken already exists in mergedList
         const existingToken = updatedList.find((token) => {
-          return token.unit.toLowerCase() === customToken.unit.toLowerCase();
+          return token?.unit?.toLowerCase() === customToken?.unit?.toLowerCase();
         });
 
         if (existingToken) {
@@ -1444,8 +1444,8 @@ export class WalletController extends BaseController {
         } else {
           updatedList.push({
             custom: true,
-            coin: customToken.coin,
-            unit: customToken.unit,
+            coin: customToken?.coin || '',
+            unit: customToken?.unit || '',
             icon: '',
             balance: '0',
             price: 0,
@@ -2417,6 +2417,18 @@ export class WalletController extends BaseController {
     } else {
       return null;
     }
+  };
+
+  getAllAccountBalance = async (addresses: string[]): Promise<string> => {
+    await this.getNetwork();
+
+    const script = await getScripts('basic', 'getFlowBalanceForAnyAccounts');
+
+    const result = await fcl.query({
+      cadence: script,
+      args: (arg, t) => [arg(addresses, t.Array(t.String))],
+    });
+    return result;
   };
 
   getBalance = async (hexEncodedAddress: string): Promise<string> => {
@@ -3696,12 +3708,6 @@ export class WalletController extends BaseController {
       console.log(error, '=== get scripts error ===');
     }
   };
-
-  reset = async () => {
-    await keyringService.loadStore(undefined);
-    keyringService.store.subscribe((value) => storage.set('keyringState', value));
-  };
-
   // Google Drive - Backup
   getBackupFiles = async () => {
     return googleDriveService.listFiles();
