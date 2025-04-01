@@ -3,24 +3,18 @@ import { useCallback, useEffect, useState, useRef } from 'react';
 
 import storage, { type AreaName, type StorageChange } from '@/background/webapi/storage';
 import { type CoinItem } from '@/shared/types/coin-types';
-import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
+import { isValidEthereumAddress } from '@/shared/utils/address';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
-import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useCoinStore } from '@/ui/stores/coinStore';
 import { debug } from '@/ui/utils';
 import { useWallet, useWalletLoaded } from '@/ui/utils/WalletContext';
-const DEFAULT_MIN_AMOUNT = '0.001';
 
 export const useCoins = () => {
   const usewallet = useWallet();
   const walletLoaded = useWalletLoaded();
-  const { mainAddress, currentWallet } = useProfiles();
   const { network } = useNetwork();
 
   const refreshInProgressRef = useRef(false);
-  const calculationInProgressRef = useRef(false);
   const lastRefreshTimeRef = useRef(0);
-  const lastTotalFlowRef = useRef('');
   const mountedRef = useRef(true);
 
   // Replace Zustand state with React state

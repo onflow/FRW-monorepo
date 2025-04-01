@@ -1307,7 +1307,7 @@ class OpenApiService {
     });
   };
 
-  getTokenList = async (network) => {
+  getTokenList = async (network): Promise<TokenInfo[]> => {
     const childType = await userWalletService.getActiveAccountType();
     const chainType = isEvmAccountType(childType) ? 'evm' : 'flow';
 

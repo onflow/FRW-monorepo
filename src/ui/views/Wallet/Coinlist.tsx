@@ -14,24 +14,33 @@ import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { type CoinItem } from '@/shared/types/coin-types';
+import { type ActiveChildType } from '@/shared/types/wallet-types';
 import { formatLargeNumber } from '@/shared/utils/number';
 
 import IconCreate from '../../../components/iconfont/IconCreate';
 import { TokenValue } from '../TokenDetail/TokenValue';
 
-const CoinList = ({ data, ableFt, isActive, childType }) => {
+const CoinList = ({
+  tokenList,
+  ableFt,
+  isActive,
+  childType,
+}: {
+  tokenList: CoinItem[];
+  ableFt: any[];
+  isActive: boolean;
+  childType: ActiveChildType;
+}) => {
   // const wallet = useWallet();
   const [isLoading, setLoading] = useState(true);
   const history = useHistory();
-  const [coinList, setCoinList] = useState([]);
 
   useEffect(() => {
-    setLoading(data.length === 0);
-    if (data.length) {
-      setCoinList(data);
+    setLoading(tokenList.length === 0);
+    if (tokenList.length) {
       setLoading(false);
     }
-  }, [data]);
+  }, [tokenList]);
 
   const EndListItemText = (props) => {
     return (
@@ -178,7 +187,7 @@ const CoinList = ({ data, ableFt, isActive, childType }) => {
 
       <List sx={{ paddingTop: '0px', paddingBottom: '0px' }}>
         {!isLoading
-          ? (coinList || []).map((coin: CoinItem) => {
+          ? (tokenList || []).map((coin: CoinItem) => {
               if (
                 childType === 'evm' &&
                 coin.unit !== 'flow' &&
@@ -199,7 +208,9 @@ const CoinList = ({ data, ableFt, isActive, childType }) => {
                     />
                   }
                   disablePadding
-                  onClick={() => history.push(`dashboard/token/${coin.unit}`)}
+                  onClick={() =>
+                    history.push(`dashboard/tokendetail/${coin.unit.toLowerCase()}/${coin.id}`)
+                  }
                 >
                   <ListItemButton sx={{ paddingRight: '0px' }} dense={true}>
                     <ListItemIcon>

@@ -1482,6 +1482,27 @@ export class WalletController extends BaseController {
             ? 0
             : this.currencyBalance(token.balance, allPrice[index].price.last),
         custom: token.custom,
+
+        // Token metadata
+        chainId: token.chainId,
+        address: token.address,
+        contractName: token.contractName,
+        path: token.path
+          ? {
+              vault: token.path.vault,
+              receiver: token.path.receiver,
+              balance: token.path.balance,
+            }
+          : undefined,
+        symbol: token.symbol,
+        name: token.name,
+        description: token.description,
+        decimals: token.decimals,
+        logoURI: token.logoURI,
+        tags: token.tags,
+        evmAddress: token.evmAddress,
+        evm_address: token.evm_address,
+        flowAddress: token.flowAddress,
       };
     });
 
