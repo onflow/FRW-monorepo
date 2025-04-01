@@ -293,20 +293,15 @@ class KeyringService extends EventEmitter {
    *
    * @emits KeyringController#unlock
    * @param {string} privateKey - The privateKey to generate address
-   * @returns {Promise<Object>} A Promise that resolves to the state.
+   * @returns {Promise<Keyring>} A Promise that resolves to the keyring.
    */
-  importPrivateKey(privateKey: string): Promise<any> {
-    let keyring;
-
-    return this.persistAllKeyrings()
-      .then(this.addNewKeyring.bind(this, 'Simple Key Pair', [privateKey]))
-      .then((_keyring) => {
-        keyring = _keyring;
-        return this.persistAllKeyrings.bind(this);
-      })
-      .then(this.setUnlocked.bind(this))
-      .then(this.fullUpdate.bind(this))
-      .then(() => keyring);
+  async importPrivateKey(privateKey: string): Promise<Keyring> {
+    await this.persistAllKeyrings();
+    const keyring = await this.addNewKeyring('Simple Key Pair', [privateKey]);
+    await this.persistAllKeyrings();
+    await this.setUnlocked();
+    await this.fullUpdate();
+    return keyring;
   }
 
   /**
@@ -316,30 +311,32 @@ class KeyringService extends EventEmitter {
    * @param {string} privateKey - The privateKey to generate address
    * @returns {Promise<Object>} A Promise that resolves to the state.
    */
-  importPublicKey(key: string, seed: string): Promise<any> {
-    let keyring;
-    return this.persistAllKeyrings()
-      .then(() => {
-        return this.addNewKeyring('HD Key Tree', {
-          publicKey: key,
-          mnemonic: seed,
-          activeIndexes: [1],
-        });
-      })
-      .then((firstKeyring) => {
-        keyring = firstKeyring;
-        return firstKeyring.getAccounts();
-      })
-      .then(([firstAccount]) => {
-        if (!firstAccount) {
-          throw new Error('KeyringController - First Account not found.');
-        }
-        return null;
-      })
-      .then(this.persistAllKeyrings.bind(this))
-      .then(this.setUnlocked.bind(this))
-      .then(this.fullUpdate.bind(this))
-      .then(() => keyring);
+  async importPublicKey(key: string, seed: string): Promise<any> {
+    // First persist all keyrings
+    await this.persistAllKeyrings();
+
+    // Add new keyring and store reference
+    const keyring = await this.addNewKeyring('HD Key Tree', {
+      publicKey: key,
+      mnemonic: seed,
+      activeIndexes: [1],
+    });
+
+    // Get accounts from the keyring
+    const accounts = await keyring.getAccounts();
+    const [firstAccount] = accounts;
+
+    // Validate first account exists
+    if (!firstAccount) {
+      throw new Error('KeyringController - First Account not found.');
+    }
+
+    // Persist, unlock and update
+    await this.persistAllKeyrings();
+    await this.setUnlocked();
+    await this.fullUpdate();
+
+    return keyring;
   }
 
   generateMnemonic(): string {
@@ -387,57 +384,58 @@ class KeyringService extends EventEmitter {
    *
    * @emits KeyringController#unlock
    * @param {string} seed - The BIP44-compliant seed phrase.
-   * @returns {Promise<Object>} A Promise that resolves to the state.
+   * @returns {Promise<Keyring>} A Promise that resolves to the keyring.
    */
   async createKeyringWithMnemonics(
     seed: string,
     derivationPath = FLOW_BIP44_PATH,
     passphrase = ''
-  ): Promise<any> {
+  ): Promise<Keyring> {
+    // Validate mnemonic first
     if (!bip39.validateMnemonic(seed)) {
-      return Promise.reject(new Error(i18n.t('mnemonic phrase is invalid')));
+      throw new Error(i18n.t('mnemonic phrase is invalid'));
     }
-    let keyring;
-    return this.persistAllKeyrings()
-      .then(() => {
-        return this.addNewKeyring('HD Key Tree', {
-          mnemonic: seed,
-          activeIndexes: [0],
-          derivationPath,
-          passphrase,
-        });
-      })
-      .then((firstKeyring) => {
-        keyring = firstKeyring;
-        return firstKeyring.getAccounts();
-      })
-      .then(([firstAccount]) => {
-        if (!firstAccount) {
-          throw new Error('KeyringController - First Account not found.');
-        }
-        return null;
-      })
-      .then(this.persistAllKeyrings.bind(this))
-      .then(this.setUnlocked.bind(this))
-      .then(this.fullUpdate.bind(this))
-      .then(() => keyring);
+
+    // Persist existing keyrings
+    await this.persistAllKeyrings();
+
+    // Create new keyring
+    const keyring = await this.addNewKeyring('HD Key Tree', {
+      mnemonic: seed,
+      activeIndexes: [0],
+      derivationPath,
+      passphrase,
+    });
+
+    // Get and validate first account
+    const accounts = await keyring.getAccounts();
+    const [firstAccount] = accounts;
+    if (!firstAccount) {
+      throw new Error('KeyringController - First Account not found.');
+    }
+
+    // Persist and update state
+    await this.persistAllKeyrings();
+    await this.setUnlocked();
+    await this.fullUpdate();
+
+    return keyring;
   }
 
-  async addKeyring(keyring: SimpleKeyring | HDKeyring) {
-    return keyring
-      .getAccounts()
-      .then((accounts) => {
-        return this.checkForDuplicate(keyring.type, accounts);
-      })
-      .then(() => {
-        this.currentKeyring.push(keyring);
-        return this.persistAllKeyrings();
-      })
-      .then(() => this._updateMemStoreKeyrings())
-      .then(() => this.fullUpdate())
-      .then(() => {
-        return keyring;
-      });
+  async addKeyring(keyring: SimpleKeyring | HDKeyring): Promise<Keyring> {
+    // Get accounts and check for duplicates
+    const accounts = await keyring.getAccounts();
+    await this.checkForDuplicate(keyring.type, accounts);
+
+    // Add keyring to current keyrings and persist
+    this.currentKeyring.push(keyring);
+    await this.persistAllKeyrings();
+
+    // Update memory store and state
+    await this._updateMemStoreKeyrings();
+    await this.fullUpdate();
+
+    return keyring;
   }
 
   /**
@@ -530,7 +528,7 @@ class KeyringService extends EventEmitter {
    * @param {Object} opts - The constructor options for the keyring.
    * @returns {Promise<Keyring>} The new keyring.
    */
-  addNewKeyring(type: KeyringType, opts?: unknown): Promise<any> {
+  addNewKeyring(type: KeyringType, opts?: unknown): Promise<Keyring> {
     const KeyringClass = this.getKeyringClassForType(type);
     if (!KeyringClass) {
       throw new Error(`Keyring type ${type} not found`);
@@ -603,19 +601,20 @@ class KeyringService extends EventEmitter {
    * @returns {Promise<Object>} A Promise that resolves to the state.
    */
   async addNewAccount(selectedKeyring: any): Promise<string[]> {
-    let _accounts;
-    return selectedKeyring
-      .addAccounts(1)
-      .then((accounts) => {
-        accounts.forEach((hexAccount) => {
-          this.emit('newAccount', hexAccount);
-        });
-        _accounts = accounts;
-      })
-      .then(this.persistAllKeyrings.bind(this))
-      .then(this._updateMemStoreKeyrings.bind(this))
-      .then(this.fullUpdate.bind(this))
-      .then(() => _accounts);
+    // Add accounts and get result
+    const accounts = await selectedKeyring.addAccounts(1);
+
+    // Emit events for each new account
+    accounts.forEach((hexAccount) => {
+      this.emit('newAccount', hexAccount);
+    });
+
+    // Persist and update state
+    await this.persistAllKeyrings();
+    await this._updateMemStoreKeyrings();
+    await this.fullUpdate();
+
+    return accounts;
   }
 
   /**
@@ -650,31 +649,26 @@ class KeyringService extends EventEmitter {
    * @returns {Promise<void>} A Promise that resolves if the operation was successful.
    */
   async removeAccount(address: string, type: string, brand?: string): Promise<any> {
-    return this.getKeyringForAccount(address, type)
-      .then((keyring) => {
-        // Not all the keyrings support this, so we have to check
-        if (typeof keyring.removeAccount === 'function') {
-          keyring.removeAccount(address, brand);
-          this.emit('removedAccount', address);
-          return keyring.getAccounts();
-        }
-        return Promise.reject(
-          new Error(`Keyring ${keyring.type} doesn't support account removal operations`)
-        );
-      })
-      .then((accounts) => {
-        // Check if this was the last/only account
-        if (accounts.length === 0) {
-          return this.removeEmptyKeyrings();
-        }
-        return undefined;
-      })
-      .then(this.persistAllKeyrings.bind(this))
-      .then(this._updateMemStoreKeyrings.bind(this))
-      .then(this.fullUpdate.bind(this))
-      .catch((e) => {
-        return Promise.reject(e);
-      });
+    const keyring = await this.getKeyringForAccount(address, type);
+
+    // Not all the keyrings support this, so we have to check
+    if (typeof keyring.removeAccount !== 'function') {
+      throw new Error(`Keyring ${keyring.type} doesn't support account removal operations`);
+    }
+
+    keyring.removeAccount(address, brand);
+    this.emit('removedAccount', address);
+
+    const accounts = await keyring.getAccounts();
+
+    // Check if this was the last/only account
+    if (accounts.length === 0) {
+      await this.removeEmptyKeyrings();
+    }
+
+    await this.persistAllKeyrings();
+    await this._updateMemStoreKeyrings();
+    await this.fullUpdate();
   }
 
   //
@@ -836,107 +830,99 @@ class KeyringService extends EventEmitter {
    * encrypts that array with the provided `password`,
    * and persists that encrypted string to storage.
    *
-   * @param {string} password - The keyring controller password.
    * @returns {Promise<boolean>} Resolves to true once keyrings are persisted.
    */
   async persistAllKeyrings(): Promise<boolean> {
     if (!this.password || typeof this.password !== 'string') {
-      return Promise.reject(new Error('KeyringController - password is not a string'));
+      throw new Error('KeyringController - password is not a string');
     }
+
     const currentPassword = this.password;
-    return Promise.all(
-      this.currentKeyring.map((keyring) => {
-        return Promise.all([keyring.type, keyring.serialize()]).then((serializedKeyringArray) => {
-          // Label the output values on each serialized Keyring:
-          return {
-            type: serializedKeyringArray[0],
-            data: serializedKeyringArray[1],
-          };
-        });
+
+    // Serialize all keyrings
+    const serializedKeyrings = await Promise.all(
+      this.currentKeyring.map(async (keyring) => {
+        const [type, data] = await Promise.all([keyring.type, keyring.serialize()]);
+        return {
+          type,
+          data,
+        };
       })
-    )
-      .then((serializedKeyrings) => {
-        return this.encryptor.encrypt(currentPassword, serializedKeyrings as unknown as Buffer);
-      })
-      .then(async (encryptedString) => {
-        // Note that currentAccountIndex is only used in keyring for old accounts that don't have an id stored in the keyring
-        // currentId always takes precedence
-        const currentId = await storage.get('currentId');
+    );
 
-        const oldVault = this.store.getState().vault;
-        const deepVault = (await storage.get('deepVault')) || []; // Retrieve deepVault from storage
-        // Check if oldVault is defined and not an array, if so convert it to an array
-        // If undefined, set it to an empty array
-        let vaultArray: CompatibleVaultEntry[] = Array.isArray(oldVault)
-          ? oldVault
-          : oldVault
-            ? [oldVault]
-            : [];
-        const deepVaultArray: CompatibleVaultEntry[] = Array.isArray(deepVault)
-          ? deepVault
-          : deepVault
-            ? [deepVault]
-            : []; // Ensure deepVault is treated as array
+    // Encrypt the serialized keyrings
+    const encryptedString = await this.encryptor.encrypt(
+      currentPassword,
+      serializedKeyrings as unknown as Buffer
+    );
 
-        // Handle the case when currentId is available
-        if (currentId !== null && currentId !== undefined) {
-          // If we have the currentId, we can filter the vaultArray to remove null/undefined entries
-          // We can then update the accountIndex to the index of the entry with currentId
-          vaultArray = vaultArray.filter((entry) => entry !== null && entry !== undefined);
-          // Find if an entry with currentId already exists in both vault and deepVault
-          let vaultArrayAccountIndex = vaultArray.findIndex(
-            (entry) =>
-              entry !== null &&
-              entry !== undefined &&
-              Object.prototype.hasOwnProperty.call(entry, currentId)
-          );
+    // Get current ID and vaults
+    const currentId = await storage.get('currentId');
+    const oldVault = this.store.getState().vault;
+    const deepVault = (await storage.get('deepVault')) || [];
 
-          const existingDeepVaultIndex = deepVaultArray.findIndex(
-            (entry) =>
-              entry !== null &&
-              entry !== undefined &&
-              Object.prototype.hasOwnProperty.call(entry, currentId)
-          );
+    // Process vault arrays
+    let vaultArray: CompatibleVaultEntry[] = Array.isArray(oldVault)
+      ? oldVault
+      : oldVault
+        ? [oldVault]
+        : [];
+    const deepVaultArray: CompatibleVaultEntry[] = Array.isArray(deepVault)
+      ? deepVault
+      : deepVault
+        ? [deepVault]
+        : [];
 
-          if (vaultArrayAccountIndex !== -1) {
-            // Update existing entry in vault
-            vaultArray[vaultArrayAccountIndex][currentId] = encryptedString;
-          } else {
-            // Add new entry to vault
-            const newEntry = {};
-            newEntry[currentId] = encryptedString;
-            vaultArray.push(newEntry);
-            // Update the existingIndex to the index of the new entry
-            vaultArrayAccountIndex = vaultArray.length - 1;
-          }
+    if (currentId === null || currentId === undefined) {
+      throw new Error('KeyringController - currentId is not provided');
+    }
 
-          if (existingDeepVaultIndex !== -1) {
-            // Update existing entry in deepVault
-            deepVaultArray[existingDeepVaultIndex][currentId] = encryptedString;
-          } else {
-            // Add new entry to deepVault
-            const newDeepEntry = {};
-            newDeepEntry[currentId] = encryptedString;
-            deepVaultArray.push(newDeepEntry);
-          }
-        } else {
-          // Handle the case when currentId is not provided
-          throw new Error('KeyringController - currentId is not provided');
-        }
+    // Filter and update vault arrays
+    vaultArray = vaultArray.filter((entry) => entry !== null && entry !== undefined);
 
-        // Update both vault and deepVault
-        if (vaultArray && vaultArray.length > 0) {
-          this.store.updateState({ vault: vaultArray });
-        }
-        if (deepVaultArray && deepVaultArray.length > 0) {
-          await storage.set('deepVault', deepVaultArray); // Save deepVault in storage
-        }
+    // Find existing entries
+    const vaultArrayAccountIndex = vaultArray.findIndex(
+      (entry) =>
+        entry !== null &&
+        entry !== undefined &&
+        Object.prototype.hasOwnProperty.call(entry, currentId)
+    );
 
-        //update the keyringlist for switching account after everything is done
-        await this.decryptVaultArray(vaultArray, currentPassword);
+    const existingDeepVaultIndex = deepVaultArray.findIndex(
+      (entry) =>
+        entry !== null &&
+        entry !== undefined &&
+        Object.prototype.hasOwnProperty.call(entry, currentId)
+    );
 
-        return true;
-      });
+    // Update or add to vault array
+    if (vaultArrayAccountIndex !== -1) {
+      vaultArray[vaultArrayAccountIndex][currentId] = encryptedString;
+    } else {
+      const newEntry = { [currentId]: encryptedString };
+      vaultArray.push(newEntry);
+    }
+
+    // Update or add to deep vault array
+    if (existingDeepVaultIndex !== -1) {
+      deepVaultArray[existingDeepVaultIndex][currentId] = encryptedString;
+    } else {
+      const newDeepEntry = { [currentId]: encryptedString };
+      deepVaultArray.push(newDeepEntry);
+    }
+
+    // Update storage
+    if (vaultArray.length > 0) {
+      this.store.updateState({ vault: vaultArray });
+    }
+    if (deepVaultArray.length > 0) {
+      await storage.set('deepVault', deepVaultArray);
+    }
+
+    // Update keyring list
+    await this.decryptVaultArray(vaultArray, currentPassword);
+
+    return true;
   }
 
   /**
@@ -1399,6 +1385,36 @@ class KeyringService extends EventEmitter {
   loadStore(initState) {
     this.store = new SimpleStore(initState || { booted: false });
     return this.store.subscribe((value) => storage.set('keyringState', value));
+  }
+
+  async loadAndMigrateKeyringStore() {
+    const keyringState = await storage.get('keyringState');
+    if (!keyringState) {
+      await this.migrateFromDeepVault();
+    }
+  }
+
+  private async loadKeyringStateV2() {
+    const keyringState = await storage.get('keyringStateV2');
+    if (keyringState) {
+      this.store.updateState(keyringState);
+    }
+  }
+
+  private async migrateFromKeyringStateV1() {
+    // Version 1 - if nothing exists in the store, use deepVault
+    const keyringState = await storage.get('keyringState');
+    if (keyringState) {
+      this.store.updateState(keyringState);
+    }
+  }
+
+  private async migrateFromDeepVault() {
+    // Version 1 - if nothing exists in the store, use deepVault
+    const deepVault = await storage.get('deepVault');
+    if (deepVault) {
+      this.store.updateState({ vault: deepVault });
+    }
   }
 
   private async decryptVaultArray(vaultArray: CompatibleVaultEntry[], password: string) {
