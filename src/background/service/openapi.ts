@@ -62,11 +62,8 @@ import {
   googleSafeHostService,
   mixpanelTrack,
 } from './index';
-// import { userInfo } from 'os';
-// import userWallet from './userWallet';
-// const axios = axiosOriginal.create({ adapter })
 
-// New type definitions for API responses
+// New type definitions for API response for /v4/cadence/tokens/ft/{address}
 interface FlowTokenResponse {
   name: string;
   symbol: string;
@@ -103,6 +100,7 @@ interface FlowTokenResponse {
   balanceInFLOW: string;
 }
 
+// New type definitions for API response for /v4/evm/tokens/ft/{address}
 interface EvmTokenResponse {
   chainId: number;
   address: string;
@@ -147,7 +145,6 @@ const auth = getAuth(app);
 // const remoteConfig = getRemoteConfig(app);
 
 const remoteFetch = fetchConfig;
-const pricesMap = {};
 
 const waitForAuthInit = async () => {
   let unsubscribe: Unsubscribe;
@@ -2030,6 +2027,12 @@ class OpenApiService {
     return { otherAccounts, wallet, loggedInAccounts };
   };
 
+  /**
+   * Get user tokens, handle both EVM and Flow tokens. Include price information.
+   * @param address - The address of the user
+   * @param network - The network of the user
+   * @returns The tokens of the user
+   */
   async getUserTokens(address: string, network?: string): Promise<ExtendedTokenInfo[]> {
     if (!address) {
       throw new Error('Address is required');
@@ -2059,6 +2062,7 @@ class OpenApiService {
       throw error;
     }
   }
+
   private async fetchUserFlowTokens(
     address: string,
     network: string
