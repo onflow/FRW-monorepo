@@ -1,8 +1,9 @@
 import { type TokenInfo } from 'flow-native-token-registry';
-import { type HashAlgoType, type SignAlgoType } from './algo-types';
+
 import { isValidFlowAddress } from '../utils/address';
 
 import { type HashAlgoString, type SignAlgoString } from './algo-types';
+import { type CoinItem } from './coin-types';
 
 // Matches exactly 16 hex characters, with optional 0x prefix
 export type FlowAddress = `0x${string & { length: 16 }}` | `${string & { length: 16 }}`;

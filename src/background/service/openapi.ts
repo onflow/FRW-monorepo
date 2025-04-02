@@ -2093,6 +2093,7 @@ class OpenApiService {
     // Convert FlowTokenResponse to ExtendedTokenInfo
     const tokens = userFlowTokenList.map(
       (token): ExtendedTokenInfo => ({
+        id: token.identifier,
         name: token.name,
         address: token.contractAddress,
         contractName: token.contractName,
@@ -2149,6 +2150,7 @@ class OpenApiService {
     // Convert EvmTokenResponse to ExtendedTokenInfo
     const tokens = userEvmTokenList.data.map(
       (token): ExtendedTokenInfo => ({
+        id: token.flowIdentifier || token.address,
         name: token.name,
         address: token.address,
         contractName: token.name, // Use name as contractName for EVM tokens
