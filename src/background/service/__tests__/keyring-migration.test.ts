@@ -35,18 +35,6 @@ vi.mock('../preference', () => ({
   },
 }));
 
-// Need to mock ethers.js Wallet used in SimpleKeyring
-vi.mock('ethers', () => {
-  return {
-    Wallet: class MockWallet {
-      address: string;
-      constructor() {
-        this.address = '0x1234567890123456789012345678901234567890';
-      }
-    },
-  };
-});
-
 // Mock current-id module
 vi.mock('@/shared/utils/current-id', () => ({
   returnCurrentProfileId: vi.fn().mockResolvedValue('hdKeyringId'),
@@ -61,28 +49,14 @@ vi.mock('bip39', () => ({
   generateMnemonic: vi.fn(() => 'test test test test test test test test test test test junk'),
 }));
 
-vi.mock('@/background/utils/modules/publicPrivateKey', () => ({
-  seed2PublicPrivateKey: vi.fn().mockResolvedValue({
-    SECP256K1: { pk: '0x1234567890abcdef' },
-  }),
-  pk2PubKey: vi.fn().mockResolvedValue({
-    EVM: '0xpublicKeyEVM',
-    FLOW: '0xpublicKeyFLOW',
-  }),
-}));
-
-// Mock normalizeAddress which is used in SimpleKeyring
-vi.mock('@/background/utils', () => ({
-  normalizeAddress: vi.fn().mockImplementation((address) => address),
-}));
-
 // Internal imports - after all mocks are defined
-import { LoggedInAccount } from '@/shared/types/wallet-types';
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
 
 import storage from '../../webapi/storage';
 import KeyringService from '../keyring';
+
+import { MOCK_KEYS, MOCK_PASSWORD } from './keyring-mock-data';
 
 // Test constants
 const TEST_PASSWORD = 'test_password_123';
@@ -95,7 +69,7 @@ const NO_ID_KEYRING_INDEX = 2; // This keyring will be identified by index in lo
 // Test mnemonics
 const HD_KEYRING_MNEMONIC = 'test test test test test test test test test test test junk';
 const HD_KEYRING_NO_PATH_MNEMONIC =
-  'apple banana cherry dog elephant frog giraffe horse igloo jacket king lion';
+  'excess anchor front combine shy robot update describe wife music direct useful';
 
 // Test private key for simple keyring - using a Buffer format to avoid Ethers.js validation
 const SIMPLE_KEYRING_PRIVATE_KEY = Buffer.from(
@@ -103,6 +77,23 @@ const SIMPLE_KEYRING_PRIVATE_KEY = Buffer.from(
   'hex'
 );
 
+const SIMPLE_KEYRING_PUBLIC_KEY_TUPLE = {
+  P256: {
+    pubK: 'eea7afce538bb6364a94cab6ee40223944b5fa02049a7c581a8b8325738b8469d49cb24caa6ad74b70e8aee1da09b77ba466e7745a84d696b07e8420fa30916e',
+  },
+  SECP256K1: {
+    pubK: '49031d7529439862e15b5263055f6a2ab0c6a74fadc7862ccb88a660d7e9192690db9e7a905f0b09a6305e0c1e2860a47b5289f52cd50f2905dd61feb0a3c6f2',
+  },
+};
+
+const NO_ID_KEYRING_PUBLIC_KEY_TUPLE = {
+  P256: {
+    pubK: 'cb52b6e4d495e9e6be80df0e5b79a23d9b7a9d5ba29cd690993ea2d5458961cf1c8fe705046d618e48d10b4434c2c8942a389f0bb54bc5658d11aae8706948bb',
+  },
+  SECP256K1: {
+    pubK: '4dcb70aaf500337ec43d926cb23a28a1ef55e9594eec8b83c907b91355fba0b013199da65e5ca2f0cc4f7741260b784a328d4506ca2f438ab0efdf748fc2cf11',
+  },
+};
 // Sample Flow addresses for tests
 const HD_KEYRING_ADDRESS = '0x0123456789abcdef';
 const SIMPLE_KEYRING_ADDRESS = '0xabcdef0123456789';
@@ -187,7 +178,7 @@ describe('Keyring Migration Tests', () => {
     const deepVault = [
       { [HD_KEYRING_ID]: encryptedHDKeyring },
       { [SIMPLE_KEYRING_ID]: encryptedSimpleKeyring },
-      { '': encryptedHDKeyringNoPath }, // This one has no ID
+      encryptedHDKeyringNoPath, // This one has no ID
     ];
 
     // Store the deep vault data
@@ -213,14 +204,11 @@ describe('Keyring Migration Tests', () => {
 
     // Create a booted flag to avoid the "Cannot unlock without a previous vault" error
     const encryptedBooted = await createEncryptedVault('true');
-
+    memoryStore.set('keyringState', {
+      booted: encryptedBooted,
+    });
     // Step 1: Initialize keyring service and set booted flag
     await KeyringService.loadKeyringStore();
-    KeyringService.store.updateState({
-      booted: encryptedBooted,
-      vault: [],
-      vaultVersion: 2,
-    });
 
     // Step 2: Submit password to unlock and migrate
     await KeyringService.submitPassword(TEST_PASSWORD);
@@ -236,10 +224,7 @@ describe('Keyring Migration Tests', () => {
 
     // Verify public key can be retrieved
     const publicKeyTuple = await KeyringService.getCurrentPublicKeyTuple();
-    expect(publicKeyTuple).toEqual({
-      EVM: '0xpublicKeyEVM',
-      FLOW: '0xpublicKeyFLOW',
-    });
+    expect(publicKeyTuple).toEqual(MOCK_KEYS.publicKeys);
 
     // Verify all keyrings were loaded properly
     expect(KeyringService.currentKeyring.length).toBeGreaterThan(0);
@@ -250,10 +235,7 @@ describe('Keyring Migration Tests', () => {
 
     // Verify we can get the public key from the simple keyring
     const simplePublicKeyTuple = await KeyringService.getCurrentPublicKeyTuple();
-    expect(simplePublicKeyTuple).toEqual({
-      EVM: '0xpublicKeyEVM',
-      FLOW: '0xpublicKeyFLOW',
-    });
+    expect(simplePublicKeyTuple).toEqual(SIMPLE_KEYRING_PUBLIC_KEY_TUPLE);
 
     // Switch to the keyring without an ID
     vi.mocked(returnCurrentProfileId).mockResolvedValue('noIdKeyring');
@@ -261,10 +243,7 @@ describe('Keyring Migration Tests', () => {
 
     // Verify we can get the public key from the keyring without an ID
     const noIdPublicKeyTuple = await KeyringService.getCurrentPublicKeyTuple();
-    expect(noIdPublicKeyTuple).toEqual({
-      EVM: '0xpublicKeyEVM',
-      FLOW: '0xpublicKeyFLOW',
-    });
+    expect(noIdPublicKeyTuple).toEqual(NO_ID_KEYRING_PUBLIC_KEY_TUPLE);
   });
 
   it('should migrate from keyringState (V1) to keyringStateV2', async () => {
@@ -333,10 +312,7 @@ describe('Keyring Migration Tests', () => {
 
     // Verify public key can be retrieved from the current keyring
     const publicKeyTuple = await KeyringService.getCurrentPublicKeyTuple();
-    expect(publicKeyTuple).toEqual({
-      EVM: '0xpublicKeyEVM',
-      FLOW: '0xpublicKeyFLOW',
-    });
+    expect(publicKeyTuple).toEqual(MOCK_KEYS.publicKeys);
 
     // Switch to the simple keyring
     vi.mocked(returnCurrentProfileId).mockResolvedValue(SIMPLE_KEYRING_ID);
@@ -344,10 +320,7 @@ describe('Keyring Migration Tests', () => {
 
     // Verify we can get the public key from the simple keyring
     const simplePublicKeyTuple = await KeyringService.getCurrentPublicKeyTuple();
-    expect(simplePublicKeyTuple).toEqual({
-      EVM: '0xpublicKeyEVM',
-      FLOW: '0xpublicKeyFLOW',
-    });
+    expect(simplePublicKeyTuple).toEqual(SIMPLE_KEYRING_PUBLIC_KEY_TUPLE);
 
     // Switch to the keyring that had no ID
     vi.mocked(returnCurrentProfileId).mockResolvedValue('noIdKeyring');
@@ -355,10 +328,7 @@ describe('Keyring Migration Tests', () => {
 
     // Verify we can get the public key from the keyring without an ID
     const noIdPublicKeyTuple = await KeyringService.getCurrentPublicKeyTuple();
-    expect(noIdPublicKeyTuple).toEqual({
-      EVM: '0xpublicKeyEVM',
-      FLOW: '0xpublicKeyFLOW',
-    });
+    expect(noIdPublicKeyTuple).toEqual(NO_ID_KEYRING_PUBLIC_KEY_TUPLE);
 
     // Verify we can directly access the derivation path and passphrase
     // This tests that the translation from V1 to V2 correctly added the derivation path and passphrase
@@ -395,7 +365,10 @@ describe('Keyring Migration Tests', () => {
     // Step 1: Initialize and boot keyring service
     await KeyringService.loadKeyringStore();
 
-    // Step 2: Create a new keyring with mnemonics
+    // Step 2: Submit password to unlock
+    await KeyringService.boot(TEST_PASSWORD);
+
+    // Step 3: Create a new keyring with mnemonics
     const newKeyring = await KeyringService.createKeyringWithMnemonics(HD_KEYRING_MNEMONIC);
 
     // Verify keyring was created
@@ -409,13 +382,10 @@ describe('Keyring Migration Tests', () => {
 
     // Verify public key can be retrieved
     const publicKeyTuple = await KeyringService.getCurrentPublicKeyTuple();
-    expect(publicKeyTuple).toEqual({
-      EVM: '0xpublicKeyEVM',
-      FLOW: '0xpublicKeyFLOW',
-    });
+    expect(publicKeyTuple).toEqual(MOCK_KEYS.publicKeys);
 
     // Verify the private key can be retrieved
     const privateKey = await KeyringService.getCurrentPrivateKey();
-    expect(privateKey).toBe('0x1234567890abcdef');
+    expect(privateKey).toEqual(MOCK_KEYS.privateKey);
   });
 });

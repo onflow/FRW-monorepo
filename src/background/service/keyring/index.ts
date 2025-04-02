@@ -1480,24 +1480,25 @@ class KeyringService extends EventEmitter {
   private async loadKeyringStateV1(): Promise<KeyringStateV1 | null> {
     const keyringState = await storage.get(KEYRING_STATE_V1_KEY);
     if (!keyringState) {
-      return await this.translateFromDeepVault();
+      return null;
+    }
+    if (!keyringState.vault) {
+      return {
+        ...keyringState,
+        vault: await this.translateFromDeepVault(),
+      };
     }
     return keyringState;
   }
 
   // Version 0
-  private async translateFromDeepVault(): Promise<KeyringStateV1 | null> {
+  private async translateFromDeepVault(): Promise<CompatibleVaultEntry[] | null> {
     // Version 1 - if nothing exists in the store, use deepVault
     const deepVault = await storage.get(KEYRING_DEEP_VAULT_KEY);
     if (!deepVault) {
       return null;
     }
-    // Convert to keyringStateV1 format
-    const keyringState: KeyringStateV1 = {
-      booted: '',
-      vault: deepVault,
-    };
-    return keyringState;
+    return deepVault;
   }
 
   // Vault Translation
