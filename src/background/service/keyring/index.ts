@@ -970,10 +970,11 @@ class KeyringService extends EventEmitter {
       );
     }
     const selectedKeyring: KeyringData = this.keyringList[selectedKeyringIndex];
-    console.log('selectedKeyring', selectedKeyring);
+    if (!selectedKeyring || !selectedKeyring[0]) {
+      throw new Error('KeyringController - selectedKeyring invalid');
+    }
     // remove the keyring of the previous account
     await this.clearKeyrings();
-
     // Restore the keyring
     await this._restoreKeyring(selectedKeyring[0]);
 
@@ -1377,7 +1378,7 @@ class KeyringService extends EventEmitter {
 
         let keyringData = {
           id,
-          0: decryptedData[0] as unknown as KeyringKeyData,
+          0: decryptedData as unknown as KeyringKeyData,
         };
         // this returns an array of KeyringKeyDataV2
         if (this.store.getState().vaultVersion === KEYRING_STATE_VAULT_V1) {
@@ -1469,7 +1470,6 @@ class KeyringService extends EventEmitter {
 
   async checkAvailableAccount(currentId: string): Promise<VaultEntryV2[]> {
     const vaultArray = this.store.getState().vault;
-    console.log('vaultArray ', vaultArray, currentId);
 
     // Check if an entry with the given currentId exists
     const foundEntry = vaultArray.find((entry) => entry.id === currentId);
