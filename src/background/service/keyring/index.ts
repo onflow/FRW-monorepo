@@ -141,6 +141,7 @@ class KeyringService extends EventEmitter {
   keyringList: KeyringData[];
   publicKeyCache: Map<string, PublicKeyTuple> = new Map();
   encryptor: typeof encryptor = encryptor;
+
   constructor() {
     super();
     this.keyringTypes = Object.values(KEYRING_SDK_TYPES);
@@ -158,7 +159,6 @@ class KeyringService extends EventEmitter {
   loadMemStore() {
     return this.memStore.getState();
   }
-
   /**
    * Boot the keyring
    * create a new clean keyring with a new password
@@ -290,6 +290,10 @@ class KeyringService extends EventEmitter {
 
   hasVault() {
     return !!this.store.getState().vault;
+  }
+
+  isUnlocked() {
+    return this.isBooted() && this.memStore.getState().isUnlocked;
   }
 
   /**

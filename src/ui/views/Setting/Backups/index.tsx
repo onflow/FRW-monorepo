@@ -2,6 +2,7 @@ import { Box, Typography, IconButton, Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { useState, useEffect, useCallback } from 'react';
 
+import { keyringService } from '@/background/service';
 import BrowserWarning from '@/ui/component/BrowserWarning';
 import { LLHeader, LLSpinner } from '@/ui/FRWComponent';
 import { LLDeleteBackupPopup } from '@/ui/FRWComponent/LLDeleteBackupPopup';
@@ -66,7 +67,8 @@ const ManageBackups = () => {
   const [loading, setLoading] = useState(true);
   const [deleteBackupPop, setDeleteBackupPop] = useState(false);
   const [deleteAllBackupPop, setDeleteAllBackupPop] = useState(false);
-
+  // TODO: Get the password from the user when they click the sync button
+  const [password, setPassword] = useState('');
   const checkBackup = useCallback(async () => {
     try {
       setLoading(true);

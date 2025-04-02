@@ -217,7 +217,6 @@ describe('Keyring Migration Tests', () => {
 
     // Check keyringStateV2 was created
     const keyringStateV2 = memoryStore.get('keyringStateV2');
-    console.log('keyringStateV2:', keyringStateV2);
     expect(keyringStateV2).toBeDefined();
 
     // Verify public key can be retrieved

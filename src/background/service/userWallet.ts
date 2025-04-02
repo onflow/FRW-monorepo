@@ -108,7 +108,7 @@ class UserWallet {
     };
   };
   isLocked = () => {
-    return !keyringService.isBooted() || !keyringService.memStore.getState().isUnlocked;
+    return !keyringService.isUnlocked();
   };
 
   setMainAccounts = async (accounts: MainAccount[], pubKey: string, network: string) => {
@@ -595,10 +595,15 @@ class UserWallet {
   };
 
   sign = async (signableMessage: string): Promise<string> => {
+    // Ensure the wallet is unlocked as we're accessing the private key
+    // Note we wouldn't be able to get the private key if the wallet is locked anyway..
+    if (this.isLocked()) {
+      throw new Error('Wallet is locked');
+    }
     const hashAlgo = await storage.get('hashAlgo');
     const signAlgo = await storage.get('signAlgo');
-    const password = keyringService.password;
-    const privateKey = await wallet.getPrivateKeyForCurrentAccount(password);
+
+    const privateKey = await keyringService.getCurrentPrivateKey();
     const realSignature = await signWithKey(
       Buffer.from(signableMessage, 'hex'),
       signAlgo,
@@ -724,12 +729,8 @@ class UserWallet {
       // If the wallet is locked, we can't sign in
       return;
     }
-    const password = keyringService.password;
-    if (!password) {
-      // No password means the wallet is not unlocked
-      return;
-    }
-    const privateKey = await wallet.getPrivateKeyForCurrentAccount(password);
+
+    const privateKey = await keyringService.getCurrentPrivateKey();
     return await this.sigInWithPk(privateKey);
   };
 

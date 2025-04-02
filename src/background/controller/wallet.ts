@@ -156,6 +156,7 @@ export class WalletController extends BaseController {
     }
   };
   isBooted = () => keyringService.isBooted();
+  isUnlocked = () => keyringService.isUnlocked();
   loadMemStore = () => keyringService.loadMemStore();
   verifyPassword = (password: string) => keyringService.verifyPassword(password);
 
@@ -445,21 +446,10 @@ export class WalletController extends BaseController {
     return { privateKeyHex, publicKeyHex };
   };
 
-  isUnlocked = async () => {
-    if (!this.isBooted()) {
-      return false;
-    }
-
-    const isUnlocked = keyringService.memStore.getState().isUnlocked;
-    return isUnlocked;
-  };
-
   lockWallet = async () => {
     await keyringService.setLocked();
     await userWalletService.signOutCurrentUser();
     await userWalletService.clear();
-    sessionService.broadcastEvent('accountsChanged', []);
-    sessionService.broadcastEvent('lock');
   };
 
   signOutWallet = async () => {
@@ -620,6 +610,7 @@ export class WalletController extends BaseController {
     return false;
   };
 
+  // Note this is not used anymore
   getPrivateKeyForCurrentAccount = async (password: string) => {
     let privateKey: string | null = null;
     const keyrings = await this.getKeyrings(password || '');
@@ -1683,7 +1674,7 @@ export class WalletController extends BaseController {
   };
 
   getMainAccounts = async (): Promise<MainAccount[] | null> => {
-    if (!(await this.isUnlocked())) {
+    if (!this.isUnlocked()) {
       return null;
     }
     const network = await this.getNetwork();
@@ -1737,7 +1728,7 @@ export class WalletController extends BaseController {
   };
 
   getCurrentWallet = async (): Promise<WalletAccount | undefined> => {
-    if (!this.isBooted() || userWalletService.isLocked()) {
+    if (!this.isUnlocked()) {
       return;
     }
     const wallet = await userWalletService.getCurrentWallet();
@@ -1788,7 +1779,7 @@ export class WalletController extends BaseController {
   };
 
   getMainAddress = async (): Promise<FlowAddress | null> => {
-    if (!this.isBooted() || userWalletService.isLocked()) {
+    if (!this.isUnlocked()) {
       return null;
     }
     const network = await this.getNetwork();
@@ -2203,7 +2194,7 @@ export class WalletController extends BaseController {
     if (address.length > 20) {
       return null;
     }
-    if (!(await this.isUnlocked())) {
+    if (!this.isUnlocked()) {
       return null;
     }
     let evmAddress;
@@ -3261,7 +3252,7 @@ export class WalletController extends BaseController {
   };
 
   checkNetwork = async () => {
-    if (!this.isBooted() || userWalletService.isLocked()) {
+    if (!this.isUnlocked()) {
       return;
     }
   };
@@ -3734,7 +3725,7 @@ export class WalletController extends BaseController {
     return this.uploadMnemonicToGoogleDrive(mnemonic, username, password);
   };
 
-  uploadMnemonicToGoogleDrive = async (mnemonic, username, password) => {
+  uploadMnemonicToGoogleDrive = async (mnemonic: string, username: string, password: string) => {
     const isValidMnemonic = bip39.validateMnemonic(mnemonic);
     if (!isValidMnemonic) {
       throw new Error('Invalid mnemonic');

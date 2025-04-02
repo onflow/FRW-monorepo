@@ -79,7 +79,6 @@ describe('Keyring Boot and Mnemonics Test', () => {
     // Reset KeyringService state
     KeyringService.currentKeyring = [];
     KeyringService.keyringList = [];
-    KeyringService.password = null;
   });
 
   it('generates mock data with real encryption', async () => {
@@ -151,7 +150,6 @@ describe('Keyring Boot and Mnemonics Test', () => {
     await KeyringService.submitPassword(MOCK_PASSWORD);
 
     // Verify it's unlocked
-    expect(KeyringService.password).toBe(MOCK_PASSWORD);
     expect(KeyringService.memStore.getState().isUnlocked).toBe(true);
 
     // Verify we have the keyring in memory
