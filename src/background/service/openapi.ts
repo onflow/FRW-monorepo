@@ -2078,7 +2078,6 @@ class OpenApiService {
     address: string,
     network: string
   ): Promise<ExtendedTokenInfo[]> {
-    console.log('fetchUserFlowTokens', address, network);
     const cacheKey = `flow_tokens_${address}_${network}`;
     const cachedFlowData = await storage.getExpiry(cacheKey);
 
@@ -2093,7 +2092,6 @@ class OpenApiService {
       {},
       WEB_NEXT_URL
     );
-    console.log('userFlowTokenList', userFlowTokenList);
     if (!userFlowTokenList?.result?.length) {
       return [];
     }
@@ -2128,7 +2126,6 @@ class OpenApiService {
         icon: token.logos?.items?.[0]?.file?.url || '', // redundant for compatibility
       })
     );
-    console.log('userFlowTokenList', userFlowTokenList);
 
     storage.setExpiry(cacheKey, tokens, 5 * 60 * 1000); // Cache for 5 minutes
     return tokens;
