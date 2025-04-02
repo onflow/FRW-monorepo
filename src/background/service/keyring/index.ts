@@ -19,18 +19,8 @@ import { KEYRING_TYPE } from 'consts';
 
 import preference from '../preference';
 
-import {
-  HDKeyring,
-  type HDKeyringType,
-  type HDKeyringSerializedData,
-  type HDKeyringData,
-} from './hdKeyring';
-import {
-  type SimpleKeyPairType,
-  SimpleKeyring,
-  type SimpleKeyringData,
-  type SimpleKeyringSerializedData,
-} from './simpleKeyring';
+import { HDKeyring, type HDKeyringType, type HDKeyringData } from './hdKeyring';
+import { type SimpleKeyPairType, SimpleKeyring, type SimpleKeyringData } from './simpleKeyring';
 
 export const KEYRING_SDK_TYPES = {
   SimpleKeyring,
@@ -101,9 +91,15 @@ export type Keyring = SimpleKeyring | HDKeyring;
 type KeyringKeyData = HDKeyringData | SimpleKeyringData;
 
 interface KeyringData {
-  0: KeyringKeyData;
+  decryptedData: KeyringKeyData[];
   id: string;
 }
+
+export type RetrievePkResult = {
+  index: number;
+  keyType: 'publicKey' | 'mnemonic' | 'privateKey';
+  value: string;
+};
 
 class SimpleStore<T> {
   private state: T;
@@ -263,7 +259,7 @@ class KeyringService extends EventEmitter {
       const pubKTuple = await pk2PubKey(privateKey);
       return pubKTuple;
     } catch (error) {
-      console.error('Failed to get public key tuple:', error);
+      console.error('Failed to get public key tuple');
       throw error;
     }
   };
@@ -862,7 +858,7 @@ class KeyringService extends EventEmitter {
       this.currentKeyring.map(async (keyring) => keyring.serializeWithType())
     );
 
-    // Encrypt the serialized keyrings
+    // Encrypt the list of serialized keyrings. encryptedString = KeyringKeyData[]
     const encryptedString = await this.encryptor.encrypt(currentPassword, serializedKeyrings);
 
     // Get current ID and vaults
@@ -952,17 +948,13 @@ class KeyringService extends EventEmitter {
       );
     }
     const selectedKeyring = this.keyringList[selectedKeyringIndex];
-    if (!selectedKeyring || !selectedKeyring[0]) {
+    if (!selectedKeyring || !selectedKeyring.decryptedData) {
       throw new Error('KeyringController - selectedKeyring invalid');
     }
-    console.log('selectedKeyring', selectedKeyring);
-    console.log('this.keyringList', this.keyringList);
-    console.log('selectedKeyring[0]', selectedKeyring[0]);
-
     // remove the keyring of the previous account
     await this.clearKeyrings();
     // Restore the keyring
-    await this._restoreKeyring(selectedKeyring[0]);
+    await this._restoreKeyring(selectedKeyring.decryptedData[0]);
 
     await this._updateMemStoreKeyrings();
     // Return the current keyring
@@ -978,69 +970,37 @@ class KeyringService extends EventEmitter {
    * @param {string} password - The keyring controller password.
    * @returns {Promise<Array<Keyring>>} The keyrings.
    */
-  async retrievePk(password: string): Promise<any[]> {
-    // TODO: this can be updated to use the new vault structure, since it's retrieve from frontend, password is required
-    let vaultArray = this.store.getState().vault;
 
-    // If vault is unavailable or empty, retrieve from deepVault
-    if (!vaultArray || vaultArray.length === 0) {
-      console.warn('Vault not found, retrieving from deepVault...');
-      vaultArray = await storage.get(KEYRING_DEEP_VAULT_KEY);
+  async retrievePk(password: string): Promise<RetrievePkResult[]> {
+    // Verify the password
+    await this.verifyPassword(password);
 
-      if (!vaultArray) {
-        throw new Error(i18n.t('Cannot unlock without a previous vault or deep vault'));
-      }
-    }
+    // Extract the private key and mnemonic from the decrypted vault
+    const extractedData = this.keyringList.map((entry, index): RetrievePkResult => {
+      const keyringKeyData = entry.decryptedData[0];
 
-    // Ensure vaultArray is an array
-    if (typeof vaultArray === 'string') {
-      vaultArray = [vaultArray];
-    }
-
-    // Decrypt each entry in the vaultArray
-    const decryptedVaults: any[] = [];
-    for (const vaultEntry of vaultArray) {
-      let encryptedString;
-      if (vaultEntry && typeof vaultEntry === 'object' && Object.keys(vaultEntry).length === 1) {
-        const key = Object.keys(vaultEntry)[0];
-        encryptedString = vaultEntry[key];
-      } else if (typeof vaultEntry === 'string') {
-        encryptedString = vaultEntry;
-      } else {
-        continue;
-      }
-
-      try {
-        const decryptedVault = await this.encryptor.decrypt(password, encryptedString);
-        decryptedVaults.push(decryptedVault);
-      } catch (error) {
-        console.error('Decryption failed for an entry:', error);
-        continue;
-      }
-    }
-
-    if (decryptedVaults.length === 0) {
-      throw new Error(i18n.t('Cannot unlock without a previous vault'));
-    }
-
-    const extractedData = decryptedVaults.map((entry, index) => {
-      const item = entry[0];
-      let keyType, value;
-
-      if (item.type === 'HD Key Tree') {
-        if (item.data.activeIndexes[0] === 1) {
-          keyType = 'publicKey';
-          value = item.data.publicKey;
-        } else {
-          keyType = 'mnemonic';
-          value = item.data.mnemonic;
+      if (keyringKeyData.type === 'HD Key Tree') {
+        // Active index tells us if the key is a public key or a mnemonic
+        if (keyringKeyData.data.activeIndexes[0] === 1) {
+          return {
+            index,
+            keyType: 'publicKey',
+            value: keyringKeyData.data.publicKey || '',
+          };
         }
-      } else if (item.type === 'Simple Key Pair') {
-        keyType = 'privateKey';
-        value = item.data[0];
+        return {
+          index,
+          keyType: 'mnemonic',
+          value: keyringKeyData.data.mnemonic || '',
+        };
+      } else if (keyringKeyData.type === 'Simple Key Pair') {
+        return {
+          index,
+          keyType: 'privateKey',
+          value: keyringKeyData.data[0],
+        };
       }
-
-      return { index, keyType, value };
+      throw new Error(`Unsupported keyring type`);
     });
 
     return extractedData;
@@ -1071,34 +1031,29 @@ class KeyringService extends EventEmitter {
    * @param {Object} serialized - The serialized keyring.
    * @returns {Promise<Keyring>} The deserialized keyring.
    */
-  async _restoreKeyring(serialized: HDKeyringData | SimpleKeyringData): Promise<any> {
+  async _restoreKeyring(serialized: KeyringKeyData): Promise<Keyring> {
     const { type, data } = serialized;
-    const Keyring = this.getKeyringClassForType(type);
-    if (!Keyring) {
+    const KeyringClass = this.getKeyringClassForType(type);
+    if (!KeyringClass) {
       throw new Error(`Keyring type ${type} not found`);
     }
-    const keyring = new Keyring();
+    const keyring = new KeyringClass();
 
-    try {
-      // For HD Key Tree, initialize with just the mnemonic and indexes
-      if (type === 'HD Key Tree' && data) {
-        await (keyring as HDKeyring).deserialize({
-          mnemonic: (data.mnemonic as string) || '',
-          activeIndexes: (data.activeIndexes as number[]) || [0],
-          derivationPath: data.derivationPath || FLOW_BIP44_PATH,
-          passphrase: data.passphrase || '',
-        });
-      } else {
-        await (keyring as SimpleKeyring).deserialize(data as string[]);
-      }
-
-      await keyring.getAccounts();
-      this.currentKeyring.push(keyring);
-      return keyring;
-    } catch (error) {
-      console.error('Restore keyring error:', error);
-      throw error;
+    // For HD Key Tree, initialize with just the mnemonic and indexes
+    if (type === 'HD Key Tree' && data) {
+      await (keyring as HDKeyring).deserialize({
+        mnemonic: (data.mnemonic as string) || '',
+        activeIndexes: (data.activeIndexes as number[]) || [0],
+        derivationPath: data.derivationPath || FLOW_BIP44_PATH,
+        passphrase: data.passphrase || '',
+      });
+    } else {
+      await (keyring as SimpleKeyring).deserialize(data as string[]);
     }
+
+    await keyring.getAccounts();
+    this.currentKeyring.push(keyring);
+    return keyring;
   }
 
   /**
@@ -1360,12 +1315,14 @@ class KeyringService extends EventEmitter {
         }
 
         // Decrypt the entry
-        const decryptedData = await this.encryptor.decrypt(password, encryptedData);
-        console.log('decryptedData', decryptedData);
-        console.log('typeof decryptedData', typeof decryptedData);
+        // encryptedString = KeyringKeyData[]
+        const decryptedData = (await this.encryptor.decrypt(
+          password,
+          encryptedData
+        )) as unknown as KeyringKeyData[];
         let keyringData = {
           id,
-          0: decryptedData[0] as unknown as KeyringKeyData,
+          decryptedData: decryptedData,
         };
         // this returns an array of KeyringKeyDataV2
         if (this.store.getState().vaultVersion === KEYRING_STATE_VAULT_V1) {
@@ -1375,7 +1332,8 @@ class KeyringService extends EventEmitter {
 
         decryptedKeyrings.push(keyringData);
       } catch (err) {
-        console.error(`Failed to process vault entry:`, err, entry);
+        // Don't print the error as it may contain sensitive data
+        console.error(`Failed to process vault entry`);
         // Continue with next entry
       }
     }
@@ -1387,7 +1345,8 @@ class KeyringService extends EventEmitter {
     const encryptedVaultArray: VaultEntryV2[] = [];
 
     for (const keyring of vaultArray) {
-      const serializedKeyringData: KeyringKeyData[] = [keyring[0]];
+      const serializedKeyringData: KeyringKeyData[] = keyring.decryptedData;
+      // encryptedString = KeyringKeyData[]
       const encryptedData = await this.encryptor.encrypt(password, serializedKeyringData);
       encryptedVaultArray.push({
         id: keyring.id,
@@ -1543,47 +1502,46 @@ class KeyringService extends EventEmitter {
 
   // Vault Translation
   // Translate decrypted vault data to the new format
-  private async translateVaultV1toV2(keyringData: KeyringData): Promise<KeyringData> {
+  private async translateVaultV1toV2(keyringDataV1: KeyringData): Promise<KeyringData> {
     // Get the logged in accounts
     const loggedInAccounts: LoggedInAccount[] = (await storage.get('loggedInAccounts')) || [];
 
-    const keyringId = keyringData.id;
-    const keyringDataV1 = keyringData[0];
-    const keyringDataType = keyringDataV1.type;
-    if (keyringDataType === 'Simple Key Pair') {
-      return {
-        id: keyringData.id,
-        0: {
-          type: keyringDataType,
-          data: keyringDataV1.data as string[],
-        },
-      };
-    }
-    if (keyringDataType === 'HD Key Tree' && !Array.isArray(keyringDataV1.data)) {
-      // Figure out the derivation path from storage
-      const accountIndex = loggedInAccounts.findIndex((account) => account.id === keyringId);
-      let derivationPath = FLOW_BIP44_PATH;
-      let passphrase = '';
-      if (accountIndex !== -1) {
-        derivationPath = (await storage.get(`user${accountIndex}_path`)) ?? FLOW_BIP44_PATH;
-        passphrase = (await storage.get(`user${accountIndex}_phrase`)) ?? '';
-      }
-      return {
-        id: keyringData.id,
-        0: {
-          type: keyringDataType,
-          data: {
-            mnemonic: keyringDataV1.data.mnemonic || '',
-            activeIndexes: keyringDataV1.data.activeIndexes || [0],
-            publicKey: keyringDataV1.data.publicKey || '',
-            derivationPath,
-            passphrase,
-          },
-        },
-      };
-    }
-    // Unsupported keyring type
-    throw new Error('Unsupported keyring type');
+    const keyringId = keyringDataV1.id;
+    const keyringDataV2: KeyringKeyData[] = await Promise.all(
+      keyringDataV1.decryptedData.map(async (keyringDataV1): Promise<KeyringKeyData> => {
+        const keyringDataType = keyringDataV1.type;
+        if (keyringDataType === 'Simple Key Pair') {
+          return keyringDataV1;
+        }
+        if (keyringDataType === 'HD Key Tree') {
+          // Figure out the derivation path from storage
+          const accountIndex = loggedInAccounts.findIndex((account) => account.id === keyringId);
+          let derivationPath = FLOW_BIP44_PATH;
+          let passphrase = '';
+          if (accountIndex !== -1) {
+            derivationPath = (await storage.get(`user${accountIndex}_path`)) ?? FLOW_BIP44_PATH;
+            passphrase = (await storage.get(`user${accountIndex}_phrase`)) ?? '';
+          }
+          return {
+            type: keyringDataType,
+            data: {
+              mnemonic: keyringDataV1.data.mnemonic || '',
+              activeIndexes: keyringDataV1.data.activeIndexes || [0],
+              publicKey: keyringDataV1.data.publicKey || '',
+              derivationPath,
+              passphrase,
+            },
+          };
+        }
+
+        // Unsupported keyring type
+        throw new Error('Unsupported keyring type');
+      })
+    );
+    return {
+      id: keyringId,
+      decryptedData: keyringDataV2,
+    };
   }
 }
 
