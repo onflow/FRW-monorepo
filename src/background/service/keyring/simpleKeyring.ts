@@ -2,9 +2,15 @@ import { Wallet } from 'ethers';
 
 import { normalizeAddress } from 'background/utils';
 
+export type SimpleKeyringSerializedData = string[];
+export type SimpleKeyPairType = 'Simple Key Pair';
+export type SimpleKeyringData = {
+  type: SimpleKeyPairType;
+  data: SimpleKeyringSerializedData;
+};
 export class SimpleKeyring {
-  static type = 'Simple Key Pair';
-  type = 'Simple Key Pair';
+  static type: SimpleKeyPairType = 'Simple Key Pair';
+  type: SimpleKeyPairType = 'Simple Key Pair';
   wallets: { privateKey: Buffer }[] = [];
 
   constructor(privateKeys?: string[]) {
@@ -13,11 +19,18 @@ export class SimpleKeyring {
     }
   }
 
-  async serialize() {
+  async serialize(): Promise<SimpleKeyringSerializedData> {
     return this.wallets.map((w) => w.privateKey.toString('hex'));
   }
 
-  async deserialize(privateKeys: string[]) {
+  async serializeWithType(): Promise<SimpleKeyringData> {
+    return {
+      type: this.type,
+      data: await this.serialize(),
+    };
+  }
+
+  async deserialize(privateKeys: SimpleKeyringSerializedData) {
     this.wallets = privateKeys.map((pk) => ({
       privateKey: Buffer.from(pk, 'hex'),
     }));

@@ -85,7 +85,7 @@ describe('Keyring Boot and Mnemonics Test', () => {
   it('generates mock data with real encryption', async () => {
     // Create encrypted booted data manually for testing
     const encryptedBooted = await encryptor.encrypt(MOCK_PASSWORD, 'true');
-    console.log('Encrypted booted data:', encryptedBooted);
+    // console.log('Encrypted booted data:', encryptedBooted);
 
     // Verify we can decrypt it
     const decryptedBooted = await encryptor.decrypt(MOCK_PASSWORD, encryptedBooted);
@@ -106,7 +106,7 @@ describe('Keyring Boot and Mnemonics Test', () => {
 
     // Encrypt the vault data
     const encryptedVaultData = await encryptor.encrypt(MOCK_PASSWORD, mockVaultData);
-    console.log('Encrypted vault data:', encryptedVaultData);
+    // console.log('Encrypted vault data:', encryptedVaultData);
 
     // Verify we can decrypt the vault data
     const decryptedVaultData = await encryptor.decrypt(MOCK_PASSWORD, encryptedVaultData);
@@ -138,9 +138,9 @@ describe('Keyring Boot and Mnemonics Test', () => {
     const mockPublicKeyTuple = MOCK_KEYS.publicKeys;
     const mockPrivateKey = MOCK_KEYS.privateKey;
 
-    console.log('\nGenerated Mock Data with Real Encryption:');
-    console.log('---------------------------------------');
-    console.log(JSON.stringify(mockData, null, 2));
+    // console.log('\nGenerated Mock Data with Real Encryption:');
+    // console.log('---------------------------------------');
+    // console.log(JSON.stringify(mockData, null, 2));
 
     // Now let's verify we can actually use this to unlock a KeyringService
 
