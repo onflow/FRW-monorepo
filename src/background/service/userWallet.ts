@@ -563,7 +563,6 @@ class UserWallet {
     shouldCoverFee: boolean = false
   ): Promise<string> => {
     const scriptName = this.extractScriptName(cadence);
-    //add proxy
     try {
       const allowed = await wallet.allowLilicoPay();
       const payerFunction = shouldCoverFee
