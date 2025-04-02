@@ -14,17 +14,17 @@ import {
   type User,
 } from 'firebase/auth/web-extension';
 import { getInstallations, getId } from 'firebase/installations';
+import type { TokenInfo } from 'flow-native-token-registry';
 import log from 'loglevel';
 
 import { storage } from '@/background/webapi';
-import type { TokenInfo, BalanceMap } from '@/shared/types/coin-types';
+import type { ExtendedTokenInfo, BalanceMap } from '@/shared/types/coin-types';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
 import {
   type LoggedInAccountWithIndex,
   type LoggedInAccount,
   type FlowAddress,
   type ActiveChildType,
-  type ExtendedTokenInfo,
   type PublicKeyAccount,
   isEvmAccountType,
 } from '@/shared/types/wallet-types';
@@ -122,8 +122,15 @@ interface EvmApiResponse {
   data: EvmTokenResponse[];
 }
 
-type FlowApiResponse = FlowTokenResponse[];
+type FlowApiResponse = { result: FlowTokenResponse[]; storage: StorageResponse };
 
+type StorageResponse = {
+  storageUsedInMB: string;
+  storageAvailableInMB: string;
+  storageCapacityInMB: string;
+  lockedFLOWforStorage: string;
+  availableBalanceToUse: string;
+};
 export interface OpenApiConfigValue {
   path: string;
   method: Method;
@@ -1445,7 +1452,7 @@ class OpenApiService {
     storage.setExpiry(`TokenList${network}${chainType}`, ftList, 600000);
   };
 
-  getEnabledTokenList = async (network = '') => {
+  getEnabledTokenList = async (network = ''): Promise<ExtendedTokenInfo[]> => {
     // const tokenList = await remoteFetch.flowCoins();
     if (!network) {
       network = await userWalletService.getNetwork();
@@ -1470,7 +1477,7 @@ class OpenApiService {
       values = {};
     }
 
-    const tokenItems: TokenInfo[] = [];
+    const tokenItems: ExtendedTokenInfo[] = [];
     const tokenMap = {};
     if (isChild !== 'evm') {
       tokenList.forEach((token) => {
@@ -2071,6 +2078,7 @@ class OpenApiService {
     address: string,
     network: string
   ): Promise<ExtendedTokenInfo[]> {
+    console.log('fetchUserFlowTokens', address, network);
     const cacheKey = `flow_tokens_${address}_${network}`;
     const cachedFlowData = await storage.getExpiry(cacheKey);
 
@@ -2085,13 +2093,13 @@ class OpenApiService {
       {},
       WEB_NEXT_URL
     );
-
-    if (!userFlowTokenList?.length) {
+    console.log('userFlowTokenList', userFlowTokenList);
+    if (!userFlowTokenList?.result?.length) {
       return [];
     }
 
     // Convert FlowTokenResponse to ExtendedTokenInfo
-    const tokens = userFlowTokenList.map(
+    const tokens = userFlowTokenList.result.map(
       (token): ExtendedTokenInfo => ({
         id: token.identifier,
         name: token.name,
@@ -2116,10 +2124,11 @@ class OpenApiService {
         balance: token.balance || '0',
         // Add CoinItem properties
         coin: token.name, // redundant for compatibility
-        unit: token.symbol, // redundant for compatibility
+        unit: token.symbol ?? token.contractName, // redundant for compatibility
         icon: token.logos?.items?.[0]?.file?.url || '', // redundant for compatibility
       })
     );
+    console.log('userFlowTokenList', userFlowTokenList);
 
     storage.setExpiry(cacheKey, tokens, 5 * 60 * 1000); // Cache for 5 minutes
     return tokens;

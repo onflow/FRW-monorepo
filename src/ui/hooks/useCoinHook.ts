@@ -42,17 +42,17 @@ export const useCoins = () => {
 
       // Single pass through the data
       for (const coin of storageData) {
-        const lowerUnit = coin.unit.toLowerCase();
+        const coinId = coin.id.toLowerCase();
 
         // Handle unique tokens
-        if (!uniqueTokenMap.has(lowerUnit)) {
-          uniqueTokenMap.set(lowerUnit, coin);
+        if (!uniqueTokenMap.has(coinId)) {
+          uniqueTokenMap.set(coinId, coin);
         }
 
         // Calculate sum and flow balance
         if (coin.total !== null) {
           sum = sum.plus(new BN(coin.total));
-          if (lowerUnit === 'flow') {
+          if (coin.unit && coin.unit.toLowerCase() === 'flow') {
             flowBalance = new BN(coin.balance);
           }
         }

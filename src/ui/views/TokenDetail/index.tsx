@@ -7,7 +7,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 
 import { storage } from '@/background/webapi';
-import type { CoinItem, TokenInfo } from '@/shared/types/coin-types';
+import type { CoinItem, ExtendedTokenInfo } from '@/shared/types/coin-types';
 import type { PriceProvider } from '@/shared/types/network-types';
 import { type ActiveChildType } from '@/shared/types/wallet-types';
 import StorageUsageCard from '@/ui/FRWComponent/StorageUsageCard';

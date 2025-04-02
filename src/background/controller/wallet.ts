@@ -9,6 +9,7 @@ import { ethErrors } from 'eth-rpc-errors';
 import * as ethUtil from 'ethereumjs-util';
 import { getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth/web-extension';
+import { type TokenInfo } from 'flow-native-token-registry';
 import { encode } from 'rlp';
 import web3, { TransactionError, Web3 } from 'web3';
 
@@ -24,7 +25,7 @@ import {
   formPubKeyTuple,
 } from '@/background/utils/modules/publicPrivateKey';
 import eventBus from '@/eventBus';
-import type { CoinItem, TokenInfo } from '@/shared/types/coin-types';
+import type { CoinItem, ExtendedTokenInfo } from '@/shared/types/coin-types';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
 import { type PublicKeyTuple } from '@/shared/types/key-types';
 import { ContactType } from '@/shared/types/network-types';
@@ -1249,7 +1250,7 @@ export class WalletController extends BaseController {
    * @param _expiry Expiry time in milliseconds
    * @returns Array of coin items
    */
-  refreshCoinList = async (_expiry = 60000): Promise<CoinItem[]> => {
+  refreshCoinList = async (_expiry = 60000): Promise<ExtendedTokenInfo[]> => {
     try {
       const isChild = await this.getActiveWallet();
 
@@ -1266,46 +1267,12 @@ export class WalletController extends BaseController {
       // Get network and address
       const network = await this.getNetwork();
       const address = await this.getCurrentAddress();
-
-      // Fetch token list, balances and prices in parallel
-      const [tokenList, allBalanceMap, priceData] = await Promise.all([
-        openapiService.getEnabledTokenList(network),
-        openapiService.getTokenBalanceStorage(address || '0x'),
-        openapiService.getTokenPrices('pricesMap'),
-      ]);
-
-      // Check if price data is empty
-      const isPriceDataEmpty =
-        Object.keys(priceData).length === 0 && priceData.constructor === Object;
-      const defaultPrice = { price: { last: '0.0', change: { percentage: '0.0' } } };
-
-      // Process token prices in parallel with optimized error handling
-      const allPrice = await Promise.all(
-        tokenList.map(async (token) => {
-          try {
-            if (isPriceDataEmpty) {
-              return defaultPrice;
-            }
-            return await this.tokenPrice(
-              token.symbol,
-              token.address,
-              priceData,
-              token.contractName
-            );
-          } catch (error) {
-            console.error(`Error fetching price for token ${token.address}:`, error);
-            return null;
-          }
-        })
-      );
-
-      // Map tokens to coin items
-      const coins = this.mapTokensBalancePrice(tokenList, allBalanceMap, allPrice, isChild);
+      const userTokenResult = await openapiService.getUserTokens(address || '0x', network);
 
       // Update storage
-      await coinListService.addCoins(coins, network);
+      await coinListService.addCoins(userTokenResult, network);
 
-      return coins;
+      return userTokenResult;
     } catch (err) {
       if (err.message === 'Operation aborted') {
         console.error('refreshCoinList operation aborted.');
@@ -1316,121 +1283,19 @@ export class WalletController extends BaseController {
     }
   };
 
-  /**
-   * Maps token data with balances and prices to create CoinItem objects
-   * @param tokenList List of tokens
-   * @param balanceMap Map of token balances
-   * @param priceData Price data for tokens
-   * @param isChild Whether this is a child account
-   * @param availableFlowBalance Available flow balance for non-child accounts
-   * @returns Array of CoinItem objects
-   */
-  mapTokensBalancePrice = (
-    tokenList: any[],
-    balanceMap: { [key: string]: string },
-    priceData: any[],
-    isChild: FlowAddress | null
-  ): CoinItem[] => {
-    return tokenList.map((token, index): CoinItem => {
-      const tokenId = `A.${token.address.slice(2)}.${token.contractName}`;
-      const tokenIdVault = `A.${token.address.slice(2)}.${token.contractName}.Vault`;
-      const isFlow = token.symbol.toLowerCase() === 'flow';
-
-      // Get balance from balanceMap
-      const balance = isFlow
-        ? balanceMap['availableFlowToken'] || '0'
-        : balanceMap[tokenIdVault] || '0';
-
-      // Get price data
-      const priceInfo = priceData[index] || null;
-      const price = priceInfo && priceInfo.price ? new BN(priceInfo.price.last).toNumber() : 0;
-
-      // Calculate change percentage
-      const change24h =
-        priceInfo && priceInfo.price && priceInfo.price.change
-          ? new BN(priceInfo.price.change.percentage).multipliedBy(100).toNumber()
-          : 0;
-
-      // Calculate total value
-      const total = price > 0 ? this.currencyBalance(balance, priceInfo.price.last) : 0;
-
-      return {
-        id: tokenId,
-        coin: token.name,
-        unit: token.symbol.toLowerCase(),
-        icon: token['logoURI'] || '',
-        balance: balance,
-        availableBalance: isFlow && !isChild ? balance : undefined,
-        price: price,
-        change24h: change24h,
-        total: total,
-
-        // Token metadata
-        chainId: token.chainId,
-        address: token.address,
-        contractName: token.contractName,
-        path: token.path
-          ? {
-              vault: token.path.vault,
-              receiver: token.path.receiver,
-              balance: token.path.balance,
-            }
-          : undefined,
-        symbol: token.symbol,
-        name: token.name,
-        description: token.description,
-        decimals: token.decimals,
-        logoURI: token.logoURI,
-        tags: token.tags,
-        evmAddress: token.evmAddress,
-        evm_address: token.evm_address,
-        flowAddress: token.flowAddress,
-      };
-    });
-  };
-
-  refreshEvmList = async (_expiry = 60000): Promise<CoinItem[]> => {
+  refreshEvmList = async (_expiry = 60000): Promise<ExtendedTokenInfo[]> => {
     const now = new Date();
     const exp = _expiry + now.getTime();
     coinListService.setExpiry(exp);
 
     const network = await this.getNetwork();
-    const evmCustomToken = (await storage.get(`${network}evmCustomToken`)) || [];
-
-    const tokenList = await openapiService.getTokenList(network);
 
     const address = await this.getRawEvmAddressWithPrefix();
     if (!isValidEthereumAddress(address)) {
       throw new Error('Invalid Ethereum address in coinlist');
     }
-
-    const allBalanceMap = await openapiService.getEvmFT(address || '0x', network);
-
-    const flowBalance = await this.getBalance(address);
-
-    const mergeBalances = (tokenList, allBalanceMap, flowBalance) => {
-      return tokenList.map((token) => {
-        const balanceInfo = allBalanceMap.find((balance) => {
-          return balance.address.toLowerCase() === token.address.toLowerCase();
-        });
-        const balanceBN = balanceInfo
-          ? new BN(balanceInfo.balance).div(new BN(10).pow(new BN(balanceInfo.decimals)))
-          : new BN(0);
-
-        let balance = balanceBN.toString();
-        if (token.symbol.toLowerCase() === 'flow') {
-          const flowBalanceBN = new BN(flowBalance).div(new BN(10).pow(new BN(18)));
-          balance = flowBalanceBN.toString();
-        }
-
-        return {
-          ...token,
-          balance,
-        };
-      });
-    };
-
-    const customToken = (coins: CoinItem[], evmCustomToken: any): CoinItem[] => {
+    const evmCustomToken = (await storage.get(`${network}evmCustomToken`)) || [];
+    const customToken = (coins: ExtendedTokenInfo[], evmCustomToken: any): ExtendedTokenInfo[] => {
       const updatedList = [...coins];
 
       evmCustomToken.forEach((customToken) => {
@@ -1452,6 +1317,14 @@ export class WalletController extends BaseController {
             change24h: 0,
             total: 0,
             id: '',
+            // Add missing TokenInfo properties
+            address: customToken?.address || '',
+            name: customToken?.name || customToken?.unit || '',
+            contractName: customToken?.contractName || '',
+            decimals: customToken?.decimals || 8,
+            symbol: customToken?.unit || '',
+            logoURI: '',
+            path: customToken?.path || '',
           });
         }
       });
@@ -1459,56 +1332,10 @@ export class WalletController extends BaseController {
       return updatedList;
     };
 
-    const mergedList = await mergeBalances(tokenList, allBalanceMap, flowBalance);
-
-    const data = await openapiService.getTokenPrices('pricesMap');
-    const prices = tokenList.map((token) => this.evmtokenPrice(token, data));
-    const allPrice = await Promise.all(prices);
-    const coins: CoinItem[] = mergedList.map((token, index) => {
-      const tokenId = `A.${token.address.slice(2)}.${token.contractName || token.symbol}`;
-      return {
-        id: token.flowIdentifier || tokenId,
-        coin: token.name,
-        unit: token.symbol.toLowerCase(),
-        icon: token['logoURI'] || placeholder,
-        balance: token.balance,
-        price: allPrice[index] === null ? 0 : new BN(allPrice[index].price.last).toNumber(),
-        change24h:
-          allPrice[index] === null || !allPrice[index].price || !allPrice[index].price.change
-            ? 0
-            : new BN(allPrice[index].price.change.percentage).multipliedBy(100).toNumber(),
-        total:
-          allPrice[index] === null
-            ? 0
-            : this.currencyBalance(token.balance, allPrice[index].price.last),
-        custom: token.custom,
-
-        // Token metadata
-        chainId: token.chainId,
-        address: token.address,
-        contractName: token.contractName,
-        path: token.path
-          ? {
-              vault: token.path.vault,
-              receiver: token.path.receiver,
-              balance: token.path.balance,
-            }
-          : undefined,
-        symbol: token.symbol,
-        name: token.name,
-        description: token.description,
-        decimals: token.decimals,
-        logoURI: token.logoURI,
-        tags: token.tags,
-        evmAddress: token.evmAddress,
-        evm_address: token.evm_address,
-        flowAddress: token.flowAddress,
-      };
-    });
-
-    const coinWithCustom = await customToken(coins, evmCustomToken);
-    coinListService.addCoins(coinWithCustom, network, 'evm');
-    return coinWithCustom;
+    const userTokenResult = await openapiService.getUserTokens(address || '0x', network);
+    const tokenFinalResult = customToken(userTokenResult, evmCustomToken);
+    coinListService.addCoins(tokenFinalResult, network, 'evm');
+    return tokenFinalResult;
   };
 
   reqeustEvmNft = async () => {
