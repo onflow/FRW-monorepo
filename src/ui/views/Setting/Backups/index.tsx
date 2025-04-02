@@ -87,10 +87,10 @@ const ManageBackups = () => {
     }
   }, [checkBackup, wallet]);
 
-  const syncBackup = async () => {
+  const syncBackup = async (password: string) => {
     try {
       setLoading(true);
-      await wallet.syncBackup();
+      await wallet.syncBackup(password);
       await checkBackup();
       setLoading(false);
     } catch (e) {
@@ -158,7 +158,7 @@ const ManageBackups = () => {
               <CheckCircleIcon size={20} color={'#41CC5D'} />
             </IconButton>
           ) : (
-            <Button variant="text" onClick={syncBackup}>
+            <Button variant="text" onClick={() => syncBackup(password)}>
               {chrome.i18n.getMessage('Sync')}
             </Button>
           )

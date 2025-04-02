@@ -310,7 +310,7 @@ const Sync = () => {
           await usewallet.saveIndex(userInfo.username);
           await usewallet.boot(password);
           const formatted = mnemonic.trim().split(/\s+/g).join(' ');
-          await usewallet.createKeyringWithMnemonics(formatted);
+          await usewallet.createKeyringWithMnemonics(password, formatted);
           setActiveTab(STEPS.ALL_SET);
         } catch (error) {
           throw new Error(error.message);

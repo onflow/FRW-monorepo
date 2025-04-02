@@ -206,7 +206,7 @@ const GoogleRecoverPassword = ({ handleSwitchTab, mnemonic, username, lastPasswo
       await usewallet.signInWithMnemonic(mnemonic);
       await usewallet.boot(password);
       const formatted = mnemonic.trim().split(/\s+/g).join(' ');
-      await usewallet.createKeyringWithMnemonics(formatted);
+      await usewallet.createKeyringWithMnemonics(password, formatted);
       setLoading(false);
       handleSwitchTab();
     } catch (e) {
