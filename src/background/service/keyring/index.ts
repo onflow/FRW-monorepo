@@ -19,8 +19,18 @@ import { KEYRING_TYPE } from 'consts';
 
 import preference from '../preference';
 
-import { HDKeyring } from './hdKeyring';
-import { SimpleKeyring } from './simpleKeyring';
+import {
+  HDKeyring,
+  type HDKeyringType,
+  type HDKeyringSerializedData,
+  type HDKeyringData,
+} from './hdKeyring';
+import {
+  type SimpleKeyPairType,
+  SimpleKeyring,
+  type SimpleKeyringData,
+  type SimpleKeyringSerializedData,
+} from './simpleKeyring';
 
 export const KEYRING_SDK_TYPES = {
   SimpleKeyring,
@@ -85,28 +95,10 @@ const KEYRING_STATE_CURRENT_KEY = KEYRING_STATE_V2_KEY;
 const KEYRING_STATE_VAULT_V1 = 1;
 const KEYRING_STATE_VAULT_V2 = 2;
 
-export type KeyringType = 'HD Key Tree' | 'Simple Key Pair';
+export type KeyringType = HDKeyringType | SimpleKeyPairType;
 export type Keyring = SimpleKeyring | HDKeyring;
 
-type SimpleKeyringData = {
-  type: 'Simple Key Pair';
-  data: string[];
-};
-
-type HDKeyringData = {
-  type: 'HD Key Tree';
-  data: {
-    mnemonic?: string;
-    activeIndexes: number[];
-    publicKey?: string;
-    derivationPath: string;
-    passphrase: string;
-  };
-};
-
-type KeyringKeyData = (HDKeyringData | SimpleKeyringData) & {
-  type: KeyringType;
-};
+type KeyringKeyData = HDKeyringData | SimpleKeyringData;
 
 interface KeyringData {
   0: KeyringKeyData;
@@ -154,7 +146,6 @@ class KeyringService extends EventEmitter {
   publicKeyCache: Map<string, PublicKeyTuple> = new Map();
   encryptor: typeof encryptor = encryptor;
   password: string | null = null;
-
   constructor() {
     super();
     this.keyringTypes = Object.values(KEYRING_SDK_TYPES);
@@ -867,21 +858,12 @@ class KeyringService extends EventEmitter {
     const currentPassword = this.password;
 
     // Serialize the current keyrings.
-    const serializedKeyrings = await Promise.all(
-      this.currentKeyring.map(async (keyring) => {
-        const [type, data] = await Promise.all([keyring.type, keyring.serialize()]);
-        return {
-          type,
-          data,
-        };
-      })
+    const serializedKeyrings: KeyringKeyData[] = await Promise.all(
+      this.currentKeyring.map(async (keyring) => keyring.serializeWithType())
     );
 
     // Encrypt the serialized keyrings
-    const encryptedString = await this.encryptor.encrypt(
-      currentPassword,
-      serializedKeyrings as unknown as Buffer
-    );
+    const encryptedString = await this.encryptor.encrypt(currentPassword, serializedKeyrings);
 
     // Get current ID and vaults
     const currentId = await storage.get('currentId');
@@ -969,10 +951,14 @@ class KeyringService extends EventEmitter {
         'somehow the keyring is not found in the keyringList when we have a valid id'
       );
     }
-    const selectedKeyring: KeyringData = this.keyringList[selectedKeyringIndex];
+    const selectedKeyring = this.keyringList[selectedKeyringIndex];
     if (!selectedKeyring || !selectedKeyring[0]) {
       throw new Error('KeyringController - selectedKeyring invalid');
     }
+    console.log('selectedKeyring', selectedKeyring);
+    console.log('this.keyringList', this.keyringList);
+    console.log('selectedKeyring[0]', selectedKeyring[0]);
+
     // remove the keyring of the previous account
     await this.clearKeyrings();
     // Restore the keyring
@@ -1375,10 +1361,11 @@ class KeyringService extends EventEmitter {
 
         // Decrypt the entry
         const decryptedData = await this.encryptor.decrypt(password, encryptedData);
-
+        console.log('decryptedData', decryptedData);
+        console.log('typeof decryptedData', typeof decryptedData);
         let keyringData = {
           id,
-          0: decryptedData as unknown as KeyringKeyData,
+          0: decryptedData[0] as unknown as KeyringKeyData,
         };
         // this returns an array of KeyringKeyDataV2
         if (this.store.getState().vaultVersion === KEYRING_STATE_VAULT_V1) {
@@ -1400,7 +1387,8 @@ class KeyringService extends EventEmitter {
     const encryptedVaultArray: VaultEntryV2[] = [];
 
     for (const keyring of vaultArray) {
-      const encryptedData = await this.encryptor.encrypt(password, keyring[0]);
+      const serializedKeyringData: KeyringKeyData[] = [keyring[0]];
+      const encryptedData = await this.encryptor.encrypt(password, serializedKeyringData);
       encryptedVaultArray.push({
         id: keyring.id,
         encryptedData,
