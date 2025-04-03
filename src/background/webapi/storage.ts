@@ -24,15 +24,15 @@ const getExpiry = async (prop: string) => {
   return storageData;
 };
 
-const set = (prop: string, value: any): Promise<void> => {
+const set = (prop: string, value: unknown): Promise<void> => {
   return chrome.storage.local.set({ [prop]: value });
 };
 
-const setSession = (prop: string, value: any): Promise<void> => {
+const setSession = (prop: string, value: unknown): Promise<void> => {
   return chrome.storage.session?.set({ [prop]: value });
 };
 
-const setExpiry = async (prop: string, value: any, ttl: number): Promise<void> => {
+const setExpiry = async (prop: string, value: unknown, ttl: number): Promise<void> => {
   const now = new Date();
 
   // `item` is an object which contains the original value
