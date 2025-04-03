@@ -124,7 +124,7 @@ describe('useNetworkHook', () => {
 
     handleStorageChange(
       {
-        userWallets: {
+        [userWalletsKey]: {
           newValue: { network: 'testnet', emulatorMode: true },
           oldValue: { network: 'mainnet', emulatorMode: false },
         },
