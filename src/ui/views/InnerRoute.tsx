@@ -230,7 +230,7 @@ const InnerRoute = (props: RouteComponentProps) => {
             <PrivateRoute path={`${props.match.url}/setting/account`}>
               <Account />
             </PrivateRoute>
-            <PrivateRoute path={`${props.match.url}/setting/backups`}>
+            <PrivateRoute path={`${props.match.url}/setting/backups`} exact>
               <ManageBackups />
             </PrivateRoute>
             <PrivateRoute path={`${props.match.url}/setting/backups/password`}>

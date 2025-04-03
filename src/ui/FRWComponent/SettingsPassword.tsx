@@ -32,6 +32,15 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
+if (process.env.NODE_ENV !== 'development') {
+  if (!!process.env.DEV_PASSWORD) {
+    throw new Error('DEV_PASSWORD should only be set in development environment');
+  }
+}
+
+const DEFAULT_PASSWORD =
+  process.env.NODE_ENV === 'development' ? process.env.DEV_PASSWORD || '' : '';
+
 const SettingsPassword = ({
   verifiedUrl,
   children = null,
@@ -42,7 +51,7 @@ const SettingsPassword = ({
   const wallet = useWallet();
   const classes = useStyles();
   const history = useHistory();
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState(DEFAULT_PASSWORD);
   const [isMatch, setMatch] = useState(false);
 
   const verify = useCallback(() => {

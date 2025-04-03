@@ -80,7 +80,8 @@ const ManageBackups = () => {
       setHasBackup(hasBackup);
       setLoading(false);
     } catch (e) {
-      console.error(e);
+      console.error('An error occurred while checking the backup');
+    } finally {
       setLoading(false);
     }
   }, [setLoading, setHasBackup, wallet]);
@@ -93,25 +94,23 @@ const ManageBackups = () => {
     }
   }, [checkBackup, wallet]);
 
-  const syncBackup = async () => {
+  const syncBackup = useCallback(async () => {
     try {
-      console.log('location.state', location.state);
       if (!location.state?.password) {
-        console.log('No password');
         // Navigate to the password page
         history.push('/dashboard/setting/backups/password');
         return;
       }
-      console.log('have password');
-      // setLoading(true);
-      // await wallet.syncBackup(location.state.password);
-      // await checkBackup();
-      // setLoading(false);
+      setLoading(true);
+      await wallet.syncBackup(location.state.password);
+      await checkBackup();
+      setLoading(false);
     } catch (e) {
-      console.error(e);
+      console.error('An error occurred while syncing the backup');
+    } finally {
       setLoading(false);
     }
-  };
+  }, [checkBackup, history, location.state, wallet]);
 
   const deleteBackup = async () => {
     try {
@@ -145,7 +144,7 @@ const ManageBackups = () => {
 
       localStorage.setItem('backupAccounts', JSON.stringify(accounts));
     } catch (e) {
-      console.error(e);
+      console.error('An error occurred while getting the Google Drive permission');
     } finally {
       setLoading(false);
     }
