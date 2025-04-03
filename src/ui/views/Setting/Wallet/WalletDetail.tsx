@@ -21,6 +21,11 @@ import { Link } from 'react-router-dom';
 
 import { storage } from '@/background/webapi';
 import type { StorageInfo } from '@/shared/types/network-types';
+import {
+  type Emoji,
+  type MainAccountWithBalance,
+  type WalletAccountWithBalance,
+} from '@/shared/types/wallet-types';
 import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
 import { LLHeader } from '@/ui/FRWComponent';
 import ResetModal from '@/ui/FRWComponent/PopupModal/resetModal';
@@ -231,17 +236,16 @@ const WalletDetail = () => {
   const classes = useStyles();
   const wallet = useWallet();
 
-  const [, setLoading] = useState(true);
-  const [userWallet, setWallet] = useState<any>(null);
-  const [, setWalletName] = useState('');
+  const [userWallet, setWallet] = useState<
+    WalletAccountWithBalance | MainAccountWithBalance | null
+  >(null);
   const [showProfile, setShowProfile] = useState(false);
   const [gasKillSwitch, setGasKillSwitch] = useState(false);
   const [modeGas, setGasMode] = useState(false);
   const [showError, setShowError] = useState(false);
-  const [, setWalletList] = useState([]);
   const [storageInfo, setStorageInfo] = useState<StorageInfo | null>(null);
   const [isKeyphrase, setIsKeyphrase] = useState(false);
-  const [emoji, setEmoji] = useState<any>(tempEmoji);
+  const [emoji, setEmoji] = useState<Emoji | null>(null);
   const [showResetModal, setShowResetModal] = useState(false);
 
   const handleErrorClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
@@ -283,27 +287,19 @@ const WalletDetail = () => {
     setEmoji(emoji);
   };
 
-  const wallets = (data) => {
-    return (data || []).map((wallet, index) => {
-      return {
-        id: index,
-        name: 'Wallet',
-        address: withPrefix(wallet.blockchain[0].address),
-        key: index,
-      };
-    });
-  };
-
   const setUserWallet = useCallback(async () => {
     await wallet.setDashIndex(3);
-    const savedWallet = await storage.get('walletDetail');
-    const walletDetail = JSON.parse(savedWallet);
+    const walletDetail: {
+      wallet: WalletAccountWithBalance;
+      selectedEmoji: Emoji;
+    } = JSON.parse(await storage.get('walletDetail'));
     if (walletDetail) {
-      setWallet([walletDetail.wallet]);
-      const selectingEmoji = {};
-      selectingEmoji['name'] = walletDetail.wallet.name;
-      selectingEmoji['emoji'] = walletDetail.wallet.icon;
-      selectingEmoji['bgcolor'] = walletDetail.wallet.color;
+      setWallet(walletDetail.wallet);
+      const selectingEmoji: Emoji = {
+        name: walletDetail.wallet.name,
+        emoji: walletDetail.wallet.icon,
+        bgcolor: walletDetail.wallet.color,
+      };
       setEmoji(selectingEmoji);
     }
   }, [wallet]);
@@ -326,24 +322,16 @@ const WalletDetail = () => {
   }, [wallet]);
 
   useEffect(() => {
-    setUserWallet();
-    loadGasKillSwitch();
-    loadGasMode();
-    loadStorageInfo();
-    checkKeyphrase();
-  }, [checkKeyphrase, loadGasKillSwitch, loadGasMode, loadStorageInfo, setUserWallet]);
-
-  useEffect(() => {
-    const list = wallets(userWallet);
-    setWalletList(list);
-    if (list.length > 0) {
-      const currentWallet = list[0];
-      const walletName = currentWallet.name;
-      setWalletName(walletName);
+    try {
+      setUserWallet();
+      loadGasKillSwitch();
+      loadGasMode();
+      loadStorageInfo();
+      checkKeyphrase();
+    } catch (error) {
+      console.error(error);
     }
-
-    setLoading(userWallet === null);
-  }, [userWallet]);
+  }, [checkKeyphrase, loadGasKillSwitch, loadGasMode, loadStorageInfo, setUserWallet]);
 
   return (
     <div className="page" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -374,12 +362,12 @@ const WalletDetail = () => {
                     borderRadius: '32px',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    backgroundColor: emoji['bgcolor'],
+                    backgroundColor: emoji?.bgcolor,
                     marginRight: '12px',
                   }}
                 >
                   <Typography sx={{ fontSize: '20px', fontWeight: '600' }}>
-                    {emoji.emoji}
+                    {emoji?.emoji}
                   </Typography>
                 </Box>
                 <Typography
@@ -390,7 +378,7 @@ const WalletDetail = () => {
                     marginRight: '4px',
                   }}
                 >
-                  {emoji.name}
+                  {emoji?.name}
                 </Typography>
                 <Box sx={{ flex: '1' }}></Box>
                 <ListItemIcon aria-label="end" sx={{ minWidth: '20px' }}>
@@ -403,7 +391,7 @@ const WalletDetail = () => {
               </ListItemButton>
             </ListItem>
           </List>
-          {userWallet && !isValidEthereumAddress(userWallet[0].blockchain[0].address) && (
+          {userWallet && !isValidEthereumAddress(userWallet.address) && (
             <>
               <List className={classes.list} sx={{ margin: '8px auto 8px auto', pt: 0, pb: 0 }}>
                 <ListItem

@@ -18,6 +18,7 @@ import {
   type MainAccount,
   type WalletAccount,
   type WalletAccountWithBalance,
+  type Emoji,
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { LLHeader } from '@/ui/FRWComponent';
@@ -28,7 +29,7 @@ import { formatAddress } from 'ui/utils';
 
 import IconEnd from '../../../../components/iconfont/IconAVector11Stroke';
 
-const tempEmoji = [
+const tempEmoji: Emoji[] = [
   {
     emoji: '🥥',
     name: 'Coconut',
@@ -42,15 +43,17 @@ const tempEmoji = [
 ];
 
 const Wallet = () => {
-  const { url } = useRouteMatch();
   const usewallet = useWallet();
   const { currentWallet } = useProfiles();
   const [userMainAccounts, setUserMainAccounts] = useState<MainAccountWithBalance[]>([]);
   const [evmList, setEvmList] = useState<WalletAccountWithBalance[]>([]);
   const [currentAddress, setCurrentWallet] = useState('');
-  const [emojis, setEmojis] = useState<any>(tempEmoji);
+  const [emojis, setEmojis] = useState<Emoji[]>(tempEmoji);
 
-  function handleWalletClick(wallet, eindex) {
+  function handleWalletClick(
+    wallet: MainAccountWithBalance | WalletAccountWithBalance,
+    eindex: number
+  ) {
     const selectedEmoji = emojis[eindex];
     const walletDetailInfo = { wallet, selectedEmoji };
     storage.set('walletDetail', JSON.stringify(walletDetailInfo));
@@ -91,7 +94,6 @@ const Wallet = () => {
     await usewallet.setDashIndex(3);
     const emojires = await usewallet.getEmoji();
     const mainAccounts: MainAccount[] | null = await usewallet.getMainAccounts();
-    console.log('wallet', mainAccounts);
     if (mainAccounts) {
       const mainAccountsWithBalances: MainAccountWithBalance[] =
         await fetchFlowBalances(mainAccounts);
