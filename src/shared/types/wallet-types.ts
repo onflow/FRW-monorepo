@@ -117,3 +117,13 @@ export type AccountDetails = {
 export type ChildAccountMap = {
   [key: string]: AccountDetails;
 };
+
+export type KeyIndexerAccountResponse = {
+  address: string;
+  keyId: number;
+  weight: number;
+  sigAlgo: number;
+  hashAlgo: number;
+  signing: SignAlgoString;
+  hashing: HashAlgoString;
+};

@@ -27,6 +27,7 @@ import {
   type ActiveChildType,
   type PublicKeyAccount,
   isEvmAccountType,
+  type KeyIndexerAccountResponse,
 } from '@/shared/types/wallet-types';
 import { isValidFlowAddress, isValidEthereumAddress } from '@/shared/utils/address';
 import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
@@ -140,6 +141,11 @@ export interface OpenApiConfigValue {
 export interface OpenApiStore {
   host: string;
   config: Record<string, OpenApiConfigValue>;
+}
+
+interface KeyIndexerProfileResponse {
+  publicKey: string;
+  accounts: PublicKeyAccount[];
 }
 
 // TODO: Add SDKs for Firebase products that you want to use
@@ -2036,6 +2042,24 @@ class OpenApiService {
 
     log.log('otherAccounts with index:', otherAccounts);
     return { otherAccounts, wallet, loggedInAccounts };
+  };
+
+  getAccountsWithPublicKey = async (
+    publicKey: string,
+    network: string
+  ): Promise<PublicKeyAccount[]> => {
+    const url = await this.sendRequest(
+      'GET',
+      `/api/v4/key-indexer/${publicKey}`,
+      { network },
+      {},
+      WEB_NEXT_URL
+    );
+
+    const result = await fetch(url);
+    const json: KeyIndexerProfileResponse = await result.json();
+
+    return json.accounts;
   };
 
   /**
