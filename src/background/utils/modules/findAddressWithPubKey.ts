@@ -42,21 +42,6 @@ export const getAccountsByPublicKeyTuple = async (
   return accounts;
 };
 
-type KeyIndexerAccountResponse = {
-  address: string;
-  keyId: number;
-  weight: number;
-  sigAlgo: number;
-  hashAlgo: number;
-  signing: SignAlgoString;
-  hashing: HashAlgoString;
-};
-
-type KeyIndexerProfileResponse = {
-  publicKey: string;
-  accounts: KeyIndexerAccountResponse[];
-};
-
 /*
  * Connect to the indexer to get all accounts associated with a public key
  * This is used to get the accounts for the current user
