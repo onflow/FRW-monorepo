@@ -188,7 +188,22 @@ export const useProfiles = () => {
       const formattedWallets = formatWallets(wallets);
       debug('formattedWallets ===', formattedWallets);
 
-      setWalletList(formattedWallets);
+      // Extract addresses from formatted wallets and pass as array
+      const addresses = formattedWallets.map((wallet) => wallet.address);
+      const walletsBalance = await usewallet.getAllAccountBalance(addresses);
+
+      // Add balances back to formatted wallets
+      const walletsWithBalance = formattedWallets.map((wallet) => {
+        return {
+          ...wallet,
+          balance: walletsBalance[wallet.address] || '0.00000000',
+        };
+      });
+
+      debug('walletsWithBalance ===', walletsWithBalance);
+
+      // Use walletsWithBalance instead of formattedWallets for the rest of your code
+      setWalletList(walletsWithBalance);
     } catch (error) {
       debug('Error in fetchProfileData:', error);
     } finally {
