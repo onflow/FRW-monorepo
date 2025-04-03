@@ -52,7 +52,11 @@ import {
 } from '@/shared/utils/address';
 import { getSignAlgo } from '@/shared/utils/algo';
 import { FLOW_BIP44_PATH, SIGN_ALGO_NUM_ECDSA_P256 } from '@/shared/utils/algo-constants';
-import { convertToIntegerAmount, validateAmount } from '@/shared/utils/number';
+import {
+  convertFlowBalanceToString,
+  convertToIntegerAmount,
+  validateAmount,
+} from '@/shared/utils/number';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import {
   keyringService,
@@ -1406,7 +1410,7 @@ export class WalletController extends BaseController {
 
     const allBalanceMap = await openapiService.getEvmFT(address || '0x', network);
 
-    const flowBalance = await this.getBalance(address);
+    const flowBalance = await this.getEvmBalance(address);
 
     const mergeBalances = (tokenList, allBalanceMap, flowBalance) => {
       return tokenList.map((token) => {
@@ -1744,8 +1748,9 @@ export class WalletController extends BaseController {
     return wallet;
   };
 
-  getEvmWallet = async () => {
+  getEvmWallet = async (): Promise<WalletAccount | null> => {
     const wallet = await userWalletService.getEvmWallet();
+
     return wallet;
   };
 
@@ -2410,7 +2415,7 @@ export class WalletController extends BaseController {
     return result;
   };
 
-  getBalance = async (hexEncodedAddress: string): Promise<string> => {
+  getEvmBalance = async (hexEncodedAddress: string): Promise<string> => {
     await this.getNetwork();
 
     if (hexEncodedAddress.startsWith('0x')) {
@@ -2426,21 +2431,24 @@ export class WalletController extends BaseController {
     return result;
   };
 
-  getFlowBalance = async (address) => {
+  getFlowBalance = async (address: string): Promise<string> => {
     const cacheKey = `checkFlowBalance${address}`;
-    let balance = await storage.getExpiry(cacheKey);
+    let balance: string = await storage.getExpiry(cacheKey);
     const ttl = 1 * 60 * 1000;
     if (!balance) {
       try {
-        const account = await fcl.send([fcl.getAccount(address!)]).then(fcl.decode);
-        balance = account.balance;
+        const account = await fcl.account(address);
+        // Returns the FLOW balance of the account in 10^8
+
+        balance = convertFlowBalanceToString(account.balance);
+
         if (balance) {
           // Store the result in the cache with an expiry
           await storage.setExpiry(cacheKey, balance, ttl);
         }
       } catch (error) {
         console.error('Error occurred:', error);
-        return {}; // Return an empty object in case of an error
+        return '';
       }
     }
 

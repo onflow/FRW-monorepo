@@ -13,6 +13,12 @@ import {
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useRouteMatch } from 'react-router-dom';
 
+import {
+  type MainAccountWithBalance,
+  type MainAccount,
+  type WalletAccount,
+  type WalletAccountWithBalance,
+} from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { LLHeader } from '@/ui/FRWComponent';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -39,9 +45,8 @@ const Wallet = () => {
   const { url } = useRouteMatch();
   const usewallet = useWallet();
   const { currentWallet } = useProfiles();
-  const [isLoading, setLoading] = useState(true);
-  const [userWallet, setWallet] = useState<any>([]);
-  const [evmList, setEvmList] = useState<any>([]);
+  const [userMainAccounts, setUserMainAccounts] = useState<MainAccountWithBalance[]>([]);
+  const [evmList, setEvmList] = useState<WalletAccountWithBalance[]>([]);
   const [currentAddress, setCurrentWallet] = useState('');
   const [emojis, setEmojis] = useState<any>(tempEmoji);
 
@@ -51,17 +56,15 @@ const Wallet = () => {
     storage.set('walletDetail', JSON.stringify(walletDetailInfo));
   }
 
-  const fetchBalances = useCallback(
-    async (wallet) => {
+  const fetchFlowBalances = useCallback(
+    async (mainAccounts: MainAccount[]) => {
       const updatedData = await Promise.all(
-        wallet.map(async (item) => {
-          const blockchainData = await Promise.all(
-            item.blockchain.map(async (bc) => {
-              const balance = await usewallet.getFlowBalance(bc.address);
-              return { ...bc, balance };
-            })
-          );
-          return { ...item, blockchain: blockchainData };
+        mainAccounts.map(async (account: MainAccount) => {
+          const mainAccountWithBalance: MainAccountWithBalance = {
+            ...account,
+            balance: await usewallet.getFlowBalance(account.address),
+          };
+          return mainAccountWithBalance;
         })
       );
       return updatedData;
@@ -70,22 +73,16 @@ const Wallet = () => {
   );
 
   const fetchEvmBalances = useCallback(
-    async (wallet) => {
-      const updatedData = await Promise.all(
-        wallet.map(async (item) => {
-          const blockchainData = await Promise.all(
-            item.blockchain.map(async (bc) => {
-              let balance = '';
-              if (isValidEthereumAddress(bc.address)) {
-                balance = await usewallet.getBalance(bc.address);
-              }
-              return { ...bc, balance };
-            })
-          );
-          return { ...item, blockchain: blockchainData };
+    async (evmAccounts: WalletAccount[]): Promise<WalletAccountWithBalance[]> => {
+      return Promise.all(
+        evmAccounts.map(async (item) => {
+          let balance = '';
+          if (isValidEthereumAddress(item.address)) {
+            balance = await usewallet.getEvmBalance(item.address);
+          }
+          return { ...item, balance };
         })
       );
-      return updatedData;
     },
     [usewallet]
   );
@@ -93,37 +90,24 @@ const Wallet = () => {
   const setUserWallet = useCallback(async () => {
     await usewallet.setDashIndex(3);
     const emojires = await usewallet.getEmoji();
-    const wallet = await usewallet.getMainAccounts();
-    const fectechdWallet = await fetchBalances(wallet);
-    setCurrentWallet(currentWallet.address);
-    const evmWallet = await usewallet.getEvmWallet();
-    const filteredEvm = [evmWallet].filter((evm) => evm?.address);
-    if (filteredEvm.length > 0) {
-      const fetchedEvm = await fetchEvmBalances(transformData(filteredEvm));
-      setEvmList(fetchedEvm);
+    const mainAccounts: MainAccount[] | null = await usewallet.getMainAccounts();
+    console.log('wallet', mainAccounts);
+    if (mainAccounts) {
+      const mainAccountsWithBalances: MainAccountWithBalance[] =
+        await fetchFlowBalances(mainAccounts);
+      setCurrentWallet(currentWallet.address);
+      const evmWallet: WalletAccount | null = await usewallet.getEvmWallet();
+      if (evmWallet) {
+        const filteredEvm = [evmWallet].filter((evm) => evm?.address);
+        if (filteredEvm.length > 0) {
+          const fetchedEvm = await fetchEvmBalances(filteredEvm);
+          setEvmList(fetchedEvm);
+        }
+      }
+      setEmojis(emojires);
+      setUserMainAccounts(mainAccountsWithBalances);
     }
-    setEmojis(emojires);
-    setWallet(fectechdWallet);
-  }, [usewallet, currentWallet, fetchBalances, fetchEvmBalances]);
-
-  const transformData = (data) => {
-    return data.map((item, index) => ({
-      id: item.id,
-      name: item.name,
-      chain_id: item.chain_id,
-      icon: item.icon,
-      color: item.color,
-      blockchain: [
-        {
-          id: index + 1,
-          name: item.name,
-          chain_id: item.chain_id,
-          address: item.address,
-          coins: item.coins,
-        },
-      ],
-    }));
-  };
+  }, [usewallet, currentWallet, fetchFlowBalances, fetchEvmBalances]);
 
   useEffect(() => {
     setUserWallet();
@@ -148,7 +132,7 @@ const Wallet = () => {
             pb: 0,
           }}
         >
-          {userWallet.map((item) => (
+          {userMainAccounts.map((item) => (
             <ListItem
               key={item.address}
               component={Link}
@@ -187,10 +171,7 @@ const Wallet = () => {
                 >
                   <Typography sx={{ fontSize: '20px', fontWeight: '600' }}>{item.icon}</Typography>
                 </Box>
-                <Box
-                  key={item.blockchain[0].address}
-                  sx={{ display: 'flex', flexDirection: 'column' }}
-                >
+                <Box key={item.address} sx={{ display: 'flex', flexDirection: 'column' }}>
                   <Box
                     sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                   >
@@ -206,8 +187,8 @@ const Wallet = () => {
                     </Typography>
                     <Typography
                       sx={{ color: '#808080', fontSize: '12px', fontWeight: '400' }}
-                    >{`(${item.blockchain[0].address})`}</Typography>
-                    {item.blockchain[0].address === currentAddress && (
+                    >{`(${item.address})`}</Typography>
+                    {item.address === currentAddress && (
                       <ListItemIcon style={{ display: 'flex', alignItems: 'center' }}>
                         <FiberManualRecordIcon
                           style={{
@@ -220,7 +201,7 @@ const Wallet = () => {
                     )}
                   </Box>
                   <Typography sx={{ color: '#808080', fontSize: '12px', fontWeight: '400' }}>
-                    {(item.blockchain[0].balance / 100000000).toFixed(3)} Flow
+                    {item.balance} Flow
                   </Typography>
                 </Box>
                 <Box sx={{ flex: '1' }}></Box>
@@ -284,10 +265,7 @@ const Wallet = () => {
                 >
                   <Typography sx={{ fontSize: '20px', fontWeight: '600' }}>{item.icon}</Typography>
                 </Box>
-                <Box
-                  key={item.blockchain[0].address}
-                  sx={{ display: 'flex', flexDirection: 'column' }}
-                >
+                <Box key={item.address} sx={{ display: 'flex', flexDirection: 'column' }}>
                   <Box
                     sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                   >
@@ -299,11 +277,11 @@ const Wallet = () => {
                         marginRight: '4px',
                       }}
                     >
-                      {item.blockchain[0].name}
+                      {item.name}
                     </Typography>
                     <Typography
                       sx={{ color: '#808080', fontSize: '12px', fontWeight: '400' }}
-                    >{`(${formatAddress(item.blockchain[0].address)})`}</Typography>
+                    >{`(${formatAddress(item.address)})`}</Typography>
                     <Typography
                       variant="body1"
                       component="span"
@@ -323,7 +301,7 @@ const Wallet = () => {
                     </Typography>
                   </Box>
                   <Typography sx={{ color: '#808080', fontSize: '12px', fontWeight: '400' }}>
-                    {(parseFloat(item.blockchain[0].balance) / 1e18).toFixed(3)} Flow
+                    {item.balance} Flow
                   </Typography>
                 </Box>
                 <Box sx={{ flex: '1' }}></Box>

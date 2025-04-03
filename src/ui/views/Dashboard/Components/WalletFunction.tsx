@@ -37,7 +37,7 @@ const WalletFunction = (props: WalletFunctionProps) => {
   const walletFlowBalance = useCallback(
     async (address: string) => {
       const balance = await usewallet.getFlowBalance(address);
-      return balance || 0;
+      return balance;
     },
     [usewallet]
   );

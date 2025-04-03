@@ -383,7 +383,7 @@ class UserWallet {
   getMainAccounts = (network: string): MainAccount[] | null => {
     const currentPubKey = this.store.currentPubkey;
     const profileList: WalletProfile[] = this.accounts[network];
-
+    console.log('getMainAccounts', network, currentPubKey, profileList);
     const profile = profileList.find((account) => account.publicKey === currentPubKey);
     if (profile) {
       return profile.accounts;
