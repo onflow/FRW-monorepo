@@ -1,6 +1,6 @@
 import storage from '@/background/webapi/storage';
 import { type CacheDataItem } from '@/shared/types/data-cache-types';
-
+export * from '@/shared/utils/data-cache-access';
 /**
  * BACKGROUND ONLY METHODS
  */

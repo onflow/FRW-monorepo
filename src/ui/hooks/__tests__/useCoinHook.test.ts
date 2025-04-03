@@ -1,6 +1,7 @@
 import { act } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+import { userWalletsKey } from '@/shared/utils/data-persist-keys';
 import { useWallet } from '@/ui/utils/WalletContext';
 
 import { useCoins } from '../useCoinHook';
@@ -62,7 +63,7 @@ vi.mock('@/background/webapi/storage', () => ({
           },
         });
       }
-      if (key === 'userWallets') {
+      if (key === userWalletsKey) {
         return Promise.resolve({
           currentAddress: '0x1234',
           network: 'mainnet',

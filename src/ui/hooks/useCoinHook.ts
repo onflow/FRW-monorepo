@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState, useRef } from 'react';
 import storage, { type AreaName, type StorageChange } from '@/background/webapi/storage';
 import { type CoinItem } from '@/shared/types/coin-types';
 import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
+import { userWalletsKey } from '@/shared/utils/data-persist-keys';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useCoinStore } from '@/ui/stores/coinStore';
@@ -81,7 +82,7 @@ export const useCoins = () => {
     const loadCoinList = async () => {
       try {
         const coinList = await storage.get('coinList');
-        const userWallet = await storage.get('userWallets');
+        const userWallet = await storage.get(userWalletsKey);
         // check for nettwork type
         let refreshedCoinlist;
 
