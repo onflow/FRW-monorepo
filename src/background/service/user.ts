@@ -1,5 +1,6 @@
 import { type UserInfoResponse } from '@/shared/types/network-types';
 import { getCurrentProfileId } from '@/shared/utils/current-id';
+import { userInfoCachekey, type UserInfoStore } from '@/shared/utils/data-cache-keys';
 import { createSessionStore } from 'background/utils';
 
 class UserInfoService {
@@ -39,8 +40,8 @@ class UserInfoService {
       Object.assign(this.store[currentId], userInfoWithAvatar);
     } else {
       // Create a new session store
-      this.store[currentId] = createSessionStore<UserInfoResponse>({
-        name: `user-info-${currentId}`,
+      this.store[currentId] = createSessionStore<UserInfoStore>({
+        name: userInfoCachekey(currentId),
         template: userInfoWithAvatar,
       });
     }

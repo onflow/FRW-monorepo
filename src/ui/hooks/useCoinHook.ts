@@ -3,24 +3,19 @@ import { useCallback, useEffect, useState, useRef } from 'react';
 
 import storage, { type AreaName, type StorageChange } from '@/background/webapi/storage';
 import { type CoinItem } from '@/shared/types/coin-types';
-import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
+import { isValidEthereumAddress } from '@/shared/utils/address';
+import { userWalletsKey } from '@/shared/utils/data-persist-keys';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
-import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useCoinStore } from '@/ui/stores/coinStore';
 import { debug } from '@/ui/utils';
 import { useWallet, useWalletLoaded } from '@/ui/utils/WalletContext';
-const DEFAULT_MIN_AMOUNT = '0.001';
 
 export const useCoins = () => {
   const usewallet = useWallet();
   const walletLoaded = useWalletLoaded();
-  const { mainAddress, currentWallet } = useProfiles();
   const { network } = useNetwork();
 
   const refreshInProgressRef = useRef(false);
-  const calculationInProgressRef = useRef(false);
   const lastRefreshTimeRef = useRef(0);
-  const lastTotalFlowRef = useRef('');
   const mountedRef = useRef(true);
 
   // Replace Zustand state with React state
@@ -48,17 +43,17 @@ export const useCoins = () => {
 
       // Single pass through the data
       for (const coin of storageData) {
-        const lowerUnit = coin.unit.toLowerCase();
+        const coinId = coin.id.toLowerCase();
 
         // Handle unique tokens
-        if (!uniqueTokenMap.has(lowerUnit)) {
-          uniqueTokenMap.set(lowerUnit, coin);
+        if (!uniqueTokenMap.has(coinId)) {
+          uniqueTokenMap.set(coinId, coin);
         }
 
         // Calculate sum and flow balance
         if (coin.total !== null) {
           sum = sum.plus(new BN(coin.total));
-          if (lowerUnit === 'flow') {
+          if (coin.unit && coin.unit.toLowerCase() === 'flow') {
             flowBalance = new BN(coin.balance);
           }
         }
@@ -81,7 +76,7 @@ export const useCoins = () => {
     const loadCoinList = async () => {
       try {
         const coinList = await storage.get('coinList');
-        const userWallet = await storage.get('userWallets');
+        const userWallet = await storage.get(userWalletsKey);
         // check for nettwork type
         let refreshedCoinlist;
 

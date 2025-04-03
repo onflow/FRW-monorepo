@@ -17,6 +17,7 @@ import { type TokenInfo } from 'flow-native-token-registry';
 import React, { useState, useEffect, useCallback } from 'react';
 
 // import { useHistory } from 'react-router-dom';
+import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
 import { LLHeader } from '@/ui/FRWComponent';
 import { useWallet } from 'ui/utils';
 
@@ -65,13 +66,13 @@ const TokenList = () => {
   const classes = useStyles();
   const wallet = useWallet();
   const [keyword, setKeyword] = useState('');
-  const [tokenInfoList, setTokenInfoList] = useState<TokenInfo[]>([]);
-  const [filteredTokenList, setFilteredTokenList] = useState<TokenInfo[]>([]);
-  const [enabledTokenList, setEnabledTokenList] = useState<TokenInfo[]>([]);
+  const [tokenInfoList, setTokenInfoList] = useState<ExtendedTokenInfo[]>([]);
+  const [filteredTokenList, setFilteredTokenList] = useState<ExtendedTokenInfo[]>([]);
+  const [enabledTokenList, setEnabledTokenList] = useState<ExtendedTokenInfo[]>([]);
   const [isConfirmationOpen, setConfirmationOpen] = useState(false);
-  const [selectedToken, setSelectedToken] = useState<TokenInfo | null>(null);
+  const [selectedToken, setSelectedToken] = useState<ExtendedTokenInfo | null>(null);
   const [filters, setFilter] = useState('all');
-  const [filteredCollections, setFilteredCollections] = useState<TokenInfo[]>([]);
+  const [filteredCollections, setFilteredCollections] = useState<ExtendedTokenInfo[]>([]);
 
   const [isLoading, setLoading] = useState(true);
 
@@ -81,7 +82,7 @@ const TokenList = () => {
       const rawTokenInfoList = await wallet.openapi.getAllTokenInfo();
 
       // Remove duplicate tokens based on symbol
-      const uniqueTokens = Array.from(
+      const uniqueTokens: ExtendedTokenInfo[] = Array.from(
         rawTokenInfoList
           .reduce((map, token) => {
             const key = token.symbol.toLowerCase();

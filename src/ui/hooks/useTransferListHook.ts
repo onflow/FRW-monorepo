@@ -35,7 +35,12 @@ export const useTransferList = () => {
       try {
         const pending = await usewallet.getPendingTx();
         debug('Checking pending transactions', { count: pending.length });
-
+        // If there are no pending transactions, clear the interval
+        if (pending.length === 0 && pendingCheckIntervalRef.current) {
+          debug('No pending transactions, clearing check interval');
+          clearInterval(pendingCheckIntervalRef.current);
+          pendingCheckIntervalRef.current = null;
+        }
         if (mountedRef.current) {
           setOccupied(pending.length > 0);
         }
@@ -48,7 +53,9 @@ export const useTransferList = () => {
     checkPendingTransactions();
 
     // Set up interval to periodically check for pending transactions
-    pendingCheckIntervalRef.current = setInterval(checkPendingTransactions, 1000);
+    if (!pendingCheckIntervalRef.current) {
+      pendingCheckIntervalRef.current = setInterval(checkPendingTransactions, 2000);
+    }
 
     // Listen for storage events (when localStorage changes in other tabs)
     const handleStorageChange = (

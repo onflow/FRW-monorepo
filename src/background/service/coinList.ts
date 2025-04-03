@@ -1,4 +1,4 @@
-import { type BalanceMap, type CoinItem } from '@/shared/types/coin-types';
+import { type BalanceMap, type CoinItem, type ExtendedTokenInfo } from '@/shared/types/coin-types';
 import { createPersistStore } from 'background/utils';
 import { storage } from 'background/webapi';
 
@@ -55,14 +55,14 @@ class CoinList {
     this.store.expiry = expiry;
   };
 
-  addCoin = (data: CoinItem, network: string, listType = 'coinItem') => {
+  addCoin = (data: ExtendedTokenInfo, network: string, listType = 'coinItem') => {
     if (this.store[listType][network] === undefined) {
       this.store[listType][network] = [];
     }
     this.store[listType][network][data.unit] = data;
   };
 
-  addCoins = (coins: CoinItem[], network: string, listType = 'coinItem') => {
+  addCoins = (coins: ExtendedTokenInfo[], network: string, listType = 'coinItem') => {
     const newNetworkData = [...coins];
 
     const updatedListType = { ...this.store[listType] };
@@ -77,7 +77,7 @@ class CoinList {
     delete this.store[listType][network][unit];
   };
 
-  updateCoin = (network: string, data: CoinItem, listType = 'coinItem') => {
+  updateCoin = (network: string, data: ExtendedTokenInfo, listType = 'coinItem') => {
     this.store[listType][network][data.unit] = data;
   };
 
@@ -87,7 +87,7 @@ class CoinList {
   getCurrentCoin = () => {
     return this.store.currentCoin;
   };
-  listCoins = (network: string, listType = 'coinItem'): CoinItem[] => {
+  listCoins = (network: string, listType = 'coinItem'): ExtendedTokenInfo[] => {
     if (!this.store[listType] || !this.store[listType][network]) {
       return [];
     }
@@ -97,7 +97,7 @@ class CoinList {
     }
 
     const list = Object.values(this.store[listType][network]);
-    return list.filter((item): item is CoinItem => !!item) || [];
+    return list.filter((item): item is ExtendedTokenInfo => !!item) || [];
   };
 
   /**
