@@ -27,7 +27,6 @@ import {
   type ActiveChildType,
   type PublicKeyAccount,
   isEvmAccountType,
-  type KeyIndexerAccountResponse,
 } from '@/shared/types/wallet-types';
 import { isValidFlowAddress, isValidEthereumAddress } from '@/shared/utils/address';
 import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';

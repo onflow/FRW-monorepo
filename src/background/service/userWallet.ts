@@ -217,7 +217,10 @@ class UserWallet {
     };
   };
 
-  getAccountsWithPublicKey = async (publicKey: string, network: string) => {
+  getAccountsWithPublicKey = async (
+    publicKey: string,
+    network: string
+  ): Promise<PublicKeyAccount[]> => {
     const accounts = await openapiService.getAccountsWithPublicKey(publicKey, network);
     return accounts;
   };
