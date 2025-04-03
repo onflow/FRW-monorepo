@@ -143,7 +143,7 @@ export interface OpenApiStore {
   config: Record<string, OpenApiConfigValue>;
 }
 
-interface KeyIndexerProfileResponse {
+export interface KeyIndexerProfileResponse {
   publicKey: string;
   accounts: PublicKeyAccount[];
 }
