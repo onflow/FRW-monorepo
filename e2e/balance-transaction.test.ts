@@ -42,8 +42,6 @@ const checkTokenBalance = (tokenName: string, actualBalance: string, requiredBal
 };
 
 test('Verify sufficient token balances for sender account', async ({ page, extensionId }) => {
-  await page.pause();
-
   // Login to sender account
   await loginToSenderAccount({ page, extensionId });
 
