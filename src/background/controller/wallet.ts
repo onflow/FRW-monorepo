@@ -3758,10 +3758,6 @@ export class WalletController extends BaseController {
     return googleDriveService.restoreAccount(username, password);
   };
 
-  getCurrentPassword = async (password: string) => {
-    await keyringService.verifyPassword(password);
-  };
-
   getPayerAddressAndKeyId = async () => {
     try {
       const config = await fetchConfig.remoteConfig();

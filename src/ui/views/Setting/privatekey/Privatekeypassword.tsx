@@ -50,7 +50,7 @@ const PrivateKeyPassword = () => {
 
     if (confirmPassword.length > 7) {
       wallet
-        .getCurrentPassword(confirmPassword)
+        .verifyPassword(confirmPassword)
         .then(() => {
           setMatch(true);
         })
