@@ -1,9 +1,6 @@
-import { type TokenInfo } from 'flow-native-token-registry';
-
 import { isValidFlowAddress } from '../utils/address';
 
 import { type HashAlgoString, type SignAlgoString } from './algo-types';
-import { type CoinItem } from './coin-types';
 
 // Matches exactly 16 hex characters, with optional 0x prefix
 export type FlowAddress = `0x${string & { length: 16 }}` | `${string & { length: 16 }}`;
@@ -59,8 +56,6 @@ export type LoggedInAccountWithIndex = LoggedInAccount & {
   indexInLoggedInAccounts: number;
 };
 
-// ExtendedTokenInfo is a intermediate type that combines Token information and pricing data.
-export type ExtendedTokenInfo = TokenInfo & CoinItem;
 export type PublicKeyAccount = {
   // The address of the account
   address: string;

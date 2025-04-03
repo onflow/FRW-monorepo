@@ -1,4 +1,4 @@
-import type { TokenInfo as FlowTokenInfo } from 'flow-native-token-registry';
+import type { TokenInfo } from 'flow-native-token-registry';
 
 export type CoinItem = {
   id: string;
@@ -30,23 +30,9 @@ export type CoinItem = {
   flowAddress?: string;
 };
 
-// Extend the original TokenInfo with additional properties
-export type TokenInfo = FlowTokenInfo & {
-  description?: string;
-  decimals?: number;
-  logoURI?: string;
-  tags?: string[];
-  evmAddress?: string;
-  evm_address?: string;
-  flowAddress?: string;
-  chainId?: number;
-  path?: {
-    vault: string;
-    receiver: string;
-    balance: string;
-  };
-};
-
 export type BalanceMap = {
   [tokenId: string]: string;
 };
+
+// ExtendedTokenInfo is a intermediate type that combines Token information and pricing data.
+export type ExtendedTokenInfo = TokenInfo & CoinItem;
