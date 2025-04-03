@@ -83,8 +83,14 @@ export type WalletAccount = {
   icon: string;
   color: string;
 };
-
+export type WalletAccountWithBalance = WalletAccount & {
+  balance: string;
+};
 export type MainAccount = WalletAccount & PublicKeyAccount;
+
+export type MainAccountWithBalance = MainAccount & {
+  balance: string;
+};
 
 export type WalletProfile = {
   publicKey: string;

@@ -131,7 +131,7 @@ const MenuDrawer = (props: MenuDrawerProps) => {
 
   const getEvmAddress = useCallback(async () => {
     if (isValidEthereumAddress(props.evmWallet.address)) {
-      const result = await usewallet.getBalance(props.evmWallet.address);
+      const result = await usewallet.getEvmBalance(props.evmWallet.address);
       const readBalance = parseFloat(result) / 1e18;
       setEvmBalance(readBalance);
     }
