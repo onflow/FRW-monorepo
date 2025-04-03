@@ -2048,7 +2048,7 @@ class OpenApiService {
     publicKey: string,
     network: string
   ): Promise<PublicKeyAccount[]> => {
-    const url = await this.sendRequest(
+    const result: PublicKeyAccount[] = await this.sendRequest(
       'GET',
       `/api/v4/key-indexer/${publicKey}`,
       { network },
@@ -2056,10 +2056,7 @@ class OpenApiService {
       WEB_NEXT_URL
     );
 
-    const result = await fetch(url);
-    const json: KeyIndexerProfileResponse = await result.json();
-
-    return json.accounts;
+    return result;
   };
 
   /**
