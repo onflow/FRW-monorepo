@@ -181,7 +181,7 @@ export interface SignInResponse {
   id: string;
 }
 
-export interface UserInfoResponse {
+export type UserInfoResponse = {
   avatar: string;
   nickname: string;
   username: string;
@@ -189,7 +189,7 @@ export interface UserInfoResponse {
   private: number;
   created: string;
   id: string;
-}
+};
 
 export interface UserWalletResponse {
   id: string;

@@ -25,16 +25,21 @@ import {
   type EvmAddress,
   type WalletAccount,
   type ChildAccountMap,
-  type UserWalletStore,
-  type ProfileAccountStore,
-  type ChildAccountStore,
-  type EvmAccountStore,
   isEvmAccountType,
   isMainAccountType,
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress, isValidFlowAddress, withPrefix } from '@/shared/utils/address';
 import { getHashAlgo, getSignAlgo } from '@/shared/utils/algo';
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
+import {
+  profileAccountsKey,
+  type ProfileAccountStore,
+  type ChildAccountStore,
+  type EvmAccountStore,
+  evmAccountKey,
+  childAccountsKey,
+} from '@/shared/utils/data-cache-keys';
+import { userWalletsKey, type UserWalletStore } from '@/shared/utils/data-persist-keys';
 
 import type {
   AccountKeyRequest,
@@ -83,7 +88,7 @@ class UserWallet {
 
   init = async () => {
     this.store = await createPersistStore<UserWalletStore>({
-      name: 'userWallets',
+      name: userWalletsKey,
       template: USER_WALLET_TEMPLATE,
     });
 
@@ -122,7 +127,7 @@ class UserWallet {
       // Create a new session store and push it to the profile list
       profileList.push(
         await createSessionStore<ProfileAccountStore>({
-          name: `profile-accounts-${network}-${pubKey}`,
+          name: profileAccountsKey(network, pubKey),
           template: {
             accounts: accounts,
             publicKey: pubKey,
@@ -228,7 +233,7 @@ class UserWallet {
     } else {
       // Create a new session store so the front end can access the child accounts
       this.childAccountMap[address] = await createSessionStore<ChildAccountStore>({
-        name: `child-accounts-${network}-${address}`,
+        name: childAccountsKey(network, address),
         template: {
           parentAddress: address,
           accounts: childAccountMap,
@@ -261,7 +266,7 @@ class UserWallet {
     // Store the evm address for address in the evmAddressMap
     if (!this.evmAddressMap[address]) {
       this.evmAddressMap[address] = await createSessionStore<EvmAccountStore>({
-        name: `evm-account-${network}-${address}`,
+        name: evmAccountKey(network, address),
         template: {
           parentAddress: address,
           evmAddress: evmAddress,
@@ -383,7 +388,6 @@ class UserWallet {
   getMainAccounts = (network: string): MainAccount[] | null => {
     const currentPubKey = this.store.currentPubkey;
     const profileList: WalletProfile[] = this.accounts[network];
-
     const profile = profileList.find((account) => account.publicKey === currentPubKey);
     if (profile) {
       return profile.accounts;
@@ -563,7 +567,6 @@ class UserWallet {
     shouldCoverFee: boolean = false
   ): Promise<string> => {
     const scriptName = this.extractScriptName(cadence);
-    //add proxy
     try {
       const allowed = await wallet.allowLilicoPay();
       const payerFunction = shouldCoverFee

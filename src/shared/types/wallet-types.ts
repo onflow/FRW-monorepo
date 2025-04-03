@@ -1,9 +1,6 @@
-import { type TokenInfo } from 'flow-native-token-registry';
-
 import { isValidFlowAddress } from '../utils/address';
 
 import { type HashAlgoString, type SignAlgoString } from './algo-types';
-import { type CoinItem } from './coin-types';
 
 // Matches exactly 16 hex characters, with optional 0x prefix
 export type FlowAddress = `0x${string & { length: 16 }}` | `${string & { length: 16 }}`;
@@ -59,8 +56,6 @@ export type LoggedInAccountWithIndex = LoggedInAccount & {
   indexInLoggedInAccounts: number;
 };
 
-// ExtendedTokenInfo is a intermediate type that combines Token information and pricing data.
-export type ExtendedTokenInfo = TokenInfo & CoinItem;
 export type PublicKeyAccount = {
   // The address of the account
   address: string;
@@ -88,8 +83,14 @@ export type WalletAccount = {
   icon: string;
   color: string;
 };
-
+export type WalletAccountWithBalance = WalletAccount & {
+  balance: string;
+};
 export type MainAccount = WalletAccount & PublicKeyAccount;
+
+export type MainAccountWithBalance = MainAccount & {
+  balance: string;
+};
 
 export type WalletProfile = {
   publicKey: string;
@@ -115,42 +116,4 @@ export type AccountDetails = {
 
 export type ChildAccountMap = {
   [key: string]: AccountDetails;
-};
-
-// Stored in local storage
-// key: `userWallets`
-export type UserWalletStore = {
-  monitor: string;
-  activeChild: ActiveChildType;
-  evmEnabled: boolean;
-  emulatorMode: boolean;
-  // The currently selected network
-  network: string;
-  // The public key of the currently active profile
-  currentPubkey: string;
-  // The address of the active main account
-  parentAddress: string;
-  // Either null - meaning main account is active, the evm account address, or the child account address
-  currentAddress: string;
-};
-
-// Stored in the session store
-// key: `profile-accounts-${network}-${pubKey}`
-export type ProfileAccountStore = {
-  accounts: MainAccount[];
-  publicKey: string;
-};
-
-// Stored in the session store
-// key: `child-accounts-${network}-${address}`
-export type ChildAccountStore = {
-  parentAddress: FlowAddress;
-  accounts: ChildAccountMap;
-};
-
-// Stored in the session store
-// key: `evm-account-${network}-${address}`
-export type EvmAccountStore = {
-  parentAddress: FlowAddress;
-  evmAddress: EvmAddress | null;
 };
