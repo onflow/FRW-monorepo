@@ -1,6 +1,7 @@
 import { Box, Typography, IconButton, Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { useState, useEffect, useCallback } from 'react';
+import { useHistory, useLocation } from 'react-router-dom';
 
 import { keyringService } from '@/background/service';
 import BrowserWarning from '@/ui/component/BrowserWarning';
@@ -58,8 +59,12 @@ const useStyles = makeStyles(() => ({
     padding: '20px 24px',
   },
 }));
-
+interface BackupsState {
+  password?: string;
+}
 const ManageBackups = () => {
+  const location = useLocation<BackupsState>();
+  const history = useHistory();
   const wallet = useWallet();
   const classes = useStyles();
   const [hasPermission, setHasPermission] = useState(false);
@@ -68,7 +73,6 @@ const ManageBackups = () => {
   const [deleteBackupPop, setDeleteBackupPop] = useState(false);
   const [deleteAllBackupPop, setDeleteAllBackupPop] = useState(false);
   // TODO: Get the password from the user when they click the sync button
-  const [password, setPassword] = useState('');
   const checkBackup = useCallback(async () => {
     try {
       setLoading(true);
@@ -89,12 +93,20 @@ const ManageBackups = () => {
     }
   }, [checkBackup, wallet]);
 
-  const syncBackup = async (password: string) => {
+  const syncBackup = async () => {
     try {
-      setLoading(true);
-      await wallet.syncBackup(password);
-      await checkBackup();
-      setLoading(false);
+      console.log('location.state', location.state);
+      if (!location.state?.password) {
+        console.log('No password');
+        // Navigate to the password page
+        history.push('/dashboard/setting/backups/password');
+        return;
+      }
+      console.log('have password');
+      // setLoading(true);
+      // await wallet.syncBackup(location.state.password);
+      // await checkBackup();
+      // setLoading(false);
     } catch (e) {
       console.error(e);
       setLoading(false);
@@ -160,7 +172,7 @@ const ManageBackups = () => {
               <CheckCircleIcon size={20} color={'#41CC5D'} />
             </IconButton>
           ) : (
-            <Button variant="text" onClick={() => syncBackup(password)}>
+            <Button variant="text" onClick={() => syncBackup()}>
               {chrome.i18n.getMessage('Sync')}
             </Button>
           )

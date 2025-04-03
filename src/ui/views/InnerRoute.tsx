@@ -25,6 +25,7 @@ import About from './Setting/About/About';
 import Account from './Setting/Account';
 import AddressBook from './Setting/AddressBook';
 import ManageBackups from './Setting/Backups';
+import BackupsPassword from './Setting/Backups/BackupsPassword';
 import DeveloperMode from './Setting/DeveloperMode/DeveloperMode';
 import DeviceInfo from './Setting/Devices/DeviceInfo';
 import KeyList from './Setting/KeyList/KeyList';
@@ -231,6 +232,9 @@ const InnerRoute = (props: RouteComponentProps) => {
             </PrivateRoute>
             <PrivateRoute path={`${props.match.url}/setting/backups`}>
               <ManageBackups />
+            </PrivateRoute>
+            <PrivateRoute path={`${props.match.url}/setting/backups/password`}>
+              <BackupsPassword />
             </PrivateRoute>
             <PrivateRoute path={`${props.match.url}/enable`}>
               <Enable />
