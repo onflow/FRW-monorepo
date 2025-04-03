@@ -74,7 +74,6 @@ import {
   transactionService,
   nftService,
   googleDriveService,
-  proxyService,
   newsService,
   mixpanelTrack,
   evmNftService,
@@ -3065,10 +3064,6 @@ export class WalletController extends BaseController {
 
   signInWithPrivatekey = async (pk: string, replaceUser = true) => {
     return userWalletService.sigInWithPk(pk, replaceUser);
-  };
-
-  requestProxyToken = async () => {
-    return proxyService.requestJwt();
   };
 
   signInV3 = async (mnemonic: string, accountKey: any, deviceInfo: any, replaceUser = true) => {
