@@ -203,7 +203,7 @@ const WalletTab = ({ network }) => {
         console.log('Wallet is locked');
         return;
       }
-      if (!(await usewallet.getMainWallet())) {
+      if (!(await usewallet.getParentAddress())) {
         console.log('Wallet Tab - No main wallet yet');
         return;
       }
@@ -389,7 +389,7 @@ const WalletTab = ({ network }) => {
             <Box sx={{ height: '100%', overflow: 'auto' }}>
               {value === 0 && (
                 <CoinList
-                  data={coins}
+                  tokenList={coins}
                   ableFt={accessible}
                   isActive={isActive}
                   childType={childType}

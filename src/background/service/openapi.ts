@@ -18,12 +18,15 @@ import type { TokenInfo } from 'flow-native-token-registry';
 import log from 'loglevel';
 
 import { storage } from '@/background/webapi';
+import type { ExtendedTokenInfo, BalanceMap } from '@/shared/types/coin-types';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
 import {
   type LoggedInAccountWithIndex,
   type LoggedInAccount,
   type FlowAddress,
   type ActiveChildType,
+  type PublicKeyAccount,
+  isEvmAccountType,
 } from '@/shared/types/wallet-types';
 import { isValidFlowAddress, isValidEthereumAddress } from '@/shared/utils/address';
 import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
@@ -34,7 +37,7 @@ import fetchConfig from 'background/utils/remoteConfig';
 import { INITIAL_OPENAPI_URL, WEB_NEXT_URL } from 'consts';
 
 import {
-  type AccountKey,
+  type AccountKeyRequest,
   type CheckResponse,
   type SignInResponse,
   type UserInfoResponse,
@@ -45,10 +48,10 @@ import {
   type NewsConditionType,
   Period,
   PriceProvider,
-  type BlockchainResponse,
-  type AccountInfo,
+  type AccountBalanceInfo,
   type Contact,
   type NFTModelV2,
+  type DeviceInfoRequest,
 } from '../../shared/types/network-types';
 
 import {
@@ -61,10 +64,73 @@ import {
   googleSafeHostService,
   mixpanelTrack,
 } from './index';
-// import { userInfo } from 'os';
-// import userWallet from './userWallet';
-// const axios = axiosOriginal.create({ adapter })
 
+// New type definitions for API response for /v4/cadence/tokens/ft/{address}
+interface FlowTokenResponse {
+  name: string;
+  symbol: string;
+  description: string;
+  logos: {
+    items: Array<{
+      file: {
+        url: string;
+      };
+      mediaType: string;
+    }>;
+  };
+  socials: {
+    x?: {
+      url: string;
+    };
+  };
+  balance: string;
+  contractAddress: string;
+  contractName: string;
+  storagePath: {
+    domain: string;
+    identifier: string;
+  };
+  receiverPath: {
+    domain: string;
+    identifier: string;
+  };
+  identifier: string;
+  isVerified: boolean;
+  priceInUSD: string;
+  balanceInUSD: string;
+  priceInFLOW: string;
+  balanceInFLOW: string;
+}
+
+// New type definitions for API response for /v4/evm/tokens/ft/{address}
+interface EvmTokenResponse {
+  chainId: number;
+  address: string;
+  symbol: string;
+  name: string;
+  decimals: number;
+  logoURI: string;
+  flowIdentifier: string;
+  balance: string;
+  priceInUSD: string;
+  balanceInUSD: string;
+  priceInFLOW: string;
+  balanceInFLOW: string;
+}
+
+interface EvmApiResponse {
+  data: EvmTokenResponse[];
+}
+
+type FlowApiResponse = { result: FlowTokenResponse[]; storage: StorageResponse };
+
+type StorageResponse = {
+  storageUsedInMB: string;
+  storageAvailableInMB: string;
+  storageCapacityInMB: string;
+  lockedFLOWforStorage: string;
+  availableBalanceToUse: string;
+};
 export interface OpenApiConfigValue {
   path: string;
   method: Method;
@@ -88,7 +154,6 @@ const auth = getAuth(app);
 // const remoteConfig = getRemoteConfig(app);
 
 const remoteFetch = fetchConfig;
-const pricesMap = {};
 
 const waitForAuthInit = async () => {
   let unsubscribe: Unsubscribe;
@@ -107,7 +172,9 @@ onAuthStateChanged(auth, (user: User | null) => {
     if (user.isAnonymous) {
       console.log('User is anonymous');
     } else {
-      mixpanelTrack.identify(user.uid, user.displayName ?? user.uid);
+      if (mixpanelTrack) {
+        mixpanelTrack.identify(user.uid, user.displayName ?? user.uid);
+      }
       console.log('User is signed in');
     }
   } else {
@@ -334,22 +401,6 @@ const recordFetch = async (response, responseData, ...args: Parameters<typeof fe
   return response;
 };
 
-// Override fetch in branches other than master
-const originalFetch = globalThis.fetch;
-
-const fetchCallRecorder = async (...args: Parameters<typeof originalFetch>) => {
-  const response = await originalFetch(...args);
-  try {
-    console.log('response', response);
-    const responseData = response.ok ? await response.clone().json() : null;
-    //  recordFetch(response, responseData, ...args);
-  } catch (err) {
-    console.error('Error recording fetch call:', err);
-  }
-  return response;
-};
-///const fetch = process.env.BRANCH_NAME === 'master' ? globalThis.fetch : fetchCallRecorder;
-
 class OpenApiService {
   store!: OpenApiStore;
 
@@ -440,6 +491,10 @@ class OpenApiService {
     // Record the response
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens has price information.
+   */
   private getUSDCPricePair = (provider: PriceProvider): string | null => {
     switch (provider) {
       case PriceProvider.binance:
@@ -453,6 +508,10 @@ class OpenApiService {
     }
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens has price information.
+   */
   getPriceProvider = (token: string): PriceProvider[] => {
     switch (token) {
       case 'usdc':
@@ -470,6 +529,10 @@ class OpenApiService {
     }
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens has price information.
+   */
   getUSDCPrice = async (provider = PriceProvider.binance): Promise<CheckResponse> => {
     const config = this.store.config.crypto_map;
     const data = await this.sendRequest(config.method, config.path, {
@@ -479,6 +542,10 @@ class OpenApiService {
     return data.data.result;
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens has price information.
+   */
   private getFlowPricePair = (provider: PriceProvider): string => {
     switch (provider) {
       case PriceProvider.binance:
@@ -496,6 +563,10 @@ class OpenApiService {
     }
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens instead. It will have token info and price.
+   */
   getTokenPrices = async (storageKey: string) => {
     const cachedPrices = await storage.getExpiry(storageKey);
     if (cachedPrices) {
@@ -533,21 +604,37 @@ class OpenApiService {
     return pricesMap;
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens instead. It will have token info and price.
+   */
   getPricesBySymbol = async (symbol: string, data) => {
     const key = symbol.toUpperCase();
     return data[key];
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens instead. It will have token info and price.
+   */
   getPricesByAddress = async (symbol: string, data) => {
     const key = symbol.toLowerCase();
     return data[key];
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens instead. It will have token info and price.
+   */
   getPricesByKey = async (symbol: string, data) => {
     const key = symbol.toLowerCase();
     return data[key];
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens instead. It will have token info and price.
+   */
   getPricesByEvmaddress = async (address: string, data) => {
     const key = address.toLowerCase();
     return data[key];
@@ -564,6 +651,10 @@ class OpenApiService {
     }
   };
 
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens instead. It will have token info and price.
+   */
   getTokenPrice = async (token: string, provider = PriceProvider.binance) => {
     const config = this.store.config.crypto_flow;
     const pair = this.getTokenPair(token, provider);
@@ -641,7 +732,7 @@ class OpenApiService {
     return data;
   };
 
-  register = async (account_key: AccountKey, username: string) => {
+  register = async (account_key: AccountKeyRequest, username: string) => {
     // Track the time until account_created is called
     mixpanelTrack.time('account_created');
 
@@ -668,8 +759,8 @@ class OpenApiService {
   };
 
   loginV3 = async (
-    account_key: any,
-    device_info: any,
+    account_key: AccountKeyRequest,
+    device_info: DeviceInfoRequest,
     signature: string,
     replaceUser = true
   ): Promise<SignInResponse> => {
@@ -688,14 +779,6 @@ class OpenApiService {
       await storage.set('currentId', result.data.id);
     }
     return result;
-  };
-
-  proxyKey = async (token: any, userId: any) => {
-    if (token) {
-      await this._signWithCustom(token);
-      await storage.set('currentId', userId);
-    }
-    return;
   };
 
   proxytoken = async () => {
@@ -745,7 +828,8 @@ class OpenApiService {
 
   userInfo = async (): Promise<UserInfoResponse> => {
     const config = this.store.config.user_info;
-    return await this.sendRequest(config.method, config.path);
+    const { data } = await this.sendRequest(config.method, config.path);
+    return data;
   };
 
   createFlowAddress = async () => {
@@ -777,6 +861,20 @@ class OpenApiService {
     return data;
   };
 
+  signBridgeFeePayer = async (transaction, message: string) => {
+    const messages = {
+      envelope_message: message,
+    };
+    const data = await this.sendRequest(
+      'POST',
+      '/api/signAsBridgeFeePayer',
+      {},
+      { transaction, message: messages },
+      WEB_NEXT_URL
+    );
+    // (config.method, config.path, {}, { transaction, message: messages });
+    return data;
+  };
   signProposer = async (transaction, message: string) => {
     const messages = {
       envelope_message: message,
@@ -803,9 +901,9 @@ class OpenApiService {
   };
 
   getNFTList = async (network: string): Promise<NFTModelV2[]> => {
-    const childType = await userWalletService.getActiveWallet();
+    const childType = await userWalletService.getActiveAccountType();
     let chainType = 'flow';
-    if (childType === 'evm') {
+    if (isEvmAccountType(childType)) {
       chainType = 'evm';
     }
 
@@ -1174,7 +1272,7 @@ class OpenApiService {
     // FIX ME: Get defaultTokenList from firebase remote config
     const address = await userWalletService.getCurrentAddress();
     const tokenInfo = await this.getTokenInfo(tokenSymbol);
-    if (!tokenInfo) {
+    if (!tokenInfo || !address) {
       return;
     }
     return await this.isTokenStorageEnabled(address, tokenInfo);
@@ -1184,7 +1282,7 @@ class OpenApiService {
     // FIX ME: Get defaultTokenList from firebase remote config
     const address = await userWalletService.getCurrentAddress();
     const tokenInfo = await this.getTokenInfo(tokenSymbol);
-    if (!tokenInfo) {
+    if (!tokenInfo || !address) {
       return;
     }
     return await this.getTokenBalanceWithModel(address, tokenInfo);
@@ -1214,7 +1312,7 @@ class OpenApiService {
     };
   };
 
-  getFlowAccountInfo = async (address: string): Promise<AccountInfo> => {
+  getFlowAccountInfo = async (address: string): Promise<AccountBalanceInfo> => {
     const script = await getScripts('basic', 'getAccountInfo');
 
     const result = await fcl.query({
@@ -1296,9 +1394,9 @@ class OpenApiService {
     });
   };
 
-  getTokenList = async (network) => {
-    const childType = await userWalletService.getActiveWallet();
-    const chainType = childType === 'evm' ? 'evm' : 'flow';
+  getTokenList = async (network): Promise<TokenInfo[]> => {
+    const childType = await userWalletService.getActiveAccountType();
+    const chainType = isEvmAccountType(childType) ? 'evm' : 'flow';
 
     const ftList = await storage.getExpiry(`TokenList${network}${chainType}`);
     if (ftList) return ftList;
@@ -1354,7 +1452,7 @@ class OpenApiService {
     storage.setExpiry(`TokenList${network}${chainType}`, ftList, 600000);
   };
 
-  getEnabledTokenList = async (network = '') => {
+  getEnabledTokenList = async (network = ''): Promise<ExtendedTokenInfo[]> => {
     // const tokenList = await remoteFetch.flowCoins();
     if (!network) {
       network = await userWalletService.getNetwork();
@@ -1366,38 +1464,29 @@ class OpenApiService {
     }
     const tokenList = await this.getTokenList(network);
     let values;
-    const isChild = await userWalletService.getActiveWallet();
+    const isChild = await userWalletService.getActiveAccountType();
     try {
       if (isChild && isChild !== 'evm') {
         values = await this.isLinkedAccountTokenListEnabled(address);
       } else if (!isChild) {
-        values = await this.isTokenListEnabled(address);
+        values = await this.getTokenBalanceStorage(address);
+        console.log('values ->', values);
       }
     } catch (error) {
-      console.error('Error isTokenListEnabled token:');
+      console.error('Error getting enabled token list:');
       values = {};
     }
 
-    const tokenItems: TokenInfo[] = [];
+    const tokenItems: ExtendedTokenInfo[] = [];
     const tokenMap = {};
     if (isChild !== 'evm') {
       tokenList.forEach((token) => {
-        const tokenId = `A.${token.address.slice(2)}.${token.contractName}`;
-        // console.log(tokenMap,'tokenMap',values)
+        const tokenId = `A.${token.address.slice(2)}.${token.contractName}.Vault`;
         if (!!values[tokenId]) {
           tokenMap[token.name] = token;
         }
       });
     }
-
-    // const data = values.map((value, index) => ({isEnabled: value, token: tokenList[index]}))
-    // return values
-    //   .map((value, index) => {
-    //     if (value) {
-    //       return tokens[index];
-    //     }
-    //   })
-    //   .filter((item) => item);
 
     Object.keys(tokenMap).map((key, idx) => {
       const item = tokenMap[key];
@@ -1443,11 +1532,18 @@ class OpenApiService {
     return isEnabledList;
   };
 
-  getTokenListBalance = async (address: string, allTokens: TokenInfo[]) => {
-    const network = await userWalletService.getNetwork();
-
-    const tokens = allTokens.filter((token) => token.address);
+  getTokenListBalance = async (address: string, allTokens: TokenInfo[]): Promise<BalanceMap> => {
     const script = await getScripts('ft', 'getTokenListBalance');
+    const balanceList = await fcl.query({
+      cadence: script,
+      args: (arg, t) => [arg(address, t.Address)],
+    });
+
+    return balanceList;
+  };
+
+  getTokenBalanceStorage = async (address: string): Promise<BalanceMap> => {
+    const script = await getScripts('ft', 'getTokenBalanceStorage');
     const balanceList = await fcl.query({
       cadence: script,
       args: (arg, t) => [arg(address, t.Address)],
@@ -1462,21 +1558,18 @@ class OpenApiService {
 
   getEnabledNFTList = async (): Promise<{ address: string; contractName: string }[]> => {
     const address = await userWalletService.getCurrentAddress();
+    if (!address) return [];
 
-    const promiseResult = await this.checkNFTListEnabled(address);
-    // const network = await userWalletService.getNetwork();
-    // const notEmptyTokenList = tokenList.filter(value => value.address[network] !== null && value.address[network] !== '' )
-    // const data = values.map((value, index) => ({isEnabled: value, token: tokenList[index]}))
-    const resultArray = Object.entries(promiseResult)
-      .filter(([_key, value]) => value === true) // Only keep entries with a value of true
-      .map(([key]) => {
-        // ignore the prefix
-        const [, address, contractName] = key.split('.');
-        return {
-          address: `0x${address}`,
-          contractName: contractName,
-        };
-      });
+    const getNftBalanceStorage = await this.getNftBalanceStorage(address);
+
+    const resultArray = Object.entries(getNftBalanceStorage).map(([key]) => {
+      // ignore the prefix
+      const [, address, contractName] = key.split('.');
+      return {
+        address: `0x${address}`,
+        contractName: contractName,
+      };
+    });
 
     return resultArray;
   };
@@ -1484,6 +1577,17 @@ class OpenApiService {
   checkNFTListEnabled = async (address: string): Promise<Record<string, boolean>> => {
     // Returns a map of enabled NFTs for the address
     const script = await getScripts('nft', 'checkNFTListEnabled');
+
+    const isEnabledList = await fcl.query({
+      cadence: script,
+      args: (arg, t) => [arg(address, t.Address)],
+    });
+    return isEnabledList;
+  };
+
+  getNftBalanceStorage = async (address: string): Promise<Record<string, number>> => {
+    // Returns a map of enabled NFTs for the address
+    const script = await getScripts('collection', 'getNFTBalanceStorage');
 
     const isEnabledList = await fcl.query({
       cadence: script,
@@ -1663,6 +1767,9 @@ class OpenApiService {
     return data;
   };
 
+  /** @deprecated
+   * Use getUserTokens has price information. It returns evm tokens with price information.
+   */
   getEvmFT = async (address: string, network: string) => {
     const { data } = await this.sendRequest(
       'GET',
@@ -1674,7 +1781,10 @@ class OpenApiService {
     return data;
   };
 
-  // TODO: remove this function, need to verify, doesn't look to be used anywhere
+  /**
+   * @deprecated This method is not used in the codebase.
+   * Use getUserTokens has price information.
+   */
   getEvmFTPrice = async () => {
     const gitPrice = await storage.getExpiry('EVMPrice');
 
@@ -1778,16 +1888,14 @@ class OpenApiService {
     return data;
   };
 
-  putDeviceInfo = async (walletData) => {
+  putDeviceInfo = async (walletData: PublicKeyAccount[]) => {
     try {
-      const testnetId = walletData.find((item) => item.chain_id === 'testnet')?.id;
-      const mainnetId = walletData.find((item) => item.chain_id === 'mainnet')?.id;
       const installationId = await this.getInstallationId();
       // console.log('location ', userlocation);
 
       await this.addDevice({
-        wallet_id: mainnetId ? mainnetId.toString() : '',
-        wallettest_id: testnetId ? testnetId.toString() : '',
+        wallet_id: '',
+        wallettest_id: '',
         device_info: {
           device_id: installationId,
           district: '',
@@ -1855,7 +1963,7 @@ class OpenApiService {
   };
 
   freshUserInfo = async (
-    currentWallet: BlockchainResponse,
+    mainAddress: FlowAddress,
     keys: FclAccount,
     pubKTuple,
     wallet,
@@ -1886,10 +1994,10 @@ class OpenApiService {
       await storage.set('pubKey', keyInfo.publicKey);
       // Make sure the address is a FlowAddress
 
-      if (!isValidFlowAddress(currentWallet.address)) {
+      if (!isValidFlowAddress(mainAddress)) {
         throw new Error('Invalid Flow address');
       }
-      const flowAddress: FlowAddress = currentWallet.address as FlowAddress;
+      const flowAddress: FlowAddress = mainAddress;
       const updatedWallet: LoggedInAccount = {
         ...wallet,
         address: flowAddress,
@@ -1929,6 +2037,153 @@ class OpenApiService {
     log.log('otherAccounts with index:', otherAccounts);
     return { otherAccounts, wallet, loggedInAccounts };
   };
+
+  /**
+   * Get user tokens, handle both EVM and Flow tokens. Include price information.
+   * @param address - The address of the user
+   * @param network - The network of the user
+   * @returns The tokens of the user
+   */
+  async getUserTokens(address: string, network?: string): Promise<ExtendedTokenInfo[]> {
+    if (!address) {
+      throw new Error('Address is required');
+    }
+
+    // If network not provided, get current network
+    if (!network) {
+      network = await userWalletService.getNetwork();
+    }
+
+    // Determine if address is EVM or Flow based on format
+    const isEvmAddress = isValidEthereumAddress(address);
+    const isFlowAddress = isValidFlowAddress(address);
+
+    if (!isEvmAddress && !isFlowAddress) {
+      throw new Error('Invalid address format');
+    }
+
+    try {
+      if (isEvmAddress) {
+        return await this.fetchUserEvmTokens(address, network);
+      } else {
+        return await this.fetchUserFlowTokens(address, network);
+      }
+    } catch (error) {
+      console.error('Error fetching user tokens:', error);
+      throw error;
+    }
+  }
+
+  private async fetchUserFlowTokens(
+    address: string,
+    network: string
+  ): Promise<ExtendedTokenInfo[]> {
+    const cacheKey = `flow_tokens_${address}_${network}`;
+    const cachedFlowData = await storage.getExpiry(cacheKey);
+
+    if (cachedFlowData !== null) {
+      return cachedFlowData;
+    }
+
+    const userFlowTokenList: FlowApiResponse = await this.sendRequest(
+      'GET',
+      `/api/v4/cadence/tokens/ft/${address}`,
+      {},
+      {},
+      WEB_NEXT_URL
+    );
+    if (!userFlowTokenList?.result?.length) {
+      return [];
+    }
+
+    // Convert FlowTokenResponse to ExtendedTokenInfo
+    const tokens = userFlowTokenList.result.map(
+      (token): ExtendedTokenInfo => ({
+        id: token.identifier,
+        name: token.name,
+        address: token.contractAddress,
+        contractName: token.contractName,
+        symbol: token.symbol,
+        decimals: 8, // Default to 8 decimals for Flow tokens if not specified
+        path: {
+          vault: `/${token.storagePath.domain}/${token.storagePath.identifier}`,
+          receiver: `/${token.receiverPath.domain}/${token.receiverPath.identifier}`,
+          balance: ``, // todo: not sure what this property is used for
+        },
+        logoURI: token.logos?.items?.[0]?.file?.url || '',
+        extensions: {
+          description: token.description,
+          twitter: token.socials?.x?.url,
+        },
+        custom: false,
+        price: Number(token.priceInUSD || '0'), // todo: future will be a string
+        total: Number(token.balanceInUSD || '0'), // todo: future will be a string
+        change24h: 0,
+        balance: token.balance || '0',
+        // Add CoinItem properties
+        coin: token.name, // redundant for compatibility
+        unit: token.symbol ?? token.contractName, // redundant for compatibility
+        icon: token.logos?.items?.[0]?.file?.url || '', // redundant for compatibility
+      })
+    );
+
+    storage.setExpiry(cacheKey, tokens, 5 * 60 * 1000); // Cache for 5 minutes
+    return tokens;
+  }
+
+  private async fetchUserEvmTokens(address: string, network: string): Promise<ExtendedTokenInfo[]> {
+    const cacheKey = `evm_tokens_${address}_${network}`;
+    const cachedEvmData = await storage.getExpiry(cacheKey);
+
+    if (cachedEvmData !== null) {
+      return cachedEvmData;
+    }
+
+    const formattedEvmAddress = address.startsWith('0x') ? address : `0x${address}`;
+
+    const userEvmTokenList: EvmApiResponse = await this.sendRequest(
+      'GET',
+      `/api/v4/evm/tokens/ft/${formattedEvmAddress}`,
+      {},
+      {},
+      WEB_NEXT_URL
+    );
+
+    if (!userEvmTokenList?.data) {
+      return [];
+    }
+
+    // Convert EvmTokenResponse to ExtendedTokenInfo
+    const tokens = userEvmTokenList.data.map(
+      (token): ExtendedTokenInfo => ({
+        id: token.flowIdentifier || token.address,
+        name: token.name,
+        address: token.address,
+        contractName: token.name, // Use name as contractName for EVM tokens
+        symbol: token.symbol,
+        decimals: token.decimals,
+        path: {
+          vault: '', // EVM tokens don't use Flow paths
+          receiver: '',
+          balance: '',
+        },
+        logoURI: token.logoURI || '',
+        extensions: {},
+        custom: false,
+        price: Number(token.priceInUSD || '0'),
+        total: Number(token.balanceInUSD || '0'),
+        change24h: 0,
+        balance: token.balance || '0',
+        // Add CoinItem properties
+        coin: token.name, // redundant for compatibility
+        unit: token.symbol, // redundant for compatibility
+        icon: token.logoURI || '', // redundant for compatibility
+      })
+    );
+
+    storage.setExpiry(cacheKey, tokens, 5 * 60 * 1000); // Cache for 5 minutes
+    return tokens;
+  }
 
   getLatestVersion = async (): Promise<string> => {
     // Get latest version from storage cache first

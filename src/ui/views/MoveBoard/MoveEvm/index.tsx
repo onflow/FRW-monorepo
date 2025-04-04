@@ -71,7 +71,7 @@ const MoveEvm = (props: MoveBoardProps) => {
 
   const requestCadenceNft = useCallback(async () => {
     const cadenceResult = await usewallet.reqeustEvmNft();
-    const tokensWithNfts = cadenceResult.filter((token) => token.ids && token.ids.length > 0);
+    const tokensWithNfts = cadenceResult.filter((token) => token.count && token.count > 0);
     const filteredData = tokensWithNfts.filter((item) => item.collection.flowIdentifier);
     if (filteredData.length > 0) {
       setSelected(filteredData[0].collection.id);

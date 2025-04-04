@@ -1,14 +1,14 @@
 import type { Account as FclAccount } from '@onflow/typedefs';
 import * as ethUtil from 'ethereumjs-util';
 
-import packageJson from '@/../package.json';
-import { storage } from '@/background/webapi';
+import { EMULATOR_HOST_TESTNET, EMULATOR_HOST_MAINNET } from '@/background/fclConfig';
+import { mixpanelTrack } from '@/background/service/mixpanel';
+import pageStateCache from '@/background/service/pageStateCache';
+import storage from '@/background/webapi/storage';
+import { type FlowNetwork } from '@/shared/types/network-types';
 
+import packageJson from '../../../package.json';
 const { version } = packageJson;
-import { type FlowNetwork } from '../../shared/types/network-types';
-import { EMULATOR_HOST_TESTNET, EMULATOR_HOST_MAINNET } from '../fclConfig';
-import { mixpanelTrack } from '../service/mixpanel';
-import pageStateCache from '../service/pageStateCache';
 
 export { default as createPersistStore } from './persisitStore';
 export { default as createSessionStore } from './sessionStore';

@@ -169,3 +169,8 @@ export const numberWithCommas = (x: string) => {
 
   return x;
 };
+
+export const convertFlowBalanceToString = (balance: number): string => {
+  // Convert from a 10^8 number to a string with 8 decimal places
+  return `${Math.floor(balance / 1e8).toString()}.${(balance % 1e8).toString().padStart(8, '0')}`;
+};

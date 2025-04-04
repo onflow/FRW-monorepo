@@ -1,36 +1,74 @@
 import { ethers, HDNodeWallet } from 'ethers';
 
+import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
+
+export type HDKeyringSerializedData = {
+  mnemonic?: string;
+  activeIndexes: number[];
+  publicKey?: string;
+  derivationPath: string;
+  passphrase: string;
+};
+export type HDKeyringType = 'HD Key Tree';
+
+export type HDKeyringData = {
+  type: HDKeyringType;
+  data: HDKeyringSerializedData;
+};
+
 export class HDKeyring {
-  static type = 'HD Key Tree';
-  type = 'HD Key Tree';
+  static type: HDKeyringType = 'HD Key Tree';
+  type: HDKeyringType = 'HD Key Tree';
 
   private hdWallet: HDNodeWallet | null = null;
-  private mnemonic: string | null = null;
+  private mnemonic: string | undefined = undefined;
   private activeIndexes: number[] = [];
+  private derivationPath: string = FLOW_BIP44_PATH;
+  private passphrase: string = '';
 
-  constructor(opts?: { mnemonic?: string; activeIndexes?: number[] }) {
+  constructor(opts?: HDKeyringSerializedData) {
     if (opts?.mnemonic) {
       this.deserialize({
         mnemonic: opts.mnemonic,
         activeIndexes: opts.activeIndexes || [0],
+        derivationPath: opts.derivationPath || FLOW_BIP44_PATH,
+        passphrase: opts.passphrase || '',
       });
     }
   }
 
-  async serialize() {
+  async serialize(): Promise<HDKeyringSerializedData> {
     return {
       mnemonic: this.hdWallet?.mnemonic?.phrase || this.mnemonic,
       activeIndexes: this.activeIndexes,
-      publicKey: this.hdWallet?.publicKey || null,
+      publicKey: this.hdWallet?.publicKey,
+      derivationPath: this.derivationPath,
+      passphrase: this.passphrase,
     };
   }
 
-  async deserialize(opts: { mnemonic: string; activeIndexes: number[] }) {
+  async serializeWithType(): Promise<HDKeyringData> {
+    return {
+      type: this.type,
+      data: await this.serialize(),
+    };
+  }
+
+  async deserialize(opts: {
+    mnemonic: string;
+    activeIndexes: number[];
+    derivationPath: string;
+    passphrase: string;
+  }) {
     this.mnemonic = opts.mnemonic;
     // Create base wallet from mnemonic only
     this.hdWallet = HDNodeWallet.fromPhrase(opts.mnemonic);
     // Store active indexes
     this.activeIndexes = opts.activeIndexes?.length ? opts.activeIndexes : [0];
+    // Store derivation path
+    this.derivationPath = opts.derivationPath;
+    // Store passphrase
+    this.passphrase = opts.passphrase;
   }
 
   async addAccounts(numberOfAccounts = 1) {
