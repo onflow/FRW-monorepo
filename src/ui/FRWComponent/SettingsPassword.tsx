@@ -1,4 +1,4 @@
-import { Typography, Button, Fade, Input, FormControl } from '@mui/material';
+import { Typography, Button, Input, FormControl } from '@mui/material';
 import Box from '@mui/material/Box';
 import { makeStyles } from '@mui/styles';
 import React, { type ReactNode, useCallback, useEffect, useState } from 'react';
@@ -41,6 +41,7 @@ if (process.env.NODE_ENV !== 'development') {
 const DEFAULT_PASSWORD =
   process.env.NODE_ENV === 'development' ? process.env.DEV_PASSWORD || '' : '';
 
+type PassMatch = 'match' | 'no-match' | 'unverified';
 const SettingsPassword = ({
   verifiedUrl,
   children = null,
@@ -52,19 +53,19 @@ const SettingsPassword = ({
   const classes = useStyles();
   const history = useHistory();
   const [password, setPassword] = useState(DEFAULT_PASSWORD);
-  const [isMatch, setMatch] = useState(false);
+  const [passMatch, setPassMatch] = useState<PassMatch>('unverified');
 
   const verify = useCallback(() => {
-    setMatch(false);
+    setPassMatch('unverified');
 
     if (password.length > 7) {
       wallet
         .verifyPassword(password)
         .then(() => {
-          setMatch(true);
+          setPassMatch('match');
         })
         .catch(() => {
-          setMatch(false);
+          setPassMatch('no-match');
         });
     }
   }, [password, wallet]);
@@ -133,7 +134,7 @@ const SettingsPassword = ({
             }}
           />
 
-          <SlideRelative direction="down" show={!!password && !isMatch}>
+          <SlideRelative direction="down" show={!!password && passMatch === 'no-match'}>
             <Box
               sx={{
                 width: '95%',
@@ -200,7 +201,7 @@ const SettingsPassword = ({
               textTransform: 'capitalize',
               width: '100%',
             }}
-            disabled={!isMatch}
+            disabled={passMatch !== 'match'}
           >
             <Typography
               sx={{ fontWeight: '600', fontSize: '14px', fontFamily: 'Inter' }}
