@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useRef } from 'react';
 
+import storage, { type StorageChange, type AreaName } from '@/background/webapi/storage';
 import {
   type FlowAddress,
   type WalletAccount,
   type ChildAccountMap,
 } from '@/shared/types/wallet-types';
 import { ensureEvmAddressPrefix, withPrefix } from '@/shared/utils/address';
+import { profileAccountsKey } from '@/shared/utils/data-cache-keys';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfileStore } from '@/ui/stores/profileStore';
@@ -120,6 +122,10 @@ export const useProfiles = () => {
 
     try {
       profilesRef.current.loading = true;
+      const currentPubkey = await usewallet.getCurrentPubkey();
+      const storageAccounts = await storage.getSession(profileAccountsKey(network, currentPubkey));
+      const wallets = storageAccounts.value.accounts;
+      debug('storageAccounts ===', storageAccounts.value.accounts);
       const mainAddress = await usewallet.getMainAddress();
       debug('mainAddress ===', mainAddress);
       if (mainAddress) {
@@ -132,9 +138,8 @@ export const useProfiles = () => {
 
         setChildAccount(childAccounts || {});
 
-        const parentAddress = await usewallet.getParentAddress();
-        debug('parentAddress ===', parentAddress);
-        if (parentAddress) {
+        debug('parentAddress ===', mainAddress);
+        if (mainAddress) {
           const [currentWallet, isChild] = await Promise.all([
             usewallet.getCurrentWallet(),
             usewallet.getActiveWallet(),
@@ -153,7 +158,7 @@ export const useProfiles = () => {
             debug('walletData ===', walletData);
             const { otherAccounts, wallet, loggedInAccounts } =
               await usewallet.openapi.freshUserInfo(
-                parentAddress,
+                mainAddress,
                 keys,
                 pubKTuple,
                 walletData,
@@ -169,7 +174,6 @@ export const useProfiles = () => {
         }
       }
 
-      const wallets = await usewallet.getMainAccounts();
       debug('wallets ===', wallets);
 
       if (!wallets) {
@@ -214,6 +218,7 @@ export const useProfiles = () => {
     usewallet,
     walletLoaded,
     initialStart,
+    network,
     formatWallets,
     setWalletList,
     setMainAddress,

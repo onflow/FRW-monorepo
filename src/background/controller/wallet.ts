@@ -416,6 +416,10 @@ export class WalletController extends BaseController {
     );
   };
 
+  getCurrentPubkey = async () => {
+    return await userWalletService.getCurrentPubkey();
+  };
+
   retrievePk = async (password: string) => {
     const pk = await keyringService.retrievePk(password);
     return pk;
