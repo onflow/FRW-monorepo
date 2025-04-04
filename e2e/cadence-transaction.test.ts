@@ -38,7 +38,7 @@ export const moveTokenFlow = async ({
 }) => {
   await getCurrentAddress(page);
   await page.getByRole('tab', { name: 'coins' }).click();
-  await page.getByRole('button', { name: tokenname }).click();
+  await page.getByTestId(`token-${tokenname.toLowerCase()}`).click();
   await page.getByRole('button', { name: 'Move' }).click();
   await page.getByPlaceholder('Amount').click();
   await page.getByPlaceholder('Amount').fill(amount);
