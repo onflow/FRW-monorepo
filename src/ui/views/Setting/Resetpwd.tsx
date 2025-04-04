@@ -129,7 +129,7 @@ const Resetpassword = () => {
   const history = useHistory();
 
   const verify = useCallback(async () => {
-    await wallet.getCurrentPassword(confirmcurrentPassword);
+    await wallet.verifyPassword(confirmcurrentPassword);
     setSame(true);
   }, [confirmcurrentPassword, wallet]);
 
