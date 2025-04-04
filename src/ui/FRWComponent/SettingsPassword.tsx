@@ -1,14 +1,14 @@
-import { Input, FormControl, Typography, Button, Fade } from '@mui/material';
+import { Typography, Button, Input, FormControl } from '@mui/material';
 import Box from '@mui/material/Box';
 import { makeStyles } from '@mui/styles';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 
+import CancelIcon from '@/components/iconfont/IconClose';
 import { LLHeader } from '@/ui/FRWComponent';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
-import { useWallet } from 'ui/utils';
 
-import CancelIcon from '../../../../components/iconfont/IconClose';
+import { useWallet } from '../utils';
 
 const useStyles = makeStyles(() => ({
   customInputLabel: {
@@ -32,54 +32,56 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const Recoveryphrasepassword = () => {
-  const history = useHistory();
+if (process.env.NODE_ENV !== 'development') {
+  if (!!process.env.DEV_PASSWORD) {
+    throw new Error('DEV_PASSWORD should only be set in development environment');
+  }
+}
+
+const DEFAULT_PASSWORD =
+  process.env.NODE_ENV === 'development' ? process.env.DEV_PASSWORD || '' : '';
+
+type PassMatch = 'match' | 'no-match' | 'unverified';
+const SettingsPassword = ({
+  verifiedUrl,
+  children = null,
+}: {
+  verifiedUrl: string;
+  children?: ReactNode;
+}) => {
   const wallet = useWallet();
   const classes = useStyles();
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [isMatch, setMatch] = useState(false);
-
-  const handleKeyDown = (event) => {
-    if (event.key === ' ' || event.keyCode === 32) {
-      event.preventDefault();
-    }
-  };
+  const history = useHistory();
+  const [password, setPassword] = useState(DEFAULT_PASSWORD);
+  const [passMatch, setPassMatch] = useState<PassMatch>('unverified');
 
   const verify = useCallback(() => {
-    setMatch(false);
+    setPassMatch('unverified');
 
-    if (confirmPassword.length > 7) {
+    if (password.length > 7) {
       wallet
-        .verifyPassword(confirmPassword)
+        .verifyPassword(password)
         .then(() => {
-          setMatch(true);
+          setPassMatch('match');
         })
         .catch(() => {
-          setMatch(false);
+          setPassMatch('no-match');
         });
     }
-  }, [confirmPassword, wallet]);
-
-  const setTab = useCallback(async () => {
-    await wallet.setDashIndex(3);
-  }, [wallet]);
+  }, [password, wallet]);
 
   const navigate = useCallback(async () => {
-    history.push({
-      pathname: '/dashboard/nested/recoveryphrasedetail',
+    history.replace({
+      pathname: verifiedUrl,
       state: {
-        password: confirmPassword,
+        password: password,
       },
     });
-  }, [confirmPassword, history]);
-
-  useEffect(() => {
-    setTab();
-  }, [setTab]);
+  }, [history, verifiedUrl, password]);
 
   useEffect(() => {
     verify();
-  }, [confirmPassword, verify]);
+  }, [password, verify]);
 
   const passwordError = () => (
     <Box
@@ -90,7 +92,7 @@ const Recoveryphrasepassword = () => {
       }}
     >
       <CancelIcon size={14} color={'#E54040'} style={{ margin: '8px' }} />
-      <Typography variant="body2" color={'#E54040'}>
+      <Typography color={'#E54040'} sx={{ color: '#E54040' }}>
         {chrome.i18n.getMessage('Incorrect__Password')}
       </Typography>
     </Box>
@@ -126,71 +128,25 @@ const Recoveryphrasepassword = () => {
             autoFocus
             fullWidth
             disableUnderline
-            value={confirmPassword}
+            value={password}
             onChange={(event) => {
-              setConfirmPassword(event.target.value);
+              setPassword(event.target.value);
             }}
-            onKeyDown={handleKeyDown}
           />
 
-          <SlideRelative show={!!(confirmPassword && !isMatch)} direction="down">
-            <>
-              <Box
-                sx={{
-                  width: '95%',
-                  backgroundColor: 'error.light',
-                  mx: 'auto',
-                  borderRadius: '0 0 12px 12px',
-                }}
-              >
-                <Box sx={{ p: '4px' }}>{passwordError()}</Box>
-              </Box>
-            </>
-          </SlideRelative>
-
-          {/* <Box sx={{flexGrow: 1}}/> */}
-
-          <Fade in={true}>
+          <SlideRelative direction="down" show={!!password && passMatch === 'no-match'}>
             <Box
               sx={{
-                backgroundColor: 'rgba(247, 87, 68, 0.1)',
-                borderRadius: '16px',
-                display: 'flex',
-                alignItems: 'center',
-                flexDirection: 'column',
-                my: '18px',
-                padding: '16px',
+                width: '95%',
+                backgroundColor: 'error.light',
+                mx: 'auto',
+                borderRadius: '0 0 12px 12px',
               }}
             >
-              <Typography
-                sx={{
-                  alignSelf: 'center',
-                  fontSize: '12px',
-                  fontStyle: 'normal',
-                  fontWeight: '600',
-                  lineHeight: '16px',
-                  color: '#E54040',
-                  paddingBottom: '16px',
-                  paddingTop: '0px',
-                }}
-              >
-                {chrome.i18n.getMessage('Do__not__share__your__secret__phrase')}
-              </Typography>
-              <Typography
-                sx={{
-                  alignSelf: 'center',
-                  fontSize: '12px',
-                  fontStyle: 'normal',
-                  fontWeight: '400',
-                  lineHeight: '16px',
-                  color: '#E54040',
-                  textAlign: 'center',
-                }}
-              >
-                {chrome.i18n.getMessage('If__someone__has__your__secret__phrase')}
-              </Typography>
+              <Box sx={{ p: '4px' }}>{passwordError()}</Box>
             </Box>
-          </Fade>
+          </SlideRelative>
+          {children}
         </FormControl>
 
         <Box sx={{ flexGrow: 1 }} />
@@ -235,6 +191,7 @@ const Recoveryphrasepassword = () => {
           <Button
             variant="contained"
             color="primary"
+            onClick={navigate}
             size="large"
             sx={{
               display: 'flex',
@@ -244,8 +201,7 @@ const Recoveryphrasepassword = () => {
               textTransform: 'capitalize',
               width: '100%',
             }}
-            onClick={navigate}
-            disabled={!isMatch}
+            disabled={passMatch !== 'match'}
           >
             <Typography
               sx={{ fontWeight: '600', fontSize: '14px', fontFamily: 'Inter' }}
@@ -260,4 +216,4 @@ const Recoveryphrasepassword = () => {
   );
 };
 
-export default Recoveryphrasepassword;
+export default SettingsPassword;

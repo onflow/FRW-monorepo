@@ -146,7 +146,6 @@ describe('Keyring Migration Tests', () => {
     // Reset keyring service state
     KeyringService.currentKeyring = [];
     KeyringService.keyringList = [];
-    KeyringService.password = null;
 
     // Mock storage
     vi.mocked(storage.get).mockImplementation((key) => memoryStore.get(key));
@@ -214,12 +213,10 @@ describe('Keyring Migration Tests', () => {
     await KeyringService.submitPassword(TEST_PASSWORD);
 
     // Verify unlocked state
-    expect(KeyringService.password).toBe(TEST_PASSWORD);
     expect(KeyringService.memStore.getState().isUnlocked).toBe(true);
 
     // Check keyringStateV2 was created
     const keyringStateV2 = memoryStore.get('keyringStateV2');
-    console.log('keyringStateV2:', keyringStateV2);
     expect(keyringStateV2).toBeDefined();
 
     // Verify public key can be retrieved
@@ -295,7 +292,6 @@ describe('Keyring Migration Tests', () => {
     await KeyringService.submitPassword(TEST_PASSWORD);
 
     // Verify unlocked state
-    expect(KeyringService.password).toBe(TEST_PASSWORD);
     expect(KeyringService.memStore.getState().isUnlocked).toBe(true);
 
     // Check keyringStateV2 was created
@@ -369,7 +365,10 @@ describe('Keyring Migration Tests', () => {
     await KeyringService.boot(TEST_PASSWORD);
 
     // Step 3: Create a new keyring with mnemonics
-    const newKeyring = await KeyringService.createKeyringWithMnemonics(HD_KEYRING_MNEMONIC);
+    const newKeyring = await KeyringService.createKeyringWithMnemonics(
+      TEST_PASSWORD,
+      HD_KEYRING_MNEMONIC
+    );
 
     // Verify keyring was created
     expect(newKeyring).toBeDefined();

@@ -70,6 +70,9 @@ function createAndEncodeCOAOwnershipProof(
 
 // Should not be in controller
 async function signMessage(msgParams, opts = {}) {
+  if (!(await Wallet.isUnlocked())) {
+    throw new Error('Wallet is locked');
+  }
   const web3 = new Web3();
   const textData = msgParams.data;
 
@@ -85,9 +88,8 @@ async function signMessage(msgParams, opts = {}) {
   const prependUserDomainTag = (msg: string) => USER_DOMAIN_TAG + msg;
   const signableData = prependUserDomainTag(removeHexPrefix(hashedData));
 
-  // Retrieve the private key from the wallet (assuming Ethereum wallet)
-  const password = keyringService.password;
-  const privateKey = await Wallet.getPrivateKeyForCurrentAccount(password);
+  // Retrieve the private key from the wallet
+  const privateKey = await keyringService.getCurrentPrivateKey();
   const currentWallet = await Wallet.getParentAddress();
   if (!currentWallet) {
     throw new Error('Current wallet not found');
@@ -110,6 +112,9 @@ async function signMessage(msgParams, opts = {}) {
 }
 
 async function signTypeData(msgParams, opts = {}) {
+  if (!(await Wallet.isUnlocked())) {
+    throw new Error('Wallet is locked');
+  }
   const rightPaddedHexBuffer = (value: string, pad: number) =>
     Buffer.from(value.padEnd(pad * 2, '0'), 'hex');
   console.log('msgParams ', msgParams);
@@ -124,8 +129,7 @@ async function signTypeData(msgParams, opts = {}) {
   const signableData = prependUserDomainTag(removeHexPrefix(hashedData));
 
   // Retrieve the private key from the wallet (assuming Ethereum wallet)
-  const password = keyringService.password;
-  const privateKey = await Wallet.getPrivateKeyForCurrentAccount(password);
+  const privateKey = await keyringService.getCurrentPrivateKey();
   const hashAlgo = await storage.get('hashAlgo');
   const signAlgo = await storage.get('signAlgo');
   const keyindex = await storage.get('keyIndex');

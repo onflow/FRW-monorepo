@@ -1,6 +1,7 @@
 import { Box, Typography, IconButton, Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { useState, useEffect, useCallback } from 'react';
+import { useHistory, useLocation } from 'react-router-dom';
 
 import BrowserWarning from '@/ui/component/BrowserWarning';
 import { LLHeader, LLSpinner } from '@/ui/FRWComponent';
@@ -57,68 +58,68 @@ const useStyles = makeStyles(() => ({
     padding: '20px 24px',
   },
 }));
-
+interface BackupsState {
+  password?: string;
+}
+/**
+ * Manage Backups to Google Drive
+ * @returns
+ */
 const ManageBackups = () => {
+  const location = useLocation<BackupsState>();
+  const history = useHistory();
   const wallet = useWallet();
   const classes = useStyles();
   const [hasPermission, setHasPermission] = useState(false);
   const [hasBackup, setHasBackup] = useState(false);
   const [loading, setLoading] = useState(true);
   const [deleteBackupPop, setDeleteBackupPop] = useState(false);
-  const [deleteAllBackupPop, setDeleteAllBackupPop] = useState(false);
 
   const checkBackup = useCallback(async () => {
     try {
-      setLoading(true);
       const hasBackup = await wallet.hasCurrentUserBackup();
+
       setHasBackup(hasBackup);
-      setLoading(false);
-    } catch (e) {
-      console.error(e);
-      setLoading(false);
+    } catch {
+      console.error('An error occurred while checking the backup');
     }
-  }, [setLoading, setHasBackup, wallet]);
+  }, [setHasBackup, wallet]);
 
   const checkPermissions = useCallback(async () => {
     const permissions = await wallet.hasGooglePremission();
     setHasPermission(permissions);
     if (permissions) {
-      checkBackup();
+      await checkBackup();
     }
+    return permissions;
   }, [checkBackup, wallet]);
 
-  const syncBackup = async () => {
+  const syncBackup = useCallback(async () => {
     try {
+      if (!location.state?.password) {
+        // Navigate to the password page
+        history.replace('/dashboard/setting/backups/password');
+        return;
+      }
       setLoading(true);
-      await wallet.syncBackup();
+      await wallet.syncBackup(location.state.password);
+
       await checkBackup();
-      setLoading(false);
-    } catch (e) {
-      console.error(e);
+    } catch {
+      console.error('An error occurred while syncing the backup');
+    } finally {
       setLoading(false);
     }
-  };
+  }, [checkBackup, history, location.state?.password, wallet]);
 
   const deleteBackup = async () => {
     try {
       setLoading(true);
       await wallet.deleteCurrentUserBackup();
       await checkBackup();
-      setLoading(false);
-    } catch (e) {
-      console.error(e);
-      setLoading(false);
-    }
-  };
-
-  const deleteAllBackup = async () => {
-    try {
-      setLoading(true);
-      await wallet.deleteBackups();
-      await checkBackup();
-      setLoading(false);
-    } catch (e) {
-      console.error(e);
+    } catch {
+      console.error('An error occurred while deleting the backup');
+    } finally {
       setLoading(false);
     }
   };
@@ -130,16 +131,31 @@ const ManageBackups = () => {
       const accounts = await wallet.loadBackupAccounts();
 
       localStorage.setItem('backupAccounts', JSON.stringify(accounts));
-    } catch (e) {
-      console.error(e);
+    } catch {
+      console.error('An error occurred while getting the Google Drive permission');
     } finally {
       setLoading(false);
     }
   };
 
+  // Check permissions then sync the backup after the password is entered
+  // The user has clicked the sync button but the password is not entered yet
+  // So we need to sync the backup after the user is returned to this page
+
   useEffect(() => {
-    checkPermissions();
-  }, [checkPermissions]);
+    setLoading(true);
+    checkPermissions()
+      .then((hasGooglePermission) => {
+        if (hasGooglePermission && location.state?.password) {
+          // Set the state to true to prevent multiple syncs
+          return syncBackup();
+        }
+      })
+      .finally(() => {
+        // Set the loading to false after checking permissions and syncing backup is complete
+        setLoading(false);
+      });
+  }, [checkPermissions, location.state?.password, syncBackup]);
 
   return (
     <div className="page" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -158,7 +174,7 @@ const ManageBackups = () => {
               <CheckCircleIcon size={20} color={'#41CC5D'} />
             </IconButton>
           ) : (
-            <Button variant="text" onClick={syncBackup}>
+            <Button variant="text" onClick={() => syncBackup()}>
               {chrome.i18n.getMessage('Sync')}
             </Button>
           )
@@ -197,41 +213,12 @@ const ManageBackups = () => {
             </Typography>
           </Button>
 
-          {/* <Button
-          onClick={()=>setDeleteAllBackupPop(true)}
-          variant='contained'
-          disabled={loading}
-          disableElevation
-          color='error'
-          sx={{
-            width: '90%',
-            height: '48px',
-            borderRadius: '12px',
-            // margin: '80px auto 20px 20px',
-            marginBottom: '24px',
-            textTransform: 'none',
-            alignSelf: 'center'
-          }}
-        >
-          <Typography color='text'>{loading ? 'Deleting' : 'DELETE ALL BACKUPS'}</Typography>
-        </Button> */}
-
           <LLDeleteBackupPopup
             deleteBackupPop={deleteBackupPop}
             handleCloseIconClicked={() => setDeleteBackupPop(false)}
             handleCancelBtnClicked={() => setDeleteBackupPop(false)}
             handleNextBtnClicked={() => {
               deleteBackup();
-              setDeleteBackupPop(false);
-            }}
-          />
-
-          <LLDeleteBackupPopup
-            deleteBackupPop={deleteAllBackupPop}
-            handleCloseIconClicked={() => setDeleteBackupPop(false)}
-            handleCancelBtnClicked={() => setDeleteBackupPop(false)}
-            handleNextBtnClicked={() => {
-              deleteAllBackup();
               setDeleteBackupPop(false);
             }}
           />
