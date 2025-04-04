@@ -2,6 +2,7 @@ import { Box, Typography, FormGroup } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { useCallback, useEffect, useState } from 'react';
 
+import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import {
   PasswordInput,
   TermsCheckbox,
@@ -54,8 +55,8 @@ const SetPassword: React.FC<SetPasswordProps> = ({
 
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const [isConfirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [password, setPassword] = useState(DEFAULT_PASSWORD);
+  const [confirmPassword, setConfirmPassword] = useState(DEFAULT_PASSWORD);
   const [isCharacters, setCharacters] = useState(false);
   const [isMatch, setMatch] = useState(false);
   const [isCheck, setCheck] = useState(!showTerms);

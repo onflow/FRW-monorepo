@@ -305,7 +305,7 @@ class UserWallet {
   };
 
   getParentAddress = async (network: string): Promise<FlowAddress | null> => {
-    if (!keyringService.isBooted() || !keyringService.memStore.getState().isUnlocked) {
+    if (!keyringService.isUnlocked()) {
       return null;
     }
     const address = this.store.parentAddress;
@@ -314,7 +314,7 @@ class UserWallet {
   };
 
   returnParentWallet = async (network: string): Promise<MainAccount | null> => {
-    if (!keyringService.isBooted() || !keyringService.memStore.getState().isUnlocked) {
+    if (!keyringService.isUnlocked()) {
       return null;
     }
     const address = this.store.parentAddress;

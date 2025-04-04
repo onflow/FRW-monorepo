@@ -67,10 +67,10 @@ type KeyringStateV1 = {
   vault: CompatibleVaultEntry[];
 };
 
-interface VaultEntryV2 {
+type VaultEntryV2 = {
   id: string;
   encryptedData: string;
-}
+};
 type KeyringStateV2 = {
   booted: string;
   vault: VaultEntryV2[];
@@ -134,13 +134,12 @@ class KeyringService extends EventEmitter {
   //
   // PUBLIC METHODS
   //
-  keyringTypes: (typeof SimpleKeyring | typeof HDKeyring)[];
-  store!: SimpleStore<KeyringStateV2>;
-  memStore: SimpleStore<MemStoreState>;
-  currentKeyring: Keyring[];
-  keyringList: KeyringData[];
-  publicKeyCache: Map<string, PublicKeyTuple> = new Map();
-  encryptor: typeof encryptor = encryptor;
+  private keyringTypes: (typeof SimpleKeyring | typeof HDKeyring)[];
+  private store!: SimpleStore<KeyringStateV2>;
+  private memStore: SimpleStore<MemStoreState>;
+  private currentKeyring: Keyring[];
+  private keyringList: KeyringData[];
+  private encryptor: typeof encryptor = encryptor;
 
   constructor() {
     super();
@@ -156,9 +155,6 @@ class KeyringService extends EventEmitter {
     this.keyringList = [];
   }
 
-  loadMemStore() {
-    return this.memStore.getState();
-  }
   /**
    * Boot the keyring
    * create a new clean keyring with a new password

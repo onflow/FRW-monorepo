@@ -3,6 +3,7 @@ import { Input, Typography, Box, FormControl, List, ListItem, ListItemText } fro
 import { makeStyles } from '@mui/styles';
 import React, { useEffect, useRef, useState } from 'react';
 
+import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import { LLPrimaryButton, CredentialBox, LLSecondaryButton } from 'ui/FRWComponent';
 import { useWallet, useApproval, useWalletRequest } from 'ui/utils';
@@ -39,7 +40,7 @@ const RetrievePK = () => {
   // const { t } = useTranslation();
   const [showError, setShowError] = useState(false);
   const [isLoading, setLoading] = useState(false);
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState(DEFAULT_PASSWORD);
   const [dataArray, setArray] = useState<any[]>([]);
   const [retrieved, setRetrieved] = useState(false);
   useEffect(() => {
