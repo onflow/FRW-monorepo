@@ -199,6 +199,7 @@ const CoinList = ({
               return (
                 <ListItem
                   key={coin.unit}
+                  data-testid={`token-${coin.unit.toLowerCase()}`}
                   secondaryAction={
                     <EndListItemText
                       primary={parseFloat(coin.balance).toFixed(3)}

@@ -18,7 +18,7 @@ export const sendTokenFlow = async ({
   await getCurrentAddress(page);
   await page.getByRole('tab', { name: 'coins' }).click();
   // send Ft token from COA
-  await page.getByRole('button', { name: tokenname }).click();
+  await page.getByTestId(`token-${tokenname.toLowerCase()}`).click();
   await page.getByRole('button', { name: 'SEND' }).click();
   await page.getByPlaceholder('Search address(0x), or flow').click();
   await page.getByPlaceholder('Search address(0x), or flow').fill(receiver);
@@ -80,7 +80,7 @@ test('send FLOW flow to flow', async ({ page }) => {
   // This can take a while
   const tx = await sendTokenFlow({
     page,
-    tokenname: /^FLOW \$/i,
+    tokenname: /^flow \$/i,
     receiver: getReceiverCadenceAccount({ parallelIndex: test.info().parallelIndex }),
     amount: '0.00123456',
   });
@@ -91,7 +91,7 @@ test('send FLOW flow to flow', async ({ page }) => {
 test('send stFlow flow to flow', async ({ page }) => {
   const tx = await sendTokenFlow({
     page,
-    tokenname: 'Liquid Staked Flow $',
+    tokenname: 'stFlow',
     receiver: getReceiverCadenceAccount({ parallelIndex: test.info().parallelIndex }),
     amount: '0.00123456',
   });
@@ -103,7 +103,7 @@ test('send FLOW flow to COA', async ({ page }) => {
   // This can take a while
   const tx = await sendTokenFlow({
     page,
-    tokenname: /^FLOW \$/i,
+    tokenname: /^flow \$/i,
     receiver: getReceiverEvmAccount({ parallelIndex: test.info().parallelIndex }),
     amount: '0.00123456',
   });
@@ -113,7 +113,7 @@ test('send FLOW flow to COA', async ({ page }) => {
 test('send USDC flow to COA', async ({ page }) => {
   const tx = await sendTokenFlow({
     page,
-    tokenname: 'USDC.e (Flow) $',
+    tokenname: 'usdc.e',
     receiver: getReceiverEvmAccount({ parallelIndex: test.info().parallelIndex }),
     ingoreFlowCharge: true,
     amount: '0.00123456',
@@ -126,7 +126,7 @@ test('send FLOW flow to EOA', async ({ page }) => {
   // This can take a while
   const tx = await sendTokenFlow({
     page,
-    tokenname: /^FLOW \$/i,
+    tokenname: /^flow \$/i,
     receiver: process.env.TEST_RECEIVER_METAMASK_EVM_ADDR!,
     amount: '0.00123456',
   });
@@ -137,7 +137,7 @@ test('send FLOW flow to EOA', async ({ page }) => {
 test('send BETA flow to EOA', async ({ page }) => {
   const tx = await sendTokenFlow({
     page,
-    tokenname: 'BETA $',
+    tokenname: 'beta',
     receiver: process.env.TEST_RECEIVER_METAMASK_EVM_ADDR!,
     ingoreFlowCharge: true,
     amount: '0.00123456',
