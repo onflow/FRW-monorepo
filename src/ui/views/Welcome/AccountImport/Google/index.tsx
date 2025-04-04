@@ -2,6 +2,7 @@ import { Box } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
+import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import AllSet from '@/ui/FRWComponent/LandingPages/AllSet';
 import LandingComponents from '@/ui/FRWComponent/LandingPages/LandingComponents';
 import RecoveryPhrase from '@/ui/FRWComponent/LandingPages/RecoveryPhrase';
@@ -34,7 +35,7 @@ const Google: React.FC<GoogleProps> = ({ accounts, onBack }) => {
   const [activeTab, setActiveTab] = useState<StepType>(STEPS.ACCOUNTS);
   const [mnemonic, setMnemonic] = useState('');
   const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState(DEFAULT_PASSWORD);
 
   const goBack = () => {
     switch (activeTab) {

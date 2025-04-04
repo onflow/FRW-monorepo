@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
 import { getAccountKey } from '@/shared/utils/address';
+import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import AllSet from '@/ui/FRWComponent/LandingPages/AllSet';
 import GoogleBackup from '@/ui/FRWComponent/LandingPages/GoogleBackup';
 import LandingComponents from '@/ui/FRWComponent/LandingPages/LandingComponents';
@@ -31,7 +32,7 @@ const Register = () => {
 
   const [activeTab, setActiveTab] = useState<StepType>(STEPS.USERNAME);
   const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState(DEFAULT_PASSWORD);
   const [mnemonic] = useState(bip39.generateMnemonic());
   const [isAddWallet, setIsAddWallet] = useState<boolean>(false);
 

@@ -4,6 +4,7 @@ import { makeStyles } from '@mui/styles';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 
+import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import { LLHeader } from '@/ui/FRWComponent';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import { useWallet } from 'ui/utils';
@@ -36,7 +37,7 @@ const Recoveryphrasepassword = () => {
   const history = useHistory();
   const wallet = useWallet();
   const classes = useStyles();
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState(DEFAULT_PASSWORD);
   const [isMatch, setMatch] = useState(false);
 
   const handleKeyDown = (event) => {
