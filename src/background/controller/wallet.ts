@@ -161,7 +161,6 @@ export class WalletController extends BaseController {
   };
   isBooted = () => keyringService.isBooted();
   isUnlocked = () => keyringService.isUnlocked();
-  loadMemStore = () => keyringService.loadMemStore();
   verifyPassword = (password: string) => keyringService.verifyPassword(password);
 
   sendRequest = (data) => {
@@ -841,14 +840,6 @@ export class WalletController extends BaseController {
     await this.verifyPassword(password);
     const accounts = await keyringService.getKeyring();
     return accounts;
-  };
-
-  getTypedAccounts = async (type) => {
-    return Promise.all(
-      keyringService.currentKeyring
-        .filter((keyring) => !type || keyring.type === type)
-        .map((keyring) => keyringService.displayForKeyring(keyring))
-    );
   };
 
   getAllVisibleAccounts: () => Promise<DisplayedKeryring[]> = async () => {

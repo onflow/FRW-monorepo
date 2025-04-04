@@ -15,7 +15,7 @@ const getProviderState = async (req) => {
   } = req;
 
   // const chainEnum = permissionService.getWithoutUpdate(origin)?.chain;
-  const isUnlocked = keyringService.memStore.getState().isUnlocked;
+  const isUnlocked = keyringService.isUnlocked;
 
   return {
     chainId: 'ETH',

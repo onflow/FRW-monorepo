@@ -150,7 +150,7 @@ export const verifyMockKeyringData = async (): Promise<boolean> => {
  *
  *     // Verify unlocked state
  *     expect(KeyringService.password).toBe(MOCK_PASSWORD);
- *     expect(KeyringService.memStore.getState().isUnlocked).toBe(true);
+ *     expect(KeyringService.isUnlocked()).toBe(true);
  *
  *     // Access the keyring data
  *     const publicKeyTuple = await KeyringService.getCurrentPublicKeyTuple();

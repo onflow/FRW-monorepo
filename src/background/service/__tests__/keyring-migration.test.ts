@@ -144,8 +144,8 @@ describe('Keyring Migration Tests', () => {
     memoryStore.clear();
 
     // Reset keyring service state
-    KeyringService.currentKeyring = [];
-    KeyringService.keyringList = [];
+    (KeyringService as any).currentKeyring = [];
+    (KeyringService as any).keyringList = [];
 
     // Mock storage
     vi.mocked(storage.get).mockImplementation((key) => memoryStore.get(key));
@@ -213,7 +213,7 @@ describe('Keyring Migration Tests', () => {
     await KeyringService.submitPassword(TEST_PASSWORD);
 
     // Verify unlocked state
-    expect(KeyringService.memStore.getState().isUnlocked).toBe(true);
+    expect(KeyringService.isUnlocked()).toBe(true);
 
     // Check keyringStateV2 was created
     const keyringStateV2 = memoryStore.get('keyringStateV2');
@@ -224,7 +224,8 @@ describe('Keyring Migration Tests', () => {
     expect(publicKeyTuple).toEqual(MOCK_KEYS.publicKeys);
 
     // Verify all keyrings were loaded properly
-    expect(KeyringService.currentKeyring.length).toBeGreaterThan(0);
+    const keyrings = await KeyringService.getKeyring();
+    expect(keyrings.length).toBeGreaterThan(0);
 
     // Switch to the simple keyring
     vi.mocked(returnCurrentProfileId).mockResolvedValue(SIMPLE_KEYRING_ID);
@@ -292,7 +293,7 @@ describe('Keyring Migration Tests', () => {
     await KeyringService.submitPassword(TEST_PASSWORD);
 
     // Verify unlocked state
-    expect(KeyringService.memStore.getState().isUnlocked).toBe(true);
+    expect(KeyringService.isUnlocked()).toBe(true);
 
     // Check keyringStateV2 was created
     const keyringStateV2 = memoryStore.get('keyringStateV2');
