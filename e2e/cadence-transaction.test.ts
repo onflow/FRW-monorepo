@@ -80,7 +80,7 @@ test('send FLOW flow to flow', async ({ page }) => {
   // This can take a while
   const tx = await sendTokenFlow({
     page,
-    tokenname: /^flow \$/i,
+    tokenname: 'flow',
     receiver: getReceiverCadenceAccount({ parallelIndex: test.info().parallelIndex }),
     amount: '0.00123456',
   });
@@ -103,7 +103,7 @@ test('send FLOW flow to COA', async ({ page }) => {
   // This can take a while
   const tx = await sendTokenFlow({
     page,
-    tokenname: /^flow \$/i,
+    tokenname: 'flow',
     receiver: getReceiverEvmAccount({ parallelIndex: test.info().parallelIndex }),
     amount: '0.00123456',
   });
@@ -126,7 +126,7 @@ test('send FLOW flow to EOA', async ({ page }) => {
   // This can take a while
   const tx = await sendTokenFlow({
     page,
-    tokenname: /^flow \$/i,
+    tokenname: 'flow',
     receiver: process.env.TEST_RECEIVER_METAMASK_EVM_ADDR!,
     amount: '0.00123456',
   });
