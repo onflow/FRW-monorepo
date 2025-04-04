@@ -5,6 +5,7 @@ import React, { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 
 import CancelIcon from '@/components/iconfont/IconClose';
+import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import { LLHeader } from '@/ui/FRWComponent';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 
@@ -31,15 +32,6 @@ const useStyles = makeStyles(() => ({
     },
   },
 }));
-
-if (process.env.NODE_ENV !== 'development') {
-  if (!!process.env.DEV_PASSWORD) {
-    throw new Error('DEV_PASSWORD should only be set in development environment');
-  }
-}
-
-const DEFAULT_PASSWORD =
-  process.env.NODE_ENV === 'development' ? process.env.DEV_PASSWORD || '' : '';
 
 type PassMatch = 'match' | 'no-match' | 'unverified';
 const SettingsPassword = ({

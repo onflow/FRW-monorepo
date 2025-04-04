@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
+import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import AllSet from '@/ui/FRWComponent/LandingPages/AllSet';
 import GoogleBackup from '@/ui/FRWComponent/LandingPages/GoogleBackup';
 import LandingComponents from '@/ui/FRWComponent/LandingPages/LandingComponents';
@@ -31,7 +32,7 @@ const AccountImport = () => {
   const [mnemonic, setMnemonic] = useState('');
   const [pk, setPk] = useState<string | null>(null);
   const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState(DEFAULT_PASSWORD);
   const [accounts, setAccounts] = useState<any>([]);
   const [errMessage, setErrorMessage] = useState(chrome.i18n.getMessage('No__backup__found'));
   const [showError, setShowError] = useState(false);

@@ -311,7 +311,7 @@ export class WalletController extends BaseController {
    * @param address
    */
 
-  importProfileByPrivateKey = async (
+  importProfileUsingPrivateKey = async (
     username: string,
     password: string,
     pk: string,
@@ -324,15 +324,17 @@ export class WalletController extends BaseController {
     // Get the public key tuple from the private key
     const pubKTuple: PublicKeyTuple = await pk2PubKey(pk);
 
+    // Check if the public key has any accounts associated with it
+    const accounts = await getOrCheckAccountsByPublicKeyTuple(pubKTuple, address);
+    if (accounts.length === 0) {
+      throw new Error('Invalid private key - no accounts found');
+    }
+
     const signInFunction = async () => {
       await this.signInWithPrivatekey(pk, true);
     };
     // Sign in or create a new user by public key tuple
     await this.signInOrCreateUserByPubKeyTuple(pubKTuple, username, signInFunction);
-
-    // TODO: Remove this
-    storage.remove('premnemonic');
-    await this.saveIndex(username);
 
     // Now we can create the keyring with the mnemonic (and path and phrase)
     await this.importPrivateKey(password, pk);
