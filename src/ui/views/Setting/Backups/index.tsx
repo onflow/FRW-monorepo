@@ -98,7 +98,7 @@ const ManageBackups = () => {
     try {
       if (!location.state?.password) {
         // Navigate to the password page
-        history.push('/dashboard/setting/backups/password');
+        history.replace('/dashboard/setting/backups/password');
         return;
       }
       setLoading(true);

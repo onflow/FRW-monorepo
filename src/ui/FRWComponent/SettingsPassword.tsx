@@ -71,7 +71,7 @@ const SettingsPassword = ({
   }, [password, wallet]);
 
   const navigate = useCallback(async () => {
-    history.push({
+    history.replace({
       pathname: verifiedUrl,
       state: {
         password: password,
