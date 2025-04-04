@@ -20,7 +20,7 @@ export const sendTokenCOA = async ({
   await getCurrentAddress(page);
   await page.getByRole('tab', { name: 'coins' }).click();
   // send Ft token from COA
-  await page.getByRole('button', { name: tokenname }).click();
+  await page.getByTestId(`token-${tokenname.toLowerCase()}`).click();
   await page.getByRole('button', { name: 'SEND' }).click();
   await page.getByPlaceholder('Search address(0x), or flow').click();
   await page.getByPlaceholder('Search address(0x), or flow').fill(receiver);
@@ -40,7 +40,7 @@ export const moveTokenCOA = async ({
   // Wait for the EVM account to be loaded
   await getCurrentAddress(page);
   await page.getByRole('tab', { name: 'coins' }).click();
-  await page.getByRole('button', { name: tokenname }).click();
+  await page.getByTestId(`token-${tokenname.toLowerCase()}`).click();
   await page.getByRole('button', { name: 'Move' }).click();
   await page.getByPlaceholder('Amount').click();
   await page.getByPlaceholder('Amount').fill(amount);
@@ -73,7 +73,7 @@ test('send Flow COA to COA', async ({ page }) => {
   // Send FLOW token from COA to COA
   await sendTokenCOA({
     page,
-    tokenname: /^FLOW \$/i,
+    tokenname: 'flow',
     receiver: getReceiverEvmAccount({ parallelIndex: test.info().parallelIndex }),
     successtext: 'success',
     amount: '0.12345678', // 8 decimal places
@@ -84,7 +84,7 @@ test('send Staked Flow COA to COA', async ({ page }) => {
   // Send stFLOW token from COA to COA
   await sendTokenCOA({
     page,
-    tokenname: 'Liquid Staked Flow $',
+    tokenname: 'stFlow',
     receiver: getReceiverEvmAccount({ parallelIndex: test.info().parallelIndex }),
     successtext: 'success',
     amount: '0.00000112134354678',
@@ -97,7 +97,7 @@ test('send Flow COA to FLOW', async ({ page }) => {
   // Send FLOW token from COA to FLOW
   await sendTokenCOA({
     page,
-    tokenname: /^FLOW \$/i,
+    tokenname: 'flow',
     receiver: getReceiverCadenceAccount({ parallelIndex: test.info().parallelIndex }),
     successtext: 'success',
     amount: '0.00123456', // 8 decimal places
@@ -108,7 +108,7 @@ test('send USDC token COA to FLOW', async ({ page }) => {
   // Send USDC token from COA to FLOW
   await sendTokenCOA({
     page,
-    tokenname: 'Bridged USDC (Celer) $',
+    tokenname: 'usdc.e',
     receiver: getReceiverCadenceAccount({ parallelIndex: test.info().parallelIndex }),
     successtext: 'success',
     amount: '0.002468', // 6 decimal places
@@ -121,7 +121,7 @@ test('send Flow COA to EOA', async ({ page }) => {
   // Send FLOW token from COA to EOA
   await sendTokenCOA({
     page,
-    tokenname: /^FLOW \$/i,
+    tokenname: 'flow',
     receiver: process.env.TEST_RECEIVER_METAMASK_EVM_ADDR!,
     successtext: 'success',
     amount: '0.00123456', // 8 decimal places
@@ -132,7 +132,7 @@ test('send BETA token COA to EOA', async ({ page }) => {
   // Send BETA token from COA to EOA
   await sendTokenCOA({
     page,
-    tokenname: 'BETA $',
+    tokenname: 'beta',
     receiver: process.env.TEST_RECEIVER_METAMASK_EVM_ADDR!,
     successtext: 'success',
     amount: '0.001234567890123456', // 8 decimal places
