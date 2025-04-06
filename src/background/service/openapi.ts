@@ -1299,12 +1299,15 @@ class OpenApiService {
   };
 
   getStorageInfo = async (address: string): Promise<StorageInfo> => {
+    console.log('getStorageInfo - address', address);
     const script = await getScripts('basic', 'getStorageInfo');
+    console.log('getStorageInfo - script', script);
 
     const result = await fcl.query({
       cadence: script,
       args: (arg, t) => [arg(address, t.Address)],
     });
+    console.log('getStorageInfo - result', result);
 
     return {
       available: result['available'],

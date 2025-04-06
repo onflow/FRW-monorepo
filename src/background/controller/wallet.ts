@@ -382,6 +382,7 @@ export class WalletController extends BaseController {
     const parentAddress = await retryOperation(
       async () => {
         const address = userWalletService.getParentAddress();
+        console.log('retryOperation - refreshWallets - parentAddress', address);
         if (!address) {
           throw new Error('Parent address not found');
         }

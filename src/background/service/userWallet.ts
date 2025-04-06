@@ -1,6 +1,6 @@
 import * as secp from '@noble/secp256k1';
 import * as fcl from '@onflow/fcl';
-import ethUtil from 'ethereumjs-util';
+import * as ethUtil from 'ethereumjs-util';
 import { getApp } from 'firebase/app';
 import { getAuth, signInAnonymously } from 'firebase/auth/web-extension';
 
@@ -148,7 +148,8 @@ class UserWallet {
 
   getNetwork = (): FlowNetwork => {
     if (!this.store) {
-      throw new Error('UserWallet not initialized');
+      // Just return mainnet for now
+      return 'mainnet';
     }
     return this.store.network;
   };
@@ -226,11 +227,12 @@ class UserWallet {
       // Other methods will throw an error if they are not set
       return;
     }
-    return Promise.all([
-      this.loadActiveAccounts(network, pubkey),
-      // extenal method that ensures caches are loaded
-      loadAllAccountsWithPubKey(network, pubkey),
-    ]);
+
+    await this.loadActiveAccounts(network, pubkey);
+    // extenal method that ensures caches are loaded
+    await loadAllAccountsWithPubKey(network, pubkey);
+    // Ensure the parent address is valid
+    await this.ensureValidParentAddress();
   };
 
   /**
@@ -470,7 +472,7 @@ class UserWallet {
     }
   };
 
-  ensureValidCurrentAccount = async () => {
+  ensureValidParentAddress = async () => {
     // Get the main accounts
     const mainAccounts = await this.getMainAccounts();
     if (!mainAccounts) {
@@ -483,8 +485,6 @@ class UserWallet {
     // Check if the current account is valid
     if (!activeAccounts.parentAddress) {
       await this.resetToFirstParentAccount();
-    } else {
-      // Check if the current account is a valid main account
     }
   };
 
@@ -1081,7 +1081,7 @@ const loadAllAccountsWithPubKey = async (network: string, pubKey: string) => {
       `Failed to load main accounts even after trying for ${Math.round(MAX_LOAD_TIME / 1000 / 60)} minutes`
     );
   }
-
+  console.log('loadAllAccountsWithPubKey', network, pubKey, mainAccounts);
   // Now for each main account load the evm address and child accounts
   await Promise.all(
     mainAccounts.map(async (mainAccount) => {
@@ -1157,6 +1157,7 @@ const loadEvmAccountOfParent = async (
   network: string,
   mainAccountAddress: string
 ): Promise<EvmAddress | null> => {
+  console.log('loadEvmAccountOfParent', network, mainAccountAddress);
   // Check that the network is correct
   if ((await fcl.config().get('flow.network')) !== network) {
     throw new Error('Invalid network');

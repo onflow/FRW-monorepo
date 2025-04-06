@@ -1,4 +1,5 @@
 import type { NewsConditionType } from '@/shared/types/news-types';
+import { isValidFlowAddress } from '@/shared/utils/address';
 
 import packageJson from '../../../package.json';
 import { userWalletService } from '../service';
@@ -75,12 +76,18 @@ class ConditionsEvaluator {
   }
 
   async evaluateStorageCondition(address: string): Promise<boolean> {
+    if (!isValidFlowAddress(address)) {
+      return true;
+    }
     const storageEvaluator = new StorageEvaluator();
     const { isStorageSufficient } = await storageEvaluator.evaluateStorage(address);
     return !isStorageSufficient;
   }
 
   async evaluateBalanceCondition(address: string): Promise<boolean> {
+    if (!isValidFlowAddress(address)) {
+      return true;
+    }
     const storageEvaluator = new StorageEvaluator();
     const { isBalanceSufficient } = await storageEvaluator.evaluateStorage(address);
 
