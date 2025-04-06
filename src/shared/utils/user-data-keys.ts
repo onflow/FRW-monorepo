@@ -3,11 +3,7 @@
  * Persistant data is data that is stored between sessions
  */
 import { type FlowNetwork } from '../types/network-types';
-import {
-  type FlowAddress,
-  type WalletAddress,
-  type ActiveChildType_depreciated,
-} from '../types/wallet-types';
+import { type FlowAddress, type WalletAddress } from '../types/wallet-types';
 
 import { getUserData } from './user-data-access';
 
@@ -24,7 +20,9 @@ export type UserWalletStore = {
   // The public key of the currently active profile
   currentPubkey: string;
 };
-
+export const getUserWalletsData = async (): Promise<UserWalletStore | undefined> => {
+  return await getUserData<UserWalletStore>(userWalletsKey);
+};
 // Profile Current Account - the user selected account on a given network
 export const activeAccountsKey = (network: string, publicKey: string) =>
   `active-accounts-${network}-${publicKey}`;
@@ -45,5 +43,15 @@ export const getActiveAccountsData = async (network: string, publicKey: string) 
   const activeAccounts = await getUserData<ActiveAccountsStore>(
     activeAccountsKey(network, publicKey)
   );
+  return activeAccounts;
+};
+
+export const getActiveAccountsByUserWallet = async (): Promise<ActiveAccountsStore | undefined> => {
+  const userWallet = await getUserWalletsData();
+  const activeAccounts = userWallet
+    ? await getUserData<ActiveAccountsStore>(
+        activeAccountsKey(userWallet.network, userWallet.currentPubkey)
+      )
+    : undefined;
   return activeAccounts;
 };

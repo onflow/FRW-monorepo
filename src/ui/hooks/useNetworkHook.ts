@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import storage, { type StorageChange, type AreaName } from '@/shared/utils/storage';
-import { userWalletsKey } from '@/shared/utils/user-data-keys';
+import { getUserWalletsData, userWalletsKey } from '@/shared/utils/user-data-keys';
 
 export const useNetwork = () => {
   const [network, setNetwork] = useState<string>('mainnet');
@@ -38,7 +38,7 @@ export const useNetwork = () => {
     const loadInitialData = async () => {
       const developerModeValue = await storage.get('developerMode');
       const emulatorModeValue = await storage.get('emulatorMode');
-      const userWalletsStorage = await storage.get(userWalletsKey);
+      const userWalletsStorage = await getUserWalletsData();
       if (mounted) {
         if (developerModeValue !== undefined) {
           setDeveloperMode(developerModeValue);

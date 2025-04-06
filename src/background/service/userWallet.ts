@@ -529,8 +529,8 @@ class UserWallet {
 
     // The index of the evm wallet - always 0 as we only support one evm wallet
     const index = 0;
-    // Add 10 to the index to get the evm emoji
-    const emoji = getEmojiByIndex(index + 10);
+    // Add 9 to the index to get the evm emoji
+    const emoji = getEmojiByIndex(index + 9);
     const evmWallet: WalletAccount = {
       address: evmAddress,
       name: emoji.name,

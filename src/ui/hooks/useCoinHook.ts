@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState, useRef } from 'react';
 import { type CoinItem } from '@/shared/types/coin-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import storage, { type AreaName, type StorageChange } from '@/shared/utils/storage';
-import { userWalletsKey } from '@/shared/utils/user-data-keys';
+import { getActiveAccountsByUserWallet } from '@/shared/utils/user-data-keys';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { debug } from '@/ui/utils';
 import { useWallet, useWalletLoaded } from '@/ui/utils/WalletContext';
@@ -76,11 +76,10 @@ export const useCoins = () => {
     const loadCoinList = async () => {
       try {
         const coinList = await storage.get('coinList');
-        const userWallet = await storage.get(userWalletsKey);
         // check for nettwork type
         let refreshedCoinlist;
-
-        if (isValidEthereumAddress(userWallet.currentAddress)) {
+        const activeAccounts = await getActiveAccountsByUserWallet();
+        if (isValidEthereumAddress(activeAccounts?.currentAddress)) {
           refreshedCoinlist = coinList['evm'][network];
         } else {
           refreshedCoinlist = coinList['coinItem'][network];
