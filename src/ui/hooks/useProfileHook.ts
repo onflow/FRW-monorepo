@@ -181,7 +181,7 @@ export const useProfiles = () => {
       }
 
       if (initialStart) {
-        await usewallet.openapi.putDeviceInfo(wallets);
+        usewallet.openapi.putDeviceInfo(wallets);
         debug('usewallet.openapi.putDeviceInfo ===', wallets);
 
         setInitial(false);
@@ -192,22 +192,34 @@ export const useProfiles = () => {
       const formattedWallets = formatWallets(wallets);
       debug('formattedWallets ===', formattedWallets);
 
-      // Extract addresses from formatted wallets and pass as array
+      // First set the formatted wallets without balances
+      setWalletList(formattedWallets);
+      debug('Initial wallets set (without balances):', formattedWallets);
+
+      // Extract addresses
       const addresses = formattedWallets.map((wallet) => wallet.address);
-      const walletsBalance = await usewallet.getAllAccountBalance(addresses);
 
-      // Add balances back to formatted wallets
-      const walletsWithBalance = formattedWallets.map((wallet) => {
-        return {
-          ...wallet,
-          balance: walletsBalance[wallet.address] || '0.00000000',
-        };
-      });
+      // Use then() instead of await
+      usewallet
+        .getAllAccountBalance(addresses)
+        .then((walletsBalance) => {
+          // Add balances back to formatted wallets
+          const walletsWithBalance = formattedWallets.map((wallet) => {
+            return {
+              ...wallet,
+              balance: walletsBalance[wallet.address] || '0.00000000',
+            };
+          });
 
-      debug('walletsWithBalance ===', walletsWithBalance);
+          debug('Wallets updated with balances:', walletsWithBalance);
 
-      // Use walletsWithBalance instead of formattedWallets for the rest of your code
-      setWalletList(walletsWithBalance);
+          // Update the wallet list with balances
+          setWalletList(walletsWithBalance);
+        })
+        .catch((error) => {
+          console.error('Error fetching wallet balances:', error);
+          // Still keep the wallets displayed even if balance fetch fails
+        });
     } catch (error) {
       debug('Error in fetchProfileData:', error);
     } finally {
