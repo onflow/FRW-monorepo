@@ -6,7 +6,10 @@ import SwipeableViews from 'react-swipeable-views';
 
 import { IconActivity, IconNfts } from '@/components/iconfont';
 import eventBus from '@/eventBus';
-import { type ActiveChildType } from '@/shared/types/wallet-types';
+import {
+  type ActiveAccountType,
+  type ActiveChildType_depreciated,
+} from '@/shared/types/wallet-types';
 import { formatLargeNumber } from '@/shared/utils/number';
 import { ButtonRow } from '@/ui/FRWComponent/ButtonRow';
 import CoinsIcon from '@/ui/FRWComponent/CoinsIcon';
@@ -54,7 +57,7 @@ const WalletTab = ({ network }) => {
 
   const [address, setAddress] = useState<string>('');
   const [accessible, setAccessible] = useState<any>([]);
-  const [childType, setChildType] = useState<ActiveChildType>(null);
+  const [childType, setChildType] = useState<ActiveAccountType>('main');
   const [alertOpen, setAlertOpen] = useState<boolean>(false);
   const [, setChildAccount] = useState<any>({});
   const [isOnRamp, setOnRamp] = useState(false);
@@ -117,7 +120,7 @@ const WalletTab = ({ network }) => {
 
   const fetchWallet = useCallback(async () => {
     // If childType is 'evm', handle it first
-    const activeChild = await usewallet.getActiveWallet();
+    const activeChild = await usewallet.getActiveAccountType();
     if (activeChild === 'evm') {
       return;
       // If not 'evm', check if it's not active
@@ -133,7 +136,7 @@ const WalletTab = ({ network }) => {
 
   const fetchChildState = useCallback(async () => {
     setChildStateLoading(true);
-    const isChild = await usewallet.getActiveWallet();
+    const isChild = await usewallet.getActiveAccountType();
     setChildAccount(childAccounts);
     setChildType(isChild);
     if (isChild && isChild !== 'evm') {

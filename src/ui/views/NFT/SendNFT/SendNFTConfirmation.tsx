@@ -105,7 +105,7 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
 
   const sendNFT = async () => {
     setSending(true);
-    const activeChild = await wallet.getActiveWallet();
+    const activeChild = await wallet.getActiveAccountType();
     const { address } = props.data.contact;
     const isEvm = activeChild === 'evm';
     const isEvmAddress = address.length > 20;
@@ -285,7 +285,7 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
   }, [props.data.contact, startCount, transactionDoneHandler]);
 
   const checkChild = useCallback(async () => {
-    const isChild = await wallet.getActiveWallet();
+    const isChild = await wallet.getActiveAccountType();
     setIsChild(isChild !== null);
   }, [wallet]);
 

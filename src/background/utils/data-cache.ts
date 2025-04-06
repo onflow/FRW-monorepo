@@ -1,6 +1,6 @@
-import storage from '@/background/webapi/storage';
 import { type CacheDataItem } from '@/shared/types/data-cache-types';
-export * from '@/shared/utils/data-cache-access';
+import storage from '@/shared/utils/storage';
+export * from '@/shared/utils/cache-data-access';
 /**
  * BACKGROUND ONLY METHODS
  */
@@ -12,9 +12,9 @@ export * from '@/shared/utils/data-cache-access';
  */
 export const registerRefreshListener = (
   keyRegex: RegExp,
-  refreshCallback: (key: string, lastAccessed: number) => void
+  loader: (...args: string[]) => Promise<unknown>
 ) => {
-  chrome.storage.onChanged.addListener((changes, namespace) => {
+  chrome.storage.onChanged.addListener(async (changes, namespace) => {
     const changedKeys = Object.keys(changes);
     const key = changedKeys.find((key) => keyRegex.test(key));
     if (namespace === 'session' && key) {
@@ -22,7 +22,13 @@ export const registerRefreshListener = (
       // If the refresh key is already set, then we might be in the middle of a refesh already
       // If we are setting the refresh key to undefined (i.e. removing it), then we have just finished a refresh
       if (changes[key].oldValue === undefined && typeof changes[key].newValue === 'number') {
-        refreshCallback(key, changes[key].newValue);
+        const matchedArgs = key.match(keyRegex) ?? [];
+        // Remove the first argument (the whole key)
+        const [, ...args] = matchedArgs;
+        await loader(...args);
+
+        // Remove the refresh key
+        storage.removeSession(`${key}-refresh`);
       }
     }
   });
@@ -38,7 +44,11 @@ export const registerRefreshListener = (
  * @param value - The value to set the data to
  * @param ttl - The time to live for the data
  */
-export const setCachedData = async (key: string, value: unknown, ttl: number): Promise<void> => {
+export const setCachedData = async (
+  key: string,
+  value: unknown,
+  ttl: number = 30_000 // 30 seconds by default
+): Promise<void> => {
   // Check that the key is not already set
   const newCacheData: CacheDataItem = { value, expiry: Date.now() + ttl };
   return storage.setSession(key, newCacheData).then(() => {

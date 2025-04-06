@@ -21,7 +21,7 @@ import type { UserInfoResponse } from '@/shared/types/network-types';
 import {
   type LoggedInAccount,
   type LoggedInAccountWithIndex,
-  type ActiveChildType,
+  type ActiveChildType_depreciated,
   type WalletAccount,
   type ChildAccountMap,
 } from '@/shared/types/wallet-types';
@@ -62,7 +62,7 @@ interface MenuDrawerProps {
   createWalletList: (props: WalletAccount) => React.ReactNode;
   setWallets: (
     walletInfo: WalletAccount,
-    key: ActiveChildType | null,
+    key: ActiveChildType_depreciated | null,
     index?: number | null
   ) => Promise<void>;
   currentNetwork: string;
@@ -120,7 +120,7 @@ const MenuDrawer = (props: MenuDrawerProps) => {
   };
 
   const checkEvmMode = useCallback(async () => {
-    const activeChild = await usewallet.getActiveWallet();
+    const activeChild = await usewallet.getActiveAccountType();
     if (activeChild === 'evm') {
       setIsEvm(true);
     } else {
@@ -396,7 +396,7 @@ const MenuDrawer = (props: MenuDrawerProps) => {
                           'https://lilico.app/placeholder-2.0.png',
                         color: '#282828',
                       },
-                      key as ActiveChildType | null
+                      key as ActiveChildType_depreciated | null
                     )
                   }
                 >

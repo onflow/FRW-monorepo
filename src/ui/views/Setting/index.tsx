@@ -98,7 +98,7 @@ const SettingTab = () => {
 
   const checkIsActive = useCallback(async () => {
     // setSending(true);
-    const activeChild = await usewallet.getActiveWallet();
+    const activeChild = await usewallet.getActiveAccountType();
     if (activeChild) {
       setIsActive(activeChild !== null);
     }

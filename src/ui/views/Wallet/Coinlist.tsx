@@ -14,7 +14,10 @@ import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { type CoinItem } from '@/shared/types/coin-types';
-import { type ActiveChildType } from '@/shared/types/wallet-types';
+import {
+  type ActiveAccountType,
+  type ActiveChildType_depreciated,
+} from '@/shared/types/wallet-types';
 import { formatLargeNumber } from '@/shared/utils/number';
 
 import IconCreate from '../../../components/iconfont/IconCreate';
@@ -29,7 +32,7 @@ const CoinList = ({
   tokenList: CoinItem[];
   ableFt: any[];
   isActive: boolean;
-  childType: ActiveChildType;
+  childType: ActiveAccountType;
 }) => {
   // const wallet = useWallet();
   const [isLoading, setLoading] = useState(true);
@@ -168,7 +171,7 @@ const CoinList = ({
 
   return (
     <>
-      {!childType && (
+      {childType === 'main' && (
         <Box sx={{ display: 'flex', px: '12px', pt: '4px' }}>
           <Box sx={{ flexGrow: 1 }} />
           <IconButton onClick={() => history.push('dashboard/tokenList')}>

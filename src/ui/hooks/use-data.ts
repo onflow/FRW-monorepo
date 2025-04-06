@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 
-import storage, { type AreaName, type StorageChange } from '@/background/webapi/storage';
 import {
   addCachedDataListener,
   getCachedData,
   removeCachedDataListener,
-} from '@/shared/utils/data-cache-access';
+} from '@/shared/utils/cache-data-access';
+import storage, { type AreaName, type StorageChange } from '@/shared/utils/storage';
 
 export const useCachedData = <T>(key: string) => {
   const [data, setData] = useState<T | undefined>(undefined);

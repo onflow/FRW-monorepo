@@ -23,7 +23,7 @@ import { storage } from '@/background/webapi';
 import {
   type WalletAccount,
   type WalletAddress,
-  type ActiveChildType,
+  type ActiveChildType_depreciated,
   type LoggedInAccountWithIndex,
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
@@ -151,7 +151,7 @@ const Header = ({ _loading = false }) => {
 
   const setWallets = async (
     walletInfo: WalletAccount,
-    key: ActiveChildType | null,
+    key: ActiveChildType_depreciated | null,
     index: number | null = null
   ) => {
     await usewallet.setActiveWallet(walletInfo, key, index);

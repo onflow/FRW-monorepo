@@ -65,7 +65,7 @@ type KeyIndexerProfileResponse = {
  * @returns {Promise<KeyIndexerProfile>} The accounts associated with the public key
  */
 
-async function getAccountsWithPublicKey(
+export async function getAccountsWithPublicKey(
   publicKey: string,
   network: string
 ): Promise<PublicKeyAccount[]> {

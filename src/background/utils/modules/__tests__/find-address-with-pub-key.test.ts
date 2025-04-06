@@ -168,8 +168,10 @@ describe('findAddressWithPubKey module', () => {
                   address: mockAddress,
                   keyId: 0,
                   weight: 500, // Less than required 1000
-                  sigAlgo: url.includes('_p256') ? 1 : 2,
-                  hashAlgo: url.includes('_p256') ? 3 : 1,
+                  sigAlgo: url.includes('_p256')
+                    ? SIGN_ALGO_NUM_ECDSA_P256
+                    : SIGN_ALGO_NUM_ECDSA_secp256k1,
+                  hashAlgo: url.includes('_p256') ? HASH_ALGO_NUM_SHA3_256 : HASH_ALGO_NUM_SHA2_256,
                   signing: url.includes('_p256') ? 'ECDSA_P256' : 'ECDSA_secp256k1',
                   hashing: url.includes('_p256') ? 'SHA3_256' : 'SHA2_256',
                 },

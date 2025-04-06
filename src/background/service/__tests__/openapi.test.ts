@@ -84,12 +84,13 @@ vi.stubGlobal('fetch', mockFetch);
 // Then imports
 import { API_TEST_RESULTS } from '@/shared/test-data/api-test-results';
 import {
+  type CommonParams,
   createTestGroups,
   updateTestParamsFromResults,
-  type CommonParams,
 } from '@/shared/test-data/test-groups';
-
 //import walletController from '../../controller/wallet';
+import { type FlowNetwork } from '@/shared/types/network-types';
+
 import openApiService from '../openapi';
 import userWalletService from '../userWallet';
 
@@ -233,7 +234,7 @@ describe('OpenApiService', () => {
           const networkHeader = headers?.Network;
           if (networkHeader) {
             vi.mocked(userWalletService.getNetwork).mockResolvedValueOnce(
-              networkHeader.toLowerCase()
+              networkHeader.toLowerCase() as FlowNetwork
             );
             // Also update the headers in the mock storage
             mockStorage.local.get.mockImplementationOnce(() =>

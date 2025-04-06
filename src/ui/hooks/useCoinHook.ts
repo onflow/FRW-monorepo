@@ -1,10 +1,10 @@
 import BN from 'bignumber.js';
 import { useCallback, useEffect, useState, useRef } from 'react';
 
-import storage, { type AreaName, type StorageChange } from '@/background/webapi/storage';
 import { type CoinItem } from '@/shared/types/coin-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
-import { userWalletsKey } from '@/shared/utils/data-persist-keys';
+import storage, { type AreaName, type StorageChange } from '@/shared/utils/storage';
+import { userWalletsKey } from '@/shared/utils/user-data-keys';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { debug } from '@/ui/utils';
 import { useWallet, useWalletLoaded } from '@/ui/utils/WalletContext';

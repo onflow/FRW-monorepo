@@ -3,6 +3,7 @@ import { WalletUtils } from '@onflow/fcl';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { storage } from '@/background/webapi';
+import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
 import { authnServiceDefinition, serviceDefinition } from 'background/controller/serviceDefinition';
 import flowgrey from 'ui/FRWAssets/svg/flow-grey.svg';
 import Link from 'ui/FRWAssets/svg/link.svg';
@@ -89,11 +90,11 @@ const Connect = ({ params: { /*icon, origin,*/ tabId } }: ConnectProps) => {
       network
     );
 
-    let chainId = 545;
+    let chainId = TESTNET_CHAIN_ID;
     if (network === 'testnet') {
-      chainId = 545;
+      chainId = TESTNET_CHAIN_ID;
     } else {
-      chainId = 747;
+      chainId = MAINNET_CHAIN_ID;
     }
     console.log('permission add ', host, title, logo, chainId);
     wallet.addConnectedSite(host, title, logo, chainId);

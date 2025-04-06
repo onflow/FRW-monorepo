@@ -13,6 +13,7 @@ import { type TokenInfo } from 'flow-native-token-registry';
 import { encode } from 'rlp';
 import web3, { TransactionError, Web3 } from 'web3';
 
+import { getAccountKey, pubKeyAccountToAccountKey } from '@/background/utils/account-key';
 import {
   findAddressWithSeed,
   findAddressWithPK,
@@ -28,12 +29,12 @@ import eventBus from '@/eventBus';
 import type { CoinItem, ExtendedTokenInfo } from '@/shared/types/coin-types';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
 import { type PublicKeyTuple } from '@/shared/types/key-types';
-import { ContactType } from '@/shared/types/network-types';
+import { ContactType, MAINNET_CHAIN_ID } from '@/shared/types/network-types';
 import { type NFTCollectionData } from '@/shared/types/nft-types';
 import { type TrackingEvents } from '@/shared/types/tracking-types';
 import { type TransferItem, type TransactionState } from '@/shared/types/transaction-types';
 import {
-  type ActiveChildType,
+  type ActiveChildType_depreciated,
   type LoggedInAccount,
   type FlowAddress,
   type PublicKeyAccount,
@@ -43,10 +44,10 @@ import {
   type EvmAddress,
   type WalletAddress,
   isEvmAccountType,
+  type ActiveAccountType,
 } from '@/shared/types/wallet-types';
 import {
   ensureEvmAddressPrefix,
-  getAccountKey,
   isValidEthereumAddress,
   isValidFlowAddress,
   withPrefix,
@@ -87,7 +88,6 @@ import {
 } from 'background/service/keyring';
 import type { CacheState } from 'background/service/pageStateCache';
 import { getScripts, replaceNftKeywords } from 'background/utils';
-import emoji from 'background/utils/emoji.json';
 import fetchConfig from 'background/utils/remoteConfig';
 import { notification, storage } from 'background/webapi';
 import { openIndexPage } from 'background/webapi/tab';
@@ -100,12 +100,11 @@ import {
 } from 'consts';
 
 import type {
-  BlockchainResponse,
+  AccountKeyRequest,
   Contact,
   NFTModelV2,
   UserInfoResponse,
 } from '../../shared/types/network-types';
-import placeholder from '../images/placeholder.png';
 import DisplayKeyring from '../service/keyring/display';
 import { HDKeyring } from '../service/keyring/hdKeyring';
 import { SimpleKeyring } from '../service/keyring/simpleKeyring';
@@ -113,6 +112,7 @@ import type { ConnectedSite } from '../service/permission';
 import type { PreferenceAccount } from '../service/preference';
 import { type EvaluateStorageResult, StorageEvaluator } from '../service/storage-evaluator';
 import defaultConfig from '../utils/defaultConfig.json';
+import { getEmojiList } from '../utils/emoji-util';
 import erc20ABI from '../utils/erc20.abi.json';
 import { getLoggedInAccount } from '../utils/getLoggedInAccount';
 import {
@@ -187,13 +187,10 @@ export class WalletController extends BaseController {
    */
   registerNewProfile = async (username: string, password: string, mnemonic: string) => {
     // The account is the public key of the account. It's derived from the mnemonic. We do not support custom curves or passphrases for new accounts
-
-    const accountKey = getAccountKey(mnemonic);
-    console.log('accountKey', accountKey);
+    const accountKey: AccountKeyRequest = await getAccountKey(mnemonic);
 
     // We're booting the keyring with the new password
     // This does not update the vault, it simply sets the password / cypher methods we're going to use to store our private keys in the vault
-
     await this.boot(password);
     // We're then registering the account with the public key
     // This calls our backend API which gives us back an account id
@@ -207,61 +204,9 @@ export class WalletController extends BaseController {
     // We're creating the Flow address for the account
     // Only after this, do we have a valid wallet with a Flow address
     await openapiService.createFlowAddress();
-  };
 
-  /**
-   * Sign in or create a new user by public key tuple
-   */
-  private signInOrCreateUserByPubKeyTuple = async (
-    pubKTuple: PublicKeyTuple,
-    username: string,
-    signInFunction: () => Promise<void>
-  ) => {
-    // Check if the account is registered on our backend (i.e. it's been created in wallet or used previously in wallet)
-    // Check if the seed phrase is valid and exists on the network
-    // Note we're not bothering to check against any address here. We're assuming that's been done in the front end. We use the indexer to get the accounts
-    const accounts = await getOrCheckAccountsByPublicKeyTuple(pubKTuple);
-    if (accounts.length === 0) {
-      throw new Error('Invalid seed phrase');
-    }
-
-    // Now check if the account is registered on our backend (i.e. it's been created in wallet or used previously in wallet)
-    const importCheckResult = await openapiService.checkImport(accounts[0].publicKey);
-    if (importCheckResult.status === HTTP_STATUS_CONFLICT) {
-      // The account has been previously imported, so just retrieve the current user name
-      // Just login to the existing account using the private key
-
-      // Sign in with the mnemonic
-      await signInFunction();
-    } else {
-      // We have to create a new user on our backend
-
-      const accountKeyStruct = {
-        public_key: accounts[0].publicKey,
-        sign_algo: accounts[0].signAlgo,
-        hash_algo: accounts[0].hashAlgo,
-        weight: 1000,
-      };
-      // Get the device info so e can do analytics
-      const installationId = await openapiService.getInstallationId();
-
-      const device_info = {
-        device_id: installationId,
-        device_name: navigator.userAgent,
-        device_type: 'extension',
-        push_token: '',
-        platform: 'chrome',
-      };
-      // Import the account creating a new user on our backend
-      // Sign in as the new user
-      await openapiService.importKey(
-        accountKeyStruct,
-        device_info,
-        username,
-        {},
-        accounts[0].address
-      );
-    }
+    // Finally set the current pubkey in userWallet
+    userWalletService.setCurrentPubkey(accountKey.public_key);
   };
 
   /**
@@ -288,18 +233,42 @@ export class WalletController extends BaseController {
     const pubKTuple: PublicKeyTuple = formPubKeyTuple(
       await seedWithPathAndPhrase2PublicPrivateKey(mnemonic, derivationPath, passphrase)
     );
-    const signInFunction = async () => {
-      await this.signInWithMnemonic(mnemonic, true, derivationPath, passphrase);
-    };
-    // Sign in or create a new user by public key tuple
-    await this.signInOrCreateUserByPubKeyTuple(pubKTuple, username, signInFunction);
+    // Check that there are accounts on the network for this public key
+    const accounts = await getOrCheckAccountsByPublicKeyTuple(pubKTuple);
+    if (accounts.length === 0) {
+      throw new Error('Invalid seed phrase');
+    }
+    // We use the public key from the first account that is returned
+    const publicKey = accounts[0].publicKey;
+    // Check if the account is registered on our backend (i.e. it's been created in wallet or used previously in wallet)
 
-    // TODO: Remove this
-    storage.remove('premnemonic');
-    await this.saveIndex(username);
+    const importCheckResult = await openapiService.checkImport(publicKey);
+    if (importCheckResult.status === HTTP_STATUS_CONFLICT) {
+      // The account has been previously imported, so just sign in with it
+
+      // Sign in with the mnemonic
+      await this.loginWithMnemonic(mnemonic, true, derivationPath, passphrase);
+    } else {
+      // We have to create a new user on our backend
+      const accountKeyStruct = pubKeyAccountToAccountKey(accounts[0]);
+      // Get the device info so we can do analytics
+      const deviceInfo = await userWalletService.getDeviceInfo();
+      // Import the account creating a new user on our backend and sign in as the new user
+      // TODO: Why can't we just call register here?
+      await openapiService.importKey(
+        accountKeyStruct,
+        deviceInfo,
+        username,
+        {},
+        accounts[0].address
+      );
+    }
 
     // Now we can create the keyring with the mnemonic (and path and phrase)
     await this.createKeyringWithMnemonics(password, mnemonic, derivationPath, passphrase);
+
+    // Set the current pubkey in userWallet
+    userWalletService.setCurrentPubkey(publicKey);
   };
 
   /**
@@ -329,14 +298,35 @@ export class WalletController extends BaseController {
       throw new Error('Invalid private key - no accounts found');
     }
 
-    const signInFunction = async () => {
-      await this.signInWithPrivatekey(pk, true);
-    };
-    // Sign in or create a new user by public key tuple
-    await this.signInOrCreateUserByPubKeyTuple(pubKTuple, username, signInFunction);
+    // We use the public key from the first account that is returned
+    const publicKey = accounts[0].publicKey;
+    // Check if the account is registered on our backend (i.e. it's been created in wallet or used previously in wallet)
+    const importCheckResult = await openapiService.checkImport(publicKey);
+    if (importCheckResult.status === HTTP_STATUS_CONFLICT) {
+      // The account has been previously imported, so just sign in with it
 
+      // Sign in with the private key
+      await this.loginWithPrivatekey(pk, true);
+    } else {
+      // We have to create a new user on our backend
+      const accountKeyStruct = pubKeyAccountToAccountKey(accounts[0]);
+      // Get the device info so we can do analytics
+      const deviceInfo = await userWalletService.getDeviceInfo();
+      // Import the account creating a new user on our backend and sign in as the new user
+      // TODO: Why can't we just call register here?
+      await openapiService.importKey(
+        accountKeyStruct,
+        deviceInfo,
+        username,
+        {},
+        accounts[0].address
+      );
+    }
     // Now we can create the keyring with the mnemonic (and path and phrase)
     await this.importPrivateKey(password, pk);
+
+    // Set the current pubkey in userWallet
+    userWalletService.setCurrentPubkey(publicKey);
   };
 
   /**
@@ -346,8 +336,8 @@ export class WalletController extends BaseController {
   switchProfile = async (id: string) => {
     try {
       await keyringService.switchKeyring(id);
-      const pubKey = await keyringService.getCurrentPublicKeyTuple();
-      await userWalletService.switchLogin(pubKey);
+      // Login with the new keyring
+      await userWalletService.loginWithKeyring();
     } catch (error) {
       throw new Error('Failed to switch account: ' + (error.message || 'Unknown error'));
     }
@@ -363,15 +353,14 @@ export class WalletController extends BaseController {
   };
 
   unlock = async (password: string) => {
+    // Submit the password. This will unlock the keyring or throw an error
     await keyringService.submitPassword(password);
-
-    // only password is correct then we store it
-    const pubKey = await keyringService.getCurrentPublicKeyTuple();
-    await userWalletService.switchLogin(pubKey);
-    // Set up all the wallet data
-    await this.refreshWallets();
-
+    // Login with the current keyring
+    await userWalletService.loginWithKeyring();
     sessionService.broadcastEvent('unlock');
+
+    // Refresh the wallet data
+    return this.refreshWallets();
   };
 
   submitPassword = async (password: string) => {
@@ -382,21 +371,6 @@ export class WalletController extends BaseController {
     // Refresh all the wallets after unlocking or switching profiles
     // Refresh the cadence scripts first
     await this.getCadenceScripts();
-
-    // Refresh the main wallets
-    await this.loadMainAccounts();
-
-    // Get the selected main address
-    const mainAddress = await this.getParentAddress();
-    if (!mainAddress) {
-      throw new Error('Main address not found');
-    }
-
-    // Refresh the EVM wallet
-    await this.queryEvmAddress(mainAddress);
-    // Refresh the child wallets
-    await this.checkUserChildAccount();
-
     // Refresh the user info
     let userInfo = {};
     try {
@@ -404,17 +378,23 @@ export class WalletController extends BaseController {
     } catch (error) {
       console.error('Error refreshing user info:', error);
     }
+    // Try for 2 mins to get the parent address
+    const parentAddress = await retryOperation(
+      async () => {
+        const address = userWalletService.getParentAddress();
+        if (!address) {
+          throw new Error('Parent address not found');
+        }
+        return address;
+      },
+      24,
+      5_000
+    );
     // Refresh the logged in account
     const pubKTuple = await keyringService.getCurrentPublicKeyTuple();
     const fclAccount = await this.getAccount();
     // Refresh the user info
-    await openapiService.freshUserInfo(
-      mainAddress as FlowAddress,
-      fclAccount,
-      pubKTuple,
-      userInfo,
-      null
-    );
+    return openapiService.freshUserInfo(parentAddress, fclAccount, pubKTuple, userInfo, 'main');
   };
 
   retrievePk = async (password: string) => {
@@ -453,13 +433,13 @@ export class WalletController extends BaseController {
 
   lockWallet = async () => {
     await keyringService.setLocked();
-    await userWalletService.signOutCurrentUser();
+    await userWalletService.logoutCurrentUser();
     await userWalletService.clear();
   };
 
   signOutWallet = async () => {
     await keyringService.updateKeyring();
-    await userWalletService.signOutCurrentUser();
+    await userWalletService.logoutCurrentUser();
     await userWalletService.clear();
     sessionService.broadcastEvent('accountsChanged', []);
   };
@@ -563,7 +543,7 @@ export class WalletController extends BaseController {
     origin: string,
     name: string,
     icon: string,
-    defaultChain = 747,
+    defaultChain = MAINNET_CHAIN_ID,
     isSigned = false
   ) => {
     permissionService.addConnectedSite(origin, name, icon, defaultChain, isSigned);
@@ -635,7 +615,9 @@ export class WalletController extends BaseController {
           // Try using logged in accounts first
           const account = await getLoggedInAccount();
           const signAlgo =
-            typeof account.signAlgo === 'string' ? getSignAlgo(account.signAlgo) : account.signAlgo;
+            typeof account.signAlgoString === 'string'
+              ? getSignAlgo(account.signAlgoString)
+              : account.signAlgoString;
           privateKey =
             signAlgo === SIGN_ALGO_NUM_ECDSA_P256
               ? publicPrivateKeyTuple.P256.pk
@@ -1078,24 +1060,6 @@ export class WalletController extends BaseController {
     }
   };
 
-  checkUserChildAccount = async (): Promise<void> => {
-    const network = await this.getNetwork();
-    const address = await userWalletService.getParentAddress(network);
-    if (!address) {
-      throw new Error('Parent address not found');
-    }
-
-    try {
-      const result: ChildAccountMap = await openapiService.checkChildAccountMeta(address);
-
-      if (result) {
-        await userWalletService.setChildAccounts(result, address, network);
-      }
-    } catch (error) {
-      console.error('Error occurred:', error);
-    }
-  };
-
   checkAccessibleNft = async (childAccount) => {
     try {
       const nfts = await openapiService.checkChildAccountNFT(childAccount);
@@ -1110,7 +1074,7 @@ export class WalletController extends BaseController {
   checkAccessibleFt = async (childAccount) => {
     const network = await this.getNetwork();
 
-    const address = await userWalletService.getParentAddress(network);
+    const address = await userWalletService.getParentAddress();
     if (!address) {
       throw new Error('Parent address not found');
     }
@@ -1120,15 +1084,13 @@ export class WalletController extends BaseController {
   };
 
   getParentAddress = async () => {
-    const network = await this.getNetwork();
-    const address = await userWalletService.getParentAddress(network);
+    const address = await userWalletService.getParentAddress();
 
     return address;
   };
 
   returnParentWallet = async () => {
-    const network = await this.getNetwork();
-    const wallet = await userWalletService.returnParentWallet(network);
+    const wallet = await userWalletService.getParentAccount();
 
     return wallet;
   };
@@ -1246,10 +1208,10 @@ export class WalletController extends BaseController {
    */
   refreshCoinList = async (_expiry = 60000): Promise<ExtendedTokenInfo[]> => {
     try {
-      const isChild = await this.getActiveWallet();
+      const isChild = await this.getActiveAccountType();
 
       // Handle EVM wallets
-      if (isEvmAccountType(isChild)) {
+      if (isChild === 'evm') {
         return await this.refreshEvmList(_expiry);
       }
 
@@ -1429,7 +1391,6 @@ export class WalletController extends BaseController {
 
   searchByUsername = async (searchKey: string) => {
     const apiResponse = await openapiService.searchUser(searchKey);
-    console.log('searchByUsername -apiResponse', apiResponse);
 
     return (
       apiResponse?.data?.users?.map((user, index): Contact => {
@@ -1469,72 +1430,17 @@ export class WalletController extends BaseController {
    * Load the main (flow) accounts for the current private key
    */
 
-  loadMainAccounts = async () => {
-    const network = await this.getNetwork();
-
-    // Get the current public key tuple
-    const pubKey: PublicKeyTuple = await keyringService.getCurrentPublicKeyTuple();
-    // Get the accounts for the current public key
-    const accounts: PublicKeyAccount[] = await getAccountsByPublicKeyTuple(pubKey, network);
-    // If there are no accounts, throw an error
-    if (!accounts || accounts.length === 0) {
-      throw new Error("Can't find address in chain");
-    }
-
-    // Get the emoji list
-    const emoji = await this.getEmoji();
-
-    // Transform the address array into MainAccount objects
-    const transformedArray: MainAccount[] = accounts.map((item, index): MainAccount => {
-      const defaultEmoji = emoji[index] || {
-        name: 'Default',
-        emoji: '🐾',
-        bgcolor: '#ffffff',
-      };
-
-      return {
-        ...item,
-        chain: network === 'mainnet' ? 747 : 545,
-        id: index,
-        name: defaultEmoji.name,
-        icon: defaultEmoji.emoji,
-        color: defaultEmoji.bgcolor,
-      };
-    });
-
-    // Set the main accounts in userWalletService
-    const currentAccount = userWalletService.setMainAccounts(
-      transformedArray,
-      // Always use the first account's public key as the current public key
-      // It's technically possible to have multiple public keys generated from the same private key. So it is possible
-      // that there could be two different public keys for a set of accounts, but we made the call not to support that.
-      accounts[0].publicKey,
-      network
-    );
-    if (!currentAccount) {
-      throw new Error('Current account not found');
-    }
-    return currentAccount;
-  };
-
   getMainAccounts = async (): Promise<MainAccount[] | null> => {
     if (!this.isUnlocked()) {
       return null;
     }
-    const network = await this.getNetwork();
-    const wallets = await userWalletService.getMainAccounts(network);
-    if (!wallets) {
-      const refreshData = await this.loadMainAccounts();
-      if (!refreshData) {
-        return null;
-      }
-      return refreshData[0].accounts;
-    }
+    const wallets = await userWalletService.getMainAccounts();
+
     return wallets;
   };
 
-  getActiveWallet = async () => {
-    const activeWallet = await userWalletService.getActiveAccountType();
+  getActiveAccountType = (): ActiveAccountType => {
+    const activeWallet = userWalletService.getActiveAccountType();
     return activeWallet;
   };
 
@@ -1548,10 +1454,14 @@ export class WalletController extends BaseController {
    */
   setActiveWallet = async (
     wallet: WalletAccount,
-    key: ActiveChildType | null,
+    key: ActiveChildType_depreciated | null,
     index: number | null = null
   ) => {
-    await userWalletService.setCurrentAccount(wallet, key);
+    const parentAddress = await userWalletService.getParentAddress();
+    if (!parentAddress) {
+      throw new Error('Parent address not found');
+    }
+    await userWalletService.setCurrentAccount(parentAddress, wallet.address as WalletAddress);
 
     // Clear collections
     this.clearNFTCollection();
@@ -1561,7 +1471,6 @@ export class WalletController extends BaseController {
 
     // If switching main wallet, refresh the EVM wallet
     if (key === null) {
-      this.refreshEvmWallets();
       await this.queryEvmAddress(wallet.address);
     }
   };
@@ -1571,30 +1480,24 @@ export class WalletController extends BaseController {
     return wallet?.address !== '';
   };
 
-  getCurrentWallet = async (): Promise<WalletAccount | undefined> => {
+  getCurrentWallet = async (): Promise<WalletAccount | null> => {
     if (!this.isUnlocked()) {
-      return;
+      return null;
     }
     const wallet = await userWalletService.getCurrentWallet();
-    if (!wallet?.address) {
-      const data = await this.loadMainAccounts();
-      if (!data || !data[0] || !data[0].accounts || data[0].accounts.length === 0) {
-        return;
-      }
-      return data[0].accounts[0];
-    }
+
     return wallet;
   };
 
   getEvmWallet = async (): Promise<WalletAccount | null> => {
-    const wallet = await userWalletService.getEvmWallet();
+    const wallet = await userWalletService.getEvmAccount();
 
     return wallet;
   };
 
   getRawEvmAddressWithPrefix = async (): Promise<EvmAddress | null> => {
     // Get the current EVM address without throwing an error
-    const evmAddress = userWalletService.getCurrentEvmAddress();
+    const evmAddress = await userWalletService.getCurrentEvmAddress();
     if (!evmAddress) {
       return null;
     }
@@ -1611,36 +1514,18 @@ export class WalletController extends BaseController {
   };
 
   getCurrentAddress = async (): Promise<WalletAddress | null> => {
-    const address = await userWalletService.getCurrentAddress();
-    if (!address) {
-      const data = await this.loadMainAccounts();
-      if (!data || !data[0] || !data[0].accounts || data[0].accounts.length === 0) {
-        // TODO: Check if we should throw an error here
-        return null;
-      }
-      return withPrefix(data[0].accounts[0].address);
-    }
-    return withPrefix(address);
+    const address = userWalletService.getCurrentAddress();
+
+    return address;
   };
 
   getMainAddress = async (): Promise<FlowAddress | null> => {
     if (!this.isUnlocked()) {
       return null;
     }
-    const network = await this.getNetwork();
-    const address = await userWalletService.getParentAddress(network);
-    if (!isValidFlowAddress(address)) {
-      const data = await this.loadMainAccounts();
-      if (!data || !data[0] || !data[0].accounts || data[0].accounts.length === 0) {
-        // TODO: Check if we should throw an error here
-        return null;
-      }
-      const address = withPrefix(data[0].accounts[0].address);
-      return isValidFlowAddress(address) ? address : null;
-    } else {
-      const prefixedAddress = withPrefix(address);
-      return isValidFlowAddress(prefixedAddress) ? prefixedAddress : null;
-    }
+    const address = await userWalletService.getParentAddress();
+
+    return address;
   };
 
   sendTransaction = async (cadence: string, args: any[]): Promise<string> => {
@@ -1658,8 +1543,7 @@ export class WalletController extends BaseController {
 
     // try to seal it
     try {
-      const result = await fcl.tx(txID).onceExecuted();
-      console.log('coa creation result ', result);
+      await fcl.tx(txID).onceExecuted();
       // Track with success
       await this.trackCoaCreation(txID);
     } catch (error) {
@@ -1680,8 +1564,8 @@ export class WalletController extends BaseController {
 
     // try to seal it
     try {
-      const result = await fcl.tx(txID).onceExecuted();
-      console.log('coa creation result ', result);
+      await fcl.tx(txID).onceExecuted();
+
       // Track with success
       await this.trackCoaCreation(txID);
     } catch (error) {
@@ -1966,7 +1850,7 @@ export class WalletController extends BaseController {
 
     // TODO: check if args are needed
     const result = await userWalletService.sendTransaction(script, []);
-    console.log('coaLink resutl ', result);
+
     return result;
   };
 
@@ -1975,7 +1859,7 @@ export class WalletController extends BaseController {
 
     const script = await getScripts('evm', 'checkCoaLink');
     const mainAddress = await this.getMainAddress();
-    console.log('getscript script ', mainAddress);
+
     if (checkedAddress === mainAddress) {
       return true;
     } else if (mainAddress) {
@@ -2044,7 +1928,7 @@ export class WalletController extends BaseController {
     }
     let evmAddress;
     try {
-      evmAddress = await this.getRawEvmAddressWithPrefix();
+      evmAddress = await userWalletService.getCurrentEvmAddress();
     } catch (error) {
       evmAddress = '';
       console.error('Error getting EVM address:', error);
@@ -2052,45 +1936,18 @@ export class WalletController extends BaseController {
     if (isValidEthereumAddress(evmAddress)) {
       return evmAddress;
     }
-    // Otherwise, refresh the EVM wallets and try again
-    await this.refreshEvmWallets();
-
-    try {
-      const script = await getScripts('evm', 'getCoaAddr');
-      const result = await fcl.query({
-        cadence: script,
-        args: (arg, t) => [arg(address, t.Address)],
-      });
-
-      if (result) {
-        // This is the COA address we get straight from the script
-        // This is where we encode the address in ERC-55 format
-        const checksummedAddress = ethUtil.toChecksumAddress(ensureEvmAddressPrefix(result));
-        await userWalletService.setAccountEvmAddress(checksummedAddress as EvmAddress);
-        return checksummedAddress;
-      } else {
-        // If the script returns null, we need to clear the EVM address
-        await userWalletService.setAccountEvmAddress(null);
-        return null;
-      }
-    } catch (error) {
-      console.trace('queryEvmAddress error', address);
-
-      console.error('Error querying the script or setting EVM address:', error);
-      return null;
-    }
+    return null;
   };
 
   checkCanMoveChild = async () => {
-    const mainAddress = await this.getMainAddress();
-    const isChild = await this.getActiveWallet();
-    if (!isChild) {
-      const evmAddress = await this.queryEvmAddress(mainAddress!);
-      const childResp = await this.checkUserChildAccount();
+    const activeAccountType = await this.getActiveAccountType();
+    if (activeAccountType !== 'child') {
+      const evmAddress = await userWalletService.getCurrentEvmAddress();
+      const childResp = await userWalletService.getChildAccounts();
       const isEmptyObject = (obj: any) => {
         return Object.keys(obj).length === 0 && obj.constructor === Object;
       };
-      if (evmAddress !== '' || !isEmptyObject(childResp)) {
+      if (evmAddress !== null || !isEmptyObject(childResp)) {
         return true;
       } else {
         return false;
@@ -2553,8 +2410,6 @@ export class WalletController extends BaseController {
     ids: number,
     token
   ): Promise<string> => {
-    console.log('script is this ', nftContractAddress);
-
     const script = await getScripts('hybridCustody', 'transferChildNFT');
     const replacedScript = replaceNftKeywords(script, token);
     const txID = await userWalletService.sendTransaction(replacedScript, [
@@ -3015,10 +2870,10 @@ export class WalletController extends BaseController {
     const now = new Date();
     const exp = _expiry + now.getTime();
     transactionService.setExpiry(exp);
-    const isChild = await this.getActiveWallet();
+    const isChild = await this.getActiveAccountType();
     let dataResult = {};
     let evmAddress;
-    if (isEvmAccountType(isChild)) {
+    if (isChild === 'evm') {
       if (!isValidEthereumAddress(address)) {
         evmAddress = await this.queryEvmAddress(address);
         if (!evmAddress!.startsWith('0x')) {
@@ -3044,21 +2899,27 @@ export class WalletController extends BaseController {
     transactionService.setTransaction(dataResult, network);
   };
 
-  signInWithMnemonic = async (
+  loginWithMnemonic = async (
     mnemonic: string,
     replaceUser = true,
     derivationPath: string = FLOW_BIP44_PATH,
     passphrase: string = ''
   ) => {
-    return userWalletService.signInWithMnemonic(mnemonic, replaceUser, derivationPath, passphrase);
+    return userWalletService.loginWithMnemonic(mnemonic, replaceUser, derivationPath, passphrase);
   };
 
-  signInWithPrivatekey = async (pk: string, replaceUser = true) => {
-    return userWalletService.sigInWithPk(pk, replaceUser);
+  loginWithPrivatekey = async (pk: string, replaceUser = true) => {
+    return userWalletService.loginWithPk(pk, replaceUser);
   };
 
-  signInV3 = async (mnemonic: string, accountKey: any, deviceInfo: any, replaceUser = true) => {
-    return userWalletService.signInv3(mnemonic, accountKey, deviceInfo, replaceUser);
+  // @deprecated
+  loginV3_depreciated = async (
+    mnemonic: string,
+    accountKey: any,
+    deviceInfo: any,
+    replaceUser = true
+  ) => {
+    return userWalletService.loginV3_depreciated(mnemonic, accountKey, deviceInfo, replaceUser);
   };
 
   signMessage = async (message: string): Promise<string> => {
@@ -3110,14 +2971,10 @@ export class WalletController extends BaseController {
   };
 
   refreshAll = async () => {
-    console.trace('refreshAll trace');
-    console.log('refreshAll');
     // Clear the active wallet if any
     // If we don't do this, the user wallets will not be refreshed
-    await this.loadMainAccounts();
     this.clearNFT();
     this.refreshAddressBook();
-    this.refreshEvmWallets();
     await this.getCadenceScripts();
     const address = await this.getCurrentAddress();
     if (address) {
@@ -3150,12 +3007,8 @@ export class WalletController extends BaseController {
 
   getEvmEnabled = async (): Promise<boolean> => {
     // Get straight from the userWalletService as getEvmAddress() throws an error if the address is not valid
-    const address = userWalletService.getEvmWallet();
+    const address = userWalletService.getEvmAccount();
     return !!address && isValidEthereumAddress(address);
-  };
-
-  refreshEvmWallets = () => {
-    userWalletService.refreshEvm();
   };
 
   clearWallet = () => {
@@ -3164,11 +3017,11 @@ export class WalletController extends BaseController {
 
   getFlowscanUrl = async (): Promise<string> => {
     const network = await this.getNetwork();
-    const isEvm = await this.getActiveWallet();
+    const isEvm = await this.getActiveAccountType();
     let baseURL = 'https://www.flowscan.io';
 
     // Check if it's an EVM wallet and update the base URL
-    if (isEvmAccountType(isEvm)) {
+    if (isEvm === 'evm') {
       switch (network) {
         case 'testnet':
           baseURL = 'https://evm-testnet.flowscan.io';
@@ -3660,18 +3513,11 @@ export class WalletController extends BaseController {
   };
 
   getEmoji = async () => {
-    return emoji.emojis;
+    return getEmojiList();
   };
 
-  setEmoji = async (emoji, type, index) => {
-    const network = await this.getNetwork();
-
-    if (isEvmAccountType(type)) {
-      await userWalletService.setEvmEmoji(emoji);
-    } else {
-      await userWalletService.setWalletEmoji(emoji, network, index);
-    }
-
+  // @deprecated - this doesn't do anything
+  setEmoji_depreciated = async (emoji, type, index) => {
     return emoji;
   };
 

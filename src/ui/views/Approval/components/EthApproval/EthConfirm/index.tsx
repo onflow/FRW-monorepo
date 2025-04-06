@@ -2,6 +2,7 @@ import { Stack, Box } from '@mui/material';
 import * as fcl from '@onflow/fcl';
 import React, { useCallback, useEffect, useState } from 'react';
 
+import { MAINNET_CHAIN_ID } from '@/shared/types/network-types';
 import { LLPrimaryButton, LLSecondaryButton } from 'ui/FRWComponent';
 import { useApproval, useWallet } from 'ui/utils';
 
@@ -78,7 +79,7 @@ const EthConfirm = ({ params }: ConnectProps) => {
   const handleAllow = async () => {
     await checkCoa();
     resolveApproval({
-      defaultChain: 747,
+      defaultChain: MAINNET_CHAIN_ID,
       signPermission: 'MAINNET_AND_TESTNET',
     });
   };

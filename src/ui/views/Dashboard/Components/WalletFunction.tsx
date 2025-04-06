@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 
 import {
   type WalletAccount,
-  type ActiveChildType,
+  type ActiveChildType_depreciated,
   type WalletAddress,
 } from '@/shared/types/wallet-types';
 import { useWallet } from 'ui/utils';
@@ -19,7 +19,7 @@ interface WalletFunctionProps {
   color: string;
   setWallets: (
     walletInfo: WalletAccount,
-    key: ActiveChildType | null,
+    key: ActiveChildType_depreciated | null,
     index?: number | null
   ) => Promise<void>;
   currentWalletIndex: number;

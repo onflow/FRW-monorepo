@@ -3,7 +3,6 @@ import * as bip39 from 'bip39';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
-import { getAccountKey } from '@/shared/utils/address';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import AllSet from '@/ui/FRWComponent/LandingPages/AllSet';
 import GoogleBackup from '@/ui/FRWComponent/LandingPages/GoogleBackup';
@@ -12,7 +11,6 @@ import PickUsername from '@/ui/FRWComponent/LandingPages/PickUsername';
 import RecoveryPhrase from '@/ui/FRWComponent/LandingPages/RecoveryPhrase';
 import RepeatPhrase from '@/ui/FRWComponent/LandingPages/RepeatPhrase';
 import SetPassword from '@/ui/FRWComponent/LandingPages/SetPassword';
-import { storage } from 'background/webapi';
 import { useWallet } from 'ui/utils';
 
 const STEPS = {

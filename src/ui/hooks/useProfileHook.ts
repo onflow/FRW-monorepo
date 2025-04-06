@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef } from 'react';
 
+import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
 import {
   type FlowAddress,
   type WalletAccount,
   type ChildAccountMap,
 } from '@/shared/types/wallet-types';
 import { ensureEvmAddressPrefix, withPrefix } from '@/shared/utils/address';
-import { retryOperation } from '@/shared/utils/retryOperation';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfileStore } from '@/ui/stores/profileStore';
 import { debug } from '@/ui/utils';
@@ -70,7 +70,7 @@ export const useProfiles = () => {
         id: wallet.id || index,
         name: wallet.name || 'Wallet',
         address: withPrefix(wallet.address) || '',
-        chain: wallet.chain || 747,
+        chain: wallet.chain || MAINNET_CHAIN_ID,
         icon: wallet.icon || '',
         color: wallet.color || '',
       })
@@ -98,7 +98,7 @@ export const useProfiles = () => {
           name: emoji[9].name,
           icon: emoji[9].emoji,
           address: evmAddress,
-          chain: network === 'testnet' ? 545 : 747,
+          chain: network === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID,
           id: 1,
           color: emoji[9].bgcolor,
         };
@@ -137,7 +137,7 @@ export const useProfiles = () => {
         if (parentAddress) {
           const [currentWallet, isChild] = await Promise.all([
             usewallet.getCurrentWallet(),
-            usewallet.getActiveWallet(),
+            usewallet.getActiveAccountType(),
           ]);
           debug('currentWallet ===', currentWallet);
 

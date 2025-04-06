@@ -10,11 +10,11 @@ import {
   type FlowAddress,
 } from '../types/wallet-types';
 
+import { getCachedData } from './cache-data-access';
+
 // Utiltiy function to create the refresh key for a given key function
-const refreshKey =
-  (keyFunction: (...args: string[]) => string) =>
-  (args: string[] = ['(.*)', '(.*)', '(.*)']) =>
-    new RegExp(`${keyFunction(...args)}-refresh`);
+const refreshKey = (keyFunction: (...args: string[]) => string) =>
+  ((args: string[] = ['(.*)', '(.*)', '(.*)']) => new RegExp(`${keyFunction(...args)}-refresh`))();
 
 /*
  * --------------------------------------------------------------------
@@ -31,16 +31,16 @@ export type UserInfoStore = UserInfoResponse;
  * --------------------------------------------------------------------
  */
 // Profile Accounts - the Main (Flow) accounts of a given public key on a given network
-export const profileAccountsKey = (network: string, publicKey: string) =>
-  `profile-accounts-${network}-${publicKey}`;
+export const mainAccountsKey = (network: string, publicKey: string) =>
+  `main-accounts-${network}-${publicKey}`;
 
-export const profileAccountsRefreshKey = refreshKey(profileAccountsKey);
+export const mainAccountsRefreshRegex = refreshKey(mainAccountsKey);
 
-export type ProfileAccountStore = {
-  accounts: MainAccount[];
-  publicKey: string;
+export type MainAccountStore = MainAccount[];
+
+export const getCachedMainAccounts = async (network: string, publicKey: string) => {
+  return getCachedData<MainAccountStore>(mainAccountsKey(network, publicKey));
 };
-
 /*
  * --------------------------------------------------------------------
  * Account level keys (keyed by network & MAIN FLOW account address)
@@ -50,18 +50,22 @@ export type ProfileAccountStore = {
 // Child Accounts - the child accounts of a given main account on a given network
 export const childAccountsKey = (network: string, mainAccountAddress: string) =>
   `child-accounts-${network}-${mainAccountAddress}`;
-export const childAccountsRefreshKey = refreshKey(childAccountsKey);
-export type ChildAccountStore = {
-  parentAddress: FlowAddress;
-  accounts: ChildAccountMap;
+export const childAccountsRefreshRegex = refreshKey(childAccountsKey);
+
+export type ChildAccountStore = ChildAccountMap;
+
+export const getCachedChildAccounts = async (network: string, mainAccountAddress: string) => {
+  return getCachedData<ChildAccountStore>(childAccountsKey(network, mainAccountAddress));
 };
+
 // EVM Account - the EVM account of a given main account on a given network
 export const evmAccountKey = (network: string, mainAccountAddress: string) =>
   `evm-account-${network}-${mainAccountAddress}`;
 
-export const evmAccountRefreshKey = refreshKey(evmAccountKey);
+export const evmAccountRefreshRegex = refreshKey(evmAccountKey);
 
-export type EvmAccountStore = {
-  parentAddress: FlowAddress;
-  evmAddress: EvmAddress | null;
+export type EvmAccountStore = EvmAddress | null;
+
+export const getCachedEvmAccount = async (network: string, mainAccountAddress: string) => {
+  return getCachedData<EvmAccountStore>(evmAccountKey(network, mainAccountAddress));
 };

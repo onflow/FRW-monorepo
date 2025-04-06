@@ -1,6 +1,6 @@
 import { type UserInfoResponse } from '@/shared/types/network-types';
+import { userInfoCachekey, type UserInfoStore } from '@/shared/utils/cache-data-keys';
 import { getCurrentProfileId } from '@/shared/utils/current-id';
-import { userInfoCachekey, type UserInfoStore } from '@/shared/utils/data-cache-keys';
 import { createSessionStore } from 'background/utils';
 
 class UserInfoService {

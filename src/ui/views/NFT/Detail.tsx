@@ -139,7 +139,7 @@ const Detail = () => {
   const fetchNft = useCallback(async () => {
     const currentAddress = currentWallet.address;
     const parentAddress = mainAddress;
-    const isChild = await usewallet.getActiveWallet();
+    const isChild = await usewallet.getActiveAccountType();
     const userTemplate = {
       avatar: userInfo!.avatar,
       domain: {

@@ -13,7 +13,8 @@ const createSessionStore = async <T extends object>({
   fromStorage = true,
   ttl = 10 * 1000, // 10 seconds
 }: CreateSessionStoreParams<T>): Promise<T> => {
-  let tpl = template;
+  // Always clone the template to avoid mutating the original object
+  let tpl = structuredClone(template);
 
   if (fromStorage) {
     const storageCache = await getCachedData<T>(name);

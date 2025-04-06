@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import storage, { type AreaName, type StorageChange } from '@/background/webapi/storage';
+import storage, { type AreaName, type StorageChange } from '@/shared/utils/storage';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useTransferListStore } from '@/ui/stores/transferListStore';
 import { useWallet, debug } from '@/ui/utils';

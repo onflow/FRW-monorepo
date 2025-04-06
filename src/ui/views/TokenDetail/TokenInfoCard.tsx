@@ -3,6 +3,8 @@ import { type TokenInfo } from 'flow-native-token-registry';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
+import { type CoinItem } from '@/shared/types/coin-types';
+import { type ActiveAccountType } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { LLPrimaryButton } from '@/ui/FRWComponent';
 import iconMove from 'ui/FRWAssets/svg/moveIcon.svg';
@@ -14,7 +16,21 @@ import { TokenValue } from './TokenValue';
 
 // import tips from 'ui/FRWAssets/svg/tips.svg';
 
-const TokenInfoCard = ({ price, token, setAccessible, accessible, tokenInfo, childType }) => {
+const TokenInfoCard = ({
+  price,
+  token,
+  setAccessible,
+  accessible,
+  tokenInfo,
+  childType,
+}: {
+  price: number;
+  token: string;
+  setAccessible: (accessible: boolean) => void;
+  accessible: boolean;
+  tokenInfo: any;
+  childType: ActiveAccountType;
+}) => {
   const wallet = useWallet();
   const history = useHistory();
   const isMounted = useRef(true);
@@ -41,7 +57,7 @@ const TokenInfoCard = ({ price, token, setAccessible, accessible, tokenInfo, chi
   };
 
   const getActive = useCallback(async () => {
-    const isChild = await wallet.getActiveWallet();
+    const isChild = await wallet.getActiveAccountType();
 
     const timerId = setTimeout(async () => {
       if (!isMounted.current) return; // Early exit if component is not mounted
@@ -224,7 +240,7 @@ const TokenInfoCard = ({ price, token, setAccessible, accessible, tokenInfo, chi
             </Box>
           </Typography>
           <Box sx={{ display: 'flex', gap: '12px', height: '36px', mt: '24px', width: '100%' }}>
-            {(!childType || childType === 'evm') && (
+            {(childType === 'main' || childType === 'evm') && (
               <LLPrimaryButton
                 sx={{
                   borderRadius: '8px',

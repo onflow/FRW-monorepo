@@ -24,9 +24,9 @@ import {
   type LoggedInAccountWithIndex,
   type LoggedInAccount,
   type FlowAddress,
-  type ActiveChildType,
+  type ActiveChildType_depreciated,
   type PublicKeyAccount,
-  isEvmAccountType,
+  type ActiveAccountType,
 } from '@/shared/types/wallet-types';
 import { isValidFlowAddress, isValidEthereumAddress } from '@/shared/utils/address';
 import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
@@ -52,6 +52,7 @@ import {
   type Contact,
   type NFTModelV2,
   type DeviceInfoRequest,
+  MAINNET_CHAIN_ID,
 } from '../../shared/types/network-types';
 
 import {
@@ -433,7 +434,7 @@ class OpenApiService {
     const app = getApp(process.env.NODE_ENV!);
     const user = await getAuth(app).currentUser;
     if (user && user.isAnonymous) {
-      userWalletService.reSign();
+      userWalletService.loginWithKeyring();
     }
   };
 
@@ -796,8 +797,8 @@ class OpenApiService {
   };
 
   importKey = async (
-    account_key: any,
-    device_info: any,
+    account_key: AccountKeyRequest,
+    device_info: DeviceInfoRequest,
     username: string,
     backup_info: any,
     address: string,
@@ -903,7 +904,7 @@ class OpenApiService {
   getNFTList = async (network: string): Promise<NFTModelV2[]> => {
     const childType = await userWalletService.getActiveAccountType();
     let chainType = 'flow';
-    if (isEvmAccountType(childType)) {
+    if (childType === 'evm') {
       chainType = 'evm';
     }
 
@@ -1379,7 +1380,7 @@ class OpenApiService {
       } else {
         // If the custom token is not found, add it to the tokens array
         tokens.push({
-          chainId: 747,
+          chainId: MAINNET_CHAIN_ID,
           address: custom.address,
           symbol: custom.unit,
           name: custom.coin,
@@ -1396,7 +1397,7 @@ class OpenApiService {
 
   getTokenList = async (network): Promise<TokenInfo[]> => {
     const childType = await userWalletService.getActiveAccountType();
-    const chainType = isEvmAccountType(childType) ? 'evm' : 'flow';
+    const chainType = childType === 'evm' ? 'evm' : 'flow';
 
     const ftList = await storage.getExpiry(`TokenList${network}${chainType}`);
     if (ftList) return ftList;
@@ -1967,14 +1968,14 @@ class OpenApiService {
     keys: FclAccount,
     pubKTuple,
     wallet,
-    isChild: ActiveChildType
+    isChild: ActiveAccountType
   ) => {
     const loggedInAccounts: LoggedInAccount[] = (await storage.get('loggedInAccounts')) || [];
 
     if (!isChild) {
       await storage.set('keyIndex', '');
-      await storage.set('hashAlgo', '');
-      await storage.set('signAlgo', '');
+      await storage.set('hashAlgoString', '');
+      await storage.set('signAlgoString', '');
       await storage.set('pubKey', '');
 
       const { P256, SECP256K1 } = pubKTuple;
@@ -1984,13 +1985,13 @@ class OpenApiService {
       const keyInfo = keyInfoA ||
         keyInfoB || {
           index: 0,
-          signAlgo: keys.keys[0].signAlgo,
-          hashAlgo: keys.keys[0].hashAlgo,
+          signAlgoString: keys.keys[0].signAlgoString,
+          hashAlgoString: keys.keys[0].hashAlgoString,
           publicKey: keys.keys[0].publicKey,
         };
       await storage.set('keyIndex', keyInfo.index);
-      await storage.set('signAlgo', keyInfo.signAlgo);
-      await storage.set('hashAlgo', keyInfo.hashAlgo);
+      await storage.set('signAlgoString', keyInfo.signAlgoString);
+      await storage.set('hashAlgoString', keyInfo.hashAlgoString);
       await storage.set('pubKey', keyInfo.publicKey);
       // Make sure the address is a FlowAddress
 
@@ -2002,8 +2003,8 @@ class OpenApiService {
         ...wallet,
         address: flowAddress,
         pubKey: keyInfo.publicKey,
-        hashAlgo: keyInfo.hashAlgo,
-        signAlgo: keyInfo.signAlgo,
+        hashAlgoString: keyInfo.hashAlgoString,
+        signAlgoString: keyInfo.signAlgoString,
         weight: keys.keys[0].weight,
       };
 

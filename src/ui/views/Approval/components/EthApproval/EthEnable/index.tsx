@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useHistory } from 'react-router-dom';
 
+import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import enableBg from 'ui/FRWAssets/image/enableBg.png';
 import flowgrey from 'ui/FRWAssets/svg/flow-grey.svg';
@@ -29,7 +30,7 @@ const EthEnable = ({ params: { icon, name, origin } }: ConnectProps) => {
   const [appIdentifier, setAppIdentifier] = useState<string | undefined>(undefined);
   const [nonce, setNonce] = useState<string | undefined>(undefined);
   const [opener, setOpener] = useState<number | undefined>(undefined);
-  const [defaultChain, setDefaultChain] = useState(747);
+  const [defaultChain, setDefaultChain] = useState(MAINNET_CHAIN_ID);
   const [host, setHost] = useState('');
   const [title, setTitle] = useState('');
   const [msgNetwork, setMsgNetwork] = useState('testnet');
@@ -46,7 +47,7 @@ const EthEnable = ({ params: { icon, name, origin } }: ConnectProps) => {
     const site = await wallet.getSite(origin);
     const collectList: { name: string; logo_url: string }[] = [];
     const network = await wallet.getNetwork();
-    const defaultChain = network === 'testnet' ? 545 : 747;
+    const defaultChain = network === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID;
     const isShowTestnet = false;
 
     setDefaultChain(defaultChain);

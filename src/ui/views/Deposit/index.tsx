@@ -114,7 +114,7 @@ const Deposit = () => {
   const [emulatorModeOn, setEmulatorModeOn] = useState<boolean>(false);
 
   const fetchStuff = useCallback(async () => {
-    const isChild = await usewallet.getActiveWallet();
+    const isChild = await usewallet.getActiveAccountType();
     if (isChild === 'evm') {
       setIsActive(isChild);
       const wallets = await usewallet.getEvmWallet();

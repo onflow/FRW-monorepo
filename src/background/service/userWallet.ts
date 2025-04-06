@@ -1,6 +1,6 @@
 import * as secp from '@noble/secp256k1';
 import * as fcl from '@onflow/fcl';
-import type { Account as FclAccount } from '@onflow/typedefs';
+import ethUtil from 'ethereumjs-util';
 import { getApp } from 'firebase/app';
 import { getAuth, signInAnonymously } from 'firebase/auth/web-extension';
 
@@ -8,83 +8,88 @@ import wallet from '@/background/controller/wallet';
 import keyringService from '@/background/service/keyring';
 import { mixpanelTrack } from '@/background/service/mixpanel';
 import openapiService from '@/background/service/openapi';
-import { getLoggedInAccount } from '@/background/utils/getLoggedInAccount';
 import {
   signWithKey,
   seed2PublicPrivateKey,
-  seed2PublicPrivateKeyTemp,
   seedWithPathAndPhrase2PublicPrivateKey,
+  formPubKeyTuple,
+  pk2PubKey,
 } from '@/background/utils/modules/publicPrivateKey';
 import createPersistStore from '@/background/utils/persisitStore';
-import { type HashAlgoString, type SignAlgoString } from '@/shared/types/algo-types';
-import { type PublicPrivateKeyTuple, type PublicKeyTuple } from '@/shared/types/key-types';
 import {
-  type LoggedInAccount,
-  type ActiveChildType,
+  type PublicPrivateKeyTuple,
+  tupleToPrivateKey,
+  combinePubPkString,
+} from '@/shared/types/key-types';
+import {
   type FlowAddress,
   type EvmAddress,
   type WalletAccount,
   type ChildAccountMap,
-  isEvmAccountType,
-  isMainAccountType,
+  type ActiveAccountType,
+  getActiveAccountTypeForAddress,
+  type WalletAddress,
+  type AccountDetails,
 } from '@/shared/types/wallet-types';
-import { isValidEthereumAddress, isValidFlowAddress, withPrefix } from '@/shared/utils/address';
-import { getHashAlgo, getSignAlgo } from '@/shared/utils/algo';
-import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
+import { ensureEvmAddressPrefix } from '@/shared/utils/address';
 import {
-  profileAccountsKey,
-  type ProfileAccountStore,
-  type ChildAccountStore,
-  type EvmAccountStore,
+  FLOW_BIP44_PATH,
+  HASH_ALGO_NUM_SHA2_256,
+  HASH_ALGO_NUM_SHA3_256,
+  SIGN_ALGO_NUM_ECDSA_P256,
+  SIGN_ALGO_NUM_ECDSA_secp256k1,
+} from '@/shared/utils/algo-constants';
+import {
+  mainAccountsKey,
   evmAccountKey,
   childAccountsKey,
-} from '@/shared/utils/data-cache-keys';
-import { userWalletsKey, type UserWalletStore } from '@/shared/utils/data-persist-keys';
+  getCachedMainAccounts,
+  getCachedEvmAccount,
+  mainAccountsRefreshRegex,
+  childAccountsRefreshRegex,
+  evmAccountRefreshRegex,
+  getCachedChildAccounts,
+} from '@/shared/utils/cache-data-keys';
+import { retryOperation } from '@/shared/utils/retryOperation';
+import { setUserData } from '@/shared/utils/user-data-access';
+import {
+  userWalletsKey,
+  type UserWalletStore,
+  type ActiveAccountsStore,
+  activeAccountsKey,
+  getActiveAccountsData,
+} from '@/shared/utils/user-data-keys';
 
-import type {
-  AccountKeyRequest,
-  DeviceInfoRequest,
-  FlowNetwork,
+import {
+  networkToChainId,
+  type AccountKeyRequest,
+  type DeviceInfoRequest,
+  type FlowNetwork,
 } from '../../shared/types/network-types';
-import {
-  type WalletProfile,
-  type PublicKeyAccount,
-  type MainAccount,
-} from '../../shared/types/wallet-types';
+import { type PublicKeyAccount, type MainAccount } from '../../shared/types/wallet-types';
 import { fclConfig } from '../fclConfig';
-import { createSessionStore } from '../utils';
-import { findAddressWithPK, getAccountKeyRequestForPK } from '../utils/modules/findAddressWithPK';
+import { getScripts } from '../utils';
+import { defaultAccountKey, pubKeyAccountToAccountKey } from '../utils/account-key';
+import { registerRefreshListener, setCachedData } from '../utils/data-cache';
+import { getEmojiByIndex } from '../utils/emoji-util';
 import {
-  accountKeyRequestForAccount,
   getAccountsByPublicKeyTuple,
+  getAccountsWithPublicKey,
 } from '../utils/modules/findAddressWithPubKey';
 import { storage } from '../webapi';
 
 const USER_WALLET_TEMPLATE: UserWalletStore = {
-  activeChild: null,
-  evmEnabled: false,
   monitor: 'flowscan',
   network: 'mainnet',
   emulatorMode: false,
   currentPubkey: '',
-  currentAddress: '',
-  parentAddress: '',
 };
 class UserWallet {
-  store!: UserWalletStore;
-  accounts: {
-    mainnet: WalletProfile[];
-    testnet: WalletProfile[];
-  } = {
-    mainnet: [],
-    testnet: [],
-  };
-
-  // This is a map of the child accounts for each address
-  childAccountMap: Map<FlowNetwork, Map<FlowAddress, ChildAccountStore>> = new Map();
-
-  // This is a map of the evm addresses for each address
-  evmAddressMap: Map<FlowNetwork, Map<FlowAddress, string>> = new Map();
+  // PERSISTENT DATA
+  // The user settings - network and other global settings
+  private store!: UserWalletStore;
+  // Map of the selected accounts for each network and pubkey
+  private activeAccounts: Map<FlowNetwork, Map<string, ActiveAccountsStore>> = new Map();
 
   init = async () => {
     this.store = await createPersistStore<UserWalletStore>({
@@ -92,13 +97,12 @@ class UserWallet {
       template: USER_WALLET_TEMPLATE,
     });
 
-    this.accounts = {
-      mainnet: [],
-      testnet: [],
-    };
+    this.activeAccounts = new Map();
+    // Initialize the account loaders
+    initAccountLoaders();
 
-    this.childAccountMap = new Map();
-    this.evmAddressMap = new Map();
+    // Load the active accounts
+    await this.loadActiveAccounts(this.store.network, this.store.currentPubkey);
   };
 
   clear = async () => {
@@ -107,45 +111,157 @@ class UserWallet {
     } else {
       Object.assign(this.store, USER_WALLET_TEMPLATE);
     }
-    this.accounts = {
-      mainnet: [],
-      testnet: [],
-    };
+    this.activeAccounts = new Map();
   };
+
   isLocked = () => {
     return !keyringService.isUnlocked();
   };
 
-  setMainAccounts = async (accounts: MainAccount[], pubKey: string, network: string) => {
-    const profileList: WalletProfile[] = this.accounts[network];
-    const accountIndex = profileList.findIndex((account) => account.publicKey === pubKey);
-    this.setCurrentPubkey(pubKey);
-    if (accountIndex !== -1) {
-      // assign the accounts to the profile
-      profileList[accountIndex].accounts = accounts;
-    } else {
-      // Create a new session store and push it to the profile list
-      profileList.push(
-        await createSessionStore<ProfileAccountStore>({
-          name: profileAccountsKey(network, pubKey),
-          template: {
-            accounts: accounts,
-            publicKey: pubKey,
-          },
-        })
-      );
-    }
-    this.store.currentAddress = accounts[0].address;
-    this.store.parentAddress = accounts[0].address;
+  /**
+   * --------------------------------------------
+   * Getting and setting current state
+   * --------------------------------------------
+   */
 
-    return profileList;
+  getCurrentPubkey = (): string => {
+    return this.store.currentPubkey;
   };
 
+  /**
+   * Set the current pubkey
+   * TODO: There are lots of async methods "get" the current pubkey before performing an action
+   * Switching the pubkey mid action may cause unexpected behavior
+   * It would be better practice to either pass the pubkey to actions or have class instances
+   * for each pubkey and network combination
+   * @param pubkey - The pubkey to set
+   */
   setCurrentPubkey = (pubkey: string) => {
+    // Note that values that are set in the proxy store are immediately available through the proxy
+    // It stores the value in memory immediately
+    // However the value in storage may not be updated immediately
     this.store.currentPubkey = pubkey;
+
+    // Load all data for the new pubkey. This is async but don't await it
+    this.loadAllAccounts(this.store.network, pubkey);
   };
 
-  switchAccount = (pubkey: string) => {
+  getNetwork = (): FlowNetwork => {
+    if (!this.store) {
+      throw new Error('UserWallet not initialized');
+    }
+    return this.store.network;
+  };
+
+  setNetwork = async (network: string) => {
+    if (!this.store) {
+      throw new Error('UserWallet not initialized');
+    }
+    if (network !== 'mainnet' && network !== 'testnet') {
+      throw new Error('Invalid network');
+    }
+    this.store.network = network;
+
+    // Load all data for the new network. This is async but don't await it
+    this.loadAllAccounts(network, this.store.currentPubkey);
+  };
+
+  /**
+   * Settings - these should be moved to preferences or some settings service
+   */
+  getMonitor = (): string => {
+    return this.store.monitor;
+  };
+
+  setMonitor = (monitor: string) => {
+    if (!this.store) {
+      throw new Error('UserWallet not initialized');
+    }
+    this.store.monitor = monitor;
+  };
+
+  getEmulatorMode = async (): Promise<boolean> => {
+    // Check feature flag first
+    const enableEmulatorMode = await openapiService.getFeatureFlag('emulator_mode');
+    if (!enableEmulatorMode) {
+      return false;
+    }
+    if (!this.store) {
+      throw new Error('UserWallet not initialized');
+    }
+    return this.store.emulatorMode;
+  };
+
+  setEmulatorMode = async (emulatorMode: boolean) => {
+    let emulatorModeToSet = emulatorMode;
+    if (emulatorModeToSet) {
+      // check feature flag
+      const enableEmulatorMode = await openapiService.getFeatureFlag('emulator_mode');
+      if (!enableEmulatorMode) {
+        emulatorModeToSet = false;
+      }
+    }
+    this.store.emulatorMode = emulatorModeToSet;
+    await this.setupFcl();
+  };
+
+  /**
+   * --------------------------------------------
+   * Loading accounts when the public key changes
+   * --------------------------------------------
+   */
+
+  /**
+   * Load all accounts for the given network and pubkey
+   * This is called when the pubkey or network changes
+   * It will safely return if either of those values are not yet set
+   * This can be called multiple times asynchrously without causing issues
+   * @param network - The network to load the accounts for
+   * @param pubkey - The pubkey to load the accounts for
+   * @returns A promise that resolves to the loaded accounts
+   */
+  loadAllAccounts = async (network: string, pubkey: string) => {
+    if (!network || !pubkey) {
+      // Simply return if the network or pubkey is not yet set
+      // Other methods will throw an error if they are not set
+      return;
+    }
+    return Promise.all([
+      this.loadActiveAccounts(network, pubkey),
+      // extenal method that ensures caches are loaded
+      loadAllAccountsWithPubKey(network, pubkey),
+    ]);
+  };
+
+  /**
+   * Load the active accounts for the given network and pubkey
+   * This is called when the pubkey or network changes
+   * It will safely return if either of those values are not yet set
+   * This can be called multiple times asynchrously without causing issues
+   * @param network - The network to load the accounts for
+   * @param pubkey - The pubkey to load the accounts for
+   * @returns A promise that resolves to the loaded accounts
+   */
+  loadActiveAccounts = async (network: string, pubkey: string) => {
+    if (network) {
+      if (!this.activeAccounts[network]) {
+        this.activeAccounts[network] = new Map();
+      }
+      if (pubkey) {
+        // Load from storage
+        const activeAccounts = (await getActiveAccountsData(network, pubkey)) ?? {
+          parentAddress: null,
+          currentAddress: null,
+        };
+        // Store in memory
+        this.activeAccounts[network][pubkey] = activeAccounts;
+      }
+    }
+  };
+
+  /*
+
+  switchProfile = async (pubkey: string) => {
     if (!pubkey) {
       console.warn('Invalid pubkey provided to switchAccount');
       return;
@@ -153,69 +269,35 @@ class UserWallet {
 
     const profileList: WalletProfile[] = this.accounts[this.store.network];
 
-    const profile = profileList.find((group) => {
+    let profile = profileList.find((group) => {
       const matches = group.publicKey === pubkey;
 
       return matches;
     });
 
-    if (!profile || !profile.accounts.length) {
+    if (!profile) {
+      // Create a new profile
+      profile = await createSessionStore<ProfileAccountStore>({
+        name: profileAccountsKey(this.store.network, pubkey),
+        template: {
+          accounts: [],
+          publicKey: pubkey,
+        },
+      });
+      // Add the new profile to the profile list
+      profileList.push(profile);
+    }
+    // Set the current pubkey
+    this.store.currentPubkey = pubkey;
+
+    if (!profile.accounts.length) {
       console.warn(`No account found for pubkey: ${pubkey.slice(0, 10)}...`);
       return;
     }
 
-    this.store.currentPubkey = pubkey;
-    // Note we could support persisting the selected wallet for a given profile across sessions
-    // For now just use the first main account as the current wallet
-    this.store.currentAddress = profile.accounts[0].address;
-    this.store.parentAddress = profile.accounts[0].address;
   };
 
-  getCurrentPubkey = (): string => {
-    return this.store.currentPubkey;
-  };
 
-  // Helper method to find account in current accounts
-  private findAccount = (
-    address: string,
-    network: string
-  ): {
-    account: PublicKeyAccount | null;
-    currentAccounts: WalletProfile[];
-  } => {
-    const profileList: WalletProfile[] = this.accounts[network];
-
-    // First try to find account group using currentPubkey
-    let accountGroupIndex = profileList.findIndex(
-      (group) => group.publicKey === this.store.currentPubkey
-    );
-
-    // If not found with currentPubkey, fallback to searching by address
-    if (accountGroupIndex === -1) {
-      accountGroupIndex = profileList.findIndex((group) =>
-        group.accounts.some((account) => account.address === address)
-      );
-    }
-
-    if (accountGroupIndex === -1) {
-      console.warn(`No account group found containing address ${address}`);
-      return { account: null, currentAccounts: profileList };
-    }
-
-    const accountIndex = profileList[accountGroupIndex].accounts.findIndex(
-      (account) => account.address === address
-    );
-
-    if (accountIndex === -1) {
-      console.warn(`Address ${address} not found in account group`);
-      return { account: null, currentAccounts: profileList };
-    }
-
-    return {
-      account: profileList[accountGroupIndex].accounts[accountIndex] as PublicKeyAccount,
-      currentAccounts: profileList,
-    };
-  };
 
   setChildAccounts = async (
     childAccountMap: ChildAccountMap,
@@ -245,7 +327,7 @@ class UserWallet {
   /*
    * Set the evm address for the main account
    * This is invoked when loading the wallet
-   */
+   * /
   setAccountEvmAddress = async (evmAddress: EvmAddress | null) => {
     const network = this.store.network;
     const address = this.store.parentAddress as FlowAddress;
@@ -277,6 +359,7 @@ class UserWallet {
     }
   };
 
+
   // TODO: Verify what this does... it doesn't look right
   setCurrentAccount = async (wallet: WalletAccount, key: ActiveChildType) => {
     this.store.currentAddress = wallet.address;
@@ -286,267 +369,254 @@ class UserWallet {
     }
   };
 
-  getActiveAccountType = (): ActiveChildType => {
-    const parentAddress = this.store.parentAddress;
-    const currentAddress = this.store.currentAddress;
-
-    if (parentAddress === currentAddress) {
-      // If ActiveChildType is null, it means the active wallet is the main account
-      return null;
-    }
-    if (isValidEthereumAddress(currentAddress)) {
-      // The evm account is the active wallet
-      return 'evm';
-    } else if (isValidFlowAddress(currentAddress)) {
-      // If ActiveChildType is a flow address, it means the active wallet is a child account
-      return currentAddress;
-    }
-    throw new Error(`Invalid active wallet address: ${currentAddress}`);
-  };
-
-  getParentAddress = async (network: string): Promise<FlowAddress | null> => {
-    if (!keyringService.isUnlocked()) {
-      return null;
-    }
-    const address = this.store.parentAddress;
-    const prefixedAddress = withPrefix(address);
-    return isValidFlowAddress(prefixedAddress) ? prefixedAddress : null;
-  };
-
-  returnParentWallet = async (network: string): Promise<MainAccount | null> => {
-    if (!keyringService.isUnlocked()) {
-      return null;
-    }
-    const address = this.store.parentAddress;
-    const pubkey = this.store.currentPubkey;
-    const profileList: WalletProfile[] = this.accounts[network];
-    const profile = profileList.find((account) => account.publicKey === pubkey);
-    if (profile) {
-      return profile.accounts.find((account) => account.address === address) || null;
-    }
-    return null;
-  };
-
-  getCurrentAddress = (): FlowAddress | EvmAddress | null => {
-    const address = this.store.currentAddress;
-
-    return withPrefix(address);
-  };
-
-  /*
-  This returns the currently selected wallet for the current profile and current network
-  Note in the future, we could support persisting the selected wallet for a given profile across sessions
   */
 
-  getCurrentWallet = (): WalletAccount | null => {
-    if (this.isLocked()) {
+  /**
+   * --------------------------------------------
+   * Accessing the current account addresses
+   * --------------------------------------------
+   */
+
+  getActiveAccounts = (): ActiveAccountsStore => {
+    return (
+      this.activeAccounts[this.store.network]?.[this.store.currentPubkey] ?? {
+        parentAddress: null,
+        currentAddress: null,
+      }
+    );
+  };
+
+  // Get the main account address for the current public key
+  getParentAddress = (): FlowAddress | null => {
+    return this.getActiveAccounts().parentAddress;
+  };
+
+  getCurrentAddress = (): WalletAddress | null => {
+    return this.getActiveAccounts().currentAddress;
+  };
+
+  getActiveAccountType = (): ActiveAccountType => {
+    return getActiveAccountTypeForAddress(this.getCurrentAddress(), this.getParentAddress());
+  };
+
+  private setActiveAccounts = async (newActiveAccounts: ActiveAccountsStore) => {
+    const pubkey = this.store.currentPubkey;
+    const network = this.store.network;
+    if (!pubkey) {
+      throw new Error('Current pubkey is not set');
+    }
+    if (!network) {
+      throw new Error('Network is not set');
+    }
+    this.activeAccounts[network][pubkey] = newActiveAccounts;
+
+    // Save the data in storage
+    await setUserData<ActiveAccountsStore>(activeAccountsKey(network, pubkey), newActiveAccounts);
+  };
+  /**
+   * Set the current account - the actively selected account
+   * Be careful to only call this once main accounts are loaded
+   * If there is no active main account, it will select the first account in the list
+   * @param parentAddress - The parent account address of whichever account you want to select
+   * @param newCurrentAddress - The new current account address. This must either be:
+   * - The parent address given in parentAddress
+   * - The evm address of the parent account with parentAddress
+   * - A child address of the parent account with parentAddress
+   * @returns
+   */
+  setCurrentAccount = async (parentAddress: FlowAddress, newCurrentAddress: WalletAddress) => {
+    // TODO: Should we validate the addresses here? How could it be possible to set an invalid address?
+    await this.setActiveAccounts({
+      parentAddress: parentAddress,
+      currentAddress: newCurrentAddress,
+    });
+  };
+  /**
+   * Select the main account if a child account is selected
+   * Be careful to only call this once main accounts are loaded
+   * If there is no active main account, it will select the first account in the list
+   * @returns
+   */
+  setCurrentAccountToParent = async () => {
+    const activeAccounts = this.getActiveAccounts();
+    if (activeAccounts.parentAddress) {
+      await this.setActiveAccounts({
+        parentAddress: activeAccounts.parentAddress,
+        currentAddress: activeAccounts.parentAddress,
+      });
+    } else {
+      await this.resetToFirstParentAccount();
+    }
+  };
+
+  /**
+   * Reset the selected address to the first account
+   * Be careful to only call this once main accounts are loaded
+   * @returns
+   */
+  resetToFirstParentAccount = async () => {
+    const newActiveAccounts: ActiveAccountsStore = {
+      parentAddress: null,
+      currentAddress: null,
+    };
+    const mainAccounts = await this.getMainAccounts();
+    if (mainAccounts) {
+      // Main accounts are loaded
+      if (mainAccounts.length > 0) {
+        newActiveAccounts.parentAddress = mainAccounts[0].address as FlowAddress;
+        newActiveAccounts.currentAddress = mainAccounts[0].address as WalletAddress;
+      }
+      await this.setActiveAccounts(newActiveAccounts);
+    }
+  };
+
+  ensureValidCurrentAccount = async () => {
+    // Get the main accounts
+    const mainAccounts = await this.getMainAccounts();
+    if (!mainAccounts) {
+      // main accounts are not loaded yet
+      return;
+    }
+    // Get the active accounts
+    const activeAccounts = this.getActiveAccounts();
+
+    // Check if the current account is valid
+    if (!activeAccounts.parentAddress) {
+      await this.resetToFirstParentAccount();
+    } else {
+      // Check if the current account is a valid main account
+    }
+  };
+
+  /**
+   * --------------------------------------------
+   * Accessing wallets of addresses
+   * --------------------------------------------
+   */
+
+  getMainAccounts = async (): Promise<MainAccount[] | null> => {
+    const mainAccounts = await getCachedMainAccounts(this.getNetwork(), this.getCurrentPubkey());
+    return mainAccounts ?? null;
+  };
+
+  // Get the main account wallet for the current public key
+  getParentAccount = async (): Promise<MainAccount | null> => {
+    const address = this.getParentAddress();
+    if (!address) {
       return null;
     }
-    const activeType = this.getActiveAccountType();
+    // Get the main accounts for the network
+    const mainAccounts = await this.getMainAccounts();
+    if (!mainAccounts) {
+      return null;
+    }
 
-    const network = this.store.network;
-    const address = this.store.parentAddress;
-    const pubkey = this.store.currentPubkey;
-
-    const profileList: WalletProfile[] = this.accounts[network];
-    const profile = profileList.find((profile) => profile.publicKey === pubkey);
-    if (profile) {
-      const account = profile.accounts.find((account) => account.address === address) || null;
-      if (!account) {
-        return null;
-      }
-      if (isEvmAccountType(activeType)) {
-        const evmWallet = {
-          ...account,
-          address: this.getCurrentEvmAddress() || '',
-          name: 'Lemon',
-          icon: '🍋',
-          color: '#FFD700',
-          pubK: this.store.currentPubkey,
-        };
-        return evmWallet;
-      } else if (isMainAccountType(activeType)) {
-        return account;
-      } else {
-        // activeType is the address of the child account
-        const networkChildAccountStore: ChildAccountStore | undefined =
-          this.childAccountMap[network]?.[address];
-        const childAccountDetails = networkChildAccountStore?.accounts[activeType];
-        const childWallet = {
-          ...account,
-          address: activeType,
-          name: childAccountDetails?.name ?? 'Unknown',
-          icon: childAccountDetails?.thumbnail?.url ?? '',
-          pubK: this.store.currentPubkey,
-        };
-        return childWallet;
-      }
+    // Find the main account that matches the address
+    const mainAccount = mainAccounts.find((account) => account.address === address);
+    if (mainAccount) {
+      return mainAccount;
     }
     return null;
   };
 
-  getMainAccounts = (network: string): MainAccount[] | null => {
-    const currentPubKey = this.store.currentPubkey;
-    const profileList: WalletProfile[] = this.accounts[network];
-    const profile = profileList.find((account) => account.publicKey === currentPubKey);
-    if (profile) {
-      return profile.accounts;
-    } else {
-      return null;
-    }
-  };
-
-  getEvmAddressOfParentAccount = (address: FlowAddress): EvmAddress | null => {
-    if (this.isLocked()) {
-      return null;
-    }
-    const evmAddress = this.evmAddressMap[address]?.evmAddress;
+  // Get the evm wallet of the current main account
+  getEvmAccount = async (): Promise<WalletAccount | null> => {
+    const evmAddress = await this.getCurrentEvmAddress();
     if (!evmAddress) {
       return null;
     }
-    return evmAddress;
-  };
+    const network = this.getNetwork();
 
-  getCurrentEvmAddress = (): EvmAddress | null => {
-    if (this.isLocked() || !this.store.parentAddress) {
-      return null;
-    }
-    const address = this.store.parentAddress as FlowAddress;
-    return this.getEvmAddressOfParentAccount(address);
-  };
-
-  getEvmWallet = (): WalletAccount | null => {
-    if (this.isLocked()) {
-      return null;
-    }
-    const evmAddress = this.getCurrentEvmAddress();
-    if (!evmAddress) {
-      return null;
-    }
-    const network = this.store.network;
+    // The index of the evm wallet - always 0 as we only support one evm wallet
+    const index = 0;
+    // Add 10 to the index to get the evm emoji
+    const emoji = getEmojiByIndex(index + 10);
     const evmWallet: WalletAccount = {
       address: evmAddress,
-      name: 'Lemon',
-      icon: '🍋',
-      color: '#FFD700',
-      chain: network === 'mainnet' ? 747 : 545,
-      id: 0,
+      name: emoji.name,
+      icon: emoji.emoji,
+      color: emoji.bgcolor,
+      chain: networkToChainId(network),
+      id: index,
     };
     return evmWallet;
   };
 
-  getChildAccounts = (): ChildAccountMap | null => {
-    if (this.isLocked()) {
+  // Get the child accounts of the current main account
+  getChildAccounts = async (): Promise<ChildAccountMap | null> => {
+    const childAccounts = await getCachedChildAccounts(this.getNetwork(), this.getCurrentPubkey());
+    return childAccounts ?? null;
+  };
+
+  private getChildAccount = async (): Promise<WalletAccount | null> => {
+    const childAccounts = await this.getChildAccounts();
+    if (!childAccounts) {
+      // Child accounts are not loaded yet
       return null;
     }
+    // if the selected address is child then the selected address must be a valid flow address
+    const childAddress = this.getCurrentAddress() as FlowAddress;
+    const childAccountDetails: AccountDetails = childAccounts[childAddress];
+    if (!childAccountDetails) {
+      throw new Error(`Child account not found: ${childAddress}`);
+    }
+    const childAccountIndex = Object.keys(childAccounts).findIndex((key) => key === childAddress);
+    const childWallet: WalletAccount = {
+      address: childAddress,
+      name: childAccountDetails.name ?? 'Unknown',
+      icon: childAccountDetails.thumbnail.url ?? '',
+      chain: networkToChainId(this.getNetwork()),
+      id: childAccountIndex,
+      color: '#FFFFFF',
+    };
+    return childWallet;
+  };
 
-    const network = this.store.network;
-    const address = this.store.parentAddress;
-    const childAccountStore: ChildAccountStore | undefined =
-      this.childAccountMap[network]?.[address];
-    if (!childAccountStore) {
+  getCurrentWallet = async (): Promise<WalletAccount | null> => {
+    switch (this.getActiveAccountType()) {
+      case 'main':
+        return this.getParentAccount();
+      case 'evm':
+        return this.getEvmAccount();
+      case 'child':
+        try {
+          return this.getChildAccount();
+        } catch {
+          console.error('Error getting child account');
+          // We need to reset to the main account
+          return null;
+        }
+      case 'none':
+        return null;
+    }
+  };
+
+  getCurrentEvmAddress = async (): Promise<EvmAddress | null> => {
+    if (this.isLocked() || !this.getParentAddress()) {
       return null;
     }
-    // Return a shallow copy of the child accounts
-    return { ...childAccountStore.accounts };
+    const evmAddress = await getCachedEvmAccount(
+      this.store.network,
+      this.getParentAddress() as FlowAddress
+    );
+    return evmAddress ?? null;
   };
 
-  setWalletEmoji = (emoji, network, id) => {
-    console.log('setWalletEmoji', emoji, network, id);
-    // this.store.wallets[network][id].name = emoji.name;
-    // this.store.wallets[network][id].icon = emoji.emoji;
-    // this.store.wallets[network][id].color = emoji.bgcolor;
-    // this.store.wallets[network][id].blockchain[0].name = emoji.name;
-    // this.store.wallets[network][id].blockchain[0].icon = emoji.emoji;
-    // this.store.wallets[network][id].blockchain[0].color = emoji.bgcolor;
-  };
+  /**
+   * --------------------------------------------
+   * User settings
+   * --------------------------------------------
+   */
 
-  refreshEvm = () => {
-    const network = this.store.network;
-    const address = this.store.parentAddress;
-
-    // Remove the evm address from the map
-    delete this.evmAddressMap[network]?.[address];
-
-    this.store.evmEnabled = false;
-  };
-
-  /*
-  New store for accounts are above
-  */
-
-  setNetwork = async (network: string) => {
-    if (!this.store) {
-      await this.init();
-    }
-    if (this.store.network !== network) {
-      this.store.activeChild = null;
-      // TODO: I think this line below should be put back in. It was removed to fix an account switching bug, but without it, it's possible for currentWallet to refer to address on another network. Either currentWallet should be cleared or the line below should be put back in.
-      // this.store.currentWallet = this.store.wallets[network][0].blockchain[0];
-    }
-    this.store.network = network;
-  };
-
-  setMonitor = (monitor: string) => {
-    this.store.monitor = monitor;
-  };
-
-  setEvmEnabled = (status: boolean) => {
-    this.store.evmEnabled = status;
-  };
-
-  getEvmEnabled = () => {
-    return this.store.evmEnabled;
-  };
-
-  getNetwork = async (): Promise<string> => {
-    if (!this.store) {
-      await this.init();
-    }
-    return this.store.network;
-  };
-
-  getEmulatorMode = async (): Promise<boolean> => {
-    // Check feature flag first
-    const enableEmulatorMode = await openapiService.getFeatureFlag('emulator_mode');
-    if (!enableEmulatorMode) {
-      return false;
-    }
-    if (!this.store) {
-      await this.init();
-    }
-    return this.store.emulatorMode;
-  };
-
-  setEmulatorMode = async (emulatorMode: boolean) => {
-    let emulatorModeToSet = emulatorMode;
-    if (emulatorModeToSet) {
-      // check feature flag
-      const enableEmulatorMode = await openapiService.getFeatureFlag('emulator_mode');
-      if (!enableEmulatorMode) {
-        emulatorModeToSet = false;
-      }
-    }
-    this.store.emulatorMode = emulatorModeToSet;
-    await this.setupFcl();
-  };
-
-  getMonitor = (): string => {
-    return this.store.monitor;
-  };
-
-  setEvmEmoji = (emoji) => {
-    console.log('setEvmEmoji', emoji);
-    // this.store.evmWallet.name = emoji.name;
-    // this.store.evmWallet.icon = emoji.emoji;
-    // this.store.evmWallet.color = emoji.bgcolor;
-  };
-
-  // transaction functions below
+  /**
+   * --------------------------------------------
+   * Transactions & Signing
+   * --------------------------------------------
+   */
 
   setupFcl = async () => {
     const isEmulatorMode = await this.getEmulatorMode();
-    const network = (await this.getNetwork()) as FlowNetwork;
+    const network = this.getNetwork();
     await fclConfig(network, isEmulatorMode);
   };
 
@@ -561,9 +631,10 @@ class UserWallet {
     }
     return 'unknown_script';
   };
+
   sendTransaction = async (
     cadence: string,
-    args: any[],
+    args: unknown[],
     shouldCoverFee: boolean = false
   ): Promise<string> => {
     const scriptName = this.extractScriptName(cadence);
@@ -576,7 +647,7 @@ class UserWallet {
           : this.authorizationFunction;
       const txID = await fcl.mutate({
         cadence: cadence,
-        args: (arg, t) => args,
+        args: () => args,
         proposer: this.authorizationFunction,
         authorizations: [
           this.authorizationFunction,
@@ -597,18 +668,41 @@ class UserWallet {
     }
   };
 
+  /**
+   * Sign a message
+   * @param signableMessage - The message to sign
+   * @returns The signature
+   */
   sign = async (signableMessage: string): Promise<string> => {
     // Ensure the wallet is unlocked as we're accessing the private key
     // Note we wouldn't be able to get the private key if the wallet is locked anyway..
     if (this.isLocked()) {
       throw new Error('Wallet is locked');
     }
-    const hashAlgo = await storage.get('hashAlgo');
-    const signAlgo = await storage.get('signAlgo');
 
-    const privateKey = await keyringService.getCurrentPrivateKey();
+    // Get the current public key
+    const pubKey = this.store.currentPubkey;
+    const keyTuple = await keyringService.getCurrentPublicPrivateKeyTuple();
+    let signAlgo: number;
+    let hashAlgo: number;
+    let privateKey: string;
+    if (pubKey === keyTuple.P256.pubK) {
+      // The public key is the same as the private key
+      // We can use the private key to sign the message
+      signAlgo = SIGN_ALGO_NUM_ECDSA_P256;
+      hashAlgo = HASH_ALGO_NUM_SHA3_256;
+      privateKey = keyTuple.P256.pk;
+    } else if (pubKey === keyTuple.SECP256K1.pubK) {
+      // The public key is the SECP256K1 public key
+      signAlgo = SIGN_ALGO_NUM_ECDSA_secp256k1;
+      hashAlgo = HASH_ALGO_NUM_SHA2_256;
+      privateKey = keyTuple.SECP256K1.pk;
+    } else {
+      throw new Error('Invalid public key');
+    }
+    // TODO: This is a temporary solution to get the private key
     const realSignature = await signWithKey(
-      Buffer.from(signableMessage, 'hex'),
+      Buffer.from(signableMessage, 'hex').toString('hex'),
       signAlgo,
       hashAlgo,
       privateKey
@@ -616,128 +710,7 @@ class UserWallet {
     return realSignature;
   };
 
-  switchLogin = async (pubKey: PublicKeyTuple, replaceUser = true) => {
-    const pubKeyP256 = pubKey.P256;
-    const pubKeySECP256K1 = pubKey.SECP256K1;
-
-    // The issue is here in using getStoragedAccount()
-    let account: Partial<LoggedInAccount> & {
-      hashAlgo: HashAlgoString;
-      signAlgo: SignAlgoString;
-      pubKey: string;
-      weight: number;
-    };
-    try {
-      // Try to get the account from  loggedInAccounts
-      account = await getLoggedInAccount();
-    } catch (error) {
-      console.error('Error getting logged in account - recreate it', error);
-      // Look for the account using the pubKey
-      const network = (await this.getNetwork()) || 'mainnet';
-      // Find the address associated with the pubKey
-      // This should return an array of address information records
-      const addressAndKeyInfoArray = await getAccountsByPublicKeyTuple(pubKey, network);
-      // Find which signAlgo and hashAlgo is used on the account
-      if (!Array.isArray(addressAndKeyInfoArray) || !addressAndKeyInfoArray.length) {
-        throw new Error('No address found');
-      }
-      // Follow the same logic as freshUserInfo in openapi.ts
-      // Look for the P256 key first
-
-      let index = addressAndKeyInfoArray.findIndex((key) => key.publicKey === pubKeyP256.pubK);
-      if (index === -1) {
-        // If no P256 key is found, look for the SECP256K1 key
-        index = addressAndKeyInfoArray.findIndex((key) => key.publicKey === pubKeySECP256K1.pubK);
-
-        if (index === -1) {
-          // Just use the first one
-          index = 0;
-        }
-      }
-      // Convert it to a LoggedInAccount
-      const pubKeyAccount = addressAndKeyInfoArray[index];
-      account = {
-        ...pubKeyAccount,
-        hashAlgo: pubKeyAccount.hashAlgoString,
-        signAlgo: pubKeyAccount.signAlgoString,
-        pubKey: pubKeyAccount.publicKey,
-        weight: pubKeyAccount.weight,
-        address: pubKeyAccount.address as FlowAddress,
-      };
-    }
-    const keyType = getSignAlgo(account.signAlgo!);
-    const keys = keyType === 1 ? pubKeyP256 : pubKeySECP256K1;
-    let result = [
-      {
-        hashAlgo: account.hashAlgo!,
-        signAlgo: account.signAlgo!,
-        pubK: keys.pubK,
-        weight: account.weight!,
-      },
-    ];
-    const privateKey = await keyringService.getCurrentPrivateKey();
-    if (!result[0].pubK) {
-      console.log('No result found, creating a new result object');
-      // Create a new result object with extension default setting
-      const foundResult = await findAddressWithPK(privateKey, '');
-      if (!foundResult) {
-        throw new Error('Unable to find a address with the provided PK. Aborting login.');
-      }
-
-      result = foundResult.map((account) => ({
-        hashAlgo: account.hashAlgoString,
-        signAlgo: account.signAlgoString,
-        pubK: account.publicKey,
-        weight: account.weight,
-      }));
-    }
-    const hashAlgo = result[0].hashAlgo;
-    const signAlgo = result[0].signAlgo;
-    const publicKey = result[0].pubK;
-
-    await this.setCurrentPubkey(publicKey);
-    const app = getApp(process.env.NODE_ENV!);
-    const auth = getAuth(app);
-    const idToken = await getAuth(app).currentUser?.getIdToken();
-    if (idToken === null || !idToken) {
-      signInAnonymously(auth);
-      return;
-    }
-    const rightPaddedHexBuffer = (value, pad) =>
-      Buffer.from(value.padEnd(pad * 2, 0), 'hex').toString('hex');
-    const USER_DOMAIN_TAG = rightPaddedHexBuffer(Buffer.from('FLOW-V0.0-user').toString('hex'), 32);
-    const message = USER_DOMAIN_TAG + Buffer.from(idToken, 'utf8').toString('hex');
-
-    // const messageHash = await secp.utils.sha256(Buffer.from(message, 'hex'));
-    const accountKey = {
-      public_key: publicKey,
-      hash_algo: typeof hashAlgo === 'string' ? getHashAlgo(hashAlgo) : hashAlgo,
-      sign_algo: typeof signAlgo === 'string' ? getSignAlgo(signAlgo) : signAlgo,
-      weight: result[0].weight,
-    };
-    const deviceInfo = await this.getDeviceInfo();
-    // const signature = await secp.sign(messageHash, privateKey);
-    const realSignature = await signWithKey(
-      Buffer.from(message, 'hex'),
-      signAlgo,
-      hashAlgo,
-      privateKey
-    );
-    return wallet.openapi.loginV3(accountKey, deviceInfo, realSignature, replaceUser);
-  };
-
-  reSign = async () => {
-    // Try to re-establish the session if the user's wallet is unlocked
-    if (this.isLocked()) {
-      // If the wallet is locked, we can't sign in
-      return;
-    }
-
-    const privateKey = await keyringService.getCurrentPrivateKey();
-    return await this.sigInWithPk(privateKey);
-  };
-
-  authorizationFunction = async (account: FclAccount) => {
+  authorizationFunction = async (account) => {
     // authorization function need to return an account
     const address = fcl.withPrefix(await wallet.getMainAddress());
     const ADDRESS = fcl.withPrefix(address);
@@ -748,7 +721,7 @@ class UserWallet {
       tempId: `${ADDRESS}-${KEY_ID}`, // tempIds are more of an advanced topic, for 99% of the times where you know the address and keyId you will want it to be a unique string per that address and keyId
       addr: fcl.sansPrefix(ADDRESS), // the address of the signatory, currently it needs to be without a prefix right now
       keyId: Number(KEY_ID), // this is the keyId for the accounts registered key that will be used to sign, make extra sure this is a number and not a string
-      signingFunction: async (signable) => {
+      signingFunction: async (signable: { message: string }) => {
         // Singing functions are passed a signable and need to return a composite signature
         // signable.message is a hex string of what needs to be signed.
         return {
@@ -760,7 +733,7 @@ class UserWallet {
     };
   };
 
-  signBridgeFeePayer = async (signable: any): Promise<string> => {
+  signBridgeFeePayer = async (signable): Promise<string> => {
     const tx = signable.voucher;
     const message = signable.message;
     const envelope = await openapiService.signBridgeFeePayer(tx, message);
@@ -768,7 +741,7 @@ class UserWallet {
     return signature;
   };
 
-  signPayer = async (signable: any): Promise<string> => {
+  signPayer = async (signable): Promise<string> => {
     const tx = signable.voucher;
     const message = signable.message;
     const envelope = await openapiService.signPayer(tx, message);
@@ -776,7 +749,7 @@ class UserWallet {
     return signature;
   };
 
-  signProposer = async (signable: any): Promise<string> => {
+  signProposer = async (signable): Promise<string> => {
     const tx = signable.voucher;
     const message = signable.message;
     const envelope = await openapiService.signProposer(tx, message);
@@ -784,7 +757,7 @@ class UserWallet {
     return signature;
   };
 
-  proposerAuthFunction = async (account: any = {}) => {
+  proposerAuthFunction = async (account) => {
     // authorization function need to return an account
     const proposer = await openapiService.getProposer();
     const address = fcl.withPrefix(proposer.data.address);
@@ -809,7 +782,7 @@ class UserWallet {
     };
   };
 
-  payerAuthFunction = async (account: any = {}) => {
+  payerAuthFunction = async (account) => {
     // authorization function need to return an account
     const payer = await wallet.getPayerAddressAndKeyId();
     const address = fcl.withPrefix(payer.address);
@@ -833,7 +806,7 @@ class UserWallet {
       },
     };
   };
-  bridgeFeePayerAuthFunction = async (account: any = {}) => {
+  bridgeFeePayerAuthFunction = async (account) => {
     // authorization function need to return an account
     const bridgeFeePayer = await wallet.getBridgeFeePayerAddressAndKeyId();
     const address = fcl.withPrefix(bridgeFeePayer.address);
@@ -858,70 +831,57 @@ class UserWallet {
     };
   };
 
-  signInWithMnemonic = async (
-    mnemonic: string,
-    replaceUser = true,
-    derivationPath: string = FLOW_BIP44_PATH,
-    passphrase: string = ''
-  ) => {
-    // Seperate this out as the private key is not returned from the getAccountsByPublicKeyTuple
-    const publicPrivateKey: PublicPrivateKeyTuple = await seedWithPathAndPhrase2PublicPrivateKey(
-      mnemonic,
-      derivationPath,
-      passphrase
-    );
+  /**
+   * --------------------------------------------
+   * Login & Sign In
+   * --------------------------------------------
+   */
 
-    const accounts = await getAccountsByPublicKeyTuple(publicPrivateKey, 'mainnet');
-    if (!accounts) {
-      throw new Error('No Address Found');
-    }
+  /**
+   * Login with the current keyring
+   * This is called immediately after switching unlocking or creating a keyring
+   * That is - the keyring has been switched or created and we need to login with the new pubkey
+   * The problem with this function is that we don't know which pubkey is the one to use
+   * We have to query the indexer to find accounts for each pubkey in the tuple
+   * @param pubKey - The public key to login with
+   * @param replaceUser - Whether to replace the current user
+   * @returns void
+   */
+  loginWithPublicPrivateKey = async (
+    keyTuple: PublicPrivateKeyTuple,
+    replaceUser = true
+  ): Promise<void> => {
+    // Get the network and store before we do anything async
+    const network = this.getNetwork();
+    // Get the public key tuple
+    const pubKeyTuple = formPubKeyTuple(keyTuple);
+
+    // Login anonymously if needed
+    // We'll need to do this before we get the accounts
     const app = getApp(process.env.NODE_ENV!);
     const auth = getAuth(app);
-    const idToken = await getAuth(app).currentUser?.getIdToken();
+    let idToken = await getAuth(app).currentUser?.getIdToken();
     if (idToken === null || !idToken) {
-      signInAnonymously(auth);
-      return;
+      // Sign in anonymously first
+      const userCredential = await signInAnonymously(auth);
+      idToken = await userCredential.user.getIdToken();
+      if (idToken === null || !idToken) {
+        throw new Error('Failed to get idToken - even after signing in anonymously');
+      }
     }
 
-    const rightPaddedHexBuffer = (value, pad) =>
-      Buffer.from(value.padEnd(pad * 2, 0), 'hex').toString('hex');
-    const USER_DOMAIN_TAG = rightPaddedHexBuffer(Buffer.from('FLOW-V0.0-user').toString('hex'), 32);
-    const message = USER_DOMAIN_TAG + Buffer.from(idToken, 'utf8').toString('hex');
+    // Find any account with public key information
+    const accounts = await getAccountsByPublicKeyTuple(pubKeyTuple, network);
 
-    // Get the account key request
-    const accountKeyRequest = await accountKeyRequestForAccount(accounts[0]);
+    // If no accounts are found, then the registration process may not have been completed
+    // Assume the default account key
+    const accountKeyRequest =
+      accounts.length === 0
+        ? defaultAccountKey(pubKeyTuple)
+        : pubKeyAccountToAccountKey(accounts[0]);
 
-    // NOTE: The private key for each type should be the same
-    const privateKey: string =
-      accountKeyRequest.public_key === publicPrivateKey.P256.pubK
-        ? publicPrivateKey.P256.pk
-        : publicPrivateKey.SECP256K1.pk;
-
-    // Sign the message
-    const realSignature = await signWithKey(
-      Buffer.from(message, 'hex'),
-      accountKeyRequest.sign_algo,
-      accountKeyRequest.hash_algo,
-      privateKey
-    );
-    // Get the device info
-    const deviceInfo = await this.getDeviceInfo();
-
-    // Login with the signed message
-    return wallet.openapi.loginV3(accountKeyRequest, deviceInfo, realSignature, replaceUser);
-  };
-
-  sigInWithPk = async (privateKey: string, replaceUser = true) => {
-    const accountKeyRequest = await getAccountKeyRequestForPK(privateKey);
-
-    // Make sure we're signed in
-    const app = getApp(process.env.NODE_ENV!);
-    const auth = getAuth(app);
-    const idToken = await getAuth(app).currentUser?.getIdToken();
-    if (idToken === null || !idToken) {
-      signInAnonymously(auth);
-      return;
-    }
+    // Get the private key from the private key tuple
+    const privateKey = tupleToPrivateKey(keyTuple, accountKeyRequest.sign_algo);
 
     // Add the user domain tag
     const rightPaddedHexBuffer = (value, pad) =>
@@ -931,7 +891,7 @@ class UserWallet {
 
     // Sign the message
     const realSignature = await signWithKey(
-      Buffer.from(message, 'hex'),
+      message,
       accountKeyRequest.sign_algo,
       accountKeyRequest.hash_algo,
       privateKey
@@ -939,11 +899,72 @@ class UserWallet {
     // Get the device info
     const deviceInfo = await this.getDeviceInfo();
 
-    // Login with the account key request
-    return wallet.openapi.loginV3(accountKeyRequest, deviceInfo, realSignature, replaceUser);
+    // Login with the signed message
+    await wallet.openapi.loginV3(accountKeyRequest, deviceInfo, realSignature, replaceUser);
+
+    // Set the current pubkey in userWallet provided we have been able to login
+    this.setCurrentPubkey(accountKeyRequest.public_key);
+  };
+  /**
+   * Login with the current keyring
+   * This is called immediately after switching unlocking or creating a keyring
+   * We also call it if we've been logged out but the wallet is unlocked
+   * @param pubKey - The public key to login with
+   * @param replaceUser - Whether to replace the current user
+   * @returns The logged in account
+   */
+  loginWithKeyring = async (replaceUser = true) => {
+    if (this.isLocked()) {
+      // If the wallet is locked, we can't sign in
+      return;
+    }
+    return this.loginWithPublicPrivateKey(
+      // Get the current public private key tuple
+      await keyringService.getCurrentPublicPrivateKeyTuple(),
+      replaceUser
+    );
   };
 
-  signInv3 = async (
+  /**
+   * Login with a mnemonic
+   * @param mnemonic - The mnemonic to login with
+   * @param replaceUser - Whether to replace the current user
+   * @param derivationPath - The derivation path to use
+   * @param passphrase - The passphrase to use
+   */
+  loginWithMnemonic = async (
+    mnemonic: string,
+    replaceUser = true,
+    derivationPath: string = FLOW_BIP44_PATH,
+    passphrase: string = ''
+  ) => {
+    // Get the public private key
+    const publicPrivateKey: PublicPrivateKeyTuple = await seedWithPathAndPhrase2PublicPrivateKey(
+      mnemonic,
+      derivationPath,
+      passphrase
+    );
+    // Login with the public private key
+    return this.loginWithPublicPrivateKey(publicPrivateKey, replaceUser);
+  };
+
+  /**
+   * Sign in with a private key
+   * @param privateKey - The private key to sign in with
+   * @param replaceUser - Whether to replace the current user
+   * @returns The logged in account
+   */
+  loginWithPk = async (privateKey: string, replaceUser = true) => {
+    // Get the public key tuple
+    const pubKeyTuple = await pk2PubKey(privateKey);
+    // Combine the public key tuple and the private key
+    const publicPrivateKey = combinePubPkString(pubKeyTuple, privateKey);
+    // Login with the public private key
+    return this.loginWithPublicPrivateKey(publicPrivateKey, replaceUser);
+  };
+
+  // @deprecated - use loginWithMnemonic instead
+  loginV3_depreciated = async (
     mnemonic: string,
     accountKey: AccountKeyRequest,
     deviceInfo: DeviceInfoRequest,
@@ -985,12 +1006,16 @@ class UserWallet {
     }
   };
 
-  signOutCurrentUser = async () => {
+  logoutCurrentUser = async () => {
     const app = getApp(process.env.NODE_ENV!);
     const auth = getAuth(app);
     await signInAnonymously(auth);
   };
 
+  /**
+   * Get the device info
+   * @returns The device info
+   */
   getDeviceInfo = async (): Promise<DeviceInfoRequest> => {
     const result = await wallet.openapi.getLocation();
     const installationId = await wallet.openapi.getInstallationId();
@@ -1019,5 +1044,148 @@ class UserWallet {
     return deviceInfo;
   };
 }
+
+// ------------------------------------------------------------------------------------------------
+// Data loading methods for userWallet
+// ------------------------------------------------------------------------------------------------
+// We're going to keep polling the load of the main accounts for up to 2 mins
+// It can take a while for a new account to be indexed by the indexer
+
+const MAX_LOAD_TIME = 120_000; // 2 minutes
+const POLL_INTERVAL = 2_000; // 2 seconds
+
+/**
+ * Load all accounts for a given public key
+ * Called internally when the pubkey or network changes
+ * Should not be awaited
+ * @param network - The network to load the accounts for
+ * @param pubKey - The public key to load the accounts for
+ * @returns The main accounts for the given public key or null if not found. Does not throw an error.
+ */
+const loadAllAccountsWithPubKey = async (network: string, pubKey: string) => {
+  if (!network || !pubKey) {
+    throw new Error('Network and pubkey are required');
+  }
+  const mainAccounts = await retryOperation(
+    async () => {
+      const mainAccounts = await loadMainAccountsWithPubKey(network, pubKey);
+      if (mainAccounts) {
+        return mainAccounts;
+      }
+    },
+    MAX_LOAD_TIME,
+    POLL_INTERVAL
+  );
+  if (!mainAccounts) {
+    throw new Error(
+      `Failed to load main accounts even after trying for ${Math.round(MAX_LOAD_TIME / 1000 / 60)} minutes`
+    );
+  }
+
+  // Now for each main account load the evm address and child accounts
+  await Promise.all(
+    mainAccounts.map(async (mainAccount) => {
+      await loadEvmAccountOfParent(network, mainAccount.address);
+      await loadChildAccountsOfParent(network, mainAccount.address);
+      return true;
+    })
+  );
+
+  return true;
+};
+
+/**
+ * Load the main accounts for a given public key
+ * Store in the data cache
+ * @param network - The network to load the accounts for
+ * @param pubKey - The public key to load the accounts for
+ * @returns The main accounts for the given public key or null if not found. Does not throw an error.
+ */
+const loadMainAccountsWithPubKey = async (
+  network: string,
+  pubKey: string
+): Promise<MainAccount[] | null> => {
+  // Get the accounts for the current public key
+  const accounts: PublicKeyAccount[] = await getAccountsWithPublicKey(pubKey, network);
+  // If there are no accounts, throw an error
+  if (!accounts || accounts.length === 0) {
+    // Return null if there are no accounts yet
+    return null;
+  }
+
+  // Transform the address array into MainAccount objects
+  const mainAccounts: MainAccount[] = accounts.map((publicKeyAccount, index): MainAccount => {
+    const emoji = getEmojiByIndex(index);
+
+    return {
+      ...publicKeyAccount,
+      chain: networkToChainId(network),
+      id: index,
+      name: emoji.name,
+      icon: emoji.emoji,
+      color: emoji.bgcolor,
+    };
+  });
+
+  // Save the main accounts to the cache
+  setCachedData(mainAccountsKey(network, pubKey), mainAccounts);
+
+  return mainAccounts;
+};
+
+/**
+ * Load the child accounts for a given main account address
+ * Store in the data cache
+ * @param network - The network to load the accounts for
+ * @param mainAccountAddress - The main account address to load the accounts for
+ * @returns The child accounts for the given main account address or null if not found. Does not throw an error.
+ */ export const loadChildAccountsOfParent = async (
+  network: string,
+  mainAccountAddress: string
+) => {
+  const childAccounts: ChildAccountMap =
+    await openapiService.checkChildAccountMeta(mainAccountAddress);
+
+  // Save the child accounts to the cache
+  setCachedData(childAccountsKey(network, mainAccountAddress), childAccounts);
+
+  return childAccounts;
+};
+
+// Load the EVM account
+const loadEvmAccountOfParent = async (
+  network: string,
+  mainAccountAddress: string
+): Promise<EvmAddress | null> => {
+  // Check that the network is correct
+  if ((await fcl.config().get('flow.network')) !== network) {
+    throw new Error('Invalid network');
+  }
+  // this will only be called if the user's main account is valid
+  const script = await getScripts('evm', 'getCoaAddr');
+  const result = await fcl.query({
+    cadence: script,
+    args: (arg, t) => [arg(mainAccountAddress, t.Address)],
+  });
+
+  if (result) {
+    // This is the COA address we get straight from the script
+    // This is where we encode the address in ERC-55 format
+    const checksummedAddress = ethUtil.toChecksumAddress(ensureEvmAddressPrefix(result));
+    // Save the EVM address to the cache
+    setCachedData(evmAccountKey(network, mainAccountAddress), checksummedAddress);
+
+    return checksummedAddress as EvmAddress;
+  } else {
+    // If the script returns null, we need to clear the EVM address
+    return null;
+  }
+};
+
+const initAccountLoaders = () => {
+  registerRefreshListener(mainAccountsRefreshRegex, loadMainAccountsWithPubKey);
+  registerRefreshListener(childAccountsRefreshRegex, loadChildAccountsOfParent);
+  registerRefreshListener(evmAccountRefreshRegex, loadEvmAccountOfParent);
+};
 
 export default new UserWallet();

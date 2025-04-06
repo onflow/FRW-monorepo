@@ -4,8 +4,8 @@ import * as ethUtil from 'ethereumjs-util';
 import { EMULATOR_HOST_TESTNET, EMULATOR_HOST_MAINNET } from '@/background/fclConfig';
 import { mixpanelTrack } from '@/background/service/mixpanel';
 import pageStateCache from '@/background/service/pageStateCache';
-import storage from '@/background/webapi/storage';
 import { type FlowNetwork } from '@/shared/types/network-types';
+import storage from '@/shared/utils/storage';
 
 import packageJson from '../../../package.json';
 const { version } = packageJson;
@@ -152,22 +152,22 @@ export const getScripts = async (folder: string, scriptName: string) => {
   }
 };
 
-export const findKeyAndInfo = (keys: FclAccount, publicKey: string) => {
-  const index = findPublicKeyIndex(keys, publicKey);
+export const findKeyAndInfo = (account: FclAccount, publicKey: string) => {
+  const index = findPublicKeyIndex(account, publicKey);
   if (index >= 0) {
-    const key = keys.keys[index];
+    const key = account.keys[index];
     return {
       index: index,
-      signAlgo: key.signAlgoString,
-      hashAlgo: key.hashAlgoString,
+      signAlgoString: key.signAlgoString,
+      hashAlgoString: key.hashAlgoString,
       publicKey: key.publicKey,
     };
   }
   return null;
 };
 
-export const findPublicKeyIndex = (data: FclAccount, publicKey: string) => {
-  return data.keys.findIndex((key) => key.publicKey === publicKey);
+export const findPublicKeyIndex = (account: FclAccount, publicKey: string) => {
+  return account.keys.findIndex((key) => key.publicKey === publicKey);
 };
 
 export const replaceNftKeywords = (script: string, token: any) => {

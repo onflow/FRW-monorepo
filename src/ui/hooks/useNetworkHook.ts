@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
-import storage, { type StorageChange, type AreaName } from '@/background/webapi/storage';
-import { userWalletsKey } from '@/shared/utils/data-persist-keys';
+import storage, { type StorageChange, type AreaName } from '@/shared/utils/storage';
+import { userWalletsKey } from '@/shared/utils/user-data-keys';
 
 export const useNetwork = () => {
   const [network, setNetwork] = useState<string>('mainnet');

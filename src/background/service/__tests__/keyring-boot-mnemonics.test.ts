@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 
 // Mock dependencies
-vi.mock('../../webapi/storage', () => ({
+vi.mock('../../../shared/utils/storage', () => ({
   default: {
     get: vi.fn(),
     set: vi.fn(),
@@ -52,7 +52,7 @@ vi.mock('bip39', () => ({
 }));
 
 // Import the mocked modules after all mocks are defined
-import storage from '../../webapi/storage';
+import storage from '../../../shared/utils/storage';
 import KeyringService from '../keyring';
 
 import { MOCK_KEYS, MOCK_MNEMONIC, MOCK_PASSWORD } from './keyring-mock-data';
@@ -159,8 +159,8 @@ describe('Keyring Boot and Mnemonics Test', () => {
     const publicKeyTuple = await KeyringService.getCurrentPublicKeyTuple();
     expect(publicKeyTuple).toEqual(mockPublicKeyTuple);
 
-    const privateKey = await KeyringService.getCurrentPrivateKey();
-    expect(privateKey).toBe(mockPrivateKey);
+    const privateKeyTuple = await KeyringService.getCurrentPrivateKeyTuple();
+    expect(privateKeyTuple.SECP256K1.pk).toEqual(mockPrivateKey);
 
     console.log('\nTest passed! You can use this mock data for future tests.');
   });

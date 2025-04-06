@@ -8,13 +8,22 @@ import * as ethUtil from 'ethereumjs-util';
 import log from 'loglevel';
 
 import { normalizeAddress } from '@/background/utils';
-import { seed2PublicPrivateKey, pk2PubKey } from '@/background/utils/modules/publicPrivateKey';
-import storage from '@/background/webapi/storage';
+import {
+  pkTuple2PubKey,
+  formPubKeyTuple,
+  seedWithPathAndPhrase2PublicPrivateKey,
+} from '@/background/utils/modules/publicPrivateKey';
 import i18n from '@/i18n';
-import { type PublicKeyTuple } from '@/shared/types/key-types';
+import {
+  combinePubPkTuple,
+  type PublicPrivateKeyTuple,
+  type PrivateKeyTuple,
+  type PublicKeyTuple,
+} from '@/shared/types/key-types';
 import { type LoggedInAccount } from '@/shared/types/wallet-types';
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
+import storage from '@/shared/utils/storage';
 import { KEYRING_TYPE } from 'consts';
 
 import preference from '../preference';
@@ -201,22 +210,28 @@ class KeyringService extends EventEmitter {
    * @returns {Promise<string>} The private key as a hex string
    * @throws {Error} If no private key is found
    */
-  getKeyringPrivateKey = async (keyrings: Keyring[]): Promise<string> => {
-    let privateKey: string | undefined;
-
+  getKeyringPrivateKeyTuple = async (keyrings: Keyring[]): Promise<PrivateKeyTuple> => {
     for (const keyring of keyrings) {
       if (keyring instanceof SimpleKeyring) {
         // If a private key is found, extract it and break the loop
-        privateKey = keyring.wallets[0].privateKey.toString('hex');
-        if (privateKey) break;
+        const privateKey = keyring.wallets[0].privateKey.toString('hex');
+        if (privateKey) {
+          return {
+            P256: { pk: privateKey },
+            SECP256K1: { pk: privateKey },
+          };
+        }
       } else if (keyring instanceof HDKeyring) {
         // Get a copy of the keyring data
         const serialized = await keyring.serialize();
         if (serialized.mnemonic) {
           // If mnemonic is found, derive the private key
-          const { SECP256K1 } = await seed2PublicPrivateKey(serialized.mnemonic);
-          privateKey = SECP256K1.pk;
-          break;
+          const privateKeyTuple = await seedWithPathAndPhrase2PublicPrivateKey(
+            serialized.mnemonic,
+            serialized.derivationPath,
+            serialized.passphrase
+          );
+          return privateKeyTuple;
         }
       } else if (
         (keyring as any).wallets &&
@@ -224,44 +239,56 @@ class KeyringService extends EventEmitter {
         (keyring as any).wallets[0].privateKey
       ) {
         // If a private key is found, extract it and break the loop
-        privateKey = (keyring as any).wallets[0].privateKey.toString('hex');
-        if (privateKey) break;
+        const privateKey = (keyring as any).wallets[0].privateKey.toString('hex');
+        if (privateKey) {
+          return {
+            P256: { pk: privateKey },
+            SECP256K1: { pk: privateKey },
+          };
+        }
       }
     }
-
-    if (!privateKey) {
-      throw new Error('No private key found in any of the keyrings.');
-    }
-
-    return privateKey;
+    throw new Error('No private key found in any of the keyrings.');
   };
   /**
-   * Get the private key from the current keyring
-   * @returns {Promise<string>} The private key as a hex string
+   * Get the private key tuple from the current keyring
+   * @returns {Promise<PrivateKeyTuple>} The private key tuple
    * @throws {Error} If no private key is found
    */
-  getCurrentPrivateKey = async (): Promise<string> => {
-    return this.getKeyringPrivateKey(this.currentKeyring);
+  getCurrentPrivateKeyTuple = async (): Promise<PrivateKeyTuple> => {
+    return this.getKeyringPrivateKeyTuple(this.currentKeyring);
   };
 
   /**
    * Get the public key tuple from the current keyring
-   * @returns {Promise<PublicKeyTuple>} The public key tuple
+   * @returns {Promise<PublicPrivateKeyTuple>} The public key tuple
    */
-  getKeyringPublicKeyTuple = async (keyrings: Keyring[]): Promise<PublicKeyTuple> => {
+  getKeyringPublicPrivateKeyTuple = async (keyrings: Keyring[]): Promise<PublicPrivateKeyTuple> => {
     try {
       // Get the private key
-      const privateKey = await this.getKeyringPrivateKey(keyrings);
-
+      const privateKeyTuple = await this.getKeyringPrivateKeyTuple(keyrings);
       // Generate public key tuple from private key
-      const pubKTuple = await pk2PubKey(privateKey);
-      return pubKTuple;
+      const pubKTuple = await pkTuple2PubKey(privateKeyTuple);
+      return combinePubPkTuple(pubKTuple, privateKeyTuple);
     } catch (error) {
       console.error('Failed to get public key tuple');
       throw error;
     }
   };
-
+  /**
+   * Get the public private key tuple from the current keyring
+   * @returns {Promise<PublicPrivateKeyTuple>} The public private key tuple
+   */
+  getCurrentPublicPrivateKeyTuple = async (): Promise<PublicPrivateKeyTuple> => {
+    return this.getKeyringPublicPrivateKeyTuple(this.currentKeyring);
+  };
+  /**
+   * Get the public key tuple from the current keyring
+   * @returns {Promise<PublicKeyTuple>} The public key tuple
+   */
+  getKeyringPublicKeyTuple = async (keyrings: Keyring[]): Promise<PublicKeyTuple> => {
+    return formPubKeyTuple(await this.getKeyringPublicPrivateKeyTuple(keyrings));
+  };
   /**
    * Get the public key tuple from the current keyring
    * @returns {Promise<PublicKeyTuple>} The public key tuple
@@ -1284,7 +1311,7 @@ class KeyringService extends EventEmitter {
    *
    * @emits KeyringController#unlock
    */
-  setUnlocked(): void {
+  private setUnlocked(): void {
     this.memStore.updateState({ isUnlocked: true });
     this.emit('unlock');
   }

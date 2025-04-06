@@ -3,7 +3,10 @@ import { Box, Button, Typography, Drawer, IconButton, CardMedia } from '@mui/mat
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import { type ActiveChildType } from '@/shared/types/wallet-types';
+import {
+  type ActiveAccountType,
+  type ActiveChildType_depreciated,
+} from '@/shared/types/wallet-types';
 import LLComingSoon from '@/ui/FRWComponent/LLComingSoonWarning';
 import moveft from 'ui/FRWAssets/image/moveft.png';
 import movenft from 'ui/FRWAssets/image/movenft.png';
@@ -26,14 +29,14 @@ const MoveBoard = (props: MoveBoardProps) => {
   const usewallet = useWallet();
   const history = useHistory();
   const [showSelectNft, setSelectBoard] = useState<boolean>(false);
-  const [childType, setChildType] = useState<ActiveChildType>(null);
+  const [childType, setChildType] = useState<ActiveAccountType>('main');
   const [network, setNetwork] = useState<string>('');
   const [alertOpen, setAlertOpen] = useState<boolean>(false);
 
   // console.log('props.loggedInAccounts', props.current)
 
   const requestChildType = useCallback(async () => {
-    const result = await usewallet.getActiveWallet();
+    const result = await usewallet.getActiveAccountType();
     const currentNetwork = await usewallet.getNetwork();
     setNetwork(currentNetwork);
     setChildType(result);
@@ -57,7 +60,7 @@ const MoveBoard = (props: MoveBoardProps) => {
       );
     }
 
-    if (childType !== null) {
+    if (childType !== 'main') {
       // We are moving FROM a flow child address
       return (
         <MoveFromChild

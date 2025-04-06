@@ -203,7 +203,7 @@ const SendToAddress = () => {
   const setUserInfo = useCallback(async () => {
     await usewallet.setDashIndex(1);
     const info = await usewallet.getUserInfo(false);
-    const activeChild = await usewallet.getActiveWallet();
+    const activeChild = await usewallet.getActiveAccountType();
     const userContact = { ...USER_CONTACT };
     if (activeChild === 'evm') {
       const data = await usewallet.getEvmAddress();

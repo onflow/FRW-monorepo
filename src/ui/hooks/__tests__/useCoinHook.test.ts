@@ -1,7 +1,7 @@
 import { act } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { userWalletsKey } from '@/shared/utils/data-persist-keys';
+import { userWalletsKey } from '@/shared/utils/user-data-keys';
 import { useWallet } from '@/ui/utils/WalletContext';
 
 import { useCoins } from '../useCoinHook';
