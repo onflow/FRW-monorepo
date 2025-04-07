@@ -92,7 +92,7 @@ export function useContacts() {
             id: index,
             contact_name: accountDetails.name || address,
             username: '', // We don't have the proper username from this call
-            avatar: accountDetails.thumbnail.url,
+            avatar: accountDetails.icon,
             address: address,
             contact_type: ContactType.AddressBook,
             domain: {

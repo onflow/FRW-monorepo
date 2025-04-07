@@ -209,7 +209,7 @@ const SendToAddress = () => {
       const data = await usewallet.getEvmAddress();
       userContact.address = data;
     } else {
-      userContact.address = withPrefix(currentWallet.address) || '';
+      userContact.address = withPrefix(currentWallet?.address ?? '') || '';
     }
     userContact.avatar = info.avatar;
     userContact.contact_name = info.username;

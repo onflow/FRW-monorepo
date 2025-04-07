@@ -5,6 +5,8 @@
 
 import encryptor from 'browser-passworder';
 
+import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
+
 /**
  * Constants used for keyring testing
  *
@@ -55,7 +57,7 @@ export const MOCK_KEYRING_STATE = {
  */
 export const setupMockKeyringStorage = (memoryStore: Map<string, any>) => {
   // Set up basic state
-  memoryStore.set('currentId', MOCK_ID);
+  memoryStore.set(CURRENT_ID_KEY, MOCK_ID);
 
   // Set up keyring state with real encrypted data
   memoryStore.set('keyringStateV2', MOCK_KEYRING_STATE);

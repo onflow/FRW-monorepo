@@ -56,3 +56,7 @@ export const setCachedData = async (
     storage.removeSession(`${key}-refresh`);
   });
 };
+
+export const clearCachedData = async (key: string): Promise<void> => {
+  return storage.removeSession(key);
+};

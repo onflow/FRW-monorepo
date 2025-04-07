@@ -50,6 +50,7 @@ vi.mock('bip39', () => ({
 }));
 
 // Internal imports - after all mocks are defined
+import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
 
@@ -199,7 +200,7 @@ describe('Keyring Migration Tests', () => {
     memoryStore.set(`user${NO_ID_KEYRING_INDEX}_phrase`, 'test_passphrase');
 
     // Set currentId to one of our keyring IDs
-    memoryStore.set('currentId', HD_KEYRING_ID);
+    memoryStore.set(CURRENT_ID_KEY, HD_KEYRING_ID);
 
     // Create a booted flag to avoid the "Cannot unlock without a previous vault" error
     const encryptedBooted = await createEncryptedVault('true');
@@ -284,7 +285,7 @@ describe('Keyring Migration Tests', () => {
     memoryStore.set(`user${NO_ID_KEYRING_INDEX}_phrase`, 'test_passphrase');
 
     // Set currentId to one of our keyring IDs
-    memoryStore.set('currentId', HD_KEYRING_ID);
+    memoryStore.set(CURRENT_ID_KEY, HD_KEYRING_ID);
 
     // Step 1: Initialize keyring service (should try to load from keyringState)
     await KeyringService.loadKeyringStore();
@@ -357,7 +358,7 @@ describe('Keyring Migration Tests', () => {
     });
 
     // Set currentId
-    memoryStore.set('currentId', HD_KEYRING_ID);
+    memoryStore.set(CURRENT_ID_KEY, HD_KEYRING_ID);
 
     // Step 1: Initialize and boot keyring service
     await KeyringService.loadKeyringStore();

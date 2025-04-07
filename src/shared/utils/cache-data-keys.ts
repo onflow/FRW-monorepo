@@ -8,6 +8,7 @@ import {
   type ChildAccountMap,
   type EvmAddress,
   type FlowAddress,
+  type WalletAccount,
 } from '../types/wallet-types';
 
 import { getCachedData } from './cache-data-access';
@@ -52,7 +53,7 @@ export const childAccountsKey = (network: string, mainAccountAddress: string) =>
   `child-accounts-${network}-${mainAccountAddress}`;
 export const childAccountsRefreshRegex = refreshKey(childAccountsKey);
 
-export type ChildAccountStore = ChildAccountMap;
+export type ChildAccountStore = WalletAccount[];
 
 export const getCachedChildAccounts = async (network: string, mainAccountAddress: string) => {
   return getCachedData<ChildAccountStore>(childAccountsKey(network, mainAccountAddress));
@@ -64,7 +65,7 @@ export const evmAccountKey = (network: string, mainAccountAddress: string) =>
 
 export const evmAccountRefreshRegex = refreshKey(evmAccountKey);
 
-export type EvmAccountStore = EvmAddress | null;
+export type EvmAccountStore = WalletAccount;
 
 export const getCachedEvmAccount = async (network: string, mainAccountAddress: string) => {
   return getCachedData<EvmAccountStore>(evmAccountKey(network, mainAccountAddress));

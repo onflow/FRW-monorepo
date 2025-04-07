@@ -85,9 +85,9 @@ const WalletTab = ({ network }) => {
     let data = '';
     try {
       if (childType === 'evm') {
-        data = evmWallet.address;
+        data = evmWallet?.address ?? '';
       } else {
-        data = currentWallet.address;
+        data = currentWallet?.address ?? '';
       }
     } catch (error) {
       console.error('Error getting address:', error);

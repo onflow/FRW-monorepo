@@ -20,6 +20,17 @@ import {
   type PrivateKeyTuple,
   type PublicKeyTuple,
 } from '@/shared/types/key-types';
+import {
+  KEYRING_DEEP_VAULT_KEY,
+  KEYRING_STATE_CURRENT_KEY,
+  KEYRING_STATE_VAULT_V1,
+  KEYRING_STATE_VAULT_V2,
+  type VaultEntryV2,
+  type KeyringStateV2,
+  KEYRING_STATE_V2_KEY,
+  KEYRING_STATE_V1_KEY,
+  CURRENT_ID_KEY,
+} from '@/shared/types/keyring-types';
 import { type LoggedInAccount } from '@/shared/types/wallet-types';
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
@@ -75,24 +86,6 @@ type KeyringStateV1 = {
   booted: string;
   vault: CompatibleVaultEntry[];
 };
-
-type VaultEntryV2 = {
-  id: string;
-  encryptedData: string;
-};
-type KeyringStateV2 = {
-  booted: string;
-  vault: VaultEntryV2[];
-  vaultVersion: number;
-};
-
-const KEYRING_STATE_V2_KEY = 'keyringStateV2';
-const KEYRING_STATE_V1_KEY = 'keyringState';
-const KEYRING_DEEP_VAULT_KEY = 'deepVault';
-
-const KEYRING_STATE_CURRENT_KEY = KEYRING_STATE_V2_KEY;
-const KEYRING_STATE_VAULT_V1 = 1;
-const KEYRING_STATE_VAULT_V2 = 2;
 
 export type KeyringType = HDKeyringType | SimpleKeyPairType;
 export type Keyring = SimpleKeyring | HDKeyring;
@@ -896,7 +889,7 @@ class KeyringService extends EventEmitter {
     const encryptedString = await this.encryptor.encrypt(password, serializedKeyrings);
 
     // Get current ID and vaults
-    const currentId = await storage.get('currentId');
+    const currentId = await storage.get(CURRENT_ID_KEY);
     const vaultArray = this.store.getState().vault || [];
 
     if (currentId === null || currentId === undefined) {
@@ -1455,7 +1448,7 @@ class KeyringService extends EventEmitter {
 
     if (foundEntry) {
       console.log('Found account with ID:', currentId);
-      await storage.set('currentId', currentId);
+      await storage.set(CURRENT_ID_KEY, currentId);
       try {
         const encryptedDataString = foundEntry[currentId];
         const encryptedData = JSON.parse(encryptedDataString) as EncryptedData;

@@ -151,15 +151,15 @@ const Detail = () => {
     let userOne, userTwo;
 
     if (accountType === 'child' && currentAddress) {
-      const wallet = childAccounts[currentAddress!];
+      const childAccount = childAccounts?.[currentAddress!];
       userOne = {
-        avatar: wallet.thumbnail.url,
+        avatar: childAccount?.icon ?? '',
         domain: {
           domain_type: 0,
           value: '',
         },
         address: currentAddress,
-        contact_name: wallet.name,
+        contact_name: childAccount.name,
       };
       userTwo = {
         ...userTemplate,

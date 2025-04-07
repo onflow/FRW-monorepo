@@ -151,7 +151,7 @@ const TokenDetail = () => {
 
   const loadNetwork = useCallback(async () => {
     const network = await usewallet.getNetwork();
-    setCurrentWallet(currentWallet);
+    setCurrentWallet(currentWallet ?? { name: '' });
     setNetwork(network);
   }, [usewallet, currentWallet]);
 

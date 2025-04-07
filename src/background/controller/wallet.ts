@@ -29,6 +29,7 @@ import eventBus from '@/eventBus';
 import type { CoinItem, ExtendedTokenInfo } from '@/shared/types/coin-types';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
 import { type PublicKeyTuple } from '@/shared/types/key-types';
+import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
 import { ContactType, MAINNET_CHAIN_ID } from '@/shared/types/network-types';
 import { type NFTCollectionData } from '@/shared/types/nft-types';
 import { type TrackingEvents } from '@/shared/types/tracking-types';
@@ -1458,12 +1459,19 @@ export class WalletController extends BaseController {
     key: ActiveChildType_depreciated | null,
     index: number | null = null
   ) => {
-    const parentAddress = await userWalletService.getParentAddress();
-    if (!parentAddress) {
-      throw new Error('Parent address not found');
+    if (key === null) {
+      // We're setting the main wallet
+      await userWalletService.setCurrentAccount(
+        wallet.address as FlowAddress,
+        wallet.address as WalletAddress
+      );
+    } else {
+      const parentAddress = await userWalletService.getParentAddress();
+      if (!parentAddress) {
+        throw new Error('Parent address not found');
+      }
+      await userWalletService.setCurrentAccount(parentAddress, wallet.address as WalletAddress);
     }
-    await userWalletService.setCurrentAccount(parentAddress, wallet.address as WalletAddress);
-
     // Clear collections
     this.clearNFTCollection();
     this.clearEvmNFTList();
@@ -2163,7 +2171,7 @@ export class WalletController extends BaseController {
     return result;
   };
 
-  getChildAccounts = async (): Promise<ChildAccountMap | null> => {
+  getChildAccounts = async (): Promise<WalletAccount[] | null> => {
     return await userWalletService.getChildAccounts();
   };
 
@@ -3625,7 +3633,7 @@ export class WalletController extends BaseController {
     // currentId always takes precedence
     await storage.set('currentAccountIndex', currentindex);
     if (userId) {
-      await storage.set('currentId', userId);
+      await storage.set(CURRENT_ID_KEY, userId);
     }
   };
 

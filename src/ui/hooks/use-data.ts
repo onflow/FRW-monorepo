@@ -7,13 +7,14 @@ import {
 } from '@/shared/utils/cache-data-access';
 import storage, { type AreaName, type StorageChange } from '@/shared/utils/storage';
 
-export const useCachedData = <T>(key: string) => {
+export const useCachedData = <T>(key: string | undefined | null): T | undefined => {
   const [data, setData] = useState<T | undefined>(undefined);
 
   useEffect(() => {
     let mounted = true;
 
     const fetchData = async () => {
+      if (!key) return;
       const data = await getCachedData(key);
       if (mounted) {
         setData(data as T);
@@ -26,6 +27,9 @@ export const useCachedData = <T>(key: string) => {
         }
       }
     };
+    // Handle undefined key
+    if (!key) return;
+
     fetchData();
     addCachedDataListener(key, handleDataChange);
 
@@ -38,12 +42,14 @@ export const useCachedData = <T>(key: string) => {
   return data;
 };
 
-export const usePersistedData = <T>(key: string) => {
+export const useUserData = <T>(key: string | undefined | null): T | undefined => {
   const [data, setData] = useState<T | undefined>(undefined);
 
   useEffect(() => {
     let mounted = true;
+    // Handle undefined key
     const fetchData = async () => {
+      if (!key) return;
       const data = await storage.get(key);
       if (mounted) {
         setData(data as T);
@@ -54,6 +60,8 @@ export const usePersistedData = <T>(key: string) => {
       changes: { [key: string]: StorageChange },
       namespace: AreaName
     ) => {
+      if (!key) return;
+
       if (namespace === 'local' || namespace === 'sync') {
         if (changes[key]) {
           if (mounted) {
@@ -62,6 +70,7 @@ export const usePersistedData = <T>(key: string) => {
         }
       }
     };
+    if (!key) return;
 
     fetchData();
     storage.addStorageListener(handleStorageChange);

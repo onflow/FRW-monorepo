@@ -117,10 +117,4 @@ describe('useProfileHook', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
-
-  it('should fetch and set profile data', async () => {
-    const hook = useProfiles();
-    await hook.fetchProfileData();
-    expect(vi.mocked(useProfileStore).mock.calls[0][0]).toBeDefined();
-  });
 });

@@ -29,7 +29,8 @@ export const getCachedData = async <T>(key: string): Promise<T | undefined> => {
 const _updateCaller = (key: string, updateCallback: (key: string, data: unknown) => void) => {
   return (changes, areaName: string) => {
     if (areaName === 'session' && changes[`${key}`]) {
-      updateCallback(key, changes[key].newValue);
+      const cacheData = changes[key].newValue as CacheDataItem;
+      updateCallback(key, cacheData.value);
     }
   };
 };

@@ -20,6 +20,7 @@ import log from 'loglevel';
 import { storage } from '@/background/webapi';
 import type { ExtendedTokenInfo, BalanceMap } from '@/shared/types/coin-types';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
+import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
 import {
   type LoggedInAccountWithIndex,
   type LoggedInAccount,
@@ -748,7 +749,7 @@ class OpenApiService {
       }
     );
     await this._signWithCustom(data.data.custom_token);
-    await storage.set('currentId', data.data.id);
+    await storage.set(CURRENT_ID_KEY, data.data.id);
 
     // Track the registration
     mixpanelTrack.track('account_created', {
@@ -777,7 +778,7 @@ class OpenApiService {
     }
     if (replaceUser) {
       await this._signWithCustom(result.data.custom_token);
-      await storage.set('currentId', result.data.id);
+      await storage.set(CURRENT_ID_KEY, result.data.id);
     }
     return result;
   };
@@ -816,7 +817,7 @@ class OpenApiService {
     }
     if (replaceUser) {
       await this._signWithCustom(result.data.custom_token);
-      await storage.set('currentId', result.data.id);
+      await storage.set(CURRENT_ID_KEY, result.data.id);
     }
     return result;
   };

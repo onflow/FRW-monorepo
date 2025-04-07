@@ -5,6 +5,7 @@ import {
   type PublicKeyTuple,
   type PrivateKeyTuple,
 } from '@/shared/types/key-types';
+import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
 
 import {
   FLOW_BIP44_PATH,
@@ -123,7 +124,7 @@ const seedWithPathAndPhrase2PublicPrivateKey = async (
 
 // @deprecated - use seedWithPathAndPhrase2PublicPrivateKey instead
 const seed2PublicPrivateKey_depreciated = async (seed: string): Promise<PublicPrivateKeyTuple> => {
-  const currentId = (await storage.get('currentId')) ?? 0;
+  const currentId = (await storage.get(CURRENT_ID_KEY)) ?? 0;
 
   // Note that currentAccountIndex is only used in keyring for old accounts that don't have an id stored in the keyring
   // currentId always takes precedence

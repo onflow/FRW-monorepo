@@ -19,7 +19,6 @@ import { makeStyles } from '@mui/styles';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
-import { storage } from '@/background/webapi';
 import {
   type WalletAccount,
   type WalletAddress,
@@ -73,9 +72,9 @@ const Header = ({ _loading = false }) => {
     evmLoading,
     userInfo,
     otherAccounts,
-    loggedInAccounts,
     mainAddressLoading,
     clearProfileData,
+    profileIds,
   } = useProfiles();
 
   const [drawer, setDrawer] = useState(false);
@@ -118,7 +117,7 @@ const Header = ({ _loading = false }) => {
   }, [history, location.pathname]);
 
   const switchAccount = useCallback(
-    async (account: LoggedInAccountWithIndex) => {
+    async (profileId: string) => {
       setSwitchLoading(true);
       setPop(false);
       setDrawer(false);
@@ -127,14 +126,10 @@ const Header = ({ _loading = false }) => {
         // Note that currentAccountIndex is only used in keyring for old accounts that don't have an id stored in the keyring
         // currentId always takes precedence
         // NOTE: TO FIX it also should be set to the index of the account in the keyring array, NOT the index in the loggedInAccounts array
-        if (account.id) {
-          await storage.set('currentId', account.id);
-        } else {
-          await storage.set('currentId', '');
-        }
+
         await usewallet.signOutWallet();
         await usewallet.clearWallet();
-        await usewallet.switchProfile(account.id);
+        await usewallet.switchProfile(profileId);
         await usewallet.switchNetwork(switchingTo);
         clearProfileData();
       } catch (error) {
@@ -298,6 +293,7 @@ const Header = ({ _loading = false }) => {
   }
 
   const appBarLabel = (props: AppBarLabelProps) => {
+    console.log('appBarLabel - props ===', props);
     const haveAddress = !mainAddressLoading && props && props.address;
 
     return (
@@ -520,15 +516,16 @@ const Header = ({ _loading = false }) => {
         <Toolbar sx={{ px: '12px', backgroundColor: '#282828' }}>
           {walletList && (
             <MenuDrawer
-              userInfo={userInfo}
+              userInfo={userInfo || null}
               drawer={drawer}
               toggleDrawer={toggleDrawer}
               otherAccounts={otherAccounts}
               switchAccount={switchAccount}
               togglePop={togglePop}
               walletList={walletList}
-              childAccounts={childAccounts}
+              childAccounts={childAccounts || null}
               current={currentWallet}
+              profileIds={profileIds || []}
               createWalletList={createWalletList}
               setWallets={setWallets}
               currentNetwork={network}
@@ -552,7 +549,7 @@ const Header = ({ _loading = false }) => {
               userInfo={userInfo!}
               current={currentWallet}
               switchAccount={switchAccount}
-              loggedInAccounts={loggedInAccounts}
+              profileIds={profileIds || []}
               switchLoading={switchLoading}
             />
           )}

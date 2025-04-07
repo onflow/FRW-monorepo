@@ -4,6 +4,7 @@ import encryptor from 'browser-passworder';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // Internal imports
+import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 
 // Mock dependencies
@@ -67,7 +68,7 @@ describe('Keyring Boot and Mnemonics Test', () => {
     memoryStore.clear();
 
     // Set currentId in storage
-    memoryStore.set('currentId', 'testId1');
+    memoryStore.set(CURRENT_ID_KEY, 'testId1');
 
     // Mock storage
     vi.mocked(storage.get).mockImplementation((key) => memoryStore.get(key));

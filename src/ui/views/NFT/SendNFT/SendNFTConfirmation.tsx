@@ -210,7 +210,7 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
     setSending(true);
     wallet
       .bridgeChildNFTToEvmAddress(
-        currentWallet.address,
+        currentWallet?.address ?? '',
         props.data.contact.address,
         flowIdentifier,
         props.data.nft.id,

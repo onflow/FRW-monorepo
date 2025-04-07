@@ -29,6 +29,7 @@ import popLock from 'ui/FRWAssets/svg/popLock.svg';
 import vmsvg from 'ui/FRWAssets/svg/viewmore.svg';
 import { useWallet } from 'ui/utils';
 
+import { ProfileItem } from './ProfileItem';
 interface TransferConfirmationProps {
   isConfirmationOpen: boolean;
   handleCloseIconClicked: () => void;
@@ -36,8 +37,8 @@ interface TransferConfirmationProps {
   handleAddBtnClicked: () => void;
   userInfo: UserInfoResponse;
   current: WalletAccount;
-  switchAccount: (account: LoggedInAccountWithIndex) => Promise<void>;
-  loggedInAccounts: LoggedInAccount[];
+  switchAccount: (profileId: string) => Promise<void>;
+  profileIds: string[];
   switchLoading: boolean;
 }
 
@@ -45,7 +46,7 @@ const Popup = (props: TransferConfirmationProps) => {
   const usewallet = useWallet();
   const history = useHistory();
   const [viewmore, setMore] = useState<boolean>(false);
-  const [loadingIndex, setLoadingIndex] = useState<number | null>(null);
+  const [loadingId, setLoadingId] = useState<string | null>(null);
   const { clearProfileData } = useProfiles();
 
   return (
@@ -92,7 +93,7 @@ const Popup = (props: TransferConfirmationProps) => {
           </Box>
         </Box>
         <Box component="nav">
-          {Array.isArray(props.loggedInAccounts) && (
+          {Array.isArray(props.profileIds) && (
             <Box
               sx={{
                 justifyContent: 'space-between',
@@ -106,88 +107,20 @@ const Popup = (props: TransferConfirmationProps) => {
                 paddingBottom: '16px',
               }}
             >
-              {props.loggedInAccounts.map((loggedInAccount: LoggedInAccount, index: number) => {
-                const loggedInAccountWithIndex: LoggedInAccountWithIndex = {
-                  ...loggedInAccount,
-                  indexInLoggedInAccounts: index,
-                };
+              {props.profileIds.map((profileId: string) => {
                 return (
-                  <ListItem
-                    disablePadding
-                    key={loggedInAccount.username}
-                    onClick={() => {
-                      if (loggedInAccount.username !== props.userInfo.username) {
-                        setLoadingIndex(index); // Set the loading index
-                        props.switchAccount(loggedInAccountWithIndex);
-                      }
-                    }}
-                  >
-                    <ListItemButton sx={{ padding: '0 20px' }}>
-                      <ListItemIcon>
-                        <Avatar
-                          component="span"
-                          src={loggedInAccount.avatar}
-                          sx={{ width: '32px', height: '32px' }}
-                          alt="avatar"
-                        />
-                      </ListItemIcon>
-                      <ListItemText>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'space-between',
-                          }}
-                        >
-                          <Typography
-                            variant="body1"
-                            component="div"
-                            display="inline"
-                            color="text.primary"
-                          >
-                            {loggedInAccount.nickname}
-                          </Typography>
-                          <Typography
-                            variant="body1"
-                            component="div"
-                            display="inline"
-                            color="text.secondary"
-                            sx={{ fontSize: '12px' }}
-                          >
-                            {loggedInAccount.address
-                              ? loggedInAccount.address
-                              : loggedInAccount.nickname}
-                          </Typography>
-                        </Box>
-                      </ListItemText>
-                      {loggedInAccount.username === props.userInfo.username && (
-                        <CardMedia
-                          component="img"
-                          sx={{ width: '16px', height: '16px' }}
-                          image={iconCheck}
-                        />
-                      )}
-                      {props.switchLoading && index === loadingIndex && (
-                        <CircularProgress
-                          variant="indeterminate"
-                          // disableShrink
-                          sx={{
-                            color: 'primary.main',
-                            animationDuration: '2000ms',
-                            [`& .${circularProgressClasses.circle}`]: {
-                              strokeLinecap: 'round',
-                            },
-                          }}
-                          size={'16px'}
-                          thickness={5}
-                          value={10}
-                        />
-                      )}
-                    </ListItemButton>
-                  </ListItem>
+                  <ProfileItem
+                    profileId={profileId}
+                    selectedProfileId={props.userInfo.id}
+                    switchAccount={props.switchAccount}
+                    switchLoading={props.switchLoading}
+                    loadingId={loadingId}
+                    setLoadingId={setLoadingId}
+                  />
                 );
               })}
-              {!viewmore && props.loggedInAccounts.length > 3 && (
+
+              {!viewmore && props.profileIds.length > 3 && (
                 <Button
                   sx={{
                     display: 'flex',
@@ -231,7 +164,7 @@ const Popup = (props: TransferConfirmationProps) => {
             display: 'flex',
           }}
         >
-          {props.loggedInAccounts && (
+          {props.profileIds && (
             <ListItem
               disablePadding
               onClick={async () => {

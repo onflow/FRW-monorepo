@@ -139,7 +139,7 @@ const Deposit = () => {
     } else if (isChild === 'child' && currentAddress) {
       setIsActive(currentAddress);
       setUserWallets(
-        Object.keys(childAccounts).map((key, index) => ({
+        Object.keys(childAccounts || []).map((key, index) => ({
           id: index,
           name: key,
           address: currentAddress,

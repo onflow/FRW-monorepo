@@ -24,6 +24,7 @@ import {
   type ActiveChildType_depreciated,
   type WalletAccount,
   type ChildAccountMap,
+  type MainAccount,
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -53,11 +54,12 @@ interface MenuDrawerProps {
   userInfo: UserInfoResponse | null;
   drawer: boolean;
   toggleDrawer: () => void;
-  otherAccounts: LoggedInAccount[];
-  switchAccount: (account: LoggedInAccountWithIndex) => Promise<void>;
+  otherAccounts: MainAccount[];
+  switchAccount: (profileId: string) => Promise<void>;
   togglePop: () => void;
   walletList: WalletAccount[];
-  childAccounts: ChildAccountMap | null;
+  childAccounts: WalletAccount[] | null;
+  profileIds: string[];
   current: WalletAccount;
   createWalletList: (props: WalletAccount) => React.ReactNode;
   setWallets: (

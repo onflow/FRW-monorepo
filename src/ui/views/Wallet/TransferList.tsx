@@ -263,7 +263,7 @@ const TransferList = () => {
                     variant="text"
                     endIcon={<ChevronRightRoundedIcon />}
                     onClick={() => {
-                      window.open(`${flowscanURL}/account/${currentWallet.address}`, '_blank');
+                      window.open(`${flowscanURL}/account/${currentWallet?.address}`, '_blank');
                     }}
                   >
                     <Typography variant="overline" color="text.secondary">
