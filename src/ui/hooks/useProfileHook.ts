@@ -122,10 +122,6 @@ export const useProfiles = () => {
 
     try {
       profilesRef.current.loading = true;
-      const currentPubkey = await usewallet.getCurrentPubkey();
-      const storageAccounts = await storage.getSession(profileAccountsKey(network, currentPubkey));
-      const wallets = storageAccounts.value.accounts;
-      debug('storageAccounts ===', storageAccounts.value.accounts);
       const mainAddress = await usewallet.getMainAddress();
       debug('mainAddress ===', mainAddress);
       if (mainAddress) {
@@ -174,6 +170,7 @@ export const useProfiles = () => {
         }
       }
 
+      const wallets = await usewallet.getMainAccounts();
       debug('wallets ===', wallets);
 
       if (!wallets) {
@@ -230,7 +227,6 @@ export const useProfiles = () => {
     usewallet,
     walletLoaded,
     initialStart,
-    network,
     formatWallets,
     setWalletList,
     setMainAddress,
