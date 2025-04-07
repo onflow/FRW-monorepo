@@ -1,6 +1,7 @@
 import { act } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
 import { userWalletsKey } from '@/shared/utils/user-data-keys';
 import { useWallet } from '@/ui/utils/WalletContext';
 
@@ -144,9 +145,8 @@ describe('useCoinHook', () => {
         { unit: 'flow', total: 5.0, balance: '5.0' },
         { unit: 'wflow', total: 2.0, balance: '2.0' },
       ];
-
       const { handleStorageData } = useCoins();
-      await handleStorageData(mockData);
+      await handleStorageData(mockData as ExtendedTokenInfo[]);
 
       // Check that state was updated correctly
       expect(mockSetCoins).toHaveBeenCalled();
@@ -165,7 +165,7 @@ describe('useCoinHook', () => {
       ];
 
       const { handleStorageData } = useCoins();
-      await handleStorageData(mockData);
+      await handleStorageData(mockData as ExtendedTokenInfo[]);
 
       // Check that balance was updated correctly
       expect(mockSetBalance).toHaveBeenCalledWith('$ 7.00');

@@ -22,14 +22,14 @@ const TokenInfoCard = ({
   setAccessible,
   accessible,
   tokenInfo,
-  childType,
+  accountType,
 }: {
   price: number;
   token: string;
   setAccessible: (accessible: boolean) => void;
   accessible: boolean;
   tokenInfo: any;
-  childType: ActiveAccountType;
+  accountType: ActiveAccountType;
 }) => {
   const wallet = useWallet();
   const history = useHistory();
@@ -57,13 +57,13 @@ const TokenInfoCard = ({
   };
 
   const getActive = useCallback(async () => {
-    const isChild = await wallet.getActiveAccountType();
+    const accountType = await wallet.getActiveAccountType();
 
     const timerId = setTimeout(async () => {
       if (!isMounted.current) return; // Early exit if component is not mounted
       setData(tokenInfo!);
       setAccessible(true);
-      if (isChild === 'evm') {
+      if (accountType === 'evm') {
         const coins = await wallet.getCoinList();
         const thisCoin = coins.filter((coin) => coin.unit.toLowerCase() === token);
         const balance = thisCoin[0].balance;
@@ -240,7 +240,7 @@ const TokenInfoCard = ({
             </Box>
           </Typography>
           <Box sx={{ display: 'flex', gap: '12px', height: '36px', mt: '24px', width: '100%' }}>
-            {(childType === 'main' || childType === 'evm') && (
+            {(accountType === 'main' || accountType === 'evm') && (
               <LLPrimaryButton
                 sx={{
                   borderRadius: '8px',

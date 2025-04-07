@@ -1,7 +1,7 @@
 import BN from 'bignumber.js';
 import { useCallback, useEffect, useState, useRef } from 'react';
 
-import { type CoinItem } from '@/shared/types/coin-types';
+import { type ExtendedTokenInfo, type CoinItem } from '@/shared/types/coin-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import storage, { type AreaName, type StorageChange } from '@/shared/utils/storage';
 import { getActiveAccountsByUserWallet } from '@/shared/utils/user-data-keys';
@@ -26,8 +26,8 @@ export const useCoins = () => {
   const [coinsLoaded, setCoinsLoaded] = useState(false);
 
   const handleStorageData = useCallback(
-    async (data) => {
-      const storageData = data.sort((a, b) => {
+    async (data?: ExtendedTokenInfo[] | null) => {
+      const storageData = data?.sort((a, b) => {
         if (b.total === a.total) {
           return new BN(b.balance).minus(new BN(a.balance)).toNumber();
         } else {
@@ -37,7 +37,7 @@ export const useCoins = () => {
       if (!storageData) return;
 
       // Create a map for faster lookups
-      const uniqueTokenMap = new Map();
+      const uniqueTokenMap = new Map<string, ExtendedTokenInfo>();
       let sum = new BN(0);
       let flowBalance = new BN(0);
 
@@ -77,7 +77,7 @@ export const useCoins = () => {
       try {
         const coinList = await storage.get('coinList');
         // check for nettwork type
-        let refreshedCoinlist;
+        let refreshedCoinlist: ExtendedTokenInfo[];
         const activeAccounts = await getActiveAccountsByUserWallet();
         if (isValidEthereumAddress(activeAccounts?.currentAddress)) {
           refreshedCoinlist = coinList['evm'][network];

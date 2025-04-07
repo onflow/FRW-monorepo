@@ -60,7 +60,7 @@ const MoveBoard = (props: MoveBoardProps) => {
       );
     }
 
-    if (childType !== 'main') {
+    if (childType === 'child') {
       // We are moving FROM a flow child address
       return (
         <MoveFromChild

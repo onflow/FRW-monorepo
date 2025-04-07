@@ -139,7 +139,7 @@ const Detail = () => {
   const fetchNft = useCallback(async () => {
     const currentAddress = currentWallet.address;
     const parentAddress = mainAddress;
-    const isChild = await usewallet.getActiveAccountType();
+    const accountType = await usewallet.getActiveAccountType();
     const userTemplate = {
       avatar: userInfo!.avatar,
       domain: {
@@ -150,7 +150,7 @@ const Detail = () => {
 
     let userOne, userTwo;
 
-    if (isChild) {
+    if (accountType === 'child' && currentAddress) {
       const wallet = childAccounts[currentAddress!];
       userOne = {
         avatar: wallet.thumbnail.url,
@@ -180,7 +180,7 @@ const Detail = () => {
     }
     setContactOne(userOne);
     setContactTwo(userTwo);
-    setChildActive(isChild ? true : false);
+    setChildActive(accountType ? true : false);
 
     await usewallet.setDashIndex(1);
   }, [

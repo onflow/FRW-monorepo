@@ -196,10 +196,10 @@ const SendToAddress = () => {
     const info = await usewallet.getUserInfo(false);
     const linked = state.linked;
     console.log(';linked ', linked);
-    const isChild = await usewallet.getActiveAccountType();
+    const accountType = await usewallet.getActiveAccountType();
 
     let userContact = { ...USER_CONTACT };
-    if (isChild) {
+    if (accountType === 'child') {
       const cwallet = childAccounts[currentWallet.address!];
       userContact = {
         ...USER_CONTACT,

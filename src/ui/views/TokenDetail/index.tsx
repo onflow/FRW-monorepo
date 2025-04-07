@@ -56,7 +56,7 @@ const TokenDetail = () => {
   const [walletName, setCurrentWallet] = useState({ name: '' });
   const [tokenInfo, setTokenInfo] = useState<CoinItem | undefined>(undefined);
   const [providers, setProviders] = useState<PriceProvider[]>([]);
-  const [childType, setChildType] = useState<ActiveAccountType>('main');
+  const [accountType, setAccountType] = useState<ActiveAccountType>('main');
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleMenuToggle = () => {
@@ -157,7 +157,7 @@ const TokenDetail = () => {
 
   const requestChildType = useCallback(async () => {
     const result = await usewallet.getActiveAccountType();
-    setChildType(result);
+    setAccountType(result);
   }, [usewallet]);
 
   const handleMoveOpen = () => {
@@ -207,7 +207,7 @@ const TokenDetail = () => {
               setAccessible={setAccessible}
               accessible={accessible}
               tokenInfo={tokenInfo}
-              childType={childType}
+              accountType={accountType}
             />
           )}
           {token === 'flow' && <StackingCard />}

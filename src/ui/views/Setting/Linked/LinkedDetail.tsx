@@ -120,9 +120,9 @@ const LinkedDetail = () => {
 
   const fetchUserWallet = useCallback(async () => {
     try {
-      const isChild = await usewallet.getActiveAccountType();
+      const accountType = await usewallet.getActiveAccountType();
       // const flowCoins = fetchRemoteConfig.flowCoins();
-      if (isChild) {
+      if (accountType !== 'main') {
         setIsActive(false);
       } else {
         setIsActive(true);

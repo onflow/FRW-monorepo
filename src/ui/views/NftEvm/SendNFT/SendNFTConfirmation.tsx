@@ -97,9 +97,9 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
 
   const sendNFT = async () => {
     // setSending(true);
-    const activeChild = await wallet.getActiveAccountType();
+    const activeAccountType = await wallet.getActiveAccountType();
     const { address } = props.data.contact;
-    const isEvm = activeChild === 'evm';
+    const isEvm = activeAccountType === 'evm';
     const isEvmAddress = address.length > 20;
     if (isEvm && isEvmAddress) {
       await evmToEvm();

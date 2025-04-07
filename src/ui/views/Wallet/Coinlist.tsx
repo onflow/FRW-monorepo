@@ -10,14 +10,11 @@ import {
   IconButton,
 } from '@mui/material';
 import { Box } from '@mui/system';
-import React, { useEffect, useState } from 'react';
+import React, { type ReactNode, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { type CoinItem } from '@/shared/types/coin-types';
-import {
-  type ActiveAccountType,
-  type ActiveChildType_depreciated,
-} from '@/shared/types/wallet-types';
+import { type ActiveAccountType } from '@/shared/types/wallet-types';
 import { formatLargeNumber } from '@/shared/utils/number';
 
 import IconCreate from '../../../components/iconfont/IconCreate';
@@ -45,7 +42,12 @@ const CoinList = ({
     }
   }, [tokenList]);
 
-  const EndListItemText = (props) => {
+  const EndListItemText = (props: {
+    primary: ReactNode;
+    secondary: ReactNode;
+    unit: string;
+    change: number;
+  }) => {
     return (
       <ListItemText
         disableTypography={true}
@@ -78,7 +80,7 @@ const CoinList = ({
     );
   };
 
-  const StartListItemText = (props) => {
+  const StartListItemText = (props: { primary: string | null; price: number; change: number }) => {
     return (
       <ListItemText
         disableTypography={true}
@@ -108,10 +110,10 @@ const CoinList = ({
             <Box sx={{ display: 'flex', gap: '3px' }}>
               {ableFt.some((item) => {
                 const parts = item.id.split('.');
-                return parts[2] && parts[2].includes(props.coin);
+                return parts[2] && parts[2].includes(props.primary);
               }) ||
               isActive ||
-              props.primary.toLowerCase() === 'flow' ? (
+              props.primary?.toLowerCase() === 'flow' ? (
                 <Box sx={{ display: 'flex' }}>
                   <Typography
                     variant="body1"
@@ -245,12 +247,14 @@ const CoinList = ({
               return (
                 <ListItem
                   key={index}
-                  secondaryAction={<EndListItemText primary="..." secondary="..." />}
+                  secondaryAction={
+                    <EndListItemText primary="..." secondary="..." unit="..." change={0} />
+                  }
                 >
                   <ListItemAvatar>
                     <Skeleton variant="circular" width={36} height={36} />
                   </ListItemAvatar>
-                  <StartListItemText primary="..." price="..." />
+                  <StartListItemText primary="..." price={0} change={0} />
                 </ListItem>
               );
             })}

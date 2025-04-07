@@ -114,6 +114,7 @@ const Deposit = () => {
   const [emulatorModeOn, setEmulatorModeOn] = useState<boolean>(false);
 
   const fetchStuff = useCallback(async () => {
+    const currentAddress = await usewallet.getCurrentAddress();
     const isChild = await usewallet.getActiveAccountType();
     if (isChild === 'evm') {
       setIsActive(isChild);
@@ -135,13 +136,13 @@ const Deposit = () => {
           address: withPrefix(ele?.blockchain[0]?.address ?? ''),
         }))
       );
-    } else if (isChild) {
-      setIsActive(isChild);
+    } else if (isChild === 'child' && currentAddress) {
+      setIsActive(currentAddress);
       setUserWallets(
         Object.keys(childAccounts).map((key, index) => ({
           id: index,
           name: key,
-          address: isChild,
+          address: currentAddress,
         }))
       );
     } else {

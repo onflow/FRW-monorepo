@@ -120,11 +120,12 @@ const WalletTab = ({ network }) => {
 
   const fetchWallet = useCallback(async () => {
     // If childType is 'evm', handle it first
-    const activeChild = await usewallet.getActiveAccountType();
-    if (activeChild === 'evm') {
+    const activeAccountType = await usewallet.getActiveAccountType();
+    if (activeAccountType === 'evm') {
       return;
       // If not 'evm', check if it's not active
     } else if (!isActive) {
+      // Child wallet
       const ftResult = await usewallet.checkAccessibleFt(address);
       if (ftResult) {
         setAccessible(ftResult);
@@ -136,16 +137,16 @@ const WalletTab = ({ network }) => {
 
   const fetchChildState = useCallback(async () => {
     setChildStateLoading(true);
-    const isChild = await usewallet.getActiveAccountType();
+    const accountType = await usewallet.getActiveAccountType();
     setChildAccount(childAccounts);
-    setChildType(isChild);
-    if (isChild && isChild !== 'evm') {
+    setChildType(accountType);
+    if (accountType !== 'main' && accountType !== 'evm') {
       setIsActive(false);
     } else {
       setIsActive(true);
     }
     setChildStateLoading(false);
-    return isChild;
+    return accountType;
   }, [usewallet, childAccounts]);
 
   useEffect(() => {
