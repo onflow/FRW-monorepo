@@ -226,7 +226,6 @@ export const importAccountBySeedPhrase = async ({
   if (!password) {
     throw new Error('TEST_PASSWORD is not set');
   }
-
   if (page.url().includes('dashboard')) {
     // Wait for the dashboard page to be fully loaded
     await page.waitForURL(/.*\/dashboard.*/);
@@ -251,7 +250,8 @@ export const importAccountBySeedPhrase = async ({
 
   await page.getByRole('button', { name: 'Import' }).click();
   // We need to wait for the next step to be visible
-  await expect(page.getByText('STEP')).not.toContainText('1/6');
+
+  await expect(page.getByRole('button', { name: 'Import' })).not.toBeVisible();
 
   const step = await page.getByText('STEP').textContent();
 
@@ -291,7 +291,7 @@ export const importAccountBySeedPhrase = async ({
   await page.goto(`chrome-extension://${extensionId}/index.html#/dashboard`);
   await page.waitForURL(/.*\/dashboard.*/);
   // Wait for the account address to be visible
-  await expect(page.getByText(accountAddr)).toBeVisible();
+  await expect(page.getByText(accountAddr)).toBeVisible({ timeout: 10_000 });
   const flowAddr = await getCurrentAddress(page);
 
   if (accountAddr && flowAddr !== accountAddr) {
