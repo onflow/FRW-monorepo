@@ -53,8 +53,8 @@ export const useEvmAccount = (
   );
 };
 
-export const useUserInfo = (userId: string | null) => {
-  return useUserData<UserInfoStore>(userId ? userInfoCachekey(userId) : null);
+export const useUserInfo = (userId: string | undefined | null) => {
+  return useCachedData<UserInfoStore>(userId ? userInfoCachekey(userId) : null);
 };
 
 export const useActiveAccounts = (

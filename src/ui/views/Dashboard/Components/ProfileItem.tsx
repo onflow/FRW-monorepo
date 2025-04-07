@@ -35,7 +35,7 @@ export const ProfileItem = ({
   return (
     <ListItem
       disablePadding
-      key={userInfo?.username}
+      key={profileId}
       onClick={() => {
         if (profileId !== selectedProfileId) {
           setLoadingId(profileId); // Set the loading index
@@ -62,6 +62,15 @@ export const ProfileItem = ({
           >
             <Typography variant="body1" component="div" display="inline" color="text.primary">
               {userInfo?.nickname}
+            </Typography>
+            <Typography
+              variant="body1"
+              component="div"
+              display="inline"
+              color="text.secondary"
+              sx={{ fontSize: '12px' }}
+            >
+              {userInfo?.username}
             </Typography>
           </Box>
         </ListItemText>

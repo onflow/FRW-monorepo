@@ -1166,7 +1166,6 @@ const loadMainAccountsWithPubKey = async (
   network: string,
   mainAccountAddress: string
 ) => {
-  console.log('loadChildAccountsOfParent', network, mainAccountAddress);
   const childAccountMap: ChildAccountMap =
     await openapiService.checkChildAccountMeta(mainAccountAddress);
 

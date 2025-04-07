@@ -293,7 +293,6 @@ const Header = ({ _loading = false }) => {
   }
 
   const appBarLabel = (props: AppBarLabelProps) => {
-    console.log('appBarLabel - props ===', props);
     const haveAddress = !mainAddressLoading && props && props.address;
 
     return (

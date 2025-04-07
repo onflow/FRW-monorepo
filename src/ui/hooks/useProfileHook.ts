@@ -70,7 +70,7 @@ export const useProfiles = () => {
   const currentId = useCurrentId();
   const profileIds = useKeyringIds();
 
-  const userInfo = useUserInfo(currentId ?? '');
+  const userInfo = useUserInfo(currentId);
   // The user wallet data - which public key is currently active
   const userWallets = useUserWallets();
   // The main accounts for the current public key
