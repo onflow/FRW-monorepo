@@ -12,11 +12,16 @@ import { makeStyles } from '@mui/styles';
 import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import { preferenceService } from '@/background/service';
+import { preferenceService, userWalletService } from '@/background/service';
 import IconEnd from '@/components/iconfont/IconAVector11Stroke';
+import { LLHeader } from '@/ui/FRWComponent';
 import { useWalletLoaded } from '@/ui/utils';
 
 const useStyles = makeStyles(() => ({
+  arrowback: {
+    borderRadius: '100%',
+    margin: '8px',
+  },
   currencyBox: {
     width: '90%',
     margin: '10px auto',
@@ -71,8 +76,8 @@ const CurrencySettings = () => {
 
     const loadCurrency = async () => {
       try {
-        await preferenceService.init();
-        const currentCurrency = preferenceService.getDisplayCurrency();
+        await userWalletService.init();
+        const currentCurrency = userWalletService.getDisplayCurrency();
         if (currentCurrency) {
           setCurrency(currentCurrency);
         }
@@ -89,8 +94,8 @@ const CurrencySettings = () => {
   const handleCurrencyChange = async (newCurrency: string) => {
     setCurrency(newCurrency);
     try {
-      await preferenceService.init();
-      preferenceService.setDisplayCurrency(newCurrency);
+      await userWalletService.init();
+      userWalletService.setDisplayCurrency(newCurrency);
     } catch (error) {
       console.warn('Error saving currency preference:', error);
     }
@@ -106,32 +111,7 @@ const CurrencySettings = () => {
 
   return (
     <div className="page">
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          width: '100%',
-          px: '16px',
-        }}
-      >
-        <IconButton onClick={() => history.push('/dashboard/setting')}>
-          <ArrowBackIcon fontSize="medium" sx={{ color: 'icon.navi', cursor: 'pointer' }} />
-        </IconButton>
-        <Typography
-          variant="h1"
-          sx={{
-            py: '14px',
-            alignSelf: 'center',
-            fontSize: '20px',
-            paddingLeft: '85px',
-            fontFamily: 'Inter',
-            fontStyle: 'normal',
-          }}
-        >
-          {chrome.i18n.getMessage('Display__Currency')}
-        </Typography>
-      </Box>
-
+      <LLHeader title={chrome.i18n.getMessage('Display__Currency')} help={false} />
       <Box className={classes.currencyBox}>
         <Typography variant="body1" color="neutral.contrastText" style={{ fontWeight: 600 }}>
           {chrome.i18n.getMessage('Select__Currency')}

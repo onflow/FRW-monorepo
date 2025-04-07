@@ -16,6 +16,8 @@ import {
   seedWithPathAndPhrase2PublicPrivateKey,
 } from '@/background/utils/modules/publicPrivateKey';
 import createPersistStore from '@/background/utils/persisitStore';
+import { EVENTS } from '@/constant';
+import eventBus from '@/eventBus';
 import { type HashAlgoString, type SignAlgoString } from '@/shared/types/algo-types';
 import { type PublicPrivateKeyTuple, type PublicKeyTuple } from '@/shared/types/key-types';
 import {
@@ -27,6 +29,7 @@ import {
   type ChildAccountMap,
   isEvmAccountType,
   isMainAccountType,
+  type Currency,
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress, isValidFlowAddress, withPrefix } from '@/shared/utils/address';
 import { getHashAlgo, getSignAlgo } from '@/shared/utils/algo';
@@ -69,6 +72,7 @@ const USER_WALLET_TEMPLATE: UserWalletStore = {
   currentPubkey: '',
   currentAddress: '',
   parentAddress: '',
+  displayCurrency: 'USD',
 };
 class UserWallet {
   store!: UserWalletStore;
@@ -1025,6 +1029,44 @@ class UserWallet {
       zip: userlocation.zip,
     };
     return deviceInfo;
+  };
+
+  // Currency-related methods
+  getDisplayCurrency = (): string => {
+    return this.store.displayCurrency || 'USD';
+  };
+
+  setDisplayCurrency = async (currency: string) => {
+    const supportedCurrencies = await this.getSupportedCurrencies();
+    if (supportedCurrencies.some((c) => c.code === currency)) {
+      this.store.displayCurrency = currency;
+      eventBus.emit(EVENTS.displayCurrencyChanged, currency);
+    }
+  };
+
+  getCurrencySymbol = async (): Promise<string> => {
+    const currency = this.getDisplayCurrency();
+    const supportedCurrencies = await this.getSupportedCurrencies();
+    const currencySymbol = supportedCurrencies.find((c) => c.code === currency)?.symbol;
+    return currencySymbol || '$';
+  };
+
+  getSupportedCurrencies = async (): Promise<Currency[]> => {
+    try {
+      // Return static list for now since we know the supported currencies
+      const supportedCurrencies = await openapiService.getSupportedCurrencies();
+      return supportedCurrencies;
+    } catch (error) {
+      console.warn('Error getting supported currencies:', error);
+      return [
+        {
+          code: 'USD',
+          symbol: '$',
+          name: 'United States Dollar',
+          country: 'United States',
+        },
+      ];
+    }
   };
 }
 

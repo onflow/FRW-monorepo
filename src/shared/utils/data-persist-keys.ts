@@ -22,4 +22,6 @@ export type UserWalletStore = {
   parentAddress: string;
   // Either null - meaning main account is active, the evm account address, or the child account address
   currentAddress: string;
+  // The currency to display balances in
+  displayCurrency: string;
 };

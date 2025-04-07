@@ -163,6 +163,9 @@ export const EVENTS = {
     TX_BUILT: 'TransactionBuilt',
     TX_CONFIRMED: 'TransactionConfirmed',
   },
+  CURRENCY: {
+    CHANGED: 'CURRENCY_CHANGED',
+  },
 };
 
 export const EVM_ENDPOINT = {

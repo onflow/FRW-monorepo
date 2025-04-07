@@ -358,22 +358,6 @@ class PreferenceService {
   //   const key = address.toLowerCase();
   //   this.store.addedToken[key] = tokenList;
   // };
-
-  // Display currency methods
-  getDisplayCurrency = (): string => {
-    return this.store.displayCurrency || 'USD';
-  };
-
-  setDisplayCurrency = (currency: string) => {
-    if (SUPPORTED_CURRENCIES.includes(currency)) {
-      this.store.displayCurrency = currency;
-      eventBus.emit(EVENTS.displayCurrencyChanged, currency);
-    }
-  };
-
-  getSupportedCurrencies = (): string[] => {
-    return SUPPORTED_CURRENCIES;
-  };
 }
 
 export default new PreferenceService();

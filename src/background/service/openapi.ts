@@ -27,6 +27,7 @@ import {
   type ActiveChildType,
   type PublicKeyAccount,
   isEvmAccountType,
+  type Currency,
 } from '@/shared/types/wallet-types';
 import { isValidFlowAddress, isValidEthereumAddress } from '@/shared/utils/address';
 import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
@@ -2051,6 +2052,75 @@ class OpenApiService {
     );
 
     return result;
+  };
+
+  SUPPORTED_CURRENCIES = [
+    {
+      code: 'USD',
+      name: 'United States Dollar',
+      symbol: '$',
+      country: 'United States',
+    },
+    {
+      code: 'EUR',
+      name: 'Euro',
+      symbol: '€',
+      country: 'Eurozone',
+    },
+    {
+      code: 'JPY',
+      name: 'Japanese Yen',
+      symbol: '¥',
+      country: 'Japan',
+    },
+    {
+      code: 'GBP',
+      name: 'British Pound Sterling',
+      symbol: '£',
+      country: 'United Kingdom',
+    },
+    {
+      code: 'AUD',
+      name: 'Australian Dollar',
+      symbol: '$',
+      country: 'Australia',
+    },
+    {
+      code: 'CAD',
+      name: 'Canadian Dollar',
+      symbol: '$',
+      country: 'Canada',
+    },
+    {
+      code: 'CHF',
+      name: 'Swiss Franc',
+      symbol: 'CHF',
+      country: 'Switzerland',
+    },
+    {
+      code: 'CNY',
+      name: 'Chinese Yuan Renminbi',
+      symbol: '¥',
+      country: 'China',
+    },
+    {
+      code: 'HKD',
+      name: 'Hong Kong Dollar',
+      symbol: '$',
+      country: 'Hong Kong',
+    },
+    {
+      code: 'NZD',
+      name: 'New Zealand Dollar',
+      symbol: '$',
+      country: 'New Zealand',
+    },
+  ];
+
+  // ** Get supported currencies **
+  // TODO: Get this from the backend
+  getSupportedCurrencies = async (): Promise<Currency[]> => {
+    return this.SUPPORTED_CURRENCIES;
   };
 
   /**
