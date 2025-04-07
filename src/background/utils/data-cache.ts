@@ -25,11 +25,12 @@ export const registerRefreshListener = (
         const matchedArgs = key.match(keyRegex) ?? [];
         // Remove the first argument (the whole key)
         const [, ...args] = matchedArgs;
-        await loader(...args);
 
-        // Remove the refresh key
-        storage.removeSession(`${key}-refresh`);
+        await loader(...args);
       }
+
+      // Remove the refresh key
+      storage.removeSession(`${key}-refresh`);
     }
   });
 };

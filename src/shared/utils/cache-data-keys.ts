@@ -23,7 +23,7 @@ const refreshKey = (keyFunction: (...args: string[]) => string) =>
  * --------------------------------------------------------------------
  */
 export const userInfoCachekey = (userId: string) => `user-info-${userId}`;
-export const userInfoRefreshKey = refreshKey(userInfoCachekey);
+export const userInfoRefreshRegex = refreshKey(userInfoCachekey);
 export type UserInfoStore = UserInfoResponse;
 
 /*

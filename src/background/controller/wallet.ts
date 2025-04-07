@@ -56,6 +56,11 @@ import {
 import { getSignAlgo } from '@/shared/utils/algo';
 import { FLOW_BIP44_PATH, SIGN_ALGO_NUM_ECDSA_P256 } from '@/shared/utils/algo-constants';
 import {
+  evmAccountRefreshRegex,
+  childAccountsRefreshRegex,
+  userInfoRefreshRegex,
+} from '@/shared/utils/cache-data-keys';
+import {
   convertFlowBalanceToString,
   convertToIntegerAmount,
   validateAmount,
@@ -112,6 +117,8 @@ import { SimpleKeyring } from '../service/keyring/simpleKeyring';
 import type { ConnectedSite } from '../service/permission';
 import type { PreferenceAccount } from '../service/preference';
 import { type EvaluateStorageResult, StorageEvaluator } from '../service/storage-evaluator';
+import { loadChildAccountsOfParent } from '../service/userWallet';
+import { registerRefreshListener } from '../utils/data-cache';
 import defaultConfig from '../utils/defaultConfig.json';
 import { getEmojiList } from '../utils/emoji-util';
 import erc20ABI from '../utils/erc20.abi.json';
@@ -1020,46 +1027,7 @@ export class WalletController extends BaseController {
       }
     }
     // Either force refresh or the user info is not set
-    return await this.fetchUserInfo();
-  };
-
-  fetchUserInfo = async () => {
-    const info = await openapiService.userInfo();
-    const avatar = this.addTokenForFirebaseImage(info.avatar);
-
-    const updatedUrl = this.replaceAvatarUrl(avatar);
-
-    info.avatar = updatedUrl;
-    userInfoService.setCurrentUserInfo(info);
-    return info;
-  };
-
-  replaceAvatarUrl = (url) => {
-    const baseUrl = 'https://source.boringavatars.com/';
-    const newBaseUrl = 'https://lilico.app/api/avatar/';
-
-    if (url.startsWith(baseUrl)) {
-      return url.replace(baseUrl, newBaseUrl);
-    }
-
-    return url;
-  };
-
-  addTokenForFirebaseImage = (avatar: string): string => {
-    if (!avatar) {
-      return avatar;
-    }
-    try {
-      const url = new URL(avatar);
-      if (url.host === 'firebasestorage.googleapis.com') {
-        url.searchParams.append('alt', 'media');
-        return url.toString();
-      }
-      return avatar;
-    } catch (err) {
-      console.error(err);
-      return avatar;
-    }
+    return await userInfoService.fetchUserInfo();
   };
 
   checkAccessibleNft = async (childAccount) => {
@@ -1383,7 +1351,7 @@ export class WalletController extends BaseController {
     if (list && list.length > 0) {
       list.forEach((addressBook, index) => {
         if (addressBook && addressBook.avatar) {
-          list[index].avatar = this.addTokenForFirebaseImage(addressBook.avatar);
+          list[index].avatar = userInfoService.addTokenForFirebaseImage(addressBook.avatar);
         }
       });
     }
