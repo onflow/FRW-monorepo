@@ -56,7 +56,11 @@ interface PreferenceStore {
   isDeveloperModeEnabled: boolean;
   network: FlowNetwork;
   isFreeGasFeeEnabled: boolean;
+  displayCurrency: string;
 }
+
+// will get from backend in the future
+const SUPPORTED_CURRENCIES = ['USD', 'CAD', 'CNY', 'EUR', 'GBP'];
 
 const SUPPORT_LOCALES = ['en'];
 
@@ -91,6 +95,7 @@ class PreferenceService {
         isDeveloperModeEnabled: isDeveloperModeEnabled || false,
         network: FlowNetwork.mainnet,
         isFreeGasFeeEnabled: false,
+        displayCurrency: 'USD',
       },
     });
     if (!this.store.locale || this.store.locale !== defaultLang) {
@@ -136,6 +141,9 @@ class PreferenceService {
     }
     if (!this.store.walletSavedList) {
       this.store.walletSavedList = [];
+    }
+    if (!this.store.displayCurrency) {
+      this.store.displayCurrency = 'USD';
     }
   };
 
@@ -350,6 +358,22 @@ class PreferenceService {
   //   const key = address.toLowerCase();
   //   this.store.addedToken[key] = tokenList;
   // };
+
+  // Display currency methods
+  getDisplayCurrency = (): string => {
+    return this.store.displayCurrency || 'USD';
+  };
+
+  setDisplayCurrency = (currency: string) => {
+    if (SUPPORTED_CURRENCIES.includes(currency)) {
+      this.store.displayCurrency = currency;
+      eventBus.emit(EVENTS.displayCurrencyChanged, currency);
+    }
+  };
+
+  getSupportedCurrencies = (): string[] => {
+    return SUPPORTED_CURRENCIES;
+  };
 }
 
 export default new PreferenceService();

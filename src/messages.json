@@ -58,6 +58,15 @@
   "Acc__list": {
     "message": "Account List"
   },
+  "Display__Currency": {
+    "message": "Display Currency"
+  },
+  "Select__Currency": {
+    "message": "Select Currency"
+  },
+  "Currency__Description": {
+    "message": "Choose the currency you want to use for displaying values"
+  },
   "Profile": {
     "message": "Profile"
   },

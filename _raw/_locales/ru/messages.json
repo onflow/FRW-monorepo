@@ -59,7 +59,16 @@
     "message": "Аккаунт"
   },
   "Acc__list": {
-    "message": "账户列表"
+    "message": "Список аккаунтов"
+  },
+  "Display__Currency": {
+    "message": "Валюта отображения"
+  },
+  "Select__Currency": {
+    "message": "Выберите валюту"
+  },
+  "Currency__Description": {
+    "message": "Выберите валюту, которую вы хотите использовать для отображения значений"
   },
   "Profile": {
     "message": "Список аккаунтов"

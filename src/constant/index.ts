@@ -153,6 +153,7 @@ export const EVENTS = {
   broadcastToBackground: 'broadcastToBackground',
   UIToBackground: 'UIToBackground',
   SIGN_FINISHED: 'SIGN_FINISHED',
+  displayCurrencyChanged: 'displayCurrencyChanged',
   WALLETCONNECT: {
     STATUS_CHANGED: 'WALLETCONNECT_STATUS_CHANGED',
     INIT: 'WALLETCONNECT_INIT',
