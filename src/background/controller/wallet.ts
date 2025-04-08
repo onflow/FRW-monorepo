@@ -32,7 +32,7 @@ import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-t
 import { type PublicKeyTuple } from '@/shared/types/key-types';
 import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
 import { ContactType, MAINNET_CHAIN_ID } from '@/shared/types/network-types';
-import { type NFTCollectionData } from '@/shared/types/nft-types';
+import { type NFTCollections, type NFTCollectionData } from '@/shared/types/nft-types';
 import { type TrackingEvents } from '@/shared/types/tracking-types';
 import { type TransferItem, type TransactionState } from '@/shared/types/transaction-types';
 import {
@@ -62,6 +62,10 @@ import {
   userInfoRefreshRegex,
   cadenceScriptsKey,
   getCachedScripts,
+  nftCollectionKey,
+  getCachedNftCollection,
+  getCachedNftCatalogCollections,
+  nftCatalogCollectionsKey,
 } from '@/shared/utils/cache-data-keys';
 import { getCurrentProfileId } from '@/shared/utils/current-id';
 import {
@@ -730,14 +734,9 @@ export class WalletController extends BaseController {
   ): Promise<PublicKeyAccount[]> => {
     return await findAddressWithSeed(seed, address, derivationPath, passphrase);
   };
-  getPreMnemonics = async (password: string) => {
-    return await keyringService.getPreMnemonics(password);
-  };
-  generatePreMnemonic = async (password: string) => {
-    return await keyringService.generatePreMnemonic(password);
-  };
+
   removePreMnemonics = () => keyringService.removePreMnemonics();
-  createKeyringWithMnemonics = async (
+  private createKeyringWithMnemonics = async (
     password: string,
     mnemonic: string,
     derivationPath = FLOW_BIP44_PATH,
@@ -752,23 +751,6 @@ export class WalletController extends BaseController {
       derivationPath,
       passphrase
     );
-    keyringService.removePreMnemonics();
-    return this._setCurrentAccountFromKeyring(keyring);
-  };
-
-  createKeyringWithProxy = async (password: string, publicKey: string, mnemonic: string) => {
-    // TODO: NEED REVISIT HERE:
-    await keyringService.clearKeyrings();
-
-    const keyring = await keyringService.importPublicKey(password, publicKey, mnemonic);
-    keyringService.removePreMnemonics();
-    return this._setCurrentAccountFromKeyring(keyring);
-  };
-
-  addAccounts = async (password: string, mnemonic: string) => {
-    // TODO: NEED REVISIT HERE:
-
-    const keyring = await keyringService.createKeyringWithMnemonics(password, mnemonic);
     keyringService.removePreMnemonics();
     return this._setCurrentAccountFromKeyring(keyring);
   };
@@ -3365,7 +3347,7 @@ export class WalletController extends BaseController {
     offset = 0
   ): Promise<NFTCollectionData> => {
     const network = await this.getNetwork();
-    const list = await nftService.getSingleCollection(network, collectionId, offset);
+    const list = await getCachedNftCollection(network, address, collectionId, offset);
     if (!list) {
       return this.refreshSingleCollection(address, collectionId, offset);
     }
@@ -3375,34 +3357,16 @@ export class WalletController extends BaseController {
   refreshSingleCollection = async (
     address: string,
     collectionId: string,
-    offset: number | null
+    offset: number
   ): Promise<NFTCollectionData> => {
-    offset = offset || 0;
     const network = await this.getNetwork();
-    const data = await openapiService.nftCatalogCollectionList(
-      address!,
-      collectionId,
-      50,
-      offset,
-      network
-    );
 
-    data.nfts.map((nft) => {
-      nft.unique_id = nft.collectionName + '_' + nft.id;
-    });
-    function getUniqueListBy(arr, key) {
-      return [...new Map(arr.map((item) => [item[key], item])).values()];
-    }
-    const unique_nfts = getUniqueListBy(data.nfts, 'unique_id');
-    data.nfts = unique_nfts;
-
-    nftService.setSingleCollection(data, collectionId, offset, network);
-    return data;
+    return nftService.loadSingleNftCollection(network, address, collectionId, `${offset || 0}`);
   };
 
   getCollectionCache = async (address: string) => {
     const network = await this.getNetwork();
-    const list = await nftService.getCollectionList(network);
+    const list = await getCachedNftCatalogCollections(network, address);
     if (!list || list.length === 0) {
       return await this.refreshCollection(address);
     }
@@ -3413,14 +3377,8 @@ export class WalletController extends BaseController {
 
   refreshCollection = async (address: string) => {
     const network = await this.getNetwork();
-    const data = await openapiService.nftCatalogCollections(address!, network);
-    if (!data || !Array.isArray(data)) {
-      return [];
-    }
-    // Sort by count, maintaining the new collection structure
-    const sortedList = [...data].sort((a, b) => b.count - a.count);
-    nftService.setCollectionList(sortedList, network);
-    return sortedList;
+
+    return nftService.loadNftCatalogCollections(network, address);
   };
 
   getNftCatalog = async () => {

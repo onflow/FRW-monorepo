@@ -1,4 +1,4 @@
-import storage from '@/shared/utils/storage';
+import storage, { type StorageChange } from '@/shared/utils/storage';
 
 import { type CacheDataItem } from '../types/data-cache-types';
 
@@ -27,7 +27,7 @@ export const getCachedData = async <T>(key: string): Promise<T | undefined> => {
  * @param updateCallback - The callback to call when the data is updated
  */
 const _updateCaller = (key: string, updateCallback: (key: string, data: unknown) => void) => {
-  return (changes, areaName: string) => {
+  return (changes: { [key: string]: StorageChange }, areaName: string) => {
     if (areaName === 'session' && changes[`${key}`] && changes[key].newValue) {
       try {
         const cacheData = changes[key].newValue as CacheDataItem;

@@ -3,6 +3,7 @@
  * This is the primary way to get cached data from network calls to the frontend
  */
 import { type UserInfoResponse } from '../types/network-types';
+import { type NFTCollections, type NFTCollectionData } from '../types/nft-types';
 import {
   type MainAccount,
   type ChildAccountMap,
@@ -16,7 +17,8 @@ import { type NetworkScripts } from './script-types';
 
 // Utiltiy function to create the refresh key for a given key function
 const refreshKey = (keyFunction: (...args: string[]) => string) =>
-  ((args: string[] = ['(.*)', '(.*)', '(.*)']) => new RegExp(`${keyFunction(...args)}-refresh`))();
+  ((args: string[] = ['(.*)', '(.*)', '(.*)', '(.*)']) =>
+    new RegExp(`${keyFunction(...args)}-refresh`))();
 
 /*
  * --------------------------------------------------------------------
@@ -79,4 +81,37 @@ export type EvmAccountStore = WalletAccount;
 
 export const getCachedEvmAccount = async (network: string, mainAccountAddress: string) => {
   return getCachedData<EvmAccountStore>(evmAccountKey(network, mainAccountAddress));
+};
+
+// NFTs
+
+export const nftCollectionKey = (
+  network: string,
+  address: string,
+  collectionId: string,
+  offset: string
+) => `nft-collection-${network}-${address}-${collectionId}-${offset}`;
+
+export const nftCollectionRefreshRegex = refreshKey(nftCollectionKey);
+export type NftCollectionStore = NFTCollectionData;
+
+export const getCachedNftCollection = async (
+  network: string,
+  address: string,
+  collectionId: string,
+  offset: number
+) => {
+  return getCachedData<NFTCollectionData>(
+    nftCollectionKey(network, address, collectionId, `${offset}`)
+  );
+};
+
+export const nftCatalogCollectionsKey = (network: string, address: string) =>
+  `nft-catalog-collections-${network}-${address}`;
+
+export const nftCatalogCollectionsRefreshRegex = refreshKey(nftCatalogCollectionsKey);
+export type NftCatalogCollectionsStore = NFTCollections[];
+
+export const getCachedNftCatalogCollections = async (network: string, address: string) => {
+  return getCachedData<NftCatalogCollectionsStore>(nftCatalogCollectionsKey(network, address));
 };
