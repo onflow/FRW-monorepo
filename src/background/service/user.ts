@@ -118,12 +118,12 @@ class UserInfoService {
 
   fetchUserInfo = async (): Promise<UserInfoResponse> => {
     const info = await openapiService.userInfo();
-    const avatar = this.addTokenForFirebaseImage(info.avatar);
-
-    const updatedUrl = this.replaceAvatarUrl(avatar);
-
-    info.avatar = updatedUrl;
-    this.setCurrentUserInfo(info);
+    if (info && info?.avatar) {
+      const avatar = this.addTokenForFirebaseImage(info?.avatar);
+      const updatedUrl = this.replaceAvatarUrl(avatar);
+      info.avatar = updatedUrl;
+      this.setCurrentUserInfo(info);
+    }
     return info;
   };
 

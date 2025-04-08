@@ -25,8 +25,11 @@ export const registerRefreshListener = (
         const matchedArgs = key.match(keyRegex) ?? [];
         // Remove the first argument (the whole key)
         const [, ...args] = matchedArgs;
-
-        await loader(...args);
+        try {
+          await loader(...args);
+        } catch (error) {
+          console.error('Error refreshing data', key, args, error);
+        }
       }
 
       // Remove the refresh key

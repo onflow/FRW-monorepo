@@ -110,6 +110,7 @@ const Popup = (props: TransferConfirmationProps) => {
               {props.profileIds.map((profileId: string) => {
                 return (
                   <ProfileItem
+                    key={profileId}
                     profileId={profileId}
                     selectedProfileId={props.userInfo.id}
                     switchAccount={props.switchAccount}

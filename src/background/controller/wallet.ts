@@ -10,6 +10,7 @@ import * as ethUtil from 'ethereumjs-util';
 import { getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth/web-extension';
 import { type TokenInfo } from 'flow-native-token-registry';
+import { now } from 'lodash';
 import { encode } from 'rlp';
 import web3, { TransactionError, Web3 } from 'web3';
 
@@ -59,13 +60,21 @@ import {
   evmAccountRefreshRegex,
   childAccountsRefreshRegex,
   userInfoRefreshRegex,
+  cadenceScriptsKey,
+  getCachedScripts,
 } from '@/shared/utils/cache-data-keys';
+import { getCurrentProfileId } from '@/shared/utils/current-id';
 import {
   convertFlowBalanceToString,
   convertToIntegerAmount,
   validateAmount,
 } from '@/shared/utils/number';
 import { retryOperation } from '@/shared/utils/retryOperation';
+import {
+  type CategoryScripts,
+  type CadenceScripts,
+  type NetworkScripts,
+} from '@/shared/utils/script-types';
 import {
   keyringService,
   preferenceService,
@@ -118,7 +127,7 @@ import type { ConnectedSite } from '../service/permission';
 import type { PreferenceAccount } from '../service/preference';
 import { type EvaluateStorageResult, StorageEvaluator } from '../service/storage-evaluator';
 import { loadChildAccountsOfParent } from '../service/userWallet';
-import { registerRefreshListener } from '../utils/data-cache';
+import { getCachedData, registerRefreshListener, setCachedData } from '../utils/data-cache';
 import defaultConfig from '../utils/defaultConfig.json';
 import { getEmojiList } from '../utils/emoji-util';
 import erc20ABI from '../utils/erc20.abi.json';
@@ -368,7 +377,7 @@ export class WalletController extends BaseController {
     sessionService.broadcastEvent('unlock');
 
     // Refresh the wallet data
-    return this.refreshWallets();
+    await this.refreshWallets();
   };
 
   submitPassword = async (password: string) => {
@@ -1217,6 +1226,10 @@ export class WalletController extends BaseController {
     const network = await this.getNetwork();
 
     const address = await this.getRawEvmAddressWithPrefix();
+    if (!address) {
+      // Not loaded yet
+      return [];
+    }
     if (!isValidEthereumAddress(address)) {
       throw new Error('Invalid Ethereum address in coinlist');
     }
@@ -1512,7 +1525,7 @@ export class WalletController extends BaseController {
   createCOA = async (amount = '0.0'): Promise<string> => {
     const formattedAmount = parseFloat(amount).toFixed(8);
 
-    const script = await getScripts('evm', 'createCoa');
+    const script = await getScripts(userWalletService.getNetwork(), 'evm', 'createCoa');
 
     const txID = await userWalletService.sendTransaction(script, [
       fcl.arg(formattedAmount, t.UFix64),
@@ -1535,7 +1548,7 @@ export class WalletController extends BaseController {
   createCoaEmpty = async (): Promise<string> => {
     await this.getNetwork();
 
-    const script = await getScripts('evm', 'createCoaEmpty');
+    const script = await getScripts(userWalletService.getNetwork(), 'evm', 'createCoaEmpty');
 
     const txID = await userWalletService.sendTransaction(script, []);
 
@@ -1691,7 +1704,11 @@ export class WalletController extends BaseController {
     amount = '1.0',
     gasLimit = 30000000
   ): Promise<string> => {
-    const script = await getScripts('evm', 'transferFlowToEvmAddress');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'evm',
+      'transferFlowToEvmAddress'
+    );
     if (recipientEVMAddressHex.startsWith('0x')) {
       recipientEVMAddressHex = recipientEVMAddressHex.substring(2);
     }
@@ -1720,7 +1737,11 @@ export class WalletController extends BaseController {
     contractEVMAddress: string,
     data
   ): Promise<string> => {
-    const script = await getScripts('bridge', 'bridgeTokensToEvmAddress');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'bridge',
+      'bridgeTokensToEvmAddress'
+    );
     if (contractEVMAddress.startsWith('0x')) {
       contractEVMAddress = contractEVMAddress.substring(2);
     }
@@ -1752,7 +1773,11 @@ export class WalletController extends BaseController {
     amount = '0.0',
     recipient: string
   ): Promise<string> => {
-    const script = await getScripts('bridge', 'bridgeTokensToEvmAddressV2');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'bridge',
+      'bridgeTokensToEvmAddressV2'
+    );
 
     const txID = await userWalletService.sendTransaction(script, [
       fcl.arg(vaultIdentifier, t.String),
@@ -1785,7 +1810,11 @@ export class WalletController extends BaseController {
 
     const integerAmountStr = convertToIntegerAmount(amount, decimals);
 
-    const script = await getScripts('bridge', 'bridgeTokensFromEvmToFlowV3');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'bridge',
+      'bridgeTokensFromEvmToFlowV3'
+    );
     const txID = await userWalletService.sendTransaction(script, [
       fcl.arg(flowidentifier, t.String),
       fcl.arg(integerAmountStr, t.UInt256),
@@ -1804,7 +1833,7 @@ export class WalletController extends BaseController {
   };
 
   withdrawFlowEvm = async (amount = '0.0', address: string): Promise<string> => {
-    const script = await getScripts('evm', 'withdrawCoa');
+    const script = await getScripts(userWalletService.getNetwork(), 'evm', 'withdrawCoa');
 
     const txID = await userWalletService.sendTransaction(script, [
       fcl.arg(amount, t.UFix64),
@@ -1815,7 +1844,7 @@ export class WalletController extends BaseController {
   };
 
   fundFlowEvm = async (amount = '1.0'): Promise<string> => {
-    const script = await getScripts('evm', 'fundCoa');
+    const script = await getScripts(userWalletService.getNetwork(), 'evm', 'fundCoa');
 
     return await userWalletService.sendTransaction(script, [fcl.arg(amount, t.UFix64)]);
   };
@@ -1823,7 +1852,7 @@ export class WalletController extends BaseController {
   coaLink = async (): Promise<string> => {
     await this.getNetwork();
 
-    const script = await getScripts('evm', 'coaLink');
+    const script = await getScripts(userWalletService.getNetwork(), 'evm', 'coaLink');
 
     // TODO: check if args are needed
     const result = await userWalletService.sendTransaction(script, []);
@@ -1834,7 +1863,7 @@ export class WalletController extends BaseController {
   checkCoaLink = async (): Promise<boolean> => {
     const checkedAddress = await storage.get('coacheckAddress');
 
-    const script = await getScripts('evm', 'checkCoaLink');
+    const script = await getScripts(userWalletService.getNetwork(), 'evm', 'checkCoaLink');
     const mainAddress = await this.getMainAddress();
 
     if (checkedAddress === mainAddress) {
@@ -1853,7 +1882,11 @@ export class WalletController extends BaseController {
   };
 
   bridgeToEvm = async (flowIdentifier, amount = '1.0'): Promise<string> => {
-    const script = await getScripts('bridge', 'bridgeTokensToEvmV2');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'bridge',
+      'bridgeTokensToEvmV2'
+    );
 
     const txID = await userWalletService.sendTransaction(script, [
       fcl.arg(flowIdentifier, t.String),
@@ -1879,7 +1912,11 @@ export class WalletController extends BaseController {
     }
     const integerAmountStr = convertToIntegerAmount(amount, decimals);
 
-    const script = await getScripts('bridge', 'bridgeTokensFromEvmV2');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'bridge',
+      'bridgeTokensFromEvmV2'
+    );
     const txID = await userWalletService.sendTransaction(script, [
       fcl.arg(flowIdentifier, t.String),
       fcl.arg(integerAmountStr, t.UInt256),
@@ -1939,7 +1976,7 @@ export class WalletController extends BaseController {
     }
     await this.getNetwork();
 
-    const script = await getScripts('evm', 'callContractV2');
+    const script = await getScripts(userWalletService.getNetwork(), 'evm', 'callContractV2');
     const gasLimit = 30000000;
     const dataBuffer = Buffer.from(data.slice(2), 'hex');
     const dataArray = Uint8Array.from(dataBuffer);
@@ -1986,7 +2023,7 @@ export class WalletController extends BaseController {
     }
     await this.getNetwork();
 
-    const script = await getScripts('evm', 'callContractV2');
+    const script = await getScripts(userWalletService.getNetwork(), 'evm', 'callContractV2');
     const gasLimit = gas || 30000000;
     const dataBuffer = Buffer.from(data.slice(2), 'hex');
     const dataArray = Uint8Array.from(dataBuffer);
@@ -2078,7 +2115,11 @@ export class WalletController extends BaseController {
   getAllAccountBalance = async (addresses: string[]): Promise<string> => {
     await this.getNetwork();
 
-    const script = await getScripts('basic', 'getFlowBalanceForAnyAccounts');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'basic',
+      'getFlowBalanceForAnyAccounts'
+    );
 
     const result = await fcl.query({
       cadence: script,
@@ -2094,7 +2135,7 @@ export class WalletController extends BaseController {
       hexEncodedAddress = hexEncodedAddress.substring(2);
     }
 
-    const script = await getScripts('evm', 'getBalance');
+    const script = await getScripts(userWalletService.getNetwork(), 'evm', 'getBalance');
 
     const result = await fcl.query({
       cadence: script,
@@ -2130,7 +2171,7 @@ export class WalletController extends BaseController {
   getNonce = async (hexEncodedAddress: string): Promise<string> => {
     await this.getNetwork();
 
-    const script = await getScripts('evm', 'getNonce');
+    const script = await getScripts(userWalletService.getNetwork(), 'evm', 'getNonce');
 
     const result = await fcl.query({
       cadence: script,
@@ -2145,14 +2186,22 @@ export class WalletController extends BaseController {
 
   unlinkChildAccount = async (address: string): Promise<string> => {
     await this.getNetwork();
-    const script = await getScripts('hybridCustody', 'getChildAccountMeta');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'hybridCustody',
+      'getChildAccountMeta'
+    );
 
     return await userWalletService.sendTransaction(script, [fcl.arg(address, t.Address)]);
   };
 
   unlinkChildAccountV2 = async (address: string): Promise<string> => {
     await this.getNetwork();
-    const script = await getScripts('hybridCustody', 'unlinkChildAccount');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'hybridCustody',
+      'unlinkChildAccount'
+    );
 
     return await userWalletService.sendTransaction(script, [fcl.arg(address, t.Address)]);
   };
@@ -2164,7 +2213,11 @@ export class WalletController extends BaseController {
     thumbnail: string
   ): Promise<string> => {
     await this.getNetwork();
-    const script = await getScripts('hybridCustody', 'editChildAccount');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'hybridCustody',
+      'editChildAccount'
+    );
 
     return await userWalletService.sendTransaction(script, [
       fcl.arg(address, t.Address),
@@ -2181,7 +2234,7 @@ export class WalletController extends BaseController {
     amount: string
   ): Promise<string> => {
     const token = await openapiService.getTokenInfo(symbol);
-    const script = await getScripts('ft', 'transferTokensV3');
+    const script = await getScripts(userWalletService.getNetwork(), 'ft', 'transferTokensV3');
 
     if (!token) {
       throw new Error(`Invaild token name - ${symbol}`);
@@ -2215,7 +2268,7 @@ export class WalletController extends BaseController {
   };
 
   revokeKey = async (index: string): Promise<string> => {
-    const script = await getScripts('basic', 'revokeKey');
+    const script = await getScripts(userWalletService.getNetwork(), 'basic', 'revokeKey');
 
     return await userWalletService.sendTransaction(script, [fcl.arg(index, t.Int)]);
   };
@@ -2261,7 +2314,7 @@ export class WalletController extends BaseController {
   ): Promise<string> => {
     const domainName = domain.split('.')[0];
     const token = await openapiService.getTokenInfoByContract(symbol);
-    const script = await getScripts('domain', 'claimFTFromInbox');
+    const script = await getScripts(userWalletService.getNetwork(), 'domain', 'claimFTFromInbox');
 
     if (!token) {
       throw new Error(`Invaild token name - ${symbol}`);
@@ -2291,7 +2344,11 @@ export class WalletController extends BaseController {
       return;
     }
     await this.getNetwork();
-    const script = await getScripts('storage', 'enableTokenStorage');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'storage',
+      'enableTokenStorage'
+    );
 
     return await userWalletService.sendTransaction(
       script
@@ -2305,7 +2362,11 @@ export class WalletController extends BaseController {
   };
 
   enableNFTStorageLocal = async (token: NFTModelV2) => {
-    const script = await getScripts('collection', 'enableNFTStorage');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'collection',
+      'enableNFTStorage'
+    );
 
     return await userWalletService.sendTransaction(
       script
@@ -2328,7 +2389,11 @@ export class WalletController extends BaseController {
     if (!token) {
       throw new Error(`Invaild token name - ${symbol}`);
     }
-    const script = await getScripts('hybridCustody', 'transferChildFT');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'hybridCustody',
+      'transferChildFT'
+    );
     const replacedScript = replaceNftKeywords(script, token);
 
     const result = await userWalletService.sendTransaction(replacedScript, [
@@ -2362,7 +2427,7 @@ export class WalletController extends BaseController {
       throw new Error(`Invalid amount - ${amount}`);
     }
 
-    const script = await getScripts('hybridCustody', 'sendChildFT');
+    const script = await getScripts(userWalletService.getNetwork(), 'hybridCustody', 'sendChildFT');
     const replacedScript = replaceNftKeywords(script, token);
 
     const result = await userWalletService.sendTransaction(replacedScript, [
@@ -2387,7 +2452,11 @@ export class WalletController extends BaseController {
     ids: number,
     token
   ): Promise<string> => {
-    const script = await getScripts('hybridCustody', 'transferChildNFT');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'hybridCustody',
+      'transferChildNFT'
+    );
     const replacedScript = replaceNftKeywords(script, token);
     const txID = await userWalletService.sendTransaction(replacedScript, [
       fcl.arg(nftContractAddress, t.Address),
@@ -2413,7 +2482,11 @@ export class WalletController extends BaseController {
     ids: number,
     token
   ): Promise<string> => {
-    const script = await getScripts('hybridCustody', 'sendChildNFT');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'hybridCustody',
+      'sendChildNFT'
+    );
     const replacedScript = replaceNftKeywords(script, token);
     const txID = await userWalletService.sendTransaction(replacedScript, [
       fcl.arg(linkedAddress, t.Address),
@@ -2440,7 +2513,11 @@ export class WalletController extends BaseController {
     id: number,
     token
   ): Promise<string> => {
-    const script = await getScripts('hybridCustody', 'bridgeChildNFTToEvmAddress');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'hybridCustody',
+      'bridgeChildNFTToEvmAddress'
+    );
     const replacedScript = replaceNftKeywords(script, token);
     const txID = await userWalletService.sendTransaction(replacedScript, [
       fcl.arg(nftContractName, t.String),
@@ -2466,7 +2543,11 @@ export class WalletController extends BaseController {
     ids: number,
     token
   ): Promise<string> => {
-    const script = await getScripts('hybridCustody', 'transferNFTToChild');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'hybridCustody',
+      'transferNFTToChild'
+    );
     const replacedScript = replaceNftKeywords(script, token);
     const txID = await userWalletService.sendTransaction(replacedScript, [
       fcl.arg(linkedAddress, t.Address),
@@ -2487,7 +2568,11 @@ export class WalletController extends BaseController {
   };
 
   getChildAccountAllowTypes = async (parent: string, child: string) => {
-    const script = await getScripts('hybridCustody', 'getChildAccountAllowTypes');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'hybridCustody',
+      'getChildAccountAllowTypes'
+    );
     const result = await fcl.query({
       cadence: script,
       args: (arg, t) => [arg(parent, t.Address), arg(child, t.Address)],
@@ -2496,7 +2581,11 @@ export class WalletController extends BaseController {
   };
 
   checkChildLinkedVault = async (parent: string, child: string, path: string): Promise<string> => {
-    const script = await getScripts('hybridCustody', 'checkChildLinkedVaults');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'hybridCustody',
+      'checkChildLinkedVaults'
+    );
 
     const result = await fcl.query({
       cadence: script,
@@ -2510,7 +2599,7 @@ export class WalletController extends BaseController {
     const scriptName = shouldCoverBridgeFee
       ? 'batchBridgeNFTToEvmWithPayer'
       : 'batchBridgeNFTToEvmV2';
-    const script = await getScripts('bridge', scriptName);
+    const script = await getScripts(userWalletService.getNetwork(), 'bridge', scriptName);
 
     const txID = await userWalletService.sendTransaction(
       script,
@@ -2534,7 +2623,7 @@ export class WalletController extends BaseController {
     const scriptName = shouldCoverBridgeFee
       ? 'batchBridgeNFTFromEvmWithPayer'
       : 'batchBridgeNFTFromEvmV2';
-    const script = await getScripts('bridge', scriptName);
+    const script = await getScripts(userWalletService.getNetwork(), 'bridge', scriptName);
 
     const txID = await userWalletService.sendTransaction(
       script,
@@ -2559,7 +2648,11 @@ export class WalletController extends BaseController {
     ids: Array<number>,
     token
   ): Promise<string> => {
-    const script = await getScripts('hybridCustody', 'batchTransferNFTToChild');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'hybridCustody',
+      'batchTransferNFTToChild'
+    );
     const replacedScript = replaceNftKeywords(script, token);
 
     const txID = await userWalletService.sendTransaction(replacedScript, [
@@ -2585,7 +2678,11 @@ export class WalletController extends BaseController {
     ids: Array<number>,
     token
   ): Promise<string> => {
-    const script = await getScripts('hybridCustody', 'batchTransferChildNFT');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'hybridCustody',
+      'batchTransferChildNFT'
+    );
     const replacedScript = replaceNftKeywords(script, token);
 
     const txID = await userWalletService.sendTransaction(replacedScript, [
@@ -2612,7 +2709,11 @@ export class WalletController extends BaseController {
     ids: Array<number>,
     token
   ): Promise<string> => {
-    const script = await getScripts('hybridCustody', 'batchSendChildNFTToChild');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'hybridCustody',
+      'batchSendChildNFTToChild'
+    );
     const replacedScript = replaceNftKeywords(script, token);
 
     const txID = await userWalletService.sendTransaction(replacedScript, [
@@ -2639,7 +2740,11 @@ export class WalletController extends BaseController {
     ids: Array<number>,
     token
   ): Promise<string> => {
-    const script = await getScripts('hybridCustody', 'batchBridgeChildNFTToEvm');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'hybridCustody',
+      'batchBridgeChildNFTToEvm'
+    );
     const replacedScript = replaceNftKeywords(script, token);
     const txID = await userWalletService.sendTransaction(replacedScript, [
       fcl.arg(identifier, t.String),
@@ -2663,7 +2768,11 @@ export class WalletController extends BaseController {
     identifier: string,
     ids: Array<number>
   ): Promise<string> => {
-    const script = await getScripts('hybridCustody', 'batchBridgeChildNFTFromEvm');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'hybridCustody',
+      'batchBridgeChildNFTFromEvm'
+    );
 
     const txID = await userWalletService.sendTransaction(script, [
       fcl.arg(identifier, t.String),
@@ -2691,7 +2800,7 @@ export class WalletController extends BaseController {
     const scriptName = shouldCoverBridgeFee
       ? 'bridgeNFTToEvmAddressWithPayer'
       : 'bridgeNFTToEvmAddressV2';
-    const script = await getScripts('bridge', scriptName);
+    const script = await getScripts(userWalletService.getNetwork(), 'bridge', scriptName);
 
     const gasLimit = 30000000;
 
@@ -2729,7 +2838,7 @@ export class WalletController extends BaseController {
     const scriptName = shouldCoverBridgeFee
       ? 'bridgeNFTFromEvmToFlowWithPayer'
       : 'bridgeNFTFromEvmToFlowV3';
-    const script = await getScripts('bridge', scriptName);
+    const script = await getScripts(userWalletService.getNetwork(), 'bridge', scriptName);
 
     const txID = await userWalletService.sendTransaction(
       script,
@@ -2749,7 +2858,11 @@ export class WalletController extends BaseController {
   };
 
   getAssociatedFlowIdentifier = async (address: string): Promise<string> => {
-    const script = await getScripts('bridge', 'getAssociatedFlowIdentifier');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'bridge',
+      'getAssociatedFlowIdentifier'
+    );
     const result = await fcl.query({
       cadence: script,
       args: (arg, t) => [arg(address, t.String)],
@@ -2759,7 +2872,7 @@ export class WalletController extends BaseController {
 
   sendNFT = async (recipient: string, id: any, token: any): Promise<string> => {
     await this.getNetwork();
-    const script = await getScripts('collection', 'sendNFTV3');
+    const script = await getScripts(userWalletService.getNetwork(), 'collection', 'sendNFTV3');
 
     const txID = await userWalletService.sendTransaction(
       script
@@ -2783,7 +2896,7 @@ export class WalletController extends BaseController {
 
   sendNBANFT = async (recipient: string, id: any, token: NFTModelV2): Promise<string> => {
     await this.getNetwork();
-    const script = await getScripts('collection', 'sendNbaNFTV3');
+    const script = await getScripts(userWalletService.getNetwork(), 'collection', 'sendNbaNFTV3');
 
     const txID = await userWalletService.sendTransaction(
       script
@@ -2914,10 +3027,10 @@ export class WalletController extends BaseController {
 
     // setup fcl for the new network
     await userWalletService.setupFcl();
-    await this.refreshAll();
 
     // Reload everything
     await this.refreshWallets();
+    await this.refreshAll();
 
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       if (!tabs || tabs.length === 0) {
@@ -2948,6 +3061,7 @@ export class WalletController extends BaseController {
   };
 
   refreshAll = async () => {
+    console.log('refreshAll');
     // Clear the active wallet if any
     // If we don't do this, the user wallets will not be refreshed
     this.clearNFT();
@@ -3317,48 +3431,19 @@ export class WalletController extends BaseController {
     return data;
   };
 
-  getCadenceScripts = async () => {
+  getCadenceScripts = async (): Promise<CategoryScripts | undefined> => {
     try {
-      const cadenceScrpts = await storage.get('cadenceScripts');
-      const now = new Date();
-      const exp = 1000 * 60 * 60 * 1 + now.getTime();
-      const network = await userWalletService.getNetwork();
-      if (
-        cadenceScrpts &&
-        cadenceScrpts['expiry'] &&
-        now.getTime() <= cadenceScrpts['expiry'] &&
-        cadenceScrpts.network === network
-      ) {
-        return cadenceScrpts['data'];
-      }
+      const cadenceScripts = await getCachedScripts();
 
-      // const { cadence, networks } = data;
-      // const cadencev1 = (await openapiService.cadenceScripts(network)) ?? {};
-
-      const cadenceScriptsV2 = (await openapiService.cadenceScriptsV2()) ?? {};
-      // const { scripts, version } = cadenceScriptsV2;
-      // const cadenceVersion = cadenceScriptsV2.version;
-      const cadence = cadenceScriptsV2.scripts[network];
-
-      // for (const item of cadence) {
-      //   console.log(cadenceVersion, 'cadenceVersion');
-      //   if (item && item.version == cadenceVersion) {
-      //     script = item;
-      //   }
-      // }
-
-      const scripts = {
-        data: cadence,
-        expiry: exp,
-        network,
-      };
-      storage.set('cadenceScripts', scripts);
-
-      return cadence;
+      const network = userWalletService.getNetwork();
+      return network === 'mainnet'
+        ? cadenceScripts?.scripts.mainnet
+        : cadenceScripts?.scripts.testnet;
     } catch (error) {
       console.log(error, '=== get scripts error ===');
     }
   };
+
   // Google Drive - Backup
   getBackupFiles = async () => {
     return googleDriveService.listFiles();
@@ -3500,6 +3585,9 @@ export class WalletController extends BaseController {
 
   // Get the news from the server
   getNews = async () => {
+    if (!this.isUnlocked()) {
+      return [];
+    }
     return await newsService.getNews();
   };
   markNewsAsDismissed = async (id: string) => {
@@ -3515,6 +3603,9 @@ export class WalletController extends BaseController {
   };
 
   getUnreadNewsCount = async () => {
+    if (!this.isUnlocked()) {
+      return 0;
+    }
     return newsService.getUnreadCount();
   };
 

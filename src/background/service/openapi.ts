@@ -1,6 +1,5 @@
 import * as fcl from '@onflow/fcl';
 import type { Account as FclAccount } from '@onflow/typedefs';
-import type { Method } from 'axios';
 import dayjs from 'dayjs';
 import { initializeApp, getApp } from 'firebase/app';
 import {
@@ -17,6 +16,10 @@ import { getInstallations, getId } from 'firebase/installations';
 import type { TokenInfo } from 'flow-native-token-registry';
 import log from 'loglevel';
 
+import { createPersistStore, getScripts, findKeyAndInfo } from '@/background/utils';
+import { registerRefreshListener, setCachedData } from '@/background/utils/data-cache';
+import { getFirbaseConfig, getFirbaseFunctionUrl } from '@/background/utils/firebaseConfig';
+import fetchConfig from '@/background/utils/remoteConfig';
 import { storage } from '@/background/webapi';
 import type { ExtendedTokenInfo, BalanceMap } from '@/shared/types/coin-types';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
@@ -25,16 +28,18 @@ import {
   type LoggedInAccountWithIndex,
   type LoggedInAccount,
   type FlowAddress,
-  type ActiveChildType_depreciated,
   type PublicKeyAccount,
   type ActiveAccountType,
 } from '@/shared/types/wallet-types';
 import { isValidFlowAddress, isValidEthereumAddress } from '@/shared/utils/address';
 import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
+import {
+  cadenceScriptsKey,
+  cadenceScriptsRefreshRegex,
+  getCachedScripts,
+} from '@/shared/utils/cache-data-keys';
 import { getPeriodFrequency } from '@/shared/utils/getPeriodFrequency';
-import { createPersistStore, getScripts, findKeyAndInfo } from 'background/utils';
-import { getFirbaseConfig, getFirbaseFunctionUrl } from 'background/utils/firebaseConfig';
-import fetchConfig from 'background/utils/remoteConfig';
+import { type NetworkScripts } from '@/shared/utils/script-types';
 import { INITIAL_OPENAPI_URL, WEB_NEXT_URL } from 'consts';
 
 import {
@@ -135,7 +140,7 @@ type StorageResponse = {
 };
 export interface OpenApiConfigValue {
   path: string;
-  method: Method;
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'get' | 'post' | 'put' | 'delete';
   params?: string[];
 }
 
@@ -411,6 +416,9 @@ class OpenApiService {
   setHost = async (host: string) => {
     this.store.host = host;
     await this.init();
+
+    // Register refresh listener for cadence scripts
+    registerRefreshListener(cadenceScriptsRefreshRegex, this._loadCadenceScripts);
   };
 
   getHost = () => {
@@ -711,10 +719,25 @@ class OpenApiService {
     return data.data.result;
   };
 
-  private _signWithCustom = async (token) => {
+  /**
+   * Login with a custom token
+   * @param userId - The user id to login with
+   * @param token - The custom token to login with
+   */
+  private _loginWithToken = async (userId: string, token: string) => {
     this.clearAllStorage();
     await setPersistence(auth, indexedDBLocalPersistence);
     await signInWithCustomToken(auth, token);
+    await storage.set(CURRENT_ID_KEY, userId);
+
+    // Kick off loaders that use the current user id
+    userInfoService.loadUserInfoByUserId(userId);
+
+    // Check that cadence scripts are loaded
+    const cadenceScripts = await getCachedScripts();
+    if (!cadenceScripts) {
+      await this._loadCadenceScripts();
+    }
   };
 
   private clearAllStorage = () => {
@@ -724,6 +747,22 @@ class OpenApiService {
     addressBookService.clear();
     userWalletService.clear();
     transactionService.clear();
+  };
+
+  /**
+   * --------------------------------------------------------------------
+   * Loaders
+   * --------------------------------------------------------------------
+   */
+  /**
+   * Load the cadence scripts for the current user
+   * @param userId - The user id to load the cadence scripts for
+   * @returns The cadence scripts for the current user
+   */
+  private _loadCadenceScripts = async (): Promise<NetworkScripts> => {
+    const cadenceScriptsV2 = await this.cadenceScriptsV2();
+    setCachedData(cadenceScriptsKey(), cadenceScriptsV2, 1000 * 60 * 60); // set to 1 hour
+    return cadenceScriptsV2;
   };
 
   checkUsername = async (username: string) => {
@@ -748,8 +787,7 @@ class OpenApiService {
         username,
       }
     );
-    await this._signWithCustom(data.data.custom_token);
-    await storage.set(CURRENT_ID_KEY, data.data.id);
+    await this._loginWithToken(data.data.id, data.data.custom_token);
 
     // Track the registration
     mixpanelTrack.track('account_created', {
@@ -777,8 +815,7 @@ class OpenApiService {
       throw new Error('NoUserFound');
     }
     if (replaceUser) {
-      await this._signWithCustom(result.data.custom_token);
-      await storage.set(CURRENT_ID_KEY, result.data.id);
+      await this._loginWithToken(result.data.id, result.data.custom_token);
     }
     return result;
   };
@@ -816,8 +853,7 @@ class OpenApiService {
       throw new Error('NoUserFound');
     }
     if (replaceUser) {
-      await this._signWithCustom(result.data.custom_token);
-      await storage.set(CURRENT_ID_KEY, result.data.id);
+      await this._loginWithToken(result.data.id, result.data.custom_token);
     }
     return result;
   };
@@ -1019,7 +1055,11 @@ class OpenApiService {
   };
 
   checkChildAccount = async (address: string) => {
-    const script = await getScripts('hybridCustody', 'checkChildAccount');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'hybridCustody',
+      'checkChildAccount'
+    );
     const result = await fcl.query({
       cadence: script,
       args: (arg, t) => [arg(address, t.Address)],
@@ -1028,7 +1068,11 @@ class OpenApiService {
   };
 
   queryAccessible = async (address: string, childAccount: string) => {
-    const script = await getScripts('hybridCustody', 'checkChildAccount');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'hybridCustody',
+      'checkChildAccount'
+    );
 
     const result = await fcl.query({
       cadence: script,
@@ -1038,7 +1082,11 @@ class OpenApiService {
   };
 
   queryAccessibleFt = async (address: string, childAccount: string) => {
-    const script = await getScripts('hybridCustody', 'getAccessibleCoinInfo');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'hybridCustody',
+      'getAccessibleCoinInfo'
+    );
 
     const result = await fcl.query({
       cadence: script,
@@ -1048,7 +1096,11 @@ class OpenApiService {
   };
 
   checkChildAccountMeta = async (address: string) => {
-    const script = await getScripts('hybridCustody', 'getChildAccountMeta');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'hybridCustody',
+      'getChildAccountMeta'
+    );
     try {
       const res = await fcl.query({
         cadence: script,
@@ -1061,7 +1113,11 @@ class OpenApiService {
   };
 
   checkChildAccountNFT = async (address: string) => {
-    const script = await getScripts('hybridCustody', 'getAccessibleChildAccountNFTs');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'hybridCustody',
+      'getAccessibleChildAccountNFTs'
+    );
 
     const result = await fcl.query({
       cadence: script,
@@ -1072,7 +1128,7 @@ class OpenApiService {
   };
 
   getFlownsAddress = async (domain: string, root = 'fn') => {
-    const script = await getScripts('basic', 'getFlownsAddress');
+    const script = await getScripts(userWalletService.getNetwork(), 'basic', 'getFlownsAddress');
 
     const address = await fcl.query({
       cadence: script,
@@ -1082,7 +1138,7 @@ class OpenApiService {
   };
 
   getAccountMinFlow = async (address: string) => {
-    const script = await getScripts('basic', 'getAccountMinFlow');
+    const script = await getScripts(userWalletService.getNetwork(), 'basic', 'getAccountMinFlow');
     if (isValidFlowAddress(address)) {
       const minFlow = await fcl.query({
         cadence: script,
@@ -1093,7 +1149,7 @@ class OpenApiService {
   };
 
   getFindAddress = async (domain: string) => {
-    const script = await getScripts('basic', 'getFindAddress');
+    const script = await getScripts(userWalletService.getNetwork(), 'basic', 'getFindAddress');
 
     const address = await fcl.query({
       cadence: script,
@@ -1103,7 +1159,11 @@ class OpenApiService {
   };
 
   getFindDomainByAddress = async (domain: string) => {
-    const script = await getScripts('basic', 'getFindDomainByAddress');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'basic',
+      'getFindDomainByAddress'
+    );
 
     const address = await fcl.query({
       cadence: script,
@@ -1300,7 +1360,7 @@ class OpenApiService {
   };
 
   getStorageInfo = async (address: string): Promise<StorageInfo> => {
-    const script = await getScripts('basic', 'getStorageInfo');
+    const script = await getScripts(userWalletService.getNetwork(), 'basic', 'getStorageInfo');
 
     const result = await fcl.query({
       cadence: script,
@@ -1315,7 +1375,7 @@ class OpenApiService {
   };
 
   getFlowAccountInfo = async (address: string): Promise<AccountBalanceInfo> => {
-    const script = await getScripts('basic', 'getAccountInfo');
+    const script = await getScripts(userWalletService.getNetwork(), 'basic', 'getAccountInfo');
 
     const result = await fcl.query({
       cadence: script,
@@ -1331,7 +1391,11 @@ class OpenApiService {
     };
   };
   getTokenBalanceWithModel = async (address: string, token: TokenInfo) => {
-    const script = await getScripts('basic', 'getTokenBalanceWithModel');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'basic',
+      'getTokenBalanceWithModel'
+    );
     const network = await userWalletService.getNetwork();
     const cadence = script
       .replaceAll('<Token>', token.contractName)
@@ -1500,7 +1564,11 @@ class OpenApiService {
   // todo
   isTokenStorageEnabled = async (address: string, token: TokenInfo) => {
     const network = await userWalletService.getNetwork();
-    const script = await getScripts('basic', 'isTokenStorageEnabled');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'basic',
+      'isTokenStorageEnabled'
+    );
 
     const cadence = script
       .replaceAll('<Token>', token.contractName)
@@ -1517,7 +1585,7 @@ class OpenApiService {
   };
 
   isTokenListEnabled = async (address: string) => {
-    const script = await getScripts('ft', 'isTokenListEnabled');
+    const script = await getScripts(userWalletService.getNetwork(), 'ft', 'isTokenListEnabled');
     const isEnabledList = await fcl.query({
       cadence: script,
       args: (arg, t) => [arg(address, t.Address)],
@@ -1526,7 +1594,11 @@ class OpenApiService {
   };
 
   isLinkedAccountTokenListEnabled = async (address: string) => {
-    const script = await getScripts('ft', 'isLinkedAccountTokenListEnabled');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'ft',
+      'isLinkedAccountTokenListEnabled'
+    );
     const isEnabledList = await fcl.query({
       cadence: script,
       args: (arg, t) => [arg(address, t.Address)],
@@ -1535,7 +1607,7 @@ class OpenApiService {
   };
 
   getTokenListBalance = async (address: string, allTokens: TokenInfo[]): Promise<BalanceMap> => {
-    const script = await getScripts('ft', 'getTokenListBalance');
+    const script = await getScripts(userWalletService.getNetwork(), 'ft', 'getTokenListBalance');
     const balanceList = await fcl.query({
       cadence: script,
       args: (arg, t) => [arg(address, t.Address)],
@@ -1545,7 +1617,7 @@ class OpenApiService {
   };
 
   getTokenBalanceStorage = async (address: string): Promise<BalanceMap> => {
-    const script = await getScripts('ft', 'getTokenBalanceStorage');
+    const script = await getScripts(userWalletService.getNetwork(), 'ft', 'getTokenBalanceStorage');
     const balanceList = await fcl.query({
       cadence: script,
       args: (arg, t) => [arg(address, t.Address)],
@@ -1578,7 +1650,7 @@ class OpenApiService {
 
   checkNFTListEnabled = async (address: string): Promise<Record<string, boolean>> => {
     // Returns a map of enabled NFTs for the address
-    const script = await getScripts('nft', 'checkNFTListEnabled');
+    const script = await getScripts(userWalletService.getNetwork(), 'nft', 'checkNFTListEnabled');
 
     const isEnabledList = await fcl.query({
       cadence: script,
@@ -1589,7 +1661,11 @@ class OpenApiService {
 
   getNftBalanceStorage = async (address: string): Promise<Record<string, number>> => {
     // Returns a map of enabled NFTs for the address
-    const script = await getScripts('collection', 'getNFTBalanceStorage');
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'collection',
+      'getNFTBalanceStorage'
+    );
 
     const isEnabledList = await fcl.query({
       cadence: script,
@@ -1715,7 +1791,7 @@ class OpenApiService {
     return data;
   };
 
-  cadenceScriptsV2 = async () => {
+  cadenceScriptsV2 = async (): Promise<NetworkScripts> => {
     const { data } = await this.sendRequest('GET', '/api/v2/scripts', {}, {}, WEB_NEXT_URL);
     return data;
   };
@@ -2087,7 +2163,7 @@ class OpenApiService {
       return cachedFlowData;
     }
 
-    const userFlowTokenList: FlowApiResponse = await this.sendRequest(
+    const { data: userFlowTokenList }: { data: FlowApiResponse } = await this.sendRequest(
       'GET',
       `/api/v4/cadence/tokens/ft/${address}`,
       {},
@@ -2138,6 +2214,7 @@ class OpenApiService {
     const cachedEvmData = await storage.getExpiry(cacheKey);
 
     if (cachedEvmData !== null) {
+      console.log('fetchUserEvmTokens - cachedEvmData', cachedEvmData);
       return cachedEvmData;
     }
 
@@ -2150,8 +2227,8 @@ class OpenApiService {
       {},
       WEB_NEXT_URL
     );
-
-    if (!userEvmTokenList?.data) {
+    console.log('fetchUserEvmTokens - userEvmTokenList', userEvmTokenList);
+    if (!userEvmTokenList?.data?.length) {
       return [];
     }
 

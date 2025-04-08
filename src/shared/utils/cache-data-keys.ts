@@ -12,6 +12,7 @@ import {
 } from '../types/wallet-types';
 
 import { getCachedData } from './cache-data-access';
+import { type NetworkScripts } from './script-types';
 
 // Utiltiy function to create the refresh key for a given key function
 const refreshKey = (keyFunction: (...args: string[]) => string) =>
@@ -25,6 +26,15 @@ const refreshKey = (keyFunction: (...args: string[]) => string) =>
 export const userInfoCachekey = (userId: string) => `user-info-${userId}`;
 export const userInfoRefreshRegex = refreshKey(userInfoCachekey);
 export type UserInfoStore = UserInfoResponse;
+
+// Note we could do this per user but it's not worth the complexity
+export const cadenceScriptsKey = () => `cadence-scripts`;
+export const cadenceScriptsRefreshRegex = refreshKey(cadenceScriptsKey);
+export type CadenceScriptsStore = NetworkScripts;
+
+export const getCachedScripts = async () => {
+  return getCachedData<CadenceScriptsStore>(cadenceScriptsKey());
+};
 
 /*
  * --------------------------------------------------------------------

@@ -65,6 +65,8 @@ class CoinList {
   addCoins = (coins: ExtendedTokenInfo[], network: string, listType = 'coinItem') => {
     const newNetworkData = [...coins];
 
+    console.log('addCoins', newNetworkData);
+
     const updatedListType = { ...this.store[listType] };
     updatedListType[network] = newNetworkData;
 

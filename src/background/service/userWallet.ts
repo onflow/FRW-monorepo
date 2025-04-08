@@ -29,7 +29,6 @@ import {
   type ActiveAccountType,
   getActiveAccountTypeForAddress,
   type WalletAddress,
-  type AccountDetails,
 } from '@/shared/types/wallet-types';
 import { ensureEvmAddressPrefix, isValidEthereumAddress } from '@/shared/utils/address';
 import {
@@ -113,6 +112,8 @@ class UserWallet {
       Object.assign(this.store, USER_WALLET_TEMPLATE);
     }
     this.activeAccounts = new Map();
+    // clear all session storage
+    await storage.clearSession();
   };
 
   isLocked = () => {
@@ -126,6 +127,9 @@ class UserWallet {
    */
 
   getCurrentPubkey = (): string => {
+    if (this.isLocked()) {
+      throw new Error('Wallet is locked');
+    }
     return this.store.currentPubkey;
   };
 
@@ -407,7 +411,6 @@ class UserWallet {
   };
 
   private setActiveAccounts = async (newActiveAccounts: ActiveAccountsStore) => {
-    console.log('setActiveAccounts', newActiveAccounts);
     const pubkey = this.store.currentPubkey;
     const network = this.store.network;
     if (!pubkey) {
@@ -463,7 +466,6 @@ class UserWallet {
    * @returns
    */
   resetToFirstParentAccount = async () => {
-    console.log('resetToFirstParentAccount');
     const newActiveAccounts: ActiveAccountsStore = {
       parentAddress: null,
       currentAddress: null,
@@ -475,13 +477,11 @@ class UserWallet {
         newActiveAccounts.parentAddress = mainAccounts[0].address as FlowAddress;
         newActiveAccounts.currentAddress = mainAccounts[0].address as WalletAddress;
       }
-      console.log('resetToFirstParentAccount - newActiveAccounts', newActiveAccounts);
       await this.setActiveAccounts(newActiveAccounts);
     }
   };
 
   ensureValidActiveAccount = async () => {
-    console.log('ensureValidActiveAccount');
     // Get the main accounts
     const mainAccounts = await this.getMainAccounts();
     if (!mainAccounts) {
@@ -570,6 +570,10 @@ class UserWallet {
 
   // Get the evm wallet of the current main account
   getEvmAccount = async (): Promise<WalletAccount | null> => {
+    const parentAddress = this.getParentAddress() as FlowAddress;
+    if (!parentAddress) {
+      return null;
+    }
     const evmAccount = await getCachedEvmAccount(
       this.store.network,
       this.getParentAddress() as FlowAddress
@@ -580,7 +584,11 @@ class UserWallet {
 
   // Get the child accounts of the current main account
   getChildAccounts = async (): Promise<WalletAccount[] | null> => {
-    const childAccounts = await getCachedChildAccounts(this.getNetwork(), this.getCurrentPubkey());
+    const parentAddress = this.getParentAddress() as FlowAddress;
+    if (!parentAddress) {
+      return null;
+    }
+    const childAccounts = await getCachedChildAccounts(this.getNetwork(), parentAddress);
     return childAccounts ?? null;
   };
 
@@ -1103,7 +1111,6 @@ const loadAllAccountsWithPubKey = async (network: string, pubKey: string) => {
       `Failed to load main accounts even after trying for ${Math.round(MAX_LOAD_TIME / 1000 / 60)} minutes`
     );
   }
-  console.log('loadAllAccountsWithPubKey', network, pubKey, mainAccounts);
   // Now for each main account load the evm address and child accounts
   await Promise.all(
     mainAccounts.flatMap((mainAccount) => {
@@ -1166,8 +1173,21 @@ const loadMainAccountsWithPubKey = async (
   network: string,
   mainAccountAddress: string
 ) => {
-  const childAccountMap: ChildAccountMap =
-    await openapiService.checkChildAccountMeta(mainAccountAddress);
+  let script: string = '';
+
+  try {
+    script = await getScripts(network, 'hybridCustody', 'getChildAccountMeta');
+  } catch {
+    // We're not logged in yet, so we can't get the child accounts
+    return undefined;
+  }
+  if ((await fcl.config().get('flow.network')) !== network) {
+    throw new Error('Invalid network');
+  }
+  const childAccountMap: ChildAccountMap = await fcl.query({
+    cadence: script,
+    args: (arg, t) => [arg(mainAccountAddress, t.Address)],
+  });
 
   // If the child accounts are not found, clear the cache
   if (!childAccountMap) {
@@ -1200,14 +1220,21 @@ const loadMainAccountsWithPubKey = async (
 const loadEvmAccountOfParent = async (
   network: string,
   mainAccountAddress: string
-): Promise<EvmAccountStore | null> => {
-  console.log('loadEvmAccountOfParent', network, mainAccountAddress);
+): Promise<EvmAccountStore | null | undefined> => {
   // Check that the network is correct
   if ((await fcl.config().get('flow.network')) !== network) {
     throw new Error('Invalid network');
   }
   // this will only be called if the user's main account is valid
-  const script = await getScripts('evm', 'getCoaAddr');
+  let script: string = '';
+
+  try {
+    script = await getScripts(network as FlowNetwork, 'evm', 'getCoaAddr');
+  } catch {
+    // We're not logged in yet, so we can't get the evm address
+    return undefined;
+  }
+
   const result = await fcl.query({
     cadence: script,
     args: (arg, t) => [arg(mainAccountAddress, t.Address)],
@@ -1235,9 +1262,18 @@ const loadEvmAccountOfParent = async (
 
     return evmAccount;
   } else {
+    // TODO: If there's no EVM address, we might want to store null in the cache
+    const nullEvmAccount: WalletAccount = {
+      address: '',
+      name: '',
+      icon: '',
+      color: '',
+      chain: networkToChainId(network),
+      id: 0,
+    };
     // If the script returns null, we need to clear the EVM account
-    clearCachedData(evmAccountKey(network, mainAccountAddress));
-    return null;
+    setCachedData(evmAccountKey(network, mainAccountAddress), nullEvmAccount);
+    return nullEvmAccount;
   }
 };
 

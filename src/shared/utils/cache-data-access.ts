@@ -28,9 +28,13 @@ export const getCachedData = async <T>(key: string): Promise<T | undefined> => {
  */
 const _updateCaller = (key: string, updateCallback: (key: string, data: unknown) => void) => {
   return (changes, areaName: string) => {
-    if (areaName === 'session' && changes[`${key}`]) {
-      const cacheData = changes[key].newValue as CacheDataItem;
-      updateCallback(key, cacheData.value);
+    if (areaName === 'session' && changes[`${key}`] && changes[key].newValue) {
+      try {
+        const cacheData = changes[key].newValue as CacheDataItem;
+        updateCallback(key, cacheData.value);
+      } catch (error) {
+        console.error('Error updating cached data', key, changes[key], error);
+      }
     }
   };
 };
