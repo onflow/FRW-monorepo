@@ -122,7 +122,7 @@ interface EvmApiResponse {
   data: EvmTokenResponse[];
 }
 
-type FlowApiResponse = { result: FlowTokenResponse[]; storage: StorageResponse };
+type FlowApiResponse = { data: { result: FlowTokenResponse[]; storage: StorageResponse } };
 
 type StorageResponse = {
   storageUsedInMB: string;
@@ -2038,6 +2038,21 @@ class OpenApiService {
     return { otherAccounts, wallet, loggedInAccounts };
   };
 
+  getAccountsWithPublicKey = async (
+    publicKey: string,
+    network: string
+  ): Promise<PublicKeyAccount[]> => {
+    const result: PublicKeyAccount[] = await this.sendRequest(
+      'GET',
+      `/api/v4/key-indexer/${publicKey}`,
+      { network },
+      {},
+      WEB_NEXT_URL
+    );
+
+    return result;
+  };
+
   /**
    * Get user tokens, handle both EVM and Flow tokens. Include price information.
    * @param address - The address of the user
@@ -2092,12 +2107,12 @@ class OpenApiService {
       {},
       WEB_NEXT_URL
     );
-    if (!userFlowTokenList?.result?.length) {
+    if (!userFlowTokenList?.data?.result?.length) {
       return [];
     }
 
     // Convert FlowTokenResponse to ExtendedTokenInfo
-    const tokens = userFlowTokenList.result.map(
+    const tokens = (userFlowTokenList?.data?.result || []).map(
       (token): ExtendedTokenInfo => ({
         id: token.identifier,
         name: token.name,
