@@ -27,6 +27,13 @@ export const useCoins = () => {
 
   const handleStorageData = useCallback(
     async (data) => {
+      console.log('Handling storage data:', data);
+
+      if (!data || !Array.isArray(data)) {
+        console.warn('Invalid data format received:', data);
+        return;
+      }
+
       const storageData = data.sort((a, b) => {
         if (b.total === a.total) {
           return new BN(b.balance).minus(new BN(a.balance)).toNumber();
@@ -34,7 +41,6 @@ export const useCoins = () => {
           return new BN(b.total).minus(new BN(a.total)).toNumber();
         }
       });
-      if (!storageData) return;
 
       // Create a map for faster lookups
       const uniqueTokenMap = new Map();
@@ -59,13 +65,21 @@ export const useCoins = () => {
         }
       }
 
-      // Batch updates
-      await Promise.all([
-        setCoins(Array.from(uniqueTokenMap.values())),
-        setTotalFlow(flowBalance.toString()),
-        setAvailableFlow(flowBalance.toString()),
-        setBalance(`$ ${sum.toFixed(2)}`),
-      ]);
+      // Use a single state update for better performance
+      const newState = {
+        coins: Array.from(uniqueTokenMap.values()),
+        totalFlow: flowBalance.toString(),
+        availableFlow: flowBalance.toString(),
+        balance: `$ ${sum.toFixed(2)}`,
+      };
+
+      console.log('Updating state with:', newState);
+
+      // Update all states at once
+      setCoins(newState.coins);
+      setTotalFlow(newState.totalFlow);
+      setAvailableFlow(newState.availableFlow);
+      setBalance(newState.balance);
     },
     [setCoins, setTotalFlow, setBalance]
   );
@@ -77,20 +91,46 @@ export const useCoins = () => {
       try {
         const coinList = await storage.get('coinList');
         const userWallet = await storage.get(userWalletsKey);
-        // check for nettwork type
-        let refreshedCoinlist;
 
-        if (isValidEthereumAddress(userWallet.currentAddress)) {
-          refreshedCoinlist = coinList['evm'][network];
-        } else {
-          refreshedCoinlist = coinList['coinItem'][network];
+        console.log('CoinList data:', { coinList, userWallet });
+
+        if (!coinList) {
+          console.warn('No coinList data found in storage');
+          return;
         }
+
+        if (!userWallet?.currentAddress) {
+          console.warn('No current address found in userWallet');
+          return;
+        }
+
+        let refreshedCoinlist;
+        const isEvm = isValidEthereumAddress(userWallet.currentAddress);
+
+        console.log('Wallet type:', isEvm ? 'EVM' : 'Flow', 'Network:', network);
+
+        if (isEvm) {
+          refreshedCoinlist = coinList?.['evm']?.[network];
+          if (!refreshedCoinlist) {
+            console.warn('No EVM coin list found for network:', network);
+          }
+        } else {
+          refreshedCoinlist = coinList?.['coinItem']?.[network];
+          if (!refreshedCoinlist) {
+            console.warn('No Flow coin list found for network:', network);
+          }
+        }
+
+        console.log('Refreshed coin list:', refreshedCoinlist);
+
         if (Array.isArray(refreshedCoinlist) && refreshedCoinlist.length > 0) {
           handleStorageData(refreshedCoinlist);
           setCoinsLoaded(true);
+        } else {
+          console.warn('Invalid or empty coin list:', refreshedCoinlist);
         }
       } catch (error) {
-        console.error('Error checking pending transactions:', error);
+        console.error('Error loading coin list:', error);
       }
     };
 
@@ -121,16 +161,18 @@ export const useCoins = () => {
   const refreshCoinData = useCallback(async () => {
     // Prevent concurrent refreshes and throttle calls
     if (refreshInProgressRef.current) {
+      console.log('Refresh already in progress, skipping');
       return;
     }
 
     const now = Date.now();
     if (now - lastRefreshTimeRef.current < 5000) {
-      // 5 second throttle
+      console.log('Throttling refresh, last refresh was less than 5s ago');
       return;
     }
 
     if (!usewallet || !walletLoaded) {
+      console.warn('Wallet not ready for refresh');
       return;
     }
 
@@ -140,15 +182,19 @@ export const useCoins = () => {
 
       // Make sure the wallet is unlocked
       if (!(await usewallet.isUnlocked())) {
+        console.warn('Wallet is locked, cannot refresh');
         return;
       }
 
-      if (!(await usewallet.getParentAddress())) {
+      const address = await usewallet.getParentAddress();
+      if (!address) {
+        console.warn('No parent address found');
         return;
       }
 
-      console.log('refreshedCoinlist');
+      console.log('Starting coin list refresh for address:', address);
       await usewallet.refreshCoinList(60000);
+      console.log('Coin list refresh completed');
     } catch (error) {
       console.error('Error refreshing coin data:', error);
     } finally {
