@@ -93,6 +93,7 @@ export const createTestGroups = (commonParams: CommonParams): ApiTestGroups => {
       { name: 'userInfo', params: {} },
       { name: 'searchUser', params: { keyword: 'webdev18_862' } },
       { name: 'checkImport', params: { key: 'test' } },
+      { name: 'getSupportedCurrencies', params: {} },
       {
         name: 'getAccountsWithPublicKey',
         params: { publicKey: commonParams.publicKey.P256.pubK, network: commonParams.network },
