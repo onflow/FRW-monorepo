@@ -1,136 +1,93 @@
-import { createPersistStore } from 'background/utils';
-import { storage } from 'background/webapi';
+import {
+  nftCatalogCollectionsKey,
+  nftCatalogCollectionsRefreshRegex,
+  nftCollectionKey,
+  nftCollectionRefreshRegex,
+  getCachedNftCollection,
+  getCachedNftCatalogCollections,
+} from '@/shared/utils/cache-data-keys';
+import { registerRefreshListener, setCachedData } from 'background/utils/data-cache';
 
 import { type NFTCollectionData, type NFTCollections } from '../../shared/types/nft-types';
-interface NftStore {
-  collectionList: {
-    mainnet: {
-      [collectionIdentifier: string]: {
-        [offset: number]: {
-          data: NFTCollectionData;
-          expiry: number;
-        };
-      };
-    };
-    testnet: {
-      [collectionIdentifier: string]: {
-        [offset: number]: {
-          data: NFTCollectionData;
-          expiry: number;
-        };
-      };
-    };
-  };
-  collections: {
-    mainnet: {
-      data: NFTCollections[];
-      expiry: number;
-    };
-    testnet: {
-      data: NFTCollections[];
-      expiry: number;
-    };
-  };
-}
 
-const EXPIRY_TIME = 60 * 1000; // 60 seconds in milliseconds
+import openapiService from './openapi';
 
 class NFT {
-  store!: NftStore;
-
   init = async () => {
-    this.store = await createPersistStore<NftStore>({
-      name: 'nftv2',
-      template: {
-        collections: {
-          testnet: {
-            data: [],
-            expiry: 0,
-          },
-          mainnet: {
-            data: [],
-            expiry: 0,
-          },
-        },
-        collectionList: {
-          testnet: {},
-          mainnet: {},
-        },
-      },
-    });
+    registerRefreshListener(nftCatalogCollectionsRefreshRegex, this.loadNftCatalogCollections);
+    registerRefreshListener(nftCollectionRefreshRegex, this.loadSingleNftCollection);
   };
 
-  getSingleCollection = (
+  loadNftCatalogCollections = async (
     network: string,
-    collectionIdentifier: string,
+    address: string
+  ): Promise<NFTCollections[]> => {
+    const data = await openapiService.nftCatalogCollections(address!, network);
+    if (!data || !Array.isArray(data)) {
+      return [];
+    }
+    // Sort by count, maintaining the new collection structure
+    const sortedList = [...data].sort((a, b) => b.count - a.count);
+
+    setCachedData(nftCatalogCollectionsKey(network, address), sortedList);
+    return sortedList;
+  };
+
+  loadSingleNftCollection = async (
+    network: string,
+    address: string,
+    collectionId: string,
+    offset: string
+  ): Promise<NFTCollectionData> => {
+    const offsetNumber = parseInt(offset) || 0;
+    const data = await openapiService.nftCatalogCollectionList(
+      address!,
+      collectionId,
+      50,
+      offsetNumber,
+      network
+    );
+
+    data.nfts.map((nft) => {
+      nft.unique_id = nft.collectionName + '_' + nft.id;
+    });
+    function getUniqueListBy(arr, key) {
+      return [...new Map(arr.map((item) => [item[key], item])).values()];
+    }
+    const unique_nfts = getUniqueListBy(data.nfts, 'unique_id');
+    data.nfts = unique_nfts;
+
+    setCachedData(nftCollectionKey(network, address, collectionId, `${offset}`), data);
+
+    return data;
+  };
+
+  getSingleCollection = async (
+    network: string,
+    address: string,
+    collectionId: string,
     offset: number
-  ): NFTCollectionData | null => {
-    const collection = this.store.collectionList[network][collectionIdentifier]?.[offset];
-    if (!collection || Date.now() > collection.expiry) {
-      return null;
-    }
-    return collection.data;
+  ): Promise<NFTCollectionData | undefined> => {
+    return getCachedNftCollection(network, address, collectionId, offset);
   };
 
-  setSingleCollection = (
-    data: NFTCollectionData,
-    collectionIdentifier: string,
-    offset: number,
-    network: string
-  ) => {
-    const expiry = Date.now() + EXPIRY_TIME;
-    if (!this.store.collectionList[network][collectionIdentifier]) {
-      this.store.collectionList[network][collectionIdentifier] = {};
+  getCollectionList = async (
+    network: string,
+    address: string
+  ): Promise<NFTCollections[] | undefined> => {
+    const collections = await getCachedNftCatalogCollections(network, address);
+    if (!collections) {
+      return undefined;
     }
-    this.store.collectionList[network][collectionIdentifier][offset] = { data, expiry };
-  };
-
-  deleteSingleCollection = (collectionIdentifier: string, offset: number, network: string) => {
-    if (this.store.collectionList[network][collectionIdentifier]) {
-      delete this.store.collectionList[network][collectionIdentifier][offset];
-    }
-  };
-
-  getCollectionList = (network: string): NFTCollections[] | null => {
-    const collections = this.store.collections[network];
-    if (!collections || Date.now() > collections.expiry) {
-      return null;
-    }
-    return collections.data;
-  };
-
-  setCollectionList = (data: Array<any>, network: string) => {
-    const expiry = Date.now() + EXPIRY_TIME;
-    this.store.collections[network] = { data, expiry };
+    return collections;
   };
 
   clear = async () => {
-    if (!this.store) {
-      await this.init();
-    }
-
-    this.store.collectionList = {
-      testnet: {},
-      mainnet: {},
-    };
-
-    this.store.collections = {
-      testnet: {
-        data: [],
-        expiry: 0,
-      },
-      mainnet: {
-        data: [],
-        expiry: 0,
-      },
-    };
-
-    storage.remove('nftv2');
-    storage.remove('nft');
+    // Just gonna ingore this for now
   };
 
   clearNFTCollection = () => {
-    this.clear();
+    // Just gonna ingore this for now
   };
 }
 
