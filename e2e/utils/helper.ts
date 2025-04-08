@@ -69,7 +69,7 @@ export const loginToExtensionAccount = async ({ page, extensionId, addr, passwor
     await page.getByRole('button', { name: 'close' }).click();
     await expect(page.getByText('Profile', { exact: true })).toBeVisible();
     // Switch to the correct account. Note doest not handle more than 3 accounts loaded
-    await page.getByRole('button', { name: 'avatar' }).getByText(nickname).click();
+    await page.getByTestId(`profile-item-nickname-${nickname}`).click();
 
     // get address
     flowAddr = await getCurrentAddress(page);

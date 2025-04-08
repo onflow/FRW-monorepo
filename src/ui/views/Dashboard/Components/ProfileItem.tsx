@@ -36,6 +36,7 @@ export const ProfileItem = ({
     <ListItem
       disablePadding
       key={profileId}
+      data-testid={`profile-item-nickname-${userInfo?.nickname}`}
       onClick={() => {
         if (profileId !== selectedProfileId) {
           setLoadingId(profileId); // Set the loading index
