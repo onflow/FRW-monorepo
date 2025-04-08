@@ -1247,6 +1247,7 @@ export class WalletController extends BaseController {
   refreshCoinList = async (_expiry = 60000): Promise<ExtendedTokenInfo[]> => {
     try {
       const isChild = await this.getActiveWallet();
+      const currencyCode = await userWalletService.getDisplayCurrency();
 
       // Handle EVM wallets
       if (isEvmAccountType(isChild)) {
@@ -1261,7 +1262,11 @@ export class WalletController extends BaseController {
       // Get network and address
       const network = await this.getNetwork();
       const address = await this.getCurrentAddress();
-      const userTokenResult = await openapiService.getUserTokens(address || '0x', network);
+      const userTokenResult = await openapiService.getUserTokens(
+        address || '0x',
+        network,
+        currencyCode
+      );
 
       // Update storage
       await coinListService.addCoins(userTokenResult, network);
@@ -1283,7 +1288,7 @@ export class WalletController extends BaseController {
     coinListService.setExpiry(exp);
 
     const network = await this.getNetwork();
-
+    const currencyCode = await userWalletService.getDisplayCurrency();
     const address = await this.getRawEvmAddressWithPrefix();
     if (!isValidEthereumAddress(address)) {
       throw new Error('Invalid Ethereum address in coinlist');
@@ -1326,7 +1331,11 @@ export class WalletController extends BaseController {
       return updatedList;
     };
 
-    const userTokenResult = await openapiService.getUserTokens(address || '0x', network);
+    const userTokenResult = await openapiService.getUserTokens(
+      address || '0x',
+      network,
+      currencyCode
+    );
     const tokenFinalResult = customToken(userTokenResult, evmCustomToken);
     coinListService.addCoins(tokenFinalResult, network, 'evm');
     return tokenFinalResult;

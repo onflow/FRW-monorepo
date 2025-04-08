@@ -10,6 +10,7 @@ import { useWallet } from 'ui/utils';
 
 import IconChevronRight from '../../../components/iconfont/IconChevronRight';
 
+import { CurrencyValue } from './CurrencyValue';
 import { TokenValue } from './TokenValue';
 
 // import tips from 'ui/FRWAssets/svg/tips.svg';
@@ -216,11 +217,7 @@ const TokenInfoCard = ({ price, token, setAccessible, accessible, tokenInfo, chi
           </Box>
           <Typography variant="body1" color="text.secondary" sx={{ fontSize: '16px' }}>
             <Box component="span" sx={{ marginRight: '0.25rem' }}>
-              <TokenValue
-                value={String(Number(balance) * price)}
-                prefix="$"
-                postFix={chrome.i18n.getMessage('USD')}
-              />
+              <CurrencyValue value={String(Number(balance) * price)} />
             </Box>
           </Typography>
           <Box sx={{ display: 'flex', gap: '12px', height: '36px', mt: '24px', width: '100%' }}>

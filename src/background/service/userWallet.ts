@@ -1053,7 +1053,6 @@ class UserWallet {
 
   getSupportedCurrencies = async (): Promise<Currency[]> => {
     try {
-      // Return static list for now since we know the supported currencies
       const supportedCurrencies = await openapiService.getSupportedCurrencies();
       return supportedCurrencies;
     } catch (error) {

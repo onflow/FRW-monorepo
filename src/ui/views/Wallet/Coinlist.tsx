@@ -18,6 +18,7 @@ import { type ActiveChildType } from '@/shared/types/wallet-types';
 import { formatLargeNumber } from '@/shared/utils/number';
 
 import IconCreate from '../../../components/iconfont/IconCreate';
+import { CurrencyValue } from '../TokenDetail/CurrencyValue';
 import { TokenValue } from '../TokenDetail/TokenValue';
 
 const CoinList = ({
@@ -121,7 +122,7 @@ const CoinList = ({
                     }}
                   >
                     {props.change === null ? '-' : ''}
-                    <TokenValue value={String(props.price)} prefix="$" />
+                    <CurrencyValue value={String(props.price)} />
                   </Typography>
                   {props.change !== 0 && (
                     <Typography
@@ -203,7 +204,7 @@ const CoinList = ({
                   secondaryAction={
                     <EndListItemText
                       primary={parseFloat(coin.balance).toFixed(3)}
-                      secondary={<TokenValue value={String(coin.total)} prefix="$" />}
+                      secondary={<CurrencyValue value={String(coin.total)} />}
                       unit={coin.unit}
                       change={parseFloat(coin.change24h?.toFixed(2) || '0')}
                     />

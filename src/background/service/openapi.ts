@@ -123,6 +123,12 @@ interface EvmApiResponse {
   data: EvmTokenResponse[];
 }
 
+interface CurrencyResponse {
+  data: {
+    currencies: Currency[];
+  };
+}
+
 type FlowApiResponse = { result: FlowTokenResponse[]; storage: StorageResponse };
 
 type StorageResponse = {
@@ -2054,82 +2060,30 @@ class OpenApiService {
     return result;
   };
 
-  SUPPORTED_CURRENCIES = [
-    {
-      code: 'USD',
-      name: 'United States Dollar',
-      symbol: '$',
-      country: 'United States',
-    },
-    {
-      code: 'EUR',
-      name: 'Euro',
-      symbol: '€',
-      country: 'Eurozone',
-    },
-    {
-      code: 'JPY',
-      name: 'Japanese Yen',
-      symbol: '¥',
-      country: 'Japan',
-    },
-    {
-      code: 'GBP',
-      name: 'British Pound Sterling',
-      symbol: '£',
-      country: 'United Kingdom',
-    },
-    {
-      code: 'AUD',
-      name: 'Australian Dollar',
-      symbol: '$',
-      country: 'Australia',
-    },
-    {
-      code: 'CAD',
-      name: 'Canadian Dollar',
-      symbol: '$',
-      country: 'Canada',
-    },
-    {
-      code: 'CHF',
-      name: 'Swiss Franc',
-      symbol: 'CHF',
-      country: 'Switzerland',
-    },
-    {
-      code: 'CNY',
-      name: 'Chinese Yuan Renminbi',
-      symbol: '¥',
-      country: 'China',
-    },
-    {
-      code: 'HKD',
-      name: 'Hong Kong Dollar',
-      symbol: '$',
-      country: 'Hong Kong',
-    },
-    {
-      code: 'NZD',
-      name: 'New Zealand Dollar',
-      symbol: '$',
-      country: 'New Zealand',
-    },
-  ];
-
   // ** Get supported currencies **
-  // TODO: Get this from the backend
   getSupportedCurrencies = async (): Promise<Currency[]> => {
-    return this.SUPPORTED_CURRENCIES;
+    const supportedCurrencies: CurrencyResponse = await this.sendRequest(
+      'GET',
+      `/api/v4/currencies`,
+      {},
+      {},
+      WEB_NEXT_URL
+    );
+    return supportedCurrencies?.data?.currencies || [];
   };
 
   /**
    * Get user tokens, handle both EVM and Flow tokens. Include price information.
    * @param address - The address of the user
    * @param network - The network of the user
+   * @param currencyCode - The currency code of the user
    * @returns The tokens of the user
    */
-  async getUserTokens(address: string, network?: string): Promise<ExtendedTokenInfo[]> {
+  async getUserTokens(
+    address: string,
+    network?: string,
+    currencyCode: string = 'USD'
+  ): Promise<ExtendedTokenInfo[]> {
     if (!address) {
       throw new Error('Address is required');
     }
@@ -2149,9 +2103,9 @@ class OpenApiService {
 
     try {
       if (isEvmAddress) {
-        return await this.fetchUserEvmTokens(address, network);
+        return await this.fetchUserEvmTokens(address, network, currencyCode);
       } else {
-        return await this.fetchUserFlowTokens(address, network);
+        return await this.fetchUserFlowTokens(address, network, currencyCode);
       }
     } catch (error) {
       console.error('Error fetching user tokens:', error);
@@ -2161,7 +2115,8 @@ class OpenApiService {
 
   private async fetchUserFlowTokens(
     address: string,
-    network: string
+    network: string,
+    currencyCode: string = 'USD'
   ): Promise<ExtendedTokenInfo[]> {
     const cacheKey = `flow_tokens_${address}_${network}`;
     const cachedFlowData = await storage.getExpiry(cacheKey);
@@ -2173,7 +2128,7 @@ class OpenApiService {
     const userFlowTokenList: FlowApiResponse = await this.sendRequest(
       'GET',
       `/api/v4/cadence/tokens/ft/${address}`,
-      {},
+      { network, currency: currencyCode },
       {},
       WEB_NEXT_URL
     );
@@ -2216,7 +2171,11 @@ class OpenApiService {
     return tokens;
   }
 
-  private async fetchUserEvmTokens(address: string, network: string): Promise<ExtendedTokenInfo[]> {
+  private async fetchUserEvmTokens(
+    address: string,
+    network: string,
+    currencyCode: string = 'USD'
+  ): Promise<ExtendedTokenInfo[]> {
     const cacheKey = `evm_tokens_${address}_${network}`;
     const cachedEvmData = await storage.getExpiry(cacheKey);
 
@@ -2229,7 +2188,7 @@ class OpenApiService {
     const userEvmTokenList: EvmApiResponse = await this.sendRequest(
       'GET',
       `/api/v4/evm/tokens/ft/${formattedEvmAddress}`,
-      {},
+      { network, currency: currencyCode },
       {},
       WEB_NEXT_URL
     );
