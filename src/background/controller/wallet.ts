@@ -1386,12 +1386,6 @@ export class WalletController extends BaseController {
     return NFTList;
   };
 
-  private currencyBalance = (balance: string, price) => {
-    const bnBalance = new BN(balance);
-    const currencyBalance = bnBalance.times(new BN(price));
-    return currencyBalance.toNumber();
-  };
-
   setCurrentCoin = async (coinName: string) => {
     await coinListService.setCurrentCoin(coinName);
   };
@@ -3682,6 +3676,14 @@ export class WalletController extends BaseController {
     }
 
     return emoji;
+  };
+
+  setDisplayCurrency = async (currency: string) => {
+    await userWalletService.setDisplayCurrency(currency);
+  };
+
+  getDisplayCurrency = async () => {
+    return await userWalletService.getDisplayCurrency();
   };
 
   // Get the news from the server

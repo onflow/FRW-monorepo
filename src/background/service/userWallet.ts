@@ -4,7 +4,6 @@ import type { Account as FclAccount } from '@onflow/typedefs';
 import { getApp } from 'firebase/app';
 import { getAuth, signInAnonymously } from 'firebase/auth/web-extension';
 
-import wallet from '@/background/controller/wallet';
 import keyringService from '@/background/service/keyring';
 import { mixpanelTrack } from '@/background/service/mixpanel';
 import openapiService from '@/background/service/openapi';
@@ -74,6 +73,7 @@ const USER_WALLET_TEMPLATE: UserWalletStore = {
   parentAddress: '',
   displayCurrency: 'USD',
 };
+
 class UserWallet {
   store!: UserWalletStore;
   accounts: {
@@ -89,6 +89,13 @@ class UserWallet {
 
   // This is a map of the evm addresses for each address
   evmAddressMap: Map<FlowNetwork, Map<FlowAddress, string>> = new Map();
+
+  // Reference to the wallet controller
+  private walletController: any;
+
+  setWalletController = (controller: any) => {
+    this.walletController = controller;
+  };
 
   init = async () => {
     this.store = await createPersistStore<UserWalletStore>({
@@ -580,7 +587,7 @@ class UserWallet {
   ): Promise<string> => {
     const scriptName = this.extractScriptName(cadence);
     try {
-      const allowed = await wallet.allowLilicoPay();
+      const allowed = await this.walletController.allowLilicoPay();
       const payerFunction = shouldCoverFee
         ? this.bridgeFeePayerAuthFunction
         : allowed
@@ -735,7 +742,12 @@ class UserWallet {
       hashAlgo,
       privateKey
     );
-    return wallet.openapi.loginV3(accountKey, deviceInfo, realSignature, replaceUser);
+    return this.walletController.openapi.loginV3(
+      accountKey,
+      deviceInfo,
+      realSignature,
+      replaceUser
+    );
   };
 
   reSign = async () => {
@@ -751,7 +763,7 @@ class UserWallet {
 
   authorizationFunction = async (account: FclAccount) => {
     // authorization function need to return an account
-    const address = fcl.withPrefix(await wallet.getMainAddress());
+    const address = fcl.withPrefix(await this.walletController.getMainAddress());
     const ADDRESS = fcl.withPrefix(address);
     // TODO: FIX THIS
     const KEY_ID = (await storage.get('keyIndex')) || 0;
@@ -823,7 +835,7 @@ class UserWallet {
 
   payerAuthFunction = async (account: any = {}) => {
     // authorization function need to return an account
-    const payer = await wallet.getPayerAddressAndKeyId();
+    const payer = await this.walletController.getPayerAddressAndKeyId();
     const address = fcl.withPrefix(payer.address);
     const ADDRESS = fcl.withPrefix(address);
     // TODO: FIX THIS
@@ -847,7 +859,7 @@ class UserWallet {
   };
   bridgeFeePayerAuthFunction = async (account: any = {}) => {
     // authorization function need to return an account
-    const bridgeFeePayer = await wallet.getBridgeFeePayerAddressAndKeyId();
+    const bridgeFeePayer = await this.walletController.getBridgeFeePayerAddressAndKeyId();
     const address = fcl.withPrefix(bridgeFeePayer.address);
     const ADDRESS = fcl.withPrefix(address);
     // TODO: FIX THIS
@@ -920,7 +932,12 @@ class UserWallet {
     const deviceInfo = await this.getDeviceInfo();
 
     // Login with the signed message
-    return wallet.openapi.loginV3(accountKeyRequest, deviceInfo, realSignature, replaceUser);
+    return this.walletController.openapi.loginV3(
+      accountKeyRequest,
+      deviceInfo,
+      realSignature,
+      replaceUser
+    );
   };
 
   sigInWithPk = async (privateKey: string, replaceUser = true) => {
@@ -952,7 +969,12 @@ class UserWallet {
     const deviceInfo = await this.getDeviceInfo();
 
     // Login with the account key request
-    return wallet.openapi.loginV3(accountKeyRequest, deviceInfo, realSignature, replaceUser);
+    return this.walletController.openapi.loginV3(
+      accountKeyRequest,
+      deviceInfo,
+      realSignature,
+      replaceUser
+    );
   };
 
   signInv3 = async (
@@ -991,7 +1013,12 @@ class UserWallet {
     if (accountKey.public_key === publicKey) {
       const signature = await secp.sign(messageHash, privateKey);
       const realSignature = secp.Signature.fromHex(signature).toCompactHex();
-      return wallet.openapi.loginV3(accountKey, deviceInfo, realSignature, replaceUser);
+      return this.walletController.openapi.loginV3(
+        accountKey,
+        deviceInfo,
+        realSignature,
+        replaceUser
+      );
     } else {
       return false;
     }
@@ -1004,8 +1031,8 @@ class UserWallet {
   };
 
   getDeviceInfo = async (): Promise<DeviceInfoRequest> => {
-    const result = await wallet.openapi.getLocation();
-    const installationId = await wallet.openapi.getInstallationId();
+    const result = await this.walletController.openapi.getLocation();
+    const installationId = await this.walletController.openapi.getInstallationId();
     // console.log('location ', userlocation);
     const userlocation = result.data;
     const deviceInfo: DeviceInfoRequest = {
@@ -1041,6 +1068,11 @@ class UserWallet {
     if (supportedCurrencies.some((c) => c.code === currency)) {
       this.store.displayCurrency = currency;
       eventBus.emit(EVENTS.displayCurrencyChanged, currency);
+      if (this.walletController) {
+        await this.walletController.refreshCoinList();
+      } else {
+        console.warn('WalletController not initialized when setting display currency');
+      }
     }
   };
 

@@ -1,21 +1,11 @@
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import {
-  Box,
-  Typography,
-  IconButton,
-  List,
-  ListItemButton,
-  ListItem,
-  CircularProgress,
-} from '@mui/material';
+import { Box, Typography, List, ListItemButton, ListItem, CircularProgress } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { useState, useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
 
-import { preferenceService, userWalletService } from '@/background/service';
 import IconEnd from '@/components/iconfont/IconAVector11Stroke';
+import type { Currency } from '@/shared/types/wallet-types';
 import { LLHeader } from '@/ui/FRWComponent';
-import { useWalletLoaded } from '@/ui/utils';
+import { useWallet, useWalletLoaded } from '@/ui/utils';
 
 const useStyles = makeStyles(() => ({
   arrowback: {
@@ -65,37 +55,36 @@ const useStyles = makeStyles(() => ({
 
 const CurrencySettings = () => {
   const classes = useStyles();
-  const history = useHistory();
   const walletLoaded = useWalletLoaded();
+  const wallet = useWallet();
   const [currency, setCurrency] = useState('USD');
   const [isLoading, setIsLoading] = useState(true);
-  const supportedCurrencies = ['USD', 'CAD', 'CNY', 'EUR', 'GBP'];
+  const [supportedCurrencies, setSupportedCurrencies] = useState<Currency[]>([]);
 
   useEffect(() => {
     if (!walletLoaded) return;
 
     const loadCurrency = async () => {
       try {
-        await userWalletService.init();
-        const currentCurrency = userWalletService.getDisplayCurrency();
-        if (currentCurrency) {
-          setCurrency(currentCurrency);
-        }
+        const currencies = await wallet.openapi.getSupportedCurrencies();
+        setSupportedCurrencies(currencies);
+        const currentCurrency = await wallet.getDisplayCurrency();
+        setCurrency(currentCurrency);
       } catch (error) {
-        console.warn('Error loading currency preference:', error);
+        console.warn('Error loading currency preferences:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
     loadCurrency();
-  }, [walletLoaded]);
+  }, [walletLoaded, wallet]);
 
   const handleCurrencyChange = async (newCurrency: string) => {
-    setCurrency(newCurrency);
     try {
-      await userWalletService.init();
-      userWalletService.setDisplayCurrency(newCurrency);
+      setCurrency(newCurrency);
+      await wallet.setDisplayCurrency(newCurrency);
+      await wallet.refreshCoinList();
     } catch (error) {
       console.warn('Error saving currency preference:', error);
     }
@@ -122,15 +111,17 @@ const CurrencySettings = () => {
         <List className={classes.list}>
           {supportedCurrencies.map((curr) => (
             <ListItem
-              key={curr}
+              key={curr.code}
               component="div"
-              onClick={() => handleCurrencyChange(curr)}
-              className={`${classes.listItem} ${curr === currency ? 'selected' : ''}`}
+              onClick={() => handleCurrencyChange(curr.code)}
+              className={`${classes.listItem} ${curr.code === currency ? 'selected' : ''}`}
               disablePadding
             >
               <ListItemButton className={classes.listItemButton}>
-                <Typography color="neutral.contrastText">{curr}</Typography>
-                {curr === currency && <IconEnd size={12} />}
+                <Typography color="neutral.contrastText">
+                  {curr.code} ({curr.symbol})
+                </Typography>
+                {curr.code === currency && <IconEnd size={12} />}
               </ListItemButton>
             </ListItem>
           ))}
