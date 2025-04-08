@@ -8,7 +8,6 @@ import { useProfiles } from './useProfileHook';
 export const useInitHook = () => {
   const walletLoaded = useWalletLoaded();
   const { fetchProfileData } = useProfiles();
-  const { refreshCoinData } = useCoins();
   const isInitializing = useRef(false);
 
   const initializeStore = useCallback(async () => {
@@ -21,11 +20,10 @@ export const useInitHook = () => {
       isInitializing.current = true;
 
       await fetchProfileData();
-      await refreshCoinData();
     } finally {
       isInitializing.current = false;
     }
-  }, [fetchProfileData, refreshCoinData, walletLoaded]);
+  }, [fetchProfileData, walletLoaded]);
 
   return { initializeStore };
 };

@@ -104,11 +104,6 @@ vi.mock('../useCoinHook', () => ({
       mockSetTotalFlow('5');
       return Promise.resolve();
     },
-    refreshCoinData: async () => {
-      await mockedWallet.refreshCoinList();
-      mockSetCoinsLoaded(true);
-      return Promise.resolve();
-    },
     clearCoins: () => {
       mockSetCoins([]);
       mockSetBalance('$ 0.00');
@@ -169,32 +164,6 @@ describe('useCoinHook', () => {
 
       // Check that balance was updated correctly
       expect(mockSetBalance).toHaveBeenCalledWith('$ 7.00');
-    });
-  });
-
-  describe('refreshCoinData', () => {
-    it('should call wallet.refreshCoinList', async () => {
-      const mockWallet = {
-        refreshCoinList: vi.fn().mockResolvedValue(undefined),
-        isUnlocked: vi.fn().mockResolvedValue(true),
-        getParentAddress: vi.fn().mockResolvedValue('test-address'),
-        openapi: {} as unknown,
-        isLoaded: vi.fn().mockResolvedValue(true),
-        setLoaded: vi.fn(),
-        boot: vi.fn().mockResolvedValue(undefined),
-        [Symbol.for('catch-all')]: vi.fn().mockImplementation(() => Promise.resolve()),
-      } as unknown;
-
-      vi.mocked(useWallet).mockReturnValue(mockWallet as ReturnType<typeof useWallet>);
-
-      const { refreshCoinData } = useCoins();
-
-      await act(async () => {
-        await refreshCoinData();
-      });
-
-      // Verify wallet methods were called
-      expect(mockedWallet.refreshCoinList).toHaveBeenCalled();
     });
   });
 });

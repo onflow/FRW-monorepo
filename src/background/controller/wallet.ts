@@ -1123,63 +1123,6 @@ export class WalletController extends BaseController {
     }
   };
 
-  private async getFlowTokenPrice(flowPrice?: string): Promise<any> {
-    const cachedFlowTokenPrice = await storage.getExpiry('flowTokenPrice');
-    if (cachedFlowTokenPrice) {
-      if (flowPrice) {
-        cachedFlowTokenPrice.price.last = flowPrice;
-      }
-      return cachedFlowTokenPrice;
-    }
-    const result = await openapiService.getTokenPrice('flow');
-    if (flowPrice) {
-      result.price.last = flowPrice;
-    }
-    await storage.setExpiry('flowTokenPrice', result, 300000); // Cache for 5 minutes
-    return result;
-  }
-
-  private async calculateTokenPrice(token: string, price: string | null): Promise<any> {
-    if (price) {
-      return { price: { last: price, change: { percentage: '0.0' } } };
-    } else {
-      return { price: { last: '0.0', change: { percentage: '0.0' } } };
-    }
-  }
-
-  private async tokenPrice(
-    tokenSymbol: string,
-    address: string,
-    data: Record<string, any>,
-    contractName: string
-  ) {
-    const token = tokenSymbol.toLowerCase();
-    const key = `${contractName.toLowerCase()}${address.toLowerCase()}`;
-    const price = await openapiService.getPricesByKey(key, data);
-
-    if (token === 'flow') {
-      const flowPrice = price || data['FLOW'];
-      return this.getFlowTokenPrice(flowPrice);
-    }
-
-    return this.calculateTokenPrice(token, price);
-  }
-
-  private async evmtokenPrice(tokeninfo, data) {
-    const token = tokeninfo.symbol.toLowerCase();
-    const price = await openapiService.getPricesByEvmaddress(
-      tokeninfo.evmAddress || tokeninfo.address,
-      data
-    );
-
-    if (token === 'flow') {
-      const flowPrice = price || data['FLOW'];
-      return this.getFlowTokenPrice(flowPrice);
-    }
-
-    return this.calculateTokenPrice(token, price);
-  }
-
   /**
    * Refreshes coin list with updated balances and prices
    * @param _expiry Expiry time in milliseconds
@@ -1205,7 +1148,7 @@ export class WalletController extends BaseController {
       const userTokenResult = await openapiService.getUserTokens(address || '0x', network);
 
       // Update storage
-      await coinListService.addCoins(userTokenResult, network);
+      // await coinListService.addCoins(userTokenResult, network);
 
       return userTokenResult;
     } catch (err) {
@@ -1275,6 +1218,12 @@ export class WalletController extends BaseController {
     const tokenFinalResult = customToken(userTokenResult, evmCustomToken);
     coinListService.addCoins(tokenFinalResult, network, 'evm');
     return tokenFinalResult;
+  };
+
+  initCoinListSession = async (address: string) => {
+    console.log('initCoinListSession', address);
+    const network = await this.getNetwork();
+    await coinListService.initCoinList(network, address);
   };
 
   reqeustEvmNft = async () => {

@@ -1,7 +1,10 @@
 import { type BalanceMap, type CoinItem, type ExtendedTokenInfo } from '@/shared/types/coin-types';
+import { coinListKey, coinListRefreshRegex } from '@/shared/utils/cache-data-keys';
 import { createPersistStore } from 'background/utils';
 import { storage } from 'background/webapi';
 
+import { walletController } from '../controller';
+import { clearCachedData, registerRefreshListener, setCachedData } from '../utils/data-cache';
 interface CoinListStore {
   expiry: number;
   coinItem: Record<string, any>;
@@ -33,6 +36,7 @@ class CoinList {
       name: 'coinList',
       template: COINLIST_TEMPLATE,
     });
+    initCoinListLoaders();
   };
 
   clear = async () => {
@@ -147,6 +151,38 @@ class CoinList {
 
     console.log('Updated balances for', updatedCoins.length, 'coins on', network);
   };
+
+  initCoinList = async (network: string, address: string) => {
+    const coinList = await refreshCoinList(network, address);
+    if (!coinList || coinList.length === 0) {
+      return null;
+    }
+    return coinList;
+  };
 }
+
+/**
+ * Load the coinlist for a given address
+ * Store in the data cache
+ * @param network - The network to load the accounts for
+ * @param address - The adress to load the accounts for
+ * @returns The coinlist for the given adress or null if not found. Does not throw an error.
+ */
+const refreshCoinList = async (
+  network: string,
+  address: string
+): Promise<ExtendedTokenInfo[] | null> => {
+  const coinList: ExtendedTokenInfo[] = await walletController.refreshCoinList();
+  if (!coinList || coinList.length === 0) {
+    return null;
+  }
+  setCachedData(coinListKey(network, address, 'usd'), coinList);
+
+  return coinList;
+};
+
+const initCoinListLoaders = () => {
+  registerRefreshListener(coinListRefreshRegex, refreshCoinList);
+};
 
 export default new CoinList();

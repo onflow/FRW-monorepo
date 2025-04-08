@@ -80,3 +80,8 @@ export type EvmAccountStore = WalletAccount;
 export const getCachedEvmAccount = async (network: string, mainAccountAddress: string) => {
   return getCachedData<EvmAccountStore>(evmAccountKey(network, mainAccountAddress));
 };
+
+export const coinListKey = (network: string, publicKey: string, currency = 'usd') =>
+  `coin-list-${network}-${publicKey}-${currency}`;
+
+export const coinListRefreshRegex = refreshKey(coinListKey);
