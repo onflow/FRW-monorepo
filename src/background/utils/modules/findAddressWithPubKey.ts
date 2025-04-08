@@ -7,8 +7,6 @@ import type { PublicKeyTuple } from '@/shared/types/key-types';
 import { type AccountKeyRequest } from '@/shared/types/network-types';
 import { type PublicKeyAccount } from '@/shared/types/wallet-types';
 
-import { getPublicAccountForPK } from './findAddressWithPK';
-
 /**
  * Get accounts with public key tuple
  * This is the main function to look up the account with the public key. Called when loading the wallet.
@@ -33,13 +31,11 @@ export const getAccountsByPublicKeyTuple = async (
   // Combine the accounts
   const accounts = [...p256Accounts, ...sepc256k1Accounts];
 
-  // Check that at least one account has weight of 1000 or more
-  const hasWeight = accounts.some((account) => account.weight >= 1000);
-  if (!hasWeight || accounts.length === 0) {
-    throw new Error('No accounts found with the given public key');
-  }
+  // Filter out accounts with weight of < 1000
+  const accountsOver1000 = accounts.filter((account) => account.weight >= 1000);
+
   // Otherwise, return the accounts
-  return accounts;
+  return accountsOver1000;
 };
 
 type KeyIndexerAccountResponse = {

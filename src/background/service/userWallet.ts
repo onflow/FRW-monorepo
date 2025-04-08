@@ -141,7 +141,7 @@ class UserWallet {
    * for each pubkey and network combination
    * @param pubkey - The pubkey to set
    */
-  setCurrentPubkey = (pubkey: string) => {
+  setCurrentPubkey = async (pubkey: string) => {
     // Note that values that are set in the proxy store are immediately available through the proxy
     // It stores the value in memory immediately
     // However the value in storage may not be updated immediately
@@ -578,7 +578,6 @@ class UserWallet {
       this.store.network,
       this.getParentAddress() as FlowAddress
     );
-
     return evmAccount ?? null;
   };
 
@@ -1099,14 +1098,15 @@ const loadAllAccountsWithPubKey = async (network: string, pubKey: string) => {
   const mainAccounts = await retryOperation(
     async () => {
       const mainAccounts = await loadMainAccountsWithPubKey(network, pubKey);
-      if (mainAccounts) {
+      if (mainAccounts && mainAccounts.length > 0) {
         return mainAccounts;
       }
+      throw new Error('Main accounts not yet loaded');
     },
     MAX_LOAD_TIME,
     POLL_INTERVAL
   );
-  if (!mainAccounts) {
+  if (!mainAccounts || mainAccounts.length === 0) {
     throw new Error(
       `Failed to load main accounts even after trying for ${Math.round(MAX_LOAD_TIME / 1000 / 60)} minutes`
     );

@@ -377,7 +377,7 @@ export class WalletController extends BaseController {
     sessionService.broadcastEvent('unlock');
 
     // Refresh the wallet data
-    await this.refreshWallets();
+    this.refreshWallets();
   };
 
   submitPassword = async (password: string) => {
@@ -1958,10 +1958,8 @@ export class WalletController extends BaseController {
     if (activeAccountType !== 'child') {
       const evmAddress = await userWalletService.getCurrentEvmAddress();
       const childResp = await userWalletService.getChildAccounts();
-      const isEmptyObject = (obj: any) => {
-        return Object.keys(obj).length === 0 && obj.constructor === Object;
-      };
-      if (evmAddress !== null || !isEmptyObject(childResp)) {
+
+      if (evmAddress !== null || (childResp && childResp?.length > 0)) {
         return true;
       } else {
         return false;

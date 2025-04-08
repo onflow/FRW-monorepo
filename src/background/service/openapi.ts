@@ -118,11 +118,15 @@ interface EvmTokenResponse {
   decimals: number;
   logoURI: string;
   flowIdentifier: string;
-  balance: string;
   priceInUSD: string;
   balanceInUSD: string;
   priceInFLOW: string;
   balanceInFLOW: string;
+  displayBalance: string;
+  rawBalance: string;
+  currency: string;
+  priceInCurrency: string;
+  balanceInCurrency: string;
 }
 
 interface EvmApiResponse {
@@ -2252,7 +2256,7 @@ class OpenApiService {
         price: Number(token.priceInUSD || '0'),
         total: Number(token.balanceInUSD || '0'),
         change24h: 0,
-        balance: token.balance || '0',
+        balance: token.displayBalance || '0',
         // Add CoinItem properties
         coin: token.name, // redundant for compatibility
         unit: token.symbol, // redundant for compatibility

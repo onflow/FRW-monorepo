@@ -46,6 +46,15 @@ const UsernameError: React.FC = () => (
   </Box>
 );
 
+const UnexpectedError: React.FC = () => (
+  <Box display="flex" flexDirection="row" alignItems="center">
+    <CancelIcon size={24} color={'#E54040'} style={{ margin: '8px' }} />
+    <Typography variant="body1" color="text.secondary">
+      {chrome.i18n.getMessage('Oops__unexpected__error')}
+    </Typography>
+  </Box>
+);
+
 const Unlock = () => {
   const wallet = useWallet();
   const walletIsLoaded = useWalletLoaded();
@@ -53,7 +62,8 @@ const Unlock = () => {
   const classes = useStyles();
   const inputEl = useRef<any>(null);
   // const { t } = useTranslation();
-  const [showError, setShowError] = useState(false);
+  const [showPasswordError, setShowPasswordError] = useState(false);
+  const [showUnexpectedError, setShowUnexpectedError] = useState(false);
   const [password, setPassword] = useState(DEFAULT_PASSWORD);
   const [resetPop, setResetPop] = useState<boolean>(false);
   const [unlocking, setUnlocking] = useState<boolean>(false);
@@ -72,13 +82,22 @@ const Unlock = () => {
   }, [wallet, clearProfileData]);
 
   const handleUnlock = useCallback(async () => {
+    // Check the password is correct
+    try {
+      await wallet.verifyPassword(password);
+    } catch {
+      // Password is incorrect
+      setShowPasswordError(true);
+      return;
+    }
+    // Unlock the wallet
     try {
       setUnlocking(true);
       await wallet.unlock(password);
       history.replace('/');
     } catch (err) {
       console.error(err);
-      setShowError(true);
+      setShowUnexpectedError(true);
     } finally {
       setUnlocking(false);
     }
@@ -145,13 +164,13 @@ const Unlock = () => {
           disableUnderline
           value={password}
           onChange={(event) => {
-            setShowError(false);
+            setShowPasswordError(false);
             setPassword(event.target.value);
           }}
           onKeyDown={handleKeyDown}
         />
 
-        <SlideRelative direction="down" show={showError}>
+        <SlideRelative direction="down" show={showPasswordError || showUnexpectedError}>
           <Box
             sx={{
               width: '95%',
@@ -161,7 +180,7 @@ const Unlock = () => {
             }}
           >
             <Box display="flex" flexDirection="row" sx={{ p: '4px' }}>
-              <UsernameError />
+              {showPasswordError ? <UsernameError /> : <UnexpectedError />}
             </Box>
           </Box>
         </SlideRelative>

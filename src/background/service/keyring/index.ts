@@ -338,8 +338,11 @@ class KeyringService extends EventEmitter {
    * @returns {Promise<Keyring>} A Promise that resolves to the keyring.
    */
   async importPrivateKey(password: string, privateKey: string): Promise<Keyring> {
-    // Note persistAllKeyrings will verify the password
-    await this.persistAllKeyrings(password);
+    // Verify the password
+    await this.verifyPassword(password);
+    // Clear the current keyrings as the new keyring will be a simple keyring
+    await this.clearKeyrings();
+    // Add the new keyring
     const keyring = await this.addNewKeyring(password, 'Simple Key Pair', [privateKey]);
     await this.persistAllKeyrings(password);
     await this.setUnlocked();
@@ -355,8 +358,10 @@ class KeyringService extends EventEmitter {
    * @returns {Promise<Object>} A Promise that resolves to the state.
    */
   async importPublicKey(password: string, key: string, seed: string): Promise<any> {
-    // First persist all keyrings
-    await this.persistAllKeyrings(password);
+    // Verify the password
+    await this.verifyPassword(password);
+    // Clear the current keyrings as the new keyring will replace it
+    await this.clearKeyrings();
 
     // Add new keyring and store reference
     const keyring = await this.addNewKeyring(password, 'HD Key Tree', {
@@ -432,13 +437,14 @@ class KeyringService extends EventEmitter {
     derivationPath = FLOW_BIP44_PATH,
     passphrase = ''
   ): Promise<Keyring> {
+    // Verify the password
+    await this.verifyPassword(password);
     // Validate mnemonic first
     if (!bip39.validateMnemonic(seed)) {
       throw new Error(i18n.t('mnemonic phrase is invalid'));
     }
-
-    // Persist existing keyrings
-    await this.persistAllKeyrings(password);
+    // Clear the current keyrings as the new keyring will replace it
+    await this.clearKeyrings();
 
     // Create new keyring
     const keyring = await this.addNewKeyring(password, 'HD Key Tree', {
@@ -447,13 +453,6 @@ class KeyringService extends EventEmitter {
       derivationPath,
       passphrase,
     });
-
-    // Get and validate first account
-    const accounts = await keyring.getAccounts();
-    const [firstAccount] = accounts;
-    if (!firstAccount) {
-      throw new Error('KeyringController - First Account not found.');
-    }
 
     // Persist and update state
     await this.persistAllKeyrings(password);
