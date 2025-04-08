@@ -1198,7 +1198,7 @@ export class WalletController extends BaseController {
 
     const userTokenResult = await openapiService.getUserTokens(address || '0x', network);
     const tokenFinalResult = customToken(userTokenResult, evmCustomToken);
-    coinListService.addCoins(tokenFinalResult, network, 'evm');
+    // coinListService.addCoins(tokenFinalResult, network, 'evm');
     return tokenFinalResult;
   };
 
