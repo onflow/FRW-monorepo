@@ -122,7 +122,7 @@ interface EvmApiResponse {
   data: EvmTokenResponse[];
 }
 
-type FlowApiResponse = { result: FlowTokenResponse[]; storage: StorageResponse };
+type FlowApiResponse = { data: { result: FlowTokenResponse[]; storage: StorageResponse } };
 
 type StorageResponse = {
   storageUsedInMB: string;
@@ -2107,12 +2107,12 @@ class OpenApiService {
       {},
       WEB_NEXT_URL
     );
-    if (!userFlowTokenList?.result?.length) {
+    if (!userFlowTokenList?.data?.result?.length) {
       return [];
     }
 
     // Convert FlowTokenResponse to ExtendedTokenInfo
-    const tokens = userFlowTokenList.result.map(
+    const tokens = (userFlowTokenList?.data?.result || []).map(
       (token): ExtendedTokenInfo => ({
         id: token.identifier,
         name: token.name,
