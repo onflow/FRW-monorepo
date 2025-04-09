@@ -241,7 +241,10 @@ class UserWallet {
     try {
       await this.loadActiveAccounts(network, pubkey);
       // extenal method that ensures caches are loaded
-      await loadAllAccountsWithPubKey(network, pubkey);
+      const mainAccounts = await loadAllAccountsWithPubKey(network, pubkey);
+      if (mainAccounts && mainAccounts.length > 0) {
+        updateMainAccountsWithBalance(mainAccounts, network);
+      }
       // Ensure the parent address is valid - this can only be called after the active and main accounts are loaded
       // Wonder if this is the best way to do this
       await this.ensureValidActiveAccount();
@@ -1101,7 +1104,10 @@ const POLL_INTERVAL = 2_000; // 2 seconds
  * @param pubKey - The public key to load the accounts for
  * @returns The main accounts for the given public key or null if not found. Does not throw an error.
  */
-const loadAllAccountsWithPubKey = async (network: string, pubKey: string) => {
+const loadAllAccountsWithPubKey = async (
+  network: string,
+  pubKey: string
+): Promise<MainAccount[]> => {
   if (!network || !pubKey) {
     throw new Error('Network and pubkey are required');
   }
@@ -1131,7 +1137,39 @@ const loadAllAccountsWithPubKey = async (network: string, pubKey: string) => {
     })
   );
 
-  return true;
+  return mainAccounts;
+};
+
+/**
+ * Update the balances of the main accounts, it is called after the main accounts are loaded and process asynchronously
+ * Store in the data cache
+ * @param mainAccounts - The main accounts to update
+ * @param network - The network to load the accounts for
+ * @param pubKey - The public key to load the accounts for
+ */
+const updateMainAccountsWithBalance = async (mainAccounts: MainAccount[], network: string) => {
+  const addresses = mainAccounts.map((account) => account.address);
+  const pubkey = mainAccounts[0].publicKey;
+  wallet
+    .getAllAccountBalance(addresses)
+    .then((accountsBalance) => {
+      // Add balances back to formatted wallets
+      const accountsWithBalance = mainAccounts.map((account) => {
+        return {
+          ...account,
+          balance: accountsBalance[account.address] || '0.00000000',
+        };
+      });
+
+      setCachedData(
+        mainAccountsKey(network, pubkey),
+        accountsWithBalance,
+        accountsWithBalance.length > 0 ? 60_000 : 1_000
+      );
+    })
+    .catch((error) => {
+      console.error('Error fetching wallet balances:', error);
+    });
 };
 
 /**
