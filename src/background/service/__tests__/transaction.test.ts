@@ -361,7 +361,7 @@ describe('Transaction Service', () => {
       const network = 'mainnet';
 
       await transaction.setPending(network, address, txId, 'icon', 'title');
-      await transaction.removePending(txId, address, network);
+      await transaction.removePending(network, address, txId);
 
       const pendingItems = await transaction.listPending(network, address);
       expect(pendingItems).toHaveLength(0);
@@ -430,7 +430,7 @@ describe('Transaction Service', () => {
       const evmTxId = pendingItems[0].evmTxIds![0];
 
       // Should remove when using cadence ID
-      await transaction.removePending(cadenceTxId, address, network);
+      await transaction.removePending(network, address, cadenceTxId);
       const pendingItems2 = await transaction.listPending(network, address);
       expect(pendingItems2).toHaveLength(0);
 
@@ -439,7 +439,7 @@ describe('Transaction Service', () => {
       await transaction.updatePending(network, address, cadenceTxId, status);
 
       // Should remove when using EVM ID
-      await transaction.removePending(evmTxId, address, network);
+      await transaction.removePending(network, address, evmTxId);
       const pendingItems3 = await transaction.listPending(network, address);
       expect(pendingItems3).toHaveLength(0);
     });
@@ -483,7 +483,7 @@ describe('Transaction Service', () => {
       expect(pendingItems[0].status).toBe('SEALED');
 
       // Verify we can still remove it using any of the IDs
-      await transaction.removePending(pendingItems[0].evmTxIds![25], address, network); // Try removing using a middle EVM tx ID
+      await transaction.removePending(network, address, pendingItems[0].evmTxIds![25]); // Try removing using a middle EVM tx ID
       const pendingItems2 = await transaction.listPending(network, address);
       expect(pendingItems2).toHaveLength(0);
     });

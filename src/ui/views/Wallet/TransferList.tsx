@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import { formatString } from '@/shared/utils/address';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -27,29 +27,9 @@ import { TokenBalance } from '../TokenDetail/TokenBalance';
 dayjs.extend(relativeTime);
 
 const TransferList = () => {
-  const {
-    fetchTransactions,
-    transactions,
-    monitor,
-    flowscanURL,
-    viewSourceURL,
-    loading,
-    showButton,
-  } = useTransferList();
+  const { transactions, monitor, flowscanURL, viewSourceURL, loading, showButton } =
+    useTransferList();
   const { currentWallet } = useProfiles();
-
-  useEffect(() => {
-    fetchTransactions();
-    const handler = (req) => {
-      if (req.msg === 'transferListUpdated') {
-        fetchTransactions();
-      }
-      return true;
-    };
-
-    chrome.runtime.onMessage.addListener(handler);
-    return () => chrome.runtime.onMessage.removeListener(handler);
-  }, [fetchTransactions]);
 
   const timeConverter = (timeStamp: number) => {
     let time = dayjs.unix(timeStamp);

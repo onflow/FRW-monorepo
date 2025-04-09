@@ -85,18 +85,23 @@ export const getCachedEvmAccount = async (network: string, mainAccountAddress: s
 };
 
 // Transfer list
-export const transferListKey = (network: string, address: string, offset: string, limit: string) =>
-  `transfer-list-${network}-${address}-${offset}-${limit}`;
+export const transferListKey = (
+  network: string,
+  address: string,
+  offset: string = '0',
+  limit: string = '15'
+) => `transfer-list-${network}-${address}-${offset}-${limit}`;
 
 export const transferListRefreshRegex = refreshKey(transferListKey);
 export type TransferListStore = {
   count: number;
+  pendingCount: number;
   list: TransferItem[];
 };
 
 // Pending Transfer list
 export const pendingTransferListKey = (network: string, address: string) =>
-  `transfer-list-pending-${network}-${address}`;
+  `pending-transfer-list-${network}-${address}`;
 
 export const pendingTransferListRefreshRegex = refreshKey(pendingTransferListKey);
 export type PendingTransferListStore = TransferItem[];

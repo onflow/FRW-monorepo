@@ -11,7 +11,7 @@ import { type CacheDataItem } from '../types/data-cache-types';
  */
 export const getCachedData = async <T>(key: string): Promise<T | undefined> => {
   const sessionData: CacheDataItem | undefined = await storage.getSession(key);
-  if (!sessionData || sessionData.expiry > Date.now()) {
+  if (!sessionData || sessionData.expiry < Date.now()) {
     // Data is not there or expired, trigger a background event to refresh the data
     // We do this by setting a key in session storage that the background script will pick up
 

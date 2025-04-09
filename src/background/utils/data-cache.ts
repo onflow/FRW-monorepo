@@ -12,7 +12,7 @@ import storage from '@/shared/utils/storage';
 
 export const getValidData = async <T>(key: string): Promise<T | undefined> => {
   const sessionData: CacheDataItem | undefined = await storage.getSession(key);
-  if (!sessionData || sessionData.expiry > Date.now()) {
+  if (!sessionData || sessionData.expiry < Date.now()) {
     return undefined;
   }
   return sessionData?.value as T | undefined;

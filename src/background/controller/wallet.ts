@@ -3073,6 +3073,7 @@ export class WalletController extends BaseController {
   };
 
   pollTransferList = async (address: string, txHash: string, maxAttempts = 5) => {
+    const network = await this.getNetwork();
     let attempts = 0;
     const poll = async () => {
       if (attempts >= maxAttempts) {
@@ -3080,7 +3081,12 @@ export class WalletController extends BaseController {
         return;
       }
 
-      const { list: newTransactions } = await this.getTransactions(address, 15, 0, 5000, true);
+      const { list: newTransactions } = await transactionService.loadTransactions(
+        network,
+        address,
+        '0',
+        '15'
+      );
       // Copy the list as we're going to modify the original list
 
       const foundTx = newTransactions?.find((tx) => txHash.includes(tx.hash));
@@ -3108,7 +3114,6 @@ export class WalletController extends BaseController {
       return;
     }
     const address = (await this.getCurrentAddress()) || '0x';
-
     const network = await this.getNetwork();
     let txHash = txId;
     try {

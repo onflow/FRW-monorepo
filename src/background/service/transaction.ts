@@ -27,8 +27,6 @@ interface TransactionStore {
   pendingItem: Record<string, TransferItem[]>;
 }
 
-const now = new Date();
-
 class Transaction {
   init = async () => {
     registerRefreshListener(transferListRefreshRegex, this.loadTransactions);
@@ -44,7 +42,7 @@ class Transaction {
 
   private setPendingList = async (network: string, address: string, txList: TransferItem[]) => {
     // Always set pending transactions to 120 seconds
-    setCachedData(pendingTransferListKey(network, address), txList, 120_000);
+    await setCachedData(pendingTransferListKey(network, address), txList, 120_000);
   };
 
   setPending = async (
@@ -94,6 +92,16 @@ class Transaction {
     txList.unshift(txItem);
     await this.setPendingList(network, address, txList);
 
+    // Get the existing indexed transaction list
+    const existingTxStore = await getInvalidData<TransferListStore>(
+      transferListKey(network, address)
+    );
+    if (existingTxStore) {
+      existingTxStore.list.unshift(txItem);
+      existingTxStore.pendingCount = existingTxStore.pendingCount + 1;
+      existingTxStore.count = existingTxStore.count + 1;
+      await setCachedData(transferListKey(network, address), existingTxStore);
+    }
     // Send a message to the UI to update the transfer list
     chrome.runtime.sendMessage({ msg: 'transferListUpdated' });
   };
@@ -145,6 +153,19 @@ class Transaction {
     txList[txItemIndex] = txItem;
     // Always set pending transactions to 120 seconds
     await this.setPendingList(network, address, txList);
+
+    // Get the existing indexed transaction list
+    const existingTxStore = await getInvalidData<TransferListStore>(
+      transferListKey(network, address)
+    );
+    if (existingTxStore) {
+      const storeItemIndex = existingTxStore.list.findIndex((item) => item.hash.includes(txId));
+      if (storeItemIndex !== -1) {
+        existingTxStore.list[storeItemIndex] = txItem;
+        await setCachedData(transferListKey(network, address), existingTxStore);
+      }
+    }
+
     // Send a message to the UI to update the transfer list
     chrome.runtime.sendMessage({ msg: 'transferListUpdated' });
 
@@ -152,9 +173,10 @@ class Transaction {
     return combinedTxHash;
   };
 
-  removePending = async (txId: string, address: string, network: string) => {
+  removePending = async (network: string, address: string, txId: string) => {
     // Get the flow transactions
     const txList = await this.getPendingList(network, address);
+
     const newList = txList.filter((item) => {
       // Supports hashes with multiple ids
       // e.g. cadenceTxId_evmTxId
@@ -164,6 +186,7 @@ class Transaction {
         !item.evmTxIds?.includes(txId)
       );
     });
+
     await this.setPendingList(network, address, newList);
   };
 
@@ -207,7 +230,7 @@ class Transaction {
       // const amountValue = parseInt(tx.node.amount.value) / 100000000
       transactionHolder.sender = tx.sender;
       transactionHolder.receiver = tx.receiver;
-      transactionHolder.time = parseInt(tx.time);
+      transactionHolder.time = new Date(tx.time).getTime();
       transactionHolder.status = tx.status;
       transactionHolder.hash = tx.txid;
       transactionHolder.error = tx.error;
@@ -219,16 +242,17 @@ class Transaction {
       transactionHolder.transferType = tx.transfer_type;
       transactionHolder.additionalMessage = tx.additional_message;
       // see if there's a pending item for this transaction
-      const pendingItem = existingPendingList.find(
+      const pendingItemIndex = existingPendingList.findIndex(
         (item) =>
           item.hash.includes(tx.txid) ||
           item.cadenceTxId?.includes(tx.txid) ||
           item.evmTxIds?.includes(tx.txid)
       );
-      if (pendingItem) {
+      if (pendingItemIndex !== -1) {
         // Store the cadence transaction id
-        transactionHolder.cadenceTxId = pendingItem.cadenceTxId;
-        transactionHolder.evmTxIds = pendingItem.evmTxIds;
+        transactionHolder.cadenceTxId = existingPendingList[pendingItemIndex].cadenceTxId;
+        transactionHolder.evmTxIds = existingPendingList[pendingItemIndex].evmTxIds;
+        existingPendingList.splice(pendingItemIndex, 1);
       } else {
         // see if there's an existing transaction with cadenceId in the store
         const existingTx = existingTxList.find(
@@ -245,13 +269,14 @@ class Transaction {
       }
 
       txList.push(transactionHolder);
-      this.removePending(tx.txid, tx.sender, network);
     });
+    await this.setPendingList(network, address, existingPendingList);
     const transferListStore: TransferListStore = {
-      count: data.total,
-      list: txList,
+      count: data.total + existingPendingList.length,
+      pendingCount: existingPendingList.length,
+      list: [...existingPendingList, ...txList],
     };
-    setCachedData(transferListKey(network, address, offset, limit), transferListStore);
+    await setCachedData(transferListKey(network, address, offset, limit), transferListStore);
     return transferListStore;
   };
 
@@ -265,8 +290,8 @@ class Transaction {
   loadTransactions = async (
     network: string,
     address: string,
-    offset: string = '',
-    limit: string = ''
+    offset: string = '0',
+    limit: string = '15'
   ): Promise<TransferListStore> => {
     if (isValidFlowAddress(address)) {
       // Get the flow transactions
@@ -319,19 +344,10 @@ class Transaction {
       transferListKey(network, address, offset, limit)
     )) || {
       count: 0,
+      pendingCount: 0,
       list: [],
     };
-    // Get the pending transaction list
-    const pendingList =
-      (await getCachedData<PendingTransferListStore>(pendingTransferListKey(network, address))) ||
-      [];
-
-    // Merge the two lists
-    const mergedList = [...pendingList, ...transactionListStore.list];
-    return {
-      count: mergedList.length,
-      list: mergedList,
-    };
+    return transactionListStore;
   };
 
   listTransactions = async (
