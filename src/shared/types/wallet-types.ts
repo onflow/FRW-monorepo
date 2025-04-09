@@ -124,3 +124,10 @@ export type Currency = {
   symbol: string;
   country: string;
 };
+
+export const DEFAULT_CURRENCY: Currency = {
+  code: 'USD',
+  name: 'United States Dollar',
+  symbol: '$',
+  country: 'United States',
+};

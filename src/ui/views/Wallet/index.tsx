@@ -22,6 +22,7 @@ import theme from '../../style/LLTheme';
 import MoveBoard from '../MoveBoard';
 import NFTTab from '../NFT';
 import NftEvm from '../NftEvm';
+import { CurrencyValue } from '../TokenDetail/CurrencyValue';
 
 import CoinList from './Coinlist';
 import OnRampList from './OnRampList';
@@ -180,13 +181,6 @@ const WalletTab = ({ network }) => {
     setMoveBoard(true);
   };
 
-  const filteredCoinData = coins.filter((coin) => {
-    if (childType === 'evm' && coin.unit !== 'flow' && Number(coin.balance) === 0 && !coin.custom) {
-      return false;
-    }
-    return true;
-  });
-
   useEffect(() => {
     if (address && coinsLoaded) {
       fetchWallet();
@@ -255,7 +249,11 @@ const WalletTab = ({ network }) => {
             fontWeight: 'semi-bold',
           }}
         >
-          {coinsLoaded ? `$${formatLargeNumber(balance)}` : <Skeleton variant="text" width={100} />}
+          {coinsLoaded ? (
+            <CurrencyValue value={balance} showCurrencyCode={false} />
+          ) : (
+            <Skeleton variant="text" width={100} />
+          )}
         </Typography>
 
         <ButtonRow

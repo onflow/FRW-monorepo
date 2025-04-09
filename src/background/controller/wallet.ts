@@ -43,6 +43,7 @@ import {
   type EvmAddress,
   type WalletAddress,
   isEvmAccountType,
+  type Currency,
 } from '@/shared/types/wallet-types';
 import {
   ensureEvmAddressPrefix,
@@ -1163,7 +1164,6 @@ export class WalletController extends BaseController {
         listCoins.length === 0 ||
         now.getTime() > expiry
       ) {
-        console.log('listCoins is empty or invalid, refreshing...');
         let refreshedList;
         if (childType === 'evm') {
           refreshedList = await this.refreshEvmList(_expiry);
@@ -1247,7 +1247,7 @@ export class WalletController extends BaseController {
   refreshCoinList = async (_expiry = 60000): Promise<ExtendedTokenInfo[]> => {
     try {
       const isChild = await this.getActiveWallet();
-      const currencyCode = await userWalletService.getDisplayCurrency();
+      const currency = await userWalletService.getDisplayCurrency();
 
       // Handle EVM wallets
       if (isEvmAccountType(isChild)) {
@@ -1265,7 +1265,7 @@ export class WalletController extends BaseController {
       const userTokenResult = await openapiService.getUserTokens(
         address || '0x',
         network,
-        currencyCode
+        currency.code
       );
 
       // Update storage
@@ -1288,7 +1288,7 @@ export class WalletController extends BaseController {
     coinListService.setExpiry(exp);
 
     const network = await this.getNetwork();
-    const currencyCode = await userWalletService.getDisplayCurrency();
+    const currency = await userWalletService.getDisplayCurrency();
     const address = await this.getRawEvmAddressWithPrefix();
     if (!isValidEthereumAddress(address)) {
       throw new Error('Invalid Ethereum address in coinlist');
@@ -1334,7 +1334,7 @@ export class WalletController extends BaseController {
     const userTokenResult = await openapiService.getUserTokens(
       address || '0x',
       network,
-      currencyCode
+      currency.code
     );
     const tokenFinalResult = customToken(userTokenResult, evmCustomToken);
     coinListService.addCoins(tokenFinalResult, network, 'evm');
@@ -3113,10 +3113,6 @@ export class WalletController extends BaseController {
   };
 
   refreshAll = async () => {
-    console.trace('refreshAll trace');
-    console.log('refreshAll');
-    // Clear the active wallet if any
-    // If we don't do this, the user wallets will not be refreshed
     await this.loadMainAccounts();
     this.clearNFT();
     this.refreshAddressBook();
@@ -3505,20 +3501,8 @@ export class WalletController extends BaseController {
         return cadenceScrpts['data'];
       }
 
-      // const { cadence, networks } = data;
-      // const cadencev1 = (await openapiService.cadenceScripts(network)) ?? {};
-
       const cadenceScriptsV2 = (await openapiService.cadenceScriptsV2()) ?? {};
-      // const { scripts, version } = cadenceScriptsV2;
-      // const cadenceVersion = cadenceScriptsV2.version;
       const cadence = cadenceScriptsV2.scripts[network];
-
-      // for (const item of cadence) {
-      //   console.log(cadenceVersion, 'cadenceVersion');
-      //   if (item && item.version == cadenceVersion) {
-      //     script = item;
-      //   }
-      // }
 
       const scripts = {
         data: cadence,
@@ -3678,7 +3662,7 @@ export class WalletController extends BaseController {
     return emoji;
   };
 
-  setDisplayCurrency = async (currency: string) => {
+  setDisplayCurrency = async (currency: Currency) => {
     await userWalletService.setDisplayCurrency(currency);
   };
 

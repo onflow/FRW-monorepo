@@ -3,7 +3,7 @@ import { makeStyles } from '@mui/styles';
 import React, { useState, useEffect } from 'react';
 
 import IconEnd from '@/components/iconfont/IconAVector11Stroke';
-import type { Currency } from '@/shared/types/wallet-types';
+import { DEFAULT_CURRENCY, type Currency } from '@/shared/types/wallet-types';
 import { LLHeader } from '@/ui/FRWComponent';
 import { useWallet, useWalletLoaded } from '@/ui/utils';
 
@@ -57,7 +57,7 @@ const CurrencySettings = () => {
   const classes = useStyles();
   const walletLoaded = useWalletLoaded();
   const wallet = useWallet();
-  const [currency, setCurrency] = useState('USD');
+  const [currency, setCurrency] = useState(DEFAULT_CURRENCY.code);
   const [isLoading, setIsLoading] = useState(true);
   const [supportedCurrencies, setSupportedCurrencies] = useState<Currency[]>([]);
 
@@ -69,7 +69,7 @@ const CurrencySettings = () => {
         const currencies = await wallet.openapi.getSupportedCurrencies();
         setSupportedCurrencies(currencies);
         const currentCurrency = await wallet.getDisplayCurrency();
-        setCurrency(currentCurrency);
+        setCurrency(currentCurrency.code);
       } catch (error) {
         console.warn('Error loading currency preferences:', error);
       } finally {
@@ -83,8 +83,11 @@ const CurrencySettings = () => {
   const handleCurrencyChange = async (newCurrency: string) => {
     try {
       setCurrency(newCurrency);
-      await wallet.setDisplayCurrency(newCurrency);
-      await wallet.refreshCoinList();
+      const currency = supportedCurrencies.find((c) => c.code === newCurrency);
+      if (currency) {
+        await wallet.setDisplayCurrency(currency);
+        await wallet.refreshCoinList();
+      }
     } catch (error) {
       console.warn('Error saving currency preference:', error);
     }
@@ -119,9 +122,8 @@ const CurrencySettings = () => {
             >
               <ListItemButton className={classes.listItemButton}>
                 <Typography color="neutral.contrastText">
-                  {curr.code} ({curr.symbol})
+                  {curr.code} ({curr.symbol}) {curr.name}
                 </Typography>
-                {curr.code === currency && <IconEnd size={12} />}
               </ListItemButton>
             </ListItem>
           ))}

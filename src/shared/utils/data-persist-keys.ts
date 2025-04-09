@@ -2,7 +2,7 @@
  * Keys and types to access persistant data in the UI from the background storage cache
  * Persistant data is data that is stored between sessions
  */
-import { type ActiveChildType } from '../types/wallet-types';
+import { type Currency, type ActiveChildType } from '../types/wallet-types';
 
 // Persistent storage keys
 export const userWalletsKey = 'userWalletsV2';
@@ -23,5 +23,5 @@ export type UserWalletStore = {
   // Either null - meaning main account is active, the evm account address, or the child account address
   currentAddress: string;
   // The currency to display balances in
-  displayCurrency: string;
+  displayCurrency: Currency;
 };

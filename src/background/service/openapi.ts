@@ -101,6 +101,9 @@ interface FlowTokenResponse {
   balanceInUSD: string;
   priceInFLOW: string;
   balanceInFLOW: string;
+  priceInCurrency: string;
+  balanceInCurrency: string;
+  currency: string;
 }
 
 // New type definitions for API response for /v4/evm/tokens/ft/{address}
@@ -175,7 +178,6 @@ onAuthStateChanged(auth, (user: User | null) => {
     // User is signed in, see docs for a list of available properties
     // https://firebase.google.com/docs/reference/js/firebase.User
     // const uid = user.uid;
-    console.log('User is signed in');
     if (user.isAnonymous) {
       console.log('User is anonymous');
     } else {
@@ -410,6 +412,7 @@ const recordFetch = async (response, responseData, ...args: Parameters<typeof fe
 
 class OpenApiService {
   store!: OpenApiStore;
+  private supportedCurrenciesCache: Currency[] | null = null;
 
   // request = rateLimit(axios.create(), { maxRPS });
 
@@ -2062,14 +2065,36 @@ class OpenApiService {
 
   // ** Get supported currencies **
   getSupportedCurrencies = async (): Promise<Currency[]> => {
-    const supportedCurrencies: CurrencyResponse = await this.sendRequest(
-      'GET',
-      `/api/v4/currencies`,
-      {},
-      {},
-      WEB_NEXT_URL
-    );
-    return supportedCurrencies?.data?.currencies || [];
+    if (this.supportedCurrenciesCache !== null) {
+      return this.supportedCurrenciesCache;
+    }
+
+    try {
+      const supportedCurrencies: CurrencyResponse = await this.sendRequest(
+        'GET',
+        `/api/v4/currencies`,
+        {},
+        {},
+        WEB_NEXT_URL
+      );
+
+      // Cache the currencies
+      this.supportedCurrenciesCache = supportedCurrencies?.data?.currencies || [];
+      return this.supportedCurrenciesCache;
+    } catch (error) {
+      console.warn('Error fetching supported currencies:', error);
+      // Return default USD if API fails
+      const defaultCurrency = [
+        {
+          code: 'USD',
+          symbol: '$',
+          name: 'United States Dollar',
+          country: 'United States',
+        },
+      ];
+      this.supportedCurrenciesCache = defaultCurrency;
+      return defaultCurrency;
+    }
   };
 
   /**
@@ -2118,7 +2143,7 @@ class OpenApiService {
     network: string,
     currencyCode: string = 'USD'
   ): Promise<ExtendedTokenInfo[]> {
-    const cacheKey = `flow_tokens_${address}_${network}`;
+    const cacheKey = `flow_tokens_${address}_${network}_${currencyCode}`;
     const cachedFlowData = await storage.getExpiry(cacheKey);
 
     if (cachedFlowData !== null) {
@@ -2136,7 +2161,6 @@ class OpenApiService {
       return [];
     }
 
-    // Convert FlowTokenResponse to ExtendedTokenInfo
     const tokens = (userFlowTokenList?.data?.result || []).map(
       (token): ExtendedTokenInfo => ({
         id: token.identifier,
@@ -2156,8 +2180,8 @@ class OpenApiService {
           twitter: token.socials?.x?.url,
         },
         custom: false,
-        price: Number(token.priceInUSD || '0'), // todo: future will be a string
-        total: Number(token.balanceInUSD || '0'), // todo: future will be a string
+        price: Number(token.priceInCurrency || token.priceInUSD || '0'), // todo: future will be a string
+        total: Number(token.balanceInCurrency || token.balanceInUSD || '0'), // todo: future will be a string
         change24h: 0,
         balance: token.balance || '0',
         // Add CoinItem properties
@@ -2176,7 +2200,7 @@ class OpenApiService {
     network: string,
     currencyCode: string = 'USD'
   ): Promise<ExtendedTokenInfo[]> {
-    const cacheKey = `evm_tokens_${address}_${network}`;
+    const cacheKey = `evm_tokens_${address}_${network}_${currencyCode}`;
     const cachedEvmData = await storage.getExpiry(cacheKey);
 
     if (cachedEvmData !== null) {

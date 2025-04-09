@@ -27,8 +27,6 @@ export const useCoins = () => {
 
   const handleStorageData = useCallback(
     async (data) => {
-      console.log('Handling storage data:', data);
-
       if (!data || !Array.isArray(data)) {
         console.warn('Invalid data format received:', data);
         return;
@@ -70,10 +68,8 @@ export const useCoins = () => {
         coins: Array.from(uniqueTokenMap.values()),
         totalFlow: flowBalance.toString(),
         availableFlow: flowBalance.toString(),
-        balance: `$ ${sum.toFixed(2)}`,
+        balance: `${sum.toFixed(2)}`,
       };
-
-      console.log('Updating state with:', newState);
 
       // Update all states at once
       setCoins(newState.coins);
@@ -92,8 +88,6 @@ export const useCoins = () => {
         const coinList = await storage.get('coinList');
         const userWallet = await storage.get(userWalletsKey);
 
-        console.log('CoinList data:', { coinList, userWallet });
-
         if (!coinList) {
           console.warn('No coinList data found in storage');
           return;
@@ -107,8 +101,6 @@ export const useCoins = () => {
         let refreshedCoinlist;
         const isEvm = isValidEthereumAddress(userWallet.currentAddress);
 
-        console.log('Wallet type:', isEvm ? 'EVM' : 'Flow', 'Network:', network);
-
         if (isEvm) {
           refreshedCoinlist = coinList?.['evm']?.[network];
           if (!refreshedCoinlist) {
@@ -120,8 +112,6 @@ export const useCoins = () => {
             console.warn('No Flow coin list found for network:', network);
           }
         }
-
-        console.log('Refreshed coin list:', refreshedCoinlist);
 
         if (Array.isArray(refreshedCoinlist) && refreshedCoinlist.length > 0) {
           handleStorageData(refreshedCoinlist);
@@ -161,13 +151,11 @@ export const useCoins = () => {
   const refreshCoinData = useCallback(async () => {
     // Prevent concurrent refreshes and throttle calls
     if (refreshInProgressRef.current) {
-      console.log('Refresh already in progress, skipping');
       return;
     }
 
     const now = Date.now();
     if (now - lastRefreshTimeRef.current < 5000) {
-      console.log('Throttling refresh, last refresh was less than 5s ago');
       return;
     }
 
@@ -192,9 +180,7 @@ export const useCoins = () => {
         return;
       }
 
-      console.log('Starting coin list refresh for address:', address);
       await usewallet.refreshCoinList(60000);
-      console.log('Coin list refresh completed');
     } catch (error) {
       console.error('Error refreshing coin data:', error);
     } finally {
