@@ -22,6 +22,14 @@ export const getCachedData = async <T>(key: string): Promise<T | undefined> => {
 };
 
 /**
+ * Trigger a refresh of the data for a given key
+ * Should rarlely be used!!
+ * @param key - The key to trigger a refresh for
+ */
+export const triggerRefresh = (key: string) => {
+  storage.setSession(`${key}-refresh`, Date.now());
+};
+/**
  * Internal function to call the update callback
  * @param key - The key to listen for
  * @param updateCallback - The callback to call when the data is updated

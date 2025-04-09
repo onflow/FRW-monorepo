@@ -78,7 +78,7 @@ export const loginToExtensionAccount = async ({ page, extensionId, addr, passwor
   expect(flowAddr).toBe(addr);
 
   // Wait for the coins to be loaded
-  await expect(page.getByRole('button', { name: 'Flow' }).first()).toBeVisible();
+  await expect(page.getByTestId('coin-balance-flow')).toBeVisible();
 };
 
 export const loginAsTestUser = async ({ page, extensionId }) => {

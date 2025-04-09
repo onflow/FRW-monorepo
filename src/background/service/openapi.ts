@@ -37,11 +37,7 @@ import {
 } from '@/shared/types/wallet-types';
 import { isValidFlowAddress, isValidEthereumAddress } from '@/shared/utils/address';
 import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
-import {
-  cadenceScriptsKey,
-  cadenceScriptsRefreshRegex,
-  getCachedScripts,
-} from '@/shared/utils/cache-data-keys';
+import { cadenceScriptsKey, cadenceScriptsRefreshRegex } from '@/shared/utils/cache-data-keys';
 import { getPeriodFrequency } from '@/shared/utils/getPeriodFrequency';
 import { type NetworkScripts } from '@/shared/utils/script-types';
 import { INITIAL_OPENAPI_URL, WEB_NEXT_URL } from 'consts';
@@ -796,17 +792,17 @@ class OpenApiService {
    * @returns The cadence scripts for the current user
    */
   private _loadCadenceScripts = async (): Promise<NetworkScripts> => {
+    const cadenceScripts = await getValidData<NetworkScripts>(cadenceScriptsKey());
+    if (cadenceScripts) {
+      return cadenceScripts;
+    }
     const cadenceScriptsV2 = await this.cadenceScriptsV2();
     setCachedData(cadenceScriptsKey(), cadenceScriptsV2, 1000 * 60 * 60); // set to 1 hour
     return cadenceScriptsV2;
   };
 
   getCadenceScripts = async (): Promise<NetworkScripts> => {
-    const cadenceScripts = await getValidData<NetworkScripts>(cadenceScriptsKey());
-    if (!cadenceScripts) {
-      return await this._loadCadenceScripts();
-    }
-    return cadenceScripts;
+    return await this._loadCadenceScripts();
   };
   checkUsername = async (username: string) => {
     const config = this.store.config.check_username;
