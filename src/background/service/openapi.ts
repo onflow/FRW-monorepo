@@ -2225,19 +2225,20 @@ class OpenApiService {
       return cachedFlowData;
     }
 
-    const { data: userFlowTokenList }: { data: FlowApiResponse } = await this.sendRequest(
+    const { data } = await this.sendRequest(
       'GET',
       `/api/v4/cadence/tokens/ft/${address}`,
       {},
       {},
       WEB_NEXT_URL
     );
-    if (!userFlowTokenList?.data?.result?.length) {
+
+    if (!data?.result?.length) {
       return [];
     }
 
     // Convert FlowTokenResponse to ExtendedTokenInfo
-    const tokens = (userFlowTokenList?.data?.result || []).map(
+    const tokens = (data?.result || []).map(
       (token): ExtendedTokenInfo => ({
         id: token.identifier,
         name: token.name,
@@ -2266,8 +2267,6 @@ class OpenApiService {
         icon: token.logoURI || token.logos?.items?.[0]?.file?.url, // redundant for compatibility
       })
     );
-
-    storage.setExpiry(cacheKey, tokens, 5 * 60 * 1000); // Cache for 5 minutes
     return tokens;
   }
 
@@ -2321,8 +2320,6 @@ class OpenApiService {
         icon: token.logoURI || '', // redundant for compatibility
       })
     );
-
-    storage.setExpiry(cacheKey, tokens, 5 * 60 * 1000); // Cache for 5 minutes
     return tokens;
   }
 
