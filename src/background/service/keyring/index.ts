@@ -8,13 +8,33 @@ import * as ethUtil from 'ethereumjs-util';
 import log from 'loglevel';
 
 import { normalizeAddress } from '@/background/utils';
-import { seed2PublicPrivateKey, pk2PubKey } from '@/background/utils/modules/publicPrivateKey';
-import storage from '@/background/webapi/storage';
+import {
+  pkTuple2PubKey,
+  formPubKeyTuple,
+  seedWithPathAndPhrase2PublicPrivateKey,
+} from '@/background/utils/modules/publicPrivateKey';
 import i18n from '@/i18n';
-import { type PublicKeyTuple } from '@/shared/types/key-types';
+import {
+  combinePubPkTuple,
+  type PublicPrivateKeyTuple,
+  type PrivateKeyTuple,
+  type PublicKeyTuple,
+} from '@/shared/types/key-types';
+import {
+  KEYRING_DEEP_VAULT_KEY,
+  KEYRING_STATE_CURRENT_KEY,
+  KEYRING_STATE_VAULT_V1,
+  KEYRING_STATE_VAULT_V2,
+  type VaultEntryV2,
+  type KeyringStateV2,
+  KEYRING_STATE_V2_KEY,
+  KEYRING_STATE_V1_KEY,
+  CURRENT_ID_KEY,
+} from '@/shared/types/keyring-types';
 import { type LoggedInAccount } from '@/shared/types/wallet-types';
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
+import storage from '@/shared/utils/storage';
 import { KEYRING_TYPE } from 'consts';
 
 import preference from '../preference';
@@ -66,24 +86,6 @@ type KeyringStateV1 = {
   booted: string;
   vault: CompatibleVaultEntry[];
 };
-
-type VaultEntryV2 = {
-  id: string;
-  encryptedData: string;
-};
-type KeyringStateV2 = {
-  booted: string;
-  vault: VaultEntryV2[];
-  vaultVersion: number;
-};
-
-const KEYRING_STATE_V2_KEY = 'keyringStateV2';
-const KEYRING_STATE_V1_KEY = 'keyringState';
-const KEYRING_DEEP_VAULT_KEY = 'deepVault';
-
-const KEYRING_STATE_CURRENT_KEY = KEYRING_STATE_V2_KEY;
-const KEYRING_STATE_VAULT_V1 = 1;
-const KEYRING_STATE_VAULT_V2 = 2;
 
 export type KeyringType = HDKeyringType | SimpleKeyPairType;
 export type Keyring = SimpleKeyring | HDKeyring;
@@ -201,22 +203,28 @@ class KeyringService extends EventEmitter {
    * @returns {Promise<string>} The private key as a hex string
    * @throws {Error} If no private key is found
    */
-  getKeyringPrivateKey = async (keyrings: Keyring[]): Promise<string> => {
-    let privateKey: string | undefined;
-
+  getKeyringPrivateKeyTuple = async (keyrings: Keyring[]): Promise<PrivateKeyTuple> => {
     for (const keyring of keyrings) {
       if (keyring instanceof SimpleKeyring) {
         // If a private key is found, extract it and break the loop
-        privateKey = keyring.wallets[0].privateKey.toString('hex');
-        if (privateKey) break;
+        const privateKey = keyring.wallets[0].privateKey.toString('hex');
+        if (privateKey) {
+          return {
+            P256: { pk: privateKey },
+            SECP256K1: { pk: privateKey },
+          };
+        }
       } else if (keyring instanceof HDKeyring) {
         // Get a copy of the keyring data
         const serialized = await keyring.serialize();
         if (serialized.mnemonic) {
           // If mnemonic is found, derive the private key
-          const { SECP256K1 } = await seed2PublicPrivateKey(serialized.mnemonic);
-          privateKey = SECP256K1.pk;
-          break;
+          const privateKeyTuple = await seedWithPathAndPhrase2PublicPrivateKey(
+            serialized.mnemonic,
+            serialized.derivationPath,
+            serialized.passphrase
+          );
+          return privateKeyTuple;
         }
       } else if (
         (keyring as any).wallets &&
@@ -224,44 +232,56 @@ class KeyringService extends EventEmitter {
         (keyring as any).wallets[0].privateKey
       ) {
         // If a private key is found, extract it and break the loop
-        privateKey = (keyring as any).wallets[0].privateKey.toString('hex');
-        if (privateKey) break;
+        const privateKey = (keyring as any).wallets[0].privateKey.toString('hex');
+        if (privateKey) {
+          return {
+            P256: { pk: privateKey },
+            SECP256K1: { pk: privateKey },
+          };
+        }
       }
     }
-
-    if (!privateKey) {
-      throw new Error('No private key found in any of the keyrings.');
-    }
-
-    return privateKey;
+    throw new Error('No private key found in any of the keyrings.');
   };
   /**
-   * Get the private key from the current keyring
-   * @returns {Promise<string>} The private key as a hex string
+   * Get the private key tuple from the current keyring
+   * @returns {Promise<PrivateKeyTuple>} The private key tuple
    * @throws {Error} If no private key is found
    */
-  getCurrentPrivateKey = async (): Promise<string> => {
-    return this.getKeyringPrivateKey(this.currentKeyring);
+  getCurrentPrivateKeyTuple = async (): Promise<PrivateKeyTuple> => {
+    return this.getKeyringPrivateKeyTuple(this.currentKeyring);
   };
 
   /**
    * Get the public key tuple from the current keyring
-   * @returns {Promise<PublicKeyTuple>} The public key tuple
+   * @returns {Promise<PublicPrivateKeyTuple>} The public key tuple
    */
-  getKeyringPublicKeyTuple = async (keyrings: Keyring[]): Promise<PublicKeyTuple> => {
+  getKeyringPublicPrivateKeyTuple = async (keyrings: Keyring[]): Promise<PublicPrivateKeyTuple> => {
     try {
       // Get the private key
-      const privateKey = await this.getKeyringPrivateKey(keyrings);
-
+      const privateKeyTuple = await this.getKeyringPrivateKeyTuple(keyrings);
       // Generate public key tuple from private key
-      const pubKTuple = await pk2PubKey(privateKey);
-      return pubKTuple;
+      const pubKTuple = await pkTuple2PubKey(privateKeyTuple);
+      return combinePubPkTuple(pubKTuple, privateKeyTuple);
     } catch (error) {
       console.error('Failed to get public key tuple');
       throw error;
     }
   };
-
+  /**
+   * Get the public private key tuple from the current keyring
+   * @returns {Promise<PublicPrivateKeyTuple>} The public private key tuple
+   */
+  getCurrentPublicPrivateKeyTuple = async (): Promise<PublicPrivateKeyTuple> => {
+    return this.getKeyringPublicPrivateKeyTuple(this.currentKeyring);
+  };
+  /**
+   * Get the public key tuple from the current keyring
+   * @returns {Promise<PublicKeyTuple>} The public key tuple
+   */
+  getKeyringPublicKeyTuple = async (keyrings: Keyring[]): Promise<PublicKeyTuple> => {
+    return formPubKeyTuple(await this.getKeyringPublicPrivateKeyTuple(keyrings));
+  };
   /**
    * Get the public key tuple from the current keyring
    * @returns {Promise<PublicKeyTuple>} The public key tuple
@@ -318,8 +338,11 @@ class KeyringService extends EventEmitter {
    * @returns {Promise<Keyring>} A Promise that resolves to the keyring.
    */
   async importPrivateKey(password: string, privateKey: string): Promise<Keyring> {
-    // Note persistAllKeyrings will verify the password
-    await this.persistAllKeyrings(password);
+    // Verify the password
+    await this.verifyPassword(password);
+    // Clear the current keyrings as the new keyring will be a simple keyring
+    await this.clearKeyrings();
+    // Add the new keyring
     const keyring = await this.addNewKeyring(password, 'Simple Key Pair', [privateKey]);
     await this.persistAllKeyrings(password);
     await this.setUnlocked();
@@ -335,8 +358,10 @@ class KeyringService extends EventEmitter {
    * @returns {Promise<Object>} A Promise that resolves to the state.
    */
   async importPublicKey(password: string, key: string, seed: string): Promise<any> {
-    // First persist all keyrings
-    await this.persistAllKeyrings(password);
+    // Verify the password
+    await this.verifyPassword(password);
+    // Clear the current keyrings as the new keyring will replace it
+    await this.clearKeyrings();
 
     // Add new keyring and store reference
     const keyring = await this.addNewKeyring(password, 'HD Key Tree', {
@@ -412,13 +437,14 @@ class KeyringService extends EventEmitter {
     derivationPath = FLOW_BIP44_PATH,
     passphrase = ''
   ): Promise<Keyring> {
+    // Verify the password
+    await this.verifyPassword(password);
     // Validate mnemonic first
     if (!bip39.validateMnemonic(seed)) {
       throw new Error(i18n.t('mnemonic phrase is invalid'));
     }
-
-    // Persist existing keyrings
-    await this.persistAllKeyrings(password);
+    // Clear the current keyrings as the new keyring will replace it
+    await this.clearKeyrings();
 
     // Create new keyring
     const keyring = await this.addNewKeyring(password, 'HD Key Tree', {
@@ -427,13 +453,6 @@ class KeyringService extends EventEmitter {
       derivationPath,
       passphrase,
     });
-
-    // Get and validate first account
-    const accounts = await keyring.getAccounts();
-    const [firstAccount] = accounts;
-    if (!firstAccount) {
-      throw new Error('KeyringController - First Account not found.');
-    }
 
     // Persist and update state
     await this.persistAllKeyrings(password);
@@ -869,7 +888,7 @@ class KeyringService extends EventEmitter {
     const encryptedString = await this.encryptor.encrypt(password, serializedKeyrings);
 
     // Get current ID and vaults
-    const currentId = await storage.get('currentId');
+    const currentId = await storage.get(CURRENT_ID_KEY);
     const vaultArray = this.store.getState().vault || [];
 
     if (currentId === null || currentId === undefined) {
@@ -1284,7 +1303,7 @@ class KeyringService extends EventEmitter {
    *
    * @emits KeyringController#unlock
    */
-  setUnlocked(): void {
+  private setUnlocked(): void {
     this.memStore.updateState({ isUnlocked: true });
     this.emit('unlock');
   }
@@ -1428,7 +1447,7 @@ class KeyringService extends EventEmitter {
 
     if (foundEntry) {
       console.log('Found account with ID:', currentId);
-      await storage.set('currentId', currentId);
+      await storage.set(CURRENT_ID_KEY, currentId);
       try {
         const encryptedDataString = foundEntry[currentId];
         const encryptedData = JSON.parse(encryptedDataString) as EncryptedData;

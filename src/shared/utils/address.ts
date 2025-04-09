@@ -1,7 +1,9 @@
-import HDWallet from 'ethereum-hdwallet';
-
 import { type AccountKeyRequest } from '@/shared/types/network-types';
-import { type FlowAddress, type EvmAddress } from '@/shared/types/wallet-types';
+import {
+  type FlowAddress,
+  type EvmAddress,
+  type PublicKeyAccount,
+} from '@/shared/types/wallet-types';
 
 export function sansPrefix(address: string): FlowAddress | EvmAddress | null {
   if (!address) return null;
@@ -16,18 +18,6 @@ export function withPrefix(address: string): FlowAddress | EvmAddress | null {
 export function display(address) {
   return withPrefix(address);
 }
-
-export const getAccountKey = (mnemonic) => {
-  const hdwallet = HDWallet.fromMnemonic(mnemonic);
-  const publicKey = hdwallet.derive("m/44'/539'/0'/0/0").getPublicKey().toString('hex');
-  const key: AccountKeyRequest = {
-    hash_algo: 1,
-    sign_algo: 2,
-    weight: 1000,
-    public_key: publicKey,
-  };
-  return key;
-};
 
 export const isValidEthereumAddress = (address): address is EvmAddress => {
   const regex = /^(0x)?[0-9a-fA-F]{40}$/;

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useHistory } from 'react-router-dom';
 
 import { storage } from '@/background/webapi';
+import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
 import { authnServiceDefinition, serviceDefinition } from 'background/controller/serviceDefinition';
 import flowgrey from 'ui/FRWAssets/svg/flow-grey.svg';
 import Link from 'ui/FRWAssets/svg/link.svg';
@@ -59,7 +60,7 @@ const EthSwitch = ({ params: { origin, target } }: ConnectProps) => {
       setMsgNetwork(target);
     }
     resolveApproval({
-      defaultChain: target === 'testnet' ? 545 : 747,
+      defaultChain: target === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID,
       signPermission: 'MAINNET_AND_TESTNET',
     });
   };

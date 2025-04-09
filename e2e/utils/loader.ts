@@ -114,7 +114,7 @@ export const getAuth = async () => {
     ? fs.readFileSync(keysFilePath, 'utf8')
     : null;
   const keysFile = keysFileContent ? JSON.parse(keysFileContent) : null;
-  return keysFile || { password: '', addr: '' };
+  return keysFile || { password: '', addr: '', nickname: '' };
 };
 // delete keys file
 

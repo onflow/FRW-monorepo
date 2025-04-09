@@ -1,4 +1,4 @@
-import { isValidFlowAddress } from '../utils/address';
+import { isValidEthereumAddress, isValidFlowAddress } from '../utils/address';
 
 import { type HashAlgoString, type SignAlgoString } from './algo-types';
 
@@ -12,18 +12,42 @@ export type EvmAddress = `0x${string & { length: 40 }}` | `${string & { length: 
 export type WalletAddress = EvmAddress | FlowAddress;
 
 // ActiveChildType is the type of the active child in the wallet. It can be 'evm', a FlowAddress, or null.
-export type ActiveChildType = 'evm' | FlowAddress | null;
+// @deprecated: use ActiveAccountType instead
+export type ActiveChildType_depreciated = 'evm' | FlowAddress | null;
 
-export const isEvmAccountType = (type: ActiveChildType): type is 'evm' => {
+// @deprecated: use ActiveAccountType instead
+export const isEvmAccountType = (type: ActiveChildType_depreciated): type is 'evm' => {
   return type === 'evm';
 };
-
-export const isChildAccountType = (type: ActiveChildType): type is FlowAddress => {
+// @deprecated: use ActiveAccountType instead
+export const isChildAccountType = (type: ActiveChildType_depreciated): type is FlowAddress => {
   return isValidFlowAddress(type);
 };
-
-export const isMainAccountType = (type: ActiveChildType): type is null => {
+// @deprecated: use ActiveAccountType instead
+export const isMainAccountType = (type: ActiveChildType_depreciated): type is null => {
   return type === null;
+};
+
+export type ActiveAccountType = 'evm' | 'child' | 'main' | 'none';
+
+export const getActiveAccountTypeForAddress = (
+  address: string | null,
+  parentAddress: string | null
+): ActiveAccountType => {
+  if (!address) {
+    // No address is selected
+    return 'none';
+  }
+  if (address === parentAddress) {
+    return 'main';
+  }
+  if (isValidEthereumAddress(address)) {
+    return 'evm';
+  }
+  if (isValidFlowAddress(address)) {
+    return 'child';
+  }
+  throw new Error(`Invalid active account address: ${address}`);
 };
 
 export type LoggedInAccount = {
@@ -40,14 +64,14 @@ export type LoggedInAccount = {
   // The creation date of the account
   created: string;
   // The hash algorithm of the account
-  hashAlgo: HashAlgoString;
+  hashAlgoString: HashAlgoString;
   // Anonymous mode of the account.
   // If 1, the account is NOT anonymous. If 2, the account is anonymous.
   private: number;
   // The public key of the account
   pubKey: string;
   // The signature algorithm of the account
-  signAlgo: SignAlgoString;
+  signAlgoString: SignAlgoString;
   // The weight of the account. Usually 1000
   weight: number;
 };
@@ -77,7 +101,7 @@ export type PublicKeyAccount = {
 
 export type WalletAccount = {
   address: string;
-  chain: number; // testnet: 545, mainnet: 747
+  chain: number; // testnet: 545, mainnet: MAINNET_CHAIN_ID
   id: number;
   name: string;
   icon: string;

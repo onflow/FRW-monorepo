@@ -129,15 +129,15 @@ const LinkedNftDetail = () => {
         },
       };
 
-      const wallet = childAccounts[currentAddress!];
+      const childAccount = childAccounts?.[currentAddress!];
       const userOne = {
-        avatar: wallet.thumbnail.url,
+        avatar: childAccount?.icon ?? '',
         domain: {
           domain_type: 0,
           value: '',
         },
         address: currentAddress,
-        contact_name: wallet.name,
+        contact_name: childAccount?.name ?? '',
       };
       const userTwo = {
         ...userTemplate,

@@ -8,7 +8,10 @@ import Web3 from 'web3';
 import { stringToHex } from 'web3-utils';
 
 import { signWithKey } from '@/background/utils/modules/publicPrivateKey';
+import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
 import { ensureEvmAddressPrefix, isValidEthereumAddress } from '@/shared/utils/address';
+import { getHashAlgo, getSignAlgo } from '@/shared/utils/algo';
+import { SIGN_ALGO_NUM_ECDSA_P256 } from '@/shared/utils/algo-constants';
 import {
   permissionService,
   sessionService,
@@ -89,15 +92,17 @@ async function signMessage(msgParams, opts = {}) {
   const signableData = prependUserDomainTag(removeHexPrefix(hashedData));
 
   // Retrieve the private key from the wallet
-  const privateKey = await keyringService.getCurrentPrivateKey();
+  const privateKeyTuple = await keyringService.getCurrentPrivateKeyTuple();
   const currentWallet = await Wallet.getParentAddress();
   if (!currentWallet) {
     throw new Error('Current wallet not found');
   }
-  const hashAlgo = await storage.get('hashAlgo');
-  const signAlgo = await storage.get('signAlgo');
+  const hashAlgo = getHashAlgo(await storage.get('hashAlgo'));
+  const signAlgo = getSignAlgo(await storage.get('signAlgo'));
   const keyindex = await storage.get('keyIndex');
   // const wallet = new ethers.Wallet(privateKey);
+  const privateKey =
+    signAlgo === SIGN_ALGO_NUM_ECDSA_P256 ? privateKeyTuple.P256.pk : privateKeyTuple.SECP256K1.pk;
   const signature = await signWithKey(signableData, signAlgo, hashAlgo, privateKey);
 
   const addressHex = currentWallet;
@@ -117,9 +122,7 @@ async function signTypeData(msgParams, opts = {}) {
   }
   const rightPaddedHexBuffer = (value: string, pad: number) =>
     Buffer.from(value.padEnd(pad * 2, '0'), 'hex');
-  console.log('msgParams ', msgParams);
   const hashedData = Buffer.from(msgParams).toString('hex');
-  console.log('hashedData ', hashedData);
   const USER_DOMAIN_TAG = rightPaddedHexBuffer(
     Buffer.from('FLOW-V0.0-user').toString('hex'),
     32
@@ -129,12 +132,15 @@ async function signTypeData(msgParams, opts = {}) {
   const signableData = prependUserDomainTag(removeHexPrefix(hashedData));
 
   // Retrieve the private key from the wallet (assuming Ethereum wallet)
-  const privateKey = await keyringService.getCurrentPrivateKey();
-  const hashAlgo = await storage.get('hashAlgo');
-  const signAlgo = await storage.get('signAlgo');
+  const privateKeyTuple = await keyringService.getCurrentPrivateKeyTuple();
+  // TODO: Fix this reliance on passing the hash algo via storage
+  const hashAlgo = getHashAlgo(await storage.get('hashAlgoString'));
+  const signAlgo = getSignAlgo(await storage.get('signAlgoString'));
   const keyindex = await storage.get('keyIndex');
   console.log('keyindex ', keyindex);
   // const wallet = new ethers.Wallet(privateKey);
+  const privateKey =
+    signAlgo === SIGN_ALGO_NUM_ECDSA_P256 ? privateKeyTuple.P256.pk : privateKeyTuple.SECP256K1.pk;
   const signature = await signWithKey(signableData, signAlgo, hashAlgo, privateKey);
   const currentWallet = await Wallet.getParentAddress();
 
@@ -443,9 +449,9 @@ class ProviderController extends BaseController {
   ethChainId = async ({ session }) => {
     const network = await Wallet.getNetwork();
     if (network === 'testnet') {
-      return 545;
+      return TESTNET_CHAIN_ID;
     } else {
-      return 747;
+      return MAINNET_CHAIN_ID;
     }
   };
 
@@ -471,9 +477,9 @@ class ProviderController extends BaseController {
     const evmaddress = await Wallet.queryEvmAddress(currentWallet);
 
     if (network === 'testnet') {
-      currentChain = 545;
+      currentChain = TESTNET_CHAIN_ID;
     } else {
-      currentChain = 747;
+      currentChain = MAINNET_CHAIN_ID;
     }
 
     const paramAddress = request.data.params?.[0] || '';
@@ -534,9 +540,9 @@ class ProviderController extends BaseController {
     const evmaddress = await Wallet.queryEvmAddress(currentWallet);
 
     if (network === 'testnet') {
-      currentChain = 545;
+      currentChain = TESTNET_CHAIN_ID;
     } else {
-      currentChain = 747;
+      currentChain = MAINNET_CHAIN_ID;
     }
 
     const paramAddress = request.data.params?.[0] ? request.data.params?.[0] : '';

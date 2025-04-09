@@ -4,7 +4,7 @@ import { Box, Typography, Drawer, Stack, Grid, CardMedia, IconButton, Button } f
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import { type AccountDetails } from '@/shared/types/wallet-types';
+import { type WalletAccount, type AccountDetails } from '@/shared/types/wallet-types';
 import { ensureEvmAddressPrefix, isValidEthereumAddress } from '@/shared/utils/address';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
@@ -37,7 +37,7 @@ const MoveFromChild = (props: SendNFTConfirmationProps) => {
   const [, setErrorMessage] = useState<string | null>(null);
   const [errorCode, setErrorCode] = useState<number | null>(null);
 
-  const [childWallet, setChildWallet] = useState<AccountDetails | null>(null);
+  const [childWallet, setChildWallet] = useState<WalletAccount | null>(null);
   const [selectedAccount, setSelectedChildAccount] = useState(null);
   const [childWallets, setChildWallets] = useState({});
   const { sufficient: isSufficient, sufficientAfterAction } = useStorageCheck({
@@ -179,7 +179,7 @@ const MoveFromChild = (props: SendNFTConfirmationProps) => {
 
   const getUserContact = useCallback(async () => {
     if (props.data.userContact) {
-      setChildWallet(childAccounts[props.data.userContact.address]);
+      setChildWallet(childAccounts?.[props.data.userContact.address] ?? null);
     }
   }, [props.data.userContact, childAccounts]);
 

@@ -42,7 +42,7 @@ export const lockExtension = async ({ page }) => {
   await expect(unlockBtn).toBeEnabled({ enabled: true, timeout: 60_000 });
 };
 
-export const loginToExtensionAccount = async ({ page, extensionId, addr, password }) => {
+export const loginToExtensionAccount = async ({ page, extensionId, addr, password, nickname }) => {
   // close all pages except the current page
   await closeOpenedPages(page);
 
@@ -52,8 +52,7 @@ export const loginToExtensionAccount = async ({ page, extensionId, addr, passwor
   await page.waitForSelector('.logoContainer', { state: 'visible' });
   await closeOpenedPages(page);
 
-  await page.getByPlaceholder('Enter your password').clear();
-  await page.getByPlaceholder('Enter your password').fill(password);
+  await fillInPassword({ page, password });
 
   const unlockBtn = await page.getByRole('button', { name: 'Unlock Wallet' });
 
@@ -70,7 +69,7 @@ export const loginToExtensionAccount = async ({ page, extensionId, addr, passwor
     await page.getByRole('button', { name: 'close' }).click();
     await expect(page.getByText('Profile', { exact: true })).toBeVisible();
     // Switch to the correct account. Note doest not handle more than 3 accounts loaded
-    await page.getByRole('button', { name: 'avatar' }).getByText(addr).click();
+    await page.getByTestId(`profile-item-nickname-${nickname}`).click();
 
     // get address
     flowAddr = await getCurrentAddress(page);
@@ -79,7 +78,7 @@ export const loginToExtensionAccount = async ({ page, extensionId, addr, passwor
   expect(flowAddr).toBe(addr);
 
   // Wait for the coins to be loaded
-  await expect(page.getByRole('button', { name: 'Flow' }).first()).toBeVisible();
+  await expect(page.getByTestId('coin-balance-flow')).toBeVisible({ timeout: 30_000 });
 };
 
 export const loginAsTestUser = async ({ page, extensionId }) => {
@@ -89,14 +88,37 @@ export const loginAsTestUser = async ({ page, extensionId }) => {
     return false;
   }
 
-  const { password, addr } = keysFile;
+  const { password, addr, nickname } = keysFile;
 
-  return loginToExtensionAccount({ page, extensionId, password, addr });
+  return loginToExtensionAccount({ page, extensionId, password, addr, nickname });
 };
 
 const getNumber = (str: string) => {
   const match = str.match(/\d+/);
   return match ? parseInt(match[0]) : null;
+};
+
+export const fillInPassword = async ({ page, password }) => {
+  // Handle both create a password and confirm your password
+  let filledAtLeastOneField = false;
+
+  if (await page.getByPlaceholder('Enter your password').isVisible()) {
+    await page.getByPlaceholder('Enter your password').clear();
+    await page.getByPlaceholder('Enter your password').fill(password);
+    filledAtLeastOneField = true;
+  }
+  if (await page.getByPlaceholder('Create a password').isVisible()) {
+    await page.getByPlaceholder('Create a password').clear();
+    await page.getByPlaceholder('Create a password').fill(password);
+    filledAtLeastOneField = true;
+  }
+  if (await page.getByPlaceholder('Confirm your password').isVisible()) {
+    await page.getByPlaceholder('Confirm your password').clear();
+    await page.getByPlaceholder('Confirm your password').fill(password);
+    filledAtLeastOneField = true;
+  }
+  // Make sure we filled at least one field
+  expect(filledAtLeastOneField).toBe(true);
 };
 
 export const registerAccount = async ({ page, extensionId, username, password }) => {
@@ -156,15 +178,7 @@ export const registerAccount = async ({ page, extensionId, username, password })
     .click();
 
   // fill
-
-  if (await page.getByPlaceholder('Create a password').isVisible()) {
-    await page.getByPlaceholder('Create a password').clear();
-    await page.getByPlaceholder('Create a password').fill(password);
-  }
-  if (await page.getByPlaceholder('Confirm your password').isVisible()) {
-    await page.getByPlaceholder('Confirm your password').clear();
-    await page.getByPlaceholder('Confirm your password').fill(password);
-  }
+  await fillInPassword({ page, password });
 
   await page.getByLabel("I agree to Flow Wallet's").click();
 
@@ -212,6 +226,7 @@ export const registerTestUser = async ({ page, extensionId }) => {
     privateKey,
     password: pwd,
     addr,
+    nickname: username,
   });
 };
 
@@ -226,7 +241,6 @@ export const importAccountBySeedPhrase = async ({
   if (!password) {
     throw new Error('TEST_PASSWORD is not set');
   }
-
   if (page.url().includes('dashboard')) {
     // Wait for the dashboard page to be fully loaded
     await page.waitForURL(/.*\/dashboard.*/);
@@ -251,18 +265,15 @@ export const importAccountBySeedPhrase = async ({
 
   await page.getByRole('button', { name: 'Import' }).click();
   // We need to wait for the next step to be visible
-  await expect(page.getByText('STEP')).not.toContainText('1/6');
+
+  await expect(page.getByRole('button', { name: 'Import' })).not.toBeVisible();
 
   const step = await page.getByText('STEP').textContent();
 
   if (step.includes('4')) {
     // We've already imported the account before
-    const confirmPasswordField = await page.getByPlaceholder('Confirm your password');
-    const confirmPasswordValue = await confirmPasswordField.inputValue();
-    if (!confirmPasswordValue) {
-      await confirmPasswordField.fill(password);
-    }
-    // await page.getByPlaceholder('Confirm Password').fill(password);
+    await fillInPassword({ page, password });
+
     await page.getByRole('button', { name: 'Login' }).click();
     // await page.getByRole('button', { name: 'Login' }).click();
   } else if (step.includes('2')) {
@@ -270,15 +281,7 @@ export const importAccountBySeedPhrase = async ({
     await page.getByPlaceholder('Username').fill(username);
     await page.getByRole('button', { name: 'Next' }).click();
 
-    // fill in the password
-    if (await page.getByPlaceholder('Create a password').isVisible()) {
-      await page.getByPlaceholder('Create a password').clear();
-      await page.getByPlaceholder('Create a password').fill(password);
-    }
-    if (await page.getByPlaceholder('Confirm your password').isVisible()) {
-      await page.getByPlaceholder('Confirm your password').clear();
-      await page.getByPlaceholder('Confirm your password').fill(password);
-    }
+    await fillInPassword({ page, password });
 
     await page.getByRole('button', { name: 'Login' }).click();
   }
@@ -291,7 +294,7 @@ export const importAccountBySeedPhrase = async ({
   await page.goto(`chrome-extension://${extensionId}/index.html#/dashboard`);
   await page.waitForURL(/.*\/dashboard.*/);
   // Wait for the account address to be visible
-  await expect(page.getByText(accountAddr)).toBeVisible();
+  await expect(page.getByText(accountAddr)).toBeVisible({ timeout: 10_000 });
   const flowAddr = await getCurrentAddress(page);
 
   if (accountAddr && flowAddr !== accountAddr) {
@@ -325,6 +328,7 @@ export const loginToSenderAccount = async ({ page, extensionId }) => {
     extensionId,
     addr: process.env.TEST_SENDER_ADDR!,
     password: process.env.TEST_PASSWORD!,
+    nickname: process.env.TEST_SENDER_NICKNAME!,
   });
 };
 
@@ -342,6 +346,7 @@ export const loginToReceiverAccount = async ({ page, extensionId }) => {
     extensionId,
     addr: process.env.TEST_RECEIVER_ADDR!,
     password: process.env.TEST_PASSWORD!,
+    nickname: process.env.TEST_RECEIVER_NICKNAME!,
   });
 };
 

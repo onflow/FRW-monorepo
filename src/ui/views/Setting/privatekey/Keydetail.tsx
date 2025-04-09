@@ -28,7 +28,7 @@ const Keydetail = () => {
 
       const pubKey = await storage.get('pubKey');
       const account = await getLoggedInAccount();
-      const { hashAlgo, signAlgo } = account;
+      const { hashAlgoString: hashAlgo, signAlgoString: signAlgo } = account;
 
       setPublicKey(pubKey);
       setHash(hashAlgo);

@@ -97,7 +97,7 @@ const Wallet = () => {
     if (mainAccounts) {
       const mainAccountsWithBalances: MainAccountWithBalance[] =
         await fetchFlowBalances(mainAccounts);
-      setCurrentWallet(currentWallet.address);
+      setCurrentWallet(currentWallet?.address ?? '');
       const evmWallet: WalletAccount | null = await usewallet.getEvmWallet();
       if (evmWallet) {
         const filteredEvm = [evmWallet].filter((evm) => evm?.address);

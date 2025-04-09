@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 
+import { MAINNET_CHAIN_ID } from '@/shared/types/network-types';
 import type {
   LoggedInAccountWithIndex,
   LoggedInAccount,
   FlowAddress,
-  PublicKeyAccount,
   WalletAccount,
   ChildAccountMap,
   MainAccount,
@@ -54,7 +54,7 @@ const INITIAL_WALLET = {
   id: 1,
   coins: ['flow'],
   color: '',
-  chain: 747,
+  chain: MAINNET_CHAIN_ID,
 };
 
 const INITIAL_ACCOUNT = {
@@ -70,7 +70,7 @@ const INITIAL_ACCOUNT = {
   hashAlgo: 1,
   signAlgoString: 'ECDSA_secp256k1',
   hashAlgoString: 'SHA3_256',
-  chain: 747,
+  chain: MAINNET_CHAIN_ID,
 };
 
 export const useProfileStore = create<ProfileState>((set) => ({

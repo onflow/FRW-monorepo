@@ -196,29 +196,29 @@ const SendToAddress = () => {
     const info = await usewallet.getUserInfo(false);
     const linked = state.linked;
     console.log(';linked ', linked);
-    const isChild = await usewallet.getActiveWallet();
+    const accountType = await usewallet.getActiveAccountType();
 
     let userContact = { ...USER_CONTACT };
-    if (isChild) {
-      const cwallet = childAccounts[currentWallet.address!];
+    if (accountType === 'child') {
+      const cwallet = childAccounts?.[currentWallet?.address!];
       userContact = {
         ...USER_CONTACT,
-        address: withPrefix(currentWallet.address!) || '',
-        avatar: cwallet.thumbnail.url,
-        contact_name: cwallet.name,
+        address: withPrefix(currentWallet?.address ?? '') || '',
+        avatar: cwallet?.thumbnail.url ?? '',
+        contact_name: cwallet?.name ?? '',
       };
     } else if (linked) {
-      const cwallet = childAccounts[linked!];
+      const cwallet = childAccounts?.[linked!];
       userContact = {
         ...USER_CONTACT,
         address: withPrefix(linked!) || '',
-        avatar: cwallet.thumbnail.url,
-        contact_name: cwallet.name,
+        avatar: cwallet?.thumbnail.url ?? '',
+        contact_name: cwallet?.name ?? '',
       };
     } else {
       userContact = {
         ...USER_CONTACT,
-        address: withPrefix(currentWallet.address) || '',
+        address: withPrefix(currentWallet?.address ?? '') || '',
         avatar: info.avatar,
         contact_name: info.username,
       };
