@@ -2225,20 +2225,19 @@ class OpenApiService {
       return cachedFlowData;
     }
 
-    const { data } = await this.sendRequest(
+    const response: FlowApiResponse = await this.sendRequest(
       'GET',
       `/api/v4/cadence/tokens/ft/${address}`,
       {},
       {},
       WEB_NEXT_URL
     );
-
-    if (!data?.result?.length) {
+    if (!response!.data?.result?.length) {
       return [];
     }
 
     // Convert FlowTokenResponse to ExtendedTokenInfo
-    const tokens = (data?.result || []).map(
+    const tokens = (response.data?.result || []).map(
       (token): ExtendedTokenInfo => ({
         id: token.identifier,
         name: token.name,
