@@ -208,6 +208,7 @@ const TokenDetail = () => {
               accessible={accessible}
               tokenInfo={tokenInfo}
               accountType={accountType}
+              tokenId={tokenId}
             />
           )}
           {token === 'flow' && <StackingCard />}
