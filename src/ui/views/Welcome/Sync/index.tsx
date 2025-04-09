@@ -304,7 +304,7 @@ const Sync = () => {
         }
       } else {
         try {
-          await usewallet.signInV3(mnemonic, accountKey, deviceInfo);
+          await usewallet.loginV3_depreciated(mnemonic, accountKey, deviceInfo);
           const userInfo = await usewallet.getUserInfo(true);
           setUsername(userInfo.username);
           await usewallet.saveIndex(userInfo.username);

@@ -6,7 +6,10 @@ import SwipeableViews from 'react-swipeable-views';
 
 import { IconActivity, IconNfts } from '@/components/iconfont';
 import eventBus from '@/eventBus';
-import { type ActiveChildType } from '@/shared/types/wallet-types';
+import {
+  type ActiveAccountType,
+  type ActiveChildType_depreciated,
+} from '@/shared/types/wallet-types';
 import { formatLargeNumber } from '@/shared/utils/number';
 import { ButtonRow } from '@/ui/FRWComponent/ButtonRow';
 import CoinsIcon from '@/ui/FRWComponent/CoinsIcon';
@@ -54,7 +57,7 @@ const WalletTab = ({ network }) => {
 
   const [address, setAddress] = useState<string>('');
   const [accessible, setAccessible] = useState<any>([]);
-  const [childType, setChildType] = useState<ActiveChildType>(null);
+  const [childType, setChildType] = useState<ActiveAccountType>('main');
   const [alertOpen, setAlertOpen] = useState<boolean>(false);
   const [, setChildAccount] = useState<any>({});
   const [isOnRamp, setOnRamp] = useState(false);
@@ -82,9 +85,9 @@ const WalletTab = ({ network }) => {
     let data = '';
     try {
       if (childType === 'evm') {
-        data = evmWallet.address;
+        data = evmWallet?.address ?? '';
       } else {
-        data = currentWallet.address;
+        data = currentWallet?.address ?? '';
       }
     } catch (error) {
       console.error('Error getting address:', error);
@@ -117,11 +120,12 @@ const WalletTab = ({ network }) => {
 
   const fetchWallet = useCallback(async () => {
     // If childType is 'evm', handle it first
-    const activeChild = await usewallet.getActiveWallet();
-    if (activeChild === 'evm') {
+    const activeAccountType = await usewallet.getActiveAccountType();
+    if (activeAccountType === 'evm') {
       return;
       // If not 'evm', check if it's not active
     } else if (!isActive) {
+      // Child wallet
       const ftResult = await usewallet.checkAccessibleFt(address);
       if (ftResult) {
         setAccessible(ftResult);
@@ -133,16 +137,16 @@ const WalletTab = ({ network }) => {
 
   const fetchChildState = useCallback(async () => {
     setChildStateLoading(true);
-    const isChild = await usewallet.getActiveWallet();
+    const accountType = await usewallet.getActiveAccountType();
     setChildAccount(childAccounts);
-    setChildType(isChild);
-    if (isChild && isChild !== 'evm') {
+    setChildType(accountType);
+    if (accountType !== 'main' && accountType !== 'evm') {
       setIsActive(false);
     } else {
       setIsActive(true);
     }
     setChildStateLoading(false);
-    return isChild;
+    return accountType;
   }, [usewallet, childAccounts]);
 
   useEffect(() => {

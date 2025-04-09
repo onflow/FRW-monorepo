@@ -1,6 +1,7 @@
 import { max } from 'lodash';
 import LRU from 'lru-cache';
 
+import { MAINNET_CHAIN_ID } from '@/shared/types/network-types';
 import { createPersistStore } from 'background/utils';
 import { INTERNAL_REQUEST_ORIGIN } from 'consts';
 
@@ -63,7 +64,7 @@ class PermissionService {
     origin: string,
     name: string,
     icon: string,
-    defaultChain = 747,
+    defaultChain = MAINNET_CHAIN_ID,
     isSigned = false
   ) => {
     if (!this.lruCache) return;

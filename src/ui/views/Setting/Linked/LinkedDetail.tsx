@@ -23,6 +23,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 
 import { type UserInfoResponse } from '@/shared/types/network-types';
+import { type WalletAccount } from '@/shared/types/wallet-types';
 import IconNext from '@/ui/FRWAssets/svg/nextgray.svg';
 import { LLSecondaryButton } from '@/ui/FRWComponent';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -100,7 +101,7 @@ const LinkedDetail = () => {
   const history = useHistory();
   const usewallet = useWallet();
   const { childAccounts } = useProfiles();
-  const [childAccount, setChildAccount] = useState<ChildAccount | null>(null);
+  const [childAccount, setChildAccount] = useState<WalletAccount | null>(null);
   const [unlinking, setUnlinking] = useState<boolean>(false);
   const [active, setIsActive] = useState<boolean>(false);
   const [key, setKey] = useState<string>('');
@@ -120,15 +121,15 @@ const LinkedDetail = () => {
 
   const fetchUserWallet = useCallback(async () => {
     try {
-      const isChild = await usewallet.getActiveWallet();
+      const accountType = await usewallet.getActiveAccountType();
       // const flowCoins = fetchRemoteConfig.flowCoins();
-      if (isChild) {
+      if (accountType !== 'main') {
         setIsActive(false);
       } else {
         setIsActive(true);
       }
       const key = location['key'];
-      setChildAccount(childAccounts[key]);
+      setChildAccount(childAccounts?.[key] ?? null);
       setKey(key);
       const catalog = await usewallet.getNftCatalog();
 
@@ -467,7 +468,7 @@ const LinkedDetail = () => {
                       backgroundColor: 'text.secondary',
                       objectFit: 'cover',
                     }}
-                    src={childAccount?.thumbnail?.url ?? 'https://lilico.app/placeholder-2.0.png'}
+                    src={childAccount?.icon ?? 'https://lilico.app/placeholder-2.0.png'}
                   />
                   <Typography
                     sx={{
@@ -540,10 +541,7 @@ const LinkedDetail = () => {
             >
               {chrome.i18n.getMessage('Description')}
             </Typography>
-            <Typography sx={{ fontSize: '14px', color: '#FFFFFF' }}>
-              {' '}
-              {childAccount?.description ?? 'No Description'}
-            </Typography>
+            <Typography sx={{ fontSize: '14px', color: '#FFFFFF' }}> {'No Description'}</Typography>
           </Box>
 
           <Box

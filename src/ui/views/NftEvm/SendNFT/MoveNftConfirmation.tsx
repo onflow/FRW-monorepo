@@ -138,10 +138,10 @@ const MoveNftConfirmation = (props: SendNFTConfirmationProps) => {
   const getChildResp = useCallback(async () => {
     const newWallet = {
       [mainAddress!]: {
-        name: parentWallet.name,
-        description: parentWallet.name,
+        name: parentWallet?.name ?? '',
+        description: parentWallet?.name ?? '',
         thumbnail: {
-          url: parentWallet.icon,
+          url: parentWallet?.icon ?? '',
         },
       },
     };

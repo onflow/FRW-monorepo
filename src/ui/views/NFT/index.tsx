@@ -2,6 +2,7 @@ import { Button, Box } from '@mui/material';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 
+import { type ActiveAccountType } from '@/shared/types/wallet-types';
 import { useWallet } from 'ui/utils';
 
 import EditNFTAddress from './EditNFTAddress';
@@ -20,16 +21,16 @@ const NFTTab = () => {
   const [activeCollection, setActiveCollection] = useState<any>([]);
   const [isActive, setIsActive] = useState(true);
   const gridRef = useRef<any>(null);
-  const [childType, setChildType] = useState<string>('');
+  const [childType, setChildType] = useState<ActiveAccountType>('main');
   const [childTypeLoaded, setChildTypeLoaded] = useState<boolean>(false);
   const loadNFTs = useCallback(async () => {
-    const isChild = await wallet.getActiveWallet();
+    const accountType = await wallet.getActiveAccountType();
     const address = await wallet.getCurrentAddress();
     setAddress(address);
     // const flowCoins = fetchRemoteConfig.flowCoins();
     setChildTypeLoaded(true);
-    if (isChild) {
-      setChildType(isChild);
+    if (accountType === 'child' && address) {
+      setChildType(accountType);
 
       const parentaddress = await wallet.getParentAddress();
       if (!parentaddress) {
@@ -63,7 +64,7 @@ const NFTTab = () => {
         activeCollection={activeCollection}
       />
 
-      {childTypeLoaded && !childType && (
+      {childTypeLoaded && childType === 'main' && (
         <Box
           sx={{
             display: 'flex',

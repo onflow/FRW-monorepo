@@ -203,13 +203,13 @@ const SendToAddress = () => {
   const setUserInfo = useCallback(async () => {
     await usewallet.setDashIndex(1);
     const info = await usewallet.getUserInfo(false);
-    const activeChild = await usewallet.getActiveWallet();
+    const activeAccountType = await usewallet.getActiveAccountType();
     const userContact = { ...USER_CONTACT };
-    if (activeChild === 'evm') {
+    if (activeAccountType === 'evm') {
       const data = await usewallet.getEvmAddress();
       userContact.address = data;
     } else {
-      userContact.address = withPrefix(currentWallet.address) || '';
+      userContact.address = withPrefix(currentWallet?.address ?? '') || '';
     }
     userContact.avatar = info.avatar;
     userContact.contact_name = info.username;

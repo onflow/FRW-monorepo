@@ -6,7 +6,7 @@ import eventBus from '@/eventBus';
 import { createPersistStore } from 'background/utils';
 import { EVENTS } from 'consts';
 
-import { FlowNetwork } from '../../shared/types/network-types';
+import { type FlowNetwork, MAINNET_NETWORK } from '../../shared/types/network-types';
 
 import { keyringService, sessionService, i18n } from './index';
 
@@ -89,7 +89,7 @@ class PreferenceService {
         pinnedChain: [],
         // addedToken: {},
         isDeveloperModeEnabled: isDeveloperModeEnabled || false,
-        network: FlowNetwork.mainnet,
+        network: MAINNET_NETWORK,
         isFreeGasFeeEnabled: false,
       },
     });

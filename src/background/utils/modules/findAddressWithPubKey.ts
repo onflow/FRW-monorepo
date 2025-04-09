@@ -1,13 +1,11 @@
 import * as fcl from '@onflow/fcl';
 import { type AccountKey } from '@onflow/typedefs';
 
-import { userWalletService } from '@/background/service';
-import { type SignAlgoString, type HashAlgoString } from '@/shared/types/algo-types';
+import openapiService from '@/background/service/openapi';
+import userWalletService from '@/background/service/userWallet';
 import type { PublicKeyTuple } from '@/shared/types/key-types';
 import { type AccountKeyRequest } from '@/shared/types/network-types';
 import { type PublicKeyAccount } from '@/shared/types/wallet-types';
-
-import { getPublicAccountForPK } from './findAddressWithPK';
 
 /**
  * Get accounts with public key tuple
@@ -33,13 +31,11 @@ export const getAccountsByPublicKeyTuple = async (
   // Combine the accounts
   const accounts = [...p256Accounts, ...sepc256k1Accounts];
 
-  // Check that at least one account has weight of 1000 or more
-  const hasWeight = accounts.some((account) => account.weight >= 1000);
-  if (!hasWeight || accounts.length === 0) {
-    throw new Error('No accounts found with the given public key');
-  }
+  // Filter out accounts with weight of < 1000
+  const accountsOver1000 = accounts.filter((account) => account.weight >= 1000);
+
   // Otherwise, return the accounts
-  return accounts;
+  return accountsOver1000;
 };
 
 /*
@@ -50,11 +46,11 @@ export const getAccountsByPublicKeyTuple = async (
  * @returns {Promise<KeyIndexerProfile>} The accounts associated with the public key
  */
 
-async function getAccountsWithPublicKey(
+export async function getAccountsWithPublicKey(
   publicKey: string,
   network: string
 ): Promise<PublicKeyAccount[]> {
-  return userWalletService.getAccountsWithPublicKey(publicKey, network);
+  return openapiService.getAccountsWithPublicKey(publicKey, network);
 }
 
 const getPublicKeyInfoForAccount = async (
