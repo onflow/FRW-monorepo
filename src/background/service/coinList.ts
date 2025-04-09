@@ -1,10 +1,16 @@
+import openapiService from '@/background/service/openapi';
 import { type BalanceMap, type CoinItem, type ExtendedTokenInfo } from '@/shared/types/coin-types';
 import { coinListKey, coinListRefreshRegex } from '@/shared/utils/cache-data-keys';
 import { createPersistStore } from 'background/utils';
 import { storage } from 'background/webapi';
 
 import { walletController } from '../controller';
-import { clearCachedData, registerRefreshListener, setCachedData } from '../utils/data-cache';
+import {
+  clearCachedData,
+  getValidData,
+  registerRefreshListener,
+  setCachedData,
+} from '../utils/data-cache';
 interface CoinListStore {
   expiry: number;
   coinItem: Record<string, any>;
@@ -14,49 +20,15 @@ interface CoinListStore {
 
 const now = new Date();
 
-const COINLIST_TEMPLATE: CoinListStore = {
-  expiry: now.getTime(),
-  coinItem: {
-    testnet: [],
-    crescendo: [],
-    mainnet: [],
-  },
-  evm: {
-    testnet: [],
-    crescendo: [],
-    mainnet: [],
-  },
-  currentCoin: 'flow',
-};
 class CoinList {
-  store!: CoinListStore;
-
   init = async () => {
-    this.store = await createPersistStore<CoinListStore>({
-      name: 'coinList',
-      template: COINLIST_TEMPLATE,
-    });
-    initCoinListLoaders();
+    registerRefreshListener(coinListRefreshRegex, this.loadCoinList);
   };
 
-  clear = async () => {
-    if (!this.store) {
-      await this.init();
-    } else {
-      Object.assign(this.store, COINLIST_TEMPLATE);
-    }
-  };
-
+  clear = async () => {};
+  /*
   getCoinByUnit = (unit: string) => {
     return this.store.coinItem[unit];
-  };
-
-  getExpiry = () => {
-    return this.store.expiry;
-  };
-
-  setExpiry = (expiry: number) => {
-    this.store.expiry = expiry;
   };
 
   addCoin = (data: ExtendedTokenInfo, network: string, listType = 'coinItem') => {
@@ -109,7 +81,7 @@ class CoinList {
    * @param balanceMap Object mapping token IDs to balance strings
    * @param network The network to update balances for
    * @param listType The list type to update
-   */
+   * /
   updateBalances = (balanceMap: BalanceMap, network: string, listType = 'coinItem') => {
     // Check if the network exists in the store
     if (!this.store[listType] || !this.store[listType][network]) {
@@ -149,38 +121,41 @@ class CoinList {
 
     console.log('Updated balances for', updatedCoins.length, 'coins on', network);
   };
-
+ */
   initCoinList = async (network: string, address: string) => {
-    const coinList = await refreshCoinList(network, address);
+    const coinList = await this.loadCoinList(network, address, 'usd');
     if (!coinList || coinList.length === 0) {
       return null;
     }
     return coinList;
   };
+
+  /**
+   * Refreshes coin list with updated balances and prices
+   * @param _expiry Expiry time in milliseconds
+   * @returns Array of coin items
+   */
+  loadCoinList = async (
+    network: string,
+    address: string,
+    currency: string
+  ): Promise<ExtendedTokenInfo[]> => {
+    // Get network and address
+    if (!address || !network) {
+      throw new Error('Address or network is not set');
+    }
+    const cachedData = await getValidData<ExtendedTokenInfo[]>(
+      coinListKey(network, address, currency)
+    );
+    if (cachedData) {
+      return cachedData;
+    }
+
+    const userTokenResult = await openapiService.getUserTokens(address, network);
+    await setCachedData(coinListKey(network, address, currency), userTokenResult);
+
+    return userTokenResult;
+  };
 }
-
-/**
- * Load the coinlist for a given address
- * Store in the data cache
- * @param network - The network to load the accounts for
- * @param address - The adress to load the accounts for
- * @returns The coinlist for the given adress or null if not found. Does not throw an error.
- */
-const refreshCoinList = async (
-  network: string,
-  address: string
-): Promise<ExtendedTokenInfo[] | null> => {
-  const coinList: ExtendedTokenInfo[] = await walletController.refreshCoinList();
-  if (!coinList || coinList.length === 0) {
-    return null;
-  }
-  setCachedData(coinListKey(network, address, 'usd'), coinList);
-
-  return coinList;
-};
-
-const initCoinListLoaders = () => {
-  registerRefreshListener(coinListRefreshRegex, refreshCoinList);
-};
 
 export default new CoinList();

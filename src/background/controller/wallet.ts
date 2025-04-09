@@ -66,6 +66,7 @@ import {
   getCachedNftCollection,
   getCachedNftCatalogCollections,
   nftCatalogCollectionsKey,
+  coinListKey,
 } from '@/shared/utils/cache-data-keys';
 import { getCurrentProfileId } from '@/shared/utils/current-id';
 import {
@@ -132,7 +133,12 @@ import type { ConnectedSite } from '../service/permission';
 import type { PreferenceAccount } from '../service/preference';
 import { type EvaluateStorageResult, StorageEvaluator } from '../service/storage-evaluator';
 import { loadChildAccountsOfParent } from '../service/userWallet';
-import { getCachedData, registerRefreshListener, setCachedData } from '../utils/data-cache';
+import {
+  getCachedData,
+  getValidData,
+  registerRefreshListener,
+  setCachedData,
+} from '../utils/data-cache';
 import defaultConfig from '../utils/defaultConfig.json';
 import { getEmojiList } from '../utils/emoji-util';
 import erc20ABI from '../utils/erc20.abi.json';
@@ -1066,143 +1072,6 @@ export class WalletController extends BaseController {
     userInfoService.setDashIndex(data);
   };
 
-  //coinList
-  getCoinList = async (_expiry = 60000, currentEnv = ''): Promise<CoinItem[]> => {
-    try {
-      const network = await this.getNetwork();
-      const now = new Date();
-      const expiry = coinListService.getExpiry();
-
-      // Determine childType: use currentEnv if not empty, otherwise fallback to active wallet type
-      let childType = currentEnv || (await userWalletService.getActiveAccountType());
-      childType = childType === 'evm' ? 'evm' : 'coinItem';
-
-      // Otherwise, fetch from the coinListService
-      const listCoins = coinListService.listCoins(network, childType);
-
-      // Validate and ensure listCoins is of type CoinItem[]
-      if (
-        !listCoins ||
-        !Array.isArray(listCoins) ||
-        listCoins.length === 0 ||
-        now.getTime() > expiry
-      ) {
-        console.log('listCoins is empty or invalid, refreshing...');
-        let refreshedList;
-        if (childType === 'evm') {
-          refreshedList = await this.refreshEvmList(_expiry);
-        } else {
-          refreshedList = await this.refreshCoinList(_expiry);
-        }
-        if (refreshedList) {
-          return refreshedList;
-        }
-      }
-
-      return listCoins;
-    } catch (error) {
-      console.error('Error fetching coin list:', error);
-      throw new Error('Failed to fetch coin list'); // Re-throw the error with a custom message
-    }
-  };
-
-  /**
-   * Refreshes coin list with updated balances and prices
-   * @param _expiry Expiry time in milliseconds
-   * @returns Array of coin items
-   */
-  refreshCoinList = async (_expiry = 60000): Promise<ExtendedTokenInfo[]> => {
-    try {
-      const isChild = await this.getActiveAccountType();
-
-      // Handle EVM wallets
-      if (isChild === 'evm') {
-        return await this.refreshEvmList(_expiry);
-      }
-
-      // Set expiry
-      const now = new Date();
-      const exp = _expiry + now.getTime();
-      coinListService.setExpiry(exp);
-
-      // Get network and address
-      const network = await this.getNetwork();
-      const address = await this.getCurrentAddress();
-      const userTokenResult = await openapiService.getUserTokens(address || '0x', network);
-
-      // Update storage
-      // await coinListService.addCoins(userTokenResult, network);
-
-      return userTokenResult;
-    } catch (err) {
-      if (err.message === 'Operation aborted') {
-        console.error('refreshCoinList operation aborted.');
-      } else {
-        console.error('refreshCoinList encountered an error:', err);
-      }
-      throw err;
-    }
-  };
-
-  refreshEvmList = async (_expiry = 60000): Promise<ExtendedTokenInfo[]> => {
-    const now = new Date();
-    const exp = _expiry + now.getTime();
-    coinListService.setExpiry(exp);
-
-    const network = await this.getNetwork();
-
-    const address = await this.getRawEvmAddressWithPrefix();
-    if (!address) {
-      // Not loaded yet
-      return [];
-    }
-    if (!isValidEthereumAddress(address)) {
-      throw new Error('Invalid Ethereum address in coinlist');
-    }
-    const evmCustomToken = (await storage.get(`${network}evmCustomToken`)) || [];
-    const customToken = (coins: ExtendedTokenInfo[], evmCustomToken: any): ExtendedTokenInfo[] => {
-      const updatedList = [...coins];
-
-      evmCustomToken.forEach((customToken) => {
-        // Check if the customToken already exists in mergedList
-        const existingToken = updatedList.find((token) => {
-          return token?.unit?.toLowerCase() === customToken?.unit?.toLowerCase();
-        });
-
-        if (existingToken) {
-          existingToken.custom = true;
-        } else {
-          updatedList.push({
-            custom: true,
-            coin: customToken?.coin || '',
-            unit: customToken?.unit || '',
-            icon: '',
-            balance: '0',
-            price: 0,
-            change24h: 0,
-            total: 0,
-            id: '',
-            // Add missing TokenInfo properties
-            address: customToken?.address || '',
-            name: customToken?.name || customToken?.unit || '',
-            contractName: customToken?.contractName || '',
-            decimals: customToken?.decimals || 8,
-            symbol: customToken?.unit || '',
-            logoURI: '',
-            path: customToken?.path || '',
-          });
-        }
-      });
-
-      return updatedList;
-    };
-
-    const userTokenResult = await openapiService.getUserTokens(address || '0x', network);
-    const tokenFinalResult = customToken(userTokenResult, evmCustomToken);
-    // coinListService.addCoins(tokenFinalResult, network, 'evm');
-    return tokenFinalResult;
-  };
-
   initCoinListSession = async (address: string) => {
     console.log('initCoinListSession', address);
     const network = await this.getNetwork();
@@ -1260,13 +1129,6 @@ export class WalletController extends BaseController {
     return currencyBalance.toNumber();
   };
 
-  setCurrentCoin = async (coinName: string) => {
-    await coinListService.setCurrentCoin(coinName);
-  };
-
-  getCurrentCoin = async () => {
-    return await coinListService.getCurrentCoin();
-  };
   // addressBook
   setRecent = async (data) => {
     const network = await this.getNetwork();
@@ -2963,7 +2825,6 @@ export class WalletController extends BaseController {
     await this.getCadenceScripts();
 
     this.abort();
-    await this.refreshCoinList(5000);
   };
 
   getNetwork = async (): Promise<string> => {
@@ -3131,7 +2992,6 @@ export class WalletController extends BaseController {
       // This will throw an error if there is an error with the transaction
       const txStatus = await fcl.tx(txId).onceExecuted();
       // Update the pending transaction with the transaction status
-      this.refreshCoinList(6000);
       txHash = await transactionService.updatePending(network, address, txId, txStatus);
 
       // Track the transaction result
