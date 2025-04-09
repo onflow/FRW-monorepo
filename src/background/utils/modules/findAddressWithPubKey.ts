@@ -45,12 +45,38 @@ export const getAccountsByPublicKeyTuple = async (
  * @param {string} network - The network to search on
  * @returns {Promise<KeyIndexerProfile>} The accounts associated with the public key
  */
-
+/*
 export async function getAccountsWithPublicKey(
   publicKey: string,
   network: string
 ): Promise<PublicKeyAccount[]> {
   return openapiService.getAccountsWithPublicKey(publicKey, network);
+} */
+
+export async function getAccountsWithPublicKey(
+  publicKey: string,
+  network: string
+): Promise<PublicKeyAccount[]> {
+  const url =
+    network === 'testnet'
+      ? `https://staging.key-indexer.flow.com/key/${publicKey}`
+      : `https://production.key-indexer.flow.com/key/${publicKey}`;
+  const result = await fetch(url);
+  const json = await result.json();
+
+  // Now massage the data to match the type we want
+  const accounts: PublicKeyAccount[] = json.accounts.map((account) => ({
+    address: account.address,
+    publicKey: json.publicKey,
+    keyIndex: account.keyId,
+    weight: account.weight,
+    signAlgo: account.sigAlgo,
+    signAlgoString: account.signing,
+    hashAlgo: account.hashAlgo,
+    hashAlgoString: account.hashing,
+  }));
+
+  return accounts;
 }
 
 const getPublicKeyInfoForAccount = async (

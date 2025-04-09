@@ -1170,7 +1170,11 @@ const loadMainAccountsWithPubKey = async (
   );
 
   // Save the main accounts to the cache
-  setCachedData(mainAccountsKey(network, pubKey), mainAccounts);
+  setCachedData(
+    mainAccountsKey(network, pubKey),
+    mainAccounts,
+    mainAccounts.length > 0 ? 60_000 : 1_000
+  );
 
   return mainAccounts;
 };
