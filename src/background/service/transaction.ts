@@ -5,44 +5,41 @@ import { type TransferItem } from '@/shared/types/transaction-types';
 import { isValidEthereumAddress, isValidFlowAddress } from '@/shared/utils/address';
 import { getCachedData } from '@/shared/utils/cache-data-access';
 import {
-  pendingTransferListKey,
   transferListKey,
   type TransferListStore,
-  type PendingTransferListStore,
   transferListRefreshRegex,
-  pendingTransferListRefreshRegex,
 } from '@/shared/utils/cache-data-keys';
 
-import {
-  getInvalidData,
-  getValidData,
-  registerRefreshListener,
-  setCachedData,
-} from '../utils/data-cache';
+import { getInvalidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
 
 interface TransactionStore {
-  expiry: number;
-  total: number;
-  transactionItem: Record<string, TransferItem[]>;
-  pendingItem: Record<string, TransferItem[]>;
+  pendingItem: {
+    mainnet: Record<string, TransferItem[]>;
+    testnet: Record<string, TransferItem[]>;
+  };
 }
 
 class Transaction {
+  private store: TransactionStore = {
+    pendingItem: {
+      mainnet: {},
+      testnet: {},
+    },
+  };
+
   init = async () => {
     registerRefreshListener(transferListRefreshRegex, this.loadTransactions);
-    registerRefreshListener(pendingTransferListRefreshRegex, this.loadPendingTransactions);
   };
 
   clear = async () => {};
 
-  private getPendingList = async (network: string, address: string) => {
-    // Get the pending list from the session store as
-    return (await getValidData<TransferItem[]>(pendingTransferListKey(network, address))) || [];
+  private getPendingList = (network: string, address: string): TransferItem[] => {
+    // Always return a clone of the pending list
+    return structuredClone(this.store.pendingItem[network][address] || []);
   };
 
-  private setPendingList = async (network: string, address: string, txList: TransferItem[]) => {
-    // Always set pending transactions to 120 seconds
-    await setCachedData(pendingTransferListKey(network, address), txList, 120_000);
+  private setPendingList = (network: string, address: string, txList: TransferItem[]) => {
+    return (this.store.pendingItem[network][address] = structuredClone(txList));
   };
 
   setPending = async (
@@ -52,7 +49,7 @@ class Transaction {
     icon: string,
     title: string
   ) => {
-    const txList = await this.getPendingList(network, address);
+    const txList = this.getPendingList(network, address);
     const items = txList.filter((txItem) => txItem.hash.includes(txId));
     if (items.length > 0) {
       return;
@@ -90,7 +87,7 @@ class Transaction {
     txItem.image = icon;
     txItem.title = title;
     txList.unshift(txItem);
-    await this.setPendingList(network, address, txList);
+    this.setPendingList(network, address, txList);
 
     // Get the existing indexed transaction list
     const existingTxStore = await getInvalidData<TransferListStore>(
@@ -112,7 +109,7 @@ class Transaction {
     txId: string,
     transactionStatus: TransactionStatus
   ): Promise<string> => {
-    const txList = await this.getPendingList(network, address);
+    const txList = this.getPendingList(network, address);
 
     const txItemIndex = txList.findIndex((item) => item.hash.includes(txId));
     let combinedTxHash = txId;
@@ -152,7 +149,7 @@ class Transaction {
     }
     txList[txItemIndex] = txItem;
     // Always set pending transactions to 120 seconds
-    await this.setPendingList(network, address, txList);
+    this.setPendingList(network, address, txList);
 
     // Get the existing indexed transaction list
     const existingTxStore = await getInvalidData<TransferListStore>(
@@ -187,12 +184,12 @@ class Transaction {
       );
     });
 
-    await this.setPendingList(network, address, newList);
+    this.setPendingList(network, address, newList);
   };
 
   // only used when evm transaction get updated.
   clearPending = async (network: string, address: string) => {
-    await this.setPendingList(network, address, []);
+    this.setPendingList(network, address, []);
   };
 
   private setTransaction = async (
@@ -270,7 +267,7 @@ class Transaction {
 
       txList.push(transactionHolder);
     });
-    await this.setPendingList(network, address, existingPendingList);
+    this.setPendingList(network, address, existingPendingList);
     const transferListStore: TransferListStore = {
       count: data.total + existingPendingList.length,
       pendingCount: existingPendingList.length,
@@ -329,8 +326,8 @@ class Transaction {
   loadPendingTransactions = async (network: string, address: string) => {
     // This will clear the pending list if it's expired
     // Pending transactions last 120 seconds
-    const pendingList = await this.getPendingList(network, address);
-    await this.setPendingList(network, address, pendingList);
+    const pendingList = this.getPendingList(network, address);
+    this.setPendingList(network, address, pendingList);
   };
 
   listAllTransactions = async (
@@ -363,10 +360,7 @@ class Transaction {
   };
 
   listPending = async (network: string, address: string): Promise<TransferItem[]> => {
-    const pendingList = await getCachedData<PendingTransferListStore>(
-      pendingTransferListKey(network, address)
-    );
-    return pendingList || [];
+    return this.getPendingList(network, address);
   };
 
   getCount = async (

@@ -99,13 +99,6 @@ export type TransferListStore = {
   list: TransferItem[];
 };
 
-// Pending Transfer list
-export const pendingTransferListKey = (network: string, address: string) =>
-  `pending-transfer-list-${network}-${address}`;
-
-export const pendingTransferListRefreshRegex = refreshKey(pendingTransferListKey);
-export type PendingTransferListStore = TransferItem[];
-
 // NFTs
 
 export const nftCollectionKey = (
