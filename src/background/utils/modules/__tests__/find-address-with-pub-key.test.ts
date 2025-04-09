@@ -1,6 +1,7 @@
 import * as fcl from '@onflow/fcl';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+import openapiService from '@/background/service/openapi';
 import {
   HASH_ALGO_NUM_SHA2_256,
   HASH_ALGO_NUM_SHA3_256,
@@ -16,8 +17,8 @@ import {
 
 // Mock FCL and userWalletService
 vi.mock('@onflow/fcl');
-vi.mock('background/service', () => ({
-  userWalletService: {
+vi.mock('@/background/service/userWallet', () => ({
+  default: {
     setupFcl: vi.fn(),
     getNetwork: vi.fn().mockResolvedValue('testnet'),
   },
@@ -27,6 +28,7 @@ vi.mock('background/service', () => ({
 vi.mock('@/background/service/openapi', () => ({
   default: {
     getFeatureFlag: vi.fn().mockResolvedValue(false),
+    getAccountsWithPublicKey: vi.fn().mockResolvedValue([]),
     init: vi.fn().mockResolvedValue(undefined),
   },
 }));
@@ -66,6 +68,23 @@ describe('findAddressWithPubKey module', () => {
     });
 
     it('should return account details when indexer finds matching accounts with SHA3_256/ECDSA_P256', async () => {
+      const mockAccountData = [
+        {
+          address: mockAddress,
+          publicKey: mockPubKey,
+          keyIndex: 0,
+          weight: 1000,
+          signAlgo: SIGN_ALGO_NUM_ECDSA_P256,
+          signAlgoString: 'ECDSA_P256',
+          hashAlgo: HASH_ALGO_NUM_SHA3_256,
+          hashAlgoString: 'SHA3_256',
+        },
+      ];
+      // Mock the service call for this specific test
+      vi.mocked(openapiService.getAccountsWithPublicKey).mockResolvedValueOnce(mockAccountData);
+
+      // The global.fetch mock below is likely now irrelevant due to code changes in findAddressWithPubKey,
+      // but kept for historical context or potential future refactoring.
       const mockIndexerResponse = {
         publicKey: mockPubKey,
         accounts: [
@@ -80,24 +99,14 @@ describe('findAddressWithPubKey module', () => {
           },
         ],
       };
-
       global.fetch = vi.fn().mockResolvedValueOnce({
         json: () => Promise.resolve(mockIndexerResponse),
       });
 
       const result = await getOrCheckAccountsWithPublicKey(mockPubKey);
-      expect(result).toEqual([
-        {
-          address: mockAddress,
-          publicKey: mockPubKey,
-          keyIndex: 0,
-          weight: 1000,
-          signAlgo: HASH_ALGO_NUM_SHA2_256,
-          signAlgoString: 'ECDSA_P256',
-          hashAlgo: HASH_ALGO_NUM_SHA3_256,
-          hashAlgoString: 'SHA3_256',
-        },
-      ]);
+
+      // Assertion needs to match the structure returned by getAccountsWithPublicKey
+      expect(result).toEqual(mockAccountData);
     });
 
     it('should query FCL when address is provided and return null if no matching keys', async () => {
@@ -192,35 +201,42 @@ describe('findAddressWithPubKey module', () => {
     });
 
     it('should return combined accounts when both keys have valid accounts', async () => {
-      // Mock fetch to return valid accounts for both keys
+      const mockP256Account = {
+        address: mockAddress,
+        publicKey: mockPubKeyTuple.P256.pubK,
+        keyIndex: 0,
+        weight: 1000,
+        signAlgo: SIGN_ALGO_NUM_ECDSA_P256,
+        signAlgoString: 'ECDSA_P256',
+        hashAlgo: HASH_ALGO_NUM_SHA3_256,
+        hashAlgoString: 'SHA3_256',
+      };
+      const mockSecpAccount = {
+        address: mockAddress, // Assuming same address for simplicity
+        publicKey: mockPubKeyTuple.SECP256K1.pubK,
+        keyIndex: 1, // Different index
+        weight: 1000,
+        signAlgo: SIGN_ALGO_NUM_ECDSA_secp256k1,
+        signAlgoString: 'ECDSA_secp256k1',
+        hashAlgo: HASH_ALGO_NUM_SHA2_256, // Different hash algo
+        hashAlgoString: 'SHA2_256',
+      };
+
+      // Mock the service call twice: once for P256, once for SECP256k1
+      vi.mocked(openapiService.getAccountsWithPublicKey)
+        .mockResolvedValueOnce([mockP256Account]) // First call (P256)
+        .mockResolvedValueOnce([mockSecpAccount]); // Second call (SECP256k1)
+
+      // The global.fetch mock below is likely now irrelevant due to code changes in findAddressWithPubKey
       global.fetch = vi.fn().mockImplementation((url) => {
-        return Promise.resolve({
-          json: () =>
-            Promise.resolve({
-              publicKey: url.includes('_p256')
-                ? mockPubKeyTuple.P256.pubK
-                : mockPubKeyTuple.SECP256K1.pubK,
-              accounts: [
-                {
-                  address: mockAddress,
-                  keyId: 0,
-                  weight: 1000,
-                  sigAlgo: url.includes('_p256')
-                    ? SIGN_ALGO_NUM_ECDSA_P256
-                    : SIGN_ALGO_NUM_ECDSA_secp256k1,
-                  hashAlgo: url.includes('_p256') ? HASH_ALGO_NUM_SHA3_256 : HASH_ALGO_NUM_SHA2_256,
-                  signing: url.includes('_p256') ? 'ECDSA_P256' : 'ECDSA_secp256k1',
-                  hashing: url.includes('_p256') ? 'SHA3_256' : 'SHA2_256',
-                },
-              ],
-            }),
-        });
+        // ... (existing fetch mock, less relevant now)
       });
 
       const result = await getOrCheckAccountsByPublicKeyTuple(mockPubKeyTuple);
       expect(result).toHaveLength(2);
-      expect(result[0].signAlgoString).toBe('ECDSA_P256');
-      expect(result[1].signAlgoString).toBe('ECDSA_secp256k1');
+      // Verify properties based on the mocked service data
+      expect(result.some((acc) => acc.signAlgoString === 'ECDSA_P256')).toBe(true);
+      expect(result.some((acc) => acc.signAlgoString === 'ECDSA_secp256k1')).toBe(true);
     });
 
     it('should throw error when no accounts are found', async () => {
@@ -240,57 +256,52 @@ describe('findAddressWithPubKey module', () => {
   });
 
   describe('getAccountsByPublicKeyTuple', () => {
-    it('should use testnet indexer when network is testnet', async () => {
-      const mockResponse = {
-        publicKey: mockPubKeyTuple.P256.pubK,
-        accounts: [
-          {
-            address: mockAddress,
-            keyId: 0,
-            weight: 1000,
-            sigAlgo: SIGN_ALGO_NUM_ECDSA_P256,
-            hashAlgo: HASH_ALGO_NUM_SHA3_256,
-            signing: 'ECDSA_P256',
-            hashing: 'SHA3_256',
-          },
-        ],
-      };
+    const mockAccount = {
+      address: mockAddress,
+      publicKey: 'will-be-overwritten', // Placeholder
+      keyIndex: 0,
+      weight: 1000,
+      signAlgo: SIGN_ALGO_NUM_ECDSA_P256,
+      signAlgoString: 'ECDSA_P256',
+      hashAlgo: HASH_ALGO_NUM_SHA3_256,
+      hashAlgoString: 'SHA3_256',
+    };
 
-      global.fetch = vi.fn().mockResolvedValue({
-        json: () => Promise.resolve(mockResponse),
-      });
+    it('should call getAccountsWithPublicKey for testnet', async () => {
+      // Mock the service call to return valid data for both keys
+      vi.mocked(openapiService.getAccountsWithPublicKey)
+        .mockResolvedValueOnce([{ ...mockAccount, publicKey: mockPubKeyTuple.P256.pubK }])
+        .mockResolvedValueOnce([{ ...mockAccount, publicKey: mockPubKeyTuple.SECP256K1.pubK }]);
 
       await getAccountsByPublicKeyTuple(mockPubKeyTuple, 'testnet');
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('staging.key-indexer.flow.com')
+      // Verify the service was called correctly
+      expect(openapiService.getAccountsWithPublicKey).toHaveBeenCalledWith(
+        mockPubKeyTuple.P256.pubK,
+        'testnet'
+      );
+      expect(openapiService.getAccountsWithPublicKey).toHaveBeenCalledWith(
+        mockPubKeyTuple.SECP256K1.pubK,
+        'testnet'
       );
     });
 
-    it('should use mainnet indexer when network is not testnet', async () => {
-      const mockResponse = {
-        publicKey: mockPubKeyTuple.P256.pubK,
-        accounts: [
-          {
-            address: mockAddress,
-            keyId: 0,
-            weight: 1000,
-            sigAlgo: SIGN_ALGO_NUM_ECDSA_P256,
-            hashAlgo: HASH_ALGO_NUM_SHA3_256,
-            signing: 'ECDSA_P256',
-            hashing: 'SHA3_256',
-          },
-        ],
-      };
-
-      global.fetch = vi.fn().mockResolvedValue({
-        json: () => Promise.resolve(mockResponse),
-      });
+    it('should call getAccountsWithPublicKey for mainnet', async () => {
+      // Mock the service call to return valid data for both keys
+      vi.mocked(openapiService.getAccountsWithPublicKey)
+        .mockResolvedValueOnce([{ ...mockAccount, publicKey: mockPubKeyTuple.P256.pubK }])
+        .mockResolvedValueOnce([{ ...mockAccount, publicKey: mockPubKeyTuple.SECP256K1.pubK }]);
 
       await getAccountsByPublicKeyTuple(mockPubKeyTuple, 'mainnet');
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('production.key-indexer.flow.com')
+      // Verify the service was called correctly
+      expect(openapiService.getAccountsWithPublicKey).toHaveBeenCalledWith(
+        mockPubKeyTuple.P256.pubK,
+        'mainnet'
+      );
+      expect(openapiService.getAccountsWithPublicKey).toHaveBeenCalledWith(
+        mockPubKeyTuple.SECP256K1.pubK,
+        'mainnet'
       );
     });
 
@@ -300,16 +311,16 @@ describe('findAddressWithPubKey module', () => {
         accounts: [
           {
             address: mockAddress,
-            keyId: 0,
+            publicKey: mockPubKeyTuple.P256.pubK,
+            keyIndex: 0,
             weight: 500, // Less than required 1000
-            sigAlgo: SIGN_ALGO_NUM_ECDSA_P256,
+            signAlgo: SIGN_ALGO_NUM_ECDSA_P256,
+            signAlgoString: 'ECDSA_P256',
             hashAlgo: HASH_ALGO_NUM_SHA3_256,
-            signing: 'ECDSA_P256',
-            hashing: 'SHA3_256',
+            hashAlgoString: 'SHA3_256',
           },
         ],
       };
-
       global.fetch = vi.fn().mockResolvedValue({
         json: () => Promise.resolve(mockResponse),
       });

@@ -1,8 +1,8 @@
 import * as fcl from '@onflow/fcl';
 import { type AccountKey } from '@onflow/typedefs';
 
-import { userWalletService } from '@/background/service';
-import { type SignAlgoString, type HashAlgoString } from '@/shared/types/algo-types';
+import openapiService from '@/background/service/openapi';
+import userWalletService from '@/background/service/userWallet';
 import type { PublicKeyTuple } from '@/shared/types/key-types';
 import { type AccountKeyRequest } from '@/shared/types/network-types';
 import { type PublicKeyAccount } from '@/shared/types/wallet-types';
@@ -38,21 +38,6 @@ export const getAccountsByPublicKeyTuple = async (
   return accountsOver1000;
 };
 
-type KeyIndexerAccountResponse = {
-  address: string;
-  keyId: number;
-  weight: number;
-  sigAlgo: number;
-  hashAlgo: number;
-  signing: SignAlgoString;
-  hashing: HashAlgoString;
-};
-
-type KeyIndexerProfileResponse = {
-  publicKey: string;
-  accounts: KeyIndexerAccountResponse[];
-};
-
 /*
  * Connect to the indexer to get all accounts associated with a public key
  * This is used to get the accounts for the current user
@@ -65,26 +50,7 @@ export async function getAccountsWithPublicKey(
   publicKey: string,
   network: string
 ): Promise<PublicKeyAccount[]> {
-  const url =
-    network === 'testnet'
-      ? `https://staging.key-indexer.flow.com/key/${publicKey}`
-      : `https://production.key-indexer.flow.com/key/${publicKey}`;
-  const result = await fetch(url);
-  const json: KeyIndexerProfileResponse = await result.json();
-
-  // Now massage the data to match the type we want
-  const accounts: PublicKeyAccount[] = json.accounts.map((account) => ({
-    address: account.address,
-    publicKey: json.publicKey,
-    keyIndex: account.keyId,
-    weight: account.weight,
-    signAlgo: account.sigAlgo,
-    signAlgoString: account.signing,
-    hashAlgo: account.hashAlgo,
-    hashAlgoString: account.hashing,
-  }));
-
-  return accounts;
+  return openapiService.getAccountsWithPublicKey(publicKey, network);
 }
 
 const getPublicKeyInfoForAccount = async (

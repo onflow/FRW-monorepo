@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+import { mixpanelTrack } from '@/background/service';
 import {
   FLOW_BIP44_PATH,
   HASH_ALGO_NUM_SHA3_256,
@@ -16,6 +17,20 @@ vi.mock('../findAddressWithPubKey');
 vi.mock('@/background/service', () => ({
   userWalletService: {
     setupFcl: vi.fn(),
+  },
+  mixpanelTrack: {
+    identify: vi.fn(),
+  },
+  openapiService: {
+    getAccountsWithPublicKey: vi.fn().mockResolvedValue([]),
+  },
+  notificationService: {
+    showNotification: vi.fn(),
+  },
+  permissionService: {
+    getPermission: vi.fn().mockResolvedValue({
+      permission: 'granted',
+    }),
   },
 }));
 
