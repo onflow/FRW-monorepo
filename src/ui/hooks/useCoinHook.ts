@@ -18,7 +18,7 @@ export const useCoins = () => {
   const { currentWallet } = useProfiles();
 
   const refreshInProgressRef = useRef(false);
-  const lastRefreshTimeRef = useRef(0);
+  const initAttemptedRef = useRef(false);
   const mountedRef = useRef(true);
 
   // Replace Zustand state with React state
@@ -29,7 +29,7 @@ export const useCoins = () => {
 
   const handleStorageData = useCallback(
     async (data?: ExtendedTokenInfo[] | null) => {
-      console.log('handleStorageData', data);
+      debug('handleStorageData', data);
       if (!data) return;
 
       // Create a map for faster lookups
@@ -46,7 +46,6 @@ export const useCoins = () => {
           }
         }
       }
-      console.log('flowBalance', flowBalance);
 
       // Batch updates
       await Promise.all([
@@ -58,80 +57,37 @@ export const useCoins = () => {
     [setTotalFlow, setBalance]
   );
 
-  // Setup localStorage event listener
-  useEffect(() => {
-    // Function to check pending transactions
-    const loadCoinList = async () => {
-      try {
-        const coinList = await storage.get('coinList');
-        // check for nettwork type
-        let refreshedCoinlist: ExtendedTokenInfo[];
-        const activeAccounts = await getActiveAccountsByUserWallet();
-        if (isValidEthereumAddress(activeAccounts?.currentAddress)) {
-          refreshedCoinlist = coinList['evm'][network];
-        } else {
-          refreshedCoinlist = coinList['coinItem'][network];
-        }
-        if (Array.isArray(refreshedCoinlist) && refreshedCoinlist.length > 0) {
-          handleStorageData(refreshedCoinlist);
-          setCoinsLoaded(true);
-        }
-      } catch (error) {
-        console.error('Error checking pending transactions:', error);
-      }
-    };
-
-    // Listen for storage events (when localStorage changes in other tabs)
-    const handleStorageChange = (
-      changes: { [key: string]: StorageChange },
-      namespace: AreaName
-    ) => {
-      if (namespace === 'local') {
-        if (changes['coinList'] || changes['coinList'] === null) {
-          debug('useCoinHook', 'useCoinHook storage changed, checking pending transactions');
-          loadCoinList();
-        }
-      }
-    };
-
-    loadCoinList();
-
-    storage.addStorageListener(handleStorageChange);
-
-    // Cleanup
-    return () => {
-      mountedRef.current = false;
-      storage.removeStorageListener(handleStorageChange);
-    };
-  }, [usewallet, network, handleStorageData]);
-
   const coins = useCoinList(network, currentWallet?.address);
 
   useEffect(() => {
     // Check if currentWallet exists and has an address
     if (currentWallet?.address) {
       // If coinList is empty or undefined, initialize it
-      if (!coins || coins.length === 0) {
-        console.log('Coin list is empty, initializing for address:', currentWallet.address);
+      if ((!coins || coins.length === 0) && !initAttemptedRef.current) {
+        debug('Coin list is empty, initializing for address:', currentWallet.address);
 
         const initAndHandle = async () => {
           try {
+            initAttemptedRef.current = true;
             await usewallet?.initCoinListSession(currentWallet.address);
-            console.log('Coin list initialization completed');
+            debug('Coin list initialization completed');
           } catch (error) {
             console.error('Error initializing coin list:', error);
           }
         };
 
         initAndHandle();
-      } else {
-        console.log('Coin list already loaded with', coins, 'coins');
+      } else if (coins && coins.length > 0) {
         handleStorageData(coins);
         setCoinsLoaded(true);
-        console.log('Coin list already loaded with', coins.length, 'coins');
+        debug('Coin list already loaded with', coins.length);
       }
     }
   }, [usewallet, network, currentWallet, coins, handleStorageData]);
+
+  useEffect(() => {
+    initAttemptedRef.current = false;
+  }, [currentWallet?.address, network]);
 
   return {
     handleStorageData,

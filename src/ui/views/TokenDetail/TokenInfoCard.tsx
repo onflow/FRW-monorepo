@@ -3,11 +3,12 @@ import { type TokenInfo } from 'flow-native-token-registry';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import { type CoinItem } from '@/shared/types/coin-types';
+import { type ExtendedTokenInfo, type CoinItem } from '@/shared/types/coin-types';
 import { type ActiveAccountType } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { LLPrimaryButton } from '@/ui/FRWComponent';
 import iconMove from 'ui/FRWAssets/svg/moveIcon.svg';
+import { useCoins } from 'ui/hooks/useCoinHook';
 import { useWallet } from 'ui/utils';
 
 import IconChevronRight from '../../../components/iconfont/IconChevronRight';
@@ -23,6 +24,7 @@ const TokenInfoCard = ({
   accessible,
   tokenInfo,
   accountType,
+  tokenId,
 }: {
   price: number;
   token: string;
@@ -30,12 +32,14 @@ const TokenInfoCard = ({
   accessible: boolean;
   tokenInfo: any;
   accountType: ActiveAccountType;
+  tokenId: string;
 }) => {
   const wallet = useWallet();
   const history = useHistory();
   const isMounted = useRef(true);
+  const { coins } = useCoins();
   const [balance, setBalance] = useState<string>('0');
-  const [data, setData] = useState<TokenInfo | undefined>(undefined);
+  const [data, setData] = useState<ExtendedTokenInfo | undefined>(undefined);
 
   const [canMoveChild, setCanMoveChild] = useState(true);
 
@@ -57,28 +61,19 @@ const TokenInfoCard = ({
   };
 
   const getActive = useCallback(async () => {
-    const accountType = await wallet.getActiveAccountType();
-
     const timerId = setTimeout(async () => {
       if (!isMounted.current) return; // Early exit if component is not mounted
-      setData(tokenInfo!);
       setAccessible(true);
-      if (accountType === 'evm') {
-        const coins = await wallet.getCoinList();
-        const thisCoin = coins.filter((coin) => coin.unit.toLowerCase() === token);
-        const balance = thisCoin[0].balance;
+      let thisCoin = coins.find((coin) => coin.id.toLowerCase() === tokenId.toLowerCase());
+
+      // If not found by ID, try to find by unit and token
+      if (!thisCoin && token) {
+        thisCoin = coins.find((coin) => coin.unit?.toLowerCase() === token.toLowerCase());
+      }
+      setData(thisCoin!);
+      const balance = thisCoin?.balance;
+      if (balance) {
         setBalance(balance);
-      } else {
-        wallet.openapi
-          .getWalletTokenBalance(token)
-          .then((response) => {
-            if (isMounted.current) {
-              setBalance(response);
-            }
-          })
-          .catch((err) => {
-            console.error('err ', err);
-          });
       }
     }, 400);
 
@@ -86,7 +81,7 @@ const TokenInfoCard = ({
       isMounted.current = false; // Mark component as unmounted
       clearTimeout(timerId); // Clear the timer
     };
-  }, [setAccessible, token, tokenInfo, wallet]);
+  }, [setAccessible, token, tokenId, coins]);
 
   const getUrl = (data) => {
     if (data.extensions?.website?.trim()) {
@@ -233,7 +228,7 @@ const TokenInfoCard = ({
           <Typography variant="body1" color="text.secondary" sx={{ fontSize: '16px' }}>
             <Box component="span" sx={{ marginRight: '0.25rem' }}>
               <TokenValue
-                value={String(Number(balance) * price)}
+                value={String(Number(balance) * data?.price)}
                 prefix="$"
                 postFix={chrome.i18n.getMessage('USD')}
               />
