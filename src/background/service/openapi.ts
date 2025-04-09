@@ -16,8 +16,12 @@ import { getInstallations, getId } from 'firebase/installations';
 import type { TokenInfo } from 'flow-native-token-registry';
 import log from 'loglevel';
 
-import { createPersistStore, getScripts, findKeyAndInfo } from '@/background/utils';
-import { registerRefreshListener, setCachedData } from '@/background/utils/data-cache';
+import { createPersistStore, findKeyAndInfo } from '@/background/utils';
+import {
+  getValidData,
+  registerRefreshListener,
+  setCachedData,
+} from '@/background/utils/data-cache';
 import { getFirbaseConfig, getFirbaseFunctionUrl } from '@/background/utils/firebaseConfig';
 import fetchConfig from '@/background/utils/remoteConfig';
 import { storage } from '@/background/webapi';
@@ -42,6 +46,7 @@ import { getPeriodFrequency } from '@/shared/utils/getPeriodFrequency';
 import { type NetworkScripts } from '@/shared/utils/script-types';
 import { INITIAL_OPENAPI_URL, WEB_NEXT_URL } from 'consts';
 
+import packageJson from '../../../package.json';
 import {
   type AccountKeyRequest,
   type CheckResponse,
@@ -71,6 +76,7 @@ import {
   googleSafeHostService,
   mixpanelTrack,
 } from './index';
+const { version } = packageJson;
 
 // New type definitions for API response for /v4/cadence/tokens/ft/{address}
 interface FlowTokenResponse {
@@ -143,6 +149,37 @@ type StorageResponse = {
   lockedFLOWforStorage: string;
   availableBalanceToUse: string;
 };
+
+// New type definitions for API response for /v1/account/transaction
+
+type TransactionResponseItem = {
+  additional_message: string;
+  status: string;
+  error: boolean;
+  token: string;
+  title: string;
+  time: string;
+  receiver: string;
+  sender: string;
+  amount: string;
+  type: number;
+  transfer_type: number;
+  image: string;
+  txid: string;
+};
+export type FlowTransactionResponse = {
+  total: number;
+  transactions: TransactionResponseItem[];
+};
+
+type EvmTransactionResponse = {
+  trxs: TransactionResponseItem[];
+  next_page_params?: {
+    items_count: number;
+    value: '0';
+  };
+};
+
 export interface OpenApiConfigValue {
   path: string;
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'get' | 'post' | 'put' | 'delete';
@@ -737,12 +774,6 @@ class OpenApiService {
 
     // Kick off loaders that use the current user id
     userInfoService.loadUserInfoByUserId(userId);
-
-    // Check that cadence scripts are loaded
-    const cadenceScripts = await getCachedScripts();
-    if (!cadenceScripts) {
-      await this._loadCadenceScripts();
-    }
   };
 
   private clearAllStorage = () => {
@@ -770,6 +801,13 @@ class OpenApiService {
     return cadenceScriptsV2;
   };
 
+  getCadenceScripts = async (): Promise<NetworkScripts> => {
+    const cadenceScripts = await getValidData<NetworkScripts>(cadenceScriptsKey());
+    if (!cadenceScripts) {
+      return await this._loadCadenceScripts();
+    }
+    return cadenceScripts;
+  };
   checkUsername = async (username: string) => {
     const config = this.store.config.check_username;
     const data = await this.sendRequest(config.method, config.path, {
@@ -1177,14 +1215,18 @@ class OpenApiService {
     return address;
   };
 
-  getTransfers = async (address: string, after = '', limit: number) => {
+  getTransfers = async (
+    address: string,
+    offset: number,
+    limit: number
+  ): Promise<FlowTransactionResponse> => {
     const config = this.store.config.get_transfers;
-    const data = await this.sendRequest(
+    const { data } = await this.sendRequest(
       config.method,
       config.path,
       {
         address,
-        after,
+        after: offset,
         limit,
       },
       {},
@@ -1194,7 +1236,11 @@ class OpenApiService {
     return data;
   };
 
-  getEVMTransfers = async (address: string, after = '', limit: number) => {
+  getEVMTransfers = async (
+    address: string,
+    offset: number,
+    limit: number
+  ): Promise<EvmTransactionResponse> => {
     const data = await this.sendRequest(
       'GET',
       `/api/evm/${address}/transactions`,
@@ -2340,5 +2386,39 @@ if (process.env.NODE_ENV === 'development') {
 
   console.log('OpenApiService Functions:', functions);
 }
+
+export const getScripts = async (network: string, category: string, scriptName: string) => {
+  try {
+    // Force a proper load of the cadence scripts
+    const cadenceScripts = await openApiService.getCadenceScripts();
+    if (!cadenceScripts) {
+      throw new Error('Cadence scripts not loaded');
+    }
+    const networkScripts =
+      network === 'mainnet' ? cadenceScripts.scripts.mainnet : cadenceScripts.scripts.testnet;
+    if (!networkScripts) {
+      throw new Error('Network scripts not found');
+    }
+    const categoryScripts = networkScripts[category];
+    if (!categoryScripts) {
+      throw new Error('Category scripts not found');
+    }
+    const script = categoryScripts[scriptName];
+    if (!script) {
+      throw new Error('Script not found');
+    }
+    const scriptString = Buffer.from(script, 'base64').toString('utf-8');
+    const modifiedScriptString = scriptString.replaceAll('<platform_info>', `Extension-${version}`);
+    return modifiedScriptString;
+  } catch (error) {
+    if (error instanceof Error) {
+      mixpanelTrack.track('script_error', {
+        script_id: scriptName,
+        error: error.message,
+      });
+    }
+    throw error;
+  }
+};
 
 export default openApiService;

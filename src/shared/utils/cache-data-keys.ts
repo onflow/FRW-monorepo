@@ -4,6 +4,7 @@
  */
 import { type UserInfoResponse } from '../types/network-types';
 import { type NFTCollections, type NFTCollectionData } from '../types/nft-types';
+import { type TransferItem } from '../types/transaction-types';
 import {
   type MainAccount,
   type ChildAccountMap,
@@ -82,6 +83,23 @@ export type EvmAccountStore = WalletAccount;
 export const getCachedEvmAccount = async (network: string, mainAccountAddress: string) => {
   return getCachedData<EvmAccountStore>(evmAccountKey(network, mainAccountAddress));
 };
+
+// Transfer list
+export const transferListKey = (network: string, address: string, offset: string, limit: string) =>
+  `transfer-list-${network}-${address}-${offset}-${limit}`;
+
+export const transferListRefreshRegex = refreshKey(transferListKey);
+export type TransferListStore = {
+  count: number;
+  list: TransferItem[];
+};
+
+// Pending Transfer list
+export const pendingTransferListKey = (network: string, address: string) =>
+  `transfer-list-pending-${network}-${address}`;
+
+export const pendingTransferListRefreshRegex = refreshKey(pendingTransferListKey);
+export type PendingTransferListStore = TransferItem[];
 
 // NFTs
 

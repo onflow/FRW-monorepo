@@ -2,14 +2,8 @@ import type { Account as FclAccount } from '@onflow/typedefs';
 import * as ethUtil from 'ethereumjs-util';
 
 import { EMULATOR_HOST_TESTNET, EMULATOR_HOST_MAINNET } from '@/background/fclConfig';
-import { mixpanelTrack } from '@/background/service/mixpanel';
 import pageStateCache from '@/background/service/pageStateCache';
 import { type FlowNetwork } from '@/shared/types/network-types';
-import { getCachedScripts } from '@/shared/utils/cache-data-keys';
-import storage from '@/shared/utils/storage';
-
-import packageJson from '../../../package.json';
-const { version } = packageJson;
 
 export { default as createPersistStore } from './persisitStore';
 export { default as createSessionStore } from './sessionStore';
@@ -131,39 +125,6 @@ export const checkEmulatorAccount = async (
   } catch (error) {
     console.error('checkEmulatorAccount - error ', error);
     return false;
-  }
-};
-
-export const getScripts = async (network: string, category: string, scriptName: string) => {
-  try {
-    const cadenceScripts = await getCachedScripts();
-    if (!cadenceScripts) {
-      throw new Error('Cadence scripts not loaded');
-    }
-    const networkScripts =
-      network === 'mainnet' ? cadenceScripts.scripts.mainnet : cadenceScripts.scripts.testnet;
-    if (!networkScripts) {
-      throw new Error('Network scripts not found');
-    }
-    const categoryScripts = networkScripts[category];
-    if (!categoryScripts) {
-      throw new Error('Category scripts not found');
-    }
-    const script = categoryScripts[scriptName];
-    if (!script) {
-      throw new Error('Script not found');
-    }
-    const scriptString = Buffer.from(script, 'base64').toString('utf-8');
-    const modifiedScriptString = scriptString.replaceAll('<platform_info>', `Extension-${version}`);
-    return modifiedScriptString;
-  } catch (error) {
-    if (error instanceof Error) {
-      mixpanelTrack.track('script_error', {
-        script_id: scriptName,
-        error: error.message,
-      });
-    }
-    throw error;
   }
 };
 

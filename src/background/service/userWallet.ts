@@ -68,7 +68,6 @@ import {
 } from '../../shared/types/network-types';
 import { type PublicKeyAccount, type MainAccount } from '../../shared/types/wallet-types';
 import { fclConfig } from '../fclConfig';
-import { getScripts } from '../utils';
 import { defaultAccountKey, pubKeyAccountToAccountKey } from '../utils/account-key';
 import { clearCachedData, registerRefreshListener, setCachedData } from '../utils/data-cache';
 import { getEmojiByIndex } from '../utils/emoji-util';
@@ -77,6 +76,8 @@ import {
   getAccountsWithPublicKey,
 } from '../utils/modules/findAddressWithPubKey';
 import { storage } from '../webapi';
+
+import { getScripts } from './openapi';
 
 const USER_WALLET_TEMPLATE: UserWalletStore = {
   monitor: 'flowscan',

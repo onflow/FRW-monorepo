@@ -7,7 +7,6 @@ import {
   SIGN_ALGO_NUM_ECDSA_P256,
   SIGN_ALGO_NUM_ECDSA_secp256k1,
 } from '@/shared/utils/algo-constants';
-import { userWalletService } from 'background/service';
 
 import {
   getOrCheckAccountsWithPublicKey,
@@ -20,6 +19,15 @@ vi.mock('@onflow/fcl');
 vi.mock('background/service', () => ({
   userWalletService: {
     setupFcl: vi.fn(),
+    getNetwork: vi.fn().mockResolvedValue('testnet'),
+  },
+}));
+
+// Add the openapi service mock
+vi.mock('@/background/service/openapi', () => ({
+  default: {
+    getFeatureFlag: vi.fn().mockResolvedValue(false),
+    init: vi.fn().mockResolvedValue(undefined),
   },
 }));
 
@@ -286,7 +294,7 @@ describe('findAddressWithPubKey module', () => {
       );
     });
 
-    it('should throw error when no accounts have sufficient weight', async () => {
+    it('should filter out accounts that dont have sufficient weight', async () => {
       const mockResponse = {
         publicKey: mockPubKeyTuple.P256.pubK,
         accounts: [
@@ -306,9 +314,8 @@ describe('findAddressWithPubKey module', () => {
         json: () => Promise.resolve(mockResponse),
       });
 
-      await expect(getAccountsByPublicKeyTuple(mockPubKeyTuple, 'mainnet')).rejects.toThrow(
-        'No accounts found with the given public key'
-      );
+      const result = await getAccountsByPublicKeyTuple(mockPubKeyTuple, 'mainnet');
+      expect(result).toEqual([]);
     });
   });
 });

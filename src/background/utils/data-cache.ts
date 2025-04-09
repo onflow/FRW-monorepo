@@ -1,5 +1,35 @@
 import { type CacheDataItem } from '@/shared/types/data-cache-types';
 import storage from '@/shared/utils/storage';
+
+/**
+ * Get valid data from session storage
+ * This will return the data if it exists and is not expired
+ * It will NOT trigger a background event to refresh the data
+ * This is useful if you need to get the data without triggering a refresh
+ * @param key - The key to get the data from
+ * @returns The cached data or undefined if it doesn't exist or is expired
+ */
+
+export const getValidData = async <T>(key: string): Promise<T | undefined> => {
+  const sessionData: CacheDataItem | undefined = await storage.getSession(key);
+  if (!sessionData || sessionData.expiry > Date.now()) {
+    return undefined;
+  }
+  return sessionData?.value as T | undefined;
+};
+/**
+ * Get whatever data is in session storage - valid or invalid
+ * This is rarely used but can be useful if you need to get something from the cache whilst doing a refresh
+ * @param key - The key to get the data from
+ * @returns The cached data or undefined if it doesn't exist or is expired
+ */
+
+export const getInvalidData = async <T>(key: string): Promise<T | undefined> => {
+  const sessionData: CacheDataItem | undefined = await storage.getSession(key);
+
+  return sessionData?.value as T | undefined;
+};
+
 export * from '@/shared/utils/cache-data-access';
 /**
  * BACKGROUND ONLY METHODS

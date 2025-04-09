@@ -57,6 +57,25 @@ const mockStorage = {
     ),
     set: vi.fn().mockImplementation(() => Promise.resolve()),
   },
+  session: {
+    get: vi.fn().mockImplementation(() =>
+      Promise.resolve({
+        expiry: Date.now() + 1000 * 60 * 60,
+        value: {
+          version: '1.0.0',
+          scripts: {
+            mainnet: {
+              test: 'test',
+            },
+            testnet: {
+              test: 'test',
+            },
+          },
+        },
+      })
+    ),
+    set: vi.fn().mockImplementation(() => Promise.resolve()),
+  },
 };
 
 vi.stubGlobal('chrome', { storage: mockStorage });

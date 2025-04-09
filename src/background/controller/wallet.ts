@@ -106,7 +106,7 @@ import {
   type KeyringType,
 } from 'background/service/keyring';
 import type { CacheState } from 'background/service/pageStateCache';
-import { getScripts, replaceNftKeywords } from 'background/utils';
+import { replaceNftKeywords } from 'background/utils';
 import fetchConfig from 'background/utils/remoteConfig';
 import { notification, storage } from 'background/webapi';
 import { openIndexPage } from 'background/webapi/tab';
@@ -127,6 +127,7 @@ import type {
 import DisplayKeyring from '../service/keyring/display';
 import { HDKeyring } from '../service/keyring/hdKeyring';
 import { SimpleKeyring } from '../service/keyring/simpleKeyring';
+import { getScripts } from '../service/openapi';
 import type { ConnectedSite } from '../service/permission';
 import type { PreferenceAccount } from '../service/preference';
 import { type EvaluateStorageResult, StorageEvaluator } from '../service/storage-evaluator';
@@ -2859,63 +2860,27 @@ export class WalletController extends BaseController {
     count: number;
     list: TransferItem[];
   }> => {
-    const network = await this.getNetwork();
-    const now = new Date();
-    const expiry = transactionService.getExpiry();
-
-    // Refresh if forced or expired
-    if (forceRefresh || now.getTime() > expiry) {
-      await this.refreshTransactions(address, limit, offset, _expiry);
-    }
-
-    const sealed = await transactionService.listTransactions(network);
-    const pending = await transactionService.listPending(network);
-
-    return {
-      // NOTE: count is the total number of INDEXED transactions
-      count: await transactionService.getCount(),
-      list: pending?.length ? [...pending, ...sealed] : sealed,
-    };
+    return address
+      ? transactionService.listAllTransactions(
+          userWalletService.getNetwork(),
+          address,
+          `${offset}`,
+          `${limit}`
+        )
+      : {
+          count: 0,
+          list: [],
+        };
   };
 
   getPendingTx = async () => {
     const network = await this.getNetwork();
-    const pending = await transactionService.listPending(network);
-    return pending;
-  };
-
-  refreshTransactions = async (address: string, limit: number, offset: number, _expiry = 5000) => {
-    const network = await this.getNetwork();
-    const now = new Date();
-    const exp = _expiry + now.getTime();
-    transactionService.setExpiry(exp);
-    const isChild = await this.getActiveAccountType();
-    let dataResult = {};
-    let evmAddress;
-    if (isChild === 'evm') {
-      if (!isValidEthereumAddress(address)) {
-        evmAddress = await this.queryEvmAddress(address);
-        if (!evmAddress!.startsWith('0x')) {
-          evmAddress = '0x' + evmAddress;
-        }
-      } else {
-        evmAddress = address;
-      }
-      const evmResult = await openapiService.getEVMTransfers(evmAddress!, '', limit);
-      if (evmResult) {
-        dataResult['transactions'] = evmResult.trxs;
-        if (evmResult.next_page_params) {
-          dataResult['total'] = evmResult.next_page_params.items_count;
-        } else {
-          dataResult['total'] = evmResult.trxs.length;
-        }
-      }
-    } else {
-      const res = await openapiService.getTransfers(address, '', limit);
-      dataResult = res.data;
+    const address = await this.getCurrentAddress();
+    if (!address) {
+      return [];
     }
-
-    transactionService.setTransaction(dataResult, network);
+    const pending = await transactionService.listPending(network, address);
+    return pending;
   };
 
   loginWithMnemonic = async (
@@ -2996,10 +2961,6 @@ export class WalletController extends BaseController {
     this.clearNFT();
     this.refreshAddressBook();
     await this.getCadenceScripts();
-    const address = await this.getCurrentAddress();
-    if (address) {
-      this.refreshTransactions(address, 15, 0);
-    }
 
     this.abort();
     await this.refreshCoinList(5000);
@@ -3159,14 +3120,14 @@ export class WalletController extends BaseController {
         msg: 'transactionPending',
         network: network,
       });
-      transactionService.setPending(txId, address, network, icon, title);
+      transactionService.setPending(network, address, txId, icon, title);
 
       // Listen to the transaction until it's sealed.
       // This will throw an error if there is an error with the transaction
       const txStatus = await fcl.tx(txId).onceExecuted();
       // Update the pending transaction with the transaction status
       this.refreshCoinList(6000);
-      txHash = transactionService.updatePending(txId, network, txStatus);
+      txHash = await transactionService.updatePending(network, address, txId, txStatus);
 
       // Track the transaction result
       mixpanelTrack.track('transaction_result', {
@@ -3262,7 +3223,10 @@ export class WalletController extends BaseController {
 
   clearPending = async () => {
     const network = await this.getNetwork();
-    transactionService.clearPending(network);
+    const address = await this.getCurrentAddress();
+    if (address) {
+      transactionService.clearPending(network, address);
+    }
   };
 
   clearNFT = () => {
