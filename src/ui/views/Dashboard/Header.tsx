@@ -122,15 +122,15 @@ const Header = ({ _loading = false }) => {
       setPop(false);
       setDrawer(false);
       try {
-        const switchingTo = 'mainnet';
+        //  const switchingTo = 'mainnet';
         // Note that currentAccountIndex is only used in keyring for old accounts that don't have an id stored in the keyring
         // currentId always takes precedence
         // NOTE: TO FIX it also should be set to the index of the account in the keyring array, NOT the index in the loggedInAccounts array
 
-        await usewallet.signOutWallet();
-        await usewallet.clearWallet();
+        // await usewallet.signOutWallet();
+        // await usewallet.clearWallet();
         await usewallet.switchProfile(profileId);
-        await usewallet.switchNetwork(switchingTo);
+        // await usewallet.switchNetwork(switchingTo);
         clearProfileData();
       } catch (error) {
         console.error('Error during account switch:', error);
@@ -152,8 +152,9 @@ const Header = ({ _loading = false }) => {
     await usewallet.setActiveWallet(walletInfo, key, index);
 
     // Navigate if needed
-    history.push('/dashboard');
-    window.location.reload();
+    //   history.push('/dashboard');
+    setDrawer(false);
+    //  window.location.reload();
   };
 
   const transactionHandler = (request) => {
