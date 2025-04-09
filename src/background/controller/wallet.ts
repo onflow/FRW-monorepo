@@ -426,10 +426,6 @@ export class WalletController extends BaseController {
     return openapiService.freshUserInfo(parentAddress, fclAccount, pubKTuple, userInfo, 'main');
   };
 
-  getCurrentPubkey = async () => {
-    return await userWalletService.getCurrentPubkey();
-  };
-
   retrievePk = async (password: string) => {
     const pk = await keyringService.retrievePk(password);
     return pk;
