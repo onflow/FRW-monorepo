@@ -35,11 +35,21 @@ class Transaction {
 
   private getPendingList = (network: string, address: string): TransferItem[] => {
     // Always return a clone of the pending list
-    return structuredClone(this.store.pendingItem[network][address] || []);
+    if (
+      !network ||
+      !address ||
+      !this.store.pendingItem[network] ||
+      !this.store.pendingItem[network][address]
+    ) {
+      return [];
+    }
+    return structuredClone(this.store.pendingItem[network][address]);
   };
 
   private setPendingList = (network: string, address: string, txList: TransferItem[]) => {
-    return (this.store.pendingItem[network][address] = structuredClone(txList));
+    if (network && address) {
+      this.store.pendingItem[network][address] = structuredClone(txList);
+    }
   };
 
   setPending = async (
