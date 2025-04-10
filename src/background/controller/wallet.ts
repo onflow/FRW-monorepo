@@ -231,7 +231,8 @@ export class WalletController extends BaseController {
     await this.createKeyringWithMnemonics(password, mnemonic);
     // We're creating the Flow address for the account
     // Only after this, do we have a valid wallet with a Flow address
-    await openapiService.createFlowAddress();
+    const result = await openapiService.createFlowAddressV2();
+    console.log('createFlowAddressV2 result', result);
 
     // Finally set the current pubkey in userWallet
     userWalletService.setCurrentPubkey(accountKey.public_key);
