@@ -1168,7 +1168,6 @@ const setupNewAccount = async (
   account: FclAccount
 ): Promise<MainAccount[]> => {
   // Setup new account after
-  console.log('setupNewAccount', account);
   const mainAccounts: MainAccount[] = [
     {
       keyIndex: account.keys[0].index,
@@ -1210,7 +1209,6 @@ const loadMainAccountsWithPubKey = async (
 ): Promise<MainAccount[]> => {
   // Check if cache is still valid first
   const existing = await getValidData<MainAccount[]>(mainAccountsKey(network, pubKey));
-  console.log('loadMainAccountsWithPubKey', existing);
   if (existing !== undefined) {
     return existing;
   }

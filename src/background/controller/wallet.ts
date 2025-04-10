@@ -236,31 +236,29 @@ export class WalletController extends BaseController {
   };
 
   checkForNewAddress = async (txid: string): Promise<FclAccount | null> => {
-    // Usage example with a transaction result
-    const txResult = await fcl.tx(txid).onceSealed();
+    try {
+      const txResult = await fcl.tx(txid).onceSealed();
 
-    // Find the AccountCreated event in the events array
-    const accountCreatedEvent = txResult.events.find(
-      (event) => event.type === 'flow.AccountCreated'
-    );
+      // Find the AccountCreated event and extract the address
+      const accountCreatedEvent = txResult.events.find(
+        (event) => event.type === 'flow.AccountCreated'
+      );
 
-    const extractAddressFromAccountCreatedEvent = (event) => {
-      if (event.type === 'flow.AccountCreated') {
-        return event.data.address;
+      if (!accountCreatedEvent) {
+        throw new Error('Account creation event not found in transaction');
       }
-      return null;
-    };
 
-    if (accountCreatedEvent) {
-      const newAddress = extractAddressFromAccountCreatedEvent(accountCreatedEvent);
-      console.log('New account address:', newAddress);
+      const newAddress = accountCreatedEvent.data.address;
+
       const account = await fcl.account(newAddress);
-      if (account) {
-        userWalletService.registerCurrentPubkey(account.keys[0].publicKey, account);
+      if (!account) {
+        throw new Error('Fcl account not found');
       }
+
+      userWalletService.registerCurrentPubkey(account.keys[0].publicKey, account);
       return account;
-    } else {
-      return null;
+    } catch (error) {
+      throw new Error(`Account creation failed: ${error.message || 'Unknown error'}`);
     }
   };
 
