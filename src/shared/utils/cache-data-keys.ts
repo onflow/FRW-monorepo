@@ -14,7 +14,7 @@ import {
   type WalletAccount,
 } from '../types/wallet-types';
 
-import { getCachedData } from './cache-data-access';
+import { getCachedData, triggerRefresh } from './cache-data-access';
 import { type NetworkScripts } from './script-types';
 
 // Utiltiy function to create the refresh key for a given key function
@@ -131,6 +131,11 @@ export type NftCatalogCollectionsStore = NFTCollections[];
 
 export const getCachedNftCatalogCollections = async (network: string, address: string) => {
   return getCachedData<NftCatalogCollectionsStore>(nftCatalogCollectionsKey(network, address));
+};
+
+export const refreshNftCatalogCollections = async (network: string, address: string) => {
+  // Should rarely be used
+  triggerRefresh(nftCatalogCollectionsKey(network, address));
 };
 
 //Coin list

@@ -6,6 +6,8 @@ import { isValidEthereumAddress } from '@/shared/utils/address';
 import { NFTDrawer } from '@/ui/FRWComponent/GeneralPages';
 import WarningSnackbar from '@/ui/FRWComponent/WarningSnackbar';
 import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
+import { useNetwork } from '@/ui/hooks/useNetworkHook';
+import { useNftCatalogCollections } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useStorageCheck } from '@/ui/utils/useStorageCheck';
 import alertMark from 'ui/FRWAssets/svg/alertMark.svg';
@@ -27,6 +29,10 @@ const MoveToChild = (props: MoveBoardProps) => {
   const usewallet = useWallet();
   const history = useHistory();
   const { currentWallet } = useProfiles();
+
+  const { network } = useNetwork();
+  const nftCollections = useNftCatalogCollections(network, currentWallet.address);
+
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [cadenceNft, setCadenceNft] = useState<any>(null);
   const [collectionList, setCollectionList] = useState<any>(null);
@@ -72,44 +78,10 @@ const MoveToChild = (props: MoveBoardProps) => {
     }
   }, [collectionList, selectedCollection]);
 
-  const fetchLatestCollection = useCallback(
-    async (address: string) => {
-      try {
-        const list = await usewallet.refreshCollection(address);
-        if (list && list.length > 0) {
-          return list;
-        }
-      } catch (err) {
-        console.log(err);
-      }
-    },
-    [usewallet]
-  );
-
-  const fetchCollectionCache = useCallback(
-    async (address: string) => {
-      try {
-        const list = await usewallet.getCollectionCache(address);
-        if (list && list.length > 0) {
-          return list;
-        } else {
-          const list = await fetchLatestCollection(address);
-          return list;
-        }
-      } catch {
-        fetchLatestCollection(address);
-      } finally {
-        console.log('done');
-      }
-    },
-    [fetchLatestCollection, usewallet]
-  );
-
   const requestCadenceNft = useCallback(async () => {
     setIsLoading(true);
     try {
-      const address = await usewallet.getCurrentAddress();
-      const cadenceResult = await fetchCollectionCache(address!);
+      const cadenceResult = nftCollections;
       setSelected(cadenceResult![0].collection.id);
 
       const extractedObjects = cadenceResult!.map((obj) => {
@@ -132,7 +104,7 @@ const MoveToChild = (props: MoveBoardProps) => {
       setCadenceNft(null);
       setIsLoading(false);
     }
-  }, [fetchCollectionCache, usewallet]);
+  }, [nftCollections]);
 
   const requestCollectionInfo = useCallback(async () => {
     if (selectedCollection) {

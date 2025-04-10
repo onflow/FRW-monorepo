@@ -6,7 +6,7 @@ import {
   getCachedNftCollection,
   getCachedNftCatalogCollections,
 } from '@/shared/utils/cache-data-keys';
-import { registerRefreshListener, setCachedData } from 'background/utils/data-cache';
+import { getValidData, registerRefreshListener, setCachedData } from 'background/utils/data-cache';
 
 import { type NFTCollectionData, type NFTCollections } from '../../shared/types/nft-types';
 
@@ -22,6 +22,7 @@ class NFT {
     network: string,
     address: string
   ): Promise<NFTCollections[]> => {
+    console.log('loadNftCatalogCollections', address, network);
     const data = await openapiService.nftCatalogCollections(address!, network);
     if (!data || !Array.isArray(data)) {
       return [];
@@ -68,16 +69,24 @@ class NFT {
     collectionId: string,
     offset: number
   ): Promise<NFTCollectionData | undefined> => {
-    return getCachedNftCollection(network, address, collectionId, offset);
+    const cachedData = await getValidData<NFTCollectionData>(
+      nftCollectionKey(network, address, collectionId, `${offset}`)
+    );
+    if (!cachedData) {
+      return this.loadSingleNftCollection(network, address, collectionId, `${offset}`);
+    }
+    return cachedData;
   };
 
   getCollectionList = async (
     network: string,
     address: string
   ): Promise<NFTCollections[] | undefined> => {
-    const collections = await getCachedNftCatalogCollections(network, address);
+    const collections = await getValidData<NFTCollections[]>(
+      nftCatalogCollectionsKey(network, address)
+    );
     if (!collections) {
-      return undefined;
+      return this.loadNftCatalogCollections(network, address);
     }
     return collections;
   };

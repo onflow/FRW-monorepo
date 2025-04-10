@@ -48,6 +48,7 @@ export const registerRefreshListener = (
     const changedKeys = Object.keys(changes);
     const key = changedKeys.find((key) => keyRegex.test(key));
     if (namespace === 'session' && key) {
+      console.log('registerRefreshListener', key, changes[key]);
       // Check that the old value is undefined, and the new value is a number
       // If the refresh key is already set, then we might be in the middle of a refesh already
       // If we are setting the refresh key to undefined (i.e. removing it), then we have just finished a refresh
@@ -63,7 +64,7 @@ export const registerRefreshListener = (
       }
 
       // Remove the refresh key
-      storage.removeSession(`${key}-refresh`);
+      await storage.removeSession(`${key}-refresh`);
     }
   });
 };

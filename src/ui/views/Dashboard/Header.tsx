@@ -402,50 +402,52 @@ const Header = ({ _loading = false }) => {
           }}
         >
           <Tooltip title={chrome.i18n.getMessage('Copy__Address')} arrow>
-            <Button
-              disabled={!haveAddress}
-              onClick={() => {
-                if (haveAddress) {
-                  navigator.clipboard.writeText(props.address);
-                }
-              }}
-              variant="text"
-            >
-              <Box
-                component="div"
-                sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+            <span>
+              <Button
+                disabled={!haveAddress}
+                onClick={() => {
+                  if (haveAddress) {
+                    navigator.clipboard.writeText(props.address);
+                  }
+                }}
+                variant="text"
               >
-                <Typography
-                  variant="overline"
-                  color="text"
-                  align="center"
-                  display="block"
-                  sx={{ lineHeight: '1.5' }}
+                <Box
+                  component="div"
+                  sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
                 >
-                  {haveAddress ? (
-                    `${props.name === 'Flow' ? 'Wallet' : props.name}${
-                      isValidEthereumAddress(props.address) ? ' EVM' : ''
-                    }`
-                  ) : (
-                    <Skeleton variant="text" width={40} />
-                  )}
-                </Typography>
-                <Box sx={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
                   <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ textTransform: 'none' }}
+                    variant="overline"
+                    color="text"
+                    align="center"
+                    display="block"
+                    sx={{ lineHeight: '1.5' }}
                   >
                     {haveAddress ? (
-                      formatAddress(props.address)
+                      `${props.name === 'Flow' ? 'Wallet' : props.name}${
+                        isValidEthereumAddress(props.address) ? ' EVM' : ''
+                      }`
                     ) : (
-                      <Skeleton variant="text" width={120} />
+                      <Skeleton variant="text" width={40} />
                     )}
                   </Typography>
-                  <IconCopy fill="icon.navi" width="12px" />
+                  <Box sx={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ textTransform: 'none' }}
+                    >
+                      {haveAddress ? (
+                        formatAddress(props.address)
+                      ) : (
+                        <Skeleton variant="text" width={120} />
+                      )}
+                    </Typography>
+                    <IconCopy fill="icon.navi" width="12px" />
+                  </Box>
                 </Box>
-              </Box>
-            </Button>
+              </Button>
+            </span>
           </Tooltip>
         </Box>
 
