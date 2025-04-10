@@ -232,10 +232,36 @@ export class WalletController extends BaseController {
     // We're creating the Flow address for the account
     // Only after this, do we have a valid wallet with a Flow address
     const result = await openapiService.createFlowAddressV2();
-    console.log('createFlowAddressV2 result', result);
+    this.checkForNewAddress(result.data);
+  };
 
-    // Finally set the current pubkey in userWallet
-    userWalletService.setCurrentPubkey(accountKey.public_key);
+  checkForNewAddress = async (txid: string): Promise<FclAccount | null> => {
+    // Usage example with a transaction result
+    const txResult = await fcl.tx(txid).onceSealed();
+
+    // Find the AccountCreated event in the events array
+    const accountCreatedEvent = txResult.events.find(
+      (event) => event.type === 'flow.AccountCreated'
+    );
+
+    const extractAddressFromAccountCreatedEvent = (event) => {
+      if (event.type === 'flow.AccountCreated') {
+        return event.data.address;
+      }
+      return null;
+    };
+
+    if (accountCreatedEvent) {
+      const newAddress = extractAddressFromAccountCreatedEvent(accountCreatedEvent);
+      console.log('New account address:', newAddress);
+      const account = await fcl.account(newAddress);
+      if (account) {
+        userWalletService.registerCurrentPubkey(account.keys[0].publicKey, account);
+      }
+      return account;
+    } else {
+      return null;
+    }
   };
 
   /**
