@@ -38,12 +38,6 @@ export const CurrencyValue: React.FC<CurrencyValueProps> = ({
 
   useEffect(() => {
     fetchCurrencyFromBackground();
-
-    const intervalId = setInterval(fetchCurrencyFromBackground, 1000);
-
-    return () => {
-      clearInterval(intervalId);
-    };
   }, [fetchCurrencyFromBackground]);
 
   return (

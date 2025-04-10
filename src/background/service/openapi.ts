@@ -104,6 +104,7 @@ interface FlowTokenResponse {
   priceInCurrency: string;
   balanceInCurrency: string;
   currency: string;
+  logoURI: string;
 }
 
 // New type definitions for API response for /v4/evm/tokens/ft/{address}
@@ -2174,7 +2175,7 @@ class OpenApiService {
           receiver: `/${token.receiverPath.domain}/${token.receiverPath.identifier}`,
           balance: ``, // todo: not sure what this property is used for
         },
-        logoURI: token.logos?.items?.[0]?.file?.url || '',
+        logoURI: token.logoURI || token.logos?.items?.[0]?.file?.url || '',
         extensions: {
           description: token.description,
           twitter: token.socials?.x?.url,
@@ -2187,7 +2188,7 @@ class OpenApiService {
         // Add CoinItem properties
         coin: token.name, // redundant for compatibility
         unit: token.symbol ?? token.contractName, // redundant for compatibility
-        icon: token.logos?.items?.[0]?.file?.url || '', // redundant for compatibility
+        icon: token.logoURI || token.logos?.items?.[0]?.file?.url || '',
       })
     );
 

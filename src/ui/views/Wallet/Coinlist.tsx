@@ -19,7 +19,6 @@ import { formatLargeNumber } from '@/shared/utils/number';
 
 import IconCreate from '../../../components/iconfont/IconCreate';
 import { CurrencyValue } from '../TokenDetail/CurrencyValue';
-import { TokenValue } from '../TokenDetail/TokenValue';
 
 const CoinList = ({
   tokenList,
