@@ -115,7 +115,7 @@ jobs:
           create_env_file ".env.pro"
 
           # Create .env.dev if environment is development
-          if [[ "${{ needs.determine-env.outputs.env_name }}" == "development" ]]; then
+          if [[ "${{ needs.determine-env.outputs.env_name }}" == "development" || "${{ needs.determine-env.outputs.env_name }}" == "staging" ]]; then
             create_env_file ".env.dev"
           fi
 
@@ -124,7 +124,7 @@ jobs:
 
       - name: Build
         run: |
-          if [[ "${{ needs.determine-env.outputs.env_name }}" == "development" ]]; then
+          if [[ "${{ needs.determine-env.outputs.env_name }}" == "development" || "${{ needs.determine-env.outputs.env_name }}" == "staging" ]]; then
             pnpm run build:dev-ci
           else
             pnpm run build:ci
