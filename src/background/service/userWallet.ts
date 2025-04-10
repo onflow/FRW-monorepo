@@ -48,7 +48,8 @@ import {
   evmAccountRefreshRegex,
   getCachedChildAccounts,
   type EvmAccountStore,
-  mainAccountBalanceKey,
+  accountBalanceKey,
+  accountBalanceRefreshRegex,
 } from '@/shared/utils/cache-data-keys';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import { setUserData } from '@/shared/utils/user-data-access';
@@ -154,6 +155,7 @@ class UserWallet {
     this.store.currentPubkey = pubkey;
 
     // Load all data for the new pubkey. This is async but don't await it
+    // NOTE: If this is remvoed... everything runs just fine (I've checked)
     this.loadAllAccounts(this.store.network, pubkey);
   };
 
@@ -242,13 +244,17 @@ class UserWallet {
     try {
       await this.loadActiveAccounts(network, pubkey);
       // extenal method that ensures caches are loaded
-      const mainAccounts = await loadAllAccountsWithPubKey(network, pubkey);
-      if (mainAccounts && mainAccounts.length > 0) {
-        updateMainAccountsWithBalance(mainAccounts, network);
-      }
+      const allAccounts = await loadAllAccountsWithPubKey(network, pubkey);
+
       // Ensure the parent address is valid - this can only be called after the active and main accounts are loaded
       // Wonder if this is the best way to do this
       await this.ensureValidActiveAccount();
+
+      // Load the balances for the main accounts
+      await loadAccountListBalance(
+        network,
+        allAccounts.map((account) => account.address)
+      );
     } catch (error) {
       console.error('Error loading accounts', error);
     }
@@ -1108,7 +1114,7 @@ const POLL_INTERVAL = 2_000; // 2 seconds
 const loadAllAccountsWithPubKey = async (
   network: string,
   pubKey: string
-): Promise<MainAccount[]> => {
+): Promise<WalletAccount[]> => {
   if (!network || !pubKey) {
     throw new Error('Network and pubkey are required');
   }
@@ -1129,7 +1135,7 @@ const loadAllAccountsWithPubKey = async (
     );
   }
   // Now for each main account load the evm address and child accounts
-  await Promise.all(
+  const childAndEvmAccounts = await Promise.all(
     mainAccounts.flatMap((mainAccount) => {
       return [
         loadEvmAccountOfParent(network, mainAccount.address),
@@ -1138,35 +1144,43 @@ const loadAllAccountsWithPubKey = async (
     })
   );
 
-  return mainAccounts;
+  return [...mainAccounts, ...childAndEvmAccounts.flatMap((account) => account)];
 };
 
 /**
- * Update the balances of the main accounts, it is called after the main accounts are loaded and process asynchronously
+ * Update the balances of a list of accounts, it is called after the main accounts are loaded and process asynchronously
  * Store in the data cache
- * @param mainAccounts - The main accounts to update
  * @param network - The network to load the accounts for
- * @param pubKey - The public key to load the accounts for
+ * @param addressList - The list of addresses to update
  */
-const updateMainAccountsWithBalance = async (mainAccounts: MainAccount[], network: string) => {
-  const addresses = mainAccounts.map((account) => account.address);
-  wallet
-    .getAllAccountBalance(addresses)
-    .then((accountsBalance) => {
-      // Add balances back to formatted wallets
-      mainAccounts.map((account) => {
-        setCachedData(
-          mainAccountBalanceKey(network, account.address),
-          accountsBalance[account.address] || '0.00000000',
-          Number(accountsBalance[account.address]) > 0 ? 60_000 : 1_000
-        );
-      });
+
+const loadAccountListBalance = async (network: string, addressList: string[]) => {
+  // Check if the network is valid
+  if ((await fcl.config().get('flow.network')) !== network) {
+    throw new Error('Invalid network');
+  }
+
+  const script = await getScripts(network, 'basic', 'getFlowBalanceForAnyAccounts');
+
+  const accountsBalances = await fcl.query({
+    cadence: script,
+    args: (arg, t) => [arg(addressList, t.Array(t.String))],
+  });
+  // Cache all the balances
+  return Promise.all(
+    addressList.map((address) => {
+      return setCachedData(
+        accountBalanceKey(network, address),
+        accountsBalances[address] || '0.00000000',
+        Number(accountsBalances[address]) > 0 ? 60_000 : 1_000
+      );
     })
-    .catch((error) => {
-      console.error('Error fetching wallet balances:', error);
-    });
+  );
 };
 
+const loadAccountBalance = async (network: string, address: string) => {
+  return loadAccountListBalance(network, [address]);
+};
 /**
  * Load the main accounts for a given public key
  * Store in the data cache
@@ -1324,6 +1338,7 @@ const initAccountLoaders = () => {
   registerRefreshListener(mainAccountsRefreshRegex, loadMainAccountsWithPubKey);
   registerRefreshListener(childAccountsRefreshRegex, loadChildAccountsOfParent);
   registerRefreshListener(evmAccountRefreshRegex, loadEvmAccountOfParent);
+  registerRefreshListener(accountBalanceRefreshRegex, loadAccountBalance);
 };
 
 export default new UserWallet();
