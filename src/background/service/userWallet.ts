@@ -48,6 +48,7 @@ import {
   evmAccountRefreshRegex,
   getCachedChildAccounts,
   type EvmAccountStore,
+  mainAccountBalanceKey,
 } from '@/shared/utils/cache-data-keys';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import { setUserData } from '@/shared/utils/user-data-access';
@@ -1162,7 +1163,7 @@ const updateMainAccountsWithBalance = async (mainAccounts: MainAccount[], networ
       });
 
       setCachedData(
-        mainAccountsKey(network, pubkey),
+        mainAccountBalanceKey(network, pubkey),
         accountsWithBalance,
         accountsWithBalance.length > 0 ? 60_000 : 1_000
       );

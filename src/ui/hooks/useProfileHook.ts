@@ -20,6 +20,7 @@ import {
   useCurrentId,
   useEvmAccount,
   useKeyringIds,
+  useMainAccountBalance,
   useMainAccounts,
   useUserInfo,
   useUserWallets,
@@ -75,8 +76,8 @@ export const useProfiles = () => {
   const userWallets = useUserWallets();
   // The main accounts for the current public key
   const mainAccounts = useMainAccounts(network, userWallets?.currentPubkey);
-
-  const walletList = mainAccounts ?? [];
+  const mainAccountBalance = useMainAccountBalance(network, userWallets?.currentPubkey);
+  const walletList = mainAccountBalance ?? mainAccounts ?? [];
 
   // The accounts that have been selected by the user
   const activeAccounts = useActiveAccounts(network, userWallets?.currentPubkey);

@@ -13,6 +13,7 @@ import {
 import {
   childAccountsKey,
   evmAccountKey,
+  mainAccountBalanceKey,
   mainAccountsKey,
   userInfoCachekey,
   type UserInfoStore,
@@ -32,6 +33,15 @@ export const useMainAccounts = (
 ) => {
   return useCachedData<MainAccount[]>(
     network && publicKey ? mainAccountsKey(network, publicKey) : null
+  );
+};
+
+export const useMainAccountBalance = (
+  network: string | undefined | null,
+  publicKey: string | undefined | null
+) => {
+  return useCachedData<MainAccount[]>(
+    network && publicKey ? mainAccountBalanceKey(network, publicKey) : null
   );
 };
 

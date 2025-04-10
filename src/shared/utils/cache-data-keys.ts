@@ -56,6 +56,18 @@ export type MainAccountStore = MainAccount[];
 export const getCachedMainAccounts = async (network: string, publicKey: string) => {
   return getCachedData<MainAccountStore>(mainAccountsKey(network, publicKey));
 };
+
+/*
+ * --------------------------------------------------------------------
+ * Main account balance keys (keyed by network & public key)
+ * --------------------------------------------------------------------
+ */
+// The Main (Flow) accounts with balances added of a given public key on a given network
+export const mainAccountBalanceKey = (network: string, publicKey: string) =>
+  `main-account-balance-${network}-${publicKey}`;
+
+export const mainAccountBalanceRefreshRegex = refreshKey(mainAccountBalanceKey);
+
 /*
  * --------------------------------------------------------------------
  * Account level keys (keyed by network & MAIN FLOW account address)
