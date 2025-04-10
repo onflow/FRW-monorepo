@@ -1157,7 +1157,7 @@ const updateMainAccountsWithBalance = async (mainAccounts: MainAccount[], networ
       // Add balances back to formatted wallets
       const accountsWithBalance = mainAccounts.map((account) => {
         return {
-          ...account,
+          address: account.address,
           balance: accountsBalance[account.address] || '0.00000000',
         };
       });

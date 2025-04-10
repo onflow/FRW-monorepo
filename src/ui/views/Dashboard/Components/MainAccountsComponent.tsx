@@ -11,7 +11,7 @@ import { useWallet } from 'ui/utils';
 
 import IconEnd from '../../../../components/iconfont/IconAVector11Stroke';
 
-interface WalletFunctionProps {
+interface MainAccountsProps {
   props_id: number;
   name: string;
   address: WalletAddress;
@@ -31,7 +31,7 @@ interface WalletFunctionProps {
   walletList: WalletAccount[];
 }
 
-const WalletFunction = (props: WalletFunctionProps) => {
+const MainAccountsComponent = (props: MainAccountsProps) => {
   const toggleExpand = () => {
     props.setExpandAccount((prev) => !prev);
   };
@@ -125,4 +125,4 @@ const WalletFunction = (props: WalletFunctionProps) => {
   ) : null;
 };
 
-export default WalletFunction;
+export default MainAccountsComponent;

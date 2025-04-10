@@ -7,6 +7,7 @@ import {
 import {
   type ChildAccountMap,
   type MainAccount,
+  type MainAccountBalance,
   type EvmAddress,
   type WalletAccount,
 } from '@/shared/types/wallet-types';
@@ -40,7 +41,7 @@ export const useMainAccountBalance = (
   network: string | undefined | null,
   publicKey: string | undefined | null
 ) => {
-  return useCachedData<MainAccount[]>(
+  return useCachedData<MainAccountBalance[]>(
     network && publicKey ? mainAccountBalanceKey(network, publicKey) : null
   );
 };

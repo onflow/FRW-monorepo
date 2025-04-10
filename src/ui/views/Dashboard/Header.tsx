@@ -35,11 +35,11 @@ import { useWallet, formatAddress, useWalletLoaded } from 'ui/utils';
 
 import IconCopy from '../../../components/iconfont/IconCopy';
 
+import MainAccountsComponent from './Components/MainAccountsComponent';
 import MenuDrawer from './Components/MenuDrawer';
 import NewsView from './Components/NewsView';
 import Popup from './Components/Popup';
 import SwitchAccountCover from './Components/SwitchAccountCover';
-import WalletFunction from './Components/WalletFunction';
 
 const useStyles = makeStyles(() => ({
   appBar: {
@@ -69,6 +69,7 @@ const Header = ({ _loading = false }) => {
     currentWalletIndex,
     childAccounts,
     walletList,
+    accountBalanceMap,
     evmLoading,
     userInfo,
     otherAccounts,
@@ -246,9 +247,10 @@ const Header = ({ _loading = false }) => {
   }, []);
 
   const createWalletList = (props: WalletAccount) => {
+    const balance = accountBalanceMap.find((account) => account.address === props.address)?.balance;
     return (
       <List component="nav" key={props.id} sx={{ mb: '0', padding: 0 }}>
-        <WalletFunction
+        <MainAccountsComponent
           props_id={props.id}
           name={props.name}
           address={props.address as WalletAddress}
@@ -260,7 +262,7 @@ const Header = ({ _loading = false }) => {
           mainAddress={mainAddress!}
           setExpandAccount={setExpandAccount}
           expandAccount={expandAccount}
-          balance={props.balance || '0.00000000'}
+          balance={balance || '0.00000000'}
           walletList={walletList}
         />
       </List>
