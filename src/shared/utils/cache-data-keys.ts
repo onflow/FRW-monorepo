@@ -63,8 +63,8 @@ export const getCachedMainAccounts = async (network: string, publicKey: string) 
  * --------------------------------------------------------------------
  */
 // The Main (Flow) accounts with balances added of a given public key on a given network
-export const mainAccountBalanceKey = (network: string, publicKey: string) =>
-  `main-account-balance-${network}-${publicKey}`;
+export const mainAccountBalanceKey = (network: string, address: string) =>
+  `main-account-balance-${network}-${address}`;
 
 export const mainAccountBalanceRefreshRegex = refreshKey(mainAccountBalanceKey);
 

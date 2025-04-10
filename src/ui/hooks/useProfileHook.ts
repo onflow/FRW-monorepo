@@ -76,13 +76,13 @@ export const useProfiles = () => {
   const userWallets = useUserWallets();
   // The main accounts for the current public key
   const mainAccounts = useMainAccounts(network, userWallets?.currentPubkey);
-  const mainAccountBalance = useMainAccountBalance(network, userWallets?.currentPubkey);
   const walletList = mainAccounts ?? [];
-  const accountBalanceMap = mainAccountBalance ?? [];
   // The accounts that have been selected by the user
   const activeAccounts = useActiveAccounts(network, userWallets?.currentPubkey);
   // The child accounts for the currently active main account
   const childAccounts = useChildAccounts(network, activeAccounts?.parentAddress);
+
+  const mainAccountBalance = useMainAccountBalance(network, activeAccounts?.currentAddress);
 
   const parentWallet =
     walletList.find((wallet) => wallet.address === activeAccounts?.parentAddress) ?? INITIAL_WALLET;
@@ -338,7 +338,7 @@ export const useProfiles = () => {
     otherAccounts,
     loggedInAccounts,
     walletList,
-    accountBalanceMap,
+    mainAccountBalance,
     parentWallet,
     currentWalletIndex,
     evmLoading,

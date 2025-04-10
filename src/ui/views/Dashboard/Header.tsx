@@ -27,7 +27,6 @@ import {
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
-import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useNews } from '@/ui/utils/NewsContext';
@@ -69,7 +68,6 @@ const Header = ({ _loading = false }) => {
     currentWalletIndex,
     childAccounts,
     walletList,
-    accountBalanceMap,
     evmLoading,
     userInfo,
     otherAccounts,
@@ -247,10 +245,10 @@ const Header = ({ _loading = false }) => {
   }, []);
 
   const createWalletList = (props: WalletAccount) => {
-    const balance = accountBalanceMap.find((account) => account.address === props.address)?.balance;
     return (
       <List component="nav" key={props.id} sx={{ mb: '0', padding: 0 }}>
         <MainAccountsComponent
+          network={network}
           props_id={props.id}
           name={props.name}
           address={props.address as WalletAddress}
@@ -262,7 +260,6 @@ const Header = ({ _loading = false }) => {
           mainAddress={mainAddress!}
           setExpandAccount={setExpandAccount}
           expandAccount={expandAccount}
-          balance={balance || '0.00000000'}
           walletList={walletList}
         />
       </List>

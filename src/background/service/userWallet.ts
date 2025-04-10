@@ -1150,23 +1150,17 @@ const loadAllAccountsWithPubKey = async (
  */
 const updateMainAccountsWithBalance = async (mainAccounts: MainAccount[], network: string) => {
   const addresses = mainAccounts.map((account) => account.address);
-  const pubkey = mainAccounts[0].publicKey;
   wallet
     .getAllAccountBalance(addresses)
     .then((accountsBalance) => {
       // Add balances back to formatted wallets
-      const accountsWithBalance = mainAccounts.map((account) => {
-        return {
-          address: account.address,
-          balance: accountsBalance[account.address] || '0.00000000',
-        };
+      mainAccounts.map((account) => {
+        setCachedData(
+          mainAccountBalanceKey(network, account.address),
+          accountsBalance[account.address] || '0.00000000',
+          Number(accountsBalance[account.address]) > 0 ? 60_000 : 1_000
+        );
       });
-
-      setCachedData(
-        mainAccountBalanceKey(network, pubkey),
-        accountsWithBalance,
-        accountsWithBalance.length > 0 ? 60_000 : 1_000
-      );
     })
     .catch((error) => {
       console.error('Error fetching wallet balances:', error);

@@ -39,11 +39,9 @@ export const useMainAccounts = (
 
 export const useMainAccountBalance = (
   network: string | undefined | null,
-  publicKey: string | undefined | null
+  address: string | undefined | null
 ) => {
-  return useCachedData<MainAccountBalance[]>(
-    network && publicKey ? mainAccountBalanceKey(network, publicKey) : null
-  );
+  return useCachedData<string>(network && address ? mainAccountBalanceKey(network, address) : null);
 };
 
 export const useChildAccounts = (
