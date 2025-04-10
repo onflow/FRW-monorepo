@@ -20,6 +20,7 @@ import {
   useCurrentId,
   useEvmAccount,
   useKeyringIds,
+  useMainAccountBalance,
   useMainAccounts,
   useUserInfo,
   useUserWallets,
@@ -75,13 +76,13 @@ export const useProfiles = () => {
   const userWallets = useUserWallets();
   // The main accounts for the current public key
   const mainAccounts = useMainAccounts(network, userWallets?.currentPubkey);
-
   const walletList = mainAccounts ?? [];
-
   // The accounts that have been selected by the user
   const activeAccounts = useActiveAccounts(network, userWallets?.currentPubkey);
   // The child accounts for the currently active main account
   const childAccounts = useChildAccounts(network, activeAccounts?.parentAddress);
+
+  const mainAccountBalance = useMainAccountBalance(network, activeAccounts?.currentAddress);
 
   const parentWallet =
     walletList.find((wallet) => wallet.address === activeAccounts?.parentAddress) ?? INITIAL_WALLET;
@@ -268,7 +269,34 @@ export const useProfiles = () => {
       const formattedWallets = formatWallets(wallets);
       debug('formattedWallets ===', formattedWallets);
 
+      // First set the formatted wallets without balances
       setWalletList(formattedWallets);
+      debug('Initial wallets set (without balances):', formattedWallets);
+
+      // Extract addresses
+      const addresses = formattedWallets.map((wallet) => wallet.address);
+
+      // Use then() instead of await
+      usewallet
+        .getAllAccountBalance(addresses)
+        .then((walletsBalance) => {
+          // Add balances back to formatted wallets
+          const walletsWithBalance = formattedWallets.map((wallet) => {
+            return {
+              ...wallet,
+              balance: walletsBalance[wallet.address] || '0.00000000',
+            };
+          });
+
+          debug('Wallets updated with balances:', walletsWithBalance);
+
+          // Update the wallet list with balances
+          setWalletList(walletsWithBalance);
+        })
+        .catch((error) => {
+          console.error('Error fetching wallet balances:', error);
+          // Still keep the wallets displayed even if balance fetch fails
+        });
     } catch (error) {
       debug('Error in fetchProfileData:', error);
     } finally {
@@ -310,6 +338,7 @@ export const useProfiles = () => {
     otherAccounts,
     loggedInAccounts,
     walletList,
+    mainAccountBalance,
     parentWallet,
     currentWalletIndex,
     evmLoading,

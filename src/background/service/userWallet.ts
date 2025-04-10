@@ -49,6 +49,8 @@ import {
   evmAccountRefreshRegex,
   getCachedChildAccounts,
   type EvmAccountStore,
+  accountBalanceKey,
+  accountBalanceRefreshRegex,
 } from '@/shared/utils/cache-data-keys';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import { setUserData } from '@/shared/utils/user-data-access';
@@ -154,6 +156,7 @@ class UserWallet {
     this.store.currentPubkey = pubkey;
 
     // Load all data for the new pubkey. This is async but don't await it
+    // NOTE: If this is remvoed... everything runs just fine (I've checked)
     this.loadAllAccounts(this.store.network, pubkey);
   };
 
@@ -261,10 +264,17 @@ class UserWallet {
     try {
       await this.loadActiveAccounts(network, pubkey);
       // extenal method that ensures caches are loaded
-      await loadAllAccountsWithPubKey(network, pubkey);
+      const allAccounts = await loadAllAccountsWithPubKey(network, pubkey);
+
       // Ensure the parent address is valid - this can only be called after the active and main accounts are loaded
       // Wonder if this is the best way to do this
       await this.ensureValidActiveAccount();
+
+      // Load the balances for the main accounts
+      await loadAccountListBalance(
+        network,
+        allAccounts.map((account) => account.address)
+      );
     } catch (error) {
       console.error('Error loading accounts', error);
     }
@@ -1121,7 +1131,10 @@ const POLL_INTERVAL = 2_000; // 2 seconds
  * @param pubKey - The public key to load the accounts for
  * @returns The main accounts for the given public key or null if not found. Does not throw an error.
  */
-const loadAllAccountsWithPubKey = async (network: string, pubKey: string) => {
+const loadAllAccountsWithPubKey = async (
+  network: string,
+  pubKey: string
+): Promise<WalletAccount[]> => {
   if (!network || !pubKey) {
     throw new Error('Network and pubkey are required');
   }
@@ -1142,7 +1155,7 @@ const loadAllAccountsWithPubKey = async (network: string, pubKey: string) => {
     );
   }
   // Now for each main account load the evm address and child accounts
-  await Promise.all(
+  const childAndEvmAccounts = await Promise.all(
     mainAccounts.flatMap((mainAccount) => {
       return [
         loadEvmAccountOfParent(network, mainAccount.address),
@@ -1151,7 +1164,42 @@ const loadAllAccountsWithPubKey = async (network: string, pubKey: string) => {
     })
   );
 
-  return true;
+  return [...mainAccounts, ...childAndEvmAccounts.flatMap((account) => account)];
+};
+
+/**
+ * Update the balances of a list of accounts, it is called after the main accounts are loaded and process asynchronously
+ * Store in the data cache
+ * @param network - The network to load the accounts for
+ * @param addressList - The list of addresses to update
+ */
+
+const loadAccountListBalance = async (network: string, addressList: string[]) => {
+  // Check if the network is valid
+  if ((await fcl.config().get('flow.network')) !== network) {
+    throw new Error('Invalid network');
+  }
+
+  const script = await getScripts(network, 'basic', 'getFlowBalanceForAnyAccounts');
+
+  const accountsBalances = await fcl.query({
+    cadence: script,
+    args: (arg, t) => [arg(addressList, t.Array(t.String))],
+  });
+  // Cache all the balances
+  return Promise.all(
+    addressList.map((address) => {
+      return setCachedData(
+        accountBalanceKey(network, address),
+        accountsBalances[address] || '0.00000000',
+        Number(accountsBalances[address]) > 0 ? 60_000 : 1_000
+      );
+    })
+  );
+};
+
+const loadAccountBalance = async (network: string, address: string) => {
+  return loadAccountListBalance(network, [address]);
 };
 
 /**
@@ -1353,6 +1401,7 @@ const initAccountLoaders = () => {
   registerRefreshListener(mainAccountsRefreshRegex, loadMainAccountsWithPubKey);
   registerRefreshListener(childAccountsRefreshRegex, loadChildAccountsOfParent);
   registerRefreshListener(evmAccountRefreshRegex, loadEvmAccountOfParent);
+  registerRefreshListener(accountBalanceRefreshRegex, loadAccountBalance);
 };
 
 export default new UserWallet();

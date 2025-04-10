@@ -106,11 +106,17 @@ export type WalletAccount = {
   name: string;
   icon: string;
   color: string;
+  balance?: string;
 };
 export type WalletAccountWithBalance = WalletAccount & {
   balance: string;
 };
 export type MainAccount = WalletAccount & PublicKeyAccount;
+
+export type MainAccountBalance = {
+  address: string;
+  balance: string;
+};
 
 export type MainAccountWithBalance = MainAccount & {
   balance: string;

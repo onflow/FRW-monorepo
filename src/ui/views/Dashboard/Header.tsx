@@ -27,7 +27,6 @@ import {
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
-import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useNews } from '@/ui/utils/NewsContext';
@@ -35,11 +34,11 @@ import { useWallet, formatAddress, useWalletLoaded } from 'ui/utils';
 
 import IconCopy from '../../../components/iconfont/IconCopy';
 
+import MainAccountsComponent from './Components/MainAccountsComponent';
 import MenuDrawer from './Components/MenuDrawer';
 import NewsView from './Components/NewsView';
 import Popup from './Components/Popup';
 import SwitchAccountCover from './Components/SwitchAccountCover';
-import WalletFunction from './Components/WalletFunction';
 
 const useStyles = makeStyles(() => ({
   appBar: {
@@ -248,7 +247,8 @@ const Header = ({ _loading = false }) => {
   const createWalletList = (props: WalletAccount) => {
     return (
       <List component="nav" key={props.id} sx={{ mb: '0', padding: 0 }}>
-        <WalletFunction
+        <MainAccountsComponent
+          network={network}
           props_id={props.id}
           name={props.name}
           address={props.address as WalletAddress}

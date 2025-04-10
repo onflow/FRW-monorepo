@@ -56,6 +56,7 @@ export type MainAccountStore = MainAccount[];
 export const getCachedMainAccounts = async (network: string, publicKey: string) => {
   return getCachedData<MainAccountStore>(mainAccountsKey(network, publicKey));
 };
+
 /*
  * --------------------------------------------------------------------
  * Account level keys (keyed by network & MAIN FLOW account address)
@@ -84,6 +85,11 @@ export type EvmAccountStore = WalletAccount;
 export const getCachedEvmAccount = async (network: string, mainAccountAddress: string) => {
   return getCachedData<EvmAccountStore>(evmAccountKey(network, mainAccountAddress));
 };
+
+export const accountBalanceKey = (network: string, address: string) =>
+  `account-balance-${network}-${address}`;
+
+export const accountBalanceRefreshRegex = refreshKey(accountBalanceKey);
 
 // Transfer list
 export const transferListKey = (
@@ -134,11 +140,11 @@ export const getCachedNftCatalogCollections = async (network: string, address: s
 };
 
 //Coin list
-export const coinListKey = (network: string, publicKey: string, currency = 'usd') =>
-  `coin-list-${network}-${publicKey}-${currency}`;
+export const coinListKey = (network: string, address: string, currency = 'usd') =>
+  `coin-list-${network}-${address}-${currency}`;
 
 export const coinListRefreshRegex = refreshKey(coinListKey);
 
-export const getCachedCoinList = async (network: string, publicKey: string, currency = 'usd') => {
-  return getCachedData<ExtendedTokenInfo[]>(coinListKey(network, publicKey, currency));
+export const getCachedCoinList = async (network: string, address: string, currency = 'usd') => {
+  return getCachedData<ExtendedTokenInfo[]>(coinListKey(network, address, currency));
 };
