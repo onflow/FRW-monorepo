@@ -231,10 +231,35 @@ export class WalletController extends BaseController {
     await this.createKeyringWithMnemonics(password, mnemonic);
     // We're creating the Flow address for the account
     // Only after this, do we have a valid wallet with a Flow address
-    await openapiService.createFlowAddress();
+    const result = await openapiService.createFlowAddressV2();
+    this.checkForNewAddress(result.data);
+  };
 
-    // Finally set the current pubkey in userWallet
-    userWalletService.setCurrentPubkey(accountKey.public_key);
+  checkForNewAddress = async (txid: string): Promise<FclAccount | null> => {
+    try {
+      const txResult = await fcl.tx(txid).onceSealed();
+
+      // Find the AccountCreated event and extract the address
+      const accountCreatedEvent = txResult.events.find(
+        (event) => event.type === 'flow.AccountCreated'
+      );
+
+      if (!accountCreatedEvent) {
+        throw new Error('Account creation event not found in transaction');
+      }
+
+      const newAddress = accountCreatedEvent.data.address;
+
+      const account = await fcl.account(newAddress);
+      if (!account) {
+        throw new Error('Fcl account not found');
+      }
+
+      userWalletService.registerCurrentPubkey(account.keys[0].publicKey, account);
+      return account;
+    } catch (error) {
+      throw new Error(`Account creation failed: ${error.message || 'Unknown error'}`);
+    }
   };
 
   /**

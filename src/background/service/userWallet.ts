@@ -1,5 +1,6 @@
 import * as secp from '@noble/secp256k1';
 import * as fcl from '@onflow/fcl';
+import type { Account as FclAccount } from '@onflow/typedefs';
 import * as ethUtil from 'ethereumjs-util';
 import { getApp } from 'firebase/app';
 import { getAuth, signInAnonymously } from 'firebase/auth/web-extension';
@@ -30,7 +31,7 @@ import {
   getActiveAccountTypeForAddress,
   type WalletAddress,
 } from '@/shared/types/wallet-types';
-import { ensureEvmAddressPrefix, isValidEthereumAddress } from '@/shared/utils/address';
+import { ensureEvmAddressPrefix, isValidEthereumAddress, withPrefix } from '@/shared/utils/address';
 import {
   FLOW_BIP44_PATH,
   HASH_ALGO_NUM_SHA2_256,
@@ -156,6 +157,25 @@ class UserWallet {
 
     // Load all data for the new pubkey. This is async but don't await it
     // NOTE: If this is remvoed... everything runs just fine (I've checked)
+    this.loadAllAccounts(this.store.network, pubkey);
+  };
+
+  /**
+   * Set the current pubkey in registered state
+   * TODO: There are lots of async methods "get" the current pubkey before performing an action
+   * Switching the pubkey mid action may cause unexpected behavior
+   * It would be better practice to either pass the pubkey to actions or have class instances
+   * for each pubkey and network combination
+   * @param pubkey - The pubkey to set
+   */
+  registerCurrentPubkey = async (pubkey: string, account: FclAccount) => {
+    // Note that values that are set in the proxy store are immediately available through the proxy
+    // It stores the value in memory immediately
+    // However the value in storage may not be updated immediately
+    this.store.currentPubkey = pubkey;
+    await setupNewAccount(this.store.network, pubkey, account);
+
+    // Load all data for the new pubkey. This is async but don't await it
     this.loadAllAccounts(this.store.network, pubkey);
   };
 
@@ -1181,6 +1201,49 @@ const loadAccountListBalance = async (network: string, addressList: string[]) =>
 const loadAccountBalance = async (network: string, address: string) => {
   return loadAccountListBalance(network, [address]);
 };
+
+/**
+ * Setup the main accounts for a given public key after registration is complete
+ * Store in the data cache
+ * @param network - The network to load the accounts for
+ * @param pubKey - The public key to load the accounts for
+ * @param account - The account structure getting from fcl after registration is complete
+ * @returns The main accounts for the given public key or null if not found. Does not throw an error.
+ */
+const setupNewAccount = async (
+  network: string,
+  pubKey: string,
+  account: FclAccount
+): Promise<MainAccount[]> => {
+  // Setup new account after
+  const mainAccounts: MainAccount[] = [
+    {
+      keyIndex: account.keys[0].index,
+      weight: account.keys[0].weight,
+      signAlgo: account.keys[0].signAlgo,
+      signAlgoString: account.keys[0].signAlgoString,
+      hashAlgo: account.keys[0].hashAlgo,
+      hashAlgoString: account.keys[0].hashAlgoString,
+      address: withPrefix(account.address) as string,
+      publicKey: account.keys[0].publicKey,
+      chain: networkToChainId(network),
+      id: 0,
+      name: getEmojiByIndex(0).name,
+      icon: getEmojiByIndex(0).emoji,
+      color: getEmojiByIndex(0).bgcolor,
+    },
+  ];
+
+  // Save the main accounts to the cache
+  setCachedData(
+    mainAccountsKey(network, pubKey),
+    mainAccounts,
+    mainAccounts.length > 0 ? 60_000 : 1_000
+  );
+
+  return mainAccounts;
+};
+
 /**
  * Load the main accounts for a given public key
  * Store in the data cache
