@@ -251,6 +251,11 @@ const dataConfig: Record<string, OpenApiConfigValue> = {
     method: 'post',
     params: [],
   },
+  create_flow_address_v2: {
+    path: '/v2/user/address',
+    method: 'post',
+    params: [],
+  },
   loginv3: {
     path: '/v3/login',
     method: 'post',
@@ -911,6 +916,12 @@ class OpenApiService {
 
   createFlowAddress = async () => {
     const config = this.store.config.create_flow_address;
+    const data = await this.sendRequest(config.method, config.path);
+    return data;
+  };
+
+  createFlowAddressV2 = async () => {
+    const config = this.store.config.create_flow_address_v2;
     const data = await this.sendRequest(config.method, config.path);
     return data;
   };
