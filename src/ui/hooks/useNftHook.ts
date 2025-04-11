@@ -1,7 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-import { NFTCollectionData, type NFTCollections, type NFTItem } from '@/shared/types/nft-types';
-import { nftCatalogCollectionsKey } from '@/shared/utils/cache-data-keys';
+import { type NFTCollections, type NFTItem } from '@/shared/types/nft-types';
+import {
+  evmNftIdsKey,
+  type EvmNftIdsStore,
+  nftCatalogCollectionsKey,
+  evmNftCollectionListKey,
+  type EvmNftCollectionListStore,
+} from '@/shared/utils/cache-data-keys';
 
 import { useCachedData } from './use-data';
 
@@ -273,4 +279,25 @@ export const useNftCatalogCollections = (network: string, address: string) => {
   );
 
   return collections;
+};
+
+export const useEvmNftIds = (network: string, address: string) => {
+  const evmNftIds = useCachedData<EvmNftIdsStore>(
+    network && address ? evmNftIdsKey(network, address) : null
+  );
+  return evmNftIds;
+};
+
+export const useEvmNftCollectionList = (
+  network: string,
+  address: string,
+  collectionIdentifier: string,
+  offset: number
+) => {
+  const evmNftCollectionList = useCachedData<EvmNftCollectionListStore>(
+    network && address
+      ? evmNftCollectionListKey(network, address, collectionIdentifier, `${offset}`)
+      : null
+  );
+  return evmNftCollectionList;
 };

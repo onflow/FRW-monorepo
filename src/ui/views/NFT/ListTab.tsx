@@ -84,7 +84,6 @@ const useStyles = makeStyles(() => ({
 const CollectionView = ({
   name,
   logo,
-  key,
   count,
   index,
   contract_name,
@@ -93,7 +92,6 @@ const CollectionView = ({
 }: {
   name: string;
   logo: string;
-  key: string;
   count: number;
   index: number;
   contract_name: string;
@@ -104,10 +102,11 @@ const CollectionView = ({
   const classes = useStyles();
 
   const handleClick = () => {
+    console.log('handleClick', ownerAddress, contract_name, count);
     history.push({
       pathname: `/dashboard/nested/collectiondetail/${ownerAddress}.${contract_name}.${count}`,
       state: {
-        collection: { name, logo, key, count, index, contract_name, ownerAddress, isAccessible },
+        collection: { name, logo, count, index, contract_name, ownerAddress, isAccessible },
         ownerAddress,
         accessible: isAccessible,
       },
@@ -115,6 +114,7 @@ const CollectionView = ({
   };
   return (
     <Card
+      key={name}
       sx={{ borderRadius: '12px', backgroundColor: '#000000' }}
       className={classes.collectionCard}
     >
@@ -192,6 +192,7 @@ const checkContractAddressInCollections = (
   nftCollections: NFTCollections,
   activeCollection: any
 ) => {
+  console.log('checkContractAddressInCollections', nftCollections, activeCollection);
   const contractAddressWithout0x = nftCollections.collection.contract_name;
   const isActiveCollect = activeCollection.some((collection) => {
     const extractedAddress = extractContractAddress(collection);
@@ -231,9 +232,9 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
       ) : (
         nftCollectionsList.map((collections, index) => (
           <CollectionView
+            key={collections.collection.name}
             name={collections.collection.name}
             logo={collections.collection.logo}
-            key={collections.collection.name}
             count={collections.count}
             index={index}
             contract_name={collections.collection.id}

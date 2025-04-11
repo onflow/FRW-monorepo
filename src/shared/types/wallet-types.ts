@@ -142,6 +142,7 @@ export type AccountDetails = {
   name: string;
   description: string;
   thumbnail: Thumbnail;
+  address?: string;
 };
 
 export type ChildAccountMap = {

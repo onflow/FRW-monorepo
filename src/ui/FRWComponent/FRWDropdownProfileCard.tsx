@@ -1,18 +1,7 @@
-import {
-  Box,
-  Typography,
-  Avatar,
-  Skeleton,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-} from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import React, { useState, useEffect, useCallback } from 'react';
+import { Box, Typography, Avatar, Skeleton, Select, MenuItem, FormControl } from '@mui/material';
+import React, { useEffect } from 'react';
 
-import { isValidEthereumAddress } from '@/shared/utils/address';
-import { useWallet, formatAddress, isEmoji } from 'ui/utils';
+import { formatAddress, isEmoji } from 'ui/utils';
 
 export const FRWDropdownProfileCard = ({
   contact,
@@ -20,8 +9,6 @@ export const FRWDropdownProfileCard = ({
   setSelectedChildAccount,
   isLoading = false,
 }) => {
-  const usewallet = useWallet();
-
   const contactKeys = Object.keys(contacts);
   const [selectedChild, setSelectedChild] = React.useState(
     contactKeys.length > 0 ? contactKeys[0] : ''
@@ -30,7 +17,6 @@ export const FRWDropdownProfileCard = ({
   useEffect(() => {
     if (selectedChild) {
       const select = contacts[selectedChild];
-      select['address'] = selectedChild;
       setSelectedChildAccount(select);
     }
   }, [selectedChild, contacts, setSelectedChildAccount]);
@@ -38,8 +24,7 @@ export const FRWDropdownProfileCard = ({
   const handleChange = (event) => {
     const selectedAddress = event.target.value;
     setSelectedChild(selectedAddress);
-    const select = contacts[selectedChild];
-    select['address'] = selectedChild;
+    const select = contacts[selectedAddress];
     setSelectedChildAccount(select);
   };
 
@@ -71,7 +56,6 @@ export const FRWDropdownProfileCard = ({
             labelId="child-wallet-select-label"
             value={selectedChild}
             onChange={handleChange}
-            disableUnderline
             sx={{
               '& .MuiSelect-select': {
                 display: 'flex',
@@ -89,7 +73,7 @@ export const FRWDropdownProfileCard = ({
               <MenuItem key={address} value={address}>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   {!isLoading ? (
-                    isEmoji(contacts[address].thumbnail.url) ? (
+                    isEmoji(contacts[address]?.thumbnail?.url) ? (
                       <Typography
                         sx={{
                           mr: '13px',
@@ -104,12 +88,12 @@ export const FRWDropdownProfileCard = ({
                           fontSize: '24px', // Adjust font size to fit within the box
                         }}
                       >
-                        {contacts[address].thumbnail.url}
+                        {contacts[address]?.thumbnail?.url}
                       </Typography>
                     ) : (
                       <Avatar
-                        alt={contacts[address]}
-                        src={contacts[address].thumbnail.url}
+                        alt={contacts[address]?.name}
+                        src={contacts[address]?.thumbnail?.url}
                         sx={{
                           mr: '13px',
                           color: 'primary.main',
@@ -118,7 +102,7 @@ export const FRWDropdownProfileCard = ({
                           height: '40px',
                         }}
                       >
-                        {getName(contacts[address].name)}
+                        {getName(contacts[address]?.name)}
                       </Avatar>
                     )
                   ) : (

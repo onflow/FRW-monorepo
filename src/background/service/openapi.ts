@@ -28,6 +28,7 @@ import { storage } from '@/background/webapi';
 import type { ExtendedTokenInfo, BalanceMap } from '@/shared/types/coin-types';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
 import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
+import { type NFTCollections } from '@/shared/types/nft-types';
 import {
   type LoggedInAccountWithIndex,
   type LoggedInAccount,
@@ -37,7 +38,12 @@ import {
 } from '@/shared/types/wallet-types';
 import { isValidFlowAddress, isValidEthereumAddress } from '@/shared/utils/address';
 import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
-import { cadenceScriptsKey, cadenceScriptsRefreshRegex } from '@/shared/utils/cache-data-keys';
+import {
+  cadenceScriptsKey,
+  cadenceScriptsRefreshRegex,
+  childAccountNFTsKey,
+  ChildAccountNFTsStore,
+} from '@/shared/utils/cache-data-keys';
 import { getPeriodFrequency } from '@/shared/utils/getPeriodFrequency';
 import { type NetworkScripts } from '@/shared/utils/script-types';
 import { INITIAL_OPENAPI_URL, WEB_NEXT_URL } from 'consts';
@@ -1162,21 +1168,6 @@ class OpenApiService {
     }
   };
 
-  checkChildAccountNFT = async (address: string) => {
-    const script = await getScripts(
-      userWalletService.getNetwork(),
-      'hybridCustody',
-      'getAccessibleChildAccountNFTs'
-    );
-
-    const result = await fcl.query({
-      cadence: script,
-      args: (arg, t) => [arg(address, t.Address)],
-    });
-    console.log(result, 'check child nft info result----=====');
-    return result;
-  };
-
   getFlownsAddress = async (domain: string, root = 'fn') => {
     const script = await getScripts(userWalletService.getNetwork(), 'basic', 'getFlownsAddress');
 
@@ -1865,7 +1856,7 @@ class OpenApiService {
     return data;
   };
 
-  nftCatalogCollections = async (address: string, network: string) => {
+  nftCatalogCollections = async (address: string, network: string): Promise<NFTCollections[]> => {
     const { data } = await this.sendRequest(
       'GET',
       `/api/v2/nft/id?address=${address}&network=${network}`,
@@ -1975,8 +1966,7 @@ class OpenApiService {
     return data;
   };
 
-  EvmNFTID = async (address: string) => {
-    const network = await userWalletService.getNetwork();
+  EvmNFTID = async (network: string, address: string) => {
     const { data } = await this.sendRequest(
       'GET',
       `/api/v3/evm/nft/id?network=${network}&address=${address}`,

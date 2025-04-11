@@ -203,7 +203,7 @@ const CoinList = ({
               }
               return (
                 <ListItem
-                  key={coin.unit}
+                  key={coin.id}
                   data-testid={`token-${coin.unit.toLowerCase()}`}
                   secondaryAction={
                     <EndListItemText
