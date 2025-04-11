@@ -144,6 +144,32 @@ export const refreshNftCatalogCollections = async (network: string, address: str
   triggerRefresh(nftCatalogCollectionsKey(network, address));
 };
 
+export const childAccountAllowTypesKey = (network: string, parent: string, child: string) =>
+  `child-account-allow-types-${network}-${parent}-${child}`;
+
+export const childAccountAllowTypesRefreshRegex = refreshKey(childAccountAllowTypesKey);
+export type ChildAccountAllowTypesStore = string[];
+
+export const getCachedChildAccountAllowTypes = async (
+  network: string,
+  parent: string,
+  child: string
+) => {
+  return getCachedData<ChildAccountAllowTypesStore>(
+    childAccountAllowTypesKey(network, parent, child)
+  );
+};
+
+export const childAccountNFTsKey = (network: string, address: string) =>
+  `child-account-nfts-${network}-${address}`;
+
+export const childAccountNFTsRefreshRegex = refreshKey(childAccountNFTsKey);
+export type ChildAccountNFTsStore = { [address: string]: string[] };
+
+export const getCachedChildAccountNFTs = async (network: string, address: string) => {
+  return getCachedData<ChildAccountNFTsStore>(childAccountNFTsKey(network, address));
+};
+
 //Coin list
 export const coinListKey = (network: string, address: string, currency = 'usd') =>
   `coin-list-${network}-${address}-${currency}`;

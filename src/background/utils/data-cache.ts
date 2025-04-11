@@ -63,7 +63,7 @@ export const registerRefreshListener = (
       }
 
       // Remove the refresh key
-      await storage.removeSession(`${key}-refresh`);
+      await storage.removeSession(`${key}`);
     }
   });
 };

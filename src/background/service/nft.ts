@@ -1,28 +1,64 @@
+import * as fcl from '@onflow/fcl';
+
 import {
   nftCatalogCollectionsKey,
   nftCatalogCollectionsRefreshRegex,
   nftCollectionKey,
   nftCollectionRefreshRegex,
-  getCachedNftCollection,
-  getCachedNftCatalogCollections,
+  childAccountAllowTypesKey,
+  childAccountAllowTypesRefreshRegex,
+  childAccountNFTsKey,
+  childAccountNFTsRefreshRegex,
 } from '@/shared/utils/cache-data-keys';
 import { getValidData, registerRefreshListener, setCachedData } from 'background/utils/data-cache';
 
 import { type NFTCollectionData, type NFTCollections } from '../../shared/types/nft-types';
+import { fclEnsureNetwork } from '../fclConfig';
 
-import openapiService from './openapi';
+import openapiService, { getScripts } from './openapi';
 
 class NFT {
   init = async () => {
     registerRefreshListener(nftCatalogCollectionsRefreshRegex, this.loadNftCatalogCollections);
     registerRefreshListener(nftCollectionRefreshRegex, this.loadSingleNftCollection);
+    registerRefreshListener(childAccountAllowTypesRefreshRegex, this.loadChildAccountAllowTypes);
+    registerRefreshListener(childAccountNFTsRefreshRegex, this.loadChildAccountNFTs);
+  };
+
+  loadChildAccountNFTs = async (network: string, address: string) => {
+    await fclEnsureNetwork(network);
+    const script = await getScripts(network, 'hybridCustody', 'getAccessibleChildAccountNFTs');
+
+    const result = await fcl.query({
+      cadence: script,
+      args: (arg, t) => [arg(address, t.Address)],
+    });
+    console.log('check child nft info result----=====', structuredClone(result));
+
+    setCachedData(childAccountNFTsKey(network, address), result);
+
+    return result;
+  };
+
+  loadChildAccountAllowTypes = async (
+    network: string,
+    parentAddress: string,
+    childAddress: string
+  ) => {
+    await fclEnsureNetwork(network);
+    const script = await getScripts(network, 'hybridCustody', 'getChildAccountAllowTypes');
+    const result = await fcl.query({
+      cadence: script,
+      args: (arg, t) => [arg(parentAddress, t.Address), arg(childAddress, t.Address)],
+    });
+    setCachedData(childAccountAllowTypesKey(network, parentAddress, childAddress), result);
+    return result;
   };
 
   loadNftCatalogCollections = async (
     network: string,
     address: string
   ): Promise<NFTCollections[]> => {
-    console.log('loadNftCatalogCollections', address, network);
     const data = await openapiService.nftCatalogCollections(address!, network);
     if (!data || !Array.isArray(data)) {
       return [];

@@ -67,6 +67,9 @@ import {
   getCachedNftCatalogCollections,
   nftCatalogCollectionsKey,
   coinListKey,
+  childAccountAllowTypesKey,
+  childAccountNFTsKey,
+  type ChildAccountNFTsStore,
 } from '@/shared/utils/cache-data-keys';
 import { getCurrentProfileId } from '@/shared/utils/current-id';
 import {
@@ -1054,14 +1057,14 @@ export class WalletController extends BaseController {
   };
 
   checkAccessibleNft = async (childAccount) => {
-    try {
-      const nfts = await openapiService.checkChildAccountNFT(childAccount);
-
-      return nfts;
-    } catch (error) {
-      console.error(error, 'error ===');
-      return [];
+    const network = userWalletService.getNetwork();
+    const validData = getValidData<ChildAccountNFTsStore>(
+      childAccountNFTsKey(network, childAccount)
+    );
+    if (validData) {
+      return validData;
     }
+    return await nftService.loadChildAccountNFTs(network, childAccount);
   };
 
   checkAccessibleFt = async (childAccount) => {
@@ -2384,17 +2387,16 @@ export class WalletController extends BaseController {
     return txID;
   };
 
-  getChildAccountAllowTypes = async (parent: string, child: string) => {
-    const script = await getScripts(
-      userWalletService.getNetwork(),
-      'hybridCustody',
-      'getChildAccountAllowTypes'
+  getChildAccountAllowTypes = async (parent: string, child: string): Promise<string[]> => {
+    const network = userWalletService.getNetwork();
+
+    const cachedData = await getValidData<string[]>(
+      childAccountAllowTypesKey(network, parent, child)
     );
-    const result = await fcl.query({
-      cadence: script,
-      args: (arg, t) => [arg(parent, t.Address), arg(child, t.Address)],
-    });
-    return result;
+    if (cachedData) {
+      return cachedData;
+    }
+    return nftService.loadChildAccountAllowTypes(network, parent, child);
   };
 
   checkChildLinkedVault = async (parent: string, child: string, path: string): Promise<string> => {

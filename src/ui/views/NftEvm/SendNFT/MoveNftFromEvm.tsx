@@ -26,7 +26,7 @@ interface SendNFTConfirmationProps {
   handleAddBtnClicked: () => void;
 }
 
-const MoveNftConfirmation = (props: SendNFTConfirmationProps) => {
+const MoveNftFromEvm = (props: SendNFTConfirmationProps) => {
   const usewallet = useWallet();
   const history = useHistory();
   const { mainAddress, childAccounts, parentWallet } = useProfiles();
@@ -398,4 +398,4 @@ const MoveNftConfirmation = (props: SendNFTConfirmationProps) => {
   );
 };
 
-export default MoveNftConfirmation;
+export default MoveNftFromEvm;
