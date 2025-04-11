@@ -3169,7 +3169,7 @@ export class WalletController extends BaseController {
 
   getCollectionCache = async (address: string) => {
     const network = await this.getNetwork();
-    const list = await getCachedNftCatalogCollections(network, address);
+    const list = await getValidData<NFTCollections[]>(nftCatalogCollectionsKey(network, address));
     if (!list || list.length === 0) {
       return await this.refreshCollection(address);
     }

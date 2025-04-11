@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-import { type NFTItem } from '@/shared/types/nft-types';
+import { NFTCollectionData, type NFTCollections, type NFTItem } from '@/shared/types/nft-types';
+import { nftCatalogCollectionsKey } from '@/shared/utils/cache-data-keys';
+
+import { useCachedData } from './use-data';
 
 interface UseNftHookProps {
   getCollection: (
@@ -262,4 +265,12 @@ export const useNftHook = ({
     loadAllPages,
     refreshCollectionImpl,
   };
+};
+
+export const useNftCatalogCollections = (network: string, address: string) => {
+  const collections = useCachedData<NFTCollections[]>(
+    network && address ? nftCatalogCollectionsKey(network, address) : null
+  );
+
+  return collections;
 };
