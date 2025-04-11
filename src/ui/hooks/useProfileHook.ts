@@ -20,7 +20,7 @@ import {
   useCurrentId,
   useEvmAccount,
   useKeyringIds,
-  useMainAccountBalance,
+  useAccountBalance,
   useMainAccounts,
   useUserInfo,
   useUserWallets,
@@ -82,7 +82,7 @@ export const useProfiles = () => {
   // The child accounts for the currently active main account
   const childAccounts = useChildAccounts(network, activeAccounts?.parentAddress);
 
-  const mainAccountBalance = useMainAccountBalance(network, activeAccounts?.currentAddress);
+  const currentBalance = useAccountBalance(network, activeAccounts?.currentAddress);
 
   const parentWallet =
     walletList.find((wallet) => wallet.address === activeAccounts?.parentAddress) ?? INITIAL_WALLET;
@@ -338,7 +338,7 @@ export const useProfiles = () => {
     otherAccounts,
     loggedInAccounts,
     walletList,
-    mainAccountBalance,
+    currentBalance,
     parentWallet,
     currentWalletIndex,
     evmLoading,

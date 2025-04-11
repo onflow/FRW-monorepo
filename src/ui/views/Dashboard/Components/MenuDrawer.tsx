@@ -27,7 +27,7 @@ import {
   type MainAccount,
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
-import { useMainAccountBalance } from '@/ui/hooks/use-account-hooks';
+import { useAccountBalance } from '@/ui/hooks/use-account-hooks';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import importIcon from 'ui/FRWAssets/svg/importIcon.svg';
 import popLock from 'ui/FRWAssets/svg/popLock.svg';
@@ -80,7 +80,7 @@ const MenuDrawer = (props: MenuDrawerProps) => {
   const usewallet = useWallet();
   const history = useHistory();
   const classes = useStyles();
-  const evmBalance = useMainAccountBalance(props.currentNetwork, props.evmWallet.address);
+  const evmBalance = useAccountBalance(props.currentNetwork, props.evmWallet.address);
   const { clearProfileData } = useProfiles();
 
   interface EvmADDComponentProps {

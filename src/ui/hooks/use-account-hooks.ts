@@ -37,7 +37,7 @@ export const useMainAccounts = (
   );
 };
 
-export const useMainAccountBalance = (
+export const useAccountBalance = (
   network: string | undefined | null,
   address: string | undefined | null
 ) => {

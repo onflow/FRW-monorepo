@@ -7,7 +7,7 @@ import {
   type ActiveChildType_depreciated,
   type WalletAddress,
 } from '@/shared/types/wallet-types';
-import { useMainAccountBalance } from '@/ui/hooks/use-account-hooks';
+import { useAccountBalance } from '@/ui/hooks/use-account-hooks';
 
 import IconEnd from '../../../../components/iconfont/IconAVector11Stroke';
 
@@ -32,7 +32,7 @@ interface MainAccountsProps {
 }
 
 const MainAccountsComponent = (props: MainAccountsProps) => {
-  const balance = useMainAccountBalance(props.network, props.address);
+  const balance = useAccountBalance(props.network, props.address);
   const isBalanceLoading = balance === undefined || balance === null;
 
   const toggleExpand = () => {
