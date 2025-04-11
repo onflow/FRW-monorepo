@@ -17,7 +17,6 @@ export const FRWDropdownProfileCard = ({
   useEffect(() => {
     if (selectedChild) {
       const select = contacts[selectedChild];
-      select['address'] = selectedChild;
       setSelectedChildAccount(select);
     }
   }, [selectedChild, contacts, setSelectedChildAccount]);
@@ -25,8 +24,7 @@ export const FRWDropdownProfileCard = ({
   const handleChange = (event) => {
     const selectedAddress = event.target.value;
     setSelectedChild(selectedAddress);
-    const select = contacts[selectedChild];
-    select['address'] = selectedChild;
+    const select = contacts[selectedAddress];
     setSelectedChildAccount(select);
   };
 

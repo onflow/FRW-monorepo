@@ -155,6 +155,7 @@ const MovefromParent = (props: SendNFTConfirmationProps) => {
         [evmAddress!]: {
           name: eWallet.name,
           description: eWallet.name,
+          address: eWallet.address,
           thumbnail: {
             url: eWallet.icon,
           },

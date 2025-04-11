@@ -4,7 +4,7 @@ import { Box, Typography, Drawer, Stack, Grid, CardMedia, IconButton, Button } f
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import { type WalletAccount, type AccountDetails } from '@/shared/types/wallet-types';
+import { type AccountDetails } from '@/shared/types/wallet-types';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
 import { WarningNFTNotOnboardedSnackbar } from '@/ui/FRWComponent/WarningNFTNotOnboardedSnackbar';
@@ -36,24 +36,19 @@ const MoveNftFromEvm = (props: SendNFTConfirmationProps) => {
   const [, setErrorMessage] = useState<string | null>(null);
   const [errorCode, setErrorCode] = useState<number | null>(null);
 
-  const [selectedAccount, setSelectedChildAccount] = useState<AccountDetails | null>({
-    name: parentWallet.name,
-    description: parentWallet.name,
-    thumbnail: {
-      url: parentWallet.icon,
-    },
-  });
+  const [selectedAccount, setSelectedChildAccount] = useState<AccountDetails | null>(null);
   const { sufficient: isSufficient } = useStorageCheck();
 
   const isLowStorage = isSufficient !== undefined && !isSufficient; // isSufficient is undefined when the storage check is not yet completed
 
-  const childAndParentWallets: { [key: string]: AccountDetails } = useMemo(() => {
+  const parentAndChildWallets: { [key: string]: AccountDetails } = useMemo(() => {
     return Object.fromEntries(
-      [...(childAccounts ?? []), parentWallet].map((wallet) => [
+      [parentWallet, ...(childAccounts ?? [])].map((wallet) => [
         wallet.address,
         {
           name: wallet.name,
           description: wallet.name,
+          address: wallet.address,
           thumbnail: {
             url: wallet.icon,
           },
@@ -79,7 +74,10 @@ const MoveNftFromEvm = (props: SendNFTConfirmationProps) => {
   };
 
   const sendNFT = async () => {
-    if (mainAddress === selectedAccount!['address']) {
+    if (!selectedAccount) {
+      throw new Error('No account selected');
+    }
+    if (mainAddress === selectedAccount.address) {
       moveToParent();
     } else {
       moveToChild();
@@ -113,7 +111,7 @@ const MoveNftFromEvm = (props: SendNFTConfirmationProps) => {
   const moveToChild = async () => {
     setSending(true);
     usewallet
-      .batchBridgeChildNFTFromEvm(selectedAccount!['address'], props.data.nft.flowIdentifier, [
+      .batchBridgeChildNFTFromEvm(selectedAccount!.address!, props.data.nft.flowIdentifier, [
         props.data.nft.id,
       ])
       .then(async (txId) => {
@@ -239,7 +237,7 @@ const MoveNftFromEvm = (props: SendNFTConfirmationProps) => {
           <Box sx={{ height: '8px' }}></Box>
           <FRWDropdownProfileCard
             contact={selectedAccount}
-            contacts={childAndParentWallets}
+            contacts={parentAndChildWallets}
             setSelectedChildAccount={setSelectedChildAccount}
           />
         </Box>
