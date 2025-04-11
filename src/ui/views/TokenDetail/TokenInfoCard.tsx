@@ -1,26 +1,44 @@
 import { Typography, Box, ButtonBase, CardMedia } from '@mui/material';
-import { type TokenInfo } from 'flow-native-token-registry';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
+import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
+import { type ActiveAccountType } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { LLPrimaryButton } from '@/ui/FRWComponent';
 import iconMove from 'ui/FRWAssets/svg/moveIcon.svg';
+import { useCoins } from 'ui/hooks/useCoinHook';
 import { useWallet } from 'ui/utils';
 
 import IconChevronRight from '../../../components/iconfont/IconChevronRight';
 
-import { CurrencyValue } from './CurrencyValue';
 import { TokenValue } from './TokenValue';
 
 // import tips from 'ui/FRWAssets/svg/tips.svg';
 
-const TokenInfoCard = ({ price, token, setAccessible, accessible, tokenInfo, childType }) => {
+const TokenInfoCard = ({
+  price,
+  token,
+  setAccessible,
+  accessible,
+  tokenInfo,
+  accountType,
+  tokenId,
+}: {
+  price: number;
+  token: string;
+  setAccessible: (accessible: boolean) => void;
+  accessible: boolean;
+  tokenInfo: any;
+  accountType: ActiveAccountType;
+  tokenId: string;
+}) => {
   const wallet = useWallet();
   const history = useHistory();
   const isMounted = useRef(true);
+  const { coins } = useCoins();
   const [balance, setBalance] = useState<string>('0');
-  const [data, setData] = useState<TokenInfo | undefined>(undefined);
+  const [data, setData] = useState<ExtendedTokenInfo | undefined>(undefined);
 
   const [canMoveChild, setCanMoveChild] = useState(true);
 
@@ -42,28 +60,19 @@ const TokenInfoCard = ({ price, token, setAccessible, accessible, tokenInfo, chi
   };
 
   const getActive = useCallback(async () => {
-    const isChild = await wallet.getActiveWallet();
-
     const timerId = setTimeout(async () => {
       if (!isMounted.current) return; // Early exit if component is not mounted
-      setData(tokenInfo!);
       setAccessible(true);
-      if (isChild === 'evm') {
-        const coins = await wallet.getCoinList();
-        const thisCoin = coins.filter((coin) => coin.unit.toLowerCase() === token);
-        const balance = thisCoin[0].balance;
+      let thisCoin = coins.find((coin) => coin.id.toLowerCase() === tokenId.toLowerCase());
+
+      // If not found by ID, try to find by unit and token
+      if (!thisCoin && token) {
+        thisCoin = coins.find((coin) => coin.unit?.toLowerCase() === token.toLowerCase());
+      }
+      setData(thisCoin!);
+      const balance = thisCoin?.balance;
+      if (balance) {
         setBalance(balance);
-      } else {
-        wallet.openapi
-          .getWalletTokenBalance(token)
-          .then((response) => {
-            if (isMounted.current) {
-              setBalance(response);
-            }
-          })
-          .catch((err) => {
-            console.error('err ', err);
-          });
       }
     }, 400);
 
@@ -71,7 +80,7 @@ const TokenInfoCard = ({ price, token, setAccessible, accessible, tokenInfo, chi
       isMounted.current = false; // Mark component as unmounted
       clearTimeout(timerId); // Clear the timer
     };
-  }, [setAccessible, token, tokenInfo, wallet]);
+  }, [setAccessible, token, tokenId, coins]);
 
   const getUrl = (data) => {
     if (data.extensions?.website?.trim()) {
@@ -217,11 +226,15 @@ const TokenInfoCard = ({ price, token, setAccessible, accessible, tokenInfo, chi
           </Box>
           <Typography variant="body1" color="text.secondary" sx={{ fontSize: '16px' }}>
             <Box component="span" sx={{ marginRight: '0.25rem' }}>
-              <CurrencyValue value={String(Number(balance) * price)} />
+              <TokenValue
+                value={String(Number(balance) * data?.price)}
+                prefix="$"
+                postFix={chrome.i18n.getMessage('USD')}
+              />
             </Box>
           </Typography>
           <Box sx={{ display: 'flex', gap: '12px', height: '36px', mt: '24px', width: '100%' }}>
-            {(!childType || childType === 'evm') && (
+            {(accountType === 'main' || accountType === 'evm') && (
               <LLPrimaryButton
                 sx={{
                   borderRadius: '8px',

@@ -7,6 +7,7 @@ import { useHistory } from 'react-router-dom';
 import enableBg from 'ui/FRWAssets/image/enableBg.png';
 import { LLPrimaryButton, LLSpinner } from 'ui/FRWComponent';
 import { useWallet } from 'ui/utils';
+
 const Enable = () => {
   const expiry_time = 60000;
   const history = useHistory();
@@ -14,7 +15,6 @@ const Enable = () => {
   const [claiming, setClaiming] = useState(false);
   const [failed, setFailed] = useState(false);
   const [error, setError] = useState('');
-  const [enough, setEnough] = useState(false);
 
   const handleClaiming = async () => {
     setClaiming(true);
@@ -37,18 +37,6 @@ const Enable = () => {
         setClaiming(false);
       });
   };
-
-  const getUsername = useCallback(async () => {
-    const storageData = await wallet.getCoinList(expiry_time);
-    const flowToken = storageData.find((token) => token.unit === 'flow');
-    if (new BN(flowToken!.balance).gte(new BN('0.002'))) {
-      setEnough(true);
-    }
-  }, [wallet]);
-
-  useEffect(() => {
-    getUsername();
-  }, [getUsername]);
 
   return (
     <Box

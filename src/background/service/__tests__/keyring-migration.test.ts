@@ -4,7 +4,7 @@ import encryptor from 'browser-passworder';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 // Mock dependencies at the beginning before any imports
-vi.mock('../../webapi/storage', () => ({
+vi.mock('../../../shared/utils/storage', () => ({
   default: {
     get: vi.fn(),
     set: vi.fn(),
@@ -50,10 +50,11 @@ vi.mock('bip39', () => ({
 }));
 
 // Internal imports - after all mocks are defined
+import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
 
-import storage from '../../webapi/storage';
+import storage from '../../../shared/utils/storage';
 import KeyringService from '../keyring';
 
 import { MOCK_KEYS, MOCK_PASSWORD } from './keyring-mock-data';
@@ -88,10 +89,10 @@ const SIMPLE_KEYRING_PUBLIC_KEY_TUPLE = {
 
 const NO_ID_KEYRING_PUBLIC_KEY_TUPLE = {
   P256: {
-    pubK: 'cb52b6e4d495e9e6be80df0e5b79a23d9b7a9d5ba29cd690993ea2d5458961cf1c8fe705046d618e48d10b4434c2c8942a389f0bb54bc5658d11aae8706948bb',
+    pubK: '75d37a3eceb4ef7f662ce7e5f08048d8d401499e5bb534f05b7694537860d89a3d9fd8b6326ffaf9282a46ef0c362b70fd2c4d43cc3cb5c6e533d362ce547f80',
   },
   SECP256K1: {
-    pubK: '4dcb70aaf500337ec43d926cb23a28a1ef55e9594eec8b83c907b91355fba0b013199da65e5ca2f0cc4f7741260b784a328d4506ca2f438ab0efdf748fc2cf11',
+    pubK: '1aeb0c0df7f247c26795e536ba69ceb567ac22fbdba6840052b054f8a56ec1804ddbcfd911bd99fc194ddeb8e6e652ff8b84dd4d7d5d05cc8494785022f1f5bc',
   },
 };
 // Sample Flow addresses for tests
@@ -199,7 +200,7 @@ describe('Keyring Migration Tests', () => {
     memoryStore.set(`user${NO_ID_KEYRING_INDEX}_phrase`, 'test_passphrase');
 
     // Set currentId to one of our keyring IDs
-    memoryStore.set('currentId', HD_KEYRING_ID);
+    memoryStore.set(CURRENT_ID_KEY, HD_KEYRING_ID);
 
     // Create a booted flag to avoid the "Cannot unlock without a previous vault" error
     const encryptedBooted = await createEncryptedVault('true');
@@ -284,7 +285,7 @@ describe('Keyring Migration Tests', () => {
     memoryStore.set(`user${NO_ID_KEYRING_INDEX}_phrase`, 'test_passphrase');
 
     // Set currentId to one of our keyring IDs
-    memoryStore.set('currentId', HD_KEYRING_ID);
+    memoryStore.set(CURRENT_ID_KEY, HD_KEYRING_ID);
 
     // Step 1: Initialize keyring service (should try to load from keyringState)
     await KeyringService.loadKeyringStore();
@@ -357,7 +358,7 @@ describe('Keyring Migration Tests', () => {
     });
 
     // Set currentId
-    memoryStore.set('currentId', HD_KEYRING_ID);
+    memoryStore.set(CURRENT_ID_KEY, HD_KEYRING_ID);
 
     // Step 1: Initialize and boot keyring service
     await KeyringService.loadKeyringStore();
@@ -385,7 +386,7 @@ describe('Keyring Migration Tests', () => {
     expect(publicKeyTuple).toEqual(MOCK_KEYS.publicKeys);
 
     // Verify the private key can be retrieved
-    const privateKey = await KeyringService.getCurrentPrivateKey();
-    expect(privateKey).toEqual(MOCK_KEYS.privateKey);
+    const privateKeyTuple = await KeyringService.getCurrentPrivateKeyTuple();
+    expect(privateKeyTuple.SECP256K1.pk).toEqual(MOCK_KEYS.privateKey);
   });
 });

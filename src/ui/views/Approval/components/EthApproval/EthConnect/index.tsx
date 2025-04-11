@@ -1,6 +1,7 @@
 import { Stack, Box, Typography, Divider, CardMedia } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 
+import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import enableBg from 'ui/FRWAssets/image/enableBg.png';
 import flowgrey from 'ui/FRWAssets/svg/flow-grey.svg';
@@ -42,7 +43,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
   // This is used to show a loading spinner
   const [isLoading, setIsLoading] = useState(false);
 
-  const [defaultChain, setDefaultChain] = useState(747);
+  const [defaultChain, setDefaultChain] = useState(MAINNET_CHAIN_ID);
   const [isEvm, setIsEvm] = useState(false);
   const [currentNetwork, setCurrent] = useState('testnet');
 
@@ -76,11 +77,11 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
         id: 1,
         icon: icon,
         color: '#282828',
-        chain: network === 'testnet' ? 545 : 747,
+        chain: network === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID,
       };
       await usewallet.setActiveWallet(walletInfo, 'evm');
     }
-    const defaultChain = network === 'testnet' ? 545 : 747;
+    const defaultChain = network === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID;
 
     setDefaultChain(defaultChain);
 

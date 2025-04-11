@@ -1,7 +1,39 @@
 import type { TransactionStatus, TransactionExecutionStatus } from '@onflow/typedefs';
 import { describe, test, expect, beforeEach, vi, beforeAll } from 'vitest';
 
+import openapiService from '@/background/service/openapi';
+
 import transaction from '../transaction';
+
+// Mock storage functions
+vi.mock('@/shared/utils/storage', () => ({
+  default: {
+    getSession: vi.fn().mockImplementation((key) => {
+      const now = Date.now();
+      const value = mockStorageState.session.get(key);
+      return Promise.resolve(
+        value
+          ? {
+              value,
+              expiry: now + 120_000, // 2 minutes from now
+            }
+          : undefined
+      );
+    }),
+    setSession: vi.fn().mockImplementation((key, value) => {
+      mockStorageState.session.set(key, value);
+      return Promise.resolve();
+    }),
+    removeSession: vi.fn().mockImplementation((key) => {
+      mockStorageState.session.delete(key);
+      return Promise.resolve();
+    }),
+    clear: vi.fn().mockImplementation(() => {
+      mockStorageState.session.clear();
+      return Promise.resolve();
+    }),
+  },
+}));
 
 // Mock storage state
 const mockStorageState = {
@@ -45,11 +77,23 @@ const createStorageApis = (storageMap: Map<string, any>) => ({
 // Mock chrome API
 const chrome = {
   i18n: {
-    getMessage: vi.fn((msg) => msg),
+    getMessage: vi.fn((msg) => {
+      const messages = {
+        PENDING: 'PENDING',
+        SEALED: 'SEALED',
+        FAILED: 'FAILED',
+      };
+      return messages[msg] || msg;
+    }),
   },
   storage: {
     local: createStorageApis(mockStorageState.local),
     session: createStorageApis(mockStorageState.session),
+    onChanged: {
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      hasListener: vi.fn(),
+    },
   },
   runtime: {
     sendMessage: vi.fn(),
@@ -114,29 +158,68 @@ describe('Transaction Service', () => {
     vi.mocked(chrome.storage.session.get).mockClear();
   });
 
+  // Add the openapi service mock
+  vi.mock('@/background/service/openapi', () => {
+    const mockData = {
+      transactions: [
+        {
+          sender: '0x1234567890abcdef',
+          receiver: '0x2234567890abcdef',
+          time: '123456789',
+          status: 'SEALED',
+          txid: '0x1234567890abcdef1234567890abcdef',
+          error: false,
+          image: 'test-image',
+          amount: '100',
+          title: 'Test Transaction',
+          token: 'FLOW',
+          type: 1,
+          transfer_type: 1,
+          additional_message: '',
+        },
+      ],
+      total: 1,
+    };
+
+    return {
+      default: {
+        getFeatureFlag: vi.fn().mockResolvedValue(false),
+        init: vi.fn().mockResolvedValue(undefined),
+        getTransfers: vi.fn().mockResolvedValue(mockData),
+      },
+    };
+  });
+
   describe('Initialization', () => {
     test('should initialize with correct default values', async () => {
-      expect(transaction.store.total).toBe(0);
-      expect(transaction.store.transactionItem.mainnet).toEqual([]);
-      expect(transaction.store.transactionItem.testnet).toEqual([]);
-      expect(transaction.store.transactionItem.crescendo).toEqual([]);
-      expect(transaction.store.pendingItem.mainnet).toEqual([]);
-      expect(transaction.store.pendingItem.testnet).toEqual([]);
-      expect(transaction.store.pendingItem.crescendo).toEqual([]);
+      // Test initialization through public methods
+      const networks = ['mainnet', 'testnet', 'crescendo'];
+      const testAddress = '0x1234567890abcdef';
+
+      for (const network of networks) {
+        const transactions = await transaction.listTransactions(network, testAddress, '', '');
+        expect(transactions).toEqual([]);
+
+        const pendingItems = await transaction.listPending(network, testAddress);
+        expect(pendingItems).toEqual([]);
+
+        const count = await transaction.getCount(network, testAddress, '', '');
+        expect(count).toBe(0);
+      }
     });
   });
 
   describe('Pending Transactions', () => {
-    test('should set pending transaction correctly', () => {
-      const txId = '0x123';
-      const address = '0xabc';
+    test('should set pending transaction correctly', async () => {
+      const txId = '0x1234567890abcdef1234567890abcdef';
+      const address = '0x1234567890abcdef';
       const network = 'mainnet';
       const icon = 'test-icon';
       const title = 'Test Transaction';
 
-      transaction.setPending(txId, address, network, icon, title);
+      await transaction.setPending(network, address, txId, icon, title);
 
-      const pendingItems = transaction.listPending(network);
+      const pendingItems = await transaction.listPending(network, address);
       expect(pendingItems).toHaveLength(1);
       expect(pendingItems[0]).toMatchObject({
         hash: txId,
@@ -148,37 +231,38 @@ describe('Transaction Service', () => {
       });
     });
 
-    test('should not add duplicate pending transactions', () => {
-      const txId = '0x123';
-      const address = '0xabc';
+    test('should not add duplicate pending transactions', async () => {
+      const txId = '0x1234567890abcdef1234567890abcdef';
+      const address = '0x1234567890abcdef';
       const network = 'mainnet';
       const icon = 'test-icon';
       const title = 'Test Transaction';
 
-      transaction.setPending(txId, address, network, icon, title);
-      transaction.setPending(txId, address, network, icon, title);
+      await transaction.setPending(network, address, txId, icon, title);
+      await transaction.setPending(network, address, txId, icon, title);
 
-      const pendingItems = transaction.listPending(network);
+      const pendingItems = await transaction.listPending(network, address);
       expect(pendingItems).toHaveLength(1);
     });
 
-    test('should update pending transaction status and handle EVM transaction IDs', () => {
-      const txId = '0x123';
+    test('should update pending transaction status and handle EVM transaction IDs', async () => {
+      const txId = '0x1234567890abcdef1234567890abcdef';
+      const address = '0x1234567890abcdef';
       const network = 'mainnet';
 
-      transaction.setPending(txId, '0xabc', network, 'icon', 'title');
+      await transaction.setPending(network, address, txId, 'icon', 'title');
 
       const status: TransactionStatus = {
         blockId: '123',
         status: 4 as TransactionExecutionStatus,
-        statusString: 'CONFIRMED',
+        statusString: 'SEALED',
         statusCode: 0,
         errorMessage: '',
         events: [
           {
             type: 'EVM.Something',
             data: {
-              hash: [1, 2, 3, 4], // This will be converted to hex
+              hash: [1, 2, 3, 4],
             },
             blockId: '123',
             blockHeight: 1,
@@ -187,43 +271,30 @@ describe('Transaction Service', () => {
             transactionIndex: 0,
             eventIndex: 0,
           },
-          {
-            type: 'EVM.SomethingElse',
-            data: {
-              hash: [5, 6, 7, 8], // This will be converted to hex
-            },
-            blockId: '123',
-            blockHeight: 1,
-            blockTimestamp: '2024-01-01T00:00:00.000Z',
-            transactionId: txId,
-            transactionIndex: 0,
-            eventIndex: 1,
-          },
         ],
       };
 
-      const updatedHash = transaction.updatePending(txId, network, status);
+      await transaction.updatePending(network, address, txId, status);
 
-      const pendingItems = transaction.listPending(network);
-      expect(pendingItems[0].status).toBe('CONFIRMED');
+      const pendingItems = await transaction.listPending(network, address);
+      expect(pendingItems[0].status).toBe('SEALED');
       expect(pendingItems[0].error).toBe(false);
       expect(pendingItems[0].cadenceTxId).toBe(txId);
-      expect(pendingItems[0].evmTxIds).toHaveLength(2);
+      expect(pendingItems[0].evmTxIds).toHaveLength(1);
       expect(pendingItems[0].evmTxIds![0]).toMatch(/^0x[0-9a-f]+$/);
-      expect(pendingItems[0].evmTxIds![1]).toMatch(/^0x[0-9a-f]+$/);
-      expect(updatedHash).toBe(`${txId}_${pendingItems[0].evmTxIds!.join('_')}`);
     });
 
-    test('should not duplicate EVM transaction IDs', () => {
-      const txId = '0x123';
+    test('should not duplicate EVM transaction IDs', async () => {
+      const txId = '0x1234567890abcdef1234567890abcdef';
+      const address = '0x1234567890abcdef';
       const network = 'mainnet';
 
-      transaction.setPending(txId, '0xabc', network, 'icon', 'title');
+      await transaction.setPending(network, address, txId, 'icon', 'title');
 
       const status: TransactionStatus = {
         blockId: '123',
         status: 4 as TransactionExecutionStatus,
-        statusString: 'CONFIRMED',
+        statusString: 'SEALED',
         statusCode: 0,
         errorMessage: '',
         events: [
@@ -254,17 +325,19 @@ describe('Transaction Service', () => {
         ],
       };
 
-      transaction.updatePending(txId, network, status);
+      await transaction.updatePending(network, address, txId, status);
 
-      const pendingItems = transaction.listPending(network);
+      const pendingItems = await transaction.listPending(network, address);
       expect(pendingItems[0].evmTxIds).toHaveLength(1);
+      expect(pendingItems[0].status).toBe('SEALED');
     });
 
-    test('should mark transaction as error when status code is 1', () => {
-      const txId = '0x123';
+    test('should mark transaction as error when status code is 1', async () => {
+      const txId = '0x1234567890abcdef1234567890abcdef';
+      const address = '0x1234567890abcdef';
       const network = 'mainnet';
 
-      transaction.setPending(txId, '0xabc', network, 'icon', 'title');
+      await transaction.setPending(network, address, txId, 'icon', 'title');
 
       const status: TransactionStatus = {
         blockId: '123',
@@ -275,48 +348,64 @@ describe('Transaction Service', () => {
         events: [],
       };
 
-      transaction.updatePending(txId, network, status);
+      await transaction.updatePending(network, address, txId, status);
 
-      const pendingItems = transaction.listPending(network);
+      const pendingItems = await transaction.listPending(network, address);
+      expect(pendingItems[0].status).toBe('FAILED');
       expect(pendingItems[0].error).toBe(true);
     });
 
-    test('should remove pending transaction', () => {
-      const txId = '0x123';
-      const address = '0xabc';
+    test('should remove pending transaction', async () => {
+      const txId = '0x1234567890abcdef1234567890abcdef';
+      const address = '0x1234567890abcdef';
       const network = 'mainnet';
 
-      transaction.setPending(txId, address, network, 'icon', 'title');
-      transaction.removePending(txId, address, network);
+      await transaction.setPending(network, address, txId, 'icon', 'title');
+      await transaction.removePending(network, address, txId);
 
-      const pendingItems = transaction.listPending(network);
+      const pendingItems = await transaction.listPending(network, address);
       expect(pendingItems).toHaveLength(0);
     });
 
-    test('should clear all pending transactions for a network', () => {
+    test('should clear all pending transactions for a network', async () => {
       const network = 'mainnet';
+      const address1 = '0x1234567890abcdef';
+      const address2 = '0x2234567890abcdef';
 
-      transaction.setPending('tx1', 'addr1', network, 'icon1', 'title1');
-      transaction.setPending('tx2', 'addr2', network, 'icon2', 'title2');
+      await transaction.setPending(
+        network,
+        address1,
+        '0x1234567890abcdef1234567890abcdef',
+        'icon1',
+        'title1'
+      );
+      await transaction.setPending(
+        network,
+        address2,
+        '0x2234567890abcdef1234567890abcdef',
+        'icon2',
+        'title2'
+      );
 
-      transaction.clearPending(network);
+      await transaction.clearPending(network, address1);
 
-      const pendingItems = transaction.listPending(network);
+      const pendingItems = await transaction.listPending(network, address1);
       expect(pendingItems).toHaveLength(0);
     });
 
-    test('should remove pending transaction when matching cadence or evm id', () => {
-      const cadenceTxId = '0x123';
+    test('should remove pending transaction when matching cadence or evm id', async () => {
+      const cadenceTxId = '0x1234567890abcdef1234567890abcdef';
+      const address = '0x1234567890abcdef';
       const network = 'mainnet';
 
       // Set up a pending transaction
-      transaction.setPending(cadenceTxId, '0xabc', network, 'icon', 'title');
+      await transaction.setPending(network, address, cadenceTxId, 'icon', 'title');
 
       // Update it with EVM transactions to create a composite hash
       const status: TransactionStatus = {
         blockId: '123',
         status: 4 as TransactionExecutionStatus,
-        statusString: 'CONFIRMED',
+        statusString: 'SEALED',
         statusCode: 0,
         errorMessage: '',
         events: [
@@ -332,44 +421,36 @@ describe('Transaction Service', () => {
             transactionIndex: 0,
             eventIndex: 0,
           },
-          {
-            type: 'EVM.SomethingElse',
-            data: {
-              hash: [5, 6, 7, 8],
-            },
-            blockId: '123',
-            blockHeight: 1,
-            blockTimestamp: '2024-01-01T00:00:00.000Z',
-            transactionId: cadenceTxId,
-            transactionIndex: 0,
-            eventIndex: 1,
-          },
         ],
       };
 
-      transaction.updatePending(cadenceTxId, network, status);
-      const pendingItems = transaction.listPending(network);
-      const evmTxId = pendingItems[0].evmTxIds![0]; // Get one of the EVM tx IDs
+      await transaction.updatePending(network, address, cadenceTxId, status);
+      const pendingItems = await transaction.listPending(network, address);
+      expect(pendingItems[0].evmTxIds).toHaveLength(1);
+      const evmTxId = pendingItems[0].evmTxIds![0];
 
       // Should remove when using cadence ID
-      transaction.removePending(cadenceTxId, '0xabc', network);
-      expect(transaction.listPending(network)).toHaveLength(0);
+      await transaction.removePending(network, address, cadenceTxId);
+      const pendingItems2 = await transaction.listPending(network, address);
+      expect(pendingItems2).toHaveLength(0);
 
       // Set up another pending transaction
-      transaction.setPending(cadenceTxId, '0xabc', network, 'icon', 'title');
-      transaction.updatePending(cadenceTxId, network, status);
+      await transaction.setPending(network, address, cadenceTxId, 'icon', 'title');
+      await transaction.updatePending(network, address, cadenceTxId, status);
 
       // Should remove when using EVM ID
-      transaction.removePending(evmTxId, '0xabc', network);
-      expect(transaction.listPending(network)).toHaveLength(0);
+      await transaction.removePending(network, address, evmTxId);
+      const pendingItems3 = await transaction.listPending(network, address);
+      expect(pendingItems3).toHaveLength(0);
     });
 
-    test('should handle large number of EVM transactions in one cadence transaction', () => {
-      const cadenceTxId = '0x123';
+    test('should handle large number of EVM transactions in one cadence transaction', async () => {
+      const cadenceTxId = '0x1234567890abcdef1234567890abcdef';
+      const address = '0x1234567890abcdef';
       const network = 'mainnet';
       const numEvmTxs = 50;
 
-      transaction.setPending(cadenceTxId, '0xabc', network, 'icon', 'title');
+      await transaction.setPending(network, address, cadenceTxId, 'icon', 'title');
 
       // Create status with 50 EVM transactions
       const events = Array.from({ length: numEvmTxs }, (_, i) => ({
@@ -388,90 +469,89 @@ describe('Transaction Service', () => {
       const status: TransactionStatus = {
         blockId: '123',
         status: 4 as TransactionExecutionStatus,
-        statusString: 'CONFIRMED',
+        statusString: 'SEALED',
         statusCode: 0,
         errorMessage: '',
         events,
       };
 
-      const updatedHash = transaction.updatePending(cadenceTxId, network, status);
+      await transaction.updatePending(network, address, cadenceTxId, status);
 
-      const pendingItems = transaction.listPending(network);
+      const pendingItems = await transaction.listPending(network, address);
       expect(pendingItems[0].evmTxIds).toHaveLength(numEvmTxs);
       expect(pendingItems[0].cadenceTxId).toBe(cadenceTxId);
-
-      // Verify the composite hash format
-      const hashParts = updatedHash.split('_');
-      expect(hashParts).toHaveLength(numEvmTxs + 1); // cadence tx id + 50 evm tx ids
-      expect(hashParts[0]).toBe(cadenceTxId);
-      hashParts.slice(1).forEach((hash) => {
-        expect(hash).toMatch(/^0x[0-9a-f]+$/);
-      });
+      expect(pendingItems[0].status).toBe('SEALED');
 
       // Verify we can still remove it using any of the IDs
-      transaction.removePending(pendingItems[0].evmTxIds![25], '0xabc', network); // Try removing using a middle EVM tx ID
-      expect(transaction.listPending(network)).toHaveLength(0);
+      await transaction.removePending(network, address, pendingItems[0].evmTxIds![25]); // Try removing using a middle EVM tx ID
+      const pendingItems2 = await transaction.listPending(network, address);
+      expect(pendingItems2).toHaveLength(0);
     });
   });
 
   describe('Transaction Management', () => {
-    test('should set transactions correctly with indexed flag', () => {
+    test('should set transactions correctly with indexed flag', async () => {
       const network = 'mainnet';
-      const mockData = {
-        transactions: [
-          {
-            sender: '0xsender',
-            receiver: '0xreceiver',
-            time: 123456789,
-            status: 'SEALED',
-            txid: '0xtx1',
-            error: false,
-            image: 'test-image',
-            amount: '100',
-            title: 'Test Transaction',
-            token: 'FLOW',
-            type: 1,
-            transfer_type: 1,
-          },
-        ],
-        total: 1,
-      };
+      const address = '0x1234567890abcdef';
 
-      transaction.setTransaction(mockData, network);
+      await transaction.loadTransactions(network, address, '', '');
 
-      const transactions = transaction.listTransactions(network);
+      const transactions = await transaction.listTransactions(network, address, '', '');
       expect(transactions).toHaveLength(1);
       expect(transactions[0]).toMatchObject({
-        sender: '0xsender',
-        receiver: '0xreceiver',
-        hash: '0xtx1',
+        sender: '0x1234567890abcdef',
+        receiver: '0x2234567890abcdef',
+        hash: '0x1234567890abcdef1234567890abcdef',
         status: 'SEALED',
         token: 'FLOW',
         indexed: true,
       });
-      expect(transaction.getCount()).toBe(1);
+      expect(await transaction.getCount(network, address, '', '')).toBe(1);
     });
 
-    test('should handle empty transaction data', () => {
+    test('should handle empty transaction data', async () => {
       const network = 'mainnet';
-      const mockData = {
+      const address = '0x1234567890abcdef';
+
+      // Override the mock for this test
+      vi.mocked(openapiService.getTransfers).mockResolvedValueOnce({
         transactions: [],
         total: 0,
-      };
+      });
 
-      transaction.setTransaction(mockData, network);
+      await transaction.loadTransactions(network, address, '', '');
 
-      const transactions = transaction.listTransactions(network);
+      const transactions = await transaction.listTransactions(network, address, '', '');
       expect(transactions).toHaveLength(0);
-      expect(transaction.getCount()).toBe(0);
-    });
-  });
-
-  describe('Expiry Management', () => {
-    test('should set and get expiry correctly', () => {
-      const expiry = Date.now();
-      transaction.setExpiry(expiry);
-      expect(transaction.getExpiry()).toBe(expiry);
+      expect(await transaction.getCount(network, address, '', '')).toBe(0);
     });
   });
 });
+
+vi.mock('@/shared/utils/cache-data-access', () => ({
+  getCachedData: vi.fn().mockImplementation(async (key) => {
+    return mockStorageState.session.get(key);
+  }),
+  setCachedData: vi.fn().mockImplementation((key, value, expiry) => {
+    mockStorageState.session.set(key, value);
+  }),
+  getValidData: vi.fn().mockImplementation(async (key) => {
+    return mockStorageState.session.get(key);
+  }),
+  getInvalidData: vi.fn().mockImplementation(async (key) => {
+    return mockStorageState.session.get(key);
+  }),
+}));
+
+vi.mock('@/background/utils/data-cache', () => ({
+  getValidData: vi.fn().mockImplementation(async (key) => {
+    return mockStorageState.session.get(key);
+  }),
+  getInvalidData: vi.fn().mockImplementation(async (key) => {
+    return mockStorageState.session.get(key);
+  }),
+  setCachedData: vi.fn().mockImplementation((key, value, expiry) => {
+    mockStorageState.session.set(key, value);
+  }),
+  registerRefreshListener: vi.fn(),
+}));

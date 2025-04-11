@@ -34,6 +34,7 @@ import {
   googleSafeHostService,
   mixpanelTrack,
 } from './service';
+import session from './service/session';
 import { getFirbaseConfig } from './utils/firebaseConfig';
 import { setEnvironmentBadge } from './utils/setEnvironmentBadge';
 import { storage } from './webapi';

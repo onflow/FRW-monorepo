@@ -189,7 +189,7 @@
   {
     "name": "register",
     "isAsync": true,
-    "fullBody": "async (account_key, username) => {\n        // Track the time until account_created is called\n        _index__WEBPACK_IMPORTED_MODULE_15__.mixpanelTrack.time('account_created');\n        const config = this.store.config.register;\n        const data = await this.sendRequest(config.method, config.path, {}, {\n            account_key,\n            username,\n        });\n        await this._signWithCustom(data.data.custom_token);\n        await _background_webapi__WEBPACK_IMPORTED_MODULE_6__.storage.set('currentId', data.data.id);\n        // Track the registration\n        _index__WEBPACK_IMPORTED_MODULE_15__.mixpanelTrack.track('account_created', {\n            public_key: account_key.public_key,\n            sign_algo: (0,_shared_utils_algo__WEBPACK_IMPORTED_MODULE_8__.getStringFromSignAlgo)(account_key.sign_algo),\n            hash_algo: (0,_shared_utils_algo__WEBPACK_IMPORTED_MODULE_8__.getStringFromHashAlgo)(account_key.hash_algo),\n        });\n        return data;\n    }",
+    "fullBody": "async (account_key, username) => {\n        // Track the time until account_created is called\n        _index__WEBPACK_IMPORTED_MODULE_15__.mixpanelTrack.time('account_created');\n        const config = this.store.config.register;\n        const data = await this.sendRequest(config.method, config.path, {}, {\n            account_key,\n            username,\n        });\n        await this._signWithCustom(data.data.custom_token);\n        await _background_webapi__WEBPACK_IMPORTED_MODULE_6__.storage.set(CURRENT_ID_KEY, data.data.id);\n        // Track the registration\n        _index__WEBPACK_IMPORTED_MODULE_15__.mixpanelTrack.track('account_created', {\n            public_key: account_key.public_key,\n            sign_algo: (0,_shared_utils_algo__WEBPACK_IMPORTED_MODULE_8__.getStringFromSignAlgo)(account_key.sign_algo),\n            hash_algo: (0,_shared_utils_algo__WEBPACK_IMPORTED_MODULE_8__.getStringFromHashAlgo)(account_key.hash_algo),\n        });\n        return data;\n    }",
     "usesSendRequest": true,
     "usesFetchDirectly": false,
     "basicSignature": "async (account_key, username) =>",
@@ -198,7 +198,7 @@
   {
     "name": "loginV3",
     "isAsync": true,
-    "fullBody": "async (account_key, device_info, signature, replaceUser = true) => {\n        const config = this.store.config.loginv3;\n        const result = await this.sendRequest(config.method, config.path, {}, { account_key, device_info, signature });\n        if (!result.data) {\n            throw new Error('NoUserFound');\n        }\n        if (replaceUser) {\n            await this._signWithCustom(result.data.custom_token);\n            await _background_webapi__WEBPACK_IMPORTED_MODULE_6__.storage.set('currentId', result.data.id);\n        }\n        return result;\n    }",
+    "fullBody": "async (account_key, device_info, signature, replaceUser = true) => {\n        const config = this.store.config.loginv3;\n        const result = await this.sendRequest(config.method, config.path, {}, { account_key, device_info, signature });\n        if (!result.data) {\n            throw new Error('NoUserFound');\n        }\n        if (replaceUser) {\n            await this._signWithCustom(result.data.custom_token);\n            await _background_webapi__WEBPACK_IMPORTED_MODULE_6__.storage.set(CURRENT_ID_KEY, result.data.id);\n        }\n        return result;\n    }",
     "usesSendRequest": true,
     "usesFetchDirectly": false,
     "basicSignature": "async (account_key, device_info, signature, replaceUser = true) =>",
@@ -207,7 +207,7 @@
   {
     "name": "proxyKey",
     "isAsync": true,
-    "fullBody": "async (token, userId) => {\n        if (token) {\n            await this._signWithCustom(token);\n            await _background_webapi__WEBPACK_IMPORTED_MODULE_6__.storage.set('currentId', userId);\n        }\n        return;\n    }",
+    "fullBody": "async (token, userId) => {\n        if (token) {\n            await this._signWithCustom(token);\n            await _background_webapi__WEBPACK_IMPORTED_MODULE_6__.storage.set(CURRENT_ID_KEY, userId);\n        }\n        return;\n    }",
     "usesSendRequest": false,
     "usesFetchDirectly": false,
     "basicSignature": "async (token, userId) =>",
@@ -225,7 +225,7 @@
   {
     "name": "importKey",
     "isAsync": true,
-    "fullBody": "async (account_key, device_info, username, backup_info, address, replaceUser = true) => {\n        const config = this.store.config.importKey;\n        const result = await this.sendRequest(config.method, config.path, {}, { username, address, account_key, device_info, backup_info });\n        if (!result.data) {\n            throw new Error('NoUserFound');\n        }\n        if (replaceUser) {\n            await this._signWithCustom(result.data.custom_token);\n            await _background_webapi__WEBPACK_IMPORTED_MODULE_6__.storage.set('currentId', result.data.id);\n        }\n        return result;\n    }",
+    "fullBody": "async (account_key, device_info, username, backup_info, address, replaceUser = true) => {\n        const config = this.store.config.importKey;\n        const result = await this.sendRequest(config.method, config.path, {}, { username, address, account_key, device_info, backup_info });\n        if (!result.data) {\n            throw new Error('NoUserFound');\n        }\n        if (replaceUser) {\n            await this._signWithCustom(result.data.custom_token);\n            await _background_webapi__WEBPACK_IMPORTED_MODULE_6__.storage.set(CURRENT_ID_KEY, result.data.id);\n        }\n        return result;\n    }",
     "usesSendRequest": true,
     "usesFetchDirectly": false,
     "basicSignature": "async (account_key, device_info, username, backup_info, address, replaceUser = true) =>",

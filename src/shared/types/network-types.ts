@@ -86,11 +86,39 @@ export interface FlowTokenStoragePath {
   receiver: string;
 }
 
-export enum FlowNetwork {
-  mainnet = 'mainnet',
-  testnet = 'testnet',
-  crescendo = 'crescendo',
-}
+export type FlowNetwork = 'mainnet' | 'testnet' | 'crescendo';
+export const isValidNetwork = (network: string): network is FlowNetwork => {
+  return network === 'mainnet' || network === 'testnet' || network === 'crescendo';
+};
+export const MAINNET_NETWORK: FlowNetwork = 'mainnet';
+export const TESTNET_NETWORK: FlowNetwork = 'testnet';
+
+export type FlowChainId = 747 | 545;
+
+export const MAINNET_CHAIN_ID: FlowChainId = 747;
+export const TESTNET_CHAIN_ID: FlowChainId = 545;
+
+export const networkToChainId = (network: string): FlowChainId => {
+  switch (network) {
+    case MAINNET_NETWORK:
+      return MAINNET_CHAIN_ID;
+    case TESTNET_NETWORK:
+      return TESTNET_CHAIN_ID;
+    default:
+      throw new Error(`Unknown network: ${network}`);
+  }
+};
+
+export const chainIdToNetwork = (chainId: number): FlowNetwork => {
+  switch (chainId) {
+    case MAINNET_CHAIN_ID:
+      return MAINNET_NETWORK;
+    case TESTNET_CHAIN_ID:
+      return TESTNET_NETWORK;
+    default:
+      throw new Error(`Unknown chainId: ${chainId}`);
+  }
+};
 
 export enum Period {
   oneDay = '1D',

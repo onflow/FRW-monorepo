@@ -21,11 +21,13 @@ import type { UserInfoResponse } from '@/shared/types/network-types';
 import {
   type LoggedInAccount,
   type LoggedInAccountWithIndex,
-  type ActiveChildType,
+  type ActiveChildType_depreciated,
   type WalletAccount,
   type ChildAccountMap,
+  type MainAccount,
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
+import { useAccountBalance } from '@/ui/hooks/use-account-hooks';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import importIcon from 'ui/FRWAssets/svg/importIcon.svg';
 import popLock from 'ui/FRWAssets/svg/popLock.svg';
@@ -53,16 +55,17 @@ interface MenuDrawerProps {
   userInfo: UserInfoResponse | null;
   drawer: boolean;
   toggleDrawer: () => void;
-  otherAccounts: LoggedInAccount[];
-  switchAccount: (account: LoggedInAccountWithIndex) => Promise<void>;
+  otherAccounts: MainAccount[];
+  switchAccount: (profileId: string) => Promise<void>;
   togglePop: () => void;
   walletList: WalletAccount[];
-  childAccounts: ChildAccountMap | null;
+  childAccounts: WalletAccount[] | null;
+  profileIds: string[];
   current: WalletAccount;
   createWalletList: (props: WalletAccount) => React.ReactNode;
   setWallets: (
     walletInfo: WalletAccount,
-    key: ActiveChildType | null,
+    key: ActiveChildType_depreciated | null,
     index?: number | null
   ) => Promise<void>;
   currentNetwork: string;
@@ -77,9 +80,7 @@ const MenuDrawer = (props: MenuDrawerProps) => {
   const usewallet = useWallet();
   const history = useHistory();
   const classes = useStyles();
-  const [evmMode, setEvmMode] = useState(true);
-  const [isEvm, setIsEvm] = useState(false);
-  const [evmBalance, setEvmBalance] = useState(0);
+  const evmBalance = useAccountBalance(props.currentNetwork, props.evmWallet.address);
   const { clearProfileData } = useProfiles();
 
   interface EvmADDComponentProps {
@@ -119,33 +120,7 @@ const MenuDrawer = (props: MenuDrawerProps) => {
     history.push('/dashboard/enable');
   };
 
-  const checkEvmMode = useCallback(async () => {
-    const activeChild = await usewallet.getActiveWallet();
-    if (activeChild === 'evm') {
-      setIsEvm(true);
-    } else {
-      setIsEvm(false);
-    }
-    setEvmMode(true);
-  }, [usewallet]);
-
-  const getEvmAddress = useCallback(async () => {
-    if (isValidEthereumAddress(props.evmWallet.address)) {
-      const result = await usewallet.getEvmBalance(props.evmWallet.address);
-      const readBalance = parseFloat(result) / 1e18;
-      setEvmBalance(readBalance);
-    }
-  }, [props.evmWallet, usewallet]);
-
   const hasChildAccounts = props.childAccounts && Object.keys(props.childAccounts).length > 0;
-
-  useEffect(() => {
-    checkEvmMode();
-  }, [checkEvmMode]);
-
-  useEffect(() => {
-    getEvmAddress();
-  }, [getEvmAddress, props.evmWallet]);
 
   return (
     <Drawer
@@ -197,8 +172,8 @@ const MenuDrawer = (props: MenuDrawerProps) => {
             </Box>
           </Box>
         </ListItem>
-        {evmMode && !props.evmLoading && !isValidEthereumAddress(props.evmWallet.address) && (
-          <ListItem sx={{ display: 'flex', justifyCOntent: 'space-between', padding: '16px' }}>
+        {!props.evmLoading && !isValidEthereumAddress(props.evmWallet.address) && (
+          <ListItem sx={{ display: 'flex', justifyContent: 'space-between', padding: '16px' }}>
             <ListItemButton
               sx={{
                 borderRadius: '12px',
@@ -282,7 +257,7 @@ const MenuDrawer = (props: MenuDrawerProps) => {
               <ListItem
                 sx={{
                   display: 'flex',
-                  justifyCOntent: 'space-between',
+                  justifyContent: 'space-between',
                   padding: '16px 0 0',
                   cursor: 'pointer',
                 }}
@@ -330,7 +305,11 @@ const MenuDrawer = (props: MenuDrawerProps) => {
                       component="span"
                       fontWeight={'semi-bold'}
                       display="flex"
-                      color={isEvm ? 'text.title' : 'text.nonselect'}
+                      color={
+                        props.evmWallet.address === props.current.address
+                          ? 'text.title'
+                          : 'text.nonselect'
+                      }
                     >
                       <Typography variant="body1" component="span" color="#FFF" fontSize={'12px'}>
                         {props.evmWallet.name}
@@ -352,7 +331,7 @@ const MenuDrawer = (props: MenuDrawerProps) => {
                       >
                         EVM
                       </Typography>
-                      {isEvm && (
+                      {props.evmWallet.address === props.current.address && (
                         <ListItemIcon style={{ display: 'flex', alignItems: 'center' }}>
                           <FiberManualRecordIcon
                             style={{
@@ -364,14 +343,14 @@ const MenuDrawer = (props: MenuDrawerProps) => {
                         </ListItemIcon>
                       )}
                     </Typography>
-                    <EvmADDComponent myString={evmBalance} />
+                    <EvmADDComponent myString={evmBalance || '0.00000000'} />
                   </Box>
                 </ListItemButton>
               </ListItem>
             )}
 
             {props.childAccounts &&
-              Object.keys(props.childAccounts).map((key, index) => (
+              props.childAccounts.map((childAccount, index) => (
                 <ListItem
                   sx={{
                     display: 'flex',
@@ -386,17 +365,8 @@ const MenuDrawer = (props: MenuDrawerProps) => {
                   onClick={() =>
                     props.childAccounts &&
                     props.setWallets(
-                      {
-                        name: props.childAccounts[key]?.name ?? key,
-                        address: key,
-                        chain: props.current.chain,
-                        id: 1,
-                        icon:
-                          props.childAccounts?.[key]?.thumbnail?.url ??
-                          'https://lilico.app/placeholder-2.0.png',
-                        color: '#282828',
-                      },
-                      key as ActiveChildType | null
+                      childAccount,
+                      childAccount.address as ActiveChildType_depreciated | null
                     )
                   }
                 >
@@ -408,14 +378,13 @@ const MenuDrawer = (props: MenuDrawerProps) => {
                       alignItems: 'center',
                       background: 'none !important',
                     }}
-                    className={props.current['address'] === key ? classes.active : ''}
+                    className={
+                      props.current['address'] === childAccount.address ? classes.active : ''
+                    }
                   >
                     <CardMedia
                       component="img"
-                      image={
-                        props.childAccounts?.[key]?.thumbnail?.url ??
-                        'https://lilico.app/placeholder-2.0.png'
-                      }
+                      image={childAccount.icon}
                       sx={{
                         height: '32px',
                         width: '32px',
@@ -431,7 +400,11 @@ const MenuDrawer = (props: MenuDrawerProps) => {
                         component="span"
                         fontWeight={'semi-bold'}
                         display="flex"
-                        color={props.current['address'] === key ? 'text.title' : 'text.nonselect'}
+                        color={
+                          props.current['address'] === childAccount.address
+                            ? 'text.title'
+                            : 'text.nonselect'
+                        }
                       >
                         <Typography
                           variant="body1"
@@ -439,9 +412,9 @@ const MenuDrawer = (props: MenuDrawerProps) => {
                           color="#E6E6E6"
                           fontSize={'12px'}
                         >
-                          {props.childAccounts?.[key]?.name ?? key}
+                          {childAccount.name}
                         </Typography>
-                        {props.current['address'] === key && (
+                        {props.current['address'] === childAccount.address && (
                           <ListItemIcon sx={{ display: 'flex', alignItems: 'center' }}>
                             <FiberManualRecordIcon
                               sx={{
@@ -460,7 +433,7 @@ const MenuDrawer = (props: MenuDrawerProps) => {
                         color={'text.nonselect'}
                         sx={{ fontSize: '12px', textTransform: 'lowercase' }}
                       >
-                        {key}
+                        {childAccount.address}
                       </Typography>
                     </Box>
                   </ListItemButton>

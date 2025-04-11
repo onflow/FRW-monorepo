@@ -5,7 +5,7 @@ import { storage } from '@/background/webapi';
 import { type Currency, DEFAULT_CURRENCY } from '@/shared/types/wallet-types';
 import { createPersistStore } from 'background/utils';
 
-import { FlowNetwork } from '../../shared/types/network-types';
+import { type FlowNetwork, MAINNET_NETWORK } from '../../shared/types/network-types';
 
 import { keyringService, sessionService, i18n } from './index';
 
@@ -89,7 +89,7 @@ class PreferenceService {
         pinnedChain: [],
         // addedToken: {},
         isDeveloperModeEnabled: isDeveloperModeEnabled || false,
-        network: FlowNetwork.mainnet,
+        network: MAINNET_NETWORK,
         isFreeGasFeeEnabled: false,
         displayCurrency: DEFAULT_CURRENCY,
       },

@@ -15,7 +15,7 @@ vi.mock('react', async () => {
 });
 
 // Mock storage module - must be defined before the vi.mock call
-vi.mock('@/background/webapi/storage', () => {
+vi.mock('@/shared/utils/storage', () => {
   return {
     default: {
       get: vi.fn().mockImplementation((key) => {
@@ -37,8 +37,8 @@ vi.mock('@/background/webapi/storage', () => {
   };
 });
 
-import storage from '@/background/webapi/storage';
-import { userWalletsKey } from '@/shared/utils/data-persist-keys';
+import storage from '@/shared/utils/storage';
+import { userWalletsKey } from '@/shared/utils/user-data-keys';
 
 import { useNetwork } from '../useNetworkHook';
 

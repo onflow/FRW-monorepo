@@ -9,7 +9,10 @@ import { useHistory, useParams } from 'react-router-dom';
 import { storage } from '@/background/webapi';
 import type { CoinItem, ExtendedTokenInfo } from '@/shared/types/coin-types';
 import type { PriceProvider } from '@/shared/types/network-types';
-import { type ActiveChildType } from '@/shared/types/wallet-types';
+import {
+  type ActiveAccountType,
+  type ActiveChildType_depreciated,
+} from '@/shared/types/wallet-types';
 import StorageUsageCard from '@/ui/FRWComponent/StorageUsageCard';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -53,7 +56,7 @@ const TokenDetail = () => {
   const [walletName, setCurrentWallet] = useState({ name: '' });
   const [tokenInfo, setTokenInfo] = useState<CoinItem | undefined>(undefined);
   const [providers, setProviders] = useState<PriceProvider[]>([]);
-  const [childType, setChildType] = useState<ActiveChildType>(null);
+  const [accountType, setAccountType] = useState<ActiveAccountType>('main');
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleMenuToggle = () => {
@@ -148,13 +151,13 @@ const TokenDetail = () => {
 
   const loadNetwork = useCallback(async () => {
     const network = await usewallet.getNetwork();
-    setCurrentWallet(currentWallet);
+    setCurrentWallet(currentWallet ?? { name: '' });
     setNetwork(network);
   }, [usewallet, currentWallet]);
 
   const requestChildType = useCallback(async () => {
-    const result = await usewallet.getActiveWallet();
-    setChildType(result);
+    const result = await usewallet.getActiveAccountType();
+    setAccountType(result);
   }, [usewallet]);
 
   const handleMoveOpen = () => {
@@ -204,7 +207,8 @@ const TokenDetail = () => {
               setAccessible={setAccessible}
               accessible={accessible}
               tokenInfo={tokenInfo}
-              childType={childType}
+              accountType={accountType}
+              tokenId={tokenId}
             />
           )}
           {token === 'flow' && <StackingCard />}

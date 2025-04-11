@@ -88,8 +88,7 @@ const clear = async () => {
 };
 
 const clearSession = async () => {
-  // @ts-ignore
-  await chrome.storage.session?.clear();
+  await chrome.storage.session.clear();
 };
 
 const addStorageListener = (

@@ -19,11 +19,10 @@ import { makeStyles } from '@mui/styles';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
-import { storage } from '@/background/webapi';
 import {
   type WalletAccount,
   type WalletAddress,
-  type ActiveChildType,
+  type ActiveChildType_depreciated,
   type LoggedInAccountWithIndex,
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
@@ -35,11 +34,11 @@ import { useWallet, formatAddress, useWalletLoaded } from 'ui/utils';
 
 import IconCopy from '../../../components/iconfont/IconCopy';
 
+import MainAccountsComponent from './Components/MainAccountsComponent';
 import MenuDrawer from './Components/MenuDrawer';
 import NewsView from './Components/NewsView';
 import Popup from './Components/Popup';
 import SwitchAccountCover from './Components/SwitchAccountCover';
-import WalletFunction from './Components/WalletFunction';
 
 const useStyles = makeStyles(() => ({
   appBar: {
@@ -72,9 +71,9 @@ const Header = ({ _loading = false }) => {
     evmLoading,
     userInfo,
     otherAccounts,
-    loggedInAccounts,
     mainAddressLoading,
     clearProfileData,
+    profileIds,
   } = useProfiles();
 
   const [drawer, setDrawer] = useState(false);
@@ -117,24 +116,20 @@ const Header = ({ _loading = false }) => {
   }, [history, location.pathname]);
 
   const switchAccount = useCallback(
-    async (account: LoggedInAccountWithIndex) => {
+    async (profileId: string) => {
       setSwitchLoading(true);
       setPop(false);
       setDrawer(false);
       try {
-        const switchingTo = 'mainnet';
+        //  const switchingTo = 'mainnet';
         // Note that currentAccountIndex is only used in keyring for old accounts that don't have an id stored in the keyring
         // currentId always takes precedence
         // NOTE: TO FIX it also should be set to the index of the account in the keyring array, NOT the index in the loggedInAccounts array
-        if (account.id) {
-          await storage.set('currentId', account.id);
-        } else {
-          await storage.set('currentId', '');
-        }
-        await usewallet.signOutWallet();
-        await usewallet.clearWallet();
-        await usewallet.switchProfile(account.id);
-        await usewallet.switchNetwork(switchingTo);
+
+        // await usewallet.signOutWallet();
+        // await usewallet.clearWallet();
+        await usewallet.switchProfile(profileId);
+        // await usewallet.switchNetwork(switchingTo);
         clearProfileData();
       } catch (error) {
         console.error('Error during account switch:', error);
@@ -150,14 +145,15 @@ const Header = ({ _loading = false }) => {
 
   const setWallets = async (
     walletInfo: WalletAccount,
-    key: ActiveChildType | null,
+    key: ActiveChildType_depreciated | null,
     index: number | null = null
   ) => {
     await usewallet.setActiveWallet(walletInfo, key, index);
 
     // Navigate if needed
     history.push('/dashboard');
-    window.location.reload();
+    setDrawer(false);
+    //  window.location.reload();
   };
 
   const transactionHandler = (request) => {
@@ -251,7 +247,8 @@ const Header = ({ _loading = false }) => {
   const createWalletList = (props: WalletAccount) => {
     return (
       <List component="nav" key={props.id} sx={{ mb: '0', padding: 0 }}>
-        <WalletFunction
+        <MainAccountsComponent
+          network={network}
           props_id={props.id}
           name={props.name}
           address={props.address as WalletAddress}
@@ -405,50 +402,53 @@ const Header = ({ _loading = false }) => {
           }}
         >
           <Tooltip title={chrome.i18n.getMessage('Copy__Address')} arrow>
-            <Button
-              disabled={!haveAddress}
-              onClick={() => {
-                if (haveAddress) {
-                  navigator.clipboard.writeText(props.address);
-                }
-              }}
-              variant="text"
-            >
-              <Box
-                component="div"
-                sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+            <span>
+              <Button
+                data-testid="copy-address-button"
+                disabled={!haveAddress}
+                onClick={() => {
+                  if (haveAddress) {
+                    navigator.clipboard.writeText(props.address);
+                  }
+                }}
+                variant="text"
               >
-                <Typography
-                  variant="overline"
-                  color="text"
-                  align="center"
-                  display="block"
-                  sx={{ lineHeight: '1.5' }}
+                <Box
+                  component="div"
+                  sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
                 >
-                  {haveAddress ? (
-                    `${props.name === 'Flow' ? 'Wallet' : props.name}${
-                      isValidEthereumAddress(props.address) ? ' EVM' : ''
-                    }`
-                  ) : (
-                    <Skeleton variant="text" width={40} />
-                  )}
-                </Typography>
-                <Box sx={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
                   <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ textTransform: 'none' }}
+                    variant="overline"
+                    color="text"
+                    align="center"
+                    display="block"
+                    sx={{ lineHeight: '1.5' }}
                   >
                     {haveAddress ? (
-                      formatAddress(props.address)
+                      `${props.name === 'Flow' ? 'Wallet' : props.name}${
+                        isValidEthereumAddress(props.address) ? ' EVM' : ''
+                      }`
                     ) : (
-                      <Skeleton variant="text" width={120} />
+                      <Skeleton variant="text" width={40} />
                     )}
                   </Typography>
-                  <IconCopy fill="icon.navi" width="12px" />
+                  <Box sx={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ textTransform: 'none' }}
+                    >
+                      {haveAddress ? (
+                        formatAddress(props.address)
+                      ) : (
+                        <Skeleton variant="text" width={120} />
+                      )}
+                    </Typography>
+                    <IconCopy fill="icon.navi" width="12px" />
+                  </Box>
                 </Box>
-              </Box>
-            </Button>
+              </Button>
+            </span>
           </Tooltip>
         </Box>
 
@@ -519,15 +519,16 @@ const Header = ({ _loading = false }) => {
         <Toolbar sx={{ px: '12px', backgroundColor: '#282828' }}>
           {walletList && (
             <MenuDrawer
-              userInfo={userInfo}
+              userInfo={userInfo || null}
               drawer={drawer}
               toggleDrawer={toggleDrawer}
               otherAccounts={otherAccounts}
               switchAccount={switchAccount}
               togglePop={togglePop}
               walletList={walletList}
-              childAccounts={childAccounts}
+              childAccounts={childAccounts || null}
               current={currentWallet}
+              profileIds={profileIds || []}
               createWalletList={createWalletList}
               setWallets={setWallets}
               currentNetwork={network}
@@ -551,7 +552,7 @@ const Header = ({ _loading = false }) => {
               userInfo={userInfo!}
               current={currentWallet}
               switchAccount={switchAccount}
-              loggedInAccounts={loggedInAccounts}
+              profileIds={profileIds || []}
               switchLoading={switchLoading}
             />
           )}

@@ -8,14 +8,13 @@ import { saveAs } from 'file-saver';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
-import nft from '@/background/service/nft';
 import { type PostMedia, MatchMediaType } from '@/ui/utils/url';
 import fallback from 'ui/FRWAssets/image/errorImage.png';
 import DetailMove from 'ui/FRWAssets/svg/detailMove.svg';
 import SendIcon from 'ui/FRWAssets/svg/detailSend.svg';
 import { useWallet } from 'ui/utils';
 
-import MoveNftConfirmation from './SendNFT/MoveNftConfirmation';
+import MoveNftFromEvm from './SendNFT/MoveNftFromEvm';
 
 const useStyles = makeStyles(() => ({
   pageContainer: {
@@ -132,7 +131,7 @@ const Detail = () => {
     const userInfo = await usewallet.getUserInfo(false);
     const currentAddress = await usewallet.getCurrentAddress();
     const evmAddress = await usewallet.getEvmAddress();
-    const isEvm = await usewallet.getActiveWallet();
+    const accountType = await usewallet.getActiveAccountType();
     const userTemplate = {
       avatar: userInfo.avatar,
       domain: {
@@ -143,7 +142,7 @@ const Detail = () => {
 
     let userOne, userTwo;
 
-    if (isEvm === 'evm') {
+    if (accountType === 'evm') {
       userOne = {
         ...userTemplate,
         address: evmAddress,
@@ -489,7 +488,7 @@ const Detail = () => {
             </Button>
           </Box>
         )}
-        <MoveNftConfirmation
+        <MoveNftFromEvm
           isConfirmationOpen={moveOpen}
           data={{
             contact: contactTwo,

@@ -91,6 +91,7 @@ jobs:
           API_NEWS_PATH="${{ vars.API_NEWS_PATH }}"
           API_CONFIG_PATH="${{ vars.API_CONFIG_PATH }}"
           API_BASE_URL="${{ vars.API_BASE_URL }}"
+          API_GO_SERVER_URL="${{ vars.API_GO_SERVER_URL }}"
           # manifest
           MANIFEST_KEY="${{ secrets.MANIFEST_KEY }}"
           OAUTH2_CLIENT_ID="${{ secrets.OAUTH2_CLIENT_ID }}"
@@ -103,7 +104,9 @@ jobs:
           TEST_SEED_PHRASE_RECEIVER="${{ secrets.TEST_SEED_PHRASE_RECEIVER }}"
           TEST_SEED_PHRASE_SENDER="${{ secrets.TEST_SEED_PHRASE_SENDER }}"
           TEST_SENDER_ADDR="${{ secrets.TEST_SENDER_ADDR }}"
+          TEST_SENDER_NICKNAME="${{ vars.TEST_SENDER_NICKNAME }}"
           TEST_RECEIVER_ADDR="${{ secrets.TEST_RECEIVER_ADDR }}"
+          TEST_RECEIVER_NICKNAME="${{ vars.TEST_RECEIVER_NICKNAME }}"
           TEST_RECEIVER_EVM_ADDR="${{ secrets.TEST_RECEIVER_EVM_ADDR }}"
           TEST_RECEIVER_METAMASK_EVM_ADDR="${{ secrets.TEST_RECEIVER_METAMASK_EVM_ADDR }}"
           EOF
@@ -113,7 +116,7 @@ jobs:
           create_env_file ".env.pro"
 
           # Create .env.dev if environment is development
-          if [[ "${{ needs.determine-env.outputs.env_name }}" == "development" ]]; then
+          if [[ "${{ needs.determine-env.outputs.env_name }}" == "development" || "${{ needs.determine-env.outputs.env_name }}" == "staging" ]]; then
             create_env_file ".env.dev"
           fi
 
@@ -122,7 +125,7 @@ jobs:
 
       - name: Build
         run: |
-          if [[ "${{ needs.determine-env.outputs.env_name }}" == "development" ]]; then
+          if [[ "${{ needs.determine-env.outputs.env_name }}" == "development" || "${{ needs.determine-env.outputs.env_name }}" == "staging" ]]; then
             pnpm run build:dev-ci
           else
             pnpm run build:ci
@@ -175,7 +178,9 @@ jobs:
           TEST_SEED_PHRASE_RECEIVER="${{ secrets.TEST_SEED_PHRASE_RECEIVER }}"
           TEST_SEED_PHRASE_SENDER="${{ secrets.TEST_SEED_PHRASE_SENDER }}"
           TEST_SENDER_ADDR="${{ secrets.TEST_SENDER_ADDR }}"
+          TEST_SENDER_NICKNAME="${{ vars.TEST_SENDER_NICKNAME }}"
           TEST_RECEIVER_ADDR="${{ secrets.TEST_RECEIVER_ADDR }}"
+          TEST_RECEIVER_NICKNAME="${{ vars.TEST_RECEIVER_NICKNAME }}"
           TEST_SENDER_EVM_ADDR="${{ secrets.TEST_SENDER_EVM_ADDR }}"
           TEST_RECEIVER_EVM_ADDR="${{ secrets.TEST_RECEIVER_EVM_ADDR }}"
           TEST_RECEIVER_METAMASK_EVM_ADDR="${{ secrets.TEST_RECEIVER_METAMASK_EVM_ADDR }}"

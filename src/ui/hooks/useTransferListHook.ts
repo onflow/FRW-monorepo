@@ -1,141 +1,52 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import storage, { type AreaName, type StorageChange } from '@/background/webapi/storage';
+import { transferListKey, type TransferListStore } from '@/shared/utils/cache-data-keys';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useTransferListStore } from '@/ui/stores/transferListStore';
-import { useWallet, debug } from '@/ui/utils';
+import { useWallet } from '@/ui/utils';
+
+import { useCachedData } from './use-data';
+import { useNetwork } from './useNetworkHook';
 
 export const useTransferList = () => {
-  const usewallet = useWallet();
-  const mountedRef = useRef(true);
-  const pendingCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  const setTransactions = useTransferListStore((state) => state.setTransactions);
-  const setMonitor = useTransferListStore((state) => state.setMonitor);
-  const setFlowscanURL = useTransferListStore((state) => state.setFlowscanURL);
-  const setViewSourceURL = useTransferListStore((state) => state.setViewSourceURL);
-  const setLoading = useTransferListStore((state) => state.setLoading);
-  const setShowButton = useTransferListStore((state) => state.setShowButton);
-  const setCount = useTransferListStore((state) => state.setCount);
-
-  const transactions = useTransferListStore((state) => state.transactions);
-  const monitor = useTransferListStore((state) => state.monitor);
-  const flowscanURL = useTransferListStore((state) => state.flowscanURL);
-  const viewSourceURL = useTransferListStore((state) => state.viewSourceURL);
-  const loading = useTransferListStore((state) => state.loading);
-  const showButton = useTransferListStore((state) => state.showButton);
-  const count = useTransferListStore((state) => state.count);
-  const [occupied, setOccupied] = useState(false);
+  const wallet = useWallet();
+  const { network } = useNetwork();
   const { currentWallet } = useProfiles();
 
-  // Setup localStorage event listener
-  useEffect(() => {
-    // Function to check pending transactions
-    const checkPendingTransactions = async () => {
-      try {
-        const pending = await usewallet.getPendingTx();
-        debug('Checking pending transactions', { count: pending.length });
-        // If there are no pending transactions, clear the interval
-        if (pending.length === 0 && pendingCheckIntervalRef.current) {
-          debug('No pending transactions, clearing check interval');
-          clearInterval(pendingCheckIntervalRef.current);
-          pendingCheckIntervalRef.current = null;
-        }
-        if (mountedRef.current) {
-          setOccupied(pending.length > 0);
-        }
-      } catch (error) {
-        console.error('Error checking pending transactions:', error);
-      }
-    };
+  const currentAddress = currentWallet?.address;
 
-    // Initial check
-    checkPendingTransactions();
-
-    // Set up interval to periodically check for pending transactions
-    if (!pendingCheckIntervalRef.current) {
-      pendingCheckIntervalRef.current = setInterval(checkPendingTransactions, 2000);
-    }
-
-    // Listen for storage events (when localStorage changes in other tabs)
-    const handleStorageChange = (
-      changes: { [key: string]: StorageChange },
-      namespace: AreaName
-    ) => {
-      if (namespace === 'local') {
-        debug('Storage change detected', {
-          changes,
-          namespace,
-        });
-        if (changes['transaction'] || changes['transaction'] === null) {
-          debug(
-            'useTransferListHook',
-            'Transaction storage changed, checking pending transactions'
-          );
-          checkPendingTransactions();
-        }
-      }
-    };
-
-    storage.addStorageListener(handleStorageChange);
-
-    // Cleanup
-    return () => {
-      mountedRef.current = false;
-      storage.removeStorageListener(handleStorageChange);
-    };
-  }, [usewallet]);
-
-  const fetchTransactions = useCallback(
-    async (forceRefresh = false) => {
-      setLoading(true);
-      const monitor = await usewallet.getMonitor();
-      setMonitor(monitor);
-      try {
-        const url = await usewallet.getFlowscanUrl();
-        const viewSourceUrl = await usewallet.getViewSourceUrl();
-        setFlowscanURL(url);
-        setViewSourceURL(viewSourceUrl);
-        const data = await usewallet.getTransactions(
-          currentWallet.address!,
-          15,
-          0,
-          60000,
-          forceRefresh
-        );
-
-        setLoading(false);
-        if (data.count > 0) {
-          setCount(data.count.toString());
-          setShowButton(data.count > 15);
-        }
-        setTransactions(data.list);
-      } catch {
-        setLoading(false);
-      }
-    },
-    [
-      usewallet,
-      setMonitor,
-      setFlowscanURL,
-      setViewSourceURL,
-      setTransactions,
-      setCount,
-      setShowButton,
-      setLoading,
-      currentWallet,
-    ]
+  const transferListStore = useCachedData<TransferListStore>(
+    network && currentAddress ? transferListKey(network, currentAddress, '0', '15') : null
   );
 
+  const [monitor, setMonitor] = useState<string | null>(null);
+  const [flowscanURL, setFlowscanURL] = useState<string | null>(null);
+  const [viewSourceURL, setViewSourceURL] = useState<string | null>(null);
+  useEffect(() => {
+    let mounted = true;
+    const fetchSettings = async () => {
+      const monitor = await wallet.getMonitor();
+      const url = await wallet.getFlowscanUrl();
+      const viewSourceUrl = await wallet.getViewSourceUrl();
+      if (mounted) {
+        setMonitor(monitor);
+        setFlowscanURL(url);
+        setViewSourceURL(viewSourceUrl);
+      }
+    };
+    fetchSettings();
+    return () => {
+      mounted = false;
+    };
+  }, [wallet]);
+
   return {
-    fetchTransactions,
-    occupied,
-    transactions,
+    occupied: !!transferListStore?.pendingCount,
+    transactions: transferListStore?.list || [],
     monitor,
     flowscanURL,
     viewSourceURL,
-    loading,
-    showButton,
-    count,
+    loading: transferListStore === undefined,
+    showButton: transferListStore && transferListStore.count > 15,
+    count: transferListStore?.count,
   };
 };

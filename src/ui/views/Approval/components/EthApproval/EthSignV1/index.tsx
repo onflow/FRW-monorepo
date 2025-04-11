@@ -4,7 +4,11 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 // import { CHAINS_ENUM } from 'consts';
-import { type UserInfoResponse } from '@/shared/types/network-types';
+import {
+  MAINNET_CHAIN_ID,
+  TESTNET_CHAIN_ID,
+  type UserInfoResponse,
+} from '@/shared/types/network-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { LLConnectLoading, LLLinkingLoading } from '@/ui/FRWComponent';
 import { LLPrimaryButton, LLSecondaryButton } from 'ui/FRWComponent';
@@ -86,7 +90,7 @@ const EthSignV1 = ({ params }: ConnectProps) => {
     await checkCoa();
     const network = await wallet.getNetwork();
     resolveApproval({
-      defaultChain: network === 'testnet' ? 545 : 747,
+      defaultChain: network === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID,
       signPermission: 'MAINNET_AND_TESTNET',
     });
   };

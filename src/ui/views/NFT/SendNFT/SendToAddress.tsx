@@ -196,34 +196,33 @@ const SendToAddress = () => {
     const info = await usewallet.getUserInfo(false);
     const linked = state.linked;
     console.log(';linked ', linked);
-    const isChild = await usewallet.getActiveWallet();
+    const accountType = await usewallet.getActiveAccountType();
 
     let userContact = { ...USER_CONTACT };
-    if (isChild) {
-      const cwallet = childAccounts[currentWallet.address!];
+    if (accountType === 'child') {
+      const cwallet = childAccounts?.[currentWallet?.address!];
       userContact = {
         ...USER_CONTACT,
-        address: withPrefix(currentWallet.address!) || '',
-        avatar: cwallet.thumbnail.url,
-        contact_name: cwallet.name,
+        address: withPrefix(currentWallet?.address ?? '') || '',
+        avatar: cwallet?.thumbnail.url ?? '',
+        contact_name: cwallet?.name ?? '',
       };
     } else if (linked) {
-      const cwallet = childAccounts[linked!];
+      const cwallet = childAccounts?.[linked!];
       userContact = {
         ...USER_CONTACT,
         address: withPrefix(linked!) || '',
-        avatar: cwallet.thumbnail.url,
-        contact_name: cwallet.name,
+        avatar: cwallet?.thumbnail.url ?? '',
+        contact_name: cwallet?.name ?? '',
       };
     } else {
       userContact = {
         ...USER_CONTACT,
-        address: withPrefix(currentWallet.address) || '',
+        address: withPrefix(currentWallet?.address ?? '') || '',
         avatar: info.avatar,
         contact_name: info.username,
       };
     }
-    console.log('userContact ', userContact);
     setUser(userContact);
   }, [usewallet, state.linked, currentWallet, childAccounts]);
 
@@ -235,10 +234,8 @@ const SendToAddress = () => {
     setMedia(media);
 
     const contractList = await usewallet.openapi.getAllNft();
-    console.log('contractList ', contractList);
-    console.log('NFT ', NFT);
+
     const filteredCollections = returnFilteredCollections(contractList, NFT);
-    console.log('filteredCollections ', filteredCollections);
     if (filteredCollections) {
       setContractInfo(filteredCollections);
     }
@@ -446,7 +443,6 @@ const SendToAddress = () => {
             className={classes.inputBox}
             placeholder={chrome.i18n.getMessage('Search__Address__or__Flow__domain')}
             autoFocus
-            disableUnderline
             endAdornment={
               <InputAdornment position="end">
                 <SearchIcon color="primary" sx={{ ml: '10px', my: '5px', fontSize: '24px' }} />

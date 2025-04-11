@@ -43,10 +43,13 @@ export const test = base.extend<{
         `--load-extension=${pathToExtension}`,
         '--allow-read-clipboard',
         '--allow-write-clipboard',
+        '--lang=en-US',
       ],
+      locale: 'en-US',
       env: {
         ...process.env,
         TEST_MODE: 'true',
+        LANGUAGE: 'en_US',
       },
       permissions: ['clipboard-read', 'clipboard-write'],
     });
@@ -111,7 +114,7 @@ export const getAuth = async () => {
     ? fs.readFileSync(keysFilePath, 'utf8')
     : null;
   const keysFile = keysFileContent ? JSON.parse(keysFileContent) : null;
-  return keysFile || { password: '', addr: '' };
+  return keysFile || { password: '', addr: '', nickname: '' };
 };
 // delete keys file
 
