@@ -297,7 +297,19 @@ class ProviderController extends BaseController {
 
     // Extracting individual parameters
     const from = transactionParams.from || '';
-    const gas = transactionParams.gas || '0x1C9C380';
+
+    let gas;
+
+    // Check if transactionParams.gas is a valid hex string
+
+    if (isHexString(transactionParams.gas)) {
+      // Use the provided gas value if it's a valid hex
+      gas = transactionParams.gas;
+    } else {
+      const estimateGas = await this.ethEstimateGas(data);
+      gas = estimateGas || '0x1C9C380';
+    }
+
     const to = transactionParams.to || '';
     const value = transactionParams.value || '0x0';
     const dataValue = transactionParams.data || '0x';
