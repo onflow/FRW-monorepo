@@ -173,7 +173,7 @@ const MenuDrawer = (props: MenuDrawerProps) => {
           </Box>
         </ListItem>
         {!props.evmLoading && !isValidEthereumAddress(props.evmWallet.address) && (
-          <ListItem sx={{ display: 'flex', justifyCOntent: 'space-between', padding: '16px' }}>
+          <ListItem sx={{ display: 'flex', justifyContent: 'space-between', padding: '16px' }}>
             <ListItemButton
               sx={{
                 borderRadius: '12px',
@@ -257,7 +257,7 @@ const MenuDrawer = (props: MenuDrawerProps) => {
               <ListItem
                 sx={{
                   display: 'flex',
-                  justifyCOntent: 'space-between',
+                  justifyContent: 'space-between',
                   padding: '16px 0 0',
                   cursor: 'pointer',
                 }}
