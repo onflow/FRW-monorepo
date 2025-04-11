@@ -2818,9 +2818,9 @@ export class WalletController extends BaseController {
 
   switchNetwork = async (network: string) => {
     // setup fcl for the new network
+    await userWalletService.switchFclNetwork(network as FlowNetwork);
     await userWalletService.setNetwork(network);
     eventBus.emit('switchNetwork', network);
-    await userWalletService.switchFclNetwork(network as FlowNetwork);
 
     // Reload everything
     await this.refreshWallets();
