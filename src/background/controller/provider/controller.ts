@@ -295,14 +295,11 @@ class ProviderController extends BaseController {
     // Accessing the first item in 'params' array
     const transactionParams = data.data.params[0];
 
-    // Extracting individual parameters
-    const from = transactionParams.from || '';
-
     let gas;
 
-    // Check if transactionParams.gas is a valid hex string
+    // Check if transactionParams.gas is available and a valid hex string
 
-    if (isHexString(transactionParams.gas)) {
+    if (transactionParams.gas && isHexString(transactionParams.gas)) {
       // Use the provided gas value if it's a valid hex
       gas = transactionParams.gas;
     } else {
@@ -310,10 +307,11 @@ class ProviderController extends BaseController {
       gas = estimateGas || '0x1C9C380';
     }
 
+    // Extracting individual parameters
+    const from = transactionParams.from || '';
     const to = transactionParams.to || '';
     const value = transactionParams.value || '0x0';
     const dataValue = transactionParams.data || '0x';
-    // console.log('transactionParams ', transactionParams)
     const cleanHex = gas.startsWith('0x') ? gas : `0x${gas}`;
     const gasBigInt = BigInt(cleanHex);
 
