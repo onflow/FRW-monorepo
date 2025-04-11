@@ -717,6 +717,11 @@ class UserWallet {
     await fclConfig(network, isEmulatorMode);
   };
 
+  switchFclNetwork = async (network: FlowNetwork) => {
+    const isEmulatorMode = await this.getEmulatorMode();
+    await fclConfig(network, isEmulatorMode);
+  };
+
   private extractScriptName = (cadence: string): string => {
     const scriptLines = cadence.split('\n');
     for (const line of scriptLines) {

@@ -129,6 +129,7 @@ import {
 import type {
   AccountKeyRequest,
   Contact,
+  FlowNetwork,
   NFTModelV2,
   UserInfoResponse,
 } from '../../shared/types/network-types';
@@ -2816,11 +2817,10 @@ export class WalletController extends BaseController {
   }
 
   switchNetwork = async (network: string) => {
+    // setup fcl for the new network
     await userWalletService.setNetwork(network);
     eventBus.emit('switchNetwork', network);
-
-    // setup fcl for the new network
-    await userWalletService.setupFcl();
+    await userWalletService.switchFclNetwork(network as FlowNetwork);
 
     // Reload everything
     await this.refreshWallets();
