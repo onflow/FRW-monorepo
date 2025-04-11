@@ -10,8 +10,12 @@ import {
   transferListRefreshRegex,
 } from '@/shared/utils/cache-data-keys';
 
-import { fclConfirmNetwork } from '../fclConfig';
-import { getInvalidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
+import {
+  getInvalidData,
+  getValidData,
+  registerRefreshListener,
+  setCachedData,
+} from '../utils/data-cache';
 
 interface TransactionStore {
   pendingItem: {
@@ -314,7 +318,7 @@ class Transaction {
     offset: string = '0',
     limit: string = '15'
   ): Promise<TransferListStore> => {
-    if (!(await fclConfirmNetwork(network))) {
+    if (openapiService.getNetwork() !== network) {
       // Do nothing if the network is switched
       // Don't update the cache
       return {
@@ -366,30 +370,29 @@ class Transaction {
   listAllTransactions = async (
     network: string,
     address: string,
-    offset: string,
-    limit: string
+    offset: string = '0',
+    limit: string = '15'
   ): Promise<TransferListStore> => {
+    const offsetString = offset ?? '0';
+    const limitString = limit ?? '15';
     // Get the cached transaction list
-    const transactionListStore = (await getCachedData<TransferListStore>(
-      transferListKey(network, address, offset, limit)
-    )) || {
-      count: 0,
-      pendingCount: 0,
-      list: [],
-    };
+    const transactionListStore = await getValidData<TransferListStore>(
+      transferListKey(network, address, offsetString, limitString)
+    );
+    if (!transactionListStore) {
+      return await this.loadTransactions(network, address, offsetString, limitString);
+    }
     return transactionListStore;
   };
 
   listTransactions = async (
     network: string,
     address: string,
-    offset: string,
-    limit: string
+    offset: string = '0',
+    limit: string = '15'
   ): Promise<TransferItem[]> => {
-    const transactionList = await getCachedData<TransferListStore>(
-      transferListKey(network, address, offset, limit)
-    );
-    return transactionList?.list || [];
+    const transactionListStore = await this.listAllTransactions(network, address, offset, limit);
+    return transactionListStore.list;
   };
 
   listPending = async (network: string, address: string): Promise<TransferItem[]> => {
@@ -402,10 +405,8 @@ class Transaction {
     offset: string,
     limit: string
   ): Promise<number> => {
-    const transactionList = await getCachedData<TransferListStore>(
-      transferListKey(network, address, offset, limit)
-    );
-    return transactionList?.count || 0;
+    const transactionList = await this.listAllTransactions(network, address, offset, limit);
+    return transactionList.count;
   };
 }
 

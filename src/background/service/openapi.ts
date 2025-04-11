@@ -474,6 +474,10 @@ class OpenApiService {
     return this.store.host;
   };
 
+  getNetwork = () => {
+    return userWalletService.getNetwork();
+  };
+
   init = async () => {
     this.store = await createPersistStore({
       name: 'openapi',
