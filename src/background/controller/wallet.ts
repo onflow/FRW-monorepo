@@ -1050,6 +1050,7 @@ export class WalletController extends BaseController {
   };
   // userinfo
   getUserInfo = async (forceRefresh: boolean = false): Promise<UserInfoResponse> => {
+    console.log('getUserInfo', forceRefresh);
     if (!forceRefresh) {
       const data = await userInfoService.getCurrentUserInfo();
       if (data.username.length) {
@@ -1105,8 +1106,8 @@ export class WalletController extends BaseController {
   };
 
   initCoinListSession = async (address: string) => {
-    console.log('initCoinListSession', address);
     const network = await this.getNetwork();
+    console.log('initCoinListSession', network, address);
     await coinListService.initCoinList(network, address);
   };
 
@@ -3160,7 +3161,7 @@ export class WalletController extends BaseController {
     address: string,
     collectionId: string,
     offset = 0
-  ): Promise<NFTCollectionData> => {
+  ): Promise<NFTCollectionData | undefined> => {
     const network = await this.getNetwork();
     const list = await getCachedNftCollection(network, address, collectionId, offset);
     if (!list) {
@@ -3173,7 +3174,7 @@ export class WalletController extends BaseController {
     address: string,
     collectionId: string,
     offset: number
-  ): Promise<NFTCollectionData> => {
+  ): Promise<NFTCollectionData | undefined> => {
     const network = await this.getNetwork();
 
     return nftService.loadSingleNftCollection(network, address, collectionId, `${offset || 0}`);
