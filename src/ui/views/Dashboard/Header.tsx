@@ -404,6 +404,7 @@ const Header = ({ _loading = false }) => {
           <Tooltip title={chrome.i18n.getMessage('Copy__Address')} arrow>
             <span>
               <Button
+                data-testid="copy-address-button"
                 disabled={!haveAddress}
                 onClick={() => {
                   if (haveAddress) {
