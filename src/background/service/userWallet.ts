@@ -1143,65 +1143,8 @@ class UserWallet {
       this.store.displayCurrency = currency;
       console.log('set displayCurrency', currency);
 
-      // Emit the event locally
-      eventBus.emit(EVENTS.displayCurrencyChanged, currency);
-
-      // Store in chrome.storage for cross-context access
-      try {
-        chrome.storage.local.set({ displayCurrency: currency }, () => {
-          console.log('Currency saved to chrome.storage.local', currency);
-        });
-      } catch (error) {
-        console.warn('Failed to save currency to chrome.storage:', error);
-      }
-
-      // Also broadcast to UI via chrome runtime messaging
-      try {
-        // Broadcast to all open tabs/contexts
-        chrome.tabs.query({}, (tabs) => {
-          // Filter tabs to likely valid ones (http/https URLs) to avoid unnecessary errors
-          const validTabs = tabs.filter((tab) => {
-            return (
-              tab.id && tab.url && (tab.url.startsWith('http://') || tab.url.startsWith('https://'))
-            );
-          });
-
-          validTabs.forEach((tab) => {
-            if (tab.id) {
-              chrome.tabs
-                .sendMessage(tab.id, {
-                  type: EVENTS.displayCurrencyChanged,
-                  data: currency,
-                })
-                .catch((err) => {
-                  // This error is expected for tabs where content script isn't running
-                  // Only log if it's not the "Receiving end does not exist" error
-                  if (!err.message?.includes('Receiving end does not exist')) {
-                    console.log(`Error sending message to tab ${tab.id}:`, err);
-                  }
-                });
-            }
-          });
-        });
-
-        // Also broadcast via runtime messaging (for popup/options pages)
-        chrome.runtime
-          .sendMessage({
-            type: EVENTS.displayCurrencyChanged,
-            data: currency,
-          })
-          .catch((err) => {
-            // Only log if it's not the "Receiving end does not exist" error
-            if (!err.message?.includes('Receiving end does not exist')) {
-              console.log('Error sending runtime message:', err);
-            }
-          });
-      } catch (error) {
-        console.warn('Failed to broadcast currency change event:', error);
-      }
-
       if (this.walletController) {
-        await this.walletController.refreshCoinList();
+        await this.walletController.initCoinListSession();
       } else {
         console.warn('WalletController not initialized when setting display currency');
       }
