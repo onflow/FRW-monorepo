@@ -4,7 +4,12 @@
  */
 import { type ExtendedTokenInfo } from '../types/coin-types';
 import { type UserInfoResponse } from '../types/network-types';
-import { type NFTCollections, type NFTCollectionData } from '../types/nft-types';
+import {
+  type NFTCollections,
+  type NFTCollectionData,
+  type EvmNFTIds,
+  type EvmNFTCollectionList,
+} from '../types/nft-types';
 import { type TransferItem } from '../types/transaction-types';
 import {
   type MainAccount,
@@ -19,7 +24,7 @@ import { type NetworkScripts } from './script-types';
 
 // Utiltiy function to create the refresh key for a given key function
 const refreshKey = (keyFunction: (...args: string[]) => string) =>
-  ((args: string[] = ['(.*)', '(.*)', '(.*)', '(.*)']) =>
+  ((args: string[] = ['([^-]+)', '([^-]+)', '([^-]+)', '([^-]+)']) =>
     new RegExp(`${keyFunction(...args)}-refresh`))();
 
 /*
@@ -170,6 +175,33 @@ export const getCachedChildAccountNFTs = async (network: string, address: string
   return getCachedData<ChildAccountNFTsStore>(childAccountNFTsKey(network, address));
 };
 
+// EVM NFTs
+export const evmNftIdsKey = (network: string, address: string) =>
+  `evm-nft-ids-${network}-${address}`;
+
+export const evmNftIdsRefreshRegex = refreshKey(evmNftIdsKey);
+export type EvmNftIdsStore = EvmNFTIds[];
+
+export const evmNftCollectionListKey = (
+  network: string,
+  address: string,
+  collectionIdentifier: string,
+  offset: string
+) => `evm-nft-collection-list-${network}-${address}-${collectionIdentifier}-${offset}`;
+
+export const evmNftCollectionListRefreshRegex = refreshKey(evmNftCollectionListKey);
+export type EvmNftCollectionListStore = EvmNFTCollectionList[];
+
+export const getCachedEvmNftCollectionList = async (
+  network: string,
+  address: string,
+  collectionIdentifier: string,
+  offset: number
+) => {
+  return getCachedData<EvmNftCollectionListStore>(
+    evmNftCollectionListKey(network, address, collectionIdentifier, `${offset}`)
+  );
+};
 //Coin list
 export const coinListKey = (network: string, address: string, currency = 'usd') =>
   `coin-list-${network}-${address}-${currency}`;

@@ -1966,8 +1966,7 @@ class OpenApiService {
     return data;
   };
 
-  EvmNFTID = async (address: string) => {
-    const network = await userWalletService.getNetwork();
+  EvmNFTID = async (network: string, address: string) => {
     const { data } = await this.sendRequest(
       'GET',
       `/api/v3/evm/nft/id?network=${network}&address=${address}`,

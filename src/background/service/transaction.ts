@@ -33,6 +33,16 @@ class Transaction {
 
   clear = async () => {};
 
+  // Remove pending items older than 120 seconds
+  private removeExpiredPendingItems = (network: string, address: string) => {
+    const timeNow = new Date().getTime();
+    const pendingList = this.store.pendingItem[network][address];
+    if (pendingList.length > 0) {
+      const filteredList = pendingList.filter((item) => item.time + 120_000 > timeNow);
+      this.store.pendingItem[network][address] = structuredClone(filteredList);
+    }
+  };
+
   private getPendingList = (network: string, address: string): TransferItem[] => {
     // Always return a clone of the pending list
     if (
@@ -43,6 +53,9 @@ class Transaction {
     ) {
       return [];
     }
+    // Remove expired pending items from the list
+    this.removeExpiredPendingItems(network, address);
+    // Return a clone of the pending list
     return structuredClone(this.store.pendingItem[network][address]);
   };
 

@@ -223,7 +223,6 @@ const SendToAddress = () => {
         contact_name: info.username,
       };
     }
-    console.log('userContact ', userContact);
     setUser(userContact);
   }, [usewallet, state.linked, currentWallet, childAccounts]);
 
@@ -235,10 +234,8 @@ const SendToAddress = () => {
     setMedia(media);
 
     const contractList = await usewallet.openapi.getAllNft();
-    console.log('contractList ', contractList);
-    console.log('NFT ', NFT);
+
     const filteredCollections = returnFilteredCollections(contractList, NFT);
-    console.log('filteredCollections ', filteredCollections);
     if (filteredCollections) {
       setContractInfo(filteredCollections);
     }
@@ -446,7 +443,6 @@ const SendToAddress = () => {
             className={classes.inputBox}
             placeholder={chrome.i18n.getMessage('Search__Address__or__Flow__domain')}
             autoFocus
-            disableUnderline
             endAdornment={
               <InputAdornment position="end">
                 <SearchIcon color="primary" sx={{ ml: '10px', my: '5px', fontSize: '24px' }} />

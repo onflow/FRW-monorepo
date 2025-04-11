@@ -1,10 +1,10 @@
 import CloseIcon from '@mui/icons-material/Close';
 import InfoIcon from '@mui/icons-material/Info';
 import { Box, Typography, Drawer, Stack, Grid, CardMedia, IconButton, Button } from '@mui/material';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import { type AccountDetails } from '@/shared/types/wallet-types';
+import { type WalletAccount, type AccountDetails } from '@/shared/types/wallet-types';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
 import { WarningNFTNotOnboardedSnackbar } from '@/ui/FRWComponent/WarningNFTNotOnboardedSnackbar';
@@ -36,11 +36,31 @@ const MoveNftFromEvm = (props: SendNFTConfirmationProps) => {
   const [, setErrorMessage] = useState<string | null>(null);
   const [errorCode, setErrorCode] = useState<number | null>(null);
 
-  const [selectedAccount, setSelectedChildAccount] = useState<AccountDetails | null>(null);
-  const [childWallets, setChildWallets] = useState({});
+  const [selectedAccount, setSelectedChildAccount] = useState<AccountDetails | null>({
+    name: parentWallet.name,
+    description: parentWallet.name,
+    thumbnail: {
+      url: parentWallet.icon,
+    },
+  });
   const { sufficient: isSufficient } = useStorageCheck();
 
   const isLowStorage = isSufficient !== undefined && !isSufficient; // isSufficient is undefined when the storage check is not yet completed
+
+  const childAndParentWallets: { [key: string]: AccountDetails } = useMemo(() => {
+    return Object.fromEntries(
+      [...(childAccounts ?? []), parentWallet].map((wallet) => [
+        wallet.address,
+        {
+          name: wallet.name,
+          description: wallet.name,
+          thumbnail: {
+            url: wallet.icon,
+          },
+        },
+      ])
+    );
+  }, [childAccounts, parentWallet]);
 
   const replaceIPFS = (url: string | null): string => {
     if (!url) {
@@ -135,30 +155,6 @@ const MoveNftFromEvm = (props: SendNFTConfirmationProps) => {
     };
   }, [props?.data?.contact, transactionDoneHandler]);
 
-  const getChildResp = useCallback(async () => {
-    const newWallet = {
-      [mainAddress!]: {
-        name: parentWallet?.name ?? '',
-        description: parentWallet?.name ?? '',
-        thumbnail: {
-          url: parentWallet?.icon ?? '',
-        },
-      },
-    };
-
-    // Merge usewallet lists
-    const walletList = { ...newWallet, ...childAccounts };
-    setChildWallets(walletList);
-    const firstWalletAddress = Object.keys(walletList)[0];
-    if (firstWalletAddress && walletList[firstWalletAddress]?.name) {
-      setSelectedChildAccount(walletList[firstWalletAddress] as AccountDetails);
-    }
-  }, [mainAddress, parentWallet, childAccounts]);
-
-  useEffect(() => {
-    getChildResp();
-  }, [getChildResp]);
-
   const renderContent = () => {
     const getUri = () => {
       return (
@@ -167,7 +163,7 @@ const MoveNftFromEvm = (props: SendNFTConfirmationProps) => {
             (props.data.media.type !== MatchMediaType.VIDEO ? (
               <CardMedia
                 sx={{ width: '72px', height: '72px', borderRadius: '8px' }}
-                image={replaceIPFS(props.data.media.image)}
+                image={props.data.media ? replaceIPFS(props.data.media.image) : ''}
               />
             ) : (
               <>
@@ -241,13 +237,11 @@ const MoveNftFromEvm = (props: SendNFTConfirmationProps) => {
         >
           <FRWProfileCard contact={props.data.userContact} />
           <Box sx={{ height: '8px' }}></Box>
-          {selectedAccount && (
-            <FRWDropdownProfileCard
-              contact={selectedAccount}
-              contacts={childWallets}
-              setSelectedChildAccount={setSelectedChildAccount}
-            />
-          )}
+          <FRWDropdownProfileCard
+            contact={selectedAccount}
+            contacts={childAndParentWallets}
+            setSelectedChildAccount={setSelectedChildAccount}
+          />
         </Box>
 
         <Box

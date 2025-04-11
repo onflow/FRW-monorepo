@@ -70,6 +70,10 @@ import {
   childAccountAllowTypesKey,
   childAccountNFTsKey,
   type ChildAccountNFTsStore,
+  evmNftIdsKey,
+  type EvmNftIdsStore,
+  type EvmNftCollectionListStore,
+  evmNftCollectionListKey,
 } from '@/shared/utils/cache-data-keys';
 import { getCurrentProfileId } from '@/shared/utils/current-id';
 import {
@@ -1108,7 +1112,8 @@ export class WalletController extends BaseController {
 
   reqeustEvmNft = async () => {
     const address = await this.getEvmAddress();
-    const evmList = await openapiService.EvmNFTID(address);
+    const network = await this.getNetwork();
+    const evmList = await openapiService.EvmNFTID(network, address);
     return evmList;
   };
 
@@ -2368,9 +2373,13 @@ export class WalletController extends BaseController {
       'hybridCustody',
       'transferNFTToChild'
     );
+    const walletAddress = withPrefix(linkedAddress);
+    if (!walletAddress) {
+      throw new Error(`Invalid linked address - ${linkedAddress}`);
+    }
     const replacedScript = replaceNftKeywords(script, token);
     const txID = await userWalletService.sendTransaction(replacedScript, [
-      fcl.arg(linkedAddress, t.Address),
+      fcl.arg(walletAddress, t.Address),
       fcl.arg(path, t.String),
       fcl.arg(ids, t.UInt64),
     ]);
@@ -2438,6 +2447,7 @@ export class WalletController extends BaseController {
   };
 
   batchBridgeNftFromEvm = async (flowIdentifier: string, ids: Array<number>): Promise<string> => {
+    console.log('batchBridgeNftFromEvm', flowIdentifier, ids);
     const shouldCoverBridgeFee = await openapiService.getFeatureFlag('cover_bridge_fee');
     const scriptName = shouldCoverBridgeFee
       ? 'batchBridgeNFTFromEvmWithPayer'
@@ -3388,7 +3398,7 @@ export class WalletController extends BaseController {
     coin?: string; // coin name
     movingBetweenEVMAndFlow?: boolean; // are we moving between EVM and Flow?
   } = {}): Promise<EvaluateStorageResult> => {
-    const address = await this.getCurrentAddress();
+    const address = await this.getParentAddress();
     const isFreeGasFeeEnabled = await this.allowLilicoPay();
     const result = await this.storageEvaluator.evaluateStorage(
       address!,
@@ -3457,46 +3467,16 @@ export class WalletController extends BaseController {
     }
   };
 
-  refreshEvmNftIds = async (address: string) => {
-    if (!isValidEthereumAddress(address)) {
-      throw new Error('Invalid Ethereum address');
-    }
-    const network = await this.getNetwork();
-    const result = await openapiService.EvmNFTID(address);
-    await evmNftService.setNftIds(result, network);
-    return result;
-  };
-
   getEvmNftId = async (address: string) => {
     if (!isValidEthereumAddress(address)) {
       throw new Error('Invalid Ethereum address');
     }
     const network = await this.getNetwork();
-    const cacheData = await evmNftService.getNftIds(network);
+    const cacheData = await getValidData<EvmNftIdsStore>(evmNftIdsKey(network, address));
     if (cacheData) {
       return cacheData;
     }
-    return this.refreshEvmNftIds(address);
-  };
-
-  refreshEvmNftCollectionList = async (
-    address: string,
-    collectionIdentifier: string,
-    limit = 50,
-    offset = 0
-  ) => {
-    if (!isValidEthereumAddress(address)) {
-      throw new Error('Invalid Ethereum address');
-    }
-    const network = await this.getNetwork();
-    const result = await openapiService.EvmNFTcollectionList(
-      address,
-      collectionIdentifier,
-      limit,
-      offset
-    );
-    await evmNftService.setSingleCollection(result, collectionIdentifier, offset, network);
-    return result;
+    return evmNftService.loadEvmNftIds(network, address);
   };
 
   getEvmNftCollectionList = async (
@@ -3509,15 +3489,13 @@ export class WalletController extends BaseController {
       throw new Error('Invalid Ethereum address');
     }
     const network = await this.getNetwork();
-    const cacheData = await evmNftService.getSingleCollection(
-      network,
-      collectionIdentifier,
-      offset
+    const cacheData = await getValidData<EvmNftCollectionListStore>(
+      evmNftCollectionListKey(network, address, collectionIdentifier, `${offset}`)
     );
     if (cacheData) {
       return cacheData;
     }
-    return this.refreshEvmNftCollectionList(address, collectionIdentifier, limit, offset);
+    return evmNftService.loadEvmCollectionList(network, address, collectionIdentifier, `${offset}`);
   };
 
   clearEvmNFTList = async () => {
