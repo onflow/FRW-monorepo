@@ -24,7 +24,7 @@ import { type NetworkScripts } from './script-types';
 
 // Utiltiy function to create the refresh key for a given key function
 const refreshKey = (keyFunction: (...args: string[]) => string) =>
-  ((args: string[] = ['([^-]+)', '([^-]+)', '([^-]+)', '([^-]+)']) =>
+  ((args: string[] = ['(.+)', '(.+)', '(.+)', '(.+)']) =>
     new RegExp(`${keyFunction(...args)}-refresh`))();
 
 /*

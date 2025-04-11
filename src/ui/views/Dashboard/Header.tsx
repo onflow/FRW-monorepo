@@ -151,7 +151,7 @@ const Header = ({ _loading = false }) => {
     await usewallet.setActiveWallet(walletInfo, key, index);
 
     // Navigate if needed
-    //   history.push('/dashboard');
+    history.push('/dashboard');
     setDrawer(false);
     //  window.location.reload();
   };
