@@ -2321,6 +2321,8 @@ class OpenApiService {
         icon: token.logoURI || token.logos?.items?.[0]?.file?.url || '',
       })
     );
+    console.log('fetchUserFlowTokens - response', response?.data?.result);
+    console.log('fetchUserFlowTokens - tokens', tokens);
     return tokens;
   }
 

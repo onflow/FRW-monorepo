@@ -203,7 +203,7 @@ export const getCachedEvmNftCollectionList = async (
   );
 };
 //Coin list
-export const coinListKey = (network: string, address: string, currency = 'usd') =>
+export const coinListKey = (network: string, address: string, currency: string = 'usd') =>
   `coin-list-${network}-${address}-${currency}`;
 
 export const coinListRefreshRegex = refreshKey(coinListKey);

@@ -122,8 +122,8 @@ class CoinList {
     console.log('Updated balances for', updatedCoins.length, 'coins on', network);
   };
  */
-  initCoinList = async (network: string, address: string) => {
-    const coinList = await this.loadCoinList(network, address, 'usd');
+  initCoinList = async (network: string, address: string, currency: string = 'USD') => {
+    const coinList = await this.loadCoinList(network, address, currency);
     if (!coinList || coinList.length === 0) {
       return null;
     }
@@ -138,7 +138,7 @@ class CoinList {
   loadCoinList = async (
     network: string,
     address: string,
-    currency: string
+    currency: string = 'USD'
   ): Promise<ExtendedTokenInfo[]> => {
     // Get network and address
     if (!address || !network) {
@@ -151,7 +151,7 @@ class CoinList {
       return cachedData;
     }
 
-    const userTokenResult = await openapiService.getUserTokens(address, network);
+    const userTokenResult = await openapiService.getUserTokens(address, network, currency);
     await setCachedData(coinListKey(network, address, currency), userTokenResult);
 
     return userTokenResult;

@@ -1104,10 +1104,10 @@ export class WalletController extends BaseController {
     userInfoService.setDashIndex(data);
   };
 
-  initCoinListSession = async (address: string) => {
-    console.log('initCoinListSession', address);
+  initCoinListSession = async (address: string, currency: string) => {
+    console.log('initCoinListSession', address, currency);
     const network = await this.getNetwork();
-    await coinListService.initCoinList(network, address);
+    await coinListService.initCoinList(network, address, currency);
   };
 
   reqeustEvmNft = async () => {
@@ -1187,7 +1187,7 @@ export class WalletController extends BaseController {
   refreshAddressBook = async (): Promise<Contact[]> => {
     const network = await this.getNetwork();
     const { data } = await openapiService.getAddressBook();
-    const list = data.contacts;
+    const list = data?.contacts;
     if (list && list.length > 0) {
       list.forEach((addressBook, index) => {
         if (addressBook && addressBook.avatar) {

@@ -2,30 +2,42 @@ import BN from 'bignumber.js';
 import { useCallback, useEffect, useState, useRef } from 'react';
 
 import { type ExtendedTokenInfo, type CoinItem } from '@/shared/types/coin-types';
-import { isValidEthereumAddress } from '@/shared/utils/address';
-import storage, { type AreaName, type StorageChange } from '@/shared/utils/storage';
-import { getActiveAccountsByUserWallet } from '@/shared/utils/user-data-keys';
+import { type Currency } from '@/shared/types/wallet-types';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { debug } from '@/ui/utils';
-import { useWallet, useWalletLoaded } from '@/ui/utils/WalletContext';
+import { useWallet } from '@/ui/utils/WalletContext';
 
 import { useCoinList } from './use-coin-hooks';
 import { useProfiles } from './useProfileHook';
+
 export const useCoins = () => {
   const usewallet = useWallet();
-  const walletLoaded = useWalletLoaded();
   const { network } = useNetwork();
   const { currentWallet } = useProfiles();
 
-  const refreshInProgressRef = useRef(false);
   const initAttemptedRef = useRef(false);
-  const mountedRef = useRef(true);
 
   // Replace Zustand state with React state
   const [balance, setBalance] = useState<string>('0');
   const [totalFlow, setTotalFlow] = useState<string>('0');
   const [availableFlow, setAvailableFlow] = useState<string>('0');
   const [coinsLoaded, setCoinsLoaded] = useState(false);
+  const [currencyCode, setCurrencyCode] = useState<string | undefined>();
+
+  useEffect(() => {
+    const fetchCurrency = async () => {
+      try {
+        const currency: Currency | undefined = await usewallet?.getDisplayCurrency();
+        setCurrencyCode(currency?.code);
+      } catch (error) {
+        console.error('Failed to fetch display currency:', error);
+        setCurrencyCode(undefined); // Handle error case
+      }
+    };
+    if (usewallet) {
+      fetchCurrency();
+    }
+  }, [usewallet]);
 
   const handleStorageData = useCallback(
     async (data?: ExtendedTokenInfo[] | null) => {
@@ -57,7 +69,7 @@ export const useCoins = () => {
     [setTotalFlow, setBalance]
   );
 
-  const coins = useCoinList(network, currentWallet?.address);
+  const coins = useCoinList(network, currentWallet?.address, currencyCode);
 
   useEffect(() => {
     // Check if currentWallet exists and has an address
@@ -69,7 +81,6 @@ export const useCoins = () => {
         const initAndHandle = async () => {
           try {
             initAttemptedRef.current = true;
-            await usewallet?.initCoinListSession(currentWallet.address);
             debug('Coin list initialization completed');
           } catch (error) {
             console.error('Error initializing coin list:', error);

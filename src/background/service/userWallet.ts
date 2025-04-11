@@ -16,9 +16,6 @@ import {
   pk2PubKey,
 } from '@/background/utils/modules/publicPrivateKey';
 import createPersistStore from '@/background/utils/persisitStore';
-import { EVENTS } from '@/constant';
-import eventBus from '@/eventBus';
-import { type HashAlgoString, type SignAlgoString } from '@/shared/types/algo-types';
 import {
   type PublicPrivateKeyTuple,
   combinePubPkString,
@@ -314,126 +311,6 @@ class UserWallet {
       }
     }
   };
-
-  /*
-
-  switchProfile = async (pubkey: string) => {
-    if (!pubkey) {
-      console.warn('Invalid pubkey provided to switchAccount');
-      return;
-    }
-
-    const profileList: WalletProfile[] = this.accounts[this.store.network];
-
-    let profile = profileList.find((group) => {
-      const matches = group.publicKey === pubkey;
-
-      return matches;
-    });
-
-    if (!profile) {
-      // Create a new profile
-      profile = await createSessionStore<ProfileAccountStore>({
-        name: profileAccountsKey(this.store.network, pubkey),
-        template: {
-          accounts: [],
-          publicKey: pubkey,
-        },
-      });
-      // Add the new profile to the profile list
-      profileList.push(profile);
-    }
-    // Set the current pubkey
-    this.store.currentPubkey = pubkey;
-
-    if (!profile.accounts.length) {
-      console.warn(`No account found for pubkey: ${pubkey.slice(0, 10)}...`);
-      return;
-    }
-
-  };
-
-
-
-  getAccountsWithPublicKey = async (
-    publicKey: string,
-    network: string
-  ): Promise<PublicKeyAccount[]> => {
-    const accounts = await openapiService.getAccountsWithPublicKey(publicKey, network);
-    return accounts;
-  };
-
-  setChildAccounts = async (
-    childAccountMap: ChildAccountMap,
-    address: FlowAddress,
-    network: string
-  ) => {
-    const { account } = this.findAccount(address, network);
-
-    if (!account) return;
-
-    // Store the child accounts for address in the childAccountMap
-    if (!!this.childAccountMap[address]) {
-      // Update the existing session store
-      this.childAccountMap[address].accounts = { ...childAccountMap };
-    } else {
-      // Create a new session store so the front end can access the child accounts
-      this.childAccountMap[address] = await createSessionStore<ChildAccountStore>({
-        name: childAccountsKey(network, address),
-        template: {
-          parentAddress: address,
-          accounts: childAccountMap,
-        },
-      });
-    }
-  };
-
-  /*
-   * Set the evm address for the main account
-   * This is invoked when loading the wallet
-   * /
-  setAccountEvmAddress = async (evmAddress: EvmAddress | null) => {
-    const network = this.store.network;
-    const address = this.store.parentAddress as FlowAddress;
-    const { account } = this.findAccount(address, network);
-
-    if (!account) {
-      throw new Error(`Account not found: ${address}`);
-    }
-
-    if (!isValidFlowAddress(address)) {
-      throw new Error(`Invalid address: ${address}`);
-    }
-
-    if (!isValidEthereumAddress(evmAddress)) {
-      throw new Error(`Invalid evm address: ${evmAddress}`);
-    }
-
-    // Store the evm address for address in the evmAddressMap
-    if (!this.evmAddressMap[address]) {
-      this.evmAddressMap[address] = await createSessionStore<EvmAccountStore>({
-        name: evmAccountKey(network, address),
-        template: {
-          parentAddress: address,
-          evmAddress: evmAddress,
-        },
-      });
-    } else {
-      this.evmAddressMap[address].evmAddress = evmAddress;
-    }
-  };
-
-
-  // TODO: Verify what this does... it doesn't look right
-  setCurrentAccount = async (wallet: WalletAccount, key: ActiveChildType) => {
-    this.store.currentAddress = wallet.address;
-    if (isMainAccountType(key)) {
-      // We're switching main accounts
-      this.store.parentAddress = wallet.address;
-    }
-  };
-
-  */
 
   /**
    * --------------------------------------------
@@ -1144,7 +1021,9 @@ class UserWallet {
       console.log('set displayCurrency', currency);
 
       if (this.walletController) {
-        await this.walletController.initCoinListSession();
+        const currentAddress = await this.getCurrentAddress();
+        console.log('set displayCurrency - currentAddress', currentAddress);
+        await this.walletController.initCoinListSession(currentAddress, currency.code);
       } else {
         console.warn('WalletController not initialized when setting display currency');
       }

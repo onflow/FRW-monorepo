@@ -86,7 +86,7 @@ const CurrencySettings = () => {
       const currency = supportedCurrencies.find((c) => c.code === newCurrency);
       if (currency) {
         await wallet.setDisplayCurrency(currency);
-        await wallet.refreshCoinList();
+        await wallet.refreshAll();
       }
     } catch (error) {
       console.warn('Error saving currency preference:', error);
