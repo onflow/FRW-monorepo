@@ -129,6 +129,7 @@ import {
 import type {
   AccountKeyRequest,
   Contact,
+  FlowNetwork,
   NFTModelV2,
   UserInfoResponse,
 } from '../../shared/types/network-types';
@@ -1105,7 +1106,6 @@ export class WalletController extends BaseController {
   };
 
   initCoinListSession = async (address: string) => {
-    console.log('initCoinListSession', address);
     const network = await this.getNetwork();
     await coinListService.initCoinList(network, address);
   };
@@ -2815,11 +2815,10 @@ export class WalletController extends BaseController {
   }
 
   switchNetwork = async (network: string) => {
+    // setup fcl for the new network
+    await userWalletService.switchFclNetwork(network as FlowNetwork);
     await userWalletService.setNetwork(network);
     eventBus.emit('switchNetwork', network);
-
-    // setup fcl for the new network
-    await userWalletService.setupFcl();
 
     // Reload everything
     await this.refreshWallets();
@@ -3160,7 +3159,7 @@ export class WalletController extends BaseController {
     address: string,
     collectionId: string,
     offset = 0
-  ): Promise<NFTCollectionData> => {
+  ): Promise<NFTCollectionData | undefined> => {
     const network = await this.getNetwork();
     const list = await getCachedNftCollection(network, address, collectionId, offset);
     if (!list) {
@@ -3173,7 +3172,7 @@ export class WalletController extends BaseController {
     address: string,
     collectionId: string,
     offset: number
-  ): Promise<NFTCollectionData> => {
+  ): Promise<NFTCollectionData | undefined> => {
     const network = await this.getNetwork();
 
     return nftService.loadSingleNftCollection(network, address, collectionId, `${offset || 0}`);
