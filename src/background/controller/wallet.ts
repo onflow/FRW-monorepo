@@ -1051,7 +1051,6 @@ export class WalletController extends BaseController {
   };
   // userinfo
   getUserInfo = async (forceRefresh: boolean = false): Promise<UserInfoResponse> => {
-    console.log('getUserInfo', forceRefresh);
     if (!forceRefresh) {
       const data = await userInfoService.getCurrentUserInfo();
       if (data.username.length) {
@@ -1108,7 +1107,6 @@ export class WalletController extends BaseController {
 
   initCoinListSession = async (address: string) => {
     const network = await this.getNetwork();
-    console.log('initCoinListSession', network, address);
     await coinListService.initCoinList(network, address);
   };
 

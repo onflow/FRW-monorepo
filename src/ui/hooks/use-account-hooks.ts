@@ -41,7 +41,6 @@ export const useAccountBalance = (
   network: string | undefined | null,
   address: string | undefined | null
 ) => {
-  console.log('useAccountBalance', network, address);
   return useCachedData<string>(network && address ? accountBalanceKey(network, address) : null);
 };
 
@@ -74,7 +73,6 @@ export const useActiveAccounts = (
   const activeAccounts = useUserData<ActiveAccountsStore>(
     network && publicKey ? activeAccountsKey(network, publicKey) : null
   );
-  console.log('useActiveAccounts', network, activeAccounts?.parentAddress, publicKey);
   return activeAccounts;
 };
 

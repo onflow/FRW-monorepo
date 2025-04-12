@@ -266,20 +266,8 @@ class UserWallet {
 
       // Ensure the parent address is valid - this can only be called after the active and main accounts are loaded
       // Wonder if this is the best way to do this
-      const activeAccounts = this.getActiveAccounts();
-      console.log(
-        'ensureValidActiveAccount - before',
-        network,
-        pubkey,
-        structuredClone(activeAccounts)
-      );
       await this.ensureValidActiveAccount(network, pubkey);
-      console.log(
-        'ensureValidActiveAccount - after',
-        network,
-        pubkey,
-        structuredClone(activeAccounts)
-      );
+
       // Load the balances for the main accounts
       await loadAccountListBalance(
         network,
@@ -467,7 +455,6 @@ class UserWallet {
   private setActiveAccounts = async (newActiveAccounts: ActiveAccountsStore) => {
     const pubkey = this.store.currentPubkey;
     const network = this.store.network;
-    console.trace('setActiveAccounts', network, newActiveAccounts);
     if (!pubkey) {
       throw new Error('Current pubkey is not set');
     }
@@ -545,12 +532,6 @@ class UserWallet {
     }
     // Get the active accounts
     const activeAccounts = this.getActiveAccounts();
-    console.log(
-      'ensureValidActiveAccount - before',
-      network,
-      pubkey,
-      structuredClone(activeAccounts)
-    );
 
     // Check the parent address is valid
     const activeMainAccount = mainAccounts.find(
