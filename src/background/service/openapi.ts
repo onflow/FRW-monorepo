@@ -458,20 +458,9 @@ const recordFetch = async (response, responseData, ...args: Parameters<typeof fe
 };
 
 class OpenApiService {
-  store!: OpenApiStore;
-
-  // request = rateLimit(axios.create(), { maxRPS });
-
-  setHost = async (host: string) => {
-    this.store.host = host;
-    await this.init();
-
-    // Register refresh listener for cadence scripts
-    registerRefreshListener(cadenceScriptsRefreshRegex, this._loadCadenceScripts);
-  };
-
-  getHost = () => {
-    return this.store.host;
+  store: OpenApiStore = {
+    host: INITIAL_OPENAPI_URL,
+    config: dataConfig,
   };
 
   getNetwork = () => {
@@ -479,15 +468,6 @@ class OpenApiService {
   };
 
   init = async () => {
-    this.store = await createPersistStore({
-      name: 'openapi',
-      template: {
-        host: INITIAL_OPENAPI_URL,
-        config: dataConfig,
-      },
-      fromStorage: false, // Debug only
-    });
-
     await userWalletService.setupFcl();
   };
 
@@ -631,6 +611,7 @@ class OpenApiService {
    * Use getUserTokens instead. It will have token info and price.
    */
   getTokenPrices = async (storageKey: string) => {
+    // TODO: move to new data cache service
     const cachedPrices = await storage.getExpiry(storageKey);
     if (cachedPrices) {
       return cachedPrices;
@@ -1005,6 +986,7 @@ class OpenApiService {
       chainType = 'evm';
     }
 
+    // TODO: move to new data cache service
     const nftList = await storage.getExpiry(`NFTList${network}${chainType}`);
     if (nftList && nftList.length > 0) {
       return nftList;
@@ -1378,8 +1360,8 @@ class OpenApiService {
   };
 
   getAllNft = async (filterNetwork = true): Promise<NFTModelV2[]> => {
-    const list = await remoteFetch.nftCollection();
-    // const network = await userWalletService.getNetwork();
+    const network = await userWalletService.getNetwork();
+    const list = await this.getNFTList(network);
     return list;
   };
 
