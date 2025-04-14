@@ -1,5 +1,6 @@
 import * as fcl from '@onflow/fcl';
 import type { Account as FclAccount } from '@onflow/typedefs';
+import BigNumber from 'bignumber.js';
 import dayjs from 'dayjs';
 import { initializeApp, getApp } from 'firebase/app';
 import {
@@ -2298,8 +2299,8 @@ class OpenApiService {
           twitter: token.socials?.x?.url,
         },
         custom: false,
-        price: Number(token.priceInCurrency || token.priceInUSD || '0'), // todo: future will be a string
-        total: Number(token.balanceInCurrency || token.balanceInUSD || '0'), // todo: future will be a string
+        price: new BigNumber(token.priceInCurrency || token.priceInUSD || '0').toNumber(), // todo: future will be a string
+        total: new BigNumber(token.balanceInCurrency || token.balanceInUSD || '0').toNumber(), // todo: future will be a string
         change24h: 0,
         balance: token.balance || '0',
         // Add CoinItem properties
