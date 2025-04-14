@@ -2299,8 +2299,8 @@ class OpenApiService {
           twitter: token.socials?.x?.url,
         },
         custom: false,
-        price: new BigNumber(token.priceInCurrency || token.priceInUSD || '0').toNumber(), // todo: future will be a string
-        total: new BigNumber(token.balanceInCurrency || token.balanceInUSD || '0').toNumber(), // todo: future will be a string
+        price: token.priceInCurrency || token.priceInUSD || '',
+        total: token.balanceInCurrency || token.balanceInUSD || '',
         change24h: 0,
         balance: token.balance || '0',
         // Add CoinItem properties
@@ -2356,8 +2356,8 @@ class OpenApiService {
         logoURI: token.logoURI || '',
         extensions: {},
         custom: false,
-        price: new BigNumber(token.priceInCurrency || token.priceInUSD || '0').toNumber(),
-        total: new BigNumber(token.balanceInCurrency || token.balanceInUSD || '0').toNumber(),
+        price: token.priceInCurrency || token.priceInUSD || '',
+        total: token.balanceInCurrency || token.balanceInUSD || '',
         change24h: 0,
         balance: token.displayBalance || '0',
         // Add CoinItem properties

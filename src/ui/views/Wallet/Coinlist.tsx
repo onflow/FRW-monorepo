@@ -80,7 +80,7 @@ const CoinList = ({
     );
   };
 
-  const StartListItemText = (props: { primary: string | null; price: number; change: number }) => {
+  const StartListItemText = (props: { primary: string | null; price: string; change: number }) => {
     return (
       <ListItemText
         disableTypography={true}
@@ -126,7 +126,7 @@ const CoinList = ({
                     }}
                   >
                     {props.change === null ? '-' : ''}
-                    <CurrencyValue value={String(props.price)} />
+                    <CurrencyValue value={props.price} />
                   </Typography>
                   {props.change !== 0 && (
                     <Typography
@@ -254,7 +254,7 @@ const CoinList = ({
                   <ListItemAvatar>
                     <Skeleton variant="circular" width={36} height={36} />
                   </ListItemAvatar>
-                  <StartListItemText primary="..." price={0} change={0} />
+                  <StartListItemText primary="..." price={''} change={0} />
                 </ListItem>
               );
             })}

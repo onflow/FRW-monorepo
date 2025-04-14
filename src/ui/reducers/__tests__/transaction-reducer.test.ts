@@ -104,9 +104,9 @@ describe('Transaction Reducer', () => {
         coin: 'test',
         unit: 'TEST',
         balance: '100',
-        price: 1,
+        price: '1',
         change24h: 0,
-        total: 100,
+        total: '100',
         icon: 'test.svg',
       };
 
@@ -227,7 +227,7 @@ describe('Transaction Reducer', () => {
         coinInfo: {
           ...INITIAL_TRANSACTION_STATE.coinInfo,
           balance: '100',
-          price: 2,
+          price: '2',
         },
         selectedToken: {
           ...INITIAL_TRANSACTION_STATE.selectedToken,
@@ -390,7 +390,7 @@ describe('Transaction Reducer', () => {
         coinInfo: {
           ...INITIAL_TRANSACTION_STATE.coinInfo,
           balance: '100',
-          price: 2,
+          price: '2',
         },
         tokenType: 'Flow' as TokenType,
         fromNetwork: 'Evm' as NetworkType,
