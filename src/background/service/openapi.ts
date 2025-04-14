@@ -2356,8 +2356,8 @@ class OpenApiService {
         logoURI: token.logoURI || '',
         extensions: {},
         custom: false,
-        price: Number(token.priceInUSD || '0'),
-        total: Number(token.balanceInUSD || '0'),
+        price: new BigNumber(token.priceInCurrency || token.priceInUSD || '0').toNumber(),
+        total: new BigNumber(token.balanceInCurrency || token.balanceInUSD || '0').toNumber(),
         change24h: 0,
         balance: token.displayBalance || '0',
         // Add CoinItem properties
