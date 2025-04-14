@@ -467,6 +467,8 @@ class OpenApiService {
     config: dataConfig,
   };
 
+  private supportedCurrenciesCache: Currency[] | null = null;
+
   getNetwork = () => {
     return userWalletService.getNetwork();
   };
