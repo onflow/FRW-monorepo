@@ -240,7 +240,7 @@ export class WalletController extends BaseController {
     // We're creating the Flow address for the account
     // Only after this, do we have a valid wallet with a Flow address
     const result = await openapiService.createFlowAddressV2();
-    this.checkForNewAddress(result.data);
+    this.checkForNewAddress(result.data.txid);
   };
 
   checkForNewAddress = async (txid: string): Promise<FclAccount | null> => {
