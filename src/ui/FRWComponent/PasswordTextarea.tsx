@@ -37,46 +37,44 @@ const PasswordTextarea = ({
     event.preventDefault(); // Prevent focus loss on click
   };
 
-  // Adjust default styles to match JsonImport.tsx textarea
+  // Adjust default styles to match JsonImport.tsx textarea style
   const defaultSx = {
     width: '100%',
-    marginBottom: '16px',
     '& .MuiInputBase-root': {
+      width: '100%',
       borderRadius: '16px',
       backgroundColor: '#2C2C2C',
       color: '#fff',
-      padding: '0px',
+      padding: '20px 0',
+      marginBottom: '16px',
       boxSizing: 'border-box',
-      alignItems: 'flex-start',
+      fontFamily: 'Inter',
+      fontSize: '16px',
+      fontWeight: 400,
       border: '1px solid #444444',
     },
     '& .MuiInputBase-input': {
-      padding: '20px',
+      padding: '0 20px',
       resize: 'none',
-      fontSize: '16px',
       fontFamily: 'Inter',
+      fontSize: '16px',
       fontWeight: 400,
       color: '#fff',
       boxSizing: 'border-box',
-      height: 'auto',
+      WebkitTextSecurity: showPassword ? 'none' : 'disc',
       '&::placeholder': {
         color: '#a0a0a0',
         opacity: 1,
       },
-      WebkitTextSecurity: showPassword ? 'none' : 'disc',
     },
     '& .MuiOutlinedInput-notchedOutline': {
       border: 'none',
     },
     '& .MuiInputAdornment-root': {
       margin: '0',
-      paddingTop: '10px',
-      alignSelf: 'flex-start',
     },
     '& .MuiInputAdornment-positionEnd': {
-      alignItems: 'flex-start',
-      paddingRight: '10px',
-      marginRight: '0px',
+      paddingRight: '20px',
     },
     '& .MuiIconButton-root': {
       color: '#a0a0a0',
@@ -91,13 +89,13 @@ const PasswordTextarea = ({
       value={value}
       onChange={onChange}
       required={required}
-      className={className} // Apply external className if provided
-      sx={{ ...defaultSx, ...sx }} // Merge default styles with passed sx prop
-      fullWidth // Default to fullWidth
-      multiline // ADDED back multiline
-      rows={minRows} // ADDED back rows (uses minRows for initial size)
-      minRows={minRows} // ADDED back minRows
-      maxRows={maxRows} // ADDED back maxRows
+      className={className}
+      sx={{ ...defaultSx, ...sx }}
+      fullWidth
+      multiline
+      rows={minRows}
+      minRows={minRows}
+      maxRows={maxRows}
       InputProps={{
         endAdornment: (
           <InputAdornment position="end">
@@ -112,7 +110,7 @@ const PasswordTextarea = ({
           </InputAdornment>
         ),
       }}
-      {...rest} // Apply any remaining props
+      {...rest}
     />
   );
 };
