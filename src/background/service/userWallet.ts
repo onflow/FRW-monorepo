@@ -271,7 +271,9 @@ class UserWallet {
       // Load the balances for the main accounts
       await loadAccountListBalance(
         network,
-        allAccounts.map((account) => account.address)
+        allAccounts
+          .filter((account) => account.address && account.address.trim() !== '')
+          .map((account) => account.address)
       );
     } catch (error) {
       console.error('Error loading accounts', error);
