@@ -70,9 +70,10 @@ export const useActiveAccounts = (
   network: string | undefined | null,
   publicKey: string | undefined | null
 ) => {
-  return useUserData<ActiveAccountsStore>(
+  const activeAccounts = useUserData<ActiveAccountsStore>(
     network && publicKey ? activeAccountsKey(network, publicKey) : null
   );
+  return activeAccounts;
 };
 
 export const useUserWallets = () => {

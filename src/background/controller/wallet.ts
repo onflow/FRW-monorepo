@@ -129,6 +129,7 @@ import {
 import type {
   AccountKeyRequest,
   Contact,
+  FlowNetwork,
   NFTModelV2,
   UserInfoResponse,
 } from '../../shared/types/network-types';
@@ -239,7 +240,7 @@ export class WalletController extends BaseController {
     // We're creating the Flow address for the account
     // Only after this, do we have a valid wallet with a Flow address
     const result = await openapiService.createFlowAddressV2();
-    this.checkForNewAddress(result.data);
+    this.checkForNewAddress(result.data.txid);
   };
 
   checkForNewAddress = async (txid: string): Promise<FclAccount | null> => {
@@ -2814,11 +2815,10 @@ export class WalletController extends BaseController {
   }
 
   switchNetwork = async (network: string) => {
+    // setup fcl for the new network
+    await userWalletService.switchFclNetwork(network as FlowNetwork);
     await userWalletService.setNetwork(network);
     eventBus.emit('switchNetwork', network);
-
-    // setup fcl for the new network
-    await userWalletService.setupFcl();
 
     // Reload everything
     await this.refreshWallets();
@@ -3159,7 +3159,7 @@ export class WalletController extends BaseController {
     address: string,
     collectionId: string,
     offset = 0
-  ): Promise<NFTCollectionData> => {
+  ): Promise<NFTCollectionData | undefined> => {
     const network = await this.getNetwork();
     const list = await getCachedNftCollection(network, address, collectionId, offset);
     if (!list) {
@@ -3172,7 +3172,7 @@ export class WalletController extends BaseController {
     address: string,
     collectionId: string,
     offset: number
-  ): Promise<NFTCollectionData> => {
+  ): Promise<NFTCollectionData | undefined> => {
     const network = await this.getNetwork();
 
     return nftService.loadSingleNftCollection(network, address, collectionId, `${offset || 0}`);

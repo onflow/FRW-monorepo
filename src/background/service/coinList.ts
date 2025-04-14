@@ -5,6 +5,7 @@ import { createPersistStore } from 'background/utils';
 import { storage } from 'background/webapi';
 
 import { walletController } from '../controller';
+import { fclConfirmNetwork } from '../fclConfig';
 import {
   clearCachedData,
   getValidData,
@@ -152,6 +153,12 @@ class CoinList {
     }
 
     const userTokenResult = await openapiService.getUserTokens(address, network, currency);
+    if (!(await fclConfirmNetwork(network))) {
+      // Do nothing if the network is switched
+      // Don't update the cache
+      return [];
+    }
+
     await setCachedData(coinListKey(network, address, currency), userTokenResult);
 
     return userTokenResult;
