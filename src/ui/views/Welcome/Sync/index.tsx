@@ -7,6 +7,10 @@ import HDWallet from 'ethereum-hdwallet';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
+import {
+  SIGN_ALGO_NUM_ECDSA_secp256k1,
+  HASH_ALGO_NUM_SHA2_256,
+} from '@/shared/utils/algo-constants';
 import { FCLWalletConnectMethod } from '@/shared/utils/type';
 import AllSet from '@/ui/FRWComponent/LandingPages/AllSet';
 import LandingComponents from '@/ui/FRWComponent/LandingPages/LandingComponents';
@@ -22,13 +26,6 @@ const STEPS = {
 } as const;
 
 type StepType = (typeof STEPS)[keyof typeof STEPS];
-
-interface AccountKey {
-  hashAlgo: number;
-  publicKey: string;
-  signAlgo: number;
-  weight: number;
-}
 
 interface DeviceInfoRequest {
   deviceId: string;
@@ -101,8 +98,8 @@ const Sync = () => {
     const publicKey = hdwallet.derive("m/44'/539'/0'/0/0").getPublicKey().toString('hex');
 
     return {
-      hashAlgo: 1,
-      signAlgo: 2,
+      hashAlgo: HASH_ALGO_NUM_SHA2_256,
+      signAlgo: SIGN_ALGO_NUM_ECDSA_secp256k1,
       weight: 1000,
       publicKey,
     };
@@ -307,13 +304,13 @@ const Sync = () => {
         }
       } else {
         try {
-          await usewallet.signInV3(mnemonic, accountKey, deviceInfo);
+          await usewallet.loginV3_depreciated(mnemonic, accountKey, deviceInfo);
           const userInfo = await usewallet.getUserInfo(true);
           setUsername(userInfo.username);
           await usewallet.saveIndex(userInfo.username);
           await usewallet.boot(password);
           const formatted = mnemonic.trim().split(/\s+/g).join(' ');
-          await usewallet.createKeyringWithMnemonics(formatted);
+          await usewallet.createKeyringWithMnemonics(password, formatted);
           setActiveTab(STEPS.ALL_SET);
         } catch (error) {
           throw new Error(error.message);

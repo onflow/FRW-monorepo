@@ -10,30 +10,44 @@ import {
   IconButton,
 } from '@mui/material';
 import { Box } from '@mui/system';
-import React, { useEffect, useState } from 'react';
+import React, { type ReactNode, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import { type CoinItem } from '@/shared/types/wallet-types';
+import { type CoinItem } from '@/shared/types/coin-types';
+import { type ActiveAccountType } from '@/shared/types/wallet-types';
 import { formatLargeNumber } from '@/shared/utils/number';
 
 import IconCreate from '../../../components/iconfont/IconCreate';
 import { TokenValue } from '../TokenDetail/TokenValue';
 
-const CoinList = ({ data, ableFt, isActive, childType }) => {
+const CoinList = ({
+  tokenList,
+  ableFt,
+  isActive,
+  childType,
+}: {
+  tokenList: CoinItem[];
+  ableFt: any[];
+  isActive: boolean;
+  childType: ActiveAccountType;
+}) => {
   // const wallet = useWallet();
   const [isLoading, setLoading] = useState(true);
   const history = useHistory();
-  const [coinList, setCoinList] = useState([]);
 
   useEffect(() => {
-    setLoading(data.length === 0);
-    if (data.length) {
-      setCoinList(data);
+    setLoading(tokenList.length === 0);
+    if (tokenList.length) {
       setLoading(false);
     }
-  }, [data]);
+  }, [tokenList]);
 
-  const EndListItemText = (props) => {
+  const EndListItemText = (props: {
+    primary: ReactNode;
+    secondary: ReactNode;
+    unit: string;
+    change: number;
+  }) => {
     return (
       <ListItemText
         disableTypography={true}
@@ -66,7 +80,7 @@ const CoinList = ({ data, ableFt, isActive, childType }) => {
     );
   };
 
-  const StartListItemText = (props) => {
+  const StartListItemText = (props: { primary: string | null; price: number; change: number }) => {
     return (
       <ListItemText
         disableTypography={true}
@@ -79,7 +93,7 @@ const CoinList = ({ data, ableFt, isActive, childType }) => {
                 fontWeight: '550',
                 textAlign: 'start',
                 color: 'text.title',
-                maxWidth: '120px',
+                maxWidth: '160px',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
@@ -96,10 +110,10 @@ const CoinList = ({ data, ableFt, isActive, childType }) => {
             <Box sx={{ display: 'flex', gap: '3px' }}>
               {ableFt.some((item) => {
                 const parts = item.id.split('.');
-                return parts[2] && parts[2].includes(props.coin);
+                return parts[2] && parts[2].includes(props.primary);
               }) ||
               isActive ||
-              props.primary.toLowerCase() === 'flow' ? (
+              props.primary?.toLowerCase() === 'flow' ? (
                 <Box sx={{ display: 'flex' }}>
                   <Typography
                     variant="body1"
@@ -159,7 +173,7 @@ const CoinList = ({ data, ableFt, isActive, childType }) => {
 
   return (
     <>
-      {!childType && (
+      {childType === 'main' && (
         <Box sx={{ display: 'flex', px: '12px', pt: '4px' }}>
           <Box sx={{ flexGrow: 1 }} />
           <IconButton onClick={() => history.push('dashboard/tokenList')}>
@@ -178,7 +192,7 @@ const CoinList = ({ data, ableFt, isActive, childType }) => {
 
       <List sx={{ paddingTop: '0px', paddingBottom: '0px' }}>
         {!isLoading
-          ? (coinList || []).map((coin: CoinItem) => {
+          ? (tokenList || []).map((coin: CoinItem) => {
               if (
                 childType === 'evm' &&
                 coin.unit !== 'flow' &&
@@ -189,7 +203,8 @@ const CoinList = ({ data, ableFt, isActive, childType }) => {
               }
               return (
                 <ListItem
-                  key={coin.unit}
+                  key={coin.id}
+                  data-testid={`token-${coin.unit.toLowerCase()}`}
                   secondaryAction={
                     <EndListItemText
                       primary={parseFloat(coin.balance).toFixed(3)}
@@ -199,7 +214,9 @@ const CoinList = ({ data, ableFt, isActive, childType }) => {
                     />
                   }
                   disablePadding
-                  onClick={() => history.push(`dashboard/token/${coin.unit}`)}
+                  onClick={() =>
+                    history.push(`dashboard/tokendetail/${coin.unit.toLowerCase()}/${coin.id}`)
+                  }
                 >
                   <ListItemButton sx={{ paddingRight: '0px' }} dense={true}>
                     <ListItemIcon>
@@ -230,12 +247,14 @@ const CoinList = ({ data, ableFt, isActive, childType }) => {
               return (
                 <ListItem
                   key={index}
-                  secondaryAction={<EndListItemText primary="..." secondary="..." />}
+                  secondaryAction={
+                    <EndListItemText primary="..." secondary="..." unit="..." change={0} />
+                  }
                 >
                   <ListItemAvatar>
                     <Skeleton variant="circular" width={36} height={36} />
                   </ListItemAvatar>
-                  <StartListItemText primary="..." price="..." />
+                  <StartListItemText primary="..." price={0} change={0} />
                 </ListItem>
               );
             })}

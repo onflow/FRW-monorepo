@@ -17,7 +17,9 @@ import { type TokenInfo } from 'flow-native-token-registry';
 import React, { useState, useEffect, useCallback } from 'react';
 
 // import { useHistory } from 'react-router-dom';
+import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
 import { LLHeader } from '@/ui/FRWComponent';
+import { useCoins } from 'ui/hooks/useCoinHook';
 import { useWallet } from 'ui/utils';
 
 import AddTokenConfirmation from './AddTokenConfirmation';
@@ -64,14 +66,14 @@ const useStyles = makeStyles(() => ({
 const TokenList = () => {
   const classes = useStyles();
   const wallet = useWallet();
+  const { coins } = useCoins();
   const [keyword, setKeyword] = useState('');
-  const [tokenInfoList, setTokenInfoList] = useState<TokenInfo[]>([]);
-  const [filteredTokenList, setFilteredTokenList] = useState<TokenInfo[]>([]);
-  const [enabledTokenList, setEnabledTokenList] = useState<TokenInfo[]>([]);
+  const [tokenInfoList, setTokenInfoList] = useState<ExtendedTokenInfo[]>([]);
+  const [filteredTokenList, setFilteredTokenList] = useState<ExtendedTokenInfo[]>([]);
   const [isConfirmationOpen, setConfirmationOpen] = useState(false);
-  const [selectedToken, setSelectedToken] = useState<TokenInfo | null>(null);
+  const [selectedToken, setSelectedToken] = useState<ExtendedTokenInfo | null>(null);
   const [filters, setFilter] = useState('all');
-  const [filteredCollections, setFilteredCollections] = useState<TokenInfo[]>([]);
+  const [filteredCollections, setFilteredCollections] = useState<ExtendedTokenInfo[]>([]);
 
   const [isLoading, setLoading] = useState(true);
 
@@ -81,7 +83,7 @@ const TokenList = () => {
       const rawTokenInfoList = await wallet.openapi.getAllTokenInfo();
 
       // Remove duplicate tokens based on symbol
-      const uniqueTokens = Array.from(
+      const uniqueTokens: ExtendedTokenInfo[] = Array.from(
         rawTokenInfoList
           .reduce((map, token) => {
             const key = token.symbol.toLowerCase();
@@ -97,9 +99,6 @@ const TokenList = () => {
       // Set the data and filtered tokens
       setTokenInfoList(uniqueTokens);
       setFilteredTokenList(uniqueTokens);
-
-      const enabledList = await wallet.openapi.getEnabledTokenList();
-      setEnabledTokenList(enabledList);
     } finally {
       setLoading(false);
     }
@@ -133,48 +132,35 @@ const TokenList = () => {
 
     setKeyword(word);
   };
+
   const checkStorageStatus = useCallback(
-    async (token: TokenInfo) => {
-      const isEnabled = enabledTokenList
-        .map((item) => item.contractName)
-        .includes(token.contractName);
+    (token: ExtendedTokenInfo) => {
+      const isEnabled = coins.map((item) => item.contractName).includes(token.contractName);
       return isEnabled;
     },
-    [enabledTokenList]
+    [coins]
   );
 
   const getFilteredCollections = useCallback(
-    async (fil: string) => {
-      const results = await Promise.all(
-        filteredTokenList.map(async (ele) => {
-          const isEnabled = await checkStorageStatus(ele);
-          return { ele, isEnabled };
-        })
-      );
+    (fil: string) => {
+      return filteredTokenList.filter((ele) => {
+        const isEnabled = checkStorageStatus(ele);
 
-      const res = results
-        .filter(({ isEnabled }) => {
-          if (fil === 'all') return true;
-          if (fil === 'enabled') return isEnabled;
-          if (fil === 'notEnabled') return !isEnabled;
-          return true;
-        })
-        .map(({ ele }) => ele);
-      return res;
+        if (fil === 'all') return true;
+        if (fil === 'enabled') return isEnabled;
+        if (fil === 'notEnabled') return !isEnabled;
+        return true;
+      });
     },
     [filteredTokenList, checkStorageStatus]
   );
 
   useEffect(() => {
-    const fetchFilteredCollections = async () => {
-      setLoading(true); // Show loading state
-      const collections = await getFilteredCollections(filters); // Assuming 'all' as default filter
-      setFilteredCollections(collections);
-      setLoading(false); // Remove loading state
-    };
-
-    fetchFilteredCollections();
-  }, [filters, enabledTokenList, filteredTokenList, getFilteredCollections]);
+    setLoading(true);
+    const collections = getFilteredCollections(filters);
+    setFilteredCollections(collections);
+    setLoading(false);
+  }, [filters, getFilteredCollections]);
 
   return (
     <StyledEngineProvider injectFirst>
@@ -341,9 +327,7 @@ const TokenList = () => {
                 <TokenItem
                   token={token}
                   isLoading={isLoading}
-                  enabled={enabledTokenList
-                    .map((item) => item.contractName)
-                    .includes(token.contractName)}
+                  enabled={coins.map((item) => item.contractName).includes(token.contractName)}
                   key={index}
                   onClick={handleTokenClick}
                 />

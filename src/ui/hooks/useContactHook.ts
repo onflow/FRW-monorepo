@@ -92,7 +92,7 @@ export function useContacts() {
             id: index,
             contact_name: accountDetails.name || address,
             username: '', // We don't have the proper username from this call
-            avatar: accountDetails.thumbnail.url,
+            avatar: accountDetails.icon,
             address: address,
             contact_type: ContactType.AddressBook,
             domain: {
@@ -109,7 +109,7 @@ export function useContacts() {
         ...evmWallet,
         address: evmAddress,
         avatar: evmWallet.icon,
-        contact_name: evmWallet.name,
+        contact_name: evmWallet.name || '',
       };
       setEvmAccounts([evmData]);
     }

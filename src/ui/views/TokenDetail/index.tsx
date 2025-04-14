@@ -3,14 +3,18 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { Box, MenuItem, Typography, IconButton } from '@mui/material';
 import { StyledEngineProvider } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
-import type { TokenInfo } from 'flow-native-token-registry';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 
 import { storage } from '@/background/webapi';
+import type { CoinItem, ExtendedTokenInfo } from '@/shared/types/coin-types';
 import type { PriceProvider } from '@/shared/types/network-types';
-import { type ActiveChildType } from '@/shared/types/wallet-types';
+import {
+  type ActiveAccountType,
+  type ActiveChildType_depreciated,
+} from '@/shared/types/wallet-types';
 import StorageUsageCard from '@/ui/FRWComponent/StorageUsageCard';
+import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import tips from 'ui/FRWAssets/svg/tips.svg';
 import { useWallet } from 'ui/utils';
@@ -43,14 +47,16 @@ const TokenDetail = () => {
   const usewallet = useWallet();
   const history = useHistory();
   const { currentWallet } = useProfiles();
+  const { coins, coinsLoaded } = useCoins();
   const [price, setPrice] = useState(0);
   const [accessible, setAccessible] = useState(true);
-  const token = useParams<{ id: string }>().id.toLowerCase();
+  const token = useParams<{ name: string }>().name.toLowerCase();
+  const tokenId = useParams<{ id: string }>().id;
   const [network, setNetwork] = useState('mainnet');
   const [walletName, setCurrentWallet] = useState({ name: '' });
-  const [tokenInfo, setTokenInfo] = useState<TokenInfo | undefined>(undefined);
+  const [tokenInfo, setTokenInfo] = useState<CoinItem | undefined>(undefined);
   const [providers, setProviders] = useState<PriceProvider[]>([]);
-  const [childType, setChildType] = useState<ActiveChildType>(null);
+  const [accountType, setAccountType] = useState<ActiveAccountType>('main');
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleMenuToggle = () => {
@@ -67,7 +73,7 @@ const TokenDetail = () => {
 
     // Filter out the token with the matching address
     evmCustomToken = evmCustomToken.filter(
-      (token) => token.address.toLowerCase() !== tokenInfo?.address.toLowerCase()
+      (token) => token.address.toLowerCase() !== tokenInfo?.address?.toLowerCase()
     );
 
     await storage.set(`${network}evmCustomToken`, evmCustomToken);
@@ -113,37 +119,45 @@ const TokenDetail = () => {
   };
 
   const getProvider = useCallback(async () => {
+    if (!coinsLoaded) {
+      return;
+    }
+
+    // First try to find by ID
+    let tokenResult = coins.find((coin) => coin.id === tokenId);
+
+    // If not found by ID, try to find by token name (case insensitive)
+    if (!tokenResult) {
+      console.log(`Token not found by ID ${tokenId}, trying to find by name ${token}`);
+      tokenResult = coins.find(
+        (coin) =>
+          coin.symbol?.toLowerCase() === token.toLowerCase() ||
+          coin.name?.toLowerCase() === token.toLowerCase()
+      );
+    }
+
     const result = await usewallet.openapi.getPriceProvider(token);
-    const tokenResult = await usewallet.openapi.getTokenInfo(token);
     if (tokenResult) {
       setTokenInfo(tokenResult);
+    } else {
+      console.log(`Could not find token with ID ${tokenId} or name ${token}`);
     }
+
     setProviders(result);
     if (result.length === 0) {
-      const data = await usewallet.openapi.getTokenPrices('pricesMap');
-      const price = await usewallet.openapi.getPricesByAddress(tokenResult!.address, data);
-      if (price) {
-        setPrice(price);
-      }
-      // TokenInfo does have evmAddress, sometimes, check first
-      const addressToCheck =
-        'evmAddress' in tokenResult! ? (tokenResult as any).evmAddress : tokenResult!.address;
-      const evmPrice = await usewallet.openapi.getPricesByEvmaddress(addressToCheck, data);
-      if (evmPrice) {
-        setPrice(evmPrice);
-      }
+      setPrice(tokenResult?.price || 0);
     }
-  }, [usewallet, token]);
+  }, [usewallet, token, tokenId, coins, coinsLoaded]);
 
   const loadNetwork = useCallback(async () => {
     const network = await usewallet.getNetwork();
-    setCurrentWallet(currentWallet);
+    setCurrentWallet(currentWallet ?? { name: '' });
     setNetwork(network);
   }, [usewallet, currentWallet]);
 
   const requestChildType = useCallback(async () => {
-    const result = await usewallet.getActiveWallet();
-    setChildType(result);
+    const result = await usewallet.getActiveAccountType();
+    setAccountType(result);
   }, [usewallet]);
 
   const handleMoveOpen = () => {
@@ -151,10 +165,12 @@ const TokenDetail = () => {
   };
 
   useEffect(() => {
-    loadNetwork();
-    getProvider();
-    requestChildType();
-  }, [loadNetwork, getProvider, requestChildType]);
+    if (coinsLoaded) {
+      loadNetwork();
+      getProvider();
+      requestChildType();
+    }
+  }, [loadNetwork, getProvider, requestChildType, coinsLoaded]);
 
   return (
     <StyledEngineProvider injectFirst>
@@ -179,7 +195,7 @@ const TokenDetail = () => {
                   color: 'error.main',
                 }}
               >
-                Flow Wallet doesn’t have access to {`${token}`} in
+                Flow Wallet doesn't have access to {`${token}`} in
                 {`${walletName.name}`} Account, please check your linked account settings.
               </Typography>
             </Box>
@@ -191,7 +207,8 @@ const TokenDetail = () => {
               setAccessible={setAccessible}
               accessible={accessible}
               tokenInfo={tokenInfo}
-              childType={childType}
+              accountType={accountType}
+              tokenId={tokenId}
             />
           )}
           {token === 'flow' && <StackingCard />}

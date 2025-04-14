@@ -1,29 +1,26 @@
-import debounce from 'debounce';
-
-import { storage } from 'background/webapi';
-
-const sessionStorage = (name: string, obj: object) => {
-  debounce(() => storage.setSession(name, obj), 1000);
-};
+import { getCachedData, setCachedData } from './data-cache';
 
 interface CreateSessionStoreParams<T> {
   name: string;
   template?: T;
   fromStorage?: boolean;
+  ttl?: number;
 }
 
 const createSessionStore = async <T extends object>({
   name,
   template = Object.create(null),
   fromStorage = true,
+  ttl = 10 * 1000, // 10 seconds
 }: CreateSessionStoreParams<T>): Promise<T> => {
-  let tpl = template;
+  // Always clone the template to avoid mutating the original object
+  let tpl = structuredClone(template);
 
   if (fromStorage) {
-    const storageCache = await storage.getSession(name);
+    const storageCache = await getCachedData<T>(name);
     tpl = storageCache || template;
     if (!storageCache) {
-      await storage.setSession(name, tpl);
+      await setCachedData(name, tpl, ttl);
     }
   }
 
@@ -36,7 +33,7 @@ const createSessionStore = async <T extends object>({
 
         target[prop] = value;
 
-        sessionStorage(name, target);
+        setCachedData(name, target, ttl);
 
         return true;
       },
@@ -45,7 +42,7 @@ const createSessionStore = async <T extends object>({
         if (Reflect.has(target, prop)) {
           Reflect.deleteProperty(target, prop);
 
-          sessionStorage(name, target);
+          setCachedData(name, target, ttl);
         }
 
         return true;

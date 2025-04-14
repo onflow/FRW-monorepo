@@ -1,3 +1,7 @@
+// Import the fcl types
+
+export type { Account, AccountKey } from '@onflow/typedefs';
+
 export interface CheckResponse {
   unique: boolean;
   username: string;
@@ -82,11 +86,39 @@ export interface FlowTokenStoragePath {
   receiver: string;
 }
 
-export enum FlowNetwork {
-  mainnet = 'mainnet',
-  testnet = 'testnet',
-  crescendo = 'crescendo',
-}
+export type FlowNetwork = 'mainnet' | 'testnet' | 'crescendo';
+export const isValidNetwork = (network: string): network is FlowNetwork => {
+  return network === 'mainnet' || network === 'testnet' || network === 'crescendo';
+};
+export const MAINNET_NETWORK: FlowNetwork = 'mainnet';
+export const TESTNET_NETWORK: FlowNetwork = 'testnet';
+
+export type FlowChainId = 747 | 545;
+
+export const MAINNET_CHAIN_ID: FlowChainId = 747;
+export const TESTNET_CHAIN_ID: FlowChainId = 545;
+
+export const networkToChainId = (network: string): FlowChainId => {
+  switch (network) {
+    case MAINNET_NETWORK:
+      return MAINNET_CHAIN_ID;
+    case TESTNET_NETWORK:
+      return TESTNET_CHAIN_ID;
+    default:
+      throw new Error(`Unknown network: ${network}`);
+  }
+};
+
+export const chainIdToNetwork = (chainId: number): FlowNetwork => {
+  switch (chainId) {
+    case MAINNET_CHAIN_ID:
+      return MAINNET_NETWORK;
+    case TESTNET_CHAIN_ID:
+      return TESTNET_NETWORK;
+    default:
+      throw new Error(`Unknown chainId: ${chainId}`);
+  }
+};
 
 export enum Period {
   oneDay = '1D',
@@ -155,14 +187,17 @@ export interface StorageInfo {
 }
 
 // All UFix64 decimal values
-export interface AccountInfo {
+// This is similar to the fcl Account type but not exactly the same
+// The fcl Account type uses a 10^8 number for the balance and does not include availableBalance or storageUsed
+export interface AccountBalanceInfo {
   address: string;
   balance: string;
   availableBalance: string;
   storageUsed: string;
   storageCapacity: string;
 }
-export interface AccountKey {
+// This is an underscore case version of the fcl AccountKey type
+export interface AccountKeyRequest {
   hash_algo: number;
   public_key: string;
   sign_algo: number;
@@ -174,11 +209,15 @@ export interface SignInResponse {
   id: string;
 }
 
-export interface UserInfoResponse {
+export type UserInfoResponse = {
   avatar: string;
   nickname: string;
   username: string;
-}
+  // 0: public, 1: private
+  private: number;
+  created: string;
+  id: string;
+};
 
 export interface UserWalletResponse {
   id: string;
@@ -204,30 +243,6 @@ export interface BlockchainResponse {
   id: number;
   icon: string;
   color: string;
-}
-
-export interface WalletType {
-  name: string;
-  icon: string;
-  address: string;
-  chain_id: string;
-  id: number;
-  coins: string[];
-  color: string;
-}
-
-interface Thumbnail {
-  url: string;
-}
-
-export interface AccountDetails {
-  name: string;
-  description: string;
-  thumbnail: Thumbnail;
-}
-
-export interface ChildAccount {
-  [key: string]: AccountDetails;
 }
 
 export interface FlowArgument {
@@ -383,7 +398,7 @@ export interface DeviceInfoRequest {
 }
 
 export interface DeviceInfo {
-  account_key: AccountKey;
+  account_key: AccountKeyRequest;
   device_info: DeviceInfoRequest;
 }
 
@@ -394,3 +409,5 @@ export {
   type NewsDisplayType,
   type NewsConditionType,
 } from '@/shared/types/news-types';
+
+export type NetworkType = 'mainnet' | 'testnet';

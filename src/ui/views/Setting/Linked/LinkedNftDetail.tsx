@@ -119,8 +119,7 @@ const LinkedNftDetail = () => {
     async (ownerAddresss) => {
       const userInfo = await usewallet.getUserInfo(false);
       const currentAddress = ownerAddresss;
-      const userWallets = await usewallet.getUserWallets();
-      const parentAddress = userWallets[0].blockchain[0].address;
+      const parentAddress = await usewallet.getParentAddress();
       const isChild = true;
       const userTemplate = {
         avatar: userInfo.avatar,
@@ -130,15 +129,15 @@ const LinkedNftDetail = () => {
         },
       };
 
-      const wallet = childAccounts[currentAddress!];
+      const childAccount = childAccounts?.[currentAddress!];
       const userOne = {
-        avatar: wallet.thumbnail.url,
+        avatar: childAccount?.icon ?? '',
         domain: {
           domain_type: 0,
           value: '',
         },
         address: currentAddress,
-        contact_name: wallet.name,
+        contact_name: childAccount?.name ?? '',
       };
       const userTwo = {
         ...userTemplate,

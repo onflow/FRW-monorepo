@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
-import storage, { type StorageChange, type AreaName } from '@/background/webapi/storage';
+import storage, { type StorageChange, type AreaName } from '@/shared/utils/storage';
+import { getUserWalletsData, userWalletsKey } from '@/shared/utils/user-data-keys';
 
 export const useNetwork = () => {
   const [network, setNetwork] = useState<string>('mainnet');
@@ -17,8 +18,8 @@ export const useNetwork = () => {
       if (namespace === 'local') {
         // Changes is to local storage
         // Check network change
-        if (changes['userWallets'] && changes['userWallets'].newValue) {
-          const userWallets = changes['userWallets'].newValue;
+        if (changes[userWalletsKey] && changes[userWalletsKey].newValue) {
+          const userWallets = changes[userWalletsKey].newValue;
           if (userWallets.network) {
             setNetwork(userWallets.network);
           }
@@ -37,7 +38,7 @@ export const useNetwork = () => {
     const loadInitialData = async () => {
       const developerModeValue = await storage.get('developerMode');
       const emulatorModeValue = await storage.get('emulatorMode');
-      const userWalletsStorage = await storage.get('userWallets');
+      const userWalletsStorage = await getUserWalletsData();
       if (mounted) {
         if (developerModeValue !== undefined) {
           setDeveloperMode(developerModeValue);

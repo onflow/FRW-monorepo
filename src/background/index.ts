@@ -34,6 +34,7 @@ import {
   googleSafeHostService,
   mixpanelTrack,
 } from './service';
+import session from './service/session';
 import { getFirbaseConfig } from './utils/firebaseConfig';
 import { setEnvironmentBadge } from './utils/setEnvironmentBadge';
 import { storage } from './webapi';
@@ -91,11 +92,10 @@ async function firebaseSetup() {
 }
 
 async function restoreAppState() {
-  const keyringState = await storage.get('keyringState');
-  keyringService.loadStore(keyringState);
-  keyringService.store.subscribe((value) => storage.set('keyringState', value));
+  // Load keyring store
+  await keyringService.loadKeyringStore();
+  // Init openapi. This starts fcl
   await openapiService.init();
-
   // clear premnemonic in storage
   storage.remove('premnemonic');
   storage.remove('tempPassword');

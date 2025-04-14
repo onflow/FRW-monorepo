@@ -15,7 +15,7 @@ vi.mock('react', async () => {
 });
 
 // Mock storage module - must be defined before the vi.mock call
-vi.mock('@/background/webapi/storage', () => {
+vi.mock('@/shared/utils/storage', () => {
   return {
     default: {
       get: vi.fn().mockImplementation((key) => {
@@ -25,7 +25,7 @@ vi.mock('@/background/webapi/storage', () => {
         if (key === 'emulatorMode') {
           return Promise.resolve(false);
         }
-        if (key === 'userWallets') {
+        if (key === userWalletsKey) {
           return Promise.resolve({ network: 'mainnet' });
         }
         return Promise.resolve({});
@@ -37,7 +37,8 @@ vi.mock('@/background/webapi/storage', () => {
   };
 });
 
-import storage from '@/background/webapi/storage';
+import storage from '@/shared/utils/storage';
+import { userWalletsKey } from '@/shared/utils/user-data-keys';
 
 import { useNetwork } from '../useNetworkHook';
 
@@ -69,7 +70,7 @@ describe('useNetworkHook', () => {
       if (key === 'emulatorMode') {
         return Promise.resolve(false);
       }
-      if (key === 'userWallets') {
+      if (key === userWalletsKey) {
         return Promise.resolve({ network: 'mainnet' });
       }
       return Promise.resolve({});
@@ -94,7 +95,7 @@ describe('useNetworkHook', () => {
       if (key === 'emulatorMode') {
         return Promise.resolve(true);
       }
-      if (key === 'userWallets') {
+      if (key === userWalletsKey) {
         return Promise.resolve({ network: 'testnet' });
       }
       return Promise.resolve({});
@@ -109,7 +110,7 @@ describe('useNetworkHook', () => {
 
     expect(mockStorage.get).toHaveBeenCalledWith('developerMode');
     expect(mockStorage.get).toHaveBeenCalledWith('emulatorMode');
-    expect(mockStorage.get).toHaveBeenCalledWith('userWallets');
+    expect(mockStorage.get).toHaveBeenCalledWith(userWalletsKey);
     expect(setDeveloperModeMock).toHaveBeenCalledWith(true);
     expect(setEmulatorModeOnMock).toHaveBeenCalledWith(true);
     expect(setNetworkMock).toHaveBeenCalledWith('testnet');
@@ -123,7 +124,7 @@ describe('useNetworkHook', () => {
 
     handleStorageChange(
       {
-        userWallets: {
+        [userWalletsKey]: {
           newValue: { network: 'testnet', emulatorMode: true },
           oldValue: { network: 'mainnet', emulatorMode: false },
         },
@@ -209,7 +210,7 @@ describe('useNetworkHook', () => {
             resolve(true);
           } else if (key === 'emulatorMode') {
             resolve(true);
-          } else if (key === 'userWallets') {
+          } else if (key === userWalletsKey) {
             resolve({ network: 'testnet' });
           } else {
             resolve({});

@@ -1,79 +1,52 @@
-import { useCallback } from 'react';
+import { useEffect, useState } from 'react';
 
+import { transferListKey, type TransferListStore } from '@/shared/utils/cache-data-keys';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useTransferListStore } from '@/ui/stores/transferListStore';
 import { useWallet } from '@/ui/utils';
 
+import { useCachedData } from './use-data';
+import { useNetwork } from './useNetworkHook';
+
 export const useTransferList = () => {
-  const usewallet = useWallet();
-
-  const setTransactions = useTransferListStore((state) => state.setTransactions);
-  const setMonitor = useTransferListStore((state) => state.setMonitor);
-  const setFlowscanURL = useTransferListStore((state) => state.setFlowscanURL);
-  const setViewSourceURL = useTransferListStore((state) => state.setViewSourceURL);
-  const setLoading = useTransferListStore((state) => state.setLoading);
-  const setShowButton = useTransferListStore((state) => state.setShowButton);
-  const setCount = useTransferListStore((state) => state.setCount);
-
-  const transactions = useTransferListStore((state) => state.transactions);
-  const monitor = useTransferListStore((state) => state.monitor);
-  const flowscanURL = useTransferListStore((state) => state.flowscanURL);
-  const viewSourceURL = useTransferListStore((state) => state.viewSourceURL);
-  const loading = useTransferListStore((state) => state.loading);
-  const showButton = useTransferListStore((state) => state.showButton);
-  const count = useTransferListStore((state) => state.count);
-
+  const wallet = useWallet();
+  const { network } = useNetwork();
   const { currentWallet } = useProfiles();
 
-  const fetchTransactions = useCallback(
-    async (forceRefresh = false) => {
-      setLoading(true);
-      const monitor = await usewallet.getMonitor();
-      setMonitor(monitor);
-      try {
-        const url = await usewallet.getFlowscanUrl();
-        const viewSourceUrl = await usewallet.getViewSourceUrl();
-        setFlowscanURL(url);
-        setViewSourceURL(viewSourceUrl);
-        const data = await usewallet.getTransactions(
-          currentWallet.address!,
-          15,
-          0,
-          60000,
-          forceRefresh
-        );
+  const currentAddress = currentWallet?.address;
 
-        setLoading(false);
-        if (data.count > 0) {
-          setCount(data.count.toString());
-          setShowButton(data.count > 15);
-        }
-        setTransactions(data.list);
-      } catch {
-        setLoading(false);
-      }
-    },
-    [
-      usewallet,
-      setMonitor,
-      setFlowscanURL,
-      setViewSourceURL,
-      setTransactions,
-      setCount,
-      setShowButton,
-      setLoading,
-      currentWallet,
-    ]
+  const transferListStore = useCachedData<TransferListStore>(
+    network && currentAddress ? transferListKey(network, currentAddress, '0', '15') : null
   );
 
+  const [monitor, setMonitor] = useState<string | null>(null);
+  const [flowscanURL, setFlowscanURL] = useState<string | null>(null);
+  const [viewSourceURL, setViewSourceURL] = useState<string | null>(null);
+  useEffect(() => {
+    let mounted = true;
+    const fetchSettings = async () => {
+      const monitor = await wallet.getMonitor();
+      const url = await wallet.getFlowscanUrl();
+      const viewSourceUrl = await wallet.getViewSourceUrl();
+      if (mounted) {
+        setMonitor(monitor);
+        setFlowscanURL(url);
+        setViewSourceURL(viewSourceUrl);
+      }
+    };
+    fetchSettings();
+    return () => {
+      mounted = false;
+    };
+  }, [wallet]);
+
   return {
-    fetchTransactions,
-    transactions,
+    occupied: !!transferListStore?.pendingCount,
+    transactions: transferListStore?.list || [],
     monitor,
     flowscanURL,
     viewSourceURL,
-    loading,
-    showButton,
-    count,
+    loading: transferListStore === undefined,
+    showButton: transferListStore && transferListStore.count > 15,
+    count: transferListStore?.count,
   };
 };

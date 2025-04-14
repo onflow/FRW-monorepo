@@ -114,7 +114,8 @@ const Deposit = () => {
   const [emulatorModeOn, setEmulatorModeOn] = useState<boolean>(false);
 
   const fetchStuff = useCallback(async () => {
-    const isChild = await usewallet.getActiveWallet();
+    const currentAddress = await usewallet.getCurrentAddress();
+    const isChild = await usewallet.getActiveAccountType();
     if (isChild === 'evm') {
       setIsActive(isChild);
       const wallets = await usewallet.getEvmWallet();
@@ -132,16 +133,16 @@ const Deposit = () => {
         result.map((ele, idx) => ({
           id: idx,
           name: chrome.i18n.getMessage('Wallet'),
-          address: withPrefix(ele?.blockchain[0]?.address),
+          address: withPrefix(ele?.blockchain[0]?.address ?? ''),
         }))
       );
-    } else if (isChild) {
-      setIsActive(isChild);
+    } else if (isChild === 'child' && currentAddress) {
+      setIsActive(currentAddress);
       setUserWallets(
-        Object.keys(childAccounts).map((key, index) => ({
+        Object.keys(childAccounts || []).map((key, index) => ({
           id: index,
           name: key,
-          address: isChild,
+          address: currentAddress,
         }))
       );
     } else {

@@ -1,4 +1,6 @@
-import { type HashAlgoType, type SignAlgoType } from './algo-types';
+import { isValidEthereumAddress, isValidFlowAddress } from '../utils/address';
+
+import { type HashAlgoString, type SignAlgoString } from './algo-types';
 
 // Matches exactly 16 hex characters, with optional 0x prefix
 export type FlowAddress = `0x${string & { length: 16 }}` | `${string & { length: 16 }}`;
@@ -10,19 +12,43 @@ export type EvmAddress = `0x${string & { length: 40 }}` | `${string & { length: 
 export type WalletAddress = EvmAddress | FlowAddress;
 
 // ActiveChildType is the type of the active child in the wallet. It can be 'evm', a FlowAddress, or null.
-export type ActiveChildType = 'evm' | FlowAddress | null;
+// @deprecated: use ActiveAccountType instead
+export type ActiveChildType_depreciated = 'evm' | FlowAddress | null;
 
-export interface CoinItem {
-  coin: string;
-  unit: string;
-  balance: string;
-  availableBalance?: string;
-  price: number;
-  change24h: number | null;
-  total: number;
-  icon: string;
-  custom?: boolean;
-}
+// @deprecated: use ActiveAccountType instead
+export const isEvmAccountType = (type: ActiveChildType_depreciated): type is 'evm' => {
+  return type === 'evm';
+};
+// @deprecated: use ActiveAccountType instead
+export const isChildAccountType = (type: ActiveChildType_depreciated): type is FlowAddress => {
+  return isValidFlowAddress(type);
+};
+// @deprecated: use ActiveAccountType instead
+export const isMainAccountType = (type: ActiveChildType_depreciated): type is null => {
+  return type === null;
+};
+
+export type ActiveAccountType = 'evm' | 'child' | 'main' | 'none';
+
+export const getActiveAccountTypeForAddress = (
+  address: string | null,
+  parentAddress: string | null
+): ActiveAccountType => {
+  if (!address) {
+    // No address is selected
+    return 'none';
+  }
+  if (address === parentAddress) {
+    return 'main';
+  }
+  if (isValidEthereumAddress(address)) {
+    return 'evm';
+  }
+  if (isValidFlowAddress(address)) {
+    return 'child';
+  }
+  throw new Error(`Invalid active account address: ${address}`);
+};
 
 export type LoggedInAccount = {
   // The globally unique id of the account
@@ -38,18 +64,87 @@ export type LoggedInAccount = {
   // The creation date of the account
   created: string;
   // The hash algorithm of the account
-  hashAlgo: HashAlgoType;
+  hashAlgoString: HashAlgoString;
   // Anonymous mode of the account.
   // If 1, the account is NOT anonymous. If 2, the account is anonymous.
   private: number;
   // The public key of the account
   pubKey: string;
   // The signature algorithm of the account
-  signAlgo: SignAlgoType;
+  signAlgoString: SignAlgoString;
   // The weight of the account. Usually 1000
   weight: number;
 };
 
 export type LoggedInAccountWithIndex = LoggedInAccount & {
   indexInLoggedInAccounts: number;
+};
+
+export type PublicKeyAccount = {
+  // The address of the account
+  address: string;
+  // The public key of the account
+  publicKey: string;
+  // The index of the key in the account
+  keyIndex: number;
+  // The weight of the key
+  weight: number;
+  // The signature algorithm of the key
+  signAlgo: number;
+  // The signature algorithm of the key
+  signAlgoString: SignAlgoString;
+  // The hash algorithm of the key
+  hashAlgo: number;
+  // The hash algorithm of the key
+  hashAlgoString: HashAlgoString;
+};
+
+export type WalletAccount = {
+  address: string;
+  chain: number; // testnet: 545, mainnet: MAINNET_CHAIN_ID
+  id: number;
+  name: string;
+  icon: string;
+  color: string;
+  balance?: string;
+};
+export type WalletAccountWithBalance = WalletAccount & {
+  balance: string;
+};
+export type MainAccount = WalletAccount & PublicKeyAccount;
+
+export type MainAccountBalance = {
+  address: string;
+  balance: string;
+};
+
+export type MainAccountWithBalance = MainAccount & {
+  balance: string;
+};
+
+export type WalletProfile = {
+  publicKey: string;
+  currentId?: string;
+  accounts: MainAccount[];
+};
+
+export type Emoji = {
+  emoji: string;
+  name: string;
+  bgcolor: string;
+};
+
+type Thumbnail = {
+  url: string;
+};
+
+export type AccountDetails = {
+  name: string;
+  description: string;
+  thumbnail: Thumbnail;
+  address?: string;
+};
+
+export type ChildAccountMap = {
+  [key: string]: AccountDetails;
 };

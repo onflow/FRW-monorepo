@@ -15,7 +15,8 @@ const createPersistStore = async <T extends object>({
   template = Object.create(null),
   fromStorage = true,
 }: CreatePersistStoreParams<T>): Promise<T> => {
-  let tpl = template;
+  // Always clone the template to avoid mutating the original object
+  let tpl = structuredClone(template);
   if (fromStorage) {
     const storageCache = await storage.get(name);
     tpl = storageCache || template;

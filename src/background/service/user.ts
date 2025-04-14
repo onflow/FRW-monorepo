@@ -1,98 +1,181 @@
-import { createPersistStore } from 'background/utils';
+import { type UserInfoResponse } from '@/shared/types/network-types';
+import { type LoggedInAccount } from '@/shared/types/wallet-types';
+import {
+  userInfoCachekey,
+  userInfoRefreshRegex,
+  type UserInfoStore,
+} from '@/shared/utils/cache-data-keys';
+import { getCurrentProfileId, returnCurrentProfileId } from '@/shared/utils/current-id';
+import storage from '@/shared/utils/storage';
+import { createSessionStore } from 'background/utils';
 
-import { mixpanelTrack } from './mixpanel';
+import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
 
-export interface UserInfoStore {
-  avatar: string;
-  nickname: string;
-  username: string;
-  dashboardIndex: number;
-  private: number;
-  user_id: string;
-  created_at: string;
-  meow: Meows;
-}
+import openapiService from './openapi';
 
-interface Meows {
-  mainnet: string;
-  testnet: string;
-}
+const storedUserListKey = 'stored-user-list';
+const loggedInAccountsKey = 'loggedInAccounts';
 
-const template = {
-  avatar: '',
-  nickname: '',
-  username: '',
-  dashboardIndex: 0,
-  private: 0,
-  user_id: '',
-  created_at: '',
-  meow: {
-    mainnet: '',
-    testnet: '',
-  },
-};
-
-class UserInfo {
-  store!: UserInfoStore;
-
+class UserInfoService {
+  store!: Map<string, UserInfoResponse>;
+  private userList: UserInfoResponse[] = [];
+  // TODO: remove this
+  dashboardIndex = 0;
   init = async () => {
-    this.store = await createPersistStore<UserInfoStore>({
-      name: 'userInfo',
-      template: template,
+    this.store = new Map<string, UserInfoResponse>();
+    this.userList = await this.loadStoredUserList();
+    registerRefreshListener(userInfoRefreshRegex, this.loadUserInfoByUserId);
+  };
+
+  loadStoredUserList = async () => {
+    const userList = await storage.get(storedUserListKey);
+    if (!userList) {
+      // Translate from logged in accounts
+      return await this.translateFromLoggedInAccounts();
+    }
+    return userList;
+  };
+
+  translateFromLoggedInAccounts = async () => {
+    const loggedInAccounts: LoggedInAccount[] = await storage.get(loggedInAccountsKey);
+    if (!loggedInAccounts) {
+      return [];
+    }
+    return loggedInAccounts.map((account) => {
+      const userInfo: UserInfoResponse = {
+        id: account.id,
+        username: account.username,
+        avatar: account.avatar,
+        nickname: account.nickname,
+        private: account.private,
+        created: account.created,
+      };
+      return userInfo;
     });
   };
+  loadUserInfoByUserId = async (userId: string) => {
+    console.trace('loadUserInfoByUserId', userId);
+    const currentId = await returnCurrentProfileId();
 
-  getUserInfo = () => {
-    return this.store;
+    const userInfo: UserInfoResponse | undefined =
+      currentId === userId
+        ? // Great we have permission to get the user info
+          // As we're logged in as the user
+          await this.fetchUserInfo()
+        : // Try to find the user in the list of stored users
+          this.userList.find((user) => user.id === userId);
+
+    if (userInfo) {
+      setCachedData(userInfoCachekey(userId), userInfo);
+    }
+    return userInfo;
   };
 
-  addUserInfo = (data: UserInfoStore) => {
-    this.store.nickname = data['nickname'];
-    this.store.private = data['private'];
-    this.store.username = data['username'];
+  getUserInfo = async (userId: string): Promise<UserInfoResponse | undefined> => {
+    const userInfo = await getValidData<UserInfoStore>(userInfoCachekey(userId));
+    if (!userInfo) {
+      return await this.loadUserInfoByUserId(userId);
+    }
 
-    const url = new URL(data['avatar']);
+    return userInfo;
+  };
+
+  getCurrentUserInfo = async (): Promise<UserInfoResponse> => {
+    const currentId = await getCurrentProfileId();
+    const userInfo = await this.getUserInfo(currentId);
+    if (!userInfo) {
+      throw new Error('User info not found');
+    }
+
+    return userInfo;
+  };
+
+  setCurrentUserInfo = async (userInfo: UserInfoResponse) => {
+    const currentId = await getCurrentProfileId();
+
+    let avatar = userInfo.avatar;
+    const url = new URL(userInfo.avatar);
+
     if (url.host === 'firebasestorage.googleapis.com') {
       url.searchParams.append('alt', 'media');
       url.searchParams.append('token', process.env.FB_TOKEN!);
-      this.store.avatar = url.toString();
-    }
-    this.store.avatar = data['avatar'];
-
-    // identify the user
-    if (this.store.user_id) {
-      mixpanelTrack.identify(this.store.user_id, this.store.username);
+      avatar = url.toString();
     }
 
-    // TODO: track the user info if not in private mode
+    const userInfoWithAvatar: UserInfoResponse = { ...userInfo, avatar };
+
+    if (this.store[currentId]) {
+      // Assign so that it maintains the reference
+      Object.assign(this.store[currentId], userInfoWithAvatar);
+    } else {
+      // Create a new session store
+      this.store[currentId] = createSessionStore<UserInfoStore>({
+        name: userInfoCachekey(currentId),
+        template: userInfoWithAvatar,
+      });
+    }
+
+    // As we can't get the list of users easily we need to cache this list in persistent storage
+    const userIndex = this.userList.findIndex((user) => user.id === currentId);
+    if (userIndex === -1) {
+      this.userList.push(userInfoWithAvatar);
+    } else {
+      this.userList[userIndex] = userInfoWithAvatar;
+    }
+    await storage.set(storedUserListKey, this.userList);
   };
 
-  addUserId = (userId: string) => {
-    this.store.user_id = userId;
-    if (this.store.user_id) {
-      mixpanelTrack.identify(this.store.user_id);
+  fetchUserInfo = async (): Promise<UserInfoResponse> => {
+    const info = await openapiService.userInfo();
+    if (info && info?.avatar) {
+      const avatar = this.addTokenForFirebaseImage(info?.avatar);
+      const updatedUrl = this.replaceAvatarUrl(avatar);
+      info.avatar = updatedUrl;
+      this.setCurrentUserInfo(info);
     }
+    return info;
   };
 
+  replaceAvatarUrl = (url) => {
+    const baseUrl = 'https://source.boringavatars.com/';
+    const newBaseUrl = 'https://lilico.app/api/avatar/';
+
+    if (url.startsWith(baseUrl)) {
+      return url.replace(baseUrl, newBaseUrl);
+    }
+
+    return url;
+  };
+
+  addTokenForFirebaseImage = (avatar: string): string => {
+    if (!avatar) {
+      return avatar;
+    }
+    try {
+      const url = new URL(avatar);
+      if (url.host === 'firebasestorage.googleapis.com') {
+        url.searchParams.append('alt', 'media');
+        return url.toString();
+      }
+      return avatar;
+    } catch (err) {
+      console.error(err);
+      return avatar;
+    }
+  };
   removeUserInfo = () => {
-    this.store = template;
+    // Note this removes the linkage to the store...
+    this.store = new Map<string, UserInfoResponse>();
   };
 
+  // Todo remove this...
   setDashIndex = (data: number) => {
-    this.store.dashboardIndex = data;
+    this.dashboardIndex = data;
   };
 
   getDashIndex = () => {
-    return this.store.dashboardIndex;
-  };
-
-  setMeow = (domain: string, network: string) => {
-    this.store.meow[network] = domain;
-  };
-
-  getMeow = (network: string) => {
-    return this.store.meow[network];
+    return this.dashboardIndex;
   };
 }
 
-export default new UserInfo();
+export default new UserInfoService();

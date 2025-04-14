@@ -1,228 +1,136 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import type {
-  ChildAccount,
-  BlockchainResponse,
-  WalletResponse,
-} from '@/shared/types/network-types';
+import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
+import {
+  type FlowAddress,
+  type WalletAccount,
+  type ChildAccountMap,
+  type MainAccount,
+  getActiveAccountTypeForAddress,
+} from '@/shared/types/wallet-types';
 import { ensureEvmAddressPrefix, withPrefix } from '@/shared/utils/address';
-import { retryOperation } from '@/shared/utils/retryOperation';
+import { UserWalletStore } from '@/shared/utils/user-data-keys';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
-import { useProfileStore } from '@/ui/stores/profileStore';
+import { debug } from '@/ui/utils';
 import { useWallet, useWalletLoaded } from '@/ui/utils/WalletContext';
 
+import {
+  useActiveAccounts,
+  useChildAccounts,
+  useCurrentId,
+  useEvmAccount,
+  useKeyringIds,
+  useAccountBalance,
+  useMainAccounts,
+  useUserInfo,
+  useUserWallets,
+} from './use-account-hooks';
+
+const INITIAL_WALLET = {
+  name: '',
+  icon: '',
+  address: '',
+  chain_id: 'flow',
+  id: 1,
+  coins: ['flow'],
+  color: '',
+  chain: MAINNET_CHAIN_ID,
+};
+
+const INITIAL_ACCOUNT = {
+  name: '',
+  icon: '',
+  address: '',
+  id: 1,
+  color: '',
+  keyIndex: 0,
+  weight: 0,
+  publicKey: '',
+  signAlgo: 1,
+  hashAlgo: 1,
+  signAlgoString: 'ECDSA_secp256k1',
+  hashAlgoString: 'SHA3_256',
+  chain: MAINNET_CHAIN_ID,
+};
+
 export const useProfiles = () => {
-  const usewallet = useWallet();
+  const profilesRef = useRef({
+    initialized: false,
+    loading: false,
+  });
+
+  const wallet = useWallet();
   const walletLoaded = useWalletLoaded();
   const { network } = useNetwork();
 
-  // Action selectors
-  const setMainAddress = useProfileStore((state) => state.setMainAddress);
-  const setEvmAddress = useProfileStore((state) => state.setEvmAddress);
-  const setInitial = useProfileStore((state) => state.setInitial);
-  const setChildAccount = useProfileStore((state) => state.setChildAccount);
-  const setCurrent = useProfileStore((state) => state.setCurrent);
-  const setEvmWallet = useProfileStore((state) => state.setEvmWallet);
-  const setMainLoading = useProfileStore((state) => state.setMainLoading);
-  const setEvmLoading = useProfileStore((state) => state.setEvmLoading);
-  const setUserInfo = useProfileStore((state) => state.setUserInfo);
-  const setOtherAccounts = useProfileStore((state) => state.setOtherAccounts);
-  const setLoggedInAccounts = useProfileStore((state) => state.setLoggedInAccounts);
-  const setWalletList = useProfileStore((state) => state.setWalletList);
-  const setParentWallet = useProfileStore((state) => state.setParentWallet);
-  const clearProfileData = useProfileStore((state) => state.clearProfileData);
+  // Replace zustand store with useState hooks
+  const [initialStart, setInitialStart] = useState(true);
+  const [loggedInAccounts, setLoggedInAccounts] = useState<WalletAccount[]>([]);
+  const [currentWalletIndex, setCurrentWalletIndex] = useState(0);
 
-  // State selectors
-  const initialStart = useProfileStore((state) => state.initialStart);
-  const currentWallet = useProfileStore((state) => state.currentWallet);
-  const mainAddress = useProfileStore((state) => state.mainAddress);
-  const evmAddress = useProfileStore((state) => state.evmAddress);
-  const childAccounts = useProfileStore((state) => state.childAccounts);
-  const evmWallet = useProfileStore((state) => state.evmWallet);
-  const userInfo = useProfileStore((state) => state.userInfo);
-  const otherAccounts = useProfileStore((state) => state.otherAccounts);
-  const loggedInAccounts = useProfileStore((state) => state.loggedInAccounts);
-  const walletList = useProfileStore((state) => state.walletList);
-  const parentWallet = useProfileStore((state) => state.parentWallet);
-  const currentWalletIndex = useProfileStore((state) => state.currentWalletIndex);
-  const evmLoading = useProfileStore((state) => state.evmLoading);
-  const mainAddressLoading = useProfileStore((state) => state.mainAddressLoading);
+  const currentId = useCurrentId();
+  const profileIds = useKeyringIds();
 
-  // Helper function for formatWallets
-  const formatWallets = useCallback(
-    (data) => {
-      if (!Array.isArray(data)) return [];
+  const userInfo = useUserInfo(currentId);
+  // The user wallet data - which public key is currently active
+  const userWallets = useUserWallets();
+  // The main accounts for the current public key
+  const mainAccounts = useMainAccounts(network, userWallets?.currentPubkey);
+  const walletList = mainAccounts ?? [];
+  // The accounts that have been selected by the user
+  const activeAccounts = useActiveAccounts(network, userWallets?.currentPubkey);
+  // The child accounts for the currently active main account
+  const childAccounts = useChildAccounts(network, activeAccounts?.parentAddress);
 
-      const filteredData = data.filter((wallet) => {
-        return wallet.chain_id === network;
-      });
+  const currentBalance = useAccountBalance(network, activeAccounts?.currentAddress);
 
-      return filteredData.map((wallet, index) => ({
-        id: index,
-        name: wallet.name || 'Wallet',
-        address: withPrefix(wallet.blockchain[0].address),
-        key: index,
-        icon: wallet.icon || '',
-        color: wallet.color || '',
-      }));
-    },
-    [network]
+  const parentWallet =
+    walletList.find((wallet) => wallet.address === activeAccounts?.parentAddress) ?? INITIAL_WALLET;
+
+  // Wallets other than the parent wallet
+  const otherAccounts = walletList.filter((wallet) => wallet.id !== parentWallet.id);
+
+  // The EVM address for the currently active main account
+  const evmAccount = useEvmAccount(network, activeAccounts?.parentAddress);
+  const evmLoading = evmAccount === undefined;
+  const evmWallet = evmAccount ?? INITIAL_WALLET;
+
+  const evmAddress = evmAccount?.address ?? '';
+  const mainAddress = activeAccounts?.parentAddress ?? '';
+
+  const mainAddressLoading = !mainAccounts || !activeAccounts || !activeAccounts?.parentAddress;
+
+  const activeAccountType = useMemo(
+    () =>
+      getActiveAccountTypeForAddress(
+        activeAccounts?.currentAddress ?? null,
+        activeAccounts?.parentAddress ?? null
+      ),
+    [activeAccounts?.currentAddress, activeAccounts?.parentAddress]
   );
 
-  // Helper function to handle EVM wallet setup
-  const setupEvmWallet = useCallback(
-    async (mainAddress: string) => {
-      try {
-        const [evmRes, emoji, evmWallet] = await Promise.all([
-          usewallet.queryEvmAddress(mainAddress),
-          usewallet.getEmoji(),
-          usewallet.getEvmWallet(),
-        ]);
-
-        const evmAddress = ensureEvmAddressPrefix(evmRes!);
-
-        // Setup EVM wallet data
-        const evmWalletData: BlockchainResponse = {
-          ...evmWallet,
-          name: emoji[9].name,
-          icon: emoji[9].emoji,
-          address: evmAddress,
-          chain_id: '1',
-          id: 1,
-          coins: [],
-          color: emoji[9].bgcolor,
-        };
-
-        // Batch updates
-        await Promise.all([setEvmWallet(evmWalletData), setEvmAddress(evmAddress)]);
-        setEvmLoading(false);
-
-        return evmWalletData;
-      } catch (error) {
-        console.error('Error setting up EVM wallet:', error);
-        throw error;
-      }
-    },
-    [usewallet, setEvmWallet, setEvmAddress, setEvmLoading]
-  );
-
-  // Helper function for fetchUserWallet
-  const freshUserInfo = useCallback(async () => {
-    if (!usewallet || !walletLoaded) return;
-    try {
-      // Make sure the wallet is unlocked and has a main wallet
-      if (!(await usewallet.getMainWallet())) {
-        console.log('freshUserInfo - No main wallet yet');
-        return;
-      }
-      //TODO: should rethink the wording of the wallet functions, have it be parent evm and child or something similar. State name and should be the same frontend and background.
-      const [currentWallet, isChild, mainAddress] = await Promise.all([
-        usewallet.getCurrentWallet(),
-        usewallet.getActiveWallet(),
-        usewallet.getMainAddress(),
-      ]);
-
-      if (!currentWallet) {
-        // We may not be logged in yet
-        return;
-      }
-      const mainwallet = await usewallet.returnMainWallet();
-      setParentWallet(mainwallet!);
-      if (isChild === 'evm') {
-        const evmWalletData = await setupEvmWallet(mainAddress!);
-        await setCurrent(evmWalletData);
-      } else if (isChild) {
-        await setCurrent(currentWallet);
-      } else {
-        await setCurrent(mainwallet);
-      }
-
-      const [keys, pubKTuple] = await Promise.all([usewallet.getAccount(), usewallet.getPubKey()]);
-
-      // Separate getUserInfo with retry since it depends on address from cadence and userinfo from openapi
-      let walletData;
-      try {
-        walletData = await retryOperation(
-          () => usewallet.getUserInfo(true),
-          3, // max attempts
-          1000 // delay between attempts
+  // The current wallet is the wallet that the user is currently using
+  const currentWallet = useMemo(() => {
+    switch (activeAccountType) {
+      case 'evm':
+        return evmAccount ?? INITIAL_WALLET;
+      case 'child':
+        return (
+          childAccounts?.find((account) => account.address === activeAccounts?.currentAddress) ??
+          INITIAL_WALLET
         );
-      } catch (error) {
-        console.error('All attempts failed to get user info:', error);
-        throw error;
-      }
-
-      const { otherAccounts, wallet, loggedInAccounts } = await usewallet.openapi.freshUserInfo(
-        currentWallet,
-        keys,
-        pubKTuple,
-        walletData,
-        isChild
-      );
-
-      await Promise.all([
-        setOtherAccounts(otherAccounts),
-        setUserInfo(wallet),
-        setLoggedInAccounts(loggedInAccounts),
-      ]);
-    } catch (error) {
-      console.error('Error in freshUserInfo:', error);
-    } finally {
-      setMainLoading(false);
+      case 'main':
+        return parentWallet ?? INITIAL_WALLET;
+      default:
+        return INITIAL_WALLET;
     }
-  }, [
-    usewallet,
-    walletLoaded,
-    setLoggedInAccounts,
-    setOtherAccounts,
-    setUserInfo,
-    setCurrent,
-    setupEvmWallet,
-    setMainLoading,
-    setParentWallet,
-  ]);
+  }, [activeAccountType, evmAccount, childAccounts, parentWallet, activeAccounts?.currentAddress]);
 
-  // 1. First called in index.ts, get the user info(name and avatar) and the main address
-  const fetchProfileData = useCallback(async () => {
-    if (!usewallet || !walletLoaded) return;
-    try {
-      const mainAddress = await usewallet.getMainAddress();
-      if (mainAddress) {
-        setMainAddress(mainAddress);
-        await setupEvmWallet(mainAddress);
-      }
-    } catch (err) {
-      console.error('fetchProfileData err', err);
-    }
-  }, [usewallet, setMainAddress, setupEvmWallet, walletLoaded]);
-
-  // 2. Second called in index.ts, get all the address for this userunder the current network
-  const freshUserWallet = useCallback(async () => {
-    if (!usewallet || !walletLoaded) return;
-    const wallet: WalletResponse[] = await usewallet.getUserWallets();
-    const fData: WalletResponse[] = wallet.filter((item) => item.blockchain !== null);
-
-    if (initialStart) {
-      await usewallet.openapi.putDeviceInfo(fData);
-      setInitial(false);
-    }
-    const formattedWallets = formatWallets(fData);
-    setWalletList(formattedWallets);
-  }, [usewallet, initialStart, setInitial, formatWallets, setWalletList, walletLoaded]);
-
-  // 3. Third called in index.ts check the child account and set the child account
-  const fetchUserWallet = useCallback(async () => {
-    if (!usewallet || !walletLoaded) return;
-    freshUserInfo();
-    const childresp: ChildAccount = await usewallet.checkUserChildAccount();
-    setChildAccount(childresp);
-    usewallet.setChildWallet(childresp);
-  }, [freshUserInfo, usewallet, setChildAccount, walletLoaded]);
+  const clearProfileData = () => {};
+  const fetchProfileData = () => {};
 
   return {
     fetchProfileData,
-    freshUserWallet,
-    fetchUserWallet,
     clearProfileData,
     initialStart,
     currentWallet,
@@ -234,9 +142,12 @@ export const useProfiles = () => {
     otherAccounts,
     loggedInAccounts,
     walletList,
+    currentBalance,
     parentWallet,
     currentWalletIndex,
     evmLoading,
     mainAddressLoading,
+    profileIds,
+    activeAccountType,
   };
 };

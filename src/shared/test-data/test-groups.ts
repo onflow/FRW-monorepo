@@ -1,6 +1,12 @@
-import { getAccountKey } from '@/shared/utils/address';
+import HDWallet from 'ethereum-hdwallet';
+
+import {
+  HASH_ALGO_NUM_SHA2_256,
+  SIGN_ALGO_NUM_ECDSA_secp256k1,
+} from '@/ui/utils/modules/constants';
 
 import { type ApiTestResult, type ApiTestResults } from './api-test-results';
+
 export interface ApiTestFunction {
   name: string;
   controlledBy?: ApiTestFunction[]; // if set we may need to go through wallet service
@@ -39,10 +45,20 @@ export interface CommonParams {
     user_agent: string;
   };
 }
+const getFrontEndAccountKey = (mnemonic: string) => {
+  const hdwallet = HDWallet.fromMnemonic(mnemonic);
+  const publicKey = hdwallet.derive("m/44'/539'/0'/0/0").getPublicKey().toString('hex');
 
+  return {
+    hashAlgo: HASH_ALGO_NUM_SHA2_256,
+    signAlgo: SIGN_ALGO_NUM_ECDSA_secp256k1,
+    weight: 1000,
+    publicKey,
+  };
+};
 export const createTestGroups = (commonParams: CommonParams): ApiTestGroups => {
-  const accountKey = getAccountKey(commonParams.mnemonicExisting);
-  const generatedAccountKey = getAccountKey(commonParams.mnemonicGenerated);
+  const accountKey = getFrontEndAccountKey(commonParams.mnemonicExisting);
+  const generatedAccountKey = getFrontEndAccountKey(commonParams.mnemonicGenerated);
 
   return {
     core: [{ name: 'sendRequest', params: { method: 'GET', url: '', params: {} } }],
@@ -93,6 +109,10 @@ export const createTestGroups = (commonParams: CommonParams): ApiTestGroups => {
       { name: 'userInfo', params: {} },
       { name: 'searchUser', params: { keyword: 'webdev18_862' } },
       { name: 'checkImport', params: { key: 'test' } },
+      {
+        name: 'getAccountsWithPublicKey',
+        params: { publicKey: commonParams.publicKey.P256.pubK, network: commonParams.network },
+      },
     ],
     wallet: [{ name: 'createFlowAddress', params: {} }],
     device: [
@@ -115,6 +135,16 @@ export const createTestGroups = (commonParams: CommonParams): ApiTestGroups => {
         params: { network: commonParams.network, chainType: 'flow' },
       },
       { name: 'getNFTList', params: { network: commonParams.network } },
+    ],
+    tokens: [
+      {
+        name: 'getUserTokens',
+        params: { address: commonParams.address, network: 'mainnet' },
+      },
+      {
+        name: 'getUserTokens',
+        params: { address: commonParams.addressEvm, network: 'mainnet' },
+      },
     ],
     approval: [
       {

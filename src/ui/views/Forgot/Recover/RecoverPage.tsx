@@ -3,12 +3,12 @@ import { Typography, Box, FormControl, Input } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { useEffect, useRef, useState } from 'react';
 
+import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import { LLPrimaryButton } from 'ui/FRWComponent';
 import { useWallet } from 'ui/utils';
 
 import CancelIcon from '../../../../components/iconfont/IconClose';
-
 const useStyles = makeStyles(() => ({
   customInputLabel: {
     '& legend': {
@@ -38,7 +38,7 @@ const RecoverPage = ({ dataArray, setArray, goNext }) => {
   // const { t } = useTranslation();
   const [showError, setShowError] = useState(false);
   const [isLoading, setLoading] = useState(false);
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState(DEFAULT_PASSWORD);
   const [retrieved, setRetrieved] = useState(false);
   useEffect(() => {
     if (!inputEl.current) return;

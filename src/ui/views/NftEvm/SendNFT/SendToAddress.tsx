@@ -203,13 +203,13 @@ const SendToAddress = () => {
   const setUserInfo = useCallback(async () => {
     await usewallet.setDashIndex(1);
     const info = await usewallet.getUserInfo(false);
-    const activeChild = await usewallet.getActiveWallet();
+    const activeAccountType = await usewallet.getActiveAccountType();
     const userContact = { ...USER_CONTACT };
-    if (activeChild === 'evm') {
+    if (activeAccountType === 'evm') {
       const data = await usewallet.getEvmAddress();
       userContact.address = data;
     } else {
-      userContact.address = withPrefix(currentWallet.address) || '';
+      userContact.address = withPrefix(currentWallet?.address ?? '') || '';
     }
     userContact.avatar = info.avatar;
     userContact.contact_name = info.username;
@@ -226,10 +226,8 @@ const SendToAddress = () => {
     setMedia(media);
 
     const contractList = await usewallet.openapi.getAllNft();
-    console.log('contractList ', contractList);
-    console.log('NFT ', NFT);
+
     const filteredCollections = returnFilteredCollections(contractList, NFT);
-    console.log('filteredCollections ', filteredCollections);
     if (filteredCollections) {
       setContractInfo(filteredCollections);
     }
@@ -433,7 +431,6 @@ const SendToAddress = () => {
             className={classes.inputBox}
             placeholder={chrome.i18n.getMessage('Search__Address__or__Flow__domain')}
             autoFocus
-            disableUnderline
             endAdornment={
               <InputAdornment position="end">
                 <SearchIcon color="primary" sx={{ ml: '10px', my: '5px', fontSize: '24px' }} />

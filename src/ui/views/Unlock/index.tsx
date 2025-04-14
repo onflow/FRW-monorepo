@@ -4,6 +4,7 @@ import { makeStyles } from '@mui/styles';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
+import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import lilo from '@/ui/FRWAssets/image/lilo.png';
 import { LLPrimaryButton, LLResetPopup } from '@/ui/FRWComponent';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
@@ -45,14 +46,14 @@ const UsernameError: React.FC = () => (
   </Box>
 );
 
-if (process.env.NODE_ENV !== 'development') {
-  if (!!process.env.DEV_PASSWORD) {
-    throw new Error('DEV_PASSWORD should only be set in development environment');
-  }
-}
-
-const DEFAULT_PASSWORD =
-  process.env.NODE_ENV === 'development' ? process.env.DEV_PASSWORD || '' : '';
+const UnexpectedError: React.FC = () => (
+  <Box display="flex" flexDirection="row" alignItems="center">
+    <CancelIcon size={24} color={'#E54040'} style={{ margin: '8px' }} />
+    <Typography variant="body1" color="text.secondary">
+      {chrome.i18n.getMessage('Oops__unexpected__error')}
+    </Typography>
+  </Box>
+);
 
 const Unlock = () => {
   const wallet = useWallet();
@@ -61,7 +62,8 @@ const Unlock = () => {
   const classes = useStyles();
   const inputEl = useRef<any>(null);
   // const { t } = useTranslation();
-  const [showError, setShowError] = useState(false);
+  const [showPasswordError, setShowPasswordError] = useState(false);
+  const [showUnexpectedError, setShowUnexpectedError] = useState(false);
   const [password, setPassword] = useState(DEFAULT_PASSWORD);
   const [resetPop, setResetPop] = useState<boolean>(false);
   const [unlocking, setUnlocking] = useState<boolean>(false);
@@ -80,13 +82,22 @@ const Unlock = () => {
   }, [wallet, clearProfileData]);
 
   const handleUnlock = useCallback(async () => {
+    // Check the password is correct
+    try {
+      await wallet.verifyPassword(password);
+    } catch {
+      // Password is incorrect
+      setShowPasswordError(true);
+      return;
+    }
+    // Unlock the wallet
     try {
       setUnlocking(true);
       await wallet.unlock(password);
       history.replace('/');
     } catch (err) {
       console.error(err);
-      setShowError(true);
+      setShowUnexpectedError(true);
     } finally {
       setUnlocking(false);
     }
@@ -153,13 +164,13 @@ const Unlock = () => {
           disableUnderline
           value={password}
           onChange={(event) => {
-            setShowError(false);
+            setShowPasswordError(false);
             setPassword(event.target.value);
           }}
           onKeyDown={handleKeyDown}
         />
 
-        <SlideRelative direction="down" show={showError}>
+        <SlideRelative direction="down" show={showPasswordError || showUnexpectedError}>
           <Box
             sx={{
               width: '95%',
@@ -169,7 +180,7 @@ const Unlock = () => {
             }}
           >
             <Box display="flex" flexDirection="row" sx={{ p: '4px' }}>
-              <UsernameError />
+              {showPasswordError ? <UsernameError /> : <UnexpectedError />}
             </Box>
           </Box>
         </SlideRelative>

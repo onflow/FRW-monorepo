@@ -1,5 +1,5 @@
 import { makeStyles } from '@mui/styles';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Switch, withRouter, type RouteComponentProps } from 'react-router-dom';
 
 import { useInitHook } from '@/ui/hooks';
@@ -25,6 +25,7 @@ import About from './Setting/About/About';
 import Account from './Setting/Account';
 import AddressBook from './Setting/AddressBook';
 import ManageBackups from './Setting/Backups';
+import BackupsPassword from './Setting/Backups/BackupsPassword';
 import DeveloperMode from './Setting/DeveloperMode/DeveloperMode';
 import DeviceInfo from './Setting/Devices/DeviceInfo';
 import KeyList from './Setting/KeyList/KeyList';
@@ -70,28 +71,33 @@ const InnerRoute = (props: RouteComponentProps) => {
   const walletLoaded = useWalletLoaded();
   const { initializeStore } = useInitHook();
 
+  const initRef = useRef(false);
+
   const fetch = useCallback(async () => {
-    if (!walletLoaded) {
+    if (!walletLoaded || initRef.current) {
       return;
     }
-    // TODO: Look into why this code exists...
-    const dashIndex = await usewallet.getDashIndex();
-    if (dashIndex) {
-      setValue(dashIndex);
-    } else {
-      setValue(0);
-      await usewallet.setDashIndex(0);
+
+    try {
+      initRef.current = true;
+      const dashIndex = await usewallet.getDashIndex();
+      if (dashIndex) {
+        setValue(dashIndex);
+      } else {
+        setValue(0);
+        await usewallet.setDashIndex(0);
+      }
+      await initializeStore();
+    } finally {
+      initRef.current = false;
     }
-    initializeStore();
   }, [usewallet, initializeStore, walletLoaded]);
 
   useEffect(() => {
-    if (!walletLoaded) {
-      return;
+    if (walletLoaded) {
+      fetch();
     }
-
-    fetch();
-  }, [fetch, walletLoaded]);
+  }, [walletLoaded, fetch]);
 
   useEffect(() => {
     if (!walletLoaded) {
@@ -174,7 +180,7 @@ const InnerRoute = (props: RouteComponentProps) => {
               <Deposit />
             </PrivateRoute>
 
-            <PrivateRoute path={`${props.match.url}/token/:id`} exact>
+            <PrivateRoute path={`${props.match.url}/tokendetail/:name/:id`} exact>
               <TokenDetail />
             </PrivateRoute>
             <PrivateRoute path={`${props.match.url}/token/:id/send`} exact>
@@ -224,8 +230,11 @@ const InnerRoute = (props: RouteComponentProps) => {
             <PrivateRoute path={`${props.match.url}/setting/account`}>
               <Account />
             </PrivateRoute>
-            <PrivateRoute path={`${props.match.url}/setting/backups`}>
+            <PrivateRoute path={`${props.match.url}/setting/backups`} exact>
               <ManageBackups />
+            </PrivateRoute>
+            <PrivateRoute path={`${props.match.url}/setting/backups/password`}>
+              <BackupsPassword />
             </PrivateRoute>
             <PrivateRoute path={`${props.match.url}/enable`}>
               <Enable />

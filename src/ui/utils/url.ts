@@ -29,6 +29,7 @@ export interface MatchMedia {
   description: string;
   type: MatchMediaType;
   videoURL: string | null;
+  image?: string;
 }
 
 export enum MatchMediaType {

@@ -2,6 +2,7 @@ import { Box, Typography, FormGroup } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { useCallback, useEffect, useState } from 'react';
 
+import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import {
   PasswordInput,
   TermsCheckbox,
@@ -41,12 +42,12 @@ interface SetPasswordProps {
 }
 
 const SetPassword: React.FC<SetPasswordProps> = ({
-  handleSwitchTab,
+  handleSwitchTab = () => {},
   onSubmit,
-  username,
+  username = '',
   showTerms = false,
-  title,
-  subtitle,
+  title = '',
+  subtitle = '',
   isLogin = false,
   autoFocus = false,
 }) => {
@@ -54,8 +55,8 @@ const SetPassword: React.FC<SetPasswordProps> = ({
 
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const [isConfirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [password, setPassword] = useState(DEFAULT_PASSWORD);
+  const [confirmPassword, setConfirmPassword] = useState(DEFAULT_PASSWORD);
   const [isCharacters, setCharacters] = useState(false);
   const [isMatch, setMatch] = useState(false);
   const [isCheck, setCheck] = useState(!showTerms);
@@ -166,6 +167,11 @@ const SetPassword: React.FC<SetPasswordProps> = ({
               setVisible={setPasswordVisible}
               className={classes.inputBox}
               autoFocus={autoFocus}
+              placeholder={
+                isLogin
+                  ? chrome.i18n.getMessage('Confirm__your__password')
+                  : chrome.i18n.getMessage('Create__a__password')
+              }
             />
             <SlideRelative show={!!password} direction="down">
               <Box style={{ marginBottom: '24px' }}>{helperText}</Box>

@@ -7,6 +7,7 @@ vi.mock('@/background/service/userWallet', async () => {
       ...actual,
       getNetwork: vi.fn().mockResolvedValue('testnet'),
       getActiveWallet: vi.fn().mockResolvedValue('test-address'),
+      getActiveAccountType: vi.fn().mockReturnValue(null),
       setupFcl: vi.fn(),
       reSign: vi.fn(),
       clear: vi.fn(),
@@ -56,6 +57,25 @@ const mockStorage = {
     ),
     set: vi.fn().mockImplementation(() => Promise.resolve()),
   },
+  session: {
+    get: vi.fn().mockImplementation(() =>
+      Promise.resolve({
+        expiry: Date.now() + 1000 * 60 * 60,
+        value: {
+          version: '1.0.0',
+          scripts: {
+            mainnet: {
+              test: 'test',
+            },
+            testnet: {
+              test: 'test',
+            },
+          },
+        },
+      })
+    ),
+    set: vi.fn().mockImplementation(() => Promise.resolve()),
+  },
 };
 
 vi.stubGlobal('chrome', { storage: mockStorage });
@@ -83,12 +103,13 @@ vi.stubGlobal('fetch', mockFetch);
 // Then imports
 import { API_TEST_RESULTS } from '@/shared/test-data/api-test-results';
 import {
+  type CommonParams,
   createTestGroups,
   updateTestParamsFromResults,
-  type CommonParams,
 } from '@/shared/test-data/test-groups';
-
 //import walletController from '../../controller/wallet';
+import { type FlowNetwork } from '@/shared/types/network-types';
+
 import openApiService from '../openapi';
 import userWalletService from '../userWallet';
 
@@ -232,7 +253,14 @@ describe('OpenApiService', () => {
           const networkHeader = headers?.Network;
           if (networkHeader) {
             vi.mocked(userWalletService.getNetwork).mockResolvedValueOnce(
-              networkHeader.toLowerCase()
+              networkHeader.toLowerCase() as FlowNetwork
+            );
+            // Also update the headers in the mock storage
+            mockStorage.local.get.mockImplementationOnce(() =>
+              Promise.resolve({
+                auth: { token: 'mock-token' },
+                network: networkHeader.toLowerCase(),
+              })
             );
           }
 

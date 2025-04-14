@@ -53,7 +53,7 @@ function AccountMainBox({ isChild, setSelectedChildAccount, selectedAccount, isE
       const walletList = { ...childAccounts, ...newWallet, ...eWallet };
       delete walletList[address!];
       const firstWalletAddress = Object.keys(walletList)[0];
-      const wallet = childAccounts[address!];
+      const wallet = childAccounts?.[address!];
       setChildWallets(walletList);
 
       const userContact = {

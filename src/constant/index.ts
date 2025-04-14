@@ -138,10 +138,9 @@ export const INTERNAL_REQUEST_SESSION = {
   icon: './images/icon-128.png',
 };
 
-export const INITIAL_OPENAPI_URL =
-  process.env.NODE_ENV === 'production' ? 'https://api.lilico.app' : 'https://dev.lilico.app';
-export const WEB_NEXT_URL =
-  process.env.NODE_ENV === 'production' ? 'https://lilico.app' : process.env.API_BASE_URL;
+export const INITIAL_OPENAPI_URL = process.env.API_GO_SERVER_URL!;
+
+export const WEB_NEXT_URL = process.env.API_BASE_URL!;
 // export const INITIAL_OPENAPI_URL = 'http://localhost:4747';
 
 // export const INITIAL_OPENAPI_URL = process.env.INITIAL_OPENAPI_URL!;
@@ -168,3 +167,5 @@ export const EVM_ENDPOINT = {
   mainnet: 'https://mainnet.evm.nodes.onflow.org',
   testnet: 'https://testnet.evm.nodes.onflow.org',
 };
+
+export const HTTP_STATUS_CONFLICT = 409;

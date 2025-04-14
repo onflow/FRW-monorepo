@@ -1,39 +1,30 @@
-import HDWallet from 'ethereum-hdwallet';
+import { type AccountKeyRequest } from '@/shared/types/network-types';
+import {
+  type FlowAddress,
+  type EvmAddress,
+  type PublicKeyAccount,
+} from '@/shared/types/wallet-types';
 
-import { type AccountKey } from '@/shared/types/network-types';
-
-export function sansPrefix(address) {
+export function sansPrefix(address: string): FlowAddress | EvmAddress | null {
   if (!address) return null;
-  return address.replace(/^0x/, '').replace(/^Fx/, '');
+  return address.replace(/^0x/, '').replace(/^Fx/, '') as FlowAddress | EvmAddress;
 }
 
-export function withPrefix(address): string | null {
+export function withPrefix(address: string): FlowAddress | EvmAddress | null {
   if (!address) return null;
-  return '0x' + sansPrefix(address);
+  return ('0x' + sansPrefix(address)) as FlowAddress | EvmAddress;
 }
 
 export function display(address) {
   return withPrefix(address);
 }
 
-export const getAccountKey = (mnemonic) => {
-  const hdwallet = HDWallet.fromMnemonic(mnemonic);
-  const publicKey = hdwallet.derive("m/44'/539'/0'/0/0").getPublicKey().toString('hex');
-  const key: AccountKey = {
-    hash_algo: 1,
-    sign_algo: 2,
-    weight: 1000,
-    public_key: publicKey,
-  };
-  return key;
-};
-
-export const isValidEthereumAddress = (address) => {
+export const isValidEthereumAddress = (address): address is EvmAddress => {
   const regex = /^(0x)?[0-9a-fA-F]{40}$/;
   return regex.test(address);
 };
 
-export const isValidFlowAddress = (address) => {
+export const isValidFlowAddress = (address): address is FlowAddress => {
   const regex = /^(0x)?[0-9a-fA-F]{16}$/;
   return regex.test(address);
 };

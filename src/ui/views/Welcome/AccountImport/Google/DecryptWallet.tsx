@@ -5,6 +5,7 @@ import { makeStyles } from '@mui/styles';
 import { Box } from '@mui/system';
 import React, { useEffect, useState } from 'react';
 
+import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import { useWallet } from 'ui/utils';
 
@@ -56,7 +57,7 @@ const DecryptWallet = ({ handleSwitchTab, setMnemonic, username }) => {
   const usewallet = useWallet();
 
   const [isPasswordVisible, setPasswordVisible] = useState(false);
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState(DEFAULT_PASSWORD);
   const [isCharacters, setCharacters] = useState(false);
   // const [isCheck, setCheck] = useState(false);
   const [isLoading, setLoading] = useState(false);

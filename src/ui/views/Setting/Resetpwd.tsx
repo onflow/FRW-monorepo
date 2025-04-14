@@ -16,6 +16,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import zxcvbn from 'zxcvbn';
 
+import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import { useWallet } from 'ui/utils';
 
@@ -120,16 +121,16 @@ const Resetpassword = () => {
   const wallet = useWallet();
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const [isConfirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [password, setPassword] = useState(DEFAULT_PASSWORD);
+  const [confirmPassword, setConfirmPassword] = useState(DEFAULT_PASSWORD);
   const [isCharacters, setCharacters] = useState(false);
   const [isMatch, setMatch] = useState(false);
-  const [confirmcurrentPassword, setConfirmcurrentPassword] = useState('');
+  const [confirmcurrentPassword, setConfirmcurrentPassword] = useState(DEFAULT_PASSWORD);
   const [isSame, setSame] = useState(false);
   const history = useHistory();
 
   const verify = useCallback(async () => {
-    await wallet.getCurrentPassword(confirmcurrentPassword);
+    await wallet.verifyPassword(confirmcurrentPassword);
     setSame(true);
   }, [confirmcurrentPassword, wallet]);
 

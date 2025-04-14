@@ -1,14 +1,9 @@
 import type { Account as FclAccount } from '@onflow/typedefs';
 import * as ethUtil from 'ethereumjs-util';
 
-import packageJson from '@/../package.json';
-import { storage } from '@/background/webapi';
-
-const { version } = packageJson;
-import { type FlowNetwork } from '../../shared/types/network-types';
-import { EMULATOR_HOST_TESTNET, EMULATOR_HOST_MAINNET } from '../fclConfig';
-import { mixpanelTrack } from '../service/mixpanel';
-import pageStateCache from '../service/pageStateCache';
+import { EMULATOR_HOST_TESTNET, EMULATOR_HOST_MAINNET } from '@/background/fclConfig';
+import pageStateCache from '@/background/service/pageStateCache';
+import { type FlowNetwork } from '@/shared/types/network-types';
 
 export { default as createPersistStore } from './persisitStore';
 export { default as createSessionStore } from './sessionStore';
@@ -133,41 +128,22 @@ export const checkEmulatorAccount = async (
   }
 };
 
-export const getScripts = async (folder: string, scriptName: string) => {
-  try {
-    const { data } = await storage.get('cadenceScripts');
-    const files = data[folder];
-    const script = files[scriptName];
-    const scriptString = Buffer.from(script, 'base64').toString('utf-8');
-    const modifiedScriptString = scriptString.replaceAll('<platform_info>', `Extension-${version}`);
-    return modifiedScriptString;
-  } catch (error) {
-    if (error instanceof Error) {
-      mixpanelTrack.track('script_error', {
-        script_id: scriptName,
-        error: error.message,
-      });
-    }
-    throw error;
-  }
-};
-
-export const findKeyAndInfo = (keys: FclAccount, publicKey: string) => {
-  const index = findPublicKeyIndex(keys, publicKey);
+export const findKeyAndInfo = (account: FclAccount, publicKey: string) => {
+  const index = findPublicKeyIndex(account, publicKey);
   if (index >= 0) {
-    const key = keys.keys[index];
+    const key = account.keys[index];
     return {
       index: index,
-      signAlgo: key.signAlgoString,
-      hashAlgo: key.hashAlgoString,
+      signAlgoString: key.signAlgoString,
+      hashAlgoString: key.hashAlgoString,
       publicKey: key.publicKey,
     };
   }
   return null;
 };
 
-export const findPublicKeyIndex = (data: FclAccount, publicKey: string) => {
-  return data.keys.findIndex((key) => key.publicKey === publicKey);
+export const findPublicKeyIndex = (account: FclAccount, publicKey: string) => {
+  return account.keys.findIndex((key) => key.publicKey === publicKey);
 };
 
 export const replaceNftKeywords = (script: string, token: any) => {
