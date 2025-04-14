@@ -1105,7 +1105,6 @@ export class WalletController extends BaseController {
   };
 
   initCoinListSession = async (address: string, currency: string) => {
-    console.log('initCoinListSession', address, currency);
     const network = await this.getNetwork();
     await coinListService.initCoinList(network, address, currency);
   };

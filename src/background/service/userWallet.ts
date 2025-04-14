@@ -122,7 +122,6 @@ class UserWallet {
     if (!this.store) {
       await this.init();
     } else {
-      console.log('clear displayCurrency', this.store.displayCurrency);
       Object.assign(this.store, USER_WALLET_TEMPLATE);
     }
     this.activeAccounts = new Map();
@@ -984,7 +983,6 @@ class UserWallet {
   getDeviceInfo = async (): Promise<DeviceInfoRequest> => {
     const result = await this.walletController.openapi.getLocation();
     const installationId = await this.walletController.openapi.getInstallationId();
-    // console.log('location ', userlocation);
     const userlocation = result.data;
     const deviceInfo: DeviceInfoRequest = {
       city: userlocation.city,
