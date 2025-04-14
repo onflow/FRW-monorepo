@@ -2,6 +2,7 @@ import { Box, Button, Typography, TextField, TextareaAutosize } from '@mui/mater
 import { makeStyles } from '@mui/styles';
 import React, { useState } from 'react';
 
+import PasswordTextarea from '@/ui/FRWComponent/PasswordTextarea';
 import { useWallet } from '@/ui/utils/WalletContext';
 import { LLSpinner } from 'ui/FRWComponent';
 
@@ -58,9 +59,8 @@ const KeyImport = ({ onOpen, onImport, setPk, isSignLoading }) => {
   return (
     <Box sx={{ padding: '0' }}>
       <form id="seed" onSubmit={handleImport} className={classes.form}>
-        <TextareaAutosize
+        <PasswordTextarea
           placeholder={chrome.i18n.getMessage('Enter_your_Private_key')}
-          className={classes.textarea}
           aria-label="Private Key"
           required
         />
