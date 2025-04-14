@@ -1008,36 +1008,6 @@ class UserWallet {
     };
     return deviceInfo;
   };
-
-  // Currency-related methods
-  getDisplayCurrency = (): Currency => {
-    return this.store.displayCurrency;
-  };
-
-  setDisplayCurrency = async (currency: Currency) => {
-    const supportedCurrencies = await this.getSupportedCurrencies();
-    if (supportedCurrencies.some((c) => c.code === currency.code)) {
-      this.store.displayCurrency = currency;
-      console.log('set displayCurrency', currency);
-
-      if (this.walletController) {
-        const currentAddress = await this.getCurrentAddress();
-        console.log('set displayCurrency - currentAddress', currentAddress);
-        await this.walletController.initCoinListSession(currentAddress, currency.code);
-      } else {
-        console.warn('WalletController not initialized when setting display currency');
-      }
-    }
-  };
-
-  getCurrencySymbol = async (): Promise<Currency> => {
-    const currency = this.getDisplayCurrency();
-    return currency;
-  };
-
-  getSupportedCurrencies = async (): Promise<Currency[]> => {
-    return openapiService.getSupportedCurrencies();
-  };
 }
 
 // ------------------------------------------------------------------------------------------------

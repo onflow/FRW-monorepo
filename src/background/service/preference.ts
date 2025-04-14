@@ -139,12 +139,7 @@ class PreferenceService {
       this.store.walletSavedList = [];
     }
     if (!this.store.displayCurrency) {
-      this.store.displayCurrency = {
-        code: 'USD',
-        symbol: '$',
-        name: 'United States Dollar',
-        country: 'United States',
-      };
+      this.store.displayCurrency = DEFAULT_CURRENCY;
     }
   };
 
@@ -359,6 +354,12 @@ class PreferenceService {
   //   const key = address.toLowerCase();
   //   this.store.addedToken[key] = tokenList;
   // };
+  getDisplayCurrency = () => {
+    return this.store.displayCurrency;
+  };
+  setDisplayCurrency = (currency: Currency) => {
+    this.store.displayCurrency = currency;
+  };
 }
 
 export default new PreferenceService();

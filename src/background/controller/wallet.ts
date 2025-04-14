@@ -3355,11 +3355,11 @@ export class WalletController extends BaseController {
   };
 
   setDisplayCurrency = async (currency: Currency) => {
-    await userWalletService.setDisplayCurrency(currency);
+    await preferenceService.setDisplayCurrency(currency);
   };
 
   getDisplayCurrency = async () => {
-    return await userWalletService.getDisplayCurrency();
+    return await preferenceService.getDisplayCurrency();
   };
 
   // Get the news from the server
