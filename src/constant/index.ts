@@ -152,7 +152,6 @@ export const EVENTS = {
   broadcastToBackground: 'broadcastToBackground',
   UIToBackground: 'UIToBackground',
   SIGN_FINISHED: 'SIGN_FINISHED',
-  displayCurrencyChanged: 'displayCurrencyChanged',
   WALLETCONNECT: {
     STATUS_CHANGED: 'WALLETCONNECT_STATUS_CHANGED',
     INIT: 'WALLETCONNECT_INIT',
@@ -161,9 +160,6 @@ export const EVENTS = {
   GNOSIS: {
     TX_BUILT: 'TransactionBuilt',
     TX_CONFIRMED: 'TransactionConfirmed',
-  },
-  CURRENCY: {
-    CHANGED: 'CURRENCY_CHANGED',
   },
 };
 
