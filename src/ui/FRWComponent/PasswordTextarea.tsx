@@ -11,7 +11,7 @@ type PasswordTextareaProps = Omit<
 };
 
 const PasswordTextarea = ({
-  minRows = 6,
+  minRows = 4,
   maxRows,
   label,
   placeholder,
