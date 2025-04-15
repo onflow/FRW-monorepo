@@ -810,15 +810,19 @@ class OpenApiService {
       } catch (error) {
         console.error('Failed to fetch Cadence scripts:', error);
         throw error;
-      } finally {
-        // Clear the promise cache after completion (success or failure)
-        setTimeout(() => {
-          this._cadenceScriptsPromise = null;
-        }, 1000);
       }
     })();
 
-    return this._cadenceScriptsPromise;
+    const resultPromise = this._cadenceScriptsPromise;
+
+    // Clear the promise cache after it settles
+    this._cadenceScriptsPromise.finally(() => {
+      if (this._cadenceScriptsPromise === resultPromise) {
+        this._cadenceScriptsPromise = null;
+      }
+    });
+
+    return resultPromise;
   };
 
   getCadenceScripts = async (): Promise<NetworkScripts> => {
