@@ -808,15 +808,17 @@ class OpenApiService {
       return result;
     });
 
-    // Store the promise
-    this._cadenceScriptsPromise = promise;
+    if (this._cadenceScriptsPromise === null) {
+      this._cadenceScriptsPromise = promise;
 
-    // Clear the promise reference when it resolves or rejects
-    promise.finally(() => {
-      this._cadenceScriptsPromise = null;
-    });
+      promise.finally(() => {
+        if (this._cadenceScriptsPromise === promise) {
+          this._cadenceScriptsPromise = null;
+        }
+      });
+    }
 
-    return promise;
+    return this._cadenceScriptsPromise || promise;
   };
 
   getCadenceScripts = async (): Promise<NetworkScripts> => {
