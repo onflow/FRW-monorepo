@@ -86,7 +86,7 @@ const PasswordTextarea = ({
     },
 
     '& .MuiIconButton-root': {
-      color: '#767676',
+      color: '#fff',
       padding: '8px',
     },
   };
