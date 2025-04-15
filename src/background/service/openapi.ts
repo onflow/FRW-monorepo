@@ -787,14 +787,36 @@ class OpenApiService {
    * @param userId - The user id to load the cadence scripts for
    * @returns The cadence scripts for the current user
    */
+  private _cadenceScriptsPromise: Promise<NetworkScripts> | null = null;
+
   private _loadCadenceScripts = async (): Promise<NetworkScripts> => {
+    // Try to get from cache first
     const cadenceScripts = await getValidData<NetworkScripts>(cadenceScriptsKey());
     if (cadenceScripts) {
       return cadenceScripts;
     }
-    const cadenceScriptsV2 = await this.cadenceScriptsV2();
-    setCachedData(cadenceScriptsKey(), cadenceScriptsV2, 1000 * 60 * 60); // set to 1 hour
-    return cadenceScriptsV2;
+
+    // If there's already a request in progress, return that promise instead of making a new request
+    if (this._cadenceScriptsPromise) {
+      return this._cadenceScriptsPromise;
+    }
+
+    // Create a new promise
+    const promise = this.cadenceScriptsV2().then((result) => {
+      // Store in cache on success
+      setCachedData(cadenceScriptsKey(), result, 1000 * 60 * 60); // 1 hour
+      return result;
+    });
+
+    this._cadenceScriptsPromise = promise;
+
+    promise.finally(() => {
+      if (this._cadenceScriptsPromise === promise) {
+        this._cadenceScriptsPromise = null;
+      }
+    });
+
+    return promise;
   };
 
   getCadenceScripts = async (): Promise<NetworkScripts> => {
