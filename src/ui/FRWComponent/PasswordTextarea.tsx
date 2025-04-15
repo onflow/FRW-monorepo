@@ -2,8 +2,6 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { TextField, InputAdornment, IconButton, type TextFieldProps } from '@mui/material';
 import React, { useState } from 'react';
 
-// Define the props, extending TextFieldProps but omitting props we manage internally
-// Re-adding minRows/maxRows for multi-line
 type PasswordTextareaProps = Omit<
   TextFieldProps,
   'type' | 'InputProps' | 'multiline' | 'rows' // Keep these omitted as we add them back below
@@ -13,7 +11,7 @@ type PasswordTextareaProps = Omit<
 };
 
 const PasswordTextarea = ({
-  minRows = 3, // Default minimum rows for multi-line
+  minRows = 6, // Increased default row count to match screenshot
   maxRows,
   label,
   placeholder,
@@ -26,9 +24,6 @@ const PasswordTextarea = ({
 }: PasswordTextareaProps) => {
   const [showPassword, setShowPassword] = useState(false);
 
-  // No longer needed debug logs
-  // const calculatedType = showPassword ? 'text' : 'password';
-
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
   };
@@ -37,27 +32,33 @@ const PasswordTextarea = ({
     event.preventDefault(); // Prevent focus loss on click
   };
 
-  // Adjust default styles to match JsonImport.tsx textarea style
+  // Restyled to match the HTML structure in the screenshot
   const defaultSx = {
     width: '100%',
+    padding: '0px',
+    border: '1px solid #444444',
+    // Root TextField container styling
+    '& .MuiFormControl-root': {
+      width: '100%',
+      marginBottom: '16px',
+    },
+    // Main input container styling (the first div)
     '& .MuiInputBase-root': {
       width: '100%',
       borderRadius: '16px',
       backgroundColor: '#2C2C2C',
       color: '#fff',
-      padding: '20px 0',
-      marginBottom: '16px',
-      boxSizing: 'border-box',
       fontFamily: 'Inter',
       fontSize: '16px',
       fontWeight: 400,
-      border: '1px solid #444444',
+      overflow: 'hidden',
     },
+    // The actual textarea styling
     '& .MuiInputBase-input': {
-      padding: '0 20px',
+      padding: '0px',
       resize: 'none',
-      fontFamily: 'Inter',
       fontSize: '16px',
+      fontFamily: 'Inter',
       fontWeight: 400,
       color: '#fff',
       boxSizing: 'border-box',
@@ -66,15 +67,18 @@ const PasswordTextarea = ({
         color: '#a0a0a0',
         opacity: 1,
       },
+      height: '138px', // Match the height from the screenshot
     },
+    // Remove default outlined border
     '& .MuiOutlinedInput-notchedOutline': {
       border: 'none',
     },
     '& .MuiInputAdornment-root': {
       margin: '0',
+      height: 'auto',
     },
     '& .MuiInputAdornment-positionEnd': {
-      paddingRight: '20px',
+      paddingRight: '10px',
     },
     '& .MuiIconButton-root': {
       color: '#a0a0a0',
