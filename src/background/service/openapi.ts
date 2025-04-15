@@ -808,17 +808,15 @@ class OpenApiService {
       return result;
     });
 
-    if (this._cadenceScriptsPromise === null) {
-      this._cadenceScriptsPromise = promise;
+    this._cadenceScriptsPromise = promise;
 
-      promise.finally(() => {
-        if (this._cadenceScriptsPromise === promise) {
-          this._cadenceScriptsPromise = null;
-        }
-      });
-    }
+    promise.finally(() => {
+      if (this._cadenceScriptsPromise === promise) {
+        this._cadenceScriptsPromise = null;
+      }
+    });
 
-    return this._cadenceScriptsPromise || promise;
+    return promise;
   };
 
   getCadenceScripts = async (): Promise<NetworkScripts> => {
