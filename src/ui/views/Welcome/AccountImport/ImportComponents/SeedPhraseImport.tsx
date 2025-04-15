@@ -89,9 +89,8 @@ const SeedPhraseImport = ({
     <Box sx={{ padding: '0' }}>
       <form id="seed" onSubmit={handleImport} className={classes.form}>
         <PasswordTextarea
-          minRows={6}
+          minRows={4}
           placeholder={chrome.i18n.getMessage('Import_12_or_24_words')}
-          className={classes.textarea}
           required
           sx={{ marginBottom: '16px' }}
         />

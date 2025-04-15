@@ -11,7 +11,7 @@ type PasswordTextareaProps = Omit<
 };
 
 const PasswordTextarea = ({
-  minRows = 6, // Increased default row count to match screenshot
+  minRows = 6,
   maxRows,
   label,
   placeholder,
@@ -32,56 +32,61 @@ const PasswordTextarea = ({
     event.preventDefault(); // Prevent focus loss on click
   };
 
-  // Restyled to match the HTML structure in the screenshot
+  // Completely restructured styling to fix padding and border radius issues
   const defaultSx = {
     width: '100%',
-    padding: '0px',
-    border: '1px solid #444444',
-    // Root TextField container styling
-    '& .MuiFormControl-root': {
-      width: '100%',
-      marginBottom: '16px',
+    marginBottom: '16px',
+    borderRadius: '16px',
+    overflow: 'hidden',
+    border: '1px solid #767676',
+
+    // Remove any extra spacing
+    '& .MuiOutlinedInput-root': {
+      borderRadius: '16px',
     },
-    // Main input container styling (the first div)
+
+    // Main input container styling
     '& .MuiInputBase-root': {
-      width: '100%',
       borderRadius: '16px',
       backgroundColor: '#2C2C2C',
       color: '#fff',
       fontFamily: 'Inter',
       fontSize: '16px',
       fontWeight: 400,
-      overflow: 'hidden',
+      padding: '0px',
     },
+
     // The actual textarea styling
     '& .MuiInputBase-input': {
-      padding: '0px',
+      padding: '20px',
       resize: 'none',
       fontSize: '16px',
       fontFamily: 'Inter',
       fontWeight: 400,
       color: '#fff',
-      boxSizing: 'border-box',
       WebkitTextSecurity: showPassword ? 'none' : 'disc',
       '&::placeholder': {
-        color: '#a0a0a0',
+        color: '#767676',
         opacity: 1,
       },
-      height: '138px', // Match the height from the screenshot
     },
+
     // Remove default outlined border
     '& .MuiOutlinedInput-notchedOutline': {
       border: 'none',
     },
+
+    // Icon styling
     '& .MuiInputAdornment-root': {
       margin: '0',
       height: 'auto',
+      position: 'absolute',
+      right: '20px',
+      top: '15px',
     },
-    '& .MuiInputAdornment-positionEnd': {
-      paddingRight: '10px',
-    },
+
     '& .MuiIconButton-root': {
-      color: '#a0a0a0',
+      color: '#767676',
       padding: '8px',
     },
   };

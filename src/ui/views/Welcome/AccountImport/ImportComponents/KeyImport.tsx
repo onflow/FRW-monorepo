@@ -60,9 +60,12 @@ const KeyImport = ({ onOpen, onImport, setPk, isSignLoading }) => {
     <Box sx={{ padding: '0' }}>
       <form id="seed" onSubmit={handleImport} className={classes.form}>
         <PasswordTextarea
+          minRows={2}
+          maxRows={2}
           placeholder={chrome.i18n.getMessage('Enter_your_Private_key')}
           aria-label="Private Key"
           required
+          sx={{ marginBottom: '16px' }}
         />
         <TextareaAutosize
           placeholder={chrome.i18n.getMessage('Enter_your_flow_address')}
