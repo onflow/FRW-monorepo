@@ -1411,7 +1411,7 @@ export class WalletController extends BaseController {
   transferTokens = async (transactionState: TransactionState): Promise<string> => {
     const transferTokensOnCadence = async () => {
       return this.transferCadenceTokens(
-        transactionState.selectedToken.symbol,
+        transactionState.tokenInfo.symbol,
         transactionState.toAddress,
         transactionState.amount
       );
@@ -1423,7 +1423,7 @@ export class WalletController extends BaseController {
         transactionState.toAddress,
         'flowTokenProvider',
         transactionState.amount,
-        transactionState.selectedToken.symbol
+        transactionState.tokenInfo.symbol
       );
     };
 
@@ -1433,10 +1433,10 @@ export class WalletController extends BaseController {
 
     const transferFTFromEvmToCadence = async () => {
       return this.transferFTFromEvm(
-        transactionState.selectedToken['flowIdentifier'],
+        transactionState.tokenInfo['flowIdentifier'],
         transactionState.amount,
         transactionState.toAddress,
-        transactionState.selectedToken
+        transactionState.tokenInfo
       );
     };
 
@@ -1444,7 +1444,7 @@ export class WalletController extends BaseController {
     const transferTokensOnEvm = async () => {
       let address, gas, value, data;
 
-      if (transactionState.selectedToken.symbol.toLowerCase() === 'flow') {
+      if (transactionState.tokenInfo.symbol.toLowerCase() === 'flow') {
         address = transactionState.toAddress;
         gas = '1';
         // the amount is always stored as a string in the transaction state
@@ -1458,7 +1458,7 @@ export class WalletController extends BaseController {
       } else {
         const integerAmountStr = convertToIntegerAmount(
           transactionState.amount,
-          transactionState.selectedToken.decimals
+          transactionState.tokenInfo.decimals
         );
 
         // Get the current network
@@ -1470,14 +1470,14 @@ export class WalletController extends BaseController {
         // Get the erc20 contract
         const erc20Contract = new web3Instance.eth.Contract(
           erc20ABI,
-          transactionState.selectedToken.address
+          transactionState.tokenInfo.address
         );
         // Encode the data
         const encodedData = erc20Contract.methods
           .transfer(ensureEvmAddressPrefix(transactionState.toAddress), integerAmountStr)
           .encodeABI();
         gas = '1312d00';
-        address = ensureEvmAddressPrefix(transactionState.selectedToken.address);
+        address = ensureEvmAddressPrefix(transactionState.tokenInfo.address);
         value = '0x0'; // Zero value as hex
         data = encodedData.startsWith('0x') ? encodedData : `0x${encodedData}`;
       }
@@ -1491,19 +1491,19 @@ export class WalletController extends BaseController {
     };
 
     const transferFTFromCadenceToEvm = async () => {
-      const address = transactionState.selectedToken!.address.startsWith('0x')
-        ? transactionState.selectedToken!.address.slice(2)
-        : transactionState.selectedToken!.address;
+      const address = transactionState.tokenInfo!.address.startsWith('0x')
+        ? transactionState.tokenInfo!.address.slice(2)
+        : transactionState.tokenInfo!.address;
 
       return this.transferFTToEvmV2(
-        `A.${address}.${transactionState.selectedToken!.contractName}.Vault`,
+        `A.${address}.${transactionState.tokenInfo!.contractName}.Vault`,
         transactionState.amount,
         transactionState.toAddress
       );
     };
 
     // Validate the amount. Just to be sure!
-    if (!validateAmount(transactionState.amount, transactionState.selectedToken.decimals)) {
+    if (!validateAmount(transactionState.amount, transactionState.tokenInfo!.decimals)) {
       throw new Error('Invalid amount or decimal places');
     }
 

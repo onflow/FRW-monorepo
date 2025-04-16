@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useReducer } from 'react';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
 
+import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
 import { type FlowAddress, type WalletAddress } from '@/shared/types/wallet-types';
 import { isValidAddress, isValidFlowAddress } from '@/shared/utils/address';
 import { useCoins } from '@/ui/hooks/useCoinHook';
@@ -24,17 +25,29 @@ export const SendTo = () => {
 
   const handleTokenChange = useCallback(
     async (symbol: string) => {
-      const tokenInfo = await wallet.openapi.getTokenInfo(symbol);
-      if (tokenInfo) {
+      const tokenInfoResult = await wallet.openapi.getTokenInfo(symbol);
+      if (tokenInfoResult) {
         const coinInfo = coins.find(
-          (coin) => coin.unit.toLowerCase() === tokenInfo.symbol.toLowerCase()
+          (coin) => coin.unit.toLowerCase() === tokenInfoResult.symbol.toLowerCase()
         );
         if (coinInfo) {
+          // Combine tokenInfoResult and coinInfo into the required ExtendedTokenInfo structure
+          const combinedTokenInfo: ExtendedTokenInfo = {
+            ...tokenInfoResult,
+            id: coinInfo.id,
+            coin: coinInfo.coin,
+            unit: coinInfo.unit,
+            balance: coinInfo.balance,
+            price: coinInfo.price,
+            change24h: coinInfo.change24h,
+            total: coinInfo.total,
+            icon: coinInfo.icon,
+            availableBalance: coinInfo.availableBalance, // Ensure availableBalance is included if needed
+          };
           dispatch({
-            type: 'setSelectedToken',
+            type: 'setTokenInfo', // Change action type
             payload: {
-              tokenInfo,
-              coinInfo,
+              tokenInfo: combinedTokenInfo, // Update payload structure
             },
           });
           // Update the URL to the new token
@@ -79,8 +92,8 @@ export const SendTo = () => {
       if (token) {
         handleTokenChange(token);
       } else {
-        // Set the token to the default token
-        handleTokenChange(INITIAL_TRANSACTION_STATE.selectedToken.symbol);
+        // Set the token to the default token using tokenInfo
+        handleTokenChange(INITIAL_TRANSACTION_STATE.tokenInfo.symbol);
       }
     }
   }, [

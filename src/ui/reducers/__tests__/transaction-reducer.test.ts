@@ -1,7 +1,7 @@
 import { type TokenInfo } from 'flow-native-token-registry';
 import { describe, expect, it } from 'vitest';
 
-import { type CoinItem } from '@/shared/types/coin-types';
+import { type CoinItem, type ExtendedTokenInfo } from '@/shared/types/coin-types';
 import {
   type NetworkType,
   type TokenType,
@@ -84,8 +84,8 @@ describe('Transaction Reducer', () => {
       });
     });
 
-    describe('setSelectedToken', () => {
-      const mockTokenInfo: TokenInfo = {
+    describe('setTokenInfo', () => {
+      const mockTokenInfo: ExtendedTokenInfo = {
         name: 'Test Token',
         address: '0x123',
         contractName: 'TestToken',
@@ -97,9 +97,6 @@ describe('Transaction Reducer', () => {
         logoURI: 'test.svg',
         decimals: 8,
         symbol: 'TEST',
-      };
-
-      const mockCoinInfo: CoinItem = {
         id: 'test',
         coin: 'test',
         unit: 'TEST',
@@ -112,17 +109,15 @@ describe('Transaction Reducer', () => {
 
       it('should set token info and update token type for non-Flow token', () => {
         const action = {
-          type: 'setSelectedToken' as const,
+          type: 'setTokenInfo' as const,
           payload: {
             tokenInfo: mockTokenInfo,
-            coinInfo: mockCoinInfo,
           },
         };
 
         const newState = transactionReducer(INITIAL_TRANSACTION_STATE, action);
-        expect(newState.selectedToken).toEqual(mockTokenInfo);
+        expect(newState.tokenInfo).toEqual(mockTokenInfo);
         expect(newState.tokenType).toBe('FT');
-        expect(newState.coinInfo).toEqual(mockCoinInfo);
       });
 
       it('should adjust amount decimals when switching to token with different decimals', () => {
@@ -133,16 +128,15 @@ describe('Transaction Reducer', () => {
         });
 
         // Then switch to a token with 6 decimals
-        const token6Decimals: TokenInfo = {
+        const token6Decimals: ExtendedTokenInfo = {
           ...mockTokenInfo,
           decimals: 6,
         };
 
         const newState = transactionReducer(stateWithAmount, {
-          type: 'setSelectedToken',
+          type: 'setTokenInfo' as const,
           payload: {
             tokenInfo: token6Decimals,
-            coinInfo: mockCoinInfo,
           },
         });
 
@@ -152,16 +146,15 @@ describe('Transaction Reducer', () => {
 
       it('should handle switching to token with more decimals', () => {
         // First set state with a 2 decimal token
-        const token2Decimals: TokenInfo = {
+        const token2Decimals: ExtendedTokenInfo = {
           ...mockTokenInfo,
           decimals: 2,
         };
 
         const stateWith2Decimals = transactionReducer(INITIAL_TRANSACTION_STATE, {
-          type: 'setSelectedToken',
+          type: 'setTokenInfo' as const,
           payload: {
             tokenInfo: token2Decimals,
-            coinInfo: mockCoinInfo,
           },
         });
 
@@ -175,16 +168,15 @@ describe('Transaction Reducer', () => {
         expect(stateWithAmount.amount).toBe('123.45');
 
         // Switch to 8 decimal token
-        const token8Decimals: TokenInfo = {
+        const token8Decimals: ExtendedTokenInfo = {
           ...mockTokenInfo,
           decimals: 8,
         };
 
         const finalState = transactionReducer(stateWithAmount, {
-          type: 'setSelectedToken',
+          type: 'setTokenInfo' as const,
           payload: {
             tokenInfo: token8Decimals,
-            coinInfo: mockCoinInfo,
           },
         });
 
@@ -224,13 +216,10 @@ describe('Transaction Reducer', () => {
     describe('setAmount', () => {
       const stateWithBalance = {
         ...INITIAL_TRANSACTION_STATE,
-        coinInfo: {
-          ...INITIAL_TRANSACTION_STATE.coinInfo,
+        tokenInfo: {
+          ...INITIAL_TRANSACTION_STATE.tokenInfo,
           balance: '100',
           price: 2,
-        },
-        selectedToken: {
-          ...INITIAL_TRANSACTION_STATE.selectedToken,
           decimals: 8,
         },
       };
@@ -259,14 +248,14 @@ describe('Transaction Reducer', () => {
 
       it('should truncate decimals based on token decimals', () => {
         // Create state with a 4 decimal token
-        const token4Decimals: TokenInfo = {
-          ...INITIAL_TRANSACTION_STATE.selectedToken,
+        const token4Decimals: ExtendedTokenInfo = {
+          ...INITIAL_TRANSACTION_STATE.tokenInfo,
           decimals: 4,
         };
 
         const stateWith4Decimals = {
           ...stateWithBalance,
-          selectedToken: token4Decimals,
+          tokenInfo: token4Decimals,
           tokenType: 'FT' as TokenType,
           fromNetwork: 'Evm' as NetworkType,
           toNetwork: 'Cadence' as NetworkType,
@@ -324,8 +313,8 @@ describe('Transaction Reducer', () => {
             ...stateWithBalance,
             fromNetwork: 'Evm' as NetworkType,
             toNetwork: 'Evm' as NetworkType,
-            selectedToken: {
-              ...stateWithBalance.selectedToken,
+            tokenInfo: {
+              ...stateWithBalance.tokenInfo,
               decimals: 18,
             },
             fiatOrCoin: 'coin',
@@ -345,8 +334,8 @@ describe('Transaction Reducer', () => {
             ...stateWithBalance,
             fromNetwork: 'Evm' as NetworkType,
             toNetwork: 'Cadence' as NetworkType,
-            selectedToken: {
-              ...stateWithBalance.selectedToken,
+            tokenInfo: {
+              ...stateWithBalance.tokenInfo,
               decimals: 18,
             },
             fiatOrCoin: 'coin',
@@ -366,8 +355,8 @@ describe('Transaction Reducer', () => {
             ...stateWithBalance,
             fromNetwork: 'Evm' as NetworkType,
             toNetwork: 'Evm' as NetworkType,
-            selectedToken: {
-              ...stateWithBalance.selectedToken,
+            tokenInfo: {
+              ...stateWithBalance.tokenInfo,
               decimals: 6,
             },
             fiatOrCoin: 'coin',
@@ -387,8 +376,8 @@ describe('Transaction Reducer', () => {
     describe('setAmountToMax', () => {
       const stateWithBalance = {
         ...INITIAL_TRANSACTION_STATE,
-        coinInfo: {
-          ...INITIAL_TRANSACTION_STATE.coinInfo,
+        tokenInfo: {
+          ...INITIAL_TRANSACTION_STATE.tokenInfo,
           balance: '100',
           price: 2,
         },
