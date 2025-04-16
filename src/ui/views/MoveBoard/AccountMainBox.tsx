@@ -1,4 +1,4 @@
-import { Typography, Box, CardMedia } from '@mui/material';
+import { Typography, Box, CardMedia, Avatar } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { useCallback, useEffect, useState } from 'react';
 
@@ -117,15 +117,14 @@ function AccountMainBox({ isChild, setSelectedChildAccount, selectedAccount, isE
                   {firstEmoji.icon}
                 </Typography>
               ) : (
-                <CardMedia
+                <Avatar
+                  src={userInfo.avatar}
                   sx={{
-                    margin: '0 auto',
-                    width: '20px',
-                    height: '20px',
-                    borderRadius: '20px',
-                    display: 'block',
+                    height: '32px',
+                    width: '32px',
+                    borderRadius: '32px',
+                    marginRight: '4px',
                   }}
-                  image={userInfo.avatar}
                 />
               )}
             </Box>
