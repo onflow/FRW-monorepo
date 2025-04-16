@@ -1371,7 +1371,7 @@ class KeyringService extends EventEmitter {
       try {
         // Validate entry is a proper object
         if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
-          console.error('Invalid vault entry format:', entry);
+          console.error('Invalid vault entry format');
           continue;
         }
 
@@ -1410,7 +1410,7 @@ class KeyringService extends EventEmitter {
       try {
         // Validate entry is a proper object
         if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
-          console.error('Invalid vault entry format:', entry);
+          console.error('Invalid vault entry format');
           continue;
         }
 

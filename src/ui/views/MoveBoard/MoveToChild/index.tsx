@@ -73,8 +73,8 @@ const MoveToChild = (props: MoveBoardProps) => {
   const findCollectionByContractName = useCallback(() => {
     if (collectionList) {
       const collection = collectionList.find((collection) => collection.id === selectedCollection);
-      setIsLoading(false);
       setCurrentCollection(collection);
+      setIsLoading(false);
     }
   }, [collectionList, selectedCollection]);
 
