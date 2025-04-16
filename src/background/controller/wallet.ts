@@ -1433,7 +1433,7 @@ export class WalletController extends BaseController {
 
     const transferFTFromEvmToCadence = async () => {
       return this.transferFTFromEvm(
-        transactionState.tokenInfo['flowIdentifier'],
+        transactionState.tokenInfo.flowIdentifier!,
         transactionState.amount,
         transactionState.toAddress,
         transactionState.tokenInfo
