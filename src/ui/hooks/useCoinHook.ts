@@ -2,7 +2,7 @@ import BN from 'bignumber.js';
 import { useCallback, useEffect, useState, useRef } from 'react';
 
 import { type ExtendedTokenInfo, type CoinItem } from '@/shared/types/coin-types';
-import { type Currency } from '@/shared/types/wallet-types';
+import { DEFAULT_CURRENCY, type Currency } from '@/shared/types/wallet-types';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { debug } from '@/ui/utils';
 import { useWallet } from '@/ui/utils/WalletContext';
@@ -27,11 +27,11 @@ export const useCoins = () => {
   useEffect(() => {
     const fetchCurrency = async () => {
       try {
-        const currency: Currency | undefined = await usewallet?.getDisplayCurrency();
+        const currency: Currency = await usewallet?.getDisplayCurrency();
         setCurrencyCode(currency?.code);
       } catch (error) {
-        console.error('Failed to fetch display currency:', error);
-        setCurrencyCode(undefined); // Handle error case
+        console.error('Failed to fetch display currency, using default USD:', error);
+        setCurrencyCode(DEFAULT_CURRENCY.code); // Handle error case
       }
     };
     if (usewallet) {

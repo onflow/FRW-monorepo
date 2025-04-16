@@ -355,7 +355,7 @@ class PreferenceService {
   //   this.store.addedToken[key] = tokenList;
   // };
   getDisplayCurrency = () => {
-    return this.store.displayCurrency;
+    return this.store.displayCurrency || DEFAULT_CURRENCY;
   };
   setDisplayCurrency = (currency: Currency) => {
     this.store.displayCurrency = currency;

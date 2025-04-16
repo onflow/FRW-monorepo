@@ -37,6 +37,7 @@ import {
   type PublicKeyAccount,
   type ActiveAccountType,
   type Currency,
+  DEFAULT_CURRENCY,
 } from '@/shared/types/wallet-types';
 import { isValidFlowAddress, isValidEthereumAddress } from '@/shared/utils/address';
 import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
@@ -468,7 +469,7 @@ class OpenApiService {
     config: dataConfig,
   };
 
-  private supportedCurrenciesCache: Currency[] | null = null;
+  private supportedCurrenciesCache: Currency[] = [];
 
   getNetwork = () => {
     return userWalletService.getNetwork();
@@ -2181,10 +2182,11 @@ class OpenApiService {
 
   // ** Get supported currencies **
   getSupportedCurrencies = async (): Promise<Currency[]> => {
-    if (this.supportedCurrenciesCache !== null) {
+    if (this.supportedCurrenciesCache.length > 0) {
       return this.supportedCurrenciesCache;
     }
 
+    let currencies = [DEFAULT_CURRENCY];
     try {
       const supportedCurrencies: CurrencyResponse = await this.sendRequest(
         'GET',
@@ -2194,23 +2196,12 @@ class OpenApiService {
         WEB_NEXT_URL
       );
 
-      // Cache the currencies
-      this.supportedCurrenciesCache = supportedCurrencies?.data?.currencies || [];
-      return this.supportedCurrenciesCache;
+      currencies = supportedCurrencies?.data?.currencies || [DEFAULT_CURRENCY];
     } catch (error) {
-      console.warn('Error fetching supported currencies:', error);
-      // Return default USD if API fails
-      const defaultCurrency = [
-        {
-          code: 'USD',
-          symbol: '$',
-          name: 'United States Dollar',
-          country: 'United States',
-        },
-      ];
-      this.supportedCurrenciesCache = defaultCurrency;
-      return defaultCurrency;
+      console.warn('Error fetching supported currencies, using default USD:', error);
     }
+    this.supportedCurrenciesCache = currencies;
+    return currencies;
   };
 
   getAccountsWithPublicKey = async (
