@@ -27,31 +27,21 @@ export const SendTo = () => {
     async (symbol: string) => {
       const tokenInfoResult = await wallet.openapi.getTokenInfo(symbol);
       if (tokenInfoResult) {
+        // shouldn't use symbol should use address
         const coinInfo = coins.find(
           (coin) => coin.unit.toLowerCase() === tokenInfoResult.symbol.toLowerCase()
         );
         if (coinInfo) {
-          // Combine tokenInfoResult and coinInfo into the required ExtendedTokenInfo structure
-          const combinedTokenInfo: ExtendedTokenInfo = {
-            ...tokenInfoResult,
-            id: coinInfo.id,
-            coin: coinInfo.coin,
-            unit: coinInfo.unit,
-            balance: coinInfo.balance,
-            price: coinInfo.price,
-            change24h: coinInfo.change24h,
-            total: coinInfo.total,
-            icon: coinInfo.icon,
-            availableBalance: coinInfo.availableBalance, // Ensure availableBalance is included if needed
-          };
           dispatch({
             type: 'setTokenInfo', // Change action type
             payload: {
-              tokenInfo: combinedTokenInfo, // Update payload structure
+              tokenInfo: coinInfo, // Update payload structure
             },
           });
           // Update the URL to the new token
           history.replace(`/dashboard/token/${symbol.toLowerCase()}/send/${toAddress}`);
+        } else {
+          console.warn(`Token ${symbol} not found`);
         }
       }
     },
