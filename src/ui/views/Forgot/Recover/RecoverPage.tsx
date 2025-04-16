@@ -49,19 +49,27 @@ const RecoverPage = ({ dataArray, setArray, goNext }) => {
     const result = await wallet.revealKeyring(password);
     const resultArray: string[] = [];
     result.forEach((keyring) => {
-      keyring.decryptedData.forEach((dataEntry) => {
-        if (dataEntry.type === 'HD Key Tree') {
-          const mnemonic = dataEntry.data.mnemonic;
-          if (mnemonic) {
-            resultArray.push(mnemonic);
+      try {
+        keyring.decryptedData.forEach((dataEntry) => {
+          try {
+            if (dataEntry.type === 'HD Key Tree') {
+              const mnemonic = dataEntry.data?.mnemonic;
+              if (mnemonic) {
+                resultArray.push(mnemonic);
+              }
+            } else if (dataEntry.type === 'Simple Key Pair') {
+              const privateKey = dataEntry.data?.[0];
+              if (privateKey) {
+                resultArray.push(privateKey);
+              }
+            }
+          } catch (dataEntryError) {
+            console.error('Error processing data entry:', dataEntryError);
           }
-        } else if (dataEntry.type === 'Simple Key Pair') {
-          const privateKey = dataEntry.data[0];
-          if (privateKey) {
-            resultArray.push(privateKey);
-          }
-        }
-      });
+        });
+      } catch (keyringError) {
+        console.error('Error processing keyring:', keyringError);
+      }
     });
 
     await setArray(resultArray);
