@@ -1047,6 +1047,9 @@ class KeyringService extends EventEmitter {
     }
 
     let vaultArray = this.store.getState().vault;
+    if (!vaultArray) {
+      throw new Error('No vault data found');
+    }
     vaultArray = Array.isArray(vaultArray) ? vaultArray.filter(Boolean) : [vaultArray];
 
     const extractedData = await this.revealVaultArray(vaultArray, password);
