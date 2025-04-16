@@ -1040,11 +1040,13 @@ class KeyringService extends EventEmitter {
    */
 
   async revealKeyring(password: string): Promise<KeyringData[]> {
-    // Verify the password
-    await this.verifyPassword(password);
-    let vaultArray = this.store.getState().vault;
+    try {
+      await this.verifyPassword(password);
+    } catch (error) {
+      throw new Error('Authentication failed. Please check your password and try again.');
+    }
 
-    // Ensure vaultArray is an array and filter out null/undefined entries
+    let vaultArray = this.store.getState().vault;
     vaultArray = Array.isArray(vaultArray) ? vaultArray.filter(Boolean) : [vaultArray];
 
     const extractedData = await this.revealVaultArray(vaultArray, password);
