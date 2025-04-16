@@ -6,7 +6,6 @@ import { useContacts } from '@/ui/hooks/useContactHook';
 
 const AccountsList = ({ handleClick }) => {
   const { cadenceAccounts, evmAccounts, childAccountsContacts } = useContacts();
-  console.log('childAccounts +++++++++++++', childAccountsContacts);
   return (
     <Box sx={{ height: '100%' }}>
       {cadenceAccounts?.length > 0 && (

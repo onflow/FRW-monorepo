@@ -58,7 +58,6 @@ function AccountMainBox({ isChild, setSelectedChildAccount, selectedAccount, isE
       }
 
       const walletList = [...childAccountsContacts, ...evmAccounts];
-      console.log('walletList', childAccountsContacts, evmAccounts);
       setChildWallets(walletList);
       const firstWallet = walletList[0];
       if (firstWallet) {

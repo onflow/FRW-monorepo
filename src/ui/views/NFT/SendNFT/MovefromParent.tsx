@@ -147,7 +147,6 @@ const MovefromParent = (props: SendNFTConfirmationProps) => {
   const getChildResp = useCallback(async () => {
     // Merge usewallet lists
     const walletList = [...childAccountsContacts, ...evmAccounts];
-    console.log('walletList +++++++++++++', walletList);
     setChildWallets(walletList);
     const firstWalletAddress = walletList[0].address;
     if (firstWalletAddress) {
