@@ -464,6 +464,11 @@ export class WalletController extends BaseController {
     return pk;
   };
 
+  revealKeyring = async (password: string) => {
+    const keyring = await keyringService.revealKeyring(password);
+    return keyring;
+  };
+
   // This is not used anymore
   extractKeys = (keyrings) => {
     let privateKeyHex, publicKeyHex;

@@ -4,11 +4,13 @@ import { Box, Typography, Drawer, Stack, Grid, CardMedia, IconButton, Button } f
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useHistory } from 'react-router-dom';
 
+import { type Contact } from '@/shared/types/network-types';
 import { type AccountDetails } from '@/shared/types/wallet-types';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
 import { WarningNFTNotOnboardedSnackbar } from '@/ui/FRWComponent/WarningNFTNotOnboardedSnackbar';
 import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
+import { useContacts } from '@/ui/hooks/useContactHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
 import { MatchMediaType } from '@/ui/utils/url';
@@ -17,7 +19,6 @@ import { LLSpinner, FRWProfileCard, FRWDropdownProfileCard } from 'ui/FRWCompone
 import { useWallet } from 'ui/utils';
 
 import IconFlow from '../../../../components/iconfont/IconFlow';
-
 interface SendNFTConfirmationProps {
   isConfirmationOpen: boolean;
   data: any;
@@ -29,6 +30,7 @@ interface SendNFTConfirmationProps {
 const MoveNftFromEvm = (props: SendNFTConfirmationProps) => {
   const usewallet = useWallet();
   const history = useHistory();
+  const { childAccountsContacts, evmAccounts, mainAccountContact } = useContacts();
   const { mainAddress, childAccounts, parentWallet } = useProfiles();
   const { occupied } = useTransferList();
   const [sending, setSending] = useState(false);
@@ -36,26 +38,14 @@ const MoveNftFromEvm = (props: SendNFTConfirmationProps) => {
   const [, setErrorMessage] = useState<string | null>(null);
   const [errorCode, setErrorCode] = useState<number | null>(null);
 
-  const [selectedAccount, setSelectedChildAccount] = useState<AccountDetails | null>(null);
+  const [selectedAccount, setSelectedChildAccount] = useState<Contact | null>(null);
   const { sufficient: isSufficient } = useStorageCheck();
 
   const isLowStorage = isSufficient !== undefined && !isSufficient; // isSufficient is undefined when the storage check is not yet completed
 
-  const parentAndChildWallets: { [key: string]: AccountDetails } = useMemo(() => {
-    return Object.fromEntries(
-      [parentWallet, ...(childAccounts ?? [])].map((wallet) => [
-        wallet.address,
-        {
-          name: wallet.name,
-          description: wallet.name,
-          address: wallet.address,
-          thumbnail: {
-            url: wallet.icon,
-          },
-        },
-      ])
-    );
-  }, [childAccounts, parentWallet]);
+  const parentAndChildWallets: Contact[] = useMemo(() => {
+    return [...mainAccountContact, ...childAccountsContacts, ...evmAccounts];
+  }, [childAccountsContacts, mainAccountContact, evmAccounts]);
 
   const replaceIPFS = (url: string | null): string => {
     if (!url) {
@@ -236,7 +226,6 @@ const MoveNftFromEvm = (props: SendNFTConfirmationProps) => {
           <FRWProfileCard contact={props.data.userContact} />
           <Box sx={{ height: '8px' }}></Box>
           <FRWDropdownProfileCard
-            contact={selectedAccount}
             contacts={parentAndChildWallets}
             setSelectedChildAccount={setSelectedChildAccount}
           />
