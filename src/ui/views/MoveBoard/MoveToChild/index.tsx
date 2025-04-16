@@ -73,7 +73,7 @@ const MoveToChild = (props: MoveBoardProps) => {
   const findCollectionByContractName = useCallback(() => {
     if (collectionList) {
       const collection = collectionList.find((collection) => collection.id === selectedCollection);
-      console.log('setCurrentCollection ', collection);
+      setIsLoading(false);
       setCurrentCollection(collection);
     }
   }, [collectionList, selectedCollection]);
@@ -82,7 +82,6 @@ const MoveToChild = (props: MoveBoardProps) => {
     setIsLoading(true);
     try {
       const cadenceResult = nftCollections;
-      console.log('cadenceResult +++++++++++++', cadenceResult);
       if (cadenceResult && cadenceResult.length > 0) {
         setSelected(cadenceResult![0].collection.id);
         const extractedObjects = cadenceResult!.map((obj) => {

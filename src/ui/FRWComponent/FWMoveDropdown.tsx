@@ -27,8 +27,6 @@ export const FWMoveDropdown: React.FC<FWMoveDropdownProps> = ({
   setSelectedChildAccount,
   isLoading = false,
 }) => {
-  console.log('contacts +++++++++++++', contacts);
-
   const [selectedChild, setSelectedChild] = React.useState(
     contacts.length > 0 ? contacts[0].address : ''
   );
