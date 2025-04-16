@@ -5,8 +5,8 @@ import { LLContactCard, LLContactEth, FWContactCard } from '@/ui/FRWComponent';
 import { useContacts } from '@/ui/hooks/useContactHook';
 
 const AccountsList = ({ handleClick }) => {
-  const { cadenceAccounts, evmAccounts, childAccounts } = useContacts();
-
+  const { cadenceAccounts, evmAccounts, childAccountsContacts } = useContacts();
+  console.log('childAccounts +++++++++++++', childAccountsContacts);
   return (
     <Box sx={{ height: '100%' }}>
       {cadenceAccounts?.length > 0 && (
@@ -37,7 +37,7 @@ const AccountsList = ({ handleClick }) => {
             </Box>
           </List>
         ))}
-      {(evmAccounts?.length > 0 || childAccounts?.length > 0) && (
+      {(evmAccounts?.length > 0 || childAccountsContacts?.length > 0) && (
         <ListSubheader
           sx={{
             lineHeight: '18px',
@@ -66,8 +66,8 @@ const AccountsList = ({ handleClick }) => {
           </List>
         ))}
 
-      {childAccounts?.length > 0 &&
-        childAccounts.map((eachgroup, index) => (
+      {childAccountsContacts?.length > 0 &&
+        childAccountsContacts.map((eachgroup, index) => (
           <List dense={false} sx={{ paddingTop: '0px', paddingBottom: '0px' }} key={index}>
             <Box>
               <ButtonBase

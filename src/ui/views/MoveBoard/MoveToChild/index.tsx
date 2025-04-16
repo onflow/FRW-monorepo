@@ -82,21 +82,23 @@ const MoveToChild = (props: MoveBoardProps) => {
     setIsLoading(true);
     try {
       const cadenceResult = nftCollections;
-      setSelected(cadenceResult![0].collection.id);
+      console.log('cadenceResult +++++++++++++', cadenceResult);
+      if (cadenceResult && cadenceResult.length > 0) {
+        setSelected(cadenceResult![0].collection.id);
+        const extractedObjects = cadenceResult!.map((obj) => {
+          return {
+            CollectionName: obj.collection.contract_name,
+            NftCount: obj.count,
+            id: obj.collection.id,
+            address: obj.collection.address,
+            logo: obj.collection.logo,
+            nftTypeId: obj.collection.nftTypeId,
+          };
+        });
 
-      const extractedObjects = cadenceResult!.map((obj) => {
-        return {
-          CollectionName: obj.collection.contract_name,
-          NftCount: obj.count,
-          id: obj.collection.id,
-          address: obj.collection.address,
-          logo: obj.collection.logo,
-          nftTypeId: obj.collection.nftTypeId,
-        };
-      });
-
-      setCollectionList(extractedObjects);
-      setCadenceNft(cadenceResult);
+        setCollectionList(extractedObjects);
+        setCadenceNft(cadenceResult);
+      }
     } catch (error) {
       console.error('Error fetching NFT data:', error);
       setSelected('');
