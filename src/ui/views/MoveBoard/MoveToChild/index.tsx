@@ -82,7 +82,7 @@ const MoveToChild = (props: MoveBoardProps) => {
     setIsLoading(true);
     try {
       const cadenceResult = nftCollections;
-      if (cadenceResult && cadenceResult.length > 0) {
+      if (cadenceResult && cadenceResult![0].collection) {
         setSelected(cadenceResult![0].collection.id);
         const extractedObjects = cadenceResult!.map((obj) => {
           return {

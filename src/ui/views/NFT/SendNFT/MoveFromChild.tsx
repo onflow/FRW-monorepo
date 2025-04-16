@@ -149,9 +149,9 @@ const MoveFromChild = (props: SendNFTConfirmationProps) => {
   const getChildResp = useCallback(async () => {
     const walletList = [...mainAccountContact, ...childAccountsContacts, ...evmAccounts];
     setChildWallets(walletList);
-    const firstWalletAddress = walletList[0];
-    if (firstWalletAddress) {
-      setSelectedChildAccount(walletList[0]);
+    if (walletList && walletList.length > 0) {
+      const firstWalletAddress = walletList[0];
+      setSelectedChildAccount(firstWalletAddress);
     }
   }, [evmAccounts, childAccountsContacts, mainAccountContact]);
 

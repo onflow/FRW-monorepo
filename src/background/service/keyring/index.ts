@@ -1341,6 +1341,15 @@ class KeyringService extends EventEmitter {
     return this.loadStore(keyringState);
   }
 
+  private isValidKeyringKeyDataArray(data: any): data is KeyringKeyData[] {
+    return (
+      Array.isArray(data) &&
+      data.every(
+        (item) => typeof item === 'object' && typeof item.type === 'string' && 'data' in item
+      )
+    );
+  }
+
   /**
    * Only reveal the decrypted data for user to retrieve when login fail
    *
@@ -1369,12 +1378,12 @@ class KeyringService extends EventEmitter {
           continue;
         }
 
-        // Decrypt the entry
-        // encryptedString = KeyringKeyData[]
-        const decryptedData = (await this.encryptor.decrypt(
-          password,
-          encryptedData
-        )) as unknown as KeyringKeyData[];
+        const decryptedData = await this.encryptor.decrypt(password, encryptedData);
+
+        if (!this.isValidKeyringKeyDataArray(decryptedData)) {
+          throw new Error('Invalid keyring data format');
+        }
+
         const keyringData = {
           id,
           decryptedData: decryptedData,
