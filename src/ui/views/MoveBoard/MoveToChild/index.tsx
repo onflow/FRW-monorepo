@@ -73,7 +73,7 @@ const MoveToChild = (props: MoveBoardProps) => {
   const findCollectionByContractName = useCallback(() => {
     if (collectionList) {
       const collection = collectionList.find((collection) => collection.id === selectedCollection);
-      setIsLoading(false);
+      console.log('setCurrentCollection ', collection);
       setCurrentCollection(collection);
     }
   }, [collectionList, selectedCollection]);
@@ -81,9 +81,11 @@ const MoveToChild = (props: MoveBoardProps) => {
   const requestCadenceNft = useCallback(async () => {
     setIsLoading(true);
     try {
-      if (nftCollections && nftCollections.length > 0) {
-        setSelected(nftCollections![0].collection.id);
-        const extractedObjects = nftCollections!.map((obj) => {
+      const cadenceResult = nftCollections;
+      console.log('cadenceResult +++++++++++++', cadenceResult);
+      if (cadenceResult && cadenceResult.length > 0) {
+        setSelected(cadenceResult![0].collection.id);
+        const extractedObjects = cadenceResult!.map((obj) => {
           return {
             CollectionName: obj.collection.contract_name,
             NftCount: obj.count,
@@ -95,8 +97,7 @@ const MoveToChild = (props: MoveBoardProps) => {
         });
 
         setCollectionList(extractedObjects);
-        setCadenceNft(nftCollections);
-        setIsLoading(false);
+        setCadenceNft(cadenceResult);
       }
     } catch (error) {
       console.error('Error fetching NFT data:', error);
@@ -110,15 +111,18 @@ const MoveToChild = (props: MoveBoardProps) => {
   const requestCollectionInfo = useCallback(async () => {
     if (selectedCollection) {
       try {
-        const cadenceResult = nftCollections;
+        const address = await usewallet.getCurrentAddress();
+        const cadenceResult = await usewallet.getSingleCollection(address!, selectedCollection, 0);
         setCollectionDetail(cadenceResult);
+        console.log('setCollectionDetail ', cadenceResult);
       } catch (error) {
+        console.error('Error requesting collection info:', error);
         setCollectionDetail(null);
       } finally {
         setIsLoading(false);
       }
     }
-  }, [selectedCollection, nftCollections]);
+  }, [selectedCollection, usewallet]);
 
   const toggleSelectNft = async (nftId) => {
     const tempIdArray = [...nftIdArray];
@@ -242,8 +246,29 @@ const MoveToChild = (props: MoveBoardProps) => {
     return replacedURL;
   };
 
+  // Callbacks for NFTLoader
+  const handleNFTsLoaded = useCallback((nfts) => {
+    console.log(`Parent received ${nfts.length} NFTs`);
+    setLoadedNFTs(nfts);
+  }, []);
+
+  const handleLoadingChange = useCallback((loading) => {
+    console.log(`NFT loading state changed to: ${loading}`);
+    setIsLoading(loading);
+  }, []);
+
   return (
     <Box>
+      {activeLoader && (
+        <NFTLoader
+          key={`loader-${activeLoader}`}
+          selectedCollection={activeLoader}
+          onNFTsLoaded={handleNFTsLoaded}
+          onLoadingChange={handleLoadingChange}
+          ownerAddress={currentWallet?.address}
+        />
+      )}
+
       <NFTDrawer
         showMoveBoard={props.showMoveBoard}
         handleCancelBtnClicked={props.handleCancelBtnClicked}

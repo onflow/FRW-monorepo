@@ -25,6 +25,7 @@ export const FRWDropdownProfileCard = ({
   const [selectedChild, setSelectedChild] = React.useState<string>(
     contacts.length > 0 ? contacts[0].address : ''
   );
+  console.log('contacts +++++++++++++', contacts);
   useEffect(() => {
     if (selectedChild) {
       const select = contacts.find((contact) => contact.address === selectedChild);

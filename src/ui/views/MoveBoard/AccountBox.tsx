@@ -10,14 +10,16 @@ import { useProfiles } from '@/ui/hooks/useProfileHook';
 import emoji from 'background/utils/emoji.json';
 import accountMove from 'ui/FRWAssets/svg/accountMove.svg';
 import { FRWProfileCard, FWMoveDropdown } from 'ui/FRWComponent';
+import { useWallet, formatAddress } from 'ui/utils';
 const USER_CONTACT = {
   contact_name: '',
   avatar: '',
 };
 
 function AccountBox({ isChild, setSelectedChildAccount, selectedAccount, isEvm = false }) {
+  const usewallet = useWallet();
   const { childAccountsContacts, evmAccounts, mainAccountContact } = useContacts();
-  const { mainAddress, evmAddress, currentWallet, evmWallet } = useProfiles();
+  const { mainAddress, evmAddress, currentWallet } = useProfiles();
   const [first, setFirst] = useState<string>('');
   const [second, setSecond] = useState<string>('');
   const [userInfo, setUser] = useState<any>(USER_CONTACT);
@@ -25,7 +27,8 @@ function AccountBox({ isChild, setSelectedChildAccount, selectedAccount, isEvm =
   const [childWallets, setChildWallets] = useState<Contact[]>([]);
 
   const requestAddress = useCallback(async () => {
-    const address = currentWallet.address;
+    const address = await usewallet.getCurrentAddress();
+    const eWallet = await usewallet.getEvmWallet();
     const walletList = [...childAccountsContacts, ...mainAccountContact, ...evmAccounts].filter(
       (account) => account.address !== currentWallet.address
     );
@@ -40,10 +43,11 @@ function AccountBox({ isChild, setSelectedChildAccount, selectedAccount, isEvm =
     if (firstWallet) {
       setSelectedChildAccount(firstWallet);
     }
+    console.log('wallet is here ', eWallet);
     setUser(userContact);
     if (isEvm) {
       setFirst(evmAddress!);
-      setFirstEmoji(evmWallet);
+      setFirstEmoji(eWallet);
     } else {
       setFirst(address!);
     }
@@ -52,12 +56,12 @@ function AccountBox({ isChild, setSelectedChildAccount, selectedAccount, isEvm =
     isEvm,
     evmAddress,
     mainAddress,
+    usewallet,
     setSelectedChildAccount,
     childAccountsContacts,
     evmAccounts,
     mainAccountContact,
     currentWallet,
-    evmWallet,
   ]);
 
   useEffect(() => {

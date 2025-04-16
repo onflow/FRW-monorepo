@@ -94,8 +94,8 @@ const MoveFromChild = (props: MoveBoardProps) => {
   const requestCadenceNft = useCallback(async () => {
     setIsLoading(true);
     try {
-      const address = currentWallet.address;
-      const parentaddress = mainAddress;
+      const address = await usewallet.getCurrentAddress();
+      const parentaddress = await usewallet.getParentAddress();
       if (!parentaddress) {
         throw new Error('Parent address not found');
       }
@@ -118,19 +118,19 @@ const MoveFromChild = (props: MoveBoardProps) => {
       });
 
       setCollectionList(extractedObjects);
-      setIsLoading(false);
     } catch (error) {
       console.error('Error fetching NFT data:', error);
       setSelected('');
       setCollectionList(null);
       setIsLoading(false);
     }
-  }, [nftCollections, currentWallet, usewallet, mainAddress]);
+  }, [nftCollections, usewallet]);
 
   const requestCollectionInfo = useCallback(async () => {
     if (selectedCollection) {
       try {
-        const cadenceResult = nftCollections;
+        const address = await usewallet.getCurrentAddress();
+        const cadenceResult = await usewallet.getSingleCollection(address!, selectedCollection, 0);
         setCollectionDetail(cadenceResult);
       } catch (error) {
         console.error('Error requesting collection info:', error);
@@ -139,7 +139,7 @@ const MoveFromChild = (props: MoveBoardProps) => {
         setIsLoading(false);
       }
     }
-  }, [selectedCollection, nftCollections]);
+  }, [selectedCollection, usewallet]);
 
   const toggleSelectNft = async (nftId) => {
     const tempIdArray = [...nftIdArray];
@@ -173,7 +173,7 @@ const MoveFromChild = (props: MoveBoardProps) => {
 
   const moveToParent = async () => {
     setSending(true);
-    const address = currentWallet.address;
+    const address = await usewallet.getCurrentAddress();
     usewallet
       .batchTransferChildNft(address!, '', nftIdArray, collectionDetail.collection)
       .then(async (txId) => {
@@ -198,7 +198,7 @@ const MoveFromChild = (props: MoveBoardProps) => {
 
   const moveToChild = async () => {
     setSending(true);
-    const address = currentWallet.address;
+    const address = await usewallet.getCurrentAddress();
     usewallet
       .sendChildNFTToChild(
         address!,
@@ -229,7 +229,7 @@ const MoveFromChild = (props: MoveBoardProps) => {
 
   const moveToEvm = async () => {
     setSending(true);
-    const address = currentWallet.address;
+    const address = await usewallet.getCurrentAddress();
     console.log('collectionDetail.collection ', collectionDetail);
     usewallet
       .batchBridgeChildNFTToEvm(
@@ -289,8 +289,28 @@ const MoveFromChild = (props: MoveBoardProps) => {
     return replacedURL;
   };
 
+  // Callbacks for NFTLoader
+  const handleNFTsLoaded = useCallback((nfts) => {
+    setLoadedNFTs(nfts);
+  }, []);
+
+  const handleLoadingChange = useCallback((loading) => {
+    console.log(`NFT loading state changed to: ${loading}`);
+    setIsLoading(loading);
+  }, []);
+
   return (
     <Box>
+      {activeLoader && (
+        <NFTLoader
+          key={`loader-${activeLoader}`}
+          selectedCollection={activeLoader}
+          onNFTsLoaded={handleNFTsLoaded}
+          onLoadingChange={handleLoadingChange}
+          ownerAddress={evmWallet?.address}
+        />
+      )}
+
       <NFTDrawer
         showMoveBoard={props.showMoveBoard}
         handleCancelBtnClicked={props.handleCancelBtnClicked}
