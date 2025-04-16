@@ -1503,7 +1503,7 @@ export class WalletController extends BaseController {
     };
 
     // Validate the amount. Just to be sure!
-    if (!validateAmount(transactionState.amount, transactionState.tokenInfo!.decimals)) {
+    if (!validateAmount(transactionState.amount, transactionState?.tokenInfo?.decimals)) {
       throw new Error('Invalid amount or decimal places');
     }
 
