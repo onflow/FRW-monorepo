@@ -46,9 +46,25 @@ const RecoverPage = ({ dataArray, setArray, goNext }) => {
   }, []);
 
   const run = async (password) => {
-    const result = await wallet.retrievePk(password);
-    console.log('result ', result);
-    await setArray(result);
+    const result = await wallet.revealKeyring(password);
+    const resultArray: string[] = [];
+    result.forEach((keyring) => {
+      keyring.decryptedData.forEach((dataEntry) => {
+        if (dataEntry.type === 'HD Key Tree') {
+          const mnemonic = dataEntry.data.mnemonic;
+          if (mnemonic) {
+            resultArray.push(mnemonic);
+          }
+        } else if (dataEntry.type === 'Simple Key Pair') {
+          const privateKey = dataEntry.data[0];
+          if (privateKey) {
+            resultArray.push(privateKey);
+          }
+        }
+      });
+    });
+
+    await setArray(resultArray);
     setRetrieved(true);
     setLoading(false);
     goNext();
