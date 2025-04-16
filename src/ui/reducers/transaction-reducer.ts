@@ -1,7 +1,6 @@
 import BN from 'bignumber.js';
-import type { TokenInfo } from 'flow-native-token-registry';
 
-import { type CoinItem, type ExtendedTokenInfo } from '@/shared/types/coin-types';
+import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
 import { type Contact } from '@/shared/types/network-types';
 import type {
   NetworkType,
