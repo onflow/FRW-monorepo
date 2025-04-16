@@ -31,15 +31,14 @@ function AccountMainBox({ isChild, setSelectedChildAccount, selectedAccount, isE
       const walletList = [...childAccountsContacts, ...mainAccountContact, ...evmAccounts].filter(
         (account) => account.address !== currentWallet.address
       );
-      const firstWallet = walletList[0];
       setChildWallets(walletList);
 
       const userContact = {
         avatar: currentWallet.icon,
         contact_name: currentWallet.name,
       };
-      if (firstWallet) {
-        setSelectedChildAccount(firstWallet);
+      if (walletList && walletList.length > 0) {
+        setSelectedChildAccount(walletList[0]);
       }
       setUser(userContact);
       setFirst(address!);
