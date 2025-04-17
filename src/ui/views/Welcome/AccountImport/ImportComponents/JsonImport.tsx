@@ -100,10 +100,18 @@ const JsonImport = ({ onOpen, onImport, setPk, isSignLoading }) => {
         setErrorMessage('Password cannot be empty');
         return;
       }
-
-      const privateKeyHex = await usewallet.jsonToPrivateKeyHex(keystoreInput, passwordInput);
-      if (!privateKeyHex) {
-        setErrorMessage('Password incorrect');
+      let privateKeyHex;
+      try {
+        privateKeyHex = await usewallet.jsonToPrivateKeyHex(keystoreInput, passwordInput);
+        if (!privateKeyHex) {
+          setErrorMessage('Password incorrect');
+          return;
+        }
+      } catch (conversionError) {
+        console.error('Error decoding JSON to private key:', conversionError);
+        setErrorMessage(
+          'Failed to decode JSON to private key. Please check the keystore and password.'
+        );
         return;
       }
 
