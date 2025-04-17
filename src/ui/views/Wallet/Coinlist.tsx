@@ -195,7 +195,7 @@ const CoinList = ({
           ? (tokenList || []).map((coin: CoinItem) => {
               if (
                 childType === 'evm' &&
-                coin.unit !== 'flow' &&
+                coin.id !== 'A.1654653399040a61.FlowToken' &&
                 parseFloat(coin.balance) === 0 &&
                 !coin.custom
               ) {
@@ -203,6 +203,7 @@ const CoinList = ({
               }
               return (
                 <ListItem
+                  sx={{ minHeight: '62px' }}
                   key={coin.id}
                   data-testid={`token-${coin.unit.toLowerCase()}`}
                   secondaryAction={
