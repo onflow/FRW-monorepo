@@ -69,6 +69,15 @@
   "Acc__list": {
     "message": "账户列表"
   },
+  "Display__Currency": {
+    "message": "显示货币"
+  },
+  "Select__Currency": {
+    "message": "选择货币"
+  },
+  "Currency__Description": {
+    "message": "选择你想要用于显示值的货币"
+  },
   "Profile": {
     "message": "账户"
   },

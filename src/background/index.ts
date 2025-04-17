@@ -121,6 +121,8 @@ async function restoreAppState() {
   await coinListService.init();
   await userInfoService.init();
   await addressBookService.init();
+  // Set the wallet controller before initializing userWalletService
+  userWalletService.setWalletController(walletController);
   await userWalletService.init();
   await transactionService.init();
   await nftService.init();

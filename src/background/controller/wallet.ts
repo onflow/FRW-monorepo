@@ -27,7 +27,6 @@ import {
   formPubKeyTuple,
 } from '@/background/utils/modules/publicPrivateKey';
 import eventBus from '@/eventBus';
-import type { CoinItem, ExtendedTokenInfo } from '@/shared/types/coin-types';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
 import { type PublicKeyTuple } from '@/shared/types/key-types';
 import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
@@ -46,6 +45,7 @@ import {
   type EvmAddress,
   type WalletAddress,
   isEvmAccountType,
+  type Currency,
   type ActiveAccountType,
 } from '@/shared/types/wallet-types';
 import {
@@ -1110,9 +1110,9 @@ export class WalletController extends BaseController {
     userInfoService.setDashIndex(data);
   };
 
-  initCoinListSession = async (address: string) => {
+  initCoinListSession = async (address: string, currency: string) => {
     const network = await this.getNetwork();
-    await coinListService.initCoinList(network, address);
+    await coinListService.initCoinList(network, address, currency);
   };
 
   reqeustEvmNft = async () => {
@@ -1192,7 +1192,7 @@ export class WalletController extends BaseController {
   refreshAddressBook = async (): Promise<Contact[]> => {
     const network = await this.getNetwork();
     const { data } = await openapiService.getAddressBook();
-    const list = data.contacts;
+    const list = data?.contacts;
     if (list && list.length > 0) {
       list.forEach((addressBook, index) => {
         if (addressBook && addressBook.avatar) {
@@ -3356,6 +3356,14 @@ export class WalletController extends BaseController {
   // @deprecated - this doesn't do anything
   setEmoji_depreciated = async (emoji, type, index) => {
     return emoji;
+  };
+
+  setDisplayCurrency = async (currency: Currency) => {
+    await preferenceService.setDisplayCurrency(currency);
+  };
+
+  getDisplayCurrency = async () => {
+    return await preferenceService.getDisplayCurrency();
   };
 
   // Get the news from the server

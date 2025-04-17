@@ -136,9 +136,9 @@ describe('useCoinHook', () => {
 
     it('should process tokens and calculate totals', async () => {
       const mockData = [
-        { unit: 'usdc.e', total: 0, balance: '0' },
-        { unit: 'flow', total: 5.0, balance: '5.0' },
-        { unit: 'wflow', total: 2.0, balance: '2.0' },
+        { unit: 'usdc.e', total: '0', balance: '0' },
+        { unit: 'flow', total: '5.0', balance: '5.0' },
+        { unit: 'wflow', total: '2.0', balance: '2.0' },
       ];
       const { handleStorageData } = useCoins();
       await handleStorageData(mockData as ExtendedTokenInfo[]);
@@ -156,7 +156,7 @@ describe('useCoinHook', () => {
     it('should handle null totals', async () => {
       const mockData = [
         { unit: 'flow', total: null, balance: '10' },
-        { unit: 'eth', total: 2.0, balance: '2.0' },
+        { unit: 'eth', total: '2.0', balance: '2.0' },
       ];
 
       const { handleStorageData } = useCoins();

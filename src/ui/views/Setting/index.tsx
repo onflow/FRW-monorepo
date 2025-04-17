@@ -1,5 +1,6 @@
 import AndroidIcon from '@mui/icons-material/Android';
 import AppleIcon from '@mui/icons-material/Apple';
+import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import PhoneIphoneIcon from '@mui/icons-material/PhoneIphone';
 import {
   List,
@@ -200,6 +201,28 @@ const SettingTab = () => {
               </ListItemButton>
             </ListItem>
           )}
+
+          <Divider sx={{ width: '90%' }} variant="middle" />
+
+          <ListItem
+            button
+            component={Link}
+            to="/dashboard/setting/currency"
+            disablePadding
+            className={classes.listItem}
+          >
+            <ListItemButton className={classes.itemButton}>
+              <ListItemIcon sx={{ minWidth: '25px' }}>
+                <Box className={classes.iconContainer}>
+                  <CurrencyExchangeIcon sx={{ width: '18px', height: '18px', color: '#59A1DB' }} />
+                </Box>
+              </ListItemIcon>
+              <ListItemText primary={chrome.i18n.getMessage('Display__Currency')} />
+              <ListItemIcon aria-label="end" sx={{ minWidth: '15px' }}>
+                <IconEnd size={12} />
+              </ListItemIcon>
+            </ListItemButton>
+          </ListItem>
 
           {!isActive && <Divider sx={{ width: '90%' }} variant="middle" />}
           {isKeyphrase && (

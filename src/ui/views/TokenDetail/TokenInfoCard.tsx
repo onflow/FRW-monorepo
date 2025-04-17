@@ -1,9 +1,8 @@
 import { Typography, Box, ButtonBase, CardMedia } from '@mui/material';
-import { type TokenInfo } from 'flow-native-token-registry';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import { type ExtendedTokenInfo, type CoinItem } from '@/shared/types/coin-types';
+import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
 import { type ActiveAccountType } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { LLPrimaryButton } from '@/ui/FRWComponent';
@@ -13,6 +12,7 @@ import { useWallet } from 'ui/utils';
 
 import IconChevronRight from '../../../components/iconfont/IconChevronRight';
 
+import { CurrencyValue } from './CurrencyValue';
 import { TokenValue } from './TokenValue';
 
 // import tips from 'ui/FRWAssets/svg/tips.svg';
@@ -26,7 +26,7 @@ const TokenInfoCard = ({
   accountType,
   tokenId,
 }: {
-  price: number;
+  price: string;
   token: string;
   setAccessible: (accessible: boolean) => void;
   accessible: boolean;
@@ -227,11 +227,7 @@ const TokenInfoCard = ({
           </Box>
           <Typography variant="body1" color="text.secondary" sx={{ fontSize: '16px' }}>
             <Box component="span" sx={{ marginRight: '0.25rem' }}>
-              <TokenValue
-                value={String(Number(balance) * data?.price)}
-                prefix="$"
-                postFix={chrome.i18n.getMessage('USD')}
-              />
+              <CurrencyValue value={tokenInfo?.total} />
             </Box>
           </Typography>
           <Box sx={{ display: 'flex', gap: '12px', height: '36px', mt: '24px', width: '100%' }}>

@@ -48,7 +48,7 @@ const TokenDetail = () => {
   const history = useHistory();
   const { currentWallet } = useProfiles();
   const { coins, coinsLoaded } = useCoins();
-  const [price, setPrice] = useState(0);
+  const [price, setPrice] = useState('');
   const [accessible, setAccessible] = useState(true);
   const token = useParams<{ name: string }>().name.toLowerCase();
   const tokenId = useParams<{ id: string }>().id;
@@ -145,7 +145,7 @@ const TokenDetail = () => {
 
     setProviders(result);
     if (result.length === 0) {
-      setPrice(tokenResult?.price || 0);
+      setPrice(tokenResult?.price || '');
     }
   }, [usewallet, token, tokenId, coins, coinsLoaded]);
 

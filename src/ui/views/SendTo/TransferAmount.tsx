@@ -23,6 +23,7 @@ import { TokenValue } from '@/ui/views/TokenDetail/TokenValue';
 
 import CancelIcon from '../../../components/iconfont/IconClose';
 import IconSwitch from '../../../components/iconfont/IconSwitch';
+import { CurrencyValue } from '../TokenDetail/CurrencyValue';
 import { TokenBalance } from '../TokenDetail/TokenBalance';
 
 const useStyles = makeStyles(() => ({
@@ -283,7 +284,7 @@ const TransferAmount = ({
                 <TokenBalance showFull={true} value={amount} />
               </>
             ) : (
-              <TokenValue value={fiatAmount} prefix={'$'} />
+              <CurrencyValue value={fiatAmount} />
             )}
             <IconButton onClick={handleSwitchFiatOrCoin}>
               <IconSwitch size={14} />

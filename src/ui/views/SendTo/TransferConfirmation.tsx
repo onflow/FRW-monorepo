@@ -16,6 +16,7 @@ import { LLSpinner } from 'ui/FRWComponent';
 import { Profile } from 'ui/FRWComponent/Send/Profile';
 import { useWallet } from 'ui/utils';
 
+import { CurrencyValue } from '../TokenDetail/CurrencyValue';
 import { TokenBalance } from '../TokenDetail/TokenBalance';
 import { TokenValue } from '../TokenDetail/TokenValue';
 
@@ -282,7 +283,7 @@ const TransferConfirmation = ({
                 color="info"
                 sx={{ fontSize: '14px', fontWeight: 'semi-bold', textAlign: 'end' }}
               >
-                <TokenValue value={transactionState.fiatAmount} prefix={'$'} />
+                <CurrencyValue value={transactionState.fiatAmount} />
               </Typography>
             </Stack>
           </Box>
