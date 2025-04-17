@@ -91,6 +91,9 @@
   "Other__Lilico__users__cannot__search__for__your__username": {
     "message": "Other Flow Wallet Wallet users cannot search for your username."
   },
+  "Remove__Profile": {
+    "message": "Remove Profile"
+  },
   "Private__Key": {
     "message": "Private Key"
   },

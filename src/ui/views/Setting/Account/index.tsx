@@ -2,6 +2,7 @@ import { Switch, switchClasses } from '@mui/base/Switch';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import { Typography, IconButton, Box, Avatar } from '@mui/material';
+import Button from '@mui/material/Button';
 import { styled } from '@mui/system';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
@@ -264,75 +265,35 @@ const AccountSettings = () => {
               }}
             />
           </Box>
-          {/* {domain && <Box sx={{
-            backgroundColor: '#282828',
-            width: '100%',
-            marginTop:'10px',
-            display: 'flex',
-            padding:'20px 24px',
-            justifyContent: 'space-between',
-            borderRadius: '16px',
-          }}>
-            <Box sx={{display: 'flex', flexDirection: 'column'}}>
-              <Typography variant='body1' color='primary.contrastText' style={{weight: 600}}>Lilico Domain</Typography>
-              <Typography variant="caption" color='text.secondary' sx={{weight: 400, fontSize: '12px'}}>
-                {username}.meow
-              </Typography>
-            </Box>
-            <CheckCircleIcon
-              size={24}
-              color={'#41CC5D'}
-            />
-          </Box>
-          } */}
-          {/* {showPop &&
-            <Box sx={{display:'flex',justifyContent:'space-between',
-            //  width:'100%',
-              alignItems: 'center',
-              border: '1px solid #FFFFFF',
-              borderRadius:'12px',
-              padding:'0px 15px 0px 0px',
-              marginTop: '16px',
-              backgroundImage:`url(${bannerbackground})`,
-              backgroundSize: '370px, 60px'
 
+          <Box
+            sx={{
+              backgroundColor: '#282828',
+              display: 'flex',
+              padding: '20px 24px',
+              justifyContent: 'center',
+              borderRadius: '16px',
+              marginTop: '8px',
             }}
+          >
+            <Button
+              variant="contained"
+              sx={{
+                backgroundColor: 'error.main',
+                color: 'white',
+                '&:hover': {
+                  backgroundColor: 'error.dark',
+                },
+                width: '100%',
+              }}
+              onClick={() => {
+                console.log('Remove Profile clicked');
+              }}
             >
-              <Box
-                sx={{
-                  width: '254px',
-                  height: '46px',
-                  // backgroundColor:'#333333',
-                  // borderRadius:'12px',
-                  display:'flex',
-                  alignItems: 'center',
-                  paddingLeft:'16px'
-                }}
-              >
-                <Typography
-                  variant="body2"
-                  align="left"
-                  paddingTop="18px"
-                  paddingBottom="15px"
-                  color="#FFFFFF"
-                  fontSize="12px"
-                >
-                  {chrome.i18n.getMessage('Claim__for__your')}
-                  <Typography
-                    display="inline"
-                    sx={{
-                      fontWeight: 'bold',
-                      fontSize:'12px',
-                      color:'#FFFFFF'
-                    }}
-                    variant="body2"
-                  >
-                    {chrome.i18n.getMessage('FREE')}
-                  </Typography>{' '}{chrome.i18n.getMessage('Lilico__domain')}
-                </Typography>
-              </Box>
-            </Box>
-          } */}
+              {chrome.i18n.getMessage('Remove__Profile') || 'Remove Profile'}
+            </Button>
+          </Box>
+
           <EditAccount
             isEdit={isEdit}
             handleCloseIconClicked={() => toggleEdit()}
