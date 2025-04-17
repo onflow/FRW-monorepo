@@ -85,27 +85,49 @@ const JsonImport = ({ onOpen, onImport, setPk, isSignLoading }) => {
     try {
       setLoading(true);
       e.preventDefault();
-      const keystore = e.target[0].value;
-      const flag = checkJSONImport(keystore);
-      if (!flag) {
-        setErrorMessage('json not valid');
+
+      const formData = new FormData(e.target);
+      const keystoreInput = formData.get('keystore') as string;
+      const passwordInput = formData.get('password') as string;
+      const addressInput = formData.get('address') as string;
+
+      if (!checkJSONImport(keystoreInput)) {
+        setErrorMessage('JSON not valid');
         return;
       }
-      const password = e.target[2].value;
-      const address = e.target[5].value;
-      const pkHex = await usewallet.jsonToPrivateKeyHex(keystore, password);
-      if (pkHex === null) {
-        setErrorMessage('Password incorrect');
+
+      if (!passwordInput) {
+        setErrorMessage('Password cannot be empty');
         return;
       }
-      const result = await usewallet.findAddressWithPrivateKey(pkHex, address);
-      setPk(pkHex);
-      if (!result) {
+      let privateKeyHex;
+      try {
+        privateKeyHex = await usewallet.jsonToPrivateKeyHex(keystoreInput, passwordInput);
+        if (!privateKeyHex) {
+          setErrorMessage('Password incorrect');
+          return;
+        }
+      } catch (conversionError) {
+        console.error('Error decoding JSON to private key:', conversionError);
+        setErrorMessage(
+          'Failed to decode JSON to private key. Please check the keystore and password.'
+        );
+        return;
+      }
+
+      const foundAccounts = await usewallet.findAddressWithPrivateKey(privateKeyHex, addressInput);
+      setPk(privateKeyHex);
+
+      if (!foundAccounts) {
         onOpen();
         return;
       }
-      const accounts = result.map((a) => ({ ...a, type: KEY_TYPE.KEYSTORE }));
+
+      const accounts = foundAccounts.map((account) => ({ ...account, type: KEY_TYPE.KEYSTORE }));
       onImport(accounts);
+    } catch (error) {
+      console.error('Error during import:', error);
+      setErrorMessage('An unexpected error occurred');
     } finally {
       setLoading(false);
     }
@@ -130,6 +152,7 @@ const JsonImport = ({ onOpen, onImport, setPk, isSignLoading }) => {
         <PasswordTextarea
           minRows={5}
           placeholder={chrome.i18n.getMessage('You_can_import_the')}
+          name="keystore"
           required
           sx={{ marginBottom: '16px' }}
         />
@@ -138,6 +161,7 @@ const JsonImport = ({ onOpen, onImport, setPk, isSignLoading }) => {
           placeholder={chrome.i18n.getMessage('Enter_password_for_json_file')}
           type={isVisible ? 'text' : 'password'}
           className={classes.input}
+          name="password"
           InputProps={{
             className: classes.inputChild,
             endAdornment: (
@@ -154,6 +178,7 @@ const JsonImport = ({ onOpen, onImport, setPk, isSignLoading }) => {
           placeholder={chrome.i18n.getMessage('Enter_your_flow_address')}
           className={classes.textarea}
           defaultValue={''}
+          name="address"
         />
 
         <Button
