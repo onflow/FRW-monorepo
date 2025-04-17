@@ -85,27 +85,40 @@ const JsonImport = ({ onOpen, onImport, setPk, isSignLoading }) => {
     try {
       setLoading(true);
       e.preventDefault();
-      const keystore = e.target[0].value;
-      const flag = checkJSONImport(keystore);
-      if (!flag) {
-        setErrorMessage('json not valid');
+
+      const keystoreInput = e.target[0].value;
+      const passwordInput = e.target[4].value;
+      const addressInput = e.target[7].value;
+
+      if (!checkJSONImport(keystoreInput)) {
+        setErrorMessage('JSON not valid');
         return;
       }
-      const password = e.target[2].value;
-      const address = e.target[5].value;
-      const pkHex = await usewallet.jsonToPrivateKeyHex(keystore, password);
-      if (pkHex === null) {
+
+      if (!passwordInput) {
+        setErrorMessage('Password cannot be empty');
+        return;
+      }
+
+      const privateKeyHex = await usewallet.jsonToPrivateKeyHex(keystoreInput, passwordInput);
+      if (!privateKeyHex) {
         setErrorMessage('Password incorrect');
         return;
       }
-      const result = await usewallet.findAddressWithPrivateKey(pkHex, address);
-      setPk(pkHex);
-      if (!result) {
+
+      const foundAccounts = await usewallet.findAddressWithPrivateKey(privateKeyHex, addressInput);
+      setPk(privateKeyHex);
+
+      if (!foundAccounts) {
         onOpen();
         return;
       }
-      const accounts = result.map((a) => ({ ...a, type: KEY_TYPE.KEYSTORE }));
+
+      const accounts = foundAccounts.map((account) => ({ ...account, type: KEY_TYPE.KEYSTORE }));
       onImport(accounts);
+    } catch (error) {
+      console.error('Error during import:', error);
+      setErrorMessage('An unexpected error occurred');
     } finally {
       setLoading(false);
     }
