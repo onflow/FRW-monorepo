@@ -2298,6 +2298,7 @@ class OpenApiService {
         coin: token.name, // redundant for compatibility
         unit: token.symbol ?? token.contractName, // redundant for compatibility
         icon: token.logoURI || token.logos?.items?.[0]?.file?.url, // redundant for compatibility
+        flowIdentifier: token.identifier,
       })
     );
     return tokens;
@@ -2351,6 +2352,7 @@ class OpenApiService {
         coin: token.name, // redundant for compatibility
         unit: token.symbol, // redundant for compatibility
         icon: token.logoURI || '', // redundant for compatibility
+        flowIdentifier: token.flowIdentifier,
       })
     );
     return tokens;
