@@ -28,6 +28,7 @@ export type CoinItem = {
   evmAddress?: string;
   evm_address?: string;
   flowAddress?: string;
+  flowIdentifier?: string;
 };
 
 export type BalanceMap = {

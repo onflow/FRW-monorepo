@@ -80,7 +80,7 @@ const SendToCadenceOrEvm = ({
             <Box>
               <Box sx={{ zIndex: 999, backgroundColor: '#121212' }}>
                 {transactionState.toContact && (
-                  <ContactCard contact={contactData} coinInfo={transactionState.coinInfo} />
+                  <ContactCard contact={contactData} tokenInfo={transactionState.tokenInfo} />
                 )}
               </Box>
 
@@ -119,7 +119,7 @@ const SendToCadenceOrEvm = ({
             >
               {chrome.i18n.getMessage('Transfer__Amount')}
             </Typography>
-            {transactionState.coinInfo.unit && (
+            {transactionState.tokenInfo.unit && (
               <TransferAmount
                 transactionState={transactionState}
                 handleAmountChange={handleAmountChange}
@@ -129,7 +129,7 @@ const SendToCadenceOrEvm = ({
               />
             )}
 
-            {transactionState.coinInfo.unit && (
+            {transactionState.tokenInfo.unit && (
               <>
                 <Typography
                   variant="body1"
@@ -144,7 +144,7 @@ const SendToCadenceOrEvm = ({
                 <Box sx={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   <CardMedia
                     sx={{ width: '18px', height: '18px' }}
-                    image={transactionState.coinInfo.icon}
+                    image={transactionState.tokenInfo.icon}
                   />
                   <Typography
                     variant="body1"
@@ -154,12 +154,12 @@ const SendToCadenceOrEvm = ({
                     }}
                   >
                     <TokenBalance
-                      value={String(transactionState.coinInfo.balance)}
+                      value={String(transactionState.tokenInfo.balance)}
                       showFull={true}
-                      postFix={transactionState.coinInfo.unit.toUpperCase()}
+                      postFix={transactionState.tokenInfo.unit.toUpperCase()}
                     />
                     {' ≈ '}
-                    <CurrencyValue value={String(transactionState.coinInfo.total)} />
+                    <CurrencyValue value={String(transactionState.tokenInfo.total)} />
                   </Typography>
                 </Box>
               </>
