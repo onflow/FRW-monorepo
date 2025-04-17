@@ -321,22 +321,27 @@ const findPath = (service) => {
  * @returns Number the keyindex of current account
  */
 async function getKeyIndex() {
-  const network = await userWalletService.getNetwork();
-  const privateKeyTuple = await keyringService.getCurrentPublicPrivateKeyTuple();
+  try {
+    const network = await userWalletService.getNetwork();
 
-  // Find any account with public key information
-  const accounts = await getAccountsByPublicKeyTuple(privateKeyTuple, network);
+    const privateKeyTuple = await keyringService.getCurrentPublicPrivateKeyTuple();
 
-  const addressHex = await userWalletService.getParentAddress();
-  const matchingAccount = accounts.find((account) => account.address === addressHex);
+    const accounts = await getAccountsByPublicKeyTuple(privateKeyTuple, network);
 
-  if (!matchingAccount) {
-    throw new Error('Current wallet not found in accounts');
+    const addressHex = await userWalletService.getParentAddress();
+
+    const matchingAccount = accounts.find((account) => account.address === addressHex);
+
+    if (!matchingAccount) {
+      throw new Error('Current wallet not found in accounts');
+    }
+
+    const keyIndex = matchingAccount.keyIndex;
+
+    return keyIndex;
+  } catch (error) {
+    throw new Error('Failed to get key index: ' + error.message);
   }
-
-  const keyIndex = matchingAccount.keyIndex;
-
-  return keyIndex;
 }
 
 const handlePreAuthz = async (id) => {
