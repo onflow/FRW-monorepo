@@ -86,9 +86,10 @@ const JsonImport = ({ onOpen, onImport, setPk, isSignLoading }) => {
       setLoading(true);
       e.preventDefault();
 
-      const keystoreInput = e.target[0].value;
-      const passwordInput = e.target[4].value;
-      const addressInput = e.target[7].value;
+      const formData = new FormData(e.target);
+      const keystoreInput = formData.get('keystore') as string;
+      const passwordInput = formData.get('password') as string;
+      const addressInput = formData.get('address') as string;
 
       if (!checkJSONImport(keystoreInput)) {
         setErrorMessage('JSON not valid');
@@ -143,6 +144,7 @@ const JsonImport = ({ onOpen, onImport, setPk, isSignLoading }) => {
         <PasswordTextarea
           minRows={5}
           placeholder={chrome.i18n.getMessage('You_can_import_the')}
+          name="keystore"
           required
           sx={{ marginBottom: '16px' }}
         />
@@ -151,6 +153,7 @@ const JsonImport = ({ onOpen, onImport, setPk, isSignLoading }) => {
           placeholder={chrome.i18n.getMessage('Enter_password_for_json_file')}
           type={isVisible ? 'text' : 'password'}
           className={classes.input}
+          name="password"
           InputProps={{
             className: classes.inputChild,
             endAdornment: (
@@ -167,6 +170,7 @@ const JsonImport = ({ onOpen, onImport, setPk, isSignLoading }) => {
           placeholder={chrome.i18n.getMessage('Enter_your_flow_address')}
           className={classes.textarea}
           defaultValue={''}
+          name="address"
         />
 
         <Button
