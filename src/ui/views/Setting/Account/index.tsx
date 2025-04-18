@@ -1,12 +1,13 @@
 import { Switch, switchClasses } from '@mui/base/Switch';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
-import { Typography, IconButton, Box, Avatar } from '@mui/material';
+import { Typography, IconButton, Box, Avatar, CircularProgress } from '@mui/material';
 import Button from '@mui/material/Button';
 import { styled } from '@mui/system';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
+import RemoveProfileModal from '@/ui/FRWComponent/PopupModal/RemoveProfileModal';
 import { useWallet } from 'ui/utils';
 
 import EditAccount from './EditAccount';
@@ -97,6 +98,9 @@ const AccountSettings = () => {
   const [isEdit, setEdit] = useState(false);
   const [avatar, setAvatar] = useState('');
   const [modeAnonymous, setModeAnonymous] = useState(false);
+  const [showRemoveConfirmModal, setShowRemoveConfirmModal] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
+  const [removeError, setRemoveError] = useState('');
 
   const getUsername = useCallback(async () => {
     const userInfo = await wallet.getUserInfo(false);
@@ -144,6 +148,51 @@ const AccountSettings = () => {
   const switchAnonymousMode = useCallback(async () => {
     await updatePreference(!modeAnonymous);
   }, [updatePreference, modeAnonymous]);
+
+  const handleOpenRemoveModal = () => {
+    setRemoveError('');
+    setShowRemoveConfirmModal(true);
+  };
+
+  const handleCloseRemoveModal = () => {
+    setShowRemoveConfirmModal(false);
+    setRemoveError('');
+  };
+
+  const handleConfirmRemove = async (password: string) => {
+    setIsRemoving(true);
+    setRemoveError('');
+    try {
+      // Fetch the details of the main account associated with the current profile
+      const parentAccount = await wallet.returnParentWallet();
+      if (!parentAccount || !parentAccount.address) {
+        throw new Error('Could not retrieve current account details.');
+      }
+
+      // Find the account details including keyring type and brand name
+      const allAccounts = await wallet.getAllVisibleAccountsArray();
+      const accountToRemove = allAccounts.find((acc) => acc.address === parentAccount.address);
+
+      if (!accountToRemove) {
+        throw new Error('Could not find keyring details for the current account.');
+      }
+
+      const accountType = accountToRemove.type; // Keyring type (e.g., 'HD Key Tree', 'Simple Key Pair')
+      const accountBrand = accountToRemove.brandName; // Keyring brand (e.g., 'HD Key Tree', 'Simple Key Pair', 'Ledger')
+
+      // Call removeAddress with the correct details
+      await wallet.removeAddress(password, parentAccount.address, accountType, accountBrand);
+
+      handleCloseRemoveModal();
+      // Redirect after successful removal
+      history.push('/welcome');
+    } catch (error: any) {
+      console.error('Error removing profile:', error);
+      setRemoveError(error.message || 'An unknown error occurred. Check password.');
+    } finally {
+      setIsRemoving(false);
+    }
+  };
 
   useEffect(() => {
     getAnonymousMode();
@@ -286,9 +335,7 @@ const AccountSettings = () => {
                 },
                 width: '100%',
               }}
-              onClick={() => {
-                console.log('Remove Profile clicked');
-              }}
+              onClick={handleOpenRemoveModal}
             >
               {chrome.i18n.getMessage('Remove__Profile') || 'Remove Profile'}
             </Button>
@@ -308,6 +355,16 @@ const AccountSettings = () => {
           />
         </Box>
       </Box>
+
+      {/* Use the new Remove Profile Modal component */}
+      <RemoveProfileModal
+        isOpen={showRemoveConfirmModal}
+        onClose={handleCloseRemoveModal}
+        onConfirm={handleConfirmRemove}
+        isRemoving={isRemoving}
+        error={removeError}
+        checkBackup={wallet.hasCurrentUserBackup}
+      />
     </div>
   );
 };

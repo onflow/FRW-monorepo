@@ -10,7 +10,6 @@ import * as ethUtil from 'ethereumjs-util';
 import { getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth/web-extension';
 import { type TokenInfo } from 'flow-native-token-registry';
-import { now } from 'lodash';
 import { encode } from 'rlp';
 import web3, { TransactionError, Web3 } from 'web3';
 
@@ -40,33 +39,19 @@ import {
   type FlowAddress,
   type PublicKeyAccount,
   type MainAccount,
-  type ChildAccountMap,
   type WalletAccount,
   type EvmAddress,
   type WalletAddress,
-  isEvmAccountType,
   type Currency,
   type ActiveAccountType,
 } from '@/shared/types/wallet-types';
-import {
-  ensureEvmAddressPrefix,
-  isValidEthereumAddress,
-  isValidFlowAddress,
-  withPrefix,
-} from '@/shared/utils/address';
+import { ensureEvmAddressPrefix, isValidEthereumAddress, withPrefix } from '@/shared/utils/address';
 import { getSignAlgo } from '@/shared/utils/algo';
 import { FLOW_BIP44_PATH, SIGN_ALGO_NUM_ECDSA_P256 } from '@/shared/utils/algo-constants';
 import {
-  evmAccountRefreshRegex,
-  childAccountsRefreshRegex,
-  userInfoRefreshRegex,
-  cadenceScriptsKey,
   getCachedScripts,
-  nftCollectionKey,
   getCachedNftCollection,
-  getCachedNftCatalogCollections,
   nftCatalogCollectionsKey,
-  coinListKey,
   childAccountAllowTypesKey,
   childAccountNFTsKey,
   type ChildAccountNFTsStore,
@@ -75,18 +60,13 @@ import {
   type EvmNftCollectionListStore,
   evmNftCollectionListKey,
 } from '@/shared/utils/cache-data-keys';
-import { getCurrentProfileId } from '@/shared/utils/current-id';
 import {
   convertFlowBalanceToString,
   convertToIntegerAmount,
   validateAmount,
 } from '@/shared/utils/number';
 import { retryOperation } from '@/shared/utils/retryOperation';
-import {
-  type CategoryScripts,
-  type CadenceScripts,
-  type NetworkScripts,
-} from '@/shared/utils/script-types';
+import { type CategoryScripts } from '@/shared/utils/script-types';
 import {
   keyringService,
   preferenceService,
@@ -140,13 +120,7 @@ import { getScripts } from '../service/openapi';
 import type { ConnectedSite } from '../service/permission';
 import type { PreferenceAccount } from '../service/preference';
 import { type EvaluateStorageResult, StorageEvaluator } from '../service/storage-evaluator';
-import { loadChildAccountsOfParent } from '../service/userWallet';
-import {
-  getCachedData,
-  getValidData,
-  registerRefreshListener,
-  setCachedData,
-} from '../utils/data-cache';
+import { getValidData } from '../utils/data-cache';
 import defaultConfig from '../utils/defaultConfig.json';
 import { getEmojiList } from '../utils/emoji-util';
 import erc20ABI from '../utils/erc20.abi.json';
