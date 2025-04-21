@@ -10,11 +10,21 @@ import {
   CircularProgress,
   Box,
 } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import React, { useState, useEffect, useCallback } from 'react';
 
 import { useWallet } from '@/ui/utils';
 
 import { CustomDialog } from './importAddressModal'; // Reuse the styled dialog base
+
+// Define a wider custom dialog
+const WiderDialog = styled(CustomDialog)({
+  '& .MuiDialog-paper': {
+    width: '100%',
+    maxWidth: '400px', // Make dialog wider
+    margin: '10px',
+  },
+});
 
 interface RemoveProfileModalProps {
   isOpen: boolean;
@@ -71,13 +81,35 @@ const RemoveProfileModal: React.FC<RemoveProfileModalProps> = ({
   };
 
   return (
-    <CustomDialog open={isOpen} onClose={onClose}>
+    <WiderDialog open={isOpen} onClose={onClose}>
       <DialogTitle sx={{ color: 'error.main', fontSize: '24px', fontWeight: '700' }}>
         {chrome.i18n.getMessage('Confirm__Profile__Removal') || 'Remove Profile'}
       </DialogTitle>
       <DialogContent>
-        {/* Backup Status Area - Simplified Styling */}
-        {isCheckingBackup && ( // Use loading state
+        {/* Profile Information */}
+        {profileName && profileUsername && (
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              mb: 3,
+              p: 2,
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              borderRadius: '8px',
+            }}
+          >
+            <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 'bold' }}>
+              {profileName}
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+              @{profileUsername}
+            </Typography>
+          </Box>
+        )}
+
+        {/* Backup Status Area */}
+        {isCheckingBackup && (
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <CircularProgress size={20} sx={{ mr: 1 }} />
             <Typography variant="body2" color="text.secondary">
@@ -88,50 +120,38 @@ const RemoveProfileModal: React.FC<RemoveProfileModalProps> = ({
         {!isCheckingBackup && (
           <>
             {backupCheckError ? (
-              // Show error if check failed - Simplified styling
               <Box sx={{ display: 'flex', alignItems: 'center', color: 'error.main', mb: 2 }}>
                 <WarningAmberRoundedIcon fontSize="small" sx={{ mr: 1 }} />
                 <Typography variant="body2" sx={{ wordWrap: 'break-word' }}>
-                  {chrome.i18n.getMessage('Backup_Check_Error') || 'Backup Check Error'}:{' '}
-                  {backupCheckError}
+                  Backup check error: {backupCheckError}
                 </Typography>
               </Box>
             ) : hasBackup ? (
               <Box sx={{ display: 'flex', alignItems: 'center', color: 'success.main', mb: 2 }}>
                 <CheckCircleOutlineIcon fontSize="small" sx={{ mr: 1 }} />
                 <Typography variant="body2" sx={{ wordWrap: 'break-word' }}>
-                  {chrome.i18n.getMessage('Backup_Found') || 'Backup Found'}.{' '}
+                  {chrome.i18n.getMessage('Backup_Found') || 'Backup Found'}
                 </Typography>
               </Box>
             ) : (
               <Box sx={{ display: 'flex', alignItems: 'flex-start', color: 'warning.main', mb: 2 }}>
-                <WarningAmberRoundedIcon fontSize="small" sx={{ mr: 1, mt: '2px' }} />{' '}
+                <WarningAmberRoundedIcon fontSize="small" sx={{ mr: 1, mt: '2px' }} />
                 <Typography variant="body2" sx={{ wordWrap: 'break-word' }}>
                   <strong>
                     {chrome.i18n.getMessage('No__backup__found') || 'No Backup Found'}
                   </strong>
-                  .{' '}
-                  {chrome.i18n.getMessage(
-                    'It__is__highly__recommended__to__back_up__your_wallet'
-                  ) ||
-                    'It is highly recommended to back up your wallet recovery phrase or use Google Drive backup before removing the profile. Proceeding without a backup means you could permanently lose access to your wallet.'}
+                  {' - '}
+                  {chrome.i18n.getMessage('Backup_warning_short') ||
+                    'We recommend backing up before proceeding.'}
                 </Typography>
               </Box>
             )}
           </>
         )}
 
-        <Typography variant="body1" gutterBottom sx={{ color: 'text.primary' }}>
-          {chrome.i18n.getMessage('Removing__this__profile') ||
-            'After removing this profile, you will be logged out. You can re-import using a recovery phrase, private key or Google Drive backup.'}
-        </Typography>
-        <Typography variant="body1" gutterBottom sx={{ color: 'text.primary' }}>
-          {chrome.i18n.getMessage('Can__reimport_later') ||
-            'You can re-import using a recovery phrase, private key or Google Drive backup.'}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" gutterBottom>
-          {chrome.i18n.getMessage('Please__enter__your__password__to__confirm') ||
-            'Enter your password and confirm.'}
+        <Typography variant="body2" sx={{ color: 'text.primary', mb: 2 }}>
+          {chrome.i18n.getMessage('Remove_profile_warning') ||
+            'After removing this profile, you will be logged out. You can re-import later using a recovery phrase, private key, or Google Drive backup.'}
         </Typography>
 
         <TextField
@@ -144,8 +164,8 @@ const RemoveProfileModal: React.FC<RemoveProfileModalProps> = ({
           variant="outlined"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          error={!!removalError} // Use the removalError prop here
-          helperText={removalError} // Display removal attempt errors
+          error={!!removalError}
+          helperText={removalError}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && password && !isRemoving) {
               handleConfirmClick();
@@ -176,11 +196,11 @@ const RemoveProfileModal: React.FC<RemoveProfileModalProps> = ({
           {isRemoving ? (
             <CircularProgress size={24} color="inherit" />
           ) : (
-            chrome.i18n.getMessage('Remove__Profile')
+            chrome.i18n.getMessage('Remove__Profile') || 'Remove Profile'
           )}
         </Button>
       </DialogActions>
-    </CustomDialog>
+    </WiderDialog>
   );
 };
 
