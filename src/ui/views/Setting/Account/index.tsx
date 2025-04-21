@@ -9,6 +9,7 @@ import { useHistory } from 'react-router-dom';
 
 import { type PreferenceAccount } from '@/background/service/preference';
 import RemoveProfileModal from '@/ui/FRWComponent/PopupModal/removeProfileModal';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from 'ui/utils';
 
 import EditAccount from './EditAccount';
@@ -93,6 +94,7 @@ const Root = styled('span')(
 const AccountSettings = () => {
   const history = useHistory();
   const wallet = useWallet();
+  const { clearProfileData } = useProfiles();
   const [username, setUsername] = useState('');
   const [nickname, setNickname] = useState('');
   const [isEdit, setEdit] = useState(false);
@@ -180,18 +182,14 @@ const AccountSettings = () => {
         throw new Error('Could not determine profile ID');
       }
 
-      console.log(`Attempting to remove profile with ID: ${profileId}`);
-
-      // Call the new removeProfile method
       await wallet.removeProfile(password, profileId);
-      console.log('Profile removed successfully.');
-
-      // Sign out from the wallet
-      await wallet.signOutWallet();
-      console.log('Signed out successfully.');
 
       handleCloseRemoveModal();
-      history.push('/welcome');
+
+      wallet.lockWallet().then(() => {
+        clearProfileData();
+        history.push('/unlock');
+      });
     } catch (error: any) {
       console.error('Failed to remove profile:', error);
       if (error.message && error.message.includes('Incorrect password')) {
@@ -347,7 +345,7 @@ const AccountSettings = () => {
               }}
               onClick={handleOpenRemoveModal}
             >
-              {chrome.i18n.getMessage('Remove__Profile') || 'Remove Profile'}
+              {chrome.i18n.getMessage('Remove__Profile')}
             </Button>
           </Box>
 
