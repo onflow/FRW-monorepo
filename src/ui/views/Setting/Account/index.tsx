@@ -370,6 +370,8 @@ const AccountSettings = () => {
         onConfirm={handleConfirmRemove}
         isRemoving={isRemoving}
         error={removeError}
+        profileName={nickname}
+        profileUsername={username}
       />
     </div>
   );

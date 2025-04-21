@@ -22,6 +22,8 @@ interface RemoveProfileModalProps {
   onConfirm: (password: string) => void; // Callback with the entered password
   isRemoving: boolean;
   error: string; // Error specifically from the removal attempt
+  profileName?: string; // Optional profile name
+  profileUsername?: string; // Optional profile username
 }
 
 const RemoveProfileModal: React.FC<RemoveProfileModalProps> = ({
@@ -30,6 +32,8 @@ const RemoveProfileModal: React.FC<RemoveProfileModalProps> = ({
   onConfirm,
   isRemoving,
   error: removalError, // Rename prop to avoid conflict
+  profileName,
+  profileUsername,
 }) => {
   const [password, setPassword] = useState('');
   const [isCheckingBackup, setIsCheckingBackup] = useState<boolean>(true); // Added loading state
@@ -120,6 +124,10 @@ const RemoveProfileModal: React.FC<RemoveProfileModalProps> = ({
         <Typography variant="body1" gutterBottom sx={{ color: 'text.primary' }}>
           {chrome.i18n.getMessage('Removing__this__profile') ||
             'After removing this profile, you will be logged out. You can re-import using a recovery phrase, private key or Google Drive backup.'}
+        </Typography>
+        <Typography variant="body1" gutterBottom sx={{ color: 'text.primary' }}>
+          {chrome.i18n.getMessage('Can__reimport_later') ||
+            'You can re-import using a recovery phrase, private key or Google Drive backup.'}
         </Typography>
         <Typography variant="body2" color="text.secondary" gutterBottom>
           {chrome.i18n.getMessage('Please__enter__your__password__to__confirm') ||
