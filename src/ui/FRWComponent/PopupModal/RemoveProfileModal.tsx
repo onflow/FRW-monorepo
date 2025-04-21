@@ -1,3 +1,4 @@
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import {
   Button,
@@ -8,10 +9,10 @@ import {
   Typography,
   CircularProgress,
   Box,
-  Alert,
-  AlertTitle,
 } from '@mui/material';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+
+import { useWallet } from '@/ui/utils';
 
 import { CustomDialog } from './importAddressModal'; // Reuse the styled dialog base
 
@@ -21,10 +22,7 @@ interface RemoveProfileModalProps {
   onConfirm: (password: string) => void; // Callback with the entered password
   isRemoving: boolean;
   error: string; // Error specifically from the removal attempt
-  checkBackup: () => Promise<boolean>; // Function to check backup status
 }
-
-type BackupStatus = 'checking' | 'exists' | 'not_found' | 'error';
 
 const RemoveProfileModal: React.FC<RemoveProfileModalProps> = ({
   isOpen,
@@ -32,34 +30,35 @@ const RemoveProfileModal: React.FC<RemoveProfileModalProps> = ({
   onConfirm,
   isRemoving,
   error: removalError, // Rename prop to avoid conflict
-  checkBackup,
 }) => {
   const [password, setPassword] = useState('');
-  const [backupStatus, setBackupStatus] = useState<BackupStatus>('checking');
+  const [isCheckingBackup, setIsCheckingBackup] = useState<boolean>(true); // Added loading state
   const [backupCheckError, setBackupCheckError] = useState<string>('');
+  const [hasBackup, setHasBackup] = useState<boolean>(false);
+  const wallet = useWallet();
+
+  const checkBackup = useCallback(async () => {
+    setIsCheckingBackup(true); // Set loading true
+    setBackupCheckError(''); // Clear previous errors
+    try {
+      console.log('Starting backup check...');
+      const backupResult = await wallet.hasCurrentUserBackup(); // Renamed variable for clarity
+      console.log('Backup check result:', backupResult);
+      setHasBackup(backupResult);
+    } catch (err) {
+      console.error('An error occurred while checking the backup:', err);
+      setBackupCheckError('Failed to check backup status.'); // Keep error state
+      setHasBackup(false); // Assume no backup on error
+    } finally {
+      setIsCheckingBackup(false); // Set loading false
+    }
+  }, [setHasBackup, wallet]);
 
   useEffect(() => {
     if (isOpen) {
       setPassword(''); // Clear password on open
-      setBackupStatus('checking');
-      setBackupCheckError('');
-
-      const performBackupCheck = async () => {
-        try {
-          const hasBackup = await checkBackup();
-          setBackupStatus(hasBackup ? 'exists' : 'not_found');
-        } catch (err: any) {
-          console.error('Backup check failed:', err);
-          setBackupStatus('error');
-          setBackupCheckError(err.message || 'Failed to check backup status.');
-        }
-      };
-
-      performBackupCheck();
-    } else {
-      // Reset status when closed
-      setBackupStatus('checking');
-      setBackupCheckError('');
+      setHasBackup(false); // Reset backup state on open
+      checkBackup();
     }
   }, [isOpen, checkBackup]);
 
@@ -75,8 +74,8 @@ const RemoveProfileModal: React.FC<RemoveProfileModalProps> = ({
         {chrome.i18n.getMessage('Confirm__Profile__Removal') || 'Confirm Profile Removal'}
       </DialogTitle>
       <DialogContent>
-        {/* Backup Status Area */}
-        {backupStatus === 'checking' && (
+        {/* Backup Status Area - Simplified Styling */}
+        {isCheckingBackup && ( // Use loading state
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <CircularProgress size={20} sx={{ mr: 1 }} />
             <Typography variant="body2" color="text.secondary">
@@ -84,22 +83,42 @@ const RemoveProfileModal: React.FC<RemoveProfileModalProps> = ({
             </Typography>
           </Box>
         )}
-        {(backupStatus === 'not_found' || backupStatus === 'error') && (
-          <Alert
-            severity="warning"
-            icon={<WarningAmberRoundedIcon fontSize="inherit" />}
-            sx={{ mb: 2 }}
-          >
-            <AlertTitle>
-              {backupStatus === 'not_found'
-                ? chrome.i18n.getMessage('No_Backup_Found') || 'No Backup Found'
-                : chrome.i18n.getMessage('Backup_Check_Error') || 'Backup Check Error'}
-            </AlertTitle>
-            {backupStatus === 'not_found'
-              ? chrome.i18n.getMessage('It__is__highly__recommended__to__back_up__your_wallet') ||
-                'It is highly recommended to back up your wallet recovery phrase or use Google Drive backup before removing the profile. Proceeding without a backup means you could permanently lose access if you do not have your recovery phrase saved elsewhere.'
-              : backupCheckError}
-          </Alert>
+        {!isCheckingBackup && (
+          <>
+            {backupCheckError ? (
+              // Show error if check failed - Simplified styling
+              <Box sx={{ display: 'flex', alignItems: 'center', color: 'error.main', mb: 2 }}>
+                <WarningAmberRoundedIcon fontSize="small" sx={{ mr: 1 }} />
+                <Typography variant="body2" sx={{ wordWrap: 'break-word' }}>
+                  {chrome.i18n.getMessage('Backup_Check_Error') || 'Backup Check Error'}:{' '}
+                  {backupCheckError}
+                </Typography>
+              </Box>
+            ) : hasBackup ? (
+              // Show success message if backup exists - Simplified styling
+              <Box sx={{ display: 'flex', alignItems: 'center', color: 'success.main', mb: 2 }}>
+                <CheckCircleOutlineIcon fontSize="small" sx={{ mr: 1 }} />
+                <Typography variant="body2" sx={{ wordWrap: 'break-word' }}>
+                  {chrome.i18n.getMessage('Backup_Found') || 'Backup Found'}.{' '}
+                  {chrome.i18n.getMessage('Your_wallet_backup_is_available_on_Google_Drive') ||
+                    'Your wallet backup is available on Google Drive.'}
+                </Typography>
+              </Box>
+            ) : (
+              // Show 'no backup' warning otherwise - Simplified styling
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', color: 'warning.main', mb: 2 }}>
+                <WarningAmberRoundedIcon fontSize="small" sx={{ mr: 1, mt: '2px' }} />{' '}
+                {/* Adjusted icon margin for alignment */}
+                <Typography variant="body2" sx={{ wordWrap: 'break-word' }}>
+                  <strong>{chrome.i18n.getMessage('No_Backup_Found') || 'No Backup Found'}</strong>.{' '}
+                  {chrome.i18n.getMessage(
+                    'It__is__highly__recommended__to__back_up__your_wallet'
+                  ) ||
+                    'It is highly recommended to back up your wallet recovery phrase or use Google Drive backup before removing the profile. Proceeding without a backup means you could permanently lose access to your wallet.'}
+                </Typography>
+              </Box>
+            )}
+          </>
         )}
 
         {/* Standard Text */}
