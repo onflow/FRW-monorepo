@@ -793,6 +793,18 @@ export class WalletController extends BaseController {
     }
   };
 
+  /**
+   * Remove a profile and its associated keys
+   * If it's the last profile, it behaves like a wallet reset
+   *
+   * @param {string} password - The keyring controller password
+   * @param {string} profileId - The ID of the profile to remove
+   * @returns {Promise<boolean>} - Returns true if successful
+   */
+  removeProfile = async (password: string, profileId: string): Promise<boolean> => {
+    return await keyringService.removeProfile(password, profileId);
+  };
+
   resetCurrentAccount = async () => {
     const [account] = await this.getAccounts();
     if (account) {

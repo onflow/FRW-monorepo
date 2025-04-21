@@ -1652,6 +1652,92 @@ class KeyringService extends EventEmitter {
       decryptedData: keyringDataV2,
     };
   }
+
+  /**
+   * Remove Profile
+   *
+   * Removes a specific profile and its associated keys from the keyring list.
+   * If it's the last profile, it resets the entire wallet.
+   * If it's the current active profile, it switches to another profile.
+   *
+   * @param {string} password - The keyring controller password.
+   * @param {string} profileId - The ID of the profile to remove.
+   * @returns {Promise<boolean>} - A promise that resolves to true if successful.
+   */
+  async removeProfile(password: string, profileId: string): Promise<boolean> {
+    // Verify the password
+    await this.verifyPassword(password);
+
+    // Get all keyring IDs
+    const keyringIds = await this.getKeyringIds();
+
+    // If this is the only profile, reset the entire wallet
+    if (keyringIds.length <= 1) {
+      await this.resetKeyRing();
+      // Update the memory store
+      this.memStore.updateState({ isUnlocked: false });
+      this.emit('lock');
+      return true;
+    }
+
+    // Find the profile in the keyring list
+    const profileIndex = this.keyringList.findIndex((keyring) => keyring.id === profileId);
+    if (profileIndex === -1) {
+      throw new Error(`Profile with ID ${profileId} not found`);
+    }
+
+    // Get the current profile ID
+    const currentId = await returnCurrentProfileId();
+
+    // If we're removing the current profile, first switch to another one
+    let needToSwitchKeyring = false;
+    if (currentId === profileId) {
+      // Find another profile to switch to
+      const nextProfileId = keyringIds.find((id) => id !== profileId);
+      if (nextProfileId) {
+        // Update the current profile ID in storage
+        await storage.set(CURRENT_ID_KEY, nextProfileId);
+        needToSwitchKeyring = true;
+      }
+    }
+
+    // Clear all accounts from the keyring (if it's currently active)
+    if (this.currentKeyring.length > 0 && currentId === profileId) {
+      for (const keyring of this.currentKeyring) {
+        if (typeof keyring.removeAllAccounts === 'function') {
+          await keyring.removeAllAccounts();
+        }
+      }
+    }
+
+    // Remove the profile from the keyring list
+    this.keyringList.splice(profileIndex, 1);
+
+    // Update the vault in the store
+    const vaultArray = this.store.getState().vault || [];
+    const updatedVault = vaultArray.filter((entry) => entry.id !== profileId);
+    this.store.updateState({ vault: updatedVault });
+
+    // Switch to another profile if needed
+    if (needToSwitchKeyring) {
+      const nextProfileId = keyringIds.find((id) => id !== profileId);
+      if (nextProfileId) {
+        this.currentKeyring = await this.switchKeyring(nextProfileId);
+      }
+    }
+
+    // Persist the changes to storage
+    await this.persistAllKeyrings(password);
+
+    // Update the memory store
+    await this._updateMemStoreKeyrings();
+    await this.fullUpdate();
+
+    // Emit an event that a profile was removed
+    this.emit('profileRemoved', profileId);
+
+    return true;
+  }
 }
 
 export default new KeyringService();

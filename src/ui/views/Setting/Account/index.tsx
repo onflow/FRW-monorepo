@@ -7,11 +7,11 @@ import { styled } from '@mui/system';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
+import { type PreferenceAccount } from '@/background/service/preference';
 import RemoveProfileModal from '@/ui/FRWComponent/PopupModal/removeProfileModal';
 import { useWallet } from 'ui/utils';
 
 import EditAccount from './EditAccount';
-
 const orange = {
   500: '#41CC5D',
 };
@@ -101,12 +101,20 @@ const AccountSettings = () => {
   const [showRemoveConfirmModal, setShowRemoveConfirmModal] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
   const [removeError, setRemoveError] = useState('');
+  const [activeAccountDetails, setActiveAccountDetails] = useState<PreferenceAccount[] | null>(
+    null
+  );
 
-  const getUsername = useCallback(async () => {
+  const loadAccountData = useCallback(async () => {
     const userInfo = await wallet.getUserInfo(false);
     setUsername(userInfo.username);
     setNickname(userInfo.nickname);
     setAvatar(userInfo.avatar);
+
+    const details = await wallet.getAllVisibleAccountsArray();
+    if (details) {
+      setActiveAccountDetails(details);
+    }
   }, [wallet]);
 
   const toggleEdit = () => {
@@ -114,12 +122,6 @@ const AccountSettings = () => {
   };
 
   const getAnonymousMode = useCallback(async () => {
-    // const domain = await wallet.fetchUserDomain();
-    // if (domain) {
-    //   setDomain(domain);
-    // } else {
-    //   setShowPop(true);
-    // }
     const userInfo = await wallet.fetchUserInfo();
     if (userInfo.private === 1) {
       setModeAnonymous(false);
@@ -160,31 +162,43 @@ const AccountSettings = () => {
   };
 
   const handleConfirmRemove = async (password: string) => {
+    if (!activeAccountDetails) {
+      console.error('Cannot remove profile: No active account details found.');
+      setRemoveError('Account details not loaded for removal.');
+      return;
+    }
+
     setIsRemoving(true);
     setRemoveError('');
+
     try {
-      // Fetch the details of the main account associated with the current profile
-      const parentAccount = await wallet.getCurrentAccount();
-      if (!parentAccount || !parentAccount.address) {
-        throw new Error('Could not retrieve current account details.');
-      }
-      console.log('parentAccount', parentAccount);
-      if (!parentAccount) {
-        throw new Error('Could not find keyring details for the current account.');
+      // Get the current profile ID
+      const userInfo = await wallet.getUserInfo(false);
+      const profileId = userInfo.id;
+
+      if (!profileId) {
+        throw new Error('Could not determine profile ID');
       }
 
-      await wallet.removeAddress(
-        password,
-        parentAccount.address,
-        parentAccount.type,
-        parentAccount.brandName
-      );
+      console.log(`Attempting to remove profile with ID: ${profileId}`);
+
+      // Call the new removeProfile method
+      await wallet.removeProfile(password, profileId);
+      console.log('Profile removed successfully.');
+
+      // Sign out from the wallet
+      await wallet.signOutWallet();
+      console.log('Signed out successfully.');
+
       handleCloseRemoveModal();
-      // Redirect after successful removal
       history.push('/welcome');
     } catch (error: any) {
-      console.error('Error removing profile:', error);
-      setRemoveError(error.message || 'An unknown error occurred. Check password.');
+      console.error('Failed to remove profile:', error);
+      if (error.message && error.message.includes('Incorrect password')) {
+        setRemoveError('Incorrect password. Please try again.');
+      } else {
+        setRemoveError(error.message || 'An unexpected error occurred during profile removal.');
+      }
     } finally {
       setIsRemoving(false);
     }
@@ -192,8 +206,8 @@ const AccountSettings = () => {
 
   useEffect(() => {
     getAnonymousMode();
-    getUsername();
-  }, [getAnonymousMode, getUsername]);
+    loadAccountData();
+  }, [getAnonymousMode, loadAccountData]);
 
   return (
     <div className="page">
@@ -352,7 +366,6 @@ const AccountSettings = () => {
         </Box>
       </Box>
 
-      {/* Use the new Remove Profile Modal component */}
       <RemoveProfileModal
         isOpen={showRemoveConfirmModal}
         onClose={handleCloseRemoveModal}
