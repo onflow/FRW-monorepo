@@ -9,6 +9,7 @@ import { useHistory } from 'react-router-dom';
 
 import { type PreferenceAccount } from '@/background/service/preference';
 import RemoveProfileModal from '@/ui/FRWComponent/PopupModal/removeProfileModal';
+import ResetModal from '@/ui/FRWComponent/PopupModal/resetModal';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from 'ui/utils';
 
@@ -94,7 +95,7 @@ const Root = styled('span')(
 const AccountSettings = () => {
   const history = useHistory();
   const wallet = useWallet();
-  const { clearProfileData } = useProfiles();
+  const { clearProfileData, profileIds } = useProfiles();
   const [username, setUsername] = useState('');
   const [nickname, setNickname] = useState('');
   const [isEdit, setEdit] = useState(false);
@@ -103,6 +104,7 @@ const AccountSettings = () => {
   const [showRemoveConfirmModal, setShowRemoveConfirmModal] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
   const [removeError, setRemoveError] = useState('');
+  const [showResetModal, setShowResetModal] = useState(false);
   const [activeAccountDetails, setActiveAccountDetails] = useState<PreferenceAccount[] | null>(
     null
   );
@@ -185,11 +187,17 @@ const AccountSettings = () => {
       await wallet.removeProfile(password, profileId);
 
       handleCloseRemoveModal();
-
-      wallet.lockWallet().then(() => {
-        clearProfileData();
-        history.push('/unlock');
-      });
+      if (profileIds && profileIds.length > 1) {
+        wallet.lockWallet().then(() => {
+          clearProfileData();
+          history.push('/unlock');
+        });
+      } else {
+        wallet.signOutWallet().then(() => {
+          clearProfileData();
+          history.push('/welcome');
+        });
+      }
     } catch (error: any) {
       console.error('Failed to remove profile:', error);
       if (error.message && error.message.includes('Incorrect password')) {
@@ -200,6 +208,10 @@ const AccountSettings = () => {
     } finally {
       setIsRemoving(false);
     }
+  };
+
+  const handleResetWallet = () => {
+    wallet.resetPwd();
   };
 
   useEffect(() => {
@@ -335,17 +347,44 @@ const AccountSettings = () => {
           >
             <Button
               variant="contained"
-              sx={{
-                backgroundColor: 'error.main',
-                color: 'white',
-                '&:hover': {
-                  backgroundColor: 'error.dark',
-                },
-                width: '100%',
-              }}
+              disableElevation
+              color="error"
               onClick={handleOpenRemoveModal}
+              sx={{
+                width: '100% !important',
+                height: '48px',
+                borderRadius: '12px',
+                textTransform: 'none',
+              }}
             >
-              {chrome.i18n.getMessage('Remove__Profile')}
+              <Typography color="text">{chrome.i18n.getMessage('Remove__Profile')}</Typography>
+            </Button>
+          </Box>
+
+          <Box
+            sx={{
+              backgroundColor: '#282828',
+              display: 'flex',
+              padding: '20px 24px',
+              justifyContent: 'center',
+              borderRadius: '16px',
+              marginTop: '8px',
+              marginBottom: '16px',
+            }}
+          >
+            <Button
+              variant="contained"
+              disableElevation
+              color="error"
+              onClick={() => setShowResetModal(true)}
+              sx={{
+                width: '100% !important',
+                height: '48px',
+                borderRadius: '12px',
+                textTransform: 'none',
+              }}
+            >
+              <Typography color="text">{chrome.i18n.getMessage('Reset_Wallet')}</Typography>
             </Button>
           </Box>
 
@@ -372,6 +411,14 @@ const AccountSettings = () => {
         error={removeError}
         profileName={nickname}
         profileUsername={username}
+      />
+
+      <ResetModal
+        setShowAction={setShowResetModal}
+        isOpen={showResetModal}
+        onOpenChange={handleResetWallet}
+        errorName={chrome.i18n.getMessage('Confirm_to_reset_Wallet')}
+        errorMessage={chrome.i18n.getMessage('This_action_will_remove')}
       />
     </div>
   );

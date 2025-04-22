@@ -1,30 +1,12 @@
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
-import {
-  Button,
-  DialogTitle,
-  DialogContent,
-  TextField,
-  DialogActions,
-  Typography,
-  CircularProgress,
-  Box,
-} from '@mui/material';
+import { Button, Typography, TextField, DialogActions, CircularProgress, Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import React, { useState, useEffect, useCallback } from 'react';
 
 import { useWallet } from '@/ui/utils';
 
 import { CustomDialog } from './importAddressModal'; // Reuse the styled dialog base
-
-// Define a wider custom dialog
-const WiderDialog = styled(CustomDialog)({
-  '& .MuiDialog-paper': {
-    width: '100%',
-    maxWidth: '400px', // Make dialog wider
-    margin: '10px',
-  },
-});
 
 interface RemoveProfileModalProps {
   isOpen: boolean;
@@ -81,126 +63,125 @@ const RemoveProfileModal: React.FC<RemoveProfileModalProps> = ({
   };
 
   return (
-    <WiderDialog open={isOpen} onClose={onClose}>
-      <DialogTitle sx={{ color: 'error.main', fontSize: '24px', fontWeight: '700' }}>
-        {chrome.i18n.getMessage('Confirm__Profile__Removal') || 'Remove Profile'}
-      </DialogTitle>
-      <DialogContent>
-        {/* Profile Information */}
-        {profileName && profileUsername && (
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              mb: 3,
-              p: 2,
-              backgroundColor: 'rgba(255, 255, 255, 0.05)',
-              borderRadius: '8px',
-            }}
-          >
-            <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 'bold' }}>
-              {profileName}
-            </Typography>
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              @{profileUsername}
-            </Typography>
-          </Box>
-        )}
+    <CustomDialog open={isOpen} onClose={onClose}>
+      <Typography sx={{ color: '#FF6D24', fontSize: '24px', fontWeight: '700' }}>
+        {chrome.i18n.getMessage('Remove_Profile') || 'Remove Profile'}
+      </Typography>
 
-        {/* Backup Status Area */}
-        {isCheckingBackup && (
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <CircularProgress size={20} sx={{ mr: 1 }} />
-            <Typography variant="body2" color="text.secondary">
-              Checking backup status...
-            </Typography>
-          </Box>
-        )}
-        {!isCheckingBackup && (
-          <>
-            {backupCheckError ? (
-              <Box sx={{ display: 'flex', alignItems: 'center', color: 'error.main', mb: 2 }}>
-                <WarningAmberRoundedIcon fontSize="small" sx={{ mr: 1 }} />
-                <Typography variant="body2" sx={{ wordWrap: 'break-word' }}>
-                  Backup check error: {backupCheckError}
-                </Typography>
-              </Box>
-            ) : hasBackup ? (
-              <Box sx={{ display: 'flex', alignItems: 'center', color: 'success.main', mb: 2 }}>
-                <CheckCircleOutlineIcon fontSize="small" sx={{ mr: 1 }} />
-                <Typography variant="body2" sx={{ wordWrap: 'break-word' }}>
-                  {chrome.i18n.getMessage('Backup_Found') || 'Backup Found'}
-                </Typography>
-              </Box>
-            ) : (
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', color: 'warning.main', mb: 2 }}>
-                <WarningAmberRoundedIcon fontSize="small" sx={{ mr: 1, mt: '2px' }} />
-                <Typography variant="body2" sx={{ wordWrap: 'break-word' }}>
-                  <strong>
-                    {chrome.i18n.getMessage('No__backup__found') || 'No Backup Found'}
-                  </strong>
-                  {' - '}
-                  {chrome.i18n.getMessage('Backup_warning_short') ||
-                    'We recommend backing up before proceeding.'}
-                </Typography>
-              </Box>
-            )}
-          </>
-        )}
-
-        <Typography variant="body2" sx={{ color: 'text.primary', mb: 2 }}>
-          {chrome.i18n.getMessage('Remove_profile_warning') ||
-            'After removing this profile, you will be logged out. You can re-import later using a recovery phrase, private key, or Google Drive backup.'}
-        </Typography>
-
-        <TextField
-          autoFocus
-          margin="dense"
-          id="confirm-remove-password"
-          label={chrome.i18n.getMessage('Password') || 'Password'}
-          type="password"
-          fullWidth
-          variant="outlined"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          error={!!removalError}
-          helperText={removalError}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && password && !isRemoving) {
-              handleConfirmClick();
-            }
-          }}
+      {/* Profile Information */}
+      {profileName && profileUsername && (
+        <Box
           sx={{
-            input: { color: 'text.primary' },
-            label: { color: 'text.secondary' },
-            '& .MuiOutlinedInput-root': {
-              '& fieldset': { borderColor: 'grey.500' },
-              '&:hover fieldset': { borderColor: 'grey.400' },
-              '&.Mui-focused fieldset': { borderColor: 'primary.main' },
-            },
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            mt: 2,
+            mb: 2,
+            py: 2,
+            px: 3,
+            backgroundColor: '#2C2C2C',
+            borderRadius: '8px',
           }}
-        />
-      </DialogContent>
-      <DialogActions sx={{ pt: 2 }}>
-        <Button onClick={onClose} color="secondary" disabled={isRemoving}>
-          {chrome.i18n.getMessage('Cancel') || 'Cancel'}
+        >
+          <Typography sx={{ fontWeight: 'bold', fontSize: '16px' }}>{profileName}</Typography>
+          <Typography sx={{ color: '#BABABA', fontSize: '14px' }}>@{profileUsername}</Typography>
+        </Box>
+      )}
+
+      {/* Backup Status - Simplified */}
+      {!isCheckingBackup && hasBackup && (
+        <Box sx={{ display: 'flex', alignItems: 'center', color: '#41CC5D', mt: 1, mb: 2 }}>
+          <CheckCircleOutlineIcon fontSize="small" sx={{ mr: 1 }} />
+          <Typography sx={{ fontSize: '14px' }}>
+            {chrome.i18n.getMessage('Backup_Found') || 'Backup Found'}
+          </Typography>
+        </Box>
+      )}
+
+      <Typography sx={{ color: '#BABABA', margin: '16px 0', fontSize: '16px' }}>
+        {chrome.i18n.getMessage('Remove_profile_warning_simplified') ||
+          'After removing this profile, you will be logged out. You can re-import later using a recovery phrase, private key, or Google Drive backup.'}
+      </Typography>
+
+      <TextField
+        autoFocus
+        margin="dense"
+        id="confirm-remove-password"
+        label={chrome.i18n.getMessage('Password') || 'Password'}
+        type="password"
+        fullWidth
+        variant="outlined"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        error={!!removalError}
+        helperText={removalError}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && password && !isRemoving) {
+            handleConfirmClick();
+          }
+        }}
+        sx={{
+          mb: 3,
+          input: { color: '#FFFFFF' },
+          '& .MuiOutlinedInput-root': {
+            '& fieldset': { borderColor: '#787878' },
+          },
+          '& .MuiFormLabel-root': {
+            color: '#BABABA',
+          },
+        }}
+      />
+
+      <DialogActions sx={{ display: 'flex', flexDirection: 'row' }}>
+        <Button
+          className="registerButton"
+          variant="contained"
+          color="secondary"
+          form="seed"
+          size="large"
+          onClick={onClose}
+          disabled={isRemoving}
+          sx={{
+            height: '56px',
+            width: '100%',
+            borderRadius: '12px',
+            textTransform: 'capitalize',
+            gap: '12px',
+            display: 'flex',
+          }}
+        >
+          <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }} color="background.paper">
+            {chrome.i18n.getMessage('Cancel') || 'Cancel'}
+          </Typography>
         </Button>
         <Button
-          onClick={handleConfirmClick}
-          color="error"
+          className="registerButton"
           variant="contained"
+          color="error"
+          form="seed"
+          size="large"
+          onClick={handleConfirmClick}
           disabled={!password || isRemoving}
-          sx={{ ml: 1 }}
+          sx={{
+            height: '56px',
+            width: '100%',
+            borderRadius: '12px',
+            textTransform: 'capitalize',
+            gap: '12px',
+            display: 'flex',
+            marginLeft: '40px',
+          }}
         >
-          {isRemoving ? (
-            <CircularProgress size={24} color="inherit" />
-          ) : (
-            chrome.i18n.getMessage('Remove__Profile') || 'Remove Profile'
-          )}
+          <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }} color="background.error">
+            {isRemoving ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              chrome.i18n.getMessage('Remove') || 'Remove'
+            )}
+          </Typography>
         </Button>
       </DialogActions>
-    </WiderDialog>
+    </CustomDialog>
   );
 };
 
