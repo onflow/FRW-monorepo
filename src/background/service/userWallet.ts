@@ -177,6 +177,24 @@ class UserWallet {
     this.loadAllAccounts(this.store.network, pubkey);
   };
 
+  /**
+   * Gets the keyindex of current account
+   * @returns Number the keyindex of current account
+   */
+  getKeyIndex = async () => {
+    try {
+      const parentAccount = await this.getParentAccount();
+      if (!parentAccount) {
+        throw new Error('Current wallet not found in accounts');
+      }
+      const keyIndex = parentAccount.keyIndex;
+
+      return keyIndex;
+    } catch (error) {
+      throw new Error('Failed to get key index: ' + error.message);
+    }
+  };
+
   getNetwork = (): FlowNetwork => {
     if (!this.store) {
       // Just return mainnet for now
@@ -767,20 +785,18 @@ class UserWallet {
 
     // Get the current public key
     const pubKey = this.store.currentPubkey;
+    const parentAccount = await this.getParentAccount();
+    if (!parentAccount) {
+      throw new Error('Current wallet not found in accounts');
+    }
+    const signAlgo = parentAccount.signAlgo;
+    const hashAlgo = parentAccount.hashAlgo;
+
     const keyTuple = await keyringService.getCurrentPublicPrivateKeyTuple();
-    let signAlgo: number;
-    let hashAlgo: number;
     let privateKey: string;
     if (pubKey === keyTuple.P256.pubK) {
-      // The public key is the same as the private key
-      // We can use the private key to sign the message
-      signAlgo = SIGN_ALGO_NUM_ECDSA_P256;
-      hashAlgo = HASH_ALGO_NUM_SHA3_256;
       privateKey = keyTuple.P256.pk;
     } else if (pubKey === keyTuple.SECP256K1.pubK) {
-      // The public key is the SECP256K1 public key
-      signAlgo = SIGN_ALGO_NUM_ECDSA_secp256k1;
-      hashAlgo = HASH_ALGO_NUM_SHA2_256;
       privateKey = keyTuple.SECP256K1.pk;
     } else {
       throw new Error('Invalid public key');
@@ -797,10 +813,10 @@ class UserWallet {
 
   authorizationFunction = async (account) => {
     // authorization function need to return an account
-    const address = fcl.withPrefix(await wallet.getMainAddress());
+    const address = fcl.withPrefix(await this.getParentAddress());
     const ADDRESS = fcl.withPrefix(address);
     // TODO: FIX THIS
-    const KEY_ID = (await storage.get('keyIndex')) || 0;
+    const KEY_ID = await this.getKeyIndex();
     return {
       ...account, // bunch of defaults in here, we want to overload some of them though
       tempId: `${ADDRESS}-${KEY_ID}`, // tempIds are more of an advanced topic, for 99% of the times where you know the address and keyId you will want it to be a unique string per that address and keyId
