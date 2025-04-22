@@ -183,31 +183,16 @@ class UserWallet {
    */
   getKeyIndex = async () => {
     try {
-      const matchingAccount = await this.getCurrentAccount();
-      const keyIndex = matchingAccount.keyIndex;
+      const parentAccount = await this.getParentAccount();
+      if (!parentAccount) {
+        throw new Error('Current wallet not found in accounts');
+      }
+      const keyIndex = parentAccount.keyIndex;
 
       return keyIndex;
     } catch (error) {
       throw new Error('Failed to get key index: ' + error.message);
     }
-  };
-
-  /**
-   * Gets the accountInfo of current account
-   * @returns PublicKeyAccount the accountInfo of current account
-   */
-  getCurrentAccount = async (): Promise<PublicKeyAccount> => {
-    const network = await this.getNetwork();
-    const privateKeyTuple = await keyringService.getCurrentPublicPrivateKeyTuple();
-    const accounts = await getAccountsByPublicKeyTuple(privateKeyTuple, network);
-    const addressHex = await this.getParentAddress();
-    const matchingAccount = accounts.find((account) => account.address === addressHex);
-
-    if (!matchingAccount) {
-      throw new Error('Current wallet not found in accounts');
-    }
-
-    return matchingAccount;
   };
 
   getNetwork = (): FlowNetwork => {
@@ -800,12 +785,12 @@ class UserWallet {
 
     // Get the current public key
     const pubKey = this.store.currentPubkey;
-    const matchingAccount = await this.getCurrentAccount();
-    if (!matchingAccount) {
+    const parentAccount = await this.getParentAccount();
+    if (!parentAccount) {
       throw new Error('Current wallet not found in accounts');
     }
-    const signAlgo = matchingAccount.signAlgo;
-    const hashAlgo = matchingAccount.hashAlgo;
+    const signAlgo = parentAccount.signAlgo;
+    const hashAlgo = parentAccount.hashAlgo;
 
     const keyTuple = await keyringService.getCurrentPublicPrivateKeyTuple();
     let privateKey: string;
