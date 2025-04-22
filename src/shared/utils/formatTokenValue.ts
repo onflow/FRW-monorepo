@@ -56,7 +56,7 @@ export function formatPrice(priceStr: string, zeroCondenseThreshold = 4): Format
   const decimalStr = scientificToDecimal(priceStr);
 
   // Handle numbers >= 1
-  if (!decimalStr.startsWith('0.')) {
+  if (typeof decimalStr === 'string' && !decimalStr.startsWith('0.')) {
     return {
       price: decimalStr,
       formattedPrice: {
