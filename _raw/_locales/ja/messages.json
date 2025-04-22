@@ -69,6 +69,15 @@
   "Acc__list": {
     "message": "アカウントリスト"
   },
+  "Display__Currency": {
+    "message": "表示通貨"
+  },
+  "Select__Currency": {
+    "message": "通貨を選択"
+  },
+  "Currency__Description": {
+    "message": "表示する値に使用する通貨を選択してください"
+  },
   "Profile": {
     "message": "プロファイル"
   },

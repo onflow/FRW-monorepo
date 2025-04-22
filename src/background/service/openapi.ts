@@ -1,5 +1,6 @@
 import * as fcl from '@onflow/fcl';
 import type { Account as FclAccount } from '@onflow/typedefs';
+import BigNumber from 'bignumber.js';
 import dayjs from 'dayjs';
 import { initializeApp, getApp } from 'firebase/app';
 import {
@@ -35,15 +36,12 @@ import {
   type FlowAddress,
   type PublicKeyAccount,
   type ActiveAccountType,
+  type Currency,
+  DEFAULT_CURRENCY,
 } from '@/shared/types/wallet-types';
 import { isValidFlowAddress, isValidEthereumAddress } from '@/shared/utils/address';
 import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
-import {
-  cadenceScriptsKey,
-  cadenceScriptsRefreshRegex,
-  childAccountNFTsKey,
-  ChildAccountNFTsStore,
-} from '@/shared/utils/cache-data-keys';
+import { cadenceScriptsKey, cadenceScriptsRefreshRegex } from '@/shared/utils/cache-data-keys';
 import { getPeriodFrequency } from '@/shared/utils/getPeriodFrequency';
 import { type NetworkScripts } from '@/shared/utils/script-types';
 import { INITIAL_OPENAPI_URL, WEB_NEXT_URL } from 'consts';
@@ -115,6 +113,9 @@ interface FlowTokenResponse {
   balanceInUSD: string;
   priceInFLOW: string;
   balanceInFLOW: string;
+  priceInCurrency: string;
+  balanceInCurrency: string;
+  currency: string;
   logoURI: string;
 }
 
@@ -140,6 +141,12 @@ interface EvmTokenResponse {
 
 interface EvmApiResponse {
   data: EvmTokenResponse[];
+}
+
+interface CurrencyResponse {
+  data: {
+    currencies: Currency[];
+  };
 }
 
 type FlowApiResponse = { data: { result: FlowTokenResponse[]; storage: StorageResponse } };
@@ -219,7 +226,6 @@ onAuthStateChanged(auth, (user: User | null) => {
     // User is signed in, see docs for a list of available properties
     // https://firebase.google.com/docs/reference/js/firebase.User
     // const uid = user.uid;
-    console.log('User is signed in');
     if (user.isAnonymous) {
       console.log('User is anonymous');
     } else {
@@ -462,6 +468,8 @@ class OpenApiService {
     host: INITIAL_OPENAPI_URL,
     config: dataConfig,
   };
+
+  private supportedCurrenciesCache: Currency[] = [];
 
   getNetwork = () => {
     return userWalletService.getNetwork();
@@ -2172,20 +2180,29 @@ class OpenApiService {
     return { otherAccounts, wallet, loggedInAccounts };
   };
 
-  /* getAccountsWithPublicKey = async (
-    publicKey: string,
-    network: string
-  ): Promise<PublicKeyAccount[]> => {
-    const result: PublicKeyAccount[] = await this.sendRequest(
-      'GET',
-      `/api/v4/key-indexer/${publicKey}`,
-      { network },
-      {},
-      WEB_NEXT_URL
-    );
+  // ** Get supported currencies **
+  getSupportedCurrencies = async (): Promise<Currency[]> => {
+    if (this.supportedCurrenciesCache.length > 0) {
+      return this.supportedCurrenciesCache;
+    }
 
-    return result;
-  }; */
+    let currencies = [DEFAULT_CURRENCY];
+    try {
+      const supportedCurrencies: CurrencyResponse = await this.sendRequest(
+        'GET',
+        `/api/v4/currencies`,
+        {},
+        {},
+        WEB_NEXT_URL
+      );
+
+      currencies = supportedCurrencies?.data?.currencies || [DEFAULT_CURRENCY];
+    } catch (error) {
+      console.warn('Error fetching supported currencies, using default USD:', error);
+    }
+    this.supportedCurrenciesCache = currencies;
+    return currencies;
+  };
 
   getAccountsWithPublicKey = async (
     publicKey: string,
@@ -2216,9 +2233,14 @@ class OpenApiService {
    * Get user tokens, handle both EVM and Flow tokens. Include price information.
    * @param address - The address of the user
    * @param network - The network of the user
+   * @param currencyCode - The currency code of the user
    * @returns The tokens of the user
    */
-  async getUserTokens(address: string, network?: string): Promise<ExtendedTokenInfo[]> {
+  async getUserTokens(
+    address: string,
+    network?: string,
+    currencyCode: string = 'USD'
+  ): Promise<ExtendedTokenInfo[]> {
     if (!address) {
       throw new Error('Address is required');
     }
@@ -2238,9 +2260,9 @@ class OpenApiService {
 
     try {
       if (isEvmAddress) {
-        return await this.fetchUserEvmTokens(address, network);
+        return await this.fetchUserEvmTokens(address, network, currencyCode);
       } else {
-        return await this.fetchUserFlowTokens(address, network);
+        return await this.fetchUserFlowTokens(address, network, currencyCode);
       }
     } catch (error) {
       console.error('Error fetching user tokens:', error);
@@ -2250,9 +2272,10 @@ class OpenApiService {
 
   private async fetchUserFlowTokens(
     address: string,
-    network: string
+    network: string,
+    currencyCode: string = 'USD'
   ): Promise<ExtendedTokenInfo[]> {
-    const cacheKey = `flow_tokens_${address}_${network}`;
+    const cacheKey = `flow_tokens_${address}_${network}_${currencyCode}`;
     const cachedFlowData = await storage.getExpiry(cacheKey);
 
     if (cachedFlowData !== null) {
@@ -2262,7 +2285,7 @@ class OpenApiService {
     const response: FlowApiResponse = await this.sendRequest(
       'GET',
       `/api/v4/cadence/tokens/ft/${address}`,
-      { network },
+      { network, currency: currencyCode },
       {},
       WEB_NEXT_URL
     );
@@ -2270,8 +2293,7 @@ class OpenApiService {
       return [];
     }
 
-    // Convert FlowTokenResponse to ExtendedTokenInfo
-    const tokens = (response.data?.result || []).map(
+    const tokens = (response?.data?.result || []).map(
       (token): ExtendedTokenInfo => ({
         id: token.identifier,
         name: token.name,
@@ -2288,27 +2310,32 @@ class OpenApiService {
             : '', // Provide a default value if receiverPath is null
           balance: ``, // todo: not sure what this property is used for
         },
-        logoURI: token.logoURI || token.logos?.items?.[0]?.file?.url,
+        logoURI: token.logoURI || token.logos?.items?.[0]?.file?.url || '',
         extensions: {
           description: token.description,
           twitter: token.socials?.x?.url,
         },
         custom: false,
-        price: Number(token.priceInUSD || '0'), // todo: future will be a string
-        total: Number(token.balanceInUSD || '0'), // todo: future will be a string
+        price: token.priceInCurrency || token.priceInUSD || '',
+        total: token.balanceInCurrency || token.balanceInUSD || '',
         change24h: 0,
         balance: token.balance || '0',
         // Add CoinItem properties
         coin: token.name, // redundant for compatibility
         unit: token.symbol ?? token.contractName, // redundant for compatibility
-        icon: token.logoURI || token.logos?.items?.[0]?.file?.url, // redundant for compatibility
+        icon: token.logoURI || token.logos?.items?.[0]?.file?.url || '',
+        flowIdentifier: token.identifier,
       })
     );
     return tokens;
   }
 
-  private async fetchUserEvmTokens(address: string, network: string): Promise<ExtendedTokenInfo[]> {
-    const cacheKey = `evm_tokens_${address}_${network}`;
+  private async fetchUserEvmTokens(
+    address: string,
+    network: string,
+    currencyCode: string = 'USD'
+  ): Promise<ExtendedTokenInfo[]> {
+    const cacheKey = `evm_tokens_${address}_${network}_${currencyCode}`;
     const cachedEvmData = await storage.getExpiry(cacheKey);
 
     if (cachedEvmData !== null) {
@@ -2321,7 +2348,7 @@ class OpenApiService {
     const userEvmTokenList: EvmApiResponse = await this.sendRequest(
       'GET',
       `/api/v4/evm/tokens/ft/${formattedEvmAddress}`,
-      { network },
+      { network, currency: currencyCode },
       {},
       WEB_NEXT_URL
     );
@@ -2347,14 +2374,15 @@ class OpenApiService {
         logoURI: token.logoURI || '',
         extensions: {},
         custom: false,
-        price: Number(token.priceInUSD || '0'),
-        total: Number(token.balanceInUSD || '0'),
+        price: token.priceInCurrency || token.priceInUSD || '',
+        total: token.balanceInCurrency || token.balanceInUSD || '',
         change24h: 0,
         balance: token.displayBalance || '0',
         // Add CoinItem properties
         coin: token.name, // redundant for compatibility
         unit: token.symbol, // redundant for compatibility
         icon: token.logoURI || '', // redundant for compatibility
+        flowIdentifier: token.flowIdentifier,
       })
     );
     return tokens;

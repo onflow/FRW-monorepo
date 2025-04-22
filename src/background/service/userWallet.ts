@@ -5,7 +5,6 @@ import * as ethUtil from 'ethereumjs-util';
 import { getApp } from 'firebase/app';
 import { getAuth, signInAnonymously } from 'firebase/auth/web-extension';
 
-import wallet from '@/background/controller/wallet';
 import keyringService from '@/background/service/keyring';
 import { mixpanelTrack } from '@/background/service/mixpanel';
 import openapiService from '@/background/service/openapi';
@@ -19,14 +18,16 @@ import {
 import createPersistStore from '@/background/utils/persisitStore';
 import {
   type PublicPrivateKeyTuple,
-  tupleToPrivateKey,
   combinePubPkString,
+  tupleToPrivateKey,
 } from '@/shared/types/key-types';
 import {
   type FlowAddress,
   type EvmAddress,
   type WalletAccount,
   type ChildAccountMap,
+  type Currency,
+  DEFAULT_CURRENCY,
   type ActiveAccountType,
   getActiveAccountTypeForAddress,
   type WalletAddress,
@@ -90,13 +91,22 @@ const USER_WALLET_TEMPLATE: UserWalletStore = {
   network: 'mainnet',
   emulatorMode: false,
   currentPubkey: '',
+  displayCurrency: DEFAULT_CURRENCY,
 };
+
 class UserWallet {
   // PERSISTENT DATA
   // The user settings - network and other global settings
   private store!: UserWalletStore;
   // Map of the selected accounts for each network and pubkey
   private activeAccounts: Map<FlowNetwork, Map<string, ActiveAccountsStore>> = new Map();
+
+  // Reference to the wallet controller
+  private walletController: any;
+
+  setWalletController = (controller: any) => {
+    this.walletController = controller;
+  };
 
   init = async () => {
     this.store = await createPersistStore<UserWalletStore>({
@@ -324,126 +334,6 @@ class UserWallet {
       }
     }
   };
-
-  /*
-
-  switchProfile = async (pubkey: string) => {
-    if (!pubkey) {
-      console.warn('Invalid pubkey provided to switchAccount');
-      return;
-    }
-
-    const profileList: WalletProfile[] = this.accounts[this.store.network];
-
-    let profile = profileList.find((group) => {
-      const matches = group.publicKey === pubkey;
-
-      return matches;
-    });
-
-    if (!profile) {
-      // Create a new profile
-      profile = await createSessionStore<ProfileAccountStore>({
-        name: profileAccountsKey(this.store.network, pubkey),
-        template: {
-          accounts: [],
-          publicKey: pubkey,
-        },
-      });
-      // Add the new profile to the profile list
-      profileList.push(profile);
-    }
-    // Set the current pubkey
-    this.store.currentPubkey = pubkey;
-
-    if (!profile.accounts.length) {
-      console.warn(`No account found for pubkey: ${pubkey.slice(0, 10)}...`);
-      return;
-    }
-
-  };
-
-
-
-  getAccountsWithPublicKey = async (
-    publicKey: string,
-    network: string
-  ): Promise<PublicKeyAccount[]> => {
-    const accounts = await openapiService.getAccountsWithPublicKey(publicKey, network);
-    return accounts;
-  };
-
-  setChildAccounts = async (
-    childAccountMap: ChildAccountMap,
-    address: FlowAddress,
-    network: string
-  ) => {
-    const { account } = this.findAccount(address, network);
-
-    if (!account) return;
-
-    // Store the child accounts for address in the childAccountMap
-    if (!!this.childAccountMap[address]) {
-      // Update the existing session store
-      this.childAccountMap[address].accounts = { ...childAccountMap };
-    } else {
-      // Create a new session store so the front end can access the child accounts
-      this.childAccountMap[address] = await createSessionStore<ChildAccountStore>({
-        name: childAccountsKey(network, address),
-        template: {
-          parentAddress: address,
-          accounts: childAccountMap,
-        },
-      });
-    }
-  };
-
-  /*
-   * Set the evm address for the main account
-   * This is invoked when loading the wallet
-   * /
-  setAccountEvmAddress = async (evmAddress: EvmAddress | null) => {
-    const network = this.store.network;
-    const address = this.store.parentAddress as FlowAddress;
-    const { account } = this.findAccount(address, network);
-
-    if (!account) {
-      throw new Error(`Account not found: ${address}`);
-    }
-
-    if (!isValidFlowAddress(address)) {
-      throw new Error(`Invalid address: ${address}`);
-    }
-
-    if (!isValidEthereumAddress(evmAddress)) {
-      throw new Error(`Invalid evm address: ${evmAddress}`);
-    }
-
-    // Store the evm address for address in the evmAddressMap
-    if (!this.evmAddressMap[address]) {
-      this.evmAddressMap[address] = await createSessionStore<EvmAccountStore>({
-        name: evmAccountKey(network, address),
-        template: {
-          parentAddress: address,
-          evmAddress: evmAddress,
-        },
-      });
-    } else {
-      this.evmAddressMap[address].evmAddress = evmAddress;
-    }
-  };
-
-
-  // TODO: Verify what this does... it doesn't look right
-  setCurrentAccount = async (wallet: WalletAccount, key: ActiveChildType) => {
-    this.store.currentAddress = wallet.address;
-    if (isMainAccountType(key)) {
-      // We're switching main accounts
-      this.store.parentAddress = wallet.address;
-    }
-  };
-
-  */
 
   /**
    * --------------------------------------------
@@ -765,7 +655,7 @@ class UserWallet {
   ): Promise<string> => {
     const scriptName = this.extractScriptName(cadence);
     try {
-      const allowed = await wallet.allowLilicoPay();
+      const allowed = await this.walletController.allowLilicoPay();
       const payerFunction = shouldCoverFee
         ? this.bridgeFeePayerAuthFunction
         : allowed
@@ -836,7 +726,7 @@ class UserWallet {
 
   authorizationFunction = async (account) => {
     // authorization function need to return an account
-    const address = fcl.withPrefix(await this.getParentAddress());
+    const address = fcl.withPrefix(await this.walletController.getMainAddress());
     const ADDRESS = fcl.withPrefix(address);
     // TODO: FIX THIS
     const KEY_ID = await this.getKeyIndex();
@@ -908,7 +798,7 @@ class UserWallet {
 
   payerAuthFunction = async (account) => {
     // authorization function need to return an account
-    const payer = await wallet.getPayerAddressAndKeyId();
+    const payer = await this.walletController.getPayerAddressAndKeyId();
     const address = fcl.withPrefix(payer.address);
     const ADDRESS = fcl.withPrefix(address);
     // TODO: FIX THIS
@@ -932,7 +822,7 @@ class UserWallet {
   };
   bridgeFeePayerAuthFunction = async (account) => {
     // authorization function need to return an account
-    const bridgeFeePayer = await wallet.getBridgeFeePayerAddressAndKeyId();
+    const bridgeFeePayer = await this.walletController.getBridgeFeePayerAddressAndKeyId();
     const address = fcl.withPrefix(bridgeFeePayer.address);
     const ADDRESS = fcl.withPrefix(address);
     // TODO: FIX THIS
@@ -1024,7 +914,12 @@ class UserWallet {
     const deviceInfo = await this.getDeviceInfo();
 
     // Login with the signed message
-    await wallet.openapi.loginV3(accountKeyRequest, deviceInfo, realSignature, replaceUser);
+    await this.walletController.openapi.loginV3(
+      accountKeyRequest,
+      deviceInfo,
+      realSignature,
+      replaceUser
+    );
 
     // Set the current pubkey in userWallet provided we have been able to login
     this.setCurrentPubkey(accountKeyRequest.public_key);
@@ -1124,7 +1019,12 @@ class UserWallet {
     if (accountKey.public_key === publicKey) {
       const signature = await secp.sign(messageHash, privateKey);
       const realSignature = secp.Signature.fromHex(signature).toCompactHex();
-      return wallet.openapi.loginV3(accountKey, deviceInfo, realSignature, replaceUser);
+      return this.walletController.openapi.loginV3(
+        accountKey,
+        deviceInfo,
+        realSignature,
+        replaceUser
+      );
     } else {
       return false;
     }
@@ -1141,9 +1041,8 @@ class UserWallet {
    * @returns The device info
    */
   getDeviceInfo = async (): Promise<DeviceInfoRequest> => {
-    const result = await wallet.openapi.getLocation();
-    const installationId = await wallet.openapi.getInstallationId();
-    // console.log('location ', userlocation);
+    const result = await this.walletController.openapi.getLocation();
+    const installationId = await this.walletController.openapi.getInstallationId();
     const userlocation = result.data;
     const deviceInfo: DeviceInfoRequest = {
       city: userlocation.city,

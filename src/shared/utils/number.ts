@@ -122,9 +122,9 @@ export const trimDecimalAmount = (
 };
 
 // Validate that a string is a valid transaction amount with the given max decimal places
-// Unless maxDecimals is zero, a decimal point is required
+// Unless maxDecimals is zero, a decimal point is required, default is 0 just in case caller doesn't know
 // If exact is true, the amount must have exactly maxDecimals decimal places
-export const validateAmount = (amount: string, maxDecimals: number, exact = false): boolean => {
+export const validateAmount = (amount: string, maxDecimals: number = 0, exact = false): boolean => {
   const regex =
     maxDecimals === 0
       ? `^(0|[1-9]\\d*)$`

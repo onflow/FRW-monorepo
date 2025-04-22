@@ -18,7 +18,7 @@ import { type ActiveAccountType } from '@/shared/types/wallet-types';
 import { formatLargeNumber } from '@/shared/utils/number';
 
 import IconCreate from '../../../components/iconfont/IconCreate';
-import { TokenValue } from '../TokenDetail/TokenValue';
+import { CurrencyValue } from '../TokenDetail/CurrencyValue';
 
 const CoinList = ({
   tokenList,
@@ -80,7 +80,7 @@ const CoinList = ({
     );
   };
 
-  const StartListItemText = (props: { primary: string | null; price: number; change: number }) => {
+  const StartListItemText = (props: { primary: string | null; price: string; change: number }) => {
     return (
       <ListItemText
         disableTypography={true}
@@ -126,7 +126,7 @@ const CoinList = ({
                     }}
                   >
                     {props.change === null ? '-' : ''}
-                    <TokenValue value={String(props.price)} prefix="$" />
+                    <CurrencyValue value={props.price} />
                   </Typography>
                   {props.change !== 0 && (
                     <Typography
@@ -209,7 +209,7 @@ const CoinList = ({
                   secondaryAction={
                     <EndListItemText
                       primary={parseFloat(coin.balance).toFixed(3)}
-                      secondary={<TokenValue value={String(coin.total)} prefix="$" />}
+                      secondary={<CurrencyValue value={String(coin.total)} />}
                       unit={coin.unit}
                       change={parseFloat(coin.change24h?.toFixed(2) || '0')}
                     />
@@ -255,7 +255,7 @@ const CoinList = ({
                   <ListItemAvatar>
                     <Skeleton variant="circular" width={36} height={36} />
                   </ListItemAvatar>
-                  <StartListItemText primary="..." price={0} change={0} />
+                  <StartListItemText primary="..." price={''} change={0} />
                 </ListItem>
               );
             })}

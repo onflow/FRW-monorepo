@@ -1065,5 +1065,14 @@
     "usesFetchDirectly": false,
     "basicSignature": "async (publicKey: string, network: string)",
     "params": ["publicKey", "network"]
+  },
+  {
+    "name": "getSupportedCurrencies",
+    "isAsync": true,
+    "fullBody": "async () => {\n        const supportedCurrencies = await this.sendRequest(\n          'GET',\n          '/api/v4/currencies',\n          {},\n          {},\n          WEB_NEXT_URL\n        );\n        return supportedCurrencies?.data?.currencies || [];\n    }",
+    "usesSendRequest": true,
+    "usesFetchDirectly": false,
+    "basicSignature": "async () =>",
+    "params": []
   }
 ]
