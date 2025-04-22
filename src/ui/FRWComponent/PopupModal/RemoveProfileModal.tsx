@@ -68,7 +68,6 @@ const RemoveProfileModal: React.FC<RemoveProfileModalProps> = ({
         {chrome.i18n.getMessage('Remove_Profile') || 'Remove Profile'}
       </Typography>
 
-      {/* Profile Information */}
       {profileName && profileUsername && (
         <Box
           sx={{
@@ -88,9 +87,8 @@ const RemoveProfileModal: React.FC<RemoveProfileModalProps> = ({
         </Box>
       )}
 
-      {/* Backup Status - Simplified */}
       {!isCheckingBackup && hasBackup && (
-        <Box sx={{ display: 'flex', alignItems: 'center', color: '#41CC5D', mt: 1, mb: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', color: '#41CC5D', mt: 1, mb: 1 }}>
           <CheckCircleOutlineIcon fontSize="small" sx={{ mr: 1 }} />
           <Typography sx={{ fontSize: '14px' }}>
             {chrome.i18n.getMessage('Backup_Found') || 'Backup Found'}
@@ -98,9 +96,16 @@ const RemoveProfileModal: React.FC<RemoveProfileModalProps> = ({
         </Box>
       )}
 
-      <Typography sx={{ color: '#BABABA', margin: '16px 0', fontSize: '16px' }}>
+      {!isCheckingBackup && backupCheckError && (
+        <Box sx={{ display: 'flex', alignItems: 'center', color: '#FF6D24', mt: 1, mb: 1 }}>
+          <WarningAmberRoundedIcon fontSize="small" sx={{ mr: 1 }} />
+          <Typography sx={{ fontSize: '14px' }}>{backupCheckError}</Typography>
+        </Box>
+      )}
+
+      <Typography sx={{ color: '#BABABA', fontSize: '16px' }}>
         {chrome.i18n.getMessage('Remove_profile_warning_simplified') ||
-          'After removing this profile, you will be logged out. You can re-import later using a recovery phrase, private key, or Google Drive backup.'}
+          'After removing this profile, you will be logged out. You can re-import using a recovery phrase, private key, or Google Drive backup.'}
       </Typography>
 
       <TextField
