@@ -67,7 +67,7 @@ const SignMessage = ({ params: { icon, origin, tabId, type } }: ConnectProps) =>
     setApproval(true);
     const address = await wallet.getCurrentAddress();
 
-    const ki = await storage.get('keyIndex');
+    const ki = await wallet.getKeyIndex();
     const keyIndex = Number(ki);
 
     const decode = Buffer.from(message, 'hex').toString('utf8');
