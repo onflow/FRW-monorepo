@@ -8,6 +8,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { type PreferenceAccount } from '@/background/service/preference';
+import { openIndexPage } from '@/background/webapi/tab';
 import RemoveProfileModal from '@/ui/FRWComponent/PopupModal/removeProfileModal';
 import ResetModal from '@/ui/FRWComponent/PopupModal/resetModal';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -195,7 +196,7 @@ const AccountSettings = () => {
       } else {
         wallet.signOutWallet().then(() => {
           clearProfileData();
-          history.push('/welcome');
+          openIndexPage('welcome?add=true');
         });
       }
     } catch (error: any) {

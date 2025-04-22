@@ -147,6 +147,9 @@
   "Backup": {
     "message": "备份"
   },
+  "Backup__Found": {
+    "message": "找到备份"
+  },
   "Claim__for__your": {
     "message": "获得您的"
   },
@@ -1388,6 +1391,12 @@
   },
   "Remove__Profile": {
     "message": "删除个人资料"
+  },
+  "Remove": {
+    "message": "删除"
+  },
+  "Remove_profile_warning_simplified": {
+    "message": "删除此个人资料后，您将退出登录。您可以使用恢复短语、私钥或Google云端硬盘备份重新导入。"
   },
   "Could_not_enable_this_collection": {
     "message": "无法启用此集合"

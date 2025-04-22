@@ -65,7 +65,7 @@ const RemoveProfileModal: React.FC<RemoveProfileModalProps> = ({
   return (
     <CustomDialog open={isOpen} onClose={onClose}>
       <Typography sx={{ color: '#FF6D24', fontSize: '24px', fontWeight: '700' }}>
-        {chrome.i18n.getMessage('Remove_Profile') || 'Remove Profile'}
+        {chrome.i18n.getMessage('Remove__Profile')}
       </Typography>
 
       {profileName && profileUsername && (
@@ -91,7 +91,7 @@ const RemoveProfileModal: React.FC<RemoveProfileModalProps> = ({
         <Box sx={{ display: 'flex', alignItems: 'center', color: '#41CC5D', mt: 1, mb: 1 }}>
           <CheckCircleOutlineIcon fontSize="small" sx={{ mr: 1 }} />
           <Typography sx={{ fontSize: '14px' }}>
-            {chrome.i18n.getMessage('Backup_Found') || 'Backup Found'}
+            {chrome.i18n.getMessage('Backup__Found')}
           </Typography>
         </Box>
       )}
@@ -104,15 +104,14 @@ const RemoveProfileModal: React.FC<RemoveProfileModalProps> = ({
       )}
 
       <Typography sx={{ color: '#BABABA', fontSize: '16px' }}>
-        {chrome.i18n.getMessage('Remove_profile_warning_simplified') ||
-          'After removing this profile, you will be logged out. You can re-import using a recovery phrase, private key, or Google Drive backup.'}
+        {chrome.i18n.getMessage('Remove_profile_warning_simplified')}
       </Typography>
 
       <TextField
         autoFocus
         margin="dense"
         id="confirm-remove-password"
-        label={chrome.i18n.getMessage('Password') || 'Password'}
+        label={chrome.i18n.getMessage('Password')}
         type="password"
         fullWidth
         variant="outlined"
@@ -156,7 +155,7 @@ const RemoveProfileModal: React.FC<RemoveProfileModalProps> = ({
           }}
         >
           <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }} color="background.paper">
-            {chrome.i18n.getMessage('Cancel') || 'Cancel'}
+            {chrome.i18n.getMessage('Cancel')}
           </Typography>
         </Button>
         <Button
@@ -181,7 +180,7 @@ const RemoveProfileModal: React.FC<RemoveProfileModalProps> = ({
             {isRemoving ? (
               <CircularProgress size={24} color="inherit" />
             ) : (
-              chrome.i18n.getMessage('Remove') || 'Remove'
+              chrome.i18n.getMessage('Remove')
             )}
           </Typography>
         </Button>

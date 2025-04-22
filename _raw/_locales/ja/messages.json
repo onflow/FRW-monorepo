@@ -147,6 +147,9 @@
   "Backup": {
     "message": "バックアップ"
   },
+  "Backup__Found": {
+    "message": "バックアップ発見"
+  },
   "Claim__for__your": {
     "message": "請求する "
   },
@@ -1367,6 +1370,12 @@
   },
   "Remove__Profile": {
     "message": "プロファイルを削除"
+  },
+  "Remove": {
+    "message": "削除"
+  },
+  "Remove_profile_warning_simplified": {
+    "message": "このプロファイルを削除すると、ログアウトされます。リカバリーフレーズ、秘密鍵、またはGoogleドライブのバックアップを使用して再インポートできます。"
   },
   "Almost_run_out_of_account_storage": {
     "message": "アカウントのストレージがほとんどありません。"
