@@ -346,6 +346,57 @@ class GoogleDriveService {
       });
     });
   };
+
+  setNewPassword = async (
+    oldPassword: string,
+    newPassword: string,
+    username: string
+  ): Promise<boolean> => {
+    try {
+      // Load all backups
+      const backups: DriveItem[] = await this.loadBackup();
+      if (backups.length === 0 || !this.fileId) {
+        return false;
+      }
+
+      // Find and update the user's backup
+      let updated = false;
+      const updatedBackups = backups.map((item) => {
+        if (item.username === username) {
+          try {
+            // Decrypt with old password
+            const decryptedMnemonic = this.decrypt(item.data, oldPassword);
+            // Re-encrypt with new password
+            const newEncryptedData = this.encrypt(decryptedMnemonic, newPassword);
+
+            updated = true;
+            return {
+              ...item,
+              data: newEncryptedData,
+              time: new Date().getTime().toString(),
+            };
+          } catch (error) {
+            console.error('Error changing password:', error);
+            // Return original item if decryption fails
+            return item;
+          }
+        }
+        return item;
+      });
+
+      if (!updated) {
+        return false;
+      }
+
+      // Update the file on Google Drive
+      const updateContent = this.encrypt(JSON.stringify(updatedBackups), this.AES_KEY);
+      await this.updateFile(this.fileId, updateContent, false);
+      return true;
+    } catch (error) {
+      console.error('Failed to set new password:', error);
+      return false;
+    }
+  };
 }
 
 export default new GoogleDriveService();
