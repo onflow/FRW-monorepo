@@ -71,6 +71,7 @@ import { fclConfig, fclConfirmNetwork, fclEnsureNetwork } from '../fclConfig';
 import { defaultAccountKey, pubKeyAccountToAccountKey } from '../utils/account-key';
 import {
   clearCachedData,
+  getInvalidData,
   getValidData,
   registerRefreshListener,
   setCachedData,
@@ -183,7 +184,7 @@ class UserWallet {
    */
   getKeyIndex = async () => {
     try {
-      const parentAccount = await this.getParentAccount();
+      const parentAccount = await this.getParentAccountNoExpire();
       if (!parentAccount) {
         throw new Error('Current wallet not found in accounts');
       }
@@ -639,6 +640,28 @@ class UserWallet {
     return null;
   };
 
+  // Get the main account wallet for the current public key without expire
+  getParentAccountNoExpire = async (): Promise<MainAccount | null> => {
+    const address = this.getParentAddress();
+    if (!address) {
+      return null;
+    }
+    // Get the main accounts for the network
+    const mainAccounts = await getInvalidData<MainAccount[]>(
+      mainAccountsKey(this.getNetwork(), this.getCurrentPubkey())
+    );
+    if (!mainAccounts) {
+      return null;
+    }
+
+    // Find the main account that matches the address
+    const mainAccount = mainAccounts.find((account) => account.address === address);
+    if (mainAccount) {
+      return mainAccount;
+    }
+    return null;
+  };
+
   // Get the evm wallet of the current main account
   getEvmAccount = async (): Promise<WalletAccount | null> => {
     const parentAddress = this.getParentAddress() as FlowAddress;
@@ -785,7 +808,7 @@ class UserWallet {
 
     // Get the current public key
     const pubKey = this.store.currentPubkey;
-    const parentAccount = await this.getParentAccount();
+    const parentAccount = await this.getParentAccountNoExpire();
     if (!parentAccount) {
       throw new Error('Current wallet not found in accounts');
     }
