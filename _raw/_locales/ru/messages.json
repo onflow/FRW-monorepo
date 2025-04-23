@@ -285,6 +285,12 @@
   "New__Password": {
     "message": "Новый пароль"
   },
+  "Enter__New__Password": {
+    "message": "Введите новый пароль"
+  },
+  "Change__Password": {
+    "message": "Изменить пароль"
+  },
   "Current__Password": {
     "message": "Текущий пароль"
   },

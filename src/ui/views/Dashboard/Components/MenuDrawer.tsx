@@ -14,16 +14,13 @@ import {
   Skeleton,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 import { useHistory } from 'react-router-dom';
 
 import type { UserInfoResponse } from '@/shared/types/network-types';
 import {
-  type LoggedInAccount,
-  type LoggedInAccountWithIndex,
   type ActiveChildType_depreciated,
   type WalletAccount,
-  type ChildAccountMap,
   type MainAccount,
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
@@ -31,6 +28,7 @@ import { useAccountBalance } from '@/ui/hooks/use-account-hooks';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import importIcon from 'ui/FRWAssets/svg/importIcon.svg';
 import popLock from 'ui/FRWAssets/svg/popLock.svg';
+import resetArrow from 'ui/FRWAssets/svg/resetarrow.svg';
 import { useWallet } from 'ui/utils';
 
 import rightarrow from '../../../FRWAssets/svg/rightarrow.svg';
@@ -526,6 +524,42 @@ const MenuDrawer = (props: MenuDrawerProps) => {
                 sx={{ fontSize: '12px' }}
               >
                 {chrome.i18n.getMessage('Lock__Wallet')}
+              </Typography>
+            </ListItemButton>
+          </ListItem>
+          <ListItem
+            disablePadding
+            onClick={() => {
+              props.toggleDrawer();
+              history.push('/dashboard/nested/resetpwd');
+            }}
+          >
+            <ListItemButton sx={{ padding: '8px 16px', margin: '0', borderRadius: '0' }}>
+              <ListItemIcon
+                sx={{
+                  width: '24px',
+                  minWidth: '24px',
+                  height: '24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: '12px',
+                }}
+              >
+                <CardMedia
+                  component="img"
+                  sx={{ width: '24px', height: '24px' }}
+                  image={resetArrow}
+                />
+              </ListItemIcon>
+              <Typography
+                variant="body1"
+                component="div"
+                display="inline"
+                color="text"
+                sx={{ fontSize: '12px' }}
+              >
+                {chrome.i18n.getMessage('Change__Password')}
               </Typography>
             </ListItemButton>
           </ListItem>

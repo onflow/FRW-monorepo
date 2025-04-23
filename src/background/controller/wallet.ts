@@ -3513,6 +3513,68 @@ export class WalletController extends BaseController {
   clearEvmNFTList = async () => {
     await evmNftService.clearEvmNfts();
   };
+
+  update = async (oldPassword: string, newPassword: string): Promise<boolean> => {
+    try {
+      // Verify the old password is correct
+      await this.verifyPassword(oldPassword);
+
+      // If we have a backup in Google Drive, update it
+      try {
+        const userInfo = await userInfoService.getCurrentUserInfo();
+        const username = userInfo.username;
+        await googleDriveService.setNewPassword(oldPassword, newPassword, username);
+      } catch (error) {
+        console.error('Failed to update Google Drive backup:', error);
+        // Continue even if backup update fails
+      }
+
+      // Step 1: Get all vaults decrypted with the old password
+      const allVaultData = await keyringService.revealKeyring(oldPassword);
+      if (!allVaultData || allVaultData.length === 0) {
+        throw new Error('No vault data found to update');
+      }
+
+      // Step 2: Update the booted state encryption with new password
+      await keyringService.update(newPassword);
+
+      // Step 3: Get the current profile ID to set it back later
+      const currentId = await storage.get(CURRENT_ID_KEY);
+
+      // Step 4: Re-encrypt all vaults with the new password
+      for (const vaultData of allVaultData) {
+        // Set current ID to the vault we're processing
+        await storage.set(CURRENT_ID_KEY, vaultData.id);
+
+        // Load this vault into currentKeyring
+        await keyringService.unlockKeyrings(oldPassword);
+
+        // Re-encrypt and persist this vault with the new password
+        await keyringService.persistAllKeyrings(newPassword);
+      }
+
+      // Step 5: Restore the original current profile ID
+      await storage.set(CURRENT_ID_KEY, currentId);
+
+      // Step 6: Unlock the original vault with the new password
+      await keyringService.submitPassword(newPassword);
+
+      // Track successful password change
+      mixpanelTrack.track('password_updated', {
+        address: (await this.getCurrentAddress()) || '',
+        success: true,
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Failed to update password:', error);
+      mixpanelTrack.track('password_update_failed', {
+        address: (await this.getCurrentAddress()) || '',
+        error: error.message,
+      });
+      return false;
+    }
+  };
 }
 
 export default new WalletController();

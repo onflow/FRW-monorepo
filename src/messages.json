@@ -271,8 +271,17 @@
   "Confirm__Password": {
     "message": "Confirm Password"
   },
+  "Enter__New__Password": {
+    "message": "Enter New Password"
+  },
   "New__Password": {
     "message": "New Password"
+  },
+  "Enter__Current__Password": {
+    "message": "Enter Current Password"
+  },
+  "Change__Password": {
+    "message": "Change Password"
   },
   "Current__Password": {
     "message": "Current Password"
