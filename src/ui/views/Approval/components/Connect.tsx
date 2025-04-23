@@ -79,7 +79,7 @@ const Connect = ({ params: { /*icon, origin,*/ tabId } }: ConnectProps) => {
     const network = await wallet.getNetwork();
 
     // TODO: FIXME Dynamic keyIndex
-    const ki = await storage.get('keyIndex');
+    const ki = await wallet.getKeyIndex();
     const keyIndex = Number(ki);
     const services = await authnServiceDefinition(
       address,

@@ -70,7 +70,13 @@ import {
 import { type PublicKeyAccount, type MainAccount } from '../../shared/types/wallet-types';
 import { fclConfig, fclConfirmNetwork, fclEnsureNetwork } from '../fclConfig';
 import { defaultAccountKey, pubKeyAccountToAccountKey } from '../utils/account-key';
-import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
+import {
+  clearCachedData,
+  getInvalidData,
+  getValidData,
+  registerRefreshListener,
+  setCachedData,
+} from '../utils/data-cache';
 import { getEmojiByIndex } from '../utils/emoji-util';
 import {
   getAccountsByPublicKeyTuple,
@@ -180,6 +186,24 @@ class UserWallet {
 
     // Load all data for the new pubkey. This is async but don't await it
     this.loadAllAccounts(this.store.network, pubkey);
+  };
+
+  /**
+   * Gets the keyindex of current account
+   * @returns Number the keyindex of current account
+   */
+  getKeyIndex = async () => {
+    try {
+      const parentAccount = await this.getParentAccountNoExpire();
+      if (!parentAccount) {
+        throw new Error('Current wallet not found in accounts');
+      }
+      const keyIndex = parentAccount.keyIndex;
+
+      return keyIndex;
+    } catch (error) {
+      throw new Error('Failed to get key index: ' + error.message);
+    }
   };
 
   getNetwork = (): FlowNetwork => {
@@ -506,6 +530,28 @@ class UserWallet {
     return null;
   };
 
+  // Get the main account wallet for the current public key without expire
+  getParentAccountNoExpire = async (): Promise<MainAccount | null> => {
+    const address = this.getParentAddress();
+    if (!address) {
+      return null;
+    }
+    // Get the main accounts for the network
+    const mainAccounts = await getInvalidData<MainAccount[]>(
+      mainAccountsKey(this.getNetwork(), this.getCurrentPubkey())
+    );
+    if (!mainAccounts) {
+      return null;
+    }
+
+    // Find the main account that matches the address
+    const mainAccount = mainAccounts.find((account) => account.address === address);
+    if (mainAccount) {
+      return mainAccount;
+    }
+    return null;
+  };
+
   // Get the evm wallet of the current main account
   getEvmAccount = async (): Promise<WalletAccount | null> => {
     const parentAddress = this.getParentAddress() as FlowAddress;
@@ -652,20 +698,18 @@ class UserWallet {
 
     // Get the current public key
     const pubKey = this.store.currentPubkey;
+    const parentAccount = await this.getParentAccountNoExpire();
+    if (!parentAccount) {
+      throw new Error('Current wallet not found in accounts');
+    }
+    const signAlgo = parentAccount.signAlgo;
+    const hashAlgo = parentAccount.hashAlgo;
+
     const keyTuple = await keyringService.getCurrentPublicPrivateKeyTuple();
-    let signAlgo: number;
-    let hashAlgo: number;
     let privateKey: string;
     if (pubKey === keyTuple.P256.pubK) {
-      // The public key is the same as the private key
-      // We can use the private key to sign the message
-      signAlgo = SIGN_ALGO_NUM_ECDSA_P256;
-      hashAlgo = HASH_ALGO_NUM_SHA3_256;
       privateKey = keyTuple.P256.pk;
     } else if (pubKey === keyTuple.SECP256K1.pubK) {
-      // The public key is the SECP256K1 public key
-      signAlgo = SIGN_ALGO_NUM_ECDSA_secp256k1;
-      hashAlgo = HASH_ALGO_NUM_SHA2_256;
       privateKey = keyTuple.SECP256K1.pk;
     } else {
       throw new Error('Invalid public key');
@@ -685,7 +729,7 @@ class UserWallet {
     const address = fcl.withPrefix(await this.walletController.getMainAddress());
     const ADDRESS = fcl.withPrefix(address);
     // TODO: FIX THIS
-    const KEY_ID = (await storage.get('keyIndex')) || 0;
+    const KEY_ID = await this.getKeyIndex();
     return {
       ...account, // bunch of defaults in here, we want to overload some of them though
       tempId: `${ADDRESS}-${KEY_ID}`, // tempIds are more of an advanced topic, for 99% of the times where you know the address and keyId you will want it to be a unique string per that address and keyId
