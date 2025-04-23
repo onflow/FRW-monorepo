@@ -21,6 +21,25 @@ import { useCoins } from '@/ui/hooks/useCoinHook';
 import IconCreate from '../../../components/iconfont/IconCreate';
 import VerifiedIcon from '../../FRWAssets/svg/verfied-check.svg';
 import { CurrencyValue } from '../TokenDetail/CurrencyValue';
+
+const ActionButtons = ({ managePath, createPath }) => {
+  const history = useHistory();
+
+  return (
+    <Box sx={{ display: 'flex', px: '12px', pt: '4px' }}>
+      <Box sx={{ flexGrow: 1 }} />
+      <IconButton onClick={() => history.push(managePath)}>
+        <Typography variant="body1" sx={{ fontSize: 14, fontWeight: '550', color: 'text.title' }}>
+          Manage
+        </Typography>
+      </IconButton>
+      <IconButton onClick={() => history.push(createPath)}>
+        <IconCreate size={16} color="#787878" />
+      </IconButton>
+    </Box>
+  );
+};
+
 const CoinList = ({
   ableFt,
   isActive,
@@ -195,28 +214,10 @@ const CoinList = ({
   return (
     <>
       {childType === 'main' && (
-        <Box sx={{ display: 'flex', px: '12px', pt: '4px' }}>
-          <Box sx={{ flexGrow: 1 }} />
-          <IconButton onClick={() => history.push('dashboard/managetoken')}>
-            <Typography
-              variant="body1"
-              sx={{ fontSize: 14, fontWeight: '550', color: 'text.title' }}
-            >
-              Manage
-            </Typography>
-          </IconButton>
-          <IconButton onClick={() => history.push('dashboard/tokenList')}>
-            <IconCreate size={16} color="#787878" />
-          </IconButton>
-        </Box>
+        <ActionButtons managePath="dashboard/managetoken" createPath="dashboard/tokenList" />
       )}
       {childType === 'evm' && (
-        <Box sx={{ display: 'flex', px: '12px', pt: '4px' }}>
-          <Box sx={{ flexGrow: 1 }} />
-          <IconButton onClick={() => history.push('dashboard/addcustomevm')}>
-            <IconCreate size={16} color="#787878" />
-          </IconButton>
-        </Box>
+        <ActionButtons managePath="dashboard/managetoken" createPath="dashboard/addcustomevm" />
       )}
 
       <List sx={{ paddingTop: '0px', paddingBottom: '0px' }}>

@@ -11,6 +11,7 @@ import React from 'react';
 
 import IconCheckmark from '../../../components/iconfont/IconCheckmark';
 import IconPlus from '../../../components/iconfont/IconPlus';
+import VerifiedIcon from '../../FRWAssets/svg/verfied-check.svg';
 
 const TokenItem = ({ token, isLoading, enabled, onClick }) => {
   const handleClick = () => {
@@ -47,6 +48,17 @@ const TokenItem = ({ token, isLoading, enabled, onClick }) => {
           <Avatar src={token.logoURI} />
         </ListItemAvatar>
         <ListItemText primary={token.name} secondary={token.symbol.toUpperCase()} />
+        {token.isVerified && (
+          <img
+            src={VerifiedIcon}
+            style={{
+              height: '16px',
+              width: '16px',
+              backgroundColor: '#282828',
+              borderRadius: '18px',
+            }}
+          />
+        )}
       </ListItem>
     </ListItemButton>
   );

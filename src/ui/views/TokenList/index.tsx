@@ -13,7 +13,6 @@ import {
 } from '@mui/material';
 import { StyledEngineProvider } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
-import { type TokenInfo } from 'flow-native-token-registry';
 import React, { useState, useEffect, useCallback } from 'react';
 
 // import { useHistory } from 'react-router-dom';
@@ -21,6 +20,8 @@ import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
 import { LLHeader } from '@/ui/FRWComponent';
 import { useCoins } from 'ui/hooks/useCoinHook';
 import { useWallet } from 'ui/utils';
+
+import VerifiedIcon from '../../FRWAssets/svg/verfied-check.svg';
 
 import AddTokenConfirmation from './AddTokenConfirmation';
 import TokenItem from './TokenItem';
@@ -66,7 +67,7 @@ const useStyles = makeStyles(() => ({
 const TokenList = () => {
   const classes = useStyles();
   const wallet = useWallet();
-  const { coins } = useCoins();
+  const { coins, tokenFilter } = useCoins();
   const [keyword, setKeyword] = useState('');
   const [tokenInfoList, setTokenInfoList] = useState<ExtendedTokenInfo[]>([]);
   const [filteredTokenList, setFilteredTokenList] = useState<ExtendedTokenInfo[]>([]);
@@ -133,26 +134,15 @@ const TokenList = () => {
     setKeyword(word);
   };
 
-  const checkStorageStatus = useCallback(
-    (token: ExtendedTokenInfo) => {
-      const isEnabled = coins.map((item) => item.contractName).includes(token.contractName);
-      return isEnabled;
-    },
-    [coins]
-  );
-
   const getFilteredCollections = useCallback(
     (fil: string) => {
       return filteredTokenList.filter((ele) => {
-        const isEnabled = checkStorageStatus(ele);
-
         if (fil === 'all') return true;
-        if (fil === 'enabled') return isEnabled;
-        if (fil === 'notEnabled') return !isEnabled;
+        if (fil === 'verified') return ele.isVerified;
         return true;
       });
     },
-    [filteredTokenList, checkStorageStatus]
+    [filteredTokenList]
   );
 
   useEffect(() => {
@@ -236,8 +226,9 @@ const TokenList = () => {
               >
                 All
               </Button>
+
               <Button
-                onClick={() => setFilter('enabled')}
+                onClick={() => setFilter('verfied')}
                 sx={{
                   display: 'inline-flex',
                   height: '36px',
@@ -247,38 +238,17 @@ const TokenList = () => {
                   gap: '10px',
                   flexShrink: 0,
                   borderRadius: '36px',
-                  border: `1.5px solid ${filters === 'enabled' ? '#41CC5D' : '#FFFFFF66'}`,
+                  border: `1.5px solid ${filters === 'verfied' ? '#41CC5D' : '#FFFFFF66'}`,
                   backgroundColor: 'transparent',
-                  color: filters === 'enabled' ? '#41CC5D' : '#FFFFFF66',
+                  color: filters === 'verfied' ? '#41CC5D' : '#FFFFFF66',
                   '&:hover': {
                     backgroundColor: 'transparent',
                     color: '#41CC5D',
                   },
                 }}
               >
-                Enabled
-              </Button>
-              <Button
-                onClick={() => setFilter('notEnabled')}
-                sx={{
-                  display: 'inline-flex',
-                  height: '36px',
-                  padding: '9px 12px',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  gap: '10px',
-                  flexShrink: 0,
-                  borderRadius: '36px',
-                  border: `1.5px solid ${filters === 'notEnabled' ? '#41CC5D' : '#FFFFFF66'}`,
-                  backgroundColor: 'transparent',
-                  color: filters === 'notEnabled' ? '#41CC5D' : '#FFFFFF66',
-                  '&:hover': {
-                    backgroundColor: 'transparent',
-                    color: '#41CC5D',
-                  },
-                }}
-              >
-                Not Enabled
+                <img src={VerifiedIcon} alt="Verified" style={{ width: '16px', height: '16px' }} />
+                Verified
               </Button>
             </Box>
           </Box>

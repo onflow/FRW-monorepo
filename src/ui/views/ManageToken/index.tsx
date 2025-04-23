@@ -1,3 +1,4 @@
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   List,
@@ -12,12 +13,15 @@ import {
   Button,
   Typography,
   Switch,
+  IconButton,
 } from '@mui/material';
 import { StyledEngineProvider } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
 import React, { useState } from 'react';
+import { useHistory } from 'react-router-dom';
 
 // import { useHistory } from 'react-router-dom';
+import IconCreate from '@/components/iconfont/IconCreate';
 import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
 import { LLHeader } from '@/ui/FRWComponent';
 import { useCoins } from 'ui/hooks/useCoinHook';
@@ -64,15 +68,13 @@ const useStyles = makeStyles(() => ({
 
 const ManageToken = () => {
   const classes = useStyles();
+  const history = useHistory();
   const { coins, tokenFilter, updateTokenFilter } = useCoins();
   const [keyword, setKeyword] = useState('');
   const [filteredTokenList, setFilteredTokenList] = useState<ExtendedTokenInfo[]>(coins);
 
   const [isLoading, setLoading] = useState(false);
 
-  const handleTokenClick = (token) => {
-    console.log(token);
-  };
   const filter = (e1: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const word = e1.target.value;
 
@@ -102,7 +104,31 @@ const ManageToken = () => {
             height: '100%',
           }}
         >
-          <LLHeader title={chrome.i18n.getMessage('Manage_Token')} help={false} />
+          <Grid
+            container
+            sx={{
+              justifyContent: 'start',
+              alignItems: 'center',
+              px: '8px',
+            }}
+          >
+            <Grid item xs={1}>
+              <IconButton onClick={history.goBack}>
+                <ArrowBackIcon sx={{ color: 'icon.navi' }} />
+              </IconButton>
+            </Grid>
+            <Grid item xs={10}>
+              <Typography variant="h1" align="center" py="14px" fontWeight="bold" fontSize="20px">
+                {chrome.i18n.getMessage('Manage_Token')}
+              </Typography>
+            </Grid>
+
+            <Grid item xs={1} sx={{ pl: 0 }}>
+              <IconButton onClick={() => history.push('/dashboard/tokenList')}>
+                <IconCreate size={16} color="#787878" />
+              </IconButton>
+            </Grid>
+          </Grid>
           <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
             Filters
           </Typography>
