@@ -11,6 +11,7 @@ import Enable from '../views/Enable';
 
 import Dashboard from './Dashboard';
 import Header from './Dashboard/Header';
+import ManageToken from './ManageToekn';
 import CollectionDetail from './NFT/CollectionDetail';
 import Detail from './NFT/Detail';
 import AddList from './NFT/NFTList/AddList';
@@ -193,6 +194,10 @@ const InnerRoute = (props: RouteComponentProps) => {
 
             <PrivateRoute path={`${props.match.url}/tokenlist`}>
               <TokenList />
+            </PrivateRoute>
+
+            <PrivateRoute path={`${props.match.url}/managetoken`}>
+              <ManageToken />
             </PrivateRoute>
             <PrivateRoute path={`${props.match.url}/addcustomevm`}>
               <AddCustomEvmToken />

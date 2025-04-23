@@ -53,8 +53,7 @@ export function formatPrice(priceStr: string, zeroCondenseThreshold = 4): Format
   }
 
   // Convert scientific notation to decimal string
-  const decimalStr = scientificToDecimal(priceStr);
-
+  const decimalStr = String(scientificToDecimal(priceStr));
   // Handle numbers >= 1
   if (typeof decimalStr === 'string' && !decimalStr.startsWith('0.')) {
     return {

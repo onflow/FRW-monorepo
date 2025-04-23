@@ -1,7 +1,8 @@
-import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
-import { coinListKey } from '@/shared/utils/cache-data-keys';
+import { type ExtendedTokenInfo, type TokenFilter } from '@/shared/types/coin-types';
+import { coinListKey, tokenFilterKey } from '@/shared/utils/cache-data-keys';
+import { setUserData } from '@/shared/utils/user-data-access';
 
-import { useCachedData } from './use-data';
+import { useCachedData, useUserData } from './use-data';
 
 export const useCoinList = (
   network: string | undefined | null,
@@ -11,4 +12,18 @@ export const useCoinList = (
   return useCachedData<ExtendedTokenInfo[]>(
     network && address && currency ? coinListKey(network, address, currency) : null
   );
+};
+
+export const useTokenFilter = (
+  network: string | undefined | null,
+  address: string | undefined | null
+) => {
+  return useUserData<TokenFilter>(network && address ? tokenFilterKey(network, address) : null);
+};
+
+export const setTokenFilter = (network: string, address: string, filter: TokenFilter) => {
+  if (!network || !address) {
+    throw new Error('Network and address are required');
+  }
+  setUserData<TokenFilter>(tokenFilterKey(network, address), filter);
 };

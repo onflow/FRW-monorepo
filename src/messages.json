@@ -1338,5 +1338,8 @@
   },
   "Could_not_enable_this_collection": {
     "message": "Could not enable this collection"
+  },
+  "Manage_Token": {
+    "message": "Manage Token"
   }
 }
