@@ -283,6 +283,9 @@
   "Change__Password": {
     "message": "Change Password"
   },
+  "Password__Change__Success": {
+    "message": "Password change successful"
+  },
   "Current__Password": {
     "message": "Current Password"
   },

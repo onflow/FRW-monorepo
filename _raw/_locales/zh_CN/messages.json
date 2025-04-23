@@ -291,6 +291,9 @@
   "Change__Password": {
     "message": "修改密码"
   },
+  "Password__Change__Success": {
+    "message": "密码修改成功"
+  },
   "Current__Password": {
     "message": "确认密码"
   },

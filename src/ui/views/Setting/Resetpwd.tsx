@@ -9,6 +9,9 @@ import {
   InputAdornment,
   Typography,
   Button,
+  Snackbar,
+  Alert,
+  CircularProgress,
 } from '@mui/material';
 import Box from '@mui/material/Box';
 import { makeStyles } from '@mui/styles';
@@ -18,6 +21,7 @@ import zxcvbn from 'zxcvbn';
 
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from 'ui/utils';
 
 import CheckCircleIcon from '../../../components/iconfont/IconCheckmark';
@@ -119,6 +123,7 @@ const PasswordIndicator = (props) => {
 const Resetpassword = () => {
   const classes = useStyles();
   const wallet = useWallet();
+  const { clearProfileData } = useProfiles();
   const [isCurrentPasswordVisible, setCurrentPasswordVisible] = useState(false);
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const [isConfirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
@@ -129,6 +134,8 @@ const Resetpassword = () => {
   const [confirmCurrentPassword, setConfirmCurrentPassword] = useState(DEFAULT_PASSWORD);
   const [isSame, setSame] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [error, setError] = useState('');
   const history = useHistory();
 
   const verify = useCallback(async () => {
@@ -209,28 +216,48 @@ const Resetpassword = () => {
   const [helperText, setHelperText] = useState(<div />);
   const [helperMatch, setHelperMatch] = useState(<div />);
 
-  const reset = () => {
-    console.log('reset password', confirmPassword);
+  const reset = async () => {
+    try {
+      setIsResetting(true);
+      setError('');
 
-    wallet.update(password, confirmPassword);
+      const success = await wallet.update(confirmCurrentPassword, confirmPassword);
+
+      if (success) {
+        setTimeout(async () => {
+          await wallet.lockWallet().then(() => {
+            clearProfileData();
+            history.push('/unlock');
+          });
+        }, 500);
+      } else {
+        setError(chrome.i18n.getMessage('Oops__unexpected__error'));
+      }
+    } catch (error) {
+      console.error('Error changing password:', error);
+      setError(error.message);
+    } finally {
+      setIsResetting(false);
+    }
   };
+
   useEffect(() => {
     if (password.length > 7) {
-      setHelperText(successInfo('At least 8 characters'));
+      setHelperText(successInfo(chrome.i18n.getMessage('At__least__8__characters')));
       setCharacters(true);
     } else {
-      setHelperText(errorInfo('At least 8 characters'));
+      setHelperText(errorInfo(chrome.i18n.getMessage('At__least__8__characters')));
       setCharacters(false);
     }
   }, [password]);
 
   useEffect(() => {
     if (confirmPassword === password) {
-      setHelperMatch(successInfo('Passwords match'));
+      setHelperMatch(successInfo(chrome.i18n.getMessage('Passwords__match')));
       setMatch(true);
     } else {
       setMatch(false);
-      setHelperMatch(errorInfo('Your passwords do not match. Please check again.'));
+      setHelperMatch(errorInfo(chrome.i18n.getMessage('Your__passwords__do__not__match')));
     }
   }, [confirmPassword, password]);
 
@@ -404,7 +431,7 @@ const Resetpassword = () => {
               id="pass2"
               type={isConfirmPasswordVisible ? 'text' : 'password'}
               name="password2"
-              placeholder={chrome.i18n.getMessage('Confirm__New__Password')}
+              placeholder={chrome.i18n.getMessage('Confirm__Password')}
               value={confirmPassword}
               className={classes.inputBox3}
               autoComplete="new-password"
@@ -450,7 +477,7 @@ const Resetpassword = () => {
               display: 'flex',
               flexGrow: 1,
               height: '48px',
-              width: '158px',
+              width: 'calc(50% - 4px)',
               borderRadius: '8px',
               textTransform: 'capitalize',
             }}
@@ -470,27 +497,76 @@ const Resetpassword = () => {
           <Button
             variant="contained"
             color="primary"
-            component={Button}
             onClick={reset}
             size="large"
             sx={{
               display: 'flex',
               flexGrow: 1,
               height: '48px',
+              width: 'calc(50% - 4px)',
               borderRadius: '8px',
-              textTransform: 'capitalize',
-              width: '158px',
+              textTransform: 'uppercase',
+              backgroundColor: '#38B000',
+              '&:hover': {
+                backgroundColor: '#309900',
+              },
             }}
-            disabled={!(isSame && isMatch && isCharacters)}
+            disabled={!(isSame && isMatch && isCharacters) || isResetting}
           >
-            <Typography
-              sx={{ fontWeight: '600', fontSize: '14px', fontFamily: 'Inter' }}
-              color="text.primary"
-            >
-              {chrome.i18n.getMessage('Next')}
-            </Typography>
+            {isResetting ? (
+              <CircularProgress size={18} color="inherit" />
+            ) : (
+              <Typography
+                sx={{ fontWeight: '600', fontSize: '14px', fontFamily: 'Inter' }}
+                color="text.primary"
+              >
+                {chrome.i18n.getMessage('Change')}
+              </Typography>
+            )}
           </Button>
         </Box>
+
+        <Snackbar
+          open={!!error}
+          autoHideDuration={6000}
+          onClose={() => setError('')}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert onClose={() => setError('')} severity="error" sx={{ width: '100%' }}>
+            {error}
+          </Alert>
+        </Snackbar>
+
+        {/* Simple success message with better visibility */}
+        {isResetting && !error && (
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: '0px',
+              left: '0',
+              right: '0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              padding: '10px 16px',
+              backgroundColor: '#38B000',
+              color: 'white',
+              boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.2)',
+            }}
+          >
+            <CheckCircleIcon size={18} color={'white'} />
+            <Typography
+              sx={{
+                color: 'white',
+                fontSize: '14px',
+                fontWeight: '600',
+              }}
+            >
+              {chrome.i18n.getMessage('Password__Change__Success')}
+            </Typography>
+          </Box>
+        )}
       </Box>
     </div>
   );
