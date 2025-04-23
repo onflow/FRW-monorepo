@@ -2302,8 +2302,12 @@ class OpenApiService {
         symbol: token.symbol,
         decimals: 8, // Default to 8 decimals for Flow tokens if not specified
         path: {
-          vault: `/${token.storagePath.domain}/${token.storagePath.identifier}`,
-          receiver: `/${token.receiverPath.domain}/${token.receiverPath.identifier}`,
+          vault: token.storagePath
+            ? `/${token.storagePath.domain}/${token.storagePath.identifier}`
+            : '', // Provide a default value if storagePath is null
+          receiver: token.receiverPath
+            ? `/${token.receiverPath.domain}/${token.receiverPath.identifier}`
+            : '', // Provide a default value if receiverPath is null
           balance: ``, // todo: not sure what this property is used for
         },
         logoURI: token.logoURI || token.logos?.items?.[0]?.file?.url || '',

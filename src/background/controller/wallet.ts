@@ -2868,6 +2868,10 @@ export class WalletController extends BaseController {
     this.abort();
   };
 
+  getKeyIndex = async (): Promise<number> => {
+    return await userWalletService.getKeyIndex();
+  };
+
   getNetwork = async (): Promise<string> => {
     return await userWalletService.getNetwork();
   };
