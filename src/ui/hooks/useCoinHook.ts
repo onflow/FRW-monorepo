@@ -52,7 +52,7 @@ export const useCoins = () => {
       for (const coin of data) {
         // Calculate sum and flow balance
         if (coin.total !== null) {
-          sum = sum.plus(new BN(coin.total));
+          sum = sum.plus(new BN(coin?.total || 0));
           if (coin.unit && coin.unit.toLowerCase() === 'flow') {
             flowBalance = new BN(coin.balance);
           }
@@ -63,7 +63,7 @@ export const useCoins = () => {
       await Promise.all([
         setTotalFlow(flowBalance.toString()),
         setAvailableFlow(flowBalance.toString()),
-        setBalance(`$ ${sum.toFixed(2)}`),
+        setBalance(sum.toString()),
       ]);
     },
     [setTotalFlow, setBalance]
