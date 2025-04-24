@@ -6,6 +6,7 @@ interface IconButtonProps {
   onClick: () => void;
   showLabel?: boolean;
   icon: string;
+  customSx?: object;
 }
 
 export const IconButton: React.FC<IconButtonProps> = ({
@@ -13,6 +14,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
   onClick,
   showLabel = true,
   icon,
+  customSx = {},
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -41,6 +43,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
+          ...customSx,
         }}
         onClick={onClick}
         onMouseEnter={() => setIsHovered(true)}

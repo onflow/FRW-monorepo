@@ -5,7 +5,11 @@ import { useHistory } from 'react-router-dom';
 import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
 import { type ActiveAccountType } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
+import buyIcon from '@/ui/FRWAssets/svg/buyIcon.svg';
+import receiveIcon from '@/ui/FRWAssets/svg/receiveIcon.svg';
+import sendIcon from '@/ui/FRWAssets/svg/sendIcon.svg';
 import { LLPrimaryButton } from '@/ui/FRWComponent';
+import { IconButton } from '@/ui/FRWComponent/IconButton';
 import iconMove from 'ui/FRWAssets/svg/moveIcon.svg';
 import { useCoins } from 'ui/hooks/useCoinHook';
 import { useWallet } from 'ui/utils';
@@ -14,7 +18,6 @@ import IconChevronRight from '../../../components/iconfont/IconChevronRight';
 import VerifiedIcon from '../../FRWAssets/svg/verfied-check.svg';
 
 import { CurrencyValue } from './CurrencyValue';
-import { TokenValue } from './TokenValue';
 
 // import tips from 'ui/FRWAssets/svg/tips.svg';
 
@@ -26,6 +29,7 @@ const TokenInfoCard = ({
   tokenInfo,
   accountType,
   tokenId,
+  setIsOnRamp,
 }: {
   price: string;
   token: string;
@@ -34,6 +38,7 @@ const TokenInfoCard = ({
   tokenInfo: any;
   accountType: ActiveAccountType;
   tokenId: string;
+  setIsOnRamp: (isOnRamp: boolean) => void;
 }) => {
   const wallet = useWallet();
   const history = useHistory();
@@ -252,34 +257,34 @@ const TokenInfoCard = ({
               <CurrencyValue value={tokenInfo?.total} />
             </Box>
           </Typography>
-          <Box sx={{ display: 'flex', gap: '12px', height: '36px', mt: '24px', width: '100%' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'space-between',
+              mt: '24px',
+              width: '100%',
+            }}
+          >
             {(accountType === 'main' || accountType === 'evm') && (
-              <LLPrimaryButton
-                sx={{
-                  borderRadius: '8px',
-                  height: '36px',
-                  fontSize: '14px',
-                  color: 'primary.contrastText',
-                  fontWeight: '600',
-                }}
-                disabled={!accessible}
+              <IconButton
+                messageKey="Send"
                 onClick={toSend}
-                label={chrome.i18n.getMessage('Send')}
-                fullWidth
+                icon={sendIcon}
+                customSx={{ width: '42px', height: '42px' }}
               />
             )}
-            <LLPrimaryButton
-              sx={{
-                borderRadius: '8px',
-                height: '36px',
-                fontSize: '14px',
-                color: 'primary.contrastText',
-                fontWeight: '600',
-              }}
-              disabled={!accessible}
+            <IconButton
+              messageKey="Deposit"
               onClick={() => history.push('/dashboard/wallet/deposit')}
-              label={chrome.i18n.getMessage('Deposit')}
-              fullWidth
+              icon={receiveIcon}
+              customSx={{ width: '42px', height: '42px' }}
+            />
+            <IconButton
+              messageKey="Buy"
+              onClick={() => setIsOnRamp(true)}
+              icon={buyIcon}
+              customSx={{ width: '42px', height: '42px' }}
             />
           </Box>
         </>
