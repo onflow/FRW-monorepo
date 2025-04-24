@@ -23,10 +23,8 @@ import { useHistory } from 'react-router-dom';
 // import { useHistory } from 'react-router-dom';
 import IconCreate from '@/components/iconfont/IconCreate';
 import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
-import { LLHeader } from '@/ui/FRWComponent';
+import TokenItem from '@/ui/FRWComponent/TokenLists/TokenItem';
 import { useCoins } from 'ui/hooks/useCoinHook';
-
-import TokenItem from './TokenItem';
 
 const useStyles = makeStyles(() => ({
   customInputLabel: {
@@ -129,7 +127,7 @@ const ManageToken = () => {
               </IconButton>
             </Grid>
           </Grid>
-          <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+          <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.6)', margin: '0 18px' }}>
             Filters
           </Typography>
           <Box
@@ -139,6 +137,7 @@ const ManageToken = () => {
               justifyContent: 'space-between',
               alignItems: 'center',
               gap: '10px',
+              margin: '0 18px',
             }}
           >
             <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
@@ -159,6 +158,7 @@ const ManageToken = () => {
               justifyContent: 'space-between',
               alignItems: 'center',
               gap: '10px',
+              margin: '0 18px',
             }}
           >
             <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
@@ -244,9 +244,13 @@ const ManageToken = () => {
               {(filteredTokenList.length > 0 ? filteredTokenList : coins).map((token, index) => (
                 <TokenItem
                   token={token}
+                  isLoading={isLoading}
+                  enabled={coins.map((item) => item.contractName).includes(token.contractName)}
+                  onClick={updateTokenFilter}
                   tokenFilter={tokenFilter}
-                  key={index}
                   updateTokenFilter={updateTokenFilter}
+                  key={index}
+                  showSwitch={true}
                 />
               ))}
             </List>

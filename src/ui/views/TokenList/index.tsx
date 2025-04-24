@@ -18,13 +18,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 // import { useHistory } from 'react-router-dom';
 import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
 import { LLHeader } from '@/ui/FRWComponent';
+import TokenItem from '@/ui/FRWComponent/TokenLists/TokenItem';
 import { useCoins } from 'ui/hooks/useCoinHook';
 import { useWallet } from 'ui/utils';
 
+import CloseIcon from '../../FRWAssets/svg/close-icon.svg';
 import VerifiedIcon from '../../FRWAssets/svg/verfied-check.svg';
 
 import AddTokenConfirmation from './AddTokenConfirmation';
-import TokenItem from './TokenItem';
 
 const useStyles = makeStyles(() => ({
   customInputLabel: {
@@ -75,6 +76,7 @@ const TokenList = () => {
   const [selectedToken, setSelectedToken] = useState<ExtendedTokenInfo | null>(null);
   const [filters, setFilter] = useState('all');
   const [filteredCollections, setFilteredCollections] = useState<ExtendedTokenInfo[]>([]);
+  const [isVerifiedActive, setVerifiedActive] = useState(false);
 
   const [isLoading, setLoading] = useState(true);
 
@@ -152,6 +154,17 @@ const TokenList = () => {
     setLoading(false);
   }, [filters, getFilteredCollections]);
 
+  const handleVerifiedToggle = () => {
+    const newFilter = isVerifiedActive ? 'all' : 'verified';
+    setFilter(newFilter);
+    setVerifiedActive(!isVerifiedActive);
+  };
+
+  const handleAllClick = () => {
+    setFilter('all');
+    setVerifiedActive(false);
+  };
+
   return (
     <StyledEngineProvider injectFirst>
       <div className="page">
@@ -197,15 +210,15 @@ const TokenList = () => {
           <Box
             sx={{
               display: 'flex',
-              justifyContent: 'space-between',
+              justifyContent: 'flex-start',
               alignItems: 'center',
               padding: '16px',
+              gap: '10px',
             }}
           >
-            {/* Button group for filter options */}
-            <Box sx={{ display: 'inline-flex', gap: '10px' }}>
+            {isVerifiedActive && (
               <Button
-                onClick={() => setFilter('all')}
+                onClick={handleVerifiedToggle}
                 sx={{
                   display: 'inline-flex',
                   height: '36px',
@@ -215,32 +228,9 @@ const TokenList = () => {
                   gap: '10px',
                   flexShrink: 0,
                   borderRadius: '36px',
-                  border: `1.5px solid ${filters === 'all' ? '#41CC5D' : '#FFFFFF66'}`,
+                  border: `1.5px solid ${isVerifiedActive ? '#41CC5D' : '#FFFFFF66'}`,
                   backgroundColor: 'transparent',
-                  color: filters === 'all' ? '#41CC5D' : '#FFFFFF66',
-                  '&:hover': {
-                    backgroundColor: 'transparent',
-                    color: '#41CC5D',
-                  },
-                }}
-              >
-                All
-              </Button>
-
-              <Button
-                onClick={() => setFilter('verfied')}
-                sx={{
-                  display: 'inline-flex',
-                  height: '36px',
-                  padding: '9px 12px',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  gap: '10px',
-                  flexShrink: 0,
-                  borderRadius: '36px',
-                  border: `1.5px solid ${filters === 'verfied' ? '#41CC5D' : '#FFFFFF66'}`,
-                  backgroundColor: 'transparent',
-                  color: filters === 'verfied' ? '#41CC5D' : '#FFFFFF66',
+                  color: isVerifiedActive ? '#41CC5D' : '#FFFFFF66',
                   '&:hover': {
                     backgroundColor: 'transparent',
                     color: '#41CC5D',
@@ -249,8 +239,59 @@ const TokenList = () => {
               >
                 <img src={VerifiedIcon} alt="Verified" style={{ width: '16px', height: '16px' }} />
                 Verified
+                <img src={CloseIcon} alt="Close" style={{ width: '8px', height: '8px' }} />
               </Button>
-            </Box>
+            )}
+
+            <Button
+              onClick={handleAllClick}
+              sx={{
+                display: 'inline-flex',
+                height: '36px',
+                padding: '9px 12px',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: '10px',
+                flexShrink: 0,
+                borderRadius: '36px',
+                border: `1.5px solid ${filters === 'all' ? '#41CC5D' : '#FFFFFF66'}`,
+                backgroundColor: 'transparent',
+                color: filters === 'all' ? '#41CC5D' : '#FFFFFF66',
+                '&:hover': {
+                  backgroundColor: 'transparent',
+                  color: '#41CC5D',
+                },
+              }}
+            >
+              All
+            </Button>
+
+            {!isVerifiedActive && (
+              <Button
+                onClick={handleVerifiedToggle}
+                sx={{
+                  display: 'inline-flex',
+                  height: '36px',
+                  padding: '9px 12px',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: '10px',
+                  flexShrink: 0,
+                  borderRadius: '36px',
+                  border: `1.5px solid ${isVerifiedActive ? '#41CC5D' : '#FFFFFF66'}`,
+                  backgroundColor: 'transparent',
+                  color: isVerifiedActive ? '#41CC5D' : '#FFFFFF66',
+                  '&:hover': {
+                    backgroundColor: 'transparent',
+                    color: '#41CC5D',
+                  },
+                }}
+              >
+                <img src={VerifiedIcon} alt="Verified" style={{ width: '16px', height: '16px' }} />
+                Verified
+                <img src={CloseIcon} alt="Close" style={{ width: '8px', height: '8px' }} />
+              </Button>
+            )}
           </Box>
 
           {isLoading ? (
@@ -300,6 +341,9 @@ const TokenList = () => {
                   enabled={coins.map((item) => item.contractName).includes(token.contractName)}
                   key={index}
                   onClick={handleTokenClick}
+                  tokenFilter={tokenFilter}
+                  updateTokenFilter={handleTokenClick}
+                  showSwitch={false}
                 />
               ))}
             </List>
