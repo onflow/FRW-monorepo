@@ -11,6 +11,7 @@ import { useCoins } from 'ui/hooks/useCoinHook';
 import { useWallet } from 'ui/utils';
 
 import IconChevronRight from '../../../components/iconfont/IconChevronRight';
+import VerifiedIcon from '../../FRWAssets/svg/verfied-check.svg';
 
 import { CurrencyValue } from './CurrencyValue';
 import { TokenValue } from './TokenValue';
@@ -136,34 +137,48 @@ const TokenInfoCard = ({
                 'https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.1654653399040a61.FlowToken/logo.svg'
               }
             ></img>
-            <ButtonBase onClick={() => window.open(getUrl(data), '_blank')}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  px: '8px',
-                  py: '4px',
-                  marginRight: '4px',
-                  borderRadius: '8px',
-                  alignSelf: 'end',
-                }}
-              >
-                <Typography
-                  variant="h6"
+            <Box sx={{ display: 'flex', alignItems: 'end' }}>
+              <ButtonBase onClick={() => window.open(getUrl(data), '_blank')}>
+                <Box
                   sx={{
-                    fontWeight: '550',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    maxWidth: '130px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    px: '8px',
+                    py: '4px',
+                    marginRight: '2px',
+                    borderRadius: '8px',
+                    alignSelf: 'end',
+                    background: 'linear-gradient(to right, #000000, #282828)',
                   }}
                 >
-                  {data.name}
-                </Typography>
-                <IconChevronRight size={20} />
-              </Box>
-            </ButtonBase>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: '550',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      maxWidth: '90px',
+                    }}
+                  >
+                    {data.name}
+                  </Typography>
+                  <IconChevronRight size={20} />
+                </Box>
+              </ButtonBase>
+              {data.isVerified && (
+                <Box
+                  sx={{ display: 'flex', alignItems: 'center', height: '40px', marginRight: '4px' }}
+                >
+                  <img
+                    src={VerifiedIcon}
+                    alt="Verified"
+                    style={{ width: '24px', height: '24px' }}
+                  />
+                </Box>
+              )}
+            </Box>
 
             <Box sx={{ flex: 1 }} />
             {canMoveChild && (
@@ -183,9 +198,16 @@ const TokenInfoCard = ({
                   <Typography sx={{ fontWeight: 'normal', color: '#41CC5D' }}>
                     {chrome.i18n.getMessage('Move')}
                   </Typography>
-                  <CardMedia
-                    sx={{ width: '12px', height: '12px', marginLeft: '4px' }}
-                    image={iconMove}
+                  <img
+                    src={iconMove}
+                    alt="Move Icon"
+                    style={{
+                      width: '14px',
+                      height: '14px',
+                      marginLeft: '4px',
+                      filter:
+                        'invert(54%) sepia(78%) saturate(366%) hue-rotate(85deg) brightness(95%) contrast(92%)',
+                    }}
                   />
                 </Box>
               </ButtonBase>
