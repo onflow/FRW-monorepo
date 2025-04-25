@@ -1693,7 +1693,7 @@ class KeyringService extends EventEmitter {
     let needToSwitchKeyring = false;
     if (currentId === profileId) {
       // Find another profile to switch to
-      const nextProfileId = keyringIds.find((id) => id !== profileId);
+      const nextProfileId = keyringIds[Math.min(profileIndex,keyringIds.length - 1)]
       if (nextProfileId) {
         // Update the current profile ID in storage
         await storage.set(CURRENT_ID_KEY, nextProfileId);
