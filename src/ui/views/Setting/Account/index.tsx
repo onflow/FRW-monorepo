@@ -9,7 +9,7 @@ import { useHistory } from 'react-router-dom';
 
 import { type PreferenceAccount } from '@/background/service/preference';
 import { openIndexPage } from '@/background/webapi/tab';
-import RemoveProfileModal from '@/ui/FRWComponent/PopupModal/removeProfileModal';
+import RemoveProfileModal from '@/ui/FRWComponent/PopupModal/remove-profile-modal';
 import ResetModal from '@/ui/FRWComponent/PopupModal/resetModal';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from 'ui/utils';
