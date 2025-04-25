@@ -683,7 +683,7 @@
     "message": "We've found"
   },
   "matching__accounts": {
-    "message": "matching account(-s)"
+    "message": "matching account(s)"
   },
   "Select__the__account__which__you__want__to__restore__back": {
     "message": "Select the account which you want to restore back."
