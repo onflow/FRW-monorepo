@@ -88,7 +88,7 @@ class UserWallet {
   private store!: UserWalletStore;
 
   // Reference to the wallet controller
-  private walletController: WalletController | undefined;
+  private walletController: WalletController | undefined = undefined;
 
   setWalletController = (controller: WalletController) => {
     this.walletController = controller;
