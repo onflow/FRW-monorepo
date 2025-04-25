@@ -45,7 +45,7 @@ import {
   accountBalanceRefreshRegex,
 } from '@/shared/utils/cache-data-keys';
 import { retryOperation } from '@/shared/utils/retryOperation';
-import { setUserData } from '@/shared/utils/user-data-access';
+import { getUserData, setUserData } from '@/shared/utils/user-data-access';
 import {
   userWalletsKey,
   type UserWalletStore,
@@ -86,8 +86,6 @@ class UserWallet {
   // PERSISTENT DATA
   // The user settings - network and other global settings
   private store!: UserWalletStore;
-  // Map of the selected accounts for each network and pubkey
-  private activeAccounts: Map<FlowNetwork, Map<string, ActiveAccountsStore>> = new Map();
 
   // Reference to the wallet controller
   private walletController: WalletController | undefined;
@@ -109,7 +107,6 @@ class UserWallet {
       template: USER_WALLET_TEMPLATE,
     });
 
-    this.activeAccounts = new Map();
     // Initialize the account loaders
     initAccountLoaders();
   };
@@ -120,7 +117,6 @@ class UserWallet {
     } else {
       Object.assign(this.store, USER_WALLET_TEMPLATE);
     }
-    this.activeAccounts = new Map();
     // clear all session storage
     await storage.clearSession();
   };
@@ -329,18 +325,17 @@ class UserWallet {
       activeAccounts
     );
     if (
-      validatedActiveAccounts.parentAddress !== activeAccounts?.parentAddress ||
-      validatedActiveAccounts.currentAddress !== activeAccounts?.currentAddress
+      validatedActiveAccounts.parentAddress !== null &&
+      validatedActiveAccounts.currentAddress !== null &&
+      (validatedActiveAccounts.parentAddress !== activeAccounts?.parentAddress ||
+        validatedActiveAccounts.currentAddress !== activeAccounts?.currentAddress)
     ) {
+      // Only update the active accounts if they have changed and the addresses are not null
       await setUserData<ActiveAccountsStore>(
         activeAccountsKey(network, pubkey),
         validatedActiveAccounts
       );
     }
-    if (!this.activeAccounts[network]) {
-      this.activeAccounts[network] = new Map();
-    }
-    this.activeAccounts[network][pubkey] = validatedActiveAccounts;
 
     return validatedActiveAccounts;
   };
@@ -358,10 +353,12 @@ class UserWallet {
       throw new Error('Network or pubkey is not set');
     }
 
-    const activeAccounts = this.activeAccounts[network]?.[pubkey];
+    const activeAccounts = await getActiveAccountsData(network, pubkey);
+
     if (!activeAccounts) {
       return this.loadActiveAccounts(network, pubkey);
     }
+
     return activeAccounts;
   };
 
@@ -399,7 +396,6 @@ class UserWallet {
     if (!network) {
       throw new Error('Network is not set');
     }
-    this.activeAccounts[network][pubkey] = newActiveAccounts;
 
     // Save the data in storage
     await setUserData<ActiveAccountsStore>(activeAccountsKey(network, pubkey), newActiveAccounts);
@@ -536,25 +532,6 @@ class UserWallet {
       parentAddress: activeAccounts.parentAddress,
       currentAddress: activeAccounts.parentAddress,
     };
-  };
-
-  ensureValidActiveAccount = async (network: string, pubkey: string) => {
-    // Get the active accounts
-    const activeAccounts = await this.getActiveAccountsWithPubKey(network, pubkey);
-
-    const newActiveAccounts = await this.validateActiveAccountStore(
-      network,
-      pubkey,
-      activeAccounts
-    );
-    if (
-      newActiveAccounts.parentAddress !== activeAccounts.parentAddress ||
-      newActiveAccounts.currentAddress !== activeAccounts.currentAddress
-    ) {
-      // The parent address has changed
-      // We need to update the active accounts
-      await this.setActiveAccounts(newActiveAccounts);
-    }
   };
 
   /**
