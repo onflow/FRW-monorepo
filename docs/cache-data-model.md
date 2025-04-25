@@ -2,7 +2,7 @@
 
 ## Overview
 
-The caching system is built specifically for Chrome extensions, implementing a stale-while-revalidate pattern adapted for the unique constraints of extension architecture. Normal react based caching strategies don't work as the react appliction is destroyed each time the popup is closed.
+The caching system is built specifically for Chrome extensions, implementing a stale-while-revalidate pattern adapted for the unique constraints of extension architecture. Normal react based caching strategies don't work as the react application is destroyed each time the popup is closed.
 
 The system handles two types of storage:
 
@@ -189,5 +189,5 @@ const userData = useUserData<NewUserDataStore>(newUserDataKey);
 4. **Data Mutation**
 
 - _Never alter cached data in the foreground_ - call a background function through a proxy
-- Backgrond loaders should only update the cache
+- Background loaders should only update the cache
 - If you want to mutate data locally - as some remote operation is pending - then create a second cache. Store the mutated data in memory then save to a combined cache that includes the pending items. Look at the transaction service to see how this is done
