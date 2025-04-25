@@ -332,13 +332,16 @@ class UserWallet {
       validatedActiveAccounts.parentAddress !== activeAccounts?.parentAddress ||
       validatedActiveAccounts.currentAddress !== activeAccounts?.currentAddress
     ) {
-      this.activeAccounts[network][pubkey] = validatedActiveAccounts;
-
       await setUserData<ActiveAccountsStore>(
         activeAccountsKey(network, pubkey),
         validatedActiveAccounts
       );
     }
+    if (!this.activeAccounts[network]) {
+      this.activeAccounts[network] = new Map();
+    }
+    this.activeAccounts[network][pubkey] = validatedActiveAccounts;
+
     return validatedActiveAccounts;
   };
 
