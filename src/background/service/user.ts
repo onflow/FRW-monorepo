@@ -54,7 +54,6 @@ class UserInfoService {
     });
   };
   loadUserInfoByUserId = async (userId: string) => {
-    console.trace('loadUserInfoByUserId', userId);
     const currentId = await returnCurrentProfileId();
 
     const userInfo: UserInfoResponse | undefined =

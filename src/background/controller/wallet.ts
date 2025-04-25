@@ -442,7 +442,7 @@ export class WalletController extends BaseController {
     // Try for 2 mins to get the parent address
     const parentAddress = await retryOperation(
       async () => {
-        const address = userWalletService.getParentAddress();
+        const address = await userWalletService.getParentAddress();
         console.log('retryOperation - refreshWallets - parentAddress', address);
         if (!address) {
           throw new Error('Parent address not found');
@@ -1254,8 +1254,8 @@ export class WalletController extends BaseController {
     return wallets;
   };
 
-  getActiveAccountType = (): ActiveAccountType => {
-    const activeWallet = userWalletService.getActiveAccountType();
+  getActiveAccountType = async (): Promise<ActiveAccountType> => {
+    const activeWallet = await userWalletService.getActiveAccountType();
     return activeWallet;
   };
 
@@ -3327,9 +3327,7 @@ export class WalletController extends BaseController {
   };
 
   allowLilicoPay = async (): Promise<boolean> => {
-    const isFreeGasFeeKillSwitch = await storage.get('freeGas');
-    const isFreeGasFeeEnabled = await storage.get('lilicoPayer');
-    return isFreeGasFeeKillSwitch && isFreeGasFeeEnabled;
+    return userWalletService.allowFreeGas();
   };
 
   signPayer = async (signable): Promise<string> => {
@@ -3415,7 +3413,7 @@ export class WalletController extends BaseController {
     movingBetweenEVMAndFlow?: boolean; // are we moving between EVM and Flow?
   } = {}): Promise<EvaluateStorageResult> => {
     const address = await this.getParentAddress();
-    const isFreeGasFeeEnabled = await this.allowLilicoPay();
+    const isFreeGasFeeEnabled = await userWalletService.allowFreeGas();
     const result = await this.storageEvaluator.evaluateStorage(
       address!,
       transferAmount,
