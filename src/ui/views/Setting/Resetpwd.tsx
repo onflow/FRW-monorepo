@@ -224,12 +224,15 @@ const Resetpassword = () => {
       const success = await wallet.update(confirmCurrentPassword, confirmPassword);
 
       if (success) {
-        setTimeout(async () => {
-          await wallet.lockWallet().then(() => {
+        await wallet
+          .lockWallet()
+          .then(() => {
             clearProfileData();
             history.push('/unlock');
+          })
+          .finally(() => {
+            setIsResetting(false);
           });
-        }, 500);
       } else {
         setError(chrome.i18n.getMessage('Oops__unexpected__error'));
       }
