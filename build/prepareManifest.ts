@@ -68,6 +68,7 @@ async function prepare() {
 
   if (mode === 'dev') {
     manifest.key = process.env.MANIFEST_KEY;
+    manifest.name = 'Flow Wallet Dev';
     try {
       const devToolsScript = await fetchDevTools();
       fs.writeFileSync(path.resolve(__dirname, '../_raw/react-devtools.js'), devToolsScript);
