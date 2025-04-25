@@ -162,7 +162,7 @@ const userData = useUserData<NewUserDataStore>(newUserDataKey);
 - Full TypeScript support for type checking
 - Generic types for data store definitions
 
-## Rules
+## Rules & Best Practices
 
 1. **Key Management**
 
@@ -183,6 +183,7 @@ const userData = useUserData<NewUserDataStore>(newUserDataKey);
 
 - Use provided hooks instead of direct storage access on the front end. These listen to storage changes and update automatically
 - In the background create a data accessor that directly loads data - but only use these accessors in the background - not through proxies
+- If you want to preload data in the background - simply call one of the background data accessors instead of calling the loader. This will use the existing cache but also ensure data is loaded
 - Handle undefined/loading states in components. `undefined` means the data is loading `null` means the data has loaded but is null
 
 4. **Data Mutation**
