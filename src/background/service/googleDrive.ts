@@ -1,5 +1,5 @@
 import aesjs from 'aes-js';
-import bip39 from 'bip39';
+import * as bip39 from 'bip39';
 
 interface GoogleDriveFileModel {
   kind: string;
