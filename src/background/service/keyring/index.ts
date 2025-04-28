@@ -1677,6 +1677,8 @@ class KeyringService extends EventEmitter {
       // Update the memory store
       this.memStore.updateState({ isUnlocked: false });
       this.emit('lock');
+      await storage.remove(CURRENT_ID_KEY);
+      this.store.updateState({ booted: '' });
       return true;
     }
 
@@ -1693,7 +1695,7 @@ class KeyringService extends EventEmitter {
     let needToSwitchKeyring = false;
     if (currentId === profileId) {
       // Find another profile to switch to
-      const nextProfileId = keyringIds[Math.min(profileIndex,keyringIds.length - 1)]
+      const nextProfileId = keyringIds[Math.min(profileIndex, keyringIds.length - 1)];
       if (nextProfileId) {
         // Update the current profile ID in storage
         await storage.set(CURRENT_ID_KEY, nextProfileId);
