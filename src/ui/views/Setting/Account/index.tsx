@@ -9,6 +9,7 @@ import { useHistory } from 'react-router-dom';
 
 import { type PreferenceAccount } from '@/background/service/preference';
 import { openIndexPage } from '@/background/webapi/tab';
+import { getCurrentProfileId } from '@/shared/utils/current-id';
 import RemoveProfileModal from '@/ui/FRWComponent/PopupModal/remove-profile-modal';
 import ResetModal from '@/ui/FRWComponent/PopupModal/resetModal';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -178,8 +179,7 @@ const AccountSettings = () => {
 
     try {
       // Get the current profile ID
-    const profileId = await getCurrentProfileId();
-
+      const profileId = await getCurrentProfileId();
 
       await wallet.removeProfile(password, profileId);
 
