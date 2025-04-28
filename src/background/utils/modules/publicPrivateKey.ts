@@ -122,7 +122,9 @@ const seedWithPathAndPhrase2PublicPrivateKey = async (
   return keyTuple;
 };
 
-// @deprecated - use seedWithPathAndPhrase2PublicPrivateKey instead
+/**
+ * @deprecated use seedWithPathAndPhrase2PublicPrivateKey instead
+ */
 const seed2PublicPrivateKey_depreciated = async (seed: string): Promise<PublicPrivateKeyTuple> => {
   const currentId = (await storage.get(CURRENT_ID_KEY)) ?? 0;
 

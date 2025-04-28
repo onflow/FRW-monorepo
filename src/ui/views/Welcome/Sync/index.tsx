@@ -7,11 +7,12 @@ import HDWallet from 'ethereum-hdwallet';
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
 
+import { isValidFlowAddress, withPrefix } from '@/shared/utils/address';
 import {
   SIGN_ALGO_NUM_ECDSA_secp256k1,
   HASH_ALGO_NUM_SHA2_256,
 } from '@/shared/utils/algo-constants';
-import { FCLWalletConnectMethod } from '@/shared/utils/type';
+import { FCLWalletConnectMethod, type FCLWalletConnectSyncAccountInfo } from '@/shared/utils/type';
 import AllSet from '@/ui/FRWComponent/LandingPages/AllSet';
 import LandingComponents from '@/ui/FRWComponent/LandingPages/LandingComponents';
 import SetPassword from '@/ui/FRWComponent/LandingPages/SetPassword';
@@ -166,9 +167,16 @@ const Sync = () => {
 
   // 3. Account and device info handlers, check if account is available based on userid, if not, generate account key and device info
   const handleAccountInfo = useCallback(
-    async (signClient: SignClient, topic: string, jsonObject: any) => {
+    async (signClient: SignClient, topic: string, jsonObject: FCLWalletConnectSyncAccountInfo) => {
       try {
-        await usewallet.checkAvailableAccount(jsonObject.data.userId);
+        const address = withPrefix(jsonObject.data.walletAddress);
+        if (!isValidFlowAddress(address)) {
+          throw new Error('Invalid address');
+        }
+        const availableKeys = await usewallet.checkAvailableAccountKeys(address);
+        if (availableKeys.length < 1) {
+          throw new Error('No available keys found for account: ' + address);
+        }
         setIsSwitchingAccount(true);
         setActiveTab(STEPS.PASSWORD);
       } catch (error) {
@@ -232,8 +240,7 @@ const Sync = () => {
         setLoadingString('Account info received');
         setSecondLine('Checking account availability');
 
-        const jsonObject = JSON.parse(result as string);
-        console.log('FCLWalletConnectMethod.accountInfo', jsonObject.data.userId);
+        const jsonObject: FCLWalletConnectSyncAccountInfo = JSON.parse(result as string);
 
         await handleAccountInfo(signClient, topic, jsonObject);
       } catch (error) {
@@ -319,7 +326,7 @@ const Sync = () => {
         }
       } else {
         try {
-          await usewallet.loginV3_depreciated(mnemonic, accountKey, deviceInfo);
+          await usewallet.loginWithMnemonic(mnemonic);
           const userInfo = await usewallet.getUserInfo(true);
           setUsername(userInfo.username);
           await usewallet.saveIndex(userInfo.username);
@@ -332,7 +339,7 @@ const Sync = () => {
         }
       }
     },
-    [usewallet, mnemonic, accountKey, deviceInfo, isSwitchingAccount, setUsername]
+    [usewallet, mnemonic, isSwitchingAccount, setUsername]
   );
 
   const goBack = () => {

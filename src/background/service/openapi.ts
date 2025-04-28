@@ -64,6 +64,7 @@ import {
   type NFTModelV2,
   type DeviceInfoRequest,
   MAINNET_CHAIN_ID,
+  type KeyResponseItem,
 } from '../../shared/types/network-types';
 
 import {
@@ -1280,7 +1281,11 @@ class OpenApiService {
     return data;
   };
 
-  keyList = async () => {
+  keyList = async (): Promise<{
+    data: {
+      result: KeyResponseItem[];
+    };
+  }> => {
     const config = this.store.config.key_list;
     const data = await this.sendRequest(config.method, config.path, {});
 

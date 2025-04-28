@@ -402,6 +402,45 @@ export interface DeviceInfo {
   device_info: DeviceInfoRequest;
 }
 
+type KeyBackupInfo = {
+  create_time: string;
+  name: string;
+  type: number;
+};
+
+type KeyDeviceInfo = {
+  city: string;
+  continent: string;
+  continentCode: string;
+  country: string;
+  countryCode: string;
+  created_at: string;
+  currency: string;
+  device_name: string;
+  device_type: number;
+  district: string;
+  id: string;
+  ip: string;
+  isp: string;
+  lat: number;
+  lon: number;
+  org: string;
+  regionName: string;
+  revoked_status: number;
+  updated_at: string;
+  user_agent: string;
+  user_id: string;
+  wallet_id: number;
+  walletsand_id: number;
+  wallettest_id: number;
+  zip: string;
+};
+export type KeyResponseItem = {
+  backup_info: KeyBackupInfo;
+  device: KeyDeviceInfo;
+  pubkey: AccountKeyRequest & { name: string };
+};
+
 export {
   type NewsItem,
   type NewsPriority,

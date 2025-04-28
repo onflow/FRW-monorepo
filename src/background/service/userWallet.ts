@@ -995,7 +995,9 @@ class UserWallet {
     return this.loginWithPublicPrivateKey(publicPrivateKey, replaceUser);
   };
 
-  // @deprecated - use loginWithMnemonic instead
+  /**
+   * @deprecated use loginWithMnemonic instead
+   */
   loginV3_depreciated = async (
     mnemonic: string,
     accountKey: AccountKeyRequest,

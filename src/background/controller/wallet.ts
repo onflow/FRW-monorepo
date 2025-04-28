@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as fcl from '@onflow/fcl';
-import type { Account as FclAccount } from '@onflow/typedefs';
+import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
 import * as t from '@onflow/types';
 import BN from 'bignumber.js';
 import * as bip39 from 'bip39';
@@ -153,6 +153,7 @@ import erc20ABI from '../utils/erc20.abi.json';
 import { getLoggedInAccount } from '../utils/getLoggedInAccount';
 import {
   getAccountsByPublicKeyTuple,
+  getAccountsWithPublicKey,
   getOrCheckAccountsByPublicKeyTuple,
 } from '../utils/modules/findAddressWithPubKey';
 
@@ -403,14 +404,31 @@ export class WalletController extends BaseController {
       throw new Error('Failed to switch account: ' + (error.message || 'Unknown error'));
     }
   };
-
-  checkAvailableAccount = async (currentId: string) => {
+  /**
+   * @deprecated  Checking accounts by user id is deprecated - use the public key or addressinstead
+   */
+  checkAvailableAccount_depreciated = async (currentId: string) => {
     try {
-      await keyringService.checkAvailableAccount(currentId);
+      await keyringService.checkAvailableAccount_depreciated(currentId);
     } catch (error) {
       console.error('Error finding available account:', error);
       throw new Error('Failed to find available account: ' + (error.message || 'Unknown error'));
     }
+  };
+
+  /**
+   * Checks if we have one or more keys that can access an account
+   * @param address of the account we want to check
+   * @returns an array of keys that can access the account
+   */
+  checkAvailableAccountKeys = async (address: FlowAddress): Promise<AccountKey[]> => {
+    const account = await fcl.account(address);
+    const publicKeys = await keyringService.getAllPublicKeys();
+    const availableKeys = account.keys.filter((key) => publicKeys.includes(key.publicKey));
+    if (availableKeys.length === 0) {
+      throw new Error('No available keys found for account: ' + address);
+    }
+    return availableKeys;
   };
 
   unlock = async (password: string) => {
@@ -454,7 +472,7 @@ export class WalletController extends BaseController {
     );
     // Refresh the logged in account
     const pubKTuple = await keyringService.getCurrentPublicKeyTuple();
-    const fclAccount = await this.getAccount();
+    const fclAccount = await this.getMainAccountInfo();
     // Refresh the user info
     return openapiService.freshUserInfo(parentAddress, fclAccount, pubKTuple, userInfo, 'main');
   };
@@ -640,7 +658,7 @@ export class WalletController extends BaseController {
 
   getPrivateKey = async (password: string, address: string) => {
     await this.verifyPassword(password);
-    const keyring = await keyringService.getKeyringForAccount(address);
+    const keyring = await keyringService.getKeyringForAccount_deprecated(address);
     if (!keyring) return null;
     return await keyring.exportAccount(address);
   };
@@ -828,7 +846,9 @@ export class WalletController extends BaseController {
     }
   };
 
-  // @deprecated - not used anymore
+  /**
+   * @deprecated not used anymore
+   */
   addKeyring = async (password: string, keyringId) => {
     const keyring = stashKeyrings[keyringId];
     if (keyring) {
@@ -849,7 +869,9 @@ export class WalletController extends BaseController {
       return false;
     }
   };
-  // @deprecated - not used anymore
+  /**
+   * @deprecated not used anymore
+   */
   deriveNewAccountFromMnemonic = async (password: string) => {
     const keyring = this._getKeyringByType(KEYRING_CLASS.MNEMONIC);
 
@@ -941,7 +963,7 @@ export class WalletController extends BaseController {
   };
 
   signPersonalMessage = async (type: string, from: string, data: string, options?: any) => {
-    const keyring = await keyringService.getKeyringForAccount(from, type);
+    const keyring = await keyringService.getKeyringForAccount_deprecated(from, type);
     const res = await keyringService.signPersonalMessage(keyring, { from, data }, options);
     if (type === KEYRING_TYPE.WalletConnectKeyring) {
       eventBus.emit(EVENTS.broadcastToUI, {
@@ -956,7 +978,7 @@ export class WalletController extends BaseController {
   };
 
   signTransaction = async (type: string, from: string, data: any, options?: any) => {
-    const keyring = await keyringService.getKeyringForAccount(from, type);
+    const keyring = await keyringService.getKeyringForAccount_deprecated(from, type);
     const res = await keyringService.signTransaction(keyring, data, options);
 
     return res;
@@ -982,7 +1004,9 @@ export class WalletController extends BaseController {
     }
   };
 
-  // @deprecated - not used anymore
+  /**
+   * @deprecated not used anymore
+   */
   unlockHardwareAccount = async (password: string, keyring, indexes, keyringId) => {
     let keyringInstance: any = null;
     try {
@@ -2800,7 +2824,10 @@ export class WalletController extends BaseController {
     return userWalletService.loginWithPk(pk, replaceUser);
   };
 
-  // @deprecated
+  /**
+   * @deprecated This method is deprecated and should not be used in new code.
+   * @see {@link loginWithMnemonic} Use this method instead.
+   */
   loginV3_depreciated = async (
     mnemonic: string,
     accountKey: any,
@@ -3342,20 +3369,27 @@ export class WalletController extends BaseController {
     await openapiService.updateProfilePreference(privacy);
   };
 
-  getAccount = async (): Promise<FclAccount> => {
+  getAccountInfo = async (address: FlowAddress): Promise<FclAccount> => {
+    const account = await fcl.account(address);
+    return account;
+  };
+
+  getMainAccountInfo = async (): Promise<FclAccount> => {
     const address = await this.getMainAddress();
     if (!address) {
       throw new Error('No address found');
     }
-    const account = await fcl.account(address);
-    return account;
+    return this.getAccountInfo(address);
   };
 
   getEmoji = async () => {
     return getEmojiList();
   };
 
-  // @deprecated - this doesn't do anything
+  /**
+   *  @deprecated this doesn't do anything
+   *  @todo remove this
+   */
   setEmoji_depreciated = async (emoji, type, index) => {
     return emoji;
   };

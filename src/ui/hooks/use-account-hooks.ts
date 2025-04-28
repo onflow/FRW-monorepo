@@ -1,7 +1,7 @@
 import {
   CURRENT_ID_KEY,
   KEYRING_STATE_CURRENT_KEY,
-  type KeyringStateV2,
+  type KeyringState,
   VaultEntryV2,
 } from '@/shared/types/keyring-types';
 import {
@@ -85,7 +85,7 @@ export const useCurrentId = () => {
   return useUserData<string>(CURRENT_ID_KEY);
 };
 export const useKeyringIds = () => {
-  const keyringState = useUserData<KeyringStateV2>(KEYRING_STATE_CURRENT_KEY);
+  const keyringState = useUserData<KeyringState>(KEYRING_STATE_CURRENT_KEY);
   if (!keyringState) {
     return null;
   }
