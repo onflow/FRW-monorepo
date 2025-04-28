@@ -178,12 +178,8 @@ const AccountSettings = () => {
 
     try {
       // Get the current profile ID
-      const userInfo = await wallet.getUserInfo(false);
-      const profileId = userInfo.id;
+    const profileId = await getCurrentProfileId();
 
-      if (!profileId) {
-        throw new Error('Could not determine profile ID');
-      }
 
       await wallet.removeProfile(password, profileId);
 
