@@ -30,12 +30,12 @@ class ConditionsEvaluator {
         }
 
       case 'insufficientStorage': {
-        const currentAddress = userWalletService.getCurrentAddress();
+        const currentAddress = await userWalletService.getCurrentAddress();
         if (!currentAddress) return false;
         return this.evaluateStorageCondition(currentAddress);
       }
       case 'insufficientBalance': {
-        const currentAddress = userWalletService.getCurrentAddress();
+        const currentAddress = await userWalletService.getCurrentAddress();
         if (!currentAddress) return false;
         return this.evaluateBalanceCondition(currentAddress);
       }
