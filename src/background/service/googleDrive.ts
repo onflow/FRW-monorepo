@@ -1,4 +1,5 @@
 import aesjs from 'aes-js';
+import bip39 from 'bip39';
 
 interface GoogleDriveFileModel {
   kind: string;
@@ -359,36 +360,33 @@ class GoogleDriveService {
         return false;
       }
 
-      // Find and update the user's backup
-      let updated = false;
+      // First, try to decrypt and re-encrypt the target user's mnemonic
+      let userBackupFound = false;
       const updatedBackups = backups.map((item) => {
         if (item.username === username) {
-          try {
-            // Decrypt with old password
-            const decryptedMnemonic = this.decrypt(item.data, oldPassword);
-            // Re-encrypt with new password
-            const newEncryptedData = this.encrypt(decryptedMnemonic, newPassword);
-
-            updated = true;
-            return {
-              ...item,
-              data: newEncryptedData,
-              time: new Date().getTime().toString(),
-            };
-          } catch (error) {
-            console.error('Error changing password:', error);
-            // Return original item if decryption fails
-            return item;
+          // verify the old password and decrypt
+          const decryptedMnemonic = this.decrypt(item.data, oldPassword);
+          if (!bip39.validateMnemonic(decryptedMnemonic)) {
+            throw new Error('Decrypted mnemonic is invalid');
           }
+          // Re-encrypt with new password
+          userBackupFound = true;
+          return {
+            ...item,
+            data: this.encrypt(decryptedMnemonic, newPassword),
+            time: new Date().getTime().toString(),
+          };
         }
+        // add non username backup to the list
         return item;
       });
 
-      if (!updated) {
+      // If the user was not found, abort
+      if (!userBackupFound) {
         return false;
       }
 
-      // Update the file on Google Drive
+      // Atomic approach, all succeeded, now update the file
       const updateContent = this.encrypt(JSON.stringify(updatedBackups), this.AES_KEY);
       await this.updateFile(this.fileId, updateContent, false);
       return true;

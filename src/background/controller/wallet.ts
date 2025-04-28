@@ -3514,50 +3514,40 @@ export class WalletController extends BaseController {
     await evmNftService.clearEvmNfts();
   };
 
-  update = async (oldPassword: string, newPassword: string): Promise<boolean> => {
+  changePassword = async (oldPassword: string, newPassword: string): Promise<boolean> => {
     try {
-      // Verify the old password is correct
-      await this.verifyPassword(oldPassword);
-
-      // If we have a backup in Google Drive, update it
+      // If we have a backup in Google Drive, update it first
       try {
         const userInfo = await userInfoService.getCurrentUserInfo();
         const username = userInfo.username;
-        await googleDriveService.setNewPassword(oldPassword, newPassword, username);
+        const backupUpdated = await googleDriveService.setNewPassword(
+          oldPassword,
+          newPassword,
+          username
+        );
+        if (backupUpdated === false) {
+          // Notify user and abort password change
+          mixpanelTrack.track('password_update_failed', {
+            address: (await this.getCurrentAddress()) || '',
+            error: 'Failed to update Google Drive backup. Password not changed.',
+          });
+          throw new Error('Failed to update Google Drive backup. Your password was not changed.');
+        }
       } catch (error) {
+        // If updating Google Drive backup fails, abort password change
         console.error('Failed to update Google Drive backup:', error);
-        // Continue even if backup update fails
+        mixpanelTrack.track('password_update_failed', {
+          address: (await this.getCurrentAddress()) || '',
+          error: error.message || error.toString(),
+        });
+        throw new Error('Failed to update Google Drive backup. Your password was not changed.');
       }
 
-      // Step 1: Get all vaults decrypted with the old password
-      const allVaultData = await keyringService.revealKeyring(oldPassword);
-      if (!allVaultData || allVaultData.length === 0) {
-        throw new Error('No vault data found to update');
+      // Change password for all keyrings in the user's wallet atomically
+      const result = await keyringService.changePassword(oldPassword, newPassword);
+      if (!result) {
+        throw new Error('Failed to update keyring password.');
       }
-
-      // Step 2: Update the booted state encryption with new password
-      await keyringService.update(newPassword);
-
-      // Step 3: Get the current profile ID to set it back later
-      const currentId = await storage.get(CURRENT_ID_KEY);
-
-      // Step 4: Re-encrypt all vaults with the new password
-      for (const vaultData of allVaultData) {
-        // Set current ID to the vault we're processing
-        await storage.set(CURRENT_ID_KEY, vaultData.id);
-
-        // Load this vault into currentKeyring
-        await keyringService.unlockKeyrings(oldPassword);
-
-        // Re-encrypt and persist this vault with the new password
-        await keyringService.persistAllKeyrings(newPassword);
-      }
-
-      // Step 5: Restore the original current profile ID
-      await storage.set(CURRENT_ID_KEY, currentId);
-
-      // Step 6: Unlock the original vault with the new password
-      await keyringService.submitPassword(newPassword);
 
       // Track successful password change
       mixpanelTrack.track('password_updated', {

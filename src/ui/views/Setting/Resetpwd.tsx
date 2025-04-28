@@ -221,7 +221,7 @@ const Resetpassword = () => {
       setIsResetting(true);
       setError('');
 
-      const success = await wallet.update(confirmCurrentPassword, confirmPassword);
+      const success = await wallet.changePassword(confirmCurrentPassword, confirmPassword);
 
       if (success) {
         await wallet
