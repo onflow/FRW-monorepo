@@ -24,6 +24,7 @@ import { useHistory } from 'react-router-dom';
 import IconCreate from '@/components/iconfont/IconCreate';
 import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
 import TokenItem from '@/ui/FRWComponent/TokenLists/TokenItem';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useCoins } from 'ui/hooks/useCoinHook';
 
 const useStyles = makeStyles(() => ({
@@ -68,6 +69,7 @@ const ManageToken = () => {
   const classes = useStyles();
   const history = useHistory();
   const { coins, tokenFilter, updateTokenFilter } = useCoins();
+  const { activeAccountType } = useProfiles();
   const [keyword, setKeyword] = useState('');
   const [filteredTokenList, setFilteredTokenList] = useState<ExtendedTokenInfo[]>(coins);
 
@@ -120,14 +122,29 @@ const ManageToken = () => {
                 {chrome.i18n.getMessage('Manage_Token')}
               </Typography>
             </Grid>
-
-            <Grid item xs={1} sx={{ pl: 0 }}>
-              <IconButton onClick={() => history.push('/dashboard/tokenList')}>
-                <IconCreate size={16} color="#787878" />
-              </IconButton>
-            </Grid>
+            {activeAccountType === 'evm' ? (
+              <Grid item xs={1} sx={{ pl: 0 }}>
+                <IconButton onClick={() => history.push('/dashboard/addcustomevm')}>
+                  <IconCreate size={16} color="#787878" />
+                </IconButton>
+              </Grid>
+            ) : (
+              <Grid item xs={1} sx={{ pl: 0 }}>
+                <IconButton onClick={() => history.push('/dashboard/tokenList')}>
+                  <IconCreate size={16} color="#787878" />
+                </IconButton>
+              </Grid>
+            )}
           </Grid>
-          <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.6)', margin: '0 18px' }}>
+          <Typography
+            variant="body1"
+            sx={{
+              color: 'rgba(255, 255, 255, 0.6)',
+              margin: '0 18px',
+              fontWeight: 600,
+              fontSize: '16px',
+            }}
+          >
             Filters
           </Typography>
           <Box
@@ -140,7 +157,10 @@ const ManageToken = () => {
               margin: '0 18px',
             }}
           >
-            <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+            <Typography
+              variant="body1"
+              sx={{ color: '#FFFFFF', fontSize: '14px', fontWeight: 400 }}
+            >
               {`Hide Dust Tokens (<1$ USD Balance)`}
             </Typography>
             <Switch
@@ -161,7 +181,10 @@ const ManageToken = () => {
               margin: '0 18px',
             }}
           >
-            <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+            <Typography
+              variant="body1"
+              sx={{ color: '#FFFFFF', fontSize: '14px', fontWeight: 400 }}
+            >
               Hide Unverified Tokens
             </Typography>
             <Switch

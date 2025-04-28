@@ -222,14 +222,26 @@ const TokenDetail = () => {
                 alignItems: 'center',
                 height: '40px',
                 justifyContent: 'space-between',
+                gap: '6px',
+                px: '8px',
               }}
             >
-              <img src={WarningIcon} alt="Verified" style={{ width: '24px', height: '24px' }} />
-              <Typography sx={{ fontSize: '12px', fontWeight: 400 }}>
+              <Box sx={{ position: 'relative', display: 'inline-block' }}>
+                <img src={WarningIcon} alt="Verified" style={{ width: '24px', height: '24px' }} />
+              </Box>
+              <Typography
+                sx={{ fontSize: '12px', fontWeight: 400, color: 'rgba(255, 255, 255, 0.40)' }}
+              >
                 This is an unverified token, only interact with tokens you trust.{' '}
                 <Typography
                   component="span"
-                  sx={{ textDecoration: 'underline', cursor: 'pointer' }}
+                  sx={{
+                    textDecoration: 'underline',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: 400,
+                    color: 'rgba(255, 255, 255, 0.40)',
+                  }}
                 >
                   Read more.
                 </Typography>
