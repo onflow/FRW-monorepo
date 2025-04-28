@@ -1665,6 +1665,10 @@ class KeyringService extends EventEmitter {
    * @returns {Promise<boolean>} - A promise that resolves to true if successful.
    */
   async removeProfile(password: string, profileId: string): Promise<boolean> {
+    const profileIndex = this.keyringList.findIndex((keyring) => keyring.id === profileId);
+    if (profileIndex === -1) {
+      throw new Error(`Profile with ID ${profileId} not found`);
+    }
     // Verify the password
     await this.verifyPassword(password);
 
@@ -1682,12 +1686,6 @@ class KeyringService extends EventEmitter {
       return true;
     }
 
-    // Find the profile in the keyring list
-    const profileIndex = this.keyringList.findIndex((keyring) => keyring.id === profileId);
-    if (profileIndex === -1) {
-      throw new Error(`Profile with ID ${profileId} not found`);
-    }
-
     // Get the current profile ID
     const currentId = await returnCurrentProfileId();
 
@@ -1703,15 +1701,6 @@ class KeyringService extends EventEmitter {
       }
     }
 
-    // Clear all accounts from the keyring (if it's currently active)
-    if (this.currentKeyring.length > 0 && currentId === profileId) {
-      for (const keyring of this.currentKeyring) {
-        if (typeof keyring.removeAllAccounts === 'function') {
-          await keyring.removeAllAccounts();
-        }
-      }
-    }
-
     // Remove the profile from the keyring list
     this.keyringList.splice(profileIndex, 1);
 
@@ -1720,6 +1709,9 @@ class KeyringService extends EventEmitter {
     const updatedVault = vaultArray.filter((entry) => entry.id !== profileId);
     this.store.updateState({ vault: updatedVault });
 
+    // Persist the changes to storage using encryptVaultArray
+    await this.encryptVaultArray(this.keyringList, password);
+
     // Switch to another profile if needed
     if (needToSwitchKeyring) {
       const nextProfileId = keyringIds.find((id) => id !== profileId);
@@ -1727,9 +1719,6 @@ class KeyringService extends EventEmitter {
         this.currentKeyring = await this.switchKeyring(nextProfileId);
       }
     }
-
-    // Persist the changes to storage
-    await this.persistAllKeyrings(password);
 
     // Update the memory store
     await this._updateMemStoreKeyrings();
