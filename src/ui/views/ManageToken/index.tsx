@@ -76,13 +76,13 @@ const ManageToken = () => {
   const [isLoading, setLoading] = useState(false);
 
   const filter = (e1: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const word = e1.target.value;
+    const searchWord = e1.target.value;
 
-    if (word !== '') {
+    if (searchWord !== '') {
       const results = coins.filter((token) => {
         return (
-          token.name.toLowerCase().includes(keyword.toLowerCase()) ||
-          token.symbol.toLowerCase().includes(keyword)
+          token.name.toLowerCase().includes(searchWord.toLowerCase()) ||
+          token.symbol.toLowerCase().includes(searchWord)
         );
       });
       setFilteredTokenList(results);
@@ -90,7 +90,7 @@ const ManageToken = () => {
       setFilteredTokenList(coins);
     }
 
-    setKeyword(word);
+    setKeyword(searchWord);
   };
 
   return (
