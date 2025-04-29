@@ -107,6 +107,10 @@ interface FlowTokenResponse {
     domain: string;
     identifier: string;
   };
+  balancePath: {
+    domain: string;
+    identifier: string;
+  };
   identifier: string;
   isVerified: boolean;
   priceInUSD: string;
@@ -2309,7 +2313,9 @@ class OpenApiService {
           receiver: token.receiverPath
             ? `/${token.receiverPath.domain}/${token.receiverPath.identifier}`
             : '', // Provide a default value if receiverPath is null
-          balance: ``, // todo: not sure what this property is used for
+          balance: token.balancePath
+            ? `/${token.balancePath.domain}/${token.balancePath.identifier}`
+            : '', // Provide a default value if balancePath is null
         },
         logoURI: token.logoURI || token.logos?.items?.[0]?.file?.url || '',
         extensions: {
