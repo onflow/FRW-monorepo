@@ -1388,5 +1388,8 @@
   },
   "Could_not_enable_this_collection": {
     "message": "Не удалось включить эту коллекцию"
+  },
+  "Manage_Token": {
+    "message": "Управление токенами"
   }
 }

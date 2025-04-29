@@ -1388,5 +1388,8 @@
   },
   "Could_not_enable_this_collection": {
     "message": "このコレクションを有効にできませんでした"
+  },
+  "Manage_Token": {
+    "message": "トークンを管理"
   }
 }

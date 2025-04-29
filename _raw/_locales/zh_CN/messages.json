@@ -1388,5 +1388,8 @@
   },
   "Could_not_enable_this_collection": {
     "message": "无法启用此收藏"
+  },
+  "Manage_Token": {
+    "message": "管理代币"
   }
 }

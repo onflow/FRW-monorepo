@@ -1388,5 +1388,8 @@
   },
   "Currency__Description": {
     "message": "Choose the currency you want to use for displaying values"
+  },
+  "Manage_Token": {
+    "message": "Manage Token"
   }
 }

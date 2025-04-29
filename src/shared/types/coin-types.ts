@@ -29,6 +29,7 @@ export type CoinItem = {
   evm_address?: string;
   flowAddress?: string;
   flowIdentifier?: string;
+  isVerified?: boolean;
 };
 
 export type BalanceMap = {
@@ -37,3 +38,9 @@ export type BalanceMap = {
 
 // ExtendedTokenInfo is a intermediate type that combines Token information and pricing data.
 export type ExtendedTokenInfo = TokenInfo & CoinItem;
+
+export type TokenFilter = {
+  hideDust: boolean;
+  hideUnverified: boolean;
+  filteredIds: string[];
+};

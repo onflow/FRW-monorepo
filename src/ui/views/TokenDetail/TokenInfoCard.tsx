@@ -5,15 +5,20 @@ import { useHistory } from 'react-router-dom';
 import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
 import { type ActiveAccountType } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
+import buyIcon from '@/ui/FRWAssets/svg/buyIcon.svg';
+import receiveIcon from '@/ui/FRWAssets/svg/receiveIcon.svg';
+import sendIcon from '@/ui/FRWAssets/svg/sendIcon.svg';
+import swapIcon from '@/ui/FRWAssets/svg/swapIcon.svg';
 import { LLPrimaryButton } from '@/ui/FRWComponent';
-import iconMove from 'ui/FRWAssets/svg/moveIcon.svg';
+import { IconButton } from '@/ui/FRWComponent/IconButton';
+import iconMove from 'ui/FRWAssets/svg/move.svg';
 import { useCoins } from 'ui/hooks/useCoinHook';
 import { useWallet } from 'ui/utils';
 
 import IconChevronRight from '../../../components/iconfont/IconChevronRight';
+import VerifiedIcon from '../../FRWAssets/svg/verfied-check.svg';
 
 import { CurrencyValue } from './CurrencyValue';
-import { TokenValue } from './TokenValue';
 
 // import tips from 'ui/FRWAssets/svg/tips.svg';
 
@@ -25,6 +30,7 @@ const TokenInfoCard = ({
   tokenInfo,
   accountType,
   tokenId,
+  setIsOnRamp,
 }: {
   price: string;
   token: string;
@@ -33,6 +39,7 @@ const TokenInfoCard = ({
   tokenInfo: any;
   accountType: ActiveAccountType;
   tokenId: string;
+  setIsOnRamp: (isOnRamp: boolean) => void;
 }) => {
   const wallet = useWallet();
   const history = useHistory();
@@ -112,7 +119,7 @@ const TokenInfoCard = ({
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'start',
-        px: '18px',
+        px: '11px',
         pb: '30px',
         mt: '12px',
         minHeight: '230px',
@@ -136,57 +143,81 @@ const TokenInfoCard = ({
                 'https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.1654653399040a61.FlowToken/logo.svg'
               }
             ></img>
-            <ButtonBase onClick={() => window.open(getUrl(data), '_blank')}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  px: '8px',
-                  py: '4px',
-                  marginRight: '4px',
-                  borderRadius: '8px',
-                  alignSelf: 'end',
-                }}
-              >
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontWeight: '550',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    maxWidth: '130px',
-                  }}
-                >
-                  {data.name}
-                </Typography>
-                <IconChevronRight size={20} />
-              </Box>
-            </ButtonBase>
-
-            <Box sx={{ flex: 1 }} />
-            {canMoveChild && (
-              <ButtonBase onClick={() => toSend()}>
+            <Box sx={{ display: 'flex', alignItems: 'end' }}>
+              <ButtonBase onClick={() => window.open(getUrl(data), '_blank')}>
                 <Box
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
-                    background: 'rgba(65, 204, 93, 0.16)',
                     gap: '4px',
                     px: '8px',
                     py: '4px',
+                    marginRight: '2px',
                     borderRadius: '8px',
                     alignSelf: 'end',
+                    background: 'linear-gradient(to right, #000000, #282828)',
                   }}
                 >
-                  <Typography sx={{ fontWeight: 'normal', color: '#41CC5D' }}>
-                    {chrome.i18n.getMessage('Move')}
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: '550',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      maxWidth: '90px',
+                    }}
+                  >
+                    {data.name}
                   </Typography>
-                  <CardMedia
-                    sx={{ width: '12px', height: '12px', marginLeft: '4px' }}
-                    image={iconMove}
+                  <IconChevronRight size={20} />
+                </Box>
+              </ButtonBase>
+              {data.isVerified && (
+                <Box
+                  sx={{ display: 'flex', alignItems: 'center', height: '40px', marginRight: '4px' }}
+                >
+                  <img
+                    src={VerifiedIcon}
+                    alt="Verified"
+                    style={{ width: '24px', height: '24px' }}
                   />
+                </Box>
+              )}
+            </Box>
+
+            <Box sx={{ flex: 1 }} />
+            {canMoveChild && (
+              <ButtonBase onClick={() => toSend()}>
+                <Box sx={{ display: 'flex', alignItems: 'center', height: '46px' }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      background: 'rgba(65, 204, 93, 0.16)',
+                      gap: '4px',
+                      px: '8px',
+                      // py: '4px',
+                      height: '24px',
+                      borderRadius: '8px',
+                      alignSelf: 'end',
+                    }}
+                  >
+                    <Typography sx={{ fontWeight: '400', fontSize: '12px', color: '#41CC5D' }}>
+                      {chrome.i18n.getMessage('Move')}
+                    </Typography>
+                    <img
+                      src={iconMove}
+                      alt="Move Icon"
+                      style={{
+                        width: '14px',
+                        height: '14px',
+                        marginLeft: '4px',
+                        filter:
+                          'invert(54%) sepia(78%) saturate(366%) hue-rotate(85deg) brightness(95%) contrast(92%)',
+                      }}
+                    />
+                  </Box>
                 </Box>
               </ButtonBase>
             )}
@@ -230,34 +261,40 @@ const TokenInfoCard = ({
               <CurrencyValue value={tokenInfo?.total} />
             </Box>
           </Typography>
-          <Box sx={{ display: 'flex', gap: '12px', height: '36px', mt: '24px', width: '100%' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'space-between',
+              mt: '24px',
+              width: '100%',
+            }}
+          >
             {(accountType === 'main' || accountType === 'evm') && (
-              <LLPrimaryButton
-                sx={{
-                  borderRadius: '8px',
-                  height: '36px',
-                  fontSize: '14px',
-                  color: 'primary.contrastText',
-                  fontWeight: '600',
-                }}
-                disabled={!accessible}
+              <IconButton
+                messageKey="Send"
                 onClick={toSend}
-                label={chrome.i18n.getMessage('Send')}
-                fullWidth
+                icon={sendIcon}
+                customSx={{ width: '42px', height: '42px' }}
               />
             )}
-            <LLPrimaryButton
-              sx={{
-                borderRadius: '8px',
-                height: '36px',
-                fontSize: '14px',
-                color: 'primary.contrastText',
-                fontWeight: '600',
-              }}
-              disabled={!accessible}
+            <IconButton
+              messageKey="Receive"
               onClick={() => history.push('/dashboard/wallet/deposit')}
-              label={chrome.i18n.getMessage('Deposit')}
-              fullWidth
+              icon={receiveIcon}
+              customSx={{ width: '42px', height: '42px' }}
+            />
+            <IconButton
+              messageKey="Swap"
+              onClick={() => window.open('https://app.increment.fi/swap', '_blank')}
+              icon={swapIcon}
+              customSx={{ width: '42px', height: '42px' }}
+            />
+            <IconButton
+              messageKey="Buy"
+              onClick={() => setIsOnRamp(true)}
+              icon={buyIcon}
+              customSx={{ width: '42px', height: '42px' }}
             />
           </Box>
         </>
