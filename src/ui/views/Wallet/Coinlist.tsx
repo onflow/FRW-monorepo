@@ -30,27 +30,10 @@ const ActionButtons = ({ managePath, createPath }) => {
     <Box sx={{ display: 'flex', px: '12px', pt: '4px' }}>
       <Box sx={{ flexGrow: 1 }} />
       <IconButton onClick={() => history.push(managePath)}>
-        <Typography
-          variant="body1"
-          sx={{
-            fontSize: 14,
-            fontWeight: '600',
-            color: 'rgba(255, 255, 255, 0.40)',
-            borderRadius: '12px',
-            background: '#323234',
-            height: '24px',
-            padding: '0 8px',
-            transition: 'opacity 0.3s ease',
-            '&:hover': {
-              opacity: 0.8,
-            },
-          }}
-        >
-          Manage
-        </Typography>
+        <img src={TablerIcon} alt="Tabler" style={{ width: '28px', height: '28px' }} />
       </IconButton>
-      <IconButton onClick={() => history.push(createPath)}>
-        <IconCreate size={16} color="#787878" />
+      <IconButton onClick={() => history.push(createPath)} sx={{ paddingX: '13px' }}>
+        <IconCreate size={18} color="#787878" />
       </IconButton>
     </Box>
   );
@@ -326,33 +309,6 @@ const CoinList = ({
               );
             })}
       </List>
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          mb: '13px',
-          gap: '4px',
-        }}
-      >
-        <IconButton onClick={() => history.push('dashboard/managetoken')}>
-          <img src={TablerIcon} alt="Tabler" style={{ width: '22px', height: '22px' }} />
-          <Typography
-            variant="body1"
-            sx={{
-              color: 'rgba(255, 255, 255, 0.80)',
-              textAlign: 'center',
-              fontFamily: 'Inter',
-              fontSize: '14px',
-              fontStyle: 'normal',
-              fontWeight: '400',
-              lineHeight: '32px',
-            }}
-          >
-            Manage token list
-          </Typography>
-        </IconButton>
-      </Box>
     </>
   );
 };

@@ -8,9 +8,10 @@ import { isValidEthereumAddress } from '@/shared/utils/address';
 import buyIcon from '@/ui/FRWAssets/svg/buyIcon.svg';
 import receiveIcon from '@/ui/FRWAssets/svg/receiveIcon.svg';
 import sendIcon from '@/ui/FRWAssets/svg/sendIcon.svg';
+import swapIcon from '@/ui/FRWAssets/svg/swapIcon.svg';
 import { LLPrimaryButton } from '@/ui/FRWComponent';
 import { IconButton } from '@/ui/FRWComponent/IconButton';
-import iconMove from 'ui/FRWAssets/svg/moveIcon.svg';
+import iconMove from 'ui/FRWAssets/svg/move.svg';
 import { useCoins } from 'ui/hooks/useCoinHook';
 import { useWallet } from 'ui/utils';
 
@@ -118,7 +119,7 @@ const TokenInfoCard = ({
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'start',
-        px: '18px',
+        px: '11px',
         pb: '30px',
         mt: '12px',
         minHeight: '230px',
@@ -188,32 +189,35 @@ const TokenInfoCard = ({
             <Box sx={{ flex: 1 }} />
             {canMoveChild && (
               <ButtonBase onClick={() => toSend()}>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    background: 'rgba(65, 204, 93, 0.16)',
-                    gap: '4px',
-                    px: '8px',
-                    py: '4px',
-                    borderRadius: '8px',
-                    alignSelf: 'end',
-                  }}
-                >
-                  <Typography sx={{ fontWeight: 'normal', color: '#41CC5D' }}>
-                    {chrome.i18n.getMessage('Move')}
-                  </Typography>
-                  <img
-                    src={iconMove}
-                    alt="Move Icon"
-                    style={{
-                      width: '14px',
-                      height: '14px',
-                      marginLeft: '4px',
-                      filter:
-                        'invert(54%) sepia(78%) saturate(366%) hue-rotate(85deg) brightness(95%) contrast(92%)',
+                <Box sx={{ display: 'flex', alignItems: 'center', height: '46px' }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      background: 'rgba(65, 204, 93, 0.16)',
+                      gap: '4px',
+                      px: '8px',
+                      // py: '4px',
+                      height: '24px',
+                      borderRadius: '8px',
+                      alignSelf: 'end',
                     }}
-                  />
+                  >
+                    <Typography sx={{ fontWeight: '400', fontSize: '12px', color: '#41CC5D' }}>
+                      {chrome.i18n.getMessage('Move')}
+                    </Typography>
+                    <img
+                      src={iconMove}
+                      alt="Move Icon"
+                      style={{
+                        width: '14px',
+                        height: '14px',
+                        marginLeft: '4px',
+                        filter:
+                          'invert(54%) sepia(78%) saturate(366%) hue-rotate(85deg) brightness(95%) contrast(92%)',
+                      }}
+                    />
+                  </Box>
                 </Box>
               </ButtonBase>
             )}
@@ -275,9 +279,15 @@ const TokenInfoCard = ({
               />
             )}
             <IconButton
-              messageKey="Deposit"
+              messageKey="Receive"
               onClick={() => history.push('/dashboard/wallet/deposit')}
               icon={receiveIcon}
+              customSx={{ width: '42px', height: '42px' }}
+            />
+            <IconButton
+              messageKey="Swap"
+              onClick={() => window.open('https://app.increment.fi/swap', '_blank')}
+              icon={swapIcon}
               customSx={{ width: '42px', height: '42px' }}
             />
             <IconButton

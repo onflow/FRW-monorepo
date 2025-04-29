@@ -1,4 +1,5 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import HelpOutlineRoundedIcon from '@mui/icons-material/HelpOutlineRounded';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   List,
@@ -14,6 +15,7 @@ import {
   Typography,
   Switch,
   IconButton,
+  Tooltip,
 } from '@mui/material';
 import { StyledEngineProvider } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
@@ -23,6 +25,7 @@ import { useHistory } from 'react-router-dom';
 // import { useHistory } from 'react-router-dom';
 import IconCreate from '@/components/iconfont/IconCreate';
 import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
+import VerifiedIcon from '@/ui/FRWAssets/svg/verfied-check.svg';
 import TokenItem from '@/ui/FRWComponent/TokenLists/TokenItem';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useCoins } from 'ui/hooks/useCoinHook';
@@ -136,64 +139,105 @@ const ManageToken = () => {
               </Grid>
             )}
           </Grid>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              padding: '15px',
+              borderRadius: '16px',
+              gap: '5px',
+              margin: '0 18px 22px',
+              backgroundColor: 'rgba(255, 255, 255, 0.10)',
+            }}
+          >
+            <Typography
+              variant="body1"
+              sx={{
+                color: 'rgba(255, 255, 255, 0.6)',
+                fontWeight: 600,
+                fontSize: '14px',
+              }}
+            >
+              Filters
+            </Typography>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: '10px',
+              }}
+            >
+              <Typography
+                variant="body1"
+                sx={{
+                  color: '#FFFFFF',
+                  fontSize: '14px',
+                  fontWeight: 400,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}
+              >
+                {`Hide Dust Tokens `}
+                <Tooltip title="Tokens with less than 1$ USD balance">
+                  <HelpOutlineRoundedIcon
+                    sx={{ color: 'rgba(255, 255, 255, 0.6)', width: '16px', height: '16px' }}
+                  />
+                </Tooltip>
+              </Typography>
+
+              <Switch
+                checked={tokenFilter.hideDust}
+                onChange={(event) =>
+                  updateTokenFilter({ ...tokenFilter, hideDust: event.target.checked })
+                }
+              />
+            </Box>
+
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: '10px',
+              }}
+            >
+              <Typography
+                variant="body1"
+                sx={{
+                  color: '#FFFFFF',
+                  fontSize: '14px',
+                  fontWeight: 400,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}
+              >
+                Only show verified tokens
+                <img src={VerifiedIcon} alt="Verified" style={{ width: '16px', height: '16px' }} />
+              </Typography>
+              <Switch
+                checked={tokenFilter.hideUnverified}
+                onChange={(event) =>
+                  updateTokenFilter({ ...tokenFilter, hideUnverified: event.target.checked })
+                }
+              />
+            </Box>
+          </Box>
           <Typography
             variant="body1"
             sx={{
               color: 'rgba(255, 255, 255, 0.6)',
-              margin: '0 18px',
               fontWeight: 600,
-              fontSize: '16px',
+              fontSize: '14px',
+              margin: '0 18px 10px',
             }}
           >
-            Filters
+            Tokens
           </Typography>
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              gap: '10px',
-              margin: '0 18px',
-            }}
-          >
-            <Typography
-              variant="body1"
-              sx={{ color: '#FFFFFF', fontSize: '14px', fontWeight: 400 }}
-            >
-              {`Hide Dust Tokens (<1$ USD Balance)`}
-            </Typography>
-            <Switch
-              checked={tokenFilter.hideDust}
-              onChange={(event) =>
-                updateTokenFilter({ ...tokenFilter, hideDust: event.target.checked })
-              }
-            />
-          </Box>
-
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              gap: '10px',
-              margin: '0 18px',
-            }}
-          >
-            <Typography
-              variant="body1"
-              sx={{ color: '#FFFFFF', fontSize: '14px', fontWeight: 400 }}
-            >
-              Hide Unverified Tokens
-            </Typography>
-            <Switch
-              checked={tokenFilter.hideUnverified}
-              onChange={(event) =>
-                updateTokenFilter({ ...tokenFilter, hideUnverified: event.target.checked })
-              }
-            />
-          </Box>
 
           <Input
             type="search"
@@ -212,7 +256,7 @@ const ManageToken = () => {
               border: 'none',
               color: '#FFFFFF',
               '& input': {
-                padding: '8px 16px',
+                padding: '8px',
                 '&::placeholder': {
                   color: 'rgba(255, 255, 255, 0.6)',
                   opacity: 1,

@@ -10,6 +10,8 @@ import {
   Skeleton,
   CardContent,
   Button,
+  Switch,
+  Typography,
 } from '@mui/material';
 import { StyledEngineProvider } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
@@ -154,15 +156,9 @@ const TokenList = () => {
     setLoading(false);
   }, [filters, getFilteredCollections]);
 
-  const handleVerifiedToggle = () => {
-    const newFilter = isVerifiedActive ? 'all' : 'verified';
-    setFilter(newFilter);
-    setVerifiedActive(!isVerifiedActive);
-  };
-
-  const handleAllClick = () => {
-    setFilter('all');
-    setVerifiedActive(false);
+  const handleToggle = () => {
+    setVerifiedActive((prev) => !prev);
+    setFilter((prev) => (prev === 'all' ? 'verified' : 'all'));
   };
 
   return (
@@ -210,88 +206,32 @@ const TokenList = () => {
           <Box
             sx={{
               display: 'flex',
-              justifyContent: 'flex-start',
+              justifyContent: 'space-between',
               alignItems: 'center',
               padding: '16px',
               gap: '10px',
             }}
           >
-            {isVerifiedActive && (
-              <Button
-                onClick={handleVerifiedToggle}
-                sx={{
-                  display: 'inline-flex',
-                  height: '36px',
-                  padding: '9px 12px',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  gap: '10px',
-                  flexShrink: 0,
-                  borderRadius: '36px',
-                  border: `1.5px solid ${isVerifiedActive ? '#41CC5D' : '#FFFFFF66'}`,
-                  backgroundColor: 'transparent',
-                  color: isVerifiedActive ? '#41CC5D' : '#FFFFFF66',
-                  '&:hover': {
-                    backgroundColor: 'transparent',
-                    color: '#41CC5D',
-                  },
-                }}
-              >
-                <img src={VerifiedIcon} alt="Verified" style={{ width: '16px', height: '16px' }} />
-                Verified
-                <img src={CloseIcon} alt="Close" style={{ width: '8px', height: '8px' }} />
-              </Button>
-            )}
-
-            <Button
-              onClick={handleAllClick}
+            <Typography
+              variant="body1"
               sx={{
-                display: 'inline-flex',
-                height: '36px',
-                padding: '9px 12px',
-                justifyContent: 'center',
+                color: '#FFFFFF',
+                fontSize: '14px',
+                fontWeight: 400,
+                display: 'flex',
                 alignItems: 'center',
-                gap: '10px',
-                flexShrink: 0,
-                borderRadius: '36px',
-                border: `1.5px solid ${filters === 'all' ? '#41CC5D' : '#FFFFFF66'}`,
-                backgroundColor: 'transparent',
-                color: filters === 'all' ? '#41CC5D' : '#FFFFFF66',
-                '&:hover': {
-                  backgroundColor: 'transparent',
-                  color: '#41CC5D',
-                },
+                gap: '4px',
               }}
             >
-              All
-            </Button>
-
-            {!isVerifiedActive && (
-              <Button
-                onClick={handleVerifiedToggle}
-                sx={{
-                  display: 'inline-flex',
-                  height: '36px',
-                  padding: '9px 12px',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  gap: '10px',
-                  flexShrink: 0,
-                  borderRadius: '36px',
-                  border: `1.5px solid ${isVerifiedActive ? '#41CC5D' : '#FFFFFF66'}`,
-                  backgroundColor: 'transparent',
-                  color: isVerifiedActive ? '#41CC5D' : '#FFFFFF66',
-                  '&:hover': {
-                    backgroundColor: 'transparent',
-                    color: '#41CC5D',
-                  },
-                }}
-              >
-                <img src={VerifiedIcon} alt="Verified" style={{ width: '16px', height: '16px' }} />
-                Verified
-                <img src={CloseIcon} alt="Close" style={{ width: '8px', height: '8px' }} />
-              </Button>
-            )}
+              Only show verified tokens
+              <img src={VerifiedIcon} alt="Verified" style={{ width: '16px', height: '16px' }} />
+            </Typography>
+            <Switch
+              checked={isVerifiedActive}
+              onChange={handleToggle}
+              color="primary"
+              inputProps={{ 'aria-label': 'Toggle Verified' }}
+            />
           </Box>
 
           {isLoading ? (

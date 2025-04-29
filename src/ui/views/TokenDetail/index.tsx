@@ -220,17 +220,18 @@ const TokenDetail = () => {
               sx={{
                 display: 'flex',
                 alignItems: 'center',
-                height: '40px',
                 justifyContent: 'space-between',
                 gap: '6px',
-                px: '8px',
+                padding: '16px',
+                background: 'rgba(255, 255, 255, 0.08)',
+                borderRadius: '12px',
               }}
             >
               <Box sx={{ position: 'relative', display: 'inline-block' }}>
-                <img src={WarningIcon} alt="Verified" style={{ width: '24px', height: '24px' }} />
+                <img src={WarningIcon} alt="Verified" style={{ width: '32px', height: '32px' }} />
               </Box>
               <Typography
-                sx={{ fontSize: '12px', fontWeight: 400, color: 'rgba(255, 255, 255, 0.40)' }}
+                sx={{ fontSize: '14px', fontWeight: 500, color: 'rgba(255, 255, 255, 0.80)' }}
               >
                 This is an unverified token, only interact with tokens you trust.{' '}
                 <Typography
@@ -238,12 +239,12 @@ const TokenDetail = () => {
                   sx={{
                     textDecoration: 'underline',
                     cursor: 'pointer',
-                    fontSize: '12px',
+                    fontSize: '14px',
                     fontWeight: 400,
-                    color: 'rgba(255, 255, 255, 0.40)',
+                    color: 'rgba(255, 255, 255, 0.80)',
                   }}
                 >
-                  Read more.
+                  View more.
                 </Typography>
               </Typography>
             </Box>
