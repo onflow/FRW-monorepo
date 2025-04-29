@@ -4,7 +4,7 @@ import SignClient from '@walletconnect/sign-client';
 import { type SessionTypes } from '@walletconnect/types';
 import * as bip39 from 'bip39';
 import HDWallet from 'ethereum-hdwallet';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import {
@@ -64,6 +64,8 @@ const Sync = () => {
   const [secondLine, setSecondLine] = useState<string>('');
   const [isSwitchingAccount, setIsSwitchingAccount] = useState<boolean>(true);
   const [isAddWallet, setIsAddWallet] = useState<boolean>(false);
+
+  const isWalletInitialized = useRef(false);
 
   useEffect(() => {
     const checkWalletStatus = async () => {
@@ -238,10 +240,16 @@ const Sync = () => {
 
   // 5. Main Initialization Effect
   useEffect(() => {
+    if (isWalletInitialized.current) {
+      console.log('Debug: Wallet already initialized, skipping');
+      return;
+    }
     let wallet: SignClient | null = null;
 
     const createWeb3Wallet = async () => {
       try {
+        isWalletInitialized.current = true;
+
         // Initialize WalletConnect
         const extensionOrigin = chrome.runtime.id
           ? `chrome-extension://${chrome.runtime.id}`
@@ -287,6 +295,7 @@ const Sync = () => {
         }
       } catch (error) {
         console.error('Error in wallet setup:', error);
+        isWalletInitialized.current = false; // Reset on error
       }
     };
 
