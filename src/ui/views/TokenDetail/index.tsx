@@ -203,18 +203,17 @@ const TokenDetail = () => {
               </Typography>
             </Box>
           )}
-          {tokenInfo && (
-            <TokenInfoCard
-              price={price}
-              token={token}
-              setAccessible={setAccessible}
-              accessible={accessible}
-              tokenInfo={tokenInfo}
-              accountType={accountType}
-              tokenId={tokenId}
-              setIsOnRamp={setIsOnRamp}
-            />
-          )}
+          <TokenInfoCard
+            price={price}
+            token={token}
+            setAccessible={setAccessible}
+            accessible={accessible}
+            tokenInfo={tokenInfo}
+            accountType={accountType}
+            tokenId={tokenId}
+            setIsOnRamp={setIsOnRamp}
+          />
+
           {tokenInfo && !tokenInfo.isVerified && (
             <Box
               sx={{

@@ -65,7 +65,7 @@ const Header = ({ _loading = false }) => {
     mainAddress,
     currentWallet,
     evmWallet,
-    currentWalletIndex,
+    parentWalletIndex: currentWalletIndex,
     childAccounts,
     walletList,
     evmLoading,

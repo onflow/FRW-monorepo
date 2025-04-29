@@ -1,8 +1,8 @@
-import { Typography, Box, ButtonBase, CardMedia } from '@mui/material';
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { Typography, Box, ButtonBase, CardMedia, Skeleton } from '@mui/material';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
+import { type CoinItem, type ExtendedTokenInfo } from '@/shared/types/coin-types';
 import { type ActiveAccountType } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import buyIcon from '@/ui/FRWAssets/svg/buyIcon.svg';
@@ -11,6 +11,7 @@ import sendIcon from '@/ui/FRWAssets/svg/sendIcon.svg';
 import swapIcon from '@/ui/FRWAssets/svg/swapIcon.svg';
 import { LLPrimaryButton } from '@/ui/FRWComponent';
 import { IconButton } from '@/ui/FRWComponent/IconButton';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import iconMove from 'ui/FRWAssets/svg/move.svg';
 import { useCoins } from 'ui/hooks/useCoinHook';
 import { useWallet } from 'ui/utils';
@@ -36,61 +37,27 @@ const TokenInfoCard = ({
   token: string;
   setAccessible: (accessible: boolean) => void;
   accessible: boolean;
-  tokenInfo: any;
+  tokenInfo: CoinItem | undefined;
   accountType: ActiveAccountType;
   tokenId: string;
   setIsOnRamp: (isOnRamp: boolean) => void;
 }) => {
-  const wallet = useWallet();
   const history = useHistory();
-  const isMounted = useRef(true);
   const { coins } = useCoins();
-  const [balance, setBalance] = useState<string>('0');
-  const [data, setData] = useState<ExtendedTokenInfo | undefined>(undefined);
 
-  const [canMoveChild, setCanMoveChild] = useState(true);
+  const extendedTokenInfo: ExtendedTokenInfo | undefined = useMemo(
+    () => coins.find((coin) => coin.id.toLowerCase() === tokenId.toLowerCase()),
+    [coins, tokenId]
+  );
 
-  useEffect(() => {
-    const checkPermission = async () => {
-      const result = await wallet.checkCanMoveChild();
-      if (Number(balance) > 0 || !tokenInfo.custom) {
-        setCanMoveChild(result);
-      } else {
-        setCanMoveChild(false);
-      }
-    };
-
-    checkPermission();
-  }, [balance, tokenInfo.custom, wallet]);
+  const balance = extendedTokenInfo?.balance;
+  const { canMoveToChild } = useProfiles();
 
   const toSend = () => {
-    history.push(`/dashboard/token/${tokenInfo.symbol}/send`);
+    history.push(`/dashboard/token/${tokenInfo?.symbol}/send`);
   };
 
-  const getActive = useCallback(async () => {
-    const timerId = setTimeout(async () => {
-      if (!isMounted.current) return; // Early exit if component is not mounted
-      setAccessible(true);
-      let thisCoin = coins.find((coin) => coin.id.toLowerCase() === tokenId.toLowerCase());
-
-      // If not found by ID, try to find by unit and token
-      if (!thisCoin && token) {
-        thisCoin = coins.find((coin) => coin.unit?.toLowerCase() === token.toLowerCase());
-      }
-      setData(thisCoin!);
-      const balance = thisCoin?.balance;
-      if (balance) {
-        setBalance(balance);
-      }
-    }, 400);
-
-    return () => {
-      isMounted.current = false; // Mark component as unmounted
-      clearTimeout(timerId); // Clear the timer
-    };
-  }, [setAccessible, token, tokenId, coins]);
-
-  const getUrl = (data) => {
+  const getUrl = (data: ExtendedTokenInfo) => {
     if (data.extensions?.website?.trim()) {
       return data.extensions.website;
     }
@@ -101,15 +68,6 @@ const TokenInfoCard = ({
     }
     return `https://flowscan.io/account/${data.address}/tokens`;
   };
-
-  useEffect(() => {
-    isMounted.current = true;
-    getActive();
-
-    return () => {
-      isMounted.current = false;
-    };
-  }, [token, getActive]);
 
   return (
     <Box
@@ -126,11 +84,9 @@ const TokenInfoCard = ({
         borderRadius: '12px',
       }}
     >
-      {data && (
-        <>
-          <Box
-            sx={{ mt: '-12px', display: 'flex', justifyContent: 'space-between', width: '100%' }}
-          >
+      <>
+        <Box sx={{ mt: '-12px', display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+          {extendedTokenInfo?.logoURI ? (
             <img
               style={{
                 height: '64px',
@@ -139,25 +95,31 @@ const TokenInfoCard = ({
                 borderRadius: '32px',
               }}
               src={
-                data.logoURI ||
+                extendedTokenInfo.logoURI ||
                 'https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.1654653399040a61.FlowToken/logo.svg'
               }
             ></img>
-            <Box sx={{ display: 'flex', alignItems: 'end' }}>
-              <ButtonBase onClick={() => window.open(getUrl(data), '_blank')}>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    px: '8px',
-                    py: '4px',
-                    marginRight: '2px',
-                    borderRadius: '8px',
-                    alignSelf: 'end',
-                    background: 'linear-gradient(to right, #000000, #282828)',
-                  }}
-                >
+          ) : (
+            <Skeleton variant="circular" width={64} height={64} />
+          )}
+          <Box sx={{ display: 'flex', alignItems: 'end' }}>
+            <ButtonBase
+              onClick={() => extendedTokenInfo && window.open(getUrl(extendedTokenInfo), '_blank')}
+            >
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  px: '8px',
+                  py: '4px',
+                  marginRight: '2px',
+                  borderRadius: '8px',
+                  alignSelf: 'end',
+                  background: 'linear-gradient(to right, #000000, #282828)',
+                }}
+              >
+                <>
                   <Typography
                     variant="h6"
                     sx={{
@@ -168,137 +130,137 @@ const TokenInfoCard = ({
                       maxWidth: '90px',
                     }}
                   >
-                    {data.name}
+                    {extendedTokenInfo ? (
+                      extendedTokenInfo?.name
+                    ) : (
+                      <Skeleton variant="text" width={90} />
+                    )}
                   </Typography>
-                  <IconChevronRight size={20} />
-                </Box>
-              </ButtonBase>
-              {data.isVerified && (
+                </>
+                <IconChevronRight size={20} />
+              </Box>
+            </ButtonBase>
+            {extendedTokenInfo?.isVerified && (
+              <Box
+                sx={{ display: 'flex', alignItems: 'center', height: '40px', marginRight: '4px' }}
+              >
+                <img src={VerifiedIcon} alt="Verified" style={{ width: '24px', height: '24px' }} />
+              </Box>
+            )}
+          </Box>
+
+          <Box sx={{ flex: 1 }} />
+          {canMoveToChild && balance && (
+            <ButtonBase onClick={() => toSend()}>
+              <Box sx={{ display: 'flex', alignItems: 'center', height: '46px' }}>
                 <Box
-                  sx={{ display: 'flex', alignItems: 'center', height: '40px', marginRight: '4px' }}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    background: 'rgba(65, 204, 93, 0.16)',
+                    gap: '4px',
+                    px: '8px',
+                    // py: '4px',
+                    height: '24px',
+                    borderRadius: '8px',
+                    alignSelf: 'end',
+                  }}
                 >
+                  <Typography sx={{ fontWeight: '400', fontSize: '12px', color: '#41CC5D' }}>
+                    {chrome.i18n.getMessage('Move')}
+                  </Typography>
                   <img
-                    src={VerifiedIcon}
-                    alt="Verified"
-                    style={{ width: '24px', height: '24px' }}
+                    src={iconMove}
+                    alt="Move Icon"
+                    style={{
+                      width: '14px',
+                      height: '14px',
+                      marginLeft: '4px',
+                      filter:
+                        'invert(54%) sepia(78%) saturate(366%) hue-rotate(85deg) brightness(95%) contrast(92%)',
+                    }}
                   />
                 </Box>
-              )}
-            </Box>
-
-            <Box sx={{ flex: 1 }} />
-            {canMoveChild && (
-              <ButtonBase onClick={() => toSend()}>
-                <Box sx={{ display: 'flex', alignItems: 'center', height: '46px' }}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      background: 'rgba(65, 204, 93, 0.16)',
-                      gap: '4px',
-                      px: '8px',
-                      // py: '4px',
-                      height: '24px',
-                      borderRadius: '8px',
-                      alignSelf: 'end',
-                    }}
-                  >
-                    <Typography sx={{ fontWeight: '400', fontSize: '12px', color: '#41CC5D' }}>
-                      {chrome.i18n.getMessage('Move')}
-                    </Typography>
-                    <img
-                      src={iconMove}
-                      alt="Move Icon"
-                      style={{
-                        width: '14px',
-                        height: '14px',
-                        marginLeft: '4px',
-                        filter:
-                          'invert(54%) sepia(78%) saturate(366%) hue-rotate(85deg) brightness(95%) contrast(92%)',
-                      }}
-                    />
-                  </Box>
-                </Box>
-              </ButtonBase>
-            )}
-          </Box>
-          <Box
+              </Box>
+            </ButtonBase>
+          )}
+        </Box>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'baseline',
+            gap: '6px',
+            pt: '18px',
+            width: '100%',
+          }}
+        >
+          <Typography
+            variant="body1"
             sx={{
-              display: 'flex',
-              alignItems: 'baseline',
-              gap: '6px',
-              pt: '18px',
-              width: '100%',
+              fontWeight: '700',
+              fontSize: 'clamp(16px, 5vw, 32px)',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
             }}
           >
-            <Typography
-              variant="body1"
-              sx={{
-                fontWeight: '700',
-                fontSize: 'clamp(16px, 5vw, 32px)',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {balance}
-            </Typography>
-            <Typography
-              variant="caption"
-              color="neutral2.main"
-              sx={{
-                fontWeight: 'medium',
-                fontSize: '14px',
-                textTransform: 'uppercase',
-                flexShrink: 0,
-              }}
-            >
-              {data.symbol}
-            </Typography>
-          </Box>
-          <Typography variant="body1" color="text.secondary" sx={{ fontSize: '16px' }}>
-            <Box component="span" sx={{ marginRight: '0.25rem' }}>
-              <CurrencyValue value={tokenInfo?.total} />
-            </Box>
+            {balance !== undefined ? balance : <Skeleton variant="text" width={100} />}
           </Typography>
-          <Box
+          <Typography
+            variant="caption"
+            color="neutral2.main"
             sx={{
-              display: 'flex',
-              gap: '12px',
-              justifyContent: 'space-between',
-              mt: '24px',
-              width: '100%',
+              fontWeight: 'medium',
+              fontSize: '14px',
+              textTransform: 'uppercase',
+              flexShrink: 0,
             }}
           >
-            {(accountType === 'main' || accountType === 'evm') && (
-              <IconButton
-                messageKey="Send"
-                onClick={toSend}
-                icon={sendIcon}
-                customSx={{ width: '42px', height: '42px' }}
-              />
-            )}
-            <IconButton
-              messageKey="Receive"
-              onClick={() => history.push('/dashboard/wallet/deposit')}
-              icon={receiveIcon}
-              customSx={{ width: '42px', height: '42px' }}
-            />
-            <IconButton
-              messageKey="Swap"
-              onClick={() => window.open('https://app.increment.fi/swap', '_blank')}
-              icon={swapIcon}
-              customSx={{ width: '42px', height: '42px' }}
-            />
-            <IconButton
-              messageKey="Buy"
-              onClick={() => setIsOnRamp(true)}
-              icon={buyIcon}
-              customSx={{ width: '42px', height: '42px' }}
-            />
+            {extendedTokenInfo ? extendedTokenInfo?.symbol : <Skeleton variant="text" width={50} />}
+          </Typography>
+        </Box>
+        <Typography variant="body1" color="text.secondary" sx={{ fontSize: '16px' }}>
+          <Box component="span" sx={{ marginRight: '0.25rem' }}>
+            <CurrencyValue value={tokenInfo?.total ?? ''} />
           </Box>
-        </>
-      )}
+        </Typography>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: '12px',
+            justifyContent: 'space-between',
+            mt: '24px',
+            width: '100%',
+          }}
+        >
+          {(accountType === 'main' || accountType === 'evm') && (
+            <IconButton
+              messageKey="Send"
+              onClick={toSend}
+              icon={sendIcon}
+              customSx={{ width: '42px', height: '42px' }}
+            />
+          )}
+          <IconButton
+            messageKey="Receive"
+            onClick={() => history.push('/dashboard/wallet/deposit')}
+            icon={receiveIcon}
+            customSx={{ width: '42px', height: '42px' }}
+          />
+          <IconButton
+            messageKey="Swap"
+            onClick={() => window.open('https://app.increment.fi/swap', '_blank')}
+            icon={swapIcon}
+            customSx={{ width: '42px', height: '42px' }}
+          />
+          <IconButton
+            messageKey="Buy"
+            onClick={() => setIsOnRamp(true)}
+            icon={buyIcon}
+            customSx={{ width: '42px', height: '42px' }}
+          />
+        </Box>
+      </>
     </Box>
   );
 };

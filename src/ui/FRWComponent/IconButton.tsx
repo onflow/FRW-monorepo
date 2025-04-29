@@ -30,6 +30,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
       <Button
         color="info3"
         variant="contained"
+        data-testid={`${messageKey.toLowerCase()}-button`}
         sx={{
           height: '38px',
           width: '38px',
