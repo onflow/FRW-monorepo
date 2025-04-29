@@ -1,4 +1,4 @@
-import { Typography, CardMedia } from '@mui/material';
+import { Typography, CardMedia, Skeleton } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { Box } from '@mui/system';
 import React from 'react';
@@ -36,7 +36,6 @@ interface SyncQrProps {
 
 const SyncQr = ({ uri, loadingString, secondLine }: SyncQrProps) => {
   const classes = useStyles();
-
   return (
     <>
       <Box
@@ -106,18 +105,18 @@ const SyncQr = ({ uri, loadingString, secondLine }: SyncQrProps) => {
             width: '347px',
           }}
         >
-          {uri && (
-            <Box>
-              <Box sx={{ position: 'relative' }}>
-                <Box
-                  sx={{
-                    borderRadius: '24px',
-                    width: '277px',
-                    height: '277px',
-                    display: 'flex',
-                    overflow: 'hidden',
-                  }}
-                >
+          <Box>
+            <Box sx={{ position: 'relative' }}>
+              <Box
+                sx={{
+                  borderRadius: '24px',
+                  width: '277px',
+                  height: '277px',
+                  display: 'flex',
+                  overflow: 'hidden',
+                }}
+              >
+                {uri ? (
                   <QRCode
                     size={237}
                     style={{
@@ -132,65 +131,67 @@ const SyncQr = ({ uri, loadingString, secondLine }: SyncQrProps) => {
                     eyeRadius={24}
                     quietZone={20}
                   />
-                </Box>
-                {loadingString && (
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      width: '277px',
-                      height: '277px',
-                      position: 'absolute',
-                      backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                      top: '0',
-                      borderRadius: '24px',
-                    }}
-                  >
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        width: '150px',
-                        color: '#41CC5D',
-                        lineHeight: '24px',
-                        fontWeight: '700',
-                        pt: '14px',
-                        fontSize: '14px',
-                        textAlign: 'center',
-                      }}
-                    >
-                      {loadingString}
-                    </Typography>
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        width: '150px',
-                        color: '#41CC5D',
-                        lineHeight: '24px',
-                        fontWeight: '700',
-                        fontSize: '14px',
-                        textAlign: 'center',
-                      }}
-                    >
-                      {secondLine}
-                    </Typography>
-                  </Box>
+                ) : (
+                  <Skeleton variant="rectangular" height={277} width={277} />
                 )}
               </Box>
-              <Typography
-                variant="body1"
-                sx={{
-                  color: ' rgba(255, 255, 255, 0.80))',
-                  pt: '14px',
-                  fontSize: '14px',
-                  textAlign: 'center',
-                }}
-              >
-                {chrome.i18n.getMessage('Scan_QR_Code_with_Mobile')}
-              </Typography>
+              {loadingString && (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    width: '277px',
+                    height: '277px',
+                    position: 'absolute',
+                    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                    top: '0',
+                    borderRadius: '24px',
+                  }}
+                >
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      width: '150px',
+                      color: '#41CC5D',
+                      lineHeight: '24px',
+                      fontWeight: '700',
+                      pt: '14px',
+                      fontSize: '14px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {loadingString}
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      width: '150px',
+                      color: '#41CC5D',
+                      lineHeight: '24px',
+                      fontWeight: '700',
+                      fontSize: '14px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {secondLine}
+                  </Typography>
+                </Box>
+              )}
             </Box>
-          )}
+            <Typography
+              variant="body1"
+              sx={{
+                color: ' rgba(255, 255, 255, 0.80))',
+                pt: '14px',
+                fontSize: '14px',
+                textAlign: 'center',
+              }}
+            >
+              {chrome.i18n.getMessage('Scan_QR_Code_with_Mobile')}
+            </Typography>
+          </Box>
         </Box>
       </Box>
     </>
