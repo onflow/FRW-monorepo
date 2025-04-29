@@ -137,6 +137,7 @@ interface EvmTokenResponse {
   currency: string;
   priceInCurrency: string;
   balanceInCurrency: string;
+  isVerified: boolean;
 }
 
 interface EvmApiResponse {
@@ -2340,7 +2341,6 @@ class OpenApiService {
     const cachedEvmData = await storage.getExpiry(cacheKey);
 
     if (cachedEvmData !== null) {
-      console.log('fetchUserEvmTokens - cachedEvmData', cachedEvmData);
       return cachedEvmData;
     }
 
@@ -2353,7 +2353,6 @@ class OpenApiService {
       {},
       WEB_NEXT_URL
     );
-    console.log('fetchUserEvmTokens - userEvmTokenList', userEvmTokenList);
     if (!userEvmTokenList?.data?.length) {
       return [];
     }
@@ -2384,6 +2383,7 @@ class OpenApiService {
         unit: token.symbol, // redundant for compatibility
         icon: token.logoURI || '', // redundant for compatibility
         flowIdentifier: token.flowIdentifier,
+        isVerified: token.isVerified,
       })
     );
     return tokens;
