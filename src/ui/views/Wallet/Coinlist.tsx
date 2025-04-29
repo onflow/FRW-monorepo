@@ -106,7 +106,6 @@ const CoinList = ({
     isVerified: boolean;
     id: string;
   }) => {
-    console.log('props', props);
     return (
       <ListItemText
         disableTypography={true}

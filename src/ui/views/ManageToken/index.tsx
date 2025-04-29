@@ -19,7 +19,7 @@ import {
 } from '@mui/material';
 import { StyledEngineProvider } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 
 // import { useHistory } from 'react-router-dom';
@@ -74,17 +74,21 @@ const ManageToken = () => {
   const { coins, tokenFilter, updateTokenFilter } = useCoins();
   const { activeAccountType } = useProfiles();
   const [keyword, setKeyword] = useState('');
-  const [filteredTokenList, setFilteredTokenList] = useState<ExtendedTokenInfo[]>(coins);
+  const [filteredTokenList, setFilteredTokenList] = useState<ExtendedTokenInfo[]>([]);
 
   const [isLoading, setLoading] = useState(false);
 
+  useEffect(() => {
+    setFilteredTokenList(coins);
+  }, [coins]);
+
   const filter = (e1: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const searchWord = e1.target.value;
+    const searchWord = e1.target.value.toLowerCase();
 
     if (searchWord !== '') {
       const results = coins.filter((token) => {
         return (
-          token.name.toLowerCase().includes(searchWord.toLowerCase()) ||
+          token.name.toLowerCase().includes(searchWord) ||
           token.symbol.toLowerCase().includes(searchWord)
         );
       });
@@ -308,7 +312,7 @@ const ManageToken = () => {
                 padding: '0 8px',
               }}
             >
-              {(filteredTokenList.length > 0 ? filteredTokenList : coins).map((token, index) => (
+              {(filteredTokenList ? filteredTokenList : []).map((token, index) => (
                 <TokenItem
                   token={token}
                   isLoading={isLoading}
