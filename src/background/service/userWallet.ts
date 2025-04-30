@@ -49,6 +49,7 @@ import {
   type EvmAccountStore,
   accountBalanceKey,
   accountBalanceRefreshRegex,
+  noAddressKey,
 } from '@/shared/utils/cache-data-keys';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import { setUserData } from '@/shared/utils/user-data-access';
@@ -1193,22 +1194,39 @@ const loadAllAccountsWithPubKey = async (
   if (!network || !pubKey) {
     throw new Error('Network and pubkey are required');
   }
-  const mainAccounts = await retryOperation(
-    async () => {
-      const mainAccounts = await loadMainAccountsWithPubKey(network, pubKey);
-      if (mainAccounts && mainAccounts.length > 0) {
-        return mainAccounts;
-      }
-      throw new Error('Main accounts not yet loaded');
-    },
-    MAX_LOAD_TIME,
-    POLL_INTERVAL
-  );
+
+  setUserData(noAddressKey(network, pubKey), false);
+
+  let mainAccounts: MainAccount[] = [];
+  try {
+    mainAccounts = await retryOperation(
+      async () => {
+        try {
+          const accounts = await loadMainAccountsWithPubKey(network, pubKey);
+
+          if (accounts && accounts.length > 0) {
+            return accounts;
+          }
+
+          throw new Error('Main accounts not yet loaded');
+        } catch (error) {
+          throw error;
+        }
+      },
+      MAX_LOAD_TIME / POLL_INTERVAL,
+      POLL_INTERVAL
+    );
+  } catch (error) {
+    console.warn('Failed to load main accounts after maximum retries:', error.message);
+  }
+
   if (!mainAccounts || mainAccounts.length === 0) {
-    throw new Error(
-      `Failed to load main accounts even after trying for ${Math.round(MAX_LOAD_TIME / 1000 / 60)} minutes`
+    setUserData(noAddressKey(network, pubKey), true);
+    console.warn(
+      `No main accounts loaded even after trying for ${Math.round(MAX_LOAD_TIME / 1000 / 60)} minutes`
     );
   }
+
   // Now for each main account load the evm address and child accounts
   const childAndEvmAccounts = await Promise.all(
     mainAccounts.flatMap((mainAccount) => {
