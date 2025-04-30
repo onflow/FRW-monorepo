@@ -99,7 +99,7 @@ const TokenInfoCard = ({
                     height: '16px',
                     position: 'absolute',
                     bottom: '4px',
-                    right: '-4px',
+                    right: '-14px',
                     zIndex: 1,
                   }}
                 />
