@@ -37,9 +37,9 @@ const useStyles = makeStyles(() => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '12px',
+    gap: '8px',
     padding: '0 18px',
-    paddingTop: '4px',
+    paddingTop: '0px',
     width: '100%',
     paddingBottom: '18px',
   },
@@ -88,7 +88,7 @@ const TokenDetail = () => {
 
   const Header = () => {
     return (
-      <Box sx={{ display: 'flex', mx: '-12px', position: 'relative' }}>
+      <Box sx={{ display: 'flex', mx: '-12px', position: 'relative', mb: '4px' }}>
         <IconButton onClick={history.goBack}>
           <ArrowBackIcon sx={{ color: 'icon.navi' }} />
         </IconButton>
@@ -204,10 +204,6 @@ const TokenDetail = () => {
             </Box>
           )}
           <TokenInfoCard
-            price={price}
-            token={token}
-            setAccessible={setAccessible}
-            accessible={accessible}
             tokenInfo={tokenInfo}
             accountType={accountType}
             tokenId={tokenId}
