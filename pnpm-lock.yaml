@@ -101,9 +101,6 @@ importers:
       '@walletconnect/utils':
         specifier: ^2.17.2
         version: 2.17.2
-      '@walletconnect/web3wallet':
-        specifier: ^1.16.1
-        version: 1.16.1
       '@zxing/library':
         specifier: 0.8.0
         version: 0.8.0
@@ -3283,10 +3280,6 @@ packages:
       typescript:
         optional: true
 
-  '@walletconnect/auth-client@2.1.2':
-    resolution: {integrity: sha512-ubJLn+vGb8sTdBFX6xAh4kjR5idrtS3RBngQWaJJJpEPBQmxMb8pM2q0FIRs8Is4K6jKy+uEhusMV+7ZBmTzjw==}
-    engines: {node: '>=16'}
-
   '@walletconnect/core@2.11.0':
     resolution: {integrity: sha512-2Tjp5BCevI7dbmqo/OrCjX4tqgMqwJNQLlQAlphqPfvwlF9+tIu6pGcVbSN3U9zyXzWIZCeleqEaWUeSeET4Ew==}
 
@@ -3429,10 +3422,6 @@ packages:
 
   '@walletconnect/utils@2.17.2':
     resolution: {integrity: sha512-T7eLRiuw96fgwUy2A5NZB5Eu87ukX8RCVoO9lji34RFV4o2IGU9FhTEWyd4QQKI8OuQRjSknhbJs0tU0r0faPw==}
-
-  '@walletconnect/web3wallet@1.16.1':
-    resolution: {integrity: sha512-l6jVoLEh/UtRfvYUDs52fN+LYXsBgx3F9WfErJuCSCFfpbxDKIzM2Y9sI0WI1/5dWN5sh24H1zNCXnQ4JJltZw==}
-    deprecated: Web3Wallet is now Reown WalletKit. Please follow the upgrade guide at https://docs.reown.com/walletkit/upgrade/from-web3wallet-web
 
   '@walletconnect/window-getters@1.0.1':
     resolution: {integrity: sha512-vHp+HqzGxORPAN8gY03qnbTMnhqIwjeRJNOMOAzePRg4xVEEE2WvYsI9G2NMjOknA8hnuYbU3/hwLcKbjhc8+Q==}
@@ -13872,39 +13861,6 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@walletconnect/auth-client@2.1.2':
-    dependencies:
-      '@ethersproject/hash': 5.7.0
-      '@ethersproject/transactions': 5.7.0
-      '@stablelib/random': 1.0.2
-      '@stablelib/sha256': 1.0.1
-      '@walletconnect/core': 2.17.2
-      '@walletconnect/events': 1.0.1
-      '@walletconnect/heartbeat': 1.2.2
-      '@walletconnect/jsonrpc-utils': 1.0.8
-      '@walletconnect/logger': 2.1.2
-      '@walletconnect/time': 1.0.2
-      '@walletconnect/utils': 2.17.2
-      events: 3.3.0
-      isomorphic-unfetch: 3.1.0
-    transitivePeerDependencies:
-      - '@azure/app-configuration'
-      - '@azure/cosmos'
-      - '@azure/data-tables'
-      - '@azure/identity'
-      - '@azure/keyvault-secrets'
-      - '@azure/storage-blob'
-      - '@capacitor/preferences'
-      - '@netlify/blobs'
-      - '@planetscale/database'
-      - '@react-native-async-storage/async-storage'
-      - '@upstash/redis'
-      - '@vercel/kv'
-      - bufferutil
-      - encoding
-      - ioredis
-      - utf-8-validate
-
   '@walletconnect/core@2.11.0':
     dependencies:
       '@walletconnect/heartbeat': 1.2.1
@@ -14565,34 +14521,6 @@ snapshots:
       - '@upstash/redis'
       - '@vercel/kv'
       - ioredis
-
-  '@walletconnect/web3wallet@1.16.1':
-    dependencies:
-      '@walletconnect/auth-client': 2.1.2
-      '@walletconnect/core': 2.17.1
-      '@walletconnect/jsonrpc-provider': 1.0.14
-      '@walletconnect/jsonrpc-utils': 1.0.8
-      '@walletconnect/logger': 2.1.2
-      '@walletconnect/sign-client': 2.17.1
-      '@walletconnect/types': 2.17.1
-      '@walletconnect/utils': 2.17.1
-    transitivePeerDependencies:
-      - '@azure/app-configuration'
-      - '@azure/cosmos'
-      - '@azure/data-tables'
-      - '@azure/identity'
-      - '@azure/keyvault-secrets'
-      - '@azure/storage-blob'
-      - '@capacitor/preferences'
-      - '@netlify/blobs'
-      - '@planetscale/database'
-      - '@react-native-async-storage/async-storage'
-      - '@upstash/redis'
-      - '@vercel/kv'
-      - bufferutil
-      - encoding
-      - ioredis
-      - utf-8-validate
 
   '@walletconnect/window-getters@1.0.1':
     dependencies:
