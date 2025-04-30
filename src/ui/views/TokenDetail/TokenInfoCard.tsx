@@ -10,16 +10,12 @@ import receiveIcon from '@/ui/FRWAssets/svg/receiveIcon.svg';
 import sendIcon from '@/ui/FRWAssets/svg/sendIcon.svg';
 import swapIcon from '@/ui/FRWAssets/svg/swapIcon.svg';
 import { IconButton } from '@/ui/FRWComponent/IconButton';
-import { useProfiles } from '@/ui/hooks/useProfileHook';
-import iconMove from 'ui/FRWAssets/svg/move.svg';
 import { useCoins } from 'ui/hooks/useCoinHook';
 
 import IconChevronRight from '../../../components/iconfont/IconChevronRight';
 import VerifiedIcon from '../../FRWAssets/svg/verfied-check.svg';
 
 import { CurrencyValue } from './CurrencyValue';
-
-// import tips from 'ui/FRWAssets/svg/tips.svg';
 
 const TokenInfoCard = ({
   tokenInfo,
@@ -41,7 +37,6 @@ const TokenInfoCard = ({
   );
 
   const balance = extendedTokenInfo?.balance;
-  const { canMoveToChild } = useProfiles();
 
   const toSend = () => {
     history.push(`/dashboard/token/${tokenInfo?.symbol}/send`);
@@ -187,37 +182,6 @@ const TokenInfoCard = ({
               )}
             </Typography>
           </Box>
-          {canMoveToChild && balance && (
-            <ButtonBase onClick={() => toSend()}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  background: 'rgba(65, 204, 93, 0.16)',
-                  gap: '4px',
-                  px: '8px',
-                  height: '24px',
-                  borderRadius: '8px',
-                  alignSelf: 'center',
-                }}
-              >
-                <Typography sx={{ fontWeight: '400', fontSize: '12px', color: '#41CC5D' }}>
-                  {chrome.i18n.getMessage('Move')}
-                </Typography>
-                <img
-                  src={iconMove}
-                  alt="Move Icon"
-                  style={{
-                    width: '14px',
-                    height: '14px',
-                    marginLeft: '4px',
-                    filter:
-                      'invert(54%) sepia(78%) saturate(366%) hue-rotate(85deg) brightness(95%) contrast(92%)',
-                  }}
-                />
-              </Box>
-            </ButtonBase>
-          )}
         </Box>
         <Typography variant="body1" color="text.secondary" sx={{ fontSize: '16px' }}>
           <Box component="span" sx={{ marginRight: '0.25rem' }}>
