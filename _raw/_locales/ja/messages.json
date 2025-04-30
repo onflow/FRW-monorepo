@@ -285,6 +285,15 @@
   "New__Password": {
     "message": "新しいパスワード"
   },
+  "Enter__New__Password": {
+    "message": "新しいパスワードを入力してください"
+  },
+  "Change__Password": {
+    "message": "パスワードの変更"
+  },
+  "Password__Change__Success": {
+    "message": "パスワードの変更が成功しました"
+  },
   "Current__Password": {
     "message": "現在のパスワード"
   },

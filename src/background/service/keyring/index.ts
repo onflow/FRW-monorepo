@@ -1652,6 +1652,53 @@ class KeyringService extends EventEmitter {
       decryptedData: keyringDataV2,
     };
   }
+
+  /**
+   * Atomically change the password for all keyrings/vaults and the booted state.
+   * If any step fails, nothing is written to storage.
+   *
+   * @param oldPassword - The current password.
+   * @param newPassword - The new password to set.
+   * @returns {Promise<boolean>} True if successful, false otherwise.
+   */
+  async changePassword(oldPassword: string, newPassword: string): Promise<boolean> {
+    try {
+      // 1. Verify the old password
+      await this.verifyPassword(oldPassword);
+
+      // 2. Decrypt all vaults with the old password
+      const allVaultData = await this.revealKeyring(oldPassword);
+      if (!allVaultData || allVaultData.length === 0) {
+        throw new Error('No vault data found to update');
+      }
+
+      // 3. Prepare to re-encrypt all vaults with the new password (in memory)
+      const newVaultArray: VaultEntryV2[] = [];
+      for (const vaultData of allVaultData) {
+        // Re-encrypt each vault's decrypted data with the new password
+        const encryptedData = await this.encryptor.encrypt(newPassword, vaultData.decryptedData);
+        newVaultArray.push({ id: vaultData.id, encryptedData });
+      }
+
+      // 4. Re-encrypt the booted state with the new password (in memory)
+      const newBooted = await this.encryptor.encrypt(newPassword, 'true');
+
+      // 5. Write both the new vaults and the new booted state to storage (atomically)
+      this.store.updateState({
+        booted: newBooted,
+        vault: newVaultArray,
+        vaultVersion: KEYRING_STATE_VAULT_V2,
+      });
+
+      // 6. Update in-memory state (if needed)
+      this.memStore.updateState({ isUnlocked: true });
+
+      return true;
+    } catch (error) {
+      log.error('Failed to change keyring password atomically:', error);
+      return false;
+    }
+  }
 }
 
 export default new KeyringService();
