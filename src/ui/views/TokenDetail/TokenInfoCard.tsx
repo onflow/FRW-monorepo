@@ -77,18 +77,34 @@ const TokenInfoCard = ({
       <>
         <Box sx={{ width: '100%', display: 'flex', alignItems: 'center' }}>
           {extendedTokenInfo?.logoURI ? (
-            <img
-              style={{
-                height: '42px',
-                width: '42px',
-                backgroundColor: '#282828',
-                borderRadius: '21px',
-              }}
-              src={
-                extendedTokenInfo.logoURI ||
-                'https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.1654653399040a61.FlowToken/logo.svg'
-              }
-            ></img>
+            <Box sx={{ position: 'relative' }}>
+              <img
+                style={{
+                  height: '42px',
+                  width: '42px',
+                  backgroundColor: '#282828',
+                  borderRadius: '21px',
+                }}
+                src={
+                  extendedTokenInfo.logoURI ||
+                  'https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.1654653399040a61.FlowToken/logo.svg'
+                }
+              />
+              {extendedTokenInfo?.isVerified && (
+                <img
+                  src={VerifiedIcon}
+                  alt="Verified"
+                  style={{
+                    width: '16px',
+                    height: '16px',
+                    position: 'absolute',
+                    bottom: '4px',
+                    right: '-4px',
+                    zIndex: 1,
+                  }}
+                />
+              )}
+            </Box>
           ) : (
             <Skeleton variant="circular" width={42} height={42} />
           )}
@@ -111,7 +127,7 @@ const TokenInfoCard = ({
                   background: 'linear-gradient(to right, #000000, #282828)',
                 }}
               >
-                <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ flex: 1 }}>
                   <Typography
                     variant="h6"
                     sx={{
@@ -125,13 +141,6 @@ const TokenInfoCard = ({
                       <Skeleton variant="text" width={90} />
                     )}
                   </Typography>
-                  {extendedTokenInfo?.isVerified && (
-                    <img
-                      src={VerifiedIcon}
-                      alt="Verified"
-                      style={{ width: '20px', height: '20px' }}
-                    />
-                  )}
                 </Box>
                 <IconChevronRight size={20} sx={{ flexShrink: 0 }} />
               </Box>
