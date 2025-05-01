@@ -1728,8 +1728,9 @@ class KeyringService extends EventEmitter {
     this.emit('profileRemoved', profileId);
 
     return true;
-   }
-   
+  }
+
+  /**
    * Atomically change the password for all keyrings/vaults and the booted state.
    * If any step fails, nothing is written to storage.
    *
