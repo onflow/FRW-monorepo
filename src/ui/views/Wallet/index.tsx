@@ -50,8 +50,8 @@ const WalletTab = ({ network }) => {
   const history = useHistory();
   const location = useLocation();
   const { initializeStore } = useInitHook();
-  const { childAccounts, evmWallet, currentWallet } = useProfiles();
   const { coins, balance, coinsLoaded } = useCoins();
+  const { childAccounts, evmWallet, currentWallet, noAddress } = useProfiles();
   const [value, setValue] = React.useState(0);
 
   const [address, setAddress] = useState<string>('');
@@ -258,7 +258,15 @@ const WalletTab = ({ network }) => {
             fontWeight: 'semi-bold',
           }}
         >
-          {coinsLoaded ? `$${formatLargeNumber(balance)}` : <Skeleton variant="text" width={100} />}
+          {noAddress ? (
+            <Typography variant="h4" component="div">
+              -
+            </Typography>
+          ) : coinsLoaded ? (
+            `$${formatLargeNumber(balance)}`
+          ) : (
+            <Skeleton variant="text" width={100} />
+          )}
         </Typography>
 
         <ButtonRow
