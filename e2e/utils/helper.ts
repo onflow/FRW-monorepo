@@ -399,7 +399,17 @@ export const switchToFlow = async ({ page, extensionId }) => {
   // get address
   await getCurrentAddress(page);
 };
-
+export const switchAccount = async ({ page, extensionId }) => {
+  // Assume the user is on the dashboard page
+  await page.getByLabel('menu').click();
+  // switch to another flow account
+  await page.getByRole('button', { name: 'Flow' }).nth(0).click();
+  await page.getByLabel('menu').click();
+  await page.getByRole('button', { name: 'Flow' }).nth(0).click();
+  await page.getByRole('button', { name: 'Flow' }).nth(1).click();
+  // get address
+  await getCurrentAddress(page);
+};
 const getActivityItemRegexp = (txId: string, ingoreFlowCharge = false) => {
   return new RegExp(`^.*${txId}.*${ingoreFlowCharge ? '(?<!FlowToken)' : ''}$`);
 };
