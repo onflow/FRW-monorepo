@@ -28,7 +28,6 @@ import {
 } from '@/shared/types/wallet-types';
 import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
 import { LLHeader } from '@/ui/FRWComponent';
-import ResetModal from '@/ui/FRWComponent/PopupModal/resetModal';
 import { useWallet } from 'ui/utils';
 
 import IconEnd from '../../../../components/iconfont/IconAVector11Stroke';
@@ -562,13 +561,6 @@ const WalletDetail = () => {
           userWallet={userWallet}
         />
       )}
-      <ResetModal
-        setShowAction={setShowResetModal}
-        isOpen={showResetModal}
-        onOpenChange={handleResetWallet}
-        errorName={chrome.i18n.getMessage('Confirm_to_reset_Wallet')}
-        errorMessage={chrome.i18n.getMessage('This_action_will_remove')}
-      />
     </div>
   );
 };

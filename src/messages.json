@@ -91,6 +91,15 @@
   "Other__Lilico__users__cannot__search__for__your__username": {
     "message": "Other Flow Wallet Wallet users cannot search for your username."
   },
+  "Remove__Profile": {
+    "message": "Remove Profile"
+  },
+  "Remove": {
+    "message": "Remove"
+  },
+  "Remove_profile_warning_simplified": {
+    "message": "After removing this profile, you will be logged out. You can re-import using a recovery phrase, private key, or Google Drive backup."
+  },
   "Private__Key": {
     "message": "Private Key"
   },
@@ -135,6 +144,9 @@
   },
   "Backup": {
     "message": "Backup"
+  },
+  "Backup__Found": {
+    "message": "Backup Found"
   },
   "Claim__for__your": {
     "message": "Claim for your "
