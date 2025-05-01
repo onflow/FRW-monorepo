@@ -5,8 +5,8 @@ import {
   getReceiverEvmAccount,
   getReceiverCadenceAccount,
   checkSentAmount,
-} from './utils/helper';
-import { test } from './utils/loader';
+} from '../utils/helper';
+import { test } from '../utils/loader';
 export const sendTokenFlow = async ({
   page,
   tokenname,

@@ -274,6 +274,7 @@ const MenuDrawer = (props: MenuDrawerProps) => {
                 }
               >
                 <ListItemButton
+                  data-testid={`evm-account-${props.evmWallet.address}`}
                   sx={{
                     mb: 0,
                     display: 'flex',
@@ -369,6 +370,7 @@ const MenuDrawer = (props: MenuDrawerProps) => {
                   }
                 >
                   <ListItemButton
+                    data-testid={`child-account-${childAccount.address}`}
                     sx={{
                       mb: 0,
                       padding: '0',
