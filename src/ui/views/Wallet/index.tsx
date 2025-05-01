@@ -123,7 +123,7 @@ const WalletTab = ({ network }) => {
     if (activeAccountType === 'evm') {
       return;
       // If not 'evm', check if it's not active
-    } else if (!isActive) {
+    } else if (activeAccountType === 'child') {
       // Child wallet
       const ftResult = await usewallet.checkAccessibleFt(address);
       if (ftResult) {
@@ -132,7 +132,7 @@ const WalletTab = ({ network }) => {
     }
 
     // Handle all non-evm and non-active cases here
-  }, [address, isActive, usewallet]);
+  }, [address, usewallet]);
 
   const fetchChildState = useCallback(async () => {
     setChildStateLoading(true);
