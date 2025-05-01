@@ -27,7 +27,7 @@ export const test = base.extend<{
 
     const baseFolderName = `/tmp/test-user-data-dir-${isTransaction ? 'transaction' : isRegistration ? 'registration' : 'other'}`;
     let dataDir = baseFolderName;
-    if (!isSetup && !isRegistration) {
+    if (!isSetup) {
       // Copy the base folder to a new folder with the parallel index
       dataDir = `${baseFolderName}-${process.env.TEST_WORKER_INDEX}`;
 
