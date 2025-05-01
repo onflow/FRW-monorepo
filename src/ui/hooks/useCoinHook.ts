@@ -1,13 +1,13 @@
 import BN from 'bignumber.js';
 import { useCallback, useEffect, useState, useRef } from 'react';
 
-import { type ExtendedTokenInfo, type CoinItem } from '@/shared/types/coin-types';
+import { type ExtendedTokenInfo, type CoinItem, type TokenFilter } from '@/shared/types/coin-types';
 import { DEFAULT_CURRENCY, type Currency } from '@/shared/types/wallet-types';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { debug } from '@/ui/utils';
 import { useWallet } from '@/ui/utils/WalletContext';
 
-import { useCoinList } from './use-coin-hooks';
+import { useCoinList, useTokenFilter, setTokenFilter } from './use-coin-hooks';
 import { useProfiles } from './useProfileHook';
 
 export const useCoins = () => {
@@ -52,7 +52,7 @@ export const useCoins = () => {
       for (const coin of data) {
         // Calculate sum and flow balance
         if (coin.total !== null) {
-          sum = sum.plus(new BN(coin.total));
+          sum = sum.plus(new BN(coin?.total || 0));
           if (coin.unit && coin.unit.toLowerCase() === 'flow') {
             flowBalance = new BN(coin.balance);
           }
@@ -63,13 +63,22 @@ export const useCoins = () => {
       await Promise.all([
         setTotalFlow(flowBalance.toString()),
         setAvailableFlow(flowBalance.toString()),
-        setBalance(`$ ${sum.toFixed(2)}`),
+        setBalance(sum.toString()),
       ]);
     },
     [setTotalFlow, setBalance]
   );
 
   const coins = useCoinList(network, currentWallet?.address, currencyCode);
+  const tokenFilter = useTokenFilter(network, currentWallet?.address) || {
+    hideDust: false,
+    hideUnverified: false,
+    filteredIds: [],
+  };
+
+  const updateTokenFilter = (filter: TokenFilter) => {
+    setTokenFilter(network, currentWallet?.address, filter);
+  };
 
   useEffect(() => {
     // Check if currentWallet exists and has an address
@@ -102,7 +111,9 @@ export const useCoins = () => {
 
   return {
     handleStorageData,
+    updateTokenFilter,
     coins: coins || [],
+    tokenFilter,
     balance,
     totalFlow,
     availableFlow,

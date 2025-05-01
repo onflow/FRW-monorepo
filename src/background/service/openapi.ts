@@ -107,6 +107,10 @@ interface FlowTokenResponse {
     domain: string;
     identifier: string;
   };
+  balancePath: {
+    domain: string;
+    identifier: string;
+  };
   identifier: string;
   isVerified: boolean;
   priceInUSD: string;
@@ -137,6 +141,7 @@ interface EvmTokenResponse {
   currency: string;
   priceInCurrency: string;
   balanceInCurrency: string;
+  isVerified: boolean;
 }
 
 interface EvmApiResponse {
@@ -2302,9 +2307,15 @@ class OpenApiService {
         symbol: token.symbol,
         decimals: 8, // Default to 8 decimals for Flow tokens if not specified
         path: {
-          vault: `/${token.storagePath.domain}/${token.storagePath.identifier}`,
-          receiver: `/${token.receiverPath.domain}/${token.receiverPath.identifier}`,
-          balance: ``, // todo: not sure what this property is used for
+          vault: token.storagePath
+            ? `/${token.storagePath.domain}/${token.storagePath.identifier}`
+            : '', // Provide a default value if storagePath is null
+          receiver: token.receiverPath
+            ? `/${token.receiverPath.domain}/${token.receiverPath.identifier}`
+            : '', // Provide a default value if receiverPath is null
+          balance: token.balancePath
+            ? `/${token.balancePath.domain}/${token.balancePath.identifier}`
+            : '', // Provide a default value if balancePath is null
         },
         logoURI: token.logoURI || token.logos?.items?.[0]?.file?.url || '',
         extensions: {
@@ -2321,6 +2332,7 @@ class OpenApiService {
         unit: token.symbol ?? token.contractName, // redundant for compatibility
         icon: token.logoURI || token.logos?.items?.[0]?.file?.url || '',
         flowIdentifier: token.identifier,
+        isVerified: token.isVerified ? token.isVerified : false,
       })
     );
     return tokens;
@@ -2335,7 +2347,6 @@ class OpenApiService {
     const cachedEvmData = await storage.getExpiry(cacheKey);
 
     if (cachedEvmData !== null) {
-      console.log('fetchUserEvmTokens - cachedEvmData', cachedEvmData);
       return cachedEvmData;
     }
 
@@ -2348,7 +2359,6 @@ class OpenApiService {
       {},
       WEB_NEXT_URL
     );
-    console.log('fetchUserEvmTokens - userEvmTokenList', userEvmTokenList);
     if (!userEvmTokenList?.data?.length) {
       return [];
     }
@@ -2379,6 +2389,7 @@ class OpenApiService {
         unit: token.symbol, // redundant for compatibility
         icon: token.logoURI || '', // redundant for compatibility
         flowIdentifier: token.flowIdentifier,
+        isVerified: token.isVerified,
       })
     );
     return tokens;

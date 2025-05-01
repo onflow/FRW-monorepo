@@ -283,8 +283,20 @@
   "Confirm__Password": {
     "message": "Confirm Password"
   },
+  "Enter__New__Password": {
+    "message": "Enter New Password"
+  },
   "New__Password": {
     "message": "New Password"
+  },
+  "Enter__Current__Password": {
+    "message": "Enter Current Password"
+  },
+  "Change__Password": {
+    "message": "Change Password"
+  },
+  "Password__Change__Success": {
+    "message": "Password change successful"
   },
   "Current__Password": {
     "message": "Current Password"
@@ -683,7 +695,7 @@
     "message": "We've found"
   },
   "matching__accounts": {
-    "message": "matching account(-s)"
+    "message": "matching account(s)"
   },
   "Select__the__account__which__you__want__to__restore__back": {
     "message": "Select the account which you want to restore back."
@@ -1350,5 +1362,8 @@
   },
   "Could_not_enable_this_collection": {
     "message": "Could not enable this collection"
+  },
+  "Manage_Token": {
+    "message": "Manage Token"
   }
 }

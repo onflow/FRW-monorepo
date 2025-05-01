@@ -12,10 +12,10 @@ import {
   Divider,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { WalletKit, type WalletKitTypes } from '@reown/walletkit';
 import { Core } from '@walletconnect/core';
 import { formatJsonRpcResult } from '@walletconnect/jsonrpc-utils';
 import { getSdkError } from '@walletconnect/utils';
-import { Web3Wallet, type Web3WalletTypes } from '@walletconnect/web3wallet';
 import React, { useState, useEffect } from 'react';
 import { useForm, FieldValues } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
@@ -84,7 +84,7 @@ const WalletConnect = (props: RevokePageProps) => {
   useEffect(() => {
     const createWeb3Wallet = async () => {
       try {
-        const wallet = await Web3Wallet.init({
+        const wallet = await WalletKit.init({
           // @ts-ignore: Unreachable code error
           core: new Core({
             projectId: process.env.WC_PROJECTID,
@@ -104,7 +104,7 @@ const WalletConnect = (props: RevokePageProps) => {
     createWeb3Wallet();
   }, []);
 
-  async function onSessionProposal({ id, params }: Web3WalletTypes.SessionProposal) {
+  async function onSessionProposal({ id, params }: WalletKitTypes.SessionProposal) {
     console.log('params ', params);
     try {
       const address = await usewallet.getParentAddress();
@@ -133,7 +133,7 @@ const WalletConnect = (props: RevokePageProps) => {
     showApproveWindow();
   }
 
-  async function onSessionRequest({ topic, params, id }: Web3WalletTypes.SessionRequest) {
+  async function onSessionRequest({ topic, params, id }: WalletKitTypes.SessionRequest) {
     console.log('session request ', params);
     if (params.request.method === FCLWalletConnectMethod.accountInfo) {
       try {

@@ -52,7 +52,7 @@ const WalletTab = ({ network }) => {
   const location = useLocation();
   const { initializeStore } = useInitHook();
   const { childAccounts, evmWallet, currentWallet } = useProfiles();
-  const { coins, balance, coinsLoaded } = useCoins();
+  const { balance, coinsLoaded } = useCoins();
   const [value, setValue] = React.useState(0);
 
   const [address, setAddress] = useState<string>('');
@@ -63,22 +63,13 @@ const WalletTab = ({ network }) => {
   const [isOnRamp, setOnRamp] = useState(false);
   const [isActive, setIsActive] = useState(true);
   const [showMoveBoard, setMoveBoard] = useState(false);
-  const [buyHover, setBuyHover] = useState(false);
-  const [sendHover, setSendHover] = useState(false);
-  const [swapHover, setSwapHover] = useState(false);
   const [canMoveChild, setCanMoveChild] = useState(true);
-  const [receiveHover, setReceiveHover] = useState(false);
-  const [childStateLoading, setChildStateLoading] = useState<boolean>(false);
 
   const incLink =
     network === 'mainnet' ? 'https://app.increment.fi/swap' : 'https://demo.increment.fi/swap';
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
-  };
-
-  const handleChangeIndex = (index) => {
-    setValue(index);
   };
 
   const setUserAddress = useCallback(async () => {
@@ -136,7 +127,6 @@ const WalletTab = ({ network }) => {
   }, [address, isActive, usewallet]);
 
   const fetchChildState = useCallback(async () => {
-    setChildStateLoading(true);
     const accountType = await usewallet.getActiveAccountType();
     setChildAccount(childAccounts);
     setChildType(accountType);
@@ -145,7 +135,6 @@ const WalletTab = ({ network }) => {
     } else {
       setIsActive(true);
     }
-    setChildStateLoading(false);
     return accountType;
   }, [usewallet, childAccounts]);
 
@@ -380,12 +369,7 @@ const WalletTab = ({ network }) => {
         <TabPanel value={value} index={0}>
           <Box sx={{ height: '100%', overflow: 'auto' }}>
             {value === 0 && (
-              <CoinList
-                tokenList={coins}
-                ableFt={accessible}
-                isActive={isActive}
-                childType={childType}
-              />
+              <CoinList ableFt={accessible} isActive={isActive} childType={childType} />
             )}
           </Box>
         </TabPanel>

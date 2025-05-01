@@ -108,6 +108,17 @@ export type TrackingEvents = {
     mechanism: RecoveryMechanismType; // The way the account was recovered
     methods: ImportKeyType[]; // Array of providers used in the multi-backup, GoogleDrive, iCloud, Seed
   };
+
+  // Password Events
+  password_updated: {
+    address: string; // Address of the account that updated password
+    success: boolean; // Whether the password update was successful
+  };
+
+  password_update_failed: {
+    address: string; // Address of the account that failed to update password
+    error: string; // Error message explaining why update failed
+  };
 };
 
 export type TrackEventMessage<T extends keyof TrackingEvents = keyof TrackingEvents> = {

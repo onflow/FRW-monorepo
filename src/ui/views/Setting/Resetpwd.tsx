@@ -9,6 +9,9 @@ import {
   InputAdornment,
   Typography,
   Button,
+  Snackbar,
+  Alert,
+  CircularProgress,
 } from '@mui/material';
 import Box from '@mui/material/Box';
 import { makeStyles } from '@mui/styles';
@@ -18,6 +21,7 @@ import zxcvbn from 'zxcvbn';
 
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from 'ui/utils';
 
 import CheckCircleIcon from '../../../components/iconfont/IconCheckmark';
@@ -119,24 +123,39 @@ const PasswordIndicator = (props) => {
 const Resetpassword = () => {
   const classes = useStyles();
   const wallet = useWallet();
+  const { clearProfileData } = useProfiles();
+  const [isCurrentPasswordVisible, setCurrentPasswordVisible] = useState(false);
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const [isConfirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   const [password, setPassword] = useState(DEFAULT_PASSWORD);
   const [confirmPassword, setConfirmPassword] = useState(DEFAULT_PASSWORD);
   const [isCharacters, setCharacters] = useState(false);
   const [isMatch, setMatch] = useState(false);
-  const [confirmcurrentPassword, setConfirmcurrentPassword] = useState(DEFAULT_PASSWORD);
+  const [confirmCurrentPassword, setConfirmCurrentPassword] = useState(DEFAULT_PASSWORD);
   const [isSame, setSame] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [error, setError] = useState('');
   const history = useHistory();
 
   const verify = useCallback(async () => {
-    await wallet.verifyPassword(confirmcurrentPassword);
-    setSame(true);
-  }, [confirmcurrentPassword, wallet]);
+    try {
+      setIsVerifying(true);
+      // verifyPassword doesn't return a value, it throws an error if the password is incorrect
+      await wallet.verifyPassword(confirmCurrentPassword);
+      // If we reach here, the password is correct
+      setSame(true);
+    } catch (error) {
+      console.error('Password verification failed:', error);
+      setSame(false);
+    } finally {
+      setIsVerifying(false);
+    }
+  }, [confirmCurrentPassword, wallet]);
 
   useEffect(() => {
     verify();
-  }, [confirmcurrentPassword, verify]);
+  }, [confirmCurrentPassword, verify]);
 
   const successInfo = (message) => {
     return (
@@ -197,26 +216,51 @@ const Resetpassword = () => {
   const [helperText, setHelperText] = useState(<div />);
   const [helperMatch, setHelperMatch] = useState(<div />);
 
-  const reset = () => {
-    wallet.update(confirmPassword);
+  const reset = async () => {
+    try {
+      setIsResetting(true);
+      setError('');
+
+      const success = await wallet.changePassword(confirmCurrentPassword, confirmPassword);
+
+      if (success) {
+        await wallet
+          .lockWallet()
+          .then(() => {
+            clearProfileData();
+            history.push('/unlock');
+          })
+          .finally(() => {
+            setIsResetting(false);
+          });
+      } else {
+        setError(chrome.i18n.getMessage('Oops__unexpected__error'));
+      }
+    } catch (error) {
+      console.error('Error changing password:', error);
+      setError(error.message);
+    } finally {
+      setIsResetting(false);
+    }
   };
+
   useEffect(() => {
     if (password.length > 7) {
-      setHelperText(successInfo('At least 8 characters'));
+      setHelperText(successInfo(chrome.i18n.getMessage('At__least__8__characters')));
       setCharacters(true);
     } else {
-      setHelperText(errorInfo('At least 8 characters'));
+      setHelperText(errorInfo(chrome.i18n.getMessage('At__least__8__characters')));
       setCharacters(false);
     }
   }, [password]);
 
   useEffect(() => {
     if (confirmPassword === password) {
-      setHelperMatch(successInfo('Passwords match'));
+      setHelperMatch(successInfo(chrome.i18n.getMessage('Passwords__match')));
       setMatch(true);
     } else {
       setMatch(false);
-      setHelperMatch(errorInfo('Your passwords do not match. Please check again.'));
+      setHelperMatch(errorInfo(chrome.i18n.getMessage('Your__passwords__do__not__match')));
     }
   }, [confirmPassword, password]);
 
@@ -256,7 +300,7 @@ const Resetpassword = () => {
               color: '#BABABA',
             }}
           >
-            {chrome.i18n.getMessage('Change__111e__Password')}
+            {chrome.i18n.getMessage('Change__Password')}
           </Typography>
         </Box>
 
@@ -270,35 +314,70 @@ const Resetpassword = () => {
           }}
         >
           <FormGroup sx={{ width: '100%' }}>
+            <Typography
+              sx={{
+                fontSize: '14px',
+                fontFamily: 'Inter',
+                fontWeight: '500',
+                paddingLeft: '18px',
+                marginBottom: '8px',
+              }}
+            >
+              {chrome.i18n.getMessage('Current__Password')}
+            </Typography>
             <Input
               sx={{ fontSize: '12px', fontFamily: 'Inter', fontStyle: 'normal' }}
               id="pass"
               name="password"
-              placeholder={chrome.i18n.getMessage('Current__Password')}
-              value={confirmcurrentPassword}
+              type={isCurrentPasswordVisible ? 'text' : 'password'}
+              placeholder={chrome.i18n.getMessage('Enter__Current__Password')}
+              value={confirmCurrentPassword}
               className={classes.inputBox}
               fullWidth
               autoFocus
               disableUnderline
               autoComplete="new-password"
               onChange={(event) => {
-                setConfirmcurrentPassword(event.target.value);
+                setConfirmCurrentPassword(event.target.value);
               }}
               endAdornment={
                 <InputAdornment position="end">
-                  {isSame ? (
+                  {isVerifying ? (
+                    <Box sx={{ width: 14, height: 14, margin: '8px' }}>
+                      <LinearProgress sx={{ width: 14, height: 14 }} />
+                    </Box>
+                  ) : isSame ? (
                     <CheckCircleIcon size={14} color={'#41CC5D'} style={{ margin: '8px' }} />
                   ) : (
                     <CancelIcon size={14} color={'#E54040'} style={{ margin: '8px' }} />
                   )}
+                  <IconButton onClick={() => setCurrentPasswordVisible(!isCurrentPasswordVisible)}>
+                    {isCurrentPasswordVisible ? (
+                      <VisibilityOffIcon sx={{ fontSize: 14, padding: 0 }} />
+                    ) : (
+                      <VisibilityIcon sx={{ fontSize: 14, padding: 0 }} />
+                    )}
+                  </IconButton>
                 </InputAdornment>
               }
             />
 
+            <Typography
+              sx={{
+                fontSize: '14px',
+                fontFamily: 'Inter',
+                fontWeight: '500',
+                paddingLeft: '18px',
+                marginTop: '16px',
+                marginBottom: '8px',
+              }}
+            >
+              {chrome.i18n.getMessage('New__Password')}
+            </Typography>
             <Input
               sx={{
                 pb: '15px',
-                marginTop: password ? '0px' : '8px',
+                marginTop: password ? '0px' : '0px',
                 fontSize: '12px',
                 fontFamily: 'Inter',
                 fontStyle: 'normal',
@@ -306,11 +385,10 @@ const Resetpassword = () => {
               id="pass1"
               type={isPasswordVisible ? 'text' : 'password'}
               name="password1"
-              placeholder={chrome.i18n.getMessage('New__Password')}
+              placeholder={chrome.i18n.getMessage('Enter__New__Password')}
               value={password}
               className={classes.inputBox2}
               fullWidth
-              autoFocus
               disableUnderline
               autoComplete="new-password"
               onChange={(event) => {
@@ -332,10 +410,23 @@ const Resetpassword = () => {
             <SlideRelative direction="down" show={!!password}>
               {helperText}
             </SlideRelative>
+
+            <Typography
+              sx={{
+                fontSize: '14px',
+                fontFamily: 'Inter',
+                fontWeight: '500',
+                paddingLeft: '18px',
+                marginTop: '16px',
+                marginBottom: '8px',
+              }}
+            >
+              {chrome.i18n.getMessage('Confirm__Password')}
+            </Typography>
             <Input
               sx={{
                 pb: '15px',
-                marginTop: password ? '0px' : '8px',
+                marginTop: password ? '0px' : '0px',
                 fontSize: '12px',
                 fontFamily: 'Inter',
                 fontStyle: 'normal',
@@ -389,7 +480,7 @@ const Resetpassword = () => {
               display: 'flex',
               flexGrow: 1,
               height: '48px',
-              width: '158px',
+              width: 'calc(50% - 4px)',
               borderRadius: '8px',
               textTransform: 'capitalize',
             }}
@@ -409,27 +500,76 @@ const Resetpassword = () => {
           <Button
             variant="contained"
             color="primary"
-            component={Button}
             onClick={reset}
             size="large"
             sx={{
               display: 'flex',
               flexGrow: 1,
               height: '48px',
+              width: 'calc(50% - 4px)',
               borderRadius: '8px',
-              textTransform: 'capitalize',
-              width: '158px',
+              textTransform: 'uppercase',
+              backgroundColor: '#38B000',
+              '&:hover': {
+                backgroundColor: '#309900',
+              },
             }}
-            disabled={!(isSame && isMatch && isCharacters)}
+            disabled={!(isSame && isMatch && isCharacters) || isResetting}
           >
-            <Typography
-              sx={{ fontWeight: '600', fontSize: '14px', fontFamily: 'Inter' }}
-              color="text.primary"
-            >
-              {chrome.i18n.getMessage('Next')}
-            </Typography>
+            {isResetting ? (
+              <CircularProgress size={18} color="inherit" />
+            ) : (
+              <Typography
+                sx={{ fontWeight: '600', fontSize: '14px', fontFamily: 'Inter' }}
+                color="text.primary"
+              >
+                {chrome.i18n.getMessage('Change')}
+              </Typography>
+            )}
           </Button>
         </Box>
+
+        <Snackbar
+          open={!!error}
+          autoHideDuration={6000}
+          onClose={() => setError('')}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert onClose={() => setError('')} severity="error" sx={{ width: '100%' }}>
+            {error}
+          </Alert>
+        </Snackbar>
+
+        {/* Simple success message with better visibility */}
+        {isResetting && !error && (
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: '0px',
+              left: '0',
+              right: '0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              padding: '10px 16px',
+              backgroundColor: '#38B000',
+              color: 'white',
+              boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.2)',
+            }}
+          >
+            <CheckCircleIcon size={18} color={'white'} />
+            <Typography
+              sx={{
+                color: 'white',
+                fontSize: '14px',
+                fontWeight: '600',
+              }}
+            >
+              {chrome.i18n.getMessage('Password__Change__Success')}
+            </Typography>
+          </Box>
+        )}
       </Box>
     </div>
   );

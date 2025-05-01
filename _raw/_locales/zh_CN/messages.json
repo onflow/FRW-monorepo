@@ -288,6 +288,15 @@
   "New__Password": {
     "message": "新密码"
   },
+  "Enter__New__Password": {
+    "message": "输入新密码"
+  },
+  "Change__Password": {
+    "message": "修改密码"
+  },
+  "Password__Change__Success": {
+    "message": "密码修改成功"
+  },
   "Current__Password": {
     "message": "确认密码"
   },
@@ -1399,6 +1408,9 @@
     "message": "删除此个人资料后，您将退出登录。您可以使用恢复短语、私钥或Google云端硬盘备份重新导入。"
   },
   "Could_not_enable_this_collection": {
-    "message": "无法启用此集合"
+    "message": "无法启用此收藏"
+  },
+  "Manage_Token": {
+    "message": "管理代币"
   }
 }

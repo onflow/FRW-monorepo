@@ -1,23 +1,23 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import { Box, MenuItem, Typography, IconButton } from '@mui/material';
+import { Box, MenuItem, Typography, IconButton, Drawer } from '@mui/material';
 import { StyledEngineProvider } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 
 import { storage } from '@/background/webapi';
-import type { CoinItem, ExtendedTokenInfo } from '@/shared/types/coin-types';
+import type { CoinItem } from '@/shared/types/coin-types';
 import type { PriceProvider } from '@/shared/types/network-types';
-import {
-  type ActiveAccountType,
-  type ActiveChildType_depreciated,
-} from '@/shared/types/wallet-types';
+import { type ActiveAccountType } from '@/shared/types/wallet-types';
 import StorageUsageCard from '@/ui/FRWComponent/StorageUsageCard';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import tips from 'ui/FRWAssets/svg/tips.svg';
+import WarningIcon from 'ui/FRWAssets/svg/warning.svg';
 import { useWallet } from 'ui/utils';
+
+import OnRampList from '../Wallet/OnRampList';
 
 import ClaimTokenCard from './ClaimTokenCard';
 import PriceCard from './PriceCard';
@@ -34,9 +34,9 @@ const useStyles = makeStyles(() => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '12px',
+    gap: '8px',
     padding: '0 18px',
-    paddingTop: '4px',
+    paddingTop: '0px',
     width: '100%',
     paddingBottom: '18px',
   },
@@ -58,7 +58,7 @@ const TokenDetail = () => {
   const [providers, setProviders] = useState<PriceProvider[]>([]);
   const [accountType, setAccountType] = useState<ActiveAccountType>('main');
   const [menuOpen, setMenuOpen] = useState(false);
-
+  const [isOnRamp, setIsOnRamp] = useState(false);
   const handleMenuToggle = () => {
     setMenuOpen(!menuOpen);
   };
@@ -85,7 +85,7 @@ const TokenDetail = () => {
 
   const Header = () => {
     return (
-      <Box sx={{ display: 'flex', mx: '-12px', position: 'relative' }}>
+      <Box sx={{ display: 'flex', mx: '-12px', position: 'relative', mb: '4px' }}>
         <IconButton onClick={history.goBack}>
           <ArrowBackIcon sx={{ color: 'icon.navi' }} />
         </IconButton>
@@ -200,16 +200,46 @@ const TokenDetail = () => {
               </Typography>
             </Box>
           )}
-          {tokenInfo && (
-            <TokenInfoCard
-              price={price}
-              token={token}
-              setAccessible={setAccessible}
-              accessible={accessible}
-              tokenInfo={tokenInfo}
-              accountType={accountType}
-              tokenId={tokenId}
-            />
+          <TokenInfoCard
+            tokenInfo={tokenInfo}
+            accountType={accountType}
+            tokenId={tokenId}
+            setIsOnRamp={setIsOnRamp}
+          />
+
+          {tokenInfo && !tokenInfo.isVerified && (
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '6px',
+                padding: '16px',
+                background: 'rgba(255, 255, 255, 0.08)',
+                borderRadius: '12px',
+              }}
+            >
+              <Box sx={{ position: 'relative', display: 'inline-block' }}>
+                <img src={WarningIcon} alt="Verified" style={{ width: '32px', height: '32px' }} />
+              </Box>
+              <Typography
+                sx={{ fontSize: '14px', fontWeight: 500, color: 'rgba(255, 255, 255, 0.80)' }}
+              >
+                This is an unverified token, only interact with tokens you trust.{' '}
+                <Typography
+                  component="span"
+                  sx={{
+                    textDecoration: 'underline',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: 400,
+                    color: 'rgba(255, 255, 255, 0.80)',
+                  }}
+                >
+                  View more.
+                </Typography>
+              </Typography>
+            </Box>
           )}
           {token === 'flow' && <StackingCard />}
           {network === 'testnet' && token === 'flow' && <ClaimTokenCard token={token} />}
@@ -218,6 +248,23 @@ const TokenDetail = () => {
           )}
 
           {token === 'flow' && <StorageUsageCard />}
+          {isOnRamp && (
+            <Drawer
+              anchor="bottom"
+              open={isOnRamp}
+              transitionDuration={300}
+              PaperProps={{
+                sx: {
+                  width: '100%',
+                  height: '65%',
+                  bgcolor: 'background.default',
+                  borderRadius: '18px 18px 0px 0px',
+                },
+              }}
+            >
+              <OnRampList close={() => setIsOnRamp(false)} />
+            </Drawer>
+          )}
         </div>
       </div>
     </StyledEngineProvider>

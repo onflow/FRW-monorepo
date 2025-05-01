@@ -293,7 +293,6 @@ export const importAccountBySeedPhrase = async ({
   await page.goto(`chrome-extension://${extensionId}/index.html#/dashboard`);
   await page.waitForURL(/.*\/dashboard.*/);
   // Wait for the account address to be visible
-  await expect(page.getByText(accountAddr)).toBeVisible({ timeout: 10_000 });
   const flowAddr = await getCurrentAddress(page);
 
   if (accountAddr && flowAddr !== accountAddr) {

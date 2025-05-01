@@ -288,6 +288,15 @@
   "New__Password": {
     "message": "Новый пароль"
   },
+  "Enter__New__Password": {
+    "message": "Введите новый пароль"
+  },
+  "Change__Password": {
+    "message": "Изменить пароль"
+  },
+  "Password__Change__Success": {
+    "message": "Пароль успешно изменен"
+  },
   "Current__Password": {
     "message": "Текущий пароль"
   },
@@ -1400,5 +1409,7 @@
   },
   "Remove_profile_warning_simplified": {
     "message": "После удаления этого профиля вы будете выходите из системы. Вы можете повторно импортировать с помощью фразы восстановления, закрытого ключа или резервной копии Google Drive."
+  "Manage_Token": {
+    "message": "Управление токенами"
   }
 }

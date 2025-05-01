@@ -416,7 +416,7 @@ export class WalletController extends BaseController {
     // Try for 2 mins to get the parent address
     const parentAddress = await retryOperation(
       async () => {
-        const address = userWalletService.getParentAddress();
+        const address = await userWalletService.getParentAddress();
         console.log('retryOperation - refreshWallets - parentAddress', address);
         if (!address) {
           throw new Error('Parent address not found');
@@ -1240,8 +1240,8 @@ export class WalletController extends BaseController {
     return wallets;
   };
 
-  getActiveAccountType = (): ActiveAccountType => {
-    const activeWallet = userWalletService.getActiveAccountType();
+  getActiveAccountType = async (): Promise<ActiveAccountType> => {
+    const activeWallet = await userWalletService.getActiveAccountType();
     return activeWallet;
   };
 
@@ -2854,6 +2854,10 @@ export class WalletController extends BaseController {
     this.abort();
   };
 
+  getKeyIndex = async (): Promise<number> => {
+    return await userWalletService.getKeyIndex();
+  };
+
   getNetwork = async (): Promise<string> => {
     return await userWalletService.getNetwork();
   };
@@ -3309,9 +3313,7 @@ export class WalletController extends BaseController {
   };
 
   allowLilicoPay = async (): Promise<boolean> => {
-    const isFreeGasFeeKillSwitch = await storage.get('freeGas');
-    const isFreeGasFeeEnabled = await storage.get('lilicoPayer');
-    return isFreeGasFeeKillSwitch && isFreeGasFeeEnabled;
+    return userWalletService.allowFreeGas();
   };
 
   signPayer = async (signable): Promise<string> => {
@@ -3397,7 +3399,7 @@ export class WalletController extends BaseController {
     movingBetweenEVMAndFlow?: boolean; // are we moving between EVM and Flow?
   } = {}): Promise<EvaluateStorageResult> => {
     const address = await this.getParentAddress();
-    const isFreeGasFeeEnabled = await this.allowLilicoPay();
+    const isFreeGasFeeEnabled = await userWalletService.allowFreeGas();
     const result = await this.storageEvaluator.evaluateStorage(
       address!,
       transferAmount,
@@ -3498,6 +3500,58 @@ export class WalletController extends BaseController {
 
   clearEvmNFTList = async () => {
     await evmNftService.clearEvmNfts();
+  };
+
+  changePassword = async (oldPassword: string, newPassword: string): Promise<boolean> => {
+    try {
+      // If we have a backup in Google Drive, update it first
+      try {
+        const userInfo = await userInfoService.getCurrentUserInfo();
+        const username = userInfo.username;
+        const backupUpdated = await googleDriveService.setNewPassword(
+          oldPassword,
+          newPassword,
+          username
+        );
+        if (backupUpdated === false) {
+          // Notify user and abort password change
+          mixpanelTrack.track('password_update_failed', {
+            address: (await this.getCurrentAddress()) || '',
+            error: 'Failed to update Google Drive backup. Password not changed.',
+          });
+          throw new Error('Failed to update Google Drive backup. Your password was not changed.');
+        }
+      } catch (error) {
+        // If updating Google Drive backup fails, abort password change
+        console.error('Failed to update Google Drive backup:', error);
+        mixpanelTrack.track('password_update_failed', {
+          address: (await this.getCurrentAddress()) || '',
+          error: error.message || error.toString(),
+        });
+        throw new Error('Failed to update Google Drive backup. Your password was not changed.');
+      }
+
+      // Change password for all keyrings in the user's wallet atomically
+      const result = await keyringService.changePassword(oldPassword, newPassword);
+      if (!result) {
+        throw new Error('Failed to update keyring password.');
+      }
+
+      // Track successful password change
+      mixpanelTrack.track('password_updated', {
+        address: (await this.getCurrentAddress()) || '',
+        success: true,
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Failed to update password:', error);
+      mixpanelTrack.track('password_update_failed', {
+        address: (await this.getCurrentAddress()) || '',
+        error: error.message,
+      });
+      return false;
+    }
   };
 }
 

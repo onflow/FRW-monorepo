@@ -4,7 +4,7 @@ import SignClient from '@walletconnect/sign-client';
 import { type SessionTypes } from '@walletconnect/types';
 import * as bip39 from 'bip39';
 import HDWallet from 'ethereum-hdwallet';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import {
@@ -65,6 +65,8 @@ const Sync = () => {
   const [isSwitchingAccount, setIsSwitchingAccount] = useState<boolean>(true);
   const [isAddWallet, setIsAddWallet] = useState<boolean>(false);
 
+  const isSignClientInitialized = useRef(false);
+
   useEffect(() => {
     const checkWalletStatus = async () => {
       const isBooted = await usewallet.isBooted();
@@ -93,6 +95,11 @@ const Sync = () => {
   }, [loadView]);
 
   // 1. Initial Setup Functions - These are created once when component mounts
+  /**
+   * Get the account key from the mnemonic
+   * @returns {Object} The account key
+   * TODO: move this to the background to use existing getAccountKey function
+   */
   const getAccountKey = useCallback(() => {
     const hdwallet = HDWallet.fromMnemonic(mnemonic);
     const publicKey = hdwallet.derive("m/44'/539'/0'/0/0").getPublicKey().toString('hex');
@@ -143,14 +150,14 @@ const Sync = () => {
   }, []);
 
   const _subscribeToEvents = useCallback(
-    async (client: SignClient) => {
-      if (!client) {
+    async (signClient: SignClient) => {
+      if (!signClient) {
         throw new Error('WalletConnect is not initialized');
       }
 
-      client.on('session_update', ({ topic, params }) => {
+      signClient.on('session_update', ({ topic, params }) => {
         const { namespaces } = params;
-        const session = client.session.get(topic);
+        const session = signClient.session.get(topic);
         onSessionConnected({ ...session, namespaces });
       });
     },
@@ -159,7 +166,7 @@ const Sync = () => {
 
   // 3. Account and device info handlers, check if account is available based on userid, if not, generate account key and device info
   const handleAccountInfo = useCallback(
-    async (wallet: SignClient, topic: string, jsonObject: any) => {
+    async (signClient: SignClient, topic: string, jsonObject: any) => {
       try {
         await usewallet.checkAvailableAccount(jsonObject.data.userId);
         setIsSwitchingAccount(true);
@@ -183,7 +190,7 @@ const Sync = () => {
           setDeviceInfo(deviceInfo);
 
           try {
-            await wallet.request({
+            await signClient.request({
               topic,
               chainId: 'flow:mainnet',
               request: {
@@ -211,9 +218,9 @@ const Sync = () => {
 
   // 4. Wallet request to fetch account info from client
   const sendRequest = useCallback(
-    async (wallet: SignClient, topic: string) => {
+    async (signClient: SignClient, topic: string) => {
       try {
-        const result = await wallet.request({
+        const result = await signClient.request({
           topic,
           chainId: 'flow:mainnet',
           request: {
@@ -228,7 +235,7 @@ const Sync = () => {
         const jsonObject = JSON.parse(result as string);
         console.log('FCLWalletConnectMethod.accountInfo', jsonObject.data.userId);
 
-        await handleAccountInfo(wallet, topic, jsonObject);
+        await handleAccountInfo(signClient, topic, jsonObject);
       } catch (error) {
         console.error('Error in account info request:', error);
       }
@@ -238,16 +245,23 @@ const Sync = () => {
 
   // 5. Main Initialization Effect
   useEffect(() => {
-    let wallet: SignClient | null = null;
+    if (isSignClientInitialized.current) {
+      console.log('Debug: Wallet already initialized, skipping');
+      return;
+    }
 
     const createWeb3Wallet = async () => {
+      let signClient: SignClient | null = null;
+
       try {
+        isSignClientInitialized.current = true;
+
         // Initialize WalletConnect
         const extensionOrigin = chrome.runtime.id
           ? `chrome-extension://${chrome.runtime.id}`
           : 'https://fcw-link.lilico.app';
 
-        wallet = await SignClient.init({
+        signClient = await SignClient.init({
           core: new Core({
             projectId: process.env.WC_PROJECTID,
           }),
@@ -264,10 +278,10 @@ const Sync = () => {
         });
 
         // Subscribe to events
-        await _subscribeToEvents(wallet);
+        await _subscribeToEvents(signClient);
 
         // Connect and get URI
-        const { uri, approval } = await wallet.connect({
+        const { uri, approval } = await signClient.connect({
           requiredNamespaces: {
             flow: {
               methods: [FCLWalletConnectMethod.accountInfo, FCLWalletConnectMethod.addDeviceInfo],
@@ -283,10 +297,11 @@ const Sync = () => {
           setLoadingString('Scan approved by client');
           setSecondLine('Generating account info');
           await onSessionConnected(session);
-          await sendRequest(wallet, session.topic);
+          await sendRequest(signClient, session.topic);
         }
       } catch (error) {
         console.error('Error in wallet setup:', error);
+        isSignClientInitialized.current = false; // Reset on error
       }
     };
 
