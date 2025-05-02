@@ -407,6 +407,11 @@ const dataConfig: Record<string, OpenApiConfigValue> = {
     method: 'get',
     params: ['network', 'chain_type'],
   },
+  create_manual_address_v2: {
+    path: '/v2/user/manualaddress',
+    method: 'post',
+    params: ['account_key'],
+  },
 };
 
 const defaultFlowToken = {
@@ -1260,6 +1265,19 @@ class OpenApiService {
   getManualAddress = async () => {
     const config = this.store.config.manual_address;
     const data = await this.sendRequest(config.method, config.path, {});
+
+    return data;
+  };
+
+  createManualAddress = async (account_key: AccountKeyRequest) => {
+    const config = this.store.config.create_manual_address_v2;
+    const transformedKey = {
+      hashAlgorithm: account_key.hash_algo,
+      publicKey: account_key.public_key,
+      signatureAlgorithm: account_key.sign_algo,
+      weight: account_key.weight,
+    };
+    const data = await this.sendRequest(config.method, config.path, {}, transformedKey);
 
     return data;
   };

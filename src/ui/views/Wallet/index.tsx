@@ -46,7 +46,7 @@ function TabPanel(props) {
   );
 }
 const WalletTab = ({ network }) => {
-  const usewallet = useWallet();
+  const wallet = useWallet();
   const history = useHistory();
   const location = useLocation();
   const { initializeStore } = useInitHook();
@@ -119,24 +119,24 @@ const WalletTab = ({ network }) => {
 
   const fetchWallet = useCallback(async () => {
     // If childType is 'evm', handle it first
-    const activeAccountType = await usewallet.getActiveAccountType();
+    const activeAccountType = await wallet.getActiveAccountType();
     if (activeAccountType === 'evm') {
       return;
       // If not 'evm', check if it's not active
     } else if (activeAccountType === 'child') {
       // Child wallet
-      const ftResult = await usewallet.checkAccessibleFt(address);
+      const ftResult = await wallet.checkAccessibleFt(address);
       if (ftResult) {
         setAccessible(ftResult);
       }
     }
 
     // Handle all non-evm and non-active cases here
-  }, [address, usewallet]);
+  }, [address, wallet]);
 
   const fetchChildState = useCallback(async () => {
     setChildStateLoading(true);
-    const accountType = await usewallet.getActiveAccountType();
+    const accountType = await wallet.getActiveAccountType();
     setChildAccount(childAccounts);
     setChildType(accountType);
     if (accountType !== 'main' && accountType !== 'evm') {
@@ -146,7 +146,7 @@ const WalletTab = ({ network }) => {
     }
     setChildStateLoading(false);
     return accountType;
-  }, [usewallet, childAccounts]);
+  }, [wallet, childAccounts]);
 
   useEffect(() => {
     fetchChildState();
@@ -202,20 +202,20 @@ const WalletTab = ({ network }) => {
 
   useEffect(() => {
     const checkPermission = async () => {
-      if (!(await usewallet.isUnlocked())) {
+      if (!(await wallet.isUnlocked())) {
         console.log('Wallet is locked');
         return;
       }
-      if (!(await usewallet.getParentAddress())) {
+      if (!(await wallet.getParentAddress())) {
         console.log('Wallet Tab - No main wallet yet');
         return;
       }
-      const result = await usewallet.checkCanMoveChild();
+      const result = await wallet.checkCanMoveChild();
       setCanMoveChild(result);
     };
 
     checkPermission();
-  }, [usewallet]);
+  }, [wallet]);
 
   useEffect(() => {
     // Add event listener for opening onramp
@@ -227,6 +227,10 @@ const WalletTab = ({ network }) => {
       eventBus.removeEventListener('openOnRamp', onRampHandler);
     };
   }, []);
+
+  const handleAddAddress = () => {
+    wallet.createManualAddress();
+  };
 
   return (
     <Box
@@ -259,9 +263,9 @@ const WalletTab = ({ network }) => {
           }}
         >
           {noAddress ? (
-            <Typography variant="h4" component="div">
-              -
-            </Typography>
+            <Button variant="contained" onClick={handleAddAddress}>
+              {chrome.i18n.getMessage('Add_address')}
+            </Button>
           ) : coinsLoaded ? (
             `$${formatLargeNumber(balance)}`
           ) : (

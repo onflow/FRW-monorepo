@@ -242,12 +242,13 @@ export class WalletController extends BaseController {
     // We're creating the Flow address for the account
     // Only after this, do we have a valid wallet with a Flow address
     const result = await openapiService.createFlowAddressV2();
-    setCachedData(registerStatusKey(), true);
+    const network = await this.getNetwork();
+    setCachedData(registerStatusKey(network), true);
 
-    this.checkForNewAddress(result.data.txid);
+    this.checkForNewAddress(result.data.txid, network);
   };
 
-  checkForNewAddress = async (txid: string): Promise<FclAccount | null> => {
+  checkForNewAddress = async (txid: string, network: string): Promise<FclAccount | null> => {
     try {
       const txResult = await fcl.tx(txid).onceSealed();
 
@@ -272,8 +273,22 @@ export class WalletController extends BaseController {
     } catch (error) {
       throw new Error(`Account creation failed: ${error.message || 'Unknown error'}`);
     } finally {
-      setCachedData(registerStatusKey(), false);
+      setCachedData(registerStatusKey(network), false);
     }
+  };
+
+  /**
+   * Create a manual address
+   * @returns
+   */
+  createManualAddress = async () => {
+    const accountKey = userWalletService.getCurrentAccountKey();
+
+    const data = await openapiService.createManualAddress(accountKey);
+    const txid = data.data.txid;
+    const network = await this.getNetwork();
+    setCachedData(registerStatusKey(network), true);
+    this.checkForNewAddress(txid, network);
   };
 
   /**
@@ -336,6 +351,13 @@ export class WalletController extends BaseController {
 
     // Set the current pubkey in userWallet
     userWalletService.setCurrentPubkey(publicKey);
+    const accountKey = {
+      public_key: accounts[0].publicKey,
+      sign_algo: accounts[0].signAlgo,
+      hash_algo: accounts[0].hashAlgo,
+      weight: 1000,
+    };
+    userWalletService.setAccountKey(accountKey);
   };
 
   /**
@@ -394,6 +416,13 @@ export class WalletController extends BaseController {
 
     // Set the current pubkey in userWallet
     userWalletService.setCurrentPubkey(publicKey);
+    const accountKey = {
+      public_key: accounts[0].publicKey,
+      sign_algo: accounts[0].signAlgo,
+      hash_algo: accounts[0].hashAlgo,
+      weight: 1000,
+    };
+    userWalletService.setAccountKey(accountKey);
   };
 
   /**

@@ -101,6 +101,6 @@ export const useNoAddress = (
   return useUserData<boolean>(network && publicKey ? noAddressKey(network, publicKey) : null);
 };
 
-export const useRegisterStatus = () => {
-  return useCachedData<boolean>(registerStatusKey());
+export const useRegisterStatus = (network: string | undefined | null) => {
+  return useCachedData<boolean>(network ? registerStatusKey(network) : null);
 };

@@ -87,7 +87,7 @@ export const useProfiles = () => {
   const currentBalance = useAccountBalance(network, activeAccounts?.currentAddress);
 
   const noAddress = useNoAddress(network, userWallets?.currentPubkey);
-  const registerStatus = useRegisterStatus();
+  const registerStatus = useRegisterStatus(network);
   const parentWallet =
     walletList.find((wallet) => wallet.address === activeAccounts?.parentAddress) ?? INITIAL_WALLET;
 

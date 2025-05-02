@@ -102,7 +102,7 @@ export const noAddressKey = (network: string, publicKey: string) =>
 export const noAddressRefreshRegex = refreshKey(noAddressKey);
 export type NoAddressStore = boolean;
 
-export const registerStatusKey = () => 'register-status';
+export const registerStatusKey = (network: string) => `register-status-${network}`;
 
 export const registerStatusRefreshRegex = refreshKey(registerStatusKey);
 export type RegisterStatusStore = boolean;
