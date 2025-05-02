@@ -270,7 +270,7 @@ const WalletTab = ({ network }) => {
                   fontSize: '14px',
                   fontWeight: 500,
                   color: '#777E90',
-                  height: '42px',
+                  height: '51px',
                   display: 'flex',
                   alignItems: 'center',
                 }}
