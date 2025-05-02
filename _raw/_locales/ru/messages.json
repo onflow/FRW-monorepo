@@ -1388,5 +1388,11 @@
   },
   "Check_your_public_key": {
     "message": "Проверьте ваш публичный ключ"
+  },
+  "Add_address": {
+    "message": "Добавить новый адрес"
+  },
+  "Address_creation_in_progress": {
+    "message": "Создание адреса в процессе..."
   }
 }

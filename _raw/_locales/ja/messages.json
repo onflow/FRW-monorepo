@@ -1388,5 +1388,11 @@
   },
   "Check_your_public_key": {
     "message": "公開鍵を確認してください"
+  },
+  "Add_address": {
+    "message": "新しいアドレスを追加"
+  },
+  "Address_creation_in_progress": {
+    "message": "アドレス作成中..."
   }
 }

@@ -51,7 +51,7 @@ const WalletTab = ({ network }) => {
   const location = useLocation();
   const { initializeStore } = useInitHook();
   const { coins, balance, coinsLoaded } = useCoins();
-  const { childAccounts, evmWallet, currentWallet, noAddress } = useProfiles();
+  const { childAccounts, evmWallet, currentWallet, noAddress, registerStatus } = useProfiles();
   const [value, setValue] = React.useState(0);
 
   const [address, setAddress] = useState<string>('');
@@ -263,9 +263,18 @@ const WalletTab = ({ network }) => {
           }}
         >
           {noAddress ? (
-            <Button variant="contained" onClick={handleAddAddress}>
-              {chrome.i18n.getMessage('Add_address')}
-            </Button>
+            !registerStatus ? (
+              <Typography
+                variant="body1"
+                sx={{ fontSize: '14px', fontWeight: 500, color: '#777E90' }}
+              >
+                {chrome.i18n.getMessage('Address_creation_in_progress')}
+              </Typography>
+            ) : (
+              <Button variant="contained" onClick={handleAddAddress}>
+                {chrome.i18n.getMessage('Add_address')}
+              </Button>
+            )
           ) : coinsLoaded ? (
             `$${formatLargeNumber(balance)}`
           ) : (
