@@ -293,11 +293,23 @@ export class WalletController extends BaseController {
    */
   createManualAddress = async () => {
     const accountKey = userWalletService.getCurrentAccountKey();
-    setCachedData(registerStatusKey(accountKey.public_key), true);
 
-    const data = await openapiService.createManualAddress(accountKey);
-    const txid = data.data.txid;
-    this.checkForNewAddress(txid);
+    try {
+      setCachedData(registerStatusKey(accountKey.public_key), true);
+
+      const data = await openapiService.createManualAddress(accountKey);
+      const txid = data.data.txid;
+      this.checkForNewAddress(txid);
+    } catch (error) {
+      // Reset the registration status if the operation fails
+      setCachedData(registerStatusKey(accountKey.public_key), false);
+
+      // Log the error for debugging
+      console.error('Failed to create manual address:', error);
+
+      // Re-throw a more specific error
+      throw new Error('Failed to create manual address. Please try again later.');
+    }
   };
 
   /**
