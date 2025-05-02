@@ -304,6 +304,11 @@ export class WalletController extends BaseController {
         publickey,
         1000
       );
+
+      if (!data?.data?.txid) {
+        throw new Error('Transaction ID not found in response');
+      }
+
       const txid = data.data.txid;
       this.checkForNewAddress(txid);
     } catch (error) {
