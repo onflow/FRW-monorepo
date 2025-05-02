@@ -1,6 +1,33 @@
-import { loginAsTestUser } from '../utils/helper';
-import { test, expect } from '../utils/loader';
+import { fillInPassword, importSenderAccount, loginAsTestUser } from '../utils/helper';
+import { test, expect, getAuth } from '../utils/loader';
 
 test('Login test', async ({ page, extensionId }) => {
   await loginAsTestUser({ page, extensionId });
+});
+
+test.skip('Remove profile test', async ({ page, extensionId }) => {
+  const keysFile = await getAuth();
+
+  if (keysFile.password === '') {
+    throw new Error('Password is empty in keys file');
+  }
+  await loginAsTestUser({ page, extensionId });
+  await importSenderAccount({ page, extensionId });
+
+  await page.getByLabel('avatar').click();
+  await page.getByLabel('avatar').click();
+  await page.getByLabel('avatar').click();
+  await page.getByRole('button', { name: 'Profile end' }).click();
+  await page.getByRole('button', { name: 'Remove Profile' }).click();
+  await fillInPassword({ page, password: keysFile.password });
+  await page.getByRole('button', { name: 'Remove' }).click();
+
+  // Now login as the test user
+  await loginAsTestUser({ page, extensionId });
+  // Check that the sender account is not visible
+  // switch to the correct account
+  await page.getByLabel('menu').click();
+  await page.getByRole('button', { name: 'close' }).click();
+
+  expect(await page.getByTestId('profile-item-nickname-sender').count()).toBe(0);
 });

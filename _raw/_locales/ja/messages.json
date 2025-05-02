@@ -147,6 +147,9 @@
   "Backup": {
     "message": "バックアップ"
   },
+  "Backup__Found": {
+    "message": "バックアップ発見"
+  },
   "Claim__for__your": {
     "message": "請求する "
   },
@@ -1372,10 +1375,19 @@
     "message": "プロファイルをインポート"
   },
   "Insufficient_Storage": {
-    "message": "ストレージが不足しています"
+    "message": "ストレージ容量が不足しています。"
+  },
+  "Remove__Profile": {
+    "message": "プロファイルを削除"
+  },
+  "Remove": {
+    "message": "削除"
+  },
+  "Remove_profile_warning_simplified": {
+    "message": "このプロファイルを削除すると、ログアウトされます。リカバリーフレーズ、秘密鍵、またはGoogleドライブのバックアップを使用して再インポートできます。"
   },
   "Almost_run_out_of_account_storage": {
-    "message": "アカウントのストレージが不足しています"
+    "message": "アカウントのストレージがほとんどありません。"
   },
   "Transaction_failed_storage_exceeded": {
     "message": "取引が失敗しました。アカウントのストレージ使用量により、アカウントの最低FLOW残高を下回ったためです。"

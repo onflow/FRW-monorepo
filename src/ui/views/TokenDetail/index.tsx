@@ -7,12 +7,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 
 import { storage } from '@/background/webapi';
-import type { CoinItem, ExtendedTokenInfo } from '@/shared/types/coin-types';
+import type { CoinItem } from '@/shared/types/coin-types';
 import type { PriceProvider } from '@/shared/types/network-types';
-import {
-  type ActiveAccountType,
-  type ActiveChildType_depreciated,
-} from '@/shared/types/wallet-types';
+import { type ActiveAccountType } from '@/shared/types/wallet-types';
 import StorageUsageCard from '@/ui/FRWComponent/StorageUsageCard';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -37,9 +34,9 @@ const useStyles = makeStyles(() => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '12px',
+    gap: '8px',
     padding: '0 18px',
-    paddingTop: '4px',
+    paddingTop: '0px',
     width: '100%',
     paddingBottom: '18px',
   },
@@ -88,7 +85,7 @@ const TokenDetail = () => {
 
   const Header = () => {
     return (
-      <Box sx={{ display: 'flex', mx: '-12px', position: 'relative' }}>
+      <Box sx={{ display: 'flex', mx: '-12px', position: 'relative', mb: '4px' }}>
         <IconButton onClick={history.goBack}>
           <ArrowBackIcon sx={{ color: 'icon.navi' }} />
         </IconButton>
@@ -204,10 +201,6 @@ const TokenDetail = () => {
             </Box>
           )}
           <TokenInfoCard
-            price={price}
-            token={token}
-            setAccessible={setAccessible}
-            accessible={accessible}
             tokenInfo={tokenInfo}
             accountType={accountType}
             tokenId={tokenId}

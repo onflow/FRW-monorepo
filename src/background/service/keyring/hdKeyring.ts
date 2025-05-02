@@ -98,6 +98,13 @@ export class HDKeyring {
     throw new Error('Operation not supported');
   }
 
+  async removeAllAccounts() {
+    this.hdWallet = null;
+    this.mnemonic = undefined;
+    this.activeIndexes = [];
+    return true;
+  }
+
   async exportAccount(address: string): Promise<string> {
     const wallet = this.hdWallet?.derivePath(`m/44'/539'/0'/0/${address}`);
     if (!wallet) throw new Error('Address not found');

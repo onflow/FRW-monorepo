@@ -138,6 +138,9 @@
   "Backup": {
     "message": "Backup"
   },
+  "Backup__Found": {
+    "message": "Backup Found"
+  },
   "Claim__for__your": {
     "message": "Claim for your "
   },
@@ -1364,6 +1367,15 @@
   },
   "Insufficient_Storage": {
     "message": "Insufficient storage."
+  },
+  "Remove__Profile": {
+    "message": "Remove Profile"
+  },
+  "Remove": {
+    "message": "Remove"
+  },
+  "Remove_profile_warning_simplified": {
+    "message": "After removing this profile, you will be logged out. You can re-import using a recovery phrase, private key, or Google Drive backup."
   },
   "Almost_run_out_of_account_storage": {
     "message": "Almost run out of account storage."
