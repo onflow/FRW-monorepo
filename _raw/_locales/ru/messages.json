@@ -1401,6 +1401,15 @@
   "Could_not_enable_this_collection": {
     "message": "Не удалось включить эту коллекцию"
   },
+  "Remove__Profile": {
+    "message": "Удалить профиль"
+  },
+  "Remove": {
+    "message": "Удалить"
+  },
+  "Remove_profile_warning_simplified": {
+    "message": "После удаления этого профиля вы будете выходите из системы. Вы можете повторно импортировать с помощью фразы восстановления, закрытого ключа или резервной копии Google Drive."
+  },
   "Manage_Token": {
     "message": "Управление токенами"
   },
