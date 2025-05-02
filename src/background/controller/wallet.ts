@@ -310,7 +310,7 @@ export class WalletController extends BaseController {
         1000
       );
 
-      if (!data?.data?.txid) {
+      if (!data || !data.data || !data.data.txid) {
         throw new Error('Transaction ID not found in response');
       }
 
