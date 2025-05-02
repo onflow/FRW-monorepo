@@ -49,7 +49,6 @@ import {
   type EvmAccountStore,
   accountBalanceKey,
   accountBalanceRefreshRegex,
-  noAddressKey,
 } from '@/shared/utils/cache-data-keys';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import { setUserData } from '@/shared/utils/user-data-access';
@@ -1221,8 +1220,6 @@ const loadAllAccountsWithPubKey = async (
 
   let mainAccounts: MainAccount[] = [];
   try {
-    // Set the no address flag to false when retrying to load the main accounts
-    setUserData(noAddressKey(network, pubKey), false);
     mainAccounts = await retryOperation(
       async () => {
         try {
@@ -1245,12 +1242,9 @@ const loadAllAccountsWithPubKey = async (
   }
 
   if (!mainAccounts || mainAccounts.length === 0) {
-    setUserData(noAddressKey(network, pubKey), true);
     console.warn(
       `No main accounts loaded even after trying for ${Math.round(MAX_LOAD_TIME / 1000 / 60)} minutes`
     );
-  } else {
-    setUserData(noAddressKey(network, pubKey), false);
   }
 
   // Now for each main account load the evm address and child accounts

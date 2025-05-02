@@ -25,7 +25,6 @@ import {
   useUserInfo,
   useUserWallets,
   useRegisterStatus,
-  useNoAddress,
 } from './use-account-hooks';
 
 const INITIAL_WALLET = {
@@ -86,7 +85,7 @@ export const useProfiles = () => {
 
   const currentBalance = useAccountBalance(network, activeAccounts?.currentAddress);
 
-  const noAddress = useNoAddress(network, userWallets?.currentPubkey);
+  const noAddress = activeAccounts && activeAccounts.currentAddress === null;
   const registerStatus = useRegisterStatus(network);
   const parentWallet =
     walletList.find((wallet) => wallet.address === activeAccounts?.parentAddress) ?? INITIAL_WALLET;
