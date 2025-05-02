@@ -45,6 +45,10 @@ export const getCachedScripts = async () => {
   return getCachedData<CadenceScriptsStore>(cadenceScriptsKey());
 };
 
+export const registerStatusKey = (pubKey: string) => `register-status-${pubKey}`;
+
+export const registerStatusRefreshRegex = refreshKey(registerStatusKey);
+export type RegisterStatusStore = boolean;
 /*
  * --------------------------------------------------------------------
  * Network level keys (keyed by network & public key)
@@ -95,11 +99,6 @@ export const accountBalanceKey = (network: string, address: string) =>
   `account-balance-${network}-${address}`;
 
 export const accountBalanceRefreshRegex = refreshKey(accountBalanceKey);
-
-export const registerStatusKey = () => 'register-status';
-
-export const registerStatusRefreshRegex = refreshKey(registerStatusKey);
-export type RegisterStatusStore = boolean;
 
 // Transfer list
 export const transferListKey = (

@@ -93,6 +93,6 @@ export const useKeyringIds = () => {
   return keyringState.vault.map((vaultEntry) => vaultEntry.id);
 };
 
-export const useRegisterStatus = () => {
-  return useCachedData<boolean>(registerStatusKey());
+export const useRegisterStatus = (pubKey: string | undefined | null) => {
+  return useCachedData<boolean>(pubKey ? registerStatusKey(pubKey) : null);
 };
