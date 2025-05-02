@@ -114,14 +114,7 @@ class UserWallet {
   };
 
   clear = async () => {
-    if (!this.store) {
-      await this.init();
-    } else {
-      Object.assign(this.store, USER_WALLET_TEMPLATE);
-    }
     this.activeAccounts = new Map();
-    // clear all session storage
-    await storage.clearSession();
   };
 
   isLocked = () => {
@@ -206,6 +199,7 @@ class UserWallet {
   };
 
   setNetwork = async (network: string) => {
+    console.trace('setNetwork', network);
     if (!this.store) {
       throw new Error('UserWallet not initialized');
     }
@@ -1399,8 +1393,8 @@ const loadMainAccountsWithPubKey = async (
     ([address, accountDetails], index) => {
       const childWallet: WalletAccount = {
         address: address,
-        name: accountDetails.name ?? 'Unknown',
-        icon: accountDetails.thumbnail.url ?? '',
+        name: accountDetails?.name ?? 'Unknown',
+        icon: accountDetails?.thumbnail?.url ?? '',
         chain: networkToChainId(network),
         id: index,
         color: '#FFFFFF',
