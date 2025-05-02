@@ -59,6 +59,7 @@ import {
   type AccountKeyRequest,
   type DeviceInfoRequest,
   type FlowNetwork,
+  type AccountAlgo,
 } from '../../shared/types/network-types';
 import { type PublicKeyAccount, type MainAccount } from '../../shared/types/wallet-types';
 import { type WalletController } from '../controller/wallet';
@@ -203,6 +204,7 @@ class UserWallet {
   };
 
   setNetwork = async (network: string) => {
+    console.trace('setNetwork', network);
     if (!this.store) {
       throw new Error('UserWallet not initialized');
     }
@@ -1100,22 +1102,37 @@ const preloadAllAccountsWithPubKey = async (
   if (!network || !pubKey) {
     throw new Error('Network and pubkey are required');
   }
-  const mainAccounts = await retryOperation(
-    async () => {
-      const mainAccounts = await getMainAccountsWithPubKey(network, pubKey);
-      if (mainAccounts && mainAccounts.length > 0) {
-        return mainAccounts;
-      }
-      throw new Error('Main accounts not yet loaded');
-    },
-    MAX_LOAD_TIME,
-    POLL_INTERVAL
-  );
-  if (!mainAccounts || mainAccounts.length === 0) {
-    throw new Error(
-      `Failed to load main accounts even after trying for ${Math.round(MAX_LOAD_TIME / 1000 / 60)} minutes`
+
+  let mainAccounts: MainAccount[] = [];
+  try {
+    mainAccounts = await retryOperation(
+      async () => {
+        try {
+          const accounts = await getMainAccountsWithPubKey(network, pubKey);
+
+          if (accounts && accounts.length > 0) {
+            return accounts;
+          }
+
+          throw new Error('Main accounts not yet loaded');
+        } catch (error) {
+          throw error;
+        }
+      },
+      MAX_LOAD_TIME / POLL_INTERVAL,
+      POLL_INTERVAL
     );
+  } catch (error) {
+    console.warn('Failed to load main accounts after maximum retries:', error.message);
   }
+
+  if (!mainAccounts || mainAccounts.length === 0) {
+    console.warn(
+      `No main accounts loaded even after trying for ${Math.round(MAX_LOAD_TIME / 1000 / 60)} minutes`
+    );
+    return [];
+  }
+
   // Now for each main account load the evm address and child accounts
   const childAndEvmAccounts = await Promise.all(
     mainAccounts.flatMap((mainAccount) => {
@@ -1178,22 +1195,26 @@ const setupNewAccount = async (
   pubKey: string,
   account: FclAccount
 ): Promise<MainAccount[]> => {
-  // Setup new account after
+  const indexOfKey = account.keys.findIndex((key) => key.publicKey === pubKey);
+  if (indexOfKey === -1) {
+    throw new Error('Key not found');
+  }
+  // Setup new account after registration is complete
   const mainAccounts: MainAccount[] = [
     {
-      keyIndex: account.keys[0].index,
-      weight: account.keys[0].weight,
-      signAlgo: account.keys[0].signAlgo,
-      signAlgoString: account.keys[0].signAlgoString,
-      hashAlgo: account.keys[0].hashAlgo,
-      hashAlgoString: account.keys[0].hashAlgoString,
+      keyIndex: account.keys[indexOfKey].index,
+      weight: account.keys[indexOfKey].weight,
+      signAlgo: account.keys[indexOfKey].signAlgo,
+      signAlgoString: account.keys[indexOfKey].signAlgoString,
+      hashAlgo: account.keys[indexOfKey].hashAlgo,
+      hashAlgoString: account.keys[indexOfKey].hashAlgoString,
       address: withPrefix(account.address) as string,
-      publicKey: account.keys[0].publicKey,
+      publicKey: account.keys[indexOfKey].publicKey,
       chain: networkToChainId(network),
-      id: 0,
-      name: getEmojiByIndex(0).name,
-      icon: getEmojiByIndex(0).emoji,
-      color: getEmojiByIndex(0).bgcolor,
+      id: indexOfKey,
+      name: getEmojiByIndex(indexOfKey).name,
+      icon: getEmojiByIndex(indexOfKey).emoji,
+      color: getEmojiByIndex(indexOfKey).bgcolor,
     },
   ];
 
@@ -1318,8 +1339,8 @@ export const loadChildAccountsOfParent = async (
     ([address, accountDetails], index) => {
       const childWallet: WalletAccount = {
         address: address,
-        name: accountDetails.name ?? 'Unknown',
-        icon: accountDetails.thumbnail.url ?? '',
+        name: accountDetails?.name ?? 'Unknown',
+        icon: accountDetails?.thumbnail?.url ?? '',
         chain: networkToChainId(network),
         id: index,
         color: '#FFFFFF',

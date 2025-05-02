@@ -45,6 +45,10 @@ export const getCachedScripts = async () => {
   return getCachedData<CadenceScriptsStore>(cadenceScriptsKey());
 };
 
+export const registerStatusKey = (pubKey: string) => `register-status-${pubKey}`;
+
+export const registerStatusRefreshRegex = refreshKey(registerStatusKey);
+export type RegisterStatusStore = boolean;
 /*
  * --------------------------------------------------------------------
  * Network level keys (keyed by network & public key)

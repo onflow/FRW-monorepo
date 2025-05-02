@@ -13,7 +13,11 @@ import { type TokenInfo } from 'flow-native-token-registry';
 import { encode } from 'rlp';
 import web3, { TransactionError, Web3 } from 'web3';
 
-import { getAccountKey, pubKeyAccountToAccountKey } from '@/background/utils/account-key';
+import {
+  getAccountKey,
+  pubKeyAccountToAccountKey,
+  pubKeyTupleToAccountKey,
+} from '@/background/utils/account-key';
 import {
   findAddressWithSeed,
   findAddressWithPK,
@@ -45,8 +49,13 @@ import {
   type Currency,
   type ActiveAccountType,
 } from '@/shared/types/wallet-types';
-import { ensureEvmAddressPrefix, isValidEthereumAddress, withPrefix } from '@/shared/utils/address';
-import { getSignAlgo } from '@/shared/utils/algo';
+import {
+  ensureEvmAddressPrefix,
+  isValidEthereumAddress,
+  isValidFlowAddress,
+  withPrefix,
+} from '@/shared/utils/address';
+import { getSignAlgo, getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
 import { FLOW_BIP44_PATH, SIGN_ALGO_NUM_ECDSA_P256 } from '@/shared/utils/algo-constants';
 import {
   getCachedScripts,
@@ -59,6 +68,8 @@ import {
   type EvmNftIdsStore,
   type EvmNftCollectionListStore,
   evmNftCollectionListKey,
+  registerStatusKey,
+  registerStatusRefreshRegex,
 } from '@/shared/utils/cache-data-keys';
 import {
   convertFlowBalanceToString,
@@ -120,7 +131,7 @@ import { getScripts } from '../service/openapi';
 import type { ConnectedSite } from '../service/permission';
 import type { PreferenceAccount } from '../service/preference';
 import { type EvaluateStorageResult, StorageEvaluator } from '../service/storage-evaluator';
-import { getValidData } from '../utils/data-cache';
+import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
 import defaultConfig from '../utils/defaultConfig.json';
 import { getEmojiList } from '../utils/emoji-util';
 import erc20ABI from '../utils/erc20.abi.json';
@@ -150,6 +161,11 @@ export class WalletController extends BaseController {
   constructor() {
     super();
     this.storageEvaluator = new StorageEvaluator();
+
+    registerRefreshListener(registerStatusRefreshRegex, async (pubKey: string) => {
+      // The ttl is set to 2 minutes. After that we set the cache to false
+      setCachedData(registerStatusKey(pubKey), false, 120_000);
+    });
   }
   // Adding as tests load the extension really, really fast
   // It's possible to call the wallet controller before services are loaded
@@ -211,9 +227,13 @@ export class WalletController extends BaseController {
 
     // We're creating the keyring with the mnemonic. This will encypt the private keys and store them in the keyring vault and deepVault
     await this.createKeyringWithMnemonics(password, mnemonic);
+
     // We're creating the Flow address for the account
     // Only after this, do we have a valid wallet with a Flow address
     const result = await openapiService.createFlowAddressV2();
+    // Set a two minute cache for the register status
+    setCachedData(registerStatusKey(accountKey.public_key), true, 120_000);
+
     this.checkForNewAddress(result.data.txid);
   };
 
@@ -238,9 +258,88 @@ export class WalletController extends BaseController {
       }
 
       userWalletService.registerCurrentPubkey(account.keys[0].publicKey, account);
+
+      // Set the register status cache to false
+      setCachedData(registerStatusKey(account.keys[0].publicKey), false, 120_000);
+
       return account;
     } catch (error) {
       throw new Error(`Account creation failed: ${error.message || 'Unknown error'}`);
+    }
+  };
+
+  registerAccountImport = async (pubKey: string, account: FclAccount) => {
+    userWalletService.registerCurrentPubkey(pubKey, account);
+  };
+
+  importAccountFromMobile = async (address: string, password: string, mnemonic: string) => {
+    // Query the account to get the account info befofe we add the key
+    const accountInfo = await this.getAccountInfo(address);
+
+    // The account is the public key of the account. It's derived from the mnemonic. We do not support custom curves or passphrases for new accounts
+    const accountKey: AccountKeyRequest = await getAccountKey(mnemonic);
+
+    // We're booting the keyring with the new password
+    // This does not update the vault, it simply sets the password / cypher methods we're going to use to store our private keys in the vault
+    await this.boot(password);
+    // Login to the account - it should already be registered by the mobile app
+    await this.loginWithMnemonic(mnemonic, true);
+
+    // We're creating the keyring with the mnemonic. This will encypt the private keys and store them in the keyring vault and deepVault
+    await this.createKeyringWithMnemonics(password, mnemonic);
+
+    // Locally add the key to the account if not there already
+    const indexOfKey = accountInfo.keys.findIndex((key) => key.publicKey === accountKey.public_key);
+    if (indexOfKey === -1) {
+      accountInfo.keys.push({
+        index: accountInfo.keys.length,
+        publicKey: accountKey.public_key,
+        signAlgo: accountKey.sign_algo,
+        hashAlgo: accountKey.hash_algo,
+        weight: accountKey.weight,
+        signAlgoString: getStringFromSignAlgo(accountKey.sign_algo),
+        hashAlgoString: getStringFromHashAlgo(accountKey.hash_algo),
+        sequenceNumber: 0,
+        revoked: false,
+      });
+    }
+    // Register the account in userWallet
+    userWalletService.registerCurrentPubkey(accountKey.public_key, accountInfo);
+  };
+  /**
+   * Create a manual address
+   * @returns
+   */
+  createManualAddress = async () => {
+    const publickey = userWalletService.getCurrentPubkey();
+    const curPubKeyTuple = await keyringService.getCurrentPublicKeyTuple();
+
+    const accountKey = pubKeyTupleToAccountKey(publickey, curPubKeyTuple);
+    try {
+      setCachedData(registerStatusKey(publickey), true, 120_000);
+
+      const data = await openapiService.createManualAddress(
+        accountKey.hash_algo,
+        accountKey.sign_algo,
+        publickey,
+        1000
+      );
+
+      if (!data || !data.data || !data.data.txid) {
+        throw new Error('Transaction ID not found in response');
+      }
+
+      const txid = data.data.txid;
+      this.checkForNewAddress(txid);
+    } catch (error) {
+      // Reset the registration status if the operation fails
+      setCachedData(registerStatusKey(publickey), false);
+
+      // Log the error for debugging
+      console.error('Failed to create manual address:', error);
+
+      // Re-throw a more specific error
+      throw new Error('Failed to create manual address. Please try again later.');
     }
   };
 
@@ -3328,13 +3427,20 @@ export class WalletController extends BaseController {
     await openapiService.updateProfilePreference(privacy);
   };
 
-  getAccount = async (): Promise<FclAccount> => {
-    const address = await this.getMainAddress();
+  getAccountInfo = async (address: string | null): Promise<FclAccount> => {
     if (!address) {
       throw new Error('No address found');
     }
-    const account = await fcl.account(address);
-    return account;
+    if (!isValidFlowAddress(address)) {
+      throw new Error('Invalid address');
+    }
+    return await fcl.account(address);
+  };
+
+  getAccount = async (): Promise<FclAccount> => {
+    const address = await this.getMainAddress();
+
+    return await this.getAccountInfo(address);
   };
 
   getEmoji = async () => {

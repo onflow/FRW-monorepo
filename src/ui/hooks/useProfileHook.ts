@@ -24,6 +24,7 @@ import {
   useMainAccounts,
   useUserInfo,
   useUserWallets,
+  useRegisterStatus,
 } from './use-account-hooks';
 
 const INITIAL_WALLET = {
@@ -72,6 +73,8 @@ export const useProfiles = () => {
 
   const currentBalance = useAccountBalance(network, activeAccounts?.currentAddress);
 
+  const noAddress = activeAccounts && activeAccounts.currentAddress === null;
+  const registerStatus = useRegisterStatus(userWallets?.currentPubkey);
   const parentWallet =
     walletList.find((wallet) => wallet.address === activeAccounts?.parentAddress) ?? INITIAL_WALLET;
 
@@ -89,7 +92,8 @@ export const useProfiles = () => {
   const evmAddress = evmAccount?.address ?? '';
   const mainAddress = activeAccounts?.parentAddress ?? '';
 
-  const mainAddressLoading = !mainAccounts || !activeAccounts || !activeAccounts?.parentAddress;
+  const mainAddressLoading =
+    !mainAccounts || !activeAccounts || activeAccounts?.parentAddress === undefined;
 
   const activeAccountType = useMemo(
     () =>
@@ -141,6 +145,8 @@ export const useProfiles = () => {
     mainAddressLoading,
     profileIds,
     activeAccountType,
+    noAddress,
+    registerStatus,
     canMoveToChild,
   };
 };

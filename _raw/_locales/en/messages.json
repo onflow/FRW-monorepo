@@ -1412,5 +1412,17 @@
   },
   "Manage_Token": {
     "message": "Manage Token"
+  },
+  "No_address_found": {
+    "message": "No address found"
+  },
+  "Check_your_public_key": {
+    "message": "Check your public key"
+  },
+  "Add_address": {
+    "message": "Add a New Address"
+  },
+  "Address_creation_in_progress": {
+    "message": "Address creation in progress..."
   }
 }

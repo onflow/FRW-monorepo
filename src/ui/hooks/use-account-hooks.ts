@@ -17,6 +17,7 @@ import {
   accountBalanceKey,
   mainAccountsKey,
   userInfoCachekey,
+  registerStatusKey,
   type UserInfoStore,
 } from '@/shared/utils/cache-data-keys';
 import {
@@ -90,4 +91,8 @@ export const useKeyringIds = () => {
     return null;
   }
   return keyringState.vault.map((vaultEntry) => vaultEntry.id);
+};
+
+export const useRegisterStatus = (pubKey: string | undefined | null) => {
+  return useCachedData<boolean>(pubKey ? registerStatusKey(pubKey) : null);
 };
