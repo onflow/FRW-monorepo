@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as fcl from '@onflow/fcl';
+import { account } from '@onflow/fcl';
 import type { Account as FclAccount } from '@onflow/typedefs';
 import * as t from '@onflow/types';
 import BN from 'bignumber.js';
@@ -54,7 +55,12 @@ import {
   isValidFlowAddress,
   withPrefix,
 } from '@/shared/utils/address';
-import { getSignAlgo } from '@/shared/utils/algo';
+import {
+  getHashAlgo,
+  getSignAlgo,
+  getStringFromHashAlgo,
+  getStringFromSignAlgo,
+} from '@/shared/utils/algo';
 import { FLOW_BIP44_PATH, SIGN_ALGO_NUM_ECDSA_P256 } from '@/shared/utils/algo-constants';
 import {
   evmAccountRefreshRegex,
@@ -287,6 +293,44 @@ export class WalletController extends BaseController {
     }
   };
 
+  registerAccountImport = async (pubKey: string, account: FclAccount) => {
+    userWalletService.registerCurrentPubkey(pubKey, account);
+  };
+
+  importAccountFromMobile = async (address: string, password: string, mnemonic: string) => {
+    // Query the account to get the account info befofe we add the key
+    const accountInfo = await this.getAccountInfo(address);
+
+    // The account is the public key of the account. It's derived from the mnemonic. We do not support custom curves or passphrases for new accounts
+    const accountKey: AccountKeyRequest = await getAccountKey(mnemonic);
+
+    // We're booting the keyring with the new password
+    // This does not update the vault, it simply sets the password / cypher methods we're going to use to store our private keys in the vault
+    await this.boot(password);
+    // Login to the account - it should already be registered by the mobile app
+    await this.loginWithMnemonic(mnemonic, true);
+
+    // We're creating the keyring with the mnemonic. This will encypt the private keys and store them in the keyring vault and deepVault
+    await this.createKeyringWithMnemonics(password, mnemonic);
+
+    // Locally add the key to the account if not there already
+    const indexOfKey = accountInfo.keys.findIndex((key) => key.publicKey === accountKey.public_key);
+    if (indexOfKey === -1) {
+      accountInfo.keys.push({
+        index: accountInfo.keys.length,
+        publicKey: accountKey.public_key,
+        signAlgo: accountKey.sign_algo,
+        hashAlgo: accountKey.hash_algo,
+        weight: accountKey.weight,
+        signAlgoString: getStringFromSignAlgo(accountKey.sign_algo),
+        hashAlgoString: getStringFromHashAlgo(accountKey.hash_algo),
+        sequenceNumber: 0,
+        revoked: false,
+      });
+    }
+    // Register the account in userWallet
+    userWalletService.registerCurrentPubkey(accountKey.public_key, accountInfo);
+  };
   /**
    * Import a profile using a mnemonic
    * @param username
@@ -3361,13 +3405,20 @@ export class WalletController extends BaseController {
     await openapiService.updateProfilePreference(privacy);
   };
 
-  getAccount = async (): Promise<FclAccount> => {
-    const address = await this.getMainAddress();
+  getAccountInfo = async (address: string | null): Promise<FclAccount> => {
     if (!address) {
       throw new Error('No address found');
     }
-    const account = await fcl.account(address);
-    return account;
+    if (!isValidFlowAddress(address)) {
+      throw new Error('Invalid address');
+    }
+    return await fcl.account(address);
+  };
+
+  getAccount = async (): Promise<FclAccount> => {
+    const address = await this.getMainAddress();
+
+    return await this.getAccountInfo(address);
   };
 
   getEmoji = async () => {

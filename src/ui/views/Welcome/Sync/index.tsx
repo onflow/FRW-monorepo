@@ -11,7 +11,7 @@ import {
   SIGN_ALGO_NUM_ECDSA_secp256k1,
   HASH_ALGO_NUM_SHA2_256,
 } from '@/shared/utils/algo-constants';
-import { FCLWalletConnectMethod } from '@/shared/utils/type';
+import { FCLWalletConnectMethod, type FCLWalletConnectSyncAccountInfo } from '@/shared/utils/type';
 import AllSet from '@/ui/FRWComponent/LandingPages/AllSet';
 import LandingComponents from '@/ui/FRWComponent/LandingPages/LandingComponents';
 import SetPassword from '@/ui/FRWComponent/LandingPages/SetPassword';
@@ -64,7 +64,7 @@ const Sync = () => {
   const [secondLine, setSecondLine] = useState<string>('');
   const [isSwitchingAccount, setIsSwitchingAccount] = useState<boolean>(true);
   const [isAddWallet, setIsAddWallet] = useState<boolean>(false);
-
+  const [addressToImport, setAddressToImport] = useState<string>('');
   useEffect(() => {
     const checkWalletStatus = async () => {
       const isBooted = await usewallet.isBooted();
@@ -159,8 +159,9 @@ const Sync = () => {
 
   // 3. Account and device info handlers, check if account is available based on userid, if not, generate account key and device info
   const handleAccountInfo = useCallback(
-    async (wallet: SignClient, topic: string, jsonObject: any) => {
+    async (wallet: SignClient, topic: string, jsonObject: FCLWalletConnectSyncAccountInfo) => {
       try {
+        setAddressToImport(jsonObject.data.walletAddress);
         await usewallet.checkAvailableAccount(jsonObject.data.userId);
         setIsSwitchingAccount(true);
         setActiveTab(STEPS.PASSWORD);
@@ -304,20 +305,17 @@ const Sync = () => {
         }
       } else {
         try {
-          await usewallet.loginV3_depreciated(mnemonic, accountKey, deviceInfo);
-          const userInfo = await usewallet.getUserInfo(true);
-          setUsername(userInfo.username);
-          await usewallet.saveIndex(userInfo.username);
-          await usewallet.boot(password);
           const formatted = mnemonic.trim().split(/\s+/g).join(' ');
-          await usewallet.createKeyringWithMnemonics(password, formatted);
+
+          await usewallet.importAccountFromMobile(addressToImport, password, formatted);
+
           setActiveTab(STEPS.ALL_SET);
         } catch (error) {
           throw new Error(error.message);
         }
       }
     },
-    [usewallet, mnemonic, accountKey, deviceInfo, isSwitchingAccount, setUsername]
+    [isSwitchingAccount, usewallet, mnemonic, addressToImport]
   );
 
   const goBack = () => {
