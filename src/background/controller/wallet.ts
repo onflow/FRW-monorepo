@@ -247,8 +247,6 @@ export class WalletController extends BaseController {
     // We're creating the keyring with the mnemonic. This will encypt the private keys and store them in the keyring vault and deepVault
     await this.createKeyringWithMnemonics(password, mnemonic);
 
-    // Set the current pubkey in userWallet
-    await userWalletService.setCurrentPubkey(accountKey.public_key);
     // We're creating the Flow address for the account
     // Only after this, do we have a valid wallet with a Flow address
     const result = await openapiService.createFlowAddressV2();

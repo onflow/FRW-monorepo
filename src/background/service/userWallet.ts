@@ -169,7 +169,7 @@ class UserWallet {
 
     // Load all data for the new pubkey. This is async but don't await it
     // NOTE: If this is remvoed... everything runs just fine (I've checked)
-    // this.loadAllAccounts(this.store.network, pubkey);
+    this.loadAllAccounts(this.store.network, pubkey);
   };
 
   /**
@@ -1245,6 +1245,7 @@ const loadAllAccountsWithPubKey = async (
     console.warn(
       `No main accounts loaded even after trying for ${Math.round(MAX_LOAD_TIME / 1000 / 60)} minutes`
     );
+    return [];
   }
 
   // Now for each main account load the evm address and child accounts
