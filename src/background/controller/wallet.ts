@@ -295,10 +295,10 @@ export class WalletController extends BaseController {
    */
   createManualAddress = async () => {
     const accountKey = userWalletService.getCurrentAccountKey();
+    setCachedData(registerStatusKey(accountKey.public_key), true);
 
     const data = await openapiService.createManualAddress(accountKey);
     const txid = data.data.txid;
-    setCachedData(registerStatusKey(accountKey.public_key), true);
     this.checkForNewAddress(txid);
   };
 

@@ -263,7 +263,7 @@ const WalletTab = ({ network }) => {
           }}
         >
           {noAddress ? (
-            !registerStatus ? (
+            registerStatus ? (
               <Typography
                 variant="body1"
                 sx={{ fontSize: '14px', fontWeight: 500, color: '#777E90' }}
