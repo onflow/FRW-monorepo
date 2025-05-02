@@ -65,6 +65,7 @@ import {
   type AccountKeyRequest,
   type DeviceInfoRequest,
   type FlowNetwork,
+  type AccountAlgo,
 } from '../../shared/types/network-types';
 import { type PublicKeyAccount, type MainAccount } from '../../shared/types/wallet-types';
 import { fclConfig, fclConfirmNetwork, fclEnsureNetwork } from '../fclConfig';
@@ -90,11 +91,9 @@ const USER_WALLET_TEMPLATE: UserWalletStore = {
   network: 'mainnet',
   emulatorMode: false,
   currentPubkey: '',
-  account_key: {
-    public_key: '',
+  accountAlgo: {
     sign_algo: 1,
     hash_algo: 1,
-    weight: 1000,
   },
 };
 class UserWallet {
@@ -146,11 +145,11 @@ class UserWallet {
     return this.store.currentPubkey;
   };
 
-  getCurrentAccountKey = (): AccountKeyRequest => {
+  getCurrentAccountAlgo = (): AccountAlgo => {
     if (this.isLocked()) {
       throw new Error('Wallet is locked');
     }
-    return this.store.account_key;
+    return this.store.accountAlgo;
   };
 
   /**
@@ -178,8 +177,8 @@ class UserWallet {
    * It is the public info of the account would not affect any other functionality
    * @param accountKey - The accountkey to set
    */
-  setAccountKey = async (accountKey: AccountKeyRequest) => {
-    this.store.account_key = accountKey;
+  setAccountAlgo = async (accountAlgo: AccountAlgo) => {
+    this.store.accountAlgo = accountAlgo;
   };
 
   /**
@@ -1051,7 +1050,10 @@ class UserWallet {
 
     // Set the current pubkey in userWallet provided we have been able to login
     this.setCurrentPubkey(accountKeyRequest.public_key);
-    this.setAccountKey(accountKeyRequest);
+    this.setAccountAlgo({
+      hash_algo: accountKeyRequest.hash_algo,
+      sign_algo: accountKeyRequest.sign_algo,
+    });
   };
   /**
    * Login with the current keyring

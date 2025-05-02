@@ -2,7 +2,7 @@
  * Keys and types to access persistant data in the UI from the background storage cache
  * Persistant data is data that is stored between sessions
  */
-import { type FlowNetwork, type AccountKeyRequest } from '../types/network-types';
+import { type FlowNetwork, type AccountAlgo } from '../types/network-types';
 import { type FlowAddress, type WalletAddress } from '../types/wallet-types';
 
 import { getUserData } from './user-data-access';
@@ -18,7 +18,7 @@ export type UserWalletStore = {
   network: FlowNetwork;
   // The public key of the currently active profile
   currentPubkey: string;
-  account_key: AccountKeyRequest;
+  accountAlgo: AccountAlgo;
 };
 export const getUserWalletsData = async (): Promise<UserWalletStore | undefined> => {
   return await getUserData<UserWalletStore>(userWalletsKey);

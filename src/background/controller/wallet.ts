@@ -292,17 +292,23 @@ export class WalletController extends BaseController {
    * @returns
    */
   createManualAddress = async () => {
-    const accountKey = userWalletService.getCurrentAccountKey();
+    const accountAlgo = userWalletService.getCurrentAccountAlgo();
+    const publickey = userWalletService.getCurrentPubkey();
 
     try {
-      setCachedData(registerStatusKey(accountKey.public_key), true);
+      setCachedData(registerStatusKey(publickey), true);
 
-      const data = await openapiService.createManualAddress(accountKey);
+      const data = await openapiService.createManualAddress(
+        accountAlgo.hash_algo,
+        accountAlgo.sign_algo,
+        publickey,
+        1000
+      );
       const txid = data.data.txid;
       this.checkForNewAddress(txid);
     } catch (error) {
       // Reset the registration status if the operation fails
-      setCachedData(registerStatusKey(accountKey.public_key), false);
+      setCachedData(registerStatusKey(publickey), false);
 
       // Log the error for debugging
       console.error('Failed to create manual address:', error);
@@ -372,13 +378,11 @@ export class WalletController extends BaseController {
 
     // Set the current pubkey in userWallet
     userWalletService.setCurrentPubkey(publicKey);
-    const accountKey = {
-      public_key: accounts[0].publicKey,
+    const accountAlgo = {
       sign_algo: accounts[0].signAlgo,
       hash_algo: accounts[0].hashAlgo,
-      weight: 1000,
     };
-    userWalletService.setAccountKey(accountKey);
+    userWalletService.setAccountAlgo(accountAlgo);
   };
 
   /**
@@ -438,12 +442,10 @@ export class WalletController extends BaseController {
     // Set the current pubkey in userWallet
     userWalletService.setCurrentPubkey(publicKey);
     const accountKey = {
-      public_key: accounts[0].publicKey,
       sign_algo: accounts[0].signAlgo,
       hash_algo: accounts[0].hashAlgo,
-      weight: 1000,
     };
-    userWalletService.setAccountKey(accountKey);
+    userWalletService.setAccountAlgo(accountKey);
   };
 
   /**

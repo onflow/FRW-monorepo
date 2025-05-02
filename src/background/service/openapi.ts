@@ -1269,14 +1269,19 @@ class OpenApiService {
     return data;
   };
 
-  createManualAddress = async (account_key: AccountKeyRequest) => {
-    const config = this.store.config.create_manual_address_v2;
+  createManualAddress = async (
+    hash_algo: number,
+    sign_algo: number,
+    public_key: string,
+    weight: number
+  ) => {
     const transformedKey = {
-      hashAlgorithm: account_key.hash_algo,
-      publicKey: account_key.public_key,
-      signatureAlgorithm: account_key.sign_algo,
-      weight: account_key.weight,
+      hashAlgorithm: hash_algo,
+      publicKey: public_key,
+      signatureAlgorithm: sign_algo,
+      weight: weight,
     };
+    const config = this.store.config.create_manual_address_v2;
     const data = await this.sendRequest(config.method, config.path, {}, transformedKey);
 
     return data;
