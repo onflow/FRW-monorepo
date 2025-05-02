@@ -1379,5 +1379,14 @@
   },
   "Could_not_enable_this_collection": {
     "message": "このコレクションを有効にできませんでした"
+  },
+  "Manage_Token": {
+    "message": "トークンを管理"
+  },
+  "No_address_found": {
+    "message": "アドレスが見つかりません"
+  },
+  "Check_your_public_key": {
+    "message": "公開鍵を確認してください"
   }
 }

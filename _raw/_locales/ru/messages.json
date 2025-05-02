@@ -1379,5 +1379,14 @@
   },
   "Could_not_enable_this_collection": {
     "message": "Не удалось включить эту коллекцию"
+  },
+  "Manage_Token": {
+    "message": "Управление токенами"
+  },
+  "No_address_found": {
+    "message": "Адрес не найден"
+  },
+  "Check_your_public_key": {
+    "message": "Проверьте ваш публичный ключ"
   }
 }

@@ -1329,5 +1329,14 @@
   },
   "Could_not_enable_this_collection": {
     "message": "Could not enable this collection"
+  },
+  "Manage_Token": {
+    "message": "Manage Token"
+  },
+  "No_address_found": {
+    "message": "No address found"
+  },
+  "Check_your_public_key": {
+    "message": "Check your public key"
   }
 }

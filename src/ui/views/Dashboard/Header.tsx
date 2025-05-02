@@ -74,6 +74,8 @@ const Header = ({ _loading = false }) => {
     mainAddressLoading,
     clearProfileData,
     profileIds,
+    noAddress,
+    registerStatus,
   } = useProfiles();
 
   const [drawer, setDrawer] = useState(false);
@@ -299,7 +301,7 @@ const Header = ({ _loading = false }) => {
     return (
       <Toolbar sx={{ height: '56px', width: '100%', display: 'flex', px: '0px' }}>
         <Box sx={{ flex: '0 0 68px', position: 'relative', display: 'flex', alignItems: 'center' }}>
-          {isPending && (
+          {(isPending || registerStatus) && (
             <CircularProgress
               size={'28px'}
               sx={{
@@ -401,7 +403,14 @@ const Header = ({ _loading = false }) => {
             alignItems: 'center',
           }}
         >
-          <Tooltip title={chrome.i18n.getMessage('Copy__Address')} arrow>
+          <Tooltip
+            title={
+              noAddress
+                ? chrome.i18n.getMessage('Check_your_public_key')
+                : chrome.i18n.getMessage('Copy__Address')
+            }
+            arrow
+          >
             <span>
               <Button
                 data-testid="copy-address-button"
@@ -428,8 +437,10 @@ const Header = ({ _loading = false }) => {
                       `${props.name === 'Flow' ? 'Wallet' : props.name}${
                         isValidEthereumAddress(props.address) ? ' EVM' : ''
                       }`
+                    ) : noAddress ? (
+                      'None'
                     ) : (
-                      <Skeleton variant="text" width={40} />
+                      <Skeleton variant="text" width={120} />
                     )}
                   </Typography>
                   <Box sx={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
@@ -440,11 +451,13 @@ const Header = ({ _loading = false }) => {
                     >
                       {haveAddress ? (
                         formatAddress(props.address)
+                      ) : noAddress ? (
+                        chrome.i18n.getMessage('No_address_found')
                       ) : (
                         <Skeleton variant="text" width={120} />
                       )}
                     </Typography>
-                    <IconCopy fill="icon.navi" width="12px" />
+                    {!noAddress && <IconCopy fill="icon.navi" width="12px" />}
                   </Box>
                 </Box>
               </Button>

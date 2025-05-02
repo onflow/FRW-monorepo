@@ -16,6 +16,8 @@ import { useHistory } from 'react-router-dom';
 import { type CoinItem } from '@/shared/types/coin-types';
 import { type ActiveAccountType } from '@/shared/types/wallet-types';
 import { formatLargeNumber } from '@/shared/utils/number';
+import { useCoins } from '@/ui/hooks/useCoinHook';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 
 import IconCreate from '../../../components/iconfont/IconCreate';
 import { TokenValue } from '../TokenDetail/TokenValue';
@@ -32,6 +34,8 @@ const CoinList = ({
   childType: ActiveAccountType;
 }) => {
   // const wallet = useWallet();
+  const { coins } = useCoins();
+  const { noAddress } = useProfiles();
   const [isLoading, setLoading] = useState(true);
   const history = useHistory();
 
@@ -191,74 +195,82 @@ const CoinList = ({
       )}
 
       <List sx={{ paddingTop: '0px', paddingBottom: '0px' }}>
-        {!isLoading
-          ? (tokenList || []).map((coin: CoinItem) => {
-              if (
-                childType === 'evm' &&
-                coin.id !== 'A.1654653399040a61.FlowToken' &&
-                parseFloat(coin.balance) === 0 &&
-                !coin.custom
-              ) {
-                return null;
-              }
-              return (
-                <ListItem
-                  sx={{ minHeight: '62px' }}
-                  key={coin.id}
-                  data-testid={`token-${coin.unit.toLowerCase()}`}
-                  secondaryAction={
-                    <EndListItemText
-                      primary={parseFloat(coin.balance).toFixed(3)}
-                      secondary={<TokenValue value={String(coin.total)} prefix="$" />}
-                      unit={coin.unit}
-                      change={parseFloat(coin.change24h?.toFixed(2) || '0')}
-                    />
-                  }
-                  disablePadding
-                  onClick={() =>
-                    history.push(`dashboard/tokendetail/${coin.unit.toLowerCase()}/${coin.id}`)
-                  }
-                >
-                  <ListItemButton sx={{ paddingRight: '0px' }} dense={true}>
-                    <ListItemIcon>
-                      {!isLoading ? (
-                        <img
-                          src={coin.icon}
-                          style={{
-                            height: '36px',
-                            width: '36px',
-                            backgroundColor: '#282828',
-                            borderRadius: '18px',
-                          }}
-                        />
-                      ) : (
-                        <Skeleton variant="circular" width={36} height={36} />
-                      )}
-                    </ListItemIcon>
-                    <StartListItemText
-                      primary={coin.coin}
-                      price={coin.price}
-                      change={parseFloat(coin.change24h?.toFixed(2) || '0')}
-                    />
-                  </ListItemButton>
-                </ListItem>
-              );
-            })
-          : [1, 2].map((index) => {
-              return (
-                <ListItem
-                  key={index}
-                  secondaryAction={
-                    <EndListItemText primary="..." secondary="..." unit="..." change={0} />
-                  }
-                >
-                  <ListItemAvatar>
-                    <Skeleton variant="circular" width={36} height={36} />
-                  </ListItemAvatar>
-                  <StartListItemText primary="..." price={0} change={0} />
-                </ListItem>
-              );
-            })}
+        {noAddress ? (
+          <ListItem sx={{ justifyContent: 'center', minHeight: '62px' }}>
+            <Typography variant="body1" color="text.secondary">
+              {chrome.i18n.getMessage('No_address_found')}
+            </Typography>
+          </ListItem>
+        ) : !isLoading ? (
+          (coins || []).map((coin: CoinItem) => {
+            if (
+              childType === 'evm' &&
+              coin.id !== 'A.1654653399040a61.FlowToken' &&
+              parseFloat(coin.balance) === 0 &&
+              !coin.custom
+            ) {
+              return null;
+            }
+            return (
+              <ListItem
+                sx={{ minHeight: '62px' }}
+                key={coin.id}
+                data-testid={`token-${coin.unit.toLowerCase()}`}
+                secondaryAction={
+                  <EndListItemText
+                    primary={parseFloat(coin.balance).toFixed(3)}
+                    secondary={String(coin.total)}
+                    unit={coin.unit}
+                    change={parseFloat(coin.change24h?.toFixed(2) || '0')}
+                  />
+                }
+                disablePadding
+                onClick={() =>
+                  history.push(`dashboard/tokendetail/${coin.unit.toLowerCase()}/${coin.id}`)
+                }
+              >
+                <ListItemButton sx={{ paddingRight: '0px' }} dense={true}>
+                  <ListItemIcon>
+                    {!isLoading ? (
+                      <img
+                        src={coin.icon}
+                        style={{
+                          height: '36px',
+                          width: '36px',
+                          backgroundColor: '#282828',
+                          borderRadius: '18px',
+                        }}
+                      />
+                    ) : (
+                      <Skeleton variant="circular" width={36} height={36} />
+                    )}
+                  </ListItemIcon>
+                  <StartListItemText
+                    primary={coin.coin}
+                    price={coin.price}
+                    change={parseFloat(coin.change24h?.toFixed(2) || '0')}
+                  />
+                </ListItemButton>
+              </ListItem>
+            );
+          })
+        ) : (
+          [1, 2].map((index) => {
+            return (
+              <ListItem
+                key={index}
+                secondaryAction={
+                  <EndListItemText primary="..." secondary="..." unit="..." change={0} />
+                }
+              >
+                <ListItemAvatar>
+                  <Skeleton variant="circular" width={36} height={36} />
+                </ListItemAvatar>
+                <StartListItemText primary="..." price={0} change={0} />
+              </ListItem>
+            );
+          })
+        )}
       </List>
     </>
   );
