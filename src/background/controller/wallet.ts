@@ -14,7 +14,11 @@ import { now } from 'lodash';
 import { encode } from 'rlp';
 import web3, { TransactionError, Web3 } from 'web3';
 
-import { getAccountKey, pubKeyAccountToAccountKey } from '@/background/utils/account-key';
+import {
+  getAccountKey,
+  pubKeyAccountToAccountKey,
+  pubKeyTupleToAccountKey,
+} from '@/background/utils/account-key';
 import {
   findAddressWithSeed,
   findAddressWithPK,
@@ -292,15 +296,16 @@ export class WalletController extends BaseController {
    * @returns
    */
   createManualAddress = async () => {
-    const accountAlgo = userWalletService.getCurrentAccountAlgo();
     const publickey = userWalletService.getCurrentPubkey();
+    const curPubKeyTuple = await keyringService.getCurrentPublicKeyTuple();
 
+    const accountKey = pubKeyTupleToAccountKey(publickey, curPubKeyTuple);
     try {
       setCachedData(registerStatusKey(publickey), true);
 
       const data = await openapiService.createManualAddress(
-        accountAlgo.hash_algo,
-        accountAlgo.sign_algo,
+        accountKey.hash_algo,
+        accountKey.sign_algo,
         publickey,
         1000
       );
@@ -383,11 +388,6 @@ export class WalletController extends BaseController {
 
     // Set the current pubkey in userWallet
     userWalletService.setCurrentPubkey(publicKey);
-    const accountAlgo = {
-      sign_algo: accounts[0].signAlgo,
-      hash_algo: accounts[0].hashAlgo,
-    };
-    userWalletService.setAccountAlgo(accountAlgo);
   };
 
   /**
@@ -446,11 +446,6 @@ export class WalletController extends BaseController {
 
     // Set the current pubkey in userWallet
     userWalletService.setCurrentPubkey(publicKey);
-    const accountKey = {
-      sign_algo: accounts[0].signAlgo,
-      hash_algo: accounts[0].hashAlgo,
-    };
-    userWalletService.setAccountAlgo(accountKey);
   };
 
   /**

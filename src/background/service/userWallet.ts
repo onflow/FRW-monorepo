@@ -91,10 +91,6 @@ const USER_WALLET_TEMPLATE: UserWalletStore = {
   network: 'mainnet',
   emulatorMode: false,
   currentPubkey: '',
-  accountAlgo: {
-    sign_algo: 1,
-    hash_algo: 1,
-  },
 };
 class UserWallet {
   // PERSISTENT DATA
@@ -145,13 +141,6 @@ class UserWallet {
     return this.store.currentPubkey;
   };
 
-  getCurrentAccountAlgo = (): AccountAlgo => {
-    if (this.isLocked()) {
-      throw new Error('Wallet is locked');
-    }
-    return this.store.accountAlgo;
-  };
-
   /**
    * Set the current pubkey
    * TODO: There are lots of async methods "get" the current pubkey before performing an action
@@ -169,16 +158,6 @@ class UserWallet {
     // Load all data for the new pubkey. This is async but don't await it
     // NOTE: If this is remvoed... everything runs just fine (I've checked)
     this.loadAllAccounts(this.store.network, pubkey);
-  };
-
-  /**
-   * Set the account pubkey
-   * Account key is the keyinfo to use when creating new address based on the current pubkey
-   * It is the public info of the account would not affect any other functionality
-   * @param accountKey - The accountkey to set
-   */
-  setAccountAlgo = async (accountAlgo: AccountAlgo) => {
-    this.store.accountAlgo = accountAlgo;
   };
 
   /**
@@ -1050,10 +1029,6 @@ class UserWallet {
 
     // Set the current pubkey in userWallet provided we have been able to login
     this.setCurrentPubkey(accountKeyRequest.public_key);
-    this.setAccountAlgo({
-      hash_algo: accountKeyRequest.hash_algo,
-      sign_algo: accountKeyRequest.sign_algo,
-    });
   };
   /**
    * Login with the current keyring
