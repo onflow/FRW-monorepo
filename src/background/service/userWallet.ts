@@ -169,7 +169,7 @@ class UserWallet {
 
     // Load all data for the new pubkey. This is async but don't await it
     // NOTE: If this is remvoed... everything runs just fine (I've checked)
-    this.loadAllAccounts(this.store.network, pubkey);
+    // this.loadAllAccounts(this.store.network, pubkey);
   };
 
   /**

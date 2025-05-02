@@ -204,7 +204,11 @@ export const registerAccount = async ({ page, extensionId, username, password })
 };
 
 export const registerTestUser = async ({ page, extensionId }) => {
-  const username = 'testuser';
+  const username = `testuser${String.fromCharCode(
+    ...Array(4)
+      .fill(0)
+      .map(() => Math.floor(Math.random() * 26) + 97)
+  )}`;
   const password = process.env.TEST_PASSWORD;
   if (!password) {
     throw new Error('TEST_PASSWORD is not set');

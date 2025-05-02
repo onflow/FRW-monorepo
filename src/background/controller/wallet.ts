@@ -75,6 +75,7 @@ import {
   type EvmNftCollectionListStore,
   evmNftCollectionListKey,
   registerStatusKey,
+  registerStatusRefreshRegex,
 } from '@/shared/utils/cache-data-keys';
 import { getCurrentProfileId } from '@/shared/utils/current-id';
 import {
@@ -144,6 +145,7 @@ import type { PreferenceAccount } from '../service/preference';
 import { type EvaluateStorageResult, StorageEvaluator } from '../service/storage-evaluator';
 import { loadChildAccountsOfParent } from '../service/userWallet';
 import {
+  clearCachedData,
   getCachedData,
   getValidData,
   registerRefreshListener,
@@ -178,6 +180,11 @@ export class WalletController extends BaseController {
   constructor() {
     super();
     this.storageEvaluator = new StorageEvaluator();
+
+    registerRefreshListener(registerStatusRefreshRegex, async (pubKey: string) => {
+      // The ttl is set to 2 minutes. After that we clear the cache
+      clearCachedData(registerStatusKey(pubKey));
+    });
   }
   // Adding as tests load the extension really, really fast
   // It's possible to call the wallet controller before services are loaded
@@ -239,16 +246,19 @@ export class WalletController extends BaseController {
 
     // We're creating the keyring with the mnemonic. This will encypt the private keys and store them in the keyring vault and deepVault
     await this.createKeyringWithMnemonics(password, mnemonic);
+
+    // Set the current pubkey in userWallet
+    await userWalletService.setCurrentPubkey(accountKey.public_key);
     // We're creating the Flow address for the account
     // Only after this, do we have a valid wallet with a Flow address
     const result = await openapiService.createFlowAddressV2();
-    const network = await this.getNetwork();
-    setCachedData(registerStatusKey(network), true);
+    // Set a two minute cache for the register status
+    setCachedData(registerStatusKey(accountKey.public_key), true, 120_000);
 
-    this.checkForNewAddress(result.data.txid, network);
+    this.checkForNewAddress(result.data.txid);
   };
 
-  checkForNewAddress = async (txid: string, network: string): Promise<FclAccount | null> => {
+  checkForNewAddress = async (txid: string): Promise<FclAccount | null> => {
     try {
       const txResult = await fcl.tx(txid).onceSealed();
 
@@ -269,11 +279,13 @@ export class WalletController extends BaseController {
       }
 
       userWalletService.registerCurrentPubkey(account.keys[0].publicKey, account);
+
+      // Clear the register status cache
+      clearCachedData(registerStatusKey(account.keys[0].publicKey));
+
       return account;
     } catch (error) {
       throw new Error(`Account creation failed: ${error.message || 'Unknown error'}`);
-    } finally {
-      setCachedData(registerStatusKey(network), false);
     }
   };
 
@@ -286,9 +298,8 @@ export class WalletController extends BaseController {
 
     const data = await openapiService.createManualAddress(accountKey);
     const txid = data.data.txid;
-    const network = await this.getNetwork();
-    setCachedData(registerStatusKey(network), true);
-    this.checkForNewAddress(txid, network);
+    setCachedData(registerStatusKey(accountKey.public_key), true);
+    this.checkForNewAddress(txid);
   };
 
   /**
