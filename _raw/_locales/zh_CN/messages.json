@@ -1388,5 +1388,11 @@
   },
   "Check_your_public_key": {
     "message": "检查您的公钥"
+  },
+  "Add_address": {
+    "message": "添加新地址"
+  },
+  "Address_creation_in_progress": {
+    "message": "地址创建中..."
   }
 }

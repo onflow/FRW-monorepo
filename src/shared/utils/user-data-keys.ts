@@ -6,7 +6,6 @@ import { type FlowNetwork } from '../types/network-types';
 import { type FlowAddress, type WalletAddress } from '../types/wallet-types';
 
 import { getUserData } from './user-data-access';
-
 // Persistent storage keys
 export const userWalletsKey = 'userWalletsV2';
 

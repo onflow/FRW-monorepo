@@ -15,7 +15,11 @@ import { now } from 'lodash';
 import { encode } from 'rlp';
 import web3, { TransactionError, Web3 } from 'web3';
 
-import { getAccountKey, pubKeyAccountToAccountKey } from '@/background/utils/account-key';
+import {
+  getAccountKey,
+  pubKeyAccountToAccountKey,
+  pubKeyTupleToAccountKey,
+} from '@/background/utils/account-key';
 import {
   findAddressWithSeed,
   findAddressWithPK,
@@ -188,8 +192,8 @@ export class WalletController extends BaseController {
     this.storageEvaluator = new StorageEvaluator();
 
     registerRefreshListener(registerStatusRefreshRegex, async (pubKey: string) => {
-      // The ttl is set to 2 minutes. After that we clear the cache
-      clearCachedData(registerStatusKey(pubKey));
+      // The ttl is set to 2 minutes. After that we set the cache to false
+      setCachedData(registerStatusKey(pubKey), false, 120_000);
     });
   }
   // Adding as tests load the extension really, really fast
@@ -284,8 +288,8 @@ export class WalletController extends BaseController {
 
       userWalletService.registerCurrentPubkey(account.keys[0].publicKey, account);
 
-      // Clear the register status cache
-      clearCachedData(registerStatusKey(account.keys[0].publicKey));
+      // Set the register status cache to false
+      setCachedData(registerStatusKey(account.keys[0].publicKey), false, 120_000);
 
       return account;
     } catch (error) {
@@ -331,6 +335,43 @@ export class WalletController extends BaseController {
     // Register the account in userWallet
     userWalletService.registerCurrentPubkey(accountKey.public_key, accountInfo);
   };
+  /**
+   * Create a manual address
+   * @returns
+   */
+  createManualAddress = async () => {
+    const publickey = userWalletService.getCurrentPubkey();
+    const curPubKeyTuple = await keyringService.getCurrentPublicKeyTuple();
+
+    const accountKey = pubKeyTupleToAccountKey(publickey, curPubKeyTuple);
+    try {
+      setCachedData(registerStatusKey(publickey), true, 120_000);
+
+      const data = await openapiService.createManualAddress(
+        accountKey.hash_algo,
+        accountKey.sign_algo,
+        publickey,
+        1000
+      );
+
+      if (!data || !data.data || !data.data.txid) {
+        throw new Error('Transaction ID not found in response');
+      }
+
+      const txid = data.data.txid;
+      this.checkForNewAddress(txid);
+    } catch (error) {
+      // Reset the registration status if the operation fails
+      setCachedData(registerStatusKey(publickey), false);
+
+      // Log the error for debugging
+      console.error('Failed to create manual address:', error);
+
+      // Re-throw a more specific error
+      throw new Error('Failed to create manual address. Please try again later.');
+    }
+  };
+
   /**
    * Import a profile using a mnemonic
    * @param username

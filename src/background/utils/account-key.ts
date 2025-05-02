@@ -6,6 +6,11 @@ import {
   FLOW_BIP44_PATH,
   HASH_ALGO_NUM_DEFAULT,
   SIGN_ALGO_NUM_DEFAULT,
+  DEFAULT_WEIGHT,
+  HASH_ALGO_NUM_SHA2_256,
+  HASH_ALGO_NUM_SHA3_256,
+  SIGN_ALGO_NUM_ECDSA_P256,
+  SIGN_ALGO_NUM_ECDSA_secp256k1,
 } from '../../shared/utils/algo-constants';
 
 import { seedWithPathAndPhrase2PublicPrivateKey } from './modules/publicPrivateKey';
@@ -14,7 +19,7 @@ export const defaultAccountKey = (pubKeyTuple: PublicKeyTuple): AccountKeyReques
   return {
     hash_algo: HASH_ALGO_NUM_DEFAULT,
     sign_algo: SIGN_ALGO_NUM_DEFAULT,
-    weight: 1000,
+    weight: DEFAULT_WEIGHT,
     public_key: tupleToPubKey(pubKeyTuple, SIGN_ALGO_NUM_DEFAULT),
   };
 };
@@ -32,4 +37,27 @@ export const pubKeyAccountToAccountKey = (pubKeyAccount: PublicKeyAccount): Acco
     hash_algo: pubKeyAccount.hashAlgo,
     weight: pubKeyAccount.weight,
   };
+};
+
+export const pubKeyTupleToAccountKey = (
+  pubKey: string,
+  pubKeyTuple: PublicKeyTuple
+): AccountKeyRequest => {
+  if (pubKey === pubKeyTuple.P256.pubK) {
+    return {
+      public_key: pubKey,
+      sign_algo: SIGN_ALGO_NUM_ECDSA_P256,
+      hash_algo: HASH_ALGO_NUM_SHA3_256,
+      weight: DEFAULT_WEIGHT,
+    };
+  }
+  if (pubKey === pubKeyTuple.SECP256K1.pubK) {
+    return {
+      public_key: pubKey,
+      sign_algo: SIGN_ALGO_NUM_ECDSA_secp256k1,
+      hash_algo: HASH_ALGO_NUM_SHA2_256,
+      weight: DEFAULT_WEIGHT,
+    };
+  }
+  throw new Error('Invalid public key');
 };

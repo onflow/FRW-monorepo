@@ -204,6 +204,11 @@ export interface AccountKeyRequest {
   weight: number;
 }
 
+export type AccountAlgo = {
+  hash_algo: number;
+  sign_algo: number;
+};
+
 export interface SignInResponse {
   custom_token: string;
   id: string;
