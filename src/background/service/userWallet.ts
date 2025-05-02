@@ -1287,22 +1287,26 @@ const setupNewAccount = async (
   pubKey: string,
   account: FclAccount
 ): Promise<MainAccount[]> => {
-  // Setup new account after
+  const indexOfKey = account.keys.findIndex((key) => key.publicKey === pubKey);
+  if (indexOfKey === -1) {
+    throw new Error('Key not found');
+  }
+  // Setup new account after registration is complete
   const mainAccounts: MainAccount[] = [
     {
-      keyIndex: account.keys[0].index,
-      weight: account.keys[0].weight,
-      signAlgo: account.keys[0].signAlgo,
-      signAlgoString: account.keys[0].signAlgoString,
-      hashAlgo: account.keys[0].hashAlgo,
-      hashAlgoString: account.keys[0].hashAlgoString,
+      keyIndex: account.keys[indexOfKey].index,
+      weight: account.keys[indexOfKey].weight,
+      signAlgo: account.keys[indexOfKey].signAlgo,
+      signAlgoString: account.keys[indexOfKey].signAlgoString,
+      hashAlgo: account.keys[indexOfKey].hashAlgo,
+      hashAlgoString: account.keys[indexOfKey].hashAlgoString,
       address: withPrefix(account.address) as string,
-      publicKey: account.keys[0].publicKey,
+      publicKey: account.keys[indexOfKey].publicKey,
       chain: networkToChainId(network),
-      id: 0,
-      name: getEmojiByIndex(0).name,
-      icon: getEmojiByIndex(0).emoji,
-      color: getEmojiByIndex(0).bgcolor,
+      id: indexOfKey,
+      name: getEmojiByIndex(indexOfKey).name,
+      icon: getEmojiByIndex(indexOfKey).emoji,
+      color: getEmojiByIndex(indexOfKey).bgcolor,
     },
   ];
 
