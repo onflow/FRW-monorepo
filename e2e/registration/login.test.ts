@@ -5,7 +5,7 @@ test('Login test', async ({ page, extensionId }) => {
   await loginAsTestUser({ page, extensionId });
 });
 
-test.skip('Remove profile test', async ({ page, extensionId }) => {
+test('Remove profile test', async ({ page, extensionId }) => {
   const keysFile = await getAuth();
 
   if (keysFile.password === '') {
