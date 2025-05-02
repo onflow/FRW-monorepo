@@ -266,7 +266,14 @@ const WalletTab = ({ network }) => {
             registerStatus ? (
               <Typography
                 variant="body1"
-                sx={{ fontSize: '14px', fontWeight: 500, color: '#777E90' }}
+                sx={{
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  color: '#777E90',
+                  height: '42px',
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
               >
                 {chrome.i18n.getMessage('Address_creation_in_progress')}
               </Typography>
