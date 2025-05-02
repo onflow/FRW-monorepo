@@ -301,7 +301,7 @@ export class WalletController extends BaseController {
 
     const accountKey = pubKeyTupleToAccountKey(publickey, curPubKeyTuple);
     try {
-      setCachedData(registerStatusKey(publickey), true);
+      setCachedData(registerStatusKey(publickey), true, 120_000);
 
       const data = await openapiService.createManualAddress(
         accountKey.hash_algo,
