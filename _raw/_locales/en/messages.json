@@ -138,6 +138,9 @@
   "Backup": {
     "message": "Backup"
   },
+  "Backup__Found": {
+    "message": "Backup Found"
+  },
   "Claim__for__your": {
     "message": "Claim for your "
   },
@@ -281,6 +284,15 @@
   },
   "New__Password": {
     "message": "New Password"
+  },
+  "Enter__New__Password": {
+    "message": "Enter New Password"
+  },
+  "Change__Password": {
+    "message": "Change Password"
+  },
+  "Password__Change__Success": {
+    "message": "Password change successful"
   },
   "Current__Password": {
     "message": "Current Password"
@@ -682,7 +694,7 @@
     "message": "We've found"
   },
   "matching__accounts": {
-    "message": "matching account(-s)"
+    "message": "matching account(s)"
   },
   "Select__the__account__which__you__want__to__restore__back": {
     "message": "Select the account which you want to restore back."
@@ -1355,6 +1367,15 @@
   },
   "Insufficient_Storage": {
     "message": "Insufficient storage."
+  },
+  "Remove__Profile": {
+    "message": "Remove Profile"
+  },
+  "Remove": {
+    "message": "Remove"
+  },
+  "Remove_profile_warning_simplified": {
+    "message": "After removing this profile, you will be logged out. You can re-import using a recovery phrase, private key, or Google Drive backup."
   },
   "Almost_run_out_of_account_storage": {
     "message": "Almost run out of account storage."

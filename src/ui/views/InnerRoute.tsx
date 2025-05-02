@@ -11,6 +11,7 @@ import Enable from '../views/Enable';
 
 import Dashboard from './Dashboard';
 import Header from './Dashboard/Header';
+import ManageToken from './ManageToken';
 import CollectionDetail from './NFT/CollectionDetail';
 import Detail from './NFT/Detail';
 import AddList from './NFT/NFTList/AddList';
@@ -26,6 +27,7 @@ import Account from './Setting/Account';
 import AddressBook from './Setting/AddressBook';
 import ManageBackups from './Setting/Backups';
 import BackupsPassword from './Setting/Backups/BackupsPassword';
+import CurrencySettings from './Setting/Currency';
 import DeveloperMode from './Setting/DeveloperMode/DeveloperMode';
 import DeviceInfo from './Setting/Devices/DeviceInfo';
 import KeyList from './Setting/KeyList/KeyList';
@@ -193,6 +195,10 @@ const InnerRoute = (props: RouteComponentProps) => {
             <PrivateRoute path={`${props.match.url}/tokenlist`}>
               <TokenList />
             </PrivateRoute>
+
+            <PrivateRoute path={`${props.match.url}/managetoken`}>
+              <ManageToken />
+            </PrivateRoute>
             <PrivateRoute path={`${props.match.url}/addcustomevm`}>
               <AddCustomEvmToken />
             </PrivateRoute>
@@ -229,6 +235,9 @@ const InnerRoute = (props: RouteComponentProps) => {
             </PrivateRoute>
             <PrivateRoute path={`${props.match.url}/setting/account`}>
               <Account />
+            </PrivateRoute>
+            <PrivateRoute path={`${props.match.url}/setting/currency`}>
+              <CurrencySettings />
             </PrivateRoute>
             <PrivateRoute path={`${props.match.url}/setting/backups`} exact>
               <ManageBackups />

@@ -58,6 +58,15 @@
   "Acc__list": {
     "message": "Account List"
   },
+  "Display__Currency": {
+    "message": "Display Currency"
+  },
+  "Select__Currency": {
+    "message": "Select Currency"
+  },
+  "Currency__Description": {
+    "message": "Choose the currency you want to use for displaying values"
+  },
   "Profile": {
     "message": "Profile"
   },
@@ -81,6 +90,15 @@
   },
   "Other__Lilico__users__cannot__search__for__your__username": {
     "message": "Other Flow Wallet Wallet users cannot search for your username."
+  },
+  "Remove__Profile": {
+    "message": "Remove Profile"
+  },
+  "Remove": {
+    "message": "Remove"
+  },
+  "Remove_profile_warning_simplified": {
+    "message": "After removing this profile, you will be logged out. You can re-import using a recovery phrase, private key, or Google Drive backup."
   },
   "Private__Key": {
     "message": "Private Key"
@@ -126,6 +144,9 @@
   },
   "Backup": {
     "message": "Backup"
+  },
+  "Backup__Found": {
+    "message": "Backup Found"
   },
   "Claim__for__your": {
     "message": "Claim for your "
@@ -262,8 +283,20 @@
   "Confirm__Password": {
     "message": "Confirm Password"
   },
+  "Enter__New__Password": {
+    "message": "Enter New Password"
+  },
   "New__Password": {
     "message": "New Password"
+  },
+  "Enter__Current__Password": {
+    "message": "Enter Current Password"
+  },
+  "Change__Password": {
+    "message": "Change Password"
+  },
+  "Password__Change__Success": {
+    "message": "Password change successful"
   },
   "Current__Password": {
     "message": "Current Password"
@@ -662,7 +695,7 @@
     "message": "We've found"
   },
   "matching__accounts": {
-    "message": "matching account(-s)"
+    "message": "matching account(s)"
   },
   "Select__the__account__which__you__want__to__restore__back": {
     "message": "Select the account which you want to restore back."

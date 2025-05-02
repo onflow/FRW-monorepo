@@ -104,7 +104,7 @@ const Deposit = () => {
   const classes = useStyles();
   const usewallet = useWallet();
   const ref = useRef<HTMLDivElement>(null);
-  const { childAccounts, currentWallet, currentWalletIndex } = useProfiles();
+  const { childAccounts, currentWallet, parentWalletIndex: currentWalletIndex } = useProfiles();
 
   const [userWallets, setUserWallets] = useState<any>(null);
   const [localWalletIndex, setLocalWalletIndex] = useState<number>(currentWalletIndex);

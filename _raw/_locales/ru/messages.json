@@ -67,7 +67,16 @@
     "message": "Аккаунт"
   },
   "Acc__list": {
-    "message": "账户列表"
+    "message": "Список аккаунтов"
+  },
+  "Display__Currency": {
+    "message": "Валюта отображения"
+  },
+  "Select__Currency": {
+    "message": "Выберите валюту"
+  },
+  "Currency__Description": {
+    "message": "Выберите валюту, которую вы хотите использовать для отображения значений"
   },
   "Profile": {
     "message": "Список аккаунтов"
@@ -137,6 +146,9 @@
   },
   "Backup": {
     "message": "Резервное копирование"
+  },
+  "Backup__Found": {
+    "message": "Резервная копия найдена"
   },
   "Claim__for__your": {
     "message": "Востребовать для вашего "
@@ -275,6 +287,15 @@
   },
   "New__Password": {
     "message": "Новый пароль"
+  },
+  "Enter__New__Password": {
+    "message": "Введите новый пароль"
+  },
+  "Change__Password": {
+    "message": "Изменить пароль"
+  },
+  "Password__Change__Success": {
+    "message": "Пароль успешно изменен"
   },
   "Current__Password": {
     "message": "Текущий пароль"
@@ -1357,7 +1378,7 @@
     "message": "Недостаточно памяти"
   },
   "Almost_run_out_of_account_storage": {
-    "message": "В вашем аккаунте недостаточно места для хранения данных"
+    "message": "Почти закончилось место для хранения учетной записи."
   },
   "Transaction_failed_storage_exceeded": {
     "message": "Ваша транзакция не выполнена, так как ваш баланс упал ниже минимального значения FLOW для использования памяти вашего аккаунта."

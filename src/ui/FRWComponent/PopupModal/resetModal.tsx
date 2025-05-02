@@ -1,27 +1,9 @@
-import {
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  MenuItem,
-  FormControl,
-  Select,
-  Typography,
-} from '@mui/material';
+import { Button, DialogActions, Typography } from '@mui/material';
 import React from 'react';
-import { useHistory } from 'react-router-dom';
 
 import { CustomDialog } from './importAddressModal';
 
-const ResetModal = ({
-  setShowAction,
-  isOpen,
-  onOpenChange,
-  errorName,
-  errorMessage,
-  isGoback = false,
-}) => {
+const ResetModal = ({ setShowAction, isOpen, onOpenChange, errorName, errorMessage }) => {
   return (
     <CustomDialog open={isOpen} onClose={() => setShowAction(false)}>
       <Typography sx={{ color: 'testnet.main', fontSize: '24px', fontWeight: '700' }}>

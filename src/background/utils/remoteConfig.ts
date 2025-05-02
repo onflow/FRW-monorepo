@@ -1,16 +1,10 @@
 import { storage } from '@/background/webapi';
 import { type NFTModelV2 } from '@/shared/types/network-types';
 
-import { userWalletService } from '../service';
 import openapi from '../service/openapi';
 
 import defaultConfig from './defaultConfig.json';
-import defaultNftListMainnet from './defaultNftList.mainnet.json';
-import defaultNftListTestnet from './defaultNftList.testnet.json';
 import defaultTokenList from './defaultTokenList.json';
-
-const { tokens: mainnetNftList } = defaultNftListMainnet;
-const { tokens: testnetNftList } = defaultNftListTestnet;
 
 interface CacheState {
   result: any;

@@ -69,6 +69,15 @@
   "Acc__list": {
     "message": "アカウントリスト"
   },
+  "Display__Currency": {
+    "message": "表示通貨"
+  },
+  "Select__Currency": {
+    "message": "通貨を選択"
+  },
+  "Currency__Description": {
+    "message": "表示する値に使用する通貨を選択してください"
+  },
   "Profile": {
     "message": "プロファイル"
   },
@@ -137,6 +146,9 @@
   },
   "Backup": {
     "message": "バックアップ"
+  },
+  "Backup__Found": {
+    "message": "バックアップ発見"
   },
   "Claim__for__your": {
     "message": "請求する "
@@ -275,6 +287,15 @@
   },
   "New__Password": {
     "message": "新しいパスワード"
+  },
+  "Enter__New__Password": {
+    "message": "新しいパスワードを入力してください"
+  },
+  "Change__Password": {
+    "message": "パスワードの変更"
+  },
+  "Password__Change__Success": {
+    "message": "パスワードの変更が成功しました"
   },
   "Current__Password": {
     "message": "現在のパスワード"
@@ -1354,10 +1375,19 @@
     "message": "プロファイルをインポート"
   },
   "Insufficient_Storage": {
-    "message": "ストレージが不足しています"
+    "message": "ストレージ容量が不足しています。"
+  },
+  "Remove__Profile": {
+    "message": "プロファイルを削除"
+  },
+  "Remove": {
+    "message": "削除"
+  },
+  "Remove_profile_warning_simplified": {
+    "message": "このプロファイルを削除すると、ログアウトされます。リカバリーフレーズ、秘密鍵、またはGoogleドライブのバックアップを使用して再インポートできます。"
   },
   "Almost_run_out_of_account_storage": {
-    "message": "アカウントのストレージが不足しています"
+    "message": "アカウントのストレージがほとんどありません。"
   },
   "Transaction_failed_storage_exceeded": {
     "message": "取引が失敗しました。アカウントのストレージ使用量により、アカウントの最低FLOW残高を下回ったためです。"

@@ -69,6 +69,15 @@
   "Acc__list": {
     "message": "账户列表"
   },
+  "Display__Currency": {
+    "message": "显示货币"
+  },
+  "Select__Currency": {
+    "message": "选择货币"
+  },
+  "Currency__Description": {
+    "message": "选择你想要用于显示值的货币"
+  },
   "Profile": {
     "message": "账户"
   },
@@ -137,6 +146,9 @@
   },
   "Backup": {
     "message": "备份"
+  },
+  "Backup__Found": {
+    "message": "找到备份"
   },
   "Claim__for__your": {
     "message": "获得您的"
@@ -275,6 +287,15 @@
   },
   "New__Password": {
     "message": "新密码"
+  },
+  "Enter__New__Password": {
+    "message": "输入新密码"
+  },
+  "Change__Password": {
+    "message": "修改密码"
+  },
+  "Password__Change__Success": {
+    "message": "密码修改成功"
   },
   "Current__Password": {
     "message": "确认密码"
@@ -1375,7 +1396,16 @@
     "message": "请确保您的存款是在 FLOW EVM 网络上进行的，如果通过其他网络存款，您的资产可能会丢失。"
   },
   "NFT_Not_onboarded": {
-    "message": "此NFT收藏尚未接入Cadence。请使用Flow Port来移动和接入此NFT收藏中的NFT"
+    "message": "此NFT集合尚未加入Cadence。请使用Flow Port移动和加入此NFT集合中的NFT。"
+  },
+  "Remove__Profile": {
+    "message": "删除个人资料"
+  },
+  "Remove": {
+    "message": "删除"
+  },
+  "Remove_profile_warning_simplified": {
+    "message": "删除此个人资料后，您将退出登录。您可以使用恢复短语、私钥或Google云端硬盘备份重新导入。"
   },
   "Could_not_enable_this_collection": {
     "message": "无法启用此收藏"

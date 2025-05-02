@@ -148,3 +148,17 @@ export type AccountDetails = {
 export type ChildAccountMap = {
   [key: string]: AccountDetails;
 };
+
+export type Currency = {
+  code: string;
+  name: string;
+  symbol: string;
+  country: string;
+};
+
+export const DEFAULT_CURRENCY: Currency = {
+  code: 'USD',
+  name: 'United States Dollar',
+  symbol: '$',
+  country: 'United States',
+};

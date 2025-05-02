@@ -2,9 +2,8 @@ import compareVersions from 'compare-versions';
 import cloneDeep from 'lodash/cloneDeep';
 
 import { storage } from '@/background/webapi';
-import eventBus from '@/eventBus';
+import { type Currency, DEFAULT_CURRENCY } from '@/shared/types/wallet-types';
 import { createPersistStore } from 'background/utils';
-import { EVENTS } from 'consts';
 
 import { type FlowNetwork, MAINNET_NETWORK } from '../../shared/types/network-types';
 
@@ -56,6 +55,7 @@ interface PreferenceStore {
   isDeveloperModeEnabled: boolean;
   network: FlowNetwork;
   isFreeGasFeeEnabled: boolean;
+  displayCurrency: Currency;
 }
 
 const SUPPORT_LOCALES = ['en'];
@@ -91,6 +91,7 @@ class PreferenceService {
         isDeveloperModeEnabled: isDeveloperModeEnabled || false,
         network: MAINNET_NETWORK,
         isFreeGasFeeEnabled: false,
+        displayCurrency: DEFAULT_CURRENCY,
       },
     });
     if (!this.store.locale || this.store.locale !== defaultLang) {
@@ -136,6 +137,9 @@ class PreferenceService {
     }
     if (!this.store.walletSavedList) {
       this.store.walletSavedList = [];
+    }
+    if (!this.store.displayCurrency) {
+      this.store.displayCurrency = DEFAULT_CURRENCY;
     }
   };
 
@@ -350,6 +354,12 @@ class PreferenceService {
   //   const key = address.toLowerCase();
   //   this.store.addedToken[key] = tokenList;
   // };
+  getDisplayCurrency = () => {
+    return this.store.displayCurrency || DEFAULT_CURRENCY;
+  };
+  setDisplayCurrency = (currency: Currency) => {
+    this.store.displayCurrency = currency;
+  };
 }
 
 export default new PreferenceService();

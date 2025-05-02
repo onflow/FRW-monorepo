@@ -23,7 +23,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export const ContactCard = ({ contact, coinInfo, isLoading = false }) => {
+export const ContactCard = ({ contact, tokenInfo, isLoading = false }) => {
   const history = useHistory();
 
   const getName = (name: string) => {
@@ -116,7 +116,7 @@ export const ContactCard = ({ contact, coinInfo, isLoading = false }) => {
         <IconButton
           onClick={(e) => {
             e.stopPropagation();
-            history.push(`/dashboard/token/${coinInfo.unit}/send`);
+            history.push(`/dashboard/token/${tokenInfo.unit}/send`);
           }}
         >
           <CardMedia sx={{ width: '11px', height: '11px' }} image={closex} />
