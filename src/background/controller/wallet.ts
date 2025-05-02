@@ -186,8 +186,8 @@ export class WalletController extends BaseController {
     this.storageEvaluator = new StorageEvaluator();
 
     registerRefreshListener(registerStatusRefreshRegex, async (pubKey: string) => {
-      // The ttl is set to 2 minutes. After that we clear the cache
-      clearCachedData(registerStatusKey(pubKey));
+      // The ttl is set to 2 minutes. After that we set the cache to false
+      setCachedData(registerStatusKey(pubKey), false, 120_000);
     });
   }
   // Adding as tests load the extension really, really fast
@@ -282,8 +282,8 @@ export class WalletController extends BaseController {
 
       userWalletService.registerCurrentPubkey(account.keys[0].publicKey, account);
 
-      // Clear the register status cache
-      clearCachedData(registerStatusKey(account.keys[0].publicKey));
+      // Set the register status cache to false
+      setCachedData(registerStatusKey(account.keys[0].publicKey), false, 120_000);
 
       return account;
     } catch (error) {
