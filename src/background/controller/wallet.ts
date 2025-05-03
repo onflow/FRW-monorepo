@@ -260,9 +260,6 @@ export class WalletController extends BaseController {
 
       userWalletService.registerCurrentPubkey(account.keys[0].publicKey, account);
 
-      // Set the register status cache to false
-      setCachedData(registerStatusKey(account.keys[0].publicKey), false, 120_000);
-
       return account;
     } catch (error) {
       throw new Error(`Account creation failed: ${error.message || 'Unknown error'}`);

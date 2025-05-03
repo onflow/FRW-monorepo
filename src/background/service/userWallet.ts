@@ -325,8 +325,10 @@ class UserWallet {
       activeAccounts
     );
     if (
-      validatedActiveAccounts.parentAddress !== activeAccounts?.parentAddress ||
-      validatedActiveAccounts.currentAddress !== activeAccounts?.currentAddress
+      validatedActiveAccounts.parentAddress !== null &&
+      validatedActiveAccounts.currentAddress !== null &&
+      (validatedActiveAccounts.parentAddress !== activeAccounts?.parentAddress ||
+        validatedActiveAccounts.currentAddress !== activeAccounts?.currentAddress)
     ) {
       // Only update the active accounts if they have changed and the addresses are not null
       await setUserData<ActiveAccountsStore>(
