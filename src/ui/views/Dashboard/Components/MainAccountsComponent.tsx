@@ -54,6 +54,7 @@ const MainAccountsComponent = (props: MainAccountsProps) => {
           disabled={isBalanceLoading}
         >
           <ListItemButton
+            data-testid={`main-account-${props.mainAddress}`}
             sx={{
               my: 0,
               display: 'flex',

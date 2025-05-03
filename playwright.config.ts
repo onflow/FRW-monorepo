@@ -68,7 +68,7 @@ export default defineConfig({
     },
     {
       name: 'registration-test',
-      testMatch: /.*login\.test\.ts/,
+      testMatch: /registration\/.*\.test\.ts/,
       dependencies: ['registration-setup'],
       fullyParallel: false,
     },
@@ -87,7 +87,7 @@ export default defineConfig({
     },
     {
       name: 'transaction-test',
-      testMatch: /.*transaction\.test\.ts/,
+      testMatch: /transaction\/.*transaction\.test\.ts/,
       dependencies: ['transaction-setup'],
       fullyParallel: false,
     },

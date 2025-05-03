@@ -42,6 +42,7 @@ import {
 import { isValidFlowAddress, isValidEthereumAddress } from '@/shared/utils/address';
 import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
 import { cadenceScriptsKey, cadenceScriptsRefreshRegex } from '@/shared/utils/cache-data-keys';
+import { getCurrentProfileId, returnCurrentProfileId } from '@/shared/utils/current-id';
 import { getPeriodFrequency } from '@/shared/utils/getPeriodFrequency';
 import { type NetworkScripts } from '@/shared/utils/script-types';
 import { INITIAL_OPENAPI_URL, WEB_NEXT_URL } from 'consts';
@@ -887,7 +888,8 @@ class OpenApiService {
       { account_key, device_info, signature }
     );
     if (!result.data) {
-      throw new Error('NoUserFound');
+      const currentId = await returnCurrentProfileId();
+      throw new Error(`NoUserFound currentId: ${currentId} public_key: ${account_key.public_key} `);
     }
     if (replaceUser) {
       await this._loginWithToken(result.data.id, result.data.custom_token);

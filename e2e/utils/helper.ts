@@ -1,7 +1,8 @@
 import { type Page } from '@playwright/test';
 
-import { getAuth, saveAuth, expect } from './loader';
+import { isValidEthereumAddress } from '../../src/shared/utils/address';
 
+import { getAuth, saveAuth, expect } from './loader';
 export const getClipboardText = async () => {
   const text = await navigator.clipboard.readText();
   return text;
@@ -26,6 +27,7 @@ export const getCurrentAddress = async (page: Page) => {
   const copyIcon = page.getByTestId('copy-address-button');
   await expect(copyIcon).toBeEnabled({ timeout: 120_000 });
 
+  // const flowAddr = await page.getByTestId('account-address').textContent();
   await copyIcon.click();
 
   const flowAddr = await page.evaluate(getClipboardText);
@@ -62,7 +64,10 @@ export const loginToExtensionAccount = async ({ page, extensionId, addr, passwor
   await unlockBtn.click();
   // get address
   let flowAddr = await getCurrentAddress(page);
-
+  if (flowAddr !== addr && isValidEthereumAddress(flowAddr)) {
+    await switchToFlow({ page, extensionId });
+    flowAddr = await getCurrentAddress(page);
+  }
   if (flowAddr !== addr) {
     // switch to the correct account
     await page.getByLabel('menu').click();
@@ -70,9 +75,13 @@ export const loginToExtensionAccount = async ({ page, extensionId, addr, passwor
     await expect(page.getByText('Profile', { exact: true })).toBeVisible();
     // Switch to the correct account. Note doest not handle more than 3 accounts loaded
     await page.getByTestId(`profile-item-nickname-${nickname}`).click();
-
+    await expect(page.getByRole('progressbar').getByRole('img')).not.toBeVisible();
     // get address
     flowAddr = await getCurrentAddress(page);
+    if (flowAddr !== addr && isValidEthereumAddress(flowAddr)) {
+      await switchToFlow({ page, extensionId });
+      flowAddr = await getCurrentAddress(page);
+    }
   }
 
   expect(flowAddr).toBe(addr);
@@ -296,8 +305,13 @@ export const importAccountBySeedPhrase = async ({
 
   await page.goto(`chrome-extension://${extensionId}/index.html#/dashboard`);
   await page.waitForURL(/.*\/dashboard.*/);
+
   // Wait for the account address to be visible
-  const flowAddr = await getCurrentAddress(page);
+  let flowAddr = await getCurrentAddress(page);
+  if (accountAddr && flowAddr !== accountAddr) {
+    await switchToFlow({ page, extensionId });
+    flowAddr = await getCurrentAddress(page);
+  }
 
   if (accountAddr && flowAddr !== accountAddr) {
     throw new Error('Account address does not match');
@@ -395,7 +409,10 @@ export const switchToEvm = async ({ page, extensionId }) => {
   // Assume the user is on the dashboard page
   await page.getByLabel('menu').click();
   // switch to COA account
-  await page.getByRole('button', { name: 'EVM' }).nth(0).click();
+  await page
+    .getByTestId(/evm-account-0x.*/)
+    .first()
+    .click();
   // get address
   await getCurrentAddress(page);
 };
@@ -404,11 +421,33 @@ export const switchToFlow = async ({ page, extensionId }) => {
   // Assume the user is on the dashboard page
   await page.getByLabel('menu').click();
   // switch to COA account
-  await page.getByRole('button', { name: 'Flow' }).nth(0).click();
+  await page
+    .getByTestId(/main-account-0x.*/)
+    .first()
+    .click();
   // get address
   await getCurrentAddress(page);
 };
-
+export const switchAccount = async ({ page, extensionId }) => {
+  // Assume the user is on the dashboard page
+  await page.getByLabel('menu').click();
+  // switch to another flow account
+  await page
+    .getByTestId(/main-account-0x.*/)
+    .first()
+    .click();
+  await page.getByLabel('menu').click();
+  await page
+    .getByTestId(/main-account-0x.*/)
+    .first()
+    .click();
+  await page
+    .getByTestId(/main-account-0x.*/)
+    .nth(1)
+    .click();
+  // get address
+  await getCurrentAddress(page);
+};
 const getActivityItemRegexp = (txId: string, ingoreFlowCharge = false) => {
   return new RegExp(`^.*${txId}.*${ingoreFlowCharge ? '(?<!FlowToken)' : ''}$`);
 };

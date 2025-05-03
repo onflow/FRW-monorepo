@@ -1672,8 +1672,8 @@ class KeyringService extends EventEmitter {
     // Verify the password
     await this.verifyPassword(password);
 
-    // Get all keyring IDs
-    const keyringIds = await this.getKeyringIds();
+    // Get all keyring IDs *before* modification
+    const keyringIds = await this.getKeyringIds(); // Or use: this.keyringList.map(k => k.id);
 
     // If this is the only profile, reset the entire wallet
     if (keyringIds.length <= 1) {
@@ -1689,35 +1689,49 @@ class KeyringService extends EventEmitter {
     // Get the current profile ID
     const currentId = await returnCurrentProfileId();
 
-    // If we're removing the current profile, first switch to another one
+    // If we're removing the current profile, determine the next one to switch to
     let needToSwitchKeyring = false;
+    let nextProfileId: string | undefined = undefined;
+
     if (currentId === profileId) {
-      // Find another profile to switch to
-      const nextProfileId = keyringIds[Math.min(profileIndex, keyringIds.length - 1)];
-      if (nextProfileId) {
-        // Update the current profile ID in storage
+      // Calculate the index of the next profile, wrapping around if removing the last one
+      const nextIndex = (profileIndex + 1) % keyringIds.length;
+      // Get the ID of the profile at the next index
+      nextProfileId = keyringIds[nextIndex];
+
+      if (nextProfileId && nextProfileId !== profileId) {
+        // Ensure we found a valid *different* ID
+        // Update the current profile ID in storage immediately
         await storage.set(CURRENT_ID_KEY, nextProfileId);
         needToSwitchKeyring = true;
+      } else {
+        // This should theoretically not happen if length > 1, but handle defensively
+        console.error(
+          'Error: Could not determine the next profile ID to switch to. currentId:',
+          currentId,
+          'profileId:',
+          profileId,
+          'profileIndex:',
+          profileIndex,
+          'keyringIds:',
+          [...keyringIds]
+        );
+        // Decide recovery strategy: maybe default to the first ID again, or throw?
+        // For now, we'll proceed without switching, potentially leaving state inconsistent
+        needToSwitchKeyring = false;
+        nextProfileId = undefined; // Ensure it's not used later
       }
     }
 
-    // Remove the profile from the keyring list
+    // Remove the profile from the in-memory keyring list
     this.keyringList.splice(profileIndex, 1);
 
-    // Update the vault in the store
-    const vaultArray = this.store.getState().vault || [];
-    const updatedVault = vaultArray.filter((entry) => entry.id !== profileId);
-    this.store.updateState({ vault: updatedVault });
-
-    // Persist the changes to storage using encryptVaultArray
+    // Update the vault in the store by re-encrypting the remaining keyrings
     await this.encryptVaultArray(this.keyringList, password);
 
-    // Switch to another profile if needed
-    if (needToSwitchKeyring) {
-      const nextProfileId = keyringIds.find((id) => id !== profileId);
-      if (nextProfileId) {
-        this.currentKeyring = await this.switchKeyring(nextProfileId);
-      }
+    // Switch to the next profile's keyring in memory if needed
+    if (needToSwitchKeyring && nextProfileId) {
+      this.currentKeyring = await this.switchKeyring(nextProfileId);
     }
 
     // Update the memory store

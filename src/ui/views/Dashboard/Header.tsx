@@ -427,6 +427,7 @@ const Header = ({ _loading = false }) => {
                   sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
                 >
                   <Typography
+                    data-testid="account-name"
                     variant="overline"
                     color="text"
                     align="center"
@@ -445,6 +446,7 @@ const Header = ({ _loading = false }) => {
                   </Typography>
                   <Box sx={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
                     <Typography
+                      data-testid="account-address"
                       variant="caption"
                       color="text.secondary"
                       sx={{ textTransform: 'none' }}
