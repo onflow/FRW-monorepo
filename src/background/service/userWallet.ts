@@ -45,7 +45,7 @@ import {
   accountBalanceRefreshRegex,
 } from '@/shared/utils/cache-data-keys';
 import { retryOperation } from '@/shared/utils/retryOperation';
-import { getUserData, setUserData } from '@/shared/utils/user-data-access';
+import { setUserData } from '@/shared/utils/user-data-access';
 import {
   userWalletsKey,
   type UserWalletStore,
@@ -59,7 +59,6 @@ import {
   type AccountKeyRequest,
   type DeviceInfoRequest,
   type FlowNetwork,
-  type AccountAlgo,
 } from '../../shared/types/network-types';
 import { type PublicKeyAccount, type MainAccount } from '../../shared/types/wallet-types';
 import { type WalletController } from '../controller/wallet';
@@ -204,7 +203,6 @@ class UserWallet {
   };
 
   setNetwork = async (network: string) => {
-    console.trace('setNetwork', network);
     if (!this.store) {
       throw new Error('UserWallet not initialized');
     }
@@ -327,10 +325,8 @@ class UserWallet {
       activeAccounts
     );
     if (
-      validatedActiveAccounts.parentAddress !== null &&
-      validatedActiveAccounts.currentAddress !== null &&
-      (validatedActiveAccounts.parentAddress !== activeAccounts?.parentAddress ||
-        validatedActiveAccounts.currentAddress !== activeAccounts?.currentAddress)
+      validatedActiveAccounts.parentAddress !== activeAccounts?.parentAddress ||
+      validatedActiveAccounts.currentAddress !== activeAccounts?.currentAddress
     ) {
       // Only update the active accounts if they have changed and the addresses are not null
       await setUserData<ActiveAccountsStore>(
@@ -1127,9 +1123,7 @@ const preloadAllAccountsWithPubKey = async (
   }
 
   if (!mainAccounts || mainAccounts.length === 0) {
-    console.warn(
-      `No main accounts loaded even after trying for ${Math.round(MAX_LOAD_TIME / 1000 / 60)} minutes`
-    );
+    console.warn(`No main accounts loaded`);
     return [];
   }
 
