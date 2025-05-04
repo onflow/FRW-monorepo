@@ -474,6 +474,11 @@ export const waitForTransaction = async ({
   successtext = 'success',
   amount = '',
   ingoreFlowCharge = false,
+}: {
+  page: Page;
+  successtext?: string | RegExp;
+  amount?: string;
+  ingoreFlowCharge?: boolean;
 }) => {
   // Wait for the transaction to be completed
   await page.waitForURL(/.*dashboard\?activity=1.*/);
@@ -483,6 +488,9 @@ export const waitForTransaction = async ({
 
   expect(txId).toBeDefined();
 
+  if (!txId) {
+    throw new Error('Transaction ID is not found');
+  }
   const progressBar = page.getByRole('progressbar');
   await expect(progressBar).toBeVisible();
   // Get the pending item with the cadence txId that was put in the url and status is pending
