@@ -22,6 +22,9 @@ test('Remove profile test', async ({ page, extensionId }) => {
   await fillInPassword({ page, password: keysFile.password });
   await page.getByRole('button', { name: 'Remove' }).click();
 
+  // Wait for the unlock page to load
+  await page.waitForURL(`chrome-extension://${extensionId}/index.html#/unlock`);
+
   // Now login as the test user
   await loginAsTestUser({ page, extensionId });
   // Check that the sender account is not visible
