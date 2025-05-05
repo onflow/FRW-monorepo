@@ -86,7 +86,7 @@ const ManageBackups = () => {
   }, [setHasBackup, wallet]);
 
   const checkPermissions = useCallback(async () => {
-    const permissions = await wallet.hasGooglePremission();
+    const permissions = await wallet.hasGooglePermission();
     setHasPermission(permissions);
     if (permissions) {
       await checkBackup();

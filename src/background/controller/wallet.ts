@@ -3315,8 +3315,8 @@ export class WalletController extends BaseController {
     return googleDriveService.listFiles();
   };
 
-  hasGooglePremission = async () => {
-    return googleDriveService.hasGooglePremission();
+  hasGooglePermission = async () => {
+    return googleDriveService.hasGooglePermission();
   };
 
   deleteAllBackups = async () => {

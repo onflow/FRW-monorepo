@@ -330,7 +330,7 @@ const ChangePassword = () => {
   const handleChangePasswordClick = useCallback(async () => {
     // Check if the user has google permission
     // We need to access backups so we can re-encrypt them
-    const hasGooglePremission = await wallet.hasGooglePremission();
+    const hasGooglePremission = await wallet.hasGooglePermission();
     if (hasGooglePremission) {
       changePassword();
     } else {

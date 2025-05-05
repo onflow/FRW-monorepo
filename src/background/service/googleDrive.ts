@@ -38,12 +38,12 @@ class GoogleDriveService {
     return accounts.includes(username);
   };
 
-  hasGooglePremission = async (): Promise<boolean> => {
+  hasGooglePermission = async (): Promise<boolean> => {
     try {
       const token = await this.getAuthTokenWrapper(false);
       return token !== undefined && token !== null;
     } catch (err) {
-      console.error('hasGooglePremission - not authorized', err);
+      console.error('hasGooglePermission - not authorized', err);
       return false;
     }
   };
@@ -350,7 +350,7 @@ class GoogleDriveService {
 
   setNewPassword = async (oldPassword: string, newPassword: string): Promise<boolean> => {
     try {
-      if (!(await this.hasGooglePremission())) {
+      if (!(await this.hasGooglePermission())) {
         throw new Error('Not authorized to update password on google backups');
       }
       // Load all backups
