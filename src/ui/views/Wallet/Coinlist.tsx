@@ -79,7 +79,8 @@ const CoinList = ({
               sx={{ fontSize: 14, fontWeight: '550', textAlign: 'end', color: 'text.title' }}
               data-testid={`coin-balance-${props.unit.toLowerCase()}`}
             >
-              {formatLargeNumber(props.primary)} {props.unit.toUpperCase()}
+              {formatLargeNumber(props.primary)}{' '}
+              {props.unit.length > 6 ? `${props.unit.slice(0, 6)}` : props.unit.toUpperCase()}{' '}
             </Typography>
           ) : (
             <Skeleton variant="text" width={35} height={15} />
@@ -113,7 +114,7 @@ const CoinList = ({
         disableTypography={true}
         primary={
           !isLoading ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
               <Typography
                 variant="body1"
                 sx={{
