@@ -227,12 +227,8 @@ const AccountSettings = () => {
           px: '16px',
         }}
       >
-        <IconButton>
-          <ArrowBackIcon
-            fontSize="medium"
-            sx={{ color: 'icon.navi', cursor: 'pointer' }}
-            onClick={() => history.push('/dashboard')}
-          />
+        <IconButton onClick={() => history.push('/dashboard/setting')}>
+          <ArrowBackIcon fontSize="medium" sx={{ color: 'icon.navi', cursor: 'pointer' }} />
         </IconButton>
         <Typography
           variant="h1"
@@ -244,14 +240,12 @@ const AccountSettings = () => {
         >
           {chrome.i18n.getMessage('Profile')}
         </Typography>
-        <IconButton>
-          <EditRoundedIcon
-            fontSize="medium"
-            sx={{ color: 'icon.navi', cursor: 'pointer' }}
-            onClick={() => {
-              toggleEdit();
-            }}
-          />
+        <IconButton
+          onClick={() => {
+            toggleEdit();
+          }}
+        >
+          <EditRoundedIcon fontSize="medium" sx={{ color: 'icon.navi', cursor: 'pointer' }} />
         </IconButton>
       </Box>
       <Box
