@@ -59,14 +59,10 @@ export const SecurityCard: React.FC<{ tokenInfo: CoinItem }> = ({ tokenInfo }) =
               sx={{ textDecoration: 'underline', cursor: 'pointer' }}
               onClick={() => {
                 if (tokenInfo.address) {
-                  if (isValidFlowAddress(tokenInfo.address)) {
-                    window.open(`https://flowscan.io/account/${tokenInfo.address}`, '_blank');
-                  } else if (isValidEthereumAddress(tokenInfo.address)) {
-                    window.open(
-                      `https://evm.flowscan.io/address/${tokenInfo.address}?tab=contract`,
-                      '_blank'
-                    );
-                  }
+                  const url = isValidFlowAddress(tokenInfo.address)
+                    ? `https://flowscan.io/account/${tokenInfo.address}`
+                    : `https://evm.flowscan.io/address/${tokenInfo.address}?tab=contract`;
+                  window.open(url, '_blank', 'noopener,noreferrer');
                 }
               }}
             >
