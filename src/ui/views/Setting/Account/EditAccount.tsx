@@ -1,7 +1,7 @@
 import CloseIcon from '@mui/icons-material/Close';
 import { Typography, Box, Drawer, Grid, Stack, InputBase, CircularProgress } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useForm, type FieldValues } from 'react-hook-form';
 
 import { useWallet } from 'ui/utils';
@@ -43,15 +43,15 @@ const EditAccount = (props: EditAccountProps) => {
   });
 
   const onSubmit = async (data: FieldValues) => {
-    console.log(data);
     const { nickname, avatar } = data;
-    await props.setNickname(nickname);
+    props.setNickname(nickname);
 
-    const response = await wallet.openapi.updateProfile(nickname, avatar);
-
-    if (response.status === 200) {
+    try {
+      await wallet.updateUserInfo(nickname, avatar);
       reset();
       props.handleAddBtnClicked();
+    } catch (error) {
+      console.error('Failed to update user info:', error);
     }
   };
 

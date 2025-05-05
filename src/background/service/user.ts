@@ -78,7 +78,17 @@ class UserInfoService {
 
     return userInfo;
   };
+  updateUserInfo = async (nickname: string, avatar: string) => {
+    const res = await openapiService.updateProfile(nickname, avatar);
+    // Refresh the user info
+    if (res.status === 200) {
+      const currentId = await getCurrentProfileId();
+      const userInfo = await this.loadUserInfoByUserId(currentId);
+      return userInfo;
+    }
 
+    throw new Error('Failed to update user info');
+  };
   getCurrentUserInfo = async (): Promise<UserInfoResponse> => {
     const currentId = await getCurrentProfileId();
     const userInfo = await this.getUserInfo(currentId);
