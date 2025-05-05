@@ -33,8 +33,6 @@ const NFTTab = () => {
   useEffect(() => {
     const loadNFTs = async () => {
       const accountType = activeAccountType;
-      console.log('loadNFTs - accountType', accountType);
-      // const flowCoins = fetchRemoteConfig.flowCoins();
       setChildTypeLoaded(true);
       if (accountType === 'child' && address) {
         setChildType(accountType);
