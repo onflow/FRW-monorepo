@@ -1,12 +1,11 @@
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import { Button, Typography, TextField, DialogActions, CircularProgress, Box } from '@mui/material';
-import { styled } from '@mui/material/styles';
 import React, { useState, useEffect, useCallback } from 'react';
 
 import { useWallet } from '@/ui/utils';
 
-import { CustomDialog } from './importAddressModal'; // Reuse the styled dialog base
+import { CustomDialog } from '../custom-dialog'; // Reuse the styled dialog base
 
 interface RemoveProfileModalProps {
   isOpen: boolean;

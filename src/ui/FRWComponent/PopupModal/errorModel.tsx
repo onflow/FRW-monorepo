@@ -2,7 +2,7 @@ import { Button, Typography } from '@mui/material';
 import React from 'react';
 import { useHistory } from 'react-router-dom';
 
-import { CustomDialog } from './importAddressModal';
+import { CustomDialog } from '../custom-dialog';
 
 const ErrorModel = ({ isOpen, onOpenChange, errorName, errorMessage, isGoback = false }) => {
   const history = useHistory();

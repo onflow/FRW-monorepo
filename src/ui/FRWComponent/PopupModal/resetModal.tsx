@@ -1,7 +1,7 @@
 import { Button, DialogActions, Typography } from '@mui/material';
 import React from 'react';
 
-import { CustomDialog } from './importAddressModal';
+import { CustomDialog } from '../custom-dialog';
 
 const ResetModal = ({ setShowAction, isOpen, onOpenChange, errorName, errorMessage }) => {
   return (

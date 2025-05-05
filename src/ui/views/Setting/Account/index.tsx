@@ -7,7 +7,6 @@ import { styled } from '@mui/system';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import { type PreferenceAccount } from '@/background/service/preference';
 import { openIndexPage } from '@/background/webapi/tab';
 import { getCurrentProfileId } from '@/shared/utils/current-id';
 import RemoveProfileModal from '@/ui/FRWComponent/PopupModal/remove-profile-modal';
@@ -97,29 +96,27 @@ const Root = styled('span')(
 const AccountSettings = () => {
   const history = useHistory();
   const wallet = useWallet();
-  const { clearProfileData, profileIds } = useProfiles();
-  const [username, setUsername] = useState('');
-  const [nickname, setNickname] = useState('');
+  const { clearProfileData, profileIds, userInfo, walletList } = useProfiles();
+
+  const [username, setUsername] = useState(userInfo?.username || '');
+  const [nickname, setNickname] = useState(userInfo?.nickname || '');
+  const [avatar, setAvatar] = useState(userInfo?.avatar || '');
   const [isEdit, setEdit] = useState(false);
-  const [avatar, setAvatar] = useState('');
-  const [modeAnonymous, setModeAnonymous] = useState(false);
+
+  const [modeAnonymous, setModeAnonymous] = useState(userInfo?.private === 1);
   const [showRemoveConfirmModal, setShowRemoveConfirmModal] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
   const [removeError, setRemoveError] = useState('');
   const [showResetModal, setShowResetModal] = useState(false);
-  const [activeAccountDetails, setActiveAccountDetails] = useState<PreferenceAccount[] | null>(
-    null
-  );
 
   const loadAccountData = useCallback(async () => {
-    const userInfo = await wallet.getUserInfo(false);
-    setUsername(userInfo.username);
-    setNickname(userInfo.nickname);
-    setAvatar(userInfo.avatar);
-
-    const details = await wallet.getAllVisibleAccountsArray();
-    if (details) {
-      setActiveAccountDetails(details);
+    try {
+      const userInfo = await wallet.getUserInfo(false);
+      setUsername(userInfo.username);
+      setNickname(userInfo.nickname);
+      setAvatar(userInfo.avatar);
+    } catch (error) {
+      console.error('Failed to load account data:', error);
     }
   }, [wallet]);
 
@@ -128,16 +125,20 @@ const AccountSettings = () => {
   };
 
   const getAnonymousMode = useCallback(async () => {
-    const userInfo = await wallet.fetchUserInfo();
-    if (userInfo.private === 1) {
-      setModeAnonymous(false);
-    } else {
-      setModeAnonymous(true);
+    try {
+      const userInfo = await wallet.getUserInfo(false);
+      if (userInfo.private === 1) {
+        setModeAnonymous(false);
+      } else {
+        setModeAnonymous(true);
+      }
+    } catch (error) {
+      console.error('Failed to get anonymous mode:', error);
     }
   }, [wallet]);
 
   const updatePreference = useCallback(
-    async (modeAnonymous) => {
+    async (modeAnonymous: boolean) => {
       if (modeAnonymous) {
         await wallet.updateProfilePreference(2);
       } else {
@@ -168,7 +169,7 @@ const AccountSettings = () => {
   };
 
   const handleConfirmRemove = async (password: string) => {
-    if (!activeAccountDetails) {
+    if (!walletList) {
       console.error('Cannot remove profile: No active account details found.');
       setRemoveError('Account details not loaded for removal.');
       return;
@@ -195,7 +196,7 @@ const AccountSettings = () => {
           openIndexPage('welcome?add=true');
         });
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to remove profile:', error);
       if (error.message && error.message.includes('Incorrect password')) {
         setRemoveError('Incorrect password. Please try again.');
@@ -212,8 +213,12 @@ const AccountSettings = () => {
   };
 
   useEffect(() => {
-    getAnonymousMode();
-    loadAccountData();
+    try {
+      getAnonymousMode();
+      loadAccountData();
+    } catch (error) {
+      console.error('Failed to load account data:', error);
+    }
   }, [getAnonymousMode, loadAccountData]);
 
   return (
