@@ -133,10 +133,12 @@ const GoogleWarningDialog = ({
   open,
   onClose,
   onProceedAnyway,
+  onError,
 }: {
   open: boolean;
   onClose: (close: boolean) => void;
   onProceedAnyway: () => void;
+  onError: (error: string) => void;
 }) => {
   const wallet = useWallet();
   const handleCancel = () => {
@@ -149,6 +151,7 @@ const GoogleWarningDialog = ({
       return wallet.loadBackupAccounts();
     } catch (error) {
       console.error('Error loading backup accounts:', error);
+      onError('Error loading backup accounts');
     }
   };
 
@@ -286,7 +289,7 @@ const ChangePassword = () => {
   const [helperMatch, setHelperMatch] = useState(<div />);
 
   const changePassword = useCallback(
-    async (ingoreBackupsAtTheirOwnRisk = false) => {
+    async (ignoreBackupsAtTheirOwnRisk = false) => {
       try {
         setIsResetting(true);
         setError('');
@@ -294,7 +297,7 @@ const ChangePassword = () => {
         const success = await wallet.changePassword(
           confirmCurrentPassword,
           confirmPassword,
-          ingoreBackupsAtTheirOwnRisk
+          ignoreBackupsAtTheirOwnRisk
         );
 
         if (success) {
@@ -611,6 +614,7 @@ const ChangePassword = () => {
           open={showGooglePermissionDialog}
           onClose={setShowGooglePermissionDialog}
           onProceedAnyway={() => changePassword(true)}
+          onError={setError}
         />
       </Box>
     </div>
