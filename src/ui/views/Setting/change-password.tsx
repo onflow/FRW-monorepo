@@ -145,7 +145,11 @@ const GoogleWarningDialog = ({
   const handleConnectToGoogle = async () => {
     // This will ask the user to connect to Google Drive
     onClose(false);
-    return wallet.loadBackupAccounts();
+    try {
+      return wallet.loadBackupAccounts();
+    } catch (error) {
+      console.error('Error loading backup accounts:', error);
+    }
   };
 
   const handleProceedAnyway = async () => {
@@ -299,6 +303,10 @@ const ChangePassword = () => {
             .then(() => {
               clearProfileData();
               history.push('/unlock');
+            })
+            .catch((error) => {
+              console.error('Error locking wallet:', error);
+              setError(chrome.i18n.getMessage('Oops__unexpected__error'));
             })
             .finally(() => {
               setIsResetting(false);
