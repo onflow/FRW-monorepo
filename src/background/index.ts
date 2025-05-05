@@ -401,13 +401,20 @@ const extMessageHandler = (msg, sender, sendResponse) => {
         const tabId = tabs[0].id;
 
         // Check if current address is flow address
-        const currentAddress = await userWalletService.getCurrentAddress();
-        if (!isValidFlowAddress(currentAddress)) {
-          const parentAddress = await userWalletService.getParentAddress();
-          if (!parentAddress) {
-            throw new Error('Parent address not found');
+        try {
+          const currentAddress = await userWalletService.getCurrentAddress();
+          if (!isValidFlowAddress(currentAddress)) {
+            const parentAddress = await userWalletService.getParentAddress();
+            if (!parentAddress) {
+              throw new Error('Parent address not found');
+            }
+            await userWalletService.setCurrentAccount(
+              parentAddress,
+              parentAddress as WalletAddress
+            );
           }
-          await userWalletService.setCurrentAccount(parentAddress, parentAddress as WalletAddress);
+        } catch (error) {
+          console.error('Error validating or setting current address:', error);
         }
         if (service.type === 'pre-authz') {
           handlePreAuthz(tabId);
