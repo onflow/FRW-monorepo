@@ -151,6 +151,9 @@ const ManageBackups = () => {
           return syncBackup();
         }
       })
+      .catch((err) => {
+        console.error('Error checking permissions or syncing backup:', err);
+      })
       .finally(() => {
         // Set the loading to false after checking permissions and syncing backup is complete
         setLoading(false);

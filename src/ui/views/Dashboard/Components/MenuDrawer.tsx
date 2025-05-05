@@ -533,7 +533,7 @@ const MenuDrawer = (props: MenuDrawerProps) => {
             disablePadding
             onClick={() => {
               props.toggleDrawer();
-              history.push('/dashboard/nested/resetpwd');
+              history.push('/dashboard/nested/changepassword');
             }}
           >
             <ListItemButton sx={{ padding: '8px 16px', margin: '0', borderRadius: '0' }}>

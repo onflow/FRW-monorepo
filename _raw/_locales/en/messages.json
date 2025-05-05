@@ -1424,5 +1424,17 @@
   },
   "Address_creation_in_progress": {
     "message": "Address creation in progress..."
+  },
+  "Google_Drive_Not_Connected": {
+    "message": "Google Drive is not connected"
+  },
+  "Change_Password_No_Google_Drive_Warning": {
+    "message": "Changing your password will corrupt any existing backups. Proceed only if you don't use Google Drive Backups."
+  },
+  "Connect_Google_Drive": {
+    "message": "Connect Google Drive"
+  },
+  "Change_Password_Anyway": {
+    "message": "Change Anyway 😱"
   }
 }

@@ -1,3 +1,4 @@
+import { Warning, WarningAmber } from '@mui/icons-material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
@@ -12,6 +13,11 @@ import {
   Snackbar,
   Alert,
   CircularProgress,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Stack,
 } from '@mui/material';
 import Box from '@mui/material/Box';
 import { makeStyles } from '@mui/styles';
@@ -20,6 +26,10 @@ import { Link, useHistory } from 'react-router-dom';
 import zxcvbn from 'zxcvbn';
 
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
+import { LLPrimaryButton } from '@/ui/FRWComponent/LLPrimaryButton';
+import { LLSecondaryButton } from '@/ui/FRWComponent/LLSecondaryButton';
+import { LLWarningButton } from '@/ui/FRWComponent/LLWarningButton';
+import { CustomDialog } from '@/ui/FRWComponent/PopupModal/importAddressModal';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from 'ui/utils';
@@ -120,7 +130,62 @@ const PasswordIndicator = (props) => {
   );
 };
 
-const Resetpassword = () => {
+const GoogleWarningDialog = ({
+  open,
+  onClose,
+  onProceedAnyway,
+}: {
+  open: boolean;
+  onClose: (close: boolean) => void;
+  onProceedAnyway: () => void;
+}) => {
+  const wallet = useWallet();
+  const handleCancel = () => {
+    onClose(false);
+  };
+  const handleConnectToGoogle = async () => {
+    // This will ask the user to connect to Google Drive
+    onClose(false);
+    return wallet.loadBackupAccounts();
+  };
+
+  const handleProceedAnyway = async () => {
+    onClose(true);
+
+    return onProceedAnyway();
+  };
+  return (
+    <CustomDialog open={open} onClose={onClose}>
+      <DialogTitle>
+        <Warning fontSize="medium" /> {chrome.i18n.getMessage('Google_Drive_Not_Connected')}
+      </DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          {chrome.i18n.getMessage('Change_Password_No_Google_Drive_Warning')}
+        </DialogContentText>
+      </DialogContent>
+      <Stack direction="column" spacing={2}>
+        <LLPrimaryButton
+          label={chrome.i18n.getMessage('Connect_Google_Drive')}
+          fullWidth
+          onClick={handleConnectToGoogle}
+        />
+        <LLWarningButton
+          label={chrome.i18n.getMessage('Change_Password_Anyway')}
+          fullWidth
+          onClick={handleProceedAnyway}
+        />
+        <LLSecondaryButton
+          label={chrome.i18n.getMessage('Cancel')}
+          fullWidth
+          onClick={handleCancel}
+        />
+      </Stack>
+    </CustomDialog>
+  );
+};
+
+const ChangePassword = () => {
   const classes = useStyles();
   const wallet = useWallet();
   const { clearProfileData } = useProfiles();
@@ -136,6 +201,7 @@ const Resetpassword = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [error, setError] = useState('');
+  const [showGooglePermissionDialog, setShowGooglePermissionDialog] = useState(false);
   const history = useHistory();
 
   const verify = useCallback(async () => {
@@ -216,33 +282,51 @@ const Resetpassword = () => {
   const [helperText, setHelperText] = useState(<div />);
   const [helperMatch, setHelperMatch] = useState(<div />);
 
-  const reset = async () => {
-    try {
-      setIsResetting(true);
-      setError('');
+  const changePassword = useCallback(
+    async (ingoreBackupsAtTheirOwnRisk = false) => {
+      try {
+        setIsResetting(true);
+        setError('');
 
-      const success = await wallet.changePassword(confirmCurrentPassword, confirmPassword);
+        const success = await wallet.changePassword(
+          confirmCurrentPassword,
+          confirmPassword,
+          ingoreBackupsAtTheirOwnRisk
+        );
 
-      if (success) {
-        await wallet
-          .lockWallet()
-          .then(() => {
-            clearProfileData();
-            history.push('/unlock');
-          })
-          .finally(() => {
-            setIsResetting(false);
-          });
-      } else {
-        setError(chrome.i18n.getMessage('Oops__unexpected__error'));
+        if (success) {
+          await wallet
+            .lockWallet()
+            .then(() => {
+              clearProfileData();
+              history.push('/unlock');
+            })
+            .finally(() => {
+              setIsResetting(false);
+            });
+        } else {
+          setError(chrome.i18n.getMessage('Oops__unexpected__error'));
+        }
+      } catch (error) {
+        console.error('Error changing password:', error);
+        setError(error.message);
+      } finally {
+        setIsResetting(false);
       }
-    } catch (error) {
-      console.error('Error changing password:', error);
-      setError(error.message);
-    } finally {
-      setIsResetting(false);
+    },
+    [confirmCurrentPassword, confirmPassword, wallet, clearProfileData, history]
+  );
+
+  const handleChangePasswordClick = useCallback(async () => {
+    // Check if the user has google permission
+    // We need to access backups so we can re-encrypt them
+    const hasGooglePremission = await wallet.hasGooglePremission();
+    if (hasGooglePremission) {
+      changePassword();
+    } else {
+      setShowGooglePermissionDialog(true);
     }
-  };
+  }, [changePassword, wallet]);
 
   useEffect(() => {
     if (password.length > 7) {
@@ -500,7 +584,7 @@ const Resetpassword = () => {
           <Button
             variant="contained"
             color="primary"
-            onClick={reset}
+            onClick={handleChangePasswordClick}
             size="large"
             sx={{
               display: 'flex',
@@ -570,9 +654,15 @@ const Resetpassword = () => {
             </Typography>
           </Box>
         )}
+
+        <GoogleWarningDialog
+          open={showGooglePermissionDialog}
+          onClose={setShowGooglePermissionDialog}
+          onProceedAnyway={() => changePassword(true)}
+        />
       </Box>
     </div>
   );
 };
 
-export default Resetpassword;
+export default ChangePassword;

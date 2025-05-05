@@ -3606,14 +3606,19 @@ export class WalletController extends BaseController {
     await evmNftService.clearEvmNfts();
   };
 
-  changePassword = async (oldPassword: string, newPassword: string): Promise<boolean> => {
+  changePassword = async (
+    oldPassword: string,
+    newPassword: string,
+    ignoreBackupsAtTheirOwnRisk = false
+  ): Promise<boolean> => {
     try {
-      // If we have a backup in Google Drive, update it first
-      const userInfo = await userInfoService.getCurrentUserInfo();
-      const username = userInfo.username;
-
-      // This will throw an error if there is an issue changing the password
-      await googleDriveService.setNewPassword(oldPassword, newPassword, username);
+      // We warn the user if they are not signed into google drive when they change their password
+      // The user may never use google sign-in, so we don't want to force them to do so
+      // If the user has been prompted, then pass in true for this, otherwise we assume they are signed in
+      if (!ignoreBackupsAtTheirOwnRisk) {
+        // This will throw an error if there is an issue changing the password
+        await googleDriveService.setNewPassword(oldPassword, newPassword);
+      }
 
       // Change password for all keyrings in the user's wallet atomically
       const result = await keyringService.changePassword(oldPassword, newPassword);
