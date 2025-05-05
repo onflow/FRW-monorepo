@@ -1,7 +1,6 @@
 import {
   Typography,
   Button,
-  Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
@@ -9,19 +8,9 @@ import {
   FormControl,
   Select,
 } from '@mui/material';
-import { styled } from '@mui/material/styles';
 import React from 'react';
 
-export const CustomDialog = styled(Dialog)({
-  '& .MuiPaper-root': {
-    width: '640px',
-    borderRadius: '24px',
-    height: 'auto',
-    padding: '40px',
-    backgroundColor: '#222222',
-    backgroundImage: 'none',
-  },
-});
+import { CustomDialog } from '../custom-dialog';
 
 const ImportAddressModal = ({ isOpen, onOpenChange, accounts, handleAddressSelection }) => {
   const [selectedAddress, setSelectedAddress] = React.useState(accounts[0]?.address || '');
@@ -36,7 +25,7 @@ const ImportAddressModal = ({ isOpen, onOpenChange, accounts, handleAddressSelec
   };
 
   return (
-    <CustomDialog open={isOpen} onClose={() => onOpenChange(false)}>
+    <CustomDialog open={isOpen} onClose={() => onOpenChange(false)} sx={{ zIndex: 1500 }}>
       <DialogTitle sx={{ color: 'success.main', fontSize: '24px', fontWeight: '700' }}>
         {accounts.length} {chrome.i18n.getMessage('Accounts_Found_on_Chain')}
       </DialogTitle>
