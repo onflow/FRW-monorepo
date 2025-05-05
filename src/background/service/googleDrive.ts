@@ -353,47 +353,42 @@ class GoogleDriveService {
     newPassword: string,
     username: string
   ): Promise<boolean> => {
-    try {
-      // Load all backups
-      const backups: DriveItem[] = await this.loadBackup();
-      if (backups.length === 0 || !this.fileId) {
-        return false;
-      }
-
-      // First, try to decrypt and re-encrypt the target user's mnemonic
-      let userBackupFound = false;
-      const updatedBackups = backups.map((item) => {
-        if (item.username === username) {
-          // verify the old password and decrypt
-          const decryptedMnemonic = this.decrypt(item.data, oldPassword);
-          if (!bip39.validateMnemonic(decryptedMnemonic)) {
-            throw new Error('Decrypted mnemonic is invalid');
-          }
-          // Re-encrypt with new password
-          userBackupFound = true;
-          return {
-            ...item,
-            data: this.encrypt(decryptedMnemonic, newPassword),
-            time: new Date().getTime().toString(),
-          };
-        }
-        // add non username backup to the list
-        return item;
-      });
-
-      // If the user was not found, abort
-      if (!userBackupFound) {
-        return false;
-      }
-
-      // Atomic approach, all succeeded, now update the file
-      const updateContent = this.encrypt(JSON.stringify(updatedBackups), this.AES_KEY);
-      await this.updateFile(this.fileId, updateContent, false);
-      return true;
-    } catch (error) {
-      console.error('Failed to set new password:', error);
+    // Load all backups
+    const backups: DriveItem[] = await this.loadBackup();
+    if (backups.length === 0 || !this.fileId) {
       return false;
     }
+
+    // First, try to decrypt and re-encrypt the target user's mnemonic
+    let userBackupFound = false;
+    const updatedBackups = backups.map((item) => {
+      if (item.username === username) {
+        // verify the old password and decrypt
+        const decryptedMnemonic = this.decrypt(item.data, oldPassword);
+        if (!bip39.validateMnemonic(decryptedMnemonic)) {
+          throw new Error('Decrypted mnemonic is invalid');
+        }
+        // Re-encrypt with new password
+        userBackupFound = true;
+        return {
+          ...item,
+          data: this.encrypt(decryptedMnemonic, newPassword),
+          time: new Date().getTime().toString(),
+        };
+      }
+      // add non username backup to the list
+      return item;
+    });
+
+    // If the user was not found, abort
+    if (!userBackupFound) {
+      return false;
+    }
+
+    // Atomic approach, all succeeded, now update the file
+    const updateContent = this.encrypt(JSON.stringify(updatedBackups), this.AES_KEY);
+    await this.updateFile(this.fileId, updateContent, false);
+    return true;
   };
 }
 

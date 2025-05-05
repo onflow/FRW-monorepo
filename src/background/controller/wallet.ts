@@ -3609,31 +3609,11 @@ export class WalletController extends BaseController {
   changePassword = async (oldPassword: string, newPassword: string): Promise<boolean> => {
     try {
       // If we have a backup in Google Drive, update it first
-      try {
-        const userInfo = await userInfoService.getCurrentUserInfo();
-        const username = userInfo.username;
-        const backupUpdated = await googleDriveService.setNewPassword(
-          oldPassword,
-          newPassword,
-          username
-        );
-        if (backupUpdated === false) {
-          // Notify user and abort password change
-          mixpanelTrack.track('password_update_failed', {
-            address: (await this.getCurrentAddress()) || '',
-            error: 'Failed to update Google Drive backup. Password not changed.',
-          });
-          throw new Error('Failed to update Google Drive backup. Your password was not changed.');
-        }
-      } catch (error) {
-        // If updating Google Drive backup fails, abort password change
-        console.error('Failed to update Google Drive backup:', error);
-        mixpanelTrack.track('password_update_failed', {
-          address: (await this.getCurrentAddress()) || '',
-          error: error.message || error.toString(),
-        });
-        throw new Error('Failed to update Google Drive backup. Your password was not changed.');
-      }
+      const userInfo = await userInfoService.getCurrentUserInfo();
+      const username = userInfo.username;
+
+      // This will throw an error if there is an issue changing the password
+      await googleDriveService.setNewPassword(oldPassword, newPassword, username);
 
       // Change password for all keyrings in the user's wallet atomically
       const result = await keyringService.changePassword(oldPassword, newPassword);
