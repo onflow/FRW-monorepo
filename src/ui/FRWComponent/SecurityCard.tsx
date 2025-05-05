@@ -4,6 +4,7 @@ import { Box, Typography, Tooltip } from '@mui/material';
 import React from 'react';
 
 import type { CoinItem } from '@/shared/types/coin-types';
+import { isValidFlowAddress, isValidEthereumAddress } from '@/shared/utils/address';
 
 export const SecurityCard: React.FC<{ tokenInfo: CoinItem }> = ({ tokenInfo }) => {
   return (
@@ -58,7 +59,14 @@ export const SecurityCard: React.FC<{ tokenInfo: CoinItem }> = ({ tokenInfo }) =
               sx={{ textDecoration: 'underline', cursor: 'pointer' }}
               onClick={() => {
                 if (tokenInfo.address) {
-                  navigator.clipboard.writeText(tokenInfo.address);
+                  if (isValidFlowAddress(tokenInfo.address)) {
+                    window.open(`https://flowscan.io/account/${tokenInfo.address}`, '_blank');
+                  } else if (isValidEthereumAddress(tokenInfo.address)) {
+                    window.open(
+                      `https://evm.flowscan.io/address/${tokenInfo.address}?tab=contract`,
+                      '_blank'
+                    );
+                  }
                 }
               }}
             >
