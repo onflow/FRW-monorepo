@@ -10,6 +10,8 @@ import {
 } from 'firebase/auth/web-extension';
 
 import eventBus from '@/eventBus';
+import { type WalletAddress } from '@/shared/types/wallet-types';
+import { isValidFlowAddress } from '@/shared/utils/address';
 import { Message } from '@/shared/utils/messaging';
 import type { WalletController } from 'background/controller/wallet';
 import { EVENTS } from 'consts';
@@ -395,9 +397,18 @@ const extMessageHandler = (msg, sender, sendResponse) => {
         active: true,
         lastFocusedWindow: true,
       })
-      .then((tabs) => {
+      .then(async (tabs) => {
         const tabId = tabs[0].id;
 
+        // Check if current address is flow address
+        const currentAddress = await userWalletService.getCurrentAddress();
+        if (!isValidFlowAddress(currentAddress)) {
+          const parentAddress = await userWalletService.getParentAddress();
+          if (!parentAddress) {
+            throw new Error('Parent address not found');
+          }
+          await userWalletService.setCurrentAccount(parentAddress, parentAddress as WalletAddress);
+        }
         if (service.type === 'pre-authz') {
           handlePreAuthz(tabId);
         } else {
