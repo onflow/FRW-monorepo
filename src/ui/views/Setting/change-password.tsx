@@ -1,5 +1,4 @@
-import { Warning, WarningAmber } from '@mui/icons-material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { Warning } from '@mui/icons-material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import {
@@ -16,21 +15,20 @@ import {
   DialogTitle,
   DialogContent,
   DialogContentText,
-  DialogActions,
   Stack,
 } from '@mui/material';
 import Box from '@mui/material/Box';
 import { makeStyles } from '@mui/styles';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import zxcvbn from 'zxcvbn';
 
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
+import { CustomDialog } from '@/ui/FRWComponent/custom-dialog';
 import { LLHeader } from '@/ui/FRWComponent/LLHeader';
 import { LLPrimaryButton } from '@/ui/FRWComponent/LLPrimaryButton';
 import { LLSecondaryButton } from '@/ui/FRWComponent/LLSecondaryButton';
 import { LLWarningButton } from '@/ui/FRWComponent/LLWarningButton';
-import { CustomDialog } from '@/ui/FRWComponent/PopupModal/importAddressModal';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from 'ui/utils';

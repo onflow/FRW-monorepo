@@ -1,16 +1,5 @@
-import { Dialog, type DialogProps, styled } from '@mui/material';
+import { Dialog, type DialogProps } from '@mui/material';
 import React from 'react';
-
-/*
- '& .MuiPaper-root': {
-    width: '640px',
-    borderRadius: '24px',
-    height: 'auto',
-    padding: '40px',
-    backgroundColor: '#222222',
-    backgroundImage: 'none',
-  },
-  */
 
 export const CustomDialog = (props: DialogProps) => {
   return (
