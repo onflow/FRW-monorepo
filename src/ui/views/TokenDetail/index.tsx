@@ -10,6 +10,7 @@ import { storage } from '@/background/webapi';
 import type { CoinItem } from '@/shared/types/coin-types';
 import type { PriceProvider } from '@/shared/types/network-types';
 import { type ActiveAccountType } from '@/shared/types/wallet-types';
+import SecurityCard from '@/ui/FRWComponent/SecurityCard';
 import StorageUsageCard from '@/ui/FRWComponent/StorageUsageCard';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -248,6 +249,7 @@ const TokenDetail = () => {
           )}
 
           {token === 'flow' && <StorageUsageCard />}
+          {tokenInfo && <SecurityCard tokenInfo={tokenInfo} />}
           {isOnRamp && (
             <Drawer
               anchor="bottom"
