@@ -529,42 +529,6 @@ const MenuDrawer = (props: MenuDrawerProps) => {
               </Typography>
             </ListItemButton>
           </ListItem>
-          <ListItem
-            disablePadding
-            onClick={() => {
-              props.toggleDrawer();
-              history.push('/dashboard/nested/changepassword');
-            }}
-          >
-            <ListItemButton sx={{ padding: '8px 16px', margin: '0', borderRadius: '0' }}>
-              <ListItemIcon
-                sx={{
-                  width: '24px',
-                  minWidth: '24px',
-                  height: '24px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginRight: '12px',
-                }}
-              >
-                <CardMedia
-                  component="img"
-                  sx={{ width: '24px', height: '24px' }}
-                  image={resetArrow}
-                />
-              </ListItemIcon>
-              <Typography
-                variant="body1"
-                component="div"
-                display="inline"
-                color="text"
-                sx={{ fontSize: '12px' }}
-              >
-                {chrome.i18n.getMessage('Change__Password')}
-              </Typography>
-            </ListItemButton>
-          </ListItem>
         </Box>
       </List>
     </Drawer>

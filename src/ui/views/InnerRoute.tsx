@@ -145,9 +145,7 @@ const InnerRoute = (props: RouteComponentProps) => {
             <PrivateRoute path={`${props.match.url}/nested/recoveryphrasedetail`}>
               <RecoveryPhasesDetail />
             </PrivateRoute>
-            <PrivateRoute path={`${props.match.url}/nested/changepassword`}>
-              <ChangePassword />
-            </PrivateRoute>
+
             <PrivateRoute
               path={`${props.match.url}/nested/collectiondetail/:collection_address_name`}
             >
@@ -210,6 +208,9 @@ const InnerRoute = (props: RouteComponentProps) => {
             </PrivateRoute>
             <PrivateRoute path={`${props.match.url}/setting/about`}>
               <About />
+            </PrivateRoute>
+            <PrivateRoute path={`${props.match.url}/setting/changepassword`}>
+              <ChangePassword />
             </PrivateRoute>
             <PrivateRoute path={`${props.match.url}/setting/linked`}>
               <Linked />

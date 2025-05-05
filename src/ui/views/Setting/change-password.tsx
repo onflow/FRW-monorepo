@@ -26,6 +26,7 @@ import { Link, useHistory } from 'react-router-dom';
 import zxcvbn from 'zxcvbn';
 
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
+import { LLHeader } from '@/ui/FRWComponent/LLHeader';
 import { LLPrimaryButton } from '@/ui/FRWComponent/LLPrimaryButton';
 import { LLSecondaryButton } from '@/ui/FRWComponent/LLSecondaryButton';
 import { LLWarningButton } from '@/ui/FRWComponent/LLWarningButton';
@@ -358,35 +359,7 @@ const ChangePassword = () => {
           height: '100%',
         }}
       >
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            width: '100%',
-            height: '64px',
-            px: '16px',
-          }}
-        >
-          <ArrowBackIcon
-            fontSize="medium"
-            sx={{ color: 'icon.navi', cursor: 'pointer' }}
-            onClick={() => history.push('/dashboard/nested/security')}
-          />
-          <Typography
-            sx={{
-              py: '14px',
-              alignSelf: 'center',
-              fontSize: '20px',
-              paddingLeft: '80px',
-              fontFamily: 'Inter',
-              fontStyle: 'normal',
-              fontWeight: '600',
-              color: '#BABABA',
-            }}
-          >
-            {chrome.i18n.getMessage('Change__Password')}
-          </Typography>
-        </Box>
+        <LLHeader title={chrome.i18n.getMessage('Change__Password')} help={false} />
 
         <Box
           sx={{
@@ -554,33 +527,6 @@ const ChangePassword = () => {
             marginBottom: '60px',
           }}
         >
-          <Button
-            variant="contained"
-            component={Link}
-            to="/dashboard/nested/security"
-            size="large"
-            sx={{
-              backgroundColor: '#333333',
-              display: 'flex',
-              flexGrow: 1,
-              height: '48px',
-              width: 'calc(50% - 4px)',
-              borderRadius: '8px',
-              textTransform: 'capitalize',
-            }}
-          >
-            <Typography
-              sx={{
-                fontWeight: '600',
-                fontSize: '14px',
-                fontFamily: 'Inter',
-                fontColor: '#E6E6E6',
-              }}
-            >
-              {chrome.i18n.getMessage('Cancel')}
-            </Typography>
-          </Button>
-
           <Button
             variant="contained"
             color="primary"
