@@ -414,6 +414,11 @@ const dataConfig: Record<string, OpenApiConfigValue> = {
     method: 'get',
     params: ['network', 'chain_type'],
   },
+  get_ft_list_full: {
+    path: '/api/v3/fts/full',
+    method: 'get',
+    params: ['network', 'chain_type'],
+  },
   get_nft_list: {
     path: '/api/v3/nfts',
     method: 'get',
@@ -1371,7 +1376,6 @@ class OpenApiService {
       network = await userWalletService.getNetwork();
     }
     const tokens = await this.getTokenList(network);
-    // const coins = await remoteFetch.flowCoins();
     return tokens.find((item) => item.symbol.toLowerCase() === name.toLowerCase());
   };
 
@@ -1520,6 +1524,22 @@ class OpenApiService {
     return this.addFlowTokenIfMissing(data.tokens);
   };
 
+  fetchFTListFull = async (network: string, chainType: string) => {
+    const config = this.store.config.get_ft_list_full;
+    const data = await this.sendRequest(
+      config.method,
+      config.path,
+      {
+        network,
+        chain_type: chainType,
+      },
+      {},
+      WEB_NEXT_URL
+    );
+
+    return this.addFlowTokenIfMissing(data.tokens);
+  };
+
   addFlowTokenIfMissing = (tokens) => {
     const hasFlowToken = tokens.some((token) => token.symbol.toLowerCase() === 'flow');
     if (!hasFlowToken) {
@@ -1562,7 +1582,7 @@ class OpenApiService {
     const ftList = await storage.getExpiry(`TokenList${network}${chainType}`);
     if (ftList) return ftList;
 
-    const tokens = await this.fetchFTList(network, chainType);
+    const tokens = await this.fetchFTListFull(network, chainType);
 
     if (chainType === 'evm') {
       const evmCustomToken = (await storage.get(`${network}evmCustomToken`)) || [];
@@ -1579,7 +1599,7 @@ class OpenApiService {
     const ftList = await storage.getExpiry(`TokenList${network}${chainType}`);
     if (ftList) return ftList;
 
-    const tokens = await this.fetchFTList(network, chainType);
+    const tokens = await this.fetchFTListFull(network, chainType);
 
     if (chainType === 'evm') {
       const evmCustomToken = (await storage.get(`${network}evmCustomToken`)) || [];
@@ -1593,7 +1613,7 @@ class OpenApiService {
   refreshEvmToken = async (network) => {
     const chainType = 'evm';
     let ftList = await storage.getExpiry(`TokenList${network}${chainType}`);
-    if (!ftList) ftList = await this.fetchFTList(network, chainType);
+    if (!ftList) ftList = await this.fetchFTListFull(network, chainType);
 
     const evmCustomToken = (await storage.get(`${network}evmCustomToken`)) || [];
     this.mergeCustomTokens(ftList, evmCustomToken);
@@ -1605,7 +1625,7 @@ class OpenApiService {
 
   refreshCustomEvmToken = async (network) => {
     const chainType = 'evm';
-    const ftList = await this.fetchFTList(network, chainType);
+    const ftList = await this.fetchFTListFull(network, chainType);
 
     const evmCustomToken = (await storage.get(`${network}evmCustomToken`)) || [];
     this.mergeCustomTokens(ftList, evmCustomToken);
@@ -1614,7 +1634,6 @@ class OpenApiService {
   };
 
   getEnabledTokenList = async (network = ''): Promise<ExtendedTokenInfo[]> => {
-    // const tokenList = await remoteFetch.flowCoins();
     if (!network) {
       network = await userWalletService.getNetwork();
     }

@@ -122,7 +122,6 @@ const LinkedDetail = () => {
   const fetchUserWallet = useCallback(async () => {
     try {
       const accountType = await usewallet.getActiveAccountType();
-      // const flowCoins = fetchRemoteConfig.flowCoins();
       if (accountType !== 'main') {
         setIsActive(false);
       } else {
