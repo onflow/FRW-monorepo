@@ -35,7 +35,7 @@ export const SecurityCard: React.FC<{ tokenInfo: CoinItem }> = ({ tokenInfo }) =
           }}
         >
           <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'bold' }}>
-            Verifed
+            Verified
           </Typography>
           <Typography variant="body2" color="text.secondary">
             {tokenInfo.isVerified ? 'Yes' : 'No'}
@@ -63,7 +63,9 @@ export const SecurityCard: React.FC<{ tokenInfo: CoinItem }> = ({ tokenInfo }) =
               }}
             >
               {tokenInfo.address &&
-                `${tokenInfo.address.slice(0, 5)}...${tokenInfo.address.slice(-5)}`}
+                (tokenInfo.address.length > 10
+                  ? `${tokenInfo.address.slice(0, 5)}...${tokenInfo.address.slice(-5)}`
+                  : tokenInfo.address)}
             </Typography>
           </Tooltip>
         </Box>
