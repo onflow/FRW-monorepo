@@ -1582,7 +1582,15 @@ class OpenApiService {
     const ftList = await storage.getExpiry(`TokenList${network}${chainType}`);
     if (ftList) return ftList;
 
-    const tokens = await this.fetchFTListFull(network, chainType);
+    let tokens = [];
+    try {
+      tokens = await this.fetchFTListFull(network, chainType);
+    } catch (error) {
+      console.error(`Error fetching token list for ${network} ${chainType}:`, error);
+      // Return default tokens or cached tokens if available
+      const cachedTokens = await storage.get(`TokenList${network}${chainType}`);
+      tokens = cachedTokens || [defaultFlowToken];
+    }
 
     if (chainType === 'evm') {
       const evmCustomToken = (await storage.get(`${network}evmCustomToken`)) || [];
@@ -1599,7 +1607,15 @@ class OpenApiService {
     const ftList = await storage.getExpiry(`TokenList${network}${chainType}`);
     if (ftList) return ftList;
 
-    const tokens = await this.fetchFTListFull(network, chainType);
+    let tokens = [];
+    try {
+      tokens = await this.fetchFTListFull(network, chainType);
+    } catch (error) {
+      console.error(`Error fetching token list for ${network} ${chainType}:`, error);
+      // Return default tokens or cached tokens if available
+      const cachedTokens = await storage.get(`TokenList${network}${chainType}`);
+      tokens = cachedTokens || [defaultFlowToken];
+    }
 
     if (chainType === 'evm') {
       const evmCustomToken = (await storage.get(`${network}evmCustomToken`)) || [];
