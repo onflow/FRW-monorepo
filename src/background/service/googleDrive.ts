@@ -348,11 +348,7 @@ class GoogleDriveService {
     });
   };
 
-  setNewPassword = async (
-    oldPassword: string,
-    newPassword: string,
-    username: string
-  ): Promise<boolean> => {
+  setNewPassword = async (oldPassword: string, newPassword: string): Promise<boolean> => {
     // Load all backups
     const backups: DriveItem[] = await this.loadBackup();
     if (backups.length === 0 || !this.fileId) {
@@ -360,30 +356,20 @@ class GoogleDriveService {
     }
 
     // First, try to decrypt and re-encrypt the target user's mnemonic
-    let userBackupFound = false;
+    // All backups for all users are encrypted with the same password, so we need to decrypt and re-encrypt each one
     const updatedBackups = backups.map((item) => {
-      if (item.username === username) {
-        // verify the old password and decrypt
-        const decryptedMnemonic = this.decrypt(item.data, oldPassword);
-        if (!bip39.validateMnemonic(decryptedMnemonic)) {
-          throw new Error('Decrypted mnemonic is invalid');
-        }
-        // Re-encrypt with new password
-        userBackupFound = true;
-        return {
-          ...item,
-          data: this.encrypt(decryptedMnemonic, newPassword),
-          time: new Date().getTime().toString(),
-        };
+      // verify the old password and decrypt
+      const decryptedMnemonic = this.decrypt(item.data, oldPassword);
+      if (!bip39.validateMnemonic(decryptedMnemonic)) {
+        throw new Error('Decrypted mnemonic is invalid');
       }
-      // add non username backup to the list
-      return item;
+      // Re-encrypt with new password
+      return {
+        ...item,
+        data: this.encrypt(decryptedMnemonic, newPassword),
+        time: new Date().getTime().toString(),
+      };
     });
-
-    // If the user was not found, abort
-    if (!userBackupFound) {
-      return false;
-    }
 
     // Atomic approach, all succeeded, now update the file
     const updateContent = this.encrypt(JSON.stringify(updatedBackups), this.AES_KEY);
