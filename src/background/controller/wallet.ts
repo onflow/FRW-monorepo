@@ -105,7 +105,7 @@ import {
   type KeyringType,
 } from 'background/service/keyring';
 import type { CacheState } from 'background/service/pageStateCache';
-import { replaceNftKeywords } from 'background/utils';
+import { findPublicKeyIndex, replaceNftKeywords } from 'background/utils';
 import fetchConfig from 'background/utils/remoteConfig';
 import { notification, storage } from 'background/webapi';
 import { openIndexPage } from 'background/webapi/tab';
@@ -124,6 +124,7 @@ import type {
   NFTModelV2,
   UserInfoResponse,
 } from '../../shared/types/network-types';
+import { fclEnsureNetwork } from '../fclConfig';
 import DisplayKeyring from '../service/keyring/display';
 import { HDKeyring } from '../service/keyring/hdKeyring';
 import { SimpleKeyring } from '../service/keyring/simpleKeyring';
@@ -259,9 +260,6 @@ export class WalletController extends BaseController {
 
       userWalletService.registerCurrentPubkey(account.keys[0].publicKey, account);
 
-      // Set the register status cache to false
-      setCachedData(registerStatusKey(account.keys[0].publicKey), false, 120_000);
-
       return account;
     } catch (error) {
       throw new Error(`Account creation failed: ${error.message || 'Unknown error'}`);
@@ -273,6 +271,10 @@ export class WalletController extends BaseController {
   };
 
   importAccountFromMobile = async (address: string, password: string, mnemonic: string) => {
+    // Switch to mainnet first as the account is on mainnet
+    if ((await this.getNetwork()) !== 'mainnet') {
+      await this.switchNetwork('mainnet');
+    }
     // Query the account to get the account info befofe we add the key
     const accountInfo = await this.getAccountInfo(address);
 
@@ -2909,10 +2911,6 @@ export class WalletController extends BaseController {
     await userWalletService.switchFclNetwork(network as FlowNetwork);
     await userWalletService.setNetwork(network);
     eventBus.emit('switchNetwork', network);
-
-    // Reload everything
-    await this.refreshWallets();
-    await this.refreshAll();
 
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       if (!tabs || tabs.length === 0) {
