@@ -113,6 +113,7 @@ export type TrackingEvents = {
   password_updated: {
     address: string; // Address of the account that updated password
     success: boolean; // Whether the password update was successful
+    profilesUpdated: number; // Number of profiles updated
   };
 
   password_update_failed: {

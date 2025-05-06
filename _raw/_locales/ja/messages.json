@@ -1424,5 +1424,53 @@
   },
   "Address_creation_in_progress": {
     "message": "アドレス作成中..."
+  },
+  "Google_Drive_Not_Connected": {
+    "message": "Google Driveは接続されていません"
+  },
+  "Change_Password_No_Google_Drive_Warning": {
+    "message": "パスワードを変更すると、既存のバックアップが破損します。Google Driveバックアップを使用しない場合のみ続行してください。"
+  },
+  "Connect_Google_Drive": {
+    "message": "Google Driveを接続"
+  },
+  "Change_Password_Anyway": {
+    "message": "パスワードを変更します 😱"
+  },
+  "Change_Password_on_Backups": {
+    "message": "バックアップのパスワードを変更"
+  },
+  "Change_Password_on_Backups_Description": {
+    "message": "パスワードを変更すると、既存のバックアップが破損します。Google Driveバックアップを使用しない場合のみ続行してください。"
+  },
+  "Loaded_in_wallet": {
+    "message": "ロード済み"
+  },
+  "Not_loaded_in_wallet": {
+    "message": "ロードされていません"
+  },
+  "Backed_up_with_current_password": {
+    "message": "現在のパスワードでバックアップ"
+  },
+  "Backed_up_with_different_password": {
+    "message": "異なるパスワードでバックアップ"
+  },
+  "Not_backed_up": {
+    "message": "バックアップされていません"
+  },
+  "Loaded_and_backed_up_with_current_password": {
+    "message": "ロード済みで、現在のパスワードでバックアップ"
+  },
+  "Loaded_but_backed_up_with_other_password_or_not_backed_up": {
+    "message": "ロード済みで、異なるパスワードでバックアップまたはバックアップされていません"
+  },
+  "Not_loaded_but_backed_up_with_current_password": {
+    "message": "ロードされていませんが、現在のパスワードでバックアップ"
+  },
+  "Not_loaded_but_backed_up_with_other_password": {
+    "message": "ロードされていませんが、異なるパスワードでバックアップ"
+  },
+  "Legend": {
+    "message": "凡例"
   }
 }

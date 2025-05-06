@@ -1,31 +1,33 @@
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import {
+  Alert,
+  Button,
+  CircularProgress,
   FormGroup,
-  LinearProgress,
   IconButton,
   Input,
   InputAdornment,
-  Typography,
-  Button,
+  LinearProgress,
   Snackbar,
-  Alert,
-  CircularProgress,
+  Typography,
 } from '@mui/material';
 import Box from '@mui/material/Box';
 import { makeStyles } from '@mui/styles';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Link, useHistory } from 'react-router-dom';
-import zxcvbn from 'zxcvbn';
+import { useHistory } from 'react-router-dom';
 
+import CheckCircleIcon from '@/components/iconfont/IconCheckmark';
+import CancelIcon from '@/components/iconfont/IconClose';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
+import { LLHeader } from '@/ui/FRWComponent/LLHeader';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
-import CheckCircleIcon from '../../../components/iconfont/IconCheckmark';
-import CancelIcon from '../../../components/iconfont/IconClose';
+import { GoogleWarningDialog } from './google-warning';
+import { PasswordIndicator } from './password-indicator';
+import { ProfileBackupSelectionDialog } from './profile-backup-selection';
 
 const useStyles = makeStyles(() => ({
   customInputLabel: {
@@ -80,47 +82,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const PasswordIndicator = (props) => {
-  const score = zxcvbn(props.value).score;
-  const precentage = ((score + 1) / 5) * 100;
-
-  const level = (score) => {
-    switch (score) {
-      case 0:
-      case 1:
-        return { text: 'Weak', color: 'primary' };
-      case 2:
-        return { text: 'Good', color: 'testnet' };
-      case 3:
-        return { text: 'Great', color: 'success' };
-      case 4:
-        return { text: 'Strong', color: 'success' };
-      default:
-        return { text: 'Unknow', color: 'error' };
-    }
-  };
-
-  return (
-    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-      <Box sx={{ width: '72px', mr: 1 }}>
-        <LinearProgress
-          variant="determinate"
-          // @ts-expect-error level function returned expected value
-          color={level(score).color}
-          sx={{ height: '12px', width: '72px', borderRadius: '12px' }}
-          value={precentage}
-        />
-      </Box>
-      <Box sx={{ minWidth: 35 }}>
-        <Typography variant="body2" color="text.secondary">
-          {level(score).text}
-        </Typography>
-      </Box>
-    </Box>
-  );
-};
-
-const Resetpassword = () => {
+const ChangePassword = () => {
   const classes = useStyles();
   const wallet = useWallet();
   const { clearProfileData } = useProfiles();
@@ -136,6 +98,10 @@ const Resetpassword = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [error, setError] = useState('');
+  const [statusMessage, setStatusMessage] = useState('');
+  const [showGooglePermissionDialog, setShowGooglePermissionDialog] = useState(false);
+  const [showProfileBackupDialog, setShowProfileBackupDialog] = useState(false);
+  // No need to maintain selectedProfiles in state since we immediately use them
   const history = useHistory();
 
   const verify = useCallback(async () => {
@@ -216,33 +182,136 @@ const Resetpassword = () => {
   const [helperText, setHelperText] = useState(<div />);
   const [helperMatch, setHelperMatch] = useState(<div />);
 
-  const reset = async () => {
-    try {
-      setIsResetting(true);
-      setError('');
+  const changePassword = useCallback(
+    async (ignoreBackupsAtTheirOwnRisk = false) => {
+      try {
+        setIsResetting(true);
+        setError('');
+        setStatusMessage(chrome.i18n.getMessage('Changing_password') || 'Changing password...');
 
-      const success = await wallet.changePassword(confirmCurrentPassword, confirmPassword);
+        const success = await wallet.changePassword(
+          confirmCurrentPassword,
+          confirmPassword,
+          [],
+          ignoreBackupsAtTheirOwnRisk
+        );
 
-      if (success) {
-        await wallet
-          .lockWallet()
-          .then(() => {
-            clearProfileData();
-            history.push('/unlock');
-          })
-          .finally(() => {
-            setIsResetting(false);
-          });
-      } else {
-        setError(chrome.i18n.getMessage('Oops__unexpected__error'));
+        if (success) {
+          setStatusMessage(
+            chrome.i18n.getMessage('Password_changed_successfully_Locking_wallet') ||
+              'Password changed successfully! Locking wallet...'
+          );
+          await wallet
+            .lockWallet()
+            .then(() => {
+              clearProfileData();
+              history.push('/unlock');
+            })
+            .catch((error) => {
+              console.error('Error locking wallet:', error);
+              setError(chrome.i18n.getMessage('Oops__unexpected__error'));
+            })
+            .finally(() => {
+              setIsResetting(false);
+              setStatusMessage('');
+            });
+        } else {
+          setError(chrome.i18n.getMessage('Oops__unexpected__error'));
+        }
+      } catch (error) {
+        console.error('Error changing password:', error);
+        setError(error.message);
+      } finally {
+        setIsResetting(false);
+        if (!error) {
+          setStatusMessage('');
+        }
       }
-    } catch (error) {
-      console.error('Error changing password:', error);
-      setError(error.message);
-    } finally {
-      setIsResetting(false);
+    },
+    [confirmCurrentPassword, confirmPassword, wallet, clearProfileData, history, error]
+  );
+
+  const changePasswordWithBackups = useCallback(
+    async (profileUsernames: string[]) => {
+      try {
+        setIsResetting(true);
+        setError('');
+        setStatusMessage(
+          chrome.i18n.getMessage('Updating_backups_and_changing_password') ||
+            'Updating backups and changing password...'
+        );
+
+        const success = await wallet.changePassword(
+          confirmCurrentPassword,
+          confirmPassword,
+          profileUsernames,
+          false // not ignoring backups
+        );
+
+        if (success) {
+          setStatusMessage(
+            chrome.i18n.getMessage('Password_changed_successfully_Locking_wallet') ||
+              'Password changed successfully! Locking wallet...'
+          );
+
+          await wallet
+            .lockWallet()
+            .then(() => {
+              clearProfileData();
+              history.push('/unlock');
+            })
+            .catch((error) => {
+              console.error('Error locking wallet:', error);
+              setError(chrome.i18n.getMessage('Oops__unexpected__error'));
+            });
+        } else {
+          setError(chrome.i18n.getMessage('Oops__unexpected__error'));
+        }
+      } catch (error) {
+        console.error('Error changing password:', error);
+
+        // Provide more specific error messages based on the error
+        if (error.message.includes('backup')) {
+          setError(
+            `${chrome.i18n.getMessage('Failed_to_update_Google_Drive_backups') || 'Failed to update Google Drive backups'}: ${error.message}`
+          );
+        } else if (error.message.includes('wallet password')) {
+          setError(
+            `${chrome.i18n.getMessage('Failed_to_change_wallet_password') || 'Failed to change wallet password'}: ${error.message}`
+          );
+        } else {
+          setError(error.message);
+        }
+      } finally {
+        setIsResetting(false);
+        setStatusMessage('');
+      }
+    },
+    [confirmCurrentPassword, confirmPassword, wallet, clearProfileData, history]
+  );
+
+  const handleChangePasswordClick = useCallback(async () => {
+    // Check if the user has google permission
+    // We need to access backups so we can re-encrypt them
+    const hasGooglePermission = await wallet.hasGooglePermission();
+    if (hasGooglePermission) {
+      // Show the profile backup selection dialog
+      setShowProfileBackupDialog(true);
+    } else {
+      setShowGooglePermissionDialog(true);
     }
-  };
+  }, [wallet]);
+
+  // Handler for profile selection
+  const handleProfileSelection = useCallback(
+    (selectedUsernames: string[]) => {
+      setShowProfileBackupDialog(false);
+
+      // Proceed with password change, including selected profiles
+      changePasswordWithBackups(selectedUsernames);
+    },
+    [changePasswordWithBackups]
+  );
 
   useEffect(() => {
     if (password.length > 7) {
@@ -274,35 +343,7 @@ const Resetpassword = () => {
           height: '100%',
         }}
       >
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            width: '100%',
-            height: '64px',
-            px: '16px',
-          }}
-        >
-          <ArrowBackIcon
-            fontSize="medium"
-            sx={{ color: 'icon.navi', cursor: 'pointer' }}
-            onClick={() => history.push('/dashboard/nested/security')}
-          />
-          <Typography
-            sx={{
-              py: '14px',
-              alignSelf: 'center',
-              fontSize: '20px',
-              paddingLeft: '80px',
-              fontFamily: 'Inter',
-              fontStyle: 'normal',
-              fontWeight: '600',
-              color: '#BABABA',
-            }}
-          >
-            {chrome.i18n.getMessage('Change__Password')}
-          </Typography>
-        </Box>
+        <LLHeader title={chrome.i18n.getMessage('Change__Password')} help={false} />
 
         <Box
           sx={{
@@ -472,35 +513,8 @@ const Resetpassword = () => {
         >
           <Button
             variant="contained"
-            component={Link}
-            to="/dashboard/nested/security"
-            size="large"
-            sx={{
-              backgroundColor: '#333333',
-              display: 'flex',
-              flexGrow: 1,
-              height: '48px',
-              width: 'calc(50% - 4px)',
-              borderRadius: '8px',
-              textTransform: 'capitalize',
-            }}
-          >
-            <Typography
-              sx={{
-                fontWeight: '600',
-                fontSize: '14px',
-                fontFamily: 'Inter',
-                fontColor: '#E6E6E6',
-              }}
-            >
-              {chrome.i18n.getMessage('Cancel')}
-            </Typography>
-          </Button>
-
-          <Button
-            variant="contained"
             color="primary"
-            onClick={reset}
+            onClick={handleChangePasswordClick}
             size="large"
             sx={{
               display: 'flex',
@@ -523,7 +537,7 @@ const Resetpassword = () => {
                 sx={{ fontWeight: '600', fontSize: '14px', fontFamily: 'Inter' }}
                 color="text.primary"
               >
-                {chrome.i18n.getMessage('Change')}
+                {chrome.i18n.getMessage('Change_Password') || 'Change Password'}
               </Typography>
             )}
           </Button>
@@ -570,9 +584,54 @@ const Resetpassword = () => {
             </Typography>
           </Box>
         )}
+
+        <GoogleWarningDialog
+          open={showGooglePermissionDialog}
+          onClose={setShowGooglePermissionDialog}
+          onProceedAnyway={() => changePassword(true)}
+          onError={setError}
+        />
+
+        <ProfileBackupSelectionDialog
+          open={showProfileBackupDialog}
+          onClose={() => setShowProfileBackupDialog(false)}
+          onConfirm={handleProfileSelection}
+          currentPassword={confirmCurrentPassword}
+        />
+
+        {statusMessage && (
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: '0px',
+              left: '0',
+              right: '0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              padding: '10px 16px',
+              backgroundColor: '#38B000',
+              color: 'white',
+              boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.2)',
+              zIndex: 1000,
+            }}
+          >
+            <CircularProgress size={16} color="inherit" />
+            <Typography
+              sx={{
+                color: 'white',
+                fontSize: '14px',
+                fontWeight: '600',
+              }}
+            >
+              {statusMessage}
+            </Typography>
+          </Box>
+        )}
       </Box>
     </div>
   );
 };
 
-export default Resetpassword;
+export default ChangePassword;

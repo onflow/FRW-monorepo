@@ -27,7 +27,11 @@ class UserInfoService {
     registerRefreshListener(userInfoRefreshRegex, this.loadUserInfoByUserId);
   };
 
-  loadStoredUserList = async () => {
+  getUserList = (): UserInfoResponse[] => {
+    return structuredClone(this.userList);
+  };
+
+  loadStoredUserList = async (): Promise<UserInfoResponse[]> => {
     const userList = await storage.get(storedUserListKey);
     if (!userList) {
       // Translate from logged in accounts
@@ -36,7 +40,7 @@ class UserInfoService {
     return userList;
   };
 
-  translateFromLoggedInAccounts = async () => {
+  translateFromLoggedInAccounts = async (): Promise<UserInfoResponse[]> => {
     const loggedInAccounts: LoggedInAccount[] = await storage.get(loggedInAccountsKey);
     if (!loggedInAccounts) {
       return [];
