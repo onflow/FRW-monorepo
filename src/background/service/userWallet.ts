@@ -5,7 +5,6 @@ import * as ethUtil from 'ethereumjs-util';
 import { getApp } from 'firebase/app';
 import { getAuth, signInAnonymously } from 'firebase/auth/web-extension';
 
-import wallet from '@/background/controller/wallet';
 import keyringService from '@/background/service/keyring';
 import { mixpanelTrack } from '@/background/service/mixpanel';
 import openapiService from '@/background/service/openapi';
@@ -19,26 +18,21 @@ import {
 import createPersistStore from '@/background/utils/persisitStore';
 import {
   type PublicPrivateKeyTuple,
-  tupleToPrivateKey,
   combinePubPkString,
+  tupleToPrivateKey,
 } from '@/shared/types/key-types';
 import {
   type FlowAddress,
   type EvmAddress,
   type WalletAccount,
   type ChildAccountMap,
+  DEFAULT_CURRENCY,
   type ActiveAccountType,
   getActiveAccountTypeForAddress,
   type WalletAddress,
 } from '@/shared/types/wallet-types';
 import { ensureEvmAddressPrefix, isValidEthereumAddress, withPrefix } from '@/shared/utils/address';
-import {
-  FLOW_BIP44_PATH,
-  HASH_ALGO_NUM_SHA2_256,
-  HASH_ALGO_NUM_SHA3_256,
-  SIGN_ALGO_NUM_ECDSA_P256,
-  SIGN_ALGO_NUM_ECDSA_secp256k1,
-} from '@/shared/utils/algo-constants';
+import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 import {
   mainAccountsKey,
   evmAccountKey,
@@ -65,18 +59,12 @@ import {
   type AccountKeyRequest,
   type DeviceInfoRequest,
   type FlowNetwork,
-  type AccountAlgo,
 } from '../../shared/types/network-types';
 import { type PublicKeyAccount, type MainAccount } from '../../shared/types/wallet-types';
-import { fclConfig, fclConfirmNetwork, fclEnsureNetwork } from '../fclConfig';
+import { type WalletController } from '../controller/wallet';
+import { fclConfig, fclConfirmNetwork } from '../fclConfig';
 import { defaultAccountKey, pubKeyAccountToAccountKey } from '../utils/account-key';
-import {
-  clearCachedData,
-  getInvalidData,
-  getValidData,
-  registerRefreshListener,
-  setCachedData,
-} from '../utils/data-cache';
+import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
 import { getEmojiByIndex } from '../utils/emoji-util';
 import {
   getAccountsByPublicKeyTuple,
@@ -91,13 +79,27 @@ const USER_WALLET_TEMPLATE: UserWalletStore = {
   network: 'mainnet',
   emulatorMode: false,
   currentPubkey: '',
+  displayCurrency: DEFAULT_CURRENCY,
 };
+
 class UserWallet {
   // PERSISTENT DATA
   // The user settings - network and other global settings
   private store!: UserWalletStore;
-  // Map of the selected accounts for each network and pubkey
-  private activeAccounts: Map<FlowNetwork, Map<string, ActiveAccountsStore>> = new Map();
+
+  // Reference to the wallet controller
+  private walletController: WalletController | undefined = undefined;
+
+  setWalletController = (controller: WalletController) => {
+    this.walletController = controller;
+  };
+
+  getWalletController = (): WalletController => {
+    if (!this.walletController) {
+      throw new Error('Wallet controller not set');
+    }
+    return this.walletController;
+  };
 
   init = async () => {
     this.store = await createPersistStore<UserWalletStore>({
@@ -105,16 +107,18 @@ class UserWallet {
       template: USER_WALLET_TEMPLATE,
     });
 
-    this.activeAccounts = new Map();
     // Initialize the account loaders
     initAccountLoaders();
-
-    // Load the active accounts
-    await this.loadActiveAccounts(this.store.network, this.store.currentPubkey);
   };
 
   clear = async () => {
-    this.activeAccounts = new Map();
+    if (!this.store) {
+      await this.init();
+    } else {
+      Object.assign(this.store, USER_WALLET_TEMPLATE);
+    }
+    // clear all session storage
+    await storage.clearSession();
   };
 
   isLocked = () => {
@@ -150,7 +154,7 @@ class UserWallet {
 
     // Load all data for the new pubkey. This is async but don't await it
     // NOTE: If this is remvoed... everything runs just fine (I've checked)
-    this.loadAllAccounts(this.store.network, pubkey);
+    this.preloadAllAccounts(this.store.network, pubkey);
   };
 
   /**
@@ -169,7 +173,7 @@ class UserWallet {
     await setupNewAccount(this.store.network, pubkey, account);
 
     // Load all data for the new pubkey. This is async but don't await it
-    this.loadAllAccounts(this.store.network, pubkey);
+    this.preloadAllAccounts(this.store.network, pubkey);
   };
 
   /**
@@ -178,7 +182,7 @@ class UserWallet {
    */
   getKeyIndex = async () => {
     try {
-      const parentAccount = await this.getParentAccountNoExpire();
+      const parentAccount = await this.getParentAccount();
       if (!parentAccount) {
         throw new Error('Current wallet not found in accounts');
       }
@@ -199,7 +203,6 @@ class UserWallet {
   };
 
   setNetwork = async (network: string) => {
-    console.trace('setNetwork', network);
     if (!this.store) {
       throw new Error('UserWallet not initialized');
     }
@@ -209,7 +212,7 @@ class UserWallet {
     this.store.network = network;
 
     // Load all data for the new network. This is async but don't await it
-    this.loadAllAccounts(network, this.store.currentPubkey);
+    this.preloadAllAccounts(network, this.store.currentPubkey);
   };
 
   /**
@@ -251,6 +254,13 @@ class UserWallet {
     await this.setupFcl();
   };
 
+  // Moved from WalletController to UserWallet
+  allowFreeGas = async (): Promise<boolean> => {
+    const isFreeGasFeeKillSwitch = await storage.get('freeGas');
+    const isFreeGasFeeEnabled = await storage.get('lilicoPayer');
+    return isFreeGasFeeKillSwitch && isFreeGasFeeEnabled;
+  };
+
   /**
    * --------------------------------------------
    * Loading accounts when the public key changes
@@ -266,7 +276,7 @@ class UserWallet {
    * @param pubkey - The pubkey to load the accounts for
    * @returns A promise that resolves to the loaded accounts
    */
-  loadAllAccounts = async (network: string, pubkey: string) => {
+  preloadAllAccounts = async (network: string, pubkey: string) => {
     if (!network || !pubkey) {
       // Simply return if the network or pubkey is not yet set
       // Other methods will throw an error if they are not set
@@ -274,13 +284,11 @@ class UserWallet {
     }
 
     try {
-      await this.loadActiveAccounts(network, pubkey);
-      // extenal method that ensures caches are loaded
-      const allAccounts = await loadAllAccountsWithPubKey(network, pubkey);
+      // Get the main accounts
+      const allAccounts = await preloadAllAccountsWithPubKey(network, pubkey);
 
-      // Ensure the parent address is valid - this can only be called after the active and main accounts are loaded
-      // Wonder if this is the best way to do this
-      await this.ensureValidActiveAccount(network, pubkey);
+      // Get the active accounts
+      await this.getActiveAccountsWithPubKey(network, pubkey);
 
       // Load the balances for the main accounts
       await loadAccountListBalance(
@@ -303,169 +311,80 @@ class UserWallet {
    * @param pubkey - The pubkey to load the accounts for
    * @returns A promise that resolves to the loaded accounts
    */
-  loadActiveAccounts = async (network: string, pubkey: string) => {
-    if (network) {
-      if (!this.activeAccounts[network]) {
-        this.activeAccounts[network] = new Map();
-      }
-      if (pubkey) {
-        // Load from storage
-        const activeAccounts = (await getActiveAccountsData(network, pubkey)) ?? {
-          parentAddress: null,
-          currentAddress: null,
-        };
-        // Store in memory
-        this.activeAccounts[network][pubkey] = activeAccounts;
-      }
+  loadActiveAccounts = async (network: string, pubkey: string): Promise<ActiveAccountsStore> => {
+    if (!network || !pubkey) {
+      throw new Error('Network or pubkey is not valid');
     }
+    const activeAccounts: ActiveAccountsStore | undefined = await getActiveAccountsData(
+      network,
+      pubkey
+    );
+    const validatedActiveAccounts = await this.validateActiveAccountStore(
+      network,
+      pubkey,
+      activeAccounts
+    );
+    if (
+      validatedActiveAccounts.parentAddress !== null &&
+      validatedActiveAccounts.currentAddress !== null &&
+      (validatedActiveAccounts.parentAddress !== activeAccounts?.parentAddress ||
+        validatedActiveAccounts.currentAddress !== activeAccounts?.currentAddress)
+    ) {
+      // Only update the active accounts if they have changed and the addresses are not null
+      await setUserData<ActiveAccountsStore>(
+        activeAccountsKey(network, pubkey),
+        validatedActiveAccounts
+      );
+    }
+
+    return validatedActiveAccounts;
   };
-
-  /*
-
-  switchProfile = async (pubkey: string) => {
-    if (!pubkey) {
-      console.warn('Invalid pubkey provided to switchAccount');
-      return;
-    }
-
-    const profileList: WalletProfile[] = this.accounts[this.store.network];
-
-    let profile = profileList.find((group) => {
-      const matches = group.publicKey === pubkey;
-
-      return matches;
-    });
-
-    if (!profile) {
-      // Create a new profile
-      profile = await createSessionStore<ProfileAccountStore>({
-        name: profileAccountsKey(this.store.network, pubkey),
-        template: {
-          accounts: [],
-          publicKey: pubkey,
-        },
-      });
-      // Add the new profile to the profile list
-      profileList.push(profile);
-    }
-    // Set the current pubkey
-    this.store.currentPubkey = pubkey;
-
-    if (!profile.accounts.length) {
-      console.warn(`No account found for pubkey: ${pubkey.slice(0, 10)}...`);
-      return;
-    }
-
-  };
-
-
-
-  getAccountsWithPublicKey = async (
-    publicKey: string,
-    network: string
-  ): Promise<PublicKeyAccount[]> => {
-    const accounts = await openapiService.getAccountsWithPublicKey(publicKey, network);
-    return accounts;
-  };
-
-  setChildAccounts = async (
-    childAccountMap: ChildAccountMap,
-    address: FlowAddress,
-    network: string
-  ) => {
-    const { account } = this.findAccount(address, network);
-
-    if (!account) return;
-
-    // Store the child accounts for address in the childAccountMap
-    if (!!this.childAccountMap[address]) {
-      // Update the existing session store
-      this.childAccountMap[address].accounts = { ...childAccountMap };
-    } else {
-      // Create a new session store so the front end can access the child accounts
-      this.childAccountMap[address] = await createSessionStore<ChildAccountStore>({
-        name: childAccountsKey(network, address),
-        template: {
-          parentAddress: address,
-          accounts: childAccountMap,
-        },
-      });
-    }
-  };
-
-  /*
-   * Set the evm address for the main account
-   * This is invoked when loading the wallet
-   * /
-  setAccountEvmAddress = async (evmAddress: EvmAddress | null) => {
-    const network = this.store.network;
-    const address = this.store.parentAddress as FlowAddress;
-    const { account } = this.findAccount(address, network);
-
-    if (!account) {
-      throw new Error(`Account not found: ${address}`);
-    }
-
-    if (!isValidFlowAddress(address)) {
-      throw new Error(`Invalid address: ${address}`);
-    }
-
-    if (!isValidEthereumAddress(evmAddress)) {
-      throw new Error(`Invalid evm address: ${evmAddress}`);
-    }
-
-    // Store the evm address for address in the evmAddressMap
-    if (!this.evmAddressMap[address]) {
-      this.evmAddressMap[address] = await createSessionStore<EvmAccountStore>({
-        name: evmAccountKey(network, address),
-        template: {
-          parentAddress: address,
-          evmAddress: evmAddress,
-        },
-      });
-    } else {
-      this.evmAddressMap[address].evmAddress = evmAddress;
-    }
-  };
-
-
-  // TODO: Verify what this does... it doesn't look right
-  setCurrentAccount = async (wallet: WalletAccount, key: ActiveChildType) => {
-    this.store.currentAddress = wallet.address;
-    if (isMainAccountType(key)) {
-      // We're switching main accounts
-      this.store.parentAddress = wallet.address;
-    }
-  };
-
-  */
 
   /**
    * --------------------------------------------
    * Accessing the current account addresses
    * --------------------------------------------
    */
+  getActiveAccountsWithPubKey = async (
+    network: string,
+    pubkey: string
+  ): Promise<ActiveAccountsStore> => {
+    if (!network || !pubkey) {
+      throw new Error('Network or pubkey is not set');
+    }
 
-  getActiveAccounts = (): ActiveAccountsStore => {
-    return (
-      this.activeAccounts[this.store.network]?.[this.store.currentPubkey] ?? {
-        parentAddress: null,
-        currentAddress: null,
-      }
-    );
+    const activeAccounts = await getActiveAccountsData(network, pubkey);
+
+    if (!activeAccounts) {
+      return this.loadActiveAccounts(network, pubkey);
+    }
+
+    return activeAccounts;
+  };
+
+  getActiveAccounts = async (): Promise<ActiveAccountsStore> => {
+    const network = this.getNetwork();
+    const pubkey = this.getCurrentPubkey();
+    return this.getActiveAccountsWithPubKey(network, pubkey);
   };
 
   // Get the main account address for the current public key
-  getParentAddress = (): FlowAddress | null => {
-    return this.getActiveAccounts().parentAddress;
+  // This is whichever main account is currently selected by the user
+  // Defaults to the first main account if no selection is made
+  // Will only ever return null if there are no main accounts
+  getParentAddress = async (): Promise<FlowAddress | null> => {
+    return (await this.getActiveAccounts()).parentAddress;
   };
 
-  getCurrentAddress = (): WalletAddress | null => {
-    return this.getActiveAccounts().currentAddress;
+  getCurrentAddress = async (): Promise<WalletAddress | null> => {
+    return (await this.getActiveAccounts()).currentAddress;
   };
 
-  getActiveAccountType = (): ActiveAccountType => {
-    return getActiveAccountTypeForAddress(this.getCurrentAddress(), this.getParentAddress());
+  getActiveAccountType = async (): Promise<ActiveAccountType> => {
+    return getActiveAccountTypeForAddress(
+      await this.getCurrentAddress(),
+      await this.getParentAddress()
+    );
   };
 
   private setActiveAccounts = async (newActiveAccounts: ActiveAccountsStore) => {
@@ -477,7 +396,6 @@ class UserWallet {
     if (!network) {
       throw new Error('Network is not set');
     }
-    this.activeAccounts[network][pubkey] = newActiveAccounts;
 
     // Save the data in storage
     await setUserData<ActiveAccountsStore>(activeAccountsKey(network, pubkey), newActiveAccounts);
@@ -507,7 +425,7 @@ class UserWallet {
    * @returns
    */
   setCurrentAccountToParent = async () => {
-    const activeAccounts = this.getActiveAccounts();
+    const activeAccounts = await this.getActiveAccounts();
     if (activeAccounts.parentAddress) {
       await this.setActiveAccounts({
         parentAddress: activeAccounts.parentAddress,
@@ -539,67 +457,81 @@ class UserWallet {
     }
   };
 
-  ensureValidActiveAccount = async (network: string, pubkey: string) => {
+  /*
+   * Ensure the active accounts are valid
+   * This will return the active accounts if they are valid
+   * Otherwise, if the parent account is valid, set the active account to that
+   * Otherwise, reset to the first parent account
+   * If there are no main accounts, set the active accounts to null
+   */
+  validateActiveAccountStore = async (
+    network: string,
+    pubkey: string,
+    activeAccounts: ActiveAccountsStore | undefined
+  ): Promise<ActiveAccountsStore> => {
     // Get the main accounts
-    const mainAccounts = await getValidData<MainAccount[]>(mainAccountsKey(network, pubkey));
-    if (!mainAccounts) {
-      // main accounts are not loaded yet
-      throw new Error('Main accounts are not loaded before ensureValidActiveAccount is called');
+    const mainAccounts = await getMainAccountsWithPubKey(network, pubkey);
+    if (mainAccounts.length === 0) {
+      // There are no main accounts - so the parent address is null.
+      // This indicates that we've loaded the active accounts but there are no main accounts
+      return {
+        parentAddress: null,
+        currentAddress: null,
+      };
     }
-    // Get the active accounts
-    const activeAccounts = this.getActiveAccounts();
+    if (!activeAccounts) {
+      // No active accounts - so we need to reset to the first parent account
+      return {
+        parentAddress: mainAccounts[0].address as FlowAddress,
+        currentAddress: mainAccounts[0].address as WalletAddress,
+      };
+    }
 
     // Check the parent address is valid
     const activeMainAccount = mainAccounts.find(
       (account) => account.address === activeAccounts.parentAddress
     );
+
     if (!activeMainAccount) {
+      // The parent address is not a valid main account
       // Reset to the first parent account
-      return this.resetToFirstParentAccount();
+      return {
+        parentAddress: mainAccounts[0].address as FlowAddress,
+        currentAddress: mainAccounts[0].address as WalletAddress,
+      };
     }
+
     // At least one main account matches our parent address
     if (activeAccounts.currentAddress === activeAccounts.parentAddress) {
       // The current address is the same as the parent address
-      // So it must be a main account
-      return;
+      // A valid main account is selected
+      return activeAccounts;
     }
     if (isValidEthereumAddress(activeAccounts.currentAddress)) {
       // Check that the address matches the evm account address
-      const evmAccount = await getValidData<EvmAccountStore>(
-        evmAccountKey(network, activeAccounts.parentAddress as FlowAddress)
+      const evmAccount = await this.getEvmAccount();
+      if (evmAccount?.address === activeAccounts.currentAddress) {
+        // The active account matches the evm account of the parent
+        return activeAccounts;
+      }
+    } else {
+      // Check that the current address is a child address
+      const childAccounts = await this.getChildAccounts();
+
+      const childAccount = childAccounts.find(
+        (account) => account.address === activeAccounts.currentAddress
       );
-      if (!evmAccount) {
-        // Reset to the parent account
-        return this.resetToFirstParentAccount();
-      }
-      if (evmAccount.address !== activeAccounts.currentAddress) {
-        // Reset to the parent account
-        return this.setActiveAccounts({
-          parentAddress: activeAccounts.parentAddress,
-          currentAddress: activeAccounts.parentAddress,
-        });
-      }
-      // The current address is a valid evm address
-      return;
-    }
-    // Check that the current address is a child address
-    const childAccounts = await getValidData<WalletAccount[]>(
-      childAccountsKey(network, activeAccounts.parentAddress as FlowAddress)
-    );
 
-    const childAccount = childAccounts?.find(
-      (account) => account.address === activeAccounts.currentAddress
-    );
-
-    if (!childAccount) {
-      // Reset to the parent account
-      return this.setActiveAccounts({
-        parentAddress: activeAccounts.parentAddress,
-        currentAddress: activeAccounts.parentAddress,
-      });
+      if (childAccount) {
+        // The current address is a valid child address
+        return activeAccounts;
+      }
     }
-    // The current address is a valid child address
-    return;
+    // Reset to the parent account
+    return {
+      parentAddress: activeAccounts.parentAddress,
+      currentAddress: activeAccounts.parentAddress,
+    };
   };
 
   /**
@@ -608,100 +540,75 @@ class UserWallet {
    * --------------------------------------------
    */
 
-  getMainAccounts = async (): Promise<MainAccount[] | null> => {
-    const mainAccounts = await getValidData<MainAccount[]>(
-      mainAccountsKey(this.getNetwork(), this.getCurrentPubkey())
-    );
-    return mainAccounts ?? null;
+  getMainAccounts = async (): Promise<MainAccount[]> => {
+    const network = this.getNetwork();
+    const pubkey = this.getCurrentPubkey();
+
+    return getMainAccountsWithPubKey(network, pubkey);
   };
 
   // Get the main account wallet for the current public key
   getParentAccount = async (): Promise<MainAccount | null> => {
-    const address = this.getParentAddress();
+    const address = await this.getParentAddress();
     if (!address) {
+      // There are no main accounts against the current pubkey
       return null;
     }
     // Get the main accounts for the network
     const mainAccounts = await this.getMainAccounts();
-    if (!mainAccounts) {
-      return null;
-    }
 
     // Find the main account that matches the address
     const mainAccount = mainAccounts.find((account) => account.address === address);
-    if (mainAccount) {
-      return mainAccount;
+    if (!mainAccount) {
+      // The main account is not found - throw an error
+      throw new Error('Parent account not found');
     }
-    return null;
-  };
-
-  // Get the main account wallet for the current public key without expire
-  getParentAccountNoExpire = async (): Promise<MainAccount | null> => {
-    const address = this.getParentAddress();
-    if (!address) {
-      return null;
-    }
-    // Get the main accounts for the network
-    const mainAccounts = await getInvalidData<MainAccount[]>(
-      mainAccountsKey(this.getNetwork(), this.getCurrentPubkey())
-    );
-    if (!mainAccounts) {
-      return null;
-    }
-
-    // Find the main account that matches the address
-    const mainAccount = mainAccounts.find((account) => account.address === address);
-    if (mainAccount) {
-      return mainAccount;
-    }
-    return null;
+    return mainAccount;
   };
 
   // Get the evm wallet of the current main account
   getEvmAccount = async (): Promise<WalletAccount | null> => {
-    const parentAddress = this.getParentAddress() as FlowAddress;
+    const network = this.getNetwork();
+    const parentAddress = await this.getParentAddress();
     if (!parentAddress) {
+      // There are no main accounts against the current pubkey
       return null;
     }
-    return await loadEvmAccountOfParent(this.store.network, parentAddress);
+    return getEvmAccountOfParent(network, parentAddress);
   };
 
   // Get the child accounts of the current main account
-  getChildAccounts = async (): Promise<WalletAccount[] | null> => {
-    const parentAddress = this.getParentAddress() as FlowAddress;
+  getChildAccounts = async (): Promise<WalletAccount[]> => {
+    const network = this.getNetwork();
+    const parentAddress = await this.getParentAddress();
     if (!parentAddress) {
-      return null;
+      // There are no main accounts against the current pubkey
+      return [];
     }
-    const childAccounts = await getValidData<WalletAccount[]>(
-      childAccountsKey(this.getNetwork(), parentAddress)
-    );
-    return childAccounts ?? null;
+    return getChildAccountsOfParent(network, parentAddress);
   };
 
   private getChildAccount = async (): Promise<WalletAccount | null> => {
-    const childAddress = this.getCurrentAddress() as FlowAddress;
-    const childAccounts = await this.getChildAccounts();
-    if (!childAccounts) {
-      // Child accounts are not loaded yet
-      return null;
+    const childAddress = await this.getCurrentAddress();
+    if (!childAddress) {
+      throw new Error('Child address is not set');
     }
-    return childAccounts.find((account) => account.address === childAddress) ?? null;
+    const childAccounts = await this.getChildAccounts();
+    const childAccount = childAccounts.find((account) => account.address === childAddress);
+    if (!childAccount) {
+      throw new Error('Child account not found');
+    }
+    return childAccount;
   };
 
   getCurrentWallet = async (): Promise<WalletAccount | null> => {
-    switch (this.getActiveAccountType()) {
+    switch (await this.getActiveAccountType()) {
       case 'main':
         return this.getParentAccount();
       case 'evm':
         return this.getEvmAccount();
       case 'child':
-        try {
-          return this.getChildAccount();
-        } catch {
-          console.error('Error getting child account');
-          // We need to reset to the main account
-          return null;
-        }
+        return this.getChildAccount();
       case 'none':
         return null;
     }
@@ -713,6 +620,9 @@ class UserWallet {
     }
     const evmAccount = await this.getEvmAccount();
     if (!evmAccount) {
+      return null;
+    }
+    if (evmAccount.address === '') {
       return null;
     }
     return evmAccount.address as EvmAddress;
@@ -760,7 +670,7 @@ class UserWallet {
   ): Promise<string> => {
     const scriptName = this.extractScriptName(cadence);
     try {
-      const allowed = await wallet.allowLilicoPay();
+      const allowed = await this.allowFreeGas();
       const payerFunction = shouldCoverFee
         ? this.bridgeFeePayerAuthFunction
         : allowed
@@ -803,7 +713,7 @@ class UserWallet {
 
     // Get the current public key
     const pubKey = this.store.currentPubkey;
-    const parentAccount = await this.getParentAccountNoExpire();
+    const parentAccount = await this.getParentAccount();
     if (!parentAccount) {
       throw new Error('Current wallet not found in accounts');
     }
@@ -903,7 +813,10 @@ class UserWallet {
 
   payerAuthFunction = async (account) => {
     // authorization function need to return an account
-    const payer = await wallet.getPayerAddressAndKeyId();
+    const payer = await this.getWalletController().getPayerAddressAndKeyId();
+    if (!payer) {
+      throw new Error('Payer address and keyId not found');
+    }
     const address = fcl.withPrefix(payer.address);
     const ADDRESS = fcl.withPrefix(address);
     // TODO: FIX THIS
@@ -927,7 +840,7 @@ class UserWallet {
   };
   bridgeFeePayerAuthFunction = async (account) => {
     // authorization function need to return an account
-    const bridgeFeePayer = await wallet.getBridgeFeePayerAddressAndKeyId();
+    const bridgeFeePayer = await this.getWalletController().getBridgeFeePayerAddressAndKeyId();
     const address = fcl.withPrefix(bridgeFeePayer.address);
     const ADDRESS = fcl.withPrefix(address);
     // TODO: FIX THIS
@@ -1019,7 +932,7 @@ class UserWallet {
     const deviceInfo = await this.getDeviceInfo();
 
     // Login with the signed message
-    await wallet.openapi.loginV3(accountKeyRequest, deviceInfo, realSignature, replaceUser);
+    await openapiService.loginV3(accountKeyRequest, deviceInfo, realSignature, replaceUser);
 
     // Set the current pubkey in userWallet provided we have been able to login
     this.setCurrentPubkey(accountKeyRequest.public_key);
@@ -1119,7 +1032,7 @@ class UserWallet {
     if (accountKey.public_key === publicKey) {
       const signature = await secp.sign(messageHash, privateKey);
       const realSignature = secp.Signature.fromHex(signature).toCompactHex();
-      return wallet.openapi.loginV3(accountKey, deviceInfo, realSignature, replaceUser);
+      return openapiService.loginV3(accountKey, deviceInfo, realSignature, replaceUser);
     } else {
       return false;
     }
@@ -1136,9 +1049,8 @@ class UserWallet {
    * @returns The device info
    */
   getDeviceInfo = async (): Promise<DeviceInfoRequest> => {
-    const result = await wallet.openapi.getLocation();
-    const installationId = await wallet.openapi.getInstallationId();
-    // console.log('location ', userlocation);
+    const result = await openapiService.getLocation();
+    const installationId = await openapiService.getInstallationId();
     const userlocation = result.data;
     const deviceInfo: DeviceInfoRequest = {
       city: userlocation.city,
@@ -1181,7 +1093,7 @@ const POLL_INTERVAL = 2_000; // 2 seconds
  * @param pubKey - The public key to load the accounts for
  * @returns The main accounts for the given public key or null if not found. Does not throw an error.
  */
-const loadAllAccountsWithPubKey = async (
+const preloadAllAccountsWithPubKey = async (
   network: string,
   pubKey: string
 ): Promise<WalletAccount[]> => {
@@ -1194,7 +1106,7 @@ const loadAllAccountsWithPubKey = async (
     mainAccounts = await retryOperation(
       async () => {
         try {
-          const accounts = await loadMainAccountsWithPubKey(network, pubKey);
+          const accounts = await getMainAccountsWithPubKey(network, pubKey);
 
           if (accounts && accounts.length > 0) {
             return accounts;
@@ -1213,9 +1125,7 @@ const loadAllAccountsWithPubKey = async (
   }
 
   if (!mainAccounts || mainAccounts.length === 0) {
-    console.warn(
-      `No main accounts loaded even after trying for ${Math.round(MAX_LOAD_TIME / 1000 / 60)} minutes`
-    );
+    console.warn(`No main accounts loaded`);
     return [];
   }
 
@@ -1223,13 +1133,13 @@ const loadAllAccountsWithPubKey = async (
   const childAndEvmAccounts = await Promise.all(
     mainAccounts.flatMap((mainAccount) => {
       return [
-        loadEvmAccountOfParent(network, mainAccount.address),
-        loadChildAccountsOfParent(network, mainAccount.address),
+        getEvmAccountOfParent(network, mainAccount.address),
+        getChildAccountsOfParent(network, mainAccount.address),
       ];
     })
   );
 
-  return [...mainAccounts, ...childAndEvmAccounts.flatMap((account) => account)];
+  return [...mainAccounts, ...childAndEvmAccounts.filter((account) => account !== null).flat()];
 };
 
 /**
@@ -1243,7 +1153,7 @@ const loadAccountListBalance = async (network: string, addressList: string[]) =>
   // Check if the network is valid
   if (!(await fclConfirmNetwork(network))) {
     // Do nothing if the network is not valid
-    return;
+    throw new Error('Network has been switched');
   }
 
   const script = await getScripts(network, 'basic', 'getFlowBalanceForAnyAccounts');
@@ -1315,6 +1225,26 @@ const setupNewAccount = async (
 };
 
 /**
+ * Get the main accounts for a given public key
+ * @param network - The network to load the accounts for
+ * @param pubkey - The public key to load the accounts for
+ * @returns The main accounts for the given public key or null if not found. Does not throw an error.
+ */
+const getMainAccountsWithPubKey = async (
+  network: string,
+  pubkey: string
+): Promise<MainAccount[]> => {
+  if (!network || !pubkey) {
+    throw new Error('Network or pubkey is not set');
+  }
+  const mainAccounts = await getValidData<MainAccount[]>(mainAccountsKey(network, pubkey));
+  if (!mainAccounts) {
+    return loadMainAccountsWithPubKey(network, pubkey);
+  }
+  return mainAccounts;
+};
+
+/**
  * Load the main accounts for a given public key
  * Store in the data cache
  * @param network - The network to load the accounts for
@@ -1325,11 +1255,6 @@ const loadMainAccountsWithPubKey = async (
   network: string,
   pubKey: string
 ): Promise<MainAccount[]> => {
-  // Check if cache is still valid first
-  const existing = await getValidData<MainAccount[]>(mainAccountsKey(network, pubKey));
-  if (existing !== undefined) {
-    return existing;
-  }
   // Get the accounts for the current public key
   const accounts: PublicKeyAccount[] = await getAccountsWithPublicKey(pubKey, network);
 
@@ -1360,28 +1285,45 @@ const loadMainAccountsWithPubKey = async (
 };
 
 /**
+ * Get the child accounts of the given main account address
+ * @param network - The network to load the accounts for
+ * @param parentAddress - The parent address to load the accounts for
+ * @returns The child accounts for the given main account address or null if not found. Does not throw an error.
+ */
+const getChildAccountsOfParent = async (
+  network: string,
+  parentAddress: string
+): Promise<WalletAccount[]> => {
+  if (!parentAddress) {
+    // There is no parent address
+    return [];
+  }
+  const childAccounts = await getValidData<WalletAccount[]>(
+    childAccountsKey(network, parentAddress)
+  );
+  if (childAccounts === undefined) {
+    // The child accounts are not loaded or needs to be refreshed
+    return await loadChildAccountsOfParent(network, parentAddress);
+  }
+  return childAccounts;
+};
+
+/**
  * Load the child accounts for a given main account address
  * Store in the data cache
  * @param network - The network to load the accounts for
  * @param mainAccountAddress - The main account address to load the accounts for
  * @returns The child accounts for the given main account address or null if not found. Does not throw an error.
- */ export const loadChildAccountsOfParent = async (
+ */
+
+export const loadChildAccountsOfParent = async (
   network: string,
   mainAccountAddress: string
 ): Promise<WalletAccount[]> => {
-  // Check if cache is still valid first
-  const existing = await getValidData<WalletAccount[]>(
-    childAccountsKey(network, mainAccountAddress)
-  );
-  if (existing !== undefined) {
-    return existing;
-  }
   const script = await getScripts(network, 'hybridCustody', 'getChildAccountMeta');
 
   if (!(await fclConfirmNetwork(network))) {
-    // Do nothing if the network is switched
-    // Don't update the cache
-    return [];
+    throw new Error('Network has been switched');
   }
   const childAccountMap: ChildAccountMap = await fcl.query({
     cadence: script,
@@ -1404,9 +1346,27 @@ const loadMainAccountsWithPubKey = async (
   );
 
   // Save the child accounts to the cache
-  setCachedData(childAccountsKey(network, mainAccountAddress), childAccounts);
+  setCachedData(childAccountsKey(network, mainAccountAddress), childAccounts, 60_000);
 
   return childAccounts;
+};
+
+// Get the evm wallet of the current main account
+const getEvmAccountOfParent = async (
+  network: string,
+  parentAddress: string
+): Promise<WalletAccount | null> => {
+  if (!parentAddress) {
+    // There are no main accounts against the current pubkey
+    return null;
+  }
+  // Get the evm account from the cache
+  const evmAccount = await getValidData<EvmAccountStore>(evmAccountKey(network, parentAddress));
+  if (evmAccount === undefined) {
+    // The evm account is not loaded or needs to be refreshed
+    return await loadEvmAccountOfParent(network, parentAddress);
+  }
+  return evmAccount;
 };
 
 // Load the EVM account
@@ -1414,11 +1374,6 @@ const loadEvmAccountOfParent = async (
   network: string,
   mainAccountAddress: string
 ): Promise<EvmAccountStore> => {
-  // Check if cache is still valid first
-  const existing = await getValidData<EvmAccountStore>(evmAccountKey(network, mainAccountAddress));
-  if (existing) {
-    return existing;
-  }
   // TODO: If there's no EVM address, we might want to store null in the cache
   const nullEvmAccount: WalletAccount = {
     address: '',
@@ -1431,7 +1386,7 @@ const loadEvmAccountOfParent = async (
   if (!(await fclConfirmNetwork(network))) {
     // Do nothing if the network is switched
     // Don't update the cache
-    return nullEvmAccount;
+    throw new Error('Network has been switched');
   }
 
   // this will only be called if the user's main account is valid
@@ -1460,12 +1415,12 @@ const loadEvmAccountOfParent = async (
       id: index,
     };
     // Save the EVM account to the cache
-    setCachedData(evmAccountKey(network, mainAccountAddress), evmAccount);
+    setCachedData(evmAccountKey(network, mainAccountAddress), evmAccount, 60_000);
 
     return evmAccount;
   } else {
     // If the script returns null, we need to clear the EVM account
-    setCachedData(evmAccountKey(network, mainAccountAddress), nullEvmAccount);
+    setCachedData(evmAccountKey(network, mainAccountAddress), nullEvmAccount, 60_000);
     return nullEvmAccount;
   }
 };

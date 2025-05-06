@@ -6,8 +6,8 @@ import {
   loginToSenderOrReceiver,
   getReceiverEvmAccount,
   getReceiverCadenceAccount,
-} from './utils/helper';
-import { test } from './utils/loader';
+} from '../utils/helper';
+import { test } from '../utils/loader';
 
 export const sendTokenCOA = async ({
   page,
@@ -21,7 +21,7 @@ export const sendTokenCOA = async ({
   await page.getByRole('tab', { name: 'coins' }).click();
   // send Ft token from COA
   await page.getByTestId(`token-${tokenname.toLowerCase()}`).click();
-  await page.getByRole('button', { name: 'SEND' }).click();
+  await page.getByTestId(`send-button`).click();
   await page.getByPlaceholder('Search address(0x), or flow').click();
   await page.getByPlaceholder('Search address(0x), or flow').fill(receiver);
   await page.getByPlaceholder('Amount').fill(amount);

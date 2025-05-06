@@ -1652,6 +1652,144 @@ class KeyringService extends EventEmitter {
       decryptedData: keyringDataV2,
     };
   }
+
+  /**
+   * Remove Profile
+   *
+   * Removes a specific profile and its associated keys from the keyring list.
+   * If it's the last profile, it resets the entire wallet.
+   * If it's the current active profile, it switches to another profile.
+   *
+   * @param {string} password - The keyring controller password.
+   * @param {string} profileId - The ID of the profile to remove.
+   * @returns {Promise<boolean>} - A promise that resolves to true if successful.
+   */
+  async removeProfile(password: string, profileId: string): Promise<boolean> {
+    const profileIndex = this.keyringList.findIndex((keyring) => keyring.id === profileId);
+    if (profileIndex === -1) {
+      throw new Error(`Profile with ID ${profileId} not found`);
+    }
+    // Verify the password
+    await this.verifyPassword(password);
+
+    // Get all keyring IDs *before* modification
+    const keyringIds = await this.getKeyringIds(); // Or use: this.keyringList.map(k => k.id);
+
+    // If this is the only profile, reset the entire wallet
+    if (keyringIds.length <= 1) {
+      await this.resetKeyRing();
+      // Update the memory store
+      this.memStore.updateState({ isUnlocked: false });
+      this.emit('lock');
+      await storage.remove(CURRENT_ID_KEY);
+      this.store.updateState({ booted: '' });
+      return true;
+    }
+
+    // Get the current profile ID
+    const currentId = await returnCurrentProfileId();
+
+    // If we're removing the current profile, determine the next one to switch to
+    let needToSwitchKeyring = false;
+    let nextProfileId: string | undefined = undefined;
+
+    if (currentId === profileId) {
+      // Calculate the index of the next profile, wrapping around if removing the last one
+      const nextIndex = (profileIndex + 1) % keyringIds.length;
+      // Get the ID of the profile at the next index
+      nextProfileId = keyringIds[nextIndex];
+
+      if (nextProfileId && nextProfileId !== profileId) {
+        // Ensure we found a valid *different* ID
+        // Update the current profile ID in storage immediately
+        await storage.set(CURRENT_ID_KEY, nextProfileId);
+        needToSwitchKeyring = true;
+      } else {
+        // This should theoretically not happen if length > 1, but handle defensively
+        console.error(
+          'Error: Could not determine the next profile ID to switch to. currentId:',
+          currentId,
+          'profileId:',
+          profileId,
+          'profileIndex:',
+          profileIndex,
+          'keyringIds:',
+          [...keyringIds]
+        );
+        // Decide recovery strategy: maybe default to the first ID again, or throw?
+        // For now, we'll proceed without switching, potentially leaving state inconsistent
+        needToSwitchKeyring = false;
+        nextProfileId = undefined; // Ensure it's not used later
+      }
+    }
+
+    // Remove the profile from the in-memory keyring list
+    this.keyringList.splice(profileIndex, 1);
+
+    // Update the vault in the store by re-encrypting the remaining keyrings
+    await this.encryptVaultArray(this.keyringList, password);
+
+    // Switch to the next profile's keyring in memory if needed
+    if (needToSwitchKeyring && nextProfileId) {
+      this.currentKeyring = await this.switchKeyring(nextProfileId);
+    }
+
+    // Update the memory store
+    await this._updateMemStoreKeyrings();
+    await this.fullUpdate();
+
+    // Emit an event that a profile was removed
+    this.emit('profileRemoved', profileId);
+
+    return true;
+  }
+
+  /**
+   * Atomically change the password for all keyrings/vaults and the booted state.
+   * If any step fails, nothing is written to storage.
+   *
+   * @param oldPassword - The current password.
+   * @param newPassword - The new password to set.
+   * @returns {Promise<boolean>} True if successful, false otherwise.
+   */
+  async changePassword(oldPassword: string, newPassword: string): Promise<boolean> {
+    try {
+      // 1. Verify the old password
+      await this.verifyPassword(oldPassword);
+
+      // 2. Decrypt all vaults with the old password
+      const allVaultData = await this.revealKeyring(oldPassword);
+      if (!allVaultData || allVaultData.length === 0) {
+        throw new Error('No vault data found to update');
+      }
+
+      // 3. Prepare to re-encrypt all vaults with the new password (in memory)
+      const newVaultArray: VaultEntryV2[] = [];
+      for (const vaultData of allVaultData) {
+        // Re-encrypt each vault's decrypted data with the new password
+        const encryptedData = await this.encryptor.encrypt(newPassword, vaultData.decryptedData);
+        newVaultArray.push({ id: vaultData.id, encryptedData });
+      }
+
+      // 4. Re-encrypt the booted state with the new password (in memory)
+      const newBooted = await this.encryptor.encrypt(newPassword, 'true');
+
+      // 5. Write both the new vaults and the new booted state to storage (atomically)
+      this.store.updateState({
+        booted: newBooted,
+        vault: newVaultArray,
+        vaultVersion: KEYRING_STATE_VAULT_V2,
+      });
+
+      // 6. Update in-memory state (if needed)
+      this.memStore.updateState({ isUnlocked: true });
+
+      return true;
+    } catch (error) {
+      log.error('Failed to change keyring password atomically:', error);
+      return false;
+    }
+  }
 }
 
 export default new KeyringService();

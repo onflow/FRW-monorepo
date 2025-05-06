@@ -2,7 +2,7 @@
  * Keys and types to access data in the UI from the background storage cache
  * This is the primary way to get cached data from network calls to the frontend
  */
-import { type ExtendedTokenInfo } from '../types/coin-types';
+import { type TokenFilter, type ExtendedTokenInfo } from '../types/coin-types';
 import { type UserInfoResponse } from '../types/network-types';
 import {
   type NFTCollections,
@@ -207,11 +207,20 @@ export const getCachedEvmNftCollectionList = async (
   );
 };
 //Coin list
-export const coinListKey = (network: string, address: string, currency = 'usd') =>
+export const coinListKey = (network: string, address: string, currency: string = 'usd') =>
   `coin-list-${network}-${address}-${currency}`;
 
 export const coinListRefreshRegex = refreshKey(coinListKey);
 
 export const getCachedCoinList = async (network: string, address: string, currency = 'usd') => {
   return getCachedData<ExtendedTokenInfo[]>(coinListKey(network, address, currency));
+};
+
+export const tokenFilterKey = (network: string, address: string) =>
+  `token-filter-${network}-${address}`;
+
+export type TokenFilterStore = TokenFilter[];
+
+export const getCachedTokenFilter = async (network: string, address: string) => {
+  return getCachedData<TokenFilterStore>(tokenFilterKey(network, address));
 };

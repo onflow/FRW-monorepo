@@ -24,6 +24,7 @@ import theme from '../../style/LLTheme';
 import MoveBoard from '../MoveBoard';
 import NFTTab from '../NFT';
 import NftEvm from '../NftEvm';
+import { CurrencyValue } from '../TokenDetail/CurrencyValue';
 
 import CoinList from './Coinlist';
 import OnRampList from './OnRampList';
@@ -50,7 +51,7 @@ const WalletTab = ({ network }) => {
   const history = useHistory();
   const location = useLocation();
   const { initializeStore } = useInitHook();
-  const { coins, balance, coinsLoaded } = useCoins();
+  const { balance, coinsLoaded } = useCoins();
   const { childAccounts, evmWallet, currentWallet, noAddress, registerStatus } = useProfiles();
   const [value, setValue] = React.useState(0);
 
@@ -62,22 +63,13 @@ const WalletTab = ({ network }) => {
   const [isOnRamp, setOnRamp] = useState(false);
   const [isActive, setIsActive] = useState(true);
   const [showMoveBoard, setMoveBoard] = useState(false);
-  const [buyHover, setBuyHover] = useState(false);
-  const [sendHover, setSendHover] = useState(false);
-  const [swapHover, setSwapHover] = useState(false);
   const [canMoveChild, setCanMoveChild] = useState(true);
-  const [receiveHover, setReceiveHover] = useState(false);
-  const [childStateLoading, setChildStateLoading] = useState<boolean>(false);
 
   const incLink =
     network === 'mainnet' ? 'https://app.increment.fi/swap' : 'https://demo.increment.fi/swap';
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
-  };
-
-  const handleChangeIndex = (index) => {
-    setValue(index);
   };
 
   const setUserAddress = useCallback(async () => {
@@ -135,7 +127,6 @@ const WalletTab = ({ network }) => {
   }, [address, wallet]);
 
   const fetchChildState = useCallback(async () => {
-    setChildStateLoading(true);
     const accountType = await wallet.getActiveAccountType();
     setChildAccount(childAccounts);
     setChildType(accountType);
@@ -144,7 +135,6 @@ const WalletTab = ({ network }) => {
     } else {
       setIsActive(true);
     }
-    setChildStateLoading(false);
     return accountType;
   }, [wallet, childAccounts]);
 
@@ -182,13 +172,6 @@ const WalletTab = ({ network }) => {
   const goMoveBoard = async () => {
     setMoveBoard(true);
   };
-
-  const filteredCoinData = coins.filter((coin) => {
-    if (childType === 'evm' && coin.unit !== 'flow' && Number(coin.balance) === 0 && !coin.custom) {
-      return false;
-    }
-    return true;
-  });
 
   useEffect(() => {
     if (address && coinsLoaded) {
@@ -283,7 +266,7 @@ const WalletTab = ({ network }) => {
               </Button>
             )
           ) : coinsLoaded ? (
-            `$${formatLargeNumber(balance)}`
+            <CurrencyValue value={balance} showCurrencyCode={false} />
           ) : (
             <Skeleton variant="text" width={100} />
           )}
@@ -410,12 +393,7 @@ const WalletTab = ({ network }) => {
         <TabPanel value={value} index={0}>
           <Box sx={{ height: '100%', overflow: 'auto' }}>
             {value === 0 && (
-              <CoinList
-                tokenList={coins}
-                ableFt={accessible}
-                isActive={isActive}
-                childType={childType}
-              />
+              <CoinList ableFt={accessible} isActive={isActive} childType={childType} />
             )}
           </Box>
         </TabPanel>

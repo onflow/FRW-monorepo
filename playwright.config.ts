@@ -25,7 +25,13 @@ export default defineConfig({
   /* Use 2 workers for parallel execution. */
   workers: 2,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: process.env.CI ? 'github' : 'html',
+  reporter: process.env.CI
+    ? [
+        ['list'], // Default reporter for CI console output
+        ['html', { open: 'never', outputFolder: 'playwright-report' }], // Generate HTML report on CI
+        ['github'], // Optional: if you still want GitHub Actions annotations
+      ]
+    : [['list'], ['html', { open: 'on-failure', outputFolder: 'playwright-report' }]], // Use list and html locally, open html on failure
   /* Stop after the first test failure */
   maxFailures: process.env.CI ? 1 : 0,
 
@@ -40,9 +46,9 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     ...devices['Desktop Chrome'],
 
-    trace: 'on-first-retry',
-    video: 'off',
-    screenshot: process.env.CI ? 'off' : 'on',
+    trace: 'retain-on-failure', // Collect trace for failed tests
+    video: 'retain-on-failure', // Record video for failed tests
+    screenshot: 'only-on-failure', // Take screenshot only on failure
 
     browserName: 'chromium',
     channel: 'chromium',
@@ -62,7 +68,7 @@ export default defineConfig({
     },
     {
       name: 'registration-test',
-      testMatch: /.*login\.test\.ts/,
+      testMatch: /registration\/.*\.test\.ts/,
       dependencies: ['registration-setup'],
       fullyParallel: false,
     },
@@ -81,7 +87,7 @@ export default defineConfig({
     },
     {
       name: 'transaction-test',
-      testMatch: /.*transaction\.test\.ts/,
+      testMatch: /transaction\/.*transaction\.test\.ts/,
       dependencies: ['transaction-setup'],
       fullyParallel: false,
     },

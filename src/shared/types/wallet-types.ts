@@ -148,3 +148,27 @@ export type AccountDetails = {
 export type ChildAccountMap = {
   [key: string]: AccountDetails;
 };
+
+export type Currency = {
+  code: string;
+  name: string;
+  symbol: string;
+  country: string;
+};
+
+export const DEFAULT_CURRENCY: Currency = {
+  code: 'USD',
+  name: 'United States Dollar',
+  symbol: '$',
+  country: 'United States',
+};
+
+export interface ProfileBackupStatus {
+  username: string;
+  uid: string | null;
+  id: string;
+  isActive: boolean; // User has it imported
+  isBackedUp: boolean; // Is backed up on Google
+  canDecrypt: boolean; // Can be decrypted with current password
+  isSelected: boolean; // User selected it for password change
+}

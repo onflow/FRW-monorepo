@@ -43,7 +43,7 @@ export const ButtonRow: React.FC<ButtonRowProps> = ({
       <IconButton messageKey="Send" onClick={onSendClick} icon={sendIcon} />
       <IconButton messageKey="Receive" onClick={onReceiveClick} icon={receiveIcon} />
       <IconButton messageKey="Swap" onClick={onSwapClick} icon={swapIcon} />
-      <IconButton messageKey="Buy" onClick={onBuyClick} icon={buyIcon} />
+      <IconButton data-testid="buy-button" messageKey="Buy" onClick={onBuyClick} icon={buyIcon} />
       {canMoveChild && <IconButton messageKey="Move" onClick={onMoveClick} icon={moveIcon} />}
     </Box>
   );

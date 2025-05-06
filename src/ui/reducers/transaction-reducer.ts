@@ -1,7 +1,6 @@
 import BN from 'bignumber.js';
-import type { TokenInfo } from 'flow-native-token-registry';
 
-import { type CoinItem } from '@/shared/types/coin-types';
+import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
 import { type Contact } from '@/shared/types/network-types';
 import type {
   NetworkType,
@@ -22,7 +21,7 @@ export const INITIAL_TRANSACTION_STATE: TransactionState = {
   fromNetwork: 'Evm',
   toNetwork: 'Evm',
   toAddress: '',
-  selectedToken: {
+  tokenInfo: {
     name: 'Flow',
     address: '0x4445e7ad11568276',
     contractName: 'FlowToken',
@@ -35,15 +34,13 @@ export const INITIAL_TRANSACTION_STATE: TransactionState = {
       'https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.1654653399040a61.FlowToken/logo.svg',
     decimals: 8,
     symbol: 'flow',
-  },
-  coinInfo: {
     id: '',
     coin: '',
     unit: '',
     balance: '0',
-    price: 0,
+    price: '0',
     change24h: 0,
-    total: 0,
+    total: '0',
     icon: '',
   },
   amount: '',
@@ -63,10 +60,9 @@ type TransactionAction =
       };
     }
   | {
-      type: 'setSelectedToken';
+      type: 'setTokenInfo';
       payload: {
-        tokenInfo: TokenInfo;
-        coinInfo: CoinItem;
+        tokenInfo: ExtendedTokenInfo;
       };
     }
   | {
@@ -133,20 +129,19 @@ export const transactionReducer = (
           : 'Child';
       return updateTxState({ ...state, rootAddress, fromAddress, fromNetwork, fromContact });
     }
-    case 'setSelectedToken': {
-      // Set the token type based on the token symbol
+    case 'setTokenInfo': {
+      // Set the token type based on the token symbol from the new tokenInfo
       const tokenType = action.payload.tokenInfo.symbol.toLowerCase() !== 'flow' ? 'FT' : 'Flow';
-      // Set the amount to the current amount so that we can truncate and adjust the amount based on the token decimals and / or price
+      // Directly update tokenInfo and trigger amount recalculation
       return transactionReducer(
         {
           ...state,
-          selectedToken: action.payload.tokenInfo,
+          tokenInfo: action.payload.tokenInfo, // Update tokenInfo
           tokenType,
-          coinInfo: action.payload.coinInfo,
         },
         {
           type: 'setAmount',
-          payload: state.amount,
+          payload: state.amount, // Recalculate amount based on new token info
         }
       );
     }
@@ -177,7 +172,7 @@ export const transactionReducer = (
         // It should not be possible to have a balance that is greater than the max number of decimals allowed by the token
         return transactionReducer(state, {
           type: 'setAmount',
-          payload: state.coinInfo.availableBalance || state.coinInfo.balance,
+          payload: state.tokenInfo.availableBalance || state.tokenInfo.balance,
         });
       } else if (state.fiatOrCoin !== 'fiat') {
         throw new Error('Not specified if entering in coin or fiat');
@@ -190,7 +185,7 @@ export const transactionReducer = (
         },
         {
           type: 'setAmount',
-          payload: state.coinInfo.availableBalance || state.coinInfo.balance,
+          payload: state.tokenInfo.availableBalance || state.tokenInfo.balance,
         }
       );
       return {
@@ -201,7 +196,7 @@ export const transactionReducer = (
     case 'finalizeAmount': {
       return {
         ...state,
-        amount: trimDecimalAmount(state.amount, state.selectedToken.decimals, 'clean'),
+        amount: trimDecimalAmount(state.amount, state.tokenInfo.decimals, 'clean'),
         fiatAmount: trimDecimalAmount(state.fiatAmount, 8, 'clean'),
       };
     }
@@ -212,8 +207,8 @@ export const transactionReducer = (
       let balanceExceeded = false;
       let remainingBalance = new BN(0);
       // Check available balance as some token may have a storage allocation
-      const balance = new BN(state.coinInfo.availableBalance || state.coinInfo.balance || '0.0');
-      const price = new BN(state.coinInfo.price || '0.0');
+      const balance = new BN(state.tokenInfo.availableBalance || state.tokenInfo.balance || '0.0');
+      const price = new BN(state.tokenInfo.price || '0.0');
 
       if (state.fiatOrCoin === 'fiat') {
         // Strip the amount entered to 8 decimal places
@@ -226,10 +221,7 @@ export const transactionReducer = (
         if (calculatedAmountInCoin.isNaN()) {
           amountInCoin = '0.0';
         } else {
-          amountInCoin = calculatedAmountInCoin.toFixed(
-            state.selectedToken.decimals,
-            BN.ROUND_DOWN
-          );
+          amountInCoin = calculatedAmountInCoin.toFixed(state.tokenInfo.decimals, BN.ROUND_DOWN);
         }
         // Calculate the remaining balance after the transaction
         remainingBalance = balance.minus(new BN(amountInCoin));
@@ -240,13 +232,13 @@ export const transactionReducer = (
         // Check if the amount entered has too many decimal places
         amountInCoin = trimDecimalAmount(
           action.payload,
-          Math.min(maxNetworkDecimals, state.selectedToken.decimals),
+          Math.min(maxNetworkDecimals, state.tokenInfo.decimals),
           'entering'
         );
 
         // Check if the balance is exceeded
         const amountBN = new BN(
-          trimDecimalAmount(amountInCoin, state.selectedToken.decimals, 'clean') || '0'
+          trimDecimalAmount(amountInCoin, state.tokenInfo.decimals, 'clean') || '0'
         );
         // Calculate the remaining balance after the transaction
         remainingBalance = balance.minus(amountBN);

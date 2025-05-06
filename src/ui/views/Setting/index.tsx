@@ -1,5 +1,6 @@
 import AndroidIcon from '@mui/icons-material/Android';
 import AppleIcon from '@mui/icons-material/Apple';
+import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import PhoneIphoneIcon from '@mui/icons-material/PhoneIphone';
 import {
   List,
@@ -28,7 +29,7 @@ import IconAddressbook from '../../../components/iconfont/IconAddressbook';
 import IconEnd from '../../../components/iconfont/IconAVector11Stroke';
 import IconBackup from '../../../components/iconfont/IconBackup';
 import IconDeveloper from '../../../components/iconfont/IconDeveloper';
-
+import IconLock from '../../../components/iconfont/IconLock';
 // Feature flags
 const SHOW_DEVICES = false;
 
@@ -116,7 +117,6 @@ const SettingTab = () => {
       <div className={classes.listDiv}>
         <List className={classes.list} sx={{ margin: '8px auto 16px auto', pt: 0, pb: 0 }}>
           <ListItem
-            button
             component={Link}
             to="/dashboard/setting/account"
             disablePadding
@@ -134,10 +134,28 @@ const SettingTab = () => {
               </ListItemIcon>
             </ListItemButton>
           </ListItem>
+          <Divider sx={{ width: '90%' }} variant="middle" />
+          <ListItem
+            component={Link}
+            to="/dashboard/setting/changepassword"
+            disablePadding
+            className={classes.listItem}
+          >
+            <ListItemButton className={classes.itemButton}>
+              <ListItemIcon sx={{ minWidth: '25px' }}>
+                <Box className={classes.iconContainer}>
+                  <IconLock size={18} color="#59A1DB" />
+                </Box>
+              </ListItemIcon>
+              <ListItemText primary={chrome.i18n.getMessage('Change__Password')} />
+              <ListItemIcon aria-label="end" sx={{ minWidth: '15px' }}>
+                <IconEnd size={12} />
+              </ListItemIcon>
+            </ListItemButton>
+          </ListItem>
         </List>
         <List className={classes.list} sx={{ margin: '8px auto 16px auto', pt: 0, pb: 0 }}>
           <ListItem
-            button
             component={Link}
             to="/dashboard/setting/wallet"
             disablePadding
@@ -159,7 +177,6 @@ const SettingTab = () => {
           <Divider sx={{ width: '90%' }} variant="middle" />
 
           <ListItem
-            button
             component={Link}
             to="/dashboard/setting/addressbook"
             disablePadding
@@ -181,7 +198,6 @@ const SettingTab = () => {
           <Divider sx={{ width: '90%' }} variant="middle" />
           {!isActive && (
             <ListItem
-              button
               component={Link}
               to="/dashboard/setting/linked"
               disablePadding
@@ -201,10 +217,30 @@ const SettingTab = () => {
             </ListItem>
           )}
 
+          <Divider sx={{ width: '90%' }} variant="middle" />
+
+          <ListItem
+            component={Link}
+            to="/dashboard/setting/currency"
+            disablePadding
+            className={classes.listItem}
+          >
+            <ListItemButton className={classes.itemButton}>
+              <ListItemIcon sx={{ minWidth: '25px' }}>
+                <Box className={classes.iconContainer}>
+                  <CurrencyExchangeIcon sx={{ width: '18px', height: '18px', color: '#59A1DB' }} />
+                </Box>
+              </ListItemIcon>
+              <ListItemText primary={chrome.i18n.getMessage('Display__Currency')} />
+              <ListItemIcon aria-label="end" sx={{ minWidth: '15px' }}>
+                <IconEnd size={12} />
+              </ListItemIcon>
+            </ListItemButton>
+          </ListItem>
+
           {!isActive && <Divider sx={{ width: '90%' }} variant="middle" />}
           {isKeyphrase && (
             <ListItem
-              button
               component={Link}
               to="/dashboard/setting/backups"
               disablePadding
@@ -227,9 +263,6 @@ const SettingTab = () => {
 
         <List className={classes.list} sx={{ margin: '8px auto 18px auto', pt: 0, pb: 0 }}>
           <ListItem
-            // button
-            // component={Link}
-            // to="https://lilico.app"
             disablePadding
             onClick={() => window.open('https://core.flow.com')}
             className={classes.listItem}

@@ -71,9 +71,22 @@ export const useActiveAccounts = (
   network: string | undefined | null,
   publicKey: string | undefined | null
 ) => {
+  const mainAccounts = useMainAccounts(network, publicKey);
   const activeAccounts = useUserData<ActiveAccountsStore>(
     network && publicKey ? activeAccountsKey(network, publicKey) : null
   );
+  if (!activeAccounts) {
+    // Special case of where main accounts is loaded but we don't have active accounts
+    // This can happen if the user is in the process of registering or when there are no main accounts
+    // In this case we return the main accounts
+    if (mainAccounts && mainAccounts.length === 0) {
+      // There are no main accounts so we return an empty array
+      return {
+        parentAddress: null,
+        currentAddress: null,
+      };
+    }
+  }
   return activeAccounts;
 };
 

@@ -16,6 +16,7 @@ import { LLSpinner } from 'ui/FRWComponent';
 import { Profile } from 'ui/FRWComponent/Send/Profile';
 import { useWallet } from 'ui/utils';
 
+import { CurrencyValue } from '../TokenDetail/CurrencyValue';
 import { TokenBalance } from '../TokenDetail/TokenBalance';
 import { TokenValue } from '../TokenDetail/TokenValue';
 
@@ -55,7 +56,7 @@ const TransferConfirmation = ({
   const { sufficient: isSufficient, sufficientAfterAction: isSufficientAfterAction } =
     useStorageCheck({
       transferAmount,
-      coin: transactionState.coinInfo?.coin,
+      coin: transactionState.tokenInfo?.coin,
       movingBetweenEVMAndFlow,
     });
 
@@ -102,9 +103,9 @@ const TransferConfirmation = ({
       wallet.listenTransaction(
         txId,
         true,
-        `${transactionState.amount} ${transactionState.coinInfo.coin} Sent`,
-        `You have sent ${transactionState.amount} ${transactionState.selectedToken?.symbol} to ${transactionState.toAddress}. \nClick to view this transaction.`,
-        transactionState.coinInfo.icon
+        `${transactionState.amount} ${transactionState.tokenInfo.coin} Sent`,
+        `You have sent ${transactionState.amount} ${transactionState.tokenInfo?.symbol} to ${transactionState.toAddress}. \nClick to view this transaction.`,
+        transactionState.tokenInfo.icon
       );
       // Record the recent contact
       await wallet.setRecent(transactionState.toContact);
@@ -259,10 +260,10 @@ const TransferConfirmation = ({
             <Stack direction="row" sx={{ alignItems: 'center' }} spacing={1}>
               <CardMedia
                 sx={{ width: '24px', height: '24px' }}
-                image={transactionState.coinInfo.icon}
+                image={transactionState.tokenInfo.icon}
               />
               <Typography variant="body1" sx={{ fontSize: '18px', fontWeight: 'semi-bold' }}>
-                {transactionState.coinInfo.coin}
+                {transactionState.tokenInfo.coin}
               </Typography>
               <Box sx={{ flexGrow: 1 }} />
               <Typography
@@ -272,7 +273,7 @@ const TransferConfirmation = ({
                 <TokenBalance
                   showFull={true}
                   value={transactionState.amount}
-                  postFix={transactionState.coinInfo.unit.toUpperCase()}
+                  postFix={transactionState.tokenInfo.unit.toUpperCase()}
                 />
               </Typography>
             </Stack>
@@ -282,7 +283,7 @@ const TransferConfirmation = ({
                 color="info"
                 sx={{ fontSize: '14px', fontWeight: 'semi-bold', textAlign: 'end' }}
               >
-                <TokenValue value={transactionState.fiatAmount} prefix={'$'} />
+                <CurrencyValue value={transactionState.fiatAmount} />
               </Typography>
             </Stack>
           </Box>

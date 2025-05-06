@@ -1,8 +1,8 @@
 import BN from 'bignumber.js';
 import { table } from 'table'; // We'll need to install this
 
-import { switchToEvm, loginToSenderAccount, loginToReceiverAccount } from './utils/helper';
-import { test, expect } from './utils/loader';
+import { switchToEvm, loginToSenderAccount, loginToReceiverAccount } from '../utils/helper';
+import { test, expect } from '../utils/loader';
 
 // Define minimum required balances for each token
 const REQUIRED_BALANCES_CADENCE = {
@@ -139,6 +139,7 @@ const reportAndCheckOverallSufficiency = (
 };
 
 test('Verify sufficient token balances for sender account', async ({ page, extensionId }) => {
+  test.slow();
   const nickname = process.env.TEST_SENDER_NICKNAME || 'Sender';
   const address = process.env.TEST_SENDER_ADDR || 'Unknown Address';
   console.log(`Starting balance check for Sender: ${nickname} (${address})`);

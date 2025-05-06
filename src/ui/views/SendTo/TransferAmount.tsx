@@ -23,6 +23,7 @@ import { TokenValue } from '@/ui/views/TokenDetail/TokenValue';
 
 import CancelIcon from '../../../components/iconfont/IconClose';
 import IconSwitch from '../../../components/iconfont/IconSwitch';
+import { CurrencyValue } from '../TokenDetail/CurrencyValue';
 import { TokenBalance } from '../TokenDetail/TokenBalance';
 
 const useStyles = makeStyles(() => ({
@@ -181,7 +182,7 @@ const TransferAmount = ({
                     <InputAdornment position="end">
                       <Tooltip
                         title={
-                          transactionState.coinInfo.unit === 'flow'
+                          transactionState.tokenInfo.unit === 'flow'
                             ? chrome.i18n.getMessage('on_Flow_the_balance_cant_less_than_0001_FLOW')
                             : ''
                         }
@@ -205,8 +206,8 @@ const TransferAmount = ({
                 renderValue={renderValue}
                 onChange={(e) => handleTokenChange(e.target.value)}
                 className={classes.selectRoot}
-                value={transactionState.selectedToken.symbol.toLowerCase()}
-                defaultValue={transactionState.selectedToken.symbol.toLowerCase()}
+                value={transactionState.tokenInfo.symbol.toLowerCase()}
+                defaultValue={transactionState.tokenInfo.symbol.toLowerCase()}
                 MenuProps={{
                   MenuListProps: { disablePadding: true },
                   PaperProps: {
@@ -244,7 +245,7 @@ const TransferAmount = ({
                     <InputAdornment position="end">
                       <Tooltip
                         title={
-                          transactionState.coinInfo.unit === 'flow'
+                          transactionState.tokenInfo.unit === 'flow'
                             ? chrome.i18n.getMessage('on_Flow_the_balance_cant_less_than_0001_FLOW')
                             : ''
                         }
@@ -277,13 +278,13 @@ const TransferAmount = ({
             {transactionState.fiatOrCoin === 'fiat' ? (
               <>
                 <img
-                  src={transactionState.coinInfo.icon}
+                  src={transactionState.tokenInfo.icon}
                   style={{ height: '18px', width: '18px' }}
                 />{' '}
                 <TokenBalance showFull={true} value={amount} />
               </>
             ) : (
-              <TokenValue value={fiatAmount} prefix={'$'} />
+              <CurrencyValue value={fiatAmount} />
             )}
             <IconButton onClick={handleSwitchFiatOrCoin}>
               <IconSwitch size={14} />
@@ -306,9 +307,9 @@ const TransferAmount = ({
             <Typography
               variant="body1"
               color="text.secondary"
-              sx={{ fontSize: transactionState.coinInfo.unit === 'flow' ? '0.7rem' : '1rem' }}
+              sx={{ fontSize: transactionState.tokenInfo.unit === 'flow' ? '0.7rem' : '1rem' }}
             >
-              {transactionState.coinInfo.unit === 'flow'
+              {transactionState.tokenInfo.unit === 'flow'
                 ? chrome.i18n.getMessage('Insufficient_balance_on_Flow')
                 : chrome.i18n.getMessage('Insufficient_balance')}
             </Typography>

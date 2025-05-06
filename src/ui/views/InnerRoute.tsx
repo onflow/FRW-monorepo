@@ -11,6 +11,7 @@ import Enable from '../views/Enable';
 
 import Dashboard from './Dashboard';
 import Header from './Dashboard/Header';
+import ManageToken from './ManageToken';
 import CollectionDetail from './NFT/CollectionDetail';
 import Detail from './NFT/Detail';
 import AddList from './NFT/NFTList/AddList';
@@ -26,6 +27,8 @@ import Account from './Setting/Account';
 import AddressBook from './Setting/AddressBook';
 import ManageBackups from './Setting/Backups';
 import BackupsPassword from './Setting/Backups/BackupsPassword';
+import ChangePassword from './Setting/change-password';
+import CurrencySettings from './Setting/Currency';
 import DeveloperMode from './Setting/DeveloperMode/DeveloperMode';
 import DeviceInfo from './Setting/Devices/DeviceInfo';
 import KeyList from './Setting/KeyList/KeyList';
@@ -37,7 +40,6 @@ import Keydetail from './Setting/privatekey/Keydetail';
 import PrivateKeyPassword from './Setting/privatekey/Privatekeypassword';
 import RecoveryPhasesDetail from './Setting/recoveryphase/Recoveryphasedetail';
 import Recoveryphrasepassword from './Setting/recoveryphase/Recoveryphrasepassword';
-import Resetpwd from './Setting/Resetpwd';
 import Security from './Setting/Security';
 import Settingone from './Setting/Settingone';
 import Switchaccount from './Setting/Switchaccount';
@@ -143,9 +145,7 @@ const InnerRoute = (props: RouteComponentProps) => {
             <PrivateRoute path={`${props.match.url}/nested/recoveryphrasedetail`}>
               <RecoveryPhasesDetail />
             </PrivateRoute>
-            <PrivateRoute path={`${props.match.url}/nested/resetpwd`}>
-              <Resetpwd />
-            </PrivateRoute>
+
             <PrivateRoute
               path={`${props.match.url}/nested/collectiondetail/:collection_address_name`}
             >
@@ -193,6 +193,10 @@ const InnerRoute = (props: RouteComponentProps) => {
             <PrivateRoute path={`${props.match.url}/tokenlist`}>
               <TokenList />
             </PrivateRoute>
+
+            <PrivateRoute path={`${props.match.url}/managetoken`}>
+              <ManageToken />
+            </PrivateRoute>
             <PrivateRoute path={`${props.match.url}/addcustomevm`}>
               <AddCustomEvmToken />
             </PrivateRoute>
@@ -204,6 +208,9 @@ const InnerRoute = (props: RouteComponentProps) => {
             </PrivateRoute>
             <PrivateRoute path={`${props.match.url}/setting/about`}>
               <About />
+            </PrivateRoute>
+            <PrivateRoute path={`${props.match.url}/setting/changepassword`}>
+              <ChangePassword />
             </PrivateRoute>
             <PrivateRoute path={`${props.match.url}/setting/linked`}>
               <Linked />
@@ -229,6 +236,9 @@ const InnerRoute = (props: RouteComponentProps) => {
             </PrivateRoute>
             <PrivateRoute path={`${props.match.url}/setting/account`}>
               <Account />
+            </PrivateRoute>
+            <PrivateRoute path={`${props.match.url}/setting/currency`}>
+              <CurrencySettings />
             </PrivateRoute>
             <PrivateRoute path={`${props.match.url}/setting/backups`} exact>
               <ManageBackups />

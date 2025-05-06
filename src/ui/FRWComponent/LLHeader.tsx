@@ -1,7 +1,6 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import HelpOutlineRoundedIcon from '@mui/icons-material/HelpOutlineRounded';
 import { Grid, IconButton, Typography, Tooltip } from '@mui/material';
-import { styled } from '@mui/material/styles';
 import React from 'react';
 import { useHistory } from 'react-router-dom';
 

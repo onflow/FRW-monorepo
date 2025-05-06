@@ -86,7 +86,7 @@ const ManageBackups = () => {
   }, [setHasBackup, wallet]);
 
   const checkPermissions = useCallback(async () => {
-    const permissions = await wallet.hasGooglePremission();
+    const permissions = await wallet.hasGooglePermission();
     setHasPermission(permissions);
     if (permissions) {
       await checkBackup();
@@ -150,6 +150,9 @@ const ManageBackups = () => {
           // Set the state to true to prevent multiple syncs
           return syncBackup();
         }
+      })
+      .catch((err) => {
+        console.error('Error checking permissions or syncing backup:', err);
       })
       .finally(() => {
         // Set the loading to false after checking permissions and syncing backup is complete

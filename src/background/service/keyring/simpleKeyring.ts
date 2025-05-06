@@ -71,6 +71,11 @@ export class SimpleKeyring {
     this.wallets.splice(index, 1);
   }
 
+  async removeAllAccounts() {
+    this.wallets = [];
+    return true;
+  }
+
   private getWalletByAddress(address: string): Wallet {
     const normalizedAddress = normalizeAddress(address);
     const privateKey = this.wallets.find(

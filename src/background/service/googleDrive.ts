@@ -1,4 +1,5 @@
 import aesjs from 'aes-js';
+import * as bip39 from 'bip39';
 
 interface GoogleDriveFileModel {
   kind: string;
@@ -37,12 +38,12 @@ class GoogleDriveService {
     return accounts.includes(username);
   };
 
-  hasGooglePremission = async (): Promise<boolean> => {
+  hasGooglePermission = async (): Promise<boolean> => {
     try {
       const token = await this.getAuthTokenWrapper(false);
       return token !== undefined && token !== null;
     } catch (err) {
-      console.error(err);
+      console.error('hasGooglePermission - not authorized', err);
       return false;
     }
   };
@@ -345,6 +346,90 @@ class GoogleDriveService {
         }
       });
     });
+  };
+
+  /**
+   * Test if a profile backup can be decrypted with the given password
+   * @param username - The username of the profile to test
+   * @param password - The password to test
+   * @returns Promise<boolean> - Whether decryption was successful
+   */
+  testProfileBackupDecryption = async (username: string, password: string): Promise<boolean> => {
+    try {
+      const backups = await this.loadBackup();
+      const backup = backups.find((b) => b.username === username);
+
+      if (!backup) {
+        return false;
+      }
+
+      const decryptedMnemonic = this.decrypt(backup.data, password);
+      return bip39.validateMnemonic(decryptedMnemonic);
+    } catch (_) {
+      // Silently handle decryption errors
+      return false;
+    }
+  };
+
+  /**
+   * Set new password for specific profile backups
+   * @param oldPassword - The current password
+   * @param newPassword - The new password to set
+   * @param profileUsernames - Array of profile usernames to update passwords for
+   * @returns Promise<boolean> - Success status
+   */
+  setNewPassword = async (
+    oldPassword: string,
+    newPassword: string,
+    profileUsernames: string[]
+  ): Promise<boolean> => {
+    try {
+      if (!(await this.hasGooglePermission())) {
+        throw new Error('Not authorized to update password on google backups');
+      }
+
+      // Load all backups
+      const backups: DriveItem[] = await this.loadBackup();
+
+      if (backups.length === 0 || !this.fileId) {
+        return false;
+      }
+
+      // Create a new array with updated backups
+      const updatedBackups = backups.map((item) => {
+        // Only update backups for specified usernames
+        if (profileUsernames.includes(item.username)) {
+          try {
+            // Verify the old password and decrypt
+            const decryptedMnemonic = this.decrypt(item.data, oldPassword);
+            if (!bip39.validateMnemonic(decryptedMnemonic)) {
+              throw new Error(`Decrypted mnemonic is invalid for ${item.username}`);
+            }
+
+            // Re-encrypt with new password
+            return {
+              ...item,
+              data: this.encrypt(decryptedMnemonic, newPassword),
+              time: new Date().getTime().toString(),
+            };
+          } catch (err) {
+            console.error(`Failed to update password for profile backup: ${item.username}`, err);
+            throw new Error(`Failed to update password for profile backup: ${item.username}`);
+          }
+        }
+
+        // Return unchanged for non-selected backups
+        return item;
+      });
+
+      // Atomic approach - all succeeded, now update the file
+      const updateContent = this.encrypt(JSON.stringify(updatedBackups), this.AES_KEY);
+      await this.updateFile(this.fileId, updateContent, false);
+      return true;
+    } catch (err) {
+      console.error('Failed to update password on selected profile backups:', err);
+      throw new Error('Failed to update password on selected profile backups');
+    }
   };
 }
 

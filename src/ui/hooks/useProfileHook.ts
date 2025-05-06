@@ -55,19 +55,7 @@ const INITIAL_ACCOUNT = {
 };
 
 export const useProfiles = () => {
-  const profilesRef = useRef({
-    initialized: false,
-    loading: false,
-  });
-
-  const wallet = useWallet();
-  const walletLoaded = useWalletLoaded();
   const { network } = useNetwork();
-
-  // Replace zustand store with useState hooks
-  const [initialStart, setInitialStart] = useState(true);
-  const [loggedInAccounts, setLoggedInAccounts] = useState<WalletAccount[]>([]);
-  const [currentWalletIndex, setCurrentWalletIndex] = useState(0);
 
   const currentId = useCurrentId();
   const profileIds = useKeyringIds();
@@ -90,6 +78,9 @@ export const useProfiles = () => {
   const parentWallet =
     walletList.find((wallet) => wallet.address === activeAccounts?.parentAddress) ?? INITIAL_WALLET;
 
+  const parentWalletIndex = walletList.findIndex(
+    (wallet) => wallet.address === activeAccounts?.currentAddress
+  );
   // Wallets other than the parent wallet
   const otherAccounts = walletList.filter((wallet) => wallet.id !== parentWallet.id);
 
@@ -130,13 +121,15 @@ export const useProfiles = () => {
     }
   }, [activeAccountType, evmAccount, childAccounts, parentWallet, activeAccounts?.currentAddress]);
 
+  const canMoveToChild =
+    activeAccountType === 'main' && (evmAccount || (childAccounts && childAccounts?.length > 0));
+
   const clearProfileData = () => {};
   const fetchProfileData = () => {};
 
   return {
     fetchProfileData,
     clearProfileData,
-    initialStart,
     currentWallet,
     mainAddress,
     evmAddress,
@@ -144,16 +137,16 @@ export const useProfiles = () => {
     evmWallet,
     userInfo,
     otherAccounts,
-    loggedInAccounts,
     walletList,
     currentBalance,
     parentWallet,
-    currentWalletIndex,
+    parentWalletIndex,
     evmLoading,
     mainAddressLoading,
     profileIds,
     activeAccountType,
     noAddress,
     registerStatus,
+    canMoveToChild,
   };
 };

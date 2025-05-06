@@ -14,16 +14,13 @@ import {
   Skeleton,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 import { useHistory } from 'react-router-dom';
 
 import type { UserInfoResponse } from '@/shared/types/network-types';
 import {
-  type LoggedInAccount,
-  type LoggedInAccountWithIndex,
   type ActiveChildType_depreciated,
   type WalletAccount,
-  type ChildAccountMap,
   type MainAccount,
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
@@ -31,6 +28,7 @@ import { useAccountBalance } from '@/ui/hooks/use-account-hooks';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import importIcon from 'ui/FRWAssets/svg/importIcon.svg';
 import popLock from 'ui/FRWAssets/svg/popLock.svg';
+import resetArrow from 'ui/FRWAssets/svg/resetarrow.svg';
 import { useWallet } from 'ui/utils';
 
 import rightarrow from '../../../FRWAssets/svg/rightarrow.svg';
@@ -276,6 +274,7 @@ const MenuDrawer = (props: MenuDrawerProps) => {
                 }
               >
                 <ListItemButton
+                  data-testid={`evm-account-${props.evmWallet.address}`}
                   sx={{
                     mb: 0,
                     display: 'flex',
@@ -371,6 +370,7 @@ const MenuDrawer = (props: MenuDrawerProps) => {
                   }
                 >
                   <ListItemButton
+                    data-testid={`child-account-${childAccount.address}`}
                     sx={{
                       mb: 0,
                       padding: '0',

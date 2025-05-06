@@ -1,6 +1,6 @@
 import { type TokenInfo } from 'flow-native-token-registry';
 
-import { type CoinItem } from './coin-types';
+import { type ExtendedTokenInfo, type CoinItem } from './coin-types';
 import { type Contact } from './network-types';
 import { type WalletAddress } from './wallet-types';
 
@@ -33,11 +33,8 @@ export type TransactionState = {
   // the contact of the to address (if it exists)
   toContact?: Contact;
 
-  // the token we've selected for the transaction
-  selectedToken: TokenInfo;
-
-  // the coin info of the selected token
-  coinInfo: CoinItem;
+  // consolidated token info for the selected token
+  tokenInfo: ExtendedTokenInfo;
 
   // the type of token we're sending
   tokenType: TokenType;

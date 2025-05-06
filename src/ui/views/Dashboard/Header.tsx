@@ -65,7 +65,7 @@ const Header = ({ _loading = false }) => {
     mainAddress,
     currentWallet,
     evmWallet,
-    currentWalletIndex,
+    parentWalletIndex: currentWalletIndex,
     childAccounts,
     walletList,
     evmLoading,
@@ -301,7 +301,7 @@ const Header = ({ _loading = false }) => {
     return (
       <Toolbar sx={{ height: '56px', width: '100%', display: 'flex', px: '0px' }}>
         <Box sx={{ flex: '0 0 68px', position: 'relative', display: 'flex', alignItems: 'center' }}>
-          {(isPending || registerStatus) && (
+          {isPending && (
             <CircularProgress
               size={'28px'}
               sx={{
@@ -427,6 +427,7 @@ const Header = ({ _loading = false }) => {
                   sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
                 >
                   <Typography
+                    data-testid="account-name"
                     variant="overline"
                     color="text"
                     align="center"
@@ -445,6 +446,7 @@ const Header = ({ _loading = false }) => {
                   </Typography>
                   <Box sx={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
                     <Typography
+                      data-testid="account-address"
                       variant="caption"
                       color="text.secondary"
                       sx={{ textTransform: 'none' }}

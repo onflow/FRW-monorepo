@@ -2,14 +2,19 @@ import { Switch, switchClasses } from '@mui/base/Switch';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import { Typography, IconButton, Box, Avatar } from '@mui/material';
+import Button from '@mui/material/Button';
 import { styled } from '@mui/system';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
+import { openIndexPage } from '@/background/webapi/tab';
+import { getCurrentProfileId } from '@/shared/utils/current-id';
+import RemoveProfileModal from '@/ui/FRWComponent/PopupModal/remove-profile-modal';
+import ResetModal from '@/ui/FRWComponent/PopupModal/resetModal';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from 'ui/utils';
 
 import EditAccount from './EditAccount';
-
 const orange = {
   500: '#41CC5D',
 };
@@ -91,17 +96,28 @@ const Root = styled('span')(
 const AccountSettings = () => {
   const history = useHistory();
   const wallet = useWallet();
-  const [username, setUsername] = useState('');
-  const [nickname, setNickname] = useState('');
-  const [isEdit, setEdit] = useState(false);
-  const [avatar, setAvatar] = useState('');
-  const [modeAnonymous, setModeAnonymous] = useState(false);
+  const { clearProfileData, profileIds, userInfo, walletList } = useProfiles();
 
-  const getUsername = useCallback(async () => {
-    const userInfo = await wallet.getUserInfo(false);
-    setUsername(userInfo.username);
-    setNickname(userInfo.nickname);
-    setAvatar(userInfo.avatar);
+  const [username, setUsername] = useState(userInfo?.username || '');
+  const [nickname, setNickname] = useState(userInfo?.nickname || '');
+  const [avatar, setAvatar] = useState(userInfo?.avatar || '');
+  const [isEdit, setEdit] = useState(false);
+
+  const [modeAnonymous, setModeAnonymous] = useState(userInfo?.private === 1);
+  const [showRemoveConfirmModal, setShowRemoveConfirmModal] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
+  const [removeError, setRemoveError] = useState('');
+  const [showResetModal, setShowResetModal] = useState(false);
+
+  const loadAccountData = useCallback(async () => {
+    try {
+      const userInfo = await wallet.getUserInfo(false);
+      setUsername(userInfo.username);
+      setNickname(userInfo.nickname);
+      setAvatar(userInfo.avatar);
+    } catch (error) {
+      console.error('Failed to load account data:', error);
+    }
   }, [wallet]);
 
   const toggleEdit = () => {
@@ -109,22 +125,20 @@ const AccountSettings = () => {
   };
 
   const getAnonymousMode = useCallback(async () => {
-    // const domain = await wallet.fetchUserDomain();
-    // if (domain) {
-    //   setDomain(domain);
-    // } else {
-    //   setShowPop(true);
-    // }
-    const userInfo = await wallet.fetchUserInfo();
-    if (userInfo.private === 1) {
-      setModeAnonymous(false);
-    } else {
-      setModeAnonymous(true);
+    try {
+      const userInfo = await wallet.getUserInfo(false);
+      if (userInfo.private === 1) {
+        setModeAnonymous(false);
+      } else {
+        setModeAnonymous(true);
+      }
+    } catch (error) {
+      console.error('Failed to get anonymous mode:', error);
     }
   }, [wallet]);
 
   const updatePreference = useCallback(
-    async (modeAnonymous) => {
+    async (modeAnonymous: boolean) => {
       if (modeAnonymous) {
         await wallet.updateProfilePreference(2);
       } else {
@@ -144,10 +158,68 @@ const AccountSettings = () => {
     await updatePreference(!modeAnonymous);
   }, [updatePreference, modeAnonymous]);
 
+  const handleOpenRemoveModal = () => {
+    setRemoveError('');
+    setShowRemoveConfirmModal(true);
+  };
+
+  const handleCloseRemoveModal = () => {
+    setShowRemoveConfirmModal(false);
+    setRemoveError('');
+  };
+
+  const handleConfirmRemove = async (password: string) => {
+    if (!walletList) {
+      console.error('Cannot remove profile: No active account details found.');
+      setRemoveError('Account details not loaded for removal.');
+      return;
+    }
+
+    setIsRemoving(true);
+    setRemoveError('');
+
+    try {
+      // Get the current profile ID
+      const profileId = await getCurrentProfileId();
+
+      await wallet.removeProfile(password, profileId);
+
+      handleCloseRemoveModal();
+      if (profileIds && profileIds.length > 1) {
+        wallet.lockWallet().then(() => {
+          clearProfileData();
+          history.push('/unlock');
+        });
+      } else {
+        wallet.signOutWallet().then(() => {
+          clearProfileData();
+          openIndexPage('welcome?add=true');
+        });
+      }
+    } catch (error) {
+      console.error('Failed to remove profile:', error);
+      if (error.message && error.message.includes('Incorrect password')) {
+        setRemoveError('Incorrect password. Please try again.');
+      } else {
+        setRemoveError(error.message || 'An unexpected error occurred during profile removal.');
+      }
+    } finally {
+      setIsRemoving(false);
+    }
+  };
+
+  const handleResetWallet = () => {
+    wallet.resetPwd();
+  };
+
   useEffect(() => {
-    getAnonymousMode();
-    getUsername();
-  }, [getAnonymousMode, getUsername]);
+    try {
+      getAnonymousMode();
+      loadAccountData();
+    } catch (error) {
+      console.error('Failed to load account data:', error);
+    }
+  }, [getAnonymousMode, loadAccountData]);
 
   return (
     <div className="page">
@@ -160,12 +232,8 @@ const AccountSettings = () => {
           px: '16px',
         }}
       >
-        <IconButton>
-          <ArrowBackIcon
-            fontSize="medium"
-            sx={{ color: 'icon.navi', cursor: 'pointer' }}
-            onClick={() => history.push('/dashboard')}
-          />
+        <IconButton onClick={() => history.push('/dashboard/setting')}>
+          <ArrowBackIcon fontSize="medium" sx={{ color: 'icon.navi', cursor: 'pointer' }} />
         </IconButton>
         <Typography
           variant="h1"
@@ -177,14 +245,12 @@ const AccountSettings = () => {
         >
           {chrome.i18n.getMessage('Profile')}
         </Typography>
-        <IconButton>
-          <EditRoundedIcon
-            fontSize="medium"
-            sx={{ color: 'icon.navi', cursor: 'pointer' }}
-            onClick={() => {
-              toggleEdit();
-            }}
-          />
+        <IconButton
+          onClick={() => {
+            toggleEdit();
+          }}
+        >
+          <EditRoundedIcon fontSize="medium" sx={{ color: 'icon.navi', cursor: 'pointer' }} />
         </IconButton>
       </Box>
       <Box
@@ -264,75 +330,60 @@ const AccountSettings = () => {
               }}
             />
           </Box>
-          {/* {domain && <Box sx={{
-            backgroundColor: '#282828',
-            width: '100%',
-            marginTop:'10px',
-            display: 'flex',
-            padding:'20px 24px',
-            justifyContent: 'space-between',
-            borderRadius: '16px',
-          }}>
-            <Box sx={{display: 'flex', flexDirection: 'column'}}>
-              <Typography variant='body1' color='primary.contrastText' style={{weight: 600}}>Lilico Domain</Typography>
-              <Typography variant="caption" color='text.secondary' sx={{weight: 400, fontSize: '12px'}}>
-                {username}.meow
-              </Typography>
-            </Box>
-            <CheckCircleIcon
-              size={24}
-              color={'#41CC5D'}
-            />
-          </Box>
-          } */}
-          {/* {showPop &&
-            <Box sx={{display:'flex',justifyContent:'space-between',
-            //  width:'100%',
-              alignItems: 'center',
-              border: '1px solid #FFFFFF',
-              borderRadius:'12px',
-              padding:'0px 15px 0px 0px',
-              marginTop: '16px',
-              backgroundImage:`url(${bannerbackground})`,
-              backgroundSize: '370px, 60px'
 
+          <Box
+            sx={{
+              backgroundColor: '#282828',
+              display: 'flex',
+              padding: '20px 24px',
+              justifyContent: 'center',
+              borderRadius: '16px',
+              marginTop: '8px',
             }}
+          >
+            <Button
+              variant="contained"
+              disableElevation
+              color="error"
+              onClick={handleOpenRemoveModal}
+              sx={{
+                width: '100% !important',
+                height: '48px',
+                borderRadius: '12px',
+                textTransform: 'none',
+              }}
             >
-              <Box
-                sx={{
-                  width: '254px',
-                  height: '46px',
-                  // backgroundColor:'#333333',
-                  // borderRadius:'12px',
-                  display:'flex',
-                  alignItems: 'center',
-                  paddingLeft:'16px'
-                }}
-              >
-                <Typography
-                  variant="body2"
-                  align="left"
-                  paddingTop="18px"
-                  paddingBottom="15px"
-                  color="#FFFFFF"
-                  fontSize="12px"
-                >
-                  {chrome.i18n.getMessage('Claim__for__your')}
-                  <Typography
-                    display="inline"
-                    sx={{
-                      fontWeight: 'bold',
-                      fontSize:'12px',
-                      color:'#FFFFFF'
-                    }}
-                    variant="body2"
-                  >
-                    {chrome.i18n.getMessage('FREE')}
-                  </Typography>{' '}{chrome.i18n.getMessage('Lilico__domain')}
-                </Typography>
-              </Box>
-            </Box>
-          } */}
+              <Typography color="text">{chrome.i18n.getMessage('Remove__Profile')}</Typography>
+            </Button>
+          </Box>
+
+          <Box
+            sx={{
+              backgroundColor: '#282828',
+              display: 'flex',
+              padding: '20px 24px',
+              justifyContent: 'center',
+              borderRadius: '16px',
+              marginTop: '8px',
+              marginBottom: '16px',
+            }}
+          >
+            <Button
+              variant="contained"
+              disableElevation
+              color="error"
+              onClick={() => setShowResetModal(true)}
+              sx={{
+                width: '100% !important',
+                height: '48px',
+                borderRadius: '12px',
+                textTransform: 'none',
+              }}
+            >
+              <Typography color="text">{chrome.i18n.getMessage('Reset_Wallet')}</Typography>
+            </Button>
+          </Box>
+
           <EditAccount
             isEdit={isEdit}
             handleCloseIconClicked={() => toggleEdit()}
@@ -347,6 +398,24 @@ const AccountSettings = () => {
           />
         </Box>
       </Box>
+
+      <RemoveProfileModal
+        isOpen={showRemoveConfirmModal}
+        onClose={handleCloseRemoveModal}
+        onConfirm={handleConfirmRemove}
+        isRemoving={isRemoving}
+        error={removeError}
+        profileName={nickname}
+        profileUsername={username}
+      />
+
+      <ResetModal
+        setShowAction={setShowResetModal}
+        isOpen={showResetModal}
+        onOpenChange={handleResetWallet}
+        errorName={chrome.i18n.getMessage('Confirm_to_reset_Wallet')}
+        errorMessage={chrome.i18n.getMessage('This_action_will_remove')}
+      />
     </div>
   );
 };
