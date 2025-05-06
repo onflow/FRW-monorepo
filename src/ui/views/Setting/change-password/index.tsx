@@ -27,6 +27,7 @@ import { useWallet } from '@/ui/utils';
 
 import { GoogleWarningDialog } from './google-warning';
 import { PasswordIndicator } from './password-indicator';
+import { ProfileBackupSelectionDialog } from './profile-backup-selection';
 
 const useStyles = makeStyles(() => ({
   customInputLabel: {
@@ -97,7 +98,10 @@ const ChangePassword = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [error, setError] = useState('');
+  const [statusMessage, setStatusMessage] = useState('');
   const [showGooglePermissionDialog, setShowGooglePermissionDialog] = useState(false);
+  const [showProfileBackupDialog, setShowProfileBackupDialog] = useState(false);
+  // No need to maintain selectedProfiles in state since we immediately use them
   const history = useHistory();
 
   const verify = useCallback(async () => {
@@ -183,6 +187,7 @@ const ChangePassword = () => {
       try {
         setIsResetting(true);
         setError('');
+        setStatusMessage(chrome.i18n.getMessage('Changing_password') || 'Changing password...');
 
         const success = await wallet.changePassword(
           confirmCurrentPassword,
@@ -191,6 +196,10 @@ const ChangePassword = () => {
         );
 
         if (success) {
+          setStatusMessage(
+            chrome.i18n.getMessage('Password_changed_successfully_Locking_wallet') ||
+              'Password changed successfully! Locking wallet...'
+          );
           await wallet
             .lockWallet()
             .then(() => {
@@ -203,6 +212,7 @@ const ChangePassword = () => {
             })
             .finally(() => {
               setIsResetting(false);
+              setStatusMessage('');
             });
         } else {
           setError(chrome.i18n.getMessage('Oops__unexpected__error'));
@@ -212,6 +222,68 @@ const ChangePassword = () => {
         setError(error.message);
       } finally {
         setIsResetting(false);
+        if (!error) {
+          setStatusMessage('');
+        }
+      }
+    },
+    [confirmCurrentPassword, confirmPassword, wallet, clearProfileData, history, error]
+  );
+
+  const changePasswordWithBackups = useCallback(
+    async (profileUsernames: string[]) => {
+      try {
+        setIsResetting(true);
+        setError('');
+        setStatusMessage(
+          chrome.i18n.getMessage('Updating_backups_and_changing_password') ||
+            'Updating backups and changing password...'
+        );
+
+        const success = await wallet.changePasswordWithBackups(
+          confirmCurrentPassword,
+          confirmPassword,
+          profileUsernames,
+          false // not ignoring backups
+        );
+
+        if (success) {
+          setStatusMessage(
+            chrome.i18n.getMessage('Password_changed_successfully_Locking_wallet') ||
+              'Password changed successfully! Locking wallet...'
+          );
+
+          await wallet
+            .lockWallet()
+            .then(() => {
+              clearProfileData();
+              history.push('/unlock');
+            })
+            .catch((error) => {
+              console.error('Error locking wallet:', error);
+              setError(chrome.i18n.getMessage('Oops__unexpected__error'));
+            });
+        } else {
+          setError(chrome.i18n.getMessage('Oops__unexpected__error'));
+        }
+      } catch (error) {
+        console.error('Error changing password:', error);
+
+        // Provide more specific error messages based on the error
+        if (error.message.includes('backup')) {
+          setError(
+            `${chrome.i18n.getMessage('Failed_to_update_Google_Drive_backups') || 'Failed to update Google Drive backups'}: ${error.message}`
+          );
+        } else if (error.message.includes('wallet password')) {
+          setError(
+            `${chrome.i18n.getMessage('Failed_to_change_wallet_password') || 'Failed to change wallet password'}: ${error.message}`
+          );
+        } else {
+          setError(error.message);
+        }
+      } finally {
+        setIsResetting(false);
+        setStatusMessage('');
       }
     },
     [confirmCurrentPassword, confirmPassword, wallet, clearProfileData, history]
@@ -220,13 +292,25 @@ const ChangePassword = () => {
   const handleChangePasswordClick = useCallback(async () => {
     // Check if the user has google permission
     // We need to access backups so we can re-encrypt them
-    const hasGooglePremission = await wallet.hasGooglePermission();
-    if (hasGooglePremission) {
-      changePassword();
+    const hasGooglePermission = await wallet.hasGooglePermission();
+    if (hasGooglePermission) {
+      // Show the profile backup selection dialog
+      setShowProfileBackupDialog(true);
     } else {
       setShowGooglePermissionDialog(true);
     }
-  }, [changePassword, wallet]);
+  }, [wallet]);
+
+  // Handler for profile selection
+  const handleProfileSelection = useCallback(
+    (selectedUsernames: string[]) => {
+      setShowProfileBackupDialog(false);
+
+      // Proceed with password change, including selected profiles
+      changePasswordWithBackups(selectedUsernames);
+    },
+    [changePasswordWithBackups]
+  );
 
   useEffect(() => {
     if (password.length > 7) {
@@ -506,6 +590,44 @@ const ChangePassword = () => {
           onProceedAnyway={() => changePassword(true)}
           onError={setError}
         />
+
+        <ProfileBackupSelectionDialog
+          open={showProfileBackupDialog}
+          onClose={() => setShowProfileBackupDialog(false)}
+          onConfirm={handleProfileSelection}
+          currentPassword={confirmCurrentPassword}
+        />
+
+        {statusMessage && (
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: '0px',
+              left: '0',
+              right: '0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              padding: '10px 16px',
+              backgroundColor: '#38B000',
+              color: 'white',
+              boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.2)',
+              zIndex: 1000,
+            }}
+          >
+            <CircularProgress size={16} color="inherit" />
+            <Typography
+              sx={{
+                color: 'white',
+                fontSize: '14px',
+                fontWeight: '600',
+              }}
+            >
+              {statusMessage}
+            </Typography>
+          </Box>
+        )}
       </Box>
     </div>
   );

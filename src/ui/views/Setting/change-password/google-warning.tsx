@@ -37,7 +37,17 @@ export const GoogleWarningDialog = ({
   const handleProceedAnyway = async () => {
     onClose(true);
 
-    return onProceedAnyway();
+    try {
+      // Proceed with password change, explicitly ignoring backups (true flag)
+      return onProceedAnyway();
+    } catch (error) {
+      console.error('Error changing password:', error);
+      onError(
+        chrome.i18n.getMessage('Error_changing_password')
+          ? `${chrome.i18n.getMessage('Error_changing_password')}: ${error.message}`
+          : `Error changing password: ${error.message}`
+      );
+    }
   };
   return (
     <CustomDialog open={open} onClose={onClose}>

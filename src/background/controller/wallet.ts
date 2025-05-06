@@ -48,6 +48,7 @@ import {
   type WalletAddress,
   type Currency,
   type ActiveAccountType,
+  type ProfileBackupStatus,
 } from '@/shared/types/wallet-types';
 import {
   ensureEvmAddressPrefix,
@@ -3634,6 +3635,7 @@ export class WalletController extends BaseController {
       mixpanelTrack.track('password_updated', {
         address: (await this.getCurrentAddress()) || '',
         success: true,
+        profilesUpdated: 0,
       });
 
       return true;
@@ -3644,6 +3646,151 @@ export class WalletController extends BaseController {
         error: error.message,
       });
       return false;
+    }
+  };
+
+  /**
+   * Get active profiles
+   * @returns Promise<Array<UserInfoResponse>> - List of active profiles
+   */
+  getActiveProfiles = async (): Promise<Array<UserInfoResponse>> => {
+    // Use userInfoService to get the stored user list
+    return await userInfoService.loadStoredUserList();
+  };
+
+  /**
+   * Get profile backup statuses for password change operation
+   * @param currentPassword - The current password to test decryption
+   * @returns Promise<ProfileBackupStatus[]> - Array of profile backup statuses
+   */
+  getProfileBackupStatuses = async (currentPassword: string): Promise<ProfileBackupStatus[]> => {
+    try {
+      // Get all backups from Google Drive
+      const backupLists = await googleDriveService.loadBackupAccountLists();
+      // Get all active profiles
+      const activeProfiles = await userInfoService.loadStoredUserList();
+
+      // Test decryption for each backup
+      const backupStatuses: ProfileBackupStatus[] = await Promise.all(
+        backupLists.map(async (backup) => {
+          const matchingProfile = activeProfiles.find(
+            (profile) => profile.username === backup.username
+          );
+          const isActive = !!matchingProfile;
+          let canDecrypt = false;
+
+          try {
+            // Attempt to decrypt with current password
+            canDecrypt = await googleDriveService.testProfileBackupDecryption(
+              backup.username,
+              currentPassword
+            );
+          } catch (err) {
+            console.error(`Cannot decrypt backup for ${backup.username}`, err);
+          }
+
+          return {
+            username: backup.username,
+            uid: backup.uid,
+            id: matchingProfile?.id || '',
+            isActive,
+            isBackedUp: true,
+            canDecrypt,
+            isSelected: canDecrypt, // Pre-select those we can decrypt
+          };
+        })
+      );
+
+      // Add active profiles that aren't backed up
+      activeProfiles.forEach((profile) => {
+        if (!backupStatuses.some((status) => status.username === profile.username)) {
+          backupStatuses.push({
+            username: profile.username,
+            uid: null,
+            id: profile.id,
+            isActive: true,
+            isBackedUp: false,
+            canDecrypt: false,
+            isSelected: false,
+          });
+        }
+      });
+
+      return backupStatuses;
+    } catch (err) {
+      console.error('Failed to get profile backup statuses:', err);
+      throw new Error('Failed to get profile backup statuses');
+    }
+  };
+
+  /**
+   * Change password with selective profile backup updates
+   * @param currentPassword - The current password
+   * @param newPassword - The new password
+   * @param selectedProfiles - List of profile usernames to update backups for
+   * @param ignoreBackups - Whether to ignore backups (for users without Google permission)
+   * @returns Promise<boolean> - Success status
+   */
+  changePasswordWithBackups = async (
+    currentPassword: string,
+    newPassword: string,
+    selectedProfiles: string[] = [],
+    ignoreBackups: boolean = false
+  ): Promise<boolean> => {
+    try {
+      // If ignoring backups, just change the wallet password
+      if (ignoreBackups) {
+        return await keyringService.changePassword(currentPassword, newPassword);
+      }
+
+      // Handle Google backups if we have Google permission
+      const hasGooglePermission = await googleDriveService.hasGooglePermission();
+
+      if (hasGooglePermission && selectedProfiles.length > 0) {
+        // First update the Google backups
+        await googleDriveService.setNewPasswordForProfiles(
+          currentPassword,
+          newPassword,
+          selectedProfiles
+        );
+
+        // Only change the keyring password if the backup update succeeds
+        const success = await keyringService.changePassword(currentPassword, newPassword);
+
+        if (!success) {
+          throw new Error('Failed to change wallet password after updating backups');
+        }
+
+        // Track successful password change
+        mixpanelTrack.track('password_updated', {
+          address: (await this.getCurrentAddress()) || '',
+          success: true,
+          profilesUpdated: selectedProfiles.length,
+        });
+
+        return true;
+      } else {
+        // No backups to update, just change the wallet password
+        const success = await keyringService.changePassword(currentPassword, newPassword);
+
+        if (success) {
+          // Track successful password change
+          mixpanelTrack.track('password_updated', {
+            address: (await this.getCurrentAddress()) || '',
+            success: true,
+            profilesUpdated: 0,
+          });
+        }
+
+        return success;
+      }
+    } catch (err) {
+      console.error('Error changing password with backups:', err);
+      mixpanelTrack.track('password_update_failed', {
+        address: (await this.getCurrentAddress()) || '',
+        error: err.message,
+      });
+      throw err;
     }
   };
 }

@@ -32,3 +32,5 @@ flow.json
 coverage
 .github-data
 playwright/.auth
+
+**/.claude/settings.local.json
