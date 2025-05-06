@@ -1,39 +1,32 @@
-import { Warning } from '@mui/icons-material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import {
+  Alert,
+  Button,
+  CircularProgress,
   FormGroup,
-  LinearProgress,
   IconButton,
   Input,
   InputAdornment,
-  Typography,
-  Button,
+  LinearProgress,
   Snackbar,
-  Alert,
-  CircularProgress,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  Stack,
+  Typography,
 } from '@mui/material';
 import Box from '@mui/material/Box';
 import { makeStyles } from '@mui/styles';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import zxcvbn from 'zxcvbn';
 
 import CheckCircleIcon from '@/components/iconfont/IconCheckmark';
 import CancelIcon from '@/components/iconfont/IconClose';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
-import { CustomDialog } from '@/ui/FRWComponent/custom-dialog';
 import { LLHeader } from '@/ui/FRWComponent/LLHeader';
-import { LLPrimaryButton } from '@/ui/FRWComponent/LLPrimaryButton';
-import { LLSecondaryButton } from '@/ui/FRWComponent/LLSecondaryButton';
-import { LLWarningButton } from '@/ui/FRWComponent/LLWarningButton';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from '@/ui/utils';
+
+import { GoogleWarningDialog } from './google-warning';
+import { PasswordIndicator } from './password-indicator';
 
 const useStyles = makeStyles(() => ({
   customInputLabel: {
@@ -87,108 +80,6 @@ const useStyles = makeStyles(() => ({
     },
   },
 }));
-
-const PasswordIndicator = (props) => {
-  const score = zxcvbn(props.value).score;
-  const precentage = ((score + 1) / 5) * 100;
-
-  const level = (score) => {
-    switch (score) {
-      case 0:
-      case 1:
-        return { text: 'Weak', color: 'primary' };
-      case 2:
-        return { text: 'Good', color: 'testnet' };
-      case 3:
-        return { text: 'Great', color: 'success' };
-      case 4:
-        return { text: 'Strong', color: 'success' };
-      default:
-        return { text: 'Unknow', color: 'error' };
-    }
-  };
-
-  return (
-    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-      <Box sx={{ width: '72px', mr: 1 }}>
-        <LinearProgress
-          variant="determinate"
-          // @ts-expect-error level function returned expected value
-          color={level(score).color}
-          sx={{ height: '12px', width: '72px', borderRadius: '12px' }}
-          value={precentage}
-        />
-      </Box>
-      <Box sx={{ minWidth: 35 }}>
-        <Typography variant="body2" color="text.secondary">
-          {level(score).text}
-        </Typography>
-      </Box>
-    </Box>
-  );
-};
-
-const GoogleWarningDialog = ({
-  open,
-  onClose,
-  onProceedAnyway,
-  onError,
-}: {
-  open: boolean;
-  onClose: (close: boolean) => void;
-  onProceedAnyway: () => void;
-  onError: (error: string) => void;
-}) => {
-  const wallet = useWallet();
-  const handleCancel = () => {
-    onClose(false);
-  };
-  const handleConnectToGoogle = async () => {
-    // This will ask the user to connect to Google Drive
-    onClose(false);
-    try {
-      return wallet.loadBackupAccounts();
-    } catch (error) {
-      console.error('Error loading backup accounts:', error);
-      onError('Error loading backup accounts');
-    }
-  };
-
-  const handleProceedAnyway = async () => {
-    onClose(true);
-
-    return onProceedAnyway();
-  };
-  return (
-    <CustomDialog open={open} onClose={onClose}>
-      <DialogTitle>
-        <Warning fontSize="medium" /> {chrome.i18n.getMessage('Google_Drive_Not_Connected')}
-      </DialogTitle>
-      <DialogContent>
-        <DialogContentText>
-          {chrome.i18n.getMessage('Change_Password_No_Google_Drive_Warning')}
-        </DialogContentText>
-      </DialogContent>
-      <Stack direction="column" spacing={2}>
-        <LLPrimaryButton
-          label={chrome.i18n.getMessage('Connect_Google_Drive')}
-          fullWidth
-          onClick={handleConnectToGoogle}
-        />
-        <LLWarningButton
-          label={chrome.i18n.getMessage('Change_Password_Anyway')}
-          fullWidth
-          onClick={handleProceedAnyway}
-        />
-        <LLSecondaryButton
-          label={chrome.i18n.getMessage('Cancel')}
-          fullWidth
-          onClick={handleCancel}
-        />
-      </Stack>
-    </CustomDialog>
-  );
-};
 
 const ChangePassword = () => {
   const classes = useStyles();
