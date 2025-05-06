@@ -23,6 +23,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import zxcvbn from 'zxcvbn';
 
+import CheckCircleIcon from '@/components/iconfont/IconCheckmark';
+import CancelIcon from '@/components/iconfont/IconClose';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import { CustomDialog } from '@/ui/FRWComponent/custom-dialog';
 import { LLHeader } from '@/ui/FRWComponent/LLHeader';
@@ -31,10 +33,7 @@ import { LLSecondaryButton } from '@/ui/FRWComponent/LLSecondaryButton';
 import { LLWarningButton } from '@/ui/FRWComponent/LLWarningButton';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useWallet } from 'ui/utils';
-
-import CheckCircleIcon from '../../../components/iconfont/IconCheckmark';
-import CancelIcon from '../../../components/iconfont/IconClose';
+import { useWallet } from '@/ui/utils';
 
 const useStyles = makeStyles(() => ({
   customInputLabel: {
