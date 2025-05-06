@@ -228,7 +228,10 @@ const TokenDetail = () => {
               >
                 This is an unverified token, only interact with tokens you trust.{' '}
                 <Typography
-                  component="span"
+                  component="a"
+                  href="https://wallet.flow.com/post/verified-tokens-on-flow-wallet"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   sx={{
                     textDecoration: 'underline',
                     cursor: 'pointer',
