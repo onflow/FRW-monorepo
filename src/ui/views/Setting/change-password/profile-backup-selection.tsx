@@ -199,7 +199,7 @@ export const ProfileBackupSelectionDialog = ({
           <Box sx={{ flex: 1 }}>
             <LLPrimaryButton
               fullWidth
-              label={chrome.i18n.getMessage('Change_Password') || 'Change Password'}
+              label={chrome.i18n.getMessage('Change') || 'Change'}
               onClick={handleConfirm}
               disabled={loading || !backups.some((b) => b.isSelected)}
             />

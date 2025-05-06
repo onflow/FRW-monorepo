@@ -537,7 +537,7 @@ const ChangePassword = () => {
                 sx={{ fontWeight: '600', fontSize: '14px', fontFamily: 'Inter' }}
                 color="text.primary"
               >
-                {chrome.i18n.getMessage('Change')}
+                {chrome.i18n.getMessage('Change_Password') || 'Change Password'}
               </Typography>
             )}
           </Button>
