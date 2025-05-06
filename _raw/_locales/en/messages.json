@@ -148,7 +148,7 @@
     "message": "FREE"
   },
   "Lilico__domain": {
-    "message": "Lilico domain."
+    "message": "Flow Wallet domain."
   },
   "Edit__Address": {
     "message": "Edit Address"
@@ -1021,9 +1021,6 @@
     "message": "Things you should know"
   },
   "Linked_Account": {
-    "message": "Linked Account"
-  },
-  "Linked_Accounts": {
     "message": "Linked Accounts"
   },
   "Wallet_List": {
@@ -1039,7 +1036,7 @@
     "message": "Linked Successful"
   },
   "Linking_Child_Account": {
-    "message": "Linking dApp Account"
+    "message": "Linking Child Account"
   },
   "Try_Our_Mobile_APP": {
     "message": "Try Our Mobile App"
@@ -1472,5 +1469,17 @@
   },
   "Legend": {
     "message": "Legend"
+  },
+  "Updating_backups_and_changing_password": {
+    "message": "Updating backups and changing password..."
+  },
+  "Changing_password": {
+    "message": "Changing password..."
+  },
+  "Password_changed_successfully_Locking_wallet": {
+    "message": "Password changed successfully! Locking wallet..."
+  },
+  "Profile_Password_Change_Description": {
+    "message": "The following profiles are either loaded in your wallet or backed up to Google Drive. Select which profiles you want to update the password for:"
   }
 }

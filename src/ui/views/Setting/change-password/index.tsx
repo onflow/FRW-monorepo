@@ -192,6 +192,7 @@ const ChangePassword = () => {
         const success = await wallet.changePassword(
           confirmCurrentPassword,
           confirmPassword,
+          [],
           ignoreBackupsAtTheirOwnRisk
         );
 
@@ -240,7 +241,7 @@ const ChangePassword = () => {
             'Updating backups and changing password...'
         );
 
-        const success = await wallet.changePasswordWithBackups(
+        const success = await wallet.changePassword(
           confirmCurrentPassword,
           confirmPassword,
           profileUsernames,

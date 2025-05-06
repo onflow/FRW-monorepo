@@ -3611,51 +3611,9 @@ export class WalletController extends BaseController {
     await evmNftService.clearEvmNfts();
   };
 
-  changePassword = async (
-    oldPassword: string,
-    newPassword: string,
-    ignoreBackupsAtTheirOwnRisk = false
-  ): Promise<boolean> => {
-    try {
-      // We warn the user if they are not signed into google drive when they change their password
-      // The user may never use google sign-in, so we don't want to force them to do so
-      // If the user has been prompted, then pass in true for this, otherwise we assume they are signed in
-      if (!ignoreBackupsAtTheirOwnRisk) {
-        // This will throw an error if there is an issue changing the password
-        await googleDriveService.setNewPassword(oldPassword, newPassword);
-      }
-
-      // Change password for all keyrings in the user's wallet atomically
-      const result = await keyringService.changePassword(oldPassword, newPassword);
-      if (!result) {
-        throw new Error('Failed to update keyring password.');
-      }
-
-      // Track successful password change
-      mixpanelTrack.track('password_updated', {
-        address: (await this.getCurrentAddress()) || '',
-        success: true,
-        profilesUpdated: 0,
-      });
-
-      return true;
-    } catch (error) {
-      console.error('Failed to update password:', error);
-      mixpanelTrack.track('password_update_failed', {
-        address: (await this.getCurrentAddress()) || '',
-        error: error.message,
-      });
-      return false;
-    }
-  };
-
-  /**
-   * Get active profiles
-   * @returns Promise<Array<UserInfoResponse>> - List of active profiles
-   */
-  getActiveProfiles = async (): Promise<Array<UserInfoResponse>> => {
+  getKeyringIds = async () => {
     // Use userInfoService to get the stored user list
-    return await userInfoService.loadStoredUserList();
+    return await keyringService.getKeyringIds();
   };
 
   /**
@@ -3668,7 +3626,26 @@ export class WalletController extends BaseController {
       // Get all backups from Google Drive
       const backupLists = await googleDriveService.loadBackupAccountLists();
       // Get all active profiles
-      const activeProfiles = await userInfoService.loadStoredUserList();
+      const userList = userInfoService.getUserList();
+
+      // Get all keyring ids
+      const keyringIds = await this.getKeyringIds();
+
+      // Determine active profiles from the keyring ids
+      const activeProfiles = keyringIds.map((id): UserInfoResponse => {
+        const matchingUser = userList.find((user) => user.id === id);
+        if (!matchingUser) {
+          return {
+            username: `unknown_${id.slice(0, 4)}`,
+            id: id,
+            avatar: '',
+            nickname: 'unknown',
+            private: 0,
+            created: '',
+          };
+        }
+        return matchingUser;
+      });
 
       // Test decryption for each backup
       const backupStatuses: ProfileBackupStatus[] = await Promise.all(
@@ -3728,18 +3705,18 @@ export class WalletController extends BaseController {
    * @param currentPassword - The current password
    * @param newPassword - The new password
    * @param selectedProfiles - List of profile usernames to update backups for
-   * @param ignoreBackups - Whether to ignore backups (for users without Google permission)
+   * @param ignoreBackupsAtUsersOwnRisk - Whether to ignore backups (for users without Google permission)
    * @returns Promise<boolean> - Success status
    */
-  changePasswordWithBackups = async (
+  changePassword = async (
     currentPassword: string,
     newPassword: string,
     selectedProfiles: string[] = [],
-    ignoreBackups: boolean = false
+    ignoreBackupsAtUsersOwnRisk: boolean = false
   ): Promise<boolean> => {
     try {
       // If ignoring backups, just change the wallet password
-      if (ignoreBackups) {
+      if (ignoreBackupsAtUsersOwnRisk) {
         return await keyringService.changePassword(currentPassword, newPassword);
       }
 
@@ -3748,11 +3725,7 @@ export class WalletController extends BaseController {
 
       if (hasGooglePermission && selectedProfiles.length > 0) {
         // First update the Google backups
-        await googleDriveService.setNewPasswordForProfiles(
-          currentPassword,
-          newPassword,
-          selectedProfiles
-        );
+        await googleDriveService.setNewPassword(currentPassword, newPassword, selectedProfiles);
 
         // Only change the keyring password if the backup update succeeds
         const success = await keyringService.changePassword(currentPassword, newPassword);

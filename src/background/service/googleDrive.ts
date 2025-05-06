@@ -348,49 +348,6 @@ class GoogleDriveService {
     });
   };
 
-  setNewPassword = async (oldPassword: string, newPassword: string): Promise<boolean> => {
-    try {
-      if (!(await this.hasGooglePermission())) {
-        throw new Error('Not authorized to update password on google backups');
-      }
-      // Load all backups
-      const backups: DriveItem[] = await this.loadBackup();
-
-      if (backups.length === 0 || !this.fileId) {
-        return false;
-      }
-
-      // First, try to decrypt and re-encrypt the target user's mnemonic
-      // All backups for all users are encrypted with the same password, so we need to decrypt and re-encrypt each one
-      const updatedBackups = backups.map((item) => {
-        try {
-          // verify the old password and decrypt
-          const decryptedMnemonic = this.decrypt(item.data, oldPassword);
-          if (!bip39.validateMnemonic(decryptedMnemonic)) {
-            throw new Error('Decrypted mnemonic is invalid');
-          }
-          // Re-encrypt with new password
-          return {
-            ...item,
-            data: this.encrypt(decryptedMnemonic, newPassword),
-            time: new Date().getTime().toString(),
-          };
-        } catch (err) {
-          console.error(`Failed to update password for backup for user: ${item.username}`, err);
-          throw new Error(`Failed to update password for backup for user: ${item.username}`);
-        }
-      });
-
-      // Atomic approach, all succeeded, now update the file
-      const updateContent = this.encrypt(JSON.stringify(updatedBackups), this.AES_KEY);
-      await this.updateFile(this.fileId, updateContent, false);
-      return true;
-    } catch (err) {
-      console.error('Failed to update password on google backups:', err);
-      throw new Error('Failed to update password on google backups');
-    }
-  };
-
   /**
    * Test if a profile backup can be decrypted with the given password
    * @param username - The username of the profile to test
@@ -421,7 +378,7 @@ class GoogleDriveService {
    * @param profileUsernames - Array of profile usernames to update passwords for
    * @returns Promise<boolean> - Success status
    */
-  setNewPasswordForProfiles = async (
+  setNewPassword = async (
     oldPassword: string,
     newPassword: string,
     profileUsernames: string[]
