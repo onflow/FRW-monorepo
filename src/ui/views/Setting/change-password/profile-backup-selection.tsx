@@ -90,13 +90,21 @@ export const ProfileBackupSelectionDialog = ({
   };
 
   return (
-    <CustomDialog open={open} onClose={onClose}>
-      <DialogTitle>
+    <CustomDialog
+      open={open}
+      onClose={onClose}
+      PaperProps={{
+        sx: {
+          padding: '18px',
+        },
+      }}
+    >
+      <DialogTitle sx={{ padding: '0' }}>
         {chrome.i18n.getMessage('Change_Password_on_Backups') || 'Change Password on Backups'}
       </DialogTitle>
-      <DialogContent>
+      <DialogContent sx={{ padding: '0', margin: '18px 0' }}>
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', padding: '20px' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
             <CircularProgress />
           </Box>
         ) : error ? (
@@ -111,13 +119,21 @@ export const ProfileBackupSelectionDialog = ({
               {backups.map((backup, index) => (
                 <ListItem
                   key={backup.username}
-                  sx={{ display: 'flex', alignItems: 'center', padding: '4px 0px' }}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '4px 0px',
+                  }}
                 >
                   <Checkbox
                     checked={backup.isSelected}
                     onChange={() => handleToggleSelection(index)}
                     disabled={backup.isBackedUp && !backup.canDecrypt} // Can't update if we can't decrypt
                     size="small"
+                    sx={{
+                      padding: 0,
+                      marginRight: '24px',
+                    }}
                   />
                   <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                     <Typography sx={{ fontSize: '14px' }}>
@@ -163,13 +179,32 @@ export const ProfileBackupSelectionDialog = ({
           </>
         )}
       </DialogContent>
-      <DialogActions>
-        <LLSecondaryButton label={chrome.i18n.getMessage('Cancel') || 'Cancel'} onClick={onClose} />
-        <LLPrimaryButton
-          label={chrome.i18n.getMessage('Change_Password') || 'Change Password'}
-          onClick={handleConfirm}
-          disabled={loading || !backups.some((b) => b.isSelected)}
-        />
+      <DialogActions sx={{ padding: '0' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            gap: '12px',
+            justifyContent: 'space-between',
+            width: '100%',
+          }}
+        >
+          <Box sx={{ flex: 1 }}>
+            <LLSecondaryButton
+              fullWidth
+              label={chrome.i18n.getMessage('Cancel') || 'Cancel'}
+              onClick={onClose}
+            />
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <LLPrimaryButton
+              fullWidth
+              label={chrome.i18n.getMessage('Change_Password') || 'Change Password'}
+              onClick={handleConfirm}
+              disabled={loading || !backups.some((b) => b.isSelected)}
+            />
+          </Box>
+        </Box>
       </DialogActions>
     </CustomDialog>
   );
