@@ -76,15 +76,15 @@ export const ProfileBackupSelectionDialog = ({
 
   const getStatusIcon = (backup: ProfileBackupStatus) => {
     if (backup.isActive && backup.isBackedUp && backup.canDecrypt) {
-      return '✅'; // Active and backed up with current password
+      return '✅'; // Loaded and backed up with current password
     } else if (backup.isActive && backup.isBackedUp && !backup.canDecrypt) {
-      return '⚠️'; // Active but backed up with other password
+      return '⚠️'; // Loaded but backed up with other password
     } else if (!backup.isActive && backup.isBackedUp && backup.canDecrypt) {
-      return '☑️'; // Not active, but backed up with current password
+      return '☑️'; // Not loaded, but backed up with current password
     } else if (backup.isActive && !backup.isBackedUp) {
-      return '⚠️'; // Active, but not backed up
+      return '⚠️'; // Loaded, but not backed up
     } else if (!backup.isActive && backup.isBackedUp && !backup.canDecrypt) {
-      return '🛑'; // Not active, but backed up with other password
+      return '🛑'; // Not loaded, but backed up with other password
     }
     return '';
   };
@@ -92,8 +92,7 @@ export const ProfileBackupSelectionDialog = ({
   return (
     <CustomDialog open={open} onClose={onClose}>
       <DialogTitle>
-        {chrome.i18n.getMessage('Select_Profiles_For_Password_Change') ||
-          'Select Profiles for Password Change'}
+        {chrome.i18n.getMessage('Change_Password_on_Backups') || 'Change Password on Backups'}
       </DialogTitle>
       <DialogContent>
         {loading ? (
@@ -104,32 +103,36 @@ export const ProfileBackupSelectionDialog = ({
           <Typography color="error">{error}</Typography>
         ) : (
           <>
-            <Typography sx={{ marginBottom: '16px' }}>
+            <Typography sx={{ marginBottom: '12px', fontSize: '14px' }}>
               {chrome.i18n.getMessage('Profile_Password_Change_Description') ||
-                'The following profiles are either active in your wallet, backed up to Google Drive, or both. Select which profiles you want to update the password for:'}
+                'The following profiles are either loaded in your wallet, backed up to Google Drive, or both. Select which profiles you want to update the password for:'}
             </Typography>
-            <List>
+            <List sx={{ padding: '0 0 8px 0' }}>
               {backups.map((backup, index) => (
-                <ListItem key={backup.username} sx={{ display: 'flex', alignItems: 'center' }}>
+                <ListItem
+                  key={backup.username}
+                  sx={{ display: 'flex', alignItems: 'center', padding: '4px 0px' }}
+                >
                   <Checkbox
                     checked={backup.isSelected}
                     onChange={() => handleToggleSelection(index)}
                     disabled={backup.isBackedUp && !backup.canDecrypt} // Can't update if we can't decrypt
+                    size="small"
                   />
                   <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                    <Typography>
+                    <Typography sx={{ fontSize: '14px' }}>
                       {getStatusIcon(backup)} {backup.username}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '12px' }}>
                       {backup.isActive
-                        ? chrome.i18n.getMessage('Active_in_wallet') || 'Active in wallet'
-                        : chrome.i18n.getMessage('Not_active_in_wallet') || 'Not active in wallet'}
+                        ? chrome.i18n.getMessage('Loaded_in_wallet') || 'Loaded'
+                        : chrome.i18n.getMessage('Not_loaded_in_wallet') || 'Not loaded'}
                       {backup.isBackedUp &&
                         backup.canDecrypt &&
-                        ` • ${chrome.i18n.getMessage('Backed_up_with_current_password') || 'Backed up with current password'}`}
+                        ` • ${chrome.i18n.getMessage('Backed_up_with_current_password') || 'current password'}`}
                       {backup.isBackedUp &&
                         !backup.canDecrypt &&
-                        ` • ${chrome.i18n.getMessage('Backed_up_with_different_password') || 'Backed up with different password'}`}
+                        ` • ${chrome.i18n.getMessage('Backed_up_with_different_password') || 'different password'}`}
                       {!backup.isBackedUp &&
                         ` • ${chrome.i18n.getMessage('Not_backed_up') || 'Not backed up'}`}
                     </Typography>
@@ -137,24 +140,24 @@ export const ProfileBackupSelectionDialog = ({
                 </ListItem>
               ))}
             </List>
-            <Box mt={2}>
-              <Typography variant="caption">
+            <Box mt={1}>
+              <Typography variant="caption" sx={{ fontSize: '11px' }}>
                 {chrome.i18n.getMessage('Legend') || 'Legend'}:<br />✅{' '}
-                {chrome.i18n.getMessage('Active_and_backed_up_with_current_password') ||
-                  'Active and backed up with current password'}
+                {chrome.i18n.getMessage('Loaded_and_backed_up_with_current_password') ||
+                  'Loaded and backed up with current password'}
                 <br />
                 ⚠️{' '}
                 {chrome.i18n.getMessage(
-                  'Active_but_backed_up_with_other_password_or_not_backed_up'
-                ) || 'Active but backed up with other password or not backed up'}
+                  'Loaded_but_backed_up_with_other_password_or_not_backed_up'
+                ) || 'Loaded but backed up with other password or not backed up'}
                 <br />
                 ☑️{' '}
-                {chrome.i18n.getMessage('Not_active_but_backed_up_with_current_password') ||
-                  'Not active, but backed up with current password'}
+                {chrome.i18n.getMessage('Not_loaded_but_backed_up_with_current_password') ||
+                  'Not loaded, but backed up with current password'}
                 <br />
                 🛑{' '}
-                {chrome.i18n.getMessage('Not_active_but_backed_up_with_other_password') ||
-                  'Not active, but backed up with other password'}
+                {chrome.i18n.getMessage('Not_loaded_but_backed_up_with_other_password') ||
+                  'Not loaded, but backed up with other password'}
               </Typography>
             </Box>
           </>

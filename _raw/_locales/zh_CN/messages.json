@@ -1436,5 +1436,41 @@
   },
   "Change_Password_Anyway": {
     "message": "更改密码 😱"
+  },
+  "Change_Password_on_Backups": {
+    "message": "更改备份密码"
+  },
+  "Change_Password_on_Backups_Description": {
+    "message": "更改密码将损坏所有现有备份。仅在您不使用Google Drive备份时继续。"
+  },
+  "Loaded_in_wallet": {
+    "message": "已加载"
+  },
+  "Not_loaded_in_wallet": {
+    "message": "未加载"
+  },
+  "Backed_up_with_current_password": {
+    "message": "当前密码备份"
+  },
+  "Backed_up_with_different_password": {
+    "message": "不同密码备份"
+  },
+  "Not_backed_up": {
+    "message": "未备份"
+  },
+  "Loaded_and_backed_up_with_current_password": {
+    "message": "已加载并使用当前密码备份"
+  },
+  "Loaded_but_backed_up_with_other_password_or_not_backed_up": {
+    "message": "已加载但使用其他密码备份或未备份"
+  },
+  "Not_loaded_but_backed_up_with_current_password": {
+    "message": "未加载但使用当前密码备份"
+  },
+  "Not_loaded_but_backed_up_with_other_password": {
+    "message": "未加载但使用其他密码备份"
+  },
+  "Legend": {
+    "message": "图例"
   }
 }

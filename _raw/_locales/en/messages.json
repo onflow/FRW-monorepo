@@ -1436,5 +1436,41 @@
   },
   "Change_Password_Anyway": {
     "message": "Change Anyway 😱"
+  },
+  "Change_Password_on_Backups": {
+    "message": "Change Password on Backups"
+  },
+  "Change_Password_on_Backups_Description": {
+    "message": "Change the password for all profiles that are either loaded in your wallet or backed up to Google Drive."
+  },
+  "Loaded_in_wallet": {
+    "message": "Loaded"
+  },
+  "Not_loaded_in_wallet": {
+    "message": "Not loaded"
+  },
+  "Backed_up_with_current_password": {
+    "message": "current password"
+  },
+  "Backed_up_with_different_password": {
+    "message": "different password"
+  },
+  "Not_backed_up": {
+    "message": "Not backed up"
+  },
+  "Loaded_and_backed_up_with_current_password": {
+    "message": "Loaded and backed up with current password"
+  },
+  "Loaded_but_backed_up_with_other_password_or_not_backed_up": {
+    "message": "Loaded but backed up with other password or not backed up"
+  },
+  "Not_loaded_but_backed_up_with_current_password": {
+    "message": "Not loaded, but backed up with current password"
+  },
+  "Not_loaded_but_backed_up_with_other_password": {
+    "message": "Not loaded, but backed up with other password"
+  },
+  "Legend": {
+    "message": "Legend"
   }
 }
