@@ -28,12 +28,40 @@ const ActionButtons = ({ managePath, createPath }) => {
   const history = useHistory();
 
   return (
-    <Box sx={{ display: 'flex', px: '12px', pt: '4px' }}>
+    <Box sx={{ display: 'flex', px: '12px', pt: '4px', gap: '12px' }}>
       <Box sx={{ flexGrow: 1 }} />
-      <IconButton onClick={() => history.push(managePath)}>
+      <IconButton
+        onClick={() => history.push(managePath)}
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: '10px',
+          flexShrink: 0,
+          borderRadius: '100px',
+          background: 'rgba(255, 255, 255, 0.10)',
+          '&:hover': {
+            opacity: 0.8,
+          },
+        }}
+      >
         <img src={slider} alt="Manage" style={{ width: '28px', height: '28px' }} />
       </IconButton>
-      <IconButton onClick={() => history.push(createPath)} sx={{ paddingX: '13px' }}>
+      <IconButton
+        onClick={() => history.push(createPath)}
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: '10px',
+          flexShrink: 0,
+          borderRadius: '100px',
+          background: 'rgba(255, 255, 255, 0.10)',
+          '&:hover': {
+            opacity: 0.8,
+          },
+        }}
+      >
         <img src={plus} alt="Add" style={{ width: '28px', height: '28px' }} />
       </IconButton>
     </Box>
