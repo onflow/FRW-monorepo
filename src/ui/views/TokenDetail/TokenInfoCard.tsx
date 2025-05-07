@@ -112,7 +112,7 @@ const TokenInfoCard = ({
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
-                      maxWidth: '90px',
+                      maxWidth: '190px',
                     }}
                   >
                     {extendedTokenInfo ? (

@@ -111,7 +111,7 @@ const TokenItem = ({
           }
           secondary={
             showSwitch
-              ? `$${parseFloat(token.total).toFixed(5).toLocaleString()}`
+              ? `$${isNaN(parseFloat(token.total)) ? '0.00' : parseFloat(token.total).toFixed(5).toLocaleString()}`
               : token.symbol.toUpperCase()
           }
         />

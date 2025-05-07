@@ -45,7 +45,7 @@ const ActionButtons = ({ managePath, createPath }) => {
           },
         }}
       >
-        <img src={slider} alt="Manage" style={{ width: '28px', height: '28px' }} />
+        <img src={slider} alt="Manage" style={{ width: '20px', height: '20px' }} />
       </IconButton>
       <IconButton
         onClick={() => history.push(createPath)}
@@ -62,7 +62,7 @@ const ActionButtons = ({ managePath, createPath }) => {
           },
         }}
       >
-        <img src={plus} alt="Add" style={{ width: '28px', height: '28px' }} />
+        <img src={plus} alt="Add" style={{ width: '20px', height: '20px' }} />
       </IconButton>
     </Box>
   );
