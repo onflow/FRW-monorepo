@@ -208,7 +208,7 @@ const TokenList = () => {
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              padding: '16px',
+              padding: '0 18px',
               gap: '10px',
             }}
           >

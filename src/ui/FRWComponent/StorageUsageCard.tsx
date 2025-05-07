@@ -30,10 +30,9 @@ export const StorageUsageCard: React.FC = () => {
   return (
     <Box
       sx={{
-        backgroundColor: 'neutral.main',
+        backgroundColor: '#121212',
         borderRadius: '12px',
         p: 2,
-        mb: 2,
       }}
     >
       <Box
