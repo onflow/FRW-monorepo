@@ -112,7 +112,11 @@ const TokenItem = ({
             </Box>
           }
           secondary={
-            showSwitch ? <CurrencyValue value={String(token.total)} /> : token.symbol.toUpperCase()
+            showSwitch ? (
+              <CurrencyValue value={token.total?.toString() ?? ''} />
+            ) : (
+              token.symbol.toUpperCase()
+            )
           }
         />
       </CustomListItem>
