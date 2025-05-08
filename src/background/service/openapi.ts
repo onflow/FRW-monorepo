@@ -1,5 +1,6 @@
 import * as fcl from '@onflow/fcl';
 import type { Account as FclAccount } from '@onflow/typedefs';
+import WalletCore from '@trustwallet/wallet-core';
 import BigNumber from 'bignumber.js';
 import dayjs from 'dayjs';
 import { initializeApp, getApp } from 'firebase/app';
@@ -24,6 +25,7 @@ import {
   setCachedData,
 } from '@/background/utils/data-cache';
 import { getFirbaseConfig, getFirbaseFunctionUrl } from '@/background/utils/firebaseConfig';
+import { verifySignature } from '@/background/utils/modules/publicPrivateKey';
 import fetchConfig from '@/background/utils/remoteConfig';
 import { storage } from '@/background/webapi';
 import type { ExtendedTokenInfo, BalanceMap } from '@/shared/types/coin-types';
@@ -553,7 +555,19 @@ class OpenApiService {
     const response = await fetch(requestUrl, init);
     const responseData = await response.json(); // parses JSON response into native JavaScript objects
 
-    // recordFetch(response, responseData, requestUrl, init);
+    // Verify signature if present in headers
+    try {
+      const xsignature = response.headers.get('X-Signature');
+      if (xsignature) {
+        const isValid = await verifySignature(xsignature, responseData);
+        if (!isValid) {
+          throw new Error('Invalid signature in response');
+        }
+      }
+    } catch (err) {
+      console.error('Error verifying signature:', err);
+    }
+
     return responseData;
     // Record the response
   };

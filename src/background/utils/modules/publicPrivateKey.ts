@@ -14,6 +14,9 @@ import {
 } from '../../../shared/utils/algo-constants';
 import storage from '../../../shared/utils/storage';
 
+const SCRIPTS_PUBLIC_KEY =
+  '25bda455f2f765a2375732e44ed34eb52a611b3b14607e43b2766c6c07a3f7b0abbd2fc38543f874cbaec50f53f0b6d685e85f78dbb5ffd81c66d9ba8c67b404';
+
 const jsonToKey = async (json: string, password: string) => {
   try {
     const { StoredKey, PrivateKey } = await initWasm();
@@ -207,6 +210,30 @@ const signWithKey = async (message: string, signAlgo: number, hashAlgo: number, 
   return Buffer.from(signature.subarray(0, signature.length - 1)).toString('hex');
 };
 
+const verifySignature = async (signature: string, message: any) => {
+  try {
+    const { PublicKey, PublicKeyType, Hash } = await initWasm();
+
+    const messageStr = typeof message === 'object' ? JSON.stringify(message) : message;
+    const messageHash = Hash.sha256(Buffer.from(messageStr, 'utf8'));
+    const signatureBuffer = Buffer.from(signature, 'hex');
+    const pubkeyData = Buffer.from(
+      '04' + SCRIPTS_PUBLIC_KEY.replace('0x', '').replace(/^04/, ''),
+      'hex'
+    );
+
+    const pubKey = PublicKey.createWithData(pubkeyData, PublicKeyType.nist256p1Extended);
+    if (!pubKey) {
+      throw new Error('Failed to create public key');
+    }
+
+    return pubKey.verify(signatureBuffer, messageHash);
+  } catch (error) {
+    console.error('Verification error:', error);
+    throw error;
+  }
+};
+
 export {
   jsonToKey,
   pk2PubKey,
@@ -218,4 +245,5 @@ export {
   seedWithPathAndPhrase2PublicPrivateKey,
   formPubKey,
   formPubKeyTuple,
+  verifySignature,
 };
