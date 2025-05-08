@@ -130,7 +130,6 @@ const TokenList = () => {
           token.symbol.toLowerCase().includes(word.toLowerCase())
         );
       });
-      console.log('filtered', results, word);
       setFilteredTokenList(results);
     } else {
       setFilteredTokenList(tokenInfoList);
