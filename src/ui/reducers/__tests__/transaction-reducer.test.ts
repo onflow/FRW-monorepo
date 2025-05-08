@@ -105,6 +105,10 @@ describe('Transaction Reducer', () => {
         change24h: 0,
         total: '100',
         icon: 'test.svg',
+        priceInUSD: '1',
+        balanceInUSD: '100',
+        priceInFLOW: '2',
+        balanceInFLOW: '200',
       };
 
       it('should set token info and update token type for non-Flow token', () => {

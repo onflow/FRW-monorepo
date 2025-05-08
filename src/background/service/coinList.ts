@@ -171,8 +171,8 @@ class CoinList {
           twitter: token.socials?.x?.url,
         },
         custom: false,
-        price: token.priceInCurrency || token.priceInUSD || '',
-        total: token.balanceInCurrency || token.balanceInUSD || '',
+        price: token.priceInCurrency || '',
+        total: token.balanceInCurrency || '',
         change24h: 0,
         balance: token.balance || '0',
         // Add CoinItem properties
@@ -181,6 +181,10 @@ class CoinList {
         icon: token.logoURI || token.logos?.items?.[0]?.file?.url || '',
         flowIdentifier: token.identifier,
         isVerified: token.isVerified ? token.isVerified : false,
+        priceInUSD: token.priceInUSD || '',
+        balanceInUSD: token.balanceInUSD || '',
+        priceInFLOW: token.priceInFLOW || '',
+        balanceInFLOW: token.balanceInFLOW || '',
       })
     );
     return tokens;
@@ -206,8 +210,8 @@ class CoinList {
         logoURI: token.logoURI || '',
         extensions: {},
         custom: false,
-        price: token.priceInCurrency || token.priceInUSD || '',
-        total: token.balanceInCurrency || token.balanceInUSD || '',
+        price: token.priceInCurrency || '',
+        total: token.balanceInCurrency || '',
         change24h: 0,
         balance: token.displayBalance || '0',
         // Add CoinItem properties
@@ -216,6 +220,10 @@ class CoinList {
         icon: token.logoURI || '', // redundant for compatibility
         flowIdentifier: token.flowIdentifier,
         isVerified: token.isVerified,
+        priceInUSD: token.priceInUSD || '',
+        balanceInUSD: token.balanceInUSD || '',
+        priceInFLOW: token.priceInFLOW || '',
+        balanceInFLOW: token.balanceInFLOW || '',
       })
     );
 

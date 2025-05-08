@@ -39,7 +39,13 @@ export type BalanceMap = {
 };
 
 // ExtendedTokenInfo is a intermediate type that combines Token information and pricing data.
-export type ExtendedTokenInfo = TokenInfo & CoinItem;
+export type ExtendedTokenInfo = TokenInfo &
+  CoinItem & {
+    priceInUSD: string;
+    balanceInUSD: string;
+    priceInFLOW: string;
+    balanceInFLOW: string;
+  };
 
 export type TokenFilter = {
   hideDust: boolean;
