@@ -1,128 +1,31 @@
 import openapiService from '@/background/service/openapi';
-import { type BalanceMap, type CoinItem, type ExtendedTokenInfo } from '@/shared/types/coin-types';
-import { coinListKey, coinListRefreshRegex } from '@/shared/utils/cache-data-keys';
-import { createPersistStore } from 'background/utils';
-import { storage } from 'background/webapi';
-
-import { walletController } from '../controller';
-import { fclConfirmNetwork } from '../fclConfig';
 import {
-  clearCachedData,
-  getValidData,
-  registerRefreshListener,
-  setCachedData,
-} from '../utils/data-cache';
-interface CoinListStore {
-  expiry: number;
-  coinItem: Record<string, any>;
-  evm: Record<string, any>;
-  currentCoin: string;
-}
+  type CadenceTokenInfo,
+  type ExtendedTokenInfo,
+  type EvmTokenInfo,
+} from '@/shared/types/coin-types';
+import { isValidEthereumAddress, isValidFlowAddress } from '@/shared/utils/address';
+import {
+  cadenceTokenInfoKey,
+  cadenceTokenInfoRefreshRegex,
+  coinListKey,
+  coinListRefreshRegex,
+  evmTokenInfoKey,
+  evmTokenInfoRefreshRegex,
+} from '@/shared/utils/cache-data-keys';
 
-const now = new Date();
+import { fclConfirmNetwork } from '../fclConfig';
+import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
 
 class CoinList {
   init = async () => {
     registerRefreshListener(coinListRefreshRegex, this.loadCoinList);
+    registerRefreshListener(evmTokenInfoRefreshRegex, this.loadEvmTokenInfo);
+    registerRefreshListener(cadenceTokenInfoRefreshRegex, this.loadCadenceTokenInfo);
   };
 
   clear = async () => {};
-  /*
-  getCoinByUnit = (unit: string) => {
-    return this.store.coinItem[unit];
-  };
 
-  addCoin = (data: ExtendedTokenInfo, network: string, listType = 'coinItem') => {
-    if (this.store[listType][network] === undefined) {
-      this.store[listType][network] = [];
-    }
-    this.store[listType][network][data.unit] = data;
-  };
-
-  addCoins = (coins: ExtendedTokenInfo[], network: string, listType = 'coinItem') => {
-    const newNetworkData = [...coins];
-
-    const updatedListType = { ...this.store[listType] };
-    updatedListType[network] = newNetworkData;
-
-    this.store[listType] = updatedListType;
-
-    storage.set('coinList', this.store);
-  };
-
-  removeCoin = (unit: string, network: string, listType = 'coinItem') => {
-    delete this.store[listType][network][unit];
-  };
-
-  updateCoin = (network: string, data: ExtendedTokenInfo, listType = 'coinItem') => {
-    this.store[listType][network][data.unit] = data;
-  };
-
-  setCurrentCoin = (coinName: string) => {
-    this.store.currentCoin = coinName;
-  };
-  getCurrentCoin = () => {
-    return this.store.currentCoin;
-  };
-  listCoins = (network: string, listType = 'coinItem'): ExtendedTokenInfo[] => {
-    if (!this.store[listType] || !this.store[listType][network]) {
-      return [];
-    }
-
-    if (Array.isArray(this.store[listType][network])) {
-      return this.store[listType][network];
-    }
-
-    const list = Object.values(this.store[listType][network]);
-    return list.filter((item): item is ExtendedTokenInfo => !!item) || [];
-  };
-
-  /**
-   * Updates only the balance of coins in the store
-   * @param balanceMap Object mapping token IDs to balance strings
-   * @param network The network to update balances for
-   * @param listType The list type to update
-   * /
-  updateBalances = (balanceMap: BalanceMap, network: string, listType = 'coinItem') => {
-    // Check if the network exists in the store
-    if (!this.store[listType] || !this.store[listType][network]) {
-      console.log('No coins found for network:', network);
-      return;
-    }
-
-    // Get the current coins array
-    const currentCoins = [...this.store[listType][network]];
-
-    // Update only the balances
-    const updatedCoins = currentCoins.map((coin) => {
-      // Create the token ID in the format used in balanceMap
-      const tokenId = coin.id || `A.${coin.address?.slice(2)}.${coin.contractName}`;
-      const tokenIdVault = `${tokenId}.Vault`;
-      const isFlow = coin.symbol.toLowerCase() === 'flow';
-      const balance = isFlow ? balanceMap['availableFlowToken'] : balanceMap[tokenIdVault] || '';
-      // If this coin has a balance in the balanceMap, update it
-      if (balance) {
-        return {
-          ...coin,
-          balance: balance,
-        };
-      }
-
-      // Otherwise return the coin unchanged
-      return coin;
-    });
-
-    // Update the store with the new coins array
-    const updatedListType = { ...this.store[listType] };
-    updatedListType[network] = updatedCoins;
-    this.store[listType] = updatedListType;
-
-    // Persist to storage
-    storage.set('coinList', this.store);
-
-    console.log('Updated balances for', updatedCoins.length, 'coins on', network);
-  };
- */
   initCoinList = async (network: string, address: string, currency: string = 'USD') => {
     const coinList = await this.loadCoinList(network, address, currency);
     if (!coinList || coinList.length === 0) {
@@ -132,37 +35,192 @@ class CoinList {
   };
 
   /**
-   * Refreshes coin list with updated balances and prices
-   * @param _expiry Expiry time in milliseconds
-   * @returns Array of coin items
+   * Get Cadence Token Info
    */
-  loadCoinList = async (
-    network: string,
-    address: string,
-    currency: string = 'USD'
-  ): Promise<ExtendedTokenInfo[]> => {
-    // Get network and address
-    if (!address || !network) {
-      throw new Error('Address or network is not set');
-    }
-    const cachedData = await getValidData<ExtendedTokenInfo[]>(
-      coinListKey(network, address, currency)
+  getCadenceTokenInfo = async (network: string, address: string, currencyCode: string = 'USD') => {
+    const cadenceTokenInfo = await getValidData<CadenceTokenInfo[]>(
+      cadenceTokenInfoKey(network, address, currencyCode)
     );
-    if (cachedData) {
-      return cachedData;
+    if (!cadenceTokenInfo) {
+      return this.loadCadenceTokenInfo(network, address, currencyCode);
     }
-
-    const userTokenResult = await openapiService.getUserTokens(address, network, currency);
-    if (!(await fclConfirmNetwork(network))) {
-      // Do nothing if the network is switched
-      // Don't update the cache
-      return [];
-    }
-
-    await setCachedData(coinListKey(network, address, currency), userTokenResult);
-
-    return userTokenResult;
+    return cadenceTokenInfo;
   };
+
+  /**
+   * Load Cadence Token Info
+   */
+  loadCadenceTokenInfo = async (network: string, address: string, currencyCode: string = 'USD') => {
+    const cadenceTokenInfo = await openapiService.fetchCadenceTokenInfo(
+      address,
+      network,
+      currencyCode
+    );
+
+    setCachedData(cadenceTokenInfoKey(network, address, currencyCode), cadenceTokenInfo);
+
+    return cadenceTokenInfo;
+  };
+
+  /**
+   * Get Cadence Token Info
+   */
+  getEvmTokenInfo = async (network: string, address: string, currencyCode: string = 'USD') => {
+    const evmTokenInfo = await getValidData<EvmTokenInfo[]>(
+      evmTokenInfoKey(network, address, currencyCode)
+    );
+    if (!evmTokenInfo) {
+      return this.loadEvmTokenInfo(network, address, currencyCode);
+    }
+    return evmTokenInfo;
+  };
+
+  /**
+   * Load Cadence Token Info
+   */
+  loadEvmTokenInfo = async (network: string, address: string, currencyCode: string = 'USD') => {
+    const evmTokenInfo = await openapiService.fetchEvmTokenInfo(address, network, currencyCode);
+
+    setCachedData(evmTokenInfoKey(network, address, currencyCode), evmTokenInfo);
+
+    return evmTokenInfo;
+  };
+  /**
+   * Get the coin list, handle both EVM and Flow tokens. Include price information.
+   */
+  getCoinList = async (network: string, address: string, currencyCode: string = 'USD') => {
+    const coinList = await getValidData<ExtendedTokenInfo[]>(
+      coinListKey(network, address, currencyCode)
+    );
+    if (!coinList) {
+      return this.loadCoinList(network, address, currencyCode);
+    }
+    return coinList;
+  };
+  /**
+   * Load the coin list, handle both EVM and Flow tokens. Include price information.
+   * @param address - The address of the user
+   * @param network - The network of the user
+   * @param currencyCode - The currency code of the user
+   * @returns The tokens of the user
+   */
+  async loadCoinList(
+    address: string,
+    network: string,
+    currencyCode: string = 'USD'
+  ): Promise<ExtendedTokenInfo[]> {
+    if (!address) {
+      throw new Error('Address is required');
+    }
+
+    // Determine if address is EVM or Flow based on format
+    const isEvmAddress = isValidEthereumAddress(address);
+    const isFlowAddress = isValidFlowAddress(address);
+
+    if (!isEvmAddress && !isFlowAddress) {
+      throw new Error('Invalid address format');
+    }
+
+    try {
+      let tokens: ExtendedTokenInfo[] = [];
+      if (isEvmAddress) {
+        const evmTokenInfo = await this.getEvmTokenInfo(network, address, currencyCode);
+        tokens = await this.transformEvmTokenExtendedInfo(evmTokenInfo);
+      } else {
+        const cadenceTokenInfo = await this.getCadenceTokenInfo(network, address, currencyCode);
+        tokens = await this.transformCadenceTokenExtendedInfo(cadenceTokenInfo);
+      }
+
+      // Set the cache
+      setCachedData(coinListKey(network, address, currencyCode), tokens);
+
+      return tokens;
+    } catch (error) {
+      console.error('Error fetching user tokens:', error);
+      throw error;
+    }
+  }
+
+  private async transformCadenceTokenExtendedInfo(
+    cadenceTokenInfo: CadenceTokenInfo[]
+  ): Promise<ExtendedTokenInfo[]> {
+    // Get the cadence token info from the cache
+
+    const tokens = cadenceTokenInfo.map(
+      (token): ExtendedTokenInfo => ({
+        id: token.identifier,
+        name: token.name,
+        address: token.contractAddress,
+        contractName: token.contractName,
+        symbol: token.symbol,
+        decimals: 8, // Default to 8 decimals for Flow tokens if not specified
+        path: {
+          vault: token.storagePath
+            ? `/${token.storagePath.domain}/${token.storagePath.identifier}`
+            : '', // Provide a default value if storagePath is null
+          receiver: token.receiverPath
+            ? `/${token.receiverPath.domain}/${token.receiverPath.identifier}`
+            : '', // Provide a default value if receiverPath is null
+          balance: token.balancePath
+            ? `/${token.balancePath.domain}/${token.balancePath.identifier}`
+            : '', // Provide a default value if balancePath is null
+        },
+        logoURI: token.logoURI || token.logos?.items?.[0]?.file?.url || '',
+        extensions: {
+          description: token.description,
+          twitter: token.socials?.x?.url,
+        },
+        custom: false,
+        price: token.priceInCurrency || token.priceInUSD || '',
+        total: token.balanceInCurrency || token.balanceInUSD || '',
+        change24h: 0,
+        balance: token.balance || '0',
+        // Add CoinItem properties
+        coin: token.name, // redundant for compatibility
+        unit: token.symbol ?? token.contractName, // redundant for compatibility
+        icon: token.logoURI || token.logos?.items?.[0]?.file?.url || '',
+        flowIdentifier: token.identifier,
+        isVerified: token.isVerified ? token.isVerified : false,
+      })
+    );
+    return tokens;
+  }
+
+  private async transformEvmTokenExtendedInfo(
+    evmTokenInfo: EvmTokenInfo[]
+  ): Promise<ExtendedTokenInfo[]> {
+    // Convert EvmTokenResponse to ExtendedTokenInfo
+    const tokens = evmTokenInfo.map(
+      (token): ExtendedTokenInfo => ({
+        id: token.flowIdentifier || token.address,
+        name: token.name,
+        address: token.address,
+        contractName: token.name, // Use name as contractName for EVM tokens
+        symbol: token.symbol,
+        decimals: token.decimals,
+        path: {
+          vault: '', // EVM tokens don't use Flow paths
+          receiver: '',
+          balance: '',
+        },
+        logoURI: token.logoURI || '',
+        extensions: {},
+        custom: false,
+        price: token.priceInCurrency || token.priceInUSD || '',
+        total: token.balanceInCurrency || token.balanceInUSD || '',
+        change24h: 0,
+        balance: token.displayBalance || '0',
+        // Add CoinItem properties
+        coin: token.name, // redundant for compatibility
+        unit: token.symbol, // redundant for compatibility
+        icon: token.logoURI || '', // redundant for compatibility
+        flowIdentifier: token.flowIdentifier,
+        isVerified: token.isVerified,
+      })
+    );
+
+    return tokens;
+  }
 }
 
 export default new CoinList();
