@@ -126,8 +126,8 @@ const TokenList = () => {
     if (word !== '') {
       const results = tokenInfoList.filter((token) => {
         return (
-          token.name.toLowerCase().includes(keyword.toLowerCase()) ||
-          token.symbol.toLowerCase().includes(keyword)
+          token.name.toLowerCase().includes(word.toLowerCase()) ||
+          token.symbol.toLowerCase().includes(word.toLowerCase())
         );
       });
       setFilteredTokenList(results);
