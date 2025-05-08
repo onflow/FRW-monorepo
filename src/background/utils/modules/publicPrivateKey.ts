@@ -14,9 +14,6 @@ import {
 } from '../../../shared/utils/algo-constants';
 import storage from '../../../shared/utils/storage';
 
-const SCRIPTS_PUBLIC_KEY =
-  '25bda455f2f765a2375732e44ed34eb52a611b3b14607e43b2766c6c07a3f7b0abbd2fc38543f874cbaec50f53f0b6d685e85f78dbb5ffd81c66d9ba8c67b404';
-
 const jsonToKey = async (json: string, password: string) => {
   try {
     const { StoredKey, PrivateKey } = await initWasm();
@@ -213,13 +210,17 @@ const signWithKey = async (message: string, signAlgo: number, hashAlgo: number, 
 const verifySignature = async (signature: string, message: any) => {
   try {
     const { PublicKey, PublicKeyType, Hash } = await initWasm();
+    const scriptsPublicKey = process.env.SCRIPTS_PUBLIC_KEY;
+    if (!scriptsPublicKey) {
+      throw new Error('SCRIPTS_PUBLIC_KEY is not set');
+    }
 
     const messageStr =
       typeof message === 'object' ? JSON.stringify(message, Object.keys(message).sort()) : message;
     const messageHash = Hash.sha256(Buffer.from(messageStr, 'utf8'));
     const signatureBuffer = Buffer.from(signature, 'hex');
     const pubkeyData = Buffer.from(
-      '04' + SCRIPTS_PUBLIC_KEY.replace('0x', '').replace(/^04/, ''),
+      '04' + scriptsPublicKey.replace('0x', '').replace(/^04/, ''),
       'hex'
     );
 
