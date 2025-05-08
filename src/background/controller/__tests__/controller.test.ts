@@ -1,0 +1,264 @@
+// --- Top-Level Mocks ---
+vi.mock('../wallet', () => ({
+  default: {
+    isUnlocked: vi.fn(),
+    getNetwork: vi.fn(),
+    getParentAddress: vi.fn(),
+    queryEvmAddress: vi.fn(),
+    // Add any other Wallet methods used by providerController or its helpers
+  },
+}));
+
+vi.mock('@/background/utils/modules/findAddressWithPubKey', () => ({
+  getAccountsByPublicKeyTuple: vi.fn(),
+}));
+
+vi.mock('background/service', () => {
+  return {
+    keyringService: {
+      getCurrentPublicPrivateKeyTuple: vi.fn(),
+    },
+    notificationService: {
+      requestApproval: vi.fn(),
+    },
+    signTextHistoryService: {
+      createHistory: vi.fn(),
+    },
+    mixpanelTrack: vi.fn(),
+    userWalletService: {
+      // Mock userWalletService to prevent openapi init issues
+      setupFcl: vi.fn(), // Explicitly mock setupFcl
+      // Mock other userWalletService methods if they are used by controller
+    },
+    // permissionService and sessionService might need similar stubs if controller uses them
+    // If they are used and not part of 'actual' or cause issues, define them here:
+    // permissionService: { ... vi.fn() for its methods ... },
+    // sessionService: { ... vi.fn() for its methods ... },
+  };
+});
+
+// 2. ADD THE FOLLOWING BLOCK of clean imports here:
+import { ecrecover, pubToAddress, bufferToHex } from 'ethereumjs-util';
+import * as ethUtil from 'ethereumjs-util';
+import { ethers } from 'ethers';
+import RLP from 'rlp';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+// --- Other Specific Imports (ensure these remain as they were) ---
+
+import * as findAddressWithPubKey from '@/background/utils/modules/findAddressWithPubKey';
+import * as publicPrivateKey from '@/background/utils/modules/publicPrivateKey';
+import { TESTNET_CHAIN_ID } from '@/shared/types/network-types';
+import { ensureEvmAddressPrefix } from '@/shared/utils/address';
+import { SIGN_ALGO_NUM_ECDSA_P256, HASH_ALGO_NUM_SHA2_256 } from '@/shared/utils/algo-constants';
+import {
+  keyringService,
+  notificationService,
+  signTextHistoryService,
+  mixpanelTrack,
+} from 'background/service';
+
+import providerController from '../provider/controller';
+import walletController from '../wallet';
+
+describe('ProviderController - signTypeData (EIP-1271)', () => {
+  const mockPrivateKeyHex = '0x2a48b006348213f6f78b7c8cf443a32737b8f6013734d8f937c68556641f02b9';
+  const mockWallet = new ethers.Wallet(mockPrivateKeyHex);
+  const mockEvmAddress = mockWallet.address; // Address derived from private key
+  const mockFlowAddress = '0xf8d6e0586b0a20c7'; // Example Flow address
+  const mockKeyIndex = 123;
+
+  const sampleTypedData = {
+    types: {
+      EIP712Domain: [
+        { name: 'name', type: 'string' },
+        { name: 'version', type: 'string' },
+        { name: 'chainId', type: 'uint256' },
+        { name: 'verifyingContract', type: 'address' },
+      ],
+      Permit: [
+        { name: 'owner', type: 'address' },
+        { name: 'spender', type: 'address' },
+        { name: 'value', type: 'uint256' },
+        { name: 'nonce', type: 'uint256' },
+        { name: 'deadline', type: 'uint256' },
+      ],
+    },
+    primaryType: 'Permit' as const,
+    domain: {
+      name: 'My DApp',
+      version: '1',
+      chainId: TESTNET_CHAIN_ID, // Must match network
+      verifyingContract: '0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC',
+    },
+    message: {
+      owner: mockEvmAddress, // Important: this should be the signing address
+      spender: ethUtil.toChecksumAddress('0xdDddDDddDDddDDddDDddDDDDdDddDDDDDDDDDDDD'),
+      value: '1000000000000000000', // 1 token
+      nonce: 0,
+      deadline: Math.floor(Date.now() / 1000) + 3600,
+    },
+  };
+
+  const getEIP712Hash = (typedData: typeof sampleTypedData) => {
+    const types = { ...typedData.types };
+    return ethers.TypedDataEncoder.hash(typedData.domain, types, typedData.message);
+  };
+
+  beforeEach(() => {
+    vi.resetAllMocks();
+
+    // Default Mocks for Wallet
+    walletController.isUnlocked = vi.fn().mockResolvedValue(true);
+    walletController.getNetwork = vi.fn().mockResolvedValue('testnet');
+    walletController.getParentAddress = vi.fn().mockResolvedValue(mockFlowAddress);
+    walletController.queryEvmAddress = vi.fn().mockResolvedValue(mockEvmAddress);
+
+    // Spy and mock for keyringService
+    keyringService.getCurrentPublicPrivateKeyTuple = vi.fn().mockResolvedValue({
+      SECP256K1: {
+        pk: mockPrivateKeyHex.slice(2),
+        pubK: mockWallet.signingKey.publicKey.slice(2),
+        type: 'eth',
+      },
+      P256: {
+        pk: mockPrivateKeyHex.slice(2),
+        pubK: mockWallet.signingKey.publicKey.slice(2),
+        type: 'flow',
+      },
+    });
+
+    // Configure mocks for other top-level mocked modules
+    vi.mocked(findAddressWithPubKey).getAccountsByPublicKeyTuple.mockResolvedValue([
+      {
+        address: mockFlowAddress,
+        keyIndex: mockKeyIndex,
+        signAlgo: SIGN_ALGO_NUM_ECDSA_P256,
+        hashAlgo: HASH_ALGO_NUM_SHA2_256,
+        weight: 1000,
+        publicKey: mockWallet.signingKey.publicKey,
+        signAlgoString: 'ECDSA_P256',
+        hashAlgoString: 'SHA2_256',
+      },
+    ]);
+    /*
+    vi.mocked(publicPrivateKey).signWithKey = vi
+      .fn()
+      .mockImplementation(
+        async (
+          dataToSignHex: string,
+          signAlgo: number,
+          hashAlgo: number,
+          privateKeyHex: string
+        ) => {
+          if (signAlgo !== SIGN_ALGO_NUM_ECDSA_P256) {
+            throw new Error('signWithKey mock called with non-ECDSA_P256 algo');
+          }
+          const messageHashBytes = Buffer.from(dataToSignHex, 'hex');
+          const signingKey = new ethers.SigningKey('0x' + privateKeyHex);
+          const sig = signingKey.sign(messageHashBytes);
+          const rHex = sig.r.slice(2);
+          const sHex = sig.s.slice(2);
+          const vHex = sig.yParity.toString(16).padStart(2, '0');
+          return rHex + sHex + vHex;
+        }
+      );
+ */
+    // Configure functions imported for mocking their modules
+    vi.mocked(notificationService.requestApproval).mockResolvedValue({});
+    vi.mocked(signTextHistoryService.createHistory).mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should return a valid EIP-1271 signature proof for eth_signTypedData_v4', async () => {
+    const request = {
+      data: {
+        method: 'eth_signTypedData_v4',
+        params: [mockEvmAddress, sampleTypedData],
+      },
+      session: {
+        origin: 'https://example.com',
+        name: 'Test DApp',
+        icon: '',
+      },
+    };
+
+    const signatureProofHex = await providerController.signTypeData(request);
+    expect(signatureProofHex).toBeTypeOf('string');
+    expect(signatureProofHex.startsWith('0x')).toBe(true);
+
+    const proofBuffer = Buffer.from(signatureProofHex.slice(2), 'hex');
+    const decodedProof = RLP.decode(proofBuffer);
+
+    expect(Array.isArray(decodedProof)).toBe(true);
+    expect(decodedProof.length).toBe(4);
+
+    const [rlpKeyIndices, rlpAddress, rlpCapabilityPath, rlpSignatures] = decodedProof;
+
+    // Using type assertion for Buffer as RLP.Decoded is broad
+    const keyIndicesBuffer = rlpKeyIndices as Buffer[];
+    const addressBuffer = rlpAddress as Buffer;
+    const capabilityPathBuffer = rlpCapabilityPath as Buffer;
+    const signaturesBufferArray = rlpSignatures as Buffer[];
+
+    const decodedKeyIndex = BigInt(bufferToHex(keyIndicesBuffer[0]));
+    expect(decodedKeyIndex).toBe(BigInt(mockKeyIndex));
+
+    expect('0x' + addressBuffer.toString('hex').toLowerCase()).toBe(mockEvmAddress.toLowerCase());
+    expect(capabilityPathBuffer.toString('utf8')).toBe('evm');
+
+    expect(Array.isArray(signaturesBufferArray)).toBe(true);
+    expect(signaturesBufferArray.length).toBe(1);
+    const embeddedSignatureWithRawV = signaturesBufferArray[0].toString('hex');
+
+    expect(embeddedSignatureWithRawV.length).toBe(130);
+
+    const r = Buffer.from(embeddedSignatureWithRawV.substring(0, 64), 'hex');
+    const s = Buffer.from(embeddedSignatureWithRawV.substring(64, 128), 'hex');
+    const rawV = parseInt(embeddedSignatureWithRawV.substring(128, 130), 16);
+
+    expect(rawV === 0 || rawV === 1).toBe(true);
+
+    const vForEcrecover = rawV + 27;
+
+    const originalMessageHash = getEIP712Hash(sampleTypedData);
+    const originalMessageHashBuffer = Buffer.from(originalMessageHash.slice(2), 'hex');
+
+    const recoveredPubKey = ecrecover(originalMessageHashBuffer, vForEcrecover, r, s);
+    const recoveredAddress = bufferToHex(pubToAddress(recoveredPubKey)).toLowerCase();
+    const expectedSignerAddress = mockEvmAddress.toLowerCase();
+
+    expect(ensureEvmAddressPrefix(recoveredAddress)).toBe(
+      ensureEvmAddressPrefix(expectedSignerAddress)
+    );
+    expect(signTextHistoryService.createHistory).toHaveBeenCalled();
+  });
+
+  it('should handle param order correctly if address is the second param', async () => {
+    const request = {
+      data: {
+        method: 'eth_signTypedData_v4',
+        params: [sampleTypedData, mockEvmAddress],
+      },
+      session: { origin: 'test', name: 'test', icon: '' },
+    };
+    await expect(providerController.signTypeData(request as any)).resolves.toBeTypeOf('string');
+    expect(notificationService.requestApproval).toHaveBeenCalled();
+  });
+
+  it('should throw if EVM address does not match current wallet', async () => {
+    const wrongEvmAddress = '0x1111111111111111111111111111111111111111';
+    const request = {
+      data: {
+        method: 'eth_signTypedData_v4',
+        params: [wrongEvmAddress, sampleTypedData],
+      },
+      session: { origin: 'test', name: 'test', icon: '' },
+    };
+    await expect(providerController.signTypeData(request as any)).rejects.toThrow(
+      'Provided address does not match the current address'
+    );
+  });
+});
