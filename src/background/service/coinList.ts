@@ -104,11 +104,11 @@ class CoinList {
    * @param currencyCode - The currency code of the user
    * @returns The tokens of the user
    */
-  async loadCoinList(
+  loadCoinList = async (
     network: string,
     address: string,
     currencyCode: string = 'USD'
-  ): Promise<ExtendedTokenInfo[]> {
+  ): Promise<ExtendedTokenInfo[]> => {
     if (!address) {
       throw new Error('Address is required');
     }
@@ -139,7 +139,7 @@ class CoinList {
       console.error('Error fetching user tokens:', error);
       throw error;
     }
-  }
+  };
 
   private async transformCadenceTokenExtendedInfo(
     cadenceTokenInfo: CadenceTokenInfo[]

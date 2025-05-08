@@ -84,7 +84,6 @@ const CoinList = ({
   const history = useHistory();
 
   useEffect(() => {
-    console.log('tokenList', coins);
     setLoading(coins.length === 0);
     if (coins.length) {
       setLoading(false);
