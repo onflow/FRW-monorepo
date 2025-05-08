@@ -261,11 +261,11 @@ const CoinList = ({
           </ListItem>
         ) : !isLoading ? (
           (coins || [])
-            .filter((coin: CoinItem) => {
+            .filter((coin) => {
               if (tokenFilter.hideDust) {
                 const isFlowToken =
                   coin.contractName === 'FlowToken' || coin.unit.toLowerCase() === 'flow';
-                const isAboveDustThreshold = parseFloat(coin.total) >= 1;
+                const isAboveDustThreshold = parseFloat(coin.balanceInUSD) >= 1;
                 if (!isFlowToken && !isAboveDustThreshold) {
                   return false;
                 }
