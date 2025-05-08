@@ -214,7 +214,8 @@ const verifySignature = async (signature: string, message: any) => {
   try {
     const { PublicKey, PublicKeyType, Hash } = await initWasm();
 
-    const messageStr = typeof message === 'object' ? JSON.stringify(message) : message;
+    const messageStr =
+      typeof message === 'object' ? JSON.stringify(message, Object.keys(message).sort()) : message;
     const messageHash = Hash.sha256(Buffer.from(messageStr, 'utf8'));
     const signatureBuffer = Buffer.from(signature, 'hex');
     const pubkeyData = Buffer.from(
