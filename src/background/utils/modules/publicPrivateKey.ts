@@ -215,8 +215,8 @@ const verifySignature = async (signature: string, message: any) => {
       throw new Error('SCRIPTS_PUBLIC_KEY is not set');
     }
 
-    const messageStr =
-      typeof message === 'object' ? JSON.stringify(message, Object.keys(message).sort()) : message;
+    const messageStr = typeof message === 'object' ? JSON.stringify(message) : message;
+
     const messageHash = Hash.sha256(Buffer.from(messageStr, 'utf8'));
     const signatureBuffer = Buffer.from(signature, 'hex');
     const pubkeyData = Buffer.from(
@@ -231,7 +231,10 @@ const verifySignature = async (signature: string, message: any) => {
 
     return pubKey.verify(signatureBuffer, messageHash);
   } catch (error) {
-    console.error('Verification error:', error);
+    console.error(
+      'Failed to verify signature:',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
     throw error;
   }
 };
