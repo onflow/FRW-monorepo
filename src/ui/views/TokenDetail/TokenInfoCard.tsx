@@ -87,9 +87,10 @@ const TokenInfoCard = ({
           ) : (
             <Skeleton variant="circular" width={64} height={64} />
           )}
-          <Box sx={{ display: 'flex', alignItems: 'end' }}>
+          <Box sx={{ display: 'flex', alignItems: 'end', flex: 1, minWidth: 0 }}>
             <ButtonBase
               onClick={() => extendedTokenInfo && window.open(getUrl(extendedTokenInfo), '_blank')}
+              sx={{ minWidth: 0, flexShrink: 1 }}
             >
               <Box
                 sx={{
@@ -102,32 +103,41 @@ const TokenInfoCard = ({
                   borderRadius: '8px',
                   alignSelf: 'start',
                   background: 'linear-gradient(to right, #000000, #282828)',
+                  minWidth: 0,
                 }}
               >
-                <>
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      fontWeight: '550',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      maxWidth: '190px',
-                    }}
-                  >
-                    {extendedTokenInfo ? (
-                      extendedTokenInfo?.name
-                    ) : (
-                      <Skeleton variant="text" width={90} />
-                    )}
-                  </Typography>
-                </>
-                <IconChevronRight size={20} />
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: '550',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 1,
+                    minWidth: '0px',
+                  }}
+                >
+                  {extendedTokenInfo ? (
+                    extendedTokenInfo?.name
+                  ) : (
+                    <Skeleton variant="text" width={90} />
+                  )}
+                </Typography>
+
+                <Box sx={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+                  <IconChevronRight size={20} />
+                </Box>
               </Box>
             </ButtonBase>
             {extendedTokenInfo?.isVerified && (
               <Box
-                sx={{ display: 'flex', alignItems: 'center', height: '40px', marginLeft: '4px' }}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  height: '40px',
+                  marginLeft: '4px',
+                  flexShrink: 0,
+                }}
               >
                 <img src={VerifiedIcon} alt="Verified" style={{ width: '24px', height: '24px' }} />
               </Box>
