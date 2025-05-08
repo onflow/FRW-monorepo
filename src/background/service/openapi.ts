@@ -566,6 +566,11 @@ class OpenApiService {
       }
     } catch (err) {
       console.error('Error verifying signature:', err);
+
+      // throw invalid signature error to prevent processing bad responses
+      if (err instanceof Error && err.message === 'Invalid signature in response') {
+        throw err;
+      }
     }
 
     return responseData;
