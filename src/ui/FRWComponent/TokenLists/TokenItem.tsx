@@ -12,6 +12,8 @@ import {
 import { styled } from '@mui/material/styles';
 import React from 'react';
 
+import { CurrencyValue } from '@/ui/views/TokenDetail/CurrencyValue';
+
 import IconCheckmark from '../../../components/iconfont/IconCheckmark';
 import IconPlus from '../../../components/iconfont/IconPlus';
 import VerifiedIcon from '../../FRWAssets/svg/verfied-check.svg';
@@ -110,9 +112,7 @@ const TokenItem = ({
             </Box>
           }
           secondary={
-            showSwitch
-              ? `$${isNaN(parseFloat(token.total)) ? '0.00' : parseFloat(token.total).toFixed(5).toLocaleString()}`
-              : token.symbol.toUpperCase()
+            showSwitch ? <CurrencyValue value={String(token.total)} /> : token.symbol.toUpperCase()
           }
         />
       </CustomListItem>
