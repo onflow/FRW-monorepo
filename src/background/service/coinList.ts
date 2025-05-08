@@ -52,8 +52,8 @@ class CoinList {
    */
   loadCadenceTokenInfo = async (network: string, address: string, currencyCode: string = 'USD') => {
     const cadenceTokenInfo = await openapiService.fetchCadenceTokenInfo(
-      address,
       network,
+      address,
       currencyCode
     );
 
@@ -79,7 +79,7 @@ class CoinList {
    * Load Cadence Token Info
    */
   loadEvmTokenInfo = async (network: string, address: string, currencyCode: string = 'USD') => {
-    const evmTokenInfo = await openapiService.fetchEvmTokenInfo(address, network, currencyCode);
+    const evmTokenInfo = await openapiService.fetchEvmTokenInfo(network, address, currencyCode);
 
     setCachedData(evmTokenInfoKey(network, address, currencyCode), evmTokenInfo);
 
@@ -105,8 +105,8 @@ class CoinList {
    * @returns The tokens of the user
    */
   async loadCoinList(
-    address: string,
     network: string,
+    address: string,
     currencyCode: string = 'USD'
   ): Promise<ExtendedTokenInfo[]> {
     if (!address) {

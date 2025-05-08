@@ -2236,8 +2236,8 @@ class OpenApiService {
   };
 
   async fetchCadenceTokenInfo(
-    address: string,
     network: string,
+    address: string,
     currencyCode: string = 'USD'
   ): Promise<CadenceTokenInfo[]> {
     const response: CadenceTokensApiResponseV4 = await this.sendRequest(
@@ -2254,8 +2254,8 @@ class OpenApiService {
   }
 
   async fetchEvmTokenInfo(
-    address: string,
     network: string,
+    address: string,
     currencyCode: string = 'USD'
   ): Promise<EvmTokenInfo[]> {
     const formattedEvmAddress = address.startsWith('0x') ? address : `0x${address}`;
