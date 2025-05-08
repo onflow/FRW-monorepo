@@ -11,6 +11,8 @@ import {
   FLOW_BIP44_PATH,
   HASH_ALGO_NUM_SHA3_256,
   SIGN_ALGO_NUM_ECDSA_P256,
+  SIGN_ALGO_NUM_ECDSA_secp256k1,
+  HASH_ALGO_NUM_SHA2_256,
 } from '../../../shared/utils/algo-constants';
 import storage from '../../../shared/utils/storage';
 
@@ -186,25 +188,62 @@ const signMessageHash = async (hashAlgo: number, messageData: string) => {
 
 /**
  * Signs a hex encoded message using the private key
- * @param message the hex encoded message to sign
+ * @param messageHex the hex encoded message to sign
  * @param signAlgo the sign algorithm to use
- * @param hashAlgo the hash algorithm to use
+ * @param hashAlgo the hash algorithm to use (used if message is not prehashed)
  * @param pk the private key to use
+ * @param includeV if true, the signature will include the recovery id (v)
+ * @param isPrehashed if true, messageHex is treated as a prehashed digest
  * @returns the signature
  */
-const signWithKey = async (message: string, signAlgo: number, hashAlgo: number, pk: string) => {
-  // Other key
-
+const signWithKey = async (
+  messageHex: string,
+  signAlgo: number,
+  hashAlgo: number,
+  pk: string,
+  includeV: boolean = false,
+  isPrehashed: boolean = false
+) => {
   const { Curve, Hash, PrivateKey } = await initWasm();
-  const messageData = Buffer.from(message, 'hex');
+  const messageBuffer = Buffer.from(messageHex, 'hex');
   const privateKey = PrivateKey.createWithData(Buffer.from(pk, 'hex'));
 
-  const curve = signAlgo === SIGN_ALGO_NUM_ECDSA_P256 ? Curve.nist256p1 : Curve.secp256k1;
+  let selectedCurve: typeof Curve.secp256k1 | typeof Curve.nist256p1; // TrustWallet's Curve type
+  if (signAlgo === SIGN_ALGO_NUM_ECDSA_secp256k1) {
+    selectedCurve = Curve.secp256k1;
+  } else if (signAlgo === SIGN_ALGO_NUM_ECDSA_P256) {
+    selectedCurve = Curve.nist256p1;
+  } else {
+    throw new Error(`Unsupported signAlgo: ${signAlgo} - pk: ${pk.substring(0, 10)}`);
+  }
+  let digestToSign: Uint8Array = messageBuffer;
+  if (isPrehashed) {
+    digestToSign = messageBuffer;
+  } else {
+    if (hashAlgo === HASH_ALGO_NUM_SHA3_256) {
+      digestToSign = Hash.sha3_256(messageBuffer);
+    } else if (hashAlgo === HASH_ALGO_NUM_SHA2_256) {
+      digestToSign = Hash.sha256(messageBuffer);
+    } else {
+      throw new Error(`Unsupported hashAlgo: ${hashAlgo}`);
+    }
+  }
 
-  const messageHash =
-    hashAlgo === HASH_ALGO_NUM_SHA3_256 ? Hash.sha3_256(messageData) : Hash.sha256(messageData);
-  const signature = privateKey.sign(messageHash, curve);
-  return Buffer.from(signature.subarray(0, signature.length - 1)).toString('hex');
+  // Ensure digest is 32 bytes for secp256k1 if prehashed, as privateKey.sign might expect it.
+  // If not prehashed, Hash.sha256/sha3_256 will produce 32 bytes.
+  if (isPrehashed && selectedCurve === Curve.secp256k1 && digestToSign.length !== 32) {
+    throw new Error('Prehashed digest for secp256k1 signing must be 32 bytes long.');
+  }
+
+  const signature = privateKey.sign(digestToSign, selectedCurve);
+  // For secp256k1, privateKey.sign from TrustWallet usually returns r (32) + s (32) + v (1, recId 0/1).
+  // For nist256p1, it might be DER or just r (32) + s (32).
+  // The test expects r+s+v (v=recId), so this should align if Wallet Core behaves as such for secp256k1.
+  if (includeV) {
+    return Buffer.from(signature).toString('hex');
+  } else {
+    return Buffer.from(signature.subarray(0, signature.length - 1)).toString('hex');
+  }
 };
 
 export {

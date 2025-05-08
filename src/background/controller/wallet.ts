@@ -133,6 +133,7 @@ import { getScripts } from '../service/openapi';
 import type { ConnectedSite } from '../service/permission';
 import type { PreferenceAccount } from '../service/preference';
 import { type EvaluateStorageResult, StorageEvaluator } from '../service/storage-evaluator';
+import { getEvmAccountOfParent } from '../service/userWallet';
 import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
 import defaultConfig from '../utils/defaultConfig.json';
 import { getEmojiList } from '../utils/emoji-util';
@@ -1858,23 +1859,9 @@ export class WalletController extends BaseController {
   };
 
   queryEvmAddress = async (address: string | FlowAddress): Promise<string | null> => {
-    if (address.length > 20) {
-      return null;
-    }
-    if (!this.isUnlocked()) {
-      return null;
-    }
-    let evmAddress;
-    try {
-      evmAddress = await userWalletService.getCurrentEvmAddress();
-    } catch (error) {
-      evmAddress = '';
-      console.error('Error getting EVM address:', error);
-    }
-    if (isValidEthereumAddress(evmAddress)) {
-      return evmAddress;
-    }
-    return null;
+    const network = await this.getNetwork();
+    const evmAccount = await getEvmAccountOfParent(network, address);
+    return evmAccount?.address ?? null;
   };
 
   checkCanMoveChild = async () => {
