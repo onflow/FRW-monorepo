@@ -109,3 +109,7 @@ export const useKeyringIds = () => {
 export const useRegisterStatus = (pubKey: string | undefined | null) => {
   return useCachedData<boolean>(pubKey ? registerStatusKey(pubKey) : null);
 };
+
+export const usePayer = () => {
+  return useUserData<string>('lilicoPayer');
+};
