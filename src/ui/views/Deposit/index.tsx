@@ -115,7 +115,7 @@ const Deposit = () => {
   }, [usewallet]);
 
   useEffect(() => {
-    if (currentWalletList?.[localWalletIndex]?.address) {
+    if (currentWalletList?.[localWalletIndex]?.address && qrCode) {
       qrCode.update({
         data: currentWalletList[localWalletIndex].address,
       });
