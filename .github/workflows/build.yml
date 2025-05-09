@@ -216,3 +216,36 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+
+  deploy-report:
+    needs: [test]
+    runs-on: ubuntu-latest
+    if: always()
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Playwright Report
+        uses: actions/download-artifact@v4
+        with:
+          name: playwright-report
+          path: temp-playwright-report
+      - name: Move report to run-specific directory
+        run: |
+          mkdir -p playwright-report/runs/${{ github.run_id }}
+          cp -r temp-playwright-report/* playwright-report/runs/${{ github.run_id }}/
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: playwright-report
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Add Playwright Report Annotation
+        if: always()
+        run: |
+          echo "::notice title=Playwright Report::View the Playwright report for this run at https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/runs/${GITHUB_RUN_ID}/"
