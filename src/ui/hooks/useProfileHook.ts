@@ -124,6 +124,12 @@ export const useProfiles = () => {
     }
   }, [activeAccountType, evmAccount, childAccounts, parentWallet, activeAccounts?.currentAddress]);
 
+  const currentWalletList = [
+    parentWallet,
+    ...(evmAccount ? [evmAccount] : []),
+    ...(childAccounts ?? []),
+  ];
+
   const canMoveToChild =
     activeAccountType === 'main' && (evmAccount || (childAccounts && childAccounts?.length > 0));
 
@@ -151,6 +157,7 @@ export const useProfiles = () => {
     noAddress,
     registerStatus,
     canMoveToChild,
+    currentWalletList,
     payer,
   };
 };

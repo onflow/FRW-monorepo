@@ -264,7 +264,7 @@ const CoinList = ({
               if (tokenFilter.hideDust) {
                 const isFlowToken =
                   coin.contractName === 'FlowToken' || coin.unit.toLowerCase() === 'flow';
-                const isAboveDustThreshold = parseFloat(coin.balanceInUSD) >= 1;
+                const isAboveDustThreshold = parseFloat(coin.balanceInUSD) >= 0.01;
                 if (!isFlowToken && !isAboveDustThreshold) {
                   return false;
                 }

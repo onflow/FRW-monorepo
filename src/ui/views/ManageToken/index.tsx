@@ -185,7 +185,7 @@ const ManageToken = () => {
                 }}
               >
                 {`Hide dust tokens `}
-                <Tooltip title="Tokens with less than 1$ USD balance">
+                <Tooltip title="Tokens with less than 0.01$ USD balance">
                   <HelpOutlineRoundedIcon
                     sx={{ color: 'rgba(255, 255, 255, 0.6)', width: '16px', height: '16px' }}
                   />
