@@ -244,7 +244,7 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
       .bridgeNftToEvmAddress(
         props.data.nft.flowIdentifier,
         props.data.nft.id,
-        props.data.contract.evmAddress
+        props.data.contact.address
       )
       .then(async (txId) => {
         wallet.listenTransaction(

@@ -26,7 +26,12 @@ import {
 import { getFirbaseConfig, getFirbaseFunctionUrl } from '@/background/utils/firebaseConfig';
 import fetchConfig from '@/background/utils/remoteConfig';
 import { storage } from '@/background/webapi';
-import type { ExtendedTokenInfo, BalanceMap } from '@/shared/types/coin-types';
+import type {
+  ExtendedTokenInfo,
+  BalanceMap,
+  EvmTokenInfo,
+  CadenceTokenInfo,
+} from '@/shared/types/coin-types';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
 import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
 import { type NFTCollections } from '@/shared/types/nft-types';
@@ -79,83 +84,11 @@ import {
 } from './index';
 const { version } = packageJson;
 
-// New type definitions for API response for /v4/cadence/tokens/ft/{address}
-interface FlowTokenResponse {
-  name: string;
-  symbol: string;
-  description: string;
-  logos: {
-    items: Array<{
-      file: {
-        url: string;
-      };
-      mediaType: string;
-    }>;
-  };
-  socials: {
-    x?: {
-      url: string;
-    };
-  };
-  balance: string;
-  contractAddress: string;
-  contractName: string;
-  storagePath: {
-    domain: string;
-    identifier: string;
-  };
-  receiverPath: {
-    domain: string;
-    identifier: string;
-  };
-  balancePath: {
-    domain: string;
-    identifier: string;
-  };
-  identifier: string;
-  isVerified: boolean;
-  priceInUSD: string;
-  balanceInUSD: string;
-  priceInFLOW: string;
-  balanceInFLOW: string;
-  priceInCurrency: string;
-  balanceInCurrency: string;
-  currency: string;
-  logoURI: string;
-}
-
-// New type definitions for API response for /v4/evm/tokens/ft/{address}
-interface EvmTokenResponse {
-  chainId: number;
-  address: string;
-  symbol: string;
-  name: string;
-  decimals: number;
-  logoURI: string;
-  flowIdentifier: string;
-  priceInUSD: string;
-  balanceInUSD: string;
-  priceInFLOW: string;
-  balanceInFLOW: string;
-  displayBalance: string;
-  rawBalance: string;
-  currency: string;
-  priceInCurrency: string;
-  balanceInCurrency: string;
-  isVerified: boolean;
-}
-
-interface EvmApiResponse {
-  data: EvmTokenResponse[];
-}
-
-interface CurrencyResponse {
+type CurrencyResponse = {
   data: {
     currencies: Currency[];
   };
-}
-
-type FlowApiResponse = { data: { result: FlowTokenResponse[]; storage: StorageResponse } };
+};
 
 type StorageResponse = {
   storageUsedInMB: string;
@@ -165,6 +98,13 @@ type StorageResponse = {
   availableBalanceToUse: string;
 };
 
+type CadenceTokensApiResponseV4 = {
+  data: { result: CadenceTokenInfo[]; storage: StorageResponse };
+};
+
+type EvmTokensApiResponseV4 = {
+  data: EvmTokenInfo[];
+};
 // New type definitions for API response for /v1/account/transaction
 
 type TransactionResponseItem = {
@@ -2294,165 +2234,43 @@ class OpenApiService {
 
     return accounts;
   };
-  /**
-   * Get user tokens, handle both EVM and Flow tokens. Include price information.
-   * @param address - The address of the user
-   * @param network - The network of the user
-   * @param currencyCode - The currency code of the user
-   * @returns The tokens of the user
-   */
-  async getUserTokens(
-    address: string,
-    network?: string,
-    currencyCode: string = 'USD'
-  ): Promise<ExtendedTokenInfo[]> {
-    if (!address) {
-      throw new Error('Address is required');
-    }
 
-    // If network not provided, get current network
-    if (!network) {
-      network = await userWalletService.getNetwork();
-    }
-
-    // Determine if address is EVM or Flow based on format
-    const isEvmAddress = isValidEthereumAddress(address);
-    const isFlowAddress = isValidFlowAddress(address);
-
-    if (!isEvmAddress && !isFlowAddress) {
-      throw new Error('Invalid address format');
-    }
-
-    try {
-      if (isEvmAddress) {
-        return await this.fetchUserEvmTokens(address, network, currencyCode);
-      } else {
-        return await this.fetchUserFlowTokens(address, network, currencyCode);
-      }
-    } catch (error) {
-      console.error('Error fetching user tokens:', error);
-      throw error;
-    }
-  }
-
-  private async fetchUserFlowTokens(
-    address: string,
+  async fetchCadenceTokenInfo(
     network: string,
+    address: string,
     currencyCode: string = 'USD'
-  ): Promise<ExtendedTokenInfo[]> {
-    const cacheKey = `flow_tokens_${address}_${network}_${currencyCode}`;
-    const cachedFlowData = await storage.getExpiry(cacheKey);
-
-    if (cachedFlowData !== null) {
-      return cachedFlowData;
-    }
-
-    const response: FlowApiResponse = await this.sendRequest(
+  ): Promise<CadenceTokenInfo[]> {
+    const response: CadenceTokensApiResponseV4 = await this.sendRequest(
       'GET',
       `/api/v4/cadence/tokens/ft/${address}`,
       { network, currency: currencyCode },
       {},
       WEB_NEXT_URL
     );
-    if (!response!.data?.result?.length) {
-      return [];
+    if (!response!.data?.result) {
+      throw new Error('No token info found');
     }
-
-    const tokens = (response?.data?.result || []).map(
-      (token): ExtendedTokenInfo => ({
-        id: token.identifier,
-        name: token.name,
-        address: token.contractAddress,
-        contractName: token.contractName,
-        symbol: token.symbol,
-        decimals: 8, // Default to 8 decimals for Flow tokens if not specified
-        path: {
-          vault: token.storagePath
-            ? `/${token.storagePath.domain}/${token.storagePath.identifier}`
-            : '', // Provide a default value if storagePath is null
-          receiver: token.receiverPath
-            ? `/${token.receiverPath.domain}/${token.receiverPath.identifier}`
-            : '', // Provide a default value if receiverPath is null
-          balance: token.balancePath
-            ? `/${token.balancePath.domain}/${token.balancePath.identifier}`
-            : '', // Provide a default value if balancePath is null
-        },
-        logoURI: token.logoURI || token.logos?.items?.[0]?.file?.url || '',
-        extensions: {
-          description: token.description,
-          twitter: token.socials?.x?.url,
-        },
-        custom: false,
-        price: token.priceInCurrency || token.priceInUSD || '',
-        total: token.balanceInCurrency || token.balanceInUSD || '',
-        change24h: 0,
-        balance: token.balance || '0',
-        // Add CoinItem properties
-        coin: token.name, // redundant for compatibility
-        unit: token.symbol ?? token.contractName, // redundant for compatibility
-        icon: token.logoURI || token.logos?.items?.[0]?.file?.url || '',
-        flowIdentifier: token.identifier,
-        isVerified: token.isVerified ? token.isVerified : false,
-      })
-    );
-    return tokens;
+    return response?.data?.result;
   }
 
-  private async fetchUserEvmTokens(
-    address: string,
+  async fetchEvmTokenInfo(
     network: string,
+    address: string,
     currencyCode: string = 'USD'
-  ): Promise<ExtendedTokenInfo[]> {
-    const cacheKey = `evm_tokens_${address}_${network}_${currencyCode}`;
-    const cachedEvmData = await storage.getExpiry(cacheKey);
-
-    if (cachedEvmData !== null) {
-      return cachedEvmData;
-    }
-
+  ): Promise<EvmTokenInfo[]> {
     const formattedEvmAddress = address.startsWith('0x') ? address : `0x${address}`;
 
-    const userEvmTokenList: EvmApiResponse = await this.sendRequest(
+    const userEvmTokenList: EvmTokensApiResponseV4 = await this.sendRequest(
       'GET',
       `/api/v4/evm/tokens/ft/${formattedEvmAddress}`,
       { network, currency: currencyCode },
       {},
       WEB_NEXT_URL
     );
-    if (!userEvmTokenList?.data?.length) {
-      return [];
+    if (!userEvmTokenList?.data) {
+      throw new Error('No token info found');
     }
-
-    // Convert EvmTokenResponse to ExtendedTokenInfo
-    const tokens = userEvmTokenList.data.map(
-      (token): ExtendedTokenInfo => ({
-        id: token.flowIdentifier || token.address,
-        name: token.name,
-        address: token.address,
-        contractName: token.name, // Use name as contractName for EVM tokens
-        symbol: token.symbol,
-        decimals: token.decimals,
-        path: {
-          vault: '', // EVM tokens don't use Flow paths
-          receiver: '',
-          balance: '',
-        },
-        logoURI: token.logoURI || '',
-        extensions: {},
-        custom: false,
-        price: token.priceInCurrency || token.priceInUSD || '',
-        total: token.balanceInCurrency || token.balanceInUSD || '',
-        change24h: 0,
-        balance: token.displayBalance || '0',
-        // Add CoinItem properties
-        coin: token.name, // redundant for compatibility
-        unit: token.symbol, // redundant for compatibility
-        icon: token.logoURI || '', // redundant for compatibility
-        flowIdentifier: token.flowIdentifier,
-        isVerified: token.isVerified,
-      })
-    );
-    return tokens;
+    return userEvmTokenList?.data;
   }
 
   getLatestVersion = async (): Promise<string> => {

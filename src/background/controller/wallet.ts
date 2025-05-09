@@ -71,6 +71,7 @@ import {
   evmNftCollectionListKey,
   registerStatusKey,
   registerStatusRefreshRegex,
+  coinListKey,
 } from '@/shared/utils/cache-data-keys';
 import {
   convertFlowBalanceToString,
@@ -134,7 +135,12 @@ import type { ConnectedSite } from '../service/permission';
 import type { PreferenceAccount } from '../service/preference';
 import { type EvaluateStorageResult, StorageEvaluator } from '../service/storage-evaluator';
 import { getEvmAccountOfParent } from '../service/userWallet';
-import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
+import {
+  getValidData,
+  registerRefreshListener,
+  setCachedData,
+  triggerRefresh,
+} from '../utils/data-cache';
 import defaultConfig from '../utils/defaultConfig.json';
 import { getEmojiList } from '../utils/emoji-util';
 import erc20ABI from '../utils/erc20.abi.json';
@@ -2707,7 +2713,7 @@ export class WalletController extends BaseController {
   bridgeNftToEvmAddress = async (
     flowIdentifier: string,
     ids: number,
-    contractEVMAddress: string
+    recipientEvmAddress: string
   ): Promise<string> => {
     const shouldCoverBridgeFee = await openapiService.getFeatureFlag('cover_bridge_fee');
     const scriptName = shouldCoverBridgeFee
@@ -2717,8 +2723,8 @@ export class WalletController extends BaseController {
 
     const gasLimit = 30000000;
 
-    if (contractEVMAddress.startsWith('0x')) {
-      contractEVMAddress = contractEVMAddress.substring(2);
+    if (recipientEvmAddress.startsWith('0x')) {
+      recipientEvmAddress = recipientEvmAddress.substring(2);
     }
 
     const txID = await userWalletService.sendTransaction(
@@ -2726,7 +2732,7 @@ export class WalletController extends BaseController {
       [
         fcl.arg(flowIdentifier, t.String),
         fcl.arg(ids, t.UInt64),
-        fcl.arg(contractEVMAddress, t.String),
+        fcl.arg(recipientEvmAddress, t.String),
       ],
       shouldCoverBridgeFee
     );
@@ -3074,6 +3080,10 @@ export class WalletController extends BaseController {
       if (foundTx && foundTx.indexed) {
         // Send a message to the UI to update the transfer list
         chrome.runtime.sendMessage({ msg: 'transferListUpdated' });
+        // Refresh the coin list
+        triggerRefresh(
+          coinListKey(network, address, (await this.getDisplayCurrency())?.code || 'USD')
+        );
       } else {
         // All of the transactions have not been picked up by the indexer yet
         attempts++;
@@ -3113,7 +3123,10 @@ export class WalletController extends BaseController {
       const txStatus = await fcl.tx(txId).onceExecuted();
       // Update the pending transaction with the transaction status
       txHash = await transactionService.updatePending(network, address, txId, txStatus);
-
+      // Refresh the coin list
+      triggerRefresh(
+        coinListKey(network, address, (await this.getDisplayCurrency())?.code || 'USD')
+      );
       // Track the transaction result
       mixpanelTrack.track('transaction_result', {
         tx_id: txId,
