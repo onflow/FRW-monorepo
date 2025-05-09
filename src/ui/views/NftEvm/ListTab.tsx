@@ -118,7 +118,7 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
       if (ownerAddress) {
         try {
           setCollectionLoading(true);
-          const list = await usewallet.refreshEvmNftIds(ownerAddress);
+          const list = await usewallet.getEvmNftId(ownerAddress);
           if (list && list.length > 0) {
             setCollectionEmpty(false);
             setCollections(list);

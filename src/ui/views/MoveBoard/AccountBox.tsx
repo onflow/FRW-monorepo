@@ -18,7 +18,7 @@ const USER_CONTACT = {
 
 function AccountBox({ isChild, setSelectedChildAccount, selectedAccount, isEvm = false }) {
   const { childAccountsContacts, evmAccounts, mainAccountContact } = useContacts();
-  const { mainAddress, evmAddress, currentWallet, evmWallet } = useProfiles();
+  const { mainAddress, evmAddress, currentWallet, evmWallet, payer } = useProfiles();
   const [first, setFirst] = useState<string>('');
   const [second, setSecond] = useState<string>('');
   const [userInfo, setUser] = useState<any>(USER_CONTACT);
@@ -146,19 +146,21 @@ function AccountBox({ isChild, setSelectedChildAccount, selectedAccount, isEvm =
           )}
         </Box>
       </Box>
-      <Box sx={{ padding: '8px 0' }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Typography sx={{ fontSize: '12px', fontWeight: '600' }}>Move Fee</Typography>
-          <Typography sx={{ fontSize: '12px', fontWeight: '600' }}>0.001 FLOW</Typography>
+      {!payer && (
+        <Box sx={{ padding: '8px 0' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+            <Typography sx={{ fontSize: '12px', fontWeight: '600' }}>Move Fee</Typography>
+            <Typography sx={{ fontSize: '12px', fontWeight: '600' }}>0.0001 FLOW</Typography>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+            <Typography
+              sx={{ fontSize: '12px', fontWeight: '400', color: 'rgba(255, 255, 255, 0.60)' }}
+            >
+              It appears when moving between VM accounts
+            </Typography>
+          </Box>
         </Box>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Typography
-            sx={{ fontSize: '12px', fontWeight: '400', color: 'rgba(255, 255, 255, 0.60)' }}
-          >
-            It appears when moving between VM accounts
-          </Typography>
-        </Box>
-      </Box>
+      )}
     </Box>
   );
 }

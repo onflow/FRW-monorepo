@@ -2,6 +2,8 @@ import { makeStyles } from '@mui/styles';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useHistory, useParams, useLocation } from 'react-router-dom';
 
+import { triggerRefresh } from '@/shared/utils/cache-data-access';
+import { evmNftCollectionListKey } from '@/shared/utils/cache-data-keys';
 import CollectionDetailGrid from '@/ui/FRWComponent/NFTs/CollectionDetailGrid';
 import GridView from '@/ui/FRWComponent/NFTs/GridView';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
@@ -182,9 +184,9 @@ const NftEvmCollectionDetail = () => {
 
   const refreshCollection = useCallback(
     async (ownerAddress, collection, offset) => {
-      return await usewallet.refreshEvmNftCollectionList(ownerAddress, collection, 50, offset);
+      triggerRefresh(evmNftCollectionListKey(network, ownerAddress, collection, `${offset}`));
     },
-    [usewallet]
+    [network]
   );
 
   // Use the useNftHook
