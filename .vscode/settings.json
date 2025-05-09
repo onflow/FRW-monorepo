@@ -20,7 +20,7 @@
   "javascript.updateImportsOnFileMove.enabled": "always",
   "typescript.updateImportsOnFileMove.enabled": "always",
   "eslint.useFlatConfig": true,
-  "githubPullRequests.overrideDefaultBranch": "dev",
+  "githubPullRequests.overrideDefaultBranch": "",
   "githubIssues.issueBranchTitle": "${issueNumber}-${sanitizedIssueTitle}",
   "cSpell.words": ["Cbor", "keccak", "secp"],
   "[dotenv]": {
@@ -28,5 +28,6 @@
   },
   "[xml]": {
     "editor.defaultFormatter": "DotJoshJohnson.xml"
-  }
+  },
+  "githubPullRequests.createDefaultBaseBranch": "repositoryDefault"
 }
