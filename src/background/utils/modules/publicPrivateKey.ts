@@ -207,6 +207,38 @@ const signWithKey = async (message: string, signAlgo: number, hashAlgo: number, 
   return Buffer.from(signature.subarray(0, signature.length - 1)).toString('hex');
 };
 
+const verifySignature = async (signature: string, message: unknown) => {
+  try {
+    const { PublicKey, PublicKeyType, Hash } = await initWasm();
+    const scriptsPublicKey = process.env.SCRIPTS_PUBLIC_KEY;
+    if (!scriptsPublicKey) {
+      throw new Error('SCRIPTS_PUBLIC_KEY is not set');
+    }
+
+    const messageStr = typeof message === 'string' ? message : JSON.stringify(message);
+
+    const messageHash = Hash.sha256(Buffer.from(messageStr, 'utf8'));
+    const signatureBuffer = Buffer.from(signature, 'hex');
+    const pubkeyData = Buffer.from(
+      '04' + scriptsPublicKey.replace('0x', '').replace(/^04/, ''),
+      'hex'
+    );
+
+    const pubKey = PublicKey.createWithData(pubkeyData, PublicKeyType.nist256p1Extended);
+    if (!pubKey) {
+      throw new Error('Failed to create public key');
+    }
+
+    return pubKey.verify(signatureBuffer, messageHash);
+  } catch (error) {
+    console.error(
+      'Failed to verify signature:',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
+    throw error;
+  }
+};
+
 export {
   jsonToKey,
   pk2PubKey,
@@ -218,4 +250,5 @@ export {
   seedWithPathAndPhrase2PublicPrivateKey,
   formPubKey,
   formPubKeyTuple,
+  verifySignature,
 };
