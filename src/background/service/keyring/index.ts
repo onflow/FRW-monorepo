@@ -339,7 +339,7 @@ class KeyringService extends EventEmitter {
    */
   async importPrivateKey(password: string, privateKey: string): Promise<Keyring> {
     // Verify the password
-    await this.verifyPassword(password);
+    await this.verifyOrBoot(password);
     // Clear the current keyrings as the new keyring will be a simple keyring
     await this.clearKeyrings();
     // Add the new keyring
@@ -359,7 +359,7 @@ class KeyringService extends EventEmitter {
    */
   async importPublicKey(password: string, key: string, seed: string): Promise<any> {
     // Verify the password
-    await this.verifyPassword(password);
+    await this.verifyOrBoot(password);
     // Clear the current keyrings as the new keyring will replace it
     await this.clearKeyrings();
 
@@ -393,7 +393,7 @@ class KeyringService extends EventEmitter {
 
   async generatePreMnemonic(password: string): Promise<string> {
     // Make sure we're using the correct password
-    await this.verifyPassword(password);
+    await this.verifyOrBoot(password);
     const mnemonic = this.generateMnemonic();
     const preMnemonics = await this.encryptor.encrypt(password, mnemonic);
     this.memStore.updateState({ preMnemonics });
@@ -413,7 +413,7 @@ class KeyringService extends EventEmitter {
 
   async getPreMnemonics(password: string): Promise<any> {
     // Verify the password
-    await this.verifyPassword(password);
+    await this.verifyOrBoot(password);
     if (!this.memStore.getState().preMnemonics) {
       return '';
     }
@@ -438,7 +438,7 @@ class KeyringService extends EventEmitter {
     passphrase = ''
   ): Promise<Keyring> {
     // Verify the password
-    await this.verifyPassword(password);
+    await this.verifyOrBoot(password);
     // Validate mnemonic first
     if (!bip39.validateMnemonic(seed)) {
       throw new Error(i18n.t('mnemonic phrase is invalid'));
@@ -521,7 +521,7 @@ class KeyringService extends EventEmitter {
    * @returns {Promise<Object>} A Promise that resolves to the state.
    */
   async submitPassword(password: string): Promise<MemStoreState> {
-    await this.verifyPassword(password);
+    await this.verifyOrBoot(password);
 
     this.currentKeyring = await this.unlockKeyrings(password);
     this.setUnlocked();
@@ -543,6 +543,23 @@ class KeyringService extends EventEmitter {
       throw new Error(i18n.t('Cannot unlock without a previous vault'));
     }
     await this.encryptor.decrypt(password, encryptedBooted);
+  }
+
+  /**
+   * Verify or Boot
+   *
+   * Attempts to decrypt the current vault with a given password
+   * to verify its validity. If the vault is not encrypted, it will boot.
+   *
+   * @param {string} password
+   */
+  async verifyOrBoot(password: string): Promise<void> {
+    const encryptedBooted = this.store.getState().booted;
+    if (!encryptedBooted) {
+      await this.boot(password);
+    } else {
+      await this.verifyPassword(password);
+    }
   }
 
   /**
@@ -633,7 +650,7 @@ class KeyringService extends EventEmitter {
    * @returns {Promise<Object>} A Promise that resolves to the state.
    */
   async addNewAccount(password: string, selectedKeyring: any): Promise<string[]> {
-    await this.verifyPassword(password);
+    await this.verifyOrBoot(password);
     // Add accounts and get result
     const accounts = await selectedKeyring.addAccounts(1);
 
@@ -691,7 +708,7 @@ class KeyringService extends EventEmitter {
     brand?: string
   ): Promise<any> {
     // Verify the password
-    await this.verifyPassword(password);
+    await this.verifyOrBoot(password);
     const keyring = await this.getKeyringForAccount(address, type);
 
     // Not all the keyrings support this, so we have to check
