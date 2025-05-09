@@ -167,7 +167,10 @@ const Deposit = () => {
                 <Tooltip title={chrome.i18n.getMessage('Copy__Address')} arrow>
                   <Button
                     onClick={() => {
-                      navigator.clipboard.writeText(currentWalletList[localWalletIndex].address);
+                      const address = currentWalletList?.[localWalletIndex]?.address;
+                      if (address) {
+                        navigator.clipboard.writeText(address);
+                      }
                     }}
                     sx={{ maxWidth: '30px', minWidth: '30px' }}
                   >
