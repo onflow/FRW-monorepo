@@ -147,6 +147,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",
+    "@metamask/eth-sig-util": "^8.2.0",
     "@playwright/test": "^1.49.0",
     "@svgr/webpack": "^5.5.0",
     "@types/chrome": "^0.0.281",

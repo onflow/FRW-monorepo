@@ -167,7 +167,7 @@ const SignTypedDataVersion = {
   V4: 'V4',
 } as const;
 
-const TypedDataUtils = {
+export const TypedDataUtils = {
   eip712Hash(message: any, version: string): Buffer {
     const types = { ...message.types };
     delete types.EIP712Domain;

@@ -134,6 +134,7 @@ import { getScripts } from '../service/openapi';
 import type { ConnectedSite } from '../service/permission';
 import type { PreferenceAccount } from '../service/preference';
 import { type EvaluateStorageResult, StorageEvaluator } from '../service/storage-evaluator';
+import { getEvmAccountOfParent } from '../service/userWallet';
 import {
   getValidData,
   registerRefreshListener,
@@ -197,6 +198,11 @@ export class WalletController extends BaseController {
   isUnlocked = () => keyringService.isUnlocked();
   verifyPassword = (password: string) => keyringService.verifyPassword(password);
 
+  verifyPasswordIfBooted = async (password: string) => {
+    if (await this.isBooted()) {
+      await this.verifyPassword(password);
+    }
+  };
   sendRequest = (data) => {
     return provider({
       data,
@@ -225,7 +231,7 @@ export class WalletController extends BaseController {
 
     // We're booting the keyring with the new password
     // This does not update the vault, it simply sets the password / cypher methods we're going to use to store our private keys in the vault
-    await this.boot(password);
+    await this.verifyPasswordIfBooted(password);
     // We're then registering the account with the public key
     // This calls our backend API which gives us back an account id
     // This register call ALSO sets the currentId in local storage
@@ -278,6 +284,8 @@ export class WalletController extends BaseController {
   };
 
   importAccountFromMobile = async (address: string, password: string, mnemonic: string) => {
+    // Verify password
+    await this.verifyPasswordIfBooted(password);
     // Switch to mainnet first as the account is on mainnet
     if ((await this.getNetwork()) !== 'mainnet') {
       await this.switchNetwork('mainnet');
@@ -288,9 +296,6 @@ export class WalletController extends BaseController {
     // The account is the public key of the account. It's derived from the mnemonic. We do not support custom curves or passphrases for new accounts
     const accountKey: AccountKeyRequest = await getAccountKey(mnemonic);
 
-    // We're booting the keyring with the new password
-    // This does not update the vault, it simply sets the password / cypher methods we're going to use to store our private keys in the vault
-    await this.boot(password);
     // Login to the account - it should already be registered by the mobile app
     await this.loginWithMnemonic(mnemonic, true);
 
@@ -368,11 +373,10 @@ export class WalletController extends BaseController {
     derivationPath: string = FLOW_BIP44_PATH,
     passphrase: string = ''
   ) => {
-    // Boot the keyring with the password
     // We should be validating the password as the first thing we do
-    await this.boot(password);
-    // Get the public key tuple from the mnemonic
+    await this.verifyPasswordIfBooted(password);
 
+    // Get the public key tuple from the mnemonic
     const pubKTuple: PublicKeyTuple = formPubKeyTuple(
       await seedWithPathAndPhrase2PublicPrivateKey(mnemonic, derivationPath, passphrase)
     );
@@ -430,8 +434,7 @@ export class WalletController extends BaseController {
   ) => {
     // Boot the keyring with the password
     // We should be validating the password as the first thing we do
-    await this.boot(password);
-
+    await this.verifyPasswordIfBooted(password);
     // Get the public key tuple from the private key
     const pubKTuple: PublicKeyTuple = await pk2PubKey(pk);
 
@@ -1864,23 +1867,9 @@ export class WalletController extends BaseController {
   };
 
   queryEvmAddress = async (address: string | FlowAddress): Promise<string | null> => {
-    if (address.length > 20) {
-      return null;
-    }
-    if (!this.isUnlocked()) {
-      return null;
-    }
-    let evmAddress;
-    try {
-      evmAddress = await userWalletService.getCurrentEvmAddress();
-    } catch (error) {
-      evmAddress = '';
-      console.error('Error getting EVM address:', error);
-    }
-    if (isValidEthereumAddress(evmAddress)) {
-      return evmAddress;
-    }
-    return null;
+    const network = await this.getNetwork();
+    const evmAccount = await getEvmAccountOfParent(network, address);
+    return evmAccount?.address ?? null;
   };
 
   checkCanMoveChild = async () => {
