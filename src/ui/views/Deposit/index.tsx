@@ -123,10 +123,11 @@ const Deposit = () => {
   }, [currentWalletList, localWalletIndex]);
 
   useEffect(() => {
-    if (!isInitialized && currentWalletList && currentWallet?.address) {
-      const defaultIndex =
-        currentWalletList.findIndex((wallet) => wallet.address === currentWallet.address) || 0;
-      setLocalWalletIndex(defaultIndex);
+    if (!isInitialized && currentWalletList?.length && currentWallet?.address) {
+      const defaultIndex = currentWalletList.findIndex(
+        (wallet) => wallet.address === currentWallet.address
+      );
+      setLocalWalletIndex(defaultIndex >= 0 ? defaultIndex : 0);
       setIsInitialized(true);
     }
   }, [currentWalletList, currentWallet?.address, isInitialized]);
