@@ -7,6 +7,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { withPrefix } from '@/shared/utils/address';
 import alertMark from '@/ui/FRWAssets/svg/alertMark.svg';
 import { NetworkIndicator } from '@/ui/FRWComponent/NetworkIndicator';
+import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { LLHeader } from 'ui/FRWComponent';
 import { useWallet } from 'ui/utils';
@@ -104,74 +105,31 @@ const Deposit = () => {
   const classes = useStyles();
   const usewallet = useWallet();
   const ref = useRef<HTMLDivElement>(null);
-  const { childAccounts, currentWallet, parentWalletIndex: currentWalletIndex } = useProfiles();
-
-  const [userWallets, setUserWallets] = useState<any>(null);
-  const [localWalletIndex, setLocalWalletIndex] = useState<number>(currentWalletIndex);
-  const [currentNetwork, setNetwork] = useState<string>('mainnet');
-  const [userInfo, setUserInfo] = useState<any>(null);
-  const [active, setIsActive] = useState<string>('');
-  const [emulatorModeOn, setEmulatorModeOn] = useState<boolean>(false);
+  const { currentWalletList, currentWallet, activeAccountType } = useProfiles();
+  const { network, emulatorModeOn } = useNetwork();
+  const [localWalletIndex, setLocalWalletIndex] = useState<number>(0);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const fetchStuff = useCallback(async () => {
-    const currentAddress = await usewallet.getCurrentAddress();
-    const isChild = await usewallet.getActiveAccountType();
-    if (isChild === 'evm') {
-      setIsActive(isChild);
-      const wallets = await usewallet.getEvmWallet();
-      const result = [
-        {
-          id: 0,
-          name: isChild,
-          chain_id: currentNetwork,
-          icon: 'placeholder',
-          color: 'placeholder',
-          blockchain: [wallets],
-        },
-      ];
-      setUserWallets(
-        result.map((ele, idx) => ({
-          id: idx,
-          name: chrome.i18n.getMessage('Wallet'),
-          address: withPrefix(ele?.blockchain[0]?.address ?? ''),
-        }))
-      );
-    } else if (isChild === 'child' && currentAddress) {
-      setIsActive(currentAddress);
-      setUserWallets(
-        Object.keys(childAccounts || []).map((key, index) => ({
-          id: index,
-          name: key,
-          address: currentAddress,
-        }))
-      );
-    } else {
-      setUserWallets([
-        {
-          id: 0,
-          name: currentWallet.name,
-          address: currentWallet.address,
-        },
-      ]);
-    }
-
     await usewallet.setDashIndex(0);
-    const network = await usewallet.getNetwork();
-    setNetwork(network);
-    const emulatorMode = await usewallet.getEmulatorMode();
-    setEmulatorModeOn(emulatorMode);
-    const user = await usewallet.getUserInfo(false);
-    setUserInfo(user);
-  }, [currentNetwork, usewallet, childAccounts, currentWallet]);
+  }, [usewallet]);
 
   useEffect(() => {
-    if (userWallets && userInfo) {
+    if (currentWalletList) {
       qrCode.update({
-        data: userWallets[localWalletIndex].address,
-        // image: userInfo.avatar
+        data: currentWalletList[localWalletIndex].address,
       });
     }
-  }, [userWallets, localWalletIndex, userInfo]);
+  }, [currentWalletList, localWalletIndex]);
+
+  useEffect(() => {
+    if (!isInitialized && currentWalletList && currentWallet?.address) {
+      const defaultIndex =
+        currentWalletList.findIndex((wallet) => wallet.address === currentWallet.address) || 0;
+      setLocalWalletIndex(defaultIndex);
+      setIsInitialized(true);
+    }
+  }, [currentWalletList, currentWallet?.address, isInitialized]);
 
   useEffect(() => {
     fetchStuff();
@@ -186,20 +144,20 @@ const Deposit = () => {
   return (
     <StyledEngineProvider injectFirst>
       <div className={`${classes.page} page`}>
-        <NetworkIndicator network={currentNetwork} emulatorMode={emulatorModeOn} />
+        <NetworkIndicator network={network} emulatorMode={emulatorModeOn} />
         <LLHeader title={chrome.i18n.getMessage('')} help={false} />
         <div className={classes.container}>
-          {userWallets && (
+          {currentWalletList && (
             <SelectContainer>
               <Select
                 className={classes.addressDropdown}
                 value={localWalletIndex}
-                onChange={(e) => setLocalWalletIndex(e.target.value as number)}
+                onChange={(e) => setLocalWalletIndex(Number(e.target.value))}
                 displayEmpty
                 inputProps={{ 'aria-label': 'Without label' }}
               >
-                {userWallets.map((ele) => (
-                  <MenuItem key={ele.id} value={ele.id}>
+                {currentWalletList.map((ele, index) => (
+                  <MenuItem key={ele.id} value={index}>
                     {ele.name} <InlineAddress>({ele.address})</InlineAddress>
                   </MenuItem>
                 ))}
@@ -208,7 +166,7 @@ const Deposit = () => {
                 <Tooltip title={chrome.i18n.getMessage('Copy__Address')} arrow>
                   <Button
                     onClick={() => {
-                      navigator.clipboard.writeText(userWallets[localWalletIndex].address);
+                      navigator.clipboard.writeText(currentWalletList[localWalletIndex].address);
                     }}
                     sx={{ maxWidth: '30px', minWidth: '30px' }}
                   >
@@ -218,10 +176,9 @@ const Deposit = () => {
               </CopyIconWrapper>
             </SelectContainer>
           )}
-          {userWallets && (
-            <QRContainer style={{ height: currentNetwork === 'testnet' ? 350 : 330 }}>
+          {currentWalletList && (
+            <QRContainer style={{ height: network === 'testnet' ? 350 : 330 }}>
               <QRWrapper>
-                {/* <QRCode value={userWallets[localWalletIndex].address} size={150} /> */}
                 <div ref={ref} />
               </QRWrapper>
               <Typography
@@ -233,7 +190,7 @@ const Deposit = () => {
               >
                 {chrome.i18n.getMessage('QR__Code')}
               </Typography>
-              {currentNetwork === 'testnet' ? (
+              {network === 'testnet' ? (
                 <TestnetWarning />
               ) : (
                 <Typography
@@ -249,7 +206,7 @@ const Deposit = () => {
               )}
             </QRContainer>
           )}
-          {active === 'evm' && (
+          {activeAccountType === 'evm' && (
             <Box
               sx={{
                 marginY: '30px',
