@@ -2,7 +2,12 @@
  * Keys and types to access data in the UI from the background storage cache
  * This is the primary way to get cached data from network calls to the frontend
  */
-import { type TokenFilter, type ExtendedTokenInfo } from '../types/coin-types';
+import {
+  type TokenFilter,
+  type ExtendedTokenInfo,
+  type EvmTokenInfo,
+  type CadenceTokenInfo,
+} from '../types/coin-types';
 import { type UserInfoResponse } from '../types/network-types';
 import {
   type NFTCollections,
@@ -206,11 +211,15 @@ export const getCachedEvmNftCollectionList = async (
     evmNftCollectionListKey(network, address, collectionIdentifier, `${offset}`)
   );
 };
-//Coin list
+/**
+ * Fungible Token information
+ */
+// Coinlist can be used for both EVM and Cadence tokens - this is the primary way to get token information
 export const coinListKey = (network: string, address: string, currency: string = 'usd') =>
   `coin-list-${network}-${address}-${currency}`;
 
 export const coinListRefreshRegex = refreshKey(coinListKey);
+export type CoinListStore = ExtendedTokenInfo[];
 
 export const getCachedCoinList = async (network: string, address: string, currency = 'usd') => {
   return getCachedData<ExtendedTokenInfo[]>(coinListKey(network, address, currency));
@@ -224,3 +233,19 @@ export type TokenFilterStore = TokenFilter[];
 export const getCachedTokenFilter = async (network: string, address: string) => {
   return getCachedData<TokenFilterStore>(tokenFilterKey(network, address));
 };
+
+// This is used internally to cache EVM token information
+// Potentially could be used in the future to replace ExtendedTokenInfo
+export const evmTokenInfoKey = (network: string, address: string, currency: string = 'usd') =>
+  `evm-token-info-${network}-${address}`;
+
+export const evmTokenInfoRefreshRegex = refreshKey(evmTokenInfoKey);
+export type EvmTokenInfoStore = EvmTokenInfo[];
+
+// This is used internally to cache Cadence token information
+// Potentially could be used in the future to replace ExtendedTokenInfo
+export const cadenceTokenInfoKey = (network: string, address: string, currency: string = 'usd') =>
+  `cadence-token-info-${network}-${address}-${currency}`;
+
+export const cadenceTokenInfoRefreshRegex = refreshKey(cadenceTokenInfoKey);
+export type CadenceTokenInfoStore = CadenceTokenInfo[];

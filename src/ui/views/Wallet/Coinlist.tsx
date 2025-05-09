@@ -19,8 +19,8 @@ import { formatLargeNumber } from '@/shared/utils/number';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 
-import IconCreate from '../../../components/iconfont/IconCreate';
-import TablerIcon from '../../FRWAssets/svg/tabler.svg';
+import plus from '../../FRWAssets/svg/plus.svg';
+import slider from '../../FRWAssets/svg/slider.svg';
 import VerifiedIcon from '../../FRWAssets/svg/verfied-check.svg';
 import { CurrencyValue } from '../TokenDetail/CurrencyValue';
 
@@ -28,13 +28,41 @@ const ActionButtons = ({ managePath, createPath }) => {
   const history = useHistory();
 
   return (
-    <Box sx={{ display: 'flex', px: '12px', pt: '4px' }}>
+    <Box sx={{ display: 'flex', px: '12px', pt: '4px', gap: '12px' }}>
       <Box sx={{ flexGrow: 1 }} />
-      <IconButton onClick={() => history.push(managePath)}>
-        <img src={TablerIcon} alt="Tabler" style={{ width: '28px', height: '28px' }} />
+      <IconButton
+        onClick={() => history.push(managePath)}
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: '10px',
+          flexShrink: 0,
+          borderRadius: '100px',
+          background: 'rgba(255, 255, 255, 0.10)',
+          '&:hover': {
+            opacity: 0.8,
+          },
+        }}
+      >
+        <img src={slider} alt="Manage" style={{ width: '20px', height: '20px' }} />
       </IconButton>
-      <IconButton onClick={() => history.push(createPath)} sx={{ paddingX: '13px' }}>
-        <IconCreate size={18} color="#787878" />
+      <IconButton
+        onClick={() => history.push(createPath)}
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: '10px',
+          flexShrink: 0,
+          borderRadius: '100px',
+          background: 'rgba(255, 255, 255, 0.10)',
+          '&:hover': {
+            opacity: 0.8,
+          },
+        }}
+      >
+        <img src={plus} alt="Add" style={{ width: '20px', height: '20px' }} />
       </IconButton>
     </Box>
   );
@@ -56,7 +84,6 @@ const CoinList = ({
   const history = useHistory();
 
   useEffect(() => {
-    console.log('tokenList', coins);
     setLoading(coins.length === 0);
     if (coins.length) {
       setLoading(false);
@@ -113,19 +140,21 @@ const CoinList = ({
       <ListItemText
         disableTypography={true}
         primary={
-          !isLoading ? (
+          !isLoading && props.name ? (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
               <Typography
                 variant="body1"
                 sx={{
                   fontSize: 14,
                   fontWeight: '550',
-                  textAlign: 'start',
+                  textAlign: 'left',
                   color: 'text.title',
                   maxWidth: '160px',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
+                  direction: 'rtl',
+                  unicodeBidi: 'plaintext',
                 }}
               >
                 {props.name}
@@ -138,6 +167,7 @@ const CoinList = ({
                     width: '16px',
                     backgroundColor: '#282828',
                     borderRadius: '18px',
+                    marginLeft: props.name.length * 8 > 160 ? '-8px' : '0',
                   }}
                 />
               )}
@@ -230,11 +260,11 @@ const CoinList = ({
           </ListItem>
         ) : !isLoading ? (
           (coins || [])
-            .filter((coin: CoinItem) => {
+            .filter((coin) => {
               if (tokenFilter.hideDust) {
                 const isFlowToken =
                   coin.contractName === 'FlowToken' || coin.unit.toLowerCase() === 'flow';
-                const isAboveDustThreshold = parseFloat(coin.total) >= 1;
+                const isAboveDustThreshold = parseFloat(coin.balanceInUSD) >= 1;
                 if (!isFlowToken && !isAboveDustThreshold) {
                   return false;
                 }

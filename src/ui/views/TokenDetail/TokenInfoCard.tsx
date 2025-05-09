@@ -70,43 +70,27 @@ const TokenInfoCard = ({
       }}
     >
       <>
-        <Box sx={{ width: '100%', display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ mt: '-12px', display: 'flex', justifyContent: 'flex-start', width: '100%' }}>
           {extendedTokenInfo?.logoURI ? (
-            <Box sx={{ position: 'relative' }}>
-              <img
-                style={{
-                  height: '42px',
-                  width: '42px',
-                  backgroundColor: '#282828',
-                  borderRadius: '21px',
-                }}
-                src={
-                  extendedTokenInfo.logoURI ||
-                  'https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.1654653399040a61.FlowToken/logo.svg'
-                }
-              />
-              {extendedTokenInfo?.isVerified && (
-                <img
-                  src={VerifiedIcon}
-                  alt="Verified"
-                  style={{
-                    width: '16px',
-                    height: '16px',
-                    position: 'absolute',
-                    bottom: '4px',
-                    right: '-14px',
-                    zIndex: 1,
-                  }}
-                />
-              )}
-            </Box>
+            <img
+              style={{
+                height: '64px',
+                width: '64px',
+                backgroundColor: '#282828',
+                borderRadius: '32px',
+              }}
+              src={
+                extendedTokenInfo.logoURI ||
+                'https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.1654653399040a61.FlowToken/logo.svg'
+              }
+            ></img>
           ) : (
-            <Skeleton variant="circular" width={42} height={42} />
+            <Skeleton variant="circular" width={64} height={64} />
           )}
-          <Box sx={{ display: 'flex', flex: 1, ml: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'end', flex: 1, minWidth: 0 }}>
             <ButtonBase
               onClick={() => extendedTokenInfo && window.open(getUrl(extendedTokenInfo), '_blank')}
-              sx={{ width: '100%' }}
+              sx={{ minWidth: 0, flexShrink: 1 }}
             >
               <Box
                 sx={{
@@ -117,29 +101,47 @@ const TokenInfoCard = ({
                   py: '4px',
                   marginRight: '2px',
                   borderRadius: '8px',
-                  width: '100%',
-                  minHeight: '42px',
+                  alignSelf: 'start',
                   background: 'linear-gradient(to right, #000000, #282828)',
+                  minWidth: 0,
                 }}
               >
-                <Box sx={{ flex: 1 }}>
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      fontWeight: '550',
-                      wordBreak: 'break-word',
-                    }}
-                  >
-                    {extendedTokenInfo ? (
-                      extendedTokenInfo?.name
-                    ) : (
-                      <Skeleton variant="text" width={90} />
-                    )}
-                  </Typography>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: '550',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 1,
+                    minWidth: '0px',
+                  }}
+                >
+                  {extendedTokenInfo ? (
+                    extendedTokenInfo?.name
+                  ) : (
+                    <Skeleton variant="text" width={90} />
+                  )}
+                </Typography>
+
+                <Box sx={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+                  <IconChevronRight size={20} />
                 </Box>
-                <IconChevronRight size={20} sx={{ flexShrink: 0 }} />
               </Box>
             </ButtonBase>
+            {extendedTokenInfo?.isVerified && (
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  height: '40px',
+                  marginLeft: '4px',
+                  flexShrink: 0,
+                }}
+              >
+                <img src={VerifiedIcon} alt="Verified" style={{ width: '24px', height: '24px' }} />
+              </Box>
+            )}
           </Box>
         </Box>
         <Box
