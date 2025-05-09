@@ -2726,7 +2726,7 @@ export class WalletController extends BaseController {
   bridgeNftToEvmAddress = async (
     flowIdentifier: string,
     ids: number,
-    contractEVMAddress: string
+    recipientEvmAddress: string
   ): Promise<string> => {
     const shouldCoverBridgeFee = await openapiService.getFeatureFlag('cover_bridge_fee');
     const scriptName = shouldCoverBridgeFee
@@ -2736,8 +2736,8 @@ export class WalletController extends BaseController {
 
     const gasLimit = 30000000;
 
-    if (contractEVMAddress.startsWith('0x')) {
-      contractEVMAddress = contractEVMAddress.substring(2);
+    if (recipientEvmAddress.startsWith('0x')) {
+      recipientEvmAddress = recipientEvmAddress.substring(2);
     }
 
     const txID = await userWalletService.sendTransaction(
@@ -2745,7 +2745,7 @@ export class WalletController extends BaseController {
       [
         fcl.arg(flowIdentifier, t.String),
         fcl.arg(ids, t.UInt64),
-        fcl.arg(contractEVMAddress, t.String),
+        fcl.arg(recipientEvmAddress, t.String),
       ],
       shouldCoverBridgeFee
     );
