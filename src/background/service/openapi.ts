@@ -421,7 +421,7 @@ const recordFetch = async (response, responseData, ...args: Parameters<typeof fe
   return response;
 };
 
-class OpenApiService {
+export class OpenApiService {
   store: OpenApiStore = {
     host: INITIAL_OPENAPI_URL,
     config: dataConfig,
