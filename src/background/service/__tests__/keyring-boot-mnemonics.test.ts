@@ -56,7 +56,7 @@ vi.mock('bip39', () => ({
 import storage from '../../../shared/utils/storage';
 import KeyringService from '../keyring';
 
-import { MOCK_KEYS, MOCK_MNEMONIC, MOCK_PASSWORD } from './keyring-mock-data';
+import { MOCK_KEYS, MOCK_MNEMONIC, MOCK_PASSWORD } from './keyring-mock-data.test';
 
 describe('Keyring Boot and Mnemonics Test', () => {
   // Create in-memory storage
