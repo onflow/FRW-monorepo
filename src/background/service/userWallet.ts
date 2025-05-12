@@ -1352,7 +1352,7 @@ export const loadChildAccountsOfParent = async (
 };
 
 // Get the evm wallet of the current main account
-const getEvmAccountOfParent = async (
+export const getEvmAccountOfParent = async (
   network: string,
   parentAddress: string
 ): Promise<WalletAccount | null> => {

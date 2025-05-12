@@ -1,15 +1,10 @@
-import { Stack, Box, Typography, Divider, CardMedia, Card } from '@mui/material';
+import { Stack, Box, Typography, CardMedia } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useLocation, useHistory } from 'react-router-dom';
 
 import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
-import { isValidEthereumAddress } from '@/shared/utils/address';
 import enableBg from 'ui/FRWAssets/image/enableBg.png';
-import flowgrey from 'ui/FRWAssets/svg/flow-grey.svg';
-import linkGlobe from 'ui/FRWAssets/svg/linkGlobe.svg';
-import { LLPrimaryButton, LLSecondaryButton, LLSpinner, LLConnectLoading } from 'ui/FRWComponent';
-import { useApproval, useWallet, formatAddress } from 'ui/utils';
+import { LLSecondaryButton, LLConnectLoading } from 'ui/FRWComponent';
+import { useApproval, useWallet } from 'ui/utils';
 // import { CHAINS_ENUM } from 'consts';
 
 interface ConnectProps {
@@ -17,53 +12,26 @@ interface ConnectProps {
 }
 
 const EthEnable = ({ params: { icon, name, origin } }: ConnectProps) => {
-  const { state } = useLocation<{
-    showChainsModal?: boolean;
-  }>();
-  const { showChainsModal = false } = state ?? {};
-  const history = useHistory();
   const [, resolveApproval, rejectApproval] = useApproval();
-  const { t } = useTranslation();
   const wallet = useWallet();
   const [isLoading, setIsLoading] = useState(false);
 
-  const [appIdentifier, setAppIdentifier] = useState<string | undefined>(undefined);
-  const [nonce, setNonce] = useState<string | undefined>(undefined);
-  const [opener, setOpener] = useState<number | undefined>(undefined);
   const [defaultChain, setDefaultChain] = useState(MAINNET_CHAIN_ID);
-  const [host, setHost] = useState('');
-  const [title, setTitle] = useState('');
-  const [msgNetwork, setMsgNetwork] = useState('testnet');
-  const [isEvm, setIsEvm] = useState(false);
-  const [currentNetwork, setCurrent] = useState('testnet');
-
-  const [approval, setApproval] = useState(false);
 
   // TODO: replace default logo
   const [logo, setLogo] = useState('');
-  const [evmAddress, setEvmAddress] = useState('');
   const init = useCallback(async () => {
     setLogo(icon);
-    const site = await wallet.getSite(origin);
-    const collectList: { name: string; logo_url: string }[] = [];
     const network = await wallet.getNetwork();
     const defaultChain = network === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID;
-    const isShowTestnet = false;
 
     setDefaultChain(defaultChain);
 
     setIsLoading(false);
-  }, [wallet, origin, icon]);
+  }, [wallet, icon]);
 
   const handleCancel = () => {
     rejectApproval('User rejected the request.');
-  };
-
-  const handleAllow = async () => {
-    resolveApproval({
-      defaultChain,
-      signPermission: 'MAINNET_AND_TESTNET',
-    });
   };
 
   useEffect(() => {

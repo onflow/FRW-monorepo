@@ -25,6 +25,7 @@ import {
   useUserInfo,
   useUserWallets,
   useRegisterStatus,
+  usePayer,
 } from './use-account-hooks';
 
 const INITIAL_WALLET = {
@@ -95,6 +96,8 @@ export const useProfiles = () => {
   const mainAddressLoading =
     !mainAccounts || !activeAccounts || activeAccounts?.parentAddress === undefined;
 
+  const payer = usePayer();
+
   const activeAccountType = useMemo(
     () =>
       getActiveAccountTypeForAddress(
@@ -155,5 +158,6 @@ export const useProfiles = () => {
     registerStatus,
     canMoveToChild,
     currentWalletList,
+    payer,
   };
 };
