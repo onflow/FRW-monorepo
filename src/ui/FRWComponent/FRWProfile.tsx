@@ -20,7 +20,6 @@ export const FRWProfile = ({ contact, isLoading = false, isEvm = false, fromEvm 
   const getEmoji = useCallback(async () => {
     setLoad(true);
     if (isEvm) {
-      console.log('getEvmWallet ', evmWallet);
       const emojiObject = tempEmoji;
       emojiObject.emoji = evmWallet.icon || '';
       emojiObject.name = evmWallet.name || '';

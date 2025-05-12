@@ -6,6 +6,7 @@ import {
   type PrivateKeyTuple,
 } from '@/shared/types/key-types';
 import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
+import { consoleError } from '@/shared/utils/console-log';
 
 import {
   FLOW_BIP44_PATH,
@@ -26,7 +27,7 @@ const jsonToKey = async (json: string, password: string) => {
     const privateKey = PrivateKey.createWithData(privateKeyData);
     return privateKey;
   } catch (error) {
-    console.error(error);
+    consoleError(error);
     return null;
   }
 };
@@ -270,7 +271,7 @@ const verifySignature = async (signature: string, message: unknown) => {
 
     return pubKey.verify(signatureBuffer, messageHash);
   } catch (error) {
-    console.error(
+    consoleError(
       'Failed to verify signature:',
       error instanceof Error ? error.message : 'Unknown error'
     );

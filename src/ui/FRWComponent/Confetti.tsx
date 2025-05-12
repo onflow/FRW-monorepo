@@ -164,7 +164,6 @@ const Confetti = () => {
   if (!isInitialized) {
     return null;
   }
-  console.log('Confetti');
   return <Particles id="tsparticles" options={CONFETTI_OPTIONS} />;
 };
 

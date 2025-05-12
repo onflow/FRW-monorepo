@@ -27,6 +27,7 @@ import {
   type WalletAccountWithBalance,
 } from '@/shared/types/wallet-types';
 import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
+import { consoleError } from '@/shared/utils/console-log';
 import { LLHeader } from '@/ui/FRWComponent';
 import { useWallet } from 'ui/utils';
 
@@ -324,7 +325,7 @@ const WalletDetail = () => {
       loadStorageInfo();
       checkKeyphrase();
     } catch (error) {
-      console.error(error);
+      consoleError(error);
     }
   }, [checkKeyphrase, loadGasKillSwitch, loadGasMode, loadStorageInfo, setUserWallet]);
 

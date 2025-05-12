@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as fcl from '@onflow/fcl';
 import type { Account as FclAccount } from '@onflow/typedefs';
 import * as t from '@onflow/types';
@@ -73,6 +71,7 @@ import {
   registerStatusRefreshRegex,
   coinListKey,
 } from '@/shared/utils/cache-data-keys';
+import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 import {
   convertFlowBalanceToString,
   convertToIntegerAmount,
@@ -107,7 +106,7 @@ import {
   type KeyringType,
 } from 'background/service/keyring';
 import type { CacheState } from 'background/service/pageStateCache';
-import { findPublicKeyIndex, replaceNftKeywords } from 'background/utils';
+import { replaceNftKeywords } from 'background/utils';
 import fetchConfig from 'background/utils/remoteConfig';
 import { notification, storage } from 'background/webapi';
 import { openIndexPage } from 'background/webapi/tab';
@@ -126,7 +125,6 @@ import type {
   NFTModelV2,
   UserInfoResponse,
 } from '../../shared/types/network-types';
-import { fclEnsureNetwork } from '../fclConfig';
 import DisplayKeyring from '../service/keyring/display';
 import { HDKeyring } from '../service/keyring/hdKeyring';
 import { SimpleKeyring } from '../service/keyring/simpleKeyring';
@@ -350,7 +348,7 @@ export class WalletController extends BaseController {
       setCachedData(registerStatusKey(publickey), false);
 
       // Log the error for debugging
-      console.error('Failed to create manual address:', error);
+      consoleError('Failed to create manual address:', error);
 
       // Re-throw a more specific error
       throw new Error('Failed to create manual address. Please try again later.');
@@ -493,7 +491,7 @@ export class WalletController extends BaseController {
     try {
       await keyringService.checkAvailableAccount(currentId);
     } catch (error) {
-      console.error('Error finding available account:', error);
+      consoleError('Error finding available account:', error);
       throw new Error('Failed to find available account: ' + (error.message || 'Unknown error'));
     }
   };
@@ -522,13 +520,12 @@ export class WalletController extends BaseController {
     try {
       userInfo = await retryOperation(async () => this.getUserInfo(true), 3, 1000);
     } catch (error) {
-      console.error('Error refreshing user info:', error);
+      consoleError('Error refreshing user info:', error);
     }
     // Try for 2 mins to get the parent address
     const parentAddress = await retryOperation(
       async () => {
         const address = await userWalletService.getParentAddress();
-        console.log('retryOperation - refreshWallets - parentAddress', address);
         if (!address) {
           throw new Error('Parent address not found');
         }
@@ -779,7 +776,7 @@ export class WalletController extends BaseController {
           // The signAlgo used to login isn't saved. We need to
 
           // We may be in the process of switching login. We have a public and private key, but we don't have the signAlgo or the address of the account
-          console.error('Error getting logged in account - using the indexer instead');
+          consoleError('Error getting logged in account - using the indexer instead');
 
           // Look for the account using the pubKey
           const network = (await this.getNetwork()) || 'mainnet';
@@ -1243,7 +1240,7 @@ export class WalletController extends BaseController {
         return nftList;
       }
     } catch (error) {
-      console.error('Error fetching NFT list:', error);
+      consoleError('Error fetching NFT list:', error);
       throw error;
     }
   };
@@ -1470,7 +1467,7 @@ export class WalletController extends BaseController {
       // Track with success
       await this.trackCoaCreation(txID);
     } catch (error) {
-      console.error('Error sealing transaction:', error);
+      consoleError('Error sealing transaction:', error);
       // Track with error
       await this.trackCoaCreation(txID, error.message);
     }
@@ -1492,7 +1489,7 @@ export class WalletController extends BaseController {
       // Track with success
       await this.trackCoaCreation(txID);
     } catch (error) {
-      console.error('Error sealing transaction:', error);
+      consoleError('Error sealing transaction:', error);
       // Track with error
       await this.trackCoaCreation(txID, error.message);
     }
@@ -2077,7 +2074,7 @@ export class WalletController extends BaseController {
           await storage.setExpiry(cacheKey, balance, ttl);
         }
       } catch (error) {
-        console.error('Error occurred:', error);
+        consoleError('Error occurred:', error);
         return '';
       }
     }
@@ -2539,7 +2536,6 @@ export class WalletController extends BaseController {
   };
 
   batchBridgeNftFromEvm = async (flowIdentifier: string, ids: Array<number>): Promise<string> => {
-    console.log('batchBridgeNftFromEvm', flowIdentifier, ids);
     const shouldCoverBridgeFee = await openapiService.getFeatureFlag('cover_bridge_fee');
     const scriptName = shouldCoverBridgeFee
       ? 'batchBridgeNFTFromEvmWithPayer'
@@ -2914,7 +2910,7 @@ export class WalletController extends BaseController {
 
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       if (!tabs || tabs.length === 0) {
-        console.log('No active tab found');
+        consoleWarn('No active tab found');
         return;
       }
       if (tabs[0].id) {
@@ -2941,7 +2937,6 @@ export class WalletController extends BaseController {
   };
 
   refreshAll = async () => {
-    console.log('refreshAll');
     // Clear the active wallet if any
     // If we don't do this, the user wallets will not be refreshed
     this.clearNFT();
@@ -3066,7 +3061,7 @@ export class WalletController extends BaseController {
     let attempts = 0;
     const poll = async () => {
       if (attempts >= maxAttempts) {
-        console.log('Max polling attempts reached');
+        consoleWarn('Max polling attempts reached');
         return;
       }
 
@@ -3163,7 +3158,7 @@ export class WalletController extends BaseController {
         }
       } catch (err: unknown) {
         // We don't want to throw an error if the notification fails
-        console.error('listenTransaction notification error ', err);
+        consoleError('listenTransaction notification error ', err);
       }
     } catch (err: unknown) {
       // An error has occurred while listening to the transaction
@@ -3185,7 +3180,7 @@ export class WalletController extends BaseController {
         errorCode = match ? parseInt(match[1], 10) : undefined;
       }
 
-      console.warn({
+      consoleWarn({
         msg: 'transactionError',
         errorMessage,
         errorCode,
@@ -3309,7 +3304,7 @@ export class WalletController extends BaseController {
         ? cadenceScripts?.scripts.mainnet
         : cadenceScripts?.scripts.testnet;
     } catch (error) {
-      console.log(error, '=== get scripts error ===');
+      consoleError(error, '=== get scripts error ===');
     }
   };
 
@@ -3665,7 +3660,7 @@ export class WalletController extends BaseController {
               currentPassword
             );
           } catch (err) {
-            console.error(`Cannot decrypt backup for ${backup.username}`, err);
+            consoleError(`Cannot decrypt backup for ${backup.username}`, err);
           }
 
           return {
@@ -3697,7 +3692,7 @@ export class WalletController extends BaseController {
 
       return backupStatuses;
     } catch (err) {
-      console.error('Failed to get profile backup statuses:', err);
+      consoleError('Failed to get profile backup statuses:', err);
       throw new Error('Failed to get profile backup statuses');
     }
   };
@@ -3760,7 +3755,7 @@ export class WalletController extends BaseController {
         return success;
       }
     } catch (err) {
-      console.error('Error changing password with backups:', err);
+      consoleError('Error changing password with backups:', err);
       mixpanelTrack.track('password_update_failed', {
         address: (await this.getCurrentAddress()) || '',
         error: err.message,

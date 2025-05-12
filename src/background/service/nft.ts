@@ -13,7 +13,7 @@ import {
 import { getValidData, registerRefreshListener, setCachedData } from 'background/utils/data-cache';
 
 import { type NFTCollectionData, type NFTCollections } from '../../shared/types/nft-types';
-import { fclConfirmNetwork, fclEnsureNetwork } from '../fclConfig';
+import { fclConfirmNetwork } from '../fclConfig';
 
 import openapiService, { getScripts } from './openapi';
 
@@ -37,7 +37,6 @@ class NFT {
       cadence: script,
       args: (arg, t) => [arg(address, t.Address)],
     });
-    console.log('check child nft info result----=====', structuredClone(result));
 
     setCachedData(childAccountNFTsKey(network, address), result);
 

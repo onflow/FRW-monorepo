@@ -1,3 +1,5 @@
+import { consoleError } from '@/shared/utils/console-log';
+
 export async function detectBrowsers() {
   // Detect Brave (Brave exposes a special API)
   let isBrave = false;
@@ -7,7 +9,7 @@ export async function detectBrowsers() {
       // @ts-ignore
       isBrave = await navigator.brave.isBrave();
     } catch (e) {
-      console.error(e);
+      consoleError(e);
       isBrave = false;
     }
   }

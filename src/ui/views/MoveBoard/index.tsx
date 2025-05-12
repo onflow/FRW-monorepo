@@ -34,8 +34,6 @@ const MoveBoard = (props: MoveBoardProps) => {
   const [network, setNetwork] = useState<string>('');
   const [alertOpen, setAlertOpen] = useState<boolean>(false);
 
-  // console.log('props.loggedInAccounts', props.current)
-
   const requestChildType = useCallback(async () => {
     const currentNetwork = await usewallet.getNetwork();
     setNetwork(currentNetwork);

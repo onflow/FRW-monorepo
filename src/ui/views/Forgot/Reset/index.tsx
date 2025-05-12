@@ -25,10 +25,8 @@ const Reset = () => {
   const [errMessage] = useState(chrome.i18n.getMessage('No__backup__found'));
   const [showError, setShowError] = useState(false);
   const [direction, setDirection] = useState(Direction.Right);
-  const [, setPassword] = useState(null);
 
   const loadView = useCallback(async () => {
-    // console.log(wallet);
     wallet
       .getCurrentAccount()
       .then((res) => {

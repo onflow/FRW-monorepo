@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { type NFTModelV2 } from '@/shared/types/network-types';
+import { consoleError } from '@/shared/utils/console-log';
 import { LLSpinner } from 'ui/FRWComponent';
 import { useWallet } from 'ui/utils';
 
@@ -50,7 +51,7 @@ const AddNFTConfirmation = ({
       }
       handleAddBtnClicked();
     } catch (err) {
-      console.error('err ->', err);
+      consoleError('err ->', err);
       setSending(false);
     }
   };

@@ -3,6 +3,7 @@ import * as fcl from '@onflow/fcl';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { MAINNET_CHAIN_ID } from '@/shared/types/network-types';
+import { consoleError } from '@/shared/utils/console-log';
 import { LLPrimaryButton, LLSecondaryButton } from 'ui/FRWComponent';
 import { useApproval, useWallet } from 'ui/utils';
 
@@ -66,7 +67,7 @@ const EthConfirm = ({ params }: ConnectProps) => {
           setDecodedCall(decodedData);
         }
       } catch (error) {
-        console.error('Error extracting data:', error);
+        consoleError('Error extracting data:', error);
       }
     },
     [usewallet]

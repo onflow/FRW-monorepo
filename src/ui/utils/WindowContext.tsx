@@ -1,5 +1,5 @@
-import React, { ReactNode, useEffect, useState } from 'react';
-import { createContext, useContext } from 'react';
+import React, { type ReactNode, useEffect, useState, createContext, useContext } from 'react';
+
 import { getCurrentWindow } from './webapi';
 
 const WindowContext = createContext<{ id: number } | null>(null);

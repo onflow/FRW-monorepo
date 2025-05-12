@@ -91,7 +91,6 @@ const DecryptWallet = ({ handleSwitchTab, setMnemonic, username }) => {
 
     try {
       const mnemonic = await usewallet.restoreAccount(username, password);
-      // console.log('mnemonic ->', mnemonic);
       setLoading(false);
       setMnemonic(mnemonic);
       handleSwitchTab();

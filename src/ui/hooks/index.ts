@@ -1,5 +1,7 @@
 import { useCallback, useRef } from 'react';
 
+import { consoleLog } from '@/shared/utils/console-log';
+
 import { useWalletLoaded } from '../utils/WalletContext';
 
 import { useCoins } from './useCoinHook';
@@ -12,7 +14,7 @@ export const useInitHook = () => {
 
   const initializeStore = useCallback(async () => {
     if (!walletLoaded || isInitializing.current) {
-      console.log('Skipping initialization - wallet not loaded or already initializing');
+      consoleLog('Skipping initialization - wallet not loaded or already initializing');
       return;
     }
 

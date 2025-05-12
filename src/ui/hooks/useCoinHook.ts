@@ -3,8 +3,8 @@ import { useCallback, useEffect, useState, useRef } from 'react';
 
 import { type ExtendedTokenInfo, type CoinItem, type TokenFilter } from '@/shared/types/coin-types';
 import { DEFAULT_CURRENCY, type Currency } from '@/shared/types/wallet-types';
+import { consoleError } from '@/shared/utils/console-log';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
-import { debug } from '@/ui/utils';
 import { useWallet } from '@/ui/utils/WalletContext';
 
 import { useCoinList, useTokenFilter, setTokenFilter } from './use-coin-hooks';
@@ -30,7 +30,7 @@ export const useCoins = () => {
         const currency: Currency = await usewallet?.getDisplayCurrency();
         setCurrencyCode(currency?.code);
       } catch (error) {
-        console.error('Failed to fetch display currency, using default USD:', error);
+        consoleError('Failed to fetch display currency, using default USD:', error);
         setCurrencyCode(DEFAULT_CURRENCY.code); // Handle error case
       }
     };
@@ -41,7 +41,6 @@ export const useCoins = () => {
 
   const handleStorageData = useCallback(
     async (data?: ExtendedTokenInfo[] | null) => {
-      debug('handleStorageData', data);
       if (!data) return;
 
       // Create a map for faster lookups
@@ -85,14 +84,11 @@ export const useCoins = () => {
     if (currentWallet?.address) {
       // If coinList is empty or undefined, initialize it
       if ((!coins || coins.length === 0) && !initAttemptedRef.current) {
-        debug('Coin list is empty, initializing for address:', currentWallet.address);
-
         const initAndHandle = async () => {
           try {
             initAttemptedRef.current = true;
-            debug('Coin list initialization completed');
           } catch (error) {
-            console.error('Error initializing coin list:', error);
+            consoleError('Error initializing coin list:', error);
           }
         };
 
@@ -100,7 +96,6 @@ export const useCoins = () => {
       } else if (coins && coins.length > 0) {
         handleStorageData(coins);
         setCoinsLoaded(true);
-        debug('Coin list already loaded with', coins.length);
       }
     }
   }, [usewallet, network, currentWallet, coins, handleStorageData]);

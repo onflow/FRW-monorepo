@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useReducer } from 'react';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
 
-import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
 import { type FlowAddress, type WalletAddress } from '@/shared/types/wallet-types';
 import { isValidAddress, isValidFlowAddress } from '@/shared/utils/address';
+import { consoleWarn } from '@/shared/utils/console-log';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { transactionReducer, INITIAL_TRANSACTION_STATE } from '@/ui/reducers/transaction-reducer';
@@ -41,7 +41,7 @@ export const SendTo = () => {
           // Update the URL to the new token
           history.replace(`/dashboard/token/${symbol.toLowerCase()}/send/${toAddress}`);
         } else {
-          console.warn(`Token ${symbol} not found`);
+          consoleWarn(`Token ${symbol} not found`);
         }
       }
     },

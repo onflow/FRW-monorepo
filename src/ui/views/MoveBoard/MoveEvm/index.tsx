@@ -2,6 +2,7 @@ import { Box } from '@mui/material';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
+import { consoleError } from '@/shared/utils/console-log';
 import { NFTDrawer } from '@/ui/FRWComponent/GeneralPages';
 import WarningSnackbar from '@/ui/FRWComponent/WarningSnackbar';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -125,7 +126,6 @@ const MoveEvm = (props: MoveBoardProps) => {
   const moveToChild = async () => {
     setSending(true);
     const collection = collectionList.find((collection) => collection.id === selectedCollection);
-    console.log('collectionDetail ', selectedCollection);
     usewallet
       .batchBridgeChildNFTFromEvm(
         selectedAccount!['address'],
@@ -146,7 +146,7 @@ const MoveEvm = (props: MoveBoardProps) => {
         history.push(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
-        console.error(err);
+        consoleError(err);
         setSending(false);
         setFailed(true);
       });
@@ -155,7 +155,6 @@ const MoveEvm = (props: MoveBoardProps) => {
   const moveToParent = async () => {
     setSending(true);
     const collection = collectionList.find((collection) => collection.id === selectedCollection);
-    console.log('collectionDetail ', collectionDetail);
     usewallet
       .batchBridgeNftFromEvm(collection.flowIdentifier, nftIdArray)
       .then(async (txId) => {
@@ -172,7 +171,7 @@ const MoveEvm = (props: MoveBoardProps) => {
         history.push(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
-        console.error(err);
+        consoleError(err);
         setSending(false);
         setFailed(true);
       });

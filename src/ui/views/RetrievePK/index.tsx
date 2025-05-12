@@ -3,6 +3,7 @@ import { Input, Typography, Box, FormControl, List, ListItem, ListItemText } fro
 import { makeStyles } from '@mui/styles';
 import React, { useEffect, useRef, useState } from 'react';
 
+import { consoleError } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import { PasswordInput } from '@/ui/FRWComponent/LandingPages/PasswordComponents';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
@@ -52,7 +53,6 @@ const RetrievePK = () => {
 
   const run = async (password) => {
     const result = await wallet.retrievePk(password);
-    console.log('result ', result);
     setArray(result);
     setRetrieved(true);
     setLoading(false);
@@ -76,8 +76,7 @@ const RetrievePK = () => {
 
     navigator.clipboard
       .writeText(allValues)
-      .then(() => console.log('Copied to clipboard successfully!'))
-      .catch((err) => console.error('Failed to copy to clipboard: ', err));
+      .catch((err) => consoleError('Failed to copy to clipboard: ', err));
   };
 
   const usernameError = () => (

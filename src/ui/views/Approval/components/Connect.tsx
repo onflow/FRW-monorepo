@@ -2,7 +2,6 @@ import { Stack, Box, Typography, Divider, CardMedia } from '@mui/material';
 import { WalletUtils } from '@onflow/fcl';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { storage } from '@/background/webapi';
 import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
 import { authnServiceDefinition, serviceDefinition } from 'background/controller/serviceDefinition';
 import flowgrey from 'ui/FRWAssets/svg/flow-grey.svg';
@@ -17,9 +16,7 @@ import { useApproval, useWallet } from 'ui/utils';
 import CheckCircleIcon from '../../../../components/iconfont/IconCheckmark';
 
 interface ConnectProps {
-  params: any;
-  // onChainChange(chain: CHAINS_ENUM): void;
-  // defaultChain: CHAINS_ENUM;
+  params: { tabId: number };
 }
 
 const Connect = ({ params: { /*icon, origin,*/ tabId } }: ConnectProps) => {
@@ -96,7 +93,6 @@ const Connect = ({ params: { /*icon, origin,*/ tabId } }: ConnectProps) => {
     } else {
       chainId = MAINNET_CHAIN_ID;
     }
-    console.log('permission add ', host, title, logo, chainId);
     wallet.addConnectedSite(host, title, logo, chainId);
 
     if (appIdentifier && nonce) {
@@ -145,11 +141,7 @@ const Connect = ({ params: { /*icon, origin,*/ tabId } }: ConnectProps) => {
   };
 
   const extMessageHandler = (msg, sender, sendResponse) => {
-    // if (msg.config.client.network !== network) {
-    //   console.log('not in correct network')
-    // }
     if (msg.type === 'FCL:VIEW:READY:RESPONSE') {
-      console.log('FCL:VIEW:READY:RESPONSE ', msg);
       if (msg.host) {
         setHost(msg.host);
       }
@@ -169,19 +161,17 @@ const Connect = ({ params: { /*icon, origin,*/ tabId } }: ConnectProps) => {
 
   const checkNetwork = useCallback(async () => {
     const address = await wallet.getCurrentAddress();
-    console.log('address currentAddress ', address);
     setCurrentAddress(address!);
 
     const network = await wallet.getNetwork();
 
-    console.log(' msgNetwork ', msgNetwork, network, showSwitch);
     setCurrent(network);
     if (msgNetwork !== network && msgNetwork) {
       setShowSwitch(true);
     } else {
       setShowSwitch(false);
     }
-  }, [wallet, msgNetwork, showSwitch]);
+  }, [wallet, msgNetwork]);
 
   useEffect(() => {
     checkNetwork();

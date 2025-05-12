@@ -9,6 +9,7 @@ import {
   type ActiveAccountType,
   type ActiveChildType_depreciated,
 } from '@/shared/types/wallet-types';
+import { consoleError } from '@/shared/utils/console-log';
 import { formatLargeNumber } from '@/shared/utils/number';
 import { ButtonRow } from '@/ui/FRWComponent/ButtonRow';
 import CoinsIcon from '@/ui/FRWComponent/CoinsIcon';
@@ -81,7 +82,7 @@ const WalletTab = ({ network }) => {
         data = currentWallet?.address ?? '';
       }
     } catch (error) {
-      console.error('Error getting address:', error);
+      consoleError('Error getting address:', error);
       data = '';
     }
     if (data) {
@@ -186,11 +187,9 @@ const WalletTab = ({ network }) => {
   useEffect(() => {
     const checkPermission = async () => {
       if (!(await wallet.isUnlocked())) {
-        console.log('Wallet is locked');
         return;
       }
       if (!(await wallet.getParentAddress())) {
-        console.log('Wallet Tab - No main wallet yet');
         return;
       }
       const result = await wallet.checkCanMoveChild();

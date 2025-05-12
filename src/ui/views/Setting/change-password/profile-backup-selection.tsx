@@ -12,6 +12,7 @@ import {
 import React, { useState, useEffect, useCallback } from 'react';
 
 import { type ProfileBackupStatus } from '@/shared/types/wallet-types';
+import { consoleError } from '@/shared/utils/console-log';
 import { CustomDialog } from '@/ui/FRWComponent/custom-dialog';
 import { LLPrimaryButton } from '@/ui/FRWComponent/LLPrimaryButton';
 import { LLSecondaryButton } from '@/ui/FRWComponent/LLSecondaryButton';
@@ -44,7 +45,7 @@ export const ProfileBackupSelectionDialog = ({
       const backupStatuses = await wallet.getProfileBackupStatuses(currentPassword);
       setBackups(backupStatuses);
     } catch (err) {
-      console.error('Failed to load backup data:', err);
+      consoleError('Failed to load backup data:', err);
       setError(
         chrome.i18n.getMessage('Failed_to_load_backup_data') ||
           'Failed to load backup data. Please try again.'

@@ -1,13 +1,8 @@
 import { ethErrors } from 'eth-rpc-errors';
 
 import eventBus from '@/eventBus';
-import { isValidEthereumAddress } from '@/shared/utils/address';
-import {
-  keyringService,
-  notificationService,
-  permissionService,
-  userWalletService,
-} from 'background/service';
+import { consoleLog } from '@/shared/utils/console-log';
+import { notificationService, permissionService } from 'background/service';
 import { PromiseFlow, underline2Camelcase } from 'background/utils';
 import { EVENTS } from 'consts';
 
@@ -20,8 +15,6 @@ const isSignApproval = (type: string) => {
   return SIGN_APPROVALS.includes(type);
 };
 
-const lockedOrigins = new Set<string>();
-
 const flow = new PromiseFlow();
 const flowContext = flow
   .use(async (ctx, next) => {
@@ -29,7 +22,7 @@ const flowContext = flow
     const {
       data: { method },
     } = ctx.request;
-    console.log('flow - use #1', method);
+    consoleLog('flow - use #1', method);
 
     ctx.mapMethod = underline2Camelcase(method);
     if (!providerController[ctx.mapMethod]) {
@@ -55,7 +48,7 @@ const flowContext = flow
       },
       mapMethod,
     } = ctx;
-    console.log('flow - use #2 - check connect', mapMethod, origin, name, icon);
+    consoleLog('flow - use #2 - check connect', mapMethod, origin, name, icon);
 
     // check connect
     // TODO: create a whitelist and list of safe methods to remove the need for Reflect.getMetadata
@@ -94,7 +87,7 @@ const flowContext = flow
       },
       mapMethod,
     } = ctx;
-    console.log('flow - use #3 - check approval', mapMethod, origin, name, icon);
+    consoleLog('flow - use #3 - check approval', mapMethod, origin, name, icon);
 
     const [approvalType, condition, { height = 599 } = {}] =
       Reflect.getMetadata('APPROVAL', providerController, mapMethod) || [];
@@ -123,7 +116,7 @@ const flowContext = flow
   })
   .use(async (ctx) => {
     const { approvalRes, mapMethod, request } = ctx;
-    console.log('flow - use #4 - process request', mapMethod, request);
+    consoleLog('flow - use #4 - process request', mapMethod, request);
 
     // process request
     const [approvalType] = Reflect.getMetadata('APPROVAL', providerController, mapMethod) || [];
@@ -140,7 +133,7 @@ const flowContext = flow
 
     requestDefer
       .then((result) => {
-        console.log('flow - process result', mapMethod, result);
+        consoleLog('flow - process result', mapMethod, result);
         if (isSignApproval(approvalType)) {
           eventBus.emit(EVENTS.broadcastToUI, {
             method: EVENTS.SIGN_FINISHED,
@@ -153,7 +146,7 @@ const flowContext = flow
         return result;
       })
       .catch((e: any) => {
-        console.log('flow - process error', mapMethod, e);
+        consoleLog('flow - process error', mapMethod, e);
 
         if (isSignApproval(approvalType)) {
           eventBus.emit(EVENTS.broadcastToUI, {

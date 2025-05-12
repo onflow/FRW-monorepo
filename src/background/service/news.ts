@@ -1,3 +1,4 @@
+import { consoleError } from '@/shared/utils/console-log';
 import { createPersistStore } from 'background/utils';
 import { storage } from 'background/webapi';
 
@@ -25,7 +26,7 @@ class NewsService {
         fromStorage: true,
       });
     } catch (error) {
-      console.error('Error initializing NewsService', error);
+      consoleError('Error initializing NewsService', error);
 
       // Try clearing the store
       this.clear();
@@ -46,13 +47,13 @@ class NewsService {
           return shouldShow ? newsItem : null;
         } catch (error) {
           // Catch error here otherwise the whole news list will be empty
-          console.error('Error evaluating conditions', error);
+          consoleError('Error evaluating conditions', error);
           return null;
         }
       });
     const filteredNews = await Promise.all(filteredNewsPromises)
       .catch((error) => {
-        console.error('Error evaluating conditions', error);
+        consoleError('Error evaluating conditions', error);
         return [];
       })
       .then((news) => news.filter((item) => item !== null));

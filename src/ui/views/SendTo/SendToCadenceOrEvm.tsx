@@ -5,6 +5,7 @@ import { useHistory } from 'react-router-dom';
 
 import { type TransactionState } from '@/shared/types/transaction-types';
 import { isValidAddress, isValidEthereumAddress } from '@/shared/utils/address';
+import { consoleError } from '@/shared/utils/console-log';
 import { LLHeader } from '@/ui/FRWComponent';
 import { ContactCard } from '@/ui/FRWComponent/Send/ContactCard';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
@@ -59,7 +60,7 @@ const SendToCadenceOrEvm = ({
           }
         }
       } catch (err) {
-        console.error('checkAddress error', err);
+        consoleError('checkAddress error', err);
         setValidated(false);
       }
     };
