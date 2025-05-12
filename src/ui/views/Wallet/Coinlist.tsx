@@ -8,6 +8,7 @@ import {
   ListItemButton,
   List,
   IconButton,
+  Avatar,
 } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { type ReactNode, useEffect, useState } from 'react';
@@ -301,15 +302,9 @@ const CoinList = ({
                   <ListItemButton sx={{ paddingRight: '0px' }} dense={true}>
                     <ListItemIcon>
                       {!isLoading ? (
-                        <img
-                          src={coin.icon}
-                          style={{
-                            height: '36px',
-                            width: '36px',
-                            backgroundColor: '#282828',
-                            borderRadius: '18px',
-                          }}
-                        />
+                        <Avatar src={coin.logoURI} sx={{ width: 36, height: 36 }}>
+                          {coin.symbol?.charAt(0)}
+                        </Avatar>
                       ) : (
                         <Skeleton variant="circular" width={36} height={36} />
                       )}
