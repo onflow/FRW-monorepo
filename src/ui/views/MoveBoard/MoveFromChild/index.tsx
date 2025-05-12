@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { isValidEthereumAddress } from '@/shared/utils/address';
+import { consoleError } from '@/shared/utils/console-log';
 import { NFTDrawer } from '@/ui/FRWComponent/GeneralPages';
 import WarningSnackbar from '@/ui/FRWComponent/WarningSnackbar';
 import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
@@ -120,7 +121,7 @@ const MoveFromChild = (props: MoveBoardProps) => {
 
       setCollectionList(extractedObjects);
     } catch (error) {
-      console.error('Error fetching NFT data:', error);
+      consoleError('Error fetching NFT data:', error);
       setSelected('');
       setCollectionList(null);
       setIsLoading(false);
@@ -134,7 +135,7 @@ const MoveFromChild = (props: MoveBoardProps) => {
         const cadenceResult = await usewallet.getSingleCollection(address!, selectedCollection, 0);
         setCollectionDetail(cadenceResult);
       } catch (error) {
-        console.error('Error requesting collection info:', error);
+        consoleError('Error requesting collection info:', error);
         setCollectionDetail(null);
       } finally {
         setIsLoading(false);
@@ -191,7 +192,7 @@ const MoveFromChild = (props: MoveBoardProps) => {
         history.push(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
-        console.error(err);
+        consoleError(err);
         setSending(false);
         setFailed(true);
       });
@@ -222,7 +223,7 @@ const MoveFromChild = (props: MoveBoardProps) => {
         history.push(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
-        console.error(err);
+        consoleError(err);
         setSending(false);
         setFailed(true);
       });
@@ -231,7 +232,6 @@ const MoveFromChild = (props: MoveBoardProps) => {
   const moveToEvm = async () => {
     setSending(true);
     const address = await usewallet.getCurrentAddress();
-    console.log('collectionDetail.collection ', collectionDetail);
     usewallet
       .batchBridgeChildNFTToEvm(
         address!,
@@ -253,7 +253,7 @@ const MoveFromChild = (props: MoveBoardProps) => {
         history.push(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
-        console.error(err);
+        consoleError(err);
         setSending(false);
         setFailed(true);
       });
@@ -296,7 +296,6 @@ const MoveFromChild = (props: MoveBoardProps) => {
   }, []);
 
   const handleLoadingChange = useCallback((loading) => {
-    console.log(`NFT loading state changed to: ${loading}`);
     setIsLoading(loading);
   }, []);
 

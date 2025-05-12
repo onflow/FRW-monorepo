@@ -8,6 +8,7 @@ import React, {
 } from 'react';
 
 import type { NewsItem } from '@/shared/types/network-types';
+import { consoleError } from '@/shared/utils/console-log';
 import { useWallet, useWalletLoaded } from 'ui/utils';
 
 interface NewsContextType {
@@ -42,7 +43,7 @@ export function NewsProvider({ children }: { children: ReactNode }) {
     };
 
     if (walletLoaded) {
-      fetchNews().catch(console.error);
+      fetchNews().catch(consoleError);
     }
 
     return () => {
@@ -59,7 +60,7 @@ export function NewsProvider({ children }: { children: ReactNode }) {
 
   const markAsRead = useCallback(
     async (id: string): Promise<boolean> => {
-      const markedAsRead = (await wallet?.markNewsAsRead(id).catch(console.error)) || false;
+      const markedAsRead = (await wallet?.markNewsAsRead(id).catch(consoleError)) || false;
       // Update news state
       if (markedAsRead) {
         setUnreadCount((prevCount) => prevCount - 1);
@@ -71,14 +72,14 @@ export function NewsProvider({ children }: { children: ReactNode }) {
 
   const markAllAsRead = useCallback(async () => {
     setUnreadCount(0);
-    await wallet?.markAllNewsAsRead().catch(console.error);
+    await wallet?.markAllNewsAsRead().catch(consoleError);
     // Update news state
     setUnreadCount(0);
   }, [wallet]);
 
   const dismissNews = useCallback(
     async (id: string) => {
-      await wallet?.markNewsAsDismissed(id).catch(console.error);
+      await wallet?.markNewsAsDismissed(id).catch(consoleError);
 
       // Update news state
       setNews(await wallet.getNews());
@@ -87,7 +88,7 @@ export function NewsProvider({ children }: { children: ReactNode }) {
   );
 
   const resetNews = useCallback(async () => {
-    await wallet?.resetNews().catch(console.error);
+    await wallet?.resetNews().catch(consoleError);
   }, [wallet]);
 
   const value: NewsContextType = {

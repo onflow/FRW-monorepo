@@ -19,6 +19,7 @@ import { useHistory, useLocation } from 'react-router-dom';
 
 import { ContactType, type Contact } from '@/shared/types/network-types';
 import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
+import { consoleError } from '@/shared/utils/console-log';
 import { LLHeader } from '@/ui/FRWComponent';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { type MatchMedia } from '@/ui/utils/url';
@@ -183,7 +184,7 @@ const SendToAddress = () => {
         );
       }
     } catch (err) {
-      console.error('err: ', err);
+      consoleError('err: ', err);
     } finally {
       if (recent.length < 1) {
         setTabValue(2);

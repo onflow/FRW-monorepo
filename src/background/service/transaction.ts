@@ -171,7 +171,6 @@ class Transaction {
       // We're sending an EVM transaction, we need to update the hash and may need to duplicate the pending item for each address
       if (evmTxIds.length > 10) {
         // TODO: Check there aren't 100s of evmTxIds
-        // console.warn('updatePending - evmTxIds.length > 10', evmTxIds);
       }
       combinedTxHash = `${txItem.cadenceTxId || txItem.hash}_${evmTxIds.join('_')}`;
     }

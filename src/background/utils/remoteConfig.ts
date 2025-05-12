@@ -1,5 +1,6 @@
 import { storage } from '@/background/webapi';
 import { type NFTModelV2 } from '@/shared/types/network-types';
+import { consoleError } from '@/shared/utils/console-log';
 
 import openapi from '../service/openapi';
 
@@ -48,7 +49,7 @@ class fetchRemoteConfig {
         this.coinState.expireTime = exp;
         return result;
       } catch (err) {
-        console.error(err);
+        consoleError(err);
         return defaultTokenList;
       }
     } else {
@@ -77,10 +78,9 @@ class fetchRemoteConfig {
         this.configState.expireTime = exp;
         await storage.set('freeGas', config.features.free_gas);
         await storage.set('alchemyAPI', config.features.alchemy_api);
-        // console.log('remoteConfig ->', result, result.features.free_gas)
         return config;
       } catch (err) {
-        console.error(err);
+        consoleError(err);
         await storage.set('freeGas', defaultConfig.features.free_gas);
         return defaultConfig;
       }

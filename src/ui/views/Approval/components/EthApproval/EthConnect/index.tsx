@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
+import { consoleError } from '@/shared/utils/console-log';
 import enableBg from 'ui/FRWAssets/image/enableBg.png';
 import flowgrey from 'ui/FRWAssets/svg/flow-grey.svg';
 import linkGlobe from 'ui/FRWAssets/svg/linkGlobe.svg';
@@ -62,7 +63,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
       currentWallet = await usewallet.getParentAddress();
     } catch (error) {
       // If an error occurs, request approval
-      console.error('Error querying EVM address:', error);
+      consoleError('Error querying EVM address:', error);
     }
     setLogo(icon);
     const res = await usewallet.queryEvmAddress(currentWallet);
@@ -104,7 +105,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
         setIsLoading(false);
       })
       .catch((err) => {
-        console.log(err);
+        consoleError(err);
         setIsLoading(false);
       });
   };

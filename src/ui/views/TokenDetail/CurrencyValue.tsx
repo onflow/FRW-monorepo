@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 
 import { DEFAULT_CURRENCY } from '@/shared/types/wallet-types';
+import { consoleError } from '@/shared/utils/console-log';
 import { useWallet } from '@/ui/utils/WalletContext';
 
 import { TokenValue } from './TokenValue';
@@ -30,7 +31,7 @@ export const CurrencyValue: React.FC<CurrencyValueProps> = ({
         setCurrencySymbol(currency.symbol);
       }
     } catch (error) {
-      console.warn('Error fetching currency from background:', error);
+      consoleError('Error fetching currency from background:', error);
       setCurrencyCode(DEFAULT_CURRENCY.code);
       setCurrencySymbol(DEFAULT_CURRENCY.symbol);
     }

@@ -10,6 +10,7 @@ import type {
 } from '@/shared/types/transaction-types';
 import { type WalletAddress } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
+import { consoleError } from '@/shared/utils/console-log';
 
 import { trimDecimalAmount } from '../../shared/utils/number';
 
@@ -250,7 +251,7 @@ export const transactionReducer = (
         const calculatedFiatAmount = amountBN.times(price);
         amountInFiat = calculatedFiatAmount.toFixed(8, BN.ROUND_DOWN);
       } else {
-        console.error('Not specified if entering in coin or fiat');
+        consoleError('Not specified if entering in coin or fiat');
         return state;
       }
       // Check the remaining balance to see if it's exceeded

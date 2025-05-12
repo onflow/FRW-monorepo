@@ -137,8 +137,7 @@ export async function importJWK(jwk, alg) {
       throw new Error('invalid argument: kty=' + jwk.kty);
   }
   const algorithm = getAlgorithm(jwk, alg);
-  //console.log("importKey key: "+ encodeJson(key));
-  //console.log("importKey algorithm: "+ encodeJson(algorithm));
+
   return await crypto.subtle.importKey('jwk', key, algorithm, false, ['verify']);
 }
 

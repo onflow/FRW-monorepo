@@ -2,6 +2,8 @@ import storage, { type StorageChange } from '@/shared/utils/storage';
 
 import { type CacheDataItem } from '../types/data-cache-types';
 
+import { consoleError } from './console-log';
+
 /**
  * Get cached data from session storage
  * This will then trigger a background event to refresh the data if is is expired
@@ -41,7 +43,7 @@ const _updateCaller = (key: string, updateCallback: (key: string, data: unknown)
         const cacheData = changes[key].newValue as CacheDataItem;
         updateCallback(key, cacheData.value);
       } catch (error) {
-        console.error('Error updating cached data', key, changes[key], error);
+        consoleError('Error updating cached data', key, changes[key], error);
       }
     }
   };

@@ -24,6 +24,7 @@ import { useHistory, useParams } from 'react-router-dom';
 
 import { type UserInfoResponse } from '@/shared/types/network-types';
 import { type WalletAccount } from '@/shared/types/wallet-types';
+import { consoleError } from '@/shared/utils/console-log';
 import IconNext from '@/ui/FRWAssets/svg/nextgray.svg';
 import { LLSecondaryButton } from '@/ui/FRWComponent';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -168,7 +169,7 @@ const LinkedDetail = () => {
       setLoading(false);
     } catch (error) {
       // Handle any errors that occur during data fetching
-      console.error('Error fetching data:', error);
+      consoleError('Error fetching data:', error);
       setLoading(false);
     }
   }, [usewallet, location, childAccounts]);

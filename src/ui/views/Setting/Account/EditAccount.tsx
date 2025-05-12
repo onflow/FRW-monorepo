@@ -4,6 +4,7 @@ import { styled } from '@mui/material/styles';
 import React, { useEffect } from 'react';
 import { useForm, type FieldValues } from 'react-hook-form';
 
+import { consoleError } from '@/shared/utils/console-log';
 import { useWallet } from 'ui/utils';
 
 import { LLPrimaryButton, LLSecondaryButton, LLFormHelperText } from '../../../FRWComponent';
@@ -51,7 +52,7 @@ const EditAccount = (props: EditAccountProps) => {
       reset();
       props.handleAddBtnClicked();
     } catch (error) {
-      console.error('Failed to update user info:', error);
+      consoleError('Failed to update user info:', error);
     }
   };
 

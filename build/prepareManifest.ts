@@ -72,7 +72,7 @@ async function prepare() {
     try {
       const devToolsScript = await fetchDevTools();
       fs.writeFileSync(path.resolve(__dirname, '../_raw/react-devtools.js'), devToolsScript);
-      // eslint-disable-next-line no-console
+
       console.info('✅ React DevTools source fetched successfully');
     } catch {
       console.warn('⚠️ Failed to fetch React DevTools. Run the devtools server first');

@@ -43,7 +43,6 @@ class GoogleSafeHost {
   };
 
   checkHostSafe = async (hosts: string[]): Promise<string[]> => {
-    // console.log('checkHostSafe =>', hosts)
     if (hosts.length === 0) {
       return [];
     }
@@ -62,19 +61,16 @@ class GoogleSafeHost {
   };
 
   getBlockList = async (hosts: string[] = [], forceCheck = false): Promise<string[]> => {
-    // console.log('getBlockList =>', hosts, forceCheck)
     if (forceCheck) {
       return await this.checkHostSafe(hosts);
     }
 
     const now = new Date().getTime();
-    // console.log('getBlockList now =>', now, this.store.expiry)
     if (now > this.store.expiry) {
       this.store.blockList = [];
       return await this.checkHostSafe(hosts);
     }
 
-    // console.log('getBlockList aa =>', now, this.store.blockList)
     return this.store.blockList;
   };
 

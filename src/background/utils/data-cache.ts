@@ -1,4 +1,5 @@
 import { type CacheDataItem } from '@/shared/types/data-cache-types';
+import { consoleError } from '@/shared/utils/console-log';
 import storage from '@/shared/utils/storage';
 
 /**
@@ -62,7 +63,7 @@ export const registerRefreshListener = (
         try {
           await loader(...args);
         } catch (error) {
-          console.error('Error refreshing data', key, args, error);
+          consoleError('Error refreshing data', key, args, error);
         }
       }
 

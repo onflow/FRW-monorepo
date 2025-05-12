@@ -13,6 +13,8 @@ import Fade from '@mui/material/Fade';
 import React from 'react';
 import Highlight from 'react-highlight';
 
+import { consoleError } from '@/shared/utils/console-log';
+
 import IconFlow from '../../../../components/iconfont/IconFlow';
 
 export const DefaultBlock = ({
@@ -45,7 +47,7 @@ export const DefaultBlock = ({
 
   const displayCadenceArguments = (cadenceArguments) => {
     if (!Array.isArray(cadenceArguments)) {
-      console.error('cadenceArguments is not an array:', cadenceArguments);
+      consoleError('cadenceArguments is not an array:', cadenceArguments);
       return;
     }
     return cadenceArguments.map((item) => processItem(item)).join('\n\n');

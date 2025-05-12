@@ -1,3 +1,5 @@
+import { consoleError } from '@/shared/utils/console-log';
+
 // keep isMetaMask and remove isFrw
 const impersonateMetamaskWhitelist = [
   // layerzero
@@ -94,6 +96,6 @@ export const patchProvider = (provider: any) => {
       return;
     }
   } catch (e) {
-    console.error(e);
+    consoleError(e);
   }
 };

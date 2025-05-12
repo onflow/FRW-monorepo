@@ -4,16 +4,12 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useHistory } from 'react-router-dom';
 
-import { storage } from '@/background/webapi';
 import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
-import { authnServiceDefinition, serviceDefinition } from 'background/controller/serviceDefinition';
-import flowgrey from 'ui/FRWAssets/svg/flow-grey.svg';
 import Link from 'ui/FRWAssets/svg/link.svg';
-import linkGlobe from 'ui/FRWAssets/svg/linkGlobe.svg';
 import mainnetsvg from 'ui/FRWAssets/svg/mainnet.svg';
 import testnetsvg from 'ui/FRWAssets/svg/testnet.svg';
-import { LLPrimaryButton, LLSecondaryButton, LLConnectLoading } from 'ui/FRWComponent';
-import { useApproval, useWallet, formatAddress } from 'ui/utils';
+import { LLPrimaryButton, LLSecondaryButton } from 'ui/FRWComponent';
+import { useApproval, useWallet } from 'ui/utils';
 // import { CHAINS_ENUM } from 'consts';
 
 interface ConnectProps {
@@ -66,8 +62,6 @@ const EthSwitch = ({ params: { origin, target } }: ConnectProps) => {
   };
 
   const checkNetwork = useCallback(async () => {
-    console.log('target ', target);
-
     const network = await wallet.getNetwork();
     setCurrent(network);
     if (target !== network && target) {

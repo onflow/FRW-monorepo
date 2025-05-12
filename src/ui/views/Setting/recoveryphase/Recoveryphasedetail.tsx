@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import { Typography, Button } from '@mui/material';
+import Box from '@mui/material/Box';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 
-import Box from '@mui/material/Box';
-import { Typography, Button } from '@mui/material';
 // import { useRouteMatch } from 'react-router-dom';
-import IconCopy from '../../../../components/iconfont/IconCopy';
-import { useWallet } from 'ui/utils';
 import { LLHeader } from '@/ui/FRWComponent';
+import { useWallet } from 'ui/utils';
+
+import IconCopy from '../../../../components/iconfont/IconCopy';
 
 interface State {
   password: string;
@@ -17,20 +18,20 @@ const RecoveryPhasesDetail = () => {
   const wallet = useWallet();
   const [recoveryphases, setRecovery] = useState<string>('');
 
-  const verify = async () => {
+  const verify = useCallback(async () => {
     const pwd = location.state.password;
     const result = await wallet.getMnemonics(pwd);
     setRecovery(result);
-  };
+  }, [location.state.password, wallet]);
 
-  const setTab = async () => {
+  const setTab = useCallback(async () => {
     await wallet.setDashIndex(3);
-  };
+  }, [wallet]);
 
   useEffect(() => {
     setTab();
     verify();
-  }, []);
+  }, [setTab, verify]);
 
   return (
     <div className="page">

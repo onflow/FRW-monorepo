@@ -4,6 +4,7 @@ import * as ethUtil from 'ethereumjs-util';
 import { EMULATOR_HOST_TESTNET, EMULATOR_HOST_MAINNET } from '@/background/fclConfig';
 import pageStateCache from '@/background/service/pageStateCache';
 import { type FlowNetwork } from '@/shared/types/network-types';
+import { consoleError } from '@/shared/utils/console-log';
 
 export { default as createPersistStore } from './persisitStore';
 export { default as createSessionStore } from './sessionStore';
@@ -102,12 +103,10 @@ export const checkEmulatorStatus = async (network: FlowNetwork): Promise<boolean
   try {
     const baseURL = getEmulatorBaseURL(network);
     const response = await fetch(`${baseURL}/v1/blocks?height=sealed`);
-    console.log('checkEmulatorStatus - response ', response);
     const data = await response.json();
-    console.log('checkEmulatorStatus - data ', data);
     return !!data[0].block_status;
   } catch (error) {
-    console.error('checkEmulatorAccount - error ', error);
+    consoleError('checkEmulatorAccount - error ', error);
 
     return false;
   }
@@ -123,7 +122,7 @@ export const checkEmulatorAccount = async (
     const data = await response.json();
     return !!data.address;
   } catch (error) {
-    console.error('checkEmulatorAccount - error ', error);
+    consoleError('checkEmulatorAccount - error ', error);
     return false;
   }
 };

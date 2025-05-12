@@ -3,14 +3,9 @@ import { useHistory } from 'react-router-dom';
 
 import { useWallet } from './WalletContext';
 
-import { getUiType } from './index';
-
 export const useApproval = () => {
-  // console.log('useApproval 1')
   const usewallet = useWallet();
   const history = useHistory();
-
-  // console.log('useApproval 2')
 
   const getApproval = useCallback(() => usewallet.getApproval(), [usewallet]);
   const stableUsewallet = useMemo(() => usewallet, [usewallet]);
