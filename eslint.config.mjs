@@ -90,6 +90,13 @@ export default [
       eqeqeq: ['error', 'always'],
       'no-unused-expressions': 'error',
       'no-duplicate-imports': 'error',
+      'no-restricted-syntax': [
+        'warn',
+        {
+          selector: 'Identifier[name="consoleLog"]',
+          message: 'Remove consoleLog once debugging is done',
+        },
+      ],
     },
   },
 
