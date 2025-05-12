@@ -13,7 +13,7 @@ class LogListener {
           code: message.code,
           category: 'console',
           message: stripSensitive(message.message),
-          extra: message.stack,
+          extra: stripSensitive(message.stack),
           value: message.code,
         });
       }
