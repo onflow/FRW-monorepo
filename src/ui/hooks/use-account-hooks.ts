@@ -96,15 +96,6 @@ export const useUserWallets = () => {
   return useUserData<UserWalletStore>(userWalletsKey);
 };
 
-export const useCurrency = () => {
-  const userWallets = useUserWallets();
-  return userWallets?.displayCurrency;
-};
-
-export const useSupportedCurrencies = () => {
-  return useCachedData<SupportedCurrenciesStore>(supportedCurrenciesKey());
-};
-
 export const useCurrentId = () => {
   // Use the currenly selected profile id
   return useUserData<string>(CURRENT_ID_KEY);

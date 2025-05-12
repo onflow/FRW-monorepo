@@ -6,7 +6,7 @@ import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { debug } from '@/ui/utils';
 import { useWallet } from '@/ui/utils/WalletContext';
 
-import { useCurrency } from './use-account-hooks';
+import { useCurrency } from './preference-hooks';
 import { useCoinList, useTokenFilter, setTokenFilter } from './use-coin-hooks';
 import { useProfiles } from './useProfileHook';
 

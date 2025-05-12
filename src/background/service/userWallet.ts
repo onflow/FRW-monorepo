@@ -79,7 +79,6 @@ const USER_WALLET_TEMPLATE: UserWalletStore = {
   network: 'mainnet',
   emulatorMode: false,
   currentPubkey: '',
-  displayCurrency: DEFAULT_CURRENCY,
 };
 
 class UserWallet {
