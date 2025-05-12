@@ -57,7 +57,7 @@ import { returnCurrentProfileId } from '@/shared/utils/current-id';
 import storage from '../../../shared/utils/storage';
 import KeyringService from '../keyring';
 
-import { MOCK_KEYS, MOCK_PASSWORD } from './keyring-mock-data.test';
+import { MOCK_KEYS, MOCK_PASSWORD } from './keyring-mock-data';
 
 // Test constants
 const TEST_PASSWORD = 'test_password_123';

@@ -108,6 +108,7 @@ export default [
       'vitest.config.ts',
       'vitest.init.ts',
       '**/*.test.ts',
+      '**/__tests__/**',
     ],
     languageOptions: {
       parserOptions: {
