@@ -27,7 +27,7 @@ const Googledrive = ({ setErrorMessage, setShowError, handleGoogleAccountsFound 
         setErrorMessage(chrome.i18n.getMessage('No__backup__found'));
       }
     } catch (e) {
-      console.log(e);
+      console.error(e);
       setShowError(true);
       setErrorMessage(chrome.i18n.getMessage('Something__is__wrong'));
     } finally {

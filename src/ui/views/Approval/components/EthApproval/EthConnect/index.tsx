@@ -104,7 +104,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
         setIsLoading(false);
       })
       .catch((err) => {
-        console.log(err);
+        console.error(err);
         setIsLoading(false);
       });
   };

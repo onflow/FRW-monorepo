@@ -206,12 +206,11 @@ const LinkedCollection = (props) => {
 
     try {
       const res = await getCollection(address, collection_name);
-      console.log('res   ', res);
       setInfo(res?.collection);
       setTotal(res?.nftCount || 0);
       setLists(res?.nfts || []);
     } catch (err) {
-      console.log('err   ', err);
+      console.error('err   ', err);
       // Handle the error if needed
     } finally {
       setLoading(false);

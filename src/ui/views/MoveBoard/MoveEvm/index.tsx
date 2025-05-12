@@ -125,7 +125,6 @@ const MoveEvm = (props: MoveBoardProps) => {
   const moveToChild = async () => {
     setSending(true);
     const collection = collectionList.find((collection) => collection.id === selectedCollection);
-    console.log('collectionDetail ', selectedCollection);
     usewallet
       .batchBridgeChildNFTFromEvm(
         selectedAccount!['address'],
@@ -155,7 +154,6 @@ const MoveEvm = (props: MoveBoardProps) => {
   const moveToParent = async () => {
     setSending(true);
     const collection = collectionList.find((collection) => collection.id === selectedCollection);
-    console.log('collectionDetail ', collectionDetail);
     usewallet
       .batchBridgeNftFromEvm(collection.flowIdentifier, nftIdArray)
       .then(async (txId) => {

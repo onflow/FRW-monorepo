@@ -84,20 +84,16 @@ export const useNftHook = ({
 
       try {
         const offsetToUse = evmOffset.current;
-        console.log('Fetching page:', currentPage, 'offset:', offsetToUse);
 
         const res = await getCollection(ownerAddress, collectionName, offsetToUse);
-        console.log('Response:', res);
 
         setLists((prev) => {
           // Simple array concat since each page has unique items
           const newList = [...prev, ...res.nfts];
-          console.log('Updated list length:', newList.length);
           return newList;
         });
 
         if (!res.offset) {
-          console.log('No NFTs returned - ending pagination');
           setLoadingMore(false);
           return null;
         }
@@ -162,7 +158,6 @@ export const useNftHook = ({
       total.current = nftCount || initialRes.nftCount;
 
       const maxPages = Math.ceil(total.current / 50);
-      console.log('loadAllPages maxPages:', maxPages);
 
       if (!isEvm) {
         hasAttemptedLoadAll.current = true;
@@ -231,7 +226,6 @@ export const useNftHook = ({
 
     const initialize = async () => {
       initialized.current = true;
-      console.log('Initializing once');
       await loadAllPages();
     };
 

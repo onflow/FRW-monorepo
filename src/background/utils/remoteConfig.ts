@@ -77,7 +77,6 @@ class fetchRemoteConfig {
         this.configState.expireTime = exp;
         await storage.set('freeGas', config.features.free_gas);
         await storage.set('alchemyAPI', config.features.alchemy_api);
-        // console.log('remoteConfig ->', result, result.features.free_gas)
         return config;
       } catch (err) {
         console.error(err);

@@ -186,11 +186,9 @@ const WalletTab = ({ network }) => {
   useEffect(() => {
     const checkPermission = async () => {
       if (!(await wallet.isUnlocked())) {
-        console.log('Wallet is locked');
         return;
       }
       if (!(await wallet.getParentAddress())) {
-        console.log('Wallet Tab - No main wallet yet');
         return;
       }
       const result = await wallet.checkCanMoveChild();

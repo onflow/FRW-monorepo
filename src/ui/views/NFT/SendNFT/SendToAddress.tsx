@@ -194,7 +194,6 @@ const SendToAddress = () => {
     await usewallet.setDashIndex(1);
     const info = await usewallet.getUserInfo(false);
     const linked = state.linked;
-    console.log(';linked ', linked);
     const accountType = await usewallet.getActiveAccountType();
 
     let userContact = { ...USER_CONTACT };

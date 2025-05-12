@@ -1,8 +1,6 @@
 import { Stack, Box, Typography, Divider, CardMedia } from '@mui/material';
 import { Contract, ethers } from 'ethers';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useLocation } from 'react-router-dom';
 
 import { storage } from '@/background/webapi';
 import { withPrefix } from '@/shared/utils/address';
@@ -12,11 +10,7 @@ import { useApproval, useWallet } from 'ui/utils';
 // import EthMove from '../EthMove';
 
 const EthSuggest = (data) => {
-  const { state } = useLocation<{
-    showChainsModal?: boolean;
-  }>();
   const [, resolveApproval, rejectApproval] = useApproval();
-  const { t } = useTranslation();
   const usewallet = useWallet();
   const [isLoading, setLoading] = useState(false);
   // TODO: replace default logo
@@ -64,7 +58,6 @@ const EthSuggest = (data) => {
       const name = await getContractData(ftContract, 'name');
       const symbol = await getContractData(ftContract, 'symbol');
       const balance = await ftContract.balanceOf(evmAddress);
-      console.log('balance ', evmAddress, balance);
 
       if (decimals !== null && name !== null && symbol !== null) {
         const info = {
@@ -92,7 +85,6 @@ const EthSuggest = (data) => {
     [usewallet]
   );
   const init = useCallback(async () => {
-    console.log('suggest data ', data);
     const contractAddress = data.params.data.params.options.address;
     addCustom(contractAddress);
   }, [addCustom, data]);
@@ -110,10 +102,8 @@ const EthSuggest = (data) => {
 
     if (existingIndex !== -1) {
       evmCustomToken[existingIndex] = coinInfo;
-      console.log('Token already exists in evmCustomToken, replacing with new info');
     } else {
       evmCustomToken.push(coinInfo);
-      console.log('New token added to evmCustomToken');
     }
 
     await storage.set(`${network}evmCustomToken`, evmCustomToken);

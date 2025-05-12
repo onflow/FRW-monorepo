@@ -113,7 +113,6 @@ const MoveToChild = (props: MoveBoardProps) => {
         const address = await usewallet.getCurrentAddress();
         const cadenceResult = await usewallet.getSingleCollection(address!, selectedCollection, 0);
         setCollectionDetail(cadenceResult);
-        console.log('setCollectionDetail ', cadenceResult);
       } catch (error) {
         console.error('Error requesting collection info:', error);
         setCollectionDetail(null);
@@ -223,7 +222,6 @@ const MoveToChild = (props: MoveBoardProps) => {
 
       // Then, after a small delay, set the new loader
       setTimeout(() => {
-        console.log(`Mounting new loader for ${selectedCollection}`);
         setActiveLoader(selectedCollection);
       }, 100);
     }
@@ -247,12 +245,10 @@ const MoveToChild = (props: MoveBoardProps) => {
 
   // Callbacks for NFTLoader
   const handleNFTsLoaded = useCallback((nfts) => {
-    console.log(`Parent received ${nfts.length} NFTs`);
     setLoadedNFTs(nfts);
   }, []);
 
   const handleLoadingChange = useCallback((loading) => {
-    console.log(`NFT loading state changed to: ${loading}`);
     setIsLoading(loading);
   }, []);
 

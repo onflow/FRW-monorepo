@@ -3,6 +3,8 @@ import { EventEmitter } from 'events';
 
 import { ethErrors, serializeError } from 'eth-rpc-errors';
 
+import { consoleLog } from '@/shared/utils/console-log';
+
 import DedupePromise from './pageProvider/dedupePromise';
 import { switchChainNotice } from './pageProvider/interceptors/switchChain';
 import { switchWalletNotice } from './pageProvider/interceptors/switchWallet';
@@ -10,7 +12,7 @@ import PushEventHandlers from './pageProvider/pushEventHandlers';
 import ReadyPromise from './pageProvider/readyPromise';
 import { domReadyCall, $ } from './pageProvider/utils';
 import BroadcastChannelMessage from './utils/message/broadcastChannelMessage';
-import { getProviderMode, patchProvider } from './utils/metamask';
+import { patchProvider } from './utils/metamask';
 
 declare const __frw__channelName;
 declare const __frw__isDefaultWallet;
@@ -19,8 +21,8 @@ declare const __frw__isOpera;
 
 const log = (event, ...args) => {
   if (process.env.NODE_ENV !== 'production') {
-    console.log(
-      `%c [frw] (${new Date().toTimeString().substr(0, 8)}) ${event}`,
+    consoleLog(
+      `%c [frw] (${new Date().toTimeString().slice(0, 8)}) ${event}`,
       'font-weight: bold; background-color: #7d6ef9; color: white;',
       ...args
     );

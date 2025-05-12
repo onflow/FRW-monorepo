@@ -1,7 +1,5 @@
 import * as fcl from '@onflow/fcl';
 import type { Account as FclAccount } from '@onflow/typedefs';
-import WalletCore from '@trustwallet/wallet-core';
-import BigNumber from 'bignumber.js';
 import dayjs from 'dayjs';
 import { initializeApp, getApp } from 'firebase/app';
 import {
@@ -18,12 +16,8 @@ import { getInstallations, getId } from 'firebase/installations';
 import type { TokenInfo } from 'flow-native-token-registry';
 import log from 'loglevel';
 
-import { createPersistStore, findKeyAndInfo } from '@/background/utils';
-import {
-  getValidData,
-  registerRefreshListener,
-  setCachedData,
-} from '@/background/utils/data-cache';
+import { findKeyAndInfo } from '@/background/utils';
+import { getValidData, setCachedData } from '@/background/utils/data-cache';
 import { getFirbaseConfig, getFirbaseFunctionUrl } from '@/background/utils/firebaseConfig';
 import { verifySignature } from '@/background/utils/modules/publicPrivateKey';
 import fetchConfig from '@/background/utils/remoteConfig';
@@ -48,8 +42,9 @@ import {
 } from '@/shared/types/wallet-types';
 import { isValidFlowAddress, isValidEthereumAddress } from '@/shared/utils/address';
 import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
-import { cadenceScriptsKey, cadenceScriptsRefreshRegex } from '@/shared/utils/cache-data-keys';
-import { getCurrentProfileId, returnCurrentProfileId } from '@/shared/utils/current-id';
+import { cadenceScriptsKey } from '@/shared/utils/cache-data-keys';
+import { consoleLog } from '@/shared/utils/console-log';
+import { returnCurrentProfileId } from '@/shared/utils/current-id';
 import { getPeriodFrequency } from '@/shared/utils/getPeriodFrequency';
 import { type NetworkScripts } from '@/shared/utils/script-types';
 import { INITIAL_OPENAPI_URL, WEB_NEXT_URL } from 'consts';
@@ -175,16 +170,16 @@ onAuthStateChanged(auth, (user: User | null) => {
     // https://firebase.google.com/docs/reference/js/firebase.User
     // const uid = user.uid;
     if (user.isAnonymous) {
-      console.log('User is anonymous');
+      consoleLog('User is anonymous');
     } else {
       if (mixpanelTrack) {
         mixpanelTrack.identify(user.uid, user.displayName ?? user.uid);
       }
-      console.log('User is signed in');
+      consoleLog('User is signed in');
     }
   } else {
     // User is signed out
-    console.log('User is signed out');
+    consoleLog('User is signed out');
   }
   // note fcl setup is async
   userWalletService.setupFcl();
@@ -409,7 +404,7 @@ const recordFetch = async (response, responseData, ...args: Parameters<typeof fe
       statusText: response.statusText,
       // Note: functionParams and functionResponse will be added by the calling function
     };
-    console.log('fetchCallRecorder - response & messageData', response, messageData);
+    consoleLog('fetchCallRecorder - response & messageData', response, messageData);
 
     chrome.runtime.sendMessage({
       type: 'API_CALL_RECORDED',
@@ -1625,7 +1620,6 @@ export class OpenApiService {
         values = await this.isLinkedAccountTokenListEnabled(address);
       } else if (!isChild) {
         values = await this.getTokenBalanceStorage(address);
-        console.log('values ->', values);
       }
     } catch (error) {
       console.error('Error getting enabled token list:');
@@ -1764,7 +1758,6 @@ export class OpenApiService {
   };
 
   getTransactionTemplate = async (cadence: string, network: string) => {
-    console.log('getTransactionTemplate ->');
     const base64 = Buffer.from(cadence, 'utf8').toString('base64');
 
     const data = {
@@ -1782,16 +1775,12 @@ export class OpenApiService {
       },
     };
 
-    console.log('getTransactionTemplate ->', init);
     const response = await fetch('https://flix.flow.com/v1/templates/search', init);
 
     const template = await response.json();
 
-    console.log('template ->', template);
-
     const auditorsResponse = await fetch(`https://flix.flow.com/v1/auditors?network=${network}`);
     const auditors = await auditorsResponse.json();
-    console.log('auditors ->', auditors);
 
     fcl.config().put(
       'flow.auditors',
@@ -1803,7 +1792,6 @@ export class OpenApiService {
       auditors: auditors.map((item) => item.address),
     });
 
-    console.log('audits ->', audits);
     const addresses = Object.keys(audits).filter((address) => audits[address]);
 
     if (addresses.length <= 0) {
@@ -1811,7 +1799,6 @@ export class OpenApiService {
     }
 
     const result = auditors.filter((item) => addresses.includes(item.address));
-    console.log('result ->', result);
     if (result.length <= 0) {
       return null;
     }
@@ -2057,7 +2044,6 @@ export class OpenApiService {
   putDeviceInfo = async (walletData: PublicKeyAccount[]) => {
     try {
       const installationId = await this.getInstallationId();
-      // console.log('location ', userlocation);
 
       await this.addDevice({
         wallet_id: '',
@@ -2361,7 +2347,7 @@ if (process.env.NODE_ENV === 'development') {
       };
     });
 
-  console.log('OpenApiService Functions:', functions);
+  consoleLog('OpenApiService Functions:', functions);
 }
 
 export const getScripts = async (network: string, category: string, scriptName: string) => {

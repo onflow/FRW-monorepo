@@ -50,7 +50,6 @@ const RetrievePK = () => {
 
   const run = async (password) => {
     const result = await wallet.retrievePk(password);
-    console.log('result ', result);
     setArray(result);
     setRetrieved(true);
     setLoading(false);
@@ -74,7 +73,6 @@ const RetrievePK = () => {
 
     navigator.clipboard
       .writeText(allValues)
-      .then(() => console.log('Copied to clipboard successfully!'))
       .catch((err) => console.error('Failed to copy to clipboard: ', err));
   };
 

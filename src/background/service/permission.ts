@@ -51,7 +51,6 @@ class PermissionService {
   sync = () => {
     if (!this.lruCache) return;
     this.store.dumpCache = this.lruCache.dump();
-    console.log('this.store.dumpCache ', this.store.dumpCache);
   };
 
   getWithoutUpdate = (key: string) => {

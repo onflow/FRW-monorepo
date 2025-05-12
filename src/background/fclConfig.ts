@@ -85,7 +85,6 @@ async function fetchContracts() {
     const cachedContracts = await storage.getExpiry('contracts');
 
     if (cachedContracts) {
-      console.log('Loaded contracts from cache.');
       return cachedContracts;
     }
 
@@ -95,7 +94,6 @@ async function fetchContracts() {
 
     // Cache the fetched contracts for future use with expiry
     await storage.setExpiry('contracts', data, ttl);
-    console.log('Fetched and cached contracts.');
     return data;
   } catch (error) {
     console.error('Error fetching contracts:', error);

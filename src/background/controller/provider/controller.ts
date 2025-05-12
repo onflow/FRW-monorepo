@@ -12,8 +12,6 @@ import { signWithKey } from '@/background/utils/modules/publicPrivateKey';
 import { tupleToPrivateKey } from '@/shared/types/key-types';
 import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
 import { ensureEvmAddressPrefix, isValidEthereumAddress } from '@/shared/utils/address';
-import { getHashAlgo, getSignAlgo } from '@/shared/utils/algo';
-import { SIGN_ALGO_NUM_ECDSA_P256 } from '@/shared/utils/algo-constants';
 import {
   permissionService,
   sessionService,
@@ -334,7 +332,6 @@ class ProviderController extends BaseController {
     try {
       // Attempt to query the EVM address
       evmAccount = await Wallet.queryEvmAddress(currentWallet);
-      console.log('Query successful:', evmAccount);
     } catch (error) {
       // If an error occurs, request approval
       console.error('Error querying EVM address:', error);
@@ -400,7 +397,6 @@ class ProviderController extends BaseController {
 
     switch (chainId) {
       case '0x221': // 545 in decimal corresponds to testnet
-        console.log('Switch to Testnet');
         if (network !== 'testnet') {
           await notificationService.requestApproval(
             {
@@ -413,7 +409,6 @@ class ProviderController extends BaseController {
         return null;
 
       case '0x2eb': // 747 in decimal corresponds to mainnet
-        console.log('Switch to Mainnet');
         if (network !== 'mainnet') {
           await notificationService.requestApproval(
             {
@@ -425,7 +420,6 @@ class ProviderController extends BaseController {
         }
         return null;
       default:
-        console.log(`Unsupported ChainId: ${chainId}`);
         throw ethErrors.provider.custom({
           code: 4902,
           message: `Unrecognized  ChainId"${chainId}".`,
@@ -458,7 +452,6 @@ class ProviderController extends BaseController {
   };
 
   signTypeData = async (request) => {
-    console.log('eth_signTypedData_v4  ', request);
     let address;
     let data;
     let currentChain;
@@ -499,7 +492,6 @@ class ProviderController extends BaseController {
       ensureEvmAddressPrefix(evmaddress!.toLowerCase()) !==
       ensureEvmAddressPrefix(address.toLowerCase())
     ) {
-      console.log('evmaddress address ', evmaddress!, address);
       throw new Error('Provided address does not match the current address');
     }
     const message = typeof data === 'string' ? JSON.parse(data) : data;
@@ -556,8 +548,6 @@ class ProviderController extends BaseController {
       data = request.data.params[0];
       address = request.data.params[1];
     }
-
-    console.log('evmaddress address ', address, evmaddress);
 
     // Potentially shouldn't change the case to compare - we should be checking ERC-55 conformity
     if (

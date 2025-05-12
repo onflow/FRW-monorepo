@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as fcl from '@onflow/fcl';
 import type { Account as FclAccount } from '@onflow/typedefs';
 import * as t from '@onflow/types';
@@ -107,7 +105,7 @@ import {
   type KeyringType,
 } from 'background/service/keyring';
 import type { CacheState } from 'background/service/pageStateCache';
-import { findPublicKeyIndex, replaceNftKeywords } from 'background/utils';
+import { replaceNftKeywords } from 'background/utils';
 import fetchConfig from 'background/utils/remoteConfig';
 import { notification, storage } from 'background/webapi';
 import { openIndexPage } from 'background/webapi/tab';
@@ -126,7 +124,6 @@ import type {
   NFTModelV2,
   UserInfoResponse,
 } from '../../shared/types/network-types';
-import { fclEnsureNetwork } from '../fclConfig';
 import DisplayKeyring from '../service/keyring/display';
 import { HDKeyring } from '../service/keyring/hdKeyring';
 import { SimpleKeyring } from '../service/keyring/simpleKeyring';
@@ -528,7 +525,6 @@ export class WalletController extends BaseController {
     const parentAddress = await retryOperation(
       async () => {
         const address = await userWalletService.getParentAddress();
-        console.log('retryOperation - refreshWallets - parentAddress', address);
         if (!address) {
           throw new Error('Parent address not found');
         }
@@ -2539,7 +2535,6 @@ export class WalletController extends BaseController {
   };
 
   batchBridgeNftFromEvm = async (flowIdentifier: string, ids: Array<number>): Promise<string> => {
-    console.log('batchBridgeNftFromEvm', flowIdentifier, ids);
     const shouldCoverBridgeFee = await openapiService.getFeatureFlag('cover_bridge_fee');
     const scriptName = shouldCoverBridgeFee
       ? 'batchBridgeNFTFromEvmWithPayer'
@@ -2914,7 +2909,7 @@ export class WalletController extends BaseController {
 
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       if (!tabs || tabs.length === 0) {
-        console.log('No active tab found');
+        console.warn('No active tab found');
         return;
       }
       if (tabs[0].id) {
@@ -2941,7 +2936,6 @@ export class WalletController extends BaseController {
   };
 
   refreshAll = async () => {
-    console.log('refreshAll');
     // Clear the active wallet if any
     // If we don't do this, the user wallets will not be refreshed
     this.clearNFT();
@@ -3066,7 +3060,7 @@ export class WalletController extends BaseController {
     let attempts = 0;
     const poll = async () => {
       if (attempts >= maxAttempts) {
-        console.log('Max polling attempts reached');
+        console.warn('Max polling attempts reached');
         return;
       }
 
@@ -3309,7 +3303,7 @@ export class WalletController extends BaseController {
         ? cadenceScripts?.scripts.mainnet
         : cadenceScripts?.scripts.testnet;
     } catch (error) {
-      console.log(error, '=== get scripts error ===');
+      console.error(error, '=== get scripts error ===');
     }
   };
 

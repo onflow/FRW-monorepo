@@ -231,7 +231,6 @@ const MoveFromChild = (props: MoveBoardProps) => {
   const moveToEvm = async () => {
     setSending(true);
     const address = await usewallet.getCurrentAddress();
-    console.log('collectionDetail.collection ', collectionDetail);
     usewallet
       .batchBridgeChildNFTToEvm(
         address!,
@@ -296,7 +295,6 @@ const MoveFromChild = (props: MoveBoardProps) => {
   }, []);
 
   const handleLoadingChange = useCallback((loading) => {
-    console.log(`NFT loading state changed to: ${loading}`);
     setIsLoading(loading);
   }, []);
 

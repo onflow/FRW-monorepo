@@ -96,7 +96,6 @@ const RecoverPage = ({ dataArray, setArray, goNext }) => {
 
     navigator.clipboard
       .writeText(allValues)
-      .then(() => console.log('Copied to clipboard successfully!'))
       .catch((err) => console.error('Failed to copy to clipboard: ', err));
   };
 

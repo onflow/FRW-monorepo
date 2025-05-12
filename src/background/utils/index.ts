@@ -102,9 +102,7 @@ export const checkEmulatorStatus = async (network: FlowNetwork): Promise<boolean
   try {
     const baseURL = getEmulatorBaseURL(network);
     const response = await fetch(`${baseURL}/v1/blocks?height=sealed`);
-    console.log('checkEmulatorStatus - response ', response);
     const data = await response.json();
-    console.log('checkEmulatorStatus - data ', data);
     return !!data[0].block_status;
   } catch (error) {
     console.error('checkEmulatorAccount - error ', error);

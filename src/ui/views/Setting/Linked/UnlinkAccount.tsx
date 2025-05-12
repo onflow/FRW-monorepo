@@ -81,7 +81,6 @@ const UnlinkAccount = (props: UnlinkAccountProps) => {
 
   const onSubmit = async (data: FieldValues) => {
     setIsLoading(true);
-    console.log('submit');
     wallet
       .unlinkChildAccountV2(props.address!)
       .then(async (txId) => {
@@ -96,19 +95,15 @@ const UnlinkAccount = (props: UnlinkAccountProps) => {
         await wallet.setDashIndex(0);
         history.push(`/dashboard?activity=1&txId=${txId}`);
       })
-      .catch(() => {
+      .catch((err) => {
         setIsLoading(false);
-        console.log('failed ');
+        console.error('failed ', err);
       });
   };
 
   const onCancelBtnClicked = () => {
     props.handleCancelBtnClicked();
   };
-
-  useEffect(() => {
-    console.log('submit');
-  }, []);
 
   const renderContent = () => (
     <Box

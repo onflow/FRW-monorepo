@@ -36,8 +36,6 @@ interface SendNFTConfirmationProps {
 }
 
 const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
-  console.log('SendNFTConfirmation - NftEvm');
-
   const wallet = useWallet();
   const history = useHistory();
   const { occupied } = useTransferList();

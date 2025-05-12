@@ -235,7 +235,6 @@ const Sync = () => {
         setSecondLine('Checking account availability');
 
         const jsonObject = JSON.parse(result as string);
-        console.log('FCLWalletConnectMethod.accountInfo', jsonObject.data.userId);
 
         await handleAccountInfo(signClient, topic, jsonObject);
       } catch (error) {
@@ -248,7 +247,6 @@ const Sync = () => {
   // 5. Main Initialization Effect
   useEffect(() => {
     if (isSignClientInitialized.current) {
-      console.log('Debug: Wallet already initialized, skipping');
       return;
     }
 

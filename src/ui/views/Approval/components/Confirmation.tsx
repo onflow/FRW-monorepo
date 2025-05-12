@@ -83,7 +83,7 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
   // useEffect(() => {
   //   getUserInfo();
   //   const index = accountArgs.findIndex(item => item.value.includes('.jpg'));
-  //   console.log(' accountArgs ', data);
+  //   consoleLog(' accountArgs ', data);
   //   if (accountArgs[index]) {
   //     setImage(accountArgs[index].value)
   //     setAccountTitle(accountArgs[4].value)
@@ -148,20 +148,16 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
   );
 
   const sendAuthzToFCL = async () => {
-    console.log('sendAuthzToFCL ==>', signable);
     if (!signable) {
       return;
     }
 
     setApproval(true);
     const signedMessage = await wallet.signMessage(signable.message);
-
-    // console.log('signedMessage ->', opener, lilicoEnabled)
-    // console.log('signedMessage ->', signedMessage)
     if (opener) {
       sendSignature(signable, signedMessage);
       const value = await sessionStorage.getItem('pendingRefBlockId');
-      // console.log('pendingRefBlockId ->', value);
+      // consoleLog('pendingRefBlockId ->', value);
       if (value !== null) {
         return;
       }
@@ -169,16 +165,6 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
 
       if (lilicoEnabled) {
         chrome.tabs.sendMessage(opener, { type: 'FCL:VIEW:READY' });
-        // const tx = signable.voucher
-        // tx.payloadSigs[0].sig = signedMessage
-        // const message = sdk.encodeTransactionEnvelope(tx)
-        // const payer = await wallet.getPayerAddressAndKeyId()
-        // const mockSignable = {voucher: tx, message: message, addr: payer.address, keyId: payer.keyId}
-        // // console.log('mockSignable ->', mockSignable)
-        // signPayer(mockSignable)
-        // sendSignature(mockSignable, payerSig)
-        // setApproval(true);
-        // resolveApproval();
       } else {
         setApproval(true);
         resolveApproval();
@@ -209,8 +195,6 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
     async (signable) => {
       setIsLoading(true);
       const value = await sessionStorage.getItem('pendingRefBlockId');
-
-      console.log('signPayer ->', signable.voucher.refBlock, value, signable.roles.payer);
 
       if (signable.roles.payer !== true) {
         return;
@@ -257,7 +241,6 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
   }, [loadPayer]);
 
   useEffect(() => {
-    console.log('pendingRefBlockId ->', lilicoEnabled, signable, approval);
     if (lilicoEnabled && signable && signable.message && approval) {
       signPayer(signable);
     }
@@ -287,11 +270,7 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
     }
 
     const extMessageHandler = (msg, sender, sendResponse) => {
-      // console.log('extMessageHandler -->', msg);
-
       if (msg.type === 'FCL:VIEW:READY:RESPONSE') {
-        console.log('extMessageHandler -->', msg.type, msg);
-
         if (msg.host) {
           setHost(msg.host);
         }
@@ -310,16 +289,6 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
         fclCallback(JSON.parse(JSON.stringify(msg || {})));
       }
 
-      // if (msg.msg === 'transferListReceived') {
-      //   // DO NOT LISTEN
-      //   console.log('FLOW::TX -->', msg.type, msg);
-      //   setLinkingDone(true);
-      // }
-      // if (msg.type === 'FLOW::TX') {
-      //   // DO NOT LISTEN
-      //   console.log('FLOW::TX -->', msg.type, msg);
-      //   // fcl.tx(msg.txId).subscribe(txStatus => {})
-      // }
       sendResponse({ status: 'ok' });
       return true;
     };
@@ -327,9 +296,7 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
     chrome.runtime?.onMessage.addListener(extMessageHandler);
 
     return () => {
-      chrome.runtime?.onMessage.removeListener(() => {
-        console.log('removeListener');
-      });
+      chrome.runtime?.onMessage.removeListener(() => {});
     };
   }, [fclCallback, tabId]);
 

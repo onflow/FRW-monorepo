@@ -33,6 +33,7 @@ import {
 } from '@/shared/types/keyring-types';
 import { type LoggedInAccount } from '@/shared/types/wallet-types';
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
+import { consoleLog } from '@/shared/utils/console-log';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
 import storage from '@/shared/utils/storage';
 import { KEYRING_TYPE } from 'consts';
@@ -1507,7 +1508,7 @@ class KeyringService extends EventEmitter {
           const keys = Object.keys(deepVaultEntry);
           const id = keys[0];
           const newEntry: VaultEntryV2 = { id, encryptedData: entry };
-          console.log(`Fixed string entry by adding ID ${id} from deepVault`);
+          consoleLog(`Fixed string entry by adding ID ${id} from deepVault`);
           return newEntry;
         }
 
@@ -1515,7 +1516,7 @@ class KeyringService extends EventEmitter {
         if (loggedInAccounts && loggedInAccounts[index] && loggedInAccounts[index].id) {
           const accountId = loggedInAccounts[index].id;
           const newEntry = { id: accountId, encryptedData: entry };
-          console.log(
+          consoleLog(
             `Fixed string entry by adding ID ${accountId} from loggedInAccounts at index ${index}`
           );
           return newEntry;
@@ -1524,7 +1525,7 @@ class KeyringService extends EventEmitter {
         // TODO: If no matching ID is found, then we 'could' decrypt the entry and use loginV3Api to get the ID
         // Handle through support. This isn't worth the effort. We won't update this old vault so it will still be there.
 
-        console.log('Could not find matching ID for string entry');
+        console.error('Could not find matching ID for string entry');
         return null;
       }
       // If the entry is an object, we can just map the values to the new format
@@ -1547,7 +1548,6 @@ class KeyringService extends EventEmitter {
     const foundEntry = vaultArray.find((entry) => entry.id === currentId);
 
     if (foundEntry) {
-      console.log('Found account with ID:', currentId);
       await storage.set(CURRENT_ID_KEY, currentId);
       try {
         const encryptedDataString = foundEntry[currentId];

@@ -1,3 +1,4 @@
+import { consoleLog } from '@/shared/utils/console-log';
 import { IS_CHROME, CHECK_METAMASK_INSTALLED_URL } from 'consts';
 
 export const noop = () => {};
@@ -172,6 +173,6 @@ export const truncate = (str, n) => {
 // Frontend utility function
 export const debug = (message: string, data?: any) => {
   if (process.env.NODE_ENV === 'development') {
-    console.log(`[${message}`, data ? data : '');
+    consoleLog(`[${message}`, data ? data : '');
   }
 };

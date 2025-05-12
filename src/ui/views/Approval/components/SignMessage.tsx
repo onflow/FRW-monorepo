@@ -12,10 +12,8 @@ import * as fcl from '@onflow/fcl';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { storage } from '@/background/webapi';
 import { LLPrimaryButton, LLSecondaryButton } from 'ui/FRWComponent';
 import { useApproval, useWallet } from 'ui/utils';
-
 import './github-dark-dimmed.css';
 
 interface ConnectProps {
@@ -144,9 +142,7 @@ const SignMessage = ({ params: { icon, origin, tabId, type } }: ConnectProps) =>
     chrome.runtime?.onMessage.addListener(extMessageHandler);
 
     return () => {
-      chrome.runtime?.onMessage.removeListener(() => {
-        console.log('removeListener');
-      });
+      chrome.runtime?.onMessage.removeListener(() => {});
     };
   }, [tabId]);
 

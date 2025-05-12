@@ -136,11 +136,11 @@ const AddCustomEvmToken = () => {
     const existingIndex = evmCustomToken.findIndex((token) => token.address === contractAddress);
 
     if (existingIndex !== -1) {
+      // Token already exists in evmCustomToken, replacing with new info
       evmCustomToken[existingIndex] = coinInfo;
-      console.log('Token already exists in evmCustomToken, replacing with new info');
     } else {
+      // New token added to evmCustomToken
       evmCustomToken.push(coinInfo);
-      console.log('New token added to evmCustomToken');
     }
 
     await storage.set(`${network}evmCustomToken`, evmCustomToken);

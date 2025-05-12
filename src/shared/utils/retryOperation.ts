@@ -1,3 +1,5 @@
+import { consoleLog } from './console-log';
+
 export const retryOperation = async <T>(
   operation: () => Promise<T>,
   maxAttempts = 3,
@@ -8,8 +10,8 @@ export const retryOperation = async <T>(
       return await operation();
     } catch (error) {
       if (attempt === maxAttempts) throw error;
-      // eslint-disable-next-line no-console
-      console.log(`Attempt ${attempt} failed, retrying in ${delay}ms...`);
+
+      consoleLog(`Attempt ${attempt} failed, retrying in ${delay}ms...`);
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
