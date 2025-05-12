@@ -18,6 +18,7 @@ const getFormattedStackTrace = () => {
 
 export type ConsoleMessageType =
   | 'console_log'
+  | 'console_info'
   | 'console_error'
   | 'console_warn'
   | 'console_debug'
@@ -34,6 +35,10 @@ export const trackConsole = (type: ConsoleMessageType, message: string, code: nu
 
 const _consoleLog = (message: string, ...args: unknown[]) => {
   trackConsole('console_log', `${message} ${args.join(' ')}`);
+};
+
+const _consoleInfo = (message: string, ...args: unknown[]) => {
+  trackConsole('console_info', `${message} ${args.join(' ')}`);
 };
 
 const _consoleError = (message: string, ...args: unknown[]) => {
@@ -54,6 +59,7 @@ const _consoleTrace = (message: string, ...args: unknown[]) => {
 
 // Export the original console functions if not in production
 export const consoleLog = IS_PROD ? _consoleLog : console.log; // eslint-disable-line no-console
+export const consoleInfo = IS_PROD ? _consoleInfo : console.info; // eslint-disable-line no-console
 export const consoleError = IS_PROD ? _consoleError : console.error;
 export const consoleWarn = IS_PROD ? _consoleWarn : console.warn;
 export const consoleDebug = IS_PROD ? _consoleDebug : console.debug; // eslint-disable-line no-console
