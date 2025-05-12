@@ -1,6 +1,8 @@
 import QrScanner from 'qr-scanner';
 import React, { useEffect, useRef, useState } from 'react';
 
+import { consoleError } from '@/shared/utils/console-log';
+
 const QrScannerComponent = ({ setUrl }) => {
   const videoRef = useRef(null);
   const [error, setError] = useState('');
@@ -23,7 +25,7 @@ const QrScannerComponent = ({ setUrl }) => {
     );
 
     qrScanner.start().catch((err) => {
-      console.error(err);
+      consoleError(err);
       setError('Camera access denied. Please allow camera access.');
     });
 

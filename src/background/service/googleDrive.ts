@@ -1,7 +1,7 @@
 import aesjs from 'aes-js';
 import * as bip39 from 'bip39';
 
-import { consoleWarn } from '@/shared/utils/console-log';
+import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 
 interface GoogleDriveFileModel {
   kind: string;
@@ -45,7 +45,7 @@ class GoogleDriveService {
       const token = await this.getAuthTokenWrapper(false);
       return token !== undefined && token !== null;
     } catch (err) {
-      console.error('hasGooglePermission - not authorized', err);
+      consoleError('hasGooglePermission - not authorized', err);
       return false;
     }
   };
@@ -415,7 +415,7 @@ class GoogleDriveService {
               time: new Date().getTime().toString(),
             };
           } catch (err) {
-            console.error(`Failed to update password for profile backup: ${item.username}`, err);
+            consoleError(`Failed to update password for profile backup: ${item.username}`, err);
             throw new Error(`Failed to update password for profile backup: ${item.username}`);
           }
         }
@@ -429,7 +429,7 @@ class GoogleDriveService {
       await this.updateFile(this.fileId, updateContent, false);
       return true;
     } catch (err) {
-      console.error('Failed to update password on selected profile backups:', err);
+      consoleError('Failed to update password on selected profile backups:', err);
       throw new Error('Failed to update password on selected profile backups');
     }
   };

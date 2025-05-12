@@ -43,7 +43,7 @@ import {
 import { isValidFlowAddress, isValidEthereumAddress } from '@/shared/utils/address';
 import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
 import { cadenceScriptsKey } from '@/shared/utils/cache-data-keys';
-import { consoleLog } from '@/shared/utils/console-log';
+import { consoleError, consoleLog } from '@/shared/utils/console-log';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
 import { getPeriodFrequency } from '@/shared/utils/getPeriodFrequency';
 import { type NetworkScripts } from '@/shared/utils/script-types';
@@ -411,7 +411,7 @@ const recordFetch = async (response, responseData, ...args: Parameters<typeof fe
       data: messageData,
     });
   } catch (err) {
-    console.error('Error sending message to UI:', err);
+    consoleError('Error sending message to UI:', err);
   }
   return response;
 };
@@ -500,7 +500,7 @@ export class OpenApiService {
         }
       }
     } catch (err) {
-      console.error('Error verifying signature:', err);
+      consoleError('Error verifying signature:', err);
 
       // throw invalid signature error to prevent processing bad responses
       if (err instanceof Error && err.message === 'Invalid signature in response') {
@@ -619,7 +619,7 @@ export class OpenApiService {
         }
       });
     } catch (error) {
-      console.error('Error fetching prices:', error);
+      consoleError('Error fetching prices:', error);
     }
 
     await storage.setExpiry(storageKey, pricesMap, 300000);
@@ -1361,7 +1361,7 @@ export class OpenApiService {
       const config = await remoteFetch.remoteConfig();
       return config.features;
     } catch (err) {
-      console.error(err);
+      consoleError(err);
     }
     // By default, all feature flags are disabled
     return {};
@@ -1540,7 +1540,7 @@ export class OpenApiService {
     try {
       tokens = await this.fetchFTListFull(network, chainType);
     } catch (error) {
-      console.error(`Error fetching token list for ${network} ${chainType}:`, error);
+      consoleError(`Error fetching token list for ${network} ${chainType}:`, error);
       // Return default tokens or cached tokens if available
       const cachedTokens = await storage.get(`TokenList${network}${chainType}`);
       tokens = cachedTokens || [defaultFlowToken];
@@ -1565,7 +1565,7 @@ export class OpenApiService {
     try {
       tokens = await this.fetchFTListFull(network, chainType);
     } catch (error) {
-      console.error(`Error fetching token list for ${network} ${chainType}:`, error);
+      consoleError(`Error fetching token list for ${network} ${chainType}:`, error);
       // Return default tokens or cached tokens if available
       const cachedTokens = await storage.get(`TokenList${network}${chainType}`);
       tokens = cachedTokens || [defaultFlowToken];
@@ -1622,7 +1622,7 @@ export class OpenApiService {
         values = await this.getTokenBalanceStorage(address);
       }
     } catch (error) {
-      console.error('Error getting enabled token list:');
+      consoleError('Error getting enabled token list:');
       values = {};
     }
 
@@ -2057,7 +2057,7 @@ export class OpenApiService {
         },
       });
     } catch (error) {
-      console.error('Error while adding device:', error);
+      consoleError('Error while adding device:', error);
       return;
     }
   };
@@ -2208,7 +2208,7 @@ export class OpenApiService {
 
       currencies = supportedCurrencies?.data?.currencies || [DEFAULT_CURRENCY];
     } catch (error) {
-      console.error('Error fetching supported currencies, using default USD:', error);
+      consoleError('Error fetching supported currencies, using default USD:', error);
     }
     this.supportedCurrenciesCache = currencies;
     return currencies;
@@ -2300,7 +2300,7 @@ export class OpenApiService {
       await storage.setExpiry('latestVersion', version, 3600000);
       return version;
     } catch (error) {
-      console.error('Error fetching latest version:', error);
+      consoleError('Error fetching latest version:', error);
       return chrome.runtime.getManifest().version; // Fallback to current version
     }
   };

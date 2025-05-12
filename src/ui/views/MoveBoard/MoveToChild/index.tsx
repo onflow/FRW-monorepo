@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { isValidEthereumAddress } from '@/shared/utils/address';
+import { consoleError } from '@/shared/utils/console-log';
 import { NFTDrawer } from '@/ui/FRWComponent/GeneralPages';
 import WarningSnackbar from '@/ui/FRWComponent/WarningSnackbar';
 import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
@@ -99,7 +100,7 @@ const MoveToChild = (props: MoveBoardProps) => {
         setCadenceNft(cadenceResult);
       }
     } catch (error) {
-      console.error('Error fetching NFT data:', error);
+      consoleError('Error fetching NFT data:', error);
       setSelected('');
       setCollectionList(null);
       setCadenceNft(null);
@@ -114,7 +115,7 @@ const MoveToChild = (props: MoveBoardProps) => {
         const cadenceResult = await usewallet.getSingleCollection(address!, selectedCollection, 0);
         setCollectionDetail(cadenceResult);
       } catch (error) {
-        console.error('Error requesting collection info:', error);
+        consoleError('Error requesting collection info:', error);
         setCollectionDetail(null);
       } finally {
         setIsLoading(false);
@@ -168,7 +169,7 @@ const MoveToChild = (props: MoveBoardProps) => {
           history.push(`/dashboard?activity=1&txId=${txId}`);
         })
         .catch((err) => {
-          console.error(err);
+          consoleError(err);
           setSending(false);
           setFailed(true);
         });
@@ -193,7 +194,7 @@ const MoveToChild = (props: MoveBoardProps) => {
         history.push(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
-        console.error(err);
+        consoleError(err);
         setSending(false);
         setFailed(true);
       });

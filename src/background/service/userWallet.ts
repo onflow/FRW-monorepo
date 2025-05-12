@@ -44,7 +44,7 @@ import {
   accountBalanceKey,
   accountBalanceRefreshRegex,
 } from '@/shared/utils/cache-data-keys';
-import { consoleWarn } from '@/shared/utils/console-log';
+import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import { setUserData } from '@/shared/utils/user-data-access';
 import {
@@ -299,7 +299,7 @@ class UserWallet {
           .map((account) => account.address)
       );
     } catch (error) {
-      console.error('Error loading accounts', error);
+      consoleError('Error loading accounts', error);
     }
   };
 
@@ -1122,7 +1122,7 @@ const preloadAllAccountsWithPubKey = async (
       POLL_INTERVAL
     );
   } catch (error) {
-    console.error('Failed to load main accounts after maximum retries:', error.message);
+    consoleError('Failed to load main accounts after maximum retries:', error.message);
   }
 
   if (!mainAccounts || mainAccounts.length === 0) {

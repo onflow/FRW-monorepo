@@ -4,6 +4,7 @@ import BN from 'bignumber.js';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
+import { consoleError } from '@/shared/utils/console-log';
 import enableBg from 'ui/FRWAssets/image/enableBg.png';
 import { LLPrimaryButton, LLSpinner } from 'ui/FRWComponent';
 import { useWallet } from 'ui/utils';
@@ -33,7 +34,7 @@ const Enable = () => {
         setClaiming(false);
       })
       .catch((err) => {
-        console.error(err);
+        consoleError(err);
         setClaiming(false);
       });
   };

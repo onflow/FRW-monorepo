@@ -1,7 +1,7 @@
 import * as fcl from '@onflow/fcl';
 import { send as httpSend } from '@onflow/transport-http';
 
-import { consoleWarn } from '@/shared/utils/console-log';
+import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 
 import { isValidNetwork, type FlowNetwork } from '../shared/types/network-types';
 
@@ -98,7 +98,7 @@ async function fetchContracts() {
     await storage.setExpiry('contracts', data, ttl);
     return data;
   } catch (error) {
-    console.error('Error fetching contracts:', error);
+    consoleError('Error fetching contracts:', error);
 
     // If fetching and cache both fail, return fallback contracts
     consoleWarn('Using fallback contract addresses.');

@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 import { storage } from '@/background/webapi';
 import { withPrefix } from '@/shared/utils/address';
+import { consoleError } from '@/shared/utils/console-log';
 import { EVM_ENDPOINT } from 'consts';
 import { LLPrimaryButton, LLSecondaryButton, LLConnectLoading } from 'ui/FRWComponent';
 import { useApproval, useWallet } from 'ui/utils';
@@ -44,12 +45,12 @@ const EthSuggest = (data) => {
         try {
           const result = await contract[method](...args);
           if (!result || result === '0x') {
-            console.error(`No data returned for method: ${method}`);
+            consoleError(`No data returned for method: ${method}`);
             return null;
           }
           return result;
         } catch (error) {
-          console.error(`Error calling ${method}:`, error);
+          consoleError(`Error calling ${method}:`, error);
           return null;
         }
       }
@@ -76,7 +77,7 @@ const EthSuggest = (data) => {
         setCoinInfo(info);
         setLoading(false);
       } else {
-        console.error('Failed to retrieve all required data for the token.');
+        consoleError('Failed to retrieve all required data for the token.');
         setIsValidatingAddress(false);
         setValidationError(true);
         setLoading(false);

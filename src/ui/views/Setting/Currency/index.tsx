@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 
 import IconEnd from '@/components/iconfont/IconAVector11Stroke';
 import { DEFAULT_CURRENCY, type Currency } from '@/shared/types/wallet-types';
+import { consoleError } from '@/shared/utils/console-log';
 import { LLHeader } from '@/ui/FRWComponent';
 import { useWallet, useWalletLoaded } from '@/ui/utils';
 
@@ -71,7 +72,7 @@ const CurrencySettings = () => {
         const currentCurrency = await wallet.getDisplayCurrency();
         setCurrency(currentCurrency.code);
       } catch (error) {
-        console.error('Error loading currency preferences:', error);
+        consoleError('Error loading currency preferences:', error);
       } finally {
         setIsLoading(false);
       }
@@ -89,7 +90,7 @@ const CurrencySettings = () => {
         await wallet.refreshAll();
       }
     } catch (error) {
-      console.error('Error saving currency preference:', error);
+      consoleError('Error saving currency preference:', error);
     }
   };
 

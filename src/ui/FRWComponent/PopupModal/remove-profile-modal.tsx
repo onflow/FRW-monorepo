@@ -3,6 +3,7 @@ import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import { Button, Typography, TextField, DialogActions, CircularProgress, Box } from '@mui/material';
 import React, { useState, useEffect, useCallback } from 'react';
 
+import { consoleError } from '@/shared/utils/console-log';
 import { useWallet } from '@/ui/utils';
 
 import { CustomDialog } from '../custom-dialog'; // Reuse the styled dialog base
@@ -39,7 +40,7 @@ const RemoveProfileModal: React.FC<RemoveProfileModalProps> = ({
       const backupResult = await wallet.hasCurrentUserBackup(); // Renamed variable for clarity
       setHasBackup(backupResult);
     } catch (err) {
-      console.error('An error occurred while checking the backup:', err);
+      consoleError('An error occurred while checking the backup:', err);
       setBackupCheckError('Failed to check backup status.'); // Keep error state
       setHasBackup(false); // Assume no backup on error
     } finally {

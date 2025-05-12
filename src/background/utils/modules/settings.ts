@@ -1,3 +1,5 @@
+import { consoleError } from '@/shared/utils/console-log';
+
 import storage from '../../../shared/utils/storage';
 
 import { jsonToString } from './utils';
@@ -76,7 +78,7 @@ export async function readSettings(): Promise<Settings> {
       delete settings.user;
     }
   } catch {
-    console.error('Error parsing settings');
+    consoleError('Error parsing settings');
   }
 
   return settings;

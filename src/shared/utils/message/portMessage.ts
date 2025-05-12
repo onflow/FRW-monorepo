@@ -1,3 +1,5 @@
+import { consoleError } from '../console-log';
+
 import Message from './index';
 class PortMessage extends Message {
   port: chrome.runtime.Port | null = null;
@@ -44,7 +46,7 @@ class PortMessage extends Message {
       this.port.postMessage({ _type_: `${this._EVENT_PRE}${type}`, data });
     } catch (e) {
       // DO NOTHING BUT CATCH THIS ERROR
-      console.error('PortMessage error: ', e);
+      consoleError('PortMessage error: ', e);
     }
   };
 

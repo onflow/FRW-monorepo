@@ -12,6 +12,7 @@ import { signWithKey } from '@/background/utils/modules/publicPrivateKey';
 import { tupleToPrivateKey } from '@/shared/types/key-types';
 import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
 import { ensureEvmAddressPrefix, isValidEthereumAddress } from '@/shared/utils/address';
+import { consoleError } from '@/shared/utils/console-log';
 import {
   permissionService,
   sessionService,
@@ -198,7 +199,7 @@ class ProviderController extends BaseController {
 
     return new Promise((resolve, reject) => {
       if (!web3Instance.currentProvider) {
-        console.error('Provider is undefined');
+        consoleError('Provider is undefined');
         return;
       }
 
@@ -211,7 +212,7 @@ class ProviderController extends BaseController {
         },
         (err, response) => {
           if (err) {
-            console.error('Error:', err);
+            consoleError('Error:', err);
             reject(err);
           } else {
             resolve(response);
@@ -247,7 +248,7 @@ class ProviderController extends BaseController {
       }
     } catch (error) {
       // If an error occurs, request approval
-      console.error('ethRequestAccounts - Error querying EVM address:', error);
+      consoleError('ethRequestAccounts - Error querying EVM address:', error);
 
       await notificationService.requestApproval(
         {
@@ -286,7 +287,7 @@ class ProviderController extends BaseController {
 
   ethSendTransaction = async (data) => {
     if (!data || !data.data || !data.data.params || !data.data.params.length) {
-      console.error('Invalid data structure');
+      consoleError('Invalid data structure');
       return null;
     }
 
@@ -323,7 +324,7 @@ class ProviderController extends BaseController {
       currentWallet = await Wallet.getParentAddress();
     } catch (error) {
       // If an error occurs, request approval
-      console.error('Error querying EVM address:', error);
+      consoleError('Error querying EVM address:', error);
 
       return;
     }
@@ -334,14 +335,14 @@ class ProviderController extends BaseController {
       evmAccount = await Wallet.queryEvmAddress(currentWallet);
     } catch (error) {
       // If an error occurs, request approval
-      console.error('Error querying EVM address:', error);
+      consoleError('Error querying EVM address:', error);
     }
 
     const account = evmAccount ? [evmAccount.toLowerCase()] : [];
     try {
       await sessionService.broadcastEvent('accountsChanged', account);
     } catch (error) {
-      console.error('Error broadcasting accountsChanged event:', error);
+      consoleError('Error broadcasting accountsChanged event:', error);
       // Continue despite the error
     }
 

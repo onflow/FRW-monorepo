@@ -24,6 +24,7 @@ import { useHistory, useParams } from 'react-router-dom';
 import { type Contact } from '@/shared/types/network-types';
 import { type WalletAddress } from '@/shared/types/wallet-types';
 import { isValidAddress } from '@/shared/utils/address';
+import { consoleError } from '@/shared/utils/console-log';
 import { filterContacts, checkAddressBookContacts } from '@/shared/utils/contact-utils';
 import { useContacts } from '@/ui/hooks/useContactHook';
 import { useWallet } from '@/ui/utils/WalletContext';
@@ -135,7 +136,7 @@ const SendAddress = () => {
 
       setSearchContacts(checkAddressBookContacts(contacts, addressBookContacts));
     } catch (error) {
-      console.error('Error searching for username', error);
+      consoleError('Error searching for username', error);
     } finally {
       setSearched(true);
       setIsLoading(false);
@@ -177,7 +178,7 @@ const SendAddress = () => {
           pathname,
         });
       } else {
-        console.error('Invalid address', address);
+        consoleError('Invalid address', address);
       }
     },
     [history, token]

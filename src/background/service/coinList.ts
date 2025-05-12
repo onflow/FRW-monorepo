@@ -13,8 +13,8 @@ import {
   evmTokenInfoKey,
   evmTokenInfoRefreshRegex,
 } from '@/shared/utils/cache-data-keys';
+import { consoleError } from '@/shared/utils/console-log';
 
-import { fclConfirmNetwork } from '../fclConfig';
 import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
 
 class CoinList {
@@ -136,7 +136,7 @@ class CoinList {
 
       return tokens;
     } catch (error) {
-      console.error('Error fetching user tokens:', error);
+      consoleError('Error fetching user tokens:', error);
       throw error;
     }
   };

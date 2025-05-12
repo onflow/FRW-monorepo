@@ -12,7 +12,7 @@ import {
 import eventBus from '@/eventBus';
 import { type WalletAddress } from '@/shared/types/wallet-types';
 import { isValidFlowAddress } from '@/shared/utils/address';
-import { consoleLog } from '@/shared/utils/console-log';
+import { consoleError, consoleLog } from '@/shared/utils/console-log';
 import { Message } from '@/shared/utils/messaging';
 import type { WalletController } from 'background/controller/wallet';
 import { EVENTS } from 'consts';
@@ -142,7 +142,7 @@ async function restoreAppState() {
   walletController.setLoaded(true);
   chrome.runtime.sendMessage({ type: 'walletInitialized' }, (response) => {
     if (chrome.runtime.lastError) {
-      console.error(
+      consoleError(
         'chrome.runtime.sendMessage - Message delivery failed:',
         chrome.runtime.lastError.message
       );
@@ -398,7 +398,7 @@ const extMessageHandler = (msg, sender, sendResponse) => {
             );
           }
         } catch (error) {
-          console.error('Error validating or setting current address:', error);
+          consoleError('Error validating or setting current address:', error);
         }
         if (service.type === 'pre-authz') {
           handlePreAuthz(tabId);

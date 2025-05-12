@@ -4,6 +4,7 @@ import { useLocation, useRouteMatch } from 'react-router-dom';
 
 import { getLoggedInAccount } from '@/background/utils/getLoggedInAccount';
 import { storage } from '@/background/webapi';
+import { consoleError } from '@/shared/utils/console-log';
 import { LLHeader } from '@/ui/FRWComponent';
 import { useWallet } from 'ui/utils';
 
@@ -34,7 +35,7 @@ const Keydetail = () => {
       setHash(hashAlgo);
       setSign(signAlgo);
     } catch (error) {
-      console.error('Error during verification:', error);
+      consoleError('Error during verification:', error);
     }
   }, [location.state.password, usewallet, setKey, setPublicKey, setHash, setSign]);
 
@@ -42,7 +43,7 @@ const Keydetail = () => {
     try {
       await usewallet.setDashIndex(3); // Set the dashboard index in the wallet
     } catch (error) {
-      console.error('Error setting tab:', error);
+      consoleError('Error setting tab:', error);
     }
   }, [usewallet]);
 

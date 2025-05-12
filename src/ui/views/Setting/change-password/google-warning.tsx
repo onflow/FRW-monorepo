@@ -2,6 +2,7 @@ import { Warning } from '@mui/icons-material';
 import { DialogContent, DialogContentText, DialogTitle, Stack } from '@mui/material';
 import React from 'react';
 
+import { consoleError } from '@/shared/utils/console-log';
 import { CustomDialog } from '@/ui/FRWComponent/custom-dialog';
 import { LLPrimaryButton } from '@/ui/FRWComponent/LLPrimaryButton';
 import { LLSecondaryButton } from '@/ui/FRWComponent/LLSecondaryButton';
@@ -29,7 +30,7 @@ export const GoogleWarningDialog = ({
     try {
       return wallet.loadBackupAccounts();
     } catch (error) {
-      console.error('Error loading backup accounts:', error);
+      consoleError('Error loading backup accounts:', error);
       onError('Error loading backup accounts');
     }
   };
@@ -41,7 +42,7 @@ export const GoogleWarningDialog = ({
       // Proceed with password change, explicitly ignoring backups (true flag)
       return onProceedAnyway();
     } catch (error) {
-      console.error('Error changing password:', error);
+      consoleError('Error changing password:', error);
       onError(
         chrome.i18n.getMessage('Error_changing_password')
           ? `${chrome.i18n.getMessage('Error_changing_password')}: ${error.message}`

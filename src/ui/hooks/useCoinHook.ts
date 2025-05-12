@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState, useRef } from 'react';
 
 import { type ExtendedTokenInfo, type CoinItem, type TokenFilter } from '@/shared/types/coin-types';
 import { DEFAULT_CURRENCY, type Currency } from '@/shared/types/wallet-types';
+import { consoleError } from '@/shared/utils/console-log';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { debug } from '@/ui/utils';
 import { useWallet } from '@/ui/utils/WalletContext';
@@ -30,7 +31,7 @@ export const useCoins = () => {
         const currency: Currency = await usewallet?.getDisplayCurrency();
         setCurrencyCode(currency?.code);
       } catch (error) {
-        console.error('Failed to fetch display currency, using default USD:', error);
+        consoleError('Failed to fetch display currency, using default USD:', error);
         setCurrencyCode(DEFAULT_CURRENCY.code); // Handle error case
       }
     };
@@ -92,7 +93,7 @@ export const useCoins = () => {
             initAttemptedRef.current = true;
             debug('Coin list initialization completed');
           } catch (error) {
-            console.error('Error initializing coin list:', error);
+            consoleError('Error initializing coin list:', error);
           }
         };
 

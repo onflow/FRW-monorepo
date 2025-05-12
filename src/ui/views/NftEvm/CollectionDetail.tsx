@@ -4,6 +4,7 @@ import { useHistory, useParams, useLocation } from 'react-router-dom';
 
 import { triggerRefresh } from '@/shared/utils/cache-data-access';
 import { evmNftCollectionListKey } from '@/shared/utils/cache-data-keys';
+import { consoleError } from '@/shared/utils/console-log';
 import CollectionDetailGrid from '@/ui/FRWComponent/NFTs/CollectionDetailGrid';
 import GridView from '@/ui/FRWComponent/NFTs/GridView';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
@@ -233,7 +234,7 @@ const NftEvmCollectionDetail = () => {
         }
         localStorage.setItem('nftDetailState', '');
       } catch (e) {
-        console.error('Error parsing saved state:', e);
+        consoleError('Error parsing saved state:', e);
       }
     }
   }, [setSearchTerm]);

@@ -3,7 +3,7 @@ import { EventEmitter } from 'events';
 
 import { ethErrors, serializeError } from 'eth-rpc-errors';
 
-import { consoleLog } from '@/shared/utils/console-log';
+import { consoleError, consoleLog } from '@/shared/utils/console-log';
 
 import DedupePromise from './pageProvider/dedupePromise';
 import { switchChainNotice } from './pageProvider/interceptors/switchChain';
@@ -440,7 +440,7 @@ const initProvider = () => {
     } catch (e) {
       // think that defineProperty failed means there is any other wallet
       requestHasOtherProvider();
-      console.error(e);
+      consoleError(e);
       window.ethereum = frwProvider;
       window.frw = frwProvider;
     }

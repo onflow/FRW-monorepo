@@ -11,6 +11,7 @@ import {
   SIGN_ALGO_NUM_ECDSA_secp256k1,
   HASH_ALGO_NUM_SHA2_256,
 } from '@/shared/utils/algo-constants';
+import { consoleError } from '@/shared/utils/console-log';
 import { FCLWalletConnectMethod, type FCLWalletConnectSyncAccountInfo } from '@/shared/utils/type';
 import AllSet from '@/ui/FRWComponent/LandingPages/AllSet';
 import LandingComponents from '@/ui/FRWComponent/LandingPages/LandingComponents';
@@ -210,7 +211,7 @@ const Sync = () => {
 
             setActiveTab(STEPS.PASSWORD);
           } catch (error) {
-            console.error('Error in device info request:', error);
+            consoleError('Error in device info request:', error);
           }
         }
       }
@@ -238,7 +239,7 @@ const Sync = () => {
 
         await handleAccountInfo(signClient, topic, jsonObject);
       } catch (error) {
-        console.error('Error in account info request:', error);
+        consoleError('Error in account info request:', error);
       }
     },
     [handleAccountInfo]
@@ -300,7 +301,7 @@ const Sync = () => {
           await sendRequest(signClient, session.topic);
         }
       } catch (error) {
-        console.error('Error in wallet setup:', error);
+        consoleError('Error in wallet setup:', error);
         isSignClientInitialized.current = false; // Reset on error
       }
     };

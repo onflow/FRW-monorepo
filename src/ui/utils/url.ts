@@ -1,3 +1,5 @@
+import { consoleError } from '@/shared/utils/console-log';
+
 import fallback from '../FRWAssets/image/errorImage.png';
 
 export const query2obj = (str: string) => {
@@ -325,7 +327,7 @@ export const findBestMedia = async (props, blockList): Promise<MatchMedia> => {
       videoURL: null,
     };
   } catch (e) {
-    console.error('Failed to find NFT media', e);
+    consoleError('Failed to find NFT media', e);
     return {
       url: fallback,
       title: findBestTitle(props),

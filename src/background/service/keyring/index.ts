@@ -33,7 +33,7 @@ import {
 } from '@/shared/types/keyring-types';
 import { type LoggedInAccount } from '@/shared/types/wallet-types';
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
-import { consoleLog, consoleWarn } from '@/shared/utils/console-log';
+import { consoleError, consoleLog, consoleWarn } from '@/shared/utils/console-log';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
 import storage from '@/shared/utils/storage';
 import { KEYRING_TYPE } from 'consts';
@@ -265,7 +265,7 @@ class KeyringService extends EventEmitter {
       const pubKTuple = await pkTuple2PubKey(privateKeyTuple);
       return combinePubPkTuple(pubKTuple, privateKeyTuple);
     } catch (error) {
-      console.error('Failed to get public key tuple');
+      consoleError('Failed to get public key tuple');
       throw error;
     }
   };
@@ -1389,7 +1389,7 @@ class KeyringService extends EventEmitter {
       try {
         // Validate entry is a proper object
         if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
-          console.error('Invalid vault entry format');
+          consoleError('Invalid vault entry format');
           continue;
         }
 
@@ -1397,7 +1397,7 @@ class KeyringService extends EventEmitter {
         const encryptedData = entry.encryptedData;
 
         if (!encryptedData) {
-          console.error(`No encrypted data found for entry with ID ${id}`);
+          consoleError(`No encrypted data found for entry with ID ${id}`);
           continue;
         }
 
@@ -1414,7 +1414,7 @@ class KeyringService extends EventEmitter {
         decryptedKeyrings.push(keyringData);
       } catch (err) {
         // Don't print the error as it may contain sensitive data
-        console.error(`Failed to process vault entry`);
+        consoleError(`Failed to process vault entry`);
         // Continue with next entry
       }
     }
@@ -1428,7 +1428,7 @@ class KeyringService extends EventEmitter {
       try {
         // Validate entry is a proper object
         if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
-          console.error('Invalid vault entry format');
+          consoleError('Invalid vault entry format');
           continue;
         }
 
@@ -1436,7 +1436,7 @@ class KeyringService extends EventEmitter {
         const encryptedData = entry.encryptedData;
 
         if (!encryptedData) {
-          console.error(`No encrypted data found for entry with ID ${id}`);
+          consoleError(`No encrypted data found for entry with ID ${id}`);
           continue;
         }
 
@@ -1459,7 +1459,7 @@ class KeyringService extends EventEmitter {
         decryptedKeyrings.push(keyringData);
       } catch (err) {
         // Don't print the error as it may contain sensitive data
-        console.error(`Failed to process vault entry`);
+        consoleError(`Failed to process vault entry`);
         // Continue with next entry
       }
     }
@@ -1525,7 +1525,7 @@ class KeyringService extends EventEmitter {
         // TODO: If no matching ID is found, then we 'could' decrypt the entry and use loginV3Api to get the ID
         // Handle through support. This isn't worth the effort. We won't update this old vault so it will still be there.
 
-        console.error('Could not find matching ID for string entry');
+        consoleError('Could not find matching ID for string entry');
         return null;
       }
       // If the entry is an object, we can just map the values to the new format
@@ -1558,7 +1558,7 @@ class KeyringService extends EventEmitter {
           consoleWarn('Encrypted data is missing required fields');
         }
       } catch (error) {
-        console.error('Error parsing encrypted data:', error);
+        consoleError('Error parsing encrypted data:', error);
       }
 
       return [foundEntry];
@@ -1723,7 +1723,7 @@ class KeyringService extends EventEmitter {
         needToSwitchKeyring = true;
       } else {
         // This should theoretically not happen if length > 1, but handle defensively
-        console.error(
+        consoleError(
           'Error: Could not determine the next profile ID to switch to. currentId:',
           currentId,
           'profileId:',

@@ -3,6 +3,7 @@ import { Input, Typography, Box, FormControl, List, ListItem, ListItemText } fro
 import { makeStyles } from '@mui/styles';
 import React, { useEffect, useRef, useState } from 'react';
 
+import { consoleError } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import { LLPrimaryButton, CredentialBox, LLSecondaryButton } from 'ui/FRWComponent';
@@ -73,7 +74,7 @@ const RetrievePK = () => {
 
     navigator.clipboard
       .writeText(allValues)
-      .catch((err) => console.error('Failed to copy to clipboard: ', err));
+      .catch((err) => consoleError('Failed to copy to clipboard: ', err));
   };
 
   const usernameError = () => (

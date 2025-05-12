@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm, type FieldValues } from 'react-hook-form';
 
 import type { Contact } from '@/shared/types/network-types';
+import { consoleError } from '@/shared/utils/console-log';
 import { useWallet } from 'ui/utils';
 
 import { withPrefix } from '../../../../shared/utils/address';
@@ -66,7 +67,7 @@ const AddOrEditAddress = (props: AddOrEditAddressProps) => {
       setIsValidatingAddress(false);
       return !!validatedResult;
     } catch (error) {
-      console.error('Error during wallet.checkAddress validation:', error);
+      consoleError('Error during wallet.checkAddress validation:', error);
 
       // Check if it's a valid EVM address using ethers.js
       if (isAddress(formattedAddress)) {

@@ -4,6 +4,7 @@ import { makeStyles } from '@mui/styles';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
+import { consoleError } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import lilo from '@/ui/FRWAssets/image/lilo.png';
 import { LLPrimaryButton, LLResetPopup } from '@/ui/FRWComponent';
@@ -96,7 +97,7 @@ const Unlock = () => {
       await wallet.unlock(password);
       history.replace('/');
     } catch (err) {
-      console.error(err);
+      consoleError('failed to unlock wallet', err);
       setShowUnexpectedError(true);
     } finally {
       setUnlocking(false);

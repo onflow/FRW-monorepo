@@ -8,6 +8,7 @@ import {
   evmNftCollectionListKey,
   type EvmNftCollectionListStore,
 } from '@/shared/utils/cache-data-keys';
+import { consoleError } from '@/shared/utils/console-log';
 
 import { useCachedData } from './use-data';
 
@@ -108,7 +109,7 @@ export const useNftHook = ({
           nextPage: currentPage + 1,
         };
       } catch (error) {
-        console.error('Error in evmNextPage:', error);
+        consoleError('Error in evmNextPage:', error);
         setLoadingMore(false);
         return null;
       }
@@ -134,11 +135,11 @@ export const useNftHook = ({
               setLists((prev) => [...prev, ...res.nfts]);
             }
           })
-          .catch((error) => console.error('Error in cadenceNextPage:', error));
+          .catch((error) => consoleError('Error in cadenceNextPage:', error));
 
         return null;
       } catch (error) {
-        console.error('Error in cadenceNextPage:', error);
+        consoleError('Error in cadenceNextPage:', error);
         return null;
       }
     },
@@ -179,7 +180,7 @@ export const useNftHook = ({
 
       setFilteredList(list);
     } catch (err) {
-      console.error('Error in loadAllPages:', err);
+      consoleError('Error in loadAllPages:', err);
     } finally {
       setIsLoadingAll(false);
     }
@@ -242,7 +243,7 @@ export const useNftHook = ({
       total.current = res.nftCount;
       setLists(res.nfts);
     } catch (err) {
-      console.error('Error in refreshCollectionImpl:', err);
+      consoleError('Error in refreshCollectionImpl:', err);
     } finally {
       setLoading(false);
     }

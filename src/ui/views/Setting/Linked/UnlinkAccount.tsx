@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm, type FieldValues } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 
+import { consoleError } from '@/shared/utils/console-log';
 import UnlinkSVG from 'ui/FRWAssets/svg/unlink.svg';
 import { useWallet } from 'ui/utils';
 
@@ -97,7 +98,7 @@ const UnlinkAccount = (props: UnlinkAccountProps) => {
       })
       .catch((err) => {
         setIsLoading(false);
-        console.error('failed ', err);
+        consoleError('failed to unlink account', err);
       });
   };
 

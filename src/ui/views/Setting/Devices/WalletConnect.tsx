@@ -11,6 +11,7 @@ import {
   type DeviceInfoRequest,
   type AccountKeyRequest,
 } from '@/shared/types/network-types';
+import { consoleError } from '@/shared/utils/console-log';
 import { FCLWalletConnectMethod } from '@/shared/utils/type';
 import { LLPrimaryButton, LLSecondaryButton } from 'ui/FRWComponent';
 import { useWallet } from 'ui/utils';
@@ -60,7 +61,7 @@ const WalletConnect = (props: RevokePageProps) => {
         });
         setWeb3Wallet(wallet);
       } catch (e) {
-        console.error(e);
+        consoleError(e);
       }
     };
     createWeb3Wallet();
@@ -89,7 +90,7 @@ const WalletConnect = (props: RevokePageProps) => {
       // ------- end namespaces builder util ------------ //
       setNamespace(namespaces);
     } catch (error) {
-      console.error(error);
+      consoleError(error);
     }
     setProposer(params.proposer.metadata);
     setId(id);
@@ -125,7 +126,7 @@ const WalletConnect = (props: RevokePageProps) => {
 
         // Router.route(to: RouteMap.RestoreLogin.syncDevice(register));
       } catch (error) {
-        console.error('[WALLET] Respond Error: [addDeviceInfo]', error);
+        consoleError('[WALLET] Respond Error: [addDeviceInfo]', error);
       }
     }
     if (params.request.method === FCLWalletConnectMethod.addDeviceInfo) {
@@ -180,18 +181,18 @@ const WalletConnect = (props: RevokePageProps) => {
 
                   props.handleCloseIconClicked();
                 } catch (error) {
-                  console.error('Error in sending session response:', error);
+                  consoleError('Error in sending session response:', error);
                 }
               }, 5000); // 5000 milliseconds = 5 seconds
             }
           })
           .catch((err) => {
-            console.error('Error in syncDevice:', err);
+            consoleError('Error in syncDevice:', err);
           });
 
         // Router.route(to: RouteMap.RestoreLogin.syncDevice(register));
       } catch (error) {
-        console.error('[WALLET] Respond Error: [addDeviceInfo]', error);
+        consoleError('[WALLET] Respond Error: [addDeviceInfo]', error);
       }
     }
   }
@@ -208,7 +209,7 @@ const WalletConnect = (props: RevokePageProps) => {
         throw new Error('Web3Wallet is not initialized');
       }
     } catch (error) {
-      console.error(error, 'wc connect error');
+      consoleError(error, 'wc connect error');
     }
   };
 

@@ -26,7 +26,7 @@ import {
   type LoggedInAccountWithIndex,
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
-import { consoleWarn } from '@/shared/utils/console-log';
+import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -135,7 +135,7 @@ const Header = ({ _loading = false }) => {
         // await usewallet.switchNetwork(switchingTo);
         clearProfileData();
       } catch (error) {
-        console.error('Error during account switch:', error);
+        consoleError('Error during account switch:', error);
         //if cannot login directly with current password switch to unlock page
         await usewallet.lockWallet();
         history.push('/unlock');

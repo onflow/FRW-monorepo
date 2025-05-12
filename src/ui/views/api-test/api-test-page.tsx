@@ -14,6 +14,7 @@ import {
 import * as bip39 from 'bip39';
 import React, { useState, useEffect } from 'react';
 
+import { consoleError } from '@/shared/utils/console-log';
 import { useWallet } from '@/ui/utils';
 
 import {
@@ -132,7 +133,7 @@ const ApiTestPage: React.FC = () => {
           }));
         }
       } catch (error) {
-        console.error('Error initializing params:', error);
+        consoleError('Error initializing params:', error);
       }
     };
     initializeParams();
@@ -221,7 +222,7 @@ const ApiTestPage: React.FC = () => {
         setProgress((prev) => ({ ...prev, completed: prev.completed + 1 }));
       }
     } catch (error) {
-      console.error('Test execution error:', error);
+      consoleError('Test execution error:', error);
     } finally {
       // Clear the current test function name
       setCurrentTestFunctionName(null);

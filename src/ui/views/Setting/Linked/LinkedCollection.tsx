@@ -21,7 +21,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useHistory, useParams, useLocation } from 'react-router-dom';
 
-import { storage } from '@/background/webapi';
+import { consoleError } from '@/shared/utils/console-log';
 import { LLSpinner } from '@/ui/FRWComponent';
 import GridView from '@/ui/FRWComponent/NFTs/GridView';
 import { type PostMedia } from '@/ui/utils/url';
@@ -210,7 +210,7 @@ const LinkedCollection = (props) => {
       setTotal(res?.nftCount || 0);
       setLists(res?.nfts || []);
     } catch (err) {
-      console.error('err   ', err);
+      consoleError('err   ', err);
       // Handle the error if needed
     } finally {
       setLoading(false);
