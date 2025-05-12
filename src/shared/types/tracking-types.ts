@@ -120,6 +120,15 @@ export type TrackingEvents = {
     address: string; // Address of the account that failed to update password
     error: string; // Error message explaining why update failed
   };
+
+  // Error Logging
+  error: {
+    code: number; // Error code
+    category: string; // Error category
+    message: string; // Error message
+    extra: string; // Extra information about the error - stack trace, etc.
+    value: string; // value of the message
+  };
 };
 
 export type TrackEventMessage<T extends keyof TrackingEvents = keyof TrackingEvents> = {
