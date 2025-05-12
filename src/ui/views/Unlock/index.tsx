@@ -7,6 +7,7 @@ import { useHistory } from 'react-router-dom';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import lilo from '@/ui/FRWAssets/image/lilo.png';
 import { LLPrimaryButton, LLResetPopup } from '@/ui/FRWComponent';
+import { PasswordInput } from '@/ui/FRWComponent/LandingPages/PasswordComponents';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet, useApproval, useWalletRequest, useWalletLoaded } from '@/ui/utils';
@@ -64,6 +65,8 @@ const Unlock = () => {
   // const { t } = useTranslation();
   const [showPasswordError, setShowPasswordError] = useState(false);
   const [showUnexpectedError, setShowUnexpectedError] = useState(false);
+
+  const [isPasswordVisible, setPasswordVisible] = useState(false);
   const [password, setPassword] = useState(DEFAULT_PASSWORD);
   const [resetPop, setResetPop] = useState<boolean>(false);
   const [unlocking, setUnlocking] = useState<boolean>(false);
@@ -154,19 +157,17 @@ const Unlock = () => {
           position: 'relative',
         }}
       >
-        <Input
-          id="textfield"
-          type="password"
-          className={classes.inputBox}
-          placeholder={chrome.i18n.getMessage('Enter__Your__Password')}
-          autoFocus
-          fullWidth
-          disableUnderline
+        <PasswordInput
           value={password}
-          onChange={(event) => {
+          onChange={(value) => {
             setShowPasswordError(false);
-            setPassword(event.target.value);
+            setPassword(value);
           }}
+          isVisible={isPasswordVisible}
+          setVisible={setPasswordVisible}
+          className={classes.inputBox}
+          autoFocus={true}
+          placeholder={chrome.i18n.getMessage('Enter__Your__Password')}
           onKeyDown={handleKeyDown}
         />
 
