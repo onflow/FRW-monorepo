@@ -5,8 +5,6 @@ import { fileURLToPath } from 'url';
 
 import dotenv from 'dotenv';
 
-import { consoleInfo, consoleWarn } from '@/shared/utils/console-log';
-
 import packageJson from '../package.json';
 const { version } = packageJson;
 
@@ -75,9 +73,9 @@ async function prepare() {
       const devToolsScript = await fetchDevTools();
       fs.writeFileSync(path.resolve(__dirname, '../_raw/react-devtools.js'), devToolsScript);
 
-      consoleInfo('✅ React DevTools source fetched successfully');
+      console.info('✅ React DevTools source fetched successfully');
     } catch {
-      consoleWarn('⚠️ Failed to fetch React DevTools. Run the devtools server first');
+      console.warn('⚠️ Failed to fetch React DevTools. Run the devtools server first');
       // Write empty file if fetch fails
       fs.writeFileSync(
         path.resolve(__dirname, '../_raw/react-devtools.js'),

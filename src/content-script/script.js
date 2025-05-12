@@ -1,3 +1,4 @@
+// @ts-nocheck
 const service = {
   f_type: 'Service',
   f_vsn: '1.0.0',

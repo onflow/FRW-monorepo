@@ -1,3 +1,5 @@
+import { stripSensitive } from './strip-sensitive';
+
 const IS_PROD = process.env.NODE_ENV === 'production';
 
 // Get the formatted stack trace
@@ -25,9 +27,10 @@ export type ConsoleMessageType =
   | 'console_trace';
 
 export const trackConsole = (type: ConsoleMessageType, message: string, code: number = 0) => {
+  const sanitizedMessage = stripSensitive(message);
   chrome.runtime.sendMessage({
     type,
-    message,
+    message: sanitizedMessage,
     stack: getFormattedStackTrace(),
     code,
   });
@@ -42,7 +45,10 @@ const _consoleInfo = (...args: unknown[]) => {
 };
 
 const _consoleError = (...args: unknown[]) => {
-  trackConsole('console_error', ` ${args.join(' ')}`);
+  const sanitizedMessage = stripSensitive(args.join(' '));
+  // eslint-disable-next-line no-console
+  console.error(sanitizedMessage);
+  trackConsole('console_error', sanitizedMessage);
 };
 
 const _consoleWarn = (...args: unknown[]) => {

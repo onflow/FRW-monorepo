@@ -1,3 +1,5 @@
+import { stripSensitive } from '@/shared/utils/strip-sensitive';
+
 import { mixpanelTrack } from './mixpanel';
 
 class LogListener {
@@ -10,9 +12,9 @@ class LogListener {
         mixpanelTrack.track('error', {
           code: message.code,
           category: 'console',
-          message: message.message,
+          message: stripSensitive(message.message),
           extra: message.stack,
-          value: message.data,
+          value: message.code,
         });
       }
     });
