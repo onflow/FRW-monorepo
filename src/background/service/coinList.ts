@@ -12,6 +12,9 @@ import {
   coinListRefreshRegex,
   evmTokenInfoKey,
   evmTokenInfoRefreshRegex,
+  supportedCurrenciesKey,
+  supportedCurrenciesRefreshRegex,
+  type SupportedCurrenciesStore,
 } from '@/shared/utils/cache-data-keys';
 
 import { fclConfirmNetwork } from '../fclConfig';
@@ -22,6 +25,7 @@ class CoinList {
     registerRefreshListener(coinListRefreshRegex, this.loadCoinList);
     registerRefreshListener(evmTokenInfoRefreshRegex, this.loadEvmTokenInfo);
     registerRefreshListener(cadenceTokenInfoRefreshRegex, this.loadCadenceTokenInfo);
+    registerRefreshListener(supportedCurrenciesRefreshRegex, this.loadSupportedCurrencies);
   };
 
   clear = async () => {};
@@ -229,6 +233,21 @@ class CoinList {
 
     return tokens;
   }
+
+  loadSupportedCurrencies = async () => {
+    const supportedCurrencies = await openapiService.getSupportedCurrencies();
+    setCachedData(supportedCurrenciesKey(), supportedCurrencies);
+    return supportedCurrencies;
+  };
+
+  getSupportedCurrencies = async () => {
+    const supportedCurrencies =
+      await getValidData<SupportedCurrenciesStore>(supportedCurrenciesKey());
+    if (!supportedCurrencies) {
+      return this.loadSupportedCurrencies();
+    }
+    return supportedCurrencies;
+  };
 }
 
 export default new CoinList();

@@ -19,6 +19,8 @@ import {
   userInfoCachekey,
   registerStatusKey,
   type UserInfoStore,
+  supportedCurrenciesKey,
+  type SupportedCurrenciesStore,
 } from '@/shared/utils/cache-data-keys';
 import {
   activeAccountsKey,
@@ -92,6 +94,15 @@ export const useActiveAccounts = (
 
 export const useUserWallets = () => {
   return useUserData<UserWalletStore>(userWalletsKey);
+};
+
+export const useCurrency = () => {
+  const userWallets = useUserWallets();
+  return userWallets?.displayCurrency;
+};
+
+export const useSupportedCurrencies = () => {
+  return useCachedData<SupportedCurrenciesStore>(supportedCurrenciesKey());
 };
 
 export const useCurrentId = () => {

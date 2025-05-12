@@ -1,4 +1,5 @@
 import { type ExtendedTokenInfo, type TokenFilter } from '@/shared/types/coin-types';
+import { type Currency } from '@/shared/types/wallet-types';
 import { coinListKey, tokenFilterKey } from '@/shared/utils/cache-data-keys';
 import { setUserData } from '@/shared/utils/user-data-access';
 

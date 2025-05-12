@@ -1,10 +1,11 @@
 import { Box, Typography, List, ListItemButton, ListItem, CircularProgress } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
 import IconEnd from '@/components/iconfont/IconAVector11Stroke';
 import { DEFAULT_CURRENCY, type Currency } from '@/shared/types/wallet-types';
 import { LLHeader } from '@/ui/FRWComponent';
+import { useCurrency, useSupportedCurrencies } from '@/ui/hooks/use-account-hooks';
 import { useWallet, useWalletLoaded } from '@/ui/utils';
 
 const useStyles = makeStyles(() => ({
@@ -57,36 +58,17 @@ const CurrencySettings = () => {
   const classes = useStyles();
   const walletLoaded = useWalletLoaded();
   const wallet = useWallet();
-  const [currency, setCurrency] = useState(DEFAULT_CURRENCY.code);
-  const [isLoading, setIsLoading] = useState(true);
-  const [supportedCurrencies, setSupportedCurrencies] = useState<Currency[]>([]);
-
-  useEffect(() => {
-    if (!walletLoaded) return;
-
-    const loadCurrency = async () => {
-      try {
-        const currencies = await wallet.openapi.getSupportedCurrencies();
-        setSupportedCurrencies(currencies);
-        const currentCurrency = await wallet.getDisplayCurrency();
-        setCurrency(currentCurrency.code);
-      } catch (error) {
-        console.warn('Error loading currency preferences:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadCurrency();
-  }, [walletLoaded, wallet]);
+  const currency = useCurrency();
+  const supportedCurrencies = useSupportedCurrencies();
+  const isLoading = currency === undefined;
 
   const handleCurrencyChange = async (newCurrency: string) => {
     try {
-      setCurrency(newCurrency);
-      const currency = supportedCurrencies.find((c) => c.code === newCurrency);
+      console.log('supportedCurrencies', supportedCurrencies);
+      console.log('newCurrency', newCurrency);
+      const currency = supportedCurrencies?.find((c) => c.code === newCurrency);
       if (currency) {
         await wallet.setDisplayCurrency(currency);
-        await wallet.refreshAll();
       }
     } catch (error) {
       console.warn('Error saving currency preference:', error);
@@ -112,12 +94,12 @@ const CurrencySettings = () => {
           {chrome.i18n.getMessage('Currency__Description')}
         </Typography>
         <List className={classes.list}>
-          {supportedCurrencies.map((curr) => (
+          {supportedCurrencies?.map((curr) => (
             <ListItem
               key={curr.code}
               component="div"
               onClick={() => handleCurrencyChange(curr.code)}
-              className={`${classes.listItem} ${curr.code === currency ? 'selected' : ''}`}
+              className={`${classes.listItem} ${curr.code === currency?.code ? 'selected' : ''}`}
               disablePadding
             >
               <ListItemButton className={classes.listItemButton}>

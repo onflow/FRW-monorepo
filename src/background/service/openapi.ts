@@ -427,8 +427,6 @@ export class OpenApiService {
     config: dataConfig,
   };
 
-  private supportedCurrenciesCache: Currency[] = [];
-
   getNetwork = () => {
     return userWalletService.getNetwork();
   };
@@ -2206,10 +2204,6 @@ export class OpenApiService {
 
   // ** Get supported currencies **
   getSupportedCurrencies = async (): Promise<Currency[]> => {
-    if (this.supportedCurrenciesCache.length > 0) {
-      return this.supportedCurrenciesCache;
-    }
-
     let currencies = [DEFAULT_CURRENCY];
     try {
       const supportedCurrencies: CurrencyResponse = await this.sendRequest(
@@ -2224,7 +2218,6 @@ export class OpenApiService {
     } catch (error) {
       console.warn('Error fetching supported currencies, using default USD:', error);
     }
-    this.supportedCurrenciesCache = currencies;
     return currencies;
   };
 
