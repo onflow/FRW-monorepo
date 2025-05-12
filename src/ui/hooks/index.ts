@@ -2,7 +2,6 @@ import { useCallback, useRef } from 'react';
 
 import { useWalletLoaded } from '../utils/WalletContext';
 
-import { useCoins } from './useCoinHook';
 import { useProfiles } from './useProfileHook';
 
 export const useInitHook = () => {

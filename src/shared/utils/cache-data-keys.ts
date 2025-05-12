@@ -22,6 +22,7 @@ import {
   type EvmAddress,
   type FlowAddress,
   type WalletAccount,
+  type Currency,
 } from '../types/wallet-types';
 
 import { getCachedData, triggerRefresh } from './cache-data-access';
@@ -48,6 +49,14 @@ export type CadenceScriptsStore = NetworkScripts;
 
 export const getCachedScripts = async () => {
   return getCachedData<CadenceScriptsStore>(cadenceScriptsKey());
+};
+
+export const supportedCurrenciesKey = () => `supported-currencies`;
+export const supportedCurrenciesRefreshRegex = refreshKey(supportedCurrenciesKey);
+export type SupportedCurrenciesStore = Currency[];
+
+export const getCachedSupportedCurrencies = async () => {
+  return getCachedData<SupportedCurrenciesStore>(supportedCurrenciesKey());
 };
 
 export const registerStatusKey = (pubKey: string) => `register-status-${pubKey}`;

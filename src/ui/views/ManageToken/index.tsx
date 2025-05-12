@@ -79,13 +79,15 @@ const ManageToken = () => {
   const [isLoading, setLoading] = useState(false);
 
   useEffect(() => {
-    setFilteredTokenList(coins);
+    if (coins) {
+      setFilteredTokenList(coins);
+    }
   }, [coins]);
 
   const filter = (e1: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const searchWord = e1.target.value.toLowerCase();
 
-    if (searchWord !== '') {
+    if (searchWord !== '' && coins) {
       const results = coins.filter((token) => {
         return (
           token.name.toLowerCase().includes(searchWord) ||
@@ -94,7 +96,7 @@ const ManageToken = () => {
       });
       setFilteredTokenList(results);
     } else {
-      setFilteredTokenList(coins);
+      setFilteredTokenList(coins ?? []);
     }
 
     setKeyword(searchWord);
@@ -316,7 +318,7 @@ const ManageToken = () => {
                 <TokenItem
                   token={token}
                   isLoading={isLoading}
-                  enabled={coins.map((item) => item.contractName).includes(token.contractName)}
+                  enabled={coins?.map((item) => item.contractName).includes(token.contractName)}
                   onClick={updateTokenFilter}
                   tokenFilter={tokenFilter}
                   updateTokenFilter={updateTokenFilter}

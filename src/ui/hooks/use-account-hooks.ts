@@ -19,6 +19,8 @@ import {
   userInfoCachekey,
   registerStatusKey,
   type UserInfoStore,
+  supportedCurrenciesKey,
+  type SupportedCurrenciesStore,
 } from '@/shared/utils/cache-data-keys';
 import {
   activeAccountsKey,
