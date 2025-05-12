@@ -26,6 +26,7 @@ import {
   type LoggedInAccountWithIndex,
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
+import { consoleWarn } from '@/shared/utils/console-log';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -170,7 +171,7 @@ const Header = ({ _loading = false }) => {
     }
     // The header should handle transactionError events
     if (request.msg === 'transactionError') {
-      console.warn('transactionError', request.errorMessage, request.errorCode);
+      consoleWarn('transactionError', request.errorMessage, request.errorCode);
       // The error message is not used anywhere else for now
       setErrorMessage(request.errorMessage);
       setErrorCode(request.errorCode);

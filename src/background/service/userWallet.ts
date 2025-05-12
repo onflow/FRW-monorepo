@@ -44,6 +44,7 @@ import {
   accountBalanceKey,
   accountBalanceRefreshRegex,
 } from '@/shared/utils/cache-data-keys';
+import { consoleWarn } from '@/shared/utils/console-log';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import { setUserData } from '@/shared/utils/user-data-access';
 import {
@@ -1121,11 +1122,11 @@ const preloadAllAccountsWithPubKey = async (
       POLL_INTERVAL
     );
   } catch (error) {
-    console.warn('Failed to load main accounts after maximum retries:', error.message);
+    console.error('Failed to load main accounts after maximum retries:', error.message);
   }
 
   if (!mainAccounts || mainAccounts.length === 0) {
-    console.warn(`No main accounts loaded`);
+    consoleWarn(`No main accounts loaded for pubkey: ${pubKey}`);
     return [];
   }
 

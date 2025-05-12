@@ -33,7 +33,7 @@ import {
 } from '@/shared/types/keyring-types';
 import { type LoggedInAccount } from '@/shared/types/wallet-types';
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
-import { consoleLog } from '@/shared/utils/console-log';
+import { consoleLog, consoleWarn } from '@/shared/utils/console-log';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
 import storage from '@/shared/utils/storage';
 import { KEYRING_TYPE } from 'consts';
@@ -1555,7 +1555,7 @@ class KeyringService extends EventEmitter {
 
         // Validate that it has the expected structure
         if (!encryptedData.data || !encryptedData.iv || !encryptedData.salt) {
-          console.warn('Encrypted data is missing required fields');
+          consoleWarn('Encrypted data is missing required fields');
         }
       } catch (error) {
         console.error('Error parsing encrypted data:', error);

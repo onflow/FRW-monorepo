@@ -33,28 +33,28 @@ export const trackConsole = (type: ConsoleMessageType, message: string, code: nu
   });
 };
 
-const _consoleLog = (message: string, ...args: unknown[]) => {
-  trackConsole('console_log', `${message} ${args.join(' ')}`);
+const _consoleLog = (...args: unknown[]) => {
+  trackConsole('console_log', ` ${args.join(' ')}`);
 };
 
-const _consoleInfo = (message: string, ...args: unknown[]) => {
-  trackConsole('console_info', `${message} ${args.join(' ')}`);
+const _consoleInfo = (...args: unknown[]) => {
+  trackConsole('console_info', ` ${args.join(' ')}`);
 };
 
-const _consoleError = (message: string, ...args: unknown[]) => {
-  trackConsole('console_error', `${message} ${args.join(' ')}`);
+const _consoleError = (...args: unknown[]) => {
+  trackConsole('console_error', ` ${args.join(' ')}`);
 };
 
-const _consoleWarn = (message: string, ...args: unknown[]) => {
-  trackConsole('console_warn', `${message} ${args.join(' ')}`);
+const _consoleWarn = (...args: unknown[]) => {
+  trackConsole('console_warn', ` ${args.join(' ')}`);
 };
 
-const _consoleDebug = (message: string, ...args: unknown[]) => {
-  trackConsole('console_debug', `${message} ${args.join(' ')}`);
+const _consoleDebug = (...args: unknown[]) => {
+  trackConsole('console_debug', ` ${args.join(' ')}`);
 };
 
-const _consoleTrace = (message: string, ...args: unknown[]) => {
-  trackConsole('console_trace', `${message} ${args.join(' ')}`);
+const _consoleTrace = (...args: unknown[]) => {
+  trackConsole('console_trace', ` ${args.join(' ')}`);
 };
 
 // Export the original console functions if not in production

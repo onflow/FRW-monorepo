@@ -71,6 +71,7 @@ import {
   registerStatusRefreshRegex,
   coinListKey,
 } from '@/shared/utils/cache-data-keys';
+import { consoleWarn } from '@/shared/utils/console-log';
 import {
   convertFlowBalanceToString,
   convertToIntegerAmount,
@@ -2909,7 +2910,7 @@ export class WalletController extends BaseController {
 
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       if (!tabs || tabs.length === 0) {
-        console.warn('No active tab found');
+        consoleWarn('No active tab found');
         return;
       }
       if (tabs[0].id) {
@@ -3060,7 +3061,7 @@ export class WalletController extends BaseController {
     let attempts = 0;
     const poll = async () => {
       if (attempts >= maxAttempts) {
-        console.warn('Max polling attempts reached');
+        consoleWarn('Max polling attempts reached');
         return;
       }
 
@@ -3179,7 +3180,7 @@ export class WalletController extends BaseController {
         errorCode = match ? parseInt(match[1], 10) : undefined;
       }
 
-      console.warn({
+      consoleWarn({
         msg: 'transactionError',
         errorMessage,
         errorCode,

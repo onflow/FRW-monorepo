@@ -1,18 +1,3 @@
-// @ts-nocheck
-//import { WalletUtils } from '@onflow/fcl';
-// import { nanoid } from 'nanoid';
-
-// const channelName = nanoid();
-// the script element with src won't execute immediately
-// use inline script element instead!
-// const container = document.head || document.documentElement;
-// const ele = document.createElement('script');
-// in prevent of webpack optimized code do some magic(e.g. double/sigle quote wrap),
-// seperate content assignment to two line
-// use AssetReplacePlugin to replace pageprovider content
-// let content = `var channelName = '${channelName}';`;
-// content += '#PAGEPROVIDER#';
-
 const service = {
   f_type: 'Service',
   f_vsn: '1.0.0',
@@ -39,7 +24,7 @@ function injectExtService(service) {
     }
     window.fcl_extensions.push(service);
   } else {
-    console.warn('Authn service is required');
+    console.error('Authn service is required');
   }
 }
 

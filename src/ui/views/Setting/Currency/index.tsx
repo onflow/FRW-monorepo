@@ -71,7 +71,7 @@ const CurrencySettings = () => {
         const currentCurrency = await wallet.getDisplayCurrency();
         setCurrency(currentCurrency.code);
       } catch (error) {
-        console.warn('Error loading currency preferences:', error);
+        console.error('Error loading currency preferences:', error);
       } finally {
         setIsLoading(false);
       }
@@ -89,7 +89,7 @@ const CurrencySettings = () => {
         await wallet.refreshAll();
       }
     } catch (error) {
-      console.warn('Error saving currency preference:', error);
+      console.error('Error saving currency preference:', error);
     }
   };
 

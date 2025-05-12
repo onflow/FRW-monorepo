@@ -1,6 +1,8 @@
 import aesjs from 'aes-js';
 import * as bip39 from 'bip39';
 
+import { consoleWarn } from '@/shared/utils/console-log';
+
 interface GoogleDriveFileModel {
   kind: string;
   id: string;
@@ -82,7 +84,7 @@ class GoogleDriveService {
       const parsedData = JSON.parse(sanitizedData);
       encryptedHex = parsedData?.hex || parsedData;
     } catch (error) {
-      console.warn('JSON parsing failed, checking if raw hex string:', error.message);
+      consoleWarn('JSON parsing failed, checking if raw hex string:', error.message);
 
       const rawHex = encryptedData.replace(/\s+/g, '');
       if (/^[0-9a-fA-F]+$/.test(rawHex)) {

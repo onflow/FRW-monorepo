@@ -2208,7 +2208,7 @@ export class OpenApiService {
 
       currencies = supportedCurrencies?.data?.currencies || [DEFAULT_CURRENCY];
     } catch (error) {
-      console.warn('Error fetching supported currencies, using default USD:', error);
+      console.error('Error fetching supported currencies, using default USD:', error);
     }
     this.supportedCurrenciesCache = currencies;
     return currencies;

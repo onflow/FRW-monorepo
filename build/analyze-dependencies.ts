@@ -106,7 +106,7 @@ function findSourceImports(): Set<string> {
         },
       });
     } catch (error) {
-      console.warn(`Failed to parse ${file}:`, error.message);
+      console.error(`Failed to parse ${file}:`, error.message);
     }
   });
 

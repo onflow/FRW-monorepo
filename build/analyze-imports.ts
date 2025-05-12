@@ -60,7 +60,7 @@ function analyzeFile(
       },
     });
   } catch (error) {
-    console.warn(`Failed to parse ${relativePath}:`, error.message);
+    console.error(`Failed to parse ${relativePath}:`, error.message);
   }
 }
 

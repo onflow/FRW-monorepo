@@ -341,7 +341,7 @@ class ProviderController extends BaseController {
     try {
       await sessionService.broadcastEvent('accountsChanged', account);
     } catch (error) {
-      console.warn('Error broadcasting accountsChanged event:', error);
+      console.error('Error broadcasting accountsChanged event:', error);
       // Continue despite the error
     }
 

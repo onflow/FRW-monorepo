@@ -30,7 +30,7 @@ export const CurrencyValue: React.FC<CurrencyValueProps> = ({
         setCurrencySymbol(currency.symbol);
       }
     } catch (error) {
-      console.warn('Error fetching currency from background:', error);
+      console.error('Error fetching currency from background:', error);
       setCurrencyCode(DEFAULT_CURRENCY.code);
       setCurrencySymbol(DEFAULT_CURRENCY.symbol);
     }
