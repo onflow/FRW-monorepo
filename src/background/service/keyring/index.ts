@@ -1202,7 +1202,6 @@ class KeyringService extends EventEmitter {
     includeWatchKeyring = true
   ): Promise<any> {
     const hexed = normalizeAddress(address).toLowerCase();
-    log.debug(`KeyringController - getKeyringForAccount: ${hexed}`);
     let keyrings = type
       ? this.currentKeyring.filter((keyring) => keyring.type === type)
       : this.currentKeyring;
@@ -1803,7 +1802,7 @@ class KeyringService extends EventEmitter {
 
       return true;
     } catch (error) {
-      log.error('Failed to change keyring password atomically:', error);
+      consoleError('Failed to change keyring password atomically:', error);
       return false;
     }
   }

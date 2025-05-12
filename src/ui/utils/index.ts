@@ -169,10 +169,3 @@ export const returnFilteredCollections = (contractList, NFT) => {
 export const truncate = (str, n) => {
   return str.length > n ? str.slice(0, n - 1) + '...' : str;
 };
-
-// Frontend utility function
-export const debug = (message: string, data?: any) => {
-  if (process.env.NODE_ENV === 'development') {
-    consoleLog(`[${message}`, data ? data : '');
-  }
-};

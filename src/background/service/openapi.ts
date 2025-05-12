@@ -2159,8 +2159,6 @@ export class OpenApiService {
         weight: keys.keys[0].weight,
       };
 
-      log.log('wallet is this:', updatedWallet);
-
       const accountIndex = loggedInAccounts.findIndex(
         // Check both pubKey and username. Older versions allowed the pubKey to be imported twice with different usernames
         (account) =>
@@ -2175,7 +2173,6 @@ export class OpenApiService {
       await storage.set('loggedInAccounts', loggedInAccounts);
     }
 
-    log.log('Updated loggedInAccounts:', loggedInAccounts);
     const otherAccounts: LoggedInAccountWithIndex[] = loggedInAccounts
       .filter((account) => account.username !== wallet.username)
       .map((account) => {
@@ -2186,7 +2183,6 @@ export class OpenApiService {
       })
       .slice(0, 2);
 
-    log.log('otherAccounts with index:', otherAccounts);
     return { otherAccounts, wallet, loggedInAccounts };
   };
 
