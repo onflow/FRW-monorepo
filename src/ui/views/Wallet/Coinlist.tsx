@@ -80,15 +80,9 @@ const CoinList = ({
   // const wallet = useWallet();
   const { noAddress } = useProfiles();
   const { coins, tokenFilter } = useCoins();
-  const [isLoading, setLoading] = useState(true);
   const history = useHistory();
 
-  useEffect(() => {
-    setLoading(coins.length === 0);
-    if (coins.length) {
-      setLoading(false);
-    }
-  }, [coins]);
+  const isLoading = coins === undefined;
 
   const EndListItemText = (props: {
     primary: ReactNode;

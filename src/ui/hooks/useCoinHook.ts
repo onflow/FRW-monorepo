@@ -1,7 +1,7 @@
 import BN from 'bignumber.js';
 import { useCallback, useEffect, useState, useRef } from 'react';
 
-import { type ExtendedTokenInfo, type CoinItem, type TokenFilter } from '@/shared/types/coin-types';
+import { type ExtendedTokenInfo, type TokenFilter } from '@/shared/types/coin-types';
 import { DEFAULT_CURRENCY, type Currency } from '@/shared/types/wallet-types';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { debug } from '@/ui/utils';
@@ -21,7 +21,6 @@ export const useCoins = () => {
   const [balance, setBalance] = useState<string>('0');
   const [totalFlow, setTotalFlow] = useState<string>('0');
   const [availableFlow, setAvailableFlow] = useState<string>('0');
-  const [coinsLoaded, setCoinsLoaded] = useState(false);
   const [currencyCode, setCurrencyCode] = useState<string | undefined>();
 
   useEffect(() => {
@@ -70,6 +69,8 @@ export const useCoins = () => {
   );
 
   const coins = useCoinList(network, currentWallet?.address, currencyCode);
+  const coinsLoaded = coins !== undefined;
+
   const tokenFilter = useTokenFilter(network, currentWallet?.address) || {
     hideDust: false,
     hideUnverified: false,
@@ -99,7 +100,6 @@ export const useCoins = () => {
         initAndHandle();
       } else if (coins && coins.length > 0) {
         handleStorageData(coins);
-        setCoinsLoaded(true);
         debug('Coin list already loaded with', coins.length);
       }
     }
@@ -112,7 +112,7 @@ export const useCoins = () => {
   return {
     handleStorageData,
     updateTokenFilter,
-    coins: coins || [],
+    coins,
     tokenFilter,
     balance,
     totalFlow,

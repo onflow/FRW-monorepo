@@ -125,12 +125,12 @@ const TokenDetail = () => {
     }
 
     // First try to find by ID
-    let tokenResult = coins.find((coin) => coin.id === tokenId);
+    let tokenResult = coins?.find((coin) => coin.id === tokenId);
 
     // If not found by ID, try to find by token name (case insensitive)
     if (!tokenResult) {
       console.log(`Token not found by ID ${tokenId}, trying to find by name ${token}`);
-      tokenResult = coins.find(
+      tokenResult = coins?.find(
         (coin) =>
           coin.symbol?.toLowerCase() === token.toLowerCase() ||
           coin.name?.toLowerCase() === token.toLowerCase()

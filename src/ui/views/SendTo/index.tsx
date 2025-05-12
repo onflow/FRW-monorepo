@@ -1,22 +1,19 @@
 import React, { useCallback, useEffect, useReducer } from 'react';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
 
-import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
 import { type FlowAddress, type WalletAddress } from '@/shared/types/wallet-types';
 import { isValidAddress, isValidFlowAddress } from '@/shared/utils/address';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { transactionReducer, INITIAL_TRANSACTION_STATE } from '@/ui/reducers/transaction-reducer';
-import { useWallet } from '@/ui/utils/WalletContext';
 
 import SendToCadenceOrEvm from './SendToCadenceOrEvm';
 
 export const SendTo = () => {
   // Remove or use only in development
-  const wallet = useWallet();
 
   const { mainAddress, currentWallet, userInfo } = useProfiles();
-  const { coins } = useCoins();
+  const { coins, coinsLoaded } = useCoins();
   const { id: token, toAddress } = useParams<{ id: string; toAddress: string }>();
   const location = useLocation();
   const history = useHistory();
@@ -25,27 +22,24 @@ export const SendTo = () => {
 
   const handleTokenChange = useCallback(
     async (symbol: string) => {
-      const tokenInfoResult = await wallet.openapi.getTokenInfo(symbol);
-      if (tokenInfoResult) {
-        // shouldn't use symbol should use address
-        const coinInfo = coins.find(
-          (coin) => coin.unit.toLowerCase() === tokenInfoResult.symbol.toLowerCase()
-        );
-        if (coinInfo) {
-          dispatch({
-            type: 'setTokenInfo', // Change action type
-            payload: {
-              tokenInfo: coinInfo, // Update payload structure
-            },
-          });
-          // Update the URL to the new token
-          history.replace(`/dashboard/token/${symbol.toLowerCase()}/send/${toAddress}`);
-        } else {
-          console.warn(`Token ${symbol} not found`);
+      // shouldn't use symbol should use address
+      const coinInfo = coins?.find((coin) => coin.unit.toLowerCase() === symbol.toLowerCase());
+      if (coinInfo) {
+        dispatch({
+          type: 'setTokenInfo', // Change action type
+          payload: {
+            tokenInfo: coinInfo, // Update payload structure
+          },
+        });
+        // Update the URL to the new token
+        history.replace(`/dashboard/token/${symbol.toLowerCase()}/send/${toAddress}`);
+      } else {
+        if (coinsLoaded) {
+          throw new Error(`Token ${symbol} not found`);
         }
       }
     },
-    [coins, wallet, history, toAddress]
+    [coins, coinsLoaded, history, toAddress]
   );
 
   useEffect(() => {

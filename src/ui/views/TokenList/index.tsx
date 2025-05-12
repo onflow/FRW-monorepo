@@ -278,7 +278,7 @@ const TokenList = () => {
                 <TokenItem
                   token={token}
                   isLoading={isLoading}
-                  enabled={coins.map((item) => item.contractName).includes(token.contractName)}
+                  enabled={coins?.map((item) => item.contractName).includes(token.contractName)}
                   key={index}
                   onClick={handleTokenClick}
                   tokenFilter={tokenFilter}

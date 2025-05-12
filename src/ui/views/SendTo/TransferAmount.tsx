@@ -125,6 +125,7 @@ const TransferAmount = ({
 
   const renderValue = useCallback(
     (option) => {
+      if (!coins) return null;
       const selectCoin = coins.find((coin) => coin.unit.toLowerCase() === option.toLowerCase());
       if (selectCoin) {
         return <img src={selectCoin.icon} style={{ height: '24px', width: '24px' }} />;
@@ -135,79 +136,79 @@ const TransferAmount = ({
   );
 
   return (
-    <StyledEngineProvider injectFirst>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0',
+      }}
+    >
       <Box
         sx={{
           display: 'flex',
           flexDirection: 'column',
-          gap: '0',
+          borderRadius: '16px',
+          px: '4px',
+          backgroundColor: 'neutral.main',
+          zIndex: 1000,
         }}
       >
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            borderRadius: '16px',
-            px: '4px',
-            backgroundColor: 'neutral.main',
-            zIndex: 1000,
-          }}
-        >
-          {transactionState.fiatOrCoin === 'fiat' ? (
-            <Box sx={{ width: '100%', display: 'flex' }}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  padding: '0 14px 0 14px',
-                  fontSize: '16px',
-                }}
-              >
-                <Typography>$</Typography>
-              </Box>
-              <FormControl sx={{ flex: '1', display: 'flex' }}>
-                <Input
-                  id="textfield"
-                  className={classes.inputBox}
-                  placeholder={chrome.i18n.getMessage('Amount')}
-                  autoFocus
-                  fullWidth
-                  disableUnderline
-                  autoComplete="off"
-                  value={fiatAmount}
-                  type="number"
-                  onChange={(event) => handleAmountChange(event.target.value)}
-                  inputProps={{ sx: { fontSize: '24px' } }}
-                  endAdornment={
-                    <InputAdornment position="end">
-                      <Tooltip
-                        title={
-                          transactionState.tokenInfo.unit === 'flow'
-                            ? chrome.i18n.getMessage('on_Flow_the_balance_cant_less_than_0001_FLOW')
-                            : ''
-                        }
-                        arrow
-                      >
-                        <Chip
-                          label={chrome.i18n.getMessage('Max')}
-                          size="small"
-                          onClick={handleMaxClick}
-                          sx={{ padding: '2px 5px' }}
-                        />
-                      </Tooltip>
-                    </InputAdornment>
-                  }
-                />
-              </FormControl>
+        {transactionState.fiatOrCoin === 'fiat' ? (
+          <Box sx={{ width: '100%', display: 'flex' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '0 14px 0 14px',
+                fontSize: '16px',
+              }}
+            >
+              <Typography>$</Typography>
             </Box>
-          ) : (
-            <Box sx={{ width: '100%', display: 'flex' }}>
+            <FormControl sx={{ flex: '1', display: 'flex' }}>
+              <Input
+                id="textfield"
+                className={classes.inputBox}
+                placeholder={chrome.i18n.getMessage('Amount')}
+                autoFocus
+                fullWidth
+                disableUnderline
+                autoComplete="off"
+                value={fiatAmount}
+                type="number"
+                onChange={(event) => handleAmountChange(event.target.value)}
+                inputProps={{ sx: { fontSize: '24px' } }}
+                endAdornment={
+                  <InputAdornment position="end">
+                    <Tooltip
+                      title={
+                        transactionState.tokenInfo.unit === 'flow'
+                          ? chrome.i18n.getMessage('on_Flow_the_balance_cant_less_than_0001_FLOW')
+                          : ''
+                      }
+                      arrow
+                    >
+                      <Chip
+                        label={chrome.i18n.getMessage('Max')}
+                        size="small"
+                        onClick={handleMaxClick}
+                        sx={{ padding: '2px 5px' }}
+                      />
+                    </Tooltip>
+                  </InputAdornment>
+                }
+              />
+            </FormControl>
+          </Box>
+        ) : (
+          <Box sx={{ width: '100%', display: 'flex' }}>
+            {coins && (
               <Select
                 renderValue={renderValue}
                 onChange={(e) => handleTokenChange(e.target.value)}
                 className={classes.selectRoot}
-                value={transactionState.tokenInfo.symbol.toLowerCase()}
-                defaultValue={transactionState.tokenInfo.symbol.toLowerCase()}
+                value={transactionState.tokenInfo.symbol}
+                defaultValue={transactionState.tokenInfo.symbol}
                 MenuProps={{
                   MenuListProps: { disablePadding: true },
                   PaperProps: {
@@ -229,94 +230,94 @@ const TransferAmount = ({
                     </MenuItem>
                   ))}
               </Select>
-              <FormControl sx={{ flex: '1', display: 'flex' }}>
-                <Input
-                  id="textfield"
-                  className={classes.inputBox}
-                  placeholder={chrome.i18n.getMessage('Amount')}
-                  autoFocus
-                  fullWidth
-                  disableUnderline
-                  autoComplete="off"
-                  value={amount}
-                  onChange={(event) => handleAmountChange(event.target.value)}
-                  inputProps={{ sx: { fontSize: '24px' } }}
-                  endAdornment={
-                    <InputAdornment position="end">
-                      <Tooltip
-                        title={
-                          transactionState.tokenInfo.unit === 'flow'
-                            ? chrome.i18n.getMessage('on_Flow_the_balance_cant_less_than_0001_FLOW')
-                            : ''
-                        }
-                        arrow
-                      >
-                        <Chip
-                          label={chrome.i18n.getMessage('Max')}
-                          size="small"
-                          onClick={handleMaxClick}
-                          sx={{ padding: '2px 5px' }}
-                        />
-                      </Tooltip>
-                    </InputAdornment>
-                  }
-                />
-              </FormControl>
-            </Box>
-          )}
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: '4px',
-              mx: '12px',
-              mb: '14px',
-            }}
-          >
-            <Typography>≈</Typography>
-            {transactionState.fiatOrCoin === 'fiat' ? (
-              <>
-                <img
-                  src={transactionState.tokenInfo.icon}
-                  style={{ height: '18px', width: '18px' }}
-                />{' '}
-                <TokenBalance showFull={true} value={amount} />
-              </>
-            ) : (
-              <CurrencyValue value={fiatAmount} />
             )}
-            <IconButton onClick={handleSwitchFiatOrCoin}>
-              <IconSwitch size={14} />
-            </IconButton>
+            <FormControl sx={{ flex: '1', display: 'flex' }}>
+              <Input
+                id="textfield"
+                className={classes.inputBox}
+                placeholder={chrome.i18n.getMessage('Amount')}
+                autoFocus
+                fullWidth
+                disableUnderline
+                autoComplete="off"
+                value={amount}
+                onChange={(event) => handleAmountChange(event.target.value)}
+                inputProps={{ sx: { fontSize: '24px' } }}
+                endAdornment={
+                  <InputAdornment position="end">
+                    <Tooltip
+                      title={
+                        transactionState.tokenInfo.unit === 'flow'
+                          ? chrome.i18n.getMessage('on_Flow_the_balance_cant_less_than_0001_FLOW')
+                          : ''
+                      }
+                      arrow
+                    >
+                      <Chip
+                        label={chrome.i18n.getMessage('Max')}
+                        size="small"
+                        onClick={handleMaxClick}
+                        sx={{ padding: '2px 5px' }}
+                      />
+                    </Tooltip>
+                  </InputAdornment>
+                }
+              />
+            </FormControl>
           </Box>
+        )}
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: '4px',
+            mx: '12px',
+            mb: '14px',
+          }}
+        >
+          <Typography>≈</Typography>
+          {transactionState.fiatOrCoin === 'fiat' ? (
+            <>
+              <img
+                src={transactionState.tokenInfo.icon}
+                style={{ height: '18px', width: '18px' }}
+              />{' '}
+              <TokenBalance showFull={true} value={amount} />
+            </>
+          ) : (
+            <CurrencyValue value={fiatAmount} />
+          )}
+          <IconButton onClick={handleSwitchFiatOrCoin}>
+            <IconSwitch size={14} />
+          </IconButton>
         </Box>
-        <SlideRelative direction="down" show={transactionState.balanceExceeded}>
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              width: '95%',
-              backgroundColor: 'error.light',
-              mx: 'auto',
-              borderRadius: '0 0 12px 12px',
-            }}
-          >
-            <CancelIcon size={24} color={'#E54040'} style={{ margin: '8px' }} />
-            <Typography
-              variant="body1"
-              color="text.secondary"
-              sx={{ fontSize: transactionState.tokenInfo.unit === 'flow' ? '0.7rem' : '1rem' }}
-            >
-              {transactionState.tokenInfo.unit === 'flow'
-                ? chrome.i18n.getMessage('Insufficient_balance_on_Flow')
-                : chrome.i18n.getMessage('Insufficient_balance')}
-            </Typography>
-          </Box>
-        </SlideRelative>
       </Box>
-    </StyledEngineProvider>
+      <SlideRelative direction="down" show={transactionState.balanceExceeded}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            width: '95%',
+            backgroundColor: 'error.light',
+            mx: 'auto',
+            borderRadius: '0 0 12px 12px',
+          }}
+        >
+          <CancelIcon size={24} color={'#E54040'} style={{ margin: '8px' }} />
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ fontSize: transactionState.tokenInfo.unit === 'flow' ? '0.7rem' : '1rem' }}
+          >
+            {transactionState.tokenInfo.unit === 'flow'
+              ? chrome.i18n.getMessage('Insufficient_balance_on_Flow')
+              : chrome.i18n.getMessage('Insufficient_balance')}
+          </Typography>
+        </Box>
+      </SlideRelative>
+    </Box>
   );
 };
 
