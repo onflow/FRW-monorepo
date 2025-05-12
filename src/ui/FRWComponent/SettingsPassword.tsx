@@ -11,7 +11,7 @@ import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 
 import { useWallet } from '../utils';
 
-import { PasswordInput } from './LandingPages/PasswordComponents';
+import { PasswordInput } from './PasswordComponents';
 
 const useStyles = makeStyles(() => ({
   customInputLabel: {

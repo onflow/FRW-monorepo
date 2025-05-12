@@ -6,7 +6,7 @@ import { Box } from '@mui/system';
 import React, { useEffect, useState } from 'react';
 
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
-import { PasswordInput } from '@/ui/FRWComponent/LandingPages/PasswordComponents';
+import { PasswordInput } from '@/ui/FRWComponent/PasswordComponents';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import { useWallet } from 'ui/utils';
 

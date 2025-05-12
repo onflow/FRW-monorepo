@@ -21,11 +21,8 @@ import CheckCircleIcon from '@/components/iconfont/IconCheckmark';
 import CancelIcon from '@/components/iconfont/IconClose';
 import { consoleError } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
-import {
-  PasswordIndicator,
-  PasswordInput,
-} from '@/ui/FRWComponent/LandingPages/PasswordComponents';
 import { LLHeader } from '@/ui/FRWComponent/LLHeader';
+import { PasswordIndicator, PasswordInput } from '@/ui/FRWComponent/PasswordComponents';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from '@/ui/utils';

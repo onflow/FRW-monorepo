@@ -19,7 +19,7 @@ import React, { useEffect, useState } from 'react';
 import zxcvbn from 'zxcvbn';
 
 import { LLSpinner, LLNotFound } from '@/ui/FRWComponent';
-import { PasswordInput } from '@/ui/FRWComponent/LandingPages/PasswordComponents';
+import { PasswordInput } from '@/ui/FRWComponent/PasswordComponents';
 import { useWallet } from 'ui/utils';
 
 import CheckCircleIcon from '../../../../../components/iconfont/IconCheckmark';

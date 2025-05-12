@@ -6,7 +6,7 @@ import { Link, useHistory } from 'react-router-dom';
 
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import { LLHeader } from '@/ui/FRWComponent';
-import { PasswordInput } from '@/ui/FRWComponent/LandingPages/PasswordComponents';
+import { PasswordInput } from '@/ui/FRWComponent/PasswordComponents';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import { useWallet } from 'ui/utils';
 
