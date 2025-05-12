@@ -49,7 +49,7 @@ const Linked = () => {
   return (
     <div className="page">
       <LLHeader title={chrome.i18n.getMessage('Linked_Account')} help={false} />
-      {childAccounts && Object.keys(childAccounts).length > 0 && (
+      {childAccounts && childAccounts.length > 0 && (
         <Typography
           variant="body1"
           component="span"
@@ -62,15 +62,15 @@ const Linked = () => {
           {chrome.i18n.getMessage('Linked_Account')}
         </Typography>
       )}
-      {childAccounts && Object.keys(childAccounts).length > 0 ? (
+      {childAccounts && childAccounts.length > 0 ? (
         <Box className={classes.logoBox}>
-          {Object.keys(childAccounts).map((key) => (
+          {childAccounts.map((childAccount) => (
             <ListItem
-              key={key}
+              key={childAccount.address}
               disablePadding
               sx={{ mb: 0, backgroundColor: '#292929', borderRadius: '16px', marginBottom: '8px' }}
               component={Link}
-              to={`/dashboard/setting/linkeddetail/${key}`}
+              to={`/dashboard/setting/linkeddetail/${childAccount.address}`}
             >
               <ListItemButton sx={{ mb: 0, padding: '12px 20px', borderRadius: '16px' }}>
                 <ListItemIcon>
@@ -82,10 +82,8 @@ const Linked = () => {
                       width: '36px',
                       objectFit: 'cover',
                     }}
-                    src={
-                      childAccounts[key]?.thumbnail?.url ?? 'https://lilico.app/placeholder-2.0.png'
-                    }
-                    alt={childAccounts[key]?.name ?? key}
+                    src={childAccount?.icon ?? 'https://lilico.app/placeholder-2.0.png'}
+                    alt={childAccount?.name ?? childAccount.address}
                   />
                 </ListItemIcon>
                 <ListItemText
@@ -98,7 +96,7 @@ const Linked = () => {
                       fontSize={'14px'}
                       // color={key === currentWallet ? 'text.nonselect' : 'text.primary'}
                     >
-                      {childAccounts[key]?.name ?? key}
+                      {childAccount?.name ?? childAccount.address}
                     </Typography>
                   }
                   secondary={
@@ -109,7 +107,7 @@ const Linked = () => {
                       fontSize={'12px'}
                       // color={key === currentWallet ? 'text.nonselect' : 'text.primary'}
                     >
-                      {key}
+                      {childAccount.address}
                     </Typography>
                   }
                 />

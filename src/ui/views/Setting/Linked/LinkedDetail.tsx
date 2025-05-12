@@ -18,7 +18,6 @@ import {
   FormControlLabel,
   Checkbox,
 } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 
@@ -32,12 +31,8 @@ import { useWallet } from 'ui/utils';
 import CheckCircleIcon from '../../../../components/iconfont/IconCheckmark';
 import IconCopy from '../../../../components/iconfont/IconCopy';
 
-// import '../../Unlock/style.css';
-
 import EditAccount from './EditAccount';
 import UnlinkAccount from './UnlinkAccount';
-
-// import fetchRemoteConfig from 'background/utils/remoteConfig';
 
 type ChildAccount = {
   name: string;
@@ -95,13 +90,195 @@ const checkContractAddressInCollections = (nft, activec) => {
   return matchedResult;
 };
 
+const NftContent = ({
+  availableNftCollection,
+  hideEmpty,
+  navigateWithState,
+}: {
+  availableNftCollection: any[];
+  hideEmpty: boolean;
+  navigateWithState: (data: any) => void;
+}) => {
+  const filteredNftCollection = availableNftCollection.filter(
+    (item) => !hideEmpty || (hideEmpty && item.total && item.total > 0)
+  );
+
+  return (
+    <Box sx={{ fontSize: '14px', color: '#FFFFFF', marginTop: '8px' }}>
+      {filteredNftCollection.length ? (
+        filteredNftCollection.map((item, index) => {
+          const collectedText = chrome.i18n.getMessage('Collected');
+
+          return (
+            <CardActionArea
+              sx={{
+                display: 'flex',
+                height: '64px',
+                marginTop: '8px',
+                padding: '16px 20px',
+                borderRadius: '16px',
+                backgroundColor: '#292929',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+              key={index}
+              onClick={() => navigateWithState(item)}
+            >
+              <img
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '32px',
+                }}
+                src={item.logo}
+                alt={item.name}
+              />
+              <Typography
+                sx={{
+                  color: '#FFF',
+                  fontFamily: 'Inter',
+                  fontSize: 14,
+                  fontStyle: 'normal',
+                  fontWeight: 600,
+                  lineHeight: '18px',
+                  textTransform: 'capitalize',
+                  marginLeft: '8px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  maxWidth: '50%',
+                  alignItems: 'center',
+                }}
+              >
+                {item.name}
+              </Typography>
+              <Box sx={{ flex: 1 }}></Box>
+              <Typography
+                sx={{
+                  color: '#BABABA',
+                  textAlign: 'right',
+                  fontFamily: 'Inter',
+                  fontSize: 12,
+                  fontStyle: 'normal',
+                  fontWeight: 600,
+                  lineHeight: '20px',
+                  alignItems: 'center',
+                }}
+              >
+                {item.total + ' '}
+                {collectedText}
+              </Typography>
+              <CardMedia
+                sx={{
+                  width: '4px',
+                  height: '8px',
+                  marginLeft: '16px',
+                  alignItems: 'center',
+                }}
+                image={IconNext}
+              />
+            </CardActionArea>
+          );
+        })
+      ) : (
+        <Box
+          sx={{
+            display: 'flex',
+            height: '64px',
+            marginTop: '8px',
+            padding: '8px 20px',
+            borderRadius: '16px',
+            backgroundColor: '#292929',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: '12px',
+              color: '#bababa',
+              textAlign: 'center',
+            }}
+          >
+            No accessible NFT
+          </Typography>
+        </Box>
+      )}
+    </Box>
+  );
+};
+
+const FtContent = ({ availableFt }: { availableFt: TicketToken[] }) => (
+  <Box sx={{ fontSize: '14px', color: '#FFFFFF', marginTop: '8px' }}>
+    {availableFt.map((token, index) => {
+      return (
+        <Box
+          sx={{
+            display: 'flex',
+            height: '64px',
+            marginTop: '8px',
+            padding: '16px 20px',
+            borderRadius: '16px',
+            backgroundColor: '#292929',
+            justifyContent: 'space-between',
+          }}
+          key={index}
+        >
+          <img
+            style={{
+              height: '32px',
+              width: '32px',
+              borderRadius: '32px',
+              backgroundColor: 'text.secondary',
+              objectFit: 'cover',
+              marginRight: '8px',
+            }}
+            src={'https://lilico.app/placeholder-2.0.png'}
+          />
+          <Typography
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              color: '#fff',
+              textAlign: 'right',
+              fontFamily: 'Inter',
+              fontSize: '14px',
+              fontStyle: 'normal',
+              fontWeight: 600,
+              lineHeight: '20px',
+            }}
+          >
+            {token.id.split('.')[2]}
+          </Typography>
+          <Box sx={{ flex: 1 }}></Box>
+          <Typography
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              color: '#BABABA',
+              textAlign: 'right',
+              fontFamily: 'Inter',
+              fontSize: '12px',
+              fontStyle: 'normal',
+              fontWeight: 600,
+              lineHeight: '20px',
+            }}
+          >
+            {parseFloat(token.balance).toFixed(3)} {token.id.split('.')[2]}
+          </Typography>
+        </Box>
+      );
+    })}
+  </Box>
+);
+
 const LinkedDetail = () => {
   const location = useParams();
 
   const history = useHistory();
   const usewallet = useWallet();
   const { childAccounts } = useProfiles();
-  const [childAccount, setChildAccount] = useState<WalletAccount | null>(null);
+  const [childAccount, setChildAccount] = useState<WalletAccount | undefined>(undefined);
   const [unlinking, setUnlinking] = useState<boolean>(false);
   const [active, setIsActive] = useState<boolean>(false);
   const [key, setKey] = useState<string>('');
@@ -128,7 +305,7 @@ const LinkedDetail = () => {
         setIsActive(true);
       }
       const key = location['key'];
-      setChildAccount(childAccounts?.[key] ?? null);
+      setChildAccount(childAccounts?.find((account) => account.address === key) ?? undefined);
       setKey(key);
       const catalog = await usewallet.getNftCatalog();
 
@@ -194,7 +371,7 @@ const LinkedDetail = () => {
     setHide(!prevEmpty);
   };
 
-  const navigateWithState = (data, key) => {
+  const navigateWithState = (data) => {
     const state = { nft: data };
     localStorage.setItem('nftLinkedState', JSON.stringify(state));
     const storagePath = data.path.storage_path.split('/')[2];
@@ -213,187 +390,6 @@ const LinkedDetail = () => {
     getUserInfo();
     fetchUserWallet();
   }, [getUserInfo, fetchUserWallet]);
-
-  const nftContent = () => {
-    const filteredNftCollection = availableNftCollection.filter(
-      (item) => !hideEmpty || (hideEmpty && item.total && item.total > 0)
-    );
-
-    return (
-      <Box sx={{ fontSize: '14px', color: '#FFFFFF', marginTop: '8px' }}>
-        {filteredNftCollection.length ? (
-          filteredNftCollection.map((item, index) => {
-            const collectedText = chrome.i18n.getMessage('Collected');
-
-            return (
-              <CardActionArea
-                sx={{
-                  display: 'flex',
-                  height: '64px',
-                  marginTop: '8px',
-                  padding: '16px 20px',
-                  borderRadius: '16px',
-                  backgroundColor: '#292929',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-                key={index}
-                // to={{
-                //   pathname: `/dashboard/nested/linked/collectiondetail/${key + '.' + item.contract_name + '.' + item.total + '.linked'}`,
-                //   state: {
-                //     collection: item,
-                //     ownerAddress: key,
-                //   }
-                // }}
-                onClick={() => navigateWithState(item, key)}
-              >
-                <img
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '32px',
-                  }}
-                  src={item.logo}
-                  alt={item.name}
-                />
-                <Typography
-                  sx={{
-                    color: '#FFF',
-                    fontFamily: 'Inter',
-                    fontSize: 14,
-                    fontStyle: 'normal',
-                    fontWeight: 600,
-                    lineHeight: '18px',
-                    textTransform: 'capitalize',
-                    marginLeft: '8px',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    maxWidth: '50%',
-                    alignItems: 'center',
-                  }}
-                >
-                  {item.name}
-                </Typography>
-                <Box sx={{ flex: 1 }}></Box>
-                <Typography
-                  sx={{
-                    color: '#BABABA',
-                    textAlign: 'right',
-                    fontFamily: 'Inter',
-                    fontSize: 12,
-                    fontStyle: 'normal',
-                    fontWeight: 600,
-                    lineHeight: '20px',
-                    alignItems: 'center',
-                  }}
-                >
-                  {item.total + ' '}
-                  {collectedText}
-                </Typography>
-                <CardMedia
-                  sx={{
-                    width: '4px',
-                    height: '8px',
-                    marginLeft: '16px',
-                    alignItems: 'center',
-                  }}
-                  image={IconNext}
-                />
-              </CardActionArea>
-            );
-          })
-        ) : (
-          <Box
-            sx={{
-              display: 'flex',
-              height: '64px',
-              marginTop: '8px',
-              padding: '8px 20px',
-              borderRadius: '16px',
-              backgroundColor: '#292929',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <Typography
-              sx={{
-                fontSize: '12px',
-                color: '#bababa',
-                textAlign: 'center',
-              }}
-            >
-              No accessible NFT
-            </Typography>
-          </Box>
-        )}
-      </Box>
-    );
-  };
-
-  const ftContent = () => (
-    <Box sx={{ fontSize: '14px', color: '#FFFFFF', marginTop: '8px' }}>
-      {availableFt.map((token, index) => {
-        return (
-          <Box
-            sx={{
-              display: 'flex',
-              height: '64px',
-              marginTop: '8px',
-              padding: '16px 20px',
-              borderRadius: '16px',
-              backgroundColor: '#292929',
-              justifyContent: 'space-between',
-            }}
-            key={index}
-          >
-            <img
-              style={{
-                height: '32px',
-                width: '32px',
-                borderRadius: '32px',
-                backgroundColor: 'text.secondary',
-                objectFit: 'cover',
-                marginRight: '8px',
-              }}
-              src={'https://lilico.app/placeholder-2.0.png'}
-            />
-            <Typography
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                color: '#fff',
-                textAlign: 'right',
-                fontFamily: 'Inter',
-                fontSize: '14px',
-                fontStyle: 'normal',
-                fontWeight: 600,
-                lineHeight: '20px',
-              }}
-            >
-              {token.id.split('.')[2]}
-            </Typography>
-            <Box sx={{ flex: 1 }}></Box>
-            <Typography
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                color: '#BABABA',
-                textAlign: 'right',
-                fontFamily: 'Inter',
-                fontSize: '12px',
-                fontStyle: 'normal',
-                fontWeight: 600,
-                lineHeight: '20px',
-              }}
-            >
-              {parseFloat(token.balance).toFixed(3)} {token.id.split('.')[2]}
-            </Typography>
-          </Box>
-        );
-      })}
-    </Box>
-  );
 
   return (
     <div className="page" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -690,7 +686,17 @@ const LinkedDetail = () => {
                 ))}
               </Box>
             ) : (
-              <Box>{value === 'one' ? nftContent() : ftContent()}</Box>
+              <Box>
+                {value === 'one' ? (
+                  <NftContent
+                    availableNftCollection={availableNftCollection}
+                    hideEmpty={hideEmpty}
+                    navigateWithState={navigateWithState}
+                  />
+                ) : (
+                  <FtContent availableFt={availableFt} />
+                )}
+              </Box>
             )}
           </Box>
           {active && (
