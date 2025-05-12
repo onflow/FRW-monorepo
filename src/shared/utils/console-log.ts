@@ -60,7 +60,7 @@ const _consoleTrace = (...args: unknown[]) => {
 // Export the original console functions if not in production
 export const consoleLog = IS_PROD ? _consoleLog : console.log; // eslint-disable-line no-console
 export const consoleInfo = IS_PROD ? _consoleInfo : console.info; // eslint-disable-line no-console
-export const consoleError = IS_PROD ? _consoleError : console.error;
-export const consoleWarn = IS_PROD ? _consoleWarn : console.warn;
+export const consoleError = IS_PROD ? _consoleError : console.error; // eslint-disable-line no-console
+export const consoleWarn = IS_PROD ? _consoleWarn : console.warn; // eslint-disable-line no-console
 export const consoleDebug = IS_PROD ? _consoleDebug : console.debug; // eslint-disable-line no-console
 export const consoleTrace = IS_PROD ? _consoleTrace : console.trace; // eslint-disable-line no-console
