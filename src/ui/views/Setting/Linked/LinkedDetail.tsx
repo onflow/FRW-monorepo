@@ -1,4 +1,3 @@
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CircleOutlinedIcon from '@mui/icons-material/CircleOutlined';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import {
@@ -18,15 +17,17 @@ import {
   FormControlLabel,
   Checkbox,
 } from '@mui/material';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 
-import { type UserInfoResponse } from '@/shared/types/network-types';
-import { type WalletAccount } from '@/shared/types/wallet-types';
+import { type NftCollection } from '@/shared/types/network-types';
+import { type ChildAccountNFTs, type ChildAccountNFTsStore } from '@/shared/utils/cache-data-keys';
 import IconNext from '@/ui/FRWAssets/svg/nextgray.svg';
-import { LLSecondaryButton } from '@/ui/FRWComponent';
+import { LLHeader, LLSecondaryButton } from '@/ui/FRWComponent';
+import { useChildAccountAllowTypes, useCurrentId, useUserInfo } from '@/ui/hooks/use-account-hooks';
+import { useChildAccountFt } from '@/ui/hooks/use-coin-hooks';
+import { useChildAccountNfts, useNftCollectionList } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useWallet } from 'ui/utils';
 
 import CheckCircleIcon from '../../../../components/iconfont/IconCheckmark';
 import IconCopy from '../../../../components/iconfont/IconCopy';
@@ -34,60 +35,55 @@ import IconCopy from '../../../../components/iconfont/IconCopy';
 import EditAccount from './EditAccount';
 import UnlinkAccount from './UnlinkAccount';
 
-type ChildAccount = {
-  name: string;
-  description: string;
-  thumbnail: {
-    url: string;
-  };
-};
-
-interface Display {
-  name: string;
-  squareImage: string;
-  mediaType: string;
-}
-
-interface AvailableNFT {
-  id: string;
-  path: string;
-  display: Display;
-  idList: string[];
-}
-
 interface TicketToken {
   id: string;
   balance: string;
 }
-
 interface Collection {
   id: string;
-  contract_name: string;
+  contractName: string;
   logo?: string;
   address: string;
   name: string;
-  total?: number;
-  nfts: any[];
+  total: number;
+  nfts: string[];
 }
 
-const extractContractName = (collection) => {
+const extractContractName = (collection: string) => {
   return collection.split('.')[2];
 };
 
-const findObjectByContractName = (contractName, collections) => {
+const findObjectByContractName = (
+  contractName: string,
+  collections: NftCollection[] | undefined
+): NftCollection | undefined => {
   const extractedContract = extractContractName(contractName);
-  const foundObject = collections.find((item) => item.contract_name === extractedContract);
-  return foundObject || null;
+  const foundObject = extractedContract
+    ? collections?.find(
+        (item) =>
+          item.contract_name === extractedContract || item.contractName === extractedContract
+      )
+    : undefined;
+  return foundObject;
 };
 
-const checkContractAddressInCollections = (nft, activec) => {
-  const matchedResult = activec.find((collection) => {
-    const parts = nft.split('.');
+const nftCollectionToCollection = (
+  nftCollection: NftCollection,
+  childAccountNfts: ChildAccountNFTs
+) => {
+  const nftCollectionContractName = nftCollection.contractName || nftCollection.contract_name;
+  const foundNftId = Object.keys(childAccountNfts).find((nftId) => {
+    const parts = nftId.split('.');
     const address = `0x${parts[1]}`;
     const contractName = parts[2];
-    return collection.address === address && collection.contract_name === contractName;
+    return nftCollection.address === address && nftCollectionContractName === contractName;
   });
-  return matchedResult;
+  const nfts = foundNftId ? childAccountNfts[foundNftId] : [];
+  return {
+    ...nftCollection,
+    total: nfts.length,
+    nfts: nfts,
+  };
 };
 
 const NftContent = ({
@@ -95,9 +91,9 @@ const NftContent = ({
   hideEmpty,
   navigateWithState,
 }: {
-  availableNftCollection: any[];
+  availableNftCollection: Collection[];
   hideEmpty: boolean;
-  navigateWithState: (data: any) => void;
+  navigateWithState: (data: Collection) => void;
 }) => {
   const filteredNftCollection = availableNftCollection.filter(
     (item) => !hideEmpty || (hideEmpty && item.total && item.total > 0)
@@ -208,9 +204,9 @@ const NftContent = ({
   );
 };
 
-const FtContent = ({ availableFt }: { availableFt: TicketToken[] }) => (
+const FtContent = ({ availableFt }: { availableFt: TicketToken[] | undefined }) => (
   <Box sx={{ fontSize: '14px', color: '#FFFFFF', marginTop: '8px' }}>
-    {availableFt.map((token, index) => {
+    {availableFt?.map((token, index) => {
       return (
         <Box
           sx={{
@@ -276,86 +272,75 @@ const LinkedDetail = () => {
   const location = useParams();
 
   const history = useHistory();
-  const usewallet = useWallet();
-  const { childAccounts } = useProfiles();
-  const [childAccount, setChildAccount] = useState<WalletAccount | undefined>(undefined);
   const [unlinking, setUnlinking] = useState<boolean>(false);
-  const [active, setIsActive] = useState<boolean>(false);
-  const [key, setKey] = useState<string>('');
   const [isEdit, setEdit] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [availableFt, setFt] = useState<TicketToken[]>([]);
-  const [availableNft, setNft] = useState<any[]>([]);
-  const [availableNftCollection, setAvailableCollections] = useState<any[]>([]);
   const [hideEmpty, setHide] = useState<boolean>(false);
-  const [nftCatalog, setCatalog] = useState<any[]>([]);
-  const [activeCollection, setActiveCollection] = useState<any>([]);
   const [value, setValue] = useState('one');
+
+  const { activeAccountType, childAccounts, mainAddress, network } = useProfiles();
+
+  const active = activeAccountType === 'main';
+  // The child account address is the key in the url
+  const childAccountAddress: string | undefined = location['key'];
+  const childAccount = childAccounts?.find((account) => account.address === childAccountAddress);
+  const childAccountAllowTypes = useChildAccountAllowTypes(
+    network,
+    mainAddress,
+    childAccountAddress
+  );
+  const nftCollectionList = useNftCollectionList(network);
+  const allChildAccountNfts: ChildAccountNFTsStore | undefined = useChildAccountNfts(
+    network,
+    mainAddress
+  );
+  const childAccountNfts: ChildAccountNFTs | undefined = useMemo(
+    () => (childAccountAddress ? allChildAccountNfts?.[childAccountAddress] : {}),
+    [allChildAccountNfts, childAccountAddress]
+  );
+
+  const availableFt = useChildAccountFt(network, mainAddress, childAccountAddress);
+
+  const availableNftCollection: Collection[] | undefined = useMemo(
+    () =>
+      childAccountAllowTypes === undefined
+        ? undefined
+        : Object.values(
+            childAccountAllowTypes
+              .map((active) => {
+                const collection = findObjectByContractName(active, nftCollectionList);
+                if (collection) {
+                  return nftCollectionToCollection(collection, childAccountNfts ?? {});
+                }
+              })
+              .filter((collection) => collection !== undefined)
+              .reduce(
+                (acc, collection) => {
+                  const contractName = collection.contractName || collection.contract_name;
+                  if (acc[contractName] !== undefined) {
+                    acc[contractName].total += collection.total;
+                    acc[contractName].nfts.push(...collection.nfts!);
+                  } else {
+                    acc[contractName] = {
+                      ...collection,
+                      contractName: contractName,
+                    };
+                  }
+                  return acc;
+                },
+                {} as { [key: string]: Collection }
+              )
+          ),
+    [childAccountAllowTypes, nftCollectionList, childAccountNfts]
+  );
+
+  const loading = availableNftCollection === undefined;
+
+  const currentId = useCurrentId();
+  const userInfo = useUserInfo(currentId);
 
   const handleChange = (_, newValue: string) => {
     setValue(newValue);
   };
-
-  const fetchUserWallet = useCallback(async () => {
-    try {
-      const accountType = await usewallet.getActiveAccountType();
-      if (accountType !== 'main') {
-        setIsActive(false);
-      } else {
-        setIsActive(true);
-      }
-      const key = location['key'];
-      setChildAccount(childAccounts?.find((account) => account.address === key) ?? undefined);
-      setKey(key);
-      const catalog = await usewallet.getNftCatalog();
-
-      const parentaddress = await usewallet.getParentAddress();
-      if (!parentaddress) {
-        throw new Error('Parent address not found');
-      }
-      const activec = await usewallet.getChildAccountAllowTypes(parentaddress, key!);
-      setActiveCollection(activec);
-      await setCatalog(catalog);
-      const collectionMap: { [key: string]: Collection } = {};
-
-      const nftResult = await usewallet.checkAccessibleNft(parentaddress);
-      activec.forEach((active) => {
-        const collection = findObjectByContractName(active, catalog);
-        if (collection) {
-          collectionMap[collection.contract_name] = { ...collection, total: 0, nfts: [] };
-        }
-      });
-      Object.entries(nftResult[key]).forEach((nft) => {
-        const someResult = checkContractAddressInCollections(nft[0], Object.values(collectionMap));
-        if (someResult) {
-          collectionMap[someResult.contract_name].total! += 1;
-          collectionMap[someResult.contract_name].nfts!.push(nft);
-        }
-      });
-      if (nftResult) {
-        setNft(nftResult);
-        const collectionsArray = Object.values(collectionMap);
-        setAvailableCollections(collectionsArray);
-      }
-      const ftResult = await usewallet.checkAccessibleFt(key);
-      if (ftResult) {
-        setFt(ftResult);
-      }
-
-      setLoading(false);
-    } catch (error) {
-      // Handle any errors that occur during data fetching
-      console.error('Error fetching data:', error);
-      setLoading(false);
-    }
-  }, [usewallet, location, childAccounts]);
-
-  const [userInfo, setUserInfo] = useState<UserInfoResponse | null>(null);
-
-  const getUserInfo = useCallback(async () => {
-    const userResult = await usewallet.getUserInfo(false);
-    await setUserInfo(userResult);
-  }, [usewallet]);
 
   const showUnlink = async (condition) => {
     await setUnlinking(condition);
@@ -377,19 +362,14 @@ const LinkedDetail = () => {
     const storagePath = data.path.storage_path.split('/')[2];
     if (data.total) {
       history.push({
-        pathname: `/dashboard/nested/linked/collectiondetail/${key + '.' + storagePath + '.' + data.total + '.linked'}`,
+        pathname: `/dashboard/nested/linked/collectiondetail/${childAccountAddress + '.' + storagePath + '.' + data.total + '.linked'}`,
         state: {
           collection: data,
-          ownerAddress: key,
+          ownerAddress: childAccountAddress,
         },
       });
     }
   };
-
-  useEffect(() => {
-    getUserInfo();
-    fetchUserWallet();
-  }, [getUserInfo, fetchUserWallet]);
 
   return (
     <div className="page" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -402,31 +382,14 @@ const LinkedDetail = () => {
           px: '16px',
         }}
       >
-        <IconButton>
-          <ArrowBackIcon
-            fontSize="medium"
-            sx={{ color: 'icon.navi', cursor: 'pointer' }}
-            onClick={() => history.push('/dashboard')}
-          />
-        </IconButton>
-        <Typography
-          variant="h1"
-          sx={{
-            py: '14px',
-            alignSelf: 'center',
-            fontSize: '20px',
+        <LLHeader title={chrome.i18n.getMessage('Linked_Account')} help={false} />
+
+        <IconButton
+          onClick={() => {
+            toggleEdit();
           }}
         >
-          {chrome.i18n.getMessage('Linked_Account')}
-        </Typography>
-        <IconButton>
-          <EditRoundedIcon
-            fontSize="medium"
-            sx={{ color: 'icon.navi', cursor: 'pointer' }}
-            onClick={() => {
-              toggleEdit();
-            }}
-          />
+          <EditRoundedIcon fontSize="medium" sx={{ color: 'icon.navi', cursor: 'pointer' }} />
         </IconButton>
       </Box>
 
@@ -503,12 +466,14 @@ const LinkedDetail = () => {
                 {chrome.i18n.getMessage('Address')}
               </Typography>
               <Typography sx={{ fontSize: '14px', color: '#bababa', width: '100%' }}>
-                {key}
+                {childAccountAddress}
               </Typography>
               <Button
                 variant="text"
                 onClick={() => {
-                  navigator.clipboard.writeText(key);
+                  if (childAccountAddress) {
+                    navigator.clipboard.writeText(childAccountAddress);
+                  }
                 }}
               >
                 <IconCopy fill="icon.navi" width="12px" />
@@ -711,7 +676,7 @@ const LinkedDetail = () => {
             showUnlink(false);
           }}
           childAccount={childAccount}
-          address={key}
+          address={childAccountAddress}
           userInfo={userInfo}
         />
         {loading || !childAccount ? (
@@ -727,7 +692,7 @@ const LinkedDetail = () => {
               setEdit(false);
             }}
             childAccount={childAccount}
-            address={key}
+            address={childAccountAddress}
             userInfo={userInfo}
           />
         )}

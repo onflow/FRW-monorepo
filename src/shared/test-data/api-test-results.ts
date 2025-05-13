@@ -14350,7 +14350,6 @@ export const createTestResults = (): ApiTestResults => ({
       functionName: 'getNFTV2CollectionList',
       functionGroup: 'nft',
       functionParams: {
-        address: '0x552013bd8742476c',
         network: 'testnet',
       },
       functionResponse: [
@@ -14463,10 +14462,9 @@ export const createTestResults = (): ApiTestResults => ({
       ],
       fetchDetails: [
         {
-          url: `${WEB_NEXT_URL}/api/v2/nft/collections?network=testnet&address=0x552013bd8742476c`,
+          url: `${WEB_NEXT_URL}/api/v2/nft/collections?network=testnet`,
           params: {
             network: 'testnet',
-            address: '0x552013bd8742476c',
           },
           requestInit: {
             method: 'GET',

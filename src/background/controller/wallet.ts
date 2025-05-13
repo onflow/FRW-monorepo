@@ -63,7 +63,7 @@ import {
   getCachedNftCollection,
   nftCatalogCollectionsKey,
   childAccountAllowTypesKey,
-  childAccountNFTsKey,
+  childAccountNftsKey,
   type ChildAccountNFTsStore,
   evmNftIdsKey,
   type EvmNftIdsStore,
@@ -72,6 +72,7 @@ import {
   registerStatusKey,
   registerStatusRefreshRegex,
   coinListKey,
+  type ChildAccountFtStore,
 } from '@/shared/utils/cache-data-keys';
 import {
   convertFlowBalanceToString,
@@ -1167,25 +1168,25 @@ export class WalletController extends BaseController {
     return await userInfoService.updateUserInfo(nickname, avatar);
   };
 
-  checkAccessibleNft = async (childAccount) => {
+  checkAccessibleNft = async (parentAddress: string) => {
     const network = userWalletService.getNetwork();
     const validData = getValidData<ChildAccountNFTsStore>(
-      childAccountNFTsKey(network, childAccount)
+      childAccountNftsKey(network, parentAddress)
     );
     if (validData) {
       return validData;
     }
-    return await nftService.loadChildAccountNFTs(network, childAccount);
+    return await nftService.loadChildAccountNFTs(network, parentAddress);
   };
 
-  checkAccessibleFt = async (childAccount) => {
+  checkAccessibleFt = async (childAccount: string): Promise<ChildAccountFtStore | undefined> => {
     const network = await this.getNetwork();
 
     const address = await userWalletService.getParentAddress();
     if (!address) {
       throw new Error('Parent address not found');
     }
-    const result = await openapiService.queryAccessibleFt(address, childAccount);
+    const result = await openapiService.queryAccessibleFt(network, address, childAccount);
 
     return result;
   };
@@ -3294,8 +3295,9 @@ export class WalletController extends BaseController {
     return nftService.loadNftCatalogCollections(network, address);
   };
 
-  getNftCatalog = async () => {
-    const data = (await openapiService.nftCollectionList()) ?? [];
+  getNftCollectionList = async () => {
+    const network = await this.getNetwork();
+    const data = (await openapiService.getNFTV2CollectionList(network)) ?? [];
 
     return data;
   };

@@ -1002,7 +1002,7 @@
     "usesSendRequest": true,
     "usesFetchDirectly": false,
     "basicSignature": "async (address, network = 'mainnet') =>",
-    "params": ["address", "network = 'mainnet'"]
+    "params": ["network = 'mainnet'"]
   },
   {
     "name": "putDeviceInfo",

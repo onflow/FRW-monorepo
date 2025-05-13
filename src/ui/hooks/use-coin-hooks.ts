@@ -1,6 +1,11 @@
 import { type ExtendedTokenInfo, type TokenFilter } from '@/shared/types/coin-types';
 import { type Currency } from '@/shared/types/wallet-types';
-import { coinListKey, tokenFilterKey } from '@/shared/utils/cache-data-keys';
+import {
+  type ChildAccountFtStore,
+  childAccountFtKey,
+  coinListKey,
+  tokenFilterKey,
+} from '@/shared/utils/cache-data-keys';
 import { setUserData } from '@/shared/utils/user-data-access';
 
 import { useCachedData, useUserData } from './use-data';
@@ -27,4 +32,16 @@ export const setTokenFilter = (network: string, address: string, filter: TokenFi
     throw new Error('Network and address are required');
   }
   setUserData<TokenFilter>(tokenFilterKey(network, address), filter);
+};
+
+export const useChildAccountFt = (
+  network: string | undefined | null,
+  parentAddress: string | undefined | null,
+  childAccount: string | undefined | null
+) => {
+  return useCachedData<ChildAccountFtStore>(
+    network && parentAddress && childAccount
+      ? childAccountFtKey(network, parentAddress, childAccount)
+      : null
+  );
 };

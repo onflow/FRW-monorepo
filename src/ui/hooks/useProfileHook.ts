@@ -159,5 +159,6 @@ export const useProfiles = () => {
     canMoveToChild,
     currentWalletList,
     payer,
+    network,
   };
 };
