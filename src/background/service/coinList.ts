@@ -8,6 +8,8 @@ import { isValidEthereumAddress, isValidFlowAddress } from '@/shared/utils/addre
 import {
   cadenceTokenInfoKey,
   cadenceTokenInfoRefreshRegex,
+  type ChildAccountFtStore,
+  childAccountFtKey,
   coinListKey,
   coinListRefreshRegex,
   evmTokenInfoKey,
@@ -15,9 +17,9 @@ import {
   supportedCurrenciesKey,
   supportedCurrenciesRefreshRegex,
   type SupportedCurrenciesStore,
+  childAccountFtRefreshRegex,
 } from '@/shared/utils/cache-data-keys';
 
-import { fclConfirmNetwork } from '../fclConfig';
 import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
 
 class CoinList {
@@ -26,6 +28,7 @@ class CoinList {
     registerRefreshListener(evmTokenInfoRefreshRegex, this.loadEvmTokenInfo);
     registerRefreshListener(cadenceTokenInfoRefreshRegex, this.loadCadenceTokenInfo);
     registerRefreshListener(supportedCurrenciesRefreshRegex, this.loadSupportedCurrencies);
+    registerRefreshListener(childAccountFtRefreshRegex, this.loadChildAccountFt);
   };
 
   clear = async () => {};
@@ -247,6 +250,24 @@ class CoinList {
       return this.loadSupportedCurrencies();
     }
     return supportedCurrencies;
+  };
+
+  // Child account FT
+  loadChildAccountFt = async (network: string, parentAddress: string, childAccount: string) => {
+    const childAccountFt = await openapiService.queryAccessibleFt(
+      network,
+      parentAddress,
+      childAccount
+    );
+    setCachedData(childAccountFtKey(network, parentAddress, childAccount), childAccountFt);
+    return childAccountFt;
+  };
+
+  getChildAccountFt = async (network: string, parentAddress: string, childAccount: string) => {
+    const childAccountFt = await getValidData<ChildAccountFtStore>(
+      childAccountFtKey(network, parentAddress, childAccount)
+    );
+    return childAccountFt;
   };
 }
 

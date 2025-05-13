@@ -1,5 +1,6 @@
 import * as fcl from '@onflow/fcl';
 
+import { type NftCollection } from '@/shared/types/network-types';
 import {
   nftCatalogCollectionsKey,
   nftCatalogCollectionsRefreshRegex,
@@ -7,8 +8,10 @@ import {
   nftCollectionRefreshRegex,
   childAccountAllowTypesKey,
   childAccountAllowTypesRefreshRegex,
-  childAccountNFTsKey,
+  childAccountNftsKey,
   childAccountNFTsRefreshRegex,
+  nftCollectionListKey,
+  nftCollectionListRefreshRegex,
 } from '@/shared/utils/cache-data-keys';
 import { getValidData, registerRefreshListener, setCachedData } from 'background/utils/data-cache';
 
@@ -23,9 +26,10 @@ class NFT {
     registerRefreshListener(nftCollectionRefreshRegex, this.loadSingleNftCollection);
     registerRefreshListener(childAccountAllowTypesRefreshRegex, this.loadChildAccountAllowTypes);
     registerRefreshListener(childAccountNFTsRefreshRegex, this.loadChildAccountNFTs);
+    registerRefreshListener(nftCollectionListRefreshRegex, this.loadNftCollectionList);
   };
 
-  loadChildAccountNFTs = async (network: string, address: string) => {
+  loadChildAccountNFTs = async (network: string, parentAddress: string) => {
     if (!(await fclConfirmNetwork(network))) {
       // Do nothing if the network is switched
       // Don't update the cache
@@ -35,11 +39,10 @@ class NFT {
 
     const result = await fcl.query({
       cadence: script,
-      args: (arg, t) => [arg(address, t.Address)],
+      args: (arg, t) => [arg(parentAddress, t.Address)],
     });
-    console.log('check child nft info result----=====', structuredClone(result));
 
-    setCachedData(childAccountNFTsKey(network, address), result);
+    setCachedData(childAccountNftsKey(network, parentAddress), result);
 
     return result;
   };
@@ -117,6 +120,15 @@ class NFT {
     return data;
   };
 
+  loadNftCollectionList = async (network: string): Promise<NftCollection[]> => {
+    const data = await openapiService.getNFTV2CollectionList(network);
+    if (!data || !Array.isArray(data)) {
+      throw new Error('Could not load nft collection list');
+    }
+    setCachedData(nftCollectionListKey(network), data);
+    return data;
+  };
+
   getSingleCollection = async (
     network: string,
     address: string,
@@ -132,7 +144,7 @@ class NFT {
     return cachedData;
   };
 
-  getCollectionList = async (
+  getNftCatalogCollections = async (
     network: string,
     address: string
   ): Promise<NFTCollections[] | undefined> => {
@@ -141,6 +153,14 @@ class NFT {
     );
     if (!collections) {
       return this.loadNftCatalogCollections(network, address);
+    }
+    return collections;
+  };
+
+  getNftCollectionList = async (network: string): Promise<NftCollection[] | undefined> => {
+    const collections = await getValidData<NftCollection[]>(nftCollectionListKey(network));
+    if (!collections) {
+      return this.loadNftCollectionList(network);
     }
     return collections;
   };
