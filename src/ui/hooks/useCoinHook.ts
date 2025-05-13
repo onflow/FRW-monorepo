@@ -57,7 +57,7 @@ export const useCoins = () => {
 
   const tokenFilter = useTokenFilter(network, currentWallet?.address) || {
     hideDust: false,
-    hideUnverified: false,
+    hideUnverified: true,
     filteredIds: [],
   };
 
