@@ -9,6 +9,7 @@ import {
   getActiveAccountTypeForAddress,
 } from '@/shared/types/wallet-types';
 import { ensureEvmAddressPrefix, withPrefix } from '@/shared/utils/address';
+import { SIGN_ALGO_NUM_DEFAULT, HASH_ALGO_NUM_DEFAULT } from '@/shared/utils/algo-constants';
 import { UserWalletStore } from '@/shared/utils/user-data-keys';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { debug } from '@/ui/utils';
@@ -37,22 +38,13 @@ const INITIAL_WALLET = {
   coins: ['flow'],
   color: '',
   chain: MAINNET_CHAIN_ID,
-};
-
-const INITIAL_ACCOUNT = {
-  name: '',
-  icon: '',
-  address: '',
-  id: 1,
-  color: '',
-  keyIndex: 0,
-  weight: 0,
   publicKey: '',
-  signAlgo: 1,
-  hashAlgo: 1,
+  keyIndex: 0,
+  weight: 1000,
+  signAlgo: SIGN_ALGO_NUM_DEFAULT,
   signAlgoString: 'ECDSA_secp256k1',
+  hashAlgo: HASH_ALGO_NUM_DEFAULT,
   hashAlgoString: 'SHA3_256',
-  chain: MAINNET_CHAIN_ID,
 };
 
 export const useProfiles = () => {
@@ -159,6 +151,5 @@ export const useProfiles = () => {
     canMoveToChild,
     currentWalletList,
     payer,
-    userWallets,
   };
 };

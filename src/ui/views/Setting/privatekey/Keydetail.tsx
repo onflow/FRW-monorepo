@@ -18,7 +18,7 @@ interface State {
 const Keydetail = () => {
   const location = useLocation<State>();
   const wallet = useWallet();
-  const { userWallets } = useProfiles();
+  const { parentWallet } = useProfiles();
   const [privatekey, setKey] = useState('');
   const [hashAlgorithm, setHash] = useState('');
   const [signAlgorithm, setSign] = useState('');
@@ -26,13 +26,13 @@ const Keydetail = () => {
   const verify = useCallback(async () => {
     try {
       const pwd = location.state.password;
-      const result = await wallet.getPubKeyPrivateKey(pwd);
 
-      if (!userWallets?.currentPubkey) {
+      if (!parentWallet?.publicKey) {
         throw new Error('No current public key found');
       }
+      const result = await wallet.getPubKeyPrivateKey(pwd);
 
-      const accountKey = pubKeyTupleToAccountKey(userWallets.currentPubkey, result);
+      const accountKey = pubKeyTupleToAccountKey(parentWallet.publicKey, result);
       let pk = '';
 
       // Find matching algorithm
@@ -44,8 +44,8 @@ const Keydetail = () => {
         throw new Error('No matching public key algorithm found');
       }
 
-      const hashAlgo = getStringFromHashAlgo(accountKey.hash_algo);
-      const signAlgo = getStringFromSignAlgo(accountKey.sign_algo);
+      const hashAlgo = parentWallet.hashAlgoString;
+      const signAlgo = parentWallet.signAlgoString;
 
       setHash(hashAlgo);
       setSign(signAlgo);
@@ -60,7 +60,7 @@ const Keydetail = () => {
         setSign('');
       }
     }
-  }, [location.state.password, wallet, userWallets]);
+  }, [location.state.password, wallet, parentWallet]);
 
   useEffect(() => {
     verify();
@@ -130,7 +130,7 @@ const Keydetail = () => {
       <Typography variant="body1" align="left" py="14px" px="20px" fontSize="17px">
         {chrome.i18n.getMessage('Public__Key')}
       </Typography>
-      {userWallets?.currentPubkey && <CredentialBox data={userWallets.currentPubkey} />}
+      {parentWallet?.publicKey && <CredentialBox data={parentWallet.publicKey} />}
       <br />
 
       <Box

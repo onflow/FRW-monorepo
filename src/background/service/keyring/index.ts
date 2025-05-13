@@ -1003,50 +1003,6 @@ class KeyringService extends EventEmitter {
   }
 
   /**
-   * Retrieve privatekey from vault
-   *
-   * Attempts to unlock the persisted encrypted storage,
-   * Return all the privatekey stored in vault.
-   *
-   * @param {string} password - The keyring controller password.
-   * @returns {Promise<Array<Keyring>>} The keyrings.
-   */
-
-  async retrievePk(password: string): Promise<RetrievePkResult[]> {
-    // Verify the password
-    await this.verifyPassword(password);
-    // Extract the private key and mnemonic from the decrypted vault
-    const extractedData = this.keyringList.map((entry, index): RetrievePkResult => {
-      const keyringKeyData = entry.decryptedData[0];
-
-      if (keyringKeyData.type === 'HD Key Tree') {
-        // Active index tells us if the key is a public key or a mnemonic
-        if (keyringKeyData.data.activeIndexes[0] === 1) {
-          return {
-            index,
-            keyType: 'publicKey',
-            value: keyringKeyData.data.publicKey || '',
-          };
-        }
-        return {
-          index,
-          keyType: 'mnemonic',
-          value: keyringKeyData.data.mnemonic || '',
-        };
-      } else if (keyringKeyData.type === 'Simple Key Pair') {
-        return {
-          index,
-          keyType: 'privateKey',
-          value: keyringKeyData.data[0],
-        };
-      }
-      throw new Error(`Unsupported keyring type`);
-    });
-
-    return extractedData;
-  }
-
-  /**
    * Reveal the decrypted data from vault
    *
    * Doesn't unlock the keyrings or save it to the state

@@ -8,8 +8,6 @@ export * from './LLNotFound';
 export * from './LLSpinner';
 export * from './LLHeader';
 export * from './LLPinAlert';
-export * from './LLResetPopup';
-export * from './LLResetPopup';
 export * from './LLConnectLoading';
 export * from './LLLinkingLoading';
 export * from './FRWHoldButton';
