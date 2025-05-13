@@ -27,25 +27,40 @@ const Keydetail = () => {
     try {
       const pwd = location.state.password;
       const result = await wallet.getPubKeyPrivateKey(pwd);
-      if (userWallets && userWallets.currentPubkey) {
-        const accountKey = pubKeyTupleToAccountKey(userWallets.currentPubkey, result);
-        let pk = '';
-        if (accountKey.public_key === result.P256.pubK) {
-          pk = result.P256.pk;
-        } else if (accountKey.public_key === result.SECP256K1.pubK) {
-          pk = result.SECP256K1.pk;
-        }
-        console.log('accountKey', accountKey);
-        const hashAlgo = getStringFromHashAlgo(accountKey.hash_algo);
-        const signAlgo = getStringFromSignAlgo(accountKey.sign_algo);
-        setHash(hashAlgo);
-        setSign(signAlgo);
-        setKey(pk);
+
+      if (!userWallets?.currentPubkey) {
+        throw new Error('No current public key found');
       }
+
+      const accountKey = pubKeyTupleToAccountKey(userWallets.currentPubkey, result);
+      let pk = '';
+
+      // Find matching algorithm
+      if (accountKey.public_key === result.P256.pubK) {
+        pk = result.P256.pk;
+      } else if (accountKey.public_key === result.SECP256K1.pubK) {
+        pk = result.SECP256K1.pk;
+      } else {
+        throw new Error('No matching public key algorithm found');
+      }
+
+      const hashAlgo = getStringFromHashAlgo(accountKey.hash_algo);
+      const signAlgo = getStringFromSignAlgo(accountKey.sign_algo);
+
+      setHash(hashAlgo);
+      setSign(signAlgo);
+      setKey(pk);
     } catch (error) {
       console.error('Error during verification:', error);
+      // Handle specific error cases
+      if (error instanceof Error) {
+        // Set appropriate error state or show user feedback
+        setKey('Error during verification');
+        setHash('');
+        setSign('');
+      }
     }
-  }, [location.state.password, wallet, userWallets, setHash, setSign]);
+  }, [location.state.password, wallet, userWallets]);
 
   useEffect(() => {
     verify();
