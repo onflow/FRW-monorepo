@@ -31,7 +31,7 @@ import {
 } from '@/background/utils/modules/publicPrivateKey';
 import eventBus from '@/eventBus';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
-import { type PublicKeyTuple } from '@/shared/types/key-types';
+import { type PublicPrivateKeyTuple, type PublicKeyTuple } from '@/shared/types/key-types';
 import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
 import { ContactType, MAINNET_CHAIN_ID } from '@/shared/types/network-types';
 import { type NFTCollections, type NFTCollectionData } from '@/shared/types/nft-types';
@@ -826,6 +826,11 @@ export class WalletController extends BaseController {
       throw error;
     }
     return privateKey;
+  };
+
+  getPubKeyPrivateKey = async (password: string): Promise<PublicPrivateKeyTuple> => {
+    await this.verifyPassword(password);
+    return await keyringService.getCurrentPublicPrivateKeyTuple();
   };
 
   getPubKey = async (): Promise<PublicKeyTuple> => {

@@ -2,9 +2,12 @@ import { Box, Grid, IconButton, Typography } from '@mui/material';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useLocation, useRouteMatch } from 'react-router-dom';
 
+import { pubKeyTupleToAccountKey } from '@/background/utils/account-key';
 import { getLoggedInAccount } from '@/background/utils/getLoggedInAccount';
 import { storage } from '@/background/webapi';
+import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
 import { LLHeader } from '@/ui/FRWComponent';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from 'ui/utils';
 
 import IconCopy from '../../../../components/iconfont/IconCopy';
@@ -14,42 +17,39 @@ interface State {
 
 const Keydetail = () => {
   const location = useLocation<State>();
-  const usewallet = useWallet();
+  const wallet = useWallet();
+  const { userWallets } = useProfiles();
   const [privatekey, setKey] = useState('');
-  const [publickey, setPublicKey] = useState('');
   const [hashAlgorithm, setHash] = useState('');
   const [signAlgorithm, setSign] = useState('');
 
   const verify = useCallback(async () => {
     try {
       const pwd = location.state.password;
-      const result = await usewallet.getPrivateKeyForCurrentAccount(pwd);
-      setKey(result);
-
-      const pubKey = await storage.get('pubKey');
-      const account = await getLoggedInAccount();
-      const { hashAlgoString: hashAlgo, signAlgoString: signAlgo } = account;
-
-      setPublicKey(pubKey);
-      setHash(hashAlgo);
-      setSign(signAlgo);
+      const result = await wallet.getPubKeyPrivateKey(pwd);
+      if (userWallets && userWallets.currentPubkey) {
+        const accountKey = pubKeyTupleToAccountKey(userWallets.currentPubkey, result);
+        let pk = '';
+        if (accountKey.public_key === result.P256.pubK) {
+          pk = result.P256.pk;
+        } else if (accountKey.public_key === result.SECP256K1.pubK) {
+          pk = result.SECP256K1.pk;
+        }
+        console.log('accountKey', accountKey);
+        const hashAlgo = getStringFromHashAlgo(accountKey.hash_algo);
+        const signAlgo = getStringFromSignAlgo(accountKey.sign_algo);
+        setHash(hashAlgo);
+        setSign(signAlgo);
+        setKey(pk);
+      }
     } catch (error) {
       console.error('Error during verification:', error);
     }
-  }, [location.state.password, usewallet, setKey, setPublicKey, setHash, setSign]);
-
-  const setTab = useCallback(async () => {
-    try {
-      await usewallet.setDashIndex(3); // Set the dashboard index in the wallet
-    } catch (error) {
-      console.error('Error setting tab:', error);
-    }
-  }, [usewallet]);
+  }, [location.state.password, wallet, userWallets, setHash, setSign]);
 
   useEffect(() => {
-    setTab();
     verify();
-  }, [verify, setTab]);
+  }, [verify]);
 
   const CredentialBox = ({ data }) => {
     return (
@@ -115,7 +115,7 @@ const Keydetail = () => {
       <Typography variant="body1" align="left" py="14px" px="20px" fontSize="17px">
         {chrome.i18n.getMessage('Public__Key')}
       </Typography>
-      <CredentialBox data={publickey} />
+      {userWallets?.currentPubkey && <CredentialBox data={userWallets.currentPubkey} />}
       <br />
 
       <Box
