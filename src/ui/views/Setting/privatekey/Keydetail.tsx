@@ -58,7 +58,7 @@ const Keydetail = () => {
     if (parentWallet?.publicKey) {
       verify();
     }
-  }, [verify, parentWallet, history, location.state]);
+  }, [verify, parentWallet?.publicKey, history, location.state]);
 
   const CredentialBox = ({ data }: { data?: string }) => {
     return (
