@@ -20,7 +20,7 @@ const Keydetail = () => {
   const history = useHistory();
   const wallet = useWallet();
   const { parentWallet } = useProfiles();
-  const [privatekey, setKey] = useState('');
+  const [privatekey, setKey] = useState<string | undefined>(undefined);
 
   const verify = useCallback(async () => {
     try {
@@ -60,7 +60,7 @@ const Keydetail = () => {
     }
   }, [verify, parentWallet, history, location.state]);
 
-  const CredentialBox = ({ data }) => {
+  const CredentialBox = ({ data }: { data?: string }) => {
     return (
       <>
         <Box
@@ -80,6 +80,7 @@ const Keydetail = () => {
             variant="body1"
             display="inline"
             color="text.secondary"
+            minHeight="36px"
             sx={{
               alignSelf: 'center',
               fontSize: '14px',
@@ -90,13 +91,15 @@ const Keydetail = () => {
               padding: '16px 0',
             }}
           >
-            {data}
+            {data === undefined ? ''.padStart(64, '*') : data}
           </Typography>
           <Grid container direction="row" justifyContent="end" alignItems="end">
             <IconButton
               edge="end"
               onClick={() => {
-                navigator.clipboard.writeText(data);
+                if (data) {
+                  navigator.clipboard.writeText(data);
+                }
               }}
               // sx={{ marginLeft:'380px'}}
             >
@@ -120,41 +123,29 @@ const Keydetail = () => {
         {chrome.i18n.getMessage('Private__Key')}
       </Typography>
       <CredentialBox data={privatekey} />
-      <br />
       <Typography variant="body1" align="left" py="14px" px="20px" fontSize="17px">
         {chrome.i18n.getMessage('Public__Key')}
       </Typography>
-      {parentWallet?.publicKey && <CredentialBox data={parentWallet.publicKey} />}
-      <br />
+      <CredentialBox data={parentWallet?.publicKey} />
 
       <Box
         sx={{
           display: 'flex',
+          width: '364px',
+
           px: '20px',
           justifyContent: 'space-between',
           alignItems: 'center',
-          paddingY: '30px',
+          paddingY: '24px',
         }}
       >
-        <Box
-          sx={{
-            borderLeft: 1,
-            px: '15px',
-            borderColor: '#333333',
-          }}
-        >
+        <Box sx={{ width: '50%' }}>
           <Typography variant="body1" color="text.secondary" align="left" fontSize="14px">
             {chrome.i18n.getMessage('Hash__Algorithm')} <br />
             {parentWallet && parentWallet?.publicKey ? parentWallet?.hashAlgoString : ''}
           </Typography>
         </Box>
-        <Box
-          sx={{
-            borderLeft: 1,
-            borderColor: '#333333',
-            px: '15px',
-          }}
-        >
+        <Box sx={{ width: '50%', borderLeft: 1, borderColor: '#333333', px: '15px' }}>
           <Typography variant="body1" color="text.secondary" align="left" fontSize="14px">
             {chrome.i18n.getMessage('Sign__Algorithm')} <br />
             {parentWallet && parentWallet?.publicKey ? parentWallet?.signAlgoString : ''}
