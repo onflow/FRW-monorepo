@@ -1,6 +1,6 @@
 import { Box, Grid, IconButton, Typography } from '@mui/material';
 import React, { useEffect, useState, useCallback } from 'react';
-import { useLocation, useRouteMatch } from 'react-router-dom';
+import { useHistory, useLocation, useRouteMatch } from 'react-router-dom';
 
 import { pubKeyTupleToAccountKey } from '@/background/utils/account-key';
 import { getLoggedInAccount } from '@/background/utils/getLoggedInAccount';
@@ -17,6 +17,7 @@ interface State {
 
 const Keydetail = () => {
   const location = useLocation<State>();
+  const history = useHistory();
   const wallet = useWallet();
   const { parentWallet } = useProfiles();
   const [privatekey, setKey] = useState('');
@@ -25,9 +26,6 @@ const Keydetail = () => {
     try {
       const pwd = location.state.password;
 
-      if (!parentWallet?.publicKey) {
-        throw new Error('No current public key found');
-      }
       const result = await wallet.getPubKeyPrivateKey(pwd);
 
       const accountKey = pubKeyTupleToAccountKey(parentWallet.publicKey, result);
@@ -51,11 +49,16 @@ const Keydetail = () => {
         setKey('Error during verification');
       }
     }
-  }, [location.state.password, wallet, parentWallet]);
+  }, [location.state?.password, wallet, parentWallet]);
 
   useEffect(() => {
-    verify();
-  }, [verify]);
+    if (!location.state?.password || !location.state) {
+      history.push('/dashboard/nested/privatekeypassword');
+    }
+    if (parentWallet?.publicKey) {
+      verify();
+    }
+  }, [verify, parentWallet, history, location.state]);
 
   const CredentialBox = ({ data }) => {
     return (
