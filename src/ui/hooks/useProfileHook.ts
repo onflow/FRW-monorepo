@@ -29,18 +29,25 @@ import {
   usePayer,
 } from './use-account-hooks';
 
-const INITIAL_WALLET = {
+const INITIAL_WALLET: WalletAccount = {
   name: '',
   icon: '',
   address: '',
-  chain_id: 'flow',
   id: 1,
-  coins: ['flow'],
   color: '',
   chain: MAINNET_CHAIN_ID,
+};
+
+const INITIAL_ACCOUNT: MainAccount = {
+  name: '',
+  icon: '',
+  address: '',
+  id: 1,
+  color: '',
   publicKey: '',
   keyIndex: 0,
   weight: 1000,
+  chain: MAINNET_CHAIN_ID,
   signAlgo: SIGN_ALGO_NUM_DEFAULT,
   signAlgoString: 'ECDSA_secp256k1',
   hashAlgo: HASH_ALGO_NUM_DEFAULT,
@@ -69,7 +76,8 @@ export const useProfiles = () => {
   const noAddress = activeAccounts && activeAccounts.currentAddress === null;
   const registerStatus = useRegisterStatus(userWallets?.currentPubkey);
   const parentWallet =
-    walletList.find((wallet) => wallet.address === activeAccounts?.parentAddress) ?? INITIAL_WALLET;
+    walletList.find((wallet) => wallet.address === activeAccounts?.parentAddress) ??
+    INITIAL_ACCOUNT;
 
   const parentWalletIndex = walletList.findIndex(
     (wallet) => wallet.address === activeAccounts?.currentAddress
