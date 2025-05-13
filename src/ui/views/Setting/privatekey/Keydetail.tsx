@@ -142,7 +142,7 @@ const Keydetail = () => {
         >
           <Typography variant="body1" color="text.secondary" align="left" fontSize="14px">
             {chrome.i18n.getMessage('Hash__Algorithm')} <br />
-            {parentWallet && parentWallet?.hashAlgoString ? parentWallet?.hashAlgoString : ''}
+            {parentWallet && parentWallet?.publicKey ? parentWallet?.hashAlgoString : ''}
           </Typography>
         </Box>
         <Box
@@ -154,7 +154,7 @@ const Keydetail = () => {
         >
           <Typography variant="body1" color="text.secondary" align="left" fontSize="14px">
             {chrome.i18n.getMessage('Sign__Algorithm')} <br />
-            {parentWallet && parentWallet?.signAlgoString ? parentWallet?.signAlgoString : ''}
+            {parentWallet && parentWallet?.publicKey ? parentWallet?.signAlgoString : ''}
           </Typography>
         </Box>
       </Box>
