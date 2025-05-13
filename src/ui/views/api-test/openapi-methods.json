@@ -859,15 +859,7 @@
     "basicSignature": "async (nickname, avatar) =>",
     "params": ["nickname", "avatar"]
   },
-  {
-    "name": "nftCatalog",
-    "isAsync": true,
-    "fullBody": "async () => {\n        const { data } = await this.sendRequest('GET', 'api/nft/collections', {}, {}, 'https://lilico.app/');\n        return data;\n    }",
-    "usesSendRequest": true,
-    "usesFetchDirectly": false,
-    "basicSignature": "async () =>",
-    "params": []
-  },
+
   {
     "name": "cadenceScriptsV2",
     "isAsync": true,

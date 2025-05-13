@@ -3295,7 +3295,7 @@ export class WalletController extends BaseController {
   };
 
   getNftCatalog = async () => {
-    const data = (await openapiService.nftCatalog()) ?? [];
+    const data = (await openapiService.nftCollectionList()) ?? [];
 
     return data;
   };

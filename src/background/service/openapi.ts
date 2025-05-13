@@ -495,7 +495,7 @@ export class OpenApiService {
 
     // Verify signature if present in headers
     try {
-      const xsignature = response.headers.get('X-Signature');
+      const xsignature = response?.headers?.get('X-Signature');
       if (xsignature) {
         const isValid = await verifySignature(xsignature, responseData);
         if (!isValid) {
@@ -1864,17 +1864,6 @@ export class OpenApiService {
       }
     );
 
-    return data;
-  };
-
-  nftCatalog = async () => {
-    const { data } = await this.sendRequest(
-      'GET',
-      'api/nft/collections',
-      {},
-      {},
-      'https://lilico.app/'
-    );
     return data;
   };
 
