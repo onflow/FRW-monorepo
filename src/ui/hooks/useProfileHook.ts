@@ -28,18 +28,16 @@ import {
   usePayer,
 } from './use-account-hooks';
 
-const INITIAL_WALLET = {
+const INITIAL_WALLET: WalletAccount = {
   name: '',
   icon: '',
   address: '',
-  chain_id: 'flow',
   id: 1,
-  coins: ['flow'],
   color: '',
   chain: MAINNET_CHAIN_ID,
 };
 
-const INITIAL_ACCOUNT = {
+const INITIAL_ACCOUNT: MainAccount = {
   name: '',
   icon: '',
   address: '',
@@ -77,7 +75,8 @@ export const useProfiles = () => {
   const noAddress = activeAccounts && activeAccounts.currentAddress === null;
   const registerStatus = useRegisterStatus(userWallets?.currentPubkey);
   const parentWallet =
-    walletList.find((wallet) => wallet.address === activeAccounts?.parentAddress) ?? INITIAL_WALLET;
+    walletList.find((wallet) => wallet.address === activeAccounts?.parentAddress) ??
+    INITIAL_ACCOUNT;
 
   const parentWalletIndex = walletList.findIndex(
     (wallet) => wallet.address === activeAccounts?.currentAddress
