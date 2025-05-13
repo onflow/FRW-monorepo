@@ -20,8 +20,6 @@ const Keydetail = () => {
   const wallet = useWallet();
   const { parentWallet } = useProfiles();
   const [privatekey, setKey] = useState('');
-  const [hashAlgorithm, setHash] = useState('');
-  const [signAlgorithm, setSign] = useState('');
 
   const verify = useCallback(async () => {
     try {
@@ -44,11 +42,6 @@ const Keydetail = () => {
         throw new Error('No matching public key algorithm found');
       }
 
-      const hashAlgo = parentWallet.hashAlgoString;
-      const signAlgo = parentWallet.signAlgoString;
-
-      setHash(hashAlgo);
-      setSign(signAlgo);
       setKey(pk);
     } catch (error) {
       console.error('Error during verification:', error);
@@ -56,8 +49,6 @@ const Keydetail = () => {
       if (error instanceof Error) {
         // Set appropriate error state or show user feedback
         setKey('Error during verification');
-        setHash('');
-        setSign('');
       }
     }
   }, [location.state.password, wallet, parentWallet]);
@@ -151,7 +142,7 @@ const Keydetail = () => {
         >
           <Typography variant="body1" color="text.secondary" align="left" fontSize="14px">
             {chrome.i18n.getMessage('Hash__Algorithm')} <br />
-            {hashAlgorithm}
+            {parentWallet && parentWallet?.hashAlgoString ? parentWallet?.hashAlgoString : ''}
           </Typography>
         </Box>
         <Box
@@ -163,7 +154,7 @@ const Keydetail = () => {
         >
           <Typography variant="body1" color="text.secondary" align="left" fontSize="14px">
             {chrome.i18n.getMessage('Sign__Algorithm')} <br />
-            {signAlgorithm}
+            {parentWallet && parentWallet?.signAlgoString ? parentWallet?.signAlgoString : ''}
           </Typography>
         </Box>
       </Box>
