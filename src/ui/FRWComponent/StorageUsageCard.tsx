@@ -59,9 +59,11 @@ export const StorageUsageCard: React.FC = () => {
             {usagePercentage.toFixed(2)}%
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {used && capacity
-              ? `${Number(used).toFixed(1)} ${usedUnit} / ${Number(capacity).toFixed(1)} ${capacityUnit}`
-              : '0 B / 0 B'}
+            {(() => {
+              const formattedUsed = used ? Number(used).toFixed(1) : '0';
+              const formattedCapacity = capacity ? Number(capacity).toFixed(1) : '0';
+              return `${formattedUsed} ${usedUnit} / ${formattedCapacity} ${capacityUnit}`;
+            })()}
           </Typography>
         </Box>
         <LinearProgress
