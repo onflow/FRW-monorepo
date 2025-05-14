@@ -139,7 +139,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
   }, [init]);
 
   const renderContent = () => (
-    <Box sx={{ padingTop: '18px' }}>
+    <Box sx={{ paddingTop: '18px' }}>
       {evmLoading || isLoading ? (
         <LLConnectLoading logo={logo} />
       ) : (
