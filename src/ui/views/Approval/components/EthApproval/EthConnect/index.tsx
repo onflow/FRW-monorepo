@@ -56,7 +56,6 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
 
   const init = useCallback(async () => {
     setLogo(icon);
-    console.log('evmAddress', evmAddress);
     if (isValidEthereumAddress(evmAddress)) {
       const walletInfo = {
         name: 'evm',
