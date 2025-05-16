@@ -3,9 +3,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
+import { EnableEvm } from '@/ui/FRWComponent/EnableEvm';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import enableBg from 'ui/FRWAssets/image/enableBg.png';
 import flowgrey from 'ui/FRWAssets/svg/flow-grey.svg';
 import linkGlobe from 'ui/FRWAssets/svg/linkGlobe.svg';
 import { LLPrimaryButton, LLSecondaryButton, LLConnectLoading } from 'ui/FRWComponent';
@@ -82,7 +82,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
     usewallet
       .createCoaEmpty()
       .then(async (createRes) => {
-        usewallet.listenTransaction(
+        await usewallet.listenTransaction(
           createRes,
           true,
           'Create EVM complete',
@@ -138,7 +138,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
     init();
   }, [init]);
 
-  const renderContent = () => (
+  return (
     <Box sx={{ paddingTop: '18px' }}>
       {evmLoading || isLoading ? (
         <LLConnectLoading logo={logo} />
@@ -276,59 +276,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
               </Box>
             </Box>
           ) : (
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                padding: '24px 18px 24px',
-                gap: '8px',
-                alignItems: 'center',
-              }}
-            >
-              <CardMedia
-                component="img"
-                sx={{ width: '196px', height: '196px', padding: '18px' }}
-                image={enableBg}
-              />
-              <Typography
-                sx={{
-                  textTransform: 'uppercase',
-                  fontSize: '18px',
-                  textAlign: 'center',
-                  paddingTop: '56px',
-                }}
-                variant="body1"
-                color="text.secondary"
-              >
-                Evm on FLOW is not enabled
-              </Typography>
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  fontWeight: 'bold',
-                  color: '#FFFFFF',
-                  fontFamily: 'Montserrat',
-                  fontSize: '12px',
-                  textAlign: 'center',
-                }}
-                color="error"
-              >
-                {chrome.i18n.getMessage('enable_the_path_to_evm_on_flow')}
-              </Typography>
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  fontWeight: 'normal',
-                  color: '#bababa',
-                  fontSize: '12px',
-                  textAlign: 'center',
-                }}
-                color="error"
-              >
-                {chrome.i18n.getMessage('manage_multi_assets_seamlessly')}
-              </Typography>
-            </Box>
+            <EnableEvm />
           )}
 
           <Box sx={{ flexGrow: 1 }} />
@@ -356,25 +304,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
           </Stack>
         </Box>
       )}
-      {/* {
-        showMoveBoard && (
-          <EthMove
-            showMoveBoard={showMoveBoard}
-            handleCloseIconClicked={() => setMoveBoard(false)}
-            handleCancelBtnClicked={() => setMoveBoard(false)}
-            handleAddBtnClicked={() => {
-              setMoveBoard(false);
-            }}
-          />
-        )
-      } */}
     </Box>
-  );
-
-  return (
-    <>
-      <Box>{renderContent()}</Box>
-    </>
   );
 };
 

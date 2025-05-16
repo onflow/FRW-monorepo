@@ -1369,7 +1369,7 @@ export const getEvmAccountOfParent = async (
 };
 
 // Load the EVM account
-const loadEvmAccountOfParent = async (
+export const loadEvmAccountOfParent = async (
   network: string,
   mainAccountAddress: string
 ): Promise<EvmAccountStore> => {

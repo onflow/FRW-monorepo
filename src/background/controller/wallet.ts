@@ -135,7 +135,7 @@ import { getScripts } from '../service/openapi';
 import type { ConnectedSite } from '../service/permission';
 import type { PreferenceAccount } from '../service/preference';
 import { type EvaluateStorageResult, StorageEvaluator } from '../service/storage-evaluator';
-import { getEvmAccountOfParent } from '../service/userWallet';
+import { getEvmAccountOfParent, loadEvmAccountOfParent } from '../service/userWallet';
 import {
   getValidData,
   registerRefreshListener,
@@ -1375,6 +1375,10 @@ export class WalletController extends BaseController {
     return await userWalletService.sendTransaction(cadence, args);
   };
 
+  /**
+   *
+   * @deprecated use createCoaEmpty
+   */
   createCOA = async (amount = '0.0'): Promise<string> => {
     const formattedAmount = parseFloat(amount).toFixed(8);
 
@@ -1399,15 +1403,21 @@ export class WalletController extends BaseController {
   };
 
   createCoaEmpty = async (): Promise<string> => {
-    await this.getNetwork();
-
-    const script = await getScripts(userWalletService.getNetwork(), 'evm', 'createCoaEmpty');
+    const network = await this.getNetwork();
+    const parentAddress = await this.getMainAddress();
+    if (!parentAddress) {
+      throw new Error('Parent address not found');
+    }
+    const script = await getScripts(network, 'evm', 'createCoaEmpty');
 
     const txID = await userWalletService.sendTransaction(script, []);
 
     // try to seal it
     try {
-      await fcl.tx(txID).onceExecuted();
+      await fcl.tx(txID).onceSealed();
+
+      // Refresh the EVM address
+      await loadEvmAccountOfParent(network, parentAddress);
 
       // Track with success
       await this.trackCoaCreation(txID);

@@ -253,8 +253,8 @@ class ProviderController extends BaseController {
 
       await notificationService.requestApproval(
         {
-          params: { origin },
-          approvalComponent: 'EthEnable',
+          params: { origin, name, icon },
+          approvalComponent: 'EthConnect',
         },
         { height: 599 }
       );
