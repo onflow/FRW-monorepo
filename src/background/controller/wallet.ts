@@ -1414,7 +1414,7 @@ export class WalletController extends BaseController {
 
     // try to seal it
     try {
-      await fcl.tx(txID).onceExecuted();
+      await fcl.tx(txID).onceSealed();
 
       // Refresh the EVM address
       await loadEvmAccountOfParent(network, parentAddress);
