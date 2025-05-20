@@ -1164,15 +1164,15 @@ export class WalletController extends BaseController {
     return await userInfoService.updateUserInfo(nickname, avatar);
   };
 
-  checkAccessibleNft = async (childAccount) => {
+  checkAccessibleNft = async (parentAddress, childAddress) => {
     const network = userWalletService.getNetwork();
-    const validData = getValidData<ChildAccountNFTsStore>(
-      childAccountNFTsKey(network, childAccount)
+    const validData = await getValidData<ChildAccountNFTsStore>(
+      childAccountNFTsKey(network, childAddress)
     );
     if (validData) {
       return validData;
     }
-    return await nftService.loadChildAccountNFTs(network, childAccount);
+    return await nftService.loadChildAccountNFTs(network, parentAddress, childAddress);
   };
 
   checkAccessibleFt = async (childAccount) => {
@@ -2485,16 +2485,19 @@ export class WalletController extends BaseController {
     return txID;
   };
 
-  getChildAccountAllowTypes = async (parent: string, child: string): Promise<string[]> => {
+  getChildAccountAllowTypes = async (
+    parentAddress: string,
+    childAddress: string
+  ): Promise<string[]> => {
     const network = userWalletService.getNetwork();
 
     const cachedData = await getValidData<string[]>(
-      childAccountAllowTypesKey(network, parent, child)
+      childAccountAllowTypesKey(network, parentAddress, childAddress)
     );
     if (cachedData) {
       return cachedData;
     }
-    return nftService.loadChildAccountAllowTypes(network, parent, child);
+    return nftService.loadChildAccountAllowTypes(network, parentAddress, childAddress);
   };
 
   checkChildLinkedVault = async (parent: string, child: string, path: string): Promise<string> => {

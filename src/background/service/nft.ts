@@ -25,7 +25,7 @@ class NFT {
     registerRefreshListener(childAccountNFTsRefreshRegex, this.loadChildAccountNFTs);
   };
 
-  loadChildAccountNFTs = async (network: string, address: string) => {
+  loadChildAccountNFTs = async (network: string, parentAddress: string, childAddress: string) => {
     if (!(await fclConfirmNetwork(network))) {
       // Do nothing if the network is switched
       // Don't update the cache
@@ -35,10 +35,9 @@ class NFT {
 
     const result = await fcl.query({
       cadence: script,
-      args: (arg, t) => [arg(address, t.Address)],
+      args: (arg, t) => [arg(parentAddress, t.Address)],
     });
-
-    setCachedData(childAccountNFTsKey(network, address), result);
+    setCachedData(childAccountNFTsKey(network, childAddress), result);
 
     return result;
   };

@@ -142,7 +142,7 @@ const LinkedDetail = () => {
       await setCatalog(catalog);
       const collectionMap: { [key: string]: Collection } = {};
 
-      const nftResult = await usewallet.checkAccessibleNft(parentaddress);
+      const nftResult = await usewallet.checkAccessibleNft(parentaddress, key!);
       activec.forEach((active) => {
         const collection = findObjectByContractName(active, catalog);
         if (collection) {
