@@ -1084,7 +1084,7 @@ export class WalletController extends BaseController {
     return await userInfoService.updateUserInfo(nickname, avatar);
   };
 
-  checkAccessibleNft = async (parentAddress: string, childAddress: string) => {
+  checkAccessibleNft = async (parentAddress: string) => {
     const network = userWalletService.getNetwork();
     const validData = getValidData<ChildAccountNFTsStore>(
       childAccountNftsKey(network, parentAddress)
