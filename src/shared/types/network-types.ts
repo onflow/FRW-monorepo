@@ -45,7 +45,19 @@ export interface NFTPath_depreciated {
   public_type: string;
   private_type: string;
 }
-
+export interface NftCollection {
+  contractName?: string; // alternative name
+  logoURI: string;
+  id: string;
+  address: string;
+  contract_name: string;
+  evmAddress: string;
+  name: string;
+  logo: string;
+  banner: string;
+  description: string;
+  flowIdentifier: string;
+}
 export interface NFTModelV2 {
   chainId: number;
   address: string;

@@ -4,7 +4,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
-import enableBg from 'ui/FRWAssets/image/enableBg.png';
+import { EnableEvm } from '@/ui/FRWComponent/EnableEvm';
+import { useNetwork } from '@/ui/hooks/useNetworkHook';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import flowgrey from 'ui/FRWAssets/svg/flow-grey.svg';
 import linkGlobe from 'ui/FRWAssets/svg/linkGlobe.svg';
 import { LLPrimaryButton, LLSecondaryButton, LLConnectLoading } from 'ui/FRWComponent';
@@ -38,6 +40,8 @@ interface ConnectProps {
 const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
   // This is used to resolve or reject the approval in the background
   const [, resolveApproval, rejectApproval] = useApproval();
+  const { evmAddress, evmLoading } = useProfiles();
+  const { network: currentNetwork } = useNetwork();
   // This is used to interact with the wallet
   const usewallet = useWallet();
 
@@ -45,49 +49,33 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const [defaultChain, setDefaultChain] = useState(MAINNET_CHAIN_ID);
-  const [isEvm, setIsEvm] = useState(false);
-  const [currentNetwork, setCurrent] = useState('testnet');
 
   // TODO: replace default logo
   const [logo, setLogo] = useState('');
-  const [evmAddress, setEvmAddress] = useState('');
 
   // This is used to initialize the component when the page is loaded
 
   const init = useCallback(async () => {
-    const network = await usewallet.getNetwork();
-    setCurrent(network);
-    let currentWallet;
-    try {
-      // Attempt to query the address
-      currentWallet = await usewallet.getParentAddress();
-    } catch (error) {
-      // If an error occurs, request approval
-      consoleError('Error querying EVM address:', error);
-    }
     setLogo(icon);
-    const res = await usewallet.queryEvmAddress(currentWallet);
-    setEvmAddress(res!);
-    setIsEvm(isValidEthereumAddress(res));
-    if (isValidEthereumAddress(res)) {
+    if (isValidEthereumAddress(evmAddress)) {
       const walletInfo = {
         name: 'evm',
-        address: res,
+        address: evmAddress,
         chain_id: currentNetwork,
         coins: ['flow'],
         id: 1,
         icon: icon,
         color: '#282828',
-        chain: network === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID,
+        chain: currentNetwork === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID,
       };
       await usewallet.setActiveWallet(walletInfo, 'evm');
     }
-    const defaultChain = network === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID;
+    const defaultChain = currentNetwork === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID;
 
     setDefaultChain(defaultChain);
 
     setIsLoading(false);
-  }, [usewallet, icon, currentNetwork]);
+  }, [usewallet, icon, currentNetwork, evmAddress]);
 
   const createCoa = async () => {
     setIsLoading(true);
@@ -95,7 +83,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
     usewallet
       .createCoaEmpty()
       .then(async (createRes) => {
-        usewallet.listenTransaction(
+        await usewallet.listenTransaction(
           createRes,
           true,
           'Create EVM complete',
@@ -117,9 +105,6 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
         if (!mainWallet) {
           throw new Error('Main wallet is undefined');
         }
-        const res = await usewallet.queryEvmAddress(mainWallet);
-        setEvmAddress(res!);
-        setIsEvm(isValidEthereumAddress(res));
       }
       return true;
     },
@@ -154,9 +139,9 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
     init();
   }, [init]);
 
-  const renderContent = () => (
-    <Box sx={{ padingTop: '18px' }}>
-      {isLoading ? (
+  return (
+    <Box sx={{ paddingTop: '18px' }}>
+      {evmLoading || isLoading ? (
         <LLConnectLoading logo={logo} />
       ) : (
         <Box
@@ -169,7 +154,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
             background: 'linear-gradient(0deg, #121212, #11271D)',
           }}
         >
-          {isEvm && (
+          {isValidEthereumAddress(evmAddress) && (
             <Box sx={{ display: 'flex', flexDirection: 'column', margin: '18px', gap: '18px' }}>
               <Box sx={{ display: 'flex', gap: '18px', marginBottom: '0px' }}>
                 <IconWithPlaceholder imageUrl={icon} />
@@ -228,8 +213,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
               </Stack>
             </Box>
           )}
-
-          {isEvm ? (
+          {isValidEthereumAddress(evmAddress) ? (
             <Box
               sx={{
                 display: 'flex',
@@ -293,59 +277,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
               </Box>
             </Box>
           ) : (
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                padding: '24px 18px 24px',
-                gap: '8px',
-                alignItems: 'center',
-              }}
-            >
-              <CardMedia
-                component="img"
-                sx={{ width: '196px', height: '196px', padding: '18px' }}
-                image={enableBg}
-              />
-              <Typography
-                sx={{
-                  textTransform: 'uppercase',
-                  fontSize: '18px',
-                  textAlign: 'center',
-                  paddingTop: '56px',
-                }}
-                variant="body1"
-                color="text.secondary"
-              >
-                Evm on FLOW is not enabled
-              </Typography>
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  fontWeight: 'bold',
-                  color: '#FFFFFF',
-                  fontFamily: 'Montserrat',
-                  fontSize: '12px',
-                  textAlign: 'center',
-                }}
-                color="error"
-              >
-                {chrome.i18n.getMessage('enable_the_path_to_evm_on_flow')}
-              </Typography>
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  fontWeight: 'normal',
-                  color: '#bababa',
-                  fontSize: '12px',
-                  textAlign: 'center',
-                }}
-                color="error"
-              >
-                {chrome.i18n.getMessage('manage_multi_assets_seamlessly')}
-              </Typography>
-            </Box>
+            <EnableEvm />
           )}
 
           <Box sx={{ flexGrow: 1 }} />
@@ -355,7 +287,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
               fullWidth
               onClick={handleCancel}
             />
-            {isEvm ? (
+            {isValidEthereumAddress(evmAddress) ? (
               <LLPrimaryButton
                 label={chrome.i18n.getMessage('Connect')}
                 fullWidth
@@ -373,25 +305,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
           </Stack>
         </Box>
       )}
-      {/* {
-        showMoveBoard && (
-          <EthMove
-            showMoveBoard={showMoveBoard}
-            handleCloseIconClicked={() => setMoveBoard(false)}
-            handleCancelBtnClicked={() => setMoveBoard(false)}
-            handleAddBtnClicked={() => {
-              setMoveBoard(false);
-            }}
-          />
-        )
-      } */}
     </Box>
-  );
-
-  return (
-    <>
-      <Box>{renderContent()}</Box>
-    </>
   );
 };
 

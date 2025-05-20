@@ -53,8 +53,8 @@ class NotificationService extends Events {
     winMgr.event.on('windowRemoved', (winId: number) => {
       if (winId === this.notifiWindowId) {
         this.notifiWindowId = 0;
+        this.rejectApproval();
       }
-      this.rejectApproval();
     });
 
     winMgr.event.on('windowFocusChange', (winId: number) => {

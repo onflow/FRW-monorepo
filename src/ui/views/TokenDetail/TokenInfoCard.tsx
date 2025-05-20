@@ -32,7 +32,7 @@ const TokenInfoCard = ({
   const { coins } = useCoins();
 
   const extendedTokenInfo: ExtendedTokenInfo | undefined = useMemo(
-    () => coins.find((coin) => coin.id.toLowerCase() === tokenId.toLowerCase()),
+    () => coins?.find((coin) => coin.id.toLowerCase() === tokenId.toLowerCase()),
     [coins, tokenId]
   );
 

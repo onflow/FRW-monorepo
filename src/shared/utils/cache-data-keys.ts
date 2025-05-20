@@ -8,7 +8,7 @@ import {
   type EvmTokenInfo,
   type CadenceTokenInfo,
 } from '../types/coin-types';
-import { type UserInfoResponse } from '../types/network-types';
+import { type NftCollection, type UserInfoResponse } from '../types/network-types';
 import {
   type NFTCollections,
   type NFTCollectionData,
@@ -22,6 +22,7 @@ import {
   type EvmAddress,
   type FlowAddress,
   type WalletAccount,
+  type Currency,
 } from '../types/wallet-types';
 
 import { getCachedData, triggerRefresh } from './cache-data-access';
@@ -48,6 +49,14 @@ export type CadenceScriptsStore = NetworkScripts;
 
 export const getCachedScripts = async () => {
   return getCachedData<CadenceScriptsStore>(cadenceScriptsKey());
+};
+
+export const supportedCurrenciesKey = () => `supported-currencies`;
+export const supportedCurrenciesRefreshRegex = refreshKey(supportedCurrenciesKey);
+export type SupportedCurrenciesStore = Currency[];
+
+export const getCachedSupportedCurrencies = async () => {
+  return getCachedData<SupportedCurrenciesStore>(supportedCurrenciesKey());
 };
 
 export const registerStatusKey = (pubKey: string) => `register-status-${pubKey}`;
@@ -122,6 +131,13 @@ export type TransferListStore = {
 
 // NFTs
 
+export const nftCollectionListKey = (network: string) => `nft-collections-${network}`;
+export const nftCollectionListRefreshRegex = refreshKey(nftCollectionListKey);
+export type NftCollectionListStore = NftCollection[];
+
+export const getCachedNftCollectionList = async (network: string) => {
+  return getCachedData<NftCollectionListStore>(nftCollectionListKey(network));
+};
 export const nftCollectionKey = (
   network: string,
   address: string,
@@ -174,14 +190,19 @@ export const getCachedChildAccountAllowTypes = async (
   );
 };
 
-export const childAccountNFTsKey = (network: string, address: string) =>
-  `child-account-nfts-${network}-${address}`;
+export const childAccountNftsKey = (network: string, parentAddress: string) =>
+  `child-account-nfts-${network}-${parentAddress}`;
 
-export const childAccountNFTsRefreshRegex = refreshKey(childAccountNFTsKey);
-export type ChildAccountNFTsStore = { [address: string]: string[] };
+export const childAccountNFTsRefreshRegex = refreshKey(childAccountNftsKey);
+export type ChildAccountNFTs = {
+  [nftCollectionId: string]: string[];
+};
+export type ChildAccountNFTsStore = {
+  [address: string]: ChildAccountNFTs;
+};
 
-export const getCachedChildAccountNFTs = async (network: string, address: string) => {
-  return getCachedData<ChildAccountNFTsStore>(childAccountNFTsKey(network, address));
+export const getCachedChildAccountNfts = async (network: string, parentAddress: string) => {
+  return getCachedData<ChildAccountNFTsStore>(childAccountNftsKey(network, parentAddress));
 };
 
 // EVM NFTs
@@ -249,3 +270,19 @@ export const cadenceTokenInfoKey = (network: string, address: string, currency: 
 
 export const cadenceTokenInfoRefreshRegex = refreshKey(cadenceTokenInfoKey);
 export type CadenceTokenInfoStore = CadenceTokenInfo[];
+
+export const childAccountFtKey = (network: string, parentAddress: string, childAccount: string) =>
+  `child-account-ft-${network}-${parentAddress}-${childAccount}`;
+
+export const childAccountFtRefreshRegex = refreshKey(childAccountFtKey);
+export type ChildAccountFtStore = { id: string; balance: string }[];
+
+export const getCachedChildAccountFt = async (
+  network: string,
+  parentAddress: string,
+  childAccount: string
+) => {
+  return getCachedData<ChildAccountFtStore>(
+    childAccountFtKey(network, parentAddress, childAccount)
+  );
+};
