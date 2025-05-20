@@ -2,8 +2,8 @@ import BN from 'bignumber.js';
 import { useCallback, useEffect, useState, useRef } from 'react';
 
 import { type ExtendedTokenInfo, type TokenFilter } from '@/shared/types/coin-types';
+import { consoleError } from '@/shared/utils/console-log';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
-import { debug } from '@/ui/utils';
 import { useWallet } from '@/ui/utils/WalletContext';
 
 import { useCurrency } from './preference-hooks';
@@ -24,7 +24,6 @@ export const useCoins = () => {
 
   const handleStorageData = useCallback(
     async (data?: ExtendedTokenInfo[] | null) => {
-      debug('handleStorageData', data);
       if (!data) return;
 
       // Create a map for faster lookups
@@ -70,21 +69,17 @@ export const useCoins = () => {
     if (currentWallet?.address) {
       // If coinList is empty or undefined, initialize it
       if ((!coins || coins.length === 0) && !initAttemptedRef.current) {
-        debug('Coin list is empty, initializing for address:', currentWallet.address);
-
         const initAndHandle = async () => {
           try {
             initAttemptedRef.current = true;
-            debug('Coin list initialization completed');
           } catch (error) {
-            console.error('Error initializing coin list:', error);
+            consoleError('Error initializing coin list:', error);
           }
         };
 
         initAndHandle();
       } else if (coins && coins.length > 0) {
         handleStorageData(coins);
-        debug('Coin list already loaded with', coins.length);
       }
     }
   }, [usewallet, network, currentWallet, coins, handleStorageData]);

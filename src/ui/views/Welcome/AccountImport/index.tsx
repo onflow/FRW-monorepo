@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
+import { consoleError } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import AllSet from '@/ui/FRWComponent/LandingPages/AllSet';
 import GoogleBackup from '@/ui/FRWComponent/LandingPages/GoogleBackup';
@@ -84,7 +85,7 @@ const AccountImport = () => {
         throw new Error('No mnemonic or private key provided');
       }
     } catch (error) {
-      console.error(error);
+      consoleError('failed to import profile', error);
       setErrorMessage(error.message);
       setShowError(true);
     }

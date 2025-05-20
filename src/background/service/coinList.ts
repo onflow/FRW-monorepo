@@ -19,6 +19,7 @@ import {
   type SupportedCurrenciesStore,
   childAccountFtRefreshRegex,
 } from '@/shared/utils/cache-data-keys';
+import { consoleError } from '@/shared/utils/console-log';
 
 import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
 
@@ -143,7 +144,7 @@ class CoinList {
 
       return tokens;
     } catch (error) {
-      console.error('Error fetching user tokens:', error);
+      consoleError('Error fetching user tokens:', error);
       throw error;
     }
   };

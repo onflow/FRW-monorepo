@@ -10,6 +10,7 @@ import { storage } from '@/background/webapi';
 import type { CoinItem } from '@/shared/types/coin-types';
 import type { PriceProvider } from '@/shared/types/network-types';
 import { type ActiveAccountType } from '@/shared/types/wallet-types';
+import { consoleWarn } from '@/shared/utils/console-log';
 import SecurityCard from '@/ui/FRWComponent/SecurityCard';
 import StorageUsageCard from '@/ui/FRWComponent/StorageUsageCard';
 import { useCoins } from '@/ui/hooks/useCoinHook';
@@ -129,7 +130,7 @@ const TokenDetail = () => {
 
     // If not found by ID, try to find by token name (case insensitive)
     if (!tokenResult) {
-      console.log(`Token not found by ID ${tokenId}, trying to find by name ${token}`);
+      consoleWarn(`Token not found by ID ${tokenId}, trying to find by name ${token}`);
       tokenResult = coins?.find(
         (coin) =>
           coin.symbol?.toLowerCase() === token.toLowerCase() ||
@@ -141,7 +142,7 @@ const TokenDetail = () => {
     if (tokenResult) {
       setTokenInfo(tokenResult);
     } else {
-      console.log(`Could not find token with ID ${tokenId} or name ${token}`);
+      consoleWarn(`Could not find token with ID ${tokenId} or name ${token}`);
     }
 
     setProviders(result);

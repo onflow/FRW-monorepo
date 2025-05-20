@@ -8,6 +8,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { openIndexPage } from '@/background/webapi/tab';
+import { consoleError } from '@/shared/utils/console-log';
 import { getCurrentProfileId } from '@/shared/utils/current-id';
 import RemoveProfileModal from '@/ui/FRWComponent/PopupModal/remove-profile-modal';
 import ResetModal from '@/ui/FRWComponent/PopupModal/resetModal';
@@ -116,7 +117,7 @@ const AccountSettings = () => {
       setNickname(userInfo.nickname);
       setAvatar(userInfo.avatar);
     } catch (error) {
-      console.error('Failed to load account data:', error);
+      consoleError('Failed to load account data:', error);
     }
   }, [wallet]);
 
@@ -133,7 +134,7 @@ const AccountSettings = () => {
         setModeAnonymous(true);
       }
     } catch (error) {
-      console.error('Failed to get anonymous mode:', error);
+      consoleError('Failed to get anonymous mode:', error);
     }
   }, [wallet]);
 
@@ -170,7 +171,7 @@ const AccountSettings = () => {
 
   const handleConfirmRemove = async (password: string) => {
     if (!walletList) {
-      console.error('Cannot remove profile: No active account details found.');
+      consoleError('Cannot remove profile: No active account details found.');
       setRemoveError('Account details not loaded for removal.');
       return;
     }
@@ -197,7 +198,7 @@ const AccountSettings = () => {
         });
       }
     } catch (error) {
-      console.error('Failed to remove profile:', error);
+      consoleError('Failed to remove profile:', error);
       if (error.message && error.message.includes('Incorrect password')) {
         setRemoveError('Incorrect password. Please try again.');
       } else {
@@ -217,7 +218,7 @@ const AccountSettings = () => {
       getAnonymousMode();
       loadAccountData();
     } catch (error) {
-      console.error('Failed to load account data:', error);
+      consoleError('Failed to load account data:', error);
     }
   }, [getAnonymousMode, loadAccountData]);
 

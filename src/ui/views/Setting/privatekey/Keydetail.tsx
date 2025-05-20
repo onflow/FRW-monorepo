@@ -1,11 +1,9 @@
 import { Box, Grid, IconButton, Typography } from '@mui/material';
 import React, { useEffect, useState, useCallback } from 'react';
-import { useHistory, useLocation, useRouteMatch } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 import { pubKeyTupleToAccountKey } from '@/background/utils/account-key';
-import { getLoggedInAccount } from '@/background/utils/getLoggedInAccount';
-import { storage } from '@/background/webapi';
-import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
+import { consoleError } from '@/shared/utils/console-log';
 import { LLHeader } from '@/ui/FRWComponent';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from 'ui/utils';
@@ -42,7 +40,7 @@ const Keydetail = () => {
 
       setKey(pk);
     } catch (error) {
-      console.error('Error during verification:', error);
+      consoleError('Error during verification:', error);
       // Handle specific error cases
       if (error instanceof Error) {
         // Set appropriate error state or show user feedback

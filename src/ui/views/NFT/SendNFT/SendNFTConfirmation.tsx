@@ -7,6 +7,7 @@ import Web3 from 'web3';
 
 import { type Contact } from '@/shared/types/network-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
+import { consoleError } from '@/shared/utils/console-log';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
 import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
@@ -38,7 +39,6 @@ interface SendNFTConfirmationProps {
 }
 
 const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
-  console.log('SendNFTConfirmation');
   const wallet = useWallet();
   const history = useHistory();
   const { childAccounts, currentWallet } = useProfiles();
@@ -161,7 +161,7 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
         history.push(`/dashboard?activity=1&txId=${txId}`);
         props.handleAddBtnClicked();
       } catch (error) {
-        console.error(error);
+        consoleError(error);
         setFailed(true);
         setSending(false);
       } finally {
@@ -194,7 +194,7 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
       history.push(`/dashboard?activity=1&txId=${txId}`);
       props.handleAddBtnClicked();
     } catch (error) {
-      console.error(error);
+      consoleError(error);
       setFailed(true);
       setSending(false);
     } finally {
@@ -229,7 +229,7 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
         history.push(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
-        console.error('send flow NFT to evm encounter error: ', err);
+        consoleError('send flow NFT to evm encounter error: ', err);
         setSending(false);
         setFailed(true);
       });
@@ -259,7 +259,7 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
         history.push(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
-        console.error('send flow to evm encounter error: ', err);
+        consoleError('send flow to evm encounter error: ', err);
         setSending(false);
         setFailed(true);
       });

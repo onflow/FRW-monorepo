@@ -102,7 +102,6 @@ const CollectionView = ({
   const classes = useStyles();
 
   const handleClick = () => {
-    console.log('handleClick', ownerAddress, contract_name, count);
     history.push({
       pathname: `/dashboard/nested/collectiondetail/${ownerAddress}.${contract_name}.${count}`,
       state: {
@@ -192,12 +191,10 @@ const checkContractAddressInCollections = (
   nftCollections: NFTCollections,
   activeCollection: any
 ) => {
-  console.log('checkContractAddressInCollections', nftCollections, activeCollection);
   const contractAddressWithout0x = nftCollections.collection.contract_name;
   const isActiveCollect = activeCollection.some((collection) => {
     const extractedAddress = extractContractAddress(collection);
     if (extractedAddress === contractAddressWithout0x) {
-      console.log('nft is ', contractAddressWithout0x, extractedAddress);
     }
     return extractedAddress === contractAddressWithout0x;
   });

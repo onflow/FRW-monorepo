@@ -1,6 +1,7 @@
 import { useEffect, useCallback, useState } from 'react';
 
 import type { StorageInfo } from '@/shared/types/network-types';
+import { consoleError } from '@/shared/utils/console-log';
 
 import { useWallet } from './WalletContext';
 
@@ -53,7 +54,7 @@ export const useStorageCheck = ({
         storageInfo,
       };
     } catch (error) {
-      console.error('Error checking storage status:', error);
+      consoleError('Error checking storage status:', error);
       return {
         sufficient: false,
         sufficientAfterAction: false,

@@ -5,6 +5,7 @@ import {
   userInfoRefreshRegex,
   type UserInfoStore,
 } from '@/shared/utils/cache-data-keys';
+import { consoleError } from '@/shared/utils/console-log';
 import { getCurrentProfileId, returnCurrentProfileId } from '@/shared/utils/current-id';
 import storage from '@/shared/utils/storage';
 import { createSessionStore } from 'background/utils';
@@ -172,7 +173,7 @@ class UserInfoService {
       }
       return avatar;
     } catch (err) {
-      console.error(err);
+      consoleError(err);
       return avatar;
     }
   };

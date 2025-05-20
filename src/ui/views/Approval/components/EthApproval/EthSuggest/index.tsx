@@ -1,22 +1,17 @@
 import { Stack, Box, Typography, Divider, CardMedia } from '@mui/material';
 import { Contract, ethers } from 'ethers';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useLocation } from 'react-router-dom';
 
 import { storage } from '@/background/webapi';
 import { withPrefix } from '@/shared/utils/address';
+import { consoleError } from '@/shared/utils/console-log';
 import { EVM_ENDPOINT } from 'consts';
 import { LLPrimaryButton, LLSecondaryButton, LLConnectLoading } from 'ui/FRWComponent';
 import { useApproval, useWallet } from 'ui/utils';
 // import EthMove from '../EthMove';
 
 const EthSuggest = (data) => {
-  const { state } = useLocation<{
-    showChainsModal?: boolean;
-  }>();
   const [, resolveApproval, rejectApproval] = useApproval();
-  const { t } = useTranslation();
   const usewallet = useWallet();
   const [isLoading, setLoading] = useState(false);
   // TODO: replace default logo
@@ -50,12 +45,12 @@ const EthSuggest = (data) => {
         try {
           const result = await contract[method](...args);
           if (!result || result === '0x') {
-            console.error(`No data returned for method: ${method}`);
+            consoleError(`No data returned for method: ${method}`);
             return null;
           }
           return result;
         } catch (error) {
-          console.error(`Error calling ${method}:`, error);
+          consoleError(`Error calling ${method}:`, error);
           return null;
         }
       }
@@ -64,7 +59,6 @@ const EthSuggest = (data) => {
       const name = await getContractData(ftContract, 'name');
       const symbol = await getContractData(ftContract, 'symbol');
       const balance = await ftContract.balanceOf(evmAddress);
-      console.log('balance ', evmAddress, balance);
 
       if (decimals !== null && name !== null && symbol !== null) {
         const info = {
@@ -83,7 +77,7 @@ const EthSuggest = (data) => {
         setCoinInfo(info);
         setLoading(false);
       } else {
-        console.error('Failed to retrieve all required data for the token.');
+        consoleError('Failed to retrieve all required data for the token.');
         setIsValidatingAddress(false);
         setValidationError(true);
         setLoading(false);
@@ -92,7 +86,6 @@ const EthSuggest = (data) => {
     [usewallet]
   );
   const init = useCallback(async () => {
-    console.log('suggest data ', data);
     const contractAddress = data.params.data.params.options.address;
     addCustom(contractAddress);
   }, [addCustom, data]);
@@ -110,10 +103,8 @@ const EthSuggest = (data) => {
 
     if (existingIndex !== -1) {
       evmCustomToken[existingIndex] = coinInfo;
-      console.log('Token already exists in evmCustomToken, replacing with new info');
     } else {
       evmCustomToken.push(coinInfo);
-      console.log('New token added to evmCustomToken');
     }
 
     await storage.set(`${network}evmCustomToken`, evmCustomToken);

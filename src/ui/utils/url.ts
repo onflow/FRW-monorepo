@@ -1,3 +1,5 @@
+import { consoleError } from '@/shared/utils/console-log';
+
 import fallback from '../FRWAssets/image/errorImage.png';
 
 export const query2obj = (str: string) => {
@@ -239,7 +241,6 @@ export const findBestMedia = async (props, blockList): Promise<MatchMedia> => {
       if (infoURL && infoURL !== '') {
         const response = await fetch(infoURL);
         const json = await response.json();
-        console.log('MusicBlock ->', json, props);
         return {
           url: json.image,
           title: json.name,
@@ -257,7 +258,6 @@ export const findBestMedia = async (props, blockList): Promise<MatchMedia> => {
         `https://bay-api.blocto.app/bloctoBay/nfts/topShot/${props.id.tokenId}`
       );
       const json = await response.json();
-      console.log('TopShot ->', json, props);
       if (json.preview_image !== '') {
         return {
           url: json.preview_image,
@@ -285,7 +285,6 @@ export const findBestMedia = async (props, blockList): Promise<MatchMedia> => {
       const infoURL = props.externalDomainViewUrl;
       const response = await fetch(infoURL);
       const json = await response.json();
-      console.log('BnGNFT ->', json, props);
       if (json.media_type === 'image') {
         return {
           url: json.url,
@@ -320,7 +319,6 @@ export const findBestMedia = async (props, blockList): Promise<MatchMedia> => {
       };
     }
 
-    console.log('Fallback NFT media', props);
     return {
       url: fallback,
       title: findBestTitle(props),
@@ -329,7 +327,7 @@ export const findBestMedia = async (props, blockList): Promise<MatchMedia> => {
       videoURL: null,
     };
   } catch (e) {
-    console.log('Failed to find NFT media', e);
+    consoleError('Failed to find NFT media', e);
     return {
       url: fallback,
       title: findBestTitle(props),

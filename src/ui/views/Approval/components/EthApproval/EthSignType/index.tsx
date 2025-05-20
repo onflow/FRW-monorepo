@@ -66,7 +66,6 @@ const EthSignType = ({ params }: ConnectProps) => {
   }
 
   const extractData = useCallback(() => {
-    console.log('obj ', params);
     let data = '';
     let address = '';
 
@@ -79,7 +78,6 @@ const EthSignType = ({ params }: ConnectProps) => {
     }
     const jsonObject = JSON.parse(data);
     setMessages(jsonObject);
-    console.log('data, ', data);
   }, [params]);
 
   const handleCancel = () => {

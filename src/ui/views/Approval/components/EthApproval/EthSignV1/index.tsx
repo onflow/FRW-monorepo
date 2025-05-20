@@ -67,7 +67,6 @@ const EthSignV1 = ({ params }: ConnectProps) => {
   }
 
   const extractData = useCallback(() => {
-    console.log('obj ', params);
     let data = '';
     let address = '';
 
@@ -79,7 +78,6 @@ const EthSignV1 = ({ params }: ConnectProps) => {
       address = params.data.params[1];
     }
     setMessages(data);
-    console.log('data, ', data);
   }, [params]);
 
   const handleCancel = () => {

@@ -1,19 +1,13 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo } from 'react';
 
-import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
+import { MAINNET_CHAIN_ID } from '@/shared/types/network-types';
 import {
-  type FlowAddress,
   type WalletAccount,
-  type ChildAccountMap,
   type MainAccount,
   getActiveAccountTypeForAddress,
 } from '@/shared/types/wallet-types';
-import { ensureEvmAddressPrefix, withPrefix } from '@/shared/utils/address';
 import { SIGN_ALGO_NUM_DEFAULT, HASH_ALGO_NUM_DEFAULT } from '@/shared/utils/algo-constants';
-import { UserWalletStore } from '@/shared/utils/user-data-keys';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
-import { debug } from '@/ui/utils';
-import { useWallet, useWalletLoaded } from '@/ui/utils/WalletContext';
 
 import {
   useActiveAccounts,

@@ -5,6 +5,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { type TransactionState } from '@/shared/types/transaction-types';
+import { consoleError } from '@/shared/utils/console-log';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
 import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
@@ -116,7 +117,7 @@ const TransferConfirmation = ({
       // Redirect to the dashboard activity tab
       history.push(`/dashboard?activity=1&txId=${txId}`);
     } catch (error) {
-      console.error('Transaction failed:', error);
+      consoleError('Transaction failed:', error);
       // Set the failed state to true so we can show the error message
       setFailed(true);
     } finally {

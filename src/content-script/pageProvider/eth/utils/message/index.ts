@@ -3,6 +3,7 @@
  */
 
 import { EventEmitter } from 'events';
+
 import { ethErrors } from 'eth-rpc-errors';
 
 abstract class Message extends EventEmitter {
@@ -50,7 +51,11 @@ abstract class Message extends EventEmitter {
 
     this._requestIdPool.push(ident);
     this._waitingMap.delete(ident);
-    err ? reject(err) : resolve(res);
+    if (err) {
+      reject(err);
+    } else {
+      resolve(res);
+    }
   };
 
   onRequest = async ({ ident, data }) => {
@@ -64,8 +69,12 @@ abstract class Message extends EventEmitter {
           message: e.message,
           stack: e.stack,
         };
-        e.code && (err.code = e.code);
-        e.data && (err.data = e.data);
+        if (e.code) {
+          err.code = e.code;
+        }
+        if (e.data) {
+          err.data = e.data;
+        }
       }
 
       this.send('response', { ident, res, err });

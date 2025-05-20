@@ -16,7 +16,7 @@ import {
 import { getValidData, registerRefreshListener, setCachedData } from 'background/utils/data-cache';
 
 import { type NFTCollectionData, type NFTCollections } from '../../shared/types/nft-types';
-import { fclConfirmNetwork, fclEnsureNetwork } from '../fclConfig';
+import { fclConfirmNetwork } from '../fclConfig';
 
 import openapiService, { getScripts } from './openapi';
 

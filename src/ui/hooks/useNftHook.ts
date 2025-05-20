@@ -12,6 +12,7 @@ import {
   childAccountNftsKey,
   type ChildAccountNFTsStore,
 } from '@/shared/utils/cache-data-keys';
+import { consoleError } from '@/shared/utils/console-log';
 
 import { useCachedData } from './use-data';
 
@@ -88,20 +89,16 @@ export const useNftHook = ({
 
       try {
         const offsetToUse = evmOffset.current;
-        console.log('Fetching page:', currentPage, 'offset:', offsetToUse);
 
         const res = await getCollection(ownerAddress, collectionName, offsetToUse);
-        console.log('Response:', res);
 
         setLists((prev) => {
           // Simple array concat since each page has unique items
           const newList = [...prev, ...res.nfts];
-          console.log('Updated list length:', newList.length);
           return newList;
         });
 
         if (!res.offset) {
-          console.log('No NFTs returned - ending pagination');
           setLoadingMore(false);
           return null;
         }
@@ -116,7 +113,7 @@ export const useNftHook = ({
           nextPage: currentPage + 1,
         };
       } catch (error) {
-        console.error('Error in evmNextPage:', error);
+        consoleError('Error in evmNextPage:', error);
         setLoadingMore(false);
         return null;
       }
@@ -142,11 +139,11 @@ export const useNftHook = ({
               setLists((prev) => [...prev, ...res.nfts]);
             }
           })
-          .catch((error) => console.error('Error in cadenceNextPage:', error));
+          .catch((error) => consoleError('Error in cadenceNextPage:', error));
 
         return null;
       } catch (error) {
-        console.error('Error in cadenceNextPage:', error);
+        consoleError('Error in cadenceNextPage:', error);
         return null;
       }
     },
@@ -166,7 +163,6 @@ export const useNftHook = ({
       total.current = nftCount || initialRes.nftCount;
 
       const maxPages = Math.ceil(total.current / 50);
-      console.log('loadAllPages maxPages:', maxPages);
 
       if (!isEvm) {
         hasAttemptedLoadAll.current = true;
@@ -188,7 +184,7 @@ export const useNftHook = ({
 
       setFilteredList(list);
     } catch (err) {
-      console.error('Error in loadAllPages:', err);
+      consoleError('Error in loadAllPages:', err);
     } finally {
       setIsLoadingAll(false);
     }
@@ -235,7 +231,6 @@ export const useNftHook = ({
 
     const initialize = async () => {
       initialized.current = true;
-      console.log('Initializing once');
       await loadAllPages();
     };
 
@@ -252,7 +247,7 @@ export const useNftHook = ({
       total.current = res.nftCount;
       setLists(res.nfts);
     } catch (err) {
-      console.error('Error in refreshCollectionImpl:', err);
+      consoleError('Error in refreshCollectionImpl:', err);
     } finally {
       setLoading(false);
     }

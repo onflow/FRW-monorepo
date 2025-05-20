@@ -2,6 +2,7 @@ import { Box, Typography, List, ListItemButton, ListItem, CircularProgress } fro
 import { makeStyles } from '@mui/styles';
 import React, { useCallback } from 'react';
 
+import { consoleError } from '@/shared/utils/console-log';
 import { LLHeader } from '@/ui/FRWComponent';
 import { useCurrency, useSupportedCurrencies } from '@/ui/hooks/preference-hooks';
 import { useWallet, useWalletLoaded } from '@/ui/utils';
@@ -68,7 +69,7 @@ const CurrencySettings = () => {
           await wallet.setDisplayCurrency(currency);
         }
       } catch (error) {
-        console.warn('Error saving currency preference:', error);
+        consoleError('Error saving currency preference:', error);
       }
     },
     [wallet, supportedCurrencies]
