@@ -42,7 +42,7 @@ const NFTTab = () => {
         const childAddress = address;
         const activec = await wallet.getChildAccountAllowTypes(parentaddress, childAddress);
         setActiveCollection(activec);
-        const nftResult = await wallet.checkAccessibleNft(parentaddress, childAddress);
+        const nftResult = await wallet.checkAccessibleNft(parentaddress);
         if (nftResult) {
           setAccessible(nftResult);
         }
