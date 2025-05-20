@@ -80,7 +80,6 @@ const USER_WALLET_TEMPLATE: UserWalletStore = {
   network: 'mainnet',
   emulatorMode: false,
   currentPubkey: '',
-  displayCurrency: DEFAULT_CURRENCY,
 };
 
 class UserWallet {
@@ -1371,7 +1370,7 @@ export const getEvmAccountOfParent = async (
 };
 
 // Load the EVM account
-const loadEvmAccountOfParent = async (
+export const loadEvmAccountOfParent = async (
   network: string,
   mainAccountAddress: string
 ): Promise<EvmAccountStore> => {

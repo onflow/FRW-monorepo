@@ -282,7 +282,6 @@ export const createTestGroups = (commonParams: CommonParams): ApiTestGroups => {
       },
     ],
     nft: [
-      { name: 'nftCatalog', params: {} },
       {
         name: 'nftCatalogList',
         params: {
@@ -340,7 +339,7 @@ export const createTestGroups = (commonParams: CommonParams): ApiTestGroups => {
       },
       {
         name: 'getNFTV2CollectionList',
-        params: { address: commonParams.address, network: commonParams.network },
+        params: { network: commonParams.network },
       },
     ],
     profile: [

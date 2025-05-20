@@ -8,6 +8,7 @@ import {
   ListItemButton,
   Switch,
   Box,
+  Typography,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import React from 'react';
@@ -95,7 +96,19 @@ const TokenItem = ({
         <ListItemText
           primary={
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <span>{token.name}</span>
+              <Typography
+                variant="body1"
+                sx={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 1,
+                  WebkitBoxOrient: 'vertical',
+                  maxWidth: '210px',
+                }}
+              >
+                {token.name}
+              </Typography>
               {token.isVerified && (
                 <img
                   src={VerifiedIcon}
@@ -105,7 +118,8 @@ const TokenItem = ({
                     width: '16px',
                     backgroundColor: '#282828',
                     borderRadius: '18px',
-                    marginLeft: '8px',
+                    marginLeft: token.name.length * 8 > 210 ? '-12px' : '4px',
+                    marginRight: '18px',
                   }}
                 />
               )}

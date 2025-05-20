@@ -4,7 +4,6 @@ import { consoleLog } from '@/shared/utils/console-log';
 
 import { useWalletLoaded } from '../utils/WalletContext';
 
-import { useCoins } from './useCoinHook';
 import { useProfiles } from './useProfileHook';
 
 export const useInitHook = () => {

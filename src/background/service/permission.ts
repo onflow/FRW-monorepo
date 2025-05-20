@@ -28,10 +28,12 @@ class PermissionService {
   lruCache: LRU<string, ConnectedSite> | undefined;
 
   init = async () => {
-    const storage = await createPersistStore<PermissionStore>({
+    this.store = await createPersistStore<PermissionStore>({
       name: 'permission',
+      template: {
+        dumpCache: [],
+      },
     });
-    this.store = storage || this.store;
 
     // @todo add a size limit to the LRU cache
     // We're creating a new LRU cache here with no size limit.

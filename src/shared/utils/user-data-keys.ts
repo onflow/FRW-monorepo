@@ -18,8 +18,8 @@ export type UserWalletStore = {
   network: FlowNetwork;
   // The public key of the currently active profile
   currentPubkey: string;
-  displayCurrency: Currency;
 };
+
 export const getUserWalletsData = async (): Promise<UserWalletStore | undefined> => {
   return await getUserData<UserWalletStore>(userWalletsKey);
 };
@@ -54,4 +54,14 @@ export const getActiveAccountsByUserWallet = async (): Promise<ActiveAccountsSto
       )
     : undefined;
   return activeAccounts;
+};
+
+export const preferencesKey = 'preference';
+
+export type PreferencesStore = {
+  displayCurrency: Currency;
+};
+
+export const getPreferencesData = async (): Promise<PreferencesStore | undefined> => {
+  return await getUserData<PreferencesStore>(preferencesKey);
 };

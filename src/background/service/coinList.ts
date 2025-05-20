@@ -8,10 +8,16 @@ import { isValidEthereumAddress, isValidFlowAddress } from '@/shared/utils/addre
 import {
   cadenceTokenInfoKey,
   cadenceTokenInfoRefreshRegex,
+  type ChildAccountFtStore,
+  childAccountFtKey,
   coinListKey,
   coinListRefreshRegex,
   evmTokenInfoKey,
   evmTokenInfoRefreshRegex,
+  supportedCurrenciesKey,
+  supportedCurrenciesRefreshRegex,
+  type SupportedCurrenciesStore,
+  childAccountFtRefreshRegex,
 } from '@/shared/utils/cache-data-keys';
 import { consoleError } from '@/shared/utils/console-log';
 
@@ -22,6 +28,8 @@ class CoinList {
     registerRefreshListener(coinListRefreshRegex, this.loadCoinList);
     registerRefreshListener(evmTokenInfoRefreshRegex, this.loadEvmTokenInfo);
     registerRefreshListener(cadenceTokenInfoRefreshRegex, this.loadCadenceTokenInfo);
+    registerRefreshListener(supportedCurrenciesRefreshRegex, this.loadSupportedCurrencies);
+    registerRefreshListener(childAccountFtRefreshRegex, this.loadChildAccountFt);
   };
 
   clear = async () => {};
@@ -229,6 +237,39 @@ class CoinList {
 
     return tokens;
   }
+
+  loadSupportedCurrencies = async () => {
+    const supportedCurrencies = await openapiService.getSupportedCurrencies();
+    setCachedData(supportedCurrenciesKey(), supportedCurrencies);
+    return supportedCurrencies;
+  };
+
+  getSupportedCurrencies = async () => {
+    const supportedCurrencies =
+      await getValidData<SupportedCurrenciesStore>(supportedCurrenciesKey());
+    if (!supportedCurrencies) {
+      return this.loadSupportedCurrencies();
+    }
+    return supportedCurrencies;
+  };
+
+  // Child account FT
+  loadChildAccountFt = async (network: string, parentAddress: string, childAccount: string) => {
+    const childAccountFt = await openapiService.queryAccessibleFt(
+      network,
+      parentAddress,
+      childAccount
+    );
+    setCachedData(childAccountFtKey(network, parentAddress, childAccount), childAccountFt);
+    return childAccountFt;
+  };
+
+  getChildAccountFt = async (network: string, parentAddress: string, childAccount: string) => {
+    const childAccountFt = await getValidData<ChildAccountFtStore>(
+      childAccountFtKey(network, parentAddress, childAccount)
+    );
+    return childAccountFt;
+  };
 }
 
 export default new CoinList();

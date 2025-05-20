@@ -67,6 +67,7 @@ import {
   type NFTModelV2,
   type DeviceInfoRequest,
   MAINNET_CHAIN_ID,
+  type NftCollection,
 } from '../../shared/types/network-types';
 
 import {
@@ -422,8 +423,6 @@ export class OpenApiService {
     config: dataConfig,
   };
 
-  private supportedCurrenciesCache: Currency[] = [];
-
   getNetwork = () => {
     return userWalletService.getNetwork();
   };
@@ -492,7 +491,7 @@ export class OpenApiService {
 
     // Verify signature if present in headers
     try {
-      const xsignature = response.headers.get('X-Signature');
+      const xsignature = response?.headers?.get('X-Signature');
       if (xsignature) {
         const isValid = await verifySignature(xsignature, responseData);
         if (!isValid) {
@@ -1124,12 +1123,8 @@ export class OpenApiService {
     return result;
   };
 
-  queryAccessibleFt = async (address: string, childAccount: string) => {
-    const script = await getScripts(
-      userWalletService.getNetwork(),
-      'hybridCustody',
-      'getAccessibleCoinInfo'
-    );
+  queryAccessibleFt = async (network: string, address: string, childAccount: string) => {
+    const script = await getScripts(network, 'hybridCustody', 'getAccessibleCoinInfo');
 
     const result = await fcl.query({
       cadence: script,
@@ -1856,17 +1851,6 @@ export class OpenApiService {
     return data;
   };
 
-  nftCatalog = async () => {
-    const { data } = await this.sendRequest(
-      'GET',
-      'api/nft/collections',
-      {},
-      {},
-      'https://lilico.app/'
-    );
-    return data;
-  };
-
   cadenceScriptsV2 = async (): Promise<NetworkScripts> => {
     const { data } = await this.sendRequest('GET', '/api/v2/scripts', {}, {}, WEB_NEXT_URL);
     return data;
@@ -1911,6 +1895,11 @@ export class OpenApiService {
     return data;
   };
 
+  /**
+   * The entire list of nft collections
+   * @returns The entire list of nft collections
+   * @deprecated Use getNFTV2CollectionList instead
+   */
   nftCollectionList = async () => {
     const { data } = await this.sendRequest('GET', '/api/nft/collections', {}, {}, WEB_NEXT_URL);
     return data;
@@ -2027,13 +2016,10 @@ export class OpenApiService {
     return data;
   };
 
-  getNFTV2CollectionList = async (
-    address: string,
-    network = 'mainnet'
-  ): Promise<NFTModel_depreciated[]> => {
+  getNFTV2CollectionList = async (network = 'mainnet'): Promise<NftCollection[]> => {
     const { data } = await this.sendRequest(
       'GET',
-      `/api/v2/nft/collections?network=${network}&address=${address}`,
+      `/api/v2/nft/collections?network=${network}`,
       {},
       {},
       WEB_NEXT_URL
@@ -2188,10 +2174,6 @@ export class OpenApiService {
 
   // ** Get supported currencies **
   getSupportedCurrencies = async (): Promise<Currency[]> => {
-    if (this.supportedCurrenciesCache.length > 0) {
-      return this.supportedCurrenciesCache;
-    }
-
     let currencies = [DEFAULT_CURRENCY];
     try {
       const supportedCurrencies: CurrencyResponse = await this.sendRequest(
@@ -2206,7 +2188,6 @@ export class OpenApiService {
     } catch (error) {
       consoleError('Error fetching supported currencies, using default USD:', error);
     }
-    this.supportedCurrenciesCache = currencies;
     return currencies;
   };
 

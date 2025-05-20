@@ -29,7 +29,7 @@ import {
 } from '@/background/utils/modules/publicPrivateKey';
 import eventBus from '@/eventBus';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
-import { type PublicKeyTuple } from '@/shared/types/key-types';
+import { type PublicPrivateKeyTuple, type PublicKeyTuple } from '@/shared/types/key-types';
 import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
 import { ContactType, MAINNET_CHAIN_ID } from '@/shared/types/network-types';
 import { type NFTCollections, type NFTCollectionData } from '@/shared/types/nft-types';
@@ -61,7 +61,7 @@ import {
   getCachedNftCollection,
   nftCatalogCollectionsKey,
   childAccountAllowTypesKey,
-  childAccountNFTsKey,
+  childAccountNftsKey,
   type ChildAccountNFTsStore,
   evmNftIdsKey,
   type EvmNftIdsStore,
@@ -70,6 +70,7 @@ import {
   registerStatusKey,
   registerStatusRefreshRegex,
   coinListKey,
+  type ChildAccountFtStore,
 } from '@/shared/utils/cache-data-keys';
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 import {
@@ -132,7 +133,7 @@ import { getScripts } from '../service/openapi';
 import type { ConnectedSite } from '../service/permission';
 import type { PreferenceAccount } from '../service/preference';
 import { type EvaluateStorageResult, StorageEvaluator } from '../service/storage-evaluator';
-import { getEvmAccountOfParent } from '../service/userWallet';
+import { getEvmAccountOfParent, loadEvmAccountOfParent } from '../service/userWallet';
 import {
   getValidData,
   registerRefreshListener,
@@ -541,11 +542,6 @@ export class WalletController extends BaseController {
     return openapiService.freshUserInfo(parentAddress, fclAccount, pubKTuple, userInfo, 'main');
   };
 
-  retrievePk = async (password: string) => {
-    const pk = await keyringService.retrievePk(password);
-    return pk;
-  };
-
   revealKeyring = async (password: string) => {
     const keyring = await keyringService.revealKeyring(password);
     return keyring;
@@ -744,85 +740,9 @@ export class WalletController extends BaseController {
     return false;
   };
 
-  // Note this is not used anymore
-  getPrivateKeyForCurrentAccount = async (password: string) => {
-    let privateKey: string | null = null;
-    const keyrings = await this.getKeyrings(password || '');
-
-    for (const keyring of keyrings) {
-      if (keyring instanceof HDKeyring) {
-        const mnemonic = await this.getMnemonics(password || '');
-        const publicPrivateKeyTuple = await seed2PublicPrivateKey(mnemonic);
-
-        // We need to know the signAlgo for the account, so we can use the correct private key
-        // The signAlgo is stored in the account object for each public key return from fcl
-
-        // getLoggedInAccount is using currentId from storage to get the account
-        // That should tell us the account to use
-
-        try {
-          // Try using logged in accounts first
-          const account = await getLoggedInAccount();
-          const signAlgo =
-            typeof account.signAlgoString === 'string'
-              ? getSignAlgo(account.signAlgoString)
-              : account.signAlgoString;
-          privateKey =
-            signAlgo === SIGN_ALGO_NUM_ECDSA_P256
-              ? publicPrivateKeyTuple.P256.pk
-              : publicPrivateKeyTuple.SECP256K1.pk;
-        } catch {
-          // Couldn't load from logged in accounts.
-          // The signAlgo used to login isn't saved. We need to
-
-          // We may be in the process of switching login. We have a public and private key, but we don't have the signAlgo or the address of the account
-          consoleError('Error getting logged in account - using the indexer instead');
-
-          // Look for the account using the pubKey
-          const network = (await this.getNetwork()) || 'mainnet';
-          // Find the address associated with the pubKey
-          // This should return an array of address information records
-          const addressAndKeyInfoArray = await getAccountsByPublicKeyTuple(
-            publicPrivateKeyTuple,
-            network
-          );
-
-          // Follow the same logic as freshUserInfo in openapi.ts
-          // Look for the P256 key first
-          let index = addressAndKeyInfoArray.findIndex(
-            (key) => key.publicKey === publicPrivateKeyTuple.P256.pubK
-          );
-          if (index === -1) {
-            // If no P256 key is found, look for the SECP256K1 key
-            index = addressAndKeyInfoArray.findIndex(
-              (key) => key.publicKey === publicPrivateKeyTuple.SECP256K1.pubK
-            );
-          }
-
-          const signAlgo: number = addressAndKeyInfoArray[index].signAlgo;
-
-          privateKey =
-            signAlgo === SIGN_ALGO_NUM_ECDSA_P256
-              ? publicPrivateKeyTuple.P256.pk
-              : publicPrivateKeyTuple.SECP256K1.pk;
-        }
-
-        break;
-      } else if (
-        keyring instanceof SimpleKeyring &&
-        keyring.wallets &&
-        keyring.wallets.length > 0 &&
-        keyring.wallets[0].privateKey
-      ) {
-        privateKey = keyring.wallets[0].privateKey.toString('hex');
-        break;
-      }
-    }
-    if (!privateKey) {
-      const error = new Error('No mnemonic or private key found in any of the keyrings.');
-      throw error;
-    }
-    return privateKey;
+  getPubKeyPrivateKey = async (password: string): Promise<PublicPrivateKeyTuple> => {
+    await this.verifyPassword(password);
+    return await keyringService.getCurrentPublicPrivateKeyTuple();
   };
 
   getPubKey = async (): Promise<PublicKeyTuple> => {
@@ -1164,25 +1084,25 @@ export class WalletController extends BaseController {
     return await userInfoService.updateUserInfo(nickname, avatar);
   };
 
-  checkAccessibleNft = async (parentAddress, childAddress) => {
+  checkAccessibleNft = async (parentAddress: string, childAddress: string) => {
     const network = userWalletService.getNetwork();
-    const validData = await getValidData<ChildAccountNFTsStore>(
-      childAccountNFTsKey(network, childAddress)
+    const validData = getValidData<ChildAccountNFTsStore>(
+      childAccountNftsKey(network, parentAddress)
     );
     if (validData) {
       return validData;
     }
-    return await nftService.loadChildAccountNFTs(network, parentAddress, childAddress);
+    return await nftService.loadChildAccountNFTs(network, parentAddress);
   };
 
-  checkAccessibleFt = async (childAccount) => {
+  checkAccessibleFt = async (childAccount: string): Promise<ChildAccountFtStore | undefined> => {
     const network = await this.getNetwork();
 
     const address = await userWalletService.getParentAddress();
     if (!address) {
       throw new Error('Parent address not found');
     }
-    const result = await openapiService.queryAccessibleFt(address, childAccount);
+    const result = await openapiService.queryAccessibleFt(network, address, childAccount);
 
     return result;
   };
@@ -1452,6 +1372,10 @@ export class WalletController extends BaseController {
     return await userWalletService.sendTransaction(cadence, args);
   };
 
+  /**
+   *
+   * @deprecated use createCoaEmpty
+   */
   createCOA = async (amount = '0.0'): Promise<string> => {
     const formattedAmount = parseFloat(amount).toFixed(8);
 
@@ -1476,15 +1400,21 @@ export class WalletController extends BaseController {
   };
 
   createCoaEmpty = async (): Promise<string> => {
-    await this.getNetwork();
-
-    const script = await getScripts(userWalletService.getNetwork(), 'evm', 'createCoaEmpty');
+    const network = await this.getNetwork();
+    const parentAddress = await this.getMainAddress();
+    if (!parentAddress) {
+      throw new Error('Parent address not found');
+    }
+    const script = await getScripts(network, 'evm', 'createCoaEmpty');
 
     const txID = await userWalletService.sendTransaction(script, []);
 
     // try to seal it
     try {
-      await fcl.tx(txID).onceExecuted();
+      await fcl.tx(txID).onceSealed();
+
+      // Refresh the EVM address
+      await loadEvmAccountOfParent(network, parentAddress);
 
       // Track with success
       await this.trackCoaCreation(txID);
@@ -3292,8 +3222,9 @@ export class WalletController extends BaseController {
     return nftService.loadNftCatalogCollections(network, address);
   };
 
-  getNftCatalog = async () => {
-    const data = (await openapiService.nftCatalog()) ?? [];
+  getNftCollectionList = async () => {
+    const network = await this.getNetwork();
+    const data = (await openapiService.getNFTV2CollectionList(network)) ?? [];
 
     return data;
   };

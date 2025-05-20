@@ -1,8 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React from 'react';
 
-import { DEFAULT_CURRENCY } from '@/shared/types/wallet-types';
-import { consoleError } from '@/shared/utils/console-log';
-import { useWallet } from '@/ui/utils/WalletContext';
+import { useCurrency } from '@/ui/hooks/preference-hooks';
 
 import { TokenValue } from './TokenValue';
 
@@ -17,33 +15,13 @@ export const CurrencyValue: React.FC<CurrencyValueProps> = ({
   className,
   showCurrencyCode = true,
 }) => {
-  const [currencySymbol, setCurrencySymbol] = useState('$');
-  const [currencyCode, setCurrencyCode] = useState('USD');
-  const wallet = useWallet(); // This accesses the background script's controller
-
-  // Function to fetch the currency directly from the background
-  const fetchCurrencyFromBackground = useCallback(async () => {
-    try {
-      const currency = await wallet.getDisplayCurrency();
-
-      if (currency.code !== currencyCode || currency.symbol !== currencySymbol) {
-        setCurrencyCode(currency.code);
-        setCurrencySymbol(currency.symbol);
-      }
-    } catch (error) {
-      consoleError('Error fetching currency from background:', error);
-      setCurrencyCode(DEFAULT_CURRENCY.code);
-      setCurrencySymbol(DEFAULT_CURRENCY.symbol);
-    }
-  }, [wallet, currencyCode, currencySymbol]);
-
-  useEffect(() => {
-    fetchCurrencyFromBackground();
-  }, [fetchCurrencyFromBackground]);
+  const currency = useCurrency();
+  const currencyCode = currency?.code;
+  const currencySymbol = currency?.symbol;
 
   return (
     <TokenValue
-      value={value}
+      value={currencyCode ? value : ''}
       className={className}
       prefix={currencySymbol}
       postFix={showCurrencyCode ? currencyCode : undefined}
