@@ -15,7 +15,6 @@ export type VaultEntryV3 = {
   id: string;
   pubKey: string;
   signAlgo: number;
-  hashAlgo: number;
   encryptedData: string;
 };
 

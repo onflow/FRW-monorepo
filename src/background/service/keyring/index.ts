@@ -106,7 +106,6 @@ type DecryptedKeyringV3 = {
   id: string;
   pubKey: string;
   signAlgo: number;
-  hashAlgo: number;
 };
 
 export type RetrievePkResult = {
@@ -917,7 +916,6 @@ class KeyringService extends EventEmitter {
         encryptedData: encryptedString,
         pubKey: '',
         signAlgo: 0,
-        hashAlgo: 0,
       };
       vaultArray.push(newEntry);
     }
@@ -1460,7 +1458,6 @@ class KeyringService extends EventEmitter {
           id: entry.id,
           pubKey: entry.pubKey,
           signAlgo: entry.signAlgo,
-          hashAlgo: entry.hashAlgo,
           decryptedData: decryptedData as DecryptedKeyDataV2[],
         };
     }
@@ -1512,7 +1509,6 @@ class KeyringService extends EventEmitter {
         id: keyring.id,
         pubKey: keyring.pubKey,
         signAlgo: keyring.signAlgo,
-        hashAlgo: keyring.hashAlgo,
         encryptedData,
       });
     }
@@ -1699,7 +1695,6 @@ class KeyringService extends EventEmitter {
       pubKey: accountKeyRequest.public_key,
       decryptedData: keyringDataV2.decryptedData,
       signAlgo: accountKeyRequest.sign_algo,
-      hashAlgo: accountKeyRequest.hash_algo,
     };
   }
 
