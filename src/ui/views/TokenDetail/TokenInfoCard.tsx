@@ -1,5 +1,5 @@
-import { Typography, Box, ButtonBase, CardMedia, Skeleton } from '@mui/material';
-import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import { Typography, Box, ButtonBase, Skeleton } from '@mui/material';
+import React, { useMemo } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { type CoinItem, type ExtendedTokenInfo } from '@/shared/types/coin-types';
@@ -9,34 +9,20 @@ import buyIcon from '@/ui/FRWAssets/svg/buyIcon.svg';
 import receiveIcon from '@/ui/FRWAssets/svg/receiveIcon.svg';
 import sendIcon from '@/ui/FRWAssets/svg/sendIcon.svg';
 import swapIcon from '@/ui/FRWAssets/svg/swapIcon.svg';
-import { LLPrimaryButton } from '@/ui/FRWComponent';
 import { IconButton } from '@/ui/FRWComponent/IconButton';
-import { useProfiles } from '@/ui/hooks/useProfileHook';
-import iconMove from 'ui/FRWAssets/svg/move.svg';
 import { useCoins } from 'ui/hooks/useCoinHook';
-import { useWallet } from 'ui/utils';
 
 import IconChevronRight from '../../../components/iconfont/IconChevronRight';
 import VerifiedIcon from '../../FRWAssets/svg/verfied-check.svg';
 
 import { CurrencyValue } from './CurrencyValue';
 
-// import tips from 'ui/FRWAssets/svg/tips.svg';
-
 const TokenInfoCard = ({
-  price,
-  token,
-  setAccessible,
-  accessible,
   tokenInfo,
   accountType,
   tokenId,
   setIsOnRamp,
 }: {
-  price: string;
-  token: string;
-  setAccessible: (accessible: boolean) => void;
-  accessible: boolean;
   tokenInfo: CoinItem | undefined;
   accountType: ActiveAccountType;
   tokenId: string;
@@ -46,12 +32,11 @@ const TokenInfoCard = ({
   const { coins } = useCoins();
 
   const extendedTokenInfo: ExtendedTokenInfo | undefined = useMemo(
-    () => coins.find((coin) => coin.id.toLowerCase() === tokenId.toLowerCase()),
+    () => coins?.find((coin) => coin.id.toLowerCase() === tokenId.toLowerCase()),
     [coins, tokenId]
   );
 
   const balance = extendedTokenInfo?.balance;
-  const { canMoveToChild } = useProfiles();
 
   const toSend = () => {
     history.push(`/dashboard/token/${tokenInfo?.symbol}/send`);
@@ -79,13 +64,13 @@ const TokenInfoCard = ({
         alignItems: 'start',
         px: '11px',
         pb: '30px',
-        mt: '12px',
+        mt: '0px',
         minHeight: '230px',
         borderRadius: '12px',
       }}
     >
       <>
-        <Box sx={{ mt: '-12px', display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+        <Box sx={{ mt: '-12px', display: 'flex', justifyContent: 'flex-start', width: '100%' }}>
           {extendedTokenInfo?.logoURI ? (
             <img
               style={{
@@ -102,9 +87,10 @@ const TokenInfoCard = ({
           ) : (
             <Skeleton variant="circular" width={64} height={64} />
           )}
-          <Box sx={{ display: 'flex', alignItems: 'end' }}>
+          <Box sx={{ display: 'flex', alignItems: 'end', flex: 1, minWidth: 0 }}>
             <ButtonBase
               onClick={() => extendedTokenInfo && window.open(getUrl(extendedTokenInfo), '_blank')}
+              sx={{ minWidth: 0, flexShrink: 1 }}
             >
               <Box
                 sx={{
@@ -115,75 +101,48 @@ const TokenInfoCard = ({
                   py: '4px',
                   marginRight: '2px',
                   borderRadius: '8px',
-                  alignSelf: 'end',
+                  alignSelf: 'start',
                   background: 'linear-gradient(to right, #000000, #282828)',
+                  minWidth: 0,
                 }}
               >
-                <>
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      fontWeight: '550',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      maxWidth: '90px',
-                    }}
-                  >
-                    {extendedTokenInfo ? (
-                      extendedTokenInfo?.name
-                    ) : (
-                      <Skeleton variant="text" width={90} />
-                    )}
-                  </Typography>
-                </>
-                <IconChevronRight size={20} />
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: '550',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 1,
+                    minWidth: '0px',
+                  }}
+                >
+                  {extendedTokenInfo ? (
+                    extendedTokenInfo?.name
+                  ) : (
+                    <Skeleton variant="text" width={90} />
+                  )}
+                </Typography>
+
+                <Box sx={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+                  <IconChevronRight size={20} />
+                </Box>
               </Box>
             </ButtonBase>
             {extendedTokenInfo?.isVerified && (
               <Box
-                sx={{ display: 'flex', alignItems: 'center', height: '40px', marginRight: '4px' }}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  height: '40px',
+                  marginLeft: '4px',
+                  flexShrink: 0,
+                }}
               >
                 <img src={VerifiedIcon} alt="Verified" style={{ width: '24px', height: '24px' }} />
               </Box>
             )}
           </Box>
-
-          <Box sx={{ flex: 1 }} />
-          {canMoveToChild && balance && (
-            <ButtonBase onClick={() => toSend()}>
-              <Box sx={{ display: 'flex', alignItems: 'center', height: '46px' }}>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    background: 'rgba(65, 204, 93, 0.16)',
-                    gap: '4px',
-                    px: '8px',
-                    // py: '4px',
-                    height: '24px',
-                    borderRadius: '8px',
-                    alignSelf: 'end',
-                  }}
-                >
-                  <Typography sx={{ fontWeight: '400', fontSize: '12px', color: '#41CC5D' }}>
-                    {chrome.i18n.getMessage('Move')}
-                  </Typography>
-                  <img
-                    src={iconMove}
-                    alt="Move Icon"
-                    style={{
-                      width: '14px',
-                      height: '14px',
-                      marginLeft: '4px',
-                      filter:
-                        'invert(54%) sepia(78%) saturate(366%) hue-rotate(85deg) brightness(95%) contrast(92%)',
-                    }}
-                  />
-                </Box>
-              </Box>
-            </ButtonBase>
-          )}
         </Box>
         <Box
           sx={{
@@ -192,32 +151,39 @@ const TokenInfoCard = ({
             gap: '6px',
             pt: '18px',
             width: '100%',
+            justifyContent: 'space-between',
           }}
         >
-          <Typography
-            variant="body1"
-            sx={{
-              fontWeight: '700',
-              fontSize: 'clamp(16px, 5vw, 32px)',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {balance !== undefined ? balance : <Skeleton variant="text" width={100} />}
-          </Typography>
-          <Typography
-            variant="caption"
-            color="neutral2.main"
-            sx={{
-              fontWeight: 'medium',
-              fontSize: '14px',
-              textTransform: 'uppercase',
-              flexShrink: 0,
-            }}
-          >
-            {extendedTokenInfo ? extendedTokenInfo?.symbol : <Skeleton variant="text" width={50} />}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+            <Typography
+              variant="body1"
+              sx={{
+                fontWeight: '700',
+                fontSize: 'clamp(16px, 5vw, 32px)',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {balance !== undefined ? balance : <Skeleton variant="text" width={100} />}
+            </Typography>
+            <Typography
+              variant="caption"
+              color="neutral2.main"
+              sx={{
+                fontWeight: 'medium',
+                fontSize: '14px',
+                textTransform: 'uppercase',
+                flexShrink: 0,
+              }}
+            >
+              {extendedTokenInfo ? (
+                extendedTokenInfo?.symbol
+              ) : (
+                <Skeleton variant="text" width={50} />
+              )}
+            </Typography>
+          </Box>
         </Box>
         <Typography variant="body1" color="text.secondary" sx={{ fontSize: '16px' }}>
           <Box component="span" sx={{ marginRight: '0.25rem' }}>

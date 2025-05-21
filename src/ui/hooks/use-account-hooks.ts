@@ -17,7 +17,11 @@ import {
   accountBalanceKey,
   mainAccountsKey,
   userInfoCachekey,
+  registerStatusKey,
   type UserInfoStore,
+  supportedCurrenciesKey,
+  type SupportedCurrenciesStore,
+  childAccountAllowTypesKey,
 } from '@/shared/utils/cache-data-keys';
 import {
   activeAccountsKey,
@@ -53,6 +57,17 @@ export const useChildAccounts = (
   );
 };
 
+export const useChildAccountAllowTypes = (
+  network: string | undefined | null,
+  parentAccountAddress: string | undefined | null,
+  childAccountAddress: string | undefined | null
+) => {
+  return useCachedData<string[]>(
+    network && parentAccountAddress && childAccountAddress
+      ? childAccountAllowTypesKey(network, parentAccountAddress, childAccountAddress)
+      : null
+  );
+};
 export const useEvmAccount = (
   network: string | undefined | null,
   mainAccountAddress: string | undefined | null
@@ -70,9 +85,22 @@ export const useActiveAccounts = (
   network: string | undefined | null,
   publicKey: string | undefined | null
 ) => {
+  const mainAccounts = useMainAccounts(network, publicKey);
   const activeAccounts = useUserData<ActiveAccountsStore>(
     network && publicKey ? activeAccountsKey(network, publicKey) : null
   );
+  if (!activeAccounts) {
+    // Special case of where main accounts is loaded but we don't have active accounts
+    // This can happen if the user is in the process of registering or when there are no main accounts
+    // In this case we return the main accounts
+    if (mainAccounts && mainAccounts.length === 0) {
+      // There are no main accounts so we return an empty array
+      return {
+        parentAddress: null,
+        currentAddress: null,
+      };
+    }
+  }
   return activeAccounts;
 };
 
@@ -90,4 +118,12 @@ export const useKeyringIds = () => {
     return null;
   }
   return keyringState.vault.map((vaultEntry) => vaultEntry.id);
+};
+
+export const useRegisterStatus = (pubKey: string | undefined | null) => {
+  return useCachedData<boolean>(pubKey ? registerStatusKey(pubKey) : null);
+};
+
+export const usePayer = () => {
+  return useUserData<string>('lilicoPayer');
 };

@@ -6,6 +6,7 @@ import { useHistory } from 'react-router-dom';
 import Web3 from 'web3';
 
 import { type Contact } from '@/shared/types/network-types';
+import { consoleError } from '@/shared/utils/console-log';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
 import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
@@ -36,8 +37,6 @@ interface SendNFTConfirmationProps {
 }
 
 const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
-  console.log('SendNFTConfirmation - NftEvm');
-
   const wallet = useWallet();
   const history = useHistory();
   const { occupied } = useTransferList();
@@ -140,7 +139,7 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
         history.push(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
-        console.error('err ', err);
+        consoleError('err ', err);
         setSending(false);
         setFailed(true);
       });
@@ -167,7 +166,7 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
         history.push(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
-        console.error(err);
+        consoleError(err);
         setSending(false);
         setFailed(true);
       });

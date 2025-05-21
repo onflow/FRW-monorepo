@@ -6,7 +6,6 @@ import { type FlowNetwork } from '../types/network-types';
 import { type Currency, type FlowAddress, type WalletAddress } from '../types/wallet-types';
 
 import { getUserData } from './user-data-access';
-
 // Persistent storage keys
 export const userWalletsKey = 'userWalletsV2';
 
@@ -19,8 +18,8 @@ export type UserWalletStore = {
   network: FlowNetwork;
   // The public key of the currently active profile
   currentPubkey: string;
-  displayCurrency: Currency;
 };
+
 export const getUserWalletsData = async (): Promise<UserWalletStore | undefined> => {
   return await getUserData<UserWalletStore>(userWalletsKey);
 };
@@ -55,4 +54,14 @@ export const getActiveAccountsByUserWallet = async (): Promise<ActiveAccountsSto
       )
     : undefined;
   return activeAccounts;
+};
+
+export const preferencesKey = 'preference';
+
+export type PreferencesStore = {
+  displayCurrency: Currency;
+};
+
+export const getPreferencesData = async (): Promise<PreferencesStore | undefined> => {
+  return await getUserData<PreferencesStore>(preferencesKey);
 };

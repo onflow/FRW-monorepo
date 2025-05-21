@@ -170,3 +170,13 @@ export const DEFAULT_CURRENCY: Currency = {
   symbol: '$',
   country: 'United States',
 };
+
+export interface ProfileBackupStatus {
+  username: string;
+  uid: string | null;
+  id: string;
+  isActive: boolean; // User has it imported
+  isBackedUp: boolean; // Is backed up on Google
+  canDecrypt: boolean; // Can be decrypted with current password
+  isSelected: boolean; // User selected it for password change
+}

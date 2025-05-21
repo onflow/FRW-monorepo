@@ -8,6 +8,7 @@ import {
   ListItemButton,
   List,
   IconButton,
+  Avatar,
 } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { type ReactNode, useEffect, useState } from 'react';
@@ -17,9 +18,10 @@ import { type CoinItem } from '@/shared/types/coin-types';
 import { type ActiveAccountType } from '@/shared/types/wallet-types';
 import { formatLargeNumber } from '@/shared/utils/number';
 import { useCoins } from '@/ui/hooks/useCoinHook';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 
-import IconCreate from '../../../components/iconfont/IconCreate';
-import TablerIcon from '../../FRWAssets/svg/tabler.svg';
+import plus from '../../FRWAssets/svg/plus.svg';
+import slider from '../../FRWAssets/svg/slider.svg';
 import VerifiedIcon from '../../FRWAssets/svg/verfied-check.svg';
 import { CurrencyValue } from '../TokenDetail/CurrencyValue';
 
@@ -27,13 +29,41 @@ const ActionButtons = ({ managePath, createPath }) => {
   const history = useHistory();
 
   return (
-    <Box sx={{ display: 'flex', px: '12px', pt: '4px' }}>
+    <Box sx={{ display: 'flex', px: '12px', pt: '4px', gap: '12px' }}>
       <Box sx={{ flexGrow: 1 }} />
-      <IconButton onClick={() => history.push(managePath)}>
-        <img src={TablerIcon} alt="Tabler" style={{ width: '28px', height: '28px' }} />
+      <IconButton
+        onClick={() => history.push(managePath)}
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: '10px',
+          flexShrink: 0,
+          borderRadius: '100px',
+          background: 'rgba(255, 255, 255, 0.10)',
+          '&:hover': {
+            opacity: 0.8,
+          },
+        }}
+      >
+        <img src={slider} alt="Manage" style={{ width: '20px', height: '20px' }} />
       </IconButton>
-      <IconButton onClick={() => history.push(createPath)} sx={{ paddingX: '13px' }}>
-        <IconCreate size={18} color="#787878" />
+      <IconButton
+        onClick={() => history.push(createPath)}
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: '10px',
+          flexShrink: 0,
+          borderRadius: '100px',
+          background: 'rgba(255, 255, 255, 0.10)',
+          '&:hover': {
+            opacity: 0.8,
+          },
+        }}
+      >
+        <img src={plus} alt="Add" style={{ width: '20px', height: '20px' }} />
       </IconButton>
     </Box>
   );
@@ -49,17 +79,11 @@ const CoinList = ({
   childType: ActiveAccountType;
 }) => {
   // const wallet = useWallet();
+  const { noAddress } = useProfiles();
   const { coins, tokenFilter } = useCoins();
-  const [isLoading, setLoading] = useState(true);
   const history = useHistory();
 
-  useEffect(() => {
-    console.log('tokenList', coins);
-    setLoading(coins.length === 0);
-    if (coins.length) {
-      setLoading(false);
-    }
-  }, [coins]);
+  const isLoading = coins === undefined;
 
   const EndListItemText = (props: {
     primary: ReactNode;
@@ -77,7 +101,8 @@ const CoinList = ({
               sx={{ fontSize: 14, fontWeight: '550', textAlign: 'end', color: 'text.title' }}
               data-testid={`coin-balance-${props.unit.toLowerCase()}`}
             >
-              {formatLargeNumber(props.primary)} {props.unit.toUpperCase()}
+              {formatLargeNumber(props.primary)}{' '}
+              {props.unit.length > 6 ? `${props.unit.slice(0, 6)}` : props.unit.toUpperCase()}{' '}
             </Typography>
           ) : (
             <Skeleton variant="text" width={35} height={15} />
@@ -110,19 +135,21 @@ const CoinList = ({
       <ListItemText
         disableTypography={true}
         primary={
-          !isLoading ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          !isLoading && props.name ? (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
               <Typography
                 variant="body1"
                 sx={{
                   fontSize: 14,
                   fontWeight: '550',
-                  textAlign: 'start',
+                  textAlign: 'left',
                   color: 'text.title',
                   maxWidth: '160px',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
+                  direction: 'rtl',
+                  unicodeBidi: 'plaintext',
                 }}
               >
                 {props.name}
@@ -135,6 +162,7 @@ const CoinList = ({
                     width: '16px',
                     backgroundColor: '#282828',
                     borderRadius: '18px',
+                    marginLeft: props.name.length * 8 > 160 ? '-8px' : '0',
                   }}
                 />
               )}
@@ -219,94 +247,96 @@ const CoinList = ({
       )}
 
       <List sx={{ paddingTop: '0px', paddingBottom: '0px' }}>
-        {!isLoading
-          ? (coins || [])
-              .filter((coin: CoinItem) => {
-                if (tokenFilter.hideDust) {
-                  const isFlowToken =
-                    coin.contractName === 'FlowToken' || coin.unit.toLowerCase() === 'flow';
-                  const isAboveDustThreshold = parseFloat(coin.total) >= 1;
-                  if (!isFlowToken && !isAboveDustThreshold) {
-                    return false;
-                  }
-                }
-                if (tokenFilter.hideUnverified && !coin.isVerified) {
+        {noAddress ? (
+          <ListItem sx={{ justifyContent: 'center', minHeight: '62px' }}>
+            <Typography variant="body1" color="text.secondary">
+              {chrome.i18n.getMessage('No_address_found')}
+            </Typography>
+          </ListItem>
+        ) : !isLoading ? (
+          (coins || [])
+            .filter((coin) => {
+              if (tokenFilter.hideDust) {
+                const isFlowToken =
+                  coin.contractName === 'FlowToken' || coin.unit.toLowerCase() === 'flow';
+                const isAboveDustThreshold = parseFloat(coin.balanceInUSD) >= 0.01;
+                if (!isFlowToken && !isAboveDustThreshold) {
                   return false;
                 }
-                if (tokenFilter.filteredIds.includes(coin.id)) {
-                  return false;
-                }
-                return true;
-              })
-              .map((coin: CoinItem) => {
-                if (
-                  childType === 'evm' &&
-                  coin.id !== 'A.1654653399040a61.FlowToken' &&
-                  parseFloat(coin.balance) === 0 &&
-                  !coin.custom
-                ) {
-                  return null;
-                }
-                return (
-                  <ListItem
-                    sx={{ minHeight: '62px' }}
-                    key={coin.id}
-                    data-testid={`token-${coin.unit.toLowerCase()}`}
-                    secondaryAction={
-                      <EndListItemText
-                        primary={parseFloat(coin.balance).toFixed(3)}
-                        secondary={<CurrencyValue value={String(coin.total)} />}
-                        unit={coin.unit}
-                        change={parseFloat(coin.change24h?.toFixed(2) || '0')}
-                      />
-                    }
-                    disablePadding
-                    onClick={() =>
-                      history.push(`dashboard/tokendetail/${coin.unit.toLowerCase()}/${coin.id}`)
-                    }
-                  >
-                    <ListItemButton sx={{ paddingRight: '0px' }} dense={true}>
-                      <ListItemIcon>
-                        {!isLoading ? (
-                          <img
-                            src={coin.icon}
-                            style={{
-                              height: '36px',
-                              width: '36px',
-                              backgroundColor: '#282828',
-                              borderRadius: '18px',
-                            }}
-                          />
-                        ) : (
-                          <Skeleton variant="circular" width={36} height={36} />
-                        )}
-                      </ListItemIcon>
-                      <StartListItemText
-                        name={coin.coin}
-                        price={coin.price}
-                        change={parseFloat(coin.change24h?.toFixed(2) || '0')}
-                        isVerified={coin.isVerified || false}
-                        id={coin.id}
-                      />
-                    </ListItemButton>
-                  </ListItem>
-                );
-              })
-          : [1, 2].map((index) => {
+              }
+              if (tokenFilter.hideUnverified && !coin.isVerified) {
+                return false;
+              }
+              if (tokenFilter.filteredIds.includes(coin.id)) {
+                return false;
+              }
+              return true;
+            })
+            .map((coin: CoinItem) => {
+              if (
+                childType === 'evm' &&
+                coin.id !== 'A.1654653399040a61.FlowToken' &&
+                parseFloat(coin.balance) === 0 &&
+                !coin.custom
+              ) {
+                return null;
+              }
               return (
                 <ListItem
-                  key={index}
+                  sx={{ minHeight: '62px' }}
+                  key={coin.id}
+                  data-testid={`token-${coin.unit.toLowerCase()}`}
                   secondaryAction={
-                    <EndListItemText primary="..." secondary="..." unit="..." change={0} />
+                    <EndListItemText
+                      primary={parseFloat(coin.balance).toFixed(3)}
+                      secondary={<CurrencyValue value={String(coin.total)} />}
+                      unit={coin.unit}
+                      change={parseFloat(coin.change24h?.toFixed(2) || '0')}
+                    />
+                  }
+                  disablePadding
+                  onClick={() =>
+                    history.push(`dashboard/tokendetail/${coin.unit.toLowerCase()}/${coin.id}`)
                   }
                 >
-                  <ListItemAvatar>
-                    <Skeleton variant="circular" width={36} height={36} />
-                  </ListItemAvatar>
-                  <StartListItemText name="..." price={''} change={0} isVerified={false} id="" />
+                  <ListItemButton sx={{ paddingRight: '0px' }} dense={true}>
+                    <ListItemIcon>
+                      {!isLoading ? (
+                        <Avatar src={coin.logoURI} sx={{ width: 36, height: 36 }}>
+                          {coin.symbol?.charAt(0)}
+                        </Avatar>
+                      ) : (
+                        <Skeleton variant="circular" width={36} height={36} />
+                      )}
+                    </ListItemIcon>
+                    <StartListItemText
+                      name={coin.coin}
+                      price={coin.price}
+                      change={parseFloat(coin.change24h?.toFixed(2) || '0')}
+                      isVerified={coin.isVerified || false}
+                      id={coin.id}
+                    />
+                  </ListItemButton>
                 </ListItem>
               );
-            })}
+            })
+        ) : (
+          [1, 2].map((index) => {
+            return (
+              <ListItem
+                key={index}
+                secondaryAction={
+                  <EndListItemText primary="..." secondary="..." unit="..." change={0} />
+                }
+              >
+                <ListItemAvatar>
+                  <Skeleton variant="circular" width={36} height={36} />
+                </ListItemAvatar>
+                <StartListItemText name="..." price={''} change={0} isVerified={false} id="" />
+              </ListItem>
+            );
+          })
+        )}
       </List>
     </>
   );

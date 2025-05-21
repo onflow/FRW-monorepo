@@ -6,8 +6,8 @@ import {
   loginToSenderOrReceiver,
   getReceiverEvmAccount,
   getReceiverCadenceAccount,
-} from './utils/helper';
-import { test } from './utils/loader';
+} from '../utils/helper';
+import { test } from '../utils/loader';
 
 export const sendTokenCOA = async ({
   page,

@@ -28,7 +28,6 @@ import { useAccountBalance } from '@/ui/hooks/use-account-hooks';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import importIcon from 'ui/FRWAssets/svg/importIcon.svg';
 import popLock from 'ui/FRWAssets/svg/popLock.svg';
-import resetArrow from 'ui/FRWAssets/svg/resetarrow.svg';
 import { useWallet } from 'ui/utils';
 
 import rightarrow from '../../../FRWAssets/svg/rightarrow.svg';
@@ -79,7 +78,7 @@ const MenuDrawer = (props: MenuDrawerProps) => {
   const history = useHistory();
   const classes = useStyles();
   const evmBalance = useAccountBalance(props.currentNetwork, props.evmWallet.address);
-  const { clearProfileData } = useProfiles();
+  const { clearProfileData, noAddress } = useProfiles();
 
   interface EvmADDComponentProps {
     myString: string | number;
@@ -162,7 +161,7 @@ const MenuDrawer = (props: MenuDrawerProps) => {
               <ListItemText
                 sx={{ fontSize: '14px', fontWeight: '700' }}
                 primary={
-                  (!props.mainAddressLoading && props?.userInfo?.nickname) || (
+                  ((!props.mainAddressLoading || noAddress) && props?.userInfo?.nickname) || (
                     <Skeleton variant="text" width={100} />
                   )
                 }
@@ -198,10 +197,7 @@ const MenuDrawer = (props: MenuDrawerProps) => {
                   }}
                 >
                   {chrome.i18n.getMessage('path_to_enable')}{' '}
-                  <Typography style={gradientStyle}>
-                    {chrome.i18n.getMessage('EVM_on_flow')}
-                  </Typography>{' '}
-                  !
+                  <span style={gradientStyle}>{chrome.i18n.getMessage('EVM_on_flow')}</span> !
                 </Typography>
                 <Typography
                   sx={{
@@ -274,6 +270,7 @@ const MenuDrawer = (props: MenuDrawerProps) => {
                 }
               >
                 <ListItemButton
+                  data-testid={`evm-account-${props.evmWallet.address}`}
                   sx={{
                     mb: 0,
                     display: 'flex',
@@ -369,6 +366,7 @@ const MenuDrawer = (props: MenuDrawerProps) => {
                   }
                 >
                   <ListItemButton
+                    data-testid={`child-account-${childAccount.address}`}
                     sx={{
                       mb: 0,
                       padding: '0',
@@ -524,42 +522,6 @@ const MenuDrawer = (props: MenuDrawerProps) => {
                 sx={{ fontSize: '12px' }}
               >
                 {chrome.i18n.getMessage('Lock__Wallet')}
-              </Typography>
-            </ListItemButton>
-          </ListItem>
-          <ListItem
-            disablePadding
-            onClick={() => {
-              props.toggleDrawer();
-              history.push('/dashboard/nested/resetpwd');
-            }}
-          >
-            <ListItemButton sx={{ padding: '8px 16px', margin: '0', borderRadius: '0' }}>
-              <ListItemIcon
-                sx={{
-                  width: '24px',
-                  minWidth: '24px',
-                  height: '24px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginRight: '12px',
-                }}
-              >
-                <CardMedia
-                  component="img"
-                  sx={{ width: '24px', height: '24px' }}
-                  image={resetArrow}
-                />
-              </ListItemIcon>
-              <Typography
-                variant="body1"
-                component="div"
-                display="inline"
-                color="text"
-                sx={{ fontSize: '12px' }}
-              >
-                {chrome.i18n.getMessage('Change__Password')}
               </Typography>
             </ListItemButton>
           </ListItem>

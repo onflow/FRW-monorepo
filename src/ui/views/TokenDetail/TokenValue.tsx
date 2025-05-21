@@ -18,7 +18,7 @@ export const TokenValue: React.FC<TokenPriceProps> = ({
   postFix = '',
 }) => {
   if (!value || value === '0' || value === '') {
-    return <span className={className}>{''}</span>;
+    return <span className={className}>&nbsp;</span>;
   }
 
   const { formattedPrice } = formatPrice(value);

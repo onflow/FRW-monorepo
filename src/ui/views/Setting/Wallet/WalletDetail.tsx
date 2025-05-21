@@ -27,8 +27,8 @@ import {
   type WalletAccountWithBalance,
 } from '@/shared/types/wallet-types';
 import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
+import { consoleError } from '@/shared/utils/console-log';
 import { LLHeader } from '@/ui/FRWComponent';
-import ResetModal from '@/ui/FRWComponent/PopupModal/resetModal';
 import { useWallet } from 'ui/utils';
 
 import IconEnd from '../../../../components/iconfont/IconAVector11Stroke';
@@ -246,16 +246,12 @@ const WalletDetail = () => {
   const [storageInfo, setStorageInfo] = useState<StorageInfo | null>(null);
   const [isKeyphrase, setIsKeyphrase] = useState(false);
   const [emoji, setEmoji] = useState<Emoji | null>(null);
-  const [showResetModal, setShowResetModal] = useState(false);
 
   const handleErrorClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return;
     }
     setShowError(false);
-  };
-  const handleResetWallet = () => {
-    wallet.resetPwd();
   };
 
   const loadGasMode = useCallback(async () => {
@@ -329,7 +325,7 @@ const WalletDetail = () => {
       loadStorageInfo();
       checkKeyphrase();
     } catch (error) {
-      console.error(error);
+      consoleError(error);
     }
   }, [checkKeyphrase, loadGasKillSwitch, loadGasMode, loadStorageInfo, setUserWallet]);
 
@@ -517,26 +513,6 @@ const WalletDetail = () => {
             </>
           )}
         </Box>
-
-        <Box sx={{ flexGrow: 1 }} />
-
-        <Button
-          variant="contained"
-          disableElevation
-          color="error"
-          onClick={() => setShowResetModal(true)}
-          sx={{
-            width: '100% !important',
-            height: '48px',
-            borderRadius: '12px',
-            // margin: '80px auto 20px 20px',
-            marginBottom: '16px',
-            textTransform: 'none',
-            alignSelf: 'center',
-          }}
-        >
-          <Typography color="text">{chrome.i18n.getMessage('Reset_Wallet')}</Typography>
-        </Button>
       </Box>
 
       <Snackbar open={showError} autoHideDuration={6000} onClose={handleErrorClose}>
@@ -562,13 +538,6 @@ const WalletDetail = () => {
           userWallet={userWallet}
         />
       )}
-      <ResetModal
-        setShowAction={setShowResetModal}
-        isOpen={showResetModal}
-        onOpenChange={handleResetWallet}
-        errorName={chrome.i18n.getMessage('Confirm_to_reset_Wallet')}
-        errorMessage={chrome.i18n.getMessage('This_action_will_remove')}
-      />
     </div>
   );
 };

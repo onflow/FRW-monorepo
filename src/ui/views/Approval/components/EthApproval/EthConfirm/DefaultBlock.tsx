@@ -24,7 +24,6 @@ export const DefaultBlock = ({ title, host, data, logo }) => {
   };
 
   const processItem = (item) => {
-    console.log('item ', item);
     if (Array.isArray(item)) {
       return `[\n${item.map((value) => `\t${value}`).join(',\n')}\n]`;
     } else if (typeof item === 'object' && item !== null) {

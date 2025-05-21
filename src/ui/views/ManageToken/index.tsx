@@ -79,13 +79,15 @@ const ManageToken = () => {
   const [isLoading, setLoading] = useState(false);
 
   useEffect(() => {
-    setFilteredTokenList(coins);
+    if (coins) {
+      setFilteredTokenList(coins);
+    }
   }, [coins]);
 
   const filter = (e1: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const searchWord = e1.target.value.toLowerCase();
 
-    if (searchWord !== '') {
+    if (searchWord !== '' && coins) {
       const results = coins.filter((token) => {
         return (
           token.name.toLowerCase().includes(searchWord) ||
@@ -94,7 +96,7 @@ const ManageToken = () => {
       });
       setFilteredTokenList(results);
     } else {
-      setFilteredTokenList(coins);
+      setFilteredTokenList(coins ?? []);
     }
 
     setKeyword(searchWord);
@@ -108,7 +110,7 @@ const ManageToken = () => {
             display: 'flex',
             flexDirection: 'column',
             width: '100%',
-            height: '100%',
+            height: 'auto',
           }}
         >
           <Grid
@@ -184,8 +186,8 @@ const ManageToken = () => {
                   gap: '4px',
                 }}
               >
-                {`Hide Dust Tokens `}
-                <Tooltip title="Tokens with less than 1$ USD balance">
+                {`Hide dust tokens `}
+                <Tooltip title="Tokens with less than 0.01$ USD balance">
                   <HelpOutlineRoundedIcon
                     sx={{ color: 'rgba(255, 255, 255, 0.6)', width: '16px', height: '16px' }}
                   />
@@ -316,7 +318,7 @@ const ManageToken = () => {
                 <TokenItem
                   token={token}
                   isLoading={isLoading}
-                  enabled={coins.map((item) => item.contractName).includes(token.contractName)}
+                  enabled={coins?.map((item) => item.contractName).includes(token.contractName)}
                   onClick={updateTokenFilter}
                   tokenFilter={tokenFilter}
                   updateTokenFilter={updateTokenFilter}

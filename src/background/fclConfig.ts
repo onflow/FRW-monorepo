@@ -1,6 +1,8 @@
 import * as fcl from '@onflow/fcl';
 import { send as httpSend } from '@onflow/transport-http';
 
+import { consoleError, consoleWarn } from '@/shared/utils/console-log';
+
 import { isValidNetwork, type FlowNetwork } from '../shared/types/network-types';
 
 import { storage } from './webapi';
@@ -85,7 +87,6 @@ async function fetchContracts() {
     const cachedContracts = await storage.getExpiry('contracts');
 
     if (cachedContracts) {
-      console.log('Loaded contracts from cache.');
       return cachedContracts;
     }
 
@@ -95,13 +96,12 @@ async function fetchContracts() {
 
     // Cache the fetched contracts for future use with expiry
     await storage.setExpiry('contracts', data, ttl);
-    console.log('Fetched and cached contracts.');
     return data;
   } catch (error) {
-    console.error('Error fetching contracts:', error);
+    consoleError('Error fetching contracts:', error);
 
     // If fetching and cache both fail, return fallback contracts
-    console.warn('Using fallback contract addresses.');
+    consoleWarn('Using fallback contract addresses.');
     return fallbackContracts;
   }
 }

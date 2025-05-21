@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm, FieldValues } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 
+import { consoleError } from '@/shared/utils/console-log';
 import { useWallet } from 'ui/utils';
 
 import closeCircle from '../../../FRWAssets/image/closeCircle.png';
@@ -62,7 +63,7 @@ const RevokePage = (props: RevokePageProps) => {
         history.push(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
-        console.log(err);
+        consoleError(err);
         setIsLoading(false);
         // setFailed(true);
       });

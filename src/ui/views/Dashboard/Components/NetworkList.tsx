@@ -9,6 +9,7 @@ import {
 } from '@mui/material';
 import React, { useState } from 'react';
 
+import { consoleError } from '@/shared/utils/console-log';
 import { useWallet } from 'ui/utils';
 
 import networkLink from '../../../FRWAssets/svg/networkLink.svg';
@@ -43,7 +44,7 @@ const NetworkList = ({ networkColor, currentNetwork, onClose }: NetworkListProps
         onClose();
       }
     } catch (error) {
-      console.error('Error switching network:', error);
+      consoleError('Error switching network:', error);
     } finally {
       setIsSwitchingNetwork(false);
     }

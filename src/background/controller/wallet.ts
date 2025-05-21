@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as fcl from '@onflow/fcl';
 import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
 import * as t from '@onflow/types';
@@ -10,11 +8,14 @@ import * as ethUtil from 'ethereumjs-util';
 import { getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth/web-extension';
 import { type TokenInfo } from 'flow-native-token-registry';
-import { now } from 'lodash';
 import { encode } from 'rlp';
 import web3, { TransactionError, Web3 } from 'web3';
 
-import { getAccountKey, pubKeyAccountToAccountKey } from '@/background/utils/account-key';
+import {
+  getAccountKey,
+  pubKeyAccountToAccountKey,
+  pubKeyTupleToAccountKey,
+} from '@/background/utils/account-key';
 import {
   findAddressWithSeed,
   findAddressWithPK,
@@ -28,7 +29,7 @@ import {
 } from '@/background/utils/modules/publicPrivateKey';
 import eventBus from '@/eventBus';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
-import { type PublicKeyTuple } from '@/shared/types/key-types';
+import { type PublicPrivateKeyTuple, type PublicKeyTuple } from '@/shared/types/key-types';
 import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
 import { ContactType, MAINNET_CHAIN_ID } from '@/shared/types/network-types';
 import { type NFTCollections, type NFTCollectionData } from '@/shared/types/nft-types';
@@ -40,13 +41,12 @@ import {
   type FlowAddress,
   type PublicKeyAccount,
   type MainAccount,
-  type ChildAccountMap,
   type WalletAccount,
   type EvmAddress,
   type WalletAddress,
-  isEvmAccountType,
   type Currency,
   type ActiveAccountType,
+  type ProfileBackupStatus,
 } from '@/shared/types/wallet-types';
 import {
   ensureEvmAddressPrefix,
@@ -54,39 +54,32 @@ import {
   isValidFlowAddress,
   withPrefix,
 } from '@/shared/utils/address';
-import { getSignAlgo } from '@/shared/utils/algo';
+import { getSignAlgo, getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
 import { FLOW_BIP44_PATH, SIGN_ALGO_NUM_ECDSA_P256 } from '@/shared/utils/algo-constants';
 import {
-  evmAccountRefreshRegex,
-  childAccountsRefreshRegex,
-  userInfoRefreshRegex,
-  cadenceScriptsKey,
   getCachedScripts,
-  nftCollectionKey,
   getCachedNftCollection,
-  getCachedNftCatalogCollections,
   nftCatalogCollectionsKey,
-  coinListKey,
   childAccountAllowTypesKey,
-  childAccountNFTsKey,
+  childAccountNftsKey,
   type ChildAccountNFTsStore,
   evmNftIdsKey,
   type EvmNftIdsStore,
   type EvmNftCollectionListStore,
   evmNftCollectionListKey,
+  registerStatusKey,
+  registerStatusRefreshRegex,
+  coinListKey,
+  type ChildAccountFtStore,
 } from '@/shared/utils/cache-data-keys';
-import { getCurrentProfileId } from '@/shared/utils/current-id';
+import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 import {
   convertFlowBalanceToString,
   convertToIntegerAmount,
   validateAmount,
 } from '@/shared/utils/number';
 import { retryOperation } from '@/shared/utils/retryOperation';
-import {
-  type CategoryScripts,
-  type CadenceScripts,
-  type NetworkScripts,
-} from '@/shared/utils/script-types';
+import { type CategoryScripts } from '@/shared/utils/script-types';
 import {
   keyringService,
   preferenceService,
@@ -140,12 +133,12 @@ import { getScripts } from '../service/openapi';
 import type { ConnectedSite } from '../service/permission';
 import type { PreferenceAccount } from '../service/preference';
 import { type EvaluateStorageResult, StorageEvaluator } from '../service/storage-evaluator';
-import { loadChildAccountsOfParent } from '../service/userWallet';
+import { getEvmAccountOfParent, loadEvmAccountOfParent } from '../service/userWallet';
 import {
-  getCachedData,
   getValidData,
   registerRefreshListener,
   setCachedData,
+  triggerRefresh,
 } from '../utils/data-cache';
 import defaultConfig from '../utils/defaultConfig.json';
 import { getEmojiList } from '../utils/emoji-util';
@@ -177,6 +170,11 @@ export class WalletController extends BaseController {
   constructor() {
     super();
     this.storageEvaluator = new StorageEvaluator();
+
+    registerRefreshListener(registerStatusRefreshRegex, async (pubKey: string) => {
+      // The ttl is set to 2 minutes. After that we set the cache to false
+      setCachedData(registerStatusKey(pubKey), false, 120_000);
+    });
   }
   // Adding as tests load the extension really, really fast
   // It's possible to call the wallet controller before services are loaded
@@ -200,6 +198,11 @@ export class WalletController extends BaseController {
   isUnlocked = () => keyringService.isUnlocked();
   verifyPassword = (password: string) => keyringService.verifyPassword(password);
 
+  verifyPasswordIfBooted = async (password: string) => {
+    if (await this.isBooted()) {
+      await this.verifyPassword(password);
+    }
+  };
   sendRequest = (data) => {
     return provider({
       data,
@@ -228,7 +231,7 @@ export class WalletController extends BaseController {
 
     // We're booting the keyring with the new password
     // This does not update the vault, it simply sets the password / cypher methods we're going to use to store our private keys in the vault
-    await this.boot(password);
+    await this.verifyPasswordIfBooted(password);
     // We're then registering the account with the public key
     // This calls our backend API which gives us back an account id
     // This register call ALSO sets the currentId in local storage
@@ -238,9 +241,13 @@ export class WalletController extends BaseController {
 
     // We're creating the keyring with the mnemonic. This will encypt the private keys and store them in the keyring vault and deepVault
     await this.createKeyringWithMnemonics(password, mnemonic);
+
     // We're creating the Flow address for the account
     // Only after this, do we have a valid wallet with a Flow address
     const result = await openapiService.createFlowAddressV2();
+    // Set a two minute cache for the register status
+    setCachedData(registerStatusKey(accountKey.public_key), true, 120_000);
+
     this.checkForNewAddress(result.data.txid);
   };
 
@@ -265,9 +272,88 @@ export class WalletController extends BaseController {
       }
 
       userWalletService.registerCurrentPubkey(account.keys[0].publicKey, account);
+
       return account;
     } catch (error) {
       throw new Error(`Account creation failed: ${error.message || 'Unknown error'}`);
+    }
+  };
+
+  registerAccountImport = async (pubKey: string, account: FclAccount) => {
+    userWalletService.registerCurrentPubkey(pubKey, account);
+  };
+
+  importAccountFromMobile = async (address: string, password: string, mnemonic: string) => {
+    // Verify password
+    await this.verifyPasswordIfBooted(password);
+    // Switch to mainnet first as the account is on mainnet
+    if ((await this.getNetwork()) !== 'mainnet') {
+      await this.switchNetwork('mainnet');
+    }
+    // Query the account to get the account info befofe we add the key
+    const accountInfo = await this.getAccountInfo(address);
+
+    // The account is the public key of the account. It's derived from the mnemonic. We do not support custom curves or passphrases for new accounts
+    const accountKey: AccountKeyRequest = await getAccountKey(mnemonic);
+
+    // Login to the account - it should already be registered by the mobile app
+    await this.loginWithMnemonic(mnemonic, true);
+
+    // We're creating the keyring with the mnemonic. This will encypt the private keys and store them in the keyring vault and deepVault
+    await this.createKeyringWithMnemonics(password, mnemonic);
+
+    // Locally add the key to the account if not there already
+    const indexOfKey = accountInfo.keys.findIndex((key) => key.publicKey === accountKey.public_key);
+    if (indexOfKey === -1) {
+      accountInfo.keys.push({
+        index: accountInfo.keys.length,
+        publicKey: accountKey.public_key,
+        signAlgo: accountKey.sign_algo,
+        hashAlgo: accountKey.hash_algo,
+        weight: accountKey.weight,
+        signAlgoString: getStringFromSignAlgo(accountKey.sign_algo),
+        hashAlgoString: getStringFromHashAlgo(accountKey.hash_algo),
+        sequenceNumber: 0,
+        revoked: false,
+      });
+    }
+    // Register the account in userWallet
+    userWalletService.registerCurrentPubkey(accountKey.public_key, accountInfo);
+  };
+  /**
+   * Create a manual address
+   * @returns
+   */
+  createManualAddress = async () => {
+    const publickey = userWalletService.getCurrentPubkey();
+    const curPubKeyTuple = await keyringService.getCurrentPublicKeyTuple();
+
+    const accountKey = pubKeyTupleToAccountKey(publickey, curPubKeyTuple);
+    try {
+      setCachedData(registerStatusKey(publickey), true, 120_000);
+
+      const data = await openapiService.createManualAddress(
+        accountKey.hash_algo,
+        accountKey.sign_algo,
+        publickey,
+        1000
+      );
+
+      if (!data || !data.data || !data.data.txid) {
+        throw new Error('Transaction ID not found in response');
+      }
+
+      const txid = data.data.txid;
+      this.checkForNewAddress(txid);
+    } catch (error) {
+      // Reset the registration status if the operation fails
+      setCachedData(registerStatusKey(publickey), false);
+
+      // Log the error for debugging
+      consoleError('Failed to create manual address:', error);
+
+      // Re-throw a more specific error
+      throw new Error('Failed to create manual address. Please try again later.');
     }
   };
 
@@ -287,11 +373,10 @@ export class WalletController extends BaseController {
     derivationPath: string = FLOW_BIP44_PATH,
     passphrase: string = ''
   ) => {
-    // Boot the keyring with the password
     // We should be validating the password as the first thing we do
-    await this.boot(password);
-    // Get the public key tuple from the mnemonic
+    await this.verifyPasswordIfBooted(password);
 
+    // Get the public key tuple from the mnemonic
     const pubKTuple: PublicKeyTuple = formPubKeyTuple(
       await seedWithPathAndPhrase2PublicPrivateKey(mnemonic, derivationPath, passphrase)
     );
@@ -349,8 +434,7 @@ export class WalletController extends BaseController {
   ) => {
     // Boot the keyring with the password
     // We should be validating the password as the first thing we do
-    await this.boot(password);
-
+    await this.verifyPasswordIfBooted(password);
     // Get the public key tuple from the private key
     const pubKTuple: PublicKeyTuple = await pk2PubKey(pk);
 
@@ -411,7 +495,7 @@ export class WalletController extends BaseController {
     try {
       await keyringService.checkAvailableAccount_depreciated(currentId);
     } catch (error) {
-      console.error('Error finding available account:', error);
+      consoleError('Error finding available account:', error);
       throw new Error('Failed to find available account: ' + (error.message || 'Unknown error'));
     }
   };
@@ -455,13 +539,12 @@ export class WalletController extends BaseController {
     try {
       userInfo = await retryOperation(async () => this.getUserInfo(true), 3, 1000);
     } catch (error) {
-      console.error('Error refreshing user info:', error);
+      consoleError('Error refreshing user info:', error);
     }
     // Try for 2 mins to get the parent address
     const parentAddress = await retryOperation(
       async () => {
         const address = await userWalletService.getParentAddress();
-        console.log('retryOperation - refreshWallets - parentAddress', address);
         if (!address) {
           throw new Error('Parent address not found');
         }
@@ -475,11 +558,6 @@ export class WalletController extends BaseController {
     const fclAccount = await this.getMainAccountInfo();
     // Refresh the user info
     return openapiService.freshUserInfo(parentAddress, fclAccount, pubKTuple, userInfo, 'main');
-  };
-
-  retrievePk = async (password: string) => {
-    const pk = await keyringService.retrievePk(password);
-    return pk;
   };
 
   revealKeyring = async (password: string) => {
@@ -680,85 +758,9 @@ export class WalletController extends BaseController {
     return false;
   };
 
-  // Note this is not used anymore
-  getPrivateKeyForCurrentAccount = async (password: string) => {
-    let privateKey: string | null = null;
-    const keyrings = await this.getKeyrings(password || '');
-
-    for (const keyring of keyrings) {
-      if (keyring instanceof HDKeyring) {
-        const mnemonic = await this.getMnemonics(password || '');
-        const publicPrivateKeyTuple = await seed2PublicPrivateKey(mnemonic);
-
-        // We need to know the signAlgo for the account, so we can use the correct private key
-        // The signAlgo is stored in the account object for each public key return from fcl
-
-        // getLoggedInAccount is using currentId from storage to get the account
-        // That should tell us the account to use
-
-        try {
-          // Try using logged in accounts first
-          const account = await getLoggedInAccount();
-          const signAlgo =
-            typeof account.signAlgoString === 'string'
-              ? getSignAlgo(account.signAlgoString)
-              : account.signAlgoString;
-          privateKey =
-            signAlgo === SIGN_ALGO_NUM_ECDSA_P256
-              ? publicPrivateKeyTuple.P256.pk
-              : publicPrivateKeyTuple.SECP256K1.pk;
-        } catch {
-          // Couldn't load from logged in accounts.
-          // The signAlgo used to login isn't saved. We need to
-
-          // We may be in the process of switching login. We have a public and private key, but we don't have the signAlgo or the address of the account
-          console.error('Error getting logged in account - using the indexer instead');
-
-          // Look for the account using the pubKey
-          const network = (await this.getNetwork()) || 'mainnet';
-          // Find the address associated with the pubKey
-          // This should return an array of address information records
-          const addressAndKeyInfoArray = await getAccountsByPublicKeyTuple(
-            publicPrivateKeyTuple,
-            network
-          );
-
-          // Follow the same logic as freshUserInfo in openapi.ts
-          // Look for the P256 key first
-          let index = addressAndKeyInfoArray.findIndex(
-            (key) => key.publicKey === publicPrivateKeyTuple.P256.pubK
-          );
-          if (index === -1) {
-            // If no P256 key is found, look for the SECP256K1 key
-            index = addressAndKeyInfoArray.findIndex(
-              (key) => key.publicKey === publicPrivateKeyTuple.SECP256K1.pubK
-            );
-          }
-
-          const signAlgo: number = addressAndKeyInfoArray[index].signAlgo;
-
-          privateKey =
-            signAlgo === SIGN_ALGO_NUM_ECDSA_P256
-              ? publicPrivateKeyTuple.P256.pk
-              : publicPrivateKeyTuple.SECP256K1.pk;
-        }
-
-        break;
-      } else if (
-        keyring instanceof SimpleKeyring &&
-        keyring.wallets &&
-        keyring.wallets.length > 0 &&
-        keyring.wallets[0].privateKey
-      ) {
-        privateKey = keyring.wallets[0].privateKey.toString('hex');
-        break;
-      }
-    }
-    if (!privateKey) {
-      const error = new Error('No mnemonic or private key found in any of the keyrings.');
-      throw error;
-    }
-    return privateKey;
+  getPubKeyPrivateKey = async (password: string): Promise<PublicPrivateKeyTuple> => {
+    await this.verifyPassword(password);
+    return await keyringService.getCurrentPublicPrivateKeyTuple();
   };
 
   getPubKey = async (): Promise<PublicKeyTuple> => {
@@ -835,6 +837,18 @@ export class WalletController extends BaseController {
     if (current?.address === address && current.type === type && current.brandName === brand) {
       this.resetCurrentAccount();
     }
+  };
+
+  /**
+   * Remove a profile and its associated keys
+   * If it's the last profile, it behaves like a wallet reset
+   *
+   * @param {string} password - The keyring controller password
+   * @param {string} profileId - The ID of the profile to remove
+   * @returns {Promise<boolean>} - Returns true if successful
+   */
+  removeProfile = async (password: string, profileId: string): Promise<boolean> => {
+    return await keyringService.removeProfile(password, profileId);
   };
 
   resetCurrentAccount = async () => {
@@ -1090,25 +1104,29 @@ export class WalletController extends BaseController {
     return await userInfoService.fetchUserInfo();
   };
 
-  checkAccessibleNft = async (childAccount) => {
+  updateUserInfo = async (nickname: string, avatar: string) => {
+    return await userInfoService.updateUserInfo(nickname, avatar);
+  };
+
+  checkAccessibleNft = async (parentAddress: string) => {
     const network = userWalletService.getNetwork();
     const validData = getValidData<ChildAccountNFTsStore>(
-      childAccountNFTsKey(network, childAccount)
+      childAccountNftsKey(network, parentAddress)
     );
     if (validData) {
       return validData;
     }
-    return await nftService.loadChildAccountNFTs(network, childAccount);
+    return await nftService.loadChildAccountNFTs(network, parentAddress);
   };
 
-  checkAccessibleFt = async (childAccount) => {
+  checkAccessibleFt = async (childAccount: string): Promise<ChildAccountFtStore | undefined> => {
     const network = await this.getNetwork();
 
     const address = await userWalletService.getParentAddress();
     if (!address) {
       throw new Error('Parent address not found');
     }
-    const result = await openapiService.queryAccessibleFt(address, childAccount);
+    const result = await openapiService.queryAccessibleFt(network, address, childAccount);
 
     return result;
   };
@@ -1166,7 +1184,7 @@ export class WalletController extends BaseController {
         return nftList;
       }
     } catch (error) {
-      console.error('Error fetching NFT list:', error);
+      consoleError('Error fetching NFT list:', error);
       throw error;
     }
   };
@@ -1378,6 +1396,10 @@ export class WalletController extends BaseController {
     return await userWalletService.sendTransaction(cadence, args);
   };
 
+  /**
+   *
+   * @deprecated use createCoaEmpty
+   */
   createCOA = async (amount = '0.0'): Promise<string> => {
     const formattedAmount = parseFloat(amount).toFixed(8);
 
@@ -1393,7 +1415,7 @@ export class WalletController extends BaseController {
       // Track with success
       await this.trackCoaCreation(txID);
     } catch (error) {
-      console.error('Error sealing transaction:', error);
+      consoleError('Error sealing transaction:', error);
       // Track with error
       await this.trackCoaCreation(txID, error.message);
     }
@@ -1402,20 +1424,26 @@ export class WalletController extends BaseController {
   };
 
   createCoaEmpty = async (): Promise<string> => {
-    await this.getNetwork();
-
-    const script = await getScripts(userWalletService.getNetwork(), 'evm', 'createCoaEmpty');
+    const network = await this.getNetwork();
+    const parentAddress = await this.getMainAddress();
+    if (!parentAddress) {
+      throw new Error('Parent address not found');
+    }
+    const script = await getScripts(network, 'evm', 'createCoaEmpty');
 
     const txID = await userWalletService.sendTransaction(script, []);
 
     // try to seal it
     try {
-      await fcl.tx(txID).onceExecuted();
+      await fcl.tx(txID).onceSealed();
+
+      // Refresh the EVM address
+      await loadEvmAccountOfParent(network, parentAddress);
 
       // Track with success
       await this.trackCoaCreation(txID);
     } catch (error) {
-      console.error('Error sealing transaction:', error);
+      consoleError('Error sealing transaction:', error);
       // Track with error
       await this.trackCoaCreation(txID, error.message);
     }
@@ -1790,23 +1818,9 @@ export class WalletController extends BaseController {
   };
 
   queryEvmAddress = async (address: string | FlowAddress): Promise<string | null> => {
-    if (address.length > 20) {
-      return null;
-    }
-    if (!this.isUnlocked()) {
-      return null;
-    }
-    let evmAddress;
-    try {
-      evmAddress = await userWalletService.getCurrentEvmAddress();
-    } catch (error) {
-      evmAddress = '';
-      console.error('Error getting EVM address:', error);
-    }
-    if (isValidEthereumAddress(evmAddress)) {
-      return evmAddress;
-    }
-    return null;
+    const network = await this.getNetwork();
+    const evmAccount = await getEvmAccountOfParent(network, address);
+    return evmAccount?.address ?? null;
   };
 
   checkCanMoveChild = async () => {
@@ -2014,7 +2028,7 @@ export class WalletController extends BaseController {
           await storage.setExpiry(cacheKey, balance, ttl);
         }
       } catch (error) {
-        console.error('Error occurred:', error);
+        consoleError('Error occurred:', error);
         return '';
       }
     }
@@ -2425,16 +2439,19 @@ export class WalletController extends BaseController {
     return txID;
   };
 
-  getChildAccountAllowTypes = async (parent: string, child: string): Promise<string[]> => {
+  getChildAccountAllowTypes = async (
+    parentAddress: string,
+    childAddress: string
+  ): Promise<string[]> => {
     const network = userWalletService.getNetwork();
 
     const cachedData = await getValidData<string[]>(
-      childAccountAllowTypesKey(network, parent, child)
+      childAccountAllowTypesKey(network, parentAddress, childAddress)
     );
     if (cachedData) {
       return cachedData;
     }
-    return nftService.loadChildAccountAllowTypes(network, parent, child);
+    return nftService.loadChildAccountAllowTypes(network, parentAddress, childAddress);
   };
 
   checkChildLinkedVault = async (parent: string, child: string, path: string): Promise<string> => {
@@ -2476,7 +2493,6 @@ export class WalletController extends BaseController {
   };
 
   batchBridgeNftFromEvm = async (flowIdentifier: string, ids: Array<number>): Promise<string> => {
-    console.log('batchBridgeNftFromEvm', flowIdentifier, ids);
     const shouldCoverBridgeFee = await openapiService.getFeatureFlag('cover_bridge_fee');
     const scriptName = shouldCoverBridgeFee
       ? 'batchBridgeNFTFromEvmWithPayer'
@@ -2652,7 +2668,7 @@ export class WalletController extends BaseController {
   bridgeNftToEvmAddress = async (
     flowIdentifier: string,
     ids: number,
-    contractEVMAddress: string
+    recipientEvmAddress: string
   ): Promise<string> => {
     const shouldCoverBridgeFee = await openapiService.getFeatureFlag('cover_bridge_fee');
     const scriptName = shouldCoverBridgeFee
@@ -2662,8 +2678,8 @@ export class WalletController extends BaseController {
 
     const gasLimit = 30000000;
 
-    if (contractEVMAddress.startsWith('0x')) {
-      contractEVMAddress = contractEVMAddress.substring(2);
+    if (recipientEvmAddress.startsWith('0x')) {
+      recipientEvmAddress = recipientEvmAddress.substring(2);
     }
 
     const txID = await userWalletService.sendTransaction(
@@ -2671,7 +2687,7 @@ export class WalletController extends BaseController {
       [
         fcl.arg(flowIdentifier, t.String),
         fcl.arg(ids, t.UInt64),
-        fcl.arg(contractEVMAddress, t.String),
+        fcl.arg(recipientEvmAddress, t.String),
       ],
       shouldCoverBridgeFee
     );
@@ -2852,13 +2868,9 @@ export class WalletController extends BaseController {
     await userWalletService.setNetwork(network);
     eventBus.emit('switchNetwork', network);
 
-    // Reload everything
-    await this.refreshWallets();
-    await this.refreshAll();
-
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       if (!tabs || tabs.length === 0) {
-        console.log('No active tab found');
+        consoleWarn('No active tab found');
         return;
       }
       if (tabs[0].id) {
@@ -2885,7 +2897,6 @@ export class WalletController extends BaseController {
   };
 
   refreshAll = async () => {
-    console.log('refreshAll');
     // Clear the active wallet if any
     // If we don't do this, the user wallets will not be refreshed
     this.clearNFT();
@@ -3010,7 +3021,7 @@ export class WalletController extends BaseController {
     let attempts = 0;
     const poll = async () => {
       if (attempts >= maxAttempts) {
-        console.log('Max polling attempts reached');
+        consoleWarn('Max polling attempts reached');
         return;
       }
 
@@ -3026,6 +3037,10 @@ export class WalletController extends BaseController {
       if (foundTx && foundTx.indexed) {
         // Send a message to the UI to update the transfer list
         chrome.runtime.sendMessage({ msg: 'transferListUpdated' });
+        // Refresh the coin list
+        triggerRefresh(
+          coinListKey(network, address, (await this.getDisplayCurrency())?.code || 'USD')
+        );
       } else {
         // All of the transactions have not been picked up by the indexer yet
         attempts++;
@@ -3065,7 +3080,10 @@ export class WalletController extends BaseController {
       const txStatus = await fcl.tx(txId).onceExecuted();
       // Update the pending transaction with the transaction status
       txHash = await transactionService.updatePending(network, address, txId, txStatus);
-
+      // Refresh the coin list
+      triggerRefresh(
+        coinListKey(network, address, (await this.getDisplayCurrency())?.code || 'USD')
+      );
       // Track the transaction result
       mixpanelTrack.track('transaction_result', {
         tx_id: txId,
@@ -3100,7 +3118,7 @@ export class WalletController extends BaseController {
         }
       } catch (err: unknown) {
         // We don't want to throw an error if the notification fails
-        console.error('listenTransaction notification error ', err);
+        consoleError('listenTransaction notification error ', err);
       }
     } catch (err: unknown) {
       // An error has occurred while listening to the transaction
@@ -3122,7 +3140,7 @@ export class WalletController extends BaseController {
         errorCode = match ? parseInt(match[1], 10) : undefined;
       }
 
-      console.warn({
+      consoleWarn({
         msg: 'transactionError',
         errorMessage,
         errorCode,
@@ -3231,8 +3249,9 @@ export class WalletController extends BaseController {
     return nftService.loadNftCatalogCollections(network, address);
   };
 
-  getNftCatalog = async () => {
-    const data = (await openapiService.nftCatalog()) ?? [];
+  getNftCollectionList = async () => {
+    const network = await this.getNetwork();
+    const data = (await openapiService.getNFTV2CollectionList(network)) ?? [];
 
     return data;
   };
@@ -3246,7 +3265,7 @@ export class WalletController extends BaseController {
         ? cadenceScripts?.scripts.mainnet
         : cadenceScripts?.scripts.testnet;
     } catch (error) {
-      console.log(error, '=== get scripts error ===');
+      consoleError(error, '=== get scripts error ===');
     }
   };
 
@@ -3255,8 +3274,8 @@ export class WalletController extends BaseController {
     return googleDriveService.listFiles();
   };
 
-  hasGooglePremission = async () => {
-    return googleDriveService.hasGooglePremission();
+  hasGooglePermission = async () => {
+    return googleDriveService.hasGooglePermission();
   };
 
   deleteAllBackups = async () => {
@@ -3369,17 +3388,23 @@ export class WalletController extends BaseController {
     await openapiService.updateProfilePreference(privacy);
   };
 
-  getAccountInfo = async (address: FlowAddress): Promise<FclAccount> => {
-    const account = await fcl.account(address);
-    return account;
+  getAccountInfo = async (address: string): Promise<FclAccount> => {
+    if (!isValidFlowAddress(address)) {
+      throw new Error('Invalid address');
+    }
+    return await fcl.account(address);
   };
 
   getMainAccountInfo = async (): Promise<FclAccount> => {
     const address = await this.getMainAddress();
+
     if (!address) {
       throw new Error('No address found');
     }
-    return this.getAccountInfo(address);
+    if (!isValidFlowAddress(address)) {
+      throw new Error('Invalid address');
+    }
+    return await fcl.account(address);
   };
 
   getEmoji = async () => {
@@ -3550,55 +3575,159 @@ export class WalletController extends BaseController {
     await evmNftService.clearEvmNfts();
   };
 
-  changePassword = async (oldPassword: string, newPassword: string): Promise<boolean> => {
+  getKeyringIds = async () => {
+    // Use userInfoService to get the stored user list
+    return await keyringService.getAllKeyringIds();
+  };
+
+  /**
+   * Get profile backup statuses for password change operation
+   * @param currentPassword - The current password to test decryption
+   * @returns Promise<ProfileBackupStatus[]> - Array of profile backup statuses
+   */
+  getProfileBackupStatuses = async (currentPassword: string): Promise<ProfileBackupStatus[]> => {
     try {
-      // If we have a backup in Google Drive, update it first
-      try {
-        const userInfo = await userInfoService.getCurrentUserInfo();
-        const username = userInfo.username;
-        const backupUpdated = await googleDriveService.setNewPassword(
-          oldPassword,
-          newPassword,
-          username
-        );
-        if (backupUpdated === false) {
-          // Notify user and abort password change
-          mixpanelTrack.track('password_update_failed', {
-            address: (await this.getCurrentAddress()) || '',
-            error: 'Failed to update Google Drive backup. Password not changed.',
-          });
-          throw new Error('Failed to update Google Drive backup. Your password was not changed.');
+      // Get all backups from Google Drive
+      const backupLists = await googleDriveService.loadBackupAccountLists();
+      // Get all active profiles
+      const userList = userInfoService.getUserList();
+
+      // Get all keyring ids
+      const keyringIds = await this.getKeyringIds();
+
+      // Determine active profiles from the keyring ids
+      const activeProfiles = keyringIds.map((id): UserInfoResponse => {
+        const matchingUser = userList.find((user) => user.id === id);
+        if (!matchingUser) {
+          return {
+            username: `unknown_${id.slice(0, 4)}`,
+            id: id,
+            avatar: '',
+            nickname: 'unknown',
+            private: 0,
+            created: '',
+          };
         }
-      } catch (error) {
-        // If updating Google Drive backup fails, abort password change
-        console.error('Failed to update Google Drive backup:', error);
-        mixpanelTrack.track('password_update_failed', {
-          address: (await this.getCurrentAddress()) || '',
-          error: error.message || error.toString(),
-        });
-        throw new Error('Failed to update Google Drive backup. Your password was not changed.');
-      }
-
-      // Change password for all keyrings in the user's wallet atomically
-      const result = await keyringService.changePassword(oldPassword, newPassword);
-      if (!result) {
-        throw new Error('Failed to update keyring password.');
-      }
-
-      // Track successful password change
-      mixpanelTrack.track('password_updated', {
-        address: (await this.getCurrentAddress()) || '',
-        success: true,
+        return matchingUser;
       });
 
-      return true;
-    } catch (error) {
-      console.error('Failed to update password:', error);
+      // Test decryption for each backup
+      const backupStatuses: ProfileBackupStatus[] = await Promise.all(
+        backupLists.map(async (backup) => {
+          const matchingProfile = activeProfiles.find(
+            (profile) => profile.username === backup.username
+          );
+          const isActive = !!matchingProfile;
+          let canDecrypt = false;
+
+          try {
+            // Attempt to decrypt with current password
+            canDecrypt = await googleDriveService.testProfileBackupDecryption(
+              backup.username,
+              currentPassword
+            );
+          } catch (err) {
+            consoleError(`Cannot decrypt backup for ${backup.username}`, err);
+          }
+
+          return {
+            username: backup.username,
+            uid: backup.uid,
+            id: matchingProfile?.id || '',
+            isActive,
+            isBackedUp: true,
+            canDecrypt,
+            isSelected: canDecrypt, // Pre-select those we can decrypt
+          };
+        })
+      );
+
+      // Add active profiles that aren't backed up
+      activeProfiles.forEach((profile) => {
+        if (!backupStatuses.some((status) => status.username === profile.username)) {
+          backupStatuses.push({
+            username: profile.username,
+            uid: null,
+            id: profile.id,
+            isActive: true,
+            isBackedUp: false,
+            canDecrypt: false,
+            isSelected: false,
+          });
+        }
+      });
+
+      return backupStatuses;
+    } catch (err) {
+      consoleError('Failed to get profile backup statuses:', err);
+      throw new Error('Failed to get profile backup statuses');
+    }
+  };
+
+  /**
+   * Change password with selective profile backup updates
+   * @param currentPassword - The current password
+   * @param newPassword - The new password
+   * @param selectedProfiles - List of profile usernames to update backups for
+   * @param ignoreBackupsAtUsersOwnRisk - Whether to ignore backups (for users without Google permission)
+   * @returns Promise<boolean> - Success status
+   */
+  changePassword = async (
+    currentPassword: string,
+    newPassword: string,
+    selectedProfiles: string[] = [],
+    ignoreBackupsAtUsersOwnRisk: boolean = false
+  ): Promise<boolean> => {
+    try {
+      // If ignoring backups, just change the wallet password
+      if (ignoreBackupsAtUsersOwnRisk) {
+        return await keyringService.changePassword(currentPassword, newPassword);
+      }
+
+      // Handle Google backups if we have Google permission
+      const hasGooglePermission = await googleDriveService.hasGooglePermission();
+
+      if (hasGooglePermission && selectedProfiles.length > 0) {
+        // First update the Google backups
+        await googleDriveService.setNewPassword(currentPassword, newPassword, selectedProfiles);
+
+        // Only change the keyring password if the backup update succeeds
+        const success = await keyringService.changePassword(currentPassword, newPassword);
+
+        if (!success) {
+          throw new Error('Failed to change wallet password after updating backups');
+        }
+
+        // Track successful password change
+        mixpanelTrack.track('password_updated', {
+          address: (await this.getCurrentAddress()) || '',
+          success: true,
+          profilesUpdated: selectedProfiles.length,
+        });
+
+        return true;
+      } else {
+        // No backups to update, just change the wallet password
+        const success = await keyringService.changePassword(currentPassword, newPassword);
+
+        if (success) {
+          // Track successful password change
+          mixpanelTrack.track('password_updated', {
+            address: (await this.getCurrentAddress()) || '',
+            success: true,
+            profilesUpdated: 0,
+          });
+        }
+
+        return success;
+      }
+    } catch (err) {
+      consoleError('Error changing password with backups:', err);
       mixpanelTrack.track('password_update_failed', {
         address: (await this.getCurrentAddress()) || '',
-        error: error.message,
+        error: err.message,
       });
-      return false;
+      throw err;
     }
   };
 }

@@ -2,6 +2,7 @@ import { makeStyles } from '@mui/styles';
 import React, { useCallback, useEffect } from 'react';
 import { useHistory, useParams, useLocation } from 'react-router-dom';
 
+import { consoleError } from '@/shared/utils/console-log';
 import CollectionDetailGrid from '@/ui/FRWComponent/NFTs/CollectionDetailGrid';
 import GridView from '@/ui/FRWComponent/NFTs/GridView';
 import { useNftHook } from '@/ui/hooks/useNftHook';
@@ -194,7 +195,7 @@ const NFTCollectionDetail = () => {
         }
         localStorage.setItem('nftDetailState', '');
       } catch (e) {
-        console.error('Error parsing saved state:', e);
+        consoleError('Error parsing saved state:', e);
       }
     }
   }, [setSearchTerm]);

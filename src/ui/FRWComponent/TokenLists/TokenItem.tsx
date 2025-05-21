@@ -8,9 +8,12 @@ import {
   ListItemButton,
   Switch,
   Box,
+  Typography,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import React from 'react';
+
+import { CurrencyValue } from '@/ui/views/TokenDetail/CurrencyValue';
 
 import IconCheckmark from '../../../components/iconfont/IconCheckmark';
 import IconPlus from '../../../components/iconfont/IconPlus';
@@ -93,7 +96,19 @@ const TokenItem = ({
         <ListItemText
           primary={
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <span>{token.name}</span>
+              <Typography
+                variant="body1"
+                sx={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 1,
+                  WebkitBoxOrient: 'vertical',
+                  maxWidth: '210px',
+                }}
+              >
+                {token.name}
+              </Typography>
               {token.isVerified && (
                 <img
                   src={VerifiedIcon}
@@ -103,16 +118,19 @@ const TokenItem = ({
                     width: '16px',
                     backgroundColor: '#282828',
                     borderRadius: '18px',
-                    marginLeft: '8px',
+                    marginLeft: token.name.length * 8 > 210 ? '-12px' : '4px',
+                    marginRight: '18px',
                   }}
                 />
               )}
             </Box>
           }
           secondary={
-            showSwitch
-              ? `$${parseFloat(token.total).toFixed(5).toLocaleString()}`
-              : token.symbol.toUpperCase()
+            showSwitch ? (
+              <CurrencyValue value={token.total?.toString() ?? ''} />
+            ) : (
+              token.symbol.toUpperCase()
+            )
           }
         />
       </CustomListItem>

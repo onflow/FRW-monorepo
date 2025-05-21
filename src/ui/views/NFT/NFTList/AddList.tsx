@@ -15,6 +15,7 @@ import { makeStyles } from '@mui/styles';
 import React, { useEffect, useState, useCallback } from 'react';
 
 import { type NFTModelV2, type NFTModel_depreciated } from '@/shared/types/network-types';
+import { consoleError } from '@/shared/utils/console-log';
 import alertMark from '@/ui/FRWAssets/svg/alert.svg';
 import { LLHeader } from '@/ui/FRWComponent';
 import WarningSnackbar from '@/ui/FRWComponent/WarningSnackbar';
@@ -106,7 +107,7 @@ const AddList = () => {
           setCollections(data);
         }
       } catch (error) {
-        console.error('Error fetching enabled NFT list:', error);
+        consoleError('Error fetching enabled NFT list:', error);
       } finally {
         setStatusLoading(false);
       }

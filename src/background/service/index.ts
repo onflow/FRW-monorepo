@@ -18,3 +18,4 @@ export { default as signTextHistoryService } from './signTextHistory';
 export { default as i18n } from './i18n';
 export { default as newsService } from './news';
 export { mixpanelTrack } from './mixpanel';
+export { default as logListener } from './log-listener';

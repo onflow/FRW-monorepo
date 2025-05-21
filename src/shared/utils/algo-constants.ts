@@ -27,7 +27,7 @@ export const SIGN_ALGO_NUM_DEFAULT = SIGN_ALGO_NUM_ECDSA_secp256k1;
 export const HASH_ALGO_NUM_DEFAULT = HASH_ALGO_NUM_SHA2_256;
 
 // note that HASH_ALGO_NUM_SHA3_256 is the default for SIGN_ALGO_NUM_ECDSA_P256
-
+export const DEFAULT_WEIGHT = 1000;
 export const SIGN_ALGO: { [key: string]: SignAlgoString } = {
   P256: 'ECDSA_P256',
   SECP256K1: 'ECDSA_secp256k1',

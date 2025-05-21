@@ -6,6 +6,8 @@ import React, { useState, useEffect } from 'react';
 import { useForm, type FieldValues } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 
+import { type WalletAccount } from '@/shared/types/wallet-types';
+import { consoleError } from '@/shared/utils/console-log';
 import UnlinkSVG from 'ui/FRWAssets/svg/unlink.svg';
 import { useWallet } from 'ui/utils';
 
@@ -53,7 +55,7 @@ interface UnlinkAccountProps {
   handleCloseIconClicked: () => void;
   handleCancelBtnClicked: () => void;
   handleAddBtnClicked: () => void;
-  childAccount?: any;
+  childAccount?: WalletAccount;
   address?: string;
   userInfo?: any;
 }
@@ -81,7 +83,6 @@ const UnlinkAccount = (props: UnlinkAccountProps) => {
 
   const onSubmit = async (data: FieldValues) => {
     setIsLoading(true);
-    console.log('submit');
     wallet
       .unlinkChildAccountV2(props.address!)
       .then(async (txId) => {
@@ -96,19 +97,15 @@ const UnlinkAccount = (props: UnlinkAccountProps) => {
         await wallet.setDashIndex(0);
         history.push(`/dashboard?activity=1&txId=${txId}`);
       })
-      .catch(() => {
+      .catch((err) => {
         setIsLoading(false);
-        console.log('failed ');
+        consoleError('failed to unlink account', err);
       });
   };
 
   const onCancelBtnClicked = () => {
     props.handleCancelBtnClicked();
   };
-
-  useEffect(() => {
-    console.log('submit');
-  }, []);
 
   const renderContent = () => (
     <Box
@@ -166,7 +163,7 @@ const UnlinkAccount = (props: UnlinkAccountProps) => {
                     backgroundColor: 'text.secondary',
                     objectFit: 'cover',
                   }}
-                  src={props.childAccount.thumbnail.url}
+                  src={props?.childAccount.icon}
                 />
               )}
               {props.childAccount && (

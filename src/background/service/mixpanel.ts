@@ -95,6 +95,7 @@ class MixpanelService {
     // Private constructor for singleton
     this.token = process.env.MIXPANEL_TOKEN!;
     if (!this.token) {
+      // eslint-disable-next-line no-console
       console.error('MIXPANEL_TOKEN is not defined in environment variables');
     }
   }
@@ -142,8 +143,10 @@ class MixpanelService {
         throw new Error(`Mixpanel API returned unexpected response: ${responseText}`);
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('error sending event to Mixpanel - raw', error);
       if (error instanceof Error) {
+        // eslint-disable-next-line no-console
         console.error('Error sending event to Mixpanel:', error.message);
       }
     }

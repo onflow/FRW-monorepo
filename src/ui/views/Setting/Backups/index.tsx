@@ -3,6 +3,7 @@ import { makeStyles } from '@mui/styles';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
+import { consoleError } from '@/shared/utils/console-log';
 import BrowserWarning from '@/ui/component/BrowserWarning';
 import { LLHeader, LLSpinner } from '@/ui/FRWComponent';
 import { LLDeleteBackupPopup } from '@/ui/FRWComponent/LLDeleteBackupPopup';
@@ -81,12 +82,12 @@ const ManageBackups = () => {
 
       setHasBackup(hasBackup);
     } catch {
-      console.error('An error occurred while checking the backup');
+      consoleError('An error occurred while checking the backup');
     }
   }, [setHasBackup, wallet]);
 
   const checkPermissions = useCallback(async () => {
-    const permissions = await wallet.hasGooglePremission();
+    const permissions = await wallet.hasGooglePermission();
     setHasPermission(permissions);
     if (permissions) {
       await checkBackup();
@@ -106,7 +107,7 @@ const ManageBackups = () => {
 
       await checkBackup();
     } catch {
-      console.error('An error occurred while syncing the backup');
+      consoleError('An error occurred while syncing the backup');
     } finally {
       setLoading(false);
     }
@@ -118,7 +119,7 @@ const ManageBackups = () => {
       await wallet.deleteCurrentUserBackup();
       await checkBackup();
     } catch {
-      console.error('An error occurred while deleting the backup');
+      consoleError('An error occurred while deleting the backup');
     } finally {
       setLoading(false);
     }
@@ -132,7 +133,7 @@ const ManageBackups = () => {
 
       localStorage.setItem('backupAccounts', JSON.stringify(accounts));
     } catch {
-      console.error('An error occurred while getting the Google Drive permission');
+      consoleError('An error occurred while getting the Google Drive permission');
     } finally {
       setLoading(false);
     }
@@ -150,6 +151,9 @@ const ManageBackups = () => {
           // Set the state to true to prevent multiple syncs
           return syncBackup();
         }
+      })
+      .catch((err) => {
+        consoleError('Error checking permissions or syncing backup:', err);
       })
       .finally(() => {
         // Set the loading to false after checking permissions and syncing backup is complete

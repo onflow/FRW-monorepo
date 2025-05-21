@@ -7,8 +7,19 @@
     "message": "Digital wallet created for everyone.",
     "description": "Application Descrtipion"
   },
+  "appNameBeta": {
+    "message": "Flow Wallet BETA",
+    "description": "Application Name"
+  },
+  "appDescriptionBeta": {
+    "message": "THIS EXTENSION IS FOR BETA TESTING. USE AT YOUR OWN RISK.",
+    "description": "Application Descrtipion"
+  },
   "Send": {
     "message": "Send"
+  },
+  "Swap": {
+    "message": "Swap"
   },
   "Save": {
     "message": "Save"
@@ -58,15 +69,6 @@
   "Acc__list": {
     "message": "Account List"
   },
-  "Display__Currency": {
-    "message": "Display Currency"
-  },
-  "Select__Currency": {
-    "message": "Select Currency"
-  },
-  "Currency__Description": {
-    "message": "Choose the currency you want to use for displaying values"
-  },
   "Profile": {
     "message": "Profile"
   },
@@ -89,7 +91,7 @@
     "message": "Anonymous"
   },
   "Other__Lilico__users__cannot__search__for__your__username": {
-    "message": "Other Flow Wallet Wallet users cannot search for your username."
+    "message": "Other Flow Wallet users cannot search for your username."
   },
   "Private__Key": {
     "message": "Private Key"
@@ -135,6 +137,9 @@
   },
   "Backup": {
     "message": "Backup"
+  },
+  "Backup__Found": {
+    "message": "Backup Found"
   },
   "Claim__for__your": {
     "message": "Claim for your "
@@ -186,6 +191,12 @@
   },
   "Switch__Network": {
     "message": "Switch Network"
+  },
+  "Please_restart_your_browser": {
+    "message": "Please restart your browser"
+  },
+  "If_you_keep_seeing_this_spinner": {
+    "message": "If you keep seeing this spinner"
   },
   "Mainnet": {
     "message": "Mainnet"
@@ -271,14 +282,11 @@
   "Confirm__Password": {
     "message": "Confirm Password"
   },
-  "Enter__New__Password": {
-    "message": "Enter New Password"
-  },
   "New__Password": {
     "message": "New Password"
   },
-  "Enter__Current__Password": {
-    "message": "Enter Current Password"
+  "Enter__New__Password": {
+    "message": "Enter New Password"
   },
   "Change__Password": {
     "message": "Change Password"
@@ -296,7 +304,7 @@
     "message": "Security"
   },
   "Allow__lilico__to__pay__the__gas__fee": {
-    "message": "Allow Flow Wallet to pay all gas fees for my transactions."
+    "message": "Allow Flow Wallet to pay the gas fee for all my transactions."
   },
   "This__feature__has__been__disabled__temporarily": {
     "message": "This feature has been disabled temporarily"
@@ -374,7 +382,7 @@
     "message": "SCRIPT"
   },
   "lilico__covers__this__gas__fee__for__you": {
-    "message": "lilico covers this gas fee for you "
+    "message": "Flow Wallet covers this gas fee for you "
   },
   "SIGN__MESSAGE": {
     "message": "SIGN MESSAGE"
@@ -397,6 +405,9 @@
   "QR__Code": {
     "message": "QR Code"
   },
+  "Choose_provider": {
+    "message": "Choose Provider"
+  },
   "Shown__your__QR__code__to__receive__transactions": {
     "message": "Scan the QR code to send assets to this account on Flow."
   },
@@ -404,10 +415,10 @@
     "message": "Make sure you are using the correct network. Send only testnet assets to this deposit address."
   },
   "Things__You__should__Know": {
-    "message": "Things You should Know"
+    "message": "Things You Should Know"
   },
   "Free__lilico__domain__help__you__find__each__other__easier__on__chain": {
-    "message": "Free lilico domain help you find each other easier on chain."
+    "message": "Free Lilico Wallet domain help you find each other easier on chain."
   },
   "An__Inbox__system__will__help__you__send__tokens__and__NFT__to__your__friend__without__enable__vault": {
     "message": "An Inbox system will help you send tokens and NFT to your friend without enable vault."
@@ -694,17 +705,20 @@
   "Write__down__this__phrase__in__this__exact__order__and__keep__them__safe": {
     "message": "Write down your recovery phrase in its exact order and make sure to keep it somewhere safe"
   },
-  "Please_select_the_word_one_by_one_refering_to_tits_order": {
+  "Please_select_the_word_one_by_one_refering_to_its_order": {
     "message": "Please select the word one by one refering to its order."
   },
   "Please__notice__that__If__you__lose__you__can__not__access": {
     "message": "If you lose your recovery phrase, you will not be able to regain access to your account."
   },
-  "Recovery_phrases_word_count_must_be_12_or_24_words": {
-    "message": "Recovery phrases word count must be 12 or 24 words"
+  "Select_the_word_at": {
+    "message": "Select the word at"
   },
   "Incorrect_recovery_phrases_please_try_again": {
     "message": "Incorrect recovery phrases, please try again."
+  },
+  "Recovery_phrases_word_count_must_be_12_or_24_words": {
+    "message": "Recovery phrases word count must be 12 or 24 words"
   },
   "Allset": {
     "message": " all set"
@@ -809,7 +823,7 @@
     "message": "All"
   },
   "Earn_More_Flow": {
-    "message": "Earn More Flow"
+    "message": "Launch Flow Port"
   },
   "Stake_tokens_and_earn_rewards": {
     "message": "Stake tokens and earn rewards"
@@ -865,9 +879,6 @@
   "This_will_remove_this_google_backup_You_will_not_import_this_wallet_via_Google_backup": {
     "message": " This will remove this google backup. You will not import this wallet via Google backup."
   },
-  "Your_lilico_domain_will_look_like": {
-    "message": "Your lilico domain will look like:"
-  },
   "meow": {
     "message": ".meow"
   },
@@ -910,6 +921,9 @@
   "Inbox__is__empty": {
     "message": "Inbox is empty"
   },
+  "No__Activity": {
+    "message": "No Activity"
+  },
   "Learn__more": {
     "message": "Learn more"
   },
@@ -940,6 +954,9 @@
   "Copy__username": {
     "message": "Copy username"
   },
+  "Refresh": {
+    "message": "Refresh"
+  },
   "Anonymous__mode__on": {
     "message": "Anonymous mode on"
   },
@@ -949,8 +966,8 @@
   "Avatar": {
     "message": "Avatar"
   },
-  "Connect__To": {
-    "message": "Connect to "
+  "Connect": {
+    "message": "Connect"
   },
   "Sign__in__Recovery__Phrase": {
     "message": "Recovery Phrase"
@@ -961,11 +978,23 @@
   "Error": {
     "message": "Error"
   },
+  "UNKNOWN": {
+    "message": "Unknown"
+  },
   "PENDING": {
     "message": "Pending"
   },
+  "FINALIZED": {
+    "message": "Finalized"
+  },
   "EXECUTED": {
     "message": "Executed"
+  },
+  "SEALED": {
+    "message": "Sealed"
+  },
+  "EXPIRED": {
+    "message": "Expired"
   },
   "Transaction__Sealed": {
     "message": "Transaction Sealed"
@@ -1012,6 +1041,12 @@
   "Try_Our_Mobile_APP": {
     "message": "Try Our Mobile App"
   },
+  "Reset_Wallet": {
+    "message": "Reset Wallet"
+  },
+  "Unlink_Message": {
+    "message": "Unlink this account, the main wallet will not have any access to this linked account anymore."
+  },
   "Edit_Linked_Account": {
     "message": "Edit Linked Account"
   },
@@ -1049,7 +1084,7 @@
     "message": "Accounts Found on Chain"
   },
   "Support_Flow_Wallet_and_private_key": {
-    "message": "Support Flow Wallet, Blocto, seed phrase, keystore and private key"
+    "message": "Support Seed Phrase, Keystore and raw key"
   },
   "Import_Address": {
     "message": "Import Address"
@@ -1330,8 +1365,20 @@
   "Insufficient_Storage": {
     "message": "Insufficient storage."
   },
+  "Remove__Profile": {
+    "message": "Remove Profile"
+  },
+  "Remove": {
+    "message": "Remove"
+  },
+  "Remove_profile_warning_simplified": {
+    "message": "After removing this profile, you will be logged out. You can re-import using a recovery phrase, private key, or Google Drive backup."
+  },
   "Almost_run_out_of_account_storage": {
     "message": "Almost run out of account storage."
+  },
+  "Insufficient_storage_after_action": {
+    "message": "Insufficient storage after this action."
   },
   "Transaction_failed_storage_exceeded": {
     "message": "Your transaction failed because it caused your account to fall below the minimum balance of FLOW for your account's storage usage."
@@ -1351,7 +1398,88 @@
   "Could_not_enable_this_collection": {
     "message": "Could not enable this collection"
   },
+  "Display__Currency": {
+    "message": "Display Currency"
+  },
+  "Select__Currency": {
+    "message": "Select Currency"
+  },
+  "Currency__Description": {
+    "message": "Choose the currency you want to use for displaying values"
+  },
   "Manage_Token": {
     "message": "Manage Token"
+  },
+  "No_address_found": {
+    "message": "No address found"
+  },
+  "Check_your_public_key": {
+    "message": "Check your public key"
+  },
+  "Add_address": {
+    "message": "Add a New Address"
+  },
+  "Address_creation_in_progress": {
+    "message": "Address creation in progress..."
+  },
+  "Google_Drive_Not_Connected": {
+    "message": "Google Drive is not connected"
+  },
+  "Change_Password_No_Google_Drive_Warning": {
+    "message": "Changing your password will corrupt any existing backups. Proceed only if you don't use Google Drive Backups."
+  },
+  "Connect_Google_Drive": {
+    "message": "Connect Google Drive"
+  },
+  "Change_Password_Anyway": {
+    "message": "Change Anyway 😱"
+  },
+  "Change_Password_on_Backups": {
+    "message": "Change Password on Backups"
+  },
+  "Change_Password_on_Backups_Description": {
+    "message": "Change the password for all profiles that are either loaded in your wallet or backed up to Google Drive."
+  },
+  "Loaded_in_wallet": {
+    "message": "Loaded"
+  },
+  "Not_loaded_in_wallet": {
+    "message": "Not loaded"
+  },
+  "Backed_up_with_current_password": {
+    "message": "current password"
+  },
+  "Backed_up_with_different_password": {
+    "message": "different password"
+  },
+  "Not_backed_up": {
+    "message": "Not backed up"
+  },
+  "Loaded_and_backed_up_with_current_password": {
+    "message": "Loaded and backed up with current password"
+  },
+  "Loaded_but_backed_up_with_other_password_or_not_backed_up": {
+    "message": "Loaded but backed up with other password or not backed up"
+  },
+  "Not_loaded_but_backed_up_with_current_password": {
+    "message": "Not loaded, but backed up with current password"
+  },
+  "Not_loaded_but_backed_up_with_other_password": {
+    "message": "Not loaded, but backed up with other password"
+  },
+  "Legend": {
+    "message": "Legend"
+  },
+  "Updating_backups_and_changing_password": {
+    "message": "Updating backups and changing password..."
+  },
+  "Changing_password": {
+    "message": "Changing password..."
+  },
+  "Password_changed_successfully_Locking_wallet": {
+    "message": "Password changed successfully! Locking wallet..."
+  },
+  "Profile_Password_Change_Description": {
+    "message": "The following profiles are either loaded in your wallet or backed up to Google Drive. Select which profiles you want to update the password for:"
   }
 }

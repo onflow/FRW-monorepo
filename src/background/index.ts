@@ -10,6 +10,9 @@ import {
 } from 'firebase/auth/web-extension';
 
 import eventBus from '@/eventBus';
+import { type WalletAddress } from '@/shared/types/wallet-types';
+import { isValidFlowAddress } from '@/shared/utils/address';
+import { consoleError, consoleLog } from '@/shared/utils/console-log';
 import { Message } from '@/shared/utils/messaging';
 import type { WalletController } from 'background/controller/wallet';
 import { EVENTS } from 'consts';
@@ -33,6 +36,7 @@ import {
   evmNftService,
   googleSafeHostService,
   mixpanelTrack,
+  logListener,
 } from './service';
 import session from './service/session';
 import { getFirbaseConfig } from './utils/firebaseConfig';
@@ -47,7 +51,7 @@ let appStoreLoaded = false;
 
 async function initAppMeta() {
   // Initialize Firebase
-  // console.log('<- initAppMeta ->')
+  // consoleLog('<- initAppMeta ->')
   // const document = chromeWindow.document;
   // const head = document.querySelector('head');
   // const icon = document.createElement('link');
@@ -72,8 +76,6 @@ async function initAppMeta() {
 async function firebaseSetup() {
   const env: string = process.env.NODE_ENV!;
   const firebaseConfig = getFirbaseConfig();
-  console.log(process.env.NODE_ENV);
-  // const firebaseProductionConfig = prodConig;
 
   const app = initializeApp(firebaseConfig, env);
 
@@ -129,6 +131,7 @@ async function restoreAppState() {
   await evmNftService.init();
   await googleSafeHostService.init();
   await mixpanelTrack.init();
+  await logListener.init();
   // rpcCache.start();
 
   appStoreLoaded = true;
@@ -137,18 +140,14 @@ async function restoreAppState() {
 
   // Set the loaded flag to true so that the UI knows the app is ready
   walletController.setLoaded(true);
-  console.log('restoreAppState chrome.runtime.sendMessage->');
   chrome.runtime.sendMessage({ type: 'walletInitialized' }, (response) => {
     if (chrome.runtime.lastError) {
-      console.log(
+      consoleError(
         'chrome.runtime.sendMessage - Message delivery failed:',
         chrome.runtime.lastError.message
       );
-    } else {
-      console.log('chrome.runtime.sendMessage - Message delivered successfully:', response);
     }
   });
-  console.log('restoreAppState chrome.tabs.query->');
   chrome.tabs
     .query({
       active: true,
@@ -158,16 +157,13 @@ async function restoreAppState() {
       tabs.forEach((tab) => {
         const tabId = tab.id;
         if (tabId && !tab.url?.match(/^chrome*/)) {
-          console.log('restoreAppState chrome.tabs.sendMessage->', tabId);
           chrome.tabs.sendMessage(tabId, { type: 'walletInitialized' }, (response) => {
             if (chrome.runtime.lastError) {
-              console.log(
+              consoleLog(
                 'chrome.tabs.sendMessage - Message delivery failed:',
                 chrome.runtime.lastError.message
               );
               // You can implement retry logic or alternative actions here
-            } else {
-              console.log('chrome.tabs.sendMessage - Message delivered successfully:', response);
             }
           });
         }
@@ -219,7 +215,6 @@ chrome.runtime.onConnect.addListener((port: chrome.runtime.Port) => {
   if (port.name === 'popup' || port.name === 'notification' || port.name === 'tab') {
     const pm = new PortMessage(port);
     pm.listen((data) => {
-      // console.log('PortMessage ->', data);
       if (data?.type) {
         switch (data.type) {
           case 'broadcast':
@@ -273,8 +268,6 @@ chrome.runtime.onConnect.addListener((port: chrome.runtime.Port) => {
     // if (!appStoreLoaded) {
     //   throw ethErrors.provider.disconnected();
     // }
-
-    // console.log('pm.listen ->', data);
 
     const sessionId = port.sender?.tab?.id;
     const session = sessionService.getOrCreateSession(sessionId);
@@ -334,7 +327,6 @@ const handlePreAuthz = async (id) => {
     network
   );
 
-  // console.log('handlePreAuthz ->', services, opener, id)
   if (id) {
     chrome.tabs.sendMessage(id, { status: 'APPROVED', data: services });
     // chrome.tabs.sendMessage(id, services)
@@ -350,16 +342,10 @@ const handlePreAuthz = async (id) => {
   }
 };
 
-// chrome.webNavigation.onHistoryStateUpdated.addListener((details) => {
-//   console.log('wake me up');
-// });
-
 // Function called when a new message is received
 const extMessageHandler = (msg, sender, sendResponse) => {
   // Messages from FCL, posted to window and proxied from content.js
   const { service } = msg;
-
-  // console.log('extMessageHandler ->', msg)
 
   if (msg.type === 'FLOW::TX') {
     // DO NOT LISTEN
@@ -395,14 +381,28 @@ const extMessageHandler = (msg, sender, sendResponse) => {
         active: true,
         lastFocusedWindow: true,
       })
-      .then((tabs) => {
+      .then(async (tabs) => {
         const tabId = tabs[0].id;
 
+        // Check if current address is flow address
+        try {
+          const currentAddress = await userWalletService.getCurrentAddress();
+          if (!isValidFlowAddress(currentAddress)) {
+            const parentAddress = await userWalletService.getParentAddress();
+            if (!parentAddress) {
+              throw new Error('Parent address not found');
+            }
+            await userWalletService.setCurrentAccount(
+              parentAddress,
+              parentAddress as WalletAddress
+            );
+          }
+        } catch (error) {
+          consoleError('Error validating or setting current address:', error);
+        }
         if (service.type === 'pre-authz') {
           handlePreAuthz(tabId);
         } else {
-          console.log('notificationService.requestApproval ->', service, findPath(service));
-          console.log('notificationService.msg ->', msg);
           notificationService
             .requestApproval(
               {
@@ -442,10 +442,8 @@ chrome.runtime.onConnect.addListener((port) => {
 });
 
 function onMessage(msg, port) {
-  console.log('received', msg, 'from', port.sender);
+  consoleLog('received', msg, 'from', port.sender);
 }
-
-console.log('Is fetch native?', fetch.toString().includes('[native code]'));
 
 // Call it when extension starts
 setEnvironmentBadge();

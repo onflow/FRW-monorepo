@@ -26,6 +26,7 @@ import {
   type LoggedInAccountWithIndex,
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
+import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -74,6 +75,8 @@ const Header = ({ _loading = false }) => {
     mainAddressLoading,
     clearProfileData,
     profileIds,
+    noAddress,
+    registerStatus,
   } = useProfiles();
 
   const [drawer, setDrawer] = useState(false);
@@ -132,7 +135,7 @@ const Header = ({ _loading = false }) => {
         // await usewallet.switchNetwork(switchingTo);
         clearProfileData();
       } catch (error) {
-        console.error('Error during account switch:', error);
+        consoleError('Error during account switch:', error);
         //if cannot login directly with current password switch to unlock page
         await usewallet.lockWallet();
         history.push('/unlock');
@@ -168,7 +171,7 @@ const Header = ({ _loading = false }) => {
     }
     // The header should handle transactionError events
     if (request.msg === 'transactionError') {
-      console.warn('transactionError', request.errorMessage, request.errorCode);
+      consoleWarn('transactionError', request.errorMessage, request.errorCode);
       // The error message is not used anywhere else for now
       setErrorMessage(request.errorMessage);
       setErrorCode(request.errorCode);
@@ -401,7 +404,14 @@ const Header = ({ _loading = false }) => {
             alignItems: 'center',
           }}
         >
-          <Tooltip title={chrome.i18n.getMessage('Copy__Address')} arrow>
+          <Tooltip
+            title={
+              noAddress
+                ? chrome.i18n.getMessage('Check_your_public_key')
+                : chrome.i18n.getMessage('Copy__Address')
+            }
+            arrow
+          >
             <span>
               <Button
                 data-testid="copy-address-button"
@@ -418,6 +428,7 @@ const Header = ({ _loading = false }) => {
                   sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
                 >
                   <Typography
+                    data-testid="account-name"
                     variant="overline"
                     color="text"
                     align="center"
@@ -428,23 +439,28 @@ const Header = ({ _loading = false }) => {
                       `${props.name === 'Flow' ? 'Wallet' : props.name}${
                         isValidEthereumAddress(props.address) ? ' EVM' : ''
                       }`
+                    ) : noAddress ? (
+                      'None'
                     ) : (
-                      <Skeleton variant="text" width={40} />
+                      <Skeleton variant="text" width={120} />
                     )}
                   </Typography>
                   <Box sx={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
                     <Typography
+                      data-testid="account-address"
                       variant="caption"
                       color="text.secondary"
                       sx={{ textTransform: 'none' }}
                     >
                       {haveAddress ? (
                         formatAddress(props.address)
+                      ) : noAddress ? (
+                        chrome.i18n.getMessage('No_address_found')
                       ) : (
                         <Skeleton variant="text" width={120} />
                       )}
                     </Typography>
-                    <IconCopy fill="icon.navi" width="12px" />
+                    {!noAddress && <IconCopy fill="icon.navi" width="12px" />}
                   </Box>
                 </Box>
               </Button>

@@ -4,12 +4,13 @@ import { makeStyles } from '@mui/styles';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
+import { consoleError } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import lilo from '@/ui/FRWAssets/image/lilo.png';
-import { LLPrimaryButton, LLResetPopup } from '@/ui/FRWComponent';
+import { LLPrimaryButton } from '@/ui/FRWComponent';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useWallet, useApproval, useWalletRequest, useWalletLoaded } from '@/ui/utils';
+import { useWallet, useWalletLoaded } from '@/ui/utils';
 import { openInternalPageInTab } from '@/ui/utils/webapi';
 
 import CancelIcon from '../../../components/iconfont/IconClose';
@@ -65,7 +66,6 @@ const Unlock = () => {
   const [showPasswordError, setShowPasswordError] = useState(false);
   const [showUnexpectedError, setShowUnexpectedError] = useState(false);
   const [password, setPassword] = useState(DEFAULT_PASSWORD);
-  const [resetPop, setResetPop] = useState<boolean>(false);
   const [unlocking, setUnlocking] = useState<boolean>(false);
   const { clearProfileData } = useProfiles();
 
@@ -75,7 +75,6 @@ const Unlock = () => {
   }, []);
 
   const restPass = useCallback(async () => {
-    // setResetPop(true);
     await wallet.lockWallet();
     clearProfileData();
     openInternalPageInTab('forgot');
@@ -96,7 +95,7 @@ const Unlock = () => {
       await wallet.unlock(password);
       history.replace('/');
     } catch (err) {
-      console.error(err);
+      consoleError('failed to unlock wallet', err);
       setShowUnexpectedError(true);
     } finally {
       setUnlocking(false);
@@ -218,15 +217,6 @@ const Unlock = () => {
           {chrome.i18n.getMessage('Forgot_password')}
         </Typography>
       </Box>
-
-      <LLResetPopup
-        resetPop={resetPop}
-        handleCloseIconClicked={() => setResetPop(false)}
-        handleCancelBtnClicked={() => setResetPop(false)}
-        handleAddBtnClicked={() => {
-          setResetPop(false);
-        }}
-      />
     </Box>
   );
 };

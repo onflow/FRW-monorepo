@@ -3,6 +3,7 @@ import { Typography, Box, FormControl, Input } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { useEffect, useRef, useState } from 'react';
 
+import { consoleError } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import { LLPrimaryButton } from 'ui/FRWComponent';
@@ -64,11 +65,11 @@ const RecoverPage = ({ dataArray, setArray, goNext }) => {
               }
             }
           } catch (dataEntryError) {
-            console.error('Error processing data entry:', dataEntryError);
+            consoleError('Error processing data entry:', dataEntryError);
           }
         });
       } catch (keyringError) {
-        console.error('Error processing keyring:', keyringError);
+        consoleError('Error processing keyring:', keyringError);
       }
     });
 
@@ -96,8 +97,7 @@ const RecoverPage = ({ dataArray, setArray, goNext }) => {
 
     navigator.clipboard
       .writeText(allValues)
-      .then(() => console.log('Copied to clipboard successfully!'))
-      .catch((err) => console.error('Failed to copy to clipboard: ', err));
+      .catch((err) => consoleError('Failed to copy to clipboard: ', err));
   };
 
   const usernameError = () => (

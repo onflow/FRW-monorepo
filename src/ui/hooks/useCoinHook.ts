@@ -1,12 +1,12 @@
 import BN from 'bignumber.js';
 import { useCallback, useEffect, useState, useRef } from 'react';
 
-import { type ExtendedTokenInfo, type CoinItem, type TokenFilter } from '@/shared/types/coin-types';
-import { DEFAULT_CURRENCY, type Currency } from '@/shared/types/wallet-types';
+import { type ExtendedTokenInfo, type TokenFilter } from '@/shared/types/coin-types';
+import { consoleError } from '@/shared/utils/console-log';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
-import { debug } from '@/ui/utils';
 import { useWallet } from '@/ui/utils/WalletContext';
 
+import { useCurrency } from './preference-hooks';
 import { useCoinList, useTokenFilter, setTokenFilter } from './use-coin-hooks';
 import { useProfiles } from './useProfileHook';
 
@@ -14,34 +14,16 @@ export const useCoins = () => {
   const usewallet = useWallet();
   const { network } = useNetwork();
   const { currentWallet } = useProfiles();
-
+  const currency = useCurrency();
   const initAttemptedRef = useRef(false);
 
   // Replace Zustand state with React state
   const [balance, setBalance] = useState<string>('0');
   const [totalFlow, setTotalFlow] = useState<string>('0');
   const [availableFlow, setAvailableFlow] = useState<string>('0');
-  const [coinsLoaded, setCoinsLoaded] = useState(false);
-  const [currencyCode, setCurrencyCode] = useState<string | undefined>();
-
-  useEffect(() => {
-    const fetchCurrency = async () => {
-      try {
-        const currency: Currency = await usewallet?.getDisplayCurrency();
-        setCurrencyCode(currency?.code);
-      } catch (error) {
-        console.error('Failed to fetch display currency, using default USD:', error);
-        setCurrencyCode(DEFAULT_CURRENCY.code); // Handle error case
-      }
-    };
-    if (usewallet) {
-      fetchCurrency();
-    }
-  }, [usewallet]);
 
   const handleStorageData = useCallback(
     async (data?: ExtendedTokenInfo[] | null) => {
-      debug('handleStorageData', data);
       if (!data) return;
 
       // Create a map for faster lookups
@@ -69,10 +51,12 @@ export const useCoins = () => {
     [setTotalFlow, setBalance]
   );
 
-  const coins = useCoinList(network, currentWallet?.address, currencyCode);
+  const coins = useCoinList(network, currentWallet?.address, currency?.code);
+  const coinsLoaded = coins !== undefined;
+
   const tokenFilter = useTokenFilter(network, currentWallet?.address) || {
     hideDust: false,
-    hideUnverified: false,
+    hideUnverified: true,
     filteredIds: [],
   };
 
@@ -85,22 +69,17 @@ export const useCoins = () => {
     if (currentWallet?.address) {
       // If coinList is empty or undefined, initialize it
       if ((!coins || coins.length === 0) && !initAttemptedRef.current) {
-        debug('Coin list is empty, initializing for address:', currentWallet.address);
-
         const initAndHandle = async () => {
           try {
             initAttemptedRef.current = true;
-            debug('Coin list initialization completed');
           } catch (error) {
-            console.error('Error initializing coin list:', error);
+            consoleError('Error initializing coin list:', error);
           }
         };
 
         initAndHandle();
       } else if (coins && coins.length > 0) {
         handleStorageData(coins);
-        setCoinsLoaded(true);
-        debug('Coin list already loaded with', coins.length);
       }
     }
   }, [usewallet, network, currentWallet, coins, handleStorageData]);
@@ -112,7 +91,7 @@ export const useCoins = () => {
   return {
     handleStorageData,
     updateTokenFilter,
-    coins: coins || [],
+    coins,
     tokenFilter,
     balance,
     totalFlow,

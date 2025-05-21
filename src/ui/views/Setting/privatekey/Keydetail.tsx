@@ -1,10 +1,11 @@
 import { Box, Grid, IconButton, Typography } from '@mui/material';
 import React, { useEffect, useState, useCallback } from 'react';
-import { useLocation, useRouteMatch } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
-import { getLoggedInAccount } from '@/background/utils/getLoggedInAccount';
-import { storage } from '@/background/webapi';
+import { pubKeyTupleToAccountKey } from '@/background/utils/account-key';
+import { consoleError } from '@/shared/utils/console-log';
 import { LLHeader } from '@/ui/FRWComponent';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from 'ui/utils';
 
 import IconCopy from '../../../../components/iconfont/IconCopy';
@@ -14,44 +15,50 @@ interface State {
 
 const Keydetail = () => {
   const location = useLocation<State>();
-  const usewallet = useWallet();
-  const [privatekey, setKey] = useState('');
-  const [publickey, setPublicKey] = useState('');
-  const [hashAlgorithm, setHash] = useState('');
-  const [signAlgorithm, setSign] = useState('');
+  const history = useHistory();
+  const wallet = useWallet();
+  const { parentWallet } = useProfiles();
+  const [privatekey, setKey] = useState<string | undefined>(undefined);
 
   const verify = useCallback(async () => {
     try {
       const pwd = location.state.password;
-      const result = await usewallet.getPrivateKeyForCurrentAccount(pwd);
-      setKey(result);
 
-      const pubKey = await storage.get('pubKey');
-      const account = await getLoggedInAccount();
-      const { hashAlgoString: hashAlgo, signAlgoString: signAlgo } = account;
+      const result = await wallet.getPubKeyPrivateKey(pwd);
 
-      setPublicKey(pubKey);
-      setHash(hashAlgo);
-      setSign(signAlgo);
+      const accountKey = pubKeyTupleToAccountKey(parentWallet.publicKey, result);
+      let pk = '';
+
+      // Find matching algorithm
+      if (accountKey.public_key === result.P256.pubK) {
+        pk = result.P256.pk;
+      } else if (accountKey.public_key === result.SECP256K1.pubK) {
+        pk = result.SECP256K1.pk;
+      } else {
+        throw new Error('No matching public key algorithm found');
+      }
+
+      setKey(pk);
     } catch (error) {
-      console.error('Error during verification:', error);
+      consoleError('Error during verification:', error);
+      // Handle specific error cases
+      if (error instanceof Error) {
+        // Set appropriate error state or show user feedback
+        setKey('Error during verification');
+      }
     }
-  }, [location.state.password, usewallet, setKey, setPublicKey, setHash, setSign]);
-
-  const setTab = useCallback(async () => {
-    try {
-      await usewallet.setDashIndex(3); // Set the dashboard index in the wallet
-    } catch (error) {
-      console.error('Error setting tab:', error);
-    }
-  }, [usewallet]);
+  }, [location.state?.password, wallet, parentWallet]);
 
   useEffect(() => {
-    setTab();
-    verify();
-  }, [verify, setTab]);
+    if (!location.state?.password || !location.state) {
+      history.push('/dashboard/nested/privatekeypassword');
+    }
+    if (parentWallet?.publicKey) {
+      verify();
+    }
+  }, [verify, parentWallet?.publicKey, history, location.state]);
 
-  const CredentialBox = ({ data }) => {
+  const CredentialBox = ({ data }: { data?: string }) => {
     return (
       <>
         <Box
@@ -71,6 +78,7 @@ const Keydetail = () => {
             variant="body1"
             display="inline"
             color="text.secondary"
+            minHeight="36px"
             sx={{
               alignSelf: 'center',
               fontSize: '14px',
@@ -81,13 +89,15 @@ const Keydetail = () => {
               padding: '16px 0',
             }}
           >
-            {data}
+            {data === undefined ? ''.padStart(64, '*') : data}
           </Typography>
           <Grid container direction="row" justifyContent="end" alignItems="end">
             <IconButton
               edge="end"
               onClick={() => {
-                navigator.clipboard.writeText(data);
+                if (data) {
+                  navigator.clipboard.writeText(data);
+                }
               }}
               // sx={{ marginLeft:'380px'}}
             >
@@ -111,44 +121,32 @@ const Keydetail = () => {
         {chrome.i18n.getMessage('Private__Key')}
       </Typography>
       <CredentialBox data={privatekey} />
-      <br />
       <Typography variant="body1" align="left" py="14px" px="20px" fontSize="17px">
         {chrome.i18n.getMessage('Public__Key')}
       </Typography>
-      <CredentialBox data={publickey} />
-      <br />
+      <CredentialBox data={parentWallet?.publicKey} />
 
       <Box
         sx={{
           display: 'flex',
+          width: '364px',
+
           px: '20px',
           justifyContent: 'space-between',
           alignItems: 'center',
-          paddingY: '30px',
+          paddingY: '24px',
         }}
       >
-        <Box
-          sx={{
-            borderLeft: 1,
-            px: '15px',
-            borderColor: '#333333',
-          }}
-        >
+        <Box sx={{ width: '50%' }}>
           <Typography variant="body1" color="text.secondary" align="left" fontSize="14px">
             {chrome.i18n.getMessage('Hash__Algorithm')} <br />
-            {hashAlgorithm}
+            {parentWallet && parentWallet?.publicKey ? parentWallet?.hashAlgoString : ''}
           </Typography>
         </Box>
-        <Box
-          sx={{
-            borderLeft: 1,
-            borderColor: '#333333',
-            px: '15px',
-          }}
-        >
+        <Box sx={{ width: '50%', borderLeft: 1, borderColor: '#333333', px: '15px' }}>
           <Typography variant="body1" color="text.secondary" align="left" fontSize="14px">
             {chrome.i18n.getMessage('Sign__Algorithm')} <br />
-            {signAlgorithm}
+            {parentWallet && parentWallet?.publicKey ? parentWallet?.signAlgoString : ''}
           </Typography>
         </Box>
       </Box>

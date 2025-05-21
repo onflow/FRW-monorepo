@@ -9,6 +9,7 @@ import {
   type ActiveAccountType,
   type ActiveChildType_depreciated,
 } from '@/shared/types/wallet-types';
+import { consoleError } from '@/shared/utils/console-log';
 import { formatLargeNumber } from '@/shared/utils/number';
 import { ButtonRow } from '@/ui/FRWComponent/ButtonRow';
 import CoinsIcon from '@/ui/FRWComponent/CoinsIcon';
@@ -47,12 +48,12 @@ function TabPanel(props) {
   );
 }
 const WalletTab = ({ network }) => {
-  const usewallet = useWallet();
+  const wallet = useWallet();
   const history = useHistory();
   const location = useLocation();
   const { initializeStore } = useInitHook();
-  const { childAccounts, evmWallet, currentWallet } = useProfiles();
   const { balance, coinsLoaded } = useCoins();
+  const { childAccounts, evmWallet, currentWallet, noAddress, registerStatus } = useProfiles();
   const [value, setValue] = React.useState(0);
 
   const [address, setAddress] = useState<string>('');
@@ -81,7 +82,7 @@ const WalletTab = ({ network }) => {
         data = currentWallet?.address ?? '';
       }
     } catch (error) {
-      console.error('Error getting address:', error);
+      consoleError('Error getting address:', error);
       data = '';
     }
     if (data) {
@@ -111,23 +112,23 @@ const WalletTab = ({ network }) => {
 
   const fetchWallet = useCallback(async () => {
     // If childType is 'evm', handle it first
-    const activeAccountType = await usewallet.getActiveAccountType();
+    const activeAccountType = await wallet.getActiveAccountType();
     if (activeAccountType === 'evm') {
       return;
       // If not 'evm', check if it's not active
-    } else if (!isActive) {
+    } else if (activeAccountType === 'child') {
       // Child wallet
-      const ftResult = await usewallet.checkAccessibleFt(address);
+      const ftResult = await wallet.checkAccessibleFt(address);
       if (ftResult) {
         setAccessible(ftResult);
       }
     }
 
     // Handle all non-evm and non-active cases here
-  }, [address, isActive, usewallet]);
+  }, [address, wallet]);
 
   const fetchChildState = useCallback(async () => {
-    const accountType = await usewallet.getActiveAccountType();
+    const accountType = await wallet.getActiveAccountType();
     setChildAccount(childAccounts);
     setChildType(accountType);
     if (accountType !== 'main' && accountType !== 'evm') {
@@ -136,7 +137,7 @@ const WalletTab = ({ network }) => {
       setIsActive(true);
     }
     return accountType;
-  }, [usewallet, childAccounts]);
+  }, [wallet, childAccounts]);
 
   useEffect(() => {
     fetchChildState();
@@ -185,20 +186,18 @@ const WalletTab = ({ network }) => {
 
   useEffect(() => {
     const checkPermission = async () => {
-      if (!(await usewallet.isUnlocked())) {
-        console.log('Wallet is locked');
+      if (!(await wallet.isUnlocked())) {
         return;
       }
-      if (!(await usewallet.getParentAddress())) {
-        console.log('Wallet Tab - No main wallet yet');
+      if (!(await wallet.getParentAddress())) {
         return;
       }
-      const result = await usewallet.checkCanMoveChild();
+      const result = await wallet.checkCanMoveChild();
       setCanMoveChild(result);
     };
 
     checkPermission();
-  }, [usewallet]);
+  }, [wallet]);
 
   useEffect(() => {
     // Add event listener for opening onramp
@@ -210,6 +209,10 @@ const WalletTab = ({ network }) => {
       eventBus.removeEventListener('openOnRamp', onRampHandler);
     };
   }, []);
+
+  const handleAddAddress = () => {
+    wallet.createManualAddress();
+  };
 
   return (
     <Box
@@ -241,7 +244,27 @@ const WalletTab = ({ network }) => {
             fontWeight: 'semi-bold',
           }}
         >
-          {coinsLoaded ? (
+          {noAddress ? (
+            registerStatus ? (
+              <Typography
+                variant="body1"
+                sx={{
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  color: '#777E90',
+                  height: '51px',
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+              >
+                {chrome.i18n.getMessage('Address_creation_in_progress')}
+              </Typography>
+            ) : (
+              <Button variant="contained" onClick={handleAddAddress}>
+                {chrome.i18n.getMessage('Add_address')}
+              </Button>
+            )
+          ) : coinsLoaded ? (
             <CurrencyValue value={balance} showCurrencyCode={false} />
           ) : (
             <Skeleton variant="text" width={100} />

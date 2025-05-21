@@ -4,7 +4,8 @@ import BN from 'bignumber.js';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import enableBg from 'ui/FRWAssets/image/enableBg.png';
+import { consoleError } from '@/shared/utils/console-log';
+import { EnableEvm } from '@/ui/FRWComponent/EnableEvm';
 import { LLPrimaryButton, LLSpinner } from 'ui/FRWComponent';
 import { useWallet } from 'ui/utils';
 
@@ -33,7 +34,7 @@ const Enable = () => {
         setClaiming(false);
       })
       .catch((err) => {
-        console.log(err);
+        consoleError(err);
         setClaiming(false);
       });
   };
@@ -64,40 +65,8 @@ const Enable = () => {
           />
         </IconButton>
       </Box>
+      <EnableEvm />
 
-      <Box
-        sx={{
-          flexGrow: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <CardMedia component="img" sx={{ width: '196px', height: '196px' }} image={enableBg} />
-        <Typography
-          variant="subtitle1"
-          sx={{
-            fontWeight: 'bold',
-            color: '#E6E6E6',
-            textAlign: 'Montserrat',
-            fontFamily: 'Inter',
-            fontSize: '20px',
-            mt: '20px',
-            width: '168px',
-          }}
-          color="error"
-        >
-          {chrome.i18n.getMessage('enable_the_path_to_evm_on_flow')}
-        </Typography>
-        <Typography
-          variant="subtitle1"
-          sx={{ fontWeight: 'normal', color: '#bababa', textAlign: 'center', fontSize: '14px' }}
-          color="error"
-        >
-          {chrome.i18n.getMessage('manage_multi_assets_seamlessly')}
-        </Typography>
-      </Box>
       <Box sx={{ padding: '18px' }}>
         {claiming ? (
           <Box

@@ -5,6 +5,7 @@ import {
   userInfoRefreshRegex,
   type UserInfoStore,
 } from '@/shared/utils/cache-data-keys';
+import { consoleError } from '@/shared/utils/console-log';
 import { getCurrentProfileId, returnCurrentProfileId } from '@/shared/utils/current-id';
 import storage from '@/shared/utils/storage';
 import { createSessionStore } from 'background/utils';
@@ -27,7 +28,11 @@ class UserInfoService {
     registerRefreshListener(userInfoRefreshRegex, this.loadUserInfoByUserId);
   };
 
-  loadStoredUserList = async () => {
+  getUserList = (): UserInfoResponse[] => {
+    return structuredClone(this.userList);
+  };
+
+  loadStoredUserList = async (): Promise<UserInfoResponse[]> => {
     const userList = await storage.get(storedUserListKey);
     if (!userList) {
       // Translate from logged in accounts
@@ -36,7 +41,7 @@ class UserInfoService {
     return userList;
   };
 
-  translateFromLoggedInAccounts = async () => {
+  translateFromLoggedInAccounts = async (): Promise<UserInfoResponse[]> => {
     const loggedInAccounts: LoggedInAccount[] = await storage.get(loggedInAccountsKey);
     if (!loggedInAccounts) {
       return [];
@@ -78,7 +83,17 @@ class UserInfoService {
 
     return userInfo;
   };
+  updateUserInfo = async (nickname: string, avatar: string) => {
+    const res = await openapiService.updateProfile(nickname, avatar);
+    // Refresh the user info
+    if (res.status === 200) {
+      const currentId = await getCurrentProfileId();
+      const userInfo = await this.loadUserInfoByUserId(currentId);
+      return userInfo;
+    }
 
+    throw new Error('Failed to update user info');
+  };
   getCurrentUserInfo = async (): Promise<UserInfoResponse> => {
     const currentId = await getCurrentProfileId();
     const userInfo = await this.getUserInfo(currentId);
@@ -158,7 +173,7 @@ class UserInfoService {
       }
       return avatar;
     } catch (err) {
-      console.error(err);
+      consoleError(err);
       return avatar;
     }
   };

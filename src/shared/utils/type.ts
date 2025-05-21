@@ -40,7 +40,6 @@ export enum FCLServiceType {
   localView = 'local-view',
   openID = 'open-id',
 }
-
 export type FCLWalletConnectSyncAccountInfo = {
   method: FCLWalletConnectMethod.accountInfo;
   data: {

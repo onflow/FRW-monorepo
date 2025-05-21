@@ -70,7 +70,7 @@ const useStyles = makeStyles(() => ({
 const TokenList = () => {
   const classes = useStyles();
   const wallet = useWallet();
-  const { coins, tokenFilter } = useCoins();
+  const { coins, tokenFilter, updateTokenFilter } = useCoins();
   const [keyword, setKeyword] = useState('');
   const [tokenInfoList, setTokenInfoList] = useState<ExtendedTokenInfo[]>([]);
   const [filteredTokenList, setFilteredTokenList] = useState<ExtendedTokenInfo[]>([]);
@@ -78,7 +78,6 @@ const TokenList = () => {
   const [selectedToken, setSelectedToken] = useState<ExtendedTokenInfo | null>(null);
   const [filters, setFilter] = useState('all');
   const [filteredCollections, setFilteredCollections] = useState<ExtendedTokenInfo[]>([]);
-  const [isVerifiedActive, setVerifiedActive] = useState(false);
 
   const [isLoading, setLoading] = useState(true);
 
@@ -126,8 +125,8 @@ const TokenList = () => {
     if (word !== '') {
       const results = tokenInfoList.filter((token) => {
         return (
-          token.name.toLowerCase().includes(keyword.toLowerCase()) ||
-          token.symbol.toLowerCase().includes(keyword)
+          token.name.toLowerCase().includes(word.toLowerCase()) ||
+          token.symbol.toLowerCase().includes(word.toLowerCase())
         );
       });
       setFilteredTokenList(results);
@@ -157,10 +156,9 @@ const TokenList = () => {
   }, [filters, getFilteredCollections]);
 
   const handleToggle = () => {
-    setVerifiedActive((prev) => !prev);
     setFilter((prev) => (prev === 'all' ? 'verified' : 'all'));
+    updateTokenFilter({ ...tokenFilter, hideUnverified: !tokenFilter.hideUnverified });
   };
-
   return (
     <StyledEngineProvider injectFirst>
       <div className="page">
@@ -208,7 +206,7 @@ const TokenList = () => {
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              padding: '16px',
+              padding: '0 18px',
               gap: '10px',
             }}
           >
@@ -227,7 +225,7 @@ const TokenList = () => {
               <img src={VerifiedIcon} alt="Verified" style={{ width: '16px', height: '16px' }} />
             </Typography>
             <Switch
-              checked={isVerifiedActive}
+              checked={tokenFilter.hideUnverified}
               onChange={handleToggle}
               color="primary"
               inputProps={{ 'aria-label': 'Toggle Verified' }}
@@ -278,7 +276,7 @@ const TokenList = () => {
                 <TokenItem
                   token={token}
                   isLoading={isLoading}
-                  enabled={coins.map((item) => item.contractName).includes(token.contractName)}
+                  enabled={coins?.map((item) => item.contractName).includes(token.contractName)}
                   key={index}
                   onClick={handleTokenClick}
                   tokenFilter={tokenFilter}

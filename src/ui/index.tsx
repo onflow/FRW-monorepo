@@ -35,7 +35,6 @@ const wallet: Record<string, any> = new Proxy(
   {},
   {
     get(obj, key) {
-      // console.log('portMessageChannel', obj, key);
       switch (key) {
         case 'openapi':
           return new Proxy(
@@ -43,9 +42,7 @@ const wallet: Record<string, any> = new Proxy(
             {
               get(obj, key) {
                 return function (...params: any) {
-                  chrome.runtime.sendMessage({ message: 'openapi' }, function (response) {
-                    // console.log(response);
-                  });
+                  chrome.runtime.sendMessage({ message: 'openapi' }, function (response) {});
 
                   return portMessageChannel.request({
                     type: 'openapi',
@@ -64,12 +61,8 @@ const wallet: Record<string, any> = new Proxy(
                 method: key,
                 params,
               },
-              function (_response) {
-                // console.log('portMessageChannel 3 ->', response);
-              }
+              function (_response) {}
             );
-
-            // console.log('portMessageChannel 2', obj, key);
 
             return portMessageChannel.request({
               type: 'controller',
@@ -83,14 +76,12 @@ const wallet: Record<string, any> = new Proxy(
 );
 
 portMessageChannel.listen((data) => {
-  console.log('portMessageChannel.listen ->', data);
   if (data.type === 'broadcast') {
     eventBus.emit(data.method, data.params);
   }
 });
 
 eventBus.addEventListener(EVENTS.broadcastToBackground, (data) => {
-  console.log('eventBus.addEventListener ->', data);
   portMessageChannel.request({
     type: 'broadcast',
     method: data.method,

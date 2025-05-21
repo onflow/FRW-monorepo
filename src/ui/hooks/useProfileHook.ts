@@ -1,18 +1,13 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo } from 'react';
 
-import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
+import { MAINNET_CHAIN_ID } from '@/shared/types/network-types';
 import {
-  type FlowAddress,
   type WalletAccount,
-  type ChildAccountMap,
   type MainAccount,
   getActiveAccountTypeForAddress,
 } from '@/shared/types/wallet-types';
-import { ensureEvmAddressPrefix, withPrefix } from '@/shared/utils/address';
-import { UserWalletStore } from '@/shared/utils/user-data-keys';
+import { SIGN_ALGO_NUM_DEFAULT, HASH_ALGO_NUM_DEFAULT } from '@/shared/utils/algo-constants';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
-import { debug } from '@/ui/utils';
-import { useWallet, useWalletLoaded } from '@/ui/utils/WalletContext';
 
 import {
   useActiveAccounts,
@@ -24,33 +19,33 @@ import {
   useMainAccounts,
   useUserInfo,
   useUserWallets,
+  useRegisterStatus,
+  usePayer,
 } from './use-account-hooks';
 
-const INITIAL_WALLET = {
+const INITIAL_WALLET: WalletAccount = {
   name: '',
   icon: '',
   address: '',
-  chain_id: 'flow',
   id: 1,
-  coins: ['flow'],
   color: '',
   chain: MAINNET_CHAIN_ID,
 };
 
-const INITIAL_ACCOUNT = {
+const INITIAL_ACCOUNT: MainAccount = {
   name: '',
   icon: '',
   address: '',
   id: 1,
   color: '',
-  keyIndex: 0,
-  weight: 0,
   publicKey: '',
-  signAlgo: 1,
-  hashAlgo: 1,
-  signAlgoString: 'ECDSA_secp256k1',
-  hashAlgoString: 'SHA3_256',
+  keyIndex: 0,
+  weight: 1000,
   chain: MAINNET_CHAIN_ID,
+  signAlgo: SIGN_ALGO_NUM_DEFAULT,
+  signAlgoString: 'ECDSA_secp256k1',
+  hashAlgo: HASH_ALGO_NUM_DEFAULT,
+  hashAlgoString: 'SHA3_256',
 };
 
 export const useProfiles = () => {
@@ -72,8 +67,11 @@ export const useProfiles = () => {
 
   const currentBalance = useAccountBalance(network, activeAccounts?.currentAddress);
 
+  const noAddress = activeAccounts && activeAccounts.currentAddress === null;
+  const registerStatus = useRegisterStatus(userWallets?.currentPubkey);
   const parentWallet =
-    walletList.find((wallet) => wallet.address === activeAccounts?.parentAddress) ?? INITIAL_WALLET;
+    walletList.find((wallet) => wallet.address === activeAccounts?.parentAddress) ??
+    INITIAL_ACCOUNT;
 
   const parentWalletIndex = walletList.findIndex(
     (wallet) => wallet.address === activeAccounts?.currentAddress
@@ -89,7 +87,10 @@ export const useProfiles = () => {
   const evmAddress = evmAccount?.address ?? '';
   const mainAddress = activeAccounts?.parentAddress ?? '';
 
-  const mainAddressLoading = !mainAccounts || !activeAccounts || !activeAccounts?.parentAddress;
+  const mainAddressLoading =
+    !mainAccounts || !activeAccounts || activeAccounts?.parentAddress === undefined;
+
+  const payer = usePayer();
 
   const activeAccountType = useMemo(
     () =>
@@ -117,6 +118,12 @@ export const useProfiles = () => {
     }
   }, [activeAccountType, evmAccount, childAccounts, parentWallet, activeAccounts?.currentAddress]);
 
+  const currentWalletList = [
+    parentWallet,
+    ...(evmAccount ? [evmAccount] : []),
+    ...(childAccounts ?? []),
+  ];
+
   const canMoveToChild =
     activeAccountType === 'main' && (evmAccount || (childAccounts && childAccounts?.length > 0));
 
@@ -141,6 +148,11 @@ export const useProfiles = () => {
     mainAddressLoading,
     profileIds,
     activeAccountType,
+    noAddress,
+    registerStatus,
     canMoveToChild,
+    currentWalletList,
+    payer,
+    network,
   };
 };

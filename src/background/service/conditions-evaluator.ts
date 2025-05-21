@@ -1,5 +1,6 @@
 import type { NewsConditionType } from '@/shared/types/news-types';
 import { isValidFlowAddress } from '@/shared/utils/address';
+import { consoleError } from '@/shared/utils/console-log';
 
 import packageJson from '../../../package.json';
 import { userWalletService } from '../service';
@@ -25,7 +26,7 @@ class ConditionsEvaluator {
           const canUpgrade = this.compareVersions(CURRENT_VERSION, latestVersion) < 0;
           return canUpgrade;
         } catch (err) {
-          console.error('Error evaluating canUpgrade', err);
+          consoleError('Error evaluating canUpgrade', err);
           return false;
         }
 

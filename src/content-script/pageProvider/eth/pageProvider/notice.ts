@@ -194,7 +194,9 @@ function notice(options: Partial<Options>) {
     onHide: () => {
       if (container && !container?.hasChildNodes()) {
         document.body.removeChild(container);
-        style && document.body.removeChild(style);
+        if (style) {
+          document.body.removeChild(style);
+        }
         style = null;
         container = null;
       }

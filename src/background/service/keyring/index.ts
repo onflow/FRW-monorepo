@@ -5,7 +5,6 @@ import { EventEmitter } from 'events';
 import * as bip39 from 'bip39';
 import encryptor from 'browser-passworder';
 import * as ethUtil from 'ethereumjs-util';
-import log from 'loglevel';
 
 import { normalizeAddress } from '@/background/utils';
 import { pubKeyAccountToAccountKey, defaultAccountKey } from '@/background/utils/account-key';
@@ -34,10 +33,10 @@ import {
   CURRENT_ID_KEY,
   KEYRING_STATE_VAULT_V3,
   type VaultEntryV3,
-  getCurrentPublicKey,
 } from '@/shared/types/keyring-types';
 import { type LoggedInAccount } from '@/shared/types/wallet-types';
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
+import { consoleError, consoleLog, consoleWarn } from '@/shared/utils/console-log';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
 import storage from '@/shared/utils/storage';
 import { KEYRING_TYPE } from 'consts';
@@ -287,7 +286,7 @@ class KeyringService extends EventEmitter {
       const pubKTuple = await pkTuple2PubKey(privateKeyTuple);
       return combinePubPkTuple(pubKTuple, privateKeyTuple);
     } catch (error) {
-      console.error('Failed to get public key tuple');
+      consoleError('Failed to get public key tuple');
       throw error;
     }
   };
@@ -362,7 +361,7 @@ class KeyringService extends EventEmitter {
    */
   async importPrivateKey(password: string, privateKey: string): Promise<Keyring> {
     // Verify the password
-    await this.verifyPassword(password);
+    await this.verifyOrBoot(password);
     // Clear the current keyrings as the new keyring will be a simple keyring
     await this.clearKeyrings();
     // Add the new keyring
@@ -382,7 +381,7 @@ class KeyringService extends EventEmitter {
    */
   async importPublicKey(password: string, key: string, seed: string): Promise<any> {
     // Verify the password
-    await this.verifyPassword(password);
+    await this.verifyOrBoot(password);
     // Clear the current keyrings as the new keyring will replace it
     await this.clearKeyrings();
 
@@ -416,7 +415,7 @@ class KeyringService extends EventEmitter {
 
   async generatePreMnemonic(password: string): Promise<string> {
     // Make sure we're using the correct password
-    await this.verifyPassword(password);
+    await this.verifyOrBoot(password);
     const mnemonic = this.generateMnemonic();
     const preMnemonics = await this.encryptor.encrypt(password, mnemonic);
     this.memStore.updateState({ preMnemonics });
@@ -436,7 +435,7 @@ class KeyringService extends EventEmitter {
 
   async getPreMnemonics(password: string): Promise<any> {
     // Verify the password
-    await this.verifyPassword(password);
+    await this.verifyOrBoot(password);
     if (!this.memStore.getState().preMnemonics) {
       return '';
     }
@@ -461,7 +460,7 @@ class KeyringService extends EventEmitter {
     passphrase = ''
   ): Promise<Keyring> {
     // Verify the password
-    await this.verifyPassword(password);
+    await this.verifyOrBoot(password);
     // Validate mnemonic first
     if (!bip39.validateMnemonic(seed)) {
       throw new Error(i18n.t('mnemonic phrase is invalid'));
@@ -544,7 +543,7 @@ class KeyringService extends EventEmitter {
    * @returns {Promise<Object>} A Promise that resolves to the state.
    */
   async submitPassword(password: string): Promise<MemStoreState> {
-    await this.verifyPassword(password);
+    await this.verifyOrBoot(password);
 
     this.currentKeyring = await this.unlockKeyrings(password);
     this.setUnlocked();
@@ -566,6 +565,23 @@ class KeyringService extends EventEmitter {
       throw new Error(i18n.t('Cannot unlock without a previous vault'));
     }
     await this.encryptor.decrypt(password, encryptedBooted);
+  }
+
+  /**
+   * Verify or Boot
+   *
+   * Attempts to decrypt the current vault with a given password
+   * to verify its validity. If the vault is not encrypted, it will boot.
+   *
+   * @param {string} password
+   */
+  async verifyOrBoot(password: string): Promise<void> {
+    const encryptedBooted = this.store.getState().booted;
+    if (!encryptedBooted) {
+      await this.boot(password);
+    } else {
+      await this.verifyPassword(password);
+    }
   }
 
   /**
@@ -656,7 +672,7 @@ class KeyringService extends EventEmitter {
    * @returns {Promise<Object>} A Promise that resolves to the state.
    */
   async addNewAccount(password: string, selectedKeyring: any): Promise<string[]> {
-    await this.verifyPassword(password);
+    await this.verifyOrBoot(password);
     // Add accounts and get result
     const accounts = await selectedKeyring.addAccounts(1);
 
@@ -714,7 +730,7 @@ class KeyringService extends EventEmitter {
     brand?: string
   ): Promise<any> {
     // Verify the password
-    await this.verifyPassword(password);
+    await this.verifyOrBoot(password);
     const keyring = await this.getKeyringForAccount_deprecated(address, type);
 
     // Not all the keyrings support this, so we have to check
@@ -1191,7 +1207,6 @@ class KeyringService extends EventEmitter {
     includeWatchKeyring = true
   ): Promise<any> {
     const hexed = normalizeAddress(address).toLowerCase();
-    log.debug(`KeyringController - getKeyringForAccount: ${hexed}`);
     let keyrings = type
       ? this.currentKeyring.filter((keyring) => keyring.type === type)
       : this.currentKeyring;
@@ -1375,7 +1390,7 @@ class KeyringService extends EventEmitter {
     const encryptedData = entry.encryptedData;
 
     if (!encryptedData) {
-      console.error(`No encrypted data found for entry with ID ${id}`);
+      consoleError(`No encrypted data found for entry with ID ${id}`);
     }
 
     // Decrypt the entry
@@ -1412,7 +1427,7 @@ class KeyringService extends EventEmitter {
         decryptedKeyrings.push(keyringDataV3);
       } catch (err) {
         // Don't print the error as it may contain sensitive data
-        console.error(`Failed to process vault entry`);
+        consoleError(`Failed to process vault entry`);
         // Continue with next entry
       }
     }
@@ -1431,7 +1446,7 @@ class KeyringService extends EventEmitter {
     const encryptedData = entry.encryptedData;
 
     if (!encryptedData) {
-      console.error(`No encrypted data found for entry`);
+      consoleError(`No encrypted data found for entry`);
     }
 
     // Decrypt the entry
@@ -1463,7 +1478,7 @@ class KeyringService extends EventEmitter {
         decryptedKeyrings.push(keyringDataV3);
       } catch {
         // Don't print the error as it may contain sensitive data
-        console.error(`Failed to process vault entry`);
+        consoleError(`Failed to process vault entry`);
         // Continue with next entry
       }
     }
@@ -1531,7 +1546,7 @@ class KeyringService extends EventEmitter {
           const keys = Object.keys(deepVaultEntry);
           const id = keys[0];
           const newEntry: VaultEntryV2 = { id, encryptedData: entry };
-          console.log(`Fixed string entry by adding ID ${id} from deepVault`);
+          consoleLog(`Fixed string entry by adding ID ${id} from deepVault`);
           return newEntry;
         }
 
@@ -1539,7 +1554,7 @@ class KeyringService extends EventEmitter {
         if (loggedInAccounts && loggedInAccounts[index] && loggedInAccounts[index].id) {
           const accountId = loggedInAccounts[index].id;
           const newEntry = { id: accountId, encryptedData: entry };
-          console.log(
+          consoleLog(
             `Fixed string entry by adding ID ${accountId} from loggedInAccounts at index ${index}`
           );
           return newEntry;
@@ -1548,7 +1563,7 @@ class KeyringService extends EventEmitter {
         // TODO: If no matching ID is found, then we 'could' decrypt the entry and use loginV3Api to get the ID
         // Handle through support. This isn't worth the effort. We won't update this old vault so it will still be there.
 
-        console.log('Could not find matching ID for string entry');
+        consoleError('Could not find matching ID for string entry');
         return null;
       }
       // If the entry is an object, we can just map the values to the new format
@@ -1577,7 +1592,6 @@ class KeyringService extends EventEmitter {
     const foundEntry = vaultArray.find((entry) => entry.id === currentId);
 
     if (foundEntry) {
-      console.log('Found account with ID:', currentId);
       await storage.set(CURRENT_ID_KEY, currentId);
       try {
         const encryptedDataString = foundEntry[currentId];
@@ -1585,10 +1599,10 @@ class KeyringService extends EventEmitter {
 
         // Validate that it has the expected structure
         if (!encryptedData.data || !encryptedData.iv || !encryptedData.salt) {
-          console.warn('Encrypted data is missing required fields');
+          consoleWarn('Encrypted data is missing required fields');
         }
       } catch (error) {
-        console.error('Error parsing encrypted data:', error);
+        consoleError('Error parsing encrypted data:', error);
       }
 
       return [foundEntry];
@@ -1735,6 +1749,97 @@ class KeyringService extends EventEmitter {
   }
 
   /**
+   * Remove Profile
+   *
+   * Removes a specific profile and its associated keys from the keyring list.
+   * If it's the last profile, it resets the entire wallet.
+   * If it's the current active profile, it switches to another profile.
+   *
+   * @param {string} password - The keyring controller password.
+   * @param {string} profileId - The ID of the profile to remove.
+   * @returns {Promise<boolean>} - A promise that resolves to true if successful.
+   */
+  async removeProfile(password: string, profileId: string): Promise<boolean> {
+    const profileIndex = this.decryptedKeyrings.findIndex((keyring) => keyring.id === profileId);
+    if (profileIndex === -1) {
+      throw new Error(`Profile with ID ${profileId} not found`);
+    }
+    // Verify the password
+    await this.verifyPassword(password);
+
+    // Get all keyring IDs *before* modification
+    const keyringIds = await this.getAllKeyringIds(); // Or use: this.keyringList.map(k => k.id);
+
+    // If this is the only profile, reset the entire wallet
+    if (keyringIds.length <= 1) {
+      await this.resetKeyRing();
+      // Update the memory store
+      this.memStore.updateState({ isUnlocked: false });
+      this.emit('lock');
+      await storage.remove(CURRENT_ID_KEY);
+      this.store.updateState({ booted: '' });
+      return true;
+    }
+
+    // Get the current profile ID
+    const currentId = await returnCurrentProfileId();
+
+    // If we're removing the current profile, determine the next one to switch to
+    let needToSwitchKeyring = false;
+    let nextProfileId: string | undefined = undefined;
+
+    if (currentId === profileId) {
+      // Calculate the index of the next profile, wrapping around if removing the last one
+      const nextIndex = (profileIndex + 1) % keyringIds.length;
+      // Get the ID of the profile at the next index
+      nextProfileId = keyringIds[nextIndex];
+
+      if (nextProfileId && nextProfileId !== profileId) {
+        // Ensure we found a valid *different* ID
+        // Update the current profile ID in storage immediately
+        await storage.set(CURRENT_ID_KEY, nextProfileId);
+        needToSwitchKeyring = true;
+      } else {
+        // This should theoretically not happen if length > 1, but handle defensively
+        consoleError(
+          'Error: Could not determine the next profile ID to switch to. currentId:',
+          currentId,
+          'profileId:',
+          profileId,
+          'profileIndex:',
+          profileIndex,
+          'keyringIds:',
+          [...keyringIds]
+        );
+        // Decide recovery strategy: maybe default to the first ID again, or throw?
+        // For now, we'll proceed without switching, potentially leaving state inconsistent
+        needToSwitchKeyring = false;
+        nextProfileId = undefined; // Ensure it's not used later
+      }
+    }
+
+    // Remove the profile from the in-memory keyring list
+    this.decryptedKeyrings.splice(profileIndex, 1);
+
+    // Update the vault in the store by re-encrypting the remaining keyrings
+    await this.encryptVaultArray(this.decryptedKeyrings, password);
+
+    // Switch to the next profile's keyring in memory if needed
+    if (needToSwitchKeyring && nextProfileId) {
+      this.currentKeyring = await this.switchKeyring(nextProfileId);
+    }
+
+    // Update the memory store
+    await this._updateMemStoreKeyrings();
+    await this.fullUpdate();
+
+    // Emit an event that a profile was removed
+    this.emit('profileRemoved', profileId);
+
+    return true;
+  }
+
+  /**
    * Atomically change the password for all keyrings/vaults and the booted state.
    * If any step fails, nothing is written to storage.
    *
@@ -1776,7 +1881,7 @@ class KeyringService extends EventEmitter {
 
       return true;
     } catch (error) {
-      log.error('Failed to change keyring password atomically:', error);
+      consoleError('Failed to change keyring password atomically:', error);
       return false;
     }
   }

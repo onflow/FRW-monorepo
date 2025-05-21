@@ -4,6 +4,7 @@ import { styled } from '@mui/material/styles';
 import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 
+import { consoleError } from '@/shared/utils/console-log';
 import { useWallet } from 'ui/utils';
 
 import { LLPrimaryButton, LLSpinner } from '../../../FRWComponent';
@@ -68,7 +69,7 @@ const EditAccount = ({
         history.push(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((error) => {
-        console.error('EditAccount - failed to edit child account', error);
+        consoleError('EditAccount - failed to edit child account', error);
 
         setIsLoading(false);
         setFailed(false);

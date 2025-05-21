@@ -7,6 +7,7 @@ import { useHistory } from 'react-router-dom';
 import { type Contact } from '@/shared/types/network-types';
 import { type WalletAccount, type AccountDetails } from '@/shared/types/wallet-types';
 import { ensureEvmAddressPrefix, isValidEthereumAddress } from '@/shared/utils/address';
+import { consoleError } from '@/shared/utils/console-log';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
 import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
@@ -96,7 +97,7 @@ const MoveFromChild = (props: SendNFTConfirmationProps) => {
         history.push(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
-        console.error(err);
+        consoleError(err);
         setSending(false);
         setFailed(true);
       });
@@ -123,7 +124,7 @@ const MoveFromChild = (props: SendNFTConfirmationProps) => {
         history.push(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
-        console.error(err);
+        consoleError(err);
         setSending(false);
         setFailed(true);
       });

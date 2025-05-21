@@ -5,8 +5,8 @@ import {
   getReceiverEvmAccount,
   getReceiverCadenceAccount,
   checkSentAmount,
-} from './utils/helper';
-import { test } from './utils/loader';
+} from '../utils/helper';
+import { test } from '../utils/loader';
 export const sendTokenFlow = async ({
   page,
   tokenname,
@@ -26,7 +26,7 @@ export const sendTokenFlow = async ({
   await page.getByRole('button', { name: 'Next' }).click();
   await page.getByRole('button', { name: 'Send' }).click();
   // Wait for the transaction to be completed
-  const txId = await waitForTransaction({ page, successtext: 'Executed', ingoreFlowCharge });
+  const txId = await waitForTransaction({ page, successtext: /Executed|Sealed/, ingoreFlowCharge });
   return { txId, tokenname, amount, ingoreFlowCharge };
 };
 
@@ -45,7 +45,7 @@ export const moveTokenFlow = async ({
   await page.getByRole('button', { name: 'Move' }).click();
 
   // Wait for the transaction to be completed
-  const txId = await waitForTransaction({ page, successtext: 'Executed', ingoreFlowCharge });
+  const txId = await waitForTransaction({ page, successtext: /Executed|Sealed/, ingoreFlowCharge });
   return { txId, tokenname, amount, ingoreFlowCharge };
 };
 
@@ -64,7 +64,7 @@ export const moveTokenFlowHomepage = async ({
   await page.getByPlaceholder('Amount').fill(amount);
   await page.getByRole('button', { name: 'Move' }).click();
   // Wait for the transaction to be completed
-  const txId = await waitForTransaction({ page, successtext: 'Executed', ingoreFlowCharge });
+  const txId = await waitForTransaction({ page, successtext: /Executed|Sealed/, ingoreFlowCharge });
   return { txId, tokenname, amount, ingoreFlowCharge };
 };
 

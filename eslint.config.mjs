@@ -9,7 +9,16 @@ import importPlugin from 'eslint-plugin-import';
 export default [
   // Base config for all files
   {
-    ignores: ['**/dist/**', '**/node_modules/**', '**/.git/**', '**/coverage/**'],
+    ignores: [
+      '**/dist/**',
+      '**/node_modules/**',
+      '**/.git/**',
+      '**/coverage/**',
+      '**/playwright/**',
+      '**/playwright-report/**',
+      '**/test-results/**',
+      '**/_raw/**',
+    ],
   },
 
   // JavaScript and TypeScript files
@@ -75,18 +84,32 @@ export default [
       ],
 
       // General rules
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'no-console': ['error'],
       'prefer-const': 'error',
       'no-var': 'error',
       eqeqeq: ['error', 'always'],
       'no-unused-expressions': 'error',
       'no-duplicate-imports': 'error',
+      'no-restricted-syntax': [
+        'warn',
+        {
+          selector: 'Identifier[name="consoleLog"]',
+          message: 'Remove consoleLog once debugging is done',
+        },
+      ],
     },
   },
 
   // Test files specific config
   {
-    files: ['e2e/**/*', 'playwright.config.ts', 'vitest.config.ts', 'vitest.init.ts'],
+    files: [
+      'e2e/**/*',
+      'playwright.config.ts',
+      'vitest.config.ts',
+      'vitest.init.ts',
+      '**/*.test.ts',
+      '**/__tests__/**',
+    ],
     languageOptions: {
       parserOptions: {
         project: './tsconfig.test.json',
@@ -95,6 +118,15 @@ export default [
     rules: {
       'no-restricted-globals': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
+      'no-console': ['off'],
+    },
+  },
+
+  // Build files specific config
+  {
+    files: ['build/**/*.{js,jsx,ts,tsx}'],
+    rules: {
+      'no-console': ['off'],
     },
   },
 

@@ -17,7 +17,7 @@ const USER_CONTACT = {
 function AccountMainBox({ isChild, setSelectedChildAccount, selectedAccount, isEvm = false }) {
   const usewallet = useWallet();
   const { childAccountsContacts, evmAccounts, mainAccountContact } = useContacts();
-  const { mainAddress, evmAddress, evmWallet, currentWallet } = useProfiles();
+  const { mainAddress, evmAddress, evmWallet, currentWallet, payer } = useProfiles();
   const [first, setFirst] = useState<string>('');
   const [userInfo, setUser] = useState<any>(USER_CONTACT);
   const [firstEmoji, setFirstEmoji] = useState<any>(null);
@@ -163,19 +163,21 @@ function AccountMainBox({ isChild, setSelectedChildAccount, selectedAccount, isE
           )}
         </Box>
       </Box>
-      <Box sx={{ padding: '8px 0' }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Typography sx={{ fontSize: '12px', fontWeight: '600' }}>Move Fee</Typography>
-          <Typography sx={{ fontSize: '12px', fontWeight: '600' }}>0.001 FLOW</Typography>
+      {!payer && (
+        <Box sx={{ padding: '8px 0' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+            <Typography sx={{ fontSize: '12px', fontWeight: '600' }}>Move Fee</Typography>
+            <Typography sx={{ fontSize: '12px', fontWeight: '600' }}>0.0001 FLOW</Typography>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+            <Typography
+              sx={{ fontSize: '12px', fontWeight: '400', color: 'rgba(255, 255, 255, 0.60)' }}
+            >
+              It appears when moving between VM accounts
+            </Typography>
+          </Box>
         </Box>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Typography
-            sx={{ fontSize: '12px', fontWeight: '400', color: 'rgba(255, 255, 255, 0.60)' }}
-          >
-            It appears when moving between VM accounts
-          </Typography>
-        </Box>
-      </Box>
+      )}
     </Box>
   );
 }
