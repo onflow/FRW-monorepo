@@ -13,7 +13,7 @@ vi.mock('../../../shared/utils/storage', () => ({
 
 vi.mock('../openapi', () => ({
   default: {
-    on: vi.fn(),
+    getAccountsWithPublicKey: vi.fn().mockResolvedValue([]),
   },
 }));
 
@@ -217,8 +217,8 @@ describe('Keyring Migration Tests', () => {
     expect(KeyringService.isUnlocked()).toBe(true);
 
     // Check keyringStateV2 was created
-    const keyringStateV2 = memoryStore.get('keyringStateV2');
-    expect(keyringStateV2).toBeDefined();
+    const keyringStateV3 = memoryStore.get('keyringStateV3');
+    expect(keyringStateV3).toBeDefined();
 
     // Verify public key can be retrieved
     const publicKeyTuple = await KeyringService.getCurrentPublicKeyTuple();
@@ -297,13 +297,13 @@ describe('Keyring Migration Tests', () => {
     expect(KeyringService.isUnlocked()).toBe(true);
 
     // Check keyringStateV2 was created
-    const keyringStateV2 = memoryStore.get('keyringStateV2');
-    expect(keyringStateV2).toBeDefined();
-    expect(keyringStateV2.vault).toHaveLength(3);
-    expect(keyringStateV2.vaultVersion).toBe(2);
+    const keyringStateV3 = memoryStore.get('keyringStateV3');
+    expect(keyringStateV3).toBeDefined();
+    expect(keyringStateV3.vault).toHaveLength(3);
+    expect(keyringStateV3.vaultVersion).toBe(3);
 
     // Verify each vault entry has proper structure with ID and encryptedData
-    keyringStateV2.vault.forEach((entry) => {
+    keyringStateV3.vault.forEach((entry) => {
       expect(entry).toHaveProperty('id');
       expect(entry).toHaveProperty('encryptedData');
     });
@@ -331,7 +331,7 @@ describe('Keyring Migration Tests', () => {
     // Verify we can directly access the derivation path and passphrase
     // This tests that the translation from V1 to V2 correctly added the derivation path and passphrase
     const decryptedVaultData = await Promise.all(
-      keyringStateV2.vault.map(async (entry) => {
+      keyringStateV3.vault.map(async (entry) => {
         return encryptor.decrypt(TEST_PASSWORD, entry.encryptedData);
       })
     );
@@ -377,9 +377,9 @@ describe('Keyring Migration Tests', () => {
     expect(newKeyring.type).toBe('HD Key Tree');
 
     // Check keyringStateV2 was updated
-    const keyringStateV2 = memoryStore.get('keyringStateV2');
-    expect(keyringStateV2).toBeDefined();
-    expect(keyringStateV2.vault.length).toBeGreaterThan(0);
+    const keyringStateV3 = memoryStore.get('keyringStateV3');
+    expect(keyringStateV3).toBeDefined();
+    expect(keyringStateV3.vault.length).toBeGreaterThan(0);
 
     // Verify public key can be retrieved
     const publicKeyTuple = await KeyringService.getCurrentPublicKeyTuple();
