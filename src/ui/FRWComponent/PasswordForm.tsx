@@ -60,29 +60,35 @@ const PasswordForm: React.FC<PasswordFormProps> = ({
     setCharactersValid(isLengthValid);
 
     // Check if fields should match
-    if (requireMatch && fields.length > Math.max(...matchFields)) {
-      const field1 = fields[matchFields[0]].value;
-      const field2 = fields[matchFields[1]].value;
-      setMatchValid(field1 === field2 && field1.length > 0);
+    if (requireMatch && fields.length > 0) {
+      // Ensure indices are valid
+      const index1 = Math.min(matchFields[0], fields.length - 1);
+      const index2 = Math.min(matchFields[1], fields.length - 1);
+
+      if (index1 >= 0 && index2 >= 0) {
+        const field1 = fields[index1].value;
+        const field2 = fields[index2].value;
+        setMatchValid(field1 === field2 && field1.length > 0);
+      }
     }
 
-    // Report validation state
+    // Report validation state to parent component
     if (onValidationChange) {
+      const index1 = requireMatch ? Math.min(matchFields[0], fields.length - 1) : 0;
+      const index2 = requireMatch ? Math.min(matchFields[1], fields.length - 1) : 0;
+      const isMatchValid =
+        !requireMatch ||
+        (index1 >= 0 &&
+          index2 >= 0 &&
+          fields[index1].value === fields[index2].value &&
+          fields[index1].value.length > 0);
+
       onValidationChange({
-        characters: isCharactersValid,
+        characters: isLengthValid,
         match: isMatchValid,
       });
     }
-  }, [
-    fieldValues,
-    minLength,
-    requireMatch,
-    fields,
-    matchFields,
-    isCharactersValid,
-    isMatchValid,
-    onValidationChange,
-  ]);
+  }, [fieldValues, minLength, requireMatch, fields, matchFields, onValidationChange]);
 
   // Helper components for validation feedback
   const successInfo = (message: string) => (
