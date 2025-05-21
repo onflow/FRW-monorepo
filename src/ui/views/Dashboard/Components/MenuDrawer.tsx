@@ -28,7 +28,6 @@ import { useAccountBalance } from '@/ui/hooks/use-account-hooks';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import importIcon from 'ui/FRWAssets/svg/importIcon.svg';
 import popLock from 'ui/FRWAssets/svg/popLock.svg';
-import resetArrow from 'ui/FRWAssets/svg/resetarrow.svg';
 import { useWallet } from 'ui/utils';
 
 import rightarrow from '../../../FRWAssets/svg/rightarrow.svg';
@@ -198,10 +197,7 @@ const MenuDrawer = (props: MenuDrawerProps) => {
                   }}
                 >
                   {chrome.i18n.getMessage('path_to_enable')}{' '}
-                  <Typography style={gradientStyle}>
-                    {chrome.i18n.getMessage('EVM_on_flow')}
-                  </Typography>{' '}
-                  !
+                  <span style={gradientStyle}>{chrome.i18n.getMessage('EVM_on_flow')}</span> !
                 </Typography>
                 <Typography
                   sx={{

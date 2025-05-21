@@ -19,6 +19,9 @@ import {
   userInfoCachekey,
   registerStatusKey,
   type UserInfoStore,
+  supportedCurrenciesKey,
+  type SupportedCurrenciesStore,
+  childAccountAllowTypesKey,
 } from '@/shared/utils/cache-data-keys';
 import {
   activeAccountsKey,
@@ -54,6 +57,17 @@ export const useChildAccounts = (
   );
 };
 
+export const useChildAccountAllowTypes = (
+  network: string | undefined | null,
+  parentAccountAddress: string | undefined | null,
+  childAccountAddress: string | undefined | null
+) => {
+  return useCachedData<string[]>(
+    network && parentAccountAddress && childAccountAddress
+      ? childAccountAllowTypesKey(network, parentAccountAddress, childAccountAddress)
+      : null
+  );
+};
 export const useEvmAccount = (
   network: string | undefined | null,
   mainAccountAddress: string | undefined | null

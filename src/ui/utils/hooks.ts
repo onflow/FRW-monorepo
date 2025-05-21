@@ -57,12 +57,6 @@ export const useApproval = () => {
     [getApproval, stableUsewallet, stableHistory]
   );
 
-  useEffect(() => {
-    window.addEventListener('beforeunload', rejectApproval);
-
-    return () => window.removeEventListener('beforeunload', rejectApproval);
-  }, [rejectApproval]);
-
   return [getApproval, resolveApproval, rejectApproval, linkingConfirm] as const;
 };
 
