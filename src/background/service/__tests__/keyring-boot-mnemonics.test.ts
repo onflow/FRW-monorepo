@@ -4,7 +4,7 @@ import encryptor from 'browser-passworder';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // Internal imports
-import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
+import { CURRENT_ID_KEY, KEYRING_STATE_V2_KEY } from '@/shared/types/keyring-types';
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 
 // Mock dependencies
@@ -62,7 +62,7 @@ describe('Keyring Boot and Mnemonics Test', () => {
   // Create in-memory storage
   const memoryStore = new Map<string, any>();
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Reset mocks and storage
     vi.clearAllMocks();
     memoryStore.clear();
@@ -78,9 +78,7 @@ describe('Keyring Boot and Mnemonics Test', () => {
     });
 
     // Reset KeyringService state
-    keyringService.clearKeyrings();
-    keyringService.clearKeyringList();
-    keyringService.clearVault();
+    await keyringService.resetKeyRing();
   });
 
   it('generates mock data with real encryption', async () => {
@@ -124,7 +122,7 @@ describe('Keyring Boot and Mnemonics Test', () => {
     };
 
     // Store this for future tests
-    memoryStore.set('keyringStateV2', keyringStateV2);
+    memoryStore.set(KEYRING_STATE_V2_KEY, keyringStateV2);
 
     // Log the mock data for future use
     const mockData = {

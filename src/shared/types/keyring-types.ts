@@ -13,7 +13,7 @@ export type KeyringStateV2 = {
 
 export type VaultEntryV3 = {
   id: string;
-  pubKey: string;
+  publicKey: string;
   signAlgo: number;
   encryptedData: string;
 };
@@ -26,9 +26,10 @@ export type KeyringStateV3 = {
 
 export type KeyringState = KeyringStateV2 | KeyringStateV3;
 
-export const KEYRING_STATE_V2_KEY = 'keyringStateV2';
 export const KEYRING_STATE_V1_KEY = 'keyringState';
+export const KEYRING_STATE_V2_KEY = 'keyringStateV2';
 export const KEYRING_STATE_V3_KEY = 'keyringStateV3';
+
 export const KEYRING_DEEP_VAULT_KEY = 'deepVault';
 
 export const KEYRING_STATE_CURRENT_KEY = KEYRING_STATE_V3_KEY;

@@ -23,7 +23,6 @@ import {
 import {
   pk2PubKey,
   jsonToKey,
-  seed2PublicPrivateKey,
   seedWithPathAndPhrase2PublicPrivateKey,
   formPubKeyTuple,
 } from '@/background/utils/modules/publicPrivateKey';
@@ -54,8 +53,8 @@ import {
   isValidFlowAddress,
   withPrefix,
 } from '@/shared/utils/address';
-import { getSignAlgo, getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
-import { FLOW_BIP44_PATH, SIGN_ALGO_NUM_ECDSA_P256 } from '@/shared/utils/algo-constants';
+import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
+import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 import {
   getCachedScripts,
   getCachedNftCollection,
@@ -127,8 +126,6 @@ import type {
   UserInfoResponse,
 } from '../../shared/types/network-types';
 import DisplayKeyring from '../service/keyring/display';
-import { HDKeyring } from '../service/keyring/hdKeyring';
-import { SimpleKeyring } from '../service/keyring/simpleKeyring';
 import { getScripts } from '../service/openapi';
 import type { ConnectedSite } from '../service/permission';
 import type { PreferenceAccount } from '../service/preference';
@@ -143,12 +140,7 @@ import {
 import defaultConfig from '../utils/defaultConfig.json';
 import { getEmojiList } from '../utils/emoji-util';
 import erc20ABI from '../utils/erc20.abi.json';
-import { getLoggedInAccount } from '../utils/getLoggedInAccount';
-import {
-  getAccountsByPublicKeyTuple,
-  getAccountsWithPublicKey,
-  getOrCheckAccountsByPublicKeyTuple,
-} from '../utils/modules/findAddressWithPubKey';
+import { getOrCheckAccountsByPublicKeyTuple } from '../utils/modules/findAddressWithPubKey';
 
 import BaseController from './base';
 import provider from './provider';
@@ -506,9 +498,15 @@ export class WalletController extends BaseController {
    * @returns an array of keys that can access the account
    */
   checkAvailableAccountKeys = async (address: FlowAddress): Promise<AccountKey[]> => {
-    const account = await fcl.account(address);
-    const publicKeys = await keyringService.getAllPublicKeys();
-    const availableKeys = account.keys.filter((key) => publicKeys.includes(key.publicKey));
+    let availableKeys: AccountKey[] = [];
+    try {
+      const account = await fcl.account(address);
+      const publicKeys = await keyringService.getAllPublicKeys();
+      availableKeys = account.keys.filter((key) => publicKeys.includes(key.publicKey));
+    } catch (error) {
+      consoleError('Error checking available account keys:', error);
+      throw new Error('Failed to check available account keys');
+    }
     if (availableKeys.length === 0) {
       throw new Error('No available keys found for account: ' + address);
     }
@@ -800,7 +798,6 @@ export class WalletController extends BaseController {
     return await findAddressWithSeed(seed, address, derivationPath, passphrase);
   };
 
-  removePreMnemonics = () => keyringService.removePreMnemonics();
   private createKeyringWithMnemonics = async (
     password: string,
     mnemonic: string,
@@ -816,7 +813,6 @@ export class WalletController extends BaseController {
       derivationPath,
       passphrase
     );
-    keyringService.removePreMnemonics();
     return this._setCurrentAccountFromKeyring(keyring);
   };
 
