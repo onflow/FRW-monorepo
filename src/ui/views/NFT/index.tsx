@@ -13,8 +13,6 @@ import ListTab from './ListTab';
 const NFTTab = () => {
   const wallet = useWallet();
 
-  const [isEdit] = useState<boolean>(false);
-  const [isAddAddressOpen, setIsAddAddressOpen] = useState<boolean>(false);
   const [nftCount, setCount] = useState<number>(0);
   const [accessible, setAccessible] = useState<any>([]);
   const [activeCollection, setActiveCollection] = useState<any>([]);
@@ -23,7 +21,7 @@ const NFTTab = () => {
   const [childType, setChildType] = useState<ActiveAccountType>('main');
   const [childTypeLoaded, setChildTypeLoaded] = useState<boolean>(false);
 
-  const { currentWallet, activeAccountType } = useProfiles();
+  const { currentWallet, parentWallet, activeAccountType } = useProfiles();
 
   const address = currentWallet.address;
 
@@ -37,11 +35,12 @@ const NFTTab = () => {
       if (accountType === 'child' && address) {
         setChildType(accountType);
 
-        const parentaddress = await wallet.getParentAddress();
+        const parentaddress = parentWallet.address;
         if (!parentaddress) {
           throw new Error('Parent address not found');
         }
-        const activec = await wallet.getChildAccountAllowTypes(parentaddress, address!);
+        const childAddress = address;
+        const activec = await wallet.getChildAccountAllowTypes(parentaddress, childAddress);
         setActiveCollection(activec);
         const nftResult = await wallet.checkAccessibleNft(parentaddress);
         if (nftResult) {
@@ -54,7 +53,7 @@ const NFTTab = () => {
       // setAddress(address);
     };
     loadNFTs();
-  }, [activeAccountType, address, wallet]);
+  }, [activeAccountType, address, wallet, parentWallet]);
 
   return (
     <div id="scrollableTab">

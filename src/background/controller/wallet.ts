@@ -316,6 +316,9 @@ export class WalletController extends BaseController {
         revoked: false,
       });
     }
+
+    setCachedData(registerStatusKey(accountKey.public_key), true, 30_000);
+
     // Register the account in userWallet
     userWalletService.registerCurrentPubkey(accountKey.public_key, accountInfo);
   };
@@ -2415,16 +2418,19 @@ export class WalletController extends BaseController {
     return txID;
   };
 
-  getChildAccountAllowTypes = async (parent: string, child: string): Promise<string[]> => {
+  getChildAccountAllowTypes = async (
+    parentAddress: string,
+    childAddress: string
+  ): Promise<string[]> => {
     const network = userWalletService.getNetwork();
 
     const cachedData = await getValidData<string[]>(
-      childAccountAllowTypesKey(network, parent, child)
+      childAccountAllowTypesKey(network, parentAddress, childAddress)
     );
     if (cachedData) {
       return cachedData;
     }
-    return nftService.loadChildAccountAllowTypes(network, parent, child);
+    return nftService.loadChildAccountAllowTypes(network, parentAddress, childAddress);
   };
 
   checkChildLinkedVault = async (parent: string, child: string, path: string): Promise<string> => {
