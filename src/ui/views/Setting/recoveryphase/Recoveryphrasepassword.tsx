@@ -18,20 +18,6 @@ const useStyles = makeStyles(() => ({
       visibility: 'visible',
     },
   },
-  inputBox: {
-    height: '64px',
-    padding: '16px',
-    // magrinBottom: '64px',
-    zIndex: '999',
-    backgroundColor: '#121212',
-    border: '2px solid #4C4C4C',
-    borderRadius: '12px',
-    boxSizing: 'border-box',
-    '&.Mui-focused': {
-      border: '2px solid #FAFAFA',
-      boxShadow: '0px 8px 12px 4px rgba(76, 76, 76, 0.24)',
-    },
-  },
 }));
 
 const Recoveryphrasepassword = () => {
@@ -128,7 +114,6 @@ const Recoveryphrasepassword = () => {
             }}
             isVisible={isPasswordVisible}
             setVisible={setPasswordVisible}
-            className={classes.inputBox}
             autoFocus={true}
             placeholder={chrome.i18n.getMessage('Enter__Your__Password')}
             onKeyDown={handleKeyDown}

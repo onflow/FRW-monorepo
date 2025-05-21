@@ -38,19 +38,6 @@ const useStyles = makeStyles(() => ({
       visibility: 'visible',
     },
   },
-  inputBox: {
-    height: '64px',
-    padding: '16px',
-    zIndex: '999',
-    backgroundColor: '#282828',
-    border: '2px solid #4C4C4C',
-    borderRadius: '12px',
-    boxSizing: 'border-box',
-    '&.Mui-focused': {
-      border: '2px solid #FAFAFA',
-      boxShadow: '0px 8px 12px 4px rgba(76, 76, 76, 0.24)',
-    },
-  },
   inputBox2: {
     height: '64px',
     padding: '16px',
@@ -219,7 +206,6 @@ const GoogleRecoverPassword = ({ handleSwitchTab, mnemonic, username, lastPasswo
                 onChange={setPassword}
                 isVisible={isPasswordVisible}
                 setVisible={setPasswordVisible}
-                className={classes.inputBox}
                 autoFocus={true}
                 placeholder={chrome.i18n.getMessage('Enter__Your__Password')}
               />
