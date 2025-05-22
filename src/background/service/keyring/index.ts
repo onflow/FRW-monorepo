@@ -5,6 +5,7 @@ import { EventEmitter } from 'events';
 import * as bip39 from 'bip39';
 import encryptor from 'browser-passworder';
 import * as ethUtil from 'ethereumjs-util';
+import { P } from 'ts-toolbelt/out/Object/_api';
 
 import { normalizeAddress } from '@/background/utils';
 import { pubKeyAccountToAccountKey, defaultAccountKey } from '@/background/utils/account-key';
@@ -40,7 +41,6 @@ import {
 import { type LoggedInAccount } from '@/shared/types/wallet-types';
 import {
   FLOW_BIP44_PATH,
-  SIGN_ALGO_NUM_DEFAULT,
   SIGN_ALGO_NUM_ECDSA_P256,
   SIGN_ALGO_NUM_ECDSA_secp256k1,
 } from '@/shared/utils/algo-constants';
@@ -476,7 +476,7 @@ class KeyringService extends EventEmitter {
     // Verify the password
     await this.verifyOrBoot(password);
     // Clear the current keyrings as the new keyring will be a simple keyring
-    await this.clearKeyrings();
+    await this.clearCurrentKeyring();
     // Add the new keyring
     const keyring = await this.addNewKeyring(publicKey, signAlgo, password, 'Simple Key Pair', [
       privateKey,
@@ -522,7 +522,7 @@ class KeyringService extends EventEmitter {
       throw new Error(i18n.t('mnemonic phrase is invalid'));
     }
     // Clear the current keyrings as the new keyring will replace it
-    await this.clearKeyrings();
+    await this.clearCurrentKeyring();
 
     // Create new keyring
     const keyring = await this.addNewKeyring(publicKey, signAlgo, password, 'HD Key Tree', {
@@ -566,13 +566,13 @@ class KeyringService extends EventEmitter {
   }
 
   /**
-   * Set Locked
+   * Lock
    * This method deallocates all secrets.
    *
    * @emits KeyringController#lock
    * @returns {Promise<Object>} A Promise that resolves to the state.
    */
-  async setLocked(): Promise<MemStoreState> {
+  async lock(): Promise<MemStoreState> {
     // set locked
     this.memStore.updateState({ isUnlocked: false });
     // remove keyrings
@@ -585,19 +585,7 @@ class KeyringService extends EventEmitter {
   }
 
   /**
-   * Update Keyring
-   * Update the keyring based on the one save in localstorage
-   *
-   */
-  async updateKeyring() {
-    // remove keyrings
-    this.currentKeyring = [];
-    this.currentPublicKey = undefined;
-    this.currentSignAlgo = undefined;
-  }
-
-  /**
-   * Submit Password
+   * Unlock
    *
    * Attempts to decrypt the current vault and load its keyrings
    * into memory.
@@ -609,13 +597,19 @@ class KeyringService extends EventEmitter {
    * @param {string} password - The keyring controller password.
    * @returns {Promise<Object>} A Promise that resolves to the state.
    */
-  async submitPassword(password: string): Promise<MemStoreState> {
-    await this.verifyOrBoot(password);
+  async unlock(password: string): Promise<MemStoreState> {
+    try {
+      await this.verifyOrBoot(password);
+      await this.unlockKeyrings(password);
+      this.setUnlocked();
 
-    await this.unlockKeyrings(password);
-    this.setUnlocked();
-
-    return this.fullUpdate();
+      return this.fullUpdate();
+    } catch (e) {
+      consoleError('Could not unlock keyring', e);
+      throw new Error(
+        'Could not unlock keyring. Either the password is incorrect or the keyring is corrupted'
+      );
+    }
   }
 
   /**
@@ -1032,12 +1026,16 @@ class KeyringService extends EventEmitter {
    * @returns {Promise<Array<Keyring>>} The keyrings.
    */
   private async unlockKeyrings(password: string): Promise<void> {
-    await this.decryptVaultArray(password);
+    try {
+      await this.decryptVaultArray(password);
 
-    if (this.store.getState().vaultVersion !== KEYRING_STATE_VAULT_V3) {
-      await this.encryptVaultArray(this.decryptedKeyrings, password);
+      if (this.store.getState().vaultVersion !== KEYRING_STATE_VAULT_V3) {
+        await this.encryptVaultArray(this.decryptedKeyrings, password);
+      }
+    } catch (error) {
+      consoleError('unlockKeyrings - error', error);
+      throw new Error('Authentication failed. Please check your password and try again.');
     }
-
     // Validate currentId
 
     // Note that currentAccountIndex is only used in keyring for old accounts that don't have an id stored in the keyring removing in 2.7.6
@@ -1076,7 +1074,7 @@ class KeyringService extends EventEmitter {
       throw new Error('KeyringController - selectedKeyring invalid');
     }
     // remove the keyring of the previous account
-    await this.clearKeyrings();
+    await this.clearCurrentKeyring();
     // Restore the keyring
     await this._restoreKeyring(decryptedKeyring);
   }
@@ -1401,7 +1399,7 @@ class KeyringService extends EventEmitter {
   }
 
   async resetKeyRing() {
-    await this.clearKeyrings();
+    await this.clearCurrentKeyring();
     await this.clearKeyringList();
     await this.clearVault();
   }
@@ -1413,7 +1411,7 @@ class KeyringService extends EventEmitter {
    * Used before initializing a new vault.
    */
 
-  async clearKeyrings(): Promise<void> {
+  async clearCurrentKeyring(): Promise<void> {
     // clear keyrings from memory
     this.currentKeyring = [];
     this.currentPublicKey = undefined;
@@ -1678,7 +1676,7 @@ class KeyringService extends EventEmitter {
   /**
    * @deprecated Checking accounts by user id is depreciated - use the public key instead
    **/
-  async checkAvailableAccount_depreciated(currentId: string): Promise<VaultEntryV2[]> {
+  async checkAvailableAccount_deprecated(currentId: string): Promise<VaultEntryV2[]> {
     if (this.store.getState().vaultVersion !== KEYRING_STATE_VAULT_V2) {
       throw new Error('Checking accounts by user id is depreciated - use the public key instead');
     }
@@ -1907,22 +1905,15 @@ class KeyringService extends EventEmitter {
         await storage.set(CURRENT_ID_KEY, nextProfileId);
         needToSwitchKeyring = true;
       } else {
+        // We thought about handling defensively here, but it's better to throw to stop the operation
+
         // This should theoretically not happen if length > 1, but handle defensively
-        consoleError(
-          'Error: Could not determine the next profile ID to switch to. currentId:',
-          currentId,
-          'profileId:',
-          profileId,
-          'profileIndex:',
-          profileIndex,
-          'keyringIds:',
-          [...keyringIds]
+        throw new Error(
+          `Error: Could not determine the next profile ID to switch to. currentId: ${currentId}, profileId: ${profileId}, profileIndex: ${profileIndex}, keyringIds: ${keyringIds}`
         );
-        // Decide recovery strategy: maybe default to the first ID again, or throw?
-        // For now, we'll proceed without switching, potentially leaving state inconsistent
-        needToSwitchKeyring = false;
-        nextProfileId = undefined; // Ensure it's not used later
       }
+      // Clear the current keyring
+      this.clearCurrentKeyring();
     }
 
     // Remove the profile from the in-memory keyring list
@@ -1932,6 +1923,7 @@ class KeyringService extends EventEmitter {
     await this.encryptVaultArray(this.decryptedKeyrings, password);
 
     // Switch to the next profile's keyring in memory if needed
+    // Note that we are switching the keyring without switching the login
     if (needToSwitchKeyring && nextProfileId) {
       await this.switchKeyring(nextProfileId);
     }

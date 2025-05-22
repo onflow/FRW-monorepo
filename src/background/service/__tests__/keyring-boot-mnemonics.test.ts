@@ -141,7 +141,7 @@ describe('Keyring Boot and Mnemonics Test', () => {
     await keyringService.loadKeyringStore();
 
     // Test unlocking with the password
-    await keyringService.submitPassword(MOCK_PASSWORD);
+    await keyringService.unlock(MOCK_PASSWORD);
 
     // Verify it's unlocked
     expect(keyringService.isUnlocked()).toBe(true);

@@ -72,6 +72,7 @@ import {
   type ChildAccountFtStore,
 } from '@/shared/utils/cache-data-keys';
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
+import { getCurrentProfileId, returnCurrentProfileId } from '@/shared/utils/current-id';
 import {
   convertFlowBalanceToString,
   convertToIntegerAmount,
@@ -506,7 +507,7 @@ export class WalletController extends BaseController {
    */
   checkAvailableAccount_depreciated = async (currentId: string) => {
     try {
-      await keyringService.checkAvailableAccount_depreciated(currentId);
+      await keyringService.checkAvailableAccount_deprecated(currentId);
     } catch (error) {
       consoleError('Error finding available account:', error);
       throw new Error('Failed to find available account: ' + (error.message || 'Unknown error'));
@@ -536,7 +537,7 @@ export class WalletController extends BaseController {
 
   unlock = async (password: string) => {
     // Submit the password. This will unlock the keyring or throw an error
-    await keyringService.submitPassword(password);
+    await keyringService.unlock(password);
     // Login with the current keyring
     await userWalletService.loginWithKeyring();
     sessionService.broadcastEvent('unlock');
@@ -546,7 +547,7 @@ export class WalletController extends BaseController {
   };
 
   submitPassword = async (password: string) => {
-    await keyringService.submitPassword(password);
+    await keyringService.unlock(password);
   };
 
   refreshWallets = async () => {
@@ -614,13 +615,13 @@ export class WalletController extends BaseController {
   };
 
   lockWallet = async () => {
-    await keyringService.setLocked();
+    await keyringService.lock();
     await userWalletService.logoutCurrentUser();
     await userWalletService.clear();
   };
 
   signOutWallet = async () => {
-    await keyringService.updateKeyring();
+    await keyringService.clearCurrentKeyring();
     await userWalletService.logoutCurrentUser();
     await userWalletService.clear();
     sessionService.broadcastEvent('accountsChanged', []);
@@ -628,7 +629,7 @@ export class WalletController extends BaseController {
 
   // lockadd here
   lockAdd = async () => {
-    await keyringService.setLocked();
+    await keyringService.lock();
     sessionService.broadcastEvent('accountsChanged', []);
     sessionService.broadcastEvent('lock');
     openIndexPage('welcome?add=true');
@@ -651,7 +652,7 @@ export class WalletController extends BaseController {
     // Note that this does not clear the 'booted' state
     // We should fix this, but it would involve making changes to keyringService
     await keyringService.resetKeyRing();
-    await keyringService.setLocked();
+    await keyringService.lock();
 
     sessionService.broadcastEvent('accountsChanged', []);
     sessionService.broadcastEvent('lock');
@@ -663,7 +664,7 @@ export class WalletController extends BaseController {
   restoreWallet = async () => {
     const switchingTo = 'mainnet';
 
-    await keyringService.setLocked();
+    await keyringService.lock();
 
     sessionService.broadcastEvent('accountsChanged', []);
     sessionService.broadcastEvent('lock');
@@ -751,7 +752,7 @@ export class WalletController extends BaseController {
   unpinConnectedSite = (origin: string) => permissionService.unpinConnectedSite(origin);
   /* keyrings */
 
-  clearKeyrings = () => keyringService.clearKeyrings();
+  clearKeyrings = () => keyringService.clearCurrentKeyring();
 
   getPrivateKey = async (password: string, address: string) => {
     await this.verifyPassword(password);
@@ -839,7 +840,7 @@ export class WalletController extends BaseController {
     passphrase = ''
   ) => {
     // TODO: NEED REVISIT HERE:
-    await keyringService.clearKeyrings();
+    await keyringService.clearCurrentKeyring();
 
     const keyring = await keyringService.createKeyringWithMnemonics(
       publicKey,
@@ -891,7 +892,17 @@ export class WalletController extends BaseController {
    * @returns {Promise<boolean>} - Returns true if successful
    */
   removeProfile = async (password: string, profileId: string): Promise<boolean> => {
-    return await keyringService.removeProfile(password, profileId);
+    // Remove the profile
+    await keyringService.removeProfile(password, profileId);
+    // Switch to the profile with currentid
+    const currentId = await returnCurrentProfileId();
+    if (!currentId) {
+      // Lock the wallet
+      this.lockWallet();
+    } else {
+      await this.switchProfile(currentId);
+    }
+    return true;
   };
   /**
    * @deprecated not used anymore
