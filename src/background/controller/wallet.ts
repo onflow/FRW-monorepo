@@ -1,5 +1,5 @@
 import * as fcl from '@onflow/fcl';
-import type { Account as FclAccount } from '@onflow/typedefs';
+import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
 import * as t from '@onflow/types';
 import BN from 'bignumber.js';
 import * as bip39 from 'bip39';
@@ -21,9 +21,8 @@ import {
   findAddressWithPK,
 } from '@/background/utils/modules/findAddressWithPK';
 import {
-  pk2PubKey,
+  pk2PubKeyTuple,
   jsonToKey,
-  seed2PublicPrivateKey,
   seedWithPathAndPhrase2PublicPrivateKey,
   formPubKeyTuple,
 } from '@/background/utils/modules/publicPrivateKey';
@@ -54,8 +53,8 @@ import {
   isValidFlowAddress,
   withPrefix,
 } from '@/shared/utils/address';
-import { getSignAlgo, getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
-import { FLOW_BIP44_PATH, SIGN_ALGO_NUM_ECDSA_P256 } from '@/shared/utils/algo-constants';
+import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
+import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 import {
   getCachedScripts,
   getCachedNftCollection,
@@ -73,6 +72,7 @@ import {
   type ChildAccountFtStore,
 } from '@/shared/utils/cache-data-keys';
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
+import { getCurrentProfileId, returnCurrentProfileId } from '@/shared/utils/current-id';
 import {
   convertFlowBalanceToString,
   convertToIntegerAmount,
@@ -128,7 +128,6 @@ import type {
 } from '../../shared/types/network-types';
 import DisplayKeyring from '../service/keyring/display';
 import { HDKeyring } from '../service/keyring/hdKeyring';
-import { SimpleKeyring } from '../service/keyring/simpleKeyring';
 import { getScripts } from '../service/openapi';
 import type { ConnectedSite } from '../service/permission';
 import type { PreferenceAccount } from '../service/preference';
@@ -143,11 +142,7 @@ import {
 import defaultConfig from '../utils/defaultConfig.json';
 import { getEmojiList } from '../utils/emoji-util';
 import erc20ABI from '../utils/erc20.abi.json';
-import { getLoggedInAccount } from '../utils/getLoggedInAccount';
-import {
-  getAccountsByPublicKeyTuple,
-  getOrCheckAccountsByPublicKeyTuple,
-} from '../utils/modules/findAddressWithPubKey';
+import { getOrCheckAccountsByPublicKeyTuple } from '../utils/modules/findAddressWithPubKey';
 
 import BaseController from './base';
 import provider from './provider';
@@ -239,7 +234,12 @@ export class WalletController extends BaseController {
     await openapiService.register(accountKey, username);
 
     // We're creating the keyring with the mnemonic. This will encypt the private keys and store them in the keyring vault and deepVault
-    await this.createKeyringWithMnemonics(password, mnemonic);
+    await this.createKeyringWithMnemonics(
+      accountKey.public_key,
+      accountKey.sign_algo,
+      password,
+      mnemonic
+    );
 
     // We're creating the Flow address for the account
     // Only after this, do we have a valid wallet with a Flow address
@@ -299,7 +299,12 @@ export class WalletController extends BaseController {
     await this.loginWithMnemonic(mnemonic, true);
 
     // We're creating the keyring with the mnemonic. This will encypt the private keys and store them in the keyring vault and deepVault
-    await this.createKeyringWithMnemonics(password, mnemonic);
+    await this.createKeyringWithMnemonics(
+      accountKey.public_key,
+      accountKey.sign_algo,
+      password,
+      mnemonic
+    );
 
     // Locally add the key to the account if not there already
     const indexOfKey = accountInfo.keys.findIndex((key) => key.publicKey === accountKey.public_key);
@@ -388,10 +393,10 @@ export class WalletController extends BaseController {
       throw new Error('Invalid seed phrase');
     }
     // We use the public key from the first account that is returned
-    const publicKey = accounts[0].publicKey;
+    const accountKeyStruct = pubKeyAccountToAccountKey(accounts[0]);
     // Check if the account is registered on our backend (i.e. it's been created in wallet or used previously in wallet)
 
-    const importCheckResult = await openapiService.checkImport(publicKey);
+    const importCheckResult = await openapiService.checkImport(accountKeyStruct.public_key);
     if (importCheckResult.status === HTTP_STATUS_CONFLICT) {
       // The account has been previously imported, so just sign in with it
 
@@ -399,7 +404,6 @@ export class WalletController extends BaseController {
       await this.loginWithMnemonic(mnemonic, true, derivationPath, passphrase);
     } else {
       // We have to create a new user on our backend
-      const accountKeyStruct = pubKeyAccountToAccountKey(accounts[0]);
       // Get the device info so we can do analytics
       const deviceInfo = await userWalletService.getDeviceInfo();
       // Import the account creating a new user on our backend and sign in as the new user
@@ -414,10 +418,17 @@ export class WalletController extends BaseController {
     }
 
     // Now we can create the keyring with the mnemonic (and path and phrase)
-    await this.createKeyringWithMnemonics(password, mnemonic, derivationPath, passphrase);
+    await this.createKeyringWithMnemonics(
+      accountKeyStruct.public_key,
+      accountKeyStruct.sign_algo,
+      password,
+      mnemonic,
+      derivationPath,
+      passphrase
+    );
 
     // Set the current pubkey in userWallet
-    userWalletService.setCurrentPubkey(publicKey);
+    userWalletService.setCurrentPubkey(accountKeyStruct.public_key);
   };
 
   /**
@@ -438,7 +449,7 @@ export class WalletController extends BaseController {
     // We should be validating the password as the first thing we do
     await this.verifyPasswordIfBooted(password);
     // Get the public key tuple from the private key
-    const pubKTuple: PublicKeyTuple = await pk2PubKey(pk);
+    const pubKTuple: PublicKeyTuple = await pk2PubKeyTuple(pk);
 
     // Check if the public key has any accounts associated with it
     const accounts = await getOrCheckAccountsByPublicKeyTuple(pubKTuple, address);
@@ -448,6 +459,7 @@ export class WalletController extends BaseController {
 
     // We use the public key from the first account that is returned
     const publicKey = accounts[0].publicKey;
+    const signAlgo = accounts[0].signAlgo;
     // Check if the account is registered on our backend (i.e. it's been created in wallet or used previously in wallet)
     const importCheckResult = await openapiService.checkImport(publicKey);
     if (importCheckResult.status === HTTP_STATUS_CONFLICT) {
@@ -471,7 +483,7 @@ export class WalletController extends BaseController {
       );
     }
     // Now we can create the keyring with the mnemonic (and path and phrase)
-    await this.importPrivateKey(password, pk);
+    await this.importPrivateKey(publicKey, signAlgo, password, pk);
 
     // Set the current pubkey in userWallet
     userWalletService.setCurrentPubkey(publicKey);
@@ -490,19 +502,42 @@ export class WalletController extends BaseController {
       throw new Error('Failed to switch account: ' + (error.message || 'Unknown error'));
     }
   };
-
-  checkAvailableAccount = async (currentId: string) => {
+  /**
+   * @deprecated  Checking accounts by user id is deprecated - use the public key or addressinstead
+   */
+  checkAvailableAccount_depreciated = async (currentId: string) => {
     try {
-      await keyringService.checkAvailableAccount(currentId);
+      await keyringService.checkAvailableAccount_deprecated(currentId);
     } catch (error) {
       consoleError('Error finding available account:', error);
       throw new Error('Failed to find available account: ' + (error.message || 'Unknown error'));
     }
   };
 
+  /**
+   * Checks if we have one or more keys that can access an account
+   * @param address of the account we want to check
+   * @returns an array of keys that can access the account
+   */
+  checkAvailableAccountKeys = async (address: FlowAddress): Promise<AccountKey[]> => {
+    let availableKeys: AccountKey[] = [];
+    try {
+      const account = await fcl.account(address);
+      const publicKeys = await keyringService.getAllPublicKeys();
+      availableKeys = account.keys.filter((key) => publicKeys.includes(key.publicKey));
+    } catch (error) {
+      consoleError('Error checking available account keys:', error);
+      throw new Error('Failed to check available account keys');
+    }
+    if (availableKeys.length === 0) {
+      throw new Error('No available keys found for account: ' + address);
+    }
+    return availableKeys;
+  };
+
   unlock = async (password: string) => {
     // Submit the password. This will unlock the keyring or throw an error
-    await keyringService.submitPassword(password);
+    await keyringService.unlock(password);
     // Login with the current keyring
     await userWalletService.loginWithKeyring();
     sessionService.broadcastEvent('unlock');
@@ -512,7 +547,7 @@ export class WalletController extends BaseController {
   };
 
   submitPassword = async (password: string) => {
-    await keyringService.submitPassword(password);
+    await keyringService.unlock(password);
   };
 
   refreshWallets = async () => {
@@ -540,7 +575,7 @@ export class WalletController extends BaseController {
     );
     // Refresh the logged in account
     const pubKTuple = await keyringService.getCurrentPublicKeyTuple();
-    const fclAccount = await this.getAccount();
+    const fclAccount = await this.getMainAccountInfo();
     // Refresh the user info
     return openapiService.freshUserInfo(parentAddress, fclAccount, pubKTuple, userInfo, 'main');
   };
@@ -580,13 +615,13 @@ export class WalletController extends BaseController {
   };
 
   lockWallet = async () => {
-    await keyringService.setLocked();
+    await keyringService.lock();
     await userWalletService.logoutCurrentUser();
     await userWalletService.clear();
   };
 
   signOutWallet = async () => {
-    await keyringService.updateKeyring();
+    await keyringService.clearCurrentKeyring();
     await userWalletService.logoutCurrentUser();
     await userWalletService.clear();
     sessionService.broadcastEvent('accountsChanged', []);
@@ -594,7 +629,7 @@ export class WalletController extends BaseController {
 
   // lockadd here
   lockAdd = async () => {
-    await keyringService.setLocked();
+    await keyringService.lock();
     sessionService.broadcastEvent('accountsChanged', []);
     sessionService.broadcastEvent('lock');
     openIndexPage('welcome?add=true');
@@ -617,7 +652,7 @@ export class WalletController extends BaseController {
     // Note that this does not clear the 'booted' state
     // We should fix this, but it would involve making changes to keyringService
     await keyringService.resetKeyRing();
-    await keyringService.setLocked();
+    await keyringService.lock();
 
     sessionService.broadcastEvent('accountsChanged', []);
     sessionService.broadcastEvent('lock');
@@ -629,7 +664,7 @@ export class WalletController extends BaseController {
   restoreWallet = async () => {
     const switchingTo = 'mainnet';
 
-    await keyringService.setLocked();
+    await keyringService.lock();
 
     sessionService.broadcastEvent('accountsChanged', []);
     sessionService.broadcastEvent('lock');
@@ -717,19 +752,25 @@ export class WalletController extends BaseController {
   unpinConnectedSite = (origin: string) => permissionService.unpinConnectedSite(origin);
   /* keyrings */
 
-  clearKeyrings = () => keyringService.clearKeyrings();
+  clearKeyrings = () => keyringService.clearCurrentKeyring();
 
   getPrivateKey = async (password: string, address: string) => {
     await this.verifyPassword(password);
-    const keyring = await keyringService.getKeyringForAccount(address);
+    const keyring = await keyringService.getKeyringForAccount_deprecated(address);
     if (!keyring) return null;
     return await keyring.exportAccount(address);
   };
 
-  getMnemonics = async (password: string) => {
+  getMnemonic = async (password: string): Promise<string> => {
     await this.verifyPassword(password);
     const keyring = this._getKeyringByType(KEYRING_CLASS.MNEMONIC);
+    if (!(keyring instanceof HDKeyring)) {
+      throw new Error('Keyring is not an HDKeyring');
+    }
     const serialized = await keyring.serialize();
+    if (!serialized.mnemonic) {
+      throw new Error('Keyring is not an HDKeyring');
+    }
     const seedWords = serialized.mnemonic;
     return seedWords;
   };
@@ -752,7 +793,7 @@ export class WalletController extends BaseController {
     return await keyringService.getCurrentPublicKeyTuple();
   };
 
-  importPrivateKey = async (password: string, pk: string) => {
+  importPrivateKey = async (publicKey: string, signAlgo: number, password: string, pk: string) => {
     const privateKey = ethUtil.stripHexPrefix(pk);
     const buffer = Buffer.from(privateKey, 'hex');
 
@@ -765,7 +806,12 @@ export class WalletController extends BaseController {
       throw error;
     }
 
-    const keyring = await keyringService.importPrivateKey(password, privateKey);
+    const keyring = await keyringService.importPrivateKey(
+      publicKey,
+      signAlgo,
+      password,
+      privateKey
+    );
     return this._setCurrentAccountFromKeyring(keyring);
   };
 
@@ -785,28 +831,39 @@ export class WalletController extends BaseController {
     return await findAddressWithSeed(seed, address, derivationPath, passphrase);
   };
 
-  removePreMnemonics = () => keyringService.removePreMnemonics();
   private createKeyringWithMnemonics = async (
+    publicKey: string,
+    signAlgo: number,
     password: string,
     mnemonic: string,
     derivationPath = FLOW_BIP44_PATH,
     passphrase = ''
   ) => {
     // TODO: NEED REVISIT HERE:
-    await keyringService.clearKeyrings();
+    await keyringService.clearCurrentKeyring();
 
     const keyring = await keyringService.createKeyringWithMnemonics(
+      publicKey,
+      signAlgo,
       password,
       mnemonic,
       derivationPath,
       passphrase
     );
-    keyringService.removePreMnemonics();
     return this._setCurrentAccountFromKeyring(keyring);
   };
 
+  /**
+   * @deprecated not used anymore
+   */
   getHiddenAddresses = () => preferenceService.getHiddenAddresses();
+  /**
+   * @deprecated not used anymore
+   */
   showAddress = (type: string, address: string) => preferenceService.showAddress(type, address);
+  /**
+   * @deprecated not used anymore
+   */
   hideAddress = (type: string, address: string, brandName: string) => {
     preferenceService.hideAddress(type, address, brandName);
     const current = preferenceService.getCurrentAccount();
@@ -814,7 +871,9 @@ export class WalletController extends BaseController {
       this.resetCurrentAccount();
     }
   };
-
+  /**
+   * @deprecated not used anymore
+   */
   removeAddress = async (password: string, address: string, type: string, brand?: string) => {
     await keyringService.removeAccount(password, address, type, brand);
     preferenceService.removeAddressBalance(address);
@@ -833,9 +892,21 @@ export class WalletController extends BaseController {
    * @returns {Promise<boolean>} - Returns true if successful
    */
   removeProfile = async (password: string, profileId: string): Promise<boolean> => {
-    return await keyringService.removeProfile(password, profileId);
+    // Remove the profile
+    await keyringService.removeProfile(password, profileId);
+    // Switch to the profile with currentid
+    const currentId = await returnCurrentProfileId();
+    if (!currentId) {
+      // Lock the wallet
+      this.lockWallet();
+    } else {
+      await this.switchProfile(currentId);
+    }
+    return true;
   };
-
+  /**
+   * @deprecated not used anymore
+   */
   resetCurrentAccount = async () => {
     const [account] = await this.getAccounts();
     if (account) {
@@ -845,28 +916,20 @@ export class WalletController extends BaseController {
     }
   };
 
-  // @deprecated - not used anymore
-  addKeyring = async (password: string, keyringId) => {
-    const keyring = stashKeyrings[keyringId];
-    if (keyring) {
-      await keyringService.addKeyring(password, keyring);
-      this._setCurrentAccountFromKeyring(keyring);
-    } else {
-      throw new Error('failed to addKeyring, keyring is undefined');
-    }
-  };
-
-  getKeyringByType = (type: string) => keyringService.getKeyringByType(type);
-
-  checkHasMnemonic = () => {
+  checkHasMnemonic = async () => {
     try {
       const keyring = this._getKeyringByType(KEYRING_CLASS.MNEMONIC);
-      return !!keyring.mnemonic;
+      if (!(keyring instanceof HDKeyring)) {
+        throw new Error('Keyring is not an HDKeyring');
+      }
+      return !!(await keyring.getMnemonic()).length;
     } catch {
       return false;
     }
   };
-  // @deprecated - not used anymore
+  /**
+   * @deprecated not used anymore
+   */
   deriveNewAccountFromMnemonic = async (password: string) => {
     const keyring = this._getKeyringByType(KEYRING_CLASS.MNEMONIC);
 
@@ -958,7 +1021,7 @@ export class WalletController extends BaseController {
   };
 
   signPersonalMessage = async (type: string, from: string, data: string, options?: any) => {
-    const keyring = await keyringService.getKeyringForAccount(from, type);
+    const keyring = await keyringService.getKeyringForAccount_deprecated(from, type);
     const res = await keyringService.signPersonalMessage(keyring, { from, data }, options);
     if (type === KEYRING_TYPE.WalletConnectKeyring) {
       eventBus.emit(EVENTS.broadcastToUI, {
@@ -973,7 +1036,7 @@ export class WalletController extends BaseController {
   };
 
   signTransaction = async (type: string, from: string, data: any, options?: any) => {
-    const keyring = await keyringService.getKeyringForAccount(from, type);
+    const keyring = await keyringService.getKeyringForAccount_deprecated(from, type);
     const res = await keyringService.signTransaction(keyring, data, options);
 
     return res;
@@ -999,30 +1062,10 @@ export class WalletController extends BaseController {
     }
   };
 
-  // @deprecated - not used anymore
-  unlockHardwareAccount = async (password: string, keyring, indexes, keyringId) => {
-    let keyringInstance: any = null;
-    try {
-      keyringInstance = this._getKeyringByType(keyring);
-    } catch {
-      // NOTHING
-    }
-    if (!keyringInstance && keyringId !== null && keyringId !== undefined) {
-      await keyringService.addKeyring(password, stashKeyrings[keyringId]);
-      keyringInstance = stashKeyrings[keyringId];
-    }
-    for (let i = 0; i < indexes.length; i++) {
-      keyringInstance!.setAccountToUnlock(indexes[i]);
-      await keyringService.addNewAccount(password, keyringInstance);
-    }
-
-    return this._setCurrentAccountFromKeyring(keyringInstance);
-  };
-
   setIsDefaultWallet = (val: boolean) => preferenceService.setIsDefaultWallet(val);
   isDefaultWallet = () => preferenceService.getIsDefaultWallet();
 
-  private _getKeyringByType(type) {
+  private _getKeyringByType(type): Keyring {
     const keyring = keyringService.getKeyringsByType(type)[0];
 
     if (keyring) {
@@ -2819,7 +2862,10 @@ export class WalletController extends BaseController {
     return userWalletService.loginWithPk(pk, replaceUser);
   };
 
-  // @deprecated
+  /**
+   * @deprecated This method is deprecated and should not be used in new code.
+   * @see {@link loginWithMnemonic} Use this method instead.
+   */
   loginV3_depreciated = async (
     mnemonic: string,
     accountKey: any,
@@ -3281,7 +3327,7 @@ export class WalletController extends BaseController {
   syncBackup = async (password: string) => {
     const data = await userInfoService.getCurrentUserInfo();
     const username = data.username;
-    const mnemonic = await this.getMnemonics(password);
+    const mnemonic = await this.getMnemonic(password);
     return this.uploadMnemonicToGoogleDrive(mnemonic, username, password);
   };
 
@@ -3364,7 +3410,16 @@ export class WalletController extends BaseController {
     await openapiService.updateProfilePreference(privacy);
   };
 
-  getAccountInfo = async (address: string | null): Promise<FclAccount> => {
+  getAccountInfo = async (address: string): Promise<FclAccount> => {
+    if (!isValidFlowAddress(address)) {
+      throw new Error('Invalid address');
+    }
+    return await fcl.account(address);
+  };
+
+  getMainAccountInfo = async (): Promise<FclAccount> => {
+    const address = await this.getMainAddress();
+
     if (!address) {
       throw new Error('No address found');
     }
@@ -3374,17 +3429,14 @@ export class WalletController extends BaseController {
     return await fcl.account(address);
   };
 
-  getAccount = async (): Promise<FclAccount> => {
-    const address = await this.getMainAddress();
-
-    return await this.getAccountInfo(address);
-  };
-
   getEmoji = async () => {
     return getEmojiList();
   };
 
-  // @deprecated - this doesn't do anything
+  /**
+   *  @deprecated this doesn't do anything
+   *  @todo remove this
+   */
   setEmoji_depreciated = async (emoji, type, index) => {
     return emoji;
   };
@@ -3547,7 +3599,7 @@ export class WalletController extends BaseController {
 
   getKeyringIds = async () => {
     // Use userInfoService to get the stored user list
-    return await keyringService.getKeyringIds();
+    return await keyringService.getAllKeyringIds();
   };
 
   /**

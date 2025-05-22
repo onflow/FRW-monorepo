@@ -7,6 +7,7 @@ import HDWallet from 'ethereum-hdwallet';
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
 
+import { isValidFlowAddress, withPrefix } from '@/shared/utils/address';
 import {
   SIGN_ALGO_NUM_ECDSA_secp256k1,
   HASH_ALGO_NUM_SHA2_256,
@@ -56,10 +57,7 @@ const Sync = () => {
   const history = useHistory();
   const usewallet = useWallet();
   const [activeTab, setActiveTab] = useState<StepType>(STEPS.QR);
-  const [username, setUsername] = useState('');
-  const [mnemonic, setMnemonic] = useState(bip39.generateMnemonic());
-  const [accountKey, setAccountKey] = useState<any>(null);
-  const [deviceInfo, setDeviceInfo] = useState<any>(null);
+  const [mnemonic] = useState(bip39.generateMnemonic());
   const [uri, setUri] = useState('');
   const [loadingString, setLoadingString] = useState<string | null>(null);
   const [secondLine, setSecondLine] = useState<string>('');
@@ -168,13 +166,20 @@ const Sync = () => {
 
   // 3. Account and device info handlers, check if account is available based on userid, if not, generate account key and device info
   const handleAccountInfo = useCallback(
-    async (wallet: SignClient, topic: string, jsonObject: FCLWalletConnectSyncAccountInfo) => {
+    async (signClient: SignClient, topic: string, jsonObject: FCLWalletConnectSyncAccountInfo) => {
       try {
         setAddressToImport(jsonObject.data.walletAddress);
-        await usewallet.checkAvailableAccount(jsonObject.data.userId);
+        const address = withPrefix(jsonObject.data.walletAddress);
+        if (!isValidFlowAddress(address)) {
+          throw new Error('Invalid address');
+        }
+        const availableKeys = await usewallet.checkAvailableAccountKeys(address);
+        if (availableKeys.length < 1) {
+          throw new Error('No available keys found for account: ' + address);
+        }
         setIsSwitchingAccount(true);
         setActiveTab(STEPS.PASSWORD);
-      } catch (error) {
+      } catch {
         setLoadingString('New account login');
         setSecondLine('Waiting for client sync');
         setIsSwitchingAccount(false);
@@ -182,18 +187,9 @@ const Sync = () => {
         if (jsonObject.method === FCLWalletConnectMethod.accountInfo) {
           const accountKey = getAccountKey();
           const deviceInfo = await getDeviceInfo();
-          const ak = {
-            public_key: accountKey.publicKey,
-            hash_algo: accountKey.hashAlgo,
-            sign_algo: accountKey.signAlgo,
-            weight: accountKey.weight,
-          };
-
-          setAccountKey(ak);
-          setDeviceInfo(deviceInfo);
 
           try {
-            await wallet.request({
+            await signClient.request({
               topic,
               chainId: 'flow:mainnet',
               request: {
@@ -235,8 +231,7 @@ const Sync = () => {
         setLoadingString('Account info received');
         setSecondLine('Checking account availability');
 
-        const jsonObject = JSON.parse(result as string);
-
+        const jsonObject: FCLWalletConnectSyncAccountInfo = JSON.parse(result as string);
         await handleAccountInfo(signClient, topic, jsonObject);
       } catch (error) {
         consoleError('Error in account info request:', error);
@@ -320,9 +315,9 @@ const Sync = () => {
         }
       } else {
         try {
-          const formatted = mnemonic.trim().split(/\s+/g).join(' ');
+          const formattedMnemonic = mnemonic.trim().split(/\s+/g).join(' ');
 
-          await usewallet.importAccountFromMobile(addressToImport, password, formatted);
+          await usewallet.importAccountFromMobile(addressToImport, password, formattedMnemonic);
 
           setActiveTab(STEPS.ALL_SET);
         } catch (error) {
@@ -364,15 +359,7 @@ const Sync = () => {
           <SetPassword
             handleSwitchTab={() => setActiveTab(STEPS.ALL_SET)}
             onSubmit={submitPassword}
-            username={username}
-            title={
-              <>
-                {chrome.i18n.getMessage('Welcome__Back')}
-                <Box display="inline" color="primary.main">
-                  {username}
-                </Box>
-              </>
-            }
+            title={<>{chrome.i18n.getMessage('Welcome__Back')}</>}
             isLogin={isAddWallet}
             autoFocus={true}
           />

@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-
+# Exit peacefully if we're in a detached HEAD state
+if ! git symbolic-ref --quiet HEAD; then
+  exit 0
+fi
 # Get the current branch name
 BRANCH_NAME=$(git symbolic-ref --short HEAD)
 

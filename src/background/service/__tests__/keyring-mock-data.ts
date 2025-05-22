@@ -5,7 +5,12 @@
 
 import encryptor from 'browser-passworder';
 
-import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
+import {
+  CURRENT_ID_KEY,
+  KEYRING_STATE_V2_KEY,
+  KEYRING_STATE_V3_KEY,
+} from '@/shared/types/keyring-types';
+import { SIGN_ALGO_NUM_ECDSA_P256 } from '@/shared/utils/algo-constants';
 
 /**
  * Constants used for keyring testing
@@ -31,13 +36,25 @@ export const MOCK_VAULT_DATA = [
     },
   },
 ];
+// Expected output keys from the mnemonic
+export const MOCK_KEYS = {
+  privateKey: '7348f26224629d28aa68f7280161839aaf40b38ce5f13fc3e5612cf8691d2725',
+  publicKeys: {
+    P256: {
+      pubK: '587c247c7cd090bc7abdd9fc6c02a135457a59195ee9cdd5e0b35c61cd857377b20dec3ba642e77901ce5b382218668cc1718f7a133304c50962fc8eda911ec5',
+    },
+    SECP256K1: {
+      pubK: '25cb73bf0f93acc8e01e5fb1b2608e9f9ca19259bcb6072610c91ba0866a6c1f1840ed4549f172776e24f4dad703a2c9d22399220833f218ea90ada9c9585d95',
+    },
+  },
+};
 
 /**
  * Real encrypted keyring state for testing
  *
  * This contains the actual encrypted data created with encryptor.encrypt using MOCK_PASSWORD
  */
-export const MOCK_KEYRING_STATE = {
+export const MOCK_KEYRING_STATE_V2 = {
   booted:
     '{"data":"8TzxAMair8Ui+gZP7udSpWlL4zDtpw==","iv":"3Y5NRX9ApIr52XYoWpCuXA==","salt":"bcukqOMOG+IZIWybNaEfg1ra5hIfUTCn/0NDxy5HBl4="}',
   vault: [
@@ -50,6 +67,20 @@ export const MOCK_KEYRING_STATE = {
   vaultVersion: 2,
 };
 
+export const MOCK_KEYRING_STATE_V3 = {
+  booted:
+    '{"data":"8TzxAMair8Ui+gZP7udSpWlL4zDtpw==","iv":"3Y5NRX9ApIr52XYoWpCuXA==","salt":"bcukqOMOG+IZIWybNaEfg1ra5hIfUTCn/0NDxy5HBl4="}',
+  vault: [
+    {
+      id: MOCK_ID,
+      pubKey: MOCK_KEYS.publicKeys.P256.pubK,
+      signAlgo: SIGN_ALGO_NUM_ECDSA_P256,
+      encryptedData:
+        '{"data":"E8+vzwvQaGX38vzxn+ufZejpI48T0Ev0EB5esgmJsFFpB/K+/A5umeFY7taThGvKF6RxS9VORjTmrNWAzjeNvsHGCKAFWwzUfmByGRAcC9DEbXE35yO73A2aBigaQdQknlBG7T5jKfTIZdIvMnWOofinr6efAJrYwnr71NGAnPdj8GjYGweYPlRCKLdggIpCldf2AhvOKYYFWaQRkHtJ3RDecSvb+ldVqha23nuG2J0t4iTrKqJxrZDmIJ/T4ruW8Bha","iv":"7SLDGGs1lz1mNbuSnfbPwQ==","salt":"H20o1zs1ryQqaV7sYvpitUk7yGdTf6+vjbAa9K+2UOk="}',
+    },
+  ],
+  vaultVersion: 3,
+};
 /**
  * Setup mock storage with real encrypted data for keyring tests
  *
@@ -60,7 +91,7 @@ export const setupMockKeyringStorage = (memoryStore: Map<string, any>) => {
   memoryStore.set(CURRENT_ID_KEY, MOCK_ID);
 
   // Set up keyring state with real encrypted data
-  memoryStore.set('keyringStateV2', MOCK_KEYRING_STATE);
+  memoryStore.set(KEYRING_STATE_V3_KEY, MOCK_KEYRING_STATE_V2);
 };
 
 /**
@@ -73,7 +104,7 @@ export const setupMockKeyringStorage = (memoryStore: Map<string, any>) => {
 export const verifyMockKeyringData = async (): Promise<boolean> => {
   try {
     // Try to decrypt the booted flag
-    const decryptedBooted = await encryptor.decrypt(MOCK_PASSWORD, MOCK_KEYRING_STATE.booted);
+    const decryptedBooted = await encryptor.decrypt(MOCK_PASSWORD, MOCK_KEYRING_STATE_V2.booted);
 
     // Check if we got the expected 'true' string
     if (typeof decryptedBooted !== 'string' || decryptedBooted !== 'true') {
@@ -82,7 +113,7 @@ export const verifyMockKeyringData = async (): Promise<boolean> => {
     }
 
     // Try to decrypt the vault data
-    const encryptedVaultData = MOCK_KEYRING_STATE.vault[0].encryptedData;
+    const encryptedVaultData = MOCK_KEYRING_STATE_V2.vault[0].encryptedData;
     const decryptedVaultData = await encryptor.decrypt(MOCK_PASSWORD, encryptedVaultData);
 
     // Basic structure validation without type checking issues
@@ -161,16 +192,3 @@ export const verifyMockKeyringData = async (): Promise<boolean> => {
  * });
  * ```
  */
-
-// Expected output keys from the mnemonic
-export const MOCK_KEYS = {
-  privateKey: '7348f26224629d28aa68f7280161839aaf40b38ce5f13fc3e5612cf8691d2725',
-  publicKeys: {
-    P256: {
-      pubK: '587c247c7cd090bc7abdd9fc6c02a135457a59195ee9cdd5e0b35c61cd857377b20dec3ba642e77901ce5b382218668cc1718f7a133304c50962fc8eda911ec5',
-    },
-    SECP256K1: {
-      pubK: '25cb73bf0f93acc8e01e5fb1b2608e9f9ca19259bcb6072610c91ba0866a6c1f1840ed4549f172776e24f4dad703a2c9d22399220833f218ea90ada9c9585d95',
-    },
-  },
-};

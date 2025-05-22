@@ -47,7 +47,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 // --- Other Specific Imports (ensure these remain as they were) ---
 
 import * as findAddressWithPubKey from '@/background/utils/modules/findAddressWithPubKey';
-import { pk2PubKey } from '@/background/utils/modules/publicPrivateKey';
+import { pk2PubKeyTuple } from '@/background/utils/modules/publicPrivateKey';
 import { tupleToPubKey } from '@/shared/types/key-types';
 import { TESTNET_CHAIN_ID } from '@/shared/types/network-types';
 import { SIGN_ALGO_NUM_DEFAULT, HASH_ALGO_NUM_DEFAULT } from '@/shared/utils/algo-constants';
@@ -58,7 +58,7 @@ import walletController from '../wallet';
 
 describe('ProviderController - signTypeData (EIP-1271)', async () => {
   const mockPrivateKeyHex = '0x2a48b006348213f6f78b7c8cf443a32737b8f6013734d8f937c68556641f02b9';
-  const mockPubKeyTuple = await pk2PubKey(stripHexPrefix(mockPrivateKeyHex));
+  const mockPubKeyTuple = await pk2PubKeyTuple(stripHexPrefix(mockPrivateKeyHex));
   const mockPubKey = tupleToPubKey(mockPubKeyTuple, SIGN_ALGO_NUM_DEFAULT);
   const mockEvmAddress = '0x000000000000000000000002433D0DD1e2D81b9F'; // Address derived from private key
   const mockFlowAddress = '0xf8d6e0586b0a20c7'; // Example Flow address

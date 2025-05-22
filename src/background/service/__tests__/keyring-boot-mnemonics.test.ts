@@ -4,7 +4,7 @@ import encryptor from 'browser-passworder';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // Internal imports
-import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
+import { CURRENT_ID_KEY, KEYRING_STATE_V2_KEY } from '@/shared/types/keyring-types';
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 
 // Mock dependencies
@@ -17,7 +17,7 @@ vi.mock('../../../shared/utils/storage', () => ({
 
 vi.mock('../../service/openapi', () => ({
   default: {
-    on: vi.fn(),
+    getAccountsWithPublicKey: vi.fn().mockResolvedValue([]),
   },
 }));
 
@@ -54,7 +54,7 @@ vi.mock('bip39', () => ({
 
 // Import the mocked modules after all mocks are defined
 import storage from '../../../shared/utils/storage';
-import KeyringService from '../keyring';
+import keyringService from '../keyring';
 
 import { MOCK_KEYS, MOCK_MNEMONIC, MOCK_PASSWORD } from './keyring-mock-data';
 
@@ -62,7 +62,7 @@ describe('Keyring Boot and Mnemonics Test', () => {
   // Create in-memory storage
   const memoryStore = new Map<string, any>();
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Reset mocks and storage
     vi.clearAllMocks();
     memoryStore.clear();
@@ -78,8 +78,7 @@ describe('Keyring Boot and Mnemonics Test', () => {
     });
 
     // Reset KeyringService state
-    (KeyringService as any).currentKeyring = [];
-    (KeyringService as any).keyringList = [];
+    await keyringService.resetKeyRing();
   });
 
   it('generates mock data with real encryption', async () => {
@@ -123,7 +122,7 @@ describe('Keyring Boot and Mnemonics Test', () => {
     };
 
     // Store this for future tests
-    memoryStore.set('keyringStateV2', keyringStateV2);
+    memoryStore.set(KEYRING_STATE_V2_KEY, keyringStateV2);
 
     // Log the mock data for future use
     const mockData = {
@@ -139,22 +138,22 @@ describe('Keyring Boot and Mnemonics Test', () => {
     // Now let's verify we can actually use this to unlock a KeyringService
 
     // Initialize the KeyringService with our mocked data
-    (KeyringService as any).store.updateState(keyringStateV2);
+    await keyringService.loadKeyringStore();
 
     // Test unlocking with the password
-    await (KeyringService as any).submitPassword(MOCK_PASSWORD);
+    await keyringService.unlock(MOCK_PASSWORD);
 
     // Verify it's unlocked
-    expect(KeyringService.isUnlocked()).toBe(true);
+    expect(keyringService.isUnlocked()).toBe(true);
 
     // Verify we have the keyring in memory
-    expect((KeyringService as any).currentKeyring.length).toBeGreaterThan(0);
+    expect((await keyringService.getKeyring()).length).toBeGreaterThan(0);
 
     // Check that we can access keys
-    const publicKeyTuple = await KeyringService.getCurrentPublicKeyTuple();
+    const publicKeyTuple = await keyringService.getCurrentPublicKeyTuple();
     expect(publicKeyTuple).toEqual(mockPublicKeyTuple);
 
-    const privateKeyTuple = await KeyringService.getCurrentPrivateKeyTuple();
+    const privateKeyTuple = await keyringService.getCurrentPrivateKeyTuple();
     expect(privateKeyTuple.SECP256K1.pk).toEqual(mockPrivateKey);
   });
 });

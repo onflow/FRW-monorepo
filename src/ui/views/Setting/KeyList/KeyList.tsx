@@ -1,6 +1,7 @@
 import { Box, IconButton, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 
+import { type KeyResponseItem, type AccountKey } from '@/shared/types/network-types';
 import { LLHeader } from '@/ui/FRWComponent';
 import { useWallet } from 'ui/utils';
 
@@ -19,11 +20,10 @@ const KeyList = () => {
   const [showKey, setShowkey] = useState(null);
   const [showRevoke, setShowRevoke] = useState(false);
   const [publickeys, setPublicKeys] = useState<any[]>([]);
-  const [deviceKey, setDeviceKey] = useState<any[]>([]);
   const [keyIndex, setKeyIndex] = useState<string>('');
 
   const getAccount = useCallback(async () => {
-    const account = await wallet.getAccount();
+    const account = await wallet.getMainAccountInfo();
     const keys = await wallet.openapi.keyList();
     const installationId = await wallet.openapi.getInstallationId();
     const mergedArray = await mergeData(
@@ -34,11 +34,6 @@ const KeyList = () => {
       installationId
     );
     setPublicKeys(mergedArray);
-  }, [wallet]);
-
-  const getUserKeys = useCallback(async () => {
-    const keys = await wallet.openapi.keyList();
-    setDeviceKey(keys);
   }, [wallet]);
 
   const setTab = useCallback(async () => {
@@ -53,28 +48,33 @@ const KeyList = () => {
     }
   };
 
-  async function mergeData(data, installationId) {
+  async function mergeData(
+    data: { result: KeyResponseItem[]; keys: AccountKey[] },
+    installationId: string
+  ) {
     const merged = data.keys.map((key) => {
       const matchingResults = data.result.filter(
         (item) => item.pubkey.public_key === key.publicKey
       );
 
-      const mergedItem = { ...key };
-      mergedItem.current_device = false;
-      mergedItem.devices = matchingResults.map((result) => {
-        const deviceItem = {
-          ...result.pubkey,
-          ...key,
-          device_name: result.device.device_name,
-        };
+      const mergedItem = {
+        ...key,
+        current_device: false,
+        devices: matchingResults.map((result) => {
+          const deviceItem = {
+            ...result.pubkey,
+            ...key,
+            device_name: result.device.device_name,
+          };
 
-        // Check if the installationId matches device.id
-        if (result.device.id === installationId) {
-          mergedItem.current_device = true;
-        }
+          // Check if the installationId matches device.id
+          if (result.device.id === installationId) {
+            mergedItem.current_device = true;
+          }
 
-        return deviceItem;
-      });
+          return deviceItem;
+        }),
+      };
 
       return mergedItem;
     });
@@ -90,8 +90,7 @@ const KeyList = () => {
   useEffect(() => {
     setTab();
     getAccount();
-    getUserKeys();
-  }, [getAccount, getUserKeys, setTab]);
+  }, [getAccount, setTab]);
 
   const CredentialBox = ({ data }) => {
     return (
