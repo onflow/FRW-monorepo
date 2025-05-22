@@ -13,6 +13,7 @@ import {
   pkTuple2PubKey,
   formPubKeyTuple,
   seedWithPathAndPhrase2PublicPrivateKey,
+  getPublicKeyFromPrivateKey,
 } from '@/background/utils/modules/publicPrivateKey';
 import i18n from '@/i18n';
 import {
@@ -20,6 +21,7 @@ import {
   type PublicPrivateKeyTuple,
   type PrivateKeyTuple,
   type PublicKeyTuple,
+  type PublicPrivateKey,
 } from '@/shared/types/key-types';
 import {
   KEYRING_DEEP_VAULT_KEY,
@@ -36,7 +38,12 @@ import {
   KEYRING_STATE_V3_KEY,
 } from '@/shared/types/keyring-types';
 import { type LoggedInAccount } from '@/shared/types/wallet-types';
-import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
+import {
+  FLOW_BIP44_PATH,
+  SIGN_ALGO_NUM_DEFAULT,
+  SIGN_ALGO_NUM_ECDSA_P256,
+  SIGN_ALGO_NUM_ECDSA_secp256k1,
+} from '@/shared/utils/algo-constants';
 import { consoleError, consoleInfo, consoleWarn } from '@/shared/utils/console-log';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
 import storage from '@/shared/utils/storage';
@@ -218,10 +225,106 @@ class KeyringService extends EventEmitter {
     }
     return id;
   };
+
+  /**
+   * Get the current sign algo
+   * @returns {number} The current sign algo
+   */
+  getCurrentSignAlgo = (): number => {
+    if (!this.isUnlocked()) {
+      throw new Error('Keyring is not unlocked');
+    }
+    if (!this.currentSignAlgo) {
+      throw new Error('Sign algo is not set');
+    }
+    return this.currentSignAlgo;
+  };
+
+  /**
+   * Get the current public key
+   * @returns {string} The current public key
+   */
+  getCurrentPublicKey = (): string => {
+    if (!this.isUnlocked()) {
+      throw new Error('Keyring is not unlocked');
+    }
+    if (!this.currentPublicKey) {
+      throw new Error('Public key is not set');
+    }
+    return this.currentPublicKey;
+  };
+
+  /**
+   * Get the current private key
+   * @returns {Promise<string>} The current private key
+   */
+  getCurrentPrivateKey = async (): Promise<string> => {
+    const pkTuple = await this.getKeyringPrivateKeyTuple(this.currentKeyring);
+    switch (this.getCurrentSignAlgo()) {
+      case SIGN_ALGO_NUM_ECDSA_secp256k1:
+        return pkTuple.SECP256K1.pk;
+      case SIGN_ALGO_NUM_ECDSA_P256:
+        return pkTuple.P256.pk;
+      default:
+        throw new Error('Invalid sign algo');
+    }
+  };
+
+  /**
+   * Get the public private key from the current keyring
+   * @returns {Promise<string>} The private key as a hex string
+   * @throws {Error} If no private key is found
+   */
+  getKeyringPublicPrivateKey = async (
+    signAlgo: number,
+    keyring: Keyring
+  ): Promise<PublicPrivateKey> => {
+    if (keyring instanceof SimpleKeyring) {
+      const privateKey = keyring.wallets[0].privateKey.toString('hex');
+      const publicKey = await getPublicKeyFromPrivateKey(privateKey, signAlgo);
+      return {
+        publicKey,
+        privateKey,
+        signAlgo,
+      };
+    }
+    if (keyring instanceof HDKeyring) {
+      const serialized = await keyring.serialize();
+      if (!serialized.mnemonic) {
+        throw new Error('Mnemonic not found');
+      }
+      // If mnemonic is found, derive the private key
+      const publicPrivateKeyTuple = await seedWithPathAndPhrase2PublicPrivateKey(
+        serialized.mnemonic,
+        serialized.derivationPath,
+        serialized.passphrase
+      );
+      if (signAlgo === SIGN_ALGO_NUM_ECDSA_P256) {
+        return {
+          publicKey: publicPrivateKeyTuple.P256.pubK,
+          privateKey: publicPrivateKeyTuple.P256.pk,
+          signAlgo,
+        };
+      } else if (signAlgo === SIGN_ALGO_NUM_ECDSA_secp256k1) {
+        return {
+          publicKey: publicPrivateKeyTuple.SECP256K1.pubK,
+          privateKey: publicPrivateKeyTuple.SECP256K1.pk,
+          signAlgo,
+        };
+      } else {
+        throw new Error('Invalid sign algo');
+      }
+    }
+
+    // Invalid keyring type
+    throw new Error('Invalid keyring type');
+  };
+
   /**
    * Get the private key from the current keyring
    * @returns {Promise<string>} The private key as a hex string
    * @throws {Error} If no private key is found
+   * @deprecated use {@link getKeyringPublicPrivateKey} instead
    */
   getKeyringPrivateKeyTuple = async (keyrings: Keyring[]): Promise<PrivateKeyTuple> => {
     for (const keyring of keyrings) {
@@ -263,10 +366,12 @@ class KeyringService extends EventEmitter {
     }
     throw new Error('No private key found in any of the keyrings.');
   };
+
   /**
    * Get the private key tuple from the current keyring
    * @returns {Promise<PrivateKeyTuple>} The private key tuple
    * @throws {Error} If no private key is found
+   * @deprecated use {@link getCurrentPublicKey} or {@link getCurrentPrivateKey} instead
    */
   getCurrentPrivateKeyTuple = async (): Promise<PrivateKeyTuple> => {
     return this.getKeyringPrivateKeyTuple(this.currentKeyring);
@@ -276,7 +381,9 @@ class KeyringService extends EventEmitter {
    * Get the public key tuple from the current keyring
    * @returns {Promise<PublicPrivateKeyTuple>} The public key tuple
    */
-  getKeyringPublicPrivateKeyTuple = async (keyrings: Keyring[]): Promise<PublicPrivateKeyTuple> => {
+  private getKeyringPublicPrivateKeyTuple = async (
+    keyrings: Keyring[]
+  ): Promise<PublicPrivateKeyTuple> => {
     try {
       // Get the private key
       const privateKeyTuple = await this.getKeyringPrivateKeyTuple(keyrings);
@@ -291,6 +398,7 @@ class KeyringService extends EventEmitter {
   /**
    * Get the public private key tuple from the current keyring
    * @returns {Promise<PublicPrivateKeyTuple>} The public private key tuple
+   * @deprecated use {@link getCurrentPublicKey} or {@link getCurrentPrivateKey} instead
    */
   getCurrentPublicPrivateKeyTuple = async (): Promise<PublicPrivateKeyTuple> => {
     return this.getKeyringPublicPrivateKeyTuple(this.currentKeyring);
@@ -298,6 +406,7 @@ class KeyringService extends EventEmitter {
   /**
    * Get the public key tuple from the current keyring
    * @returns {Promise<PublicKeyTuple>} The public key tuple
+   * @deprecated use {@link getKeyringPublicPrivateKey} instead
    */
   getKeyringPublicKeyTuple = async (keyrings: Keyring[]): Promise<PublicKeyTuple> => {
     return formPubKeyTuple(await this.getKeyringPublicPrivateKeyTuple(keyrings));
@@ -305,6 +414,7 @@ class KeyringService extends EventEmitter {
   /**
    * Get the public key tuple from the current keyring
    * @returns {Promise<PublicKeyTuple>} The public key tuple
+   * @deprecated use {@link getCurrentPublicKey} instead
    */
   getCurrentPublicKeyTuple = async (): Promise<PublicKeyTuple> => {
     return this.getKeyringPublicKeyTuple(this.currentKeyring);
@@ -1100,9 +1210,20 @@ class KeyringService extends EventEmitter {
   private async _restoreKeyring(decryptedKeyring: DecryptedKeyringV3): Promise<Keyring> {
     const keyring = await this._instansiateKeyring(decryptedKeyring.decryptedData[0]);
     this.currentKeyring = [keyring];
-    this.currentPublicKey = decryptedKeyring.publicKey;
     this.currentSignAlgo = decryptedKeyring.signAlgo;
+    // Regenerate the public key from the private key
+    const publicPrivateKey = await this.getKeyringPublicPrivateKey(
+      decryptedKeyring.signAlgo,
+      keyring
+    );
+    this.currentPublicKey = publicPrivateKey.publicKey;
 
+    // throw an error if the public key is not the same as the one in the decrypted keyring
+    if (this.currentPublicKey !== decryptedKeyring.publicKey) {
+      throw new Error(
+        `restoreKeyring - public key mismatch: ${this.currentPublicKey} !== ${decryptedKeyring.publicKey}`
+      );
+    }
     return keyring;
   }
 

@@ -21,7 +21,7 @@ import {
   findAddressWithPK,
 } from '@/background/utils/modules/findAddressWithPK';
 import {
-  pk2PubKey,
+  pk2PubKeyTuple,
   jsonToKey,
   seedWithPathAndPhrase2PublicPrivateKey,
   formPubKeyTuple,
@@ -448,7 +448,7 @@ export class WalletController extends BaseController {
     // We should be validating the password as the first thing we do
     await this.verifyPasswordIfBooted(password);
     // Get the public key tuple from the private key
-    const pubKTuple: PublicKeyTuple = await pk2PubKey(pk);
+    const pubKTuple: PublicKeyTuple = await pk2PubKeyTuple(pk);
 
     // Check if the public key has any accounts associated with it
     const accounts = await getOrCheckAccountsByPublicKeyTuple(pubKTuple, address);
