@@ -196,22 +196,18 @@ class KeyringService extends EventEmitter {
   /**
    * Get keyring public keys
    * @returns {Promise<string[]>} The keyring ids
+   * @deprecated Use {@link getAllPublicKeys} instead and migrate to using public keys to refer to keyrings
    */
-
   getAllKeyringIds = async (): Promise<string[]> => {
     const keyringIds = this.decryptedKeyrings.map((keyring) => keyring.id);
     return keyringIds;
-  };
-
-  getAllPublicKeys = async (): Promise<string[]> => {
-    const keyringPublicKeys = this.decryptedKeyrings.map((keyring) => keyring.publicKey);
-    return keyringPublicKeys;
   };
 
   /**
    * Ensure valid currentId
    * @param currentId - The id of the keyring to switch to.
    * @returns {Promise<string>} The currentId
+   * @deprecated Use {@link ensureValidKeyringPublicKey} instead and move profile ids out of keyring
    */
   ensureValidKeyringId = async (id: string | null): Promise<string> => {
     const keyringIds = await this.getAllKeyringIds();
@@ -224,6 +220,33 @@ class KeyringService extends EventEmitter {
       return firstKeyringId;
     }
     return id;
+  };
+
+  /**
+   * Get keyring public keys
+   * @returns {Promise<string[]>} The keyring public keys
+   */
+  getAllPublicKeys = async (): Promise<string[]> => {
+    const keyringPublicKeys = this.decryptedKeyrings.map((keyring) => keyring.publicKey);
+    return keyringPublicKeys;
+  };
+
+  /**
+   * Ensure valid currentId
+   * @param currentId - The id of the keyring to switch to.
+   * @returns {Promise<string>} The currentId
+   */
+  ensureValidKeyringPublicKey = async (publicKey: string | null): Promise<string> => {
+    const keyringPublicKeys = await this.getAllPublicKeys();
+    if (keyringPublicKeys.length === 0) {
+      throw new Error('KeyringController - No keyrings found');
+    }
+    if (!publicKey || !keyringPublicKeys.includes(publicKey)) {
+      // Data has been corrupted somehow. Switch to the first keyring
+      const firstKeyringPublicKey = keyringPublicKeys[0];
+      return firstKeyringPublicKey;
+    }
+    return publicKey;
   };
 
   /**
@@ -984,7 +1007,7 @@ class KeyringService extends EventEmitter {
     const encryptedString = await this.encryptor.encrypt(password, serializedKeyrings);
 
     // Get current ID and vaults
-    const currentId = await storage.get(CURRENT_ID_KEY);
+    const currentPublicKey = this.currentPublicKey;
     const keyringState = this.store.getState();
 
     const vaultArray =
@@ -992,13 +1015,20 @@ class KeyringService extends EventEmitter {
         ? keyringState.vault
         : await this.encryptVaultArray(await this.decryptVaultArray(password), password);
 
-    const vaultArrayAccountIndex = vaultArray.findIndex((entry) => entry.id === currentId);
+    const vaultArrayAccountIndex = vaultArray.findIndex(
+      (entry) => entry.publicKey === currentPublicKey
+    );
     // Update or add to vault array
     if (vaultArrayAccountIndex !== -1 && vaultArray[vaultArrayAccountIndex]) {
       vaultArray[vaultArrayAccountIndex].encryptedData = encryptedString;
       vaultArray[vaultArrayAccountIndex].publicKey = this.currentPublicKey;
       vaultArray[vaultArrayAccountIndex].signAlgo = this.currentSignAlgo;
     } else {
+      // Handle legacy profile ID
+      const currentId = await returnCurrentProfileId();
+      if (!currentId) {
+        throw new Error('No current profile ID found');
+      }
       const newEntry: VaultEntryV3 = {
         id: currentId,
         encryptedData: encryptedString,
@@ -1674,7 +1704,7 @@ class KeyringService extends EventEmitter {
   }
 
   /**
-   * @deprecated Checking accounts by user id is depreciated - use the public key instead
+   * @deprecated Checking accounts by user id is deprecated - use the public key instead
    **/
   async checkAvailableAccount_deprecated(currentId: string): Promise<VaultEntryV2[]> {
     if (this.store.getState().vaultVersion !== KEYRING_STATE_VAULT_V2) {
@@ -1863,7 +1893,7 @@ class KeyringService extends EventEmitter {
    * @param {string} password - The keyring controller password.
    * @param {string} profileId - The ID of the profile to remove.
    * @returns {Promise<boolean>} - A promise that resolves to true if successful.
-   * @deprecated Use {@link removeKeyring} instead.
+   * @deprecated Use {@link removeKeyring} instead and update the current profile ID outside of the function
    */
   async removeProfile(password: string, profileId: string): Promise<boolean> {
     const profileIndex = this.decryptedKeyrings.findIndex((keyring) => keyring.id === profileId);
@@ -1909,9 +1939,7 @@ class KeyringService extends EventEmitter {
         // We thought about handling defensively here, but it's better to throw to stop the operation
 
         // This should theoretically not happen if length > 1, but handle defensively
-        throw new Error(
-          `Error: Could not determine the next profile ID to switch to. currentId: ${currentId}, profileId: ${profileId}, profileIndex: ${profileIndex}, keyringIds: ${keyringIds}`
-        );
+        throw new Error(`Error: Could not determine the next profile ID to switch to`);
       }
       // Clear the current keyring
       this.clearCurrentKeyring();
