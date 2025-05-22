@@ -66,8 +66,8 @@ const PasswordForm: React.FC<PasswordFormProps> = ({
       const index2 = Math.min(matchFields[1], fields.length - 1);
 
       if (index1 >= 0 && index2 >= 0) {
-        const field1 = fields[index1].value;
-        const field2 = fields[index2].value;
+        const field1 = fields[index1].value || '';
+        const field2 = fields[index2].value || '';
         setMatchValid(field1 === field2 && field1.length > 0);
       }
     }
