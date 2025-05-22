@@ -56,7 +56,7 @@ const PasswordForm: React.FC<PasswordFormProps> = ({
   useEffect(() => {
     // Length validation for first field
     const primaryField = fields[0];
-    const isLengthValid = primaryField?.value?.length >= minLength;
+    const isLengthValid = (primaryField?.value?.length ?? 0) >= minLength;
     setCharactersValid(isLengthValid);
 
     // Check if fields should match
