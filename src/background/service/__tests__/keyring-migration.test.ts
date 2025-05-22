@@ -441,6 +441,8 @@ describe('Keyring Migration Tests', () => {
 
     // Step 3: Create a new keyring with mnemonics
     const newKeyring = await keyringService.createKeyringWithMnemonics(
+      MOCK_KEYS.publicKeys.SECP256K1.pubK,
+      SIGN_ALGO_NUM_DEFAULT,
       TEST_PASSWORD,
       HD_KEYRING_MNEMONIC
     );

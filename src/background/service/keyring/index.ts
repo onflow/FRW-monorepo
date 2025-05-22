@@ -149,6 +149,8 @@ class KeyringService extends EventEmitter {
   private store!: SimpleStore<KeyringState>;
   private memStore: SimpleStore<MemStoreState>;
   private currentKeyring: Keyring[];
+  private currentPublicKey: string | undefined;
+  private currentSignAlgo: number | undefined;
   private decryptedKeyrings: DecryptedKeyringV3[];
   private encryptor: typeof encryptor = encryptor;
 
@@ -164,6 +166,8 @@ class KeyringService extends EventEmitter {
       isUnlocked: false,
     });
     this.currentKeyring = [];
+    this.currentPublicKey = undefined;
+    this.currentSignAlgo = undefined;
     this.decryptedKeyrings = [];
   }
 
@@ -353,53 +357,23 @@ class KeyringService extends EventEmitter {
    * @param {string} privateKey - The privateKey to generate address
    * @returns {Promise<Keyring>} A Promise that resolves to the keyring.
    */
-  async importPrivateKey(password: string, privateKey: string): Promise<Keyring> {
+  async importPrivateKey(
+    publicKey: string,
+    signAlgo: number,
+    password: string,
+    privateKey: string
+  ): Promise<Keyring> {
     // Verify the password
     await this.verifyOrBoot(password);
     // Clear the current keyrings as the new keyring will be a simple keyring
     await this.clearKeyrings();
     // Add the new keyring
-    const keyring = await this.addNewKeyring(password, 'Simple Key Pair', [privateKey]);
+    const keyring = await this.addNewKeyring(publicKey, signAlgo, password, 'Simple Key Pair', [
+      privateKey,
+    ]);
     await this.persistAllKeyrings(password);
     await this.setUnlocked();
     await this.fullUpdate();
-    return keyring;
-  }
-
-  /**
-   * Import Keychain using Proxy publickey
-   *
-   * @emits KeyringController#unlock
-   * @param {string} privateKey - The privateKey to generate address
-   * @returns {Promise<Object>} A Promise that resolves to the state.
-   */
-  async importPublicKey(password: string, key: string, seed: string): Promise<any> {
-    // Verify the password
-    await this.verifyOrBoot(password);
-    // Clear the current keyrings as the new keyring will replace it
-    await this.clearKeyrings();
-
-    // Add new keyring and store reference
-    const keyring = await this.addNewKeyring(password, 'HD Key Tree', {
-      publicKey: key,
-      mnemonic: seed,
-      activeIndexes: [1],
-    });
-
-    // Get accounts from the keyring
-    const accounts = await keyring.getAccounts();
-    const [firstAccount] = accounts;
-
-    // Validate first account exists
-    if (!firstAccount) {
-      throw new Error('KeyringController - First Account not found.');
-    }
-
-    // Persist, unlock and update
-    await this.persistAllKeyrings(password);
-    await this.setUnlocked();
-    await this.fullUpdate();
-
     return keyring;
   }
 
@@ -424,6 +398,8 @@ class KeyringService extends EventEmitter {
    * @returns {Promise<Keyring>} A Promise that resolves to the keyring.
    */
   async createKeyringWithMnemonics(
+    publicKey: string,
+    signAlgo: number,
     password: string,
     seed: string,
     derivationPath = FLOW_BIP44_PATH,
@@ -439,7 +415,7 @@ class KeyringService extends EventEmitter {
     await this.clearKeyrings();
 
     // Create new keyring
-    const keyring = await this.addNewKeyring(password, 'HD Key Tree', {
+    const keyring = await this.addNewKeyring(publicKey, signAlgo, password, 'HD Key Tree', {
       mnemonic: seed,
       activeIndexes: [0],
       derivationPath,
@@ -454,13 +430,23 @@ class KeyringService extends EventEmitter {
     return keyring;
   }
 
-  async addKeyring(password: string, keyring: SimpleKeyring | HDKeyring): Promise<Keyring> {
+  async addKeyring(
+    publicKey: string,
+    signAlgo: number,
+    password: string,
+    keyring: SimpleKeyring | HDKeyring
+  ): Promise<Keyring> {
     // Get accounts and check for duplicates
-    const accounts = await keyring.getAccounts();
-    await this.checkForDuplicate(keyring.type, accounts);
+    if (this.currentPublicKey === publicKey) {
+      throw new Error('Current public key or sign algo is already set');
+    }
 
     // Add keyring to current keyrings and persist
-    this.currentKeyring.push(keyring);
+    // Don't use push here because we want to replace the current keyring
+    this.currentKeyring = [keyring];
+    this.currentPublicKey = publicKey;
+    this.currentSignAlgo = signAlgo;
+
     await this.persistAllKeyrings(password);
 
     // Update memory store and state
@@ -481,6 +467,8 @@ class KeyringService extends EventEmitter {
     this.memStore.updateState({ isUnlocked: false });
     // remove keyrings
     this.currentKeyring = [];
+    this.currentPublicKey = undefined;
+    this.currentSignAlgo = undefined;
     this.decryptedKeyrings = [];
     this.emit('lock');
     return this.fullUpdate();
@@ -494,6 +482,8 @@ class KeyringService extends EventEmitter {
   async updateKeyring() {
     // remove keyrings
     this.currentKeyring = [];
+    this.currentPublicKey = undefined;
+    this.currentSignAlgo = undefined;
   }
 
   /**
@@ -512,7 +502,7 @@ class KeyringService extends EventEmitter {
   async submitPassword(password: string): Promise<MemStoreState> {
     await this.verifyOrBoot(password);
 
-    this.currentKeyring = await this.unlockKeyrings(password);
+    await this.unlockKeyrings(password);
     this.setUnlocked();
 
     return this.fullUpdate();
@@ -565,13 +555,19 @@ class KeyringService extends EventEmitter {
    * @param {Object} opts - The constructor options for the keyring.
    * @returns {Promise<Keyring>} The new keyring.
    */
-  addNewKeyring(password: string, type: KeyringType, opts?: unknown): Promise<Keyring> {
+  addNewKeyring(
+    publicKey: string,
+    signAlgo: number,
+    password: string,
+    type: KeyringType,
+    opts?: unknown
+  ): Promise<Keyring> {
     const KeyringClass = this.getKeyringClassForType(type);
     if (!KeyringClass) {
       throw new Error(`Keyring type ${type} not found`);
     }
     const keyring = new KeyringClass(opts as typeof KeyringClass.arguments);
-    return this.addKeyring(password, keyring);
+    return this.addKeyring(publicKey, signAlgo, password, keyring);
   }
 
   /**
@@ -596,6 +592,10 @@ class KeyringService extends EventEmitter {
       })
     );
     this.currentKeyring = validKeyrings;
+    if (validKeyrings.length === 0) {
+      this.currentPublicKey = undefined;
+      this.currentSignAlgo = undefined;
+    }
     return;
   }
 
@@ -608,6 +608,7 @@ class KeyringService extends EventEmitter {
    * @param {string} type - The key pair type to check for.
    * @param {Array<string>} newAccountArray - Array of new accounts.
    * @returns {Promise<Array<string>>} The account, if no duplicate is found.
+   * @deprecated - This method should not be used anymore. It works on EOA addresses, not public keys.
    */
   async checkForDuplicate(type: string, newAccountArray: string[]): Promise<string[]> {
     const keyrings = this.getKeyringsByType(type);
@@ -637,6 +638,7 @@ class KeyringService extends EventEmitter {
    * @param {string} password - The password to use to persist the keyring.
    * @param {Keyring} selectedKeyring - The currently selected keyring.
    * @returns {Promise<Object>} A Promise that resolves to the state.
+   * @deprecated - This method should not be used anymore. It works on EOA addresses, not public keys.
    */
   async addNewAccount(password: string, selectedKeyring: any): Promise<string[]> {
     await this.verifyOrBoot(password);
@@ -665,6 +667,7 @@ class KeyringService extends EventEmitter {
    *
    * @param {string} address - The address of the account to export.
    * @returns {Promise<string>} The private key of the account.
+   * @deprecated - This method should not be used anymore. It works on EOA addresses, not public keys.
    */
   async exportAccount(address: string): Promise<string> {
     try {
@@ -688,6 +691,7 @@ class KeyringService extends EventEmitter {
    * @param {string} type - The type of keyring to remove the account from.
    * @param {string} brand - The brand of the keyring to remove the account from.
    * @returns {Promise<void>} A Promise that resolves if the operation was successful.
+   * @deprecated - This method should not be used anymore. It works on EOA addresses, not public keys.
    */
   async removeAccount(
     password: string,
@@ -731,6 +735,7 @@ class KeyringService extends EventEmitter {
    * @param {string} _fromAddress - The transaction 'from' address.
    * @param {Object} opts - Signing options.
    * @returns {Promise<Object>} The signed transactio object.
+   * @deprecated - This method should not be used anymore. It works on EOA addresses, not public keys.
    */
   signTransaction(keyring, ethTx, _fromAddress, opts = {}) {
     const fromAddress = normalizeAddress(_fromAddress);
@@ -744,6 +749,7 @@ class KeyringService extends EventEmitter {
    *
    * @param {Object} msgParams - The message parameters to sign.
    * @returns {Promise<Buffer>} The raw signature.
+   * @deprecated - This method should not be used anymore. It works on EOA addresses, not public keys.
    */
   signMessage(msgParams, opts = {}) {
     const address = normalizeAddress(msgParams.from);
@@ -760,6 +766,8 @@ class KeyringService extends EventEmitter {
    *
    * @param {Object} msgParams - The message parameters to sign.
    * @returns {Promise<Buffer>} The raw signature.
+     * @deprecated - This method should not be used anymore. It works on EOA addresses, not public keys.
+
    */
   signPersonalMessage(keyring, msgParams, opts = {}) {
     const address = normalizeAddress(msgParams.from);
@@ -772,6 +780,7 @@ class KeyringService extends EventEmitter {
    *
    * @param {Object} msgParams - The message parameters to sign.
    * @returns {Promise<Buffer>} The raw signature.
+   * @deprecated - This method should not be used anymore. It works on EOA addresses, not public keys.
    */
   signTypedMessage(keyring, msgParams, opts = { version: 'V1' }) {
     const address = normalizeAddress(msgParams.from);
@@ -785,6 +794,7 @@ class KeyringService extends EventEmitter {
    *
    * @param {Object} address - The address to get the encryption public key for.
    * @returns {Promise<Buffer>} The public key.
+   * @deprecated - This method should not be used anymore. It works on EOA addresses, not public keys.
    */
   getEncryptionPublicKey(_address, opts = {}) {
     const address = normalizeAddress(_address);
@@ -800,6 +810,7 @@ class KeyringService extends EventEmitter {
    *
    * @param {Object} msgParams - The decryption message parameters.
    * @returns {Promise<Buffer>} The raw decryption result.
+   * @deprecated - This method should not be used anymore. It works on EOA addresses, not public keys.
    */
   decryptMessage(msgParams, opts = {}) {
     const address = normalizeAddress(msgParams.from);
@@ -814,6 +825,7 @@ class KeyringService extends EventEmitter {
    * @param {string} _address - The Ethereum address for the app key.
    * @param {string} origin - The origin for the app key.
    * @returns {string} The app key address.
+   * @deprecated - This method should not be used anymore. It works on EOA addresses, not public keys.
    */
   async getAppKeyAddress(_address, origin) {
     const address = normalizeAddress(_address);
@@ -827,6 +839,7 @@ class KeyringService extends EventEmitter {
    * @param {string} _address - The Ethereum address for the app key.
    * @param {string} origin - The origin for the app key.
    * @returns {string} The app key private key.
+   * @deprecated - This method should not be used anymore. It works on EOA addresses, not public keys.
    */
   async exportAppKeyForAddress(_address, origin) {
     const address = normalizeAddress(_address);
@@ -855,7 +868,9 @@ class KeyringService extends EventEmitter {
   private async persistAllKeyrings(password: string): Promise<boolean> {
     // Check we're using the correct password
     await this.verifyPassword(password);
-
+    if (!this.currentPublicKey || !this.currentSignAlgo) {
+      throw new Error('Current public key or sign algo is not set');
+    }
     // Serialize the current keyrings.
     const serializedKeyrings: DecryptedKeyDataV2[] = await Promise.all(
       this.currentKeyring.map(async (keyring) => keyring.serializeWithType())
@@ -877,12 +892,14 @@ class KeyringService extends EventEmitter {
     // Update or add to vault array
     if (vaultArrayAccountIndex !== -1 && vaultArray[vaultArrayAccountIndex]) {
       vaultArray[vaultArrayAccountIndex].encryptedData = encryptedString;
+      vaultArray[vaultArrayAccountIndex].publicKey = this.currentPublicKey;
+      vaultArray[vaultArrayAccountIndex].signAlgo = this.currentSignAlgo;
     } else {
       const newEntry: VaultEntryV3 = {
         id: currentId,
         encryptedData: encryptedString,
-        publicKey: '',
-        signAlgo: 0,
+        publicKey: this.currentPublicKey,
+        signAlgo: this.currentSignAlgo,
       };
       vaultArray.push(newEntry);
     }
@@ -904,7 +921,7 @@ class KeyringService extends EventEmitter {
    * @param {string} password - The keyring controller password.
    * @returns {Promise<Array<Keyring>>} The keyrings.
    */
-  private async unlockKeyrings(password: string): Promise<any[]> {
+  private async unlockKeyrings(password: string): Promise<void> {
     await this.decryptVaultArray(password);
 
     if (this.store.getState().vaultVersion !== KEYRING_STATE_VAULT_V3) {
@@ -919,10 +936,7 @@ class KeyringService extends EventEmitter {
     // Validate the currentId to ensure it's a valid keyring id (Note switchKeyring also does this)
     const validCurrentId = await this.ensureValidKeyringId(currentId);
     // switch to the keyring with the currentId
-    const keyrings = await this.switchKeyring(validCurrentId);
-
-    // Return the current keyring
-    return keyrings;
+    await this.switchKeyring(validCurrentId);
   }
 
   /**
@@ -934,7 +948,7 @@ class KeyringService extends EventEmitter {
    * @param {string} id - The id of the keyring to switch to.
    * @returns {Promise<Array<Keyring>>} The keyring.
    */
-  async switchKeyring(id: string): Promise<Keyring[]> {
+  async switchKeyring(id: string): Promise<void> {
     // Ensure the id is valid
     const validKeyringId = await this.ensureValidKeyringId(id);
     // Find the keyring in the keyringList
@@ -947,17 +961,14 @@ class KeyringService extends EventEmitter {
         'somehow the keyring is not found in the keyringList when we have a valid id'
       );
     }
-    const selectedKeyring = this.decryptedKeyrings[selectedKeyringIndex];
-    if (!selectedKeyring || !selectedKeyring.decryptedData) {
+    const decryptedKeyring: DecryptedKeyringV3 = this.decryptedKeyrings[selectedKeyringIndex];
+    if (!decryptedKeyring || !decryptedKeyring.decryptedData) {
       throw new Error('KeyringController - selectedKeyring invalid');
     }
     // remove the keyring of the previous account
     await this.clearKeyrings();
     // Restore the keyring
-    await this._restoreKeyring(selectedKeyring.decryptedData[0]);
-
-    // Return the current keyring
-    return this.currentKeyring;
+    await this._restoreKeyring(decryptedKeyring);
   }
 
   /**
@@ -1086,10 +1097,12 @@ class KeyringService extends EventEmitter {
    * @param {Object} serialized - The serialized keyring.
    * @returns {Promise<Keyring>} The deserialized keyring.
    */
-  private async _restoreKeyring(serialized: DecryptedKeyDataV2): Promise<Keyring> {
-    const keyring = await this._instansiateKeyring(serialized);
-    await keyring.getAccounts();
-    this.currentKeyring.push(keyring);
+  private async _restoreKeyring(decryptedKeyring: DecryptedKeyringV3): Promise<Keyring> {
+    const keyring = await this._instansiateKeyring(decryptedKeyring.decryptedData[0]);
+    this.currentKeyring = [keyring];
+    this.currentPublicKey = decryptedKeyring.publicKey;
+    this.currentSignAlgo = decryptedKeyring.signAlgo;
+
     return keyring;
   }
 
@@ -1116,7 +1129,7 @@ class KeyringService extends EventEmitter {
    * @param {string} type - The keyring types to retrieve.
    * @returns {Array<Keyring>} The keyrings.
    */
-  getKeyringsByType(type: string): any[] {
+  getKeyringsByType(type: string): Keyring[] {
     return this.currentKeyring.filter((keyring) => keyring.type === type);
   }
 
@@ -1127,6 +1140,7 @@ class KeyringService extends EventEmitter {
    * managed by all currently unlocked keyrings.
    *
    * @returns {Promise<Array<string>>} The array of accounts.
+   * @deprecated - This method should not be used anymore. It works on EOA addresses, not public keys.
    */
   async getAccounts(): Promise<string[]> {
     const keyrings = this.currentKeyring || [];
@@ -1227,10 +1241,18 @@ class KeyringService extends EventEmitter {
     });
   }
 
+  /**
+   *
+   * @returns
+   * @deprecated - This method should not be used anymore. It works on EOA addresses, not public keys.
+   */
   getAllTypedAccounts(): Promise<DisplayedKeryring[]> {
     return Promise.all(this.currentKeyring.map((keyring) => this.displayForKeyring(keyring)));
   }
 
+  /**
+   * @deprecated - This method should not be used anymore. It works on EOA addresses, not public keys.
+   */
   async getAllTypedVisibleAccounts(): Promise<DisplayedKeryring[]> {
     const keyrings = await Promise.all(
       this.currentKeyring.map((keyring) => this.displayForKeyring(keyring, false))
@@ -1238,7 +1260,9 @@ class KeyringService extends EventEmitter {
 
     return keyrings.filter((keyring) => keyring.accounts.length > 0);
   }
-
+  /**
+   * @deprecated - This method should not be used anymore. It works on EOA addresses, not public keys.
+   */
   async getAllVisibleAccountsArray() {
     const typedAccounts = await this.getAllTypedVisibleAccounts();
     const result: { address: string; type: string; brandName: string }[] = [];
@@ -1271,6 +1295,8 @@ class KeyringService extends EventEmitter {
   async clearKeyrings(): Promise<void> {
     // clear keyrings from memory
     this.currentKeyring = [];
+    this.currentPublicKey = undefined;
+    this.currentSignAlgo = undefined;
   }
 
   /**
@@ -1786,7 +1812,7 @@ class KeyringService extends EventEmitter {
 
     // Switch to the next profile's keyring in memory if needed
     if (needToSwitchKeyring && nextProfileId) {
-      this.currentKeyring = await this.switchKeyring(nextProfileId);
+      await this.switchKeyring(nextProfileId);
     }
 
     // Update the memory store
