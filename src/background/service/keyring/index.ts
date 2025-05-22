@@ -867,6 +867,7 @@ class KeyringService extends EventEmitter {
     // Get current ID and vaults
     const currentId = await storage.get(CURRENT_ID_KEY);
     const keyringState = this.store.getState();
+
     const vaultArray =
       keyringState.vaultVersion === KEYRING_STATE_VAULT_V3
         ? keyringState.vault
@@ -889,6 +890,7 @@ class KeyringService extends EventEmitter {
     this.store.updateState({ vault: vaultArray });
 
     // NOTE: We could just add the decrypted serialized keyrings to the decrypted vault array, but we'll do it this way for now
+    await this.decryptVaultArray(password);
 
     return true;
   }

@@ -56,7 +56,7 @@ import {
   KEYRING_STATE_V2_KEY,
   type KeyringStateV2,
 } from '@/shared/types/keyring-types';
-import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
+import { FLOW_BIP44_PATH, SIGN_ALGO_NUM_DEFAULT } from '@/shared/utils/algo-constants';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
 
 import storage from '../../../shared/utils/storage';
@@ -407,6 +407,10 @@ describe('Keyring Migration Tests', () => {
     // Verify public key can be retrieved from the current keyring
     const publicKeyTuple = await keyringService.getCurrentPublicKeyTuple();
     expect(publicKeyTuple).toEqual(MOCK_KEYS.publicKeys);
+
+    const currentVault = keyringStateCurrent.vault.find((entry) => entry.id === HD_KEYRING_ID);
+    expect(currentVault.publicKey).toEqual(MOCK_KEYS.publicKeys.SECP256K1.pubK);
+    expect(currentVault.signAlgo).toEqual(SIGN_ALGO_NUM_DEFAULT);
 
     // Switch to the simple keyring
     vi.mocked(returnCurrentProfileId).mockResolvedValue(SIMPLE_KEYRING_ID);
