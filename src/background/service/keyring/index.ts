@@ -1863,6 +1863,7 @@ class KeyringService extends EventEmitter {
    * @param {string} password - The keyring controller password.
    * @param {string} profileId - The ID of the profile to remove.
    * @returns {Promise<boolean>} - A promise that resolves to true if successful.
+   * @deprecated Use {@link removeKeyring} instead.
    */
   async removeProfile(password: string, profileId: string): Promise<boolean> {
     const profileIndex = this.decryptedKeyrings.findIndex((keyring) => keyring.id === profileId);
@@ -1937,6 +1938,73 @@ class KeyringService extends EventEmitter {
     return true;
   }
 
+  /**
+   * Remove Keyring
+   *
+   * Removes a specific keyring and its associated keys from the keyring list.
+   * If it's the last keyring, it resets the entire wallet.
+   * If it's the current active keyring, it figures out the next one to switch to.
+   *
+   * @param {string} password - The keyring controller password.
+   * @param {string} publicKey - The public key of the keyring to remove.
+   * @returns {Promise<string|undefined>} - A promise that resolves to the next keyring public key, undefined if there are no keyrings left.
+   * @throws {Error} - If the keyring is not found.
+   */
+  async removeKeyring(password: string, publicKey: string): Promise<string | undefined> {
+    const keyringIndex = this.decryptedKeyrings.findIndex(
+      (keyring) => keyring.publicKey === publicKey
+    );
+    if (keyringIndex === -1) {
+      throw new Error(`Keyring with public key ${publicKey} not found`);
+    }
+    // Verify the password
+    await this.verifyPassword(password);
+
+    // Get all keyring IDs *before* modification
+    const publicKeyList = await this.getAllPublicKeys(); // Or use: this.keyringList.map(k => k.id);
+
+    // If this is the only profile, reset the entire wallet
+    if (publicKeyList.length <= 1) {
+      await this.resetKeyRing();
+      // Update the memory store
+      this.memStore.updateState({ isUnlocked: false });
+      this.emit('lock');
+      this.store.updateState({ booted: '' });
+      // There are no keyrings left, so return undefined
+      return undefined;
+    }
+
+    // Get the current profile ID
+    const currentPublicKey = this.getCurrentPublicKey();
+
+    // If we're removing the current profile, determine the next one to switch to
+    let nextPublicKey: string = currentPublicKey;
+
+    if (currentPublicKey === publicKey) {
+      // Calculate the index of the next profile, wrapping around if removing the last one
+      const nextIndex = (keyringIndex + 1) % publicKeyList.length;
+      // Get the ID of the profile at the next index
+      nextPublicKey = publicKeyList[nextIndex];
+
+      if (!nextPublicKey || nextPublicKey === publicKey) {
+        // We thought about handling defensively here, but it's better to throw to stop the operation
+
+        // This should theoretically not happen if length > 1, but handle defensively
+        throw new Error(`Error: Could not determine the next keyring to switch to`);
+      }
+      // Clear the current keyring
+      this.clearCurrentKeyring();
+    }
+
+    // Remove the profile from the in-memory keyring list
+    this.decryptedKeyrings.splice(keyringIndex, 1);
+
+    // Update the vault in the store by re-encrypting the remaining keyrings
+    await this.encryptVaultArray(this.decryptedKeyrings, password);
+
+    // Return the next keyring public key
+    return nextPublicKey;
+  }
   /**
    * Atomically change the password for all keyrings/vaults and the booted state.
    * If any step fails, nothing is written to storage.
