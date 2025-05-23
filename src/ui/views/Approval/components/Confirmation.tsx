@@ -11,6 +11,7 @@ import {
   LLConnectLoading,
   LLLinkingLoading,
 } from '@/ui/FRWComponent';
+import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useApproval, useWallet } from 'ui/utils';
 // import { CHAINS_ENUM } from 'consts';
 
@@ -18,6 +19,7 @@ import './github-dark-dimmed.css';
 
 import { DefaultBlock } from './DefaultBlock';
 import { LinkingBlock } from './LinkingBlock';
+import ShowSwitch from './ShowSwitch';
 
 interface ConnectProps {
   params: any;
@@ -51,6 +53,10 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
 
   // TODO: replace default logo
   const [logo, setLogo] = useState('');
+  const { network: currentNetwork } = useNetwork();
+  const [msgNetwork, setMsgNetwork] = useState('testnet');
+  const [showSwitch, setShowSwitch] = useState(false);
+
   interface Roles {
     authorizer: boolean;
     payer: boolean;
@@ -79,16 +85,6 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
     const userResult = await wallet.getUserInfo(false);
     await setUserInfo(userResult);
   }, [wallet]);
-
-  // useEffect(() => {
-  //   getUserInfo();
-  //   const index = accountArgs.findIndex(item => item.value.includes('.jpg'));
-  //   consoleLog(' accountArgs ', data);
-  //   if (accountArgs[index]) {
-  //     setImage(accountArgs[index].value)
-  //     setAccountTitle(accountArgs[4].value)
-  //   }
-  // }, [accountArgs])
 
   const fetchTxInfo = useCallback(
     async (cadence: string) => {
@@ -208,12 +204,7 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
         const signedMessage = await wallet.signPayer(signable);
         sendSignature(signable, signedMessage);
         setApproval(true);
-        // if (accountLinking) {
-        //   await linkningConfirm();
-        // } else {
-        //   resolveApproval();
-        //   setIsLoading(false);
-        // }
+
         resolveApproval();
         setIsLoading(false);
       } catch (err) {
@@ -229,8 +220,17 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
     setLilicoEnabled(isEnabled);
   }, [wallet]);
 
+  const checkNetwork = useCallback(async () => {
+    if (msgNetwork !== currentNetwork && msgNetwork) {
+      setShowSwitch(true);
+    } else {
+      setShowSwitch(false);
+    }
+  }, [msgNetwork, currentNetwork]);
+
   useEffect(() => {
     loadPayer();
+    checkNetwork();
 
     return () => {
       sessionStorage.removeItem('pendingRefBlockId');
@@ -238,7 +238,7 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
       // @ts-ignore
       chrome.storage.session?.remove('pendingRefBlockId');
     };
-  }, [loadPayer]);
+  }, [loadPayer, checkNetwork]);
 
   useEffect(() => {
     if (lilicoEnabled && signable && signable.message && approval) {
@@ -286,6 +286,9 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
         if (msg.body?.args?.length > 0) {
           setCadenceArguments(msg.body.args);
         }
+        if (msg.config?.client?.network) {
+          setMsgNetwork(msg.config.client.network);
+        }
         fclCallback(JSON.parse(JSON.stringify(msg || {})));
       }
 
@@ -308,64 +311,74 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
 
   return (
     <>
-      {isLoading ? (
-        <Box>
-          {accountLinking ? (
-            <LLLinkingLoading
-              linkingDone={linkingDone}
-              image={image}
-              accountTitle={accountTitle}
-              userInfo={userInfo}
-            />
-          ) : (
-            <LLConnectLoading logo={logo} />
-          )}
-          {/* <LLConnectLoading logo={logo} /> */}
-        </Box>
+      {showSwitch ? (
+        <ShowSwitch
+          currentNetwork={currentNetwork}
+          msgNetwork={msgNetwork}
+          onCancel={handleCancel}
+        />
       ) : (
-        <Box
-          sx={{
-            margin: '18px 18px 0px 18px',
-            display: 'flex',
-            flexDirection: 'column',
-            borderRadius: '12px',
-            height: '100%',
-            background: accountLinking
-              ? 'linear-gradient(0deg, #121212, #32484C)'
-              : 'linear-gradient(0deg, #121212, #11271D)',
-          }}
-        >
-          {accountLinking ? (
-            <LinkingBlock image={image} accountTitle={accountTitle} userInfo={userInfo} />
+        <>
+          {isLoading ? (
+            <Box>
+              {accountLinking ? (
+                <LLLinkingLoading
+                  linkingDone={linkingDone}
+                  image={image}
+                  accountTitle={accountTitle}
+                  userInfo={userInfo}
+                />
+              ) : (
+                <LLConnectLoading logo={logo} />
+              )}
+              {/* <LLConnectLoading logo={logo} /> */}
+            </Box>
           ) : (
-            <DefaultBlock
-              title={title}
-              host={host}
-              auditor={auditor}
-              expanded={expanded}
-              lilicoEnabled={lilicoEnabled}
-              cadenceArguments={cadenceArguments}
-              logo={logo}
-              cadenceScript={cadenceScript}
-              setExpanded={setExpanded}
-              dedent={dedent}
-            />
+            <Box
+              sx={{
+                margin: '18px 18px 0px 18px',
+                display: 'flex',
+                flexDirection: 'column',
+                borderRadius: '12px',
+                height: '100%',
+                background: accountLinking
+                  ? 'linear-gradient(0deg, #121212, #32484C)'
+                  : 'linear-gradient(0deg, #121212, #11271D)',
+              }}
+            >
+              {accountLinking ? (
+                <LinkingBlock image={image} accountTitle={accountTitle} userInfo={userInfo} />
+              ) : (
+                <DefaultBlock
+                  title={title}
+                  host={host}
+                  auditor={auditor}
+                  expanded={expanded}
+                  lilicoEnabled={lilicoEnabled}
+                  cadenceArguments={cadenceArguments}
+                  logo={logo}
+                  cadenceScript={cadenceScript}
+                  setExpanded={setExpanded}
+                  dedent={dedent}
+                />
+              )}
+              <Box sx={{ flexGrow: 1 }} />
+              <Stack direction="row" spacing={1} sx={{ paddingBottom: '32px' }}>
+                <LLSecondaryButton
+                  label={chrome.i18n.getMessage('Cancel')}
+                  fullWidth
+                  onClick={handleCancel}
+                />
+                <LLPrimaryButton
+                  label={chrome.i18n.getMessage('Approve')}
+                  fullWidth
+                  type="submit"
+                  onClick={sendAuthzToFCL}
+                />
+              </Stack>
+            </Box>
           )}
-          <Box sx={{ flexGrow: 1 }} />
-          <Stack direction="row" spacing={1} sx={{ paddingBottom: '32px' }}>
-            <LLSecondaryButton
-              label={chrome.i18n.getMessage('Cancel')}
-              fullWidth
-              onClick={handleCancel}
-            />
-            <LLPrimaryButton
-              label={chrome.i18n.getMessage('Approve')}
-              fullWidth
-              type="submit"
-              onClick={sendAuthzToFCL}
-            />
-          </Stack>
-        </Box>
+        </>
       )}
     </>
   );
