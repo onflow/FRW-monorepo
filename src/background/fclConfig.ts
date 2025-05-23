@@ -1,5 +1,4 @@
 import * as fcl from '@onflow/fcl';
-import { send as httpSend } from '@onflow/transport-http';
 
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 
@@ -116,7 +115,6 @@ export const fclMainnetConfig = async (emulatorMode?: boolean) => {
     .config()
     .put('accessNode.api', host)
     // note this is the default transport. We don't really need to set this
-    .put('sdk.transport', httpSend)
     .put('flow.network', 'mainnet');
 
   // Loop through all keys in mainnetContracts and apply them to the configuration
