@@ -13,7 +13,7 @@ import {
   seed2PublicPrivateKey,
   seedWithPathAndPhrase2PublicPrivateKey,
   formPubKeyTuple,
-  pk2PubKey,
+  pk2PubKeyTuple,
 } from '@/background/utils/modules/publicPrivateKey';
 import createPersistStore from '@/background/utils/persisitStore';
 import {
@@ -988,14 +988,16 @@ class UserWallet {
    */
   loginWithPk = async (privateKey: string, replaceUser = true) => {
     // Get the public key tuple
-    const pubKeyTuple = await pk2PubKey(privateKey);
+    const pubKeyTuple = await pk2PubKeyTuple(privateKey);
     // Combine the public key tuple and the private key
     const publicPrivateKey = combinePubPkString(pubKeyTuple, privateKey);
     // Login with the public private key
     return this.loginWithPublicPrivateKey(publicPrivateKey, replaceUser);
   };
 
-  // @deprecated - use loginWithMnemonic instead
+  /**
+   * @deprecated use loginWithMnemonic instead
+   */
   loginV3_depreciated = async (
     mnemonic: string,
     accountKey: AccountKeyRequest,

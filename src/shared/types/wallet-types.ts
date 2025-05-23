@@ -12,18 +12,26 @@ export type EvmAddress = `0x${string & { length: 40 }}` | `${string & { length: 
 export type WalletAddress = EvmAddress | FlowAddress;
 
 // ActiveChildType is the type of the active child in the wallet. It can be 'evm', a FlowAddress, or null.
-// @deprecated: use ActiveAccountType instead
+/**
+ * @deprecated : use ActiveAccountType instead
+ */
 export type ActiveChildType_depreciated = 'evm' | FlowAddress | null;
 
-// @deprecated: use ActiveAccountType instead
+/**
+ * @deprecated : use ActiveAccountType instead
+ */
 export const isEvmAccountType = (type: ActiveChildType_depreciated): type is 'evm' => {
   return type === 'evm';
 };
-// @deprecated: use ActiveAccountType instead
+/**
+ * @deprecated : use ActiveAccountType instead
+ */
 export const isChildAccountType = (type: ActiveChildType_depreciated): type is FlowAddress => {
   return isValidFlowAddress(type);
 };
-// @deprecated: use ActiveAccountType instead
+/**
+ * @deprecated : use ActiveAccountType instead
+ */
 export const isMainAccountType = (type: ActiveChildType_depreciated): type is null => {
   return type === null;
 };

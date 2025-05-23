@@ -2,6 +2,13 @@ import {
   SIGN_ALGO_NUM_ECDSA_P256,
   SIGN_ALGO_NUM_ECDSA_secp256k1,
 } from '@/shared/utils/algo-constants';
+
+export type PublicPrivateKey = {
+  publicKey: string;
+  privateKey: string;
+  signAlgo: number;
+};
+
 export type PublicKeyTuple = {
   P256: { pubK: string };
   SECP256K1: { pubK: string };

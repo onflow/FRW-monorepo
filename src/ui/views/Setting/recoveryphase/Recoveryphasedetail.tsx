@@ -20,7 +20,7 @@ const RecoveryPhasesDetail = () => {
 
   const verify = useCallback(async () => {
     const pwd = location.state.password;
-    const result = await wallet.getMnemonics(pwd);
+    const result = await wallet.getMnemonic(pwd);
     setRecovery(result);
   }, [location.state.password, wallet]);
 

@@ -35,7 +35,9 @@ export class SimpleKeyring {
       privateKey: Buffer.from(pk, 'hex'),
     }));
   }
-
+  /**
+   * @deprecated Do not use this method. It returns a dummy address that is an EOA address and not a real account that the user has, but it is a unique identifier for the wallet
+   */
   async addAccounts(n = 1) {
     const newAddresses: string[] = [];
 
@@ -49,7 +51,9 @@ export class SimpleKeyring {
 
     return newAddresses;
   }
-
+  /**
+   * @deprecated Do not use this method. It returns a dummy address that is an EOA address and not a real account that the user has, but it is a unique identifier for the wallet
+   */
   async getAccounts() {
     return Promise.resolve(
       this.wallets.map((w) => {
@@ -60,7 +64,9 @@ export class SimpleKeyring {
       })
     );
   }
-
+  /**
+   * @deprecated Do not use this method. It returns a dummy address that is an EOA address and not a real account that the user has, but it is a unique identifier for the wallet
+   */
   async removeAccount(address: string) {
     const normalizedAddress = normalizeAddress(address);
     const index = this.wallets.findIndex(
@@ -70,12 +76,16 @@ export class SimpleKeyring {
     if (index === -1) throw new Error('Address not found');
     this.wallets.splice(index, 1);
   }
-
+  /**
+   * @deprecated Do not use this method. It returns a dummy address that is an EOA address and not a real account that the user has, but it is a unique identifier for the wallet
+   */
   async removeAllAccounts() {
     this.wallets = [];
     return true;
   }
-
+  /**
+   * @deprecated Do not use this method. It returns a dummy address that is an EOA address and not a real account that the user has, but it is a unique identifier for the wallet
+   */
   private getWalletByAddress(address: string): Wallet {
     const normalizedAddress = normalizeAddress(address);
     const privateKey = this.wallets.find(
@@ -85,25 +95,35 @@ export class SimpleKeyring {
     if (!privateKey) throw new Error('Address not found');
     return new Wallet(privateKey.privateKey.toString('hex'));
   }
-
+  /**
+   * @deprecated Do not use this method. It returns a dummy address that is an EOA address and not a real account that the user has, but it is a unique identifier for the wallet
+   */
   async exportAccount(address: string): Promise<string> {
     return this.getWalletByAddress(address).privateKey;
   }
-
+  /**
+   * @deprecated Do not use this method. It returns a dummy address that is an EOA address and not a real account that the user has, but it is a unique identifier for the wallet
+   */
   async signTransaction(address: string, tx: any) {
     const wallet = this.getWalletByAddress(address);
     return wallet.signTransaction(tx);
   }
-
+  /**
+   * @deprecated Do not use this method. It returns a dummy address that is an EOA address and not a real account that the user has, but it is a unique identifier for the wallet
+   */
   async signMessage(address: string, data: string) {
     const wallet = this.getWalletByAddress(address);
     return wallet.signMessage(data);
   }
-
+  /**
+   * @deprecated Do not use this method. It returns a dummy address that is an EOA address and not a real account that the user has, but it is a unique identifier for the wallet
+   */
   async signPersonalMessage(address: string, data: string) {
     return this.signMessage(address, data);
   }
-
+  /**
+   * @deprecated Do not use this method. It returns a dummy address that is an EOA address and not a real account that the user has, but it is a unique identifier for the wallet
+   */
   async signTypedData(address: string, data: any, opts: { version: string } = { version: 'V1' }) {
     const wallet = this.getWalletByAddress(address);
 
@@ -118,12 +138,16 @@ export class SimpleKeyring {
         throw new Error(`Unsupported typed data version: ${opts.version}`);
     }
   }
-
+  /**
+   * @deprecated Do not use this method. It returns a dummy address that is an EOA address and not a real account that the user has, but it is a unique identifier for the wallet
+   */
   async getEncryptionPublicKey(address: string) {
     const wallet = this.getWalletByAddress(address);
     return wallet.signingKey.publicKey;
   }
-
+  /**
+   * @deprecated Do not use this method. It returns a dummy address that is an EOA address and not a real account that the user has, but it is a unique identifier for the wallet
+   */
   async decryptMessage(address: string, data: string) {
     const wallet = this.getWalletByAddress(address);
     // Todo: This is a placeholder. Implement actual message decryption logic

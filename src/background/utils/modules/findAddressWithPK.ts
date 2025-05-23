@@ -8,13 +8,13 @@ import {
   getAccountsByPublicKeyTuple,
   getOrCheckAccountsByPublicKeyTuple,
 } from './findAddressWithPubKey';
-import { pk2PubKey, seedWithPathAndPhrase2PublicPrivateKey } from './publicPrivateKey';
+import { pk2PubKeyTuple, seedWithPathAndPhrase2PublicPrivateKey } from './publicPrivateKey';
 
 export const findAddressWithPK = async (
   pk: string,
   address: string
 ): Promise<PublicKeyAccount[]> => {
-  const pubKTuple = await pk2PubKey(pk);
+  const pubKTuple = await pk2PubKeyTuple(pk);
   return await getOrCheckAccountsByPublicKeyTuple(pubKTuple, address);
 };
 
@@ -34,7 +34,7 @@ export const findAddressWithSeed = async (
 };
 
 export const getPublicAccountForPK = async (pk: string): Promise<PublicKeyAccount> => {
-  const pubKTuple = await pk2PubKey(pk);
+  const pubKTuple = await pk2PubKeyTuple(pk);
   const accounts = await getAccountsByPublicKeyTuple(pubKTuple, 'mainnet');
   if (accounts.length === 0) {
     throw new Error('No accounts found');
