@@ -8,23 +8,27 @@ interface CurrencyValueProps {
   value: string;
   className?: string;
   showCurrencyCode?: boolean;
+  currencyCode?: string;
+  currencySymbol?: string;
 }
 
 export const CurrencyValue: React.FC<CurrencyValueProps> = ({
   value,
   className,
   showCurrencyCode = true,
+  currencyCode,
+  currencySymbol,
 }) => {
+  //only use its values if props aren't provided
   const currency = useCurrency();
-  const currencyCode = currency?.code;
-  const currencySymbol = currency?.symbol;
-
+  const renderedCurrencyCode = currencyCode || currency?.code;
+  const renderedCurrencySymbol = currencySymbol || currency?.symbol;
   return (
     <TokenValue
-      value={currencyCode ? value : ''}
+      value={renderedCurrencyCode ? value : ''}
       className={className}
-      prefix={currencySymbol}
-      postFix={showCurrencyCode ? currencyCode : undefined}
+      prefix={renderedCurrencySymbol}
+      postFix={showCurrencyCode ? renderedCurrencyCode : undefined}
     />
   );
 };

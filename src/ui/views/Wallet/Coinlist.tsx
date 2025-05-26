@@ -17,6 +17,7 @@ import { useHistory } from 'react-router-dom';
 import { type CoinItem } from '@/shared/types/coin-types';
 import { type ActiveAccountType } from '@/shared/types/wallet-types';
 import { formatLargeNumber } from '@/shared/utils/number';
+import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 
@@ -81,6 +82,9 @@ const CoinList = ({
   // const wallet = useWallet();
   const { noAddress } = useProfiles();
   const { coins, tokenFilter } = useCoins();
+  const currency = useCurrency();
+  const currencyCode = currency?.code;
+  const currencySymbol = currency?.symbol;
   const history = useHistory();
 
   const isLoading = coins === undefined;
@@ -192,7 +196,11 @@ const CoinList = ({
                     }}
                   >
                     {props.change === null ? '-' : ''}
-                    <CurrencyValue value={props.price} />
+                    <CurrencyValue
+                      value={props.price}
+                      currencyCode={currencyCode}
+                      currencySymbol={currencySymbol}
+                    />
                   </Typography>
                   {props.change !== 0 && (
                     <Typography
@@ -289,7 +297,13 @@ const CoinList = ({
                   secondaryAction={
                     <EndListItemText
                       primary={parseFloat(coin.balance).toFixed(3)}
-                      secondary={<CurrencyValue value={String(coin.total)} />}
+                      secondary={
+                        <CurrencyValue
+                          value={String(coin.total)}
+                          currencyCode={currencyCode}
+                          currencySymbol={currencySymbol}
+                        />
+                      }
                       unit={coin.unit}
                       change={parseFloat(coin.change24h?.toFixed(2) || '0')}
                     />
