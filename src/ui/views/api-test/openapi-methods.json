@@ -81,15 +81,6 @@
     "params": ["provider"]
   },
   {
-    "name": "getTokenPrices",
-    "isAsync": true,
-    "fullBody": "async (storageKey, isEvm = false) => {\n        const cachedPrices = await _background_webapi__WEBPACK_IMPORTED_MODULE_6__.storage.getExpiry(storageKey);\n        if (cachedPrices) {\n            return cachedPrices;\n        }\n        const pricesMap = {};\n        try {\n            const response = await this.sendRequest('GET', '/api/prices', {}, {}, consts__WEBPACK_IMPORTED_MODULE_13__.WEB_NEXT_URL);\n            const data = response?.data || [];\n            data.forEach((token) => {\n                if (isEvm && token.evmAddress) {\n                    // EVM price\n                    const { rateToUSD, evmAddress } = token;\n                    const key = evmAddress.toLowerCase();\n                    pricesMap[key] = Number(rateToUSD).toFixed(8);\n                }\n                else if (!isEvm && token.contractName && token.contractAddress) {\n                    // Flow chain price\n                    const { rateToUSD, contractName, contractAddress } = token;\n                    const key = `${contractName.toLowerCase()}${contractAddress.toLowerCase()}`;\n                    pricesMap[key] = Number(rateToUSD).toFixed(8);\n                }\n                else if (isEvm && token.symbol) {\n                    // Handle fallback for EVM tokens\n                    const { rateToUSD, symbol } = token;\n                    const key = symbol.toUpperCase();\n                    pricesMap[key] = Number(rateToUSD).toFixed(8);\n                }\n            });\n        }\n        catch (error) {\n            console.error('Error fetching prices:', error);\n        }\n        await _background_webapi__WEBPACK_IMPORTED_MODULE_6__.storage.setExpiry(storageKey, pricesMap, 300000);\n        return pricesMap;\n    }",
-    "usesSendRequest": true,
-    "usesFetchDirectly": false,
-    "basicSignature": "async (storageKey, isEvm = false) =>",
-    "params": ["storageKey", "isEvm = false"]
-  },
-  {
     "name": "getPricesBySymbol",
     "isAsync": true,
     "fullBody": "async (symbol, data) => {\n        const key = symbol.toUpperCase();\n        return data[key];\n    }",

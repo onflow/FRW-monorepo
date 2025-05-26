@@ -588,48 +588,6 @@ export class OpenApiService {
    * @deprecated This method is not used in the codebase.
    * Use getUserTokens instead. It will have token info and price.
    */
-  getTokenPrices = async (storageKey: string) => {
-    // TODO: move to new data cache service
-    const cachedPrices = await storage.getExpiry(storageKey);
-    if (cachedPrices) {
-      return cachedPrices;
-    }
-
-    const pricesMap: Record<string, string> = {};
-
-    try {
-      const response = await this.sendRequest('GET', '/api/prices', {}, {}, WEB_NEXT_URL);
-      const data = response?.data || [];
-
-      data.forEach((token) => {
-        if (token.evmAddress) {
-          const { rateToUSD, evmAddress, symbol } = token;
-          const key = evmAddress.toLowerCase();
-          pricesMap[key] = Number(rateToUSD).toFixed(8);
-          const symbolKey = symbol.toUpperCase();
-          if (symbolKey) {
-            pricesMap[symbolKey] = Number(rateToUSD).toFixed(8);
-          }
-        }
-        if (token.contractName && token.contractAddress) {
-          // Flow chain price
-          const { rateToUSD, contractName, contractAddress } = token;
-          const key = `${contractName.toLowerCase()}${contractAddress.toLowerCase()}`;
-          pricesMap[key] = Number(rateToUSD).toFixed(8);
-        }
-      });
-    } catch (error) {
-      consoleError('Error fetching prices:', error);
-    }
-
-    await storage.setExpiry(storageKey, pricesMap, 300000);
-    return pricesMap;
-  };
-
-  /**
-   * @deprecated This method is not used in the codebase.
-   * Use getUserTokens instead. It will have token info and price.
-   */
   getPricesBySymbol = async (symbol: string, data) => {
     const key = symbol.toUpperCase();
     return data[key];

@@ -97,7 +97,6 @@ export const createTestGroups = (commonParams: CommonParams): ApiTestGroups => {
     ],
     prices: [
       { name: 'getUSDCPrice', params: { provider: 'binance' } },
-      { name: 'getTokenPrices', params: { storageKey: 'test', isEvm: false } },
       { name: 'getTokenPrice', params: { token: 'flow', provider: 'binance' } },
       {
         name: 'getTokenPriceHistory',
