@@ -11,6 +11,8 @@ import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
 import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
 import { useContacts } from '@/ui/hooks/useContactHook';
+import { useAllNftList } from '@/ui/hooks/useNftHook';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
 import { MatchMediaType } from '@/ui/utils/url';
 import { LLSpinner, FRWProfileCard, FRWDropdownProfileCard } from 'ui/FRWComponent';
@@ -38,6 +40,9 @@ const MovefromParent = (props: SendNFTConfirmationProps) => {
 
   const [childWallets, setChildWallets] = useState<Contact[]>([]);
   const [selectedAccount, setSelectedChildAccount] = useState<Contact | null>(null);
+
+  const { activeAccountType, network } = useProfiles();
+  const allNftList = useAllNftList(network, activeAccountType === 'evm' ? 'evm' : 'flow');
   const { sufficient: isSufficient, sufficientAfterAction } = useStorageCheck({
     transferAmount: 0,
     coin: 'flow',
@@ -73,8 +78,7 @@ const MovefromParent = (props: SendNFTConfirmationProps) => {
   const moveNFTToFlow = async () => {
     setSending(true);
     // setSending(true);
-    const contractList = await usewallet.openapi.getAllNft();
-    const filteredCollections = returnFilteredCollections(contractList, props.data.nft);
+    const filteredCollections = returnFilteredCollections(allNftList, props.data.nft);
 
     if (isValidEthereumAddress(selectedAccount!['address'])) {
       await moveNFTToEvm();

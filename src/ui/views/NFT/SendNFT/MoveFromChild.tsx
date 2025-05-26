@@ -12,6 +12,7 @@ import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
 import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
 import { useContacts } from '@/ui/hooks/useContactHook';
+import { useAllNftList } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
 import { MatchMediaType } from '@/ui/utils/url';
@@ -42,6 +43,10 @@ const MoveFromChild = (props: SendNFTConfirmationProps) => {
   const [childWallet, setChildWallet] = useState<WalletAccount | null>(null);
   const [selectedAccount, setSelectedChildAccount] = useState<Contact | null>(null);
   const [childWallets, setChildWallets] = useState<Contact[]>([]);
+
+  const { activeAccountType, network } = useProfiles();
+  const allNftList = useAllNftList(network, activeAccountType === 'evm' ? 'evm' : 'flow');
+
   const { sufficient: isSufficient, sufficientAfterAction } = useStorageCheck({
     transferAmount: 0,
     movingBetweenEVMAndFlow: selectedAccount
@@ -80,8 +85,7 @@ const MoveFromChild = (props: SendNFTConfirmationProps) => {
   const moveNFTToFlow = async () => {
     setSending(true);
     // setSending(true);
-    const contractList = await usewallet.openapi.getAllNft();
-    const filteredCollections = returnFilteredCollections(contractList, props.data.nft);
+    const filteredCollections = returnFilteredCollections(allNftList, props.data.nft);
     usewallet
       .moveNFTfromChild(props.data.userContact.address, '', props.data.nft.id, filteredCollections)
       .then(async (txId) => {
@@ -106,8 +110,7 @@ const MoveFromChild = (props: SendNFTConfirmationProps) => {
   const moveToEvm = async () => {
     setSending(true);
     const address = await usewallet.getCurrentAddress();
-    const contractList = await usewallet.openapi.getAllNft();
-    const filteredCollections = returnFilteredCollections(contractList, props.data.nft);
+    const filteredCollections = returnFilteredCollections(allNftList, props.data.nft);
     const flowIdentifier = props.data.contract.flowIdentifier || props.data.nft.flowIdentifier;
     usewallet
       .batchBridgeChildNFTToEvm(address!, flowIdentifier, [props.data.nft.id], filteredCollections)

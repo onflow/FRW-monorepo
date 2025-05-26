@@ -19,6 +19,9 @@ import { consoleError } from '@/shared/utils/console-log';
 import alertMark from '@/ui/FRWAssets/svg/alert.svg';
 import { LLHeader } from '@/ui/FRWComponent';
 import WarningSnackbar from '@/ui/FRWComponent/WarningSnackbar';
+import { useNetwork } from '@/ui/hooks/useNetworkHook';
+import { useAllNftList } from '@/ui/hooks/useNftHook';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from 'ui/utils';
 
 import CollectionCard from './AddNFTCard';
@@ -77,6 +80,9 @@ const AddList = () => {
   const [isConfirmationOpen, setConfirmationOpen] = useState(false);
   const [selectedNFT, setSelectedNFT] = useState<NFTModelV2 | null>(null);
 
+  const { activeAccountType, network } = useProfiles();
+  const allNftList = useAllNftList(network, activeAccountType === 'evm' ? 'evm' : 'flow');
+
   const filteredCollections = collections.filter((ele) => {
     if (filter === 'all') return true;
     if (filter === 'enabled') return ele.added;
@@ -115,22 +121,11 @@ const AddList = () => {
     [usewallet, setStatusLoading, setCollections]
   );
 
-  const fetchData = useCallback(async (): Promise<NFTModelV2[]> => {
-    try {
-      setLoading(true);
-      const nftList = await usewallet.openapi.getAllNft();
-      setCollections(nftList);
-      return nftList;
-    } finally {
-      setLoading(false);
-    }
-  }, [usewallet, setLoading, setCollections]);
-
   useEffect(() => {
-    fetchData().then((data) => {
-      fetchList(data);
-    });
-  }, [fetchData, fetchList]);
+    if (allNftList && allNftList.length > 0) {
+      fetchList(allNftList);
+    }
+  }, [allNftList, fetchList]);
 
   const handleNFTClick = (token) => {
     // if (!isEnabled) {

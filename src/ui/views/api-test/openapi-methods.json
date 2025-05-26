@@ -299,7 +299,7 @@
     "usesSendRequest": true,
     "usesFetchDirectly": false,
     "basicSignature": "async (network) =>",
-    "params": ["network"]
+    "params": ["network", "chainType"]
   },
   {
     "name": "getAddressBook",
@@ -593,15 +593,6 @@
     "name": "getAllTokenInfo",
     "isAsync": true,
     "fullBody": "async (fiterNetwork = true) => {\n        const network = await _index__WEBPACK_IMPORTED_MODULE_15__.userWalletService.getNetwork();\n        const list = await this.getTokenList(network);\n        return fiterNetwork ? list.filter((item) => item.address) : list;\n    }",
-    "usesSendRequest": false,
-    "usesFetchDirectly": false,
-    "basicSignature": "async (fiterNetwork = true) =>",
-    "params": ["fiterNetwork = true"]
-  },
-  {
-    "name": "getAllNft",
-    "isAsync": true,
-    "fullBody": "async (fiterNetwork = true) => {\n        const list = await remoteFetch.nftCollection();\n        // const network = await userWalletService.getNetwork();\n        return list;\n    }",
     "usesSendRequest": false,
     "usesFetchDirectly": false,
     "basicSignature": "async (fiterNetwork = true) =>",

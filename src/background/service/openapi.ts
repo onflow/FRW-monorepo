@@ -14,7 +14,6 @@ import {
 } from 'firebase/auth/web-extension';
 import { getInstallations, getId } from 'firebase/installations';
 import type { TokenInfo } from 'flow-native-token-registry';
-import log from 'loglevel';
 
 import { findKeyAndInfo } from '@/background/utils';
 import { getValidData, setCachedData } from '@/background/utils/data-cache';
@@ -938,18 +937,7 @@ export class OpenApiService {
     return data;
   };
 
-  getNFTList = async (network: string): Promise<NFTModelV2[]> => {
-    const childType = await userWalletService.getActiveAccountType();
-    let chainType = 'flow';
-    if (childType === 'evm') {
-      chainType = 'evm';
-    }
-
-    // TODO: move to new data cache service
-    const nftList = await storage.getExpiry(`NFTList${network}${chainType}`);
-    if (nftList && nftList.length > 0) {
-      return nftList;
-    }
+  getNFTList = async (network: string, chainType: 'flow' | 'evm'): Promise<NFTModelV2[]> => {
     const config = this.store.config.get_nft_list;
     const { tokens }: { tokens: NFTModelV2[] } = await this.sendRequest(
       config.method,
@@ -961,8 +949,6 @@ export class OpenApiService {
       {},
       WEB_NEXT_URL
     );
-
-    storage.setExpiry(`NFTList${network}${chainType}`, tokens, 600000);
 
     return tokens;
   };
@@ -1333,12 +1319,6 @@ export class OpenApiService {
     const network = await userWalletService.getNetwork();
     const list = await this.getTokenList(network);
     return filterNetwork ? list.filter((item) => item.address) : list;
-  };
-
-  getAllNft = async (filterNetwork = true): Promise<NFTModelV2[]> => {
-    const network = await userWalletService.getNetwork();
-    const list = await this.getNFTList(network);
-    return list;
   };
 
   isWalletTokenStorageEnabled = async (tokenSymbol: string) => {

@@ -2027,6 +2027,16 @@ export class WalletController extends BaseController {
     return balance;
   };
 
+  getAllNft = async (): Promise<NFTModelV2[]> => {
+    const network = await this.getNetwork();
+    const childType = await this.getActiveAccountType();
+    let chainType: 'evm' | 'flow' = 'flow';
+    if (childType === 'evm') {
+      chainType = 'evm';
+    }
+    return await nftService.getNftList(network, chainType);
+  };
+
   getNonce = async (hexEncodedAddress: string): Promise<string> => {
     await this.getNetwork();
 

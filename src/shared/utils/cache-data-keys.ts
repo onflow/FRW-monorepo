@@ -8,7 +8,7 @@ import {
   type EvmTokenInfo,
   type CadenceTokenInfo,
 } from '../types/coin-types';
-import { type NftCollection, type UserInfoResponse } from '../types/network-types';
+import { type NFTModelV2, type NftCollection, type UserInfoResponse } from '../types/network-types';
 import {
   type NFTCollections,
   type NFTCollectionData,
@@ -16,14 +16,7 @@ import {
   type EvmNFTCollectionList,
 } from '../types/nft-types';
 import { type TransferItem } from '../types/transaction-types';
-import {
-  type MainAccount,
-  type ChildAccountMap,
-  type EvmAddress,
-  type FlowAddress,
-  type WalletAccount,
-  type Currency,
-} from '../types/wallet-types';
+import { type MainAccount, type WalletAccount, type Currency } from '../types/wallet-types';
 
 import { getCachedData, triggerRefresh } from './cache-data-access';
 import { type NetworkScripts } from './script-types';
@@ -130,6 +123,11 @@ export type TransferListStore = {
 };
 
 // NFTs
+
+export const nftListKey = (network: string, chainType: string) =>
+  `nft-list-${network}-${chainType}`;
+export const nftListRefreshRegex = refreshKey(nftListKey);
+export type NftListStore = NFTModelV2[];
 
 export const nftCollectionListKey = (network: string) => `nft-collections-${network}`;
 export const nftCollectionListRefreshRegex = refreshKey(nftCollectionListKey);
@@ -258,7 +256,7 @@ export const getCachedTokenFilter = async (network: string, address: string) => 
 // This is used internally to cache EVM token information
 // Potentially could be used in the future to replace ExtendedTokenInfo
 export const evmTokenInfoKey = (network: string, address: string, currency: string = 'usd') =>
-  `evm-token-info-${network}-${address}`;
+  `evm-token-info-${network}-${address}-${currency}`;
 
 export const evmTokenInfoRefreshRegex = refreshKey(evmTokenInfoKey);
 export type EvmTokenInfoStore = EvmTokenInfo[];

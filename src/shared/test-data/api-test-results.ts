@@ -6929,6 +6929,7 @@ export const createTestResults = (): ApiTestResults => ({
       functionGroup: 'fetch',
       functionParams: {
         network: 'testnet',
+        chainType: 'flow',
       },
       functionResponse: [
         {
