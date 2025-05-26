@@ -1191,25 +1191,6 @@ export class WalletController extends BaseController {
     return evmList;
   };
 
-  reqeustEvmNftList = async () => {
-    try {
-      // Check if the nftList is already in storage and not expired
-      const cachedNFTList = await storage.getExpiry('evmnftList');
-      if (cachedNFTList) {
-        return cachedNFTList;
-      } else {
-        // Fetch the nftList from the API
-        const nftList = await openapiService.evmNFTList();
-        // Cache the nftList with a one-hour expiry (3600000 milliseconds)
-        await storage.setExpiry('evmnftList', nftList, 3600000);
-        return nftList;
-      }
-    } catch (error) {
-      consoleError('Error fetching NFT list:', error);
-      throw error;
-    }
-  };
-
   requestCadenceNft = async () => {
     const network = await this.getNetwork();
     const address = await this.getCurrentAddress();

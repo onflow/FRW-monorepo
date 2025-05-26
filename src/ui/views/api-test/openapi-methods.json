@@ -933,15 +933,6 @@
     "params": []
   },
   {
-    "name": "evmNFTList",
-    "isAsync": true,
-    "fullBody": "async () => {\n        const { data } = await this.sendRequest('GET', '/api/evm/nfts', {}, {}, consts__WEBPACK_IMPORTED_MODULE_13__.WEB_NEXT_URL);\n        return data;\n    }",
-    "usesSendRequest": true,
-    "usesFetchDirectly": false,
-    "basicSignature": "async () =>",
-    "params": []
-  },
-  {
     "name": "getEvmNFT",
     "isAsync": true,
     "fullBody": "async (address, network) => {\n        const { data } = await this.sendRequest('GET', `/api/evm/${address}/nfts?network=${network}`, {}, {}, consts__WEBPACK_IMPORTED_MODULE_13__.WEB_NEXT_URL);\n        return data;\n    }",

@@ -1945,11 +1945,6 @@ export class OpenApiService {
     }
   };
 
-  evmNFTList = async () => {
-    const { data } = await this.sendRequest('GET', '/api/evm/nfts', {}, {}, WEB_NEXT_URL);
-    return data;
-  };
-
   getEvmNFT = async (address: string, network: string) => {
     const { data } = await this.sendRequest(
       'GET',

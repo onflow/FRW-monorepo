@@ -312,7 +312,6 @@ export const createTestGroups = (commonParams: CommonParams): ApiTestGroups => {
         params: { address: commonParams.addressEvm, network: commonParams.network },
       },
       { name: 'getEvmFTPrice', params: {} },
-      { name: 'evmNFTList', params: {} },
       {
         name: 'getEvmNFT',
         params: { address: commonParams.addressEvm, network: commonParams.network },
