@@ -369,22 +369,6 @@ const dataConfig: Record<string, OpenApiConfigValue> = {
   },
 };
 
-const defaultFlowToken = {
-  name: 'Flow',
-  address: '0x4445e7ad11568276',
-  contractName: 'FlowToken',
-  path: {
-    balance: '/public/flowTokenBalance',
-    receiver: '/public/flowTokenReceiver',
-    vault: '/storage/flowTokenVault',
-  },
-  logoURI:
-    'https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.1654653399040a61.FlowToken/logo.svg',
-  // On Evm networks we can use up to 18 decimals
-  decimals: 18,
-  symbol: 'flow',
-};
-
 const recordFetch = async (response, responseData, ...args: Parameters<typeof fetch>) => {
   try {
     // Extract URL parameters from the first argument if it's a URL with query params
@@ -1268,38 +1252,6 @@ export class OpenApiService {
     return data;
   };
 
-  getTokenInfo = async (name: string, network = ''): Promise<TokenInfo | undefined> => {
-    // FIX ME: Get defaultTokenList from firebase remote config
-    if (!network) {
-      network = await userWalletService.getNetwork();
-    }
-    const tokens = await this.getTokenList(network);
-    return tokens.find((item) => item.symbol.toLowerCase() === name.toLowerCase());
-  };
-
-  getEvmTokenInfo = async (name: string, network = ''): Promise<TokenInfo | undefined> => {
-    if (!network) {
-      network = await userWalletService.getNetwork();
-    }
-
-    const tokens = await this.getEvmList(network);
-
-    const tokenInfo = tokens.find((item) => item.symbol.toLowerCase() === name.toLowerCase());
-
-    if (tokenInfo && isValidEthereumAddress(tokenInfo.address)) {
-      return tokenInfo;
-    }
-
-    const freshTokens = await this.refreshEvmToken(network);
-    return freshTokens.find((item) => item.symbol.toLowerCase() === name.toLowerCase());
-  };
-
-  getTokenInfoByContract = async (contractName: string): Promise<TokenModel | undefined> => {
-    // FIX ME: Get defaultTokenList from firebase remote config
-    const coins = await remoteFetch.flowCoins();
-    return coins.find((item) => item.contract_name.toLowerCase() === contractName.toLowerCase());
-  };
-
   getFeatureFlags = async (): Promise<FeatureFlags> => {
     try {
       const config = await remoteFetch.remoteConfig();
@@ -1313,41 +1265,6 @@ export class OpenApiService {
   getFeatureFlag = async (featureFlag: FeatureFlagKey): Promise<boolean> => {
     const flags = await this.getFeatureFlags();
     return !!flags[featureFlag];
-  };
-
-  getAllTokenInfo = async (filterNetwork = true): Promise<TokenInfo[]> => {
-    const network = await userWalletService.getNetwork();
-    const list = await this.getTokenList(network);
-    return filterNetwork ? list.filter((item) => item.address) : list;
-  };
-
-  isWalletTokenStorageEnabled = async (tokenSymbol: string) => {
-    // FIX ME: Get defaultTokenList from firebase remote config
-    const address = await userWalletService.getCurrentAddress();
-    const tokenInfo = await this.getTokenInfo(tokenSymbol);
-    if (!tokenInfo || !address) {
-      return;
-    }
-    return await this.isTokenStorageEnabled(address, tokenInfo);
-  };
-
-  getWalletTokenBalance = async (tokenSymbol: string) => {
-    // FIX ME: Get defaultTokenList from firebase remote config
-    const address = await userWalletService.getCurrentAddress();
-    const tokenInfo = await this.getTokenInfo(tokenSymbol);
-    if (!tokenInfo || !address) {
-      return;
-    }
-    return await this.getTokenBalanceWithModel(address, tokenInfo);
-  };
-
-  getTokenBalance = async (address: string, tokenSymbol: string) => {
-    // FIX ME: Get defaultTokenList from firebase remote config
-    const tokenInfo = await this.getTokenInfo(tokenSymbol);
-    if (!tokenInfo) {
-      return;
-    }
-    return await this.getTokenBalanceWithModel(address, tokenInfo);
   };
 
   getStorageInfo = async (address: string): Promise<StorageInfo> => {
@@ -1400,7 +1317,7 @@ export class OpenApiService {
     return balance;
   };
 
-  fetchFTList = async (network: string, chainType: string) => {
+  fetchFTList = async (network: string, chainType: string): Promise<TokenInfo[]> => {
     const config = this.store.config.get_ft_list;
     const data = await this.sendRequest(
       config.method,
@@ -1412,11 +1329,10 @@ export class OpenApiService {
       {},
       WEB_NEXT_URL
     );
-
-    return this.addFlowTokenIfMissing(data.tokens);
+    return data.tokens;
   };
 
-  fetchFTListFull = async (network: string, chainType: string) => {
+  fetchFTListFull = async (network: string, chainType: string): Promise<TokenInfo[]> => {
     const config = this.store.config.get_ft_list_full;
     const data = await this.sendRequest(
       config.method,
@@ -1429,116 +1345,7 @@ export class OpenApiService {
       WEB_NEXT_URL
     );
 
-    return this.addFlowTokenIfMissing(data.tokens);
-  };
-
-  addFlowTokenIfMissing = (tokens) => {
-    const hasFlowToken = tokens.some((token) => token.symbol.toLowerCase() === 'flow');
-    if (!hasFlowToken) {
-      return [defaultFlowToken, ...tokens];
-    }
-    return tokens;
-  };
-
-  mergeCustomTokens = (tokens, customTokens) => {
-    customTokens.forEach((custom) => {
-      const existingToken = tokens.find(
-        (token) => token.address.toLowerCase() === custom.address.toLowerCase()
-      );
-
-      if (existingToken) {
-        // If the custom token is found, set the custom key to true
-        existingToken.custom = true;
-      } else {
-        // If the custom token is not found, add it to the tokens array
-        tokens.push({
-          chainId: MAINNET_CHAIN_ID,
-          address: custom.address,
-          symbol: custom.unit,
-          name: custom.coin,
-          decimals: custom.decimals,
-          logoURI: '',
-          flowIdentifier: custom.flowIdentifier,
-          tags: [],
-          balance: 0,
-          custom: true,
-        });
-      }
-    });
-  };
-
-  getTokenList = async (network): Promise<TokenInfo[]> => {
-    const childType = await userWalletService.getActiveAccountType();
-    const chainType = childType === 'evm' ? 'evm' : 'flow';
-
-    const ftList = await storage.getExpiry(`TokenList${network}${chainType}`);
-    if (ftList) return ftList;
-
-    let tokens = [];
-    try {
-      tokens = await this.fetchFTListFull(network, chainType);
-    } catch (error) {
-      consoleError(`Error fetching token list for ${network} ${chainType}:`, error);
-      // Return default tokens or cached tokens if available
-      const cachedTokens = await storage.get(`TokenList${network}${chainType}`);
-      tokens = cachedTokens || [defaultFlowToken];
-    }
-
-    if (chainType === 'evm') {
-      const evmCustomToken = (await storage.get(`${network}evmCustomToken`)) || [];
-      this.mergeCustomTokens(tokens, evmCustomToken);
-    }
-
-    storage.setExpiry(`TokenList${network}${chainType}`, tokens, 600000);
-    return tokens;
-  };
-
-  getEvmList = async (network) => {
-    const chainType = 'evm';
-
-    const ftList = await storage.getExpiry(`TokenList${network}${chainType}`);
-    if (ftList) return ftList;
-
-    let tokens = [];
-    try {
-      tokens = await this.fetchFTListFull(network, chainType);
-    } catch (error) {
-      consoleError(`Error fetching token list for ${network} ${chainType}:`, error);
-      // Return default tokens or cached tokens if available
-      const cachedTokens = await storage.get(`TokenList${network}${chainType}`);
-      tokens = cachedTokens || [defaultFlowToken];
-    }
-
-    if (chainType === 'evm') {
-      const evmCustomToken = (await storage.get(`${network}evmCustomToken`)) || [];
-      this.mergeCustomTokens(tokens, evmCustomToken);
-    }
-
-    storage.setExpiry(`TokenList${network}${chainType}`, tokens, 600000);
-    return tokens;
-  };
-
-  refreshEvmToken = async (network) => {
-    const chainType = 'evm';
-    let ftList = await storage.getExpiry(`TokenList${network}${chainType}`);
-    if (!ftList) ftList = await this.fetchFTListFull(network, chainType);
-
-    const evmCustomToken = (await storage.get(`${network}evmCustomToken`)) || [];
-    this.mergeCustomTokens(ftList, evmCustomToken);
-
-    storage.setExpiry(`TokenList${network}${chainType}`, ftList, 600000);
-
-    return ftList;
-  };
-
-  refreshCustomEvmToken = async (network) => {
-    const chainType = 'evm';
-    const ftList = await this.fetchFTListFull(network, chainType);
-
-    const evmCustomToken = (await storage.get(`${network}evmCustomToken`)) || [];
-    this.mergeCustomTokens(ftList, evmCustomToken);
-
-    storage.setExpiry(`TokenList${network}${chainType}`, ftList, 600000);
+    return data.tokens;
   };
 
   // todo

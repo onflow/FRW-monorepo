@@ -554,15 +554,6 @@
     "params": ["name", "network = ''"]
   },
   {
-    "name": "getTokenInfoByContract",
-    "isAsync": true,
-    "fullBody": "async (contractName) => {\n        // FIX ME: Get defaultTokenList from firebase remote config\n        const coins = await remoteFetch.flowCoins();\n        return coins.find((item) => item.contract_name.toLowerCase() === contractName.toLowerCase());\n    }",
-    "usesSendRequest": false,
-    "usesFetchDirectly": false,
-    "basicSignature": "async (contractName) =>",
-    "params": ["contractName"]
-  },
-  {
     "name": "getAllToken",
     "isAsync": true,
     "fullBody": "async () => {\n        // FIX ME: Get defaultTokenList from firebase remote config\n        const coins = await remoteFetch.flowCoins();\n        return coins;\n    }",

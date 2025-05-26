@@ -1,11 +1,16 @@
+import { type TokenInfo } from 'flow-native-token-registry';
+
 import { type ExtendedTokenInfo, type TokenFilter } from '@/shared/types/coin-types';
 import { type Currency } from '@/shared/types/wallet-types';
+import { triggerRefresh } from '@/shared/utils/cache-data-access';
 import {
   type ChildAccountFtStore,
   childAccountFtKey,
   coinListKey,
   tokenFilterKey,
+  tokenListKey,
 } from '@/shared/utils/cache-data-keys';
+import { consoleLog } from '@/shared/utils/console-log';
 import { setUserData } from '@/shared/utils/user-data-access';
 
 import { useCachedData, useUserData } from './use-data';
@@ -44,4 +49,13 @@ export const useChildAccountFt = (
       ? childAccountFtKey(network, parentAddress, childAccount)
       : null
   );
+};
+
+export const useAllTokenInfo = (network: string, chainType: string) => {
+  consoleLog('useAllTokenInfo', network, chainType);
+  return useCachedData<TokenInfo[]>(network && chainType ? tokenListKey(network, chainType) : null);
+};
+
+export const refreshEvmToken = (network: string) => {
+  return triggerRefresh(tokenListKey(network, 'evm'));
 };

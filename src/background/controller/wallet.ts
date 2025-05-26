@@ -98,6 +98,7 @@ import {
   newsService,
   mixpanelTrack,
   evmNftService,
+  tokenListService,
 } from 'background/service';
 import i18n from 'background/service/i18n';
 import {
@@ -2096,13 +2097,23 @@ export class WalletController extends BaseController {
     ]);
   };
 
+  getTokenInfo = async (symbol: string): Promise<TokenInfo | undefined> => {
+    const network = await this.getNetwork();
+    const activeAccountType = await this.getActiveAccountType();
+    return await tokenListService.getTokenInfo(
+      network,
+      activeAccountType === 'evm' ? 'evm' : 'flow',
+      symbol
+    );
+  };
+
   // TODO: Replace with generic token
   transferCadenceTokens = async (
     symbol: string,
     address: string,
     amount: string
   ): Promise<string> => {
-    const token = await openapiService.getTokenInfo(symbol);
+    const token = await this.getTokenInfo(symbol);
     const script = await getScripts(userWalletService.getNetwork(), 'ft', 'transferTokensV3');
 
     if (!token) {
@@ -2174,41 +2185,8 @@ export class WalletController extends BaseController {
     );
   };
 
-  // TODO: Replace with generic token
-  claimFTFromInbox = async (
-    domain: string,
-    amount: string,
-    symbol: string,
-    root = 'meow'
-  ): Promise<string> => {
-    const domainName = domain.split('.')[0];
-    const token = await openapiService.getTokenInfoByContract(symbol);
-    const script = await getScripts(userWalletService.getNetwork(), 'domain', 'claimFTFromInbox');
-
-    if (!token) {
-      throw new Error(`Invaild token name - ${symbol}`);
-    }
-    const network = await this.getNetwork();
-    const address = fcl.sansPrefix(token.address[network]);
-    const key = `A.${address}.${symbol}.Vault`;
-    return await userWalletService.sendTransaction(
-      script
-        .replaceAll('<Token>', token.contract_name)
-        .replaceAll('<TokenBalancePath>', token.storage_path.balance)
-        .replaceAll('<TokenReceiverPath>', token.storage_path.receiver)
-        .replaceAll('<TokenStoragePath>', token.storage_path.vault)
-        .replaceAll('<TokenAddress>', token.address[network]),
-      [
-        fcl.arg(domainName, fcl.t.String),
-        fcl.arg(root, fcl.t.String),
-        fcl.arg(key, fcl.t.String),
-        fcl.arg(amount, fcl.t.UFix64),
-      ]
-    );
-  };
-
   enableTokenStorage = async (symbol: string) => {
-    const token = await openapiService.getTokenInfo(symbol);
+    const token = await this.getTokenInfo(symbol);
     if (!token) {
       return;
     }
@@ -2254,7 +2232,7 @@ export class WalletController extends BaseController {
     amount: string,
     symbol: string
   ): Promise<string> => {
-    const token = await openapiService.getTokenInfo(symbol);
+    const token = await this.getTokenInfo(symbol);
     if (!token) {
       throw new Error(`Invaild token name - ${symbol}`);
     }
@@ -2287,7 +2265,7 @@ export class WalletController extends BaseController {
     amount: string,
     symbol: string
   ): Promise<string> => {
-    const token = await openapiService.getTokenInfo(symbol);
+    const token = await this.getTokenInfo(symbol);
     if (!token) {
       throw new Error(`Invaild token name - ${symbol}`);
     }

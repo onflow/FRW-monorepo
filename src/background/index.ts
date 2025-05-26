@@ -37,10 +37,9 @@ import {
   googleSafeHostService,
   mixpanelTrack,
   logListener,
+  tokenListService,
 } from './service';
-import session from './service/session';
 import { getFirbaseConfig } from './utils/firebaseConfig';
-import { getAccountsByPublicKeyTuple } from './utils/modules/findAddressWithPubKey';
 import { setEnvironmentBadge } from './utils/setEnvironmentBadge';
 import { storage } from './webapi';
 const { PortMessage } = Message;
@@ -132,6 +131,7 @@ async function restoreAppState() {
   await googleSafeHostService.init();
   await mixpanelTrack.init();
   await logListener.init();
+  await tokenListService.init();
   // rpcCache.start();
 
   appStoreLoaded = true;

@@ -2,6 +2,8 @@
  * Keys and types to access data in the UI from the background storage cache
  * This is the primary way to get cached data from network calls to the frontend
  */
+import { type TokenInfo } from 'flow-native-token-registry';
+
 import {
   type TokenFilter,
   type ExtendedTokenInfo,
@@ -205,7 +207,7 @@ export const getCachedChildAccountNfts = async (network: string, parentAddress: 
 
 // EVM NFTs
 export const evmNftIdsKey = (network: string, address: string) =>
-  `evm-nft-ids-${network}-${address}`;
+  `evm-nft-collection-ids-${network}-${address}`;
 
 export const evmNftIdsRefreshRegex = refreshKey(evmNftIdsKey);
 export type EvmNftIdsStore = EvmNFTIds[];
@@ -233,6 +235,12 @@ export const getCachedEvmNftCollectionList = async (
 /**
  * Fungible Token information
  */
+
+export const tokenListKey = (network: string, chainType: string) =>
+  `token-list-${network}-${chainType}`;
+export const tokenListRefreshRegex = refreshKey(tokenListKey);
+export type TokenListStore = TokenInfo[];
+
 // Coinlist can be used for both EVM and Cadence tokens - this is the primary way to get token information
 export const coinListKey = (network: string, address: string, currency: string = 'usd') =>
   `coin-list-${network}-${address}-${currency}`;

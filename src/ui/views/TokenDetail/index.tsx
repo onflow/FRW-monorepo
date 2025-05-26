@@ -13,6 +13,7 @@ import { type ActiveAccountType } from '@/shared/types/wallet-types';
 import { consoleWarn } from '@/shared/utils/console-log';
 import SecurityCard from '@/ui/FRWComponent/SecurityCard';
 import StorageUsageCard from '@/ui/FRWComponent/StorageUsageCard';
+import { refreshEvmToken } from '@/ui/hooks/use-coin-hooks';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import tips from 'ui/FRWAssets/svg/tips.svg';
@@ -80,7 +81,7 @@ const TokenDetail = () => {
 
     await storage.set(`${network}evmCustomToken`, evmCustomToken);
     await usewallet.clearCoinList();
-    await usewallet.openapi.refreshCustomEvmToken(network);
+    refreshEvmToken(network);
     history.replace({ pathname: history.location.pathname, state: { refreshed: true } });
     history.goBack();
   };
