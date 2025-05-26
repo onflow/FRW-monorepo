@@ -1541,47 +1541,6 @@ export class OpenApiService {
     storage.setExpiry(`TokenList${network}${chainType}`, ftList, 600000);
   };
 
-  getEnabledTokenList = async (network = ''): Promise<ExtendedTokenInfo[]> => {
-    if (!network) {
-      network = await userWalletService.getNetwork();
-    }
-    const address = await userWalletService.getCurrentAddress();
-    if (!address) {
-      // If we haven't loaded an address yet, return an empty array
-      return [];
-    }
-    const tokenList = await this.getTokenList(network);
-    let values;
-    const isChild = await userWalletService.getActiveAccountType();
-    try {
-      if (isChild && isChild !== 'evm') {
-        values = await this.isLinkedAccountTokenListEnabled(address);
-      } else if (!isChild) {
-        values = await this.getTokenBalanceStorage(address);
-      }
-    } catch (error) {
-      consoleError('Error getting enabled token list:');
-      values = {};
-    }
-
-    const tokenItems: ExtendedTokenInfo[] = [];
-    const tokenMap = {};
-    if (isChild !== 'evm') {
-      tokenList.forEach((token) => {
-        const tokenId = `A.${token.address.slice(2)}.${token.contractName}.Vault`;
-        if (!!values[tokenId]) {
-          tokenMap[token.name] = token;
-        }
-      });
-    }
-
-    Object.keys(tokenMap).map((key, idx) => {
-      const item = tokenMap[key];
-      tokenItems.push(item);
-    });
-    return tokenItems;
-  };
-
   // todo
   isTokenStorageEnabled = async (address: string, token: TokenInfo) => {
     const network = await userWalletService.getNetwork();

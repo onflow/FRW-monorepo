@@ -13,6 +13,7 @@ import {
   nftCollectionListKey,
   nftCollectionListRefreshRegex,
   nftListKey,
+  nftListRefreshRegex,
 } from '@/shared/utils/cache-data-keys';
 import { getValidData, registerRefreshListener, setCachedData } from 'background/utils/data-cache';
 
@@ -28,6 +29,7 @@ class NFT {
     registerRefreshListener(childAccountAllowTypesRefreshRegex, this.loadChildAccountAllowTypes);
     registerRefreshListener(childAccountNFTsRefreshRegex, this.loadChildAccountNFTs);
     registerRefreshListener(nftCollectionListRefreshRegex, this.loadNftCollectionList);
+    registerRefreshListener(nftListRefreshRegex, this.loadNftList);
   };
 
   loadChildAccountNFTs = async (network: string, parentAddress: string) => {
@@ -171,7 +173,7 @@ class NFT {
    * @param network - The network to get the NFTs for
    * @returns The list of NFTs
    */
-  getNftList = async (network: string, chainType: 'evm' | 'flow'): Promise<NFTModelV2[]> => {
+  getNftList = async (network: string, chainType: string): Promise<NFTModelV2[]> => {
     const nftList = await getValidData<NFTModelV2[]>(nftListKey(network, chainType));
     if (!nftList) {
       return this.loadNftList(network, chainType);
@@ -185,7 +187,10 @@ class NFT {
    * @param chainType - The chain type to get the NFTs for
    * @returns The list of NFTs
    */
-  loadNftList = async (network: string, chainType: 'evm' | 'flow'): Promise<NFTModelV2[]> => {
+  loadNftList = async (network: string, chainType: string): Promise<NFTModelV2[]> => {
+    if (chainType !== 'evm' && chainType !== 'flow') {
+      throw new Error('Invalid chain type');
+    }
     const data = await openapiService.getNFTList(network, chainType);
 
     if (!data || !Array.isArray(data)) {

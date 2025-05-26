@@ -716,15 +716,6 @@
     "params": ["network"]
   },
   {
-    "name": "getEnabledTokenList",
-    "isAsync": true,
-    "fullBody": "async (network = '') => {\n        // const tokenList = await remoteFetch.flowCoins();\n        if (!network) {\n            network = await _index__WEBPACK_IMPORTED_MODULE_15__.userWalletService.getNetwork();\n        }\n        const address = await _index__WEBPACK_IMPORTED_MODULE_15__.userWalletService.getCurrentAddress();\n        const tokenList = await this.getTokenList(network);\n        let values;\n        const isChild = await _index__WEBPACK_IMPORTED_MODULE_15__.userWalletService.getActiveWallet();\n        try {\n            if (isChild && isChild !== 'evm') {\n                values = await this.isLinkedAccountTokenListEnabled(address);\n            }\n            else if (!isChild) {\n                values = await this.isTokenListEnabled(address);\n            }\n        }\n        catch (error) {\n            console.error('Error isTokenListEnabled token:');\n            values = {};\n        }\n        const tokenItems = [];\n        const tokenMap = {};\n        if (isChild !== 'evm') {\n            tokenList.forEach((token) => {\n                const tokenId = `A.${token.address.slice(2)}.${token.contractName}`;\n                // console.log(tokenMap,'tokenMap',values)\n                if (!!values[tokenId]) {\n                    tokenMap[token.name] = token;\n                }\n            });\n        }\n        // const data = values.map((value, index) => ({isEnabled: value, token: tokenList[index]}))\n        // return values\n        //   .map((value, index) => {\n        //     if (value) {\n        //       return tokens[index];\n        //     }\n        //   })\n        //   .filter((item) => item);\n        Object.keys(tokenMap).map((key, idx) => {\n            const item = tokenMap[key];\n            tokenItems.push(item);\n        });\n        return tokenItems;\n    }",
-    "usesSendRequest": false,
-    "usesFetchDirectly": false,
-    "basicSignature": "async (network = '') =>",
-    "params": ["network = ''"]
-  },
-  {
     "name": "isTokenStorageEnabled",
     "isAsync": true,
     "fullBody": "async (address, token) => {\n        const network = await _index__WEBPACK_IMPORTED_MODULE_15__.userWalletService.getNetwork();\n        const script = await (0,background_utils__WEBPACK_IMPORTED_MODULE_10__.getScripts)('basic', 'isTokenStorageEnabled');\n        const cadence = script\n            .replaceAll('<Token>', token.contractName)\n            .replaceAll('<TokenBalancePath>', token.path.balance)\n            .replaceAll('<TokenReceiverPath>', token.path.receiver)\n            .replaceAll('<TokenAddress>', token.address);\n        const isEnabled = await _onflow_fcl__WEBPACK_IMPORTED_MODULE_0__.query({\n            cadence: cadence,\n            args: (arg, t) => [arg(address, t.Address)],\n        });\n        return isEnabled;\n    }",
