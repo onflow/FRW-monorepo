@@ -69,6 +69,7 @@ import {
   registerStatusRefreshRegex,
   coinListKey,
   type ChildAccountFtStore,
+  accountBalanceKey,
 } from '@/shared/utils/cache-data-keys';
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 import { getCurrentProfileId, returnCurrentProfileId } from '@/shared/utils/current-id';
@@ -131,7 +132,11 @@ import { getScripts } from '../service/openapi';
 import type { ConnectedSite } from '../service/permission';
 import type { PreferenceAccount } from '../service/preference';
 import { type EvaluateStorageResult, StorageEvaluator } from '../service/storage-evaluator';
-import { getEvmAccountOfParent, loadEvmAccountOfParent } from '../service/userWallet';
+import userWallet, {
+  getEvmAccountOfParent,
+  loadAccountBalance,
+  loadEvmAccountOfParent,
+} from '../service/userWallet';
 import {
   getValidData,
   registerRefreshListener,
@@ -1982,6 +1987,12 @@ export class WalletController extends BaseController {
     }
   };
 
+  /**
+   * Get the balance of a list of accounts
+   * @param addresses - The list of addresses to get the balance for
+   * @returns The balance of the accounts
+   * @deprecated Use {@link userWallets.loadAccountListBalance} instead
+   */
   getAllAccountBalance = async (addresses: string[]): Promise<string> => {
     await this.getNetwork();
 
@@ -1999,42 +2010,20 @@ export class WalletController extends BaseController {
   };
 
   getEvmBalance = async (hexEncodedAddress: string): Promise<string> => {
-    await this.getNetwork();
-
-    if (hexEncodedAddress.startsWith('0x')) {
-      hexEncodedAddress = hexEncodedAddress.substring(2);
+    const network = await this.getNetwork();
+    const balance = await getValidData<string>(accountBalanceKey(network, hexEncodedAddress));
+    if (!balance) {
+      return await loadAccountBalance(network, hexEncodedAddress);
     }
-
-    const script = await getScripts(userWalletService.getNetwork(), 'evm', 'getBalance');
-
-    const result = await fcl.query({
-      cadence: script,
-      args: (arg, t) => [arg(hexEncodedAddress, t.String)],
-    });
-    return result;
+    return balance;
   };
 
   getFlowBalance = async (address: string): Promise<string> => {
-    const cacheKey = `checkFlowBalance${address}`;
-    let balance: string = await storage.getExpiry(cacheKey);
-    const ttl = 1 * 60 * 1000;
+    const network = await this.getNetwork();
+    const balance = await getValidData<string>(accountBalanceKey(network, address));
     if (!balance) {
-      try {
-        const account = await fcl.account(address);
-        // Returns the FLOW balance of the account in 10^8
-
-        balance = convertFlowBalanceToString(account.balance);
-
-        if (balance) {
-          // Store the result in the cache with an expiry
-          await storage.setExpiry(cacheKey, balance, ttl);
-        }
-      } catch (error) {
-        consoleError('Error occurred:', error);
-        return '';
-      }
+      return await loadAccountBalance(network, address);
     }
-
     return balance;
   };
 

@@ -1160,24 +1160,29 @@ const loadAccountListBalance = async (network: string, addressList: string[]) =>
 
   const script = await getScripts(network, 'basic', 'getFlowBalanceForAnyAccounts');
 
-  const accountsBalances = await fcl.query({
+  const accountsBalances: { [address: string]: string } = await fcl.query({
     cadence: script,
     args: (arg, t) => [arg(addressList, t.Array(t.String))],
   });
   // Cache all the balances
   return Promise.all(
-    addressList.map((address) => {
-      return setCachedData(
+    addressList.map(async (address) => {
+      await setCachedData(
         accountBalanceKey(network, address),
         accountsBalances[address] || '0.00000000',
         Number(accountsBalances[address]) > 0 ? 60_000 : 1_000
       );
+      return accountsBalances[address];
     })
   );
 };
 
-const loadAccountBalance = async (network: string, address: string) => {
-  return loadAccountListBalance(network, [address]);
+export const loadAccountBalance = async (network: string, address: string) => {
+  const balanceList = await loadAccountListBalance(network, [address]);
+  if (balanceList.length !== 1) {
+    throw new Error('Invalid balance list');
+  }
+  return balanceList[0];
 };
 
 /**
