@@ -477,6 +477,12 @@ class ProviderController extends BaseController {
     } else {
       currentChain = MAINNET_CHAIN_ID;
     }
+    const message = typeof data === 'string' ? JSON.parse(data) : data;
+    const { chainId } = message.domain || {};
+
+    if (!chainId || Number(chainId) !== Number(currentChain)) {
+      throw new Error('Provided chainId does not match the currently active chain');
+    }
 
     const paramAddress = request.data.params?.[0] || '';
 
@@ -495,7 +501,6 @@ class ProviderController extends BaseController {
     ) {
       throw new Error('Provided address does not match the current address');
     }
-    const message = typeof data === 'string' ? JSON.parse(data) : data;
 
     const signTypeMethod =
       request.data.method === 'eth_signTypedData_v3'
@@ -540,6 +545,13 @@ class ProviderController extends BaseController {
       currentChain = MAINNET_CHAIN_ID;
     }
 
+    const message = typeof data === 'string' ? JSON.parse(data) : data;
+    const { chainId } = message.domain || {};
+
+    if (!chainId || Number(chainId) !== Number(currentChain)) {
+      throw new Error('Provided chainId does not match the currently active chain');
+    }
+
     const paramAddress = request.data.params?.[0] ? request.data.params?.[0] : '';
 
     if (isValidEthereumAddress(paramAddress)) {
@@ -557,8 +569,6 @@ class ProviderController extends BaseController {
     ) {
       throw new Error('Provided address does not match the current address');
     }
-
-    const message = typeof data === 'string' ? JSON.parse(data) : data;
 
     const hash = TypedDataUtils.eip712Hash(message, SignTypedDataVersion.V4);
 
