@@ -198,8 +198,8 @@ const CoinList = ({
                     {props.change === null ? '-' : ''}
                     <CurrencyValue
                       value={props.price}
-                      currencyCode={currencyCode}
-                      currencySymbol={currencySymbol}
+                      currencyCode={currencyCode ?? ''}
+                      currencySymbol={currencySymbol ?? ''}
                     />
                   </Typography>
                   {props.change !== 0 && (
@@ -300,8 +300,8 @@ const CoinList = ({
                       secondary={
                         <CurrencyValue
                           value={String(coin.total)}
-                          currencyCode={currencyCode}
-                          currencySymbol={currencySymbol}
+                          currencyCode={currencyCode ?? ''}
+                          currencySymbol={currencySymbol ?? ''}
                         />
                       }
                       unit={coin.unit}
