@@ -23,28 +23,28 @@ class RemoteConfigService {
       process.env.API_BASE_URL
     );
 
-    const config = result.config;
+    const config = result;
 
     setCachedData(remoteConfigKey(), config, 600_000); // 10 minutes
     return config;
   };
 
   getRemoteConfig = async (): Promise<RemoteConfig> => {
-    const config = await getValidData<RemoteConfig>(remoteConfigKey());
-    if (!config) {
+    const fullConfig = await getValidData<RemoteConfig>(remoteConfigKey());
+    if (!fullConfig) {
       return this.loadRemoteConfig();
     }
-    return config;
+    return fullConfig;
   };
 
   getFeatureFlags = async (): Promise<FeatureFlags> => {
-    const config = await this.getRemoteConfig();
-    return config.features;
+    const fullConfig = await this.getRemoteConfig();
+    return fullConfig.config.features;
   };
 
   getFeatureFlag = async (featureFlag: FeatureFlagKey): Promise<boolean> => {
-    const config = await this.getRemoteConfig();
-    return config.features[featureFlag];
+    const fullConfig = await this.getRemoteConfig();
+    return fullConfig.config.features[featureFlag];
   };
 }
 

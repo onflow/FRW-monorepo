@@ -13,14 +13,14 @@ const FIXED_MOVE_FEE = 0.0001;
 const AVERAGE_TX_FEE = 0.0005;
 const BYTES_PER_FLOW = 100 * 1024 * 1024; // 100 MB
 
-export const evaluateStorage = async (
+export const evaluateStorage = (
   accountStorageInfo: AccountBalanceInfo,
   sendAmount?: string, // UFix64
   coin?: string,
   movingBetweenEVMAndFlow?: boolean,
   freeGas?: boolean,
   featureFlagTxWarningPrediction?: boolean
-): Promise<EvaluateStorageResult> => {
+): EvaluateStorageResult => {
   // Get storage info from openapi service
   const remainingStorage = BigNumber(accountStorageInfo.storageCapacity).minus(
     BigNumber(accountStorageInfo.storageUsed)
@@ -68,7 +68,7 @@ export const evaluateStorage = async (
   };
 };
 
-export const checkEnoughBalanceForFees = async (
+export const checkEnoughBalanceForFees = (
   sendingAccountBalance: string, // UFix64
   sendAmount: string, // UFix64
   coin: string,
@@ -80,4 +80,10 @@ export const checkEnoughBalanceForFees = async (
     .plus(freeGas ? BigNumber(0) : BigNumber(AVERAGE_TX_FEE));
 
   return BigNumber(sendingAccountBalance).gte(flowUsed);
+};
+
+export const checkLowBalance = (
+  accountBalance: string // UFix64
+) => {
+  return BigNumber(accountBalance).lt(MINIMUM_FLOW_BALANCE);
 };

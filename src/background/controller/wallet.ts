@@ -10,7 +10,6 @@ import { type TokenInfo } from 'flow-native-token-registry';
 import { encode } from 'rlp';
 import web3, { TransactionError, Web3 } from 'web3';
 
-import fetchConfig from '@/background/service/remoteConfig';
 import {
   getAccountKey,
   pubKeyAccountToAccountKey,
@@ -73,12 +72,8 @@ import {
   accountBalanceKey,
 } from '@/shared/utils/cache-data-keys';
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
-import { getCurrentProfileId, returnCurrentProfileId } from '@/shared/utils/current-id';
-import {
-  convertFlowBalanceToString,
-  convertToIntegerAmount,
-  validateAmount,
-} from '@/shared/utils/number';
+import { returnCurrentProfileId } from '@/shared/utils/current-id';
+import { convertToIntegerAmount, validateAmount } from '@/shared/utils/number';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import { type CategoryScripts } from '@/shared/utils/script-types';
 import {
@@ -133,8 +128,7 @@ import { HDKeyring } from '../service/keyring/hdKeyring';
 import { getScripts } from '../service/openapi';
 import type { ConnectedSite } from '../service/permission';
 import type { PreferenceAccount } from '../service/preference';
-import { type EvaluateStorageResult, StorageEvaluator } from '../service/storage-evaluator';
-import userWallet, {
+import {
   getEvmAccountOfParent,
   loadAccountBalance,
   loadEvmAccountOfParent,
@@ -164,12 +158,10 @@ interface TokenTransaction {
 
 export class WalletController extends BaseController {
   openapi = openapiService;
-  private storageEvaluator: StorageEvaluator;
   private loaded = false;
 
   constructor() {
     super();
-    this.storageEvaluator = new StorageEvaluator();
 
     registerRefreshListener(registerStatusRefreshRegex, async (pubKey: string) => {
       // The ttl is set to 2 minutes. After that we set the cache to false
@@ -3328,9 +3320,9 @@ export class WalletController extends BaseController {
 
   getPayerAddressAndKeyId = async () => {
     try {
-      const config = await remoteConfigService.getRemoteConfig();
+      const remoteConfig = await remoteConfigService.getRemoteConfig();
       const network = await this.getNetwork();
-      return config.payer[network];
+      return remoteConfig.config.payer[network];
     } catch {
       const network = await this.getNetwork();
       return defaultConfig.payer[network];
@@ -3339,12 +3331,12 @@ export class WalletController extends BaseController {
 
   getBridgeFeePayerAddressAndKeyId = async () => {
     try {
-      const config = await remoteConfigService.getRemoteConfig();
+      const remoteConfig = await remoteConfigService.getRemoteConfig();
       const network = await this.getNetwork();
-      if (!config.bridgeFeePayer) {
+      if (!remoteConfig.config.bridgeFeePayer) {
         throw new Error('Bridge fee payer not found');
       }
-      return config.bridgeFeePayer[network];
+      return remoteConfig.config.bridgeFeePayer[network];
     } catch {
       const network = await this.getNetwork();
       return defaultConfig.bridgeFeePayer[network];
@@ -3414,13 +3406,6 @@ export class WalletController extends BaseController {
     return await preferenceService.getDisplayCurrency();
   };
 
-  // Get the news from the server
-  getNews = async () => {
-    if (!this.isUnlocked()) {
-      return [];
-    }
-    return await newsService.getFilteredNews();
-  };
   markNewsAsDismissed = async (id: string) => {
     return await newsService.markAsDismissed(id);
   };
@@ -3433,41 +3418,12 @@ export class WalletController extends BaseController {
     return await newsService.markAllAsRead();
   };
 
-  getUnreadNewsCount = async () => {
-    if (!this.isUnlocked()) {
-      return 0;
-    }
-    return newsService.getUnreadCount();
-  };
-
   isNewsRead = (id: string) => {
     return newsService.isRead(id);
   };
 
-  resetNews = async () => {
-    return await newsService.clear();
-  };
-
-  // Check the storage status
-  checkStorageStatus = async ({
-    transferAmount,
-    coin,
-    movingBetweenEVMAndFlow,
-  }: {
-    transferAmount?: number; // amount in coins
-    coin?: string; // coin name
-    movingBetweenEVMAndFlow?: boolean; // are we moving between EVM and Flow?
-  } = {}): Promise<EvaluateStorageResult> => {
-    const address = await this.getParentAddress();
-    const isFreeGasFeeEnabled = await userWalletService.allowFreeGas();
-    const result = await this.storageEvaluator.evaluateStorage(
-      address!,
-      transferAmount,
-      coin,
-      movingBetweenEVMAndFlow,
-      isFreeGasFeeEnabled
-    );
-    return result;
+  resetNews = () => {
+    return newsService.clear();
   };
 
   // Tracking stuff

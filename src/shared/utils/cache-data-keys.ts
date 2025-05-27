@@ -44,28 +44,27 @@ export const newsKey = () => `news`;
 export const newsRefreshRegex = refreshKey(newsKey);
 export type NewsStore = NewsItem[];
 
-export const latestVersionKey = () => `latest-version`;
-export const latestVersionRefreshRegex = refreshKey(latestVersionKey);
-export type LatestVersionStore = string;
-
 export const remoteConfigKey = () => `remote-config`;
 export const remoteConfigRefreshRegex = refreshKey(remoteConfigKey);
 export type RemoteConfig = {
-  features: FeatureFlags;
-  payer: Record<
-    'mainnet' | 'testnet' | 'previewnet' | 'sandboxnet' | 'crescendo',
-    {
-      address: string;
-      keyId: number;
-    }
-  >;
-  bridgeFeePayer?: Record<
-    'mainnet' | 'testnet' | 'previewnet' | 'sandboxnet' | 'crescendo',
-    {
-      address: string;
-      keyId: number;
-    }
-  >;
+  version: string;
+  config: {
+    features: FeatureFlags;
+    payer: Record<
+      'mainnet' | 'testnet' | 'previewnet' | 'sandboxnet' | 'crescendo',
+      {
+        address: string;
+        keyId: number;
+      }
+    >;
+    bridgeFeePayer?: Record<
+      'mainnet' | 'testnet' | 'previewnet' | 'sandboxnet' | 'crescendo',
+      {
+        address: string;
+        keyId: number;
+      }
+    >;
+  };
 };
 /*
  * --------------------------------------------------------------------

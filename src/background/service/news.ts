@@ -10,7 +10,6 @@ import { storage } from 'background/webapi';
 
 import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
 
-import conditionsEvaluator from './conditions-evaluator';
 import openapi from './openapi';
 
 class NewsService {
@@ -28,9 +27,6 @@ class NewsService {
       });
     } catch (error) {
       consoleError('Error initializing NewsService', error);
-
-      // Try clearing the store
-      this.clear();
     }
     registerRefreshListener(newsRefreshRegex, this.loadNews);
   };
@@ -57,34 +53,6 @@ class NewsService {
     return this.loadNews();
   };
 
-  getFilteredNews = async (): Promise<NewsItem[]> => {
-    if (!this.store) await this.init();
-
-    const news = await this.getNews();
-    // Remove dismissed news and evaluate conditions
-
-    const filteredNewsPromises = news
-      .filter((n) => !this.isDismissed(n.id))
-      .map(async (newsItem) => {
-        try {
-          const shouldShow = await conditionsEvaluator.evaluateConditions(newsItem.conditions);
-          return shouldShow ? newsItem : null;
-        } catch (error) {
-          // Catch error here otherwise the whole news list will be empty
-          consoleError('Error evaluating conditions', error);
-          return null;
-        }
-      });
-    const filteredNews = await Promise.all(filteredNewsPromises)
-      .catch((error) => {
-        consoleError('Error evaluating conditions', error);
-        return [];
-      })
-      .then((news) => news.filter((item) => item !== null));
-
-    return filteredNews as NewsItem[];
-  };
-
   isRead = (id: string): boolean => {
     // TODO: we could use a set for this, but it's not a big deal
     return this.store?.readIds?.includes(id);
@@ -93,7 +61,7 @@ class NewsService {
   markAsRead = async (id: string): Promise<boolean> => {
     if (!this.store) await this.init();
 
-    const news = await this.getFilteredNews();
+    const news = await this.getNews();
 
     if (!this.isRead(id)) {
       // Use this opportunity to clear the read ids that are not in the new news
@@ -112,7 +80,7 @@ class NewsService {
   markAllAsRead = async () => {
     if (!this.store) await this.init();
 
-    const news = await this.getFilteredNews();
+    const news = await this.getNews();
     this.store.readIds = news.map((n) => n.id);
   };
 
@@ -121,7 +89,7 @@ class NewsService {
 
     // Not sure I love this, but it's a quick way to get the unread count
     // The frontend should cache the unread count
-    const news = await this.getFilteredNews();
+    const news = await this.getNews();
 
     const unreadCount = news.reduce((count, item) => (this.isRead(item.id) ? count : count + 1), 0);
 
