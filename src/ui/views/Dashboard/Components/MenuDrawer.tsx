@@ -117,6 +117,10 @@ const MenuDrawer = (props: MenuDrawerProps) => {
     history.push('/dashboard/enable');
   };
 
+  const addAccount = async () => {
+    await usewallet.createManualAddress();
+  };
+
   const hasChildAccounts = props.childAccounts && Object.keys(props.childAccounts).length > 0;
 
   return (
@@ -488,6 +492,42 @@ const MenuDrawer = (props: MenuDrawerProps) => {
                 sx={{ fontSize: '12px' }}
               >
                 {chrome.i18n.getMessage('Import__Profile')}
+              </Typography>
+            </ListItemButton>
+          </ListItem>
+          <ListItem
+            disablePadding
+            onClick={async () => {
+              await addAccount();
+              // history.push('/add');
+            }}
+          >
+            <ListItemButton sx={{ padding: '8px 16px', margin: '0', borderRadius: '0' }}>
+              <ListItemIcon
+                sx={{
+                  width: '24px',
+                  minWidth: '16px',
+                  height: '24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: '12px',
+                }}
+              >
+                <CardMedia
+                  component="img"
+                  sx={{ width: '16px', height: '16px' }}
+                  image={importIcon}
+                />
+              </ListItemIcon>
+              <Typography
+                variant="body1"
+                component="div"
+                display="inline"
+                color="text"
+                sx={{ fontSize: '12px' }}
+              >
+                Add Account
               </Typography>
             </ListItemButton>
           </ListItem>
