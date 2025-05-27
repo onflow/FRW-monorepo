@@ -9,6 +9,7 @@ import { consoleError } from '@/shared/utils/console-log';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
 import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
+import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useContact } from '@/ui/hooks/useContactHook';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
 import { useStorageCheck } from '@/ui/utils/useStorageCheck';
@@ -35,6 +36,7 @@ const TransferConfirmation = ({
   const wallet = useWallet();
   const history = useHistory();
   const { occupied } = useTransferList();
+  const currency = useCurrency();
   const fromContactData =
     useContact(transactionState.fromContact?.address || '') || transactionState.fromContact;
   const toContactData =
@@ -284,7 +286,11 @@ const TransferConfirmation = ({
                 color="info"
                 sx={{ fontSize: '14px', fontWeight: 'semi-bold', textAlign: 'end' }}
               >
-                <CurrencyValue value={transactionState.fiatAmount} />
+                <CurrencyValue
+                  value={transactionState.fiatAmount}
+                  currencyCode={currency?.code ?? ''}
+                  currencySymbol={currency?.symbol ?? ''}
+                />
               </Typography>
             </Stack>
           </Box>

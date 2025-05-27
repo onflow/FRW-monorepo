@@ -14,8 +14,8 @@ import { formatLargeNumber } from '@/shared/utils/number';
 import { ButtonRow } from '@/ui/FRWComponent/ButtonRow';
 import CoinsIcon from '@/ui/FRWComponent/CoinsIcon';
 import LLComingSoon from '@/ui/FRWComponent/LLComingSoonWarning';
-import { NumberTransition } from '@/ui/FRWComponent/NumberTransition';
 import { useInitHook } from '@/ui/hooks';
+import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from '@/ui/utils';
@@ -53,6 +53,7 @@ const WalletTab = ({ network }) => {
   const location = useLocation();
   const { initializeStore } = useInitHook();
   const { balance, coinsLoaded } = useCoins();
+  const currency = useCurrency();
   const { childAccounts, evmWallet, currentWallet, noAddress, registerStatus } = useProfiles();
   const [value, setValue] = React.useState(0);
 
@@ -265,7 +266,11 @@ const WalletTab = ({ network }) => {
               </Button>
             )
           ) : coinsLoaded ? (
-            <CurrencyValue value={balance} showCurrencyCode={false} />
+            <CurrencyValue
+              value={balance}
+              currencyCode={currency?.code ?? ''}
+              currencySymbol={currency?.symbol ?? ''}
+            />
           ) : (
             <Skeleton variant="text" width={100} />
           )}
