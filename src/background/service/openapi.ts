@@ -15,11 +15,11 @@ import {
 import { getInstallations, getId } from 'firebase/installations';
 import type { TokenInfo } from 'flow-native-token-registry';
 
+import fetchConfig from '@/background/service/remoteConfig';
 import { findKeyAndInfo } from '@/background/utils';
 import { getValidData, setCachedData } from '@/background/utils/data-cache';
 import { getFirbaseConfig, getFirbaseFunctionUrl } from '@/background/utils/firebaseConfig';
 import { verifySignature } from '@/background/utils/modules/publicPrivateKey';
-import fetchConfig from '@/background/utils/remoteConfig';
 import { storage } from '@/background/webapi';
 import type {
   ExtendedTokenInfo,
@@ -1252,21 +1252,6 @@ export class OpenApiService {
     return data;
   };
 
-  getFeatureFlags = async (): Promise<FeatureFlags> => {
-    try {
-      const config = await remoteFetch.remoteConfig();
-      return config.features;
-    } catch (err) {
-      consoleError(err);
-    }
-    // By default, all feature flags are disabled
-    return {};
-  };
-  getFeatureFlag = async (featureFlag: FeatureFlagKey): Promise<boolean> => {
-    const flags = await this.getFeatureFlags();
-    return !!flags[featureFlag];
-  };
-
   getStorageInfo = async (address: string): Promise<StorageInfo> => {
     const script = await getScripts(userWalletService.getNetwork(), 'basic', 'getStorageInfo');
 
@@ -1282,8 +1267,8 @@ export class OpenApiService {
     };
   };
 
-  getFlowAccountInfo = async (address: string): Promise<AccountBalanceInfo> => {
-    const script = await getScripts(userWalletService.getNetwork(), 'basic', 'getAccountInfo');
+  getFlowAccountInfo = async (network: string, address: string): Promise<AccountBalanceInfo> => {
+    const script = await getScripts(network, 'basic', 'getAccountInfo');
 
     const result = await fcl.query({
       cadence: script,
@@ -1753,37 +1738,29 @@ export class OpenApiService {
       process.env.API_BASE_URL
     );
 
-    const timeNow = new Date(Date.now());
-
-    const news = data
-      .map(
-        (dataFromApi: {
-          id: string;
-          priority: string;
-          type: string;
-          title: string;
-          body?: string;
-          icon?: string;
-          image?: string;
-          url?: string;
-          expiry_time: string;
-          display_type: string;
-          conditions?: string[]; // Add conditions field
-        }) => {
-          const newsItem = {
-            ...dataFromApi,
-            expiryTime: new Date(dataFromApi.expiry_time),
-            displayType: dataFromApi.display_type,
-            conditions: dataFromApi.conditions as NewsConditionType[], // Map conditions
-          };
-          return newsItem;
-        }
-      )
-      .filter((n: { expiryTime: Date }) => {
-        return n.expiryTime > timeNow;
-      });
-
-    await storage.setExpiry('news', news, 300000); // 5 minutes in milliseconds
+    const news = data.map(
+      (dataFromApi: {
+        id: string;
+        priority: string;
+        type: string;
+        title: string;
+        body?: string;
+        icon?: string;
+        image?: string;
+        url?: string;
+        expiry_time: string;
+        display_type: string;
+        conditions?: string[]; // Add conditions field
+      }) => {
+        const newsItem = {
+          ...dataFromApi,
+          expiryTime: new Date(dataFromApi.expiry_time),
+          displayType: dataFromApi.display_type,
+          conditions: dataFromApi.conditions as NewsConditionType[], // Map conditions
+        };
+        return newsItem;
+      }
+    );
 
     return news;
   };

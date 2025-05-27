@@ -10,6 +10,7 @@ import { type TokenInfo } from 'flow-native-token-registry';
 import { encode } from 'rlp';
 import web3, { TransactionError, Web3 } from 'web3';
 
+import fetchConfig from '@/background/service/remoteConfig';
 import {
   getAccountKey,
   pubKeyAccountToAccountKey,
@@ -99,6 +100,7 @@ import {
   mixpanelTrack,
   evmNftService,
   tokenListService,
+  remoteConfigService,
 } from 'background/service';
 import i18n from 'background/service/i18n';
 import {
@@ -109,7 +111,6 @@ import {
 } from 'background/service/keyring';
 import type { CacheState } from 'background/service/pageStateCache';
 import { replaceNftKeywords } from 'background/utils';
-import fetchConfig from 'background/utils/remoteConfig';
 import { notification, storage } from 'background/webapi';
 import { openIndexPage } from 'background/webapi/tab';
 import {
@@ -2448,7 +2449,7 @@ export class WalletController extends BaseController {
   };
 
   batchBridgeNftToEvm = async (flowIdentifier: string, ids: Array<number>): Promise<string> => {
-    const shouldCoverBridgeFee = await openapiService.getFeatureFlag('cover_bridge_fee');
+    const shouldCoverBridgeFee = await remoteConfigService.getFeatureFlag('cover_bridge_fee');
     const scriptName = shouldCoverBridgeFee
       ? 'batchBridgeNFTToEvmWithPayer'
       : 'batchBridgeNFTToEvmV2';
@@ -2472,7 +2473,7 @@ export class WalletController extends BaseController {
   };
 
   batchBridgeNftFromEvm = async (flowIdentifier: string, ids: Array<number>): Promise<string> => {
-    const shouldCoverBridgeFee = await openapiService.getFeatureFlag('cover_bridge_fee');
+    const shouldCoverBridgeFee = await remoteConfigService.getFeatureFlag('cover_bridge_fee');
     const scriptName = shouldCoverBridgeFee
       ? 'batchBridgeNFTFromEvmWithPayer'
       : 'batchBridgeNFTFromEvmV2';
@@ -2649,7 +2650,7 @@ export class WalletController extends BaseController {
     ids: number,
     recipientEvmAddress: string
   ): Promise<string> => {
-    const shouldCoverBridgeFee = await openapiService.getFeatureFlag('cover_bridge_fee');
+    const shouldCoverBridgeFee = await remoteConfigService.getFeatureFlag('cover_bridge_fee');
     const scriptName = shouldCoverBridgeFee
       ? 'bridgeNFTToEvmAddressWithPayer'
       : 'bridgeNFTToEvmAddressV2';
@@ -2687,7 +2688,7 @@ export class WalletController extends BaseController {
     ids: number,
     receiver: string
   ): Promise<string> => {
-    const shouldCoverBridgeFee = await openapiService.getFeatureFlag('cover_bridge_fee');
+    const shouldCoverBridgeFee = await remoteConfigService.getFeatureFlag('cover_bridge_fee');
     const scriptName = shouldCoverBridgeFee
       ? 'bridgeNFTFromEvmToFlowWithPayer'
       : 'bridgeNFTFromEvmToFlowV3';
@@ -3327,7 +3328,7 @@ export class WalletController extends BaseController {
 
   getPayerAddressAndKeyId = async () => {
     try {
-      const config = await fetchConfig.remoteConfig();
+      const config = await remoteConfigService.getRemoteConfig();
       const network = await this.getNetwork();
       return config.payer[network];
     } catch {
@@ -3338,8 +3339,11 @@ export class WalletController extends BaseController {
 
   getBridgeFeePayerAddressAndKeyId = async () => {
     try {
-      const config = await fetchConfig.remoteConfig();
+      const config = await remoteConfigService.getRemoteConfig();
       const network = await this.getNetwork();
+      if (!config.bridgeFeePayer) {
+        throw new Error('Bridge fee payer not found');
+      }
       return config.bridgeFeePayer[network];
     } catch {
       const network = await this.getNetwork();
@@ -3348,11 +3352,11 @@ export class WalletController extends BaseController {
   };
 
   getFeatureFlags = async (): Promise<FeatureFlags> => {
-    return openapiService.getFeatureFlags();
+    return remoteConfigService.getFeatureFlags();
   };
 
   getFeatureFlag = async (featureFlag: FeatureFlagKey): Promise<boolean> => {
-    return openapiService.getFeatureFlag(featureFlag);
+    return remoteConfigService.getFeatureFlag(featureFlag);
   };
 
   allowLilicoPay = async (): Promise<boolean> => {
@@ -3415,7 +3419,7 @@ export class WalletController extends BaseController {
     if (!this.isUnlocked()) {
       return [];
     }
-    return await newsService.getNews();
+    return await newsService.getFilteredNews();
   };
   markNewsAsDismissed = async (id: string) => {
     return await newsService.markAsDismissed(id);

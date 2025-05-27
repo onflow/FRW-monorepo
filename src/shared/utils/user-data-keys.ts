@@ -65,3 +65,15 @@ export type PreferencesStore = {
 export const getPreferencesData = async (): Promise<PreferencesStore | undefined> => {
   return await getUserData<PreferencesStore>(preferencesKey);
 };
+
+export const readAndDismissedNewsKey = () => `newsService`;
+export type ReadAndDismissedNewsStore = {
+  readIds: string[];
+  dismissedIds: string[];
+};
+
+export const getReadAndDismissedNewsData = async (): Promise<
+  ReadAndDismissedNewsStore | undefined
+> => {
+  return await getUserData<ReadAndDismissedNewsStore>(readAndDismissedNewsKey());
+};

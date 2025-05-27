@@ -21,6 +21,7 @@ import {
   useUserWallets,
   useRegisterStatus,
   usePayer,
+  useMainAccountStorageBalance,
 } from './use-account-hooks';
 
 const INITIAL_WALLET: WalletAccount = {
@@ -90,6 +91,8 @@ export const useProfiles = () => {
   const mainAddressLoading =
     !mainAccounts || !activeAccounts || activeAccounts?.parentAddress === undefined;
 
+  const parentAccountStorageBalance = useMainAccountStorageBalance(network, mainAddress);
+
   const payer = usePayer();
 
   const activeAccountType = useMemo(
@@ -142,6 +145,7 @@ export const useProfiles = () => {
     otherAccounts,
     walletList,
     currentBalance,
+    parentAccountStorageBalance,
     parentWallet,
     parentWalletIndex,
     evmLoading,

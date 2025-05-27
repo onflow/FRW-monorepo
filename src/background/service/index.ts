@@ -18,5 +18,6 @@ export { default as signTextHistoryService } from './signTextHistory';
 export { default as i18n } from './i18n';
 export { default as newsService } from './news';
 export { default as tokenListService } from './token-list';
+export { default as remoteConfigService } from './remoteConfig';
 export { mixpanelTrack } from './mixpanel';
 export { default as logListener } from './log-listener';

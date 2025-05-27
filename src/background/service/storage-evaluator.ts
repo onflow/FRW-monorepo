@@ -1,5 +1,5 @@
 import type { StorageInfo } from '../../shared/types/network-types';
-import { openapiService } from '../service';
+import { openapiService, remoteConfigService } from '../service';
 
 export type EvaluateStorageResult = {
   isStorageSufficient: boolean;
@@ -40,7 +40,7 @@ export class StorageEvaluator {
 
     // Check feature flag
     const FEATURE_FLAG_TX_WARNING_PREDICTION =
-      await openapiService.getFeatureFlag('tx_warning_prediction');
+      await remoteConfigService.getFeatureFlag('tx_warning_prediction');
 
     if (FEATURE_FLAG_TX_WARNING_PREDICTION) {
       // The feature is enabled, so we need to check if there is enough storage after the action

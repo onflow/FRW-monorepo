@@ -563,24 +563,6 @@
     "params": []
   },
   {
-    "name": "getFeatureFlags",
-    "isAsync": true,
-    "fullBody": "async () => {\n        try {\n            const config = await remoteFetch.remoteConfig();\n            return config.features;\n        }\n        catch (err) {\n            console.error(err);\n        }\n        // By default, all feature flags are disabled\n        return {};\n    }",
-    "usesSendRequest": false,
-    "usesFetchDirectly": false,
-    "basicSignature": "async () =>",
-    "params": []
-  },
-  {
-    "name": "getFeatureFlag",
-    "isAsync": true,
-    "fullBody": "async (featureFlag) => {\n        const flags = await this.getFeatureFlags();\n        return !!flags[featureFlag];\n    }",
-    "usesSendRequest": false,
-    "usesFetchDirectly": false,
-    "basicSignature": "async (featureFlag) =>",
-    "params": ["featureFlag"]
-  },
-  {
     "name": "getAllTokenInfo",
     "isAsync": true,
     "fullBody": "async (fiterNetwork = true) => {\n        const network = await _index__WEBPACK_IMPORTED_MODULE_15__.userWalletService.getNetwork();\n        const list = await this.getTokenList(network);\n        return fiterNetwork ? list.filter((item) => item.address) : list;\n    }",

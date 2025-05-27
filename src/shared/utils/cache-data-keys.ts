@@ -10,7 +10,14 @@ import {
   type EvmTokenInfo,
   type CadenceTokenInfo,
 } from '../types/coin-types';
-import { type NFTModelV2, type NftCollection, type UserInfoResponse } from '../types/network-types';
+import { type FeatureFlags } from '../types/feature-types';
+import {
+  type NewsItem,
+  type NFTModelV2,
+  type NftCollection,
+  type UserInfoResponse,
+  type AccountBalanceInfo,
+} from '../types/network-types';
 import {
   type NFTCollections,
   type NFTCollectionData,
@@ -28,6 +35,38 @@ const refreshKey = (keyFunction: (...args: string[]) => string) =>
   ((args: string[] = ['(.+)', '(.+)', '(.+)', '(.+)']) =>
     new RegExp(`${keyFunction(...args)}-refresh`))();
 
+/**
+ * --------------------------------------------------------------------
+ * Global keys
+ * --------------------------------------------------------------------
+ */
+export const newsKey = () => `news`;
+export const newsRefreshRegex = refreshKey(newsKey);
+export type NewsStore = NewsItem[];
+
+export const latestVersionKey = () => `latest-version`;
+export const latestVersionRefreshRegex = refreshKey(latestVersionKey);
+export type LatestVersionStore = string;
+
+export const remoteConfigKey = () => `remote-config`;
+export const remoteConfigRefreshRegex = refreshKey(remoteConfigKey);
+export type RemoteConfig = {
+  features: FeatureFlags;
+  payer: Record<
+    'mainnet' | 'testnet' | 'previewnet' | 'sandboxnet' | 'crescendo',
+    {
+      address: string;
+      keyId: number;
+    }
+  >;
+  bridgeFeePayer?: Record<
+    'mainnet' | 'testnet' | 'previewnet' | 'sandboxnet' | 'crescendo',
+    {
+      address: string;
+      keyId: number;
+    }
+  >;
+};
 /*
  * --------------------------------------------------------------------
  * User level keys
@@ -106,8 +145,13 @@ export const getCachedEvmAccount = async (network: string, mainAccountAddress: s
 
 export const accountBalanceKey = (network: string, address: string) =>
   `account-balance-${network}-${address}`;
-
 export const accountBalanceRefreshRegex = refreshKey(accountBalanceKey);
+
+export const mainAccountStorageBalanceKey = (network: string, address: string) =>
+  `account-storage-balance-${network}-${address}`;
+export type MainAccountStorageBalanceStore = AccountBalanceInfo;
+
+export const mainAccountStorageBalanceRefreshRegex = refreshKey(mainAccountStorageBalanceKey);
 
 // Transfer list
 export const transferListKey = (

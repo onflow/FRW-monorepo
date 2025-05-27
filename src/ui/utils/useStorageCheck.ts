@@ -3,6 +3,8 @@ import { useEffect, useCallback, useState } from 'react';
 import type { StorageInfo } from '@/shared/types/network-types';
 import { consoleError } from '@/shared/utils/console-log';
 
+import { useProfiles } from '../hooks/useProfileHook';
+
 import { useWallet } from './WalletContext';
 
 interface StorageCheckResult {
@@ -24,6 +26,7 @@ export const useStorageCheck = ({
 }: UseStorageCheckProps = {}): StorageCheckResult => {
   const wallet = useWallet();
 
+  const { parentAccountStorageBalance } = useProfiles();
   const [sufficient, setSufficient] = useState<boolean | undefined>(undefined);
   const [sufficientAfterAction, setSufficientAfterAction] = useState<boolean | undefined>(
     undefined

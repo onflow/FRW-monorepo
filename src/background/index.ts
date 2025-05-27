@@ -38,6 +38,7 @@ import {
   mixpanelTrack,
   logListener,
   tokenListService,
+  remoteConfigService,
 } from './service';
 import { getFirbaseConfig } from './utils/firebaseConfig';
 import { setEnvironmentBadge } from './utils/setEnvironmentBadge';
@@ -102,11 +103,6 @@ async function restoreAppState() {
   storage.remove('premnemonic');
   storage.remove('tempPassword');
   // enable free gas fee
-  storage.get('freeGas').then((value) => {
-    if (value === null || value === undefined) {
-      storage.set('freeGas', true);
-    }
-  });
   storage.get('lilicoPayer').then((value) => {
     if (value === null || value === undefined) {
       storage.set('lilicoPayer', true);
@@ -132,6 +128,7 @@ async function restoreAppState() {
   await mixpanelTrack.init();
   await logListener.init();
   await tokenListService.init();
+  await remoteConfigService.init();
   // rpcCache.start();
 
   appStoreLoaded = true;
