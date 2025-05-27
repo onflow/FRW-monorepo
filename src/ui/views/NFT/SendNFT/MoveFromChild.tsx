@@ -14,9 +14,9 @@ import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSn
 import { useContacts } from '@/ui/hooks/useContactHook';
 import { useAllNftList } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
+import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
 import { MatchMediaType } from '@/ui/utils/url';
-import { useStorageCheck } from '@/ui/utils/useStorageCheck';
 import { LLSpinner, FRWChildProfile, FRWDropdownProfileCard } from 'ui/FRWComponent';
 import { useWallet, returnFilteredCollections } from 'ui/utils';
 

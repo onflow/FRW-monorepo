@@ -3,7 +3,7 @@
 import { Box, Typography, LinearProgress } from '@mui/material';
 import React from 'react';
 
-import { useStorageCheck } from '../utils/useStorageCheck';
+import { useStorageCheck } from '../hooks/useStorageCheck';
 
 const determineUnit = (used: number) => {
   const units = ['B', 'KB', 'MB', 'GB', 'TB'];

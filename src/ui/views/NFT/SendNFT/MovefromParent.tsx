@@ -13,11 +13,11 @@ import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSn
 import { useContacts } from '@/ui/hooks/useContactHook';
 import { useAllNftList } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
+import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
 import { MatchMediaType } from '@/ui/utils/url';
 import { LLSpinner, FRWProfileCard, FRWDropdownProfileCard } from 'ui/FRWComponent';
 import { useWallet, returnFilteredCollections } from 'ui/utils';
-import { useStorageCheck } from 'ui/utils/useStorageCheck';
 
 import IconFlow from '../../../../components/iconfont/IconFlow';
 interface SendNFTConfirmationProps {

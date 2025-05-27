@@ -3,9 +3,9 @@ import { useEffect, useCallback, useState } from 'react';
 import type { StorageInfo } from '@/shared/types/network-types';
 import { consoleError } from '@/shared/utils/console-log';
 
-import { useProfiles } from '../hooks/useProfileHook';
+import { useWallet } from '../utils/WalletContext';
 
-import { useWallet } from './WalletContext';
+import { useProfiles } from './useProfileHook';
 
 interface StorageCheckResult {
   sufficient?: boolean;

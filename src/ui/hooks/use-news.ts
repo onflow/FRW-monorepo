@@ -4,7 +4,6 @@ import { newsService } from '@/background/service';
 import { type NewsItem } from '@/shared/types/news-types';
 import { newsKey } from '@/shared/utils/cache-data-keys';
 
-import { useMainAccountStorageBalance } from './use-account-hooks';
 import { useCachedData, useUserData } from './use-data';
 import { useProfiles } from './useProfileHook';
 
