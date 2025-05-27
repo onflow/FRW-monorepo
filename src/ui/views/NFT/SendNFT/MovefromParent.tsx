@@ -44,7 +44,7 @@ const MovefromParent = (props: SendNFTConfirmationProps) => {
   const { activeAccountType, network } = useProfiles();
   const allNftList = useAllNftList(network, activeAccountType === 'evm' ? 'evm' : 'flow');
   const { sufficient: isSufficient, sufficientAfterAction } = useStorageCheck({
-    transferAmount: 0,
+    transferAmount: '0',
     coin: 'flow',
     movingBetweenEVMAndFlow: selectedAccount
       ? isValidEthereumAddress(selectedAccount!['address'])

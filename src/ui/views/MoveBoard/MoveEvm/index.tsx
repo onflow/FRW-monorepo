@@ -38,7 +38,7 @@ const MoveEvm = (props: MoveBoardProps) => {
   const [selectCollection, setSelectCollection] = useState(false);
   const [selectedAccount, setSelectedChildAccount] = useState(null);
   const { sufficient: isSufficient, sufficientAfterAction } = useStorageCheck({
-    transferAmount: 0,
+    transferAmount: '0',
     // We are moving within the EVM network, the flag should be false
     movingBetweenEVMAndFlow: false,
   });

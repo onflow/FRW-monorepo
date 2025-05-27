@@ -19,7 +19,6 @@ import { useWallet } from 'ui/utils';
 
 import { CurrencyValue } from '../TokenDetail/CurrencyValue';
 import { TokenBalance } from '../TokenDetail/TokenBalance';
-import { TokenValue } from '../TokenDetail/TokenValue';
 
 interface TransferConfirmationProps {
   transactionState: TransactionState;
@@ -47,8 +46,6 @@ const TransferConfirmation = ({
   const [tid, setTid] = useState<string>('');
   const [count, setCount] = useState(0);
 
-  const transferAmount = transactionState.amount ? parseFloat(transactionState.amount) : undefined;
-
   // Check if the transfer is between EVM and Flow networks
   const movingBetweenEVMAndFlow =
     (transactionState.fromNetwork === 'Evm' && transactionState.toNetwork !== 'Evm') ||
@@ -56,7 +53,7 @@ const TransferConfirmation = ({
 
   const { sufficient: isSufficient, sufficientAfterAction: isSufficientAfterAction } =
     useStorageCheck({
-      transferAmount,
+      transferAmount: transactionState.amount,
       coin: transactionState.tokenInfo?.coin,
       movingBetweenEVMAndFlow,
     });

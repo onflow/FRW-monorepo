@@ -1,21 +1,17 @@
-import { useEffect, useCallback, useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import type { StorageInfo } from '@/shared/types/network-types';
-import { consoleError } from '@/shared/utils/console-log';
+import { checkEnoughBalanceForFees, evaluateStorage } from '@/shared/utils/evaluate-storage';
 
-import { useWallet } from '../utils/WalletContext';
-
+import { useFeatureFlag } from './use-feature-flags';
 import { useProfiles } from './useProfileHook';
 
 interface StorageCheckResult {
   sufficient?: boolean;
   sufficientAfterAction?: boolean;
-  storageInfo?: StorageInfo;
-  checkStorageStatus: () => Promise<{ sufficient: boolean; storageInfo: StorageInfo }>;
 }
 
 interface UseStorageCheckProps {
-  transferAmount?: number;
+  transferAmount?: string;
   coin?: string;
   movingBetweenEVMAndFlow?: boolean;
 }
@@ -24,77 +20,69 @@ export const useStorageCheck = ({
   coin, // coin name
   movingBetweenEVMAndFlow = false, // are we moving between EVM and Flow?
 }: UseStorageCheckProps = {}): StorageCheckResult => {
-  const wallet = useWallet();
-
-  const { parentAccountStorageBalance } = useProfiles();
+  const { currentBalance, parentAccountStorageBalance, activeAccountType } = useProfiles();
   const [sufficient, setSufficient] = useState<boolean | undefined>(undefined);
   const [sufficientAfterAction, setSufficientAfterAction] = useState<boolean | undefined>(
     undefined
   );
-  const [storageInfo, setStorageInfo] = useState<StorageInfo | undefined>(undefined);
 
-  // Check general storage status
-  const checkStorageStatus = useCallback(async (): Promise<{
-    sufficient: boolean;
-    sufficientAfterAction: boolean;
-    storageInfo: StorageInfo;
-  }> => {
-    try {
-      const {
-        isStorageSufficient,
-        isBalanceSufficient,
-        isStorageSufficientAfterAction,
-        storageInfo,
-      } = await wallet.checkStorageStatus({
-        transferAmount: transferAmount,
-        coin,
-        movingBetweenEVMAndFlow,
-      });
+  const freeGas = useFeatureFlag('free_gas');
 
-      return {
-        sufficient: isStorageSufficient && isBalanceSufficient,
-        sufficientAfterAction: isStorageSufficientAfterAction,
-        storageInfo,
-      };
-    } catch (error) {
-      consoleError('Error checking storage status:', error);
-      return {
-        sufficient: false,
-        sufficientAfterAction: false,
-        storageInfo: { available: 0, used: 0, capacity: 0 },
-      }; // Default to true to not block transactions on error
-    }
-  }, [movingBetweenEVMAndFlow, transferAmount, wallet, coin]);
-
-  // Initial storage check
   useEffect(() => {
-    // Add this to track when the effect is actually running
-
-    let mounted = true;
-    if (wallet) {
-      checkStorageStatus().then(
-        ({
-          sufficient: isSufficient,
-          sufficientAfterAction: isSufficientAfterAction,
-          storageInfo,
-        }) => {
-          if (mounted) {
-            setStorageInfo(storageInfo);
-            setSufficient(isSufficient);
-            setSufficientAfterAction(isSufficientAfterAction);
-          }
+    const checkBalance = async () => {
+      setSufficient(undefined);
+      setSufficientAfterAction(undefined);
+      if (
+        activeAccountType === 'main' &&
+        parentAccountStorageBalance !== undefined &&
+        transferAmount !== undefined &&
+        coin !== undefined &&
+        movingBetweenEVMAndFlow !== undefined &&
+        freeGas !== undefined
+      ) {
+        const { isStorageSufficient, isBalanceSufficient, isStorageSufficientAfterAction } =
+          await evaluateStorage(
+            parentAccountStorageBalance,
+            transferAmount,
+            coin,
+            movingBetweenEVMAndFlow,
+            freeGas
+          );
+        setSufficient(isStorageSufficient && isBalanceSufficient);
+        setSufficientAfterAction(isStorageSufficientAfterAction);
+      } else {
+        if (
+          currentBalance !== undefined &&
+          transferAmount !== undefined &&
+          coin !== undefined &&
+          freeGas !== undefined
+        ) {
+          const isBalanceSufficient = await checkEnoughBalanceForFees(
+            currentBalance,
+            transferAmount,
+            coin,
+            movingBetweenEVMAndFlow,
+            freeGas
+          );
+          setSufficient(isBalanceSufficient);
         }
-      );
-      return () => {
-        mounted = false;
-      };
+      }
+    };
+    if (activeAccountType !== undefined && parentAccountStorageBalance !== undefined) {
+      checkBalance();
     }
-  }, [checkStorageStatus, wallet]);
+  }, [
+    currentBalance,
+    transferAmount,
+    coin,
+    movingBetweenEVMAndFlow,
+    freeGas,
+    activeAccountType,
+    parentAccountStorageBalance,
+  ]);
 
   return {
-    storageInfo,
     sufficient,
     sufficientAfterAction,
-    checkStorageStatus,
   };
 };

@@ -56,7 +56,7 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
   const { activeAccountType, network } = useProfiles();
   const allNftList = useAllNftList(network, activeAccountType === 'evm' ? 'evm' : 'flow');
   const { sufficient: isSufficient, sufficientAfterAction } = useStorageCheck({
-    transferAmount: 0,
+    transferAmount: '0',
     // Check if the recipient is an EVM address
     movingBetweenEVMAndFlow: isValidEthereumAddress(props?.data?.contact?.address),
   });

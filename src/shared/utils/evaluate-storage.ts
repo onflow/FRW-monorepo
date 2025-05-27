@@ -67,3 +67,17 @@ export const evaluateStorage = async (
     isStorageSufficientAfterAction,
   };
 };
+
+export const checkEnoughBalanceForFees = async (
+  sendingAccountBalance: string, // UFix64
+  sendAmount: string, // UFix64
+  coin: string,
+  movingBetweenEVMAndFlow: boolean,
+  freeGas: boolean
+) => {
+  const flowUsed = (coin === 'flow' ? BigNumber(sendAmount) : BigNumber(0))
+    .plus(movingBetweenEVMAndFlow ? BigNumber(FIXED_MOVE_FEE) : BigNumber(0))
+    .plus(freeGas ? BigNumber(0) : BigNumber(AVERAGE_TX_FEE));
+
+  return BigNumber(sendingAccountBalance).gte(flowUsed);
+};

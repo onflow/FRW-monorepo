@@ -55,7 +55,7 @@ const MoveToChild = (props: MoveBoardProps) => {
   const [loadedNFTs, setLoadedNFTs] = useState<any[]>([]);
   const [activeLoader, setActiveLoader] = useState<string | null>(null);
   const { sufficient: isSufficient, sufficientAfterAction } = useStorageCheck({
-    transferAmount: 0,
+    transferAmount: '0',
     movingBetweenEVMAndFlow: selectedAccount
       ? isValidEthereumAddress(selectedAccount!['address'])
       : false,
