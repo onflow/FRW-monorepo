@@ -59,7 +59,7 @@ export const moveTokenCoaHomepage = async ({ page, tokenname, amount = '0.000000
   await page.getByPlaceholder('Amount').fill(amount);
   await page.getByRole('button', { name: 'Move' }).click();
   // Wait for the transaction to be completed
-  await waitForTransaction({ page, successtext: 'success', amount });
+  await waitForTransaction({ page, successtext: /Executed|success/, amount });
 };
 
 test.beforeEach(async ({ page, extensionId }) => {
@@ -75,7 +75,7 @@ test('send Flow COA to COA', async ({ page }) => {
     page,
     tokenname: 'flow',
     receiver: getReceiverEvmAccount({ parallelIndex: test.info().parallelIndex }),
-    successtext: 'success',
+    successtext: /Executed|success/,
     amount: '0.12345678', // 8 decimal places
   });
 });
@@ -86,7 +86,7 @@ test('send Staked Flow COA to COA', async ({ page }) => {
     page,
     tokenname: 'stFlow',
     receiver: getReceiverEvmAccount({ parallelIndex: test.info().parallelIndex }),
-    successtext: 'success',
+    successtext: /Executed|success/,
     amount: '0.00000112134354678',
   });
 });
@@ -99,7 +99,7 @@ test('send Flow COA to FLOW', async ({ page }) => {
     page,
     tokenname: 'flow',
     receiver: getReceiverCadenceAccount({ parallelIndex: test.info().parallelIndex }),
-    successtext: 'success',
+    successtext: /Executed|success/,
     amount: '0.00123456', // 8 decimal places
   });
 });
@@ -110,7 +110,7 @@ test('send USDC token COA to FLOW', async ({ page }) => {
     page,
     tokenname: 'usdc.e',
     receiver: getReceiverCadenceAccount({ parallelIndex: test.info().parallelIndex }),
-    successtext: 'success',
+    successtext: /Executed|success/,
     amount: '0.002468', // 6 decimal places
   });
 });
@@ -123,7 +123,7 @@ test('send Flow COA to EOA', async ({ page }) => {
     page,
     tokenname: 'flow',
     receiver: process.env.TEST_RECEIVER_METAMASK_EVM_ADDR!,
-    successtext: 'success',
+    successtext: /Executed|success/,
     amount: '0.00123456', // 8 decimal places
   });
 });
@@ -134,7 +134,7 @@ test('send BETA token COA to EOA', async ({ page }) => {
     page,
     tokenname: 'beta',
     receiver: process.env.TEST_RECEIVER_METAMASK_EVM_ADDR!,
-    successtext: 'success',
+    successtext: /Executed|success/,
     amount: '0.001234567890123456', // 8 decimal places
   });
 });
@@ -144,7 +144,7 @@ test('move Flow COA to FLOW', async ({ page }) => {
   await moveTokenCOA({
     page,
     tokenname: /^FLOW \$/i,
-    successtext: 'success',
+    successtext: /Executed|success/,
   });
 });
 
@@ -153,7 +153,7 @@ test('move USDC token COA to FLOW', async ({ page }) => {
   await moveTokenCOA({
     page,
     tokenname: 'Bridged USDC (Celer) $',
-    successtext: 'success',
+    successtext: /Executed|success/,
   });
 });
 
