@@ -29,6 +29,7 @@ import {
 import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
 import { LLHeader } from '@/ui/FRWComponent';
+import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
 import { useWallet } from 'ui/utils';
 
 import IconEnd from '../../../../components/iconfont/IconAVector11Stroke';
@@ -246,7 +247,7 @@ const WalletDetail = () => {
   const [storageInfo, setStorageInfo] = useState<StorageInfo | null>(null);
   const [isKeyphrase, setIsKeyphrase] = useState(false);
   const [emoji, setEmoji] = useState<Emoji | null>(null);
-
+  const isFreeGasFeeEnabled = useFeatureFlag('free_gas');
   const handleErrorClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return;
@@ -263,11 +264,10 @@ const WalletDetail = () => {
 
   const loadGasKillSwitch = useCallback(async () => {
     await wallet.getPayerAddressAndKeyId();
-    const isFreeGasFeeEnabled = await storage.get('freeGas');
     if (isFreeGasFeeEnabled) {
       setGasKillSwitch(isFreeGasFeeEnabled);
     }
-  }, [wallet]);
+  }, [isFreeGasFeeEnabled, wallet]);
 
   const switchGasMode = async () => {
     setGasMode(!modeGas);

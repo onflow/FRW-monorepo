@@ -37,10 +37,11 @@ import {
   googleSafeHostService,
   mixpanelTrack,
   logListener,
+  tokenListService,
+  remoteConfigService,
+  newsService,
 } from './service';
-import session from './service/session';
 import { getFirbaseConfig } from './utils/firebaseConfig';
-import { getAccountsByPublicKeyTuple } from './utils/modules/findAddressWithPubKey';
 import { setEnvironmentBadge } from './utils/setEnvironmentBadge';
 import { storage } from './webapi';
 const { PortMessage } = Message;
@@ -103,11 +104,6 @@ async function restoreAppState() {
   storage.remove('premnemonic');
   storage.remove('tempPassword');
   // enable free gas fee
-  storage.get('freeGas').then((value) => {
-    if (value === null || value === undefined) {
-      storage.set('freeGas', true);
-    }
-  });
   storage.get('lilicoPayer').then((value) => {
     if (value === null || value === undefined) {
       storage.set('lilicoPayer', true);
@@ -132,6 +128,9 @@ async function restoreAppState() {
   await googleSafeHostService.init();
   await mixpanelTrack.init();
   await logListener.init();
+  await tokenListService.init();
+  await remoteConfigService.init();
+  await newsService.init();
   // rpcCache.start();
 
   appStoreLoaded = true;

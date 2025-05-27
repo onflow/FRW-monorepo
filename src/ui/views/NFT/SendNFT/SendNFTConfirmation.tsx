@@ -11,10 +11,11 @@ import { consoleError } from '@/shared/utils/console-log';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
 import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
+import { useAllNftList } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
+import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
 import { type MatchMedia, MatchMediaType } from '@/ui/utils/url';
-import { useStorageCheck } from '@/ui/utils/useStorageCheck';
 import erc721 from 'background/utils/erc721.abi.json';
 import { EVM_ENDPOINT } from 'consts';
 import IconNext from 'ui/FRWAssets/svg/next.svg';
@@ -52,8 +53,10 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
   const [erc721Contract, setErcContract] = useState<any>(null);
   const [count, setCount] = useState(0);
 
+  const { activeAccountType, network } = useProfiles();
+  const allNftList = useAllNftList(network, activeAccountType === 'evm' ? 'evm' : 'flow');
   const { sufficient: isSufficient, sufficientAfterAction } = useStorageCheck({
-    transferAmount: 0,
+    transferAmount: '0',
     // Check if the recipient is an EVM address
     movingBetweenEVMAndFlow: isValidEthereumAddress(props?.data?.contact?.address),
   });
@@ -203,8 +206,7 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
   };
 
   const sendChildNftToEvm = async () => {
-    const contractList = await wallet.openapi.getAllNft();
-    const filteredCollection = returnFilteredCollections(contractList, props.data.nft);
+    const filteredCollection = returnFilteredCollections(allNftList, props.data.nft);
 
     const flowIdentifier = props.data.contract.flowIdentifier || props.data.nft.flowIdentifier;
     setSending(true);

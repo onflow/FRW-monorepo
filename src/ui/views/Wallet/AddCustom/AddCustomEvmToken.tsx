@@ -16,6 +16,7 @@ import { useHistory } from 'react-router-dom';
 
 import { storage } from '@/background/webapi';
 import { consoleError } from '@/shared/utils/console-log';
+import { refreshEvmToken } from '@/ui/hooks/use-coin-hooks';
 import { EVM_ENDPOINT } from 'consts';
 import { useWallet } from 'ui/utils';
 
@@ -145,7 +146,7 @@ const AddCustomEvmToken = () => {
     }
 
     await storage.set(`${network}evmCustomToken`, evmCustomToken);
-    await usewallet.openapi.refreshEvmToken(network);
+    refreshEvmToken(network);
     setLoading(false);
     history.replace({ pathname: history.location.pathname, state: { refreshed: true } });
     history.goBack();

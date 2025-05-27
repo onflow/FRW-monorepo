@@ -69,14 +69,11 @@ import {
   registerStatusRefreshRegex,
   coinListKey,
   type ChildAccountFtStore,
+  accountBalanceKey,
 } from '@/shared/utils/cache-data-keys';
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
-import { getCurrentProfileId, returnCurrentProfileId } from '@/shared/utils/current-id';
-import {
-  convertFlowBalanceToString,
-  convertToIntegerAmount,
-  validateAmount,
-} from '@/shared/utils/number';
+import { returnCurrentProfileId } from '@/shared/utils/current-id';
+import { convertToIntegerAmount, validateAmount } from '@/shared/utils/number';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import { type CategoryScripts } from '@/shared/utils/script-types';
 import {
@@ -97,6 +94,8 @@ import {
   newsService,
   mixpanelTrack,
   evmNftService,
+  tokenListService,
+  remoteConfigService,
 } from 'background/service';
 import i18n from 'background/service/i18n';
 import {
@@ -107,7 +106,6 @@ import {
 } from 'background/service/keyring';
 import type { CacheState } from 'background/service/pageStateCache';
 import { replaceNftKeywords } from 'background/utils';
-import fetchConfig from 'background/utils/remoteConfig';
 import { notification, storage } from 'background/webapi';
 import { openIndexPage } from 'background/webapi/tab';
 import {
@@ -130,8 +128,11 @@ import { HDKeyring } from '../service/keyring/hdKeyring';
 import { getScripts } from '../service/openapi';
 import type { ConnectedSite } from '../service/permission';
 import type { PreferenceAccount } from '../service/preference';
-import { type EvaluateStorageResult, StorageEvaluator } from '../service/storage-evaluator';
-import { getEvmAccountOfParent, loadEvmAccountOfParent } from '../service/userWallet';
+import {
+  getEvmAccountOfParent,
+  loadAccountBalance,
+  loadEvmAccountOfParent,
+} from '../service/userWallet';
 import {
   getValidData,
   registerRefreshListener,
@@ -157,12 +158,10 @@ interface TokenTransaction {
 
 export class WalletController extends BaseController {
   openapi = openapiService;
-  private storageEvaluator: StorageEvaluator;
   private loaded = false;
 
   constructor() {
     super();
-    this.storageEvaluator = new StorageEvaluator();
 
     registerRefreshListener(registerStatusRefreshRegex, async (pubKey: string) => {
       // The ttl is set to 2 minutes. After that we set the cache to false
@@ -1191,25 +1190,6 @@ export class WalletController extends BaseController {
     return evmList;
   };
 
-  reqeustEvmNftList = async () => {
-    try {
-      // Check if the nftList is already in storage and not expired
-      const cachedNFTList = await storage.getExpiry('evmnftList');
-      if (cachedNFTList) {
-        return cachedNFTList;
-      } else {
-        // Fetch the nftList from the API
-        const nftList = await openapiService.evmNFTList();
-        // Cache the nftList with a one-hour expiry (3600000 milliseconds)
-        await storage.setExpiry('evmnftList', nftList, 3600000);
-        return nftList;
-      }
-    } catch (error) {
-      consoleError('Error fetching NFT list:', error);
-      throw error;
-    }
-  };
-
   requestCadenceNft = async () => {
     const network = await this.getNetwork();
     const address = await this.getCurrentAddress();
@@ -2001,6 +1981,12 @@ export class WalletController extends BaseController {
     }
   };
 
+  /**
+   * Get the balance of a list of accounts
+   * @param addresses - The list of addresses to get the balance for
+   * @returns The balance of the accounts
+   * @deprecated Use {@link userWallets.loadAccountListBalance} instead
+   */
   getAllAccountBalance = async (addresses: string[]): Promise<string> => {
     await this.getNetwork();
 
@@ -2018,43 +2004,31 @@ export class WalletController extends BaseController {
   };
 
   getEvmBalance = async (hexEncodedAddress: string): Promise<string> => {
-    await this.getNetwork();
-
-    if (hexEncodedAddress.startsWith('0x')) {
-      hexEncodedAddress = hexEncodedAddress.substring(2);
+    const network = await this.getNetwork();
+    const balance = await getValidData<string>(accountBalanceKey(network, hexEncodedAddress));
+    if (!balance) {
+      return await loadAccountBalance(network, hexEncodedAddress);
     }
-
-    const script = await getScripts(userWalletService.getNetwork(), 'evm', 'getBalance');
-
-    const result = await fcl.query({
-      cadence: script,
-      args: (arg, t) => [arg(hexEncodedAddress, t.String)],
-    });
-    return result;
+    return balance;
   };
 
   getFlowBalance = async (address: string): Promise<string> => {
-    const cacheKey = `checkFlowBalance${address}`;
-    let balance: string = await storage.getExpiry(cacheKey);
-    const ttl = 1 * 60 * 1000;
+    const network = await this.getNetwork();
+    const balance = await getValidData<string>(accountBalanceKey(network, address));
     if (!balance) {
-      try {
-        const account = await fcl.account(address);
-        // Returns the FLOW balance of the account in 10^8
-
-        balance = convertFlowBalanceToString(account.balance);
-
-        if (balance) {
-          // Store the result in the cache with an expiry
-          await storage.setExpiry(cacheKey, balance, ttl);
-        }
-      } catch (error) {
-        consoleError('Error occurred:', error);
-        return '';
-      }
+      return await loadAccountBalance(network, address);
     }
-
     return balance;
+  };
+
+  getAllNft = async (): Promise<NFTModelV2[]> => {
+    const network = await this.getNetwork();
+    const childType = await this.getActiveAccountType();
+    let chainType: 'evm' | 'flow' = 'flow';
+    if (childType === 'evm') {
+      chainType = 'evm';
+    }
+    return await nftService.getNftList(network, chainType);
   };
 
   getNonce = async (hexEncodedAddress: string): Promise<string> => {
@@ -2116,13 +2090,23 @@ export class WalletController extends BaseController {
     ]);
   };
 
+  getTokenInfo = async (symbol: string): Promise<TokenInfo | undefined> => {
+    const network = await this.getNetwork();
+    const activeAccountType = await this.getActiveAccountType();
+    return await tokenListService.getTokenInfo(
+      network,
+      activeAccountType === 'evm' ? 'evm' : 'flow',
+      symbol
+    );
+  };
+
   // TODO: Replace with generic token
   transferCadenceTokens = async (
     symbol: string,
     address: string,
     amount: string
   ): Promise<string> => {
-    const token = await openapiService.getTokenInfo(symbol);
+    const token = await this.getTokenInfo(symbol);
     const script = await getScripts(userWalletService.getNetwork(), 'ft', 'transferTokensV3');
 
     if (!token) {
@@ -2194,41 +2178,8 @@ export class WalletController extends BaseController {
     );
   };
 
-  // TODO: Replace with generic token
-  claimFTFromInbox = async (
-    domain: string,
-    amount: string,
-    symbol: string,
-    root = 'meow'
-  ): Promise<string> => {
-    const domainName = domain.split('.')[0];
-    const token = await openapiService.getTokenInfoByContract(symbol);
-    const script = await getScripts(userWalletService.getNetwork(), 'domain', 'claimFTFromInbox');
-
-    if (!token) {
-      throw new Error(`Invaild token name - ${symbol}`);
-    }
-    const network = await this.getNetwork();
-    const address = fcl.sansPrefix(token.address[network]);
-    const key = `A.${address}.${symbol}.Vault`;
-    return await userWalletService.sendTransaction(
-      script
-        .replaceAll('<Token>', token.contract_name)
-        .replaceAll('<TokenBalancePath>', token.storage_path.balance)
-        .replaceAll('<TokenReceiverPath>', token.storage_path.receiver)
-        .replaceAll('<TokenStoragePath>', token.storage_path.vault)
-        .replaceAll('<TokenAddress>', token.address[network]),
-      [
-        fcl.arg(domainName, fcl.t.String),
-        fcl.arg(root, fcl.t.String),
-        fcl.arg(key, fcl.t.String),
-        fcl.arg(amount, fcl.t.UFix64),
-      ]
-    );
-  };
-
   enableTokenStorage = async (symbol: string) => {
-    const token = await openapiService.getTokenInfo(symbol);
+    const token = await this.getTokenInfo(symbol);
     if (!token) {
       return;
     }
@@ -2274,7 +2225,7 @@ export class WalletController extends BaseController {
     amount: string,
     symbol: string
   ): Promise<string> => {
-    const token = await openapiService.getTokenInfo(symbol);
+    const token = await this.getTokenInfo(symbol);
     if (!token) {
       throw new Error(`Invaild token name - ${symbol}`);
     }
@@ -2307,7 +2258,7 @@ export class WalletController extends BaseController {
     amount: string,
     symbol: string
   ): Promise<string> => {
-    const token = await openapiService.getTokenInfo(symbol);
+    const token = await this.getTokenInfo(symbol);
     if (!token) {
       throw new Error(`Invaild token name - ${symbol}`);
     }
@@ -2490,7 +2441,7 @@ export class WalletController extends BaseController {
   };
 
   batchBridgeNftToEvm = async (flowIdentifier: string, ids: Array<number>): Promise<string> => {
-    const shouldCoverBridgeFee = await openapiService.getFeatureFlag('cover_bridge_fee');
+    const shouldCoverBridgeFee = await remoteConfigService.getFeatureFlag('cover_bridge_fee');
     const scriptName = shouldCoverBridgeFee
       ? 'batchBridgeNFTToEvmWithPayer'
       : 'batchBridgeNFTToEvmV2';
@@ -2514,7 +2465,7 @@ export class WalletController extends BaseController {
   };
 
   batchBridgeNftFromEvm = async (flowIdentifier: string, ids: Array<number>): Promise<string> => {
-    const shouldCoverBridgeFee = await openapiService.getFeatureFlag('cover_bridge_fee');
+    const shouldCoverBridgeFee = await remoteConfigService.getFeatureFlag('cover_bridge_fee');
     const scriptName = shouldCoverBridgeFee
       ? 'batchBridgeNFTFromEvmWithPayer'
       : 'batchBridgeNFTFromEvmV2';
@@ -2691,7 +2642,7 @@ export class WalletController extends BaseController {
     ids: number,
     recipientEvmAddress: string
   ): Promise<string> => {
-    const shouldCoverBridgeFee = await openapiService.getFeatureFlag('cover_bridge_fee');
+    const shouldCoverBridgeFee = await remoteConfigService.getFeatureFlag('cover_bridge_fee');
     const scriptName = shouldCoverBridgeFee
       ? 'bridgeNFTToEvmAddressWithPayer'
       : 'bridgeNFTToEvmAddressV2';
@@ -2729,7 +2680,7 @@ export class WalletController extends BaseController {
     ids: number,
     receiver: string
   ): Promise<string> => {
-    const shouldCoverBridgeFee = await openapiService.getFeatureFlag('cover_bridge_fee');
+    const shouldCoverBridgeFee = await remoteConfigService.getFeatureFlag('cover_bridge_fee');
     const scriptName = shouldCoverBridgeFee
       ? 'bridgeNFTFromEvmToFlowWithPayer'
       : 'bridgeNFTFromEvmToFlowV3';
@@ -3369,9 +3320,9 @@ export class WalletController extends BaseController {
 
   getPayerAddressAndKeyId = async () => {
     try {
-      const config = await fetchConfig.remoteConfig();
+      const remoteConfig = await remoteConfigService.getRemoteConfig();
       const network = await this.getNetwork();
-      return config.payer[network];
+      return remoteConfig.config.payer[network];
     } catch {
       const network = await this.getNetwork();
       return defaultConfig.payer[network];
@@ -3380,9 +3331,12 @@ export class WalletController extends BaseController {
 
   getBridgeFeePayerAddressAndKeyId = async () => {
     try {
-      const config = await fetchConfig.remoteConfig();
+      const remoteConfig = await remoteConfigService.getRemoteConfig();
       const network = await this.getNetwork();
-      return config.bridgeFeePayer[network];
+      if (!remoteConfig.config.bridgeFeePayer) {
+        throw new Error('Bridge fee payer not found');
+      }
+      return remoteConfig.config.bridgeFeePayer[network];
     } catch {
       const network = await this.getNetwork();
       return defaultConfig.bridgeFeePayer[network];
@@ -3390,11 +3344,11 @@ export class WalletController extends BaseController {
   };
 
   getFeatureFlags = async (): Promise<FeatureFlags> => {
-    return openapiService.getFeatureFlags();
+    return remoteConfigService.getFeatureFlags();
   };
 
   getFeatureFlag = async (featureFlag: FeatureFlagKey): Promise<boolean> => {
-    return openapiService.getFeatureFlag(featureFlag);
+    return remoteConfigService.getFeatureFlag(featureFlag);
   };
 
   allowLilicoPay = async (): Promise<boolean> => {
@@ -3452,13 +3406,6 @@ export class WalletController extends BaseController {
     return await preferenceService.getDisplayCurrency();
   };
 
-  // Get the news from the server
-  getNews = async () => {
-    if (!this.isUnlocked()) {
-      return [];
-    }
-    return await newsService.getNews();
-  };
   markNewsAsDismissed = async (id: string) => {
     return await newsService.markAsDismissed(id);
   };
@@ -3471,41 +3418,12 @@ export class WalletController extends BaseController {
     return await newsService.markAllAsRead();
   };
 
-  getUnreadNewsCount = async () => {
-    if (!this.isUnlocked()) {
-      return 0;
-    }
-    return newsService.getUnreadCount();
-  };
-
   isNewsRead = (id: string) => {
     return newsService.isRead(id);
   };
 
-  resetNews = async () => {
-    return await newsService.clear();
-  };
-
-  // Check the storage status
-  checkStorageStatus = async ({
-    transferAmount,
-    coin,
-    movingBetweenEVMAndFlow,
-  }: {
-    transferAmount?: number; // amount in coins
-    coin?: string; // coin name
-    movingBetweenEVMAndFlow?: boolean; // are we moving between EVM and Flow?
-  } = {}): Promise<EvaluateStorageResult> => {
-    const address = await this.getParentAddress();
-    const isFreeGasFeeEnabled = await userWalletService.allowFreeGas();
-    const result = await this.storageEvaluator.evaluateStorage(
-      address!,
-      transferAmount,
-      coin,
-      movingBetweenEVMAndFlow,
-      isFreeGasFeeEnabled
-    );
-    return result;
+  resetNews = () => {
+    return newsService.clear();
   };
 
   // Tracking stuff

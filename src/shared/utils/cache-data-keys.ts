@@ -2,13 +2,22 @@
  * Keys and types to access data in the UI from the background storage cache
  * This is the primary way to get cached data from network calls to the frontend
  */
+import { type TokenInfo } from 'flow-native-token-registry';
+
 import {
   type TokenFilter,
   type ExtendedTokenInfo,
   type EvmTokenInfo,
   type CadenceTokenInfo,
 } from '../types/coin-types';
-import { type NftCollection, type UserInfoResponse } from '../types/network-types';
+import { type FeatureFlags } from '../types/feature-types';
+import {
+  type NewsItem,
+  type NFTModelV2,
+  type NftCollection,
+  type UserInfoResponse,
+  type AccountBalanceInfo,
+} from '../types/network-types';
 import {
   type NFTCollections,
   type NFTCollectionData,
@@ -16,14 +25,7 @@ import {
   type EvmNFTCollectionList,
 } from '../types/nft-types';
 import { type TransferItem } from '../types/transaction-types';
-import {
-  type MainAccount,
-  type ChildAccountMap,
-  type EvmAddress,
-  type FlowAddress,
-  type WalletAccount,
-  type Currency,
-} from '../types/wallet-types';
+import { type MainAccount, type WalletAccount, type Currency } from '../types/wallet-types';
 
 import { getCachedData, triggerRefresh } from './cache-data-access';
 import { type NetworkScripts } from './script-types';
@@ -33,6 +35,37 @@ const refreshKey = (keyFunction: (...args: string[]) => string) =>
   ((args: string[] = ['(.+)', '(.+)', '(.+)', '(.+)']) =>
     new RegExp(`${keyFunction(...args)}-refresh`))();
 
+/**
+ * --------------------------------------------------------------------
+ * Global keys
+ * --------------------------------------------------------------------
+ */
+export const newsKey = () => `news`;
+export const newsRefreshRegex = refreshKey(newsKey);
+export type NewsStore = NewsItem[];
+
+export const remoteConfigKey = () => `remote-config`;
+export const remoteConfigRefreshRegex = refreshKey(remoteConfigKey);
+export type RemoteConfig = {
+  version: string;
+  config: {
+    features: FeatureFlags;
+    payer: Record<
+      'mainnet' | 'testnet' | 'previewnet' | 'sandboxnet' | 'crescendo',
+      {
+        address: string;
+        keyId: number;
+      }
+    >;
+    bridgeFeePayer?: Record<
+      'mainnet' | 'testnet' | 'previewnet' | 'sandboxnet' | 'crescendo',
+      {
+        address: string;
+        keyId: number;
+      }
+    >;
+  };
+};
 /*
  * --------------------------------------------------------------------
  * User level keys
@@ -111,8 +144,13 @@ export const getCachedEvmAccount = async (network: string, mainAccountAddress: s
 
 export const accountBalanceKey = (network: string, address: string) =>
   `account-balance-${network}-${address}`;
-
 export const accountBalanceRefreshRegex = refreshKey(accountBalanceKey);
+
+export const mainAccountStorageBalanceKey = (network: string, address: string) =>
+  `account-storage-balance-${network}-${address}`;
+export type MainAccountStorageBalanceStore = AccountBalanceInfo;
+
+export const mainAccountStorageBalanceRefreshRegex = refreshKey(mainAccountStorageBalanceKey);
 
 // Transfer list
 export const transferListKey = (
@@ -130,6 +168,11 @@ export type TransferListStore = {
 };
 
 // NFTs
+
+export const nftListKey = (network: string, chainType: string) =>
+  `nft-list-${network}-${chainType}`;
+export const nftListRefreshRegex = refreshKey(nftListKey);
+export type NftListStore = NFTModelV2[];
 
 export const nftCollectionListKey = (network: string) => `nft-collections-${network}`;
 export const nftCollectionListRefreshRegex = refreshKey(nftCollectionListKey);
@@ -207,7 +250,7 @@ export const getCachedChildAccountNfts = async (network: string, parentAddress: 
 
 // EVM NFTs
 export const evmNftIdsKey = (network: string, address: string) =>
-  `evm-nft-ids-${network}-${address}`;
+  `evm-nft-collection-ids-${network}-${address}`;
 
 export const evmNftIdsRefreshRegex = refreshKey(evmNftIdsKey);
 export type EvmNftIdsStore = EvmNFTIds[];
@@ -235,6 +278,12 @@ export const getCachedEvmNftCollectionList = async (
 /**
  * Fungible Token information
  */
+
+export const tokenListKey = (network: string, chainType: string) =>
+  `token-list-${network}-${chainType}`;
+export const tokenListRefreshRegex = refreshKey(tokenListKey);
+export type TokenListStore = TokenInfo[];
+
 // Coinlist can be used for both EVM and Cadence tokens - this is the primary way to get token information
 export const coinListKey = (network: string, address: string, currency: string = 'usd') =>
   `coin-list-${network}-${address}-${currency}`;
@@ -258,7 +307,7 @@ export const getCachedTokenFilter = async (network: string, address: string) => 
 // This is used internally to cache EVM token information
 // Potentially could be used in the future to replace ExtendedTokenInfo
 export const evmTokenInfoKey = (network: string, address: string, currency: string = 'usd') =>
-  `evm-token-info-${network}-${address}`;
+  `evm-token-info-${network}-${address}-${currency}`;
 
 export const evmTokenInfoRefreshRegex = refreshKey(evmTokenInfoKey);
 export type EvmTokenInfoStore = EvmTokenInfo[];
