@@ -21,7 +21,7 @@ const AllSet = ({ handleSwitchTab, variant = 'register' }: AllSetProps) => {
   }, [usewallet, variant]);
 
   useEffect(() => {
-    if (variant === 'register') {
+    if (variant === 'recover') {
       loadScript().then(() => {
         usewallet.trackAccountRecovered();
       });
