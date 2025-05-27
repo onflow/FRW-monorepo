@@ -1633,22 +1633,6 @@ export class OpenApiService {
     return data;
   };
 
-  /**
-   * @deprecated This method is not used in the codebase.
-   * Use getUserTokens has price information.
-   */
-  getEvmFTPrice = async () => {
-    const gitPrice = await storage.getExpiry('EVMPrice');
-
-    if (gitPrice) {
-      return gitPrice;
-    } else {
-      const { data } = await this.sendRequest('GET', '/api/prices', {}, {}, WEB_NEXT_URL);
-      storage.setExpiry('EVMPrice', data, 6000);
-      return data;
-    }
-  };
-
   getEvmNFT = async (address: string, network: string) => {
     const { data } = await this.sendRequest(
       'GET',

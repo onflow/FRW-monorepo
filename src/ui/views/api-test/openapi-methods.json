@@ -888,15 +888,6 @@
     "params": ["address", "network"]
   },
   {
-    "name": "getEvmFTPrice",
-    "isAsync": true,
-    "fullBody": "async () => {\n        const gitPrice = await _background_webapi__WEBPACK_IMPORTED_MODULE_6__.storage.getExpiry('EVMPrice');\n        if (gitPrice) {\n            return gitPrice;\n        }\n        else {\n            const { data } = await this.sendRequest('GET', '/api/prices', {}, {}, consts__WEBPACK_IMPORTED_MODULE_13__.WEB_NEXT_URL);\n            _background_webapi__WEBPACK_IMPORTED_MODULE_6__.storage.setExpiry('EVMPrice', data, 6000);\n            return data;\n        }\n    }",
-    "usesSendRequest": true,
-    "usesFetchDirectly": false,
-    "basicSignature": "async () =>",
-    "params": []
-  },
-  {
     "name": "getEvmNFT",
     "isAsync": true,
     "fullBody": "async (address, network) => {\n        const { data } = await this.sendRequest('GET', `/api/evm/${address}/nfts?network=${network}`, {}, {}, consts__WEBPACK_IMPORTED_MODULE_13__.WEB_NEXT_URL);\n        return data;\n    }",
