@@ -353,7 +353,6 @@ export const createTestGroups = (commonParams: CommonParams): ApiTestGroups => {
     scripts: [{ name: 'cadenceScriptsV2', params: {} }],
     misc: [
       { name: 'getNews', params: {} },
-      { name: 'getLatestVersion', params: {} },
       { name: 'validateRecaptcha', params: { token: commonParams.token } },
       { name: 'pingNetwork', params: { network: commonParams.network } },
       {

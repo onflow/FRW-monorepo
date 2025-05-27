@@ -1723,13 +1723,6 @@ export class OpenApiService {
 
   getNews = async (): Promise<NewsItem[]> => {
     // Get news from firebase function
-
-    const cachedNews = await storage.getExpiry('news');
-
-    if (cachedNews) {
-      return cachedNews;
-    }
-
     const data = await this.sendRequest(
       'GET',
       process.env.API_NEWS_PATH,
@@ -1919,33 +1912,6 @@ export class OpenApiService {
     }
     return userEvmTokenList?.data;
   }
-
-  getLatestVersion = async (): Promise<string> => {
-    // Get latest version from storage cache first
-    const cached = await storage.getExpiry('latestVersion');
-    if (cached) {
-      return cached;
-    }
-
-    try {
-      const result = await this.sendRequest(
-        'GET',
-        process.env.API_CONFIG_PATH,
-        {},
-        {},
-        process.env.API_BASE_URL
-      );
-
-      const version = result.version;
-
-      // Cache for 1 hour
-      await storage.setExpiry('latestVersion', version, 3600000);
-      return version;
-    } catch (error) {
-      consoleError('Error fetching latest version:', error);
-      return chrome.runtime.getManifest().version; // Fallback to current version
-    }
-  };
 }
 
 const openApiService = new OpenApiService();

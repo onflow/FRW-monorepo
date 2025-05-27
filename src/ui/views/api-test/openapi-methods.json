@@ -960,15 +960,6 @@
     "params": ["currentWallet", "keys", "pubKTuple", "wallet", "isChild"]
   },
   {
-    "name": "getLatestVersion",
-    "isAsync": true,
-    "fullBody": "async () => {\n        // Get latest version from storage cache first\n        const cached = await _background_webapi__WEBPACK_IMPORTED_MODULE_6__.storage.getExpiry('latestVersion');\n        if (cached) {\n            return cached;\n        }\n        try {\n            const result = await this.sendRequest('GET', \"/config/config.dev.json\", {}, {}, \"https://test.lilico.app\");\n            const version = result.version;\n            // Cache for 1 hour\n            await _background_webapi__WEBPACK_IMPORTED_MODULE_6__.storage.setExpiry('latestVersion', version, 3600000);\n            return version;\n        }\n        catch (error) {\n            console.error('Error fetching latest version:', error);\n            return chrome.runtime.getManifest().version; // Fallback to current version\n        }\n    }",
-    "usesSendRequest": true,
-    "usesFetchDirectly": false,
-    "basicSignature": "async () =>",
-    "params": []
-  },
-  {
     "name": "getUserTokens",
     "isAsync": true,
     "fullBody": "async getUserTokens(address: string, network?: string): Promise<ExtendedTokenInfo[]> {\n    console.log('getUserTokens called for:', { address, network });\n\n    if (!address) {\n      throw new Error('Address is required');\n    }\n\n    // If network not provided, get current network\n    if (!network) {\n      network = await userWalletService.getNetwork();\n      console.log('Using current network:', network);\n    }\n\n    // Determine if address is EVM or Flow based on format\n    const isEvmAddress = isValidEthereumAddress(address);\n    const isFlowAddress = isValidFlowAddress(address);\n\n    if (!isEvmAddress && !isFlowAddress) {\n      throw new Error('Invalid address format');\n    }\n\n    try {\n      if (isEvmAddress) {\n        return await this.fetchUserEvmTokens(address, network);\n      } else {\n        return await this.fetchUserFlowTokens(address, network);\n      }\n    } catch (error) {\n      console.error('Error fetching user tokens:', error);\n      throw error;\n    }\n  }",

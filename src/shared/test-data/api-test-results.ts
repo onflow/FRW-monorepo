@@ -670,68 +670,6 @@ export const createTestResults = (): ApiTestResults => ({
       timestamp: 1737344606271,
     },
     {
-      functionName: 'getLatestVersion',
-      functionGroup: 'misc',
-      functionParams: {},
-      functionResponse: '2.6.2',
-      fetchDetails: [
-        {
-          url: `${process.env.API_BASE_URL}${process.env.API_CONFIG_PATH}`,
-          params: {},
-          requestInit: {
-            method: 'GET',
-            headers: {
-              Network: 'testnet',
-              Accept: 'application/json',
-              'Content-Type': 'application/json',
-              Authorization: 'Bearer mock-token',
-            },
-          },
-          responseData: {
-            version: '2.6.2',
-            config: {
-              features: {
-                free_gas: true,
-                wallet_connect: true,
-                on_ramp: true,
-                app_list: true,
-                swap: false,
-                browser: true,
-                nft_transfer: true,
-                tx_warning_prediction: false,
-                authz_sercice: true,
-              },
-              payer: {
-                mainnet: {
-                  address: '0x319e67f2ef9d937f',
-                  keyId: 0,
-                },
-                testnet: {
-                  address: '0xcb1cf3196916f9e2',
-                  keyId: 0,
-                },
-                previewnet: {
-                  address: '0xa460a24643b45e74',
-                  keyId: 0,
-                },
-                sandboxnet: {
-                  address: '0x41e6dda4c0240c16',
-                  keyId: 0,
-                },
-                crescendo: {
-                  address: '0xcb1cf3196916f9e2',
-                  keyId: 0,
-                },
-              },
-            },
-          },
-          status: 200,
-          statusText: '',
-        },
-      ],
-      timestamp: 1737344765520,
-    },
-    {
       functionName: 'validateRecaptcha',
       functionGroup: 'misc',
       functionParams: {
