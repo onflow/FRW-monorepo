@@ -18,8 +18,20 @@ export const DefaultBlock = ({ title, host, data, logo }) => {
   const [expanded, setExpanded] = useState(true);
 
   const hexToString = (hexString: string) => {
+    // Check if string is hex
+    const hexRegex = /^(0x)?[0-9a-fA-F]+$/;
+    if (!hexRegex.test(hexString)) {
+      throw new Error('Invalid hex string provided');
+    }
+
     // Remove '0x' prefix if present
     const cleanHex = hexString.replace('0x', '');
+
+    // Check if the length is even (valid hex bytes)
+    if (cleanHex.length % 2 !== 0) {
+      throw new Error('Invalid hex string length');
+    }
+
     // Convert hex to UTF-8 string using Buffer
     return Buffer.from(cleanHex, 'hex').toString('utf8');
   };
