@@ -10,7 +10,7 @@ import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSn
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useNftCatalogCollections } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useStorageCheck } from '@/ui/utils/useStorageCheck';
+import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
 import alertMark from 'ui/FRWAssets/svg/alertMark.svg';
 import { useWallet } from 'ui/utils';
 
@@ -68,7 +68,7 @@ const MoveFromChild = (props: MoveBoardProps) => {
   const [loadedNFTs, setLoadedNFTs] = useState<any[]>([]);
   const [activeLoader, setActiveLoader] = useState<string | null>(null);
   const { sufficient: isSufficient, sufficientAfterAction } = useStorageCheck({
-    transferAmount: 0,
+    transferAmount: '0',
     // Check if the selected account is an EVM address
     movingBetweenEVMAndFlow: selectedAccount
       ? isValidEthereumAddress(selectedAccount['address'])

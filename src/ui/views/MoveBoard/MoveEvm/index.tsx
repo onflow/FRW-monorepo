@@ -6,7 +6,7 @@ import { consoleError } from '@/shared/utils/console-log';
 import { NFTDrawer } from '@/ui/FRWComponent/GeneralPages';
 import WarningSnackbar from '@/ui/FRWComponent/WarningSnackbar';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useStorageCheck } from '@/ui/utils/useStorageCheck';
+import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
 import alertMark from 'ui/FRWAssets/svg/alertMark.svg';
 import { useWallet } from 'ui/utils';
 
@@ -38,7 +38,7 @@ const MoveEvm = (props: MoveBoardProps) => {
   const [selectCollection, setSelectCollection] = useState(false);
   const [selectedAccount, setSelectedChildAccount] = useState(null);
   const { sufficient: isSufficient, sufficientAfterAction } = useStorageCheck({
-    transferAmount: 0,
+    transferAmount: '0',
     // We are moving within the EVM network, the flag should be false
     movingBetweenEVMAndFlow: false,
   });

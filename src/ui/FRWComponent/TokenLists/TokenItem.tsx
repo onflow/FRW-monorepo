@@ -13,6 +13,7 @@ import {
 import { styled } from '@mui/material/styles';
 import React from 'react';
 
+import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { CurrencyValue } from '@/ui/views/TokenDetail/CurrencyValue';
 
 import IconCheckmark from '../../../components/iconfont/IconCheckmark';
@@ -37,6 +38,7 @@ const TokenItem = ({
   updateTokenFilter,
   showSwitch = false,
 }) => {
+  const currency = useCurrency();
   const handleClick = () => {
     if (onClick) {
       onClick(token, enabled);
@@ -127,7 +129,11 @@ const TokenItem = ({
           }
           secondary={
             showSwitch ? (
-              <CurrencyValue value={token.total?.toString() ?? ''} />
+              <CurrencyValue
+                value={token.total?.toString() ?? ''}
+                currencyCode={currency?.code ?? ''}
+                currencySymbol={currency?.symbol ?? ''}
+              />
             ) : (
               token.symbol.toUpperCase()
             )

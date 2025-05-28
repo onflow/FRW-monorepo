@@ -18,8 +18,8 @@ import React, { useCallback } from 'react';
 
 import { type TransactionState } from '@/shared/types/transaction-types';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
+import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useCoins } from '@/ui/hooks/useCoinHook';
-import { TokenValue } from '@/ui/views/TokenDetail/TokenValue';
 
 import CancelIcon from '../../../components/iconfont/IconClose';
 import IconSwitch from '../../../components/iconfont/IconSwitch';
@@ -122,7 +122,7 @@ const TransferAmount = ({
   const classes = useStyles();
   const { amount, fiatAmount } = transactionState;
   const { coins } = useCoins();
-
+  const currency = useCurrency();
   const renderValue = useCallback(
     (option) => {
       if (!coins) return null;
@@ -286,7 +286,11 @@ const TransferAmount = ({
               <TokenBalance showFull={true} value={amount} />
             </>
           ) : (
-            <CurrencyValue value={fiatAmount} />
+            <CurrencyValue
+              value={fiatAmount}
+              currencyCode={currency?.code ?? ''}
+              currencySymbol={currency?.symbol ?? ''}
+            />
           )}
           <IconButton onClick={handleSwitchFiatOrCoin}>
             <IconSwitch size={14} />

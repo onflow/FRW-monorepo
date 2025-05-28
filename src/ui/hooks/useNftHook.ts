@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-import { type NftCollection } from '@/shared/types/network-types';
+import { type NFTModelV2, type NftCollection } from '@/shared/types/network-types';
 import { type NFTCollections, type NFTItem } from '@/shared/types/nft-types';
 import {
   evmNftIdsKey,
@@ -11,6 +11,7 @@ import {
   nftCollectionListKey,
   childAccountNftsKey,
   type ChildAccountNFTsStore,
+  nftListKey,
 } from '@/shared/utils/cache-data-keys';
 import { consoleError } from '@/shared/utils/console-log';
 
@@ -313,4 +314,11 @@ export const useChildAccountNfts = (network: string, parentAddress: string) => {
     network && parentAddress ? childAccountNftsKey(network, parentAddress) : null
   );
   return childAccountNFTs;
+};
+
+export const useAllNftList = (network: string, chainType: 'evm' | 'flow') => {
+  const allNftList = useCachedData<NFTModelV2[]>(
+    network && chainType ? nftListKey(network, chainType) : null
+  );
+  return allNftList;
 };

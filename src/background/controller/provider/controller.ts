@@ -479,13 +479,24 @@ class ProviderController extends BaseController {
     }
 
     const paramAddress = request.data.params?.[0] || '';
-
     if (isValidEthereumAddress(paramAddress)) {
       data = request.data.params[1];
       address = request.data.params[0];
     } else {
       data = request.data.params[0];
       address = request.data.params[1];
+    }
+
+    let message;
+    try {
+      message = typeof data === 'string' ? JSON.parse(data) : data;
+    } catch (e) {
+      throw new Error('Invalid JSON data provided');
+    }
+    const { chainId } = message.domain || {};
+
+    if (!chainId || Number(chainId) !== Number(currentChain)) {
+      throw new Error('Provided chainId does not match the currently active chain');
     }
 
     // Potentially shouldn't change the case to compare - we should be checking ERC-55 conformity
@@ -495,7 +506,6 @@ class ProviderController extends BaseController {
     ) {
       throw new Error('Provided address does not match the current address');
     }
-    const message = typeof data === 'string' ? JSON.parse(data) : data;
 
     const signTypeMethod =
       request.data.method === 'eth_signTypedData_v3'
@@ -550,6 +560,18 @@ class ProviderController extends BaseController {
       address = request.data.params[1];
     }
 
+    let message;
+    try {
+      message = typeof data === 'string' ? JSON.parse(data) : data;
+    } catch (e) {
+      throw new Error('Invalid JSON data provided');
+    }
+    const { chainId } = message.domain || {};
+
+    if (!chainId || Number(chainId) !== Number(currentChain)) {
+      throw new Error('Provided chainId does not match the currently active chain');
+    }
+
     // Potentially shouldn't change the case to compare - we should be checking ERC-55 conformity
     if (
       ensureEvmAddressPrefix(evmaddress!.toLowerCase()) !==
@@ -557,8 +579,6 @@ class ProviderController extends BaseController {
     ) {
       throw new Error('Provided address does not match the current address');
     }
-
-    const message = typeof data === 'string' ? JSON.parse(data) : data;
 
     const hash = TypedDataUtils.eip712Hash(message, SignTypedDataVersion.V4);
 

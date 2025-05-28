@@ -22,6 +22,8 @@ import {
   supportedCurrenciesKey,
   type SupportedCurrenciesStore,
   childAccountAllowTypesKey,
+  type MainAccountStorageBalanceStore,
+  mainAccountStorageBalanceKey,
 } from '@/shared/utils/cache-data-keys';
 import {
   activeAccountsKey,
@@ -46,6 +48,15 @@ export const useAccountBalance = (
   address: string | undefined | null
 ) => {
   return useCachedData<string>(network && address ? accountBalanceKey(network, address) : null);
+};
+
+export const useMainAccountStorageBalance = (
+  network: string | undefined | null,
+  address: string | undefined | null
+) => {
+  return useCachedData<MainAccountStorageBalanceStore>(
+    network && address ? mainAccountStorageBalanceKey(network, address) : null
+  );
 };
 
 export const useChildAccounts = (

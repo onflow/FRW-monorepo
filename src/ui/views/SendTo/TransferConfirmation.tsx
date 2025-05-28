@@ -9,9 +9,10 @@ import { consoleError } from '@/shared/utils/console-log';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
 import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
+import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useContact } from '@/ui/hooks/useContactHook';
+import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
-import { useStorageCheck } from '@/ui/utils/useStorageCheck';
 import IconNext from 'ui/FRWAssets/svg/next.svg';
 import { LLSpinner } from 'ui/FRWComponent';
 import { Profile } from 'ui/FRWComponent/Send/Profile';
@@ -19,7 +20,6 @@ import { useWallet } from 'ui/utils';
 
 import { CurrencyValue } from '../TokenDetail/CurrencyValue';
 import { TokenBalance } from '../TokenDetail/TokenBalance';
-import { TokenValue } from '../TokenDetail/TokenValue';
 
 interface TransferConfirmationProps {
   transactionState: TransactionState;
@@ -35,6 +35,7 @@ const TransferConfirmation = ({
   const wallet = useWallet();
   const history = useHistory();
   const { occupied } = useTransferList();
+  const currency = useCurrency();
   const fromContactData =
     useContact(transactionState.fromContact?.address || '') || transactionState.fromContact;
   const toContactData =
@@ -47,8 +48,6 @@ const TransferConfirmation = ({
   const [tid, setTid] = useState<string>('');
   const [count, setCount] = useState(0);
 
-  const transferAmount = transactionState.amount ? parseFloat(transactionState.amount) : undefined;
-
   // Check if the transfer is between EVM and Flow networks
   const movingBetweenEVMAndFlow =
     (transactionState.fromNetwork === 'Evm' && transactionState.toNetwork !== 'Evm') ||
@@ -56,7 +55,7 @@ const TransferConfirmation = ({
 
   const { sufficient: isSufficient, sufficientAfterAction: isSufficientAfterAction } =
     useStorageCheck({
-      transferAmount,
+      transferAmount: transactionState.amount,
       coin: transactionState.tokenInfo?.coin,
       movingBetweenEVMAndFlow,
     });
@@ -284,7 +283,11 @@ const TransferConfirmation = ({
                 color="info"
                 sx={{ fontSize: '14px', fontWeight: 'semi-bold', textAlign: 'end' }}
               >
-                <CurrencyValue value={transactionState.fiatAmount} />
+                <CurrencyValue
+                  value={transactionState.fiatAmount}
+                  currencyCode={currency?.code ?? ''}
+                  currencySymbol={currency?.symbol ?? ''}
+                />
               </Typography>
             </Stack>
           </Box>

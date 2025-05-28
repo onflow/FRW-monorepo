@@ -31,7 +31,12 @@ import {
   getActiveAccountTypeForAddress,
   type WalletAddress,
 } from '@/shared/types/wallet-types';
-import { ensureEvmAddressPrefix, isValidEthereumAddress, withPrefix } from '@/shared/utils/address';
+import {
+  ensureEvmAddressPrefix,
+  isValidEthereumAddress,
+  isValidFlowAddress,
+  withPrefix,
+} from '@/shared/utils/address';
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 import {
   mainAccountsKey,
@@ -43,6 +48,9 @@ import {
   type EvmAccountStore,
   accountBalanceKey,
   accountBalanceRefreshRegex,
+  mainAccountStorageBalanceKey,
+  mainAccountStorageBalanceRefreshRegex,
+  type MainAccountStorageBalanceStore,
 } from '@/shared/utils/cache-data-keys';
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 import { retryOperation } from '@/shared/utils/retryOperation';
@@ -74,6 +82,7 @@ import {
 import { storage } from '../webapi';
 
 import { getScripts } from './openapi';
+import remoteConfigService from './remoteConfig';
 
 const USER_WALLET_TEMPLATE: UserWalletStore = {
   monitor: 'flowscan',
@@ -231,7 +240,7 @@ class UserWallet {
 
   getEmulatorMode = async (): Promise<boolean> => {
     // Check feature flag first
-    const enableEmulatorMode = await openapiService.getFeatureFlag('emulator_mode');
+    const enableEmulatorMode = await remoteConfigService.getFeatureFlag('emulator_mode');
     if (!enableEmulatorMode) {
       return false;
     }
@@ -245,7 +254,7 @@ class UserWallet {
     let emulatorModeToSet = emulatorMode;
     if (emulatorModeToSet) {
       // check feature flag
-      const enableEmulatorMode = await openapiService.getFeatureFlag('emulator_mode');
+      const enableEmulatorMode = await remoteConfigService.getFeatureFlag('emulator_mode');
       if (!enableEmulatorMode) {
         emulatorModeToSet = false;
       }
@@ -256,7 +265,7 @@ class UserWallet {
 
   // Moved from WalletController to UserWallet
   allowFreeGas = async (): Promise<boolean> => {
-    const isFreeGasFeeKillSwitch = await storage.get('freeGas');
+    const isFreeGasFeeKillSwitch = await remoteConfigService.getFeatureFlag('free_gas');
     const isFreeGasFeeEnabled = await storage.get('lilicoPayer');
     return isFreeGasFeeKillSwitch && isFreeGasFeeEnabled;
   };
@@ -1160,24 +1169,50 @@ const loadAccountListBalance = async (network: string, addressList: string[]) =>
 
   const script = await getScripts(network, 'basic', 'getFlowBalanceForAnyAccounts');
 
-  const accountsBalances = await fcl.query({
+  const accountsBalances: { [address: string]: string } = await fcl.query({
     cadence: script,
     args: (arg, t) => [arg(addressList, t.Array(t.String))],
   });
   // Cache all the balances
   return Promise.all(
-    addressList.map((address) => {
-      return setCachedData(
+    addressList.map(async (address) => {
+      await setCachedData(
         accountBalanceKey(network, address),
         accountsBalances[address] || '0.00000000',
         Number(accountsBalances[address]) > 0 ? 60_000 : 1_000
       );
+      return accountsBalances[address];
     })
   );
 };
 
-const loadAccountBalance = async (network: string, address: string) => {
-  return loadAccountListBalance(network, [address]);
+export const loadAccountBalance = async (network: string, address: string) => {
+  const balanceList = await loadAccountListBalance(network, [address]);
+  if (balanceList.length !== 1) {
+    throw new Error('Invalid balance list');
+  }
+  return balanceList[0];
+};
+
+export const loadMainAccountStorageBalance = async (
+  network: string,
+  address: string
+): Promise<MainAccountStorageBalanceStore> => {
+  // Check if the network is valid
+  if (!(await fclConfirmNetwork(network))) {
+    // Do nothing if the network is not valid
+    throw new Error('Network has been switched');
+  }
+  if (!isValidFlowAddress(address)) {
+    throw new Error('Invalid address');
+  }
+  const storageBalance: MainAccountStorageBalanceStore = await openapiService.getFlowAccountInfo(
+    network,
+    address
+  );
+
+  setCachedData(mainAccountStorageBalanceKey(network, address), storageBalance);
+  return storageBalance;
 };
 
 /**
@@ -1432,6 +1467,7 @@ const initAccountLoaders = () => {
   registerRefreshListener(childAccountsRefreshRegex, loadChildAccountsOfParent);
   registerRefreshListener(evmAccountRefreshRegex, loadEvmAccountOfParent);
   registerRefreshListener(accountBalanceRefreshRegex, loadAccountBalance);
+  registerRefreshListener(mainAccountStorageBalanceRefreshRegex, loadMainAccountStorageBalance);
 };
 
 export default new UserWallet();

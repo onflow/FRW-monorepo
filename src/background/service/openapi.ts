@@ -14,13 +14,12 @@ import {
 } from 'firebase/auth/web-extension';
 import { getInstallations, getId } from 'firebase/installations';
 import type { TokenInfo } from 'flow-native-token-registry';
-import log from 'loglevel';
 
+import fetchConfig from '@/background/service/remoteConfig';
 import { findKeyAndInfo } from '@/background/utils';
 import { getValidData, setCachedData } from '@/background/utils/data-cache';
 import { getFirbaseConfig, getFirbaseFunctionUrl } from '@/background/utils/firebaseConfig';
 import { verifySignature } from '@/background/utils/modules/publicPrivateKey';
-import fetchConfig from '@/background/utils/remoteConfig';
 import { storage } from '@/background/webapi';
 import type {
   ExtendedTokenInfo,
@@ -370,22 +369,6 @@ const dataConfig: Record<string, OpenApiConfigValue> = {
   },
 };
 
-const defaultFlowToken = {
-  name: 'Flow',
-  address: '0x4445e7ad11568276',
-  contractName: 'FlowToken',
-  path: {
-    balance: '/public/flowTokenBalance',
-    receiver: '/public/flowTokenReceiver',
-    vault: '/storage/flowTokenVault',
-  },
-  logoURI:
-    'https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.1654653399040a61.FlowToken/logo.svg',
-  // On Evm networks we can use up to 18 decimals
-  decimals: 18,
-  symbol: 'flow',
-};
-
 const recordFetch = async (response, responseData, ...args: Parameters<typeof fetch>) => {
   try {
     // Extract URL parameters from the first argument if it's a URL with query params
@@ -582,48 +565,6 @@ export class OpenApiService {
       default:
         return '';
     }
-  };
-
-  /**
-   * @deprecated This method is not used in the codebase.
-   * Use getUserTokens instead. It will have token info and price.
-   */
-  getTokenPrices = async (storageKey: string) => {
-    // TODO: move to new data cache service
-    const cachedPrices = await storage.getExpiry(storageKey);
-    if (cachedPrices) {
-      return cachedPrices;
-    }
-
-    const pricesMap: Record<string, string> = {};
-
-    try {
-      const response = await this.sendRequest('GET', '/api/prices', {}, {}, WEB_NEXT_URL);
-      const data = response?.data || [];
-
-      data.forEach((token) => {
-        if (token.evmAddress) {
-          const { rateToUSD, evmAddress, symbol } = token;
-          const key = evmAddress.toLowerCase();
-          pricesMap[key] = Number(rateToUSD).toFixed(8);
-          const symbolKey = symbol.toUpperCase();
-          if (symbolKey) {
-            pricesMap[symbolKey] = Number(rateToUSD).toFixed(8);
-          }
-        }
-        if (token.contractName && token.contractAddress) {
-          // Flow chain price
-          const { rateToUSD, contractName, contractAddress } = token;
-          const key = `${contractName.toLowerCase()}${contractAddress.toLowerCase()}`;
-          pricesMap[key] = Number(rateToUSD).toFixed(8);
-        }
-      });
-    } catch (error) {
-      consoleError('Error fetching prices:', error);
-    }
-
-    await storage.setExpiry(storageKey, pricesMap, 300000);
-    return pricesMap;
   };
 
   /**
@@ -980,18 +921,7 @@ export class OpenApiService {
     return data;
   };
 
-  getNFTList = async (network: string): Promise<NFTModelV2[]> => {
-    const childType = await userWalletService.getActiveAccountType();
-    let chainType = 'flow';
-    if (childType === 'evm') {
-      chainType = 'evm';
-    }
-
-    // TODO: move to new data cache service
-    const nftList = await storage.getExpiry(`NFTList${network}${chainType}`);
-    if (nftList && nftList.length > 0) {
-      return nftList;
-    }
+  getNFTList = async (network: string, chainType: 'flow' | 'evm'): Promise<NFTModelV2[]> => {
     const config = this.store.config.get_nft_list;
     const { tokens }: { tokens: NFTModelV2[] } = await this.sendRequest(
       config.method,
@@ -1003,8 +933,6 @@ export class OpenApiService {
       {},
       WEB_NEXT_URL
     );
-
-    storage.setExpiry(`NFTList${network}${chainType}`, tokens, 600000);
 
     return tokens;
   };
@@ -1324,94 +1252,6 @@ export class OpenApiService {
     return data;
   };
 
-  getTokenInfo = async (name: string, network = ''): Promise<TokenInfo | undefined> => {
-    // FIX ME: Get defaultTokenList from firebase remote config
-    if (!network) {
-      network = await userWalletService.getNetwork();
-    }
-    const tokens = await this.getTokenList(network);
-    return tokens.find((item) => item.symbol.toLowerCase() === name.toLowerCase());
-  };
-
-  getEvmTokenInfo = async (name: string, network = ''): Promise<TokenInfo | undefined> => {
-    if (!network) {
-      network = await userWalletService.getNetwork();
-    }
-
-    const tokens = await this.getEvmList(network);
-
-    const tokenInfo = tokens.find((item) => item.symbol.toLowerCase() === name.toLowerCase());
-
-    if (tokenInfo && isValidEthereumAddress(tokenInfo.address)) {
-      return tokenInfo;
-    }
-
-    const freshTokens = await this.refreshEvmToken(network);
-    return freshTokens.find((item) => item.symbol.toLowerCase() === name.toLowerCase());
-  };
-
-  getTokenInfoByContract = async (contractName: string): Promise<TokenModel | undefined> => {
-    // FIX ME: Get defaultTokenList from firebase remote config
-    const coins = await remoteFetch.flowCoins();
-    return coins.find((item) => item.contract_name.toLowerCase() === contractName.toLowerCase());
-  };
-
-  getFeatureFlags = async (): Promise<FeatureFlags> => {
-    try {
-      const config = await remoteFetch.remoteConfig();
-      return config.features;
-    } catch (err) {
-      consoleError(err);
-    }
-    // By default, all feature flags are disabled
-    return {};
-  };
-  getFeatureFlag = async (featureFlag: FeatureFlagKey): Promise<boolean> => {
-    const flags = await this.getFeatureFlags();
-    return !!flags[featureFlag];
-  };
-
-  getAllTokenInfo = async (filterNetwork = true): Promise<TokenInfo[]> => {
-    const network = await userWalletService.getNetwork();
-    const list = await this.getTokenList(network);
-    return filterNetwork ? list.filter((item) => item.address) : list;
-  };
-
-  getAllNft = async (filterNetwork = true): Promise<NFTModelV2[]> => {
-    const network = await userWalletService.getNetwork();
-    const list = await this.getNFTList(network);
-    return list;
-  };
-
-  isWalletTokenStorageEnabled = async (tokenSymbol: string) => {
-    // FIX ME: Get defaultTokenList from firebase remote config
-    const address = await userWalletService.getCurrentAddress();
-    const tokenInfo = await this.getTokenInfo(tokenSymbol);
-    if (!tokenInfo || !address) {
-      return;
-    }
-    return await this.isTokenStorageEnabled(address, tokenInfo);
-  };
-
-  getWalletTokenBalance = async (tokenSymbol: string) => {
-    // FIX ME: Get defaultTokenList from firebase remote config
-    const address = await userWalletService.getCurrentAddress();
-    const tokenInfo = await this.getTokenInfo(tokenSymbol);
-    if (!tokenInfo || !address) {
-      return;
-    }
-    return await this.getTokenBalanceWithModel(address, tokenInfo);
-  };
-
-  getTokenBalance = async (address: string, tokenSymbol: string) => {
-    // FIX ME: Get defaultTokenList from firebase remote config
-    const tokenInfo = await this.getTokenInfo(tokenSymbol);
-    if (!tokenInfo) {
-      return;
-    }
-    return await this.getTokenBalanceWithModel(address, tokenInfo);
-  };
-
   getStorageInfo = async (address: string): Promise<StorageInfo> => {
     const script = await getScripts(userWalletService.getNetwork(), 'basic', 'getStorageInfo');
 
@@ -1427,8 +1267,8 @@ export class OpenApiService {
     };
   };
 
-  getFlowAccountInfo = async (address: string): Promise<AccountBalanceInfo> => {
-    const script = await getScripts(userWalletService.getNetwork(), 'basic', 'getAccountInfo');
+  getFlowAccountInfo = async (network: string, address: string): Promise<AccountBalanceInfo> => {
+    const script = await getScripts(network, 'basic', 'getAccountInfo');
 
     const result = await fcl.query({
       cadence: script,
@@ -1462,7 +1302,7 @@ export class OpenApiService {
     return balance;
   };
 
-  fetchFTList = async (network: string, chainType: string) => {
+  fetchFTList = async (network: string, chainType: string): Promise<TokenInfo[]> => {
     const config = this.store.config.get_ft_list;
     const data = await this.sendRequest(
       config.method,
@@ -1474,11 +1314,10 @@ export class OpenApiService {
       {},
       WEB_NEXT_URL
     );
-
-    return this.addFlowTokenIfMissing(data.tokens);
+    return data.tokens;
   };
 
-  fetchFTListFull = async (network: string, chainType: string) => {
+  fetchFTListFull = async (network: string, chainType: string): Promise<TokenInfo[]> => {
     const config = this.store.config.get_ft_list_full;
     const data = await this.sendRequest(
       config.method,
@@ -1491,157 +1330,7 @@ export class OpenApiService {
       WEB_NEXT_URL
     );
 
-    return this.addFlowTokenIfMissing(data.tokens);
-  };
-
-  addFlowTokenIfMissing = (tokens) => {
-    const hasFlowToken = tokens.some((token) => token.symbol.toLowerCase() === 'flow');
-    if (!hasFlowToken) {
-      return [defaultFlowToken, ...tokens];
-    }
-    return tokens;
-  };
-
-  mergeCustomTokens = (tokens, customTokens) => {
-    customTokens.forEach((custom) => {
-      const existingToken = tokens.find(
-        (token) => token.address.toLowerCase() === custom.address.toLowerCase()
-      );
-
-      if (existingToken) {
-        // If the custom token is found, set the custom key to true
-        existingToken.custom = true;
-      } else {
-        // If the custom token is not found, add it to the tokens array
-        tokens.push({
-          chainId: MAINNET_CHAIN_ID,
-          address: custom.address,
-          symbol: custom.unit,
-          name: custom.coin,
-          decimals: custom.decimals,
-          logoURI: '',
-          flowIdentifier: custom.flowIdentifier,
-          tags: [],
-          balance: 0,
-          custom: true,
-        });
-      }
-    });
-  };
-
-  getTokenList = async (network): Promise<TokenInfo[]> => {
-    const childType = await userWalletService.getActiveAccountType();
-    const chainType = childType === 'evm' ? 'evm' : 'flow';
-
-    const ftList = await storage.getExpiry(`TokenList${network}${chainType}`);
-    if (ftList) return ftList;
-
-    let tokens = [];
-    try {
-      tokens = await this.fetchFTListFull(network, chainType);
-    } catch (error) {
-      consoleError(`Error fetching token list for ${network} ${chainType}:`, error);
-      // Return default tokens or cached tokens if available
-      const cachedTokens = await storage.get(`TokenList${network}${chainType}`);
-      tokens = cachedTokens || [defaultFlowToken];
-    }
-
-    if (chainType === 'evm') {
-      const evmCustomToken = (await storage.get(`${network}evmCustomToken`)) || [];
-      this.mergeCustomTokens(tokens, evmCustomToken);
-    }
-
-    storage.setExpiry(`TokenList${network}${chainType}`, tokens, 600000);
-    return tokens;
-  };
-
-  getEvmList = async (network) => {
-    const chainType = 'evm';
-
-    const ftList = await storage.getExpiry(`TokenList${network}${chainType}`);
-    if (ftList) return ftList;
-
-    let tokens = [];
-    try {
-      tokens = await this.fetchFTListFull(network, chainType);
-    } catch (error) {
-      consoleError(`Error fetching token list for ${network} ${chainType}:`, error);
-      // Return default tokens or cached tokens if available
-      const cachedTokens = await storage.get(`TokenList${network}${chainType}`);
-      tokens = cachedTokens || [defaultFlowToken];
-    }
-
-    if (chainType === 'evm') {
-      const evmCustomToken = (await storage.get(`${network}evmCustomToken`)) || [];
-      this.mergeCustomTokens(tokens, evmCustomToken);
-    }
-
-    storage.setExpiry(`TokenList${network}${chainType}`, tokens, 600000);
-    return tokens;
-  };
-
-  refreshEvmToken = async (network) => {
-    const chainType = 'evm';
-    let ftList = await storage.getExpiry(`TokenList${network}${chainType}`);
-    if (!ftList) ftList = await this.fetchFTListFull(network, chainType);
-
-    const evmCustomToken = (await storage.get(`${network}evmCustomToken`)) || [];
-    this.mergeCustomTokens(ftList, evmCustomToken);
-
-    storage.setExpiry(`TokenList${network}${chainType}`, ftList, 600000);
-
-    return ftList;
-  };
-
-  refreshCustomEvmToken = async (network) => {
-    const chainType = 'evm';
-    const ftList = await this.fetchFTListFull(network, chainType);
-
-    const evmCustomToken = (await storage.get(`${network}evmCustomToken`)) || [];
-    this.mergeCustomTokens(ftList, evmCustomToken);
-
-    storage.setExpiry(`TokenList${network}${chainType}`, ftList, 600000);
-  };
-
-  getEnabledTokenList = async (network = ''): Promise<ExtendedTokenInfo[]> => {
-    if (!network) {
-      network = await userWalletService.getNetwork();
-    }
-    const address = await userWalletService.getCurrentAddress();
-    if (!address) {
-      // If we haven't loaded an address yet, return an empty array
-      return [];
-    }
-    const tokenList = await this.getTokenList(network);
-    let values;
-    const isChild = await userWalletService.getActiveAccountType();
-    try {
-      if (isChild && isChild !== 'evm') {
-        values = await this.isLinkedAccountTokenListEnabled(address);
-      } else if (!isChild) {
-        values = await this.getTokenBalanceStorage(address);
-      }
-    } catch (error) {
-      consoleError('Error getting enabled token list:');
-      values = {};
-    }
-
-    const tokenItems: ExtendedTokenInfo[] = [];
-    const tokenMap = {};
-    if (isChild !== 'evm') {
-      tokenList.forEach((token) => {
-        const tokenId = `A.${token.address.slice(2)}.${token.contractName}.Vault`;
-        if (!!values[tokenId]) {
-          tokenMap[token.name] = token;
-        }
-      });
-    }
-
-    Object.keys(tokenMap).map((key, idx) => {
-      const item = tokenMap[key];
-      tokenItems.push(item);
-    });
-    return tokenItems;
+    return data.tokens;
   };
 
   // todo
@@ -1929,27 +1618,6 @@ export class OpenApiService {
     return data;
   };
 
-  /**
-   * @deprecated This method is not used in the codebase.
-   * Use getUserTokens has price information.
-   */
-  getEvmFTPrice = async () => {
-    const gitPrice = await storage.getExpiry('EVMPrice');
-
-    if (gitPrice) {
-      return gitPrice;
-    } else {
-      const { data } = await this.sendRequest('GET', '/api/prices', {}, {}, WEB_NEXT_URL);
-      storage.setExpiry('EVMPrice', data, 6000);
-      return data;
-    }
-  };
-
-  evmNFTList = async () => {
-    const { data } = await this.sendRequest('GET', '/api/evm/nfts', {}, {}, WEB_NEXT_URL);
-    return data;
-  };
-
   getEvmNFT = async (address: string, network: string) => {
     const { data } = await this.sendRequest(
       'GET',
@@ -2055,13 +1723,6 @@ export class OpenApiService {
 
   getNews = async (): Promise<NewsItem[]> => {
     // Get news from firebase function
-
-    const cachedNews = await storage.getExpiry('news');
-
-    if (cachedNews) {
-      return cachedNews;
-    }
-
     const data = await this.sendRequest(
       'GET',
       process.env.API_NEWS_PATH,
@@ -2070,37 +1731,29 @@ export class OpenApiService {
       process.env.API_BASE_URL
     );
 
-    const timeNow = new Date(Date.now());
-
-    const news = data
-      .map(
-        (dataFromApi: {
-          id: string;
-          priority: string;
-          type: string;
-          title: string;
-          body?: string;
-          icon?: string;
-          image?: string;
-          url?: string;
-          expiry_time: string;
-          display_type: string;
-          conditions?: string[]; // Add conditions field
-        }) => {
-          const newsItem = {
-            ...dataFromApi,
-            expiryTime: new Date(dataFromApi.expiry_time),
-            displayType: dataFromApi.display_type,
-            conditions: dataFromApi.conditions as NewsConditionType[], // Map conditions
-          };
-          return newsItem;
-        }
-      )
-      .filter((n: { expiryTime: Date }) => {
-        return n.expiryTime > timeNow;
-      });
-
-    await storage.setExpiry('news', news, 300000); // 5 minutes in milliseconds
+    const news = data.map(
+      (dataFromApi: {
+        id: string;
+        priority: string;
+        type: string;
+        title: string;
+        body?: string;
+        icon?: string;
+        image?: string;
+        url?: string;
+        expiry_time: string;
+        display_type: string;
+        conditions?: string[]; // Add conditions field
+      }) => {
+        const newsItem = {
+          ...dataFromApi,
+          expiryTime: new Date(dataFromApi.expiry_time),
+          displayType: dataFromApi.display_type,
+          conditions: dataFromApi.conditions as NewsConditionType[], // Map conditions
+        };
+        return newsItem;
+      }
+    );
 
     return news;
   };
@@ -2259,33 +1912,6 @@ export class OpenApiService {
     }
     return userEvmTokenList?.data;
   }
-
-  getLatestVersion = async (): Promise<string> => {
-    // Get latest version from storage cache first
-    const cached = await storage.getExpiry('latestVersion');
-    if (cached) {
-      return cached;
-    }
-
-    try {
-      const result = await this.sendRequest(
-        'GET',
-        process.env.API_CONFIG_PATH,
-        {},
-        {},
-        process.env.API_BASE_URL
-      );
-
-      const version = result.version;
-
-      // Cache for 1 hour
-      await storage.setExpiry('latestVersion', version, 3600000);
-      return version;
-    } catch (error) {
-      consoleError('Error fetching latest version:', error);
-      return chrome.runtime.getManifest().version; // Fallback to current version
-    }
-  };
 }
 
 const openApiService = new OpenApiService();
