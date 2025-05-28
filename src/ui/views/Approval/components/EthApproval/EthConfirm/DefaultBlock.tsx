@@ -32,8 +32,16 @@ export const DefaultBlock = ({ title, host, data, logo }) => {
       throw new Error('Invalid hex string length');
     }
 
-    // Convert hex to UTF-8 string using Buffer
-    return Buffer.from(cleanHex, 'hex').toString('utf8');
+    // Convert hex to bytes
+    const bytes = Buffer.from(cleanHex, 'hex');
+
+    // Check for valid UTF-8 encoding
+    const decoder = new TextDecoder('utf-8', { fatal: true });
+    try {
+      return decoder.decode(bytes);
+    } catch (e) {
+      throw new Error('Invalid UTF-8 encoding in hex string');
+    }
   };
 
   const processItem = (item) => {
