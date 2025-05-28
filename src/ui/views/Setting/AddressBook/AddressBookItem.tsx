@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 import { ContactType, type Contact } from '@/shared/types/network-types';
 
 import IconSubtract from '../../../../components/iconfont/IconSubtract';
-import { LLContactCard, LLPrimaryButton, LLSecondaryButton } from '../../../FRWComponent';
+import { LLContactCard, LLPrimaryButton, LLSecondaryButton } from '../../../components';
 
 interface AddressBookItemProps {
   index: number;

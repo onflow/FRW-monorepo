@@ -17,8 +17,8 @@ import { makeStyles } from '@mui/styles';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 
-import { LLHeader } from '@/ui/FRWComponent';
-import CoinsIcon from '@/ui/FRWComponent/CoinsIcon';
+import { LLHeader } from '@/ui/components';
+import CoinsIcon from '@/ui/components/CoinsIcon';
 import { useWallet } from '@/ui/utils';
 import { ReactComponent as Device } from 'ui/FRWAssets/svg/device.svg';
 import { ReactComponent as IconLink } from 'ui/FRWAssets/svg/Iconlink.svg';

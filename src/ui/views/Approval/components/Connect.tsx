@@ -5,12 +5,12 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { authnServiceDefinition, serviceDefinition } from 'background/controller/serviceDefinition';
+import { LLPrimaryButton, LLSecondaryButton, LLConnectLoading } from 'ui/components';
 import flowgrey from 'ui/FRWAssets/svg/flow-grey.svg';
 import Link from 'ui/FRWAssets/svg/link.svg';
 import linkGlobe from 'ui/FRWAssets/svg/linkGlobe.svg';
 import mainnetsvg from 'ui/FRWAssets/svg/mainnet.svg';
 import testnetsvg from 'ui/FRWAssets/svg/testnet.svg';
-import { LLPrimaryButton, LLSecondaryButton, LLConnectLoading } from 'ui/FRWComponent';
 import { useApproval, useWallet } from 'ui/utils';
 // import { CHAINS_ENUM } from 'consts';
 

@@ -28,7 +28,7 @@ import {
 } from '@/shared/types/wallet-types';
 import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
-import { LLHeader } from '@/ui/FRWComponent';
+import { LLHeader } from '@/ui/components';
 import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
 import { useWallet } from 'ui/utils';
 

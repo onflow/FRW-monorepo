@@ -15,7 +15,7 @@ import { useHistory } from 'react-router-dom';
 
 import { type NFTCollections } from '@/shared/types/nft-types';
 import { refreshNftCatalogCollections } from '@/shared/utils/cache-data-keys';
-import ListSkeleton from '@/ui/FRWComponent/NFTs/ListSkeleton';
+import ListSkeleton from '@/ui/components/NFTs/ListSkeleton';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useNftCatalogCollections } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';

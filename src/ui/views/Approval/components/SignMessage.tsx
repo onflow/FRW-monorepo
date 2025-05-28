@@ -13,7 +13,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
-import { LLPrimaryButton, LLSecondaryButton } from 'ui/FRWComponent';
+import { LLPrimaryButton, LLSecondaryButton } from 'ui/components';
 import { useApproval, useWallet } from 'ui/utils';
 
 import './github-dark-dimmed.css';

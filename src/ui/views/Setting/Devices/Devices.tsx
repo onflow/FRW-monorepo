@@ -2,7 +2,7 @@ import { Box, Typography } from '@mui/material';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import { LLHeader } from '@/ui/FRWComponent';
+import { LLHeader } from '@/ui/components';
 import { useWallet } from 'ui/utils';
 
 import circlecheck from '../../../FRWAssets/image/circlecheck.png';

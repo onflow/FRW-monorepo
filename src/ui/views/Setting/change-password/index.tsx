@@ -21,8 +21,8 @@ import CheckCircleIcon from '@/components/iconfont/IconCheckmark';
 import CancelIcon from '@/components/iconfont/IconClose';
 import { consoleError } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
-import { LLHeader } from '@/ui/FRWComponent/LLHeader';
-import SlideRelative from '@/ui/FRWComponent/SlideRelative';
+import { LLHeader } from '@/ui/components/LLHeader';
+import SlideRelative from '@/ui/components/SlideRelative';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from '@/ui/utils';
 

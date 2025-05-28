@@ -6,7 +6,7 @@ import { Box } from '@mui/system';
 import React, { useEffect, useState } from 'react';
 
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
-import SlideRelative from '@/ui/FRWComponent/SlideRelative';
+import SlideRelative from '@/ui/components/SlideRelative';
 import { useWallet } from 'ui/utils';
 
 import CancelIcon from '../../../../../components/iconfont/IconClose';

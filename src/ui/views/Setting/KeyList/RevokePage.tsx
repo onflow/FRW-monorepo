@@ -7,9 +7,9 @@ import { useHistory } from 'react-router-dom';
 import { consoleError } from '@/shared/utils/console-log';
 import { useWallet } from 'ui/utils';
 
+import { LLPrimaryButton } from '../../../components';
 import closeCircle from '../../../FRWAssets/image/closeCircle.png';
 import warning from '../../../FRWAssets/image/warning.png';
-import { LLPrimaryButton } from '../../../FRWComponent';
 
 const StyledInput = styled(InputBase)(({ theme }) => ({
   zIndex: 1,

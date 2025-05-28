@@ -26,7 +26,7 @@ import {
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
-import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
+import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
 import { useNews } from '@/ui/hooks/use-news';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';

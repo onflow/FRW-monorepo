@@ -14,7 +14,7 @@ import { useDebouncedCallback } from 'use-debounce';
 
 import { consoleError } from '@/shared/utils/console-log';
 import EmailIcon from '@/ui/assets/alternate-email.svg';
-import SlideRelative from '@/ui/FRWComponent/SlideRelative';
+import SlideRelative from '@/ui/components/SlideRelative';
 import { useWallet } from 'ui/utils';
 
 import CheckCircleIcon from '../../../components/iconfont/IconCheckmark';

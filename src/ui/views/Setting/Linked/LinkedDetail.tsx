@@ -22,8 +22,8 @@ import { useHistory, useParams } from 'react-router-dom';
 
 import { type NftCollection } from '@/shared/types/network-types';
 import { type ChildAccountNFTs, type ChildAccountNFTsStore } from '@/shared/utils/cache-data-keys';
+import { LLHeader, LLSecondaryButton } from '@/ui/components';
 import IconNext from '@/ui/FRWAssets/svg/nextgray.svg';
-import { LLHeader, LLSecondaryButton } from '@/ui/FRWComponent';
 import { useChildAccountAllowTypes, useCurrentId, useUserInfo } from '@/ui/hooks/use-account-hooks';
 import { useChildAccountFt } from '@/ui/hooks/use-coin-hooks';
 import { useChildAccountNfts, useNftCollectionList } from '@/ui/hooks/useNftHook';

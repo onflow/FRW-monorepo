@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 
 import { storage } from '@/background/webapi';
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
-import ErrorModel from '@/ui/FRWComponent/PopupModal/errorModel';
+import ErrorModel from '@/ui/components/PopupModal/errorModel';
 import { useWallet } from '@/ui/utils';
 import Googledrive from '@/ui/views/Welcome/AccountImport/ImportComponents/Googledrive';
 import JsonImport from '@/ui/views/Welcome/AccountImport/ImportComponents/JsonImport';

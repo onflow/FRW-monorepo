@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 
 import { consoleError } from '@/shared/utils/console-log';
 import BrowserWarning from '@/ui/component/BrowserWarning';
-import { LLSpinner } from '@/ui/FRWComponent';
+import { LLSpinner } from '@/ui/components';
 import { useWallet } from '@/ui/utils';
 
 import IconGoogleDrive from '../../../../../components/iconfont/IconGoogleDrive';

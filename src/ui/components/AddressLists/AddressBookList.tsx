@@ -2,7 +2,7 @@ import { List, ListSubheader, CardMedia, Typography, ButtonBase, Box } from '@mu
 import { groupBy } from 'lodash';
 import React, { useEffect, useState } from 'react';
 
-import { LLContactCard } from '@/ui/FRWComponent';
+import { LLContactCard } from '@/ui/components';
 import emptyAddress from 'ui/assets/emptyAddress.svg';
 
 const AddressBookList = ({ filteredContacts, isLoading, handleClick }) => {

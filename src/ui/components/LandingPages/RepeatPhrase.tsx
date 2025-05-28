@@ -3,7 +3,7 @@ import { Button, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 
-import SlideRelative from '@/ui/FRWComponent/SlideRelative';
+import SlideRelative from '@/ui/components/SlideRelative';
 
 const randomElement = (list: any[]) => {
   return list[Math.floor(Math.random() * list.length)];

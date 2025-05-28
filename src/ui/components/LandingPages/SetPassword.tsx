@@ -8,8 +8,8 @@ import {
   TermsCheckbox,
   ErrorSnackbar,
   SubmitButton,
-} from '@/ui/FRWComponent/LandingPages/PasswordComponents';
-import SlideRelative from '@/ui/FRWComponent/SlideRelative';
+} from '@/ui/components/LandingPages/PasswordComponents';
+import SlideRelative from '@/ui/components/SlideRelative';
 
 import CheckCircleIcon from '../../../components/iconfont/IconCheckmark';
 import CancelIcon from '../../../components/iconfont/IconClose';

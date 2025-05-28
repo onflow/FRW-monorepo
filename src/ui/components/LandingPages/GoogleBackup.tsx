@@ -4,8 +4,8 @@ import { Box } from '@mui/system';
 import React, { useState } from 'react';
 
 import { consoleError } from '@/shared/utils/console-log';
-import SlideRelative from '@/ui/FRWComponent/SlideRelative';
-import { LLSpinner } from 'ui/FRWComponent';
+import SlideRelative from '@/ui/components/SlideRelative';
+import { LLSpinner } from 'ui/components';
 import { useWallet } from 'ui/utils';
 
 import IconGoogleDrive from '../../../components/iconfont/IconGoogleDrive';

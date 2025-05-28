@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 
 // import { useRouteMatch } from 'react-router-dom';
-import { LLHeader } from '@/ui/FRWComponent';
+import { LLHeader } from '@/ui/components';
 import { useWallet } from 'ui/utils';
 
 import IconCopy from '../../../../components/iconfont/IconCopy';

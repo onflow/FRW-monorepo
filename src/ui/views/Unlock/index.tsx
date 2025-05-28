@@ -6,9 +6,9 @@ import { useHistory } from 'react-router-dom';
 
 import { consoleError } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
+import { LLPrimaryButton } from '@/ui/components';
+import SlideRelative from '@/ui/components/SlideRelative';
 import lilo from '@/ui/FRWAssets/image/lilo.png';
-import { LLPrimaryButton } from '@/ui/FRWComponent';
-import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet, useWalletLoaded } from '@/ui/utils';
 import { openInternalPageInTab } from '@/ui/utils/webapi';

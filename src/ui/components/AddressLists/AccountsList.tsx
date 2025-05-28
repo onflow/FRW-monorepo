@@ -1,7 +1,7 @@
 import { List, ListSubheader, ButtonBase, Box } from '@mui/material';
 import React from 'react';
 
-import { LLContactCard, LLContactEth, FWContactCard } from '@/ui/FRWComponent';
+import { LLContactCard, LLContactEth, FWContactCard } from '@/ui/components';
 import { useContacts } from '@/ui/hooks/useContactHook';
 
 const AccountsList = ({ handleClick }) => {

@@ -20,17 +20,17 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { ContactType, type Contact } from '@/shared/types/network-types';
 import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
-import { LLHeader } from '@/ui/FRWComponent';
+import { LLHeader } from '@/ui/components';
 import { useAllNftList } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { type MatchMedia } from '@/ui/utils/url';
 import { useWallet, returnFilteredCollections } from 'ui/utils';
 
 import IconAbout from '../../../../components/iconfont/IconAbout';
-import AccountsList from '../../../FRWComponent/AddressLists/AccountsList';
-import AddressBookList from '../../../FRWComponent/AddressLists/AddressBookList';
-import RecentList from '../../../FRWComponent/AddressLists/RecentList';
-import SearchList from '../../../FRWComponent/AddressLists/SearchList';
+import AccountsList from '../../../components/AddressLists/AccountsList';
+import AddressBookList from '../../../components/AddressLists/AddressBookList';
+import RecentList from '../../../components/AddressLists/RecentList';
+import SearchList from '../../../components/AddressLists/SearchList';
 
 import SendNFTConfirmation from './SendNFTConfirmation';
 

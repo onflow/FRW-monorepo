@@ -4,9 +4,9 @@ import { makeStyles } from '@mui/styles';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 
-import { LLHeader } from '@/ui/FRWComponent';
-import SettingsPassword from '@/ui/FRWComponent/SettingsPassword';
-import SlideRelative from '@/ui/FRWComponent/SlideRelative';
+import { LLHeader } from '@/ui/components';
+import SettingsPassword from '@/ui/components/SettingsPassword';
+import SlideRelative from '@/ui/components/SlideRelative';
 import { useWallet } from 'ui/utils';
 
 import CancelIcon from '../../../../components/iconfont/IconClose';

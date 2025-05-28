@@ -18,8 +18,8 @@ import { makeStyles } from '@mui/styles';
 import React from 'react';
 import zxcvbn from 'zxcvbn';
 
+import { LLSpinner } from '@/ui/components';
 import { BpUncheked, BpCheckedIcon } from '@/ui/FRWAssets/icons/CustomCheckboxIcons';
-import { LLSpinner } from '@/ui/FRWComponent';
 
 const useStyles = makeStyles(() => ({
   inputBox: {

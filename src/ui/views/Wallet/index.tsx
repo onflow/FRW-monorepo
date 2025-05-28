@@ -11,9 +11,9 @@ import {
 } from '@/shared/types/wallet-types';
 import { consoleError } from '@/shared/utils/console-log';
 import { formatLargeNumber } from '@/shared/utils/number';
-import { ButtonRow } from '@/ui/FRWComponent/ButtonRow';
-import CoinsIcon from '@/ui/FRWComponent/CoinsIcon';
-import LLComingSoon from '@/ui/FRWComponent/LLComingSoonWarning';
+import { ButtonRow } from '@/ui/components/ButtonRow';
+import CoinsIcon from '@/ui/components/CoinsIcon';
+import LLComingSoon from '@/ui/components/LLComingSoonWarning';
 import { useInitHook } from '@/ui/hooks';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useCoins } from '@/ui/hooks/useCoinHook';

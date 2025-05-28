@@ -5,7 +5,7 @@ import { Button, Typography, IconButton } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { useState } from 'react';
 
-import SlideRelative from '@/ui/FRWComponent/SlideRelative';
+import SlideRelative from '@/ui/components/SlideRelative';
 
 import IconCopy from '../../../components/iconfont/IconCopy';
 

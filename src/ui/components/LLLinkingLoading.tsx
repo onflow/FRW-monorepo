@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import IconCheck from 'ui/assets/check.svg';
-import { LLPrimaryButton } from 'ui/FRWComponent';
+import { LLPrimaryButton } from 'ui/components';
 
 const useStyles = makeStyles({
   IconCheck: {

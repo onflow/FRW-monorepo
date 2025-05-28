@@ -4,13 +4,13 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
-import AllSet from '@/ui/FRWComponent/LandingPages/AllSet';
-import GoogleBackup from '@/ui/FRWComponent/LandingPages/GoogleBackup';
-import LandingComponents from '@/ui/FRWComponent/LandingPages/LandingComponents';
-import PickUsername from '@/ui/FRWComponent/LandingPages/PickUsername';
-import RecoveryPhrase from '@/ui/FRWComponent/LandingPages/RecoveryPhrase';
-import RepeatPhrase from '@/ui/FRWComponent/LandingPages/RepeatPhrase';
-import SetPassword from '@/ui/FRWComponent/LandingPages/SetPassword';
+import AllSet from '@/ui/components/LandingPages/AllSet';
+import GoogleBackup from '@/ui/components/LandingPages/GoogleBackup';
+import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
+import PickUsername from '@/ui/components/LandingPages/PickUsername';
+import RecoveryPhrase from '@/ui/components/LandingPages/RecoveryPhrase';
+import RepeatPhrase from '@/ui/components/LandingPages/RepeatPhrase';
+import SetPassword from '@/ui/components/LandingPages/SetPassword';
 import { useWallet } from 'ui/utils';
 
 const STEPS = {

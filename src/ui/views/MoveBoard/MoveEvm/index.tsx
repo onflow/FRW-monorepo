@@ -3,8 +3,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { consoleError } from '@/shared/utils/console-log';
-import { NFTDrawer } from '@/ui/FRWComponent/GeneralPages';
-import WarningSnackbar from '@/ui/FRWComponent/WarningSnackbar';
+import { NFTDrawer } from '@/ui/components/GeneralPages';
+import WarningSnackbar from '@/ui/components/WarningSnackbar';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
 import alertMark from 'ui/FRWAssets/svg/alertMark.svg';

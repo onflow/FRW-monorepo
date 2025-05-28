@@ -6,7 +6,7 @@ import { useHistory } from 'react-router-dom';
 
 import { type UserInfoResponse } from '@/shared/types/network-types';
 import { withPrefix } from '@/shared/utils/address';
-import { LLSecondaryButton } from '@/ui/FRWComponent';
+import { LLSecondaryButton } from '@/ui/components';
 import { useWallet } from 'ui/utils';
 import { openInternalPageInTab } from 'ui/utils/webapi';
 

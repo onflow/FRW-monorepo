@@ -10,7 +10,7 @@ import { consoleError } from '@/shared/utils/console-log';
 import { useWallet } from 'ui/utils';
 
 import { withPrefix } from '../../../../shared/utils/address';
-import { LLPrimaryButton, LLSecondaryButton, LLFormHelperText } from '../../../FRWComponent';
+import { LLPrimaryButton, LLSecondaryButton, LLFormHelperText } from '../../../components';
 
 const StyledInput = styled(InputBase)(({ theme }) => ({
   zIndex: 1,

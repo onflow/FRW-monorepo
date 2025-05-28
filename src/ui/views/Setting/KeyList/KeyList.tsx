@@ -2,7 +2,7 @@ import { Box, IconButton, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { type KeyResponseItem, type AccountKey } from '@/shared/types/network-types';
-import { LLHeader } from '@/ui/FRWComponent';
+import { LLHeader } from '@/ui/components';
 import { useWallet } from 'ui/utils';
 
 import IconCopy from '../../../../components/iconfont/IconCopy';

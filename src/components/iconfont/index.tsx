@@ -52,7 +52,7 @@ import IconPlayStore from './IconPlayStore';
 import IconAppStore from './IconAppStore';
 import IconBackButton from './IconBackButton';
 import IconActivity from './IconActivity';
-import CoinsIcon from '@/ui/FRWComponent/CoinsIcon';
+import CoinsIcon from '@/ui/components/CoinsIcon';
 export { default as IconKucoin } from './IconKucoin';
 export { default as IconCoinbase } from './IconCoinbase';
 export { default as IconInbox } from './IconInbox';
@@ -103,7 +103,7 @@ export { default as IconEye } from './IconEye';
 export { default as IconPlayStore } from './IconPlayStore';
 export { default as IconAppStore } from './IconAppStore';
 export { default as IconBackButton } from './IconBackButton';
-export { default as CoinsIcon } from '@/ui/FRWComponent/CoinsIcon';
+export { default as CoinsIcon } from '@/ui/components/CoinsIcon';
 export { default as IconActivity } from './IconActivity';
 
 const IconFont = ({ name, ...rest }) => {

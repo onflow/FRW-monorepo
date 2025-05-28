@@ -7,7 +7,7 @@ import {
   type ActiveAccountType,
   type ActiveChildType_depreciated,
 } from '@/shared/types/wallet-types';
-import LLComingSoon from '@/ui/FRWComponent/LLComingSoonWarning';
+import LLComingSoon from '@/ui/components/LLComingSoonWarning';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import moveft from 'ui/FRWAssets/image/moveft.png';
 import movenft from 'ui/FRWAssets/image/movenft.png';

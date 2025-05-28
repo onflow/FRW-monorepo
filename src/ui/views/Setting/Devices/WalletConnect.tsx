@@ -13,7 +13,7 @@ import {
 } from '@/shared/types/network-types';
 import { consoleError } from '@/shared/utils/console-log';
 import { FCLWalletConnectMethod } from '@/shared/utils/type';
-import { LLPrimaryButton, LLSecondaryButton } from 'ui/FRWComponent';
+import { LLPrimaryButton, LLSecondaryButton } from 'ui/components';
 import { useWallet } from 'ui/utils';
 
 import closeCircle from '../../../FRWAssets/image/closeCircle.png';

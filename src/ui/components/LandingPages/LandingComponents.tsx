@@ -1,10 +1,10 @@
 import { Box, IconButton, Typography } from '@mui/material';
 import React from 'react';
 
-import { LLPinAlert } from '@/ui/FRWComponent';
-import Confetti from '@/ui/FRWComponent/Confetti';
-import RegisterHeader from '@/ui/FRWComponent/LandingPages/RegisterHeader';
-import SlideLeftRight from '@/ui/FRWComponent/SlideLeftRight';
+import { LLPinAlert } from '@/ui/components';
+import Confetti from '@/ui/components/Confetti';
+import RegisterHeader from '@/ui/components/LandingPages/RegisterHeader';
+import SlideLeftRight from '@/ui/components/SlideLeftRight';
 
 import BackButtonIcon from '../../../components/iconfont/IconBackButton';
 

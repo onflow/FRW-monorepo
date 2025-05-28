@@ -8,7 +8,7 @@ import { useWallet } from 'ui/utils';
 
 // import theme from '../../style/LLTheme';
 // import { initOnRamp } from '@coinbase/cbpay-js';
-// import { LLHeader } from '@/ui/FRWComponent';
+// import { LLHeader } from '@/ui/components';
 // import Coinbase from '../../FRWAssets/svg/coinbasepay-txt.svg';
 
 import Coinbase from '../../FRWAssets/svg/coinbase-pay.svg';

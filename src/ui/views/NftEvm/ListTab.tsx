@@ -14,7 +14,7 @@ import { Box } from '@mui/system';
 import React, { forwardRef, useImperativeHandle, useEffect, useState, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import ListSkeleton from '@/ui/FRWComponent/NFTs/ListSkeleton';
+import ListSkeleton from '@/ui/components/NFTs/ListSkeleton';
 import { useWallet } from '@/ui/utils/WalletContext';
 import placeholder from 'ui/FRWAssets/image/placeholder.png';
 

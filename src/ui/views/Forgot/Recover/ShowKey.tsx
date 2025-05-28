@@ -4,7 +4,7 @@ import { Button, Typography, IconButton } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { useState } from 'react';
 
-import ResetModal from '@/ui/FRWComponent/PopupModal/resetModal';
+import ResetModal from '@/ui/components/PopupModal/resetModal';
 import { useWallet } from 'ui/utils';
 
 import IconCopy from '../../../../components/iconfont/IconCopy';

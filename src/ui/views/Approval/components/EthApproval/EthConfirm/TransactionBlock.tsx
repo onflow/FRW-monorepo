@@ -2,10 +2,10 @@ import { Stack, Box, Typography, Divider, CardMedia, Tooltip } from '@mui/materi
 import { isHexString } from 'ethers';
 import React from 'react';
 
+import { CopyButton } from 'ui/components';
 import circlecheck from 'ui/FRWAssets/image/circlecheck.png';
 import placeholder from 'ui/FRWAssets/image/placeholder.png';
 import transactionFeeIcon from 'ui/FRWAssets/svg/transactionFeeIcon.svg';
-import { CopyButton } from 'ui/FRWComponent';
 import { formatAddress, HexToDecimalConverter } from 'ui/utils';
 
 import IconFlow from '../../../../../../components/iconfont/IconFlow';

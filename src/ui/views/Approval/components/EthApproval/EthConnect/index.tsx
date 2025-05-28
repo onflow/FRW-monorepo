@@ -4,12 +4,12 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
-import { EnableEvm } from '@/ui/FRWComponent/EnableEvm';
+import { EnableEvm } from '@/ui/components/EnableEvm';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
+import { LLPrimaryButton, LLSecondaryButton, LLConnectLoading } from 'ui/components';
 import flowgrey from 'ui/FRWAssets/svg/flow-grey.svg';
 import linkGlobe from 'ui/FRWAssets/svg/linkGlobe.svg';
-import { LLPrimaryButton, LLSecondaryButton, LLConnectLoading } from 'ui/FRWComponent';
 import { useApproval, useWallet, formatAddress } from 'ui/utils';
 
 import CheckCircleIcon from '../../../../../../components/iconfont/IconCheckmark';

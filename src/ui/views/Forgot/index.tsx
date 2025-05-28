@@ -3,9 +3,9 @@ import { Box } from '@mui/system';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
+import RegisterHeader from '@/ui/components/LandingPages/RegisterHeader';
 import recover from '@/ui/FRWAssets/svg/recover.svg';
 import reset from '@/ui/FRWAssets/svg/resetarrow.svg';
-import RegisterHeader from '@/ui/FRWComponent/LandingPages/RegisterHeader';
 
 const Forgot = () => {
   return (

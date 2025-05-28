@@ -5,8 +5,8 @@ import { useHistory, useLocation } from 'react-router-dom';
 
 import { consoleError } from '@/shared/utils/console-log';
 import BrowserWarning from '@/ui/component/BrowserWarning';
-import { LLHeader, LLSpinner } from '@/ui/FRWComponent';
-import { LLDeleteBackupPopup } from '@/ui/FRWComponent/LLDeleteBackupPopup';
+import { LLHeader, LLSpinner } from '@/ui/components';
+import { LLDeleteBackupPopup } from '@/ui/components/LLDeleteBackupPopup';
 import { useWallet } from 'ui/utils';
 
 import CheckCircleIcon from '../../../../components/iconfont/IconCheckmark';

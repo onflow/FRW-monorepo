@@ -3,10 +3,10 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Box, Button, Typography, Drawer, IconButton, CardMedia, Skeleton } from '@mui/material';
 import React, { useState } from 'react';
 
-import NftSearch from '@/ui/FRWComponent/NFTs/NftSearch';
+import NftSearch from '@/ui/components/NFTs/NftSearch';
+import { LLSpinner } from 'ui/components';
 import moveSelectDrop from 'ui/FRWAssets/svg/moveSelectDrop.svg';
 import selected from 'ui/FRWAssets/svg/selected.svg';
-import { LLSpinner } from 'ui/FRWComponent';
 
 interface NFTMoveDrawerProps {
   showMoveBoard: boolean;

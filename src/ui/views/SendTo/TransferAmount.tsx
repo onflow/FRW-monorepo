@@ -17,7 +17,7 @@ import { makeStyles } from '@mui/styles';
 import React, { useCallback } from 'react';
 
 import { type TransactionState } from '@/shared/types/transaction-types';
-import SlideRelative from '@/ui/FRWComponent/SlideRelative';
+import SlideRelative from '@/ui/components/SlideRelative';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 

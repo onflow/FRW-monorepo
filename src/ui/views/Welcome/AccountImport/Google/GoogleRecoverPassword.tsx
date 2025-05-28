@@ -18,7 +18,7 @@ import { Box } from '@mui/system';
 import React, { useEffect, useState } from 'react';
 import zxcvbn from 'zxcvbn';
 
-import { LLSpinner, LLNotFound } from '@/ui/FRWComponent';
+import { LLSpinner, LLNotFound } from '@/ui/components';
 import { useWallet } from 'ui/utils';
 
 import CheckCircleIcon from '../../../../../components/iconfont/IconCheckmark';

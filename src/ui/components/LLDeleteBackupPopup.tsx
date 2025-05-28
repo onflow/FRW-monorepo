@@ -1,7 +1,7 @@
 import { Typography, Box, Drawer, Stack } from '@mui/material';
 import React from 'react';
 
-import { LLPrimaryButton, LLSecondaryButton } from 'ui/FRWComponent';
+import { LLPrimaryButton, LLSecondaryButton } from 'ui/components';
 
 import IconSubtract from '../../components/iconfont/IconSubtract';
 
