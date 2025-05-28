@@ -9,14 +9,15 @@ import {
   AccordionDetails,
 } from '@mui/material';
 import * as fcl from '@onflow/fcl';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { storage } from '@/background/webapi';
+import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { LLPrimaryButton, LLSecondaryButton } from 'ui/FRWComponent';
 import { useApproval, useWallet } from 'ui/utils';
 
 import './github-dark-dimmed.css';
+import ShowSwitch from './ShowSwitch';
 
 interface ConnectProps {
   params: any;
@@ -36,6 +37,9 @@ const SignMessage = ({ params: { icon, origin, tabId, type } }: ConnectProps) =>
   const [title, setTitle] = useState('');
   const [expanded, setExpanded] = useState(true);
   const [logo, setLogo] = useState('');
+  const { network: currentNetwork } = useNetwork();
+  const [msgNetwork, setMsgNetwork] = useState('testnet');
+  const [showSwitch, setShowSwitch] = useState(false);
 
   const rightPaddedHexBuffer = (value: string, pad: number) =>
     Buffer.from(value.padEnd(pad * 2, '0'), 'hex');
@@ -110,13 +114,23 @@ const SignMessage = ({ params: { icon, origin, tabId, type } }: ConnectProps) =>
       if (msg.config.app.icon) {
         setLogo(msg.config.app.icon);
       }
-
+      if (msg.config?.client?.network) {
+        setMsgNetwork(msg.config.client.network);
+      }
       setMessage(msg.body?.message);
     }
 
     sendResponse({ status: 'ok' });
     return true;
   };
+
+  const checkNetwork = useCallback(async () => {
+    if (msgNetwork !== currentNetwork && msgNetwork) {
+      setShowSwitch(true);
+    } else {
+      setShowSwitch(false);
+    }
+  }, [msgNetwork, currentNetwork]);
 
   useEffect(() => {
     if (chrome.tabs) {
@@ -143,12 +157,12 @@ const SignMessage = ({ params: { icon, origin, tabId, type } }: ConnectProps) =>
 
     chrome.runtime?.onMessage.addListener(extMessageHandler);
 
+    checkNetwork();
+
     return () => {
-      chrome.runtime?.onMessage.removeListener(() => {
-        console.log('removeListener');
-      });
+      chrome.runtime?.onMessage.removeListener(() => {});
     };
-  }, [tabId]);
+  }, [tabId, checkNetwork]);
 
   window.onbeforeunload = () => {
     if (!approval) {
@@ -169,92 +183,100 @@ const SignMessage = ({ params: { icon, origin, tabId, type } }: ConnectProps) =>
 
   return (
     <>
-      <Box
-        sx={{
-          margin: '18px 18px 0px 18px',
-          display: 'flex',
-          flexDirection: 'column',
-          borderRadius: '12px',
-          height: '100%',
-          background: 'linear-gradient(0deg, #121212, #11271D)',
-        }}
-      >
-        <Box sx={{ display: 'flex', flexDirection: 'column', margin: '18px', gap: '18px' }}>
-          <Box sx={{ display: 'flex', gap: '18px', marginBottom: '14px' }}>
-            <img
-              style={{
-                height: '90px',
-                width: '90px',
-                borderRadius: '12px',
-                backgroundColor: 'text.secondary',
-              }}
-              src={logo}
-            />
-            <Stack direction="column" spacing={1} sx={{ justifyContent: 'space-between' }}>
-              <Typography>{title}</Typography>
-              <Typography>{host}</Typography>
-            </Stack>
-          </Box>
-          <Divider />
+      {showSwitch ? (
+        <ShowSwitch
+          currentNetwork={currentNetwork}
+          msgNetwork={msgNetwork}
+          onCancel={handleCancel}
+        />
+      ) : (
+        <Box
+          sx={{
+            margin: '18px 18px 0px 18px',
+            display: 'flex',
+            flexDirection: 'column',
+            borderRadius: '12px',
+            height: '100%',
+            background: 'linear-gradient(0deg, #121212, #11271D)',
+          }}
+        >
+          <Box sx={{ display: 'flex', flexDirection: 'column', margin: '18px', gap: '18px' }}>
+            <Box sx={{ display: 'flex', gap: '18px', marginBottom: '14px' }}>
+              <img
+                style={{
+                  height: '90px',
+                  width: '90px',
+                  borderRadius: '12px',
+                  backgroundColor: 'text.secondary',
+                }}
+                src={logo}
+              />
+              <Stack direction="column" spacing={1} sx={{ justifyContent: 'space-between' }}>
+                <Typography>{title}</Typography>
+                <Typography>{host}</Typography>
+              </Stack>
+            </Box>
+            <Divider />
 
-          <Box sx={{ borderRadius: '12px', overflow: 'hidden', width: '100%', height: '100%' }}>
-            <Accordion
-              expanded={expanded}
-              onChange={() => setExpanded(!expanded)}
-              disableGutters
-              sx={{
-                color: '#BABABA',
-                background: '#282828',
-                borderRadius: '12px !important',
-                overflow: 'hidden',
-              }}
-            >
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon sx={{ color: '#41CC5D', fontSize: 20 }} />}
-                aria-controls="panel1a-content"
-                sx={{ height: '40px !important' }}
+            <Box sx={{ borderRadius: '12px', overflow: 'hidden', width: '100%', height: '100%' }}>
+              <Accordion
+                expanded={expanded}
+                onChange={() => setExpanded(!expanded)}
+                disableGutters
+                sx={{
+                  color: '#BABABA',
+                  background: '#282828',
+                  borderRadius: '12px !important',
+                  overflow: 'hidden',
+                }}
               >
-                <Typography sx={{ fontWeight: '500', fontSize: '12px', fontFamily: 'Inter' }}>
-                  {chrome.i18n.getMessage('SIGN__MESSAGE')}
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails sx={{ padding: '0 10px' }}>
-                <Box
-                  sx={{
-                    background: '#333333',
-                    borderRadius: '12px',
-                    height: '100%',
-                    padding: '12px 8px',
-                    mb: '12px',
-                    overflow: 'scroll',
-                  }}
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon sx={{ color: '#41CC5D', fontSize: 20 }} />}
+                  aria-controls="panel1a-content"
+                  sx={{ height: '40px !important' }}
                 >
-                  <Typography
-                    component="p"
-                    sx={{ fontWeight: '400', fontSize: '14px', fontFamily: 'Inter' }}
-                  >
-                    {message && Buffer.from(message, 'hex').toString('utf8')}
+                  <Typography sx={{ fontWeight: '500', fontSize: '12px', fontFamily: 'Inter' }}>
+                    {chrome.i18n.getMessage('SIGN__MESSAGE')}
                   </Typography>
-                </Box>
-              </AccordionDetails>
-            </Accordion>
+                </AccordionSummary>
+                <AccordionDetails sx={{ padding: '0 10px' }}>
+                  <Box
+                    sx={{
+                      background: '#333333',
+                      borderRadius: '12px',
+                      height: '100%',
+                      padding: '12px 8px',
+                      mb: '12px',
+                      overflow: 'scroll',
+                    }}
+                  >
+                    <Typography
+                      component="p"
+                      sx={{ fontWeight: '400', fontSize: '14px', fontFamily: 'Inter' }}
+                    >
+                      {message && Buffer.from(message, 'hex').toString('utf8')}
+                    </Typography>
+                  </Box>
+                </AccordionDetails>
+              </Accordion>
+            </Box>
           </Box>
+          <Box sx={{ flexGrow: 1 }} />
+          <Stack direction="row" spacing={1} sx={{ paddingBottom: '32px' }}>
+            <LLSecondaryButton
+              label={chrome.i18n.getMessage('Cancel')}
+              fullWidth
+              onClick={handleCancel}
+            />
+            <LLPrimaryButton
+              label={chrome.i18n.getMessage('Approve')}
+              fullWidth
+              type="submit"
+              onClick={sendAuthzToFCL}
+            />
+          </Stack>
         </Box>
-        <Box sx={{ flexGrow: 1 }} />
-        <Stack direction="row" spacing={1} sx={{ paddingBottom: '32px' }}>
-          <LLSecondaryButton
-            label={chrome.i18n.getMessage('Cancel')}
-            fullWidth
-            onClick={handleCancel}
-          />
-          <LLPrimaryButton
-            label={chrome.i18n.getMessage('Approve')}
-            fullWidth
-            type="submit"
-            onClick={sendAuthzToFCL}
-          />
-        </Stack>
-      </Box>
+      )}
     </>
   );
 };

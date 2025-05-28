@@ -1,23 +1,24 @@
+import { type NewsItem } from '@/shared/types/news-types';
+import { newsKey, newsRefreshRegex, type NewsStore } from '@/shared/utils/cache-data-keys';
+import { consoleError } from '@/shared/utils/console-log';
+import {
+  readAndDismissedNewsKey,
+  type ReadAndDismissedNewsStore,
+} from '@/shared/utils/user-data-keys';
 import { createPersistStore } from 'background/utils';
 import { storage } from 'background/webapi';
 
-import type { NewsItem } from '../../shared/types/network-types';
+import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
 
-import conditionsEvaluator from './conditions-evaluator';
 import openapi from './openapi';
 
-interface NewsStore {
-  readIds: string[];
-  dismissedIds: string[];
-}
-
 class NewsService {
-  store!: NewsStore;
+  store!: ReadAndDismissedNewsStore;
 
   init = async () => {
     try {
-      this.store = await createPersistStore<NewsStore>({
-        name: 'newsService', // Must be unique name
+      this.store = await createPersistStore<ReadAndDismissedNewsStore>({
+        name: readAndDismissedNewsKey(), // Must be unique name
         template: {
           readIds: [], // ids of news that are read
           dismissedIds: [], // ids of news that are dismissed
@@ -25,39 +26,31 @@ class NewsService {
         fromStorage: true,
       });
     } catch (error) {
-      console.error('Error initializing NewsService', error);
-
-      // Try clearing the store
-      this.clear();
+      consoleError('Error initializing NewsService', error);
     }
+    registerRefreshListener(newsRefreshRegex, this.loadNews);
+  };
+
+  loadNews = async () => {
+    const unfilteredNews = await openapi.getNews();
+
+    // Filter out news that are expired
+    const timeNow = new Date(Date.now());
+
+    const news = unfilteredNews.filter((n: { expiryTime: Date }) => {
+      return n.expiryTime > timeNow;
+    });
+
+    setCachedData(newsKey(), news, 5 * 60_000); // 5 minutes
+    return news;
   };
 
   getNews = async (): Promise<NewsItem[]> => {
-    if (!this.store) await this.init();
-
-    const news = await openapi.getNews();
-    // Remove dismissed news and evaluate conditions
-
-    const filteredNewsPromises = news
-      .filter((n) => !this.isDismissed(n.id))
-      .map(async (newsItem) => {
-        try {
-          const shouldShow = await conditionsEvaluator.evaluateConditions(newsItem.conditions);
-          return shouldShow ? newsItem : null;
-        } catch (error) {
-          // Catch error here otherwise the whole news list will be empty
-          console.error('Error evaluating conditions', error);
-          return null;
-        }
-      });
-    const filteredNews = await Promise.all(filteredNewsPromises)
-      .catch((error) => {
-        console.error('Error evaluating conditions', error);
-        return [];
-      })
-      .then((news) => news.filter((item) => item !== null));
-
-    return filteredNews as NewsItem[];
+    const cachedNews = await getValidData<NewsStore>(newsKey());
+    if (cachedNews) {
+      return cachedNews;
+    }
+    return this.loadNews();
   };
 
   isRead = (id: string): boolean => {

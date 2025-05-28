@@ -1,6 +1,8 @@
 import aesjs from 'aes-js';
 import * as bip39 from 'bip39';
 
+import { consoleError, consoleWarn } from '@/shared/utils/console-log';
+
 interface GoogleDriveFileModel {
   kind: string;
   id: string;
@@ -43,7 +45,7 @@ class GoogleDriveService {
       const token = await this.getAuthTokenWrapper(false);
       return token !== undefined && token !== null;
     } catch (err) {
-      console.error('hasGooglePermission - not authorized', err);
+      consoleError('hasGooglePermission - not authorized', err);
       return false;
     }
   };
@@ -82,7 +84,7 @@ class GoogleDriveService {
       const parsedData = JSON.parse(sanitizedData);
       encryptedHex = parsedData?.hex || parsedData;
     } catch (error) {
-      console.warn('JSON parsing failed, checking if raw hex string:', error.message);
+      consoleWarn('JSON parsing failed, checking if raw hex string:', error.message);
 
       const rawHex = encryptedData.replace(/\s+/g, '');
       if (/^[0-9a-fA-F]+$/.test(rawHex)) {
@@ -413,7 +415,7 @@ class GoogleDriveService {
               time: new Date().getTime().toString(),
             };
           } catch (err) {
-            console.error(`Failed to update password for profile backup: ${item.username}`, err);
+            consoleError(`Failed to update password for profile backup: ${item.username}`, err);
             throw new Error(`Failed to update password for profile backup: ${item.username}`);
           }
         }
@@ -427,7 +429,7 @@ class GoogleDriveService {
       await this.updateFile(this.fileId, updateContent, false);
       return true;
     } catch (err) {
-      console.error('Failed to update password on selected profile backups:', err);
+      consoleError('Failed to update password on selected profile backups:', err);
       throw new Error('Failed to update password on selected profile backups');
     }
   };

@@ -1,39 +1,31 @@
-import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Box, IconButton, Typography } from '@mui/material';
+import React, { useCallback, useEffect, useState } from 'react';
 
-import { Box, Grid, IconButton } from '@mui/material';
-import { Typography } from '@mui/material';
-import IconCopy from '../../../../components/iconfont/IconCopy';
-import { useWallet } from 'ui/utils';
+import { type KeyResponseItem, type AccountKey } from '@/shared/types/network-types';
 import { LLHeader } from '@/ui/FRWComponent';
-import sequence from '../../../FRWAssets/image/sequence.png';
-import hash from '../../../FRWAssets/image/hash.png';
-import weight from '../../../FRWAssets/image/weight.png';
-import key from '../../../FRWAssets/image/key.png';
+import { useWallet } from 'ui/utils';
+
+import IconCopy from '../../../../components/iconfont/IconCopy';
 import curve from '../../../FRWAssets/image/curve.png';
+import hash from '../../../FRWAssets/image/hash.png';
+import key from '../../../FRWAssets/image/key.png';
+import sequence from '../../../FRWAssets/image/sequence.png';
 import toggle from '../../../FRWAssets/image/toggle.png';
+import weight from '../../../FRWAssets/image/weight.png';
+
 import RevokePage from './RevokePage';
 
-interface State {
-  password: string;
-}
-
 const KeyList = () => {
-  const location = useLocation<State>();
   const wallet = useWallet();
-  const [privatekey, setKey] = useState('');
-  const [publickey, setPublicKey] = useState('');
   const [showKey, setShowkey] = useState(null);
   const [showRevoke, setShowRevoke] = useState(false);
   const [publickeys, setPublicKeys] = useState<any[]>([]);
-  const [deviceKey, setDeviceKey] = useState<any[]>([]);
   const [keyIndex, setKeyIndex] = useState<string>('');
 
-  const getAccount = async () => {
-    const account = await wallet.getAccount();
+  const getAccount = useCallback(async () => {
+    const account = await wallet.getMainAccountInfo();
     const keys = await wallet.openapi.keyList();
     const installationId = await wallet.openapi.getInstallationId();
-    // console.log(';account is ', account)
     const mergedArray = await mergeData(
       {
         result: keys.data.result,
@@ -41,18 +33,12 @@ const KeyList = () => {
       },
       installationId
     );
-    console.log(';account is ', mergedArray);
     setPublicKeys(mergedArray);
-  };
+  }, [wallet]);
 
-  const getUserKeys = async () => {
-    const keys = await wallet.openapi.keyList();
-    setDeviceKey(keys);
-    console.log('keys ', keys);
-  };
-  const setTab = async () => {
+  const setTab = useCallback(async () => {
     await wallet.setDashIndex(3);
-  };
+  }, [wallet]);
 
   const toggleKey = async (index) => {
     if (showKey === index) {
@@ -62,30 +48,33 @@ const KeyList = () => {
     }
   };
 
-  async function mergeData(data, installationId) {
+  async function mergeData(
+    data: { result: KeyResponseItem[]; keys: AccountKey[] },
+    installationId: string
+  ) {
     const merged = data.keys.map((key) => {
       const matchingResults = data.result.filter(
         (item) => item.pubkey.public_key === key.publicKey
       );
 
-      const mergedItem = { ...key };
-      console.log('matchingResult ', matchingResults);
-      mergedItem.current_device = false;
-      mergedItem.devices = matchingResults.map((result) => {
-        const deviceItem = {
-          ...result.pubkey,
-          ...key,
-          device_name: result.device.device_name,
-        };
-        console.log('matchingResult ', result);
+      const mergedItem = {
+        ...key,
+        current_device: false,
+        devices: matchingResults.map((result) => {
+          const deviceItem = {
+            ...result.pubkey,
+            ...key,
+            device_name: result.device.device_name,
+          };
 
-        // Check if the installationId matches device.id
-        if (result.device.id === installationId) {
-          mergedItem.current_device = true;
-        }
+          // Check if the installationId matches device.id
+          if (result.device.id === installationId) {
+            mergedItem.current_device = true;
+          }
 
-        return deviceItem;
-      });
+          return deviceItem;
+        }),
+      };
 
       return mergedItem;
     });
@@ -101,8 +90,7 @@ const KeyList = () => {
   useEffect(() => {
     setTab();
     getAccount();
-    getUserKeys();
-  }, []);
+  }, [getAccount, setTab]);
 
   const CredentialBox = ({ data }) => {
     return (

@@ -15,6 +15,8 @@ import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 
 import { storage } from '@/background/webapi';
+import { consoleError } from '@/shared/utils/console-log';
+import { refreshEvmToken } from '@/ui/hooks/use-coin-hooks';
 import { EVM_ENDPOINT } from 'consts';
 import { useWallet } from 'ui/utils';
 
@@ -85,12 +87,12 @@ const AddCustomEvmToken = () => {
       try {
         const result = await contract[method](...args);
         if (!result || result === '0x') {
-          console.error(`No data returned for method: ${method}`);
+          consoleError(`No data returned for method: ${method}`);
           return null;
         }
         return result;
       } catch (error) {
-        console.error(`Error calling ${method}:`, error);
+        consoleError(`Error calling ${method}:`, error);
         return null;
       }
     }
@@ -116,7 +118,7 @@ const AddCustomEvmToken = () => {
       setCoinInfo(info);
       setLoading(false);
     } else {
-      console.error('Failed to retrieve all required data for the token.');
+      consoleError('Failed to retrieve all required data for the token.');
       setIsValidatingAddress(false);
       setValidationError(true);
       setLoading(false);
@@ -136,15 +138,15 @@ const AddCustomEvmToken = () => {
     const existingIndex = evmCustomToken.findIndex((token) => token.address === contractAddress);
 
     if (existingIndex !== -1) {
+      // Token already exists in evmCustomToken, replacing with new info
       evmCustomToken[existingIndex] = coinInfo;
-      console.log('Token already exists in evmCustomToken, replacing with new info');
     } else {
+      // New token added to evmCustomToken
       evmCustomToken.push(coinInfo);
-      console.log('New token added to evmCustomToken');
     }
 
     await storage.set(`${network}evmCustomToken`, evmCustomToken);
-    await usewallet.openapi.refreshEvmToken(network);
+    refreshEvmToken(network);
     setLoading(false);
     history.replace({ pathname: history.location.pathname, state: { refreshed: true } });
     history.goBack();

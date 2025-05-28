@@ -106,7 +106,7 @@ function findSourceImports(): Set<string> {
         },
       });
     } catch (error) {
-      console.warn(`Failed to parse ${file}:`, error.message);
+      console.error(`Failed to parse ${file}:`, error.message);
     }
   });
 
@@ -199,7 +199,6 @@ function generateReport(dependencies: Dependencies): string {
 }
 
 function prepareBuildEnvironment() {
-  // eslint-disable-next-line no-console
   console.log('Preparing build environment...');
 
   // Copy manifest
@@ -226,7 +225,7 @@ prepareBuildEnvironment();
 
 const config = webpackConfig({ config: 'dev' });
 config.watch = false;
-// eslint-disable-next-line no-console
+
 console.log('Starting webpack build and analysis...');
 
 webpack(config, (err, stats) => {
@@ -235,13 +234,12 @@ webpack(config, (err, stats) => {
     process.exit(1);
   }
 
-  // eslint-disable-next-line no-console
   console.log('Build complete, analyzing dependencies...');
   const dependencies = analyzeDependencies(stats);
   const report = generateReport(dependencies);
 
   const reportPath = path.join(__dirname, '../extension-dependencies.md');
   fs.writeFileSync(reportPath, report);
-  // eslint-disable-next-line no-console
+
   console.log(`Analysis complete! Check ${reportPath}`);
 });

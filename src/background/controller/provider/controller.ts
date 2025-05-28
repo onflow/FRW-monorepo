@@ -12,8 +12,7 @@ import { signWithKey } from '@/background/utils/modules/publicPrivateKey';
 import { tupleToPrivateKey } from '@/shared/types/key-types';
 import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
 import { ensureEvmAddressPrefix, isValidEthereumAddress } from '@/shared/utils/address';
-import { getHashAlgo, getSignAlgo } from '@/shared/utils/algo';
-import { SIGN_ALGO_NUM_ECDSA_P256 } from '@/shared/utils/algo-constants';
+import { consoleError } from '@/shared/utils/console-log';
 import {
   permissionService,
   sessionService,
@@ -200,7 +199,7 @@ class ProviderController extends BaseController {
 
     return new Promise((resolve, reject) => {
       if (!web3Instance.currentProvider) {
-        console.error('Provider is undefined');
+        consoleError('Provider is undefined');
         return;
       }
 
@@ -213,7 +212,7 @@ class ProviderController extends BaseController {
         },
         (err, response) => {
           if (err) {
-            console.error('Error:', err);
+            consoleError('Error:', err);
             reject(err);
           } else {
             resolve(response);
@@ -249,7 +248,7 @@ class ProviderController extends BaseController {
       }
     } catch (error) {
       // If an error occurs, request approval
-      console.error('ethRequestAccounts - Error querying EVM address:', error);
+      consoleError('ethRequestAccounts - Error querying EVM address:', error);
 
       await notificationService.requestApproval(
         {
@@ -288,7 +287,7 @@ class ProviderController extends BaseController {
 
   ethSendTransaction = async (data) => {
     if (!data || !data.data || !data.data.params || !data.data.params.length) {
-      console.error('Invalid data structure');
+      consoleError('Invalid data structure');
       return null;
     }
 
@@ -325,7 +324,7 @@ class ProviderController extends BaseController {
       currentWallet = await Wallet.getParentAddress();
     } catch (error) {
       // If an error occurs, request approval
-      console.error('Error querying EVM address:', error);
+      consoleError('Error querying EVM address:', error);
 
       return;
     }
@@ -334,17 +333,16 @@ class ProviderController extends BaseController {
     try {
       // Attempt to query the EVM address
       evmAccount = await Wallet.queryEvmAddress(currentWallet);
-      console.log('Query successful:', evmAccount);
     } catch (error) {
       // If an error occurs, request approval
-      console.error('Error querying EVM address:', error);
+      consoleError('Error querying EVM address:', error);
     }
 
     const account = evmAccount ? [evmAccount.toLowerCase()] : [];
     try {
       await sessionService.broadcastEvent('accountsChanged', account);
     } catch (error) {
-      console.warn('Error broadcasting accountsChanged event:', error);
+      consoleError('Error broadcasting accountsChanged event:', error);
       // Continue despite the error
     }
 
@@ -400,7 +398,6 @@ class ProviderController extends BaseController {
 
     switch (chainId) {
       case '0x221': // 545 in decimal corresponds to testnet
-        console.log('Switch to Testnet');
         if (network !== 'testnet') {
           await notificationService.requestApproval(
             {
@@ -413,7 +410,6 @@ class ProviderController extends BaseController {
         return null;
 
       case '0x2eb': // 747 in decimal corresponds to mainnet
-        console.log('Switch to Mainnet');
         if (network !== 'mainnet') {
           await notificationService.requestApproval(
             {
@@ -425,7 +421,6 @@ class ProviderController extends BaseController {
         }
         return null;
       default:
-        console.log(`Unsupported ChainId: ${chainId}`);
         throw ethErrors.provider.custom({
           code: 4902,
           message: `Unrecognized  ChainId"${chainId}".`,
@@ -458,7 +453,6 @@ class ProviderController extends BaseController {
   };
 
   signTypeData = async (request) => {
-    console.log('eth_signTypedData_v4  ', request);
     let address;
     let data;
     let currentChain;
@@ -485,7 +479,6 @@ class ProviderController extends BaseController {
     }
 
     const paramAddress = request.data.params?.[0] || '';
-
     if (isValidEthereumAddress(paramAddress)) {
       data = request.data.params[1];
       address = request.data.params[0];
@@ -494,15 +487,25 @@ class ProviderController extends BaseController {
       address = request.data.params[1];
     }
 
+    let message;
+    try {
+      message = typeof data === 'string' ? JSON.parse(data) : data;
+    } catch (e) {
+      throw new Error('Invalid JSON data provided');
+    }
+    const { chainId } = message.domain || {};
+
+    if (!chainId || Number(chainId) !== Number(currentChain)) {
+      throw new Error('Provided chainId does not match the currently active chain');
+    }
+
     // Potentially shouldn't change the case to compare - we should be checking ERC-55 conformity
     if (
       ensureEvmAddressPrefix(evmaddress!.toLowerCase()) !==
       ensureEvmAddressPrefix(address.toLowerCase())
     ) {
-      console.log('evmaddress address ', evmaddress!, address);
       throw new Error('Provided address does not match the current address');
     }
-    const message = typeof data === 'string' ? JSON.parse(data) : data;
 
     const signTypeMethod =
       request.data.method === 'eth_signTypedData_v3'
@@ -557,7 +560,17 @@ class ProviderController extends BaseController {
       address = request.data.params[1];
     }
 
-    console.log('evmaddress address ', address, evmaddress);
+    let message;
+    try {
+      message = typeof data === 'string' ? JSON.parse(data) : data;
+    } catch (e) {
+      throw new Error('Invalid JSON data provided');
+    }
+    const { chainId } = message.domain || {};
+
+    if (!chainId || Number(chainId) !== Number(currentChain)) {
+      throw new Error('Provided chainId does not match the currently active chain');
+    }
 
     // Potentially shouldn't change the case to compare - we should be checking ERC-55 conformity
     if (
@@ -566,8 +579,6 @@ class ProviderController extends BaseController {
     ) {
       throw new Error('Provided address does not match the current address');
     }
-
-    const message = typeof data === 'string' ? JSON.parse(data) : data;
 
     const hash = TypedDataUtils.eip712Hash(message, SignTypedDataVersion.V4);
 

@@ -10,6 +10,7 @@ import receiveIcon from '@/ui/FRWAssets/svg/receiveIcon.svg';
 import sendIcon from '@/ui/FRWAssets/svg/sendIcon.svg';
 import swapIcon from '@/ui/FRWAssets/svg/swapIcon.svg';
 import { IconButton } from '@/ui/FRWComponent/IconButton';
+import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useCoins } from 'ui/hooks/useCoinHook';
 
 import IconChevronRight from '../../../components/iconfont/IconChevronRight';
@@ -30,6 +31,7 @@ const TokenInfoCard = ({
 }) => {
   const history = useHistory();
   const { coins } = useCoins();
+  const currency = useCurrency();
 
   const extendedTokenInfo: ExtendedTokenInfo | undefined = useMemo(
     () => coins?.find((coin) => coin.id.toLowerCase() === tokenId.toLowerCase()),
@@ -187,7 +189,11 @@ const TokenInfoCard = ({
         </Box>
         <Typography variant="body1" color="text.secondary" sx={{ fontSize: '16px' }}>
           <Box component="span" sx={{ marginRight: '0.25rem' }}>
-            <CurrencyValue value={tokenInfo?.total ?? ''} />
+            <CurrencyValue
+              value={tokenInfo?.total ?? ''}
+              currencyCode={currency?.code ?? ''}
+              currencySymbol={currency?.symbol ?? ''}
+            />
           </Box>
         </Typography>
         <Box

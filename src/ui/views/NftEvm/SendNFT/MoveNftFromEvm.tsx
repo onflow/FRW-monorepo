@@ -6,15 +6,16 @@ import { useHistory } from 'react-router-dom';
 
 import { type Contact } from '@/shared/types/network-types';
 import { type AccountDetails } from '@/shared/types/wallet-types';
+import { consoleError } from '@/shared/utils/console-log';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
 import { WarningNFTNotOnboardedSnackbar } from '@/ui/FRWComponent/WarningNFTNotOnboardedSnackbar';
 import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
 import { useContacts } from '@/ui/hooks/useContactHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
+import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
 import { MatchMediaType } from '@/ui/utils/url';
-import { useStorageCheck } from '@/ui/utils/useStorageCheck';
 import { LLSpinner, FRWProfileCard, FRWDropdownProfileCard } from 'ui/FRWComponent';
 import { useWallet } from 'ui/utils';
 
@@ -92,7 +93,7 @@ const MoveNftFromEvm = (props: SendNFTConfirmationProps) => {
         history.push(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((error) => {
-        console.error(error);
+        consoleError(error);
         setSending(false);
         setFailed(true);
       });
@@ -119,7 +120,7 @@ const MoveNftFromEvm = (props: SendNFTConfirmationProps) => {
         history.push(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
-        console.error(err);
+        consoleError(err);
         setSending(false);
         setFailed(true);
       });

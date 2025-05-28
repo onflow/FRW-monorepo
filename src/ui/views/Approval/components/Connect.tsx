@@ -2,8 +2,8 @@ import { Stack, Box, Typography, Divider, CardMedia } from '@mui/material';
 import { WalletUtils } from '@onflow/fcl';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { storage } from '@/background/webapi';
 import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
+import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { authnServiceDefinition, serviceDefinition } from 'background/controller/serviceDefinition';
 import flowgrey from 'ui/FRWAssets/svg/flow-grey.svg';
 import Link from 'ui/FRWAssets/svg/link.svg';
@@ -16,14 +16,15 @@ import { useApproval, useWallet } from 'ui/utils';
 
 import CheckCircleIcon from '../../../../components/iconfont/IconCheckmark';
 
+import ShowSwitch from './ShowSwitch';
+
 interface ConnectProps {
-  params: any;
-  // onChainChange(chain: CHAINS_ENUM): void;
-  // defaultChain: CHAINS_ENUM;
+  params: { tabId: number };
 }
 
 const Connect = ({ params: { /*icon, origin,*/ tabId } }: ConnectProps) => {
   const [, resolveApproval, rejectApproval] = useApproval();
+  const { network: currentNetwork } = useNetwork();
   const wallet = useWallet();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -35,7 +36,6 @@ const Connect = ({ params: { /*icon, origin,*/ tabId } }: ConnectProps) => {
   const [title, setTitle] = useState('');
   const [msgNetwork, setMsgNetwork] = useState('testnet');
   const [showSwitch, setShowSwitch] = useState(false);
-  const [currentNetwork, setCurrent] = useState('testnet');
   const [currentAddress, setCurrentAddress] = useState('');
   const [approval, setApproval] = useState(false);
 
@@ -59,16 +59,6 @@ const Connect = ({ params: { /*icon, origin,*/ tabId } }: ConnectProps) => {
     setApproval(false);
     rejectApproval('User rejected the request.');
   }, [opener, rejectApproval, windowId]);
-
-  const handleSwitchNetwork = async () => {
-    wallet.switchNetwork(msgNetwork);
-
-    if (currentNetwork !== msgNetwork) {
-      // TODO: replace it with better UX
-      setCurrent(msgNetwork);
-      setMsgNetwork(msgNetwork);
-    }
-  };
 
   const handleAllow = async () => {
     setIsLoading(true);
@@ -96,7 +86,6 @@ const Connect = ({ params: { /*icon, origin,*/ tabId } }: ConnectProps) => {
     } else {
       chainId = MAINNET_CHAIN_ID;
     }
-    console.log('permission add ', host, title, logo, chainId);
     wallet.addConnectedSite(host, title, logo, chainId);
 
     if (appIdentifier && nonce) {
@@ -145,11 +134,7 @@ const Connect = ({ params: { /*icon, origin,*/ tabId } }: ConnectProps) => {
   };
 
   const extMessageHandler = (msg, sender, sendResponse) => {
-    // if (msg.config.client.network !== network) {
-    //   console.log('not in correct network')
-    // }
     if (msg.type === 'FCL:VIEW:READY:RESPONSE') {
-      console.log('FCL:VIEW:READY:RESPONSE ', msg);
       if (msg.host) {
         setHost(msg.host);
       }
@@ -169,19 +154,14 @@ const Connect = ({ params: { /*icon, origin,*/ tabId } }: ConnectProps) => {
 
   const checkNetwork = useCallback(async () => {
     const address = await wallet.getCurrentAddress();
-    console.log('address currentAddress ', address);
     setCurrentAddress(address!);
 
-    const network = await wallet.getNetwork();
-
-    console.log(' msgNetwork ', msgNetwork, network, showSwitch);
-    setCurrent(network);
-    if (msgNetwork !== network && msgNetwork) {
+    if (msgNetwork !== currentNetwork && msgNetwork) {
       setShowSwitch(true);
     } else {
       setShowSwitch(false);
     }
-  }, [wallet, msgNetwork, showSwitch]);
+  }, [wallet, msgNetwork, currentNetwork]);
 
   useEffect(() => {
     checkNetwork();
@@ -244,17 +224,6 @@ const Connect = ({ params: { /*icon, origin,*/ tabId } }: ConnectProps) => {
       chrome.windows.onRemoved.removeListener(handleWindowRemoved);
     };
   }, [approval, handleCancel, windowId]);
-
-  const networkColor = (network: string) => {
-    switch (network) {
-      case 'mainnet':
-        return '#41CC5D';
-      case 'testnet':
-        return '#FF8A00';
-      case 'crescendo':
-        return '#CCAF21';
-    }
-  };
 
   const renderContent = () => (
     <Box>
@@ -401,115 +370,11 @@ const Connect = ({ params: { /*icon, origin,*/ tabId } }: ConnectProps) => {
   return (
     <>
       {showSwitch ? (
-        <Box
-          sx={{
-            margin: '18px 18px 0px 18px',
-            display: 'flex',
-            flexDirection: 'column',
-            borderRadius: '12px',
-            height: '506px',
-            background: 'linear-gradient(0deg, #121212, #11271D)',
-          }}
-        >
-          <Box sx={{ display: 'flex', flexDirection: 'column', margin: '18px', gap: '18px' }}>
-            <Divider />
-            <Typography sx={{ textAlign: 'center', fontSize: '20px', color: '#E6E6E6' }}>
-              Allow this site to switch <br />
-              the network?
-            </Typography>
-            <Stack direction="row" spacing={1} sx={{ alignItems: 'flex-start', marginTop: '18px' }}>
-              <Typography sx={{ textAlign: 'center', color: '#BABABA', fontSize: '14px' }}>
-                This action will change your current network from{' '}
-                <Typography sx={{ display: 'inline', color: '#E6E6E6' }}>
-                  {' '}
-                  {currentNetwork}
-                </Typography>{' '}
-                to{' '}
-                <Typography sx={{ display: 'inline', color: '#E6E6E6' }}> {msgNetwork}</Typography>.
-              </Typography>
-            </Stack>
-          </Box>
-          <Stack
-            direction="column"
-            spacing="18px"
-            sx={{ justifyContent: 'space-between', width: '100%' }}
-          >
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr 1fr',
-                justifyContent: 'center',
-                alignItems: 'stretch',
-              }}
-            >
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <img
-                  style={{
-                    height: '60px',
-                    width: '60px',
-                    padding: '18px',
-                    borderRadius: '30px',
-                    backgroundColor: networkColor(currentNetwork),
-                    objectFit: 'cover',
-                  }}
-                  src={testnetsvg}
-                />
-                <Typography
-                  sx={{
-                    fontSize: '14px',
-                    color: '#E6E6E6',
-                    fontWeight: 'bold',
-                    width: '100%',
-                    pt: '4px',
-                    textAlign: 'center',
-                  }}
-                >
-                  {currentNetwork}
-                </Typography>
-              </Box>
-              <img style={{ width: '116px' }} src={Link} />
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <img
-                  style={{
-                    height: '60px',
-                    width: '60px',
-                    padding: '18px',
-                    borderRadius: '30px',
-                    backgroundColor: networkColor(msgNetwork),
-                    objectFit: 'cover',
-                  }}
-                  src={mainnetsvg}
-                />
-                <Typography
-                  sx={{
-                    fontSize: '14px',
-                    color: '#E6E6E6',
-                    fontWeight: 'bold',
-                    width: '100%',
-                    pt: '4px',
-                    textAlign: 'center',
-                  }}
-                >
-                  {msgNetwork}
-                </Typography>
-              </Box>
-            </Box>
-          </Stack>
-          <Box sx={{ flexGrow: 1 }} />
-          <Stack direction="row" spacing={1} sx={{ paddingBottom: '32px' }}>
-            <LLSecondaryButton
-              label={chrome.i18n.getMessage('Cancel')}
-              fullWidth
-              onClick={handleCancel}
-            />
-            <LLPrimaryButton
-              label={chrome.i18n.getMessage('Switch__Network')}
-              fullWidth
-              type="submit"
-              onClick={handleSwitchNetwork}
-            />
-          </Stack>
-        </Box>
+        <ShowSwitch
+          currentNetwork={currentNetwork}
+          msgNetwork={msgNetwork}
+          onCancel={handleCancel}
+        />
       ) : (
         <Box>{renderContent()}</Box>
       )}

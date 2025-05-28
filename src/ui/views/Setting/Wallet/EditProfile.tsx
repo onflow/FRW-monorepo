@@ -17,10 +17,7 @@ import { useHistory } from 'react-router-dom';
 
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import emojis from 'background/utils/emoji.json';
-import homeMoveFt from 'ui/FRWAssets/svg/homeMoveFt.svg';
-import moveSvg from 'ui/FRWAssets/svg/moveSvg.svg';
 import { useWallet } from 'ui/utils';
-import { profileHooks } from 'ui/utils/profileHooks';
 
 interface MoveBoardProps {
   showMoveBoard: boolean;
@@ -33,14 +30,8 @@ interface MoveBoardProps {
 }
 
 const EditProfile = (props: MoveBoardProps) => {
-  const { updateEmojis } = profileHooks();
-
   const usewallet = useWallet();
-  const history = useHistory();
-  const [showSelectNft, setSelectBoard] = useState<boolean>(false);
   const [selectedEmoji, setSelectEmoji] = useState<any>(null);
-
-  // console.log('props.loggedInAccounts', props.current)
 
   const requestChildType = useCallback(async () => {
     setSelectEmoji(props.emoji);
@@ -58,7 +49,6 @@ const EditProfile = (props: MoveBoardProps) => {
       props.userWallet[0].blockchain[0].id
     );
     setSelectEmoji(selectedEmoji);
-    updateEmojis();
     props.updateProfileEmoji(selectedEmoji);
     props.handleAddBtnClicked();
   };

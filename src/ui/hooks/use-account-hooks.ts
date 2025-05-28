@@ -1,7 +1,7 @@
 import {
   CURRENT_ID_KEY,
   KEYRING_STATE_CURRENT_KEY,
-  type KeyringStateV2,
+  type KeyringState,
   VaultEntryV2,
 } from '@/shared/types/keyring-types';
 import {
@@ -22,6 +22,8 @@ import {
   supportedCurrenciesKey,
   type SupportedCurrenciesStore,
   childAccountAllowTypesKey,
+  type MainAccountStorageBalanceStore,
+  mainAccountStorageBalanceKey,
 } from '@/shared/utils/cache-data-keys';
 import {
   activeAccountsKey,
@@ -46,6 +48,15 @@ export const useAccountBalance = (
   address: string | undefined | null
 ) => {
   return useCachedData<string>(network && address ? accountBalanceKey(network, address) : null);
+};
+
+export const useMainAccountStorageBalance = (
+  network: string | undefined | null,
+  address: string | undefined | null
+) => {
+  return useCachedData<MainAccountStorageBalanceStore>(
+    network && address ? mainAccountStorageBalanceKey(network, address) : null
+  );
 };
 
 export const useChildAccounts = (
@@ -113,7 +124,7 @@ export const useCurrentId = () => {
   return useUserData<string>(CURRENT_ID_KEY);
 };
 export const useKeyringIds = () => {
-  const keyringState = useUserData<KeyringStateV2>(KEYRING_STATE_CURRENT_KEY);
+  const keyringState = useUserData<KeyringState>(KEYRING_STATE_CURRENT_KEY);
   if (!keyringState) {
     return null;
   }

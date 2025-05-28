@@ -1,3 +1,5 @@
+import { consoleError } from './console-log';
+
 export type StorageChange = chrome.storage.StorageChange;
 export type AreaName = chrome.storage.AreaName;
 
@@ -64,11 +66,11 @@ const checkExpiry = async (value: string, prop: string) => {
     }
     return item.value;
   } catch (error) {
-    console.error('Error parsing storage data', error);
+    consoleError('Error parsing storage data', error);
     try {
       await remove(prop);
     } catch (error) {
-      console.error('Error removing expired storage data', error);
+      consoleError('Error removing expired storage data', error);
     }
     return null;
   }

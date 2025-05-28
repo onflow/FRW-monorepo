@@ -1,30 +1,17 @@
 import SearchIcon from '@mui/icons-material/Search';
-import {
-  Typography,
-  Box,
-  Drawer,
-  Link,
-  Button,
-  InputBase,
-  Input,
-  InputAdornment,
-  Stack,
-  Divider,
-} from '@mui/material';
-import { styled } from '@mui/material/styles';
+import { Typography, Box, Drawer, Input, InputAdornment, Stack, Divider } from '@mui/material';
 import { WalletKit, type WalletKitTypes } from '@reown/walletkit';
 import { Core } from '@walletconnect/core';
 import { formatJsonRpcResult } from '@walletconnect/jsonrpc-utils';
 import { getSdkError } from '@walletconnect/utils';
 import React, { useState, useEffect } from 'react';
-import { useForm, FieldValues } from 'react-hook-form';
-import { useHistory } from 'react-router-dom';
 
 import {
   type DeviceInfo,
   type DeviceInfoRequest,
   type AccountKeyRequest,
 } from '@/shared/types/network-types';
+import { consoleError } from '@/shared/utils/console-log';
 import { FCLWalletConnectMethod } from '@/shared/utils/type';
 import { LLPrimaryButton, LLSecondaryButton } from 'ui/FRWComponent';
 import { useWallet } from 'ui/utils';
@@ -36,19 +23,6 @@ import micone from '../../../FRWAssets/image/micone.png';
 
 import QrScannerComponent from './QrScannerComponent';
 
-const StyledInput = styled(InputBase)(({ theme }) => ({
-  zIndex: 1,
-  color: (theme.palette as any).text,
-  backgroundColor: (theme.palette as any).background.default,
-  borderRadius: theme.spacing(2),
-  marginTop: theme.spacing(2),
-  width: '100%',
-  '& .MuiInputBase-input': {
-    padding: theme.spacing(2),
-    width: '100%',
-  },
-}));
-
 interface RevokePageProps {
   isAddAddressOpen: boolean;
   handleCloseIconClicked: () => void;
@@ -59,17 +33,7 @@ interface RevokePageProps {
 const WalletConnect = (props: RevokePageProps) => {
   const usewallet = useWallet();
 
-  const history = useHistory();
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, dirtyFields, isValid, isDirty, isSubmitting },
-  } = useForm({
-    mode: 'all',
-  });
   const [syncing, setSyncing] = useState(false);
-  const [Uri, setUri] = useState('');
   const [showApprove, setShowApprove] = useState<boolean>(false);
 
   const [namespaceObject, setNamespace] = useState<any>();
@@ -79,7 +43,6 @@ const WalletConnect = (props: RevokePageProps) => {
   const [ID, setId] = useState<any>();
 
   const [web3wallet, setWeb3Wallet] = useState<any>(null);
-  const [showSyncing, setSyncPage] = useState<boolean>(false);
 
   useEffect(() => {
     const createWeb3Wallet = async () => {
@@ -98,14 +61,13 @@ const WalletConnect = (props: RevokePageProps) => {
         });
         setWeb3Wallet(wallet);
       } catch (e) {
-        console.error(e);
+        consoleError(e);
       }
     };
     createWeb3Wallet();
   }, []);
 
   async function onSessionProposal({ id, params }: WalletKitTypes.SessionProposal) {
-    console.log('params ', params);
     try {
       const address = await usewallet.getParentAddress();
       // ------- namespaces builder util ------------ //
@@ -127,14 +89,15 @@ const WalletConnect = (props: RevokePageProps) => {
 
       // ------- end namespaces builder util ------------ //
       setNamespace(namespaces);
-    } catch (error) {}
+    } catch (error) {
+      consoleError(error);
+    }
     setProposer(params.proposer.metadata);
     setId(id);
     showApproveWindow();
   }
 
   async function onSessionRequest({ topic, params, id }: WalletKitTypes.SessionRequest) {
-    console.log('session request ', params);
     if (params.request.method === FCLWalletConnectMethod.accountInfo) {
       try {
         const userInfo = await usewallet.getUserInfo(false);
@@ -155,7 +118,6 @@ const WalletConnect = (props: RevokePageProps) => {
         };
 
         const result = JSON.stringify(response);
-        console.log('send back account response ', response);
         await web3wallet.respondSessionRequest({
           topic,
           requestId: id,
@@ -164,21 +126,18 @@ const WalletConnect = (props: RevokePageProps) => {
 
         // Router.route(to: RouteMap.RestoreLogin.syncDevice(register));
       } catch (error) {
-        console.error('[WALLET] Respond Error: [addDeviceInfo]', error);
+        consoleError('[WALLET] Respond Error: [addDeviceInfo]', error);
       }
     }
     if (params.request.method === FCLWalletConnectMethod.addDeviceInfo) {
       try {
         const accountKeyData = params.request.params.data.accountKey;
 
-        console.log('response ', accountKeyData);
         const publicKey = accountKeyData.publicKey || accountKeyData.public_key;
         const signAlgo = accountKeyData.signAlgo || accountKeyData.sign_algo;
         const hashAlgo = accountKeyData.hashAlgo || accountKeyData.hash_algo;
 
         await usewallet.addKeyToAccount(publicKey, signAlgo, hashAlgo, accountKeyData.weight);
-
-        console.log('response ', params);
 
         // Extracting and mapping the deviceInfo
         const deviceInfoData = params.request.params.data.deviceInfo;
@@ -211,7 +170,6 @@ const WalletConnect = (props: RevokePageProps) => {
         usewallet.openapi
           .synceDevice(requestParams)
           .then((res) => {
-            console.log('sync response ', res);
             if (res.status === 200) {
               // Wait for 5 seconds before sending the response
               setTimeout(async () => {
@@ -219,23 +177,22 @@ const WalletConnect = (props: RevokePageProps) => {
                   const response = formatJsonRpcResult(id, '');
                   await web3wallet.respondSessionRequest({ topic, requestId: id, response });
                   setSyncing(false);
-                  setSyncPage(false);
                   setShowApprove(false);
 
                   props.handleCloseIconClicked();
                 } catch (error) {
-                  console.error('Error in sending session response:', error);
+                  consoleError('Error in sending session response:', error);
                 }
               }, 5000); // 5000 milliseconds = 5 seconds
             }
           })
           .catch((err) => {
-            console.log('Error in syncDevice:', err);
+            consoleError('Error in syncDevice:', err);
           });
 
         // Router.route(to: RouteMap.RestoreLogin.syncDevice(register));
       } catch (error) {
-        console.error('[WALLET] Respond Error: [addDeviceInfo]', error);
+        consoleError('[WALLET] Respond Error: [addDeviceInfo]', error);
       }
     }
   }
@@ -243,18 +200,16 @@ const WalletConnect = (props: RevokePageProps) => {
   const handleFilterAndSearch = async (e) => {
     try {
       const keyword = e.target.value;
-      console.log('keyword', keyword);
-      console.log('web3wallet ', web3wallet);
 
       if (web3wallet) {
         web3wallet.on('session_proposal', onSessionProposal);
         web3wallet.on('session_request', onSessionRequest);
         const res = await web3wallet.pair({ uri: keyword });
       } else {
-        console.log('Web3Wallet is not initialized');
+        throw new Error('Web3Wallet is not initialized');
       }
     } catch (error) {
-      console.log(error, 'wc connect error');
+      consoleError(error, 'wc connect error');
     }
   };
 
@@ -263,7 +218,6 @@ const WalletConnect = (props: RevokePageProps) => {
   };
 
   const approveProposal = async () => {
-    console.log('ID ', ID);
     setSyncing(true);
     await web3wallet.approveSession({
       id: ID,
@@ -272,7 +226,6 @@ const WalletConnect = (props: RevokePageProps) => {
   };
 
   const cancelProposal = async () => {
-    console.log('ID ', ID);
     await web3wallet.rejectSession({
       id: ID,
       reason: getSdkError('USER_REJECTED_METHODS'),
@@ -389,16 +342,7 @@ const WalletConnect = (props: RevokePageProps) => {
           }
           onChange={handleFilterAndSearch}
         />
-        {/* <QrScanner
-          onDecode={(result) => {
-            if (result) {
-              const uri = (result as any).text;
 
-              setUri(uri);
-            }
-          }}
-          onError={(error) => console.log(error?.message)}
-        /> */}
         <QrScannerComponent setUrl={setUrl} />
       </Box>
       <Typography

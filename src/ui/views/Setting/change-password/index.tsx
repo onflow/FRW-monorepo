@@ -19,6 +19,7 @@ import { useHistory } from 'react-router-dom';
 
 import CheckCircleIcon from '@/components/iconfont/IconCheckmark';
 import CancelIcon from '@/components/iconfont/IconClose';
+import { consoleError } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import { LLHeader } from '@/ui/FRWComponent/LLHeader';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
@@ -112,7 +113,7 @@ const ChangePassword = () => {
       // If we reach here, the password is correct
       setSame(true);
     } catch (error) {
-      console.error('Password verification failed:', error);
+      consoleError('Password verification failed:', error);
       setSame(false);
     } finally {
       setIsVerifying(false);
@@ -208,7 +209,7 @@ const ChangePassword = () => {
               history.push('/unlock');
             })
             .catch((error) => {
-              console.error('Error locking wallet:', error);
+              consoleError('Error locking wallet:', error);
               setError(chrome.i18n.getMessage('Oops__unexpected__error'));
             })
             .finally(() => {
@@ -219,7 +220,7 @@ const ChangePassword = () => {
           setError(chrome.i18n.getMessage('Oops__unexpected__error'));
         }
       } catch (error) {
-        console.error('Error changing password:', error);
+        consoleError('Error changing password:', error);
         setError(error.message);
       } finally {
         setIsResetting(false);
@@ -261,14 +262,14 @@ const ChangePassword = () => {
               history.push('/unlock');
             })
             .catch((error) => {
-              console.error('Error locking wallet:', error);
+              consoleError('Error locking wallet:', error);
               setError(chrome.i18n.getMessage('Oops__unexpected__error'));
             });
         } else {
           setError(chrome.i18n.getMessage('Oops__unexpected__error'));
         }
       } catch (error) {
-        console.error('Error changing password:', error);
+        consoleError('Error changing password:', error);
 
         // Provide more specific error messages based on the error
         if (error.message.includes('backup')) {

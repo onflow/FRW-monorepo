@@ -146,12 +146,11 @@ test('send BETA flow to EOA', async ({ page }) => {
 });
 
 test('check all sealed transactions', async ({ page, extensionId }) => {
-  await loginToSenderOrReceiver({ page, extensionId, parallelIndex: test.info().parallelIndex });
+  // Check the amounts that were sent for each transaction
   // Go to the activity page
   await page.goto(`chrome-extension://${extensionId}/index.html#/dashboard?activity=1`);
   await page.waitForURL(/.*\/dashboard.*/);
 
-  // Check the amounts that were sent for each transaction
   await Promise.all(
     txList.map(async (tx) => {
       await checkSentAmount({

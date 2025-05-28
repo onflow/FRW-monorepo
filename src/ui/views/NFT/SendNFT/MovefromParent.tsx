@@ -6,15 +6,18 @@ import { useHistory } from 'react-router-dom';
 
 import { type Contact } from '@/shared/types/network-types';
 import { ensureEvmAddressPrefix, isValidEthereumAddress } from '@/shared/utils/address';
+import { consoleError } from '@/shared/utils/console-log';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
 import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
 import { useContacts } from '@/ui/hooks/useContactHook';
+import { useAllNftList } from '@/ui/hooks/useNftHook';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
+import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
 import { MatchMediaType } from '@/ui/utils/url';
 import { LLSpinner, FRWProfileCard, FRWDropdownProfileCard } from 'ui/FRWComponent';
 import { useWallet, returnFilteredCollections } from 'ui/utils';
-import { useStorageCheck } from 'ui/utils/useStorageCheck';
 
 import IconFlow from '../../../../components/iconfont/IconFlow';
 interface SendNFTConfirmationProps {
@@ -37,8 +40,11 @@ const MovefromParent = (props: SendNFTConfirmationProps) => {
 
   const [childWallets, setChildWallets] = useState<Contact[]>([]);
   const [selectedAccount, setSelectedChildAccount] = useState<Contact | null>(null);
+
+  const { activeAccountType, network } = useProfiles();
+  const allNftList = useAllNftList(network, activeAccountType === 'evm' ? 'evm' : 'flow');
   const { sufficient: isSufficient, sufficientAfterAction } = useStorageCheck({
-    transferAmount: 0,
+    transferAmount: '0',
     coin: 'flow',
     movingBetweenEVMAndFlow: selectedAccount
       ? isValidEthereumAddress(selectedAccount!['address'])
@@ -72,8 +78,7 @@ const MovefromParent = (props: SendNFTConfirmationProps) => {
   const moveNFTToFlow = async () => {
     setSending(true);
     // setSending(true);
-    const contractList = await usewallet.openapi.getAllNft();
-    const filteredCollections = returnFilteredCollections(contractList, props.data.nft);
+    const filteredCollections = returnFilteredCollections(allNftList, props.data.nft);
 
     if (isValidEthereumAddress(selectedAccount!['address'])) {
       await moveNFTToEvm();
@@ -93,7 +98,7 @@ const MovefromParent = (props: SendNFTConfirmationProps) => {
           history.push(`/dashboard?activity=1&txId=${txId}`);
         })
         .catch((err) => {
-          console.error(err);
+          consoleError(err);
           setSending(false);
           setFailed(true);
         });
@@ -120,7 +125,7 @@ const MovefromParent = (props: SendNFTConfirmationProps) => {
         history.push(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
-        console.error(err);
+        consoleError(err);
         setSending(false);
         setFailed(true);
       });

@@ -3,6 +3,7 @@ import { Button, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { useState } from 'react';
 
+import { consoleError } from '@/shared/utils/console-log';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import { LLSpinner } from 'ui/FRWComponent';
 import { useWallet } from 'ui/utils';
@@ -41,7 +42,7 @@ const GoogleBackup: React.FC<GoogleBackupProps> = ({
           setBackupErr(true);
         });
     } catch (e) {
-      console.error(e);
+      consoleError(e);
       setLoading(false);
     }
   };

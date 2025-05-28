@@ -60,7 +60,7 @@ function analyzeFile(
       },
     });
   } catch (error) {
-    console.warn(`Failed to parse ${relativePath}:`, error.message);
+    console.error(`Failed to parse ${relativePath}:`, error.message);
   }
 }
 
@@ -97,7 +97,7 @@ function generateReport(imports: Map<string, Set<string>>, packageLocations: Pac
 }
 
 // Run the analysis
-// eslint-disable-next-line no-console
+
 console.log('Starting import analysis...');
 
 const imports = new Map<string, Set<string>>();
@@ -117,5 +117,5 @@ files.forEach((file) => {
 
 const report = generateReport(imports, packageLocations);
 fs.writeFileSync('dependency-usage.md', report);
-// eslint-disable-next-line no-console
+
 console.log('Analysis complete! Check dependency-usage.md');

@@ -20,6 +20,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { type Contact } from '@/shared/types/network-types';
+import { consoleError } from '@/shared/utils/console-log';
 import EmptyStateImage from 'ui/FRWAssets/image/search_user.png';
 import { useWallet } from 'ui/utils';
 
@@ -110,7 +111,7 @@ const AddressBook = () => {
       setFoundContacts(sortedContacts);
     } catch (error) {
       // Log error or handle it appropriately
-      console.error('Error fetching address book:', error);
+      consoleError('Error fetching address book:', error);
       setIsLoading(false);
     }
   }, [wallet]);

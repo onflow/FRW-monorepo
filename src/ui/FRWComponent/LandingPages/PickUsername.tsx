@@ -12,6 +12,7 @@ import { Box } from '@mui/system';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 
+import { consoleError } from '@/shared/utils/console-log';
 import EmailIcon from '@/ui/assets/alternate-email.svg';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
 import { useWallet } from 'ui/utils';
@@ -136,7 +137,7 @@ const PickUsername = ({
             }
           }
         } catch (error) {
-          console.error('error', error);
+          consoleError('error', error);
           if (isMounted.current) {
             setErrorMessage(chrome.i18n.getMessage('Oops__unexpected__error'));
           }

@@ -5,9 +5,11 @@ import { useHistory } from 'react-router-dom';
 
 import { type TransactionState } from '@/shared/types/transaction-types';
 import { isValidAddress, isValidEthereumAddress } from '@/shared/utils/address';
+import { consoleError } from '@/shared/utils/console-log';
 import { LLHeader } from '@/ui/FRWComponent';
 import { ContactCard } from '@/ui/FRWComponent/Send/ContactCard';
 import SlideRelative from '@/ui/FRWComponent/SlideRelative';
+import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useContact } from '@/ui/hooks/useContactHook';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useWallet } from 'ui/utils';
@@ -37,6 +39,7 @@ const SendToCadenceOrEvm = ({
   const history = useHistory();
   const wallet = useWallet();
   const { network } = useNetwork();
+  const currency = useCurrency();
   const contactData =
     useContact(transactionState.toContact?.address || '') || transactionState.toContact || null;
   const [isConfirmationOpen, setConfirmationOpen] = useState(false);
@@ -59,7 +62,7 @@ const SendToCadenceOrEvm = ({
           }
         }
       } catch (err) {
-        console.error('checkAddress error', err);
+        consoleError('checkAddress error', err);
         setValidated(false);
       }
     };
@@ -159,7 +162,11 @@ const SendToCadenceOrEvm = ({
                       postFix={transactionState.tokenInfo.unit.toUpperCase()}
                     />
                     {' ≈ '}
-                    <CurrencyValue value={String(transactionState.tokenInfo.total)} />
+                    <CurrencyValue
+                      value={String(transactionState.tokenInfo.total)}
+                      currencyCode={currency?.code ?? ''}
+                      currencySymbol={currency?.symbol ?? ''}
+                    />
                   </Typography>
                 </Box>
               </>

@@ -11,6 +11,7 @@ import {
 import { makeStyles } from '@mui/styles';
 import React, { useState } from 'react';
 
+import { consoleError } from '@/shared/utils/console-log';
 import PasswordTextarea from '@/ui/FRWComponent/PasswordTextarea';
 import { useWallet } from '@/ui/utils/WalletContext';
 import { LLSpinner } from 'ui/FRWComponent';
@@ -108,7 +109,7 @@ const JsonImport = ({ onOpen, onImport, setPk, isSignLoading }) => {
           return;
         }
       } catch (conversionError) {
-        console.error('Error decoding JSON to private key:', conversionError);
+        consoleError('Error decoding JSON to private key:', conversionError);
         setErrorMessage(
           'Failed to decode JSON to private key. Please check the keystore and password.'
         );
@@ -126,7 +127,7 @@ const JsonImport = ({ onOpen, onImport, setPk, isSignLoading }) => {
       const accounts = foundAccounts.map((account) => ({ ...account, type: KEY_TYPE.KEYSTORE }));
       onImport(accounts);
     } catch (error) {
-      console.error('Error during import:', error);
+      consoleError('Error during import:', error);
       setErrorMessage('An unexpected error occurred');
     } finally {
       setLoading(false);

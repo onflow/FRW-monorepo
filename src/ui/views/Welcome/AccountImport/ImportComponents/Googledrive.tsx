@@ -1,6 +1,7 @@
 import { Box, Button, Typography } from '@mui/material';
 import React, { useState } from 'react';
 
+import { consoleError } from '@/shared/utils/console-log';
 import BrowserWarning from '@/ui/component/BrowserWarning';
 import { LLSpinner } from '@/ui/FRWComponent';
 import { useWallet } from '@/ui/utils';
@@ -27,7 +28,7 @@ const Googledrive = ({ setErrorMessage, setShowError, handleGoogleAccountsFound 
         setErrorMessage(chrome.i18n.getMessage('No__backup__found'));
       }
     } catch (e) {
-      console.log(e);
+      consoleError(e);
       setShowError(true);
       setErrorMessage(chrome.i18n.getMessage('Something__is__wrong'));
     } finally {

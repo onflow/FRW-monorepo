@@ -1,6 +1,6 @@
 import * as fcl from '@onflow/fcl';
 
-import { type NftCollection } from '@/shared/types/network-types';
+import { type NFTModelV2, type NftCollection } from '@/shared/types/network-types';
 import {
   nftCatalogCollectionsKey,
   nftCatalogCollectionsRefreshRegex,
@@ -12,11 +12,13 @@ import {
   childAccountNFTsRefreshRegex,
   nftCollectionListKey,
   nftCollectionListRefreshRegex,
+  nftListKey,
+  nftListRefreshRegex,
 } from '@/shared/utils/cache-data-keys';
 import { getValidData, registerRefreshListener, setCachedData } from 'background/utils/data-cache';
 
 import { type NFTCollectionData, type NFTCollections } from '../../shared/types/nft-types';
-import { fclConfirmNetwork, fclEnsureNetwork } from '../fclConfig';
+import { fclConfirmNetwork } from '../fclConfig';
 
 import openapiService, { getScripts } from './openapi';
 
@@ -27,6 +29,7 @@ class NFT {
     registerRefreshListener(childAccountAllowTypesRefreshRegex, this.loadChildAccountAllowTypes);
     registerRefreshListener(childAccountNFTsRefreshRegex, this.loadChildAccountNFTs);
     registerRefreshListener(nftCollectionListRefreshRegex, this.loadNftCollectionList);
+    registerRefreshListener(nftListRefreshRegex, this.loadNftList);
   };
 
   loadChildAccountNFTs = async (network: string, parentAddress: string) => {
@@ -163,6 +166,38 @@ class NFT {
       return this.loadNftCollectionList(network);
     }
     return collections;
+  };
+
+  /**
+   * Get the list of NFTs for a given network
+   * @param network - The network to get the NFTs for
+   * @returns The list of NFTs
+   */
+  getNftList = async (network: string, chainType: string): Promise<NFTModelV2[]> => {
+    const nftList = await getValidData<NFTModelV2[]>(nftListKey(network, chainType));
+    if (!nftList) {
+      return this.loadNftList(network, chainType);
+    }
+    return nftList;
+  };
+
+  /**
+   * Load the list of NFTs for a given network
+   * @param network - The network to get the NFTs for
+   * @param chainType - The chain type to get the NFTs for
+   * @returns The list of NFTs
+   */
+  loadNftList = async (network: string, chainType: string): Promise<NFTModelV2[]> => {
+    if (chainType !== 'evm' && chainType !== 'flow') {
+      throw new Error('Invalid chain type');
+    }
+    const data = await openapiService.getNFTList(network, chainType);
+
+    if (!data || !Array.isArray(data)) {
+      throw new Error('Could not load nft collection list');
+    }
+    setCachedData(nftListKey(network, chainType), data);
+    return data;
   };
 
   clear = async () => {

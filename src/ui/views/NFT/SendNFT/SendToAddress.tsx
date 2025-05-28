@@ -19,7 +19,9 @@ import { useLocation } from 'react-router-dom';
 
 import { type Contact, ContactType } from '@/shared/types/network-types';
 import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
+import { consoleError } from '@/shared/utils/console-log';
 import { LLHeader } from '@/ui/FRWComponent';
+import { useAllNftList } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { type MatchMedia } from '@/ui/utils/url';
 import { useWallet, returnFilteredCollections } from 'ui/utils';
@@ -133,8 +135,8 @@ const SendToAddress = () => {
   const theme = useTheme();
   const usewallet = useWallet();
   const location = useLocation();
-  const { childAccounts, currentWallet } = useProfiles();
-
+  const { childAccounts, currentWallet, activeAccountType, network } = useProfiles();
+  const allNftList = useAllNftList(network, activeAccountType === 'evm' ? 'evm' : 'flow');
   const [tabValue, setTabValue] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [searching, setSearching] = useState(false);
@@ -178,7 +180,7 @@ const SendToAddress = () => {
         );
       }
     } catch (err) {
-      console.error('err: ', err);
+      consoleError('err: ', err);
     } finally {
       if (recent.length < 1) {
         setTabValue(2);
@@ -194,7 +196,6 @@ const SendToAddress = () => {
     await usewallet.setDashIndex(1);
     const info = await usewallet.getUserInfo(false);
     const linked = state.linked;
-    console.log(';linked ', linked);
     const accountType = await usewallet.getActiveAccountType();
 
     let userContact = { ...USER_CONTACT };
@@ -232,13 +233,11 @@ const SendToAddress = () => {
     setDetail(NFT);
     setMedia(media);
 
-    const contractList = await usewallet.openapi.getAllNft();
-
-    const filteredCollections = returnFilteredCollections(contractList, NFT);
+    const filteredCollections = returnFilteredCollections(allNftList, NFT);
     if (filteredCollections) {
       setContractInfo(filteredCollections);
     }
-  }, [usewallet, state.nft, state.media]);
+  }, [state.nft, state.media, allNftList]);
 
   useEffect(() => {
     fetchNFTInfo();

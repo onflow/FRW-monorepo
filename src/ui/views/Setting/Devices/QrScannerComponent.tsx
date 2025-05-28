@@ -1,5 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
 import QrScanner from 'qr-scanner';
+import React, { useEffect, useRef, useState } from 'react';
+
+import { consoleError } from '@/shared/utils/console-log';
 
 const QrScannerComponent = ({ setUrl }) => {
   const videoRef = useRef(null);
@@ -9,12 +11,10 @@ const QrScannerComponent = ({ setUrl }) => {
     if (!videoRef.current) {
       return;
     }
-    console.log('video ref  true, ', videoRef);
 
     const qrScanner = new QrScanner(
       videoRef.current,
       (result) => {
-        console.log('decoded qr code:', result);
         const { data = '' } = result;
         if (data && data.length > 0) {
           setUrl(data);
@@ -25,30 +25,12 @@ const QrScannerComponent = ({ setUrl }) => {
     );
 
     qrScanner.start().catch((err) => {
-      console.error(err);
+      consoleError(err);
       setError('Camera access denied. Please allow camera access.');
     });
 
     return () => qrScanner.stop();
-  }, []);
-
-  // useEffect(()=>{
-  //   if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-  //     navigator.mediaDevices.getUserMedia({ video: true }).then(function(stream) {
-  //         // video.src = window.URL.createObjectURL(stream);
-  //         // video.play();
-  //         console.log(stream)
-  //     }).catch(function(error) {
-  //         console.log("获取摄像头访问权限失败：", error);
-  //     });
-  //   }
-  // })
-
-  const retryAccess = () => {
-    setError('');
-
-    // Re-initiate QR Scanner or refresh the page
-  };
+  }, [setUrl]);
 
   return (
     <div>

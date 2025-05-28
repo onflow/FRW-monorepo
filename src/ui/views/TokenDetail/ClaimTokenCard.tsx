@@ -1,21 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { useWallet } from 'ui/utils';
-import { Typography, Box } from '@mui/material';
-import { ButtonBase } from '@mui/material';
+import { Typography, Box, ButtonBase } from '@mui/material';
+import React from 'react';
+
+import { useNetwork } from '@/ui/hooks/useNetworkHook';
+
 import Claim from '../../FRWAssets/image/claim.png';
 
 const ClaimTokenCard = ({ token }) => {
-  const wallet = useWallet();
-  const [network, setNetwork] = useState('testnet');
-
-  const loadNetwork = async () => {
-    const currentNetwork = await wallet.getNetwork();
-    setNetwork(currentNetwork);
-  };
-
-  useEffect(() => {
-    loadNetwork();
-  }, []);
+  const { network } = useNetwork();
 
   return (
     <ButtonBase

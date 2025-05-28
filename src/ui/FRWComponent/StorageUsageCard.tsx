@@ -3,7 +3,7 @@
 import { Box, Typography, LinearProgress } from '@mui/material';
 import React from 'react';
 
-import { useStorageCheck } from '../utils/useStorageCheck';
+import { useProfiles } from '../hooks/useProfileHook';
 
 const determineUnit = (used: number) => {
   const units = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -19,13 +19,20 @@ const determineUnit = (used: number) => {
 };
 
 export const StorageUsageCard: React.FC = () => {
-  const { storageInfo } = useStorageCheck();
+  const { parentAccountStorageBalance } = useProfiles();
 
-  if (!storageInfo) return null;
+  if (!parentAccountStorageBalance) return null;
 
-  const usagePercentage = (storageInfo.used / storageInfo.capacity) * 100;
-  const { value: used, unit: usedUnit } = determineUnit(storageInfo.used);
-  const { value: capacity, unit: capacityUnit } = determineUnit(storageInfo.capacity);
+  const usagePercentage =
+    (parseFloat(parentAccountStorageBalance.storageUsed) /
+      parseFloat(parentAccountStorageBalance.storageCapacity)) *
+    100;
+  const { value: used, unit: usedUnit } = determineUnit(
+    parseFloat(parentAccountStorageBalance.storageUsed)
+  );
+  const { value: capacity, unit: capacityUnit } = determineUnit(
+    parseFloat(parentAccountStorageBalance.storageCapacity)
+  );
 
   return (
     <Box

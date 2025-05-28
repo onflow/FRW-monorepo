@@ -6,6 +6,7 @@ import {
   type PrivateKeyTuple,
 } from '@/shared/types/key-types';
 import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
+import { consoleError } from '@/shared/utils/console-log';
 
 import {
   FLOW_BIP44_PATH,
@@ -26,12 +27,12 @@ const jsonToKey = async (json: string, password: string) => {
     const privateKey = PrivateKey.createWithData(privateKeyData);
     return privateKey;
   } catch (error) {
-    console.error(error);
+    consoleError(error);
     return null;
   }
 };
 
-const pkTuple2PubKey = async (pkTuple: PrivateKeyTuple): Promise<PublicKeyTuple> => {
+const pkTuple2PubKeyTuple = async (pkTuple: PrivateKeyTuple): Promise<PublicKeyTuple> => {
   const { PrivateKey } = await initWasm();
   // The private keys could be different if created from a mnemonic
   const p256pk = PrivateKey.createWithData(Buffer.from(pkTuple.P256.pk, 'hex'));
@@ -71,6 +72,28 @@ const pk2PubKey = async (pk: string): Promise<PublicKeyTuple> => {
       pubK: secp256PubK,
     },
   };
+};
+
+/**
+ * Convert a private key to a public key
+ * @param pk the private key
+ * @param signAlgo the sign algorithm
+ * @returns the public key
+ */
+const getPublicKeyFromPrivateKey = async (pk: string, signAlgo: number): Promise<string> => {
+  const { PrivateKey } = await initWasm();
+  const privateKey = PrivateKey.createWithData(Buffer.from(pk, 'hex'));
+  if (signAlgo === SIGN_ALGO_NUM_ECDSA_P256) {
+    return Buffer.from(privateKey.getPublicKeyNist256p1().uncompressed().data())
+      .toString('hex')
+      .replace(/^04/, '');
+  } else if (signAlgo === SIGN_ALGO_NUM_ECDSA_secp256k1) {
+    return Buffer.from(privateKey.getPublicKeySecp256k1(false).data())
+      .toString('hex')
+      .replace(/^04/, '');
+  } else {
+    throw new Error(`Unsupported signAlgo: ${signAlgo}`);
+  }
 };
 
 const formPubKey = async (pubKey: string): Promise<PublicKeyTuple> => {
@@ -124,7 +147,9 @@ const seedWithPathAndPhrase2PublicPrivateKey = async (
   return keyTuple;
 };
 
-// @deprecated - use seedWithPathAndPhrase2PublicPrivateKey instead
+/**
+ * @deprecated use seedWithPathAndPhrase2PublicPrivateKey instead
+ */
 const seed2PublicPrivateKey_depreciated = async (seed: string): Promise<PublicPrivateKeyTuple> => {
   const currentId = (await storage.get(CURRENT_ID_KEY)) ?? 0;
 
@@ -270,7 +295,7 @@ const verifySignature = async (signature: string, message: unknown) => {
 
     return pubKey.verify(signatureBuffer, messageHash);
   } catch (error) {
-    console.error(
+    consoleError(
       'Failed to verify signature:',
       error instanceof Error ? error.message : 'Unknown error'
     );
@@ -280,8 +305,9 @@ const verifySignature = async (signature: string, message: unknown) => {
 
 export {
   jsonToKey,
-  pk2PubKey,
-  pkTuple2PubKey,
+  pk2PubKey as pk2PubKeyTuple,
+  getPublicKeyFromPrivateKey,
+  pkTuple2PubKeyTuple as pkTuple2PubKey,
   seed2PublicPrivateKey_depreciated as seed2PublicPrivateKey,
   signMessageHash,
   signWithKey,

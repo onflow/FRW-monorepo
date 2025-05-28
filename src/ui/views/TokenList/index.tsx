@@ -21,6 +21,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
 import { LLHeader } from '@/ui/FRWComponent';
 import TokenItem from '@/ui/FRWComponent/TokenLists/TokenItem';
+import { useAllTokenInfo } from '@/ui/hooks/use-coin-hooks';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useCoins } from 'ui/hooks/useCoinHook';
 import { useWallet } from 'ui/utils';
 
@@ -81,14 +83,19 @@ const TokenList = () => {
 
   const [isLoading, setLoading] = useState(true);
 
+  const { network, activeAccountType } = useProfiles();
+  const chainType = activeAccountType === 'evm' ? 'evm' : 'flow';
+  const allTokenInfo = useAllTokenInfo(network, chainType);
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const rawTokenInfoList = await wallet.openapi.getAllTokenInfo();
-
+      if (!allTokenInfo) {
+        return;
+      }
       // Remove duplicate tokens based on symbol
       const uniqueTokens: ExtendedTokenInfo[] = Array.from(
-        rawTokenInfoList
+        allTokenInfo
           .reduce((map, token) => {
             const key = token.symbol.toLowerCase();
             // Keep the first occurrence of each symbol
@@ -106,7 +113,7 @@ const TokenList = () => {
     } finally {
       setLoading(false);
     }
-  }, [wallet]);
+  }, [allTokenInfo]);
 
   const handleTokenClick = (token, isEnabled) => {
     if (!isEnabled) {

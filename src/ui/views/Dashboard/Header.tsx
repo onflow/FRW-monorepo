@@ -23,13 +23,13 @@ import {
   type WalletAccount,
   type WalletAddress,
   type ActiveChildType_depreciated,
-  type LoggedInAccountWithIndex,
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
+import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
+import { useNews } from '@/ui/hooks/use-news';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useNews } from '@/ui/utils/NewsContext';
 import { useWallet, formatAddress, useWalletLoaded } from 'ui/utils';
 
 import IconCopy from '../../../components/iconfont/IconCopy';
@@ -134,7 +134,7 @@ const Header = ({ _loading = false }) => {
         // await usewallet.switchNetwork(switchingTo);
         clearProfileData();
       } catch (error) {
-        console.error('Error during account switch:', error);
+        consoleError('Error during account switch:', error);
         //if cannot login directly with current password switch to unlock page
         await usewallet.lockWallet();
         history.push('/unlock');
@@ -170,7 +170,7 @@ const Header = ({ _loading = false }) => {
     }
     // The header should handle transactionError events
     if (request.msg === 'transactionError') {
-      console.warn('transactionError', request.errorMessage, request.errorCode);
+      consoleWarn('transactionError', request.errorMessage, request.errorCode);
       // The error message is not used anywhere else for now
       setErrorMessage(request.errorMessage);
       setErrorCode(request.errorCode);

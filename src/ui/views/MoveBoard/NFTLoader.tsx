@@ -26,11 +26,9 @@ const NFTLoader: React.FC<NFTLoaderProps> = ({
     async (ownerAddress, collection, offset) => {
       // Only fetch if the collection matches the initial one
       if (collection !== collectionToUse) {
-        console.log(`Skipping fetch for ${collection} (not ${collectionToUse})`);
         return { nfts: [], nftCount: 0 };
       }
 
-      console.log(`Hook fetching collection: ${ownerAddress}, ${collection}, ${offset}`);
       return await usewallet.getSingleCollection(ownerAddress, collection, offset);
     },
     [usewallet, collectionToUse]
@@ -47,7 +45,6 @@ const NFTLoader: React.FC<NFTLoaderProps> = ({
     onLoadingChange(hookLoading);
 
     if (!hookLoading && allNfts) {
-      console.log(`Loaded ${allNfts.length} NFTs for collection ${collectionToUse}`);
       onNFTsLoaded(allNfts);
     }
   }, [allNfts, hookLoading, onNFTsLoaded, onLoadingChange, collectionToUse]);

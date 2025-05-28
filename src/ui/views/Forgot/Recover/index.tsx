@@ -30,7 +30,6 @@ const Recover = () => {
   const [dataArray, setArray] = useState<any[]>([]);
 
   const loadView = useCallback(async () => {
-    // console.log(wallet);
     wallet
       .getCurrentAccount()
       .then((res) => {

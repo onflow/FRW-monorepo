@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
+import { consoleError } from '@/shared/utils/console-log';
 import { EnableEvm } from '@/ui/FRWComponent/EnableEvm';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -92,7 +93,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
         setIsLoading(false);
       })
       .catch((err) => {
-        console.log(err);
+        consoleError(err);
         setIsLoading(false);
       });
   };
