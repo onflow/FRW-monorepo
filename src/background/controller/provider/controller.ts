@@ -486,8 +486,13 @@ class ProviderController extends BaseController {
       data = request.data.params[0];
       address = request.data.params[1];
     }
-    const message = typeof data === 'string' ? JSON.parse(data) : data;
 
+    let message;
+    try {
+      message = typeof data === 'string' ? JSON.parse(data) : data;
+    } catch (e) {
+      throw new Error('Invalid JSON data provided');
+    }
     const { chainId } = message.domain || {};
 
     if (!chainId || Number(chainId) !== Number(currentChain)) {
@@ -555,8 +560,12 @@ class ProviderController extends BaseController {
       address = request.data.params[1];
     }
 
-    const message = typeof data === 'string' ? JSON.parse(data) : data;
-
+    let message;
+    try {
+      message = typeof data === 'string' ? JSON.parse(data) : data;
+    } catch (e) {
+      throw new Error('Invalid JSON data provided');
+    }
     const { chainId } = message.domain || {};
 
     if (!chainId || Number(chainId) !== Number(currentChain)) {
