@@ -20,7 +20,7 @@ import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useNftCatalogCollections } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from '@/ui/utils/WalletContext';
-import placeholder from 'ui/FRWAssets/image/placeholder.png';
+import placeholder from 'ui/assets/image/placeholder.png';
 
 import EmptyStatus from '../EmptyStatus';
 interface ListTabProps {

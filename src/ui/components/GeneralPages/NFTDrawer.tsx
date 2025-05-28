@@ -4,9 +4,9 @@ import { Box, Button, Typography, Drawer, IconButton, CardMedia, Skeleton } from
 import React, { useState } from 'react';
 
 import NftSearch from '@/ui/components/NFTs/NftSearch';
+import moveSelectDrop from 'ui/assets/svg/moveSelectDrop.svg';
+import selected from 'ui/assets/svg/selected.svg';
 import { LLSpinner } from 'ui/components';
-import moveSelectDrop from 'ui/FRWAssets/svg/moveSelectDrop.svg';
-import selected from 'ui/FRWAssets/svg/selected.svg';
 
 interface NFTMoveDrawerProps {
   showMoveBoard: boolean;

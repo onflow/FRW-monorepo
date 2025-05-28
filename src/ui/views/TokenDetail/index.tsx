@@ -16,8 +16,8 @@ import StorageUsageCard from '@/ui/components/StorageUsageCard';
 import { refreshEvmToken } from '@/ui/hooks/use-coin-hooks';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import tips from 'ui/FRWAssets/svg/tips.svg';
-import WarningIcon from 'ui/FRWAssets/svg/warning.svg';
+import tips from 'ui/assets/svg/tips.svg';
+import WarningIcon from 'ui/assets/svg/warning.svg';
 import { useWallet } from 'ui/utils';
 
 import OnRampList from '../Wallet/OnRampList';

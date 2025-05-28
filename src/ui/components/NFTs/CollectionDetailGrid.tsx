@@ -19,7 +19,7 @@ import { makeStyles } from '@mui/styles';
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import { ReactComponent as SearchIcon } from '@/ui/FRWAssets/svg/searchIcon.svg';
+import { ReactComponent as SearchIcon } from '@/ui/assets/svg/searchIcon.svg';
 import { truncate } from '@/ui/utils';
 
 import SearchDialog from './SearchDialog';

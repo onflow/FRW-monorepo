@@ -5,9 +5,9 @@ import QRCodeStyling from 'qr-code-styling';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 import { withPrefix } from '@/shared/utils/address';
+import alertMark from '@/ui/assets/svg/alertMark.svg';
 import IconCopy from '@/ui/components/iconfont/IconCopy';
 import { NetworkIndicator } from '@/ui/components/NetworkIndicator';
-import alertMark from '@/ui/FRWAssets/svg/alertMark.svg';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { LLHeader } from 'ui/components';

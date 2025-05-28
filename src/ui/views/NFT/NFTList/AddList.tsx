@@ -16,9 +16,9 @@ import React, { useEffect, useState, useCallback } from 'react';
 
 import { type NFTModelV2, type NFTModel_depreciated } from '@/shared/types/network-types';
 import { consoleError } from '@/shared/utils/console-log';
+import alertMark from '@/ui/assets/svg/alert.svg';
 import { LLHeader } from '@/ui/components';
 import WarningSnackbar from '@/ui/components/WarningSnackbar';
-import alertMark from '@/ui/FRWAssets/svg/alert.svg';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useAllNftList } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';

@@ -33,7 +33,7 @@ import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
 import { useWallet } from 'ui/utils';
 
-import editEmoji from '../../../FRWAssets/svg/editEmoji.svg';
+import editEmoji from '../../../assets/svg/editEmoji.svg';
 
 import EditProfile from './EditProfile';
 

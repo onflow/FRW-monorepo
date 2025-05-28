@@ -16,8 +16,8 @@ import { useTransferList } from '@/ui/hooks/useTransferListHook';
 import { type MatchMedia, MatchMediaType } from '@/ui/utils/url';
 import erc721 from 'background/utils/erc721.abi.json';
 import { EVM_ENDPOINT } from 'consts';
+import IconNext from 'ui/assets/svg/next.svg';
 import { LLSpinner, LLProfile, FRWProfile } from 'ui/components';
-import IconNext from 'ui/FRWAssets/svg/next.svg';
 import { useWallet } from 'ui/utils';
 
 interface SendNFTConfirmationProps {

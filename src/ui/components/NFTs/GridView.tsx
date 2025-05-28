@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 
 import type { PostMedia } from '@/ui/utils/url';
-import fallback from 'ui/FRWAssets/image/errorImage.png';
+import fallback from 'ui/assets/image/errorImage.png';
 
 const useStyles = makeStyles(() => ({
   titleWrapper: {

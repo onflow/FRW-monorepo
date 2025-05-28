@@ -9,10 +9,10 @@ import { useWallet } from 'ui/utils';
 // import theme from '../../style/LLTheme';
 // import { initOnRamp } from '@coinbase/cbpay-js';
 // import { LLHeader } from '@/ui/components';
-// import Coinbase from '../../FRWAssets/svg/coinbasepay-txt.svg';
+// import Coinbase from '../../assets/svg/coinbasepay-txt.svg';
 
-import Coinbase from '../../FRWAssets/svg/coinbase-pay.svg';
-import MoonPay from '../../FRWAssets/svg/moonpay.svg';
+import Coinbase from '../../assets/svg/coinbase-pay.svg';
+import MoonPay from '../../assets/svg/moonpay.svg';
 
 const OnRampList = ({ close }) => {
   const wallet = useWallet();

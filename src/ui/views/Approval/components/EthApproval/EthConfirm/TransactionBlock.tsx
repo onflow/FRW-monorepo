@@ -3,10 +3,10 @@ import { isHexString } from 'ethers';
 import React from 'react';
 
 import IconFlow from '@/ui/components/iconfont/IconFlow';
+import circlecheck from 'ui/assets/image/circlecheck.png';
+import placeholder from 'ui/assets/image/placeholder.png';
+import transactionFeeIcon from 'ui/assets/svg/transactionFeeIcon.svg';
 import { CopyButton } from 'ui/components';
-import circlecheck from 'ui/FRWAssets/image/circlecheck.png';
-import placeholder from 'ui/FRWAssets/image/placeholder.png';
-import transactionFeeIcon from 'ui/FRWAssets/svg/transactionFeeIcon.svg';
 import { formatAddress, HexToDecimalConverter } from 'ui/utils';
 
 import IconWithPlaceholder from '../EthApprovalComponents/IconWithPlaceholder';

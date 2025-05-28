@@ -16,7 +16,7 @@ import { useHistory } from 'react-router-dom';
 
 import ListSkeleton from '@/ui/components/NFTs/ListSkeleton';
 import { useWallet } from '@/ui/utils/WalletContext';
-import placeholder from 'ui/FRWAssets/image/placeholder.png';
+import placeholder from 'ui/assets/image/placeholder.png';
 
 import EmptyStatus from '../EmptyStatus';
 

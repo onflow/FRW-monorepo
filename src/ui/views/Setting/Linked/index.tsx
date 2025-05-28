@@ -13,7 +13,7 @@ import { Link } from 'react-router-dom';
 import { LLHeader } from '@/ui/components';
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import EmptyStateImage from 'ui/FRWAssets/image/search_user.png';
+import EmptyStateImage from 'ui/assets/image/search_user.png';
 
 const useStyles = makeStyles(() => ({
   logoBox: {

@@ -16,9 +16,9 @@ import {
 import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import popAdd from 'ui/FRWAssets/svg/popAdd.svg';
-import popLock from 'ui/FRWAssets/svg/popLock.svg';
-import selected from 'ui/FRWAssets/svg/selected.svg';
+import popAdd from 'ui/assets/svg/popAdd.svg';
+import popLock from 'ui/assets/svg/popLock.svg';
+import selected from 'ui/assets/svg/selected.svg';
 import { useWallet } from 'ui/utils';
 
 const MoveCollectionSelect = ({

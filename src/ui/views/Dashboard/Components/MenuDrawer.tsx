@@ -26,12 +26,12 @@ import {
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { useAccountBalance } from '@/ui/hooks/use-account-hooks';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import importIcon from 'ui/FRWAssets/svg/importIcon.svg';
-import popLock from 'ui/FRWAssets/svg/popLock.svg';
+import importIcon from 'ui/assets/svg/importIcon.svg';
+import popLock from 'ui/assets/svg/popLock.svg';
 import { useWallet } from 'ui/utils';
 
-import rightarrow from '../../../FRWAssets/svg/rightarrow.svg';
-import sideMore from '../../../FRWAssets/svg/sideMore.svg';
+import rightarrow from '../../../assets/svg/rightarrow.svg';
+import sideMore from '../../../assets/svg/sideMore.svg';
 
 import NetworkList from './NetworkList';
 

@@ -6,8 +6,8 @@ import { type Contact } from '@/shared/types/network-types';
 import { ensureEvmAddressPrefix } from '@/shared/utils/address';
 import { useContacts } from '@/ui/hooks/useContactHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
+import accountMove from 'ui/assets/svg/accountMove.svg';
 import { FWMoveDropdown } from 'ui/components';
-import accountMove from 'ui/FRWAssets/svg/accountMove.svg';
 import { useWallet } from 'ui/utils';
 const USER_CONTACT = {
   contact_name: '',

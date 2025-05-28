@@ -26,8 +26,8 @@ import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useCoins } from 'ui/hooks/useCoinHook';
 import { useWallet } from 'ui/utils';
 
-import CloseIcon from '../../FRWAssets/svg/close-icon.svg';
-import VerifiedIcon from '../../FRWAssets/svg/verfied-check.svg';
+import CloseIcon from '../../assets/svg/close-icon.svg';
+import VerifiedIcon from '../../assets/svg/verfied-check.svg';
 
 import AddTokenConfirmation from './AddTokenConfirmation';
 

@@ -8,9 +8,9 @@ import { EnableEvm } from '@/ui/components/EnableEvm';
 import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
+import flowgrey from 'ui/assets/svg/flow-grey.svg';
+import linkGlobe from 'ui/assets/svg/linkGlobe.svg';
 import { LLPrimaryButton, LLSecondaryButton, LLConnectLoading } from 'ui/components';
-import flowgrey from 'ui/FRWAssets/svg/flow-grey.svg';
-import linkGlobe from 'ui/FRWAssets/svg/linkGlobe.svg';
 import { useApproval, useWallet, formatAddress } from 'ui/utils';
 
 import IconWithPlaceholder from '../EthApprovalComponents/IconWithPlaceholder';

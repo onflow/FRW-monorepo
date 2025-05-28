@@ -3,11 +3,11 @@ import { Box } from '@mui/system';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
+import appicon from '@/ui/assets/image/appicon.png';
+import create from '@/ui/assets/svg/create.svg';
+import importPng from '@/ui/assets/svg/import.svg';
+import qr from '@/ui/assets/svg/scanIcon.svg';
 import RegisterHeader from '@/ui/components/LandingPages/RegisterHeader';
-import appicon from '@/ui/FRWAssets/image/appicon.png';
-import create from '@/ui/FRWAssets/svg/create.svg';
-import importPng from '@/ui/FRWAssets/svg/import.svg';
-import qr from '@/ui/FRWAssets/svg/scanIcon.svg';
 
 interface WelcomeLayoutProps {
   registerPath: string;

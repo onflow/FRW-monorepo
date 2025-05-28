@@ -3,7 +3,7 @@ import { Box } from '@mui/system';
 import React, { useCallback, useEffect } from 'react';
 
 import { storage } from 'background/webapi';
-import AllSetIcon from 'ui/FRWAssets/svg/allset.svg';
+import AllSetIcon from 'ui/assets/svg/allset.svg';
 import { useWallet } from 'ui/utils';
 
 interface AllSetProps {

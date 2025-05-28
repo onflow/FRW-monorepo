@@ -11,7 +11,7 @@ import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useNftCatalogCollections } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
-import alertMark from 'ui/FRWAssets/svg/alertMark.svg';
+import alertMark from 'ui/assets/svg/alertMark.svg';
 import { useWallet } from 'ui/utils';
 
 import AccountMainBox from '../AccountMainBox';

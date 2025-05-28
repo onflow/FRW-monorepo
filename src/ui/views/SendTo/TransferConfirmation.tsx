@@ -13,9 +13,9 @@ import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useContact } from '@/ui/hooks/useContactHook';
 import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
+import IconNext from 'ui/assets/svg/next.svg';
 import { LLSpinner } from 'ui/components';
 import { Profile } from 'ui/components/Send/Profile';
-import IconNext from 'ui/FRWAssets/svg/next.svg';
 import { useWallet } from 'ui/utils';
 
 import { CurrencyValue } from '../TokenDetail/CurrencyValue';

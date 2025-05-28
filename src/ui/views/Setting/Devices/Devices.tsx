@@ -5,11 +5,11 @@ import { useHistory } from 'react-router-dom';
 import { LLHeader } from '@/ui/components';
 import { useWallet } from 'ui/utils';
 
-import circlecheck from '../../../FRWAssets/image/circlecheck.png';
-import goto from '../../../FRWAssets/image/goto.png';
-import Mobile from '../../../FRWAssets/image/mobile.png';
-import Pc from '../../../FRWAssets/image/pc.png';
-import QR from '../../../FRWAssets/image/QR2.png';
+import circlecheck from '../../../assets/image/circlecheck.png';
+import goto from '../../../assets/image/goto.png';
+import Mobile from '../../../assets/image/mobile.png';
+import Pc from '../../../assets/image/pc.png';
+import QR from '../../../assets/image/QR2.png';
 
 import WalletConnect from './WalletConnect';
 

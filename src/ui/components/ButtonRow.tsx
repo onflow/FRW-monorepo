@@ -1,11 +1,11 @@
 import { Box } from '@mui/material';
 import React from 'react';
 
-import buyIcon from '@/ui/FRWAssets/svg/buyIcon.svg';
-import moveIcon from '@/ui/FRWAssets/svg/homeMove.svg';
-import receiveIcon from '@/ui/FRWAssets/svg/receiveIcon.svg';
-import sendIcon from '@/ui/FRWAssets/svg/sendIcon.svg';
-import swapIcon from '@/ui/FRWAssets/svg/swapIcon.svg';
+import buyIcon from '@/ui/assets/svg/buyIcon.svg';
+import moveIcon from '@/ui/assets/svg/homeMove.svg';
+import receiveIcon from '@/ui/assets/svg/receiveIcon.svg';
+import sendIcon from '@/ui/assets/svg/sendIcon.svg';
+import swapIcon from '@/ui/assets/svg/swapIcon.svg';
 
 import { IconButton } from './IconButton';
 

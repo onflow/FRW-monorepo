@@ -13,8 +13,8 @@ import React, { useEffect, useState } from 'react';
 
 import { storage } from 'background/webapi';
 
-import Expand from '../FRWAssets/svg/expand.svg';
-import Hide from '../FRWAssets/svg/hide.svg';
+import Expand from '../assets/svg/expand.svg';
+import Hide from '../assets/svg/hide.svg';
 
 const useStyles = makeStyles((theme) => ({
   form: {

@@ -18,7 +18,7 @@ import IconPlus from '@/ui/components/iconfont/IconPlus';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { CurrencyValue } from '@/ui/views/TokenDetail/CurrencyValue';
 
-import VerifiedIcon from '../../FRWAssets/svg/verfied-check.svg';
+import VerifiedIcon from '../../assets/svg/verfied-check.svg';
 
 // Custom styled ListItem to override default secondaryAction styles
 const CustomListItem = styled(ListItem)({
