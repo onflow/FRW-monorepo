@@ -21,7 +21,7 @@ export const DefaultBlock = ({ title, host, data, logo }) => {
     // Check if string is hex
     const hexRegex = /^(0x)?[0-9a-fA-F]+$/;
     if (!hexRegex.test(hexString)) {
-      throw new Error('Invalid hex string provided');
+      return hexString;
     }
 
     // Remove '0x' prefix if present
@@ -29,7 +29,7 @@ export const DefaultBlock = ({ title, host, data, logo }) => {
 
     // Check if the length is even (valid hex bytes)
     if (cleanHex.length % 2 !== 0) {
-      throw new Error('Invalid hex string length');
+      return hexString;
     }
 
     // Convert hex to bytes
@@ -40,7 +40,7 @@ export const DefaultBlock = ({ title, host, data, logo }) => {
     try {
       return decoder.decode(bytes);
     } catch (e) {
-      throw new Error('Invalid UTF-8 encoding in hex string');
+      return bytes;
     }
   };
 
