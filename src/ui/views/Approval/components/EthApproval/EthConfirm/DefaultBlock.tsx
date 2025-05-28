@@ -40,7 +40,7 @@ export const DefaultBlock = ({ title, host, data, logo }) => {
     try {
       return decoder.decode(bytes);
     } catch (e) {
-      return bytes;
+      return hexString;
     }
   };
 
