@@ -111,71 +111,7 @@ export class HDKeyring {
     this.activeIndexes = [];
     return true;
   }
-  /**
-   * @deprecated Do not use this method. It returns a dummy address that is an EOA address and not a real account that the user has, but it is a unique identifier for the wallet
-   */
-  async exportAccount(address: string): Promise<string> {
-    const wallet = this.hdWallet?.derivePath(`m/44'/539'/0'/0/${address}`);
-    if (!wallet) throw new Error('Address not found');
-    return wallet.privateKey;
-  }
-  /**
-   * @deprecated Do not use this method. It returns a dummy address that is an EOA address and not a real account that the user has, but it is a unique identifier for the wallet
-   */
-  async signTransaction(address: string, tx: any) {
-    const wallet = this.hdWallet?.derivePath(`m/44'/539'/0'/0/${address}`);
-    if (!wallet) throw new Error('Address not found');
-    return wallet.signTransaction(tx);
-  }
-  /**
-   * @deprecated Do not use this method. It returns a dummy address that is an EOA address and not a real account that the user has, but it is a unique identifier for the wallet
-   */
-  async signMessage(address: string, data: string) {
-    const wallet = this.hdWallet?.derivePath(`m/44'/539'/0'/0/${address}`);
-    if (!wallet) throw new Error('Address not found');
-    return wallet.signMessage(data);
-  }
-  /**
-   * @deprecated Do not use this method. It returns a dummy address that is an EOA address and not a real account that the user has, but it is a unique identifier for the wallet
-   */
-  async signPersonalMessage(address: string, data: string) {
-    return this.signMessage(address, data);
-  }
-  /**
-   * @deprecated Do not use this method. It returns a dummy address that is an EOA address and not a real account that the user has, but it is a unique identifier for the wallet
-   */
-  async signTypedData(address: string, data: any, opts: { version: string } = { version: 'V1' }) {
-    const wallet = this.hdWallet?.derivePath(`m/44'/539'/0'/0/${address}`);
-    if (!wallet) throw new Error('Address not found');
 
-    switch (opts.version) {
-      case 'V1':
-        return wallet.signTypedData(data.domain || {}, data.types || {}, data.message || {});
-      case 'V3':
-        return wallet.signTypedData(data.domain || {}, data.types || {}, data.message || {});
-      case 'V4':
-        return wallet.signTypedData(data.domain || {}, data.types || {}, data.message || {});
-      default:
-        throw new Error(`Unsupported typed data version: ${opts.version}`);
-    }
-  }
-  /**
-   * @deprecated Do not use this method. It returns a dummy address that is an EOA address and not a real account that the user has, but it is a unique identifier for the wallet
-   */
-  async getEncryptionPublicKey(address: string) {
-    const wallet = this.hdWallet?.derivePath(`m/44'/539'/0'/0/${address}`);
-    if (!wallet) throw new Error('Address not found');
-    return wallet.signingKey.publicKey;
-  }
-  /**
-   * @deprecated Do not use this method. It returns a dummy address that is an EOA address and not a real account that the user has, but it is a unique identifier for the wallet
-   */
-  async decryptMessage(address: string, data: string) {
-    const wallet = this.hdWallet?.derivePath(`m/44'/539'/0'/0/${address}`);
-    if (!wallet) throw new Error('Address not found');
-    // Todo: This is a placeholder. Implement actual message decryption logic
-    throw new Error('Message decryption not implemented');
-  }
   /**
    * @deprecated Do not use this method. It returns a dummy address that is an EOA address and not a real account that the user has, but it is a unique identifier for the wallet
    */

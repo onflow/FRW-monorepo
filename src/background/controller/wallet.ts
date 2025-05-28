@@ -752,13 +752,6 @@ export class WalletController extends BaseController {
 
   clearKeyrings = () => keyringService.clearCurrentKeyring();
 
-  getPrivateKey = async (password: string, address: string) => {
-    await this.verifyPassword(password);
-    const keyring = await keyringService.getKeyringForAccount_deprecated(address);
-    if (!keyring) return null;
-    return await keyring.exportAccount(address);
-  };
-
   getMnemonic = async (password: string): Promise<string> => {
     await this.verifyPassword(password);
     const keyring = this._getKeyringByType(KEYRING_CLASS.MNEMONIC);
@@ -1016,28 +1009,6 @@ export class WalletController extends BaseController {
     }
 
     return stashKeyringId;
-  };
-
-  signPersonalMessage = async (type: string, from: string, data: string, options?: any) => {
-    const keyring = await keyringService.getKeyringForAccount_deprecated(from, type);
-    const res = await keyringService.signPersonalMessage(keyring, { from, data }, options);
-    if (type === KEYRING_TYPE.WalletConnectKeyring) {
-      eventBus.emit(EVENTS.broadcastToUI, {
-        method: EVENTS.SIGN_FINISHED,
-        params: {
-          success: true,
-          data: res,
-        },
-      });
-    }
-    return res;
-  };
-
-  signTransaction = async (type: string, from: string, data: any, options?: any) => {
-    const keyring = await keyringService.getKeyringForAccount_deprecated(from, type);
-    const res = await keyringService.signTransaction(keyring, data, options);
-
-    return res;
   };
 
   requestKeyring = (type, methodName, keyringId: number | null, ...params) => {
