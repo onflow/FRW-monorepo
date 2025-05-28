@@ -7,6 +7,7 @@ import { useHistory } from 'react-router-dom';
 import { type Contact } from '@/shared/types/network-types';
 import { type AccountDetails } from '@/shared/types/wallet-types';
 import { consoleError } from '@/shared/utils/console-log';
+import IconFlow from '@/ui/components/iconfont/IconFlow';
 import SlideRelative from '@/ui/components/SlideRelative';
 import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
 import { WarningNFTNotOnboardedSnackbar } from '@/ui/components/WarningNFTNotOnboardedSnackbar';
@@ -19,7 +20,6 @@ import { MatchMediaType } from '@/ui/utils/url';
 import { LLSpinner, FRWProfileCard, FRWDropdownProfileCard } from 'ui/components';
 import { useWallet } from 'ui/utils';
 
-import IconFlow from '../../../../components/iconfont/IconFlow';
 interface SendNFTConfirmationProps {
   isConfirmationOpen: boolean;
   data: any;

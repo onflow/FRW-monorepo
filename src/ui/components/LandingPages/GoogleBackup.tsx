@@ -4,11 +4,10 @@ import { Box } from '@mui/system';
 import React, { useState } from 'react';
 
 import { consoleError } from '@/shared/utils/console-log';
+import IconGoogleDrive from '@/ui/components/iconfont/IconGoogleDrive';
 import SlideRelative from '@/ui/components/SlideRelative';
 import { LLSpinner } from 'ui/components';
 import { useWallet } from 'ui/utils';
-
-import IconGoogleDrive from '../../../components/iconfont/IconGoogleDrive';
 
 interface GoogleBackupProps {
   handleSwitchTab: () => void;

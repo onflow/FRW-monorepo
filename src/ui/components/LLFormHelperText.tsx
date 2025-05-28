@@ -2,8 +2,8 @@ import { Typography, CircularProgress } from '@mui/material';
 import { Box } from '@mui/system';
 import React from 'react';
 
-import CheckCircleIcon from '../../components/iconfont/IconCheckmark';
-import CancelIcon from '../../components/iconfont/IconClose';
+import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
+import CancelIcon from '@/ui/components/iconfont/IconClose';
 
 import SlideRelative from './SlideRelative';
 interface LLFormHelperTextProps {

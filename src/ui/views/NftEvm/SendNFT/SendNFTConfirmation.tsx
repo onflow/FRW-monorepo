@@ -7,6 +7,7 @@ import Web3 from 'web3';
 
 import { type Contact } from '@/shared/types/network-types';
 import { consoleError } from '@/shared/utils/console-log';
+import IconFlow from '@/ui/components/iconfont/IconFlow';
 import SlideRelative from '@/ui/components/SlideRelative';
 import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
 import { WarningStorageLowSnackbar } from '@/ui/components/WarningStorageLowSnackbar';
@@ -18,8 +19,6 @@ import { EVM_ENDPOINT } from 'consts';
 import { LLSpinner, LLProfile, FRWProfile } from 'ui/components';
 import IconNext from 'ui/FRWAssets/svg/next.svg';
 import { useWallet } from 'ui/utils';
-
-import IconFlow from '../../../../components/iconfont/IconFlow';
 
 interface SendNFTConfirmationProps {
   isConfirmationOpen: boolean;

@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Switch, withRouter, type RouteComponentProps } from 'react-router-dom';
 
 import { useInitHook } from '@/ui/hooks';
-import { PrivateRoute } from 'ui/component';
+import PrivateRoute from 'ui/components/PrivateRoute';
 import { useWallet, useWalletLoaded } from 'ui/utils';
 
 import Deposit from '../views/Deposit';

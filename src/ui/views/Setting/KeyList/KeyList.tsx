@@ -3,9 +3,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 import { type KeyResponseItem, type AccountKey } from '@/shared/types/network-types';
 import { LLHeader } from '@/ui/components';
+import IconCopy from '@/ui/components/iconfont/IconCopy';
 import { useWallet } from 'ui/utils';
 
-import IconCopy from '../../../../components/iconfont/IconCopy';
 import curve from '../../../FRWAssets/image/curve.png';
 import hash from '../../../FRWAssets/image/hash.png';
 import key from '../../../FRWAssets/image/key.png';

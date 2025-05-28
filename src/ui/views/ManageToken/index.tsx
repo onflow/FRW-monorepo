@@ -23,8 +23,8 @@ import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 
 // import { useHistory } from 'react-router-dom';
-import IconCreate from '@/components/iconfont/IconCreate';
 import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
+import IconCreate from '@/ui/components/iconfont/IconCreate';
 import TokenItem from '@/ui/components/TokenLists/TokenItem';
 import VerifiedIcon from '@/ui/FRWAssets/svg/verfied-check.svg';
 import { useProfiles } from '@/ui/hooks/useProfileHook';

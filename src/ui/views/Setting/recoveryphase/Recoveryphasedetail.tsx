@@ -5,9 +5,8 @@ import { useLocation } from 'react-router-dom';
 
 // import { useRouteMatch } from 'react-router-dom';
 import { LLHeader } from '@/ui/components';
+import IconCopy from '@/ui/components/iconfont/IconCopy';
 import { useWallet } from 'ui/utils';
-
-import IconCopy from '../../../../components/iconfont/IconCopy';
 
 interface State {
   password: string;

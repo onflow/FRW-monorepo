@@ -13,11 +13,11 @@ import {
 import { styled } from '@mui/material/styles';
 import React from 'react';
 
+import IconCheckmark from '@/ui/components/iconfont/IconCheckmark';
+import IconPlus from '@/ui/components/iconfont/IconPlus';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { CurrencyValue } from '@/ui/views/TokenDetail/CurrencyValue';
 
-import IconCheckmark from '../../../components/iconfont/IconCheckmark';
-import IconPlus from '../../../components/iconfont/IconPlus';
 import VerifiedIcon from '../../FRWAssets/svg/verfied-check.svg';
 
 // Custom styled ListItem to override default secondaryAction styles

@@ -1,7 +1,7 @@
 import { Box, Typography } from '@mui/material';
 import React, { ReactNode } from 'react';
 
-import { LLSpinner } from '../components/LLSpinner';
+import { LLSpinner } from './LLSpinner';
 
 export default ({ children, spinning = true }) => {
   return (

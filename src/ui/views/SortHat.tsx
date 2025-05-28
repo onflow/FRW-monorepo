@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Redirect } from 'react-router-dom';
 
-import { Spin } from 'ui/component';
+import Spin from 'ui/components/Spin';
 import { useWallet, getUiType, useApproval } from 'ui/utils';
 import { openInternalPageInTab } from 'ui/utils/webapi';
 

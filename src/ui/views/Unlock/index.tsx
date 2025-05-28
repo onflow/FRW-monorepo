@@ -7,13 +7,13 @@ import { useHistory } from 'react-router-dom';
 import { consoleError } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import { LLPrimaryButton } from '@/ui/components';
+import CancelIcon from '@/ui/components/iconfont/IconClose';
 import SlideRelative from '@/ui/components/SlideRelative';
 import lilo from '@/ui/FRWAssets/image/lilo.png';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet, useWalletLoaded } from '@/ui/utils';
 import { openInternalPageInTab } from '@/ui/utils/webapi';
 
-import CancelIcon from '../../../components/iconfont/IconClose';
 import './style.css';
 
 const useStyles = makeStyles(() => ({

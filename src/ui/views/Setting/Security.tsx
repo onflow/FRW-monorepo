@@ -12,9 +12,8 @@ import Box from '@mui/material/Box';
 import React, { useEffect } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 
+import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import { useWallet } from 'ui/utils';
-
-import IconEnd from '../../../components/iconfont/IconAVector11Stroke';
 
 const Security = () => {
   const history = useHistory();

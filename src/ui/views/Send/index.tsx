@@ -26,10 +26,10 @@ import { type WalletAddress } from '@/shared/types/wallet-types';
 import { isValidAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
 import { filterContacts, checkAddressBookContacts } from '@/shared/utils/contact-utils';
+import IconAbout from '@/ui/components/iconfont/IconAbout';
 import { useContacts } from '@/ui/hooks/useContactHook';
 import { useWallet } from '@/ui/utils/WalletContext';
 
-import IconAbout from '../../../components/iconfont/IconAbout';
 import AccountsList from '../../components/AddressLists/AccountsList';
 import AddressBookList from '../../components/AddressLists/AddressBookList';
 import RecentList from '../../components/AddressLists/RecentList';

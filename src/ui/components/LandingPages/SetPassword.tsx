@@ -3,6 +3,8 @@ import { makeStyles } from '@mui/styles';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
+import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
+import CancelIcon from '@/ui/components/iconfont/IconClose';
 import {
   PasswordInput,
   TermsCheckbox,
@@ -10,9 +12,6 @@ import {
   SubmitButton,
 } from '@/ui/components/LandingPages/PasswordComponents';
 import SlideRelative from '@/ui/components/SlideRelative';
-
-import CheckCircleIcon from '../../../components/iconfont/IconCheckmark';
-import CancelIcon from '../../../components/iconfont/IconClose';
 
 const useStyles = makeStyles(() => ({
   inputBox: {

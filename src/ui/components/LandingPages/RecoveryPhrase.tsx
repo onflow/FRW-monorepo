@@ -5,9 +5,8 @@ import { Button, Typography, IconButton } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { useState } from 'react';
 
+import IconCopy from '@/ui/components/iconfont/IconCopy';
 import SlideRelative from '@/ui/components/SlideRelative';
-
-import IconCopy from '../../../components/iconfont/IconCopy';
 
 const RecoveryPhrase = ({ handleSwitchTab, mnemonic }) => {
   const [canGoNext, setCanGoNext] = useState(false);

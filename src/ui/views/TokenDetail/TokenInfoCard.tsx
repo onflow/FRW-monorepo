@@ -6,6 +6,7 @@ import { type CoinItem, type ExtendedTokenInfo } from '@/shared/types/coin-types
 import { type ActiveAccountType } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { IconButton } from '@/ui/components/IconButton';
+import IconChevronRight from '@/ui/components/iconfont/IconChevronRight';
 import buyIcon from '@/ui/FRWAssets/svg/buyIcon.svg';
 import receiveIcon from '@/ui/FRWAssets/svg/receiveIcon.svg';
 import sendIcon from '@/ui/FRWAssets/svg/sendIcon.svg';
@@ -13,7 +14,6 @@ import swapIcon from '@/ui/FRWAssets/svg/swapIcon.svg';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useCoins } from 'ui/hooks/useCoinHook';
 
-import IconChevronRight from '../../../components/iconfont/IconChevronRight';
 import VerifiedIcon from '../../FRWAssets/svg/verfied-check.svg';
 
 import { CurrencyValue } from './CurrencyValue';

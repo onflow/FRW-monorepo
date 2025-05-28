@@ -1,9 +1,8 @@
 import { Typography, Box, Drawer, Stack } from '@mui/material';
 import React from 'react';
 
+import IconSubtract from '@/ui/components/iconfont/IconSubtract';
 import { LLPrimaryButton, LLSecondaryButton } from 'ui/components';
-
-import IconSubtract from '../../components/iconfont/IconSubtract';
 
 interface DeleteBackupProps {
   deleteBackupPop: boolean;

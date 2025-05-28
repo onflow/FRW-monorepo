@@ -19,10 +19,9 @@ import React, { useEffect, useState } from 'react';
 import zxcvbn from 'zxcvbn';
 
 import { LLSpinner, LLNotFound } from '@/ui/components';
+import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
+import CancelIcon from '@/ui/components/iconfont/IconClose';
 import { useWallet } from 'ui/utils';
-
-import CheckCircleIcon from '../../../../../components/iconfont/IconCheckmark';
-import CancelIcon from '../../../../../components/iconfont/IconClose';
 
 // const helperTextStyles = makeStyles(() => ({
 //   root: {

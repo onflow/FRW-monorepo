@@ -8,6 +8,7 @@ import { type Contact } from '@/shared/types/network-types';
 import { type WalletAccount, type AccountDetails } from '@/shared/types/wallet-types';
 import { ensureEvmAddressPrefix, isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
+import IconFlow from '@/ui/components/iconfont/IconFlow';
 import SlideRelative from '@/ui/components/SlideRelative';
 import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
 import { WarningStorageLowSnackbar } from '@/ui/components/WarningStorageLowSnackbar';
@@ -20,7 +21,6 @@ import { MatchMediaType } from '@/ui/utils/url';
 import { LLSpinner, FRWChildProfile, FRWDropdownProfileCard } from 'ui/components';
 import { useWallet, returnFilteredCollections } from 'ui/utils';
 
-import IconFlow from '../../../../components/iconfont/IconFlow';
 interface SendNFTConfirmationProps {
   isConfirmationOpen: boolean;
   data: any;

@@ -29,10 +29,10 @@ import {
 import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
 import { LLHeader } from '@/ui/components';
+import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
 import { useWallet } from 'ui/utils';
 
-import IconEnd from '../../../../components/iconfont/IconAVector11Stroke';
 import editEmoji from '../../../FRWAssets/svg/editEmoji.svg';
 
 import EditProfile from './EditProfile';

@@ -4,8 +4,8 @@ import { ListItem, Stack, Divider, Box, Drawer, Typography } from '@mui/material
 import React, { useState } from 'react';
 
 import { ContactType, type Contact } from '@/shared/types/network-types';
+import IconSubtract from '@/ui/components/iconfont/IconSubtract';
 
-import IconSubtract from '../../../../components/iconfont/IconSubtract';
 import { LLContactCard, LLPrimaryButton, LLSecondaryButton } from '../../../components';
 
 interface AddressBookItemProps {

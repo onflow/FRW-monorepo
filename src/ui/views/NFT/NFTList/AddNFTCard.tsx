@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import React from 'react';
 
-import IconFlow from '../../../../components/iconfont/IconFlow';
+import IconFlow from '@/ui/components/iconfont/IconFlow';
 
 import { type CollectionItem } from './AddList';
 

@@ -2,7 +2,7 @@ import { Box, IconButton, Menu, MenuItem } from '@mui/material';
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import IconCreate from '../../../components/iconfont/IconCreate';
+import IconCreate from '@/ui/components/iconfont/IconCreate';
 
 const TokenDropdown = () => {
   const [anchorEl, setAnchorEl] = useState(null);

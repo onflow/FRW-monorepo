@@ -3,10 +3,9 @@ import React from 'react';
 
 import { LLPinAlert } from '@/ui/components';
 import Confetti from '@/ui/components/Confetti';
+import BackButtonIcon from '@/ui/components/iconfont/IconBackButton';
 import RegisterHeader from '@/ui/components/LandingPages/RegisterHeader';
 import SlideLeftRight from '@/ui/components/SlideLeftRight';
-
-import BackButtonIcon from '../../../components/iconfont/IconBackButton';
 
 const LandingComponents = ({
   activeIndex,

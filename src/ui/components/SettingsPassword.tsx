@@ -4,9 +4,9 @@ import { makeStyles } from '@mui/styles';
 import React, { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 
-import CancelIcon from '@/components/iconfont/IconClose';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import { LLHeader } from '@/ui/components';
+import CancelIcon from '@/ui/components/iconfont/IconClose';
 import SlideRelative from '@/ui/components/SlideRelative';
 
 import { useWallet } from '../utils';

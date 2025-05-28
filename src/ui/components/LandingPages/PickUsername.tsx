@@ -14,11 +14,10 @@ import { useDebouncedCallback } from 'use-debounce';
 
 import { consoleError } from '@/shared/utils/console-log';
 import EmailIcon from '@/ui/assets/alternate-email.svg';
+import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
+import CancelIcon from '@/ui/components/iconfont/IconClose';
 import SlideRelative from '@/ui/components/SlideRelative';
 import { useWallet } from 'ui/utils';
-
-import CheckCircleIcon from '../../../components/iconfont/IconCheckmark';
-import CancelIcon from '../../../components/iconfont/IconClose';
 
 const useStyles = makeStyles((_theme) => ({
   customInputLabel: {

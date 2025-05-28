@@ -1,7 +1,7 @@
 import { styled, Button, Tooltip } from '@mui/material';
 import React from 'react';
 
-import IconCopy from '../../components/iconfont/IconCopy';
+import IconCopy from '@/ui/components/iconfont/IconCopy';
 
 const CopyIconWrapper = styled('div')(() => ({
   cursor: 'pointer',
