@@ -3,7 +3,7 @@ import React from 'react';
 
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 
-import Claim from '../../FRWAssets/image/claim.png';
+import Claim from '../../assets/image/claim.png';
 
 const ClaimTokenCard = ({ token }) => {
   const { network } = useNetwork();

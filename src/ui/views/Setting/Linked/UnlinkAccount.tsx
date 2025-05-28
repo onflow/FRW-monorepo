@@ -8,10 +8,10 @@ import { useHistory } from 'react-router-dom';
 
 import { type WalletAccount } from '@/shared/types/wallet-types';
 import { consoleError } from '@/shared/utils/console-log';
-import UnlinkSVG from 'ui/FRWAssets/svg/unlink.svg';
+import UnlinkSVG from 'ui/assets/svg/unlink.svg';
 import { useWallet } from 'ui/utils';
 
-import { LLPrimaryButton, LLSecondaryButton, LLSpinner } from '../../../FRWComponent';
+import { LLPrimaryButton, LLSecondaryButton, LLSpinner } from '../../../components';
 
 const useStyles = makeStyles(() => ({
   IconCheck: {

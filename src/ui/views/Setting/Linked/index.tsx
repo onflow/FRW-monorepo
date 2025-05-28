@@ -10,11 +10,10 @@ import { makeStyles } from '@mui/styles';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-import { LLHeader } from '@/ui/FRWComponent';
+import { LLHeader } from '@/ui/components';
+import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import EmptyStateImage from 'ui/FRWAssets/image/search_user.png';
-
-import IconEnd from '../../../../components/iconfont/IconAVector11Stroke';
+import EmptyStateImage from 'ui/assets/image/search_user.png';
 
 const useStyles = makeStyles(() => ({
   logoBox: {

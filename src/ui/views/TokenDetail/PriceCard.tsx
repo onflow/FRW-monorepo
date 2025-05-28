@@ -17,15 +17,14 @@ import { AreaChart, Area, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 import { Period, type PriceProvider } from '@/shared/types/network-types';
 import { getPeriodFrequency } from '@/shared/utils/getPeriodFrequency';
-import { useWallet } from 'ui/utils';
-
 import {
   IconKraken,
   IconBinance,
   IconCoinbase,
   IconKucoin,
   IconHuobi,
-} from '../../../components/iconfont';
+} from '@/ui/components/iconfont';
+import { useWallet } from 'ui/utils';
 
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
   '& .MuiToggleButtonGroup-grouped': {

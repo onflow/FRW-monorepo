@@ -4,8 +4,8 @@ import { Box } from '@mui/system';
 import React from 'react';
 import { QRCode } from 'react-qrcode-logo';
 
+import lilo from 'ui/assets/image/lilo.png';
 import scanIcon from 'ui/assets/scan.svg';
-import lilo from 'ui/FRWAssets/image/lilo.png';
 
 const useStyles = makeStyles(() => ({
   customInputLabel: {

@@ -17,12 +17,12 @@ import { makeStyles } from '@mui/styles';
 import React, { useCallback } from 'react';
 
 import { type TransactionState } from '@/shared/types/transaction-types';
-import SlideRelative from '@/ui/FRWComponent/SlideRelative';
+import CancelIcon from '@/ui/components/iconfont/IconClose';
+import IconSwitch from '@/ui/components/iconfont/IconSwitch';
+import SlideRelative from '@/ui/components/SlideRelative';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 
-import CancelIcon from '../../../components/iconfont/IconClose';
-import IconSwitch from '../../../components/iconfont/IconSwitch';
 import { CurrencyValue } from '../TokenDetail/CurrencyValue';
 import { TokenBalance } from '../TokenDetail/TokenBalance';
 

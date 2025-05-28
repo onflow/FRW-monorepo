@@ -11,13 +11,13 @@ import type { CoinItem } from '@/shared/types/coin-types';
 import type { PriceProvider } from '@/shared/types/network-types';
 import { type ActiveAccountType } from '@/shared/types/wallet-types';
 import { consoleWarn } from '@/shared/utils/console-log';
-import SecurityCard from '@/ui/FRWComponent/SecurityCard';
-import StorageUsageCard from '@/ui/FRWComponent/StorageUsageCard';
+import SecurityCard from '@/ui/components/SecurityCard';
+import StorageUsageCard from '@/ui/components/StorageUsageCard';
 import { refreshEvmToken } from '@/ui/hooks/use-coin-hooks';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import tips from 'ui/FRWAssets/svg/tips.svg';
-import WarningIcon from 'ui/FRWAssets/svg/warning.svg';
+import tips from 'ui/assets/svg/tips.svg';
+import WarningIcon from 'ui/assets/svg/warning.svg';
 import { useWallet } from 'ui/utils';
 
 import OnRampList from '../Wallet/OnRampList';

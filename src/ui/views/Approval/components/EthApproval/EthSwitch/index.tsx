@@ -5,10 +5,10 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useHistory } from 'react-router-dom';
 
 import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
-import Link from 'ui/FRWAssets/svg/link.svg';
-import mainnetsvg from 'ui/FRWAssets/svg/mainnet.svg';
-import testnetsvg from 'ui/FRWAssets/svg/testnet.svg';
-import { LLPrimaryButton, LLSecondaryButton } from 'ui/FRWComponent';
+import Link from 'ui/assets/svg/link.svg';
+import mainnetsvg from 'ui/assets/svg/mainnet.svg';
+import testnetsvg from 'ui/assets/svg/testnet.svg';
+import { LLPrimaryButton, LLSecondaryButton } from 'ui/components';
 import { useApproval, useWallet } from 'ui/utils';
 // import { CHAINS_ENUM } from 'consts';
 

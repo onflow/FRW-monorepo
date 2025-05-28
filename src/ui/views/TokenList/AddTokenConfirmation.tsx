@@ -4,9 +4,8 @@ import { type TokenInfo } from 'flow-native-token-registry';
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
+import IconPlus from '@/ui/components/iconfont/IconPlus';
 import { useWallet } from 'ui/utils';
-
-import IconPlus from '../../../components/iconfont/IconPlus';
 
 interface AddTokenConfirmationProps {
   isConfirmationOpen: boolean;

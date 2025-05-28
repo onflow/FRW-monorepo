@@ -6,16 +6,16 @@ import { useHistory } from 'react-router-dom';
 
 import { type TransactionState } from '@/shared/types/transaction-types';
 import { consoleError } from '@/shared/utils/console-log';
-import SlideRelative from '@/ui/FRWComponent/SlideRelative';
-import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
-import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
+import SlideRelative from '@/ui/components/SlideRelative';
+import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
+import { WarningStorageLowSnackbar } from '@/ui/components/WarningStorageLowSnackbar';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useContact } from '@/ui/hooks/useContactHook';
 import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
-import IconNext from 'ui/FRWAssets/svg/next.svg';
-import { LLSpinner } from 'ui/FRWComponent';
-import { Profile } from 'ui/FRWComponent/Send/Profile';
+import IconNext from 'ui/assets/svg/next.svg';
+import { LLSpinner } from 'ui/components';
+import { Profile } from 'ui/components/Send/Profile';
 import { useWallet } from 'ui/utils';
 
 import { CurrencyValue } from '../TokenDetail/CurrencyValue';

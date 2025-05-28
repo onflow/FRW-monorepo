@@ -4,14 +4,14 @@ import { useHistory } from 'react-router-dom';
 
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
-import { NFTDrawer } from '@/ui/FRWComponent/GeneralPages';
-import WarningSnackbar from '@/ui/FRWComponent/WarningSnackbar';
-import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
+import { NFTDrawer } from '@/ui/components/GeneralPages';
+import WarningSnackbar from '@/ui/components/WarningSnackbar';
+import { WarningStorageLowSnackbar } from '@/ui/components/WarningStorageLowSnackbar';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useNftCatalogCollections } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
-import alertMark from 'ui/FRWAssets/svg/alertMark.svg';
+import alertMark from 'ui/assets/svg/alertMark.svg';
 import { useWallet } from 'ui/utils';
 
 import AccountMainBox from '../AccountMainBox';

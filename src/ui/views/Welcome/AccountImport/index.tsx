@@ -5,11 +5,11 @@ import { useHistory } from 'react-router-dom';
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 import { consoleError } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
-import AllSet from '@/ui/FRWComponent/LandingPages/AllSet';
-import GoogleBackup from '@/ui/FRWComponent/LandingPages/GoogleBackup';
-import LandingComponents from '@/ui/FRWComponent/LandingPages/LandingComponents';
-import PickUsername from '@/ui/FRWComponent/LandingPages/PickUsername';
-import SetPassword from '@/ui/FRWComponent/LandingPages/SetPassword';
+import AllSet from '@/ui/components/LandingPages/AllSet';
+import GoogleBackup from '@/ui/components/LandingPages/GoogleBackup';
+import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
+import PickUsername from '@/ui/components/LandingPages/PickUsername';
+import SetPassword from '@/ui/components/LandingPages/SetPassword';
 import { useWallet } from 'ui/utils';
 
 import Google from './Google';

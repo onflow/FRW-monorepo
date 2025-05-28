@@ -7,7 +7,7 @@ import { useHistory } from 'react-router-dom';
 import { consoleError } from '@/shared/utils/console-log';
 import { useWallet } from 'ui/utils';
 
-import { LLPrimaryButton, LLSpinner } from '../../../FRWComponent';
+import { LLPrimaryButton, LLSpinner } from '../../../components';
 
 const StyledInput = styled(InputBase)(({ theme }) => ({
   zIndex: 1,

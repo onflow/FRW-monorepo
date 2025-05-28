@@ -14,7 +14,7 @@ import React from 'react';
 
 import { type UserInfoResponse } from '@/shared/types/network-types';
 import { useUserInfo } from '@/ui/hooks/use-account-hooks';
-import iconCheck from 'ui/FRWAssets/svg/iconCheck.svg';
+import iconCheck from 'ui/assets/svg/iconCheck.svg';
 
 export const ProfileItem = ({
   profileId,

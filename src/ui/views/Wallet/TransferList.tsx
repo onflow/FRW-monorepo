@@ -20,7 +20,7 @@ import React from 'react';
 import { formatString } from '@/shared/utils/address';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
-import activity from 'ui/FRWAssets/svg/activity.svg';
+import activity from 'ui/assets/svg/activity.svg';
 
 import { TokenBalance } from '../TokenDetail/TokenBalance';
 

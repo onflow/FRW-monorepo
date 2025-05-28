@@ -12,7 +12,7 @@ import React, { useEffect, useState } from 'react';
 
 import { UserInfoResponse } from '@/shared/types/network-types';
 import IconCheck from 'ui/assets/check.svg';
-import Link from 'ui/FRWAssets/svg/link.svg';
+import Link from 'ui/assets/svg/link.svg';
 import { useWallet } from 'ui/utils';
 
 const useStyles = makeStyles({
