@@ -31,6 +31,7 @@ import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
 import { useNews } from '@/ui/hooks/use-news';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
+import { networkColor } from '@/ui/style/color';
 import { useWallet, formatAddress, useWalletLoaded } from 'ui/utils';
 
 import MainAccountsComponent from './Components/MainAccountsComponent';
@@ -201,18 +202,6 @@ const Header = ({ _loading = false }) => {
       setIsPending(false);
     }
   }, [usewallet]);
-
-  const networkColor = (network: string) => {
-    switch (network) {
-      case 'mainnet':
-        return '#41CC5D';
-      case 'testnet':
-        return '#FF8A00';
-      case 'crescendo':
-        return '#CCAF21';
-    }
-    return '#41CC5D';
-  };
 
   const checkAuthStatus = useCallback(async () => {
     await usewallet.openapi.checkAuthStatus();
