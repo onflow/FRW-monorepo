@@ -4,10 +4,10 @@ import React, { useState } from 'react';
 
 import { seedWithPathAndPhrase2PublicPrivateKey } from '@/background/utils/modules/publicPrivateKey';
 import { useWallet } from '@/ui/utils/WalletContext';
-import { LLSpinner } from 'ui/FRWComponent';
+import { LLSpinner } from 'ui/components';
 
-import KeyPathInput from '../../../../FRWComponent/KeyPathInputs';
-import PasswordTextarea from '../../../../FRWComponent/PasswordTextarea';
+import KeyPathInput from '../../../../components/KeyPathInputs';
+import PasswordTextarea from '../../../../components/PasswordTextarea';
 import { FLOW_BIP44_PATH, KEY_TYPE } from '../../../../utils/modules/constants';
 
 const useStyles = makeStyles(() => ({

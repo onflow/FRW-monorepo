@@ -14,9 +14,9 @@ import {
 } from '@/shared/utils/algo-constants';
 import { consoleError } from '@/shared/utils/console-log';
 import { FCLWalletConnectMethod, type FCLWalletConnectSyncAccountInfo } from '@/shared/utils/type';
-import AllSet from '@/ui/FRWComponent/LandingPages/AllSet';
-import LandingComponents from '@/ui/FRWComponent/LandingPages/LandingComponents';
-import SetPassword from '@/ui/FRWComponent/LandingPages/SetPassword';
+import AllSet from '@/ui/components/LandingPages/AllSet';
+import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
+import SetPassword from '@/ui/components/LandingPages/SetPassword';
 import { useWallet } from 'ui/utils';
 
 import SyncQr from './SyncQr';

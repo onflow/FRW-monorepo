@@ -2,9 +2,9 @@ import { Box, Button, Typography, TextField, TextareaAutosize } from '@mui/mater
 import { makeStyles } from '@mui/styles';
 import React, { useState } from 'react';
 
-import PasswordTextarea from '@/ui/FRWComponent/PasswordTextarea';
+import PasswordTextarea from '@/ui/components/PasswordTextarea';
 import { useWallet } from '@/ui/utils/WalletContext';
-import { LLSpinner } from 'ui/FRWComponent';
+import { LLSpinner } from 'ui/components';
 
 import { KEY_TYPE } from '../../../../utils/modules/constants';
 

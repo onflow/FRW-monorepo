@@ -22,8 +22,8 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import { useHistory, useParams, useLocation } from 'react-router-dom';
 
 import { consoleError } from '@/shared/utils/console-log';
-import { LLSpinner } from '@/ui/FRWComponent';
-import GridView from '@/ui/FRWComponent/NFTs/GridView';
+import { LLSpinner } from '@/ui/components';
+import GridView from '@/ui/components/NFTs/GridView';
 import { type PostMedia } from '@/ui/utils/url';
 import { useWallet } from 'ui/utils';
 

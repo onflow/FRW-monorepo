@@ -1,10 +1,10 @@
 import { Box, Stack, Typography, Divider } from '@mui/material';
 import React from 'react';
 
-import Link from 'ui/FRWAssets/svg/link.svg';
-import mainnetsvg from 'ui/FRWAssets/svg/mainnet.svg';
-import testnetsvg from 'ui/FRWAssets/svg/testnet.svg';
-import { LLPrimaryButton, LLSecondaryButton } from 'ui/FRWComponent';
+import Link from 'ui/assets/svg/link.svg';
+import mainnetsvg from 'ui/assets/svg/mainnet.svg';
+import testnetsvg from 'ui/assets/svg/testnet.svg';
+import { LLPrimaryButton, LLSecondaryButton } from 'ui/components';
 import { useWallet } from 'ui/utils';
 
 interface ShowSwitchProps {

@@ -17,19 +17,18 @@ import { makeStyles } from '@mui/styles';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 
-import { LLHeader } from '@/ui/FRWComponent';
-import CoinsIcon from '@/ui/FRWComponent/CoinsIcon';
+import { LLHeader } from '@/ui/components';
+import CoinsIcon from '@/ui/components/CoinsIcon';
+import IconAbout from '@/ui/components/iconfont/IconAbout';
+import IconAccount from '@/ui/components/iconfont/IconAccount';
+import IconAddressbook from '@/ui/components/iconfont/IconAddressbook';
+import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
+import IconBackup from '@/ui/components/iconfont/IconBackup';
+import IconDeveloper from '@/ui/components/iconfont/IconDeveloper';
+import IconLock from '@/ui/components/iconfont/IconLock';
 import { useWallet } from '@/ui/utils';
-import { ReactComponent as Device } from 'ui/FRWAssets/svg/device.svg';
-import { ReactComponent as IconLink } from 'ui/FRWAssets/svg/Iconlink.svg';
-
-import IconAbout from '../../../components/iconfont/IconAbout';
-import IconAccount from '../../../components/iconfont/IconAccount';
-import IconAddressbook from '../../../components/iconfont/IconAddressbook';
-import IconEnd from '../../../components/iconfont/IconAVector11Stroke';
-import IconBackup from '../../../components/iconfont/IconBackup';
-import IconDeveloper from '../../../components/iconfont/IconDeveloper';
-import IconLock from '../../../components/iconfont/IconLock';
+import { ReactComponent as Device } from 'ui/assets/svg/device.svg';
+import { ReactComponent as IconLink } from 'ui/assets/svg/Iconlink.svg';
 // Feature flags
 const SHOW_DEVICES = false;
 

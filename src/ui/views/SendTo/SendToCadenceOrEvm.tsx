@@ -6,15 +6,15 @@ import { useHistory } from 'react-router-dom';
 import { type TransactionState } from '@/shared/types/transaction-types';
 import { isValidAddress, isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
-import { LLHeader } from '@/ui/FRWComponent';
-import { ContactCard } from '@/ui/FRWComponent/Send/ContactCard';
-import SlideRelative from '@/ui/FRWComponent/SlideRelative';
+import { LLHeader } from '@/ui/components';
+import CancelIcon from '@/ui/components/iconfont/IconClose';
+import { ContactCard } from '@/ui/components/Send/ContactCard';
+import SlideRelative from '@/ui/components/SlideRelative';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useContact } from '@/ui/hooks/useContactHook';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useWallet } from 'ui/utils';
 
-import CancelIcon from '../../../components/iconfont/IconClose';
 import { CurrencyValue } from '../TokenDetail/CurrencyValue';
 import { TokenBalance } from '../TokenDetail/TokenBalance';
 

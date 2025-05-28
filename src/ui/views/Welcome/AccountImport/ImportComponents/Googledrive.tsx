@@ -2,11 +2,10 @@ import { Box, Button, Typography } from '@mui/material';
 import React, { useState } from 'react';
 
 import { consoleError } from '@/shared/utils/console-log';
-import BrowserWarning from '@/ui/component/BrowserWarning';
-import { LLSpinner } from '@/ui/FRWComponent';
+import { LLSpinner } from '@/ui/components';
+import BrowserWarning from '@/ui/components/BrowserWarning';
+import IconGoogleDrive from '@/ui/components/iconfont/IconGoogleDrive';
 import { useWallet } from '@/ui/utils';
-
-import IconGoogleDrive from '../../../../../components/iconfont/IconGoogleDrive';
 
 const Googledrive = ({ setErrorMessage, setShowError, handleGoogleAccountsFound }) => {
   const wallets = useWallet();

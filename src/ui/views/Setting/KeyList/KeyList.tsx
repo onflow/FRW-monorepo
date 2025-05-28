@@ -2,16 +2,16 @@ import { Box, IconButton, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { type KeyResponseItem, type AccountKey } from '@/shared/types/network-types';
-import { LLHeader } from '@/ui/FRWComponent';
+import { LLHeader } from '@/ui/components';
+import IconCopy from '@/ui/components/iconfont/IconCopy';
 import { useWallet } from 'ui/utils';
 
-import IconCopy from '../../../../components/iconfont/IconCopy';
-import curve from '../../../FRWAssets/image/curve.png';
-import hash from '../../../FRWAssets/image/hash.png';
-import key from '../../../FRWAssets/image/key.png';
-import sequence from '../../../FRWAssets/image/sequence.png';
-import toggle from '../../../FRWAssets/image/toggle.png';
-import weight from '../../../FRWAssets/image/weight.png';
+import curve from '../../../assets/image/curve.png';
+import hash from '../../../assets/image/hash.png';
+import key from '../../../assets/image/key.png';
+import sequence from '../../../assets/image/sequence.png';
+import toggle from '../../../assets/image/toggle.png';
+import weight from '../../../assets/image/weight.png';
 
 import RevokePage from './RevokePage';
 

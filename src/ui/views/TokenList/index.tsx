@@ -19,15 +19,15 @@ import React, { useState, useEffect, useCallback } from 'react';
 
 // import { useHistory } from 'react-router-dom';
 import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
-import { LLHeader } from '@/ui/FRWComponent';
-import TokenItem from '@/ui/FRWComponent/TokenLists/TokenItem';
+import { LLHeader } from '@/ui/components';
+import TokenItem from '@/ui/components/TokenLists/TokenItem';
 import { useAllTokenInfo } from '@/ui/hooks/use-coin-hooks';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useCoins } from 'ui/hooks/useCoinHook';
 import { useWallet } from 'ui/utils';
 
-import CloseIcon from '../../FRWAssets/svg/close-icon.svg';
-import VerifiedIcon from '../../FRWAssets/svg/verfied-check.svg';
+import CloseIcon from '../../assets/svg/close-icon.svg';
+import VerifiedIcon from '../../assets/svg/verfied-check.svg';
 
 import AddTokenConfirmation from './AddTokenConfirmation';
 

@@ -10,7 +10,7 @@ import {
   LLSecondaryButton,
   LLConnectLoading,
   LLLinkingLoading,
-} from '@/ui/FRWComponent';
+} from '@/ui/components';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useApproval, useWallet } from 'ui/utils';
 // import { CHAINS_ENUM } from 'consts';

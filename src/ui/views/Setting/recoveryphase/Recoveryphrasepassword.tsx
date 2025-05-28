@@ -5,11 +5,10 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
-import { LLHeader } from '@/ui/FRWComponent';
-import SlideRelative from '@/ui/FRWComponent/SlideRelative';
+import { LLHeader } from '@/ui/components';
+import CancelIcon from '@/ui/components/iconfont/IconClose';
+import SlideRelative from '@/ui/components/SlideRelative';
 import { useWallet } from 'ui/utils';
-
-import CancelIcon from '../../../../components/iconfont/IconClose';
 
 const useStyles = makeStyles(() => ({
   customInputLabel: {

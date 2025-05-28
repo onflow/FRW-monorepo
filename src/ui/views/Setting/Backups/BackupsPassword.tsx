@@ -1,6 +1,6 @@
 import React from 'react';
 
-import SettingsPassword from '@/ui/FRWComponent/SettingsPassword';
+import SettingsPassword from '@/ui/components/SettingsPassword';
 
 const BackupsPassword = () => {
   return <SettingsPassword verifiedUrl="/dashboard/setting/backups"></SettingsPassword>;

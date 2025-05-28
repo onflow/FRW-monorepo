@@ -9,9 +9,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
 import { type PostMedia, MatchMediaType } from '@/ui/utils/url';
-import fallback from 'ui/FRWAssets/image/errorImage.png';
-import DetailMove from 'ui/FRWAssets/svg/detailMove.svg';
-import SendIcon from 'ui/FRWAssets/svg/detailSend.svg';
+import fallback from 'ui/assets/image/errorImage.png';
+import DetailMove from 'ui/assets/svg/detailMove.svg';
+import SendIcon from 'ui/assets/svg/detailSend.svg';
 import { useWallet } from 'ui/utils';
 
 import MoveNftFromEvm from './SendNFT/MoveNftFromEvm';

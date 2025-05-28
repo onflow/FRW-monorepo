@@ -7,9 +7,8 @@ import {
   type ActiveChildType_depreciated,
   type WalletAddress,
 } from '@/shared/types/wallet-types';
+import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import { useAccountBalance } from '@/ui/hooks/use-account-hooks';
-
-import IconEnd from '../../../../components/iconfont/IconAVector11Stroke';
 
 interface MainAccountsProps {
   props_id: number;

@@ -8,9 +8,10 @@ import Web3 from 'web3';
 import { type Contact } from '@/shared/types/network-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
-import SlideRelative from '@/ui/FRWComponent/SlideRelative';
-import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
-import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
+import IconFlow from '@/ui/components/iconfont/IconFlow';
+import SlideRelative from '@/ui/components/SlideRelative';
+import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
+import { WarningStorageLowSnackbar } from '@/ui/components/WarningStorageLowSnackbar';
 import { useAllNftList } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
@@ -18,11 +19,9 @@ import { useTransferList } from '@/ui/hooks/useTransferListHook';
 import { type MatchMedia, MatchMediaType } from '@/ui/utils/url';
 import erc721 from 'background/utils/erc721.abi.json';
 import { EVM_ENDPOINT } from 'consts';
-import IconNext from 'ui/FRWAssets/svg/next.svg';
-import { LLSpinner, LLProfile, FRWProfile, FRWTargetProfile } from 'ui/FRWComponent';
+import IconNext from 'ui/assets/svg/next.svg';
+import { LLSpinner, LLProfile, FRWProfile, FRWTargetProfile } from 'ui/components';
 import { useWallet, isEmoji, returnFilteredCollections } from 'ui/utils';
-
-import IconFlow from '../../../../components/iconfont/IconFlow';
 
 interface SendNFTConfirmationProps {
   isConfirmationOpen: boolean;

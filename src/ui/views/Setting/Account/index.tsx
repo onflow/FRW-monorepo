@@ -10,8 +10,8 @@ import { useHistory } from 'react-router-dom';
 import { openIndexPage } from '@/background/webapi/tab';
 import { consoleError } from '@/shared/utils/console-log';
 import { getCurrentProfileId } from '@/shared/utils/current-id';
-import RemoveProfileModal from '@/ui/FRWComponent/PopupModal/remove-profile-modal';
-import ResetModal from '@/ui/FRWComponent/PopupModal/resetModal';
+import RemoveProfileModal from '@/ui/components/PopupModal/remove-profile-modal';
+import ResetModal from '@/ui/components/PopupModal/resetModal';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from 'ui/utils';
 

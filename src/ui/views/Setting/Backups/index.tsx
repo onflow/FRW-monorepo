@@ -4,13 +4,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
 import { consoleError } from '@/shared/utils/console-log';
-import BrowserWarning from '@/ui/component/BrowserWarning';
-import { LLHeader, LLSpinner } from '@/ui/FRWComponent';
-import { LLDeleteBackupPopup } from '@/ui/FRWComponent/LLDeleteBackupPopup';
+import { LLHeader, LLSpinner } from '@/ui/components';
+import BrowserWarning from '@/ui/components/BrowserWarning';
+import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
+import IconGoogleDrive from '@/ui/components/iconfont/IconGoogleDrive';
+import { LLDeleteBackupPopup } from '@/ui/components/LLDeleteBackupPopup';
 import { useWallet } from 'ui/utils';
-
-import CheckCircleIcon from '../../../../components/iconfont/IconCheckmark';
-import IconGoogleDrive from '../../../../components/iconfont/IconGoogleDrive';
 
 const useStyles = makeStyles(() => ({
   arrowback: {

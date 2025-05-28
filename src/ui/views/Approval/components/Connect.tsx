@@ -3,18 +3,17 @@ import { WalletUtils } from '@onflow/fcl';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
+import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { authnServiceDefinition, serviceDefinition } from 'background/controller/serviceDefinition';
-import flowgrey from 'ui/FRWAssets/svg/flow-grey.svg';
-import Link from 'ui/FRWAssets/svg/link.svg';
-import linkGlobe from 'ui/FRWAssets/svg/linkGlobe.svg';
-import mainnetsvg from 'ui/FRWAssets/svg/mainnet.svg';
-import testnetsvg from 'ui/FRWAssets/svg/testnet.svg';
-import { LLPrimaryButton, LLSecondaryButton, LLConnectLoading } from 'ui/FRWComponent';
+import flowgrey from 'ui/assets/svg/flow-grey.svg';
+import Link from 'ui/assets/svg/link.svg';
+import linkGlobe from 'ui/assets/svg/linkGlobe.svg';
+import mainnetsvg from 'ui/assets/svg/mainnet.svg';
+import testnetsvg from 'ui/assets/svg/testnet.svg';
+import { LLPrimaryButton, LLSecondaryButton, LLConnectLoading } from 'ui/components';
 import { useApproval, useWallet } from 'ui/utils';
 // import { CHAINS_ENUM } from 'consts';
-
-import CheckCircleIcon from '../../../../components/iconfont/IconCheckmark';
 
 import ShowSwitch from './ShowSwitch';
 

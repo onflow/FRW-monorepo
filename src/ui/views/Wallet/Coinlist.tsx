@@ -21,9 +21,9 @@ import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 
-import plus from '../../FRWAssets/svg/plus.svg';
-import slider from '../../FRWAssets/svg/slider.svg';
-import VerifiedIcon from '../../FRWAssets/svg/verfied-check.svg';
+import plus from '../../assets/svg/plus.svg';
+import slider from '../../assets/svg/slider.svg';
+import VerifiedIcon from '../../assets/svg/verfied-check.svg';
 import { CurrencyValue } from '../TokenDetail/CurrencyValue';
 
 const ActionButtons = ({ managePath, createPath }) => {
