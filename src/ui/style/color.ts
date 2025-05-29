@@ -42,16 +42,18 @@ export const COLOR_ORANGE_WARNING_FF8A00 = '#FF8A00';
 export const COLOR_SETTINGS_BLUE_59A1DB = '#59A1DB';
 
 // Flow Brand Colors
-export const COLOR_GREEN_FLOW_00EF8B = '#00EF8B';
-export const COLOR_GREEN_FLOW_DARK_02D87E = '#02D87E';
+export const COLOR_GREEN_FLOW_DARKMODE_00EF8B = '#00EF8B';
+export const COLOR_GREEN_FLOW_DARKMODE_DARK_02D87E = '#02D87E';
+
+export const COLOR_GREEN_FLOW_LIGHTMODE_00B877 = '#00B877';
 
 // Network Colors
 export const networkColor = (network: string) => {
   switch (network) {
     case 'mainnet':
-      return COLOR_GREEN_FLOW_00EF8B;
+      return COLOR_GREEN_FLOW_DARKMODE_00EF8B;
     case 'testnet':
       return COLOR_ORANGE_WARNING_FF8A00;
   }
-  return COLOR_GREEN_FLOW_00EF8B;
+  return COLOR_GREEN_FLOW_DARKMODE_00EF8B;
 };

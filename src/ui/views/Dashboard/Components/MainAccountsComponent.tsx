@@ -41,12 +41,6 @@ const MainAccountsComponent = (props: MainAccountsProps) => {
 
   return props.address === props.mainAddress || props.expandAccount ? (
     <>
-      <AccountAvatar
-        emoji={props.icon}
-        color={props.color}
-        active={props.address === props.currentWallet['address']}
-        spinning={false}
-      />
       <Tooltip title={isBalanceLoading ? 'Loading balance...' : ''} arrow>
         <span>
           <ListItem

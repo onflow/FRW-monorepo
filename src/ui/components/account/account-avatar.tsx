@@ -1,7 +1,12 @@
 import { Avatar, Box, CircularProgress, IconButton, Typography } from '@mui/material';
+import { useTheme, alpha } from '@mui/material/styles';
 import React from 'react';
 
-import { networkColor } from '@/ui/style/color';
+import {
+  COLOR_GREEN_FLOW_DARKMODE_00EF8B,
+  COLOR_GREEN_FLOW_LIGHTMODE_00B877,
+  networkColor,
+} from '@/ui/style/color';
 
 /**
  * An Account Avatar component that displays an emoji and a parent emoji.
@@ -19,8 +24,8 @@ import { networkColor } from '@/ui/style/color';
  */
 export const AccountAvatar = ({
   network,
-  accountEmoji,
-  accountColor,
+  emoji,
+  color,
   parentEmoji,
   parentColor,
   active = false,
@@ -28,25 +33,25 @@ export const AccountAvatar = ({
   onClick,
 }: {
   network: string;
-  accountEmoji: string;
-  accountColor?: string;
+  emoji: string;
+  color?: string;
   parentEmoji?: string;
   parentColor?: string;
   active?: boolean;
   spinning?: boolean;
   onClick?: () => void;
 }) => {
+  const theme = useTheme();
+
   return (
     <Box>
       {spinning && (
         <CircularProgress
-          size={'28px'}
+          size={'42px'}
           sx={{
             position: 'absolute',
-            width: '28px',
-            height: '28px',
-            left: '-1px',
-            top: '-1px',
+            left: '-2px',
+            top: '-2px',
             color: networkColor(network),
           }}
         />
@@ -57,24 +62,61 @@ export const AccountAvatar = ({
         aria-label="menu"
         onClick={onClick}
         sx={{
-          marginLeft: '0px',
-          padding: '3px',
-          position: 'relative',
-          border: spinning
-            ? ''
-            : network !== 'mainnet'
-              ? `2px solid ${networkColor(network)}`
-              : '2px solid #282828',
-          marginRight: '0px',
+          display: 'flex',
+          height: '36px',
+          width: '36px',
+          borderRadius: '36px',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: color,
+          marginRight: '12px',
+          outlineStyle: 'solid',
+          outlineWidth: spinning || !active ? '0px' : '1px',
+          outlineOffset: spinning || !active ? '0px' : '2px',
+          outlineColor: active
+            ? (theme) =>
+                theme.palette.mode === 'dark'
+                  ? COLOR_GREEN_FLOW_DARKMODE_00EF8B
+                  : COLOR_GREEN_FLOW_LIGHTMODE_00B877
+            : spinning
+              ? 'transparent'
+              : network !== 'mainnet'
+                ? networkColor(network)
+                : 'transparent',
+          '&:hover': {
+            backgroundColor: color ? alpha(color, 0.8) : undefined,
+          },
         }}
       >
-        <img
-          src={accountEmoji}
-          style={{ backgroundColor: '#797979', borderRadius: '10px' }}
-          width="20px"
-          height="20px"
-        />
+        <Typography
+          sx={{
+            fontSize: '18px',
+            fontWeight: '600',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            lineHeight: '18px',
+          }}
+        >
+          {emoji}
+        </Typography>
       </IconButton>
+      {parentEmoji && (
+        <Box
+          sx={{
+            display: 'flex',
+            height: '32px',
+            width: '32px',
+            borderRadius: '32px',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: color,
+            marginRight: '12px',
+          }}
+        >
+          <Typography sx={{ fontSize: '20px', fontWeight: '600' }}>{parentEmoji}</Typography>
+        </Box>
+      )}
     </Box>
   );
 };
