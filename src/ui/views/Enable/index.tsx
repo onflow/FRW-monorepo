@@ -5,8 +5,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { consoleError } from '@/shared/utils/console-log';
-import { EnableEvm } from '@/ui/FRWComponent/EnableEvm';
-import { LLPrimaryButton, LLSpinner } from 'ui/FRWComponent';
+import { EnableEvm } from '@/ui/components/EnableEvm';
+import { LLPrimaryButton, LLSpinner } from 'ui/components';
 import { useWallet } from 'ui/utils';
 
 const Enable = () => {

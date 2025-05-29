@@ -4,10 +4,10 @@ import React from 'react';
 import { useHistory } from 'react-router-dom';
 
 import packageJson from '@/../package.json';
-import { LLHeader } from '@/ui/FRWComponent';
-import discord from 'ui/FRWAssets/image/discord.png';
-import lilo from 'ui/FRWAssets/image/lilo.png';
-import X from 'ui/FRWAssets/svg/xLogo.svg';
+import { LLHeader } from '@/ui/components';
+import discord from 'ui/assets/image/discord.png';
+import lilo from 'ui/assets/image/lilo.png';
+import X from 'ui/assets/svg/xLogo.svg';
 const { version } = packageJson;
 // import '../../Unlock/style.css';
 

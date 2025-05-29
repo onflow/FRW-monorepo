@@ -5,11 +5,11 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import { consoleError } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
-import SlideRelative from '@/ui/FRWComponent/SlideRelative';
-import { LLPrimaryButton } from 'ui/FRWComponent';
+import CancelIcon from '@/ui/components/iconfont/IconClose';
+import SlideRelative from '@/ui/components/SlideRelative';
+import { LLPrimaryButton } from 'ui/components';
 import { useWallet } from 'ui/utils';
 
-import CancelIcon from '../../../../components/iconfont/IconClose';
 const useStyles = makeStyles(() => ({
   customInputLabel: {
     '& legend': {

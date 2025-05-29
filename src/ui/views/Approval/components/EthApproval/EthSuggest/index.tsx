@@ -7,7 +7,7 @@ import { withPrefix } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
 import { refreshEvmToken } from '@/ui/hooks/use-coin-hooks';
 import { EVM_ENDPOINT } from 'consts';
-import { LLPrimaryButton, LLSecondaryButton, LLConnectLoading } from 'ui/FRWComponent';
+import { LLPrimaryButton, LLSecondaryButton, LLConnectLoading } from 'ui/components';
 import { useApproval, useWallet } from 'ui/utils';
 // import EthMove from '../EthMove';
 

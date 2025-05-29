@@ -3,7 +3,7 @@ import { makeStyles } from '@mui/styles';
 import React, { useCallback } from 'react';
 
 import { consoleError } from '@/shared/utils/console-log';
-import { LLHeader } from '@/ui/FRWComponent';
+import { LLHeader } from '@/ui/components';
 import { useCurrency, useSupportedCurrencies } from '@/ui/hooks/preference-hooks';
 import { useWallet, useWalletLoaded } from '@/ui/utils';
 

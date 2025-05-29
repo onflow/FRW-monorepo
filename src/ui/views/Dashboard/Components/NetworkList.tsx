@@ -12,7 +12,7 @@ import React, { useState } from 'react';
 import { consoleError } from '@/shared/utils/console-log';
 import { useWallet } from 'ui/utils';
 
-import networkLink from '../../../FRWAssets/svg/networkLink.svg';
+import networkLink from '../../../assets/svg/networkLink.svg';
 
 const bgColor = (network: string) => {
   switch (network) {

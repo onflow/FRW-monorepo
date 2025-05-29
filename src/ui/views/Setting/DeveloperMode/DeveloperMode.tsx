@@ -15,7 +15,7 @@ import { styled } from '@mui/system';
 import React, { useState, useEffect, useCallback } from 'react';
 
 import { storage } from '@/background/webapi';
-import { LLHeader } from '@/ui/FRWComponent';
+import { LLHeader } from '@/ui/components';
 import { useWallet } from 'ui/utils';
 
 const useStyles = makeStyles(() => ({

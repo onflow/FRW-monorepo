@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box';
 import React from 'react';
 
-import { NetworkIndicator } from '@/ui/FRWComponent/NetworkIndicator';
+import { NetworkIndicator } from '@/ui/components/NetworkIndicator';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 
 import WalletTab from '../Wallet';

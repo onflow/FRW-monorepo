@@ -21,7 +21,7 @@ import { useHistory } from 'react-router-dom';
 
 import { type Contact } from '@/shared/types/network-types';
 import { consoleError } from '@/shared/utils/console-log';
-import EmptyStateImage from 'ui/FRWAssets/image/search_user.png';
+import EmptyStateImage from 'ui/assets/image/search_user.png';
 import { useWallet } from 'ui/utils';
 
 import AddOrEditAddress from './AddOrEditAddress';

@@ -21,7 +21,7 @@ import { EVM_ENDPOINT } from 'consts';
 import { useWallet } from 'ui/utils';
 
 import { withPrefix, isValidEthereumAddress } from '../../../../shared/utils/address';
-import { LLPrimaryButton, LLFormHelperText } from '../../../FRWComponent';
+import { LLPrimaryButton, LLFormHelperText } from '../../../components';
 
 import AddCustomEvmForm from './CustomEvmForm';
 

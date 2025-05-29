@@ -3,8 +3,8 @@ import React, { useCallback, useEffect } from 'react';
 import { useHistory, useParams, useLocation } from 'react-router-dom';
 
 import { consoleError } from '@/shared/utils/console-log';
-import CollectionDetailGrid from '@/ui/FRWComponent/NFTs/CollectionDetailGrid';
-import GridView from '@/ui/FRWComponent/NFTs/GridView';
+import CollectionDetailGrid from '@/ui/components/NFTs/CollectionDetailGrid';
+import GridView from '@/ui/components/NFTs/GridView';
 import { useNftHook } from '@/ui/hooks/useNftHook';
 import { useWallet } from 'ui/utils';
 

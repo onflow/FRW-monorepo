@@ -5,14 +5,13 @@ import QRCodeStyling from 'qr-code-styling';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 import { withPrefix } from '@/shared/utils/address';
-import alertMark from '@/ui/FRWAssets/svg/alertMark.svg';
-import { NetworkIndicator } from '@/ui/FRWComponent/NetworkIndicator';
+import alertMark from '@/ui/assets/svg/alertMark.svg';
+import IconCopy from '@/ui/components/iconfont/IconCopy';
+import { NetworkIndicator } from '@/ui/components/NetworkIndicator';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { LLHeader } from 'ui/FRWComponent';
+import { LLHeader } from 'ui/components';
 import { useWallet } from 'ui/utils';
-
-import IconCopy from '../../../components/iconfont/IconCopy';
 
 import TestnetWarning from './TestnetWarning';
 

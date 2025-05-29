@@ -12,11 +12,11 @@ import { makeStyles } from '@mui/styles';
 import React, { useState } from 'react';
 
 import { consoleError } from '@/shared/utils/console-log';
-import PasswordTextarea from '@/ui/FRWComponent/PasswordTextarea';
+import PasswordTextarea from '@/ui/components/PasswordTextarea';
 import { useWallet } from '@/ui/utils/WalletContext';
-import { LLSpinner } from 'ui/FRWComponent';
+import { LLSpinner } from 'ui/components';
 
-import ErrorModel from '../../../../FRWComponent/PopupModal/errorModel';
+import ErrorModel from '../../../../components/PopupModal/errorModel';
 import { KEY_TYPE } from '../../../../utils/modules/constants';
 
 const useStyles = makeStyles(() => ({

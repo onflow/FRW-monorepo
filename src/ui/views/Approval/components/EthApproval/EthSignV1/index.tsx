@@ -10,8 +10,8 @@ import {
   type UserInfoResponse,
 } from '@/shared/types/network-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
-import { LLConnectLoading, LLLinkingLoading } from '@/ui/FRWComponent';
-import { LLPrimaryButton, LLSecondaryButton } from 'ui/FRWComponent';
+import { LLConnectLoading, LLLinkingLoading } from '@/ui/components';
+import { LLPrimaryButton, LLSecondaryButton } from 'ui/components';
 import { useApproval, useWallet } from 'ui/utils';
 
 import IconWithPlaceholder from '../EthApprovalComponents/IconWithPlaceholder';

@@ -23,10 +23,10 @@ import {
   type WalletAccount,
 } from '@/shared/types/wallet-types';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import iconCheck from 'ui/FRWAssets/svg/iconCheck.svg';
-import popAdd from 'ui/FRWAssets/svg/popAdd.svg';
-import popLock from 'ui/FRWAssets/svg/popLock.svg';
-import vmsvg from 'ui/FRWAssets/svg/viewmore.svg';
+import iconCheck from 'ui/assets/svg/iconCheck.svg';
+import popAdd from 'ui/assets/svg/popAdd.svg';
+import popLock from 'ui/assets/svg/popLock.svg';
+import vmsvg from 'ui/assets/svg/viewmore.svg';
 import { useWallet } from 'ui/utils';
 
 import { ProfileItem } from './ProfileItem';
