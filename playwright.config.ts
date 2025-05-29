@@ -28,10 +28,10 @@ export default defineConfig({
   reporter: process.env.CI
     ? [
         ['list'], // Default reporter for CI console output
-        ['html', { open: 'never', outputFolder: 'test-results/playwright-report' }], // Generate HTML report on CI
+        ['html', { open: 'never', outputFolder: 'playwright-report' }], // Generate HTML report on CI
         ['github'], // Optional: if you still want GitHub Actions annotations
       ]
-    : [['list'], ['html', { open: 'on-failure', outputFolder: 'test-results/playwright-report' }]], // Use list and html locally, open html on failure
+    : [['list'], ['html', { open: 'on-failure', outputFolder: 'playwright-report' }]], // Use list and html locally, open html on failure
   /* Stop after the first test failure */
   maxFailures: process.env.CI ? 1 : 0,
 

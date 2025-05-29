@@ -247,15 +247,15 @@ jobs:
       - name: Build Storybook
         run: pnpm build-storybook # Assumes output is storybook-static
 
-      - name: Prepare Playwright report for Chromatic
+      - name: Copy Playwright report to Storybook static
         run: |
           mkdir -p storybook-static/test-results
           if [ -d "playwright-report" ]; then
             cp -r playwright-report storybook-static/test-results/playwright-report
             echo "Playwright report copied to storybook-static/test-results/playwright-report"
           else
-            echo "Playwright report directory not found, skipping copy."
-            # Optionally create a placeholder if needed by the Storybook component
+            echo "Playwright report not found. Skipping copy."
+            echo "Creating placeholder Playwright report..."
             mkdir -p storybook-static/test-results/playwright-report
             echo "<html><body><h1>Playwright report not found.</h1></body></html>" > storybook-static/test-results/playwright-report/index.html
           fi
