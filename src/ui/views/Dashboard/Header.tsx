@@ -291,7 +291,10 @@ const Header = ({ _loading = false }) => {
 
     return (
       <Toolbar sx={{ height: '56px', width: '100%', display: 'flex', px: '0px' }}>
-        <Box sx={{ flex: '0 0 68px', position: 'relative', display: 'flex', alignItems: 'center' }}>
+        <Box
+          sx={{ flex: '0 0 68px', position: 'relative', display: 'flex', alignItems: 'center' }}
+          data-testid="account-menu-button"
+        >
           <AccountAvatar
             network={network}
             emoji={currentWallet.icon}
