@@ -74,6 +74,7 @@ test.beforeEach(async ({ page, extensionId }) => {
 });
 
 test('EVM transactions', async ({ page, extensionId }) => {
+  test.setTimeout(120_000);
   const txList: { txId: string; tokenname: string; amount: string }[] = [];
 
   //Send Fts from COA to COA

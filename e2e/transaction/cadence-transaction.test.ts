@@ -77,6 +77,7 @@ const txList: { txId: string; tokenname: string; amount: string; ingoreFlowCharg
 
 //Send FLOW token from Flow to Flow
 test('send Cadence transactions', async ({ page, extensionId }) => {
+  test.setTimeout(120_000);
   // This can take a while
   const tx1 = await sendTokenFlow({
     page,
