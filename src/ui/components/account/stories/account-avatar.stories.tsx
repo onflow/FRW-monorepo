@@ -6,6 +6,8 @@ import AccountAvatar from '@/ui/components/account/account-avatar';
 
 const meta: Meta<typeof AccountAvatar> = {
   title: 'Components/AccountAvatar',
+  tags: ['autodocs'],
+
   component: AccountAvatar,
   argTypes: {
     network: {

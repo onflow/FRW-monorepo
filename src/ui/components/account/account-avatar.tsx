@@ -8,15 +8,6 @@ import { COLOR_DARK_GRAY_1A1A1A, networkColor } from '@/ui/style/color';
  * An Account Avatar component that displays an emoji and a parent emoji.
  * It also displays a spinning indicator if the account has a pending transaction.
  * It also displays a border if the account is active.
- * @param network - The network of the account
- * @param emoji - The emoji to display in the avatar
- * @param color - The color of the avatar
- * @param parentEmoji - The emoji to display in the parent avatar
- * @param parentColor - The color of the parent avatar
- * @param active - Whether the avatar is active
- * @param spinning - Whether the avatar is spinning
- * @param onClick - The function to call when the avatar is clicked
- * @returns The AccountAvatar component
  */
 export const AccountAvatar = ({
   network,
@@ -30,7 +21,7 @@ export const AccountAvatar = ({
 }: {
   network: string;
   emoji: string;
-  color?: string;
+  color: string;
   parentEmoji?: string;
   parentColor?: string;
   active?: boolean;
