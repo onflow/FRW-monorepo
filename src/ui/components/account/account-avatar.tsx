@@ -44,15 +44,15 @@ export const AccountAvatar = ({
   const theme = useTheme();
 
   return (
-    <Box>
+    <Box sx={{ display: 'flex', alignItems: 'center' }}>
       {spinning && (
         <CircularProgress
-          size={'42px'}
+          size={'44px'}
           sx={{
             position: 'absolute',
-            left: '-2px',
-            top: '-2px',
+            left: '0px',
             color: networkColor(network),
+            zIndex: 0,
           }}
         />
       )}
@@ -62,6 +62,7 @@ export const AccountAvatar = ({
         aria-label="menu"
         onClick={onClick}
         sx={{
+          zIndex: 1,
           display: 'flex',
           height: '36px',
           width: '36px',
@@ -69,7 +70,6 @@ export const AccountAvatar = ({
           alignItems: 'center',
           justifyContent: 'center',
           backgroundColor: color,
-          marginRight: '12px',
           outlineStyle: 'solid',
           outlineWidth: spinning || !active ? '0px' : '1px',
           outlineOffset: spinning || !active ? '0px' : '2px',
@@ -101,6 +101,7 @@ export const AccountAvatar = ({
           {emoji}
         </Typography>
       </IconButton>
+
       {parentEmoji && (
         <Box
           sx={{
@@ -110,7 +111,7 @@ export const AccountAvatar = ({
             borderRadius: '32px',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: color,
+            backgroundColor: parentColor,
             marginRight: '12px',
           }}
         >
