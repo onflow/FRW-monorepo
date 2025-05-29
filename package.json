@@ -38,7 +38,9 @@
     "analyze:priority": "pnpm analyze:fetch && pnpm analyze:project",
     "emulate:testnet": "flow emulator --chain-id testnet --rpc-host access.devnet.nodes.onflow.org:9000",
     "emulate:mainnet": "flow emulator --chain-id mainnet --rpc-host access.mainnet.nodes.onflow.org:9000",
-    "gh:login": "gh auth login -s project && gh auth status"
+    "gh:login": "gh auth login -s project && gh auth status",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@coinbase/cbpay-js": "^1.10.0",
@@ -147,6 +149,10 @@
     "@eslint/js": "^9.15.0",
     "@metamask/eth-sig-util": "^8.2.0",
     "@playwright/test": "^1.49.0",
+    "@storybook/addon-docs": "^9.0.0",
+    "@storybook/addon-onboarding": "^9.0.0",
+    "@storybook/addon-webpack5-compiler-swc": "^3.0.0",
+    "@storybook/react-webpack5": "^9.0.0",
     "@svgr/webpack": "^5.5.0",
     "@types/chrome": "^0.0.281",
     "@types/events": "^3.0.3",
@@ -175,6 +181,7 @@
     "eslint-plugin-prettier": "^3.4.1",
     "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-storybook": "^9.0.0",
     "eslint-webpack-plugin": "^4.2.0",
     "file-loader": "^6.2.0",
     "fs-extra": "^10.1.0",
@@ -200,6 +207,7 @@
     "react-iconfont-cli": "^2.0.2",
     "shelljs": "^0.8.5",
     "sinon-chrome": "^3.0.1",
+    "storybook": "^9.0.0",
     "style-loader": "^2.0.0",
     "table": "^6.9.0",
     "ts-import-plugin": "^1.6.7",

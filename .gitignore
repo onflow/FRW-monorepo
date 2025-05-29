@@ -34,3 +34,6 @@ coverage
 playwright/.auth
 
 **/.claude/settings.local.json
+
+*storybook.log
+storybook-static
