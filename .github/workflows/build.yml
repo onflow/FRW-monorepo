@@ -217,35 +217,53 @@ jobs:
           path: playwright-report/
           retention-days: 30
 
-  deploy-report:
-    needs: [test]
+  deploy-storybook-and-reports:
+    needs: [test] # Depends on the Playwright test job
     runs-on: ubuntu-latest
-    if: always()
-    permissions:
-      contents: write
-      pages: write
-      id-token: write
+    if: always() # Run even if tests fail to publish what's available
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required by Chromatic
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x' # Or your project's Node version
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
       - name: Download Playwright Report
         uses: actions/download-artifact@v4
         with:
           name: playwright-report
-          path: temp-playwright-report
-      - name: Move report to run-specific directory
+          path: playwright-report/ # Download to this path
+
+      - name: Build Storybook
+        run: pnpm build-storybook # Assumes output is storybook-static
+
+      - name: Copy Playwright report to Storybook static
         run: |
-          mkdir -p playwright-report/runs/${{ github.run_id }}
-          cp -r temp-playwright-report/* playwright-report/runs/${{ github.run_id }}/
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+          mkdir -p storybook-static/test-results
+          if [ -d "playwright-report" ]; then
+            cp -r playwright-report storybook-static/test-results/playwright-report
+            echo "Playwright report copied to storybook-static/test-results/playwright-report"
+          else
+            echo "Playwright report not found. Skipping copy."
+            echo "Creating placeholder Playwright report..."
+            mkdir -p storybook-static/test-results/playwright-report
+            echo "<html><body><h1>Playwright report not found.</h1></body></html>" > storybook-static/test-results/playwright-report/index.html
+          fi
+
+      - name: Publish to Chromatic
+        uses: chromaui/action@v1
         with:
-          path: playwright-report
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-      - name: Add Playwright Report Annotation
-        if: always()
-        run: |
-          echo "::notice title=Playwright Report::View the Playwright report for this run at https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/runs/${GITHUB_RUN_ID}/"
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          storybookBuildDir: storybook-static # Directory with Storybook and reports
+          exitZeroOnChanges: true # Optional: useful for PR checks
+          # workingDir: . # Not needed if storybookBuildDir is set correctly

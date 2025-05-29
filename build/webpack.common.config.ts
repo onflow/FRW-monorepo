@@ -193,7 +193,7 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
         fs: false,
         'fs/promises': false,
       },
-      extensions: ['.js', 'jsx', '.ts', '.tsx'],
+      extensions: ['.js', '.jsx', '.ts', '.tsx'],
     },
     stats: 'minimal',
   };

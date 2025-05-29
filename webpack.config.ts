@@ -32,7 +32,7 @@ const configs: Record<'dev' | 'pro' | 'none', webpack.Configuration> = {
       extensions: ['.js', '.jsx', '.ts', '.tsx'],
       fallback: {
         buffer: require.resolve('buffer'),
-        url: require.resolve('url/'),
+        url: require.resolve('url'),
       },
     },
   },
