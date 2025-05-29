@@ -51,6 +51,7 @@ import {
   mainAccountStorageBalanceKey,
   mainAccountStorageBalanceRefreshRegex,
   type MainAccountStorageBalanceStore,
+  getCachedMainAccounts,
 } from '@/shared/utils/cache-data-keys';
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 import { retryOperation } from '@/shared/utils/retryOperation';
@@ -164,6 +165,66 @@ class UserWallet {
     // Load all data for the new pubkey. This is async but don't await it
     // NOTE: If this is remvoed... everything runs just fine (I've checked)
     this.preloadAllAccounts(this.store.network, pubkey);
+  };
+
+  /**
+   * Create a placeholder account during account creation process
+   * The account will get replaced with the real account based on the id after address is created
+   * If the account is not created, the placeholder account should be removed after checkaddress catch the error
+   * @param account - The account key used for creating the address
+   */
+  setPlaceholderAccount = async (account: AccountKeyRequest) => {
+    const network = await this.getNetwork();
+    const mainAccounts = await getCachedMainAccounts(network, account.public_key);
+    if (!mainAccounts) {
+      return;
+    }
+    const emoji = getEmojiByIndex(mainAccounts.length);
+    const newAccountId = mainAccounts.length;
+    mainAccounts.push({
+      address: '',
+      chain: networkToChainId(network),
+      hashAlgo: account.hash_algo,
+      hashAlgoString: '',
+      id: newAccountId,
+      keyIndex: 0,
+      publicKey: account.public_key,
+      signAlgo: account.sign_algo,
+      signAlgoString: '',
+      weight: 1000,
+      name: emoji.name,
+      icon: emoji.emoji,
+      color: emoji.bgcolor,
+    });
+    setCachedData(
+      mainAccountsKey(network, account.public_key),
+      mainAccounts,
+      mainAccounts.length > 0 ? 60_000 : 1_000
+    );
+
+    return newAccountId;
+  };
+
+  /**
+   * Remove a placeholder account if address creation fails
+   * Only removes accounts with empty addresses to prevent accidental deletion of real accounts
+   * @param network - The network the account is on ('mainnet' or 'testnet')
+   * @param pubkey - The public key associated with the accounts
+   * @param accountId - The ID of the placeholder account to remove
+   * @returns void
+   */
+  removePlaceholderAccount = async (network: string, pubkey: string, accountId: number) => {
+    const mainAccounts = await getCachedMainAccounts(network, pubkey);
+    if (!mainAccounts) {
+      return;
+    }
+
+    // Only remove if it's a placeholder account (empty address)
+    const updatedAccounts = mainAccounts.filter(
+      (account) => !(account.id === accountId && account.address === '')
+    );
+
+    setCachedData(mainAccountsKey(network, pubkey), updatedAccounts, 60_000);
   };
 
   /**

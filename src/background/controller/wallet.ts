@@ -29,7 +29,7 @@ import eventBus from '@/eventBus';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
 import { type PublicPrivateKeyTuple, type PublicKeyTuple } from '@/shared/types/key-types';
 import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
-import { ContactType, MAINNET_CHAIN_ID } from '@/shared/types/network-types';
+import { ContactType, MAINNET_CHAIN_ID, networkToChainId } from '@/shared/types/network-types';
 import { type NFTCollections, type NFTCollectionData } from '@/shared/types/nft-types';
 import { type TrackingEvents } from '@/shared/types/tracking-types';
 import { type TransferItem, type TransactionState } from '@/shared/types/transaction-types';
@@ -70,6 +70,8 @@ import {
   coinListKey,
   type ChildAccountFtStore,
   accountBalanceKey,
+  getCachedMainAccounts,
+  mainAccountsKey,
 } from '@/shared/utils/cache-data-keys';
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
@@ -140,7 +142,7 @@ import {
   triggerRefresh,
 } from '../utils/data-cache';
 import defaultConfig from '../utils/defaultConfig.json';
-import { getEmojiList } from '../utils/emoji-util';
+import { getEmojiByIndex, getEmojiList } from '../utils/emoji-util';
 import erc20ABI from '../utils/erc20.abi.json';
 import { getOrCheckAccountsByPublicKeyTuple } from '../utils/modules/findAddressWithPubKey';
 
@@ -248,7 +250,12 @@ export class WalletController extends BaseController {
     this.checkForNewAddress(result.data.txid);
   };
 
-  checkForNewAddress = async (txid: string): Promise<FclAccount | null> => {
+  checkForNewAddress = async (
+    txid: string,
+    newAccountId?: number,
+    createPubKey?: string
+  ): Promise<FclAccount | null> => {
+    const network = await this.getNetwork();
     try {
       const txResult = await fcl.tx(txid).onceSealed();
 
@@ -268,10 +275,56 @@ export class WalletController extends BaseController {
         throw new Error('Fcl account not found');
       }
 
-      userWalletService.registerCurrentPubkey(account.keys[0].publicKey, account);
+      const mainAccounts = await getCachedMainAccounts('mainnet', account.keys[0].publicKey);
+
+      if (mainAccounts && mainAccounts.length > 0) {
+        // Find and update the placeholder account
+        const placeholderIndex = mainAccounts.findIndex((acc) => acc.id === newAccountId);
+        if (placeholderIndex !== -1) {
+          // Update the placeholder account with real data
+          mainAccounts[placeholderIndex] = {
+            ...mainAccounts[placeholderIndex],
+            address: withPrefix(account.address) || account.address,
+            hashAlgoString: account.keys[0].hashAlgoString,
+            keyIndex: account.keys[0].index,
+            signAlgoString: account.keys[0].signAlgoString,
+            weight: account.keys[0].weight,
+          };
+        } else {
+          // If no placeholder found, create new account
+          const emoji = getEmojiByIndex(newAccountId || mainAccounts.length);
+          mainAccounts.push({
+            address: withPrefix(account.address) || account.address,
+            chain: networkToChainId(network),
+            hashAlgo: account.keys[0].hashAlgo,
+            hashAlgoString: account.keys[0].hashAlgoString,
+            id: newAccountId || mainAccounts.length,
+            keyIndex: account.keys[0].index,
+            publicKey: account.keys[0].publicKey,
+            signAlgo: account.keys[0].signAlgo,
+            signAlgoString: account.keys[0].signAlgoString,
+            weight: account.keys[0].weight,
+            name: emoji.name,
+            icon: emoji.emoji,
+            color: emoji.bgcolor,
+          });
+        }
+
+        setCachedData(
+          mainAccountsKey(network, account.keys[0].publicKey),
+          mainAccounts,
+          mainAccounts.length > 0 ? 60_000 : 1_000
+        );
+      } else {
+        userWalletService.registerCurrentPubkey(account.keys[0].publicKey, account);
+      }
 
       return account;
     } catch (error) {
+      // Remove placeholder account if creation failed
+      if (newAccountId && createPubKey) {
+        await userWalletService.removePlaceholderAccount(network, createPubKey, newAccountId);
+      }
       throw new Error(`Account creation failed: ${error.message || 'Unknown error'}`);
     }
   };
@@ -292,17 +345,6 @@ export class WalletController extends BaseController {
 
     // The account is the public key of the account. It's derived from the mnemonic. We do not support custom curves or passphrases for new accounts
     const accountKey: AccountKeyRequest = await getAccountKey(mnemonic);
-
-    // Login to the account - it should already be registered by the mobile app
-    await this.loginWithMnemonic(mnemonic, true);
-
-    // We're creating the keyring with the mnemonic. This will encypt the private keys and store them in the keyring vault and deepVault
-    await this.createKeyringWithMnemonics(
-      accountKey.public_key,
-      accountKey.sign_algo,
-      password,
-      mnemonic
-    );
 
     // Locally add the key to the account if not there already
     const indexOfKey = accountInfo.keys.findIndex((key) => key.publicKey === accountKey.public_key);
@@ -349,7 +391,9 @@ export class WalletController extends BaseController {
       }
 
       const txid = data.data.txid;
-      this.checkForNewAddress(txid);
+
+      const newAccountId = await userWalletService.setPlaceholderAccount(accountKey);
+      this.checkForNewAddress(txid, newAccountId, accountKey.public_key);
     } catch (error) {
       // Reset the registration status if the operation fails
       setCachedData(registerStatusKey(publickey), false);
