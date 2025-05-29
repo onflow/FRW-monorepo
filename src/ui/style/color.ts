@@ -32,7 +32,9 @@ export const COLOR_WHITE_ALPHA_20_FFFFFF33 = '#FFFFFF33';
 export const COLOR_WHITE_ALPHA_40_FFFFFF66 = '#FFFFFF66';
 export const COLOR_WHITE_ALPHA_60_FFFFFF99 = '#FFFFFF99';
 export const COLOR_WHITE_ALPHA_80_FFFFFFCC = '#FFFFFFCC';
+
 export const COLOR_WHITE_FFFFFF = '#FFFFFF';
+export const COLOR_DARK_GRAY_1A1A1A = '#1A1A1A';
 
 // Legacy primary colors used in the product
 export const COLOR_ERROR_RED_E54040 = '#E54040';

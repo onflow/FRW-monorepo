@@ -60,20 +60,53 @@ export const Active: Story = {
 
 export const Spinning: Story = {
   args: {
-    network: 'testnet',
+    network: 'mainnet',
     emoji: emojis[2].emoji,
     color: emojis[2].bgcolor,
     active: false,
     spinning: true,
   },
 };
+
+export const Testnet: Story = {
+  args: {
+    network: 'testnet',
+    emoji: emojis[2].emoji,
+    color: emojis[2].bgcolor,
+    active: true,
+    spinning: false,
+  },
+};
+
+export const ChildAccount: Story = {
+  args: {
+    network: 'mainnet',
+    emoji: emojis[2].emoji,
+    color: emojis[2].bgcolor,
+    parentEmoji: emojis[0].emoji,
+    parentColor: emojis[0].bgcolor,
+    active: false,
+    spinning: false,
+  },
+};
+
+export const ChildAccountActive: Story = {
+  args: {
+    network: 'mainnet',
+    emoji: emojis[2].emoji,
+    color: emojis[2].bgcolor,
+    parentEmoji: emojis[0].emoji,
+    parentColor: emojis[0].bgcolor,
+    active: true,
+    spinning: false,
+  },
+};
+
 export const CustomColor: Story = {
   args: {
     network: 'mainnet',
     emoji: emojis[3].emoji,
     color: emojis[3].bgcolor,
-    parentEmoji: emojis[0].emoji,
-    parentColor: emojis[0].bgcolor,
     active: false,
     spinning: false,
   },

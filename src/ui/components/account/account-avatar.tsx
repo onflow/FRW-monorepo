@@ -3,6 +3,7 @@ import { useTheme, alpha } from '@mui/material/styles';
 import React from 'react';
 
 import {
+  COLOR_DARK_GRAY_1A1A1A,
   COLOR_GREEN_FLOW_DARKMODE_00EF8B,
   COLOR_GREEN_FLOW_LIGHTMODE_00B877,
   networkColor,
@@ -44,13 +45,13 @@ export const AccountAvatar = ({
   const theme = useTheme();
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', marginX: '4px' }}>
       {spinning && (
         <CircularProgress
           size={'44px'}
           sx={{
             position: 'absolute',
-            left: '0px',
+            left: '4px',
             color: networkColor(network),
             zIndex: 0,
           }}
@@ -73,16 +74,7 @@ export const AccountAvatar = ({
           outlineStyle: 'solid',
           outlineWidth: spinning || !active ? '0px' : '1px',
           outlineOffset: spinning || !active ? '0px' : '2px',
-          outlineColor: active
-            ? (theme) =>
-                theme.palette.mode === 'dark'
-                  ? COLOR_GREEN_FLOW_DARKMODE_00EF8B
-                  : COLOR_GREEN_FLOW_LIGHTMODE_00B877
-            : spinning
-              ? 'transparent'
-              : network !== 'mainnet'
-                ? networkColor(network)
-                : 'transparent',
+          outlineColor: active && !spinning ? networkColor(network) : 'transparent',
           '&:hover': {
             backgroundColor: color ? alpha(color, 0.8) : undefined,
           },
@@ -105,17 +97,22 @@ export const AccountAvatar = ({
       {parentEmoji && (
         <Box
           sx={{
+            zIndex: 2,
+            position: 'absolute',
             display: 'flex',
-            height: '32px',
-            width: '32px',
-            borderRadius: '32px',
+            height: '18px',
+            width: '18px',
+            left: 2,
+            top: 15,
+            borderRadius: '18px',
+            border: `2px solid ${COLOR_DARK_GRAY_1A1A1A}`,
             alignItems: 'center',
             justifyContent: 'center',
             backgroundColor: parentColor,
             marginRight: '12px',
           }}
         >
-          <Typography sx={{ fontSize: '20px', fontWeight: '600' }}>{parentEmoji}</Typography>
+          <Typography sx={{ fontSize: '12px', fontWeight: '600' }}>{parentEmoji}</Typography>
         </Box>
       )}
     </Box>
