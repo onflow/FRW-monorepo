@@ -22,6 +22,8 @@ import {
   type LoggedInAccount,
   type WalletAccount,
 } from '@/shared/types/wallet-types';
+import userCircleCheck from '@/ui/assets/svg/user-circle-check.svg';
+import userCirclePlus from '@/ui/assets/svg/user-circle-plus.svg';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import iconCheck from 'ui/assets/svg/iconCheck.svg';
 import popAdd from 'ui/assets/svg/popAdd.svg';
@@ -188,7 +190,7 @@ const Popup = (props: TransferConfirmationProps) => {
                   <CardMedia
                     component="img"
                     sx={{ width: '24px', height: '24px' }}
-                    image={popAdd}
+                    image={userCirclePlus}
                   />
                 </ListItemIcon>
                 <Typography
@@ -198,46 +200,49 @@ const Popup = (props: TransferConfirmationProps) => {
                   color="text"
                   sx={{ fontSize: '12px' }}
                 >
-                  {chrome.i18n.getMessage('Add_account')}
+                  Create a new profile
                 </Typography>
               </ListItemButton>
             </ListItem>
           )}
-          <ListItem
-            sx={{ marginTop: '16px' }}
-            disablePadding
-            onClick={() => {
-              usewallet.lockWallet().then(() => {
-                clearProfileData();
-                history.push('/unlock');
-              });
-            }}
-          >
-            <ListItemButton sx={{ padding: '8px 20px', margin: '0', borderRadius: '5px' }}>
-              <ListItemIcon
-                sx={{
-                  width: '24px',
-                  minWidth: '24px',
-                  height: '24px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginRight: '12px',
-                }}
-              >
-                <CardMedia component="img" sx={{ width: '24px', height: '24px' }} image={popLock} />
-              </ListItemIcon>
-              <Typography
-                variant="body1"
-                component="div"
-                display="inline"
-                color="text"
-                sx={{ fontSize: '12px' }}
-              >
-                {chrome.i18n.getMessage('Lock__Wallet')}
-              </Typography>
-            </ListItemButton>
-          </ListItem>
+          {props.profileIds && (
+            <ListItem
+              disablePadding
+              onClick={async () => {
+                await usewallet.lockAdd();
+                // history.push('/add');
+              }}
+            >
+              <ListItemButton sx={{ padding: '8px 20px', margin: '0', borderRadius: '5px' }}>
+                <ListItemIcon
+                  sx={{
+                    width: '24px',
+                    minWidth: '24px',
+                    height: '24px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginRight: '12px',
+                  }}
+                >
+                  <CardMedia
+                    component="img"
+                    sx={{ width: '24px', height: '24px' }}
+                    image={userCircleCheck}
+                  />
+                </ListItemIcon>
+                <Typography
+                  variant="body1"
+                  component="div"
+                  display="inline"
+                  color="text"
+                  sx={{ fontSize: '12px' }}
+                >
+                  Recover an existing profile
+                </Typography>
+              </ListItemButton>
+            </ListItem>
+          )}
         </Box>
       </Box>
 
