@@ -2,12 +2,7 @@ import { Avatar, Box, CircularProgress, IconButton, Typography } from '@mui/mate
 import { useTheme, alpha } from '@mui/material/styles';
 import React from 'react';
 
-import {
-  COLOR_DARK_GRAY_1A1A1A,
-  COLOR_GREEN_FLOW_DARKMODE_00EF8B,
-  COLOR_GREEN_FLOW_LIGHTMODE_00B877,
-  networkColor,
-} from '@/ui/style/color';
+import { COLOR_DARK_GRAY_1A1A1A, networkColor } from '@/ui/style/color';
 
 /**
  * An Account Avatar component that displays an emoji and a parent emoji.
@@ -42,25 +37,20 @@ export const AccountAvatar = ({
   spinning?: boolean;
   onClick?: () => void;
 }) => {
-  const theme = useTheme();
-
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', marginX: '4px' }}>
+    <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', marginX: '4px' }}>
       {spinning && (
         <CircularProgress
           size={'44px'}
           sx={{
             position: 'absolute',
-            left: '4px',
+            left: '-4px',
             color: networkColor(network),
             zIndex: 0,
           }}
         />
       )}
       <IconButton
-        edge="start"
-        color="inherit"
-        aria-label="menu"
         onClick={onClick}
         sx={{
           zIndex: 1,
@@ -71,6 +61,8 @@ export const AccountAvatar = ({
           alignItems: 'center',
           justifyContent: 'center',
           backgroundColor: color,
+          padding: '0px',
+          boxSizing: 'content-box',
           outlineStyle: 'solid',
           outlineWidth: spinning || !active ? '0px' : '1px',
           outlineOffset: spinning || !active ? '0px' : '2px',
@@ -96,20 +88,25 @@ export const AccountAvatar = ({
 
       {parentEmoji && (
         <Box
+          onClick={onClick}
           sx={{
             zIndex: 2,
             position: 'absolute',
             display: 'flex',
             height: '18px',
             width: '18px',
-            left: 2,
-            top: 15,
+            left: -6,
+            top: -1,
+            boxSizing: 'content-box',
             borderRadius: '18px',
-            border: `2px solid ${COLOR_DARK_GRAY_1A1A1A}`,
+            outlineStyle: 'solid',
+            outlineWidth: '2px',
+            outlineColor: COLOR_DARK_GRAY_1A1A1A,
             alignItems: 'center',
             justifyContent: 'center',
             backgroundColor: parentColor,
-            marginRight: '12px',
+            cursor: 'pointer',
+            padding: '0px',
           }}
         >
           <Typography sx={{ fontSize: '12px', fontWeight: '600' }}>{parentEmoji}</Typography>
