@@ -1481,5 +1481,8 @@
   },
   "Profile_Password_Change_Description": {
     "message": "The following profiles are either loaded in your wallet or backed up to Google Drive. Select which profiles you want to update the password for:"
+  },
+  "Profiles": {
+    "message": "Profiles"
   }
 }

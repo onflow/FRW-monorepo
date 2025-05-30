@@ -1472,5 +1472,8 @@
   },
   "Legend": {
     "message": "凡例"
+  },
+  "Profiles": {
+    "message": "プロファイル"
   }
 }

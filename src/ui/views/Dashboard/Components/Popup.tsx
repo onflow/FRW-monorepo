@@ -24,14 +24,14 @@ import {
 } from '@/shared/types/wallet-types';
 import userCircleCheck from '@/ui/assets/svg/user-circle-check.svg';
 import userCirclePlus from '@/ui/assets/svg/user-circle-plus.svg';
+import { ProfileButton } from '@/ui/components/profile/profile-button';
+import { useUserInfo } from '@/ui/hooks/use-account-hooks';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import iconCheck from 'ui/assets/svg/iconCheck.svg';
-import popAdd from 'ui/assets/svg/popAdd.svg';
-import popLock from 'ui/assets/svg/popLock.svg';
 import vmsvg from 'ui/assets/svg/viewmore.svg';
 import { useWallet } from 'ui/utils';
 
-import { ProfileItem } from './ProfileItem';
+import { ProfileItem } from '../../../components/profile/profile-item';
+
 interface TransferConfirmationProps {
   isConfirmationOpen: boolean;
   handleCloseIconClicked: () => void;
@@ -43,6 +43,30 @@ interface TransferConfirmationProps {
   profileIds: string[];
   switchLoading: boolean;
 }
+
+const ProfileItemList = ({
+  profileId,
+  selectedProfileId,
+  switchAccount,
+  setLoadingId,
+}: {
+  profileId: string;
+  selectedProfileId: string;
+  switchAccount: (profileId: string) => Promise<void>;
+  setLoadingId: (id: string) => void;
+}) => {
+  const userInfo = useUserInfo(profileId);
+  return (
+    <ProfileItem
+      key={profileId}
+      profileId={profileId}
+      selectedProfileId={selectedProfileId}
+      switchAccount={switchAccount}
+      setLoadingId={setLoadingId}
+      userInfo={userInfo}
+    />
+  );
+};
 
 const Popup = (props: TransferConfirmationProps) => {
   const usewallet = useWallet();
@@ -70,15 +94,24 @@ const Popup = (props: TransferConfirmationProps) => {
         <Box
           sx={{
             display: 'flex',
+            flexDirection: 'column',
             justifyContent: 'space-between',
             width: '100%',
-            height: '24px',
-            margin: '20px 0',
+            margin: '12px 0 9px',
             alignItems: 'center',
             px: '20px',
+            gap: '24px',
           }}
         >
-          <Box sx={{ width: '40px' }}></Box>
+          <Box
+            onClick={props.handleCancelBtnClicked}
+            sx={{
+              borderRadius: '100px',
+              background: 'rgba(217, 217, 217, 0.10)',
+              width: '54px',
+              height: '4px',
+            }}
+          />
           <Typography
             variant="body1"
             component="div"
@@ -86,13 +119,8 @@ const Popup = (props: TransferConfirmationProps) => {
             color="text"
             sx={{ fontSize: '18px', textAlign: 'center', lineHeight: '24px', fontWeight: '700' }}
           >
-            {chrome.i18n.getMessage('Profile')}
+            {chrome.i18n.getMessage('Profiles')}
           </Typography>
-          <Box onClick={props.handleCancelBtnClicked}>
-            <IconButton>
-              <CloseIcon fontSize="medium" sx={{ color: 'icon.navi', cursor: 'pointer' }} />
-            </IconButton>
-          </Box>
         </Box>
         <Box component="nav">
           {Array.isArray(props.profileIds) && (
@@ -104,24 +132,20 @@ const Popup = (props: TransferConfirmationProps) => {
                 flexDirection: 'column',
                 display: 'flex',
                 height: 'auto',
-                maxHeight: viewmore ? '246px' : '166px',
+                maxHeight: viewmore ? '246px' : '175px',
                 overflow: viewmore ? 'scroll' : 'hidden',
                 paddingBottom: '16px',
               }}
             >
-              {props.profileIds.map((profileId: string) => {
-                return (
-                  <ProfileItem
-                    key={profileId}
-                    profileId={profileId}
-                    selectedProfileId={props.userInfo.id}
-                    switchAccount={props.switchAccount}
-                    switchLoading={props.switchLoading}
-                    loadingId={loadingId}
-                    setLoadingId={setLoadingId}
-                  />
-                );
-              })}
+              {props.profileIds.map((profileId: string) => (
+                <ProfileItemList
+                  key={profileId}
+                  profileId={profileId}
+                  selectedProfileId={props.userInfo.id}
+                  switchAccount={props.switchAccount}
+                  setLoadingId={setLoadingId}
+                />
+              ))}
 
               {!viewmore && props.profileIds.length > 3 && (
                 <Button
@@ -152,96 +176,35 @@ const Popup = (props: TransferConfirmationProps) => {
 
         <Box
           sx={{
-            height: '1px',
-            width: '100%',
-            margin: '0 0 16px',
-            backgroundColor: 'rgba(255, 255, 255, 0.12)',
-          }}
-        ></Box>
-
-        <Box
-          sx={{
             justifyContent: 'space-between',
             alignItems: 'center',
             flexDirection: 'column',
             display: 'flex',
+            borderRadius: '16px',
+            background: '#2A2A2A',
+            margin: '9px 18px 0',
+            overflow: 'hidden',
           }}
         >
+          <ProfileButton
+            icon={userCirclePlus}
+            text="Create a new profile"
+            onClick={async () => await usewallet.lockAdd()}
+          />
+          <Box
+            sx={{
+              height: '1px',
+              width: '100%',
+              padding: '1px 16px',
+              backgroundColor: 'rgba(255, 255, 255, 0.25)',
+            }}
+          />
           {props.profileIds && (
-            <ListItem
-              disablePadding
-              onClick={async () => {
-                await usewallet.lockAdd();
-                // history.push('/add');
-              }}
-            >
-              <ListItemButton sx={{ padding: '8px 20px', margin: '0', borderRadius: '5px' }}>
-                <ListItemIcon
-                  sx={{
-                    width: '24px',
-                    minWidth: '24px',
-                    height: '24px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginRight: '12px',
-                  }}
-                >
-                  <CardMedia
-                    component="img"
-                    sx={{ width: '24px', height: '24px' }}
-                    image={userCirclePlus}
-                  />
-                </ListItemIcon>
-                <Typography
-                  variant="body1"
-                  component="div"
-                  display="inline"
-                  color="text"
-                  sx={{ fontSize: '12px' }}
-                >
-                  Create a new profile
-                </Typography>
-              </ListItemButton>
-            </ListItem>
-          )}
-          {props.profileIds && (
-            <ListItem
-              disablePadding
-              onClick={async () => {
-                await usewallet.lockAdd();
-                // history.push('/add');
-              }}
-            >
-              <ListItemButton sx={{ padding: '8px 20px', margin: '0', borderRadius: '5px' }}>
-                <ListItemIcon
-                  sx={{
-                    width: '24px',
-                    minWidth: '24px',
-                    height: '24px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginRight: '12px',
-                  }}
-                >
-                  <CardMedia
-                    component="img"
-                    sx={{ width: '24px', height: '24px' }}
-                    image={userCircleCheck}
-                  />
-                </ListItemIcon>
-                <Typography
-                  variant="body1"
-                  component="div"
-                  display="inline"
-                  color="text"
-                  sx={{ fontSize: '12px' }}
-                >
-                  Recover an existing profile
-                </Typography>
-              </ListItemButton>
-            </ListItem>
+            <ProfileButton
+              icon={userCircleCheck}
+              text="Recover an existing profile"
+              onClick={async () => await usewallet.lockAdd()}
+            />
           )}
         </Box>
       </Box>

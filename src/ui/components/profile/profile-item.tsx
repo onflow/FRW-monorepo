@@ -13,25 +13,28 @@ import {
 import React from 'react';
 
 import { type UserInfoResponse } from '@/shared/types/network-types';
+import iconCheck from '@/ui/assets/svg/check-circle-fill.svg';
+import iconCheckUnfill from '@/ui/assets/svg/check-circle-unfill.svg';
 import { useUserInfo } from '@/ui/hooks/use-account-hooks';
-import iconCheck from 'ui/assets/svg/iconCheck.svg';
 
+/**
+ * ProfileItem component is used to display a user profile in the profile list.
+ * It displays the profile avatar, nickname, and a checkmark if the profile is selected.
+ * It also allows the user to switch to the profile when clicked.
+ */
 export const ProfileItem = ({
   profileId,
   selectedProfileId,
   switchAccount,
-  switchLoading,
-  loadingId,
   setLoadingId,
+  userInfo,
 }: {
   profileId: string; // The profile id of this item
   selectedProfileId: string; // The profile id of the currently selected profile
   switchAccount: (profileId: string) => void;
-  switchLoading: boolean;
-  loadingId: string | null;
   setLoadingId: (profileId: string) => void;
+  userInfo: UserInfoResponse | undefined;
 }) => {
-  const userInfo: UserInfoResponse | undefined = useUserInfo(profileId);
   return (
     <ListItem
       disablePadding
@@ -44,12 +47,12 @@ export const ProfileItem = ({
         }
       }}
     >
-      <ListItemButton sx={{ padding: '0 20px' }}>
+      <ListItemButton sx={{ padding: '9px 18px' }}>
         <ListItemIcon>
           <Avatar
             component="span"
             src={userInfo?.avatar}
-            sx={{ width: '32px', height: '32px' }}
+            sx={{ width: '40px', height: '40px' }}
             alt="avatar"
           />
         </ListItemIcon>
@@ -61,37 +64,18 @@ export const ProfileItem = ({
               justifyContent: 'space-between',
             }}
           >
-            <Typography variant="body1" component="div" display="inline" color="text.primary">
+            <Typography variant="body1" component="div" display="inline" sx={{ color: '#fff' }}>
               {userInfo?.nickname}
-            </Typography>
-            <Typography
-              variant="body1"
-              component="div"
-              display="inline"
-              color="text.secondary"
-              sx={{ fontSize: '12px' }}
-            >
-              {userInfo?.username}
             </Typography>
           </Box>
         </ListItemText>
-        {profileId === selectedProfileId && (
-          <CardMedia component="img" sx={{ width: '16px', height: '16px' }} image={iconCheck} />
-        )}
-        {switchLoading && profileId === loadingId && (
-          <CircularProgress
-            variant="indeterminate"
-            // disableShrink
-            sx={{
-              color: 'primary.main',
-              animationDuration: '2000ms',
-              [`& .${circularProgressClasses.circle}`]: {
-                strokeLinecap: 'round',
-              },
-            }}
-            size={'16px'}
-            thickness={5}
-            value={10}
+        {profileId === selectedProfileId ? (
+          <CardMedia component="img" sx={{ width: '24px', height: '24px' }} image={iconCheck} />
+        ) : (
+          <CardMedia
+            component="img"
+            sx={{ width: '24px', height: '24px' }}
+            image={iconCheckUnfill}
           />
         )}
       </ListItemButton>

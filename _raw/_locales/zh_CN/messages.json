@@ -1472,5 +1472,8 @@
   },
   "Legend": {
     "message": "图例"
+  },
+  "Profiles": {
+    "message": "个人资料"
   }
 }
