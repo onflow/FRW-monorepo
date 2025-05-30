@@ -71,7 +71,6 @@ const ProfileItemList = ({
 const Popup = (props: TransferConfirmationProps) => {
   const usewallet = useWallet();
   const history = useHistory();
-  const [viewmore, setMore] = useState<boolean>(false);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const { clearProfileData } = useProfiles();
 
@@ -80,6 +79,7 @@ const Popup = (props: TransferConfirmationProps) => {
       anchor="bottom"
       sx={{ zIndex: '1500 !important' }}
       open={props.isConfirmationOpen}
+      onClose={props.handleCancelBtnClicked}
       transitionDuration={300}
       PaperProps={{
         sx: {
@@ -102,9 +102,9 @@ const Popup = (props: TransferConfirmationProps) => {
             px: '20px',
             gap: '24px',
           }}
+          onClick={props.handleCancelBtnClicked}
         >
           <Box
-            onClick={props.handleCancelBtnClicked}
             sx={{
               borderRadius: '100px',
               background: 'rgba(217, 217, 217, 0.10)',
@@ -132,8 +132,8 @@ const Popup = (props: TransferConfirmationProps) => {
                 flexDirection: 'column',
                 display: 'flex',
                 height: 'auto',
-                maxHeight: viewmore ? '246px' : '175px',
-                overflow: viewmore ? 'scroll' : 'hidden',
+                maxHeight: '190px',
+                overflow: 'scroll',
                 paddingBottom: '16px',
               }}
             >
@@ -146,30 +146,6 @@ const Popup = (props: TransferConfirmationProps) => {
                   setLoadingId={setLoadingId}
                 />
               ))}
-
-              {!viewmore && props.profileIds.length > 3 && (
-                <Button
-                  sx={{
-                    display: 'flex',
-                    position: 'absolute',
-                    bottom: '0px',
-                    alignItems: 'center',
-                    background: '#2C2C2C',
-                    borderRadius: '8px',
-                    color: '#8C9BAB',
-                    textTransform: 'capitalize',
-                    padding: '4px 16px',
-                  }}
-                  onClick={() => setMore(true)}
-                >
-                  View More
-                  <CardMedia
-                    component="img"
-                    sx={{ width: '16px', height: '16px', display: 'inline', paddingLeft: '8px' }}
-                    image={vmsvg}
-                  />
-                </Button>
-              )}
             </Box>
           )}
         </Box>
