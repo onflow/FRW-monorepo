@@ -27,7 +27,7 @@ const config: webpack.Configuration = {
   resolve: {
     fallback: {
       buffer: require.resolve('buffer'),
-      url: require.resolve('url/'),
+      url: require.resolve('url'),
       vm: require.resolve('vm-browserify'),
     },
   },

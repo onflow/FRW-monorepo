@@ -26,11 +26,13 @@ import {
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
+import { AccountAvatar } from '@/ui/components/account/account-avatar';
 import IconCopy from '@/ui/components/iconfont/IconCopy';
 import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
 import { useNews } from '@/ui/hooks/use-news';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
+import { networkColor } from '@/ui/style/color';
 import { useWallet, formatAddress, useWalletLoaded } from 'ui/utils';
 
 import MainAccountsComponent from './Components/MainAccountsComponent';
@@ -59,10 +61,12 @@ const Header = ({ _loading = false }) => {
   const history = useHistory();
   const location = useLocation();
 
-  const { network, developerMode } = useNetwork();
+  const { developerMode } = useNetwork();
   const {
+    network,
     mainAddress,
     currentWallet,
+    parentWallet,
     evmWallet,
     parentWalletIndex: currentWalletIndex,
     childAccounts,
@@ -202,18 +206,6 @@ const Header = ({ _loading = false }) => {
     }
   }, [usewallet]);
 
-  const networkColor = (network: string) => {
-    switch (network) {
-      case 'mainnet':
-        return '#41CC5D';
-      case 'testnet':
-        return '#FF8A00';
-      case 'crescendo':
-        return '#CCAF21';
-    }
-    return '#41CC5D';
-  };
-
   const checkAuthStatus = useCallback(async () => {
     await usewallet.openapi.checkAuthStatus();
     await usewallet.checkNetwork();
@@ -299,46 +291,25 @@ const Header = ({ _loading = false }) => {
 
     return (
       <Toolbar sx={{ height: '56px', width: '100%', display: 'flex', px: '0px' }}>
-        <Box sx={{ flex: '0 0 68px', position: 'relative', display: 'flex', alignItems: 'center' }}>
-          {isPending && (
-            <CircularProgress
-              size={'28px'}
-              sx={{
-                position: 'absolute',
-                width: '28px',
-                height: '28px',
-                left: '-1px',
-                top: '-1px',
-                color: networkColor(network),
-              }}
-            />
-          )}
-          <IconButton
-            edge="start"
-            color="inherit"
-            aria-label="menu"
+        <Box
+          sx={{ flex: '0 0 68px', position: 'relative', display: 'flex', alignItems: 'center' }}
+          data-testid="account-menu-button"
+        >
+          <AccountAvatar
+            network={network}
+            emoji={currentWallet.icon}
+            color={currentWallet.color}
+            parentEmoji={
+              parentWallet.address !== currentWallet.address ? parentWallet.icon : undefined
+            }
+            parentColor={parentWallet.color}
+            active={true}
+            spinning={isPending}
             onClick={toggleDrawer}
-            sx={{
-              marginLeft: '0px',
-              padding: '3px',
-              position: 'relative',
-              border: isPending
-                ? ''
-                : network !== 'mainnet'
-                  ? `2px solid ${networkColor(network)}`
-                  : '2px solid #282828',
-              marginRight: '0px',
-            }}
-          >
-            <img
-              src={userInfo?.avatar}
-              style={{ backgroundColor: '#797979', borderRadius: '10px' }}
-              width="20px"
-              height="20px"
-            />
-          </IconButton>
+          />
+
           {deploymentEnv !== 'production' && (
-            <Box sx={{ position: 'absolute', left: '30px', top: '-8px', zIndex: 10 }}>
+            <Box sx={{ position: 'absolute', left: '50px', top: '-8px', zIndex: 10 }}>
               <Tooltip
                 title={
                   <Box>
