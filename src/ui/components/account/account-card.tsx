@@ -39,20 +39,8 @@ type AccountCardWithCopyProps = {
 };
 
 type AccountCardProps = AccountCardWithCopyProps & {
-  secondaryAction?: React.ReactNode;
-};
-
-const CopyAddressButton = ({ address }: { address?: string }) => {
-  const handleCopy = () => {
-    if (address) {
-      navigator.clipboard.writeText(address);
-    }
-  };
-  return (
-    <IconButton onClick={handleCopy} aria-label="Copy address" disabled={!address}>
-      <CopyIcon width={24} />
-    </IconButton>
-  );
+  onClickSecondary?: () => void;
+  secondaryIcon?: React.ReactNode;
 };
 
 export const AccountCard = ({
@@ -62,7 +50,8 @@ export const AccountCard = ({
   active = false,
   spinning = false,
   onClick,
-  secondaryAction = <CopyAddressButton address={account?.address} />,
+  onClickSecondary = () => account?.address && navigator.clipboard.writeText(account.address),
+  secondaryIcon = <CopyIcon width={24} />,
   showLink = false,
 }: AccountCardProps) => {
   const { name, icon, color, address, balance, nfts } = account || {};
@@ -173,8 +162,12 @@ export const AccountCard = ({
           </Typography>
         </Box>
       </CardActionArea>
-      {secondaryAction && (
-        <CardActions sx={{ padding: '0px', marginLeft: 'auto' }}>{secondaryAction}</CardActions>
+      {onClickSecondary && (
+        <CardActions sx={{ padding: '0px', marginLeft: 'auto' }}>
+          <IconButton onClick={onClickSecondary} aria-label="Copy address" disabled={!address}>
+            {secondaryIcon}
+          </IconButton>
+        </CardActions>
       )}
     </Card>
   );

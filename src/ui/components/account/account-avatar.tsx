@@ -5,6 +5,43 @@ import React from 'react';
 
 import { COLOR_DARK_GRAY_1A1A1A, networkColor } from '@/ui/style/color';
 
+const EmojiIcon = ({ emoji }: { emoji: string }) => {
+  return (
+    <Typography
+      sx={{
+        fontSize: '18px',
+        fontWeight: '600',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        lineHeight: '18px',
+      }}
+    >
+      {emoji}
+    </Typography>
+  );
+};
+
+const ImageIcon = ({ image, size = 24 }: { image: string; size?: number }) => {
+  return (
+    <img
+      src={image}
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size,
+      }}
+    />
+  );
+};
+
+const Icon = ({ icon }: { icon: string }) => {
+  if (icon.startsWith('http')) {
+    return <ImageIcon image={icon} />;
+  }
+  return <EmojiIcon emoji={icon} />;
+};
+
 /**
  * An Account Avatar component that displays an emoji and a parent emoji.
  * It also displays a spinning indicator if the account has a pending transaction.
@@ -68,34 +105,12 @@ export const AccountAvatar = ({
       )}
       {onClick && (
         <IconButton onClick={onClick} sx={sxProps}>
-          <Typography
-            sx={{
-              fontSize: '18px',
-              fontWeight: '600',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              lineHeight: '18px',
-            }}
-          >
-            {emoji}
-          </Typography>
+          <Icon icon={emoji} />
         </IconButton>
       )}
       {!onClick && (
         <Box sx={sxProps}>
-          <Typography
-            sx={{
-              fontSize: '18px',
-              fontWeight: '600',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              lineHeight: '18px',
-            }}
-          >
-            {emoji}
-          </Typography>
+          <Icon icon={emoji} />
         </Box>
       )}
 
