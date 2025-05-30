@@ -49,6 +49,10 @@ export const COLOR_GREEN_FLOW_DARKMODE_DARK_02D87E = '#02D87E';
 
 export const COLOR_GREEN_FLOW_LIGHTMODE_00B877 = '#00B877';
 
+export const COLOR_DARKMODE_BACKGROUND_CARDS = COLOR_DARK_GRAY_1A1A1A;
+export const COLOR_DARKMODE_TEXT_PRIMARY = COLOR_WHITE_FFFFFF;
+export const COLOR_DARKMODE_TEXT_SECONDARY = '#B3B3B3';
+
 // Network Colors
 export const networkColor = (network: string) => {
   switch (network) {

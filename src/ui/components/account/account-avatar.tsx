@@ -31,19 +31,10 @@ export const AccountAvatar = ({
 }) => {
   const loading = !network || !emoji || !color;
   if (loading) {
-    return (
-      <Skeleton
-        variant="circular"
-        width="36px"
-        height="36px"
-        sx={{
-          marginX: '4px',
-        }}
-      />
-    );
+    return <Skeleton variant="circular" width="36px" height="36px" />;
   }
   return (
-    <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', marginX: '4px' }}>
+    <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
       {spinning && (
         <CircularProgress
           size={'44px'}
