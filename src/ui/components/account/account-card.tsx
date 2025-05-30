@@ -13,12 +13,16 @@ import React from 'react';
 import { type WalletAccount } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { CopyIcon } from '@/ui/assets/icons/CopyIcon';
+import { LinkIcon } from '@/ui/assets/icons/LinkIcon';
 import {
-  COLOR_DARKMODE_BACKGROUND_CARDS,
-  COLOR_DARKMODE_TEXT_PRIMARY,
-  COLOR_DARKMODE_TEXT_SECONDARY,
+  COLOR_DARKMODE_BACKGROUND_CARDS_1A1A1A,
+  COLOR_DARKMODE_TEXT_PRIMARY_FFFFFF,
+  COLOR_DARKMODE_TEXT_SECONDARY_B3B3B3,
+  COLOR_ACCENT_EVM_627EEA,
+  COLOR_GREY_ICONS_767676,
 } from '@/ui/style/color';
 import { formatAddress } from '@/ui/utils';
+import { ReactComponent as IconLink } from 'ui/assets/svg/Iconlink.svg';
 
 import { TokenBalance } from '../TokenLists/TokenBalance';
 
@@ -31,6 +35,7 @@ type AccountCardWithCopyProps = {
   active?: boolean;
   spinning?: boolean;
   onClick?: () => void;
+  showLink?: boolean;
 };
 
 type AccountCardProps = AccountCardWithCopyProps & {
@@ -45,6 +50,7 @@ export const AccountCard = ({
   spinning = false,
   onClick,
   secondaryAction,
+  showLink = false,
 }: AccountCardProps) => {
   const { name, icon, color, address, balance, nfts } = account || {};
   const { icon: parentIcon, color: parentColor } =
@@ -58,7 +64,7 @@ export const AccountCard = ({
         flexDirection: 'row',
         alignItems: 'center',
         borderRadius: '16px',
-        backgroundColor: COLOR_DARKMODE_BACKGROUND_CARDS,
+        backgroundColor: COLOR_DARKMODE_BACKGROUND_CARDS_1A1A1A,
         overflow: 'hidden',
         maxWidth: '300px',
       }}
@@ -74,12 +80,17 @@ export const AccountCard = ({
         }}
         onClick={onClick}
       >
-        <CardMedia>
+        <CardMedia sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+          {showLink && (
+            <Box paddingLeft="10px" paddingRight="6px">
+              <LinkIcon width={20} height={20} color={COLOR_GREY_ICONS_767676} />
+            </Box>
+          )}
           <AccountAvatar
             network={network}
             emoji={icon}
             color={color}
-            parentEmoji={parentIcon}
+            parentEmoji={showLink ? undefined : parentIcon}
             parentColor={parentColor}
             active={active}
             spinning={spinning}
@@ -89,7 +100,7 @@ export const AccountCard = ({
         <Box sx={{ width: '100%', overflow: 'hidden' }}>
           <Typography
             fontStyle="Inter"
-            color={COLOR_DARKMODE_TEXT_PRIMARY}
+            color={COLOR_DARKMODE_TEXT_PRIMARY_FFFFFF}
             fontSize="14px"
             fontWeight="600"
             lineHeight="17px"
@@ -109,8 +120,8 @@ export const AccountCard = ({
                   justifyContent: 'center',
                   alignItems: 'center',
                   borderRadius: '16px',
-                  background: '#627EEA',
-                  color: COLOR_DARKMODE_TEXT_PRIMARY,
+                  background: COLOR_ACCENT_EVM_627EEA,
+                  color: COLOR_DARKMODE_TEXT_PRIMARY_FFFFFF,
                   fontSize: '8px',
                   marginLeft: '4px',
                   fontWeight: '400',
@@ -124,7 +135,7 @@ export const AccountCard = ({
           </Typography>
           <Typography
             fontStyle="Inter"
-            color={COLOR_DARKMODE_TEXT_SECONDARY}
+            color={COLOR_DARKMODE_TEXT_SECONDARY_B3B3B3}
             fontSize="12px"
             fontWeight="400"
             lineHeight="17px"
@@ -134,7 +145,7 @@ export const AccountCard = ({
           </Typography>
           <Typography
             fontStyle="Inter"
-            color={COLOR_DARKMODE_TEXT_SECONDARY}
+            color={COLOR_DARKMODE_TEXT_SECONDARY_B3B3B3}
             fontSize="12px"
             fontWeight="400"
             lineHeight="17px"
@@ -169,23 +180,11 @@ const CopyAddressButton = ({ address }: { address?: string }) => {
   );
 };
 
-export const AccountCardWithCopy = ({
-  network,
-  account,
-  parentAccount,
-  active = false,
-  spinning = false,
-  onClick,
-}: AccountCardWithCopyProps) => {
+export const AccountCardWithCopy = (props: AccountCardWithCopyProps) => {
   return (
     <AccountCard
-      network={network}
-      account={account}
-      parentAccount={parentAccount}
-      active={active}
-      spinning={spinning}
-      onClick={onClick}
-      secondaryAction={<CopyAddressButton address={account?.address} />}
+      {...props}
+      secondaryAction={<CopyAddressButton address={props.account?.address} />}
     />
   );
 };

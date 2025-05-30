@@ -1,11 +1,9 @@
 import { type Meta, type StoryObj } from '@storybook/react-webpack5';
-import React from 'react';
 
 import { emojis } from '@/background/utils/emoji.json';
 import { MAINNET_CHAIN_ID } from '@/shared/types/network-types';
-import { MainAccount, type WalletAccount } from '@/shared/types/wallet-types';
+import { type WalletAccount } from '@/shared/types/wallet-types';
 
-import { CopyButton } from '../../CopyButton';
 import { AccountCardWithCopy } from '../account-card';
 const mainWalletAccount: WalletAccount = {
   name: emojis[2].name,
@@ -48,6 +46,9 @@ const meta: Meta<typeof AccountCardWithCopy> = {
     spinning: {
       control: 'boolean',
     },
+    showLink: {
+      control: 'boolean',
+    },
   },
 };
 
@@ -81,19 +82,19 @@ export const LargeFlow: Story = {
   },
 };
 
-export const EVM: Story = {
-  args: {
-    network: 'mainnet',
-    account: evmWalletAccount,
-    parentAccount: mainWalletAccount,
-  },
-};
-
 export const Active: Story = {
   args: {
     network: 'mainnet',
     account: mainWalletAccount,
     active: true,
+  },
+};
+
+export const EVM: Story = {
+  args: {
+    network: 'mainnet',
+    account: evmWalletAccount,
+    parentAccount: mainWalletAccount,
   },
 };
 
@@ -112,6 +113,14 @@ export const EVMSpinning: Story = {
     account: evmWalletAccount,
     parentAccount: mainWalletAccount,
     spinning: true,
+  },
+};
+export const EVMLink: Story = {
+  args: {
+    network: 'mainnet',
+    account: evmWalletAccount,
+    parentAccount: mainWalletAccount,
+    showLink: true,
   },
 };
 
