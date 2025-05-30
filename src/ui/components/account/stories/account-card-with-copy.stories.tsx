@@ -22,7 +22,7 @@ const evmWalletAccount: WalletAccount = {
   name: emojis[6].name,
   icon: emojis[6].emoji,
   color: emojis[6].bgcolor,
-  address: '0x000000000000000000000006b7b7c8c7c7c7', // Flow COA EVM address
+  address: '0x00000000000000000000000279356d1221d883F5', // Flow COA EVM address
   chain: MAINNET_CHAIN_ID,
   id: 1,
   balance: '550.66005012',

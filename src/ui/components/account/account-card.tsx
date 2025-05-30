@@ -8,9 +8,10 @@ import {
   Skeleton,
   Typography,
 } from '@mui/material';
-import React, { useState } from 'react';
+import React from 'react';
 
 import { type WalletAccount } from '@/shared/types/wallet-types';
+import { isValidEthereumAddress } from '@/shared/utils/address';
 import { CopyIcon } from '@/ui/assets/icons/CopyIcon';
 import {
   COLOR_DARKMODE_BACKGROUND_CARDS,
@@ -93,8 +94,33 @@ export const AccountCard = ({
             fontWeight="600"
             lineHeight="17px"
             noWrap
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              flexDirection: 'row',
+            }}
           >
-            {name || <Skeleton variant="text" width="100px" />}
+            {name || <Skeleton variant="text" width="50px" />}
+
+            {isValidEthereumAddress(address) && (
+              <span
+                style={{
+                  padding: '0px 4px',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  borderRadius: '16px',
+                  background: '#627EEA',
+                  color: COLOR_DARKMODE_TEXT_PRIMARY,
+                  fontSize: '8px',
+                  marginLeft: '4px',
+                  fontWeight: '400',
+                  letterSpacing: '0.128px',
+                  lineHeight: '1.5em',
+                }}
+              >
+                EVM
+              </span>
+            )}
           </Typography>
           <Typography
             fontStyle="Inter"
@@ -104,7 +130,7 @@ export const AccountCard = ({
             lineHeight="17px"
             noWrap
           >
-            {address ? formatAddress(address) : <Skeleton variant="text" width="100px" />}
+            {address ? formatAddress(address) : <Skeleton variant="text" width="120px" />}
           </Typography>
           <Typography
             fontStyle="Inter"
@@ -117,7 +143,7 @@ export const AccountCard = ({
             {balance ? (
               <TokenBalance value={balance} decimals={8} showFull={false} postFix="Flow" />
             ) : (
-              <Skeleton variant="text" width="100px" />
+              <Skeleton variant="text" width="130px" />
             )}
             {nfts && <span>{` | ${nfts} NFTs`}</span>}
           </Typography>
