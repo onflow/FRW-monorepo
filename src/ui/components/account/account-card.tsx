@@ -1,4 +1,3 @@
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import {
   Box,
   Card,
@@ -56,7 +55,7 @@ export const AccountCard = ({
   return (
     <Card
       sx={{
-        padding: '10px 16px',
+        padding: '10px 16px 10px 8px',
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
@@ -108,7 +107,7 @@ export const AccountCard = ({
             lineHeight="17px"
             noWrap
           >
-            {address}
+            {address || <Skeleton variant="text" width="100px" />}
           </Typography>
           <Typography
             fontStyle="Inter"
@@ -144,12 +143,8 @@ const CopyAddressButton = ({ address }: { address?: string }) => {
     }
   };
   return (
-    <IconButton
-      onClick={handleCopy}
-      aria-label="Copy address"
-      sx={{ width: '64px', height: '64px' }}
-    >
-      <ContentCopyIcon sx={{ color: COLOR_DARKMODE_TEXT_SECONDARY }} />
+    <IconButton onClick={handleCopy} aria-label="Copy address" disabled={!address}>
+      <CopyIcon width={24} />
     </IconButton>
   );
 };

@@ -18,6 +18,17 @@ const mainWalletAccount: WalletAccount = {
   nfts: 12,
 };
 
+const evmWalletAccount: WalletAccount = {
+  name: emojis[6].name,
+  icon: emojis[6].emoji,
+  color: emojis[6].bgcolor,
+  address: '0x000000000000000000000006b7b7c8c7c7c7', // Flow COA EVM address
+  chain: MAINNET_CHAIN_ID,
+  id: 1,
+  balance: '550.66005012',
+  nfts: 12,
+};
+
 const meta: Meta<typeof AccountCardWithCopy> = {
   title: 'Components/AccountCardWithCopy',
 
@@ -70,11 +81,37 @@ export const LargeFlow: Story = {
   },
 };
 
+export const EVM: Story = {
+  args: {
+    network: 'mainnet',
+    account: evmWalletAccount,
+    parentAccount: mainWalletAccount,
+  },
+};
+
 export const Active: Story = {
   args: {
     network: 'mainnet',
     account: mainWalletAccount,
     active: true,
+  },
+};
+
+export const EVMActive: Story = {
+  args: {
+    network: 'mainnet',
+    account: evmWalletAccount,
+    parentAccount: mainWalletAccount,
+    active: true,
+  },
+};
+
+export const EVMSpinning: Story = {
+  args: {
+    network: 'mainnet',
+    account: evmWalletAccount,
+    parentAccount: mainWalletAccount,
+    spinning: true,
   },
 };
 

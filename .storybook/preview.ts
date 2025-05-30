@@ -1,4 +1,8 @@
-import type { Preview } from '@storybook/react-webpack5';
+import { ThemeProvider, CssBaseline, createTheme } from '@mui/material';
+import { withThemeFromJSXProvider } from '@storybook/addon-themes';
+import type { Preview, StoryFn } from '@storybook/react-webpack5';
+
+import themeOptions from '../src/ui/style/LLTheme'; // Import your theme options
 
 import '../src/ui/style/fonts.css';
 
@@ -21,6 +25,8 @@ if (typeof global.chrome === 'undefined' || typeof global.chrome.i18n === 'undef
   } as unknown as typeof chrome; // Use 'as any' to simplify mocking complex global objects
 }
 
+const theme = createTheme(themeOptions); // Create a theme instance
+
 const preview: Preview = {
   parameters: {
     controls: {
@@ -30,6 +36,19 @@ const preview: Preview = {
       },
     },
   },
+
+  decorators: [
+    withThemeFromJSXProvider({
+      GlobalStyles: CssBaseline,
+      Provider: ThemeProvider,
+      themes: {
+        // Provide your custom themes here
+        light: theme,
+        dark: theme,
+      },
+      defaultTheme: 'dark',
+    }),
+  ],
 };
 
 export default preview;
