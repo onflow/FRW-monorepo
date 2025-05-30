@@ -6,7 +6,7 @@ import { MAINNET_CHAIN_ID } from '@/shared/types/network-types';
 import { MainAccount, type WalletAccount } from '@/shared/types/wallet-types';
 
 import { CopyButton } from '../../CopyButton';
-import { AccountCard } from '../account-card';
+import { AccountCardWithCopy } from '../account-card';
 const mainWalletAccount: WalletAccount = {
   name: emojis[2].name,
   icon: emojis[2].emoji,
@@ -18,11 +18,10 @@ const mainWalletAccount: WalletAccount = {
   nfts: 12,
 };
 
-const meta: Meta<typeof AccountCard> = {
-  title: 'Components/AccountCard',
-  tags: ['autodocs'],
+const meta: Meta<typeof AccountCardWithCopy> = {
+  title: 'Components/AccountCardWithCopy',
 
-  component: AccountCard,
+  component: AccountCardWithCopy,
   argTypes: {
     network: {
       control: 'select',
@@ -43,7 +42,7 @@ const meta: Meta<typeof AccountCard> = {
 
 export default meta;
 
-type Story = StoryObj<typeof AccountCard>;
+type Story = StoryObj<typeof AccountCardWithCopy>;
 
 export const Default: Story = {
   args: {
