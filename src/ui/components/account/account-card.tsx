@@ -36,6 +36,7 @@ type AccountCardWithCopyProps = {
   spinning?: boolean;
   onClick?: () => void;
   showLink?: boolean;
+  showCard?: boolean;
 };
 
 type AccountCardProps = AccountCardWithCopyProps & {
@@ -53,6 +54,7 @@ export const AccountCard = ({
   onClickSecondary = () => account?.address && navigator.clipboard.writeText(account.address),
   secondaryIcon = <CopyIcon width={24} />,
   showLink = false,
+  showCard = false,
 }: AccountCardProps) => {
   const { name, icon, color, address, balance, nfts } = account || {};
   const { icon: parentIcon, color: parentColor } =
@@ -61,15 +63,19 @@ export const AccountCard = ({
   return (
     <Card
       sx={{
-        padding: '10px 16px 10px 8px',
+        paddingLeft: '8px',
+        paddingRight: '16px',
+        paddingTop: showCard ? '10px' : '8px',
+        paddingBottom: showCard ? '10px' : '8px',
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
         borderRadius: '16px',
-        backgroundColor: COLOR_DARKMODE_BACKGROUND_CARDS_1A1A1A,
+        backgroundColor: showCard ? COLOR_DARKMODE_BACKGROUND_CARDS_1A1A1A : 'transparent',
         overflow: 'hidden',
-        maxWidth: '300px',
+        maxWidth: '500px',
       }}
+      elevation={showCard ? 1 : 0}
     >
       <CardActionArea
         sx={{

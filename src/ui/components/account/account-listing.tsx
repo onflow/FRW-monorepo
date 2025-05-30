@@ -11,6 +11,7 @@ type WalletHierarchy = {
 };
 
 type AccountListingProps = {
+  network: string;
   accounts: WalletHierarchy[];
   activeAddress?: string;
   onAccountClick?: (address: string) => void;
@@ -19,6 +20,7 @@ type AccountListingProps = {
 };
 
 export const AccountListing = ({
+  network,
   accounts,
   activeAddress,
   onAccountClick,
@@ -27,8 +29,9 @@ export const AccountListing = ({
 }: AccountListingProps) => {
   const AccountHierarchy = ({ account, linkedAccounts }: WalletHierarchy) => {
     return (
-      <Box>
+      <Box sx={{ gap: '0px', display: 'flex', flexDirection: 'column' }}>
         <AccountCard
+          network={network}
           key={account.address}
           account={account}
           active={activeAddress === account.address}
@@ -37,10 +40,12 @@ export const AccountListing = ({
             onAccountClickSecondary ? () => onAccountClickSecondary(account.address) : undefined
           }
           secondaryIcon={secondaryIcon}
+          showCard={false}
         />
         {linkedAccounts.map((linkedAccount) => {
           return (
             <AccountCard
+              network={network}
               key={linkedAccount.address}
               account={linkedAccount}
               active={activeAddress === linkedAccount.address}
@@ -51,6 +56,8 @@ export const AccountListing = ({
                   : undefined
               }
               secondaryIcon={secondaryIcon}
+              showLink={true}
+              showCard={false}
             />
           );
         })}
@@ -58,7 +65,7 @@ export const AccountListing = ({
     );
   };
   return (
-    <Box>
+    <Box sx={{ gap: '0px', display: 'flex', flexDirection: 'column' }}>
       {accounts.map((account) => {
         return (
           <AccountHierarchy

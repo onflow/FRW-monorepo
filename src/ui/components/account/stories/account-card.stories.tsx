@@ -60,6 +60,7 @@ export const Default: Story = {
   args: {
     network: 'mainnet',
     account: mainWalletAccount,
+    showCard: true,
   },
 };
 export const SmallFlow: Story = {
@@ -69,6 +70,7 @@ export const SmallFlow: Story = {
       ...mainWalletAccount,
       balance: '0.00000001',
     },
+    showCard: true,
   },
 };
 
@@ -79,6 +81,7 @@ export const LargeFlow: Story = {
       ...mainWalletAccount,
       balance: '1000000000000000000',
     },
+    showCard: true,
   },
 };
 
@@ -87,6 +90,7 @@ export const Active: Story = {
     network: 'mainnet',
     account: mainWalletAccount,
     active: true,
+    showCard: true,
   },
 };
 
@@ -95,6 +99,16 @@ export const EVM: Story = {
     network: 'mainnet',
     account: evmWalletAccount,
     parentAccount: mainWalletAccount,
+    showCard: true,
+  },
+};
+
+export const EVMNoCard: Story = {
+  args: {
+    network: 'mainnet',
+    account: evmWalletAccount,
+    parentAccount: mainWalletAccount,
+    showCard: false,
   },
 };
 
@@ -104,6 +118,7 @@ export const EVMActive: Story = {
     account: evmWalletAccount,
     parentAccount: mainWalletAccount,
     active: true,
+    showCard: true,
   },
 };
 
@@ -113,6 +128,7 @@ export const EVMSpinning: Story = {
     account: evmWalletAccount,
     parentAccount: mainWalletAccount,
     spinning: true,
+    showCard: true,
   },
 };
 export const EVMLink: Story = {
@@ -121,6 +137,17 @@ export const EVMLink: Story = {
     account: evmWalletAccount,
     parentAccount: mainWalletAccount,
     showLink: true,
+    showCard: true,
+  },
+};
+
+export const EVMLinkNoCard: Story = {
+  args: {
+    network: 'mainnet',
+    account: evmWalletAccount,
+    parentAccount: mainWalletAccount,
+    showLink: true,
+    showCard: false,
   },
 };
 
@@ -128,5 +155,6 @@ export const Loading: Story = {
   args: {
     network: 'mainnet',
     active: true,
+    showCard: true,
   },
 };
