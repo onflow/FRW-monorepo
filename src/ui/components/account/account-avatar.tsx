@@ -1,5 +1,6 @@
-import { Avatar, Box, CircularProgress, IconButton, Typography } from '@mui/material';
+import { Avatar, Box, CircularProgress, IconButton, Skeleton, Typography } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
+import { margin } from '@mui/system';
 import React from 'react';
 
 import { COLOR_DARK_GRAY_1A1A1A, networkColor } from '@/ui/style/color';
@@ -19,15 +20,28 @@ export const AccountAvatar = ({
   spinning = false,
   onClick,
 }: {
-  network: string;
-  emoji: string;
-  color: string;
+  network?: string;
+  emoji?: string;
+  color?: string;
   parentEmoji?: string;
   parentColor?: string;
   active?: boolean;
   spinning?: boolean;
   onClick?: () => void;
 }) => {
+  const loading = !network || !emoji || !color;
+  if (loading) {
+    return (
+      <Skeleton
+        variant="circular"
+        width="36px"
+        height="36px"
+        sx={{
+          marginX: '4px',
+        }}
+      />
+    );
+  }
   return (
     <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', marginX: '4px' }}>
       {spinning && (
