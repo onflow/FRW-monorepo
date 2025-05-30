@@ -42,6 +42,19 @@ type AccountCardProps = AccountCardWithCopyProps & {
   secondaryAction?: React.ReactNode;
 };
 
+const CopyAddressButton = ({ address }: { address?: string }) => {
+  const handleCopy = () => {
+    if (address) {
+      navigator.clipboard.writeText(address);
+    }
+  };
+  return (
+    <IconButton onClick={handleCopy} aria-label="Copy address" disabled={!address}>
+      <CopyIcon width={24} />
+    </IconButton>
+  );
+};
+
 export const AccountCard = ({
   network,
   account,
@@ -49,7 +62,7 @@ export const AccountCard = ({
   active = false,
   spinning = false,
   onClick,
-  secondaryAction,
+  secondaryAction = <CopyAddressButton address={account?.address} />,
   showLink = false,
 }: AccountCardProps) => {
   const { name, icon, color, address, balance, nfts } = account || {};
@@ -164,27 +177,5 @@ export const AccountCard = ({
         <CardActions sx={{ padding: '0px', marginLeft: 'auto' }}>{secondaryAction}</CardActions>
       )}
     </Card>
-  );
-};
-
-const CopyAddressButton = ({ address }: { address?: string }) => {
-  const handleCopy = () => {
-    if (address) {
-      navigator.clipboard.writeText(address);
-    }
-  };
-  return (
-    <IconButton onClick={handleCopy} aria-label="Copy address" disabled={!address}>
-      <CopyIcon width={24} />
-    </IconButton>
-  );
-};
-
-export const AccountCardWithCopy = (props: AccountCardWithCopyProps) => {
-  return (
-    <AccountCard
-      {...props}
-      secondaryAction={<CopyAddressButton address={props.account?.address} />}
-    />
   );
 };

@@ -4,7 +4,7 @@ import { emojis } from '@/background/utils/emoji.json';
 import { MAINNET_CHAIN_ID } from '@/shared/types/network-types';
 import { type WalletAccount } from '@/shared/types/wallet-types';
 
-import { AccountCardWithCopy } from '../account-card';
+import { AccountCard } from '../account-card';
 const mainWalletAccount: WalletAccount = {
   name: emojis[2].name,
   icon: emojis[2].emoji,
@@ -27,10 +27,10 @@ const evmWalletAccount: WalletAccount = {
   nfts: 12,
 };
 
-const meta: Meta<typeof AccountCardWithCopy> = {
-  title: 'Components/AccountCardWithCopy',
+const meta: Meta<typeof AccountCard> = {
+  title: 'Components/AccountCard',
 
-  component: AccountCardWithCopy,
+  component: AccountCard,
   argTypes: {
     network: {
       control: 'select',
@@ -54,7 +54,7 @@ const meta: Meta<typeof AccountCardWithCopy> = {
 
 export default meta;
 
-type Story = StoryObj<typeof AccountCardWithCopy>;
+type Story = StoryObj<typeof AccountCard>;
 
 export const Default: Story = {
   args: {
