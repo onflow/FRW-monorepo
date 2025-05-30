@@ -3,24 +3,21 @@ import {
   Card,
   CardActionArea,
   CardActions,
-  CardContent,
   CardMedia,
   IconButton,
-  ListItem,
-  ListItemAvatar,
   Skeleton,
   Typography,
 } from '@mui/material';
 import React, { useState } from 'react';
 
-import { type MainAccount, type WalletAccount } from '@/shared/types/wallet-types';
+import { type WalletAccount } from '@/shared/types/wallet-types';
 import { CopyIcon } from '@/ui/assets/icons/CopyIcon';
 import {
-  COLOR_DARK_GRAY_1A1A1A,
   COLOR_DARKMODE_BACKGROUND_CARDS,
   COLOR_DARKMODE_TEXT_PRIMARY,
   COLOR_DARKMODE_TEXT_SECONDARY,
 } from '@/ui/style/color';
+import { formatAddress } from '@/ui/utils';
 
 import { TokenBalance } from '../TokenLists/TokenBalance';
 
@@ -107,7 +104,7 @@ export const AccountCard = ({
             lineHeight="17px"
             noWrap
           >
-            {address || <Skeleton variant="text" width="100px" />}
+            {address ? formatAddress(address) : <Skeleton variant="text" width="100px" />}
           </Typography>
           <Typography
             fontStyle="Inter"
@@ -134,12 +131,9 @@ export const AccountCard = ({
 };
 
 const CopyAddressButton = ({ address }: { address?: string }) => {
-  const [isCopied, setIsCopied] = useState(false);
-
   const handleCopy = () => {
     if (address) {
       navigator.clipboard.writeText(address);
-      setIsCopied(true);
     }
   };
   return (
