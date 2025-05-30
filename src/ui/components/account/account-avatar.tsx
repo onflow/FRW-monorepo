@@ -33,6 +33,26 @@ export const AccountAvatar = ({
   if (loading) {
     return <Skeleton variant="circular" width="36px" height="36px" sx={{ marginLeft: '8px' }} />;
   }
+  // These are used either on the IconButton or the Box
+  const sxProps = {
+    zIndex: 1,
+    display: 'flex',
+    height: '36px',
+    width: '36px',
+    borderRadius: '36px',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: color,
+    padding: '0px',
+    boxSizing: 'content-box',
+    outlineStyle: 'solid',
+    outlineWidth: spinning || !active ? '0px' : '1px',
+    outlineOffset: spinning || !active ? '0px' : '2px',
+    outlineColor: active && !spinning ? networkColor(network) : 'transparent',
+    '&:hover': {
+      backgroundColor: color ? alpha(color, 0.8) : undefined,
+    },
+  };
   return (
     <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', marginLeft: '8px' }}>
       {spinning && (
@@ -46,41 +66,38 @@ export const AccountAvatar = ({
           }}
         />
       )}
-      <IconButton
-        onClick={onClick}
-        sx={{
-          zIndex: 1,
-          display: 'flex',
-          height: '36px',
-          width: '36px',
-          borderRadius: '36px',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: color,
-          padding: '0px',
-          boxSizing: 'content-box',
-          outlineStyle: 'solid',
-          outlineWidth: spinning || !active ? '0px' : '1px',
-          outlineOffset: spinning || !active ? '0px' : '2px',
-          outlineColor: active && !spinning ? networkColor(network) : 'transparent',
-          '&:hover': {
-            backgroundColor: color ? alpha(color, 0.8) : undefined,
-          },
-        }}
-      >
-        <Typography
-          sx={{
-            fontSize: '18px',
-            fontWeight: '600',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            lineHeight: '18px',
-          }}
-        >
-          {emoji}
-        </Typography>
-      </IconButton>
+      {onClick && (
+        <IconButton onClick={onClick} sx={sxProps}>
+          <Typography
+            sx={{
+              fontSize: '18px',
+              fontWeight: '600',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              lineHeight: '18px',
+            }}
+          >
+            {emoji}
+          </Typography>
+        </IconButton>
+      )}
+      {!onClick && (
+        <Box sx={sxProps}>
+          <Typography
+            sx={{
+              fontSize: '18px',
+              fontWeight: '600',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              lineHeight: '18px',
+            }}
+          >
+            {emoji}
+          </Typography>
+        </Box>
+      )}
 
       {parentEmoji && (
         <Box
