@@ -52,7 +52,7 @@ export const ProfileItem = ({
           <Avatar
             component="span"
             src={userInfo?.avatar}
-            sx={{ width: '40px', height: '40px' }}
+            sx={{ width: '40px', height: '40px', borderRadius: '8px' }}
             alt="avatar"
           />
         </ListItemIcon>
