@@ -85,7 +85,7 @@ const Popup = (props: TransferConfirmationProps) => {
         sx: {
           width: '100%',
           height: 'auto',
-          background: '#222',
+          background: '#121212',
           borderRadius: '18px 18px 0px 0px',
         },
       }}
