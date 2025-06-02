@@ -98,8 +98,8 @@ const meta: Meta<typeof AccountListing> = {
     accountList: {
       control: 'object',
     },
-    activeAddress: {
-      control: 'text',
+    activeAccount: {
+      control: 'object',
     },
     network: { control: 'text' },
   },
@@ -136,7 +136,7 @@ export const Default: Story = {
   args: {
     network: 'mainnet',
     accountList: [mainWalletAccount, mainWalletAccount2],
-    activeAddress: undefined,
+    activeAccount: undefined,
   },
   parameters: {
     mockData: createMockData({
@@ -161,7 +161,9 @@ export const Active: Story = {
   args: {
     network: 'mainnet',
     accountList: [mainWalletAccount],
-    activeAddress: mainWalletAccount.address,
+    activeAccount: mainWalletAccount,
+    activeParentAccount: mainWalletAccount, // not necessary if activeAccount is a main account
+    showActiveAccount: true,
   },
   parameters: {
     mockData: createMockData({
@@ -176,7 +178,9 @@ export const EVMActive: Story = {
   args: {
     network: 'mainnet',
     accountList: [mainWalletAccount],
-    activeAddress: evmWalletAccount.address,
+    activeAccount: evmWalletAccount,
+    activeParentAccount: mainWalletAccount,
+    showActiveAccount: true,
   },
   parameters: {
     mockData: createMockData({
@@ -192,6 +196,15 @@ export const Loading: Story = {
   args: {
     network: 'mainnet',
     accountList: undefined,
-    activeAddress: undefined,
+    activeAccount: undefined,
+  },
+};
+
+export const LoadingActive: Story = {
+  args: {
+    network: 'mainnet',
+    accountList: undefined,
+    activeAccount: undefined,
+    showActiveAccount: true,
   },
 };

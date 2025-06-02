@@ -1490,5 +1490,11 @@
   },
   "Create_a_new_profile": {
     "message": "Create a new profile"
+  },
+  "Active_account": {
+    "message": "Active account"
+  },
+  "Other_accounts": {
+    "message": "Other accounts"
   }
 }

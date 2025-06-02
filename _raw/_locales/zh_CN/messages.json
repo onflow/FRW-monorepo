@@ -1481,5 +1481,11 @@
   },
   "Create_a_new_profile": {
     "message": "创建新个人资料"
+  },
+  "Active_account": {
+    "message": "活跃账户"
+  },
+  "Other_accounts": {
+    "message": "其他账户"
   }
 }

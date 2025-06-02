@@ -1481,5 +1481,11 @@
   },
   "Create_a_new_profile": {
     "message": "Создать новый профиль"
+  },
+  "Active_account": {
+    "message": "Активный аккаунт"
+  },
+  "Other_accounts": {
+    "message": "Другие аккаунты"
   }
 }
