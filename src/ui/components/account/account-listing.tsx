@@ -2,10 +2,12 @@ import { Box, Typography } from '@mui/material';
 import React from 'react';
 
 import { type WalletAccount } from '@/shared/types/wallet-types';
+import { isValidEthereumAddress } from '@/shared/utils/address';
 import { useChildAccounts, useEvmAccount } from '@/ui/hooks/use-account-hooks';
 import { COLOR_DARKMODE_TEXT_PRIMARY_80_FFFFFF80 } from '@/ui/style/color';
 
 import { AccountCard } from './account-card';
+import { EnableEvmAccountCard } from './enable-evm-account-card';
 
 type AccountHierarchyProps = {
   network?: string;
@@ -49,9 +51,11 @@ const AccountHierarchy = ({
           onAccountClickSecondary ? () => onAccountClickSecondary(account.address) : undefined
         }
         secondaryIcon={secondaryIcon}
-        showCard={false}
+        showCard={true}
       />
-      {evmAccount && (
+
+      {/* If the EVM account is valid, show the EVM account card */}
+      {evmAccount && isValidEthereumAddress(evmAccount.address) && (
         <AccountCard
           network={network}
           key={evmAccount.address}
@@ -111,6 +115,17 @@ export const AccountListing = ({
   secondaryIcon,
   showActiveAccount = false,
 }: AccountListingProps) => {
+  // Get the EVM account for the active account provided it's a main account
+  const evmAccount = useEvmAccount(
+    network,
+    activeParentAccount === undefined || activeAccount?.address === activeParentAccount.address
+      ? activeAccount?.address
+      : undefined
+  );
+
+  // Check if the EVM account is not valid
+  const noEvmAccount = evmAccount && !isValidEthereumAddress(evmAccount.address);
+
   return (
     <Box sx={{ gap: '0px', display: 'flex', flexDirection: 'column' }}>
       {/* Active account */}
@@ -141,6 +156,9 @@ export const AccountListing = ({
             showCard={true}
             showLink={false}
           />
+          {/* If the EVM account is not valid, show the EnableEvmAccountCard */}
+          {noEvmAccount && <EnableEvmAccountCard showCard={false} />}
+
           <Typography
             variant="body1"
             color="text.primary"

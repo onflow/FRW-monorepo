@@ -54,6 +54,15 @@ const evmWalletAccount2: WalletAccount = {
   nfts: 0,
 };
 
+const noEvmWalletAccount: WalletAccount = {
+  name: '',
+  icon: '',
+  color: '',
+  address: '',
+  chain: MAINNET_CHAIN_ID,
+  id: 1,
+};
+
 const childWallet1: WalletAccount = {
   name: 'Dapper Wallet ',
   icon: 'https://accounts.meetdapper.com/static/img/dapper/dapper.png',
@@ -93,6 +102,8 @@ const createMockData = (config: {
 
 const meta: Meta<typeof AccountListing> = {
   title: 'Components/AccountListing',
+  tags: ['autodocs'],
+
   component: AccountListing,
   argTypes: {
     accountList: {
@@ -186,6 +197,24 @@ export const EVMActive: Story = {
     mockData: createMockData({
       [mainWalletAccount.address]: {
         evm: evmWalletAccount,
+        children: [childWallet2], // ChildWallet1 is omitted as per original story logic
+      },
+    }),
+  },
+};
+
+export const NoEVM: Story = {
+  args: {
+    network: 'mainnet',
+    accountList: [mainWalletAccount],
+    activeAccount: mainWalletAccount,
+    activeParentAccount: mainWalletAccount,
+    showActiveAccount: true,
+  },
+  parameters: {
+    mockData: createMockData({
+      [mainWalletAccount.address]: {
+        evm: noEvmWalletAccount,
         children: [childWallet2], // ChildWallet1 is omitted as per original story logic
       },
     }),
