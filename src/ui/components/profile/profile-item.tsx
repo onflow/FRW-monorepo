@@ -64,7 +64,12 @@ export const ProfileItem = ({
               justifyContent: 'space-between',
             }}
           >
-            <Typography variant="body1" component="div" display="inline" sx={{ color: '#fff' }}>
+            <Typography
+              variant="body1"
+              component="div"
+              display="inline"
+              sx={{ color: '#fff', fontWeight: '700', fontSize: '14px' }}
+            >
               {userInfo?.nickname}
             </Typography>
           </Box>
