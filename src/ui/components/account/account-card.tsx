@@ -22,7 +22,6 @@ import {
   COLOR_GREY_ICONS_767676,
 } from '@/ui/style/color';
 import { formatAddress } from '@/ui/utils';
-import { ReactComponent as IconLink } from 'ui/assets/svg/Iconlink.svg';
 
 import { TokenBalance } from '../TokenLists/TokenBalance';
 

@@ -1,6 +1,7 @@
 import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 
-import { emojis } from '@/background/utils/emoji.json';
+import emojisJson from '@/background/utils/emoji.json';
+const { emojis } = emojisJson;
 import { MAINNET_CHAIN_ID } from '@/shared/types/network-types';
 import { type WalletAccount } from '@/shared/types/wallet-types';
 

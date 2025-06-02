@@ -2,15 +2,8 @@ import {
   CURRENT_ID_KEY,
   KEYRING_STATE_CURRENT_KEY,
   type KeyringState,
-  VaultEntryV2,
 } from '@/shared/types/keyring-types';
-import {
-  type ChildAccountMap,
-  type MainAccount,
-  type MainAccountBalance,
-  type EvmAddress,
-  type WalletAccount,
-} from '@/shared/types/wallet-types';
+import { type MainAccount, type WalletAccount } from '@/shared/types/wallet-types';
 import {
   childAccountsKey,
   evmAccountKey,
@@ -19,8 +12,6 @@ import {
   userInfoCachekey,
   registerStatusKey,
   type UserInfoStore,
-  supportedCurrenciesKey,
-  type SupportedCurrenciesStore,
   childAccountAllowTypesKey,
   type MainAccountStorageBalanceStore,
   mainAccountStorageBalanceKey,
