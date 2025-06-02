@@ -67,9 +67,9 @@ export const AccountCard = ({
     ? `evm-account-${address}`
     : hasParentAccount
       ? `child-account-${address}`
-      : `account-${address}`;
+      : `main-account-${address}`;
   const accountBalance = useAccountBalance(network, address);
-  const balance = accountBalance ?? account?.balance;
+  const balance = accountBalance === undefined ? account?.balance : accountBalance;
   return (
     <Card
       sx={{
