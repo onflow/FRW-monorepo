@@ -9,6 +9,7 @@ import {
   ListItemButton,
   ListItemIcon,
   Typography,
+  Skeleton,
 } from '@mui/material';
 import React from 'react';
 
@@ -35,6 +36,21 @@ export const ProfileItem = ({
   setLoadingId: (profileId: string) => void;
   userInfo: UserInfoResponse | undefined;
 }) => {
+  if (!userInfo) {
+    return (
+      <ListItem disablePadding>
+        <ListItemButton sx={{ padding: '9px 18px' }}>
+          <ListItemIcon>
+            <Skeleton variant="rectangular" width={40} height={40} sx={{ borderRadius: '8px' }} />
+          </ListItemIcon>
+          <ListItemText>
+            <Skeleton variant="text" width={120} height={24} />
+          </ListItemText>
+        </ListItemButton>
+      </ListItem>
+    );
+  }
+
   return (
     <ListItem
       disablePadding

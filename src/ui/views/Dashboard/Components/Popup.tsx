@@ -70,9 +70,7 @@ const ProfileItemList = ({
 
 const Popup = (props: TransferConfirmationProps) => {
   const usewallet = useWallet();
-  const history = useHistory();
   const [loadingId, setLoadingId] = useState<string | null>(null);
-  const { clearProfileData } = useProfiles();
 
   return (
     <Drawer
