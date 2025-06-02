@@ -1,4 +1,3 @@
-import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import {
   Box,
   List,
@@ -9,7 +8,6 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  Divider,
   CardMedia,
   Skeleton,
 } from '@mui/material';
@@ -18,20 +16,12 @@ import React, { useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import type { UserInfoResponse } from '@/shared/types/network-types';
-import {
-  type ActiveChildType_depreciated,
-  type WalletAccount,
-  type MainAccount,
-} from '@/shared/types/wallet-types';
-import { isValidEthereumAddress } from '@/shared/utils/address';
+import { type WalletAccount } from '@/shared/types/wallet-types';
 import { AccountListing } from '@/ui/components/account/account-listing';
-import { useAccountBalance } from '@/ui/hooks/use-account-hooks';
-import { useProfiles } from '@/ui/hooks/useProfileHook';
 import importIcon from 'ui/assets/svg/importIcon.svg';
 import popLock from 'ui/assets/svg/popLock.svg';
 import { useWallet } from 'ui/utils';
 
-import rightarrow from '../../../assets/svg/rightarrow.svg';
 import sideMore from '../../../assets/svg/sideMore.svg';
 
 import NetworkList from './NetworkList';
@@ -50,61 +40,41 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface MenuDrawerProps {
-  userInfo: UserInfoResponse | null;
   drawer: boolean;
   toggleDrawer: () => void;
-  otherAccounts: MainAccount[];
-  switchAccount: (profileId: string) => Promise<void>;
+  userInfo: UserInfoResponse | null;
   togglePop: () => void;
   walletList: WalletAccount[];
-  childAccounts: WalletAccount[] | null;
-  profileIds: string[];
-  current: WalletAccount;
+  activeAccount: WalletAccount;
   activeParentAccount: WalletAccount;
-  createWalletList: (props: WalletAccount) => React.ReactNode;
-  setWallets: (
-    walletInfo: WalletAccount,
-    key: ActiveChildType_depreciated | null,
-    index?: number | null
-  ) => Promise<void>;
-  currentNetwork: string;
-  evmWallet: WalletAccount;
-  networkColor: (network: string) => string;
-  evmLoading: boolean;
+  network: string;
   modeOn: boolean;
   mainAddressLoading: boolean;
+  noAddress?: boolean;
 }
 
 const MenuDrawer = ({
   userInfo,
   drawer,
   toggleDrawer,
-  otherAccounts,
-  switchAccount,
   togglePop,
-  walletList,
-  childAccounts,
-  profileIds,
-  current,
+  activeAccount,
   activeParentAccount,
-  createWalletList,
-  setWallets,
-  currentNetwork,
-  evmWallet,
-  networkColor,
-  evmLoading,
+  walletList,
+  network,
   modeOn,
   mainAddressLoading,
+  noAddress,
 }: MenuDrawerProps) => {
   const wallet = useWallet();
   const history = useHistory();
   const classes = useStyles();
-  const { clearProfileData, noAddress } = useProfiles();
 
   const setActiveAccount = useCallback(
     (address: string, parentAddress?: string) => {
-      wallet.setActiveAccount(address, parentAddress || address);
-      toggleDrawer();
+      wallet.setActiveAccount(address, parentAddress || address).then(() => {
+        toggleDrawer();
+      });
     },
     [wallet, toggleDrawer]
   );
@@ -160,9 +130,9 @@ const MenuDrawer = ({
           </Box>
         </ListItem>
         <AccountListing
-          network={currentNetwork}
+          network={network}
           accountList={walletList}
-          activeAccount={current}
+          activeAccount={activeAccount}
           activeParentAccount={activeParentAccount}
           onAccountClick={setActiveAccount}
           showActiveAccount={true}
@@ -178,18 +148,11 @@ const MenuDrawer = ({
             marginBottom: '20px',
           }}
         >
-          {modeOn && (
-            <NetworkList
-              networkColor={networkColor}
-              currentNetwork={currentNetwork}
-              onClose={toggleDrawer}
-            />
-          )}
+          {modeOn && <NetworkList currentNetwork={network} onClose={toggleDrawer} />}
           <ListItem
             disablePadding
             onClick={async () => {
               await wallet.lockAdd();
-              // history.push('/add');
             }}
           >
             <ListItemButton sx={{ padding: '8px 16px', margin: '0', borderRadius: '0' }}>
@@ -225,7 +188,6 @@ const MenuDrawer = ({
             disablePadding
             onClick={() => {
               wallet.lockWallet().then(() => {
-                clearProfileData();
                 history.push('/unlock');
               });
             }}

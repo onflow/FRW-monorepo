@@ -59,6 +59,15 @@ export const AccountCard = ({
   const { name, icon, color, address, nfts } = account || {};
   const { icon: parentIcon, color: parentColor } =
     account && parentAccount && parentAccount.address !== account.address ? parentAccount : {};
+
+  const hasParentAccount = account && parentAccount && parentAccount.address !== account.address;
+  const isEvmAccount = account && isValidEthereumAddress(account.address);
+
+  const testId = isEvmAccount
+    ? `evm-account-${address}`
+    : hasParentAccount
+      ? `child-account-${address}`
+      : `account-${address}`;
   const accountBalance = useAccountBalance(network, address);
   const balance = accountBalance ?? account?.balance;
   return (
@@ -77,6 +86,7 @@ export const AccountCard = ({
         maxWidth: '500px',
       }}
       elevation={showCard ? 1 : 0}
+      data-testid={testId}
     >
       <CardActionArea
         sx={{

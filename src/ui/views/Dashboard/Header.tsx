@@ -6,10 +6,8 @@ import {
   Typography,
   IconButton,
   Drawer,
-  List,
   Button,
   Skeleton,
-  CircularProgress,
   Chip,
 } from '@mui/material';
 import Box from '@mui/material/Box';
@@ -19,11 +17,6 @@ import { makeStyles } from '@mui/styles';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
-import {
-  type WalletAccount,
-  type WalletAddress,
-  type ActiveChildType_depreciated,
-} from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 import { AccountAvatar } from '@/ui/components/account/account-avatar';
@@ -32,10 +25,8 @@ import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
 import { useNews } from '@/ui/hooks/use-news';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { networkColor } from '@/ui/style/color';
 import { useWallet, formatAddress, useWalletLoaded } from 'ui/utils';
 
-import MainAccountsComponent from './Components/MainAccountsComponent';
 import MenuDrawer from './Components/MenuDrawer';
 import NewsView from './Components/NewsView';
 import Popup from './Components/Popup';
@@ -64,21 +55,14 @@ const Header = ({ _loading = false }) => {
   const { developerMode } = useNetwork();
   const {
     network,
-    mainAddress,
     currentWallet,
     parentWallet,
-    evmWallet,
-    parentWalletIndex: currentWalletIndex,
-    childAccounts,
     walletList,
-    evmLoading,
     userInfo,
-    otherAccounts,
     mainAddressLoading,
     clearProfileData,
     profileIds,
     noAddress,
-    registerStatus,
   } = useProfiles();
 
   const [drawer, setDrawer] = useState(false);
@@ -88,7 +72,6 @@ const Header = ({ _loading = false }) => {
   const [ispop, setPop] = useState(false);
 
   const [switchLoading, setSwitchLoading] = useState(false);
-  const [expandAccount, setExpandAccount] = useState(false);
   const [, setErrorMessage] = useState('');
   const [errorCode, setErrorCode] = useState(null);
 
@@ -147,19 +130,6 @@ const Header = ({ _loading = false }) => {
     },
     [usewallet, history, clearProfileData]
   );
-
-  const setWallets = async (
-    walletInfo: WalletAccount,
-    key: ActiveChildType_depreciated | null,
-    index: number | null = null
-  ) => {
-    await usewallet.setActiveWallet(walletInfo, key, index);
-
-    // Navigate if needed
-    history.push('/dashboard');
-    setDrawer(false);
-    //  window.location.reload();
-  };
 
   const transactionHandler = (request) => {
     // This is just to handle pending transactions
@@ -236,28 +206,6 @@ const Header = ({ _loading = false }) => {
 
     return `${repoUrl}/commits`;
   }, []);
-
-  const createWalletList = (props: WalletAccount) => {
-    return (
-      <List component="nav" key={props.id} sx={{ mb: '0', padding: 0 }}>
-        <MainAccountsComponent
-          network={network}
-          props_id={props.id}
-          name={props.name}
-          address={props.address as WalletAddress}
-          icon={props.icon}
-          color={props.color}
-          setWallets={setWallets}
-          currentWalletIndex={currentWalletIndex}
-          currentWallet={currentWallet}
-          mainAddress={mainAddress!}
-          setExpandAccount={setExpandAccount}
-          expandAccount={expandAccount}
-          walletList={walletList}
-        />
-      </List>
-    );
-  };
 
   const NewsDrawer = () => {
     return (
@@ -504,25 +452,17 @@ const Header = ({ _loading = false }) => {
         <Toolbar sx={{ px: '12px', backgroundColor: '#282828' }}>
           {walletList && (
             <MenuDrawer
-              userInfo={userInfo || null}
               drawer={drawer}
               toggleDrawer={toggleDrawer}
-              otherAccounts={otherAccounts}
-              switchAccount={switchAccount}
               togglePop={togglePop}
-              walletList={walletList}
-              childAccounts={childAccounts || null}
+              userInfo={userInfo || null}
+              activeAccount={currentWallet}
               activeParentAccount={parentWallet}
-              current={currentWallet}
-              profileIds={profileIds || []}
-              createWalletList={createWalletList}
-              setWallets={setWallets}
-              currentNetwork={network}
-              evmWallet={evmWallet}
-              networkColor={networkColor}
-              evmLoading={evmLoading}
+              walletList={walletList}
+              network={network}
               modeOn={developerMode}
               mainAddressLoading={mainAddressLoading}
+              noAddress={noAddress ?? false}
             />
           )}
           {appBarLabel(currentWallet)}

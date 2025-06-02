@@ -55,7 +55,7 @@ const AccountHierarchy = ({
             : undefined
         }
         secondaryIcon={secondaryIcon}
-        showCard={true}
+        showCard={false}
       />
 
       {/* If the EVM account is valid, show the EVM account card */}
@@ -130,7 +130,7 @@ export const AccountListing = ({
   // Get the EVM account for the active account provided it's a main account
   const evmAccount = useEvmAccount(
     network,
-    activeParentAccount === undefined || activeAccount?.address === activeParentAccount.address
+    activeParentAccount === undefined || activeAccount?.address === activeParentAccount?.address
       ? activeAccount?.address
       : undefined
   );
