@@ -1273,6 +1273,20 @@ export class WalletController extends BaseController {
     return activeWallet;
   };
 
+  /**
+   * Set the active account
+   * @param address - The address of the account to set as active
+   * @param parentAddress - The parent address of the account to set as active
+   * @todo - Tom B - 2 Jun 2025 - I am concerned that this may create problems if the network or pubkey is switched while this is being called. I'm considering including the pubkey and network as arguments
+   */
+
+  setActiveAccount = async (address: string, parentAddress: string) => {
+    await userWalletService.setCurrentAccount(
+      parentAddress as FlowAddress,
+      address as WalletAddress
+    );
+  };
+
   /*
    * Sets the active main wallet and current child wallet
    * This is used to switch between main accounts or switch from main to child wallet

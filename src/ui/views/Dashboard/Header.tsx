@@ -512,6 +512,7 @@ const Header = ({ _loading = false }) => {
               togglePop={togglePop}
               walletList={walletList}
               childAccounts={childAccounts || null}
+              activeParentAccount={parentWallet}
               current={currentWallet}
               profileIds={profileIds || []}
               createWalletList={createWalletList}

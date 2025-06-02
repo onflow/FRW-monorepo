@@ -14,6 +14,7 @@ import { type WalletAccount } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { CopyIcon } from '@/ui/assets/icons/CopyIcon';
 import { LinkIcon } from '@/ui/assets/icons/LinkIcon';
+import { useAccountBalance } from '@/ui/hooks/use-account-hooks';
 import {
   COLOR_DARKMODE_BACKGROUND_CARDS_1A1A1A,
   COLOR_DARKMODE_TEXT_PRIMARY_FFFFFF,
@@ -55,10 +56,11 @@ export const AccountCard = ({
   showLink = false,
   showCard = false,
 }: AccountCardProps) => {
-  const { name, icon, color, address, balance, nfts } = account || {};
+  const { name, icon, color, address, nfts } = account || {};
   const { icon: parentIcon, color: parentColor } =
     account && parentAccount && parentAccount.address !== account.address ? parentAccount : {};
-
+  const accountBalance = useAccountBalance(network, address);
+  const balance = accountBalance ?? account?.balance;
   return (
     <Card
       sx={{
@@ -101,7 +103,6 @@ export const AccountCard = ({
             parentColor={parentColor}
             active={active}
             spinning={spinning}
-            onClick={onClick}
           />
         </CardMedia>
         <Box sx={{ width: '100%', overflow: 'hidden' }}>
@@ -159,7 +160,7 @@ export const AccountCard = ({
             noWrap
           >
             {balance ? (
-              <TokenBalance value={balance} decimals={8} showFull={false} postFix="Flow" />
+              <TokenBalance value={balance} decimals={4} showFull={false} postFix="Flow" />
             ) : (
               <Skeleton variant="text" width="130px" />
             )}

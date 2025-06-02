@@ -13,8 +13,8 @@ type AccountHierarchyProps = {
   network?: string;
   account?: WalletAccount;
   activeAccount?: WalletAccount;
-  onAccountClick?: (address: string) => void;
-  onAccountClickSecondary?: (address: string) => void;
+  onAccountClick?: (address: string, parentAddress?: string) => void;
+  onAccountClickSecondary?: (address: string, parentAddress?: string) => void;
   secondaryIcon?: React.ReactNode;
 };
 const AccountHierarchy = ({
@@ -46,9 +46,13 @@ const AccountHierarchy = ({
         key={account.address}
         account={account}
         active={activeAccount?.address === account.address}
-        onClick={onAccountClick ? () => onAccountClick(account.address) : undefined}
+        onClick={
+          onAccountClick ? () => onAccountClick(account.address, account.address) : undefined
+        }
         onClickSecondary={
-          onAccountClickSecondary ? () => onAccountClickSecondary(account.address) : undefined
+          onAccountClickSecondary
+            ? () => onAccountClickSecondary(account.address, account.address)
+            : undefined
         }
         secondaryIcon={secondaryIcon}
         showCard={true}
@@ -61,9 +65,13 @@ const AccountHierarchy = ({
           key={evmAccount.address}
           account={evmAccount}
           active={activeAccount?.address === evmAccount.address}
-          onClick={onAccountClick ? () => onAccountClick(evmAccount.address) : undefined}
+          onClick={
+            onAccountClick ? () => onAccountClick(evmAccount.address, account.address) : undefined
+          }
           onClickSecondary={
-            onAccountClickSecondary ? () => onAccountClickSecondary(evmAccount.address) : undefined
+            onAccountClickSecondary
+              ? () => onAccountClickSecondary(evmAccount.address, account.address)
+              : undefined
           }
           secondaryIcon={secondaryIcon}
           showLink={true}
@@ -78,10 +86,14 @@ const AccountHierarchy = ({
               key={linkedAccount.address}
               account={linkedAccount}
               active={activeAccount?.address === linkedAccount.address}
-              onClick={onAccountClick ? () => onAccountClick(linkedAccount.address) : undefined}
+              onClick={
+                onAccountClick
+                  ? () => onAccountClick(linkedAccount.address, account.address)
+                  : undefined
+              }
               onClickSecondary={
                 onAccountClickSecondary
-                  ? () => onAccountClickSecondary(linkedAccount.address)
+                  ? () => onAccountClickSecondary(linkedAccount.address, account.address)
                   : undefined
               }
               secondaryIcon={secondaryIcon}
@@ -99,8 +111,8 @@ type AccountListingProps = {
   accountList?: WalletAccount[];
   activeAccount?: WalletAccount;
   activeParentAccount?: WalletAccount;
-  onAccountClick?: (address: string) => void;
-  onAccountClickSecondary?: (address: string) => void;
+  onAccountClick?: (address: string, parentAddress?: string) => void;
+  onAccountClickSecondary?: (address: string, parentAddress?: string) => void;
   secondaryIcon?: React.ReactNode;
   showActiveAccount?: boolean;
 };
@@ -143,6 +155,7 @@ export const AccountListing = ({
               lineHeight: '16px',
               marginTop: '24px',
               marginBottom: '8px',
+              marginLeft: '16px',
             }}
           >
             {chrome.i18n.getMessage('Active_account')}
@@ -152,6 +165,12 @@ export const AccountListing = ({
             network={network}
             account={activeAccount}
             parentAccount={activeParentAccount}
+            onClickSecondary={
+              onAccountClickSecondary && activeAccount?.address
+                ? () => onAccountClickSecondary(activeAccount.address, activeAccount.address)
+                : undefined
+            }
+            secondaryIcon={secondaryIcon}
             active={true}
             showCard={true}
             showLink={false}
@@ -171,6 +190,7 @@ export const AccountListing = ({
               lineHeight: '16px',
               marginTop: '24px',
               marginBottom: '8px',
+              marginLeft: '16px',
             }}
           >
             {chrome.i18n.getMessage('Other_accounts')}
