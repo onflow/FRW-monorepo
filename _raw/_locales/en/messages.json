@@ -1484,5 +1484,11 @@
   },
   "Profiles": {
     "message": "Profiles"
+  },
+  "Recover_an_existing_profile": {
+    "message": "Recover an existing profile"
+  },
+  "Create_a_new_profile": {
+    "message": "Create a new profile"
   }
 }
