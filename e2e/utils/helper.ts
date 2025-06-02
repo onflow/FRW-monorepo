@@ -37,7 +37,7 @@ export const getCurrentAddress = async (page: Page) => {
 export const lockExtension = async ({ page }) => {
   // Assume we're logged in before calling this
 
-  await page.getByLabel('menu').click();
+  await page.getByTestId('account-menu-button').click();
   await page.getByRole('button', { name: 'Lock Wallet' }).click();
   const unlockBtn = await page.getByRole('button', { name: 'Unlock Wallet' });
 
@@ -70,9 +70,9 @@ export const loginToExtensionAccount = async ({ page, extensionId, addr, passwor
   }
   if (flowAddr !== addr) {
     // switch to the correct account
-    await page.getByLabel('menu').click();
+    await page.getByTestId('account-menu-button').click();
     await page.getByRole('button', { name: 'close' }).click();
-    await expect(page.getByText('Profile', { exact: true })).toBeVisible();
+    await expect(page.getByText('Profiles', { exact: true })).toBeVisible();
     // Switch to the correct account. Note doest not handle more than 3 accounts loaded
     await page.getByTestId(`profile-item-nickname-${nickname}`).click();
     await expect(page.getByRole('progressbar').getByRole('img')).not.toBeVisible();
@@ -258,7 +258,7 @@ export const importAccountBySeedPhrase = async ({
     await page.waitForURL(/.*\/dashboard.*/);
 
     // We're already logged in so we need to click import profile
-    await page.getByLabel('menu').click();
+    await page.getByTestId('account-menu-button').click();
     await page.getByRole('button', { name: 'Import Profile' }).click();
     // Close all pages except the current page (the extension opens them in the background)
     await closeOpenedPages(page);
@@ -407,7 +407,7 @@ export const loginToSenderOrReceiver = async ({ page, extensionId, parallelIndex
 };
 export const switchToEvm = async ({ page, extensionId }) => {
   // Assume the user is on the dashboard page
-  await page.getByLabel('menu').click();
+  await page.getByTestId('account-menu-button').click();
   // switch to COA account
   await page
     .getByTestId(/evm-account-0x.*/)
@@ -419,7 +419,7 @@ export const switchToEvm = async ({ page, extensionId }) => {
 
 export const switchToFlow = async ({ page, extensionId }) => {
   // Assume the user is on the dashboard page
-  await page.getByLabel('menu').click();
+  await page.getByTestId('account-menu-button').click();
   // switch to COA account
   await page
     .getByTestId(/main-account-0x.*/)
@@ -430,13 +430,13 @@ export const switchToFlow = async ({ page, extensionId }) => {
 };
 export const switchAccount = async ({ page, extensionId }) => {
   // Assume the user is on the dashboard page
-  await page.getByLabel('menu').click();
+  await page.getByTestId('account-menu-button').click();
   // switch to another flow account
   await page
     .getByTestId(/main-account-0x.*/)
     .first()
     .click();
-  await page.getByLabel('menu').click();
+  await page.getByTestId('account-menu-button').click();
   await page
     .getByTestId(/main-account-0x.*/)
     .first()

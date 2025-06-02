@@ -362,7 +362,7 @@ export class WalletController extends BaseController {
       });
     }
 
-    setCachedData(registerStatusKey(accountKey.public_key), true, 30_000);
+    setCachedData(registerStatusKey(accountKey.public_key), true, 120_000);
 
     // Register the account in userWallet
     userWalletService.registerCurrentPubkey(accountKey.public_key, accountInfo);

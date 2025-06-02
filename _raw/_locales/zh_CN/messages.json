@@ -1472,5 +1472,14 @@
   },
   "Legend": {
     "message": "图例"
+  },
+  "Profiles": {
+    "message": "个人资料"
+  },
+  "Recover_an_existing_profile": {
+    "message": "恢复现有个人资料"
+  },
+  "Create_a_new_profile": {
+    "message": "创建新个人资料"
   }
 }

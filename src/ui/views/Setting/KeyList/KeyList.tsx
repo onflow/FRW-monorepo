@@ -59,20 +59,13 @@ const KeyList = () => {
 
       const mergedItem = {
         ...key,
-        current_device: false,
+        current_device: matchingResults.some((result) => result.device.id === installationId),
         devices: matchingResults.map((result) => {
-          const deviceItem = {
+          return {
             ...result.pubkey,
             ...key,
             device_name: result.device.device_name,
           };
-
-          // Check if the installationId matches device.id
-          if (result.device.id === installationId) {
-            mergedItem.current_device = true;
-          }
-
-          return deviceItem;
         }),
       };
 
@@ -234,7 +227,6 @@ const KeyList = () => {
             <Box
               sx={{
                 display: 'flex',
-                height: '16px',
                 width: '72px',
                 position: 'relative',
                 zIndex: '5',
@@ -269,20 +261,18 @@ const KeyList = () => {
                 </Typography>
               </Box>
             </Box>
-            <Box
+            <IconButton
+              sx={{ marginLeft: '14px', height: '26px' }}
               onClick={() => toggleKey(item.index)}
-              sx={{ display: 'flex', alignItems: 'center', marginLeft: '14px' }}
             >
               <img
                 src={toggle}
                 style={{
-                  width: '10px',
-                  height: '6px',
                   transform: showKey === item.index ? 'rotate(180deg)' : 'none',
                   transition: 'transform 0.3s',
                 }}
               />
-            </Box>
+            </IconButton>
           </Box>
           <Box
             sx={{

@@ -1472,5 +1472,14 @@
   },
   "Legend": {
     "message": "Легенда"
+  },
+  "Profiles": {
+    "message": "Профили"
+  },
+  "Recover_an_existing_profile": {
+    "message": "Восстановить существующий профиль"
+  },
+  "Create_a_new_profile": {
+    "message": "Создать новый профиль"
   }
 }
