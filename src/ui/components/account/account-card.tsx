@@ -83,7 +83,7 @@ export const AccountCard = ({
   const accountBalance = useAccountBalance(network, address);
   const balance = accountBalance === undefined ? account?.balance : accountBalance;
 
-  const nftCount = nftCatalogCollections?.reduce((acc, curr) => acc + curr.count, 0);
+  const nftCount = nfts || nftCatalogCollections?.reduce((acc, curr) => acc + curr.count, 0);
   return (
     <Card
       sx={{
@@ -191,7 +191,7 @@ export const AccountCard = ({
               )
             ) : // Main account or EVM account
             balance !== undefined ? ( // Balance is available
-              <TokenBalance value={balance} decimals={4} showFull={true} postFix="Flow" />
+              <TokenBalance value={balance} decimals={4} showFull={false} postFix="Flow" />
             ) : (
               <Skeleton variant="text" width="130px" />
             )}
