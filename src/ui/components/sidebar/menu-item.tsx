@@ -5,11 +5,12 @@ interface MenuItemProps {
   icon: string;
   text: string;
   onClick: () => Promise<void> | void;
+  dataTestId?: string;
 }
 
-export const MenuItem = ({ icon, text, onClick }: MenuItemProps) => {
+export const MenuItem = ({ icon, text, onClick, dataTestId }: MenuItemProps) => {
   return (
-    <ListItem disablePadding onClick={onClick}>
+    <ListItem disablePadding onClick={onClick} data-testid={dataTestId}>
       <ListItemButton sx={{ padding: '8px 16px', margin: '0', borderRadius: '0' }}>
         <ListItemIcon
           sx={{
