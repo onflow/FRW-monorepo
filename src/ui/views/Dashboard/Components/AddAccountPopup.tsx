@@ -64,6 +64,7 @@ const AddAccountPopup = (props: TransferConfirmationProps) => {
           <ProfileButton
             icon={importExisting}
             text={chrome.i18n.getMessage('Import_an_existing_account')}
+            data-testid="import-existing-account-button"
             onClick={async () => await usewallet.lockAdd()}
           />
         </Box>

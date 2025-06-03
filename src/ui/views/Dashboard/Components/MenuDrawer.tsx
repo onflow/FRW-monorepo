@@ -239,6 +239,7 @@ const MenuDrawer = ({
             <MenuItem
               icon={plus}
               text={chrome.i18n.getMessage('Add_Account')}
+              data-testid="add-account-button"
               onClick={toggleAddAccount}
             />
           )}
