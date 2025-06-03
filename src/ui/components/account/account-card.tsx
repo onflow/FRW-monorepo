@@ -37,6 +37,7 @@ type AccountCardWithCopyProps = {
   onClick?: () => void;
   showLink?: boolean;
   showCard?: boolean;
+  'data-testid'?: string;
 };
 
 type AccountCardProps = AccountCardWithCopyProps & {
@@ -55,6 +56,7 @@ export const AccountCard = ({
   secondaryIcon = <CopyIcon width={24} />,
   showLink = false,
   showCard = false,
+  'data-testid': dataTestId,
 }: AccountCardProps) => {
   const { name, icon, color, address, nfts } = account || {};
   const { icon: parentIcon, color: parentColor } =
@@ -63,11 +65,13 @@ export const AccountCard = ({
   const hasParentAccount = account && parentAccount && parentAccount.address !== account.address;
   const isEvmAccount = account && isValidEthereumAddress(account.address);
 
-  const testId = isEvmAccount
-    ? `evm-account-${address}`
-    : hasParentAccount
-      ? `child-account-${address}`
-      : `main-account-${address}`;
+  const testId =
+    dataTestId ||
+    (isEvmAccount
+      ? `evm-account-${address}`
+      : hasParentAccount
+        ? `child-account-${address}`
+        : `main-account-${address}`);
   const accountBalance = useAccountBalance(network, address);
   const balance = accountBalance === undefined ? account?.balance : accountBalance;
   return (
