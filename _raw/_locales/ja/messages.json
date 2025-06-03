@@ -1481,5 +1481,11 @@
   },
   "Create_a_new_profile": {
     "message": "新しいプロファイルを作成"
+  },
+  "Active_account": {
+    "message": "アクティブアカウント"
+  },
+  "Other_accounts": {
+    "message": "その他のアカウント"
   }
 }

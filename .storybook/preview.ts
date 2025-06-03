@@ -1,7 +1,9 @@
 import { ThemeProvider, CssBaseline, createTheme } from '@mui/material';
 import { withThemeFromJSXProvider } from '@storybook/addon-themes';
-import type { Preview, StoryFn } from '@storybook/react-webpack5';
+import type { Preview } from '@storybook/react-webpack5';
+import { themes, ensure } from 'storybook/theming';
 
+import messages from '../src/messages.json';
 import themeOptions from '../src/ui/style/LLTheme'; // Import your theme options
 
 import '../src/ui/style/fonts.css';
@@ -19,6 +21,9 @@ if (typeof global.chrome === 'undefined' || typeof global.chrome.i18n === 'undef
           // For object substitutions, you might want a more complex replacement logic
           return messageName + ': ' + JSON.stringify(substitutions);
         }
+        if (messages[messageName as keyof typeof messages]) {
+          return messages[messageName as keyof typeof messages].message;
+        }
         return messageName;
       },
     },
@@ -34,6 +39,9 @@ const preview: Preview = {
         color: /(background|color)$/i,
         date: /Date$/i,
       },
+    },
+    docs: {
+      theme: themes.dark,
     },
   },
 

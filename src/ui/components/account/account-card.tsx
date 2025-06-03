@@ -14,6 +14,8 @@ import { type WalletAccount } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { CopyIcon } from '@/ui/assets/icons/CopyIcon';
 import { LinkIcon } from '@/ui/assets/icons/LinkIcon';
+import { useAccountBalance } from '@/ui/hooks/use-account-hooks';
+import { useNftCatalogCollections } from '@/ui/hooks/useNftHook';
 import {
   COLOR_DARKMODE_BACKGROUND_CARDS_1A1A1A,
   COLOR_DARKMODE_TEXT_PRIMARY_FFFFFF,
@@ -22,7 +24,6 @@ import {
   COLOR_GREY_ICONS_767676,
 } from '@/ui/style/color';
 import { formatAddress } from '@/ui/utils';
-import { ReactComponent as IconLink } from 'ui/assets/svg/Iconlink.svg';
 
 import { TokenBalance } from '../TokenLists/TokenBalance';
 
@@ -37,6 +38,7 @@ type AccountCardWithCopyProps = {
   onClick?: () => void;
   showLink?: boolean;
   showCard?: boolean;
+  'data-testid'?: string;
 };
 
 type AccountCardProps = AccountCardWithCopyProps & {
@@ -55,11 +57,33 @@ export const AccountCard = ({
   secondaryIcon = <CopyIcon width={24} />,
   showLink = false,
   showCard = false,
+  'data-testid': dataTestId,
 }: AccountCardProps) => {
-  const { name, icon, color, address, balance, nfts } = account || {};
+  const { name, icon, color, address, nfts } = account || {};
   const { icon: parentIcon, color: parentColor } =
     account && parentAccount && parentAccount.address !== account.address ? parentAccount : {};
 
+  const hasParentAccount = account && parentAccount && parentAccount.address !== account.address;
+  const isEvmAccount = account && isValidEthereumAddress(account.address);
+  const isChildAccount = hasParentAccount && !isEvmAccount;
+
+  // Only show NFTs for child accounts
+  const nftCatalogCollections = useNftCatalogCollections(
+    network,
+    isChildAccount ? address : undefined
+  );
+
+  const testId =
+    dataTestId ||
+    (isEvmAccount
+      ? `evm-account-${address}`
+      : hasParentAccount
+        ? `child-account-${address}`
+        : `main-account-${address}`);
+  const accountBalance = useAccountBalance(network, address);
+  const balance = accountBalance === undefined ? account?.balance : accountBalance;
+
+  const nftCount = nfts || nftCatalogCollections?.reduce((acc, curr) => acc + curr.count, 0);
   return (
     <Card
       sx={{
@@ -76,6 +100,7 @@ export const AccountCard = ({
         maxWidth: '500px',
       }}
       elevation={showCard ? 1 : 0}
+      data-testid={testId}
     >
       <CardActionArea
         sx={{
@@ -102,7 +127,6 @@ export const AccountCard = ({
             parentColor={parentColor}
             active={active}
             spinning={spinning}
-            onClick={onClick}
           />
         </CardMedia>
         <Box sx={{ width: '100%', overflow: 'hidden' }}>
@@ -159,12 +183,18 @@ export const AccountCard = ({
             lineHeight="17px"
             noWrap
           >
-            {balance ? (
-              <TokenBalance value={balance} decimals={8} showFull={false} postFix="Flow" />
+            {isChildAccount ? ( // Child account
+              nftCount !== undefined ? ( // NFT count is available
+                <span>{`${nftCount} NFTs`}</span>
+              ) : (
+                <Skeleton variant="text" width="130px" />
+              )
+            ) : // Main account or EVM account
+            balance !== undefined ? ( // Balance is available
+              <TokenBalance value={balance} decimals={4} showFull={false} postFix="Flow" />
             ) : (
               <Skeleton variant="text" width="130px" />
             )}
-            {nfts && <span>{` | ${nfts} NFTs`}</span>}
           </Typography>
         </Box>
       </CardActionArea>
