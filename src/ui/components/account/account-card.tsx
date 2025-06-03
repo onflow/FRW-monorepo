@@ -87,10 +87,10 @@ export const AccountCard = ({
   return (
     <Card
       sx={{
-        paddingLeft: '8px',
-        paddingRight: '16px',
-        paddingTop: showCard ? '10px' : '8px',
-        paddingBottom: showCard ? '10px' : '8px',
+        paddingLeft: showCard ? '8px' : '0',
+        paddingRight: showCard ? '16px' : '0',
+        paddingTop: showCard ? '10px' : '0',
+        paddingBottom: showCard ? '10px' : '0',
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
@@ -110,6 +110,8 @@ export const AccountCard = ({
           padding: '0px',
           alignItems: 'center',
           overflow: 'hidden',
+          paddingTop: showCard ? '0' : '8px',
+          paddingBottom: showCard ? '0' : '8px',
         }}
         onClick={onClick}
       >

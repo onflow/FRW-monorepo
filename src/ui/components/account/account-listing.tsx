@@ -141,7 +141,7 @@ export const AccountListing = ({
   const noEvmAccount = evmAccount && !isValidEthereumAddress(evmAccount.address);
 
   return (
-    <Box sx={{ gap: '0px', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ gap: '0px', padding: '0 16px', display: 'flex', flexDirection: 'column' }}>
       {/* Active account */}
       {showActiveAccount && (
         <>
@@ -155,9 +155,7 @@ export const AccountListing = ({
               fontStyle: 'normal',
               fontWeight: '400',
               lineHeight: '16px',
-              marginTop: '24px',
               marginBottom: '8px',
-              marginLeft: '16px',
             }}
           >
             {chrome.i18n.getMessage('Active_account')}
@@ -198,7 +196,6 @@ export const AccountListing = ({
               lineHeight: '16px',
               marginTop: '24px',
               marginBottom: '8px',
-              marginLeft: '16px',
             }}
           >
             {chrome.i18n.getMessage('Other_accounts')}

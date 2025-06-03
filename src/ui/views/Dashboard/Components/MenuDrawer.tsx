@@ -10,20 +10,24 @@ import {
   ListItemText,
   CardMedia,
   Skeleton,
+  CircularProgress,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React, { useCallback } from 'react';
+import React, { useCallback, useState, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import type { UserInfoResponse } from '@/shared/types/network-types';
 import { type WalletAccount } from '@/shared/types/wallet-types';
+import { consoleError } from '@/shared/utils/console-log';
 import { AccountListing } from '@/ui/components/account/account-listing';
-import importIcon from 'ui/assets/svg/importIcon.svg';
-import popLock from 'ui/assets/svg/popLock.svg';
+import { MenuItem } from '@/ui/components/sidebar/menu-item';
 import { useWallet } from 'ui/utils';
 
-import sideMore from '../../../assets/svg/sideMore.svg';
+import lock from '../../../assets/svg/sidebar-lock.svg';
+import plus from '../../../assets/svg/sidebar-plus.svg';
+import userCircleGear from '../../../assets/svg/user-circle-gear.svg';
 
+import AddAccountPopup from './AddAccountPopup';
 import NetworkList from './NetworkList';
 
 const useStyles = makeStyles(() => ({
@@ -31,7 +35,7 @@ const useStyles = makeStyles(() => ({
     zIndex: '1400 !important',
   },
   paper: {
-    background: '#282828',
+    background: '#0A0A0B',
   },
   active: {
     background: '#BABABA14',
@@ -69,6 +73,11 @@ const MenuDrawer = ({
   const wallet = useWallet();
   const history = useHistory();
   const classes = useStyles();
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Add Account Drawer
+  const [showAddAccount, setShowAddAccount] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
 
   const setActiveAccount = useCallback(
     (address: string, parentAddress?: string) => {
@@ -80,7 +89,29 @@ const MenuDrawer = ({
   );
 
   const addAccount = async () => {
-    await wallet.createManualAddress();
+    try {
+      setIsCreating(true);
+      toggleAddAccount();
+      await wallet.createManualAddress();
+
+      // Scroll to bottom after a short delay to ensure new account is rendered
+      setTimeout(() => {
+        if (scrollRef.current) {
+          scrollRef.current.scrollTo({
+            top: scrollRef.current.scrollHeight,
+            behavior: 'smooth',
+          });
+        }
+      }, 100);
+    } catch (error) {
+      consoleError('Failed to create account:', error);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const toggleAddAccount = () => {
+    setShowAddAccount((prevShowAddAccount) => !prevShowAddAccount);
   };
   return (
     <Drawer
@@ -92,54 +123,77 @@ const MenuDrawer = ({
     >
       <List
         sx={{
-          backgroundColor: '#282828',
+          backgroundColor: '#0A0A0B',
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
         }}
       >
-        <ListItem
-          sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}
-        >
-          <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-            <ListItemIcon sx={{ display: 'flex', justifyContent: 'space-between' }}>
+        <Box sx={{ padding: '24px 16px' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              padding: '0 0 12px',
+              borderBottom: '1px solid rgba(255, 255, 255, 0.25)',
+              justifyContent: 'space-between',
+            }}
+          >
+            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
               {userInfo ? (
                 <img
                   src={userInfo.avatar}
                   width={48}
                   height={48}
-                  style={{ backgroundColor: '#797979', borderRadius: 48 / 2 }}
+                  style={{ backgroundColor: '#16FF99', borderRadius: '8px' }}
                 />
               ) : (
                 <Skeleton variant="circular" width={48} height={48} />
               )}
-
-              <Box sx={{ paddingTop: '4px', px: '2px' }}>
-                <IconButton edge="end" aria-label="close" onClick={togglePop}>
-                  <img style={{ display: 'inline-block', width: '24px' }} src={sideMore} />
-                </IconButton>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <ListItemText
+                  sx={{ fontSize: '14px', fontWeight: '700', marginLeft: '16px' }}
+                  primary={
+                    ((!mainAddressLoading || noAddress) && userInfo?.nickname) || (
+                      <Skeleton variant="text" width={100} />
+                    )
+                  }
+                />
               </Box>
-            </ListItemIcon>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <ListItemText
-                sx={{ fontSize: '14px', fontWeight: '700' }}
-                primary={
-                  ((!mainAddressLoading || noAddress) && userInfo?.nickname) || (
-                    <Skeleton variant="text" width={100} />
-                  )
-                }
-              />
+            </Box>
+            <Box sx={{ paddingTop: '4px', px: '2px' }}>
+              <IconButton edge="end" aria-label="close" onClick={togglePop}>
+                <img style={{ display: 'inline-block', width: '24px' }} src={userCircleGear} />
+              </IconButton>
             </Box>
           </Box>
-        </ListItem>
-        <AccountListing
-          network={network}
-          accountList={walletList}
-          activeAccount={activeAccount}
-          activeParentAccount={activeParentAccount}
-          onAccountClick={setActiveAccount}
-          showActiveAccount={true}
-        />
+        </Box>
+        <Box
+          ref={scrollRef}
+          sx={{
+            overflowY: 'auto',
+            maxHeight: 'calc(100vh - 200px)',
+            '&::-webkit-scrollbar': {
+              width: '4px',
+            },
+            '&::-webkit-scrollbar-track': {
+              background: 'transparent',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              background: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '4px',
+            },
+          }}
+        >
+          <AccountListing
+            network={network}
+            accountList={walletList}
+            activeAccount={activeAccount}
+            activeParentAccount={activeParentAccount}
+            onAccountClick={setActiveAccount}
+            showActiveAccount={true}
+          />
+        </Box>
+        <Box sx={{ padding: '0 16px', flex: 1 }}></Box>
         <Box
           sx={{
             justifyContent: 'space-between',
@@ -147,116 +201,68 @@ const MenuDrawer = ({
             flexDirection: 'column',
             display: 'flex',
             px: '0',
-            marginTop: 'auto',
-            marginBottom: '20px',
+            marginTop: '24px',
+            marginBottom: '8px',
+            borderTop: '1px solid rgba(255, 255, 255, 0.25)',
+            paddingTop: '8px',
           }}
         >
-          {modeOn && <NetworkList currentNetwork={network} onClose={toggleDrawer} />}
-          <ListItem
-            disablePadding
-            onClick={async () => {
-              await wallet.lockAdd();
-            }}
-          >
-            <ListItemButton sx={{ padding: '8px 16px', margin: '0', borderRadius: '0' }}>
-              <ListItemIcon
-                sx={{
-                  width: '24px',
-                  minWidth: '16px',
-                  height: '24px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginRight: '12px',
-                }}
-              >
-                <CardMedia
-                  component="img"
-                  sx={{ width: '16px', height: '16px' }}
-                  image={importIcon}
-                />
-              </ListItemIcon>
-              <Typography
-                variant="body1"
-                component="div"
-                display="inline"
-                color="text"
-                sx={{ fontSize: '12px' }}
-              >
-                {chrome.i18n.getMessage('Import__Profile')}
-              </Typography>
-            </ListItemButton>
-          </ListItem>
-          <ListItem
-            disablePadding
-            onClick={async () => {
-              await addAccount();
-              // history.push('/add');
-            }}
-          >
-            <ListItemButton sx={{ padding: '8px 16px', margin: '0', borderRadius: '0' }}>
-              <ListItemIcon
-                sx={{
-                  width: '24px',
-                  minWidth: '16px',
-                  height: '24px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginRight: '12px',
-                }}
-              >
-                <CardMedia
-                  component="img"
-                  sx={{ width: '16px', height: '16px' }}
-                  image={importIcon}
-                />
-              </ListItemIcon>
-              <Typography
-                variant="body1"
-                component="div"
-                display="inline"
-                color="text"
-                sx={{ fontSize: '12px' }}
-              >
-                Add Account
-              </Typography>
-            </ListItemButton>
-          </ListItem>
-          <ListItem
-            disablePadding
+          {isCreating ? (
+            <ListItem disablePadding>
+              <ListItemButton sx={{ padding: '8px 16px', margin: '0', borderRadius: '0' }}>
+                <ListItemIcon
+                  sx={{
+                    width: '40px',
+                    minWidth: '40px',
+                    height: '40px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginRight: '16px',
+                    borderRadius: '40px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  }}
+                >
+                  <CircularProgress size={24} />
+                </ListItemIcon>
+                <Typography
+                  variant="body1"
+                  component="div"
+                  display="inline"
+                  sx={{ fontSize: '16px', color: '#FFFFFFCC', opacity: 0.7 }}
+                >
+                  Creating...
+                </Typography>
+              </ListItemButton>
+            </ListItem>
+          ) : (
+            <MenuItem
+              icon={plus}
+              text={chrome.i18n.getMessage('Add_Account')}
+              onClick={toggleAddAccount}
+            />
+          )}
+          <MenuItem
+            icon={lock}
+            text={chrome.i18n.getMessage('Lock__Wallet')}
             onClick={() => {
               wallet.lockWallet().then(() => {
                 history.push('/unlock');
               });
             }}
-          >
-            <ListItemButton sx={{ padding: '8px 16px', margin: '0', borderRadius: '0' }}>
-              <ListItemIcon
-                sx={{
-                  width: '24px',
-                  minWidth: '24px',
-                  height: '24px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginRight: '12px',
-                }}
-              >
-                <CardMedia component="img" sx={{ width: '24px', height: '24px' }} image={popLock} />
-              </ListItemIcon>
-              <Typography
-                variant="body1"
-                component="div"
-                display="inline"
-                color="text"
-                sx={{ fontSize: '12px' }}
-              >
-                {chrome.i18n.getMessage('Lock__Wallet')}
-              </Typography>
-            </ListItemButton>
-          </ListItem>
+          />
         </Box>
+        {showAddAccount && (
+          <AddAccountPopup
+            isConfirmationOpen={showAddAccount}
+            handleCloseIconClicked={() => setShowAddAccount(false)}
+            handleCancelBtnClicked={() => setShowAddAccount(false)}
+            handleAddBtnClicked={() => {
+              setShowAddAccount(false);
+            }}
+            addAccount={addAccount}
+          />
+        )}
       </List>
     </Drawer>
   );
