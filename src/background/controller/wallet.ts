@@ -48,6 +48,7 @@ import {
 } from '@/shared/types/wallet-types';
 import {
   ensureEvmAddressPrefix,
+  isValidAddress,
   isValidEthereumAddress,
   isValidFlowAddress,
   withPrefix,
@@ -110,13 +111,7 @@ import type { CacheState } from 'background/service/pageStateCache';
 import { replaceNftKeywords } from 'background/utils';
 import { notification, storage } from 'background/webapi';
 import { openIndexPage } from 'background/webapi/tab';
-import {
-  INTERNAL_REQUEST_ORIGIN,
-  EVENTS,
-  KEYRING_TYPE,
-  EVM_ENDPOINT,
-  HTTP_STATUS_CONFLICT,
-} from 'consts';
+import { INTERNAL_REQUEST_ORIGIN, EVM_ENDPOINT, HTTP_STATUS_CONFLICT } from 'consts';
 
 import type {
   AccountKeyRequest,
@@ -1317,6 +1312,23 @@ export class WalletController extends BaseController {
     return activeWallet;
   };
 
+  /**
+   * Set the active account
+   * @param address - The address of the account to set as active
+   * @param parentAddress - The parent address of the account to set as active
+   * @todo - Tom B - 2 Jun 2025 - I am concerned that this may create problems if the network or pubkey is switched while this is being called. I'm considering including the pubkey and network as arguments
+   */
+
+  setActiveAccount = async (address: string, parentAddress: string) => {
+    if (!isValidFlowAddress(parentAddress)) {
+      throw new Error('Invalid parent address');
+    }
+    if (!isValidAddress(address)) {
+      throw new Error('Invalid account address');
+    }
+    await userWalletService.setCurrentAccount(parentAddress, address);
+  };
+
   /*
    * Sets the active main wallet and current child wallet
    * This is used to switch between main accounts or switch from main to child wallet
@@ -1328,7 +1340,7 @@ export class WalletController extends BaseController {
   setActiveWallet = async (
     wallet: WalletAccount,
     key: ActiveChildType_depreciated | null,
-    index: number | null = null
+    _index: number | null = null
   ) => {
     if (key === null) {
       // We're setting the main wallet
@@ -1408,7 +1420,7 @@ export class WalletController extends BaseController {
     return address;
   };
 
-  sendTransaction = async (cadence: string, args: any[]): Promise<string> => {
+  sendTransaction = async (cadence: string, args: unknown[]): Promise<string> => {
     return await userWalletService.sendTransaction(cadence, args);
   };
 
@@ -2663,8 +2675,6 @@ export class WalletController extends BaseController {
       : 'bridgeNFTToEvmAddressV2';
     const script = await getScripts(userWalletService.getNetwork(), 'bridge', scriptName);
 
-    const gasLimit = 30000000;
-
     if (recipientEvmAddress.startsWith('0x')) {
       recipientEvmAddress = recipientEvmAddress.substring(2);
     }
@@ -2735,7 +2745,7 @@ export class WalletController extends BaseController {
     return result;
   };
 
-  sendNFT = async (recipient: string, id: any, token: any): Promise<string> => {
+  sendNFT = async (recipient: string, id: number, token: NFTModelV2): Promise<string> => {
     await this.getNetwork();
     const script = await getScripts(userWalletService.getNetwork(), 'collection', 'sendNFTV3');
 
@@ -2745,7 +2755,7 @@ export class WalletController extends BaseController {
         .replaceAll('<NFTAddress>', token.address)
         .replaceAll('<CollectionStoragePath>', token.path.storage)
         .replaceAll('<CollectionPublicPath>', token.path.public),
-      [fcl.arg(recipient, fcl.t.Address), fcl.arg(parseInt(id), fcl.t.UInt64)]
+      [fcl.arg(recipient, fcl.t.Address), fcl.arg(id, fcl.t.UInt64)]
     );
     mixpanelTrack.track('nft_transfer', {
       tx_id: txID,
@@ -2759,7 +2769,7 @@ export class WalletController extends BaseController {
     return txID;
   };
 
-  sendNBANFT = async (recipient: string, id: any, token: NFTModelV2): Promise<string> => {
+  sendNBANFT = async (recipient: string, id: number, token: NFTModelV2): Promise<string> => {
     await this.getNetwork();
     const script = await getScripts(userWalletService.getNetwork(), 'collection', 'sendNbaNFTV3');
 
@@ -2769,7 +2779,7 @@ export class WalletController extends BaseController {
         .replaceAll('<NFTAddress>', token.address)
         .replaceAll('<CollectionStoragePath>', token.path.storage)
         .replaceAll('<CollectionPublicPath>', token.path.public),
-      [fcl.arg(recipient, fcl.t.Address), fcl.arg(parseInt(id), fcl.t.UInt64)]
+      [fcl.arg(recipient, fcl.t.Address), fcl.arg(id, fcl.t.UInt64)]
     );
     mixpanelTrack.track('nft_transfer', {
       tx_id: txID,
@@ -2790,7 +2800,7 @@ export class WalletController extends BaseController {
     limit: number,
     offset: number,
     _expiry = 60000,
-    forceRefresh = false
+    _forceRefresh = false
   ): Promise<{
     count: number;
     list: TransferItem[];
@@ -2829,19 +2839,6 @@ export class WalletController extends BaseController {
 
   loginWithPrivatekey = async (pk: string, replaceUser = true) => {
     return userWalletService.loginWithPk(pk, replaceUser);
-  };
-
-  /**
-   * @deprecated This method is deprecated and should not be used in new code.
-   * @see {@link loginWithMnemonic} Use this method instead.
-   */
-  loginV3_depreciated = async (
-    mnemonic: string,
-    accountKey: any,
-    deviceInfo: any,
-    replaceUser = true
-  ) => {
-    return userWalletService.loginV3_depreciated(mnemonic, accountKey, deviceInfo, replaceUser);
   };
 
   signMessage = async (message: string): Promise<string> => {
@@ -3325,7 +3322,7 @@ export class WalletController extends BaseController {
     return googleDriveService.loadBackupAccounts();
   };
 
-  loadBackupAccountLists = async (): Promise<any[]> => {
+  loadBackupAccountLists = async () => {
     return googleDriveService.loadBackupAccountLists();
   };
 
@@ -3409,7 +3406,7 @@ export class WalletController extends BaseController {
    *  @deprecated this doesn't do anything
    *  @todo remove this
    */
-  setEmoji_depreciated = async (emoji, type, index) => {
+  setEmoji_depreciated = async (emoji, _type, _index) => {
     return emoji;
   };
 
@@ -3513,7 +3510,7 @@ export class WalletController extends BaseController {
   getEvmNftCollectionList = async (
     address: string,
     collectionIdentifier: string,
-    limit = 50,
+    _limit = 50,
     offset = 0
   ) => {
     if (!isValidEthereumAddress(address)) {

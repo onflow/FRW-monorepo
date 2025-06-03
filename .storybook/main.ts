@@ -28,6 +28,10 @@ const config: StorybookConfig = {
 
     config.resolve.alias = {
       ...config.resolve.alias,
+      '@/ui/hooks/use-account-hooks$': path.resolve(
+        __dirname,
+        '../src/ui/components/account/stories/use-account-hooks.mock.ts'
+      ),
       '@': path.resolve(__dirname, '../src'),
       ui: path.resolve(__dirname, '../src/ui'),
       background: path.resolve(__dirname, '../src/background'),

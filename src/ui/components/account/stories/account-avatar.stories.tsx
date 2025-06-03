@@ -1,7 +1,8 @@
 import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 
-import { emojis } from '@/background/utils/emoji.json';
+import emojisJson from '@/background/utils/emoji.json';
+const { emojis } = emojisJson;
 import AccountAvatar from '@/ui/components/account/account-avatar';
 
 const meta: Meta<typeof AccountAvatar> = {

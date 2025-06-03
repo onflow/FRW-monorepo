@@ -14,6 +14,7 @@ import { type WalletAccount } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { CopyIcon } from '@/ui/assets/icons/CopyIcon';
 import { LinkIcon } from '@/ui/assets/icons/LinkIcon';
+import { useAccountBalance } from '@/ui/hooks/use-account-hooks';
 import {
   COLOR_DARKMODE_BACKGROUND_CARDS_1A1A1A,
   COLOR_DARKMODE_TEXT_PRIMARY_FFFFFF,
@@ -22,7 +23,6 @@ import {
   COLOR_GREY_ICONS_767676,
 } from '@/ui/style/color';
 import { formatAddress } from '@/ui/utils';
-import { ReactComponent as IconLink } from 'ui/assets/svg/Iconlink.svg';
 
 import { TokenBalance } from '../TokenLists/TokenBalance';
 
@@ -56,10 +56,20 @@ export const AccountCard = ({
   showLink = false,
   showCard = false,
 }: AccountCardProps) => {
-  const { name, icon, color, address, balance, nfts } = account || {};
+  const { name, icon, color, address, nfts } = account || {};
   const { icon: parentIcon, color: parentColor } =
     account && parentAccount && parentAccount.address !== account.address ? parentAccount : {};
 
+  const hasParentAccount = account && parentAccount && parentAccount.address !== account.address;
+  const isEvmAccount = account && isValidEthereumAddress(account.address);
+
+  const testId = isEvmAccount
+    ? `evm-account-${address}`
+    : hasParentAccount
+      ? `child-account-${address}`
+      : `main-account-${address}`;
+  const accountBalance = useAccountBalance(network, address);
+  const balance = accountBalance === undefined ? account?.balance : accountBalance;
   return (
     <Card
       sx={{
@@ -76,6 +86,7 @@ export const AccountCard = ({
         maxWidth: '500px',
       }}
       elevation={showCard ? 1 : 0}
+      data-testid={testId}
     >
       <CardActionArea
         sx={{
@@ -102,7 +113,6 @@ export const AccountCard = ({
             parentColor={parentColor}
             active={active}
             spinning={spinning}
-            onClick={onClick}
           />
         </CardMedia>
         <Box sx={{ width: '100%', overflow: 'hidden' }}>
@@ -160,7 +170,7 @@ export const AccountCard = ({
             noWrap
           >
             {balance ? (
-              <TokenBalance value={balance} decimals={8} showFull={false} postFix="Flow" />
+              <TokenBalance value={balance} decimals={4} showFull={false} postFix="Flow" />
             ) : (
               <Skeleton variant="text" width="130px" />
             )}

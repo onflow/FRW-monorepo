@@ -1,10 +1,13 @@
 import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 
-import { emojis } from '@/background/utils/emoji.json';
+import emojisJson from '@/background/utils/emoji.json';
+const { emojis } = emojisJson;
 import { MAINNET_CHAIN_ID } from '@/shared/types/network-types';
 import { type WalletAccount } from '@/shared/types/wallet-types';
 
 import { AccountCard } from '../account-card';
+
+import { useAccountBalance } from './use-account-hooks.mock';
 const mainWalletAccount: WalletAccount = {
   name: emojis[2].name,
   icon: emojis[2].emoji,
@@ -29,6 +32,7 @@ const evmWalletAccount: WalletAccount = {
 
 const meta: Meta<typeof AccountCard> = {
   title: 'Components/AccountCard',
+  tags: ['autodocs'],
 
   component: AccountCard,
   argTypes: {
@@ -57,6 +61,9 @@ export default meta;
 type Story = StoryObj<typeof AccountCard>;
 
 export const Default: Story = {
+  beforeEach: () => {
+    useAccountBalance.mockReturnValue(mainWalletAccount.balance);
+  },
   args: {
     network: 'mainnet',
     account: mainWalletAccount,
@@ -64,28 +71,35 @@ export const Default: Story = {
   },
 };
 export const SmallFlow: Story = {
+  beforeEach: () => {
+    useAccountBalance.mockReturnValue('0.00000001');
+  },
   args: {
     network: 'mainnet',
     account: {
       ...mainWalletAccount,
-      balance: '0.00000001',
     },
     showCard: true,
   },
 };
 
 export const LargeFlow: Story = {
+  beforeEach: () => {
+    useAccountBalance.mockReturnValue('1000000000000000000');
+  },
   args: {
     network: 'mainnet',
     account: {
       ...mainWalletAccount,
-      balance: '1000000000000000000',
     },
     showCard: true,
   },
 };
 
 export const Active: Story = {
+  beforeEach: () => {
+    useAccountBalance.mockReturnValue(mainWalletAccount.balance);
+  },
   args: {
     network: 'mainnet',
     account: mainWalletAccount,
@@ -95,6 +109,9 @@ export const Active: Story = {
 };
 
 export const EVM: Story = {
+  beforeEach: () => {
+    useAccountBalance.mockReturnValue(evmWalletAccount.balance);
+  },
   args: {
     network: 'mainnet',
     account: evmWalletAccount,
@@ -104,6 +121,9 @@ export const EVM: Story = {
 };
 
 export const EVMNoCard: Story = {
+  beforeEach: () => {
+    useAccountBalance.mockReturnValue(evmWalletAccount.balance);
+  },
   args: {
     network: 'mainnet',
     account: evmWalletAccount,
@@ -113,6 +133,9 @@ export const EVMNoCard: Story = {
 };
 
 export const EVMActive: Story = {
+  beforeEach: () => {
+    useAccountBalance.mockReturnValue(evmWalletAccount.balance);
+  },
   args: {
     network: 'mainnet',
     account: evmWalletAccount,
@@ -123,6 +146,9 @@ export const EVMActive: Story = {
 };
 
 export const EVMSpinning: Story = {
+  beforeEach: () => {
+    useAccountBalance.mockReturnValue(evmWalletAccount.balance);
+  },
   args: {
     network: 'mainnet',
     account: evmWalletAccount,
@@ -132,6 +158,9 @@ export const EVMSpinning: Story = {
   },
 };
 export const EVMLink: Story = {
+  beforeEach: () => {
+    useAccountBalance.mockReturnValue(evmWalletAccount.balance);
+  },
   args: {
     network: 'mainnet',
     account: evmWalletAccount,
@@ -142,6 +171,9 @@ export const EVMLink: Story = {
 };
 
 export const EVMLinkNoCard: Story = {
+  beforeEach: () => {
+    useAccountBalance.mockReturnValue(evmWalletAccount.balance);
+  },
   args: {
     network: 'mainnet',
     account: evmWalletAccount,
@@ -152,6 +184,9 @@ export const EVMLinkNoCard: Story = {
 };
 
 export const Loading: Story = {
+  beforeEach: () => {
+    useAccountBalance.mockReturnValue(undefined);
+  },
   args: {
     network: 'mainnet',
     active: true,
