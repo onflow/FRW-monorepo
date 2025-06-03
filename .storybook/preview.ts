@@ -1,6 +1,7 @@
 import { ThemeProvider, CssBaseline, createTheme } from '@mui/material';
 import { withThemeFromJSXProvider } from '@storybook/addon-themes';
-import type { Preview, StoryFn } from '@storybook/react-webpack5';
+import type { Preview } from '@storybook/react-webpack5';
+import { themes, ensure } from 'storybook/theming';
 
 import messages from '../src/messages.json';
 import themeOptions from '../src/ui/style/LLTheme'; // Import your theme options
@@ -38,6 +39,9 @@ const preview: Preview = {
         color: /(background|color)$/i,
         date: /Date$/i,
       },
+    },
+    docs: {
+      theme: themes.dark,
     },
   },
 
