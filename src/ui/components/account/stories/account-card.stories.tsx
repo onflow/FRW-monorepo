@@ -8,6 +8,8 @@ import { type WalletAccount } from '@/shared/types/wallet-types';
 import { AccountCard } from '../account-card';
 
 import { useAccountBalance } from './use-account-hooks.mock';
+import { useNftCatalogCollections } from './use-nft-hooks.mock';
+
 const mainWalletAccount: WalletAccount = {
   name: emojis[2].name,
   icon: emojis[2].emoji,
@@ -63,6 +65,7 @@ type Story = StoryObj<typeof AccountCard>;
 export const Default: Story = {
   beforeEach: () => {
     useAccountBalance.mockReturnValue(mainWalletAccount.balance);
+    useNftCatalogCollections.mockReturnValue([]);
   },
   args: {
     network: 'mainnet',
@@ -73,6 +76,14 @@ export const Default: Story = {
 export const SmallFlow: Story = {
   beforeEach: () => {
     useAccountBalance.mockReturnValue('0.00000001');
+    useNftCatalogCollections.mockReturnValue([
+      {
+        count: 12,
+        collection: {
+          name: 'Test Collection',
+        },
+      },
+    ]);
   },
   args: {
     network: 'mainnet',

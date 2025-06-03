@@ -9,6 +9,9 @@ import {
   useChildAccounts as importedMockUseChildAccounts, // Aliased import from the mock file
   useEvmAccount as importedMockUseEvmAccount, // Aliased import from the mock file
 } from '@/ui/components/account/stories/use-account-hooks.mock';
+import {
+  useNftCatalogCollections as importedMockUseNftCatalogCollections, // Aliased import from the mock file
+} from '@/ui/components/account/stories/use-nft-hooks.mock';
 // eslint-disable-next-line import/order
 import { AccountListing } from '@/ui/components/account/account-listing';
 
@@ -87,17 +90,19 @@ const childWallet2: WalletAccount = {
 
 // Helper to create mock data for stories
 const createMockData = (config: {
-  [address: string]: { evm?: WalletAccount; children?: WalletAccount[] };
+  [address: string]: { evm?: WalletAccount; children?: WalletAccount[]; nfts?: number };
 }) => {
   const evmAccounts: Record<string, WalletAccount | undefined> = {};
   const childAccounts: Record<string, WalletAccount[] | undefined> = {};
+  const nfts: Record<string, number | undefined> = {};
   for (const addr in config) {
     if (Object.prototype.hasOwnProperty.call(config, addr)) {
       evmAccounts[addr] = config[addr].evm;
       childAccounts[addr] = config[addr].children;
+      nfts[addr] = config[addr].nfts;
     }
   }
-  return { evmAccounts, childAccounts };
+  return { evmAccounts, childAccounts, nfts };
 };
 
 const meta: Meta<typeof AccountListing> = {
@@ -118,7 +123,7 @@ const meta: Meta<typeof AccountListing> = {
     (Story, context) => {
       importedMockUseChildAccounts.mockReset();
       importedMockUseEvmAccount.mockReset();
-
+      importedMockUseNftCatalogCollections.mockReset();
       const { mockData } = context.parameters;
       if (mockData) {
         importedMockUseEvmAccount.mockImplementation((_network, address) => {
@@ -130,6 +135,12 @@ const meta: Meta<typeof AccountListing> = {
         importedMockUseChildAccounts.mockImplementation((_network, address) => {
           if (typeof address === 'string' && mockData.childAccounts) {
             return mockData.childAccounts[address] || [];
+          }
+          return [];
+        });
+        importedMockUseNftCatalogCollections.mockImplementation((_network, address) => {
+          if (typeof address === 'string' && mockData.nfts) {
+            return [{ count: mockData.nfts[address] }];
           }
           return [];
         });
@@ -164,6 +175,12 @@ export const Default: Story = {
         evm: evmWalletAccount2,
         children: [], // Example: mainWalletAccount2 has no children in this story
       },
+      [childWallet1.address]: {
+        nfts: 65000,
+      },
+      [childWallet2.address]: {
+        nfts: 12,
+      },
     }),
   },
 };
@@ -180,6 +197,12 @@ export const Active: Story = {
     mockData: createMockData({
       [mainWalletAccount.address]: {
         children: [childWallet1, childWallet2],
+      },
+      [childWallet1.address]: {
+        nfts: 65000,
+      },
+      [childWallet2.address]: {
+        nfts: 12,
       },
     }),
   },
@@ -199,6 +222,12 @@ export const EVMActive: Story = {
         evm: evmWalletAccount,
         children: [childWallet2], // ChildWallet1 is omitted as per original story logic
       },
+      [childWallet1.address]: {
+        nfts: 65000,
+      },
+      [childWallet2.address]: {
+        nfts: 12,
+      },
     }),
   },
 };
@@ -216,6 +245,12 @@ export const NoEVM: Story = {
       [mainWalletAccount.address]: {
         evm: noEvmWalletAccount,
         children: [childWallet2], // ChildWallet1 is omitted as per original story logic
+      },
+      [childWallet1.address]: {
+        nfts: 65000,
+      },
+      [childWallet2.address]: {
+        nfts: 12,
       },
     }),
   },

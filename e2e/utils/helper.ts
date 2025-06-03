@@ -416,6 +416,17 @@ export const switchToEvm = async ({ page, extensionId }) => {
   // get address
   await getCurrentAddress(page);
 };
+export const switchToEvmAddress = async ({ page, extensionId, address }) => {
+  // Assume the user is on the dashboard page
+  await page.getByTestId('account-menu-button').click();
+  // switch to COA account
+  await page
+    .getByTestId(new RegExp(`evm-account-${address}`, 'i'))
+    .first()
+    .click();
+  // get address
+  await getCurrentAddress(page);
+};
 
 export const switchToFlow = async ({ page, extensionId }) => {
   // Assume the user is on the dashboard page
@@ -437,10 +448,6 @@ export const switchAccount = async ({ page, extensionId }) => {
     .first()
     .click();
   await page.getByTestId('account-menu-button').click();
-  await page
-    .getByTestId(/main-account-0x.*/)
-    .first()
-    .click();
   await page
     .getByTestId(/main-account-0x.*/)
     .nth(1)

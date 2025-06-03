@@ -1,4 +1,9 @@
-import { importAccountBySeedPhrase, switchToEvm, switchAccount } from '../utils/helper';
+import {
+  importAccountBySeedPhrase,
+  switchToEvm,
+  switchAccount,
+  switchToEvmAddress,
+} from '../utils/helper';
 import { test, expect } from '../utils/loader';
 
 test('check main account address after switching', async ({ page, extensionId }) => {
@@ -19,26 +24,40 @@ test('check main account address after switching', async ({ page, extensionId })
     timeout: 60_000,
   });
   //Check main account 1 EVM address
-  await switchToEvm({ page, extensionId });
-  const mainAccEvmAddress = page.getByTestId('copy-address-button').filter({ hasText: 'ae07968a' });
+  await switchToEvmAddress({
+    page,
+    extensionId,
+    address: process.env.TEST_MULTI_ACCOUNT_TESTER_EVM_ADDR1!,
+  });
+  const mainAccEvmAddress = page.getByTestId('copy-address-button').filter({
+    hasText: process.env.TEST_MULTI_ACCOUNT_TESTER_EVM_ADDR1!.slice(
+      process.env.TEST_MULTI_ACCOUNT_TESTER_EVM_ADDR1!.length - 8
+    ),
+  });
 
   await expect(mainAccEvmAddress).toBeVisible({
     timeout: 60_000,
   });
   //Switch from account 1 to account 2
   await switchAccount({ page, extensionId });
-  const switchedAccAddress = page
-    .getByTestId('copy-address-button')
-    .filter({ hasText: process.env.TEST_MULTI_ACCOUNT_TESTER_ADDR2! });
+  const switchedAccAddress = page.getByTestId('copy-address-button').filter({
+    hasText: process.env.TEST_MULTI_ACCOUNT_TESTER_ADDR2,
+  });
   //Check main account 2 Flow address
   await expect(switchedAccAddress).toBeVisible({
     timeout: 60_000,
   });
   //Check main account 2 EVM address
-  await switchToEvm({ page, extensionId });
-  const switchedAccEvmAddress = page
-    .getByTestId('copy-address-button')
-    .filter({ hasText: 'b0757199' });
+  await switchToEvmAddress({
+    page,
+    extensionId,
+    address: process.env.TEST_MULTI_ACCOUNT_TESTER_EVM_ADDR2!,
+  });
+  const switchedAccEvmAddress = page.getByTestId('copy-address-button').filter({
+    hasText: process.env.TEST_MULTI_ACCOUNT_TESTER_EVM_ADDR2!.slice(
+      process.env.TEST_MULTI_ACCOUNT_TESTER_EVM_ADDR2!.length - 8
+    ),
+  });
 
   await expect(switchedAccEvmAddress).toBeVisible({
     timeout: 60_000,

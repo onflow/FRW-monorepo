@@ -32,6 +32,10 @@ const config: StorybookConfig = {
         __dirname,
         '../src/ui/components/account/stories/use-account-hooks.mock.ts'
       ),
+      '@/ui/hooks/useNftHook$': path.resolve(
+        __dirname,
+        '../src/ui/components/account/stories/use-nft-hooks.mock.ts'
+      ),
       '@': path.resolve(__dirname, '../src'),
       ui: path.resolve(__dirname, '../src/ui'),
       background: path.resolve(__dirname, '../src/background'),

@@ -64,6 +64,7 @@ const AccountHierarchy = ({
           network={network}
           key={evmAccount.address}
           account={evmAccount}
+          parentAccount={account}
           active={activeAccount?.address === evmAccount.address}
           onClick={
             onAccountClick ? () => onAccountClick(evmAccount.address, account.address) : undefined
@@ -85,6 +86,7 @@ const AccountHierarchy = ({
               network={network}
               key={linkedAccount.address}
               account={linkedAccount}
+              parentAccount={account}
               active={activeAccount?.address === linkedAccount.address}
               onClick={
                 onAccountClick
@@ -165,6 +167,11 @@ export const AccountListing = ({
             network={network}
             account={activeAccount}
             parentAccount={activeParentAccount}
+            onClick={
+              onAccountClick && activeAccount?.address
+                ? () => onAccountClick(activeAccount.address, activeAccount.address)
+                : undefined
+            }
             onClickSecondary={
               onAccountClickSecondary && activeAccount?.address
                 ? () => onAccountClickSecondary(activeAccount.address, activeAccount.address)
@@ -174,6 +181,7 @@ export const AccountListing = ({
             active={true}
             showCard={true}
             showLink={false}
+            data-testid="active-account-card"
           />
           {/* If the EVM account is not valid, show the EnableEvmAccountCard */}
           {noEvmAccount && <EnableEvmAccountCard showCard={false} />}
