@@ -7,6 +7,7 @@ const COLOR_REGEX =
 
 const UI_DIRECTORY = 'src/ui';
 const OUTPUT_FILE = 'color_report.txt';
+const CSV_OUTPUT_FILE = 'color_report.csv';
 const DEBUG_MODE = false; // Set to true for detailed logs
 
 interface ColorData {
@@ -182,6 +183,17 @@ function main() {
 
   fs.writeFileSync(OUTPUT_FILE, reportContent, 'utf-8');
   console.log(`Color report generated: ${OUTPUT_FILE}`);
+
+  // Generate CSV report
+  let csvContent = 'Color,Count,FileCount\n';
+  for (const [color, data] of sortedColors) {
+    // Escape commas in color strings if any (e.g., rgba(0,0,0,1)) by quoting
+    const csvColor = color.includes(',') ? `"${color}"` : color;
+    csvContent += `${csvColor},${data.count},${data.files.size}\n`;
+  }
+  fs.writeFileSync(CSV_OUTPUT_FILE, csvContent, 'utf-8');
+  console.log(`Color CSV report generated: ${CSV_OUTPUT_FILE}`);
+
   console.log(`Found ${colorData.size} unique colors/color references.`);
 }
 

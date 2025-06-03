@@ -15,6 +15,7 @@ import { isValidEthereumAddress } from '@/shared/utils/address';
 import { CopyIcon } from '@/ui/assets/icons/CopyIcon';
 import { LinkIcon } from '@/ui/assets/icons/LinkIcon';
 import { useAccountBalance } from '@/ui/hooks/use-account-hooks';
+import { useNftCatalogCollections } from '@/ui/hooks/useNftHook';
 import {
   COLOR_DARKMODE_BACKGROUND_CARDS_1A1A1A,
   COLOR_DARKMODE_TEXT_PRIMARY_FFFFFF,
@@ -64,6 +65,13 @@ export const AccountCard = ({
 
   const hasParentAccount = account && parentAccount && parentAccount.address !== account.address;
   const isEvmAccount = account && isValidEthereumAddress(account.address);
+  const isChildAccount = hasParentAccount && !isEvmAccount;
+
+  // Only show NFTs for child accounts
+  const nftCatalogCollections = useNftCatalogCollections(
+    network,
+    isChildAccount ? address : undefined
+  );
 
   const testId =
     dataTestId ||
@@ -74,6 +82,8 @@ export const AccountCard = ({
         : `main-account-${address}`);
   const accountBalance = useAccountBalance(network, address);
   const balance = accountBalance === undefined ? account?.balance : accountBalance;
+
+  const nftCount = nftCatalogCollections?.reduce((acc, curr) => acc + curr.count, 0);
   return (
     <Card
       sx={{
@@ -173,12 +183,18 @@ export const AccountCard = ({
             lineHeight="17px"
             noWrap
           >
-            {balance ? (
-              <TokenBalance value={balance} decimals={4} showFull={false} postFix="Flow" />
+            {isChildAccount ? ( // Child account
+              nftCount !== undefined ? ( // NFT count is available
+                <span>{`${nftCount} NFTs`}</span>
+              ) : (
+                <Skeleton variant="text" width="130px" />
+              )
+            ) : // Main account or EVM account
+            balance !== undefined ? ( // Balance is available
+              <TokenBalance value={balance} decimals={4} showFull={true} postFix="Flow" />
             ) : (
               <Skeleton variant="text" width="130px" />
             )}
-            {nfts && <span>{` | ${nfts} NFTs`}</span>}
           </Typography>
         </Box>
       </CardActionArea>
