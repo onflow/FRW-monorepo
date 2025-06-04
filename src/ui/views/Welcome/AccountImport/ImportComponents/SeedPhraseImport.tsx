@@ -2,7 +2,6 @@ import { Box, Button, Typography, TextareaAutosize } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { useState } from 'react';
 
-import { seedWithPathAndPhrase2PublicPrivateKey } from '@/background/utils/modules/publicPrivateKey';
 import { useWallet } from '@/ui/utils/WalletContext';
 import { LLSpinner } from 'ui/components';
 

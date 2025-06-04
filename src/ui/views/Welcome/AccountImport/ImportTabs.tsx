@@ -1,10 +1,8 @@
 import { Box, Tabs, Tab, Typography } from '@mui/material';
 import React, { useState } from 'react';
 
-import { storage } from '@/background/webapi';
-import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 import ErrorModel from '@/ui/components/PopupModal/errorModel';
-import { useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/utils/WalletContext';
 import Googledrive from '@/ui/views/Welcome/AccountImport/ImportComponents/Googledrive';
 import JsonImport from '@/ui/views/Welcome/AccountImport/ImportComponents/JsonImport';
 import KeyImport from '@/ui/views/Welcome/AccountImport/ImportComponents/KeyImport';
