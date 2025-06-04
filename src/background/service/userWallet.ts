@@ -175,10 +175,14 @@ class UserWallet {
    */
   setPlaceholderAccount = async (account: AccountKeyRequest) => {
     const network = await this.getNetwork();
-    const mainAccounts = await getCachedMainAccounts(network, account.public_key);
-    if (!mainAccounts) {
-      return;
+    const cachedMainAccounts = await getCachedMainAccounts(network, account.public_key);
+    let mainAccounts;
+    if (!cachedMainAccounts) {
+      mainAccounts = [];
+    } else {
+      mainAccounts = cachedMainAccounts;
     }
+
     const emoji = getEmojiByIndex(mainAccounts.length);
     const newAccountId = mainAccounts.length;
     mainAccounts.push({
@@ -203,6 +207,63 @@ class UserWallet {
     );
 
     return newAccountId;
+  };
+
+  /**
+   * Update a placeholder account with real account data after address creation succeeds
+   * Updates existing placeholder or creates new account if placeholder not found
+   * @param network - The network the account is on ('mainnet' or 'testnet')
+   * @param newAccountId - The ID of the placeholder account to update
+   * @param account - The FCL account object containing the real account data
+   * @returns void
+   */
+  updatePlaceholderAccount = async (network: string, newAccountId: number, account: FclAccount) => {
+    // Get current state (ensure we have an array)
+    const cachedMainAccounts = await getCachedMainAccounts('mainnet', account.keys[0].publicKey);
+    let mainAccounts;
+    if (!cachedMainAccounts) {
+      mainAccounts = [];
+    } else {
+      mainAccounts = cachedMainAccounts;
+    }
+    // Prepare the account data
+    const accountData = {
+      address: withPrefix(account.address) || account.address,
+      hashAlgoString: account.keys[0].hashAlgoString,
+      keyIndex: account.keys[0].index,
+      signAlgoString: account.keys[0].signAlgoString,
+      weight: account.keys[0].weight,
+    };
+
+    // Find existing account or prepare new one
+    const existingIndex = mainAccounts.findIndex((acc) => acc.id === newAccountId);
+    if (existingIndex !== -1) {
+      // Update existing account
+      mainAccounts[existingIndex] = {
+        ...mainAccounts[existingIndex],
+        ...accountData,
+      };
+    } else {
+      // Create new account
+      const emoji = getEmojiByIndex(newAccountId || mainAccounts.length);
+      mainAccounts.push({
+        ...accountData,
+        chain: networkToChainId(network),
+        hashAlgo: account.keys[0].hashAlgo,
+        id: newAccountId || mainAccounts.length,
+        publicKey: account.keys[0].publicKey,
+        signAlgo: account.keys[0].signAlgo,
+        name: emoji.name,
+        icon: emoji.emoji,
+        color: emoji.bgcolor,
+      });
+    }
+
+    await setCachedData(
+      mainAccountsKey(network, account.keys[0].publicKey),
+      mainAccounts,
+      mainAccounts.length > 0 ? 60_000 : 1_000
+    );
   };
 
   /**

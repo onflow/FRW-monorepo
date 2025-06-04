@@ -1,19 +1,18 @@
 import {
   Box,
-  List,
-  ListItemButton,
-  Typography,
+  CircularProgress,
   Drawer,
   IconButton,
+  List,
   ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
-  CardMedia,
   Skeleton,
-  CircularProgress,
+  Typography,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React, { useCallback, useState, useRef } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import type { UserInfoResponse } from '@/shared/types/network-types';
@@ -26,9 +25,9 @@ import { useWallet } from 'ui/utils';
 import lock from '../../../assets/svg/sidebar-lock.svg';
 import plus from '../../../assets/svg/sidebar-plus.svg';
 import userCircleGear from '../../../assets/svg/user-circle-gear.svg';
+import ErrorModel from '../../../components/PopupModal/errorModel';
 
 import AddAccountPopup from './AddAccountPopup';
-import NetworkList from './NetworkList';
 
 const useStyles = makeStyles(() => ({
   menuDrawer: {
@@ -79,6 +78,10 @@ const MenuDrawer = ({
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
+  // Error state
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
   const setActiveAccount = useCallback(
     (address: string, parentAddress?: string) => {
       wallet.setActiveAccount(address, parentAddress || address).then(() => {
@@ -105,6 +108,8 @@ const MenuDrawer = ({
       }, 100);
     } catch (error) {
       consoleError('Failed to create account:', error);
+      setErrorMessage(error.message || 'Failed to create account. Please try again.');
+      setShowError(true);
     } finally {
       setIsCreating(false);
     }
@@ -262,6 +267,15 @@ const MenuDrawer = ({
               setShowAddAccount(false);
             }}
             addAccount={addAccount}
+          />
+        )}
+
+        {showError && (
+          <ErrorModel
+            isOpen={showError}
+            onOpenChange={() => setShowError(false)}
+            errorName={chrome.i18n.getMessage('Error')}
+            errorMessage={errorMessage}
           />
         )}
       </List>

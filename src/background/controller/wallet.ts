@@ -111,7 +111,12 @@ import type { CacheState } from 'background/service/pageStateCache';
 import { replaceNftKeywords } from 'background/utils';
 import { notification, storage } from 'background/webapi';
 import { openIndexPage } from 'background/webapi/tab';
-import { INTERNAL_REQUEST_ORIGIN, EVM_ENDPOINT, HTTP_STATUS_CONFLICT } from 'consts';
+import {
+  INTERNAL_REQUEST_ORIGIN,
+  EVM_ENDPOINT,
+  HTTP_STATUS_CONFLICT,
+  HTTP_STATUS_TOO_MANY_REQUESTS,
+} from 'consts';
 
 import type {
   AccountKeyRequest,
@@ -271,50 +276,7 @@ export class WalletController extends BaseController {
       }
 
       if (newAccountId && createPubKey) {
-        // Get current state (ensure we have an array)
-        let mainAccounts = await getCachedMainAccounts('mainnet', account.keys[0].publicKey);
-        if (!mainAccounts) {
-          mainAccounts = [];
-        }
-
-        // Prepare the account data
-        const accountData = {
-          address: withPrefix(account.address) || account.address,
-          hashAlgoString: account.keys[0].hashAlgoString,
-          keyIndex: account.keys[0].index,
-          signAlgoString: account.keys[0].signAlgoString,
-          weight: account.keys[0].weight,
-        };
-
-        // Find existing account or prepare new one
-        const existingIndex = mainAccounts.findIndex((acc) => acc.id === newAccountId);
-        if (existingIndex !== -1) {
-          // Update existing account
-          mainAccounts[existingIndex] = {
-            ...mainAccounts[existingIndex],
-            ...accountData,
-          };
-        } else {
-          // Create new account
-          const emoji = getEmojiByIndex(newAccountId || mainAccounts.length);
-          mainAccounts.push({
-            ...accountData,
-            chain: networkToChainId(network),
-            hashAlgo: account.keys[0].hashAlgo,
-            id: newAccountId || mainAccounts.length,
-            publicKey: account.keys[0].publicKey,
-            signAlgo: account.keys[0].signAlgo,
-            name: emoji.name,
-            icon: emoji.emoji,
-            color: emoji.bgcolor,
-          });
-        }
-
-        await setCachedData(
-          mainAccountsKey(network, account.keys[0].publicKey),
-          mainAccounts,
-          mainAccounts.length > 0 ? 60_000 : 1_000
-        );
+        await userWalletService.updatePlaceholderAccount(network, newAccountId, account);
       } else {
         userWalletService.registerCurrentPubkey(account.keys[0].publicKey, account);
       }
@@ -396,6 +358,9 @@ export class WalletController extends BaseController {
         publickey,
         1000
       );
+      if (data.status === HTTP_STATUS_TOO_MANY_REQUESTS) {
+        throw new Error('Rate limit exceeded. Please wait at least 2 minutes between requests.');
+      }
 
       if (!data || !data.data || !data.data.txid) {
         throw new Error('Transaction ID not found in response');
@@ -413,7 +378,7 @@ export class WalletController extends BaseController {
       consoleError('Failed to create manual address:', error);
 
       // Re-throw a more specific error
-      throw new Error('Failed to create manual address. Please try again later.');
+      throw new Error(`Failed to create manual address. ${error.message}`);
     }
   };
 
