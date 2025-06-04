@@ -341,6 +341,17 @@ export class WalletController extends BaseController {
     // The account is the public key of the account. It's derived from the mnemonic. We do not support custom curves or passphrases for new accounts
     const accountKey: AccountKeyRequest = await getAccountKey(mnemonic);
 
+    // Login to the account - it should already be registered by the mobile app
+    await this.loginWithMnemonic(mnemonic, true);
+
+    // We're creating the keyring with the mnemonic. This will encypt the private keys and store them in the keyring vault and deepVault
+    await this.createKeyringWithMnemonics(
+      accountKey.public_key,
+      accountKey.sign_algo,
+      password,
+      mnemonic
+    );
+
     // Locally add the key to the account if not there already
     const indexOfKey = accountInfo.keys.findIndex((key) => key.publicKey === accountKey.public_key);
     if (indexOfKey === -1) {
