@@ -237,8 +237,8 @@ class UserWallet {
 
     // Find existing account or prepare new one
     const existingIndex = mainAccounts.findIndex((acc) => acc.id === newAccountId);
-    if (existingIndex !== -1) {
-      // Update existing account
+    if (existingIndex >= 0 && existingIndex < mainAccounts.length) {
+      // Update existing account with bounds check
       mainAccounts[existingIndex] = {
         ...mainAccounts[existingIndex],
         ...accountData,
