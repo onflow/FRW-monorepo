@@ -219,7 +219,7 @@ class UserWallet {
    */
   updatePlaceholderAccount = async (network: string, newAccountId: number, account: FclAccount) => {
     // Get current state (ensure we have an array)
-    const cachedMainAccounts = await getCachedMainAccounts('mainnet', account.keys[0].publicKey);
+    const cachedMainAccounts = await getCachedMainAccounts(network, account.keys[0].publicKey);
     let mainAccounts;
     if (!cachedMainAccounts) {
       mainAccounts = [];
