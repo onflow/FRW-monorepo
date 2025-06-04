@@ -7,7 +7,7 @@ import { LLSpinner } from 'ui/components';
 
 import KeyPathInput from '../../../../components/KeyPathInputs';
 import PasswordTextarea from '../../../../components/PasswordTextarea';
-import { FLOW_BIP44_PATH, KEY_TYPE } from '../../../../utils/modules/constants';
+import { KEY_TYPE } from '../../../../utils/modules/constants';
 
 const useStyles = makeStyles(() => ({
   form: {
@@ -108,7 +108,7 @@ const SeedPhraseImport = ({
           type="submit"
           sx={{
             height: '56px',
-            width: '640px',
+            width: '100%',
             borderRadius: '12px',
             textTransform: 'capitalize',
             gap: '12px',

@@ -35,7 +35,7 @@ const LandingComponents = ({
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        width: 720,
+        width: 744,
         marginTop: '80px',
         height: 'auto',
         transition: 'all .3s ease-in-out',

@@ -1224,6 +1224,9 @@
   "Step_3": {
     "message": "Step 3 "
   },
+  "Step_4": {
+    "message": "Step 4 "
+  },
   "Import_Recovery_Phrase_or_Private_Key": {
     "message": "Import Recovery Phrase or Private Key "
   },
@@ -1499,5 +1502,23 @@
   },
   "Other_accounts": {
     "message": "Other accounts"
+  },
+  "Create_a_new_profile_with_an_account_from_Flow_Wallet_Mobile_App": {
+    "message": "Create a new profile using an account from Flow Wallet Mobile App."
+  },
+  "Import_from_Mobile_Step_1": {
+    "message": "Generate a new recovery phrase to secure the accounts."
+  },
+  "Import_from_Mobile_Step_2": {
+    "message": "Verify your password."
+  },
+  "Import_from_Mobile_Step_3": {
+    "message": "Scan the QR code to link your mobile device."
+  },
+  "Import_from_Mobile_Step_4": {
+    "message": "Confirm accounts you want to import on your mobile device."
+  },
+  "Import_from_Mobile_Submit": {
+    "message": "Get Started"
   }
 }

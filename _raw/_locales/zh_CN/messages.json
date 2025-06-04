@@ -1236,6 +1236,9 @@
   "Step_3": {
     "message": "步骤 3"
   },
+  "Step_4": {
+    "message": "步骤 4"
+  },
   "Import_Recovery_Phrase_or_Private_Key": {
     "message": "导入恢复短语或私钥"
   },
@@ -1490,5 +1493,23 @@
   },
   "Other_accounts": {
     "message": "其他账户"
+  },
+  "Create_a_new_profile_with_an_account_from_Flow_Wallet_Mobile_App": {
+    "message": "从 Flow Wallet Mobile App 创建新个人资料"
+  },
+  "Import_from_Mobile_Step_1": {
+    "message": "生成一个新的恢复短语来保护您的账户。"
+  },
+  "Import_from_Mobile_Step_2": {
+    "message": "验证您的密码。"
+  },
+  "Import_from_Mobile_Step_3": {
+    "message": "扫描二维码以链接您的移动设备。"
+  },
+  "Import_from_Mobile_Step_4": {
+    "message": "确认您想要在移动设备上导入的账户。"
+  },
+  "Import_from_Mobile_Submit": {
+    "message": "开始"
   }
 }

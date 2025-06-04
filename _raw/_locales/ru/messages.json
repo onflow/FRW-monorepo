@@ -1236,6 +1236,9 @@
   "Step_3": {
     "message": "Шаг 3"
   },
+  "Step_4": {
+    "message": "Шаг 4"
+  },
   "Import_Recovery_Phrase_or_Private_Key": {
     "message": "Импортировать фразу для восстановления или приватный ключ"
   },
@@ -1490,5 +1493,23 @@
   },
   "Other_accounts": {
     "message": "Другие аккаунты"
+  },
+  "Create_a_new_profile_with_an_account_from_Flow_Wallet_Mobile_App": {
+    "message": "Создать новый профиль с учетными записями из Flow Wallet Mobile App."
+  },
+  "Import_from_Mobile_Step_1": {
+    "message": "Сгенерируйте новую фразу восстановления, чтобы защитить ваши учетные записи."
+  },
+  "Import_from_Mobile_Step_2": {
+    "message": "Проверьте ваш пароль."
+  },
+  "Import_from_Mobile_Step_3": {
+    "message": "Сканируйте QR-код, чтобы подключить ваше мобильное устройство."
+  },
+  "Import_from_Mobile_Step_4": {
+    "message": "Подтвердите учетные записи, которые вы хотите импортировать на ваше мобильное устройство."
+  },
+  "Import_from_Mobile_Submit": {
+    "message": "Начать"
   }
 }

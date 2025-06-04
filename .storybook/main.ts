@@ -28,6 +28,7 @@ const config: StorybookConfig = {
 
     config.resolve.alias = {
       ...config.resolve.alias,
+      'react-router-dom': path.resolve(__dirname, '../src/stories/react-router-dom.mock.ts'),
       '@/ui/hooks/use-account-hooks$': path.resolve(
         __dirname,
         '../src/stories/use-account-hooks.mock.ts'

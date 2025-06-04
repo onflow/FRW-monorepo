@@ -1236,6 +1236,9 @@
   "Step_3": {
     "message": "ステップ 3"
   },
+  "Step_4": {
+    "message": "ステップ 4"
+  },
   "Import_Recovery_Phrase_or_Private_Key": {
     "message": "回復フレーズまたは秘密鍵をインポート"
   },
@@ -1490,5 +1493,23 @@
   },
   "Other_accounts": {
     "message": "その他のアカウント"
+  },
+  "Create_a_new_profile_with_an_account_from_Flow_Wallet_Mobile_App": {
+    "message": "Flow Wallet Mobile App のアカウントから新しいプロファイルを作成します。"
+  },
+  "Import_from_Mobile_Step_1": {
+    "message": "アカウントを保護するために新しい回復フレーズを生成します。"
+  },
+  "Import_from_Mobile_Step_2": {
+    "message": "パスワードを確認します。"
+  },
+  "Import_from_Mobile_Step_3": {
+    "message": "QRコードをスキャンしてモバイルデバイスをリンクします。"
+  },
+  "Import_from_Mobile_Step_4": {
+    "message": "モバイルデバイスにインポートするアカウントを確認します。"
+  },
+  "Import_from_Mobile_Submit": {
+    "message": "はじめる"
   }
 }

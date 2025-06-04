@@ -12,6 +12,8 @@ import Googledrive from '@/ui/views/Welcome/AccountImport/ImportComponents/Googl
 import JsonImport from '@/ui/views/Welcome/AccountImport/ImportComponents/JsonImport';
 import KeyImport from '@/ui/views/Welcome/AccountImport/ImportComponents/KeyImport';
 import SeedPhraseImport from '@/ui/views/Welcome/AccountImport/ImportComponents/SeedPhraseImport';
+
+import MobileAppImportSteps from './ImportComponents/mobile-app-import-steps';
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
 
@@ -187,6 +189,9 @@ const ImportTabs = ({
           setPk={setPk}
           isSignLoading={isSignLoading}
         />
+      </TabPanel>
+      <TabPanel value={selectedTab} index={4}>
+        <MobileAppImportSteps />
       </TabPanel>
       {!addressFound && (
         <ErrorModel
