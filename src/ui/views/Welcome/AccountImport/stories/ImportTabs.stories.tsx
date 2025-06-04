@@ -19,6 +19,7 @@ const meta = {
         openapi: {
           checkImport: fn().mockResolvedValue({ status: 200 }),
         },
+        getCurrentAccount: fn().mockResolvedValue(null),
       }));
       return (
         <Box sx={{ width: '100%', maxWidth: '600px', margin: 'auto' }}>

@@ -10,7 +10,7 @@ import GoogleBackup from '@/ui/components/LandingPages/GoogleBackup';
 import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
 import PickUsername from '@/ui/components/LandingPages/PickUsername';
 import SetPassword from '@/ui/components/LandingPages/SetPassword';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils/WalletContext';
 
 import Google from './Google';
 import ImportTabs from './ImportTabs';
