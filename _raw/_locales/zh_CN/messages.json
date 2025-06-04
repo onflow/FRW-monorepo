@@ -1147,7 +1147,7 @@
     "message": "导入钱包"
   },
   "Support_Flow_Wallet_Blocto": {
-    "message": "支持 keystore、Google Drive 和原始密钥"
+    "message": "支持 Flow 钱包、Blocto、恢复短语、密钥库和私钥"
   },
   "A_crypto_wallet_on_Flow": {
     "message": "Flow 上的加密钱包适用于"

@@ -1147,7 +1147,7 @@
     "message": "Импортировать другие кошельки"
   },
   "Support_Flow_Wallet_Blocto": {
-    "message": "Поддержка Flow Wallet, keystore и raw ключа"
+    "message": "Поддержка Flow Wallet, Blocto, Recovery Phrase, Keystore и Private Key"
   },
   "A_crypto_wallet_on_Flow": {
     "message": "Криптокошелек на Flow для исследователей, коллекционеров и геймеров"

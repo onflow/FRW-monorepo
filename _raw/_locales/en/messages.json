@@ -1135,7 +1135,7 @@
     "message": "Import Wallets"
   },
   "Support_Flow_Wallet_Blocto": {
-    "message": "From Seed Phrase, Keystore or Raw Key"
+    "message": "From Recovery Phrase, Keystore or Private Key"
   },
   "A_crypto_wallet_on_Flow": {
     "message": "A crypto wallet on Flow built for"
