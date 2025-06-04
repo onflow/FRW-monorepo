@@ -1158,11 +1158,14 @@
   "Keystore": {
     "message": "密钥库"
   },
-  "Seed_Phrase": {
-    "message": "助记词"
+  "Recovery_Phrase": {
+    "message": "恢复短语"
   },
   "Private_Key": {
     "message": "私钥"
+  },
+  "Mobile_app": {
+    "message": "移动应用"
   },
   "You_can_import_the": {
     "message": "从另一个钱包（例如：Blocto）粘贴Json内容"

@@ -1146,11 +1146,14 @@
   "Keystore": {
     "message": "Keystore"
   },
-  "Seed_Phrase": {
-    "message": "Seed Phrase"
+  "Recovery_Phrase": {
+    "message": "Recovery phrase"
   },
   "Private_Key": {
-    "message": "Private Key"
+    "message": "Private key"
+  },
+  "Mobile_app": {
+    "message": "Mobile app"
   },
   "You_can_import_the": {
     "message": "Paste the JSON contents of the keystore from another wallet (eg: Blocto)"

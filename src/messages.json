@@ -1146,11 +1146,14 @@
   "Keystore": {
     "message": "Keystore"
   },
-  "Seed_Phrase": {
-    "message": "Seed Phrase"
+  "Recovery_Phrase": {
+    "message": "Recovery phrase"
   },
   "Private_Key": {
-    "message": "Private Key"
+    "message": "Private key"
+  },
+  "Mobile_app": {
+    "message": "Mobile app"
   },
   "You_can_import_the": {
     "message": "Paste the JSON contents of the keystore from another wallet (eg: Blocto)"
@@ -1261,7 +1264,7 @@
     "message": "Date"
   },
   "Link_Flow_Reference_Wallet_Mobile_by_Scanning": {
-    "message": "Link Flow Wallet Mobile by Scanning the QR code"
+    "message": "Link Flow Wallet Mobile by SMobile appcanning the QR code"
   },
   "Current_Sessions": {
     "message": "Current Sessions"

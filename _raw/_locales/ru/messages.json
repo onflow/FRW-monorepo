@@ -1158,11 +1158,14 @@
   "Keystore": {
     "message": "Ключевое хранилище"
   },
-  "Seed_Phrase": {
-    "message": "Секретная фраза"
+  "Recovery_Phrase": {
+    "message": "Фраза восстановления"
   },
   "Private_Key": {
     "message": "Приватный ключ"
+  },
+  "Mobile_app": {
+    "message": "Мобильное приложение"
   },
   "You_can_import_the": {
     "message": "Вставьте содержимое JSON из хранилища ключей другого кошелька (например: Blocto)"

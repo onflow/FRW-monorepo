@@ -1158,11 +1158,14 @@
   "Keystore": {
     "message": "キーストア"
   },
-  "Seed_Phrase": {
-    "message": "シードフレーズ"
+  "Recovery_Phrase": {
+    "message": "リカバリーフレーズ"
   },
   "Private_Key": {
     "message": "プライベートキー"
+  },
+  "Mobile_app": {
+    "message": "モバイルアプリ"
   },
   "You_can_import_the": {
     "message": "他のウォレット（例：Blocto）からキーストアのJSON内容を貼り付けてください"
