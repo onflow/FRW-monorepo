@@ -271,45 +271,50 @@ export class WalletController extends BaseController {
       }
 
       if (newAccountId && createPubKey) {
-        const mainAccounts = await getCachedMainAccounts('mainnet', account.keys[0].publicKey);
-        if (mainAccounts && mainAccounts.length > 0) {
-          // Find and update the placeholder account
-          const placeholderIndex = mainAccounts.findIndex((acc) => acc.id === newAccountId);
-          if (placeholderIndex !== -1) {
-            // Update the placeholder account with real data
-            mainAccounts[placeholderIndex] = {
-              ...mainAccounts[placeholderIndex],
-              address: withPrefix(account.address) || account.address,
-              hashAlgoString: account.keys[0].hashAlgoString,
-              keyIndex: account.keys[0].index,
-              signAlgoString: account.keys[0].signAlgoString,
-              weight: account.keys[0].weight,
-            };
-          } else {
-            // If no placeholder found, create new account
-            const emoji = getEmojiByIndex(newAccountId || mainAccounts.length);
-            mainAccounts.push({
-              address: withPrefix(account.address) || account.address,
-              chain: networkToChainId(network),
-              hashAlgo: account.keys[0].hashAlgo,
-              hashAlgoString: account.keys[0].hashAlgoString,
-              id: newAccountId || mainAccounts.length,
-              keyIndex: account.keys[0].index,
-              publicKey: account.keys[0].publicKey,
-              signAlgo: account.keys[0].signAlgo,
-              signAlgoString: account.keys[0].signAlgoString,
-              weight: account.keys[0].weight,
-              name: emoji.name,
-              icon: emoji.emoji,
-              color: emoji.bgcolor,
-            });
-          }
-          setCachedData(
-            mainAccountsKey(network, account.keys[0].publicKey),
-            mainAccounts,
-            mainAccounts.length > 0 ? 60_000 : 1_000
-          );
+        // Get current state (ensure we have an array)
+        let mainAccounts = await getCachedMainAccounts('mainnet', account.keys[0].publicKey);
+        if (!mainAccounts) {
+          mainAccounts = [];
         }
+
+        // Prepare the account data
+        const accountData = {
+          address: withPrefix(account.address) || account.address,
+          hashAlgoString: account.keys[0].hashAlgoString,
+          keyIndex: account.keys[0].index,
+          signAlgoString: account.keys[0].signAlgoString,
+          weight: account.keys[0].weight,
+        };
+
+        // Find existing account or prepare new one
+        const existingIndex = mainAccounts.findIndex((acc) => acc.id === newAccountId);
+        if (existingIndex !== -1) {
+          // Update existing account
+          mainAccounts[existingIndex] = {
+            ...mainAccounts[existingIndex],
+            ...accountData,
+          };
+        } else {
+          // Create new account
+          const emoji = getEmojiByIndex(newAccountId || mainAccounts.length);
+          mainAccounts.push({
+            ...accountData,
+            chain: networkToChainId(network),
+            hashAlgo: account.keys[0].hashAlgo,
+            id: newAccountId || mainAccounts.length,
+            publicKey: account.keys[0].publicKey,
+            signAlgo: account.keys[0].signAlgo,
+            name: emoji.name,
+            icon: emoji.emoji,
+            color: emoji.bgcolor,
+          });
+        }
+
+        await setCachedData(
+          mainAccountsKey(network, account.keys[0].publicKey),
+          mainAccounts,
+          mainAccounts.length > 0 ? 60_000 : 1_000
+        );
       } else {
         userWalletService.registerCurrentPubkey(account.keys[0].publicKey, account);
       }
