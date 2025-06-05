@@ -1494,20 +1494,26 @@
   "Other_accounts": {
     "message": "其他账户"
   },
+  "Mobile_overview": {
+    "message": "移动应用概览"
+  },
   "Create_a_new_profile_with_an_account_from_Flow_Wallet_Mobile_App": {
-    "message": "从 Flow Wallet Mobile App 创建新个人资料"
+    "message": "这些是导入您的 Flow Wallet 移动应用程序中的个人资料所涉及的步骤。"
   },
   "Import_from_Mobile_Step_1": {
-    "message": "生成一个新的恢复短语来保护您的账户。"
+    "message": "生成一个新的恢复短语来保护您的个人资料。"
   },
-  "Import_from_Mobile_Step_2": {
-    "message": "验证您的密码。"
+  "Import_from_Mobile_Step_2_setup": {
+    "message": "设置一个新的密码来保护您的个人资料。"
+  },
+  "Import_from_Mobile_Step_2_verify": {
+    "message": "验证您的密码来保护您的个人资料。"
   },
   "Import_from_Mobile_Step_3": {
-    "message": "扫描二维码以链接您的移动设备。"
+    "message": "扫描以连接到移动设备。"
   },
   "Import_from_Mobile_Step_4": {
-    "message": "确认您想要在移动设备上导入的账户。"
+    "message": "选择您想要导入的个人资料。"
   },
   "Import_from_Mobile_Submit": {
     "message": "开始"

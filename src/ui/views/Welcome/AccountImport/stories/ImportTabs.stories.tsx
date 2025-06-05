@@ -5,6 +5,7 @@ import { action } from 'storybook/actions';
 import { fn } from 'storybook/test';
 
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
+import { Link as LinkMock } from '@/stories/react-router-dom.mock';
 import { useWallet as useWalletMock } from '@/stories/wallet-context.mock';
 
 import ImportTabs from '../ImportTabs';
@@ -14,12 +15,16 @@ const meta = {
   component: ImportTabs,
   decorators: [
     (Story) => {
+      LinkMock.mockReset();
+      LinkMock.mockImplementation((props: any) => <Box {...props} />);
+
       useWalletMock.mockReset();
       useWalletMock.mockImplementation(() => ({
         openapi: {
           checkImport: fn().mockResolvedValue({ status: 200 }),
         },
         getCurrentAccount: fn().mockResolvedValue(null),
+        isBooted: fn().mockResolvedValue(false),
       }));
       return (
         <Box sx={{ width: '100%', maxWidth: '600px', margin: 'auto' }}>
@@ -35,7 +40,6 @@ const meta = {
     setMnemonic: fn(),
     setPk: fn(),
     setAccounts: fn(),
-    setUsername: fn(),
     goPassword: fn(),
     handleSwitchTab: fn(),
     setErrorMessage: fn(),
@@ -55,10 +59,7 @@ export const Default: Story = {
     setMnemonic: action('setMnemonic'),
     setPk: action('setPk'),
     setAccounts: action('setAccounts'),
-    accounts: [],
-    mnemonic: null,
-    pk: null,
-    setUsername: action('setUsername'),
+
     goPassword: action('goPassword'),
     handleSwitchTab: action('handleSwitchTab'),
     setErrorMessage: action('setErrorMessage'),

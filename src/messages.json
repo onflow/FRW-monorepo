@@ -1503,20 +1503,26 @@
   "Other_accounts": {
     "message": "Other accounts"
   },
+  "Mobile_overview": {
+    "message": "Mobile overview"
+  },
   "Create_a_new_profile_with_an_account_from_Flow_Wallet_Mobile_App": {
-    "message": "Create a new profile using an account from Flow Wallet Mobile App."
+    "message": "These are the steps involved in importing your profile from your Flow Wallet mobile app."
   },
   "Import_from_Mobile_Step_1": {
-    "message": "Generate a new recovery phrase to secure the accounts."
+    "message": "Generate a new recovery phrase to secure your profile."
   },
-  "Import_from_Mobile_Step_2": {
-    "message": "Verify your password."
+  "Import_from_Mobile_Step_2_setup": {
+    "message": "Set up a new password to secure your profile."
+  },
+  "Import_from_Mobile_Step_2_verify": {
+    "message": "Verify your password to secure the profile."
   },
   "Import_from_Mobile_Step_3": {
-    "message": "Scan the QR code to link your mobile device."
+    "message": "Scan to connect to mobile."
   },
   "Import_from_Mobile_Step_4": {
-    "message": "Confirm accounts you want to import on your mobile device."
+    "message": "Choose the profile you'd like to import."
   },
   "Import_from_Mobile_Submit": {
     "message": "Get Started"

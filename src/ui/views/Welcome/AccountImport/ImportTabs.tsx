@@ -1,5 +1,5 @@
 import { Box, Tabs, Tab, Typography } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { QrCodeIcon } from '@/ui/assets/icons/QrCodeIcon';
 import ErrorModel from '@/ui/components/PopupModal/errorModel';
@@ -34,10 +34,7 @@ const ImportTabs = ({
   setMnemonic,
   setPk,
   setAccounts,
-  accounts,
-  mnemonic,
-  pk,
-  setUsername,
+
   goPassword,
   handleSwitchTab,
   setErrorMessage,
@@ -51,10 +48,6 @@ const ImportTabs = ({
   setMnemonic: (mnemonic: string) => void;
   setPk: (pk: string) => void;
   setAccounts: (accounts: any[]) => void;
-  accounts: any[];
-  mnemonic: string | null;
-  pk: string | null;
-  setUsername: (username: string) => void;
   goPassword: () => void;
   handleSwitchTab: () => void;
   setErrorMessage: (errorMessage: string) => void;
@@ -66,11 +59,18 @@ const ImportTabs = ({
   setPhrase: (phrase: string) => void;
 }) => {
   const [selectedTab, setSelectedTab] = useState(0);
-  const [mnemonicValid, setMnemonicValid] = useState(true);
   const [isSignLoading, setSignLoading] = useState(false);
   const [addressFound, setAddressFound] = useState(true);
   const [newKey, setKeyNew] = useState(true);
+  const [isLogin, setIsLogin] = useState(false);
   const usewallet = useWallet();
+  useEffect(() => {
+    const checkIsBooted = async () => {
+      const isBooted = await usewallet.isBooted();
+      setIsLogin(isBooted);
+    };
+    checkIsBooted();
+  }, [usewallet]);
 
   const handleTabChange = (event, newValue) => {
     setSelectedTab(newValue);
@@ -191,7 +191,7 @@ const ImportTabs = ({
         />
       </TabPanel>
       <TabPanel value={selectedTab} index={4}>
-        <MobileAppImportSteps />
+        <MobileAppImportSteps isLogin={isLogin} />
       </TabPanel>
       {!addressFound && (
         <ErrorModel

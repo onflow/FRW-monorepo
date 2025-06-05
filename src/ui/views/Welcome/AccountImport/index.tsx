@@ -132,10 +132,6 @@ const AccountImport = () => {
                   setMnemonic={setMnemonic}
                   setPk={setPk}
                   setAccounts={setAccounts}
-                  accounts={accounts}
-                  mnemonic={mnemonic}
-                  pk={pk}
-                  setUsername={setUsername}
                   goPassword={() => setActiveTab(STEPS.RECOVER_PASSWORD)}
                   handleSwitchTab={() => setActiveTab(STEPS.PICK_USERNAME)}
                   setErrorMessage={setErrorMessage}

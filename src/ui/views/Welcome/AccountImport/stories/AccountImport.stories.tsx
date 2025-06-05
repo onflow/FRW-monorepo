@@ -23,6 +23,7 @@ const meta = {
         getCurrentAccount: fn().mockResolvedValue(null),
         importProfileUsingPrivateKey: fn(),
         importProfileUsingMnemonic: fn(),
+        isBooted: fn().mockResolvedValue(false),
       }));
       return (
         <Box

@@ -1494,20 +1494,26 @@
   "Other_accounts": {
     "message": "その他のアカウント"
   },
+  "Mobile_overview": {
+    "message": "モバイルアプリの概要"
+  },
   "Create_a_new_profile_with_an_account_from_Flow_Wallet_Mobile_App": {
-    "message": "Flow Wallet Mobile App のアカウントから新しいプロファイルを作成します。"
+    "message": "Flow Wallet モバイルアプリからプロファイルをインポートするための手順です。"
   },
   "Import_from_Mobile_Step_1": {
-    "message": "アカウントを保護するために新しい回復フレーズを生成します。"
+    "message": "プロファイルを保護するために新しい回復フレーズを生成します。"
   },
-  "Import_from_Mobile_Step_2": {
-    "message": "パスワードを確認します。"
+  "Import_from_Mobile_Step_2_setup": {
+    "message": "プロファイルを保護するために新しいパスワードを設定します。"
+  },
+  "Import_from_Mobile_Step_2_verify": {
+    "message": "パスワードを確認してプロファイルを保護します。"
   },
   "Import_from_Mobile_Step_3": {
-    "message": "QRコードをスキャンしてモバイルデバイスをリンクします。"
+    "message": "モバイルデバイスに接続するためにスキャンします。"
   },
   "Import_from_Mobile_Step_4": {
-    "message": "モバイルデバイスにインポートするアカウントを確認します。"
+    "message": "インポートするプロファイルを選択します。"
   },
   "Import_from_Mobile_Submit": {
     "message": "はじめる"
