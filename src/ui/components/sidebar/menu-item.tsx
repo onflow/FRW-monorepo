@@ -1,6 +1,8 @@
 import { ListItem, ListItemButton, ListItemIcon, Typography, CardMedia } from '@mui/material';
 import React from 'react';
 
+import { COLOR_WHITE_ALPHA_80_FFFFFFCC } from '@/ui/style/color';
+
 interface MenuItemProps {
   icon: string;
   text: string;
@@ -32,7 +34,14 @@ export const MenuItem = ({ icon, text, onClick, dataTestId }: MenuItemProps) => 
           component="div"
           display="inline"
           color="text"
-          sx={{ fontSize: '16px', color: '#FFFFFFCC' }}
+          sx={{
+            color: COLOR_WHITE_ALPHA_80_FFFFFFCC,
+            fontFamily: 'Inter',
+            fontSize: '12px',
+            fontStyle: 'normal',
+            fontWeight: 600,
+            lineHeight: '16px',
+          }}
         >
           {text}
         </Typography>

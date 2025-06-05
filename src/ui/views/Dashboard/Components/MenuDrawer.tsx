@@ -20,6 +20,7 @@ import { type WalletAccount } from '@/shared/types/wallet-types';
 import { consoleError } from '@/shared/utils/console-log';
 import { AccountListing } from '@/ui/components/account/account-listing';
 import { MenuItem } from '@/ui/components/sidebar/menu-item';
+import { COLOR_GREEN_FLOW_THEME_16FF99 } from '@/ui/style/color';
 import { useWallet } from 'ui/utils';
 
 import lock from '../../../assets/svg/sidebar-lock.svg';
@@ -149,7 +150,7 @@ const MenuDrawer = ({
                   src={userInfo.avatar}
                   width={48}
                   height={48}
-                  style={{ backgroundColor: '#16FF99', borderRadius: '8px' }}
+                  style={{ backgroundColor: COLOR_GREEN_FLOW_THEME_16FF99, borderRadius: '8px' }}
                 />
               ) : (
                 <Skeleton variant="circular" width={48} height={48} />
