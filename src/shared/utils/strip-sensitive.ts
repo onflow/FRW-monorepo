@@ -22,7 +22,7 @@ export const stripSensitive = (message: string) => {
     // Embedded sensitive values in stringified objects
     /"(?:password|passwd|pwd|privateKey|private_key|privatekey|secretKey|secret_key|secretkey|apiKey|api_key|apikey|mnemonic|seed|seedPhrase|seed_phrase|recoveryPhrase|recovery_phrase|token|jwt|sessionToken|session_token|pk|sk)"\s*:\s*"([^"]+)"/gi,
     // Handle escaped quotes in stringified objects
-    /"(?:password|passwd|pwd|privateKey|private_key|privatekey|secretKey|secret_key|secretkey|apiKey|api_key|apikey|mnemonic|seed|seedPhrase|seed_phrase|recoveryPhraserecovery_phrase|token|jwt|sessionToken|session_token|pk|sk)"\s*:\s*"((?:[^"\\]|\\.)*)"/gi,
+    /"(?:password|passwd|pwd|privateKey|private_key|privatekey|secretKey|secret_key|secretkey|apiKey|api_key|apikey|mnemonic|seed|seedPhrase|seed_phrase|recoveryPhrase|recovery_phrase|token|jwt|sessionToken|session_token|pk|sk)"\s*:\s*"((?:[^"\\]|\\.)*)"/gi,
     // Handle unquoted values in stringified objects
     /"(?:password|passwd|pwd|privateKey|private_key|privatekey|secretKey|secret_key|secretkey|apiKey|api_key|apikey|mnemonic|seed|seedPhrase|seed_phrase|recoveryPhrase|recovery_phrase|token|jwt|sessionToken|session_token|pk|sk)"\s*:\s*([^,}\s]+)/gi,
   ];
