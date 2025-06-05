@@ -39,7 +39,7 @@ type AccountCardWithCopyProps = {
   onClick?: () => void;
   showLink?: boolean;
   showCard?: boolean;
-  showSecondary?: boolean;
+  isPending?: boolean;
   'data-testid'?: string;
 };
 
@@ -59,7 +59,7 @@ export const AccountCard = ({
   secondaryIcon = <CopyIcon width={24} />,
   showLink = false,
   showCard = false,
-  showSecondary = true,
+  isPending = false,
   'data-testid': dataTestId,
 }: AccountCardProps) => {
   const { name, icon, color, address, nfts } = account || {};
@@ -132,6 +132,7 @@ export const AccountCard = ({
             parentColor={parentColor}
             active={active}
             spinning={spinning}
+            isPending={isPending}
           />
         </CardMedia>
         <Box sx={{ width: '100%', overflow: 'hidden' }}>
@@ -203,7 +204,7 @@ export const AccountCard = ({
           </Typography>
         </Box>
       </CardActionArea>
-      {onClickSecondary && showSecondary && (
+      {onClickSecondary && !isPending && (
         <CardActions sx={{ padding: '0px', marginLeft: 'auto' }}>
           <IconButton onClick={onClickSecondary} aria-label="Copy address" disabled={!address}>
             {secondaryIcon}

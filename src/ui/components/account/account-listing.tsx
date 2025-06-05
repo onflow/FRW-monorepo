@@ -4,7 +4,12 @@ import React from 'react';
 import { type WalletAccount } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { FlowIcon } from '@/ui/assets/icons/FlowIcon';
-import { useChildAccounts, useEvmAccount } from '@/ui/hooks/use-account-hooks';
+import {
+  useChildAccounts,
+  useEvmAccount,
+  usePendingAccountCreationTransactions,
+} from '@/ui/hooks/use-account-hooks';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { COLOR_DARKMODE_TEXT_PRIMARY_80_FFFFFF80 } from '@/ui/style/color';
 
 import { AccountCard } from './account-card';
@@ -41,33 +46,22 @@ const AccountHierarchy = ({
 
   return (
     <Box sx={{ gap: '0px', display: 'flex', flexDirection: 'column' }}>
-      {account.icon === 'pendingAccount' ? (
-        <AccountCard
-          network={network}
-          account={account}
-          showCard={false}
-          showLink={false}
-          spinning={true}
-          showSecondary={false}
-        />
-      ) : (
-        <AccountCard
-          network={network}
-          key={account.address}
-          account={account}
-          active={activeAccount?.address === account.address}
-          onClick={
-            onAccountClick ? () => onAccountClick(account.address, account.address) : undefined
-          }
-          onClickSecondary={
-            onAccountClickSecondary
-              ? () => onAccountClickSecondary(account.address, account.address)
-              : undefined
-          }
-          secondaryIcon={secondaryIcon}
-          showCard={false}
-        />
-      )}
+      <AccountCard
+        network={network}
+        key={account.address}
+        account={account}
+        active={activeAccount?.address === account.address}
+        onClick={
+          onAccountClick ? () => onAccountClick(account.address, account.address) : undefined
+        }
+        onClickSecondary={
+          onAccountClickSecondary
+            ? () => onAccountClickSecondary(account.address, account.address)
+            : undefined
+        }
+        secondaryIcon={secondaryIcon}
+        showCard={false}
+      />
 
       {/* If the EVM account is valid, show the EVM account card */}
       {evmAccount && isValidEthereumAddress(evmAccount.address) && (
@@ -147,10 +141,9 @@ export const AccountListing = ({
       ? activeAccount?.address
       : undefined
   );
-
   // Check if the EVM account is not valid
   const noEvmAccount = evmAccount && !isValidEthereumAddress(evmAccount.address);
-
+  const { pendingAccountTransactions } = useProfiles();
   return (
     <Box sx={{ gap: '0px', padding: '0 16px', display: 'flex', flexDirection: 'column' }}>
       {/* Active account */}
@@ -230,6 +223,20 @@ export const AccountListing = ({
           />
         );
       })}
+      {pendingAccountTransactions &&
+        pendingAccountTransactions.map((transaction) => {
+          return (
+            <AccountCard
+              key={transaction.txId}
+              account={transaction}
+              showCard={false}
+              isPending={true}
+              showLink={false}
+              network={network}
+              spinning={true}
+            />
+          );
+        })}
     </Box>
   );
 };

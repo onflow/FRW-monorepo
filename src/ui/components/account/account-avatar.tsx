@@ -37,8 +37,8 @@ const ImageIcon = ({ image, size = 24 }: { image: string; size?: number }) => {
   );
 };
 
-const Icon = ({ icon }: { icon: string }) => {
-  if (icon === 'pendingAccount') {
+const Icon = ({ icon, isPending }: { icon: string; isPending?: boolean }) => {
+  if (isPending) {
     return <FlowIcon width={36} height={36} />;
   }
   if (isEmoji(icon)) {
@@ -61,6 +61,7 @@ export const AccountAvatar = ({
   active = false,
   spinning = false,
   onClick,
+  isPending = false,
 }: {
   network?: string;
   emoji?: string;
@@ -70,6 +71,7 @@ export const AccountAvatar = ({
   active?: boolean;
   spinning?: boolean;
   onClick?: () => void;
+  isPending?: boolean;
 }) => {
   const loading = !network || !emoji || !color;
   if (loading) {
@@ -110,12 +112,12 @@ export const AccountAvatar = ({
       )}
       {onClick && (
         <IconButton onClick={onClick} sx={sxProps}>
-          <Icon icon={emoji} />
+          <Icon icon={emoji} isPending={isPending} />
         </IconButton>
       )}
       {!onClick && (
         <Box sx={sxProps}>
-          <Icon icon={emoji} />
+          <Icon icon={emoji} isPending={isPending} />
         </Box>
       )}
 

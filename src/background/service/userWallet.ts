@@ -30,6 +30,7 @@ import {
   type ActiveAccountType,
   getActiveAccountTypeForAddress,
   type WalletAddress,
+  type PendingTransaction,
 } from '@/shared/types/wallet-types';
 import {
   ensureEvmAddressPrefix,
@@ -52,6 +53,7 @@ import {
   mainAccountStorageBalanceRefreshRegex,
   type MainAccountStorageBalanceStore,
   getCachedMainAccounts,
+  pendingTransactionsKey,
 } from '@/shared/utils/cache-data-keys';
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 import { retryOperation } from '@/shared/utils/retryOperation';
@@ -74,7 +76,12 @@ import { type PublicKeyAccount, type MainAccount } from '../../shared/types/wall
 import { type WalletController } from '../controller/wallet';
 import { fclConfig, fclConfirmNetwork } from '../fclConfig';
 import { defaultAccountKey, pubKeyAccountToAccountKey } from '../utils/account-key';
-import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
+import {
+  getValidData,
+  registerRefreshListener,
+  setCachedData,
+  clearCachedData,
+} from '../utils/data-cache';
 import { getEmojiByIndex } from '../utils/emoji-util';
 import {
   getAccountsByPublicKeyTuple,
@@ -98,25 +105,10 @@ interface PendingAccount extends MainAccount {
   expiresAt: number;
 }
 
-// Transactions that are creating accounts
-export interface PendingTransaction {
-  txId: string;
-  network: string;
-  pubkey: string;
-  accountId: number;
-  createdAt: number;
-  expiresAt: number;
-}
-
 const pendingAccountsStore = new Map<string, PendingAccount[]>();
-const pendingTransactionStore = new Map<string, PendingTransaction[]>();
 
 const getPendingAccountsKey = (network: string, pubkey: string): string => {
   return `pending:${network}:${pubkey}`;
-};
-
-const getPendingTransactionKey = (network: string, pubkey: string): string => {
-  return `pending-creation:${network}:${pubkey}`;
 };
 
 class UserWallet {
@@ -211,33 +203,8 @@ class UserWallet {
     }
 
     const pendingAccountId = mainAccounts.length;
-    const pendingAccount: MainAccount = {
-      address: '',
-      chain: networkToChainId(network),
-      hashAlgo: account.hash_algo,
-      hashAlgoString: '',
-      id: pendingAccountId,
-      keyIndex: 0,
-      publicKey: account.public_key,
-      signAlgo: account.sign_algo,
-      signAlgoString: '',
-      weight: 1000,
-      name: '',
-      icon: 'pendingTransaction',
-      color: '#fff',
-    };
 
     await this.addPendingTransaction(txid, network, account.public_key, pendingAccountId);
-
-    // DON'T add to pending accounts - it doesn't have a real address yet
-    // Only add to cached data for UI consistency
-    mainAccounts.push(pendingAccount);
-    setCachedData(
-      mainAccountsKey(network, account.public_key),
-      mainAccounts,
-      mainAccounts.length > 0 ? 60_000 : 1_000
-    );
-
     return pendingAccountId;
   };
 
@@ -277,8 +244,7 @@ class UserWallet {
       weight: account.keys[0].weight,
     };
     // Find existing account or prepare new one
-    const existingIndex = mainAccounts.findIndex((acc) => acc.id === pendingAccountId);
-    const emoji = getEmojiByIndex(pendingAccountId || mainAccounts.length);
+    const emoji = getEmojiByIndex(mainAccounts.length);
     const pendingAccount = {
       ...accountData,
       chain: networkToChainId(network),
@@ -290,11 +256,7 @@ class UserWallet {
       icon: emoji.emoji,
       color: emoji.bgcolor,
     };
-    if (existingIndex >= 0 && existingIndex < mainAccounts.length) {
-      mainAccounts[existingIndex] = pendingAccount;
-    } else {
-      mainAccounts.push(pendingAccount);
-    }
+    mainAccounts.push(pendingAccount);
     if (pendingAccount && pendingAccount.address) {
       setupPendingAccount(network, account.keys[0].publicKey, pendingAccount);
     }
@@ -303,16 +265,6 @@ class UserWallet {
       mainAccounts,
       mainAccounts.length > 0 ? 60_000 : 1_000
     );
-  };
-
-  /**
-   * Get the count of pending account creation transactions
-   * @returns The number of pending account creation transactions
-   */
-  getPendingTransactionCount = async (): Promise<number> => {
-    const network = this.getNetwork();
-    const pubkey = this.getCurrentPubkey();
-    return getPendingTransactionList(network, pubkey).length;
   };
 
   /**
@@ -328,23 +280,28 @@ class UserWallet {
     pubkey: string,
     accountId: number
   ): Promise<void> => {
-    const key = getPendingTransactionKey(network, pubkey);
-    const existingPending = pendingTransactionStore.get(key) || [];
+    const existingPending =
+      (await getValidData<PendingTransaction[]>(pendingTransactionsKey(network, pubkey))) || [];
 
     const pendingTransaction: PendingTransaction = {
+      address: '',
+      chain: networkToChainId(network),
+      id: accountId,
+      name: '',
       txId,
       network,
       pubkey,
       accountId,
       createdAt: Date.now(),
       expiresAt: Date.now() + 30_000,
+      icon: getEmojiByIndex(accountId).emoji,
+      color: '#fff',
     };
 
     // Remove any existing pending transaction with the same txId
     const filtered = existingPending.filter((pt) => pt.txId !== txId);
     filtered.push(pendingTransaction);
-
-    pendingTransactionStore.set(key, filtered);
+    await setCachedData(pendingTransactionsKey(network, pubkey), filtered, 30_000);
   };
 
   /**
@@ -358,15 +315,11 @@ class UserWallet {
     pubkey: string,
     txId: string
   ): Promise<void> => {
-    const key = getPendingTransactionKey(network, pubkey);
-    const existingPending = pendingTransactionStore.get(key) || [];
+    const existingPending =
+      (await getValidData<PendingTransaction[]>(pendingTransactionsKey(network, pubkey))) || [];
 
     const filtered = existingPending.filter((pt) => pt.txId !== txId);
-    if (filtered.length > 0) {
-      pendingTransactionStore.set(key, filtered);
-    } else {
-      pendingTransactionStore.delete(key);
-    }
+    await setCachedData(pendingTransactionsKey(network, pubkey), filtered, 30_000);
   };
 
   /**
@@ -1560,26 +1513,6 @@ const getPendingAccounts = (network: string, pubkey: string): PendingAccount[] =
   }
 
   return validNew;
-};
-
-const getPendingTransactionList = (network: string, pubkey: string): PendingTransaction[] => {
-  const key = getPendingTransactionKey(network, pubkey);
-  const pendingTransactions = pendingTransactionStore.get(key) || [];
-
-  // Filter out expired transactions
-  const now = Date.now();
-  const validPending = pendingTransactions.filter((pt) => pt.expiresAt > now);
-
-  // Update the pending transactions object if we filtered out any expired transactions
-  if (validPending.length !== pendingTransactions.length) {
-    if (validPending.length > 0) {
-      pendingTransactionStore.set(key, validPending);
-    } else {
-      pendingTransactionStore.delete(key);
-    }
-  }
-
-  return validPending;
 };
 
 /**
