@@ -1,0 +1,30 @@
+import { fn } from 'storybook/test';
+
+// Mock for useProfiles hook
+export const useProfiles = fn().mockName('useProfiles').mockReturnValue({
+  fetchProfileData: fn(),
+  clearProfileData: fn(),
+  currentWallet: null,
+  mainAddress: '',
+  evmAddress: '',
+  childAccounts: [],
+  evmWallet: null,
+  userInfo: null,
+  otherAccounts: [],
+  walletList: [],
+  currentBalance: '0',
+  parentAccountStorageBalance: null,
+  parentWallet: null,
+  parentWalletIndex: -1,
+  evmLoading: false,
+  mainAddressLoading: false,
+  profileIds: [],
+  activeAccountType: 'none',
+  noAddress: false,
+  registerStatus: false,
+  canMoveToChild: false,
+  currentWalletList: [],
+  payer: false,
+  network: 'mainnet',
+  pendingAccountTransactions: [],
+});
