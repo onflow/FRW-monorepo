@@ -13,6 +13,7 @@ interface TransferConfirmationProps {
   handleCancelBtnClicked: () => void;
   handleAddBtnClicked: () => void;
   addAccount: () => Promise<void>;
+  importExistingAccount: boolean;
 }
 
 const AddAccountPopup = (props: TransferConfirmationProps) => {
@@ -53,20 +54,24 @@ const AddAccountPopup = (props: TransferConfirmationProps) => {
             text={chrome.i18n.getMessage('Create_a_new_account')}
             onClick={props.addAccount}
           />
-          <Box
-            sx={{
-              height: '1px',
-              width: '100%',
-              padding: '1px 16px',
-              backgroundColor: 'rgba(255, 255, 255, 0.25)',
-            }}
-          />
-          <ProfileButton
-            icon={importExisting}
-            text={chrome.i18n.getMessage('Import_an_existing_account')}
-            dataTestId="import-existing-account-button"
-            onClick={async () => await usewallet.lockAdd()}
-          />
+          {props.importExistingAccount && (
+            <Box
+              sx={{
+                height: '1px',
+                width: '100%',
+                padding: '1px 16px',
+                backgroundColor: 'rgba(255, 255, 255, 0.25)',
+              }}
+            />
+          )}
+          {props.importExistingAccount && (
+            <ProfileButton
+              icon={importExisting}
+              text={chrome.i18n.getMessage('Import_an_existing_account')}
+              dataTestId="import-existing-account-button"
+              onClick={async () => await usewallet.lockAdd()}
+            />
+          )}
         </Box>
       </Box>
     </Drawer>

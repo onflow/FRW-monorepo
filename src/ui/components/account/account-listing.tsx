@@ -3,6 +3,7 @@ import React from 'react';
 
 import { type WalletAccount } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
+import { FlowIcon } from '@/ui/assets/icons/FlowIcon';
 import { useChildAccounts, useEvmAccount } from '@/ui/hooks/use-account-hooks';
 import { COLOR_DARKMODE_TEXT_PRIMARY_80_FFFFFF80 } from '@/ui/style/color';
 
@@ -28,7 +29,6 @@ const AccountHierarchy = ({
   const childAccounts = useChildAccounts(network, account?.address);
   const evmAccount = useEvmAccount(network, account?.address);
   const loading = network === undefined || account === undefined;
-
   if (loading) {
     return (
       <Box sx={{ gap: '0px', display: 'flex', flexDirection: 'column' }}>
@@ -41,22 +41,33 @@ const AccountHierarchy = ({
 
   return (
     <Box sx={{ gap: '0px', display: 'flex', flexDirection: 'column' }}>
-      <AccountCard
-        network={network}
-        key={account.address}
-        account={account}
-        active={activeAccount?.address === account.address}
-        onClick={
-          onAccountClick ? () => onAccountClick(account.address, account.address) : undefined
-        }
-        onClickSecondary={
-          onAccountClickSecondary
-            ? () => onAccountClickSecondary(account.address, account.address)
-            : undefined
-        }
-        secondaryIcon={secondaryIcon}
-        showCard={false}
-      />
+      {account.icon === 'pendingAccount' ? (
+        <AccountCard
+          network={network}
+          account={account}
+          showCard={false}
+          showLink={false}
+          spinning={true}
+          showSecondary={false}
+        />
+      ) : (
+        <AccountCard
+          network={network}
+          key={account.address}
+          account={account}
+          active={activeAccount?.address === account.address}
+          onClick={
+            onAccountClick ? () => onAccountClick(account.address, account.address) : undefined
+          }
+          onClickSecondary={
+            onAccountClickSecondary
+              ? () => onAccountClickSecondary(account.address, account.address)
+              : undefined
+          }
+          secondaryIcon={secondaryIcon}
+          showCard={false}
+        />
+      )}
 
       {/* If the EVM account is valid, show the EVM account card */}
       {evmAccount && isValidEthereumAddress(evmAccount.address) && (

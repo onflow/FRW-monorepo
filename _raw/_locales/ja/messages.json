@@ -1493,5 +1493,8 @@
   },
   "Import_an_existing_account": {
     "message": "既存のアカウントをインポート"
+  },
+  "Add_Account_Sidebar": {
+    "message": "アカウントを追加"
   }
 }

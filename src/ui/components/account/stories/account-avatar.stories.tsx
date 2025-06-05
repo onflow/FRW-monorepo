@@ -118,3 +118,23 @@ export const CustomColor: Story = {
 export const Loading: Story = {
   args: {},
 };
+
+export const PendingAccount: Story = {
+  args: {
+    network: 'mainnet',
+    emoji: 'pendingAccount',
+    color: '#fff',
+    active: false,
+    spinning: true,
+  },
+};
+
+export const PendingAccountActive: Story = {
+  args: {
+    network: 'mainnet',
+    emoji: 'pendingAccount',
+    color: '#fff',
+    active: true,
+    spinning: true,
+  },
+};

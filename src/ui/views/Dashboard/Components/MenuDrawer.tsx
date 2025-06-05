@@ -20,7 +20,12 @@ import { type WalletAccount } from '@/shared/types/wallet-types';
 import { consoleError } from '@/shared/utils/console-log';
 import { AccountListing } from '@/ui/components/account/account-listing';
 import { MenuItem } from '@/ui/components/sidebar/menu-item';
-import { COLOR_GREEN_FLOW_THEME_16FF99 } from '@/ui/style/color';
+import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
+import {
+  COLOR_GREEN_FLOW_THEME_16FF99,
+  COLOR_WHITE_ALPHA_10_FFFFFF1A,
+  COLOR_WHITE_ALPHA_40_FFFFFF66,
+} from '@/ui/style/color';
 import { useWallet } from 'ui/utils';
 
 import lock from '../../../assets/svg/sidebar-lock.svg';
@@ -78,6 +83,8 @@ const MenuDrawer = ({
   // Add Account Drawer
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const canCreateNewAccount = useFeatureFlag('create_new_account');
+  const canImportExistingAccount = useFeatureFlag('import_existing_account');
 
   // Error state
   const [showError, setShowError] = useState(false);
@@ -209,46 +216,47 @@ const MenuDrawer = ({
             px: '0',
             marginTop: '24px',
             marginBottom: '8px',
-            borderTop: '1px solid rgba(255, 255, 255, 0.25)',
+            borderTop: `1px solid ${COLOR_WHITE_ALPHA_40_FFFFFF66}`,
             paddingTop: '8px',
           }}
         >
-          {isCreating ? (
-            <ListItem disablePadding>
-              <ListItemButton sx={{ padding: '8px 16px', margin: '0', borderRadius: '0' }}>
-                <ListItemIcon
-                  sx={{
-                    width: '40px',
-                    minWidth: '40px',
-                    height: '40px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginRight: '16px',
-                    borderRadius: '40px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  }}
-                >
-                  <CircularProgress size={24} />
-                </ListItemIcon>
-                <Typography
-                  variant="body1"
-                  component="div"
-                  display="inline"
-                  sx={{ fontSize: '16px', color: '#FFFFFFCC', opacity: 0.7 }}
-                >
-                  Creating...
-                </Typography>
-              </ListItemButton>
-            </ListItem>
-          ) : (
-            <MenuItem
-              icon={plus}
-              text={chrome.i18n.getMessage('Add_Account')}
-              dataTestId="add-account-button"
-              onClick={toggleAddAccount}
-            />
-          )}
+          {canCreateNewAccount &&
+            (isCreating ? (
+              <ListItem disablePadding>
+                <ListItemButton sx={{ padding: '8px 16px', margin: '0', borderRadius: '0' }}>
+                  <ListItemIcon
+                    sx={{
+                      width: '40px',
+                      minWidth: '40px',
+                      height: '40px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginRight: '16px',
+                      borderRadius: '40px',
+                      backgroundColor: COLOR_WHITE_ALPHA_10_FFFFFF1A,
+                    }}
+                  >
+                    <CircularProgress size={24} />
+                  </ListItemIcon>
+                  <Typography
+                    variant="body1"
+                    component="div"
+                    display="inline"
+                    sx={{ fontSize: '16px', color: '#FFFFFFCC', opacity: 0.7 }}
+                  >
+                    Creating...
+                  </Typography>
+                </ListItemButton>
+              </ListItem>
+            ) : (
+              <MenuItem
+                icon={plus}
+                text={chrome.i18n.getMessage('Add_Account_Sidebar')}
+                dataTestId="add-account-button"
+                onClick={toggleAddAccount}
+              />
+            ))}
           <MenuItem
             icon={lock}
             text={chrome.i18n.getMessage('Lock__Wallet')}
@@ -268,6 +276,7 @@ const MenuDrawer = ({
               setShowAddAccount(false);
             }}
             addAccount={addAccount}
+            importExistingAccount={canImportExistingAccount}
           />
         )}
 

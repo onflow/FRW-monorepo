@@ -22,6 +22,7 @@ import {
   COLOR_DARKMODE_TEXT_SECONDARY_B3B3B3,
   COLOR_ACCENT_EVM_627EEA,
   COLOR_GREY_ICONS_767676,
+  COLOR_GREEN_FLOW_THEME_16FF99,
 } from '@/ui/style/color';
 import { formatAddress } from '@/ui/utils';
 
@@ -38,6 +39,7 @@ type AccountCardWithCopyProps = {
   onClick?: () => void;
   showLink?: boolean;
   showCard?: boolean;
+  showSecondary?: boolean;
   'data-testid'?: string;
 };
 
@@ -57,6 +59,7 @@ export const AccountCard = ({
   secondaryIcon = <CopyIcon width={24} />,
   showLink = false,
   showCard = false,
+  showSecondary = true,
   'data-testid': dataTestId,
 }: AccountCardProps) => {
   const { name, icon, color, address, nfts } = account || {};
@@ -200,7 +203,7 @@ export const AccountCard = ({
           </Typography>
         </Box>
       </CardActionArea>
-      {onClickSecondary && (
+      {onClickSecondary && showSecondary && (
         <CardActions sx={{ padding: '0px', marginLeft: 'auto' }}>
           <IconButton onClick={onClickSecondary} aria-label="Copy address" disabled={!address}>
             {secondaryIcon}

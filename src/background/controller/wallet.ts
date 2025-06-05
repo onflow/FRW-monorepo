@@ -276,13 +276,18 @@ export class WalletController extends BaseController {
       }
 
       if (newAccountId && createPubKey) {
-        await userWalletService.updatePlaceholderAccount(network, newAccountId, account);
+        await userWalletService.updatePlaceholderAccount(network, newAccountId, account, txid);
       } else {
         userWalletService.registerCurrentPubkey(account.keys[0].publicKey, account);
       }
 
       return account;
     } catch (error) {
+      // Remove from pending creation transactions on error
+      if (createPubKey) {
+        await userWalletService.removePendingTransaction(network, createPubKey, txid);
+      }
+
       // Remove placeholder account if creation failed
       if (newAccountId && createPubKey) {
         await userWalletService.removePlaceholderAccount(network, createPubKey, newAccountId);
@@ -368,7 +373,8 @@ export class WalletController extends BaseController {
 
       const txid = data.data.txid;
 
-      const newAccountId = await userWalletService.setPlaceholderAccount(accountKey);
+      const newAccountId = await userWalletService.setPlaceholderAccount(accountKey, txid);
+
       this.checkForNewAddress(txid, newAccountId, accountKey.public_key);
     } catch (error) {
       // Reset the registration status if the operation fails

@@ -92,70 +92,31 @@ const USER_WALLET_TEMPLATE: UserWalletStore = {
   currentPubkey: '',
 };
 
-// Accounts that is under creation process
+// Accounts that have real addresses but are pending being indexed
 interface PendingAccount extends MainAccount {
   createdAt: number;
   expiresAt: number;
 }
 
+// Transactions that are creating accounts
+export interface PendingTransaction {
+  txId: string;
+  network: string;
+  pubkey: string;
+  accountId: number;
+  createdAt: number;
+  expiresAt: number;
+}
+
 const pendingAccountsStore = new Map<string, PendingAccount[]>();
+const pendingTransactionStore = new Map<string, PendingTransaction[]>();
 
 const getPendingAccountsKey = (network: string, pubkey: string): string => {
   return `pending:${network}:${pubkey}`;
 };
 
-const addPendingAccount = (
-  network: string,
-  pubkey: string,
-  account: MainAccount,
-  ttl: number = 120_000
-): void => {
-  const key = getPendingAccountsKey(network, pubkey);
-  const existingPending = pendingAccountsStore.get(key) || [];
-
-  const pendingAccount: PendingAccount = {
-    ...account,
-    createdAt: Date.now(),
-    expiresAt: Date.now() + ttl,
-  };
-
-  // Remove any existing pending account with the same ID
-  const filtered = existingPending.filter((pa) => pa.id !== account.id);
-  filtered.push(pendingAccount);
-
-  pendingAccountsStore.set(key, filtered);
-};
-
-const removePendingAccount = (network: string, pubkey: string, accountId: number): void => {
-  const key = getPendingAccountsKey(network, pubkey);
-  const existingPending = pendingAccountsStore.get(key) || [];
-
-  const filtered = existingPending.filter((pa) => pa.id !== accountId);
-  if (filtered.length > 0) {
-    pendingAccountsStore.set(key, filtered);
-  } else {
-    pendingAccountsStore.delete(key);
-  }
-};
-
-const getPendingAccounts = (network: string, pubkey: string): PendingAccount[] => {
-  const key = getPendingAccountsKey(network, pubkey);
-  const pendingAccounts = pendingAccountsStore.get(key) || [];
-
-  // Filter out expired accounts
-  const now = Date.now();
-  const validPending = pendingAccounts.filter((pa) => pa.expiresAt > now);
-
-  // Update the pending accounts object if we filtered out any expired accounts
-  if (validPending.length !== pendingAccounts.length) {
-    if (validPending.length > 0) {
-      pendingAccountsStore.set(key, validPending);
-    } else {
-      pendingAccountsStore.delete(key);
-    }
-  }
-
-  return validPending;
+const getPendingTransactionKey = (network: string, pubkey: string): string => {
+  return `pending-creation:${network}:${pubkey}`;
 };
 
 class UserWallet {
@@ -234,12 +195,12 @@ class UserWallet {
   };
 
   /**
-   * Create a placeholder account during account creation process
+   * Create a pending account during account creation process
    * The account will get replaced with the real account based on the id after address is created
-   * If the account is not created, the placeholder account should be removed after checkaddress catch the error
+   * If the account is not created, the pending account should be removed after checkaddress catch the error
    * @param account - The account key used for creating the address
    */
-  setPlaceholderAccount = async (account: AccountKeyRequest) => {
+  setPlaceholderAccount = async (account: AccountKeyRequest, txid: string) => {
     const network = await this.getNetwork();
     const cachedMainAccounts = await getCachedMainAccounts(network, account.public_key);
     let mainAccounts;
@@ -249,49 +210,54 @@ class UserWallet {
       mainAccounts = cachedMainAccounts;
     }
 
-    const emoji = getEmojiByIndex(mainAccounts.length);
-    const newAccountId = mainAccounts.length;
-    const newAccount: MainAccount = {
+    const pendingAccountId = mainAccounts.length;
+    const pendingAccount: MainAccount = {
       address: '',
       chain: networkToChainId(network),
       hashAlgo: account.hash_algo,
       hashAlgoString: '',
-      id: newAccountId,
+      id: pendingAccountId,
       keyIndex: 0,
       publicKey: account.public_key,
       signAlgo: account.sign_algo,
       signAlgoString: '',
       weight: 1000,
-      name: emoji.name,
-      icon: emoji.emoji,
-      color: emoji.bgcolor,
+      name: '',
+      icon: 'pendingTransaction',
+      color: '#fff',
     };
 
-    // Add to pending accounts for immediate UI feedback
-    addPendingAccount(network, account.public_key, newAccount);
+    await this.addPendingTransaction(txid, network, account.public_key, pendingAccountId);
 
-    // Also update cached data for consistency
-    mainAccounts.push(newAccount);
+    // DON'T add to pending accounts - it doesn't have a real address yet
+    // Only add to cached data for UI consistency
+    mainAccounts.push(pendingAccount);
     setCachedData(
       mainAccountsKey(network, account.public_key),
       mainAccounts,
       mainAccounts.length > 0 ? 60_000 : 1_000
     );
 
-    return newAccountId;
+    return pendingAccountId;
   };
 
   /**
    * Update a placeholder account with real account data after address creation succeeds
    * Updates existing placeholder or creates new account if placeholder not found
    * @param network - The network the account is on ('mainnet' or 'testnet')
-   * @param newAccountId - The ID of the placeholder account to update
+   * @param pendingAccountId - The ID of the placeholder account to update
    * @param account - The FCL account object containing the real account data
+   * @param txid - The transaction ID to remove from pending creation transactions
    * @returns void
    */
-  updatePlaceholderAccount = async (network: string, newAccountId: number, account: FclAccount) => {
-    // Remove from pending accounts after address creation succeeds
-    removePendingAccount(network, account.keys[0].publicKey, newAccountId);
+  updatePlaceholderAccount = async (
+    network: string,
+    pendingAccountId: number,
+    account: FclAccount,
+    txid: string
+  ) => {
+    // Remove from pending creation transactions once the account is created
+    await this.removePendingTransaction(network, account.keys[0].publicKey, txid);
 
     // Get current state (ensure we have an array)
     const cachedMainAccounts = await getCachedMainAccounts(network, account.keys[0].publicKey);
@@ -301,6 +267,7 @@ class UserWallet {
     } else {
       mainAccounts = cachedMainAccounts;
     }
+
     // Prepare the account data
     const accountData = {
       address: withPrefix(account.address) || account.address,
@@ -309,36 +276,97 @@ class UserWallet {
       signAlgoString: account.keys[0].signAlgoString,
       weight: account.keys[0].weight,
     };
-
     // Find existing account or prepare new one
-    const existingIndex = mainAccounts.findIndex((acc) => acc.id === newAccountId);
+    const existingIndex = mainAccounts.findIndex((acc) => acc.id === pendingAccountId);
+    const emoji = getEmojiByIndex(pendingAccountId || mainAccounts.length);
+    const pendingAccount = {
+      ...accountData,
+      chain: networkToChainId(network),
+      hashAlgo: account.keys[0].hashAlgo,
+      id: pendingAccountId || mainAccounts.length,
+      publicKey: account.keys[0].publicKey,
+      signAlgo: account.keys[0].signAlgo,
+      name: emoji.name,
+      icon: emoji.emoji,
+      color: emoji.bgcolor,
+    };
     if (existingIndex >= 0 && existingIndex < mainAccounts.length) {
-      // Update existing account with bounds check
-      mainAccounts[existingIndex] = {
-        ...mainAccounts[existingIndex],
-        ...accountData,
-      };
+      mainAccounts[existingIndex] = pendingAccount;
     } else {
-      // Create new account
-      const emoji = getEmojiByIndex(newAccountId || mainAccounts.length);
-      mainAccounts.push({
-        ...accountData,
-        chain: networkToChainId(network),
-        hashAlgo: account.keys[0].hashAlgo,
-        id: newAccountId || mainAccounts.length,
-        publicKey: account.keys[0].publicKey,
-        signAlgo: account.keys[0].signAlgo,
-        name: emoji.name,
-        icon: emoji.emoji,
-        color: emoji.bgcolor,
-      });
+      mainAccounts.push(pendingAccount);
     }
-
-    await setCachedData(
+    if (pendingAccount && pendingAccount.address) {
+      setupPendingAccount(network, account.keys[0].publicKey, pendingAccount);
+    }
+    setCachedData(
       mainAccountsKey(network, account.keys[0].publicKey),
       mainAccounts,
       mainAccounts.length > 0 ? 60_000 : 1_000
     );
+  };
+
+  /**
+   * Get the count of pending account creation transactions
+   * @returns The number of pending account creation transactions
+   */
+  getPendingTransactionCount = async (): Promise<number> => {
+    const network = this.getNetwork();
+    const pubkey = this.getCurrentPubkey();
+    return getPendingTransactionList(network, pubkey).length;
+  };
+
+  /**
+   * Add a pending account creation transaction
+   * @param txId - The transaction ID
+   * @param network - The network
+   * @param pubkey - The public key
+   * @param accountId - The account ID
+   */
+  addPendingTransaction = async (
+    txId: string,
+    network: string,
+    pubkey: string,
+    accountId: number
+  ): Promise<void> => {
+    const key = getPendingTransactionKey(network, pubkey);
+    const existingPending = pendingTransactionStore.get(key) || [];
+
+    const pendingTransaction: PendingTransaction = {
+      txId,
+      network,
+      pubkey,
+      accountId,
+      createdAt: Date.now(),
+      expiresAt: Date.now() + 30_000,
+    };
+
+    // Remove any existing pending transaction with the same txId
+    const filtered = existingPending.filter((pt) => pt.txId !== txId);
+    filtered.push(pendingTransaction);
+
+    pendingTransactionStore.set(key, filtered);
+  };
+
+  /**
+   * Remove a pending account creation transaction
+   * @param network - The network
+   * @param pubkey - The public key
+   * @param txId - The transaction ID
+   */
+  removePendingTransaction = async (
+    network: string,
+    pubkey: string,
+    txId: string
+  ): Promise<void> => {
+    const key = getPendingTransactionKey(network, pubkey);
+    const existingPending = pendingTransactionStore.get(key) || [];
+
+    const filtered = existingPending.filter((pt) => pt.txId !== txId);
+    if (filtered.length > 0) {
+      pendingTransactionStore.set(key, filtered);
+    } else {
+      pendingTransactionStore.delete(key);
+    }
   };
 
   /**
@@ -350,9 +378,6 @@ class UserWallet {
    * @returns void
    */
   removePlaceholderAccount = async (network: string, pubkey: string, accountId: number) => {
-    // Remove from pending accounts
-    removePendingAccount(network, pubkey, accountId);
-
     const mainAccounts = await getCachedMainAccounts(network, pubkey);
     if (!mainAccounts) {
       return;
@@ -362,6 +387,7 @@ class UserWallet {
     const updatedAccounts = mainAccounts.filter(
       (account) => !(account.id === accountId && account.address === '')
     );
+    // Remove from pending accounts
 
     setCachedData(mainAccountsKey(network, pubkey), updatedAccounts, 60_000);
   };
@@ -1481,40 +1507,116 @@ const getMainAccountsWithPubKey = async (
   return mainAccounts;
 };
 
+// New accounts (with real addresses waiting to be indexed)
+const setupPendingAccount = (
+  network: string,
+  pubkey: string,
+  account: MainAccount,
+  ttl: number = 120_000
+): void => {
+  const key = getPendingAccountsKey(network, pubkey);
+  const existingNew = pendingAccountsStore.get(key) || [];
+
+  const pendingAccount: PendingAccount = {
+    ...account,
+    createdAt: Date.now(),
+    expiresAt: Date.now() + ttl,
+  };
+
+  // Remove any existing new account with the same ID
+  const filtered = existingNew.filter((na) => na.id !== account.id);
+  filtered.push(pendingAccount);
+
+  pendingAccountsStore.set(key, filtered);
+};
+
+const removePendingAccount = (network: string, pubkey: string, accountId: number): void => {
+  const key = getPendingAccountsKey(network, pubkey);
+  const existingNew = pendingAccountsStore.get(key) || [];
+
+  const filtered = existingNew.filter((na) => na.id !== accountId);
+  if (filtered.length > 0) {
+    pendingAccountsStore.set(key, filtered);
+  } else {
+    pendingAccountsStore.delete(key);
+  }
+};
+
+const getPendingAccounts = (network: string, pubkey: string): PendingAccount[] => {
+  const key = getPendingAccountsKey(network, pubkey);
+  const pendingAccounts = pendingAccountsStore.get(key) || [];
+
+  // Filter out expired accounts
+  const now = Date.now();
+  const validNew = pendingAccounts.filter((na) => na.expiresAt > now);
+
+  // Update the new accounts object if we filtered out any expired accounts
+  if (validNew.length !== pendingAccounts.length) {
+    if (validNew.length > 0) {
+      pendingAccountsStore.set(key, validNew);
+    } else {
+      pendingAccountsStore.delete(key);
+    }
+  }
+
+  return validNew;
+};
+
+const getPendingTransactionList = (network: string, pubkey: string): PendingTransaction[] => {
+  const key = getPendingTransactionKey(network, pubkey);
+  const pendingTransactions = pendingTransactionStore.get(key) || [];
+
+  // Filter out expired transactions
+  const now = Date.now();
+  const validPending = pendingTransactions.filter((pt) => pt.expiresAt > now);
+
+  // Update the pending transactions object if we filtered out any expired transactions
+  if (validPending.length !== pendingTransactions.length) {
+    if (validPending.length > 0) {
+      pendingTransactionStore.set(key, validPending);
+    } else {
+      pendingTransactionStore.delete(key);
+    }
+  }
+
+  return validPending;
+};
+
 /**
  * Merge indexed accounts with pending accounts, handling cleanup and deduplication
  * @param network - The network to process accounts for
  * @param pubKey - The public key associated with the accounts
  * @param indexedMainAccounts - The accounts that have been indexed on the blockchain
- * @returns The merged list of accounts with pending accounts included
+ * @returns The merged list of accounts with new accounts included
  */
-const mergeAccountsWithPending = (
+const mergeAccountsWithPendingAccounts = (
   network: string,
   pubKey: string,
   indexedMainAccounts: MainAccount[]
 ): MainAccount[] => {
-  // Get pending accounts and filter them
   const pendingAccounts = getPendingAccounts(network, pubKey);
 
-  // Remove pending accounts that have real addresses
+  // Remove new accounts that have real addresses and are now indexed
   const indexedAddresses = new Set(indexedMainAccounts.map((acc) => acc.address));
-  const stillPendingAccounts = pendingAccounts.filter((pending) => {
-    // If the pending account has an address and it's now indexed, remove it from pending
-    if (pending.address && indexedAddresses.has(pending.address)) {
-      removePendingAccount(network, pubKey, pending.id);
+  const stillPendingAccounts = pendingAccounts.filter((newAcc) => {
+    // If the new account has an address and it's now indexed, remove it from new accounts
+    if (newAcc.address && indexedAddresses.has(newAcc.address)) {
+      removePendingAccount(network, pubKey, newAcc.id);
       return false;
     }
-    // Keep pending accounts that don't have addresses yet (still being created)
-    return !pending.address || pending.address === '';
+    // Keep new accounts that have real addresses but aren't indexed yet
+    return newAcc.address && newAcc.address !== '';
   });
 
   const mainAccounts = [...indexedMainAccounts];
 
-  // Add pending accounts that don't conflict with indexed accounts
-  stillPendingAccounts.forEach((pending) => {
-    const existsInIndexed = indexedMainAccounts.some((indexed) => indexed.id === pending.id);
+  // Add new accounts that don't conflict with indexed accounts
+  stillPendingAccounts.forEach((newAcc) => {
+    const existsInIndexed = indexedMainAccounts.some(
+      (indexed) => indexed.address === newAcc.address
+    );
     if (!existsInIndexed) {
-      const { createdAt, expiresAt, ...mainAccount } = pending;
+      const { createdAt, expiresAt, ...mainAccount } = newAcc;
       mainAccounts.push(mainAccount);
     }
   });
@@ -1556,8 +1658,7 @@ const loadMainAccountsWithPubKey = async (
   );
 
   // Merge with pending accounts
-  const mainAccounts = mergeAccountsWithPending(network, pubKey, indexedMainAccounts);
-
+  const mainAccounts = mergeAccountsWithPendingAccounts(network, pubKey, indexedMainAccounts);
   // Save the merged accounts to the cache
   setCachedData(
     mainAccountsKey(network, pubKey),

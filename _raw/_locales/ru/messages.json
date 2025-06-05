@@ -1493,5 +1493,8 @@
   },
   "Import_an_existing_account": {
     "message": "Импортировать существующий аккаунт"
+  },
+  "Add_Account_Sidebar": {
+    "message": "Добавить аккаунт"
   }
 }

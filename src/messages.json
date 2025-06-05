@@ -1502,5 +1502,8 @@
   },
   "Import_an_existing_account": {
     "message": "Import an existing account"
+  },
+  "Add_Account_Sidebar": {
+    "message": "Add Account"
   }
 }
