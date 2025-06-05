@@ -270,7 +270,7 @@ export const importAccountBySeedPhrase = async ({
   // Close all pages except the current page (the extension opens them in the background)
   await closeOpenedPages(page);
 
-  await page.getByRole('tab', { name: 'Seed Phrase' }).click();
+  await page.getByRole('tab', { name: 'Recovery Phrase' }).click();
   await page.getByPlaceholder('Import 12 or 24 words split').click();
 
   await page.getByPlaceholder('Import 12 or 24 words split').fill(seedPhrase);
