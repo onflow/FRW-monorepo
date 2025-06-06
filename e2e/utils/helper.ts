@@ -308,11 +308,11 @@ export const importAccountBySeedPhrase = async ({
 
   // Wait for the account address to be visible
   let flowAddr = await getCurrentAddress(page);
+
   if (accountAddr && flowAddr !== accountAddr) {
-    await switchToFlow({ page, extensionId });
+    await switchToMainAccount({ page, address: accountAddr });
     flowAddr = await getCurrentAddress(page);
   }
-
   if (accountAddr && flowAddr !== accountAddr) {
     throw new Error('Account address does not match');
   }
@@ -451,6 +451,18 @@ export const switchAccount = async ({ page, extensionId }) => {
   await page
     .getByTestId(/main-account-0x.*/)
     .nth(1)
+    .click();
+  // get address
+  await getCurrentAddress(page);
+};
+
+export const switchToMainAccount = async ({ page, address }) => {
+  // Assume the user is on the dashboard page
+  await page.getByTestId('account-menu-button').click();
+  // switch to another flow account
+  await page
+    .getByTestId(new RegExp(`main-account-${address}`, 'i'))
+    .first()
     .click();
   // get address
   await getCurrentAddress(page);
