@@ -439,23 +439,6 @@ export const switchToEvmAddress = async ({ page, address }) => {
   await getCurrentAddress(page);
 };
 
-export const switchAccount = async ({ page }) => {
-  // Assume the user is on the dashboard page
-  await page.getByTestId('account-menu-button').click();
-  // switch to another flow account
-  await page
-    .getByTestId(/main-account-0x.*/)
-    .first()
-    .click();
-  await page.getByTestId('account-menu-button').click();
-  await page
-    .getByTestId(/main-account-0x.*/)
-    .nth(1)
-    .click();
-  // get address
-  await getCurrentAddress(page);
-};
-
 export const switchToMainAccount = async ({ page, address }) => {
   // Assume the user is on the dashboard page
   await page.getByTestId('account-menu-button').click();

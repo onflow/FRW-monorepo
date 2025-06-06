@@ -1,4 +1,8 @@
-import { importAccountBySeedPhrase, switchAccount, switchToEvmAddress } from '../utils/helper';
+import {
+  importAccountBySeedPhrase,
+  switchToEvmAddress,
+  switchToMainAccount,
+} from '../utils/helper';
 import { test, expect } from '../utils/loader';
 
 test('check main account address after switching', async ({ page, extensionId }) => {
@@ -31,7 +35,7 @@ test('check main account address after switching', async ({ page, extensionId })
     timeout: 60_000,
   });
   //Switch from account 1 to account 2
-  await switchAccount({ page });
+  await switchToMainAccount({ page, address: process.env.TEST_MULTI_ACCOUNT_TESTER_ADDR2! });
   const switchedAccAddress = page.getByTestId('copy-address-button').filter({
     hasText: process.env.TEST_MULTI_ACCOUNT_TESTER_ADDR2,
   });
