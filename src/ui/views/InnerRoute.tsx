@@ -130,7 +130,7 @@ const InnerRoute = (props: RouteComponentProps) => {
             <PrivateRoute path={`${props.match.url}/nested/privatekeypassword`}>
               <PrivateKeyPassword />
             </PrivateRoute>
-            <PrivateRoute path={`${props.match.url}/nested/keylist/:address`}>
+            <PrivateRoute path={`${props.match.url}/nested/keylist`}>
               <KeyList />
             </PrivateRoute>
             <PrivateRoute path={`${props.match.url}/nested/keydetail`}>
