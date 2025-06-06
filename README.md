@@ -134,8 +134,6 @@ ATTENTION: When you create a new key, make sure the key doesen't include space a
 Setup the following environment variables in .env.dev file:
 
 - TEST_PASSWORD: The password for the test wallet
-- TEST_PK_P256: The P256 public key for the test wallet
-- TEST_PK_SECP256K1: The SECP256K1 public key for the test wallet
 
 ## Analyzing High Priority Issues
 

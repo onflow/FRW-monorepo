@@ -99,8 +99,6 @@ jobs:
           WC_PROJECTID="${{ secrets.WC_PROJECTID }}"
           MIXPANEL_TOKEN="${{ secrets.MIXPANEL_TOKEN }}"
           TEST_PASSWORD="${{ secrets.TEST_PASSWORD }}"
-          TEST_PK_P256="${{ secrets.TEST_PK_P256 }}"
-          TEST_PK_SECP256K1="${{ secrets.TEST_PK_SECP256K1 }}"
           TEST_SEED_PHRASE_RECEIVER="${{ secrets.TEST_SEED_PHRASE_RECEIVER }}"
           TEST_SEED_PHRASE_SENDER="${{ secrets.TEST_SEED_PHRASE_SENDER }}"
           TEST_SENDER_ADDR="${{ secrets.TEST_SENDER_ADDR }}"
@@ -180,8 +178,6 @@ jobs:
           cat << EOF > .env.test
           # Test secrets
           TEST_PASSWORD="${{ secrets.TEST_PASSWORD }}"
-          TEST_PK_P256="${{ secrets.TEST_PK_P256 }}"
-          TEST_PK_SECP256K1="${{ secrets.TEST_PK_SECP256K1 }}"
           TEST_SEED_PHRASE_RECEIVER="${{ secrets.TEST_SEED_PHRASE_RECEIVER }}"
           TEST_SEED_PHRASE_SENDER="${{ secrets.TEST_SEED_PHRASE_SENDER }}"
           TEST_SENDER_ADDR="${{ secrets.TEST_SENDER_ADDR }}"

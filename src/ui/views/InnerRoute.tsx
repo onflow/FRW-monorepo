@@ -2,7 +2,6 @@ import { makeStyles } from '@mui/styles';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Switch, withRouter, type RouteComponentProps } from 'react-router-dom';
 
-import { useInitHook } from '@/ui/hooks';
 import PrivateRoute from 'ui/components/PrivateRoute';
 import { useWallet, useWalletLoaded } from 'ui/utils';
 
@@ -71,7 +70,6 @@ const InnerRoute = (props: RouteComponentProps) => {
 
   const usewallet = useWallet();
   const walletLoaded = useWalletLoaded();
-  const { initializeStore } = useInitHook();
 
   const initRef = useRef(false);
 
@@ -89,11 +87,10 @@ const InnerRoute = (props: RouteComponentProps) => {
         setValue(0);
         await usewallet.setDashIndex(0);
       }
-      await initializeStore();
     } finally {
       initRef.current = false;
     }
-  }, [usewallet, initializeStore, walletLoaded]);
+  }, [usewallet, walletLoaded]);
 
   useEffect(() => {
     if (walletLoaded) {
@@ -133,7 +130,7 @@ const InnerRoute = (props: RouteComponentProps) => {
             <PrivateRoute path={`${props.match.url}/nested/privatekeypassword`}>
               <PrivateKeyPassword />
             </PrivateRoute>
-            <PrivateRoute path={`${props.match.url}/nested/keylist`}>
+            <PrivateRoute path={`${props.match.url}/nested/keylist/:address`}>
               <KeyList />
             </PrivateRoute>
             <PrivateRoute path={`${props.match.url}/nested/keydetail`}>
