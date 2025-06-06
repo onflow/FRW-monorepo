@@ -60,6 +60,9 @@ interface MenuDrawerProps {
   modeOn: boolean;
   mainAddressLoading: boolean;
   noAddress?: boolean;
+  // Optional props for Storybook stories
+  canCreateNewAccount?: boolean;
+  canImportExistingAccount?: boolean;
 }
 
 const MenuDrawer = ({

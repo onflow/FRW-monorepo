@@ -28,23 +28,24 @@ const config: StorybookConfig = {
 
     config.resolve.alias = {
       ...config.resolve.alias,
-      '@/ui/hooks/use-account-hooks$': path.resolve(
+      '@/ui/hooks/use-account-hooks': path.resolve(
         __dirname,
         '../src/ui/components/account/stories/use-account-hooks.mock.ts'
       ),
-      '@/ui/hooks/useNftHook$': path.resolve(
+      '@/ui/hooks/useNftHook': path.resolve(
         __dirname,
         '../src/ui/components/account/stories/use-nft-hooks.mock.ts'
       ),
-      '@/ui/hooks/useProfileHook$': path.resolve(
+      '@/ui/hooks/useProfileHook': path.resolve(
         __dirname,
         '../src/ui/hooks/useProfileHook.mock.ts'
       ),
-      '@/ui/hooks/useNetworkHook$': path.resolve(
+      '@/ui/hooks/useNetworkHook': path.resolve(
         __dirname,
         '../src/ui/hooks/useNetworkHook.mock.ts'
       ),
-      '@/ui/utils/WalletContext$': path.resolve(__dirname, '../src/stories/wallet-context.mock.ts'),
+      '@/ui/utils/WalletContext': path.resolve(__dirname, '../src/stories/wallet-context.mock.ts'),
+      'ui/utils$': path.resolve(__dirname, '../src/stories/ui-utils.mock.ts'),
       '@': path.resolve(__dirname, '../src'),
       ui: path.resolve(__dirname, '../src/ui'),
       background: path.resolve(__dirname, '../src/background'),
