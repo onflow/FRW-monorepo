@@ -11,8 +11,17 @@ import {
   useEvmAccount as importedMockUseEvmAccount,
 } from '@/ui/components/account/stories/use-account-hooks.mock';
 import { useNftCatalogCollections as importedMockUseNftCatalogCollections } from '@/ui/components/account/stories/use-nft-hooks.mock';
+import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
 
 import MenuDrawer from '../MenuDrawer';
+
+// Debug wrapper component
+const MenuDrawerWithDebug = (props: any) => {
+  const canCreateNewAccount = useFeatureFlag('create_new_account');
+  const canImportExistingAccount = useFeatureFlag('import_existing_account');
+
+  return <MenuDrawer {...props} />;
+};
 
 // Mock wallet accounts - aligned with account-listing stories
 const mockMainAccount: WalletAccount = {
@@ -131,7 +140,7 @@ const mockWalletListWithExtra: WalletAccount[] = [
 const meta: Meta<typeof MenuDrawer> = {
   title: 'Views/Dashboard/MenuDrawer',
   tags: ['autodocs'],
-  component: MenuDrawer,
+  component: MenuDrawerWithDebug,
   decorators: [
     (Story, context) => {
       // Reset mocks
@@ -139,7 +148,25 @@ const meta: Meta<typeof MenuDrawer> = {
       importedMockUseEvmAccount.mockReset();
       importedMockUseNftCatalogCollections.mockReset();
 
-      const { mockData, pendingTransactions } = context.parameters;
+      const { mockData, pendingTransactions, featureFlags } = context.parameters;
+
+      // Set up feature flag mocks
+      if (typeof window !== 'undefined') {
+        const flagsToSet: Record<string, boolean> = {
+          create_new_account: false,
+          import_existing_account: false,
+        };
+
+        if (featureFlags?.canCreateNewAccount) {
+          flagsToSet.create_new_account = true;
+        }
+
+        if (featureFlags?.canImportExistingAccount) {
+          flagsToSet.import_existing_account = true;
+        }
+
+        (window as any).__STORYBOOK_FEATURE_FLAGS__ = flagsToSet;
+      }
 
       // Set up global useProfiles mock with pending transactions
       if (typeof window !== 'undefined') {
@@ -225,14 +252,6 @@ const meta: Meta<typeof MenuDrawer> = {
       control: 'boolean',
       description: 'Indicates no wallet address is available',
     },
-    canCreateNewAccount: {
-      control: 'boolean',
-      description: 'Shows add account button',
-    },
-    canImportExistingAccount: {
-      control: 'boolean',
-      description: 'Shows import existing account option',
-    },
     toggleDrawer: { action: 'toggle drawer' },
     togglePop: { action: 'toggle popup' },
   },
@@ -291,12 +310,14 @@ export const WithAddAccountFlow: Story = {
     modeOn: false,
     mainAddressLoading: false,
     noAddress: false,
-    canCreateNewAccount: true,
     toggleDrawer: () => {},
     togglePop: () => {},
   },
   parameters: {
     pendingTransactions: [mockPendingTransaction],
+    featureFlags: {
+      canCreateNewAccount: true,
+    },
     mockData: createMockData({
       [mockMainAccount.address]: {
         evm: mockEvmAccount,
@@ -338,7 +359,7 @@ export const Loading: Story = {
     drawer: true,
     userInfo: null,
     walletList: [],
-    activeAccount: mockMainAccount,
+    activeAccount: undefined,
     activeParentAccount: mockMainAccount,
     network: 'mainnet',
     modeOn: false,
@@ -349,38 +370,6 @@ export const Loading: Story = {
   },
   parameters: {
     mockData: createMockData({}),
-  },
-};
-
-export const WithPendingAccount: Story = {
-  name: 'Account Creation in Progress',
-  args: {
-    drawer: true,
-    userInfo: mockUserInfo,
-    walletList: mockWalletList,
-    activeAccount: mockMainAccount,
-    activeParentAccount: mockMainAccount,
-    network: 'mainnet',
-    modeOn: false,
-    mainAddressLoading: false,
-    noAddress: false,
-    toggleDrawer: () => {},
-    togglePop: () => {},
-  },
-  parameters: {
-    pendingTransactions: [mockPendingTransaction],
-    mockData: createMockData({
-      [mockMainAccount.address]: {
-        evm: mockEvmAccount,
-        children: [mockChildAccount1],
-      },
-      [mockMainAccount2.address]: {
-        children: [],
-      },
-      [mockChildAccount1.address]: {
-        nfts: 12,
-      },
-    }),
   },
 };
 
@@ -557,7 +546,7 @@ export const Closed: Story = {
 };
 
 export const InteractiveDemo: Story = {
-  name: 'Add Account Popup',
+  name: 'Add account feature flags all true Popup',
   args: {
     drawer: true,
     userInfo: mockUserInfo,
@@ -568,12 +557,14 @@ export const InteractiveDemo: Story = {
     modeOn: false,
     mainAddressLoading: false,
     noAddress: false,
-    canCreateNewAccount: true,
-    canImportExistingAccount: true,
     toggleDrawer: () => {},
     togglePop: () => {},
   },
   parameters: {
+    featureFlags: {
+      canCreateNewAccount: true,
+      canImportExistingAccount: true,
+    },
     mockData: createMockData({
       [mockMainAccount.address]: {
         evm: mockEvmAccount,

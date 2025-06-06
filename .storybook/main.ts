@@ -28,6 +28,11 @@ const config: StorybookConfig = {
 
     config.resolve.alias = {
       ...config.resolve.alias,
+      // Specific hook aliases first
+      '@/ui/hooks/use-feature-flags': path.resolve(
+        __dirname,
+        '../src/ui/hooks/use-feature-flags.mock.ts'
+      ),
       '@/ui/hooks/use-account-hooks': path.resolve(
         __dirname,
         '../src/ui/components/account/stories/use-account-hooks.mock.ts'
@@ -44,6 +49,9 @@ const config: StorybookConfig = {
         __dirname,
         '../src/ui/hooks/useNetworkHook.mock.ts'
       ),
+      // General hooks alias (fallback)
+      '@/ui/hooks': path.resolve(__dirname, '../src/stories/ui-hooks.mock.ts'),
+      // Other aliases
       '@/ui/utils/WalletContext': path.resolve(__dirname, '../src/stories/wallet-context.mock.ts'),
       'ui/utils$': path.resolve(__dirname, '../src/stories/ui-utils.mock.ts'),
       '@': path.resolve(__dirname, '../src'),
