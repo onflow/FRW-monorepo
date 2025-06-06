@@ -11,14 +11,14 @@ test('check main account address after switching', async ({ page, extensionId })
   await importAccountBySeedPhrase({
     page,
     extensionId,
-    seedPhrase: process.env.TEST_SEED_PHRASE_MULTI_ACCOUNT_TESTER,
-    username: process.env.TEST_MULTI_ACCOUNT_TESTER_NICKNAME!,
-    accountAddr: process.env.TEST_MULTI_ACCOUNT_TESTER_ADDR1!,
+    seedPhrase: process.env.TEST_SEED_PHRASE_SENDER,
+    username: process.env.TEST_SENDER_NICKNAME!,
+    accountAddr: process.env.TEST_SENDER_ADDR!,
   });
   //Check main account 1 Flow address
   const mainAccAddress = page
     .getByTestId('copy-address-button')
-    .filter({ hasText: process.env.TEST_MULTI_ACCOUNT_TESTER_ADDR1! });
+    .filter({ hasText: process.env.TEST_SENDER_ADDR! });
 
   await expect(mainAccAddress).toBeVisible({
     timeout: 60_000,
@@ -27,12 +27,10 @@ test('check main account address after switching', async ({ page, extensionId })
   await switchToEvmAddress({
     page,
     extensionId,
-    address: process.env.TEST_MULTI_ACCOUNT_TESTER_EVM_ADDR1!,
+    address: process.env.TEST_SENDER_EVM_ADDR!,
   });
   const mainAccEvmAddress = page.getByTestId('copy-address-button').filter({
-    hasText: process.env.TEST_MULTI_ACCOUNT_TESTER_EVM_ADDR1!.slice(
-      process.env.TEST_MULTI_ACCOUNT_TESTER_EVM_ADDR1!.length - 8
-    ),
+    hasText: process.env.TEST_SENDER_EVM_ADDR!.slice(process.env.TEST_SENDER_EVM_ADDR!.length - 8),
   });
 
   await expect(mainAccEvmAddress).toBeVisible({
