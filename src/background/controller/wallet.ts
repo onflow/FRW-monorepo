@@ -3354,16 +3354,6 @@ export class WalletController extends BaseController {
     return await fcl.account(address);
   };
 
-  getCurrentAddressInfo = async (address: string): Promise<FclAccount> => {
-    if (!address) {
-      throw new Error('No address found');
-    }
-    if (!isValidFlowAddress(address)) {
-      throw new Error('Invalid address');
-    }
-    return await fcl.account(address);
-  };
-
   getEmoji = async () => {
     return getEmojiList();
   };

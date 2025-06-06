@@ -28,7 +28,7 @@ const KeyList = () => {
   const getAccount = useCallback(async () => {
     const keys = await wallet.openapi.keyList();
 
-    const account = await wallet.getCurrentAddressInfo(address);
+    const account = await wallet.getAccountInfo(address);
     const installationId = await wallet.openapi.getInstallationId();
     const mergedArray = await mergeData(
       {
