@@ -237,6 +237,9 @@ jobs:
           name: playwright-report
           path: playwright-report/ # Download to this path
 
+      - name: Create .nojekyll file
+        run: touch playwright-report/.nojekyll
+
       - name: Deploy Playwright Report
         uses: peaceiris/actions-gh-pages@v4
         if: always() # Deploy even if tests fail
