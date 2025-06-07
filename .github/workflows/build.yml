@@ -210,6 +210,9 @@ jobs:
         env:
           CI: true
           HEADLESS: true
+      - name: Sanitize Playwright Report
+        if: always()
+        run: pnpm tsx build/sanitize-playwright.ts
       - uses: actions/upload-artifact@v4
         if: always()
         with:
