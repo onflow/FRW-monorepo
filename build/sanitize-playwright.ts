@@ -135,9 +135,8 @@ async function sanitizeAllTraces() {
   const secrets = await loadSecrets();
 
   if (!(await fs.stat(dataDir).catch(() => false))) {
-    console.error(`Data directory not found: ${dataDir}`);
-    console.error('Please provide a valid Playwright report directory.');
-    process.exit(1);
+    console.info(`No reports to sanitize in: ${dataDir}`);
+    return;
   }
 
   const files = await fs.readdir(dataDir);
