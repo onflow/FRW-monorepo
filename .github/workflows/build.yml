@@ -146,11 +146,20 @@ jobs:
       group: tests-${{ github.workflow }}
       cancel-in-progress: false
     environment: ${{ needs.determine-env.outputs.env_name }}
+    strategy:
+      matrix:
+        node-version: [22.x]
+
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
         with:
-          node-version: lts/*
+          node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
 
       - name: Download build artifacts
@@ -202,18 +211,19 @@ jobs:
     needs: [test] # Depends on the Playwright test job
     runs-on: ubuntu-latest
     if: always() # Run even if tests fail to publish what's available
+    strategy:
+      matrix:
+        node-version: [22.x]
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Required by Chromatic
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
 
-      - name: Use Node.js
+      - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
-          node-version: lts/*
+          node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
 
       - name: Install dependencies
