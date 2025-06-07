@@ -6,14 +6,11 @@ import JSZip from 'jszip';
 async function loadSecrets() {
   const secrets = new Set<string>();
   const projectRoot = process.cwd();
-  console.log(`Searching for .env files in: ${projectRoot}`);
   try {
     const files = await fs.readdir(projectRoot);
     const envFiles = files.filter((file) => file === '.env' || file.startsWith('.env.'));
-    console.log(`Found .env files: ${envFiles.join(', ') || 'None'}`);
 
     for (const file of envFiles) {
-      console.log(`Loading secrets from ${file}`);
       const content = await fs.readFile(path.join(projectRoot, file), 'utf-8');
       const lines = content.split('\n');
       for (const line of lines) {
@@ -34,13 +31,8 @@ async function loadSecrets() {
         }
       }
     }
-    const loadedSecrets = Array.from(secrets);
-    console.log(`Loaded ${loadedSecrets.length} secrets.`);
-    if (loadedSecrets.length > 0) {
-      console.log('Loaded secrets:', loadedSecrets);
-    }
   } catch (error) {
-    console.warn('Could not load .env files. Continuing without them.', error);
+    console.warn('Could not load .env files. Continuing without them.');
   }
   return Array.from(secrets);
 }
@@ -55,21 +47,15 @@ function scrubValue(obj: any, secrets: string[], objectPath = '') {
       const currentPath = objectPath ? `${objectPath}.${key}` : key;
       const value = obj[key];
       if (typeof value === 'string') {
-        if (secrets.includes(value)) {
-          console.log(`Sanitizing exact match at path: ${currentPath}`);
-          obj[key] = '********';
-        } else {
-          // Check for partial matches for debugging purposes
-          for (const secret of secrets) {
-            // Ensure secret is not an empty string and is found in the value
-            if (secret && value.includes(secret)) {
-              console.log(
-                `[DEBUG] Potential partial match found at path '${currentPath}'. The script does not scrub partial matches by default.`
-              );
-              console.log(`[DEBUG]   Secret: '${secret}'`);
-              console.log(`[DEBUG]   Value:  '${value}'`);
-            }
+        let scrubbedValue = value;
+        for (const secret of secrets) {
+          if (secret && scrubbedValue.includes(secret)) {
+            scrubbedValue = scrubbedValue.replaceAll(secret, '********');
           }
+        }
+
+        if (scrubbedValue !== value) {
+          obj[key] = scrubbedValue;
         }
       } else {
         scrubValue(value, secrets, currentPath); // Pass path down in recursion
@@ -84,15 +70,8 @@ async function sanitizeTrace(tracePath: string, secrets: string[]) {
     return;
   }
 
-  console.log(`\n--- Sanitizing trace: ${path.basename(tracePath)} ---`);
-
   const zipData = await fs.readFile(tracePath);
   const zip = await JSZip.loadAsync(zipData);
-
-  console.log(`Files inside ${path.basename(tracePath)}:`);
-  Object.keys(zip.files).forEach((filename) => {
-    console.log(`- ${filename}`);
-  });
 
   const traceFiles = Object.values(zip.files).filter((f) => f.name.endsWith('.trace'));
 
@@ -101,10 +80,7 @@ async function sanitizeTrace(tracePath: string, secrets: string[]) {
     return;
   }
 
-  console.log(`Found ${traceFiles.length} trace file(s) to sanitize.`);
-
   for (const traceFile of traceFiles) {
-    console.log(`Sanitizing: ${traceFile.name}`);
     const traceContent = await traceFile.async('string');
     const lines = traceContent.split('\n');
 
@@ -123,11 +99,9 @@ async function sanitizeTrace(tracePath: string, secrets: string[]) {
           sensitiveKeywords.test(event.params.selector)
         ) {
           if ('value' in event.params) {
-            console.log(`Sanitizing value for selector: ${event.params.selector}`);
             event.params.value = '********';
           }
           if ('text' in event.params) {
-            console.log(`Sanitizing text for selector: ${event.params.selector}`);
             event.params.text = '********';
           }
         }
@@ -153,8 +127,6 @@ async function sanitizeTrace(tracePath: string, secrets: string[]) {
   });
 
   await fs.writeFile(tracePath, newZipData);
-
-  console.log(`Sanitization complete: ${tracePath}`);
 }
 
 async function sanitizeAllTraces() {
