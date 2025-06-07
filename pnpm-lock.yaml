@@ -453,6 +453,9 @@ importers:
       jest:
         specifier: ^27.5.1
         version: 27.5.1(bufferutil@4.0.9)(ts-node@10.9.2(@swc/core@1.11.29)(@types/node@22.15.24)(typescript@5.8.3))(utf-8-validate@5.0.10)
+      jszip:
+        specifier: ^3.10.1
+        version: 3.10.1
       libsodium-wrappers:
         specifier: ^0.7.15
         version: 0.7.15
