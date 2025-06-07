@@ -216,6 +216,7 @@
     "ts-import-plugin": "^1.6.7",
     "ts-loader": "^9.5.1",
     "tsconfig-paths-webpack-plugin": "^4.2.0",
+    "tsx": "^4.19.4",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.15.0",
     "typescript-transform-paths": "^3.5.2",
