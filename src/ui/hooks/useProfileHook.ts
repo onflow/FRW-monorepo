@@ -131,16 +131,13 @@ export const useProfiles = () => {
     ...(evmAccount ? [evmAccount] : []),
     ...(childAccounts ?? []),
   ];
-
-  const canMoveToChild =
-    activeAccountType === 'main' && (evmAccount || (childAccounts && childAccounts?.length > 0));
-
-  const clearProfileData = () => {};
-  const fetchProfileData = () => {};
+  // Check if we have another account to move to
+  const canMoveToOtherAccount =
+    activeAccountType === 'evm' ||
+    activeAccountType === 'child' ||
+    (activeAccountType === 'main' && (!!evmAccount || !!childAccounts?.length));
 
   return {
-    fetchProfileData,
-    clearProfileData,
     currentWallet,
     mainAddress,
     evmAddress,
@@ -159,7 +156,7 @@ export const useProfiles = () => {
     activeAccountType,
     noAddress,
     registerStatus,
-    canMoveToChild,
+    canMoveToOtherAccount,
     currentWalletList,
     payer,
     network,

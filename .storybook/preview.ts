@@ -108,7 +108,6 @@ const preview: Preview = {
       Provider: ThemeProvider,
       themes: {
         // Provide your custom themes here
-        light: theme,
         dark: theme,
       },
       defaultTheme: 'dark',

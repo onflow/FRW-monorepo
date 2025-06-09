@@ -33,7 +33,7 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-// Mock the useWallet hook to return the mock wallet object directly
+// These are the mock function instances, exported with the names the component expects.
 export const useWallet = () => mockWallet;
 
 // Mock the useWalletLoaded hook

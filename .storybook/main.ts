@@ -54,6 +54,13 @@ const config: StorybookConfig = {
       // Other aliases
       '@/ui/utils/WalletContext': path.resolve(__dirname, '../src/stories/wallet-context.mock.ts'),
       'ui/utils$': path.resolve(__dirname, '../src/stories/ui-utils.mock.ts'),
+      'react-router-dom': path.resolve(__dirname, '../src/stories/react-router-dom.mock.ts'),
+      '@/ui/hooks/use-account-hooks$': path.resolve(
+        __dirname,
+        '../src/stories/use-account-hooks.mock.ts'
+      ),
+      '@/ui/hooks/useNftHook$': path.resolve(__dirname, '../src/stories/use-nft-hooks.mock.ts'),
+      '@/ui/utils/WalletContext$': path.resolve(__dirname, '../src/stories/wallet-context.mock.ts'),
       '@': path.resolve(__dirname, '../src'),
       ui: path.resolve(__dirname, '../src/ui'),
       background: path.resolve(__dirname, '../src/background'),
