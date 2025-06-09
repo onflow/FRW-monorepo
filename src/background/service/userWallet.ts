@@ -1599,13 +1599,11 @@ export const addPlaceholderAccount = async (
   // Set to 3 minutes. That should be enough time to get the account indexed
   await setCachedData(placeholderAccountsKey(network, pubkey), placeholderAccounts, 360_000);
 
+  await loadMainAccountsWithPubKey(network, pubkey);
+
   // Provided no errors, remove the pending transaction
   // Remove from pending creation transactions once the account is created
   await removePendingAccountCreationTransaction(network, pubkey, txId);
-
-  // Trigger a refresh of the main accounts
-  // The merge happens in loadMainAccountsWithPubKey
-  triggerRefresh(mainAccountsKey(network, pubkey));
 };
 
 const clearPlaceholderAccounts = async (network: string, pubkey: string) => {
