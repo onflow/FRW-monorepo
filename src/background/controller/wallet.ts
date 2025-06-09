@@ -347,10 +347,10 @@ export class WalletController extends BaseController {
     userWalletService.registerCurrentPubkey(accountKey.public_key, accountInfo);
   };
   /**
-   * Create a manual address
+   * Create a new address
    * @returns
    */
-  createManualAddress = async () => {
+  createNewAccount = async () => {
     const publickey = userWalletService.getCurrentPubkey();
     const curPubKeyTuple = await keyringService.getCurrentPublicKeyTuple();
 
@@ -358,7 +358,7 @@ export class WalletController extends BaseController {
     try {
       setCachedData(registerStatusKey(publickey), true, 120_000);
 
-      const data = await openapiService.createManualAddress(
+      const data = await openapiService.createNewAccount(
         accountKey.hash_algo,
         accountKey.sign_algo,
         publickey,

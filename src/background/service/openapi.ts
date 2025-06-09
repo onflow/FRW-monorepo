@@ -1167,7 +1167,7 @@ export class OpenApiService {
     return data;
   };
 
-  createManualAddress = async (
+  createNewAccount = async (
     hash_algo: number,
     sign_algo: number,
     public_key: string,

@@ -4,7 +4,7 @@ import { fn } from 'storybook/test';
 // Mock wallet object with common methods that components might use
 const mockWallet = {
   setActiveAccount: fn().mockName('setActiveAccount').mockResolvedValue(undefined),
-  createManualAddress: fn().mockName('createManualAddress').mockResolvedValue(undefined),
+  createNewAccount: fn().mockName('createNewAccount').mockResolvedValue(undefined),
   lockWallet: fn().mockName('lockWallet').mockResolvedValue(undefined),
   lockAdd: fn().mockName('lockAdd').mockResolvedValue(undefined),
   sendTransaction: fn().mockName('sendTransaction').mockResolvedValue('mock-tx-id'),

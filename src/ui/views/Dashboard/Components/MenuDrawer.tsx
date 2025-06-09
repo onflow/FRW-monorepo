@@ -106,7 +106,7 @@ const MenuDrawer = ({
     try {
       setIsCreating(true);
       toggleAddAccount();
-      await wallet.createManualAddress();
+      await wallet.createNewAccount();
 
       // Scroll to bottom after a short delay to ensure new account is rendered
       setTimeout(() => {
