@@ -1,6 +1,5 @@
 import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
-import { MemoryRouter } from 'react-router-dom';
 
 import emojisJson from '@/background/utils/emoji.json';
 const { emojis } = emojisJson as { emojis: Emoji[] };
@@ -9,8 +8,8 @@ import { type Emoji, type WalletAccount } from '@/shared/types/wallet-types';
 import {
   useChildAccounts as importedMockUseChildAccounts,
   useEvmAccount as importedMockUseEvmAccount,
-} from '@/ui/components/account/stories/use-account-hooks.mock';
-import { useNftCatalogCollections as importedMockUseNftCatalogCollections } from '@/ui/components/account/stories/use-nft-hooks.mock';
+} from '@/stories/use-account-hooks.mock';
+import { useNftCatalogCollections as importedMockUseNftCatalogCollections } from '@/stories/use-nft-hooks.mock';
 import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
 
 import MenuDrawer from '../MenuDrawer';
@@ -223,11 +222,9 @@ const meta: Meta<typeof MenuDrawer> = {
       }
 
       return (
-        <MemoryRouter>
-          <div style={{ height: '100vh', backgroundColor: '#000' }}>
-            <Story />
-          </div>
-        </MemoryRouter>
+        <div style={{ height: '100vh', backgroundColor: '#000' }}>
+          <Story />
+        </div>
       );
     },
   ],

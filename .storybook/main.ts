@@ -35,12 +35,9 @@ const config: StorybookConfig = {
       ),
       '@/ui/hooks/use-account-hooks': path.resolve(
         __dirname,
-        '../src/ui/components/account/stories/use-account-hooks.mock.ts'
+        '../src/stories/use-account-hooks.mock.ts'
       ),
-      '@/ui/hooks/useNftHook': path.resolve(
-        __dirname,
-        '../src/ui/components/account/stories/use-nft-hooks.mock.ts'
-      ),
+      '@/ui/hooks/useNftHook': path.resolve(__dirname, '../src/stories/use-nft-hooks.mock.ts'),
       '@/ui/hooks/useProfileHook': path.resolve(
         __dirname,
         '../src/ui/hooks/useProfileHook.mock.ts'

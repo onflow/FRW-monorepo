@@ -24,7 +24,7 @@ export {
 } from '../ui/utils';
 
 // Import and re-export the mocked WalletContext
-export { WalletProvider, useWallet, useWalletLoaded, wallet } from './wallet-context.mock';
+export { useWallet, useWalletLoaded } from './wallet-context.mock';
 
 // Import and re-export the mocked useProfiles hook
 export { useProfiles } from '../ui/hooks/useProfileHook.mock';
