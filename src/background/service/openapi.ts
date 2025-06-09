@@ -427,19 +427,24 @@ export class OpenApiService {
   sendRequest = async (
     method = 'GET',
     url = '',
-    params = {},
-    data = {},
+    params: Record<string, string> = {},
+    data: Record<string, unknown> = {},
     host = this.store.host
   ) => {
     // Default options are marked with *
     let requestUrl = '';
 
-    if (Object.keys(params).length) {
+    if (Object.keys(params).length && method.toUpperCase() === 'GET') {
       requestUrl = host + url + '?' + new URLSearchParams(params).toString();
     } else {
       requestUrl = host + url;
     }
-    const network = await userWalletService.getNetwork();
+    // If network is provided in params, use it, otherwise get the network from the userWalletService
+    const network =
+      params.network ||
+      (data.network && typeof data.network === 'string'
+        ? data.network
+        : await userWalletService.getNetwork());
 
     const app = getApp(process.env.NODE_ENV!);
     const user = await getAuth(app).currentUser;
@@ -541,7 +546,7 @@ export class OpenApiService {
     const config = this.store.config.crypto_map;
     const data = await this.sendRequest(config.method, config.path, {
       provider,
-      pair: this.getUSDCPricePair(provider),
+      pair: this.getUSDCPricePair(provider) || '',
     });
     return data.data.result;
   };
@@ -665,9 +670,9 @@ export class OpenApiService {
     const config = this.store.config.crypto_history;
     const data = await this.sendRequest(config.method, config.path, {
       provider,
-      pair: this.getTokenPair(token, provider),
-      after: period === Period.all ? '' : after.unix(),
-      periods,
+      pair: this.getTokenPair(token, provider) || '',
+      after: period === Period.all ? '' : after.unix().toString(),
+      periods: periods.toString(),
     });
     return data.data.result;
   };
@@ -991,7 +996,7 @@ export class OpenApiService {
 
   deleteAddressBook = async (id: number) => {
     const config = this.store.config.delete_address_book;
-    const data = await this.sendRequest(config.method, config.path, { id });
+    const data = await this.sendRequest(config.method, config.path, { id: id.toString() });
     return data;
   };
 
@@ -1135,8 +1140,8 @@ export class OpenApiService {
       config.path,
       {
         address,
-        after: offset,
-        limit,
+        after: offset.toString(),
+        limit: limit.toString(),
       },
       {},
       WEB_NEXT_URL
@@ -1171,7 +1176,8 @@ export class OpenApiService {
     hash_algo: number,
     sign_algo: number,
     public_key: string,
-    weight: number
+    weight: number,
+    network?: string
   ) => {
     const transformedKey = {
       hashAlgorithm: hash_algo,
@@ -1180,7 +1186,12 @@ export class OpenApiService {
       weight: weight,
     };
     const config = this.store.config.create_manual_address_v2;
-    const data = await this.sendRequest(config.method, config.path, {}, transformedKey);
+    const data = await this.sendRequest(
+      config.method,
+      config.path,
+      network ? { network } : {},
+      transformedKey
+    );
 
     return data;
   };
