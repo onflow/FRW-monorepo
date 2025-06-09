@@ -25,6 +25,7 @@ import {
   seedWithPathAndPhrase2PublicPrivateKey,
   formPubKeyTuple,
 } from '@/background/utils/modules/publicPrivateKey';
+import { generateRandomId } from '@/background/utils/random-id';
 import eventBus from '@/eventBus';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
 import { type PublicPrivateKeyTuple, type PublicKeyTuple } from '@/shared/types/key-types';
@@ -353,8 +354,14 @@ export class WalletController extends BaseController {
     const signAlgo = await keyringService.getCurrentSignAlgo();
     const accountKey = pubKeySignAlgoToAccountKey(publickey, signAlgo);
 
+    const randomTxId = generateRandomId();
+
     try {
       setCachedData(registerStatusKey(publickey), true, 120_000);
+
+      // Add the pending account creation transaction to the user wallet to show the random txid
+      // This is to show the spinner in the UI
+      await addPendingAccountCreationTransaction(network, accountKey.public_key, randomTxId);
 
       const data = await openapiService.createNewAccount(
         network,
@@ -373,12 +380,15 @@ export class WalletController extends BaseController {
 
       const txid = data.data.txid;
 
-      // Add the pending account creation transaction to the user wallet
-      await addPendingAccountCreationTransaction(network, accountKey.public_key, txid);
+      // Add the pending account creation transaction to the user wallet replacing the random txid
+      await addPendingAccountCreationTransaction(network, accountKey.public_key, txid, randomTxId);
 
       // Check for the new address
       this.checkForNewAddress(network, accountKey.public_key, txid);
     } catch (error) {
+      // Remove the pending account creation transaction if the operation fails
+      await removePendingAccountCreationTransaction(network, accountKey.public_key, randomTxId);
+
       // Reset the registration status if the operation fails
       setCachedData(registerStatusKey(publickey), false);
 

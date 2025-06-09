@@ -1510,7 +1510,8 @@ export const loadEvmAccountOfParent = async (
 export const addPendingAccountCreationTransaction = async (
   network: string,
   pubkey: string,
-  txId: string
+  txId: string,
+  replaceRandomTxId?: string
 ): Promise<void> => {
   const existingPending =
     (await getValidData<PendingTransaction[]>(
@@ -1518,7 +1519,10 @@ export const addPendingAccountCreationTransaction = async (
     )) || [];
 
   // Remove any existing pending transaction with the same txId
-  const filtered = existingPending.filter((pendingTxId) => pendingTxId !== txId);
+  const filtered = existingPending.filter(
+    (pendingTxId) =>
+      pendingTxId !== txId && (replaceRandomTxId ? pendingTxId !== replaceRandomTxId : true)
+  );
   filtered.push(txId);
 
   // Set it to 3 minutes. That should be enough time to get the address created and indexed
@@ -1573,8 +1577,6 @@ export const addPlaceholderAccount = async (
   txId: string,
   account: FclAccount
 ) => {
-  const placeholderAccounts = await getPlaceholderAccounts(network, pubkey);
-
   const keyIndex = account.keys.findIndex(
     (key) => key.publicKey === pubkey && key.weight >= DEFAULT_WEIGHT
   );
@@ -1593,8 +1595,19 @@ export const addPlaceholderAccount = async (
     hashAlgoString: account.keys[keyIndex].hashAlgoString,
   };
 
+  return await addPlaceholderPublicKeyAccount(network, pubkey, txId, newAccount);
+};
+
+export const addPlaceholderPublicKeyAccount = async (
+  network: string,
+  pubkey: string,
+  txId: string,
+  account: PublicKeyAccount
+) => {
+  const placeholderAccounts = await getPlaceholderAccounts(network, pubkey);
+
   // Update the pending accounts
-  placeholderAccounts.push(newAccount);
+  placeholderAccounts.push(account);
 
   // Set to 3 minutes. That should be enough time to get the account indexed
   await setCachedData(placeholderAccountsKey(network, pubkey), placeholderAccounts, 360_000);

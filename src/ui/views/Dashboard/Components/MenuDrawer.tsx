@@ -102,25 +102,23 @@ const MenuDrawer = ({
 
   const addAccount = async () => {
     try {
-      setIsCreating(true);
       toggleAddAccount();
-      await wallet.createNewAccount(network);
 
-      // Scroll to bottom after a short delay to ensure new account is rendered
+      // Scroll to bottom to show the spinner
       setTimeout(() => {
         if (scrollRef.current) {
           scrollRef.current.scrollTo({
-            top: scrollRef.current.scrollHeight,
+            top: scrollRef.current.scrollHeight + 60,
             behavior: 'smooth',
           });
         }
       }, 100);
+
+      await wallet.createNewAccount(network);
     } catch (error) {
       consoleError('Failed to create account:', error);
       setErrorMessage(error.message || 'Failed to create account. Please try again.');
       setShowError(true);
-    } finally {
-      setIsCreating(false);
     }
   };
 
@@ -267,19 +265,19 @@ const MenuDrawer = ({
               });
             }}
           />
+          {showAddAccount && (
+            <AddAccountPopup
+              isConfirmationOpen={showAddAccount}
+              handleCloseIconClicked={() => setShowAddAccount(false)}
+              handleCancelBtnClicked={() => setShowAddAccount(false)}
+              handleAddBtnClicked={() => {
+                setShowAddAccount(false);
+              }}
+              addAccount={addAccount}
+              importExistingAccount={canImportExistingAccount}
+            />
+          )}
         </Box>
-        {showAddAccount && (
-          <AddAccountPopup
-            isConfirmationOpen={showAddAccount}
-            handleCloseIconClicked={() => setShowAddAccount(false)}
-            handleCancelBtnClicked={() => setShowAddAccount(false)}
-            handleAddBtnClicked={() => {
-              setShowAddAccount(false);
-            }}
-            addAccount={addAccount}
-            importExistingAccount={canImportExistingAccount}
-          />
-        )}
 
         {showError && (
           <ErrorModel
