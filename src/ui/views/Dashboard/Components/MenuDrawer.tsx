@@ -74,7 +74,6 @@ const MenuDrawer = ({
   activeParentAccount,
   walletList,
   network,
-  modeOn,
   mainAddressLoading,
   noAddress,
 }: MenuDrawerProps) => {
@@ -82,7 +81,6 @@ const MenuDrawer = ({
   const history = useHistory();
   const classes = useStyles();
   const scrollRef = useRef<HTMLDivElement>(null);
-
   // Add Account Drawer
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -106,7 +104,7 @@ const MenuDrawer = ({
     try {
       setIsCreating(true);
       toggleAddAccount();
-      await wallet.createNewAccount();
+      await wallet.createNewAccount(network);
 
       // Scroll to bottom after a short delay to ensure new account is rendered
       setTimeout(() => {

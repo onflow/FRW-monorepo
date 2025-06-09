@@ -91,7 +91,7 @@ const WalletTab = ({ network }) => {
   };
 
   const handleAddAddress = () => {
-    wallet.createNewAccount();
+    wallet.createNewAccount(network);
   };
 
   useEffect(() => {

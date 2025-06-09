@@ -1173,11 +1173,11 @@ export class OpenApiService {
   };
 
   createNewAccount = async (
+    network: string,
     hash_algo: number,
     sign_algo: number,
     public_key: string,
-    weight: number,
-    network?: string
+    weight: number
   ) => {
     const transformedKey = {
       hashAlgorithm: hash_algo,
@@ -1186,12 +1186,7 @@ export class OpenApiService {
       weight: weight,
     };
     const config = this.store.config.create_manual_address_v2;
-    const data = await this.sendRequest(
-      config.method,
-      config.path,
-      network ? { network } : {},
-      transformedKey
-    );
+    const data = await this.sendRequest(config.method, config.path, { network }, transformedKey);
 
     return data;
   };

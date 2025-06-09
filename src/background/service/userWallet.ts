@@ -192,8 +192,7 @@ class UserWallet {
    * If the account is not created, the pending account should be removed after checkaddress catch the error
    * @param account - The account key used for creating the address
    */
-  setPlaceholderAccount = async (account: AccountKeyRequest, txid: string) => {
-    const network = await this.getNetwork();
+  setPlaceholderAccount = async (network: string, account: AccountKeyRequest, txid: string) => {
     const cachedMainAccounts = await getCachedMainAccounts(network, account.public_key);
     let mainAccounts;
     if (!cachedMainAccounts) {

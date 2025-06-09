@@ -13,7 +13,7 @@ import web3, { TransactionError, Web3 } from 'web3';
 import {
   getAccountKey,
   pubKeyAccountToAccountKey,
-  pubKeyTupleToAccountKey,
+  pubKeySignAlgoToAccountKey,
 } from '@/background/utils/account-key';
 import {
   findAddressWithSeed,
@@ -29,7 +29,7 @@ import eventBus from '@/eventBus';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
 import { type PublicPrivateKeyTuple, type PublicKeyTuple } from '@/shared/types/key-types';
 import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
-import { ContactType, MAINNET_CHAIN_ID, networkToChainId } from '@/shared/types/network-types';
+import { ContactType, MAINNET_CHAIN_ID } from '@/shared/types/network-types';
 import { type NFTCollections, type NFTCollectionData } from '@/shared/types/nft-types';
 import { type TrackingEvents } from '@/shared/types/tracking-types';
 import { type TransferItem, type TransactionState } from '@/shared/types/transaction-types';
@@ -71,9 +71,6 @@ import {
   coinListKey,
   type ChildAccountFtStore,
   accountBalanceKey,
-  getCachedMainAccounts,
-  mainAccountsKey,
-  childAccountFtKey,
 } from '@/shared/utils/cache-data-keys';
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
@@ -143,7 +140,7 @@ import {
   triggerRefresh,
 } from '../utils/data-cache';
 import defaultConfig from '../utils/defaultConfig.json';
-import { getEmojiByIndex, getEmojiList } from '../utils/emoji-util';
+import { getEmojiList } from '../utils/emoji-util';
 import erc20ABI from '../utils/erc20.abi.json';
 import { getOrCheckAccountsByPublicKeyTuple } from '../utils/modules/findAddressWithPubKey';
 
@@ -248,15 +245,15 @@ export class WalletController extends BaseController {
     // Set a two minute cache for the register status
     setCachedData(registerStatusKey(accountKey.public_key), true, 120_000);
 
-    this.checkForNewAddress(result.data.txid);
+    this.checkForNewAddress('mainnet', result.data.txid);
   };
 
   checkForNewAddress = async (
+    network: string,
     txid: string,
     newAccountId?: number,
     createPubKey?: string
   ): Promise<FclAccount | null> => {
-    const network = await this.getNetwork();
     try {
       const txResult = await fcl.tx(txid).onceSealed();
 
@@ -350,15 +347,17 @@ export class WalletController extends BaseController {
    * Create a new address
    * @returns
    */
-  createNewAccount = async () => {
-    const publickey = userWalletService.getCurrentPubkey();
-    const curPubKeyTuple = await keyringService.getCurrentPublicKeyTuple();
 
-    const accountKey = pubKeyTupleToAccountKey(publickey, curPubKeyTuple);
+  createNewAccount = async (network: string) => {
+    const publickey = await keyringService.getCurrentPublicKey();
+    const signAlgo = await keyringService.getCurrentSignAlgo();
+    const accountKey = pubKeySignAlgoToAccountKey(publickey, signAlgo);
+
     try {
       setCachedData(registerStatusKey(publickey), true, 120_000);
 
       const data = await openapiService.createNewAccount(
+        network,
         accountKey.hash_algo,
         accountKey.sign_algo,
         publickey,
@@ -374,9 +373,9 @@ export class WalletController extends BaseController {
 
       const txid = data.data.txid;
 
-      const newAccountId = await userWalletService.setPlaceholderAccount(accountKey, txid);
+      const newAccountId = await userWalletService.setPlaceholderAccount(network, accountKey, txid);
 
-      this.checkForNewAddress(txid, newAccountId, accountKey.public_key);
+      this.checkForNewAddress(network, txid, newAccountId, accountKey.public_key);
     } catch (error) {
       // Reset the registration status if the operation fails
       setCachedData(registerStatusKey(publickey), false);
