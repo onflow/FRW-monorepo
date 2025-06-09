@@ -26,6 +26,7 @@ const AddAccountPopup = (props: TransferConfirmationProps) => {
         zIndex: '1500 !important',
         '& .MuiDrawer-paper': {
           width: '75%',
+          maxWidth: '400px',
           marginRight: 'auto',
           borderTopLeftRadius: '16px',
           borderTopRightRadius: '16px',
