@@ -273,6 +273,5 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🔗 Links" >> $GITHUB_STEP_SUMMARY
           echo "- 📋 **[View Full Report](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/reports/run-${{ github.run_id }}/)**" >> $GITHUB_STEP_SUMMARY
-          echo "- 📁 **[All Reports](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/)**" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "> 💡 **Tip**: Click the report link above to view detailed test results, traces, and screenshots!" >> $GITHUB_STEP_SUMMARY

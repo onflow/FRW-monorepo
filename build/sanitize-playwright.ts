@@ -3,7 +3,7 @@ import path from 'path';
 
 import JSZip from 'jszip';
 
-async function loadSecrets() {
+export async function loadSecrets() {
   const secrets = new Set<string>();
   const projectRoot = process.cwd();
   try {
@@ -31,16 +31,19 @@ async function loadSecrets() {
         }
       }
     }
-  } catch (error) {
+  } catch {
     console.warn('Could not load .env files. Continuing without them.');
   }
   return Array.from(secrets);
 }
 
-function scrubValue(obj: any, secrets: string[], objectPath = '') {
+export function scrubValue(obj: unknown, secrets: string[], objectPath = '') {
   if (!obj || typeof obj !== 'object') {
     return;
   }
+  // 64 hex, 32 hex, 40 hex, 20 hex, 12 word seed phrase
+  const sensitiveValues =
+    /\b(0x[a-fA-F0-9]{64}|[a-zA-Z0-9]{32})\b|\b(0x[a-fA-F0-9]{40}|[a-zA-Z0-9]{20})\b|\b([a-z]+\s+){11}[a-z]+\b/i;
 
   for (const key in obj) {
     if (Object.prototype.hasOwnProperty.call(obj, key)) {
@@ -53,7 +56,9 @@ function scrubValue(obj: any, secrets: string[], objectPath = '') {
             scrubbedValue = scrubbedValue.replaceAll(secret, '********');
           }
         }
-
+        if (sensitiveValues.test(scrubbedValue)) {
+          scrubbedValue = '********';
+        }
         if (scrubbedValue !== value) {
           obj[key] = scrubbedValue;
         }
@@ -64,7 +69,7 @@ function scrubValue(obj: any, secrets: string[], objectPath = '') {
   }
 }
 
-async function sanitizeTrace(tracePath: string, secrets: string[]) {
+export async function sanitizeTrace(tracePath: string, secrets: string[]) {
   if (!(await fs.stat(tracePath).catch(() => false))) {
     console.error(`Trace file not found: ${tracePath}`);
     return;
@@ -84,7 +89,8 @@ async function sanitizeTrace(tracePath: string, secrets: string[]) {
     const traceContent = await traceFile.async('string');
     const lines = traceContent.split('\n');
 
-    const sensitiveKeywords = /password|secret|token/i;
+    const sensitiveKeywords = /password|secret|token|pk|mnemonic|seed|phrase|private/i;
+
     const sanitizedLines = lines.map((line) => {
       try {
         if (line.trim() === '') {
@@ -108,7 +114,7 @@ async function sanitizeTrace(tracePath: string, secrets: string[]) {
         // Sanitize any value from .env files
         scrubValue(event, secrets);
         return JSON.stringify(event);
-      } catch (e) {
+      } catch {
         // Not a valid JSON line, return it as is
         return line;
       }
@@ -129,7 +135,7 @@ async function sanitizeTrace(tracePath: string, secrets: string[]) {
   await fs.writeFile(tracePath, newZipData);
 }
 
-async function sanitizeAllTraces() {
+export async function sanitizeAllTraces() {
   const baseDir = path.resolve(process.argv[2] || 'playwright-report');
   const dataDir = path.join(baseDir, 'data');
   const secrets = await loadSecrets();
@@ -155,6 +161,9 @@ async function sanitizeAllTraces() {
   }
 }
 
-sanitizeAllTraces().catch((err) => {
-  console.error('An error occurred during trace sanitization:', err);
-});
+// Only run if executed directly
+if (import.meta.url.endsWith(path.basename(process.argv[1]))) {
+  sanitizeAllTraces().catch((err) => {
+    console.error('An error occurred during trace sanitization:', err);
+  });
+}
