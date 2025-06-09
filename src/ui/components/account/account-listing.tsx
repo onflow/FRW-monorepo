@@ -3,12 +3,7 @@ import React from 'react';
 
 import { type WalletAccount } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
-import { FlowIcon } from '@/ui/assets/icons/FlowIcon';
-import {
-  useChildAccounts,
-  useEvmAccount,
-  usePendingAccountCreationTransactions,
-} from '@/ui/hooks/use-account-hooks';
+import { useChildAccounts, useEvmAccount } from '@/ui/hooks/use-account-hooks';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { COLOR_DARKMODE_TEXT_PRIMARY_80_FFFFFF80 } from '@/ui/style/color';
 
@@ -227,8 +222,7 @@ export const AccountListing = ({
         pendingAccountTransactions.map((transaction) => {
           return (
             <AccountCard
-              key={transaction.txId}
-              account={transaction}
+              key={transaction}
               showCard={false}
               isPending={true}
               showLink={false}

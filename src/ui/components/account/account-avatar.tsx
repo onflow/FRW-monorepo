@@ -37,10 +37,14 @@ const ImageIcon = ({ image, size = 24 }: { image: string; size?: number }) => {
   );
 };
 
-const Icon = ({ icon, isPending }: { icon: string; isPending?: boolean }) => {
+const Icon = ({ icon, isPending }: { icon?: string; isPending?: boolean }) => {
   if (isPending) {
     return <FlowIcon width={36} height={36} />;
   }
+  if (!icon) {
+    return <Skeleton variant="circular" width="36px" height="36px" />;
+  }
+
   if (isEmoji(icon)) {
     return <EmojiIcon emoji={icon} />;
   }
@@ -73,7 +77,7 @@ export const AccountAvatar = ({
   onClick?: () => void;
   isPending?: boolean;
 }) => {
-  const loading = !network || !emoji || !color;
+  const loading = !network || (!isPending && (!emoji || !color));
   if (loading) {
     return <Skeleton variant="circular" width="36px" height="36px" sx={{ marginLeft: '8px' }} />;
   }

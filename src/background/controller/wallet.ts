@@ -129,9 +129,12 @@ import { getScripts } from '../service/openapi';
 import type { ConnectedSite } from '../service/permission';
 import type { PreferenceAccount } from '../service/preference';
 import {
+  addPendingAccountCreationTransaction,
+  addPlaceholderAccount,
   getEvmAccountOfParent,
   loadAccountBalance,
   loadEvmAccountOfParent,
+  removePendingAccountCreationTransaction,
 } from '../service/userWallet';
 import {
   getValidData,
@@ -238,21 +241,27 @@ export class WalletController extends BaseController {
       password,
       mnemonic
     );
+    // Set a two minute cache for the register status
+    setCachedData(registerStatusKey(accountKey.public_key), true, 120_000);
 
     // We're creating the Flow address for the account
     // Only after this, do we have a valid wallet with a Flow address
     const result = await openapiService.createFlowAddressV2();
-    // Set a two minute cache for the register status
-    setCachedData(registerStatusKey(accountKey.public_key), true, 120_000);
 
-    this.checkForNewAddress('mainnet', result.data.txid);
+    // Add the pending account creation transaction to the user wallet
+    await addPendingAccountCreationTransaction('mainnet', accountKey.public_key, result.data.txid);
+
+    // Switch to the new public key
+    await userWalletService.setCurrentPubkey(accountKey.public_key);
+
+    // Check for the new address asynchronously
+    this.checkForNewAddress('mainnet', accountKey.public_key, result.data.txid);
   };
 
   checkForNewAddress = async (
     network: string,
-    txid: string,
-    newAccountId?: number,
-    createPubKey?: string
+    pubKey: string,
+    txid: string
   ): Promise<FclAccount | null> => {
     try {
       const txResult = await fcl.tx(txid).onceSealed();
@@ -268,28 +277,19 @@ export class WalletController extends BaseController {
 
       const newAddress = accountCreatedEvent.data.address;
 
+      // Get the account from the new address
       const account = await fcl.account(newAddress);
       if (!account) {
         throw new Error('Fcl account not found');
       }
-
-      if (newAccountId && createPubKey) {
-        await userWalletService.updatePlaceholderAccount(network, newAccountId, account, txid);
-      } else {
-        userWalletService.registerCurrentPubkey(account.keys[0].publicKey, account);
-      }
+      // Add the placeholder account to the user wallet
+      await addPlaceholderAccount(network, pubKey, txid, account);
 
       return account;
     } catch (error) {
       // Remove from pending creation transactions on error
-      if (createPubKey) {
-        await userWalletService.removePendingTransaction(network, createPubKey, txid);
-      }
+      await removePendingAccountCreationTransaction(network, pubKey, txid);
 
-      // Remove placeholder account if creation failed
-      if (newAccountId && createPubKey) {
-        await userWalletService.removePlaceholderAccount(network, createPubKey, newAccountId);
-      }
       throw new Error(`Account creation failed: ${error.message || 'Unknown error'}`);
     }
   };
@@ -373,9 +373,11 @@ export class WalletController extends BaseController {
 
       const txid = data.data.txid;
 
-      const newAccountId = await userWalletService.setPlaceholderAccount(network, accountKey, txid);
+      // Add the pending account creation transaction to the user wallet
+      await addPendingAccountCreationTransaction(network, accountKey.public_key, txid);
 
-      this.checkForNewAddress(network, txid, newAccountId, accountKey.public_key);
+      // Check for the new address
+      this.checkForNewAddress(network, accountKey.public_key, txid);
     } catch (error) {
       // Reset the registration status if the operation fails
       setCachedData(registerStatusKey(publickey), false);

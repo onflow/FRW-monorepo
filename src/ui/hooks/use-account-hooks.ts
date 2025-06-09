@@ -19,7 +19,7 @@ import {
   childAccountAllowTypesKey,
   type MainAccountStorageBalanceStore,
   mainAccountStorageBalanceKey,
-  pendingTransactionsKey,
+  pendingAccountCreationTransactionsKey,
 } from '@/shared/utils/cache-data-keys';
 import {
   activeAccountsKey,
@@ -140,6 +140,6 @@ export const usePendingAccountCreationTransactions = (
   pubkey: string | undefined | null
 ) => {
   return useCachedData<PendingTransaction[]>(
-    network && pubkey ? pendingTransactionsKey(network, pubkey) : null
+    network && pubkey ? pendingAccountCreationTransactionsKey(network, pubkey) : null
   );
 };

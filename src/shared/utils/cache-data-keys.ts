@@ -30,6 +30,7 @@ import {
   type WalletAccount,
   type Currency,
   type PendingTransaction,
+  type PublicKeyAccount,
 } from '../types/wallet-types';
 
 import { getCachedData, triggerRefresh } from './cache-data-access';
@@ -118,6 +119,21 @@ export const getCachedMainAccounts = async (network: string, publicKey: string) 
   return getCachedData<MainAccountStore>(mainAccountsKey(network, publicKey));
 };
 
+// Pending Accounts
+export const placeholderAccountsKey = (network: string, pubkey: string): string => {
+  return `placeholder-accounts-${network}-${pubkey}`;
+};
+export const placeholderAccountsRefreshRegex = refreshKey(placeholderAccountsKey);
+export type PlaceholderAccountsStore = PublicKeyAccount[];
+
+// Pending Account Creation Transactions
+export const pendingAccountCreationTransactionsKey = (network: string, pubkey: string) =>
+  `pending-account-creation-transactions-${network}-${pubkey}`;
+export const pendingAccountCreationTransactionsRefreshRegex = refreshKey(
+  pendingAccountCreationTransactionsKey
+);
+export type PendingAccountCreationTransactionsStore = string[];
+
 /*
  * --------------------------------------------------------------------
  * Account level keys (keyed by network & MAIN FLOW account address)
@@ -171,12 +187,6 @@ export type TransferListStore = {
   pendingCount: number;
   list: TransferItem[];
 };
-
-// Pending Transactions
-export const pendingTransactionsKey = (network: string, pubkey: string) =>
-  `pending-transactions-${network}-${pubkey}`;
-export const pendingTransactionsRefreshRegex = refreshKey(pendingTransactionsKey);
-export type PendingTransactionsStore = PendingTransaction[];
 
 // NFTs
 

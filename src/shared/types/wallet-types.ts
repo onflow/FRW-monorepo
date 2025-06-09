@@ -183,11 +183,4 @@ export interface ProfileBackupStatus {
 }
 
 // Transactions that are creating accounts
-export type PendingTransaction = WalletAccount & {
-  txId: string;
-  network: string;
-  pubkey: string;
-  accountId: number;
-  createdAt: number;
-  expiresAt: number;
-};
+export type PendingTransaction = string;

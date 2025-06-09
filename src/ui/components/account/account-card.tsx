@@ -22,7 +22,6 @@ import {
   COLOR_DARKMODE_TEXT_SECONDARY_B3B3B3,
   COLOR_ACCENT_EVM_627EEA,
   COLOR_GREY_ICONS_767676,
-  COLOR_GREEN_FLOW_THEME_16FF99,
 } from '@/ui/style/color';
 import { formatAddress } from '@/ui/utils';
 
