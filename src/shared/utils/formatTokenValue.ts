@@ -59,7 +59,7 @@ export function formatPrice(priceStr: string, zeroCondenseThreshold = 4): Format
     return {
       price: decimalStr,
       formattedPrice: {
-        leadingPart: trimDecimalAmount(decimalStr, 2, 'exact'),
+        leadingPart: decimalStr,
         zeroPart: null,
         endingPart: null,
       },
