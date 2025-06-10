@@ -146,11 +146,21 @@ jobs:
       group: tests-${{ github.workflow }}
       cancel-in-progress: false
     environment: ${{ needs.determine-env.outputs.env_name }}
+    strategy:
+      matrix:
+        node-version: [22.x]
+
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
         with:
-          node-version: lts/*
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -201,18 +211,21 @@ jobs:
     needs: [test] # Depends on the Playwright test job
     runs-on: ubuntu-latest
     if: always() # Run even if tests fail to publish what's available
+    strategy:
+      matrix:
+        node-version: [22.x]
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Required by Chromatic
+          fetch-depth: 0 # Fetch all history for tags
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
 
-      - name: Use Node.js
+      - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
-          node-version: '22.x' # Or your project's Node version
+          node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
 
       - name: Install dependencies
@@ -224,21 +237,20 @@ jobs:
           name: playwright-report
           path: playwright-report/ # Download to this path
 
+      - name: Create .nojekyll file
+        run: touch playwright-report/.nojekyll
+
+      - name: Deploy Playwright Report
+        uses: peaceiris/actions-gh-pages@v4
+        if: always() # Deploy even if tests fail
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./playwright-report
+          destination_dir: reports/run-${{ github.run_id }}
+          keep_files: true
+
       - name: Build Storybook
         run: pnpm build-storybook # Assumes output is storybook-static
-
-      - name: Copy Playwright report to Storybook static
-        run: |
-          mkdir -p storybook-static/test-results
-          if [ -d "playwright-report" ]; then
-            cp -r playwright-report storybook-static/test-results/playwright-report
-            echo "Playwright report copied to storybook-static/test-results/playwright-report"
-          else
-            echo "Playwright report not found. Skipping copy."
-            echo "Creating placeholder Playwright report..."
-            mkdir -p storybook-static/test-results/playwright-report
-            echo "<html><body><h1>Playwright report not found.</h1></body></html>" > storybook-static/test-results/playwright-report/index.html
-          fi
 
       - name: Publish to Chromatic
         uses: chromaui/action@v1
@@ -247,3 +259,19 @@ jobs:
           storybookBuildDir: storybook-static # Directory with Storybook and reports
           exitZeroOnChanges: true # Optional: useful for PR checks
           # workingDir: . # Not needed if storybookBuildDir is set correctly
+
+      - name: Add Job Summary
+        if: always()
+        run: |
+          echo "## 🎭 Playwright Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Report Details" >> $GITHUB_STEP_SUMMARY
+          echo "- **Run ID**: ${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered by**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔗 Links" >> $GITHUB_STEP_SUMMARY
+          echo "- 📋 **[View Full Report](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/reports/run-${{ github.run_id }}/)**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "> 💡 **Tip**: Click the report link above to view detailed test results, traces, and screenshots!" >> $GITHUB_STEP_SUMMARY
