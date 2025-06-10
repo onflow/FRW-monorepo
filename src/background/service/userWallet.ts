@@ -308,7 +308,7 @@ class UserWallet {
       const allAccounts = await preloadAllAccountsWithPubKey(network, pubkey);
 
       // Get the active accounts
-      await this.getActiveAccountsWithPubKey(network, pubkey);
+      await this.loadActiveAccounts(network, pubkey);
 
       // Load the balances for the main accounts
       await loadAccountListBalance(
