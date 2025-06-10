@@ -25,7 +25,13 @@ import {
   type EvmNFTCollectionList,
 } from '../types/nft-types';
 import { type TransferItem } from '../types/transaction-types';
-import { type MainAccount, type WalletAccount, type Currency } from '../types/wallet-types';
+import {
+  type MainAccount,
+  type WalletAccount,
+  type Currency,
+  type PendingTransaction,
+  type PublicKeyAccount,
+} from '../types/wallet-types';
 
 import { getCachedData, triggerRefresh } from './cache-data-access';
 import { type NetworkScripts } from './script-types';
@@ -112,6 +118,21 @@ export type MainAccountStore = MainAccount[];
 export const getCachedMainAccounts = async (network: string, publicKey: string) => {
   return getCachedData<MainAccountStore>(mainAccountsKey(network, publicKey));
 };
+
+// Pending Accounts
+export const placeholderAccountsKey = (network: string, pubkey: string): string => {
+  return `placeholder-accounts-${network}-${pubkey}`;
+};
+export const placeholderAccountsRefreshRegex = refreshKey(placeholderAccountsKey);
+export type PlaceholderAccountsStore = PublicKeyAccount[];
+
+// Pending Account Creation Transactions
+export const pendingAccountCreationTransactionsKey = (network: string, pubkey: string) =>
+  `pending-account-creation-transactions-${network}-${pubkey}`;
+export const pendingAccountCreationTransactionsRefreshRegex = refreshKey(
+  pendingAccountCreationTransactionsKey
+);
+export type PendingAccountCreationTransactionsStore = string[];
 
 /*
  * --------------------------------------------------------------------

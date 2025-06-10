@@ -1494,6 +1494,12 @@
   "Other_accounts": {
     "message": "其他账户"
   },
+  "Import_an_existing_account": {
+    "message": "导入现有账户"
+  },
+  "Add_Account_Sidebar": {
+    "message": "添加账户"
+  },
   "Mobile_overview": {
     "message": "移动应用概览"
   },

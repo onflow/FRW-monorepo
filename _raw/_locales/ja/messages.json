@@ -1494,6 +1494,15 @@
   "Other_accounts": {
     "message": "その他のアカウント"
   },
+  "Create_a_new_account": {
+    "message": "新しいアカウントを作成"
+  },
+  "Import_an_existing_account": {
+    "message": "既存のアカウントをインポート"
+  },
+  "Add_Account_Sidebar": {
+    "message": "アカウントを追加"
+  },
   "Mobile_overview": {
     "message": "モバイルアプリの概要"
   },

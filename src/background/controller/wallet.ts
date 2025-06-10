@@ -13,7 +13,7 @@ import web3, { TransactionError, Web3 } from 'web3';
 import {
   getAccountKey,
   pubKeyAccountToAccountKey,
-  pubKeyTupleToAccountKey,
+  pubKeySignAlgoToAccountKey,
 } from '@/background/utils/account-key';
 import {
   findAddressWithSeed,
@@ -25,6 +25,7 @@ import {
   seedWithPathAndPhrase2PublicPrivateKey,
   formPubKeyTuple,
 } from '@/background/utils/modules/publicPrivateKey';
+import { generateRandomId } from '@/background/utils/random-id';
 import eventBus from '@/eventBus';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
 import { type PublicPrivateKeyTuple, type PublicKeyTuple } from '@/shared/types/key-types';
@@ -71,7 +72,6 @@ import {
   coinListKey,
   type ChildAccountFtStore,
   accountBalanceKey,
-  childAccountFtKey,
 } from '@/shared/utils/cache-data-keys';
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
@@ -110,7 +110,12 @@ import type { CacheState } from 'background/service/pageStateCache';
 import { replaceNftKeywords } from 'background/utils';
 import { notification, storage } from 'background/webapi';
 import { openIndexPage } from 'background/webapi/tab';
-import { INTERNAL_REQUEST_ORIGIN, EVM_ENDPOINT, HTTP_STATUS_CONFLICT } from 'consts';
+import {
+  INTERNAL_REQUEST_ORIGIN,
+  EVM_ENDPOINT,
+  HTTP_STATUS_CONFLICT,
+  HTTP_STATUS_TOO_MANY_REQUESTS,
+} from 'consts';
 
 import type {
   AccountKeyRequest,
@@ -125,9 +130,12 @@ import { getScripts } from '../service/openapi';
 import type { ConnectedSite } from '../service/permission';
 import type { PreferenceAccount } from '../service/preference';
 import {
+  addPendingAccountCreationTransaction,
+  addPlaceholderAccount,
   getEvmAccountOfParent,
   loadAccountBalance,
   loadEvmAccountOfParent,
+  removePendingAccountCreationTransaction,
 } from '../service/userWallet';
 import {
   getValidData,
@@ -234,17 +242,28 @@ export class WalletController extends BaseController {
       password,
       mnemonic
     );
+    // Set a two minute cache for the register status
+    setCachedData(registerStatusKey(accountKey.public_key), true, 120_000);
 
     // We're creating the Flow address for the account
     // Only after this, do we have a valid wallet with a Flow address
     const result = await openapiService.createFlowAddressV2();
-    // Set a two minute cache for the register status
-    setCachedData(registerStatusKey(accountKey.public_key), true, 120_000);
 
-    this.checkForNewAddress(result.data.txid);
+    // Add the pending account creation transaction to the user wallet
+    await addPendingAccountCreationTransaction('mainnet', accountKey.public_key, result.data.txid);
+
+    // Switch to the new public key
+    await userWalletService.setCurrentPubkey(accountKey.public_key);
+
+    // Check for the new address asynchronously
+    this.checkForNewAddress('mainnet', accountKey.public_key, result.data.txid);
   };
 
-  checkForNewAddress = async (txid: string): Promise<FclAccount | null> => {
+  checkForNewAddress = async (
+    network: string,
+    pubKey: string,
+    txid: string
+  ): Promise<FclAccount | null> => {
     try {
       const txResult = await fcl.tx(txid).onceSealed();
 
@@ -259,15 +278,19 @@ export class WalletController extends BaseController {
 
       const newAddress = accountCreatedEvent.data.address;
 
+      // Get the account from the new address
       const account = await fcl.account(newAddress);
       if (!account) {
         throw new Error('Fcl account not found');
       }
-
-      userWalletService.registerCurrentPubkey(account.keys[0].publicKey, account);
+      // Add the placeholder account to the user wallet
+      await addPlaceholderAccount(network, pubKey, txid, account);
 
       return account;
     } catch (error) {
+      // Remove from pending creation transactions on error
+      await removePendingAccountCreationTransaction(network, pubKey, txid);
+
       throw new Error(`Account creation failed: ${error.message || 'Unknown error'}`);
     }
   };
@@ -322,31 +345,50 @@ export class WalletController extends BaseController {
     userWalletService.registerCurrentPubkey(accountKey.public_key, accountInfo);
   };
   /**
-   * Create a manual address
+   * Create a new address
    * @returns
    */
-  createManualAddress = async () => {
-    const publickey = userWalletService.getCurrentPubkey();
-    const curPubKeyTuple = await keyringService.getCurrentPublicKeyTuple();
 
-    const accountKey = pubKeyTupleToAccountKey(publickey, curPubKeyTuple);
+  createNewAccount = async (network: string) => {
+    const publickey = await keyringService.getCurrentPublicKey();
+    const signAlgo = await keyringService.getCurrentSignAlgo();
+    const accountKey = pubKeySignAlgoToAccountKey(publickey, signAlgo);
+
+    const randomTxId = generateRandomId();
+
     try {
       setCachedData(registerStatusKey(publickey), true, 120_000);
 
-      const data = await openapiService.createManualAddress(
+      // Add the pending account creation transaction to the user wallet to show the random txid
+      // This is to show the spinner in the UI
+      await addPendingAccountCreationTransaction(network, accountKey.public_key, randomTxId);
+
+      const data = await openapiService.createNewAccount(
+        network,
         accountKey.hash_algo,
         accountKey.sign_algo,
         publickey,
         1000
       );
+      if (data.status === HTTP_STATUS_TOO_MANY_REQUESTS) {
+        throw new Error('Rate limit exceeded. Please wait at least 2 minutes between requests.');
+      }
 
       if (!data || !data.data || !data.data.txid) {
         throw new Error('Transaction ID not found in response');
       }
 
       const txid = data.data.txid;
-      this.checkForNewAddress(txid);
+
+      // Add the pending account creation transaction to the user wallet replacing the random txid
+      await addPendingAccountCreationTransaction(network, accountKey.public_key, txid, randomTxId);
+
+      // Check for the new address
+      this.checkForNewAddress(network, accountKey.public_key, txid);
     } catch (error) {
+      // Remove the pending account creation transaction if the operation fails
+      await removePendingAccountCreationTransaction(network, accountKey.public_key, randomTxId);
+
       // Reset the registration status if the operation fails
       setCachedData(registerStatusKey(publickey), false);
 
@@ -354,7 +396,7 @@ export class WalletController extends BaseController {
       consoleError('Failed to create manual address:', error);
 
       // Re-throw a more specific error
-      throw new Error('Failed to create manual address. Please try again later.');
+      throw new Error(`Failed to create manual address. ${error.message}`);
     }
   };
 

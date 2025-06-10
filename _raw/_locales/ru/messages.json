@@ -1494,6 +1494,15 @@
   "Other_accounts": {
     "message": "Другие аккаунты"
   },
+  "Create_a_new_account": {
+    "message": "Создать новый аккаунт"
+  },
+  "Import_an_existing_account": {
+    "message": "Импортировать существующий аккаунт"
+  },
+  "Add_Account_Sidebar": {
+    "message": "Добавить аккаунт"
+  },
   "Mobile_overview": {
     "message": "Обзор мобильного приложения"
   },
