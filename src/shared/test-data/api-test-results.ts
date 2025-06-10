@@ -5766,7 +5766,7 @@ export const createTestResults = (): ApiTestResults => ({
           requestInit: {
             method: 'get',
             headers: {
-              Network: 'testnet',
+              Network: 'mainnet',
               Accept: 'application/json',
               Authorization: 'Bearer mock-token',
               'Content-Type': 'application/json',
@@ -7187,7 +7187,7 @@ export const createTestResults = (): ApiTestResults => ({
           requestInit: {
             method: 'GET',
             headers: {
-              Network: 'mainnet',
+              Network: 'testnet',
               Accept: 'application/json',
               Authorization: 'Bearer mock-token',
               'Content-Type': 'application/json',

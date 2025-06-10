@@ -434,7 +434,10 @@ export class OpenApiService {
     // Default options are marked with *
     let requestUrl = '';
 
-    if (Object.keys(params).length && method.toUpperCase() === 'GET') {
+    if (
+      Object.keys(params).length &&
+      (method.toUpperCase() === 'GET' || method.toUpperCase() === 'DELETE')
+    ) {
       requestUrl = host + url + '?' + new URLSearchParams(params).toString();
     } else {
       requestUrl = host + url;
