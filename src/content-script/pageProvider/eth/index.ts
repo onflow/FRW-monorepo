@@ -356,18 +356,28 @@ const flowProvider = new Proxy(provider, {
   },
 });
 
-const requestHasOtherProvider = () => {
-  return provider.requestInternalMethods({
-    method: 'hasOtherProvider',
-    params: [],
-  });
+const requestHasOtherProvider = async () => {
+  try {
+    return await provider.requestInternalMethods({
+      method: 'hasOtherProvider',
+      params: [],
+    });
+  } catch (error) {
+    consoleError('Error checking for other providers:', error);
+    return false;
+  }
 };
 
-const requestIsDefaultWallet = () => {
-  return provider.requestInternalMethods({
-    method: 'isDefaultWallet',
-    params: [],
-  }) as Promise<boolean>;
+const requestIsDefaultWallet = async () => {
+  try {
+    return (await provider.requestInternalMethods({
+      method: 'isDefaultWallet',
+      params: [],
+    })) as Promise<boolean>;
+  } catch (error) {
+    consoleError('Error checking default wallet status:', error);
+    return false;
+  }
 };
 
 // Check if user is connected to Flow Wallet
@@ -458,12 +468,12 @@ const initOperaProvider = () => {
   flowProvider.on('frw:chainChanged', switchChainNotice);
 };
 
-const initProvider = () => {
+const initProvider = async () => {
   flowProvider._isReady = true;
   flowProvider.on('defaultWalletChanged', switchWalletNotice);
   patchProvider(flowProvider);
   if (window.ethereum) {
-    requestHasOtherProvider();
+    await requestHasOtherProvider();
   }
   if (!window.web3) {
     window.web3 = {
@@ -497,44 +507,61 @@ const initProvider = () => {
                 // Handle request method specially
                 if (prop === 'request') {
                   return async (data) => {
-                    // Check if user is connected to Flow Wallet
-                    const connectedToFlowWallet = isConnectedToFlowWallet(flowProvider);
+                    try {
+                      // Check if user is connected to Flow Wallet
+                      const connectedToFlowWallet = isConnectedToFlowWallet(flowProvider);
 
-                    if (data && shouldRouteToFlowWallet(data.method, connectedToFlowWallet)) {
-                      return flowProvider.request(data);
+                      if (data && shouldRouteToFlowWallet(data.method, connectedToFlowWallet)) {
+                        return await flowProvider.request(data);
+                      }
+                      // Route other methods to the default provider
+                      return await target.request(data);
+                    } catch (error) {
+                      consoleError('Error in request proxy:', error);
+                      throw error;
                     }
-                    // Route other methods to the default provider
-                    return target.request(data);
                   };
                 }
                 // Handle sendAsync method
                 if (prop === 'sendAsync') {
                   return async (payload, callback) => {
-                    const connectedToFlowWallet = isConnectedToFlowWallet(flowProvider);
+                    try {
+                      const connectedToFlowWallet = isConnectedToFlowWallet(flowProvider);
 
-                    if (
-                      payload &&
-                      !Array.isArray(payload) &&
-                      shouldRouteToFlowWallet(payload.method, connectedToFlowWallet)
-                    ) {
-                      return flowProvider.sendAsync(payload, callback);
+                      if (
+                        payload &&
+                        !Array.isArray(payload) &&
+                        shouldRouteToFlowWallet(payload.method, connectedToFlowWallet)
+                      ) {
+                        return await flowProvider.sendAsync(payload, callback);
+                      }
+                      return await target.sendAsync(payload, callback);
+                    } catch (error) {
+                      consoleError('Error in sendAsync proxy:', error);
+                      if (callback) callback(error, null);
+                      throw error;
                     }
-                    return target.sendAsync(payload, callback);
                   };
                 }
                 // Handle send method
                 if (prop === 'send') {
                   return async (payload, callback) => {
-                    const connectedToFlowWallet = isConnectedToFlowWallet(flowProvider);
+                    try {
+                      const connectedToFlowWallet = isConnectedToFlowWallet(flowProvider);
 
-                    if (
-                      typeof payload === 'object' &&
-                      payload.method &&
-                      shouldRouteToFlowWallet(payload.method, connectedToFlowWallet)
-                    ) {
-                      return flowProvider.send(payload, callback);
+                      if (
+                        typeof payload === 'object' &&
+                        payload.method &&
+                        shouldRouteToFlowWallet(payload.method, connectedToFlowWallet)
+                      ) {
+                        return await flowProvider.send(payload, callback);
+                      }
+                      return await target.send(payload, callback);
+                    } catch (error) {
+                      consoleError('Error in send proxy:', error);
+                      if (callback) callback(error, null);
+                      throw error;
                     }
-                    return target.send(payload, callback);
                   };
                 }
                 // For other properties, return from the target
@@ -578,7 +605,7 @@ const initProvider = () => {
       });
     } catch (e) {
       // think that defineProperty failed means there is any other wallet
-      requestHasOtherProvider();
+      await requestHasOtherProvider();
       consoleError(e);
       window.ethereum = flowProvider;
       window.frw = flowProvider;
@@ -589,18 +616,36 @@ const initProvider = () => {
   }
 };
 
-if (isOpera) {
-  initOperaProvider();
-} else {
-  initProvider();
-}
+// Initialize provider async
+const initializeWallet = async () => {
+  try {
+    if (isOpera) {
+      initOperaProvider();
+    } else {
+      await initProvider();
+    }
 
-requestIsDefaultWallet().then((frwAsDefault) => {
-  window.flowWalletRouter?.setDefaultProvider(frwAsDefault);
-  if (frwAsDefault) {
-    window.ethereum = flowProvider;
+    const frwAsDefault = await requestIsDefaultWallet();
+    window.flowWalletRouter?.setDefaultProvider(frwAsDefault);
+    if (frwAsDefault) {
+      window.ethereum = flowProvider;
+    }
+
+    log('[initialization]', 'Flow Wallet successfully initialized');
+  } catch (error) {
+    consoleError('Error during wallet initialization:', error);
+    // Fallback to basic initialization
+    if (isOpera) {
+      initOperaProvider();
+    } else {
+      window.ethereum = flowProvider;
+      window.frw = flowProvider;
+    }
   }
-});
+};
+
+// Initialize the wallet
+initializeWallet();
 
 const EIP6963Icon =
   'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjUwIiBoZWlnaHQ9IjI1MCIgdmlld0JveD0iMCAwIDI1MCAyNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMF8xMzc2MV8zNTIxKSI+CjxyZWN0IHdpZHRoPSIyNTAiIGhlaWdodD0iMjUwIiByeD0iNDYuODc1IiBmaWxsPSJ3aGl0ZSIvPgo8ZyBjbGlwLXBhdGg9InVybCgjY2xpcDFfMTM3NjFfMzUyMSkiPgo8cmVjdCB3aWR0aD0iMjUwIiBoZWlnaHQ9IjI1MCIgZmlsbD0idXJsKCNwYWludDBfbGluZWFyXzEzNzYxXzM1MjEpIi8+CjxwYXRoIGQ9Ik0xMjUgMjE3LjUyOUMxNzYuMTAyIDIxNy41MjkgMjE3LjUyOSAxNzYuMTAyIDIxNy41MjkgMTI1QzIxNy41MjkgNzMuODk3NSAxNzYuMTAyIDMyLjQ3MDcgMTI1IDMyLjQ3MDdDNzMuODk3NSAzMi40NzA3IDMyLjQ3MDcgNzMuODk3NSAzMi40NzA3IDEyNUMzMi40NzA3IDE3Ni4xMDIgNzMuODk3NSAyMTcuNTI5IDEyNSAyMTcuNTI5WiIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTE2NS4zODIgMTEwLjQyMkgxMzkuNTg1VjEzNi43OEgxNjUuMzgyVjExMC40MjJaIiBmaWxsPSJibGFjayIvPgo8cGF0aCBkPSJNMTEzLjIyNyAxMzYuNzhIMTM5LjU4NVYxMTAuNDIySDExMy4yMjdWMTM2Ljc4WiIgZmlsbD0iIzQxQ0M1RCIvPgo8L2c+CjwvZz4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQwX2xpbmVhcl8xMzc2MV8zNTIxIiB4MT0iMCIgeTE9IjAiIHgyPSIyNTAiIHkyPSIyNTAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iIzFDRUI4QSIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM0MUNDNUQiLz4KPC9saW5lYXJHcmFkaWVudD4KPGNsaXBQYXRoIGlkPSJjbGlwMF8xMzc2MV8zNTIxIj4KPHJlY3Qgd2lkdGg9IjI1MCIgaGVpZ2h0PSIyNTAiIHJ4PSI0Ni44NzUiIGZpbGw9IndoaXRlIi8+CjwvY2xpcFBhdGg+CjxjbGlwUGF0aCBpZD0iY2xpcDFfMTM3NjFfMzUyMSI+CjxyZWN0IHdpZHRoPSIyNTAiIGhlaWdodD0iMjUwIiBmaWxsPSJ3aGl0ZSIvPgo8L2NsaXBQYXRoPgo8L2RlZnM+Cjwvc3ZnPgo=';
