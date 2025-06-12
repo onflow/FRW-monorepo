@@ -89,6 +89,12 @@ describe('formatPrice', () => {
   it('should format numbers < 1 based on threshold and displayDecimals', () => {
     const testCases = [
       {
+        input: '0.1',
+        threshold: 4,
+        displayDecimals: 2,
+        expected: { leadingPart: '0.10', zeroPart: null, endingPart: null },
+      },
+      {
         input: '0.123456',
         threshold: 4,
         displayDecimals: 2,
