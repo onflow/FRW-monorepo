@@ -139,12 +139,13 @@ const TokenDetail = () => {
       );
     }
 
-    const result = await usewallet.openapi.getPriceProvider(token);
     if (tokenResult) {
       setTokenInfo(tokenResult);
     } else {
       consoleWarn(`Could not find token with ID ${tokenId} or name ${token}`);
     }
+
+    const result = await usewallet.openapi.getPriceProvider(token);
 
     setProviders(result);
     if (result.length === 0) {
@@ -176,105 +177,103 @@ const TokenDetail = () => {
   }, [loadNetwork, getProvider, requestChildType, coinsLoaded]);
 
   return (
-    <StyledEngineProvider injectFirst>
-      <div className={`${classes.page} page`}>
-        <div className={classes.container}>
-          <Header />
-          {!accessible && (
-            <Box
+    <Box className={classes.page}>
+      <Box className={classes.container}>
+        <Header />
+        {!accessible && (
+          <Box
+            sx={{
+              display: 'flex',
+              marginBottom: '12px',
+              borderRadius: '8px',
+              padding: '8px 11px',
+              backgroundColor: 'error.light',
+            }}
+          >
+            <img style={{ height: '16px', width: '16px', borderRadius: '16px' }} src={tips}></img>
+            <Typography
               sx={{
-                display: 'flex',
-                marginBottom: '12px',
-                borderRadius: '8px',
-                padding: '8px 11px',
-                backgroundColor: 'error.light',
+                fontSize: '12px',
+                marginLeft: '5px',
+                color: 'error.main',
               }}
             >
-              <img style={{ height: '16px', width: '16px', borderRadius: '16px' }} src={tips}></img>
+              Flow Wallet doesn't have access to {`${token}`} in
+              {`${walletName.name}`} Account, please check your linked account settings.
+            </Typography>
+          </Box>
+        )}
+        <TokenInfoCard
+          tokenInfo={tokenInfo}
+          accountType={accountType}
+          tokenId={tokenId}
+          setIsOnRamp={setIsOnRamp}
+        />
+
+        {tokenInfo && !tokenInfo.isVerified && (
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '6px',
+              padding: '16px',
+              background: 'rgba(255, 255, 255, 0.08)',
+              borderRadius: '12px',
+            }}
+          >
+            <Box sx={{ position: 'relative', display: 'inline-block' }}>
+              <img src={WarningIcon} alt="Verified" style={{ width: '32px', height: '32px' }} />
+            </Box>
+            <Typography
+              sx={{ fontSize: '14px', fontWeight: 500, color: 'rgba(255, 255, 255, 0.80)' }}
+            >
+              This is an unverified token, only interact with tokens you trust.{' '}
               <Typography
+                component="a"
+                href="https://wallet.flow.com/post/verified-tokens-on-flow-wallet"
+                target="_blank"
+                rel="noopener noreferrer"
                 sx={{
-                  fontSize: '12px',
-                  marginLeft: '5px',
-                  color: 'error.main',
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 400,
+                  color: 'rgba(255, 255, 255, 0.80)',
                 }}
               >
-                Flow Wallet doesn't have access to {`${token}`} in
-                {`${walletName.name}`} Account, please check your linked account settings.
+                View more.
               </Typography>
-            </Box>
-          )}
-          <TokenInfoCard
-            tokenInfo={tokenInfo}
-            accountType={accountType}
-            tokenId={tokenId}
-            setIsOnRamp={setIsOnRamp}
-          />
+            </Typography>
+          </Box>
+        )}
+        {token === 'flow' && <StackingCard />}
+        {network === 'testnet' && token === 'flow' && <ClaimTokenCard token={token} />}
+        {providers?.length > 0 && (
+          <PriceCard token={token} price={price} setPrice={setPrice} providers={providers} />
+        )}
 
-          {tokenInfo && !tokenInfo.isVerified && (
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: '6px',
-                padding: '16px',
-                background: 'rgba(255, 255, 255, 0.08)',
-                borderRadius: '12px',
-              }}
-            >
-              <Box sx={{ position: 'relative', display: 'inline-block' }}>
-                <img src={WarningIcon} alt="Verified" style={{ width: '32px', height: '32px' }} />
-              </Box>
-              <Typography
-                sx={{ fontSize: '14px', fontWeight: 500, color: 'rgba(255, 255, 255, 0.80)' }}
-              >
-                This is an unverified token, only interact with tokens you trust.{' '}
-                <Typography
-                  component="a"
-                  href="https://wallet.flow.com/post/verified-tokens-on-flow-wallet"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{
-                    textDecoration: 'underline',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    fontWeight: 400,
-                    color: 'rgba(255, 255, 255, 0.80)',
-                  }}
-                >
-                  View more.
-                </Typography>
-              </Typography>
-            </Box>
-          )}
-          {token === 'flow' && <StackingCard />}
-          {network === 'testnet' && token === 'flow' && <ClaimTokenCard token={token} />}
-          {providers?.length > 0 && (
-            <PriceCard token={token} price={price} setPrice={setPrice} providers={providers} />
-          )}
-
-          {token === 'flow' && <StorageUsageCard />}
-          {tokenInfo && <SecurityCard tokenInfo={tokenInfo} />}
-          {isOnRamp && (
-            <Drawer
-              anchor="bottom"
-              open={isOnRamp}
-              transitionDuration={300}
-              PaperProps={{
-                sx: {
-                  width: '100%',
-                  height: '65%',
-                  bgcolor: 'background.default',
-                  borderRadius: '18px 18px 0px 0px',
-                },
-              }}
-            >
-              <OnRampList close={() => setIsOnRamp(false)} />
-            </Drawer>
-          )}
-        </div>
-      </div>
-    </StyledEngineProvider>
+        {token === 'flow' && <StorageUsageCard />}
+        {tokenInfo && <SecurityCard tokenInfo={tokenInfo} />}
+        {isOnRamp && (
+          <Drawer
+            anchor="bottom"
+            open={isOnRamp}
+            transitionDuration={300}
+            PaperProps={{
+              sx: {
+                width: '100%',
+                height: '65%',
+                bgcolor: 'background.default',
+                borderRadius: '18px 18px 0px 0px',
+              },
+            }}
+          >
+            <OnRampList close={() => setIsOnRamp(false)} />
+          </Drawer>
+        )}
+      </Box>
+    </Box>
   );
 };
 

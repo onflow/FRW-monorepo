@@ -14,7 +14,6 @@ import {
   type User,
 } from 'firebase/auth/web-extension';
 import { getInstallations, getId } from 'firebase/installations';
-import type { TokenInfo } from 'flow-native-token-registry';
 
 import fetchConfig from '@/background/service/remoteConfig';
 import { findKeyAndInfo } from '@/background/utils';
@@ -23,14 +22,16 @@ import { getFirbaseConfig, getFirbaseFunctionUrl } from '@/background/utils/fire
 import { verifySignature } from '@/background/utils/modules/publicPrivateKey';
 import { storage } from '@/background/webapi';
 import type {
-  ExtendedTokenInfo,
   BalanceMap,
   EvmTokenInfo,
   CadenceTokenInfo,
+  FungibleTokenListResponse,
+  FungibleTokenInfo,
+  CustomFungibleTokenInfo,
 } from '@/shared/types/coin-types';
-import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
 import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
 import { type NFTCollections } from '@/shared/types/nft-types';
+import type { TokenInfo } from '@/shared/types/token-info';
 import {
   type LoggedInAccountWithIndex,
   type LoggedInAccount,
@@ -40,7 +41,7 @@ import {
   type Currency,
   DEFAULT_CURRENCY,
 } from '@/shared/types/wallet-types';
-import { isValidFlowAddress, isValidEthereumAddress } from '@/shared/utils/address';
+import { isValidFlowAddress } from '@/shared/utils/address';
 import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
 import { cadenceScriptsKey } from '@/shared/utils/cache-data-keys';
 import { consoleError, consoleLog } from '@/shared/utils/console-log';
@@ -55,8 +56,6 @@ import {
   type CheckResponse,
   type SignInResponse,
   type UserInfoResponse,
-  type TokenModel,
-  type NFTModel_depreciated,
   type StorageInfo,
   type NewsItem,
   type NewsConditionType,
@@ -66,7 +65,6 @@ import {
   type Contact,
   type NFTModelV2,
   type DeviceInfoRequest,
-  MAINNET_CHAIN_ID,
   type KeyResponseItem,
   type NftCollection,
 } from '../../shared/types/network-types';
@@ -505,8 +503,9 @@ export class OpenApiService {
   };
 
   /**
-   * @deprecated This method is not used in the codebase.
-   * Use getUserTokens has price information.
+   * Return the USDC price pair for a given provider
+   * @param provider - The provider to get the USDC price pair for
+   * @returns The USDC price pair for the provider
    */
   private getUSDCPricePair = (provider: PriceProvider): string | null => {
     switch (provider) {
@@ -522,8 +521,9 @@ export class OpenApiService {
   };
 
   /**
-   * @deprecated This method is not used in the codebase.
-   * Use getUserTokens has price information.
+   * Return the price providers to use for a given token
+   * @param token - The token to get the price providers for
+   * @returns The price providers to use for the token
    */
   getPriceProvider = (token: string): PriceProvider[] => {
     switch (token) {
@@ -543,8 +543,10 @@ export class OpenApiService {
   };
 
   /**
-   * @deprecated This method is not used in the codebase.
-   * Use getUserTokens has price information.
+   * Return the price pair for a given token and provider
+   * @param token - The token to get the price pair for
+   * @param provider - The provider to get the price pair for
+   * @returns The price pair for the token and provider
    */
   getUSDCPrice = async (provider = PriceProvider.binance): Promise<CheckResponse> => {
     const config = this.store.config.crypto_map;
@@ -556,8 +558,9 @@ export class OpenApiService {
   };
 
   /**
-   * @deprecated This method is not used in the codebase.
-   * Use getUserTokens has price information.
+   * Return the price pair for a given provider
+   * @param provider - The provider to get the price pair for
+   * @returns The price pair for the provider
    */
   private getFlowPricePair = (provider: PriceProvider): string => {
     switch (provider) {
@@ -577,8 +580,10 @@ export class OpenApiService {
   };
 
   /**
-   * @deprecated This method is not used in the codebase.
-   * Use getUserTokens instead. It will have token info and price.
+   * Return the price by symbol
+   * @param symbol - The symbol to get the price for
+   * @param data - The data to get the price from
+   * @returns The price for the symbol
    */
   getPricesBySymbol = async (symbol: string, data) => {
     const key = symbol.toUpperCase();
@@ -586,8 +591,10 @@ export class OpenApiService {
   };
 
   /**
-   * @deprecated This method is not used in the codebase.
-   * Use getUserTokens instead. It will have token info and price.
+   * Return the price by address
+   * @param symbol - The symbol to get the price for
+   * @param data - The data to get the price from
+   * @returns The price for the symbol
    */
   getPricesByAddress = async (symbol: string, data) => {
     const key = symbol.toLowerCase();
@@ -1293,12 +1300,15 @@ export class OpenApiService {
       storageCapacity: result['storageCapacity'],
     };
   };
-  getTokenBalanceWithModel = async (address: string, token: TokenInfo) => {
+  getTokenBalanceWithModel = async (address: string, token: CustomFungibleTokenInfo) => {
     const script = await getScripts(
       userWalletService.getNetwork(),
       'basic',
       'getTokenBalanceWithModel'
     );
+    if (!token.contractName || !token.path || !token.address) {
+      throw new Error('Invalid token');
+    }
     const network = await userWalletService.getNetwork();
     const cadence = script
       .replaceAll('<Token>', token.contractName)
@@ -1327,9 +1337,9 @@ export class OpenApiService {
     return data.tokens;
   };
 
-  fetchFTListFull = async (network: string, chainType: string): Promise<TokenInfo[]> => {
+  fetchFTListFull = async (network: string, chainType: string): Promise<FungibleTokenInfo[]> => {
     const config = this.store.config.get_ft_list_full;
-    const data = await this.sendRequest(
+    const data: FungibleTokenListResponse = await this.sendRequest(
       config.method,
       config.path,
       {
@@ -1344,14 +1354,16 @@ export class OpenApiService {
   };
 
   // todo
-  isTokenStorageEnabled = async (address: string, token: TokenInfo) => {
+  isTokenStorageEnabled = async (address: string, token: CustomFungibleTokenInfo) => {
     const network = await userWalletService.getNetwork();
     const script = await getScripts(
       userWalletService.getNetwork(),
       'basic',
       'isTokenStorageEnabled'
     );
-
+    if (!token.contractName || !token.path || !token.address) {
+      throw new Error('Invalid token');
+    }
     const cadence = script
       .replaceAll('<Token>', token.contractName)
       .replaceAll('<TokenBalancePath>', token.path.balance)

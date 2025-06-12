@@ -6,7 +6,6 @@ import { ethErrors } from 'eth-rpc-errors';
 import * as ethUtil from 'ethereumjs-util';
 import { getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth/web-extension';
-import { type TokenInfo } from 'flow-native-token-registry';
 import { encode } from 'rlp';
 import web3, { TransactionError, Web3 } from 'web3';
 
@@ -27,11 +26,13 @@ import {
 } from '@/background/utils/modules/publicPrivateKey';
 import { generateRandomId } from '@/background/utils/random-id';
 import eventBus from '@/eventBus';
+import { type CustomFungibleTokenInfo } from '@/shared/types/coin-types';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
 import { type PublicPrivateKeyTuple, type PublicKeyTuple } from '@/shared/types/key-types';
 import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
 import { ContactType, MAINNET_CHAIN_ID } from '@/shared/types/network-types';
 import { type NFTCollections, type NFTCollectionData } from '@/shared/types/nft-types';
+import { type TokenInfo } from '@/shared/types/token-info';
 import { type TrackingEvents } from '@/shared/types/tracking-types';
 import { type TransferItem, type TransactionState } from '@/shared/types/transaction-types';
 import {
@@ -2120,7 +2121,7 @@ export class WalletController extends BaseController {
     ]);
   };
 
-  getTokenInfo = async (symbol: string): Promise<TokenInfo | undefined> => {
+  getTokenInfo = async (symbol: string): Promise<CustomFungibleTokenInfo | undefined> => {
     const network = await this.getNetwork();
     const activeAccountType = await this.getActiveAccountType();
     return await tokenListService.getTokenInfo(
@@ -2128,6 +2129,10 @@ export class WalletController extends BaseController {
       activeAccountType === 'evm' ? 'evm' : 'flow',
       symbol
     );
+  };
+
+  addCustomEvmToken = async (network: string, token: CustomFungibleTokenInfo) => {
+    return await tokenListService.addCustomEvmToken(network, token);
   };
 
   // TODO: Replace with generic token
@@ -2149,6 +2154,9 @@ export class WalletController extends BaseController {
 
     await this.getNetwork();
 
+    if (!token.contractName || !token.path || !token.address) {
+      throw new Error('Invalid token');
+    }
     const txID = await userWalletService.sendTransaction(
       script
         .replaceAll('<Token>', token.contractName)
@@ -2219,6 +2227,9 @@ export class WalletController extends BaseController {
       'storage',
       'enableTokenStorage'
     );
+    if (!token.contractName || !token.path || !token.address) {
+      throw new Error('Invalid token');
+    }
 
     return await userWalletService.sendTransaction(
       script
@@ -2275,7 +2286,7 @@ export class WalletController extends BaseController {
       from_address: (await this.getCurrentAddress()) || '',
       to_address: childAddress,
       amount: amount,
-      ft_identifier: token.contractName,
+      ft_identifier: 'flow',
       type: 'flow',
     });
     return result;
@@ -2310,7 +2321,7 @@ export class WalletController extends BaseController {
       from_address: childAddress,
       to_address: receiver,
       amount: amount,
-      ft_identifier: token.contractName,
+      ft_identifier: 'flow',
       type: 'flow',
     });
     return result;

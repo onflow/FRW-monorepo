@@ -2,7 +2,7 @@
  * Keys and types to access data in the UI from the background storage cache
  * This is the primary way to get cached data from network calls to the frontend
  */
-import { type TokenInfo } from 'flow-native-token-registry';
+import { type TokenInfo } from '@/shared/types/token-info';
 
 import {
   type TokenFilter,
