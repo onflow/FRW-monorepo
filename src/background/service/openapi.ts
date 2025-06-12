@@ -1,5 +1,6 @@
 import * as fcl from '@onflow/fcl';
 import type { Account as FclAccount } from '@onflow/typedefs';
+import BigNumber from 'bignumber.js';
 import dayjs from 'dayjs';
 import { initializeApp, getApp } from 'firebase/app';
 import {
@@ -1910,10 +1911,30 @@ export class OpenApiService {
       {},
       WEB_NEXT_URL
     );
-    if (!response!.data?.result) {
+    if (!response!.data?.result || !response!.data?.storage) {
       throw new Error('No token info found');
     }
-    return response?.data?.result;
+
+    // TODO: TB remove this after the API is updated
+    const storageInfo: StorageResponse = response?.data?.storage;
+    const cadenceTokenInfo: CadenceTokenInfo[] = response?.data?.result.map((token) => {
+      if (token.symbol.toUpperCase() === 'FLOW') {
+        return {
+          ...token,
+          balance: storageInfo.availableBalanceToUse,
+          displayBalance: storageInfo.availableBalanceToUse,
+          balanceInFLOW: storageInfo.availableBalanceToUse,
+          balanceInUSD: BigNumber(storageInfo.availableBalanceToUse)
+            .multipliedBy(BigNumber(token.priceInUSD))
+            .toString(),
+          balanceInCurrency: BigNumber(storageInfo.availableBalanceToUse)
+            .multipliedBy(BigNumber(token.priceInCurrency))
+            .toString(),
+        };
+      }
+      return token;
+    });
+    return cadenceTokenInfo;
   }
 
   async fetchEvmTokenInfo(

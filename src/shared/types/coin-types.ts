@@ -96,6 +96,7 @@ export type CadenceTokenInfo = {
   balanceInCurrency: string;
   currency: string;
   logoURI: string;
+  displayBalance: string;
 };
 
 // New type definitions for API response for /v4/evm/tokens/ft/{address}
