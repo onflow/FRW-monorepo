@@ -2,7 +2,7 @@
  * Keys and types to access persistant data in the UI from the background storage cache
  * Persistant data is data that is stored between sessions
  */
-import { type CustomFungibleTokenInfo } from '../types/coin-types';
+import { type EvmCustomTokenInfo, type CustomFungibleTokenInfo } from '../types/coin-types';
 import { type FlowNetwork } from '../types/network-types';
 import { type Currency, type FlowAddress, type WalletAddress } from '../types/wallet-types';
 
@@ -68,10 +68,8 @@ export const getPreferencesData = async (): Promise<PreferencesStore | undefined
 };
 
 export const evmCustomTokenKey = (network: string) => `${network}evmCustomToken`;
-export const getEvmCustomTokenData = async (
-  network: string
-): Promise<CustomFungibleTokenInfo[]> => {
-  const data = await getUserData<CustomFungibleTokenInfo[]>(evmCustomTokenKey(network));
+export const getEvmCustomTokenData = async (network: string): Promise<EvmCustomTokenInfo[]> => {
+  const data = await getUserData<EvmCustomTokenInfo[]>(evmCustomTokenKey(network));
   return data || [];
 };
 

@@ -16,6 +16,29 @@ export enum PriceProvider {
   increment = 'increment',
 }
 
+/**
+ * Return the price providers to use for a given token
+ * @param token - The token to get the price providers for
+ * @returns The price providers to use for the token
+ */
+
+export const getPriceProvider = (token: string): PriceProvider[] => {
+  switch (token) {
+    case 'usdc':
+      return [PriceProvider.binance, PriceProvider.kakren, PriceProvider.huobi];
+    case 'flow':
+      return [
+        PriceProvider.binance,
+        PriceProvider.kakren,
+        PriceProvider.coinbase,
+        PriceProvider.kucoin,
+        PriceProvider.huobi,
+      ];
+    default:
+      return [];
+  }
+};
+
 export interface TokenModel {
   name: string;
   address: FlowNetworkModel;

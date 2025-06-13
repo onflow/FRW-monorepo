@@ -1,9 +1,9 @@
 import {
+  type EvmCustomTokenInfo,
   type CustomFungibleTokenInfo,
   type ExtendedTokenInfo,
   type TokenFilter,
 } from '@/shared/types/coin-types';
-import { type TokenInfo } from '@/shared/types/token-info';
 import { triggerRefresh } from '@/shared/utils/cache-data-access';
 import {
   type ChildAccountFtStore,
@@ -54,7 +54,9 @@ export const useChildAccountFt = (
 };
 
 export const useAllTokenInfo = (network: string, chainType: string) => {
-  return useCachedData<TokenInfo[]>(network && chainType ? tokenListKey(network, chainType) : null);
+  return useCachedData<CustomFungibleTokenInfo[]>(
+    network && chainType ? tokenListKey(network, chainType) : null
+  );
 };
 
 export const refreshEvmToken = (network: string) => {
@@ -62,5 +64,5 @@ export const refreshEvmToken = (network: string) => {
 };
 
 export const useEvmCustomTokens = (network: string) => {
-  return useUserData<CustomFungibleTokenInfo[]>(evmCustomTokenKey(network));
+  return useUserData<EvmCustomTokenInfo[]>(evmCustomTokenKey(network));
 };

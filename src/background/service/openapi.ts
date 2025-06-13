@@ -67,6 +67,7 @@ import {
   type DeviceInfoRequest,
   type KeyResponseItem,
   type NftCollection,
+  getPriceProvider,
 } from '../../shared/types/network-types';
 
 import {
@@ -521,28 +522,6 @@ export class OpenApiService {
   };
 
   /**
-   * Return the price providers to use for a given token
-   * @param token - The token to get the price providers for
-   * @returns The price providers to use for the token
-   */
-  getPriceProvider = (token: string): PriceProvider[] => {
-    switch (token) {
-      case 'usdc':
-        return [PriceProvider.binance, PriceProvider.kakren, PriceProvider.huobi];
-      case 'flow':
-        return [
-          PriceProvider.binance,
-          PriceProvider.kakren,
-          PriceProvider.coinbase,
-          PriceProvider.kucoin,
-          PriceProvider.huobi,
-        ];
-      default:
-        return [];
-    }
-  };
-
-  /**
    * Return the price pair for a given token and provider
    * @param token - The token to get the price pair for
    * @param provider - The provider to get the price pair for
@@ -631,8 +610,10 @@ export class OpenApiService {
   };
 
   /**
-   * @deprecated This method is not used in the codebase.
-   * Use getUserTokens instead. It will have token info and price.
+   * Get the price of a token
+   * @param token - The token to get the price for
+   * @param provider - The provider to get the price from
+   * @returns The price of the token
    */
   getTokenPrice = async (token: string, provider = PriceProvider.binance) => {
     const config = this.store.config.crypto_flow;
@@ -647,6 +628,13 @@ export class OpenApiService {
     return data.data.result;
   };
 
+  /**
+   * Get the price history of a token
+   * @param token - The token to get the price history for
+   * @param period - The period to get the price history for
+   * @param provider - The provider to get the price history from
+   * @returns The price history of the token
+   */
   getTokenPriceHistory = async (
     token: string,
     period = Period.oneDay,
@@ -655,7 +643,7 @@ export class OpenApiService {
     let after = dayjs();
     const periods = getPeriodFrequency(period);
 
-    const providers = this.getPriceProvider(token);
+    const providers = getPriceProvider(token);
     if (providers.length === 0) {
       throw new Error('no price provider found');
     }

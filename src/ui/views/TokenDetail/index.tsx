@@ -1,19 +1,22 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { Box, MenuItem, Typography, IconButton, Drawer } from '@mui/material';
-import { StyledEngineProvider } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 
 import { storage } from '@/background/webapi';
-import type { CoinItem } from '@/shared/types/coin-types';
-import type { PriceProvider } from '@/shared/types/network-types';
+import type {
+  CoinItem,
+  CustomFungibleTokenInfo,
+  EvmCustomTokenInfo,
+} from '@/shared/types/coin-types';
+import { getPriceProvider, type PriceProvider } from '@/shared/types/network-types';
 import { type ActiveAccountType } from '@/shared/types/wallet-types';
-import { consoleWarn } from '@/shared/utils/console-log';
+import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 import SecurityCard from '@/ui/components/SecurityCard';
 import StorageUsageCard from '@/ui/components/StorageUsageCard';
-import { refreshEvmToken } from '@/ui/hooks/use-coin-hooks';
+import { refreshEvmToken, useAllTokenInfo, useEvmCustomTokens } from '@/ui/hooks/use-coin-hooks';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import tips from 'ui/assets/svg/tips.svg';
@@ -49,39 +52,100 @@ const TokenDetail = () => {
   const classes = useStyles();
   const usewallet = useWallet();
   const history = useHistory();
-  const { currentWallet } = useProfiles();
-  const { coins, coinsLoaded } = useCoins();
-  const [price, setPrice] = useState('');
-  const [accessible, setAccessible] = useState(true);
+  // Get the token name and id from the url
   const token = useParams<{ name: string }>().name.toLowerCase();
   const tokenId = useParams<{ id: string }>().id;
-  const [network, setNetwork] = useState('mainnet');
-  const [walletName, setCurrentWallet] = useState({ name: '' });
-  const [tokenInfo, setTokenInfo] = useState<CoinItem | undefined>(undefined);
-  const [providers, setProviders] = useState<PriceProvider[]>([]);
-  const [accountType, setAccountType] = useState<ActiveAccountType>('main');
+
+  // Get the network, current wallet, and active account type
+  const { network, currentWallet, activeAccountType } = useProfiles();
+  // Get the coins and whether the coins are loaded
+  const { coins, coinsLoaded } = useCoins();
+
+  // Get all token info
+  const allTokenInfo = useAllTokenInfo(network, activeAccountType === 'evm' ? 'evm' : 'flow');
+
+  // Get EVM Custom Token Info
+  const evmCustomTokens = useEvmCustomTokens(network);
+
+  // Set the price and accessible state
+  const [price, setPrice] = useState('');
+  // Child account FT access
+  const [canAccessFt, setCanAccessFt] = useState(true);
+  // Get the token info from the coin list
+  const tokenInfo: CoinItem | CustomFungibleTokenInfo | EvmCustomTokenInfo | undefined =
+    useMemo(() => {
+      // check if the coins are loaded
+      if (!coins || !coinsLoaded || !token || !tokenId || !activeAccountType) {
+        return undefined;
+      }
+      // find the token by id
+      const coinItem = coins.find((coin) => coin.id === tokenId);
+      if (coinItem) {
+        return coinItem;
+      }
+
+      consoleWarn(`Token not found by ID ${tokenId}, trying to find by name ${token}`);
+
+      const lowerCaseToken = token.toLowerCase();
+      // find the token by name
+      const coinFoundByName = coins.find(
+        (coin) =>
+          coin.symbol?.toLowerCase() === lowerCaseToken ||
+          coin.name?.toLowerCase() === lowerCaseToken
+      );
+      if (coinFoundByName) {
+        return coinFoundByName;
+      }
+      consoleWarn(`Token not found by in coin list, trying to find in token list by name ${token}`);
+
+      // find the token by
+      const coinFoundByAddress: CustomFungibleTokenInfo | undefined = allTokenInfo?.find(
+        (customToken) =>
+          customToken.symbol?.toLowerCase() === lowerCaseToken ||
+          customToken.name?.toLowerCase() === lowerCaseToken
+      );
+      if (coinFoundByAddress) {
+        return coinFoundByAddress;
+      }
+      if (activeAccountType !== 'evm') {
+        consoleError(`Token not found ${token} for account type ${activeAccountType}`);
+        return undefined;
+      }
+
+      consoleWarn(
+        `Token not found in token list, trying to find in custom token list by name ${token}`
+      );
+
+      // Find custom token by address
+      const customTokenInfo: EvmCustomTokenInfo | undefined = evmCustomTokens?.find(
+        (customToken) => customToken.unit?.toLowerCase() === lowerCaseToken
+      );
+      if (customTokenInfo) {
+        return customTokenInfo;
+      }
+      consoleError(`Token not found ${token}`);
+      return undefined;
+    }, [coins, tokenId, coinsLoaded, token, allTokenInfo, evmCustomTokens, activeAccountType]);
+
+  // Get the price providers
+  const priceProviders = useMemo(() => {
+    return getPriceProvider(token);
+  }, [token]);
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [isOnRamp, setIsOnRamp] = useState(false);
+
   const handleMenuToggle = () => {
     setMenuOpen(!menuOpen);
   };
 
+  // Handle the delete EFT button to remove an EVM Custom Token
   const handleDeleteEFT = async () => {
-    const network = await usewallet.getNetwork();
+    if (!tokenInfo?.address) {
+      throw new Error('Token address is required');
+    }
+    await usewallet.removeCustomEvmToken(network, tokenInfo.address);
 
-    let evmCustomToken = (await storage.get(`${network}evmCustomToken`)) || [];
-
-    // Filter out any empty objects from evmCustomToken
-    evmCustomToken = evmCustomToken.filter((token) => Object.keys(token).length > 0);
-
-    // Filter out the token with the matching address
-    evmCustomToken = evmCustomToken.filter(
-      (token) => token.address.toLowerCase() !== tokenInfo?.address?.toLowerCase()
-    );
-
-    await storage.set(`${network}evmCustomToken`, evmCustomToken);
-    await usewallet.clearCoinList();
-    refreshEvmToken(network);
     history.replace({ pathname: history.location.pathname, state: { refreshed: true } });
     history.goBack();
   };
@@ -93,12 +157,11 @@ const TokenDetail = () => {
           <ArrowBackIcon sx={{ color: 'icon.navi' }} />
         </IconButton>
         <Box sx={{ flexGrow: 1 }} />
-        {tokenInfo &&
-          (tokenInfo as any).custom && ( // potential type error here. custom is not a property of TokenInfo
-            <IconButton onClick={handleMenuToggle}>
-              <MoreHorizIcon sx={{ color: 'icon.navi' }} />
-            </IconButton>
-          )}
+        {tokenInfo?.custom && (
+          <IconButton onClick={handleMenuToggle}>
+            <MoreHorizIcon sx={{ color: 'icon.navi' }} />
+          </IconButton>
+        )}
         {menuOpen && (
           <Box
             sx={{
@@ -121,66 +184,31 @@ const TokenDetail = () => {
     );
   };
 
-  const getProvider = useCallback(async () => {
-    if (!coinsLoaded) {
-      return;
-    }
-
-    // First try to find by ID
-    let tokenResult = coins?.find((coin) => coin.id === tokenId);
-
-    // If not found by ID, try to find by token name (case insensitive)
-    if (!tokenResult) {
-      consoleWarn(`Token not found by ID ${tokenId}, trying to find by name ${token}`);
-      tokenResult = coins?.find(
-        (coin) =>
-          coin.symbol?.toLowerCase() === token.toLowerCase() ||
-          coin.name?.toLowerCase() === token.toLowerCase()
-      );
-    }
-
-    if (tokenResult) {
-      setTokenInfo(tokenResult);
-    } else {
-      consoleWarn(`Could not find token with ID ${tokenId} or name ${token}`);
-    }
-
-    const result = await usewallet.openapi.getPriceProvider(token);
-
-    setProviders(result);
-    if (result.length === 0) {
-      setPrice(tokenResult?.price || '');
-    }
-  }, [usewallet, token, tokenId, coins, coinsLoaded]);
-
-  const loadNetwork = useCallback(async () => {
-    const network = await usewallet.getNetwork();
-    setCurrentWallet(currentWallet ?? { name: '' });
-    setNetwork(network);
-  }, [usewallet, currentWallet]);
-
-  const requestChildType = useCallback(async () => {
-    const result = await usewallet.getActiveAccountType();
-    setAccountType(result);
-  }, [usewallet]);
-
-  const handleMoveOpen = () => {
-    history.push(`/dashboard/token/${token}/send`);
-  };
-
+  // Set the price if the token info is loaded and no price providers are available
   useEffect(() => {
     if (coinsLoaded) {
-      loadNetwork();
-      getProvider();
-      requestChildType();
+      if (priceProviders?.length === 0 && tokenInfo && 'price' in tokenInfo) {
+        setPrice(tokenInfo.price);
+      }
     }
-  }, [loadNetwork, getProvider, requestChildType, coinsLoaded]);
+  }, [priceProviders?.length, tokenInfo, coinsLoaded]);
+
+  // Check if the token is accessible
+  useEffect(() => {
+    if (activeAccountType === 'child' && tokenInfo && 'flowIdentifier' in tokenInfo) {
+      usewallet.checkAccessibleFt(currentWallet.address).then((accessibleFt) => {
+        if (accessibleFt) {
+          setCanAccessFt(accessibleFt.some((ft) => ft.id === tokenInfo.flowIdentifier));
+        }
+      });
+    }
+  }, [activeAccountType, currentWallet.address, tokenInfo, usewallet]);
 
   return (
     <Box className={classes.page}>
       <Box className={classes.container}>
         <Header />
-        {!accessible && (
+        {!canAccessFt && (
           <Box
             sx={{
               display: 'flex',
@@ -199,18 +227,18 @@ const TokenDetail = () => {
               }}
             >
               Flow Wallet doesn't have access to {`${token}`} in
-              {`${walletName.name}`} Account, please check your linked account settings.
+              {`${currentWallet.name}`} Account, please check your linked account settings.
             </Typography>
           </Box>
         )}
         <TokenInfoCard
           tokenInfo={tokenInfo}
-          accountType={accountType}
+          accountType={activeAccountType}
           tokenId={tokenId}
           setIsOnRamp={setIsOnRamp}
         />
 
-        {tokenInfo && !tokenInfo.isVerified && (
+        {tokenInfo && 'isVerified' in tokenInfo && !tokenInfo.isVerified && (
           <Box
             sx={{
               display: 'flex',
@@ -249,11 +277,11 @@ const TokenDetail = () => {
         )}
         {token === 'flow' && <StackingCard />}
         {network === 'testnet' && token === 'flow' && <ClaimTokenCard token={token} />}
-        {providers?.length > 0 && (
-          <PriceCard token={token} price={price} setPrice={setPrice} providers={providers} />
+        {priceProviders?.length > 0 && (
+          <PriceCard token={token} price={price} setPrice={setPrice} providers={priceProviders} />
         )}
 
-        {token === 'flow' && <StorageUsageCard />}
+        {token === 'flow' && activeAccountType === 'main' && <StorageUsageCard />}
         {tokenInfo && <SecurityCard tokenInfo={tokenInfo} />}
         {isOnRamp && (
           <Drawer

@@ -1,24 +1,18 @@
 import {
   type FungibleTokenInfo,
-  type CoinItem,
   type CustomFungibleTokenInfo,
+  type EvmCustomTokenInfo,
 } from '@/shared/types/coin-types';
 import { MAINNET_CHAIN_ID } from '@/shared/types/network-types';
-import { type TokenInfo } from '@/shared/types/token-info';
 import { tokenListKey, tokenListRefreshRegex } from '@/shared/utils/cache-data-keys';
 import { setUserData } from '@/shared/utils/user-data-access';
 import { evmCustomTokenKey, getEvmCustomTokenData } from '@/shared/utils/user-data-keys';
 
 import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
-import { storage } from '../webapi';
 
 import openapiService from './openapi';
 
 import { userWalletService } from '.';
-
-type CustomTokenInfo = TokenInfo & {
-  custom: boolean;
-};
 
 const defaultFlowToken = {
   name: 'Flow',
@@ -52,17 +46,34 @@ class TokenList {
     const evmTokens = await getEvmCustomTokenData(network);
     const existingIndex = evmTokens.findIndex((t) => t.address === token.address);
     if (existingIndex !== -1) {
-      evmTokens[existingIndex] = token;
+      evmTokens[existingIndex] = {
+        ...evmTokens[existingIndex],
+        coin: token.name,
+        unit: token.symbol,
+        flowIdentifier: token.flowIdentifier,
+        address: token.address,
+        custom: true,
+      };
     } else {
-      evmTokens.push(token);
+      evmTokens.push({
+        ...token,
+        coin: token.name,
+        unit: token.symbol,
+        flowIdentifier: token.flowIdentifier,
+        address: token.address,
+        custom: true,
+      });
     }
     await setUserData(evmCustomTokenKey(network), evmTokens);
   };
 
-  mergeCustomTokens = (
-    tokens: CustomFungibleTokenInfo[],
-    customTokens: CustomFungibleTokenInfo[]
-  ) => {
+  removeCustomEvmToken = async (network: string, tokenAddress: string) => {
+    const evmTokens = await getEvmCustomTokenData(network);
+    const filteredEvmTokens = evmTokens.filter((t) => t.address !== tokenAddress);
+    await setUserData(evmCustomTokenKey(network), filteredEvmTokens);
+  };
+
+  mergeCustomTokens = (tokens: CustomFungibleTokenInfo[], customTokens: EvmCustomTokenInfo[]) => {
     customTokens.forEach((custom) => {
       const existingToken = tokens.find(
         (token) => token.address?.toLowerCase() === custom.address?.toLowerCase()
@@ -76,6 +87,13 @@ class TokenList {
         tokens.push({
           ...custom,
           custom: true,
+          chainId: MAINNET_CHAIN_ID,
+          symbol: custom.unit,
+          name: custom.coin,
+          decimals: 18,
+          logoURI: '',
+          flowIdentifier: custom.flowIdentifier,
+          tags: [],
         });
       }
     });
@@ -103,7 +121,7 @@ class TokenList {
     const tokens = await openapiService.fetchFTListFull(network, chainType);
 
     if (chainType === 'evm') {
-      const evmCustomToken: CustomFungibleTokenInfo[] = await getEvmCustomTokenData(network);
+      const evmCustomToken = await getEvmCustomTokenData(network);
       this.mergeCustomTokens(
         tokens.map((token) => ({ ...token, custom: false })),
         evmCustomToken

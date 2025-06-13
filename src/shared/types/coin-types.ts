@@ -147,6 +147,18 @@ export type CustomFungibleTokenInfo = FungibleTokenInfo & {
   custom?: boolean;
 };
 
+/*
+ * This is the important part of the token info for EVM custom tokens
+ * These are the fields I have to use to display the token info
+ */
+export type EvmCustomTokenInfo = {
+  address: string;
+  coin: string;
+  flowIdentifier: string;
+  unit: string;
+  custom: true;
+};
+
 export type FungibleTokenListResponse = {
   name: string;
   network: string;

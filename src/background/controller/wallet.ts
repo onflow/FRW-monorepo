@@ -2135,6 +2135,10 @@ export class WalletController extends BaseController {
     return await tokenListService.addCustomEvmToken(network, token);
   };
 
+  removeCustomEvmToken = async (network: string, tokenAddress: string) => {
+    return await tokenListService.removeCustomEvmToken(network, tokenAddress);
+  };
+
   // TODO: Replace with generic token
   transferCadenceTokens = async (
     symbol: string,
