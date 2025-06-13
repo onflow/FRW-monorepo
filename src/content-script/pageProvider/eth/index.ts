@@ -35,6 +35,7 @@ let isDefaultWallet =
   typeof __frw__isDefaultWallet !== 'undefined' ? __frw__isDefaultWallet : false;
 let isOpera = typeof __frw__isOpera !== 'undefined' ? __frw__isOpera : false;
 let uuid = typeof __frw__uuid !== 'undefined' ? __frw__uuid : '';
+let extensionId = '';
 
 const getParams = () => {
   if (localStorage.getItem('frw:channelName')) {
@@ -52,6 +53,10 @@ const getParams = () => {
   if (localStorage.getItem('frw:isOpera')) {
     isOpera = localStorage.getItem('frw:isOpera') === 'true';
     localStorage.removeItem('frw:isOpera');
+  }
+  if (localStorage.getItem('frw:extensionId')) {
+    extensionId = localStorage.getItem('frw:extensionId') as string;
+    localStorage.removeItem('frw:extensionId');
   }
 };
 getParams();
@@ -230,7 +235,10 @@ export class EthereumProvider extends EventEmitter {
       }
 
       return this._bcm
-        .request(data)
+        .request({
+          ...data,
+          extensionId,
+        })
         .then((res) => {
           if (data.method !== 'eth_call') {
             log('[request: success]', data.method, res);
