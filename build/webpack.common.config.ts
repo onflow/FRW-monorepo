@@ -99,9 +99,9 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
         },
         {
           test: /\.(png|jpe?g|gif)$/i,
-          loader: 'file-loader',
-          options: {
-            name: '[name].[ext]',
+          type: 'asset/resource',
+          generator: {
+            filename: 'images/[name][ext]',
           },
         },
         {
@@ -115,15 +115,10 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
         },
         {
           test: /\.(woff|woff2|eot|ttf|otf)$/,
-          use: [
-            {
-              loader: 'file-loader',
-              options: {
-                outputPath: 'fonts/', // output folder for fonts
-                name: '[name].[ext]', // keep the original file name
-              },
-            },
-          ],
+          type: 'asset/resource',
+          generator: {
+            filename: 'fonts/[name][ext]',
+          },
         },
       ],
     },
