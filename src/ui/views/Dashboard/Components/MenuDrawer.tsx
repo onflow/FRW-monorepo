@@ -82,7 +82,8 @@ const MenuDrawer = ({
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const canCreateNewAccount = useFeatureFlag('create_new_account');
-  const canImportExistingAccount = useFeatureFlag('import_existing_account');
+  // TODO: Uncomment this when we have the import existing account feature flag
+  const canImportExistingAccount = false; // useFeatureFlag('import_existing_account');
 
   // Error state
   const [showError, setShowError] = useState(false);
