@@ -48,7 +48,7 @@ const TokenInfoCard = ({
       return data.extensions.website;
     }
     if (isValidEthereumAddress(data.address)) {
-      return `https://evm.flowscan.io/token/${data.address}`;
+      return `https://flowscan.io/evm/token/${data.address}`;
     } else if (data.symbol.toLowerCase() === 'flow') {
       return 'https://flow.com/';
     }

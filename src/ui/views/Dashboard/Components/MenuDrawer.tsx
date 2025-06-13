@@ -82,7 +82,8 @@ const MenuDrawer = ({
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const canCreateNewAccount = useFeatureFlag('create_new_account');
-  const canImportExistingAccount = useFeatureFlag('import_existing_account');
+  // TODO: Uncomment this when we have the import existing account feature flag
+  const canImportExistingAccount = false; // useFeatureFlag('import_existing_account');
 
   // Error state
   const [showError, setShowError] = useState(false);
@@ -122,6 +123,13 @@ const MenuDrawer = ({
   const toggleAddAccount = () => {
     setShowAddAccount((prevShowAddAccount) => !prevShowAddAccount);
   };
+  const handleEnableEvmClick = useCallback(
+    (parentAddress: string) => {
+      history.replace(`/dashboard/enable?parentAddress=${parentAddress}`);
+      toggleDrawer();
+    },
+    [history, toggleDrawer]
+  );
   return (
     <Drawer
       open={drawer}
@@ -170,7 +178,12 @@ const MenuDrawer = ({
               </Box>
             </Box>
             <Box sx={{ paddingTop: '4px', px: '2px' }}>
-              <IconButton edge="end" aria-label="close" onClick={togglePop}>
+              <IconButton
+                edge="end"
+                aria-label="close"
+                onClick={togglePop}
+                data-testid="switch-profile-button"
+              >
                 <img style={{ display: 'inline-block', width: '24px' }} src={userCircleGear} />
               </IconButton>
             </Box>
@@ -199,6 +212,7 @@ const MenuDrawer = ({
             activeAccount={activeAccount}
             activeParentAccount={activeParentAccount}
             onAccountClick={setActiveAccount}
+            onEnableEvmClick={handleEnableEvmClick}
             showActiveAccount={true}
           />
         </Box>

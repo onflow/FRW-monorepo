@@ -2940,10 +2940,10 @@ export class WalletController extends BaseController {
     if (isEvm === 'evm') {
       switch (network) {
         case 'testnet':
-          baseURL = 'https://evm-testnet.flowscan.io';
+          baseURL = 'https://testnet.flowscan.io/evm';
           break;
         case 'mainnet':
-          baseURL = 'https://evm.flowscan.io';
+          baseURL = 'https://flowscan.io/evm';
           break;
       }
     } else {
