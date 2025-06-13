@@ -5,10 +5,12 @@ import CopyPlugin from 'copy-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import webpack from 'webpack';
 
-import packageJson from '../package.json';
+import packageJson from '../package.json' with { type: 'json' };
 
 import paths from './paths';
 const { version } = packageJson;
+
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
 const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration => {
   const isDevelopment = env.config === 'dev';
@@ -174,8 +176,8 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
     ],
     resolve: {
       alias: {
-        moment: require.resolve('dayjs'),
-        'cross-fetch': require.resolve('cross-fetch'),
+        moment: 'dayjs',
+        'cross-fetch': 'cross-fetch',
         '@': paths.rootResolve('src'),
         ui: paths.rootResolve('src/ui'),
         background: paths.rootResolve('src/background'),
@@ -186,10 +188,10 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
         // Removes polyfills that were interfering with native fetch
         http: false,
         https: false,
-        stream: require.resolve('stream-browserify'),
-        crypto: require.resolve('crypto-browserify'),
-        os: require.resolve('os-browserify/browser'),
-        path: require.resolve('path-browserify'),
+        stream: 'stream-browserify',
+        crypto: 'crypto-browserify',
+        os: 'os-browserify/browser',
+        path: 'path-browserify',
         fs: false,
         'fs/promises': false,
       },
