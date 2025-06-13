@@ -1924,8 +1924,8 @@ export class OpenApiService {
       {},
       WEB_NEXT_URL
     );
-    if (!response!.data?.result || !response!.data?.storage) {
-      throw new Error('No token info found');
+    if (!response?.data?.result || !response?.data?.storage) {
+      throw new Error('Could not fetch token info');
     }
 
     // TODO: TB remove this after the API is updated
