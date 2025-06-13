@@ -17,7 +17,7 @@ const mockUserInfo = {
 };
 
 const meta: Meta<typeof ProfileItem> = {
-  title: 'Components/ProfileItem',
+  title: 'Components/profile/ProfileItem',
   component: ProfileItem,
   tags: ['autodocs'],
   parameters: {

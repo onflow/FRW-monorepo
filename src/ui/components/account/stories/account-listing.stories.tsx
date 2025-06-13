@@ -110,7 +110,7 @@ const createMockData = (config: {
 };
 
 const meta: Meta<typeof AccountListing> = {
-  title: 'Components/AccountListing',
+  title: 'Components/account/AccountListing',
   tags: ['autodocs'],
 
   component: AccountListing,

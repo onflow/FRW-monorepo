@@ -140,6 +140,7 @@ export const AccountListing = ({
   );
   // Check if the EVM account is not valid
   const noEvmAccount = evmAccount && !isValidEthereumAddress(evmAccount.address);
+  //const pendingAccountTransactions = [];
   const { pendingAccountTransactions } = useProfiles();
   return (
     <Box sx={{ gap: '0px', padding: '0 16px', display: 'flex', flexDirection: 'column' }}>
