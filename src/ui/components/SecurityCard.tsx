@@ -62,7 +62,7 @@ export const SecurityCard: React.FC<{ tokenInfo: CoinItem }> = ({ tokenInfo }) =
                   if (tokenInfo.address) {
                     const url = isValidFlowAddress(tokenInfo.address)
                       ? `https://flowscan.io/account/${tokenInfo.address}`
-                      : `https://evm.flowscan.io/address/${tokenInfo.address}?tab=contract`;
+                      : `https://flowscan.io/evm/address/${tokenInfo.address}?tab=contract`;
                     window.open(url, '_blank', 'noopener,noreferrer');
                   }
                 }}
