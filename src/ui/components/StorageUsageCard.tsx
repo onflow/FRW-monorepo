@@ -4,9 +4,12 @@ import { Box, Typography, LinearProgress, Skeleton } from '@mui/material';
 import BigNumber from 'bignumber.js';
 import React from 'react';
 
-import { type AccountBalanceInfo } from '@/shared/types/network-types';
-
-import { useProfiles } from '../hooks/useProfileHook';
+import { useMainAccountStorageBalance } from '../hooks/use-account-hooks';
+import {
+  COLOR_CHARCOAL_GRAY_4C4C4C,
+  COLOR_DARKMODE_BACKGROUND_CARDS_1A1A1A,
+  COLOR_GREEN_FLOW_DARKMODE_00EF8B,
+} from '../style/color';
 
 import { TokenBalance } from './TokenLists/TokenBalance';
 
@@ -23,9 +26,12 @@ const determineUnit = (used: number) => {
   return { value, unit: units[unitIndex] };
 };
 
-export const StorageUsageCard: React.FC = () => {
-  const { parentAccountStorageBalance } = useProfiles();
-  const storageBalance: AccountBalanceInfo | undefined = parentAccountStorageBalance;
+export const StorageUsageCard: React.FC<{
+  network: string;
+  address: string;
+  backgroundColor?: string;
+}> = ({ network, address, backgroundColor = COLOR_DARKMODE_BACKGROUND_CARDS_1A1A1A }) => {
+  const storageBalance = useMainAccountStorageBalance(network, address);
   const usagePercentage = storageBalance
     ? (parseFloat(storageBalance.storageUsed) / parseFloat(storageBalance.storageCapacity)) * 100
     : 0;
@@ -43,7 +49,7 @@ export const StorageUsageCard: React.FC = () => {
   return (
     <Box
       sx={{
-        backgroundColor: '#121212',
+        backgroundColor: backgroundColor,
         borderRadius: '12px',
         p: 2,
       }}
@@ -59,7 +65,7 @@ export const StorageUsageCard: React.FC = () => {
         <Typography>Storage Usage</Typography>
         <Typography>
           {storageBalance ? (
-            <TokenBalance value={flowUsedForStorage.toString()} />
+            <TokenBalance value={flowUsedForStorage.toString()} postFix="FLOW" />
           ) : (
             <Skeleton variant="text" width={200} />
           )}
@@ -71,10 +77,10 @@ export const StorageUsageCard: React.FC = () => {
           variant="determinate"
           value={storageBalance ? usagePercentage : 0}
           sx={{
-            marginBottom: '0.5rem',
-            backgroundColor: 'background.paper',
+            marginBottom: '1rem',
+            backgroundColor: COLOR_CHARCOAL_GRAY_4C4C4C,
             '& .MuiLinearProgress-bar': {
-              backgroundColor: '#4CAF50',
+              backgroundColor: COLOR_GREEN_FLOW_DARKMODE_00EF8B,
             },
           }}
         />
@@ -117,7 +123,7 @@ export const StorageUsageCard: React.FC = () => {
         <Typography>Total Balance</Typography>
         <Typography>
           {storageBalance ? (
-            <TokenBalance value={storageBalance.balance} />
+            <TokenBalance value={storageBalance.balance} postFix="FLOW" />
           ) : (
             <Skeleton variant="text" width={200} />
           )}

@@ -266,7 +266,9 @@ const TokenDetail = () => {
         {network === 'testnet' && token === 'flow' && <ClaimTokenCard token={token} />}
         {priceProviders?.length > 0 && <PriceCard token={token} />}
 
-        {token === 'flow' && activeAccountType === 'main' && <StorageUsageCard />}
+        {token === 'flow' && activeAccountType === 'main' && (
+          <StorageUsageCard network={network} address={currentWallet.address} />
+        )}
         {tokenInfo && <SecurityCard tokenInfo={tokenInfo} />}
         {isOnRamp && (
           <Drawer
