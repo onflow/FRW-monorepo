@@ -122,6 +122,13 @@ const MenuDrawer = ({
   const toggleAddAccount = () => {
     setShowAddAccount((prevShowAddAccount) => !prevShowAddAccount);
   };
+  const handleEnableEvmClick = useCallback(
+    (parentAddress: string) => {
+      history.replace(`/dashboard/enable?parentAddress=${parentAddress}`);
+      toggleDrawer();
+    },
+    [history, toggleDrawer]
+  );
   return (
     <Drawer
       open={drawer}
@@ -199,6 +206,7 @@ const MenuDrawer = ({
             activeAccount={activeAccount}
             activeParentAccount={activeParentAccount}
             onAccountClick={setActiveAccount}
+            onEnableEvmClick={handleEnableEvmClick}
             showActiveAccount={true}
           />
         </Box>
