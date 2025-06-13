@@ -2,21 +2,19 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { Box, MenuItem, Typography, IconButton, Drawer } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 
-import { storage } from '@/background/webapi';
 import type {
   CoinItem,
   CustomFungibleTokenInfo,
   EvmCustomTokenInfo,
 } from '@/shared/types/coin-types';
-import { getPriceProvider, type PriceProvider } from '@/shared/types/network-types';
-import { type ActiveAccountType } from '@/shared/types/wallet-types';
+import { getPriceProvider } from '@/shared/types/network-types';
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 import SecurityCard from '@/ui/components/SecurityCard';
 import StorageUsageCard from '@/ui/components/StorageUsageCard';
-import { refreshEvmToken, useAllTokenInfo, useEvmCustomTokens } from '@/ui/hooks/use-coin-hooks';
+import { useAllTokenInfo, useEvmCustomTokens } from '@/ui/hooks/use-coin-hooks';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import tips from 'ui/assets/svg/tips.svg';
@@ -67,8 +65,6 @@ const TokenDetail = () => {
   // Get EVM Custom Token Info
   const evmCustomTokens = useEvmCustomTokens(network);
 
-  // Set the price and accessible state
-  const [price, setPrice] = useState('');
   // Child account FT access
   const [canAccessFt, setCanAccessFt] = useState(true);
   // Get the token info from the coin list
@@ -184,15 +180,6 @@ const TokenDetail = () => {
     );
   };
 
-  // Set the price if the token info is loaded and no price providers are available
-  useEffect(() => {
-    if (coinsLoaded) {
-      if (priceProviders?.length === 0 && tokenInfo && 'price' in tokenInfo) {
-        setPrice(tokenInfo.price);
-      }
-    }
-  }, [priceProviders?.length, tokenInfo, coinsLoaded]);
-
   // Check if the token is accessible
   useEffect(() => {
     if (activeAccountType === 'child' && tokenInfo && 'flowIdentifier' in tokenInfo) {
@@ -277,9 +264,7 @@ const TokenDetail = () => {
         )}
         {token === 'flow' && <StackingCard />}
         {network === 'testnet' && token === 'flow' && <ClaimTokenCard token={token} />}
-        {priceProviders?.length > 0 && (
-          <PriceCard token={token} price={price} setPrice={setPrice} providers={priceProviders} />
-        )}
+        {priceProviders?.length > 0 && <PriceCard token={token} />}
 
         {token === 'flow' && activeAccountType === 'main' && <StorageUsageCard />}
         {tokenInfo && <SecurityCard tokenInfo={tokenInfo} />}

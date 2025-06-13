@@ -39,6 +39,15 @@ export const getPriceProvider = (token: string): PriceProvider[] => {
   }
 };
 
+export type TokenPriceHistory = {
+  closeTime: number;
+  openPrice: number;
+  highPrice: number;
+  lowPrice: number;
+  price: number;
+  volume: number;
+  quoteVolume: number;
+};
 export interface TokenModel {
   name: string;
   address: FlowNetworkModel;

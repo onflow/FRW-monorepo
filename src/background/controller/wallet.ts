@@ -30,7 +30,7 @@ import { type CustomFungibleTokenInfo } from '@/shared/types/coin-types';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
 import { type PublicPrivateKeyTuple, type PublicKeyTuple } from '@/shared/types/key-types';
 import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
-import { ContactType, MAINNET_CHAIN_ID } from '@/shared/types/network-types';
+import { ContactType, MAINNET_CHAIN_ID, Period, PriceProvider } from '@/shared/types/network-types';
 import { type NFTCollections, type NFTCollectionData } from '@/shared/types/nft-types';
 import { type TokenInfo } from '@/shared/types/token-info';
 import { type TrackingEvents } from '@/shared/types/tracking-types';
@@ -76,6 +76,7 @@ import {
 } from '@/shared/utils/cache-data-keys';
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
+import { getPeriodFrequency } from '@/shared/utils/getPeriodFrequency';
 import { convertToIntegerAmount, validateAmount } from '@/shared/utils/number';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import { type CategoryScripts } from '@/shared/utils/script-types';
@@ -123,6 +124,7 @@ import type {
   Contact,
   FlowNetwork,
   NFTModelV2,
+  TokenPriceHistory,
   UserInfoResponse,
 } from '../../shared/types/network-types';
 import DisplayKeyring from '../service/keyring/display';
@@ -2129,6 +2131,45 @@ export class WalletController extends BaseController {
       activeAccountType === 'evm' ? 'evm' : 'flow',
       symbol
     );
+  };
+
+  /**
+   * Get the price of a token
+   * @param token - The token to get the price for
+   * @param provider - The provider to get the price from
+   * @returns The price of the token
+   */
+  getTokenPrice = async (token: string, provider = PriceProvider.binance) => {
+    return await openapiService.getTokenPrice(token, provider);
+  };
+
+  /**
+   * Get the price history of a token
+   * @param token - The token to get the price history for
+   * @param period - The period to get the price history for
+   * @param provider - The provider to get the price history from
+   * @returns The price history of the token
+   */
+  getTokenPriceHistory = async (
+    token: string,
+    period = Period.oneDay,
+    provider = PriceProvider.binance
+  ): Promise<TokenPriceHistory[]> => {
+    const rawPriceHistory = await openapiService.getTokenPriceHistoryArray(token, period, provider);
+    const frequency = getPeriodFrequency(period);
+    if (!rawPriceHistory[frequency]) {
+      throw new Error('No price history found for this period');
+    }
+
+    return rawPriceHistory[frequency].map((item) => ({
+      closeTime: item[0],
+      openPrice: item[1],
+      highPrice: item[2],
+      lowPrice: item[3],
+      price: item[4],
+      volume: item[5],
+      quoteVolume: item[6],
+    }));
   };
 
   addCustomEvmToken = async (network: string, token: CustomFungibleTokenInfo) => {

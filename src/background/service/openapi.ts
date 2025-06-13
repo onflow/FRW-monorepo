@@ -30,6 +30,25 @@ import type {
   CustomFungibleTokenInfo,
 } from '@/shared/types/coin-types';
 import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
+import {
+  type AccountKeyRequest,
+  type CheckResponse,
+  type SignInResponse,
+  type UserInfoResponse,
+  type StorageInfo,
+  type NewsItem,
+  type NewsConditionType,
+  Period,
+  PriceProvider,
+  type AccountBalanceInfo,
+  type Contact,
+  type NFTModelV2,
+  type DeviceInfoRequest,
+  type KeyResponseItem,
+  type NftCollection,
+  getPriceProvider,
+  type PeriodFrequency,
+} from '@/shared/types/network-types';
 import { type NFTCollections } from '@/shared/types/nft-types';
 import type { TokenInfo } from '@/shared/types/token-info';
 import {
@@ -51,24 +70,6 @@ import { type NetworkScripts } from '@/shared/utils/script-types';
 import { INITIAL_OPENAPI_URL, WEB_NEXT_URL } from 'consts';
 
 import packageJson from '../../../package.json';
-import {
-  type AccountKeyRequest,
-  type CheckResponse,
-  type SignInResponse,
-  type UserInfoResponse,
-  type StorageInfo,
-  type NewsItem,
-  type NewsConditionType,
-  Period,
-  PriceProvider,
-  type AccountBalanceInfo,
-  type Contact,
-  type NFTModelV2,
-  type DeviceInfoRequest,
-  type KeyResponseItem,
-  type NftCollection,
-  getPriceProvider,
-} from '../../shared/types/network-types';
 
 import {
   userWalletService,
@@ -615,7 +616,17 @@ export class OpenApiService {
    * @param provider - The provider to get the price from
    * @returns The price of the token
    */
-  getTokenPrice = async (token: string, provider = PriceProvider.binance) => {
+  getTokenPrice = async (
+    token: string,
+    provider = PriceProvider.binance
+  ): Promise<{
+    price: {
+      change: {
+        percentage: number;
+      };
+      last: number;
+    };
+  }> => {
     const config = this.store.config.crypto_flow;
     const pair = this.getTokenPair(token, provider);
     if (!pair) {
@@ -635,11 +646,13 @@ export class OpenApiService {
    * @param provider - The provider to get the price history from
    * @returns The price history of the token
    */
-  getTokenPriceHistory = async (
+  getTokenPriceHistoryArray = async (
     token: string,
     period = Period.oneDay,
     provider = PriceProvider.binance
-  ): Promise<CheckResponse> => {
+  ): Promise<
+    Record<PeriodFrequency, [number, number, number, number, number, number, number, number][]>
+  > => {
     let after = dayjs();
     const periods = getPeriodFrequency(period);
 
