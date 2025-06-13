@@ -178,7 +178,12 @@ const MenuDrawer = ({
               </Box>
             </Box>
             <Box sx={{ paddingTop: '4px', px: '2px' }}>
-              <IconButton edge="end" aria-label="close" onClick={togglePop}>
+              <IconButton
+                edge="end"
+                aria-label="close"
+                onClick={togglePop}
+                data-testid="switch-profile-button"
+              >
                 <img style={{ display: 'inline-block', width: '24px' }} src={userCircleGear} />
               </IconButton>
             </Box>

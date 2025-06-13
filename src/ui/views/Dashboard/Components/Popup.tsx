@@ -165,6 +165,7 @@ const Popup = (props: TransferConfirmationProps) => {
             icon={userCirclePlus}
             text={chrome.i18n.getMessage('Create_a_new_profile')}
             onClick={async () => await usewallet.lockAdd()}
+            dataTestId="create-profile-button"
           />
           <Box
             sx={{
@@ -179,6 +180,7 @@ const Popup = (props: TransferConfirmationProps) => {
               icon={userCircleCheck}
               text={chrome.i18n.getMessage('Recover_an_existing_profile')}
               onClick={async () => await usewallet.lockAdd()}
+              dataTestId="recover-profile-button"
             />
           )}
         </Box>
