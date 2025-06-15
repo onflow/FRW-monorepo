@@ -1,14 +1,5 @@
 <!doctype html>
-<html
-  translate="no"
-  style="
-    height: 100%;
-    overflow-x: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  "
->
+<html translate="no" style="height: 100%; overflow: hidden; display: flex; justify-content: center">
   <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -28,6 +19,10 @@
       .root-container {
         height: 100%;
         overflow: hidden;
+      }
+
+      #root {
+        height: 100%;
       }
 
       /* Reset CSS */
@@ -129,16 +124,14 @@
 
       .h-full {
         height: 100%;
+        width: 100%;
         max-width: 400px;
         margin: 0px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
       }
     </style>
   </head>
 
-  <body class="h-full w-full" style="background-color: #121212">
+  <body class="h-full" style="background-color: #121212">
     <div id="root" class="overflow-x-hidden overflow-y-auto"></div>
   </body>
 </html>
