@@ -45,7 +45,7 @@ jobs:
       - name: Get latest tag
         id: latest_tag
         run: |
-          LATEST_TAG=$(git tag --sort=-committerdate | head -n 1 || echo "v0.0.0")
+          LATEST_TAG=$(git tag --sort=-committerdate | grep -v "beta" | head -n 1 || echo "v0.0.0")
           echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
           echo "Latest tag: $LATEST_TAG"
 
@@ -117,6 +117,7 @@ jobs:
           MIXPANEL_TOKEN="${{ secrets.MIXPANEL_TOKEN }}"
           SCRIPTS_PUBLIC_KEY="${{ vars.SCRIPTS_PUBLIC_KEY }}"
           BETA_MANIFEST_KEY="${{ secrets.BETA_MANIFEST_KEY }}"
+          BETA_OAUTH2_CLIENT_ID="${{ secrets.BETA_OAUTH2_CLIENT_ID }}"
           EOF
           }
 

@@ -65,6 +65,7 @@ async function prepare() {
     manifest.name = '__MSG_appNameBeta__';
     manifest.description = '__MSG_appDescriptionBeta__';
     manifest.key = process.env.BETA_MANIFEST_KEY;
+    manifest.oauth2.client_id = process.env.BETA_OAUTH2_CLIENT_ID;
   } else {
     manifest.version = version;
     manifest.name = '__MSG_appName__';
