@@ -192,19 +192,6 @@ const Header = ({ _loading = false }) => {
     };
   }, [checkAuthStatus, checkPendingTx, network]);
 
-  // Function to construct GitHub comparison URL
-  const getComparisonUrl = useCallback(() => {
-    const repoUrl = process.env.REPO_URL || 'https://github.com/onflow/FRW-Extension';
-    const latestTag = process.env.LATEST_TAG || '';
-    const commitSha = process.env.COMMIT_SHA || '';
-
-    if (latestTag && commitSha) {
-      return `${repoUrl}/compare/${latestTag}...${commitSha}`;
-    }
-
-    return `${repoUrl}/commits`;
-  }, []);
-
   const NewsDrawer = () => {
     return (
       <Drawer
@@ -225,7 +212,6 @@ const Header = ({ _loading = false }) => {
       </Drawer>
     );
   };
-  const deploymentEnv = process.env.DEPLOYMENT_ENV || 'local';
 
   interface AppBarLabelProps {
     address: string;
@@ -253,62 +239,6 @@ const Header = ({ _loading = false }) => {
             spinning={isPending}
             onClick={toggleDrawer}
           />
-
-          {deploymentEnv !== 'production' && (
-            <Box sx={{ position: 'absolute', left: '50px', top: '-8px', zIndex: 10 }}>
-              <Tooltip
-                title={
-                  <Box>
-                    <Typography variant="caption">
-                      {`Build: ${process.env.DEPLOYMENT_ENV}`}
-                    </Typography>
-                    {process.env.LATEST_TAG && process.env.COMMIT_SHA && (
-                      <Typography variant="caption" display="block">
-                        {`Compare: ${process.env.LATEST_TAG}...${process.env.COMMIT_SHA?.substring(0, 7)}`}
-                      </Typography>
-                    )}
-                    <Typography variant="caption" display="block">
-                      {`Repo: ${process.env.REPO_URL?.replace('https://github.com/', '') || 'onflow/FRW-Extension'}`}
-                    </Typography>
-                    <Typography variant="caption" display="block">
-                      Click to view changes
-                    </Typography>
-                  </Box>
-                }
-                arrow
-              >
-                <Chip
-                  label={deploymentEnv}
-                  size="small"
-                  color={
-                    deploymentEnv === 'staging'
-                      ? 'default'
-                      : deploymentEnv === 'development'
-                        ? 'warning'
-                        : 'error'
-                  }
-                  sx={{
-                    height: '18px',
-                    fontSize: '10px',
-                    fontWeight: 'bold',
-                    minWidth: '16px',
-                    maxWidth: '90px',
-                    cursor: 'pointer',
-                    '& .MuiChip-label': {
-                      padding: '0 8px',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    },
-                  }}
-                  onClick={() => {
-                    const url = getComparisonUrl();
-                    window.open(url, '_blank');
-                  }}
-                />
-              </Tooltip>
-            </Box>
-          )}
         </Box>
 
         <Box
