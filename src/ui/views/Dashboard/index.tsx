@@ -1,7 +1,6 @@
 import Box from '@mui/material/Box';
 import React from 'react';
 
-import { BuildChip } from '@/ui/components/build-chip';
 import { BuildIndicator } from '@/ui/components/build-indicator';
 import { NetworkIndicator } from '@/ui/components/NetworkIndicator';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';

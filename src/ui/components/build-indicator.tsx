@@ -7,7 +7,7 @@ import { COLOR_PRIMARY_TEXT_282828 } from '../style/color';
 
 const deploymentEnv = process.env.DEPLOYMENT_ENV || 'local';
 const isBeta = process.env.IS_BETA === 'true';
-const betaVersion = process.env.BETA_VERSION || '';
+const betaVersion = process.env.BETA_VERSION || ''; // This is the whole tag name like 2.8.5-beta.1
 
 export const BuildIndicator = () => {
   // Function to construct GitHub comparison URL
@@ -27,8 +27,7 @@ export const BuildIndicator = () => {
     return null;
   }
 
-  const buildText = isBeta ? `${version}-beta-${betaVersion}` : `${deploymentEnv} build`;
-  const latestTag = process.env.LATEST_TAG || '';
+  const buildText = isBeta ? betaVersion : `${deploymentEnv} build`;
   return (
     <Box
       sx={{

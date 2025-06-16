@@ -1,11 +1,12 @@
 // Set environment badge based on branch
+const IS_BETA = process.env.IS_BETA === 'true';
 
 export const setEnvironmentBadge = () => {
   const deploymentEnv = process.env.DEPLOYMENT_ENV;
 
   if (deploymentEnv === 'production') {
     // No badge for production
-    if (process.env.BETA_MANIFEST_KEY) {
+    if (IS_BETA) {
       chrome.action.setBadgeText({ text: 'β' });
     } else {
       chrome.action.setBadgeText({ text: '' });
