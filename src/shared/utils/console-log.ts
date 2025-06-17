@@ -5,7 +5,7 @@ const IS_BETA = process.env.IS_BETA === 'true';
 const IS_PROD = process.env.NODE_ENV === 'production' || DEPLOYMENT_ENV === 'production' || IS_BETA;
 
 const extensionId =
-  chrome.runtime.id || IS_BETA
+  chrome?.runtime?.id || IS_BETA
     ? 'lpgbokkinafiehohpkiccnlncmeonkfc'
     : DEPLOYMENT_ENV === 'production'
       ? 'hpclkefagolihohboafpheddmmgdffjm'
@@ -37,12 +37,17 @@ export type ConsoleMessageType =
 
 export const trackConsole = (type: ConsoleMessageType, message: string, code: number = 0) => {
   const sanitizedMessage = stripSensitive(message);
-  chrome.runtime.sendMessage(extensionId, {
-    type,
-    message: sanitizedMessage,
-    stack: getFormattedStackTrace(),
-    code,
-  });
+  try {
+    chrome?.runtime?.sendMessage(extensionId, {
+      type,
+      message: sanitizedMessage,
+      stack: getFormattedStackTrace(),
+      code,
+    });
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Could not track console error', error);
+  }
 };
 
 const _consoleLog = (...args: unknown[]) => {
