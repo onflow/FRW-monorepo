@@ -1,6 +1,15 @@
 import { stripSensitive } from './strip-sensitive';
 
-const IS_PROD = process.env.NODE_ENV === 'production';
+const DEPLOYMENT_ENV = process.env.DEPLOYMENT_ENV;
+const IS_BETA = process.env.IS_BETA === 'true';
+const IS_PROD = process.env.NODE_ENV === 'production' || DEPLOYMENT_ENV === 'production' || IS_BETA;
+
+const extensionId =
+  chrome.runtime.id || IS_BETA
+    ? 'lpgbokkinafiehohpkiccnlncmeonkfc'
+    : DEPLOYMENT_ENV === 'production'
+      ? 'hpclkefagolihohboafpheddmmgdffjm'
+      : 'cfiagdgiikmjgfjnlballglniejjgegi';
 
 // Get the formatted stack trace
 const getFormattedStackTrace = () => {
@@ -28,7 +37,7 @@ export type ConsoleMessageType =
 
 export const trackConsole = (type: ConsoleMessageType, message: string, code: number = 0) => {
   const sanitizedMessage = stripSensitive(message);
-  chrome.runtime.sendMessage({
+  chrome.runtime.sendMessage(extensionId, {
     type,
     message: sanitizedMessage,
     stack: getFormattedStackTrace(),
@@ -55,7 +64,13 @@ const _consoleError = (...args: unknown[]) => {
   const sanitizedMessage = stripSensitive(stringArgs.join(' '));
   // eslint-disable-next-line no-console
   console.error(sanitizedMessage);
-  trackConsole('console_error', sanitizedMessage);
+  try {
+    trackConsole('console_error', sanitizedMessage);
+  } catch {
+    // ignore
+    // eslint-disable-next-line no-console
+    console.error('Could not track console error');
+  }
 };
 
 const _consoleWarn = (...args: unknown[]) => {
