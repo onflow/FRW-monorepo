@@ -22,6 +22,7 @@ declare const __frw__isOpera;
 
 const log = (event, ...args) => {
   if (process.env.NODE_ENV !== 'production') {
+    // eslint-disable-next-line
     consoleLog(
       `%c [frw] (${new Date().toTimeString().slice(0, 8)}) ${event}`,
       'font-weight: bold; background-color: #7d6ef9; color: white;',
@@ -37,26 +38,32 @@ let isOpera = typeof __frw__isOpera !== 'undefined' ? __frw__isOpera : false;
 let uuid = typeof __frw__uuid !== 'undefined' ? __frw__uuid : '';
 let extensionId = '';
 
+const DEPLOYMENT_ENV = process.env.DEPLOYMENT_ENV;
+const IS_BETA = process.env.IS_BETA === 'true';
+
+const channelPrefix = IS_BETA ? 'frw-beta:' : DEPLOYMENT_ENV === 'production' ? 'frw:' : 'frw-dev:';
+
 const getParams = () => {
-  if (localStorage.getItem('frw:channelName')) {
-    channelName = localStorage.getItem('frw:channelName') as string;
-    localStorage.removeItem('frw:channelName');
+  consoleLog('eth getParams', localStorage.getItem(`${channelPrefix}channelName`));
+  if (localStorage.getItem(`${channelPrefix}channelName`)) {
+    channelName = localStorage.getItem(`${channelPrefix}channelName`) as string;
+    localStorage.removeItem(`${channelPrefix}channelName`);
   }
-  if (localStorage.getItem('frw:isDefaultWallet')) {
-    isDefaultWallet = localStorage.getItem('frw:isDefaultWallet') === 'true';
-    localStorage.removeItem('frw:isDefaultWallet');
+  if (localStorage.getItem(`${channelPrefix}isDefaultWallet`)) {
+    isDefaultWallet = localStorage.getItem(`${channelPrefix}isDefaultWallet`) === 'true';
+    localStorage.removeItem(`${channelPrefix}isDefaultWallet`);
   }
-  if (localStorage.getItem('frw:uuid')) {
-    uuid = localStorage.getItem('frw:uuid') as string;
-    localStorage.removeItem('frw:uuid');
+  if (localStorage.getItem(`${channelPrefix}uuid`)) {
+    uuid = localStorage.getItem(`${channelPrefix}uuid`) as string;
+    localStorage.removeItem(`${channelPrefix}uuid`);
   }
-  if (localStorage.getItem('frw:isOpera')) {
-    isOpera = localStorage.getItem('frw:isOpera') === 'true';
-    localStorage.removeItem('frw:isOpera');
+  if (localStorage.getItem(`${channelPrefix}isOpera`)) {
+    isOpera = localStorage.getItem(`${channelPrefix}isOpera`) === 'true';
+    localStorage.removeItem(`${channelPrefix}isOpera`);
   }
-  if (localStorage.getItem('frw:extensionId')) {
-    extensionId = localStorage.getItem('frw:extensionId') as string;
-    localStorage.removeItem('frw:extensionId');
+  if (localStorage.getItem(`${channelPrefix}extensionId`)) {
+    extensionId = localStorage.getItem(`${channelPrefix}extensionId`) as string;
+    localStorage.removeItem(`${channelPrefix}extensionId`);
   }
 };
 getParams();
@@ -619,8 +626,12 @@ const initProvider = async () => {
       window.frw = flowProvider;
     }
   } else {
-    window.ethereum = flowProvider;
-    window.frw = flowProvider;
+    try {
+      window.ethereum = flowProvider;
+      window.frw = flowProvider;
+    } catch (e) {
+      consoleError(e);
+    }
   }
 };
 
