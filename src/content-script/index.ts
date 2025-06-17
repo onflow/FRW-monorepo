@@ -1,17 +1,27 @@
 import { nanoid } from 'nanoid';
 import { v4 as uuid } from 'uuid';
 
+import { consoleLog } from '@/shared/utils/console-log';
 import { Message } from '@/shared/utils/messaging';
 
 const channelName = nanoid();
 const extensionId = chrome.runtime.id;
 
-const injectProviderScript = async (isDefaultWallet) => {
+const DEPLOYMENT_ENV = process.env.DEPLOYMENT_ENV;
+const IS_BETA = process.env.IS_BETA === 'true';
+
+const channelPrefix = IS_BETA ? 'frw-beta:' : DEPLOYMENT_ENV === 'production' ? 'frw:' : 'frw-dev:';
+const injectProviderScript = (isDefaultWallet: boolean) => {
   // Set local storage variables
-  await localStorage.setItem('frw:channelName', channelName);
-  await localStorage.setItem('frw:isDefaultWallet', isDefaultWallet);
-  await localStorage.setItem('frw:uuid', uuid());
-  await localStorage.setItem('frw:extensionId', extensionId);
+  localStorage.setItem(`${channelPrefix}channelName`, channelName);
+  localStorage.setItem(`${channelPrefix}isDefaultWallet`, isDefaultWallet.toString());
+  localStorage.setItem(`${channelPrefix}uuid`, uuid());
+  localStorage.setItem(`${channelPrefix}extensionId`, extensionId);
+
+  consoleLog(
+    'injectProviderScript get channelName',
+    localStorage.getItem(`${channelPrefix}channelName`)
+  );
 
   const container = document.head || document.documentElement;
   const scriptElement = document.createElement('script');
