@@ -1,7 +1,5 @@
 import AndroidIcon from '@mui/icons-material/Android';
 import AppleIcon from '@mui/icons-material/Apple';
-import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
-import PhoneIphoneIcon from '@mui/icons-material/PhoneIphone';
 import {
   List,
   ListItemText,
@@ -12,7 +10,6 @@ import {
   CardMedia,
   IconButton,
   Box,
-  Typography,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { useState, useEffect, useCallback } from 'react';
@@ -23,24 +20,14 @@ import { AccountListIcon } from '@/ui/assets/icons/settings/AccountList';
 import { AddProfileIcon } from '@/ui/assets/icons/settings/AddProfile';
 import { AddressIcon } from '@/ui/assets/icons/settings/Address';
 import { BackupIcon } from '@/ui/assets/icons/settings/Backup';
-import { BugIcon } from '@/ui/assets/icons/settings/Bug';
 import { CurrencyIcon } from '@/ui/assets/icons/settings/Currency';
 import { DevicesIcon } from '@/ui/assets/icons/settings/Devices';
 import { DevmodeIcon } from '@/ui/assets/icons/settings/Devmode';
 import { EditIcon } from '@/ui/assets/icons/settings/Edit';
 import { MobileIcon } from '@/ui/assets/icons/settings/Mobile';
-import { NotificationsIcon } from '@/ui/assets/icons/settings/Notifications';
 import { SecurityIcon } from '@/ui/assets/icons/settings/Security';
-import { WalletConnectIcon } from '@/ui/assets/icons/settings/WalletConnect';
 import { LLHeader } from '@/ui/components';
-import CoinsIcon from '@/ui/components/CoinsIcon';
-import IconAbout from '@/ui/components/iconfont/IconAbout';
-import IconAccount from '@/ui/components/iconfont/IconAccount';
-import IconAddressbook from '@/ui/components/iconfont/IconAddressbook';
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
-import IconBackup from '@/ui/components/iconfont/IconBackup';
-import IconDeveloper from '@/ui/components/iconfont/IconDeveloper';
-import IconLock from '@/ui/components/iconfont/IconLock';
 import { SettingsListItem } from '@/ui/components/settings/list-item';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import {
@@ -49,8 +36,6 @@ import {
   COLOR_WHITE_ALPHA_40_FFFFFF66,
 } from '@/ui/style/color';
 import { useWallet } from '@/ui/utils';
-import { ReactComponent as Device } from 'ui/assets/svg/device.svg';
-import { ReactComponent as IconLink } from 'ui/assets/svg/Iconlink.svg';
 // Feature flags
 const SHOW_DEVICES = false;
 
@@ -61,14 +46,6 @@ const useStyles = makeStyles(() => ({
     alignItems: 'center',
     width: '100%',
     paddingBottom: '8px',
-  },
-  listItem: {
-    height: '66px',
-    width: '100%',
-    overflow: 'hidden',
-    '&:hover': {
-      backgroundColor: '#282828',
-    },
   },
   itemButton: {
     width: '90%',
@@ -186,13 +163,12 @@ const SettingTab = () => {
         )}
 
         {/* top link */}
-        <List className={classes.list} sx={{ margin: '8px auto 16px auto', padding: '10px 0' }}>
+        <List className={classes.list} sx={{ margin: '8px auto 16px auto', padding: '0' }}>
           <Box sx={{ display: 'flex', width: '100%' }}>
             <ListItem
               component={Link}
               to="/dashboard/setting/addressbook"
               disablePadding
-              className={classes.listItem}
               sx={{ flex: 1 }}
             >
               <ListItemButton
@@ -201,6 +177,7 @@ const SettingTab = () => {
                   flexDirection: 'column',
                   justifyContent: 'center',
                   gap: '8px',
+                  paddingY: '18px',
                 }}
               >
                 <Box className={classes.iconContainer}>
@@ -208,7 +185,7 @@ const SettingTab = () => {
                 </Box>
                 <ListItemText
                   primary={chrome.i18n.getMessage('Address')}
-                  sx={{ textAlign: 'center', mt: 0 }}
+                  sx={{ textAlign: 'center', margin: '0' }}
                 />
               </ListItemButton>
             </ListItem>
@@ -216,7 +193,6 @@ const SettingTab = () => {
               component={Link}
               to="/dashboard/setting/wallet"
               disablePadding
-              className={classes.listItem}
               sx={{ flex: 1 }}
             >
               <ListItemButton
@@ -225,6 +201,7 @@ const SettingTab = () => {
                   flexDirection: 'column',
                   justifyContent: 'center',
                   gap: '8px',
+                  paddingY: '18px',
                 }}
               >
                 <Box className={classes.iconContainer}>
@@ -232,7 +209,7 @@ const SettingTab = () => {
                 </Box>
                 <ListItemText
                   primary={chrome.i18n.getMessage('Acc__list')}
-                  sx={{ textAlign: 'center', mt: 0 }}
+                  sx={{ textAlign: 'center', margin: '0' }}
                 />
               </ListItemButton>
             </ListItem>

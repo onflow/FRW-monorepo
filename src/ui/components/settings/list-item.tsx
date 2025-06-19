@@ -23,8 +23,8 @@ export const SettingsListItem: React.FC<SettingsListItemProps> = ({
     <ListItem component={Link} to={to} disablePadding sx={{ padding: '0' }} onClick={onClick}>
       <ListItemButton
         sx={{
-          padding: ' 18px',
-          minHeight: '72px',
+          padding: ' 16px',
+          height: '56px',
           '&:hover': {
             backgroundColor: COLOR_WHITE_ALPHA_10_FFFFFF1A,
           },
