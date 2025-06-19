@@ -1,49 +1,40 @@
 import { Snackbar, Alert, Box } from '@mui/material';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useReducer } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
-import { consoleError } from '@/shared/utils/console-log';
-import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import AllSet from '@/ui/components/LandingPages/AllSet';
 import GoogleBackup from '@/ui/components/LandingPages/GoogleBackup';
 import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
 import PickUsername from '@/ui/components/LandingPages/PickUsername';
 import SetPassword from '@/ui/components/LandingPages/SetPassword';
+import {
+  importProfileReducer,
+  INITIAL_IMPORT_STATE,
+  IMPORT_STEPS,
+} from '@/ui/reducers/import-profile-reducer';
 import { useWallet } from '@/ui/utils/WalletContext';
 
 import Google from './Google';
 import ImportTabs from './ImportTabs';
 
-const STEPS = {
-  IMPORT: 'import',
-  PICK_USERNAME: 'pick_username',
-  SET_PASSWORD: 'set_password',
-  RECOVER_PASSWORD: 'recover_password',
-  GOOGLE_BACKUP: 'google_backup',
-  ALL_SET: 'all_set',
-} as const;
-
-type StepType = (typeof STEPS)[keyof typeof STEPS];
-
 const AccountImport = () => {
   const history = useHistory();
   const usewallet = useWallet();
 
-  const [mnemonic, setMnemonic] = useState('');
-  const [pk, setPk] = useState<string | null>(null);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState(DEFAULT_PASSWORD);
-  const [accounts, setAccounts] = useState<any>([]);
-  const [errMessage, setErrorMessage] = useState(chrome.i18n.getMessage('No__backup__found'));
-  const [showError, setShowError] = useState(false);
-  const [activeTab, setActiveTab] = useState<StepType>(STEPS.IMPORT);
-  const [showGoogleImport, setShowGoogleImport] = useState(false);
-  const [googleAccounts, setGoogleAccounts] = useState<string[]>([]);
-
-  // For seed phrase import
-  const [path, setPath] = useState(FLOW_BIP44_PATH);
-  const [phrase, setPhrase] = useState('');
+  const [state, dispatch] = useReducer(importProfileReducer, INITIAL_IMPORT_STATE);
+  const {
+    activeTab,
+    mnemonic,
+    pk,
+    username,
+    password,
+    errMessage,
+    showError,
+    showGoogleImport,
+    googleAccounts,
+    path,
+    phrase,
+  } = state;
 
   const loadView = useCallback(async () => {
     usewallet
@@ -66,109 +57,126 @@ const AccountImport = () => {
     if (reason === 'clickaway') {
       return;
     }
-    setShowError(false);
+    dispatch({ type: 'SET_ERROR', payload: { message: '', show: false } });
   };
 
   const submitPassword = async (newPassword: string) => {
-    // Note this handles both creating a new profile and importing an existing profile
-    setPassword(newPassword);
+    dispatch({ type: 'SET_PASSWORD', payload: newPassword });
     try {
       if (pk) {
         await usewallet.importProfileUsingPrivateKey(username, newPassword, pk);
-        // Go to done
-        setActiveTab(STEPS.ALL_SET);
+        dispatch({ type: 'SET_ACTIVE_TAB', payload: IMPORT_STEPS.ALL_SET });
       } else if (mnemonic) {
         await usewallet.importProfileUsingMnemonic(username, newPassword, mnemonic, path, phrase);
-        // Go to backup
-        setActiveTab(STEPS.GOOGLE_BACKUP);
+        dispatch({ type: 'SET_ACTIVE_TAB', payload: IMPORT_STEPS.GOOGLE_BACKUP });
       } else {
         throw new Error('No mnemonic or private key provided');
       }
     } catch (error) {
-      consoleError('failed to import profile', error);
-      setErrorMessage(error.message);
-      setShowError(true);
+      dispatch({
+        type: 'SET_ERROR',
+        payload: { message: error.message, show: true },
+      });
     }
   };
 
   const goBack = () => {
-    switch (activeTab) {
-      case STEPS.PICK_USERNAME:
-        setActiveTab(STEPS.IMPORT);
-        break;
-      case STEPS.SET_PASSWORD:
-        setActiveTab(STEPS.PICK_USERNAME);
-        break;
-      case STEPS.RECOVER_PASSWORD:
-        setActiveTab(STEPS.IMPORT);
-        break;
-      case STEPS.GOOGLE_BACKUP:
-        history.goBack();
-      default:
-        history.goBack();
+    if (activeTab === IMPORT_STEPS.GOOGLE_BACKUP || activeTab === IMPORT_STEPS.ALL_SET) {
+      history.goBack();
+      return;
     }
+    dispatch({ type: 'GO_BACK' });
   };
 
   const handleGoogleAccountsFound = (accounts: string[]) => {
-    setGoogleAccounts(accounts);
-    setShowGoogleImport(true);
+    dispatch({ type: 'SET_GOOGLE_IMPORT', payload: { show: true, accounts } });
   };
 
   return (
     <Box>
       {!showGoogleImport ? (
         <LandingComponents
-          activeIndex={Object.values(STEPS).indexOf(activeTab)}
+          activeIndex={Object.values(IMPORT_STEPS).indexOf(activeTab)}
           direction="right"
-          showBackButton={activeTab !== STEPS.ALL_SET}
+          showBackButton={activeTab !== IMPORT_STEPS.ALL_SET}
           onBack={goBack}
-          showConfetti={activeTab === STEPS.ALL_SET}
+          showConfetti={activeTab === IMPORT_STEPS.ALL_SET}
           showRegisterHeader={true}
         >
           <Box>
             <>
-              {activeTab === STEPS.IMPORT && (
+              {activeTab === IMPORT_STEPS.IMPORT && (
                 <ImportTabs
-                  setMnemonic={setMnemonic}
-                  setPk={setPk}
-                  setAccounts={setAccounts}
-                  goPassword={() => setActiveTab(STEPS.RECOVER_PASSWORD)}
-                  handleSwitchTab={() => setActiveTab(STEPS.PICK_USERNAME)}
-                  setErrorMessage={setErrorMessage}
-                  setShowError={setShowError}
+                  setMnemonic={(m) => dispatch({ type: 'SET_MNEMONIC', payload: m })}
+                  setPk={(k) => dispatch({ type: 'SET_PK', payload: k })}
+                  setAccounts={(a) => dispatch({ type: 'SET_ACCOUNTS', payload: a })}
+                  goPassword={() =>
+                    dispatch({
+                      type: 'SET_ACTIVE_TAB',
+                      payload: IMPORT_STEPS.RECOVER_PASSWORD,
+                    })
+                  }
+                  handleSwitchTab={() =>
+                    dispatch({
+                      type: 'SET_ACTIVE_TAB',
+                      payload: IMPORT_STEPS.PICK_USERNAME,
+                    })
+                  }
+                  setErrorMessage={(msg) =>
+                    dispatch({
+                      type: 'SET_ERROR',
+                      payload: { message: msg, show: true },
+                    })
+                  }
+                  setShowError={(show) =>
+                    dispatch({ type: 'SET_ERROR', payload: { message: '', show } })
+                  }
                   handleGoogleAccountsFound={handleGoogleAccountsFound}
                   path={path}
-                  setPath={setPath}
+                  setPath={(p) => dispatch({ type: 'SET_DERIVATION_PATH', payload: p })}
                   phrase={phrase}
-                  setPhrase={setPhrase}
+                  setPhrase={(p) => dispatch({ type: 'SET_PASSPHRASE', payload: p })}
                 />
               )}
 
-              {activeTab === STEPS.PICK_USERNAME && (
+              {activeTab === IMPORT_STEPS.PICK_USERNAME && (
                 <PickUsername
-                  handleSwitchTab={() => setActiveTab(STEPS.SET_PASSWORD)}
+                  handleSwitchTab={() =>
+                    dispatch({
+                      type: 'SET_ACTIVE_TAB',
+                      payload: IMPORT_STEPS.SET_PASSWORD,
+                    })
+                  }
                   username={username}
-                  setUsername={setUsername}
+                  setUsername={(u) => dispatch({ type: 'SET_USERNAME', payload: u })}
                 />
               )}
 
-              {(activeTab === STEPS.SET_PASSWORD || activeTab === STEPS.RECOVER_PASSWORD) && (
+              {(activeTab === IMPORT_STEPS.SET_PASSWORD ||
+                activeTab === IMPORT_STEPS.RECOVER_PASSWORD) && (
                 <SetPassword
                   handleSwitchTab={() => {}}
                   onSubmit={submitPassword}
-                  isLogin={activeTab === STEPS.RECOVER_PASSWORD}
+                  isLogin={activeTab === IMPORT_STEPS.RECOVER_PASSWORD}
                 />
               )}
-              {activeTab === STEPS.GOOGLE_BACKUP && (
+              {activeTab === IMPORT_STEPS.GOOGLE_BACKUP && (
                 <GoogleBackup
-                  handleSwitchTab={() => setActiveTab(STEPS.ALL_SET)}
+                  handleSwitchTab={() =>
+                    dispatch({
+                      type: 'SET_ACTIVE_TAB',
+                      payload: IMPORT_STEPS.ALL_SET,
+                    })
+                  }
                   mnemonic={mnemonic}
                   username={username}
-                  password={password}
+                  password={password || ''}
                 />
               )}
 
-              {activeTab === STEPS.ALL_SET && <AllSet handleSwitchTab={() => window.close()} />}
+              {activeTab === IMPORT_STEPS.ALL_SET && (
+                <AllSet handleSwitchTab={() => window.close()} />
+              )}
             </>
           </Box>
 
@@ -179,7 +187,15 @@ const AccountImport = () => {
           </Snackbar>
         </LandingComponents>
       ) : (
-        <Google accounts={googleAccounts} onBack={() => setShowGoogleImport(false)} />
+        <Google
+          accounts={googleAccounts}
+          onBack={() =>
+            dispatch({
+              type: 'SET_GOOGLE_IMPORT',
+              payload: { show: false, accounts: [] },
+            })
+          }
+        />
       )}
     </Box>
   );

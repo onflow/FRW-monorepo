@@ -2,6 +2,7 @@ import { Box, Button, Typography, TextField, TextareaAutosize } from '@mui/mater
 import { makeStyles } from '@mui/styles';
 import React, { useState } from 'react';
 
+import { type PublicKeyAccount } from '@/shared/types/wallet-types';
 import PasswordTextarea from '@/ui/components/PasswordTextarea';
 import { useWallet } from '@/ui/utils/WalletContext';
 import { LLSpinner } from 'ui/components';
@@ -30,7 +31,17 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: 'bold',
   },
 }));
-const KeyImport = ({ onOpen, onImport, setPk, isSignLoading }) => {
+const KeyImport = ({
+  onOpen,
+  onImport,
+  setPk,
+  isSignLoading,
+}: {
+  onOpen: () => void;
+  onImport: (accounts: PublicKeyAccount[]) => void;
+  setPk: (pk: string) => void;
+  isSignLoading: boolean;
+}) => {
   const classes = useStyles();
   const usewallet = useWallet();
   const [isLoading, setLoading] = useState(false);
@@ -49,7 +60,10 @@ const KeyImport = ({ onOpen, onImport, setPk, isSignLoading }) => {
         onOpen();
         return;
       }
-      const accounts = result.map((a) => ({ ...a, type: KEY_TYPE.PRIVATE_KEY }));
+      const accounts: (PublicKeyAccount & { type: string })[] = result.map((a) => ({
+        ...a,
+        type: KEY_TYPE.PRIVATE_KEY,
+      }));
       onImport(accounts);
     } finally {
       setLoading(false);
