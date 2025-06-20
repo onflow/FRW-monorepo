@@ -1,5 +1,4 @@
 import { Box, Button, Typography, TextareaAutosize } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import React, { useState } from 'react';
 
 import { type PublicKeyAccount } from '@/shared/types/wallet-types';
@@ -9,29 +8,6 @@ import { LLSpinner } from 'ui/components';
 import KeyPathInput from '../../../../components/KeyPathInputs';
 import PasswordTextarea from '../../../../components/PasswordTextarea';
 import { KEY_TYPE } from '../../../../utils/modules/constants';
-
-const useStyles = makeStyles(() => ({
-  form: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  textarea: {
-    width: '100%',
-    borderRadius: '16px',
-    backgroundColor: '#2C2C2C',
-    padding: '20px',
-    color: '#fff',
-    marginBottom: '16px',
-    resize: 'none',
-    fontSize: '16px',
-    fontFamily: 'Inter',
-  },
-  button: {
-    width: '100%',
-    fontWeight: 'bold',
-  },
-}));
 
 const SeedPhraseImport = ({
   onOpen,
@@ -52,7 +28,6 @@ const SeedPhraseImport = ({
   phrase: string;
   setPhrase: (phrase: string) => void;
 }) => {
-  const classes = useStyles();
   const usewallet = useWallet();
   const [isLoading, setLoading] = useState(false);
 
@@ -93,7 +68,11 @@ const SeedPhraseImport = ({
 
   return (
     <Box sx={{ padding: '0' }}>
-      <form id="seed" onSubmit={handleImport} className={classes.form}>
+      <form
+        id="seed"
+        onSubmit={handleImport}
+        style={{ width: '100%', display: 'flex', flexDirection: 'column' }}
+      >
         <PasswordTextarea
           minRows={4}
           placeholder={chrome.i18n.getMessage('Import_12_or_24_words')}
@@ -102,7 +81,17 @@ const SeedPhraseImport = ({
         />
         <TextareaAutosize
           placeholder={chrome.i18n.getMessage('Enter_your_flow_address')}
-          className={classes.textarea}
+          style={{
+            width: '100%',
+            borderRadius: '16px',
+            backgroundColor: '#2C2C2C',
+            padding: '20px',
+            color: '#fff',
+            marginBottom: '16px',
+            resize: 'none',
+            fontSize: '16px',
+            fontFamily: 'Inter',
+          }}
           defaultValue={''}
         />
         <KeyPathInput path={path} setPath={setPath} phrase={phrase} setPhrase={setPhrase} />
