@@ -6,9 +6,9 @@ import {
   CardMedia,
   CardContent,
   Container,
-  Grid,
   Box,
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import React, { forwardRef, useImperativeHandle } from 'react';
 import { useHistory } from 'react-router-dom';
 
@@ -108,7 +108,7 @@ const CollectionView = ({
           />
           <CardContent sx={{ flex: '1 0 auto', padding: '8px 4px' }}>
             <Grid container justifyContent="space-between" alignItems="center" sx={{ pr: 2 }}>
-              <Grid item sx={{ flex: 1 }}>
+              <Grid sx={{ flex: 1 }}>
                 <Typography component="div" variant="body1" color="#fff" sx={{ mb: 0 }}>
                   {name}
                 </Typography>
@@ -139,7 +139,7 @@ const CollectionView = ({
                   </Box>
                 )}
               </Grid>
-              <Grid item>
+              <Grid>
                 <ArrowForwardIcon color="primary" />
               </Grid>
             </Grid>

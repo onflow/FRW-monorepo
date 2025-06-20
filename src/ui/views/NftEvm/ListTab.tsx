@@ -6,9 +6,9 @@ import {
   CardMedia,
   CardContent,
   Container,
-  Grid,
   Skeleton,
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import { Box } from '@mui/system';
 import React, { forwardRef, useImperativeHandle, useEffect, useState, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
@@ -143,7 +143,7 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
             />
             <CardContent sx={{ flex: '1 0 auto', padding: '8px 4px' }}>
               <Grid container justifyContent="space-between" alignItems="center" sx={{ pr: 2 }}>
-                <Grid item sx={{ flex: 1 }}>
+                <Grid sx={{ flex: 1 }}>
                   <Typography component="div" variant="body1" color="#fff" sx={{ mb: 0 }}>
                     {data.name}
                   </Typography>
@@ -156,7 +156,7 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
                     {data.count} {chrome.i18n.getMessage('collectibles')}
                   </Typography>
                 </Grid>
-                <Grid item>
+                <Grid>
                   <ArrowForwardIcon color="primary" />
                 </Grid>
               </Grid>

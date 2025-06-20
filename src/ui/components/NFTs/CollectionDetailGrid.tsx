@@ -4,7 +4,6 @@ import ReplayRoundedIcon from '@mui/icons-material/ReplayRounded';
 import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 import {
   Box,
-  Grid,
   Card,
   CardMedia,
   CardContent,
@@ -15,6 +14,7 @@ import {
   Tooltip,
   Skeleton,
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
@@ -91,7 +91,6 @@ const CollectionDetailGrid: React.FC<CollectionDetailProps> = ({
         <>
           <Grid container sx={{ width: '100%', p: '0 25px 18px 25px' }}>
             <Grid
-              item
               sx={{
                 justifyContent: 'center',
                 backgroundColor: '#121212',
@@ -105,7 +104,7 @@ const CollectionDetailGrid: React.FC<CollectionDetailProps> = ({
                 style={{ borderRadius: '12px', width: '100%', height: '100%' }}
               />
             </Grid>
-            <Grid item sx={{ ml: 0, pl: '18px' }}>
+            <Grid sx={{ ml: 0, pl: '18px' }}>
               <Typography component="div" color="text.primary" variant="h6">
                 {truncate(info?.name || info.contract_name, 16)}
               </Typography>

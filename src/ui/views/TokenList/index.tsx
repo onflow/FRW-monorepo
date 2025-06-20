@@ -4,7 +4,6 @@ import {
   Box,
   Input,
   InputAdornment,
-  Grid,
   Card,
   CardMedia,
   Skeleton,
@@ -13,6 +12,7 @@ import {
   Switch,
   Typography,
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import { StyledEngineProvider } from '@mui/material/styles';
 import React, { useState, useEffect, useCallback } from 'react';
 

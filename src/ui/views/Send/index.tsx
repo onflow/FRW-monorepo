@@ -12,10 +12,10 @@ import {
   ListItem,
   ListItemAvatar,
   ListItemText,
-  Grid,
   IconButton,
   Tooltip,
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import { useTheme, StyledEngineProvider } from '@mui/material/styles';
 import React, { useState, useCallback, useEffect } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
@@ -176,17 +176,17 @@ const SendAddress = () => {
             px: '8px',
           }}
         >
-          <Grid item xs={1} sx={{ display: 'flex', justifyContent: 'center' }}>
+          <Grid size={1} sx={{ display: 'flex', justifyContent: 'center' }}>
             <IconButton onClick={() => history.push('/dashboard')}>
               <ArrowBackIcon sx={{ color: 'icon.navi' }} />
             </IconButton>
           </Grid>
-          <Grid item xs={10}>
+          <Grid size={10}>
             <Typography variant="h1" align="center" py="14px" fontWeight="bold" fontSize="20px">
               {chrome.i18n.getMessage('Send_to')}
             </Typography>
           </Grid>
-          <Grid item xs={1} sx={{ display: 'flex', justifyContent: 'center' }}>
+          <Grid size={1} sx={{ display: 'flex', justifyContent: 'center' }}>
             <IconButton onClick={() => window.open('https://usewallet.flow.com/contact', '_blank')}>
               <Tooltip title={chrome.i18n.getMessage('Need__Help')} arrow>
                 <HelpOutlineRoundedIcon sx={{ color: 'icon.navi' }} />

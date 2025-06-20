@@ -6,7 +6,6 @@ import {
   Box,
   Input,
   InputAdornment,
-  Grid,
   Card,
   CardMedia,
   Skeleton,
@@ -17,6 +16,7 @@ import {
   IconButton,
   Tooltip,
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import { StyledEngineProvider } from '@mui/material/styles';
 import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
@@ -81,24 +81,24 @@ const ManageToken = () => {
               px: '8px',
             }}
           >
-            <Grid item xs={1}>
+            <Grid size={1}>
               <IconButton onClick={history.goBack}>
                 <ArrowBackIcon sx={{ color: 'icon.navi' }} />
               </IconButton>
             </Grid>
-            <Grid item xs={10}>
+            <Grid size={10}>
               <Typography variant="h1" align="center" py="14px" fontWeight="bold" fontSize="20px">
                 {chrome.i18n.getMessage('Manage_Token')}
               </Typography>
             </Grid>
             {activeAccountType === 'evm' ? (
-              <Grid item xs={1} sx={{ pl: 0 }}>
+              <Grid size={1} sx={{ pl: 0 }}>
                 <IconButton onClick={() => history.push('/dashboard/addcustomevm')}>
                   <IconCreate size={16} color="#787878" />
                 </IconButton>
               </Grid>
             ) : (
-              <Grid item xs={1} sx={{ pl: 0 }}>
+              <Grid size={1} sx={{ pl: 0 }}>
                 <IconButton onClick={() => history.push('/dashboard/tokenList')}>
                   <IconCreate size={16} color="#787878" />
                 </IconButton>

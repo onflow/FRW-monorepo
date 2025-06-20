@@ -5,7 +5,6 @@ import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 import {
   Typography,
   Card,
-  Grid,
   Button,
   Box,
   IconButton,
@@ -15,6 +14,7 @@ import {
   ButtonBase,
   Tooltip,
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import { StyledEngineProvider } from '@mui/material/styles';
 import React, { useState, useEffect, useCallback } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
@@ -206,7 +206,6 @@ const LinkedCollection = (props) => {
           <>
             <Grid container sx={{ width: '100%', p: '0 25px 18px 25px' }}>
               <Grid
-                item
                 sx={{
                   justifyContent: 'center',
                   backgroundColor: '#121212',
@@ -220,7 +219,7 @@ const LinkedCollection = (props) => {
                   style={{ borderRadius: '12px', width: '100%', height: '100%' }}
                 />
               </Grid>
-              <Grid item sx={{ ml: 0, pl: '18px' }}>
+              <Grid sx={{ ml: 0, pl: '18px' }}>
                 <Typography component="div" color="text.primary" variant="h6">
                   {truncate(info?.name || info.contract_name, 16)}
                 </Typography>

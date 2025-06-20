@@ -7,10 +7,10 @@ import {
   Card,
   CardContent,
   CardMedia,
-  Grid,
   Skeleton,
   Button,
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import React, { useEffect, useState, useCallback } from 'react';
 
 import { type NFTModelV2, type NFTModel_depreciated } from '@/shared/types/network-types';

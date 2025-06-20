@@ -1,5 +1,6 @@
 import CloseIcon from '@mui/icons-material/Close';
-import { Box, Drawer, Grid, Typography, Stack, InputBase } from '@mui/material';
+import { Box, Drawer, Typography, Stack, InputBase } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import { styled } from '@mui/material/styles';
 import React, { useState, useEffect } from 'react';
 import { useForm, type FieldValues } from 'react-hook-form';
@@ -86,13 +87,13 @@ const UnlinkAccount = (props: UnlinkAccountProps) => {
           alignItems: 'center',
         }}
       >
-        <Grid item xs={1}></Grid>
-        <Grid item xs={10}>
+        <Grid size={1}></Grid>
+        <Grid size={10}>
           <Typography variant="h1" align="center" py="14px" fontSize="18px">
             {chrome.i18n.getMessage('Unlink_Confirmation')}
           </Typography>
         </Grid>
-        <Grid item xs={1}>
+        <Grid size={1}>
           <CloseIcon
             fontSize="medium"
             sx={{ color: 'icon.navi', cursor: 'pointer', align: 'center' }}
