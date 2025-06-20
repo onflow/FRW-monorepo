@@ -7,7 +7,6 @@ import {
   Input,
   InputAdornment,
 } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import { Box } from '@mui/system';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
@@ -19,27 +18,6 @@ import CancelIcon from '@/ui/components/iconfont/IconClose';
 import SlideRelative from '@/ui/components/SlideRelative';
 import { useWallet } from 'ui/utils';
 
-const useStyles = makeStyles((_theme) => ({
-  customInputLabel: {
-    '& legend': {
-      visibility: 'visible',
-    },
-  },
-  inputBox: {
-    height: '64px',
-    padding: '16px',
-    zIndex: '999',
-    backgroundColor: '#282828',
-    border: '2px solid #4C4C4C',
-    borderRadius: '12px',
-    boxSizing: 'border-box',
-    '&.Mui-focused': {
-      border: '2px solid #FAFAFA',
-      boxShadow: '0px 8px 12px 4px rgba(76, 76, 76, 0.24)',
-    },
-  },
-}));
-
 const PickUsername = ({
   handleSwitchTab,
   username,
@@ -49,7 +27,6 @@ const PickUsername = ({
   username: string;
   setUsername: (username: string) => void;
 }) => {
-  const classes = useStyles();
   const wallet = useWallet();
   const [isLoading, setLoading] = useState(false);
   const [usernameValid, setUsernameValid] = useState(false);
@@ -217,7 +194,19 @@ const PickUsername = ({
             <Input
               id="textfield"
               autoComplete="nickname"
-              className={classes.inputBox}
+              sx={{
+                height: '64px',
+                padding: '16px',
+                zIndex: '999',
+                backgroundColor: '#282828',
+                border: '2px solid #4C4C4C',
+                borderRadius: '12px',
+                boxSizing: 'border-box',
+                '&.Mui-focused': {
+                  border: '2px solid #FAFAFA',
+                  boxShadow: '0px 8px 12px 4px rgba(76, 76, 76, 0.24)',
+                },
+              }}
               placeholder={chrome.i18n.getMessage('Username')}
               autoFocus
               fullWidth
