@@ -10,6 +10,7 @@ import {
 } from '@mui/material';
 import React, { useState } from 'react';
 
+import { type PublicKeyAccount } from '@/shared/types/wallet-types';
 import { consoleError } from '@/shared/utils/console-log';
 import PasswordTextarea from '@/ui/components/PasswordTextarea';
 import { useWallet } from '@/ui/utils/WalletContext';
@@ -18,7 +19,17 @@ import { LLSpinner } from 'ui/components';
 import ErrorModel from '../../../../components/PopupModal/errorModel';
 import { KEY_TYPE } from '../../../../utils/modules/constants';
 
-const JsonImport = ({ onOpen, onImport, setPk, isSignLoading }) => {
+const JsonImport = ({
+  onOpen,
+  onImport,
+  setPk,
+  isSignLoading,
+}: {
+  onOpen: () => void;
+  onImport: (accounts: PublicKeyAccount[]) => void;
+  setPk: (pk: string) => void;
+  isSignLoading: boolean;
+}) => {
   const usewallet = useWallet();
   const [isLoading, setLoading] = useState(false);
   const [isInvalid, setIsInvalid] = useState(false);
@@ -80,7 +91,11 @@ const JsonImport = ({ onOpen, onImport, setPk, isSignLoading }) => {
         return;
       }
 
-      const accounts = foundAccounts.map((account) => ({ ...account, type: KEY_TYPE.KEYSTORE }));
+      const accounts: (PublicKeyAccount & { type: string })[] = foundAccounts.map((account) => ({
+        ...account,
+        type: KEY_TYPE.KEYSTORE,
+      }));
+
       onImport(accounts);
     } catch (error) {
       consoleError('Error during import:', error);

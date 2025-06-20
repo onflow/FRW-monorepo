@@ -1,6 +1,7 @@
 import { Box, Button, Typography, TextareaAutosize } from '@mui/material';
 import React, { useState } from 'react';
 
+import { type PublicKeyAccount } from '@/shared/types/wallet-types';
 import { useWallet } from '@/ui/utils/WalletContext';
 import { LLSpinner } from 'ui/components';
 
@@ -19,7 +20,7 @@ const SeedPhraseImport = ({
   setPhrase,
 }: {
   onOpen: () => void;
-  onImport: (accounts: any[]) => void;
+  onImport: (accounts: PublicKeyAccount[]) => void;
   setMnemonic: (mnemonic: string) => void;
   isSignLoading: boolean;
   path: string;
@@ -51,7 +52,13 @@ const SeedPhraseImport = ({
         onOpen();
         return;
       }
-      const accounts = result.map((a) => ({ ...a, type: KEY_TYPE.SEED_PHRASE, mnemonic: seed }));
+      const accounts: (PublicKeyAccount & { type: string; mnemonic: string })[] = result.map(
+        (a) => ({
+          ...a,
+          type: KEY_TYPE.SEED_PHRASE,
+          mnemonic: seed,
+        })
+      );
       onImport(accounts);
       // TODO: We need to catch errors and show them to the user
     } finally {
