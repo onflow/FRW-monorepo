@@ -1,4 +1,3 @@
-import { Switch, switchClasses } from '@mui/base/Switch';
 import {
   Typography,
   Box,
@@ -8,13 +7,12 @@ import {
   ListItem,
   ListItemButton,
   Divider,
-  Button,
   Alert,
   Snackbar,
   CardMedia,
+  Switch,
 } from '@mui/material';
 import LinearProgress from '@mui/material/LinearProgress';
-import { styled } from '@mui/system';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -25,7 +23,7 @@ import {
   type MainAccountWithBalance,
   type WalletAccountWithBalance,
 } from '@/shared/types/wallet-types';
-import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
+import { isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
 import { LLHeader } from '@/ui/components';
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
@@ -35,90 +33,6 @@ import { useWallet } from 'ui/utils';
 import editEmoji from '../../../assets/svg/editEmoji.svg';
 
 import EditProfile from './EditProfile';
-
-const orange = {
-  500: '#41CC5D',
-};
-
-const grey = {
-  400: '#BABABA',
-  500: '#787878',
-  600: '#5E5E5E',
-};
-
-const Root = styled('span')(
-  ({ theme }) => `
-    font-size: 0;
-    position: relative;
-    display: inline-block;
-    width: 40px;
-    height: 20px;
-    // margin: 0;
-    margin-left: auto;
-    cursor: pointer;
-
-    &.${switchClasses.disabled} {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-
-    & .${switchClasses.track} {
-      background: ${theme.palette.mode === 'dark' ? grey[600] : grey[400]};
-      border-radius: 10px;
-      display: block;
-      height: 100%;
-      width: 100%;
-      position: absolute;
-    }
-
-    & .${switchClasses.thumb} {
-      display: block;
-      width: 14px;
-      height: 14px;
-      top: 3px;
-      left: 3px;
-      border-radius: 16px;
-      background-color: #fff;
-      position: relative;
-      transition: all 200ms ease;
-    }
-
-    &.${switchClasses.focusVisible} .${switchClasses.thumb} {
-      background-color: ${grey[500]};
-      box-shadow: 0 0 1px 8px rgba(0, 0, 0, 0.25);
-    }
-
-    &.${switchClasses.checked} {
-      .${switchClasses.thumb} {
-        left: 17px;
-        top: 3px;
-        background-color: #fff;
-      }
-
-      .${switchClasses.track} {
-        background: ${orange[500]};
-      }
-    }
-
-    & .${switchClasses.input} {
-      cursor: inherit;
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      top: 0;
-      left: 0;
-      opacity: 0;
-      z-index: 1;
-      margin: 0;
-    }
-    `
-);
-
-const tempEmoji = {
-  emoji: '🥥',
-  name: 'Coconut',
-  bgcolor: '#FFE4C4',
-};
 
 function formatBytes(bytes, decimals = 2) {
   if (bytes === 0) return '0 Bytes';
@@ -201,10 +115,9 @@ const WalletDetail = () => {
   }, [wallet]);
 
   const loadStorageInfo = useCallback(async () => {
-    const address = await wallet.getCurrentAddress();
     const info = await wallet.openapi.getStorageInfo(address!);
     setStorageInfo(info);
-  }, [wallet]);
+  }, [wallet, address]);
 
   function storageCapacity(storage): number {
     const used = storage?.used ?? 1;
@@ -447,7 +360,8 @@ const WalletDetail = () => {
                   display: 'flex',
                   flexDirection: 'row',
                   borderRadius: '16px',
-                  alignContent: 'space-between',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
                   gap: '8px',
                 }}
               >
@@ -468,9 +382,6 @@ const WalletDetail = () => {
                 <Switch
                   disabled={!gasKillSwitch}
                   checked={modeGas}
-                  slots={{
-                    root: Root,
-                  }}
                   onChange={() => {
                     switchGasMode();
                   }}
@@ -485,7 +396,8 @@ const WalletDetail = () => {
                     display: 'flex',
                     flexDirection: 'row',
                     borderRadius: '16px',
-                    alignContent: 'space-between',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
                     gap: '8px',
                   }}
                 >
