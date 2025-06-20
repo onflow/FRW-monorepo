@@ -486,7 +486,6 @@ const SettingTab = () => {
           <Divider sx={{ width: '90%' }} variant="middle" />
 
           <ListItem
-            button
             component={Link}
             to="/dashboard/setting/developerMode"
             disablePadding
@@ -535,7 +534,6 @@ const SettingTab = () => {
           {SHOW_DEVICES && (
             <>
               <ListItem
-                button
                 component={Link}
                 to="/dashboard/setting/devices"
                 disablePadding
@@ -584,7 +582,6 @@ const SettingTab = () => {
           )}
 
           <ListItem
-            button
             component={Link}
             to="/dashboard/setting/about"
             disablePadding

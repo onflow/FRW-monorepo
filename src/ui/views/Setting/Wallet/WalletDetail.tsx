@@ -332,7 +332,6 @@ const WalletDetail = () => {
                 }}
               >
                 <ListItem
-                  button
                   component={Link}
                   to="/dashboard/nested/privatekeypassword"
                   disablePadding
@@ -364,7 +363,6 @@ const WalletDetail = () => {
 
                 {isKeyphrase && (
                   <ListItem
-                    button
                     component={Link}
                     to="/dashboard/nested/recoveryphrasepassword"
                     disablePadding
@@ -411,7 +409,6 @@ const WalletDetail = () => {
                   }}
                 >
                   <ListItem
-                    button
                     component={Link}
                     to={`/dashboard/nested/keylist?address=${address}`}
                     disablePadding
