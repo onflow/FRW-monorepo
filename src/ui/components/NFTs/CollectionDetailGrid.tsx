@@ -15,7 +15,6 @@ import {
   Tooltip,
   Skeleton,
 } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
@@ -23,50 +22,6 @@ import { ReactComponent as SearchIcon } from '@/ui/assets/svg/searchIcon.svg';
 import { truncate } from '@/ui/utils';
 
 import SearchDialog from './SearchDialog';
-
-const useStyles = makeStyles((theme) => ({
-  iconbox: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    padding: '12px 18px',
-    alignItems: 'center',
-  },
-  arrowback: {
-    padding: '0',
-    borderRadius: '12px',
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
-  },
-  grid: {
-    padding: '0 8px',
-    justifyContent: 'space-between',
-  },
-  card: {
-    width: '48%',
-    marginBottom: '16px',
-    borderRadius: '12px',
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
-    cursor: 'pointer',
-    '&:hover': {
-      backgroundColor: 'rgba(0, 0, 0, 0.1)',
-    },
-  },
-  cardNoHover: {
-    width: '48%',
-    marginBottom: '16px',
-    borderRadius: '12px',
-    backgroundColor: 'transparent',
-  },
-  cardmedia: {
-    padding: '8px',
-  },
-  content: {
-    padding: '8px',
-    paddingTop: 0,
-    '&:last-child': {
-      paddingBottom: '8px',
-    },
-  },
-}));
 
 interface CollectionDetailProps {
   info: any;
@@ -95,15 +50,28 @@ const CollectionDetailGrid: React.FC<CollectionDetailProps> = ({
   setSearchTerm,
   loadingMore,
 }) => {
-  const classes = useStyles();
   const history = useHistory();
   const [filteredList, setFilteredList] = useState<any[]>([]);
   const [searchOpen, setSearchOpen] = useState(false);
 
   return (
     <div className="page" id="scrollableDiv" style={{ overflow: 'auto' }}>
-      <Box className={classes.iconbox}>
-        <IconButton onClick={() => history.push('/dashboard')} className={classes.arrowback}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          padding: '12px 18px',
+          alignItems: 'center',
+        }}
+      >
+        <IconButton
+          onClick={() => history.push('/dashboard')}
+          sx={{
+            padding: '0',
+            borderRadius: '12px',
+            backgroundColor: 'rgba(0, 0, 0, 0.05)',
+          }}
+        >
           <ArrowBackIcon sx={{ color: 'icon.navi' }} />
         </IconButton>
         <IconButton
@@ -227,10 +195,29 @@ const CollectionDetailGrid: React.FC<CollectionDetailProps> = ({
           />
 
           {loading ? (
-            <Grid container className={classes.grid}>
+            <Grid
+              container
+              sx={{
+                padding: '0 8px',
+                justifyContent: 'space-between',
+              }}
+            >
               {[...Array(4).keys()].map((key) => (
-                <Card className={classes.card} elevation={0} key={key}>
-                  <CardMedia className={classes.cardmedia}>
+                <Card
+                  sx={{
+                    width: '48%',
+                    marginBottom: '16px',
+                    borderRadius: '12px',
+                    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                    cursor: 'pointer',
+                    '&:hover': {
+                      backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                    },
+                  }}
+                  elevation={0}
+                  key={key}
+                >
+                  <CardMedia sx={{ padding: '8px' }}>
                     <Skeleton
                       variant="rectangular"
                       width={150}
@@ -238,7 +225,15 @@ const CollectionDetailGrid: React.FC<CollectionDetailProps> = ({
                       sx={{ margin: '0 auto', borderRadius: '8px' }}
                     />
                   </CardMedia>
-                  <CardContent className={classes.content}>
+                  <CardContent
+                    sx={{
+                      padding: '8px',
+                      paddingTop: 0,
+                      '&:last-child': {
+                        paddingBottom: '8px',
+                      },
+                    }}
+                  >
                     <Skeleton variant="text" width={150} sx={{ margin: '0 auto' }} />
                   </CardContent>
                 </Card>
@@ -248,10 +243,24 @@ const CollectionDetailGrid: React.FC<CollectionDetailProps> = ({
             info && (
               <>
                 {list && list.length > 0 ? (
-                  <Grid container className={classes.grid}>
+                  <Grid
+                    container
+                    sx={{
+                      padding: '0 8px',
+                      justifyContent: 'space-between',
+                    }}
+                  >
                     {list.map(createGridCard)}
                     {list.length % 2 !== 0 && (
-                      <Card className={classes.cardNoHover} elevation={0} />
+                      <Card
+                        sx={{
+                          width: '48%',
+                          marginBottom: '16px',
+                          borderRadius: '12px',
+                          backgroundColor: 'transparent',
+                        }}
+                        elevation={0}
+                      />
                     )}
                   </Grid>
                 ) : (
@@ -266,10 +275,33 @@ const CollectionDetailGrid: React.FC<CollectionDetailProps> = ({
           )}
         </>
       ) : (
-        <Grid container className={classes.grid}>
+        <Grid
+          container
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gridAutoRows: 'minmax(100px, auto)',
+            padding: '0',
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            gap: '18px',
+            marginBottom: '18px',
+          }}
+        >
           {[...Array(4).keys()].map((key) => (
-            <Card className={classes.card} elevation={0} key={key}>
-              <CardMedia className={classes.cardmedia}>
+            <Card
+              sx={{
+                borderRadius: '12px',
+                backgroundColor: '#1a1a1a',
+                overflow: 'hidden',
+                '&:hover': { cursor: 'pointer' },
+              }}
+              elevation={0}
+              key={key}
+            >
+              <CardMedia
+                sx={{ width: '100%', height: '100%', margin: 0, padding: '8px 8px 0 8px' }}
+              >
                 <Skeleton
                   variant="rectangular"
                   width={150}
@@ -277,7 +309,9 @@ const CollectionDetailGrid: React.FC<CollectionDetailProps> = ({
                   sx={{ margin: '0 auto', borderRadius: '8px' }}
                 />
               </CardMedia>
-              <CardContent className={classes.content}>
+              <CardContent
+                sx={{ paddingTop: 0, paddingBottom: '9px !important', maxHeight: '50px' }}
+              >
                 <Skeleton variant="text" width={150} sx={{ margin: '0 auto' }} />
               </CardContent>
             </Card>
