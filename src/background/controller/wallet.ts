@@ -3124,13 +3124,10 @@ export class WalletController extends BaseController {
 
       // Listen to the transaction until it's sealed.
       // This will throw an error if there is an error with the transaction
-      const txStatus = await fcl.tx(txId).onceExecuted();
+      const txStatusFinalized = await fcl.tx(txId).onceFinalized();
       // Update the pending transaction with the transaction status
-      txHash = await transactionService.updatePending(network, address, txId, txStatus);
-      // Refresh the coin list
-      triggerRefresh(
-        coinListKey(network, address, (await this.getDisplayCurrency())?.code || 'USD')
-      );
+      txHash = await transactionService.updatePending(network, address, txId, txStatusFinalized);
+
       // Track the transaction result
       mixpanelTrack.track('transaction_result', {
         tx_id: txId,
@@ -3144,7 +3141,7 @@ export class WalletController extends BaseController {
           if (baseURL.includes('evm')) {
             // It's an EVM transaction
             // Look through the events in txStatus
-            const evmEvent = txStatus.events.find(
+            const evmEvent = txStatusFinalized.events.find(
               (event) => event.type.includes('EVM') && !!event.data?.hash
             );
             if (evmEvent) {
@@ -3167,6 +3164,31 @@ export class WalletController extends BaseController {
         // We don't want to throw an error if the notification fails
         consoleError('listenTransaction notification error ', err);
       }
+
+      // Wait for the transacton to be executed
+      // Listen to the transaction until it's sealed.
+      // This will throw an error if there is an error with the transaction
+      const txStatusExecuted = await fcl.tx(txId).onceExecuted();
+      // Update the pending transaction with the transaction status
+      txHash = await transactionService.updatePending(network, address, txId, txStatusExecuted);
+      // Refresh the coin list
+      triggerRefresh(
+        coinListKey(network, address, (await this.getDisplayCurrency())?.code || 'USD')
+      );
+      // Refresh the account balance
+      triggerRefresh(accountBalanceKey(network, address));
+
+      // Wait for the transaction to be sealed
+      const txStatusSealed = await fcl.tx(txId).onceSealed();
+      // Update the pending transaction with the transaction status
+      txHash = await transactionService.updatePending(network, address, txId, txStatusSealed);
+
+      // Refresh the coin list
+      triggerRefresh(
+        coinListKey(network, address, (await this.getDisplayCurrency())?.code || 'USD')
+      );
+      // Refresh the account balance
+      triggerRefresh(accountBalanceKey(network, address));
     } catch (err: unknown) {
       // An error has occurred while listening to the transaction
       let errorMessage = 'unknown error';

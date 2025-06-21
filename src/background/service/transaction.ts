@@ -186,6 +186,9 @@ class Transaction {
       const storeItemIndex = existingTxStore.list.findIndex((item) => item.hash.includes(txId));
       if (storeItemIndex !== -1) {
         existingTxStore.list[storeItemIndex] = txItem;
+        existingTxStore.pendingCount = existingTxStore.list.filter(
+          (item) => item.status === 'PENDING'
+        ).length;
         await setCachedData(transferListKey(network, address), existingTxStore);
       }
     }
@@ -297,7 +300,8 @@ class Transaction {
     this.setPendingList(network, address, existingPendingList);
     const transferListStore: TransferListStore = {
       count: data.total + existingPendingList.length,
-      pendingCount: existingPendingList.length,
+      // This is the number of transaction that are in progress
+      pendingCount: existingPendingList.filter((item) => item.status === 'PENDING').length,
       list: [...existingPendingList, ...txList],
     };
     await setCachedData(transferListKey(network, address, offset, limit), transferListStore);
