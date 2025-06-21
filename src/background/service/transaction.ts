@@ -3,7 +3,6 @@ import type { TransactionStatus } from '@onflow/typedefs';
 import openapiService, { type FlowTransactionResponse } from '@/background/service/openapi';
 import { type TransferItem } from '@/shared/types/transaction-types';
 import { isValidEthereumAddress, isValidFlowAddress } from '@/shared/utils/address';
-import { getCachedData } from '@/shared/utils/cache-data-access';
 import {
   transferListKey,
   type TransferListStore,
@@ -127,8 +126,6 @@ class Transaction {
       existingTxStore.count = existingTxStore.count + 1;
       await setCachedData(transferListKey(network, address), existingTxStore);
     }
-    // Send a message to the UI to update the transfer list
-    chrome.runtime.sendMessage({ msg: 'transferListUpdated' });
   };
 
   updatePending = async (
@@ -192,9 +189,6 @@ class Transaction {
         await setCachedData(transferListKey(network, address), existingTxStore);
       }
     }
-
-    // Send a message to the UI to update the transfer list
-    chrome.runtime.sendMessage({ msg: 'transferListUpdated' });
 
     // Return the hash of the transaction
     return combinedTxHash;

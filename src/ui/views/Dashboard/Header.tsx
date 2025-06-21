@@ -103,16 +103,19 @@ const Header = ({ _loading = false }) => {
     [usewallet, history]
   );
 
-  const [errorCode, setErrorCode] = useState(null);
+  const [errorCode, setErrorCode] = useState<number | null>(null);
 
-  const transactionHandler = (request) => {
+  const transactionHandler = (request: {
+    msg: string;
+    errorMessage: string;
+    errorCode: number;
+  }) => {
     // The header should handle transactionError events
     if (request.msg === 'transactionError') {
       consoleWarn('transactionError', request.errorMessage, request.errorCode);
       // The error message is not used anywhere else for now
       setErrorCode(request.errorCode);
     }
-    return true;
   };
 
   const checkAuthStatus = useCallback(async () => {

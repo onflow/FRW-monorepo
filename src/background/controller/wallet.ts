@@ -3065,6 +3065,7 @@ export class WalletController extends BaseController {
 
   pollTransferList = async (address: string, txHash: string, maxAttempts = 5) => {
     const network = await this.getNetwork();
+    const currency = (await this.getDisplayCurrency())?.code || 'USD';
     let attempts = 0;
     const poll = async () => {
       if (attempts >= maxAttempts) {
@@ -3082,12 +3083,8 @@ export class WalletController extends BaseController {
 
       const foundTx = newTransactions?.find((tx) => txHash.includes(tx.hash));
       if (foundTx && foundTx.indexed) {
-        // Send a message to the UI to update the transfer list
-        chrome.runtime.sendMessage({ msg: 'transferListUpdated' });
         // Refresh the coin list
-        triggerRefresh(
-          coinListKey(network, address, (await this.getDisplayCurrency())?.code || 'USD')
-        );
+        triggerRefresh(coinListKey(network, address, currency));
       } else {
         // All of the transactions have not been picked up by the indexer yet
         attempts++;
@@ -3110,21 +3107,15 @@ export class WalletController extends BaseController {
     }
     const address = (await this.getCurrentAddress()) || '0x';
     const network = await this.getNetwork();
+    const currency = (await this.getDisplayCurrency())?.code || 'USD';
     let txHash = txId;
     try {
-      chrome.storage.session.set({
-        transactionPending: { txId, network, date: new Date() },
-      });
-      eventBus.emit('transactionPending');
-      chrome.runtime.sendMessage({
-        msg: 'transactionPending',
-        network: network,
-      });
       transactionService.setPending(network, address, txId, icon, title);
-
+      const fclTx = fcl.tx(txId);
       // Listen to the transaction until it's sealed.
       // This will throw an error if there is an error with the transaction
-      const txStatusFinalized = await fcl.tx(txId).onceFinalized();
+      const txStatusFinalized = await fclTx.onceFinalized();
+
       // Update the pending transaction with the transaction status
       txHash = await transactionService.updatePending(network, address, txId, txStatusFinalized);
 
@@ -3168,27 +3159,25 @@ export class WalletController extends BaseController {
       // Wait for the transacton to be executed
       // Listen to the transaction until it's sealed.
       // This will throw an error if there is an error with the transaction
-      const txStatusExecuted = await fcl.tx(txId).onceExecuted();
+      const txStatusExecuted = await fclTx.onceExecuted();
+
       // Update the pending transaction with the transaction status
       txHash = await transactionService.updatePending(network, address, txId, txStatusExecuted);
-      // Refresh the coin list
-      triggerRefresh(
-        coinListKey(network, address, (await this.getDisplayCurrency())?.code || 'USD')
-      );
       // Refresh the account balance
       triggerRefresh(accountBalanceKey(network, address));
+      // Refresh the coin list
+      triggerRefresh(coinListKey(network, address, currency));
 
       // Wait for the transaction to be sealed
-      const txStatusSealed = await fcl.tx(txId).onceSealed();
+      const txStatusSealed = await fclTx.onceSealed();
+
       // Update the pending transaction with the transaction status
       txHash = await transactionService.updatePending(network, address, txId, txStatusSealed);
 
-      // Refresh the coin list
-      triggerRefresh(
-        coinListKey(network, address, (await this.getDisplayCurrency())?.code || 'USD')
-      );
-      // Refresh the account balance
+      // Refresh the account balance after sealed status - just to be sure
       triggerRefresh(accountBalanceKey(network, address));
+      // Refresh the coin list after sealed status - just to be sure
+      triggerRefresh(coinListKey(network, address, currency));
     } catch (err: unknown) {
       // An error has occurred while listening to the transaction
       let errorMessage = 'unknown error';
@@ -3229,15 +3218,6 @@ export class WalletController extends BaseController {
         errorCode,
       });
     } finally {
-      // Remove the pending transaction from the UI
-      await chrome.storage.session.remove('transactionPending');
-
-      // Message the UI that the transaction is done
-      eventBus.emit('transactionDone');
-      chrome.runtime.sendMessage({
-        msg: 'transactionDone',
-      });
-
       if (txHash) {
         // Start polling for transfer list updates
         await this.pollTransferList(address, txHash);
