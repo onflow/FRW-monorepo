@@ -3067,32 +3067,36 @@ export class WalletController extends BaseController {
     const network = await this.getNetwork();
     const currency = (await this.getDisplayCurrency())?.code || 'USD';
     let attempts = 0;
-    const poll = async () => {
-      if (attempts >= maxAttempts) {
-        consoleWarn('Max polling attempts reached');
-        return;
-      }
+    try {
+      const poll = async () => {
+        if (attempts >= maxAttempts) {
+          consoleWarn('Max polling attempts reached');
+          return;
+        }
 
-      const { list: newTransactions } = await transactionService.loadTransactions(
-        network,
-        address,
-        '0',
-        '15'
-      );
-      // Copy the list as we're going to modify the original list
+        const { list: newTransactions } = await transactionService.loadTransactions(
+          network,
+          address,
+          '0',
+          '15'
+        );
+        // Copy the list as we're going to modify the original list
 
-      const foundTx = newTransactions?.find((tx) => txHash.includes(tx.hash));
-      if (foundTx && foundTx.indexed) {
-        // Refresh the coin list
-        triggerRefresh(coinListKey(network, address, currency));
-      } else {
-        // All of the transactions have not been picked up by the indexer yet
-        attempts++;
-        setTimeout(poll, 5000); // Poll every 5 seconds
-      }
-    };
+        const foundTx = newTransactions?.find((tx) => txHash.includes(tx.hash));
+        if (foundTx && foundTx.indexed) {
+          // Refresh the coin list
+          triggerRefresh(coinListKey(network, address, currency));
+        } else {
+          // All of the transactions have not been picked up by the indexer yet
+          attempts++;
+          setTimeout(poll, 5000); // Poll every 5 seconds
+        }
+      };
 
-    await poll();
+      await poll();
+    } catch (error) {
+      consoleError('pollTransferList error', error);
+    }
   };
 
   listenTransaction = async (
