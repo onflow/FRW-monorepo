@@ -22,6 +22,9 @@ import SendTo from './SendTo';
 import SettingTab from './Setting';
 import About from './Setting/About/About';
 import Account from './Setting/Account';
+import AccountList from './Setting/AccountList';
+import RemoveWallet from './Setting/AccountList/RemoveWallet';
+import WalletDetail from './Setting/AccountList/WalletDetail';
 import AddressBook from './Setting/AddressBook';
 import ManageBackups from './Setting/Backups';
 import BackupsPassword from './Setting/Backups/BackupsPassword';
@@ -41,9 +44,6 @@ import Recoveryphrasepassword from './Setting/recoveryphase/Recoveryphrasepasswo
 import Security from './Setting/Security';
 import Switchaccount from './Setting/Switchaccount';
 import './Landing.css';
-import WalletList from './Setting/Wallet';
-import RemoveWallet from './Setting/Wallet/RemoveWallet';
-import WalletDetail from './Setting/Wallet/WalletDetail';
 import TokenDetail from './TokenDetail';
 import TokenList from './TokenList';
 import AddCustomEvmToken from './Wallet/AddCustom/AddCustomEvmToken';
@@ -209,11 +209,11 @@ const InnerRoute = (props: RouteComponentProps) => {
             <PrivateRoute path={`${props.match.url}/setting/deviceinfo`}>
               <DeviceInfo />
             </PrivateRoute>
-            <PrivateRoute path={`${props.match.url}/setting/wallet/detail`}>
+            <PrivateRoute path={`${props.match.url}/setting/accountlist/detail`}>
               <WalletDetail />
             </PrivateRoute>
-            <PrivateRoute path={`${props.match.url}/setting/wallet`}>
-              <WalletList />
+            <PrivateRoute path={`${props.match.url}/setting/accountlist`}>
+              <AccountList />
             </PrivateRoute>
             <PrivateRoute path={`${props.match.url}/setting/removeWallet`}>
               <RemoveWallet />

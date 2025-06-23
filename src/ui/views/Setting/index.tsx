@@ -11,7 +11,6 @@ import {
   IconButton,
   Box,
 } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -29,6 +28,7 @@ import { SecurityIcon } from '@/ui/assets/icons/settings/Security';
 import { LLHeader } from '@/ui/components';
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import { SettingsListItem } from '@/ui/components/settings/list-item';
+import TopLinkButton from '@/ui/components/settings/TopLinkButton';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import {
   COLOR_WHITE_FFFFFF,
@@ -39,58 +39,7 @@ import { useWallet } from '@/ui/utils';
 // Feature flags
 const SHOW_DEVICES = false;
 
-// Styles
-const useStyles = makeStyles(() => ({
-  listDiv: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-    paddingBottom: '8px',
-  },
-  itemButton: {
-    width: '90%',
-    height: '100%',
-    overflow: 'hidden',
-    margin: '0 auto',
-    '&:hover': {
-      backgroundColor: '#282828',
-    },
-  },
-  list: {
-    width: '90%',
-    borderRadius: '16px',
-    overflow: 'hidden',
-    backgroundColor: '#282828',
-    '&:hover': {
-      backgroundColor: '#282828',
-    },
-  },
-  listIcon: {
-    minWidth: '25px',
-  },
-  icon: {
-    color: '#59A1DB',
-    width: '18px',
-    height: '18px',
-    marginRight: '14px',
-  },
-  iconOthers: {
-    color: '#59A1DB',
-    width: '18px',
-    height: '18px',
-    marginRight: '14px',
-  },
-  iconContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '18px',
-    height: '18px',
-  },
-}));
-
 const SettingTab = () => {
-  const classes = useStyles();
   const usewallet = useWallet();
   const { profileIds, userInfo } = useProfiles();
   const [isActive, setIsActive] = useState(false);
@@ -113,7 +62,15 @@ const SettingTab = () => {
   return (
     <div className="page">
       <LLHeader title={chrome.i18n.getMessage('Settings')} help={false} />
-      <div className={classes.listDiv}>
+      <Box
+        sx={{
+          justifyContent: 'center',
+          alignItems: 'center',
+          width: '100%',
+          paddingBottom: '8px',
+          paddingTop: '8px',
+        }}
+      >
         {profileIds && profileIds.length > 1 && (
           <List sx={{ margin: '8px auto 16px auto', pt: 0, pb: 0 }}>
             <ListItem component={Link} to="/dashboard/setting/account" sx={{ padding: '0 18px' }}>
@@ -163,59 +120,48 @@ const SettingTab = () => {
         )}
 
         {/* top link */}
-        <List className={classes.list} sx={{ margin: '8px auto 16px auto', padding: '0' }}>
+        <List
+          className="list"
+          sx={{
+            margin: '8px auto 16px auto',
+            padding: '0',
+            width: '90%',
+            borderRadius: '16px',
+            overflow: 'hidden',
+            backgroundColor: '#282828',
+            '&:hover': {
+              backgroundColor: '#282828',
+            },
+          }}
+        >
           <Box sx={{ display: 'flex', width: '100%' }}>
-            <ListItem
-              component={Link}
+            <TopLinkButton
               to="/dashboard/setting/addressbook"
-              disablePadding
-              sx={{ flex: 1 }}
-            >
-              <ListItemButton
-                className={classes.itemButton}
-                sx={{
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  paddingY: '18px',
-                }}
-              >
-                <Box className={classes.iconContainer}>
-                  <AddressIcon width={28} height={28} />
-                </Box>
-                <ListItemText
-                  primary={chrome.i18n.getMessage('Address')}
-                  sx={{ textAlign: 'center', margin: '0' }}
-                />
-              </ListItemButton>
-            </ListItem>
-            <ListItem
-              component={Link}
-              to="/dashboard/setting/wallet"
-              disablePadding
-              sx={{ flex: 1 }}
-            >
-              <ListItemButton
-                className={classes.itemButton}
-                sx={{
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  paddingY: '18px',
-                }}
-              >
-                <Box className={classes.iconContainer}>
-                  <AccountListIcon width={28} height={28} />
-                </Box>
-                <ListItemText
-                  primary={chrome.i18n.getMessage('Acc__list')}
-                  sx={{ textAlign: 'center', margin: '0' }}
-                />
-              </ListItemButton>
-            </ListItem>
+              icon={<AddressIcon width={28} height={28} />}
+              text={chrome.i18n.getMessage('Address')}
+            />
+            <TopLinkButton
+              to="/dashboard/setting/accountlist"
+              icon={<AccountListIcon width={28} height={28} />}
+              text={chrome.i18n.getMessage('Acc__list')}
+            />
           </Box>
         </List>
-        <List className={classes.list} sx={{ margin: '8px auto 16px auto', pt: 0, pb: 0 }}>
+        <List
+          className="list"
+          sx={{
+            margin: '8px auto 16px auto',
+            pt: 0,
+            pb: 0,
+            width: '90%',
+            borderRadius: '16px',
+            overflow: 'hidden',
+            backgroundColor: '#282828',
+            '&:hover': {
+              backgroundColor: '#282828',
+            },
+          }}
+        >
           <SettingsListItem
             to="/dashboard/setting/currency"
             icon={<CurrencyIcon width={24} height={24} />}
@@ -240,7 +186,21 @@ const SettingTab = () => {
             endIcon={<IconEnd size={12} />}
           />
         </List>
-        <List className={classes.list} sx={{ margin: '8px auto 18px auto', pt: 0, pb: 0 }}>
+        <List
+          className="list"
+          sx={{
+            margin: '8px auto 18px auto',
+            pt: 0,
+            pb: 0,
+            width: '90%',
+            borderRadius: '16px',
+            overflow: 'hidden',
+            backgroundColor: '#282828',
+            '&:hover': {
+              backgroundColor: '#282828',
+            },
+          }}
+        >
           <SettingsListItem
             to="https://core.flow.com"
             icon={<MobileIcon width={24} height={24} />}
@@ -299,7 +259,21 @@ const SettingTab = () => {
             endIcon={<IconEnd size={12} />}
           />
         </List>
-        <List className={classes.list} sx={{ margin: '8px auto 18px auto', pt: 0, pb: 0 }}>
+        <List
+          className="list"
+          sx={{
+            margin: '8px auto 18px auto',
+            pt: 0,
+            pb: 0,
+            width: '90%',
+            borderRadius: '16px',
+            overflow: 'hidden',
+            backgroundColor: '#282828',
+            '&:hover': {
+              backgroundColor: '#282828',
+            },
+          }}
+        >
           <SettingsListItem
             to="/dashboard/setting"
             icon={<AddProfileIcon width={24} height={24} />}
@@ -307,7 +281,7 @@ const SettingTab = () => {
             endIcon={<IconEnd size={12} />}
           />
         </List>
-      </div>
+      </Box>
     </div>
   );
 };
