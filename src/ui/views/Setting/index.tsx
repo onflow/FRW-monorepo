@@ -73,7 +73,12 @@ const SettingTab = () => {
       >
         {profileIds && profileIds.length > 1 && (
           <List sx={{ margin: '8px auto 16px auto', pt: 0, pb: 0 }}>
-            <ListItem component={Link} to="/dashboard/setting/account" sx={{ padding: '0 18px' }}>
+            <ListItem
+              component={Link}
+              to="/dashboard/setting/account"
+              sx={{ padding: '0 18px' }}
+              data-testid="setting-goto-account-button"
+            >
               <ListItemIcon sx={{ minWidth: '25px' }}>
                 <CardMedia
                   component="img"
