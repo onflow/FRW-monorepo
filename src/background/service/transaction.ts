@@ -8,6 +8,7 @@ import {
   type TransferListStore,
   transferListRefreshRegex,
 } from '@/shared/utils/cache-data-keys';
+import { consoleError } from '@/shared/utils/console-log';
 
 import {
   getInvalidData,
@@ -333,18 +334,31 @@ class Transaction {
       );
       return this.setTransaction(network, address, flowResult, offset, limit);
     } else if (isValidEthereumAddress(address)) {
-      const evmResult = await openapiService.getEVMTransfers(
-        address,
-        parseInt(offset ?? '0'),
-        parseInt(limit ?? '15')
-      );
-      const resultAsFlowResponse: FlowTransactionResponse = {
-        total: evmResult.next_page_params
-          ? evmResult.next_page_params.items_count
-          : evmResult.trxs.length,
-        transactions: evmResult.trxs,
-      };
-      return this.setTransaction(network, address, resultAsFlowResponse, offset, limit);
+      try {
+        const evmResult = await openapiService.getEVMTransfers(
+          address,
+          parseInt(offset ?? '0'),
+          parseInt(limit ?? '15')
+        );
+        if (!evmResult.trxs) {
+          throw new Error('Error loading EVM transactions');
+        }
+        const resultAsFlowResponse: FlowTransactionResponse = {
+          total: evmResult.next_page_params
+            ? evmResult.next_page_params.items_count
+            : evmResult.trxs?.length || 0,
+          transactions: evmResult.trxs || [],
+        };
+        return this.setTransaction(network, address, resultAsFlowResponse, offset, limit);
+      } catch (error) {
+        consoleError('Error loading EVM transactions', error);
+        const emptyResult: FlowTransactionResponse = {
+          total: 0,
+          transactions: [],
+        };
+
+        return this.setTransaction(network, address, emptyResult, offset, limit);
+      }
     } else {
       throw new Error('Invalid address');
     }
