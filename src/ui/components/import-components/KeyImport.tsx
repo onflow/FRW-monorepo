@@ -5,6 +5,7 @@ import { type PublicKeyAccount } from '@/shared/types/wallet-types';
 import { KEY_TYPE } from '@/shared/utils/algo-constants';
 import { LLSpinner } from '@/ui/components/LLSpinner';
 import PasswordTextarea from '@/ui/components/PasswordTextarea';
+import { COLOR_DARKMODE_WHITE_3pc } from '@/ui/style/color';
 import { useWallet } from '@/ui/utils/WalletContext';
 
 const KeyImport = ({
@@ -65,7 +66,7 @@ const KeyImport = ({
           style={{
             width: '100%',
             borderRadius: '16px',
-            backgroundColor: '#2C2C2C',
+            backgroundColor: COLOR_DARKMODE_WHITE_3pc,
             padding: '20px',
             color: '#fff',
             marginBottom: '16px',

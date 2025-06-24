@@ -19,6 +19,7 @@ import zxcvbn from 'zxcvbn';
 
 import { BpUncheked, BpCheckedIcon } from '@/ui/assets/icons/CustomCheckboxIcons';
 import { LLSpinner } from '@/ui/components';
+import { COLOR_DARKMODE_WHITE_3pc } from '@/ui/style/color';
 
 // Password Indicator Component
 interface PasswordIndicatorProps {
@@ -96,7 +97,7 @@ export const PasswordInput = ({
           height: '64px',
           padding: '16px',
           zIndex: '999',
-          backgroundColor: '#282828',
+          backgroundColor: COLOR_DARKMODE_WHITE_3pc,
           border: '2px solid #4C4C4C',
           borderRadius: '12px',
           boxSizing: 'border-box',

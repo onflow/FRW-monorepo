@@ -2,6 +2,8 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { TextField, InputAdornment, IconButton, type TextFieldProps } from '@mui/material';
 import React, { useState } from 'react';
 
+import { COLOR_DARKMODE_WHITE_3pc } from '@/ui/style/color';
+
 type PasswordTextareaProps = Omit<
   TextFieldProps,
   'type' | 'InputProps' | 'multiline' | 'rows' // Keep these omitted as we add them back below
@@ -48,7 +50,7 @@ const PasswordTextarea = ({
     // Main input container styling
     '& .MuiInputBase-root': {
       borderRadius: '16px',
-      backgroundColor: '#2C2C2C',
+      backgroundColor: COLOR_DARKMODE_WHITE_3pc,
       color: '#fff',
       fontFamily: 'Inter',
       fontSize: '16px',

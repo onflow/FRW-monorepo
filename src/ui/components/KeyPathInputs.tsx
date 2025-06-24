@@ -12,6 +12,7 @@ import React, { useState } from 'react';
 
 import Expand from '../assets/svg/expand.svg';
 import Hide from '../assets/svg/hide.svg';
+import { COLOR_DARKMODE_WHITE_3pc } from '../style/color';
 
 const StyledAccordionSummary = styled(AccordionSummary)(({ theme }) => ({
   flexDirection: 'row-reverse',
@@ -60,7 +61,7 @@ const KeyPathInput = ({
         aria-controls="additional-options-content"
         id="additional-options-header"
       >
-        <Typography sx={{ marginLeft: '8px', fontSize: '14px' }}>Advance</Typography>
+        <Typography sx={{ marginLeft: '8px', fontSize: '14px' }}>Advanced</Typography>
       </StyledAccordionSummary>
       <AccordionDetails
         sx={{
@@ -95,7 +96,7 @@ const KeyPathInput = ({
             style={{
               width: '100%',
               borderRadius: '16px',
-              backgroundColor: '#2C2C2C',
+              backgroundColor: COLOR_DARKMODE_WHITE_3pc,
               padding: '46px 20px 20px',
               color: 'rgba(255, 255, 255, 0.40)',
               resize: 'none',
@@ -133,7 +134,7 @@ const KeyPathInput = ({
             style={{
               width: '100%',
               borderRadius: '16px',
-              backgroundColor: '#2C2C2C',
+              backgroundColor: COLOR_DARKMODE_WHITE_3pc,
               padding: '46px 20px 20px',
               color: 'rgba(255, 255, 255, 0.40)',
               resize: 'none',

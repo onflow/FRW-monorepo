@@ -1,5 +1,7 @@
 import { createTheme, type ThemeOptions } from '@mui/material/styles';
+
 import './fonts.css';
+import { COLOR_GREEN_FLOW_DARKMODE_00EF8B } from './color';
 
 const themeOptions: ThemeOptions = {
   components: {
@@ -34,7 +36,7 @@ const themeOptions: ThemeOptions = {
       title: '#E6E6E6',
       error: '#E54040',
       good: '#FF8A00',
-      increase: '#41CC5D',
+      increase: COLOR_GREEN_FLOW_DARKMODE_00EF8B,
       decrease: '#E54040',
     },
     testnet: {
@@ -46,7 +48,7 @@ const themeOptions: ThemeOptions = {
       light: '#CCAF2129',
     },
     success: {
-      main: '#41CC5D',
+      main: COLOR_GREEN_FLOW_DARKMODE_00EF8B,
       light: '#41CC5D29',
       contrastText: '#000000CC',
     },
@@ -60,7 +62,7 @@ const themeOptions: ThemeOptions = {
     },
     primary: {
       // light: will be calculated from palette.primary.main,
-      main: '#41CC5D',
+      main: COLOR_GREEN_FLOW_DARKMODE_00EF8B,
       light: '#FFFFFF',
       // dark: will be calculated from palette.primary.main,
       // contrastText: will be calculated to contrast with palette.primary.main
@@ -108,7 +110,7 @@ const themeOptions: ThemeOptions = {
       navi: '#787878',
     },
     up: {
-      main: '#00EF8B',
+      main: COLOR_GREEN_FLOW_DARKMODE_00EF8B,
     },
   },
   typography: {

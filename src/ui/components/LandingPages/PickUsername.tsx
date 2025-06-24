@@ -16,6 +16,7 @@ import EmailIcon from '@/ui/assets/alternate-email.svg';
 import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
 import CancelIcon from '@/ui/components/iconfont/IconClose';
 import SlideRelative from '@/ui/components/SlideRelative';
+import { COLOR_DARKMODE_WHITE_3pc } from '@/ui/style/color';
 import { useWallet } from 'ui/utils';
 
 const PickUsername = ({
@@ -198,7 +199,7 @@ const PickUsername = ({
                 height: '64px',
                 padding: '16px',
                 zIndex: '999',
-                backgroundColor: '#282828',
+                backgroundColor: COLOR_DARKMODE_WHITE_3pc,
                 border: '2px solid #4C4C4C',
                 borderRadius: '12px',
                 boxSizing: 'border-box',

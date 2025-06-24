@@ -5,6 +5,7 @@ import { consoleError } from '@/shared/utils/console-log';
 import { LLSpinner } from '@/ui/components';
 import BrowserWarning from '@/ui/components/BrowserWarning';
 import IconGoogleDrive from '@/ui/components/iconfont/IconGoogleDrive';
+import { COLOR_DARKMODE_WHITE_3pc } from '@/ui/style/color';
 import { useWallet } from '@/ui/utils/WalletContext';
 
 const Googledrive = ({ setErrorMessage, setShowError, handleGoogleAccountsFound }) => {
@@ -43,7 +44,7 @@ const Googledrive = ({ setErrorMessage, setShowError, handleGoogleAccountsFound 
           flexDirection: 'column',
           justifyContent: 'space-between',
           alignItems: 'center',
-          backgroundColor: '#2C2C2C',
+          backgroundColor: COLOR_DARKMODE_WHITE_3pc,
           borderRadius: '16px',
           py: '40px',
         }}
