@@ -1,14 +1,31 @@
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import { Box, IconButton, Typography } from '@mui/material';
+import MobileStepper from '@mui/material/MobileStepper';
 import React from 'react';
 
 import { LLPinAlert } from '@/ui/components';
 import Confetti from '@/ui/components/Confetti';
-import BackButtonIcon from '@/ui/components/iconfont/IconBackButton';
 import RegisterHeader from '@/ui/components/LandingPages/RegisterHeader';
 import SlideLeftRight from '@/ui/components/SlideLeftRight';
-import { COLOR_DARKMODE_WHITE_10pc } from '@/ui/style/color';
+import {
+  COLOR_DARKMODE_WHITE_10pc,
+  COLOR_DARKMODE_WHITE_50pc,
+  COLOR_GREEN_FLOW_DARKMODE_00EF8B,
+} from '@/ui/style/color';
 
 import { FlowBackgroundSVG } from './flow-background-svg';
+
+interface LandingComponentsProps {
+  activeIndex: number;
+  direction: 'left' | 'right';
+  showBackButton: boolean;
+  onBack: () => void;
+  children: React.ReactElement;
+  showConfetti: boolean;
+  showRegisterHeader: boolean;
+  stepCount: number;
+}
 
 const LandingComponents = ({
   activeIndex,
@@ -18,7 +35,8 @@ const LandingComponents = ({
   children,
   showConfetti,
   showRegisterHeader,
-}) => (
+  stepCount = 6,
+}: LandingComponentsProps) => (
   <Box
     sx={{
       display: 'flex',
@@ -75,26 +93,36 @@ const LandingComponents = ({
             padding: '24px 24px 0px 24px',
           }}
         >
-          {showBackButton && (
-            <IconButton onClick={onBack} size="small">
-              <BackButtonIcon color="#5E5E5E" size={27} />
-            </IconButton>
-          )}
-
-          <div style={{ flexGrow: 1 }}></div>
-
-          <Typography
-            variant="body1"
-            sx={{
-              color: '#5E5E5E',
-              alignSelf: 'end',
-              lineHeight: '37px',
-              fontWeight: '700',
-              fontSize: '16px',
-            }}
-          >
-            {chrome.i18n.getMessage('STEP')} {activeIndex + 1}/6
-          </Typography>
+          <MobileStepper
+            variant="dots"
+            steps={stepCount}
+            position="static"
+            activeStep={activeIndex}
+            sx={{ flexGrow: 1, backgroundColor: 'transparent' }}
+            backButton={
+              <>
+                {showBackButton && (
+                  <IconButton onClick={onBack} size="small">
+                    <ChevronLeftIcon sx={{ color: COLOR_DARKMODE_WHITE_50pc, fontSize: 27 }} />
+                  </IconButton>
+                )}
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: '#5E5E5E',
+                    alignSelf: 'end',
+                    lineHeight: '37px',
+                    fontWeight: '700',
+                    fontSize: '16px',
+                  }}
+                >
+                  {chrome.i18n.getMessage('Step_X_of_Y', [`${activeIndex + 1}`, `${stepCount}`])}
+                </Typography>
+                <div style={{ flexGrow: 1 }} />
+              </>
+            }
+            nextButton={<div />}
+          />
         </Box>
 
         <SlideLeftRight direction={direction === 'left' ? 'left' : 'right'} show={true}>

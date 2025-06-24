@@ -442,7 +442,20 @@
     "message": "Domain creation complete"
   },
   "STEP": {
-    "message": "STEP"
+    "message": "Step"
+  },
+  "Step_X_of_Y": {
+    "message": "Step $step$ of $total$",
+    "placeholders": {
+      "step": {
+        "content": "$1",
+        "example": "2"
+      },
+      "total": {
+        "content": "$2",
+        "example": "6"
+      }
+    }
   },
   "No__backup__found": {
     "message": "No Backup found"

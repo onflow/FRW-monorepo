@@ -442,7 +442,20 @@
     "message": "Создание домена завершено"
   },
   "STEP": {
-    "message": "ШАГ"
+    "message": "Шаг"
+  },
+  "Step_X_of_Y": {
+    "message": "Шаг $step$ из $total$",
+    "placeholders": {
+      "step": {
+        "content": "$1",
+        "example": "2"
+      },
+      "total": {
+        "content": "$2",
+        "example": "6"
+      }
+    }
   },
   "No__backup__found": {
     "message": "Резервная копия не найдена"

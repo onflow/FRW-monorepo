@@ -92,21 +92,28 @@ if (typeof global.chrome === 'undefined' || typeof global.chrome.i18n === 'undef
   global.chrome = {
     i18n: {
       getMessage: (messageName: string, substitutions?: unknown) => {
+        const entry = messages[messageName as keyof typeof messages];
+        let msg = entry ? entry.message : messageName;
         if (substitutions) {
           if (Array.isArray(substitutions)) {
-            // Simple substitution for array format
-            return messageName + ': ' + substitutions.join(', ');
+            // Replace $1$, $2$, ... with array values
+            substitutions.forEach((val, idx) => {
+              msg = msg.replace(new RegExp(`\\$[^$]+\\$`), String(val));
+            });
+            return msg;
           }
-          // For object substitutions, you might want a more complex replacement logic
-          return messageName + ': ' + JSON.stringify(substitutions);
+          if (typeof substitutions === 'object') {
+            // Replace $key$ with object values
+            Object.entries(substitutions).forEach(([key, val]) => {
+              msg = msg.replace(new RegExp(`\\$${key}\\$`, 'g'), String(val));
+            });
+            return msg;
+          }
         }
-        if (messages[messageName as keyof typeof messages]) {
-          return messages[messageName as keyof typeof messages].message;
-        }
-        return messageName;
+        return msg;
       },
     },
-  } as unknown as typeof chrome; // Use 'as any' to simplify mocking complex global objects
+  } as unknown as typeof chrome;
 }
 
 const theme = createTheme(themeOptions); // Create a theme instance

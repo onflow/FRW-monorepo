@@ -447,6 +447,19 @@
   "STEP": {
     "message": "步骤"
   },
+  "Step_X_of_Y": {
+    "message": "步骤 $step$ 的 $total$",
+    "placeholders": {
+      "step": {
+        "content": "$1",
+        "example": "2"
+      },
+      "total": {
+        "content": "$2",
+        "example": "6"
+      }
+    }
+  },
   "No__backup__found": {
     "message": "没有找到备份"
   },
