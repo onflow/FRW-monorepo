@@ -3,18 +3,17 @@ import React, { useEffect, useState } from 'react';
 
 import { type PublicKeyAccount } from '@/shared/types/wallet-types';
 import { QrCodeIcon } from '@/ui/assets/icons/QrCodeIcon';
+import Googledrive from '@/ui/components/import-components/Googledrive';
+import JsonImport from '@/ui/components/import-components/JsonImport';
+import KeyImport from '@/ui/components/import-components/KeyImport';
+import MobileAppImportSteps from '@/ui/components/import-components/mobile-app-import-steps';
+import SeedPhraseImport from '@/ui/components/import-components/SeedPhraseImport';
 import ErrorModel from '@/ui/components/PopupModal/errorModel';
 import {
   COLOR_GREEN_FLOW_DARKMODE_00EF8B,
   COLOR_GREEN_FLOW_DARKMODE_00EF8B_10pc,
 } from '@/ui/style/color';
 import { useWallet } from '@/ui/utils/WalletContext';
-import Googledrive from '@/ui/views/Welcome/AccountImport/ImportComponents/Googledrive';
-import JsonImport from '@/ui/views/Welcome/AccountImport/ImportComponents/JsonImport';
-import KeyImport from '@/ui/views/Welcome/AccountImport/ImportComponents/KeyImport';
-import SeedPhraseImport from '@/ui/views/Welcome/AccountImport/ImportComponents/SeedPhraseImport';
-
-import MobileAppImportSteps from './ImportComponents/mobile-app-import-steps';
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
 

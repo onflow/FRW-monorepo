@@ -1,12 +1,11 @@
-import { Box, Button, Typography, TextField, TextareaAutosize } from '@mui/material';
+import { Box, Button, Typography, TextareaAutosize } from '@mui/material';
 import React, { useState } from 'react';
 
 import { type PublicKeyAccount } from '@/shared/types/wallet-types';
+import { KEY_TYPE } from '@/shared/utils/algo-constants';
+import { LLSpinner } from '@/ui/components/LLSpinner';
 import PasswordTextarea from '@/ui/components/PasswordTextarea';
 import { useWallet } from '@/ui/utils/WalletContext';
-import { LLSpinner } from 'ui/components';
-
-import { KEY_TYPE } from '../../../../utils/modules/constants';
 
 const KeyImport = ({
   onOpen,

@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useReducer } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { consoleError } from '@/shared/utils/console-log';
+import Google from '@/ui/components/google-import';
 import AllSet from '@/ui/components/LandingPages/AllSet';
 import GoogleBackup from '@/ui/components/LandingPages/GoogleBackup';
 import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
@@ -15,7 +16,6 @@ import {
 } from '@/ui/reducers/import-profile-reducer';
 import { useWallet } from '@/ui/utils/WalletContext';
 
-import Google from './Google';
 import ImportTabs from './ImportTabs';
 
 const AccountImport = () => {
@@ -36,22 +36,6 @@ const AccountImport = () => {
     path,
     phrase,
   } = state;
-  const loadView = useCallback(async () => {
-    usewallet
-      .getCurrentAccount()
-      .then((res) => {
-        if (res) {
-          history.push('/');
-        }
-      })
-      .catch(() => {
-        return;
-      });
-  }, [usewallet, history]);
-
-  useEffect(() => {
-    loadView();
-  }, [loadView]);
 
   const handleErrorClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {

@@ -11,13 +11,12 @@ import {
 import React, { useState } from 'react';
 
 import { type PublicKeyAccount } from '@/shared/types/wallet-types';
+import { KEY_TYPE } from '@/shared/utils/algo-constants';
 import { consoleError } from '@/shared/utils/console-log';
+import { LLSpinner } from '@/ui/components/LLSpinner';
 import PasswordTextarea from '@/ui/components/PasswordTextarea';
+import ErrorModel from '@/ui/components/PopupModal/errorModel';
 import { useWallet } from '@/ui/utils/WalletContext';
-import { LLSpinner } from 'ui/components';
-
-import ErrorModel from '../../../../components/PopupModal/errorModel';
-import { KEY_TYPE } from '../../../../utils/modules/constants';
 
 const JsonImport = ({
   onOpen,

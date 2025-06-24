@@ -2,12 +2,11 @@ import { Box, Button, Typography, TextareaAutosize } from '@mui/material';
 import React, { useState } from 'react';
 
 import { type PublicKeyAccount } from '@/shared/types/wallet-types';
+import KeyPathInput from '@/ui/components/KeyPathInputs';
+import { LLSpinner } from '@/ui/components/LLSpinner';
+import PasswordTextarea from '@/ui/components/PasswordTextarea';
+import { KEY_TYPE } from '@/ui/utils/modules/constants';
 import { useWallet } from '@/ui/utils/WalletContext';
-import { LLSpinner } from 'ui/components';
-
-import KeyPathInput from '../../../../components/KeyPathInputs';
-import PasswordTextarea from '../../../../components/PasswordTextarea';
-import { KEY_TYPE } from '../../../../utils/modules/constants';
 
 const SeedPhraseImport = ({
   onOpen,

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import MobileAppImportSteps from '../ImportComponents/mobile-app-import-steps';
+import MobileAppImportSteps from '@/ui/components/import-components/mobile-app-import-steps';
 
 export default {
   title: 'View/Welcome/AccountImport/MobileAppImportSteps',
