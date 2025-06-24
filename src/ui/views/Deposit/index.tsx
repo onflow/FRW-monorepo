@@ -32,8 +32,8 @@ const qrCode = new QRCodeStyling({
 
 const Deposit = () => {
   const ref = useRef<HTMLDivElement>(null);
-  const { currentWallet, activeAccountType, network } = useProfiles();
-  const { emulatorModeOn } = useNetwork();
+  const { currentWallet, activeAccountType } = useProfiles();
+  const { emulatorModeOn, network } = useNetwork();
 
   useEffect(() => {
     if (currentWallet?.address && qrCode) {
