@@ -1,5 +1,6 @@
 import { type PublicKeyAccount } from '@/shared/types/wallet-types';
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
+import { consoleLog } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 
 export const IMPORT_STEPS = {
