@@ -9,7 +9,7 @@ import { useWallet as useWalletMock } from '@/stories/wallet-context.mock';
 import AccountImport from '../index';
 
 const meta = {
-  title: 'View/Welcome/AccountImport',
+  title: 'views/Welcome/AccountImport',
   component: AccountImport,
   decorators: [
     (Story) => {

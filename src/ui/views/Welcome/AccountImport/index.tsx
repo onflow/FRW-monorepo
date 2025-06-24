@@ -16,7 +16,7 @@ import {
 } from '@/ui/reducers/import-profile-reducer';
 import { useWallet } from '@/ui/utils/WalletContext';
 
-import ImportTabs from './ImportTabs';
+import ImportTabs from '../../../components/import-components/ImportTabs';
 
 const AccountImport = () => {
   const history = useHistory();

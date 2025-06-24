@@ -11,7 +11,7 @@ import { useWallet as useWalletMock } from '@/stories/wallet-context.mock';
 import ImportTabs from '../ImportTabs';
 
 const meta = {
-  title: 'View/Welcome/AccountImport/ImportTabs',
+  title: 'components/import-components/ImportTabs',
   component: ImportTabs,
   decorators: [
     (Story) => {

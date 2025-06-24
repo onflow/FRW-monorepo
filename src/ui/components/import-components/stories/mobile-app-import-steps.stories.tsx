@@ -3,7 +3,7 @@ import React from 'react';
 import MobileAppImportSteps from '@/ui/components/import-components/mobile-app-import-steps';
 
 export default {
-  title: 'View/Welcome/AccountImport/MobileAppImportSteps',
+  title: 'components/import-components/MobileAppImportSteps',
   tags: ['autodocs'],
 
   component: MobileAppImportSteps,
