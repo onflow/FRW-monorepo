@@ -1,4 +1,4 @@
-import { ListItem, ListItemButton, ListItemText, Box, Typography } from '@mui/material';
+import { ListItem, ListItemButton, Box, Typography } from '@mui/material';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -14,7 +14,6 @@ const TopLinkButton: React.FC<TopLinkButtonProps> = ({ to, icon, text }) => {
   return (
     <ListItem component={Link} to={to} disablePadding sx={{ flex: 1 }}>
       <ListItemButton
-        className="itemButton"
         sx={{
           flexDirection: 'column',
           justifyContent: 'center',

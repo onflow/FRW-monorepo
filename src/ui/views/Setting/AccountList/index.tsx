@@ -71,8 +71,12 @@ const AccountList = () => {
       if (isValidEthereumAddress(accountAddress)) {
         history.push(`/dashboard/setting/accountlist/detail/${accountAddress}`);
       } else {
-        // For Flow linked accounts, navigate to linked detail page
-        history.push(`/dashboard/setting/linkeddetail/${accountAddress}`);
+        // For Flow linked accounts, navigate to linked detail page with parent address name
+        const parentAccount = walletList?.find((wallet) => wallet.address === parentAddress);
+        const parentName = parentAccount?.name || '';
+        history.push(
+          `/dashboard/setting/linkeddetail/${accountAddress}?parentName=${encodeURIComponent(parentName)}`
+        );
       }
     } else {
       // For main accounts, navigate to account detail page

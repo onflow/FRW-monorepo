@@ -28,7 +28,7 @@ import { SecurityIcon } from '@/ui/assets/icons/settings/Security';
 import { LLHeader } from '@/ui/components';
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import { SettingsListItem } from '@/ui/components/settings/list-item';
-import TopLinkButton from '@/ui/components/settings/TopLinkButton';
+import TopLinkButton from '@/ui/components/settings/top-link-button';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import {
   COLOR_WHITE_FFFFFF,

@@ -25,8 +25,10 @@ import {
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
+import { EditIcon } from '@/ui/assets/icons/settings/Edit';
 import { LLHeader } from '@/ui/components';
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
+import AddressCard from '@/ui/components/settings/address-card';
 import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
 import { useWallet } from 'ui/utils';
 
@@ -159,7 +161,7 @@ const WalletDetail = () => {
           <List
             sx={{
               borderRadius: '16px',
-              padding: '0 10px',
+              padding: '0 2px',
               overflow: 'hidden',
               backgroundColor: '#282828',
               '&:hover': {
@@ -183,7 +185,7 @@ const WalletDetail = () => {
             >
               <ListItemButton
                 sx={{
-                  width: '90%',
+                  width: '100%',
                   height: '100%',
                   margin: '0 auto',
                   '&:hover': {
@@ -218,22 +220,17 @@ const WalletDetail = () => {
                   {emoji?.name}
                 </Typography>
                 <Box sx={{ flex: '1' }}></Box>
-                <ListItemIcon aria-label="end" sx={{ minWidth: '20px' }}>
-                  <CardMedia
-                    component="img"
-                    sx={{ width: '20px', height: '20px' }}
-                    image={editEmoji}
-                  />
-                </ListItemIcon>
+                <EditIcon width={24} height={24} />
               </ListItemButton>
             </ListItem>
           </List>
+          <AddressCard address={userWallet?.address || ''} label="Address" />
           {userWallet && !isValidEthereumAddress(userWallet.address) && (
             <>
               <List
                 sx={{
                   borderRadius: '16px',
-                  padding: '0 10px',
+                  padding: '0 2px',
                   overflow: 'hidden',
                   backgroundColor: '#282828',
                   '&:hover': {
@@ -310,7 +307,7 @@ const WalletDetail = () => {
                 <List
                   sx={{
                     borderRadius: '16px',
-                    padding: '0 10px',
+                    padding: '0 2px',
                     overflow: 'hidden',
                     backgroundColor: '#282828',
                     '&:hover': {
