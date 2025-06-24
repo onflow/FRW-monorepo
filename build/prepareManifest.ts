@@ -60,7 +60,13 @@ async function prepare() {
   };
   // Update the version in the manifest
   if (IS_BETA) {
-    manifest.version = version.replace(/^(\d+\.\d+\.\d+).*/, '$1');
+    const betaVersion = process.env.BETA_VERSION;
+    if (!betaVersion) {
+      throw new Error('BETA_VERSION is not set');
+    }
+
+    const betaBuildNumber = betaVersion.replace(/^(\d+\.\d+\.\d+).*beta[^\d]*(\d+).*/, '$2');
+    manifest.version = version.replace(/^(\d+)\.(\d+)\.(\d+).*/, `$1$2.$3.${betaBuildNumber}`);
 
     manifest.name = '__MSG_appNameBeta__';
     manifest.description = '__MSG_appDescriptionBeta__';

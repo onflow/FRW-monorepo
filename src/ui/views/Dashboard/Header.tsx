@@ -1,19 +1,9 @@
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import SettingsIcon from '@mui/icons-material/Settings';
-import {
-  AppBar,
-  Toolbar,
-  Typography,
-  IconButton,
-  Drawer,
-  Button,
-  Skeleton,
-  Chip,
-} from '@mui/material';
+import { AppBar, Toolbar, Typography, IconButton, Drawer, Button, Skeleton } from '@mui/material';
 import Box from '@mui/material/Box';
 import { StyledEngineProvider } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
-import { makeStyles } from '@mui/styles';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
@@ -25,6 +15,7 @@ import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
 import { useNews } from '@/ui/hooks/use-news';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
+import { useTransferList } from '@/ui/hooks/useTransferListHook';
 import { useWallet, formatAddress, useWalletLoaded } from 'ui/utils';
 
 import MenuDrawer from './Components/MenuDrawer';
@@ -32,23 +23,9 @@ import NewsView from './Components/NewsView';
 import Popup from './Components/Popup';
 import SwitchAccountCover from './Components/SwitchAccountCover';
 
-const useStyles = makeStyles(() => ({
-  appBar: {
-    zIndex: 1399,
-  },
-  paper: {
-    background: '#282828',
-  },
-  active: {
-    background: '#BABABA14',
-    borderRadius: '12px',
-  },
-}));
-
 const Header = ({ _loading = false }) => {
   const usewallet = useWallet();
   const walletLoaded = useWalletLoaded();
-  const classes = useStyles();
   const history = useHistory();
   const location = useLocation();
 
@@ -64,15 +41,12 @@ const Header = ({ _loading = false }) => {
     noAddress,
   } = useProfiles();
 
+  const { occupied: pendingTransactions } = useTransferList();
   const [drawer, setDrawer] = useState(false);
-
-  const [isPending, setIsPending] = useState(false);
 
   const [ispop, setPop] = useState(false);
 
   const [switchLoading, setSwitchLoading] = useState(false);
-  const [, setErrorMessage] = useState('');
-  const [errorCode, setErrorCode] = useState(null);
 
   // News Drawer
   const [showNewsDrawer, setShowNewsDrawer] = useState(false);
@@ -102,7 +76,7 @@ const Header = ({ _loading = false }) => {
     }
   }, [history, location.pathname]);
 
-  const switchAccount = useCallback(
+  const switchProfile = useCallback(
     async (profileId: string) => {
       setSwitchLoading(true);
       setPop(false);
@@ -129,50 +103,20 @@ const Header = ({ _loading = false }) => {
     [usewallet, history]
   );
 
-  const transactionHandler = (request) => {
-    // This is just to handle pending transactions
-    // The header will listen to the transactionPending event
-    // It shows spinner on the header when there is a pending transaction
-    if (request.msg === 'transactionPending') {
-      setIsPending(true);
-    }
-    if (request.msg === 'transactionDone') {
-      setIsPending(false);
-    }
+  const [errorCode, setErrorCode] = useState<number | null>(null);
+
+  const transactionHandler = (request: {
+    msg: string;
+    errorMessage: string;
+    errorCode: number;
+  }) => {
     // The header should handle transactionError events
     if (request.msg === 'transactionError') {
       consoleWarn('transactionError', request.errorMessage, request.errorCode);
       // The error message is not used anywhere else for now
-      setErrorMessage(request.errorMessage);
       setErrorCode(request.errorCode);
     }
-    return true;
   };
-
-  const checkPendingTx = useCallback(async () => {
-    const network = await usewallet.getNetwork();
-
-    const result = await chrome.storage.session.get('transactionPending');
-    const now = new Date();
-    if (result.transactionPending?.date) {
-      const diff = now.getTime() - result.transactionPending.date.getTime();
-      const inMins = Math.round(diff / 60000);
-      if (inMins > 5) {
-        await chrome.storage.session.remove('transactionPending');
-        return;
-      }
-    }
-    if (
-      result &&
-      Object.keys(result).length !== 0 &&
-      network === result.transactionPending.network
-    ) {
-      setIsPending(true);
-      usewallet.listenTransaction(result.transactionPending.txId, false);
-    } else {
-      setIsPending(false);
-    }
-  }, [usewallet]);
 
   const checkAuthStatus = useCallback(async () => {
     await usewallet.openapi.checkAuthStatus();
@@ -180,9 +124,7 @@ const Header = ({ _loading = false }) => {
   }, [usewallet]);
 
   useEffect(() => {
-    checkPendingTx();
     checkAuthStatus();
-
     chrome.runtime.onMessage.addListener(transactionHandler);
     /**
      * Fired when a message is sent from either an extension process or a content script.
@@ -190,7 +132,7 @@ const Header = ({ _loading = false }) => {
     return () => {
       chrome.runtime.onMessage.removeListener(transactionHandler);
     };
-  }, [checkAuthStatus, checkPendingTx, network]);
+  }, [checkAuthStatus, network]);
 
   const NewsDrawer = () => {
     return (
@@ -198,13 +140,13 @@ const Header = ({ _loading = false }) => {
         open={showNewsDrawer}
         anchor="top"
         onClose={toggleNewsDrawer}
-        classes={{ paper: classes.paper }}
         PaperProps={{
           sx: {
             width: '100%',
             marginTop: '56px',
             marginBottom: '144px',
             bgcolor: 'background.paper',
+            background: '#282828',
           },
         }}
       >
@@ -236,7 +178,7 @@ const Header = ({ _loading = false }) => {
             }
             parentColor={parentWallet.color}
             active={true}
-            spinning={isPending}
+            spinning={pendingTransactions}
             onClick={toggleDrawer}
           />
         </Box>
@@ -314,7 +256,10 @@ const Header = ({ _loading = false }) => {
         </Box>
 
         <Box sx={{ flex: '0 0 68px' }}>
-          <Tooltip title={isPending ? chrome.i18n.getMessage('Pending__Transaction') : ''} arrow>
+          <Tooltip
+            title={pendingTransactions ? chrome.i18n.getMessage('Pending__Transaction') : ''}
+            arrow
+          >
             <Box style={{ position: 'relative' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <IconButton
@@ -376,7 +321,7 @@ const Header = ({ _loading = false }) => {
   return (
     <StyledEngineProvider injectFirst>
       <SwitchAccountCover open={switchLoading} />
-      <AppBar position="relative" className={classes.appBar} elevation={0}>
+      <AppBar position="relative" sx={{ zIndex: 1399 }} elevation={0}>
         <Toolbar sx={{ px: '12px', backgroundColor: '#282828' }}>
           {walletList && (
             <MenuDrawer
@@ -405,7 +350,7 @@ const Header = ({ _loading = false }) => {
               }}
               userInfo={userInfo!}
               current={currentWallet}
-              switchAccount={switchAccount}
+              switchAccount={switchProfile}
               profileIds={profileIds || []}
               switchLoading={switchLoading}
             />
