@@ -51,11 +51,7 @@ export const LinkedAccountCard = ({
 }: LinkedAccountCardProps) => {
   const { name, icon, color, address, nfts } = account || {};
 
-  // Only show NFTs for child accounts
-  const nftCatalogCollections = useNftCatalogCollections(network, address);
-
   const testId = dataTestId || `linked-account-${address}`;
-  const nftCount = nfts || nftCatalogCollections?.reduce((acc, curr) => acc + curr.count, 0);
 
   return (
     <Card
