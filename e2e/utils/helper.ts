@@ -266,7 +266,7 @@ export const importAccountBySeedPhrase = async ({
   }
 
   // Go to the import page
-  await page.goto(`chrome-extension://${extensionId}/index.html#/welcome/accountimport`);
+  await page.goto(`chrome-extension://${extensionId}/index.html#/welcome/RecoverProfile`);
 
   // Close all pages except the current page (the extension opens them in the background)
   await closeOpenedPages(page);

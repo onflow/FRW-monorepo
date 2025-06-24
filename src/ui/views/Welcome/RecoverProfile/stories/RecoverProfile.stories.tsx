@@ -6,11 +6,11 @@ import { fn } from 'storybook/test';
 import { Link as LinkMock } from '@/stories/react-router-dom.mock';
 import { useWallet as useWalletMock } from '@/stories/wallet-context.mock';
 
-import AccountImport from '../index';
+import RecoverProfile from '../index';
 
 const meta = {
-  title: 'views/Welcome/AccountImport',
-  component: AccountImport,
+  title: 'views/Welcome/RecoverProfile',
+  component: RecoverProfile,
   decorators: [
     (Story) => {
       LinkMock.mockReset();
@@ -42,11 +42,11 @@ const meta = {
     layout: 'centered',
   },
   args: {},
-} satisfies Meta<typeof AccountImport>;
+} satisfies Meta<typeof RecoverProfile>;
 
 export default meta;
 
-type Story = StoryObj<typeof AccountImport>;
+type Story = StoryObj<typeof RecoverProfile>;
 
 export const Default: Story = {
   args: {},

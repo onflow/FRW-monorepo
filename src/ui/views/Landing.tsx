@@ -5,7 +5,7 @@ import Forgot from './Forgot';
 import Recover from './Forgot/Recover';
 import Reset from './Forgot/Reset';
 import Welcome from './Welcome';
-import AccountImport from './Welcome/AccountImport';
+import RecoverProfile from './Welcome/RecoverProfile';
 import Register from './Welcome/Register';
 import Sync from './Welcome/Sync';
 
@@ -22,7 +22,7 @@ export const Landing: React.FC = () => {
       <Switch>
         <Route exact path="/welcome" component={Welcome} />
         <Route exact path="/welcome/register" component={Register} />
-        <Route exact path="/welcome/accountimport" component={AccountImport} />
+        <Route exact path="/welcome/recoverprofile" component={RecoverProfile} />
         <Route exact path="/welcome/sync" component={Sync} />
         <Route exact path="/forgot" component={Forgot} />
         <Route exact path="/forgot/recover" component={Recover} />

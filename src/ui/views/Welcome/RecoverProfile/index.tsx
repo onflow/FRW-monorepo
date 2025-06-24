@@ -18,7 +18,7 @@ import { useWallet } from '@/ui/utils/WalletContext';
 
 import ImportTabs from '../../../components/import-components/ImportTabs';
 
-const AccountImport = () => {
+const RecoverProfile = () => {
   const history = useHistory();
   const usewallet = useWallet();
 
@@ -192,4 +192,4 @@ const AccountImport = () => {
   );
 };
 
-export default AccountImport;
+export default RecoverProfile;
