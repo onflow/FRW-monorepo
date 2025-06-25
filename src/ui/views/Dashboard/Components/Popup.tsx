@@ -35,7 +35,7 @@ interface TransferConfirmationProps {
   handleCloseIconClicked: () => void;
   handleCancelBtnClicked: () => void;
   handleAddBtnClicked: () => void;
-  userInfo: UserInfoResponse;
+  userInfo?: UserInfoResponse;
   current: WalletAccount;
   switchProfile: (profileId: string) => Promise<void>;
   profileIds?: string[];

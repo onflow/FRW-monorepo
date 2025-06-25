@@ -99,6 +99,9 @@ const AccountImport = () => {
 
       // Now get the proper username
       const userInfo = await usewallet.getUserInfo();
+      if (!userInfo) {
+        throw new Error('User info not found');
+      }
       dispatch({ type: 'SET_USERNAME', payload: userInfo.username });
     } catch (error) {
       consoleError(error);

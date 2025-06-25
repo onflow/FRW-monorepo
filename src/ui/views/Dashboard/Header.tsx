@@ -345,7 +345,7 @@ const Header = ({ _loading = false }) => {
             handleAddBtnClicked={() => {
               setPop(false);
             }}
-            userInfo={userInfo!}
+            userInfo={userInfo}
             current={currentWallet}
             switchProfile={switchProfile}
             profileIds={profileIds || []}

@@ -51,7 +51,7 @@ export const registerReducer = (state: RegisterState, action: RegisterAction): R
     case 'SET_ACTIVE_TAB':
       return { ...state, activeTab: action.payload };
     case 'SET_NICKNAME':
-      return { ...state, username: action.payload };
+      return { ...state, nickname: action.payload };
     case 'SET_USERNAME':
       return { ...state, username: action.payload };
     case 'SET_PASSWORD':
