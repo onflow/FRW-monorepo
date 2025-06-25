@@ -74,16 +74,12 @@ interface PasswordInputProps {
   readOnly?: boolean;
   placeholder?: string;
   autoFocus?: boolean;
-<<<<<<<< HEAD:src/ui/components/PasswordComponents.tsx
   className?: string;
   showIndicator?: boolean;
   onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
   sx?: any;
   visibilitySx?: any;
   endAdornment?: React.ReactNode;
-========
-  sx?: any;
->>>>>>>> dev:src/ui/components/LandingPages/PasswordComponents.tsx
 }
 
 export const PasswordInput = ({
@@ -94,7 +90,6 @@ export const PasswordInput = ({
   readOnly = false,
   placeholder = chrome.i18n.getMessage('Create__a__password'),
   autoFocus = false,
-<<<<<<<< HEAD:src/ui/components/PasswordComponents.tsx
   className,
   showIndicator = false,
   onKeyDown,
@@ -102,8 +97,6 @@ export const PasswordInput = ({
   visibilitySx,
   endAdornment,
 }: PasswordInputProps) => {
-  const classes = useStyles();
-
   const defaultEndAdornment = (
     <InputAdornment position="end">
       {value && showIndicator && <PasswordIndicator value={value} />}
@@ -113,10 +106,6 @@ export const PasswordInput = ({
     </InputAdornment>
   );
 
-========
-  sx,
-}: PasswordInputProps) => {
->>>>>>>> dev:src/ui/components/LandingPages/PasswordComponents.tsx
   return (
     <Input
       type={isVisible ? 'text' : 'password'}
@@ -143,7 +132,6 @@ export const PasswordInput = ({
       disableUnderline
       onChange={(e) => onChange(e.target.value)}
       onKeyDown={onKeyDown}
-      sx={sx}
       endAdornment={endAdornment || defaultEndAdornment}
     />
   );
