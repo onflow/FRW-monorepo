@@ -21,7 +21,6 @@ import SendAddress from './Send';
 import SendTo from './SendTo';
 import SettingTab from './Setting';
 import About from './Setting/About/About';
-import Account from './Setting/Account';
 import AccountList from './Setting/AccountList';
 import RemoveWallet from './Setting/AccountList/RemoveWallet';
 import WalletDetail from './Setting/AccountList/WalletDetail';
@@ -39,6 +38,7 @@ import LinkedDetail from './Setting/Linked/LinkedDetail';
 import LinkedNftDetail from './Setting/Linked/LinkedNftDetail';
 import Keydetail from './Setting/privatekey/Keydetail';
 import PrivateKeyPassword from './Setting/privatekey/Privatekeypassword';
+import Profile from './Setting/Profile';
 import RecoveryPhasesDetail from './Setting/recoveryphase/Recoveryphasedetail';
 import Recoveryphrasepassword from './Setting/recoveryphase/Recoveryphrasepassword';
 import Security from './Setting/Security';
@@ -218,8 +218,8 @@ const InnerRoute = (props: RouteComponentProps) => {
             <PrivateRoute path={`${props.match.url}/setting/removeWallet`}>
               <RemoveWallet />
             </PrivateRoute>
-            <PrivateRoute path={`${props.match.url}/setting/account`}>
-              <Account />
+            <PrivateRoute path={`${props.match.url}/setting/profile`}>
+              <Profile />
             </PrivateRoute>
             <PrivateRoute path={`${props.match.url}/setting/currency`}>
               <CurrencySettings />

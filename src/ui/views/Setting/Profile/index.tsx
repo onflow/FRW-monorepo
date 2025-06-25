@@ -16,7 +16,7 @@ import { useWallet } from 'ui/utils';
 
 import EditAccount from './EditAccount';
 
-const AccountSettings = () => {
+const Profile = () => {
   const history = useHistory();
   const wallet = useWallet();
   const { profileIds, userInfo, walletList } = useProfiles();
@@ -338,4 +338,4 @@ const AccountSettings = () => {
   );
 };
 
-export default AccountSettings;
+export default Profile;

@@ -75,7 +75,7 @@ const SettingTab = () => {
           <List sx={{ margin: '8px auto 16px auto', pt: 0, pb: 0 }}>
             <ListItem
               component={Link}
-              to="/dashboard/setting/account"
+              to="/dashboard/setting/profile"
               sx={{ padding: '0 18px' }}
               data-testid="setting-goto-account-button"
             >
@@ -280,9 +280,9 @@ const SettingTab = () => {
           }}
         >
           <SettingsListItem
-            to="/dashboard/setting"
+            onClick={async () => await usewallet.lockAdd()}
             icon={<AddProfileIcon width={24} height={24} />}
-            text={chrome.i18n.getMessage('Add_Profile')}
+            text={chrome.i18n.getMessage('Add_Profile') || 'Add Profile'}
             endIcon={<IconEnd size={12} />}
           />
         </List>
