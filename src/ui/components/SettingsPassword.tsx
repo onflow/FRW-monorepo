@@ -110,7 +110,6 @@ const SettingsPassword = ({
             sx={{
               height: '64px',
               padding: '16px',
-              // magrinBottom: '64px',
               zIndex: '999',
               backgroundColor: '#121212',
               border: '2px solid #4C4C4C',
