@@ -111,7 +111,7 @@ const MenuDrawer = ({
   };
   const handleEnableEvmClick = useCallback(
     (parentAddress: string) => {
-      history.replace(`/dashboard/enable?parentAddress=${parentAddress}`);
+      history.push(`/dashboard/enable?parentAddress=${parentAddress}`);
       toggleDrawer();
     },
     [history, toggleDrawer]

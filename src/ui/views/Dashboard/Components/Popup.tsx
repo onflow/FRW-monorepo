@@ -37,7 +37,7 @@ interface TransferConfirmationProps {
   handleAddBtnClicked: () => void;
   userInfo: UserInfoResponse;
   current: WalletAccount;
-  switchAccount: (profileId: string) => Promise<void>;
+  switchProfile: (profileId: string) => Promise<void>;
   profileIds?: string[];
   switchLoading: boolean;
 }
@@ -115,7 +115,7 @@ const Popup = (props: TransferConfirmationProps) => {
                   key={profileId}
                   profileId={profileId}
                   selectedProfileId={props.userInfo?.id}
-                  switchAccount={props.switchAccount}
+                  switchAccount={props.switchProfile}
                   setLoadingId={setLoadingId}
                 />
               ))}

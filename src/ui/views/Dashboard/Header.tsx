@@ -347,7 +347,7 @@ const Header = ({ _loading = false }) => {
             }}
             userInfo={userInfo!}
             current={currentWallet}
-            switchAccount={switchProfile}
+            switchProfile={switchProfile}
             profileIds={profileIds || []}
             switchLoading={switchLoading}
           />

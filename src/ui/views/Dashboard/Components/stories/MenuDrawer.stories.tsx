@@ -333,7 +333,7 @@ export const EmptyWalletState: Story = {
 export const Loading: Story = {
   args: {
     drawer: true,
-    userInfo: null,
+    userInfo: undefined,
     walletList: [],
     activeAccount: undefined,
     activeParentAccount: mockMainAccount,
