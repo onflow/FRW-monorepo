@@ -29,7 +29,10 @@ import { EditIcon } from '@/ui/assets/icons/settings/Edit';
 import { LLHeader } from '@/ui/components';
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import AddressCard from '@/ui/components/settings/address-card';
+import SettingButton from '@/ui/components/settings/setting-button';
+import SettingsSwitchCard from '@/ui/components/settings/settings-switch';
 import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
+import { COLOR_WHITE_ALPHA_40_FFFFFF66, COLOR_WHITE_ALPHA_80_FFFFFFCC } from '@/ui/style/color';
 import { useWallet } from 'ui/utils';
 
 import editEmoji from '../../../assets/svg/editEmoji.svg';
@@ -63,6 +66,7 @@ const WalletDetail = () => {
   const [storageInfo, setStorageInfo] = useState<StorageInfo | null>(null);
   const [isKeyphrase, setIsKeyphrase] = useState(false);
   const [emoji, setEmoji] = useState<Emoji | null>(null);
+  const [isHidden, setIsHidden] = useState(false);
   const isFreeGasFeeEnabled = useFeatureFlag('free_gas');
   const handleErrorClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
@@ -155,6 +159,7 @@ const WalletDetail = () => {
           flexDirection: 'column',
           justifyContent: 'space-between',
           flexGrow: 1,
+          color: COLOR_WHITE_ALPHA_80_FFFFFFCC,
         }}
       >
         <Box>
@@ -241,148 +246,62 @@ const WalletDetail = () => {
                   pb: 0,
                 }}
               >
-                <ListItem
-                  component={Link}
+                <SettingButton
+                  label={chrome.i18n.getMessage('Private__Key')}
                   to="/dashboard/nested/privatekeypassword"
-                  disablePadding
-                  sx={{
-                    height: '66px',
-                    width: '100%',
-                    '&:hover': {
-                      backgroundColor: '#282828',
-                    },
-                  }}
-                >
-                  <ListItemButton
-                    sx={{
-                      width: '90%',
-                      height: '100%',
-                      margin: '0 auto',
-                      '&:hover': {
-                        backgroundColor: '#282828',
-                      },
-                    }}
-                  >
-                    <ListItemText primary={chrome.i18n.getMessage('Private__Key')} />
-                    <ListItemIcon aria-label="end" sx={{ minWidth: '15px' }}>
-                      <IconEnd size={12} />
-                    </ListItemIcon>
-                  </ListItemButton>
-                </ListItem>
+                />
                 {isKeyphrase && <Divider sx={{ width: '90%' }} variant="middle" />}
 
                 {isKeyphrase && (
-                  <ListItem
-                    component={Link}
+                  <SettingButton
+                    label={chrome.i18n.getMessage('Recovery__Phrase')}
                     to="/dashboard/nested/recoveryphrasepassword"
-                    disablePadding
-                    sx={{
-                      height: '66px',
-                      width: '100%',
-                      '&:hover': {
-                        backgroundColor: '#282828',
-                      },
-                    }}
-                  >
-                    <ListItemButton
-                      sx={{
-                        width: '90%',
-                        height: '100%',
-                        margin: '0 auto',
-                        '&:hover': {
-                          backgroundColor: '#282828',
-                        },
-                      }}
-                    >
-                      <ListItemText primary={chrome.i18n.getMessage('Recovery__Phrase')} />
-                      <ListItemIcon aria-label="end" sx={{ minWidth: '15px' }}>
-                        <IconEnd size={12} />
-                      </ListItemIcon>
-                    </ListItemButton>
-                  </ListItem>
+                  />
                 )}
               </List>
-
-              <Box>
-                <List
-                  sx={{
-                    borderRadius: '16px',
-                    padding: '0 2px',
-                    overflow: 'hidden',
-                    backgroundColor: '#282828',
-                    '&:hover': {
-                      backgroundColor: '#282828',
-                    },
-                    margin: '8px auto 8px auto',
-                    pt: 0,
-                    pb: 0,
-                  }}
-                >
-                  <ListItem
-                    component={Link}
-                    to={`/dashboard/nested/keylist?address=${address}`}
-                    disablePadding
+              {userWallet?.address && (
+                <Box>
+                  <List
                     sx={{
-                      height: '66px',
-                      width: '100%',
+                      borderRadius: '16px',
+                      padding: '0 2px',
+                      overflow: 'hidden',
+                      backgroundColor: '#282828',
                       '&:hover': {
                         backgroundColor: '#282828',
                       },
+                      margin: '8px auto 8px auto',
+                      pt: 0,
+                      pb: 0,
                     }}
                   >
-                    <ListItemButton
-                      sx={{
-                        width: '90%',
-                        height: '100%',
-                        margin: '0 auto',
-                        '&:hover': {
-                          backgroundColor: '#282828',
-                        },
-                      }}
-                    >
-                      <ListItemText primary={'Account Keys'} />
-                      <ListItemIcon aria-label="end" sx={{ minWidth: '15px' }}>
-                        <IconEnd size={12} />
-                      </ListItemIcon>
-                    </ListItemButton>
-                  </ListItem>
-                </List>
-              </Box>
-
-              <Box
-                sx={{
-                  margin: '10px auto',
-                  backgroundColor: '#282828',
-                  padding: '20px 24px',
-                  display: 'flex',
-                  flexDirection: 'row',
-                  borderRadius: '16px',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '8px',
-                }}
-              >
-                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                  <Typography variant="body1" color="neutral.contrastText" style={{ weight: 600 }}>
-                    {chrome.i18n.getMessage('Free__Gas__Fee')}
-                  </Typography>
-                  <Typography
-                    variant="body1"
-                    color={gasKillSwitch ? 'text.secondary' : 'error.main'}
-                    sx={{ weight: 400, fontSize: '12px' }}
-                  >
-                    {gasKillSwitch
-                      ? chrome.i18n.getMessage('Allow__lilico__to__pay__the__gas__fee')
-                      : chrome.i18n.getMessage('This__feature__has__been__disabled__temporarily')}
-                  </Typography>
+                    <SettingButton
+                      label="Account Keys"
+                      to={`/dashboard/nested/keylist?address=${userWallet.address}`}
+                    />
+                  </List>
                 </Box>
-                <Switch
-                  disabled={!gasKillSwitch}
-                  checked={modeGas}
-                  onChange={() => {
-                    switchGasMode();
-                  }}
-                />
+              )}
+              <SettingsSwitchCard
+                label="Show in account list"
+                checked={!isHidden}
+                onChange={() => {}}
+              />
+              <SettingsSwitchCard
+                label="Free gas fee"
+                checked={modeGas}
+                onChange={() => {
+                  switchGasMode();
+                }}
+                disabled={!gasKillSwitch}
+              />
+              <Box sx={{ padding: '4px 8px' }}>
+                <Typography
+                  variant="caption"
+                  sx={{ fontSize: '12px', color: COLOR_WHITE_ALPHA_40_FFFFFF66 }}
+                >
+                  * Allow Flow Wallet to pay the gas fee for all my transactions
+                </Typography>
               </Box>
               {!!storageInfo /* TODO: remove this after the storage usage card is implemented */ && (
                 <Box

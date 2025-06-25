@@ -49,8 +49,12 @@ export const LinkedAccountCard = ({
   isPending = false,
   'data-testid': dataTestId,
 }: LinkedAccountCardProps) => {
-  const { name, icon, color, address, nfts } = account || {};
-
+  const { name, icon, color, address } = account || {
+    name: '',
+    icon: '',
+    color: '',
+    address: '',
+  };
   const testId = dataTestId || `linked-account-${address}`;
 
   return (
