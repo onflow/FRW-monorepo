@@ -323,38 +323,34 @@ const Header = ({ _loading = false }) => {
       <SwitchAccountCover open={switchLoading} />
       <AppBar position="relative" sx={{ zIndex: 1399 }} elevation={0}>
         <Toolbar sx={{ px: '12px', backgroundColor: '#282828' }}>
-          {walletList && (
-            <MenuDrawer
-              drawer={drawer}
-              toggleDrawer={toggleDrawer}
-              togglePop={togglePop}
-              userInfo={userInfo || null}
-              activeAccount={currentWallet}
-              activeParentAccount={parentWallet}
-              walletList={walletList}
-              network={network}
-              modeOn={developerMode}
-              mainAddressLoading={mainAddressLoading}
-              noAddress={noAddress ?? false}
-            />
-          )}
+          <MenuDrawer
+            drawer={drawer}
+            toggleDrawer={toggleDrawer}
+            togglePop={togglePop}
+            userInfo={userInfo}
+            activeAccount={currentWallet}
+            activeParentAccount={parentWallet}
+            walletList={walletList}
+            network={network}
+            modeOn={developerMode}
+            mainAddressLoading={mainAddressLoading}
+            noAddress={noAddress ?? false}
+          />
           {appBarLabel(currentWallet)}
           <NewsDrawer />
-          {userInfo && (
-            <Popup
-              isConfirmationOpen={ispop}
-              handleCloseIconClicked={() => setPop(false)}
-              handleCancelBtnClicked={() => setPop(false)}
-              handleAddBtnClicked={() => {
-                setPop(false);
-              }}
-              userInfo={userInfo!}
-              current={currentWallet}
-              switchAccount={switchProfile}
-              profileIds={profileIds || []}
-              switchLoading={switchLoading}
-            />
-          )}
+          <Popup
+            isConfirmationOpen={ispop}
+            handleCloseIconClicked={() => setPop(false)}
+            handleCancelBtnClicked={() => setPop(false)}
+            handleAddBtnClicked={() => {
+              setPop(false);
+            }}
+            userInfo={userInfo!}
+            current={currentWallet}
+            switchAccount={switchProfile}
+            profileIds={profileIds || []}
+            switchLoading={switchLoading}
+          />
         </Toolbar>
       </AppBar>
       <StorageExceededAlert open={errorCode === 1103} onClose={() => setErrorCode(null)} />

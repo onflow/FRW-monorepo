@@ -18,6 +18,7 @@ import type { UserInfoResponse } from '@/shared/types/network-types';
 import { type WalletAccount } from '@/shared/types/wallet-types';
 import { consoleError } from '@/shared/utils/console-log';
 import { AccountListing } from '@/ui/components/account/account-listing';
+import { ProfileItemBase } from '@/ui/components/profile/profile-item-base';
 import { MenuItem } from '@/ui/components/sidebar/menu-item';
 import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
 import {
@@ -37,7 +38,7 @@ import AddAccountPopup from './AddAccountPopup';
 interface MenuDrawerProps {
   drawer: boolean;
   toggleDrawer: () => void;
-  userInfo: UserInfoResponse | null;
+  userInfo?: UserInfoResponse;
   togglePop: () => void;
   walletList: WalletAccount[];
   activeAccount: WalletAccount;
@@ -130,7 +131,7 @@ const MenuDrawer = ({
           height: '100%',
         }}
       >
-        <Box sx={{ padding: '24px 16px' }}>
+        <Box sx={{ padding: '0px 0px 24px 0px' }}>
           <Box
             sx={{
               display: 'flex',
@@ -139,38 +140,14 @@ const MenuDrawer = ({
               justifyContent: 'space-between',
             }}
           >
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              {userInfo ? (
-                <img
-                  src={userInfo.avatar}
-                  width={48}
-                  height={48}
-                  style={{ backgroundColor: COLOR_GREEN_FLOW_THEME_16FF99, borderRadius: '8px' }}
-                />
-              ) : (
-                <Skeleton variant="circular" width={48} height={48} />
-              )}
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <ListItemText
-                  sx={{ fontSize: '14px', fontWeight: '700', marginLeft: '16px' }}
-                  primary={
-                    ((!mainAddressLoading || noAddress) && userInfo?.nickname) || (
-                      <Skeleton variant="text" width={100} />
-                    )
-                  }
-                />
-              </Box>
-            </Box>
-            <Box sx={{ paddingTop: '4px', px: '2px' }}>
-              <IconButton
-                edge="end"
-                aria-label="close"
-                onClick={togglePop}
-                data-testid="switch-profile-button"
-              >
-                <img style={{ display: 'inline-block', width: '24px' }} src={userCircleGear} />
-              </IconButton>
-            </Box>
+            <ProfileItemBase
+              profileId={userInfo?.id}
+              selectedProfileId={userInfo?.id}
+              onClick={(_profileId: string) => togglePop()}
+              setLoadingId={() => {}}
+              userInfo={userInfo}
+              activeProfileVariant={true}
+            />
           </Box>
         </Box>
         <Box
