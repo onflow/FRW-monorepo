@@ -133,7 +133,6 @@ const Unlock = () => {
           sx={{
             height: '64px',
             padding: '16px',
-            marginBottom: '64px',
             zIndex: '999',
             backgroundColor: '#282828',
             border: '2px solid #4C4C4C',

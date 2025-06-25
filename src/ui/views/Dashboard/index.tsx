@@ -23,10 +23,8 @@ const Dashboard = () => {
       >
         <BuildIndicator />
         <NetworkIndicator network={network} emulatorMode={emulatorModeOn} />
-        <div test-id="x-overflow" style={{ overflowX: 'hidden', height: '100%' }}>
-          <div style={{ display: 'block', width: '100%' }}>
-            <WalletTab network={network} />
-          </div>
+        <div test-id="x-overflow" style={{ overflowX: 'hidden', height: '100%', width: '100%' }}>
+          <WalletTab network={network} />
         </div>
       </Box>
     </div>
