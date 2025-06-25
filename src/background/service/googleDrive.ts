@@ -1,7 +1,7 @@
 import aesjs from 'aes-js';
 import * as bip39 from 'bip39';
 
-import { consoleError, consoleLog, consoleWarn } from '@/shared/utils/console-log';
+import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 
 interface GoogleDriveFileModel {
   kind: string;
@@ -367,7 +367,8 @@ class GoogleDriveService {
 
       const decryptedMnemonic = this.decrypt(backup.data, password);
       return bip39.validateMnemonic(decryptedMnemonic);
-    } catch (_) {
+    } catch (err) {
+      consoleError('testProfileBackupDecryption - error', err);
       // Silently handle decryption errors
       return false;
     }
