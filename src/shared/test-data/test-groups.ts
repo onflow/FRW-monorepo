@@ -97,10 +97,9 @@ export const createTestGroups = (commonParams: CommonParams): ApiTestGroups => {
     ],
     prices: [
       { name: 'getUSDCPrice', params: { provider: 'binance' } },
-      { name: 'getTokenPrices', params: { storageKey: 'test', isEvm: false } },
       { name: 'getTokenPrice', params: { token: 'flow', provider: 'binance' } },
       {
-        name: 'getTokenPriceHistory',
+        name: 'getTokenPriceHistoryArray',
         params: { token: 'flow', period: 'oneDay', provider: 'binance' },
       },
     ],
@@ -135,7 +134,7 @@ export const createTestGroups = (commonParams: CommonParams): ApiTestGroups => {
         name: 'fetchFTList',
         params: { network: commonParams.network, chainType: 'flow' },
       },
-      { name: 'getNFTList', params: { network: commonParams.network } },
+      { name: 'getNFTList', params: { network: commonParams.network, chainType: 'flow' } },
     ],
     tokens: [
       {
@@ -311,8 +310,6 @@ export const createTestGroups = (commonParams: CommonParams): ApiTestGroups => {
         name: 'getEvmFT',
         params: { address: commonParams.addressEvm, network: commonParams.network },
       },
-      { name: 'getEvmFTPrice', params: {} },
-      { name: 'evmNFTList', params: {} },
       {
         name: 'getEvmNFT',
         params: { address: commonParams.addressEvm, network: commonParams.network },
@@ -356,7 +353,6 @@ export const createTestGroups = (commonParams: CommonParams): ApiTestGroups => {
     scripts: [{ name: 'cadenceScriptsV2', params: {} }],
     misc: [
       { name: 'getNews', params: {} },
-      { name: 'getLatestVersion', params: {} },
       { name: 'validateRecaptcha', params: { token: commonParams.token } },
       { name: 'pingNetwork', params: { network: commonParams.network } },
       {

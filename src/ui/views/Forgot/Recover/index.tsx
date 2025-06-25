@@ -3,13 +3,12 @@ import { Box } from '@mui/system';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import RegisterHeader from '@/ui/FRWComponent/LandingPages/RegisterHeader';
-import SlideLeftRight from '@/ui/FRWComponent/SlideLeftRight';
-import SlideRelative from '@/ui/FRWComponent/SlideRelative';
+import BackButtonIcon from '@/ui/components/iconfont/IconBackButton';
+import RegisterHeader from '@/ui/components/LandingPages/RegisterHeader';
+import SlideLeftRight from '@/ui/components/SlideLeftRight';
+import SlideRelative from '@/ui/components/SlideRelative';
 import { storage } from 'background/webapi';
 import { useWallet } from 'ui/utils';
-
-import BackButtonIcon from '../../../../components/iconfont/IconBackButton';
 
 import RecoverPage from './RecoverPage';
 import ShowKey from './ShowKey';

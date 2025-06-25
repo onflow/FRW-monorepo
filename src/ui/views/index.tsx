@@ -4,8 +4,7 @@ import React from 'react';
 import { HashRouter as Router, Route, useLocation } from 'react-router-dom';
 
 import themeOptions from '@/ui/style/LLTheme';
-import { NewsProvider } from '@/ui/utils/NewsContext';
-import { PrivateRoute } from 'ui/component';
+import PrivateRoute from 'ui/components/PrivateRoute';
 import { WalletProvider, useWallet } from 'ui/utils';
 
 // Uncomment this when we need to test api-test
@@ -62,9 +61,7 @@ const App = ({ wallet }: { wallet: any }) => {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <WalletProvider wallet={wallet}>
-        <NewsProvider>
-          <Main />
-        </NewsProvider>
+        <Main />
       </WalletProvider>
     </ThemeProvider>
   );

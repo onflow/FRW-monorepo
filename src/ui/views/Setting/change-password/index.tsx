@@ -13,77 +13,26 @@ import {
   Typography,
 } from '@mui/material';
 import Box from '@mui/material/Box';
-import { makeStyles } from '@mui/styles';
+
 import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import CheckCircleIcon from '@/components/iconfont/IconCheckmark';
-import CancelIcon from '@/components/iconfont/IconClose';
 import { consoleError } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
-import { LLHeader } from '@/ui/FRWComponent/LLHeader';
-import PasswordForm from '@/ui/FRWComponent/PasswordForm';
+import PasswordForm from '@/ui/components/PasswordForm';
+import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
+import CancelIcon from '@/ui/components/iconfont/IconClose';
+import { LLHeader } from '@/ui/components/LLHeader';
+import SlideRelative from '@/ui/components/SlideRelative';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from '@/ui/utils';
 
 import { GoogleWarningDialog } from './google-warning';
 import { ProfileBackupSelectionDialog } from './profile-backup-selection';
 
-const useStyles = makeStyles(() => ({
-  customInputLabel: {
-    '& legend': {
-      visibility: 'visible',
-    },
-  },
-  inputBox: {
-    width: '100%',
-    height: '48px',
-    padding: '18px',
-    zIndex: '999',
-    border: '1px solid #4C4C4C',
-    borderRadius: '8px',
-    boxSizing: 'border-box',
-    '&.Mui-focused': {
-      border: '1px solid #FAFAFA',
-      boxShadow: '0px 8px 12px 4px rgba(76, 76, 76, 0.24)',
-    },
-  },
-  inputBox2: {
-    width: '355px',
-    height: '48px',
-    padding: '18px',
-    marginLeft: '18px',
-    marginRight: '18px',
-    zIndex: '999',
-    border: '1px solid #4C4C4C',
-    borderRadius: '8px',
-    boxSizing: 'border-box',
-    '&.Mui-focused': {
-      border: '1px solid #FAFAFA',
-      boxShadow: '0px 8px 12px 4px rgba(76, 76, 76, 0.24)',
-    },
-  },
-  inputBox3: {
-    width: '355px',
-    height: '48px',
-    padding: '18px',
-    marginLeft: '18px',
-    marginRight: '18px',
-    zIndex: '999',
-    border: '1px solid #4C4C4C',
-    borderRadius: '8px',
-    boxSizing: 'border-box',
-    '&.Mui-focused': {
-      border: '1px solid #FAFAFA',
-      boxShadow: '0px 8px 12px 4px rgba(76, 76, 76, 0.24)',
-    },
-  },
-}));
-
 const ChangePassword = () => {
-  const classes = useStyles();
   const wallet = useWallet();
-  const { clearProfileData } = useProfiles();
+
   const [isCurrentPasswordVisible, setCurrentPasswordVisible] = useState(false);
   const [password, setPassword] = useState(DEFAULT_PASSWORD);
   const [confirmPassword, setConfirmPassword] = useState(DEFAULT_PASSWORD);
@@ -200,7 +149,6 @@ const ChangePassword = () => {
           await wallet
             .lockWallet()
             .then(() => {
-              clearProfileData();
               history.push('/unlock');
             })
             .catch((error) => {
@@ -224,7 +172,7 @@ const ChangePassword = () => {
         }
       }
     },
-    [confirmCurrentPassword, confirmPassword, wallet, clearProfileData, history, error]
+    [confirmCurrentPassword, confirmPassword, wallet, history, error]
   );
 
   const changePasswordWithBackups = useCallback(
@@ -253,7 +201,6 @@ const ChangePassword = () => {
           await wallet
             .lockWallet()
             .then(() => {
-              clearProfileData();
               history.push('/unlock');
             })
             .catch((error) => {
@@ -283,7 +230,7 @@ const ChangePassword = () => {
         setStatusMessage('');
       }
     },
-    [confirmCurrentPassword, confirmPassword, wallet, clearProfileData, history]
+    [confirmCurrentPassword, confirmPassword, wallet, history]
   );
 
   const handleChangePasswordClick = useCallback(async () => {
@@ -414,7 +361,6 @@ const ChangePassword = () => {
                 showIndicator: true,
               },
             ]}
-            className={classes.inputBox}
             requireMatch={true}
             matchFields={[1, 2]} // Match new password and confirm password
             onValidationChange={handleValidationChange}

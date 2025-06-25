@@ -1,12 +1,19 @@
-import { type ExtendedTokenInfo, type TokenFilter } from '@/shared/types/coin-types';
-import { type Currency } from '@/shared/types/wallet-types';
+import {
+  type EvmCustomTokenInfo,
+  type CustomFungibleTokenInfo,
+  type ExtendedTokenInfo,
+  type TokenFilter,
+} from '@/shared/types/coin-types';
+import { triggerRefresh } from '@/shared/utils/cache-data-access';
 import {
   type ChildAccountFtStore,
   childAccountFtKey,
   coinListKey,
   tokenFilterKey,
+  tokenListKey,
 } from '@/shared/utils/cache-data-keys';
 import { setUserData } from '@/shared/utils/user-data-access';
+import { evmCustomTokenKey } from '@/shared/utils/user-data-keys';
 
 import { useCachedData, useUserData } from './use-data';
 
@@ -44,4 +51,18 @@ export const useChildAccountFt = (
       ? childAccountFtKey(network, parentAddress, childAccount)
       : null
   );
+};
+
+export const useAllTokenInfo = (network: string, chainType: string) => {
+  return useCachedData<CustomFungibleTokenInfo[]>(
+    network && chainType ? tokenListKey(network, chainType) : null
+  );
+};
+
+export const refreshEvmToken = (network: string) => {
+  return triggerRefresh(tokenListKey(network, 'evm'));
+};
+
+export const useEvmCustomTokens = (network: string) => {
+  return useUserData<EvmCustomTokenInfo[]>(evmCustomTokenKey(network));
 };

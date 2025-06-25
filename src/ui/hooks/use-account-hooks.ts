@@ -1,15 +1,17 @@
+import { useMemo } from 'react';
+
 import {
   CURRENT_ID_KEY,
   KEYRING_STATE_CURRENT_KEY,
+  type VaultEntryV2,
+  type VaultEntryV3,
   type KeyringState,
-  VaultEntryV2,
 } from '@/shared/types/keyring-types';
 import {
-  type ChildAccountMap,
   type MainAccount,
-  type MainAccountBalance,
-  type EvmAddress,
   type WalletAccount,
+  type PendingTransaction,
+  getActiveAccountTypeForAddress,
 } from '@/shared/types/wallet-types';
 import {
   childAccountsKey,
@@ -19,9 +21,10 @@ import {
   userInfoCachekey,
   registerStatusKey,
   type UserInfoStore,
-  supportedCurrenciesKey,
-  type SupportedCurrenciesStore,
   childAccountAllowTypesKey,
+  type MainAccountStorageBalanceStore,
+  mainAccountStorageBalanceKey,
+  pendingAccountCreationTransactionsKey,
 } from '@/shared/utils/cache-data-keys';
 import {
   activeAccountsKey,
@@ -46,6 +49,15 @@ export const useAccountBalance = (
   address: string | undefined | null
 ) => {
   return useCachedData<string>(network && address ? accountBalanceKey(network, address) : null);
+};
+
+export const useMainAccountStorageBalance = (
+  network: string | undefined | null,
+  address: string | undefined | null
+) => {
+  return useCachedData<MainAccountStorageBalanceStore>(
+    network && address ? mainAccountStorageBalanceKey(network, address) : null
+  );
 };
 
 export const useChildAccounts = (
@@ -104,6 +116,23 @@ export const useActiveAccounts = (
   return activeAccounts;
 };
 
+export const useActiveAccountType = (
+  network: string | undefined | null,
+  publicKey: string | undefined | null
+) => {
+  const activeAccounts = useActiveAccounts(network, publicKey);
+
+  const activeAccountType = useMemo(
+    () =>
+      getActiveAccountTypeForAddress(
+        activeAccounts?.currentAddress ?? null,
+        activeAccounts?.parentAddress ?? null
+      ),
+    [activeAccounts?.currentAddress, activeAccounts?.parentAddress]
+  );
+  return activeAccountType;
+};
+
 export const useUserWallets = () => {
   return useUserData<UserWalletStore>(userWalletsKey);
 };
@@ -117,7 +146,7 @@ export const useKeyringIds = () => {
   if (!keyringState) {
     return null;
   }
-  return keyringState.vault.map((vaultEntry) => vaultEntry.id);
+  return keyringState.vault?.map((vaultEntry: VaultEntryV2 | VaultEntryV3) => vaultEntry.id) ?? [];
 };
 
 export const useRegisterStatus = (pubKey: string | undefined | null) => {
@@ -126,4 +155,13 @@ export const useRegisterStatus = (pubKey: string | undefined | null) => {
 
 export const usePayer = () => {
   return useUserData<string>('lilicoPayer');
+};
+
+export const usePendingAccountCreationTransactions = (
+  network: string | undefined | null,
+  pubkey: string | undefined | null
+) => {
+  return useCachedData<PendingTransaction[]>(
+    network && pubkey ? pendingAccountCreationTransactionsKey(network, pubkey) : null
+  );
 };

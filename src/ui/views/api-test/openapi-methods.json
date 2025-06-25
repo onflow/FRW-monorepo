@@ -81,15 +81,6 @@
     "params": ["provider"]
   },
   {
-    "name": "getTokenPrices",
-    "isAsync": true,
-    "fullBody": "async (storageKey, isEvm = false) => {\n        const cachedPrices = await _background_webapi__WEBPACK_IMPORTED_MODULE_6__.storage.getExpiry(storageKey);\n        if (cachedPrices) {\n            return cachedPrices;\n        }\n        const pricesMap = {};\n        try {\n            const response = await this.sendRequest('GET', '/api/prices', {}, {}, consts__WEBPACK_IMPORTED_MODULE_13__.WEB_NEXT_URL);\n            const data = response?.data || [];\n            data.forEach((token) => {\n                if (isEvm && token.evmAddress) {\n                    // EVM price\n                    const { rateToUSD, evmAddress } = token;\n                    const key = evmAddress.toLowerCase();\n                    pricesMap[key] = Number(rateToUSD).toFixed(8);\n                }\n                else if (!isEvm && token.contractName && token.contractAddress) {\n                    // Flow chain price\n                    const { rateToUSD, contractName, contractAddress } = token;\n                    const key = `${contractName.toLowerCase()}${contractAddress.toLowerCase()}`;\n                    pricesMap[key] = Number(rateToUSD).toFixed(8);\n                }\n                else if (isEvm && token.symbol) {\n                    // Handle fallback for EVM tokens\n                    const { rateToUSD, symbol } = token;\n                    const key = symbol.toUpperCase();\n                    pricesMap[key] = Number(rateToUSD).toFixed(8);\n                }\n            });\n        }\n        catch (error) {\n            console.error('Error fetching prices:', error);\n        }\n        await _background_webapi__WEBPACK_IMPORTED_MODULE_6__.storage.setExpiry(storageKey, pricesMap, 300000);\n        return pricesMap;\n    }",
-    "usesSendRequest": true,
-    "usesFetchDirectly": false,
-    "basicSignature": "async (storageKey, isEvm = false) =>",
-    "params": ["storageKey", "isEvm = false"]
-  },
-  {
     "name": "getPricesBySymbol",
     "isAsync": true,
     "fullBody": "async (symbol, data) => {\n        const key = symbol.toUpperCase();\n        return data[key];\n    }",
@@ -147,7 +138,7 @@
     ]
   },
   {
-    "name": "getTokenPriceHistory",
+    "name": "getTokenPriceHistoryArray",
     "isAsync": true,
     "fullBody": "async (token, period = _networkModel__WEBPACK_IMPORTED_MODULE_14__.Period.oneDay, provider = _networkModel__WEBPACK_IMPORTED_MODULE_14__.PriceProvider.binance) => {\n        let after = dayjs__WEBPACK_IMPORTED_MODULE_1___default()();\n        const periods = (0,_shared_utils_getPeriodFrequency__WEBPACK_IMPORTED_MODULE_9__.getPeriodFrequency)(period);\n        const providers = this.getPriceProvider(token);\n        if (providers.length === 0) {\n            throw new Error('no price provider found');\n        }\n        switch (period) {\n            case _networkModel__WEBPACK_IMPORTED_MODULE_14__.Period.oneDay:\n                after = after.subtract(1, 'days');\n                break;\n            case _networkModel__WEBPACK_IMPORTED_MODULE_14__.Period.oneWeek:\n                after = after.subtract(7, 'days');\n                break;\n            case _networkModel__WEBPACK_IMPORTED_MODULE_14__.Period.oneMonth:\n                after = after.subtract(1, 'months');\n                break;\n            case _networkModel__WEBPACK_IMPORTED_MODULE_14__.Period.threeMonth:\n                after = after.subtract(3, 'months');\n                break;\n            case _networkModel__WEBPACK_IMPORTED_MODULE_14__.Period.oneYear:\n                after = after.subtract(1, 'years');\n                break;\n        }\n        const config = this.store.config.crypto_history;\n        const data = await this.sendRequest(config.method, config.path, {\n            provider,\n            pair: this.getTokenPair(token, provider),\n            after: period === _networkModel__WEBPACK_IMPORTED_MODULE_14__.Period.all ? '' : after.unix(),\n            periods,\n        });\n        return data.data.result;\n    }",
     "usesSendRequest": true,
@@ -308,7 +299,7 @@
     "usesSendRequest": true,
     "usesFetchDirectly": false,
     "basicSignature": "async (network) =>",
-    "params": ["network"]
+    "params": ["network", "chainType"]
   },
   {
     "name": "getAddressBook",
@@ -563,15 +554,6 @@
     "params": ["name", "network = ''"]
   },
   {
-    "name": "getTokenInfoByContract",
-    "isAsync": true,
-    "fullBody": "async (contractName) => {\n        // FIX ME: Get defaultTokenList from firebase remote config\n        const coins = await remoteFetch.flowCoins();\n        return coins.find((item) => item.contract_name.toLowerCase() === contractName.toLowerCase());\n    }",
-    "usesSendRequest": false,
-    "usesFetchDirectly": false,
-    "basicSignature": "async (contractName) =>",
-    "params": ["contractName"]
-  },
-  {
     "name": "getAllToken",
     "isAsync": true,
     "fullBody": "async () => {\n        // FIX ME: Get defaultTokenList from firebase remote config\n        const coins = await remoteFetch.flowCoins();\n        return coins;\n    }",
@@ -581,36 +563,9 @@
     "params": []
   },
   {
-    "name": "getFeatureFlags",
-    "isAsync": true,
-    "fullBody": "async () => {\n        try {\n            const config = await remoteFetch.remoteConfig();\n            return config.features;\n        }\n        catch (err) {\n            console.error(err);\n        }\n        // By default, all feature flags are disabled\n        return {};\n    }",
-    "usesSendRequest": false,
-    "usesFetchDirectly": false,
-    "basicSignature": "async () =>",
-    "params": []
-  },
-  {
-    "name": "getFeatureFlag",
-    "isAsync": true,
-    "fullBody": "async (featureFlag) => {\n        const flags = await this.getFeatureFlags();\n        return !!flags[featureFlag];\n    }",
-    "usesSendRequest": false,
-    "usesFetchDirectly": false,
-    "basicSignature": "async (featureFlag) =>",
-    "params": ["featureFlag"]
-  },
-  {
     "name": "getAllTokenInfo",
     "isAsync": true,
     "fullBody": "async (fiterNetwork = true) => {\n        const network = await _index__WEBPACK_IMPORTED_MODULE_15__.userWalletService.getNetwork();\n        const list = await this.getTokenList(network);\n        return fiterNetwork ? list.filter((item) => item.address) : list;\n    }",
-    "usesSendRequest": false,
-    "usesFetchDirectly": false,
-    "basicSignature": "async (fiterNetwork = true) =>",
-    "params": ["fiterNetwork = true"]
-  },
-  {
-    "name": "getAllNft",
-    "isAsync": true,
-    "fullBody": "async (fiterNetwork = true) => {\n        const list = await remoteFetch.nftCollection();\n        // const network = await userWalletService.getNetwork();\n        return list;\n    }",
     "usesSendRequest": false,
     "usesFetchDirectly": false,
     "basicSignature": "async (fiterNetwork = true) =>",
@@ -732,15 +687,6 @@
     "usesFetchDirectly": false,
     "basicSignature": "async (network) =>",
     "params": ["network"]
-  },
-  {
-    "name": "getEnabledTokenList",
-    "isAsync": true,
-    "fullBody": "async (network = '') => {\n        // const tokenList = await remoteFetch.flowCoins();\n        if (!network) {\n            network = await _index__WEBPACK_IMPORTED_MODULE_15__.userWalletService.getNetwork();\n        }\n        const address = await _index__WEBPACK_IMPORTED_MODULE_15__.userWalletService.getCurrentAddress();\n        const tokenList = await this.getTokenList(network);\n        let values;\n        const isChild = await _index__WEBPACK_IMPORTED_MODULE_15__.userWalletService.getActiveWallet();\n        try {\n            if (isChild && isChild !== 'evm') {\n                values = await this.isLinkedAccountTokenListEnabled(address);\n            }\n            else if (!isChild) {\n                values = await this.isTokenListEnabled(address);\n            }\n        }\n        catch (error) {\n            console.error('Error isTokenListEnabled token:');\n            values = {};\n        }\n        const tokenItems = [];\n        const tokenMap = {};\n        if (isChild !== 'evm') {\n            tokenList.forEach((token) => {\n                const tokenId = `A.${token.address.slice(2)}.${token.contractName}`;\n                // console.log(tokenMap,'tokenMap',values)\n                if (!!values[tokenId]) {\n                    tokenMap[token.name] = token;\n                }\n            });\n        }\n        // const data = values.map((value, index) => ({isEnabled: value, token: tokenList[index]}))\n        // return values\n        //   .map((value, index) => {\n        //     if (value) {\n        //       return tokens[index];\n        //     }\n        //   })\n        //   .filter((item) => item);\n        Object.keys(tokenMap).map((key, idx) => {\n            const item = tokenMap[key];\n            tokenItems.push(item);\n        });\n        return tokenItems;\n    }",
-    "usesSendRequest": false,
-    "usesFetchDirectly": false,
-    "basicSignature": "async (network = '') =>",
-    "params": ["network = ''"]
   },
   {
     "name": "isTokenStorageEnabled",
@@ -924,24 +870,6 @@
     "params": ["address", "network"]
   },
   {
-    "name": "getEvmFTPrice",
-    "isAsync": true,
-    "fullBody": "async () => {\n        const gitPrice = await _background_webapi__WEBPACK_IMPORTED_MODULE_6__.storage.getExpiry('EVMPrice');\n        if (gitPrice) {\n            return gitPrice;\n        }\n        else {\n            const { data } = await this.sendRequest('GET', '/api/prices', {}, {}, consts__WEBPACK_IMPORTED_MODULE_13__.WEB_NEXT_URL);\n            _background_webapi__WEBPACK_IMPORTED_MODULE_6__.storage.setExpiry('EVMPrice', data, 6000);\n            return data;\n        }\n    }",
-    "usesSendRequest": true,
-    "usesFetchDirectly": false,
-    "basicSignature": "async () =>",
-    "params": []
-  },
-  {
-    "name": "evmNFTList",
-    "isAsync": true,
-    "fullBody": "async () => {\n        const { data } = await this.sendRequest('GET', '/api/evm/nfts', {}, {}, consts__WEBPACK_IMPORTED_MODULE_13__.WEB_NEXT_URL);\n        return data;\n    }",
-    "usesSendRequest": true,
-    "usesFetchDirectly": false,
-    "basicSignature": "async () =>",
-    "params": []
-  },
-  {
     "name": "getEvmNFT",
     "isAsync": true,
     "fullBody": "async (address, network) => {\n        const { data } = await this.sendRequest('GET', `/api/evm/${address}/nfts?network=${network}`, {}, {}, consts__WEBPACK_IMPORTED_MODULE_13__.WEB_NEXT_URL);\n        return data;\n    }",
@@ -1030,15 +958,6 @@
     "usesFetchDirectly": false,
     "basicSignature": "async (currentWallet, keys, pubKTuple, wallet, isChild) =>",
     "params": ["currentWallet", "keys", "pubKTuple", "wallet", "isChild"]
-  },
-  {
-    "name": "getLatestVersion",
-    "isAsync": true,
-    "fullBody": "async () => {\n        // Get latest version from storage cache first\n        const cached = await _background_webapi__WEBPACK_IMPORTED_MODULE_6__.storage.getExpiry('latestVersion');\n        if (cached) {\n            return cached;\n        }\n        try {\n            const result = await this.sendRequest('GET', \"/config/config.dev.json\", {}, {}, \"https://test.lilico.app\");\n            const version = result.version;\n            // Cache for 1 hour\n            await _background_webapi__WEBPACK_IMPORTED_MODULE_6__.storage.setExpiry('latestVersion', version, 3600000);\n            return version;\n        }\n        catch (error) {\n            console.error('Error fetching latest version:', error);\n            return chrome.runtime.getManifest().version; // Fallback to current version\n        }\n    }",
-    "usesSendRequest": true,
-    "usesFetchDirectly": false,
-    "basicSignature": "async () =>",
-    "params": []
   },
   {
     "name": "getUserTokens",

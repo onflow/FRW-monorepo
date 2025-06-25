@@ -13,13 +13,13 @@ import {
 } from '@/shared/types/network-types';
 import { consoleError } from '@/shared/utils/console-log';
 import { FCLWalletConnectMethod } from '@/shared/utils/type';
-import { LLPrimaryButton, LLSecondaryButton } from 'ui/FRWComponent';
+import { LLPrimaryButton, LLSecondaryButton } from 'ui/components';
 import { useWallet } from 'ui/utils';
 
-import closeCircle from '../../../FRWAssets/image/closeCircle.png';
-import dicon from '../../../FRWAssets/image/dicon.png';
-import licon from '../../../FRWAssets/image/licon.png';
-import micone from '../../../FRWAssets/image/micone.png';
+import closeCircle from '../../../assets/image/closeCircle.png';
+import dicon from '../../../assets/image/dicon.png';
+import licon from '../../../assets/image/licon.png';
+import micone from '../../../assets/image/micone.png';
 
 import QrScannerComponent from './QrScannerComponent';
 

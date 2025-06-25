@@ -3,9 +3,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
-import AllSet from '@/ui/FRWComponent/LandingPages/AllSet';
-import LandingComponents from '@/ui/FRWComponent/LandingPages/LandingComponents';
-import RecoveryPhrase from '@/ui/FRWComponent/LandingPages/RecoveryPhrase';
+import AllSet from '@/ui/components/LandingPages/AllSet';
+import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
+import RecoveryPhrase from '@/ui/components/LandingPages/RecoveryPhrase';
 import { storage } from 'background/webapi';
 
 import DecryptWallet from './DecryptWallet';

@@ -2,20 +2,25 @@ import { Typography, Box, ButtonBase, Skeleton } from '@mui/material';
 import React, { useMemo } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import { type CoinItem, type ExtendedTokenInfo } from '@/shared/types/coin-types';
+import {
+  type CustomFungibleTokenInfo,
+  type CoinItem,
+  type ExtendedTokenInfo,
+  type EvmCustomTokenInfo,
+} from '@/shared/types/coin-types';
 import { type ActiveAccountType } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
-import buyIcon from '@/ui/FRWAssets/svg/buyIcon.svg';
-import receiveIcon from '@/ui/FRWAssets/svg/receiveIcon.svg';
-import sendIcon from '@/ui/FRWAssets/svg/sendIcon.svg';
-import swapIcon from '@/ui/FRWAssets/svg/swapIcon.svg';
-import { IconButton } from '@/ui/FRWComponent/IconButton';
+import buyIcon from '@/ui/assets/svg/buyIcon.svg';
+import receiveIcon from '@/ui/assets/svg/receiveIcon.svg';
+import sendIcon from '@/ui/assets/svg/sendIcon.svg';
+import swapIcon from '@/ui/assets/svg/swapIcon.svg';
+import { IconButton } from '@/ui/components/IconButton';
+import IconChevronRight from '@/ui/components/iconfont/IconChevronRight';
+import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useCoins } from 'ui/hooks/useCoinHook';
 
-import IconChevronRight from '../../../components/iconfont/IconChevronRight';
-import VerifiedIcon from '../../FRWAssets/svg/verfied-check.svg';
-
-import { CurrencyValue } from './CurrencyValue';
+import VerifiedIcon from '../../assets/svg/verfied-check.svg';
+import { CurrencyValue } from '../../components/TokenLists/CurrencyValue';
 
 const TokenInfoCard = ({
   tokenInfo,
@@ -23,13 +28,14 @@ const TokenInfoCard = ({
   tokenId,
   setIsOnRamp,
 }: {
-  tokenInfo: CoinItem | undefined;
+  tokenInfo: CoinItem | CustomFungibleTokenInfo | EvmCustomTokenInfo | undefined;
   accountType: ActiveAccountType;
   tokenId: string;
   setIsOnRamp: (isOnRamp: boolean) => void;
 }) => {
   const history = useHistory();
   const { coins } = useCoins();
+  const currency = useCurrency();
 
   const extendedTokenInfo: ExtendedTokenInfo | undefined = useMemo(
     () => coins?.find((coin) => coin.id.toLowerCase() === tokenId.toLowerCase()),
@@ -39,7 +45,11 @@ const TokenInfoCard = ({
   const balance = extendedTokenInfo?.balance;
 
   const toSend = () => {
-    history.push(`/dashboard/token/${tokenInfo?.symbol}/send`);
+    if (tokenInfo && 'symbol' in tokenInfo) {
+      history.push(`/dashboard/token/${tokenInfo.symbol}/send`);
+    } else {
+      history.push(`/dashboard/token/${tokenInfo?.address}/send`);
+    }
   };
 
   const getUrl = (data: ExtendedTokenInfo) => {
@@ -47,7 +57,7 @@ const TokenInfoCard = ({
       return data.extensions.website;
     }
     if (isValidEthereumAddress(data.address)) {
-      return `https://evm.flowscan.io/token/${data.address}`;
+      return `https://flowscan.io/evm/token/${data.address}`;
     } else if (data.symbol.toLowerCase() === 'flow') {
       return 'https://flow.com/';
     }
@@ -187,7 +197,11 @@ const TokenInfoCard = ({
         </Box>
         <Typography variant="body1" color="text.secondary" sx={{ fontSize: '16px' }}>
           <Box component="span" sx={{ marginRight: '0.25rem' }}>
-            <CurrencyValue value={tokenInfo?.total ?? ''} />
+            <CurrencyValue
+              value={tokenInfo && 'total' in tokenInfo ? tokenInfo.total : ''}
+              currencyCode={currency?.code ?? ''}
+              currencySymbol={currency?.symbol ?? ''}
+            />
           </Box>
         </Typography>
         <Box

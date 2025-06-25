@@ -14,8 +14,7 @@ import React from 'react';
 import Highlight from 'react-highlight';
 
 import { consoleError } from '@/shared/utils/console-log';
-
-import IconFlow from '../../../../components/iconfont/IconFlow';
+import IconFlow from '@/ui/components/iconfont/IconFlow';
 
 export const DefaultBlock = ({
   title,

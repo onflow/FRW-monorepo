@@ -1,27 +1,19 @@
 // import { useTranslation } from 'react-i18next';
 import { Typography, Box, FormControl, Input } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+
 import React, { useEffect, useRef, useState } from 'react';
 
 import { consoleError } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
-import { PasswordInput } from '@/ui/FRWComponent/PasswordComponents';
-import SlideRelative from '@/ui/FRWComponent/SlideRelative';
-import { LLPrimaryButton } from 'ui/FRWComponent';
+import { PasswordInput } from '@/ui/components/PasswordComponents';
+import CancelIcon from '@/ui/components/iconfont/IconClose';
+import SlideRelative from '@/ui/components/SlideRelative';
+import { LLPrimaryButton } from 'ui/components';
 import { useWallet } from 'ui/utils';
-
-import CancelIcon from '../../../../components/iconfont/IconClose';
-const useStyles = makeStyles(() => ({
-  customInputLabel: {
-    '& legend': {
-      visibility: 'visible',
-    },
-  },
-}));
 
 const RecoverPage = ({ dataArray, setArray, goNext }) => {
   const wallet = useWallet();
-  const classes = useStyles();
+
   const inputEl = useRef<any>(null);
   // const { t } = useTranslation();
   const [showError, setShowError] = useState(false);

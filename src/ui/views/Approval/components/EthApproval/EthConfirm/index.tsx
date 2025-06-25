@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 import { MAINNET_CHAIN_ID } from '@/shared/types/network-types';
 import { consoleError } from '@/shared/utils/console-log';
-import { LLPrimaryButton, LLSecondaryButton } from 'ui/FRWComponent';
+import { LLPrimaryButton, LLSecondaryButton } from 'ui/components';
 import { useApproval, useWallet } from 'ui/utils';
 
 import { DefaultBlock } from './DefaultBlock';

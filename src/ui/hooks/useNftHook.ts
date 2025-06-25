@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-import { type NftCollection } from '@/shared/types/network-types';
+import { type NFTModelV2, type NftCollection } from '@/shared/types/network-types';
 import { type NFTCollections, type NFTItem } from '@/shared/types/nft-types';
 import {
   evmNftIdsKey,
@@ -11,6 +11,7 @@ import {
   nftCollectionListKey,
   childAccountNftsKey,
   type ChildAccountNFTsStore,
+  nftListKey,
 } from '@/shared/utils/cache-data-keys';
 import { consoleError } from '@/shared/utils/console-log';
 
@@ -272,7 +273,7 @@ export const useNftHook = ({
   };
 };
 
-export const useNftCatalogCollections = (network: string, address: string) => {
+export const useNftCatalogCollections = (network?: string, address?: string) => {
   const collections = useCachedData<NFTCollections[]>(
     network && address ? nftCatalogCollectionsKey(network, address) : null
   );
@@ -280,7 +281,7 @@ export const useNftCatalogCollections = (network: string, address: string) => {
   return collections;
 };
 
-export const useEvmNftIds = (network: string, address: string) => {
+export const useEvmNftIds = (network?: string, address?: string) => {
   const evmNftIds = useCachedData<EvmNftIdsStore>(
     network && address ? evmNftIdsKey(network, address) : null
   );
@@ -288,29 +289,36 @@ export const useEvmNftIds = (network: string, address: string) => {
 };
 
 export const useEvmNftCollectionList = (
-  network: string,
-  address: string,
-  collectionIdentifier: string,
-  offset: number
+  network?: string,
+  address?: string,
+  collectionIdentifier?: string,
+  offset?: number
 ) => {
   const evmNftCollectionList = useCachedData<EvmNftCollectionListStore>(
-    network && address
+    network && address && collectionIdentifier && offset
       ? evmNftCollectionListKey(network, address, collectionIdentifier, `${offset}`)
       : null
   );
   return evmNftCollectionList;
 };
 
-export const useNftCollectionList = (network: string) => {
+export const useNftCollectionList = (network?: string) => {
   const nftCollectionList = useCachedData<NftCollection[]>(
     network ? nftCollectionListKey(network) : null
   );
   return nftCollectionList;
 };
 
-export const useChildAccountNfts = (network: string, parentAddress: string) => {
+export const useChildAccountNfts = (network?: string, parentAddress?: string) => {
   const childAccountNFTs = useCachedData<ChildAccountNFTsStore>(
     network && parentAddress ? childAccountNftsKey(network, parentAddress) : null
   );
   return childAccountNFTs;
+};
+
+export const useAllNftList = (network?: string, chainType?: 'evm' | 'flow') => {
+  const allNftList = useCachedData<NFTModelV2[]>(
+    network && chainType ? nftListKey(network, chainType) : null
+  );
+  return allNftList;
 };

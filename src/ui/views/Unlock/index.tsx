@@ -1,29 +1,21 @@
 // import { useTranslation } from 'react-i18next';
 import { Input, Typography, Box, FormControl, CircularProgress } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { consoleError } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
-import lilo from '@/ui/FRWAssets/image/lilo.png';
-import { LLPrimaryButton } from '@/ui/FRWComponent';
-import { PasswordInput } from '@/ui/FRWComponent/PasswordComponents';
-import SlideRelative from '@/ui/FRWComponent/SlideRelative';
+import { PasswordInput } from '@/ui/components/PasswordComponents';
+import lilo from '@/ui/assets/image/lilo.png';
+import { LLPrimaryButton } from '@/ui/components';
+import CancelIcon from '@/ui/components/iconfont/IconClose';
+import SlideRelative from '@/ui/components/SlideRelative';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet, useWalletLoaded } from '@/ui/utils';
 import { openInternalPageInTab } from '@/ui/utils/webapi';
 
-import CancelIcon from '../../../components/iconfont/IconClose';
 import './style.css';
-
-const useStyles = makeStyles(() => ({
-  customInputLabel: {
-    '& legend': {
-      visibility: 'visible',
-    },
-  },
-}));
 
 const UsernameError: React.FC = () => (
   <Box display="flex" flexDirection="row" alignItems="center">
@@ -47,7 +39,7 @@ const Unlock = () => {
   const wallet = useWallet();
   const walletIsLoaded = useWalletLoaded();
   const history = useHistory();
-  const classes = useStyles();
+
   const inputEl = useRef<any>(null);
   // const { t } = useTranslation();
   const [showPasswordError, setShowPasswordError] = useState(false);
@@ -56,7 +48,6 @@ const Unlock = () => {
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const [password, setPassword] = useState(DEFAULT_PASSWORD);
   const [unlocking, setUnlocking] = useState<boolean>(false);
-  const { clearProfileData } = useProfiles();
 
   useEffect(() => {
     if (!inputEl.current) return;
@@ -65,9 +56,9 @@ const Unlock = () => {
 
   const restPass = useCallback(async () => {
     await wallet.lockWallet();
-    clearProfileData();
+
     openInternalPageInTab('forgot');
-  }, [wallet, clearProfileData]);
+  }, [wallet]);
 
   const handleUnlock = useCallback(async () => {
     // Check the password is correct

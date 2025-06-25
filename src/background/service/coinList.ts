@@ -132,10 +132,10 @@ class CoinList {
     try {
       let tokens: ExtendedTokenInfo[] = [];
       if (isEvmAddress) {
-        const evmTokenInfo = await this.getEvmTokenInfo(network, address, currencyCode);
+        const evmTokenInfo = await this.loadEvmTokenInfo(network, address, currencyCode);
         tokens = await this.transformEvmTokenExtendedInfo(evmTokenInfo);
       } else {
-        const cadenceTokenInfo = await this.getCadenceTokenInfo(network, address, currencyCode);
+        const cadenceTokenInfo = await this.loadCadenceTokenInfo(network, address, currencyCode);
         tokens = await this.transformCadenceTokenExtendedInfo(cadenceTokenInfo);
       }
 
@@ -268,6 +268,9 @@ class CoinList {
     const childAccountFt = await getValidData<ChildAccountFtStore>(
       childAccountFtKey(network, parentAddress, childAccount)
     );
+    if (!childAccountFt) {
+      return this.loadChildAccountFt(network, parentAddress, childAccount);
+    }
     return childAccountFt;
   };
 }

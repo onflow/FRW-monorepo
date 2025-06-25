@@ -3,17 +3,19 @@ import { WalletUtils } from '@onflow/fcl';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
+import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
+import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { authnServiceDefinition, serviceDefinition } from 'background/controller/serviceDefinition';
-import flowgrey from 'ui/FRWAssets/svg/flow-grey.svg';
-import Link from 'ui/FRWAssets/svg/link.svg';
-import linkGlobe from 'ui/FRWAssets/svg/linkGlobe.svg';
-import mainnetsvg from 'ui/FRWAssets/svg/mainnet.svg';
-import testnetsvg from 'ui/FRWAssets/svg/testnet.svg';
-import { LLPrimaryButton, LLSecondaryButton, LLConnectLoading } from 'ui/FRWComponent';
+import flowgrey from 'ui/assets/svg/flow-grey.svg';
+import Link from 'ui/assets/svg/link.svg';
+import linkGlobe from 'ui/assets/svg/linkGlobe.svg';
+import mainnetsvg from 'ui/assets/svg/mainnet.svg';
+import testnetsvg from 'ui/assets/svg/testnet.svg';
+import { LLPrimaryButton, LLSecondaryButton, LLConnectLoading } from 'ui/components';
 import { useApproval, useWallet } from 'ui/utils';
 // import { CHAINS_ENUM } from 'consts';
 
-import CheckCircleIcon from '../../../../components/iconfont/IconCheckmark';
+import ShowSwitch from './ShowSwitch';
 
 interface ConnectProps {
   params: { tabId: number };
@@ -21,6 +23,7 @@ interface ConnectProps {
 
 const Connect = ({ params: { /*icon, origin,*/ tabId } }: ConnectProps) => {
   const [, resolveApproval, rejectApproval] = useApproval();
+  const { network: currentNetwork } = useNetwork();
   const wallet = useWallet();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -32,7 +35,6 @@ const Connect = ({ params: { /*icon, origin,*/ tabId } }: ConnectProps) => {
   const [title, setTitle] = useState('');
   const [msgNetwork, setMsgNetwork] = useState('testnet');
   const [showSwitch, setShowSwitch] = useState(false);
-  const [currentNetwork, setCurrent] = useState('testnet');
   const [currentAddress, setCurrentAddress] = useState('');
   const [approval, setApproval] = useState(false);
 
@@ -56,16 +58,6 @@ const Connect = ({ params: { /*icon, origin,*/ tabId } }: ConnectProps) => {
     setApproval(false);
     rejectApproval('User rejected the request.');
   }, [opener, rejectApproval, windowId]);
-
-  const handleSwitchNetwork = async () => {
-    wallet.switchNetwork(msgNetwork);
-
-    if (currentNetwork !== msgNetwork) {
-      // TODO: replace it with better UX
-      setCurrent(msgNetwork);
-      setMsgNetwork(msgNetwork);
-    }
-  };
 
   const handleAllow = async () => {
     setIsLoading(true);
@@ -163,15 +155,12 @@ const Connect = ({ params: { /*icon, origin,*/ tabId } }: ConnectProps) => {
     const address = await wallet.getCurrentAddress();
     setCurrentAddress(address!);
 
-    const network = await wallet.getNetwork();
-
-    setCurrent(network);
-    if (msgNetwork !== network && msgNetwork) {
+    if (msgNetwork !== currentNetwork && msgNetwork) {
       setShowSwitch(true);
     } else {
       setShowSwitch(false);
     }
-  }, [wallet, msgNetwork]);
+  }, [wallet, msgNetwork, currentNetwork]);
 
   useEffect(() => {
     checkNetwork();
@@ -234,17 +223,6 @@ const Connect = ({ params: { /*icon, origin,*/ tabId } }: ConnectProps) => {
       chrome.windows.onRemoved.removeListener(handleWindowRemoved);
     };
   }, [approval, handleCancel, windowId]);
-
-  const networkColor = (network: string) => {
-    switch (network) {
-      case 'mainnet':
-        return '#41CC5D';
-      case 'testnet':
-        return '#FF8A00';
-      case 'crescendo':
-        return '#CCAF21';
-    }
-  };
 
   const renderContent = () => (
     <Box>
@@ -391,115 +369,11 @@ const Connect = ({ params: { /*icon, origin,*/ tabId } }: ConnectProps) => {
   return (
     <>
       {showSwitch ? (
-        <Box
-          sx={{
-            margin: '18px 18px 0px 18px',
-            display: 'flex',
-            flexDirection: 'column',
-            borderRadius: '12px',
-            height: '506px',
-            background: 'linear-gradient(0deg, #121212, #11271D)',
-          }}
-        >
-          <Box sx={{ display: 'flex', flexDirection: 'column', margin: '18px', gap: '18px' }}>
-            <Divider />
-            <Typography sx={{ textAlign: 'center', fontSize: '20px', color: '#E6E6E6' }}>
-              Allow this site to switch <br />
-              the network?
-            </Typography>
-            <Stack direction="row" spacing={1} sx={{ alignItems: 'flex-start', marginTop: '18px' }}>
-              <Typography sx={{ textAlign: 'center', color: '#BABABA', fontSize: '14px' }}>
-                This action will change your current network from{' '}
-                <Typography sx={{ display: 'inline', color: '#E6E6E6' }}>
-                  {' '}
-                  {currentNetwork}
-                </Typography>{' '}
-                to{' '}
-                <Typography sx={{ display: 'inline', color: '#E6E6E6' }}> {msgNetwork}</Typography>.
-              </Typography>
-            </Stack>
-          </Box>
-          <Stack
-            direction="column"
-            spacing="18px"
-            sx={{ justifyContent: 'space-between', width: '100%' }}
-          >
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr 1fr',
-                justifyContent: 'center',
-                alignItems: 'stretch',
-              }}
-            >
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <img
-                  style={{
-                    height: '60px',
-                    width: '60px',
-                    padding: '18px',
-                    borderRadius: '30px',
-                    backgroundColor: networkColor(currentNetwork),
-                    objectFit: 'cover',
-                  }}
-                  src={testnetsvg}
-                />
-                <Typography
-                  sx={{
-                    fontSize: '14px',
-                    color: '#E6E6E6',
-                    fontWeight: 'bold',
-                    width: '100%',
-                    pt: '4px',
-                    textAlign: 'center',
-                  }}
-                >
-                  {currentNetwork}
-                </Typography>
-              </Box>
-              <img style={{ width: '116px' }} src={Link} />
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <img
-                  style={{
-                    height: '60px',
-                    width: '60px',
-                    padding: '18px',
-                    borderRadius: '30px',
-                    backgroundColor: networkColor(msgNetwork),
-                    objectFit: 'cover',
-                  }}
-                  src={mainnetsvg}
-                />
-                <Typography
-                  sx={{
-                    fontSize: '14px',
-                    color: '#E6E6E6',
-                    fontWeight: 'bold',
-                    width: '100%',
-                    pt: '4px',
-                    textAlign: 'center',
-                  }}
-                >
-                  {msgNetwork}
-                </Typography>
-              </Box>
-            </Box>
-          </Stack>
-          <Box sx={{ flexGrow: 1 }} />
-          <Stack direction="row" spacing={1} sx={{ paddingBottom: '32px' }}>
-            <LLSecondaryButton
-              label={chrome.i18n.getMessage('Cancel')}
-              fullWidth
-              onClick={handleCancel}
-            />
-            <LLPrimaryButton
-              label={chrome.i18n.getMessage('Switch__Network')}
-              fullWidth
-              type="submit"
-              onClick={handleSwitchNetwork}
-            />
-          </Stack>
-        </Box>
+        <ShowSwitch
+          currentNetwork={currentNetwork}
+          msgNetwork={msgNetwork}
+          onCancel={handleCancel}
+        />
       ) : (
         <Box>{renderContent()}</Box>
       )}

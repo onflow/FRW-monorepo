@@ -1,94 +1,52 @@
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import SettingsIcon from '@mui/icons-material/Settings';
-import {
-  AppBar,
-  Toolbar,
-  Typography,
-  IconButton,
-  Drawer,
-  List,
-  Button,
-  Skeleton,
-  CircularProgress,
-  Chip,
-} from '@mui/material';
+import { AppBar, Toolbar, Typography, IconButton, Drawer, Button, Skeleton } from '@mui/material';
 import Box from '@mui/material/Box';
 import { StyledEngineProvider } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
-import { makeStyles } from '@mui/styles';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
-import {
-  type WalletAccount,
-  type WalletAddress,
-  type ActiveChildType_depreciated,
-  type LoggedInAccountWithIndex,
-} from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
-import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
+import { AccountAvatar } from '@/ui/components/account/account-avatar';
+import IconCopy from '@/ui/components/iconfont/IconCopy';
+import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
+import { useNews } from '@/ui/hooks/use-news';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useNews } from '@/ui/utils/NewsContext';
+import { useTransferList } from '@/ui/hooks/useTransferListHook';
 import { useWallet, formatAddress, useWalletLoaded } from 'ui/utils';
 
-import IconCopy from '../../../components/iconfont/IconCopy';
-
-import MainAccountsComponent from './Components/MainAccountsComponent';
 import MenuDrawer from './Components/MenuDrawer';
 import NewsView from './Components/NewsView';
 import Popup from './Components/Popup';
 import SwitchAccountCover from './Components/SwitchAccountCover';
 
-const useStyles = makeStyles(() => ({
-  appBar: {
-    zIndex: 1399,
-  },
-  paper: {
-    background: '#282828',
-  },
-  active: {
-    background: '#BABABA14',
-    borderRadius: '12px',
-  },
-}));
-
 const Header = ({ _loading = false }) => {
   const usewallet = useWallet();
   const walletLoaded = useWalletLoaded();
-  const classes = useStyles();
   const history = useHistory();
   const location = useLocation();
 
-  const { network, developerMode } = useNetwork();
+  const { developerMode } = useNetwork();
   const {
-    mainAddress,
+    network,
     currentWallet,
-    evmWallet,
-    parentWalletIndex: currentWalletIndex,
-    childAccounts,
+    parentWallet,
     walletList,
-    evmLoading,
     userInfo,
-    otherAccounts,
     mainAddressLoading,
-    clearProfileData,
     profileIds,
     noAddress,
-    registerStatus,
   } = useProfiles();
 
+  const { occupied: pendingTransactions } = useTransferList();
   const [drawer, setDrawer] = useState(false);
-
-  const [isPending, setIsPending] = useState(false);
 
   const [ispop, setPop] = useState(false);
 
   const [switchLoading, setSwitchLoading] = useState(false);
-  const [expandAccount, setExpandAccount] = useState(false);
-  const [, setErrorMessage] = useState('');
-  const [errorCode, setErrorCode] = useState(null);
 
   // News Drawer
   const [showNewsDrawer, setShowNewsDrawer] = useState(false);
@@ -118,7 +76,7 @@ const Header = ({ _loading = false }) => {
     }
   }, [history, location.pathname]);
 
-  const switchAccount = useCallback(
+  const switchProfile = useCallback(
     async (profileId: string) => {
       setSwitchLoading(true);
       setPop(false);
@@ -133,7 +91,6 @@ const Header = ({ _loading = false }) => {
         // await usewallet.clearWallet();
         await usewallet.switchProfile(profileId);
         // await usewallet.switchNetwork(switchingTo);
-        clearProfileData();
       } catch (error) {
         consoleError('Error during account switch:', error);
         //if cannot login directly with current password switch to unlock page
@@ -143,77 +100,22 @@ const Header = ({ _loading = false }) => {
         setSwitchLoading(false);
       }
     },
-    [usewallet, history, clearProfileData]
+    [usewallet, history]
   );
 
-  const setWallets = async (
-    walletInfo: WalletAccount,
-    key: ActiveChildType_depreciated | null,
-    index: number | null = null
-  ) => {
-    await usewallet.setActiveWallet(walletInfo, key, index);
+  const [errorCode, setErrorCode] = useState<number | null>(null);
 
-    // Navigate if needed
-    history.push('/dashboard');
-    setDrawer(false);
-    //  window.location.reload();
-  };
-
-  const transactionHandler = (request) => {
-    // This is just to handle pending transactions
-    // The header will listen to the transactionPending event
-    // It shows spinner on the header when there is a pending transaction
-    if (request.msg === 'transactionPending') {
-      setIsPending(true);
-    }
-    if (request.msg === 'transactionDone') {
-      setIsPending(false);
-    }
+  const transactionHandler = (request: {
+    msg: string;
+    errorMessage: string;
+    errorCode: number;
+  }) => {
     // The header should handle transactionError events
     if (request.msg === 'transactionError') {
       consoleWarn('transactionError', request.errorMessage, request.errorCode);
       // The error message is not used anywhere else for now
-      setErrorMessage(request.errorMessage);
       setErrorCode(request.errorCode);
     }
-    return true;
-  };
-
-  const checkPendingTx = useCallback(async () => {
-    const network = await usewallet.getNetwork();
-
-    const result = await chrome.storage.session.get('transactionPending');
-    const now = new Date();
-    if (result.transactionPending?.date) {
-      const diff = now.getTime() - result.transactionPending.date.getTime();
-      const inMins = Math.round(diff / 60000);
-      if (inMins > 5) {
-        await chrome.storage.session.remove('transactionPending');
-        return;
-      }
-    }
-    if (
-      result &&
-      Object.keys(result).length !== 0 &&
-      network === result.transactionPending.network
-    ) {
-      setIsPending(true);
-      usewallet.listenTransaction(result.transactionPending.txId, false);
-    } else {
-      setIsPending(false);
-    }
-  }, [usewallet]);
-
-  const networkColor = (network: string) => {
-    switch (network) {
-      case 'mainnet':
-        return '#41CC5D';
-      case 'testnet':
-        return '#FF8A00';
-      case 'crescendo':
-        return '#CCAF21';
-    }
-    return '#41CC5D';
   };
 
   const checkAuthStatus = useCallback(async () => {
@@ -222,9 +124,7 @@ const Header = ({ _loading = false }) => {
   }, [usewallet]);
 
   useEffect(() => {
-    checkPendingTx();
     checkAuthStatus();
-
     chrome.runtime.onMessage.addListener(transactionHandler);
     /**
      * Fired when a message is sent from either an extension process or a content script.
@@ -232,42 +132,7 @@ const Header = ({ _loading = false }) => {
     return () => {
       chrome.runtime.onMessage.removeListener(transactionHandler);
     };
-  }, [checkAuthStatus, checkPendingTx, network]);
-
-  // Function to construct GitHub comparison URL
-  const getComparisonUrl = useCallback(() => {
-    const repoUrl = process.env.REPO_URL || 'https://github.com/onflow/FRW-Extension';
-    const latestTag = process.env.LATEST_TAG || '';
-    const commitSha = process.env.COMMIT_SHA || '';
-
-    if (latestTag && commitSha) {
-      return `${repoUrl}/compare/${latestTag}...${commitSha}`;
-    }
-
-    return `${repoUrl}/commits`;
-  }, []);
-
-  const createWalletList = (props: WalletAccount) => {
-    return (
-      <List component="nav" key={props.id} sx={{ mb: '0', padding: 0 }}>
-        <MainAccountsComponent
-          network={network}
-          props_id={props.id}
-          name={props.name}
-          address={props.address as WalletAddress}
-          icon={props.icon}
-          color={props.color}
-          setWallets={setWallets}
-          currentWalletIndex={currentWalletIndex}
-          currentWallet={currentWallet}
-          mainAddress={mainAddress!}
-          setExpandAccount={setExpandAccount}
-          expandAccount={expandAccount}
-          walletList={walletList}
-        />
-      </List>
-    );
-  };
+  }, [checkAuthStatus, network]);
 
   const NewsDrawer = () => {
     return (
@@ -275,13 +140,13 @@ const Header = ({ _loading = false }) => {
         open={showNewsDrawer}
         anchor="top"
         onClose={toggleNewsDrawer}
-        classes={{ paper: classes.paper }}
         PaperProps={{
           sx: {
             width: '100%',
             marginTop: '56px',
             marginBottom: '144px',
             bgcolor: 'background.paper',
+            background: '#282828',
           },
         }}
       >
@@ -289,7 +154,6 @@ const Header = ({ _loading = false }) => {
       </Drawer>
     );
   };
-  const deploymentEnv = process.env.DEPLOYMENT_ENV || 'local';
 
   interface AppBarLabelProps {
     address: string;
@@ -301,99 +165,22 @@ const Header = ({ _loading = false }) => {
 
     return (
       <Toolbar sx={{ height: '56px', width: '100%', display: 'flex', px: '0px' }}>
-        <Box sx={{ flex: '0 0 68px', position: 'relative', display: 'flex', alignItems: 'center' }}>
-          {isPending && (
-            <CircularProgress
-              size={'28px'}
-              sx={{
-                position: 'absolute',
-                width: '28px',
-                height: '28px',
-                left: '-1px',
-                top: '-1px',
-                color: networkColor(network),
-              }}
-            />
-          )}
-          <IconButton
-            edge="start"
-            color="inherit"
-            aria-label="menu"
+        <Box
+          sx={{ flex: '0 0 68px', position: 'relative', display: 'flex', alignItems: 'center' }}
+          data-testid="account-menu-button"
+        >
+          <AccountAvatar
+            network={network}
+            emoji={currentWallet.icon}
+            color={currentWallet.color}
+            parentEmoji={
+              parentWallet.address !== currentWallet.address ? parentWallet.icon : undefined
+            }
+            parentColor={parentWallet.color}
+            active={true}
+            spinning={pendingTransactions}
             onClick={toggleDrawer}
-            sx={{
-              marginLeft: '0px',
-              padding: '3px',
-              position: 'relative',
-              border: isPending
-                ? ''
-                : network !== 'mainnet'
-                  ? `2px solid ${networkColor(network)}`
-                  : '2px solid #282828',
-              marginRight: '0px',
-            }}
-          >
-            <img
-              src={userInfo?.avatar}
-              style={{ backgroundColor: '#797979', borderRadius: '10px' }}
-              width="20px"
-              height="20px"
-            />
-          </IconButton>
-          {deploymentEnv !== 'production' && (
-            <Box sx={{ position: 'absolute', left: '30px', top: '-8px', zIndex: 10 }}>
-              <Tooltip
-                title={
-                  <Box>
-                    <Typography variant="caption">
-                      {`Build: ${process.env.DEPLOYMENT_ENV}`}
-                    </Typography>
-                    {process.env.LATEST_TAG && process.env.COMMIT_SHA && (
-                      <Typography variant="caption" display="block">
-                        {`Compare: ${process.env.LATEST_TAG}...${process.env.COMMIT_SHA?.substring(0, 7)}`}
-                      </Typography>
-                    )}
-                    <Typography variant="caption" display="block">
-                      {`Repo: ${process.env.REPO_URL?.replace('https://github.com/', '') || 'onflow/FRW-Extension'}`}
-                    </Typography>
-                    <Typography variant="caption" display="block">
-                      Click to view changes
-                    </Typography>
-                  </Box>
-                }
-                arrow
-              >
-                <Chip
-                  label={deploymentEnv}
-                  size="small"
-                  color={
-                    deploymentEnv === 'staging'
-                      ? 'default'
-                      : deploymentEnv === 'development'
-                        ? 'warning'
-                        : 'error'
-                  }
-                  sx={{
-                    height: '18px',
-                    fontSize: '10px',
-                    fontWeight: 'bold',
-                    minWidth: '16px',
-                    maxWidth: '90px',
-                    cursor: 'pointer',
-                    '& .MuiChip-label': {
-                      padding: '0 8px',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    },
-                  }}
-                  onClick={() => {
-                    const url = getComparisonUrl();
-                    window.open(url, '_blank');
-                  }}
-                />
-              </Tooltip>
-            </Box>
-          )}
+          />
         </Box>
 
         <Box
@@ -469,7 +256,10 @@ const Header = ({ _loading = false }) => {
         </Box>
 
         <Box sx={{ flex: '0 0 68px' }}>
-          <Tooltip title={isPending ? chrome.i18n.getMessage('Pending__Transaction') : ''} arrow>
+          <Tooltip
+            title={pendingTransactions ? chrome.i18n.getMessage('Pending__Transaction') : ''}
+            arrow
+          >
             <Box style={{ position: 'relative' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <IconButton
@@ -531,28 +321,21 @@ const Header = ({ _loading = false }) => {
   return (
     <StyledEngineProvider injectFirst>
       <SwitchAccountCover open={switchLoading} />
-      <AppBar position="relative" className={classes.appBar} elevation={0}>
+      <AppBar position="relative" sx={{ zIndex: 1399 }} elevation={0}>
         <Toolbar sx={{ px: '12px', backgroundColor: '#282828' }}>
           {walletList && (
             <MenuDrawer
-              userInfo={userInfo || null}
               drawer={drawer}
               toggleDrawer={toggleDrawer}
-              otherAccounts={otherAccounts}
-              switchAccount={switchAccount}
               togglePop={togglePop}
+              userInfo={userInfo || null}
+              activeAccount={currentWallet}
+              activeParentAccount={parentWallet}
               walletList={walletList}
-              childAccounts={childAccounts || null}
-              current={currentWallet}
-              profileIds={profileIds || []}
-              createWalletList={createWalletList}
-              setWallets={setWallets}
-              currentNetwork={network}
-              evmWallet={evmWallet}
-              networkColor={networkColor}
-              evmLoading={evmLoading}
+              network={network}
               modeOn={developerMode}
               mainAddressLoading={mainAddressLoading}
+              noAddress={noAddress ?? false}
             />
           )}
           {appBarLabel(currentWallet)}
@@ -567,7 +350,7 @@ const Header = ({ _loading = false }) => {
               }}
               userInfo={userInfo!}
               current={currentWallet}
-              switchAccount={switchAccount}
+              switchAccount={switchProfile}
               profileIds={profileIds || []}
               switchLoading={switchLoading}
             />

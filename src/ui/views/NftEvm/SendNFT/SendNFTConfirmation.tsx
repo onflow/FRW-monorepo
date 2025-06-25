@@ -1,25 +1,25 @@
 import CloseIcon from '@mui/icons-material/Close';
 import InfoIcon from '@mui/icons-material/Info';
-import { Box, Typography, Drawer, Stack, Grid, CardMedia, IconButton, Button } from '@mui/material';
+import { Box, Typography, Drawer, Stack, CardMedia, IconButton, Button } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 import Web3 from 'web3';
 
 import { type Contact } from '@/shared/types/network-types';
 import { consoleError } from '@/shared/utils/console-log';
-import SlideRelative from '@/ui/FRWComponent/SlideRelative';
-import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
-import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
+import IconFlow from '@/ui/components/iconfont/IconFlow';
+import SlideRelative from '@/ui/components/SlideRelative';
+import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
+import { WarningStorageLowSnackbar } from '@/ui/components/WarningStorageLowSnackbar';
+import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
 import { type MatchMedia, MatchMediaType } from '@/ui/utils/url';
-import { useStorageCheck } from '@/ui/utils/useStorageCheck';
 import erc721 from 'background/utils/erc721.abi.json';
 import { EVM_ENDPOINT } from 'consts';
-import IconNext from 'ui/FRWAssets/svg/next.svg';
-import { LLSpinner, LLProfile, FRWProfile } from 'ui/FRWComponent';
+import IconNext from 'ui/assets/svg/next.svg';
+import { LLSpinner, LLProfile, FRWProfile } from 'ui/components';
 import { useWallet } from 'ui/utils';
-
-import IconFlow from '../../../../components/iconfont/IconFlow';
 
 interface SendNFTConfirmationProps {
   isConfirmationOpen: boolean;
@@ -179,7 +179,6 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
       setErrorMessage(request.errorMessage);
       setErrorCode(request.errorCode);
     }
-    return true;
   }, []);
 
   useEffect(() => {
@@ -266,8 +265,8 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
             alignItems: 'center',
           }}
         >
-          <Grid item xs={1}></Grid>
-          <Grid item xs={10}>
+          <Grid size={1}></Grid>
+          <Grid size={10}>
             {tid ? (
               <Box
                 sx={{
@@ -287,7 +286,7 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
               </Typography>
             )}
           </Grid>
-          <Grid item xs={1}>
+          <Grid size={1}>
             <IconButton onClick={props.handleCloseIconClicked}>
               <CloseIcon fontSize="medium" sx={{ color: 'icon.navi', cursor: 'pointer' }} />
             </IconButton>

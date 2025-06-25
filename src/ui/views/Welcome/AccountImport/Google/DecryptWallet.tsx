@@ -1,47 +1,17 @@
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { Button, Typography, IconButton, Input, InputAdornment, FormGroup } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+
 import { Box } from '@mui/system';
 import React, { useEffect, useState } from 'react';
 
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
-import { PasswordInput } from '@/ui/FRWComponent/PasswordComponents';
-import SlideRelative from '@/ui/FRWComponent/SlideRelative';
+import { PasswordInput } from '@/ui/components/PasswordComponents';
+import CancelIcon from '@/ui/components/iconfont/IconClose';
+import SlideRelative from '@/ui/components/SlideRelative';
 import { useWallet } from 'ui/utils';
 
-import CancelIcon from '../../../../../components/iconfont/IconClose';
-
-// const helperTextStyles = makeStyles(() => ({
-//   root: {
-//     size: '16px',
-//     color: '#BABABA',
-//   },
-// }));
-
-const useStyles = makeStyles(() => ({
-  customInputLabel: {
-    '& legend': {
-      visibility: 'visible',
-    },
-  },
-  inputBox2: {
-    height: '64px',
-    padding: '16px',
-    zIndex: '999',
-    backgroundColor: '#282828',
-    border: '2px solid #4C4C4C',
-    borderRadius: '12px',
-    boxSizing: 'border-box',
-    '&.Mui-focused': {
-      border: '2px solid #FAFAFA',
-      boxShadow: '0px 8px 12px 4px rgba(76, 76, 76, 0.24)',
-    },
-  },
-}));
-
 const DecryptWallet = ({ handleSwitchTab, setMnemonic, username }) => {
-  const classes = useStyles();
   const usewallet = useWallet();
 
   const [isPasswordVisible, setPasswordVisible] = useState(false);

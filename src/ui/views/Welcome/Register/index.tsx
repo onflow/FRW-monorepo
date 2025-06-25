@@ -1,43 +1,33 @@
 import { Box } from '@mui/material';
-import * as bip39 from 'bip39';
-import React, { useCallback, useEffect, useState } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import React, { useCallback, useEffect, useReducer } from 'react';
+import { useHistory } from 'react-router-dom';
 
-import { DEFAULT_PASSWORD } from '@/shared/utils/default';
-import AllSet from '@/ui/FRWComponent/LandingPages/AllSet';
-import GoogleBackup from '@/ui/FRWComponent/LandingPages/GoogleBackup';
-import LandingComponents from '@/ui/FRWComponent/LandingPages/LandingComponents';
-import PickUsername from '@/ui/FRWComponent/LandingPages/PickUsername';
-import RecoveryPhrase from '@/ui/FRWComponent/LandingPages/RecoveryPhrase';
-import RepeatPhrase from '@/ui/FRWComponent/LandingPages/RepeatPhrase';
-import SetPassword from '@/ui/FRWComponent/LandingPages/SetPassword';
+import AllSet from '@/ui/components/LandingPages/AllSet';
+import GoogleBackup from '@/ui/components/LandingPages/GoogleBackup';
+import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
+import PickUsername from '@/ui/components/LandingPages/PickUsername';
+import RecoveryPhrase from '@/ui/components/LandingPages/RecoveryPhrase';
+import RepeatPhrase from '@/ui/components/LandingPages/RepeatPhrase';
+import SetPassword from '@/ui/components/LandingPages/SetPassword';
+import {
+  INITIAL_REGISTER_STATE,
+  initRegisterState,
+  registerReducer,
+  STEPS,
+} from '@/ui/reducers/register-reducer';
 import { useWallet } from 'ui/utils';
-
-const STEPS = {
-  USERNAME: 'username',
-  RECOVERY: 'recovery',
-  REPEAT: 'repeat',
-  PASSWORD: 'password',
-  BACKUP: 'backup',
-  ALL_SET: 'all_set',
-} as const;
-
-type StepType = (typeof STEPS)[keyof typeof STEPS];
 
 const Register = () => {
   const history = useHistory();
   const usewallet = useWallet();
 
-  const [activeTab, setActiveTab] = useState<StepType>(STEPS.USERNAME);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState(DEFAULT_PASSWORD);
-  const [mnemonic] = useState(bip39.generateMnemonic());
-  const [isAddWallet, setIsAddWallet] = useState<boolean>(false);
+  const [state, dispatch] = useReducer(registerReducer, INITIAL_REGISTER_STATE, initRegisterState);
+  const { activeTab, username, password, mnemonic, isAddWallet } = state;
 
   useEffect(() => {
     const checkWalletStatus = async () => {
       const isBooted = await usewallet.isBooted();
-      setIsAddWallet(isBooted);
+      dispatch({ type: 'SET_IS_ADD_WALLET', payload: isBooted });
     };
 
     checkWalletStatus();
@@ -58,32 +48,21 @@ const Register = () => {
 
   const submitPassword = useCallback(
     async (newPassword: string) => {
-      setPassword(newPassword);
+      dispatch({ type: 'SET_PASSWORD', payload: newPassword });
       // We're registering the new profile with the password, username, and mnemonic
       await usewallet.registerNewProfile(username, newPassword, mnemonic);
 
       // But after all this, we haven't updated loggedInAccounts so if we close the window before the account refreshes, we won't be able to login
-      setActiveTab(STEPS.BACKUP);
+      dispatch({ type: 'SET_ACTIVE_TAB', payload: STEPS.BACKUP });
     },
     [username, mnemonic, usewallet]
   );
 
   const goBack = () => {
-    switch (activeTab) {
-      case STEPS.RECOVERY:
-        setActiveTab(STEPS.USERNAME);
-        break;
-      case STEPS.REPEAT:
-        setActiveTab(STEPS.RECOVERY);
-        break;
-      case STEPS.PASSWORD:
-        setActiveTab(STEPS.REPEAT);
-        break;
-      case STEPS.BACKUP:
-        setActiveTab(STEPS.PASSWORD);
-        break;
-      default:
-        history.goBack();
+    if (activeTab === STEPS.USERNAME || activeTab === STEPS.ALL_SET) {
+      history.goBack();
+    } else {
+      dispatch({ type: 'GO_BACK' });
     }
   };
 
@@ -95,7 +74,7 @@ const Register = () => {
     <LandingComponents
       activeIndex={Object.values(STEPS).indexOf(activeTab)}
       direction="right"
-      showBackButton={activeTab !== STEPS.BACKUP && activeTab !== STEPS.ALL_SET}
+      showBackButton={activeTab !== STEPS.ALL_SET}
       onBack={goBack}
       showConfetti={activeTab === STEPS.ALL_SET}
       showRegisterHeader={true}
@@ -103,23 +82,29 @@ const Register = () => {
       <Box>
         {activeTab === STEPS.USERNAME && (
           <PickUsername
-            handleSwitchTab={() => setActiveTab(STEPS.RECOVERY)}
+            handleSwitchTab={() => dispatch({ type: 'SET_ACTIVE_TAB', payload: STEPS.RECOVERY })}
             username={username}
-            setUsername={setUsername}
+            setUsername={(name) => dispatch({ type: 'SET_USERNAME', payload: name })}
           />
         )}
 
         {activeTab === STEPS.RECOVERY && (
-          <RecoveryPhrase handleSwitchTab={() => setActiveTab(STEPS.REPEAT)} mnemonic={mnemonic} />
+          <RecoveryPhrase
+            handleSwitchTab={() => dispatch({ type: 'SET_ACTIVE_TAB', payload: STEPS.REPEAT })}
+            mnemonic={mnemonic}
+          />
         )}
 
         {activeTab === STEPS.REPEAT && (
-          <RepeatPhrase handleSwitchTab={() => setActiveTab(STEPS.PASSWORD)} mnemonic={mnemonic} />
+          <RepeatPhrase
+            handleSwitchTab={() => dispatch({ type: 'SET_ACTIVE_TAB', payload: STEPS.PASSWORD })}
+            mnemonic={mnemonic}
+          />
         )}
 
         {activeTab === STEPS.PASSWORD && (
           <SetPassword
-            handleSwitchTab={() => setActiveTab(STEPS.BACKUP)}
+            handleSwitchTab={() => dispatch({ type: 'SET_ACTIVE_TAB', payload: STEPS.BACKUP })}
             onSubmit={submitPassword}
             username={username}
             showTerms={true}
@@ -130,10 +115,10 @@ const Register = () => {
 
         {activeTab === STEPS.BACKUP && (
           <GoogleBackup
-            handleSwitchTab={() => setActiveTab(STEPS.ALL_SET)}
+            handleSwitchTab={() => dispatch({ type: 'SET_ACTIVE_TAB', payload: STEPS.ALL_SET })}
             mnemonic={mnemonic}
             username={username}
-            password={password}
+            password={password || ''}
           />
         )}
 

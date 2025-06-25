@@ -1,29 +1,20 @@
 import { Input, FormControl, Typography, Button, Fade } from '@mui/material';
 import Box from '@mui/material/Box';
-import { makeStyles } from '@mui/styles';
+
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
-import { LLHeader } from '@/ui/FRWComponent';
-import { PasswordInput } from '@/ui/FRWComponent/PasswordComponents';
-import SlideRelative from '@/ui/FRWComponent/SlideRelative';
+import { LLHeader } from '@/ui/components';
+import { PasswordInput } from '@/ui/components/PasswordComponents';
+import CancelIcon from '@/ui/components/iconfont/IconClose';
+import SlideRelative from '@/ui/components/SlideRelative';
 import { useWallet } from 'ui/utils';
-
-import CancelIcon from '../../../../components/iconfont/IconClose';
-
-const useStyles = makeStyles(() => ({
-  customInputLabel: {
-    '& legend': {
-      visibility: 'visible',
-    },
-  },
-}));
 
 const Recoveryphrasepassword = () => {
   const history = useHistory();
   const wallet = useWallet();
-  const classes = useStyles();
+
   const [confirmPassword, setConfirmPassword] = useState(DEFAULT_PASSWORD);
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const [isMatch, setMatch] = useState(false);

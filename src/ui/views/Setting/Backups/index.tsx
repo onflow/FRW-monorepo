@@ -1,64 +1,15 @@
 import { Box, Typography, IconButton, Button } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
 import { consoleError } from '@/shared/utils/console-log';
-import BrowserWarning from '@/ui/component/BrowserWarning';
-import { LLHeader, LLSpinner } from '@/ui/FRWComponent';
-import { LLDeleteBackupPopup } from '@/ui/FRWComponent/LLDeleteBackupPopup';
+import { LLHeader, LLSpinner } from '@/ui/components';
+import BrowserWarning from '@/ui/components/BrowserWarning';
+import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
+import IconGoogleDrive from '@/ui/components/iconfont/IconGoogleDrive';
+import { LLDeleteBackupPopup } from '@/ui/components/LLDeleteBackupPopup';
 import { useWallet } from 'ui/utils';
 
-import CheckCircleIcon from '../../../../components/iconfont/IconCheckmark';
-import IconGoogleDrive from '../../../../components/iconfont/IconGoogleDrive';
-
-const useStyles = makeStyles(() => ({
-  arrowback: {
-    borderRadius: '100%',
-    margin: '8px',
-  },
-  iconbox: {
-    position: 'sticky',
-    top: 0,
-    // width: '100%',
-    backgroundColor: '#121212',
-    margin: 0,
-    padding: 0,
-  },
-  developerTitle: {
-    zIndex: 20,
-    textAlign: 'center',
-    top: 0,
-    position: 'sticky',
-  },
-  developerBox: {
-    width: 'auto',
-    height: 'auto',
-    margin: '20px 20px',
-    backgroundColor: '#282828',
-    padding: '20px 20px',
-    display: 'flex',
-    flexDirection: 'row',
-    borderRadius: '16px',
-    alignContent: 'space-between',
-    alignItems: 'center',
-    gap: '8px',
-  },
-  radioBox: {
-    width: '90%',
-    borderRadius: '16px',
-    backgroundColor: '#282828',
-    margin: '20px auto',
-    // padding: '10px 24px',
-  },
-  checkboxRow: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignContent: 'space-between',
-    justifyContent: 'space-between',
-    padding: '20px 24px',
-  },
-}));
 interface BackupsState {
   password?: string;
 }
@@ -70,7 +21,6 @@ const ManageBackups = () => {
   const location = useLocation<BackupsState>();
   const history = useHistory();
   const wallet = useWallet();
-  const classes = useStyles();
   const [hasPermission, setHasPermission] = useState(false);
   const [hasBackup, setHasBackup] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -164,7 +114,21 @@ const ManageBackups = () => {
   return (
     <div className="page" style={{ display: 'flex', flexDirection: 'column' }}>
       <LLHeader title={chrome.i18n.getMessage('Manage__Backups')} help={false} />
-      <Box className={classes.developerBox}>
+      <Box
+        sx={{
+          width: 'auto',
+          height: 'auto',
+          margin: '20px 20px',
+          backgroundColor: '#282828',
+          padding: '20px 20px',
+          display: 'flex',
+          flexDirection: 'row',
+          borderRadius: '16px',
+          alignContent: 'space-between',
+          alignItems: 'center',
+          gap: '8px',
+        }}
+      >
         <IconGoogleDrive size={20} />
         <Typography variant="body1" color="neutral.contrastText" style={{ weight: 600 }}>
           {chrome.i18n.getMessage('Google__Drive')}

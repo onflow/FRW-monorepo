@@ -3,10 +3,10 @@ import { DialogContent, DialogContentText, DialogTitle, Stack } from '@mui/mater
 import React from 'react';
 
 import { consoleError } from '@/shared/utils/console-log';
-import { CustomDialog } from '@/ui/FRWComponent/custom-dialog';
-import { LLPrimaryButton } from '@/ui/FRWComponent/LLPrimaryButton';
-import { LLSecondaryButton } from '@/ui/FRWComponent/LLSecondaryButton';
-import { LLWarningButton } from '@/ui/FRWComponent/LLWarningButton';
+import { CustomDialog } from '@/ui/components/custom-dialog';
+import { LLPrimaryButton } from '@/ui/components/LLPrimaryButton';
+import { LLSecondaryButton } from '@/ui/components/LLSecondaryButton';
+import { LLWarningButton } from '@/ui/components/LLWarningButton';
 import { useWallet } from '@/ui/utils';
 
 export const GoogleWarningDialog = ({

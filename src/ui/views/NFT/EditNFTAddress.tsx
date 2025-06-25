@@ -1,5 +1,6 @@
 import CloseIcon from '@mui/icons-material/Close';
-import { Typography, Box, Drawer, Grid, Stack, InputBase, CircularProgress } from '@mui/material';
+import { Typography, Box, Drawer, Stack, InputBase, CircularProgress } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import { styled } from '@mui/material/styles';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useForm, type FieldValues } from 'react-hook-form';
@@ -7,7 +8,7 @@ import { useForm, type FieldValues } from 'react-hook-form';
 import { storage } from '@/background/webapi';
 import { useWallet } from 'ui/utils';
 
-import { LLPrimaryButton, LLSecondaryButton, LLFormHelperText } from '../../FRWComponent';
+import { LLPrimaryButton, LLSecondaryButton, LLFormHelperText } from '../../components';
 
 const StyledInput = styled(InputBase)(({ theme }) => ({
   zIndex: 1,
@@ -116,13 +117,13 @@ const EditNFTAddress = (props: EditNFTAddressProps) => {
           alignItems: 'center',
         }}
       >
-        <Grid item xs={1}></Grid>
-        <Grid item xs={10}>
+        <Grid size={1}></Grid>
+        <Grid size={10}>
           <Typography variant="h1" align="center" py="14px" fontWeight="bold" fontSize="20px">
             {chrome.i18n.getMessage('Change__Address')}
           </Typography>
         </Grid>
-        <Grid item xs={1}>
+        <Grid size={1}>
           <CloseIcon
             fontSize="medium"
             sx={{ color: 'icon.navi', cursor: 'pointer' }}

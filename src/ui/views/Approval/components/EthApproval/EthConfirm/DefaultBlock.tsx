@@ -9,18 +9,39 @@ import {
   AccordionDetails,
   CardMedia,
 } from '@mui/material';
-import React from 'react';
+import React, { useState } from 'react';
 import Highlight from 'react-highlight';
 
 import IconWithPlaceholder from '../EthApprovalComponents/IconWithPlaceholder';
 
 export const DefaultBlock = ({ title, host, data, logo }) => {
-  const hexToString = (hex) => {
-    let str = '';
-    for (let i = 0; i < hex.length; i += 2) {
-      str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+  const [expanded, setExpanded] = useState(true);
+
+  const hexToString = (hexString: string) => {
+    // Check if string is hex
+    const hexRegex = /^(0x)?[0-9a-fA-F]+$/;
+    if (!hexRegex.test(hexString)) {
+      return hexString;
     }
-    return str;
+
+    // Remove '0x' prefix if present
+    const cleanHex = hexString.replace('0x', '');
+
+    // Check if the length is even (valid hex bytes)
+    if (cleanHex.length % 2 !== 0) {
+      return hexString;
+    }
+
+    // Convert hex to bytes
+    const bytes = Buffer.from(cleanHex, 'hex');
+
+    // Check for valid UTF-8 encoding
+    const decoder = new TextDecoder('utf-8', { fatal: true });
+    try {
+      return decoder.decode(bytes);
+    } catch (e) {
+      return hexString;
+    }
   };
 
   const processItem = (item) => {
@@ -50,7 +71,8 @@ export const DefaultBlock = ({ title, host, data, logo }) => {
 
       <Box sx={{ borderRadius: '12px', overflow: 'hidden', width: '100%', height: '100%' }}>
         <Accordion
-          key="Cadence"
+          expanded={expanded}
+          onChange={() => setExpanded(!expanded)}
           disableGutters
           sx={{
             color: '#BABABA',

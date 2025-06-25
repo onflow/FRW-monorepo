@@ -1,30 +1,34 @@
 import { Box, IconButton, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 import { type KeyResponseItem, type AccountKey } from '@/shared/types/network-types';
-import { LLHeader } from '@/ui/FRWComponent';
+import { LLHeader } from '@/ui/components';
+import IconCopy from '@/ui/components/iconfont/IconCopy';
 import { useWallet } from 'ui/utils';
 
-import IconCopy from '../../../../components/iconfont/IconCopy';
-import curve from '../../../FRWAssets/image/curve.png';
-import hash from '../../../FRWAssets/image/hash.png';
-import key from '../../../FRWAssets/image/key.png';
-import sequence from '../../../FRWAssets/image/sequence.png';
-import toggle from '../../../FRWAssets/image/toggle.png';
-import weight from '../../../FRWAssets/image/weight.png';
+import curve from '../../../assets/image/curve.png';
+import hash from '../../../assets/image/hash.png';
+import key from '../../../assets/image/key.png';
+import sequence from '../../../assets/image/sequence.png';
+import toggle from '../../../assets/image/toggle.png';
+import weight from '../../../assets/image/weight.png';
 
 import RevokePage from './RevokePage';
 
 const KeyList = () => {
   const wallet = useWallet();
+  const location = useLocation();
+  const address = new URLSearchParams(location.search).get('address') || '';
   const [showKey, setShowkey] = useState(null);
   const [showRevoke, setShowRevoke] = useState(false);
   const [publickeys, setPublicKeys] = useState<any[]>([]);
   const [keyIndex, setKeyIndex] = useState<string>('');
 
   const getAccount = useCallback(async () => {
-    const account = await wallet.getMainAccountInfo();
     const keys = await wallet.openapi.keyList();
+
+    const account = await wallet.getAccountInfo(address);
     const installationId = await wallet.openapi.getInstallationId();
     const mergedArray = await mergeData(
       {
@@ -34,7 +38,7 @@ const KeyList = () => {
       installationId
     );
     setPublicKeys(mergedArray);
-  }, [wallet]);
+  }, [wallet, address]);
 
   const setTab = useCallback(async () => {
     await wallet.setDashIndex(3);
@@ -59,20 +63,13 @@ const KeyList = () => {
 
       const mergedItem = {
         ...key,
-        current_device: false,
+        current_device: matchingResults.some((result) => result.device.id === installationId),
         devices: matchingResults.map((result) => {
-          const deviceItem = {
+          return {
             ...result.pubkey,
             ...key,
             device_name: result.device.device_name,
           };
-
-          // Check if the installationId matches device.id
-          if (result.device.id === installationId) {
-            mergedItem.current_device = true;
-          }
-
-          return deviceItem;
         }),
       };
 
@@ -234,7 +231,6 @@ const KeyList = () => {
             <Box
               sx={{
                 display: 'flex',
-                height: '16px',
                 width: '72px',
                 position: 'relative',
                 zIndex: '5',
@@ -269,20 +265,18 @@ const KeyList = () => {
                 </Typography>
               </Box>
             </Box>
-            <Box
+            <IconButton
+              sx={{ marginLeft: '14px', height: '26px' }}
               onClick={() => toggleKey(item.index)}
-              sx={{ display: 'flex', alignItems: 'center', marginLeft: '14px' }}
             >
               <img
                 src={toggle}
                 style={{
-                  width: '10px',
-                  height: '6px',
                   transform: showKey === item.index ? 'rotate(180deg)' : 'none',
                   transition: 'transform 0.3s',
                 }}
               />
-            </Box>
+            </IconButton>
           </Box>
           <Box
             sx={{

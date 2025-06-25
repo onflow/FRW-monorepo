@@ -3,7 +3,7 @@ import { Card, CardContent, CardMedia, IconButton, Typography, Box, Tooltip } fr
 import React, { useEffect, useRef, useState } from 'react';
 
 import type { NewsItem } from '@/shared/types/network-types';
-import { useNews } from '@/ui/utils/NewsContext';
+import { useNews } from '@/ui/hooks/use-news';
 import { openInTab } from '@/ui/utils/webapi';
 
 export const NewsItemCard = ({ item }: { item: NewsItem }) => {

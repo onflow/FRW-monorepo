@@ -1,25 +1,26 @@
 import CloseIcon from '@mui/icons-material/Close';
 import InfoIcon from '@mui/icons-material/Info';
-import { Box, Typography, Drawer, Stack, Grid, CardMedia, IconButton, Button } from '@mui/material';
+import { Box, Typography, Drawer, Stack, CardMedia, IconButton, Button } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { type Contact } from '@/shared/types/network-types';
 import { type AccountDetails } from '@/shared/types/wallet-types';
 import { consoleError } from '@/shared/utils/console-log';
-import SlideRelative from '@/ui/FRWComponent/SlideRelative';
-import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
-import { WarningNFTNotOnboardedSnackbar } from '@/ui/FRWComponent/WarningNFTNotOnboardedSnackbar';
-import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
+import IconFlow from '@/ui/components/iconfont/IconFlow';
+import SlideRelative from '@/ui/components/SlideRelative';
+import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
+import { WarningNFTNotOnboardedSnackbar } from '@/ui/components/WarningNFTNotOnboardedSnackbar';
+import { WarningStorageLowSnackbar } from '@/ui/components/WarningStorageLowSnackbar';
 import { useContacts } from '@/ui/hooks/useContactHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
+import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
 import { MatchMediaType } from '@/ui/utils/url';
-import { useStorageCheck } from '@/ui/utils/useStorageCheck';
-import { LLSpinner, FRWProfileCard, FRWDropdownProfileCard } from 'ui/FRWComponent';
+import { LLSpinner, FRWProfileCard, FRWDropdownProfileCard } from 'ui/components';
 import { useWallet } from 'ui/utils';
 
-import IconFlow from '../../../../components/iconfont/IconFlow';
 interface SendNFTConfirmationProps {
   isConfirmationOpen: boolean;
   data: any;
@@ -127,13 +128,11 @@ const MoveNftFromEvm = (props: SendNFTConfirmationProps) => {
   };
 
   const transactionDoneHandler = useCallback((request) => {
-    // Handle error
     if (request.msg === 'transactionError') {
       setFailed(true);
       setErrorMessage(request.errorMessage);
       setErrorCode(request.errorCode);
     }
-    return true;
   }, []);
 
   useEffect(() => {
@@ -203,13 +202,13 @@ const MoveNftFromEvm = (props: SendNFTConfirmationProps) => {
             alignItems: 'center',
           }}
         >
-          <Grid item xs={1}></Grid>
-          <Grid item xs={10}>
+          <Grid size={1}></Grid>
+          <Grid size={10}>
             <Typography variant="h1" align="center" py="14px" fontWeight="bold" fontSize="20px">
               {chrome.i18n.getMessage('Move')} NFT
             </Typography>
           </Grid>
-          <Grid item xs={1}>
+          <Grid size={1}>
             <IconButton onClick={props.handleCloseIconClicked}>
               <CloseIcon fontSize="medium" sx={{ color: 'icon.navi', cursor: 'pointer' }} />
             </IconButton>

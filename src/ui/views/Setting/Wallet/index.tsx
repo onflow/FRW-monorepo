@@ -21,13 +21,12 @@ import {
   type Emoji,
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
-import { LLHeader } from '@/ui/FRWComponent';
+import { LLHeader } from '@/ui/components';
+import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from '@/ui/utils';
 import { storage } from 'background/webapi';
 import { formatAddress } from 'ui/utils';
-
-import IconEnd from '../../../../components/iconfont/IconAVector11Stroke';
 
 const tempEmoji: Emoji[] = [
   {
@@ -138,7 +137,7 @@ const Wallet = () => {
             <ListItem
               key={item.address}
               component={Link}
-              to="/dashboard/setting/wallet/detail"
+              to={`/dashboard/setting/wallet/detail?address=${item.address}`}
               onClick={() => handleWalletClick(item, 0)}
               disablePadding
               sx={{

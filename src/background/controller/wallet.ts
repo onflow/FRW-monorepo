@@ -1,20 +1,18 @@
 import * as fcl from '@onflow/fcl';
 import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
-import * as t from '@onflow/types';
 import BN from 'bignumber.js';
 import * as bip39 from 'bip39';
 import { ethErrors } from 'eth-rpc-errors';
 import * as ethUtil from 'ethereumjs-util';
 import { getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth/web-extension';
-import { type TokenInfo } from 'flow-native-token-registry';
 import { encode } from 'rlp';
 import web3, { TransactionError, Web3 } from 'web3';
 
 import {
   getAccountKey,
   pubKeyAccountToAccountKey,
-  pubKeyTupleToAccountKey,
+  pubKeySignAlgoToAccountKey,
 } from '@/background/utils/account-key';
 import {
   findAddressWithSeed,
@@ -26,12 +24,15 @@ import {
   seedWithPathAndPhrase2PublicPrivateKey,
   formPubKeyTuple,
 } from '@/background/utils/modules/publicPrivateKey';
+import { generateRandomId } from '@/background/utils/random-id';
 import eventBus from '@/eventBus';
+import { type CustomFungibleTokenInfo } from '@/shared/types/coin-types';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
 import { type PublicPrivateKeyTuple, type PublicKeyTuple } from '@/shared/types/key-types';
 import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
-import { ContactType, MAINNET_CHAIN_ID } from '@/shared/types/network-types';
+import { ContactType, MAINNET_CHAIN_ID, Period, PriceProvider } from '@/shared/types/network-types';
 import { type NFTCollections, type NFTCollectionData } from '@/shared/types/nft-types';
+import { type TokenInfo } from '@/shared/types/token-info';
 import { type TrackingEvents } from '@/shared/types/tracking-types';
 import { type TransferItem, type TransactionState } from '@/shared/types/transaction-types';
 import {
@@ -49,6 +50,7 @@ import {
 } from '@/shared/types/wallet-types';
 import {
   ensureEvmAddressPrefix,
+  isValidAddress,
   isValidEthereumAddress,
   isValidFlowAddress,
   withPrefix,
@@ -70,14 +72,12 @@ import {
   registerStatusRefreshRegex,
   coinListKey,
   type ChildAccountFtStore,
+  accountBalanceKey,
 } from '@/shared/utils/cache-data-keys';
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
-import { getCurrentProfileId, returnCurrentProfileId } from '@/shared/utils/current-id';
-import {
-  convertFlowBalanceToString,
-  convertToIntegerAmount,
-  validateAmount,
-} from '@/shared/utils/number';
+import { returnCurrentProfileId } from '@/shared/utils/current-id';
+import { getPeriodFrequency } from '@/shared/utils/getPeriodFrequency';
+import { convertToIntegerAmount, validateAmount } from '@/shared/utils/number';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import { type CategoryScripts } from '@/shared/utils/script-types';
 import {
@@ -98,6 +98,8 @@ import {
   newsService,
   mixpanelTrack,
   evmNftService,
+  tokenListService,
+  remoteConfigService,
 } from 'background/service';
 import i18n from 'background/service/i18n';
 import {
@@ -108,15 +110,13 @@ import {
 } from 'background/service/keyring';
 import type { CacheState } from 'background/service/pageStateCache';
 import { replaceNftKeywords } from 'background/utils';
-import fetchConfig from 'background/utils/remoteConfig';
 import { notification, storage } from 'background/webapi';
 import { openIndexPage } from 'background/webapi/tab';
 import {
   INTERNAL_REQUEST_ORIGIN,
-  EVENTS,
-  KEYRING_TYPE,
   EVM_ENDPOINT,
   HTTP_STATUS_CONFLICT,
+  HTTP_STATUS_TOO_MANY_REQUESTS,
 } from 'consts';
 
 import type {
@@ -124,6 +124,7 @@ import type {
   Contact,
   FlowNetwork,
   NFTModelV2,
+  TokenPriceHistory,
   UserInfoResponse,
 } from '../../shared/types/network-types';
 import DisplayKeyring from '../service/keyring/display';
@@ -131,8 +132,14 @@ import { HDKeyring } from '../service/keyring/hdKeyring';
 import { getScripts } from '../service/openapi';
 import type { ConnectedSite } from '../service/permission';
 import type { PreferenceAccount } from '../service/preference';
-import { type EvaluateStorageResult, StorageEvaluator } from '../service/storage-evaluator';
-import { getEvmAccountOfParent, loadEvmAccountOfParent } from '../service/userWallet';
+import {
+  addPendingAccountCreationTransaction,
+  addPlaceholderAccount,
+  getEvmAccountOfParent,
+  loadAccountBalance,
+  loadEvmAccountOfParent,
+  removePendingAccountCreationTransaction,
+} from '../service/userWallet';
 import {
   getValidData,
   registerRefreshListener,
@@ -158,12 +165,10 @@ interface TokenTransaction {
 
 export class WalletController extends BaseController {
   openapi = openapiService;
-  private storageEvaluator: StorageEvaluator;
   private loaded = false;
 
   constructor() {
     super();
-    this.storageEvaluator = new StorageEvaluator();
 
     registerRefreshListener(registerStatusRefreshRegex, async (pubKey: string) => {
       // The ttl is set to 2 minutes. After that we set the cache to false
@@ -182,15 +187,17 @@ export class WalletController extends BaseController {
   boot = async (password) => {
     // When wallet first initializes through install, it will add a encrypted password to boot state. If is boot is false, it means there's no password set.
     const isBooted = await keyringService.isBooted();
-    if (isBooted) {
+    const hasVault = await keyringService.hasVault();
+
+    if (isBooted && hasVault) {
       await keyringService.updateUnlocked(password);
     } else {
       await keyringService.boot(password);
     }
   };
-  isBooted = () => keyringService.isBooted();
-  isUnlocked = () => keyringService.isUnlocked();
-  verifyPassword = (password: string) => keyringService.verifyPassword(password);
+  isBooted = async () => keyringService.isBooted() && keyringService.hasVault();
+  isUnlocked = async () => keyringService.isUnlocked();
+  verifyPassword = async (password: string) => keyringService.verifyPassword(password);
 
   verifyPasswordIfBooted = async (password: string) => {
     if (await this.isBooted()) {
@@ -240,17 +247,28 @@ export class WalletController extends BaseController {
       password,
       mnemonic
     );
+    // Set a two minute cache for the register status
+    setCachedData(registerStatusKey(accountKey.public_key), true, 120_000);
 
     // We're creating the Flow address for the account
     // Only after this, do we have a valid wallet with a Flow address
     const result = await openapiService.createFlowAddressV2();
-    // Set a two minute cache for the register status
-    setCachedData(registerStatusKey(accountKey.public_key), true, 120_000);
 
-    this.checkForNewAddress(result.data.txid);
+    // Add the pending account creation transaction to the user wallet
+    await addPendingAccountCreationTransaction('mainnet', accountKey.public_key, result.data.txid);
+
+    // Switch to the new public key
+    await userWalletService.setCurrentPubkey(accountKey.public_key);
+
+    // Check for the new address asynchronously
+    this.checkForNewAddress('mainnet', accountKey.public_key, result.data.txid);
   };
 
-  checkForNewAddress = async (txid: string): Promise<FclAccount | null> => {
+  checkForNewAddress = async (
+    network: string,
+    pubKey: string,
+    txid: string
+  ): Promise<FclAccount | null> => {
     try {
       const txResult = await fcl.tx(txid).onceSealed();
 
@@ -265,15 +283,19 @@ export class WalletController extends BaseController {
 
       const newAddress = accountCreatedEvent.data.address;
 
+      // Get the account from the new address
       const account = await fcl.account(newAddress);
       if (!account) {
         throw new Error('Fcl account not found');
       }
-
-      userWalletService.registerCurrentPubkey(account.keys[0].publicKey, account);
+      // Add the placeholder account to the user wallet
+      await addPlaceholderAccount(network, pubKey, txid, account);
 
       return account;
     } catch (error) {
+      // Remove from pending creation transactions on error
+      await removePendingAccountCreationTransaction(network, pubKey, txid);
+
       throw new Error(`Account creation failed: ${error.message || 'Unknown error'}`);
     }
   };
@@ -322,37 +344,56 @@ export class WalletController extends BaseController {
       });
     }
 
-    setCachedData(registerStatusKey(accountKey.public_key), true, 30_000);
+    setCachedData(registerStatusKey(accountKey.public_key), true, 120_000);
 
     // Register the account in userWallet
     userWalletService.registerCurrentPubkey(accountKey.public_key, accountInfo);
   };
   /**
-   * Create a manual address
+   * Create a new address
    * @returns
    */
-  createManualAddress = async () => {
-    const publickey = userWalletService.getCurrentPubkey();
-    const curPubKeyTuple = await keyringService.getCurrentPublicKeyTuple();
 
-    const accountKey = pubKeyTupleToAccountKey(publickey, curPubKeyTuple);
+  createNewAccount = async (network: string) => {
+    const publickey = await keyringService.getCurrentPublicKey();
+    const signAlgo = await keyringService.getCurrentSignAlgo();
+    const accountKey = pubKeySignAlgoToAccountKey(publickey, signAlgo);
+
+    const randomTxId = generateRandomId();
+
     try {
       setCachedData(registerStatusKey(publickey), true, 120_000);
 
-      const data = await openapiService.createManualAddress(
+      // Add the pending account creation transaction to the user wallet to show the random txid
+      // This is to show the spinner in the UI
+      await addPendingAccountCreationTransaction(network, accountKey.public_key, randomTxId);
+
+      const data = await openapiService.createNewAccount(
+        network,
         accountKey.hash_algo,
         accountKey.sign_algo,
         publickey,
         1000
       );
+      if (data.status === HTTP_STATUS_TOO_MANY_REQUESTS) {
+        throw new Error('Rate limit exceeded. Please wait at least 2 minutes between requests.');
+      }
 
       if (!data || !data.data || !data.data.txid) {
         throw new Error('Transaction ID not found in response');
       }
 
       const txid = data.data.txid;
-      this.checkForNewAddress(txid);
+
+      // Add the pending account creation transaction to the user wallet replacing the random txid
+      await addPendingAccountCreationTransaction(network, accountKey.public_key, txid, randomTxId);
+
+      // Check for the new address
+      this.checkForNewAddress(network, accountKey.public_key, txid);
     } catch (error) {
+      // Remove the pending account creation transaction if the operation fails
+      await removePendingAccountCreationTransaction(network, accountKey.public_key, randomTxId);
+
       // Reset the registration status if the operation fails
       setCachedData(registerStatusKey(publickey), false);
 
@@ -360,7 +401,7 @@ export class WalletController extends BaseController {
       consoleError('Failed to create manual address:', error);
 
       // Re-throw a more specific error
-      throw new Error('Failed to create manual address. Please try again later.');
+      throw new Error(`Failed to create manual address. ${error.message}`);
     }
   };
 
@@ -754,13 +795,6 @@ export class WalletController extends BaseController {
 
   clearKeyrings = () => keyringService.clearCurrentKeyring();
 
-  getPrivateKey = async (password: string, address: string) => {
-    await this.verifyPassword(password);
-    const keyring = await keyringService.getKeyringForAccount_deprecated(address);
-    if (!keyring) return null;
-    return await keyring.exportAccount(address);
-  };
-
   getMnemonic = async (password: string): Promise<string> => {
     await this.verifyPassword(password);
     const keyring = this._getKeyringByType(KEYRING_CLASS.MNEMONIC);
@@ -1020,28 +1054,6 @@ export class WalletController extends BaseController {
     return stashKeyringId;
   };
 
-  signPersonalMessage = async (type: string, from: string, data: string, options?: any) => {
-    const keyring = await keyringService.getKeyringForAccount_deprecated(from, type);
-    const res = await keyringService.signPersonalMessage(keyring, { from, data }, options);
-    if (type === KEYRING_TYPE.WalletConnectKeyring) {
-      eventBus.emit(EVENTS.broadcastToUI, {
-        method: EVENTS.SIGN_FINISHED,
-        params: {
-          success: true,
-          data: res,
-        },
-      });
-    }
-    return res;
-  };
-
-  signTransaction = async (type: string, from: string, data: any, options?: any) => {
-    const keyring = await keyringService.getKeyringForAccount_deprecated(from, type);
-    const res = await keyringService.signTransaction(keyring, data, options);
-
-    return res;
-  };
-
   requestKeyring = (type, methodName, keyringId: number | null, ...params) => {
     let keyring;
     if (keyringId !== null && keyringId !== undefined) {
@@ -1144,13 +1156,12 @@ export class WalletController extends BaseController {
   checkAccessibleFt = async (childAccount: string): Promise<ChildAccountFtStore | undefined> => {
     const network = await this.getNetwork();
 
-    const address = await userWalletService.getParentAddress();
-    if (!address) {
+    const parentAddress = await userWalletService.getParentAddress();
+    if (!parentAddress) {
       throw new Error('Parent address not found');
     }
-    const result = await openapiService.queryAccessibleFt(network, address, childAccount);
 
-    return result;
+    return await coinListService.getChildAccountFt(network, parentAddress, childAccount);
   };
 
   getParentAddress = async () => {
@@ -1190,25 +1201,6 @@ export class WalletController extends BaseController {
     const address = await this.getEvmAddress();
     const evmList = await openapiService.EvmNFTcollectionList(address, collection);
     return evmList;
-  };
-
-  reqeustEvmNftList = async () => {
-    try {
-      // Check if the nftList is already in storage and not expired
-      const cachedNFTList = await storage.getExpiry('evmnftList');
-      if (cachedNFTList) {
-        return cachedNFTList;
-      } else {
-        // Fetch the nftList from the API
-        const nftList = await openapiService.evmNFTList();
-        // Cache the nftList with a one-hour expiry (3600000 milliseconds)
-        await storage.setExpiry('evmnftList', nftList, 3600000);
-        return nftList;
-      }
-    } catch (error) {
-      consoleError('Error fetching NFT list:', error);
-      throw error;
-    }
   };
 
   requestCadenceNft = async () => {
@@ -1323,6 +1315,23 @@ export class WalletController extends BaseController {
     return activeWallet;
   };
 
+  /**
+   * Set the active account
+   * @param address - The address of the account to set as active
+   * @param parentAddress - The parent address of the account to set as active
+   * @todo - Tom B - 2 Jun 2025 - I am concerned that this may create problems if the network or pubkey is switched while this is being called. I'm considering including the pubkey and network as arguments
+   */
+
+  setActiveAccount = async (address: string, parentAddress: string) => {
+    if (!isValidFlowAddress(parentAddress)) {
+      throw new Error('Invalid parent address');
+    }
+    if (!isValidAddress(address)) {
+      throw new Error('Invalid account address');
+    }
+    await userWalletService.setCurrentAccount(parentAddress, address);
+  };
+
   /*
    * Sets the active main wallet and current child wallet
    * This is used to switch between main accounts or switch from main to child wallet
@@ -1334,7 +1343,7 @@ export class WalletController extends BaseController {
   setActiveWallet = async (
     wallet: WalletAccount,
     key: ActiveChildType_depreciated | null,
-    index: number | null = null
+    _index: number | null = null
   ) => {
     if (key === null) {
       // We're setting the main wallet
@@ -1414,7 +1423,7 @@ export class WalletController extends BaseController {
     return address;
   };
 
-  sendTransaction = async (cadence: string, args: any[]): Promise<string> => {
+  sendTransaction = async (cadence: string, args: unknown[]): Promise<string> => {
     return await userWalletService.sendTransaction(cadence, args);
   };
 
@@ -1428,7 +1437,7 @@ export class WalletController extends BaseController {
     const script = await getScripts(userWalletService.getNetwork(), 'evm', 'createCoa');
 
     const txID = await userWalletService.sendTransaction(script, [
-      fcl.arg(formattedAmount, t.UFix64),
+      fcl.arg(formattedAmount.toString(), fcl.t.UFix64),
     ]);
 
     // try to seal it
@@ -1620,9 +1629,9 @@ export class WalletController extends BaseController {
     }
 
     const txID = await userWalletService.sendTransaction(script, [
-      fcl.arg(recipientEVMAddressHex, t.String),
-      fcl.arg(amount, t.UFix64),
-      fcl.arg(gasLimit, t.UInt64),
+      fcl.arg(recipientEVMAddressHex, fcl.t.String),
+      fcl.arg(amount, fcl.t.UFix64),
+      fcl.arg(gasLimit, fcl.t.UInt64),
     ]);
 
     mixpanelTrack.track('ft_transfer', {
@@ -1657,12 +1666,12 @@ export class WalletController extends BaseController {
     const gasLimit = 30000000;
 
     const txID = await userWalletService.sendTransaction(script, [
-      fcl.arg(tokenContractAddress, t.Address),
-      fcl.arg(tokenContractName, t.String),
-      fcl.arg(amount, t.UFix64),
-      fcl.arg(contractEVMAddress, t.String),
-      fcl.arg(regularArray, t.Array(t.UInt8)),
-      fcl.arg(gasLimit, t.UInt64),
+      fcl.arg(tokenContractAddress, fcl.t.Address),
+      fcl.arg(tokenContractName, fcl.t.String),
+      fcl.arg(amount, fcl.t.UFix64),
+      fcl.arg(contractEVMAddress, fcl.t.String),
+      fcl.arg(regularArray, fcl.t.Array(fcl.t.UInt8)),
+      fcl.arg(gasLimit, fcl.t.UInt64),
     ]);
     mixpanelTrack.track('ft_transfer', {
       from_address: (await this.getCurrentAddress()) || '',
@@ -1686,9 +1695,9 @@ export class WalletController extends BaseController {
     );
 
     const txID = await userWalletService.sendTransaction(script, [
-      fcl.arg(vaultIdentifier, t.String),
-      fcl.arg(amount, t.UFix64),
-      fcl.arg(recipient, t.String),
+      fcl.arg(vaultIdentifier, fcl.t.String),
+      fcl.arg(amount, fcl.t.UFix64),
+      fcl.arg(recipient, fcl.t.String),
     ]);
 
     mixpanelTrack.track('ft_transfer', {
@@ -1722,9 +1731,9 @@ export class WalletController extends BaseController {
       'bridgeTokensFromEvmToFlowV3'
     );
     const txID = await userWalletService.sendTransaction(script, [
-      fcl.arg(flowidentifier, t.String),
-      fcl.arg(integerAmountStr, t.UInt256),
-      fcl.arg(receiver, t.Address),
+      fcl.arg(flowidentifier, fcl.t.String),
+      fcl.arg(integerAmountStr, fcl.t.UInt256),
+      fcl.arg(receiver, fcl.t.Address),
     ]);
 
     mixpanelTrack.track('ft_transfer', {
@@ -1742,8 +1751,8 @@ export class WalletController extends BaseController {
     const script = await getScripts(userWalletService.getNetwork(), 'evm', 'withdrawCoa');
 
     const txID = await userWalletService.sendTransaction(script, [
-      fcl.arg(amount, t.UFix64),
-      fcl.arg(address, t.Address),
+      fcl.arg(amount, fcl.t.UFix64),
+      fcl.arg(address, fcl.t.Address),
     ]);
 
     return txID;
@@ -1752,7 +1761,7 @@ export class WalletController extends BaseController {
   fundFlowEvm = async (amount = '1.0'): Promise<string> => {
     const script = await getScripts(userWalletService.getNetwork(), 'evm', 'fundCoa');
 
-    return await userWalletService.sendTransaction(script, [fcl.arg(amount, t.UFix64)]);
+    return await userWalletService.sendTransaction(script, [fcl.arg(amount, fcl.t.UFix64)]);
   };
 
   coaLink = async (): Promise<string> => {
@@ -1795,8 +1804,8 @@ export class WalletController extends BaseController {
     );
 
     const txID = await userWalletService.sendTransaction(script, [
-      fcl.arg(flowIdentifier, t.String),
-      fcl.arg(amount, t.UFix64),
+      fcl.arg(flowIdentifier, fcl.t.String),
+      fcl.arg(amount, fcl.t.UFix64),
     ]);
 
     mixpanelTrack.track('ft_transfer', {
@@ -1824,8 +1833,8 @@ export class WalletController extends BaseController {
       'bridgeTokensFromEvmV2'
     );
     const txID = await userWalletService.sendTransaction(script, [
-      fcl.arg(flowIdentifier, t.String),
-      fcl.arg(integerAmountStr, t.UInt256),
+      fcl.arg(flowIdentifier, fcl.t.String),
+      fcl.arg(integerAmountStr, fcl.t.UInt256),
     ]);
 
     mixpanelTrack.track('ft_transfer', {
@@ -1845,6 +1854,11 @@ export class WalletController extends BaseController {
     return evmAccount?.address ?? null;
   };
 
+  /**
+   *
+   * @returns
+   * @deprecated use canMoveToOtherAccount from useProfiles
+   */
   checkCanMoveChild = async () => {
     const activeAccountType = await this.getActiveAccountType();
     if (activeAccountType !== 'child') {
@@ -1890,10 +1904,10 @@ export class WalletController extends BaseController {
     const transactionValue = value === '0x' ? BigInt(0) : BigInt(value);
 
     const result = await userWalletService.sendTransaction(script, [
-      fcl.arg(to, t.String),
-      fcl.arg(transactionValue.toString(), t.UInt256),
-      fcl.arg(regularArray, t.Array(t.UInt8)),
-      fcl.arg(gasLimit, t.UInt64),
+      fcl.arg(to, fcl.t.String),
+      fcl.arg(transactionValue.toString(), fcl.t.UInt256),
+      fcl.arg(regularArray, fcl.t.Array(fcl.t.UInt8)),
+      fcl.arg(gasLimit, fcl.t.UInt64),
     ]);
 
     mixpanelTrack.track('ft_transfer', {
@@ -1949,10 +1963,10 @@ export class WalletController extends BaseController {
     const transactionValue = value === '0x' ? BigInt(0) : BigInt(value);
 
     await userWalletService.sendTransaction(script, [
-      fcl.arg(to, t.String),
-      fcl.arg(transactionValue.toString(), t.UInt256),
-      fcl.arg(regularArray, t.Array(t.UInt8)),
-      fcl.arg(gasLimit.toString(), t.UInt64),
+      fcl.arg(to, fcl.t.String),
+      fcl.arg(transactionValue.toString(), fcl.t.UInt256),
+      fcl.arg(regularArray, fcl.t.Array(fcl.t.UInt8)),
+      fcl.arg(gasLimit.toString(), fcl.t.UInt64),
     ]);
 
     let evmAddress = await this.getEvmAddress();
@@ -2002,6 +2016,12 @@ export class WalletController extends BaseController {
     }
   };
 
+  /**
+   * Get the balance of a list of accounts
+   * @param addresses - The list of addresses to get the balance for
+   * @returns The balance of the accounts
+   * @deprecated Use {@link userWallets.loadAccountListBalance} instead
+   */
   getAllAccountBalance = async (addresses: string[]): Promise<string> => {
     await this.getNetwork();
 
@@ -2019,43 +2039,31 @@ export class WalletController extends BaseController {
   };
 
   getEvmBalance = async (hexEncodedAddress: string): Promise<string> => {
-    await this.getNetwork();
-
-    if (hexEncodedAddress.startsWith('0x')) {
-      hexEncodedAddress = hexEncodedAddress.substring(2);
+    const network = await this.getNetwork();
+    const balance = await getValidData<string>(accountBalanceKey(network, hexEncodedAddress));
+    if (!balance) {
+      return await loadAccountBalance(network, hexEncodedAddress);
     }
-
-    const script = await getScripts(userWalletService.getNetwork(), 'evm', 'getBalance');
-
-    const result = await fcl.query({
-      cadence: script,
-      args: (arg, t) => [arg(hexEncodedAddress, t.String)],
-    });
-    return result;
+    return balance;
   };
 
   getFlowBalance = async (address: string): Promise<string> => {
-    const cacheKey = `checkFlowBalance${address}`;
-    let balance: string = await storage.getExpiry(cacheKey);
-    const ttl = 1 * 60 * 1000;
+    const network = await this.getNetwork();
+    const balance = await getValidData<string>(accountBalanceKey(network, address));
     if (!balance) {
-      try {
-        const account = await fcl.account(address);
-        // Returns the FLOW balance of the account in 10^8
-
-        balance = convertFlowBalanceToString(account.balance);
-
-        if (balance) {
-          // Store the result in the cache with an expiry
-          await storage.setExpiry(cacheKey, balance, ttl);
-        }
-      } catch (error) {
-        consoleError('Error occurred:', error);
-        return '';
-      }
+      return await loadAccountBalance(network, address);
     }
-
     return balance;
+  };
+
+  getAllNft = async (): Promise<NFTModelV2[]> => {
+    const network = await this.getNetwork();
+    const childType = await this.getActiveAccountType();
+    let chainType: 'evm' | 'flow' = 'flow';
+    if (childType === 'evm') {
+      chainType = 'evm';
+    }
+    return await nftService.getNftList(network, chainType);
   };
 
   getNonce = async (hexEncodedAddress: string): Promise<string> => {
@@ -2082,7 +2090,7 @@ export class WalletController extends BaseController {
       'getChildAccountMeta'
     );
 
-    return await userWalletService.sendTransaction(script, [fcl.arg(address, t.Address)]);
+    return await userWalletService.sendTransaction(script, [fcl.arg(address, fcl.t.Address)]);
   };
 
   unlinkChildAccountV2 = async (address: string): Promise<string> => {
@@ -2093,7 +2101,7 @@ export class WalletController extends BaseController {
       'unlinkChildAccount'
     );
 
-    return await userWalletService.sendTransaction(script, [fcl.arg(address, t.Address)]);
+    return await userWalletService.sendTransaction(script, [fcl.arg(address, fcl.t.Address)]);
   };
 
   editChildAccount = async (
@@ -2110,11 +2118,68 @@ export class WalletController extends BaseController {
     );
 
     return await userWalletService.sendTransaction(script, [
-      fcl.arg(address, t.Address),
-      fcl.arg(name, t.String),
-      fcl.arg(description, t.String),
-      fcl.arg(thumbnail, t.String),
+      fcl.arg(address, fcl.t.Address),
+      fcl.arg(name, fcl.t.String),
+      fcl.arg(description, fcl.t.String),
+      fcl.arg(thumbnail, fcl.t.String),
     ]);
+  };
+
+  getTokenInfo = async (symbol: string): Promise<CustomFungibleTokenInfo | undefined> => {
+    const network = await this.getNetwork();
+    const activeAccountType = await this.getActiveAccountType();
+    return await tokenListService.getTokenInfo(
+      network,
+      activeAccountType === 'evm' ? 'evm' : 'flow',
+      symbol
+    );
+  };
+
+  /**
+   * Get the price of a token
+   * @param token - The token to get the price for
+   * @param provider - The provider to get the price from
+   * @returns The price of the token
+   */
+  getTokenPrice = async (token: string, provider = PriceProvider.binance) => {
+    return await openapiService.getTokenPrice(token, provider);
+  };
+
+  /**
+   * Get the price history of a token
+   * @param token - The token to get the price history for
+   * @param period - The period to get the price history for
+   * @param provider - The provider to get the price history from
+   * @returns The price history of the token
+   */
+  getTokenPriceHistory = async (
+    token: string,
+    period = Period.oneDay,
+    provider = PriceProvider.binance
+  ): Promise<TokenPriceHistory[]> => {
+    const rawPriceHistory = await openapiService.getTokenPriceHistoryArray(token, period, provider);
+    const frequency = getPeriodFrequency(period);
+    if (!rawPriceHistory[frequency]) {
+      throw new Error('No price history found for this period');
+    }
+
+    return rawPriceHistory[frequency].map((item) => ({
+      closeTime: item[0],
+      openPrice: item[1],
+      highPrice: item[2],
+      lowPrice: item[3],
+      price: item[4],
+      volume: item[5],
+      quoteVolume: item[6],
+    }));
+  };
+
+  addCustomEvmToken = async (network: string, token: CustomFungibleTokenInfo) => {
+    return await tokenListService.addCustomEvmToken(network, token);
+  };
+
+  removeCustomEvmToken = async (network: string, tokenAddress: string) => {
+    return await tokenListService.removeCustomEvmToken(network, tokenAddress);
   };
 
   // TODO: Replace with generic token
@@ -2123,7 +2188,7 @@ export class WalletController extends BaseController {
     address: string,
     amount: string
   ): Promise<string> => {
-    const token = await openapiService.getTokenInfo(symbol);
+    const token = await this.getTokenInfo(symbol);
     const script = await getScripts(userWalletService.getNetwork(), 'ft', 'transferTokensV3');
 
     if (!token) {
@@ -2136,6 +2201,9 @@ export class WalletController extends BaseController {
 
     await this.getNetwork();
 
+    if (!token.contractName || !token.path || !token.address) {
+      throw new Error('Invalid token');
+    }
     const txID = await userWalletService.sendTransaction(
       script
         .replaceAll('<Token>', token.contractName)
@@ -2143,7 +2211,7 @@ export class WalletController extends BaseController {
         .replaceAll('<TokenReceiverPath>', token.path.receiver)
         .replaceAll('<TokenStoragePath>', token.path.vault)
         .replaceAll('<TokenAddress>', token.address),
-      [fcl.arg(amount, t.UFix64), fcl.arg(address, t.Address)]
+      [fcl.arg(amount, fcl.t.UFix64), fcl.arg(address, fcl.t.Address)]
     );
 
     mixpanelTrack.track('ft_transfer', {
@@ -2160,7 +2228,7 @@ export class WalletController extends BaseController {
   revokeKey = async (index: string): Promise<string> => {
     const script = await getScripts(userWalletService.getNetwork(), 'basic', 'revokeKey');
 
-    return await userWalletService.sendTransaction(script, [fcl.arg(index, t.Int)]);
+    return await userWalletService.sendTransaction(script, [fcl.arg(index, fcl.t.Int)]);
   };
 
   addKeyToAccount = async (
@@ -2187,49 +2255,16 @@ export class WalletController extends BaseController {
       }
       `,
       [
-        fcl.arg(publicKey, t.String),
-        fcl.arg(signatureAlgorithm, t.UInt8),
-        fcl.arg(hashAlgorithm, t.UInt8),
-        fcl.arg(weight.toFixed(1), t.UFix64),
-      ]
-    );
-  };
-
-  // TODO: Replace with generic token
-  claimFTFromInbox = async (
-    domain: string,
-    amount: string,
-    symbol: string,
-    root = 'meow'
-  ): Promise<string> => {
-    const domainName = domain.split('.')[0];
-    const token = await openapiService.getTokenInfoByContract(symbol);
-    const script = await getScripts(userWalletService.getNetwork(), 'domain', 'claimFTFromInbox');
-
-    if (!token) {
-      throw new Error(`Invaild token name - ${symbol}`);
-    }
-    const network = await this.getNetwork();
-    const address = fcl.sansPrefix(token.address[network]);
-    const key = `A.${address}.${symbol}.Vault`;
-    return await userWalletService.sendTransaction(
-      script
-        .replaceAll('<Token>', token.contract_name)
-        .replaceAll('<TokenBalancePath>', token.storage_path.balance)
-        .replaceAll('<TokenReceiverPath>', token.storage_path.receiver)
-        .replaceAll('<TokenStoragePath>', token.storage_path.vault)
-        .replaceAll('<TokenAddress>', token.address[network]),
-      [
-        fcl.arg(domainName, t.String),
-        fcl.arg(root, t.String),
-        fcl.arg(key, t.String),
-        fcl.arg(amount, t.UFix64),
+        fcl.arg(publicKey, fcl.t.String),
+        fcl.arg(signatureAlgorithm, fcl.t.UInt8),
+        fcl.arg(hashAlgorithm, fcl.t.UInt8),
+        fcl.arg(weight.toFixed(1), fcl.t.UFix64),
       ]
     );
   };
 
   enableTokenStorage = async (symbol: string) => {
-    const token = await openapiService.getTokenInfo(symbol);
+    const token = await this.getTokenInfo(symbol);
     if (!token) {
       return;
     }
@@ -2239,6 +2274,9 @@ export class WalletController extends BaseController {
       'storage',
       'enableTokenStorage'
     );
+    if (!token.contractName || !token.path || !token.address) {
+      throw new Error('Invalid token');
+    }
 
     return await userWalletService.sendTransaction(
       script
@@ -2275,7 +2313,7 @@ export class WalletController extends BaseController {
     amount: string,
     symbol: string
   ): Promise<string> => {
-    const token = await openapiService.getTokenInfo(symbol);
+    const token = await this.getTokenInfo(symbol);
     if (!token) {
       throw new Error(`Invaild token name - ${symbol}`);
     }
@@ -2287,15 +2325,15 @@ export class WalletController extends BaseController {
     const replacedScript = replaceNftKeywords(script, token);
 
     const result = await userWalletService.sendTransaction(replacedScript, [
-      fcl.arg(childAddress, t.Address),
-      fcl.arg(path, t.String),
-      fcl.arg(amount, t.UFix64),
+      fcl.arg(childAddress, fcl.t.Address),
+      fcl.arg(path, fcl.t.String),
+      fcl.arg(amount, fcl.t.UFix64),
     ]);
     mixpanelTrack.track('ft_transfer', {
       from_address: (await this.getCurrentAddress()) || '',
       to_address: childAddress,
       amount: amount,
-      ft_identifier: token.contractName,
+      ft_identifier: 'flow',
       type: 'flow',
     });
     return result;
@@ -2308,7 +2346,7 @@ export class WalletController extends BaseController {
     amount: string,
     symbol: string
   ): Promise<string> => {
-    const token = await openapiService.getTokenInfo(symbol);
+    const token = await this.getTokenInfo(symbol);
     if (!token) {
       throw new Error(`Invaild token name - ${symbol}`);
     }
@@ -2321,16 +2359,16 @@ export class WalletController extends BaseController {
     const replacedScript = replaceNftKeywords(script, token);
 
     const result = await userWalletService.sendTransaction(replacedScript, [
-      fcl.arg(childAddress, t.Address),
-      fcl.arg(receiver, t.Address),
-      fcl.arg(path, t.String),
-      fcl.arg(amount, t.UFix64),
+      fcl.arg(childAddress, fcl.t.Address),
+      fcl.arg(receiver, fcl.t.Address),
+      fcl.arg(path, fcl.t.String),
+      fcl.arg(amount, fcl.t.UFix64),
     ]);
     mixpanelTrack.track('ft_transfer', {
       from_address: childAddress,
       to_address: receiver,
       amount: amount,
-      ft_identifier: token.contractName,
+      ft_identifier: 'flow',
       type: 'flow',
     });
     return result;
@@ -2349,9 +2387,9 @@ export class WalletController extends BaseController {
     );
     const replacedScript = replaceNftKeywords(script, token);
     const txID = await userWalletService.sendTransaction(replacedScript, [
-      fcl.arg(nftContractAddress, t.Address),
-      fcl.arg(nftContractName, t.String),
-      fcl.arg(ids, t.UInt64),
+      fcl.arg(nftContractAddress, fcl.t.Address),
+      fcl.arg(nftContractName, fcl.t.String),
+      fcl.arg(ids, fcl.t.UInt64),
     ]);
     mixpanelTrack.track('nft_transfer', {
       tx_id: txID,
@@ -2379,10 +2417,10 @@ export class WalletController extends BaseController {
     );
     const replacedScript = replaceNftKeywords(script, token);
     const txID = await userWalletService.sendTransaction(replacedScript, [
-      fcl.arg(linkedAddress, t.Address),
-      fcl.arg(receiverAddress, t.Address),
-      fcl.arg(nftContractName, t.String),
-      fcl.arg(ids, t.UInt64),
+      fcl.arg(linkedAddress, fcl.t.Address),
+      fcl.arg(receiverAddress, fcl.t.Address),
+      fcl.arg(nftContractName, fcl.t.String),
+      fcl.arg(ids, fcl.t.UInt64),
     ]);
     mixpanelTrack.track('nft_transfer', {
       tx_id: txID,
@@ -2410,10 +2448,10 @@ export class WalletController extends BaseController {
     );
     const replacedScript = replaceNftKeywords(script, token);
     const txID = await userWalletService.sendTransaction(replacedScript, [
-      fcl.arg(nftContractName, t.String),
-      fcl.arg(linkedAddress, t.Address),
-      fcl.arg(id, t.UInt64),
-      fcl.arg(receiverAddress, t.String),
+      fcl.arg(nftContractName, fcl.t.String),
+      fcl.arg(linkedAddress, fcl.t.Address),
+      fcl.arg(id, fcl.t.UInt64),
+      fcl.arg(receiverAddress, fcl.t.String),
     ]);
     mixpanelTrack.track('nft_transfer', {
       tx_id: txID,
@@ -2444,9 +2482,9 @@ export class WalletController extends BaseController {
     }
     const replacedScript = replaceNftKeywords(script, token);
     const txID = await userWalletService.sendTransaction(replacedScript, [
-      fcl.arg(walletAddress, t.Address),
-      fcl.arg(path, t.String),
-      fcl.arg(ids, t.UInt64),
+      fcl.arg(walletAddress, fcl.t.Address),
+      fcl.arg(path, fcl.t.String),
+      fcl.arg(ids, fcl.t.UInt64),
     ]);
 
     mixpanelTrack.track('nft_transfer', {
@@ -2491,7 +2529,7 @@ export class WalletController extends BaseController {
   };
 
   batchBridgeNftToEvm = async (flowIdentifier: string, ids: Array<number>): Promise<string> => {
-    const shouldCoverBridgeFee = await openapiService.getFeatureFlag('cover_bridge_fee');
+    const shouldCoverBridgeFee = await remoteConfigService.getFeatureFlag('cover_bridge_fee');
     const scriptName = shouldCoverBridgeFee
       ? 'batchBridgeNFTToEvmWithPayer'
       : 'batchBridgeNFTToEvmV2';
@@ -2499,7 +2537,7 @@ export class WalletController extends BaseController {
 
     const txID = await userWalletService.sendTransaction(
       script,
-      [fcl.arg(flowIdentifier, t.String), fcl.arg(ids, t.Array(t.UInt64))],
+      [fcl.arg(flowIdentifier, fcl.t.String), fcl.arg(ids, fcl.t.Array(fcl.t.UInt64))],
       shouldCoverBridgeFee
     );
     mixpanelTrack.track('nft_transfer', {
@@ -2515,7 +2553,7 @@ export class WalletController extends BaseController {
   };
 
   batchBridgeNftFromEvm = async (flowIdentifier: string, ids: Array<number>): Promise<string> => {
-    const shouldCoverBridgeFee = await openapiService.getFeatureFlag('cover_bridge_fee');
+    const shouldCoverBridgeFee = await remoteConfigService.getFeatureFlag('cover_bridge_fee');
     const scriptName = shouldCoverBridgeFee
       ? 'batchBridgeNFTFromEvmWithPayer'
       : 'batchBridgeNFTFromEvmV2';
@@ -2523,7 +2561,7 @@ export class WalletController extends BaseController {
 
     const txID = await userWalletService.sendTransaction(
       script,
-      [fcl.arg(flowIdentifier, t.String), fcl.arg(ids, t.Array(t.UInt256))],
+      [fcl.arg(flowIdentifier, fcl.t.String), fcl.arg(ids, fcl.t.Array(fcl.t.UInt256))],
       shouldCoverBridgeFee
     );
     mixpanelTrack.track('nft_transfer', {
@@ -2552,9 +2590,9 @@ export class WalletController extends BaseController {
     const replacedScript = replaceNftKeywords(script, token);
 
     const txID = await userWalletService.sendTransaction(replacedScript, [
-      fcl.arg(childAddr, t.Address),
-      fcl.arg(identifier, t.String),
-      fcl.arg(ids, t.Array(t.UInt64)),
+      fcl.arg(childAddr, fcl.t.Address),
+      fcl.arg(identifier, fcl.t.String),
+      fcl.arg(ids, fcl.t.Array(fcl.t.UInt64)),
     ]);
     mixpanelTrack.track('nft_transfer', {
       tx_id: txID,
@@ -2582,9 +2620,9 @@ export class WalletController extends BaseController {
     const replacedScript = replaceNftKeywords(script, token);
 
     const txID = await userWalletService.sendTransaction(replacedScript, [
-      fcl.arg(childAddr, t.Address),
-      fcl.arg(identifier, t.String),
-      fcl.arg(ids, t.Array(t.UInt64)),
+      fcl.arg(childAddr, fcl.t.Address),
+      fcl.arg(identifier, fcl.t.String),
+      fcl.arg(ids, fcl.t.Array(fcl.t.UInt64)),
     ]);
     mixpanelTrack.track('nft_transfer', {
       tx_id: txID,
@@ -2613,10 +2651,10 @@ export class WalletController extends BaseController {
     const replacedScript = replaceNftKeywords(script, token);
 
     const txID = await userWalletService.sendTransaction(replacedScript, [
-      fcl.arg(childAddr, t.Address),
-      fcl.arg(receiver, t.Address),
-      fcl.arg(identifier, t.String),
-      fcl.arg(ids, t.Array(t.UInt64)),
+      fcl.arg(childAddr, fcl.t.Address),
+      fcl.arg(receiver, fcl.t.Address),
+      fcl.arg(identifier, fcl.t.String),
+      fcl.arg(ids, fcl.t.Array(fcl.t.UInt64)),
     ]);
     mixpanelTrack.track('nft_transfer', {
       tx_id: txID,
@@ -2643,9 +2681,9 @@ export class WalletController extends BaseController {
     );
     const replacedScript = replaceNftKeywords(script, token);
     const txID = await userWalletService.sendTransaction(replacedScript, [
-      fcl.arg(identifier, t.String),
-      fcl.arg(childAddr, t.Address),
-      fcl.arg(ids, t.Array(t.UInt64)),
+      fcl.arg(identifier, fcl.t.String),
+      fcl.arg(childAddr, fcl.t.Address),
+      fcl.arg(ids, fcl.t.Array(fcl.t.UInt64)),
     ]);
     mixpanelTrack.track('nft_transfer', {
       tx_id: txID,
@@ -2671,9 +2709,9 @@ export class WalletController extends BaseController {
     );
 
     const txID = await userWalletService.sendTransaction(script, [
-      fcl.arg(identifier, t.String),
-      fcl.arg(childAddr, t.Address),
-      fcl.arg(ids, t.Array(t.UInt256)),
+      fcl.arg(identifier, fcl.t.String),
+      fcl.arg(childAddr, fcl.t.Address),
+      fcl.arg(ids, fcl.t.Array(fcl.t.UInt256)),
     ]);
     mixpanelTrack.track('nft_transfer', {
       tx_id: txID,
@@ -2692,13 +2730,11 @@ export class WalletController extends BaseController {
     ids: number,
     recipientEvmAddress: string
   ): Promise<string> => {
-    const shouldCoverBridgeFee = await openapiService.getFeatureFlag('cover_bridge_fee');
+    const shouldCoverBridgeFee = await remoteConfigService.getFeatureFlag('cover_bridge_fee');
     const scriptName = shouldCoverBridgeFee
       ? 'bridgeNFTToEvmAddressWithPayer'
       : 'bridgeNFTToEvmAddressV2';
     const script = await getScripts(userWalletService.getNetwork(), 'bridge', scriptName);
-
-    const gasLimit = 30000000;
 
     if (recipientEvmAddress.startsWith('0x')) {
       recipientEvmAddress = recipientEvmAddress.substring(2);
@@ -2707,9 +2743,9 @@ export class WalletController extends BaseController {
     const txID = await userWalletService.sendTransaction(
       script,
       [
-        fcl.arg(flowIdentifier, t.String),
-        fcl.arg(ids, t.UInt64),
-        fcl.arg(recipientEvmAddress, t.String),
+        fcl.arg(flowIdentifier, fcl.t.String),
+        fcl.arg(ids, fcl.t.UInt64),
+        fcl.arg(recipientEvmAddress, fcl.t.String),
       ],
       shouldCoverBridgeFee
     );
@@ -2730,7 +2766,7 @@ export class WalletController extends BaseController {
     ids: number,
     receiver: string
   ): Promise<string> => {
-    const shouldCoverBridgeFee = await openapiService.getFeatureFlag('cover_bridge_fee');
+    const shouldCoverBridgeFee = await remoteConfigService.getFeatureFlag('cover_bridge_fee');
     const scriptName = shouldCoverBridgeFee
       ? 'bridgeNFTFromEvmToFlowWithPayer'
       : 'bridgeNFTFromEvmToFlowV3';
@@ -2738,7 +2774,11 @@ export class WalletController extends BaseController {
 
     const txID = await userWalletService.sendTransaction(
       script,
-      [fcl.arg(flowIdentifier, t.String), fcl.arg(ids, t.UInt256), fcl.arg(receiver, t.Address)],
+      [
+        fcl.arg(flowIdentifier, fcl.t.String),
+        fcl.arg(ids, fcl.t.UInt256),
+        fcl.arg(receiver, fcl.t.Address),
+      ],
       shouldCoverBridgeFee
     );
     mixpanelTrack.track('nft_transfer', {
@@ -2766,7 +2806,7 @@ export class WalletController extends BaseController {
     return result;
   };
 
-  sendNFT = async (recipient: string, id: any, token: any): Promise<string> => {
+  sendNFT = async (recipient: string, id: number, token: NFTModelV2): Promise<string> => {
     await this.getNetwork();
     const script = await getScripts(userWalletService.getNetwork(), 'collection', 'sendNFTV3');
 
@@ -2776,7 +2816,7 @@ export class WalletController extends BaseController {
         .replaceAll('<NFTAddress>', token.address)
         .replaceAll('<CollectionStoragePath>', token.path.storage)
         .replaceAll('<CollectionPublicPath>', token.path.public),
-      [fcl.arg(recipient, t.Address), fcl.arg(parseInt(id), t.UInt64)]
+      [fcl.arg(recipient, fcl.t.Address), fcl.arg(id, fcl.t.UInt64)]
     );
     mixpanelTrack.track('nft_transfer', {
       tx_id: txID,
@@ -2790,7 +2830,7 @@ export class WalletController extends BaseController {
     return txID;
   };
 
-  sendNBANFT = async (recipient: string, id: any, token: NFTModelV2): Promise<string> => {
+  sendNBANFT = async (recipient: string, id: number, token: NFTModelV2): Promise<string> => {
     await this.getNetwork();
     const script = await getScripts(userWalletService.getNetwork(), 'collection', 'sendNbaNFTV3');
 
@@ -2800,7 +2840,7 @@ export class WalletController extends BaseController {
         .replaceAll('<NFTAddress>', token.address)
         .replaceAll('<CollectionStoragePath>', token.path.storage)
         .replaceAll('<CollectionPublicPath>', token.path.public),
-      [fcl.arg(recipient, t.Address), fcl.arg(parseInt(id), t.UInt64)]
+      [fcl.arg(recipient, fcl.t.Address), fcl.arg(id, fcl.t.UInt64)]
     );
     mixpanelTrack.track('nft_transfer', {
       tx_id: txID,
@@ -2821,7 +2861,7 @@ export class WalletController extends BaseController {
     limit: number,
     offset: number,
     _expiry = 60000,
-    forceRefresh = false
+    _forceRefresh = false
   ): Promise<{
     count: number;
     list: TransferItem[];
@@ -2860,19 +2900,6 @@ export class WalletController extends BaseController {
 
   loginWithPrivatekey = async (pk: string, replaceUser = true) => {
     return userWalletService.loginWithPk(pk, replaceUser);
-  };
-
-  /**
-   * @deprecated This method is deprecated and should not be used in new code.
-   * @see {@link loginWithMnemonic} Use this method instead.
-   */
-  loginV3_depreciated = async (
-    mnemonic: string,
-    accountKey: any,
-    deviceInfo: any,
-    replaceUser = true
-  ) => {
-    return userWalletService.loginV3_depreciated(mnemonic, accountKey, deviceInfo, replaceUser);
   };
 
   signMessage = async (message: string): Promise<string> => {
@@ -2971,10 +2998,10 @@ export class WalletController extends BaseController {
     if (isEvm === 'evm') {
       switch (network) {
         case 'testnet':
-          baseURL = 'https://evm-testnet.flowscan.io';
+          baseURL = 'https://testnet.flowscan.io/evm';
           break;
         case 'mainnet':
-          baseURL = 'https://evm.flowscan.io';
+          baseURL = 'https://flowscan.io/evm';
           break;
       }
     } else {
@@ -3040,37 +3067,38 @@ export class WalletController extends BaseController {
 
   pollTransferList = async (address: string, txHash: string, maxAttempts = 5) => {
     const network = await this.getNetwork();
+    const currency = (await this.getDisplayCurrency())?.code || 'USD';
     let attempts = 0;
-    const poll = async () => {
-      if (attempts >= maxAttempts) {
-        consoleWarn('Max polling attempts reached');
-        return;
-      }
+    try {
+      const poll = async () => {
+        if (attempts >= maxAttempts) {
+          consoleWarn('Max polling attempts reached');
+          return;
+        }
 
-      const { list: newTransactions } = await transactionService.loadTransactions(
-        network,
-        address,
-        '0',
-        '15'
-      );
-      // Copy the list as we're going to modify the original list
-
-      const foundTx = newTransactions?.find((tx) => txHash.includes(tx.hash));
-      if (foundTx && foundTx.indexed) {
-        // Send a message to the UI to update the transfer list
-        chrome.runtime.sendMessage({ msg: 'transferListUpdated' });
-        // Refresh the coin list
-        triggerRefresh(
-          coinListKey(network, address, (await this.getDisplayCurrency())?.code || 'USD')
+        const { list: newTransactions } = await transactionService.loadTransactions(
+          network,
+          address,
+          '0',
+          '15'
         );
-      } else {
-        // All of the transactions have not been picked up by the indexer yet
-        attempts++;
-        setTimeout(poll, 5000); // Poll every 5 seconds
-      }
-    };
+        // Copy the list as we're going to modify the original list
 
-    await poll();
+        const foundTx = newTransactions?.find((tx) => txHash.includes(tx.hash));
+        if (foundTx && foundTx.indexed) {
+          // Refresh the coin list
+          triggerRefresh(coinListKey(network, address, currency));
+        } else {
+          // All of the transactions have not been picked up by the indexer yet
+          attempts++;
+          setTimeout(poll, 5000); // Poll every 5 seconds
+        }
+      };
+
+      await poll();
+    } catch (error) {
+      consoleError('pollTransferList error', error);
+    }
   };
 
   listenTransaction = async (
@@ -3085,27 +3113,18 @@ export class WalletController extends BaseController {
     }
     const address = (await this.getCurrentAddress()) || '0x';
     const network = await this.getNetwork();
+    const currency = (await this.getDisplayCurrency())?.code || 'USD';
     let txHash = txId;
     try {
-      chrome.storage.session.set({
-        transactionPending: { txId, network, date: new Date() },
-      });
-      eventBus.emit('transactionPending');
-      chrome.runtime.sendMessage({
-        msg: 'transactionPending',
-        network: network,
-      });
       transactionService.setPending(network, address, txId, icon, title);
-
+      const fclTx = fcl.tx(txId);
       // Listen to the transaction until it's sealed.
       // This will throw an error if there is an error with the transaction
-      const txStatus = await fcl.tx(txId).onceExecuted();
+      const txStatusFinalized = await fclTx.onceFinalized();
+
       // Update the pending transaction with the transaction status
-      txHash = await transactionService.updatePending(network, address, txId, txStatus);
-      // Refresh the coin list
-      triggerRefresh(
-        coinListKey(network, address, (await this.getDisplayCurrency())?.code || 'USD')
-      );
+      txHash = await transactionService.updatePending(network, address, txId, txStatusFinalized);
+
       // Track the transaction result
       mixpanelTrack.track('transaction_result', {
         tx_id: txId,
@@ -3119,7 +3138,7 @@ export class WalletController extends BaseController {
           if (baseURL.includes('evm')) {
             // It's an EVM transaction
             // Look through the events in txStatus
-            const evmEvent = txStatus.events.find(
+            const evmEvent = txStatusFinalized.events.find(
               (event) => event.type.includes('EVM') && !!event.data?.hash
             );
             if (evmEvent) {
@@ -3142,6 +3161,29 @@ export class WalletController extends BaseController {
         // We don't want to throw an error if the notification fails
         consoleError('listenTransaction notification error ', err);
       }
+
+      // Wait for the transacton to be executed
+      // Listen to the transaction until it's sealed.
+      // This will throw an error if there is an error with the transaction
+      const txStatusExecuted = await fclTx.onceExecuted();
+
+      // Update the pending transaction with the transaction status
+      txHash = await transactionService.updatePending(network, address, txId, txStatusExecuted);
+      // Refresh the account balance
+      triggerRefresh(accountBalanceKey(network, address));
+      // Refresh the coin list
+      triggerRefresh(coinListKey(network, address, currency));
+
+      // Wait for the transaction to be sealed
+      const txStatusSealed = await fclTx.onceSealed();
+
+      // Update the pending transaction with the transaction status
+      txHash = await transactionService.updatePending(network, address, txId, txStatusSealed);
+
+      // Refresh the account balance after sealed status - just to be sure
+      triggerRefresh(accountBalanceKey(network, address));
+      // Refresh the coin list after sealed status - just to be sure
+      triggerRefresh(coinListKey(network, address, currency));
     } catch (err: unknown) {
       // An error has occurred while listening to the transaction
       let errorMessage = 'unknown error';
@@ -3182,15 +3224,6 @@ export class WalletController extends BaseController {
         errorCode,
       });
     } finally {
-      // Remove the pending transaction from the UI
-      await chrome.storage.session.remove('transactionPending');
-
-      // Message the UI that the transaction is done
-      eventBus.emit('transactionDone');
-      chrome.runtime.sendMessage({
-        msg: 'transactionDone',
-      });
-
       if (txHash) {
         // Start polling for transfer list updates
         await this.pollTransferList(address, txHash);
@@ -3356,7 +3389,7 @@ export class WalletController extends BaseController {
     return googleDriveService.loadBackupAccounts();
   };
 
-  loadBackupAccountLists = async (): Promise<any[]> => {
+  loadBackupAccountLists = async () => {
     return googleDriveService.loadBackupAccountLists();
   };
 
@@ -3366,9 +3399,9 @@ export class WalletController extends BaseController {
 
   getPayerAddressAndKeyId = async () => {
     try {
-      const config = await fetchConfig.remoteConfig();
+      const remoteConfig = await remoteConfigService.getRemoteConfig();
       const network = await this.getNetwork();
-      return config.payer[network];
+      return remoteConfig.config.payer[network];
     } catch {
       const network = await this.getNetwork();
       return defaultConfig.payer[network];
@@ -3377,9 +3410,12 @@ export class WalletController extends BaseController {
 
   getBridgeFeePayerAddressAndKeyId = async () => {
     try {
-      const config = await fetchConfig.remoteConfig();
+      const remoteConfig = await remoteConfigService.getRemoteConfig();
       const network = await this.getNetwork();
-      return config.bridgeFeePayer[network];
+      if (!remoteConfig.config.bridgeFeePayer) {
+        throw new Error('Bridge fee payer not found');
+      }
+      return remoteConfig.config.bridgeFeePayer[network];
     } catch {
       const network = await this.getNetwork();
       return defaultConfig.bridgeFeePayer[network];
@@ -3387,11 +3423,11 @@ export class WalletController extends BaseController {
   };
 
   getFeatureFlags = async (): Promise<FeatureFlags> => {
-    return openapiService.getFeatureFlags();
+    return remoteConfigService.getFeatureFlags();
   };
 
   getFeatureFlag = async (featureFlag: FeatureFlagKey): Promise<boolean> => {
-    return openapiService.getFeatureFlag(featureFlag);
+    return remoteConfigService.getFeatureFlag(featureFlag);
   };
 
   allowLilicoPay = async (): Promise<boolean> => {
@@ -3437,7 +3473,7 @@ export class WalletController extends BaseController {
    *  @deprecated this doesn't do anything
    *  @todo remove this
    */
-  setEmoji_depreciated = async (emoji, type, index) => {
+  setEmoji_depreciated = async (emoji, _type, _index) => {
     return emoji;
   };
 
@@ -3449,13 +3485,6 @@ export class WalletController extends BaseController {
     return await preferenceService.getDisplayCurrency();
   };
 
-  // Get the news from the server
-  getNews = async () => {
-    if (!this.isUnlocked()) {
-      return [];
-    }
-    return await newsService.getNews();
-  };
   markNewsAsDismissed = async (id: string) => {
     return await newsService.markAsDismissed(id);
   };
@@ -3468,41 +3497,12 @@ export class WalletController extends BaseController {
     return await newsService.markAllAsRead();
   };
 
-  getUnreadNewsCount = async () => {
-    if (!this.isUnlocked()) {
-      return 0;
-    }
-    return newsService.getUnreadCount();
-  };
-
   isNewsRead = (id: string) => {
     return newsService.isRead(id);
   };
 
-  resetNews = async () => {
-    return await newsService.clear();
-  };
-
-  // Check the storage status
-  checkStorageStatus = async ({
-    transferAmount,
-    coin,
-    movingBetweenEVMAndFlow,
-  }: {
-    transferAmount?: number; // amount in coins
-    coin?: string; // coin name
-    movingBetweenEVMAndFlow?: boolean; // are we moving between EVM and Flow?
-  } = {}): Promise<EvaluateStorageResult> => {
-    const address = await this.getParentAddress();
-    const isFreeGasFeeEnabled = await userWalletService.allowFreeGas();
-    const result = await this.storageEvaluator.evaluateStorage(
-      address!,
-      transferAmount,
-      coin,
-      movingBetweenEVMAndFlow,
-      isFreeGasFeeEnabled
-    );
-    return result;
+  resetNews = () => {
+    return newsService.clear();
   };
 
   // Tracking stuff
@@ -3577,7 +3577,7 @@ export class WalletController extends BaseController {
   getEvmNftCollectionList = async (
     address: string,
     collectionIdentifier: string,
-    limit = 50,
+    _limit = 50,
     offset = 0
   ) => {
     if (!isValidEthereumAddress(address)) {

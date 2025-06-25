@@ -4,15 +4,15 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
-import { EnableEvm } from '@/ui/FRWComponent/EnableEvm';
+import { EnableEvm } from '@/ui/components/EnableEvm';
+import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import flowgrey from 'ui/FRWAssets/svg/flow-grey.svg';
-import linkGlobe from 'ui/FRWAssets/svg/linkGlobe.svg';
-import { LLPrimaryButton, LLSecondaryButton, LLConnectLoading } from 'ui/FRWComponent';
+import flowgrey from 'ui/assets/svg/flow-grey.svg';
+import linkGlobe from 'ui/assets/svg/linkGlobe.svg';
+import { LLPrimaryButton, LLSecondaryButton, LLConnectLoading } from 'ui/components';
 import { useApproval, useWallet, formatAddress } from 'ui/utils';
 
-import CheckCircleIcon from '../../../../../../components/iconfont/IconCheckmark';
 import IconWithPlaceholder from '../EthApprovalComponents/IconWithPlaceholder';
 // import EthMove from '../EthMove';
 
@@ -97,28 +97,6 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
         setIsLoading(false);
       });
   };
-
-  const transactionDoneHandler = useCallback(
-    async (request) => {
-      if (request.msg === 'transactionDone') {
-        const mainWallet = await usewallet.getParentAddress();
-        if (!mainWallet) {
-          throw new Error('Main wallet is undefined');
-        }
-      }
-      return true;
-    },
-    [usewallet]
-  );
-
-  useEffect(() => {
-    // Handle listenting for transactionDone event
-    chrome.runtime.onMessage.addListener(transactionDoneHandler);
-
-    return () => {
-      chrome.runtime.onMessage.removeListener(transactionDoneHandler);
-    };
-  }, [transactionDoneHandler]);
 
   const handleCancel = () => {
     // This is called when the user clicks the cancel button

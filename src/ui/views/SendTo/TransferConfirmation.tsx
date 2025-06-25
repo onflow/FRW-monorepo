@@ -1,25 +1,26 @@
 import CloseIcon from '@mui/icons-material/Close';
 import InfoIcon from '@mui/icons-material/Info';
-import { Box, Typography, Drawer, Stack, Grid, CardMedia, IconButton, Button } from '@mui/material';
+import { Box, Typography, Drawer, Stack, CardMedia, IconButton, Button } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { type TransactionState } from '@/shared/types/transaction-types';
 import { consoleError } from '@/shared/utils/console-log';
-import SlideRelative from '@/ui/FRWComponent/SlideRelative';
-import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
-import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
+import SlideRelative from '@/ui/components/SlideRelative';
+import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
+import { WarningStorageLowSnackbar } from '@/ui/components/WarningStorageLowSnackbar';
+import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useContact } from '@/ui/hooks/useContactHook';
+import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
-import { useStorageCheck } from '@/ui/utils/useStorageCheck';
-import IconNext from 'ui/FRWAssets/svg/next.svg';
-import { LLSpinner } from 'ui/FRWComponent';
-import { Profile } from 'ui/FRWComponent/Send/Profile';
+import IconNext from 'ui/assets/svg/next.svg';
+import { LLSpinner } from 'ui/components';
+import { Profile } from 'ui/components/Send/Profile';
 import { useWallet } from 'ui/utils';
 
-import { CurrencyValue } from '../TokenDetail/CurrencyValue';
-import { TokenBalance } from '../TokenDetail/TokenBalance';
-import { TokenValue } from '../TokenDetail/TokenValue';
+import { CurrencyValue } from '../../components/TokenLists/CurrencyValue';
+import { TokenBalance } from '../../components/TokenLists/TokenBalance';
 
 interface TransferConfirmationProps {
   transactionState: TransactionState;
@@ -35,6 +36,7 @@ const TransferConfirmation = ({
   const wallet = useWallet();
   const history = useHistory();
   const { occupied } = useTransferList();
+  const currency = useCurrency();
   const fromContactData =
     useContact(transactionState.fromContact?.address || '') || transactionState.fromContact;
   const toContactData =
@@ -47,8 +49,6 @@ const TransferConfirmation = ({
   const [tid, setTid] = useState<string>('');
   const [count, setCount] = useState(0);
 
-  const transferAmount = transactionState.amount ? parseFloat(transactionState.amount) : undefined;
-
   // Check if the transfer is between EVM and Flow networks
   const movingBetweenEVMAndFlow =
     (transactionState.fromNetwork === 'Evm' && transactionState.toNetwork !== 'Evm') ||
@@ -56,7 +56,7 @@ const TransferConfirmation = ({
 
   const { sufficient: isSufficient, sufficientAfterAction: isSufficientAfterAction } =
     useStorageCheck({
-      transferAmount,
+      transferAmount: transactionState.amount,
       coin: transactionState.tokenInfo?.coin,
       movingBetweenEVMAndFlow,
     });
@@ -132,7 +132,6 @@ const TransferConfirmation = ({
       setErrorMessage(request.errorMessage);
       setErrorCode(request.errorCode);
     }
-    return true;
   }, []);
 
   useEffect(() => {
@@ -176,8 +175,8 @@ const TransferConfirmation = ({
               alignItems: 'center',
             }}
           >
-            <Grid item xs={1}></Grid>
-            <Grid item xs={10}>
+            <Grid size={1}></Grid>
+            <Grid size={10}>
               {tid ? (
                 <Box
                   sx={{
@@ -199,7 +198,7 @@ const TransferConfirmation = ({
                 </Typography>
               )}
             </Grid>
-            <Grid item xs={1}>
+            <Grid size={1}>
               <IconButton onClick={handleCloseIconClicked}>
                 <CloseIcon fontSize="medium" sx={{ color: 'icon.navi', cursor: 'pointer' }} />
               </IconButton>
@@ -284,7 +283,11 @@ const TransferConfirmation = ({
                 color="info"
                 sx={{ fontSize: '14px', fontWeight: 'semi-bold', textAlign: 'end' }}
               >
-                <CurrencyValue value={transactionState.fiatAmount} />
+                <CurrencyValue
+                  value={transactionState.fiatAmount}
+                  currencyCode={currency?.code ?? ''}
+                  currencySymbol={currency?.symbol ?? ''}
+                />
               </Typography>
             </Stack>
           </Box>

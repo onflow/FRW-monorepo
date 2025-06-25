@@ -4,12 +4,18 @@ import { v4 as uuid } from 'uuid';
 import { Message } from '@/shared/utils/messaging';
 
 const channelName = nanoid();
+const extensionId = chrome.runtime.id;
 
-const injectProviderScript = async (isDefaultWallet) => {
+const DEPLOYMENT_ENV = process.env.DEPLOYMENT_ENV;
+const IS_BETA = process.env.IS_BETA === 'true';
+
+const channelPrefix = IS_BETA ? 'frw-beta:' : DEPLOYMENT_ENV === 'production' ? 'frw:' : 'frw-dev:';
+const injectProviderScript = (isDefaultWallet: boolean) => {
   // Set local storage variables
-  await localStorage.setItem('frw:channelName', channelName);
-  await localStorage.setItem('frw:isDefaultWallet', isDefaultWallet);
-  await localStorage.setItem('frw:uuid', uuid());
+  localStorage.setItem(`${channelPrefix}channelName`, channelName);
+  localStorage.setItem(`${channelPrefix}isDefaultWallet`, isDefaultWallet.toString());
+  localStorage.setItem(`${channelPrefix}uuid`, uuid());
+  localStorage.setItem(`${channelPrefix}extensionId`, extensionId);
 
   const container = document.head || document.documentElement;
   const scriptElement = document.createElement('script');
@@ -48,6 +54,7 @@ initListener(channelName);
 // because the content script run at document start
 setTimeout(() => {
   document.body.setAttribute('data-channel-name', channelName);
+  document.body.setAttribute('data-extension-id', extensionId);
 }, 0);
 
 /**
@@ -68,7 +75,9 @@ injectScript(chrome.runtime.getURL('script.js'), 'body');
 
 // Listener for messages from window/FCL
 window.addEventListener('message', function (event) {
-  chrome.runtime.sendMessage(event.data);
+  if (event.data && typeof event.data === 'object') {
+    chrome.runtime.sendMessage(extensionId, event.data);
+  }
 });
 
 // Listener for Custom Flow Transaction event from FCL send
@@ -114,8 +123,6 @@ const extMessageHandler = (msg, _sender) => {
       window.postMessage(JSON.parse(JSON.stringify(msg || {})), '*');
     }
   }
-
-  return true;
 };
 
 /**
@@ -125,7 +132,7 @@ chrome.runtime.onMessage.addListener(extMessageHandler);
 
 const wakeup = function () {
   setTimeout(function () {
-    chrome.runtime.sendMessage('ping', function () {
+    chrome.runtime.sendMessage(extensionId, 'ping', function () {
       return false;
     });
     wakeup();

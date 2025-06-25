@@ -1,5 +1,4 @@
 import { Typography, Box, CardMedia } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { storage } from '@/background/webapi';
@@ -8,8 +7,8 @@ import { ensureEvmAddressPrefix, formatString } from '@/shared/utils/address';
 import { useContacts } from '@/ui/hooks/useContactHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import emoji from 'background/utils/emoji.json';
-import accountMove from 'ui/FRWAssets/svg/accountMove.svg';
-import { FRWProfileCard, FWMoveDropdown } from 'ui/FRWComponent';
+import accountMove from 'ui/assets/svg/accountMove.svg';
+import { FRWProfileCard, FWMoveDropdown } from 'ui/components';
 import { useWallet, formatAddress } from 'ui/utils';
 const USER_CONTACT = {
   contact_name: '',

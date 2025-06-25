@@ -14,58 +14,23 @@ import {
 } from '@mui/material';
 import InputAdornment from '@mui/material/InputAdornment';
 import { StyledEngineProvider } from '@mui/material/styles';
-import { makeStyles } from '@mui/styles';
 import _ from 'lodash';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { type Contact } from '@/shared/types/network-types';
 import { consoleError } from '@/shared/utils/console-log';
-import EmptyStateImage from 'ui/FRWAssets/image/search_user.png';
+import EmptyStateImage from 'ui/assets/image/search_user.png';
 import { useWallet } from 'ui/utils';
 
 import AddOrEditAddress from './AddOrEditAddress';
 import AddressBookItem from './AddressBookItem';
-
-const useStyles = makeStyles((theme) => ({
-  customInputLabel: {
-    '& legend': {
-      visibility: 'visible',
-    },
-  },
-  // inputBox: {
-  //   minHeight: '46px',
-  //   zIndex: '999',
-  //   border: '1px solid #5E5E5E',
-  //   borderRadius: '16px',
-  //   boxSizing: 'border-box',
-  //   margin: '2px 18px 10px 18px',
-  // },
-  inputBox: {
-    minHeight: '56px',
-    // borderRadius: theme.spacing(2),
-    backgroundColor: '#282828',
-    zIndex: '999',
-    // width: '100%',
-    borderRadius: '16px',
-    boxSizing: 'border-box',
-    // margin: '2px 18px 10px 18px',
-    width: '100%',
-    marginBottom: '16px',
-  },
-  inputWrapper: {
-    paddingLeft: '18px',
-    paddingRight: '18px',
-    width: 'auto',
-  },
-}));
 
 const AddressBook = () => {
   const [group, setGroup] = useState<Array<Contact>>([]);
   const grouped = _.groupBy(group, (contact) => contact.contact_name[0]);
 
   const history = useHistory();
-  const classes = useStyles();
   const wallet = useWallet();
 
   const [name, setName] = useState('');
@@ -221,12 +186,26 @@ const AddressBook = () => {
             }}
           />
         </Box>
-        <div className={classes.inputWrapper}>
+        <Box
+          sx={{
+            paddingLeft: '18px',
+            paddingRight: '18px',
+            width: 'auto',
+          }}
+        >
           <Input
             type="search"
             value={name}
             onChange={filter}
-            className={classes.inputBox}
+            sx={{
+              minHeight: '56px',
+              backgroundColor: '#282828',
+              zIndex: '999',
+              borderRadius: '16px',
+              boxSizing: 'border-box',
+              width: '100%',
+              marginBottom: '16px',
+            }}
             placeholder={chrome.i18n.getMessage('Search')}
             autoFocus
             disableUnderline
@@ -236,7 +215,7 @@ const AddressBook = () => {
               </InputAdornment>
             }
           />
-        </div>
+        </Box>
 
         <AddOrEditAddress
           isAddAddressOpen={isAddAddressOpen}

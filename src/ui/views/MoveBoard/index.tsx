@@ -3,16 +3,12 @@ import { Box, Button, Typography, Drawer, IconButton, CardMedia } from '@mui/mat
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import {
-  type ActiveAccountType,
-  type ActiveChildType_depreciated,
-} from '@/shared/types/wallet-types';
-import LLComingSoon from '@/ui/FRWComponent/LLComingSoonWarning';
+import LLComingSoon from '@/ui/components/LLComingSoonWarning';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import moveft from 'ui/FRWAssets/image/moveft.png';
-import movenft from 'ui/FRWAssets/image/movenft.png';
-import moveftbg from 'ui/FRWAssets/svg/moveftbg.svg';
-import movenftbg from 'ui/FRWAssets/svg/movenftbg.svg';
+import moveft from 'ui/assets/image/moveft.png';
+import movenft from 'ui/assets/image/movenft.png';
+import moveftbg from 'ui/assets/svg/moveftbg.svg';
+import movenftbg from 'ui/assets/svg/movenftbg.svg';
 import { useWallet } from 'ui/utils';
 
 import MoveEvm from './MoveEvm';

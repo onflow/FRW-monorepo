@@ -1,14 +1,15 @@
-import { Box, Grid, IconButton, Typography } from '@mui/material';
+import { Box, IconButton, Typography } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
 import { pubKeyTupleToAccountKey } from '@/background/utils/account-key';
 import { consoleError } from '@/shared/utils/console-log';
-import { LLHeader } from '@/ui/FRWComponent';
+import { LLHeader } from '@/ui/components';
+import IconCopy from '@/ui/components/iconfont/IconCopy';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from 'ui/utils';
 
-import IconCopy from '../../../../components/iconfont/IconCopy';
 interface State {
   password: string;
 }

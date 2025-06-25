@@ -13,9 +13,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 
 import { type ProfileBackupStatus } from '@/shared/types/wallet-types';
 import { consoleError } from '@/shared/utils/console-log';
-import { CustomDialog } from '@/ui/FRWComponent/custom-dialog';
-import { LLPrimaryButton } from '@/ui/FRWComponent/LLPrimaryButton';
-import { LLSecondaryButton } from '@/ui/FRWComponent/LLSecondaryButton';
+import { CustomDialog } from '@/ui/components/custom-dialog';
+import { LLPrimaryButton } from '@/ui/components/LLPrimaryButton';
+import { LLSecondaryButton } from '@/ui/components/LLSecondaryButton';
 import { useWallet } from '@/ui/utils';
 
 interface ProfileBackupSelectionDialogProps {

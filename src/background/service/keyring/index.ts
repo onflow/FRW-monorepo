@@ -5,7 +5,6 @@ import { EventEmitter } from 'events';
 import * as bip39 from 'bip39';
 import encryptor from 'browser-passworder';
 import * as ethUtil from 'ethereumjs-util';
-import { P } from 'ts-toolbelt/out/Object/_api';
 
 import { normalizeAddress } from '@/background/utils';
 import { pubKeyAccountToAccountKey, defaultAccountKey } from '@/background/utils/account-key';
@@ -458,7 +457,7 @@ class KeyringService extends EventEmitter {
   }
 
   hasVault() {
-    return !!this.store.getState().vault;
+    return !!this.store.getState()?.vault?.length;
   }
 
   isUnlocked() {
@@ -661,7 +660,8 @@ class KeyringService extends EventEmitter {
    */
   async verifyOrBoot(password: string): Promise<void> {
     const encryptedBooted = this.store.getState().booted;
-    if (!encryptedBooted) {
+    const hasVault = this.hasVault();
+    if (!encryptedBooted || !hasVault) {
       await this.boot(password);
     } else {
       await this.verifyPassword(password);
@@ -854,99 +854,6 @@ class KeyringService extends EventEmitter {
   //
 
   /**
-   * Sign Ethereum Transaction
-   *
-   * Signs an Ethereum transaction object.
-   *
-   * @param {Object} ethTx - The transaction to sign.
-   * @param {string} _fromAddress - The transaction 'from' address.
-   * @param {Object} opts - Signing options.
-   * @returns {Promise<Object>} The signed transactio object.
-   * @deprecated - This method should not be used anymore. It works on EOA addresses, not public keys.
-   */
-  signTransaction(keyring, ethTx, _fromAddress, opts = {}) {
-    const fromAddress = normalizeAddress(_fromAddress);
-    return keyring.signTransaction(fromAddress, ethTx, opts);
-  }
-
-  /**
-   * Sign Message
-   *
-   * Attempts to sign the provided message parameters.
-   *
-   * @param {Object} msgParams - The message parameters to sign.
-   * @returns {Promise<Buffer>} The raw signature.
-   * @deprecated - This method should not be used anymore. It works on EOA addresses, not public keys.
-   */
-  signMessage(msgParams, opts = {}) {
-    const address = normalizeAddress(msgParams.from);
-    return this.getKeyringForAccount_deprecated(address).then((keyring) => {
-      return keyring.signMessage(address, msgParams.data, opts);
-    });
-  }
-
-  /**
-   * Sign Personal Message
-   *
-   * Attempts to sign the provided message paramaters.
-   * Prefixes the hash before signing per the personal sign expectation.
-   *
-   * @param {Object} msgParams - The message parameters to sign.
-   * @returns {Promise<Buffer>} The raw signature.
-     * @deprecated - This method should not be used anymore. It works on EOA addresses, not public keys.
-
-   */
-  signPersonalMessage(keyring, msgParams, opts = {}) {
-    const address = normalizeAddress(msgParams.from);
-    return keyring.signPersonalMessage(address, msgParams.data, opts);
-  }
-
-  /**
-   * Sign Typed Data
-   * (EIP712 https://github.com/ethereum/EIPs/pull/712#issuecomment-329988454)
-   *
-   * @param {Object} msgParams - The message parameters to sign.
-   * @returns {Promise<Buffer>} The raw signature.
-   * @deprecated - This method should not be used anymore. It works on EOA addresses, not public keys.
-   */
-  signTypedMessage(keyring, msgParams, opts = { version: 'V1' }) {
-    const address = normalizeAddress(msgParams.from);
-    return keyring.signTypedData(address, msgParams.data, opts);
-  }
-
-  /**
-   * Get encryption public key
-   *
-   * Get encryption public key for using in encrypt/decrypt process.
-   *
-   * @param {Object} address - The address to get the encryption public key for.
-   * @returns {Promise<Buffer>} The public key.
-   * @deprecated - This method should not be used anymore. It works on EOA addresses, not public keys.
-   */
-  getEncryptionPublicKey(_address, opts = {}) {
-    const address = normalizeAddress(_address);
-    return this.getKeyringForAccount_deprecated(address).then((keyring) => {
-      return keyring.getEncryptionPublicKey(address, opts);
-    });
-  }
-
-  /**
-   * Decrypt Message
-   *
-   * Attempts to decrypt the provided message parameters.
-   *
-   * @param {Object} msgParams - The decryption message parameters.
-   * @returns {Promise<Buffer>} The raw decryption result.
-   * @deprecated - This method should not be used anymore. It works on EOA addresses, not public keys.
-   */
-  decryptMessage(msgParams, opts = {}) {
-    const address = normalizeAddress(msgParams.from);
-    return this.getKeyringForAccount_deprecated(address).then((keyring) => {
-      return keyring.decryptMessage(address, msgParams.data, opts);
-    });
-  }
-
-  /**
    * Gets the app key address for the given Ethereum address and origin.
    *
    * @param {string} _address - The Ethereum address for the app key.
@@ -1012,7 +919,7 @@ class KeyringService extends EventEmitter {
 
     const vaultArray =
       keyringState.vaultVersion === KEYRING_STATE_VAULT_V3
-        ? keyringState.vault
+        ? (keyringState.vault ?? [])
         : await this.encryptVaultArray(await this.decryptVaultArray(password), password);
 
     const vaultArrayAccountIndex = vaultArray.findIndex(
@@ -1618,7 +1525,9 @@ class KeyringService extends EventEmitter {
       // Ensure vaultArray is an array and filter out null/undefined entries
       const vaultArray = Array.isArray(keyringState.vault)
         ? keyringState.vault.filter(Boolean)
-        : [keyringState.vault];
+        : keyringState.vault
+          ? [keyringState.vault]
+          : [];
 
       return await this.decryptVaultArrayV2(vaultArray, password);
     }

@@ -1,9 +1,7 @@
-import { makeStyles } from '@mui/styles';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Switch, withRouter, type RouteComponentProps } from 'react-router-dom';
 
-import { useInitHook } from '@/ui/hooks';
-import { PrivateRoute } from 'ui/component';
+import PrivateRoute from 'ui/components/PrivateRoute';
 import { useWallet, useWalletLoaded } from 'ui/utils';
 
 import Deposit from '../views/Deposit';
@@ -51,27 +49,11 @@ import TokenDetail from './TokenDetail';
 import TokenList from './TokenList';
 import AddCustomEvmToken from './Wallet/AddCustom/AddCustomEvmToken';
 
-const useStyles = makeStyles(() => ({
-  innerWrapper: {
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    height: '100%',
-  },
-  mainBody: {
-    flex: 1,
-    overflowY: 'scroll',
-    height: '100%',
-  },
-}));
-
 const InnerRoute = (props: RouteComponentProps) => {
-  const classes = useStyles();
   const [value, setValue] = useState(0);
 
   const usewallet = useWallet();
   const walletLoaded = useWalletLoaded();
-  const { initializeStore } = useInitHook();
 
   const initRef = useRef(false);
 
@@ -89,11 +71,10 @@ const InnerRoute = (props: RouteComponentProps) => {
         setValue(0);
         await usewallet.setDashIndex(0);
       }
-      await initializeStore();
     } finally {
       initRef.current = false;
     }
-  }, [usewallet, initializeStore, walletLoaded]);
+  }, [usewallet, walletLoaded]);
 
   useEffect(() => {
     if (walletLoaded) {
@@ -110,10 +91,17 @@ const InnerRoute = (props: RouteComponentProps) => {
 
   return (
     <React.Fragment>
-      <div className={classes.innerWrapper}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          height: '100%',
+        }}
+      >
         <Header />
 
-        <div className="route-wrapper" id="scrollableTab">
+        <div id="scrollableTab" style={{ flex: 1, overflowY: 'scroll' }}>
           <Switch>
             <PrivateRoute exact path={`${props.match.url}/`}>
               <Dashboard />

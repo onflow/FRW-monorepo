@@ -1,6 +1,7 @@
 import CloseIcon from '@mui/icons-material/Close';
 import InfoIcon from '@mui/icons-material/Info';
-import { Box, Typography, Drawer, Stack, Grid, CardMedia, IconButton, Button } from '@mui/material';
+import { Box, Typography, Drawer, Stack, CardMedia, IconButton, Button } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
@@ -8,18 +9,19 @@ import { type Contact } from '@/shared/types/network-types';
 import { type WalletAccount, type AccountDetails } from '@/shared/types/wallet-types';
 import { ensureEvmAddressPrefix, isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
-import SlideRelative from '@/ui/FRWComponent/SlideRelative';
-import StorageExceededAlert from '@/ui/FRWComponent/StorageExceededAlert';
-import { WarningStorageLowSnackbar } from '@/ui/FRWComponent/WarningStorageLowSnackbar';
+import IconFlow from '@/ui/components/iconfont/IconFlow';
+import SlideRelative from '@/ui/components/SlideRelative';
+import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
+import { WarningStorageLowSnackbar } from '@/ui/components/WarningStorageLowSnackbar';
 import { useContacts } from '@/ui/hooks/useContactHook';
+import { useAllNftList } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
+import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
 import { MatchMediaType } from '@/ui/utils/url';
-import { useStorageCheck } from '@/ui/utils/useStorageCheck';
-import { LLSpinner, FRWChildProfile, FRWDropdownProfileCard } from 'ui/FRWComponent';
+import { LLSpinner, FRWChildProfile, FRWDropdownProfileCard } from 'ui/components';
 import { useWallet, returnFilteredCollections } from 'ui/utils';
 
-import IconFlow from '../../../../components/iconfont/IconFlow';
 interface SendNFTConfirmationProps {
   isConfirmationOpen: boolean;
   data: any;
@@ -42,8 +44,12 @@ const MoveFromChild = (props: SendNFTConfirmationProps) => {
   const [childWallet, setChildWallet] = useState<WalletAccount | null>(null);
   const [selectedAccount, setSelectedChildAccount] = useState<Contact | null>(null);
   const [childWallets, setChildWallets] = useState<Contact[]>([]);
+
+  const { activeAccountType, network } = useProfiles();
+  const allNftList = useAllNftList(network, activeAccountType === 'evm' ? 'evm' : 'flow');
+
   const { sufficient: isSufficient, sufficientAfterAction } = useStorageCheck({
-    transferAmount: 0,
+    transferAmount: '0',
     movingBetweenEVMAndFlow: selectedAccount
       ? isValidEthereumAddress(selectedAccount!['address'])
       : false,
@@ -80,8 +86,7 @@ const MoveFromChild = (props: SendNFTConfirmationProps) => {
   const moveNFTToFlow = async () => {
     setSending(true);
     // setSending(true);
-    const contractList = await usewallet.openapi.getAllNft();
-    const filteredCollections = returnFilteredCollections(contractList, props.data.nft);
+    const filteredCollections = returnFilteredCollections(allNftList, props.data.nft);
     usewallet
       .moveNFTfromChild(props.data.userContact.address, '', props.data.nft.id, filteredCollections)
       .then(async (txId) => {
@@ -106,8 +111,7 @@ const MoveFromChild = (props: SendNFTConfirmationProps) => {
   const moveToEvm = async () => {
     setSending(true);
     const address = await usewallet.getCurrentAddress();
-    const contractList = await usewallet.openapi.getAllNft();
-    const filteredCollections = returnFilteredCollections(contractList, props.data.nft);
+    const filteredCollections = returnFilteredCollections(allNftList, props.data.nft);
     const flowIdentifier = props.data.contract.flowIdentifier || props.data.nft.flowIdentifier;
     usewallet
       .batchBridgeChildNFTToEvm(address!, flowIdentifier, [props.data.nft.id], filteredCollections)
@@ -136,7 +140,6 @@ const MoveFromChild = (props: SendNFTConfirmationProps) => {
       setErrorMessage(request.errorMessage);
       setErrorCode(request.errorCode);
     }
-    return true;
   }, []);
 
   useEffect(() => {
@@ -145,7 +148,7 @@ const MoveFromChild = (props: SendNFTConfirmationProps) => {
     return () => {
       chrome.runtime.onMessage.removeListener(transactionDoneHandler);
     };
-  }, [props.data.contact, transactionDoneHandler]);
+  }, [props?.data?.contact, transactionDoneHandler]);
 
   const getChildResp = useCallback(async () => {
     const walletList = [...mainAccountContact, ...childAccountsContacts, ...evmAccounts];
@@ -226,13 +229,13 @@ const MoveFromChild = (props: SendNFTConfirmationProps) => {
             alignItems: 'center',
           }}
         >
-          <Grid item xs={1}></Grid>
-          <Grid item xs={10}>
+          <Grid size={1}></Grid>
+          <Grid size={10}>
             <Typography variant="h1" align="center" py="14px" fontWeight="bold" fontSize="20px">
               {chrome.i18n.getMessage('Move')} NFT
             </Typography>
           </Grid>
-          <Grid item xs={1}>
+          <Grid size={1}>
             <IconButton onClick={props.handleCloseIconClicked}>
               <CloseIcon fontSize="medium" sx={{ color: 'icon.navi', cursor: 'pointer' }} />
             </IconButton>
