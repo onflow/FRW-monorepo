@@ -1,6 +1,5 @@
 import { type PublicKeyAccount } from '@/shared/types/wallet-types';
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
-import { consoleLog } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 
 export const IMPORT_STEPS = {
@@ -18,7 +17,8 @@ export interface ImportState {
   activeTab: ImportStepType;
   mnemonic: string;
   pk: string | null;
-  username: string;
+  username?: string;
+  nickname: string;
   password?: string;
   accounts: PublicKeyAccount[];
   errMessage: string;
@@ -34,7 +34,8 @@ export const INITIAL_IMPORT_STATE: ImportState = {
   activeTab: IMPORT_STEPS.IMPORT,
   mnemonic: '',
   pk: null,
-  username: '',
+  username: undefined,
+  nickname: '',
   password: DEFAULT_PASSWORD,
   accounts: [],
   errMessage: '',
@@ -52,6 +53,7 @@ export type ImportAction =
   | { type: 'SET_PK'; payload: string | null }
   | { type: 'SET_IS_ADD_WALLET'; payload: boolean }
   | { type: 'SET_USERNAME'; payload: string }
+  | { type: 'SET_NICKNAME'; payload: string }
   | { type: 'SET_PASSWORD'; payload: string }
   | { type: 'SET_ACCOUNTS'; payload: PublicKeyAccount[] }
   | { type: 'SET_ERROR'; payload: { message: string; show: boolean } }
@@ -72,6 +74,8 @@ export const importProfileReducer = (state: ImportState, action: ImportAction): 
       return { ...state, isAddWallet: action.payload };
     case 'SET_USERNAME':
       return { ...state, username: action.payload };
+    case 'SET_NICKNAME':
+      return { ...state, nickname: action.payload };
     case 'SET_PASSWORD':
       return { ...state, password: action.payload };
     case 'SET_ACCOUNTS':

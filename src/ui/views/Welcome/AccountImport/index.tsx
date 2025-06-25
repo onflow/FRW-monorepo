@@ -6,7 +6,7 @@ import { consoleError } from '@/shared/utils/console-log';
 import AllSet from '@/ui/components/LandingPages/AllSet';
 import GoogleBackup from '@/ui/components/LandingPages/GoogleBackup';
 import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
-import PickUsername from '@/ui/components/LandingPages/PickUsername';
+import PickNickname from '@/ui/components/LandingPages/PickNickname';
 import SetPassword from '@/ui/components/LandingPages/SetPassword';
 import {
   importProfileReducer,
@@ -28,6 +28,7 @@ const AccountImport = () => {
     mnemonic,
     pk,
     username,
+    nickname,
     password,
     errMessage,
     showError,
@@ -87,14 +88,18 @@ const AccountImport = () => {
     }
     try {
       if (pk) {
-        await usewallet.importProfileUsingPrivateKey(username, newPassword, pk);
+        await usewallet.importProfileUsingPrivateKey(nickname, newPassword, pk);
         dispatch({ type: 'SET_ACTIVE_TAB', payload: IMPORT_STEPS.ALL_SET });
       } else if (mnemonic) {
-        await usewallet.importProfileUsingMnemonic(username, newPassword, mnemonic, path, phrase);
+        await usewallet.importProfileUsingMnemonic(nickname, newPassword, mnemonic, path, phrase);
         dispatch({ type: 'SET_ACTIVE_TAB', payload: IMPORT_STEPS.GOOGLE_BACKUP });
       } else {
         throw new Error('No mnemonic or private key provided');
       }
+
+      // Now get the proper username
+      const userInfo = await usewallet.getUserInfo();
+      dispatch({ type: 'SET_USERNAME', payload: userInfo.username });
     } catch (error) {
       consoleError(error);
       dispatch({
@@ -178,15 +183,15 @@ const AccountImport = () => {
           )}
 
           {activeTab === IMPORT_STEPS.PICK_USERNAME && (
-            <PickUsername
+            <PickNickname
               handleSwitchTab={() =>
                 dispatch({
                   type: 'SET_ACTIVE_TAB',
                   payload: IMPORT_STEPS.SET_PASSWORD,
                 })
               }
-              username={username}
-              setUsername={(u) => dispatch({ type: 'SET_USERNAME', payload: u })}
+              nickname={nickname}
+              setNickname={(u) => dispatch({ type: 'SET_NICKNAME', payload: u })}
             />
           )}
 
@@ -198,7 +203,7 @@ const AccountImport = () => {
               isLogin={isAddWallet}
             />
           )}
-          {activeTab === IMPORT_STEPS.GOOGLE_BACKUP && (
+          {activeTab === IMPORT_STEPS.GOOGLE_BACKUP && username && password && (
             <GoogleBackup
               handleSwitchTab={() =>
                 dispatch({
@@ -208,7 +213,7 @@ const AccountImport = () => {
               }
               mnemonic={mnemonic}
               username={username}
-              password={password || ''}
+              password={password}
             />
           )}
 
