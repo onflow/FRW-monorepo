@@ -40,7 +40,11 @@ export const ProfileItemBase = ({
     <ListItem
       disablePadding
       key={profileId}
-      data-testid={`profile-item-nickname-${userInfo?.nickname}`}
+      data-testid={
+        activeProfileVariant
+          ? 'switch-profile-button'
+          : `profile-item-nickname-${userInfo?.nickname}`
+      }
       onClick={() => {
         if (profileId) {
           if (setLoadingId && profileId !== selectedProfileId) {
