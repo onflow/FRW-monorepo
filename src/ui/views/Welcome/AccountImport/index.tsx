@@ -35,6 +35,7 @@ const AccountImport = () => {
     googleAccounts,
     path,
     phrase,
+    isAddWallet,
   } = state;
   const loadView = useCallback(async () => {
     usewallet
@@ -53,6 +54,15 @@ const AccountImport = () => {
     loadView();
   }, [loadView]);
 
+  useEffect(() => {
+    const checkWalletStatus = async () => {
+      const isBooted = await usewallet.isBooted();
+      dispatch({ type: 'SET_IS_ADD_WALLET', payload: isBooted });
+    };
+
+    checkWalletStatus();
+  }, [usewallet]);
+
   const handleErrorClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return;
@@ -62,6 +72,19 @@ const AccountImport = () => {
 
   const submitPassword = async (newPassword: string) => {
     dispatch({ type: 'SET_PASSWORD', payload: newPassword });
+    // Check the password first so we can show the error message
+    if (isAddWallet) {
+      try {
+        await usewallet.verifyPasswordIfBooted(newPassword);
+      } catch (err) {
+        consoleError(err);
+        dispatch({
+          type: 'SET_ERROR',
+          payload: { message: chrome.i18n.getMessage('Incorrect__Password'), show: true },
+        });
+        return;
+      }
+    }
     try {
       if (pk) {
         await usewallet.importProfileUsingPrivateKey(username, newPassword, pk);
@@ -172,7 +195,7 @@ const AccountImport = () => {
             <SetPassword
               handleSwitchTab={() => {}}
               onSubmit={submitPassword}
-              isLogin={activeTab === IMPORT_STEPS.RECOVER_PASSWORD}
+              isLogin={isAddWallet}
             />
           )}
           {activeTab === IMPORT_STEPS.GOOGLE_BACKUP && (
