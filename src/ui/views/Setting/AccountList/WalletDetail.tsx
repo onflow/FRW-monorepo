@@ -31,6 +31,7 @@ import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import AddressCard from '@/ui/components/settings/address-card';
 import SettingButton from '@/ui/components/settings/setting-button';
 import SettingsSwitchCard from '@/ui/components/settings/settings-switch';
+import { useAddressHidden, toggleAddressHidden } from '@/ui/hooks/preference-hooks';
 import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
 import { COLOR_WHITE_ALPHA_40_FFFFFF66, COLOR_WHITE_ALPHA_80_FFFFFFCC } from '@/ui/style/color';
 import { useWallet } from 'ui/utils';
@@ -66,8 +67,11 @@ const WalletDetail = () => {
   const [storageInfo, setStorageInfo] = useState<StorageInfo | null>(null);
   const [isKeyphrase, setIsKeyphrase] = useState(false);
   const [emoji, setEmoji] = useState<Emoji | null>(null);
-  const [isHidden, setIsHidden] = useState(false);
   const isFreeGasFeeEnabled = useFeatureFlag('free_gas');
+
+  // Use the new preference hook for hidden address status
+  const isHidden = useAddressHidden(userWallet?.address || '');
+
   const handleErrorClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return;
@@ -93,6 +97,12 @@ const WalletDetail = () => {
     setGasMode(!modeGas);
     storage.set('lilicoPayer', !modeGas);
     setShowError(true);
+  };
+
+  const toggleHiddenStatus = async () => {
+    if (userWallet?.address) {
+      await toggleAddressHidden(userWallet.address);
+    }
   };
 
   const toggleEditProfile = async () => {
@@ -283,9 +293,11 @@ const WalletDetail = () => {
                 </Box>
               )}
               <SettingsSwitchCard
-                label="Show in account list"
+                label={chrome.i18n.getMessage('Show__in__account__sidebar')}
                 checked={!isHidden}
-                onChange={() => {}}
+                onChange={() => {
+                  toggleHiddenStatus();
+                }}
               />
               <SettingsSwitchCard
                 label="Free gas fee"

@@ -1544,5 +1544,8 @@
   },
   "Unlink_account": {
     "message": "Unlink account"
+  },
+  "Show__in__account__sidebar": {
+    "message": "Show in account sidebar"
   }
 }

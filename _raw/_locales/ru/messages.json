@@ -1535,5 +1535,8 @@
   },
   "Unlink_account": {
     "message": "Отвязать аккаунт"
+  },
+  "Show__in__account__sidebar": {
+    "message": "Показывать в боковой панели аккаунтов"
   }
 }

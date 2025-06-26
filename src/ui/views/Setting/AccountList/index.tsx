@@ -1,6 +1,6 @@
-import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import {
   Typography,
+  Box,
   List,
   ListItemText,
   ListItemIcon,
@@ -8,11 +8,11 @@ import {
   ListItemButton,
   Divider,
   CardMedia,
-  Box,
 } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useRouteMatch, useHistory } from 'react-router-dom';
 
+import { storage } from '@/background/webapi';
 import {
   type MainAccountWithBalance,
   type MainAccount,
@@ -24,12 +24,10 @@ import { isValidEthereumAddress } from '@/shared/utils/address';
 import { LinkIcon } from '@/ui/assets/icons/LinkIcon';
 import { LLHeader } from '@/ui/components';
 import { AccountCard } from '@/ui/components/account/account-card';
-import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
-import { useChildAccounts, useEvmAccount } from '@/ui/hooks/use-account-hooks';
+import { BaseAccountHierarchy } from '@/ui/components/account/base-account-hierarchy';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useWallet } from '@/ui/utils';
-import { storage } from 'background/webapi';
-import { formatAddress } from 'ui/utils';
+import { COLOR_DARKMODE_TEXT_PRIMARY_80_FFFFFF80 } from '@/ui/style/color';
+import { useWallet } from 'ui/utils';
 
 const tempEmoji: Emoji[] = [
   {
@@ -95,65 +93,6 @@ const AccountList = () => {
     setUserWallet();
   }, [setUserWallet]);
 
-  // AccountHierarchy component similar to account-listing
-  const AccountHierarchy = ({ account }: { account: WalletAccount }) => {
-    const childAccounts = useChildAccounts(network, account?.address);
-    const evmAccount = useEvmAccount(network, account?.address);
-    const loading = network === undefined || account === undefined;
-
-    if (loading) {
-      return (
-        <Box sx={{ gap: '0px', display: 'flex', flexDirection: 'column' }}>
-          <AccountCard showCard={false} />
-          <AccountCard showCard={false} showLink={true} />
-          <AccountCard showCard={false} showLink={true} />
-        </Box>
-      );
-    }
-
-    return (
-      <Box sx={{ gap: '0px', display: 'flex', flexDirection: 'column' }}>
-        <AccountCard
-          network={network}
-          key={account.address}
-          account={account}
-          active={currentWallet?.address === account.address}
-          onClick={() => handleAccountClick(account.address, account.address)}
-          showCard={false}
-        />
-
-        {/* If the EVM account is valid, show the EVM account card */}
-        {evmAccount && isValidEthereumAddress(evmAccount.address) && (
-          <AccountCard
-            network={network}
-            key={evmAccount.address}
-            account={evmAccount}
-            parentAccount={account}
-            active={currentWallet?.address === evmAccount.address}
-            onClick={() => handleAccountClick(evmAccount.address, account.address)}
-            showLink={true}
-            showCard={false}
-          />
-        )}
-        {childAccounts &&
-          childAccounts.map((linkedAccount) => {
-            return (
-              <AccountCard
-                network={network}
-                key={linkedAccount.address}
-                account={linkedAccount}
-                parentAccount={account}
-                active={currentWallet?.address === linkedAccount.address}
-                onClick={() => handleAccountClick(linkedAccount.address, account.address)}
-                showLink={true}
-                showCard={false}
-              />
-            );
-          })}
-      </Box>
-    );
-  };
-
   // Don't render anything until we have the network and walletList
   if (!network || !walletList || walletList.length === 0 || !isInitialized) {
     return (
@@ -205,22 +144,6 @@ const AccountList = () => {
     <div className="page">
       <LLHeader title={chrome.i18n.getMessage('Acc__list')} help={false} />
       <Box sx={{ gap: '0px', padding: '0 16px', display: 'flex', flexDirection: 'column' }}>
-        <Typography
-          variant="body1"
-          color="text.primary"
-          sx={{
-            color: 'rgba(255, 255, 255, 0.80)',
-            fontFamily: 'Inter,sans-serif',
-            fontSize: '14px',
-            fontStyle: 'normal',
-            fontWeight: '400',
-            lineHeight: '16px',
-            marginBottom: '8px',
-          }}
-        >
-          {chrome.i18n.getMessage('main_wallet')}
-        </Typography>
-
         <Box sx={{ gap: '8px', display: 'flex', flexDirection: 'column' }}>
           {walletList.map((account) => (
             <Box
@@ -236,7 +159,14 @@ const AccountList = () => {
                 background: 'rgba(255, 255, 255, 0.10)',
               }}
             >
-              <AccountHierarchy account={account} />
+              <BaseAccountHierarchy
+                account={account}
+                network={network}
+                activeAccount={currentWallet}
+                onAccountClick={handleAccountClick}
+                showCard={false}
+                showLink={true}
+              />
             </Box>
           ))}
         </Box>

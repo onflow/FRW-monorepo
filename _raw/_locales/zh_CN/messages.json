@@ -1532,5 +1532,8 @@
   },
   "Unlink_account": {
     "message": "取消关联账户"
+  },
+  "Show__in__account__sidebar": {
+    "message": "在账户侧边栏显示"
   }
 }

@@ -46,7 +46,6 @@ const SettingTab = () => {
   const [isKeyphrase, setIsKeyphrase] = useState(false);
 
   const checkIsActive = useCallback(async () => {
-    // setSending(true);
     const activeAccountType = await usewallet.getActiveAccountType();
     if (activeAccountType === 'child') {
       setIsActive(true);

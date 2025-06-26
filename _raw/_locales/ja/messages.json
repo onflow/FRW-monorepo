@@ -1535,5 +1535,8 @@
   },
   "Unlink_account": {
     "message": "アカウントをリンク解除"
+  },
+  "Show__in__account__sidebar": {
+    "message": "アカウントサイドバーに表示"
   }
 }
