@@ -48,7 +48,7 @@ const config: StorybookConfig = {
       ),
       '@/ui/hooks/preference-hooks$': path.resolve(
         __dirname,
-        '../src/ui/hooks/preference-hooks.ts'
+        '../src/stories/preference-hooks.mock.ts'
       ),
       // General hooks alias (fallback)
       '@/ui/hooks': path.resolve(__dirname, '../src/stories/ui-hooks.mock.ts'),
