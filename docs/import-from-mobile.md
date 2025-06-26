@@ -39,33 +39,33 @@ Profiles are added to the extension by adding a new public key to an existing pr
 
 ```mermaid
 sequenceDiagram
-    participant User
-    participant Extension
-    participant WalletConnect
-    participant MobileApp
-    participant Backend
+  participant User
+  participant Extension
+  participant WalletConnect
+  participant MobileApp
+  participant Backend
 
-    User->>Extension: Selects "Import an existing Profile" → "Mobile App"
-    Extension->>Extension: Generates new Mnemonic (kept in memory)
-    Extension->>User: Prompts user to repeat mnemonic
-    User->>Extension: Confirms mnemonic
-    Extension->>Extension: Generates WalletConnect URI (QR code)
-    Extension->>User: Displays QR code
-    User->>MobileApp: Scans QR code
-    MobileApp->>WalletConnect: Connects to session
-    WalletConnect->>Extension: Notifies of session
-    Extension->>MobileApp: Sends new public key to mobile app
-    MobileApp->>User: Prompts to select profile
-    User->>MobileApp: Selects profile
-    MobileApp->>MobileApp: Creates transaction to add public key to all accounts (mainnet/testnet)
-    MobileApp->>Backend: Adds public key to user on backend
-    Backend-->>MobileApp: Confirms public key added
-    MobileApp->>Extension: Sends response via WalletConnect (ready to login)
-    Extension->>User: Prompts for password (to save mnemonic)
-    User->>Extension: Enters password
-    Extension->>Extension: Saves mnemonic in keyring
-    Extension->>Extension: Logs user into imported profile
-    Extension->>User: Profile import complete
+  User->>Extension: Selects "Import an existing Profile" then "Mobile App"
+  Extension->>Extension: Generates new Mnemonic (kept in memory)
+  Extension->>User: Prompts user to repeat mnemonic
+  User->>Extension: Confirms mnemonic
+  Extension->>Extension: Generates WalletConnect URI (QR code)
+  Extension->>User: Displays QR code
+  User->>MobileApp: Scans QR code
+  MobileApp->>WalletConnect: Connects to session
+  WalletConnect->>Extension: Notifies of session
+  Extension->>MobileApp: Sends new public key to mobile app
+  MobileApp->>User: Prompts to select profile
+  User->>MobileApp: Selects profile
+  MobileApp->>MobileApp: Creates transaction to add public key to all accounts (mainnet/testnet)
+  MobileApp->>Backend: Adds public key to user on backend
+  Backend-->>MobileApp: Confirms public key added
+  MobileApp->>Extension: Sends response via WalletConnect (ready to login)
+  Extension->>User: Prompts for password (to save mnemonic)
+  User->>Extension: Enters password
+  Extension->>Extension: Saves mnemonic in keyring
+  Extension->>Extension: Logs user into imported profile
+  Extension->>User: Profile import complete
 ```
 
 ---
@@ -103,7 +103,15 @@ When the extension is ready to add the new key to the selected profile, it shoul
 
 ---
 
-## Technical Details
+# Import Multiple Accounts from Mobile
+
+## Overview
+
+In addition to being able to import a whole profile from mobile, the user can import accounts from mobile to an existing profile. This will add the public key of the existing extension profile to the accounts the user selects on either mainnet or testnet.
+
+--
+
+# Technical Details
 
 ### Extension (Frontend)
 
@@ -127,6 +135,7 @@ When the extension is ready to add the new key to the selected profile, it shoul
   - The mobile app receives the new public key from the extension, prompts the user to select a profile, and creates a transaction to add the key to all relevant accounts.
 - **Backend Update:**
   - The mobile app updates the backend to associate the new public key with the user.
+  - Call the `v3/sync` API call
 - **Session Confirmation:**
   - The mobile app sends a confirmation response to the extension via WalletConnect, signaling that the extension can now safely prompt for password, save the mnemonic, and log in.
 
