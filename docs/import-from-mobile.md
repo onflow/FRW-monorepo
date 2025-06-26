@@ -132,7 +132,7 @@ When the extension is ready to add the new key to the selected profile, it shoul
 ### Mobile App (Backend Coordination)
 
 - **Profile Selection and Transaction:**
-  - The mobile app receives the new public key(s) from the extension, prompts the user to select a profile, and creates a **batch transaction** per network to add all keys to all relevant accounts. See issue [FRW-web-next #380](https://github.com/onflow/FRW-web-next/issues/380) for details of how to do this.
+  - The mobile app receives the new public key(s) from the extension, prompts the user to select a profile, and creates a **batch transaction** per network to add all keys to all relevant accounts. See issue [FRW-web-next #380](https://github.com/onflow/FRW-web-next/issues/380) and [FRW-web-next #392](https://github.com/onflow/FRW-web-next/issues/392) for details of how to do this.
 - **Backend Update:**
   - The mobile app updates the backend to associate the new public keys with the user for each network.
   - Call the `v3/sync` API call
@@ -263,7 +263,7 @@ When the extension is ready to add the public key to selected accounts, it shoul
 ### Mobile App (Backend Coordination)
 
 - **Account Selection and Transaction:**
-  - The mobile app receives the public key(s) and network from the extension, prompts the user to select accounts, and creates a **batch transaction** to add all keys to all selected accounts on the specified network. See issue [FRW-web-next #380](https://github.com/onflow/FRW-web-next/issues/380) for details of how to do this.
+  - The mobile app receives the public key(s) and network from the extension, prompts the user to select accounts, and creates a **batch transaction** to add all keys to all selected accounts on the specified network. See issue [FRW-web-next #380](https://github.com/onflow/FRW-web-next/issues/380) and [FRW-web-next #392](https://github.com/onflow/FRW-web-next/issues/392) for details of how to do this.
 - **Backend Update:**
   - The mobile app updates the backend to associate the new public keys with the selected accounts.
   - Call the `v3/sync` API call
