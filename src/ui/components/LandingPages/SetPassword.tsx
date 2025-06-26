@@ -9,7 +9,7 @@ import {
   TermsCheckbox,
   ErrorSnackbar,
   SubmitButton,
-} from '@/ui/components/LandingPages/PasswordComponents';
+} from '@/ui/components/PasswordComponents';
 import SlideRelative from '@/ui/components/SlideRelative';
 
 interface SetPasswordProps {
