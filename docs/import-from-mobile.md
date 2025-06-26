@@ -111,7 +111,48 @@ When the extension is ready to add the new key to the selected profile, it shoul
 
 ---
 
-# Import Multiple Accounts from Mobile
+## Technical Details
+
+### Extension (Frontend)
+
+- **Mnemonic Generation:**
+  - The extension generates a new mnemonic and prompts the user to confirm it. The mnemonic is kept in memory and not saved until the backend confirms the public key addition.
+- **WalletConnect Initialization:**
+  - The extension initializes a WalletConnect session and generates a QR code for the user to scan.
+- **Session Handling:**
+  - On connection, the extension sends the new public key(s) to the mobile app.
+- **Mobile Profile Selection:**
+  - The mobile app prompts the user to select a profile to which the new public key(s) will be added.
+- **Public Key Addition:**
+  - The mobile app creates a **batch transaction** per network (mainnet and testnet) to add all provided public keys to all accounts of the selected profile and updates the backend.
+- **Confirmation and Finalization:**
+  - Once the backend confirms the public keys are added, the mobile app notifies the extension via WalletConnect.
+  - The extension then prompts the user for their password, saves the mnemonic in the keyring, and logs the user into the imported profile.
+
+### Mobile App (Backend Coordination)
+
+- **Profile Selection and Transaction:**
+  - The mobile app receives the new public key(s) from the extension, prompts the user to select a profile, and creates a **batch transaction** per network to add all keys to all relevant accounts. See issue [FRW-web-next #380](https://github.com/onflow/FRW-web-next/issues/380) for details of how to do this.
+- **Backend Update:**
+  - The mobile app updates the backend to associate the new public keys with the user for each network.
+  - Call the `v3/sync` API call
+- **Session Confirmation:**
+  - The mobile app sends a confirmation response to the extension via WalletConnect, signaling that the extension can now safely prompt for password, save the mnemonic, and log in.
+
+### Security Considerations
+
+- **Mnemonic Handling:**
+  - The mnemonic is only saved in the extension after the public key is successfully added to the user's accounts, preventing empty or orphaned profiles.
+- **End-to-End Security:**
+  - Sensitive data (mnemonic, private key) never leaves the user's devices unencrypted. All communication between extension and mobile is via WalletConnect.
+- **User Confirmation:**
+  - The user must confirm the mnemonic and select the profile on mobile, ensuring explicit consent for key addition.
+- **Password Prompt Timing:**
+  - The password is only requested after backend confirmation, ensuring the mnemonic is not persisted prematurely.
+
+---
+
+## Import Multiple Accounts from Mobile
 
 ## Overview
 
@@ -203,50 +244,45 @@ When the extension is ready to add the public key to selected accounts, it shoul
 
 ---
 
-# Technical Details
+## Technical Details: Import Multiple Accounts from Mobile
 
 ### Extension (Frontend)
 
-- **Mnemonic Generation:**
-  - The extension generates a new mnemonic and prompts the user to confirm it. The mnemonic is kept in memory and not saved until the backend confirms the public key addition.
 - **WalletConnect Initialization:**
   - The extension initializes a WalletConnect session and generates a QR code for the user to scan.
 - **Session Handling:**
-  - On connection, the extension sends the new public key(s) to the mobile app.
-- **Mobile Profile Selection:**
-  - The mobile app prompts the user to select a profile to which the new public key(s) will be added.
+  - On connection, the extension sends the existing profile's public key(s) to the mobile app, along with the selected network.
+- **Mobile Account Selection:**
+  - The mobile app prompts the user to select specific accounts to which the public key(s) will be added.
 - **Public Key Addition:**
-  - The mobile app creates a **batch transaction** per network (mainnet and testnet) to add all provided public keys to all accounts of the selected profile and updates the backend.
+  - The mobile app creates a **batch transaction** to add all provided public keys to all selected accounts on the specified network and updates the backend.
 - **Confirmation and Finalization:**
   - Once the backend confirms the public keys are added, the mobile app notifies the extension via WalletConnect.
-  - The extension then prompts the user for their password, saves the mnemonic in the keyring, and logs the user into the imported profile.
+  - The extension updates its local cache for the imported accounts and notifies the user that the accounts have been added.
 
 ### Mobile App (Backend Coordination)
 
-- **Profile Selection and Transaction:**
-  - The mobile app receives the new public key(s) from the extension, prompts the user to select a profile, and creates a **batch transaction** per network to add all keys to all relevant accounts.
+- **Account Selection and Transaction:**
+  - The mobile app receives the public key(s) and network from the extension, prompts the user to select accounts, and creates a **batch transaction** to add all keys to all selected accounts on the specified network. See issue [FRW-web-next #380](https://github.com/onflow/FRW-web-next/issues/380) for details of how to do this.
 - **Backend Update:**
-  - The mobile app updates the backend to associate the new public keys with the user for each network.
+  - The mobile app updates the backend to associate the new public keys with the selected accounts.
   - Call the `v3/sync` API call
 - **Session Confirmation:**
-  - The mobile app sends a confirmation response to the extension via WalletConnect, signaling that the extension can now safely prompt for password, save the mnemonic, and log in.
+  - The mobile app sends a confirmation response to the extension via WalletConnect, signaling that the extension can now update its local cache and notify the user.
 
 ---
 
-## Security Considerations
+## Security Considerations: Import Multiple Accounts from Mobile
 
-- **Mnemonic Handling:**
-  - The mnemonic is only saved in the extension after the public key is successfully added to the user's accounts, preventing empty or orphaned profiles.
+- **Key Handling:**
+  - Only the public key(s) from the existing extension profile are sent; no new mnemonic or private key is generated or transmitted.
 - **End-to-End Security:**
-  - Sensitive data (mnemonic, private key) never leaves the user's devices unencrypted. All communication between extension and mobile is via WalletConnect.
+  - Sensitive data (private key, mnemonic) never leaves the user's devices unencrypted. All communication between extension and mobile is via WalletConnect.
 - **User Confirmation:**
-  - The user must confirm the mnemonic and select the profile on mobile, ensuring explicit consent for key addition.
-- **Password Prompt Timing:**
-  - The password is only requested after backend confirmation, ensuring the mnemonic is not persisted prematurely.
+  - The user must explicitly select which accounts to import on the mobile app, ensuring consent for key addition.
+- **Cache Consistency:**
+  - The extension updates its local cache only after backend confirmation, reducing the risk of inconsistent state.
+- **No Password Prompt:**
+  - Since no new mnemonic is generated, the user is not prompted for a password during this flow.
 
 ---
-
-## User Experience
-
-- The process is designed to be seamless: confirm mnemonic, scan QR, approve on mobile, enter password, and you're done.
-- All sensitive operations (like handling the mnemonic) are performed locally and only finalized after backend confirmation.
