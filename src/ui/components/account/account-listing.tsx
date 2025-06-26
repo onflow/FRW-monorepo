@@ -158,13 +158,6 @@ export const AccountListing = ({
             />
           );
         })}
-      {/* Show enable EVM account card if there's no EVM account */}
-      {noEvmAccount && activeParentAccount && onEnableEvmClick && (
-        <EnableEvmAccountCard
-          showCard={false}
-          onEnableEvmClick={() => onEnableEvmClick(activeParentAccount.address)}
-        />
-      )}
     </Box>
   );
 };
