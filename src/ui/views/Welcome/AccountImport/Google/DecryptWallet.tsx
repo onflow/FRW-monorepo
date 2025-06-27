@@ -1,13 +1,12 @@
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { Button, Typography, IconButton, Input, InputAdornment, FormGroup } from '@mui/material';
-
 import { Box } from '@mui/system';
 import React, { useEffect, useState } from 'react';
 
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
-import { PasswordInput } from '@/ui/components/PasswordComponents';
 import CancelIcon from '@/ui/components/iconfont/IconClose';
+import { PasswordInput } from '@/ui/components/PasswordComponents';
 import SlideRelative from '@/ui/components/SlideRelative';
 import { useWallet } from 'ui/utils';
 

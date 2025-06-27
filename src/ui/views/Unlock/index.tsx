@@ -1,15 +1,14 @@
 // import { useTranslation } from 'react-i18next';
 import { Input, Typography, Box, FormControl, CircularProgress } from '@mui/material';
-
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { consoleError } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
-import { PasswordInput } from '@/ui/components/PasswordComponents';
 import lilo from '@/ui/assets/image/lilo.png';
 import { LLPrimaryButton } from '@/ui/components';
 import CancelIcon from '@/ui/components/iconfont/IconClose';
+import { PasswordInput } from '@/ui/components/PasswordComponents';
 import SlideRelative from '@/ui/components/SlideRelative';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet, useWalletLoaded } from '@/ui/utils';

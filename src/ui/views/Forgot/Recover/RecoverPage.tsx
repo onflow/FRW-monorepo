@@ -1,12 +1,11 @@
 // import { useTranslation } from 'react-i18next';
 import { Typography, Box, FormControl, Input } from '@mui/material';
-
 import React, { useEffect, useRef, useState } from 'react';
 
 import { consoleError } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
-import { PasswordInput } from '@/ui/components/PasswordComponents';
 import CancelIcon from '@/ui/components/iconfont/IconClose';
+import { PasswordInput } from '@/ui/components/PasswordComponents';
 import SlideRelative from '@/ui/components/SlideRelative';
 import { LLPrimaryButton } from 'ui/components';
 import { useWallet } from 'ui/utils';
