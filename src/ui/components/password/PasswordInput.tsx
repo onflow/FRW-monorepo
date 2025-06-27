@@ -111,7 +111,7 @@ export const PasswordInput = ({
   );
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
       {isSmallScreen && showIndicator && (
         <Box sx={{ justifyItems: 'flex-end', paddingY: '8px' }}>
           <PasswordIndicator value={value} />
@@ -123,6 +123,7 @@ export const PasswordInput = ({
         sx={
           sx || {
             height: '64px',
+            width: '100%',
             padding: '16px',
             zIndex: '999',
             backgroundColor: '#282828',

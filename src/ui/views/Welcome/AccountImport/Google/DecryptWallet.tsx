@@ -1,13 +1,9 @@
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import { Button, Typography, IconButton, Input, InputAdornment, FormGroup } from '@mui/material';
+import { Button, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { useEffect, useState } from 'react';
 
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
-import CancelIcon from '@/ui/components/iconfont/IconClose';
 import { PasswordInput } from '@/ui/components/password/PasswordInput';
-import { PasswordValidationText } from '@/ui/components/password/PasswordValidationText';
 import { useWallet } from 'ui/utils';
 
 const DecryptWallet = ({ handleSwitchTab, setMnemonic, username }) => {
@@ -15,9 +11,9 @@ const DecryptWallet = ({ handleSwitchTab, setMnemonic, username }) => {
 
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const [password, setPassword] = useState(DEFAULT_PASSWORD);
-  const [isCharacters, setCharacters] = useState(false);
   const [isLoading, setLoading] = useState(false);
 
+  const [errorText, setErrorText] = useState<string | undefined>(undefined);
   const decryptWallet = async () => {
     setLoading(true);
 
@@ -29,16 +25,9 @@ const DecryptWallet = ({ handleSwitchTab, setMnemonic, username }) => {
     } catch (e) {
       setLoading(false);
       // Error will be shown by PasswordValidationText
+      setErrorText(chrome.i18n.getMessage('Incorrect__decrypt__password__please__try__again'));
     }
   };
-
-  useEffect(() => {
-    if (password.length < 8) {
-      setCharacters(false);
-    } else {
-      setCharacters(true);
-    }
-  }, [password]);
 
   return (
     <>
@@ -62,34 +51,22 @@ const DecryptWallet = ({ handleSwitchTab, setMnemonic, username }) => {
             display: 'flex',
           }}
         >
-          <FormGroup sx={{ width: '100%' }}>
-            <PasswordInput
-              value={password}
-              onChange={setPassword}
-              showPassword={isPasswordVisible}
-              setShowPassword={setPasswordVisible}
-              autoFocus={true}
-              placeholder={chrome.i18n.getMessage('Enter__Your__Password')}
-            />
-            <PasswordValidationText
-              message={
-                password.length < 8
-                  ? chrome.i18n.getMessage(
-                      'The__decrypt__password__should__be__8__characters__long'
-                    )
-                  : chrome.i18n.getMessage('Incorrect__decrypt__password__please__try__again')
-              }
-              type="error"
-              show={!!password && password.length < 8}
-            />
-          </FormGroup>
+          <PasswordInput
+            value={password}
+            onChange={setPassword}
+            showPassword={isPasswordVisible}
+            setShowPassword={setPasswordVisible}
+            errorText={errorText}
+            autoFocus={true}
+            placeholder={chrome.i18n.getMessage('Enter__Your__Password')}
+          />
         </Box>
 
         <Box sx={{ flexGrow: 1 }} />
         <Button
           className="registerButton"
           onClick={decryptWallet}
-          disabled={!isCharacters}
+          disabled={isLoading || !password}
           variant="contained"
           color="secondary"
           size="large"
