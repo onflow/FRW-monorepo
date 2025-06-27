@@ -1,10 +1,12 @@
-import React, { type ReactNode, createContext, useContext, useEffect, useState } from 'react';
+import React, { type ReactNode, createContext, useContext } from 'react';
 import type { Object } from 'ts-toolbelt';
 
+import { walletLoadedKey } from '@/shared/utils/cache-data-keys';
 import type { WalletController as WalletControllerClass } from 'background/controller/wallet';
 import type { OpenApiService } from 'background/service/openapi';
 
 import type { IExtractFromPromise } from '../../shared/utils/type';
+import { useCachedData } from '../hooks/use-data';
 
 export type WalletControllerType = {
   [key in keyof WalletControllerClass]: WalletControllerClass[key] extends (
@@ -34,6 +36,11 @@ const WalletContext = createContext<{
   loaded: boolean;
 } | null>(null);
 
+const useWalletLoaded = () => {
+  const loaded = useCachedData<boolean>(walletLoadedKey());
+  return loaded ?? false;
+};
+
 const WalletProvider = ({
   children,
   wallet,
@@ -41,46 +48,9 @@ const WalletProvider = ({
   children?: ReactNode;
   wallet: WalletController;
 }) => {
-  const [walletInitialized, setWalletInitialized] = useState(false);
-
-  useEffect(() => {
-    const checkWalletInitialized = async () => {
-      const walletInitialized = await wallet.isLoaded();
-      if (walletInitialized) {
-        setWalletInitialized(true);
-      }
-    };
-    checkWalletInitialized();
-  }, [wallet]);
-
-  const walletInitializedListener = (
-    msg: { type: string },
-    _sender: unknown,
-    _sendResponse: unknown
-  ) => {
-    if (msg.type === 'walletInitialized') {
-      setWalletInitialized(true);
-    }
-  };
-  useEffect(() => {
-    let walletListener: typeof walletInitializedListener | null = null;
-    if (!walletInitialized) {
-      walletListener = walletInitializedListener;
-      chrome.runtime.onMessage.addListener(walletListener);
-    } else if (walletListener) {
-      chrome.runtime.onMessage.removeListener(walletListener);
-      walletListener = null;
-    }
-    return () => {
-      if (walletListener) {
-        chrome.runtime.onMessage.removeListener(walletListener);
-        walletListener = null;
-      }
-    };
-  }, [walletInitialized]);
-
+  const walletInitialized = useWalletLoaded();
   return (
-    <WalletContext.Provider value={{ wallet, loaded: walletInitialized }}>
+    <WalletContext.Provider value={{ wallet, loaded: walletInitialized ?? false }}>
       {children}
     </WalletContext.Provider>
   );
@@ -92,14 +62,6 @@ const useWallet = () => {
   };
 
   return wallet;
-};
-
-const useWalletLoaded = () => {
-  const { loaded } = useContext(WalletContext) as unknown as {
-    loaded: boolean;
-  };
-
-  return loaded;
 };
 
 export { WalletProvider, useWallet, useWalletLoaded };
