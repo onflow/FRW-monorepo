@@ -16,6 +16,8 @@ import { BpUncheked, BpCheckedIcon } from '@/ui/assets/icons/CustomCheckboxIcons
 import { LLSpinner } from '@/ui/components';
 import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
 import CancelIcon from '@/ui/components/iconfont/IconClose';
+import { PasswordErrorText } from '@/ui/components/password/PasswordErrorText';
+import { PasswordHelperText } from '@/ui/components/password/PasswordHelperText';
 import { PasswordInput } from '@/ui/components/password/PasswordInput';
 import SlideRelative from '@/ui/components/SlideRelative';
 
@@ -53,44 +55,6 @@ const SetPassword: React.FC<SetPasswordProps> = ({
   const [helperText, setHelperText] = useState(<div />);
   const [helperMatch, setHelperMatch] = useState(<div />);
 
-  const successInfo = (message: string) => (
-    <Box
-      sx={{
-        width: '95%',
-        backgroundColor: 'success.light',
-        mx: 'auto',
-        borderRadius: '0 0 12px 12px',
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-      }}
-    >
-      <CheckCircleIcon size={24} color={'#41CC5D'} style={{ margin: '8px' }} />
-      <Typography variant="body1" color="success.main">
-        {message}
-      </Typography>
-    </Box>
-  );
-
-  const errorInfo = (message: string) => (
-    <Box
-      sx={{
-        width: '95%',
-        backgroundColor: 'error.light',
-        mx: 'auto',
-        borderRadius: '0 0 12px 12px',
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-      }}
-    >
-      <CancelIcon size={24} color={'#E54040'} style={{ margin: '8px' }} />
-      <Typography variant="body1" color="error.main">
-        {message}
-      </Typography>
-    </Box>
-  );
-
   const handleSubmit = async () => {
     setLoading(true);
     try {
@@ -105,21 +69,27 @@ const SetPassword: React.FC<SetPasswordProps> = ({
 
   useEffect(() => {
     if (password.length > 7) {
-      setHelperText(successInfo(chrome.i18n.getMessage('At__least__8__characters')));
+      setHelperText(
+        <PasswordHelperText message={chrome.i18n.getMessage('At__least__8__characters')} />
+      );
       setCharacters(true);
     } else {
-      setHelperText(errorInfo(chrome.i18n.getMessage('At__least__8__characters')));
+      setHelperText(
+        <PasswordErrorText message={chrome.i18n.getMessage('At__least__8__characters')} />
+      );
       setCharacters(false);
     }
   }, [password]);
 
   useEffect(() => {
     if (confirmPassword === password) {
-      setHelperMatch(successInfo(chrome.i18n.getMessage('Passwords__match')));
+      setHelperMatch(<PasswordHelperText message={chrome.i18n.getMessage('Passwords__match')} />);
       setMatch(true);
     } else {
       setMatch(false);
-      setHelperMatch(errorInfo(chrome.i18n.getMessage('Your__passwords__do__not__match')));
+      setHelperMatch(
+        <PasswordErrorText message={chrome.i18n.getMessage('Your__passwords__do__not__match')} />
+      );
     }
   }, [confirmPassword, password]);
 

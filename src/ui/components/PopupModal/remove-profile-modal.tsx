@@ -1,12 +1,13 @@
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
-import { Button, Typography, TextField, DialogActions, CircularProgress, Box } from '@mui/material';
+import { Button, Typography, DialogActions, CircularProgress, Box } from '@mui/material';
 import React, { useState, useEffect, useCallback } from 'react';
 
 import { consoleError } from '@/shared/utils/console-log';
 import { useWallet } from '@/ui/utils';
 
 import { CustomDialog } from '../custom-dialog'; // Reuse the styled dialog base
+import { PasswordInput } from '../password/PasswordInput';
 
 interface RemoveProfileModalProps {
   isOpen: boolean;
@@ -28,6 +29,7 @@ const RemoveProfileModal: React.FC<RemoveProfileModalProps> = ({
   profileUsername,
 }) => {
   const [password, setPassword] = useState('');
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isCheckingBackup, setIsCheckingBackup] = useState<boolean>(true); // Added loading state
   const [backupCheckError, setBackupCheckError] = useState<string>('');
   const [hasBackup, setHasBackup] = useState<boolean>(false);
@@ -107,34 +109,33 @@ const RemoveProfileModal: React.FC<RemoveProfileModalProps> = ({
         {chrome.i18n.getMessage('Remove_profile_warning_simplified')}
       </Typography>
 
-      <TextField
+      <PasswordInput
         autoFocus
-        margin="dense"
-        id="confirm-remove-password"
-        label={chrome.i18n.getMessage('Password')}
-        type="password"
-        fullWidth
-        variant="outlined"
         value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        error={!!removalError}
-        helperText={removalError}
+        onChange={setPassword}
+        isVisible={isPasswordVisible}
+        setVisible={setIsPasswordVisible}
+        placeholder={chrome.i18n.getMessage('Password')}
         onKeyDown={(e) => {
           if (e.key === 'Enter' && password && !isRemoving) {
             handleConfirmClick();
           }
         }}
         sx={{
-          mb: 3,
-          input: { color: '#FFFFFF' },
-          '& .MuiOutlinedInput-root': {
-            '& fieldset': { borderColor: '#787878' },
-          },
-          '& .MuiFormLabel-root': {
-            color: '#BABABA',
+          border: '2px solid #4C4C4C',
+          borderRadius: '12px',
+          mb: 2,
+          padding: '8px',
+          '&.Mui-focused': {
+            border: '2px solid #FAFAFA',
+            boxShadow: '0px 8px 12px 4px rgba(76, 76, 76, 0.24)',
           },
         }}
       />
+
+      {removalError && (
+        <Typography sx={{ color: '#FF6D24', fontSize: '14px', mb: 2 }}>{removalError}</Typography>
+      )}
 
       <DialogActions sx={{ display: 'flex', flexDirection: 'row' }}>
         <Button

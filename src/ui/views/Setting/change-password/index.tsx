@@ -21,7 +21,8 @@ import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
 import CancelIcon from '@/ui/components/iconfont/IconClose';
 import { LLHeader } from '@/ui/components/LLHeader';
-import PasswordForm from '@/ui/components/password/PasswordForm';
+import { PasswordInput } from '@/ui/components/password/PasswordInput';
+import { PasswordValidationText } from '@/ui/components/password/PasswordValidationText';
 import SlideRelative from '@/ui/components/SlideRelative';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from '@/ui/utils';
@@ -33,27 +34,29 @@ const ChangePassword = () => {
   const wallet = useWallet();
 
   const [isCurrentPasswordVisible, setCurrentPasswordVisible] = useState(false);
+  const [isNewPasswordVisible, setNewPasswordVisible] = useState(false);
+  const [isConfirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+
   const [password, setPassword] = useState(DEFAULT_PASSWORD);
   const [confirmPassword, setConfirmPassword] = useState(DEFAULT_PASSWORD);
+  const [confirmCurrentPassword, setConfirmCurrentPassword] = useState(DEFAULT_PASSWORD);
+
   const [isCharacters, setCharacters] = useState(false);
   const [isMatch, setMatch] = useState(false);
-  const [confirmCurrentPassword, setConfirmCurrentPassword] = useState(DEFAULT_PASSWORD);
   const [isSame, setSame] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [error, setError] = useState('');
-  const [statusMessage, setStatusMessage] = useState('');
+  const [statusMessage, setStatusMessage] = useState<string>('');
   const [showGooglePermissionDialog, setShowGooglePermissionDialog] = useState(false);
   const [showProfileBackupDialog, setShowProfileBackupDialog] = useState(false);
-  // No need to maintain selectedProfiles in state since we immediately use them
+
   const history = useHistory();
 
   const verify = useCallback(async () => {
     try {
       setIsVerifying(true);
-      // verifyPassword doesn't return a value, it throws an error if the password is incorrect
       await wallet.verifyPassword(confirmCurrentPassword);
-      // If we reach here, the password is correct
       setSame(true);
     } catch (error) {
       consoleError('Password verification failed:', error);
@@ -67,64 +70,43 @@ const ChangePassword = () => {
     verify();
   }, [confirmCurrentPassword, verify]);
 
-  const successInfo = (message) => {
-    return (
-      <Box
-        sx={{
-          width: '95%',
-          backgroundColor: '#38B00014',
-          mx: 'auto',
-          borderRadius: '0 0 12px 12px',
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-        }}
-      >
-        <CheckCircleIcon size={12} color={'#41CC5D'} style={{ margin: '8px' }} />
-        <Typography
-          sx={{
-            fontSize: '10px',
-            fontStyle: 'normal',
-            fontWeight: '400',
-          }}
-          color="text.secondary"
-        >
-          {message}
-        </Typography>
-      </Box>
-    );
-  };
+  // Validation effects
+  useEffect(() => {
+    // Length validation for new password
+    const isLengthValid = password.length >= 8;
+    setCharacters(isLengthValid);
+  }, [password]);
 
-  const errorInfo = (message) => {
-    return (
-      <Box
-        sx={{
-          width: '95%',
-          backgroundColor: 'error.light',
-          mx: 'auto',
-          borderRadius: '0 0 12px 12px',
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-        }}
-      >
-        <CancelIcon size={12} color={'#E54040'} style={{ margin: '8px' }} />
-        <Typography
-          sx={{
-            fontSize: '10px',
-            fontStyle: 'normal',
-            fontWeight: '400',
-          }}
-          color="error.main"
-        >
-          {message}
-        </Typography>
-      </Box>
-    );
-  };
+  useEffect(() => {
+    // Match validation for new password and confirm password
+    if (confirmPassword === password && password.length > 0) {
+      setMatch(true);
+    } else {
+      setMatch(false);
+    }
+  }, [confirmPassword, password]);
 
-  const [helperText, setHelperText] = useState(<div />);
-  const [helperMatch, setHelperMatch] = useState(<div />);
+  // Custom endAdornment for the current password field
+  const currentPasswordAdornment = (
+    <InputAdornment position="end">
+      {isVerifying ? (
+        <Box sx={{ width: 14, height: 14, margin: '8px' }}>
+          <LinearProgress sx={{ width: 14, height: 14 }} />
+        </Box>
+      ) : isSame ? (
+        <CheckCircleIcon size={14} color={'#41CC5D'} style={{ margin: '8px' }} />
+      ) : (
+        <CancelIcon size={14} color={'#E54040'} style={{ margin: '8px' }} />
+      )}
+      <IconButton onClick={() => setCurrentPasswordVisible(!isCurrentPasswordVisible)}>
+        {isCurrentPasswordVisible ? (
+          <VisibilityOffIcon sx={{ fontSize: 14, padding: 0 }} />
+        ) : (
+          <VisibilityIcon sx={{ fontSize: 14, padding: 0 }} />
+        )}
+      </IconButton>
+    </InputAdornment>
+  );
 
   const changePassword = useCallback(
     async (ignoreBackupsAtTheirOwnRisk = false) => {
@@ -205,46 +187,44 @@ const ChangePassword = () => {
             .catch((error) => {
               consoleError('Error locking wallet:', error);
               setError(chrome.i18n.getMessage('Oops__unexpected__error'));
+            })
+            .finally(() => {
+              setIsResetting(false);
+              setStatusMessage('');
             });
         } else {
           setError(chrome.i18n.getMessage('Oops__unexpected__error'));
         }
       } catch (error) {
-        consoleError('Error changing password:', error);
-
-        // Provide more specific error messages based on the error
-        if (error.message.includes('backup')) {
-          setError(
-            `${chrome.i18n.getMessage('Failed_to_update_Google_Drive_backups') || 'Failed to update Google Drive backups'}: ${error.message}`
-          );
-        } else if (error.message.includes('wallet password')) {
-          setError(
-            `${chrome.i18n.getMessage('Failed_to_change_wallet_password') || 'Failed to change wallet password'}: ${error.message}`
-          );
-        } else {
-          setError(error.message);
-        }
+        consoleError('Error changing password with backups:', error);
+        setError(error.message);
       } finally {
         setIsResetting(false);
-        setStatusMessage('');
+        if (!error) {
+          setStatusMessage('');
+        }
       }
     },
-    [confirmCurrentPassword, confirmPassword, wallet, history]
+    [confirmCurrentPassword, confirmPassword, wallet, history, error]
   );
 
   const handleChangePasswordClick = useCallback(async () => {
-    // Check if the user has google permission
-    // We need to access backups so we can re-encrypt them
-    const hasGooglePermission = await wallet.hasGooglePermission();
-    if (hasGooglePermission) {
-      // Show the profile backup selection dialog
-      setShowProfileBackupDialog(true);
-    } else {
-      setShowGooglePermissionDialog(true);
+    try {
+      // Check if the user has google permission
+      const hasGooglePermission = await wallet.hasGooglePermission();
+      if (hasGooglePermission) {
+        // Show the profile backup selection dialog
+        setShowProfileBackupDialog(true);
+      } else {
+        setShowGooglePermissionDialog(true);
+      }
+    } catch (error) {
+      consoleError('Error checking Google permission:', error);
+      // If we can't check permission, proceed without backups
+      await changePassword(true);
     }
-  }, [wallet]);
+  }, [wallet, changePassword]);
 
-  // Handler for profile selection
   const handleProfileSelection = useCallback(
     (selectedUsernames: string[]) => {
       setShowProfileBackupDialog(false);
@@ -253,56 +233,6 @@ const ChangePassword = () => {
       changePasswordWithBackups(selectedUsernames);
     },
     [changePasswordWithBackups]
-  );
-
-  useEffect(() => {
-    if (password.length > 7) {
-      setHelperText(successInfo(chrome.i18n.getMessage('At__least__8__characters')));
-      setCharacters(true);
-    } else {
-      setHelperText(errorInfo(chrome.i18n.getMessage('At__least__8__characters')));
-      setCharacters(false);
-    }
-  }, [password]);
-
-  useEffect(() => {
-    if (confirmPassword === password) {
-      setHelperMatch(successInfo(chrome.i18n.getMessage('Passwords__match')));
-      setMatch(true);
-    } else {
-      setMatch(false);
-      setHelperMatch(errorInfo(chrome.i18n.getMessage('Your__passwords__do__not__match')));
-    }
-  }, [confirmPassword, password]);
-
-  // Custom endAdornment for the current password field
-  const currentPasswordAdornment = (
-    <InputAdornment position="end">
-      {isVerifying ? (
-        <Box sx={{ width: 14, height: 14, margin: '8px' }}>
-          <LinearProgress sx={{ width: 14, height: 14 }} />
-        </Box>
-      ) : isSame ? (
-        <CheckCircleIcon size={14} color={'#41CC5D'} style={{ margin: '8px' }} />
-      ) : (
-        <CancelIcon size={14} color={'#E54040'} style={{ margin: '8px' }} />
-      )}
-      <IconButton onClick={() => setCurrentPasswordVisible(!isCurrentPasswordVisible)}>
-        {isCurrentPasswordVisible ? (
-          <VisibilityOffIcon sx={{ fontSize: 14, padding: 0 }} />
-        ) : (
-          <VisibilityIcon sx={{ fontSize: 14, padding: 0 }} />
-        )}
-      </IconButton>
-    </InputAdornment>
-  );
-
-  const handleValidationChange = useCallback(
-    (validationState: { characters: boolean; match: boolean }) => {
-      setCharacters(validationState.characters);
-      setMatch(validationState.match);
-    },
-    []
   );
 
   return (
@@ -327,44 +257,136 @@ const ChangePassword = () => {
             paddingX: '18px',
           }}
         >
-          <PasswordForm
-            fields={[
-              {
-                value: confirmCurrentPassword,
-                onChange: (value) => setConfirmCurrentPassword(value),
-                label: chrome.i18n.getMessage('Current__Password'),
-                placeholder: chrome.i18n.getMessage('Enter__Current__Password'),
-                sx: { fontSize: '12px', fontFamily: 'Inter', fontStyle: 'normal' },
-                visibilitySx: { fontSize: 14, padding: 0 },
-                endAdornment: currentPasswordAdornment,
-              },
-              {
-                value: password,
-                onChange: (value) => {
+          <FormGroup sx={{ width: '100%' }}>
+            {/* Current Password */}
+            <Box sx={{ mb: 2 }}>
+              <Typography
+                sx={{
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  marginBottom: '4px',
+                }}
+              >
+                {chrome.i18n.getMessage('Current__Password')}
+              </Typography>
+              <PasswordInput
+                value={confirmCurrentPassword}
+                onChange={setConfirmCurrentPassword}
+                isVisible={isCurrentPasswordVisible}
+                setVisible={setCurrentPasswordVisible}
+                placeholder={chrome.i18n.getMessage('Enter__Current__Password')}
+                sx={{
+                  fontSize: '12px',
+                  fontFamily: 'Inter',
+                  fontStyle: 'normal',
+                  backgroundColor: '#121212',
+                  border: '2px solid #4C4C4C',
+                  borderRadius: '12px',
+                  padding: '8px',
+                  '&.Mui-focused': {
+                    border: '2px solid #FAFAFA',
+                    boxShadow: '0px 8px 12px 4px rgba(76, 76, 76, 0.24)',
+                  },
+                }}
+                visibilitySx={{ fontSize: 14, padding: 0 }}
+                endAdornment={currentPasswordAdornment}
+              />
+              <PasswordValidationText
+                message={chrome.i18n.getMessage('Incorrect__Password')}
+                type="error"
+                show={!!confirmCurrentPassword && !isSame}
+              />
+            </Box>
+
+            {/* New Password */}
+            <Box sx={{ mb: 2 }}>
+              <Typography
+                sx={{
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  marginBottom: '4px',
+                }}
+              >
+                {chrome.i18n.getMessage('New__Password')}
+              </Typography>
+              <PasswordInput
+                value={password}
+                onChange={(value) => {
                   setPassword(value);
                   setConfirmPassword('');
-                },
-                label: chrome.i18n.getMessage('New__Password'),
-                placeholder: chrome.i18n.getMessage('Enter__New__Password'),
-                sx: { fontSize: '12px', fontFamily: 'Inter', fontStyle: 'normal' },
-                visibilitySx: { fontSize: 14, margin: 0 },
-                showIndicator: true,
-              },
-              {
-                value: confirmPassword,
-                onChange: (value) => setConfirmPassword(value),
-                label: chrome.i18n.getMessage('Confirm__Password'),
-                placeholder: chrome.i18n.getMessage('Confirm__Password'),
-                sx: { fontSize: '12px', fontFamily: 'Inter', fontStyle: 'normal' },
-                visibilitySx: { fontSize: 14, margin: 0 },
-                showIndicator: true,
-              },
-            ]}
-            requireMatch={true}
-            matchFields={[1, 2]} // Match new password and confirm password
-            onValidationChange={handleValidationChange}
-          />
+                }}
+                isVisible={isNewPasswordVisible}
+                setVisible={setNewPasswordVisible}
+                placeholder={chrome.i18n.getMessage('Enter__New__Password')}
+                sx={{
+                  fontSize: '12px',
+                  fontFamily: 'Inter',
+                  fontStyle: 'normal',
+                  backgroundColor: '#121212',
+                  border: '2px solid #4C4C4C',
+                  borderRadius: '12px',
+                  padding: '8px',
+                  '&.Mui-focused': {
+                    border: '2px solid #FAFAFA',
+                    boxShadow: '0px 8px 12px 4px rgba(76, 76, 76, 0.24)',
+                  },
+                }}
+                visibilitySx={{ fontSize: 14, margin: 0 }}
+                showIndicator={true}
+              />
+              <PasswordValidationText
+                message={chrome.i18n.getMessage('At__least__8__characters')}
+                type={isCharacters ? 'success' : 'error'}
+                show={!!password}
+              />
+            </Box>
+
+            {/* Confirm Password */}
+            <Box sx={{ mb: 2 }}>
+              <Typography
+                sx={{
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  marginBottom: '4px',
+                }}
+              >
+                {chrome.i18n.getMessage('Confirm__Password')}
+              </Typography>
+              <PasswordInput
+                value={confirmPassword}
+                onChange={setConfirmPassword}
+                isVisible={isConfirmPasswordVisible}
+                setVisible={setConfirmPasswordVisible}
+                placeholder={chrome.i18n.getMessage('Confirm__Password')}
+                sx={{
+                  fontSize: '12px',
+                  fontFamily: 'Inter',
+                  fontStyle: 'normal',
+                  backgroundColor: '#121212',
+                  border: '2px solid #4C4C4C',
+                  borderRadius: '12px',
+                  padding: '8px',
+                  '&.Mui-focused': {
+                    border: '2px solid #FAFAFA',
+                    boxShadow: '0px 8px 12px 4px rgba(76, 76, 76, 0.24)',
+                  },
+                }}
+                visibilitySx={{ fontSize: 14, margin: 0 }}
+                showIndicator={true}
+              />
+              <PasswordValidationText
+                message={
+                  isMatch
+                    ? chrome.i18n.getMessage('Passwords__match')
+                    : chrome.i18n.getMessage('Your__passwords__do__not__match')
+                }
+                type={isMatch ? 'success' : 'error'}
+                show={!!confirmPassword}
+              />
+            </Box>
+          </FormGroup>
         </Box>
+
         <Box
           sx={{
             display: 'flex',

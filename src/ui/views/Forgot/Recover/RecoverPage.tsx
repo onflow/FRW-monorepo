@@ -6,7 +6,7 @@ import { consoleError } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import CancelIcon from '@/ui/components/iconfont/IconClose';
 import { PasswordInput } from '@/ui/components/password/PasswordInput';
-import SlideRelative from '@/ui/components/SlideRelative';
+import { PasswordValidationText } from '@/ui/components/password/PasswordValidationText';
 import { LLPrimaryButton } from 'ui/components';
 import { useWallet } from 'ui/utils';
 
@@ -79,21 +79,6 @@ const RecoverPage = ({ dataArray, setArray, goNext }) => {
       .catch((err) => consoleError('Failed to copy to clipboard: ', err));
   };
 
-  const usernameError = () => (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-      }}
-    >
-      <CancelIcon size={24} color={'#E54040'} style={{ margin: '8px' }} />
-      <Typography variant="body1" color="text.secondary">
-        {chrome.i18n.getMessage('Incorrect__Password')}
-      </Typography>
-    </Box>
-  );
-
   return (
     <Box
       sx={{
@@ -150,18 +135,11 @@ const RecoverPage = ({ dataArray, setArray, goNext }) => {
           onKeyDown={handleKeyDown}
         />
 
-        <SlideRelative direction="down" show={showError}>
-          <Box
-            sx={{
-              width: '95%',
-              backgroundColor: 'error.light',
-              mx: 'auto',
-              borderRadius: '0 0 12px 12px',
-            }}
-          >
-            <Box sx={{ p: '4px' }}>{usernameError()}</Box>
-          </Box>
-        </SlideRelative>
+        <PasswordValidationText
+          message={chrome.i18n.getMessage('Incorrect__Password')}
+          type="error"
+          show={showError}
+        />
       </FormControl>
 
       <Box

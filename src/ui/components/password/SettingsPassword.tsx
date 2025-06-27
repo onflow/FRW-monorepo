@@ -4,13 +4,13 @@ import React, { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
-import { LLHeader } from '@/ui/components';
 import CancelIcon from '@/ui/components/iconfont/IconClose';
-import SlideRelative from '@/ui/components/SlideRelative';
+import { LLHeader } from '@/ui/components/LLHeader';
 
-import { useWallet } from '../utils';
+import { useWallet } from '../../utils';
 
-import { PasswordInput } from './password/PasswordInput';
+import { PasswordInput } from './PasswordInput';
+import { PasswordValidationText } from './PasswordValidationText';
 
 type PassMatch = 'match' | 'no-match' | 'unverified';
 const SettingsPassword = ({
@@ -60,21 +60,6 @@ const SettingsPassword = ({
     verify();
   }, [password, verify]);
 
-  const passwordError = () => (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-      }}
-    >
-      <CancelIcon size={14} color={'#E54040'} style={{ margin: '8px' }} />
-      <Typography color={'#E54040'} sx={{ color: '#E54040' }}>
-        {chrome.i18n.getMessage('Incorrect__Password')}
-      </Typography>
-    </Box>
-  );
-
   return (
     <div className="page">
       <Box
@@ -107,23 +92,14 @@ const SettingsPassword = ({
             className="inputBox"
             autoFocus={true}
             placeholder={chrome.i18n.getMessage('Enter__Your__Password')}
-            sx={{
-              backgroundColor: '#121212',
-            }}
           />
 
-          <SlideRelative direction="down" show={!!password && passMatch === 'no-match'}>
-            <Box
-              sx={{
-                width: '95%',
-                backgroundColor: 'error.light',
-                mx: 'auto',
-                borderRadius: '0 0 12px 12px',
-              }}
-            >
-              <Box sx={{ p: '4px' }}>{passwordError()}</Box>
-            </Box>
-          </SlideRelative>
+          <PasswordValidationText
+            message={chrome.i18n.getMessage('Incorrect__Password')}
+            type="error"
+            show={!!password && passMatch === 'no-match'}
+          />
+
           {children}
         </FormControl>
 

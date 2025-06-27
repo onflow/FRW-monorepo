@@ -7,7 +7,7 @@ import React, { useEffect, useState } from 'react';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import CancelIcon from '@/ui/components/iconfont/IconClose';
 import { PasswordInput } from '@/ui/components/password/PasswordInput';
-import SlideRelative from '@/ui/components/SlideRelative';
+import { PasswordValidationText } from '@/ui/components/password/PasswordValidationText';
 import { useWallet } from 'ui/utils';
 
 const DecryptWallet = ({ handleSwitchTab, setMnemonic, username }) => {
@@ -16,31 +16,7 @@ const DecryptWallet = ({ handleSwitchTab, setMnemonic, username }) => {
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const [password, setPassword] = useState(DEFAULT_PASSWORD);
   const [isCharacters, setCharacters] = useState(false);
-  // const [isCheck, setCheck] = useState(false);
   const [isLoading, setLoading] = useState(false);
-
-  const errorInfo = (message) => {
-    return (
-      <Box
-        sx={{
-          width: '95%',
-          backgroundColor: 'error.light',
-          mx: 'auto',
-          borderRadius: '0 0 12px 12px',
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-        }}
-      >
-        <CancelIcon size={24} color={'#E54040'} style={{ margin: '8px' }} />
-        <Typography variant="body1" color="error.main">
-          {message}
-        </Typography>
-      </Box>
-    );
-  };
-
-  const [helperText, setHelperText] = useState(<div />);
 
   const decryptWallet = async () => {
     setLoading(true);
@@ -52,20 +28,14 @@ const DecryptWallet = ({ handleSwitchTab, setMnemonic, username }) => {
       handleSwitchTab();
     } catch (e) {
       setLoading(false);
-      setHelperText(
-        errorInfo(chrome.i18n.getMessage('Incorrect__decrypt__password__please__try__again'))
-      );
+      // Error will be shown by PasswordValidationText
     }
   };
 
   useEffect(() => {
     if (password.length < 8) {
-      setHelperText(
-        errorInfo(chrome.i18n.getMessage('The__decrypt__password__should__be__8__characters__long'))
-      );
       setCharacters(false);
     } else {
-      setHelperText(<div />);
       setCharacters(true);
     }
   }, [password]);
@@ -101,9 +71,17 @@ const DecryptWallet = ({ handleSwitchTab, setMnemonic, username }) => {
               autoFocus={true}
               placeholder={chrome.i18n.getMessage('Enter__Your__Password')}
             />
-            <SlideRelative direction="down" show={!!password}>
-              {helperText}
-            </SlideRelative>
+            <PasswordValidationText
+              message={
+                password.length < 8
+                  ? chrome.i18n.getMessage(
+                      'The__decrypt__password__should__be__8__characters__long'
+                    )
+                  : chrome.i18n.getMessage('Incorrect__decrypt__password__please__try__again')
+              }
+              type="error"
+              show={!!password && password.length < 8}
+            />
           </FormGroup>
         </Box>
 
