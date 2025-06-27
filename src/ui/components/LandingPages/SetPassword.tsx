@@ -79,8 +79,7 @@ const SetPassword: React.FC<SetPasswordProps> = ({
     }
 
     if (confirmPassword === password) {
-      setHelperText(chrome.i18n.getMessage('Passwords__match'));
-
+      setHelperMatch(chrome.i18n.getMessage('Passwords__match'));
       setMatch(true);
     } else {
       setMatch(false);
