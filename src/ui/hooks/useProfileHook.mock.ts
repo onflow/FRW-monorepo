@@ -75,4 +75,4 @@ export const USE_PROFILES_MOCK: ReturnType<typeof actual.useProfiles> = {
 
 export const useProfiles = fn(actual.useProfiles)
   .mockName('useProfiles')
-  .mockResolvedValue(USE_PROFILES_MOCK);
+  .mockReturnValue(USE_PROFILES_MOCK);

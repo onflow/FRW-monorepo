@@ -3,9 +3,13 @@ import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 import { fn } from 'storybook/test';
 
+import { type ActiveAccountType } from '@/shared/types/wallet-types';
 import { useHistory as importedMockUseHistory } from '@/stories/react-router-dom.mock';
 import { useNetwork as importedMockUseNetwork } from '@/ui/hooks/useNetworkHook.mock';
-import { useProfiles as importedMockUseProfiles } from '@/ui/hooks/useProfileHook.mock';
+import {
+  useProfiles as importedMockUseProfiles,
+  USE_PROFILES_MOCK,
+} from '@/ui/hooks/useProfileHook.mock';
 
 import Deposit from './index';
 
@@ -35,14 +39,14 @@ export default {
             emulatorModeOn: false,
           };
         });
-        importedMockUseProfiles.mockImplementation(() => {
-          return {
-            currentWallet: {
-              address: address,
-            },
-            activeAccountType: activeAccountType,
-            network: network,
-          };
+        importedMockUseProfiles.mockReturnValue({
+          ...USE_PROFILES_MOCK,
+          currentWallet: {
+            ...USE_PROFILES_MOCK.currentWallet,
+            address: address,
+          },
+          activeAccountType: activeAccountType as ActiveAccountType,
+          network: network,
         });
       }
       return (

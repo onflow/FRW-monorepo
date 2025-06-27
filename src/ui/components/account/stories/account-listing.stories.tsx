@@ -157,12 +157,12 @@ const meta: Meta<typeof AccountListing> = {
             return [];
           }
         );
-        importedMockUseProfiles.mockResolvedValue({
+        importedMockUseProfiles.mockReturnValue({
           ...USE_PROFILES_MOCK,
           pendingAccountTransactions: mockData.pendingAccountTransactions || [],
         });
       } else {
-        importedMockUseProfiles.mockResolvedValue({
+        importedMockUseProfiles.mockReturnValue({
           ...USE_PROFILES_MOCK,
           pendingAccountTransactions: [],
         });
