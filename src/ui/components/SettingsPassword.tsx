@@ -10,7 +10,7 @@ import SlideRelative from '@/ui/components/SlideRelative';
 
 import { useWallet } from '../utils';
 
-import { PasswordInput } from './PasswordComponents';
+import { PasswordInput } from './password/PasswordInput';
 
 type PassMatch = 'match' | 'no-match' | 'unverified';
 const SettingsPassword = ({

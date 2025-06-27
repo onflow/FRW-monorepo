@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import CancelIcon from '@/ui/components/iconfont/IconClose';
-import { PasswordInput } from '@/ui/components/PasswordComponents';
+import { PasswordInput } from '@/ui/components/password/PasswordInput';
 import SlideRelative from '@/ui/components/SlideRelative';
 import { useWallet } from 'ui/utils';
 

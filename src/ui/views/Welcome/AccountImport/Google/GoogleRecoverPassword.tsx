@@ -21,7 +21,7 @@ import zxcvbn from 'zxcvbn';
 import { LLSpinner, LLNotFound } from '@/ui/components';
 import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
 import CancelIcon from '@/ui/components/iconfont/IconClose';
-import { PasswordInput } from '@/ui/components/PasswordComponents';
+import { PasswordInput } from '@/ui/components/password/PasswordInput';
 import { useWallet } from 'ui/utils';
 
 const BpIcon = styled('span')(() => ({

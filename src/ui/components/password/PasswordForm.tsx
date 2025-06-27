@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 
 import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
 import CancelIcon from '@/ui/components/iconfont/IconClose';
-import { PasswordInput } from '@/ui/components/PasswordComponents';
+import { PasswordInput } from '@/ui/components/password/PasswordInput';
 import SlideRelative from '@/ui/components/SlideRelative';
 
 interface PasswordFieldConfig {

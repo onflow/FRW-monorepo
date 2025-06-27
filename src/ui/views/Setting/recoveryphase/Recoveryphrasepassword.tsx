@@ -6,7 +6,7 @@ import { Link, useHistory } from 'react-router-dom';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import { LLHeader } from '@/ui/components';
 import CancelIcon from '@/ui/components/iconfont/IconClose';
-import { PasswordInput } from '@/ui/components/PasswordComponents';
+import { PasswordInput } from '@/ui/components/password/PasswordInput';
 import SlideRelative from '@/ui/components/SlideRelative';
 import { useWallet } from 'ui/utils';
 

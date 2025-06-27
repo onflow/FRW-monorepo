@@ -21,7 +21,7 @@ import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
 import CancelIcon from '@/ui/components/iconfont/IconClose';
 import { LLHeader } from '@/ui/components/LLHeader';
-import PasswordForm from '@/ui/components/PasswordForm';
+import PasswordForm from '@/ui/components/password/PasswordForm';
 import SlideRelative from '@/ui/components/SlideRelative';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from '@/ui/utils';

@@ -5,7 +5,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { consoleError } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import CancelIcon from '@/ui/components/iconfont/IconClose';
-import { PasswordInput } from '@/ui/components/PasswordComponents';
+import { PasswordInput } from '@/ui/components/password/PasswordInput';
 import SlideRelative from '@/ui/components/SlideRelative';
 import { LLPrimaryButton } from 'ui/components';
 import { useWallet } from 'ui/utils';
