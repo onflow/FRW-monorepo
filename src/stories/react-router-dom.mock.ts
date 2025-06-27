@@ -1,6 +1,4 @@
 import { fn } from 'storybook/test';
 
-const Link = fn().mockName('Link');
-const useHistory = fn().mockName('useHistory');
-
-export { Link, useHistory };
+export const Link = fn().mockName('Link');
+export const useHistory = fn().mockName('useHistory');

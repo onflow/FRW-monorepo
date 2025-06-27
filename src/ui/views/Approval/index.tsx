@@ -2,7 +2,8 @@ import { Box } from '@mui/system';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import { useWallet, useApproval, useWalletLoaded } from 'ui/utils';
+import { useApproval } from '@/ui/hooks/use-approval';
+import { useWallet } from '@/ui/utils/WalletContext';
 
 // import Header from '../Dashboard/Header';
 
