@@ -11,7 +11,10 @@ import {
 } from '@/ui/hooks/use-account-hooks.mock';
 import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
 import { useNftCatalogCollections as importedMockUseNftCatalogCollections } from '@/ui/hooks/useNftHook.mock';
-import { useProfiles as importedMockUseProfiles } from '@/ui/hooks/useProfileHook.mock';
+import {
+  useProfiles as importedMockUseProfiles,
+  USE_PROFILES_MOCK,
+} from '@/ui/hooks/useProfileHook.mock';
 
 import MenuDrawer from '../MenuDrawer';
 
@@ -139,7 +142,6 @@ const mockWalletListWithExtra: WalletAccount[] = [
 
 const meta: Meta<typeof MenuDrawer> = {
   title: 'Views/Dashboard/MenuDrawer',
-  tags: ['autodocs'],
   component: MenuDrawerWithDebug,
   decorators: [
     (Story, context) => {
@@ -181,22 +183,17 @@ const meta: Meta<typeof MenuDrawer> = {
           }
           return [];
         });
-        importedMockUseNftCatalogCollections.mockImplementation((_network, address) => {
-          if (typeof address === 'string' && mockData.nfts) {
-            return [{ count: mockData.nfts[address] }];
-          }
+        importedMockUseNftCatalogCollections.mockImplementation(() => {
           return [];
         });
-        importedMockUseProfiles.mockImplementation(() => {
-          return {
-            pendingAccountTransactions: mockData.pendingAccountTransactions || [],
-          };
+        importedMockUseProfiles.mockResolvedValue({
+          ...USE_PROFILES_MOCK,
+          pendingAccountTransactions: mockData.pendingAccountTransactions || [],
         });
       } else {
-        importedMockUseProfiles.mockImplementation(() => {
-          return {
-            pendingAccountTransactions: [],
-          };
+        importedMockUseProfiles.mockResolvedValue({
+          ...USE_PROFILES_MOCK,
+          pendingAccountTransactions: [],
         });
       }
 

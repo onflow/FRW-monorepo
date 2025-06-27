@@ -16,7 +16,7 @@ const meta = {
       LinkMock.mockReset();
       LinkMock.mockImplementation((props: any): React.ReactNode => <Box {...props} />);
       useWalletMock.mockReset();
-      useWalletMock.mockImplementation(() => ({
+      useWalletMock.mockResolvedValue({
         openapi: {
           checkImport: fn().mockResolvedValue({ status: 200 }),
         },
@@ -24,7 +24,7 @@ const meta = {
         importProfileUsingPrivateKey: fn(),
         importProfileUsingMnemonic: fn(),
         isBooted: fn().mockResolvedValue(false),
-      }));
+      });
       return (
         <Box
           sx={{
