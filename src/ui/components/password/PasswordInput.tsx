@@ -4,6 +4,10 @@ import { Box, LinearProgress, Typography, Input, InputAdornment, IconButton } fr
 import React from 'react';
 import zxcvbn from 'zxcvbn';
 
+import SlideRelative from '@/ui/components/SlideRelative';
+
+import { PasswordErrorText } from './PasswordErrorText';
+import { PasswordHelperText } from './PasswordHelperText';
 // Password Indicator Component
 interface PasswordIndicatorProps {
   value: string;
@@ -57,12 +61,13 @@ interface PasswordInputProps {
   setVisible?: (visible: boolean) => void;
   readOnly?: boolean;
   placeholder?: string;
+  helperText?: string;
+  errorText?: string;
   autoFocus?: boolean;
-  className?: string;
   showIndicator?: boolean;
   onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
-  sx?: any;
-  visibilitySx?: any;
+  sx?: object;
+  visibilitySx?: object;
   endAdornment?: React.ReactNode;
 }
 
@@ -73,8 +78,9 @@ export const PasswordInput = ({
   setVisible = () => {},
   readOnly = false,
   placeholder = chrome.i18n.getMessage('Create__a__password'),
+  helperText = undefined,
+  errorText = undefined,
   autoFocus = false,
-  className,
   showIndicator = false,
   onKeyDown,
   sx,
@@ -91,32 +97,40 @@ export const PasswordInput = ({
   );
 
   return (
-    <Input
-      type={isVisible ? 'text' : 'password'}
-      value={value}
-      sx={
-        sx || {
-          height: '64px',
-          padding: '16px',
-          zIndex: '999',
-          backgroundColor: '#282828',
-          border: '2px solid #4C4C4C',
-          borderRadius: '12px',
-          boxSizing: 'border-box',
-          '&.Mui-focused': {
-            border: '2px solid #FAFAFA',
-            boxShadow: '0px 8px 12px 4px rgba(76, 76, 76, 0.24)',
-          },
+    <Box>
+      <Input
+        type={isVisible ? 'text' : 'password'}
+        value={value}
+        sx={
+          sx || {
+            height: '64px',
+            padding: '16px',
+            zIndex: '999',
+            backgroundColor: '#282828',
+            border: '2px solid #4C4C4C',
+            borderRadius: '12px',
+            boxSizing: 'border-box',
+            '&.Mui-focused': {
+              border: '2px solid #FAFAFA',
+              boxShadow: '0px 8px 12px 4px rgba(76, 76, 76, 0.24)',
+            },
+          }
         }
-      }
-      readOnly={readOnly}
-      autoFocus={autoFocus}
-      placeholder={placeholder}
-      fullWidth
-      disableUnderline
-      onChange={(e) => onChange(e.target.value)}
-      onKeyDown={onKeyDown}
-      endAdornment={endAdornment || defaultEndAdornment}
-    />
+        readOnly={readOnly}
+        autoFocus={autoFocus}
+        placeholder={placeholder}
+        fullWidth
+        disableUnderline
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={onKeyDown}
+        endAdornment={endAdornment || defaultEndAdornment}
+      />
+      <SlideRelative direction="down" show={!!helperText && !errorText}>
+        <PasswordHelperText message={helperText || ''} />
+      </SlideRelative>
+      <SlideRelative direction="down" show={!!errorText}>
+        <PasswordErrorText message={errorText || ''} />
+      </SlideRelative>
+    </Box>
   );
 };

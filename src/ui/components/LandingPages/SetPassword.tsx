@@ -52,8 +52,10 @@ const SetPassword: React.FC<SetPasswordProps> = ({
   const [isLoading, setLoading] = useState(false);
   const [errMessage, setErrorMessage] = useState('Something wrong, please try again');
   const [showError, setShowError] = useState(false);
-  const [helperText, setHelperText] = useState(<div />);
-  const [helperMatch, setHelperMatch] = useState(<div />);
+  const [errorText, setErrorText] = useState<string | undefined>(undefined);
+  const [helperText, setHelperText] = useState<string | undefined>(undefined);
+  const [errorMatch, setErrorMatch] = useState<string | undefined>(undefined);
+  const [helperMatch, setHelperMatch] = useState<string | undefined>(undefined);
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -69,27 +71,20 @@ const SetPassword: React.FC<SetPasswordProps> = ({
 
   useEffect(() => {
     if (password.length > 7) {
-      setHelperText(
-        <PasswordHelperText message={chrome.i18n.getMessage('At__least__8__characters')} />
-      );
+      setHelperText(chrome.i18n.getMessage('At__least__8__characters'));
       setCharacters(true);
     } else {
-      setHelperText(
-        <PasswordErrorText message={chrome.i18n.getMessage('At__least__8__characters')} />
-      );
+      setErrorText(chrome.i18n.getMessage('At__least__8__characters'));
       setCharacters(false);
     }
-  }, [password]);
 
-  useEffect(() => {
     if (confirmPassword === password) {
-      setHelperMatch(<PasswordHelperText message={chrome.i18n.getMessage('Passwords__match')} />);
+      setHelperText(chrome.i18n.getMessage('Passwords__match'));
+
       setMatch(true);
     } else {
       setMatch(false);
-      setHelperMatch(
-        <PasswordErrorText message={chrome.i18n.getMessage('Your__passwords__do__not__match')} />
-      );
+      setErrorMatch(chrome.i18n.getMessage('Your__passwords__do__not__match'));
     }
   }, [confirmPassword, password]);
 
@@ -123,15 +118,14 @@ const SetPassword: React.FC<SetPasswordProps> = ({
               isVisible={isPasswordVisible}
               setVisible={setPasswordVisible}
               autoFocus={autoFocus}
+              helperText={helperText}
+              errorText={errorText}
               placeholder={
                 isLogin
                   ? chrome.i18n.getMessage('Confirm__your__password')
                   : chrome.i18n.getMessage('Create__a__password')
               }
             />
-            <SlideRelative show={!!password} direction="down">
-              <Box style={{ marginBottom: '24px' }}>{helperText}</Box>
-            </SlideRelative>
 
             {!isLogin && (
               <Box sx={{ pb: '30px', marginTop: password ? '0px' : '24px' }}>
@@ -140,11 +134,10 @@ const SetPassword: React.FC<SetPasswordProps> = ({
                   onChange={setConfirmPassword}
                   isVisible={isConfirmPasswordVisible}
                   setVisible={setConfirmPasswordVisible}
+                  helperText={helperMatch}
+                  errorText={errorMatch}
                   placeholder={chrome.i18n.getMessage('Confirm__your__password')}
                 />
-                <SlideRelative show={!!confirmPassword} direction="down">
-                  {helperMatch}
-                </SlideRelative>
               </Box>
             )}
           </FormGroup>
