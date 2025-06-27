@@ -1,16 +1,12 @@
-// import { useTranslation } from 'react-i18next';
-import { Input, Typography, Box, FormControl, CircularProgress } from '@mui/material';
+import { Typography, Box, FormControl, CircularProgress } from '@mui/material';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { consoleError } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import lilo from '@/ui/assets/image/lilo.png';
-import CancelIcon from '@/ui/components/iconfont/IconClose';
 import { LLPrimaryButton } from '@/ui/components/LLPrimaryButton';
 import { PasswordInput } from '@/ui/components/password/PasswordInput';
-import { PasswordValidationText } from '@/ui/components/password/PasswordValidationText';
-import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet, useWalletLoaded } from '@/ui/utils';
 import { openInternalPageInTab } from '@/ui/utils/webapi';
 
@@ -22,7 +18,6 @@ const Unlock = () => {
   const history = useHistory();
 
   const inputEl = useRef<any>(null);
-  // const { t } = useTranslation();
   const [showPasswordError, setShowPasswordError] = useState(false);
   const [showUnexpectedError, setShowUnexpectedError] = useState(false);
 
@@ -120,21 +115,18 @@ const Unlock = () => {
             setShowPasswordError(false);
             setPassword(value);
           }}
+          errorText={
+            showPasswordError
+              ? chrome.i18n.getMessage('Incorrect__Password')
+              : showUnexpectedError
+                ? chrome.i18n.getMessage('Oops__unexpected__error')
+                : undefined
+          }
           isVisible={isPasswordVisible}
           setVisible={setPasswordVisible}
           autoFocus={true}
           placeholder={chrome.i18n.getMessage('Enter__Your__Password')}
           onKeyDown={handleKeyDown}
-        />
-
-        <PasswordValidationText
-          message={
-            showPasswordError
-              ? chrome.i18n.getMessage('Incorrect__Password')
-              : chrome.i18n.getMessage('Oops__unexpected__error')
-          }
-          type="error"
-          show={showPasswordError || showUnexpectedError}
         />
       </FormControl>
 
