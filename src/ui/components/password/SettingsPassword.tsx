@@ -1,16 +1,13 @@
-import { Typography, Button, Input, FormControl } from '@mui/material';
-import Box from '@mui/material/Box';
+import { Typography, Button, FormControl, Box } from '@mui/material';
 import React, { type ReactNode, useCallback, useEffect, useState } from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
-import CancelIcon from '@/ui/components/iconfont/IconClose';
 import { LLHeader } from '@/ui/components/LLHeader';
 
 import { useWallet } from '../../utils';
 
 import { PasswordInput } from './PasswordInput';
-import { PasswordValidationText } from './PasswordValidationText';
 
 type PassMatch = 'match' | 'no-match' | 'unverified';
 const SettingsPassword = ({
@@ -89,17 +86,14 @@ const SettingsPassword = ({
             }}
             showPassword={isPasswordVisible}
             setShowPassword={setPasswordVisible}
-            className="inputBox"
+            errorText={
+              !!password && passMatch === 'no-match'
+                ? chrome.i18n.getMessage('Incorrect__Password')
+                : undefined
+            }
             autoFocus={true}
             placeholder={chrome.i18n.getMessage('Enter__Your__Password')}
           />
-
-          <PasswordValidationText
-            message={chrome.i18n.getMessage('Incorrect__Password')}
-            type="error"
-            show={!!password && passMatch === 'no-match'}
-          />
-
           {children}
         </FormControl>
 
