@@ -87,8 +87,8 @@ const SettingsPassword = ({
             onChange={(value) => {
               setPassword(value);
             }}
-            isVisible={isPasswordVisible}
-            setVisible={setPasswordVisible}
+            showPassword={isPasswordVisible}
+            setShowPassword={setPasswordVisible}
             className="inputBox"
             autoFocus={true}
             placeholder={chrome.i18n.getMessage('Enter__Your__Password')}

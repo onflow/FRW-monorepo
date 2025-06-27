@@ -113,8 +113,8 @@ const RemoveProfileModal: React.FC<RemoveProfileModalProps> = ({
         autoFocus
         value={password}
         onChange={setPassword}
-        isVisible={isPasswordVisible}
-        setVisible={setIsPasswordVisible}
+        showPassword={isPasswordVisible}
+        setShowPassword={setIsPasswordVisible}
         placeholder={chrome.i18n.getMessage('Password')}
         onKeyDown={(e) => {
           if (e.key === 'Enter' && password && !isRemoving) {

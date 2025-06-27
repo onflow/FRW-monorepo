@@ -272,8 +272,8 @@ const ChangePassword = () => {
               <PasswordInput
                 value={confirmCurrentPassword}
                 onChange={setConfirmCurrentPassword}
-                isVisible={isCurrentPasswordVisible}
-                setVisible={setCurrentPasswordVisible}
+                showPassword={isCurrentPasswordVisible}
+                setShowPassword={setCurrentPasswordVisible}
                 placeholder={chrome.i18n.getMessage('Enter__Current__Password')}
                 sx={{
                   fontSize: '12px',
@@ -315,8 +315,8 @@ const ChangePassword = () => {
                   setPassword(value);
                   setConfirmPassword('');
                 }}
-                isVisible={isNewPasswordVisible}
-                setVisible={setNewPasswordVisible}
+                showPassword={isNewPasswordVisible}
+                setShowPassword={setNewPasswordVisible}
                 placeholder={chrome.i18n.getMessage('Enter__New__Password')}
                 sx={{
                   fontSize: '12px',
@@ -355,8 +355,8 @@ const ChangePassword = () => {
               <PasswordInput
                 value={confirmPassword}
                 onChange={setConfirmPassword}
-                isVisible={isConfirmPasswordVisible}
-                setVisible={setConfirmPasswordVisible}
+                showPassword={isConfirmPasswordVisible}
+                setShowPassword={setConfirmPasswordVisible}
                 placeholder={chrome.i18n.getMessage('Confirm__Password')}
                 sx={{
                   fontSize: '12px',

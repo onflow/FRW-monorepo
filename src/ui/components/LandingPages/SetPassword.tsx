@@ -115,8 +115,8 @@ const SetPassword: React.FC<SetPasswordProps> = ({
             <PasswordInput
               value={password}
               onChange={setPassword}
-              isVisible={isPasswordVisible}
-              setVisible={setPasswordVisible}
+              showPassword={isPasswordVisible}
+              setShowPassword={setPasswordVisible}
               autoFocus={autoFocus}
               helperText={helperText}
               errorText={errorText}
@@ -132,8 +132,8 @@ const SetPassword: React.FC<SetPasswordProps> = ({
                 <PasswordInput
                   value={confirmPassword}
                   onChange={setConfirmPassword}
-                  isVisible={isConfirmPasswordVisible}
-                  setVisible={setConfirmPasswordVisible}
+                  showPassword={isConfirmPasswordVisible}
+                  setShowPassword={setConfirmPasswordVisible}
                   helperText={helperMatch}
                   errorText={errorMatch}
                   placeholder={chrome.i18n.getMessage('Confirm__your__password')}

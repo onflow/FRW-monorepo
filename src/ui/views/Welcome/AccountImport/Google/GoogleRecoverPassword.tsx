@@ -174,8 +174,8 @@ const GoogleRecoverPassword = ({ handleSwitchTab, mnemonic, username, lastPasswo
               <PasswordInput
                 value={password}
                 onChange={setPassword}
-                isVisible={isPasswordVisible}
-                setVisible={setPasswordVisible}
+                showPassword={isPasswordVisible}
+                setShowPassword={setPasswordVisible}
                 autoFocus={true}
                 placeholder={chrome.i18n.getMessage('Enter__Your__Password')}
               />

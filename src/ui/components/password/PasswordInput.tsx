@@ -57,15 +57,15 @@ const PasswordIndicator = ({ value }: PasswordIndicatorProps) => {
 interface PasswordInputProps {
   value: string;
   onChange: (value: string) => void;
-  isVisible: boolean;
-  setVisible?: (visible: boolean) => void;
+  onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
   readOnly?: boolean;
   placeholder?: string;
   helperText?: string;
   errorText?: string;
   autoFocus?: boolean;
   showIndicator?: boolean;
-  onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+  showPassword: boolean;
+  setShowPassword?: (visible: boolean) => void;
   sx?: object;
   visibilitySx?: object;
   endAdornment?: React.ReactNode;
@@ -74,15 +74,15 @@ interface PasswordInputProps {
 export const PasswordInput = ({
   value,
   onChange,
-  isVisible,
-  setVisible = () => {},
+  onKeyDown,
   readOnly = false,
   placeholder = chrome.i18n.getMessage('Create__a__password'),
   helperText = undefined,
   errorText = undefined,
   autoFocus = false,
+  showPassword: isVisible,
+  setShowPassword: setVisible = () => {},
   showIndicator = false,
-  onKeyDown,
   sx,
   visibilitySx,
   endAdornment,
