@@ -5,13 +5,13 @@ import emojisJson from '@/background/utils/emoji.json';
 const { emojis } = emojisJson as { emojis: Emoji[] };
 import { MAINNET_CHAIN_ID, type UserInfoResponse } from '@/shared/types/network-types';
 import { type Emoji, type WalletAccount } from '@/shared/types/wallet-types';
-import { useProfiles as importedMockUseProfiles } from '@/stories/ui-hooks.mock';
 import {
   useChildAccounts as importedMockUseChildAccounts,
   useEvmAccount as importedMockUseEvmAccount,
-} from '@/stories/use-account-hooks.mock';
-import { useNftCatalogCollections as importedMockUseNftCatalogCollections } from '@/stories/use-nft-hooks.mock';
+} from '@/ui/hooks/use-account-hooks.mock';
 import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
+import { useNftCatalogCollections as importedMockUseNftCatalogCollections } from '@/ui/hooks/useNftHook.mock';
+import { useProfiles as importedMockUseProfiles } from '@/ui/hooks/useProfileHook.mock';
 
 import MenuDrawer from '../MenuDrawer';
 

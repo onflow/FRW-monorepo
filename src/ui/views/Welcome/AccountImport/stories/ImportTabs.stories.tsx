@@ -6,7 +6,7 @@ import { fn } from 'storybook/test';
 
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 import { Link as LinkMock } from '@/stories/react-router-dom.mock';
-import { useWallet as useWalletMock } from '@/stories/wallet-context.mock';
+import { useWallet as useWalletMock } from '@/ui/utils/WalletContext.mock';
 
 import ImportTabs from '../ImportTabs';
 

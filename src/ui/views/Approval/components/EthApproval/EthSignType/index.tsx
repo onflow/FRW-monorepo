@@ -10,9 +10,15 @@ import {
   type UserInfoResponse,
 } from '@/shared/types/network-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
-import { LLConnectLoading, LLLinkingLoading } from '@/ui/components';
-import { LLPrimaryButton, LLSecondaryButton } from 'ui/components';
-import { useApproval, useWallet, formatAddress } from 'ui/utils';
+import {
+  LLConnectLoading,
+  LLLinkingLoading,
+  LLPrimaryButton,
+  LLSecondaryButton,
+} from '@/ui/components';
+import { useApproval } from '@/ui/hooks/use-approval';
+import { formatAddress } from '@/ui/utils';
+import { useWallet } from '@/ui/utils/WalletContext';
 
 import IconWithPlaceholder from '../EthApprovalComponents/IconWithPlaceholder';
 interface ConnectProps {

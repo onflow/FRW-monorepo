@@ -4,16 +4,17 @@ import React from 'react';
 import emojisJson from '@/background/utils/emoji.json';
 const { emojis } = emojisJson as { emojis: Emoji[] };
 import { MAINNET_CHAIN_ID } from '@/shared/types/network-types';
+import { type NFTCollections } from '@/shared/types/nft-types';
 import { type Emoji, type WalletAccount } from '@/shared/types/wallet-types';
-import { useProfiles as importedMockUseProfiles } from '@/stories/ui-hooks.mock';
+import { AccountListing } from '@/ui/components/account/account-listing';
 import {
   useChildAccounts as importedMockUseChildAccounts, // Aliased import from the mock file
   useEvmAccount as importedMockUseEvmAccount, // Aliased import from the mock file
-} from '@/stories/use-account-hooks.mock';
+} from '@/ui/hooks/use-account-hooks.mock';
 import {
   useNftCatalogCollections as importedMockUseNftCatalogCollections, // Aliased import from the mock file
-} from '@/stories/use-nft-hooks.mock';
-import { AccountListing } from '@/ui/components/account/account-listing';
+} from '@/ui/hooks/useNftHook.mock';
+import { useProfiles as importedMockUseProfiles } from '@/ui/hooks/useProfileHook.mock';
 
 const mainWalletAccount: WalletAccount = {
   name: emojis[2].name,
@@ -143,12 +144,16 @@ const meta: Meta<typeof AccountListing> = {
           }
           return [];
         });
-        importedMockUseNftCatalogCollections.mockImplementation((_network, address) => {
-          if (typeof address === 'string' && mockData.nfts) {
-            return [{ count: mockData.nfts[address] }];
+        importedMockUseNftCatalogCollections.mockImplementation(
+          (network?: string, address?: string) => {
+            if (typeof address === 'string' && mockData.nfts) {
+              return [
+                { collection: { name: 'test' }, ids: ['test'], count: mockData.nfts[address] },
+              ] as NFTCollections[];
+            }
+            return [];
           }
-          return [];
-        });
+        );
         importedMockUseProfiles.mockImplementation(() => {
           return {
             pendingAccountTransactions: mockData.pendingAccountTransactions || [],

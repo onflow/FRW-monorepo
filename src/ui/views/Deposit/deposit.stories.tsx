@@ -4,8 +4,8 @@ import React from 'react';
 import { fn } from 'storybook/test';
 
 import { useHistory as importedMockUseHistory } from '@/stories/react-router-dom.mock';
-import { useNetwork as importedMockUseNetwork } from '@/stories/useNetworkHook.mock';
-import { useProfiles as importedMockUseProfiles } from '@/stories/useProfileHook.mock';
+import { useNetwork as importedMockUseNetwork } from '@/ui/hooks/useNetworkHook.mock';
+import { useProfiles as importedMockUseProfiles } from '@/ui/hooks/useProfileHook.mock';
 
 import Deposit from './index';
 

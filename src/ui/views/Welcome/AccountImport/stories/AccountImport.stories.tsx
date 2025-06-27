@@ -4,7 +4,7 @@ import React from 'react';
 import { fn } from 'storybook/test';
 
 import { Link as LinkMock } from '@/stories/react-router-dom.mock';
-import { useWallet as useWalletMock } from '@/stories/wallet-context.mock';
+import { useWallet as useWalletMock } from '@/ui/utils/WalletContext.mock';
 
 import AccountImport from '../index';
 

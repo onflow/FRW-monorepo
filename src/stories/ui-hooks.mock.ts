@@ -1,14 +1,18 @@
 // Mock for the entire ui/hooks directory
 
 // Re-export everything from actual hooks that don't need mocking
-export * from '../ui/hooks/use-data';
-export * from '../ui/hooks/preference-hooks';
-export * from '../ui/hooks/use-coin-hooks';
+import * as actualPreferenceHooks from '@/ui/hooks/preference-hooks';
+import * as actualCoinHooks from '@/ui/hooks/use-coin-hooks';
+import * as actualUseData from '@/ui/hooks/use-data';
 
 // Import and re-export mocked hooks
-export { useProfiles } from './useProfileHook.mock';
-export { useNetwork } from './useNetworkHook.mock';
-export { useFeatureFlag, useFeatureFlags, useLatestVersion } from './use-feature-flags.mock';
+export { useProfiles } from '@/ui/hooks/useProfileHook.mock';
+export { useNetwork } from '@/ui/hooks/useNetworkHook.mock';
+export {
+  useFeatureFlag,
+  useFeatureFlags,
+  useLatestVersion,
+} from '@/ui/hooks/use-feature-flags.mock';
 
 // Export other hooks with basic mocks if needed
 export const useInitHook = () => ({
