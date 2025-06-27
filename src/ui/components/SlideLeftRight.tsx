@@ -1,4 +1,3 @@
-import { Box, Slide } from '@mui/material';
 import React from 'react';
 
 const SlideLeftRight = React.forwardRef(
@@ -10,7 +9,7 @@ const SlideLeftRight = React.forwardRef(
     }: {
       show: boolean;
       direction: 'left' | 'right';
-      children: React.ReactElement;
+      children: React.ReactNode;
     },
     ref
   ) => {

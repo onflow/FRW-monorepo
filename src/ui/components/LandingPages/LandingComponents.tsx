@@ -4,6 +4,7 @@ import { Box, IconButton, Typography } from '@mui/material';
 import MobileStepper from '@mui/material/MobileStepper';
 import React from 'react';
 
+import flowBackgroundSVG from '@/ui/assets/flow-background.svg';
 import { LLPinAlert } from '@/ui/components';
 import Confetti from '@/ui/components/Confetti';
 import RegisterHeader from '@/ui/components/LandingPages/RegisterHeader';
@@ -14,17 +15,15 @@ import {
   COLOR_GREEN_FLOW_DARKMODE_00EF8B,
 } from '@/ui/style/color';
 
-import { FlowBackgroundSVG } from './flow-background-svg';
-
 interface LandingComponentsProps {
   activeIndex: number;
   direction: 'left' | 'right';
   showBackButton: boolean;
   onBack: () => void;
-  children: React.ReactElement;
+  children: React.ReactNode;
   showConfetti: boolean;
   showRegisterHeader: boolean;
-  stepCount: number;
+  stepCount?: number;
 }
 
 const LandingComponents = ({
@@ -41,8 +40,8 @@ const LandingComponents = ({
     sx={{
       display: 'flex',
       flexDirection: 'column',
-      background:
-        'linear-gradient(122deg, rgba(0, 239, 139, 0.00) 30.91%, hsla(155, 100.00%, 46.90%, 0.20) 99.99%), #000;',
+      background: `url(${flowBackgroundSVG}) right 0px bottom 0px / 362px 337px no-repeat, linear-gradient(122deg,${COLOR_GREEN_FLOW_DARKMODE_00EF8B}00 30%, ${COLOR_GREEN_FLOW_DARKMODE_00EF8B}20 100%), #000`,
+      backdropFilter: 'blur(7.5px)',
       width: '100%',
       height: '100vh',
       justifyContent: 'center',
@@ -51,12 +50,6 @@ const LandingComponents = ({
     }}
   >
     <Box
-      sx={{ position: 'absolute', top: 464, right: 0, zIndex: 0 }}
-      data-testid="flow-background-svg"
-    >
-      <FlowBackgroundSVG />
-    </Box>
-    <Box
       sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -64,7 +57,6 @@ const LandingComponents = ({
         height: '100vh',
         justifyContent: 'center',
         alignItems: 'center',
-        zIndex: 1,
       }}
     >
       {showConfetti && <Confetti />}
@@ -84,7 +76,7 @@ const LandingComponents = ({
           overflowY: 'auto',
           overflowX: 'hidden',
           backgroundColor: COLOR_DARKMODE_WHITE_10pc,
-          zIndex: 1,
+          backdropFilter: 'blur(30px)',
         }}
       >
         <Box

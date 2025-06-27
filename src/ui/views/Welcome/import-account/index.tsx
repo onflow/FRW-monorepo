@@ -17,7 +17,7 @@ import {
 } from '@/ui/reducers/import-profile-reducer';
 import { useWallet } from '@/ui/utils/WalletContext';
 
-const RecoverProfile = () => {
+const ImportAccount = () => {
   const history = useHistory();
   const usewallet = useWallet();
 
@@ -131,71 +131,81 @@ const RecoverProfile = () => {
       onBack={goBack}
       showConfetti={activeTab === IMPORT_STEPS.ALL_SET}
       showRegisterHeader={true}
-      stepCount={Object.values(IMPORT_STEPS).length}
     >
-      {activeTab === IMPORT_STEPS.IMPORT && (
-        <ImportTabs
-          setMnemonic={(m) => dispatch({ type: 'SET_MNEMONIC', payload: m })}
-          setPk={(k) => dispatch({ type: 'SET_PK', payload: k })}
-          setAccounts={(a) => dispatch({ type: 'SET_ACCOUNTS', payload: a })}
-          goPassword={() =>
-            dispatch({
-              type: 'SET_ACTIVE_TAB',
-              payload: IMPORT_STEPS.RECOVER_PASSWORD,
-            })
-          }
-          handleSwitchTab={() =>
-            dispatch({
-              type: 'SET_ACTIVE_TAB',
-              payload: IMPORT_STEPS.PICK_USERNAME,
-            })
-          }
-          setErrorMessage={(msg) =>
-            dispatch({
-              type: 'SET_ERROR',
-              payload: { message: msg, show: true },
-            })
-          }
-          setShowError={(show) => dispatch({ type: 'SET_ERROR', payload: { message: '', show } })}
-          handleGoogleAccountsFound={handleGoogleAccountsFound}
-          path={path}
-          setPath={(p) => dispatch({ type: 'SET_DERIVATION_PATH', payload: p })}
-          phrase={phrase}
-          setPhrase={(p) => dispatch({ type: 'SET_PASSPHRASE', payload: p })}
-        />
-      )}
+      <Box>
+        <>
+          {activeTab === IMPORT_STEPS.IMPORT && (
+            <ImportTabs
+              setMnemonic={(m) => dispatch({ type: 'SET_MNEMONIC', payload: m })}
+              setPk={(k) => dispatch({ type: 'SET_PK', payload: k })}
+              setAccounts={(a) => dispatch({ type: 'SET_ACCOUNTS', payload: a })}
+              goPassword={() =>
+                dispatch({
+                  type: 'SET_ACTIVE_TAB',
+                  payload: IMPORT_STEPS.RECOVER_PASSWORD,
+                })
+              }
+              handleSwitchTab={() =>
+                dispatch({
+                  type: 'SET_ACTIVE_TAB',
+                  payload: IMPORT_STEPS.PICK_USERNAME,
+                })
+              }
+              setErrorMessage={(msg) =>
+                dispatch({
+                  type: 'SET_ERROR',
+                  payload: { message: msg, show: true },
+                })
+              }
+              setShowError={(show) =>
+                dispatch({ type: 'SET_ERROR', payload: { message: '', show } })
+              }
+              handleGoogleAccountsFound={handleGoogleAccountsFound}
+              path={path}
+              setPath={(p) => dispatch({ type: 'SET_DERIVATION_PATH', payload: p })}
+              phrase={phrase}
+              setPhrase={(p) => dispatch({ type: 'SET_PASSPHRASE', payload: p })}
+            />
+          )}
 
-      {activeTab === IMPORT_STEPS.PICK_USERNAME && (
-        <PickNickname
-          handleSwitchTab={() =>
-            dispatch({
-              type: 'SET_ACTIVE_TAB',
-              payload: IMPORT_STEPS.SET_PASSWORD,
-            })
-          }
-          nickname={nickname}
-          setNickname={(u) => dispatch({ type: 'SET_NICKNAME', payload: u })}
-        />
-      )}
+          {activeTab === IMPORT_STEPS.PICK_USERNAME && (
+            <PickNickname
+              handleSwitchTab={() =>
+                dispatch({
+                  type: 'SET_ACTIVE_TAB',
+                  payload: IMPORT_STEPS.SET_PASSWORD,
+                })
+              }
+              nickname={nickname}
+              setNickname={(u) => dispatch({ type: 'SET_NICKNAME', payload: u })}
+            />
+          )}
 
-      {(activeTab === IMPORT_STEPS.SET_PASSWORD || activeTab === IMPORT_STEPS.RECOVER_PASSWORD) && (
-        <SetPassword handleSwitchTab={() => {}} onSubmit={submitPassword} isLogin={isAddWallet} />
-      )}
-      {activeTab === IMPORT_STEPS.GOOGLE_BACKUP && username && password && (
-        <GoogleBackup
-          handleSwitchTab={() =>
-            dispatch({
-              type: 'SET_ACTIVE_TAB',
-              payload: IMPORT_STEPS.ALL_SET,
-            })
-          }
-          mnemonic={mnemonic}
-          username={username}
-          password={password}
-        />
-      )}
+          {(activeTab === IMPORT_STEPS.SET_PASSWORD ||
+            activeTab === IMPORT_STEPS.RECOVER_PASSWORD) && (
+            <SetPassword
+              handleSwitchTab={() => {}}
+              onSubmit={submitPassword}
+              isLogin={isAddWallet}
+            />
+          )}
+          {activeTab === IMPORT_STEPS.GOOGLE_BACKUP && username && password && (
+            <GoogleBackup
+              handleSwitchTab={() =>
+                dispatch({
+                  type: 'SET_ACTIVE_TAB',
+                  payload: IMPORT_STEPS.ALL_SET,
+                })
+              }
+              mnemonic={mnemonic}
+              username={username}
+              password={password}
+            />
+          )}
 
-      {activeTab === IMPORT_STEPS.ALL_SET && <AllSet handleSwitchTab={() => window.close()} />}
+          {activeTab === IMPORT_STEPS.ALL_SET && <AllSet handleSwitchTab={() => window.close()} />}
+        </>
+      </Box>
 
       <Snackbar
         open={showError}
@@ -212,4 +222,4 @@ const RecoverProfile = () => {
   );
 };
 
-export default RecoverProfile;
+export default ImportAccount;
