@@ -14,7 +14,10 @@ import {
 import {
   useNftCatalogCollections as importedMockUseNftCatalogCollections, // Aliased import from the mock file
 } from '@/ui/hooks/useNftHook.mock';
-import { useProfiles as importedMockUseProfiles } from '@/ui/hooks/useProfileHook.mock';
+import {
+  USE_PROFILES_MOCK,
+  useProfiles as importedMockUseProfiles,
+} from '@/ui/hooks/useProfileHook.mock';
 
 const mainWalletAccount: WalletAccount = {
   name: emojis[2].name,
@@ -154,16 +157,14 @@ const meta: Meta<typeof AccountListing> = {
             return [];
           }
         );
-        importedMockUseProfiles.mockImplementation(() => {
-          return {
-            pendingAccountTransactions: mockData.pendingAccountTransactions || [],
-          };
+        importedMockUseProfiles.mockResolvedValue({
+          ...USE_PROFILES_MOCK,
+          pendingAccountTransactions: mockData.pendingAccountTransactions || [],
         });
       } else {
-        importedMockUseProfiles.mockImplementation(() => {
-          return {
-            pendingAccountTransactions: [],
-          };
+        importedMockUseProfiles.mockResolvedValue({
+          ...USE_PROFILES_MOCK,
+          pendingAccountTransactions: [],
         });
       }
       return <Story />;

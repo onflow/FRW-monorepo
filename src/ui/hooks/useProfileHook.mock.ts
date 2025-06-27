@@ -6,7 +6,7 @@ import * as actual from './useProfileHook';
 
 // Mock for useProfiles hook that uses the global mock
 
-const USE_PROFILES_MOCK: ReturnType<typeof actual.useProfiles> = {
+export const USE_PROFILES_MOCK: ReturnType<typeof actual.useProfiles> = {
   currentWallet: {
     name: 'panda',
     icon: '🐼',
