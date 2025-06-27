@@ -152,19 +152,6 @@ const SetPassword: React.FC<SetPasswordProps> = ({
               onChange={setPassword}
               isVisible={isPasswordVisible}
               setVisible={setPasswordVisible}
-              sx={{
-                height: '64px',
-                padding: '16px',
-                zIndex: '999',
-                backgroundColor: '#282828',
-                border: '2px solid #4C4C4C',
-                borderRadius: '12px',
-                boxSizing: 'border-box',
-                '&.Mui-focused': {
-                  border: '2px solid #FAFAFA',
-                  boxShadow: '0px 8px 12px 4px rgba(76, 76, 76, 0.24)',
-                },
-              }}
               autoFocus={autoFocus}
               placeholder={
                 isLogin
@@ -184,19 +171,6 @@ const SetPassword: React.FC<SetPasswordProps> = ({
                   isVisible={isConfirmPasswordVisible}
                   setVisible={setConfirmPasswordVisible}
                   placeholder={chrome.i18n.getMessage('Confirm__your__password')}
-                  sx={{
-                    height: '64px',
-                    padding: '16px',
-                    zIndex: '999',
-                    backgroundColor: '#282828',
-                    border: '2px solid #4C4C4C',
-                    borderRadius: '12px',
-                    boxSizing: 'border-box',
-                    '&.Mui-focused': {
-                      border: '2px solid #FAFAFA',
-                      boxShadow: '0px 8px 12px 4px rgba(76, 76, 76, 0.24)',
-                    },
-                  }}
                 />
                 <SlideRelative show={!!confirmPassword} direction="down">
                   {helperMatch}
