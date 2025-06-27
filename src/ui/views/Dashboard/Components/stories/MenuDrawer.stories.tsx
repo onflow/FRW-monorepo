@@ -252,48 +252,11 @@ export const Default: Story = {
   },
 };
 
-export const WithAddAccountFlow: Story = {
-  name: 'With Add Account Flow',
+export const EmptyWallet: Story = {
   args: {
     drawer: true,
     userInfo: mockUserInfo,
-    walletList: mockWalletList,
-    activeAccount: mockMainAccount,
-    activeParentAccount: mockMainAccount,
-    network: 'mainnet',
-    modeOn: false,
-    mainAddressLoading: false,
-    noAddress: false,
-    toggleDrawer: () => {},
-    togglePop: () => {},
-  },
-  parameters: {
-    pendingTransactions: [mockPendingTransaction],
-    featureFlags: {
-      create_new_account: true,
-    },
-    mockData: createMockData({
-      [mockMainAccount.address]: {
-        evm: mockEvmAccount,
-        children: [mockChildAccount1],
-      },
-      [mockMainAccount2.address]: {
-        evm: mockEvmAccount2,
-        children: [],
-      },
-      [mockChildAccount1.address]: {
-        nfts: 65000,
-      },
-    }),
-  },
-};
-
-export const EmptyWalletState: Story = {
-  name: 'Empty Wallet',
-  args: {
-    drawer: true,
-    userInfo: mockUserInfo,
-    walletList: [],
+    walletList: [mockMainAccount],
     activeAccount: mockMainAccount,
     activeParentAccount: mockMainAccount,
     network: 'mainnet',
@@ -324,42 +287,6 @@ export const Loading: Story = {
   },
   parameters: {
     mockData: createMockData({}),
-  },
-};
-
-export const FullAccountHierarchy: Story = {
-  name: 'Full Account Hierarchy with Pending',
-  args: {
-    drawer: true,
-    userInfo: mockUserInfo,
-    walletList: mockWalletListWithExtra,
-    activeAccount: mockMainAccount,
-    activeParentAccount: mockMainAccount,
-    network: 'mainnet',
-    modeOn: false,
-    mainAddressLoading: false,
-    noAddress: false,
-    toggleDrawer: () => {},
-    togglePop: () => {},
-  },
-  parameters: {
-    pendingTransactions: [mockPendingTransaction],
-    mockData: createMockData({
-      [mockMainAccount.address]: {
-        evm: mockEvmAccount,
-        children: [mockChildAccount1, mockChildAccount2],
-      },
-      [mockMainAccount2.address]: {
-        evm: mockEvmAccount2,
-        children: [],
-      },
-      [mockChildAccount1.address]: {
-        nfts: 65000,
-      },
-      [mockChildAccount2.address]: {
-        nfts: 12,
-      },
-    }),
   },
 };
 
@@ -499,8 +426,42 @@ export const Closed: Story = {
   },
 };
 
-export const InteractiveDemo: Story = {
-  name: 'Add account feature flags all true Popup',
+export const FullAccountHierarchyWithPending: Story = {
+  args: {
+    drawer: true,
+    userInfo: mockUserInfo,
+    walletList: mockWalletListWithExtra,
+    activeAccount: mockMainAccount,
+    activeParentAccount: mockMainAccount,
+    network: 'mainnet',
+    modeOn: false,
+    mainAddressLoading: false,
+    noAddress: false,
+    toggleDrawer: () => {},
+    togglePop: () => {},
+  },
+  parameters: {
+    pendingTransactions: [mockPendingTransaction],
+    mockData: createMockData({
+      [mockMainAccount.address]: {
+        evm: mockEvmAccount,
+        children: [mockChildAccount1, mockChildAccount2],
+      },
+      [mockMainAccount2.address]: {
+        evm: mockEvmAccount2,
+        children: [],
+      },
+      [mockChildAccount1.address]: {
+        nfts: 65000,
+      },
+      [mockChildAccount2.address]: {
+        nfts: 12,
+      },
+    }),
+  },
+};
+
+export const AddAccountFeatureFlagsAllTrue: Story = {
   args: {
     drawer: true,
     userInfo: mockUserInfo,
