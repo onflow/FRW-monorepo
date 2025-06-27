@@ -1,4 +1,3 @@
-import { consoleLog } from '@/shared/utils/console-log';
 import { IS_CHROME, CHECK_METAMASK_INSTALLED_URL } from 'consts';
 
 export const noop = () => {};

@@ -1,7 +1,4 @@
-import { useCallback, useEffect, useRef, useMemo, useState } from 'react';
-import { useHistory } from 'react-router-dom';
-
-import { useWallet } from './WalletContext';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export const useSelectOption = <T>({
   options,
@@ -86,59 +83,6 @@ export const useSelectOption = <T>({
   ] as const;
 };
 
-export const useWalletRequest = (
-  requestFn,
-  {
-    onSuccess,
-    onError,
-  }: {
-    onSuccess?(arg: any): void;
-    onError?(arg: any): void;
-  }
-) => {
-  const mounted = useRef(false);
-  useEffect(() => {
-    mounted.current = true;
-
-    return () => {
-      mounted.current = false;
-    };
-  }, []);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [res, setRes] = useState<any>();
-  const [err, setErr] = useState<any>();
-
-  const run = useCallback(
-    async (...args) => {
-      setLoading(true);
-      try {
-        const _res = await Promise.resolve(requestFn(...args));
-        if (!mounted.current) {
-          return;
-        }
-        setRes(_res);
-        if (onSuccess) {
-          onSuccess(_res);
-        }
-      } catch (err) {
-        if (!mounted.current) {
-          return;
-        }
-        setErr(err);
-        if (onError) {
-          onError(err);
-        }
-      } finally {
-        if (mounted.current) {
-          setLoading(false);
-        }
-      }
-    },
-    [requestFn, mounted, onSuccess, onError]
-  );
-
-  return [run, loading, res, err] as const;
-};
 export interface UseHoverOptions {
   mouseEnterDelayMS?: number;
   mouseLeaveDelayMS?: number;
