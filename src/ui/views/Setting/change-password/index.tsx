@@ -125,12 +125,9 @@ const ChangePassword = () => {
         setError(error.message);
       } finally {
         setIsResetting(false);
-        if (!error) {
-          setStatusMessage('');
-        }
       }
     },
-    [confirmCurrentPassword, confirmPassword, wallet, history, error]
+    [confirmCurrentPassword, confirmPassword, wallet, history]
   );
 
   const changePasswordWithBackups = useCallback(
