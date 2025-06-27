@@ -4,8 +4,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 import { MAINNET_CHAIN_ID } from '@/shared/types/network-types';
 import { consoleError } from '@/shared/utils/console-log';
-import { LLPrimaryButton, LLSecondaryButton } from 'ui/components';
-import { useApproval, useWallet } from 'ui/utils';
+import { LLPrimaryButton, LLSecondaryButton } from '@/ui/components';
+import { useApproval } from '@/ui/hooks/use-approval';
+import { useWallet } from '@/ui/utils/WalletContext';
 
 import { DefaultBlock } from './DefaultBlock';
 import { TransactionBlock } from './TransactionBlock';

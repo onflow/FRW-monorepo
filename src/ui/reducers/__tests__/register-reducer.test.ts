@@ -18,7 +18,7 @@ describe('Register Reducer', () => {
     it('should have the correct initial state', () => {
       expect(INITIAL_REGISTER_STATE).toEqual({
         activeTab: STEPS.USERNAME,
-        username: '',
+        nickname: '',
         password: DEFAULT_PASSWORD,
         mnemonic: '',
         isAddWallet: false,

@@ -12,9 +12,10 @@ import * as fcl from '@onflow/fcl';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { LLPrimaryButton, LLSecondaryButton } from '@/ui/components';
+import { useApproval } from '@/ui/hooks/use-approval';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
-import { LLPrimaryButton, LLSecondaryButton } from 'ui/components';
-import { useApproval, useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils/WalletContext';
 
 import './github-dark-dimmed.css';
 import ShowSwitch from './ShowSwitch';

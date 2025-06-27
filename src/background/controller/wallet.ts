@@ -73,6 +73,8 @@ import {
   coinListKey,
   type ChildAccountFtStore,
   accountBalanceKey,
+  walletLoadedKey,
+  walletLoadedRefreshRegex,
 } from '@/shared/utils/cache-data-keys';
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
@@ -174,6 +176,11 @@ export class WalletController extends BaseController {
       // The ttl is set to 2 minutes. After that we set the cache to false
       setCachedData(registerStatusKey(pubKey), false, 120_000);
     });
+
+    registerRefreshListener(walletLoadedRefreshRegex, async () => {
+      // This should never be called normally...
+      setCachedData(walletLoadedKey(), this.loaded, 1_000_000_000); // Really long ttl
+    });
   }
   // Adding as tests load the extension really, really fast
   // It's possible to call the wallet controller before services are loaded
@@ -181,6 +188,9 @@ export class WalletController extends BaseController {
   isLoaded = async () => this.loaded;
   setLoaded = async (loaded: boolean) => {
     this.loaded = loaded;
+    if (loaded) {
+      setCachedData(walletLoadedKey(), true, 1_000_000_000); // Really long ttl
+    }
   };
 
   /* wallet */

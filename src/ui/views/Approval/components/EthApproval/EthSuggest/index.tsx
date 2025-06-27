@@ -7,11 +7,13 @@ import { type CustomFungibleTokenInfo, type CoinItem } from '@/shared/types/coin
 import { networkToChainId } from '@/shared/types/network-types';
 import { withPrefix } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
+import { LLPrimaryButton, LLSecondaryButton, LLConnectLoading } from '@/ui/components';
+import { useApproval } from '@/ui/hooks/use-approval';
 import { refreshEvmToken } from '@/ui/hooks/use-coin-hooks';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
+import { useWallet } from '@/ui/utils/WalletContext';
 import { EVM_ENDPOINT } from 'consts';
-import { LLPrimaryButton, LLSecondaryButton, LLConnectLoading } from 'ui/components';
-import { useApproval, useWallet } from 'ui/utils';
+
 // import EthMove from '../EthMove';
 
 const EthSuggest = (data) => {

@@ -19,14 +19,14 @@ import SlideRelative from '@/ui/components/SlideRelative';
 import { COLOR_DARKMODE_WHITE_3pc } from '@/ui/style/color';
 import { useWallet } from 'ui/utils';
 
-const PickUsername = ({
+const PickNickname = ({
   handleSwitchTab,
-  username,
-  setUsername,
+  nickname,
+  setNickname,
 }: {
   handleSwitchTab: () => void;
-  username: string;
-  setUsername: (username: string) => void;
+  nickname: string;
+  setNickname: (username: string) => void;
 }) => {
   const wallet = useWallet();
   const [isLoading, setLoading] = useState(false);
@@ -157,7 +157,7 @@ const PickUsername = ({
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const newUsername = event.target.value;
       // Set the username
-      setUsername(newUsername);
+      setNickname(newUsername);
 
       // Validate username
       validateUsername(newUsername);
@@ -173,8 +173,8 @@ const PickUsername = ({
   }, []);
 
   const handleClearUsername = useCallback(() => {
-    setUsername('');
-  }, [setUsername]);
+    setNickname('');
+  }, [setNickname]);
 
   const msgBgColor = isLoading ? 'neutral.light' : usernameValid ? 'success.light' : 'error.light';
   return (
@@ -213,7 +213,7 @@ const PickUsername = ({
               fullWidth
               disableUnderline
               // Making uncontrolled component
-              defaultValue={username}
+              defaultValue={nickname}
               onChange={handleUsernameChange}
               startAdornment={
                 <InputAdornment position="start">
@@ -231,7 +231,7 @@ const PickUsername = ({
                 </InputAdornment>
               }
             />
-            <SlideRelative direction="down" show={!!username}>
+            <SlideRelative direction="down" show={!!nickname}>
               <Box
                 sx={{
                   width: '95%',
@@ -273,4 +273,4 @@ const PickUsername = ({
   );
 };
 
-export default PickUsername;
+export default PickNickname;

@@ -5,8 +5,8 @@ const { emojis } = emojisJson;
 import { MAINNET_CHAIN_ID } from '@/shared/types/network-types';
 import { type WalletAccount } from '@/shared/types/wallet-types';
 
-import { useAccountBalance } from '../../../../stories/use-account-hooks.mock';
-import { useNftCatalogCollections } from '../../../../stories/use-nft-hooks.mock';
+import { useAccountBalance } from '../../../hooks/use-account-hooks.mock';
+import { useNftCatalogCollections } from '../../../hooks/useNftHook.mock';
 import { AccountCard } from '../account-card';
 
 const mainWalletAccount: WalletAccount = {
@@ -80,7 +80,24 @@ export const SmallFlow: Story = {
         count: 12,
         collection: {
           name: 'Test Collection',
+          id: 'test',
+          contract_name: 'test',
+          address: 'test',
+          logo: 'test',
+          description: 'test',
+          banner: 'test',
+          path: {
+            storage_path: 'test',
+            public_path: 'test',
+            private_path: 'test',
+          },
+          nftTypeId: 'test',
+          socials: {
+            twitter: { url: 'test' },
+            discord: { url: 'test' },
+          },
         },
+        ids: ['test'],
       },
     ]);
   },

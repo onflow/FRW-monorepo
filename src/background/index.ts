@@ -138,36 +138,7 @@ async function restoreAppState() {
   await initAppMeta();
 
   // Set the loaded flag to true so that the UI knows the app is ready
-  walletController.setLoaded(true);
-  chrome.runtime.sendMessage({ type: 'walletInitialized' }, (response) => {
-    if (chrome.runtime.lastError) {
-      consoleError(
-        'chrome.runtime.sendMessage - Message delivery failed:',
-        chrome.runtime.lastError.message
-      );
-    }
-  });
-  chrome.tabs
-    .query({
-      active: true,
-      lastFocusedWindow: true,
-    })
-    .then((tabs) => {
-      tabs.forEach((tab) => {
-        const tabId = tab.id;
-        if (tabId && !tab.url?.match(/^chrome*/)) {
-          chrome.tabs.sendMessage(tabId, { type: 'walletInitialized' }, (response) => {
-            if (chrome.runtime.lastError) {
-              consoleLog(
-                'chrome.tabs.sendMessage - Message delivery failed:',
-                chrome.runtime.lastError.message
-              );
-              // You can implement retry logic or alternative actions here
-            }
-          });
-        }
-      });
-    });
+  await walletController.setLoaded(true);
 }
 
 restoreAppState();

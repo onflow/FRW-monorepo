@@ -29,30 +29,40 @@ const config: StorybookConfig = {
     config.resolve.alias = {
       ...config.resolve.alias,
       // Specific hook aliases first
+      '@/shared/utils/user-data-access$': path.resolve(
+        __dirname,
+        '../src/shared/utils/user-data-access.mock.ts'
+      ),
+      '@/shared/utils/cache-data-access$': path.resolve(
+        __dirname,
+        '../src/shared/utils/cache-data-access.mock.ts'
+      ),
       '@/ui/hooks/use-feature-flags$': path.resolve(
         __dirname,
-        '../src/stories/use-feature-flags.mock.ts'
+        '../src/ui/hooks/use-feature-flags.mock.ts'
       ),
       '@/ui/hooks/use-account-hooks$': path.resolve(
         __dirname,
-        '../src/stories/use-account-hooks.mock.ts'
+        '../src/ui/hooks/use-account-hooks.mock.ts'
       ),
-      '@/ui/hooks/useNftHook$': path.resolve(__dirname, '../src/stories/use-nft-hooks.mock.ts'),
+      '@/ui/hooks/useNftHook$': path.resolve(__dirname, '../src/ui/hooks/useNftHook.mock.ts'),
       '@/ui/hooks/useProfileHook$': path.resolve(
         __dirname,
-        '../src/stories/useProfileHook.mock.ts'
+        '../src/ui/hooks/useProfileHook.mock.ts'
       ),
       '@/ui/hooks/useNetworkHook$': path.resolve(
         __dirname,
-        '../src/stories/useNetworkHook.mock.ts'
+        '../src/ui/hooks/useNetworkHook.mock.ts'
       ),
-      // General hooks alias (fallback)
-      '@/ui/hooks': path.resolve(__dirname, '../src/stories/ui-hooks.mock.ts'),
+      '@/ui/utils/WalletContext$': path.resolve(
+        __dirname,
+        '../src/ui/utils/WalletContext.mock.tsx'
+      ),
+
       // Other aliases
-      '@/ui/utils/WalletContext': path.resolve(__dirname, '../src/stories/wallet-context.mock.ts'),
       'ui/utils$': path.resolve(__dirname, '../src/stories/ui-utils.mock.ts'),
+      '@/ui/utils$': path.resolve(__dirname, '../src/stories/ui-utils.mock.ts'),
       'react-router-dom': path.resolve(__dirname, '../src/stories/react-router-dom.mock.ts'),
-      '@/ui/utils/WalletContext$': path.resolve(__dirname, '../src/stories/wallet-context.mock.ts'),
       '@': path.resolve(__dirname, '../src'),
       ui: path.resolve(__dirname, '../src/ui'),
       background: path.resolve(__dirname, '../src/background'),

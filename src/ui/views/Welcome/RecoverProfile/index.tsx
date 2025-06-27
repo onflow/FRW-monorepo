@@ -7,7 +7,7 @@ import Google from '@/ui/components/google-import';
 import AllSet from '@/ui/components/LandingPages/AllSet';
 import GoogleBackup from '@/ui/components/LandingPages/GoogleBackup';
 import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
-import PickUsername from '@/ui/components/LandingPages/PickUsername';
+import PickNickname from '@/ui/components/LandingPages/PickNickname';
 import SetPassword from '@/ui/components/LandingPages/SetPassword';
 import {
   importProfileReducer,
@@ -28,6 +28,7 @@ const RecoverProfile = () => {
     mnemonic,
     pk,
     username,
+    nickname,
     password,
     errMessage,
     showError,
@@ -35,7 +36,17 @@ const RecoverProfile = () => {
     googleAccounts,
     path,
     phrase,
+    isAddWallet,
   } = state;
+
+  useEffect(() => {
+    const checkWalletStatus = async () => {
+      const isBooted = await usewallet.isBooted();
+      dispatch({ type: 'SET_IS_ADD_WALLET', payload: isBooted });
+    };
+
+    checkWalletStatus();
+  }, [usewallet]);
 
   const handleErrorClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
@@ -46,16 +57,36 @@ const RecoverProfile = () => {
 
   const submitPassword = async (newPassword: string) => {
     dispatch({ type: 'SET_PASSWORD', payload: newPassword });
+    // Check the password first so we can show the error message
+    if (isAddWallet) {
+      try {
+        await usewallet.verifyPasswordIfBooted(newPassword);
+      } catch (err) {
+        consoleError(err);
+        dispatch({
+          type: 'SET_ERROR',
+          payload: { message: chrome.i18n.getMessage('Incorrect__Password'), show: true },
+        });
+        return;
+      }
+    }
     try {
       if (pk) {
-        await usewallet.importProfileUsingPrivateKey(username, newPassword, pk);
+        await usewallet.importProfileUsingPrivateKey(nickname, newPassword, pk);
         dispatch({ type: 'SET_ACTIVE_TAB', payload: IMPORT_STEPS.ALL_SET });
       } else if (mnemonic) {
-        await usewallet.importProfileUsingMnemonic(username, newPassword, mnemonic, path, phrase);
+        await usewallet.importProfileUsingMnemonic(nickname, newPassword, mnemonic, path, phrase);
         dispatch({ type: 'SET_ACTIVE_TAB', payload: IMPORT_STEPS.GOOGLE_BACKUP });
       } else {
         throw new Error('No mnemonic or private key provided');
       }
+
+      // Now get the proper username
+      const userInfo = await usewallet.getUserInfo();
+      if (!userInfo) {
+        throw new Error('User info not found');
+      }
+      dispatch({ type: 'SET_USERNAME', payload: userInfo.username });
     } catch (error) {
       consoleError(error);
       dispatch({
@@ -139,15 +170,15 @@ const RecoverProfile = () => {
           )}
 
           {activeTab === IMPORT_STEPS.PICK_USERNAME && (
-            <PickUsername
+            <PickNickname
               handleSwitchTab={() =>
                 dispatch({
                   type: 'SET_ACTIVE_TAB',
                   payload: IMPORT_STEPS.SET_PASSWORD,
                 })
               }
-              username={username}
-              setUsername={(u) => dispatch({ type: 'SET_USERNAME', payload: u })}
+              nickname={nickname}
+              setNickname={(u) => dispatch({ type: 'SET_NICKNAME', payload: u })}
             />
           )}
 
@@ -156,10 +187,10 @@ const RecoverProfile = () => {
             <SetPassword
               handleSwitchTab={() => {}}
               onSubmit={submitPassword}
-              isLogin={activeTab === IMPORT_STEPS.RECOVER_PASSWORD}
+              isLogin={isAddWallet}
             />
           )}
-          {activeTab === IMPORT_STEPS.GOOGLE_BACKUP && (
+          {activeTab === IMPORT_STEPS.GOOGLE_BACKUP && username && password && (
             <GoogleBackup
               handleSwitchTab={() =>
                 dispatch({
@@ -169,7 +200,7 @@ const RecoverProfile = () => {
               }
               mnemonic={mnemonic}
               username={username}
-              password={password || ''}
+              password={password}
             />
           )}
 

@@ -25,48 +25,22 @@ import {
 import userCircleCheck from '@/ui/assets/svg/user-circle-check.svg';
 import userCirclePlus from '@/ui/assets/svg/user-circle-plus.svg';
 import { ProfileButton } from '@/ui/components/profile/profile-button';
-import { useUserInfo } from '@/ui/hooks/use-account-hooks';
+import { ProfileItem } from '@/ui/components/profile/profile-item';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import vmsvg from 'ui/assets/svg/viewmore.svg';
 import { useWallet } from 'ui/utils';
-
-import { ProfileItem } from '../../../components/profile/profile-item';
 
 interface TransferConfirmationProps {
   isConfirmationOpen: boolean;
   handleCloseIconClicked: () => void;
   handleCancelBtnClicked: () => void;
   handleAddBtnClicked: () => void;
-  userInfo: UserInfoResponse;
+  userInfo?: UserInfoResponse;
   current: WalletAccount;
-  switchAccount: (profileId: string) => Promise<void>;
-  profileIds: string[];
+  switchProfile: (profileId: string) => Promise<void>;
+  profileIds?: string[];
   switchLoading: boolean;
 }
-
-const ProfileItemList = ({
-  profileId,
-  selectedProfileId,
-  switchAccount,
-  setLoadingId,
-}: {
-  profileId: string;
-  selectedProfileId: string;
-  switchAccount: (profileId: string) => Promise<void>;
-  setLoadingId: (id: string) => void;
-}) => {
-  const userInfo = useUserInfo(profileId);
-  return (
-    <ProfileItem
-      key={profileId}
-      profileId={profileId}
-      selectedProfileId={selectedProfileId}
-      switchAccount={switchAccount}
-      setLoadingId={setLoadingId}
-      userInfo={userInfo}
-    />
-  );
-};
 
 const Popup = (props: TransferConfirmationProps) => {
   const usewallet = useWallet();
@@ -137,11 +111,11 @@ const Popup = (props: TransferConfirmationProps) => {
               }}
             >
               {props.profileIds.map((profileId: string) => (
-                <ProfileItemList
+                <ProfileItem
                   key={profileId}
                   profileId={profileId}
-                  selectedProfileId={props.userInfo.id}
-                  switchAccount={props.switchAccount}
+                  selectedProfileId={props.userInfo?.id}
+                  switchAccount={props.switchProfile}
                   setLoadingId={setLoadingId}
                 />
               ))}
