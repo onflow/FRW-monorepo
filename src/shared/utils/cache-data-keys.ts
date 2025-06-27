@@ -2,8 +2,6 @@
  * Keys and types to access data in the UI from the background storage cache
  * This is the primary way to get cached data from network calls to the frontend
  */
-import { type TokenInfo } from '@/shared/types/token-info';
-
 import {
   type TokenFilter,
   type ExtendedTokenInfo,
@@ -30,7 +28,6 @@ import {
   type MainAccount,
   type WalletAccount,
   type Currency,
-  type PendingTransaction,
   type PublicKeyAccount,
 } from '../types/wallet-types';
 
@@ -73,6 +70,10 @@ export type RemoteConfig = {
     >;
   };
 };
+
+export const walletLoadedKey = () => `wallet-loaded`;
+export const walletLoadedRefreshRegex = refreshKey(walletLoadedKey);
+export type WalletLoadedStore = boolean;
 /*
  * --------------------------------------------------------------------
  * User level keys
