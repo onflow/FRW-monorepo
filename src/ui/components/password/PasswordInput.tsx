@@ -1,6 +1,15 @@
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import { Box, LinearProgress, Typography, Input, InputAdornment, IconButton } from '@mui/material';
+import {
+  Box,
+  LinearProgress,
+  Typography,
+  Input,
+  InputAdornment,
+  IconButton,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
 import React from 'react';
 import zxcvbn from 'zxcvbn';
 
@@ -14,7 +23,7 @@ interface PasswordIndicatorProps {
 }
 
 const PasswordIndicator = ({ value }: PasswordIndicatorProps) => {
-  const score = zxcvbn(value).score;
+  const score = value ? zxcvbn(value).score : 0;
   const percentage = ((score + 1) / 5) * 100;
 
   const level = (score: number) => {
@@ -35,15 +44,17 @@ const PasswordIndicator = ({ value }: PasswordIndicatorProps) => {
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-      <Box sx={{ width: '72px', mr: 1 }}>
-        <LinearProgress
-          variant="determinate"
-          // @ts-expect-error level function returned expected value
-          color={level(score).color}
-          sx={{ height: '12px', width: '72px', borderRadius: '12px' }}
-          value={percentage}
-        />
-      </Box>
+      {value && (
+        <Box sx={{ width: '72px', mr: 1 }}>
+          <LinearProgress
+            variant="determinate"
+            // @ts-expect-error level function returned expected value
+            color={level(score).color}
+            sx={{ height: '12px', width: '72px', borderRadius: '12px' }}
+            value={percentage}
+          />
+        </Box>
+      )}
       <Box sx={{ minWidth: 35 }}>
         <Typography variant="body2" color="text.secondary">
           {level(score).text}
@@ -87,9 +98,12 @@ export const PasswordInput = ({
   visibilitySx,
   endAdornment,
 }: PasswordInputProps) => {
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+
   const defaultEndAdornment = (
     <InputAdornment position="end">
-      {value && showIndicator && <PasswordIndicator value={value} />}
+      {!isSmallScreen && value && showIndicator && <PasswordIndicator value={value} />}
       <IconButton onClick={() => setVisible(!isVisible)}>
         {isVisible ? <VisibilityOffIcon sx={visibilitySx} /> : <VisibilityIcon sx={visibilitySx} />}
       </IconButton>
@@ -97,7 +111,12 @@ export const PasswordInput = ({
   );
 
   return (
-    <Box>
+    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+      {isSmallScreen && showIndicator && (
+        <Box sx={{ justifyItems: 'flex-end', paddingY: '8px' }}>
+          <PasswordIndicator value={value} />
+        </Box>
+      )}
       <Input
         type={isVisible ? 'text' : 'password'}
         value={value}
@@ -125,12 +144,15 @@ export const PasswordInput = ({
         onKeyDown={onKeyDown}
         endAdornment={endAdornment || defaultEndAdornment}
       />
-      <SlideRelative direction="down" show={!!helperText && !errorText}>
-        <PasswordHelperText message={helperText || ''} />
-      </SlideRelative>
-      <SlideRelative direction="down" show={!!errorText}>
-        <PasswordErrorText message={errorText || ''} />
-      </SlideRelative>
+      <Box height="24px">
+        <SlideRelative direction="down" show={!!errorText || !!helperText}>
+          {errorText ? (
+            <PasswordErrorText message={errorText || ''} />
+          ) : (
+            <PasswordHelperText message={helperText || ''} />
+          )}
+        </SlideRelative>
+      </Box>
     </Box>
   );
 };

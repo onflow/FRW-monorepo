@@ -130,15 +130,10 @@ const RecoverPage = ({ dataArray, setArray, goNext }) => {
           }}
           showPassword={isPasswordVisible}
           setShowPassword={setPasswordVisible}
+          errorText={showError ? chrome.i18n.getMessage('Incorrect__Password') : undefined}
           autoFocus={true}
           placeholder={chrome.i18n.getMessage('Enter__Your__Password')}
           onKeyDown={handleKeyDown}
-        />
-
-        <PasswordValidationText
-          message={chrome.i18n.getMessage('Incorrect__Password')}
-          type="error"
-          show={showError}
         />
       </FormControl>
 

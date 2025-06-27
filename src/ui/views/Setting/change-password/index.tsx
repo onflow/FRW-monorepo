@@ -13,6 +13,7 @@ import {
   Typography,
 } from '@mui/material';
 import Box from '@mui/material/Box';
+import { flexDirection } from '@mui/system';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
@@ -23,8 +24,6 @@ import CancelIcon from '@/ui/components/iconfont/IconClose';
 import { LLHeader } from '@/ui/components/LLHeader';
 import { PasswordInput } from '@/ui/components/password/PasswordInput';
 import { PasswordValidationText } from '@/ui/components/password/PasswordValidationText';
-import SlideRelative from '@/ui/components/SlideRelative';
-import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from '@/ui/utils';
 
 import { GoogleWarningDialog } from './google-warning';
@@ -41,9 +40,9 @@ const ChangePassword = () => {
   const [confirmPassword, setConfirmPassword] = useState(DEFAULT_PASSWORD);
   const [confirmCurrentPassword, setConfirmCurrentPassword] = useState(DEFAULT_PASSWORD);
 
-  const [isCharacters, setCharacters] = useState(false);
-  const [isMatch, setMatch] = useState(false);
-  const [isSame, setSame] = useState(false);
+  const [isCharacters, setCharacters] = useState<boolean | undefined>(undefined);
+  const [isMatch, setMatch] = useState<boolean | undefined>(undefined);
+  const [isSame, setSame] = useState<boolean | undefined>(undefined);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [error, setError] = useState('');
@@ -85,28 +84,6 @@ const ChangePassword = () => {
       setMatch(false);
     }
   }, [confirmPassword, password]);
-
-  // Custom endAdornment for the current password field
-  const currentPasswordAdornment = (
-    <InputAdornment position="end">
-      {isVerifying ? (
-        <Box sx={{ width: 14, height: 14, margin: '8px' }}>
-          <LinearProgress sx={{ width: 14, height: 14 }} />
-        </Box>
-      ) : isSame ? (
-        <CheckCircleIcon size={14} color={'#41CC5D'} style={{ margin: '8px' }} />
-      ) : (
-        <CancelIcon size={14} color={'#E54040'} style={{ margin: '8px' }} />
-      )}
-      <IconButton onClick={() => setCurrentPasswordVisible(!isCurrentPasswordVisible)}>
-        {isCurrentPasswordVisible ? (
-          <VisibilityOffIcon sx={{ fontSize: 14, padding: 0 }} />
-        ) : (
-          <VisibilityIcon sx={{ fontSize: 14, padding: 0 }} />
-        )}
-      </IconButton>
-    </InputAdornment>
-  );
 
   const changePassword = useCallback(
     async (ignoreBackupsAtTheirOwnRisk = false) => {
@@ -251,140 +228,64 @@ const ChangePassword = () => {
           sx={{
             flexGrow: 1,
             width: '100%',
-            my: '8px',
             display: 'flex',
-            boxSizing: 'border-box',
+            flexDirection: 'column',
             paddingX: '18px',
           }}
         >
-          <FormGroup sx={{ width: '100%' }}>
-            {/* Current Password */}
-            <Box sx={{ mb: 2 }}>
-              <Typography
-                sx={{
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  marginBottom: '4px',
-                }}
-              >
-                {chrome.i18n.getMessage('Current__Password')}
-              </Typography>
-              <PasswordInput
-                value={confirmCurrentPassword}
-                onChange={setConfirmCurrentPassword}
-                showPassword={isCurrentPasswordVisible}
-                setShowPassword={setCurrentPasswordVisible}
-                placeholder={chrome.i18n.getMessage('Enter__Current__Password')}
-                sx={{
-                  fontSize: '12px',
-                  fontFamily: 'Inter',
-                  fontStyle: 'normal',
-                  backgroundColor: '#121212',
-                  border: '2px solid #4C4C4C',
-                  borderRadius: '12px',
-                  padding: '8px',
-                  '&.Mui-focused': {
-                    border: '2px solid #FAFAFA',
-                    boxShadow: '0px 8px 12px 4px rgba(76, 76, 76, 0.24)',
-                  },
-                }}
-                visibilitySx={{ fontSize: 14, padding: 0 }}
-                endAdornment={currentPasswordAdornment}
-              />
-              <PasswordValidationText
-                message={chrome.i18n.getMessage('Incorrect__Password')}
-                type="error"
-                show={!!confirmCurrentPassword && !isSame}
-              />
-            </Box>
-
+          {/* Current Password */}
+          <PasswordInput
+            value={confirmCurrentPassword}
+            onChange={setConfirmCurrentPassword}
+            showPassword={isCurrentPasswordVisible}
+            setShowPassword={setCurrentPasswordVisible}
+            placeholder={chrome.i18n.getMessage('Enter__Current__Password')}
+            errorText={
+              !!confirmCurrentPassword && isSame === false
+                ? chrome.i18n.getMessage('Incorrect__Password')
+                : undefined
+            }
+            showIndicator={false}
+          />
+          <Box sx={{ flexDirection: 'column', gap: '8px' }}>
             {/* New Password */}
-            <Box sx={{ mb: 2 }}>
-              <Typography
-                sx={{
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  marginBottom: '4px',
-                }}
-              >
-                {chrome.i18n.getMessage('New__Password')}
-              </Typography>
-              <PasswordInput
-                value={password}
-                onChange={(value) => {
-                  setPassword(value);
-                  setConfirmPassword('');
-                }}
-                showPassword={isNewPasswordVisible}
-                setShowPassword={setNewPasswordVisible}
-                placeholder={chrome.i18n.getMessage('Enter__New__Password')}
-                sx={{
-                  fontSize: '12px',
-                  fontFamily: 'Inter',
-                  fontStyle: 'normal',
-                  backgroundColor: '#121212',
-                  border: '2px solid #4C4C4C',
-                  borderRadius: '12px',
-                  padding: '8px',
-                  '&.Mui-focused': {
-                    border: '2px solid #FAFAFA',
-                    boxShadow: '0px 8px 12px 4px rgba(76, 76, 76, 0.24)',
-                  },
-                }}
-                visibilitySx={{ fontSize: 14, margin: 0 }}
-                showIndicator={true}
-              />
-              <PasswordValidationText
-                message={chrome.i18n.getMessage('At__least__8__characters')}
-                type={isCharacters ? 'success' : 'error'}
-                show={!!password}
-              />
-            </Box>
+            <PasswordInput
+              value={password}
+              onChange={(value) => {
+                setPassword(value);
+                setConfirmPassword('');
+              }}
+              showPassword={isNewPasswordVisible}
+              setShowPassword={setNewPasswordVisible}
+              placeholder={chrome.i18n.getMessage('Enter__New__Password')}
+              errorText={
+                !!password && isCharacters === false
+                  ? chrome.i18n.getMessage('At__least__8__characters')
+                  : undefined
+              }
+              showIndicator={true}
+            />
+            {/* Confirm New Password */}
 
-            {/* Confirm Password */}
-            <Box sx={{ mb: 2 }}>
-              <Typography
-                sx={{
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  marginBottom: '4px',
-                }}
-              >
-                {chrome.i18n.getMessage('Confirm__Password')}
-              </Typography>
-              <PasswordInput
-                value={confirmPassword}
-                onChange={setConfirmPassword}
-                showPassword={isConfirmPasswordVisible}
-                setShowPassword={setConfirmPasswordVisible}
-                placeholder={chrome.i18n.getMessage('Confirm__Password')}
-                sx={{
-                  fontSize: '12px',
-                  fontFamily: 'Inter',
-                  fontStyle: 'normal',
-                  backgroundColor: '#121212',
-                  border: '2px solid #4C4C4C',
-                  borderRadius: '12px',
-                  padding: '8px',
-                  '&.Mui-focused': {
-                    border: '2px solid #FAFAFA',
-                    boxShadow: '0px 8px 12px 4px rgba(76, 76, 76, 0.24)',
-                  },
-                }}
-                visibilitySx={{ fontSize: 14, margin: 0 }}
-                showIndicator={true}
-              />
-              <PasswordValidationText
-                message={
-                  isMatch
-                    ? chrome.i18n.getMessage('Passwords__match')
-                    : chrome.i18n.getMessage('Your__passwords__do__not__match')
-                }
-                type={isMatch ? 'success' : 'error'}
-                show={!!confirmPassword}
-              />
-            </Box>
-          </FormGroup>
+            <PasswordInput
+              value={confirmPassword}
+              onChange={setConfirmPassword}
+              showPassword={isConfirmPasswordVisible}
+              setShowPassword={setConfirmPasswordVisible}
+              placeholder={chrome.i18n.getMessage('Confirm__Password')}
+              errorText={
+                !!confirmPassword && isMatch === false
+                  ? chrome.i18n.getMessage('Your__passwords__do__not__match')
+                  : undefined
+              }
+              helperText={
+                !!confirmPassword && isMatch
+                  ? chrome.i18n.getMessage('Passwords__match')
+                  : undefined
+              }
+              showIndicator={false}
+            />
+          </Box>
         </Box>
 
         <Box
