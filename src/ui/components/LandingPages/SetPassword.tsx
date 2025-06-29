@@ -14,12 +14,7 @@ import React, { useEffect, useState } from 'react';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import { BpUncheked, BpCheckedIcon } from '@/ui/assets/icons/CustomCheckboxIcons';
 import { LLSpinner } from '@/ui/components';
-import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
-import CancelIcon from '@/ui/components/iconfont/IconClose';
-import { PasswordErrorText } from '@/ui/components/password/PasswordErrorText';
-import { PasswordHelperText } from '@/ui/components/password/PasswordHelperText';
 import { PasswordInput } from '@/ui/components/password/PasswordInput';
-import SlideRelative from '@/ui/components/SlideRelative';
 
 interface SetPasswordProps {
   handleSwitchTab: () => void;

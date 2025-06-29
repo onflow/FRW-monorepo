@@ -1,29 +1,13 @@
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import {
-  Alert,
-  Button,
-  CircularProgress,
-  FormGroup,
-  IconButton,
-  Input,
-  InputAdornment,
-  LinearProgress,
-  Snackbar,
-  Typography,
-} from '@mui/material';
+import { Alert, Button, CircularProgress, Snackbar, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
-import { flexDirection } from '@mui/system';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { consoleError } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
-import CancelIcon from '@/ui/components/iconfont/IconClose';
 import { LLHeader } from '@/ui/components/LLHeader';
 import { PasswordInput } from '@/ui/components/password/PasswordInput';
-import { PasswordValidationText } from '@/ui/components/password/PasswordValidationText';
 import { useWallet } from '@/ui/utils';
 
 import { GoogleWarningDialog } from './google-warning';

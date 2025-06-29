@@ -4,9 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import { consoleError } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
-import CancelIcon from '@/ui/components/iconfont/IconClose';
 import { PasswordInput } from '@/ui/components/password/PasswordInput';
-import { PasswordValidationText } from '@/ui/components/password/PasswordValidationText';
 import { LLPrimaryButton } from 'ui/components';
 import { useWallet } from 'ui/utils';
 

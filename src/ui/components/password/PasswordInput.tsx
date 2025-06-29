@@ -15,7 +15,6 @@ import zxcvbn from 'zxcvbn';
 
 import SlideRelative from '@/ui/components/SlideRelative';
 
-import { PasswordErrorText } from './PasswordErrorText';
 import { PasswordHelperText } from './PasswordHelperText';
 // Password Indicator Component
 interface PasswordIndicatorProps {
@@ -147,11 +146,10 @@ export const PasswordInput = ({
       />
       <Box height="24px">
         <SlideRelative direction="down" show={!!errorText || !!helperText}>
-          {errorText ? (
-            <PasswordErrorText message={errorText || ''} />
-          ) : (
-            <PasswordHelperText message={helperText || ''} />
-          )}
+          <PasswordHelperText
+            message={errorText || helperText || ''}
+            variant={!!errorText ? 'error' : 'success'}
+          />
         </SlideRelative>
       </Box>
     </Box>
