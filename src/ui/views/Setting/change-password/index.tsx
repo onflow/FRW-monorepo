@@ -29,7 +29,7 @@ const ChangePassword = () => {
   const [isSame, setSame] = useState<boolean | undefined>(undefined);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
-  const [error, setError] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const [statusMessage, setStatusMessage] = useState<string>('');
   const [showGooglePermissionDialog, setShowGooglePermissionDialog] = useState(false);
   const [showProfileBackupDialog, setShowProfileBackupDialog] = useState(false);
@@ -73,7 +73,7 @@ const ChangePassword = () => {
     async (ignoreBackupsAtTheirOwnRisk = false) => {
       try {
         setIsResetting(true);
-        setError('');
+        setErrorMessage('');
         setStatusMessage(chrome.i18n.getMessage('Changing_password') || 'Changing password...');
 
         const success = await wallet.changePassword(
@@ -95,18 +95,18 @@ const ChangePassword = () => {
             })
             .catch((error) => {
               consoleError('Error locking wallet:', error);
-              setError(chrome.i18n.getMessage('Oops__unexpected__error'));
+              setErrorMessage(chrome.i18n.getMessage('Oops__unexpected__error'));
             })
             .finally(() => {
               setIsResetting(false);
               setStatusMessage('');
             });
         } else {
-          setError(chrome.i18n.getMessage('Oops__unexpected__error'));
+          setErrorMessage(chrome.i18n.getMessage('Oops__unexpected__error'));
         }
       } catch (error) {
         consoleError('Error changing password:', error);
-        setError(error.message);
+        setErrorMessage(error.message);
       } finally {
         setIsResetting(false);
       }
@@ -118,7 +118,7 @@ const ChangePassword = () => {
     async (profileUsernames: string[]) => {
       try {
         setIsResetting(true);
-        setError('');
+        setErrorMessage('');
         setStatusMessage(
           chrome.i18n.getMessage('Updating_backups_and_changing_password') ||
             'Updating backups and changing password...'
@@ -136,34 +136,28 @@ const ChangePassword = () => {
             chrome.i18n.getMessage('Password_changed_successfully_Locking_wallet') ||
               'Password changed successfully! Locking wallet...'
           );
-
-          await wallet
-            .lockWallet()
-            .then(() => {
-              history.push('/unlock');
-            })
-            .catch((error) => {
-              consoleError('Error locking wallet:', error);
-              setError(chrome.i18n.getMessage('Oops__unexpected__error'));
-            })
-            .finally(() => {
-              setIsResetting(false);
-              setStatusMessage('');
-            });
+          try {
+            await wallet.lockWallet();
+            history.push('/unlock');
+          } catch (error) {
+            consoleError('Error locking wallet:', error);
+            setErrorMessage(chrome.i18n.getMessage('Oops__unexpected__error'));
+          } finally {
+            setIsResetting(false);
+            setStatusMessage('');
+          }
         } else {
-          setError(chrome.i18n.getMessage('Oops__unexpected__error'));
+          setErrorMessage(chrome.i18n.getMessage('Oops__unexpected__error'));
         }
       } catch (error) {
         consoleError('Error changing password with backups:', error);
-        setError(error.message);
+        setErrorMessage(error.message);
       } finally {
         setIsResetting(false);
-        if (!error) {
-          setStatusMessage('');
-        }
+        setStatusMessage('');
       }
     },
-    [confirmCurrentPassword, confirmPassword, wallet, history, error]
+    [confirmCurrentPassword, confirmPassword, wallet, history]
   );
 
   const handleChangePasswordClick = useCallback(async () => {
@@ -312,18 +306,18 @@ const ChangePassword = () => {
         </Box>
 
         <Snackbar
-          open={!!error}
+          open={!!errorMessage}
           autoHideDuration={6000}
-          onClose={() => setError('')}
+          onClose={() => setErrorMessage('')}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         >
-          <Alert onClose={() => setError('')} severity="error" sx={{ width: '100%' }}>
-            {error}
+          <Alert onClose={() => setErrorMessage('')} severity="error" sx={{ width: '100%' }}>
+            {errorMessage}
           </Alert>
         </Snackbar>
 
         {/* Simple success message with better visibility */}
-        {isResetting && !error && (
+        {isResetting && !errorMessage && (
           <Box
             sx={{
               position: 'absolute',
@@ -357,7 +351,7 @@ const ChangePassword = () => {
           open={showGooglePermissionDialog}
           onClose={setShowGooglePermissionDialog}
           onProceedAnyway={() => changePassword(true)}
-          onError={setError}
+          onError={setErrorMessage}
         />
 
         <ProfileBackupSelectionDialog
