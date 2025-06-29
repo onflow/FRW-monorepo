@@ -67,18 +67,22 @@ const SetPassword: React.FC<SetPasswordProps> = ({
   useEffect(() => {
     if (password.length > 7) {
       setHelperText(chrome.i18n.getMessage('At__least__8__characters'));
+      setErrorText(undefined);
       setCharacters(true);
     } else {
       setErrorText(chrome.i18n.getMessage('At__least__8__characters'));
+      setHelperText(undefined);
       setCharacters(false);
     }
 
     if (confirmPassword === password) {
       setHelperMatch(chrome.i18n.getMessage('Passwords__match'));
+      setErrorMatch(undefined);
       setMatch(true);
     } else {
       setMatch(false);
       setErrorMatch(chrome.i18n.getMessage('Your__passwords__do__not__match'));
+      setHelperMatch(undefined);
     }
   }, [confirmPassword, password]);
 
