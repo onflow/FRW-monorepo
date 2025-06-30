@@ -321,7 +321,7 @@ const CoinList = ({
                   }
                   disablePadding
                   onClick={() =>
-                    navigate(`dashboard/tokendetail/${coin.unit.toLowerCase()}/${coin.id}`)
+                    navigate(`/dashboard/tokendetail/${coin.unit.toLowerCase()}/${coin.id}`)
                   }
                 >
                   <ListItemButton sx={{ paddingRight: '0px' }} dense={true}>

@@ -20,13 +20,13 @@ const TokenDropdown = () => {
 
   // Navigate to Token List
   const goToTokenList = () => {
-    navigate('dashboard/tokenList');
+    navigate('/dashboard/tokenList');
     handleMenuClose();
   };
 
   // Navigate to Token List
   const goToCustom = () => {
-    navigate('dashboard/tokenList');
+    navigate('/dashboard/tokenList');
     handleMenuClose();
   };
 
