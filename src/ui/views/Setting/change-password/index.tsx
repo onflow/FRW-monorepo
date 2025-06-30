@@ -206,6 +206,7 @@ const ChangePassword = () => {
             display: 'flex',
             flexDirection: 'column',
             paddingX: '18px',
+            gap: '8px',
           }}
         >
           {/* Current Password */}
@@ -214,7 +215,7 @@ const ChangePassword = () => {
             onChange={setConfirmCurrentPassword}
             showPassword={isCurrentPasswordVisible}
             setShowPassword={setCurrentPasswordVisible}
-            placeholder={chrome.i18n.getMessage('Enter__Current__Password')}
+            placeholder={chrome.i18n.getMessage('Current__Password')}
             errorText={
               !!confirmCurrentPassword && isSame === false
                 ? chrome.i18n.getMessage('Incorrect__Password')
@@ -222,7 +223,7 @@ const ChangePassword = () => {
             }
             showIndicator={false}
           />
-          <Box sx={{ flexDirection: 'column', gap: '8px' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {/* New Password */}
             <PasswordInput
               value={password}
