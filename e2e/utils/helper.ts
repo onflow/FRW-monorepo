@@ -127,7 +127,7 @@ export const fillInPassword = async ({ page, password }) => {
     filledAtLeastOneField = true;
   }
   if (await page.getByRole('checkbox', { name: /.*agree to Flow Wallet.*/ }).isVisible()) {
-    await page.getByRole('checkbox', { name: /.*agree to Flow Wallet.*/ }).click();
+    await page.getByRole('checkbox', { name: /.*agree to Flow Wallet.*/ }).setChecked(true);
   }
   // Make sure we filled at least one field
   expect(filledAtLeastOneField).toBe(true);
@@ -192,7 +192,7 @@ export const registerAccount = async ({ page, extensionId, username, password })
   // fill
   await fillInPassword({ page, password });
 
-  await page.getByLabel("I agree to Flow Wallet's").click();
+  await page.getByLabel("I agree to Flow Wallet's").setChecked(true);
 
   const registerBtn = await page.getByRole('button', { name: 'Register' });
   await registerBtn.click();
