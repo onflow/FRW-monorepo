@@ -60,6 +60,7 @@ const theme = createTheme(themeOptions); // Create a theme instance
 
 const preview: Preview = {
   parameters: {
+    actions: { argTypesRegex: '^on.*' },
     controls: {
       matchers: {
         color: /(background|color)$/i,
