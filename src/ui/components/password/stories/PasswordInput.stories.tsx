@@ -53,3 +53,11 @@ export const WithIndicator: Story = {
     showIndicator: true,
   },
 };
+
+export const ReadOnly: Story = {
+  args: {
+    value: '12345678',
+    showIndicator: false,
+    readOnly: true,
+  },
+};
