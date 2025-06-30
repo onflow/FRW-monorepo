@@ -10,10 +10,16 @@ import { WalletProvider, useWallet } from 'ui/utils';
 // Uncomment this when we need to test api-test
 import ApiTestPage from './api-test/api-test-page';
 import Approval from './Approval';
+import Forgot from './Forgot';
+import Recover from './Forgot/Recover';
+import Reset from './Forgot/Reset';
 import InnerRoute from './InnerRoute';
-import { Landing } from './Landing';
 import SortHat from './SortHat';
 import Unlock from './Unlock';
+import Welcome from './Welcome';
+import AccountImport from './Welcome/AccountImport';
+import Register from './Welcome/Register';
+import Sync from './Welcome/Sync';
 
 const theme = createTheme(themeOptions);
 
@@ -29,10 +35,13 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<SortHat />} />
       <Route path="/unlock" element={<Unlock />} />
-      <Route path="/welcome" element={<Landing />} />
-      <Route path="/welcome/*" element={<Landing />} />
-      <Route path="/forgot" element={<Landing />} />
-      <Route path="/forgot/*" element={<Landing />} />
+      <Route path="/welcome" element={<Welcome />} />
+      <Route path="/welcome/register" element={<Register />} />
+      <Route path="/welcome/accountimport" element={<AccountImport />} />
+      <Route path="/welcome/sync" element={<Sync />} />
+      <Route path="/forgot" element={<Forgot />} />
+      <Route path="/forgot/recover" element={<Recover />} />
+      <Route path="/forgot/reset" element={<Reset />} />
       <Route path="/dashboard/*" element={<InnerRoute />} />
       <Route
         path="/approval/*"
