@@ -110,11 +110,6 @@ const getNumber = (str: string) => {
 export const fillInPassword = async ({ page, password }) => {
   // Handle both create a password and confirm your password
   let filledAtLeastOneField = false;
-  if (await page.getByLabel('Password').isVisible()) {
-    await page.getByLabel('Password').clear();
-    await page.getByLabel('Password').fill(password);
-    filledAtLeastOneField = true;
-  }
 
   if (await page.getByPlaceholder('Enter your password').isVisible()) {
     await page.getByPlaceholder('Enter your password').clear();

@@ -127,7 +127,7 @@ export const PasswordInput = ({
         type={isVisible ? 'text' : 'password'}
         value={value}
         inputProps={{
-          'aria-label': 'password',
+          'aria-label': placeholder,
           'data-testid': 'password-input',
         }}
         sx={{

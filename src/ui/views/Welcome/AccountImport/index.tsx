@@ -200,11 +200,7 @@ const AccountImport = () => {
 
           {(activeTab === IMPORT_STEPS.SET_PASSWORD ||
             activeTab === IMPORT_STEPS.RECOVER_PASSWORD) && (
-            <SetPassword
-              handleSwitchTab={() => {}}
-              onSubmit={submitPassword}
-              isLogin={isAddWallet}
-            />
+            <SetPassword onSubmit={submitPassword} isLogin={isAddWallet} />
           )}
           {activeTab === IMPORT_STEPS.GOOGLE_BACKUP && username && password && (
             <GoogleBackup

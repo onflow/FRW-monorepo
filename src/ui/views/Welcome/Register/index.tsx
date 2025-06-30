@@ -107,14 +107,7 @@ const Register = () => {
         )}
 
         {activeTab === STEPS.PASSWORD && (
-          <SetPassword
-            handleSwitchTab={() => dispatch({ type: 'SET_ACTIVE_TAB', payload: STEPS.BACKUP })}
-            onSubmit={submitPassword}
-            username={username}
-            showTerms={true}
-            autoFocus={true}
-            isLogin={isAddWallet}
-          />
+          <SetPassword onSubmit={submitPassword} isLogin={isAddWallet} />
         )}
 
         {activeTab === STEPS.BACKUP && username && password && (

@@ -17,26 +17,14 @@ import { LLSpinner } from '@/ui/components';
 import { PasswordInput } from '@/ui/components/password/PasswordInput';
 
 interface SetPasswordProps {
-  handleSwitchTab: () => void;
   onSubmit: (password: string) => Promise<void>;
-  username?: string;
-  showTerms?: boolean;
-  title?: string | React.ReactNode;
   subtitle?: string;
   isLogin?: boolean;
-  autoFocus?: boolean;
 }
 
-const SetPassword: React.FC<SetPasswordProps> = ({
-  handleSwitchTab = () => {},
-  onSubmit,
-  username = '',
-  showTerms = false,
-  title = '',
-  subtitle = '',
-  isLogin = false,
-  autoFocus = false,
-}) => {
+const SetPassword: React.FC<SetPasswordProps> = ({ onSubmit, subtitle = '', isLogin = false }) => {
+  const showTerms = !isLogin;
+
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const [isConfirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   const [password, setPassword] = useState(DEFAULT_PASSWORD);
@@ -52,7 +40,8 @@ const SetPassword: React.FC<SetPasswordProps> = ({
   const [errorMatch, setErrorMatch] = useState<string | undefined>(undefined);
   const [helperMatch, setHelperMatch] = useState<string | undefined>(undefined);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setLoading(true);
     try {
       await onSubmit(password);
@@ -120,14 +109,27 @@ const SetPassword: React.FC<SetPasswordProps> = ({
             )}
         </Typography>
 
-        <Box sx={{ flexGrow: 1, width: 640, maxWidth: '100%', my: '32px', display: 'flex' }}>
+        <Box
+          component="form"
+          sx={{
+            flexGrow: 1,
+            width: 640,
+            maxWidth: '100%',
+            my: '32px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+          }}
+          onSubmit={handleSubmit}
+          target="_self"
+        >
           <FormGroup sx={{ width: '100%' }}>
             <PasswordInput
               value={password}
               onChange={setPassword}
               showPassword={isPasswordVisible}
               setShowPassword={setPasswordVisible}
-              autoFocus={autoFocus}
+              autoFocus={true}
               helperText={helperText}
               errorText={errorText}
               placeholder={
@@ -138,32 +140,29 @@ const SetPassword: React.FC<SetPasswordProps> = ({
             />
 
             {!isLogin && (
-              <Box sx={{ pb: '30px', marginTop: password ? '0px' : '24px' }}>
-                <PasswordInput
-                  value={confirmPassword}
-                  onChange={setConfirmPassword}
-                  showPassword={isConfirmPasswordVisible}
-                  setShowPassword={setConfirmPasswordVisible}
-                  helperText={helperMatch}
-                  errorText={errorMatch}
-                  placeholder={chrome.i18n.getMessage('Confirm__your__password')}
-                />
-              </Box>
+              <PasswordInput
+                value={confirmPassword}
+                onChange={setConfirmPassword}
+                showPassword={isConfirmPasswordVisible}
+                setShowPassword={setConfirmPasswordVisible}
+                helperText={helperMatch}
+                errorText={errorMatch}
+                placeholder={chrome.i18n.getMessage('Confirm__your__password')}
+              />
             )}
           </FormGroup>
+
+          {showTerms && <TermsCheckbox onChange={setCheck} />}
+
+          <SubmitButton
+            isLoading={isLoading}
+            disabled={isLogin ? !isCharacters : !(isMatch && isCharacters && isCheck)}
+            isLogin={isLogin}
+          />
         </Box>
 
-        {showTerms && <TermsCheckbox onChange={setCheck} />}
-
-        <SubmitButton
-          onClick={handleSubmit}
-          isLoading={isLoading}
-          disabled={isLogin ? !isCharacters : !(isMatch && isCharacters && isCheck)}
-          isLogin={isLogin}
-        />
+        <ErrorSnackbar open={showError} message={errMessage} onClose={() => setShowError(false)} />
       </Box>
-
-      <ErrorSnackbar open={showError} message={errMessage} onClose={() => setShowError(false)} />
     </>
   );
 };
@@ -225,22 +224,20 @@ const ErrorSnackbar = ({ open, message, onClose }: ErrorSnackbarProps) => (
 
 // Submit Button Component
 interface SubmitButtonProps {
-  onClick: () => void;
   isLoading: boolean;
   disabled: boolean;
   isLogin?: boolean;
 }
 
-const SubmitButton = ({ onClick, isLoading, disabled, isLogin = false }: SubmitButtonProps) => (
+const SubmitButton = ({ isLoading, disabled, isLogin = false }: SubmitButtonProps) => (
   <Button
-    className="registerButton"
     variant="contained"
     color="secondary"
-    onClick={onClick}
+    type="submit"
     size="large"
     sx={{
       height: '56px',
-      width: '640px',
+      width: '100%',
       borderRadius: '12px',
       textTransform: 'capitalize',
       gap: '12px',
@@ -249,9 +246,7 @@ const SubmitButton = ({ onClick, isLoading, disabled, isLogin = false }: SubmitB
     disabled={isLoading || disabled}
   >
     {isLoading && <LLSpinner size={28} />}
-    <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }} color="background.paper">
-      {isLogin ? chrome.i18n.getMessage('Login') : chrome.i18n.getMessage('Register')}
-    </Typography>
+    {isLogin ? chrome.i18n.getMessage('Login') : chrome.i18n.getMessage('Register')}
   </Button>
 );
 
