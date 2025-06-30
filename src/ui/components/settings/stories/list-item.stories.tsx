@@ -1,4 +1,4 @@
-import { type Meta, type StoryObj } from '@storybook/react-webpack5';
+import type { Meta, StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 
 import { AboutIcon } from '@/ui/assets/icons/settings/About';
@@ -6,68 +6,11 @@ import { CurrencyIcon } from '@/ui/assets/icons/settings/Currency';
 import { SecurityIcon } from '@/ui/assets/icons/settings/Security';
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 
-// Mock SettingsListItem component for Storybook
-const SettingsListItemMock: React.FC<{
-  to: string;
-  icon: React.ReactNode;
-  text: string;
-  endIcon?: React.ReactNode;
-  onClick?: () => void;
-}> = ({ icon, text, endIcon, onClick }) => (
-  <div
-    onClick={onClick}
-    style={{
-      padding: '16px',
-      height: '56px',
-      display: 'flex',
-      alignItems: 'center',
-      cursor: 'pointer',
-      color: '#FFFFFF',
-      fontFamily: 'Inter',
-      fontSize: '14px',
-      fontWeight: 600,
-      lineHeight: '120%',
-      letterSpacing: '-0.084px',
-      '&:hover': {
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-      },
-    }}
-  >
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        minWidth: '25px',
-        marginRight: '14px',
-        color: '#59A1DB',
-      }}
-    >
-      {icon}
-    </div>
-    <div
-      style={{
-        flex: 1,
-      }}
-    >
-      {text}
-    </div>
-    {endIcon && (
-      <div
-        style={{
-          minWidth: '15px',
-          marginLeft: '8px',
-          color: '#59A1DB',
-        }}
-      >
-        {endIcon}
-      </div>
-    )}
-  </div>
-);
+import { SettingsListItem } from '../list-item';
 
-const meta: Meta<typeof SettingsListItemMock> = {
-  title: 'Components/Settings/ListItem',
-  component: SettingsListItemMock,
+const meta: Meta<typeof SettingsListItem> = {
+  title: 'Settings/ListItem',
+  component: SettingsListItem,
   tags: ['autodocs'],
   parameters: {
     layout: 'centered',
@@ -99,7 +42,7 @@ const meta: Meta<typeof SettingsListItemMock> = {
   argTypes: {
     to: {
       control: 'text',
-      description: 'Navigation path',
+      description: 'Navigation path (optional)',
     },
     icon: {
       control: false,
@@ -115,35 +58,34 @@ const meta: Meta<typeof SettingsListItemMock> = {
     },
     onClick: {
       action: 'clicked',
-      description: 'Click handler function',
+      description: 'Click handler function (optional)',
     },
   },
 };
 
 export default meta;
-type Story = StoryObj<typeof SettingsListItemMock>;
+type Story = StoryObj<typeof SettingsListItem>;
 
 export const Default: Story = {
   args: {
-    to: '/dashboard/setting/currency',
     icon: <CurrencyIcon width={24} height={24} />,
     text: 'Display Currency',
     endIcon: <IconEnd size={12} />,
   },
   parameters: {
-    docs: {
-      description: {
-        story: 'Default list item with icon, text, and end icon.',
-      },
+    mockData: {
+      icon: 'CurrencyIcon',
+      text: 'Display Currency',
+      endIcon: 'IconEnd',
     },
   },
 };
 
 export const WithoutEndIcon: Story = {
   args: {
-    to: '/dashboard/setting/security',
     icon: <SecurityIcon width={24} height={24} />,
     text: 'Security',
+    onClick: () => alert('Clicked!'),
   },
   parameters: {
     docs: {
@@ -156,10 +98,10 @@ export const WithoutEndIcon: Story = {
 
 export const WithLongText: Story = {
   args: {
-    to: '/dashboard/setting/about',
     icon: <AboutIcon width={24} height={24} />,
     text: 'This is a very long text that should wrap properly in the list item',
     endIcon: <IconEnd size={12} />,
+    onClick: () => alert('Clicked!'),
   },
   parameters: {
     docs: {
@@ -172,11 +114,10 @@ export const WithLongText: Story = {
 
 export const WithClickHandler: Story = {
   args: {
-    to: '#',
     icon: <CurrencyIcon width={24} height={24} />,
     text: 'Click Me',
     endIcon: <IconEnd size={12} />,
-    onClick: () => {},
+    onClick: () => alert('List item clicked!'),
   },
   parameters: {
     docs: {
@@ -187,33 +128,54 @@ export const WithClickHandler: Story = {
   },
 };
 
+export const WithoutNavigation: Story = {
+  args: {
+    icon: <SecurityIcon width={24} height={24} />,
+    text: 'No Navigation',
+    endIcon: <IconEnd size={12} />,
+    onClick: () => alert('List item clicked!'),
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'List item without navigation, only click handler.',
+      },
+    },
+  },
+};
+
 export const MultipleItems: Story = {
   render: () => (
     <div>
-      <SettingsListItemMock
-        to="/dashboard/setting/currency"
+      <SettingsListItem
         icon={<CurrencyIcon width={24} height={24} />}
         text="Display Currency"
         endIcon={<IconEnd size={12} />}
+        onClick={() => alert('Clicked!')}
       />
-      <SettingsListItemMock
-        to="/dashboard/setting/security"
+      <SettingsListItem
         icon={<SecurityIcon width={24} height={24} />}
         text="Security"
         endIcon={<IconEnd size={12} />}
+        onClick={() => alert('Clicked!')}
       />
-      <SettingsListItemMock
-        to="/dashboard/setting/about"
+      <SettingsListItem
         icon={<AboutIcon width={24} height={24} />}
         text="About"
         endIcon={<IconEnd size={12} />}
+        onClick={() => alert('Clicked!')}
+      />
+      <SettingsListItem
+        icon={<SecurityIcon width={24} height={24} />}
+        text="Logout"
+        onClick={() => alert('Logout clicked!')}
       />
     </div>
   ),
   parameters: {
     docs: {
       description: {
-        story: 'Multiple list items to show how they look together.',
+        story: 'Multiple list items displayed together.',
       },
     },
   },

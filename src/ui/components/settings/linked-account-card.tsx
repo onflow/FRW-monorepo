@@ -13,14 +13,12 @@ import React from 'react';
 import { type WalletAccount } from '@/shared/types/wallet-types';
 import { LinkIcon } from '@/ui/assets/icons/LinkIcon';
 import { EditIcon } from '@/ui/assets/icons/settings/Edit';
-import { useNftCatalogCollections } from '@/ui/hooks/useNftHook';
 import {
   COLOR_DARKMODE_BACKGROUND_CARDS_1A1A1A,
   COLOR_DARKMODE_TEXT_PRIMARY_FFFFFF,
   COLOR_DARKMODE_TEXT_SECONDARY_B3B3B3,
   COLOR_GREY_ICONS_767676,
 } from '@/ui/style/color';
-import { formatAddress } from '@/ui/utils';
 
 import { AccountAvatar } from '../account/account-avatar';
 
