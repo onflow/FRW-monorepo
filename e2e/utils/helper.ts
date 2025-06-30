@@ -111,6 +111,11 @@ export const fillInPassword = async ({ page, password }) => {
   // Handle both create a password and confirm your password
   let filledAtLeastOneField = false;
 
+  if (await page.getByPlaceholder('Password').first().isVisible()) {
+    await page.getByPlaceholder('Password').first().clear();
+    await page.getByPlaceholder('Password').first().fill(password);
+    filledAtLeastOneField = true;
+  }
   if (await page.getByPlaceholder('Enter your password').isVisible()) {
     await page.getByPlaceholder('Enter your password').clear();
     await page.getByPlaceholder('Enter your password').fill(password);
