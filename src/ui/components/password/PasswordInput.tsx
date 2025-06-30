@@ -11,7 +11,7 @@ import {
   useTheme,
   Collapse,
 } from '@mui/material';
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import zxcvbn from 'zxcvbn';
 
 import { PasswordHelperText } from './PasswordHelperText';
@@ -73,8 +73,8 @@ interface PasswordInputProps {
   errorText?: string;
   autoFocus?: boolean;
   showIndicator?: boolean;
-  showPassword: boolean;
-  setShowPassword?: (visible: boolean) => void;
+  showPassword?: boolean;
+  setShowPassword?: (func: (prev: boolean) => boolean) => void;
   sx?: object;
   endAdornment?: React.ReactNode;
 }
@@ -88,19 +88,29 @@ export const PasswordInput = ({
   helperText = undefined,
   errorText = undefined,
   autoFocus = false,
-  showPassword: isVisible,
-  setShowPassword: setVisible = () => {},
+  showPassword,
+  setShowPassword,
   showIndicator = false,
   sx,
   endAdornment,
 }: PasswordInputProps) => {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const [showPasswordState, setShowPasswordState] = useState(false);
+  const isVisible = showPassword === undefined ? showPasswordState : showPassword;
+
+  const handleSetShowPassword = useCallback(() => {
+    if (setShowPassword) {
+      setShowPassword((prev) => !prev);
+    } else {
+      setShowPasswordState((prev) => !prev);
+    }
+  }, [setShowPassword, setShowPasswordState]);
 
   const defaultEndAdornment = (
     <InputAdornment position="end">
       {!isSmallScreen && value && showIndicator && <PasswordIndicator value={value} />}
-      <IconButton onClick={() => setVisible(!isVisible)}>
+      <IconButton onClick={handleSetShowPassword}>
         {isVisible ? <VisibilityOffIcon /> : <VisibilityIcon />}
       </IconButton>
     </InputAdornment>
