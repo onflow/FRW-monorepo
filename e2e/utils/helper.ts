@@ -126,6 +126,9 @@ export const fillInPassword = async ({ page, password }) => {
     await page.getByPlaceholder('Confirm your password').fill(password);
     filledAtLeastOneField = true;
   }
+  if (await page.getByRole('checkbox', { name: /.*agree to Flow Wallet.*/ }).isVisible()) {
+    await page.getByRole('checkbox', { name: /.*agree to Flow Wallet.*/ }).click();
+  }
   // Make sure we filled at least one field
   expect(filledAtLeastOneField).toBe(true);
 };
