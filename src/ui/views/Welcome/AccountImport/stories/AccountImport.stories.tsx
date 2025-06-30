@@ -2,6 +2,7 @@ import { Box } from '@mui/material';
 import type { Meta, StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 import { fn } from 'storybook/test';
+import { withRouter } from 'storybook-addon-remix-react-router';
 
 import { useWallet as useWalletMock } from '@/ui/utils/WalletContext.mock';
 
@@ -11,6 +12,7 @@ const meta = {
   title: 'views/Welcome/AccountImport',
   component: AccountImport,
   decorators: [
+    withRouter,
     (Story) => {
       useWalletMock.mockReset();
       useWalletMock.mockResolvedValue({
