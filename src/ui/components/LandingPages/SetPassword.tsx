@@ -118,39 +118,37 @@ const SetPassword: React.FC<SetPasswordProps> = ({ onSubmit, subtitle = '', isLo
             my: '32px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '16px',
+            gap: '8px',
           }}
           onSubmit={handleSubmit}
           target="_self"
         >
-          <FormGroup sx={{ width: '100%' }}>
-            <PasswordInput
-              value={password}
-              onChange={setPassword}
-              showPassword={isPasswordVisible}
-              setShowPassword={setPasswordVisible}
-              autoFocus={true}
-              helperText={helperText}
-              errorText={errorText}
-              placeholder={
-                isLogin
-                  ? chrome.i18n.getMessage('Confirm__your__password')
-                  : chrome.i18n.getMessage('Create__a__password')
-              }
-            />
+          <PasswordInput
+            value={password}
+            onChange={setPassword}
+            showPassword={isPasswordVisible}
+            setShowPassword={setPasswordVisible}
+            autoFocus={true}
+            helperText={helperText}
+            errorText={errorText}
+            placeholder={
+              isLogin
+                ? chrome.i18n.getMessage('Confirm__your__password')
+                : chrome.i18n.getMessage('Create__a__password')
+            }
+          />
 
-            {!isLogin && (
-              <PasswordInput
-                value={confirmPassword}
-                onChange={setConfirmPassword}
-                showPassword={isConfirmPasswordVisible}
-                setShowPassword={setConfirmPasswordVisible}
-                helperText={helperMatch}
-                errorText={errorMatch}
-                placeholder={chrome.i18n.getMessage('Confirm__your__password')}
-              />
-            )}
-          </FormGroup>
+          {!isLogin && (
+            <PasswordInput
+              value={confirmPassword}
+              onChange={setConfirmPassword}
+              showPassword={isConfirmPasswordVisible}
+              setShowPassword={setConfirmPasswordVisible}
+              helperText={helperMatch}
+              errorText={errorMatch}
+              placeholder={chrome.i18n.getMessage('Confirm__your__password')}
+            />
+          )}
 
           {showTerms && <TermsCheckbox onChange={setCheck} />}
 
