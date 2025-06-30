@@ -97,6 +97,7 @@ export const PasswordInput = ({
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const [showPasswordState, setShowPasswordState] = useState(false);
+  const [isTouched, setIsTouched] = useState(false);
   const isVisible = showPassword === undefined ? showPasswordState : showPassword;
 
   const handleSetShowPassword = useCallback(() => {
@@ -106,6 +107,10 @@ export const PasswordInput = ({
       setShowPasswordState((prev) => !prev);
     }
   }, [setShowPassword, setShowPasswordState]);
+
+  const handleBlur = () => {
+    setIsTouched(true);
+  };
 
   const defaultEndAdornment = (
     <InputAdornment position="end">
@@ -154,9 +159,10 @@ export const PasswordInput = ({
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={onKeyDown}
         endAdornment={endAdornment || defaultEndAdornment}
+        onBlur={handleBlur}
       />
       <Box height="24px">
-        <Collapse in={!!errorText || !!helperText} orientation="vertical">
+        <Collapse in={isTouched && (!!errorText || !!helperText)} orientation="vertical">
           <PasswordHelperText
             message={errorText || helperText || ''}
             variant={!!errorText ? 'error' : 'success'}
