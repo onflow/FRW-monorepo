@@ -1,4 +1,4 @@
-import { Box, Collapse, Slide } from '@mui/material';
+import { Box, Slide } from '@mui/material';
 import React, { useRef } from 'react';
 
 const SlideRelative = React.forwardRef(
@@ -14,9 +14,15 @@ const SlideRelative = React.forwardRef(
     return (
       <>
         <Box position="relative" ref={containerRef} />
-        <Collapse in={!!show} orientation="vertical">
+        <Slide
+          in={!!show}
+          direction={direction}
+          container={containerRef.current}
+          mountOnEnter
+          unmountOnExit
+        >
           <Box ref={ref}>{children}</Box>
-        </Collapse>
+        </Slide>
       </>
     );
   }

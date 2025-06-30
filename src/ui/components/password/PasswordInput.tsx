@@ -9,11 +9,10 @@ import {
   IconButton,
   useMediaQuery,
   useTheme,
+  Collapse,
 } from '@mui/material';
 import React from 'react';
 import zxcvbn from 'zxcvbn';
-
-import SlideRelative from '@/ui/components/SlideRelative';
 
 import { PasswordHelperText } from './PasswordHelperText';
 // Password Indicator Component
@@ -77,7 +76,6 @@ interface PasswordInputProps {
   showPassword: boolean;
   setShowPassword?: (visible: boolean) => void;
   sx?: object;
-  visibilitySx?: object;
   endAdornment?: React.ReactNode;
 }
 
@@ -94,7 +92,6 @@ export const PasswordInput = ({
   setShowPassword: setVisible = () => {},
   showIndicator = false,
   sx,
-  visibilitySx,
   endAdornment,
 }: PasswordInputProps) => {
   const theme = useTheme();
@@ -104,7 +101,7 @@ export const PasswordInput = ({
     <InputAdornment position="end">
       {!isSmallScreen && value && showIndicator && <PasswordIndicator value={value} />}
       <IconButton onClick={() => setVisible(!isVisible)}>
-        {isVisible ? <VisibilityOffIcon sx={visibilitySx} /> : <VisibilityIcon sx={visibilitySx} />}
+        {isVisible ? <VisibilityOffIcon /> : <VisibilityIcon />}
       </IconButton>
     </InputAdornment>
   );
@@ -119,22 +116,26 @@ export const PasswordInput = ({
       <Input
         type={isVisible ? 'text' : 'password'}
         value={value}
-        sx={
-          sx || {
-            height: '64px',
-            width: '100%',
-            padding: '16px',
-            zIndex: '999',
-            backgroundColor: '#282828',
-            border: '2px solid #4C4C4C',
-            borderRadius: '12px',
-            boxSizing: 'border-box',
-            '&.Mui-focused': {
-              border: '2px solid #FAFAFA',
-              boxShadow: '0px 8px 12px 4px rgba(76, 76, 76, 0.24)',
-            },
-          }
-        }
+        inputProps={{
+          'aria-label': 'password',
+          'data-testid': 'password-input',
+        }}
+        sx={{
+          height: '64px',
+          width: '100%',
+          padding: '16px',
+          zIndex: '999',
+          backgroundColor: '#282828',
+          border: '2px solid #4C4C4C',
+          borderRadius: '12px',
+          boxSizing: 'border-box',
+          '&.Mui-focused': {
+            border: '2px solid #FAFAFA',
+            boxShadow: '0px 8px 12px 4px rgba(76, 76, 76, 0.24)',
+          },
+          // Make sure base sx is applied
+          ...sx,
+        }}
         readOnly={readOnly}
         autoFocus={autoFocus}
         placeholder={placeholder}
@@ -145,12 +146,12 @@ export const PasswordInput = ({
         endAdornment={endAdornment || defaultEndAdornment}
       />
       <Box height="24px">
-        <SlideRelative direction="down" show={!!errorText || !!helperText}>
+        <Collapse in={!!errorText || !!helperText} orientation="vertical">
           <PasswordHelperText
             message={errorText || helperText || ''}
             variant={!!errorText ? 'error' : 'success'}
           />
-        </SlideRelative>
+        </Collapse>
       </Box>
     </Box>
   );
