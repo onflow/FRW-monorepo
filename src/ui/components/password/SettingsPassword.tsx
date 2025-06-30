@@ -4,10 +4,8 @@ import { useHistory } from 'react-router-dom';
 
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import { LLHeader } from '@/ui/components/LLHeader';
-
-import { useWallet } from '../../utils';
-
-import { PasswordInput } from './PasswordInput';
+import { PasswordInput } from '@/ui/components/password/PasswordInput';
+import { useWallet } from '@/ui/utils/WalletContext';
 
 type PassMatch = 'match' | 'no-match' | 'unverified';
 const SettingsPassword = ({
