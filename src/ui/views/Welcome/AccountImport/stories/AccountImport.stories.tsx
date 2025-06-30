@@ -4,7 +4,7 @@ import React from 'react';
 import { fn } from 'storybook/test';
 
 import { Link as LinkMock } from '@/stories/react-router-dom.mock';
-import { useWallet as useWalletMock } from '@/stories/wallet-context.mock';
+import { useWallet as useWalletMock } from '@/ui/utils/WalletContext.mock';
 
 import AccountImport from '../index';
 
@@ -16,7 +16,7 @@ const meta = {
       LinkMock.mockReset();
       LinkMock.mockImplementation((props: any): React.ReactNode => <Box {...props} />);
       useWalletMock.mockReset();
-      useWalletMock.mockImplementation(() => ({
+      useWalletMock.mockResolvedValue({
         openapi: {
           checkImport: fn().mockResolvedValue({ status: 200 }),
         },
@@ -24,7 +24,7 @@ const meta = {
         importProfileUsingPrivateKey: fn(),
         importProfileUsingMnemonic: fn(),
         isBooted: fn().mockResolvedValue(false),
-      }));
+      });
       return (
         <Box
           sx={{

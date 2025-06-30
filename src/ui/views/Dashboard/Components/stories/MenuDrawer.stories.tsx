@@ -3,25 +3,21 @@ import React from 'react';
 
 import emojisJson from '@/background/utils/emoji.json';
 const { emojis } = emojisJson as { emojis: Emoji[] };
+import { type FeatureFlagKey } from '@/shared/types/feature-types';
 import { MAINNET_CHAIN_ID, type UserInfoResponse } from '@/shared/types/network-types';
 import { type Emoji, type WalletAccount } from '@/shared/types/wallet-types';
-import { useProfiles as importedMockUseProfiles } from '@/stories/ui-hooks.mock';
 import {
   useChildAccounts as importedMockUseChildAccounts,
   useEvmAccount as importedMockUseEvmAccount,
-} from '@/stories/use-account-hooks.mock';
-import { useNftCatalogCollections as importedMockUseNftCatalogCollections } from '@/stories/use-nft-hooks.mock';
-import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
+} from '@/ui/hooks/use-account-hooks.mock';
+import { useFeatureFlag as importedMockUseFeatureFlag } from '@/ui/hooks/use-feature-flags.mock';
+import { useNftCatalogCollections as importedMockUseNftCatalogCollections } from '@/ui/hooks/useNftHook.mock';
+import {
+  useProfiles as importedMockUseProfiles,
+  USE_PROFILES_MOCK,
+} from '@/ui/hooks/useProfileHook.mock';
 
 import MenuDrawer from '../MenuDrawer';
-
-// Debug wrapper component
-const MenuDrawerWithDebug = (props: any) => {
-  const canCreateNewAccount = useFeatureFlag('create_new_account');
-  const canImportExistingAccount = useFeatureFlag('import_existing_account');
-
-  return <MenuDrawer {...props} />;
-};
 
 // Mock wallet accounts - aligned with account-listing stories
 const mockMainAccount: WalletAccount = {
@@ -139,8 +135,7 @@ const mockWalletListWithExtra: WalletAccount[] = [
 
 const meta: Meta<typeof MenuDrawer> = {
   title: 'Views/Dashboard/MenuDrawer',
-  tags: ['autodocs'],
-  component: MenuDrawerWithDebug,
+  component: MenuDrawer,
   decorators: [
     (Story, context) => {
       // Reset mocks
@@ -148,25 +143,13 @@ const meta: Meta<typeof MenuDrawer> = {
       importedMockUseEvmAccount.mockReset();
       importedMockUseNftCatalogCollections.mockReset();
       importedMockUseProfiles.mockReset();
+      importedMockUseFeatureFlag.mockReset();
       const { mockData, pendingTransactions, featureFlags } = context.parameters;
 
       // Set up feature flag mocks
-      if (typeof window !== 'undefined') {
-        const flagsToSet: Record<string, boolean> = {
-          create_new_account: false,
-          import_existing_account: false,
-        };
-
-        if (featureFlags?.canCreateNewAccount) {
-          flagsToSet.create_new_account = true;
-        }
-
-        if (featureFlags?.canImportExistingAccount) {
-          flagsToSet.import_existing_account = true;
-        }
-
-        (window as any).__STORYBOOK_FEATURE_FLAGS__ = flagsToSet;
-      }
+      importedMockUseFeatureFlag.mockImplementation((featureFlag: FeatureFlagKey) => {
+        return featureFlags?.[featureFlag] || false;
+      });
 
       if (mockData) {
         importedMockUseEvmAccount.mockImplementation((_network, address) => {
@@ -181,22 +164,17 @@ const meta: Meta<typeof MenuDrawer> = {
           }
           return [];
         });
-        importedMockUseNftCatalogCollections.mockImplementation((_network, address) => {
-          if (typeof address === 'string' && mockData.nfts) {
-            return [{ count: mockData.nfts[address] }];
-          }
+        importedMockUseNftCatalogCollections.mockImplementation(() => {
           return [];
         });
-        importedMockUseProfiles.mockImplementation(() => {
-          return {
-            pendingAccountTransactions: mockData.pendingAccountTransactions || [],
-          };
+        importedMockUseProfiles.mockReturnValue({
+          ...USE_PROFILES_MOCK,
+          pendingAccountTransactions: pendingTransactions || [],
         });
       } else {
-        importedMockUseProfiles.mockImplementation(() => {
-          return {
-            pendingAccountTransactions: [],
-          };
+        importedMockUseProfiles.mockReturnValue({
+          ...USE_PROFILES_MOCK,
+          pendingAccountTransactions: [],
         });
       }
 
@@ -274,48 +252,11 @@ export const Default: Story = {
   },
 };
 
-export const WithAddAccountFlow: Story = {
-  name: 'With Add Account Flow',
+export const EmptyWallet: Story = {
   args: {
     drawer: true,
     userInfo: mockUserInfo,
-    walletList: mockWalletList,
-    activeAccount: mockMainAccount,
-    activeParentAccount: mockMainAccount,
-    network: 'mainnet',
-    modeOn: false,
-    mainAddressLoading: false,
-    noAddress: false,
-    toggleDrawer: () => {},
-    togglePop: () => {},
-  },
-  parameters: {
-    pendingTransactions: [mockPendingTransaction],
-    featureFlags: {
-      canCreateNewAccount: true,
-    },
-    mockData: createMockData({
-      [mockMainAccount.address]: {
-        evm: mockEvmAccount,
-        children: [mockChildAccount1],
-      },
-      [mockMainAccount2.address]: {
-        evm: mockEvmAccount2,
-        children: [],
-      },
-      [mockChildAccount1.address]: {
-        nfts: 65000,
-      },
-    }),
-  },
-};
-
-export const EmptyWalletState: Story = {
-  name: 'Empty Wallet',
-  args: {
-    drawer: true,
-    userInfo: mockUserInfo,
-    walletList: [],
+    walletList: [mockMainAccount],
     activeAccount: mockMainAccount,
     activeParentAccount: mockMainAccount,
     network: 'mainnet',
@@ -346,42 +287,6 @@ export const Loading: Story = {
   },
   parameters: {
     mockData: createMockData({}),
-  },
-};
-
-export const FullAccountHierarchy: Story = {
-  name: 'Full Account Hierarchy with Pending',
-  args: {
-    drawer: true,
-    userInfo: mockUserInfo,
-    walletList: mockWalletListWithExtra,
-    activeAccount: mockMainAccount,
-    activeParentAccount: mockMainAccount,
-    network: 'mainnet',
-    modeOn: false,
-    mainAddressLoading: false,
-    noAddress: false,
-    toggleDrawer: () => {},
-    togglePop: () => {},
-  },
-  parameters: {
-    pendingTransactions: [mockPendingTransaction],
-    mockData: createMockData({
-      [mockMainAccount.address]: {
-        evm: mockEvmAccount,
-        children: [mockChildAccount1, mockChildAccount2],
-      },
-      [mockMainAccount2.address]: {
-        evm: mockEvmAccount2,
-        children: [],
-      },
-      [mockChildAccount1.address]: {
-        nfts: 65000,
-      },
-      [mockChildAccount2.address]: {
-        nfts: 12,
-      },
-    }),
   },
 };
 
@@ -521,8 +426,42 @@ export const Closed: Story = {
   },
 };
 
-export const InteractiveDemo: Story = {
-  name: 'Add account feature flags all true Popup',
+export const FullAccountHierarchyWithPending: Story = {
+  args: {
+    drawer: true,
+    userInfo: mockUserInfo,
+    walletList: mockWalletListWithExtra,
+    activeAccount: mockMainAccount,
+    activeParentAccount: mockMainAccount,
+    network: 'mainnet',
+    modeOn: false,
+    mainAddressLoading: false,
+    noAddress: false,
+    toggleDrawer: () => {},
+    togglePop: () => {},
+  },
+  parameters: {
+    pendingTransactions: [mockPendingTransaction],
+    mockData: createMockData({
+      [mockMainAccount.address]: {
+        evm: mockEvmAccount,
+        children: [mockChildAccount1, mockChildAccount2],
+      },
+      [mockMainAccount2.address]: {
+        evm: mockEvmAccount2,
+        children: [],
+      },
+      [mockChildAccount1.address]: {
+        nfts: 65000,
+      },
+      [mockChildAccount2.address]: {
+        nfts: 12,
+      },
+    }),
+  },
+};
+
+export const AddAccountFeatureFlagsAllTrue: Story = {
   args: {
     drawer: true,
     userInfo: mockUserInfo,
@@ -538,8 +477,8 @@ export const InteractiveDemo: Story = {
   },
   parameters: {
     featureFlags: {
-      canCreateNewAccount: true,
-      canImportExistingAccount: true,
+      create_new_account: true,
+      import_existing_account: true,
     },
     mockData: createMockData({
       [mockMainAccount.address]: {

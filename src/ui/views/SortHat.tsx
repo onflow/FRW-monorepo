@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Redirect } from 'react-router-dom';
 
+import { useApproval } from '@/ui/hooks/use-approval';
 import Spin from 'ui/components/Spin';
-import { useWallet, getUiType, useApproval } from 'ui/utils';
+import { useWallet, getUiType } from 'ui/utils';
 import { openInternalPageInTab } from 'ui/utils/webapi';
 
 const SortHat = () => {

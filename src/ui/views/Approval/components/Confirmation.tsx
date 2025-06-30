@@ -11,8 +11,10 @@ import {
   LLConnectLoading,
   LLLinkingLoading,
 } from '@/ui/components';
+import { useApproval } from '@/ui/hooks/use-approval';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
-import { useApproval, useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils/WalletContext';
+
 // import { CHAINS_ENUM } from 'consts';
 
 import './github-dark-dimmed.css';

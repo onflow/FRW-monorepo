@@ -2,8 +2,8 @@ import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 import { fn } from 'storybook/test';
 
-import { useWallet as useWalletMock } from '@/stories/wallet-context.mock';
 import PriceCard from '@/ui/components/TokenLists/PriceCard';
+import { useWallet as useWalletMock } from '@/ui/utils/WalletContext.mock';
 
 const meta: Meta<typeof PriceCard> = {
   title: 'Components/TokenLists/PriceCard',
