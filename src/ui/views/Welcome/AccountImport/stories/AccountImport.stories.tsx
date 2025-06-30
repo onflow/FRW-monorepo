@@ -3,18 +3,15 @@ import type { Meta, StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 import { fn } from 'storybook/test';
 
-import { Link as LinkMock } from '@/stories/react-router-dom.mock';
 import { useWallet as useWalletMock } from '@/ui/utils/WalletContext.mock';
 
 import AccountImport from '../index';
 
 const meta = {
-  title: 'View/Welcome/AccountImport',
+  title: 'views/Welcome/AccountImport',
   component: AccountImport,
   decorators: [
     (Story) => {
-      LinkMock.mockReset();
-      LinkMock.mockImplementation((props: any): React.ReactNode => <Box {...props} />);
       useWalletMock.mockReset();
       useWalletMock.mockResolvedValue({
         openapi: {

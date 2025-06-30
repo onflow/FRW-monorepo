@@ -2,9 +2,9 @@ import { Box } from '@mui/material';
 import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 import { fn } from 'storybook/test';
+import { withRouter } from 'storybook-addon-remix-react-router';
 
 import { type ActiveAccountType } from '@/shared/types/wallet-types';
-import { useNavigate as importedMockUseNavigate } from '@/stories/react-router-dom.mock';
 import { useNetwork as importedMockUseNetwork } from '@/ui/hooks/useNetworkHook.mock';
 import {
   useProfiles as importedMockUseProfiles,
@@ -17,13 +17,10 @@ export default {
   title: 'views/Deposit',
   component: Deposit,
   decorators: [
+    withRouter,
     (Story, context) => {
       importedMockUseNetwork.mockReset();
       importedMockUseProfiles.mockReset();
-      importedMockUseNavigate.mockReset();
-      importedMockUseNavigate.mockImplementation(() => {
-        return fn();
-      });
       const { address, network, activeAccountType } = context.args as {
         address: string;
         network: string;
