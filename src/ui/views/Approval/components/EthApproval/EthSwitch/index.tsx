@@ -2,7 +2,7 @@ import { Stack, Box, Typography, Divider, CardMedia } from '@mui/material';
 import { WalletUtils } from '@onflow/fcl';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useHistory } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router';
 
 import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
 import { useApproval } from '@/ui/hooks/use-approval';
@@ -20,11 +20,9 @@ interface ConnectProps {
 }
 
 const EthSwitch = ({ params: { origin, target } }: ConnectProps) => {
-  const { state } = useLocation<{
-    showChainsModal?: boolean;
-  }>();
+  const { state } = useLocation();
   const { showChainsModal = false } = state ?? {};
-  const history = useHistory();
+  const navigate = useNavigate();
   const [, resolveApproval, rejectApproval] = useApproval();
   const { t } = useTranslation();
   const wallet = useWallet();

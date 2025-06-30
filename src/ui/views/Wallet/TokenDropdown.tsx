@@ -1,12 +1,12 @@
 import { Box, IconButton, Menu, MenuItem } from '@mui/material';
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import IconCreate from '@/ui/components/iconfont/IconCreate';
 
 const TokenDropdown = () => {
   const [anchorEl, setAnchorEl] = useState(null);
-  const history = useHistory();
+  const navigate = useNavigate();
 
   // Open the dropdown menu
   const handleMenuOpen = (event) => {
@@ -20,13 +20,13 @@ const TokenDropdown = () => {
 
   // Navigate to Token List
   const goToTokenList = () => {
-    history.push('dashboard/tokenList');
+    navigate('dashboard/tokenList');
     handleMenuClose();
   };
 
   // Navigate to Token List
   const goToCustom = () => {
-    history.push('dashboard/tokenList');
+    navigate('dashboard/tokenList');
     handleMenuClose();
   };
 

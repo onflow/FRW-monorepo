@@ -2,7 +2,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Box, Typography, Drawer, Button, IconButton } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { type NFTModelV2 } from '@/shared/types/network-types';
 import { consoleError } from '@/shared/utils/console-log';
@@ -25,7 +25,7 @@ const AddNFTConfirmation = ({
   handleAddBtnClicked,
 }: AddNFTConfirmationProps) => {
   const wallet = useWallet();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [sending, setSending] = useState(false);
   const [, setTid] = useState<string>('');
 
@@ -48,7 +48,7 @@ const AddNFTConfirmation = ({
         );
         setSending(false);
         setTid(txId);
-        history.push(`/dashboard?activity=1&txId=${txId}`);
+        navigate(`/dashboard?activity=1&txId=${txId}`);
       }
       handleAddBtnClicked();
     } catch (err) {

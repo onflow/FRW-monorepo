@@ -2,7 +2,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Box, Typography, Drawer, Button, IconButton, CircularProgress } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { type TokenInfo } from '@/shared/types/token-info';
 import IconPlus from '@/ui/components/iconfont/IconPlus';
@@ -18,7 +18,7 @@ interface AddTokenConfirmationProps {
 
 const AddTokenConfirmation = (props: AddTokenConfirmationProps) => {
   const wallet = useWallet();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [sending, setSending] = useState(false);
   // const [tid, setTid] = useState<string>('');
 
@@ -41,7 +41,7 @@ const AddTokenConfirmation = (props: AddTokenConfirmationProps) => {
         props.handleAddBtnClicked();
         await wallet.setDashIndex(0);
         setSending(false);
-        history.push(`/dashboard?activity=1&txId=${txId}`);
+        navigate(`/dashboard?activity=1&txId=${txId}`);
       }
     } catch (err) {
       setSending(false);

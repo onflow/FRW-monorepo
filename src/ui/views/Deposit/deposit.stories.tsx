@@ -4,7 +4,7 @@ import React from 'react';
 import { fn } from 'storybook/test';
 
 import { type ActiveAccountType } from '@/shared/types/wallet-types';
-import { useHistory as importedMockUseHistory } from '@/stories/react-router-dom.mock';
+import { useNavigate as importedMockUseNavigate } from '@/stories/react-router-dom.mock';
 import { useNetwork as importedMockUseNetwork } from '@/ui/hooks/useNetworkHook.mock';
 import {
   useProfiles as importedMockUseProfiles,
@@ -20,11 +20,9 @@ export default {
     (Story, context) => {
       importedMockUseNetwork.mockReset();
       importedMockUseProfiles.mockReset();
-      importedMockUseHistory.mockReset();
-      importedMockUseHistory.mockImplementation(() => {
-        return {
-          goBack: fn(),
-        };
+      importedMockUseNavigate.mockReset();
+      importedMockUseNavigate.mockImplementation(() => {
+        return fn();
       });
       const { address, network, activeAccountType } = context.args as {
         address: string;

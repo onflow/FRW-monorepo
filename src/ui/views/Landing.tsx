@@ -1,5 +1,5 @@
 import React from 'react';
-import { Switch, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router';
 
 import Forgot from './Forgot';
 import Recover from './Forgot/Recover';
@@ -18,16 +18,15 @@ const LogPageView = () => {
 export const Landing: React.FC = () => {
   return (
     <div style={{ display: 'contents' }}>
-      <Route path="/" component={LogPageView} />
-      <Switch>
-        <Route exact path="/welcome" component={Welcome} />
-        <Route exact path="/welcome/register" component={Register} />
-        <Route exact path="/welcome/accountimport" component={AccountImport} />
-        <Route exact path="/welcome/sync" component={Sync} />
-        <Route exact path="/forgot" component={Forgot} />
-        <Route exact path="/forgot/recover" component={Recover} />
-        <Route exact path="/forgot/reset" component={Reset} />
-      </Switch>
+      <Routes>
+        <Route path="/welcome" element={<Welcome />} />
+        <Route path="/welcome/register" element={<Register />} />
+        <Route path="/welcome/accountimport" element={<AccountImport />} />
+        <Route path="/welcome/sync" element={<Sync />} />
+        <Route path="/forgot" element={<Forgot />} />
+        <Route path="/forgot/recover" element={<Recover />} />
+        <Route path="/forgot/reset" element={<Reset />} />
+      </Routes>
     </div>
   );
 };

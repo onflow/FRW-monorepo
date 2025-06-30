@@ -1,6 +1,6 @@
 import { Typography, Box, ButtonBase, Skeleton } from '@mui/material';
 import React, { useMemo } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import {
   type CustomFungibleTokenInfo,
@@ -33,7 +33,7 @@ const TokenInfoCard = ({
   tokenId: string;
   setIsOnRamp: (isOnRamp: boolean) => void;
 }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const { coins } = useCoins();
   const currency = useCurrency();
 
@@ -46,9 +46,9 @@ const TokenInfoCard = ({
 
   const toSend = () => {
     if (tokenInfo && 'symbol' in tokenInfo) {
-      history.push(`/dashboard/token/${tokenInfo.symbol}/send`);
+      navigate(`/dashboard/token/${tokenInfo.symbol}/send`);
     } else {
-      history.push(`/dashboard/token/${tokenInfo?.address}/send`);
+      navigate(`/dashboard/token/${tokenInfo?.address}/send`);
     }
   };
 
@@ -223,7 +223,7 @@ const TokenInfoCard = ({
           )}
           <IconButton
             messageKey="Receive"
-            onClick={() => history.push('/dashboard/wallet/deposit')}
+            onClick={() => navigate('/dashboard/wallet/deposit')}
             icon={receiveIcon}
             customSx={{ width: '42px', height: '42px' }}
           />

@@ -1,7 +1,7 @@
 import { Box, IconButton, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import React, { useEffect, useState, useCallback } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router';
 
 import { pubKeyTupleToAccountKey } from '@/background/utils/account-key';
 import { consoleError } from '@/shared/utils/console-log';
@@ -10,13 +10,9 @@ import IconCopy from '@/ui/components/iconfont/IconCopy';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from 'ui/utils';
 
-interface State {
-  password: string;
-}
-
 const Keydetail = () => {
-  const location = useLocation<State>();
-  const history = useHistory();
+  const location = useLocation();
+  const navigate = useNavigate();
   const wallet = useWallet();
   const { parentWallet } = useProfiles();
   const [privatekey, setKey] = useState<string | undefined>(undefined);
@@ -52,12 +48,12 @@ const Keydetail = () => {
 
   useEffect(() => {
     if (!location.state?.password || !location.state) {
-      history.push('/dashboard/nested/privatekeypassword');
+      navigate('/dashboard/nested/privatekeypassword');
     }
     if (parentWallet?.publicKey) {
       verify();
     }
-  }, [verify, parentWallet?.publicKey, history, location.state]);
+  }, [verify, parentWallet?.publicKey, navigate, location.state]);
 
   const CredentialBox = ({ data }: { data?: string }) => {
     return (

@@ -3,7 +3,7 @@ import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import { Typography, IconButton, Box, Avatar, Switch } from '@mui/material';
 import Button from '@mui/material/Button';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { openIndexPage } from '@/background/webapi/tab';
 import { consoleError } from '@/shared/utils/console-log';
@@ -16,7 +16,7 @@ import { useWallet } from 'ui/utils';
 import EditAccount from './EditAccount';
 
 const AccountSettings = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const wallet = useWallet();
   const { profileIds, userInfo, walletList } = useProfiles();
 
@@ -109,7 +109,7 @@ const AccountSettings = () => {
       handleCloseRemoveModal();
       if (profileIds && profileIds.length > 1) {
         wallet.lockWallet().then(() => {
-          history.push('/unlock');
+          navigate('/unlock');
         });
       } else {
         wallet.signOutWallet().then(() => {
@@ -152,7 +152,7 @@ const AccountSettings = () => {
           px: '16px',
         }}
       >
-        <IconButton onClick={() => history.push('/dashboard/setting')}>
+        <IconButton onClick={() => navigate('/dashboard/setting')}>
           <ArrowBackIcon fontSize="medium" sx={{ color: 'icon.navi', cursor: 'pointer' }} />
         </IconButton>
         <Typography

@@ -18,7 +18,7 @@ import {
   Checkbox,
 } from '@mui/material';
 import React, { useState, useMemo } from 'react';
-import { useHistory, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 
 import { type NftCollection } from '@/shared/types/network-types';
 import { type ChildAccountNFTs, type ChildAccountNFTsStore } from '@/shared/utils/cache-data-keys';
@@ -270,7 +270,7 @@ const FtContent = ({ availableFt }: { availableFt: TicketToken[] | undefined }) 
 const LinkedDetail = () => {
   const location = useParams();
 
-  const history = useHistory();
+  const navigate = useNavigate();
   const [unlinking, setUnlinking] = useState<boolean>(false);
   const [isEdit, setEdit] = useState<boolean>(false);
   const [hideEmpty, setHide] = useState<boolean>(false);
@@ -360,13 +360,15 @@ const LinkedDetail = () => {
     localStorage.setItem('nftLinkedState', JSON.stringify(state));
     const storagePath = data.path.storage_path.split('/')[2];
     if (data.total) {
-      history.push({
-        pathname: `/dashboard/nested/linked/collectiondetail/${childAccountAddress + '.' + storagePath + '.' + data.total + '.linked'}`,
-        state: {
-          collection: data,
-          ownerAddress: childAccountAddress,
-        },
-      });
+      navigate(
+        `/dashboard/nested/linked/collectiondetail/${childAccountAddress + '.' + storagePath + '.' + data.total + '.linked'}`,
+        {
+          state: {
+            collection: data,
+            ownerAddress: childAccountAddress,
+          },
+        }
+      );
     }
   };
 

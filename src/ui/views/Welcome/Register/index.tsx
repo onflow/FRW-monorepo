@@ -1,6 +1,6 @@
 import { Box } from '@mui/material';
 import React, { useCallback, useEffect, useReducer } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import AllSet from '@/ui/components/LandingPages/AllSet';
 import GoogleBackup from '@/ui/components/LandingPages/GoogleBackup';
@@ -18,7 +18,7 @@ import {
 import { useWallet } from 'ui/utils';
 
 const Register = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const usewallet = useWallet();
 
   const [state, dispatch] = useReducer(registerReducer, INITIAL_REGISTER_STATE, initRegisterState);
@@ -38,13 +38,13 @@ const Register = () => {
       .getCurrentAccount()
       .then((res) => {
         if (res) {
-          history.push('/');
+          navigate('/');
         }
       })
       .catch(() => {
         return;
       });
-  }, [usewallet, history]);
+  }, [usewallet, navigate]);
 
   const submitPassword = useCallback(
     async (newPassword: string) => {
@@ -64,7 +64,7 @@ const Register = () => {
 
   const goBack = () => {
     if (activeTab === STEPS.USERNAME || activeTab === STEPS.ALL_SET) {
-      history.goBack();
+      navigate(-1);
     } else {
       dispatch({ type: 'GO_BACK' });
     }

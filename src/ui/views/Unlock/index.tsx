@@ -1,7 +1,7 @@
 // import { useTranslation } from 'react-i18next';
 import { Input, Typography, Box, FormControl, CircularProgress } from '@mui/material';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { consoleError } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
@@ -36,7 +36,7 @@ const UnexpectedError: React.FC = () => (
 const Unlock = () => {
   const wallet = useWallet();
   const walletIsLoaded = useWalletLoaded();
-  const history = useHistory();
+  const navigate = useNavigate();
   const inputEl = useRef<any>(null);
   // const { t } = useTranslation();
   const [showPasswordError, setShowPasswordError] = useState(false);
@@ -67,14 +67,14 @@ const Unlock = () => {
     try {
       setUnlocking(true);
       await wallet.unlock(password);
-      history.replace('/');
+      navigate('/', { replace: true });
     } catch (err) {
       consoleError('failed to unlock wallet', err);
       setShowUnexpectedError(true);
     } finally {
       setUnlocking(false);
     }
-  }, [wallet, history, password]);
+  }, [wallet, navigate, password]);
 
   const handleKeyDown = useCallback(
     (event) => {

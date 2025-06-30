@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import CircularProgress, { circularProgressClasses } from '@mui/material/CircularProgress';
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import type { UserInfoResponse } from '@/shared/types/network-types';
 import {

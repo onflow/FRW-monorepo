@@ -19,9 +19,9 @@ import {
 import Grid from '@mui/material/Grid';
 import { StyledEngineProvider } from '@mui/material/styles';
 import React, { useState, useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
-// import { useHistory } from 'react-router-dom';
+// import { useNavigate } from 'react-router';
 import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
 import VerifiedIcon from '@/ui/assets/svg/verfied-check.svg';
 import IconCreate from '@/ui/components/iconfont/IconCreate';
@@ -30,7 +30,7 @@ import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useCoins } from 'ui/hooks/useCoinHook';
 
 const ManageToken = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const { coins, tokenFilter, updateTokenFilter } = useCoins();
   const { activeAccountType } = useProfiles();
   const [keyword, setKeyword] = useState('');
@@ -82,7 +82,7 @@ const ManageToken = () => {
             }}
           >
             <Grid size={1}>
-              <IconButton onClick={history.goBack}>
+              <IconButton onClick={() => navigate(-1)}>
                 <ArrowBackIcon sx={{ color: 'icon.navi' }} />
               </IconButton>
             </Grid>
@@ -93,13 +93,13 @@ const ManageToken = () => {
             </Grid>
             {activeAccountType === 'evm' ? (
               <Grid size={1} sx={{ pl: 0 }}>
-                <IconButton onClick={() => history.push('/dashboard/addcustomevm')}>
+                <IconButton onClick={() => navigate('/dashboard/addcustomevm')}>
                   <IconCreate size={16} color="#787878" />
                 </IconButton>
               </Grid>
             ) : (
               <Grid size={1} sx={{ pl: 0 }}>
-                <IconButton onClick={() => history.push('/dashboard/tokenList')}>
+                <IconButton onClick={() => navigate('/dashboard/tokenList')}>
                   <IconCreate size={16} color="#787878" />
                 </IconButton>
               </Grid>

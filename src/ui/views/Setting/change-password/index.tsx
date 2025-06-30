@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import Box from '@mui/material/Box';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { consoleError } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
@@ -47,7 +47,7 @@ const ChangePassword = () => {
   const [showGooglePermissionDialog, setShowGooglePermissionDialog] = useState(false);
   const [showProfileBackupDialog, setShowProfileBackupDialog] = useState(false);
   // No need to maintain selectedProfiles in state since we immediately use them
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const verify = useCallback(async () => {
     try {
@@ -149,7 +149,7 @@ const ChangePassword = () => {
           await wallet
             .lockWallet()
             .then(() => {
-              history.push('/unlock');
+              navigate('/unlock');
             })
             .catch((error) => {
               consoleError('Error locking wallet:', error);
@@ -172,7 +172,7 @@ const ChangePassword = () => {
         }
       }
     },
-    [confirmCurrentPassword, confirmPassword, wallet, history, error]
+    [confirmCurrentPassword, confirmPassword, wallet, navigate, error]
   );
 
   const changePasswordWithBackups = useCallback(
@@ -201,7 +201,7 @@ const ChangePassword = () => {
           await wallet
             .lockWallet()
             .then(() => {
-              history.push('/unlock');
+              navigate('/unlock');
             })
             .catch((error) => {
               consoleError('Error locking wallet:', error);
@@ -230,7 +230,7 @@ const ChangePassword = () => {
         setStatusMessage('');
       }
     },
-    [confirmCurrentPassword, confirmPassword, wallet, history]
+    [confirmCurrentPassword, confirmPassword, wallet, navigate]
   );
 
   const handleChangePasswordClick = useCallback(async () => {

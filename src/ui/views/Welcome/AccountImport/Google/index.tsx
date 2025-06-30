@@ -1,6 +1,6 @@
 import { Box } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router';
 
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import AllSet from '@/ui/components/LandingPages/AllSet';

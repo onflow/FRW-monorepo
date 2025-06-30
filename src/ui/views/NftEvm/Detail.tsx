@@ -5,7 +5,7 @@ import { Typography, Container, Box, IconButton, Button, CardMedia } from '@mui/
 import { StyledEngineProvider } from '@mui/material/styles';
 import { saveAs } from 'file-saver';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router';
 
 import { type PostMedia, MatchMediaType } from '@/ui/utils/url';
 import fallback from 'ui/assets/image/errorImage.png';
@@ -34,7 +34,7 @@ const Detail = () => {
   };
 
   const location = useLocation();
-  const history = useHistory();
+  const navigate = useNavigate();
   const usewallet = useWallet();
   const [nftDetail, setDetail] = useState<any>(null);
   const [metadata, setMetadata] = useState<any>(null);
@@ -280,11 +280,7 @@ const Detail = () => {
           }}
         >
           <IconButton
-            onClick={() =>
-              history.push({
-                pathname: `/dashboard`,
-              })
-            }
+            onClick={() => navigate(`/dashboard`)}
             sx={{
               borderRadius: '100%',
               margin: '8px',
@@ -444,8 +440,7 @@ const Detail = () => {
                   backdropFilter: 'blur(6px)',
                 }}
                 onClick={() =>
-                  history.push({
-                    pathname: '/dashboard/nftevm/send/',
+                  navigate('/dashboard/nftevm/send/', {
                     state: { nft: nftDetail, media: media, contract: nftDetail },
                   })
                 }

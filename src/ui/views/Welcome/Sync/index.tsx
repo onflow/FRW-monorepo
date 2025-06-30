@@ -5,7 +5,7 @@ import { type SessionTypes } from '@walletconnect/types';
 import * as bip39 from 'bip39';
 import HDWallet from 'ethereum-hdwallet';
 import React, { useCallback, useEffect, useState, useRef } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { isValidFlowAddress, withPrefix } from '@/shared/utils/address';
 import {
@@ -54,7 +54,7 @@ interface DeviceInfoRequest {
 }
 
 const Sync = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const usewallet = useWallet();
   const [activeTab, setActiveTab] = useState<StepType>(STEPS.QR);
   const [mnemonic] = useState(bip39.generateMnemonic());
@@ -82,13 +82,13 @@ const Sync = () => {
       .getCurrentAccount()
       .then((res) => {
         if (res) {
-          history.push('/');
+          navigate('/');
         }
       })
       .catch(() => {
         return;
       });
-  }, [usewallet, history]);
+  }, [usewallet, navigate]);
 
   useEffect(() => {
     loadView();
@@ -337,7 +337,7 @@ const Sync = () => {
         setActiveTab(STEPS.PASSWORD);
         break;
       default:
-        history.goBack();
+        navigate(-1);
     }
   };
 

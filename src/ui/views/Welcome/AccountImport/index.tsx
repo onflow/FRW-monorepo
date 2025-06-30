@@ -1,6 +1,6 @@
 import { Snackbar, Alert, Box } from '@mui/material';
 import React, { useCallback, useEffect, useReducer } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { consoleError } from '@/shared/utils/console-log';
 import AllSet from '@/ui/components/LandingPages/AllSet';
@@ -19,7 +19,7 @@ import Google from './Google';
 import ImportTabs from './ImportTabs';
 
 const AccountImport = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const usewallet = useWallet();
 
   const [state, dispatch] = useReducer(importProfileReducer, INITIAL_IMPORT_STATE);
@@ -43,13 +43,13 @@ const AccountImport = () => {
       .getCurrentAccount()
       .then((res) => {
         if (res) {
-          history.push('/');
+          navigate('/');
         }
       })
       .catch(() => {
         return;
       });
-  }, [usewallet, history]);
+  }, [usewallet, navigate]);
 
   useEffect(() => {
     loadView();
@@ -117,7 +117,7 @@ const AccountImport = () => {
 
   const goBack = () => {
     if (activeTab === IMPORT_STEPS.GOOGLE_BACKUP || activeTab === IMPORT_STEPS.ALL_SET) {
-      history.goBack();
+      navigate(-1);
       return;
     }
     dispatch({ type: 'GO_BACK' });

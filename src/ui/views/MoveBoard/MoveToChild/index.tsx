@@ -1,6 +1,6 @@
 import { Box } from '@mui/material';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
@@ -28,7 +28,7 @@ interface MoveBoardProps {
 
 const MoveToChild = (props: MoveBoardProps) => {
   const usewallet = useWallet();
-  const history = useHistory();
+  const navigate = useNavigate();
   const { currentWallet } = useProfiles();
 
   const { network } = useNetwork();
@@ -166,7 +166,7 @@ const MoveToChild = (props: MoveBoardProps) => {
           props.handleCloseIconClicked();
           await usewallet.setDashIndex(0);
           setSending(false);
-          history.push(`/dashboard?activity=1&txId=${txId}`);
+          navigate(`/dashboard?activity=1&txId=${txId}`);
         })
         .catch((err) => {
           consoleError(err);
@@ -191,7 +191,7 @@ const MoveToChild = (props: MoveBoardProps) => {
         props.handleCloseIconClicked();
         await usewallet.setDashIndex(0);
         setSending(false);
-        history.push(`/dashboard?activity=1&txId=${txId}`);
+        navigate(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
         consoleError(err);

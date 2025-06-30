@@ -1,7 +1,7 @@
 import { Typography, Button, Input, FormControl } from '@mui/material';
 import Box from '@mui/material/Box';
 import React, { type ReactNode, useCallback, useEffect, useState } from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router';
 
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import { LLHeader } from '@/ui/components';
@@ -19,7 +19,7 @@ const SettingsPassword = ({
   children?: ReactNode;
 }) => {
   const wallet = useWallet();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [password, setPassword] = useState(DEFAULT_PASSWORD);
   const [passMatch, setPassMatch] = useState<PassMatch>('unverified');
 
@@ -38,14 +38,13 @@ const SettingsPassword = ({
     }
   }, [password, wallet]);
 
-  const navigate = useCallback(async () => {
-    history.replace({
-      pathname: verifiedUrl,
+  const handleNavigate = useCallback(async () => {
+    navigate(verifiedUrl, {
       state: {
         password: password,
       },
     });
-  }, [history, verifiedUrl, password]);
+  }, [navigate, verifiedUrl, password]);
 
   useEffect(() => {
     verify();
@@ -171,7 +170,7 @@ const SettingsPassword = ({
           <Button
             variant="contained"
             color="primary"
-            onClick={navigate}
+            onClick={handleNavigate}
             size="large"
             sx={{
               display: 'flex',

@@ -1,7 +1,7 @@
 import { CssBaseline } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import React from 'react';
-import { HashRouter as Router, Route, useLocation } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, useLocation } from 'react-router';
 
 import themeOptions from '@/ui/style/LLTheme';
 import PrivateRoute from 'ui/components/PrivateRoute';
@@ -17,7 +17,7 @@ import Unlock from './Unlock';
 
 const theme = createTheme(themeOptions);
 
-const Routes = () => {
+const AppRoutes = () => {
   const location = useLocation();
   const wallet = useWallet();
 
@@ -26,32 +26,41 @@ const Routes = () => {
   }, [location, wallet]);
 
   return (
-    <>
-      <Route exact path="/">
-        <SortHat />
-      </Route>
-      <Route exact path="/unlock" component={Unlock} />
-      <Landing />
-      <Route path="/dashboard">
-        <InnerRoute />
-      </Route>
-      <PrivateRoute path="/approval">
-        <Approval />
-      </PrivateRoute>
+    <Routes>
+      <Route path="/" element={<SortHat />} />
+      <Route path="/unlock" element={<Unlock />} />
+      <Route path="/welcome" element={<Landing />} />
+      <Route path="/welcome/*" element={<Landing />} />
+      <Route path="/forgot" element={<Landing />} />
+      <Route path="/forgot/*" element={<Landing />} />
+      <Route path="/dashboard/*" element={<InnerRoute />} />
+      <Route
+        path="/approval/*"
+        element={
+          <PrivateRoute>
+            <Approval />
+          </PrivateRoute>
+        }
+      />
       {/* uncomment this when we need to test api-test */}
       {process.env.NODE_ENV === 'development' && (
-        <PrivateRoute path="/api-test">
-          <ApiTestPage />
-        </PrivateRoute>
+        <Route
+          path="/api-test/*"
+          element={
+            <PrivateRoute>
+              <ApiTestPage />
+            </PrivateRoute>
+          }
+        />
       )}
-    </>
+    </Routes>
   );
 };
 
 function Main() {
   return (
     <Router>
-      <Routes />
+      <AppRoutes />
     </Router>
   );
 }

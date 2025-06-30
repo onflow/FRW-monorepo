@@ -1,13 +1,13 @@
 import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 import { Box, Typography, Avatar, IconButton, CardMedia, Skeleton } from '@mui/material';
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import closex from 'ui/assets/closex.svg';
 import { useWallet, formatAddress, isEmoji } from 'ui/utils';
 
 export const ContactCard = ({ contact, tokenInfo, isLoading = false }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const getName = (name: string) => {
     if (name.startsWith('0')) {
@@ -99,7 +99,7 @@ export const ContactCard = ({ contact, tokenInfo, isLoading = false }) => {
         <IconButton
           onClick={(e) => {
             e.stopPropagation();
-            history.push(`/dashboard/token/${tokenInfo.unit}/send`);
+            navigate(`/dashboard/token/${tokenInfo.unit}/send`);
           }}
         >
           <CardMedia sx={{ width: '11px', height: '11px' }} image={closex} />

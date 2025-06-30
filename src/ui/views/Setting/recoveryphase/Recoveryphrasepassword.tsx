@@ -1,7 +1,7 @@
 import { Input, FormControl, Typography, Button, Fade } from '@mui/material';
 import Box from '@mui/material/Box';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router';
 
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import { LLHeader } from '@/ui/components';
@@ -10,7 +10,7 @@ import SlideRelative from '@/ui/components/SlideRelative';
 import { useWallet } from 'ui/utils';
 
 const Recoveryphrasepassword = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const wallet = useWallet();
   const [confirmPassword, setConfirmPassword] = useState(DEFAULT_PASSWORD);
   const [isMatch, setMatch] = useState(false);
@@ -40,14 +40,13 @@ const Recoveryphrasepassword = () => {
     await wallet.setDashIndex(3);
   }, [wallet]);
 
-  const navigate = useCallback(async () => {
-    history.push({
-      pathname: '/dashboard/nested/recoveryphrasedetail',
+  const handleNavigate = useCallback(async () => {
+    navigate('/dashboard/nested/recoveryphrasedetail', {
       state: {
         password: confirmPassword,
       },
     });
-  }, [confirmPassword, history]);
+  }, [confirmPassword, navigate]);
 
   useEffect(() => {
     setTab();
@@ -232,7 +231,7 @@ const Recoveryphrasepassword = () => {
               textTransform: 'capitalize',
               width: '100%',
             }}
-            onClick={navigate}
+            onClick={handleNavigate}
             disabled={!isMatch}
           >
             <Typography

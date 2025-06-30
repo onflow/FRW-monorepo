@@ -10,13 +10,13 @@ import {
 } from '@mui/material';
 import Box from '@mui/material/Box';
 import React, { useEffect } from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router';
 
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import { useWallet } from 'ui/utils';
 
 const Security = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const wallet = useWallet();
 
   useEffect(() => {
@@ -47,7 +47,7 @@ const Security = () => {
         <ArrowBackIcon
           fontSize="medium"
           sx={{ color: 'icon.navi', cursor: 'pointer' }}
-          onClick={() => history.push('/dashboard')}
+          onClick={() => navigate('/dashboard')}
         />
         <Typography
           variant="h1"

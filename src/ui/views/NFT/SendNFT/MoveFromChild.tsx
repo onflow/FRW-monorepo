@@ -3,7 +3,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import { Box, Typography, Drawer, Stack, CardMedia, IconButton, Button } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { type Contact } from '@/shared/types/network-types';
 import { type WalletAccount, type AccountDetails } from '@/shared/types/wallet-types';
@@ -35,7 +35,7 @@ const MoveFromChild = (props: SendNFTConfirmationProps) => {
   const { childAccountsContacts, evmAccounts, mainAccountContact } = useContacts();
   const { childAccounts } = useProfiles();
   const { occupied } = useTransferList();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [sending, setSending] = useState(false);
   const [failed, setFailed] = useState(false);
   const [, setErrorMessage] = useState<string | null>(null);
@@ -99,7 +99,7 @@ const MoveFromChild = (props: SendNFTConfirmationProps) => {
         props.handleCloseIconClicked();
         await usewallet.setDashIndex(0);
         setSending(false);
-        history.push(`/dashboard?activity=1&txId=${txId}`);
+        navigate(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
         consoleError(err);
@@ -125,7 +125,7 @@ const MoveFromChild = (props: SendNFTConfirmationProps) => {
         props.handleCloseIconClicked();
         await usewallet.setDashIndex(0);
         setSending(false);
-        history.push(`/dashboard?activity=1&txId=${txId}`);
+        navigate(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
         consoleError(err);

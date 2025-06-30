@@ -1,6 +1,6 @@
 import { Box, IconButton, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 
 import { type KeyResponseItem, type AccountKey } from '@/shared/types/network-types';
 import { LLHeader } from '@/ui/components';
