@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 
-import SettingButton from '../setting-button';
+import SettingButton from '@/ui/components/settings/setting-button';
 
 const meta: Meta<typeof SettingButton> = {
-  title: 'Settings/SettingButton',
+  title: 'Components/Settings/SettingButton',
   component: SettingButton,
   tags: ['autodocs'],
   parameters: {
@@ -62,7 +62,11 @@ export const Default: Story = {
     showArrow: true,
   },
   parameters: {
-    mockData: { label: 'Display Currency', showArrow: true },
+    docs: {
+      description: {
+        story: 'Default setting button with label and arrow.',
+      },
+    },
   },
 };
 
@@ -112,18 +116,15 @@ export const LongText: Story = {
 };
 
 export const MultipleButtons: Story = {
-  render: () => (
-    <div>
-      <SettingButton label="Display Currency" showArrow={true} onClick={() => alert('Clicked!')} />
-      <SettingButton label="Security Settings" showArrow={true} onClick={() => alert('Clicked!')} />
-      <SettingButton label="About" showArrow={true} onClick={() => alert('Clicked!')} />
-      <SettingButton label="Logout" onClick={() => alert('Logout clicked!')} showArrow={false} />
-    </div>
-  ),
+  args: {
+    label: 'Display Currency',
+    showArrow: true,
+    onClick: () => alert('Clicked!'),
+  },
   parameters: {
     docs: {
       description: {
-        story: 'Multiple setting buttons displayed together.',
+        story: 'Setting button with navigation arrow.',
       },
     },
   },

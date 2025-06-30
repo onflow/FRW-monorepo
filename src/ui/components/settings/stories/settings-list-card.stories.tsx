@@ -2,10 +2,10 @@ import { Box } from '@mui/material';
 import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 
-import SettingsListCard from '../settings-list-card';
+import SettingsListCard from '@/ui/components/settings/settings-list-card';
 
 const meta: Meta<typeof SettingsListCard> = {
-  title: 'Settings/SettingsListCard',
+  title: 'Components/Settings/SettingsListCard',
   component: SettingsListCard,
   tags: ['autodocs'],
   parameters: {
@@ -74,26 +74,10 @@ export const Default: Story = {
     showDivider: true,
   },
   parameters: {
-    mockData: {
-      items: [
-        {
-          iconColor: '#1A5CFF',
-          iconText: 'A',
-          title: 'NBA-Top-Shot',
-          subtitle: '29 Collectible',
-        },
-        {
-          iconColor: '#8e24aa',
-          iconText: 'B',
-          title: 'Flovatar Collection',
-          subtitle: '12 Collectible',
-        },
-        {
-          iconColor: '#333',
-          iconText: 'C',
-          title: 'DGD shop',
-        },
-      ],
+    docs: {
+      description: {
+        story: 'Default settings list card with multiple items and dividers.',
+      },
     },
   },
 };
@@ -120,29 +104,6 @@ export const WithoutDividers: Story = {
       },
     ],
     showDivider: false,
-  },
-  parameters: {
-    mockData: {
-      items: [
-        {
-          iconColor: '#1A5CFF',
-          iconText: 'A',
-          title: 'NBA-Top-Shot',
-          subtitle: '29 Collectible',
-        },
-        {
-          iconColor: '#8e24aa',
-          iconText: 'B',
-          title: 'Flovatar Collection',
-          subtitle: '12 Collectible',
-        },
-        {
-          iconColor: '#333',
-          iconText: 'C',
-          title: 'DGD shop',
-        },
-      ],
-    },
   },
 };
 

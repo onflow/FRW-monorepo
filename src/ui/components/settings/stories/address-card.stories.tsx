@@ -2,10 +2,10 @@ import { Box } from '@mui/material';
 import type { Meta, StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 
-import AddressCard from '../address-card';
+import AddressCard from '@/ui/components/settings/address-card';
 
 const meta: Meta<typeof AddressCard> = {
-  title: 'Settings/AddressCard',
+  title: 'Components/Settings/AddressCard',
   component: AddressCard,
   tags: ['autodocs'],
   parameters: {
@@ -55,7 +55,6 @@ export const Default: Story = {
     label: 'Address',
   },
   parameters: {
-    mockData: { address: '0x0c666c888d8fb259', label: 'Address' },
     docs: {
       description: {
         story: 'Default address card with standard address format.',
@@ -135,17 +134,14 @@ export const LongLabel: Story = {
 };
 
 export const MultipleCards: Story = {
-  render: () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      <AddressCard address="0x0c666c888d8fb259" label="Main Address" />
-      <AddressCard address="0x1d777c999e9fc370" label="Secondary Address" />
-      <AddressCard address="0x2e888d000f0d481" label="Tertiary Address" />
-    </div>
-  ),
+  args: {
+    address: '0x0c666c888d8fb259',
+    label: 'Main Address',
+  },
   parameters: {
     docs: {
       description: {
-        story: 'Multiple address cards displayed together.',
+        story: 'Address card with main address.',
       },
     },
   },

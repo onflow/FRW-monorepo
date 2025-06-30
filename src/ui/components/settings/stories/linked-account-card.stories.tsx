@@ -1,11 +1,11 @@
 import { Box } from '@mui/material';
-import { type Meta, type StoryObj } from '@storybook/react-webpack5';
+import type { Meta, StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 
-import { LinkedAccountCard } from '../linked-account-card';
+import { LinkedAccountCard } from '@/ui/components/settings/linked-account-card';
 
 const meta: Meta<typeof LinkedAccountCard> = {
-  title: 'Settings/LinkedAccountCard',
+  title: 'Components/Settings/LinkedAccountCard',
   component: LinkedAccountCard,
   tags: ['autodocs'],
   parameters: {
@@ -92,17 +92,6 @@ export const Default: Story = {
     showCard: true,
   },
   parameters: {
-    mockData: {
-      account: {
-        name: 'Panda',
-        icon: '🐼',
-        color: '#fff',
-        address: '0x0c666c888d8fb259',
-        chain: 1,
-        id: 1,
-      },
-      parentName: 'Main Account',
-    },
     docs: {
       description: {
         story: 'Default linked account card with all props.',
@@ -288,55 +277,24 @@ export const LongNames: Story = {
 };
 
 export const MultipleCards: Story = {
-  render: () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      <LinkedAccountCard
-        account={{
-          name: 'Panda',
-          icon: '🐼',
-          color: '#fff',
-          address: '0x0c666c888d8fb259',
-          chain: 1,
-          id: 1,
-        }}
-        parentName="Main Account"
-        active={true}
-        onEditClick={() => alert('Edit clicked')}
-        showCard={true}
-      />
-      <LinkedAccountCard
-        account={{
-          name: 'Dragon',
-          icon: '🐉',
-          color: '#ff6b6b',
-          address: '0x1d777c999e9fc370',
-          chain: 1,
-          id: 2,
-        }}
-        parentName="Secondary Account"
-        spinning={true}
-        onEditClick={() => alert('Edit clicked')}
-        showCard={true}
-      />
-      <LinkedAccountCard
-        account={{
-          name: 'Phoenix',
-          icon: '🦅',
-          color: '#4ecdc4',
-          address: '0x2e888d000f0d481',
-          chain: 1,
-          id: 3,
-        }}
-        parentName="Tertiary Account"
-        isPending={true}
-        showCard={true}
-      />
-    </div>
-  ),
+  args: {
+    account: {
+      name: 'Panda',
+      icon: '🐼',
+      color: '#fff',
+      address: '0x0c666c888d8fb259',
+      chain: 1,
+      id: 1,
+    },
+    parentName: 'Main Account',
+    active: true,
+    onEditClick: () => alert('Edit clicked'),
+    showCard: true,
+  },
   parameters: {
     docs: {
       description: {
-        story: 'Multiple linked account cards displayed together.',
+        story: 'Linked account card in active state.',
       },
     },
   },

@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 
-import SettingsSwitchCard from '../settings-switch';
+import SettingsSwitchCard from '@/ui/components/settings/settings-switch';
 
 const meta: Meta<typeof SettingsSwitchCard> = {
-  title: 'Settings/SettingsSwitch',
+  title: 'Components/Settings/SettingsSwitch',
   component: SettingsSwitchCard,
   tags: ['autodocs'],
   parameters: {
@@ -134,23 +134,15 @@ export const LongText: Story = {
 };
 
 export const MultipleSwitches: Story = {
-  render: () => (
-    <div>
-      <SettingsSwitchCard label="Enable Notifications" checked={true} onChange={() => {}} />
-      <SettingsSwitchCard label="Dark Mode" checked={false} onChange={() => {}} />
-      <SettingsSwitchCard label="Auto Backup" checked={true} onChange={() => {}} />
-      <SettingsSwitchCard
-        label="Premium Feature"
-        checked={false}
-        onChange={() => {}}
-        disabled={true}
-      />
-    </div>
-  ),
+  args: {
+    label: 'Enable Notifications',
+    checked: true,
+    onChange: () => {},
+  },
   parameters: {
     docs: {
       description: {
-        story: 'Multiple settings switches displayed together.',
+        story: 'Settings switch in enabled state.',
       },
     },
   },

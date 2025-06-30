@@ -5,11 +5,10 @@ import { AboutIcon } from '@/ui/assets/icons/settings/About';
 import { CurrencyIcon } from '@/ui/assets/icons/settings/Currency';
 import { SecurityIcon } from '@/ui/assets/icons/settings/Security';
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
-
-import { SettingsListItem } from '../list-item';
+import { SettingsListItem } from '@/ui/components/settings/list-item';
 
 const meta: Meta<typeof SettingsListItem> = {
-  title: 'Settings/ListItem',
+  title: 'Components/Settings/ListItem',
   component: SettingsListItem,
   tags: ['autodocs'],
   parameters: {
@@ -73,10 +72,10 @@ export const Default: Story = {
     endIcon: <IconEnd size={12} />,
   },
   parameters: {
-    mockData: {
-      icon: 'CurrencyIcon',
-      text: 'Display Currency',
-      endIcon: 'IconEnd',
+    docs: {
+      description: {
+        story: 'Default list item with icon, text, and end icon.',
+      },
     },
   },
 };
@@ -145,37 +144,16 @@ export const WithoutNavigation: Story = {
 };
 
 export const MultipleItems: Story = {
-  render: () => (
-    <div>
-      <SettingsListItem
-        icon={<CurrencyIcon width={24} height={24} />}
-        text="Display Currency"
-        endIcon={<IconEnd size={12} />}
-        onClick={() => alert('Clicked!')}
-      />
-      <SettingsListItem
-        icon={<SecurityIcon width={24} height={24} />}
-        text="Security"
-        endIcon={<IconEnd size={12} />}
-        onClick={() => alert('Clicked!')}
-      />
-      <SettingsListItem
-        icon={<AboutIcon width={24} height={24} />}
-        text="About"
-        endIcon={<IconEnd size={12} />}
-        onClick={() => alert('Clicked!')}
-      />
-      <SettingsListItem
-        icon={<SecurityIcon width={24} height={24} />}
-        text="Logout"
-        onClick={() => alert('Logout clicked!')}
-      />
-    </div>
-  ),
+  args: {
+    icon: <CurrencyIcon width={24} height={24} />,
+    text: 'Display Currency',
+    endIcon: <IconEnd size={12} />,
+    onClick: () => alert('Clicked!'),
+  },
   parameters: {
     docs: {
       description: {
-        story: 'Multiple list items displayed together.',
+        story: 'List item with currency icon and navigation.',
       },
     },
   },

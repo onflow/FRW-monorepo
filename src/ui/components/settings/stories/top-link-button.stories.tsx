@@ -3,11 +3,10 @@ import React from 'react';
 
 import { AccountListIcon } from '@/ui/assets/icons/settings/AccountList';
 import { AddressIcon } from '@/ui/assets/icons/settings/Address';
-
-import TopLinkButton from '../top-link-button';
+import TopLinkButton from '@/ui/components/settings/top-link-button';
 
 const meta: Meta<typeof TopLinkButton> = {
-  title: 'Settings/TopLinkButton',
+  title: 'Components/Settings/TopLinkButton',
   component: TopLinkButton,
   tags: ['autodocs'],
   parameters: {
@@ -97,50 +96,30 @@ export const AccountList: Story = {
 };
 
 export const BothButtons: Story = {
-  render: () => (
-    <div style={{ display: 'flex', gap: '8px' }}>
-      <TopLinkButton
-        icon={<AddressIcon width={28} height={28} />}
-        text="Address"
-        onClick={() => {}}
-      />
-      <TopLinkButton
-        icon={<AccountListIcon width={28} height={28} />}
-        text="Account List"
-        onClick={() => {}}
-      />
-    </div>
-  ),
+  args: {
+    icon: <AddressIcon width={28} height={28} />,
+    text: 'Address',
+    onClick: () => {},
+  },
   parameters: {
     docs: {
       description: {
-        story:
-          'Both Address and Account List buttons displayed together as they appear in the settings. Hover over each button to see interactive states.',
+        story: 'Address navigation button with address book icon.',
       },
     },
   },
 };
 
 export const HoverStates: Story = {
-  render: () => (
-    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-      <TopLinkButton
-        icon={<AddressIcon width={28} height={28} />}
-        text="Address"
-        onClick={() => {}}
-      />
-      <TopLinkButton
-        icon={<AccountListIcon width={28} height={28} />}
-        text="Account List"
-        onClick={() => {}}
-      />
-    </div>
-  ),
+  args: {
+    icon: <AccountListIcon width={28} height={28} />,
+    text: 'Account List',
+    onClick: () => {},
+  },
   parameters: {
     docs: {
       description: {
-        story:
-          'Hover over the buttons to see the interactive hover state with background color change.',
+        story: 'Account List navigation button with account list icon.',
       },
     },
   },

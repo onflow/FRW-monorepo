@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 
-import SlidingTabSwitch from '../sliding-tab-switch';
+import SlidingTabSwitch from '@/ui/components/settings/sliding-tab-switch';
 
 const meta: Meta<typeof SlidingTabSwitch> = {
-  title: 'Settings/SlidingTabSwitch',
+  title: 'Components/Settings/SlidingTabSwitch',
   component: SlidingTabSwitch,
   tags: ['autodocs'],
   parameters: {
@@ -155,38 +155,18 @@ export const LongLabels: Story = {
 };
 
 export const MultipleSwitches: Story = {
-  render: () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      <SlidingTabSwitch
-        value="grid"
-        onChange={() => {}}
-        leftLabel="Grid"
-        rightLabel="List"
-        leftValue="grid"
-        rightValue="list"
-      />
-      <SlidingTabSwitch
-        value="all"
-        onChange={() => {}}
-        leftLabel="All"
-        rightLabel="Favorites"
-        leftValue="all"
-        rightValue="favorites"
-      />
-      <SlidingTabSwitch
-        value="name"
-        onChange={() => {}}
-        leftLabel="Name"
-        rightLabel="Date"
-        leftValue="name"
-        rightValue="date"
-      />
-    </div>
-  ),
+  args: {
+    value: 'grid',
+    onChange: () => {},
+    leftLabel: 'Grid',
+    rightLabel: 'List',
+    leftValue: 'grid',
+    rightValue: 'list',
+  },
   parameters: {
     docs: {
       description: {
-        story: 'Multiple sliding tab switches displayed together.',
+        story: 'Sliding tab switch with grid/list options.',
       },
     },
   },
