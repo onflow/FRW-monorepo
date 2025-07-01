@@ -28,8 +28,7 @@ import { consoleError } from '@/shared/utils/console-log';
 import { EditIcon } from '@/ui/assets/icons/settings/Edit';
 import { LLHeader } from '@/ui/components';
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
-import AddressCard from '@/ui/components/settings/address-card';
-import SettingButton from '@/ui/components/settings/setting-button';
+import SettingsListItem from '@/ui/components/settings/setting-list-item';
 import SettingsSwitchCard from '@/ui/components/settings/settings-switch';
 import { useAddressHidden, toggleAddressHidden } from '@/ui/hooks/preference-hooks';
 import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
@@ -241,7 +240,20 @@ const AccountDetail = () => {
               </ListItemButton>
             </ListItem>
           </List>
-          <AddressCard address={userWallet?.address || ''} label="Address" />
+          <List
+            sx={{
+              borderRadius: '16px',
+              overflow: 'hidden',
+              backgroundColor: '#282828',
+              margin: '8px auto',
+              pt: 0,
+              pb: 0,
+              width: '100%',
+              padding: '0 2px',
+            }}
+          >
+            <SettingsListItem address={userWallet?.address || ''} addressLabel="Address" />
+          </List>
           {userWallet && !isValidEthereumAddress(userWallet.address) && (
             <>
               <List
@@ -258,15 +270,15 @@ const AccountDetail = () => {
                   pb: 0,
                 }}
               >
-                <SettingButton
-                  label={chrome.i18n.getMessage('Private__Key')}
+                <SettingsListItem
+                  text={chrome.i18n.getMessage('Private__Key')}
                   to="/dashboard/nested/privatekeypassword"
                 />
                 {isKeyphrase && <Divider sx={{ width: '90%' }} variant="middle" />}
 
                 {isKeyphrase && (
-                  <SettingButton
-                    label={chrome.i18n.getMessage('Recovery__Phrase')}
+                  <SettingsListItem
+                    text={chrome.i18n.getMessage('Recovery__Phrase')}
                     to="/dashboard/nested/recoveryphrasepassword"
                   />
                 )}
@@ -287,8 +299,8 @@ const AccountDetail = () => {
                       pb: 0,
                     }}
                   >
-                    <SettingButton
-                      label="Account Keys"
+                    <SettingsListItem
+                      text="Account Keys"
                       to={`/dashboard/nested/keylist?address=${userWallet.address}`}
                     />
                   </List>

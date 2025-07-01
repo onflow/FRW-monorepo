@@ -2,6 +2,7 @@ import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 import { BrowserRouter } from 'react-router';
 
+import * as useAccountHooks from '@/ui/hooks/use-account-hooks';
 import { useUserData } from '@/ui/hooks/use-data.mock';
 import { useNetwork } from '@/ui/hooks/useNetworkHook.mock';
 import { useProfiles } from '@/ui/hooks/useProfileHook.mock';
@@ -78,6 +79,14 @@ type Story = StoryObj<typeof SettingTab>;
 
 export const Default: Story = {
   render: () => {
+    (useAccountHooks as any).useUserInfo = () => ({
+      avatar: 'https://lilico.app/api/avatar/beam/120/avatar',
+      nickname: 'Test User',
+      username: 'testuser',
+      private: 0,
+      created: '2021-01-01',
+      id: '1',
+    });
     useNetwork.mockReturnValue({
       network: 'mainnet',
       developerMode: false,
@@ -110,6 +119,14 @@ export const Default: Story = {
 
 export const WithProfile: Story = {
   render: () => {
+    (useAccountHooks as any).useUserInfo = () => ({
+      avatar: 'https://lilico.app/api/avatar/beam/120/avatar',
+      nickname: 'Test User',
+      username: 'testuser',
+      private: 0,
+      created: '2021-01-01',
+      id: '1',
+    });
     useNetwork.mockReturnValue({
       network: 'mainnet',
       developerMode: false,
