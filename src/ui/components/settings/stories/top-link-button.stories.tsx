@@ -56,10 +56,6 @@ const meta: Meta<typeof TopLinkButton> = {
       control: 'text',
       description: 'Text label for the button',
     },
-    onClick: {
-      action: 'clicked',
-      description: 'Click handler for the button',
-    },
   },
 };
 
@@ -99,7 +95,6 @@ export const BothButtons: Story = {
   args: {
     icon: <AddressIcon width={28} height={28} />,
     text: 'Address',
-    onClick: () => {},
   },
   parameters: {
     docs: {
@@ -114,7 +109,6 @@ export const HoverStates: Story = {
   args: {
     icon: <AccountListIcon width={28} height={28} />,
     text: 'Account List',
-    onClick: () => {},
   },
   parameters: {
     docs: {

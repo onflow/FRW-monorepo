@@ -24,7 +24,7 @@ import { isValidEthereumAddress } from '@/shared/utils/address';
 import { LinkIcon } from '@/ui/assets/icons/LinkIcon';
 import { LLHeader } from '@/ui/components';
 import { AccountCard } from '@/ui/components/account/account-card';
-import { BaseAccountHierarchy } from '@/ui/components/account/base-account-hierarchy';
+import { useChildAccounts, useEvmAccount } from '@/ui/hooks/use-account-hooks';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { COLOR_DARKMODE_TEXT_PRIMARY_80_FFFFFF80 } from '@/ui/style/color';
 import { useWallet } from 'ui/utils';
@@ -41,6 +41,79 @@ const tempEmoji: Emoji[] = [
     bgcolor: '#98FB98',
   },
 ];
+
+// Separate component to handle account hierarchy with hooks
+const AccountHierarchyItem = ({
+  account,
+  network,
+  currentWallet,
+  onAccountClick,
+}: {
+  account: WalletAccount;
+  network?: string;
+  currentWallet?: WalletAccount;
+  onAccountClick: (accountAddress: string, parentAddress?: string) => void;
+}) => {
+  const childAccounts = useChildAccounts(network, account.address);
+  const evmAccount = useEvmAccount(network, account.address);
+
+  return (
+    <Box
+      key={account.address}
+      sx={{
+        display: 'flex',
+        padding: '10px',
+        flexDirection: 'column',
+        gap: '18px',
+        alignSelf: 'stretch',
+        borderRadius: '16px',
+        border: '1px solid #1A1A1A',
+        background: 'rgba(255, 255, 255, 0.10)',
+      }}
+    >
+      <Box sx={{ gap: '0px', display: 'flex', flexDirection: 'column' }}>
+        <AccountCard
+          network={network}
+          account={account}
+          active={currentWallet?.address === account.address}
+          onClick={() => onAccountClick(account.address, account.address)}
+          showCard={false}
+          showLink={false}
+        />
+
+        {/* If the EVM account is valid, show the EVM account card */}
+        {evmAccount && evmAccount.address && isValidEthereumAddress(evmAccount.address) && (
+          <AccountCard
+            network={network}
+            account={evmAccount}
+            parentAccount={account}
+            active={currentWallet?.address === evmAccount.address}
+            onClick={() => onAccountClick(evmAccount.address, account.address)}
+            showLink={true}
+            showCard={false}
+          />
+        )}
+
+        {/* Render child accounts */}
+        {childAccounts &&
+          childAccounts.map((linkedAccount) => {
+            return (
+              <AccountCard
+                network={network}
+                key={linkedAccount.address}
+                account={linkedAccount}
+                parentAccount={account}
+                active={currentWallet?.address === linkedAccount.address}
+                onClick={() => onAccountClick(linkedAccount.address, account.address)}
+                showLink={true}
+                showCard={false}
+              />
+            );
+          })}
+      </Box>
+    </Box>
+  );
+};
 
 const AccountList = () => {
   const usewallet = useWallet();
@@ -146,28 +219,13 @@ const AccountList = () => {
       <Box sx={{ gap: '0px', padding: '0 16px', display: 'flex', flexDirection: 'column' }}>
         <Box sx={{ gap: '8px', display: 'flex', flexDirection: 'column' }}>
           {walletList.map((account) => (
-            <Box
+            <AccountHierarchyItem
               key={account.address}
-              sx={{
-                display: 'flex',
-                padding: '10px',
-                flexDirection: 'column',
-                gap: '18px',
-                alignSelf: 'stretch',
-                borderRadius: '16px',
-                border: '1px solid #1A1A1A',
-                background: 'rgba(255, 255, 255, 0.10)',
-              }}
-            >
-              <BaseAccountHierarchy
-                account={account}
-                network={network}
-                activeAccount={currentWallet}
-                onAccountClick={handleAccountClick}
-                showCard={false}
-                showLink={true}
-              />
-            </Box>
+              account={account}
+              network={network}
+              currentWallet={currentWallet}
+              onAccountClick={handleAccountClick}
+            />
           ))}
         </Box>
       </Box>
