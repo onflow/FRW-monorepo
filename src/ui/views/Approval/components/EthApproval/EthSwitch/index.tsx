@@ -103,12 +103,7 @@ const EthSwitch = ({ params: { origin, target } }: ConnectProps) => {
                 {' '}
                 {currentNetwork}
               </Typography>{' '}
-              to{' '}
-              <Typography sx={{ display: 'inline', color: '#E6E6E6' }}>
-                {' '}
-                {currentNetwork}
-              </Typography>
-              .
+              to <Typography sx={{ display: 'inline', color: '#E6E6E6' }}> {target}</Typography>.
             </Typography>
           </Stack>
         </Box>
@@ -135,7 +130,7 @@ const EthSwitch = ({ params: { origin, target } }: ConnectProps) => {
                   backgroundColor: networkColor(currentNetwork),
                   objectFit: 'cover',
                 }}
-                src={testnetsvg}
+                src={currentNetwork === 'testnet' ? testnetsvg : mainnetsvg}
               />
               <Typography
                 sx={{
@@ -147,7 +142,7 @@ const EthSwitch = ({ params: { origin, target } }: ConnectProps) => {
                   textAlign: 'center',
                 }}
               >
-                {target}
+                {currentNetwork}
               </Typography>
             </Box>
             <img style={{ width: '116px' }} src={Link} />
@@ -161,7 +156,7 @@ const EthSwitch = ({ params: { origin, target } }: ConnectProps) => {
                   backgroundColor: networkColor(target),
                   objectFit: 'cover',
                 }}
-                src={mainnetsvg}
+                src={target === 'testnet' ? testnetsvg : mainnetsvg}
               />
               <Typography
                 sx={{
