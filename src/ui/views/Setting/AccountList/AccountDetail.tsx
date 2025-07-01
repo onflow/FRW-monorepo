@@ -2,19 +2,15 @@ import {
   Typography,
   Box,
   List,
-  ListItemText,
-  ListItemIcon,
   ListItem,
   ListItemButton,
   Divider,
   Alert,
   Snackbar,
-  CardMedia,
-  Switch,
 } from '@mui/material';
 import LinearProgress from '@mui/material/LinearProgress';
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link, useLocation, useParams } from 'react-router';
+import { useParams } from 'react-router';
 
 import { storage } from '@/background/webapi';
 import type { StorageInfo } from '@/shared/types/network-types';
@@ -23,19 +19,16 @@ import {
   type MainAccountWithBalance,
   type WalletAccountWithBalance,
 } from '@/shared/types/wallet-types';
-import { isValidEthereumAddress } from '@/shared/utils/address';
+import { formatString, isValidEthereumAddress, isValidFlowAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
 import { EditIcon } from '@/ui/assets/icons/settings/Edit';
 import { LLHeader } from '@/ui/components';
-import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import SettingsListItem from '@/ui/components/settings/setting-list-item';
 import SettingsSwitchCard from '@/ui/components/settings/settings-switch';
 import { useAddressHidden, toggleAddressHidden } from '@/ui/hooks/preference-hooks';
 import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
 import { COLOR_WHITE_ALPHA_40_FFFFFF66, COLOR_WHITE_ALPHA_80_FFFFFFCC } from '@/ui/style/color';
 import { useWallet } from 'ui/utils';
-
-import editEmoji from '../../../assets/svg/editEmoji.svg';
 
 import EditAccount from './EditAccount';
 
@@ -130,7 +123,7 @@ const AccountDetail = () => {
   }, [wallet]);
 
   const loadStorageInfo = useCallback(async () => {
-    if (address) {
+    if (address && isValidFlowAddress(address)) {
       const info = await wallet.openapi.getStorageInfo(address);
       setStorageInfo(info);
     }
@@ -252,7 +245,10 @@ const AccountDetail = () => {
               padding: '0 2px',
             }}
           >
-            <SettingsListItem address={userWallet?.address || ''} addressLabel="Address" />
+            <SettingsListItem
+              address={formatString(userWallet?.address || '')}
+              addressLabel="Address"
+            />
           </List>
           {userWallet && !isValidEthereumAddress(userWallet.address) && (
             <>

@@ -24,7 +24,7 @@ import { isValidEthereumAddress } from '@/shared/utils/address';
 import { LinkIcon } from '@/ui/assets/icons/LinkIcon';
 import { LLHeader } from '@/ui/components';
 import { AccountCard } from '@/ui/components/account/account-card';
-import { BaseAccountHierarchy } from '@/ui/components/account/base-account-hierarchy';
+import { useChildAccounts, useEvmAccount } from '@/ui/hooks/use-account-hooks';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { COLOR_DARKMODE_TEXT_PRIMARY_80_FFFFFF80 } from '@/ui/style/color';
 import { useWallet } from 'ui/utils';
@@ -42,6 +42,79 @@ const tempEmoji: Emoji[] = [
   },
 ];
 
+// Separate component to handle account hierarchy with hooks
+const AccountHierarchyItem = ({
+  account,
+  network,
+  currentWallet,
+  onAccountClick,
+}: {
+  account: WalletAccount;
+  network?: string;
+  currentWallet?: WalletAccount;
+  onAccountClick: (clickedAccount: WalletAccount, parentAccount?: WalletAccount) => void;
+}) => {
+  const childAccounts = useChildAccounts(network, account.address);
+  const evmAccount = useEvmAccount(network, account.address);
+
+  return (
+    <Box
+      key={account.address}
+      sx={{
+        display: 'flex',
+        padding: '10px',
+        flexDirection: 'column',
+        gap: '18px',
+        alignSelf: 'stretch',
+        borderRadius: '16px',
+        border: '1px solid #1A1A1A',
+        background: 'rgba(255, 255, 255, 0.10)',
+      }}
+    >
+      <Box sx={{ gap: '0px', display: 'flex', flexDirection: 'column' }}>
+        <AccountCard
+          network={network}
+          account={account}
+          active={currentWallet?.address === account.address}
+          onClick={() => onAccountClick(account, account)}
+          showCard={false}
+          showLink={false}
+        />
+
+        {/* If the EVM account is valid, show the EVM account card */}
+        {evmAccount && evmAccount.address && isValidEthereumAddress(evmAccount.address) && (
+          <AccountCard
+            network={network}
+            account={evmAccount}
+            parentAccount={account}
+            active={currentWallet?.address === evmAccount.address}
+            onClick={() => onAccountClick(evmAccount, account)}
+            showLink={true}
+            showCard={false}
+          />
+        )}
+
+        {/* Render child accounts */}
+        {childAccounts &&
+          childAccounts.map((linkedAccount) => {
+            return (
+              <AccountCard
+                network={network}
+                key={linkedAccount.address}
+                account={linkedAccount}
+                parentAccount={account}
+                active={currentWallet?.address === linkedAccount.address}
+                onClick={() => onAccountClick(linkedAccount, account)}
+                showLink={true}
+                showCard={false}
+              />
+            );
+          })}
+      </Box>
+    </Box>
+  );
+};
+
 const AccountList = () => {
   const usewallet = useWallet();
   const { currentWallet, walletList, network } = useProfiles();
@@ -49,32 +122,26 @@ const AccountList = () => {
   const [isInitialized, setIsInitialized] = useState(false);
   const navigate = useNavigate();
 
-  const handleAccountClick = (accountAddress: string, parentAddress?: string) => {
-    // Find the account for storage
-    const account = walletList?.find((wallet) => wallet.address === accountAddress);
-
-    if (account) {
-      // Find the emoji by name (account.name should match emoji.name)
-
-      const walletDetailInfo = { wallet: account };
+  const handleAccountClick = (clickedAccount: WalletAccount, parentAccount?: WalletAccount) => {
+    if (clickedAccount) {
+      const walletDetailInfo = { wallet: clickedAccount };
       storage.set('walletDetail', JSON.stringify(walletDetailInfo));
     }
 
-    if (parentAddress && accountAddress !== parentAddress) {
+    if (parentAccount && clickedAccount.address !== parentAccount.address) {
       // Check if this is an EVM account or a Flow linked account
-      if (isValidEthereumAddress(accountAddress)) {
-        navigate(`/dashboard/setting/accountlist/detail/${accountAddress}`);
+      if (isValidEthereumAddress(clickedAccount.address)) {
+        navigate(`/dashboard/setting/accountlist/detail/${clickedAccount.address}`);
       } else {
         // For Flow linked accounts, navigate to linked detail page with parent address name
-        const parentAccount = walletList?.find((wallet) => wallet.address === parentAddress);
-        const parentName = parentAccount?.name || '';
+        const parentName = parentAccount.name || '';
         navigate(
-          `/dashboard/setting/linkeddetail/${accountAddress}?parentName=${encodeURIComponent(parentName)}&parentAddress=${encodeURIComponent(parentAddress)}`
+          `/dashboard/setting/accountlist/linkeddetail/${clickedAccount.address}?parentName=${encodeURIComponent(parentName)}&parentAddress=${encodeURIComponent(parentAccount.address)}`
         );
       }
     } else {
       // For main accounts, navigate to account detail page
-      navigate(`/dashboard/setting/accountlist/detail/${accountAddress}`);
+      navigate(`/dashboard/setting/accountlist/detail/${clickedAccount.address}`);
     }
   };
 
@@ -142,28 +209,13 @@ const AccountList = () => {
       <Box sx={{ gap: '0px', padding: '0 16px', display: 'flex', flexDirection: 'column' }}>
         <Box sx={{ gap: '8px', display: 'flex', flexDirection: 'column' }}>
           {walletList.map((account) => (
-            <Box
+            <AccountHierarchyItem
               key={account.address}
-              sx={{
-                display: 'flex',
-                padding: '10px',
-                flexDirection: 'column',
-                gap: '18px',
-                alignSelf: 'stretch',
-                borderRadius: '16px',
-                border: '1px solid #1A1A1A',
-                background: 'rgba(255, 255, 255, 0.10)',
-              }}
-            >
-              <BaseAccountHierarchy
-                account={account}
-                network={network}
-                activeAccount={currentWallet}
-                onAccountClick={handleAccountClick}
-                showCard={false}
-                showLink={true}
-              />
-            </Box>
+              account={account}
+              network={network}
+              currentWallet={currentWallet}
+              onAccountClick={handleAccountClick}
+            />
           ))}
         </Box>
       </Box>
