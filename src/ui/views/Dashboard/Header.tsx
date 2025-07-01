@@ -5,7 +5,7 @@ import Box from '@mui/material/Box';
 import { StyledEngineProvider } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router';
 
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
@@ -26,7 +26,7 @@ import SwitchAccountCover from './Components/SwitchAccountCover';
 const Header = ({ _loading = false }) => {
   const usewallet = useWallet();
   const walletLoaded = useWalletLoaded();
-  const history = useHistory();
+  const navigate = useNavigate();
   const location = useLocation();
 
   const { developerMode } = useNetwork();
@@ -70,11 +70,11 @@ const Header = ({ _loading = false }) => {
 
   const goToSettings = useCallback(() => {
     if (location.pathname.includes('/dashboard/setting')) {
-      history.push('/dashboard');
+      navigate('/dashboard');
     } else {
-      history.push('/dashboard/setting');
+      navigate('/dashboard/setting');
     }
-  }, [history, location.pathname]);
+  }, [navigate, location.pathname]);
 
   const switchProfile = useCallback(
     async (profileId: string) => {
@@ -95,12 +95,12 @@ const Header = ({ _loading = false }) => {
         consoleError('Error during account switch:', error);
         //if cannot login directly with current password switch to unlock page
         await usewallet.lockWallet();
-        history.push('/unlock');
+        navigate('/unlock');
       } finally {
         setSwitchLoading(false);
       }
     },
-    [usewallet, history]
+    [usewallet, navigate]
   );
 
   const [errorCode, setErrorCode] = useState<number | null>(null);

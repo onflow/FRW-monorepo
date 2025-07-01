@@ -1,6 +1,6 @@
 import { Box } from '@mui/material';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
@@ -41,7 +41,7 @@ const checkContractAddressInCollections = (nft, activec) => {
 
 const MoveFromChild = (props: MoveBoardProps) => {
   const usewallet = useWallet();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const { network } = useNetwork();
 
@@ -189,7 +189,7 @@ const MoveFromChild = (props: MoveBoardProps) => {
         props.handleCloseIconClicked();
         await usewallet.setDashIndex(0);
         setSending(false);
-        history.push(`/dashboard?activity=1&txId=${txId}`);
+        navigate(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
         consoleError(err);
@@ -220,7 +220,7 @@ const MoveFromChild = (props: MoveBoardProps) => {
         props.handleCloseIconClicked();
         await usewallet.setDashIndex(0);
         setSending(false);
-        history.push(`/dashboard?activity=1&txId=${txId}`);
+        navigate(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
         consoleError(err);
@@ -250,7 +250,7 @@ const MoveFromChild = (props: MoveBoardProps) => {
         props.handleCloseIconClicked();
         await usewallet.setDashIndex(0);
         setSending(false);
-        history.push(`/dashboard?activity=1&txId=${txId}`);
+        navigate(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
         consoleError(err);

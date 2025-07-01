@@ -16,7 +16,7 @@ import Grid from '@mui/material/Grid';
 import { StyledEngineProvider } from '@mui/material/styles';
 import React, { useState, useEffect, useCallback } from 'react';
 
-// import { useHistory } from 'react-router-dom';
+// import { useNavigate } from 'react-router';
 import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
 import { LLHeader } from '@/ui/components';
 import TokenItem from '@/ui/components/TokenLists/TokenItem';

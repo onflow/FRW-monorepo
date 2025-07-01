@@ -16,7 +16,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import { StyledEngineProvider } from '@mui/material/styles';
 import _ from 'lodash';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { type Contact } from '@/shared/types/network-types';
 import { consoleError } from '@/shared/utils/console-log';
@@ -30,7 +30,7 @@ const AddressBook = () => {
   const [group, setGroup] = useState<Array<Contact>>([]);
   const grouped = _.groupBy(group, (contact) => contact.contact_name[0]);
 
-  const history = useHistory();
+  const navigate = useNavigate();
   const wallet = useWallet();
 
   const [name, setName] = useState('');
@@ -165,7 +165,7 @@ const AddressBook = () => {
           <ArrowBackIcon
             fontSize="medium"
             sx={{ color: 'icon.navi', cursor: 'pointer' }}
-            onClick={() => history.push('/dashboard')}
+            onClick={() => navigate('/dashboard')}
           />
           <Typography
             variant="h1"

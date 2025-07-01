@@ -1,13 +1,13 @@
 import { Box, CardMedia, Typography } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import React, { useState, useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import IconCheck from 'ui/assets/check.svg';
 import { LLPrimaryButton } from 'ui/components';
 
 export const LLLinkingLoading = ({ linkingDone, image, accountTitle, userInfo }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [count, setCount] = useState(0);
   const colorArray = [
     'rgba(94,94,94,0.3)',
@@ -32,7 +32,7 @@ export const LLLinkingLoading = ({ linkingDone, image, accountTitle, userInfo })
 
   const startUsing = () => {
     setTimeout(() => {
-      history.replace('/');
+      navigate('/');
     });
   };
 

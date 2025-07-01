@@ -1,7 +1,7 @@
 import { Alert, Button, CircularProgress, Snackbar, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { consoleError } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
@@ -33,8 +33,8 @@ const ChangePassword = () => {
   const [statusMessage, setStatusMessage] = useState<string>('');
   const [showGooglePermissionDialog, setShowGooglePermissionDialog] = useState(false);
   const [showProfileBackupDialog, setShowProfileBackupDialog] = useState(false);
-
-  const history = useHistory();
+  // No need to maintain selectedProfiles in state since we immediately use them
+  const navigate = useNavigate();
 
   const verify = useCallback(async () => {
     try {
@@ -91,7 +91,7 @@ const ChangePassword = () => {
           await wallet
             .lockWallet()
             .then(() => {
-              history.push('/unlock');
+              navigate('/unlock');
             })
             .catch((error) => {
               consoleError('Error locking wallet:', error);
@@ -111,7 +111,7 @@ const ChangePassword = () => {
         setIsResetting(false);
       }
     },
-    [confirmCurrentPassword, confirmPassword, wallet, history]
+    [confirmCurrentPassword, confirmPassword, wallet, navigate]
   );
 
   const changePasswordWithBackups = useCallback(
@@ -138,7 +138,7 @@ const ChangePassword = () => {
           );
           try {
             await wallet.lockWallet();
-            history.push('/unlock');
+            navigate('/unlock');
           } catch (error) {
             consoleError('Error locking wallet:', error);
             setErrorMessage(chrome.i18n.getMessage('Oops__unexpected__error'));
@@ -157,7 +157,7 @@ const ChangePassword = () => {
         setStatusMessage('');
       }
     },
-    [confirmCurrentPassword, confirmPassword, wallet, history]
+    [confirmCurrentPassword, confirmPassword, wallet, navigate]
   );
 
   const handleChangePasswordClick = useCallback(async () => {

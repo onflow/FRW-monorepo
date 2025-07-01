@@ -1,6 +1,6 @@
 import { Button, Box } from '@mui/material';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 import { type ActiveAccountType } from '@/shared/types/wallet-types';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';

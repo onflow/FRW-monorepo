@@ -1,6 +1,6 @@
 import { Box, Typography } from '@mui/material';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { LLHeader } from '@/ui/components';
 import { useWallet } from 'ui/utils';
@@ -15,7 +15,7 @@ import WalletConnect from './WalletConnect';
 
 const Devices = () => {
   const usewallet = useWallet();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const wallet = useWallet();
   const [devices, setDevices] = useState<any[]>([]);
@@ -94,8 +94,7 @@ const Devices = () => {
             sx={{ width: '100%', margin: '8px 0' }}
             onClick={() => {
               if (item.id !== currentId) {
-                history.push({
-                  pathname: '/dashboard/setting/deviceinfo',
+                navigate('/dashboard/setting/deviceinfo', {
                   state: { deviceItem: item },
                 });
               }

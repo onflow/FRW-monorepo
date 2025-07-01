@@ -1,6 +1,6 @@
 import { Typography, Box, Drawer, Stack } from '@mui/material';
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import ResetModal from '@/ui/components/PopupModal/resetModal';
 import { LLPrimaryButton, LLSecondaryButton, LLWarningButton } from 'ui/components';
@@ -22,7 +22,7 @@ export interface AddressBookValues {
 
 const ResetPage = (props: AddOrEditAddressProps) => {
   const usewallet = useWallet();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [showAction, setShowAction] = useState(false);
 
   const onResetSubmit = async () => {

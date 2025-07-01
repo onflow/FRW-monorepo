@@ -14,7 +14,7 @@ import {
 import { useTheme, styled, StyledEngineProvider } from '@mui/material/styles';
 import { isEmpty } from 'lodash';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router';
 
 import { ContactType, type Contact } from '@/shared/types/network-types';
 import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';

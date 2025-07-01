@@ -1,5 +1,6 @@
 import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
+import { withRouter } from 'storybook-addon-remix-react-router';
 
 import emojisJson from '@/background/utils/emoji.json';
 const { emojis } = emojisJson as { emojis: Emoji[] };
@@ -137,6 +138,7 @@ const meta: Meta<typeof MenuDrawer> = {
   title: 'Views/Dashboard/MenuDrawer',
   component: MenuDrawer,
   decorators: [
+    withRouter,
     (Story, context) => {
       // Reset mocks
       importedMockUseChildAccounts.mockReset();

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
-import { useHistory, useParams, useLocation } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router';
 
 import { consoleError } from '@/shared/utils/console-log';
 import CollectionDetailGrid from '@/ui/components/NFTs/CollectionDetailGrid';
@@ -36,10 +36,10 @@ interface CollectionDetailState {
 const NFTCollectionDetail = () => {
   const usewallet = useWallet();
   const location = useParams();
-  const uselocation = useLocation<CollectionDetailState>();
-  const history = useHistory();
+  const uselocation = useLocation();
+  const navigate = useNavigate();
 
-  const collection_info = location['collection_address_name'].split('.');
+  const collection_info = location['collection_address_name']?.split('.') || [];
   const address = collection_info[0];
   const collection_name = collection_info[1];
   const nftCount = collection_info[2];

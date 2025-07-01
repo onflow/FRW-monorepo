@@ -3,7 +3,7 @@ import HelpOutlineRoundedIcon from '@mui/icons-material/HelpOutlineRounded';
 import { IconButton, Typography, Tooltip } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 interface LLHeaderProps {
   title: string | JSX.Element;
@@ -12,7 +12,7 @@ interface LLHeaderProps {
 
 export const LLHeader = (props: LLHeaderProps) => {
   //   const { label, ...inherentProps } = props;
-  const history = useHistory();
+  const navigate = useNavigate();
 
   return (
     <Grid
@@ -24,7 +24,7 @@ export const LLHeader = (props: LLHeaderProps) => {
       }}
     >
       <Grid size={1}>
-        <IconButton onClick={history.goBack}>
+        <IconButton onClick={() => navigate(-1)}>
           <ArrowBackIcon sx={{ color: 'icon.navi' }} />
         </IconButton>
       </Grid>

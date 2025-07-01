@@ -1,7 +1,7 @@
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, Typography, Button, IconButton } from '@mui/material';
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import eventBus from '@/eventBus';
 
@@ -11,7 +11,7 @@ interface StorageExceededAlertProps {
 }
 
 const StorageExceededAlert: React.FC<StorageExceededAlertProps> = ({ open, onClose }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const handleBuyFlow = () => {
     onClose();
@@ -118,7 +118,7 @@ const StorageExceededAlert: React.FC<StorageExceededAlertProps> = ({ open, onClo
             color="inherit"
             onClick={() => {
               onClose();
-              history.push('/dashboard/wallet/deposit');
+              navigate('/dashboard/wallet/deposit');
             }}
             sx={{
               height: '48px',

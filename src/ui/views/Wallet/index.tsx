@@ -1,7 +1,7 @@
 import { Typography, Button, Skeleton, Drawer, Tabs, Tab } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router';
 
 import eventBus from '@/eventBus';
 import { type ActiveAccountType } from '@/shared/types/wallet-types';
@@ -49,7 +49,7 @@ const TabPanel = ({
 };
 const WalletTab = ({ network }) => {
   const wallet = useWallet();
-  const history = useHistory();
+  const navigate = useNavigate();
   const location = useLocation();
   const currency = useCurrency();
   const { balance, coinsLoaded } = useCoins();
@@ -173,8 +173,8 @@ const WalletTab = ({ network }) => {
         </Typography>
 
         <ButtonRow
-          onSendClick={() => history.push('/dashboard/token/flow/send')}
-          onReceiveClick={() => history.push('/dashboard/wallet/deposit')}
+          onSendClick={() => navigate('/dashboard/token/flow/send')}
+          onReceiveClick={() => navigate('/dashboard/wallet/deposit')}
           onSwapClick={() => window.open(swapLink, '_blank', 'noopener,noreferrer')}
           onBuyClick={() => setShowOnRamp(true)}
           onMoveClick={() => goMoveBoard()}

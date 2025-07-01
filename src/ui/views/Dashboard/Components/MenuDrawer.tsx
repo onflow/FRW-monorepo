@@ -12,7 +12,7 @@ import {
   Typography,
 } from '@mui/material';
 import React, { useCallback, useRef, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import type { UserInfoResponse } from '@/shared/types/network-types';
 import { type WalletAccount } from '@/shared/types/wallet-types';
@@ -62,7 +62,7 @@ const MenuDrawer = ({
   noAddress,
 }: MenuDrawerProps) => {
   const wallet = useWallet();
-  const history = useHistory();
+  const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
   // Add Account Drawer
   const [showAddAccount, setShowAddAccount] = useState(false);
@@ -111,10 +111,10 @@ const MenuDrawer = ({
   };
   const handleEnableEvmClick = useCallback(
     (parentAddress: string) => {
-      history.push(`/dashboard/enable?parentAddress=${parentAddress}`);
+      navigate(`/dashboard/enable?parentAddress=${parentAddress}`);
       toggleDrawer();
     },
-    [history, toggleDrawer]
+    [navigate, toggleDrawer]
   );
   return (
     <Drawer
@@ -233,7 +233,7 @@ const MenuDrawer = ({
             text={chrome.i18n.getMessage('Lock__Wallet')}
             onClick={() => {
               wallet.lockWallet().then(() => {
-                history.push('/unlock');
+                navigate('/unlock');
               });
             }}
           />

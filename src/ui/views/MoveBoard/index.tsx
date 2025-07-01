@@ -1,7 +1,7 @@
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, Button, Typography, Drawer, IconButton, CardMedia } from '@mui/material';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import LLComingSoon from '@/ui/components/LLComingSoonWarning';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -24,7 +24,7 @@ interface MoveBoardProps {
 
 const MoveBoard = (props: MoveBoardProps) => {
   const usewallet = useWallet();
-  const history = useHistory();
+  const navigate = useNavigate();
   const { activeAccountType } = useProfiles();
   const [showSelectNft, setSelectBoard] = useState<boolean>(false);
   const [network, setNetwork] = useState<string>('');
@@ -209,7 +209,7 @@ const MoveBoard = (props: MoveBoardProps) => {
             },
           }}
           onClick={() => {
-            history.push('/dashboard/token/flow/send');
+            navigate('/dashboard/token/flow/send');
           }}
         >
           <CardMedia

@@ -18,7 +18,7 @@ import Grid from '@mui/material/Grid';
 import { StyledEngineProvider } from '@mui/material/styles';
 import React, { useState, useEffect, useCallback } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import { useHistory, useParams, useLocation } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router';
 
 import { consoleError } from '@/shared/utils/console-log';
 import { LLSpinner } from '@/ui/components';
@@ -70,9 +70,9 @@ const LinkedCollection = (props) => {
 
   const location = useParams();
 
-  const uselocation = useLocation<CollectionDetailState>();
+  const uselocation = useLocation();
 
-  const history = useHistory();
+  const navigate = useNavigate();
   const [list, setLists] = useState<any[]>([]);
   const [ownerAddress, setOwnerAddress] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -80,7 +80,7 @@ const LinkedCollection = (props) => {
   const [total, setTotal] = useState(0);
   const [pageIndex, setPage] = useState(1);
   const [loadingMore, setLoadingMore] = useState(false);
-  const collection_info = location['collection_address_name'].split('.');
+  const collection_info = location['collection_address_name']?.split('.') || [];
   const address = collection_info[0];
   const collection_name = collection_info[1];
   const nftCount = collection_info[2];
@@ -192,7 +192,7 @@ const LinkedCollection = (props) => {
           }}
         >
           <IconButton
-            onClick={() => history.goBack()}
+            onClick={() => navigate(-1)}
             sx={{
               borderRadius: '100%',
               margin: '8px',

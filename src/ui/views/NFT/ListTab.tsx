@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import React, { forwardRef, useImperativeHandle } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { type NFTCollections } from '@/shared/types/nft-types';
 import { refreshNftCatalogCollections } from '@/shared/utils/cache-data-keys';
@@ -54,11 +54,10 @@ const CollectionView = ({
   ownerAddress: string;
   isAccessible: boolean;
 }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const handleClick = () => {
-    history.push({
-      pathname: `/dashboard/nested/collectiondetail/${ownerAddress}.${contract_name}.${count}`,
+    navigate(`/dashboard/nested/collectiondetail/${ownerAddress}.${contract_name}.${count}`, {
       state: {
         collection: { name, logo, count, index, contract_name, ownerAddress, isAccessible },
         ownerAddress,
@@ -169,7 +168,7 @@ const checkContractAddressInCollections = (
 };
 
 const ListTab = forwardRef((props: ListTabProps, ref) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const usewallet = useWallet();
 
   const { currentWallet } = useProfiles();

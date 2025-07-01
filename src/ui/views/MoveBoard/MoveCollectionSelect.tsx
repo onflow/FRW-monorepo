@@ -14,7 +14,7 @@ import {
   CardMedia,
 } from '@mui/material';
 import React, { useState, useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import popAdd from 'ui/assets/svg/popAdd.svg';
 import popLock from 'ui/assets/svg/popLock.svg';
@@ -31,7 +31,7 @@ const MoveCollectionSelect = ({
   collectionList,
 }) => {
   const usewallet = useWallet();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [filter, setFilter] = useState('');
 
   const handleFilterChange = (event) => {

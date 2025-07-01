@@ -4,7 +4,7 @@ import Grid from '@mui/material/Grid';
 import { styled } from '@mui/material/styles';
 import React, { useState, useEffect } from 'react';
 import { useForm, type FieldValues } from 'react-hook-form';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { type WalletAccount } from '@/shared/types/wallet-types';
 import { consoleError } from '@/shared/utils/console-log';
@@ -29,7 +29,7 @@ export interface AddressBookValues {
 }
 
 const UnlinkAccount = (props: UnlinkAccountProps) => {
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const wallet = useWallet();
   const {
@@ -57,7 +57,7 @@ const UnlinkAccount = (props: UnlinkAccountProps) => {
           `You have unlinked the child account ${props.address} from your account. \nClick to view this transaction.`
         );
         await wallet.setDashIndex(0);
-        history.push(`/dashboard?activity=1&txId=${txId}`);
+        navigate(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
         setIsLoading(false);
