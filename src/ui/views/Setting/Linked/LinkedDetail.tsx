@@ -32,7 +32,12 @@ import AddressCard from '@/ui/components/settings/address-card';
 import { LinkedAccountCard } from '@/ui/components/settings/linked-account-card';
 import SettingsListCard from '@/ui/components/settings/settings-list-card';
 import SlidingTabSwitch from '@/ui/components/settings/sliding-tab-switch';
-import { useChildAccountAllowTypes, useCurrentId, useUserInfo } from '@/ui/hooks/use-account-hooks';
+import {
+  useChildAccountAllowTypes,
+  useCurrentId,
+  useUserInfo,
+  useChildAccounts,
+} from '@/ui/hooks/use-account-hooks';
 import { useChildAccountFt } from '@/ui/hooks/use-coin-hooks';
 import { useChildAccountNfts, useNftCollectionList } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -199,32 +204,35 @@ const LinkedDetail = () => {
   const [hideEmpty, setHide] = useState<boolean>(true);
   const [value, setValue] = useState('one');
 
-  const { activeAccountType, childAccounts, mainAddress, network } = useProfiles();
-
-  // Extract parentName from URL query parameters
+  const { currentWallet, network } = useProfiles();
+  // Extract parentName and parentAddress from URL query parameters
   const urlParams = new URLSearchParams(locationState.search);
   const parentName = urlParams.get('parentName') || '';
+  const parentAddress = urlParams.get('parentAddress') || '';
 
-  const active = activeAccountType === 'main';
+  const childAccounts = useChildAccounts(network, parentAddress);
+
+  //Can only make unlink action if the current wallet is the parent wallet of the linked account
+  const active = currentWallet.address === parentAddress;
   // The child account address is the key in the url
   const childAccountAddress: string | undefined = location['key'];
   const childAccount = childAccounts?.find((account) => account.address === childAccountAddress);
   const childAccountAllowTypes = useChildAccountAllowTypes(
     network,
-    mainAddress,
+    parentAddress,
     childAccountAddress
   );
   const nftCollectionList = useNftCollectionList(network);
   const allChildAccountNfts: ChildAccountNFTsStore | undefined = useChildAccountNfts(
     network,
-    mainAddress
+    parentAddress
   );
   const childAccountNfts: ChildAccountNFTs | undefined = useMemo(
     () => (childAccountAddress ? allChildAccountNfts?.[childAccountAddress] : {}),
     [allChildAccountNfts, childAccountAddress]
   );
 
-  const availableFt = useChildAccountFt(network, mainAddress, childAccountAddress);
+  const availableFt = useChildAccountFt(network, parentAddress, childAccountAddress);
 
   const availableNftCollection: Collection[] | undefined = useMemo(
     () =>

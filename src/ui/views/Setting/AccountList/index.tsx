@@ -73,7 +73,7 @@ const AccountList = () => {
         const parentAccount = walletList?.find((wallet) => wallet.address === parentAddress);
         const parentName = parentAccount?.name || '';
         navigate(
-          `/dashboard/setting/linkeddetail/${accountAddress}?parentName=${encodeURIComponent(parentName)}`
+          `/dashboard/setting/linkeddetail/${accountAddress}?parentName=${encodeURIComponent(parentName)}&parentAddress=${encodeURIComponent(parentAddress)}`
         );
       }
     } else {
