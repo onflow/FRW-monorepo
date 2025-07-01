@@ -50,8 +50,8 @@ import {
 } from '@/ui/style/color';
 import { formatAddress } from '@/ui/utils';
 
-import EditAccount from './EditAccount';
-import UnlinkAccount from './UnlinkAccount';
+import EditAccount from './Linked/EditAccount';
+import UnlinkAccount from './Linked/UnlinkAccount';
 
 interface TicketToken {
   id: string;

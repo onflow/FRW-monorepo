@@ -52,7 +52,7 @@ const AccountHierarchyItem = ({
   account: WalletAccount;
   network?: string;
   currentWallet?: WalletAccount;
-  onAccountClick: (accountAddress: string, parentAddress?: string) => void;
+  onAccountClick: (clickedAccount: WalletAccount, parentAccount?: WalletAccount) => void;
 }) => {
   const childAccounts = useChildAccounts(network, account.address);
   const evmAccount = useEvmAccount(network, account.address);
@@ -76,7 +76,7 @@ const AccountHierarchyItem = ({
           network={network}
           account={account}
           active={currentWallet?.address === account.address}
-          onClick={() => onAccountClick(account.address, account.address)}
+          onClick={() => onAccountClick(account, account)}
           showCard={false}
           showLink={false}
         />
@@ -88,7 +88,7 @@ const AccountHierarchyItem = ({
             account={evmAccount}
             parentAccount={account}
             active={currentWallet?.address === evmAccount.address}
-            onClick={() => onAccountClick(evmAccount.address, account.address)}
+            onClick={() => onAccountClick(evmAccount, account)}
             showLink={true}
             showCard={false}
           />
@@ -104,7 +104,7 @@ const AccountHierarchyItem = ({
                 account={linkedAccount}
                 parentAccount={account}
                 active={currentWallet?.address === linkedAccount.address}
-                onClick={() => onAccountClick(linkedAccount.address, account.address)}
+                onClick={() => onAccountClick(linkedAccount, account)}
                 showLink={true}
                 showCard={false}
               />
@@ -122,36 +122,30 @@ const AccountList = () => {
   const [isInitialized, setIsInitialized] = useState(false);
   const navigate = useNavigate();
 
-  const handleAccountClick = (accountAddress: string, parentAddress?: string) => {
-    // Find the account for storage
-    const account = walletList?.find((wallet) => wallet.address === accountAddress);
+  const handleAccountClick = (clickedAccount: WalletAccount, parentAccount?: WalletAccount) => {
+    // Find the emoji by name (clickedAccount.name should match emoji.name)
+    const emojiIndex = emojis.findIndex((emoji) => emoji.name === clickedAccount.name);
 
-    if (account) {
-      // Find the emoji by name (account.name should match emoji.name)
-      const emojiIndex = emojis.findIndex((emoji) => emoji.name === account.name);
-
-      if (emojiIndex !== -1) {
-        const selectedEmoji = emojis[emojiIndex];
-        const walletDetailInfo = { wallet: account, selectedEmoji };
-        storage.set('walletDetail', JSON.stringify(walletDetailInfo));
-      }
+    if (emojiIndex !== -1) {
+      const selectedEmoji = emojis[emojiIndex];
+      const walletDetailInfo = { wallet: clickedAccount, selectedEmoji };
+      storage.set('walletDetail', JSON.stringify(walletDetailInfo));
     }
 
-    if (parentAddress && accountAddress !== parentAddress) {
+    if (parentAccount && clickedAccount.address !== parentAccount.address) {
       // Check if this is an EVM account or a Flow linked account
-      if (isValidEthereumAddress(accountAddress)) {
-        navigate(`/dashboard/setting/accountlist/detail/${accountAddress}`);
+      if (isValidEthereumAddress(clickedAccount.address)) {
+        navigate(`/dashboard/setting/accountlist/detail/${clickedAccount.address}`);
       } else {
         // For Flow linked accounts, navigate to linked detail page with parent address name
-        const parentAccount = walletList?.find((wallet) => wallet.address === parentAddress);
-        const parentName = parentAccount?.name || '';
+        const parentName = parentAccount.name || '';
         navigate(
-          `/dashboard/setting/linkeddetail/${accountAddress}?parentName=${encodeURIComponent(parentName)}&parentAddress=${encodeURIComponent(parentAddress)}`
+          `/dashboard/setting/accountlist/linkeddetail/${clickedAccount.address}?parentName=${encodeURIComponent(parentName)}&parentAddress=${encodeURIComponent(parentAccount.address)}`
         );
       }
     } else {
       // For main accounts, navigate to account detail page
-      navigate(`/dashboard/setting/accountlist/detail/${accountAddress}`);
+      navigate(`/dashboard/setting/accountlist/detail/${clickedAccount.address}`);
     }
   };
 

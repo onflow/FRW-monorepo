@@ -9,6 +9,8 @@ import Enable from '../views/Enable';
 
 import Dashboard from './Dashboard';
 import Header from './Dashboard/Header';
+import LinkedCollection from './Linked/LinkedCollection';
+import LinkedNftDetail from './Linked/LinkedNftDetail';
 import ManageToken from './ManageToken';
 import CollectionDetail from './NFT/CollectionDetail';
 import Detail from './NFT/Detail';
@@ -22,6 +24,7 @@ import SendTo from './SendTo';
 import SettingTab from './Setting';
 import About from './Setting/About/About';
 import AccountList from './Setting/AccountList';
+import LinkedDetail from './Setting/AccountList/LinkedDetail';
 import RemoveWallet from './Setting/AccountList/RemoveWallet';
 import WalletDetail from './Setting/AccountList/WalletDetail';
 import AddressBook from './Setting/AddressBook';
@@ -32,10 +35,6 @@ import CurrencySettings from './Setting/Currency';
 import DeveloperMode from './Setting/DeveloperMode/DeveloperMode';
 import DeviceInfo from './Setting/Devices/DeviceInfo';
 import KeyList from './Setting/KeyList/KeyList';
-import Linked from './Setting/Linked';
-import LinkedCollection from './Setting/Linked/LinkedCollection';
-import LinkedDetail from './Setting/Linked/LinkedDetail';
-import LinkedNftDetail from './Setting/Linked/LinkedNftDetail';
 import Keydetail from './Setting/privatekey/Keydetail';
 import PrivateKeyPassword from './Setting/privatekey/Privatekeypassword';
 import Profile from './Setting/Profile';
@@ -326,15 +325,7 @@ const InnerRoute = () => {
               }
             />
             <Route
-              path="setting/linked"
-              element={
-                <PrivateRoute>
-                  <Linked />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="setting/linkeddetail/:key"
+              path="setting/accountlist/linkeddetail/:key"
               element={
                 <PrivateRoute>
                   <LinkedDetail />

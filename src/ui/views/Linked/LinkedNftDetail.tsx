@@ -9,12 +9,11 @@ import { useNavigate, useLocation } from 'react-router';
 
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { type PostMedia, MatchMediaType } from '@/ui/utils/url';
+import MoveFromChild from '@/ui/views/NFT/SendNFT/MoveFromChild';
 import fallback from 'ui/assets/image/errorImage.png';
 import DetailMove from 'ui/assets/svg/detailMove.svg';
 import SendIcon from 'ui/assets/svg/detailSend.svg';
 import { useWallet } from 'ui/utils';
-
-import MoveFromChild from '../../NFT/SendNFT/MoveFromChild';
 
 interface NFTDetailState {
   nft: any;

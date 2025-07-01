@@ -8,10 +8,9 @@ import { useNavigate } from 'react-router';
 
 import { type WalletAccount } from '@/shared/types/wallet-types';
 import { consoleError } from '@/shared/utils/console-log';
+import { LLPrimaryButton, LLSecondaryButton, LLSpinner } from '@/ui/components';
 import UnlinkSVG from 'ui/assets/svg/unlink.svg';
 import { useWallet } from 'ui/utils';
-
-import { LLPrimaryButton, LLSecondaryButton, LLSpinner } from '../../../components';
 
 interface UnlinkAccountProps {
   isAddAddressOpen: boolean;
