@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import LinearProgress from '@mui/material/LinearProgress';
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link, useLocation } from 'react-router';
+import { Link, useLocation, useParams } from 'react-router';
 
 import { storage } from '@/background/webapi';
 import type { StorageInfo } from '@/shared/types/network-types';
@@ -38,7 +38,7 @@ import { useWallet } from 'ui/utils';
 
 import editEmoji from '../../../assets/svg/editEmoji.svg';
 
-import EditProfile from './EditProfile';
+import EditAccount from './EditAccount';
 
 function formatBytes(bytes, decimals = 2) {
   if (bytes === 0) return '0 Bytes';
@@ -53,10 +53,10 @@ function formatStorageInfo(used: number | undefined, capacity: number | undefine
   return `${formatBytes((used || 0) * 10)} / ${formatBytes((capacity || 0) * 10)}`;
 }
 
-const WalletDetail = () => {
+const AccountDetail = () => {
   const wallet = useWallet();
-  const location = useLocation();
-  const address = new URLSearchParams(location.search).get('address') || '';
+  const params = useParams();
+  const address = params.address || '';
   const [userWallet, setWallet] = useState<
     WalletAccountWithBalance | MainAccountWithBalance | null
   >(null);
@@ -131,8 +131,10 @@ const WalletDetail = () => {
   }, [wallet]);
 
   const loadStorageInfo = useCallback(async () => {
-    const info = await wallet.openapi.getStorageInfo(address!);
-    setStorageInfo(info);
+    if (address) {
+      const info = await wallet.openapi.getStorageInfo(address);
+      setStorageInfo(info);
+    }
   }, [wallet, address]);
 
   function storageCapacity(storage): number {
@@ -383,21 +385,22 @@ const WalletDetail = () => {
           {chrome.i18n.getMessage('You__will__need__to__connect__to__your__wallet__again')}
         </Alert>
       </Snackbar>
-      {showProfile && (
-        <EditProfile
+      {showProfile && address && (
+        <EditAccount
           showMoveBoard={showProfile}
           handleCloseIconClicked={() => setShowProfile(false)}
           handleCancelBtnClicked={() => setShowProfile(false)}
-          handleAddBtnClicked={() => {
+          handleAddBtnClicked={async () => {
             setShowProfile(false);
           }}
           updateProfileEmoji={(emoji) => updateProfileEmoji(emoji)}
           emoji={emoji}
           userWallet={userWallet}
+          address={address}
         />
       )}
     </div>
   );
 };
 
-export default WalletDetail;
+export default AccountDetail;

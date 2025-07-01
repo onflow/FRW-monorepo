@@ -75,6 +75,8 @@ import {
   accountBalanceKey,
   walletLoadedKey,
   walletLoadedRefreshRegex,
+  userMetadataKey,
+  mainAccountsKey,
 } from '@/shared/utils/cache-data-keys';
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
@@ -147,6 +149,7 @@ import {
   registerRefreshListener,
   setCachedData,
   triggerRefresh,
+  clearCachedData,
 } from '../utils/data-cache';
 import defaultConfig from '../utils/defaultConfig.json';
 import { getEmojiList } from '../utils/emoji-util';
@@ -3761,6 +3764,74 @@ export class WalletController extends BaseController {
       });
       throw err;
     }
+  };
+
+  /**
+   * Update account metadata (emoji, name, background color) via openapi API
+   */
+  updateAccountMetadata = async (
+    address: string,
+    icon: string,
+    name: string,
+    background: string
+  ) => {
+    const result = await openapiService.updateAccountMetadata(address, icon, name, background);
+
+    // Update the metadata cache after successful update
+    try {
+      const currentPubKey = userWalletService.getCurrentPubkey();
+      const cacheKey = userMetadataKey(currentPubKey);
+
+      // Get existing metadata from cache
+      const existingMetadata = (await getValidData(cacheKey)) || {};
+      const updatedMetadata = {
+        ...existingMetadata,
+        [address]: {
+          background,
+          icon,
+          name,
+        },
+      };
+
+      // Update the cache with new metadata
+      await setCachedData(cacheKey, updatedMetadata, 300_000);
+
+      // Update the specific account in the main accounts cache
+      try {
+        const network = await userWalletService.getNetwork();
+        const accountsCacheKey = mainAccountsKey(network, currentPubKey);
+        const existingMainAccounts = await getValidData(accountsCacheKey);
+
+        if (existingMainAccounts && Array.isArray(existingMainAccounts)) {
+          const updatedMainAccounts = existingMainAccounts.map((account) => {
+            if (account.address === address) {
+              return {
+                ...account,
+                name: name,
+                icon: icon,
+                color: background,
+              };
+            }
+            return account;
+          });
+
+          await setCachedData(accountsCacheKey, updatedMainAccounts, 60_000);
+        }
+      } catch (updateError) {
+        consoleError('Failed to update main accounts cache:', updateError);
+      }
+    } catch (error) {
+      consoleError('Failed to update metadata cache:', error);
+    }
+
+    return result;
+  };
+
+  /**
+   * Get user metadata from openapi API
+   */
+  getUserMetadata = async () => {
+    return await openapiService.getUserMetadata();
   };
 }
 

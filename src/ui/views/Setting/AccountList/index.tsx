@@ -55,13 +55,9 @@ const AccountList = () => {
 
     if (account) {
       // Find the emoji by name (account.name should match emoji.name)
-      const emojiIndex = emojis.findIndex((emoji) => emoji.name === account.name);
 
-      if (emojiIndex !== -1) {
-        const selectedEmoji = emojis[emojiIndex];
-        const walletDetailInfo = { wallet: account, selectedEmoji };
-        storage.set('walletDetail', JSON.stringify(walletDetailInfo));
-      }
+      const walletDetailInfo = { wallet: account };
+      storage.set('walletDetail', JSON.stringify(walletDetailInfo));
     }
 
     if (parentAddress && accountAddress !== parentAddress) {
