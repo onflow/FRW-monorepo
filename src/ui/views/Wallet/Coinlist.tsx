@@ -265,10 +265,10 @@ const CoinList = ({
   return (
     <>
       {activeAccountType === 'main' && (
-        <ActionButtons managePath="dashboard/managetoken" createPath="dashboard/tokenList" />
+        <ActionButtons managePath="/dashboard/managetoken" createPath="/dashboard/tokenList" />
       )}
       {activeAccountType === 'evm' && (
-        <ActionButtons managePath="dashboard/managetoken" createPath="dashboard/addcustomevm" />
+        <ActionButtons managePath="/dashboard/managetoken" createPath="/dashboard/addcustomevm" />
       )}
 
       <List sx={{ paddingTop: '0px', paddingBottom: '0px' }}>
