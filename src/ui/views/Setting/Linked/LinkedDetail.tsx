@@ -18,6 +18,7 @@ import {
   FormControlLabel,
   Switch,
   Grid,
+  List,
 } from '@mui/material';
 import React, { useState, useMemo } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router';
@@ -28,8 +29,8 @@ import { CopyIcon } from '@/ui/assets/icons/CopyIcon';
 import IconNext from '@/ui/assets/svg/nextgray.svg';
 import { LLHeader, LLSecondaryButton } from '@/ui/components';
 import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
-import AddressCard from '@/ui/components/settings/address-card';
 import { LinkedAccountCard } from '@/ui/components/settings/linked-account-card';
+import SettingsListItem from '@/ui/components/settings/setting-list-item';
 import SettingsListCard from '@/ui/components/settings/settings-list-card';
 import SlidingTabSwitch from '@/ui/components/settings/sliding-tab-switch';
 import {
@@ -350,7 +351,20 @@ const LinkedDetail = () => {
             </Box>
           </Box>
 
-          <AddressCard address={childAccountAddress || ''} label="Address" />
+          <List
+            sx={{
+              borderRadius: '16px',
+              overflow: 'hidden',
+              backgroundColor: '#282828',
+              margin: '8px auto',
+              pt: 0,
+              pb: 0,
+              width: '100%',
+              padding: '0 2px',
+            }}
+          >
+            <SettingsListItem address={childAccountAddress || ''} addressLabel="Address" />
+          </List>
 
           <Box
             sx={{

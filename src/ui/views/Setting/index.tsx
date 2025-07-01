@@ -27,7 +27,8 @@ import { MobileIcon } from '@/ui/assets/icons/settings/Mobile';
 import { SecurityIcon } from '@/ui/assets/icons/settings/Security';
 import { LLHeader } from '@/ui/components';
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
-import { SettingsListItem } from '@/ui/components/settings/list-item';
+import { ProfileItem } from '@/ui/components/profile/profile-item';
+import SettingsListItem from '@/ui/components/settings/setting-list-item';
 import TopLinkButton from '@/ui/components/settings/top-link-button';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import {
@@ -78,47 +79,13 @@ const SettingTab = () => {
               sx={{ padding: '0 18px' }}
               data-testid="setting-goto-account-button"
             >
-              <ListItemIcon sx={{ minWidth: '25px' }}>
-                <CardMedia
-                  component="img"
-                  image={userInfo?.avatar}
-                  alt={userInfo?.nickname}
-                  sx={{ width: '40px', height: '40px', borderRadius: '8px' }}
-                />
-              </ListItemIcon>
-              <ListItemText
-                sx={{
-                  color: COLOR_WHITE_FFFFFF,
-                  fontFamily: 'Inter',
-                  fontSize: '14px',
-                  fontStyle: 'normal',
-                  fontWeight: 600,
-                  lineHeight: '120%',
-                  letterSpacing: '-0.084px',
-                  marginLeft: '16px',
-                }}
-              >
-                {userInfo?.nickname}
-              </ListItemText>
-              <ListItemIcon
-                aria-label="end"
-                sx={{
-                  minWidth: '40px',
-                  height: '40px',
-                  padding: '8px',
-                  borderRadius: '100%',
-                  backgroundColor: COLOR_WHITE_ALPHA_10_FFFFFF1A,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  '&:hover': {
-                    backgroundColor: COLOR_WHITE_ALPHA_40_FFFFFF66,
-                  },
-                  transition: 'background-color 0.2s ease',
-                }}
-              >
-                <EditIcon width={24} height={24} />
-              </ListItemIcon>
+              <ProfileItem
+                profileId={profileIds[0]}
+                selectedProfileId={profileIds[0]}
+                switchAccount={async () => {}}
+                setLoadingId={() => {}}
+                rightIcon={<EditIcon width={24} height={24} />}
+              />
             </ListItem>
           </List>
         )}

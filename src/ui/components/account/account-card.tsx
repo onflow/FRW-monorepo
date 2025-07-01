@@ -105,7 +105,6 @@ export const AccountCard = ({
         borderRadius: '16px',
         backgroundColor: showCard ? COLOR_DARKMODE_BACKGROUND_CARDS_1A1A1A : 'transparent',
         overflow: 'hidden',
-        maxWidth: '500px',
       }}
       elevation={showCard ? 1 : 0}
       data-testid={testId}

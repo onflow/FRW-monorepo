@@ -28,6 +28,7 @@ export const ProfileItemBase = ({
   setLoadingId,
   userInfo,
   activeProfileVariant = false,
+  rightIcon,
 }: {
   profileId?: string; // The profile id of this item
   selectedProfileId?: string; // The profile id of the currently selected profile
@@ -35,6 +36,7 @@ export const ProfileItemBase = ({
   setLoadingId?: (profileId: string) => void;
   userInfo?: UserInfoResponse;
   activeProfileVariant?: boolean;
+  rightIcon?: React.ReactNode;
 }) => {
   return (
     <ListItem
@@ -85,7 +87,9 @@ export const ProfileItemBase = ({
             </Typography>
           </Box>
         </ListItemText>
-        {profileId && profileId === selectedProfileId ? (
+        {rightIcon ? (
+          rightIcon
+        ) : profileId && profileId === selectedProfileId ? (
           activeProfileVariant ? (
             <CardMedia
               component="img"
