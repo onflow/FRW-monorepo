@@ -1,6 +1,6 @@
 import { Typography, Box, CardMedia } from '@mui/material';
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import packageJson from '@/../package.json';
 import { LLHeader } from '@/ui/components';
@@ -16,7 +16,7 @@ const BRANCH_NAME = process.env.BRANCH_NAME;
 const COMMIT_SHA = process.env.COMMIT_SHA;
 
 const About = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
 
   return (
     <div className="page">

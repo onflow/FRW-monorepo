@@ -11,7 +11,7 @@ import {
 import Grid from '@mui/material/Grid';
 import { Box } from '@mui/system';
 import React, { forwardRef, useImperativeHandle, useEffect, useState, useCallback } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import ListSkeleton from '@/ui/components/NFTs/ListSkeleton';
 import { useWallet } from '@/ui/utils/WalletContext';
@@ -28,7 +28,7 @@ interface ListTabProps {
 
 const ListTab = forwardRef((props: ListTabProps, ref) => {
   const { accessible, setCount, data } = props;
-  const history = useHistory();
+  const navigate = useNavigate();
   const usewallet = useWallet();
   const [collectionLoading, setCollectionLoading] = useState(true);
   const [collections, setCollections] = useState<any[]>([]);
@@ -93,14 +93,16 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
 
   const CollectionView = (data) => {
     const handleClick = () => {
-      history.push({
-        pathname: `/dashboard/nested/evm/collectiondetail/${data.ownerAddress}.${data.contract_name}.${data.count}`,
-        state: {
-          collection: data,
-          ownerAddress: data.ownerAddress,
-          accessible: accessible,
-        },
-      });
+      navigate(
+        `/dashboard/nested/evm/collectiondetail/${data.ownerAddress}.${data.contract_name}.${data.count}`,
+        {
+          state: {
+            collection: data,
+            ownerAddress: data.ownerAddress,
+            accessible: accessible,
+          },
+        }
+      );
     };
     return (
       <Card

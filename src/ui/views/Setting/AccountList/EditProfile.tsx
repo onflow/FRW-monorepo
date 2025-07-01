@@ -13,7 +13,7 @@ import {
   CardMedia,
 } from '@mui/material';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import emojis from 'background/utils/emoji.json';

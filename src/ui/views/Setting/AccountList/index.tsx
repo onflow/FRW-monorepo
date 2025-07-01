@@ -10,7 +10,7 @@ import {
   CardMedia,
 } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Link, useRouteMatch, useHistory } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router';
 
 import { storage } from '@/background/webapi';
 import {
@@ -47,7 +47,7 @@ const AccountList = () => {
   const { currentWallet, walletList, network } = useProfiles();
   const [emojis, setEmojis] = useState<Emoji[]>(tempEmoji);
   const [isInitialized, setIsInitialized] = useState(false);
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const handleAccountClick = (accountAddress: string, parentAddress?: string) => {
     // Find the account for storage
@@ -67,18 +67,18 @@ const AccountList = () => {
     if (parentAddress && accountAddress !== parentAddress) {
       // Check if this is an EVM account or a Flow linked account
       if (isValidEthereumAddress(accountAddress)) {
-        history.push(`/dashboard/setting/accountlist/detail/${accountAddress}`);
+        navigate(`/dashboard/setting/accountlist/detail/${accountAddress}`);
       } else {
         // For Flow linked accounts, navigate to linked detail page with parent address name
         const parentAccount = walletList?.find((wallet) => wallet.address === parentAddress);
         const parentName = parentAccount?.name || '';
-        history.push(
+        navigate(
           `/dashboard/setting/linkeddetail/${accountAddress}?parentName=${encodeURIComponent(parentName)}`
         );
       }
     } else {
       // For main accounts, navigate to account detail page
-      history.push(`/dashboard/setting/accountlist/detail/${accountAddress}`);
+      navigate(`/dashboard/setting/accountlist/detail/${accountAddress}`);
     }
   };
 

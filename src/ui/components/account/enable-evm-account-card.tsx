@@ -8,7 +8,7 @@ import {
   IconButton,
 } from '@mui/material';
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import rightarrow from '@/ui/assets/svg/rightarrow.svg';
 import {
@@ -25,7 +25,7 @@ export const EnableEvmAccountCard = ({
   onEnableEvmClick: () => void;
   showCard: boolean;
 }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const gradientStyle: React.CSSProperties = {
     background: `linear-gradient(92deg, ${COLOR_GREEN_FLOW_DARKMODE_00EF8B} 63.42%, ${COLOR_ACCENT_EVM_627EEA} 91.99%)`,

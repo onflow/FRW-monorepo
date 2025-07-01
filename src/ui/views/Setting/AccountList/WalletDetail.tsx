@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import LinearProgress from '@mui/material/LinearProgress';
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router';
 
 import { storage } from '@/background/webapi';
 import type { StorageInfo } from '@/shared/types/network-types';

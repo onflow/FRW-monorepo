@@ -1,15 +1,15 @@
 import { useCallback, useMemo } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { useWallet } from '@/ui/utils/WalletContext';
 
 export const useApproval = () => {
   const usewallet = useWallet();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const getApproval = useCallback(() => usewallet.getApproval(), [usewallet]);
   const stableUsewallet = useMemo(() => usewallet, [usewallet]);
-  const stableHistory = useMemo(() => history, [history]);
+  const stableNavigate = useMemo(() => navigate, [navigate]);
 
   const linkingConfirm = useCallback(
     async (data?: any, stay = false, forceReject = false) => {
@@ -37,10 +37,10 @@ export const useApproval = () => {
         return;
       }
       setTimeout(() => {
-        stableHistory.replace('/');
+        stableNavigate('/', { replace: true });
       });
     },
-    [getApproval, stableUsewallet, stableHistory]
+    [getApproval, stableUsewallet, stableNavigate]
   );
 
   const rejectApproval = useCallback(
@@ -49,9 +49,9 @@ export const useApproval = () => {
       if (approval) {
         await stableUsewallet.rejectApproval(err);
       }
-      stableHistory.push('/');
+      stableNavigate('/');
     },
-    [getApproval, stableUsewallet, stableHistory]
+    [getApproval, stableUsewallet, stableNavigate]
   );
 
   return [getApproval, resolveApproval, rejectApproval, linkingConfirm] as const;

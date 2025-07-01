@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Redirect } from 'react-router-dom';
+import { Navigate } from 'react-router';
 
 import { useApproval } from '@/ui/hooks/use-approval';
 import Spin from 'ui/components/Spin';
@@ -70,7 +70,7 @@ const SortHat = () => {
 
     // </Box>
     // <LLSpinner size={40}>{to && <Redirect to={to} />}</LLSpinner>
-    <Spin spinning={!to}>{to && <Redirect to={to} />}</Spin>
+    <Spin spinning={!to}>{to && <Navigate to={to} replace />}</Spin>
     // <Spin />
   );
 };

@@ -1,7 +1,7 @@
 import { Typography, Button, CardMedia } from '@mui/material';
 import { Box } from '@mui/system';
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 import recover from '@/ui/assets/svg/recover.svg';
 import reset from '@/ui/assets/svg/resetarrow.svg';

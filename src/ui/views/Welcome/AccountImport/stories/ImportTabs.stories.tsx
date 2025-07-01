@@ -5,19 +5,15 @@ import { action } from 'storybook/actions';
 import { fn } from 'storybook/test';
 
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
-import { Link as LinkMock } from '@/stories/react-router-dom.mock';
 import { useWallet as useWalletMock } from '@/ui/utils/WalletContext.mock';
 
 import ImportTabs from '../ImportTabs';
 
 const meta = {
-  title: 'View/Welcome/AccountImport/ImportTabs',
+  title: 'views/Welcome/AccountImport/ImportTabs',
   component: ImportTabs,
   decorators: [
     (Story) => {
-      LinkMock.mockReset();
-      LinkMock.mockImplementation((props: any) => <Box {...props} />);
-
       useWalletMock.mockReset();
       useWalletMock.mockImplementation(() => ({
         openapi: {

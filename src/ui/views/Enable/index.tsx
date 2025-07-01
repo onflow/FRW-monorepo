@@ -2,7 +2,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { Typography, IconButton, Box, Link, CardMedia } from '@mui/material';
 import BN from 'bignumber.js';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { consoleError } from '@/shared/utils/console-log';
 import { EnableEvm } from '@/ui/components/EnableEvm';
@@ -11,7 +11,7 @@ import { useWallet } from 'ui/utils';
 
 const Enable = () => {
   const expiry_time = 60000;
-  const history = useHistory();
+  const navigate = useNavigate();
   const wallet = useWallet();
   const [claiming, setClaiming] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -29,7 +29,7 @@ const Enable = () => {
           `Your EVM on Flow address has been created. \nClick to view this transaction.`
         );
         await wallet.setDashIndex(0);
-        history.push(`/dashboard?activity=1&txId=${txId}`);
+        navigate(`/dashboard?activity=1&txId=${txId}`);
 
         setClaiming(false);
       })
@@ -57,7 +57,7 @@ const Enable = () => {
           justifyContent: 'space-between',
         }}
       >
-        <IconButton onClick={history.goBack}>
+        <IconButton onClick={() => navigate(-1)}>
           <ArrowBackIcon
             sx={{
               color: 'icon.navi',

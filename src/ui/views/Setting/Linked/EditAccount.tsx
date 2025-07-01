@@ -3,7 +3,7 @@ import { Box, Drawer, Typography, Stack, InputBase } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { styled } from '@mui/material/styles';
 import React, { useState, useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { consoleError } from '@/shared/utils/console-log';
 import { useWallet } from 'ui/utils';
@@ -46,7 +46,7 @@ const EditAccount = ({
   address,
 }: EditAccountProps) => {
   const wallet = useWallet();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [failed, setFailed] = useState<boolean>(false);
@@ -67,7 +67,7 @@ const EditAccount = ({
           `You have unlinked the child account ${address} from your account. \nClick to view this transaction.`
         );
         await wallet.setDashIndex(0);
-        history.push(`/dashboard?activity=1&txId=${txId}`);
+        navigate(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((error) => {
         consoleError('EditAccount - failed to edit child account', error);

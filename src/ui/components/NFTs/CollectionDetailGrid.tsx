@@ -16,7 +16,7 @@ import {
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { ReactComponent as SearchIcon } from '@/ui/assets/svg/searchIcon.svg';
 import { truncate } from '@/ui/utils';
@@ -50,7 +50,7 @@ const CollectionDetailGrid: React.FC<CollectionDetailProps> = ({
   setSearchTerm,
   loadingMore,
 }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [filteredList, setFilteredList] = useState<any[]>([]);
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -65,7 +65,7 @@ const CollectionDetailGrid: React.FC<CollectionDetailProps> = ({
         }}
       >
         <IconButton
-          onClick={() => history.push('/dashboard')}
+          onClick={() => navigate('/dashboard')}
           sx={{
             padding: '0',
             borderRadius: '12px',

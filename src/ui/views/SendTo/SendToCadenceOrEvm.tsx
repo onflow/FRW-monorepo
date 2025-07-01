@@ -1,7 +1,7 @@
 import { Box, Button, Typography, CardMedia } from '@mui/material';
 import BN from 'bignumber.js';
 import React, { useState, useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { type TransactionState } from '@/shared/types/transaction-types';
 import { isValidAddress, isValidEthereumAddress } from '@/shared/utils/address';
@@ -36,7 +36,7 @@ const SendToCadenceOrEvm = ({
   handleMaxClick: () => void;
   handleFinalizeAmount: () => void;
 }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const wallet = useWallet();
   const { network } = useNetwork();
   const currency = useCurrency();
@@ -177,7 +177,7 @@ const SendToCadenceOrEvm = ({
 
           <Box sx={{ display: 'flex', gap: '8px', mx: '18px', mb: '35px', mt: '10px' }}>
             <Button
-              onClick={history.goBack}
+              onClick={() => navigate(-1)}
               variant="contained"
               // @ts-expect-error custom color
               color="neutral"

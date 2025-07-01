@@ -1,6 +1,6 @@
 import { ListItem, ListItemButton, ListItemText, ListItemIcon, Typography } from '@mui/material';
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import { COLOR_WHITE_ALPHA_80_FFFFFFCC } from '@/ui/style/color';
@@ -13,10 +13,8 @@ interface SettingButtonProps {
 }
 
 const SettingButton: React.FC<SettingButtonProps> = ({ label, to, onClick, showArrow = true }) => {
-  return (
+  const content = (
     <ListItem
-      component={to ? Link : 'div'}
-      to={to}
       disablePadding
       sx={{
         height: '66px',
@@ -51,6 +49,14 @@ const SettingButton: React.FC<SettingButtonProps> = ({ label, to, onClick, showA
         )}
       </ListItemButton>
     </ListItem>
+  );
+
+  return to ? (
+    <Link to={to} style={{ textDecoration: 'none' }}>
+      {content}
+    </Link>
+  ) : (
+    content
   );
 };
 

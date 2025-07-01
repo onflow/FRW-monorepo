@@ -1,7 +1,7 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { Typography, Box, IconButton, Skeleton, Button } from '@mui/material';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { type UserInfoResponse } from '@/shared/types/network-types';
 import { withPrefix } from '@/shared/utils/address';
@@ -12,7 +12,7 @@ import { openInternalPageInTab } from 'ui/utils/webapi';
 import reset from '../../../assets/svg/reset.svg';
 
 const RemoveWallet = ({ hideBackButton = false }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const restPass = () => {
     usewallet.resetPwd();
@@ -83,7 +83,7 @@ const RemoveWallet = ({ hideBackButton = false }) => {
           }}
         >
           <IconButton
-            onClick={history.goBack}
+            onClick={() => navigate(-1)}
             sx={{
               borderRadius: '100%',
               margin: '8px',
@@ -166,7 +166,7 @@ const RemoveWallet = ({ hideBackButton = false }) => {
         <LLSecondaryButton
           label={chrome.i18n.getMessage('Cancel')}
           fullWidth
-          onClick={history.goBack}
+          onClick={() => navigate(-1)}
         />
 
         <Button

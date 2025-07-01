@@ -1,6 +1,6 @@
 import { Typography, Button, FormControl, Box } from '@mui/material';
 import React, { type ReactNode, useCallback, useEffect, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import { LLHeader } from '@/ui/components/LLHeader';
@@ -16,7 +16,7 @@ const SettingsPassword = ({
   children?: ReactNode;
 }) => {
   const wallet = useWallet();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [password, setPassword] = useState(DEFAULT_PASSWORD);
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const [passMatch, setPassMatch] = useState<PassMatch>('unverified');
@@ -36,20 +36,15 @@ const SettingsPassword = ({
     }
   }, [password, wallet]);
 
-  const navigate = useCallback(async () => {
-    history.replace({
-      pathname: verifiedUrl,
-      state: {
-        password: password,
-      },
-    });
-  }, [history, verifiedUrl, password]);
+  const handleNavigate = useCallback(async () => {
+    navigate(verifiedUrl, { state: { password } });
+  }, [navigate, verifiedUrl, password]);
 
   const goBack = useCallback(async () => {
-    history.replace({
+    navigate({
       pathname: '/dashboard',
     });
-  }, [history]);
+  }, [navigate]);
 
   useEffect(() => {
     verify();
@@ -136,7 +131,7 @@ const SettingsPassword = ({
           <Button
             variant="contained"
             color="primary"
-            onClick={navigate}
+            onClick={handleNavigate}
             size="large"
             sx={{
               display: 'flex',

@@ -18,7 +18,7 @@ import {
 import Grid from '@mui/material/Grid';
 import { useTheme, StyledEngineProvider } from '@mui/material/styles';
 import React, { useState, useCallback, useEffect } from 'react';
-import { useHistory, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 
 import { type Contact } from '@/shared/types/network-types';
 import { type WalletAddress } from '@/shared/types/wallet-types';
@@ -72,7 +72,7 @@ const a11yProps = (index: number) => {
 
 const SendAddress = () => {
   const theme = useTheme();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const { recentContacts, addressBookContacts } = useContacts();
 
@@ -85,7 +85,8 @@ const SendAddress = () => {
   const [searched, setSearched] = useState<boolean>(false);
   const [searchContacts, setSearchContacts] = useState<Contact[]>([]);
   const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
-  const { id: token } = useParams<{ id: string }>();
+  const params = useParams();
+  const token = params.id;
 
   useEffect(() => {
     // Update filtered contacts when the search key changes
@@ -140,14 +141,12 @@ const SendAddress = () => {
       if (isValidAddress(address)) {
         // Check if there was a token in the search params
         const pathname = `/dashboard/token/${token}/send/${address}`;
-        history.push({
-          pathname,
-        });
+        navigate(pathname);
       } else {
         consoleError('Invalid address', address);
       }
     },
-    [history, token]
+    [navigate, token]
   );
   // Handle the click of a contact
   const handleContactClick = useCallback(
@@ -177,7 +176,7 @@ const SendAddress = () => {
           }}
         >
           <Grid size={1} sx={{ display: 'flex', justifyContent: 'center' }}>
-            <IconButton onClick={() => history.push('/dashboard')}>
+            <IconButton onClick={() => navigate('/dashboard')}>
               <ArrowBackIcon sx={{ color: 'icon.navi' }} />
             </IconButton>
           </Grid>

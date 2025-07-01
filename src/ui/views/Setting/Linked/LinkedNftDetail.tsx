@@ -5,7 +5,7 @@ import { Typography, Container, Box, IconButton, Button, CardMedia } from '@mui/
 import { StyledEngineProvider } from '@mui/material/styles';
 import { saveAs } from 'file-saver';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router';
 
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { type PostMedia, MatchMediaType } from '@/ui/utils/url';
@@ -35,7 +35,7 @@ const LinkedNftDetail = () => {
   };
 
   const location = useLocation();
-  const history = useHistory();
+  const navigate = useNavigate();
   const usewallet = useWallet();
   const { childAccounts } = useProfiles();
   const [nftDetail, setDetail] = useState<any>(null);
@@ -278,7 +278,7 @@ const LinkedNftDetail = () => {
           }}
         >
           <IconButton
-            onClick={() => history.goBack()}
+            onClick={() => navigate(-1)}
             sx={{
               borderRadius: '100%',
               margin: '8px',
@@ -464,8 +464,7 @@ const LinkedNftDetail = () => {
               }}
               disabled={!isAccessibleNft}
               onClick={() =>
-                history.push({
-                  pathname: '/dashboard/nft/send/',
+                navigate('/dashboard/nft/send/', {
                   state: {
                     nft: nftDetail,
                     media: media,

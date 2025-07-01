@@ -1,6 +1,6 @@
 import { Typography, Card, CardActionArea, CardMedia, CardContent, Box } from '@mui/material';
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 import type { PostMedia } from '@/ui/utils/url';
 import fallback from 'ui/assets/image/errorImage.png';
@@ -203,10 +203,7 @@ const GridView = (props: GridViewProps) => {
             backgroundColor: '#222222',
           },
         }}
-        to={{
-          pathname: detailPath,
-          state: navigateState,
-        }}
+        to={detailPath}
         onClick={navigateWithState}
       >
         <CardMedia

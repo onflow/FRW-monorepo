@@ -12,7 +12,7 @@ import {
   Box,
 } from '@mui/material';
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 import { AboutIcon } from '@/ui/assets/icons/settings/About';
 import { AccountListIcon } from '@/ui/assets/icons/settings/AccountList';

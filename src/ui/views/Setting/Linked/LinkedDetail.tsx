@@ -20,7 +20,7 @@ import {
   Grid,
 } from '@mui/material';
 import React, { useState, useMemo } from 'react';
-import { useHistory, useParams, useLocation } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router';
 
 import { type NftCollection } from '@/shared/types/network-types';
 import { type ChildAccountNFTs, type ChildAccountNFTsStore } from '@/shared/utils/cache-data-keys';
@@ -193,7 +193,7 @@ const LinkedDetail = () => {
   const location = useParams();
   const locationState = useLocation();
 
-  const history = useHistory();
+  const navigate = useNavigate();
   const [unlinking, setUnlinking] = useState<boolean>(false);
   const [isEdit, setEdit] = useState<boolean>(false);
   const [hideEmpty, setHide] = useState<boolean>(true);
@@ -287,13 +287,15 @@ const LinkedDetail = () => {
     localStorage.setItem('nftLinkedState', JSON.stringify(state));
     const storagePath = data.path.storage_path.split('/')[2];
     if (data.total) {
-      history.push({
-        pathname: `/dashboard/nested/linked/collectiondetail/${childAccountAddress + '.' + storagePath + '.' + data.total + '.linked'}`,
-        state: {
-          collection: data,
-          ownerAddress: childAccountAddress,
-        },
-      });
+      navigate(
+        `/dashboard/nested/linked/collectiondetail/${childAccountAddress + '.' + storagePath + '.' + data.total + '.linked'}`,
+        {
+          state: {
+            collection: data,
+            ownerAddress: childAccountAddress,
+          },
+        }
+      );
     }
   };
 

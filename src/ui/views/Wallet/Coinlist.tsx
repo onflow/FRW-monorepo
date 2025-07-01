@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import { Box } from '@mui/system';
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { type CoinItem } from '@/shared/types/coin-types';
 import { type ActiveAccountType } from '@/shared/types/wallet-types';
@@ -28,13 +28,13 @@ import VerifiedIcon from '../../assets/svg/verfied-check.svg';
 import { CurrencyValue } from '../../components/TokenLists/CurrencyValue';
 
 const ActionButtons = ({ managePath, createPath }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
 
   return (
     <Box sx={{ display: 'flex', px: '12px', pt: '4px', gap: '12px' }}>
       <Box sx={{ flexGrow: 1 }} />
       <IconButton
-        onClick={() => history.push(managePath)}
+        onClick={() => navigate(managePath)}
         sx={{
           display: 'flex',
           justifyContent: 'center',
@@ -51,7 +51,7 @@ const ActionButtons = ({ managePath, createPath }) => {
         <img src={slider} alt="Manage" style={{ width: '20px', height: '20px' }} />
       </IconButton>
       <IconButton
-        onClick={() => history.push(createPath)}
+        onClick={() => navigate(createPath)}
         sx={{
           display: 'flex',
           justifyContent: 'center',
@@ -86,7 +86,7 @@ const CoinList = ({
   const currency = useCurrency();
   const currencyCode = currency?.code;
   const currencySymbol = currency?.symbol;
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const isLoading = coins === undefined;
 
@@ -321,7 +321,7 @@ const CoinList = ({
                   }
                   disablePadding
                   onClick={() =>
-                    history.push(`dashboard/tokendetail/${coin.unit.toLowerCase()}/${coin.id}`)
+                    navigate(`/dashboard/tokendetail/${coin.unit.toLowerCase()}/${coin.id}`)
                   }
                 >
                   <ListItemButton sx={{ paddingRight: '0px' }} dense={true}>

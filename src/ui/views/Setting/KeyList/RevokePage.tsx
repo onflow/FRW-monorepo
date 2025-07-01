@@ -2,7 +2,7 @@ import { Typography, Box, Drawer, Stack, InputBase, CircularProgress } from '@mu
 import { styled } from '@mui/material/styles';
 import React, { useState, useEffect } from 'react';
 import { useForm, FieldValues } from 'react-hook-form';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { consoleError } from '@/shared/utils/console-log';
 import { useWallet } from 'ui/utils';
@@ -35,7 +35,7 @@ interface RevokePageProps {
 const RevokePage = (props: RevokePageProps) => {
   const wallet = useWallet();
 
-  const history = useHistory();
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
@@ -60,7 +60,7 @@ const RevokePage = (props: RevokePageProps) => {
         props.handleCloseIconClicked();
         await wallet.setDashIndex(0);
         setIsLoading(false);
-        history.push(`/dashboard?activity=1&txId=${txId}`);
+        navigate(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
         consoleError(err);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useHistory, useParams, useLocation } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router';
 
 import { triggerRefresh } from '@/shared/utils/cache-data-access';
 import { evmNftCollectionListKey } from '@/shared/utils/cache-data-keys';
@@ -53,8 +53,8 @@ interface CollectionDetailState {
 const NftEvmCollectionDetail = () => {
   const usewallet = useWallet();
   const location = useParams();
-  const uselocation = useLocation<CollectionDetailState>();
-  const history = useHistory();
+  const uselocation = useLocation();
+  const navigate = useNavigate();
   const { network } = useNetwork();
 
   const [ownerAddress, setOwnerAddress] = useState<any>(null);
@@ -63,7 +63,7 @@ const NftEvmCollectionDetail = () => {
   // Add a useRef to track if we've initialized the filtered list
   const initializedRef = useRef(false);
 
-  const collection_info = location['collection_address_name'].split('.');
+  const collection_info = location['collection_address_name']?.split('.') || [];
   const address = collection_info[0];
   const collection_name = collection_info[1];
   const nftCount = collection_info[2];
@@ -101,7 +101,7 @@ const NftEvmCollectionDetail = () => {
     ownerAddress: address,
     collectionName: collection_name,
     isEvm: true,
-    nftCount: nftCount,
+    nftCount: parseInt(nftCount || '0', 10),
   });
 
   // Add this useEffect to initialize the filtered list only once
@@ -152,7 +152,7 @@ const NftEvmCollectionDetail = () => {
       info={info}
       list={list}
       allNfts={allNfts}
-      total={nftCount}
+      total={parseInt(nftCount || '0', 10)}
       loading={loading}
       isLoadingAll={isLoadingAll}
       refreshCollectionImpl={refreshCollectionImpl}

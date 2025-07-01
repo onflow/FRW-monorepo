@@ -1,6 +1,6 @@
 import { ListItem, ListItemButton, ListItemText, Box } from '@mui/material';
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 import { COLOR_WHITE_ALPHA_10_FFFFFF1A } from '@/ui/style/color';
 
@@ -65,8 +65,14 @@ export const SettingsListItem: React.FC<SettingsListItemProps> = ({
     </ListItemButton>
   );
 
-  return (
-    <ListItem component={to ? Link : 'div'} to={to} disablePadding sx={{ padding: '0' }}>
+  return to ? (
+    <Link to={to} style={{ textDecoration: 'none' }}>
+      <ListItem disablePadding sx={{ padding: '0' }}>
+        {buttonContent}
+      </ListItem>
+    </Link>
+  ) : (
+    <ListItem disablePadding sx={{ padding: '0' }}>
       {buttonContent}
     </ListItem>
   );
