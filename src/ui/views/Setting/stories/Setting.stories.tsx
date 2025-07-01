@@ -17,7 +17,7 @@ const mockUseWallet = {
   lockAdd: () => Promise.resolve(),
 };
 
-// Mock chrome.i18n
+// Mock chrome APIs
 global.chrome = {
   i18n: {
     getMessage: (key: string) => {
@@ -36,6 +36,35 @@ global.chrome = {
       };
       return messages[key] || key;
     },
+  },
+  storage: {
+    local: {
+      get: () => Promise.resolve({}),
+      set: () => Promise.resolve(),
+      remove: () => Promise.resolve(),
+      clear: () => Promise.resolve(),
+    },
+    sync: {
+      get: () => Promise.resolve({}),
+      set: () => Promise.resolve(),
+      remove: () => Promise.resolve(),
+      clear: () => Promise.resolve(),
+    },
+    onChanged: {
+      addListener: () => {},
+      removeListener: () => {},
+    },
+  },
+  runtime: {
+    sendMessage: () => Promise.resolve({}),
+    onMessage: {
+      addListener: () => {},
+      removeListener: () => {},
+    },
+  },
+  tabs: {
+    query: () => Promise.resolve([]),
+    sendMessage: () => Promise.resolve({}),
   },
 } as any;
 

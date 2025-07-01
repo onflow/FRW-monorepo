@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
+import { BrowserRouter } from 'react-router';
 
 import { AccountListIcon } from '@/ui/assets/icons/settings/AccountList';
 import { AddressIcon } from '@/ui/assets/icons/settings/Address';
@@ -24,26 +25,28 @@ const meta: Meta<typeof TopLinkButton> = {
   decorators: [
     (Story) => {
       return (
-        <div
-          style={{
-            width: '400px',
-            backgroundColor: '#282828',
-            borderRadius: '16px',
-            padding: '8px',
-            color: 'white',
-          }}
-        >
-          <style>
-            {`
-              /* Hover state for TopLinkButton */
-              .MuiListItemButton-root:hover {
-                background-color: rgba(255, 255, 255, 0.08) !important;
-                transition: background-color 0.2s ease;
-              }
-            `}
-          </style>
-          <Story />
-        </div>
+        <BrowserRouter>
+          <div
+            style={{
+              width: '400px',
+              backgroundColor: '#282828',
+              borderRadius: '16px',
+              padding: '8px',
+              color: 'white',
+            }}
+          >
+            <style>
+              {`
+                /* Hover state for TopLinkButton */
+                .MuiListItemButton-root:hover {
+                  background-color: rgba(255, 255, 255, 0.08) !important;
+                  transition: background-color 0.2s ease;
+                }
+              `}
+            </style>
+            <Story />
+          </div>
+        </BrowserRouter>
       );
     },
   ],
