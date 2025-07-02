@@ -40,12 +40,7 @@ import {
 import { DEFAULT_WEIGHT, FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 import {
   mainAccountsKey,
-  evmAccountKey,
-  childAccountsKey,
   mainAccountsRefreshRegex,
-  childAccountsRefreshRegex,
-  evmAccountRefreshRegex,
-  type EvmAccountStore,
   accountBalanceKey,
   accountBalanceRefreshRegex,
   mainAccountStorageBalanceKey,
@@ -56,9 +51,9 @@ import {
   placeholderAccountsRefreshRegex,
   pendingAccountCreationTransactionsRefreshRegex,
 } from '@/shared/utils/cache-data-keys';
-import { consoleError, consoleWarn } from '@/shared/utils/console-log';
+import { consoleError, consoleTrace, consoleWarn } from '@/shared/utils/console-log';
 import { retryOperation } from '@/shared/utils/retryOperation';
-import { setUserData } from '@/shared/utils/user-data-access';
+import { removeUserData, setUserData } from '@/shared/utils/user-data-access';
 import {
   userWalletsKey,
   type UserWalletStore,
@@ -341,7 +336,17 @@ class UserWallet {
       pubkey,
       activeAccounts
     );
-    if (
+    if (validatedActiveAccounts.parentAddress === null) {
+      const mainAccounts = await this.getMainAccounts();
+      if (mainAccounts.length === 0) {
+        // If the parent address is null, we need to reset to the first parent account
+        await removeUserData(activeAccountsKey(network, pubkey));
+        return {
+          parentAddress: null,
+          currentAddress: null,
+        };
+      }
+    } else if (
       validatedActiveAccounts.parentAddress !== null &&
       validatedActiveAccounts.currentAddress !== null &&
       (validatedActiveAccounts.parentAddress !== activeAccounts?.parentAddress ||
@@ -585,24 +590,37 @@ class UserWallet {
 
   // Get the evm wallet of the current main account
   getEvmAccount = async (): Promise<WalletAccount | null> => {
-    const network = this.getNetwork();
-    const parentAddress = await this.getParentAddress();
+    return this.getEvmAccountOfParent((await this.getParentAddress()) ?? '');
+  };
+
+  // Get the evm wallet of the current main account
+  getEvmAccountOfParent = async (parentAddress: string): Promise<WalletAccount | null> => {
     if (!parentAddress) {
       // There are no main accounts against the current pubkey
       return null;
     }
-    return getEvmAccountOfParent(network, parentAddress);
+    const mainAccounts = await this.getMainAccounts();
+    const mainAccount = mainAccounts.find((account) => account.address === parentAddress);
+    if (!mainAccount) {
+      // The main account is not found - throw an error
+      throw new Error('Parent account not found');
+    }
+    return mainAccount.evmAccount ?? null;
   };
-
   // Get the child accounts of the current main account
   getChildAccounts = async (): Promise<WalletAccount[]> => {
-    const network = this.getNetwork();
     const parentAddress = await this.getParentAddress();
     if (!parentAddress) {
       // There are no main accounts against the current pubkey
       return [];
     }
-    return getChildAccountsOfParent(network, parentAddress);
+    const mainAccounts = await this.getMainAccounts();
+    const mainAccount = mainAccounts.find((account) => account.address === parentAddress);
+    if (!mainAccount) {
+      // The main account is not found - throw an error
+      throw new Error('Parent account not found');
+    }
+    return mainAccount.childAccounts ?? [];
   };
 
   private getChildAccount = async (): Promise<WalletAccount | null> => {
@@ -1148,17 +1166,7 @@ const preloadAllAccountsWithPubKey = async (
     return [];
   }
 
-  // Now for each main account load the evm address and child accounts
-  const childAndEvmAccounts = await Promise.all(
-    mainAccounts.flatMap((mainAccount) => {
-      return [
-        getEvmAccountOfParent(network, mainAccount.address),
-        getChildAccountsOfParent(network, mainAccount.address),
-      ];
-    })
-  );
-
-  return [...mainAccounts, ...childAndEvmAccounts.filter((account) => account !== null).flat()];
+  return mainAccounts;
 };
 
 /**
@@ -1169,6 +1177,7 @@ const preloadAllAccountsWithPubKey = async (
  */
 
 const loadAccountListBalance = async (network: string, addressList: string[]) => {
+  consoleTrace('loadAccountListBalance', network, addressList);
   // Check if the network is valid
   if (!(await fclConfirmNetwork(network))) {
     // Do nothing if the network is not valid
@@ -1338,65 +1347,69 @@ const loadMainAccountsWithPubKey = async (
     }
   );
 
-  // Merge with pending accounts
+  // Load all accounts detail
+  const accountDetailMap = await loadAccountsDetail(
+    network,
+    mainAccounts.map((mainAccount) => mainAccount.address)
+  );
+
+  const mainAccountsWithDetail: MainAccount[] = mainAccounts.map((mainAccount) => {
+    const accountDetail = accountDetailMap[mainAccount.address];
+    return {
+      ...mainAccount,
+      evmAccount: !!accountDetail.COAs?.length
+        ? evmAddressToWalletAccount(network, accountDetail.COAs[0])
+        : undefined,
+      childAccounts: childAccountMapToWalletAccounts(network, accountDetail.childrens),
+    };
+  });
 
   // Save the merged accounts to the cache
   setCachedData(
     mainAccountsKey(network, pubKey),
-    mainAccounts,
-    mainAccounts.length > 0 ? 60_000 : 1_000
+    mainAccountsWithDetail,
+    mainAccountsWithDetail.length > 0 ? 60_000 : 1_000
   );
 
-  return mainAccounts;
+  return mainAccountsWithDetail;
+};
+
+type AccountsDetail = {
+  flowBalance: string;
+  nftCounts: number;
+  childrens: ChildAccountMap; // terrible spelling, but it's the name of the field in the script
+  COAs: EvmAddress[];
+};
+
+type AccountDetailMap = {
+  [key: string]: AccountsDetail;
 };
 
 /**
- * Get the child accounts of the given main account address
+ * Load child and evm accounts for a list of main accounts
  * @param network - The network to load the accounts for
- * @param parentAddress - The parent address to load the accounts for
- * @returns The child accounts for the given main account address or null if not found. Does not throw an error.
- */
-const getChildAccountsOfParent = async (
-  network: string,
-  parentAddress: string
-): Promise<WalletAccount[]> => {
-  if (!parentAddress) {
-    // There is no parent address
-    return [];
-  }
-  const childAccounts = await getValidData<WalletAccount[]>(
-    childAccountsKey(network, parentAddress)
-  );
-  if (childAccounts === undefined) {
-    // The child accounts are not loaded or needs to be refreshed
-    return await loadChildAccountsOfParent(network, parentAddress);
-  }
-  return childAccounts;
-};
-
-/**
- * Load the child accounts for a given main account address
- * Store in the data cache
- * @param network - The network to load the accounts for
- * @param mainAccountAddress - The main account address to load the accounts for
- * @returns The child accounts for the given main account address or null if not found. Does not throw an error.
+ * @param mainAccounts - The main accounts to load the accounts for
+ * @returns The child and evm accounts for the given main accounts
  */
 
-export const loadChildAccountsOfParent = async (
+const loadAccountsDetail = async (
   network: string,
-  mainAccountAddress: string
-): Promise<WalletAccount[]> => {
-  const script = await getScripts(network, 'hybridCustody', 'getChildAccountMeta');
+  mainAccountAddresses: string[]
+): Promise<AccountDetailMap> => {
+  const script = await getScripts(network, 'basic', 'getAccountsDetail');
 
-  if (!(await fclConfirmNetwork(network))) {
-    throw new Error('Network has been switched');
-  }
-
-  const childAccountMap: ChildAccountMap = await fcl.query({
+  const accountsDetail: AccountDetailMap = await fcl.query({
     cadence: script,
-    args: (arg, t) => [arg(mainAccountAddress, t.Address)],
+    args: (arg, t) => [arg(mainAccountAddresses, t.Array(t.Address))],
   });
 
+  return accountsDetail;
+};
+
+const childAccountMapToWalletAccounts = (
+  network: string,
+  childAccountMap: ChildAccountMap
+): WalletAccount[] => {
   // Convert the child accounts to wallet accounts
   const childAccounts: WalletAccount[] = Object.entries(childAccountMap || {}).map(
     ([address, accountDetails], index) => {
@@ -1411,85 +1424,46 @@ export const loadChildAccountsOfParent = async (
       return childWallet;
     }
   );
-
-  // Save the child accounts to the cache
-  setCachedData(childAccountsKey(network, mainAccountAddress), childAccounts, 10_000);
-
   return childAccounts;
 };
 
-// Get the evm wallet of the current main account
-export const getEvmAccountOfParent = async (
-  network: string,
-  parentAddress: string
-): Promise<WalletAccount | null> => {
-  if (!parentAddress) {
-    // There are no main accounts against the current pubkey
-    return null;
-  }
-  // Get the evm account from the cache
-  const evmAccount = await getValidData<EvmAccountStore>(evmAccountKey(network, parentAddress));
-  if (evmAccount === undefined) {
-    // The evm account is not loaded or needs to be refreshed
-    return await loadEvmAccountOfParent(network, parentAddress);
-  }
-  return evmAccount;
-};
-
-// Load the EVM account
-export const loadEvmAccountOfParent = async (
-  network: string,
-  mainAccountAddress: string
-): Promise<EvmAccountStore> => {
-  // TODO: If there's no EVM address, we might want to store null in the cache
-  const nullEvmAccount: WalletAccount = {
-    address: '',
-    name: '',
-    icon: '',
-    color: '',
-    chain: networkToChainId(network),
-    id: 0,
-  };
-  if (!(await fclConfirmNetwork(network))) {
-    // Do nothing if the network is switched
-    // Don't update the cache
-    throw new Error('Network has been switched');
-  }
-
-  // this will only be called if the user's main account is valid
-  const script = await getScripts(network as FlowNetwork, 'evm', 'getCoaAddr');
-
-  const result = await fcl.query({
-    cadence: script,
-    args: (arg, t) => [arg(mainAccountAddress, t.Address)],
-  });
-
-  if (result) {
-    // This is the COA address we get straight from the script
-    // This is where we encode the address in ERC-55 format
-    const checksummedAddress = ethUtil.toChecksumAddress(ensureEvmAddressPrefix(result));
-
-    // The index of the evm wallet - always 0 as we only support one evm wallet
-    const index = 0;
-    // Add 9 to the index to get the evm emoji
-    const emoji = getEmojiByIndex(index + 9);
-    const evmAccount: WalletAccount = {
-      address: checksummedAddress,
-      name: emoji.name,
-      icon: emoji.emoji,
-      color: emoji.bgcolor,
+/**
+ * Convert an EVM address to a wallet account
+ * @param network - The network to load the accounts for
+ * @param evmAddress - The EVM address to convert to a wallet account
+ * @returns The wallet account for the given EVM address or null if not found. Does not throw an error.
+ */
+const evmAddressToWalletAccount = (network: string, evmAddress?: EvmAddress): WalletAccount => {
+  if (!evmAddress) {
+    const nullEvmAccount: WalletAccount = {
+      address: '',
+      name: '',
+      icon: '',
+      color: '',
       chain: networkToChainId(network),
-      id: index,
+      id: 0,
     };
-    // Save the EVM account to the cache
-    setCachedData(evmAccountKey(network, mainAccountAddress), evmAccount, 10_000);
-
-    return evmAccount;
-  } else {
-    // If the script returns null, we need to clear the EVM account
-    setCachedData(evmAccountKey(network, mainAccountAddress), nullEvmAccount, 60_000);
     return nullEvmAccount;
   }
+
+  // This is the COA address we get straight from the script
+  // This is where we encode the address in ERC-55 format
+  const checksummedAddress = ethUtil.toChecksumAddress(ensureEvmAddressPrefix(evmAddress));
+
+  // The index of the evm wallet - always 0 as we only support one evm wallet
+  const index = 0;
+  // Add 9 to the index to get the evm emoji
+  const emoji = getEmojiByIndex(index + 9);
+  const evmAccount: WalletAccount = {
+    address: checksummedAddress,
+    name: emoji.name,
+    icon: emoji.emoji,
+    color: emoji.bgcolor,
+    chain: networkToChainId(network),
+    id: index,
+  };
+
+  return evmAccount;
 };
 
 /**
@@ -1627,8 +1601,6 @@ const clearPendingAccountCreationTransactions = async (network: string, pubkey: 
 
 const initAccountLoaders = () => {
   registerRefreshListener(mainAccountsRefreshRegex, loadMainAccountsWithPubKey);
-  registerRefreshListener(childAccountsRefreshRegex, loadChildAccountsOfParent);
-  registerRefreshListener(evmAccountRefreshRegex, loadEvmAccountOfParent);
 
   // Use batch refresh for account balances to avoid hitting the backend too hard
   registerBatchRefreshListener(

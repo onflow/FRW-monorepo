@@ -11,9 +11,7 @@ import { useNetwork } from '@/ui/hooks/useNetworkHook';
 
 import {
   useActiveAccounts,
-  useChildAccounts,
   useCurrentId,
-  useEvmAccount,
   useKeyringIds,
   useAccountBalance,
   useMainAccounts,
@@ -64,8 +62,6 @@ export const useProfiles = () => {
   const walletList = mainAccounts ?? [];
   // The accounts that have been selected by the user
   const activeAccounts = useActiveAccounts(network, userWallets?.currentPubkey);
-  // The child accounts for the currently active main account
-  const childAccounts = useChildAccounts(network, activeAccounts?.parentAddress);
 
   const currentBalance = useAccountBalance(network, activeAccounts?.currentAddress);
 
@@ -75,6 +71,9 @@ export const useProfiles = () => {
     walletList.find((wallet) => wallet.address === activeAccounts?.parentAddress) ??
     INITIAL_ACCOUNT;
 
+  // The child accounts for the currently active main account
+  const childAccounts = parentWallet?.childAccounts;
+
   const parentWalletIndex = walletList.findIndex(
     (wallet) => wallet.address === activeAccounts?.currentAddress
   );
@@ -82,7 +81,7 @@ export const useProfiles = () => {
   const otherAccounts = walletList.filter((wallet) => wallet.id !== parentWallet.id);
 
   // The EVM address for the currently active main account
-  const evmAccount = useEvmAccount(network, activeAccounts?.parentAddress);
+  const evmAccount = parentWallet?.evmAccount;
   const evmLoading = evmAccount === undefined;
   const evmWallet = evmAccount ?? INITIAL_WALLET;
 

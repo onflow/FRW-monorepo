@@ -1,9 +1,8 @@
 import { Box, Typography } from '@mui/material';
 import React from 'react';
 
-import { type WalletAccount } from '@/shared/types/wallet-types';
+import { type MainAccount, type WalletAccount } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
-import { useChildAccounts, useEvmAccount } from '@/ui/hooks/use-account-hooks';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { COLOR_DARKMODE_TEXT_PRIMARY_80_FFFFFF80 } from '@/ui/style/color';
 
@@ -12,7 +11,7 @@ import { EnableEvmAccountCard } from './enable-evm-account-card';
 
 type AccountHierarchyProps = {
   network?: string;
-  account?: WalletAccount;
+  account?: MainAccount;
   activeAccount?: WalletAccount;
   onAccountClick?: (address: string, parentAddress?: string) => void;
   onAccountClickSecondary?: (address: string, parentAddress?: string) => void;
@@ -26,8 +25,8 @@ const AccountHierarchy = ({
   onAccountClickSecondary,
   secondaryIcon,
 }: AccountHierarchyProps) => {
-  const childAccounts = useChildAccounts(network, account?.address);
-  const evmAccount = useEvmAccount(network, account?.address);
+  const childAccounts = account?.childAccounts;
+  const evmAccount = account?.evmAccount;
   const loading = network === undefined || account === undefined;
   if (loading) {
     return (
@@ -110,9 +109,9 @@ const AccountHierarchy = ({
 
 type AccountListingProps = {
   network?: string;
-  accountList?: WalletAccount[];
+  accountList?: MainAccount[];
   activeAccount?: WalletAccount;
-  activeParentAccount?: WalletAccount;
+  activeParentAccount?: MainAccount;
   onAccountClick?: (address: string, parentAddress?: string) => void;
   onAccountClickSecondary?: (address: string, parentAddress?: string) => void;
   onEnableEvmClick?: (parentAddress: string) => void;
@@ -132,12 +131,7 @@ export const AccountListing = ({
   showActiveAccount = false,
 }: AccountListingProps) => {
   // Get the EVM account for the active account provided it's a main account
-  const evmAccount = useEvmAccount(
-    network,
-    activeParentAccount === undefined || activeAccount?.address === activeParentAccount?.address
-      ? activeAccount?.address
-      : undefined
-  );
+  const evmAccount = activeParentAccount?.evmAccount;
   // Check if the EVM account is not valid
   const noEvmAccount = evmAccount && !isValidEthereumAddress(evmAccount.address);
   //const pendingAccountTransactions = [];
