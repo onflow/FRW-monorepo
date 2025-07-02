@@ -9,13 +9,10 @@ import {
 } from '@/shared/types/keyring-types';
 import {
   type MainAccount,
-  type WalletAccount,
   type PendingTransaction,
   getActiveAccountTypeForAddress,
 } from '@/shared/types/wallet-types';
 import {
-  childAccountsKey,
-  evmAccountKey,
   accountBalanceKey,
   mainAccountsKey,
   userInfoCachekey,
@@ -60,15 +57,6 @@ export const useMainAccountStorageBalance = (
   );
 };
 
-export const useChildAccounts = (
-  network: string | undefined | null,
-  mainAccountAddress: string | undefined | null
-) => {
-  return useCachedData<WalletAccount[]>(
-    network && mainAccountAddress ? childAccountsKey(network, mainAccountAddress) : null
-  );
-};
-
 export const useChildAccountAllowTypes = (
   network: string | undefined | null,
   parentAccountAddress: string | undefined | null,
@@ -78,14 +66,6 @@ export const useChildAccountAllowTypes = (
     network && parentAccountAddress && childAccountAddress
       ? childAccountAllowTypesKey(network, parentAccountAddress, childAccountAddress)
       : null
-  );
-};
-export const useEvmAccount = (
-  network: string | undefined | null,
-  mainAccountAddress: string | undefined | null
-) => {
-  return useCachedData<WalletAccount>(
-    network && mainAccountAddress ? evmAccountKey(network, mainAccountAddress) : null
   );
 };
 
