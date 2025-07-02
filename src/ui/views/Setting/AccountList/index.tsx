@@ -24,6 +24,8 @@ import { isValidEthereumAddress } from '@/shared/utils/address';
 import { LinkIcon } from '@/ui/assets/icons/LinkIcon';
 import { LLHeader } from '@/ui/components';
 import { AccountCard } from '@/ui/components/account/account-card';
+import { AccountListing } from '@/ui/components/account/account-listing';
+import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import { useChildAccounts, useEvmAccount } from '@/ui/hooks/use-account-hooks';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { COLOR_DARKMODE_TEXT_PRIMARY_80_FFFFFF80 } from '@/ui/style/color';
@@ -41,79 +43,6 @@ const tempEmoji: Emoji[] = [
     bgcolor: '#98FB98',
   },
 ];
-
-// Separate component to handle account hierarchy with hooks
-const AccountHierarchyItem = ({
-  account,
-  network,
-  currentWallet,
-  onAccountClick,
-}: {
-  account: WalletAccount;
-  network?: string;
-  currentWallet?: WalletAccount;
-  onAccountClick: (clickedAccount: WalletAccount, parentAccount?: WalletAccount) => void;
-}) => {
-  const childAccounts = useChildAccounts(network, account.address);
-  const evmAccount = useEvmAccount(network, account.address);
-
-  return (
-    <Box
-      key={account.address}
-      sx={{
-        display: 'flex',
-        padding: '10px',
-        flexDirection: 'column',
-        gap: '18px',
-        alignSelf: 'stretch',
-        borderRadius: '16px',
-        border: '1px solid #1A1A1A',
-        background: 'rgba(255, 255, 255, 0.10)',
-      }}
-    >
-      <Box sx={{ gap: '0px', display: 'flex', flexDirection: 'column' }}>
-        <AccountCard
-          network={network}
-          account={account}
-          active={currentWallet?.address === account.address}
-          onClick={() => onAccountClick(account, account)}
-          showCard={false}
-          showLink={false}
-        />
-
-        {/* If the EVM account is valid, show the EVM account card */}
-        {evmAccount && evmAccount.address && isValidEthereumAddress(evmAccount.address) && (
-          <AccountCard
-            network={network}
-            account={evmAccount}
-            parentAccount={account}
-            active={currentWallet?.address === evmAccount.address}
-            onClick={() => onAccountClick(evmAccount, account)}
-            showLink={true}
-            showCard={false}
-          />
-        )}
-
-        {/* Render child accounts */}
-        {childAccounts &&
-          childAccounts.map((linkedAccount) => {
-            return (
-              <AccountCard
-                network={network}
-                key={linkedAccount.address}
-                account={linkedAccount}
-                parentAccount={account}
-                active={currentWallet?.address === linkedAccount.address}
-                onClick={() => onAccountClick(linkedAccount, account)}
-                showLink={true}
-                showCard={false}
-              />
-            );
-          })}
-      </Box>
-    </Box>
-  );
-};
 
 const AccountList = () => {
   const usewallet = useWallet();
@@ -210,18 +139,33 @@ const AccountList = () => {
   return (
     <div className="page">
       <LLHeader title={chrome.i18n.getMessage('Acc__list')} help={false} />
-      <Box sx={{ gap: '0px', padding: '0 16px', display: 'flex', flexDirection: 'column' }}>
-        <Box sx={{ gap: '8px', display: 'flex', flexDirection: 'column' }}>
-          {walletList.map((account) => (
-            <AccountHierarchyItem
-              key={account.address}
-              account={account}
-              network={network}
-              currentWallet={currentWallet}
-              onAccountClick={handleAccountClick}
-            />
-          ))}
-        </Box>
+      <Box
+        sx={{
+          gap: '0px',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        <AccountListing
+          network={network}
+          accountList={walletList}
+          activeAccount={currentWallet}
+          onAccountClick={handleAccountClick}
+          onAccountClickSecondary={handleAccountClick}
+          showActiveAccount={false}
+          itemSx={{
+            display: 'flex',
+            padding: '10px',
+            flexDirection: 'column',
+            gap: '18px',
+            alignSelf: 'stretch',
+            borderRadius: '16px',
+            border: '1px solid #1A1A1A',
+            background: 'rgba(255, 255, 255, 0.10)',
+          }}
+          secondaryIcon={<IconEnd size={12} color="#bababa" />}
+          ignoreHidden={true}
+        />
       </Box>
     </div>
   );

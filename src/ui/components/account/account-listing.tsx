@@ -15,8 +15,8 @@ type AccountHierarchyProps = {
   network?: string;
   account?: WalletAccount;
   activeAccount?: WalletAccount;
-  onAccountClick?: (address: string, parentAddress?: string) => void;
-  onAccountClickSecondary?: (address: string, parentAddress?: string) => void;
+  onAccountClick?: (address: WalletAccount, parentAddress?: WalletAccount) => void;
+  onAccountClickSecondary?: (address: WalletAccount, parentAddress?: WalletAccount) => void;
   secondaryIcon?: React.ReactNode;
 };
 
@@ -44,24 +44,21 @@ const AccountHierarchy = ({
 
   return (
     <Box sx={{ gap: '0px', display: 'flex', flexDirection: 'column' }}>
+      {/* Main account */}
       <AccountCard
         network={network}
         key={account.address}
         account={account}
         active={activeAccount?.address === account.address}
-        onClick={
-          onAccountClick ? () => onAccountClick(account.address, account.address) : undefined
-        }
+        onClick={onAccountClick ? () => onAccountClick(account) : undefined}
         onClickSecondary={
-          onAccountClickSecondary
-            ? () => onAccountClickSecondary(account.address, account.address)
-            : undefined
+          onAccountClickSecondary ? () => onAccountClickSecondary(account) : undefined
         }
         secondaryIcon={secondaryIcon}
         showCard={false}
       />
 
-      {/* If the EVM account is valid, show the EVM account card */}
+      {/* EVM account */}
       {evmAccount && evmAccount.address && isValidEthereumAddress(evmAccount.address) && (
         <AccountCard
           network={network}
@@ -69,44 +66,36 @@ const AccountHierarchy = ({
           account={evmAccount}
           parentAccount={account}
           active={activeAccount?.address === evmAccount.address}
-          onClick={
-            onAccountClick ? () => onAccountClick(evmAccount.address, account.address) : undefined
-          }
+          onClick={onAccountClick ? () => onAccountClick(evmAccount, account) : undefined}
           onClickSecondary={
-            onAccountClickSecondary
-              ? () => onAccountClickSecondary(evmAccount.address, account.address)
-              : undefined
+            onAccountClickSecondary ? () => onAccountClickSecondary(evmAccount, account) : undefined
           }
           secondaryIcon={secondaryIcon}
           showLink={true}
           showCard={false}
         />
       )}
+
+      {/* Child accounts */}
       {childAccounts &&
-        childAccounts.map((linkedAccount) => {
-          return (
-            <AccountCard
-              network={network}
-              key={linkedAccount.address}
-              account={linkedAccount}
-              parentAccount={account}
-              active={activeAccount?.address === linkedAccount.address}
-              onClick={
-                onAccountClick
-                  ? () => onAccountClick(linkedAccount.address, account.address)
-                  : undefined
-              }
-              onClickSecondary={
-                onAccountClickSecondary
-                  ? () => onAccountClickSecondary(linkedAccount.address, account.address)
-                  : undefined
-              }
-              secondaryIcon={secondaryIcon}
-              showLink={true}
-              showCard={false}
-            />
-          );
-        })}
+        childAccounts.map((linkedAccount) => (
+          <AccountCard
+            network={network}
+            key={linkedAccount.address}
+            account={linkedAccount}
+            parentAccount={account}
+            active={activeAccount?.address === linkedAccount.address}
+            onClick={onAccountClick ? () => onAccountClick(linkedAccount, account) : undefined}
+            onClickSecondary={
+              onAccountClickSecondary
+                ? () => onAccountClickSecondary(linkedAccount, account)
+                : undefined
+            }
+            secondaryIcon={secondaryIcon}
+            showLink={true}
+            showCard={false}
+          />
+        ))}
     </Box>
   );
 };
@@ -116,11 +105,13 @@ type AccountListingProps = {
   accountList?: WalletAccount[];
   activeAccount?: WalletAccount;
   activeParentAccount?: WalletAccount;
-  onAccountClick?: (address: string, parentAddress?: string) => void;
-  onAccountClickSecondary?: (address: string, parentAddress?: string) => void;
+  onAccountClick?: (address: WalletAccount, parentAddress?: WalletAccount) => void;
+  onAccountClickSecondary?: (address: WalletAccount, parentAddress?: WalletAccount) => void;
   onEnableEvmClick?: (parentAddress: string) => void;
   secondaryIcon?: React.ReactNode;
   showActiveAccount?: boolean;
+  itemSx?: any;
+  ignoreHidden?: boolean;
 };
 
 export const AccountListing = ({
@@ -133,6 +124,8 @@ export const AccountListing = ({
   onEnableEvmClick,
   secondaryIcon,
   showActiveAccount = false,
+  itemSx,
+  ignoreHidden = false,
 }: AccountListingProps) => {
   // Get the EVM account for the active account provided it's a main account
   const evmAccount = useEvmAccount(
@@ -173,12 +166,12 @@ export const AccountListing = ({
             parentAccount={activeParentAccount}
             onClick={
               onAccountClick && activeAccount?.address
-                ? () => onAccountClick(activeAccount.address, activeAccount.address)
+                ? () => onAccountClick(activeAccount, activeAccount)
                 : undefined
             }
             onClickSecondary={
               onAccountClickSecondary && activeAccount?.address
-                ? () => onAccountClickSecondary(activeAccount.address, activeAccount.address)
+                ? () => onAccountClickSecondary(activeAccount, activeAccount)
                 : undefined
             }
             secondaryIcon={secondaryIcon}
@@ -221,21 +214,27 @@ export const AccountListing = ({
       {accountList === undefined && (
         <AccountHierarchy network={network} account={undefined} activeAccount={activeAccount} />
       )}
-      {accountList
-        ?.filter((account) => !hiddenAddresses.includes(account.address))
-        .map((account) => {
-          return (
-            <AccountHierarchy
-              network={network}
+      {accountList &&
+        accountList
+          .filter((account) => ignoreHidden || !hiddenAddresses.includes(account.address))
+          .map((account, idx, arr) => (
+            <Box
               key={account.address}
-              account={account}
-              activeAccount={activeAccount}
-              onAccountClick={onAccountClick}
-              onAccountClickSecondary={onAccountClickSecondary}
-              secondaryIcon={secondaryIcon}
-            />
-          );
-        })}
+              sx={{
+                ...(itemSx || {}),
+                marginBottom: idx !== arr.length - 1 ? '8px' : 0,
+              }}
+            >
+              <AccountHierarchy
+                network={network}
+                account={account}
+                activeAccount={activeAccount}
+                onAccountClick={onAccountClick}
+                onAccountClickSecondary={onAccountClickSecondary}
+                secondaryIcon={secondaryIcon}
+              />
+            </Box>
+          ))}
       {pendingAccountTransactions &&
         pendingAccountTransactions.map((transaction) => {
           return (
