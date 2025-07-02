@@ -432,7 +432,7 @@ export const FullAccountHierarchyWithPending: Story = {
   args: {
     drawer: true,
     userInfo: mockUserInfo,
-    walletList: mockWalletListWithExtra,
+    walletList: mockWalletList,
     activeAccount: mockMainAccount,
     activeParentAccount: mockMainAccount,
     network: 'mainnet',

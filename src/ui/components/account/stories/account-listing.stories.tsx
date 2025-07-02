@@ -222,7 +222,6 @@ export const Active: Story = {
     accountList: [
       {
         ...mainWalletAccount,
-        evmAccount: evmWalletAccount,
         childAccounts: [childWallet1, childWallet2],
       },
     ],
@@ -252,7 +251,7 @@ export const EVMActive: Story = {
       {
         ...mainWalletAccount,
         evmAccount: evmWalletAccount,
-        childAccounts: [childWallet1, childWallet2],
+        childAccounts: [childWallet2],
       },
     ],
     activeAccount: evmWalletAccount,
@@ -281,7 +280,7 @@ export const NoEVM: Story = {
     accountList: [
       {
         ...mainWalletAccount,
-        evmAccount: evmWalletAccount,
+        evmAccount: noEvmWalletAccount,
         childAccounts: [childWallet1, childWallet2],
       },
     ],
@@ -328,8 +327,8 @@ export const PendingAccountTransaction: Story = {
     accountList: [
       {
         ...mainWalletAccount,
-        evmAccount: evmWalletAccount,
-        childAccounts: [childWallet1, childWallet2],
+        evmAccount: noEvmWalletAccount,
+        childAccounts: [childWallet2],
       },
     ],
     activeAccount: mainWalletAccount,
@@ -361,7 +360,7 @@ export const MultiplePendingAccountTransaction: Story = {
     accountList: [
       {
         ...mainWalletAccount,
-        evmAccount: evmWalletAccount,
+        evmAccount: evmWalletAccount2,
         childAccounts: [childWallet1, childWallet2],
       },
     ],
