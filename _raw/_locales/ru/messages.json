@@ -1538,5 +1538,8 @@
   },
   "Show__in__account__sidebar": {
     "message": "Показывать в боковой панели аккаунтов"
+  },
+  "Contacts": {
+    "message": "Контакты"
   }
 }

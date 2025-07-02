@@ -31,11 +31,6 @@ import { ProfileItem } from '@/ui/components/profile/profile-item';
 import SettingsListItem from '@/ui/components/settings/setting-list-item';
 import TopLinkButton from '@/ui/components/settings/top-link-button';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import {
-  COLOR_WHITE_FFFFFF,
-  COLOR_WHITE_ALPHA_10_FFFFFF1A,
-  COLOR_WHITE_ALPHA_40_FFFFFF66,
-} from '@/ui/style/color';
 import { useWallet } from '@/ui/utils';
 // Feature flags
 const SHOW_DEVICES = false;
@@ -61,42 +56,39 @@ const SettingTab = () => {
 
   return (
     <div className="page">
-      <LLHeader title={chrome.i18n.getMessage('Settings')} help={false} />
+      <LLHeader title={chrome.i18n.getMessage('Settings')} help={false} goBackLink="/dashboard" />
+      {profileIds && profileIds.length > 1 && (
+        <List sx={{ margin: '8px auto 16px auto', pt: 0, pb: 0 }}>
+          <ListItem
+            component={Link}
+            to="/dashboard/setting/profile"
+            sx={{ padding: '0' }}
+            data-testid="setting-goto-account-button"
+          >
+            <ProfileItem
+              profileId={profileIds[0]}
+              selectedProfileId={profileIds[0]}
+              switchAccount={async () => {}}
+              setLoadingId={() => {}}
+              rightIcon={<EditIcon width={24} height={24} />}
+            />
+          </ListItem>
+        </List>
+      )}
       <Box
         sx={{
           justifyContent: 'center',
           alignItems: 'center',
           width: '100%',
-          paddingBottom: '8px',
-          paddingTop: '8px',
+          padding: '8px 18px',
         }}
       >
-        {profileIds && profileIds.length > 1 && (
-          <List sx={{ margin: '8px auto 16px auto', pt: 0, pb: 0 }}>
-            <ListItem
-              component={Link}
-              to="/dashboard/setting/profile"
-              sx={{ padding: '0 18px' }}
-              data-testid="setting-goto-account-button"
-            >
-              <ProfileItem
-                profileId={profileIds[0]}
-                selectedProfileId={profileIds[0]}
-                switchAccount={async () => {}}
-                setLoadingId={() => {}}
-                rightIcon={<EditIcon width={24} height={24} />}
-              />
-            </ListItem>
-          </List>
-        )}
-
         {/* top link */}
         <List
           className="list"
           sx={{
             margin: '8px auto 16px auto',
             padding: '0',
-            width: '90%',
             borderRadius: '16px',
             overflow: 'hidden',
             backgroundColor: '#282828',
@@ -109,7 +101,7 @@ const SettingTab = () => {
             <TopLinkButton
               to="/dashboard/setting/addressbook"
               icon={<AddressIcon width={28} height={28} />}
-              text={chrome.i18n.getMessage('Address')}
+              text={chrome.i18n.getMessage('Contacts')}
             />
             <TopLinkButton
               to="/dashboard/setting/accountlist"
@@ -124,7 +116,6 @@ const SettingTab = () => {
             margin: '8px auto 16px auto',
             pt: 0,
             pb: 0,
-            width: '90%',
             borderRadius: '16px',
             overflow: 'hidden',
             backgroundColor: '#282828',
@@ -163,7 +154,6 @@ const SettingTab = () => {
             margin: '8px auto 18px auto',
             pt: 0,
             pb: 0,
-            width: '90%',
             borderRadius: '16px',
             overflow: 'hidden',
             backgroundColor: '#282828',
@@ -236,7 +226,6 @@ const SettingTab = () => {
             margin: '8px auto 18px auto',
             pt: 0,
             pb: 0,
-            width: '90%',
             borderRadius: '16px',
             overflow: 'hidden',
             backgroundColor: '#282828',

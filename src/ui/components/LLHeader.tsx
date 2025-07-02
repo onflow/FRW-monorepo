@@ -14,10 +14,8 @@ interface LLHeaderProps {
 export const LLHeader = (props: LLHeaderProps) => {
   //   const { label, ...inherentProps } = props;
   const navigate = useNavigate();
-
   const handleGoBack = () => {
     if (props.goBackLink) {
-      // Use custom link if provided
       navigate(props.goBackLink);
     } else {
       // Fall back to browser history

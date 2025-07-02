@@ -1547,5 +1547,8 @@
   },
   "Show__in__account__sidebar": {
     "message": "Show in account sidebar"
+  },
+  "Contacts": {
+    "message": "Contacts"
   }
 }
