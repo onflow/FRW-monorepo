@@ -3,7 +3,7 @@ import HelpOutlineRoundedIcon from '@mui/icons-material/HelpOutlineRounded';
 import { IconButton, Typography, Tooltip } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import React from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
 
 interface LLHeaderProps {
   title: string | JSX.Element;
@@ -14,11 +14,17 @@ interface LLHeaderProps {
 export const LLHeader = (props: LLHeaderProps) => {
   //   const { label, ...inherentProps } = props;
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleGoBack = () => {
     if (props.goBackLink) {
-      // Use custom link if provided
-      navigate(props.goBackLink);
+      // Prevent infinite navigation loop if goBackLink is the current page
+      if (location.pathname !== props.goBackLink) {
+        navigate(props.goBackLink);
+      } else {
+        // Fall back to browser history
+        navigate(-1);
+      }
     } else {
       // Fall back to browser history
       navigate(-1);
