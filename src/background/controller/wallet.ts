@@ -3810,6 +3810,22 @@ export class WalletController extends BaseController {
                 color: background,
               };
             }
+            //Update evmAccount if the address is a valid EVM address
+            if (
+              account.evmAccount &&
+              isValidEthereumAddress(address) &&
+              account.evmAccount.address === address
+            ) {
+              return {
+                ...account,
+                evmAccount: {
+                  ...account.evmAccount,
+                  name: name,
+                  icon: icon,
+                  color: background,
+                },
+              };
+            }
             return account;
           });
 

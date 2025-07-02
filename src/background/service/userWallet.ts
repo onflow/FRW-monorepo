@@ -1419,11 +1419,23 @@ const loadMainAccountsWithPubKey = async (
 
   const mainAccountsWithDetail: MainAccount[] = mainAccounts.map((mainAccount) => {
     const accountDetail = accountDetailMap[mainAccount.address];
+    const evmAccount = !!accountDetail.COAs?.length
+      ? evmAddressToWalletAccount(network, accountDetail.COAs[0])
+      : undefined;
+
+    // Apply custom metadata to evmAccount if it exists
+    if (evmAccount && evmAccount.address) {
+      const evmCustomData = customMetadata[evmAccount.address];
+      if (evmCustomData) {
+        evmAccount.name = evmCustomData.name || evmAccount.name;
+        evmAccount.icon = evmCustomData.icon || evmAccount.icon;
+        evmAccount.color = evmCustomData.background || evmAccount.color;
+      }
+    }
+
     return {
       ...mainAccount,
-      evmAccount: !!accountDetail.COAs?.length
-        ? evmAddressToWalletAccount(network, accountDetail.COAs[0])
-        : undefined,
+      evmAccount,
       childAccounts: childAccountMapToWalletAccounts(network, accountDetail.childrens),
     };
   });

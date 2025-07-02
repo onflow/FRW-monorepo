@@ -38,10 +38,17 @@ const EditAccount = (props: MoveBoardProps) => {
   const [customName, setCustomName] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const requestChildType = useCallback(async () => {
-    setSelectEmoji(props.emoji);
-    setCustomName(props.emoji?.name || '');
-  }, [props.emoji]);
+  const requestWalletInfo = useCallback(async () => {
+    // Use userWallet data as default, fall back to props.emoji if no userWallet data
+    const defaultEmoji = {
+      emoji: props.userWallet?.icon || props.emoji?.emoji || '',
+      name: props.userWallet?.name || props.emoji?.name || '',
+      bgcolor: props.userWallet?.color || props.emoji?.bgcolor || '',
+    };
+
+    setSelectEmoji(defaultEmoji);
+    setCustomName(defaultEmoji.name || '');
+  }, [props.emoji, props.userWallet]);
 
   const changeAccount = async () => {
     try {
@@ -85,8 +92,8 @@ const EditAccount = (props: MoveBoardProps) => {
   };
 
   useEffect(() => {
-    requestChildType();
-  }, [props.emoji, requestChildType]);
+    requestWalletInfo();
+  }, [props.emoji, props.userWallet, requestWalletInfo]);
 
   return (
     <Drawer
