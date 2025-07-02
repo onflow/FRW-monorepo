@@ -8,7 +8,7 @@ import {
   IconButton,
 } from '@mui/material';
 import React from 'react';
-import { Link } from 'react-router';
+import { useNavigate } from 'react-router';
 
 import { CopyIcon } from '@/ui/assets/icons/CopyIcon';
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
@@ -35,6 +35,7 @@ const SettingsListItem: React.FC<SettingsListItemUniversalProps> = ({
   address,
   addressLabel = 'Address',
 }) => {
+  const navigate = useNavigate();
   const isAddress = Boolean(address);
   const baseButtonSx = {
     height: '100%',
@@ -127,20 +128,20 @@ const SettingsListItem: React.FC<SettingsListItemUniversalProps> = ({
     </>
   );
 
-  const listItem = (
-    <ListItem disablePadding sx={listItemSx} onClick={!isAddress ? onClick : undefined}>
-      <ListItemButton sx={buttonSx} onClick={isAddress ? undefined : onClick}>
+  const handleClick = () => {
+    if (to) {
+      navigate(to);
+    } else if (onClick) {
+      onClick();
+    }
+  };
+
+  return (
+    <ListItem disablePadding sx={listItemSx} onClick={!isAddress ? handleClick : undefined}>
+      <ListItemButton sx={buttonSx} onClick={isAddress ? undefined : handleClick}>
         {content}
       </ListItemButton>
     </ListItem>
-  );
-
-  return to ? (
-    <Link to={to} style={{ textDecoration: 'none' }}>
-      {listItem}
-    </Link>
-  ) : (
-    listItem
   );
 };
 
