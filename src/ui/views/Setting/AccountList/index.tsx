@@ -88,53 +88,6 @@ const AccountList = () => {
     setUserWallet();
   }, [setUserWallet]);
 
-  // Don't render anything until we have the network and walletList
-  if (!network || !walletList || walletList.length === 0 || !isInitialized) {
-    return (
-      <div className="page">
-        <LLHeader title={chrome.i18n.getMessage('Acc__list')} help={false} />
-        <Box sx={{ gap: '0px', padding: '0 16px', display: 'flex', flexDirection: 'column' }}>
-          <Typography
-            variant="body1"
-            color="text.primary"
-            sx={{
-              color: 'rgba(255, 255, 255, 0.80)',
-              fontFamily: 'Inter,sans-serif',
-              fontSize: '14px',
-              fontStyle: 'normal',
-              fontWeight: '400',
-              lineHeight: '16px',
-              marginBottom: '8px',
-            }}
-          >
-            {chrome.i18n.getMessage('main_wallet')}
-          </Typography>
-
-          <Box sx={{ gap: '8px', display: 'flex', flexDirection: 'column' }}>
-            <Box
-              sx={{
-                display: 'flex',
-                padding: '10px',
-                flexDirection: 'column',
-                gap: '18px',
-                alignSelf: 'stretch',
-                borderRadius: '16px',
-                border: '1px solid #1A1A1A',
-                background: 'rgba(255, 255, 255, 0.10)',
-              }}
-            >
-              <Box sx={{ gap: '0px', display: 'flex', flexDirection: 'column' }}>
-                <AccountCard showCard={false} />
-                <AccountCard showCard={false} showLink={true} />
-                <AccountCard showCard={false} showLink={true} />
-              </Box>
-            </Box>
-          </Box>
-        </Box>
-      </div>
-    );
-  }
-
   return (
     <div className="page">
       <LLHeader title={chrome.i18n.getMessage('Acc__list')} help={false} />
