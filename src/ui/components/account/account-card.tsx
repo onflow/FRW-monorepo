@@ -86,7 +86,7 @@ export const AccountCard = ({
   const accountBalance = useAccountBalance(network, address);
   const balance = accountBalance === undefined ? account?.balance : accountBalance;
 
-  const nftCount = nfts || nftCatalogCollections?.reduce((acc, curr) => acc + curr.count, 0);
+  const nftCount = nfts ?? nftCatalogCollections?.reduce((acc, curr) => acc + curr.count, 0) ?? 0;
 
   return (
     <Card
