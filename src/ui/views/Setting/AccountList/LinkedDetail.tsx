@@ -37,7 +37,7 @@ import {
   useChildAccountAllowTypes,
   useCurrentId,
   useUserInfo,
-  useChildAccounts,
+  useMainAccount,
 } from '@/ui/hooks/use-account-hooks';
 import { useChildAccountFt } from '@/ui/hooks/use-coin-hooks';
 import { useChildAccountNfts, useNftCollectionList } from '@/ui/hooks/useNftHook';
@@ -228,7 +228,7 @@ const LinkedDetail = () => {
   const parentName = urlParams.get('parentName') || '';
   const parentAddress = urlParams.get('parentAddress') || '';
 
-  const childAccounts = useChildAccounts(network, parentAddress);
+  const childAccounts = useMainAccount(network, parentAddress)?.childAccounts;
 
   //Can only make unlink action if the current wallet is the parent wallet of the linked account
   const active = currentWallet.address === parentAddress;

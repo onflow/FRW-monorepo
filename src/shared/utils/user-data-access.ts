@@ -20,6 +20,15 @@ export const setUserData = async <T>(key: string, data: T) => {
 };
 
 /**
+ * Set user data in local storage
+ * @param key - The key to set the data to
+ * @param data - The data to set
+ */
+export const removeUserData = async (key: string) => {
+  await storage.remove(key);
+};
+
+/**
  * Internal function to call the update callback
  * @param key - The key to listen for
  * @param updateCallback - The callback to call when the data is updated

@@ -26,7 +26,6 @@ import { LLHeader } from '@/ui/components';
 import { AccountCard } from '@/ui/components/account/account-card';
 import { AccountListing } from '@/ui/components/account/account-listing';
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
-import { useChildAccounts, useEvmAccount } from '@/ui/hooks/use-account-hooks';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { COLOR_DARKMODE_TEXT_PRIMARY_80_FFFFFF80 } from '@/ui/style/color';
 import { useWallet } from 'ui/utils';

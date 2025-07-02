@@ -9,13 +9,10 @@ import {
 } from '@/shared/types/keyring-types';
 import {
   type MainAccount,
-  type WalletAccount,
   type PendingTransaction,
   getActiveAccountTypeForAddress,
 } from '@/shared/types/wallet-types';
 import {
-  childAccountsKey,
-  evmAccountKey,
   accountBalanceKey,
   mainAccountsKey,
   userInfoCachekey,
@@ -44,6 +41,19 @@ export const useMainAccounts = (
   );
 };
 
+export const useMainAccount = (
+  network: string | undefined | null,
+  address: string | undefined | null
+) => {
+  // The user wallet data - which public key is currently active
+  const userWallets = useUserWallets();
+  // The main accounts for the current public key
+  const mainAccounts = useMainAccounts(network, userWallets?.currentPubkey);
+  // The main account for the address
+  const mainAccount = mainAccounts?.find((account) => account.address === address);
+  return mainAccount;
+};
+
 export const useAccountBalance = (
   network: string | undefined | null,
   address: string | undefined | null
@@ -60,15 +70,6 @@ export const useMainAccountStorageBalance = (
   );
 };
 
-export const useChildAccounts = (
-  network: string | undefined | null,
-  mainAccountAddress: string | undefined | null
-) => {
-  return useCachedData<WalletAccount[]>(
-    network && mainAccountAddress ? childAccountsKey(network, mainAccountAddress) : null
-  );
-};
-
 export const useChildAccountAllowTypes = (
   network: string | undefined | null,
   parentAccountAddress: string | undefined | null,
@@ -78,14 +79,6 @@ export const useChildAccountAllowTypes = (
     network && parentAccountAddress && childAccountAddress
       ? childAccountAllowTypesKey(network, parentAccountAddress, childAccountAddress)
       : null
-  );
-};
-export const useEvmAccount = (
-  network: string | undefined | null,
-  mainAccountAddress: string | undefined | null
-) => {
-  return useCachedData<WalletAccount>(
-    network && mainAccountAddress ? evmAccountKey(network, mainAccountAddress) : null
   );
 };
 
