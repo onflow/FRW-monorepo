@@ -44,22 +44,16 @@ const tempEmoji: Emoji[] = [
 ];
 
 const AccountList = () => {
-  const usewallet = useWallet();
   const { currentWallet, walletList, network } = useProfiles();
-  const [emojis, setEmojis] = useState<Emoji[]>(tempEmoji);
-  const [isInitialized, setIsInitialized] = useState(false);
   const navigate = useNavigate();
 
   const handleAccountClick = (clickedAccount: WalletAccount, parentAccount?: WalletAccount) => {
-    if (clickedAccount) {
-      const walletDetailInfo = { wallet: clickedAccount };
-      storage.set('walletDetail', JSON.stringify(walletDetailInfo));
-    }
-
     if (parentAccount && clickedAccount.address !== parentAccount.address) {
       // Check if this is an EVM account or a Flow linked account
       if (isValidEthereumAddress(clickedAccount.address)) {
-        navigate(`/dashboard/setting/accountlist/detail/${clickedAccount.address}`);
+        navigate(
+          `/dashboard/setting/accountlist/detail/${clickedAccount.address}?parentAddress=${parentAccount.address}`
+        );
       } else {
         // For Flow linked accounts, navigate to linked detail page with parent address name
         const parentName = parentAccount.name || '';
@@ -72,17 +66,6 @@ const AccountList = () => {
       navigate(`/dashboard/setting/accountlist/detail/${clickedAccount.address}`);
     }
   };
-
-  const setUserWallet = useCallback(async () => {
-    await usewallet.setDashIndex(3);
-    const emojires = await usewallet.getEmoji();
-    setEmojis(emojires);
-    setIsInitialized(true);
-  }, [usewallet]);
-
-  useEffect(() => {
-    setUserWallet();
-  }, [setUserWallet]);
 
   return (
     <div className="page">

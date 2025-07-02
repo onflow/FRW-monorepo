@@ -1,25 +1,12 @@
-import {
-  Typography,
-  Box,
-  List,
-  ListItem,
-  ListItemButton,
-  Divider,
-  Alert,
-  Snackbar,
-} from '@mui/material';
+import { Typography, Box, List, Divider, Alert, Snackbar } from '@mui/material';
 import LinearProgress from '@mui/material/LinearProgress';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'react-router';
+import { useParams, useLocation } from 'react-router';
 
 import { storage } from '@/background/webapi';
 import type { StorageInfo } from '@/shared/types/network-types';
-import {
-  type Emoji,
-  type MainAccountWithBalance,
-  type WalletAccountWithBalance,
-} from '@/shared/types/wallet-types';
-import { formatString, isValidEthereumAddress, isValidFlowAddress } from '@/shared/utils/address';
+import { type Emoji } from '@/shared/types/wallet-types';
+import { isValidEthereumAddress, isValidFlowAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
 import { EditIcon } from '@/ui/assets/icons/settings/Edit';
 import { LLHeader } from '@/ui/components';
@@ -27,6 +14,7 @@ import { AccountCard } from '@/ui/components/account/account-card';
 import SettingsListItem from '@/ui/components/settings/setting-list-item';
 import SettingsSwitchCard from '@/ui/components/settings/settings-switch';
 import { useAddressHidden, toggleAddressHidden } from '@/ui/hooks/preference-hooks';
+import { useMainAccount } from '@/ui/hooks/use-account-hooks';
 import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { COLOR_WHITE_ALPHA_40_FFFFFF66, COLOR_WHITE_ALPHA_80_FFFFFFCC } from '@/ui/style/color';
@@ -51,10 +39,11 @@ const AccountDetail = () => {
   const wallet = useWallet();
   const { network } = useNetwork();
   const params = useParams();
+  const location = useLocation();
+  const urlParams = new URLSearchParams(location.search);
+  const parentAddress = urlParams.get('parentAddress') || null;
   const address = params.address || '';
-  const [userWallet, setWallet] = useState<
-    WalletAccountWithBalance | MainAccountWithBalance | null
-  >(null);
+  const userWallet = useMainAccount(network, parentAddress || address);
   const [showProfile, setShowProfile] = useState(false);
   const [gasKillSwitch, setGasKillSwitch] = useState(false);
   const [modeGas, setGasMode] = useState(false);
@@ -65,7 +54,7 @@ const AccountDetail = () => {
   const isFreeGasFeeEnabled = useFeatureFlag('free_gas');
 
   // Use the new preference hook for hidden address status
-  const isHidden = useAddressHidden(userWallet?.address || '');
+  const isHidden = useAddressHidden(params.address || '');
 
   const handleErrorClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
@@ -95,8 +84,8 @@ const AccountDetail = () => {
   };
 
   const toggleHiddenStatus = async () => {
-    if (userWallet?.address) {
-      await toggleAddressHidden(userWallet.address);
+    if (address) {
+      await toggleAddressHidden(address);
     }
   };
 
@@ -107,23 +96,6 @@ const AccountDetail = () => {
   const updateProfileEmoji = (emoji) => {
     setEmoji(emoji);
   };
-
-  const setUserWallet = useCallback(async () => {
-    await wallet.setDashIndex(3);
-    const walletDetail: {
-      wallet: WalletAccountWithBalance;
-      selectedEmoji: Emoji;
-    } = JSON.parse(await storage.get('walletDetail'));
-    if (walletDetail) {
-      setWallet(walletDetail.wallet);
-      const selectingEmoji: Emoji = {
-        name: walletDetail.wallet.name,
-        emoji: walletDetail.wallet.icon,
-        bgcolor: walletDetail.wallet.color,
-      };
-      setEmoji(selectingEmoji);
-    }
-  }, [wallet]);
 
   const loadStorageInfo = useCallback(async () => {
     if (address && isValidFlowAddress(address)) {
@@ -145,7 +117,6 @@ const AccountDetail = () => {
 
   useEffect(() => {
     try {
-      setUserWallet();
       loadGasKillSwitch();
       loadGasMode();
       loadStorageInfo();
@@ -153,7 +124,7 @@ const AccountDetail = () => {
     } catch (error) {
       consoleError(error);
     }
-  }, [checkKeyphrase, loadGasKillSwitch, loadGasMode, loadStorageInfo, setUserWallet]);
+  }, [checkKeyphrase, loadGasKillSwitch, loadGasMode, loadStorageInfo]);
 
   return (
     <div className="page" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -184,19 +155,30 @@ const AccountDetail = () => {
               pb: 0,
             }}
           >
-            {userWallet && (
-              <AccountCard
-                account={userWallet}
-                network={network}
-                showCard={true}
-                onClick={toggleEditProfile}
-                secondaryIcon={<EditIcon width={24} height={24} />}
-                onClickSecondary={toggleEditProfile}
-              />
-            )}
+            {!isValidEthereumAddress(address)
+              ? userWallet && (
+                  <AccountCard
+                    account={userWallet}
+                    network={network}
+                    showCard={true}
+                    onClick={toggleEditProfile}
+                    secondaryIcon={<EditIcon width={24} height={24} />}
+                    onClickSecondary={toggleEditProfile}
+                  />
+                )
+              : userWallet?.evmAccount && (
+                  <AccountCard
+                    account={userWallet?.evmAccount}
+                    network={network}
+                    showCard={true}
+                    onClick={toggleEditProfile}
+                    secondaryIcon={<EditIcon width={24} height={24} />}
+                    onClickSecondary={toggleEditProfile}
+                  />
+                )}
           </List>
 
-          {userWallet && !isValidEthereumAddress(userWallet.address) && (
+          {address && !isValidEthereumAddress(address) && (
             <>
               <List
                 sx={{
@@ -225,7 +207,7 @@ const AccountDetail = () => {
                   />
                 )}
               </List>
-              {userWallet?.address && (
+              {address && (
                 <Box>
                   <List
                     sx={{
@@ -243,7 +225,7 @@ const AccountDetail = () => {
                   >
                     <SettingsListItem
                       text="Account Keys"
-                      to={`/dashboard/nested/keylist?address=${userWallet.address}`}
+                      to={`/dashboard/nested/keylist?address=${address}`}
                     />
                   </List>
                 </Box>
