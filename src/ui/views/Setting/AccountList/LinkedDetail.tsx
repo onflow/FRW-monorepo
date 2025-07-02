@@ -37,7 +37,7 @@ import {
   useChildAccountAllowTypes,
   useCurrentId,
   useUserInfo,
-  useChildAccounts,
+  useMainAccount,
 } from '@/ui/hooks/use-account-hooks';
 import { useChildAccountFt } from '@/ui/hooks/use-coin-hooks';
 import { useChildAccountNfts, useNftCollectionList } from '@/ui/hooks/useNftHook';
@@ -68,7 +68,9 @@ interface Collection {
 }
 
 const extractContractName = (collection: string) => {
-  return collection.split('.')[2];
+  const parts = collection.split('.');
+  const result = parts[2];
+  return result;
 };
 
 const findObjectByContractName = (
@@ -76,32 +78,47 @@ const findObjectByContractName = (
   collections: NftCollection[] | undefined
 ): NftCollection | undefined => {
   const extractedContract = extractContractName(contractName);
-  const foundObject = extractedContract
-    ? collections?.find(
-        (item) =>
-          item.contract_name === extractedContract || item.contractName === extractedContract
-      )
-    : undefined;
-  return foundObject;
+
+  if (!extractedContract || !collections) {
+    return undefined;
+  }
+
+  return collections.find((item) => {
+    return (
+      item.contract_name === extractedContract ||
+      item.contractName === extractedContract ||
+      item.id === extractedContract ||
+      item.id === `${extractedContract}Collection`
+    );
+  });
 };
 
 const nftCollectionToCollection = (
   nftCollection: NftCollection,
   childAccountNfts: ChildAccountNFTs
 ) => {
-  const nftCollectionContractName = nftCollection.contractName || nftCollection.contract_name;
+  const nftCollectionContractName =
+    nftCollection.contractName || nftCollection.contract_name || nftCollection.id;
+  const normalizedContractName = nftCollectionContractName?.replace(/Collection$/, '');
+
   const foundNftId = Object.keys(childAccountNfts).find((nftId) => {
     const parts = nftId.split('.');
     const address = `0x${parts[1]}`;
     const contractName = parts[2];
-    return nftCollection.address === address && nftCollectionContractName === contractName;
+    const matches = nftCollection.address === address && normalizedContractName === contractName;
+    return matches;
   });
   const nfts = foundNftId ? childAccountNfts[foundNftId] : [];
-  return {
+  const result = {
     ...nftCollection,
+    contractName:
+      nftCollection.contractName ||
+      nftCollection.contract_name ||
+      nftCollection.id?.replace(/Collection$/, ''),
     total: nfts.length,
     nfts: nfts,
   };
+  return result;
 };
 
 const NftContent = ({
@@ -211,7 +228,7 @@ const LinkedDetail = () => {
   const parentName = urlParams.get('parentName') || '';
   const parentAddress = urlParams.get('parentAddress') || '';
 
-  const childAccounts = useChildAccounts(network, parentAddress);
+  const childAccounts = useMainAccount(network, parentAddress)?.childAccounts;
 
   //Can only make unlink action if the current wallet is the parent wallet of the linked account
   const active = currentWallet.address === parentAddress;
@@ -235,47 +252,71 @@ const LinkedDetail = () => {
 
   const availableFt = useChildAccountFt(network, parentAddress, childAccountAddress);
 
-  const availableNftCollection: Collection[] | undefined = useMemo(
-    () =>
-      childAccountAllowTypes === undefined
-        ? undefined
-        : Object.values(
-            childAccountAllowTypes
-              .map((active) => {
-                const collection = findObjectByContractName(active, nftCollectionList);
-                if (collection) {
-                  return nftCollectionToCollection(collection, childAccountNfts ?? {});
-                }
-              })
-              .filter((collection) => collection !== undefined)
-              .reduce(
-                (acc, collection) => {
-                  const contractName = collection.contractName || collection.contract_name;
-                  if (acc[contractName] !== undefined) {
-                    acc[contractName].total += collection.total;
-                    acc[contractName].nfts.push(...collection.nfts!);
-                  } else {
-                    acc[contractName] = {
-                      ...collection,
-                      contractName: contractName,
-                    };
-                  }
-                  return acc;
-                },
-                {} as { [key: string]: Collection }
-              )
-          ),
-    [childAccountAllowTypes, nftCollectionList, childAccountNfts]
-  );
+  const availableNftCollection: Collection[] | undefined = useMemo(() => {
+    if (childAccountAllowTypes === undefined) {
+      return undefined;
+    }
+
+    const mappedCollections = childAccountAllowTypes.map((active) => {
+      const collection = findObjectByContractName(active, nftCollectionList);
+
+      if (collection) {
+        const result = nftCollectionToCollection(collection, childAccountNfts ?? {});
+        return result;
+      }
+
+      // Special handling for TopShot if it's missing from collection list
+      // TODO: Remove this once we have a proper TopShot collection in the collection list
+      if (active.includes('TopShot')) {
+        const fallbackTopShotCollection: NftCollection = {
+          id: 'TopShotCollection',
+          name: 'TopShot',
+          contractName: 'TopShot',
+          contract_name: 'TopShot',
+          address: '0x0b2a3299cc857e29',
+          description: 'NBA TopShot - Digital Collectibles',
+          logo: '', // Add default logo if available
+          logoURI: '',
+          banner: '',
+          evmAddress: '',
+          flowIdentifier: '',
+        };
+        const result = nftCollectionToCollection(fallbackTopShotCollection, childAccountNfts ?? {});
+        return result;
+      }
+
+      return undefined;
+    });
+
+    const filteredCollections = mappedCollections.filter((collection) => collection !== undefined);
+
+    const reducedCollections = filteredCollections.reduce(
+      (acc, collection) => {
+        const contractName = collection.contractName || collection.contract_name;
+
+        if (acc[contractName] !== undefined) {
+          acc[contractName].total += collection.total;
+          acc[contractName].nfts.push(...collection.nfts!);
+        } else {
+          acc[contractName] = {
+            ...collection,
+            contractName: contractName,
+          };
+        }
+        return acc;
+      },
+      {} as { [key: string]: Collection }
+    );
+
+    const finalResult = Object.values(reducedCollections);
+
+    return finalResult;
+  }, [childAccountAllowTypes, nftCollectionList, childAccountNfts]);
 
   const loading = availableNftCollection === undefined;
 
   const currentId = useCurrentId();
   const userInfo = useUserInfo(currentId);
-
-  const handleChange = (_, newValue: string) => {
-    setValue(newValue);
-  };
 
   const showUnlink = async (condition) => {
     await setUnlinking(condition);

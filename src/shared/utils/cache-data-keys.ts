@@ -146,29 +146,6 @@ export type PendingAccountCreationTransactionsStore = string[];
  * --------------------------------------------------------------------
  */
 
-// Child Accounts - the child accounts of a given main account on a given network
-export const childAccountsKey = (network: string, mainAccountAddress: string) =>
-  `child-accounts-${network}-${mainAccountAddress}`;
-export const childAccountsRefreshRegex = refreshKey(childAccountsKey);
-
-export type ChildAccountStore = WalletAccount[];
-
-export const getCachedChildAccounts = async (network: string, mainAccountAddress: string) => {
-  return getCachedData<ChildAccountStore>(childAccountsKey(network, mainAccountAddress));
-};
-
-// EVM Account - the EVM account of a given main account on a given network
-export const evmAccountKey = (network: string, mainAccountAddress: string) =>
-  `evm-account-${network}-${mainAccountAddress}`;
-
-export const evmAccountRefreshRegex = refreshKey(evmAccountKey);
-
-export type EvmAccountStore = WalletAccount;
-
-export const getCachedEvmAccount = async (network: string, mainAccountAddress: string) => {
-  return getCachedData<EvmAccountStore>(evmAccountKey(network, mainAccountAddress));
-};
-
 export const accountBalanceKey = (network: string, address: string) =>
   `account-balance-${network}-${address}`;
 export const accountBalanceRefreshRegex = refreshKey(accountBalanceKey);

@@ -15,7 +15,7 @@ import React, { useCallback, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import type { UserInfoResponse } from '@/shared/types/network-types';
-import { type WalletAccount } from '@/shared/types/wallet-types';
+import { type MainAccount, type WalletAccount } from '@/shared/types/wallet-types';
 import { consoleError } from '@/shared/utils/console-log';
 import { AccountListing } from '@/ui/components/account/account-listing';
 import { ProfileItemBase } from '@/ui/components/profile/profile-item-base';
@@ -40,9 +40,9 @@ interface MenuDrawerProps {
   toggleDrawer: () => void;
   userInfo?: UserInfoResponse;
   togglePop: () => void;
-  walletList: WalletAccount[];
+  walletList: MainAccount[];
   activeAccount: WalletAccount;
-  activeParentAccount: WalletAccount;
+  activeParentAccount: MainAccount;
   network: string;
   modeOn: boolean;
   mainAddressLoading: boolean;
@@ -76,10 +76,12 @@ const MenuDrawer = ({
   const [errorMessage, setErrorMessage] = useState('');
 
   const setActiveAccount = useCallback(
-    (address: string, parentAddress?: string) => {
-      wallet.setActiveAccount(address, parentAddress || address).then(() => {
-        toggleDrawer();
-      });
+    (currentAccount: WalletAccount, parentAccount?: WalletAccount) => {
+      wallet
+        .setActiveAccount(currentAccount.address, parentAccount?.address || currentAccount.address)
+        .then(() => {
+          toggleDrawer();
+        });
     },
     [wallet, toggleDrawer]
   );

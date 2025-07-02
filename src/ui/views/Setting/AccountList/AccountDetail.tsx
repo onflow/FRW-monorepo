@@ -23,10 +23,12 @@ import { formatString, isValidEthereumAddress, isValidFlowAddress } from '@/shar
 import { consoleError } from '@/shared/utils/console-log';
 import { EditIcon } from '@/ui/assets/icons/settings/Edit';
 import { LLHeader } from '@/ui/components';
+import { AccountCard } from '@/ui/components/account/account-card';
 import SettingsListItem from '@/ui/components/settings/setting-list-item';
 import SettingsSwitchCard from '@/ui/components/settings/settings-switch';
 import { useAddressHidden, toggleAddressHidden } from '@/ui/hooks/preference-hooks';
 import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
+import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { COLOR_WHITE_ALPHA_40_FFFFFF66, COLOR_WHITE_ALPHA_80_FFFFFFCC } from '@/ui/style/color';
 import { useWallet } from 'ui/utils';
 
@@ -47,6 +49,7 @@ function formatStorageInfo(used: number | undefined, capacity: number | undefine
 
 const AccountDetail = () => {
   const wallet = useWallet();
+  const { network } = useNetwork();
   const params = useParams();
   const address = params.address || '';
   const [userWallet, setWallet] = useState<
@@ -181,75 +184,18 @@ const AccountDetail = () => {
               pb: 0,
             }}
           >
-            <ListItem
-              disablePadding
-              sx={{
-                height: '66px',
-                width: '100%',
-                '&:hover': {
-                  backgroundColor: '#282828',
-                },
-              }}
-              onClick={() => toggleEditProfile()}
-            >
-              <ListItemButton
-                sx={{
-                  width: '100%',
-                  height: '100%',
-                  margin: '0 auto',
-                  '&:hover': {
-                    backgroundColor: '#282828',
-                  },
-                }}
-              >
-                <Box
-                  sx={{
-                    display: 'flex',
-                    height: '32px',
-                    width: '32px',
-                    borderRadius: '32px',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: emoji?.bgcolor,
-                    marginRight: '12px',
-                  }}
-                >
-                  <Typography sx={{ fontSize: '20px', fontWeight: '600' }}>
-                    {emoji?.emoji}
-                  </Typography>
-                </Box>
-                <Typography
-                  sx={{
-                    color: '##FFFFFF',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    marginRight: '4px',
-                  }}
-                >
-                  {emoji?.name}
-                </Typography>
-                <Box sx={{ flex: '1' }}></Box>
-                <EditIcon width={24} height={24} />
-              </ListItemButton>
-            </ListItem>
+            {userWallet && (
+              <AccountCard
+                account={userWallet}
+                network={network}
+                showCard={true}
+                onClick={toggleEditProfile}
+                secondaryIcon={<EditIcon width={24} height={24} />}
+                onClickSecondary={toggleEditProfile}
+              />
+            )}
           </List>
-          <List
-            sx={{
-              borderRadius: '16px',
-              overflow: 'hidden',
-              backgroundColor: '#282828',
-              margin: '8px auto',
-              pt: 0,
-              pb: 0,
-              width: '100%',
-              padding: '0 2px',
-            }}
-          >
-            <SettingsListItem
-              address={formatString(userWallet?.address || '')}
-              addressLabel="Address"
-            />
-          </List>
+
           {userWallet && !isValidEthereumAddress(userWallet.address) && (
             <>
               <List

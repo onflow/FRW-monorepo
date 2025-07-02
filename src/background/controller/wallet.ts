@@ -139,9 +139,7 @@ import type { PreferenceAccount } from '../service/preference';
 import {
   addPendingAccountCreationTransaction,
   addPlaceholderAccount,
-  getEvmAccountOfParent,
   loadAccountBalance,
-  loadEvmAccountOfParent,
   removePendingAccountCreationTransaction,
 } from '../service/userWallet';
 import {
@@ -1470,6 +1468,7 @@ export class WalletController extends BaseController {
   createCoaEmpty = async (): Promise<string> => {
     const network = await this.getNetwork();
     const parentAddress = await this.getMainAddress();
+    const pubKey = userWalletService.getCurrentPubkey();
     if (!parentAddress) {
       throw new Error('Parent address not found');
     }
@@ -1482,7 +1481,7 @@ export class WalletController extends BaseController {
       await fcl.tx(txID).onceSealed();
 
       // Refresh the EVM address
-      await loadEvmAccountOfParent(network, parentAddress);
+      triggerRefresh(mainAccountsKey(network, pubKey));
 
       // Track with success
       await this.trackCoaCreation(txID);
@@ -1862,8 +1861,7 @@ export class WalletController extends BaseController {
   };
 
   queryEvmAddress = async (address: string | FlowAddress): Promise<string | null> => {
-    const network = await this.getNetwork();
-    const evmAccount = await getEvmAccountOfParent(network, address);
+    const evmAccount = await userWalletService.getEvmAccountOfParent(address as string);
     return evmAccount?.address ?? null;
   };
 

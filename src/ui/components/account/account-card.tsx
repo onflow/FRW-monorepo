@@ -14,9 +14,7 @@ import React from 'react';
 import { type WalletAccount } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { CopyIcon } from '@/ui/assets/icons/CopyIcon';
-import HiddenIcon from '@/ui/assets/icons/HiddenIcon';
 import { LinkIcon } from '@/ui/assets/icons/LinkIcon';
-import { useAddressHidden } from '@/ui/hooks/preference-hooks';
 import { useAccountBalance } from '@/ui/hooks/use-account-hooks';
 import { useNftCatalogCollections } from '@/ui/hooks/useNftHook';
 import {
@@ -25,7 +23,6 @@ import {
   COLOR_DARKMODE_TEXT_SECONDARY_B3B3B3,
   COLOR_ACCENT_EVM_627EEA,
   COLOR_GREY_ICONS_767676,
-  COLOR_DARKMODE_TEXT_SECONDARY_737373,
 } from '@/ui/style/color';
 import { formatAddress } from '@/ui/utils';
 
@@ -90,7 +87,6 @@ export const AccountCard = ({
   const balance = accountBalance === undefined ? account?.balance : accountBalance;
 
   const nftCount = nfts || nftCatalogCollections?.reduce((acc, curr) => acc + curr.count, 0);
-  const isHidden = useAddressHidden(address || '');
 
   return (
     <Card
@@ -154,19 +150,6 @@ export const AccountCard = ({
             }}
           >
             {name || <Skeleton variant="text" width="50px" />}
-            {isHidden && (
-              <>
-                <Typography
-                  fontStyle="Inter"
-                  color={COLOR_DARKMODE_TEXT_SECONDARY_737373}
-                  fontSize="12px"
-                  fontWeight="400"
-                  lineHeight="17px"
-                >
-                  (Hidden)
-                </Typography>
-              </>
-            )}
             {isValidEthereumAddress(address) && (
               <span
                 style={{
@@ -219,14 +202,9 @@ export const AccountCard = ({
             )}
           </Typography>
         </Box>
-        {isHidden && (
-          <Box sx={{ marginLeft: 'auto', paddingRight: 1, display: 'flex', alignItems: 'center' }}>
-            <HiddenIcon style={{ color: COLOR_DARKMODE_TEXT_SECONDARY_737373 }} />
-          </Box>
-        )}
       </CardActionArea>
       {onClickSecondary && !isPending && (
-        <CardActions sx={{ padding: '0px', marginLeft: isHidden ? 0 : 'auto' }}>
+        <CardActions sx={{ padding: '0px', marginLeft: 'auto' }}>
           <IconButton onClick={onClickSecondary} aria-label="Copy address" disabled={!address}>
             {secondaryIcon}
           </IconButton>

@@ -112,7 +112,7 @@ export type WalletAccount = {
   chain: number; // testnet: 545, mainnet: MAINNET_CHAIN_ID
   id: number;
   name: string;
-  icon: string;
+  icon: string; // either an emoji or a url
   color: string;
   balance?: string;
   nfts?: number;
@@ -120,7 +120,11 @@ export type WalletAccount = {
 export type WalletAccountWithBalance = WalletAccount & {
   balance: string;
 };
-export type MainAccount = WalletAccount & PublicKeyAccount;
+export type MainAccount = WalletAccount &
+  PublicKeyAccount & {
+    evmAccount?: WalletAccount;
+    childAccounts?: WalletAccount[];
+  };
 
 export type MainAccountBalance = {
   address: string;
