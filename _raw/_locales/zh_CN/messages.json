@@ -1535,5 +1535,8 @@
   },
   "Show__in__account__sidebar": {
     "message": "在账户侧边栏显示"
+  },
+  "Contacts": {
+    "message": "联系人"
   }
 }
