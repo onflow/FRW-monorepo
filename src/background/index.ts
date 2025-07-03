@@ -18,6 +18,7 @@ import { isValidFlowAddress } from '@/shared/utils/address';
 import { consoleError, consoleLog } from '@/shared/utils/console-log';
 import eventBus from '@/shared/utils/message/eventBus';
 import { Message } from '@/shared/utils/messaging';
+import storage from '@/shared/utils/storage';
 
 import notificationService from './controller/notification';
 import {
@@ -42,7 +43,6 @@ import {
 } from './service';
 import { getFirbaseConfig } from './utils/firebaseConfig';
 import { setEnvironmentBadge } from './utils/setEnvironmentBadge';
-import { storage } from './webapi';
 const { PortMessage } = Message;
 
 const chromeWindow = await chrome.windows.getCurrent();

@@ -50,6 +50,7 @@ import {
 } from '@/shared/utils/cache-data-keys';
 import { consoleError, consoleTrace, consoleWarn } from '@/shared/utils/console-log';
 import { retryOperation } from '@/shared/utils/retryOperation';
+import storage from '@/shared/utils/storage';
 import { removeUserData, setUserData } from '@/shared/utils/user-data-access';
 import {
   activeAccountsKey,
@@ -81,7 +82,6 @@ import {
   signWithKey,
 } from '../utils/modules/publicPrivateKey';
 import createPersistStore from '../utils/persistStore';
-import { storage } from '../webapi';
 
 import keyringService from './keyring';
 import { mixpanelTrack } from './mixpanel';

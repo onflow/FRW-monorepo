@@ -46,7 +46,7 @@ import {
   seedWithPathAndPhrase2PublicPrivateKey,
 } from '@/background/utils/modules/publicPrivateKey';
 import { generateRandomId } from '@/background/utils/random-id';
-import { notification, storage } from '@/background/webapi';
+import notification from '@/background/webapi/notification';
 import { openIndexPage } from '@/background/webapi/tab';
 import { FLOW_BIP44_PATH } from '@/shared/constant/algo-constants';
 import {
@@ -123,6 +123,7 @@ import eventBus from '@/shared/utils/message/eventBus';
 import { convertToIntegerAmount, validateAmount } from '@/shared/utils/number';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import { type CategoryScripts } from '@/shared/utils/script-types';
+import storage from '@/shared/utils/storage';
 
 import { HDKeyring } from '../service/keyring/hdKeyring';
 import { getScripts } from '../service/openapi';

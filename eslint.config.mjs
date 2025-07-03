@@ -389,6 +389,49 @@ const config = [
       ],
     },
   },
+  // Shared folder cannot import outside of shared
+  {
+    files: ['**/src/shared/**/*.{js,jsx,ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            // Block relative imports outside shared folder
+            {
+              group: [
+                '../background/*',
+                '../background/**',
+                '../ui/*',
+                '../ui/**',
+                '../content-script/*',
+                '../content-script/**',
+                '../../background/*',
+                '../../background/**',
+                '../../ui/*',
+                '../../ui/**',
+                '../../content-script/*',
+                '../../content-script/**',
+              ],
+              message: 'Files in shared folder cannot import outside of shared folder',
+            },
+            // Block alias imports outside shared
+            {
+              group: [
+                '@/background/*',
+                '@/background/**',
+                '@/ui/*',
+                '@/ui/**',
+                '@/content-script/*',
+                '@/content-script/**',
+              ],
+              message: 'Files in shared folder cannot import outside of shared folder',
+            },
+          ],
+        },
+      ],
+    },
+  },
   ...storybook.configs['flat/recommended'],
 ];
 

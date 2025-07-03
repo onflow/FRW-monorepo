@@ -1,4 +1,4 @@
-import { storage } from '../webapi';
+import storage from '@/shared/utils/storage';
 
 const persistStorage = (name: string, obj: object) => {
   storage.set(name, obj);

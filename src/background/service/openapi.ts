@@ -62,13 +62,13 @@ import { consoleError, consoleLog } from '@/shared/utils/console-log';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
 import { getPeriodFrequency } from '@/shared/utils/getPeriodFrequency';
 import { type NetworkScripts } from '@/shared/utils/script-types';
+import storage from '@/shared/utils/storage';
 
 import { findKeyAndInfo } from '../utils';
 import { getValidData, setCachedData } from '../utils/data-cache';
 import { getFirbaseConfig, getFirbaseFunctionUrl } from '../utils/firebaseConfig';
 import { verifySignature } from '../utils/modules/publicPrivateKey';
 import { version } from '../utils/package-version';
-import { storage } from '../webapi';
 
 import fetchConfig from './remoteConfig';
 

@@ -3,7 +3,6 @@ import { Box, List, ListItem, ListItemButton, ListItemIcon, Typography } from '@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
 
-import { storage } from '@/background/webapi';
 import {
   type Emoji,
   type MainAccount,
@@ -12,6 +11,7 @@ import {
   type WalletAccountWithBalance,
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
+import storage from '@/shared/utils/storage';
 import { LLHeader } from '@/ui/components';
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import { useWallet } from '@/ui/hooks/use-wallet';

@@ -5,9 +5,6 @@ import { EMULATOR_HOST_MAINNET, EMULATOR_HOST_TESTNET } from '@/background/utils
 import { type FlowNetwork } from '@/shared/types/network-types';
 import { consoleError } from '@/shared/utils/console-log';
 
-export { default as createPersistStore } from './persistStore';
-export { default as createSessionStore } from './sessionStore';
-
 // {a:{b: string}} => {1: 'a.b'}
 // later same [source] value will override [result] key generated before
 const retrieveValuePath = (obj) => {
