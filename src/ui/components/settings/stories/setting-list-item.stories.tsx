@@ -2,7 +2,6 @@ import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 import { BrowserRouter } from 'react-router';
 
-import { CopyIcon } from '@/ui/assets/icons/CopyIcon';
 import { CurrencyIcon } from '@/ui/assets/icons/settings/Currency';
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 
@@ -46,12 +45,5 @@ export const NoIcon: Story = {
     text: 'Display Currency',
     endIcon: <IconEnd size={12} />,
     onClick: () => alert('Clicked!'),
-  },
-};
-
-export const AddressItem: Story = {
-  args: {
-    address: '0x1234abcd5678efgh',
-    addressLabel: 'Address',
   },
 };

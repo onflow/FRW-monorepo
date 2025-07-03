@@ -32,67 +32,26 @@ const SettingsListItem: React.FC<SettingsListItemUniversalProps> = ({
   text,
   endIcon,
   showArrow = true,
-  address,
-  addressLabel = 'Address',
 }) => {
   const navigate = useNavigate();
-  const isAddress = Boolean(address);
   const baseButtonSx = {
     height: '100%',
     margin: '0 auto',
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: isAddress ? 'center' : 'unset',
+    alignItems: 'unset',
   };
 
-  const listItemSx = isAddress
-    ? {
-        height: '66px',
-        width: '100%',
-        '&:hover': { backgroundColor: '#282828' },
-      }
-    : { padding: '0' };
+  const listItemSx = { padding: '0' };
 
-  const buttonSx = isAddress
-    ? {
-        ...baseButtonSx,
-        '&:hover': { backgroundColor: '#282828' },
-      }
-    : {
-        ...baseButtonSx,
-        padding: '16px',
-        height: '56px',
-        '&:hover': { backgroundColor: COLOR_WHITE_ALPHA_10_FFFFFF1A },
-      };
+  const buttonSx = {
+    ...baseButtonSx,
+    padding: '16px',
+    height: '56px',
+    '&:hover': { backgroundColor: COLOR_WHITE_ALPHA_10_FFFFFF1A },
+  };
 
-  const content = isAddress ? (
-    <>
-      <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
-        <Typography
-          sx={{ color: '#bababa', fontSize: '12px', fontWeight: 400, marginBottom: '2px' }}
-        >
-          {addressLabel}
-        </Typography>
-        <Typography
-          sx={{
-            color: '#fff',
-            fontSize: '16px',
-            fontWeight: 500,
-            flex: 1,
-            wordBreak: 'break-all',
-          }}
-        >
-          {address}
-        </Typography>
-      </Box>
-      <IconButton
-        onClick={() => address && navigator.clipboard.writeText(address)}
-        sx={{ color: '#bababa', ml: 1 }}
-      >
-        <CopyIcon width={20} height={20} />
-      </IconButton>
-    </>
-  ) : icon ? (
+  const content = icon ? (
     <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', minWidth: '25px', marginRight: '14px' }}>
         {icon}
@@ -130,15 +89,20 @@ const SettingsListItem: React.FC<SettingsListItemUniversalProps> = ({
 
   const handleClick = () => {
     if (to) {
-      navigate(to);
+      // Check if it's an external URL
+      if (to.startsWith('http://') || to.startsWith('https://')) {
+        window.open(to, '_blank', 'noopener,noreferrer');
+      } else {
+        navigate(to);
+      }
     } else if (onClick) {
       onClick();
     }
   };
 
   return (
-    <ListItem disablePadding sx={listItemSx} onClick={!isAddress ? handleClick : undefined}>
-      <ListItemButton sx={buttonSx} onClick={isAddress ? undefined : handleClick}>
+    <ListItem disablePadding sx={listItemSx}>
+      <ListItemButton sx={buttonSx} onClick={handleClick}>
         {content}
       </ListItemButton>
     </ListItem>

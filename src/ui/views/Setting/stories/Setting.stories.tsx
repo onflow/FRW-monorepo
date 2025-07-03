@@ -18,57 +18,6 @@ const mockUseWallet = {
   lockAdd: () => Promise.resolve(),
 };
 
-// Mock chrome APIs
-global.chrome = {
-  i18n: {
-    getMessage: (key: string) => {
-      const messages: Record<string, string> = {
-        Settings: 'Settings',
-        Address: 'Address Book',
-        Acc__list: 'Account List',
-        Display__Currency: 'Display Currency',
-        Backup: 'Backup',
-        Security: 'Security',
-        Try_Our_Mobile_APP: 'Try Our Mobile APP',
-        Developer__Mode: 'Developer Mode',
-        Devices: 'Devices',
-        About: 'About',
-        Add_Profile: 'Add Profile',
-      };
-      return messages[key] || key;
-    },
-  },
-  storage: {
-    local: {
-      get: () => Promise.resolve({}),
-      set: () => Promise.resolve(),
-      remove: () => Promise.resolve(),
-      clear: () => Promise.resolve(),
-    },
-    sync: {
-      get: () => Promise.resolve({}),
-      set: () => Promise.resolve(),
-      remove: () => Promise.resolve(),
-      clear: () => Promise.resolve(),
-    },
-    onChanged: {
-      addListener: () => {},
-      removeListener: () => {},
-    },
-  },
-  runtime: {
-    sendMessage: () => Promise.resolve({}),
-    onMessage: {
-      addListener: () => {},
-      removeListener: () => {},
-    },
-  },
-  tabs: {
-    query: () => Promise.resolve([]),
-    sendMessage: () => Promise.resolve({}),
-  },
-} as any;
-
 const meta: Meta<typeof SettingTab> = {
   title: 'Views/Setting/SettingTab',
   component: SettingTab,

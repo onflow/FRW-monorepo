@@ -29,6 +29,7 @@ export const ProfileItemBase = ({
   userInfo,
   activeProfileVariant = false,
   rightIcon,
+  noPadding = false,
 }: {
   profileId?: string; // The profile id of this item
   selectedProfileId?: string; // The profile id of the currently selected profile
@@ -37,6 +38,7 @@ export const ProfileItemBase = ({
   userInfo?: UserInfoResponse;
   activeProfileVariant?: boolean;
   rightIcon?: React.ReactNode;
+  noPadding?: boolean;
 }) => {
   return (
     <ListItem
@@ -56,7 +58,7 @@ export const ProfileItemBase = ({
         }
       }}
     >
-      <ListItemButton sx={{ padding: '9px 18px' }}>
+      <ListItemButton sx={{ padding: noPadding ? '0' : '9px 18px' }}>
         <ListItemIcon>
           {userInfo?.avatar ? (
             <Avatar
