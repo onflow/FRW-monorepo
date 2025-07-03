@@ -6,8 +6,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import Web3 from 'web3';
 
-import erc721 from '@/core/utils/erc721.abi.json';
 import { EVM_ENDPOINT } from '@/shared/constant/domain-constants';
+import erc721 from '@/shared/constant/erc721.abi.json';
 import { type Contact } from '@/shared/types/network-types';
 import { consoleError } from '@/shared/utils/console-log';
 import IconNext from '@/ui/assets/svg/next.svg';

@@ -1,7 +1,7 @@
 import { Box, Button, Drawer, ListItem, ListItemButton, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import emojis from '@/core/utils/emoji.json';
+import emojis from '@/shared/constant/emoji.json';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { useWallet } from '@/ui/hooks/use-wallet';
 

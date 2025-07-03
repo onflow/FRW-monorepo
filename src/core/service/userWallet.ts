@@ -49,6 +49,7 @@ import {
   placeholderAccountsRefreshRegex,
 } from '@/shared/utils/cache-data-keys';
 import { consoleError, consoleTrace, consoleWarn } from '@/shared/utils/console-log';
+import { getEmojiByIndex } from '@/shared/utils/emoji-util';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import storage from '@/shared/utils/storage';
 import { removeUserData, setUserData } from '@/shared/utils/user-data-access';
@@ -68,7 +69,6 @@ import {
   registerRefreshListener,
   setCachedData,
 } from '../utils/data-cache';
-import { getEmojiByIndex } from '../utils/emoji-util';
 import { fclConfig, fclConfirmNetwork } from '../utils/fclConfig';
 import {
   getAccountsByPublicKeyTuple,

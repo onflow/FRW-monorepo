@@ -2,7 +2,7 @@ import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 import { withRouter } from 'storybook-addon-remix-react-router';
 
-import emojisJson from '@/core/utils/emoji.json';
+import emojisJson from '@/shared/constant/emoji.json';
 import { MAINNET_CHAIN_ID } from '@/shared/types/network-types';
 import { type NFTCollections } from '@/shared/types/nft-types';
 import { type Emoji, type MainAccount, type WalletAccount } from '@/shared/types/wallet-types';

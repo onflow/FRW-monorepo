@@ -382,8 +382,22 @@ const config = [
                 '**/src/shared/**',
                 '**/src/content-script/*',
                 '**/src/content-script/**',
+                '**/src/core/*',
+                '**/src/core/**',
               ],
               message: 'Files in UI folder must use aliases for imports outside UI',
+            },
+            // Block core imports from UI
+            {
+              group: [
+                '@/core/*',
+                '@/core/**',
+                '../core/*',
+                '../core/**',
+                '../../core/*',
+                '../../core/**',
+              ],
+              message: 'Files in UI folder cannot import from core',
             },
             // Block relative imports between UI subfolders (force use of aliases)
             {

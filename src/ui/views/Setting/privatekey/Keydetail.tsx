@@ -3,7 +3,6 @@ import Grid from '@mui/material/Grid';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
-import { pubKeyTupleToAccountKey } from '@/core/utils/account-key';
 import { consoleError } from '@/shared/utils/console-log';
 import { LLHeader } from '@/ui/components';
 import IconCopy from '@/ui/components/iconfont/IconCopy';
@@ -19,21 +18,11 @@ const Keydetail = () => {
 
   const verify = useCallback(async () => {
     try {
-      const pwd = location.state.password;
-
-      const result = await wallet.getPubKeyPrivateKey(pwd);
-
-      const accountKey = pubKeyTupleToAccountKey(parentWallet.publicKey, result);
-      let pk = '';
-
-      // Find matching algorithm
-      if (accountKey.public_key === result.P256.pubK) {
-        pk = result.P256.pk;
-      } else if (accountKey.public_key === result.SECP256K1.pubK) {
-        pk = result.SECP256K1.pk;
-      } else {
-        throw new Error('No matching public key algorithm found');
+      const pwd: string | undefined = location.state?.password;
+      if (!pwd) {
+        throw new Error('Password is required');
       }
+      const pk = await wallet.getPrivateKey(pwd);
 
       setKey(pk);
     } catch (error) {
@@ -44,7 +33,7 @@ const Keydetail = () => {
         setKey('Error during verification');
       }
     }
-  }, [location.state?.password, wallet, parentWallet]);
+  }, [location.state?.password, wallet]);
 
   useEffect(() => {
     if (!location.state?.password || !location.state) {

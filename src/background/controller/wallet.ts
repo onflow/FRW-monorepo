@@ -53,8 +53,6 @@ import {
   setCachedData,
   triggerRefresh,
 } from '@/core/utils/data-cache';
-import { getEmojiList } from '@/core/utils/emoji-util';
-import erc20ABI from '@/core/utils/erc20.abi.json';
 import { findAddressWithPK, findAddressWithSeed } from '@/core/utils/modules/findAddressWithPK';
 import { getOrCheckAccountsByPublicKeyTuple } from '@/core/utils/modules/findAddressWithPubKey';
 import {
@@ -71,6 +69,7 @@ import {
   HTTP_STATUS_TOO_MANY_REQUESTS,
   INTERNAL_REQUEST_ORIGIN,
 } from '@/shared/constant/domain-constants';
+import erc20ABI from '@/shared/constant/erc20.abi.json';
 import { type CustomFungibleTokenInfo } from '@/shared/types/coin-types';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
 import { type PublicKeyTuple, type PublicPrivateKeyTuple } from '@/shared/types/key-types';
@@ -134,6 +133,7 @@ import {
 } from '@/shared/utils/cache-data-keys';
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
+import { getEmojiList } from '@/shared/utils/emoji-util';
 import { getPeriodFrequency } from '@/shared/utils/getPeriodFrequency';
 import eventBus from '@/shared/utils/message/eventBus';
 import { convertToIntegerAmount, validateAmount } from '@/shared/utils/number';
@@ -812,6 +812,11 @@ export class WalletController extends BaseController {
   getPubKeyPrivateKey = async (password: string): Promise<PublicPrivateKeyTuple> => {
     await this.verifyPassword(password);
     return await keyringService.getCurrentPublicPrivateKeyTuple();
+  };
+
+  getPrivateKey = async (password: string): Promise<string> => {
+    await this.verifyPassword(password);
+    return await keyringService.getCurrentPrivateKey();
   };
 
   getPubKey = async (): Promise<PublicKeyTuple> => {

@@ -1,8 +1,6 @@
 import React, { type ReactNode, createContext } from 'react';
-import type { Object } from 'ts-toolbelt';
 
 import type { WalletController as WalletControllerClass } from '@/background/controller/wallet';
-import type { OpenApiService } from '@/core/service/openapi';
 import { walletLoadedKey } from '@/shared/utils/cache-data-keys';
 import type { IExtractFromPromise } from '@/shared/utils/type';
 import { useCachedData } from '@/ui/hooks/use-data';
@@ -16,19 +14,7 @@ export type WalletControllerType = {
       ) => Promise<IExtractFromPromise<T>>
     : WalletControllerClass[key];
 };
-
-export type WalletController = Object.Merge<
-  WalletControllerClass,
-  {
-    openapi: {
-      [key in keyof OpenApiService]: OpenApiService[key] extends (...args: infer ARGS) => infer RET
-        ? <T extends IExtractFromPromise<RET> = IExtractFromPromise<RET>>(
-            ...args: ARGS
-          ) => Promise<IExtractFromPromise<T>>
-        : OpenApiService[key];
-    };
-  }
->;
+export type WalletController = WalletControllerClass;
 
 export const WalletContext = createContext<{
   wallet: WalletController;
