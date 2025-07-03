@@ -140,7 +140,7 @@ vi.mock('@/core/utils/storage', () => ({
 }));
 
 // Mock MixpanelService
-vi.mock('@/background/service/mixpanel', () => ({
+vi.mock('@/core/service/mixpanel', () => ({
   mixpanelTrack: {
     track: vi.fn(),
     identify: vi.fn(),

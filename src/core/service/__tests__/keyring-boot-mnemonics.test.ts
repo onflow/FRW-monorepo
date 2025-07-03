@@ -16,25 +16,25 @@ vi.mock('@/shared/utils/storage', () => ({
   },
 }));
 
-vi.mock('@/background/service/openapi', () => ({
+vi.mock('@/core/service/openapi', () => ({
   default: {
     getAccountsWithPublicKey: vi.fn().mockResolvedValue([]),
   },
 }));
 
-vi.mock('@/background/service/userWallet', () => ({
+vi.mock('@/core/service/userWallet', () => ({
   default: {
     setupFcl: vi.fn(),
   },
 }));
 
-vi.mock('@/background/service/i18n', () => ({
+vi.mock('@/core/service/i18n', () => ({
   default: {
     t: (key) => key,
   },
 }));
 
-vi.mock('@/background/service/preference', () => ({
+vi.mock('@/core/service/preference', () => ({
   default: {
     getHiddenAddresses: vi.fn().mockReturnValue([]),
   },

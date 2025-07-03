@@ -14,8 +14,8 @@ vi.mock('@/core/utils/modules/findAddressWithPubKey', () => ({
   getAccountsByPublicKeyTuple: vi.fn(),
 }));
 
-// Consolidate mocks for services imported from '@/background/service'
-vi.mock('@/background/service', () => {
+// Consolidate mocks for services imported from '@/core/service'
+vi.mock('@/core/service', () => {
   return {
     keyringService: {
       getCurrentPublicPrivateKeyTuple: vi.fn(),
@@ -51,7 +51,7 @@ import RLP from 'rlp';
 import { afterEach, beforeEach, describe, expect, it, vi, type MockedFunction } from 'vitest';
 // --- Other Specific Imports (ensure these remain as they were) ---
 
-// Change these imports to be named imports from '@/background/service'
+// Change these imports to be named imports from '@/core/service'
 import { keyringService, signTextHistoryService } from '@/core/service';
 import * as findAddressWithPubKey from '@/core/utils/modules/findAddressWithPubKey';
 import { pk2PubKeyTuple } from '@/core/utils/modules/publicPrivateKey';

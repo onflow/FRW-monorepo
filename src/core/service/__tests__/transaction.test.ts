@@ -124,7 +124,7 @@ describe('Transaction Service', () => {
   });
 
   // Add the openapi service mock
-  vi.mock('@/background/service/openapi', () => {
+  vi.mock('@/core/service/openapi', () => {
     const mockData = {
       transactions: [
         {

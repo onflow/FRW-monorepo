@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/background/service/userWallet', async () => {
-  const actual = await vi.importActual('@/background/service/userWallet');
+vi.mock('@/core/service/userWallet', async () => {
+  const actual = await vi.importActual('@/core/service/userWallet');
   return {
     default: {
       ...actual,
@@ -16,31 +16,31 @@ vi.mock('@/background/service/userWallet', async () => {
   };
 });
 
-vi.mock('@/background/service/nft', () => ({
+vi.mock('@/core/service/nft', () => ({
   default: {
     clear: vi.fn(),
   },
 }));
 
-vi.mock('@/background/service/userInfo', () => ({
+vi.mock('@/core/service/userInfo', () => ({
   default: {
     removeUserInfo: vi.fn(),
   },
 }));
 
-vi.mock('@/background/service/coinList', () => ({
+vi.mock('@/core/service/coinList', () => ({
   default: {
     clear: vi.fn(),
   },
 }));
 
-vi.mock('@/background/service/addressBook', () => ({
+vi.mock('@/core/service/addressBook', () => ({
   default: {
     clear: vi.fn(),
   },
 }));
 
-vi.mock('@/background/service/transaction', () => ({
+vi.mock('@/core/service/transaction', () => ({
   default: {
     clear: vi.fn(),
   },
