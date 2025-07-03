@@ -15,6 +15,7 @@ const Keydetail = () => {
   const wallet = useWallet();
   const { parentWallet } = useProfiles();
   const [privatekey, setKey] = useState<string | undefined>(undefined);
+  const publicKey = parentWallet?.publicKey;
 
   const verify = useCallback(async () => {
     try {
@@ -39,10 +40,10 @@ const Keydetail = () => {
     if (!location.state?.password || !location.state) {
       navigate('/dashboard/nested/privatekeypassword');
     }
-    if (parentWallet?.publicKey) {
+    if (publicKey) {
       verify();
     }
-  }, [verify, parentWallet?.publicKey, navigate, location.state]);
+  }, [verify, publicKey, navigate, location.state]);
 
   const CredentialBox = ({ data }: { data?: string }) => {
     return (
@@ -110,7 +111,7 @@ const Keydetail = () => {
       <Typography variant="body1" align="left" py="14px" px="20px" fontSize="17px">
         {chrome.i18n.getMessage('Public__Key')}
       </Typography>
-      <CredentialBox data={parentWallet?.publicKey} />
+      <CredentialBox data={publicKey} />
 
       <Box
         sx={{
@@ -126,13 +127,13 @@ const Keydetail = () => {
         <Box sx={{ width: '50%' }}>
           <Typography variant="body1" color="text.secondary" align="left" fontSize="14px">
             {chrome.i18n.getMessage('Hash__Algorithm')} <br />
-            {parentWallet && parentWallet?.publicKey ? parentWallet?.hashAlgoString : ''}
+            {parentWallet && publicKey ? parentWallet?.hashAlgoString : ''}
           </Typography>
         </Box>
         <Box sx={{ width: '50%', borderLeft: 1, borderColor: '#333333', px: '15px' }}>
           <Typography variant="body1" color="text.secondary" align="left" fontSize="14px">
             {chrome.i18n.getMessage('Sign__Algorithm')} <br />
-            {parentWallet && parentWallet?.publicKey ? parentWallet?.signAlgoString : ''}
+            {parentWallet && publicKey ? parentWallet?.signAlgoString : ''}
           </Typography>
         </Box>
       </Box>
