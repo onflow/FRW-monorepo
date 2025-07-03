@@ -3,36 +3,38 @@ import encryptor from 'browser-passworder';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Internal imports
+import keyringService from '@/background/service/keyring';
 import { FLOW_BIP44_PATH } from '@/shared/constant/algo-constants';
 import { CURRENT_ID_KEY, KEYRING_STATE_V2_KEY } from '@/shared/types/keyring-types';
+import storage from '@/shared/utils/storage';
 
 // Mock dependencies
-vi.mock('../../../shared/utils/storage', () => ({
+vi.mock('@/shared/utils/storage', () => ({
   default: {
     get: vi.fn(),
     set: vi.fn(),
   },
 }));
 
-vi.mock('../../service/openapi', () => ({
+vi.mock('@/background/service/openapi', () => ({
   default: {
     getAccountsWithPublicKey: vi.fn().mockResolvedValue([]),
   },
 }));
 
-vi.mock('../../service/userWallet', () => ({
+vi.mock('@/background/service/userWallet', () => ({
   default: {
     setupFcl: vi.fn(),
   },
 }));
 
-vi.mock('../../service/i18n', () => ({
+vi.mock('@/background/service/i18n', () => ({
   default: {
     t: (key) => key,
   },
 }));
 
-vi.mock('../../service/preference', () => ({
+vi.mock('@/background/service/preference', () => ({
   default: {
     getHiddenAddresses: vi.fn().mockReturnValue([]),
   },
@@ -52,8 +54,6 @@ vi.mock('bip39', () => ({
 }));
 
 // Import the mocked modules after all mocks are defined
-import storage from '../../../shared/utils/storage';
-import keyringService from '../keyring';
 
 import { MOCK_KEYS, MOCK_MNEMONIC, MOCK_PASSWORD } from './keyring-mock-data';
 

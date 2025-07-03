@@ -1,6 +1,5 @@
 import { consoleError } from '@/shared/utils/console-log';
-
-import storage from '../../../shared/utils/storage';
+import storage from '@/shared/utils/storage';
 
 import { jsonToString } from './utils';
 

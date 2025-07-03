@@ -1,9 +1,9 @@
 import CloseIcon from '@mui/icons-material/Close';
-import { Box, Typography, Button, IconButton } from '@mui/material';
+import { Box, Button, IconButton, Typography } from '@mui/material';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
-import eventBus from '@/eventBus';
+import eventBus from '@/shared/utils/message/eventBus';
 
 interface StorageExceededAlertProps {
   open: boolean;

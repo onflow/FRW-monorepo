@@ -58,8 +58,8 @@ import {
   type KeyringStateV2,
 } from '@/shared/types/keyring-types';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
+import storage from '@/shared/utils/storage';
 
-import storage from '../../../shared/utils/storage';
 import keyringService from '../keyring';
 import { SimpleKeyring } from '../keyring/simpleKeyring';
 

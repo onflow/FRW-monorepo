@@ -1,21 +1,20 @@
 import { initWasm } from '@trustwallet/wallet-core';
 
 import {
+  FLOW_BIP44_PATH,
+  HASH_ALGO_NUM_SHA2_256,
+  HASH_ALGO_NUM_SHA3_256,
+  SIGN_ALGO_NUM_ECDSA_P256,
+  SIGN_ALGO_NUM_ECDSA_secp256k1,
+} from '@/shared/constant/algo-constants';
+import {
   type PrivateKeyTuple,
   type PublicKeyTuple,
   type PublicPrivateKeyTuple,
 } from '@/shared/types/key-types';
 import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
 import { consoleError } from '@/shared/utils/console-log';
-
-import {
-  FLOW_BIP44_PATH,
-  HASH_ALGO_NUM_SHA2_256,
-  HASH_ALGO_NUM_SHA3_256,
-  SIGN_ALGO_NUM_ECDSA_P256,
-  SIGN_ALGO_NUM_ECDSA_secp256k1,
-} from '../../../shared/constant/algo-constants';
-import storage from '../../../shared/utils/storage';
+import storage from '@/shared/utils/storage';
 
 const jsonToKey = async (json: string, password: string) => {
   try {

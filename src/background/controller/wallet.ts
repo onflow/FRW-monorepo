@@ -48,7 +48,6 @@ import {
 import { generateRandomId } from '@/background/utils/random-id';
 import { notification, storage } from '@/background/webapi';
 import { openIndexPage } from '@/background/webapi/tab';
-import eventBus from '@/eventBus';
 import { FLOW_BIP44_PATH } from '@/shared/constant/algo-constants';
 import {
   EVM_ENDPOINT,
@@ -60,7 +59,18 @@ import { type CustomFungibleTokenInfo } from '@/shared/types/coin-types';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
 import { type PublicKeyTuple, type PublicPrivateKeyTuple } from '@/shared/types/key-types';
 import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
-import { ContactType, MAINNET_CHAIN_ID, Period, PriceProvider } from '@/shared/types/network-types';
+import {
+  type AccountKeyRequest,
+  type Contact,
+  ContactType,
+  type FlowNetwork,
+  MAINNET_CHAIN_ID,
+  type NFTModelV2,
+  Period,
+  PriceProvider,
+  type TokenPriceHistory,
+  type UserInfoResponse,
+} from '@/shared/types/network-types';
 import { type NFTCollectionData, type NFTCollections } from '@/shared/types/nft-types';
 import { type TokenInfo } from '@/shared/types/token-info';
 import { type TrackingEvents } from '@/shared/types/tracking-types';
@@ -109,18 +119,11 @@ import {
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
 import { getPeriodFrequency } from '@/shared/utils/getPeriodFrequency';
+import eventBus from '@/shared/utils/message/eventBus';
 import { convertToIntegerAmount, validateAmount } from '@/shared/utils/number';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import { type CategoryScripts } from '@/shared/utils/script-types';
 
-import type {
-  AccountKeyRequest,
-  Contact,
-  FlowNetwork,
-  NFTModelV2,
-  TokenPriceHistory,
-  UserInfoResponse,
-} from '../../shared/types/network-types';
 import { HDKeyring } from '../service/keyring/hdKeyring';
 import { getScripts } from '../service/openapi';
 import type { ConnectedSite } from '../service/permission';

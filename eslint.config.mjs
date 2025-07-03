@@ -156,6 +156,25 @@ const config = [
               group: ['@/ui/*', '@/ui/**'],
               message: 'UI components/modules cannot be imported into background scripts',
             },
+            // Block relative imports outside background folder
+            {
+              group: [
+                '../shared/*',
+                '../shared/**',
+                '../ui/*',
+                '../ui/**',
+                '../content-script/*',
+                '../content-script/**',
+                '../../shared/*',
+                '../../shared/**',
+                '../../ui/*',
+                '../../ui/**',
+                '../../content-script/*',
+                '../../content-script/**',
+              ],
+              message:
+                'Files in background folder must use aliases (@/shared/*, etc.) instead of relative paths outside background',
+            },
           ],
         },
       ],

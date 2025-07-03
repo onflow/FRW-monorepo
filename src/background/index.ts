@@ -12,11 +12,11 @@ import 'reflect-metadata';
 import providerController from '@/background/controller/provider';
 import { preAuthzServiceDefinition } from '@/background/controller/serviceDefinition';
 import walletController, { type WalletController } from '@/background/controller/wallet';
-import eventBus from '@/eventBus';
 import { EVENTS } from '@/shared/constant/events';
 import { type WalletAddress } from '@/shared/types/wallet-types';
 import { isValidFlowAddress } from '@/shared/utils/address';
 import { consoleError, consoleLog } from '@/shared/utils/console-log';
+import eventBus from '@/shared/utils/message/eventBus';
 import { Message } from '@/shared/utils/messaging';
 
 import notificationService from './controller/notification';

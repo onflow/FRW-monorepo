@@ -3,7 +3,7 @@ import { Box } from '@mui/system';
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
-import eventBus from '@/eventBus';
+import eventBus from '@/shared/utils/message/eventBus';
 import { ButtonRow } from '@/ui/components/ButtonRow';
 import CoinsIcon from '@/ui/components/CoinsIcon';
 import { IconActivity, IconNfts } from '@/ui/components/iconfont';
