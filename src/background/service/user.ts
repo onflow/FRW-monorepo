@@ -8,9 +8,9 @@ import {
 import { consoleError } from '@/shared/utils/console-log';
 import { getCurrentProfileId, returnCurrentProfileId } from '@/shared/utils/current-id';
 import storage from '@/shared/utils/storage';
-import { createSessionStore } from 'background/utils';
 
 import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
+import createSessionStore from '../utils/persistStore';
 
 import openapiService from './openapi';
 

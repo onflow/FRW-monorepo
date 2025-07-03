@@ -4,7 +4,7 @@ import LRU from 'lru-cache';
 import { INTERNAL_REQUEST_ORIGIN } from '@/shared/constant/domain-constants';
 import { MAINNET_CHAIN_ID } from '@/shared/types/network-types';
 
-import createPersistStore from '../utils/persisitStore';
+import createPersistStore from '../utils/persistStore';
 
 export interface ConnectedSite {
   origin: string;

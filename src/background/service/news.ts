@@ -7,7 +7,7 @@ import {
 } from '@/shared/utils/user-data-keys';
 
 import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
-import createPersistStore from '../utils/persisitStore';
+import createPersistStore from '../utils/persistStore';
 
 import openapi from './openapi';
 

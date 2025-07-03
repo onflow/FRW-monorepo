@@ -6,6 +6,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import Web3 from 'web3';
 
+import erc721 from '@/background/utils/erc721.abi.json';
 import { EVM_ENDPOINT } from '@/shared/constant/domain-constants';
 import { type Contact } from '@/shared/types/network-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
@@ -19,7 +20,6 @@ import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
 import { type MatchMedia, MatchMediaType } from '@/ui/utils/url';
-import erc721 from 'background/utils/erc721.abi.json';
 import IconNext from 'ui/assets/svg/next.svg';
 import { FRWProfile, FRWTargetProfile, LLProfile, LLSpinner } from 'ui/components';
 import { isEmoji, returnFilteredCollections, useWallet } from 'ui/utils';

@@ -2,7 +2,7 @@ import { sortBy } from 'lodash';
 
 import { INTERNAL_REQUEST_ORIGIN } from '@/shared/constant/domain-constants';
 
-import createPersistStore from '../utils/persisitStore';
+import createPersistStore from '../utils/persistStore';
 
 import permissionService, { type ConnectedSite } from './permission';
 

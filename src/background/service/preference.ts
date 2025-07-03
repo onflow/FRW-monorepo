@@ -3,7 +3,7 @@ import compareVersions from 'compare-versions';
 import { type FlowNetwork, MAINNET_NETWORK } from '@/shared/types/network-types';
 import { type Currency, DEFAULT_CURRENCY } from '@/shared/types/wallet-types';
 
-import createPersistStore from '../utils/persisitStore';
+import createPersistStore from '../utils/persistStore';
 import { storage } from '../webapi';
 
 import keyringService from './keyring';

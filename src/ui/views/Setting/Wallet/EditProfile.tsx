@@ -1,8 +1,8 @@
-import { Box, Button, ListItemButton, Typography, Drawer, ListItem } from '@mui/material';
-import React, { useState, useEffect, useCallback } from 'react';
+import { Box, Button, Drawer, ListItem, ListItemButton, Typography } from '@mui/material';
+import React, { useCallback, useEffect, useState } from 'react';
 
+import emojis from '@/background/utils/emoji.json';
 import { isValidEthereumAddress } from '@/shared/utils/address';
-import emojis from 'background/utils/emoji.json';
 import { useWallet } from 'ui/utils';
 
 interface MoveBoardProps {

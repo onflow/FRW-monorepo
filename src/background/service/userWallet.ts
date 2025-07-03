@@ -6,27 +6,27 @@ import { getApp } from 'firebase/app';
 import { getAuth, signInAnonymously } from 'firebase/auth/web-extension';
 
 import {
-  type PublicPrivateKeyTuple,
   combinePubPkString,
+  type PublicPrivateKeyTuple,
   tupleToPrivateKey,
 } from '@/shared/types/key-types';
 import {
-  networkToChainId,
   type AccountKeyRequest,
   type DeviceInfoRequest,
   type FlowNetwork,
+  networkToChainId,
 } from '@/shared/types/network-types';
 import {
-  type FlowAddress,
-  type EvmAddress,
-  type WalletAccount,
-  type ChildAccountMap,
   type ActiveAccountType,
+  type ChildAccountMap,
+  type EvmAddress,
+  type FlowAddress,
   getActiveAccountTypeForAddress,
-  type WalletAddress,
+  type MainAccount,
   type PendingTransaction,
   type PublicKeyAccount,
-  type MainAccount,
+  type WalletAccount,
+  type WalletAddress,
 } from '@/shared/types/wallet-types';
 import {
   ensureEvmAddressPrefix,
@@ -36,35 +36,35 @@ import {
 } from '@/shared/utils/address';
 import { DEFAULT_WEIGHT, FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 import {
-  mainAccountsKey,
-  mainAccountsRefreshRegex,
   accountBalanceKey,
   accountBalanceRefreshRegex,
+  mainAccountsKey,
+  mainAccountsRefreshRegex,
   mainAccountStorageBalanceKey,
   mainAccountStorageBalanceRefreshRegex,
   type MainAccountStorageBalanceStore,
   pendingAccountCreationTransactionsKey,
+  pendingAccountCreationTransactionsRefreshRegex,
   placeholderAccountsKey,
   placeholderAccountsRefreshRegex,
-  pendingAccountCreationTransactionsRefreshRegex,
 } from '@/shared/utils/cache-data-keys';
 import { consoleError, consoleTrace, consoleWarn } from '@/shared/utils/console-log';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import { removeUserData, setUserData } from '@/shared/utils/user-data-access';
 import {
+  activeAccountsKey,
+  type ActiveAccountsStore,
+  getActiveAccountsData,
   userWalletsKey,
   type UserWalletStore,
-  type ActiveAccountsStore,
-  activeAccountsKey,
-  getActiveAccountsData,
 } from '@/shared/utils/user-data-keys';
 
 import { defaultAccountKey, pubKeyAccountToAccountKey } from '../utils/account-key';
 import {
   clearCachedData,
   getValidData,
-  registerRefreshListener,
   registerBatchRefreshListener,
+  registerRefreshListener,
   setCachedData,
 } from '../utils/data-cache';
 import { getEmojiByIndex } from '../utils/emoji-util';
@@ -74,13 +74,13 @@ import {
   getAccountsWithPublicKey,
 } from '../utils/modules/findAddressWithPubKey';
 import {
-  signWithKey,
-  seed2PublicPrivateKey,
-  seedWithPathAndPhrase2PublicPrivateKey,
   formPubKeyTuple,
   pk2PubKeyTuple,
+  seed2PublicPrivateKey,
+  seedWithPathAndPhrase2PublicPrivateKey,
+  signWithKey,
 } from '../utils/modules/publicPrivateKey';
-import createPersistStore from '../utils/persisitStore';
+import createPersistStore from '../utils/persistStore';
 import { storage } from '../webapi';
 
 import keyringService from './keyring';

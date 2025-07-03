@@ -1,11 +1,11 @@
 import type { Account as FclAccount } from '@onflow/typedefs';
 import * as ethUtil from 'ethereumjs-util';
 
-import { EMULATOR_HOST_TESTNET, EMULATOR_HOST_MAINNET } from '@/background/utils/fclConfig';
+import { EMULATOR_HOST_MAINNET, EMULATOR_HOST_TESTNET } from '@/background/utils/fclConfig';
 import { type FlowNetwork } from '@/shared/types/network-types';
 import { consoleError } from '@/shared/utils/console-log';
 
-export { default as createPersistStore } from './persisitStore';
+export { default as createPersistStore } from './persistStore';
 export { default as createSessionStore } from './sessionStore';
 
 // {a:{b: string}} => {1: 'a.b'}
@@ -39,8 +39,8 @@ export const underline2Camelcase = (str: string) => {
   return str.replace(/_(.)/g, (m, p1) => p1.toUpperCase());
 };
 
-export { retrieveValuePath };
 export { default as PromiseFlow } from './promiseFlow';
+export { retrieveValuePath };
 
 export function normalizeAddress(input: number | string): string {
   if (!input) {

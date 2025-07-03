@@ -6,6 +6,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import Web3 from 'web3';
 
+import erc721 from '@/background/utils/erc721.abi.json';
 import { EVM_ENDPOINT } from '@/shared/constant/domain-constants';
 import { type Contact } from '@/shared/types/network-types';
 import { consoleError } from '@/shared/utils/console-log';
@@ -16,7 +17,6 @@ import { WarningStorageLowSnackbar } from '@/ui/components/WarningStorageLowSnac
 import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
 import { type MatchMedia, MatchMediaType } from '@/ui/utils/url';
-import erc721 from 'background/utils/erc721.abi.json';
 import IconNext from 'ui/assets/svg/next.svg';
 import { FRWProfile, LLProfile, LLSpinner } from 'ui/components';
 import { useWallet } from 'ui/utils';
