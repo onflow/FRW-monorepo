@@ -16,11 +16,11 @@ import {
 } from '@/background/service';
 import { getAccountsByPublicKeyTuple } from '@/background/utils/modules/findAddressWithPubKey';
 import { signWithKey } from '@/background/utils/modules/publicPrivateKey';
+import { EVM_ENDPOINT } from '@/shared/constant/domain-constants';
 import { tupleToPrivateKey } from '@/shared/types/key-types';
 import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
 import { ensureEvmAddressPrefix, isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
-import { EVM_ENDPOINT } from '@/shared/utils/domain-constants';
 
 import notificationService from '../notification';
 

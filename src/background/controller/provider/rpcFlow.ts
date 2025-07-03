@@ -2,8 +2,8 @@ import { ethErrors } from 'eth-rpc-errors';
 
 import { permissionService } from '@/background/service';
 import { PromiseFlow, underline2Camelcase } from '@/background/utils';
-import { EVENTS } from '@/constant/index';
 import eventBus from '@/eventBus';
+import { EVENTS } from '@/shared/constant/events';
 import { consoleLog } from '@/shared/utils/console-log';
 
 import notificationService from '../notification';

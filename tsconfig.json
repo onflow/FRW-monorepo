@@ -15,8 +15,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "ui/*": ["./src/ui/*"],
-      "background/*": ["./src/background/*"],
-      "consts": ["./src/constant/index"]
+      "background/*": ["./src/background/*"]
     },
     "lib": ["ES2021.String", "DOM", "DOM.Iterable"],
     "types": ["chrome", "node", "react", "react-dom"],

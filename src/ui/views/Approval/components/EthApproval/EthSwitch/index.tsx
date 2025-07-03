@@ -1,4 +1,4 @@
-import { Stack, Box, Typography, Divider } from '@mui/material';
+import { Box, Divider, Stack, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
@@ -11,8 +11,6 @@ import mainnetsvg from 'ui/assets/svg/mainnet.svg';
 import testnetsvg from 'ui/assets/svg/testnet.svg';
 import { LLPrimaryButton, LLSecondaryButton } from 'ui/components';
 import { networkColor } from 'ui/style/color';
-
-// import { CHAINS_ENUM } from 'consts';
 
 interface ConnectProps {
   params: any;

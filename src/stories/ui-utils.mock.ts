@@ -1,23 +1,22 @@
 // Re-export everything from the original ui/utils except WalletContext
-export * from '../ui/utils/WindowContext';
-export * from '../ui/utils/webapi';
-export * from '../ui/utils/time';
 export * from '../shared/utils/number';
+export * from '../ui/utils/time';
+export * from '../ui/utils/webapi';
+export * from '../ui/utils/WindowContext';
 
 // Re-export other utils from the main index file
 export {
-  noop,
-  getUiType,
-  hex2Text,
-  isEmoji,
-  hexToUint8Array,
-  getUITypeName,
-  getOriginName,
-  hashCode,
-  isMetaMaskActive,
   ellipsisOverflowedText,
   formatAddress,
+  getOriginName,
+  getUiType,
+  getUITypeName,
+  hashCode,
+  hex2Text,
   HexToDecimalConverter,
+  hexToUint8Array,
+  isEmoji,
+  noop,
   returnFilteredCollections,
   truncate,
 } from '../ui/utils';

@@ -1,19 +1,19 @@
-import 'reflect-metadata';
 import { ethErrors } from 'eth-rpc-errors';
 import { initializeApp } from 'firebase/app';
 import {
   getAuth,
-  signInAnonymously,
   indexedDBLocalPersistence,
-  setPersistence,
   onAuthStateChanged,
+  setPersistence,
+  signInAnonymously,
 } from 'firebase/auth/web-extension';
+import 'reflect-metadata';
 
 import providerController from '@/background/controller/provider';
 import { preAuthzServiceDefinition } from '@/background/controller/serviceDefinition';
 import walletController, { type WalletController } from '@/background/controller/wallet';
-import { EVENTS } from '@/constant/index';
 import eventBus from '@/eventBus';
+import { EVENTS } from '@/shared/constant/events';
 import { type WalletAddress } from '@/shared/types/wallet-types';
 import { isValidFlowAddress } from '@/shared/utils/address';
 import { consoleError, consoleLog } from '@/shared/utils/console-log';
@@ -21,24 +21,24 @@ import { Message } from '@/shared/utils/messaging';
 
 import notificationService from './controller/notification';
 import {
-  permissionService,
-  preferenceService,
-  sessionService,
-  keyringService,
-  openapiService,
-  coinListService,
-  userInfoService,
   addressBookService,
-  userWalletService,
-  transactionService,
-  nftService,
+  coinListService,
   evmNftService,
   googleSafeHostService,
-  mixpanelTrack,
+  keyringService,
   logListener,
-  tokenListService,
-  remoteConfigService,
+  mixpanelTrack,
   newsService,
+  nftService,
+  openapiService,
+  permissionService,
+  preferenceService,
+  remoteConfigService,
+  sessionService,
+  tokenListService,
+  transactionService,
+  userInfoService,
+  userWalletService,
 } from './service';
 import { getFirbaseConfig } from './utils/firebaseConfig';
 import { setEnvironmentBadge } from './utils/setEnvironmentBadge';

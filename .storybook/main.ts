@@ -67,7 +67,6 @@ const config: StorybookConfig = {
       '@': path.resolve(__dirname, '../src'),
       ui: path.resolve(__dirname, '../src/ui'),
       background: path.resolve(__dirname, '../src/background'),
-      consts: path.resolve(__dirname, '../src/constant/index'),
     };
 
     config.plugins.push(

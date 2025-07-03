@@ -1,25 +1,25 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import {
-  Typography,
   Box,
-  IconButton,
-  Stack,
-  InputBase,
   CircularProgress,
   FormControl,
+  IconButton,
+  InputBase,
+  Stack,
+  Typography,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { Contract, ethers } from 'ethers';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate, useLocation } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 
+import { EVM_ENDPOINT } from '@/shared/constant/domain-constants';
 import { type CustomFungibleTokenInfo } from '@/shared/types/coin-types';
 import { networkToChainId } from '@/shared/types/network-types';
-import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
+import { isValidEthereumAddress, withPrefix } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
-import { EVM_ENDPOINT } from '@/shared/utils/domain-constants';
-import { LLPrimaryButton, LLFormHelperText } from '@/ui/components';
+import { LLFormHelperText, LLPrimaryButton } from '@/ui/components';
 import { refreshEvmToken } from '@/ui/hooks/use-coin-hooks';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useWallet } from 'ui/utils';

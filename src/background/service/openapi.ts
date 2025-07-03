@@ -2,64 +2,64 @@ import * as fcl from '@onflow/fcl';
 import type { Account as FclAccount } from '@onflow/typedefs';
 import BigNumber from 'bignumber.js';
 import dayjs from 'dayjs';
-import { initializeApp, getApp } from 'firebase/app';
+import { getApp, initializeApp } from 'firebase/app';
 import {
   getAuth,
-  signInWithCustomToken,
-  setPersistence,
   indexedDBLocalPersistence,
-  signInAnonymously,
   onAuthStateChanged,
+  setPersistence,
+  signInAnonymously,
+  signInWithCustomToken,
   type Unsubscribe,
   type User,
 } from 'firebase/auth/web-extension';
-import { getInstallations, getId } from 'firebase/installations';
+import { getId, getInstallations } from 'firebase/installations';
 
+import { INITIAL_OPENAPI_URL, WEB_NEXT_URL } from '@/shared/constant/domain-constants';
 import type {
   BalanceMap,
-  EvmTokenInfo,
   CadenceTokenInfo,
-  FungibleTokenListResponse,
-  FungibleTokenInfo,
   CustomFungibleTokenInfo,
+  EvmTokenInfo,
+  FungibleTokenInfo,
+  FungibleTokenListResponse,
 } from '@/shared/types/coin-types';
 import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
 import {
+  type AccountBalanceInfo,
   type AccountKeyRequest,
   type CheckResponse,
-  type SignInResponse,
-  type UserInfoResponse,
-  type StorageInfo,
-  type NewsItem,
-  type NewsConditionType,
-  Period,
-  PriceProvider,
-  type AccountBalanceInfo,
   type Contact,
-  type NFTModelV2,
   type DeviceInfoRequest,
-  type KeyResponseItem,
-  type NftCollection,
   getPriceProvider,
+  type KeyResponseItem,
+  type NewsConditionType,
+  type NewsItem,
+  type NftCollection,
+  type NFTModelV2,
+  Period,
   type PeriodFrequency,
+  PriceProvider,
+  type SignInResponse,
+  type StorageInfo,
+  type UserInfoResponse,
 } from '@/shared/types/network-types';
 import { type NFTCollections } from '@/shared/types/nft-types';
 import type { TokenInfo } from '@/shared/types/token-info';
 import {
-  type LoggedInAccountWithIndex,
-  type LoggedInAccount,
-  type FlowAddress,
-  type PublicKeyAccount,
   type ActiveAccountType,
   type Currency,
   DEFAULT_CURRENCY,
+  type FlowAddress,
+  type LoggedInAccount,
+  type LoggedInAccountWithIndex,
+  type PublicKeyAccount,
 } from '@/shared/types/wallet-types';
 import { isValidFlowAddress } from '@/shared/utils/address';
 import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
 import { cadenceScriptsKey } from '@/shared/utils/cache-data-keys';
 import { consoleError, consoleLog } from '@/shared/utils/console-log';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
-import { INITIAL_OPENAPI_URL, WEB_NEXT_URL } from '@/shared/utils/domain-constants';
 import { getPeriodFrequency } from '@/shared/utils/getPeriodFrequency';
 import { type NetworkScripts } from '@/shared/utils/script-types';
 
@@ -73,14 +73,14 @@ import { storage } from '../webapi';
 import fetchConfig from './remoteConfig';
 
 import {
-  userWalletService,
-  coinListService,
   addressBookService,
-  userInfoService,
-  transactionService,
-  nftService,
+  coinListService,
   googleSafeHostService,
   mixpanelTrack,
+  nftService,
+  transactionService,
+  userInfoService,
+  userWalletService,
 } from './index';
 
 type CurrencyResponse = {

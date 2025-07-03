@@ -10,23 +10,23 @@ import { encode } from 'rlp';
 import web3, { TransactionError, Web3 } from 'web3';
 
 import {
-  keyringService,
-  preferenceService,
-  permissionService,
-  sessionService,
-  openapiService,
-  userInfoService,
-  coinListService,
   addressBookService,
-  userWalletService,
-  transactionService,
-  nftService,
-  googleDriveService,
-  newsService,
-  mixpanelTrack,
+  coinListService,
   evmNftService,
-  tokenListService,
+  googleDriveService,
+  keyringService,
+  mixpanelTrack,
+  newsService,
+  nftService,
+  openapiService,
+  permissionService,
+  preferenceService,
   remoteConfigService,
+  sessionService,
+  tokenListService,
+  transactionService,
+  userInfoService,
+  userWalletService,
 } from '@/background/service';
 import { type Keyring, KEYRING_CLASS, type KeyringType } from '@/background/service/keyring';
 import { replaceNftKeywords } from '@/background/utils';
@@ -36,40 +36,46 @@ import {
   pubKeySignAlgoToAccountKey,
 } from '@/background/utils/account-key';
 import {
-  findAddressWithSeed,
   findAddressWithPK,
+  findAddressWithSeed,
 } from '@/background/utils/modules/findAddressWithPK';
 import {
-  pk2PubKeyTuple,
-  jsonToKey,
-  seedWithPathAndPhrase2PublicPrivateKey,
   formPubKeyTuple,
+  jsonToKey,
+  pk2PubKeyTuple,
+  seedWithPathAndPhrase2PublicPrivateKey,
 } from '@/background/utils/modules/publicPrivateKey';
 import { generateRandomId } from '@/background/utils/random-id';
 import { notification, storage } from '@/background/webapi';
 import { openIndexPage } from '@/background/webapi/tab';
 import eventBus from '@/eventBus';
+import {
+  EVM_ENDPOINT,
+  HTTP_STATUS_CONFLICT,
+  HTTP_STATUS_TOO_MANY_REQUESTS,
+  INTERNAL_REQUEST_ORIGIN,
+} from '@/shared/constant/domain-constants';
 import { type CustomFungibleTokenInfo } from '@/shared/types/coin-types';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
-import { type PublicPrivateKeyTuple, type PublicKeyTuple } from '@/shared/types/key-types';
+import { type PublicKeyTuple, type PublicPrivateKeyTuple } from '@/shared/types/key-types';
 import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
 import { ContactType, MAINNET_CHAIN_ID, Period, PriceProvider } from '@/shared/types/network-types';
-import { type NFTCollections, type NFTCollectionData } from '@/shared/types/nft-types';
+import { type NFTCollectionData, type NFTCollections } from '@/shared/types/nft-types';
 import { type TokenInfo } from '@/shared/types/token-info';
 import { type TrackingEvents } from '@/shared/types/tracking-types';
-import { type TransferItem, type TransactionState } from '@/shared/types/transaction-types';
+import { type TransactionState, type TransferItem } from '@/shared/types/transaction-types';
 import {
-  type ActiveChildType_depreciated,
-  type LoggedInAccount,
-  type FlowAddress,
-  type PublicKeyAccount,
-  type MainAccount,
-  type WalletAccount,
-  type EvmAddress,
-  type WalletAddress,
-  type Currency,
   type ActiveAccountType,
+  type ActiveChildType_depreciated,
+  type Currency,
+  type EvmAddress,
+  type FlowAddress,
+  type LoggedInAccount,
+  type MainAccount,
   type ProfileBackupStatus,
+  type PublicKeyAccount,
+  type WalletAccount,
+  type WalletAddress,
 } from '@/shared/types/wallet-types';
 import {
   ensureEvmAddressPrefix,
@@ -81,33 +87,27 @@ import {
 import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 import {
-  getCachedScripts,
-  getCachedNftCollection,
-  nftCatalogCollectionsKey,
+  accountBalanceKey,
   childAccountAllowTypesKey,
+  type ChildAccountFtStore,
   childAccountNftsKey,
   type ChildAccountNFTsStore,
+  coinListKey,
+  evmNftCollectionListKey,
+  type EvmNftCollectionListStore,
   evmNftIdsKey,
   type EvmNftIdsStore,
-  type EvmNftCollectionListStore,
-  evmNftCollectionListKey,
+  getCachedNftCollection,
+  getCachedScripts,
+  mainAccountsKey,
+  nftCatalogCollectionsKey,
   registerStatusKey,
   registerStatusRefreshRegex,
-  coinListKey,
-  type ChildAccountFtStore,
-  accountBalanceKey,
   walletLoadedKey,
   walletLoadedRefreshRegex,
-  mainAccountsKey,
 } from '@/shared/utils/cache-data-keys';
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
-import {
-  INTERNAL_REQUEST_ORIGIN,
-  EVM_ENDPOINT,
-  HTTP_STATUS_CONFLICT,
-  HTTP_STATUS_TOO_MANY_REQUESTS,
-} from '@/shared/utils/domain-constants';
 import { getPeriodFrequency } from '@/shared/utils/getPeriodFrequency';
 import { convertToIntegerAmount, validateAmount } from '@/shared/utils/number';
 import { retryOperation } from '@/shared/utils/retryOperation';

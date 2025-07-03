@@ -1,8 +1,8 @@
 import { max } from 'lodash';
 import LRU from 'lru-cache';
 
+import { INTERNAL_REQUEST_ORIGIN } from '@/shared/constant/domain-constants';
 import { MAINNET_CHAIN_ID } from '@/shared/types/network-types';
-import { INTERNAL_REQUEST_ORIGIN } from '@/shared/utils/domain-constants';
 
 import createPersistStore from '../utils/persisitStore';
 
