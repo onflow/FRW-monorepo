@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import { PasswordInput } from '@/ui/components/password/PasswordInput';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
 const DecryptWallet = ({ handleSwitchTab, setMnemonic, username }) => {
   const usewallet = useWallet();

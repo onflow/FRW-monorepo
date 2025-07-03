@@ -2,19 +2,19 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CircleOutlinedIcon from '@mui/icons-material/CircleOutlined';
 import {
   Box,
-  Typography,
-  Checkbox,
   CardActionArea,
+  Checkbox,
   Divider,
-  FormControlLabel,
   Fade,
+  FormControlLabel,
   Switch,
+  Typography,
 } from '@mui/material';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { storage } from '@/background/webapi';
 import { LLHeader } from '@/ui/components';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
 const DeveloperMode = () => {
   const usewallet = useWallet();

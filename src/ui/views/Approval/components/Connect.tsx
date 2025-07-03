@@ -7,13 +7,13 @@ import {
   serviceDefinition,
 } from '@/background/controller/serviceDefinition';
 import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
+import flowgrey from '@/ui/assets/svg/flow-grey.svg';
+import linkGlobe from '@/ui/assets/svg/linkGlobe.svg';
+import { LLConnectLoading, LLPrimaryButton, LLSecondaryButton } from '@/ui/components';
 import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
 import { useApproval } from '@/ui/hooks/use-approval';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useWallet } from '@/ui/utils/WalletContext';
-import flowgrey from 'ui/assets/svg/flow-grey.svg';
-import linkGlobe from 'ui/assets/svg/linkGlobe.svg';
-import { LLConnectLoading, LLPrimaryButton, LLSecondaryButton } from 'ui/components';
 
 import ShowSwitch from './ShowSwitch';
 

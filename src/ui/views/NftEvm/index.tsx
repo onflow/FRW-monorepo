@@ -1,8 +1,8 @@
 import { Box, Button } from '@mui/material';
-import React, { useState, useRef } from 'react';
+import React, { useRef, useState } from 'react';
 
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
 import ListTab from './ListTab';
 

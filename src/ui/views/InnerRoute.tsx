@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Routes, Route } from 'react-router';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Route, Routes } from 'react-router';
 
-import PrivateRoute from 'ui/components/PrivateRoute';
-import { useWallet, useWalletLoaded } from 'ui/utils';
+import PrivateRoute from '@/ui/components/PrivateRoute';
+import { useWallet, useWalletLoaded } from '@/ui/utils';
 
 import Deposit from '../views/Deposit';
 import Enable from '../views/Enable';

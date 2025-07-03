@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 import emojis from '@/background/utils/emoji.json';
 import { isValidEthereumAddress } from '@/shared/utils/address';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
 interface MoveBoardProps {
   showMoveBoard: boolean;

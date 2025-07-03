@@ -15,8 +15,7 @@ import { isValidEthereumAddress } from '@/shared/utils/address';
 import { LLHeader } from '@/ui/components';
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useWallet } from '@/ui/utils';
-import { formatAddress } from 'ui/utils';
+import { formatAddress, useWallet } from '@/ui/utils';
 
 const tempEmoji: Emoji[] = [
   {

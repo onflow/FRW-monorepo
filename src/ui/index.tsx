@@ -4,7 +4,7 @@ import { createRoot } from 'react-dom/client';
 import eventBus from '@/eventBus';
 import { EVENTS } from '@/shared/constant/events';
 import { Message } from '@/shared/utils/messaging';
-import { getUITypeName } from 'ui/utils';
+import { getUITypeName } from '@/ui/utils';
 
 import Views from './views';
 // import './style/index.less';

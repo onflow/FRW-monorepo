@@ -153,7 +153,7 @@ const config = [
         {
           patterns: [
             {
-              group: ['ui/*', '**/ui/**'],
+              group: ['@/ui/*', '@/ui/**'],
               message: 'UI components/modules cannot be imported into background scripts',
             },
           ],
@@ -214,7 +214,7 @@ const config = [
                 'Files in background/service can only import from background/utils/*, background/webapi/* or within service',
             },
             {
-              group: ['../../*', '!../../utils', '!../../utils/*', '!../../utils/**'],
+              group: ['../../*', '!../../utils/**'],
               message:
                 'Files in background/service subdirectories can only import from background/utils/*',
             },

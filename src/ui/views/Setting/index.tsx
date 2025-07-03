@@ -3,18 +3,20 @@ import AppleIcon from '@mui/icons-material/Apple';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import PhoneIphoneIcon from '@mui/icons-material/PhoneIphone';
 import {
-  List,
-  ListItemText,
-  ListItemIcon,
-  ListItem,
-  ListItemButton,
+  Box,
   Divider,
   IconButton,
-  Box,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
 } from '@mui/material';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
 
+import { ReactComponent as Device } from '@/ui/assets/svg/device.svg';
+import { ReactComponent as IconLink } from '@/ui/assets/svg/Iconlink.svg';
 import { LLHeader } from '@/ui/components';
 import CoinsIcon from '@/ui/components/CoinsIcon';
 import IconAbout from '@/ui/components/iconfont/IconAbout';
@@ -25,8 +27,6 @@ import IconBackup from '@/ui/components/iconfont/IconBackup';
 import IconDeveloper from '@/ui/components/iconfont/IconDeveloper';
 import IconLock from '@/ui/components/iconfont/IconLock';
 import { useWallet } from '@/ui/utils';
-import { ReactComponent as Device } from 'ui/assets/svg/device.svg';
-import { ReactComponent as IconLink } from 'ui/assets/svg/Iconlink.svg';
 // Feature flags
 const SHOW_DEVICES = false;
 

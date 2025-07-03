@@ -1,11 +1,11 @@
 import { generateOnRampURL } from '@coinbase/cbpay-js';
 import CloseIcon from '@mui/icons-material/Close';
-import { Typography, ButtonBase, IconButton } from '@mui/material';
+import { ButtonBase, IconButton, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { Box } from '@mui/system';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
 // import theme from '../../style/LLTheme';
 // import { initOnRamp } from '@coinbase/cbpay-js';

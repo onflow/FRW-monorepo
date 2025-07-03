@@ -15,7 +15,7 @@ import {
   registerReducer,
   STEPS,
 } from '@/ui/reducers/register-reducer';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
 const Register = () => {
   const navigate = useNavigate();

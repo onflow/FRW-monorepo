@@ -1,18 +1,18 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
-import { Typography, Container, Box, IconButton, Button, CardMedia } from '@mui/material';
+import { Box, Button, CardMedia, Container, IconButton, Typography } from '@mui/material';
 import { StyledEngineProvider } from '@mui/material/styles';
 import { saveAs } from 'file-saver';
-import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router';
 
+import fallback from '@/ui/assets/image/errorImage.png';
+import DetailMove from '@/ui/assets/svg/detailMove.svg';
+import SendIcon from '@/ui/assets/svg/detailSend.svg';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
+import { useWallet } from '@/ui/utils';
 import { type PostMedia } from '@/ui/utils/url';
-import fallback from 'ui/assets/image/errorImage.png';
-import DetailMove from 'ui/assets/svg/detailMove.svg';
-import SendIcon from 'ui/assets/svg/detailSend.svg';
-import { useWallet } from 'ui/utils';
 
 import MoveFromChild from '../../NFT/SendNFT/MoveFromChild';
 

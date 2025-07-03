@@ -10,16 +10,16 @@ import erc721 from '@/background/utils/erc721.abi.json';
 import { EVM_ENDPOINT } from '@/shared/constant/domain-constants';
 import { type Contact } from '@/shared/types/network-types';
 import { consoleError } from '@/shared/utils/console-log';
+import IconNext from '@/ui/assets/svg/next.svg';
+import { FRWProfile, LLProfile, LLSpinner } from '@/ui/components';
 import IconFlow from '@/ui/components/iconfont/IconFlow';
 import SlideRelative from '@/ui/components/SlideRelative';
 import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
 import { WarningStorageLowSnackbar } from '@/ui/components/WarningStorageLowSnackbar';
 import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
+import { useWallet } from '@/ui/utils';
 import { type MatchMedia, MatchMediaType } from '@/ui/utils/url';
-import IconNext from 'ui/assets/svg/next.svg';
-import { FRWProfile, LLProfile, LLSpinner } from 'ui/components';
-import { useWallet } from 'ui/utils';
 
 interface SendNFTConfirmationProps {
   isConfirmationOpen: boolean;

@@ -1,10 +1,10 @@
-import { Typography, CardMedia, Skeleton } from '@mui/material';
+import { CardMedia, Skeleton, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import React from 'react';
 import { QRCode } from 'react-qrcode-logo';
 
-import lilo from 'ui/assets/image/lilo.png';
-import scanIcon from 'ui/assets/scan.svg';
+import lilo from '@/ui/assets/image/lilo.png';
+import scanIcon from '@/ui/assets/scan.svg';
 
 interface SyncQrProps {
   uri: string;

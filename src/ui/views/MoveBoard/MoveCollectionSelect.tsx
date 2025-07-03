@@ -2,20 +2,20 @@ import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
-  InputAdornment,
-  Typography,
+  CardMedia,
   Drawer,
   IconButton,
-  TextField,
+  InputAdornment,
   ListItem,
   ListItemButton,
-  CardMedia,
+  TextField,
+  Typography,
 } from '@mui/material';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import selected from 'ui/assets/svg/selected.svg';
-import { useWallet } from 'ui/utils';
+import selected from '@/ui/assets/svg/selected.svg';
+import { useWallet } from '@/ui/utils';
 
 const MoveCollectionSelect = ({
   showMoveBoard,

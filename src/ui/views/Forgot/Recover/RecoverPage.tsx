@@ -1,12 +1,12 @@
 // import { useTranslation } from 'react-i18next';
-import { Typography, Box, FormControl } from '@mui/material';
+import { Box, FormControl, Typography } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 
 import { consoleError } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
+import { LLPrimaryButton } from '@/ui/components';
 import { PasswordInput } from '@/ui/components/password/PasswordInput';
-import { LLPrimaryButton } from 'ui/components';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
 const RecoverPage = ({ dataArray, setArray, goNext }) => {
   const wallet = useWallet();

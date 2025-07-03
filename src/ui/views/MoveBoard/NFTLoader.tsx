@@ -1,7 +1,7 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 import { useNftHook } from '@/ui/hooks/useNftHook';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
 interface NFTLoaderProps {
   selectedCollection: string;

@@ -1,11 +1,11 @@
-import { Typography, Box, Drawer, InputBase, CircularProgress } from '@mui/material';
+import { Box, CircularProgress, Drawer, InputBase, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router';
 
 import { consoleError } from '@/shared/utils/console-log';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
 import warning from '../../../assets/image/warning.png';
 import { LLPrimaryButton } from '../../../components';

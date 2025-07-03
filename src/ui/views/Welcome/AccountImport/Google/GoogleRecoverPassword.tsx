@@ -1,15 +1,15 @@
-import { Button, Typography, FormGroup, Alert, Snackbar } from '@mui/material';
+import { Alert, Button, FormGroup, Snackbar, Typography } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { styled } from '@mui/material/styles';
 import { Box } from '@mui/system';
 import React, { useEffect, useState } from 'react';
 
-import { LLSpinner, LLNotFound } from '@/ui/components';
+import { LLNotFound, LLSpinner } from '@/ui/components';
 import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
 import CancelIcon from '@/ui/components/iconfont/IconClose';
 import { PasswordInput } from '@/ui/components/password/PasswordInput';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
 const BpIcon = styled('span')(() => ({
   borderRadius: 8,

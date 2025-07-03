@@ -2,10 +2,10 @@ import { Box, IconButton, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation } from 'react-router';
 
-import { type KeyResponseItem, type AccountKey } from '@/shared/types/network-types';
+import { type AccountKey, type KeyResponseItem } from '@/shared/types/network-types';
 import { LLHeader } from '@/ui/components';
 import IconCopy from '@/ui/components/iconfont/IconCopy';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
 import curve from '../../../assets/image/curve.png';
 import hash from '../../../assets/image/hash.png';

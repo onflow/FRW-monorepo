@@ -4,20 +4,20 @@ import SignClient from '@walletconnect/sign-client';
 import { type SessionTypes } from '@walletconnect/types';
 import * as bip39 from 'bip39';
 import HDWallet from 'ethereum-hdwallet';
-import React, { useCallback, useEffect, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import { isValidFlowAddress, withPrefix } from '@/shared/utils/address';
 import {
-  SIGN_ALGO_NUM_ECDSA_secp256k1,
   HASH_ALGO_NUM_SHA2_256,
+  SIGN_ALGO_NUM_ECDSA_secp256k1,
 } from '@/shared/utils/algo-constants';
 import { consoleError } from '@/shared/utils/console-log';
 import { FCLWalletConnectMethod, type FCLWalletConnectSyncAccountInfo } from '@/shared/utils/type';
 import AllSet from '@/ui/components/LandingPages/AllSet';
 import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
 import SetPassword from '@/ui/components/LandingPages/SetPassword';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
 import SyncQr from './SyncQr';
 

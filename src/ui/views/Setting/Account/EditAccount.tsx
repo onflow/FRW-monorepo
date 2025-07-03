@@ -1,14 +1,14 @@
 import CloseIcon from '@mui/icons-material/Close';
-import { Typography, Box, Drawer, Stack, InputBase, CircularProgress } from '@mui/material';
+import { Box, CircularProgress, Drawer, InputBase, Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { styled } from '@mui/material/styles';
 import React, { useEffect } from 'react';
 import { useForm, type FieldValues } from 'react-hook-form';
 
 import { consoleError } from '@/shared/utils/console-log';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
-import { LLPrimaryButton, LLSecondaryButton, LLFormHelperText } from '../../../components';
+import { LLFormHelperText, LLPrimaryButton, LLSecondaryButton } from '../../../components';
 
 const StyledInput = styled(InputBase)(({ theme }) => ({
   zIndex: 1,

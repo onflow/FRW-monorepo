@@ -1,5 +1,5 @@
 import CloseIcon from '@mui/icons-material/Close';
-import { Box, Drawer, Typography, Stack } from '@mui/material';
+import { Box, Drawer, Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import React, { useState } from 'react';
 import { useForm, type FieldValues } from 'react-hook-form';
@@ -7,8 +7,8 @@ import { useNavigate } from 'react-router';
 
 import { type WalletAccount } from '@/shared/types/wallet-types';
 import { consoleError } from '@/shared/utils/console-log';
-import UnlinkSVG from 'ui/assets/svg/unlink.svg';
-import { useWallet } from 'ui/utils';
+import UnlinkSVG from '@/ui/assets/svg/unlink.svg';
+import { useWallet } from '@/ui/utils';
 
 import { LLPrimaryButton, LLSecondaryButton, LLSpinner } from '../../../components';
 

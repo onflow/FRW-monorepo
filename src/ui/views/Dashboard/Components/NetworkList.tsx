@@ -1,17 +1,17 @@
 import {
   Box,
-  Typography,
-  Select,
-  MenuItem,
-  FormControl,
-  type SelectChangeEvent,
   CircularProgress,
+  FormControl,
+  MenuItem,
+  Select,
+  Typography,
+  type SelectChangeEvent,
 } from '@mui/material';
 import React, { useState } from 'react';
 
 import { consoleError } from '@/shared/utils/console-log';
 import { networkColor } from '@/ui/style/color';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
 import networkLink from '../../../assets/svg/networkLink.svg';
 

@@ -1,12 +1,12 @@
-import { Typography, Box, ButtonBase, Skeleton } from '@mui/material';
+import { Box, ButtonBase, Skeleton, Typography } from '@mui/material';
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router';
 
 import {
-  type CustomFungibleTokenInfo,
   type CoinItem,
-  type ExtendedTokenInfo,
+  type CustomFungibleTokenInfo,
   type EvmCustomTokenInfo,
+  type ExtendedTokenInfo,
 } from '@/shared/types/coin-types';
 import { type ActiveAccountType } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
@@ -17,7 +17,7 @@ import swapIcon from '@/ui/assets/svg/swapIcon.svg';
 import { IconButton } from '@/ui/components/IconButton';
 import IconChevronRight from '@/ui/components/iconfont/IconChevronRight';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
-import { useCoins } from 'ui/hooks/useCoinHook';
+import { useCoins } from '@/ui/hooks/useCoinHook';
 
 import VerifiedIcon from '../../assets/svg/verfied-check.svg';
 import { CurrencyValue } from '../../components/TokenLists/CurrencyValue';

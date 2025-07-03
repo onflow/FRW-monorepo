@@ -1,11 +1,11 @@
 import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
-import { Box, Typography, Avatar, IconButton, CardMedia, Skeleton } from '@mui/material';
+import { Avatar, Box, CardMedia, IconButton, Skeleton, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import { ContactType } from '@/shared/types/network-types';
-import closex from 'ui/assets/closex.svg';
-import { useWallet, formatAddress, isEmoji } from 'ui/utils';
+import closex from '@/ui/assets/closex.svg';
+import { formatAddress, isEmoji, useWallet } from '@/ui/utils';
 
 export const LLContactCard = ({ contact, hideCloseButton, isSend = false, isLoading = false }) => {
   const wallet = useWallet();

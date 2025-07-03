@@ -1,13 +1,13 @@
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import { Typography, Card, CardActionArea, CardMedia, CardContent, Container } from '@mui/material';
+import { Card, CardActionArea, CardContent, CardMedia, Container, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { Box } from '@mui/system';
-import React, { forwardRef, useImperativeHandle, useEffect, useState, useCallback } from 'react';
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useState } from 'react';
 import { useNavigate } from 'react-router';
 
+import placeholder from '@/ui/assets/image/placeholder.png';
 import ListSkeleton from '@/ui/components/NFTs/ListSkeleton';
 import { useWallet } from '@/ui/utils/WalletContext';
-import placeholder from 'ui/assets/image/placeholder.png';
 
 import EmptyStatus from '../EmptyStatus';
 

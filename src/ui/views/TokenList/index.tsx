@@ -1,28 +1,28 @@
 import SearchIcon from '@mui/icons-material/Search';
 import {
-  List,
   Box,
+  Card,
+  CardContent,
+  CardMedia,
   Input,
   InputAdornment,
-  Card,
-  CardMedia,
+  List,
   Skeleton,
-  CardContent,
   Switch,
   Typography,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { StyledEngineProvider } from '@mui/material/styles';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 // import { useNavigate } from 'react-router';
 import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
 import { LLHeader } from '@/ui/components';
 import TokenItem from '@/ui/components/TokenLists/TokenItem';
 import { useAllTokenInfo } from '@/ui/hooks/use-coin-hooks';
+import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useCoins } from 'ui/hooks/useCoinHook';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
 import VerifiedIcon from '../../assets/svg/verfied-check.svg';
 

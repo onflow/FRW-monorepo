@@ -2,25 +2,25 @@ import CallMadeRoundedIcon from '@mui/icons-material/CallMadeRounded';
 import CallReceivedRoundedIcon from '@mui/icons-material/CallReceivedRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import {
-  Typography,
+  Box,
+  Button,
+  CardMedia,
   ListItem,
   ListItemAvatar,
-  ListItemText,
-  ListItemIcon,
-  Skeleton,
   ListItemButton,
-  CardMedia,
-  Button,
-  Box,
+  ListItemIcon,
+  ListItemText,
+  Skeleton,
+  Typography,
 } from '@mui/material';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import React from 'react';
 
 import { formatString } from '@/shared/utils/address';
+import activity from '@/ui/assets/svg/activity.svg';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
-import activity from 'ui/assets/svg/activity.svg';
 
 import { TokenBalance } from '../../components/TokenLists/TokenBalance';
 

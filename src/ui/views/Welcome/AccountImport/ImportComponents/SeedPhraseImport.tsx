@@ -1,9 +1,9 @@
-import { Box, Button, Typography, TextareaAutosize } from '@mui/material';
+import { Box, Button, TextareaAutosize, Typography } from '@mui/material';
 import React, { useState } from 'react';
 
 import { type PublicKeyAccount } from '@/shared/types/wallet-types';
+import { LLSpinner } from '@/ui/components';
 import { useWallet } from '@/ui/utils/WalletContext';
-import { LLSpinner } from 'ui/components';
 
 import KeyPathInput from '../../../../components/KeyPathInputs';
 import PasswordTextarea from '../../../../components/password/PasswordTextarea';

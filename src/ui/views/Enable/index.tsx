@@ -1,12 +1,12 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { Typography, IconButton, Box, Link } from '@mui/material';
+import { Box, IconButton, Link, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import { consoleError } from '@/shared/utils/console-log';
+import { LLPrimaryButton, LLSpinner } from '@/ui/components';
 import { EnableEvm } from '@/ui/components/EnableEvm';
-import { LLPrimaryButton, LLSpinner } from 'ui/components';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
 const Enable = () => {
   const expiry_time = 60000;

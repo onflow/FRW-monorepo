@@ -1,17 +1,17 @@
 import CloseIcon from '@mui/icons-material/Close';
-import { Typography, Box, Drawer, Stack, InputBase, CircularProgress } from '@mui/material';
+import { Box, CircularProgress, Drawer, InputBase, Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { styled } from '@mui/material/styles';
 import { isAddress } from 'ethers';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm, type FieldValues } from 'react-hook-form';
 
 import type { Contact } from '@/shared/types/network-types';
 import { consoleError } from '@/shared/utils/console-log';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
 import { withPrefix } from '../../../../shared/utils/address';
-import { LLPrimaryButton, LLSecondaryButton, LLFormHelperText } from '../../../components';
+import { LLFormHelperText, LLPrimaryButton, LLSecondaryButton } from '../../../components';
 
 const StyledInput = styled(InputBase)(({ theme }) => ({
   zIndex: 1,

@@ -1,11 +1,11 @@
 import { CssBaseline } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import React from 'react';
-import { HashRouter as Router, Routes, Route, useLocation } from 'react-router';
+import { Route, HashRouter as Router, Routes, useLocation } from 'react-router';
 
+import PrivateRoute from '@/ui/components/PrivateRoute';
 import themeOptions from '@/ui/style/LLTheme';
-import PrivateRoute from 'ui/components/PrivateRoute';
-import { WalletProvider, useWallet } from 'ui/utils';
+import { useWallet, WalletProvider } from '@/ui/utils';
 
 // Uncomment this when we need to test api-test
 import ApiTestPage from './api-test/api-test-page';

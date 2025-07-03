@@ -1,9 +1,9 @@
-import { Box, Typography, Skeleton } from '@mui/material';
+import { Box, Skeleton, Typography } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useWallet, formatAddress, isEmoji } from 'ui/utils';
+import { formatAddress, isEmoji, useWallet } from '@/ui/utils';
 
 import theme from '../style/LLTheme';
 

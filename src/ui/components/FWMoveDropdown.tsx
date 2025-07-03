@@ -1,16 +1,16 @@
 import {
-  Box,
-  Typography,
   Avatar,
-  Select,
-  MenuItem,
+  Box,
   FormControl,
+  MenuItem,
+  Select,
+  Typography,
   type SelectChangeEvent,
 } from '@mui/material';
 import React, { useEffect } from 'react';
 
 import { type Contact } from '@/shared/types/network-types';
-import { isEmoji, formatAddress } from 'ui/utils';
+import { formatAddress, isEmoji } from '@/ui/utils';
 
 interface FWMoveDropdownProps {
   contacts: Contact[];

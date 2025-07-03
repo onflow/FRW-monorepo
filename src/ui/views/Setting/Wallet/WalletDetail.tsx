@@ -1,19 +1,19 @@
 import {
-  Typography,
+  Alert,
   Box,
+  CardMedia,
+  Divider,
   List,
-  ListItemText,
-  ListItemIcon,
   ListItem,
   ListItemButton,
-  Divider,
-  Alert,
+  ListItemIcon,
+  ListItemText,
   Snackbar,
-  CardMedia,
   Switch,
+  Typography,
 } from '@mui/material';
 import LinearProgress from '@mui/material/LinearProgress';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router';
 
 import { storage } from '@/background/webapi';
@@ -28,7 +28,7 @@ import { consoleError } from '@/shared/utils/console-log';
 import { LLHeader } from '@/ui/components';
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
 import editEmoji from '../../../assets/svg/editEmoji.svg';
 

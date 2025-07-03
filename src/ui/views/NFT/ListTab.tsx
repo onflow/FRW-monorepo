@@ -1,12 +1,12 @@
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import {
-  Typography,
+  Box,
   Card,
   CardActionArea,
-  CardMedia,
   CardContent,
+  CardMedia,
   Container,
-  Box,
+  Typography,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import React, { forwardRef, useImperativeHandle } from 'react';
@@ -14,12 +14,12 @@ import { useNavigate } from 'react-router';
 
 import { type NFTCollections } from '@/shared/types/nft-types';
 import { refreshNftCatalogCollections } from '@/shared/utils/cache-data-keys';
+import placeholder from '@/ui/assets/image/placeholder.png';
 import ListSkeleton from '@/ui/components/NFTs/ListSkeleton';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useNftCatalogCollections } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from '@/ui/utils/WalletContext';
-import placeholder from 'ui/assets/image/placeholder.png';
 
 import EmptyStatus from '../EmptyStatus';
 interface ListTabProps {

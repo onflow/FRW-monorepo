@@ -1,17 +1,17 @@
 import SearchIcon from '@mui/icons-material/Search';
 import {
-  Typography,
   Box,
-  InputAdornment,
-  Input,
+  Button,
   Card,
   CardContent,
   CardMedia,
+  Input,
+  InputAdornment,
   Skeleton,
-  Button,
+  Typography,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { type NFTModelV2 } from '@/shared/types/network-types';
 import { consoleError } from '@/shared/utils/console-log';
@@ -20,7 +20,7 @@ import { LLHeader } from '@/ui/components';
 import WarningSnackbar from '@/ui/components/WarningSnackbar';
 import { useAllNftList } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
 import CollectionCard from './AddNFTCard';
 import AddNFTConfirmation from './AddNFTConfirmation';

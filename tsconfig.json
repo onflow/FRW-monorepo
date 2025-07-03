@@ -13,8 +13,7 @@
     "useUnknownInCatchVariables": false,
     "resolveJsonModule": true,
     "paths": {
-      "@/*": ["./src/*"],
-      "ui/*": ["./src/ui/*"]
+      "@/*": ["./src/*"]
     },
     "lib": ["ES2021.String", "DOM", "DOM.Iterable"],
     "types": ["chrome", "node", "react", "react-dom"],

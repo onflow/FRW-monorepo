@@ -1,7 +1,7 @@
-import { Box, Typography, Avatar } from '@mui/material';
+import { Avatar, Box, Typography } from '@mui/material';
 import React from 'react';
 
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
 export const FRWChildProfile = ({ contact, address, isLoading = false }) => {
   const usewallet = useWallet();

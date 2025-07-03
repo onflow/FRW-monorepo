@@ -2,25 +2,25 @@ import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SearchIcon from '@mui/icons-material/Search';
 import {
-  List,
-  ListItemText,
-  ListItem,
-  ListSubheader,
-  ListItemAvatar,
-  Input,
-  Typography,
   Box,
+  Input,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  ListSubheader,
   Skeleton,
+  Typography,
 } from '@mui/material';
 import InputAdornment from '@mui/material/InputAdornment';
 import _ from 'lodash';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import { type Contact } from '@/shared/types/network-types';
 import { consoleError } from '@/shared/utils/console-log';
-import EmptyStateImage from 'ui/assets/image/search_user.png';
-import { useWallet } from 'ui/utils';
+import EmptyStateImage from '@/ui/assets/image/search_user.png';
+import { useWallet } from '@/ui/utils';
 
 import AddOrEditAddress from './AddOrEditAddress';
 import AddressBookItem from './AddressBookItem';

@@ -1,6 +1,6 @@
-import { Box, Typography, IconButton, Button } from '@mui/material';
-import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router';
+import { Box, Button, IconButton, Typography } from '@mui/material';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router';
 
 import { consoleError } from '@/shared/utils/console-log';
 import { LLHeader, LLSpinner } from '@/ui/components';
@@ -8,7 +8,7 @@ import BrowserWarning from '@/ui/components/BrowserWarning';
 import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
 import IconGoogleDrive from '@/ui/components/iconfont/IconGoogleDrive';
 import { LLDeleteBackupPopup } from '@/ui/components/LLDeleteBackupPopup';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
 /**
  * Manage Backups to Google Drive

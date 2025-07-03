@@ -1,12 +1,12 @@
-import { Typography, Box, CardMedia } from '@mui/material';
+import { Box, CardMedia, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { type Contact } from '@/shared/types/network-types';
 import { formatString } from '@/shared/utils/address';
+import accountMove from '@/ui/assets/svg/accountMove.svg';
+import { FWMoveDropdown } from '@/ui/components';
 import { useContacts } from '@/ui/hooks/useContactHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import accountMove from 'ui/assets/svg/accountMove.svg';
-import { FWMoveDropdown } from 'ui/components';
 const USER_CONTACT = {
   contact_name: '',
   avatar: '',

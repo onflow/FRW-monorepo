@@ -1,6 +1,6 @@
-import { Box, Button, Typography, CardMedia } from '@mui/material';
+import { Box, Button, CardMedia, Typography } from '@mui/material';
 import BN from 'bignumber.js';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import { type TransactionState } from '@/shared/types/transaction-types';
@@ -13,7 +13,7 @@ import SlideRelative from '@/ui/components/SlideRelative';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useContact } from '@/ui/hooks/useContactHook';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
 import { CurrencyValue } from '../../components/TokenLists/CurrencyValue';
 import { TokenBalance } from '../../components/TokenLists/TokenBalance';

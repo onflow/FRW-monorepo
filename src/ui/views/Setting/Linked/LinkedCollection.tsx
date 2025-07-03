@@ -3,28 +3,28 @@ import PublicOutlinedIcon from '@mui/icons-material/PublicOutlined';
 import ReplayRoundedIcon from '@mui/icons-material/ReplayRounded';
 import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 import {
-  Typography,
-  Card,
-  Button,
   Box,
-  IconButton,
-  CardMedia,
-  CardContent,
-  Skeleton,
+  Button,
   ButtonBase,
+  Card,
+  CardContent,
+  CardMedia,
+  IconButton,
+  Skeleton,
   Tooltip,
+  Typography,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { StyledEngineProvider } from '@mui/material/styles';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import { useNavigate, useParams, useLocation } from 'react-router';
+import { useLocation, useNavigate, useParams } from 'react-router';
 
 import { consoleError } from '@/shared/utils/console-log';
 import { LLSpinner } from '@/ui/components';
 import GridView from '@/ui/components/NFTs/GridView';
+import { useWallet } from '@/ui/utils';
 import { type PostMedia } from '@/ui/utils/url';
-import { useWallet } from 'ui/utils';
 
 interface CollectionDisplay {
   name: string;

@@ -1,4 +1,4 @@
-import { Box, Typography, Drawer } from '@mui/material';
+import { Box, Drawer, Typography } from '@mui/material';
 import React, { useState } from 'react';
 
 import type { UserInfoResponse } from '@/shared/types/network-types';
@@ -7,7 +7,7 @@ import userCircleCheck from '@/ui/assets/svg/user-circle-check.svg';
 import userCirclePlus from '@/ui/assets/svg/user-circle-plus.svg';
 import { ProfileButton } from '@/ui/components/profile/profile-button';
 import { ProfileItem } from '@/ui/components/profile/profile-item';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
 interface TransferConfirmationProps {
   isConfirmationOpen: boolean;

@@ -1,19 +1,19 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import {
-  Typography,
+  Divider,
   List,
-  ListItemText,
-  ListItemIcon,
   ListItem,
   ListItemButton,
-  Divider,
+  ListItemIcon,
+  ListItemText,
+  Typography,
 } from '@mui/material';
 import Box from '@mui/material/Box';
 import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router';
 
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
 const Security = () => {
   const navigate = useNavigate();

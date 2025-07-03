@@ -1,18 +1,18 @@
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 import {
-  Typography,
   Avatar,
   Box,
-  List,
-  ListItemIcon,
-  ListItemButton,
-  ListItemText,
   IconButton,
+  List,
   ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Typography,
 } from '@mui/material';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
 const FetchAvatar = ({ username }) => {
   const [avatar, setAvatar] = useState(

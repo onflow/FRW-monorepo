@@ -1,8 +1,8 @@
-import { Stack, Box, Typography, Divider } from '@mui/material';
+import { Box, Divider, Stack, Typography } from '@mui/material';
 import React from 'react';
 
-import IconCheck from 'ui/assets/check.svg';
-import Link from 'ui/assets/svg/link.svg';
+import IconCheck from '@/ui/assets/check.svg';
+import Link from '@/ui/assets/svg/link.svg';
 
 export const LinkingBlock = ({ image, accountTitle, userInfo }) => {
   return (

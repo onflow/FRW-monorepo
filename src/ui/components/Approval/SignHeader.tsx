@@ -1,9 +1,9 @@
 import { Box, Typography } from '@mui/material';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import IconCheck from 'ui/assets/check.svg';
-import { LLPrimaryButton } from 'ui/components';
+import IconCheck from '@/ui/assets/check.svg';
+import { LLPrimaryButton } from '@/ui/components';
 
 export const SignHeader = ({ linkingDone, image, accountTitle, userInfo }) => {
   const navigate = useNavigate();

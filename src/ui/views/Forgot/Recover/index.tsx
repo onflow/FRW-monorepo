@@ -1,12 +1,12 @@
-import { IconButton, Snackbar, Alert } from '@mui/material';
+import { Alert, IconButton, Snackbar } from '@mui/material';
 import { Box } from '@mui/system';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import BackButtonIcon from '@/ui/components/iconfont/IconBackButton';
 import RegisterHeader from '@/ui/components/LandingPages/RegisterHeader';
 import SlideLeftRight from '@/ui/components/SlideLeftRight';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
 import RecoverPage from './RecoverPage';
 import ShowKey from './ShowKey';

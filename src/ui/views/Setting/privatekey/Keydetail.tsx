@@ -1,14 +1,14 @@
 import { Box, IconButton, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
-import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router';
 
 import { pubKeyTupleToAccountKey } from '@/background/utils/account-key';
 import { consoleError } from '@/shared/utils/console-log';
 import { LLHeader } from '@/ui/components';
 import IconCopy from '@/ui/components/iconfont/IconCopy';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
 const Keydetail = () => {
   const location = useLocation();

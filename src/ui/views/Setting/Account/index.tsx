@@ -1,8 +1,8 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
-import { Typography, IconButton, Box, Avatar, Switch } from '@mui/material';
+import { Avatar, Box, IconButton, Switch, Typography } from '@mui/material';
 import Button from '@mui/material/Button';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import { openIndexPage } from '@/background/webapi/tab';
@@ -11,7 +11,7 @@ import { getCurrentProfileId } from '@/shared/utils/current-id';
 import RemoveProfileModal from '@/ui/components/PopupModal/remove-profile-modal';
 import ResetModal from '@/ui/components/PopupModal/resetModal';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
 import EditAccount from './EditAccount';
 

@@ -1,9 +1,9 @@
-import { Box, Typography, Avatar, IconButton, CardMedia, Skeleton } from '@mui/material';
+import { Avatar, Box, CardMedia, IconButton, Skeleton, Typography } from '@mui/material';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
-import closex from 'ui/assets/closex.svg';
-import { formatAddress, isEmoji } from 'ui/utils';
+import closex from '@/ui/assets/closex.svg';
+import { formatAddress, isEmoji } from '@/ui/utils';
 
 export const ContactCard = ({ contact, tokenInfo, isLoading = false }) => {
   const navigate = useNavigate();

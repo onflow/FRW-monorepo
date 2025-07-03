@@ -1,10 +1,10 @@
-import { Button, Box } from '@mui/material';
-import React, { useState, useEffect, useRef } from 'react';
+import { Box, Button } from '@mui/material';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 
 import { type ActiveAccountType } from '@/shared/types/wallet-types';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/utils';
 
 import ListTab from './ListTab';
 
