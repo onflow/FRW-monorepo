@@ -21,6 +21,7 @@ import { useNavigate } from 'react-router';
 import { type Contact } from '@/shared/types/network-types';
 import { consoleError } from '@/shared/utils/console-log';
 import EmptyStateImage from 'ui/assets/image/search_user.png';
+import { LLHeader } from 'ui/components/LLHeader';
 import { useWallet } from 'ui/utils';
 
 import AddOrEditAddress from './AddOrEditAddress';
@@ -153,39 +154,21 @@ const AddressBook = () => {
           height: '100%',
         }}
       >
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            width: 'auto',
-            px: '16px',
-          }}
-        >
-          <ArrowBackIcon
-            fontSize="medium"
-            sx={{ color: 'icon.navi', cursor: 'pointer' }}
-            onClick={() => navigate('/dashboard')}
-          />
-          <Typography
-            variant="h1"
-            sx={{
-              py: '14px',
-              alignSelf: 'center',
-              fontSize: '20px',
-            }}
-          >
-            {chrome.i18n.getMessage('Address__Book')}
-          </Typography>
-          <AddIcon
-            fontSize="medium"
-            sx={{ color: 'icon.navi', cursor: 'pointer' }}
-            onClick={() => {
-              setIsAddAddressOpen(true);
-              setIsEdit(false);
-            }}
-          />
-        </Box>
+        <LLHeader
+          title={chrome.i18n.getMessage('Address__Book')}
+          help={false}
+          goBackLink="/dashboard/setting"
+          right={
+            <AddIcon
+              fontSize="medium"
+              sx={{ color: 'icon.navi', cursor: 'pointer' }}
+              onClick={() => {
+                setIsAddAddressOpen(true);
+                setIsEdit(false);
+              }}
+            />
+          }
+        />
         <Box
           sx={{
             paddingLeft: '18px',
