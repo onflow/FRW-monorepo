@@ -285,7 +285,11 @@ export const NoEVM: Story = {
       },
     ],
     activeAccount: mainWalletAccount,
-    activeParentAccount: mainWalletAccount,
+    activeParentAccount: {
+      ...mainWalletAccount,
+      evmAccount: noEvmWalletAccount,
+      childAccounts: [childWallet1, childWallet2],
+    },
     showActiveAccount: true,
   },
   parameters: {
@@ -332,7 +336,11 @@ export const PendingAccountTransaction: Story = {
       },
     ],
     activeAccount: mainWalletAccount,
-    activeParentAccount: mainWalletAccount,
+    activeParentAccount: {
+      ...mainWalletAccount,
+      evmAccount: noEvmWalletAccount,
+      childAccounts: [childWallet1, childWallet2],
+    },
     showActiveAccount: true,
   },
   parameters: {
