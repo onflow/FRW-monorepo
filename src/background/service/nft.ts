@@ -1,6 +1,7 @@
 import * as fcl from '@onflow/fcl';
 
 import { type NFTModelV2, type NftCollection } from '@/shared/types/network-types';
+import { type NFTCollectionData, type NFTCollections } from '@/shared/types/nft-types';
 import {
   nftCatalogCollectionsKey,
   nftCatalogCollectionsRefreshRegex,
@@ -15,10 +16,9 @@ import {
   nftListKey,
   nftListRefreshRegex,
 } from '@/shared/utils/cache-data-keys';
-import { getValidData, registerRefreshListener, setCachedData } from 'background/utils/data-cache';
 
-import { type NFTCollectionData, type NFTCollections } from '../../shared/types/nft-types';
-import { fclConfirmNetwork } from '../fclConfig';
+import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
+import { fclConfirmNetwork } from '../utils/fclConfig';
 
 import openapiService, { getScripts } from './openapi';
 

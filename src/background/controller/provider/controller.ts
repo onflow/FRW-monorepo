@@ -7,12 +7,8 @@ import RLP from 'rlp';
 import Web3 from 'web3';
 import { stringToHex } from 'web3-utils';
 
-import { getAccountsByPublicKeyTuple } from '@/background/utils/modules/findAddressWithPubKey';
-import { signWithKey } from '@/background/utils/modules/publicPrivateKey';
-import { tupleToPrivateKey } from '@/shared/types/key-types';
-import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
-import { ensureEvmAddressPrefix, isValidEthereumAddress } from '@/shared/utils/address';
-import { consoleError } from '@/shared/utils/console-log';
+import BaseController from '@/background/controller/base';
+import Wallet from '@/background/controller/wallet';
 import {
   permissionService,
   sessionService,
@@ -20,12 +16,14 @@ import {
   keyringService,
   notificationService,
   userWalletService,
-} from 'background/service';
-import { EVM_ENDPOINT } from 'consts';
-
-import { storage } from '../../webapi';
-import BaseController from '../base';
-import Wallet from '../wallet';
+} from '@/background/service';
+import { getAccountsByPublicKeyTuple } from '@/background/utils/modules/findAddressWithPubKey';
+import { signWithKey } from '@/background/utils/modules/publicPrivateKey';
+import { tupleToPrivateKey } from '@/shared/types/key-types';
+import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
+import { ensureEvmAddressPrefix, isValidEthereumAddress } from '@/shared/utils/address';
+import { consoleError } from '@/shared/utils/console-log';
+import { EVM_ENDPOINT } from '@/shared/utils/domain-constants';
 
 interface Web3WalletPermission {
   // The name of the method corresponding to the permission

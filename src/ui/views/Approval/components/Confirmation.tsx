@@ -15,8 +15,6 @@ import { useApproval } from '@/ui/hooks/use-approval';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useWallet } from '@/ui/utils/WalletContext';
 
-// import { CHAINS_ENUM } from 'consts';
-
 import './github-dark-dimmed.css';
 
 import { DefaultBlock } from './DefaultBlock';

@@ -5,22 +5,17 @@ import * as ethUtil from 'ethereumjs-util';
 import { getApp } from 'firebase/app';
 import { getAuth, signInAnonymously } from 'firebase/auth/web-extension';
 
-import keyringService from '@/background/service/keyring';
-import { mixpanelTrack } from '@/background/service/mixpanel';
-import openapiService from '@/background/service/openapi';
-import {
-  signWithKey,
-  seed2PublicPrivateKey,
-  seedWithPathAndPhrase2PublicPrivateKey,
-  formPubKeyTuple,
-  pk2PubKeyTuple,
-} from '@/background/utils/modules/publicPrivateKey';
-import createPersistStore from '@/background/utils/persisitStore';
 import {
   type PublicPrivateKeyTuple,
   combinePubPkString,
   tupleToPrivateKey,
 } from '@/shared/types/key-types';
+import {
+  networkToChainId,
+  type AccountKeyRequest,
+  type DeviceInfoRequest,
+  type FlowNetwork,
+} from '@/shared/types/network-types';
 import {
   type FlowAddress,
   type EvmAddress,
@@ -30,6 +25,8 @@ import {
   getActiveAccountTypeForAddress,
   type WalletAddress,
   type PendingTransaction,
+  type PublicKeyAccount,
+  type MainAccount,
 } from '@/shared/types/wallet-types';
 import {
   ensureEvmAddressPrefix,
@@ -62,15 +59,6 @@ import {
   getActiveAccountsData,
 } from '@/shared/utils/user-data-keys';
 
-import {
-  networkToChainId,
-  type AccountKeyRequest,
-  type DeviceInfoRequest,
-  type FlowNetwork,
-} from '../../shared/types/network-types';
-import { type PublicKeyAccount, type MainAccount } from '../../shared/types/wallet-types';
-import { type WalletController } from '../controller/wallet';
-import { fclConfig, fclConfirmNetwork } from '../fclConfig';
 import { defaultAccountKey, pubKeyAccountToAccountKey } from '../utils/account-key';
 import {
   clearCachedData,
@@ -80,13 +68,24 @@ import {
   setCachedData,
 } from '../utils/data-cache';
 import { getEmojiByIndex } from '../utils/emoji-util';
+import { fclConfig, fclConfirmNetwork } from '../utils/fclConfig';
 import {
   getAccountsByPublicKeyTuple,
   getAccountsWithPublicKey,
 } from '../utils/modules/findAddressWithPubKey';
+import {
+  signWithKey,
+  seed2PublicPrivateKey,
+  seedWithPathAndPhrase2PublicPrivateKey,
+  formPubKeyTuple,
+  pk2PubKeyTuple,
+} from '../utils/modules/publicPrivateKey';
+import createPersistStore from '../utils/persisitStore';
 import { storage } from '../webapi';
 
-import { getScripts } from './openapi';
+import keyringService from './keyring';
+import { mixpanelTrack } from './mixpanel';
+import openapiService, { getScripts } from './openapi';
 import remoteConfigService from './remoteConfig';
 
 const USER_WALLET_TEMPLATE: UserWalletStore = {
@@ -100,20 +99,6 @@ class UserWallet {
   // PERSISTENT DATA
   // The user settings - network and other global settings
   private store!: UserWalletStore;
-
-  // Reference to the wallet controller
-  private walletController: WalletController | undefined = undefined;
-
-  setWalletController = (controller: WalletController) => {
-    this.walletController = controller;
-  };
-
-  getWalletController = (): WalletController => {
-    if (!this.walletController) {
-      throw new Error('Wallet controller not set');
-    }
-    return this.walletController;
-  };
 
   init = async () => {
     this.store = await createPersistStore<UserWalletStore>({
@@ -846,9 +831,20 @@ class UserWallet {
     };
   };
 
+  getPayerAddressAndKeyId = async (): Promise<{ address: string; keyId: number }> => {
+    try {
+      const network = this.getNetwork();
+      const remoteConfig = await remoteConfigService.getRemoteConfig();
+      return remoteConfig.config.payer[network];
+    } catch (err) {
+      consoleError(err);
+      throw new Error('Payer address and keyId not found');
+    }
+  };
+
   payerAuthFunction = async (account) => {
     // authorization function need to return an account
-    const payer = await this.getWalletController().getPayerAddressAndKeyId();
+    const payer = await this.getPayerAddressAndKeyId();
     if (!payer) {
       throw new Error('Payer address and keyId not found');
     }
@@ -873,9 +869,24 @@ class UserWallet {
       },
     };
   };
+
+  getBridgeFeePayerAddressAndKeyId = async () => {
+    try {
+      const network = this.getNetwork();
+      const remoteConfig = await remoteConfigService.getRemoteConfig();
+      if (!remoteConfig.config.bridgeFeePayer) {
+        throw new Error('Bridge fee payer not found');
+      }
+      return remoteConfig.config.bridgeFeePayer[network];
+    } catch (err) {
+      consoleError(err);
+      throw new Error('Bridge fee payer address and keyId not found');
+    }
+  };
+
   bridgeFeePayerAuthFunction = async (account) => {
     // authorization function need to return an account
-    const bridgeFeePayer = await this.getWalletController().getBridgeFeePayerAddressAndKeyId();
+    const bridgeFeePayer = await this.getBridgeFeePayerAddressAndKeyId();
     const address = fcl.withPrefix(bridgeFeePayer.address);
     const ADDRESS = fcl.withPrefix(address);
     // TODO: FIX THIS

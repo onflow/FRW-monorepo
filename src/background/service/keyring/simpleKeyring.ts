@@ -1,6 +1,6 @@
 import { Wallet } from 'ethers';
 
-import { normalizeAddress } from 'background/utils';
+import { normalizeAddress } from '../../utils';
 
 export type SimpleKeyringSerializedData = string[];
 export type SimpleKeyPairType = 'Simple Key Pair';

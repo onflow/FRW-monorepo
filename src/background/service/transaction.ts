@@ -1,6 +1,5 @@
 import type { TransactionStatus } from '@onflow/typedefs';
 
-import openapiService, { type FlowTransactionResponse } from '@/background/service/openapi';
 import { type TransferItem } from '@/shared/types/transaction-types';
 import { isValidEthereumAddress, isValidFlowAddress } from '@/shared/utils/address';
 import {
@@ -16,6 +15,8 @@ import {
   registerRefreshListener,
   setCachedData,
 } from '../utils/data-cache';
+
+import openapiService, { type FlowTransactionResponse } from './openapi';
 
 interface TransactionStore {
   pendingItem: {

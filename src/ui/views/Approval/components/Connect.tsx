@@ -14,7 +14,6 @@ import linkGlobe from 'ui/assets/svg/linkGlobe.svg';
 import mainnetsvg from 'ui/assets/svg/mainnet.svg';
 import testnetsvg from 'ui/assets/svg/testnet.svg';
 import { LLPrimaryButton, LLSecondaryButton, LLConnectLoading } from 'ui/components';
-// import { CHAINS_ENUM } from 'consts';
 
 import ShowSwitch from './ShowSwitch';
 

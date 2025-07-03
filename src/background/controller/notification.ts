@@ -3,8 +3,8 @@ import Events from 'events';
 import { ethErrors } from 'eth-rpc-errors';
 import { EthereumProviderError } from 'eth-rpc-errors/dist/classes';
 
-import { winMgr } from 'background/webapi';
-import { IS_CHROME, IS_LINUX } from 'consts';
+import { winMgr } from '@/background/webapi';
+import { IS_CHROME, IS_LINUX } from '@/constant';
 
 import { setEnvironmentBadge } from '../utils/setEnvironmentBadge';
 

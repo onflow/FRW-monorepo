@@ -1,7 +1,6 @@
 import type { TrackingEvents } from '@/shared/types/tracking-types';
 
-import packageJson from '../../../package.json';
-const { version } = packageJson;
+import { version } from '../utils/package-version';
 
 const DISTINCT_ID_KEY = 't_distinct_id';
 const DEVICE_ID_PREFIX = '$device:';

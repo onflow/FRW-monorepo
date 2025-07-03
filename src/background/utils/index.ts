@@ -1,8 +1,7 @@
 import type { Account as FclAccount } from '@onflow/typedefs';
 import * as ethUtil from 'ethereumjs-util';
 
-import { EMULATOR_HOST_TESTNET, EMULATOR_HOST_MAINNET } from '@/background/fclConfig';
-import pageStateCache from '@/background/service/pageStateCache';
+import { EMULATOR_HOST_TESTNET, EMULATOR_HOST_MAINNET } from '@/background/utils/fclConfig';
 import { type FlowNetwork } from '@/shared/types/network-types';
 import { consoleError } from '@/shared/utils/console-log';
 
@@ -69,27 +68,6 @@ export const wait = (fn: () => void, ms = 1000) => {
       resolve(true);
     }, ms);
   });
-};
-
-export const setPageStateCacheWhenPopupClose = (data) => {
-  const cache = pageStateCache.get();
-  if (cache && cache.path === '/import/wallet-connect') {
-    pageStateCache.set({
-      ...cache,
-      states: {
-        ...cache.states,
-        data,
-      },
-    });
-  }
-};
-
-export const hasWalletConnectPageStateCache = () => {
-  const cache = pageStateCache.get();
-  if (cache && cache.path === '/import/wallet-connect') {
-    return true;
-  }
-  return false;
 };
 
 export const isSameAddress = (a: string, b: string) => {

@@ -9,16 +9,17 @@ import {
   onAuthStateChanged,
 } from 'firebase/auth/web-extension';
 
+import providerController from '@/background/controller/provider';
+import { preAuthzServiceDefinition } from '@/background/controller/serviceDefinition';
+import walletController, { type WalletController } from '@/background/controller/wallet';
+import { EVENTS } from '@/constant/index';
 import eventBus from '@/eventBus';
 import { type WalletAddress } from '@/shared/types/wallet-types';
 import { isValidFlowAddress } from '@/shared/utils/address';
 import { consoleError, consoleLog } from '@/shared/utils/console-log';
 import { Message } from '@/shared/utils/messaging';
-import type { WalletController } from 'background/controller/wallet';
-import { EVENTS } from 'consts';
 
-import { providerController, walletController } from './controller';
-import { preAuthzServiceDefinition } from './controller/serviceDefinition';
+import notificationService from './controller/notification';
 import {
   permissionService,
   preferenceService,
@@ -30,7 +31,6 @@ import {
   userInfoService,
   addressBookService,
   userWalletService,
-  notificationService,
   transactionService,
   nftService,
   evmNftService,
@@ -119,8 +119,7 @@ async function restoreAppState() {
   await coinListService.init();
   await userInfoService.init();
   await addressBookService.init();
-  // Set the wallet controller before initializing userWalletService
-  userWalletService.setWalletController(walletController);
+
   await userWalletService.init();
   await transactionService.init();
   await nftService.init();

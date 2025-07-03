@@ -8,6 +8,7 @@ import Web3 from 'web3';
 
 import { type Contact } from '@/shared/types/network-types';
 import { consoleError } from '@/shared/utils/console-log';
+import { EVM_ENDPOINT } from '@/shared/utils/domain-constants';
 import IconFlow from '@/ui/components/iconfont/IconFlow';
 import SlideRelative from '@/ui/components/SlideRelative';
 import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
@@ -16,7 +17,6 @@ import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
 import { type MatchMedia, MatchMediaType } from '@/ui/utils/url';
 import erc721 from 'background/utils/erc721.abi.json';
-import { EVM_ENDPOINT } from 'consts';
 import IconNext from 'ui/assets/svg/next.svg';
 import { LLSpinner, LLProfile, FRWProfile } from 'ui/components';
 import { useWallet } from 'ui/utils';

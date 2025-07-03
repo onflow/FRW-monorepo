@@ -1,12 +1,12 @@
 import compareVersions from 'compare-versions';
 
-import { storage } from '@/background/webapi';
+import { type FlowNetwork, MAINNET_NETWORK } from '@/shared/types/network-types';
 import { type Currency, DEFAULT_CURRENCY } from '@/shared/types/wallet-types';
-import { createPersistStore } from 'background/utils';
 
-import { type FlowNetwork, MAINNET_NETWORK } from '../../shared/types/network-types';
+import createPersistStore from '../utils/persisitStore';
+import { storage } from '../webapi';
 
-import { keyringService, i18n } from './index';
+import keyringService from './keyring';
 
 const version = process.env.release || '0';
 export interface PreferenceAccount {

@@ -56,3 +56,25 @@ export const getCurrentPublicKey = async (): Promise<string> => {
 export const setCurrentPublicKey = async (pubKey: string) => {
   await storage.set(CURRENT_PUBKEY_KEY, pubKey);
 };
+
+export const KEYRING_TYPE = {
+  HdKeyring: 'HD Key Tree',
+  SimpleKeyring: 'Simple Key Pair',
+  HardwareKeyring: 'hardware',
+  WatchAddressKeyring: 'Watch Address',
+  WalletConnectKeyring: 'WalletConnect',
+  GnosisKeyring: 'Gnosis',
+};
+export const KEYRING_CLASS = {
+  PRIVATE_KEY: 'Simple Key Pair',
+  MNEMONIC: 'HD Key Tree',
+  HARDWARE: {
+    TREZOR: 'Trezor Hardware',
+    LEDGER: 'Ledger Hardware',
+    ONEKEY: 'Onekey Hardware',
+    GRIDPLUS: 'GridPlus Hardware',
+  },
+  WATCH: 'Watch Address',
+  WALLETCONNECT: 'WalletConnect',
+  GNOSIS: 'Gnosis',
+};

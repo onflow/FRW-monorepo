@@ -15,12 +15,6 @@ import {
 } from 'firebase/auth/web-extension';
 import { getInstallations, getId } from 'firebase/installations';
 
-import fetchConfig from '@/background/service/remoteConfig';
-import { findKeyAndInfo } from '@/background/utils';
-import { getValidData, setCachedData } from '@/background/utils/data-cache';
-import { getFirbaseConfig, getFirbaseFunctionUrl } from '@/background/utils/firebaseConfig';
-import { verifySignature } from '@/background/utils/modules/publicPrivateKey';
-import { storage } from '@/background/webapi';
 import type {
   BalanceMap,
   EvmTokenInfo,
@@ -65,11 +59,18 @@ import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/alg
 import { cadenceScriptsKey } from '@/shared/utils/cache-data-keys';
 import { consoleError, consoleLog } from '@/shared/utils/console-log';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
+import { INITIAL_OPENAPI_URL, WEB_NEXT_URL } from '@/shared/utils/domain-constants';
 import { getPeriodFrequency } from '@/shared/utils/getPeriodFrequency';
 import { type NetworkScripts } from '@/shared/utils/script-types';
-import { INITIAL_OPENAPI_URL, WEB_NEXT_URL } from 'consts';
 
-import packageJson from '../../../package.json';
+import { findKeyAndInfo } from '../utils';
+import { getValidData, setCachedData } from '../utils/data-cache';
+import { getFirbaseConfig, getFirbaseFunctionUrl } from '../utils/firebaseConfig';
+import { verifySignature } from '../utils/modules/publicPrivateKey';
+import { version } from '../utils/package-version';
+import { storage } from '../webapi';
+
+import fetchConfig from './remoteConfig';
 
 import {
   userWalletService,
@@ -81,7 +82,6 @@ import {
   googleSafeHostService,
   mixpanelTrack,
 } from './index';
-const { version } = packageJson;
 
 type CurrencyResponse = {
   data: {

@@ -1,4 +1,4 @@
-import { createPersistStore } from 'background/utils';
+import createPersistStore from '../utils/persisitStore';
 
 interface GoogleHostModel {
   url: string;

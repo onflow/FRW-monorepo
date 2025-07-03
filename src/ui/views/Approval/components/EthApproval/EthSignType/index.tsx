@@ -3,7 +3,6 @@ import * as fcl from '@onflow/fcl';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-// import { CHAINS_ENUM } from 'consts';
 import {
   MAINNET_CHAIN_ID,
   TESTNET_CHAIN_ID,

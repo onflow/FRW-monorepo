@@ -5,10 +5,9 @@ import {
   readAndDismissedNewsKey,
   type ReadAndDismissedNewsStore,
 } from '@/shared/utils/user-data-keys';
-import { createPersistStore } from 'background/utils';
-import { storage } from 'background/webapi';
 
 import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
+import createPersistStore from '../utils/persisitStore';
 
 import openapi from './openapi';
 
@@ -119,7 +118,6 @@ class NewsService {
       this.store.readIds = [];
       this.store.dismissedIds = [];
     }
-    storage.remove('newsService');
   };
 }
 

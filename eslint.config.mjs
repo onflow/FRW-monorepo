@@ -152,6 +152,148 @@ const config = [
         },
       ],
     },
+  }, // Restrict imports from background/service
+  {
+    files: ['**/src/background/service/*.{js,jsx,ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            // Block all imports from @/ except @/shared and @/background/service (within service)
+            {
+              group: [
+                '@/*',
+                '!@/shared',
+                '!@/shared/**',
+                '!@/background/service',
+                '!@/background/service/**',
+              ],
+              message:
+                'Files in background/service can only import from @/shared/* or within service',
+            },
+            // Block imports from background/* except background/utils, background/webapi and background/service
+            {
+              group: [
+                'background/*',
+                '!background/utils',
+                '!background/utils/**',
+                '!background/webapi',
+                '!background/webapi/**',
+                '!background/service',
+                '!background/service/**',
+              ],
+              message:
+                'Files in background/service can only import from background/utils/*, background/webapi/* or within service',
+            },
+            // Block UI imports
+            {
+              group: ['ui/*', 'ui/**'],
+              message: 'Files in background/service cannot import from UI',
+            },
+            // Block relative imports that go outside allowed directories
+            {
+              group: [
+                '../*',
+                '!../utils',
+                '!../utils/*',
+                '!../utils/**',
+                '!../webapi',
+                '!../webapi/*',
+                '!../webapi/**',
+                '!../keyring',
+                '!../keyring/*',
+                '!../keyring/**',
+                '!../*.ts',
+                '!../*.js',
+              ],
+              message:
+                'Files in background/service can only import from background/utils/*, background/webapi/* or within service',
+            },
+            {
+              group: ['../../*', '!../../utils', '!../../utils/*', '!../../utils/**'],
+              message:
+                'Files in background/service subdirectories can only import from background/utils/*',
+            },
+            // Block ALL relative imports to shared - force use of @/shared alias
+            {
+              group: [
+                '../shared/**',
+                '../../shared/**',
+                '../../../shared/**',
+                '../../../../shared/**',
+              ],
+              message: 'Use @/shared/* alias instead of relative imports to shared',
+            },
+          ],
+        },
+      ],
+    },
+  }, // Specific rules for background/service/keyring folder
+  {
+    files: ['**/src/background/service/keyring/**/*.{js,jsx,ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            // Block all imports from @/ except @/shared, @/background/service, and @/background/utils
+            {
+              group: [
+                '@/*',
+                '!@/shared',
+                '!@/shared/**',
+                '!@/background/service',
+                '!@/background/service/**',
+                '!@/background/utils',
+                '!@/background/utils/**',
+              ],
+              message:
+                'Files in background/service/keyring can only import from @/shared/*, @/background/utils/* or within service',
+            },
+            // Block imports from background/* except background/utils and background/service
+            {
+              group: [
+                'background/*',
+                '!background/utils',
+                '!background/utils/**',
+                '!background/service',
+                '!background/service/**',
+              ],
+              message:
+                'Files in background/service/keyring can only import from background/utils/* or within service',
+            },
+            // Block UI imports
+            {
+              group: ['ui/*', 'ui/**'],
+              message: 'Files in background/service/keyring cannot import from UI',
+            },
+            // Allow relative imports to utils and webapi from keyring folder
+            {
+              group: [
+                '../../*',
+                '!../../utils',
+                '!../../utils/**',
+                '!../../webapi',
+                '!../../webapi/**',
+              ],
+              message:
+                'Files in background/service/keyring can only import from ../../utils/* or ../../webapi/*',
+            },
+            // Block ALL relative imports to shared - force use of @/shared alias
+            {
+              group: [
+                '../shared/**',
+                '../../shared/**',
+                '../../../shared/**',
+                '../../../../shared/**',
+              ],
+              message: 'Use @/shared/* alias instead of relative imports to shared',
+            },
+          ],
+        },
+      ],
+    },
   },
   ...storybook.configs['flat/recommended'],
 ];

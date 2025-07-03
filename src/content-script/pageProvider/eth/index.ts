@@ -3,7 +3,6 @@ import { EventEmitter } from 'events';
 
 import { ethErrors, serializeError } from 'eth-rpc-errors';
 
-import { SAFE_RPC_METHODS } from '@/constant';
 import { consoleError, consoleLog } from '@/shared/utils/console-log';
 
 import DedupePromise from './pageProvider/dedupePromise';
@@ -14,6 +13,7 @@ import ReadyPromise from './pageProvider/readyPromise';
 import { domReadyCall, $ } from './pageProvider/utils';
 import BroadcastChannelMessage from './utils/message/broadcastChannelMessage';
 import { patchProvider } from './utils/metamask';
+import { SAFE_RPC_METHODS } from './utils/safeRpcMethods';
 
 declare const __frw__channelName;
 declare const __frw__isDefaultWallet;

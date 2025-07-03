@@ -16,14 +16,13 @@ import { useNavigate, useLocation } from 'react-router';
 
 import { type CustomFungibleTokenInfo } from '@/shared/types/coin-types';
 import { networkToChainId } from '@/shared/types/network-types';
+import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
+import { EVM_ENDPOINT } from '@/shared/utils/domain-constants';
+import { LLPrimaryButton, LLFormHelperText } from '@/ui/components';
 import { refreshEvmToken } from '@/ui/hooks/use-coin-hooks';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
-import { EVM_ENDPOINT } from 'consts';
 import { useWallet } from 'ui/utils';
-
-import { withPrefix, isValidEthereumAddress } from '../../../../shared/utils/address';
-import { LLPrimaryButton, LLFormHelperText } from '../../../components';
 
 import AddCustomEvmForm from './CustomEvmForm';
 

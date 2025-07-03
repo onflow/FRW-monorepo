@@ -6,8 +6,8 @@ import {
   evmNftIdsRefreshRegex,
 } from '@/shared/utils/cache-data-keys';
 
-import { fclConfirmNetwork } from '../fclConfig';
 import { registerRefreshListener, setCachedData } from '../utils/data-cache';
+import { fclConfirmNetwork } from '../utils/fclConfig';
 
 import { openapiService } from '.';
 

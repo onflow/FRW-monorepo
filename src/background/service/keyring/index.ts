@@ -6,16 +6,6 @@ import * as bip39 from 'bip39';
 import encryptor from 'browser-passworder';
 import * as ethUtil from 'ethereumjs-util';
 
-import { normalizeAddress } from '@/background/utils';
-import { pubKeyAccountToAccountKey, defaultAccountKey } from '@/background/utils/account-key';
-import { getAccountsByPublicKeyTuple } from '@/background/utils/modules/findAddressWithPubKey';
-import {
-  pkTuple2PubKey,
-  formPubKeyTuple,
-  seedWithPathAndPhrase2PublicPrivateKey,
-  getPublicKeyFromPrivateKey,
-} from '@/background/utils/modules/publicPrivateKey';
-import i18n from '@/i18n';
 import {
   combinePubPkTuple,
   type PublicPrivateKeyTuple,
@@ -36,6 +26,7 @@ import {
   KEYRING_STATE_VAULT_V3,
   type VaultEntryV3,
   KEYRING_STATE_V3_KEY,
+  KEYRING_TYPE,
 } from '@/shared/types/keyring-types';
 import { type LoggedInAccount } from '@/shared/types/wallet-types';
 import {
@@ -46,9 +37,16 @@ import {
 import { consoleError, consoleInfo, consoleWarn } from '@/shared/utils/console-log';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
 import storage from '@/shared/utils/storage';
-import { KEYRING_TYPE } from 'consts';
 
-import preference from '../preference';
+import { normalizeAddress } from '../../utils';
+import { pubKeyAccountToAccountKey, defaultAccountKey } from '../../utils/account-key';
+import { getAccountsByPublicKeyTuple } from '../../utils/modules/findAddressWithPubKey';
+import {
+  pkTuple2PubKey,
+  formPubKeyTuple,
+  seedWithPathAndPhrase2PublicPrivateKey,
+  getPublicKeyFromPrivateKey,
+} from '../../utils/modules/publicPrivateKey';
 
 import { HDKeyring, type HDKeyringType, type HDKeyringData } from './hdKeyring';
 import { type SimpleKeyPairType, SimpleKeyring, type SimpleKeyringData } from './simpleKeyring';
@@ -541,7 +539,7 @@ class KeyringService extends EventEmitter {
     await this.verifyOrBoot(password);
     // Validate mnemonic first
     if (!bip39.validateMnemonic(seed)) {
-      throw new Error(i18n.t('mnemonic phrase is invalid'));
+      throw new Error('mnemonic phrase is invalid');
     }
     // Clear the current keyrings as the new keyring will replace it
     await this.clearCurrentKeyring();
@@ -645,7 +643,7 @@ class KeyringService extends EventEmitter {
   async verifyPassword(password: string): Promise<void> {
     const encryptedBooted = this.store.getState().booted;
     if (!encryptedBooted) {
-      throw new Error(i18n.t('Cannot unlock without a previous vault'));
+      throw new Error('Cannot unlock without a previous vault');
     }
     await this.encryptor.decrypt(password, encryptedBooted);
   }
@@ -752,7 +750,7 @@ class KeyringService extends EventEmitter {
     });
 
     return isIncluded
-      ? Promise.reject(new Error(i18n.t('duplicateAccount')))
+      ? Promise.reject(new Error('duplicateAccount'))
       : Promise.resolve(newAccountArray);
   }
 
@@ -1260,79 +1258,6 @@ class KeyringService extends EventEmitter {
         return accounts.includes(hexed);
       });
     });
-  }
-
-  /**
-   * Display For Keyring
-   *
-   * Is used for adding the current keyrings to the state object.
-   * @param {Keyring} keyring
-   * @returns {Promise<Object>} A keyring display object, with type and accounts properties.
-   */
-  displayForKeyring(keyring, includeHidden = true): Promise<DisplayedKeryring> {
-    const hiddenAddresses = preference.getHiddenAddresses();
-    const accounts: Promise<({ address: string; brandName: string } | string)[]> =
-      keyring.getAccountsWithBrand ? keyring.getAccountsWithBrand() : keyring.getAccounts();
-
-    return accounts.then((accounts) => {
-      const allAccounts = accounts.map((account) => ({
-        address: normalizeAddress(typeof account === 'string' ? account : account.address),
-        brandName: typeof account === 'string' ? keyring.type : account.brandName,
-      }));
-
-      return {
-        type: keyring.type,
-        accounts: includeHidden
-          ? allAccounts
-          : allAccounts.filter(
-              (account) =>
-                !hiddenAddresses.find(
-                  (item) =>
-                    item.type === keyring.type &&
-                    item.address.toLowerCase() === account.address.toLowerCase()
-                )
-            ),
-        keyring,
-      };
-    });
-  }
-
-  /**
-   *
-   * @returns
-   * @deprecated - This method should not be used anymore. It works on EOA addresses, not public keys.
-   */
-  getAllTypedAccounts(): Promise<DisplayedKeryring[]> {
-    return Promise.all(this.currentKeyring.map((keyring) => this.displayForKeyring(keyring)));
-  }
-
-  /**
-   * @deprecated - This method should not be used anymore. It works on EOA addresses, not public keys.
-   */
-  async getAllTypedVisibleAccounts(): Promise<DisplayedKeryring[]> {
-    const keyrings = await Promise.all(
-      this.currentKeyring.map((keyring) => this.displayForKeyring(keyring, false))
-    );
-
-    return keyrings.filter((keyring) => keyring.accounts.length > 0);
-  }
-  /**
-   * @deprecated - This method should not be used anymore. It works on EOA addresses, not public keys.
-   */
-  async getAllVisibleAccountsArray() {
-    const typedAccounts = await this.getAllTypedVisibleAccounts();
-    const result: { address: string; type: string; brandName: string }[] = [];
-    typedAccounts.forEach((accountGroup) => {
-      result.push(
-        ...accountGroup.accounts.map((account) => ({
-          address: account.address,
-          brandName: account.brandName,
-          type: accountGroup.type,
-        }))
-      );
-    });
-
-    return result;
   }
 
   async resetKeyRing() {

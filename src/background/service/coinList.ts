@@ -1,4 +1,3 @@
-import openapiService from '@/background/service/openapi';
 import {
   type CadenceTokenInfo,
   type ExtendedTokenInfo,
@@ -22,6 +21,8 @@ import {
 import { consoleError } from '@/shared/utils/console-log';
 
 import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
+
+import openapiService from './openapi';
 
 class CoinList {
   init = async () => {

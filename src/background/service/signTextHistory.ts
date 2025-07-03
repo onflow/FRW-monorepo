@@ -1,7 +1,8 @@
 import { sortBy } from 'lodash';
 
-import { CHAINS_ENUM, INTERNAL_REQUEST_ORIGIN } from '@/constant';
-import { createPersistStore } from 'background/utils';
+import { INTERNAL_REQUEST_ORIGIN } from '@/shared/utils/domain-constants';
+
+import createPersistStore from '../utils/persisitStore';
 
 import permissionService, { type ConnectedSite } from './permission';
 

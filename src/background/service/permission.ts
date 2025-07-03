@@ -2,8 +2,9 @@ import { max } from 'lodash';
 import LRU from 'lru-cache';
 
 import { MAINNET_CHAIN_ID } from '@/shared/types/network-types';
-import { createPersistStore } from 'background/utils';
-import { INTERNAL_REQUEST_ORIGIN } from 'consts';
+import { INTERNAL_REQUEST_ORIGIN } from '@/shared/utils/domain-constants';
+
+import createPersistStore from '../utils/persisitStore';
 
 export interface ConnectedSite {
   origin: string;

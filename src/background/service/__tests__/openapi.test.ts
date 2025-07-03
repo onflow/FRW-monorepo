@@ -107,7 +107,6 @@ import {
   createTestGroups,
   updateTestParamsFromResults,
 } from '@/shared/test-data/test-groups';
-//import walletController from '../../controller/wallet';
 import { type FlowNetwork } from '@/shared/types/network-types';
 
 import openApiService from '../openapi';
