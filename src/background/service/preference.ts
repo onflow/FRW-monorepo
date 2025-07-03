@@ -33,6 +33,7 @@ interface PreferenceStore {
   currentAccount: PreferenceAccount | undefined | null;
   externalLinkAck: boolean;
   hiddenAddresses: PreferenceAccount[];
+  hiddenAccounts: string[];
   balanceMap: {
     [address: string]: any;
   };
@@ -73,6 +74,7 @@ class PreferenceService {
         currentAccount: undefined,
         externalLinkAck: false,
         hiddenAddresses: [],
+        hiddenAccounts: [],
         balanceMap: {},
         useLedgerLive: false,
         locale: defaultLang,
@@ -127,6 +129,9 @@ class PreferenceService {
     }
     if (!this.store.hiddenAddresses) {
       this.store.hiddenAddresses = [];
+    }
+    if (!this.store.hiddenAccounts) {
+      this.store.hiddenAccounts = [];
     }
     if (!this.store.balanceMap) {
       this.store.balanceMap = {};

@@ -37,22 +37,17 @@ const SHOW_DEVICES = false;
 
 const SettingTab = () => {
   const usewallet = useWallet();
-  const { profileIds, userInfo } = useProfiles();
-  const [isActive, setIsActive] = useState(false);
+  const { profileIds, activeAccountType } = useProfiles();
   const [isKeyphrase, setIsKeyphrase] = useState(false);
 
-  const checkIsActive = useCallback(async () => {
-    const activeAccountType = await usewallet.getActiveAccountType();
-    if (activeAccountType === 'child') {
-      setIsActive(true);
-    }
+  const checkIsKeyphrase = useCallback(async () => {
     const keyrings = await usewallet.checkMnemonics();
     await setIsKeyphrase(keyrings);
   }, [usewallet]);
 
   useEffect(() => {
-    checkIsActive();
-  }, [checkIsActive]);
+    checkIsKeyphrase();
+  }, [checkIsKeyphrase]);
 
   return (
     <div className="page">
@@ -131,8 +126,8 @@ const SettingTab = () => {
             endIcon={<IconEnd size={12} />}
           />
 
-          {!isActive && <Divider sx={{ width: '90%' }} variant="middle" />}
-          {isKeyphrase && (
+          {activeAccountType === 'main' && <Divider sx={{ width: '90%' }} variant="middle" />}
+          {isKeyphrase && activeAccountType === 'main' && (
             <SettingsListItem
               to="/dashboard/setting/backups"
               icon={<BackupIcon width={24} height={24} />}

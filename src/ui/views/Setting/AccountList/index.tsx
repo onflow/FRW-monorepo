@@ -69,7 +69,11 @@ const AccountList = () => {
 
   return (
     <div className="page">
-      <LLHeader title={chrome.i18n.getMessage('Acc__list')} help={false} />
+      <LLHeader
+        title={chrome.i18n.getMessage('Acc__list')}
+        help={false}
+        goBackLink="/dashboard/setting"
+      />
       <Box
         sx={{
           gap: '0px',

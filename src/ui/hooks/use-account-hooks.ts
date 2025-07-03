@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 
+import { setCachedData } from '@/background/utils/data-cache';
 import {
   CURRENT_ID_KEY,
   KEYRING_STATE_CURRENT_KEY,
@@ -23,6 +24,7 @@ import {
   mainAccountStorageBalanceKey,
   pendingAccountCreationTransactionsKey,
 } from '@/shared/utils/cache-data-keys';
+import storage from '@/shared/utils/storage';
 import {
   activeAccountsKey,
   type ActiveAccountsStore,
@@ -157,4 +159,15 @@ export const usePendingAccountCreationTransactions = (
   return useCachedData<PendingTransaction[]>(
     network && pubkey ? pendingAccountCreationTransactionsKey(network, pubkey) : null
   );
+};
+
+export const childAccountDescKey = (address: string) => `childaccount-desc-${address}`;
+
+export const useChildAccountDescription = (address: string | undefined | null) => {
+  return useCachedData<string>(address ? childAccountDescKey(address) : null);
+};
+
+export const setChildAccountDescription = async (address: string, desc: string): Promise<void> => {
+  if (!address) return;
+  await setCachedData(childAccountDescKey(address), desc, 3600_000);
 };

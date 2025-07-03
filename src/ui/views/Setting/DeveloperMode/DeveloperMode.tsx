@@ -90,7 +90,11 @@ const DeveloperMode = () => {
 
   return (
     <div className="page">
-      <LLHeader title={chrome.i18n.getMessage('Developer__Settings')} help={false} />
+      <LLHeader
+        title={chrome.i18n.getMessage('Developer__Settings')}
+        help={false}
+        goBackLink="/dashboard/setting"
+      />
 
       <Box
         sx={{

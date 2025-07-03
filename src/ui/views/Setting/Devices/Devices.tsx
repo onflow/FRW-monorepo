@@ -46,7 +46,11 @@ const Devices = () => {
 
   return (
     <div className="page">
-      <LLHeader title={chrome.i18n.getMessage('Devices')} help={false} />
+      <LLHeader
+        title={chrome.i18n.getMessage('Devices')}
+        help={false}
+        goBackLink="/dashboard/setting"
+      />
       <Typography
         sx={{
           color: 'var(--basic-foreground-white-8-text, rgba(255, 255, 255, 0.80))',

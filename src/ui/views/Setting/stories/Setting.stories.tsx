@@ -1,6 +1,7 @@
 import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 import { BrowserRouter } from 'react-router';
+import { withRouter } from 'storybook-addon-remix-react-router';
 
 import * as useAccountHooks from '@/ui/hooks/use-account-hooks';
 import { useUserData } from '@/ui/hooks/use-data.mock';
@@ -83,6 +84,7 @@ const meta: Meta<typeof SettingTab> = {
     },
   },
   decorators: [
+    withRouter,
     (Story) => (
       <React.StrictMode>
         <BrowserRouter>

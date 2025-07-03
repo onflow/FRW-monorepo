@@ -3,7 +3,7 @@ import React from 'react';
 
 import { type MainAccount, type WalletAccount } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
-import { useHiddenAddresses } from '@/ui/hooks/preference-hooks';
+import { useHiddenAccounts } from '@/ui/hooks/preference-hooks';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { COLOR_DARKMODE_TEXT_PRIMARY_80_FFFFFF80 } from '@/ui/style/color';
 
@@ -131,7 +131,7 @@ export const AccountListing = ({
   // Check if the EVM account is not valid
   const noEvmAccount = evmAccount && !isValidEthereumAddress(evmAccount.address);
   const { pendingAccountTransactions } = useProfiles();
-  const hiddenAddresses = useHiddenAddresses();
+  const hiddenAccounts = useHiddenAccounts();
 
   return (
     <Box sx={{ gap: '0px', padding: '0 16px', display: 'flex', flexDirection: 'column' }}>
@@ -210,7 +210,7 @@ export const AccountListing = ({
       )}
       {accountList &&
         accountList
-          .filter((account) => ignoreHidden || !hiddenAddresses.includes(account.address))
+          .filter((account) => ignoreHidden || !hiddenAccounts.includes(account.address))
           .map((account, idx, arr) => (
             <Box
               key={account.address}
