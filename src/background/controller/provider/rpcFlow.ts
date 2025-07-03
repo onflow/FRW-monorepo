@@ -1,11 +1,12 @@
 import { ethErrors } from 'eth-rpc-errors';
 
-import { notificationService, permissionService } from '@/background/service';
+import { permissionService } from '@/background/service';
 import { PromiseFlow, underline2Camelcase } from '@/background/utils';
 import { EVENTS } from '@/constant/index';
 import eventBus from '@/eventBus';
 import { consoleLog } from '@/shared/utils/console-log';
 
+import notificationService from '../notification';
 import Wallet from '../wallet';
 
 import providerController from './controller';

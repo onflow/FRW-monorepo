@@ -96,7 +96,6 @@ class PreferenceService {
     if (!this.store.locale || this.store.locale !== defaultLang) {
       this.store.locale = defaultLang;
     }
-    i18n.changeLanguage(this.store.locale);
     if (this.store.isDefaultWallet === undefined || this.store.isDefaultWallet === null) {
       this.store.isDefaultWallet = true;
     }
@@ -272,7 +271,6 @@ class PreferenceService {
 
   setLocale = (locale: string) => {
     this.store.locale = locale;
-    i18n.changeLanguage(locale);
   };
 
   // updateUseLedgerLive = async (value: boolean) => {

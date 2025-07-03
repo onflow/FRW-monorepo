@@ -8,25 +8,25 @@ import * as ethUtil from 'ethereumjs-util';
 
 import {
   combinePubPkTuple,
-  type PublicPrivateKeyTuple,
   type PrivateKeyTuple,
   type PublicKeyTuple,
   type PublicPrivateKey,
+  type PublicPrivateKeyTuple,
 } from '@/shared/types/key-types';
 import {
+  CURRENT_ID_KEY,
   KEYRING_DEEP_VAULT_KEY,
   KEYRING_STATE_CURRENT_KEY,
+  KEYRING_STATE_V1_KEY,
+  KEYRING_STATE_V2_KEY,
+  KEYRING_STATE_V3_KEY,
   KEYRING_STATE_VAULT_V1,
   KEYRING_STATE_VAULT_V2,
-  type VaultEntryV2,
-  type KeyringState,
-  KEYRING_STATE_V2_KEY,
-  KEYRING_STATE_V1_KEY,
-  CURRENT_ID_KEY,
   KEYRING_STATE_VAULT_V3,
-  type VaultEntryV3,
-  KEYRING_STATE_V3_KEY,
   KEYRING_TYPE,
+  type KeyringState,
+  type VaultEntryV2,
+  type VaultEntryV3,
 } from '@/shared/types/keyring-types';
 import { type LoggedInAccount } from '@/shared/types/wallet-types';
 import {
@@ -39,16 +39,17 @@ import { returnCurrentProfileId } from '@/shared/utils/current-id';
 import storage from '@/shared/utils/storage';
 
 import { normalizeAddress } from '../../utils';
-import { pubKeyAccountToAccountKey, defaultAccountKey } from '../../utils/account-key';
+import { defaultAccountKey, pubKeyAccountToAccountKey } from '../../utils/account-key';
 import { getAccountsByPublicKeyTuple } from '../../utils/modules/findAddressWithPubKey';
 import {
-  pkTuple2PubKey,
   formPubKeyTuple,
-  seedWithPathAndPhrase2PublicPrivateKey,
   getPublicKeyFromPrivateKey,
+  pkTuple2PubKey,
+  seedWithPathAndPhrase2PublicPrivateKey,
 } from '../../utils/modules/publicPrivateKey';
+import preference from '../preference';
 
-import { HDKeyring, type HDKeyringType, type HDKeyringData } from './hdKeyring';
+import { HDKeyring, type HDKeyringData, type HDKeyringType } from './hdKeyring';
 import { type SimpleKeyPairType, SimpleKeyring, type SimpleKeyringData } from './simpleKeyring';
 
 export const KEYRING_SDK_TYPES = {
@@ -1258,6 +1259,79 @@ class KeyringService extends EventEmitter {
         return accounts.includes(hexed);
       });
     });
+  }
+
+  /**
+   * Display For Keyring
+   *
+   * Is used for adding the current keyrings to the state object.
+   * @param {Keyring} keyring
+   * @returns {Promise<Object>} A keyring display object, with type and accounts properties.
+   */
+  displayForKeyring(keyring, includeHidden = true): Promise<DisplayedKeryring> {
+    const hiddenAddresses = preference.getHiddenAddresses();
+    const accounts: Promise<({ address: string; brandName: string } | string)[]> =
+      keyring.getAccountsWithBrand ? keyring.getAccountsWithBrand() : keyring.getAccounts();
+
+    return accounts.then((accounts) => {
+      const allAccounts = accounts.map((account) => ({
+        address: normalizeAddress(typeof account === 'string' ? account : account.address),
+        brandName: typeof account === 'string' ? keyring.type : account.brandName,
+      }));
+
+      return {
+        type: keyring.type,
+        accounts: includeHidden
+          ? allAccounts
+          : allAccounts.filter(
+              (account) =>
+                !hiddenAddresses.find(
+                  (item) =>
+                    item.type === keyring.type &&
+                    item.address.toLowerCase() === account.address.toLowerCase()
+                )
+            ),
+        keyring,
+      };
+    });
+  }
+
+  /**
+   *
+   * @returns
+   * @deprecated - This method should not be used anymore. It works on EOA addresses, not public keys.
+   */
+  getAllTypedAccounts(): Promise<DisplayedKeryring[]> {
+    return Promise.all(this.currentKeyring.map((keyring) => this.displayForKeyring(keyring)));
+  }
+
+  /**
+   * @deprecated - This method should not be used anymore. It works on EOA addresses, not public keys.
+   */
+  async getAllTypedVisibleAccounts(): Promise<DisplayedKeryring[]> {
+    const keyrings = await Promise.all(
+      this.currentKeyring.map((keyring) => this.displayForKeyring(keyring, false))
+    );
+
+    return keyrings.filter((keyring) => keyring.accounts.length > 0);
+  }
+  /**
+   * @deprecated - This method should not be used anymore. It works on EOA addresses, not public keys.
+   */
+  async getAllVisibleAccountsArray() {
+    const typedAccounts = await this.getAllTypedVisibleAccounts();
+    const result: { address: string; type: string; brandName: string }[] = [];
+    typedAccounts.forEach((accountGroup) => {
+      result.push(
+        ...accountGroup.accounts.map((account) => ({
+          address: account.address,
+          brandName: account.brandName,
+          type: accountGroup.type,
+        }))
+      );
+    });
+
+    return result;
   }
 
   async resetKeyRing() {

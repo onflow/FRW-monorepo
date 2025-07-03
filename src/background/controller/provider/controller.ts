@@ -1,7 +1,6 @@
-import * as fcl from '@onflow/fcl';
 import BigNumber from 'bignumber.js';
 import { ethErrors } from 'eth-rpc-errors';
-import { isHexString, intToHex } from 'ethereumjs-util';
+import { intToHex, isHexString } from 'ethereumjs-util';
 import { ethers } from 'ethers';
 import RLP from 'rlp';
 import Web3 from 'web3';
@@ -10,12 +9,10 @@ import { stringToHex } from 'web3-utils';
 import BaseController from '@/background/controller/base';
 import Wallet from '@/background/controller/wallet';
 import {
+  keyringService,
   permissionService,
   sessionService,
   signTextHistoryService,
-  keyringService,
-  notificationService,
-  userWalletService,
 } from '@/background/service';
 import { getAccountsByPublicKeyTuple } from '@/background/utils/modules/findAddressWithPubKey';
 import { signWithKey } from '@/background/utils/modules/publicPrivateKey';
@@ -24,6 +21,8 @@ import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types
 import { ensureEvmAddressPrefix, isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
 import { EVM_ENDPOINT } from '@/shared/utils/domain-constants';
+
+import notificationService from '../notification';
 
 interface Web3WalletPermission {
   // The name of the method corresponding to the permission
