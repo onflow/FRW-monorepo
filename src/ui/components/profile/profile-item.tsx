@@ -10,12 +10,14 @@ export const ProfileItem = ({
   switchAccount,
   setLoadingId,
   rightIcon,
+  noPadding,
 }: {
   profileId: string;
   selectedProfileId?: string;
   switchAccount: (profileId: string) => Promise<void>;
   setLoadingId: (id: string) => void;
   rightIcon?: React.ReactNode;
+  noPadding?: boolean;
 }) => {
   const userInfo = useUserInfo(profileId);
   return (
@@ -27,6 +29,7 @@ export const ProfileItem = ({
       setLoadingId={setLoadingId}
       userInfo={userInfo}
       rightIcon={rightIcon}
+      noPadding={noPadding}
     />
   );
 };

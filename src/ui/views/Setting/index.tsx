@@ -53,22 +53,26 @@ const SettingTab = () => {
     <div className="page">
       <LLHeader title={chrome.i18n.getMessage('Settings')} help={false} goBackLink="/dashboard" />
       {profileIds && profileIds.length > 1 && (
-        <List sx={{ margin: '8px auto 16px auto', pt: 0, pb: 0 }}>
-          <ListItem
-            component={Link}
-            to="/dashboard/setting/profile"
-            sx={{ padding: '0' }}
-            data-testid="setting-goto-account-button"
-          >
+        <Box
+          sx={{
+            margin: '8px auto',
+            padding: '0 18px',
+            borderRadius: '16px',
+            overflow: 'hidden',
+            backgroundColor: 'transparent',
+          }}
+        >
+          <Link to="/dashboard/setting/profile" data-testid="setting-goto-account-button">
             <ProfileItem
               profileId={profileIds[0]}
               selectedProfileId={profileIds[0]}
               switchAccount={async () => {}}
               setLoadingId={() => {}}
               rightIcon={<EditIcon width={24} height={24} />}
+              noPadding={true}
             />
-          </ListItem>
-        </List>
+          </Link>
+        </Box>
       )}
       <Box
         sx={{
@@ -83,7 +87,8 @@ const SettingTab = () => {
           className="list"
           sx={{
             margin: '8px auto 16px auto',
-            padding: '0',
+            pt: 0,
+            pb: 0,
             borderRadius: '16px',
             overflow: 'hidden',
             backgroundColor: '#282828',
@@ -92,18 +97,19 @@ const SettingTab = () => {
             },
           }}
         >
-          <Box sx={{ display: 'flex', width: '100%' }}>
-            <TopLinkButton
-              to="/dashboard/setting/addressbook"
-              icon={<AddressIcon width={28} height={28} />}
-              text={chrome.i18n.getMessage('Contacts')}
-            />
-            <TopLinkButton
-              to="/dashboard/setting/accountlist"
-              icon={<AccountListIcon width={28} height={28} />}
-              text={chrome.i18n.getMessage('Acc__list')}
-            />
-          </Box>
+          <SettingsListItem
+            to="/dashboard/setting/accountlist"
+            icon={<AccountListIcon width={24} height={24} />}
+            text={chrome.i18n.getMessage('Accounts')}
+            showArrow={false}
+          />
+          <Divider sx={{ width: '90%' }} variant="middle" />
+          <SettingsListItem
+            to="/dashboard/setting/addressbook"
+            icon={<AddressIcon width={24} height={24} />}
+            text={chrome.i18n.getMessage('AddressBook')}
+            showArrow={false}
+          />
         </List>
         <List
           className="list"
@@ -139,7 +145,7 @@ const SettingTab = () => {
           <SettingsListItem
             to="/dashboard/setting/changepassword"
             icon={<SecurityIcon width={24} height={24} />}
-            text={chrome.i18n.getMessage('Security')}
+            text={chrome.i18n.getMessage('Password')}
             endIcon={<IconEnd size={12} />}
           />
         </List>

@@ -1,6 +1,5 @@
 import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
-import { BrowserRouter } from 'react-router';
 import { withRouter } from 'storybook-addon-remix-react-router';
 
 import * as useAccountHooks from '@/ui/hooks/use-account-hooks';
@@ -17,57 +16,6 @@ const mockUseWallet = {
   checkMnemonics: () => Promise.resolve(true),
   lockAdd: () => Promise.resolve(),
 };
-
-// Mock chrome APIs
-global.chrome = {
-  i18n: {
-    getMessage: (key: string) => {
-      const messages: Record<string, string> = {
-        Settings: 'Settings',
-        Address: 'Address Book',
-        Acc__list: 'Account List',
-        Display__Currency: 'Display Currency',
-        Backup: 'Backup',
-        Security: 'Security',
-        Try_Our_Mobile_APP: 'Try Our Mobile APP',
-        Developer__Mode: 'Developer Mode',
-        Devices: 'Devices',
-        About: 'About',
-        Add_Profile: 'Add Profile',
-      };
-      return messages[key] || key;
-    },
-  },
-  storage: {
-    local: {
-      get: () => Promise.resolve({}),
-      set: () => Promise.resolve(),
-      remove: () => Promise.resolve(),
-      clear: () => Promise.resolve(),
-    },
-    sync: {
-      get: () => Promise.resolve({}),
-      set: () => Promise.resolve(),
-      remove: () => Promise.resolve(),
-      clear: () => Promise.resolve(),
-    },
-    onChanged: {
-      addListener: () => {},
-      removeListener: () => {},
-    },
-  },
-  runtime: {
-    sendMessage: () => Promise.resolve({}),
-    onMessage: {
-      addListener: () => {},
-      removeListener: () => {},
-    },
-  },
-  tabs: {
-    query: () => Promise.resolve([]),
-    sendMessage: () => Promise.resolve({}),
-  },
-} as any;
 
 const meta: Meta<typeof SettingTab> = {
   title: 'Views/Setting/SettingTab',
@@ -87,19 +35,17 @@ const meta: Meta<typeof SettingTab> = {
     withRouter,
     (Story) => (
       <React.StrictMode>
-        <BrowserRouter>
-          <div
-            style={{
-              width: '400px',
-              backgroundColor: '#1A1A1A',
-              minHeight: '100vh',
-              color: 'white',
-              fontFamily: 'Inter, sans-serif',
-            }}
-          >
-            <Story />
-          </div>
-        </BrowserRouter>
+        <div
+          style={{
+            width: '400px',
+            backgroundColor: '#1A1A1A',
+            minHeight: '100vh',
+            color: 'white',
+            fontFamily: 'Inter, sans-serif',
+          }}
+        >
+          <Story />
+        </div>
       </React.StrictMode>
     ),
   ],

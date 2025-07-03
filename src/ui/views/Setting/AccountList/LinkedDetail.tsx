@@ -19,7 +19,6 @@ import { type NFTCollections } from '@/shared/types/nft-types';
 import { EditIcon } from '@/ui/assets/icons/settings/Edit';
 import { LLHeader, LLSecondaryButton } from '@/ui/components';
 import { AccountCard } from '@/ui/components/account/account-card';
-import SettingsListItem from '@/ui/components/settings/setting-list-item';
 import SettingsListCard from '@/ui/components/settings/settings-list-card';
 import SlidingTabSwitch from '@/ui/components/settings/sliding-tab-switch';
 import {
