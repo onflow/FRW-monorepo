@@ -9,7 +9,7 @@ export * from './webapi';
 
 export * from './time';
 
-export * from '../../shared/utils/number';
+export * from '@/shared/utils/number';
 
 const UI_TYPE = {
   Tab: 'index',

@@ -7,10 +7,10 @@ import React, { useEffect, useState } from 'react';
 import { useForm, type FieldValues } from 'react-hook-form';
 
 import type { Contact } from '@/shared/types/network-types';
+import { withPrefix } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
 import { useWallet } from '@/ui/utils';
 
-import { withPrefix } from '../../../../shared/utils/address';
 import { LLFormHelperText, LLPrimaryButton, LLSecondaryButton } from '../../../components';
 
 const StyledInput = styled(InputBase)(({ theme }) => ({

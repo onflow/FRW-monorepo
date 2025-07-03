@@ -297,6 +297,43 @@ const config = [
         },
       ],
     },
+  }, // UI-specific config to block relative imports outside ui folder
+  {
+    files: ['**/src/ui/**/*.{js,jsx,ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            // Block relative imports that explicitly go to background or shared
+            {
+              group: [
+                '../background/*',
+                '../background/**',
+                '../**/background/**',
+                '../**/shared/*',
+                '../shared/*',
+                '../**/shared/**',
+              ],
+              message:
+                'Files in UI folder must use aliases (@/shared/*, @/background/*) instead of relative paths',
+            },
+            // Block relative imports to src level that aren't ui
+            {
+              group: [
+                '**/src/background/*',
+                '**/src/background/**',
+                '**/src/shared/*',
+                '**/src/shared/**',
+                '**/src/content-script/*',
+                '**/src/content-script/**',
+              ],
+              message: 'Files in UI folder must use aliases for imports outside UI',
+            },
+          ],
+        },
+      ],
+    },
   },
   ...storybook.configs['flat/recommended'],
 ];
