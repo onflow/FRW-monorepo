@@ -20,7 +20,7 @@ import { useNavigate } from 'react-router';
 import { type Contact } from '@/shared/types/network-types';
 import { consoleError } from '@/shared/utils/console-log';
 import EmptyStateImage from '@/ui/assets/image/search_user.png';
-import { useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 import AddOrEditAddress from './AddOrEditAddress';
 import AddressBookItem from './AddressBookItem';

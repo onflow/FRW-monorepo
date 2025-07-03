@@ -5,7 +5,7 @@ import { useLocation } from 'react-router';
 import { type AccountKey, type KeyResponseItem } from '@/shared/types/network-types';
 import { LLHeader } from '@/ui/components';
 import IconCopy from '@/ui/components/iconfont/IconCopy';
-import { useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 import curve from '../../../assets/image/curve.png';
 import hash from '../../../assets/image/hash.png';

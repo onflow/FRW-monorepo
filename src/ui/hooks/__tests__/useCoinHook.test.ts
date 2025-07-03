@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
 import { userWalletsKey } from '@/shared/utils/user-data-keys';
-import { useWallet } from '@/ui/utils/WalletContext';
 
+import { useWallet } from '../use-wallet';
 import { useCoins } from '../useCoinHook';
 
 // Mock React's useState to track state changes
@@ -77,7 +77,7 @@ vi.mock('@/background/webapi/storage', () => ({
 }));
 
 // Mock wallet context
-vi.mock('@/ui/utils/WalletContext', () => ({
+vi.mock('@/ui/hooks/use-wallet', () => ({
   useWalletLoaded: vi.fn().mockReturnValue(true),
   useWallet: vi.fn().mockReturnValue({
     refreshCoinList: vi.fn().mockResolvedValue(undefined),

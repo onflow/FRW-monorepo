@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router';
 import { type UserInfoResponse } from '@/shared/types/network-types';
 import { withPrefix } from '@/shared/utils/address';
 import { LLSecondaryButton } from '@/ui/components';
-import { useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 import reset from '../../../assets/svg/reset.svg';
 

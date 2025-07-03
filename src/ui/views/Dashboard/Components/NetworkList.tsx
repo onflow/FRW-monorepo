@@ -10,8 +10,8 @@ import {
 import React, { useState } from 'react';
 
 import { consoleError } from '@/shared/utils/console-log';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { networkColor } from '@/ui/style/color';
-import { useWallet } from '@/ui/utils';
 
 import networkLink from '../../../assets/svg/networkLink.svg';
 

@@ -29,7 +29,7 @@ import {
   IconKraken,
   IconKucoin,
 } from '@/ui/components/iconfont';
-import { useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
   '& .MuiToggleButtonGroup-grouped': {

@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router';
 
 import { type TokenInfo } from '@/shared/types/token-info';
 import IconPlus from '@/ui/components/iconfont/IconPlus';
-import { useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 interface AddTokenConfirmationProps {
   isConfirmationOpen: boolean;

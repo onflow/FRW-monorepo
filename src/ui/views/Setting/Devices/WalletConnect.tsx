@@ -14,7 +14,7 @@ import {
 import { consoleError } from '@/shared/utils/console-log';
 import { FCLWalletConnectMethod } from '@/shared/utils/type';
 import { LLPrimaryButton, LLSecondaryButton } from '@/ui/components';
-import { useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 import closeCircle from '../../../assets/image/closeCircle.png';
 import dicon from '../../../assets/image/dicon.png';

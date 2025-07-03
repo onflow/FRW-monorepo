@@ -4,9 +4,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { type Contact } from '@/shared/types/network-types';
 import accountMove from '@/ui/assets/svg/accountMove.svg';
 import { FWMoveDropdown } from '@/ui/components';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useContacts } from '@/ui/hooks/useContactHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useWallet } from '@/ui/utils';
 const USER_CONTACT = {
   contact_name: '',
   avatar: '',

@@ -1,8 +1,9 @@
 import { Box, Skeleton, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { formatAddress, isEmoji, useWallet } from '@/ui/utils';
+import { formatAddress, isEmoji } from '@/ui/utils';
 
 const tempEmoji = {
   emoji: '🥥',

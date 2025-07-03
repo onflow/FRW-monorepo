@@ -20,9 +20,9 @@ import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
 import { LLHeader } from '@/ui/components';
 import TokenItem from '@/ui/components/TokenLists/TokenItem';
 import { useAllTokenInfo } from '@/ui/hooks/use-coin-hooks';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useWallet } from '@/ui/utils';
 
 import VerifiedIcon from '../../assets/svg/verfied-check.svg';
 

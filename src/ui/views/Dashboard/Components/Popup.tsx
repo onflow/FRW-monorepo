@@ -7,7 +7,7 @@ import userCircleCheck from '@/ui/assets/svg/user-circle-check.svg';
 import userCirclePlus from '@/ui/assets/svg/user-circle-plus.svg';
 import { ProfileButton } from '@/ui/components/profile/profile-button';
 import { ProfileItem } from '@/ui/components/profile/profile-item';
-import { useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 interface TransferConfirmationProps {
   isConfirmationOpen: boolean;

@@ -14,10 +14,10 @@ import SlideRelative from '@/ui/components/SlideRelative';
 import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
 import { WarningStorageLowSnackbar } from '@/ui/components/WarningStorageLowSnackbar';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useContact } from '@/ui/hooks/useContactHook';
 import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
-import { useWallet } from '@/ui/utils';
 
 import { CurrencyValue } from '../../components/TokenLists/CurrencyValue';
 import { TokenBalance } from '../../components/TokenLists/TokenBalance';

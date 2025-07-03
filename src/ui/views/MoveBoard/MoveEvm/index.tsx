@@ -6,9 +6,9 @@ import { consoleError } from '@/shared/utils/console-log';
 import alertMark from '@/ui/assets/svg/alertMark.svg';
 import { NFTDrawer } from '@/ui/components/GeneralPages';
 import WarningSnackbar from '@/ui/components/WarningSnackbar';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
-import { useWallet } from '@/ui/utils';
 
 import AccountBox from '../AccountBox';
 import MoveCollectionSelect from '../MoveCollectionSelect';

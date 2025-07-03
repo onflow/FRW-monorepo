@@ -17,7 +17,7 @@ import { FCLWalletConnectMethod, type FCLWalletConnectSyncAccountInfo } from '@/
 import AllSet from '@/ui/components/LandingPages/AllSet';
 import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
 import SetPassword from '@/ui/components/LandingPages/SetPassword';
-import { useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 import SyncQr from './SyncQr';
 

@@ -1,16 +1,5 @@
 export const noop = () => {};
 
-export * from './WalletContext';
-export * from './WindowContext';
-
-export * from './hooks';
-
-export * from './webapi';
-
-export * from './time';
-
-export * from '@/shared/utils/number';
-
 const UI_TYPE = {
   Tab: 'index',
   Pop: 'popup',

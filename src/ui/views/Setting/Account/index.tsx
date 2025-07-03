@@ -10,8 +10,8 @@ import { consoleError } from '@/shared/utils/console-log';
 import { getCurrentProfileId } from '@/shared/utils/current-id';
 import RemoveProfileModal from '@/ui/components/PopupModal/remove-profile-modal';
 import ResetModal from '@/ui/components/PopupModal/resetModal';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useWallet } from '@/ui/utils';
 
 import EditAccount from './EditAccount';
 

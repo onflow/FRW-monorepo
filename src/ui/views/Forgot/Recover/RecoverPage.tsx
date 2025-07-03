@@ -6,7 +6,7 @@ import { consoleError } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import { LLPrimaryButton } from '@/ui/components';
 import { PasswordInput } from '@/ui/components/password/PasswordInput';
-import { useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 const RecoverPage = ({ dataArray, setArray, goNext }) => {
   const wallet = useWallet();

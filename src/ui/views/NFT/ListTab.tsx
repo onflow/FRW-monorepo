@@ -16,10 +16,10 @@ import { type NFTCollections } from '@/shared/types/nft-types';
 import { refreshNftCatalogCollections } from '@/shared/utils/cache-data-keys';
 import placeholder from '@/ui/assets/image/placeholder.png';
 import ListSkeleton from '@/ui/components/NFTs/ListSkeleton';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useNftCatalogCollections } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useWallet } from '@/ui/utils/WalletContext';
 
 import EmptyStatus from '../EmptyStatus';
 interface ListTabProps {

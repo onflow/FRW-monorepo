@@ -3,7 +3,7 @@ import { Box } from '@mui/system';
 import React, { useCallback, useEffect } from 'react';
 
 import AllSetIcon from '@/ui/assets/svg/allset.svg';
-import { useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 interface AllSetProps {
   handleSwitchTab: () => void;

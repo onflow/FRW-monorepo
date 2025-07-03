@@ -1,4 +1,4 @@
-import React, { type ReactNode, createContext, useContext } from 'react';
+import React, { type ReactNode, createContext } from 'react';
 import type { Object } from 'ts-toolbelt';
 
 import type { WalletController as WalletControllerClass } from '@/background/controller/wallet';
@@ -31,37 +31,22 @@ export type WalletController = Object.Merge<
   }
 >;
 
-const WalletContext = createContext<{
+export const WalletContext = createContext<{
   wallet: WalletController;
   loaded: boolean;
 } | null>(null);
 
-const useWalletLoaded = () => {
-  const loaded = useCachedData<boolean>(walletLoadedKey());
-  return loaded ?? false;
-};
-
-const WalletProvider = ({
+export const WalletProvider = ({
   children,
   wallet,
 }: {
   children?: ReactNode;
   wallet: WalletController;
 }) => {
-  const walletInitialized = useWalletLoaded();
+  const walletInitialized = useCachedData<boolean>(walletLoadedKey());
   return (
     <WalletContext.Provider value={{ wallet, loaded: walletInitialized ?? false }}>
       {children}
     </WalletContext.Provider>
   );
 };
-
-const useWallet = () => {
-  const { wallet } = useContext(WalletContext) as unknown as {
-    wallet: WalletControllerType;
-  };
-
-  return wallet;
-};
-
-export { WalletProvider, useWallet, useWalletLoaded };

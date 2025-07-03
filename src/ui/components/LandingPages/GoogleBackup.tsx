@@ -7,7 +7,7 @@ import { consoleError } from '@/shared/utils/console-log';
 import { LLSpinner } from '@/ui/components';
 import IconGoogleDrive from '@/ui/components/iconfont/IconGoogleDrive';
 import SlideRelative from '@/ui/components/SlideRelative';
-import { useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 interface GoogleBackupProps {
   handleSwitchTab: () => void;

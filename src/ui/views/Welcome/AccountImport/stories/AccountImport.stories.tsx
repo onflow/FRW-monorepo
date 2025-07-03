@@ -4,7 +4,7 @@ import React from 'react';
 import { fn } from 'storybook/test';
 import { withRouter } from 'storybook-addon-remix-react-router';
 
-import { useWallet as useWalletMock } from '@/ui/utils/WalletContext.mock';
+import { useWallet as useWalletMock } from '@/ui/hooks/use-wallet.mock';
 
 import AccountImport from '../index';
 

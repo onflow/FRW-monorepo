@@ -13,10 +13,11 @@ import { AccountAvatar } from '@/ui/components/account/account-avatar';
 import IconCopy from '@/ui/components/iconfont/IconCopy';
 import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
 import { useNews } from '@/ui/hooks/use-news';
+import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
-import { formatAddress, useWallet, useWalletLoaded } from '@/ui/utils';
+import { formatAddress } from '@/ui/utils';
 
 import MenuDrawer from './Components/MenuDrawer';
 import NewsView from './Components/NewsView';

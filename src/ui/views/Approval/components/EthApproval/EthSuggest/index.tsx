@@ -10,8 +10,8 @@ import { consoleError } from '@/shared/utils/console-log';
 import { LLConnectLoading, LLPrimaryButton, LLSecondaryButton } from '@/ui/components';
 import { useApproval } from '@/ui/hooks/use-approval';
 import { refreshEvmToken } from '@/ui/hooks/use-coin-hooks';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
-import { useWallet } from '@/ui/utils/WalletContext';
 
 // import EthMove from '../EthMove';
 

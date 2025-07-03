@@ -5,7 +5,8 @@ import { useNavigate } from 'react-router';
 
 import { ContactType } from '@/shared/types/network-types';
 import closex from '@/ui/assets/closex.svg';
-import { formatAddress, useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
+import { formatAddress } from '@/ui/utils';
 
 export const FWContactCard = ({ contact, hideCloseButton, isSend = false, isLoading = false }) => {
   const wallet = useWallet();

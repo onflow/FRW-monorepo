@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import { LLHeader } from '@/ui/components';
-import { useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 import circlecheck from '../../../assets/image/circlecheck.png';
 import goto from '../../../assets/image/goto.png';

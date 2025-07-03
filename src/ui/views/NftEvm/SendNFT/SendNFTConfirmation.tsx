@@ -16,9 +16,9 @@ import IconFlow from '@/ui/components/iconfont/IconFlow';
 import SlideRelative from '@/ui/components/SlideRelative';
 import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
 import { WarningStorageLowSnackbar } from '@/ui/components/WarningStorageLowSnackbar';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
-import { useWallet } from '@/ui/utils';
 import { type MatchMedia, MatchMediaType } from '@/ui/utils/url';
 
 interface SendNFTConfirmationProps {

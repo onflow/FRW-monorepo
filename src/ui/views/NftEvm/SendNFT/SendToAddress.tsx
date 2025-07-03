@@ -21,9 +21,10 @@ import { isValidEthereumAddress, withPrefix } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
 import { LLHeader } from '@/ui/components';
 import IconAbout from '@/ui/components/iconfont/IconAbout';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useAllNftList } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { returnFilteredCollections, useWallet } from '@/ui/utils';
+import { returnFilteredCollections } from '@/ui/utils';
 import { type MatchMedia } from '@/ui/utils/url';
 
 import AccountsList from '../../../components/AddressLists/AccountsList';

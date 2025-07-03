@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router';
 import { consoleError } from '@/shared/utils/console-log';
 import { LLPrimaryButton, LLSpinner } from '@/ui/components';
 import { EnableEvm } from '@/ui/components/EnableEvm';
-import { useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 const Enable = () => {
   const expiry_time = 60000;

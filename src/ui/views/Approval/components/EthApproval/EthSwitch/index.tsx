@@ -9,8 +9,8 @@ import mainnetsvg from '@/ui/assets/svg/mainnet.svg';
 import testnetsvg from '@/ui/assets/svg/testnet.svg';
 import { LLPrimaryButton, LLSecondaryButton } from '@/ui/components';
 import { useApproval } from '@/ui/hooks/use-approval';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { networkColor } from '@/ui/style/color';
-import { useWallet } from '@/ui/utils/WalletContext';
 
 interface ConnectProps {
   params: any;

@@ -6,7 +6,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useForm, type FieldValues } from 'react-hook-form';
 
 import { storage } from '@/background/webapi';
-import { useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 import { LLFormHelperText, LLPrimaryButton, LLSecondaryButton } from '../../components';
 

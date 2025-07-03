@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 
 import { transferListKey, type TransferListStore } from '@/shared/utils/cache-data-keys';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useWallet } from '@/ui/utils';
 
 import { useCachedData } from './use-data';
 import { useNetwork } from './useNetworkHook';

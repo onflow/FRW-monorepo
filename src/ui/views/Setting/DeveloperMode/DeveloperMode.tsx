@@ -14,7 +14,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 import { storage } from '@/background/webapi';
 import { LLHeader } from '@/ui/components';
-import { useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 const DeveloperMode = () => {
   const usewallet = useWallet();

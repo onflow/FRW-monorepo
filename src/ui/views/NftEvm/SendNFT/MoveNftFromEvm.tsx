@@ -13,11 +13,11 @@ import SlideRelative from '@/ui/components/SlideRelative';
 import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
 import { WarningNFTNotOnboardedSnackbar } from '@/ui/components/WarningNFTNotOnboardedSnackbar';
 import { WarningStorageLowSnackbar } from '@/ui/components/WarningStorageLowSnackbar';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useContacts } from '@/ui/hooks/useContactHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
-import { useWallet } from '@/ui/utils';
 import { MatchMediaType } from '@/ui/utils/url';
 
 interface SendNFTConfirmationProps {

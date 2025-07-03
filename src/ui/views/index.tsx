@@ -4,8 +4,9 @@ import React from 'react';
 import { Route, HashRouter as Router, Routes, useLocation } from 'react-router';
 
 import PrivateRoute from '@/ui/components/PrivateRoute';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import themeOptions from '@/ui/style/LLTheme';
-import { useWallet, WalletProvider } from '@/ui/utils';
+import { WalletProvider } from '@/ui/utils/WalletContext';
 
 // Uncomment this when we need to test api-test
 import ApiTestPage from './api-test/api-test-page';

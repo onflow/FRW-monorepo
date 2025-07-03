@@ -10,7 +10,7 @@ import { useLocation, useNavigate } from 'react-router';
 import fallback from '@/ui/assets/image/errorImage.png';
 import DetailMove from '@/ui/assets/svg/detailMove.svg';
 import SendIcon from '@/ui/assets/svg/detailSend.svg';
-import { useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { type PostMedia } from '@/ui/utils/url';
 
 import MoveNftFromEvm from './SendNFT/MoveNftFromEvm';

@@ -25,7 +25,7 @@ import {
   createTestGroups,
 } from '@/shared/test-data/test-groups';
 import { consoleError } from '@/shared/utils/console-log';
-import { useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 const addFunctionResult = (prev: ApiTestResult[], result: ApiTestResult) => {
   const prevFunctionResult = prev.find((r) => r.functionName === result.functionName);

@@ -26,7 +26,7 @@ import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import IconBackup from '@/ui/components/iconfont/IconBackup';
 import IconDeveloper from '@/ui/components/iconfont/IconDeveloper';
 import IconLock from '@/ui/components/iconfont/IconLock';
-import { useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 // Feature flags
 const SHOW_DEVICES = false;
 

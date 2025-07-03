@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router';
 
 import { LLWarningButton } from '@/ui/components';
 import ResetModal from '@/ui/components/PopupModal/resetModal';
-import { useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 import StepBox from '../stepBox';
 

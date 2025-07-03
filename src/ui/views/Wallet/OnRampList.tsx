@@ -5,7 +5,7 @@ import Grid from '@mui/material/Grid';
 import { Box } from '@mui/system';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 // import theme from '../../style/LLTheme';
 // import { initOnRamp } from '@coinbase/cbpay-js';

@@ -1,7 +1,7 @@
-import { Typography, Button, Skeleton, Drawer, Tabs, Tab } from '@mui/material';
+import { Button, Drawer, Skeleton, Tab, Tabs, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 
 import eventBus from '@/eventBus';
 import { ButtonRow } from '@/ui/components/ButtonRow';
@@ -10,9 +10,9 @@ import { IconActivity, IconNfts } from '@/ui/components/iconfont';
 import LLComingSoon from '@/ui/components/LLComingSoonWarning';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useChildAccountFt } from '@/ui/hooks/use-coin-hooks';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useWallet } from '@/ui/utils';
 
 import { CurrencyValue } from '../../components/TokenLists/CurrencyValue';
 import MoveBoard from '../MoveBoard';

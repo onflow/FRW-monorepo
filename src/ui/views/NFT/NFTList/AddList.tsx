@@ -18,9 +18,9 @@ import { consoleError } from '@/shared/utils/console-log';
 import alertMark from '@/ui/assets/svg/alert.svg';
 import { LLHeader } from '@/ui/components';
 import WarningSnackbar from '@/ui/components/WarningSnackbar';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useAllNftList } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useWallet } from '@/ui/utils';
 
 import CollectionCard from './AddNFTCard';
 import AddNFTConfirmation from './AddNFTConfirmation';

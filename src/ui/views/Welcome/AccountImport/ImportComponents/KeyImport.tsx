@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { type PublicKeyAccount } from '@/shared/types/wallet-types';
 import { LLSpinner } from '@/ui/components';
 import PasswordTextarea from '@/ui/components/password/PasswordTextarea';
-import { useWallet } from '@/ui/utils/WalletContext';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 import { KEY_TYPE } from '../../../../utils/modules/constants';
 

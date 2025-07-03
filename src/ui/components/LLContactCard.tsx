@@ -5,7 +5,8 @@ import { useNavigate } from 'react-router';
 
 import { ContactType } from '@/shared/types/network-types';
 import closex from '@/ui/assets/closex.svg';
-import { formatAddress, isEmoji, useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
+import { formatAddress, isEmoji } from '@/ui/utils';
 
 export const LLContactCard = ({ contact, hideCloseButton, isSend = false, isLoading = false }) => {
   const wallet = useWallet();

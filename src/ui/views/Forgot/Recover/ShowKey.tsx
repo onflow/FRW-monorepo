@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 
 import IconCopy from '@/ui/components/iconfont/IconCopy';
 import ResetModal from '@/ui/components/PopupModal/resetModal';
-import { useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 const ShowKey = ({ handleSwitchTab, mnemonic }) => {
   const usewallet = useWallet();

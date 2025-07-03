@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 const FetchAvatar = ({ username }) => {
   const [avatar, setAvatar] = useState(

@@ -1,7 +1,8 @@
 import { Avatar, Box, FormControl, MenuItem, Select, Typography } from '@mui/material';
 import React, { useEffect } from 'react';
 
-import { formatAddress, isEmoji, useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
+import { formatAddress, isEmoji } from '@/ui/utils';
 
 export const FWDropDownProfile = ({
   contact,

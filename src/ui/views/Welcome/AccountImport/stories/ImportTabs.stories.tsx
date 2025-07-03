@@ -5,7 +5,7 @@ import { action } from 'storybook/actions';
 import { fn } from 'storybook/test';
 
 import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
-import { useWallet as useWalletMock } from '@/ui/utils/WalletContext.mock';
+import { useWallet as useWalletMock } from '@/ui/hooks/use-wallet.mock';
 
 import ImportTabs from '../ImportTabs';
 

@@ -8,7 +8,7 @@ import BrowserWarning from '@/ui/components/BrowserWarning';
 import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
 import IconGoogleDrive from '@/ui/components/iconfont/IconGoogleDrive';
 import { LLDeleteBackupPopup } from '@/ui/components/LLDeleteBackupPopup';
-import { useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 /**
  * Manage Backups to Google Drive

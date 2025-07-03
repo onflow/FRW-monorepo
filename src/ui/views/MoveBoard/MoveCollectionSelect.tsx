@@ -15,7 +15,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import selected from '@/ui/assets/svg/selected.svg';
-import { useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 const MoveCollectionSelect = ({
   showMoveBoard,

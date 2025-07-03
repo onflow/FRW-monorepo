@@ -1,22 +1,22 @@
 import {
+  Box,
   Checkbox,
+  CircularProgress,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   List,
   ListItem,
   Typography,
-  Box,
-  CircularProgress,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
 } from '@mui/material';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { type ProfileBackupStatus } from '@/shared/types/wallet-types';
 import { consoleError } from '@/shared/utils/console-log';
 import { CustomDialog } from '@/ui/components/custom-dialog';
 import { LLPrimaryButton } from '@/ui/components/LLPrimaryButton';
 import { LLSecondaryButton } from '@/ui/components/LLSecondaryButton';
-import { useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 interface ProfileBackupSelectionDialogProps {
   open: boolean;
