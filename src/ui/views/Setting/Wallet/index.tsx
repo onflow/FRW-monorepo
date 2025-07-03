@@ -1,15 +1,5 @@
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
-import {
-  Typography,
-  List,
-  ListItemText,
-  ListItemIcon,
-  ListItem,
-  ListItemButton,
-  Divider,
-  CardMedia,
-  Box,
-} from '@mui/material';
+import { Typography, List, ListItemIcon, ListItem, ListItemButton, Box } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
 

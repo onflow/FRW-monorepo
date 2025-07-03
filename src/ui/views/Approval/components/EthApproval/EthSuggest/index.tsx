@@ -2,8 +2,7 @@ import { Stack, Box, Typography, Divider, CardMedia } from '@mui/material';
 import { Contract, ethers } from 'ethers';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { storage } from '@/background/webapi';
-import { type CustomFungibleTokenInfo, type CoinItem } from '@/shared/types/coin-types';
+import { type CustomFungibleTokenInfo } from '@/shared/types/coin-types';
 import { networkToChainId } from '@/shared/types/network-types';
 import { withPrefix } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';

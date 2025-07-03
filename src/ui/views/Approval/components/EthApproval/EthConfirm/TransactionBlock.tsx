@@ -4,7 +4,6 @@ import React from 'react';
 
 import IconFlow from '@/ui/components/iconfont/IconFlow';
 import circlecheck from 'ui/assets/image/circlecheck.png';
-import placeholder from 'ui/assets/image/placeholder.png';
 import transactionFeeIcon from 'ui/assets/svg/transactionFeeIcon.svg';
 import { CopyButton } from 'ui/components';
 import { formatAddress, HexToDecimalConverter } from 'ui/utils';

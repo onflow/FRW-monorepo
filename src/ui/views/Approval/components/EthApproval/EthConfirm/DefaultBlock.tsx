@@ -7,7 +7,6 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  CardMedia,
 } from '@mui/material';
 import React, { useState } from 'react';
 import Highlight from 'react-highlight';

@@ -1,13 +1,12 @@
-import { Typography, Box, Drawer, Stack, InputBase, CircularProgress } from '@mui/material';
+import { Typography, Box, Drawer, InputBase, CircularProgress } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import React, { useState, useEffect } from 'react';
-import { useForm, FieldValues } from 'react-hook-form';
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router';
 
 import { consoleError } from '@/shared/utils/console-log';
 import { useWallet } from 'ui/utils';
 
-import closeCircle from '../../../assets/image/closeCircle.png';
 import warning from '../../../assets/image/warning.png';
 import { LLPrimaryButton } from '../../../components';
 

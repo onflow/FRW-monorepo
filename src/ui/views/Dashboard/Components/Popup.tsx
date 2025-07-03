@@ -1,33 +1,12 @@
-import CloseIcon from '@mui/icons-material/Close';
-import {
-  Box,
-  Button,
-  ListItemButton,
-  Typography,
-  Drawer,
-  IconButton,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Avatar,
-  CardMedia,
-} from '@mui/material';
-import CircularProgress, { circularProgressClasses } from '@mui/material/CircularProgress';
+import { Box, Typography, Drawer } from '@mui/material';
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router';
 
 import type { UserInfoResponse } from '@/shared/types/network-types';
-import {
-  type LoggedInAccountWithIndex,
-  type LoggedInAccount,
-  type WalletAccount,
-} from '@/shared/types/wallet-types';
+import { type WalletAccount } from '@/shared/types/wallet-types';
 import userCircleCheck from '@/ui/assets/svg/user-circle-check.svg';
 import userCirclePlus from '@/ui/assets/svg/user-circle-plus.svg';
 import { ProfileButton } from '@/ui/components/profile/profile-button';
 import { ProfileItem } from '@/ui/components/profile/profile-item';
-import { useProfiles } from '@/ui/hooks/useProfileHook';
-import vmsvg from 'ui/assets/svg/viewmore.svg';
 import { useWallet } from 'ui/utils';
 
 interface TransferConfirmationProps {

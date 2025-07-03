@@ -1,5 +1,4 @@
 import { List, CardMedia, Typography, ButtonBase, Box } from '@mui/material';
-import { isEmpty } from 'lodash';
 import React from 'react';
 
 import emptyAddress from 'ui/assets/emptyAddress.svg';

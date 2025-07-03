@@ -1,6 +1,6 @@
 import * as ethSigUtil from '@metamask/eth-sig-util';
 import { ethers } from 'ethers';
-import { test, expect, describe, vi, beforeAll } from 'vitest';
+import { test, expect, describe, vi } from 'vitest';
 
 // Import TypedDataUtils directly from the controller
 import { TypedDataUtils } from '../provider/controller';

@@ -1,5 +1,4 @@
-import { Box, CardMedia, Typography } from '@mui/material';
-import Avatar from '@mui/material/Avatar';
+import { Box, Typography } from '@mui/material';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 

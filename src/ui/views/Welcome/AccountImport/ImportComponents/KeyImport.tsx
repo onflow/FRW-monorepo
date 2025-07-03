@@ -1,4 +1,4 @@
-import { Box, Button, Typography, TextField, TextareaAutosize } from '@mui/material';
+import { Box, Button, Typography, TextareaAutosize } from '@mui/material';
 import React, { useState } from 'react';
 
 import { type PublicKeyAccount } from '@/shared/types/wallet-types';

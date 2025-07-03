@@ -1,7 +1,6 @@
 import { Box, Button } from '@mui/material';
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useRef } from 'react';
 
-import { ensureEvmAddressPrefix } from '@/shared/utils/address';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from 'ui/utils';
 

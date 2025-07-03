@@ -1,5 +1,5 @@
 import { List, ListSubheader, CardMedia, Typography, ButtonBase, Box } from '@mui/material';
-import { groupBy, isEmpty } from 'lodash';
+import { groupBy } from 'lodash';
 import React, { useEffect, useState } from 'react';
 
 import { type Contact } from '@/shared/types/network-types';

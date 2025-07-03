@@ -1,13 +1,5 @@
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import {
-  Typography,
-  Card,
-  CardActionArea,
-  CardMedia,
-  CardContent,
-  Container,
-  Skeleton,
-} from '@mui/material';
+import { Typography, Card, CardActionArea, CardMedia, CardContent, Container } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { Box } from '@mui/system';
 import React, { forwardRef, useImperativeHandle, useEffect, useState, useCallback } from 'react';

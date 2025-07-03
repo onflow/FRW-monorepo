@@ -1,7 +1,6 @@
 import { Box, Typography, Avatar } from '@mui/material';
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 
-import { isValidEthereumAddress } from '@/shared/utils/address';
 import { useWallet } from 'ui/utils';
 
 export const FRWChildProfile = ({ contact, address, isLoading = false }) => {

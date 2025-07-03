@@ -7,7 +7,7 @@ import { saveAs } from 'file-saver';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 
-import { type PostMedia, MatchMediaType } from '@/ui/utils/url';
+import { type PostMedia } from '@/ui/utils/url';
 import fallback from 'ui/assets/image/errorImage.png';
 import DetailMove from 'ui/assets/svg/detailMove.svg';
 import SendIcon from 'ui/assets/svg/detailSend.svg';

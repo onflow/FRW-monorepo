@@ -1,16 +1,6 @@
-import {
-  Box,
-  Typography,
-  Avatar,
-  Skeleton,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-} from '@mui/material';
-import React, { useState, useEffect, useCallback } from 'react';
+import { Box, Typography, Avatar, Select, MenuItem, FormControl } from '@mui/material';
+import React, { useEffect } from 'react';
 
-import { isValidEthereumAddress } from '@/shared/utils/address';
 import { useWallet, isEmoji, formatAddress } from 'ui/utils';
 
 export const FWDropDownProfile = ({

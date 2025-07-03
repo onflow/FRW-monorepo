@@ -1,5 +1,3 @@
-import { FlowNetwork, MAINNET_NETWORK, TESTNET_NETWORK } from '../types/network-types';
-
 /**
  * A set of cadence scripts
  * The key is the script name

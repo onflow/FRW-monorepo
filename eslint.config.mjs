@@ -1,13 +1,13 @@
 // For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
 import storybook from 'eslint-plugin-storybook';
 
-import js from '@eslint/js';
-import globals from 'globals';
-import typescriptParser from '@typescript-eslint/parser';
 import typescriptPlugin from '@typescript-eslint/eslint-plugin';
+import typescriptParser from '@typescript-eslint/parser';
+import importPlugin from 'eslint-plugin-import';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
-import importPlugin from 'eslint-plugin-import';
+import unusedImportsPlugin from 'eslint-plugin-unused-imports';
+import globals from 'globals';
 
 const config = [
   // Base config for all files
@@ -44,6 +44,7 @@ const config = [
       react: reactPlugin,
       'react-hooks': reactHooksPlugin,
       import: importPlugin,
+      'unused-imports': unusedImportsPlugin,
     },
     settings: {
       'import/resolver': {
@@ -58,10 +59,17 @@ const config = [
       // TypeScript specific rules
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': 'off', // Let unused-imports handle this
       '@typescript-eslint/consistent-type-imports': [
         'error',
         { prefer: 'type-imports', fixStyle: 'inline-type-imports', disallowTypeAnnotations: false },
+      ],
+
+      // Unused imports rules
+      'unused-imports/no-unused-imports': 'error',
+      'unused-imports/no-unused-vars': [
+        'warn',
+        { vars: 'all', varsIgnorePattern: '^_', args: 'after-used', argsIgnorePattern: '^_' },
       ],
 
       // React rules
@@ -201,11 +209,6 @@ const config = [
                 '!../webapi',
                 '!../webapi/*',
                 '!../webapi/**',
-                '!../keyring',
-                '!../keyring/*',
-                '!../keyring/**',
-                '!../*.ts',
-                '!../*.js',
               ],
               message:
                 'Files in background/service can only import from background/utils/*, background/webapi/* or within service',

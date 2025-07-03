@@ -1,5 +1,5 @@
 import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
-import { Box, Typography, Avatar, IconButton, CardMedia, Skeleton } from '@mui/material';
+import { Box, Typography, IconButton, CardMedia, Skeleton } from '@mui/material';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 

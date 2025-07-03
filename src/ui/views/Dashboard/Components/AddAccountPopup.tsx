@@ -1,6 +1,5 @@
-import CloseIcon from '@mui/icons-material/Close';
-import { Box, Button, ListItemButton, Typography, Drawer } from '@mui/material';
-import React, { useState } from 'react';
+import { Box, Drawer } from '@mui/material';
+import React from 'react';
 
 import createNew from '@/ui/assets/svg/create-new.svg';
 import importExisting from '@/ui/assets/svg/import-existing.svg';

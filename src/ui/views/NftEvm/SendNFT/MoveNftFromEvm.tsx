@@ -6,7 +6,6 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 
 import { type Contact } from '@/shared/types/network-types';
-import { type AccountDetails } from '@/shared/types/wallet-types';
 import { consoleError } from '@/shared/utils/console-log';
 import IconFlow from '@/ui/components/iconfont/IconFlow';
 import SlideRelative from '@/ui/components/SlideRelative';

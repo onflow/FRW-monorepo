@@ -2,13 +2,10 @@ import {
   Box,
   CircularProgress,
   Drawer,
-  IconButton,
   List,
   ListItem,
   ListItemButton,
   ListItemIcon,
-  ListItemText,
-  Skeleton,
   Typography,
 } from '@mui/material';
 import React, { useCallback, useRef, useState } from 'react';
@@ -21,16 +18,11 @@ import { AccountListing } from '@/ui/components/account/account-listing';
 import { ProfileItemBase } from '@/ui/components/profile/profile-item-base';
 import { MenuItem } from '@/ui/components/sidebar/menu-item';
 import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
-import {
-  COLOR_GREEN_FLOW_THEME_16FF99,
-  COLOR_WHITE_ALPHA_10_FFFFFF1A,
-  COLOR_WHITE_ALPHA_40_FFFFFF66,
-} from '@/ui/style/color';
+import { COLOR_WHITE_ALPHA_10_FFFFFF1A, COLOR_WHITE_ALPHA_40_FFFFFF66 } from '@/ui/style/color';
 import { useWallet } from 'ui/utils';
 
 import lock from '../../../assets/svg/sidebar-lock.svg';
 import plus from '../../../assets/svg/sidebar-plus.svg';
-import userCircleGear from '../../../assets/svg/user-circle-gear.svg';
 import ErrorModel from '../../../components/PopupModal/errorModel';
 
 import AddAccountPopup from './AddAccountPopup';

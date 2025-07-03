@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { mixpanelTrack } from '@/background/service';
 import {
   FLOW_BIP44_PATH,
   HASH_ALGO_NUM_SHA3_256,

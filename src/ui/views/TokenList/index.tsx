@@ -8,7 +8,6 @@ import {
   CardMedia,
   Skeleton,
   CardContent,
-  Button,
   Switch,
   Typography,
 } from '@mui/material';
@@ -25,7 +24,6 @@ import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useCoins } from 'ui/hooks/useCoinHook';
 import { useWallet } from 'ui/utils';
 
-import CloseIcon from '../../assets/svg/close-icon.svg';
 import VerifiedIcon from '../../assets/svg/verfied-check.svg';
 
 import AddTokenConfirmation from './AddTokenConfirmation';

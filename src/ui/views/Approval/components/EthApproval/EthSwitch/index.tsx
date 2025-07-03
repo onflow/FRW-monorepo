@@ -1,5 +1,4 @@
-import { Stack, Box, Typography, Divider, CardMedia } from '@mui/material';
-import { WalletUtils } from '@onflow/fcl';
+import { Stack, Box, Typography, Divider } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';

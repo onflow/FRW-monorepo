@@ -9,7 +9,6 @@ import {
   ListItem,
   ListItemButton,
   Divider,
-  CardMedia,
   IconButton,
   Box,
 } from '@mui/material';

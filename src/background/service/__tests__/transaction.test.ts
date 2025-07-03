@@ -2,10 +2,7 @@ import type { TransactionStatus, TransactionExecutionStatus } from '@onflow/type
 import { describe, test, expect, beforeEach, vi, beforeAll } from 'vitest';
 
 import openapiService from '@/background/service/openapi';
-import { getValidData, setCachedData } from '@/background/utils/data-cache';
 import { type FlowNetwork } from '@/shared/types/network-types';
-import { TransferItem } from '@/shared/types/transaction-types';
-import { transferListKey, type TransferListStore } from '@/shared/utils/cache-data-keys';
 
 import transaction from '../transaction';
 

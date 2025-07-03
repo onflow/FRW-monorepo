@@ -1,11 +1,9 @@
 import { Typography, Button, Skeleton, Drawer, Tabs, Tab } from '@mui/material';
 import { Box } from '@mui/system';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 
 import eventBus from '@/eventBus';
-import { type ActiveAccountType } from '@/shared/types/wallet-types';
-import { consoleError } from '@/shared/utils/console-log';
 import { ButtonRow } from '@/ui/components/ButtonRow';
 import CoinsIcon from '@/ui/components/CoinsIcon';
 import { IconActivity, IconNfts } from '@/ui/components/iconfont';
@@ -16,7 +14,6 @@ import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useWallet } from '@/ui/utils';
 
-import { withPrefix } from '../../../shared/utils/address';
 import { CurrencyValue } from '../../components/TokenLists/CurrencyValue';
 import MoveBoard from '../MoveBoard';
 import NFTTab from '../NFT';

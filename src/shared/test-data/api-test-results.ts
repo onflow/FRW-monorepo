@@ -1,7 +1,5 @@
 import { INITIAL_OPENAPI_URL, WEB_NEXT_URL } from '@/shared/utils/domain-constants';
 
-import { CommonParams } from './test-groups';
-
 export type FetchDetail = {
   url: string;
   params: Record<string, unknown>;

@@ -1,5 +1,4 @@
 // Testing imports
-import * as bip39 from 'bip39';
 import encryptor from 'browser-passworder';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 

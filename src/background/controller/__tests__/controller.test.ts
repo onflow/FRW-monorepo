@@ -52,14 +52,7 @@ import { afterEach, beforeEach, describe, expect, it, vi, type MockedFunction } 
 // --- Other Specific Imports (ensure these remain as they were) ---
 
 // Change these imports to be named imports from '@/background/service'
-import {
-  keyringService,
-  signTextHistoryService,
-  mixpanelTrack,
-  userWalletService,
-  permissionService,
-  sessionService,
-} from '@/background/service';
+import { keyringService, signTextHistoryService } from '@/background/service';
 import * as findAddressWithPubKey from '@/background/utils/modules/findAddressWithPubKey';
 import { pk2PubKeyTuple } from '@/background/utils/modules/publicPrivateKey';
 import { tupleToPubKey } from '@/shared/types/key-types';

@@ -1,10 +1,9 @@
-import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 import { Box, Typography, Avatar, IconButton, CardMedia, Skeleton } from '@mui/material';
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router';
 
 import closex from 'ui/assets/closex.svg';
-import { useWallet, formatAddress, isEmoji } from 'ui/utils';
+import { formatAddress, isEmoji } from 'ui/utils';
 
 export const ContactCard = ({ contact, tokenInfo, isLoading = false }) => {
   const navigate = useNavigate();

@@ -1,6 +1,6 @@
 import { Button, Typography } from '@mui/material';
 import { Box } from '@mui/system';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import { PasswordInput } from '@/ui/components/password/PasswordInput';

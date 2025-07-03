@@ -1,4 +1,4 @@
-import { Stack, Box, Typography, CardMedia } from '@mui/material';
+import { Stack, Box, Typography } from '@mui/material';
 import * as fcl from '@onflow/fcl';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';

@@ -1,7 +1,6 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { Typography, IconButton, Box, Link, CardMedia } from '@mui/material';
-import BN from 'bignumber.js';
-import React, { useState, useEffect, useCallback } from 'react';
+import { Typography, IconButton, Box, Link } from '@mui/material';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import { consoleError } from '@/shared/utils/console-log';

@@ -12,7 +12,6 @@ import {
   Chip,
   Tooltip,
 } from '@mui/material';
-import { StyledEngineProvider } from '@mui/material/styles';
 import React, { useCallback } from 'react';
 
 import { type TransactionState } from '@/shared/types/transaction-types';

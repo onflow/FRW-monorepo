@@ -1,19 +1,5 @@
-import CloseIcon from '@mui/icons-material/Close';
-import {
-  Box,
-  Button,
-  ListItemButton,
-  Typography,
-  Drawer,
-  IconButton,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Avatar,
-  CardMedia,
-} from '@mui/material';
+import { Box, Button, ListItemButton, Typography, Drawer, ListItem } from '@mui/material';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router';
 
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import emojis from 'background/utils/emoji.json';

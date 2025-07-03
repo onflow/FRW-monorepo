@@ -5,11 +5,7 @@
 
 import encryptor from 'browser-passworder';
 
-import {
-  CURRENT_ID_KEY,
-  KEYRING_STATE_V2_KEY,
-  KEYRING_STATE_V3_KEY,
-} from '@/shared/types/keyring-types';
+import { CURRENT_ID_KEY, KEYRING_STATE_V3_KEY } from '@/shared/types/keyring-types';
 import { SIGN_ALGO_NUM_ECDSA_P256 } from '@/shared/utils/algo-constants';
 
 /**

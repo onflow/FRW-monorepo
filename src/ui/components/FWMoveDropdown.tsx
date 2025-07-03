@@ -2,18 +2,15 @@ import {
   Box,
   Typography,
   Avatar,
-  Skeleton,
   Select,
   MenuItem,
   FormControl,
-  InputLabel,
   type SelectChangeEvent,
 } from '@mui/material';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useEffect } from 'react';
 
 import { type Contact } from '@/shared/types/network-types';
-import { isValidEthereumAddress } from '@/shared/utils/address';
-import { useWallet, isEmoji, formatAddress } from 'ui/utils';
+import { isEmoji, formatAddress } from 'ui/utils';
 
 interface FWMoveDropdownProps {
   contacts: Contact[];

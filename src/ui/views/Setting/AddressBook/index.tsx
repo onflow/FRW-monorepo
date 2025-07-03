@@ -13,7 +13,6 @@ import {
   Skeleton,
 } from '@mui/material';
 import InputAdornment from '@mui/material/InputAdornment';
-import { StyledEngineProvider } from '@mui/material/styles';
 import _ from 'lodash';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';

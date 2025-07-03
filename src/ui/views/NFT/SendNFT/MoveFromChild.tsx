@@ -6,8 +6,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 
 import { type Contact } from '@/shared/types/network-types';
-import { type WalletAccount, type AccountDetails } from '@/shared/types/wallet-types';
-import { ensureEvmAddressPrefix, isValidEthereumAddress } from '@/shared/utils/address';
+import { type WalletAccount } from '@/shared/types/wallet-types';
+import { isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
 import IconFlow from '@/ui/components/iconfont/IconFlow';
 import SlideRelative from '@/ui/components/SlideRelative';

@@ -6,8 +6,6 @@ import { useNavigate } from 'react-router';
 import BackButtonIcon from '@/ui/components/iconfont/IconBackButton';
 import RegisterHeader from '@/ui/components/LandingPages/RegisterHeader';
 import SlideLeftRight from '@/ui/components/SlideLeftRight';
-import SlideRelative from '@/ui/components/SlideRelative';
-import { storage } from 'background/webapi';
 import { useWallet } from 'ui/utils';
 
 import ResetPage from './ResetPage';

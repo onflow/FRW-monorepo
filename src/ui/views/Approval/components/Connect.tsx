@@ -1,4 +1,4 @@
-import { Stack, Box, Typography, Divider, CardMedia } from '@mui/material';
+import { Box, CardMedia, Divider, Stack, Typography } from '@mui/material';
 import { WalletUtils } from '@onflow/fcl';
 import React, { useCallback, useEffect, useState } from 'react';
 
@@ -9,11 +9,8 @@ import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useWallet } from '@/ui/utils/WalletContext';
 import { authnServiceDefinition, serviceDefinition } from 'background/controller/serviceDefinition';
 import flowgrey from 'ui/assets/svg/flow-grey.svg';
-import Link from 'ui/assets/svg/link.svg';
 import linkGlobe from 'ui/assets/svg/linkGlobe.svg';
-import mainnetsvg from 'ui/assets/svg/mainnet.svg';
-import testnetsvg from 'ui/assets/svg/testnet.svg';
-import { LLPrimaryButton, LLSecondaryButton, LLConnectLoading } from 'ui/components';
+import { LLConnectLoading, LLPrimaryButton, LLSecondaryButton } from 'ui/components';
 
 import ShowSwitch from './ShowSwitch';
 

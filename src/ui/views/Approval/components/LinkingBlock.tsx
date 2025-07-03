@@ -1,18 +1,8 @@
-import {
-  Stack,
-  Box,
-  Typography,
-  Divider,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-} from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import { Stack, Box, Typography, Divider } from '@mui/material';
+import React from 'react';
 
-import { UserInfoResponse } from '@/shared/types/network-types';
 import IconCheck from 'ui/assets/check.svg';
 import Link from 'ui/assets/svg/link.svg';
-import { useWallet } from 'ui/utils';
 
 export const LinkingBlock = ({ image, accountTitle, userInfo }) => {
   return (

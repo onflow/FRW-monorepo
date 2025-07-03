@@ -24,12 +24,7 @@ import {
   type EvmNFTCollectionList,
 } from '../types/nft-types';
 import { type TransferItem } from '../types/transaction-types';
-import {
-  type MainAccount,
-  type WalletAccount,
-  type Currency,
-  type PublicKeyAccount,
-} from '../types/wallet-types';
+import { type MainAccount, type Currency, type PublicKeyAccount } from '../types/wallet-types';
 
 import { getCachedData, triggerRefresh } from './cache-data-access';
 import { type NetworkScripts } from './script-types';

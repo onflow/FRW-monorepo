@@ -1,4 +1,4 @@
-import { Box, Typography, Avatar, Skeleton } from '@mui/material';
+import { Box, Typography, Skeleton } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import React, { useState, useEffect, useCallback } from 'react';
 

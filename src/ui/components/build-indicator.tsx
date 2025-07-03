@@ -1,4 +1,4 @@
-import { Box, Chip, Tooltip, Typography } from '@mui/material';
+import { Box, Tooltip, Typography } from '@mui/material';
 import React, { useCallback } from 'react';
 
 import packageJson from '../../../package.json' assert { type: 'json' };
