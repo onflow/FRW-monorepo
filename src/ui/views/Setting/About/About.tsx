@@ -20,7 +20,7 @@ const About = () => {
 
   return (
     <div className="page">
-      <LLHeader title="" help={true} />
+      <LLHeader title="" help={true} goBackLink="/dashboard/setting" />
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
         {/* <img src={logo} alt='logo' className={classes.logo} /> */}

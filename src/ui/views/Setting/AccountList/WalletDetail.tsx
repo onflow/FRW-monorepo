@@ -26,7 +26,7 @@ import { LLHeader } from '@/ui/components';
 import { AccountCard } from '@/ui/components/account/account-card';
 import SettingsListItem from '@/ui/components/settings/setting-list-item';
 import SettingsSwitchCard from '@/ui/components/settings/settings-switch';
-import { useAddressHidden, toggleAddressHidden } from '@/ui/hooks/preference-hooks';
+import { useAccountHidden, toggleAccountHidden } from '@/ui/hooks/preference-hooks';
 import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { COLOR_WHITE_ALPHA_40_FFFFFF66, COLOR_WHITE_ALPHA_80_FFFFFFCC } from '@/ui/style/color';
@@ -66,7 +66,7 @@ const WalletDetail = () => {
   const isFreeGasFeeEnabled = useFeatureFlag('free_gas');
 
   // Use the new preference hook for hidden address status
-  const isHidden = useAddressHidden(userWallet?.address || '');
+  const isHidden = useAccountHidden(userWallet?.address || '');
 
   const handleErrorClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
@@ -97,7 +97,7 @@ const WalletDetail = () => {
 
   const toggleHiddenStatus = async () => {
     if (userWallet?.address) {
-      await toggleAddressHidden(userWallet.address);
+      await toggleAccountHidden(userWallet.address);
     }
   };
 
@@ -158,7 +158,11 @@ const WalletDetail = () => {
 
   return (
     <div className="page" style={{ display: 'flex', flexDirection: 'column' }}>
-      <LLHeader title={chrome.i18n.getMessage('Account')} help={false} />
+      <LLHeader
+        title={chrome.i18n.getMessage('Account')}
+        help={false}
+        goBackLink="/dashboard/setting/accountlist"
+      />
 
       <Box
         px="20px"

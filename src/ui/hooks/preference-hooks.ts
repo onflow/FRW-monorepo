@@ -17,29 +17,29 @@ export const useSupportedCurrencies = () => {
   return useCachedData<SupportedCurrenciesStore>(supportedCurrenciesKey());
 };
 
-export const useHiddenAddresses = () => {
+export const useHiddenAccounts = () => {
   const preferences = useUserData<PreferencesStore>(preferencesKey);
-  return preferences?.hiddenAddresses || [];
+  return preferences?.hiddenAccounts || [];
 };
 
-export const useAddressHidden = (address: string) => {
-  const hiddenAddresses = useHiddenAddresses();
-  return hiddenAddresses.includes(address);
+export const useAccountHidden = (address: string) => {
+  const hiddenAccounts = useHiddenAccounts();
+  return hiddenAccounts.includes(address);
 };
 
-export const toggleAddressHidden = async (address: string) => {
+export const toggleAccountHidden = async (address: string) => {
   const preferences = await getUserData<PreferencesStore>(preferencesKey);
-  const currentHiddenAddresses = preferences?.hiddenAddresses || [];
+  const currentHiddenAccounts = preferences?.hiddenAccounts || [];
 
-  const newHiddenAddresses = currentHiddenAddresses.includes(address)
-    ? currentHiddenAddresses.filter((addr) => addr !== address)
-    : [...currentHiddenAddresses, address];
+  const newHiddenAccounts = currentHiddenAccounts.includes(address)
+    ? currentHiddenAccounts.filter((addr) => addr !== address)
+    : [...currentHiddenAccounts, address];
 
   await setUserData<PreferencesStore>(preferencesKey, {
     ...preferences,
     displayCurrency: preferences?.displayCurrency || DEFAULT_CURRENCY,
-    hiddenAddresses: newHiddenAddresses,
+    hiddenAccounts: newHiddenAccounts,
   });
 
-  return !currentHiddenAddresses.includes(address);
+  return !currentHiddenAccounts.includes(address);
 };

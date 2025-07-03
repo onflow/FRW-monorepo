@@ -197,7 +197,11 @@ const ChangePassword = () => {
           height: '100%',
         }}
       >
-        <LLHeader title={chrome.i18n.getMessage('Change__Password')} help={false} />
+        <LLHeader
+          title={chrome.i18n.getMessage('Change__Password')}
+          help={false}
+          goBackLink="/dashboard/setting"
+        />
 
         <Box
           sx={{
