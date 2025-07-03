@@ -1,32 +1,22 @@
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
-import {
-  Typography,
-  List,
-  ListItemText,
-  ListItemIcon,
-  ListItem,
-  ListItemButton,
-  Divider,
-  CardMedia,
-  Box,
-} from '@mui/material';
+import { Box, List, ListItem, ListItemButton, ListItemIcon, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
 
 import {
-  type MainAccountWithBalance,
+  type Emoji,
   type MainAccount,
+  type MainAccountWithBalance,
   type WalletAccount,
   type WalletAccountWithBalance,
-  type Emoji,
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
+import storage from '@/shared/utils/storage';
 import { LLHeader } from '@/ui/components';
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useWallet } from '@/ui/utils';
-import { storage } from 'background/webapi';
-import { formatAddress } from 'ui/utils';
+import { formatAddress } from '@/ui/utils';
 
 const tempEmoji: Emoji[] = [
   {

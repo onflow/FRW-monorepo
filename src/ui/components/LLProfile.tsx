@@ -1,7 +1,7 @@
-import { Box, Typography, Avatar, Skeleton } from '@mui/material';
+import { Avatar, Box, Skeleton, Typography } from '@mui/material';
 import React from 'react';
 
-import { formatAddress, isEmoji } from 'ui/utils';
+import { formatAddress, isEmoji } from '@/ui/utils';
 
 export const LLProfile = ({ contact, isLoading = false }) => {
   const getName = (name: string) => {

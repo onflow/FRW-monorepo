@@ -1,11 +1,11 @@
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
-import { Button, Typography, DialogActions, CircularProgress, Box, Skeleton } from '@mui/material';
-import React, { useState, useEffect, useCallback } from 'react';
+import { Box, Button, CircularProgress, DialogActions, Skeleton, Typography } from '@mui/material';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { consoleError } from '@/shared/utils/console-log';
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
-import { useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 import { CustomDialog } from '../custom-dialog'; // Reuse the styled dialog base
 import { PasswordInput } from '../password/PasswordInput';

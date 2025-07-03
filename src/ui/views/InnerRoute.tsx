@@ -1,14 +1,13 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Routes, Route } from 'react-router';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Route, Routes } from 'react-router';
 
-import PrivateRoute from 'ui/components/PrivateRoute';
-import { useWallet, useWalletLoaded } from 'ui/utils';
-
-import Deposit from '../views/Deposit';
-import Enable from '../views/Enable';
+import PrivateRoute from '@/ui/components/PrivateRoute';
+import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';
 
 import Dashboard from './Dashboard';
 import Header from './Dashboard/Header';
+import Deposit from './Deposit';
+import Enable from './Enable';
 import ManageToken from './ManageToken';
 import CollectionDetail from './NFT/CollectionDetail';
 import Detail from './NFT/Detail';

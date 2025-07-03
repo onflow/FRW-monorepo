@@ -7,7 +7,7 @@ import { CustomDialog } from '@/ui/components/custom-dialog';
 import { LLPrimaryButton } from '@/ui/components/LLPrimaryButton';
 import { LLSecondaryButton } from '@/ui/components/LLSecondaryButton';
 import { LLWarningButton } from '@/ui/components/LLWarningButton';
-import { useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 export const GoogleWarningDialog = ({
   open,

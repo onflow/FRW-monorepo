@@ -1,13 +1,12 @@
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import { ListItem, ListItemButton, ListItemIcon, Typography, Box, Tooltip } from '@mui/material';
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 
 import {
   type WalletAccount,
   type ActiveChildType_depreciated,
   type WalletAddress,
 } from '@/shared/types/wallet-types';
-import AccountAvatar from '@/ui/components/account/account-avatar';
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import { useAccountBalance } from '@/ui/hooks/use-account-hooks';
 

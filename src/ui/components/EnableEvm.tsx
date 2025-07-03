@@ -1,7 +1,7 @@
 import { Box, CardMedia, Typography } from '@mui/material';
 import React from 'react';
 
-import enableBg from 'ui/assets/image/enableBg.png';
+import enableBg from '@/ui/assets/image/enableBg.png';
 
 export const EnableEvm = () => {
   return (

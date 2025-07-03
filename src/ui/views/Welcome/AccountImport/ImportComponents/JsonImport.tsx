@@ -2,22 +2,21 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import {
   Box,
   Button,
-  Typography,
-  TextField,
   IconButton,
-  TextareaAutosize,
   InputAdornment,
+  TextareaAutosize,
+  TextField,
+  Typography,
 } from '@mui/material';
 import React, { useState } from 'react';
 
+import { KEY_TYPE } from '@/shared/constant/algo-constants';
 import { type PublicKeyAccount } from '@/shared/types/wallet-types';
 import { consoleError } from '@/shared/utils/console-log';
+import { LLSpinner } from '@/ui/components';
 import PasswordTextarea from '@/ui/components/password/PasswordTextarea';
-import { useWallet } from '@/ui/utils/WalletContext';
-import { LLSpinner } from 'ui/components';
-
-import ErrorModel from '../../../../components/PopupModal/errorModel';
-import { KEY_TYPE } from '../../../../utils/modules/constants';
+import ErrorModel from '@/ui/components/PopupModal/errorModel';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 const JsonImport = ({
   onOpen,

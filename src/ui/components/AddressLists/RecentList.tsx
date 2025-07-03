@@ -1,11 +1,10 @@
-import { List, CardMedia, Typography, ButtonBase, Box } from '@mui/material';
-import { isEmpty } from 'lodash';
+import { Box, ButtonBase, CardMedia, List, Typography } from '@mui/material';
 import React from 'react';
 
-import emptyAddress from 'ui/assets/emptyAddress.svg';
-import { isEmoji } from 'ui/utils';
+import emptyAddress from '@/ui/assets/emptyAddress.svg';
+import { isEmoji } from '@/ui/utils';
 
-import { LLContactCard, FWContactCard } from '..';
+import { FWContactCard, LLContactCard } from '..';
 
 const RecentList = ({ filteredContacts, isLoading, handleClick }) => {
   return (

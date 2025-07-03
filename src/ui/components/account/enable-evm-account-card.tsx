@@ -1,12 +1,4 @@
-import {
-  Typography,
-  Box,
-  Card,
-  CardActionArea,
-  CardMedia,
-  CardActions,
-  IconButton,
-} from '@mui/material';
+import { Typography, Box, Card, CardActionArea, CardMedia } from '@mui/material';
 import React from 'react';
 import { useNavigate } from 'react-router';
 

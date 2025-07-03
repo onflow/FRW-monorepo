@@ -1,9 +1,8 @@
-import { Stack, Box, Typography, CardMedia } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import * as fcl from '@onflow/fcl';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-// import { CHAINS_ENUM } from 'consts';
 import {
   MAINNET_CHAIN_ID,
   TESTNET_CHAIN_ID,
@@ -17,8 +16,8 @@ import {
   LLSecondaryButton,
 } from '@/ui/components';
 import { useApproval } from '@/ui/hooks/use-approval';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { formatAddress } from '@/ui/utils';
-import { useWallet } from '@/ui/utils/WalletContext';
 
 import IconWithPlaceholder from '../EthApprovalComponents/IconWithPlaceholder';
 interface ConnectProps {

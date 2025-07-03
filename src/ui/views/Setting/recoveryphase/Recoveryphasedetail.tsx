@@ -1,11 +1,11 @@
-import { Typography, Button } from '@mui/material';
+import { Button, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation } from 'react-router';
 
 import { LLHeader } from '@/ui/components';
 import IconCopy from '@/ui/components/iconfont/IconCopy';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 const RecoveryPhasesDetail = () => {
   const location = useLocation();

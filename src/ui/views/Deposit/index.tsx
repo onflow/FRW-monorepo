@@ -1,11 +1,11 @@
-import { Typography, Box, AlertTitle, Alert } from '@mui/material';
+import { Alert, AlertTitle, Box, Typography } from '@mui/material';
 import QRCodeStyling from 'qr-code-styling';
 import React, { useEffect, useRef } from 'react';
 
+import { LLHeader } from '@/ui/components';
 import { NetworkIndicator } from '@/ui/components/NetworkIndicator';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { LLHeader } from 'ui/components';
 
 const qrCode = new QRCodeStyling({
   width: 160,

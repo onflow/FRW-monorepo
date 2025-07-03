@@ -8,7 +8,7 @@ import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
 import { LLHeader } from '@/ui/components/LLHeader';
 import { PasswordInput } from '@/ui/components/password/PasswordInput';
-import { useWallet } from '@/ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 import { GoogleWarningDialog } from './google-warning';
 import { ProfileBackupSelectionDialog } from './profile-backup-selection';

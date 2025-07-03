@@ -1,14 +1,14 @@
 import {
-  Typography,
+  Avatar,
+  IconButton,
+  List,
   ListItem,
   ListItemAvatar,
-  ListItemText,
-  ListItemIcon,
-  Skeleton,
   ListItemButton,
-  List,
-  IconButton,
-  Avatar,
+  ListItemIcon,
+  ListItemText,
+  Skeleton,
+  Typography,
 } from '@mui/material';
 import { Box } from '@mui/system';
 import React from 'react';
@@ -17,15 +17,14 @@ import { useNavigate } from 'react-router';
 import { type CoinItem } from '@/shared/types/coin-types';
 import { type ActiveAccountType } from '@/shared/types/wallet-types';
 import { type ChildAccountFtStore } from '@/shared/utils/cache-data-keys';
+import plus from '@/ui/assets/svg/plus.svg';
+import slider from '@/ui/assets/svg/slider.svg';
+import VerifiedIcon from '@/ui/assets/svg/verfied-check.svg';
+import { CurrencyValue } from '@/ui/components/TokenLists/CurrencyValue';
 import { TokenBalance } from '@/ui/components/TokenLists/TokenBalance';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-
-import plus from '../../assets/svg/plus.svg';
-import slider from '../../assets/svg/slider.svg';
-import VerifiedIcon from '../../assets/svg/verfied-check.svg';
-import { CurrencyValue } from '../../components/TokenLists/CurrencyValue';
 
 const ActionButtons = ({ managePath, createPath }) => {
   const navigate = useNavigate();

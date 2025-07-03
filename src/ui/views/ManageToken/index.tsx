@@ -2,23 +2,22 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import HelpOutlineRoundedIcon from '@mui/icons-material/HelpOutlineRounded';
 import SearchIcon from '@mui/icons-material/Search';
 import {
-  List,
   Box,
+  Card,
+  CardContent,
+  CardMedia,
+  IconButton,
   Input,
   InputAdornment,
-  Card,
-  CardMedia,
+  List,
   Skeleton,
-  CardContent,
-  Button,
-  Typography,
   Switch,
-  IconButton,
   Tooltip,
+  Typography,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { StyledEngineProvider } from '@mui/material/styles';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 // import { useNavigate } from 'react-router';
@@ -26,8 +25,8 @@ import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
 import VerifiedIcon from '@/ui/assets/svg/verfied-check.svg';
 import IconCreate from '@/ui/components/iconfont/IconCreate';
 import TokenItem from '@/ui/components/TokenLists/TokenItem';
+import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useCoins } from 'ui/hooks/useCoinHook';
 
 const ManageToken = () => {
   const navigate = useNavigate();

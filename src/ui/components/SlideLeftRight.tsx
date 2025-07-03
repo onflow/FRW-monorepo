@@ -1,4 +1,3 @@
-import { Box, Slide } from '@mui/material';
 import React from 'react';
 
 const SlideLeftRight = React.forwardRef(

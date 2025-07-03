@@ -1,9 +1,9 @@
-import { List, ListSubheader, CardMedia, Typography, ButtonBase, Box } from '@mui/material';
+import { Box, ButtonBase, CardMedia, List, ListSubheader, Typography } from '@mui/material';
 import { groupBy } from 'lodash';
 import React, { useEffect, useState } from 'react';
 
+import emptyAddress from '@/ui/assets/emptyAddress.svg';
 import { LLContactCard } from '@/ui/components';
-import emptyAddress from 'ui/assets/emptyAddress.svg';
 
 const AddressBookList = ({ filteredContacts, isLoading, handleClick }) => {
   const [grouped, setGrouped] = useState<any>([]);

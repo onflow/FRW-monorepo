@@ -1,11 +1,11 @@
 import {
-  CircularProgress,
-  IconButton,
   Button,
-  Typography,
+  CircularProgress,
   FormControl,
+  IconButton,
   Input,
   InputAdornment,
+  Typography,
 } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -16,7 +16,7 @@ import EmailIcon from '@/ui/assets/alternate-email.svg';
 import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
 import CancelIcon from '@/ui/components/iconfont/IconClose';
 import SlideRelative from '@/ui/components/SlideRelative';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 const PickNickname = ({
   handleSwitchTab,

@@ -1,8 +1,8 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import { Box, MenuItem, Typography, IconButton, Drawer } from '@mui/material';
+import { Box, Drawer, IconButton, MenuItem, Typography } from '@mui/material';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams, useLocation } from 'react-router';
+import { useLocation, useNavigate, useParams } from 'react-router';
 
 import type {
   CoinItem,
@@ -11,16 +11,16 @@ import type {
 } from '@/shared/types/coin-types';
 import { getPriceProvider } from '@/shared/types/network-types';
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
+import tips from '@/ui/assets/svg/tips.svg';
+import WarningIcon from '@/ui/assets/svg/warning.svg';
 import SecurityCard from '@/ui/components/SecurityCard';
 import StorageUsageCard from '@/ui/components/StorageUsageCard';
+import PriceCard from '@/ui/components/TokenLists/PriceCard';
 import { useAllTokenInfo, useEvmCustomTokens } from '@/ui/hooks/use-coin-hooks';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import tips from 'ui/assets/svg/tips.svg';
-import WarningIcon from 'ui/assets/svg/warning.svg';
-import { useWallet } from 'ui/utils';
 
-import PriceCard from '../../components/TokenLists/PriceCard';
 import OnRampList from '../Wallet/OnRampList';
 
 import ClaimTokenCard from './ClaimTokenCard';

@@ -2,24 +2,20 @@ import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
-  Button,
-  InputAdornment,
-  Typography,
+  CardMedia,
   Drawer,
   IconButton,
-  TextField,
+  InputAdornment,
   ListItem,
   ListItemButton,
-  Avatar,
-  CardMedia,
+  TextField,
+  Typography,
 } from '@mui/material';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import popAdd from 'ui/assets/svg/popAdd.svg';
-import popLock from 'ui/assets/svg/popLock.svg';
-import selected from 'ui/assets/svg/selected.svg';
-import { useWallet } from 'ui/utils';
+import selected from '@/ui/assets/svg/selected.svg';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 const MoveCollectionSelect = ({
   showMoveBoard,

@@ -1,21 +1,21 @@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
-  Stack,
-  Box,
-  Typography,
-  Divider,
   Accordion,
-  AccordionSummary,
   AccordionDetails,
+  AccordionSummary,
+  Box,
+  Divider,
+  Stack,
+  Typography,
 } from '@mui/material';
 import * as fcl from '@onflow/fcl';
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { LLPrimaryButton, LLSecondaryButton } from '@/ui/components';
 import { useApproval } from '@/ui/hooks/use-approval';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
-import { useWallet } from '@/ui/utils/WalletContext';
 
 import './github-dark-dimmed.css';
 import ShowSwitch from './ShowSwitch';
