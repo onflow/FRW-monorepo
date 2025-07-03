@@ -5,8 +5,7 @@ import type { WalletController as WalletControllerClass } from '@/background/con
 import type { OpenApiService } from '@/background/service/openapi';
 import { walletLoadedKey } from '@/shared/utils/cache-data-keys';
 import type { IExtractFromPromise } from '@/shared/utils/type';
-
-import { useCachedData } from '../hooks/use-data';
+import { useCachedData } from '@/ui/hooks/use-data';
 
 export type WalletControllerType = {
   [key in keyof WalletControllerClass]: WalletControllerClass[key] extends (

@@ -4,10 +4,9 @@ import React, { useState } from 'react';
 import { KEY_TYPE } from '@/shared/constant/algo-constants';
 import { type PublicKeyAccount } from '@/shared/types/wallet-types';
 import { LLSpinner } from '@/ui/components';
+import KeyPathInput from '@/ui/components/KeyPathInputs';
+import PasswordTextarea from '@/ui/components/password/PasswordTextarea';
 import { useWallet } from '@/ui/hooks/use-wallet';
-
-import KeyPathInput from '../../../../components/KeyPathInputs';
-import PasswordTextarea from '../../../../components/password/PasswordTextarea';
 
 const SeedPhraseImport = ({
   onOpen,

@@ -5,10 +5,9 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router';
 
 import { consoleError } from '@/shared/utils/console-log';
+import warning from '@/ui/assets/image/warning.png';
+import { LLPrimaryButton } from '@/ui/components';
 import { useWallet } from '@/ui/hooks/use-wallet';
-
-import warning from '../../../assets/image/warning.png';
-import { LLPrimaryButton } from '../../../components';
 
 const StyledInput = styled(InputBase)(({ theme }) => ({
   zIndex: 1,

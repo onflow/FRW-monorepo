@@ -4,9 +4,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
+import theme from '@/ui/style/LLTheme';
 import { formatAddress, isEmoji } from '@/ui/utils';
-
-import theme from '../style/LLTheme';
 
 const tempEmoji = {
   emoji: '🥥',

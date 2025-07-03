@@ -10,10 +10,9 @@ import {
 import React, { useState } from 'react';
 
 import { consoleError } from '@/shared/utils/console-log';
+import networkLink from '@/ui/assets/svg/networkLink.svg';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { networkColor } from '@/ui/style/color';
-
-import networkLink from '../../../assets/svg/networkLink.svg';
 
 const bgColor = (network: string) => {
   return `${networkColor(network)}14`;

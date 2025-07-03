@@ -1,4 +1,5 @@
-import IconFlow from '../../assets/flow.svg';
+import IconFlow from '@/ui/assets/flow.svg';
+
 import IconMetamask from '../../assets/metamask.svg';
 import { isInSameOriginIframe } from '../../utils/iframe';
 import notice from '../notice';

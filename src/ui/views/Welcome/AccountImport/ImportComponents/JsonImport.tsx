@@ -15,9 +15,8 @@ import { type PublicKeyAccount } from '@/shared/types/wallet-types';
 import { consoleError } from '@/shared/utils/console-log';
 import { LLSpinner } from '@/ui/components';
 import PasswordTextarea from '@/ui/components/password/PasswordTextarea';
+import ErrorModel from '@/ui/components/PopupModal/errorModel';
 import { useWallet } from '@/ui/hooks/use-wallet';
-
-import ErrorModel from '../../../../components/PopupModal/errorModel';
 
 const JsonImport = ({
   onOpen,

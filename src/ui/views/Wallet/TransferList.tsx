@@ -19,10 +19,9 @@ import React from 'react';
 
 import { formatString } from '@/shared/utils/address';
 import activity from '@/ui/assets/svg/activity.svg';
+import { TokenBalance } from '@/ui/components/TokenLists/TokenBalance';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
-
-import { TokenBalance } from '../../components/TokenLists/TokenBalance';
 
 dayjs.extend(relativeTime);
 

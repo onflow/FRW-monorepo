@@ -12,15 +12,14 @@ import { LLSpinner } from '@/ui/components';
 import { Profile } from '@/ui/components/Send/Profile';
 import SlideRelative from '@/ui/components/SlideRelative';
 import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
+import { CurrencyValue } from '@/ui/components/TokenLists/CurrencyValue';
+import { TokenBalance } from '@/ui/components/TokenLists/TokenBalance';
 import { WarningStorageLowSnackbar } from '@/ui/components/WarningStorageLowSnackbar';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useContact } from '@/ui/hooks/useContactHook';
 import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
-
-import { CurrencyValue } from '../../components/TokenLists/CurrencyValue';
-import { TokenBalance } from '../../components/TokenLists/TokenBalance';
 
 interface TransferConfirmationProps {
   transactionState: TransactionState;

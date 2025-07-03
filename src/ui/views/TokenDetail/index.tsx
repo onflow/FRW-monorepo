@@ -15,12 +15,12 @@ import tips from '@/ui/assets/svg/tips.svg';
 import WarningIcon from '@/ui/assets/svg/warning.svg';
 import SecurityCard from '@/ui/components/SecurityCard';
 import StorageUsageCard from '@/ui/components/StorageUsageCard';
+import PriceCard from '@/ui/components/TokenLists/PriceCard';
 import { useAllTokenInfo, useEvmCustomTokens } from '@/ui/hooks/use-coin-hooks';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 
-import PriceCard from '../../components/TokenLists/PriceCard';
 import OnRampList from '../Wallet/OnRampList';
 
 import ClaimTokenCard from './ClaimTokenCard';

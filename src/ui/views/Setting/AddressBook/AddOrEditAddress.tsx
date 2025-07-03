@@ -9,9 +9,8 @@ import { useForm, type FieldValues } from 'react-hook-form';
 import type { Contact } from '@/shared/types/network-types';
 import { withPrefix } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
+import { LLFormHelperText, LLPrimaryButton, LLSecondaryButton } from '@/ui/components';
 import { useWallet } from '@/ui/hooks/use-wallet';
-
-import { LLFormHelperText, LLPrimaryButton, LLSecondaryButton } from '../../../components';
 
 const StyledInput = styled(InputBase)(({ theme }) => ({
   zIndex: 1,

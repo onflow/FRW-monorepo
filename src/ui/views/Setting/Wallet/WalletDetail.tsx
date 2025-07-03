@@ -25,12 +25,11 @@ import {
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
+import editEmoji from '@/ui/assets/svg/editEmoji.svg';
 import { LLHeader } from '@/ui/components';
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
 import { useWallet } from '@/ui/hooks/use-wallet';
-
-import editEmoji from '../../../assets/svg/editEmoji.svg';
 
 import EditProfile from './EditProfile';
 

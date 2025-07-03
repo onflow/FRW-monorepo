@@ -1,9 +1,10 @@
 import { Box, Tooltip, Typography } from '@mui/material';
 import React, { useCallback } from 'react';
 
+import { COLOR_PRIMARY_TEXT_282828 } from '@/ui/style/color';
+
 import packageJson from '../../../package.json' assert { type: 'json' };
 const { version } = packageJson;
-import { COLOR_PRIMARY_TEXT_282828 } from '../style/color';
 
 const deploymentEnv = process.env.DEPLOYMENT_ENV || 'local';
 const isBeta = process.env.IS_BETA === 'true';

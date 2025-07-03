@@ -1,6 +1,6 @@
 import React from 'react';
 
-import warningIcon from '../assets/svg/lowStorage.svg';
+import warningIcon from '@/ui/assets/svg/lowStorage.svg';
 
 import WarningSnackbar from './WarningSnackbar';
 interface WarningStorageLowSnackbarProps {

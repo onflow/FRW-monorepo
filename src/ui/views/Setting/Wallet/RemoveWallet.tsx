@@ -5,10 +5,9 @@ import { useNavigate } from 'react-router';
 
 import { type UserInfoResponse } from '@/shared/types/network-types';
 import { withPrefix } from '@/shared/utils/address';
+import reset from '@/ui/assets/svg/reset.svg';
 import { LLSecondaryButton } from '@/ui/components';
 import { useWallet } from '@/ui/hooks/use-wallet';
-
-import reset from '../../../assets/svg/reset.svg';
 
 const RemoveWallet = ({ hideBackButton = false }) => {
   const navigate = useNavigate();

@@ -6,9 +6,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import { consoleError } from '@/shared/utils/console-log';
+import { LLPrimaryButton, LLSpinner } from '@/ui/components';
 import { useWallet } from '@/ui/hooks/use-wallet';
-
-import { LLPrimaryButton, LLSpinner } from '../../../components';
 
 const StyledInput = styled(InputBase)(({ theme }) => ({
   zIndex: 1,

@@ -3,13 +3,11 @@ import { Route, Routes } from 'react-router';
 
 import PrivateRoute from '@/ui/components/PrivateRoute';
 import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';
-import {} from '@/ui/utils';
-
-import Deposit from '../views/Deposit';
-import Enable from '../views/Enable';
 
 import Dashboard from './Dashboard';
 import Header from './Dashboard/Header';
+import Deposit from './Deposit';
+import Enable from './Enable';
 import ManageToken from './ManageToken';
 import CollectionDetail from './NFT/CollectionDetail';
 import Detail from './NFT/Detail';

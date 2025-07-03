@@ -8,13 +8,13 @@ import { ButtonRow } from '@/ui/components/ButtonRow';
 import CoinsIcon from '@/ui/components/CoinsIcon';
 import { IconActivity, IconNfts } from '@/ui/components/iconfont';
 import LLComingSoon from '@/ui/components/LLComingSoonWarning';
+import { CurrencyValue } from '@/ui/components/TokenLists/CurrencyValue';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useChildAccountFt } from '@/ui/hooks/use-coin-hooks';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 
-import { CurrencyValue } from '../../components/TokenLists/CurrencyValue';
 import MoveBoard from '../MoveBoard';
 import NFTTab from '../NFT';
 import NftEvm from '../NftEvm';

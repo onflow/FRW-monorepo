@@ -25,14 +25,13 @@ import { type WalletAddress } from '@/shared/types/wallet-types';
 import { isValidAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
 import { checkAddressBookContacts, filterContacts } from '@/shared/utils/contact-utils';
+import AccountsList from '@/ui/components/AddressLists/AccountsList';
+import AddressBookList from '@/ui/components/AddressLists/AddressBookList';
+import RecentList from '@/ui/components/AddressLists/RecentList';
+import SearchList from '@/ui/components/AddressLists/SearchList';
 import IconAbout from '@/ui/components/iconfont/IconAbout';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useContacts } from '@/ui/hooks/useContactHook';
-
-import AccountsList from '../../components/AddressLists/AccountsList';
-import AddressBookList from '../../components/AddressLists/AddressBookList';
-import RecentList from '../../components/AddressLists/RecentList';
-import SearchList from '../../components/AddressLists/SearchList';
 
 export enum SendPageTabOptions {
   Recent = 'Recent',

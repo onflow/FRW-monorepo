@@ -2,14 +2,13 @@ import { Box, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
+import circlecheck from '@/ui/assets/image/circlecheck.png';
+import goto from '@/ui/assets/image/goto.png';
+import Mobile from '@/ui/assets/image/mobile.png';
+import Pc from '@/ui/assets/image/pc.png';
+import QR from '@/ui/assets/image/QR2.png';
 import { LLHeader } from '@/ui/components';
 import { useWallet } from '@/ui/hooks/use-wallet';
-
-import circlecheck from '../../../assets/image/circlecheck.png';
-import goto from '../../../assets/image/goto.png';
-import Mobile from '../../../assets/image/mobile.png';
-import Pc from '../../../assets/image/pc.png';
-import QR from '../../../assets/image/QR2.png';
 
 import WalletConnect from './WalletConnect';
 

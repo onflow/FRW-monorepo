@@ -10,13 +10,12 @@ import { LLHeader } from '@/ui/components';
 import CancelIcon from '@/ui/components/iconfont/IconClose';
 import { ContactCard } from '@/ui/components/Send/ContactCard';
 import SlideRelative from '@/ui/components/SlideRelative';
+import { CurrencyValue } from '@/ui/components/TokenLists/CurrencyValue';
+import { TokenBalance } from '@/ui/components/TokenLists/TokenBalance';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useContact } from '@/ui/hooks/useContactHook';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
-
-import { CurrencyValue } from '../../components/TokenLists/CurrencyValue';
-import { TokenBalance } from '../../components/TokenLists/TokenBalance';
 
 import TransferAmount from './TransferAmount';
 import TransferConfirmation from './TransferConfirmation';

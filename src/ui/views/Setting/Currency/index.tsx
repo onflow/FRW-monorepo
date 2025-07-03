@@ -5,7 +5,6 @@ import { consoleError } from '@/shared/utils/console-log';
 import { LLHeader } from '@/ui/components';
 import { useCurrency, useSupportedCurrencies } from '@/ui/hooks/preference-hooks';
 import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';
-import {} from '@/ui/utils';
 
 const CurrencySettings = () => {
   const walletLoaded = useWalletLoaded();

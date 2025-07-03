@@ -1,12 +1,11 @@
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import { ListItem, Stack, Divider, Box, Drawer, Typography } from '@mui/material';
+import { Box, Divider, Drawer, ListItem, Stack, Typography } from '@mui/material';
 import React, { useState } from 'react';
 
 import { ContactType, type Contact } from '@/shared/types/network-types';
+import { LLContactCard, LLPrimaryButton, LLSecondaryButton } from '@/ui/components';
 import IconSubtract from '@/ui/components/iconfont/IconSubtract';
-
-import { LLContactCard, LLPrimaryButton, LLSecondaryButton } from '../../../components';
 
 interface AddressBookItemProps {
   index: number;

@@ -14,16 +14,15 @@ import { useNavigate } from 'react-router';
 import type { UserInfoResponse } from '@/shared/types/network-types';
 import { type MainAccount, type WalletAccount } from '@/shared/types/wallet-types';
 import { consoleError } from '@/shared/utils/console-log';
+import lock from '@/ui/assets/svg/sidebar-lock.svg';
+import plus from '@/ui/assets/svg/sidebar-plus.svg';
 import { AccountListing } from '@/ui/components/account/account-listing';
+import ErrorModel from '@/ui/components/PopupModal/errorModel';
 import { ProfileItemBase } from '@/ui/components/profile/profile-item-base';
 import { MenuItem } from '@/ui/components/sidebar/menu-item';
 import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { COLOR_WHITE_ALPHA_10_FFFFFF1A, COLOR_WHITE_ALPHA_40_FFFFFF66 } from '@/ui/style/color';
-
-import lock from '../../../assets/svg/sidebar-lock.svg';
-import plus from '../../../assets/svg/sidebar-plus.svg';
-import ErrorModel from '../../../components/PopupModal/errorModel';
 
 import AddAccountPopup from './AddAccountPopup';
 
