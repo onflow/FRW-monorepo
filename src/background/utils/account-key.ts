@@ -1,17 +1,17 @@
 import { type PublicKeyTuple, tupleToPubKey } from '@/shared/types/key-types';
 import { type PublicKeyAccount } from '@/shared/types/wallet-types';
 
-import type { AccountKeyRequest } from '../../shared/types/network-types';
 import {
+  DEFAULT_WEIGHT,
   FLOW_BIP44_PATH,
   HASH_ALGO_NUM_DEFAULT,
-  SIGN_ALGO_NUM_DEFAULT,
-  DEFAULT_WEIGHT,
   HASH_ALGO_NUM_SHA2_256,
   HASH_ALGO_NUM_SHA3_256,
+  SIGN_ALGO_NUM_DEFAULT,
   SIGN_ALGO_NUM_ECDSA_P256,
   SIGN_ALGO_NUM_ECDSA_secp256k1,
-} from '../../shared/utils/algo-constants';
+} from '../../shared/constant/algo-constants';
+import type { AccountKeyRequest } from '../../shared/types/network-types';
 
 import { seedWithPathAndPhrase2PublicPrivateKey } from './modules/publicPrivateKey';
 

@@ -1,5 +1,5 @@
 import * as fcl from '@onflow/fcl';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import openapiService from '@/background/service/openapi';
 import {
@@ -7,12 +7,12 @@ import {
   HASH_ALGO_NUM_SHA3_256,
   SIGN_ALGO_NUM_ECDSA_P256,
   SIGN_ALGO_NUM_ECDSA_secp256k1,
-} from '@/shared/utils/algo-constants';
+} from '@/shared/constant/algo-constants';
 
 import {
-  getOrCheckAccountsWithPublicKey,
-  getOrCheckAccountsByPublicKeyTuple,
   getAccountsByPublicKeyTuple,
+  getOrCheckAccountsByPublicKeyTuple,
+  getOrCheckAccountsWithPublicKey,
 } from '../findAddressWithPubKey';
 
 // Mock FCL and userWalletService

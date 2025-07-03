@@ -49,6 +49,7 @@ import { generateRandomId } from '@/background/utils/random-id';
 import { notification, storage } from '@/background/webapi';
 import { openIndexPage } from '@/background/webapi/tab';
 import eventBus from '@/eventBus';
+import { FLOW_BIP44_PATH } from '@/shared/constant/algo-constants';
 import {
   EVM_ENDPOINT,
   HTTP_STATUS_CONFLICT,
@@ -85,7 +86,6 @@ import {
   withPrefix,
 } from '@/shared/utils/address';
 import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
-import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 import {
   accountBalanceKey,
   childAccountAllowTypesKey,

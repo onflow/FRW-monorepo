@@ -1,6 +1,6 @@
 // Testing imports
 import encryptor from 'browser-passworder';
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock dependencies at the beginning before any imports
 vi.mock('../../../shared/utils/storage', () => ({
@@ -45,18 +45,18 @@ vi.mock('bip39', () => ({
 
 // Internal imports - after all mocks are defined
 import {
+  FLOW_BIP44_PATH,
+  SIGN_ALGO_NUM_DEFAULT,
+  SIGN_ALGO_NUM_ECDSA_P256,
+  SIGN_ALGO_NUM_ECDSA_secp256k1,
+} from '@/shared/constant/algo-constants';
+import {
   CURRENT_ID_KEY,
   KEYRING_STATE_CURRENT_KEY,
   KEYRING_STATE_V1_KEY,
   KEYRING_STATE_V2_KEY,
   type KeyringStateV2,
 } from '@/shared/types/keyring-types';
-import {
-  FLOW_BIP44_PATH,
-  SIGN_ALGO_NUM_DEFAULT,
-  SIGN_ALGO_NUM_ECDSA_P256,
-  SIGN_ALGO_NUM_ECDSA_secp256k1,
-} from '@/shared/utils/algo-constants';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
 
 import storage from '../../../shared/utils/storage';

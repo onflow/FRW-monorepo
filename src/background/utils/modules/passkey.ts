@@ -5,14 +5,14 @@ import {
   HASH_ALGO,
   KEY_TYPE,
   SIGN_ALGO,
-} from '../../../shared/utils/algo-constants';
+} from '../../../shared/constant/algo-constants';
 
 import { decodeArray } from './base64';
 import { addCredential, readSettings } from './settings';
 import {
+  decodeAttestationObject,
   decodeAuthenticatorData,
   decodeClientDataJSON,
-  decodeAttestationObject,
 } from './WebAuthnDecoder';
 
 function getRandomBytes(length) {

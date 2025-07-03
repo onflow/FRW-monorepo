@@ -5,6 +5,7 @@ import * as ethUtil from 'ethereumjs-util';
 import { getApp } from 'firebase/app';
 import { getAuth, signInAnonymously } from 'firebase/auth/web-extension';
 
+import { DEFAULT_WEIGHT, FLOW_BIP44_PATH } from '@/shared/constant/algo-constants';
 import {
   combinePubPkString,
   type PublicPrivateKeyTuple,
@@ -34,7 +35,6 @@ import {
   isValidFlowAddress,
   withPrefix,
 } from '@/shared/utils/address';
-import { DEFAULT_WEIGHT, FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 import {
   accountBalanceKey,
   accountBalanceRefreshRegex,

@@ -10,6 +10,7 @@ import {
 } from '@mui/material';
 import React, { useState } from 'react';
 
+import { KEY_TYPE } from '@/shared/constant/algo-constants';
 import { type PublicKeyAccount } from '@/shared/types/wallet-types';
 import { consoleError } from '@/shared/utils/console-log';
 import { LLSpinner } from '@/ui/components';
@@ -17,7 +18,6 @@ import PasswordTextarea from '@/ui/components/password/PasswordTextarea';
 import { useWallet } from '@/ui/hooks/use-wallet';
 
 import ErrorModel from '../../../../components/PopupModal/errorModel';
-import { KEY_TYPE } from '../../../../utils/modules/constants';
 
 const JsonImport = ({
   onOpen,

@@ -1,20 +1,20 @@
 import { initWasm } from '@trustwallet/wallet-core';
 
 import {
-  type PublicPrivateKeyTuple,
-  type PublicKeyTuple,
   type PrivateKeyTuple,
+  type PublicKeyTuple,
+  type PublicPrivateKeyTuple,
 } from '@/shared/types/key-types';
 import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
 import { consoleError } from '@/shared/utils/console-log';
 
 import {
   FLOW_BIP44_PATH,
+  HASH_ALGO_NUM_SHA2_256,
   HASH_ALGO_NUM_SHA3_256,
   SIGN_ALGO_NUM_ECDSA_P256,
   SIGN_ALGO_NUM_ECDSA_secp256k1,
-  HASH_ALGO_NUM_SHA2_256,
-} from '../../../shared/utils/algo-constants';
+} from '../../../shared/constant/algo-constants';
 import storage from '../../../shared/utils/storage';
 
 const jsonToKey = async (json: string, password: string) => {
@@ -304,16 +304,16 @@ const verifySignature = async (signature: string, message: unknown) => {
 };
 
 export {
-  jsonToKey,
-  pk2PubKey as pk2PubKeyTuple,
-  getPublicKeyFromPrivateKey,
-  pkTuple2PubKeyTuple as pkTuple2PubKey,
-  seed2PublicPrivateKey_depreciated as seed2PublicPrivateKey,
-  signMessageHash,
-  signWithKey,
-  seed2PublicPrivateKeyTemp,
-  seedWithPathAndPhrase2PublicPrivateKey,
   formPubKey,
   formPubKeyTuple,
+  getPublicKeyFromPrivateKey,
+  jsonToKey,
+  pk2PubKey as pk2PubKeyTuple,
+  pkTuple2PubKeyTuple as pkTuple2PubKey,
+  seed2PublicPrivateKey_depreciated as seed2PublicPrivateKey,
+  seed2PublicPrivateKeyTemp,
+  seedWithPathAndPhrase2PublicPrivateKey,
+  signMessageHash,
+  signWithKey,
   verifySignature,
 };

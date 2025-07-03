@@ -1,26 +1,26 @@
 import { useMemo } from 'react';
 
+import { HASH_ALGO_NUM_DEFAULT, SIGN_ALGO_NUM_DEFAULT } from '@/shared/constant/algo-constants';
 import { MAINNET_CHAIN_ID } from '@/shared/types/network-types';
 import {
-  type WalletAccount,
   type MainAccount,
+  type WalletAccount,
   getActiveAccountTypeForAddress,
 } from '@/shared/types/wallet-types';
-import { SIGN_ALGO_NUM_DEFAULT, HASH_ALGO_NUM_DEFAULT } from '@/shared/utils/algo-constants';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 
 import {
+  useAccountBalance,
   useActiveAccounts,
   useCurrentId,
   useKeyringIds,
-  useAccountBalance,
+  useMainAccountStorageBalance,
   useMainAccounts,
+  usePayer,
+  usePendingAccountCreationTransactions,
+  useRegisterStatus,
   useUserInfo,
   useUserWallets,
-  useRegisterStatus,
-  usePayer,
-  useMainAccountStorageBalance,
-  usePendingAccountCreationTransactions,
 } from './use-account-hooks';
 
 const INITIAL_WALLET: WalletAccount = {

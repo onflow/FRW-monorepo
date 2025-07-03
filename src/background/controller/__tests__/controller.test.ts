@@ -55,9 +55,9 @@ import { afterEach, beforeEach, describe, expect, it, vi, type MockedFunction } 
 import { keyringService, signTextHistoryService } from '@/background/service';
 import * as findAddressWithPubKey from '@/background/utils/modules/findAddressWithPubKey';
 import { pk2PubKeyTuple } from '@/background/utils/modules/publicPrivateKey';
+import { HASH_ALGO_NUM_DEFAULT, SIGN_ALGO_NUM_DEFAULT } from '@/shared/constant/algo-constants';
 import { tupleToPubKey } from '@/shared/types/key-types';
 import { TESTNET_CHAIN_ID } from '@/shared/types/network-types';
-import { HASH_ALGO_NUM_DEFAULT, SIGN_ALGO_NUM_DEFAULT } from '@/shared/utils/algo-constants';
 
 import notificationService from '../notification';
 import providerController from '../provider/controller';

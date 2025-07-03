@@ -7,11 +7,11 @@ import HDWallet from 'ethereum-hdwallet';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { isValidFlowAddress, withPrefix } from '@/shared/utils/address';
 import {
   HASH_ALGO_NUM_SHA2_256,
   SIGN_ALGO_NUM_ECDSA_secp256k1,
-} from '@/shared/utils/algo-constants';
+} from '@/shared/constant/algo-constants';
+import { isValidFlowAddress, withPrefix } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
 import { FCLWalletConnectMethod, type FCLWalletConnectSyncAccountInfo } from '@/shared/utils/type';
 import AllSet from '@/ui/components/LandingPages/AllSet';

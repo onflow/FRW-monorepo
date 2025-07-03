@@ -7,6 +7,11 @@ import encryptor from 'browser-passworder';
 import * as ethUtil from 'ethereumjs-util';
 
 import {
+  FLOW_BIP44_PATH,
+  SIGN_ALGO_NUM_ECDSA_P256,
+  SIGN_ALGO_NUM_ECDSA_secp256k1,
+} from '@/shared/constant/algo-constants';
+import {
   combinePubPkTuple,
   type PrivateKeyTuple,
   type PublicKeyTuple,
@@ -29,11 +34,6 @@ import {
   type VaultEntryV3,
 } from '@/shared/types/keyring-types';
 import { type LoggedInAccount } from '@/shared/types/wallet-types';
-import {
-  FLOW_BIP44_PATH,
-  SIGN_ALGO_NUM_ECDSA_P256,
-  SIGN_ALGO_NUM_ECDSA_secp256k1,
-} from '@/shared/utils/algo-constants';
 import { consoleError, consoleInfo, consoleWarn } from '@/shared/utils/console-log';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
 import storage from '@/shared/utils/storage';

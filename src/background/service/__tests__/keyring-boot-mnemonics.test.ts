@@ -1,10 +1,10 @@
 // Testing imports
 import encryptor from 'browser-passworder';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Internal imports
+import { FLOW_BIP44_PATH } from '@/shared/constant/algo-constants';
 import { CURRENT_ID_KEY, KEYRING_STATE_V2_KEY } from '@/shared/types/keyring-types';
-import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 
 // Mock dependencies
 vi.mock('../../../shared/utils/storage', () => ({
