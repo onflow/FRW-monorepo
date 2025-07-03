@@ -2,7 +2,7 @@ import React, { type ReactNode, createContext } from 'react';
 import type { Object } from 'ts-toolbelt';
 
 import type { WalletController as WalletControllerClass } from '@/background/controller/wallet';
-import type { OpenApiService } from '@/background/service/openapi';
+import type { OpenApiService } from '@/core/service/openapi';
 import { walletLoadedKey } from '@/shared/utils/cache-data-keys';
 import type { IExtractFromPromise } from '@/shared/utils/type';
 import { useCachedData } from '@/ui/hooks/use-data';

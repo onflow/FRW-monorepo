@@ -1,8 +1,8 @@
 import * as fcl from '@onflow/fcl';
 import { type AccountKey } from '@onflow/typedefs';
 
-import openapiService from '@/background/service/openapi';
-import userWalletService from '@/background/service/userWallet';
+import openapiService from '@/core/service/openapi';
+import userWalletService from '@/core/service/userWallet';
 import type { PublicKeyTuple } from '@/shared/types/key-types';
 import { type AccountKeyRequest } from '@/shared/types/network-types';
 import { type PublicKeyAccount } from '@/shared/types/wallet-types';

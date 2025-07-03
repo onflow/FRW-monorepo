@@ -1,5 +1,5 @@
-import { preferenceService, keyringService } from '@/background/service';
-import { type PreferenceAccount } from '@/background/service/preference';
+import { keyringService, preferenceService } from '@/core/service';
+import { type PreferenceAccount } from '@/core/service/preference';
 
 class BaseController {
   getCurrentAccount = async () => {

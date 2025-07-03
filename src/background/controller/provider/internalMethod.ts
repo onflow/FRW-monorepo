@@ -1,4 +1,4 @@
-import { preferenceService, keyringService } from '@/background/service';
+import { keyringService, preferenceService } from '@/core/service';
 
 const tabCheckin = ({
   data: {

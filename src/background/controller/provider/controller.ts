@@ -13,9 +13,9 @@ import {
   permissionService,
   sessionService,
   signTextHistoryService,
-} from '@/background/service';
-import { getAccountsByPublicKeyTuple } from '@/background/utils/modules/findAddressWithPubKey';
-import { signWithKey } from '@/background/utils/modules/publicPrivateKey';
+} from '@/core/service';
+import { getAccountsByPublicKeyTuple } from '@/core/utils/modules/findAddressWithPubKey';
+import { signWithKey } from '@/core/utils/modules/publicPrivateKey';
 import { EVM_ENDPOINT } from '@/shared/constant/domain-constants';
 import { tupleToPrivateKey } from '@/shared/types/key-types';
 import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';

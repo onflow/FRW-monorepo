@@ -130,7 +130,7 @@ vi.mock('firebase/auth/web-extension', () => ({
 }));
 
 // Mock storage utility
-vi.mock('@/background/utils/storage', () => ({
+vi.mock('@/core/utils/storage', () => ({
   default: {
     get: vi.fn().mockResolvedValue({}),
     set: vi.fn().mockResolvedValue(undefined),

@@ -3,7 +3,7 @@ import encryptor from 'browser-passworder';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Internal imports
-import keyringService from '@/background/service/keyring';
+import keyringService from '@/core/service/keyring';
 import { FLOW_BIP44_PATH } from '@/shared/constant/algo-constants';
 import { CURRENT_ID_KEY, KEYRING_STATE_V2_KEY } from '@/shared/types/keyring-types';
 import storage from '@/shared/utils/storage';

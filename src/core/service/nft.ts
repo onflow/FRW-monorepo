@@ -1,18 +1,18 @@
 import * as fcl from '@onflow/fcl';
 
-import { type NFTModelV2, type NftCollection } from '@/shared/types/network-types';
+import { type NftCollection, type NFTModelV2 } from '@/shared/types/network-types';
 import { type NFTCollectionData, type NFTCollections } from '@/shared/types/nft-types';
 import {
-  nftCatalogCollectionsKey,
-  nftCatalogCollectionsRefreshRegex,
-  nftCollectionKey,
-  nftCollectionRefreshRegex,
   childAccountAllowTypesKey,
   childAccountAllowTypesRefreshRegex,
   childAccountNftsKey,
   childAccountNFTsRefreshRegex,
+  nftCatalogCollectionsKey,
+  nftCatalogCollectionsRefreshRegex,
+  nftCollectionKey,
   nftCollectionListKey,
   nftCollectionListRefreshRegex,
+  nftCollectionRefreshRegex,
   nftListKey,
   nftListRefreshRegex,
 } from '@/shared/utils/cache-data-keys';

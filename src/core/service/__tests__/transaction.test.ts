@@ -1,7 +1,7 @@
-import type { TransactionStatus, TransactionExecutionStatus } from '@onflow/typedefs';
-import { describe, test, expect, beforeEach, vi, beforeAll } from 'vitest';
+import type { TransactionExecutionStatus, TransactionStatus } from '@onflow/typedefs';
+import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import openapiService from '@/background/service/openapi';
+import openapiService from '@/core/service/openapi';
 import { type FlowNetwork } from '@/shared/types/network-types';
 
 import transaction from '../transaction';
@@ -509,7 +509,7 @@ vi.mock('@/shared/utils/cache-data-access', () => ({
   }),
 }));
 
-vi.mock('@/background/utils/data-cache', () => ({
+vi.mock('@/core/utils/data-cache', () => ({
   getValidData: vi.fn().mockImplementation(async (key) => {
     return mockStorageState.session.get(key);
   }),

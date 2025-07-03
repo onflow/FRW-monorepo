@@ -10,7 +10,7 @@ vi.mock('../wallet', () => ({
   },
 }));
 
-vi.mock('@/background/utils/modules/findAddressWithPubKey', () => ({
+vi.mock('@/core/utils/modules/findAddressWithPubKey', () => ({
   getAccountsByPublicKeyTuple: vi.fn(),
 }));
 
@@ -52,9 +52,9 @@ import { afterEach, beforeEach, describe, expect, it, vi, type MockedFunction } 
 // --- Other Specific Imports (ensure these remain as they were) ---
 
 // Change these imports to be named imports from '@/background/service'
-import { keyringService, signTextHistoryService } from '@/background/service';
-import * as findAddressWithPubKey from '@/background/utils/modules/findAddressWithPubKey';
-import { pk2PubKeyTuple } from '@/background/utils/modules/publicPrivateKey';
+import { keyringService, signTextHistoryService } from '@/core/service';
+import * as findAddressWithPubKey from '@/core/utils/modules/findAddressWithPubKey';
+import { pk2PubKeyTuple } from '@/core/utils/modules/publicPrivateKey';
 import { HASH_ALGO_NUM_DEFAULT, SIGN_ALGO_NUM_DEFAULT } from '@/shared/constant/algo-constants';
 import { tupleToPubKey } from '@/shared/types/key-types';
 import { TESTNET_CHAIN_ID } from '@/shared/types/network-types';

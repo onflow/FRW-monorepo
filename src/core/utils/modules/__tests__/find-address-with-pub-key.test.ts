@@ -1,7 +1,7 @@
 import * as fcl from '@onflow/fcl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import openapiService from '@/background/service/openapi';
+import openapiService from '@/core/service/openapi';
 import {
   HASH_ALGO_NUM_SHA2_256,
   HASH_ALGO_NUM_SHA3_256,

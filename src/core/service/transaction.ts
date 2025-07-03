@@ -4,8 +4,8 @@ import { type TransferItem } from '@/shared/types/transaction-types';
 import { isValidEthereumAddress, isValidFlowAddress } from '@/shared/utils/address';
 import {
   transferListKey,
-  type TransferListStore,
   transferListRefreshRegex,
+  type TransferListStore,
 } from '@/shared/utils/cache-data-keys';
 import { consoleError } from '@/shared/utils/console-log';
 

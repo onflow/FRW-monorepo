@@ -3,7 +3,7 @@ import Grid from '@mui/material/Grid';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
-import { pubKeyTupleToAccountKey } from '@/background/utils/account-key';
+import { pubKeyTupleToAccountKey } from '@/core/utils/account-key';
 import { consoleError } from '@/shared/utils/console-log';
 import { LLHeader } from '@/ui/components';
 import IconCopy from '@/ui/components/iconfont/IconCopy';

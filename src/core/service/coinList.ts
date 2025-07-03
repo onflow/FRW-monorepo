@@ -1,22 +1,22 @@
 import {
   type CadenceTokenInfo,
-  type ExtendedTokenInfo,
   type EvmTokenInfo,
+  type ExtendedTokenInfo,
 } from '@/shared/types/coin-types';
 import { isValidEthereumAddress, isValidFlowAddress } from '@/shared/utils/address';
 import {
   cadenceTokenInfoKey,
   cadenceTokenInfoRefreshRegex,
-  type ChildAccountFtStore,
   childAccountFtKey,
+  childAccountFtRefreshRegex,
   coinListKey,
   coinListRefreshRegex,
   evmTokenInfoKey,
   evmTokenInfoRefreshRegex,
   supportedCurrenciesKey,
   supportedCurrenciesRefreshRegex,
+  type ChildAccountFtStore,
   type SupportedCurrenciesStore,
-  childAccountFtRefreshRegex,
 } from '@/shared/utils/cache-data-keys';
 import { consoleError } from '@/shared/utils/console-log';
 

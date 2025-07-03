@@ -20,7 +20,6 @@ import eventBus from '@/shared/utils/message/eventBus';
 import { Message } from '@/shared/utils/messaging';
 import storage from '@/shared/utils/storage';
 
-import notificationService from './controller/notification';
 import {
   addressBookService,
   coinListService,
@@ -40,9 +39,12 @@ import {
   transactionService,
   userInfoService,
   userWalletService,
-} from './service';
-import { getFirbaseConfig } from './utils/firebaseConfig';
-import { setEnvironmentBadge } from './utils/setEnvironmentBadge';
+} from '../core/service';
+import { getFirbaseConfig } from '../core/utils/firebaseConfig';
+import { setEnvironmentBadge } from '../core/utils/setEnvironmentBadge';
+
+import notificationService from './controller/notification';
+
 const { PortMessage } = Message;
 
 const chromeWindow = await chrome.windows.getCurrent();

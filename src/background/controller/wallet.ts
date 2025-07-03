@@ -9,6 +9,8 @@ import { getAuth } from 'firebase/auth/web-extension';
 import { encode } from 'rlp';
 import web3, { TransactionError, Web3 } from 'web3';
 
+import notification from '@/background/webapi/notification';
+import { openIndexPage } from '@/background/webapi/tab';
 import {
   addressBookService,
   coinListService,
@@ -27,27 +29,41 @@ import {
   transactionService,
   userInfoService,
   userWalletService,
-} from '@/background/service';
-import { type Keyring, KEYRING_CLASS, type KeyringType } from '@/background/service/keyring';
-import { replaceNftKeywords } from '@/background/utils';
+} from '@/core/service';
+import { type Keyring, KEYRING_CLASS, type KeyringType } from '@/core/service/keyring';
+import { HDKeyring } from '@/core/service/keyring/hdKeyring';
+import { getScripts } from '@/core/service/openapi';
+import type { ConnectedSite } from '@/core/service/permission';
+import type { PreferenceAccount } from '@/core/service/preference';
+import {
+  addPendingAccountCreationTransaction,
+  addPlaceholderAccount,
+  loadAccountBalance,
+  removePendingAccountCreationTransaction,
+} from '@/core/service/userWallet';
+import { replaceNftKeywords } from '@/core/utils';
 import {
   getAccountKey,
   pubKeyAccountToAccountKey,
   pubKeySignAlgoToAccountKey,
-} from '@/background/utils/account-key';
+} from '@/core/utils/account-key';
 import {
-  findAddressWithPK,
-  findAddressWithSeed,
-} from '@/background/utils/modules/findAddressWithPK';
+  getValidData,
+  registerRefreshListener,
+  setCachedData,
+  triggerRefresh,
+} from '@/core/utils/data-cache';
+import { getEmojiList } from '@/core/utils/emoji-util';
+import erc20ABI from '@/core/utils/erc20.abi.json';
+import { findAddressWithPK, findAddressWithSeed } from '@/core/utils/modules/findAddressWithPK';
+import { getOrCheckAccountsByPublicKeyTuple } from '@/core/utils/modules/findAddressWithPubKey';
 import {
   formPubKeyTuple,
   jsonToKey,
   pk2PubKeyTuple,
   seedWithPathAndPhrase2PublicPrivateKey,
-} from '@/background/utils/modules/publicPrivateKey';
-import { generateRandomId } from '@/background/utils/random-id';
-import notification from '@/background/webapi/notification';
-import { openIndexPage } from '@/background/webapi/tab';
+} from '@/core/utils/modules/publicPrivateKey';
+import { generateRandomId } from '@/core/utils/random-id';
 import { FLOW_BIP44_PATH } from '@/shared/constant/algo-constants';
 import {
   EVM_ENDPOINT,
@@ -124,26 +140,6 @@ import { convertToIntegerAmount, validateAmount } from '@/shared/utils/number';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import { type CategoryScripts } from '@/shared/utils/script-types';
 import storage from '@/shared/utils/storage';
-
-import { HDKeyring } from '../service/keyring/hdKeyring';
-import { getScripts } from '../service/openapi';
-import type { ConnectedSite } from '../service/permission';
-import type { PreferenceAccount } from '../service/preference';
-import {
-  addPendingAccountCreationTransaction,
-  addPlaceholderAccount,
-  loadAccountBalance,
-  removePendingAccountCreationTransaction,
-} from '../service/userWallet';
-import {
-  getValidData,
-  registerRefreshListener,
-  setCachedData,
-  triggerRefresh,
-} from '../utils/data-cache';
-import { getEmojiList } from '../utils/emoji-util';
-import erc20ABI from '../utils/erc20.abi.json';
-import { getOrCheckAccountsByPublicKeyTuple } from '../utils/modules/findAddressWithPubKey';
 
 import BaseController from './base';
 import notificationService from './notification';

@@ -1,7 +1,7 @@
 import {
-  type FungibleTokenInfo,
   type CustomFungibleTokenInfo,
   type EvmCustomTokenInfo,
+  type FungibleTokenInfo,
 } from '@/shared/types/coin-types';
 import { MAINNET_CHAIN_ID } from '@/shared/types/network-types';
 import { tokenListKey, tokenListRefreshRegex } from '@/shared/utils/cache-data-keys';
