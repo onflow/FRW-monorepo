@@ -1,5 +1,6 @@
 import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
+import { BrowserRouter } from 'react-router';
 
 import { CopyIcon } from '@/ui/assets/icons/CopyIcon';
 import { CurrencyIcon } from '@/ui/assets/icons/settings/Currency';
@@ -18,9 +19,11 @@ const meta: Meta<typeof SettingsListItem> = {
   },
   decorators: [
     (Story) => (
-      <div style={{ background: '#1A1A1A', padding: '1rem', color: 'white', maxWidth: 400 }}>
-        <Story />
-      </div>
+      <BrowserRouter>
+        <div style={{ background: '#1A1A1A', padding: '1rem', color: 'white', maxWidth: 400 }}>
+          <Story />
+        </div>
+      </BrowserRouter>
     ),
   ],
 };
