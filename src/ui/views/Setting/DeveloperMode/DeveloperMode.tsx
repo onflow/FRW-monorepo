@@ -89,7 +89,7 @@ const DeveloperMode = () => {
   };
 
   return (
-    <div className="page">
+    <Box sx={{ padding: '0', height: '100%' }}>
       <LLHeader
         title={chrome.i18n.getMessage('Developer__Settings')}
         help={false}
@@ -120,7 +120,7 @@ const DeveloperMode = () => {
           }}
         />
       </Box>
-      <Fade in={developerModeOn}>
+      {developerModeOn && (
         <Box sx={{ pb: '20px' }}>
           {emulatorFeatureEnabled && (
             <Box
@@ -390,8 +390,8 @@ const DeveloperMode = () => {
             </CardActionArea>
           </Box>
         </Box>
-      </Fade>
-    </div>
+      )}
+    </Box>
   );
 };
 

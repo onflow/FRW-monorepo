@@ -9,6 +9,7 @@ interface LLHeaderProps {
   title: string | JSX.Element;
   help: boolean | JSX.Element;
   goBackLink?: string; // Optional link
+  right?: React.ReactNode;
 }
 
 export const LLHeader = (props: LLHeaderProps) => {
@@ -42,20 +43,22 @@ export const LLHeader = (props: LLHeaderProps) => {
           {props.title}
         </Typography>
       </Grid>
-      {/* <Grid2 size={1}> */}
-      {/* </Grid2> */}
-      {props.help && (
-        <Grid size={1} sx={{ pl: 0 }}>
-          <a href="https://wallet.flow.com/contact" target="_blank">
-            <IconButton>
-              <Tooltip title={chrome.i18n.getMessage('Need__Help')} arrow>
-                {/* <a href="https://wallet.flow.com/contact" target='_blank'> */}
-                <HelpOutlineRoundedIcon sx={{ color: 'icon.navi' }} />
-                {/* </a> */}
-              </Tooltip>
-            </IconButton>
-          </a>
+      {props.right ? (
+        <Grid size={1} sx={{ pl: 0, display: 'flex', justifyContent: 'flex-end' }}>
+          {props.right}
         </Grid>
+      ) : (
+        props.help && (
+          <Grid size={1} sx={{ pl: 0 }}>
+            <a href="https://wallet.flow.com/contact" target="_blank">
+              <IconButton>
+                <Tooltip title={chrome.i18n.getMessage('Need__Help')} arrow>
+                  <HelpOutlineRoundedIcon sx={{ color: 'icon.navi' }} />
+                </Tooltip>
+              </IconButton>
+            </a>
+          </Grid>
+        )
       )}
     </Grid>
   );

@@ -113,7 +113,7 @@ const Profile = () => {
           navigate('/unlock');
         });
       } else {
-        wallet.signOutWallet().then(() => {
+        wallet.lockAdd().then(() => {
           openIndexPage('welcome?add=true');
         });
       }
