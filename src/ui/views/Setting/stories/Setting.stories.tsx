@@ -6,7 +6,7 @@ import { useUserInfo as useUserInfoMock } from '@/ui/hooks/use-account-hooks.moc
 import { useUserData } from '@/ui/hooks/use-data.mock';
 import { useWallet as useWalletMock } from '@/ui/hooks/use-wallet.mock';
 import { useNetwork } from '@/ui/hooks/useNetworkHook.mock';
-import { useProfiles } from '@/ui/hooks/useProfileHook.mock';
+import { USE_PROFILES_MOCK, useProfiles } from '@/ui/hooks/useProfileHook.mock';
 
 import SettingTab from '../index';
 
@@ -77,7 +77,7 @@ export const Default: Story = {
       return undefined;
     });
     useProfiles.mockReturnValue({
-      ...useProfiles(),
+      ...USE_PROFILES_MOCK,
       profileIds: [],
       userInfo: undefined,
     });
@@ -117,7 +117,7 @@ export const WithProfile: Story = {
       return undefined;
     });
     useProfiles.mockReturnValue({
-      ...useProfiles(),
+      ...USE_PROFILES_MOCK,
       profileIds: ['1', '2'],
       userInfo: {
         avatar: 'https://lilico.app/api/avatar/beam/120/avatar',
