@@ -1,25 +1,19 @@
-import CloseIcon from '@mui/icons-material/Close';
 import {
   Box,
   Button,
-  ListItemButton,
-  Typography,
-  Drawer,
-  IconButton,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Avatar,
-  CardMedia,
-  TextField,
   CircularProgress,
+  Drawer,
+  ListItem,
+  ListItemButton,
+  TextField,
+  Typography,
 } from '@mui/material';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
+import emojis from '@/shared/constant/emoji.json';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
-import emojis from 'background/utils/emoji.json';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 interface MoveBoardProps {
   showMoveBoard: boolean;

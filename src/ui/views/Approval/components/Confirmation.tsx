@@ -1,4 +1,4 @@
-import { Stack, Box } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import * as fcl from '@onflow/fcl';
 import dedent from 'dedent';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -6,16 +6,14 @@ import { useTranslation } from 'react-i18next';
 
 import { type UserInfoResponse } from '@/shared/types/network-types';
 import {
-  LLPrimaryButton,
-  LLSecondaryButton,
   LLConnectLoading,
   LLLinkingLoading,
+  LLPrimaryButton,
+  LLSecondaryButton,
 } from '@/ui/components';
 import { useApproval } from '@/ui/hooks/use-approval';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
-import { useWallet } from '@/ui/utils/WalletContext';
-
-// import { CHAINS_ENUM } from 'consts';
 
 import './github-dark-dimmed.css';
 

@@ -1,24 +1,24 @@
-import { Typography, Box, List, Divider, Alert, Snackbar } from '@mui/material';
+import { Alert, Box, Divider, List, Snackbar, Typography } from '@mui/material';
 import LinearProgress from '@mui/material/LinearProgress';
-import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useLocation } from 'react-router';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useLocation, useParams } from 'react-router';
 
-import { storage } from '@/background/webapi';
 import type { StorageInfo } from '@/shared/types/network-types';
 import { type Emoji } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress, isValidFlowAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
+import storage from '@/shared/utils/storage';
 import { EditIcon } from '@/ui/assets/icons/settings/Edit';
 import { LLHeader } from '@/ui/components';
 import { AccountCard } from '@/ui/components/account/account-card';
 import SettingsListItem from '@/ui/components/settings/setting-list-item';
 import SettingsSwitchCard from '@/ui/components/settings/settings-switch';
-import { useAccountHidden, toggleAccountHidden } from '@/ui/hooks/preference-hooks';
+import { toggleAccountHidden, useAccountHidden } from '@/ui/hooks/preference-hooks';
 import { useMainAccount } from '@/ui/hooks/use-account-hooks';
 import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { COLOR_WHITE_ALPHA_40_FFFFFF66, COLOR_WHITE_ALPHA_80_FFFFFFCC } from '@/ui/style/color';
-import { useWallet } from 'ui/utils';
 
 import EditAccount from './EditAccount';
 

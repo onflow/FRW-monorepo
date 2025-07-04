@@ -4,9 +4,9 @@ import { withRouter } from 'storybook-addon-remix-react-router';
 
 import * as useAccountHooks from '@/ui/hooks/use-account-hooks';
 import { useUserData } from '@/ui/hooks/use-data.mock';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useNetwork } from '@/ui/hooks/useNetworkHook.mock';
 import { useProfiles } from '@/ui/hooks/useProfileHook.mock';
-import { useWallet } from '@/ui/utils';
 
 import SettingTab from '../index';
 

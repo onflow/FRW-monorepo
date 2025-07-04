@@ -1,14 +1,4 @@
-import {
-  Box,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  MenuItem,
-  FormControl,
-  Select,
-  Typography,
-} from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import React from 'react';
 
 const stepBox = () => {

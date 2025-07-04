@@ -1,23 +1,20 @@
-import { Typography, Button, Skeleton, Drawer, Tabs, Tab } from '@mui/material';
+import { Button, Drawer, Skeleton, Tab, Tabs, Typography } from '@mui/material';
 import { Box } from '@mui/system';
-import React, { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router';
 
-import eventBus from '@/eventBus';
-import { type ActiveAccountType } from '@/shared/types/wallet-types';
-import { consoleError } from '@/shared/utils/console-log';
+import eventBus from '@/shared/utils/message/eventBus';
 import { ButtonRow } from '@/ui/components/ButtonRow';
 import CoinsIcon from '@/ui/components/CoinsIcon';
 import { IconActivity, IconNfts } from '@/ui/components/iconfont';
 import LLComingSoon from '@/ui/components/LLComingSoonWarning';
+import { CurrencyValue } from '@/ui/components/TokenLists/CurrencyValue';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useChildAccountFt } from '@/ui/hooks/use-coin-hooks';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useWallet } from '@/ui/utils';
 
-import { withPrefix } from '../../../shared/utils/address';
-import { CurrencyValue } from '../../components/TokenLists/CurrencyValue';
 import MoveBoard from '../MoveBoard';
 import NFTTab from '../NFT';
 import NftEvm from '../NftEvm';

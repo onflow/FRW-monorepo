@@ -1,17 +1,7 @@
 import AndroidIcon from '@mui/icons-material/Android';
 import AppleIcon from '@mui/icons-material/Apple';
-import {
-  List,
-  ListItemText,
-  ListItemIcon,
-  ListItem,
-  ListItemButton,
-  Divider,
-  CardMedia,
-  IconButton,
-  Box,
-} from '@mui/material';
-import React, { useState, useEffect, useCallback } from 'react';
+import { Box, Divider, IconButton, List } from '@mui/material';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
 
 import { AboutIcon } from '@/ui/assets/icons/settings/About';
@@ -29,9 +19,8 @@ import { LLHeader } from '@/ui/components';
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import { ProfileItem } from '@/ui/components/profile/profile-item';
 import SettingsListItem from '@/ui/components/settings/setting-list-item';
-import TopLinkButton from '@/ui/components/settings/top-link-button';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useWallet } from '@/ui/utils';
 // Feature flags
 const SHOW_DEVICES = false;
 

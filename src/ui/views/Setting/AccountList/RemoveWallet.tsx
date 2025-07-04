@@ -1,15 +1,13 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { Typography, Box, IconButton, Skeleton, Button } from '@mui/material';
-import React, { useState, useEffect, useCallback } from 'react';
+import { Box, Button, IconButton, Skeleton, Typography } from '@mui/material';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import { type UserInfoResponse } from '@/shared/types/network-types';
 import { withPrefix } from '@/shared/utils/address';
+import reset from '@/ui/assets/svg/reset.svg';
 import { LLSecondaryButton } from '@/ui/components';
-import { useWallet } from 'ui/utils';
-import { openInternalPageInTab } from 'ui/utils/webapi';
-
-import reset from '../../../assets/svg/reset.svg';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 const RemoveWallet = ({ hideBackButton = false }) => {
   const navigate = useNavigate();

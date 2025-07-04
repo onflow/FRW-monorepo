@@ -1,12 +1,12 @@
-import { Typography, Box, CardMedia } from '@mui/material';
+import { Box, CardMedia, Typography } from '@mui/material';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
 import packageJson from '@/../package.json';
+import discord from '@/ui/assets/image/discord.png';
+import lilo from '@/ui/assets/image/lilo.png';
+import X from '@/ui/assets/svg/xLogo.svg';
 import { LLHeader } from '@/ui/components';
-import discord from 'ui/assets/image/discord.png';
-import lilo from 'ui/assets/image/lilo.png';
-import X from 'ui/assets/svg/xLogo.svg';
 const { version } = packageJson;
 const BETA_VERSION = process.env.BETA_VERSION;
 // import '../../Unlock/style.css';

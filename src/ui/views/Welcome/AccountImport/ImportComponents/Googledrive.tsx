@@ -5,7 +5,7 @@ import { consoleError } from '@/shared/utils/console-log';
 import { LLSpinner } from '@/ui/components';
 import BrowserWarning from '@/ui/components/BrowserWarning';
 import IconGoogleDrive from '@/ui/components/iconfont/IconGoogleDrive';
-import { useWallet } from '@/ui/utils/WalletContext';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 const Googledrive = ({ setErrorMessage, setShowError, handleGoogleAccountsFound }) => {
   const wallets = useWallet();

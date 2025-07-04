@@ -1,29 +1,27 @@
 import {
   Box,
-  Typography,
-  IconButton,
-  ListItemText,
-  Select,
-  MenuItem,
-  ListItemIcon,
-  FormControl,
-  InputAdornment,
-  Input,
   Chip,
+  FormControl,
+  IconButton,
+  Input,
+  InputAdornment,
+  ListItemIcon,
+  ListItemText,
+  MenuItem,
+  Select,
   Tooltip,
+  Typography,
 } from '@mui/material';
-import { StyledEngineProvider } from '@mui/material/styles';
 import React, { useCallback } from 'react';
 
 import { type TransactionState } from '@/shared/types/transaction-types';
 import CancelIcon from '@/ui/components/iconfont/IconClose';
 import IconSwitch from '@/ui/components/iconfont/IconSwitch';
 import SlideRelative from '@/ui/components/SlideRelative';
+import { CurrencyValue } from '@/ui/components/TokenLists/CurrencyValue';
+import { TokenBalance } from '@/ui/components/TokenLists/TokenBalance';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useCoins } from '@/ui/hooks/useCoinHook';
-
-import { CurrencyValue } from '../../components/TokenLists/CurrencyValue';
-import { TokenBalance } from '../../components/TokenLists/TokenBalance';
 
 const TransferAmount = ({
   transactionState,

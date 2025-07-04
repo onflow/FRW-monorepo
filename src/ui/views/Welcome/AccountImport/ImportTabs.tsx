@@ -1,14 +1,14 @@
-import { Box, Tabs, Tab, Typography } from '@mui/material';
+import { Box, Tab, Tabs, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 
 import { type PublicKeyAccount } from '@/shared/types/wallet-types';
 import { QrCodeIcon } from '@/ui/assets/icons/QrCodeIcon';
 import ErrorModel from '@/ui/components/PopupModal/errorModel';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import {
   COLOR_GREEN_FLOW_DARKMODE_00EF8B,
   COLOR_GREEN_FLOW_DARKMODE_00EF8B_10pc,
 } from '@/ui/style/color';
-import { useWallet } from '@/ui/utils/WalletContext';
 import Googledrive from '@/ui/views/Welcome/AccountImport/ImportComponents/Googledrive';
 import JsonImport from '@/ui/views/Welcome/AccountImport/ImportComponents/JsonImport';
 import KeyImport from '@/ui/views/Welcome/AccountImport/ImportComponents/KeyImport';

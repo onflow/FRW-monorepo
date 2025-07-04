@@ -1,20 +1,19 @@
-import { Stack, Box, Typography, Divider, CardMedia } from '@mui/material';
+import { Box, CardMedia, Divider, Stack, Typography } from '@mui/material';
 import { WalletUtils } from '@onflow/fcl';
 import React, { useCallback, useEffect, useState } from 'react';
 
+import {
+  authnServiceDefinition,
+  serviceDefinition,
+} from '@/background/controller/serviceDefinition';
 import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
+import flowgrey from '@/ui/assets/svg/flow-grey.svg';
+import linkGlobe from '@/ui/assets/svg/linkGlobe.svg';
+import { LLConnectLoading, LLPrimaryButton, LLSecondaryButton } from '@/ui/components';
 import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
 import { useApproval } from '@/ui/hooks/use-approval';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
-import { useWallet } from '@/ui/utils/WalletContext';
-import { authnServiceDefinition, serviceDefinition } from 'background/controller/serviceDefinition';
-import flowgrey from 'ui/assets/svg/flow-grey.svg';
-import Link from 'ui/assets/svg/link.svg';
-import linkGlobe from 'ui/assets/svg/linkGlobe.svg';
-import mainnetsvg from 'ui/assets/svg/mainnet.svg';
-import testnetsvg from 'ui/assets/svg/testnet.svg';
-import { LLPrimaryButton, LLSecondaryButton, LLConnectLoading } from 'ui/components';
-// import { CHAINS_ENUM } from 'consts';
 
 import ShowSwitch from './ShowSwitch';
 

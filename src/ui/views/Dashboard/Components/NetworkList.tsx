@@ -1,19 +1,18 @@
 import {
   Box,
-  Typography,
-  Select,
-  MenuItem,
-  FormControl,
-  type SelectChangeEvent,
   CircularProgress,
+  FormControl,
+  MenuItem,
+  Select,
+  Typography,
+  type SelectChangeEvent,
 } from '@mui/material';
 import React, { useState } from 'react';
 
 import { consoleError } from '@/shared/utils/console-log';
+import networkLink from '@/ui/assets/svg/networkLink.svg';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { networkColor } from '@/ui/style/color';
-import { useWallet } from 'ui/utils';
-
-import networkLink from '../../../assets/svg/networkLink.svg';
 
 const bgColor = (network: string) => {
   return `${networkColor(network)}14`;

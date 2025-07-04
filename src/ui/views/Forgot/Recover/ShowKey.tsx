@@ -1,12 +1,12 @@
 import LockOpenRoundedIcon from '@mui/icons-material/LockOpenRounded';
 import LockRoundedIcon from '@mui/icons-material/LockRounded';
-import { Button, Typography, IconButton } from '@mui/material';
+import { Button, IconButton, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { useState } from 'react';
 
 import IconCopy from '@/ui/components/iconfont/IconCopy';
 import ResetModal from '@/ui/components/PopupModal/resetModal';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 const ShowKey = ({ handleSwitchTab, mnemonic }) => {
   const usewallet = useWallet();

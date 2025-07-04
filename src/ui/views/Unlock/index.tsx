@@ -1,4 +1,4 @@
-import { Typography, Box, FormControl, CircularProgress } from '@mui/material';
+import { Box, CircularProgress, FormControl, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -7,7 +7,7 @@ import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import lilo from '@/ui/assets/image/lilo.png';
 import { LLPrimaryButton } from '@/ui/components/LLPrimaryButton';
 import { PasswordInput } from '@/ui/components/password/PasswordInput';
-import { useWallet, useWalletLoaded } from '@/ui/utils';
+import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';
 import { openInternalPageInTab } from '@/ui/utils/webapi';
 
 import './style.css';

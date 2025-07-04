@@ -2,37 +2,36 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import HelpOutlineRoundedIcon from '@mui/icons-material/HelpOutlineRounded';
 import SearchIcon from '@mui/icons-material/Search';
 import {
-  Box,
-  Tab,
-  Tabs,
-  Typography,
-  InputAdornment,
-  Input,
   Avatar,
+  Box,
+  IconButton,
+  Input,
+  InputAdornment,
   ListItem,
   ListItemAvatar,
   ListItemText,
-  IconButton,
+  Tab,
+  Tabs,
   Tooltip,
+  Typography,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
-import { useTheme, StyledEngineProvider } from '@mui/material/styles';
-import React, { useState, useCallback, useEffect } from 'react';
+import { StyledEngineProvider, useTheme } from '@mui/material/styles';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
 import { type Contact } from '@/shared/types/network-types';
 import { type WalletAddress } from '@/shared/types/wallet-types';
 import { isValidAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
-import { filterContacts, checkAddressBookContacts } from '@/shared/utils/contact-utils';
+import { checkAddressBookContacts, filterContacts } from '@/shared/utils/contact-utils';
+import AccountsList from '@/ui/components/AddressLists/AccountsList';
+import AddressBookList from '@/ui/components/AddressLists/AddressBookList';
+import RecentList from '@/ui/components/AddressLists/RecentList';
+import SearchList from '@/ui/components/AddressLists/SearchList';
 import IconAbout from '@/ui/components/iconfont/IconAbout';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useContacts } from '@/ui/hooks/useContactHook';
-import { useWallet } from '@/ui/utils/WalletContext';
-
-import AccountsList from '../../components/AddressLists/AccountsList';
-import AddressBookList from '../../components/AddressLists/AddressBookList';
-import RecentList from '../../components/AddressLists/RecentList';
-import SearchList from '../../components/AddressLists/SearchList';
 
 export enum SendPageTabOptions {
   Recent = 'Recent',
