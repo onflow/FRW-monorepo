@@ -1,15 +1,7 @@
-import { type WalletController } from './index';
-
 export const getCurrentTab = async () => {
   const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
 
   return tabs[0];
-};
-
-export const getCurrentConnectSite = async (wallet: WalletController) => {
-  const { id } = await getCurrentTab();
-  if (!id) return null;
-  return wallet.getCurrentConnectedSite(id);
 };
 
 export const openInTab = async (url, needClose = true): Promise<number | undefined> => {

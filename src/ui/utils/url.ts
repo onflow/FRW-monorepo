@@ -1,6 +1,5 @@
 import { consoleError } from '@/shared/utils/console-log';
-
-import fallback from '../assets/image/errorImage.png';
+import fallback from '@/ui/assets/image/errorImage.png';
 
 export const query2obj = (str: string) => {
   const res: Record<string, string> = {};

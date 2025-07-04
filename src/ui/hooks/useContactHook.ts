@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 
 import { type Contact, ContactType } from '@/shared/types/network-types';
 import { type WalletAddress } from '@/shared/types/wallet-types';
-import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
+import { isValidEthereumAddress, withPrefix } from '@/shared/utils/address';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useWallet } from '@/ui/utils';
 
 export function useContacts() {
   const wallet = useWallet();

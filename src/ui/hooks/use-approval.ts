@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 
-import { useWallet } from '@/ui/utils/WalletContext';
+import { useWallet } from './use-wallet';
 
 export const useApproval = () => {
   const usewallet = useWallet();

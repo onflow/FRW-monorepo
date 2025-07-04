@@ -1,13 +1,13 @@
 import BN from 'bignumber.js';
-import { useCallback, useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { type ExtendedTokenInfo, type TokenFilter } from '@/shared/types/coin-types';
 import { consoleError } from '@/shared/utils/console-log';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
-import { useWallet } from '@/ui/utils/WalletContext';
 
 import { useCurrency } from './preference-hooks';
-import { useCoinList, useTokenFilter, setTokenFilter } from './use-coin-hooks';
+import { setTokenFilter, useCoinList, useTokenFilter } from './use-coin-hooks';
+import { useWallet } from './use-wallet';
 import { useProfiles } from './useProfileHook';
 
 export const useCoins = () => {
