@@ -22,9 +22,12 @@ Authentication from GitHub Actions to Google Cloud will use **Workload Identity 
 In your GitHub repository settings → Secrets and variables → Actions, add the following secrets, which will be provided by your IT team:
 
 - `PROJECT_ID`: Your GCP project ID.
-- `GCS_BUCKET_NAME`: The name of the GCS bucket for reports (e.g., `frw-playwright-reports`).
 - `WORKLOAD_IDENTITY_PROVIDER`: The full identifier of the Workload Identity Provider.
 - `SERVICE_ACCOUNT`: The email of the Google Cloud service account to impersonate.
+
+Also, set the following as a **GitHub Variable** (not a secret):
+
+- `GCS_BUCKET_NAME`: The name of the GCS bucket for reports (e.g., `frw-playwright-reports`).
 
 ## GitHub Actions Workflow Changes
 
@@ -62,8 +65,8 @@ deploy-reports:
     - name: Upload reports to GCS
       run: |
         RUN_DIR="reports/run-${{ github.run_id }}"
-        gsutil -m cp -r playwright-report/* gs://${{ secrets.GCS_BUCKET_NAME }}/$RUN_DIR/
-        echo "REPORT_URL=https://storage.googleapis.com/${{ secrets.GCS_BUCKET_NAME }}/$RUN_DIR/index.html" >> $GITHUB_ENV
+        gsutil -m cp -r playwright-report/* gs://${{ vars.GCS_BUCKET_NAME }}/$RUN_DIR/
+        echo "REPORT_URL=https://storage.googleapis.com/${{ vars.GCS_BUCKET_NAME }}/$RUN_DIR/index.html" >> $GITHUB_ENV
 
     - name: Add Job Summary
       if: always()
@@ -93,9 +96,10 @@ Reports will be accessible at:
 ## Next Steps
 
 1. Receive GCS bucket details and Workload Identity configuration from the IT team.
-2. Add GitHub secrets (`PROJECT_ID`, `GCS_BUCKET_NAME`, `WORKLOAD_IDENTITY_PROVIDER`, `SERVICE_ACCOUNT`) to the repository.
-3. Implement the workflow changes in `.github/workflows/build.yml`.
-4. Test with a new commit to verify the setup works.
+2. Add GitHub secrets (`PROJECT_ID`, `WORKLOAD_IDENTITY_PROVIDER`, `SERVICE_ACCOUNT`) to the repository.
+3. Add GitHub variable (`GCS_BUCKET_NAME`) to the repository.
+4. Implement the workflow changes in `.github/workflows/build.yml`.
+5. Test with a new commit to verify the setup works.
 
 ## Task Status
 

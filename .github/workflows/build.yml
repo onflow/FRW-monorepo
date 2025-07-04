@@ -256,8 +256,8 @@ jobs:
       - name: Upload reports to GCS
         run: |
           RUN_DIR="reports/run-${{ github.run_id }}"
-          gsutil -m cp -r playwright-report/* gs://${{ secrets.GCS_BUCKET_NAME }}/$RUN_DIR/
-          echo "REPORT_URL=https://storage.googleapis.com/${{ secrets.GCS_BUCKET_NAME }}/$RUN_DIR/index.html" >> $GITHUB_ENV
+          gsutil -m cp -r playwright-report/* gs://${{ vars.GCS_BUCKET_NAME }}/$RUN_DIR/
+          echo "REPORT_URL=https://storage.googleapis.com/${{ vars.GCS_BUCKET_NAME }}/$RUN_DIR/index.html" >> $GITHUB_ENV
 
       - name: Add Job Summary
         if: always()
