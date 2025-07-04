@@ -1,6 +1,8 @@
 import { Box } from '@mui/material';
 import type { Meta, StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
+import { withRouter } from 'storybook-addon-remix-react-router';
+// eslint-disable-next-line import/order
 import { fn } from 'storybook/test';
 
 import { useWallet as useWalletMock } from '@/ui/hooks/use-wallet.mock';
@@ -11,6 +13,7 @@ const meta = {
   title: 'views/Welcome/RecoverProfile',
   component: RecoverProfile,
   decorators: [
+    withRouter,
     (Story) => {
       useWalletMock.mockReset();
       useWalletMock.mockResolvedValue({
