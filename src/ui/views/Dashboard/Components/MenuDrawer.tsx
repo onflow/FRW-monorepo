@@ -67,10 +67,12 @@ const MenuDrawer = ({
   const [errorMessage, setErrorMessage] = useState('');
 
   const setActiveAccount = useCallback(
-    (address: string, parentAddress?: string) => {
-      wallet.setActiveAccount(address, parentAddress || address).then(() => {
-        toggleDrawer();
-      });
+    (currentAccount: WalletAccount, parentAccount?: WalletAccount) => {
+      wallet
+        .setActiveAccount(currentAccount.address, parentAccount?.address || currentAccount.address)
+        .then(() => {
+          toggleDrawer();
+        });
     },
     [wallet, toggleDrawer]
   );

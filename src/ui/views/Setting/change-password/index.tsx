@@ -188,212 +188,212 @@ const ChangePassword = () => {
   );
 
   return (
-    <div className="page">
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%',
+        height: '100%',
+      }}
+    >
+      <LLHeader
+        title={chrome.i18n.getMessage('Change__Password')}
+        help={false}
+        goBackLink="/dashboard/setting"
+      />
+
       <Box
         sx={{
+          flexGrow: 1,
+          width: '100%',
           display: 'flex',
           flexDirection: 'column',
-          width: '100%',
-          height: '100%',
+          paddingX: '18px',
+          gap: '8px',
         }}
       >
-        <LLHeader title={chrome.i18n.getMessage('Change__Password')} help={false} />
-
-        <Box
-          sx={{
-            flexGrow: 1,
-            width: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            paddingX: '18px',
-            gap: '8px',
-          }}
-        >
-          {/* Current Password */}
+        {/* Current Password */}
+        <PasswordInput
+          value={confirmCurrentPassword}
+          onChange={setConfirmCurrentPassword}
+          showPassword={isCurrentPasswordVisible}
+          setShowPassword={setCurrentPasswordVisible}
+          placeholder={chrome.i18n.getMessage('Current__Password')}
+          errorText={
+            !!confirmCurrentPassword && isSame === false
+              ? chrome.i18n.getMessage('Incorrect__Password')
+              : undefined
+          }
+          showIndicator={false}
+        />
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {/* New Password */}
           <PasswordInput
-            value={confirmCurrentPassword}
-            onChange={setConfirmCurrentPassword}
-            showPassword={isCurrentPasswordVisible}
-            setShowPassword={setCurrentPasswordVisible}
-            placeholder={chrome.i18n.getMessage('Current__Password')}
+            value={password}
+            onChange={(value) => {
+              setPassword(value);
+              setConfirmPassword('');
+            }}
+            showPassword={isNewPasswordVisible}
+            setShowPassword={setNewPasswordVisible}
+            placeholder={chrome.i18n.getMessage('Enter__New__Password')}
             errorText={
-              !!confirmCurrentPassword && isSame === false
-                ? chrome.i18n.getMessage('Incorrect__Password')
+              !!password && isCharacters === false
+                ? chrome.i18n.getMessage('At__least__8__characters')
                 : undefined
+            }
+            showIndicator={true}
+          />
+          {/* Confirm New Password */}
+
+          <PasswordInput
+            value={confirmPassword}
+            onChange={setConfirmPassword}
+            showPassword={isConfirmPasswordVisible}
+            setShowPassword={setConfirmPasswordVisible}
+            placeholder={chrome.i18n.getMessage('Confirm__Password')}
+            errorText={
+              !!confirmPassword && isMatch === false
+                ? chrome.i18n.getMessage('Your__passwords__do__not__match')
+                : undefined
+            }
+            helperText={
+              !!confirmPassword && isMatch ? chrome.i18n.getMessage('Passwords__match') : undefined
             }
             showIndicator={false}
           />
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {/* New Password */}
-            <PasswordInput
-              value={password}
-              onChange={(value) => {
-                setPassword(value);
-                setConfirmPassword('');
-              }}
-              showPassword={isNewPasswordVisible}
-              setShowPassword={setNewPasswordVisible}
-              placeholder={chrome.i18n.getMessage('Enter__New__Password')}
-              errorText={
-                !!password && isCharacters === false
-                  ? chrome.i18n.getMessage('At__least__8__characters')
-                  : undefined
-              }
-              showIndicator={true}
-            />
-            {/* Confirm New Password */}
-
-            <PasswordInput
-              value={confirmPassword}
-              onChange={setConfirmPassword}
-              showPassword={isConfirmPasswordVisible}
-              setShowPassword={setConfirmPasswordVisible}
-              placeholder={chrome.i18n.getMessage('Confirm__Password')}
-              errorText={
-                !!confirmPassword && isMatch === false
-                  ? chrome.i18n.getMessage('Your__passwords__do__not__match')
-                  : undefined
-              }
-              helperText={
-                !!confirmPassword && isMatch
-                  ? chrome.i18n.getMessage('Passwords__match')
-                  : undefined
-              }
-              showIndicator={false}
-            />
-          </Box>
         </Box>
+      </Box>
 
-        <Box
+      <Box
+        sx={{
+          display: 'flex',
+          px: '18px',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: '8px',
+          marginBottom: '18px',
+        }}
+      >
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleChangePasswordClick}
+          size="large"
           sx={{
             display: 'flex',
-            px: '18px',
-            justifyContent: 'space-between',
+            flexGrow: 1,
+            height: '48px',
+            width: 'calc(50% - 4px)',
+            borderRadius: '8px',
+            textTransform: 'uppercase',
+            backgroundColor: '#38B000',
+            '&:hover': {
+              backgroundColor: '#309900',
+            },
+          }}
+          disabled={!(isSame && isMatch && isCharacters) || isResetting}
+        >
+          {isResetting ? (
+            <CircularProgress size={18} color="inherit" />
+          ) : (
+            <Typography
+              sx={{ fontWeight: '600', fontSize: '14px', fontFamily: 'Inter' }}
+              color="text.primary"
+            >
+              {chrome.i18n.getMessage('Change_Password') || 'Change Password'}
+            </Typography>
+          )}
+        </Button>
+      </Box>
+
+      <Snackbar
+        open={!!errorMessage}
+        autoHideDuration={6000}
+        onClose={() => setErrorMessage('')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setErrorMessage('')} severity="error" sx={{ width: '100%' }}>
+          {errorMessage}
+        </Alert>
+      </Snackbar>
+
+      {/* Simple success message with better visibility */}
+      {isResetting && !errorMessage && (
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: '0px',
+            left: '0',
+            right: '0',
+            display: 'flex',
             alignItems: 'center',
+            justifyContent: 'center',
             gap: '8px',
-            marginBottom: '60px',
+            padding: '10px 16px',
+            backgroundColor: '#38B000',
+            color: 'white',
+            boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.2)',
           }}
         >
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleChangePasswordClick}
-            size="large"
+          <CheckCircleIcon size={18} color={'white'} />
+          <Typography
             sx={{
-              display: 'flex',
-              flexGrow: 1,
-              height: '48px',
-              width: 'calc(50% - 4px)',
-              borderRadius: '8px',
-              textTransform: 'uppercase',
-              backgroundColor: '#38B000',
-              '&:hover': {
-                backgroundColor: '#309900',
-              },
+              color: 'white',
+              fontSize: '14px',
+              fontWeight: '600',
             }}
-            disabled={!(isSame && isMatch && isCharacters) || isResetting}
           >
-            {isResetting ? (
-              <CircularProgress size={18} color="inherit" />
-            ) : (
-              <Typography
-                sx={{ fontWeight: '600', fontSize: '14px', fontFamily: 'Inter' }}
-                color="text.primary"
-              >
-                {chrome.i18n.getMessage('Change_Password') || 'Change Password'}
-              </Typography>
-            )}
-          </Button>
+            {chrome.i18n.getMessage('Password__Change__Success')}
+          </Typography>
         </Box>
+      )}
 
-        <Snackbar
-          open={!!errorMessage}
-          autoHideDuration={6000}
-          onClose={() => setErrorMessage('')}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      <GoogleWarningDialog
+        open={showGooglePermissionDialog}
+        onClose={setShowGooglePermissionDialog}
+        onProceedAnyway={() => changePassword(true)}
+        onError={setErrorMessage}
+      />
+
+      <ProfileBackupSelectionDialog
+        open={showProfileBackupDialog}
+        onClose={() => setShowProfileBackupDialog(false)}
+        onConfirm={handleProfileSelection}
+        currentPassword={confirmCurrentPassword}
+      />
+
+      {statusMessage && (
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: '0px',
+            left: '0',
+            right: '0',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            padding: '10px 16px',
+            backgroundColor: '#38B000',
+            color: 'white',
+            boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.2)',
+            zIndex: 1000,
+          }}
         >
-          <Alert onClose={() => setErrorMessage('')} severity="error" sx={{ width: '100%' }}>
-            {errorMessage}
-          </Alert>
-        </Snackbar>
-
-        {/* Simple success message with better visibility */}
-        {isResetting && !errorMessage && (
-          <Box
+          <CircularProgress size={16} color="inherit" />
+          <Typography
             sx={{
-              position: 'absolute',
-              bottom: '0px',
-              left: '0',
-              right: '0',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              padding: '10px 16px',
-              backgroundColor: '#38B000',
               color: 'white',
-              boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.2)',
+              fontSize: '14px',
+              fontWeight: '600',
             }}
           >
-            <CheckCircleIcon size={18} color={'white'} />
-            <Typography
-              sx={{
-                color: 'white',
-                fontSize: '14px',
-                fontWeight: '600',
-              }}
-            >
-              {chrome.i18n.getMessage('Password__Change__Success')}
-            </Typography>
-          </Box>
-        )}
-
-        <GoogleWarningDialog
-          open={showGooglePermissionDialog}
-          onClose={setShowGooglePermissionDialog}
-          onProceedAnyway={() => changePassword(true)}
-          onError={setErrorMessage}
-        />
-
-        <ProfileBackupSelectionDialog
-          open={showProfileBackupDialog}
-          onClose={() => setShowProfileBackupDialog(false)}
-          onConfirm={handleProfileSelection}
-          currentPassword={confirmCurrentPassword}
-        />
-
-        {statusMessage && (
-          <Box
-            sx={{
-              position: 'absolute',
-              bottom: '0px',
-              left: '0',
-              right: '0',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              padding: '10px 16px',
-              backgroundColor: '#38B000',
-              color: 'white',
-              boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.2)',
-              zIndex: 1000,
-            }}
-          >
-            <CircularProgress size={16} color="inherit" />
-            <Typography
-              sx={{
-                color: 'white',
-                fontSize: '14px',
-                fontWeight: '600',
-              }}
-            >
-              {statusMessage}
-            </Typography>
-          </Box>
-        )}
-      </Box>
-    </div>
+            {statusMessage}
+          </Typography>
+        </Box>
+      )}
+    </Box>
   );
 };
 

@@ -114,6 +114,7 @@ import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/alg
 import {
   accountBalanceKey,
   childAccountAllowTypesKey,
+  childAccountDescKey,
   type ChildAccountFtStore,
   childAccountNftsKey,
   type ChildAccountNFTsStore,
@@ -3708,6 +3709,17 @@ export class WalletController extends BaseController {
       });
       throw err;
     }
+  };
+
+  /**
+   * Set the description for a child account
+   * @param address - The address of the child account
+   * @param desc - The description to set
+   * @returns Promise<void> - Success status
+   */
+  setChildAccountDescription = async (address: string, desc: string): Promise<void> => {
+    if (!address) return;
+    await setCachedData(childAccountDescKey(address), desc, 3600_000);
   };
 }
 

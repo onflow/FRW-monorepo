@@ -1,5 +1,4 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import { Avatar, Box, IconButton, Switch, Typography } from '@mui/material';
 import Button from '@mui/material/Button';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -8,6 +7,7 @@ import { useNavigate } from 'react-router';
 import { openIndexPage } from '@/background/webapi/tab';
 import { consoleError } from '@/shared/utils/console-log';
 import { getCurrentProfileId } from '@/shared/utils/current-id';
+import { EditIcon } from '@/ui/assets/icons/settings/Edit';
 import RemoveProfileModal from '@/ui/components/PopupModal/remove-profile-modal';
 import ResetModal from '@/ui/components/PopupModal/resetModal';
 import { useWallet } from '@/ui/hooks/use-wallet';
@@ -15,7 +15,7 @@ import { useProfiles } from '@/ui/hooks/useProfileHook';
 
 import EditAccount from './EditAccount';
 
-const AccountSettings = () => {
+const Profile = () => {
   const navigate = useNavigate();
   const wallet = useWallet();
   const { profileIds, userInfo, walletList } = useProfiles();
@@ -112,7 +112,7 @@ const AccountSettings = () => {
           navigate('/unlock');
         });
       } else {
-        wallet.signOutWallet().then(() => {
+        wallet.lockAdd().then(() => {
           openIndexPage('welcome?add=true');
         });
       }
@@ -170,7 +170,7 @@ const AccountSettings = () => {
             toggleEdit();
           }}
         >
-          <EditRoundedIcon fontSize="medium" sx={{ color: 'icon.navi', cursor: 'pointer' }} />
+          <EditIcon width={24} height={24} />
         </IconButton>
       </Box>
       <Box
@@ -337,4 +337,4 @@ const AccountSettings = () => {
   );
 };
 
-export default AccountSettings;
+export default Profile;

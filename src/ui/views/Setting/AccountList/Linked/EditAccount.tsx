@@ -3,11 +3,8 @@ import { Box, Drawer, InputBase, Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { styled } from '@mui/material/styles';
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router';
 
-import { consoleError } from '@/shared/utils/console-log';
 import { LLPrimaryButton, LLSpinner } from '@/ui/components';
-import { useWallet } from '@/ui/hooks/use-wallet';
 
 const StyledInput = styled(InputBase)(({ theme }) => ({
   zIndex: 1,
@@ -26,7 +23,7 @@ interface EditAccountProps {
   isAddAddressOpen: boolean;
   handleCloseIconClicked: () => void;
   handleCancelBtnClicked: () => void;
-  handleAddBtnClicked: () => void;
+  handleAddBtnClicked: (desc: string) => void;
   childAccount?: any;
   address?: string;
   userInfo?: any;
@@ -41,12 +38,10 @@ const EditAccount = ({
   isAddAddressOpen,
   handleCloseIconClicked,
   handleCancelBtnClicked,
+  handleAddBtnClicked,
   childAccount,
   address,
 }: EditAccountProps) => {
-  const wallet = useWallet();
-  const navigate = useNavigate();
-
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [failed, setFailed] = useState<boolean>(false);
   const [name, setName] = useState<string>(childAccount?.name || '');
@@ -54,26 +49,9 @@ const EditAccount = ({
 
   const onSubmit = async () => {
     setIsLoading(true);
-    wallet
-      .editChildAccount(address!, name, desc, childAccount.thumbnail.url)
-      .then(async (txId) => {
-        setIsLoading(false);
-        handleCancelBtnClicked();
-        wallet.listenTransaction(
-          txId,
-          true,
-          `${address} unlinked`,
-          `You have unlinked the child account ${address} from your account. \nClick to view this transaction.`
-        );
-        await wallet.setDashIndex(0);
-        navigate(`/dashboard?activity=1&txId=${txId}`);
-      })
-      .catch((error) => {
-        consoleError('EditAccount - failed to edit child account', error);
+    handleAddBtnClicked(desc);
 
-        setIsLoading(false);
-        setFailed(false);
-      });
+    handleCancelBtnClicked();
   };
 
   const renderContent = () => (
@@ -166,7 +144,7 @@ const EditAccount = ({
         />
       </Box>
       <Box sx={{ flexGrow: 1 }}></Box>
-      <Stack direction="row" spacing={1} sx={{ paddingBottom: '32px' }}>
+      <Stack direction="row" spacing={1} sx={{ paddingBottom: '32px', marginTop: '16px' }}>
         {isLoading ? (
           <Box
             sx={{
