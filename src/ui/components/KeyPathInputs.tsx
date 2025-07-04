@@ -1,17 +1,17 @@
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Box,
-  Typography,
   CardMedia,
   TextareaAutosize,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
+  Typography,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import React, { useState } from 'react';
 
-import Expand from '../assets/svg/expand.svg';
-import Hide from '../assets/svg/hide.svg';
+import Expand from '@/ui/assets/svg/expand.svg';
+import Hide from '@/ui/assets/svg/hide.svg';
 
 const StyledAccordionSummary = styled(AccordionSummary)(({ theme }) => ({
   flexDirection: 'row-reverse',

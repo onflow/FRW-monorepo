@@ -1,4 +1,3 @@
-import { Box } from '@mui/material';
 import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 

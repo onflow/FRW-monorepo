@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router';
 
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 const PrivateRoute = ({ children }) => {
   const wallet = useWallet();

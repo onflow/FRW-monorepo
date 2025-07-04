@@ -1,4 +1,4 @@
-import { ListItem, ListItemButton, Box, Typography } from '@mui/material';
+import { ListItem, ListItemButton, Typography } from '@mui/material';
 import React from 'react';
 import { Link } from 'react-router';
 

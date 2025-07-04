@@ -1,24 +1,23 @@
 import {
-  ListItemText,
-  ListItem,
   Avatar,
-  ListItemAvatar,
-  IconButton,
-  CircularProgress,
-  ListItemButton,
-  Switch,
   Box,
+  CircularProgress,
+  IconButton,
+  ListItem,
+  ListItemAvatar,
+  ListItemButton,
+  ListItemText,
+  Switch,
   Typography,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import React from 'react';
 
+import VerifiedIcon from '@/ui/assets/svg/verfied-check.svg';
 import IconCheckmark from '@/ui/components/iconfont/IconCheckmark';
 import IconPlus from '@/ui/components/iconfont/IconPlus';
 import { CurrencyValue } from '@/ui/components/TokenLists/CurrencyValue';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
-
-import VerifiedIcon from '../../assets/svg/verfied-check.svg';
 
 // Custom styled ListItem to override default secondaryAction styles
 const CustomListItem = styled(ListItem)({

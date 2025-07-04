@@ -2,34 +2,34 @@ import ArrowDropDownRoundedIcon from '@mui/icons-material/ArrowDropDownRounded';
 import ArrowDropUpRoundedIcon from '@mui/icons-material/ArrowDropUpRounded';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
 import {
-  ToggleButtonGroup,
-  ToggleButton,
-  Menu,
-  MenuItem,
-  Typography,
   Box,
   ButtonBase,
+  Menu,
+  MenuItem,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import dayjs from 'dayjs';
-import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { AreaChart, Area, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Area, AreaChart, ResponsiveContainer, Tooltip, YAxis } from 'recharts';
 
 import {
   getPriceProvider,
   Period,
-  type TokenPriceHistory,
   type PriceProvider,
+  type TokenPriceHistory,
 } from '@/shared/types/network-types';
 import { consoleWarn } from '@/shared/utils/console-log';
 import {
-  IconKraken,
   IconBinance,
   IconCoinbase,
-  IconKucoin,
   IconHuobi,
+  IconKraken,
+  IconKucoin,
 } from '@/ui/components/iconfont';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
   '& .MuiToggleButtonGroup-grouped': {
