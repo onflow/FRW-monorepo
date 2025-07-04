@@ -174,9 +174,6 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
         moment: 'dayjs',
         'cross-fetch': 'cross-fetch',
         '@': paths.rootResolve('src'),
-        ui: paths.rootResolve('src/ui'),
-        background: paths.rootResolve('src/background'),
-        consts: paths.rootResolve('src/constant/index'),
       },
       plugins: [],
       fallback: {
