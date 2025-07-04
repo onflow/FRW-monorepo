@@ -1,25 +1,25 @@
 import CloseIcon from '@mui/icons-material/Close';
 import InfoIcon from '@mui/icons-material/Info';
-import { Box, Typography, Drawer, Stack, CardMedia, IconButton, Button } from '@mui/material';
+import { Box, Button, CardMedia, Drawer, IconButton, Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
-import React, { useState, useEffect, useCallback } from 'react';
-import { useHistory } from 'react-router-dom';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 import Web3 from 'web3';
 
+import { EVM_ENDPOINT } from '@/shared/constant/domain-constants';
+import erc721 from '@/shared/constant/erc721.abi.json';
 import { type Contact } from '@/shared/types/network-types';
 import { consoleError } from '@/shared/utils/console-log';
+import IconNext from '@/ui/assets/svg/next.svg';
+import { FRWProfile, LLProfile, LLSpinner } from '@/ui/components';
 import IconFlow from '@/ui/components/iconfont/IconFlow';
 import SlideRelative from '@/ui/components/SlideRelative';
 import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
 import { WarningStorageLowSnackbar } from '@/ui/components/WarningStorageLowSnackbar';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
 import { type MatchMedia, MatchMediaType } from '@/ui/utils/url';
-import erc721 from 'background/utils/erc721.abi.json';
-import { EVM_ENDPOINT } from 'consts';
-import IconNext from 'ui/assets/svg/next.svg';
-import { LLSpinner, LLProfile, FRWProfile } from 'ui/components';
-import { useWallet } from 'ui/utils';
 
 interface SendNFTConfirmationProps {
   isConfirmationOpen: boolean;
@@ -38,7 +38,7 @@ interface SendNFTConfirmationProps {
 
 const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
   const wallet = useWallet();
-  const history = useHistory();
+  const navigate = useNavigate();
   const { occupied } = useTransferList();
   const [sending, setSending] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -136,7 +136,7 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
         await wallet.setDashIndex(0);
         setSending(false);
         setTid(txId);
-        history.push(`/dashboard?activity=1&txId=${txId}`);
+        navigate(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
         consoleError('err ', err);
@@ -163,7 +163,7 @@ const SendNFTConfirmation = (props: SendNFTConfirmationProps) => {
         props.handleCloseIconClicked();
         await wallet.setDashIndex(0);
         setSending(false);
-        history.push(`/dashboard?activity=1&txId=${txId}`);
+        navigate(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
         consoleError(err);

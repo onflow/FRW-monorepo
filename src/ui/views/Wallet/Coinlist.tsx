@@ -1,40 +1,39 @@
 import {
-  Typography,
+  Avatar,
+  IconButton,
+  List,
   ListItem,
   ListItemAvatar,
-  ListItemText,
-  ListItemIcon,
-  Skeleton,
   ListItemButton,
-  List,
-  IconButton,
-  Avatar,
+  ListItemIcon,
+  ListItemText,
+  Skeleton,
+  Typography,
 } from '@mui/material';
 import { Box } from '@mui/system';
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { type CoinItem } from '@/shared/types/coin-types';
 import { type ActiveAccountType } from '@/shared/types/wallet-types';
 import { type ChildAccountFtStore } from '@/shared/utils/cache-data-keys';
+import plus from '@/ui/assets/svg/plus.svg';
+import slider from '@/ui/assets/svg/slider.svg';
+import VerifiedIcon from '@/ui/assets/svg/verfied-check.svg';
+import { CurrencyValue } from '@/ui/components/TokenLists/CurrencyValue';
 import { TokenBalance } from '@/ui/components/TokenLists/TokenBalance';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 
-import plus from '../../assets/svg/plus.svg';
-import slider from '../../assets/svg/slider.svg';
-import VerifiedIcon from '../../assets/svg/verfied-check.svg';
-import { CurrencyValue } from '../../components/TokenLists/CurrencyValue';
-
 const ActionButtons = ({ managePath, createPath }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
 
   return (
     <Box sx={{ display: 'flex', px: '12px', pt: '4px', gap: '12px' }}>
       <Box sx={{ flexGrow: 1 }} />
       <IconButton
-        onClick={() => history.push(managePath)}
+        onClick={() => navigate(managePath)}
         sx={{
           display: 'flex',
           justifyContent: 'center',
@@ -51,7 +50,7 @@ const ActionButtons = ({ managePath, createPath }) => {
         <img src={slider} alt="Manage" style={{ width: '20px', height: '20px' }} />
       </IconButton>
       <IconButton
-        onClick={() => history.push(createPath)}
+        onClick={() => navigate(createPath)}
         sx={{
           display: 'flex',
           justifyContent: 'center',
@@ -86,7 +85,7 @@ const CoinList = ({
   const currency = useCurrency();
   const currencyCode = currency?.code;
   const currencySymbol = currency?.symbol;
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const isLoading = coins === undefined;
 
@@ -265,10 +264,10 @@ const CoinList = ({
   return (
     <>
       {activeAccountType === 'main' && (
-        <ActionButtons managePath="dashboard/managetoken" createPath="dashboard/tokenList" />
+        <ActionButtons managePath="/dashboard/managetoken" createPath="/dashboard/tokenList" />
       )}
       {activeAccountType === 'evm' && (
-        <ActionButtons managePath="dashboard/managetoken" createPath="dashboard/addcustomevm" />
+        <ActionButtons managePath="/dashboard/managetoken" createPath="/dashboard/addcustomevm" />
       )}
 
       <List sx={{ paddingTop: '0px', paddingBottom: '0px' }}>
@@ -321,7 +320,7 @@ const CoinList = ({
                   }
                   disablePadding
                   onClick={() =>
-                    history.push(`dashboard/tokendetail/${coin.unit.toLowerCase()}/${coin.id}`)
+                    navigate(`/dashboard/tokendetail/${coin.unit.toLowerCase()}/${coin.id}`)
                   }
                 >
                   <ListItemButton sx={{ paddingRight: '0px' }} dense={true}>

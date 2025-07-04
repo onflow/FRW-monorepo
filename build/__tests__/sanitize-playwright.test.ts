@@ -4,7 +4,7 @@ import fs from 'fs/promises';
 import path from 'path';
 
 import JSZip from 'jszip';
-import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { loadSecrets, scrubValue, sanitizeTrace } from '../sanitize-playwright';
 

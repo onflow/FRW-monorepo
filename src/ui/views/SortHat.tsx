@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Redirect } from 'react-router-dom';
+import { Navigate } from 'react-router';
 
+import Spin from '@/ui/components/Spin';
 import { useApproval } from '@/ui/hooks/use-approval';
-import Spin from 'ui/components/Spin';
-import { useWallet, getUiType } from 'ui/utils';
-import { openInternalPageInTab } from 'ui/utils/webapi';
+import { useWallet } from '@/ui/hooks/use-wallet';
+import { getUiType } from '@/ui/utils';
+import { openInternalPageInTab } from '@/ui/utils/webapi';
 
 const SortHat = () => {
   const wallet = useWallet();
@@ -70,7 +71,7 @@ const SortHat = () => {
 
     // </Box>
     // <LLSpinner size={40}>{to && <Redirect to={to} />}</LLSpinner>
-    <Spin spinning={!to}>{to && <Redirect to={to} />}</Spin>
+    <Spin spinning={!to}>{to && <Navigate to={to} replace />}</Spin>
     // <Spin />
   );
 };

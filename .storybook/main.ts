@@ -16,6 +16,7 @@ const config: StorybookConfig = {
     '@storybook/addon-onboarding',
     '@storybook/addon-docs',
     '@storybook/addon-themes',
+    'storybook-addon-remix-react-router',
   ],
   framework: {
     name: '@storybook/react-webpack5',
@@ -54,19 +55,12 @@ const config: StorybookConfig = {
         __dirname,
         '../src/ui/hooks/useNetworkHook.mock.ts'
       ),
-      '@/ui/utils/WalletContext$': path.resolve(
-        __dirname,
-        '../src/ui/utils/WalletContext.mock.tsx'
-      ),
+      '@/ui/hooks/use-wallet$': path.resolve(__dirname, '../src/ui/hooks/use-wallet.mock.ts'),
 
       // Other aliases
-      'ui/utils$': path.resolve(__dirname, '../src/stories/ui-utils.mock.ts'),
-      '@/ui/utils$': path.resolve(__dirname, '../src/stories/ui-utils.mock.ts'),
-      'react-router-dom': path.resolve(__dirname, '../src/stories/react-router-dom.mock.ts'),
       '@': path.resolve(__dirname, '../src'),
       ui: path.resolve(__dirname, '../src/ui'),
       background: path.resolve(__dirname, '../src/background'),
-      consts: path.resolve(__dirname, '../src/constant/index'),
     };
 
     config.plugins.push(

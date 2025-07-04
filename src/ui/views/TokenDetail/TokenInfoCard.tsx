@@ -1,12 +1,12 @@
-import { Typography, Box, ButtonBase, Skeleton } from '@mui/material';
+import { Box, ButtonBase, Skeleton, Typography } from '@mui/material';
 import React, { useMemo } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import {
-  type CustomFungibleTokenInfo,
   type CoinItem,
-  type ExtendedTokenInfo,
+  type CustomFungibleTokenInfo,
   type EvmCustomTokenInfo,
+  type ExtendedTokenInfo,
 } from '@/shared/types/coin-types';
 import { type ActiveAccountType } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
@@ -14,13 +14,12 @@ import buyIcon from '@/ui/assets/svg/buyIcon.svg';
 import receiveIcon from '@/ui/assets/svg/receiveIcon.svg';
 import sendIcon from '@/ui/assets/svg/sendIcon.svg';
 import swapIcon from '@/ui/assets/svg/swapIcon.svg';
+import VerifiedIcon from '@/ui/assets/svg/verfied-check.svg';
 import { IconButton } from '@/ui/components/IconButton';
 import IconChevronRight from '@/ui/components/iconfont/IconChevronRight';
+import { CurrencyValue } from '@/ui/components/TokenLists/CurrencyValue';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
-import { useCoins } from 'ui/hooks/useCoinHook';
-
-import VerifiedIcon from '../../assets/svg/verfied-check.svg';
-import { CurrencyValue } from '../../components/TokenLists/CurrencyValue';
+import { useCoins } from '@/ui/hooks/useCoinHook';
 
 const TokenInfoCard = ({
   tokenInfo,
@@ -33,7 +32,7 @@ const TokenInfoCard = ({
   tokenId: string;
   setIsOnRamp: (isOnRamp: boolean) => void;
 }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const { coins } = useCoins();
   const currency = useCurrency();
 
@@ -46,9 +45,9 @@ const TokenInfoCard = ({
 
   const toSend = () => {
     if (tokenInfo && 'symbol' in tokenInfo) {
-      history.push(`/dashboard/token/${tokenInfo.symbol}/send`);
+      navigate(`/dashboard/token/${tokenInfo.symbol}/send`);
     } else {
-      history.push(`/dashboard/token/${tokenInfo?.address}/send`);
+      navigate(`/dashboard/token/${tokenInfo?.address}/send`);
     }
   };
 
@@ -223,7 +222,7 @@ const TokenInfoCard = ({
           )}
           <IconButton
             messageKey="Receive"
-            onClick={() => history.push('/dashboard/wallet/deposit')}
+            onClick={() => navigate('/dashboard/wallet/deposit')}
             icon={receiveIcon}
             customSx={{ width: '42px', height: '42px' }}
           />

@@ -1,6 +1,5 @@
-import { Avatar, Box, CircularProgress, IconButton, Skeleton, Typography } from '@mui/material';
-import { useTheme, alpha } from '@mui/material/styles';
-import { margin } from '@mui/system';
+import { Box, CircularProgress, IconButton, Skeleton, Typography } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import React from 'react';
 
 import { FlowIcon } from '@/ui/assets/icons/FlowIcon';

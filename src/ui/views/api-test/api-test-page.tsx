@@ -1,32 +1,31 @@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Box,
   Button,
+  CircularProgress,
   Container,
+  Paper,
   TextField,
   Typography,
-  Paper,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  CircularProgress,
 } from '@mui/material';
 import * as bip39 from 'bip39';
-import React, { useState, useEffect } from 'react';
-
-import { consoleError } from '@/shared/utils/console-log';
-import { useWallet } from '@/ui/utils';
+import React, { useEffect, useState } from 'react';
 
 import {
   API_TEST_RESULTS,
-  type FetchDetail,
   type ApiTestResult,
-} from '../../../shared/test-data/api-test-results';
+  type FetchDetail,
+} from '@/shared/test-data/api-test-results';
 import {
   type ApiTestFunction,
   type CommonParams,
   createTestGroups,
-} from '../../../shared/test-data/test-groups';
+} from '@/shared/test-data/test-groups';
+import { consoleError } from '@/shared/utils/console-log';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 const addFunctionResult = (prev: ApiTestResult[], result: ApiTestResult) => {
   const prevFunctionResult = prev.find((r) => r.functionName === result.functionName);

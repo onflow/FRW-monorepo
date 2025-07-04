@@ -1,30 +1,25 @@
-import { Stack, Box, Typography, Divider, CardMedia } from '@mui/material';
-import { WalletUtils } from '@onflow/fcl';
+import { Box, Divider, Stack, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useHistory } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router';
 
 import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
+import Link from '@/ui/assets/svg/link.svg';
+import mainnetsvg from '@/ui/assets/svg/mainnet.svg';
+import testnetsvg from '@/ui/assets/svg/testnet.svg';
+import { LLPrimaryButton, LLSecondaryButton } from '@/ui/components';
 import { useApproval } from '@/ui/hooks/use-approval';
-import { useWallet } from '@/ui/utils/WalletContext';
-import Link from 'ui/assets/svg/link.svg';
-import mainnetsvg from 'ui/assets/svg/mainnet.svg';
-import testnetsvg from 'ui/assets/svg/testnet.svg';
-import { LLPrimaryButton, LLSecondaryButton } from 'ui/components';
-import { networkColor } from 'ui/style/color';
-
-// import { CHAINS_ENUM } from 'consts';
+import { useWallet } from '@/ui/hooks/use-wallet';
+import { networkColor } from '@/ui/style/color';
 
 interface ConnectProps {
   params: any;
 }
 
 const EthSwitch = ({ params: { origin, target } }: ConnectProps) => {
-  const { state } = useLocation<{
-    showChainsModal?: boolean;
-  }>();
+  const { state } = useLocation();
   const { showChainsModal = false } = state ?? {};
-  const history = useHistory();
+  const navigate = useNavigate();
   const [, resolveApproval, rejectApproval] = useApproval();
   const { t } = useTranslation();
   const wallet = useWallet();
@@ -105,12 +100,7 @@ const EthSwitch = ({ params: { origin, target } }: ConnectProps) => {
                 {' '}
                 {currentNetwork}
               </Typography>{' '}
-              to{' '}
-              <Typography sx={{ display: 'inline', color: '#E6E6E6' }}>
-                {' '}
-                {currentNetwork}
-              </Typography>
-              .
+              to <Typography sx={{ display: 'inline', color: '#E6E6E6' }}> {target}</Typography>.
             </Typography>
           </Stack>
         </Box>
@@ -137,7 +127,7 @@ const EthSwitch = ({ params: { origin, target } }: ConnectProps) => {
                   backgroundColor: networkColor(currentNetwork),
                   objectFit: 'cover',
                 }}
-                src={testnetsvg}
+                src={currentNetwork === 'testnet' ? testnetsvg : mainnetsvg}
               />
               <Typography
                 sx={{
@@ -149,7 +139,7 @@ const EthSwitch = ({ params: { origin, target } }: ConnectProps) => {
                   textAlign: 'center',
                 }}
               >
-                {target}
+                {currentNetwork}
               </Typography>
             </Box>
             <img style={{ width: '116px' }} src={Link} />
@@ -163,7 +153,7 @@ const EthSwitch = ({ params: { origin, target } }: ConnectProps) => {
                   backgroundColor: networkColor(target),
                   objectFit: 'cover',
                 }}
-                src={mainnetsvg}
+                src={target === 'testnet' ? testnetsvg : mainnetsvg}
               />
               <Typography
                 sx={{

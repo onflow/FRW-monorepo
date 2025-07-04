@@ -1,14 +1,12 @@
-import { IconButton, Snackbar, Alert } from '@mui/material';
+import { Alert, IconButton, Snackbar } from '@mui/material';
 import { Box } from '@mui/system';
-import React, { useState, useEffect, useCallback } from 'react';
-import { useHistory } from 'react-router-dom';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 
 import BackButtonIcon from '@/ui/components/iconfont/IconBackButton';
 import RegisterHeader from '@/ui/components/LandingPages/RegisterHeader';
 import SlideLeftRight from '@/ui/components/SlideLeftRight';
-import SlideRelative from '@/ui/components/SlideRelative';
-import { storage } from 'background/webapi';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 import RecoverPage from './RecoverPage';
 import ShowKey from './ShowKey';
@@ -19,7 +17,7 @@ enum Direction {
 }
 
 const Recover = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const wallet = useWallet();
   const [activeIndex, onChange] = useState(0);
   const [errMessage] = useState(chrome.i18n.getMessage('No__backup__found'));
@@ -33,13 +31,13 @@ const Recover = () => {
       .getCurrentAccount()
       .then((res) => {
         if (res) {
-          history.push('/');
+          navigate('/');
         }
       })
       .catch(() => {
         return;
       });
-  }, [history, wallet]);
+  }, [navigate, wallet]);
   const goNext = () => {
     setDirection(Direction.Right);
     if (activeIndex < 5) {
@@ -54,7 +52,7 @@ const Recover = () => {
     if (activeIndex >= 1) {
       onChange(activeIndex - 1);
     } else {
-      history.goBack();
+      navigate(-1);
     }
   };
 

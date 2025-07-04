@@ -1,9 +1,8 @@
 import React, { useCallback, useEffect, useReducer } from 'react';
-import { useHistory, useLocation, useParams } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router';
 
 import { type FlowAddress, type WalletAddress } from '@/shared/types/wallet-types';
 import { isValidAddress, isValidFlowAddress } from '@/shared/utils/address';
-import { consoleWarn } from '@/shared/utils/console-log';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { transactionReducer, INITIAL_TRANSACTION_STATE } from '@/ui/reducers/transaction-reducer';
@@ -15,9 +14,11 @@ export const SendTo = () => {
 
   const { mainAddress, currentWallet, userInfo } = useProfiles();
   const { coins, coinsLoaded } = useCoins();
-  const { id: token, toAddress } = useParams<{ id: string; toAddress: string }>();
+  const params = useParams();
+  const token = params.id;
+  const toAddress = params.toAddress;
   const location = useLocation();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const [transactionState, dispatch] = useReducer(transactionReducer, INITIAL_TRANSACTION_STATE);
 
@@ -33,14 +34,14 @@ export const SendTo = () => {
           },
         });
         // Update the URL to the new token
-        history.replace(`/dashboard/token/${symbol.toLowerCase()}/send/${toAddress}`);
+        navigate(`/dashboard/token/${symbol.toLowerCase()}/send/${toAddress}`);
       } else {
         if (coinsLoaded) {
           throw new Error(`Token ${symbol} not found`);
         }
       }
     },
-    [coins, coinsLoaded, history, toAddress]
+    [coins, coinsLoaded, navigate, toAddress]
   );
 
   useEffect(() => {

@@ -2,36 +2,27 @@ import {
   Box,
   CircularProgress,
   Drawer,
-  IconButton,
   List,
   ListItem,
   ListItemButton,
   ListItemIcon,
-  ListItemText,
-  Skeleton,
   Typography,
 } from '@mui/material';
 import React, { useCallback, useRef, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import type { UserInfoResponse } from '@/shared/types/network-types';
-import { type WalletAccount } from '@/shared/types/wallet-types';
+import { type MainAccount, type WalletAccount } from '@/shared/types/wallet-types';
 import { consoleError } from '@/shared/utils/console-log';
+import lock from '@/ui/assets/svg/sidebar-lock.svg';
+import plus from '@/ui/assets/svg/sidebar-plus.svg';
 import { AccountListing } from '@/ui/components/account/account-listing';
+import ErrorModel from '@/ui/components/PopupModal/errorModel';
 import { ProfileItemBase } from '@/ui/components/profile/profile-item-base';
 import { MenuItem } from '@/ui/components/sidebar/menu-item';
 import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
-import {
-  COLOR_GREEN_FLOW_THEME_16FF99,
-  COLOR_WHITE_ALPHA_10_FFFFFF1A,
-  COLOR_WHITE_ALPHA_40_FFFFFF66,
-} from '@/ui/style/color';
-import { useWallet } from 'ui/utils';
-
-import lock from '../../../assets/svg/sidebar-lock.svg';
-import plus from '../../../assets/svg/sidebar-plus.svg';
-import userCircleGear from '../../../assets/svg/user-circle-gear.svg';
-import ErrorModel from '../../../components/PopupModal/errorModel';
+import { useWallet } from '@/ui/hooks/use-wallet';
+import { COLOR_WHITE_ALPHA_10_FFFFFF1A, COLOR_WHITE_ALPHA_40_FFFFFF66 } from '@/ui/style/color';
 
 import AddAccountPopup from './AddAccountPopup';
 
@@ -40,9 +31,9 @@ interface MenuDrawerProps {
   toggleDrawer: () => void;
   userInfo?: UserInfoResponse;
   togglePop: () => void;
-  walletList: WalletAccount[];
+  walletList: MainAccount[];
   activeAccount: WalletAccount;
-  activeParentAccount: WalletAccount;
+  activeParentAccount: MainAccount;
   network: string;
   modeOn: boolean;
   mainAddressLoading: boolean;
@@ -62,7 +53,7 @@ const MenuDrawer = ({
   noAddress,
 }: MenuDrawerProps) => {
   const wallet = useWallet();
-  const history = useHistory();
+  const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
   // Add Account Drawer
   const [showAddAccount, setShowAddAccount] = useState(false);
@@ -111,10 +102,10 @@ const MenuDrawer = ({
   };
   const handleEnableEvmClick = useCallback(
     (parentAddress: string) => {
-      history.push(`/dashboard/enable?parentAddress=${parentAddress}`);
+      navigate(`/dashboard/enable?parentAddress=${parentAddress}`);
       toggleDrawer();
     },
-    [history, toggleDrawer]
+    [navigate, toggleDrawer]
   );
   return (
     <Drawer
@@ -233,7 +224,7 @@ const MenuDrawer = ({
             text={chrome.i18n.getMessage('Lock__Wallet')}
             onClick={() => {
               wallet.lockWallet().then(() => {
-                history.push('/unlock');
+                navigate('/unlock');
               });
             }}
           />

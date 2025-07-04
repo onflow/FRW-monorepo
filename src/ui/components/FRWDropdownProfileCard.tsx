@@ -1,17 +1,17 @@
 import {
-  Box,
-  Typography,
   Avatar,
-  Skeleton,
-  Select,
-  MenuItem,
+  Box,
   FormControl,
+  MenuItem,
+  Select,
+  Skeleton,
+  Typography,
   type SelectChangeEvent,
 } from '@mui/material';
 import React, { useEffect } from 'react';
 
 import { type Contact } from '@/shared/types/network-types';
-import { formatAddress, isEmoji } from 'ui/utils';
+import { formatAddress, isEmoji } from '@/ui/utils';
 
 export const FRWDropdownProfileCard = ({
   contacts,

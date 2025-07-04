@@ -1,4 +1,4 @@
-import { Box, Tabs, Tab, Typography } from '@mui/material';
+import { Box, Tab, Tabs, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 
 import { type PublicKeyAccount } from '@/shared/types/wallet-types';
@@ -9,12 +9,12 @@ import KeyImport from '@/ui/components/import-components/KeyImport';
 import MobileAppImportSteps from '@/ui/components/import-components/mobile-app-import-steps';
 import SeedPhraseImport from '@/ui/components/import-components/SeedPhraseImport';
 import ErrorModel from '@/ui/components/PopupModal/errorModel';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import {
-  COLOR_DARKMODE_WHITE_10pc,
   COLOR_GREEN_FLOW_DARKMODE_00EF8B,
   COLOR_GREEN_FLOW_DARKMODE_00EF8B_10pc,
 } from '@/ui/style/color';
-import { useWallet } from '@/ui/utils/WalletContext';
+
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
 

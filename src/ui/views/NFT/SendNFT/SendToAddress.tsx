@@ -1,35 +1,35 @@
 import SearchIcon from '@mui/icons-material/Search';
 import {
-  Box,
-  Tab,
-  Tabs,
-  Typography,
-  InputAdornment,
-  Input,
   Avatar,
+  Box,
+  Input,
+  InputAdornment,
   ListItem,
   ListItemAvatar,
   ListItemText,
+  Tab,
+  Tabs,
+  Typography,
 } from '@mui/material';
 import { StyledEngineProvider, useTheme } from '@mui/material/styles';
 import { isEmpty } from 'lodash';
-import React, { useState, useEffect, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useLocation } from 'react-router';
 
 import { type Contact, ContactType } from '@/shared/types/network-types';
-import { withPrefix, isValidEthereumAddress } from '@/shared/utils/address';
+import { isValidEthereumAddress, withPrefix } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
 import { LLHeader } from '@/ui/components';
+import AccountsList from '@/ui/components/AddressLists/AccountsList';
+import AddressBookList from '@/ui/components/AddressLists/AddressBookList';
+import RecentList from '@/ui/components/AddressLists/RecentList';
+import SearchList from '@/ui/components/AddressLists/SearchList';
 import IconAbout from '@/ui/components/iconfont/IconAbout';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useAllNftList } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
+import { returnFilteredCollections } from '@/ui/utils';
 import { type MatchMedia } from '@/ui/utils/url';
-import { useWallet, returnFilteredCollections } from 'ui/utils';
-
-import AccountsList from '../../../components/AddressLists/AccountsList';
-import AddressBookList from '../../../components/AddressLists/AddressBookList';
-import RecentList from '../../../components/AddressLists/RecentList';
-import SearchList from '../../../components/AddressLists/SearchList';
 
 import SendNFTConfirmation from './SendNFTConfirmation';
 

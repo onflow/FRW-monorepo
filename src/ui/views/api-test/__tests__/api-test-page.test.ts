@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-import { createTestGroups } from '../../../../shared/test-data/test-groups';
+import { createTestGroups } from '@/shared/test-data/test-groups';
+
 import methods from '../openapi-methods.json';
 
 describe('ApiTestPage', () => {

@@ -1,16 +1,17 @@
 import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
-import { Box, Typography, Avatar, IconButton, CardMedia, Skeleton } from '@mui/material';
+import { Avatar, Box, CardMedia, IconButton, Skeleton, Typography } from '@mui/material';
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { ContactType } from '@/shared/types/network-types';
-import closex from 'ui/assets/closex.svg';
-import { useWallet, formatAddress, isEmoji } from 'ui/utils';
+import closex from '@/ui/assets/closex.svg';
+import { useWallet } from '@/ui/hooks/use-wallet';
+import { formatAddress, isEmoji } from '@/ui/utils';
 
 export const LLContactCard = ({ contact, hideCloseButton, isSend = false, isLoading = false }) => {
   const wallet = useWallet();
 
-  const history = useHistory();
+  const navigate = useNavigate();
   const [contactAdd, setContactAdd] = useState(false);
 
   const getName = (name: string) => {
@@ -132,7 +133,7 @@ export const LLContactCard = ({ contact, hideCloseButton, isSend = false, isLoad
           <IconButton
             onClick={(e) => {
               e.stopPropagation();
-              history.push(`/dashboard/token/flow/send/${contact.address}`);
+              navigate(`/dashboard/token/flow/send/${contact.address}`);
             }}
           >
             <CardMedia sx={{ width: '11px', height: '11px' }} image={closex} />

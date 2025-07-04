@@ -1,15 +1,13 @@
-import { Typography, Box, Drawer, Stack, InputBase, CircularProgress } from '@mui/material';
+import { Box, CircularProgress, Drawer, InputBase, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import React, { useState, useEffect } from 'react';
-import { useForm, FieldValues } from 'react-hook-form';
-import { useHistory } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router';
 
 import { consoleError } from '@/shared/utils/console-log';
-import { useWallet } from 'ui/utils';
-
-import closeCircle from '../../../assets/image/closeCircle.png';
-import warning from '../../../assets/image/warning.png';
-import { LLPrimaryButton } from '../../../components';
+import warning from '@/ui/assets/image/warning.png';
+import { LLPrimaryButton } from '@/ui/components';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 const StyledInput = styled(InputBase)(({ theme }) => ({
   zIndex: 1,
@@ -35,7 +33,7 @@ interface RevokePageProps {
 const RevokePage = (props: RevokePageProps) => {
   const wallet = useWallet();
 
-  const history = useHistory();
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
@@ -60,7 +58,7 @@ const RevokePage = (props: RevokePageProps) => {
         props.handleCloseIconClicked();
         await wallet.setDashIndex(0);
         setIsLoading(false);
-        history.push(`/dashboard?activity=1&txId=${txId}`);
+        navigate(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
         consoleError(err);

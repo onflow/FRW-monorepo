@@ -1,8 +1,6 @@
 import { CardMedia } from '@mui/material';
 import React from 'react';
 
-import flowgrey from 'ui/assets/svg/flow-grey.svg';
-
 interface IconWithPlaceholderProps {
   imageUrl: string;
   width?: string | number;

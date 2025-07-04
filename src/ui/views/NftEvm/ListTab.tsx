@@ -1,21 +1,13 @@
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import {
-  Typography,
-  Card,
-  CardActionArea,
-  CardMedia,
-  CardContent,
-  Container,
-  Skeleton,
-} from '@mui/material';
+import { Card, CardActionArea, CardContent, CardMedia, Container, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { Box } from '@mui/system';
-import React, { forwardRef, useImperativeHandle, useEffect, useState, useCallback } from 'react';
-import { useHistory } from 'react-router-dom';
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useState } from 'react';
+import { useNavigate } from 'react-router';
 
+import placeholder from '@/ui/assets/image/placeholder.png';
 import ListSkeleton from '@/ui/components/NFTs/ListSkeleton';
-import { useWallet } from '@/ui/utils/WalletContext';
-import placeholder from 'ui/assets/image/placeholder.png';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 import EmptyStatus from '../EmptyStatus';
 
@@ -28,7 +20,7 @@ interface ListTabProps {
 
 const ListTab = forwardRef((props: ListTabProps, ref) => {
   const { accessible, setCount, data } = props;
-  const history = useHistory();
+  const navigate = useNavigate();
   const usewallet = useWallet();
   const [collectionLoading, setCollectionLoading] = useState(true);
   const [collections, setCollections] = useState<any[]>([]);
@@ -93,14 +85,16 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
 
   const CollectionView = (data) => {
     const handleClick = () => {
-      history.push({
-        pathname: `/dashboard/nested/evm/collectiondetail/${data.ownerAddress}.${data.contract_name}.${data.count}`,
-        state: {
-          collection: data,
-          ownerAddress: data.ownerAddress,
-          accessible: accessible,
-        },
-      });
+      navigate(
+        `/dashboard/nested/evm/collectiondetail/${data.ownerAddress}.${data.contract_name}.${data.count}`,
+        {
+          state: {
+            collection: data,
+            ownerAddress: data.ownerAddress,
+            accessible: accessible,
+          },
+        }
+      );
     };
     return (
       <Card

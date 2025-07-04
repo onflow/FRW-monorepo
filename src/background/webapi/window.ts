@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 
-import { IS_WINDOWS } from 'consts';
+import { IS_WINDOWS } from '@/shared/constant/environment';
 
 const event = new EventEmitter();
 

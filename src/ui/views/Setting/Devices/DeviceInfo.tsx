@@ -1,16 +1,12 @@
 import { Box, Typography } from '@mui/material';
-import React, { useState, useEffect, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useLocation } from 'react-router';
 
 import { LLHeader } from '@/ui/components';
-import { useWallet } from 'ui/utils';
-
-interface LocationState {
-  deviceItem?: any;
-}
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 const DeviceInfo = () => {
-  const location = useLocation<LocationState>();
+  const location = useLocation();
   const wallet = useWallet();
   const [devices, setDevices] = useState<any>({});
 

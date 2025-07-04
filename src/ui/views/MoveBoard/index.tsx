@@ -1,15 +1,15 @@
 import CloseIcon from '@mui/icons-material/Close';
-import { Box, Button, Typography, Drawer, IconButton, CardMedia } from '@mui/material';
-import React, { useState, useEffect, useCallback } from 'react';
-import { useHistory } from 'react-router-dom';
+import { Box, Button, CardMedia, Drawer, IconButton, Typography } from '@mui/material';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 
+import moveft from '@/ui/assets/image/moveft.png';
+import movenft from '@/ui/assets/image/movenft.png';
+import moveftbg from '@/ui/assets/svg/moveftbg.svg';
+import movenftbg from '@/ui/assets/svg/movenftbg.svg';
 import LLComingSoon from '@/ui/components/LLComingSoonWarning';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import moveft from 'ui/assets/image/moveft.png';
-import movenft from 'ui/assets/image/movenft.png';
-import moveftbg from 'ui/assets/svg/moveftbg.svg';
-import movenftbg from 'ui/assets/svg/movenftbg.svg';
-import { useWallet } from 'ui/utils';
 
 import MoveEvm from './MoveEvm';
 import MoveFromChild from './MoveFromChild';
@@ -24,7 +24,7 @@ interface MoveBoardProps {
 
 const MoveBoard = (props: MoveBoardProps) => {
   const usewallet = useWallet();
-  const history = useHistory();
+  const navigate = useNavigate();
   const { activeAccountType } = useProfiles();
   const [showSelectNft, setSelectBoard] = useState<boolean>(false);
   const [network, setNetwork] = useState<string>('');
@@ -209,7 +209,7 @@ const MoveBoard = (props: MoveBoardProps) => {
             },
           }}
           onClick={() => {
-            history.push('/dashboard/token/flow/send');
+            navigate('/dashboard/token/flow/send');
           }}
         >
           <CardMedia

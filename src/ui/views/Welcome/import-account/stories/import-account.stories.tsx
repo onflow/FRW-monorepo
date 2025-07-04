@@ -2,19 +2,18 @@ import { Box } from '@mui/material';
 import type { Meta, StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 import { fn } from 'storybook/test';
+import { withRouter } from 'storybook-addon-remix-react-router';
 
-import { Link as LinkMock } from '@/stories/react-router-dom.mock';
-import { useWallet as useWalletMock } from '@/ui/utils/WalletContext.mock';
+import { useWallet as useWalletMock } from '@/ui/hooks/use-wallet.mock';
 
 import ImportAccount from '../index';
 
 const meta = {
-  title: 'views/Welcome/import-account',
+  title: 'views/Welcome/ImportAccount',
   component: ImportAccount,
   decorators: [
+    withRouter,
     (Story) => {
-      LinkMock.mockReset();
-      LinkMock.mockImplementation((props: any): React.ReactNode => <Box {...props} />);
       useWalletMock.mockReset();
       useWalletMock.mockResolvedValue({
         openapi: {

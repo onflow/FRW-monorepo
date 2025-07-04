@@ -1,7 +1,8 @@
-import { createTheme, type ThemeOptions } from '@mui/material/styles';
+import { type ThemeOptions } from '@mui/material/styles';
+
+import { COLOR_GREEN_FLOW_DARKMODE_00EF8B } from './color';
 
 import './fonts.css';
-import { COLOR_GREEN_FLOW_DARKMODE_00EF8B } from './color';
 
 const themeOptions: ThemeOptions = {
   components: {

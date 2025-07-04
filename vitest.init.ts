@@ -130,7 +130,7 @@ vi.mock('firebase/auth/web-extension', () => ({
 }));
 
 // Mock storage utility
-vi.mock('@/background/utils/storage', () => ({
+vi.mock('@/core/utils/storage', () => ({
   default: {
     get: vi.fn().mockResolvedValue({}),
     set: vi.fn().mockResolvedValue(undefined),
@@ -140,7 +140,7 @@ vi.mock('@/background/utils/storage', () => ({
 }));
 
 // Mock MixpanelService
-vi.mock('@/background/service/mixpanel', () => ({
+vi.mock('@/core/service/mixpanel', () => ({
   mixpanelTrack: {
     track: vi.fn(),
     identify: vi.fn(),

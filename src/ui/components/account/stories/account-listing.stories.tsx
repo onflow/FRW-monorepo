@@ -1,16 +1,12 @@
 import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
+import { withRouter } from 'storybook-addon-remix-react-router';
 
-import emojisJson from '@/background/utils/emoji.json';
-const { emojis } = emojisJson as { emojis: Emoji[] };
+import emojisJson from '@/shared/constant/emoji.json';
 import { MAINNET_CHAIN_ID } from '@/shared/types/network-types';
 import { type NFTCollections } from '@/shared/types/nft-types';
-import { type Emoji, type WalletAccount } from '@/shared/types/wallet-types';
+import { type Emoji, type MainAccount, type WalletAccount } from '@/shared/types/wallet-types';
 import { AccountListing } from '@/ui/components/account/account-listing';
-import {
-  useChildAccounts as importedMockUseChildAccounts, // Aliased import from the mock file
-  useEvmAccount as importedMockUseEvmAccount, // Aliased import from the mock file
-} from '@/ui/hooks/use-account-hooks.mock';
 import {
   useNftCatalogCollections as importedMockUseNftCatalogCollections, // Aliased import from the mock file
 } from '@/ui/hooks/useNftHook.mock';
@@ -18,8 +14,9 @@ import {
   USE_PROFILES_MOCK,
   useProfiles as importedMockUseProfiles,
 } from '@/ui/hooks/useProfileHook.mock';
+const { emojis } = emojisJson as { emojis: Emoji[] };
 
-const mainWalletAccount: WalletAccount = {
+const mainWalletAccount: MainAccount = {
   name: emojis[2].name,
   icon: emojis[2].emoji,
   color: emojis[2].bgcolor,
@@ -28,8 +25,15 @@ const mainWalletAccount: WalletAccount = {
   id: 1,
   balance: '550.66005012',
   nfts: 12,
+  publicKey: '0x0000000000000000000000000000000000000000000000000000000000000000',
+  keyIndex: 0,
+  weight: 1000,
+  signAlgo: 0,
+  signAlgoString: 'ECDSA',
+  hashAlgo: 0,
+  hashAlgoString: 'SHA256',
 };
-const mainWalletAccount2: WalletAccount = {
+const mainWalletAccount2: MainAccount = {
   name: emojis[3].name,
   icon: emojis[3].emoji,
   color: emojis[3].bgcolor,
@@ -38,6 +42,13 @@ const mainWalletAccount2: WalletAccount = {
   id: 1, // Differentiate ID if it matters for keying or logic
   balance: '0.00000077',
   nfts: 4,
+  publicKey: '0x0000000000000000000000000000000000000000000000000000000000000000',
+  keyIndex: 0,
+  weight: 1000,
+  signAlgo: 0,
+  signAlgoString: 'ECDSA',
+  hashAlgo: 0,
+  hashAlgoString: 'SHA256',
 };
 
 const evmWalletAccount: WalletAccount = {
@@ -128,25 +139,12 @@ const meta: Meta<typeof AccountListing> = {
     network: { control: 'text' },
   },
   decorators: [
+    withRouter,
     (Story, context) => {
-      importedMockUseChildAccounts.mockReset();
-      importedMockUseEvmAccount.mockReset();
       importedMockUseNftCatalogCollections.mockReset();
       importedMockUseProfiles.mockReset();
       const { mockData } = context.parameters;
       if (mockData) {
-        importedMockUseEvmAccount.mockImplementation((_network, address) => {
-          if (typeof address === 'string' && mockData.evmAccounts) {
-            return mockData.evmAccounts[address];
-          }
-          return undefined;
-        });
-        importedMockUseChildAccounts.mockImplementation((_network, address) => {
-          if (typeof address === 'string' && mockData.childAccounts) {
-            return mockData.childAccounts[address] || [];
-          }
-          return [];
-        });
         importedMockUseNftCatalogCollections.mockImplementation(
           (network?: string, address?: string) => {
             if (typeof address === 'string' && mockData.nfts) {
@@ -179,7 +177,18 @@ type Story = StoryObj<typeof AccountListing>;
 export const Default: Story = {
   args: {
     network: 'mainnet',
-    accountList: [mainWalletAccount, mainWalletAccount2],
+    accountList: [
+      {
+        ...mainWalletAccount,
+        evmAccount: evmWalletAccount,
+        childAccounts: [childWallet1, childWallet2],
+      },
+      {
+        ...mainWalletAccount2,
+        evmAccount: evmWalletAccount2,
+        childAccounts: [],
+      },
+    ],
     activeAccount: undefined,
   },
   parameters: {
@@ -210,7 +219,12 @@ export const Default: Story = {
 export const Active: Story = {
   args: {
     network: 'mainnet',
-    accountList: [mainWalletAccount],
+    accountList: [
+      {
+        ...mainWalletAccount,
+        childAccounts: [childWallet1, childWallet2],
+      },
+    ],
     activeAccount: mainWalletAccount,
     activeParentAccount: mainWalletAccount, // not necessary if activeAccount is a main account
     showActiveAccount: true,
@@ -233,7 +247,13 @@ export const Active: Story = {
 export const EVMActive: Story = {
   args: {
     network: 'mainnet',
-    accountList: [mainWalletAccount],
+    accountList: [
+      {
+        ...mainWalletAccount,
+        evmAccount: evmWalletAccount,
+        childAccounts: [childWallet2],
+      },
+    ],
     activeAccount: evmWalletAccount,
     activeParentAccount: mainWalletAccount,
     showActiveAccount: true,
@@ -257,9 +277,19 @@ export const EVMActive: Story = {
 export const NoEVM: Story = {
   args: {
     network: 'mainnet',
-    accountList: [mainWalletAccount],
+    accountList: [
+      {
+        ...mainWalletAccount,
+        evmAccount: noEvmWalletAccount,
+        childAccounts: [childWallet1, childWallet2],
+      },
+    ],
     activeAccount: mainWalletAccount,
-    activeParentAccount: mainWalletAccount,
+    activeParentAccount: {
+      ...mainWalletAccount,
+      evmAccount: noEvmWalletAccount,
+      childAccounts: [childWallet1, childWallet2],
+    },
     showActiveAccount: true,
   },
   parameters: {
@@ -298,9 +328,19 @@ export const LoadingActive: Story = {
 export const PendingAccountTransaction: Story = {
   args: {
     network: 'mainnet',
-    accountList: [mainWalletAccount],
+    accountList: [
+      {
+        ...mainWalletAccount,
+        evmAccount: noEvmWalletAccount,
+        childAccounts: [childWallet2],
+      },
+    ],
     activeAccount: mainWalletAccount,
-    activeParentAccount: mainWalletAccount,
+    activeParentAccount: {
+      ...mainWalletAccount,
+      evmAccount: noEvmWalletAccount,
+      childAccounts: [childWallet1, childWallet2],
+    },
     showActiveAccount: true,
   },
   parameters: {
@@ -325,7 +365,13 @@ export const PendingAccountTransaction: Story = {
 export const MultiplePendingAccountTransaction: Story = {
   args: {
     network: 'mainnet',
-    accountList: [mainWalletAccount],
+    accountList: [
+      {
+        ...mainWalletAccount,
+        evmAccount: evmWalletAccount2,
+        childAccounts: [childWallet1, childWallet2],
+      },
+    ],
     activeAccount: mainWalletAccount,
     activeParentAccount: mainWalletAccount,
     showActiveAccount: true,

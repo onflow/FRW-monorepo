@@ -1,5 +1,4 @@
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import { Box, IconButton, Typography } from '@mui/material';
 import MobileStepper from '@mui/material/MobileStepper';
 import React from 'react';

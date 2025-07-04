@@ -1,29 +1,28 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import {
-  Typography,
   Box,
-  IconButton,
-  Stack,
-  InputBase,
   CircularProgress,
   FormControl,
+  IconButton,
+  InputBase,
+  Stack,
+  Typography,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { Contract, ethers } from 'ethers';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useHistory } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router';
 
+import { EVM_ENDPOINT } from '@/shared/constant/domain-constants';
 import { type CustomFungibleTokenInfo } from '@/shared/types/coin-types';
 import { networkToChainId } from '@/shared/types/network-types';
+import { isValidEthereumAddress, withPrefix } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
+import { LLFormHelperText, LLPrimaryButton } from '@/ui/components';
 import { refreshEvmToken } from '@/ui/hooks/use-coin-hooks';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
-import { EVM_ENDPOINT } from 'consts';
-import { useWallet } from 'ui/utils';
-
-import { withPrefix, isValidEthereumAddress } from '../../../../shared/utils/address';
-import { LLPrimaryButton, LLFormHelperText } from '../../../components';
 
 import AddCustomEvmForm from './CustomEvmForm';
 
@@ -42,7 +41,8 @@ const StyledInput = styled(InputBase)(({ theme }) => ({
 
 const AddCustomEvmToken = () => {
   const usewallet = useWallet();
-  const history = useHistory();
+  const navigate = useNavigate();
+  const location = useLocation();
   const {
     register,
     watch,
@@ -139,15 +139,15 @@ const AddCustomEvmToken = () => {
       consoleError('Failed to import custom token:', error);
     } finally {
       setLoading(false);
-      history.replace({ pathname: history.location.pathname, state: { refreshed: true } });
-      history.goBack();
+      navigate(location.pathname, { state: { refreshed: true }, replace: true });
+      navigate(-1);
     }
   };
 
   const Header = () => {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <IconButton onClick={history.goBack} sx={{ height: '40px', padding: '0' }}>
+        <IconButton onClick={() => navigate(-1)} sx={{ height: '40px', padding: '0' }}>
           <ArrowBackIcon sx={{ color: 'icon.navi' }} />
         </IconButton>
         <Typography

@@ -1,7 +1,7 @@
-import { Box, Button, Typography, CardMedia } from '@mui/material';
+import { Box, Button, CardMedia, Typography } from '@mui/material';
 import BN from 'bignumber.js';
-import React, { useState, useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 
 import { type TransactionState } from '@/shared/types/transaction-types';
 import { isValidAddress, isValidEthereumAddress } from '@/shared/utils/address';
@@ -10,13 +10,12 @@ import { LLHeader } from '@/ui/components';
 import CancelIcon from '@/ui/components/iconfont/IconClose';
 import { ContactCard } from '@/ui/components/Send/ContactCard';
 import SlideRelative from '@/ui/components/SlideRelative';
+import { CurrencyValue } from '@/ui/components/TokenLists/CurrencyValue';
+import { TokenBalance } from '@/ui/components/TokenLists/TokenBalance';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useContact } from '@/ui/hooks/useContactHook';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
-import { useWallet } from 'ui/utils';
-
-import { CurrencyValue } from '../../components/TokenLists/CurrencyValue';
-import { TokenBalance } from '../../components/TokenLists/TokenBalance';
 
 import TransferAmount from './TransferAmount';
 import TransferConfirmation from './TransferConfirmation';
@@ -36,7 +35,7 @@ const SendToCadenceOrEvm = ({
   handleMaxClick: () => void;
   handleFinalizeAmount: () => void;
 }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const wallet = useWallet();
   const { network } = useNetwork();
   const currency = useCurrency();
@@ -177,7 +176,7 @@ const SendToCadenceOrEvm = ({
 
           <Box sx={{ display: 'flex', gap: '8px', mx: '18px', mb: '35px', mt: '10px' }}>
             <Button
-              onClick={history.goBack}
+              onClick={() => navigate(-1)}
               variant="contained"
               // @ts-expect-error custom color
               color="neutral"

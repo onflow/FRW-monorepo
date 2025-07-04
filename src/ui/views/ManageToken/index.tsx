@@ -2,35 +2,34 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import HelpOutlineRoundedIcon from '@mui/icons-material/HelpOutlineRounded';
 import SearchIcon from '@mui/icons-material/Search';
 import {
-  List,
   Box,
+  Card,
+  CardContent,
+  CardMedia,
+  IconButton,
   Input,
   InputAdornment,
-  Card,
-  CardMedia,
+  List,
   Skeleton,
-  CardContent,
-  Button,
-  Typography,
   Switch,
-  IconButton,
   Tooltip,
+  Typography,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { StyledEngineProvider } from '@mui/material/styles';
-import React, { useState, useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 
-// import { useHistory } from 'react-router-dom';
+// import { useNavigate } from 'react-router';
 import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
 import VerifiedIcon from '@/ui/assets/svg/verfied-check.svg';
 import IconCreate from '@/ui/components/iconfont/IconCreate';
 import TokenItem from '@/ui/components/TokenLists/TokenItem';
+import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useCoins } from 'ui/hooks/useCoinHook';
 
 const ManageToken = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const { coins, tokenFilter, updateTokenFilter } = useCoins();
   const { activeAccountType } = useProfiles();
   const [keyword, setKeyword] = useState('');
@@ -82,7 +81,7 @@ const ManageToken = () => {
             }}
           >
             <Grid size={1}>
-              <IconButton onClick={history.goBack}>
+              <IconButton onClick={() => navigate(-1)}>
                 <ArrowBackIcon sx={{ color: 'icon.navi' }} />
               </IconButton>
             </Grid>
@@ -93,13 +92,13 @@ const ManageToken = () => {
             </Grid>
             {activeAccountType === 'evm' ? (
               <Grid size={1} sx={{ pl: 0 }}>
-                <IconButton onClick={() => history.push('/dashboard/addcustomevm')}>
+                <IconButton onClick={() => navigate('/dashboard/addcustomevm')}>
                   <IconCreate size={16} color="#787878" />
                 </IconButton>
               </Grid>
             ) : (
               <Grid size={1} sx={{ pl: 0 }}>
-                <IconButton onClick={() => history.push('/dashboard/tokenList')}>
+                <IconButton onClick={() => navigate('/dashboard/tokenList')}>
                   <IconCreate size={16} color="#787878" />
                 </IconButton>
               </Grid>

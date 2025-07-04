@@ -16,7 +16,7 @@ _raw/manifest.json
 _raw/react-devtools.js
 yarn-error.log
 dist2
-src/background/utils/firebase.config.json
+src/core/utils/firebase.config.json
 dist.rar
 dist.7z
 .cursorrules

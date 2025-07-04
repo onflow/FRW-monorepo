@@ -1,10 +1,10 @@
-import { Typography, Box, Drawer, Stack } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
+import { LLWarningButton } from '@/ui/components';
 import ResetModal from '@/ui/components/PopupModal/resetModal';
-import { LLPrimaryButton, LLSecondaryButton, LLWarningButton } from 'ui/components';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 import StepBox from '../stepBox';
 
@@ -22,7 +22,7 @@ export interface AddressBookValues {
 
 const ResetPage = (props: AddOrEditAddressProps) => {
   const usewallet = useWallet();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [showAction, setShowAction] = useState(false);
 
   const onResetSubmit = async () => {

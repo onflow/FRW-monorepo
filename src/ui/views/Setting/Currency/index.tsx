@@ -1,10 +1,10 @@
-import { Box, Typography, List, ListItemButton, ListItem, CircularProgress } from '@mui/material';
+import { Box, CircularProgress, List, ListItem, ListItemButton, Typography } from '@mui/material';
 import React, { useCallback } from 'react';
 
 import { consoleError } from '@/shared/utils/console-log';
 import { LLHeader } from '@/ui/components';
 import { useCurrency, useSupportedCurrencies } from '@/ui/hooks/preference-hooks';
-import { useWallet, useWalletLoaded } from '@/ui/utils';
+import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';
 
 const CurrencySettings = () => {
   const walletLoaded = useWalletLoaded();

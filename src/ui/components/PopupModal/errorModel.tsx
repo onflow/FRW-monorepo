@@ -1,14 +1,14 @@
 import { Button, Typography } from '@mui/material';
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { CustomDialog } from '../custom-dialog';
 
 const ErrorModel = ({ isOpen, onOpenChange, errorName, errorMessage, isGoback = false }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const handleSubmit = () => {
-    history.goBack();
+    navigate(-1);
   };
 
   return (

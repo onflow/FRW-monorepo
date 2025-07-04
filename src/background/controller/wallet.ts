@@ -9,44 +9,99 @@ import { getAuth } from 'firebase/auth/web-extension';
 import { encode } from 'rlp';
 import web3, { TransactionError, Web3 } from 'web3';
 
+import notification from '@/background/webapi/notification';
+import { openIndexPage } from '@/background/webapi/tab';
+import {
+  addressBookService,
+  coinListService,
+  evmNftService,
+  googleDriveService,
+  keyringService,
+  mixpanelTrack,
+  newsService,
+  nftService,
+  openapiService,
+  permissionService,
+  preferenceService,
+  remoteConfigService,
+  sessionService,
+  tokenListService,
+  transactionService,
+  userInfoService,
+  userWalletService,
+} from '@/core/service';
+import { type Keyring, KEYRING_CLASS, type KeyringType } from '@/core/service/keyring';
+import { HDKeyring } from '@/core/service/keyring/hdKeyring';
+import { getScripts } from '@/core/service/openapi';
+import type { ConnectedSite } from '@/core/service/permission';
+import type { PreferenceAccount } from '@/core/service/preference';
+import {
+  addPendingAccountCreationTransaction,
+  addPlaceholderAccount,
+  loadAccountBalance,
+  removePendingAccountCreationTransaction,
+} from '@/core/service/userWallet';
+import { replaceNftKeywords } from '@/core/utils';
 import {
   getAccountKey,
   pubKeyAccountToAccountKey,
   pubKeySignAlgoToAccountKey,
-} from '@/background/utils/account-key';
+} from '@/core/utils/account-key';
 import {
-  findAddressWithSeed,
-  findAddressWithPK,
-} from '@/background/utils/modules/findAddressWithPK';
+  getValidData,
+  registerRefreshListener,
+  setCachedData,
+  triggerRefresh,
+} from '@/core/utils/data-cache';
+import { findAddressWithPK, findAddressWithSeed } from '@/core/utils/modules/findAddressWithPK';
+import { getOrCheckAccountsByPublicKeyTuple } from '@/core/utils/modules/findAddressWithPubKey';
 import {
-  pk2PubKeyTuple,
-  jsonToKey,
-  seedWithPathAndPhrase2PublicPrivateKey,
   formPubKeyTuple,
-} from '@/background/utils/modules/publicPrivateKey';
-import { generateRandomId } from '@/background/utils/random-id';
-import eventBus from '@/eventBus';
+  jsonToKey,
+  pk2PubKeyTuple,
+  seedWithPathAndPhrase2PublicPrivateKey,
+} from '@/core/utils/modules/publicPrivateKey';
+import { generateRandomId } from '@/core/utils/random-id';
+import { FLOW_BIP44_PATH } from '@/shared/constant/algo-constants';
+import {
+  EVM_ENDPOINT,
+  HTTP_STATUS_CONFLICT,
+  HTTP_STATUS_TOO_MANY_REQUESTS,
+  INTERNAL_REQUEST_ORIGIN,
+} from '@/shared/constant/domain-constants';
+import erc20ABI from '@/shared/constant/erc20.abi.json';
 import { type CustomFungibleTokenInfo } from '@/shared/types/coin-types';
 import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
-import { type PublicPrivateKeyTuple, type PublicKeyTuple } from '@/shared/types/key-types';
+import { type PublicKeyTuple, type PublicPrivateKeyTuple } from '@/shared/types/key-types';
 import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
-import { ContactType, MAINNET_CHAIN_ID, Period, PriceProvider } from '@/shared/types/network-types';
-import { type NFTCollections, type NFTCollectionData } from '@/shared/types/nft-types';
+import {
+  type AccountKeyRequest,
+  type Contact,
+  ContactType,
+  type FlowNetwork,
+  MAINNET_CHAIN_ID,
+  type NFTModelV2,
+  Period,
+  PriceProvider,
+  type TokenPriceHistory,
+  type UserInfoResponse,
+} from '@/shared/types/network-types';
+import { type NFTCollectionData, type NFTCollections } from '@/shared/types/nft-types';
 import { type TokenInfo } from '@/shared/types/token-info';
 import { type TrackingEvents } from '@/shared/types/tracking-types';
-import { type TransferItem, type TransactionState } from '@/shared/types/transaction-types';
+import { type TransactionState, type TransferItem } from '@/shared/types/transaction-types';
 import {
-  type ActiveChildType_depreciated,
-  type LoggedInAccount,
-  type FlowAddress,
-  type PublicKeyAccount,
-  type MainAccount,
-  type WalletAccount,
-  type EvmAddress,
-  type WalletAddress,
-  type Currency,
   type ActiveAccountType,
+  type ActiveChildType_depreciated,
+  type Currency,
+  type EvmAddress,
+  type FlowAddress,
+  type LoggedInAccount,
+  type MainAccount,
   type ProfileBackupStatus,
+  type PublicKeyAccount,
+  type WalletAccount,
+  type WalletAddress,
 } from '@/shared/types/wallet-types';
 import {
   ensureEvmAddressPrefix,
@@ -56,104 +111,38 @@ import {
   withPrefix,
 } from '@/shared/utils/address';
 import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
-import { FLOW_BIP44_PATH } from '@/shared/utils/algo-constants';
 import {
-  getCachedScripts,
-  getCachedNftCollection,
-  nftCatalogCollectionsKey,
+  accountBalanceKey,
   childAccountAllowTypesKey,
+  type ChildAccountFtStore,
   childAccountNftsKey,
   type ChildAccountNFTsStore,
+  coinListKey,
+  evmNftCollectionListKey,
+  type EvmNftCollectionListStore,
   evmNftIdsKey,
   type EvmNftIdsStore,
-  type EvmNftCollectionListStore,
-  evmNftCollectionListKey,
+  getCachedNftCollection,
+  getCachedScripts,
+  mainAccountsKey,
+  nftCatalogCollectionsKey,
   registerStatusKey,
   registerStatusRefreshRegex,
-  coinListKey,
-  type ChildAccountFtStore,
-  accountBalanceKey,
   walletLoadedKey,
   walletLoadedRefreshRegex,
 } from '@/shared/utils/cache-data-keys';
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 import { returnCurrentProfileId } from '@/shared/utils/current-id';
+import { getEmojiList } from '@/shared/utils/emoji-util';
 import { getPeriodFrequency } from '@/shared/utils/getPeriodFrequency';
+import eventBus from '@/shared/utils/message/eventBus';
 import { convertToIntegerAmount, validateAmount } from '@/shared/utils/number';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import { type CategoryScripts } from '@/shared/utils/script-types';
-import {
-  keyringService,
-  preferenceService,
-  notificationService,
-  permissionService,
-  sessionService,
-  openapiService,
-  pageStateCacheService,
-  userInfoService,
-  coinListService,
-  addressBookService,
-  userWalletService,
-  transactionService,
-  nftService,
-  googleDriveService,
-  newsService,
-  mixpanelTrack,
-  evmNftService,
-  tokenListService,
-  remoteConfigService,
-} from 'background/service';
-import i18n from 'background/service/i18n';
-import {
-  type DisplayedKeryring,
-  type Keyring,
-  KEYRING_CLASS,
-  type KeyringType,
-} from 'background/service/keyring';
-import type { CacheState } from 'background/service/pageStateCache';
-import { replaceNftKeywords } from 'background/utils';
-import { notification, storage } from 'background/webapi';
-import { openIndexPage } from 'background/webapi/tab';
-import {
-  INTERNAL_REQUEST_ORIGIN,
-  EVM_ENDPOINT,
-  HTTP_STATUS_CONFLICT,
-  HTTP_STATUS_TOO_MANY_REQUESTS,
-} from 'consts';
-
-import type {
-  AccountKeyRequest,
-  Contact,
-  FlowNetwork,
-  NFTModelV2,
-  TokenPriceHistory,
-  UserInfoResponse,
-} from '../../shared/types/network-types';
-import DisplayKeyring from '../service/keyring/display';
-import { HDKeyring } from '../service/keyring/hdKeyring';
-import { getScripts } from '../service/openapi';
-import type { ConnectedSite } from '../service/permission';
-import type { PreferenceAccount } from '../service/preference';
-import {
-  addPendingAccountCreationTransaction,
-  addPlaceholderAccount,
-  getEvmAccountOfParent,
-  loadAccountBalance,
-  loadEvmAccountOfParent,
-  removePendingAccountCreationTransaction,
-} from '../service/userWallet';
-import {
-  getValidData,
-  registerRefreshListener,
-  setCachedData,
-  triggerRefresh,
-} from '../utils/data-cache';
-import defaultConfig from '../utils/defaultConfig.json';
-import { getEmojiList } from '../utils/emoji-util';
-import erc20ABI from '../utils/erc20.abi.json';
-import { getOrCheckAccountsByPublicKeyTuple } from '../utils/modules/findAddressWithPubKey';
+import storage from '@/shared/utils/storage';
 
 import BaseController from './base';
+import notificationService from './notification';
 import provider from './provider';
 
 const stashKeyrings: Record<string, Keyring> = {};
@@ -724,14 +713,6 @@ export class WalletController extends BaseController {
   };
   openIndexPage = openIndexPage;
 
-  hasPageStateCache = () => pageStateCacheService.has();
-  getPageStateCache = () => {
-    if (!this.isUnlocked()) return null;
-    return pageStateCacheService.get();
-  };
-  clearPageStateCache = () => pageStateCacheService.clear();
-  setPageStateCache = (cache: CacheState) => pageStateCacheService.set(cache);
-
   getAddressCacheBalance = (address: string | undefined) => {
     if (!address) return null;
     return preferenceService.getAddressBalance(address);
@@ -829,6 +810,11 @@ export class WalletController extends BaseController {
     return await keyringService.getCurrentPublicPrivateKeyTuple();
   };
 
+  getPrivateKey = async (password: string): Promise<string> => {
+    await this.verifyPassword(password);
+    return await keyringService.getCurrentPrivateKey();
+  };
+
   getPubKey = async (): Promise<PublicKeyTuple> => {
     return await keyringService.getCurrentPublicKeyTuple();
   };
@@ -837,7 +823,7 @@ export class WalletController extends BaseController {
     const privateKey = ethUtil.stripHexPrefix(pk);
     const buffer = Buffer.from(privateKey, 'hex');
 
-    const error = new Error(i18n.t('the private key is invalid'));
+    const error = new Error('the private key is invalid');
     try {
       if (!ethUtil.isValidPrivate(buffer)) {
         throw error;
@@ -987,28 +973,6 @@ export class WalletController extends BaseController {
     await this.verifyPassword(password);
     const accounts = await keyringService.getKeyring();
     return accounts;
-  };
-
-  getAllVisibleAccounts: () => Promise<DisplayedKeryring[]> = async () => {
-    const typedAccounts = await keyringService.getAllTypedVisibleAccounts();
-
-    return typedAccounts.map((account) => ({
-      ...account,
-      keyring: new DisplayKeyring(account.keyring),
-    }));
-  };
-
-  getAllVisibleAccountsArray: () => Promise<PreferenceAccount[]> = () => {
-    return keyringService.getAllVisibleAccountsArray();
-  };
-
-  getAllClassAccounts: () => Promise<DisplayedKeryring[]> = async () => {
-    const typedAccounts = await keyringService.getAllTypedAccounts();
-
-    return typedAccounts.map((account) => ({
-      ...account,
-      keyring: new DisplayKeyring(account.keyring),
-    }));
   };
 
   changeAccount = (account: PreferenceAccount) => {
@@ -1463,6 +1427,7 @@ export class WalletController extends BaseController {
   createCoaEmpty = async (): Promise<string> => {
     const network = await this.getNetwork();
     const parentAddress = await this.getMainAddress();
+    const pubKey = userWalletService.getCurrentPubkey();
     if (!parentAddress) {
       throw new Error('Parent address not found');
     }
@@ -1475,7 +1440,7 @@ export class WalletController extends BaseController {
       await fcl.tx(txID).onceSealed();
 
       // Refresh the EVM address
-      await loadEvmAccountOfParent(network, parentAddress);
+      triggerRefresh(mainAccountsKey(network, pubKey));
 
       // Track with success
       await this.trackCoaCreation(txID);
@@ -1855,8 +1820,7 @@ export class WalletController extends BaseController {
   };
 
   queryEvmAddress = async (address: string | FlowAddress): Promise<string | null> => {
-    const network = await this.getNetwork();
-    const evmAccount = await getEvmAccountOfParent(network, address);
+    const evmAccount = await userWalletService.getEvmAccountOfParent(address as string);
     return evmAccount?.address ?? null;
   };
 
@@ -3404,28 +3368,11 @@ export class WalletController extends BaseController {
   };
 
   getPayerAddressAndKeyId = async () => {
-    try {
-      const remoteConfig = await remoteConfigService.getRemoteConfig();
-      const network = await this.getNetwork();
-      return remoteConfig.config.payer[network];
-    } catch {
-      const network = await this.getNetwork();
-      return defaultConfig.payer[network];
-    }
+    return userWalletService.getPayerAddressAndKeyId();
   };
 
   getBridgeFeePayerAddressAndKeyId = async () => {
-    try {
-      const remoteConfig = await remoteConfigService.getRemoteConfig();
-      const network = await this.getNetwork();
-      if (!remoteConfig.config.bridgeFeePayer) {
-        throw new Error('Bridge fee payer not found');
-      }
-      return remoteConfig.config.bridgeFeePayer[network];
-    } catch {
-      const network = await this.getNetwork();
-      return defaultConfig.bridgeFeePayer[network];
-    }
+    return userWalletService.getBridgeFeePayerAddressAndKeyId();
   };
 
   getFeatureFlags = async (): Promise<FeatureFlags> => {

@@ -1,17 +1,17 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
-import { Typography, Container, Box, IconButton, Button, CardMedia } from '@mui/material';
+import { Box, Button, CardMedia, Container, IconButton, Typography } from '@mui/material';
 import { StyledEngineProvider } from '@mui/material/styles';
 import { saveAs } from 'file-saver';
-import React, { useState, useEffect, useCallback } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router';
 
-import { type PostMedia, MatchMediaType } from '@/ui/utils/url';
-import fallback from 'ui/assets/image/errorImage.png';
-import DetailMove from 'ui/assets/svg/detailMove.svg';
-import SendIcon from 'ui/assets/svg/detailSend.svg';
-import { useWallet } from 'ui/utils';
+import fallback from '@/ui/assets/image/errorImage.png';
+import DetailMove from '@/ui/assets/svg/detailMove.svg';
+import SendIcon from '@/ui/assets/svg/detailSend.svg';
+import { useWallet } from '@/ui/hooks/use-wallet';
+import { type PostMedia } from '@/ui/utils/url';
 
 import MoveNftFromEvm from './SendNFT/MoveNftFromEvm';
 
@@ -34,7 +34,7 @@ const Detail = () => {
   };
 
   const location = useLocation();
-  const history = useHistory();
+  const navigate = useNavigate();
   const usewallet = useWallet();
   const [nftDetail, setDetail] = useState<any>(null);
   const [metadata, setMetadata] = useState<any>(null);
@@ -280,11 +280,7 @@ const Detail = () => {
           }}
         >
           <IconButton
-            onClick={() =>
-              history.push({
-                pathname: `/dashboard`,
-              })
-            }
+            onClick={() => navigate(`/dashboard`)}
             sx={{
               borderRadius: '100%',
               margin: '8px',
@@ -444,8 +440,7 @@ const Detail = () => {
                   backdropFilter: 'blur(6px)',
                 }}
                 onClick={() =>
-                  history.push({
-                    pathname: '/dashboard/nftevm/send/',
+                  navigate('/dashboard/nftevm/send/', {
                     state: { nft: nftDetail, media: media, contract: nftDetail },
                   })
                 }

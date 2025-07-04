@@ -1,43 +1,29 @@
 import { Box, IconButton, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
-import React, { useEffect, useState, useCallback } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router';
 
-import { pubKeyTupleToAccountKey } from '@/background/utils/account-key';
 import { consoleError } from '@/shared/utils/console-log';
 import { LLHeader } from '@/ui/components';
 import IconCopy from '@/ui/components/iconfont/IconCopy';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { useWallet } from 'ui/utils';
-
-interface State {
-  password: string;
-}
 
 const Keydetail = () => {
-  const location = useLocation<State>();
-  const history = useHistory();
+  const location = useLocation();
+  const navigate = useNavigate();
   const wallet = useWallet();
   const { parentWallet } = useProfiles();
   const [privatekey, setKey] = useState<string | undefined>(undefined);
+  const publicKey = parentWallet?.publicKey;
 
   const verify = useCallback(async () => {
     try {
-      const pwd = location.state.password;
-
-      const result = await wallet.getPubKeyPrivateKey(pwd);
-
-      const accountKey = pubKeyTupleToAccountKey(parentWallet.publicKey, result);
-      let pk = '';
-
-      // Find matching algorithm
-      if (accountKey.public_key === result.P256.pubK) {
-        pk = result.P256.pk;
-      } else if (accountKey.public_key === result.SECP256K1.pubK) {
-        pk = result.SECP256K1.pk;
-      } else {
-        throw new Error('No matching public key algorithm found');
+      const pwd: string | undefined = location.state?.password;
+      if (!pwd) {
+        throw new Error('Password is required');
       }
+      const pk = await wallet.getPrivateKey(pwd);
 
       setKey(pk);
     } catch (error) {
@@ -48,16 +34,16 @@ const Keydetail = () => {
         setKey('Error during verification');
       }
     }
-  }, [location.state?.password, wallet, parentWallet]);
+  }, [location.state?.password, wallet]);
 
   useEffect(() => {
     if (!location.state?.password || !location.state) {
-      history.push('/dashboard/nested/privatekeypassword');
+      navigate('/dashboard/nested/privatekeypassword');
     }
-    if (parentWallet?.publicKey) {
+    if (publicKey) {
       verify();
     }
-  }, [verify, parentWallet?.publicKey, history, location.state]);
+  }, [verify, publicKey, navigate, location.state]);
 
   const CredentialBox = ({ data }: { data?: string }) => {
     return (
@@ -125,7 +111,7 @@ const Keydetail = () => {
       <Typography variant="body1" align="left" py="14px" px="20px" fontSize="17px">
         {chrome.i18n.getMessage('Public__Key')}
       </Typography>
-      <CredentialBox data={parentWallet?.publicKey} />
+      <CredentialBox data={publicKey} />
 
       <Box
         sx={{
@@ -141,13 +127,13 @@ const Keydetail = () => {
         <Box sx={{ width: '50%' }}>
           <Typography variant="body1" color="text.secondary" align="left" fontSize="14px">
             {chrome.i18n.getMessage('Hash__Algorithm')} <br />
-            {parentWallet && parentWallet?.publicKey ? parentWallet?.hashAlgoString : ''}
+            {parentWallet && publicKey ? parentWallet?.hashAlgoString : ''}
           </Typography>
         </Box>
         <Box sx={{ width: '50%', borderLeft: 1, borderColor: '#333333', px: '15px' }}>
           <Typography variant="body1" color="text.secondary" align="left" fontSize="14px">
             {chrome.i18n.getMessage('Sign__Algorithm')} <br />
-            {parentWallet && parentWallet?.publicKey ? parentWallet?.signAlgoString : ''}
+            {parentWallet && publicKey ? parentWallet?.signAlgoString : ''}
           </Typography>
         </Box>
       </Box>

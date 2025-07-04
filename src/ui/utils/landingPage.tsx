@@ -1,6 +1,6 @@
 import { Box } from '@mui/material';
 import React, { type FC, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 export interface PageConfig {
   component: React.ComponentType<any>;
@@ -29,7 +29,7 @@ export const getDirectionType = (direction: Direction) => {
 export const useNavigation = (maxSteps: number) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState(Direction.Right);
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const goNext = () => {
     setDirection(Direction.Right);
@@ -45,7 +45,7 @@ export const useNavigation = (maxSteps: number) => {
     if (activeIndex >= 1) {
       setActiveIndex(activeIndex - 1);
     } else {
-      history.goBack();
+      navigate(-1);
     }
   };
 

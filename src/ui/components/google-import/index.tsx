@@ -1,12 +1,10 @@
 import { Box } from '@mui/material';
-import React, { useCallback, useEffect, useState } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
 
 import { DEFAULT_PASSWORD } from '@/shared/utils/default';
 import AllSet from '@/ui/components/LandingPages/AllSet';
 import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
 import RecoveryPhrase from '@/ui/components/LandingPages/RecoveryPhrase';
-import { storage } from 'background/webapi';
 
 import DecryptWallet from './DecryptWallet';
 import GoogleAccounts from './GoogleAccounts';

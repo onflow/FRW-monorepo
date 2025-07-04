@@ -1,21 +1,20 @@
 import { Box, Typography } from '@mui/material';
-import React, { useState, useEffect, useCallback } from 'react';
-import { useHistory } from 'react-router-dom';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 
+import circlecheck from '@/ui/assets/image/circlecheck.png';
+import goto from '@/ui/assets/image/goto.png';
+import Mobile from '@/ui/assets/image/mobile.png';
+import Pc from '@/ui/assets/image/pc.png';
+import QR from '@/ui/assets/image/QR2.png';
 import { LLHeader } from '@/ui/components';
-import { useWallet } from 'ui/utils';
-
-import circlecheck from '../../../assets/image/circlecheck.png';
-import goto from '../../../assets/image/goto.png';
-import Mobile from '../../../assets/image/mobile.png';
-import Pc from '../../../assets/image/pc.png';
-import QR from '../../../assets/image/QR2.png';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 import WalletConnect from './WalletConnect';
 
 const Devices = () => {
   const usewallet = useWallet();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const wallet = useWallet();
   const [devices, setDevices] = useState<any[]>([]);
@@ -94,8 +93,7 @@ const Devices = () => {
             sx={{ width: '100%', margin: '8px 0' }}
             onClick={() => {
               if (item.id !== currentId) {
-                history.push({
-                  pathname: '/dashboard/setting/deviceinfo',
+                navigate('/dashboard/setting/deviceinfo', {
                   state: { deviceItem: item },
                 });
               }

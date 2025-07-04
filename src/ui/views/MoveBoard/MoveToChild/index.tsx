@@ -1,18 +1,18 @@
 import { Box } from '@mui/material';
-import React, { useState, useEffect, useCallback } from 'react';
-import { useHistory } from 'react-router-dom';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
+import alertMark from '@/ui/assets/svg/alertMark.svg';
 import { NFTDrawer } from '@/ui/components/GeneralPages';
 import WarningSnackbar from '@/ui/components/WarningSnackbar';
 import { WarningStorageLowSnackbar } from '@/ui/components/WarningStorageLowSnackbar';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useNftCatalogCollections } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
-import alertMark from 'ui/assets/svg/alertMark.svg';
-import { useWallet } from 'ui/utils';
 
 import AccountMainBox from '../AccountMainBox';
 import MoveCollectionSelect from '../MoveCollectionSelect';
@@ -28,7 +28,7 @@ interface MoveBoardProps {
 
 const MoveToChild = (props: MoveBoardProps) => {
   const usewallet = useWallet();
-  const history = useHistory();
+  const navigate = useNavigate();
   const { currentWallet } = useProfiles();
 
   const { network } = useNetwork();
@@ -166,7 +166,7 @@ const MoveToChild = (props: MoveBoardProps) => {
           props.handleCloseIconClicked();
           await usewallet.setDashIndex(0);
           setSending(false);
-          history.push(`/dashboard?activity=1&txId=${txId}`);
+          navigate(`/dashboard?activity=1&txId=${txId}`);
         })
         .catch((err) => {
           consoleError(err);
@@ -191,7 +191,7 @@ const MoveToChild = (props: MoveBoardProps) => {
         props.handleCloseIconClicked();
         await usewallet.setDashIndex(0);
         setSending(false);
-        history.push(`/dashboard?activity=1&txId=${txId}`);
+        navigate(`/dashboard?activity=1&txId=${txId}`);
       })
       .catch((err) => {
         consoleError(err);

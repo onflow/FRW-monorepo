@@ -2,37 +2,36 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import HelpOutlineRoundedIcon from '@mui/icons-material/HelpOutlineRounded';
 import SearchIcon from '@mui/icons-material/Search';
 import {
-  Box,
-  Tab,
-  Tabs,
-  Typography,
-  InputAdornment,
-  Input,
   Avatar,
+  Box,
+  IconButton,
+  Input,
+  InputAdornment,
   ListItem,
   ListItemAvatar,
   ListItemText,
-  IconButton,
+  Tab,
+  Tabs,
   Tooltip,
+  Typography,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
-import { useTheme, StyledEngineProvider } from '@mui/material/styles';
-import React, { useState, useCallback, useEffect } from 'react';
-import { useHistory, useParams } from 'react-router-dom';
+import { StyledEngineProvider, useTheme } from '@mui/material/styles';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router';
 
 import { type Contact } from '@/shared/types/network-types';
 import { type WalletAddress } from '@/shared/types/wallet-types';
 import { isValidAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
-import { filterContacts, checkAddressBookContacts } from '@/shared/utils/contact-utils';
+import { checkAddressBookContacts, filterContacts } from '@/shared/utils/contact-utils';
+import AccountsList from '@/ui/components/AddressLists/AccountsList';
+import AddressBookList from '@/ui/components/AddressLists/AddressBookList';
+import RecentList from '@/ui/components/AddressLists/RecentList';
+import SearchList from '@/ui/components/AddressLists/SearchList';
 import IconAbout from '@/ui/components/iconfont/IconAbout';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useContacts } from '@/ui/hooks/useContactHook';
-import { useWallet } from '@/ui/utils/WalletContext';
-
-import AccountsList from '../../components/AddressLists/AccountsList';
-import AddressBookList from '../../components/AddressLists/AddressBookList';
-import RecentList from '../../components/AddressLists/RecentList';
-import SearchList from '../../components/AddressLists/SearchList';
 
 export enum SendPageTabOptions {
   Recent = 'Recent',
@@ -72,7 +71,7 @@ const a11yProps = (index: number) => {
 
 const SendAddress = () => {
   const theme = useTheme();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const { recentContacts, addressBookContacts } = useContacts();
 
@@ -85,7 +84,8 @@ const SendAddress = () => {
   const [searched, setSearched] = useState<boolean>(false);
   const [searchContacts, setSearchContacts] = useState<Contact[]>([]);
   const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
-  const { id: token } = useParams<{ id: string }>();
+  const params = useParams();
+  const token = params.id;
 
   useEffect(() => {
     // Update filtered contacts when the search key changes
@@ -140,14 +140,12 @@ const SendAddress = () => {
       if (isValidAddress(address)) {
         // Check if there was a token in the search params
         const pathname = `/dashboard/token/${token}/send/${address}`;
-        history.push({
-          pathname,
-        });
+        navigate(pathname);
       } else {
         consoleError('Invalid address', address);
       }
     },
-    [history, token]
+    [navigate, token]
   );
   // Handle the click of a contact
   const handleContactClick = useCallback(
@@ -177,7 +175,7 @@ const SendAddress = () => {
           }}
         >
           <Grid size={1} sx={{ display: 'flex', justifyContent: 'center' }}>
-            <IconButton onClick={() => history.push('/dashboard')}>
+            <IconButton onClick={() => navigate('/dashboard')}>
               <ArrowBackIcon sx={{ color: 'icon.navi' }} />
             </IconButton>
           </Grid>

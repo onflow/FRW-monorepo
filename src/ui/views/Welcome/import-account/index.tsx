@@ -1,6 +1,6 @@
-import { Snackbar, Alert, Box } from '@mui/material';
+import { Alert, Box, Snackbar } from '@mui/material';
 import React, { useEffect, useReducer } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { consoleError } from '@/shared/utils/console-log';
 import Google from '@/ui/components/google-import';
@@ -10,15 +10,15 @@ import GoogleBackup from '@/ui/components/LandingPages/GoogleBackup';
 import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
 import PickNickname from '@/ui/components/LandingPages/PickNickname';
 import SetPassword from '@/ui/components/LandingPages/SetPassword';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import {
+  IMPORT_STEPS,
   importProfileReducer,
   INITIAL_IMPORT_STATE,
-  IMPORT_STEPS,
 } from '@/ui/reducers/import-profile-reducer';
-import { useWallet } from '@/ui/utils/WalletContext';
 
 const ImportAccount = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const usewallet = useWallet();
 
   const [state, dispatch] = useReducer(importProfileReducer, INITIAL_IMPORT_STATE);
@@ -100,7 +100,7 @@ const ImportAccount = () => {
 
   const goBack = () => {
     if (activeTab === IMPORT_STEPS.GOOGLE_BACKUP || activeTab === IMPORT_STEPS.ALL_SET) {
-      history.goBack();
+      navigate(-1);
       return;
     }
     dispatch({ type: 'GO_BACK' });
@@ -183,11 +183,7 @@ const ImportAccount = () => {
 
           {(activeTab === IMPORT_STEPS.SET_PASSWORD ||
             activeTab === IMPORT_STEPS.RECOVER_PASSWORD) && (
-            <SetPassword
-              handleSwitchTab={() => {}}
-              onSubmit={submitPassword}
-              isLogin={isAddWallet}
-            />
+            <SetPassword onSubmit={submitPassword} isLogin={isAddWallet} />
           )}
           {activeTab === IMPORT_STEPS.GOOGLE_BACKUP && username && password && (
             <GoogleBackup

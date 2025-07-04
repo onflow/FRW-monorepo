@@ -4,20 +4,20 @@ import SignClient from '@walletconnect/sign-client';
 import { type SessionTypes } from '@walletconnect/types';
 import * as bip39 from 'bip39';
 import HDWallet from 'ethereum-hdwallet';
-import React, { useCallback, useEffect, useState, useRef } from 'react';
-import { useHistory } from 'react-router-dom';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router';
 
-import { isValidFlowAddress, withPrefix } from '@/shared/utils/address';
 import {
-  SIGN_ALGO_NUM_ECDSA_secp256k1,
   HASH_ALGO_NUM_SHA2_256,
-} from '@/shared/utils/algo-constants';
+  SIGN_ALGO_NUM_ECDSA_secp256k1,
+} from '@/shared/constant/algo-constants';
+import { isValidFlowAddress, withPrefix } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
 import { FCLWalletConnectMethod, type FCLWalletConnectSyncAccountInfo } from '@/shared/utils/type';
 import AllSet from '@/ui/components/LandingPages/AllSet';
 import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
 import SetPassword from '@/ui/components/LandingPages/SetPassword';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 import SyncQr from './SyncQr';
 
@@ -54,7 +54,7 @@ interface DeviceInfoRequest {
 }
 
 const Sync = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const usewallet = useWallet();
   const [activeTab, setActiveTab] = useState<StepType>(STEPS.QR);
   const [mnemonic] = useState(bip39.generateMnemonic());
@@ -82,13 +82,13 @@ const Sync = () => {
       .getCurrentAccount()
       .then((res) => {
         if (res) {
-          history.push('/');
+          navigate('/');
         }
       })
       .catch(() => {
         return;
       });
-  }, [usewallet, history]);
+  }, [usewallet, navigate]);
 
   useEffect(() => {
     loadView();
@@ -337,7 +337,7 @@ const Sync = () => {
         setActiveTab(STEPS.PASSWORD);
         break;
       default:
-        history.goBack();
+        navigate(-1);
     }
   };
 
@@ -356,13 +356,7 @@ const Sync = () => {
         )}
 
         {activeTab === STEPS.PASSWORD && (
-          <SetPassword
-            handleSwitchTab={() => setActiveTab(STEPS.ALL_SET)}
-            onSubmit={submitPassword}
-            title={<>{chrome.i18n.getMessage('Welcome__Back')}</>}
-            isLogin={isAddWallet}
-            autoFocus={true}
-          />
+          <SetPassword onSubmit={submitPassword} isLogin={isAddWallet} />
         )}
 
         {activeTab === STEPS.ALL_SET && (

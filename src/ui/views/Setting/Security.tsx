@@ -1,22 +1,22 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import {
-  Typography,
+  Divider,
   List,
-  ListItemText,
-  ListItemIcon,
   ListItem,
   ListItemButton,
-  Divider,
+  ListItemIcon,
+  ListItemText,
+  Typography,
 } from '@mui/material';
 import Box from '@mui/material/Box';
 import React, { useEffect } from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router';
 
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 const Security = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const wallet = useWallet();
 
   useEffect(() => {
@@ -47,7 +47,7 @@ const Security = () => {
         <ArrowBackIcon
           fontSize="medium"
           sx={{ color: 'icon.navi', cursor: 'pointer' }}
-          onClick={() => history.push('/dashboard')}
+          onClick={() => navigate('/dashboard')}
         />
         <Typography
           variant="h1"

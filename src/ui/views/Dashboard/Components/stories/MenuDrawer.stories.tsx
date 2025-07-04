@@ -1,26 +1,23 @@
 import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
+import { withRouter } from 'storybook-addon-remix-react-router';
 
-import emojisJson from '@/background/utils/emoji.json';
-const { emojis } = emojisJson as { emojis: Emoji[] };
+import emojisJson from '@/shared/constant/emoji.json';
 import { type FeatureFlagKey } from '@/shared/types/feature-types';
 import { MAINNET_CHAIN_ID, type UserInfoResponse } from '@/shared/types/network-types';
-import { type Emoji, type WalletAccount } from '@/shared/types/wallet-types';
-import {
-  useChildAccounts as importedMockUseChildAccounts,
-  useEvmAccount as importedMockUseEvmAccount,
-} from '@/ui/hooks/use-account-hooks.mock';
+import { type Emoji, type MainAccount, type WalletAccount } from '@/shared/types/wallet-types';
 import { useFeatureFlag as importedMockUseFeatureFlag } from '@/ui/hooks/use-feature-flags.mock';
 import { useNftCatalogCollections as importedMockUseNftCatalogCollections } from '@/ui/hooks/useNftHook.mock';
 import {
   useProfiles as importedMockUseProfiles,
   USE_PROFILES_MOCK,
 } from '@/ui/hooks/useProfileHook.mock';
+const { emojis } = emojisJson as { emojis: Emoji[] };
 
 import MenuDrawer from '../MenuDrawer';
 
 // Mock wallet accounts - aligned with account-listing stories
-const mockMainAccount: WalletAccount = {
+const mockMainAccount: MainAccount = {
   name: emojis[2].name,
   icon: emojis[2].emoji,
   color: emojis[2].bgcolor,
@@ -29,9 +26,16 @@ const mockMainAccount: WalletAccount = {
   id: 1,
   balance: '550.66005012',
   nfts: 12,
+  publicKey: '0x0000000000000000000000000000000000000000000000000000000000000000',
+  keyIndex: 0,
+  weight: 1000,
+  signAlgo: 0,
+  signAlgoString: 'ECDSA',
+  hashAlgo: 0,
+  hashAlgoString: 'SHA256',
 };
 
-const mockMainAccount2: WalletAccount = {
+const mockMainAccount2: MainAccount = {
   name: emojis[3].name,
   icon: emojis[3].emoji,
   color: emojis[3].bgcolor,
@@ -40,6 +44,13 @@ const mockMainAccount2: WalletAccount = {
   id: 2,
   balance: '0.00000077',
   nfts: 4,
+  publicKey: '0x0000000000000000000000000000000000000000000000000000000000000000',
+  keyIndex: 0,
+  weight: 1000,
+  signAlgo: 0,
+  signAlgoString: 'ECDSA',
+  hashAlgo: 0,
+  hashAlgoString: 'SHA256',
 };
 
 const mockEvmAccount: WalletAccount = {
@@ -124,23 +135,26 @@ const createMockData = (config: {
   return { evmAccounts, childAccounts, nfts };
 };
 
-const mockWalletList: WalletAccount[] = [mockMainAccount, mockMainAccount2];
+const mockWalletList: MainAccount[] = [
+  {
+    ...mockMainAccount,
+    evmAccount: mockEvmAccount,
+    childAccounts: [mockChildAccount1, mockChildAccount2],
+  },
+  { ...mockMainAccount2, evmAccount: mockEvmAccount2, childAccounts: [] },
+];
 
 // Remove the pending account from the regular wallet list
-const mockWalletListWithExtra: WalletAccount[] = [
-  mockMainAccount,
-  mockMainAccount2,
-  mockChildAccount1,
-];
+const mockWalletListWithExtra: MainAccount[] = [mockMainAccount, mockMainAccount2];
 
 const meta: Meta<typeof MenuDrawer> = {
   title: 'Views/Dashboard/MenuDrawer',
   component: MenuDrawer,
   decorators: [
+    withRouter,
     (Story, context) => {
       // Reset mocks
-      importedMockUseChildAccounts.mockReset();
-      importedMockUseEvmAccount.mockReset();
+
       importedMockUseNftCatalogCollections.mockReset();
       importedMockUseProfiles.mockReset();
       importedMockUseFeatureFlag.mockReset();
@@ -152,18 +166,6 @@ const meta: Meta<typeof MenuDrawer> = {
       });
 
       if (mockData) {
-        importedMockUseEvmAccount.mockImplementation((_network, address) => {
-          if (typeof address === 'string' && mockData.evmAccounts) {
-            return mockData.evmAccounts[address];
-          }
-          return undefined;
-        });
-        importedMockUseChildAccounts.mockImplementation((_network, address) => {
-          if (typeof address === 'string' && mockData.childAccounts) {
-            return mockData.childAccounts[address] || [];
-          }
-          return [];
-        });
         importedMockUseNftCatalogCollections.mockImplementation(() => {
           return [];
         });
@@ -430,7 +432,7 @@ export const FullAccountHierarchyWithPending: Story = {
   args: {
     drawer: true,
     userInfo: mockUserInfo,
-    walletList: mockWalletListWithExtra,
+    walletList: mockWalletList,
     activeAccount: mockMainAccount,
     activeParentAccount: mockMainAccount,
     network: 'mainnet',

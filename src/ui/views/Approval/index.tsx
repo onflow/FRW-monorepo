@@ -1,9 +1,9 @@
 import { Box } from '@mui/system';
-import React, { useEffect, useState, useCallback } from 'react';
-import { useHistory } from 'react-router-dom';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 
 import { useApproval } from '@/ui/hooks/use-approval';
-import { useWallet } from '@/ui/utils/WalletContext';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 // import Header from '../Dashboard/Header';
 
@@ -11,24 +11,24 @@ import * as ApprovalComponent from './components';
 // import ApprovalHeader from './ApprovalHeader';
 
 const Approval = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   // const [account, setAccount] = useState('');
   const usewallet = useWallet();
-  const [getApproval, resolveApproval, rejectApproval] = useApproval();
+  const [getApproval, , rejectApproval] = useApproval();
   const [approval, setApproval] = useState<null | Awaited<ReturnType<typeof getApproval>>>(null);
 
   const init = useCallback(async () => {
     // initializeStore();
     const approval = await getApproval();
     if (!approval) {
-      history.replace('/');
+      navigate('/', { replace: true });
       return null;
     }
     setApproval(approval);
     if (approval.origin || approval.params.origin) {
       document.title = approval.origin || approval.params.origin;
     } else if (approval['lock']) {
-      history.replace('/unlock');
+      navigate('/unlock', { replace: true });
       return;
     }
     const account = await usewallet.getCurrentAccount();
@@ -39,7 +39,7 @@ const Approval = () => {
       rejectApproval();
       return;
     }
-  }, [history, getApproval, setApproval, usewallet, rejectApproval]);
+  }, [navigate, getApproval, setApproval, usewallet, rejectApproval]);
 
   useEffect(() => {
     init();

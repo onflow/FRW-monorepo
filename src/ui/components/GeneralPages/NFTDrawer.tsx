@@ -1,12 +1,12 @@
 // src/ui/views/MoveBoard/components/NFTMoveDrawer.tsx
 import CloseIcon from '@mui/icons-material/Close';
-import { Box, Button, Typography, Drawer, IconButton, CardMedia, Skeleton } from '@mui/material';
+import { Box, Button, CardMedia, Drawer, IconButton, Skeleton, Typography } from '@mui/material';
 import React, { useState } from 'react';
 
+import moveSelectDrop from '@/ui/assets/svg/moveSelectDrop.svg';
+import selected from '@/ui/assets/svg/selected.svg';
+import { LLSpinner } from '@/ui/components';
 import NftSearch from '@/ui/components/NFTs/NftSearch';
-import moveSelectDrop from 'ui/assets/svg/moveSelectDrop.svg';
-import selected from 'ui/assets/svg/selected.svg';
-import { LLSpinner } from 'ui/components';
 
 interface NFTMoveDrawerProps {
   showMoveBoard: boolean;

@@ -1,22 +1,21 @@
 import {
-  Typography,
+  Alert,
   Box,
+  CardMedia,
+  Divider,
   List,
-  ListItemText,
-  ListItemIcon,
   ListItem,
   ListItemButton,
-  Divider,
-  Alert,
+  ListItemIcon,
+  ListItemText,
   Snackbar,
-  CardMedia,
   Switch,
+  Typography,
 } from '@mui/material';
 import LinearProgress from '@mui/material/LinearProgress';
-import React, { useState, useEffect, useCallback } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router';
 
-import { storage } from '@/background/webapi';
 import type { StorageInfo } from '@/shared/types/network-types';
 import {
   type Emoji,
@@ -25,12 +24,12 @@ import {
 } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
+import storage from '@/shared/utils/storage';
+import editEmoji from '@/ui/assets/svg/editEmoji.svg';
 import { LLHeader } from '@/ui/components';
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
-import { useWallet } from 'ui/utils';
-
-import editEmoji from '../../../assets/svg/editEmoji.svg';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 import EditProfile from './EditProfile';
 

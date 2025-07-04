@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Route, Redirect, useRouteMatch } from 'react-router-dom';
+import { Navigate } from 'react-router';
 
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
-const PrivateRoute = ({ children, path, ...rest }) => {
+const PrivateRoute = ({ children }) => {
   const wallet = useWallet();
-  const match = useRouteMatch(path);
 
   const [booted, setBooted] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
@@ -26,36 +25,33 @@ const PrivateRoute = ({ children, path, ...rest }) => {
       }
     };
 
-    //const strippedPath = path.replace(/\/$/, '');
-
     // Initial check
-    if (match?.isExact) {
-      fetchLockState().then(({ booted, unlocked }) => {
-        if (mounted) {
-          setBooted(booted);
-          setUnlocked(unlocked);
-          setLoading(false);
-        }
-      });
-    }
+    fetchLockState().then(({ booted, unlocked }) => {
+      if (mounted) {
+        setBooted(booted);
+        setUnlocked(unlocked);
+        setLoading(false);
+      }
+    });
+
     return () => {
       mounted = false;
     };
-  }, [wallet, match?.isExact]);
+  }, [wallet]);
 
-  return (
-    <Route
-      path={path}
-      {...rest}
-      render={() => {
-        if (loading) {
-          return null;
-        }
-        const to = !booted ? '/welcome' : !unlocked ? '/unlock' : null;
-        return !to ? children : <Redirect to={to} />;
-      }}
-    />
-  );
+  if (loading) {
+    return null;
+  }
+
+  if (!booted) {
+    return <Navigate to="/welcome" replace />;
+  }
+
+  if (!unlocked) {
+    return <Navigate to="/unlock" replace />;
+  }
+
+  return <>{children}</>;
 };
 
 export default PrivateRoute;

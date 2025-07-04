@@ -1,15 +1,15 @@
 'use client';
 
-import { Box, Typography, LinearProgress, Skeleton } from '@mui/material';
+import { Box, LinearProgress, Skeleton, Typography } from '@mui/material';
 import BigNumber from 'bignumber.js';
 import React from 'react';
 
-import { useMainAccountStorageBalance } from '../hooks/use-account-hooks';
+import { useMainAccountStorageBalance } from '@/ui/hooks/use-account-hooks';
 import {
   COLOR_CHARCOAL_GRAY_4C4C4C,
   COLOR_DARKMODE_BACKGROUND_CARDS_1A1A1A,
   COLOR_GREEN_FLOW_DARKMODE_00EF8B,
-} from '../style/color';
+} from '@/ui/style/color';
 
 import { TokenBalance } from './TokenLists/TokenBalance';
 

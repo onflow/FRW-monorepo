@@ -1,6 +1,6 @@
 import { Box } from '@mui/material';
 import React, { useCallback, useEffect, useReducer } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import AllSet from '@/ui/components/LandingPages/AllSet';
 import GoogleBackup from '@/ui/components/LandingPages/GoogleBackup';
@@ -9,16 +9,16 @@ import PickNickname from '@/ui/components/LandingPages/PickNickname';
 import RecoveryPhrase from '@/ui/components/LandingPages/RecoveryPhrase';
 import RepeatPhrase from '@/ui/components/LandingPages/RepeatPhrase';
 import SetPassword from '@/ui/components/LandingPages/SetPassword';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import {
   INITIAL_REGISTER_STATE,
   initRegisterState,
   registerReducer,
   STEPS,
 } from '@/ui/reducers/register-reducer';
-import { useWallet } from 'ui/utils';
 
 const Register = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const usewallet = useWallet();
 
   const [state, dispatch] = useReducer(registerReducer, INITIAL_REGISTER_STATE, initRegisterState);
@@ -38,13 +38,13 @@ const Register = () => {
       .getCurrentAccount()
       .then((res) => {
         if (res) {
-          history.push('/');
+          navigate('/');
         }
       })
       .catch(() => {
         return;
       });
-  }, [usewallet, history]);
+  }, [usewallet, navigate]);
 
   const submitPassword = useCallback(
     async (newPassword: string) => {
@@ -64,7 +64,7 @@ const Register = () => {
 
   const goBack = () => {
     if (activeTab === STEPS.USERNAME || activeTab === STEPS.ALL_SET) {
-      history.goBack();
+      navigate(-1);
     } else {
       dispatch({ type: 'GO_BACK' });
     }
@@ -107,14 +107,7 @@ const Register = () => {
         )}
 
         {activeTab === STEPS.PASSWORD && (
-          <SetPassword
-            handleSwitchTab={() => dispatch({ type: 'SET_ACTIVE_TAB', payload: STEPS.BACKUP })}
-            onSubmit={submitPassword}
-            username={username}
-            showTerms={true}
-            autoFocus={true}
-            isLogin={isAddWallet}
-          />
+          <SetPassword onSubmit={submitPassword} isLogin={isAddWallet} />
         )}
 
         {activeTab === STEPS.BACKUP && username && password && (

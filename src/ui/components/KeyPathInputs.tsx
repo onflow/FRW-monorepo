@@ -1,18 +1,18 @@
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Box,
-  Typography,
   CardMedia,
   TextareaAutosize,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
+  Typography,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import React, { useState } from 'react';
 
-import Expand from '../assets/svg/expand.svg';
-import Hide from '../assets/svg/hide.svg';
-import { COLOR_DARKMODE_WHITE_3pc } from '../style/color';
+import Expand from '@/ui/assets/svg/expand.svg';
+import Hide from '@/ui/assets/svg/hide.svg';
+import { COLOR_DARKMODE_WHITE_3pc } from '@/ui/style/color';
 
 const StyledAccordionSummary = styled(AccordionSummary)(({ theme }) => ({
   flexDirection: 'row-reverse',

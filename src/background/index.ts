@@ -1,49 +1,50 @@
-import 'reflect-metadata';
 import { ethErrors } from 'eth-rpc-errors';
 import { initializeApp } from 'firebase/app';
 import {
   getAuth,
-  signInAnonymously,
   indexedDBLocalPersistence,
-  setPersistence,
   onAuthStateChanged,
+  setPersistence,
+  signInAnonymously,
 } from 'firebase/auth/web-extension';
+import 'reflect-metadata';
 
-import eventBus from '@/eventBus';
+import providerController from '@/background/controller/provider';
+import { preAuthzServiceDefinition } from '@/background/controller/serviceDefinition';
+import walletController, { type WalletController } from '@/background/controller/wallet';
+import { EVENTS } from '@/shared/constant/events';
 import { type WalletAddress } from '@/shared/types/wallet-types';
 import { isValidFlowAddress } from '@/shared/utils/address';
 import { consoleError, consoleLog } from '@/shared/utils/console-log';
+import eventBus from '@/shared/utils/message/eventBus';
 import { Message } from '@/shared/utils/messaging';
-import type { WalletController } from 'background/controller/wallet';
-import { EVENTS } from 'consts';
+import storage from '@/shared/utils/storage';
 
-import { providerController, walletController } from './controller';
-import { preAuthzServiceDefinition } from './controller/serviceDefinition';
 import {
-  permissionService,
-  preferenceService,
-  sessionService,
-  keyringService,
-  openapiService,
-  pageStateCacheService,
-  coinListService,
-  userInfoService,
   addressBookService,
-  userWalletService,
-  notificationService,
-  transactionService,
-  nftService,
+  coinListService,
   evmNftService,
   googleSafeHostService,
-  mixpanelTrack,
+  keyringService,
   logListener,
-  tokenListService,
-  remoteConfigService,
+  mixpanelTrack,
   newsService,
-} from './service';
-import { getFirbaseConfig } from './utils/firebaseConfig';
-import { setEnvironmentBadge } from './utils/setEnvironmentBadge';
-import { storage } from './webapi';
+  nftService,
+  openapiService,
+  permissionService,
+  preferenceService,
+  remoteConfigService,
+  sessionService,
+  tokenListService,
+  transactionService,
+  userInfoService,
+  userWalletService,
+} from '../core/service';
+import { getFirbaseConfig } from '../core/utils/firebaseConfig';
+import { setEnvironmentBadge } from '../core/utils/setEnvironmentBadge';
+
+import notificationService from './controller/notification';
+
 const { PortMessage } = Message;
 
 const chromeWindow = await chrome.windows.getCurrent();
@@ -115,12 +116,10 @@ async function restoreAppState() {
 
   await permissionService.init();
   await preferenceService.init();
-  await pageStateCacheService.init();
   await coinListService.init();
   await userInfoService.init();
   await addressBookService.init();
-  // Set the wallet controller before initializing userWalletService
-  userWalletService.setWalletController(walletController);
+
   await userWalletService.init();
   await transactionService.init();
   await nftService.init();

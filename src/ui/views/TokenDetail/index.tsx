@@ -1,8 +1,8 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import { Box, MenuItem, Typography, IconButton, Drawer } from '@mui/material';
+import { Box, Drawer, IconButton, MenuItem, Typography } from '@mui/material';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useHistory, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router';
 
 import type {
   CoinItem,
@@ -11,16 +11,16 @@ import type {
 } from '@/shared/types/coin-types';
 import { getPriceProvider } from '@/shared/types/network-types';
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
+import tips from '@/ui/assets/svg/tips.svg';
+import WarningIcon from '@/ui/assets/svg/warning.svg';
 import SecurityCard from '@/ui/components/SecurityCard';
 import StorageUsageCard from '@/ui/components/StorageUsageCard';
+import PriceCard from '@/ui/components/TokenLists/PriceCard';
 import { useAllTokenInfo, useEvmCustomTokens } from '@/ui/hooks/use-coin-hooks';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import tips from 'ui/assets/svg/tips.svg';
-import WarningIcon from 'ui/assets/svg/warning.svg';
-import { useWallet } from 'ui/utils';
 
-import PriceCard from '../../components/TokenLists/PriceCard';
 import OnRampList from '../Wallet/OnRampList';
 
 import ClaimTokenCard from './ClaimTokenCard';
@@ -29,10 +29,12 @@ import TokenInfoCard from './TokenInfoCard';
 
 const TokenDetail = () => {
   const usewallet = useWallet();
-  const history = useHistory();
+  const navigate = useNavigate();
+  const location = useLocation();
   // Get the token name and id from the url
-  const token = useParams<{ name: string }>().name.toLowerCase();
-  const tokenId = useParams<{ id: string }>().id;
+  const params = useParams();
+  const token = params.name?.toLowerCase();
+  const tokenId = params.id;
 
   // Get the network, current wallet, and active account type
   const { network, currentWallet, activeAccountType } = useProfiles();
@@ -105,7 +107,7 @@ const TokenDetail = () => {
 
   // Get the price providers
   const priceProviders = useMemo(() => {
-    return getPriceProvider(token);
+    return token ? getPriceProvider(token) : [];
   }, [token]);
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -122,14 +124,14 @@ const TokenDetail = () => {
     }
     await usewallet.removeCustomEvmToken(network, tokenInfo.address);
 
-    history.replace({ pathname: history.location.pathname, state: { refreshed: true } });
-    history.goBack();
+    navigate(location.pathname, { state: { refreshed: true } });
+    navigate(-1);
   };
 
   const Header = () => {
     return (
       <Box sx={{ display: 'flex', mx: '-12px', position: 'relative', mb: '4px' }}>
-        <IconButton onClick={history.goBack}>
+        <IconButton onClick={() => navigate(-1)}>
           <ArrowBackIcon sx={{ color: 'icon.navi' }} />
         </IconButton>
         <Box sx={{ flexGrow: 1 }} />
@@ -218,7 +220,7 @@ const TokenDetail = () => {
         <TokenInfoCard
           tokenInfo={tokenInfo}
           accountType={activeAccountType}
-          tokenId={tokenId}
+          tokenId={tokenId || ''}
           setIsOnRamp={setIsOnRamp}
         />
 

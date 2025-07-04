@@ -1,6 +1,6 @@
-import { Box, Typography, IconButton, Button } from '@mui/material';
-import React, { useState, useEffect, useCallback } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { Box, Button, IconButton, Typography } from '@mui/material';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router';
 
 import { consoleError } from '@/shared/utils/console-log';
 import { LLHeader, LLSpinner } from '@/ui/components';
@@ -8,18 +8,15 @@ import BrowserWarning from '@/ui/components/BrowserWarning';
 import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
 import IconGoogleDrive from '@/ui/components/iconfont/IconGoogleDrive';
 import { LLDeleteBackupPopup } from '@/ui/components/LLDeleteBackupPopup';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
-interface BackupsState {
-  password?: string;
-}
 /**
  * Manage Backups to Google Drive
  * @returns
  */
 const ManageBackups = () => {
-  const location = useLocation<BackupsState>();
-  const history = useHistory();
+  const location = useLocation();
+  const navigate = useNavigate();
   const wallet = useWallet();
   const [hasPermission, setHasPermission] = useState(false);
   const [hasBackup, setHasBackup] = useState(false);
@@ -49,7 +46,7 @@ const ManageBackups = () => {
     try {
       if (!location.state?.password) {
         // Navigate to the password page
-        history.replace('/dashboard/setting/backups/password');
+        navigate('/dashboard/setting/backups/password');
         return;
       }
       setLoading(true);
@@ -61,7 +58,7 @@ const ManageBackups = () => {
     } finally {
       setLoading(false);
     }
-  }, [checkBackup, history, location.state?.password, wallet]);
+  }, [checkBackup, navigate, location.state?.password, wallet]);
 
   const deleteBackup = async () => {
     try {

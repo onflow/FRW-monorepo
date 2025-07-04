@@ -3,8 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 import { fn } from 'storybook/test';
 
-import { Link as LinkMock } from '@/stories/react-router-dom.mock';
-import { useWallet as useWalletMock } from '@/ui/utils/WalletContext.mock';
+import { useWallet as useWalletMock } from '@/ui/hooks/use-wallet.mock';
 
 import RecoverProfile from '../index';
 
@@ -13,8 +12,6 @@ const meta = {
   component: RecoverProfile,
   decorators: [
     (Story) => {
-      LinkMock.mockReset();
-      LinkMock.mockImplementation((props: any): React.ReactNode => <Box {...props} />);
       useWalletMock.mockReset();
       useWalletMock.mockResolvedValue({
         openapi: {

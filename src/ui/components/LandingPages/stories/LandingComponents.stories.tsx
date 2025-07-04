@@ -1,7 +1,5 @@
-import { Box } from '@mui/material';
-import type { Meta, StoryObj } from '@storybook/react-webpack5';
+import type { StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
-import { action } from 'storybook/actions';
 import { fn } from 'storybook/test';
 
 import LandingComponents from '../LandingComponents';

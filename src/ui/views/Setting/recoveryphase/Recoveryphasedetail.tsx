@@ -1,19 +1,14 @@
-import { Typography, Button } from '@mui/material';
+import { Button, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
-import React, { useState, useEffect, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useLocation } from 'react-router';
 
-// import { useRouteMatch } from 'react-router-dom';
 import { LLHeader } from '@/ui/components';
 import IconCopy from '@/ui/components/iconfont/IconCopy';
-import { useWallet } from 'ui/utils';
-
-interface State {
-  password: string;
-}
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 const RecoveryPhasesDetail = () => {
-  const location = useLocation<State>();
+  const location = useLocation();
   const wallet = useWallet();
   const [recoveryphases, setRecovery] = useState<string>('');
 
