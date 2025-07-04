@@ -10,49 +10,56 @@ vi.mock('../wallet', () => ({
   },
 }));
 
-vi.mock('@/background/utils/modules/findAddressWithPubKey', () => ({
+vi.mock('@/core/utils/modules/findAddressWithPubKey', () => ({
   getAccountsByPublicKeyTuple: vi.fn(),
 }));
 
-vi.mock('background/service', () => {
+// Consolidate mocks for services imported from '@/core/service'
+vi.mock('@/core/service', () => {
   return {
     keyringService: {
       getCurrentPublicPrivateKeyTuple: vi.fn(),
-    },
-    notificationService: {
-      requestApproval: vi.fn(),
     },
     signTextHistoryService: {
       createHistory: vi.fn(),
     },
     mixpanelTrack: vi.fn(),
     userWalletService: {
-      // Mock userWalletService to prevent openapi init issues
-      setupFcl: vi.fn(), // Explicitly mock setupFcl
-      // Mock other userWalletService methods if they are used by controller
+      setupFcl: vi.fn(),
     },
-    // permissionService and sessionService might need similar stubs if controller uses them
-    // If they are used and not part of 'actual' or cause issues, define them here:
-    // permissionService: { ... vi.fn() for its methods ... },
-    // sessionService: { ... vi.fn() for its methods ... },
+    permissionService: {
+      hasPermission: vi.fn(),
+      addConnectedSite: vi.fn(),
+    },
+    sessionService: {
+      broadcastEvent: vi.fn(),
+    },
   };
 });
 
+vi.mock('background/controller/notification', () => ({
+  default: {
+    requestApproval: vi.fn(),
+  },
+}));
+
 // 2. ADD THE FOLLOWING BLOCK of clean imports here:
-import { ecrecover, bufferToHex, stripHexPrefix } from 'ethereumjs-util';
 import * as ethUtil from 'ethereumjs-util';
+import { bufferToHex, ecrecover, stripHexPrefix } from 'ethereumjs-util';
 import { ethers } from 'ethers';
 import RLP from 'rlp';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type MockedFunction } from 'vitest';
 // --- Other Specific Imports (ensure these remain as they were) ---
 
-import * as findAddressWithPubKey from '@/background/utils/modules/findAddressWithPubKey';
-import { pk2PubKeyTuple } from '@/background/utils/modules/publicPrivateKey';
+// Change these imports to be named imports from '@/core/service'
+import { keyringService, signTextHistoryService } from '@/core/service';
+import * as findAddressWithPubKey from '@/core/utils/modules/findAddressWithPubKey';
+import { pk2PubKeyTuple } from '@/core/utils/modules/publicPrivateKey';
+import { HASH_ALGO_NUM_DEFAULT, SIGN_ALGO_NUM_DEFAULT } from '@/shared/constant/algo-constants';
 import { tupleToPubKey } from '@/shared/types/key-types';
 import { TESTNET_CHAIN_ID } from '@/shared/types/network-types';
-import { SIGN_ALGO_NUM_DEFAULT, HASH_ALGO_NUM_DEFAULT } from '@/shared/utils/algo-constants';
-import { keyringService, notificationService, signTextHistoryService } from 'background/service';
 
+import notificationService from '../notification';
 import providerController from '../provider/controller';
 import walletController from '../wallet';
 
@@ -99,7 +106,7 @@ describe('ProviderController - signTypeData (EIP-1271)', async () => {
 
   const getEIP712Hash = (typedData: typeof sampleTypedData) => {
     // Remove the EIP712Domain type from the types object
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     const { EIP712Domain, ...otherTypes } = typedData.types;
     return ethers.TypedDataEncoder.hash(typedData.domain, otherTypes, typedData.message);
   };
@@ -113,9 +120,13 @@ describe('ProviderController - signTypeData (EIP-1271)', async () => {
     walletController.getParentAddress = vi.fn().mockResolvedValue(mockFlowAddress);
     walletController.queryEvmAddress = vi.fn().mockResolvedValue(mockEvmAddress);
     walletController.getCurrentAddress = vi.fn().mockResolvedValue(mockEvmAddress);
-    // Spy and mock for keyringService
 
-    keyringService.getCurrentPublicPrivateKeyTuple = vi.fn().mockResolvedValue({
+    // Spy and mock for keyringService
+    (
+      keyringService.getCurrentPublicPrivateKeyTuple as MockedFunction<
+        typeof keyringService.getCurrentPublicPrivateKeyTuple
+      >
+    ).mockResolvedValue({
       SECP256K1: {
         pk: mockPrivateKeyHex.slice(2),
         pubK: mockPubKeyTuple.SECP256K1.pubK,
@@ -163,8 +174,16 @@ describe('ProviderController - signTypeData (EIP-1271)', async () => {
       );
  */
     // Configure functions imported for mocking their modules
-    vi.mocked(notificationService.requestApproval).mockResolvedValue({});
-    vi.mocked(signTextHistoryService.createHistory).mockImplementation(() => {});
+    (
+      signTextHistoryService.createHistory as MockedFunction<
+        typeof signTextHistoryService.createHistory
+      >
+    ).mockImplementation(() => {});
+    (
+      notificationService.requestApproval as MockedFunction<
+        typeof notificationService.requestApproval
+      >
+    ).mockResolvedValue({});
   });
 
   afterEach(() => {
@@ -228,7 +247,6 @@ describe('ProviderController - signTypeData (EIP-1271)', async () => {
     const originalMessageHash = getEIP712Hash(sampleTypedData);
     const originalMessageHashBuffer = Buffer.from(originalMessageHash.slice(2), 'hex');
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const recoveredPubKey = ecrecover(originalMessageHashBuffer, vForEcrecover, r, s);
     // Can't get this to work, so skipping for now
     // expect(recoveredPubKey.toString('hex')).toBe(mockPubKey);
