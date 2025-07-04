@@ -1,25 +1,26 @@
 import CloseIcon from '@mui/icons-material/Close';
 import InfoIcon from '@mui/icons-material/Info';
-import { Box, Typography, Drawer, Stack, CardMedia, IconButton, Button } from '@mui/material';
+import { Box, Button, CardMedia, Drawer, IconButton, Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import { type Contact } from '@/shared/types/network-types';
-import { ensureEvmAddressPrefix, isValidEthereumAddress } from '@/shared/utils/address';
+import { isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
+import { FRWDropdownProfileCard, FRWProfileCard, LLSpinner } from '@/ui/components';
 import IconFlow from '@/ui/components/iconfont/IconFlow';
 import SlideRelative from '@/ui/components/SlideRelative';
 import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
 import { WarningStorageLowSnackbar } from '@/ui/components/WarningStorageLowSnackbar';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useContacts } from '@/ui/hooks/useContactHook';
 import { useAllNftList } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
+import { returnFilteredCollections } from '@/ui/utils';
 import { MatchMediaType } from '@/ui/utils/url';
-import { LLSpinner, FRWProfileCard, FRWDropdownProfileCard } from 'ui/components';
-import { useWallet, returnFilteredCollections } from 'ui/utils';
 
 interface SendNFTConfirmationProps {
   isConfirmationOpen: boolean;

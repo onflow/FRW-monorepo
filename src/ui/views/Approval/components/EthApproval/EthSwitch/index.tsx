@@ -1,19 +1,16 @@
-import { Stack, Box, Typography, Divider, CardMedia } from '@mui/material';
-import { WalletUtils } from '@onflow/fcl';
+import { Box, Divider, Stack, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
 
 import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
+import Link from '@/ui/assets/svg/link.svg';
+import mainnetsvg from '@/ui/assets/svg/mainnet.svg';
+import testnetsvg from '@/ui/assets/svg/testnet.svg';
+import { LLPrimaryButton, LLSecondaryButton } from '@/ui/components';
 import { useApproval } from '@/ui/hooks/use-approval';
-import { useWallet } from '@/ui/utils/WalletContext';
-import Link from 'ui/assets/svg/link.svg';
-import mainnetsvg from 'ui/assets/svg/mainnet.svg';
-import testnetsvg from 'ui/assets/svg/testnet.svg';
-import { LLPrimaryButton, LLSecondaryButton } from 'ui/components';
-import { networkColor } from 'ui/style/color';
-
-// import { CHAINS_ENUM } from 'consts';
+import { useWallet } from '@/ui/hooks/use-wallet';
+import { networkColor } from '@/ui/style/color';
 
 interface ConnectProps {
   params: any;

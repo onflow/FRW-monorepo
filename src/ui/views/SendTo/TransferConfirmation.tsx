@@ -1,26 +1,25 @@
 import CloseIcon from '@mui/icons-material/Close';
 import InfoIcon from '@mui/icons-material/Info';
-import { Box, Typography, Drawer, Stack, CardMedia, IconButton, Button } from '@mui/material';
+import { Box, Button, CardMedia, Drawer, IconButton, Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import { type TransactionState } from '@/shared/types/transaction-types';
 import { consoleError } from '@/shared/utils/console-log';
+import IconNext from '@/ui/assets/svg/next.svg';
+import { LLSpinner } from '@/ui/components';
+import { Profile } from '@/ui/components/Send/Profile';
 import SlideRelative from '@/ui/components/SlideRelative';
 import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
+import { CurrencyValue } from '@/ui/components/TokenLists/CurrencyValue';
+import { TokenBalance } from '@/ui/components/TokenLists/TokenBalance';
 import { WarningStorageLowSnackbar } from '@/ui/components/WarningStorageLowSnackbar';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useContact } from '@/ui/hooks/useContactHook';
 import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
-import IconNext from 'ui/assets/svg/next.svg';
-import { LLSpinner } from 'ui/components';
-import { Profile } from 'ui/components/Send/Profile';
-import { useWallet } from 'ui/utils';
-
-import { CurrencyValue } from '../../components/TokenLists/CurrencyValue';
-import { TokenBalance } from '../../components/TokenLists/TokenBalance';
 
 interface TransferConfirmationProps {
   transactionState: TransactionState;

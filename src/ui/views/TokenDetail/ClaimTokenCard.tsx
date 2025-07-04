@@ -1,9 +1,8 @@
-import { Typography, Box, ButtonBase } from '@mui/material';
+import { Box, ButtonBase, Typography } from '@mui/material';
 import React from 'react';
 
+import Claim from '@/ui/assets/image/claim.png';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
-
-import Claim from '../../assets/image/claim.png';
 
 const ClaimTokenCard = ({ token }) => {
   const { network } = useNetwork();

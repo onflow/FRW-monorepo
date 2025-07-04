@@ -1,10 +1,10 @@
-import { Typography, Box, Drawer, Stack } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 
+import { LLWarningButton } from '@/ui/components';
 import ResetModal from '@/ui/components/PopupModal/resetModal';
-import { LLPrimaryButton, LLSecondaryButton, LLWarningButton } from 'ui/components';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 import StepBox from '../stepBox';
 

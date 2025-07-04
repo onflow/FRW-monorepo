@@ -1,11 +1,11 @@
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import SettingsIcon from '@mui/icons-material/Settings';
-import { AppBar, Toolbar, Typography, IconButton, Drawer, Button, Skeleton } from '@mui/material';
+import { AppBar, Button, Drawer, IconButton, Skeleton, Toolbar, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import { StyledEngineProvider } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
-import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router';
 
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError, consoleWarn } from '@/shared/utils/console-log';
@@ -13,10 +13,11 @@ import { AccountAvatar } from '@/ui/components/account/account-avatar';
 import IconCopy from '@/ui/components/iconfont/IconCopy';
 import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
 import { useNews } from '@/ui/hooks/use-news';
+import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
-import { useWallet, formatAddress, useWalletLoaded } from 'ui/utils';
+import { formatAddress } from '@/ui/utils';
 
 import MenuDrawer from './Components/MenuDrawer';
 import NewsView from './Components/NewsView';

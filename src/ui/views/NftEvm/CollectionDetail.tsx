@@ -1,15 +1,15 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate, useParams, useLocation } from 'react-router';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router';
 
 import { triggerRefresh } from '@/shared/utils/cache-data-access';
 import { evmNftCollectionListKey } from '@/shared/utils/cache-data-keys';
 import { consoleError } from '@/shared/utils/console-log';
 import CollectionDetailGrid from '@/ui/components/NFTs/CollectionDetailGrid';
 import GridView from '@/ui/components/NFTs/GridView';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useEvmNftCollectionList, useNftHook } from '@/ui/hooks/useNftHook';
 import { type PostMedia } from '@/ui/utils/url';
-import { useWallet } from 'ui/utils';
 
 interface CollectionDisplay {
   name: string;

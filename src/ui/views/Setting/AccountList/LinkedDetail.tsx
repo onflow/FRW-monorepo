@@ -1,19 +1,18 @@
 import {
-  Typography,
-  Divider,
   Box,
-  CardMedia,
-  Skeleton,
   Card,
-  CardContent,
   CardActionArea,
+  CardContent,
+  CardMedia,
+  Divider,
   FormControlLabel,
-  Switch,
   List,
+  Skeleton,
+  Switch,
+  Typography,
 } from '@mui/material';
-import React, { useState, useMemo, useEffect } from 'react';
-import { useNavigate, useParams, useLocation } from 'react-router';
-import { C } from 'ts-toolbelt';
+import React, { useMemo, useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router';
 
 import { type NFTCollections } from '@/shared/types/nft-types';
 import { EditIcon } from '@/ui/assets/icons/settings/Edit';
@@ -23,19 +22,19 @@ import SettingsListCard from '@/ui/components/settings/settings-list-card';
 import SlidingTabSwitch from '@/ui/components/settings/sliding-tab-switch';
 import {
   useChildAccountAllowTypes,
-  useCurrentId,
-  useUserInfo,
-  useMainAccount,
   useChildAccountDescription,
-  setChildAccountDescription,
+  useCurrentId,
+  useMainAccount,
+  useUserInfo,
 } from '@/ui/hooks/use-account-hooks';
 import { useChildAccountFt } from '@/ui/hooks/use-coin-hooks';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useNftCatalogCollections, useNftCollectionList } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import {
   COLOR_GRAY_808080,
-  COLOR_WHITE_ALPHA_80_FFFFFFCC,
   COLOR_WHITE_ALPHA_40_FFFFFF66,
+  COLOR_WHITE_ALPHA_80_FFFFFFCC,
 } from '@/ui/style/color';
 
 import EditAccount from './Linked/EditAccount';
@@ -137,6 +136,7 @@ const FtContent = ({ availableFt }: { availableFt: TicketToken[] | undefined }) 
 };
 
 const LinkedDetail = () => {
+  const wallet = useWallet();
   const location = useParams();
   const locationState = useLocation();
 
@@ -480,7 +480,7 @@ const LinkedDetail = () => {
             handleCloseIconClicked={() => setEdit(false)}
             handleCancelBtnClicked={() => setEdit(false)}
             handleAddBtnClicked={async (desc) => {
-              await setChildAccountDescription(childAccount.address, desc);
+              await wallet.setChildAccountDescription(childAccount.address, desc);
               setEdit(false);
             }}
             childAccount={childAccount}

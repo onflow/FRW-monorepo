@@ -1,15 +1,13 @@
-import { Typography, Box, Drawer, Stack, InputBase, CircularProgress } from '@mui/material';
+import { Box, CircularProgress, Drawer, InputBase, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import React, { useState, useEffect } from 'react';
-import { useForm, FieldValues } from 'react-hook-form';
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router';
 
 import { consoleError } from '@/shared/utils/console-log';
-import { useWallet } from 'ui/utils';
-
-import closeCircle from '../../../assets/image/closeCircle.png';
-import warning from '../../../assets/image/warning.png';
-import { LLPrimaryButton } from '../../../components';
+import warning from '@/ui/assets/image/warning.png';
+import { LLPrimaryButton } from '@/ui/components';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 const StyledInput = styled(InputBase)(({ theme }) => ({
   zIndex: 1,

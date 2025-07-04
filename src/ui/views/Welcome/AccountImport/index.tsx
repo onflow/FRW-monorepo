@@ -1,4 +1,4 @@
-import { Snackbar, Alert, Box } from '@mui/material';
+import { Alert, Box, Snackbar } from '@mui/material';
 import React, { useCallback, useEffect, useReducer } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -8,12 +8,12 @@ import GoogleBackup from '@/ui/components/LandingPages/GoogleBackup';
 import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
 import PickNickname from '@/ui/components/LandingPages/PickNickname';
 import SetPassword from '@/ui/components/LandingPages/SetPassword';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import {
+  IMPORT_STEPS,
   importProfileReducer,
   INITIAL_IMPORT_STATE,
-  IMPORT_STEPS,
 } from '@/ui/reducers/import-profile-reducer';
-import { useWallet } from '@/ui/utils/WalletContext';
 
 import Google from './Google';
 import ImportTabs from './ImportTabs';

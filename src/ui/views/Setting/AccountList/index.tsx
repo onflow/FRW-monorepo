@@ -1,34 +1,15 @@
-import {
-  Typography,
-  Box,
-  List,
-  ListItemText,
-  ListItemIcon,
-  ListItem,
-  ListItemButton,
-  Divider,
-  CardMedia,
-} from '@mui/material';
+import { Box } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 
-import { storage } from '@/background/webapi';
-import {
-  type MainAccountWithBalance,
-  type MainAccount,
-  type WalletAccount,
-  type WalletAccountWithBalance,
-  type Emoji,
-} from '@/shared/types/wallet-types';
+import { type Emoji, type WalletAccount } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
-import { LinkIcon } from '@/ui/assets/icons/LinkIcon';
+import storage from '@/shared/utils/storage';
 import { LLHeader } from '@/ui/components';
-import { AccountCard } from '@/ui/components/account/account-card';
 import { AccountListing } from '@/ui/components/account/account-listing';
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { COLOR_DARKMODE_TEXT_PRIMARY_80_FFFFFF80 } from '@/ui/style/color';
-import { useWallet } from 'ui/utils';
 
 const tempEmoji: Emoji[] = [
   {

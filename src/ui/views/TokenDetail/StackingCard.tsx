@@ -1,7 +1,7 @@
-import { Typography, Box, ButtonBase } from '@mui/material';
+import { Box, ButtonBase, Typography } from '@mui/material';
 import React from 'react';
 
-import flowGrey from 'ui/assets/svg/flow-grey.svg';
+import flowGrey from '@/ui/assets/svg/flow-grey.svg';
 
 const StackingCard = () => {
   const openFlowPort = async () => {

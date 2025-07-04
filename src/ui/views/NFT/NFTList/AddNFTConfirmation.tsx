@@ -1,13 +1,13 @@
 import CloseIcon from '@mui/icons-material/Close';
-import { Box, Typography, Drawer, Button, IconButton } from '@mui/material';
+import { Box, Button, Drawer, IconButton, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import { type NFTModelV2 } from '@/shared/types/network-types';
 import { consoleError } from '@/shared/utils/console-log';
-import { LLSpinner } from 'ui/components';
-import { useWallet } from 'ui/utils';
+import { LLSpinner } from '@/ui/components';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 interface AddNFTConfirmationProps {
   isConfirmationOpen: boolean;

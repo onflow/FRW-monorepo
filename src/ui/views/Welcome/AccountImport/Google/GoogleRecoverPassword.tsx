@@ -1,28 +1,15 @@
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import {
-  Button,
-  Typography,
-  IconButton,
-  Input,
-  InputAdornment,
-  FormGroup,
-  LinearProgress,
-  Alert,
-  Snackbar,
-} from '@mui/material';
+import { Alert, Button, FormGroup, Snackbar, Typography } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { styled } from '@mui/material/styles';
 import { Box } from '@mui/system';
 import React, { useEffect, useState } from 'react';
-import zxcvbn from 'zxcvbn';
 
-import { LLSpinner, LLNotFound } from '@/ui/components';
+import { LLNotFound, LLSpinner } from '@/ui/components';
 import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
 import CancelIcon from '@/ui/components/iconfont/IconClose';
 import { PasswordInput } from '@/ui/components/password/PasswordInput';
-import { useWallet } from 'ui/utils';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 const BpIcon = styled('span')(() => ({
   borderRadius: 8,
