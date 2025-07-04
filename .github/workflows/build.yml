@@ -226,58 +226,38 @@ jobs:
           path: playwright-report/
           retention-days: 30
 
-  deploy-storybook-and-reports:
-    needs: [test] # Depends on the Playwright test job
+  deploy-reports:
+    needs: [test]
     runs-on: ubuntu-latest
-    if: always() # Run even if tests fail to publish what's available
-    strategy:
-      matrix:
-        node-version: [22.x]
+    if: always()
+    permissions:
+      contents: 'read'
+      id-token: 'write'
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Fetch all history for tags
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install
-
       - name: Download Playwright Report
         uses: actions/download-artifact@v4
         with:
           name: playwright-report
-          path: playwright-report/ # Download to this path
+          path: playwright-report
 
-      - name: Create .nojekyll file
-        run: touch playwright-report/.nojekyll
-
-      - name: Deploy Playwright Report
-        uses: peaceiris/actions-gh-pages@v4
-        if: always() # Deploy even if tests fail
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./playwright-report
-          destination_dir: reports/run-${{ github.run_id }}
-          keep_files: true
+          token_format: 'access_token'
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}
 
-      - name: Build Storybook
-        run: pnpm build-storybook # Assumes output is storybook-static
-
-      - name: Publish to Chromatic
-        uses: chromaui/action@v1
+      - name: Setup Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v1
         with:
-          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
-          storybookBuildDir: storybook-static # Directory with Storybook and reports
-          exitZeroOnChanges: true # Optional: useful for PR checks
-          # workingDir: . # Not needed if storybookBuildDir is set correctly
+          project_id: ${{ secrets.PROJECT_ID }}
+
+      - name: Upload reports to GCS
+        run: |
+          RUN_DIR="reports/run-${{ github.run_id }}"
+          gsutil -m cp -r playwright-report/* gs://${{ vars.GCS_BUCKET_NAME }}/$RUN_DIR/
+          echo "REPORT_URL=https://storage.googleapis.com/${{ vars.GCS_BUCKET_NAME }}/$RUN_DIR/index.html" >> $GITHUB_ENV
 
       - name: Add Job Summary
         if: always()
@@ -291,6 +271,40 @@ jobs:
           echo "- **Triggered by**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🔗 Links" >> $GITHUB_STEP_SUMMARY
-          echo "- 📋 **[View Full Report](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/reports/run-${{ github.run_id }}/)**" >> $GITHUB_STEP_SUMMARY
+          echo "- 📋 **[View Full Report](${{ env.REPORT_URL }})**" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "> 💡 **Tip**: Click the report link above to view detailed test results, traces, and screenshots!" >> $GITHUB_STEP_SUMMARY
+
+  deploy-storybook:
+    needs: [build]
+    runs-on: ubuntu-latest
+    if: always()
+    strategy:
+      matrix:
+        node-version: [22.x]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build Storybook
+        run: pnpm build-storybook
+
+      - name: Publish to Chromatic
+        uses: chromaui/action@v1
+        with:
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          storybookBuildDir: storybook-static
+          exitZeroOnChanges: true
