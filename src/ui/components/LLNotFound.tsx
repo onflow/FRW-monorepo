@@ -1,8 +1,8 @@
-import { Box, Button, Typography, CardMedia, Stack } from '@mui/material';
+import { Box, Button, CardMedia, Stack, Typography } from '@mui/material';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
-import NotFoundIcon from 'ui/assets/svg/notfound.svg';
+import NotFoundIcon from '@/ui/assets/svg/notfound.svg';
 
 export const LLNotFound = ({ setShowDialog }) => {
   const navigate = useNavigate();

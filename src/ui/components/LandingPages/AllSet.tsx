@@ -1,10 +1,9 @@
-import { Button, Typography, CardMedia } from '@mui/material';
+import { Button, CardMedia, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { useCallback, useEffect } from 'react';
 
-import { storage } from 'background/webapi';
-import AllSetIcon from 'ui/assets/svg/allset.svg';
-import { useWallet } from 'ui/utils';
+import AllSetIcon from '@/ui/assets/svg/allset.svg';
+import { useWallet } from '@/ui/hooks/use-wallet';
 
 interface AllSetProps {
   handleSwitchTab: () => void;

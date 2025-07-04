@@ -1,9 +1,9 @@
 import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 
-import emojisJson from '@/background/utils/emoji.json';
-const { emojis } = emojisJson;
+import emojisJson from '@/shared/constant/emoji.json';
 import { MAINNET_CHAIN_ID } from '@/shared/types/network-types';
 import { type WalletAccount } from '@/shared/types/wallet-types';
+const { emojis } = emojisJson;
 
 import { useAccountBalance } from '../../../hooks/use-account-hooks.mock';
 import { useNftCatalogCollections } from '../../../hooks/useNftHook.mock';

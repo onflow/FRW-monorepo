@@ -1,10 +1,9 @@
-import { Box, CardMedia, Typography } from '@mui/material';
-import Avatar from '@mui/material/Avatar';
-import React, { useState, useEffect } from 'react';
+import { Box, Typography } from '@mui/material';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import IconCheck from 'ui/assets/check.svg';
-import { LLPrimaryButton } from 'ui/components';
+import IconCheck from '@/ui/assets/check.svg';
+import { LLPrimaryButton } from '@/ui/components';
 
 export const LLLinkingLoading = ({ linkingDone, image, accountTitle, userInfo }) => {
   const navigate = useNavigate();

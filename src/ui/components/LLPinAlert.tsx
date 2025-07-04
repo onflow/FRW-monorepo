@@ -5,8 +5,6 @@ import React from 'react';
 
 import lilicoIcon from '../../../_raw/images/icon-128.png';
 
-import SlideLeftRight from './SlideLeftRight';
-
 export const LLPinAlert = ({ open }) => {
   return (
     <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'right' }} open={open}>

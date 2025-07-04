@@ -2,11 +2,10 @@ import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 import { withRouter } from 'storybook-addon-remix-react-router';
 
-import emojisJson from '@/background/utils/emoji.json';
-const { emojis } = emojisJson as { emojis: Emoji[] };
+import emojisJson from '@/shared/constant/emoji.json';
 import { MAINNET_CHAIN_ID } from '@/shared/types/network-types';
 import { type NFTCollections } from '@/shared/types/nft-types';
-import { type MainAccount, type Emoji, type WalletAccount } from '@/shared/types/wallet-types';
+import { type Emoji, type MainAccount, type WalletAccount } from '@/shared/types/wallet-types';
 import { AccountListing } from '@/ui/components/account/account-listing';
 import {
   useNftCatalogCollections as importedMockUseNftCatalogCollections, // Aliased import from the mock file
@@ -15,6 +14,7 @@ import {
   USE_PROFILES_MOCK,
   useProfiles as importedMockUseProfiles,
 } from '@/ui/hooks/useProfileHook.mock';
+const { emojis } = emojisJson as { emojis: Emoji[] };
 
 const mainWalletAccount: MainAccount = {
   name: emojis[2].name,
@@ -285,7 +285,11 @@ export const NoEVM: Story = {
       },
     ],
     activeAccount: mainWalletAccount,
-    activeParentAccount: mainWalletAccount,
+    activeParentAccount: {
+      ...mainWalletAccount,
+      evmAccount: noEvmWalletAccount,
+      childAccounts: [childWallet1, childWallet2],
+    },
     showActiveAccount: true,
   },
   parameters: {
@@ -332,7 +336,11 @@ export const PendingAccountTransaction: Story = {
       },
     ],
     activeAccount: mainWalletAccount,
-    activeParentAccount: mainWalletAccount,
+    activeParentAccount: {
+      ...mainWalletAccount,
+      evmAccount: noEvmWalletAccount,
+      childAccounts: [childWallet1, childWallet2],
+    },
     showActiveAccount: true,
   },
   parameters: {

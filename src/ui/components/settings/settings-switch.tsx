@@ -1,7 +1,7 @@
 import { Box, Typography, Switch } from '@mui/material';
 import React from 'react';
 
-import { COLOR_WHITE_ALPHA_40_FFFFFF66, COLOR_WHITE_ALPHA_80_FFFFFFCC } from '@/ui/style/color';
+import { COLOR_WHITE_ALPHA_80_FFFFFFCC } from '@/ui/style/color';
 
 interface SettingsSwitchCardProps {
   label: string;

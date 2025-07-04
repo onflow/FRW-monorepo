@@ -1,7 +1,7 @@
 import { Alert, AlertTitle, Box } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 
-import { isChrome } from '../utils/browser';
+import { isChrome } from '@/ui/utils/browser';
 
 const BrowserWarning = () => {
   const [isVisible, setIsVisible] = useState(false); // assume Chrome until checked

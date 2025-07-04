@@ -1,16 +1,7 @@
-import {
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  ListItemIcon,
-  Typography,
-  Box,
-  IconButton,
-} from '@mui/material';
+import { ListItem, ListItemButton, ListItemText, Typography, Box } from '@mui/material';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
-import { CopyIcon } from '@/ui/assets/icons/CopyIcon';
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import { COLOR_WHITE_ALPHA_10_FFFFFF1A, COLOR_WHITE_ALPHA_80_FFFFFFCC } from '@/ui/style/color';
 

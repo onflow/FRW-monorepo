@@ -1,6 +1,6 @@
-import { storage } from '@/background/webapi';
+import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
 
-import { CURRENT_ID_KEY } from '../types/keyring-types';
+import storage from './storage';
 
 export const returnCurrentProfileId = async (): Promise<string | null> => {
   return await storage.get(CURRENT_ID_KEY);

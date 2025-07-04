@@ -1,6 +1,7 @@
+import IconFlow from '@/ui/assets/flow.svg';
+import IconWarning from '@/ui/assets/warning.svg';
+
 import IconArrow from '../../assets/arrow.svg';
-import IconFlow from '../../assets/flow.svg';
-import IconWarning from '../../assets/warning.svg';
 import { isInSameOriginIframe } from '../../utils/iframe';
 import notice from '../notice';
 

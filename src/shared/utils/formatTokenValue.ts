@@ -1,7 +1,5 @@
 import BigNumber from 'bignumber.js';
 
-import { numberWithCommas } from './number';
-
 interface TokenValueParts {
   leadingPart: string;
   zeroPart: number | null;
