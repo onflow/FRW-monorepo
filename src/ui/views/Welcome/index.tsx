@@ -173,7 +173,7 @@ const Welcome = () => {
               variant="contained"
               color="secondary"
               component={Link}
-              to="/welcome/accountimport"
+              to="/welcome/RecoverProfile"
               size="large"
               sx={{
                 display: 'flex',

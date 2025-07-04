@@ -1,16 +1,17 @@
 import { Box } from '@mui/material';
 import type { Meta, StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
-import { fn } from 'storybook/test';
 import { withRouter } from 'storybook-addon-remix-react-router';
+// eslint-disable-next-line import/order
+import { fn } from 'storybook/test';
 
 import { useWallet as useWalletMock } from '@/ui/hooks/use-wallet.mock';
 
-import AccountImport from '../index';
+import RecoverProfile from '../index';
 
 const meta = {
-  title: 'views/Welcome/AccountImport',
-  component: AccountImport,
+  title: 'views/Welcome/RecoverProfile',
+  component: RecoverProfile,
   decorators: [
     withRouter,
     (Story) => {
@@ -41,11 +42,11 @@ const meta = {
     layout: 'centered',
   },
   args: {},
-} satisfies Meta<typeof AccountImport>;
+} satisfies Meta<typeof RecoverProfile>;
 
 export default meta;
 
-type Story = StoryObj<typeof AccountImport>;
+type Story = StoryObj<typeof RecoverProfile>;
 
 export const Default: Story = {
   args: {},

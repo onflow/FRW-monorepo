@@ -1,8 +1,10 @@
 import { Alert, Box, Snackbar } from '@mui/material';
-import React, { useCallback, useEffect, useReducer } from 'react';
+import React, { useEffect, useReducer } from 'react';
 import { useNavigate } from 'react-router';
 
 import { consoleError } from '@/shared/utils/console-log';
+import Google from '@/ui/components/google-import';
+import ImportTabs from '@/ui/components/import-components/ImportTabs';
 import AllSet from '@/ui/components/LandingPages/AllSet';
 import GoogleBackup from '@/ui/components/LandingPages/GoogleBackup';
 import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
@@ -15,10 +17,7 @@ import {
   INITIAL_IMPORT_STATE,
 } from '@/ui/reducers/import-profile-reducer';
 
-import Google from './Google';
-import ImportTabs from './ImportTabs';
-
-const AccountImport = () => {
+const ImportAccount = () => {
   const navigate = useNavigate();
   const usewallet = useWallet();
 
@@ -38,22 +37,6 @@ const AccountImport = () => {
     phrase,
     isAddWallet,
   } = state;
-  const loadView = useCallback(async () => {
-    usewallet
-      .getCurrentAccount()
-      .then((res) => {
-        if (res) {
-          navigate('/');
-        }
-      })
-      .catch(() => {
-        return;
-      });
-  }, [usewallet, navigate]);
-
-  useEffect(() => {
-    loadView();
-  }, [loadView]);
 
   useEffect(() => {
     const checkWalletStatus = async () => {
@@ -235,4 +218,4 @@ const AccountImport = () => {
   );
 };
 
-export default AccountImport;
+export default ImportAccount;

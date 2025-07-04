@@ -447,6 +447,19 @@
   "STEP": {
     "message": "ステップ"
   },
+  "Step_X_of_Y": {
+    "message": "ステップ $step$ の $total$",
+    "placeholders": {
+      "step": {
+        "content": "$1",
+        "example": "2"
+      },
+      "total": {
+        "content": "$2",
+        "example": "6"
+      }
+    }
+  },
   "No__backup__found": {
     "message": "バックアップが見つかりません"
   },

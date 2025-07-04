@@ -7,6 +7,7 @@ import React, { useState } from 'react';
 
 import IconCopy from '@/ui/components/iconfont/IconCopy';
 import SlideRelative from '@/ui/components/SlideRelative';
+import { COLOR_DARKMODE_WHITE_3pc } from '@/ui/style/color';
 
 const RecoveryPhrase = ({ handleSwitchTab, mnemonic }) => {
   const [canGoNext, setCanGoNext] = useState(false);
@@ -46,7 +47,7 @@ const RecoveryPhrase = ({ handleSwitchTab, mnemonic }) => {
             // gridTemplateColumns: 'repeat(6, 1fr)',
             // gridAutoFlow: 'column',
             borderRadius: '12px',
-            backgroundColor: '#333333',
+            backgroundColor: COLOR_DARKMODE_WHITE_3pc,
             transition: 'all .3s linear',
             // margin: '-2%',
             py: '16px',

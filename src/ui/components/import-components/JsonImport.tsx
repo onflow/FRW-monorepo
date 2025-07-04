@@ -13,10 +13,11 @@ import React, { useState } from 'react';
 import { KEY_TYPE } from '@/shared/constant/algo-constants';
 import { type PublicKeyAccount } from '@/shared/types/wallet-types';
 import { consoleError } from '@/shared/utils/console-log';
-import { LLSpinner } from '@/ui/components';
+import { LLSpinner } from '@/ui/components/LLSpinner';
 import PasswordTextarea from '@/ui/components/password/PasswordTextarea';
 import ErrorModel from '@/ui/components/PopupModal/errorModel';
 import { useWallet } from '@/ui/hooks/use-wallet';
+import { COLOR_DARKMODE_WHITE_3pc } from '@/ui/style/color';
 
 const JsonImport = ({
   onOpen,
@@ -146,7 +147,7 @@ const JsonImport = ({
             sx: {
               width: '100%',
               borderRadius: '16px',
-              backgroundColor: '#2C2C2C',
+              backgroundColor: COLOR_DARKMODE_WHITE_3pc,
               padding: '20px 0',
               color: '#fff',
               marginBottom: '16px',
@@ -170,7 +171,7 @@ const JsonImport = ({
           style={{
             width: '100%',
             borderRadius: '16px',
-            backgroundColor: '#2C2C2C',
+            backgroundColor: COLOR_DARKMODE_WHITE_3pc,
             padding: '20px',
             color: '#fff',
             marginBottom: '16px',

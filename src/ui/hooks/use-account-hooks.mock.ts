@@ -9,3 +9,5 @@ export const usePendingAccountCreationTransactions = fn(
 )
   .mockName('usePendingAccountCreationTransactions')
   .mockReturnValue([]);
+
+export const useUserInfo = fn(actual.useUserInfo).mockName('useUserInfo');

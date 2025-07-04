@@ -2,7 +2,7 @@ import { type Page } from '@playwright/test';
 
 import { isValidEthereumAddress } from '../../src/shared/utils/address';
 
-import { getAuth, saveAuth, expect } from './loader';
+import { expect, getAuth, saveAuth } from './loader';
 export const getClipboardText = async () => {
   const text = await navigator.clipboard.readText();
   return text;
@@ -166,9 +166,10 @@ export const registerAccount = async ({ page, extensionId, username, password })
 
   // got keys from clipboard
   const clipboardText = await page.evaluate(getClipboardText);
+  expect(clipboardText).toBeDefined();
 
   const keyArr = clipboardText.split(' ');
-
+  expect(keyArr.length).toBe(12);
   // next step
   await page.getByRole('button', { name: 'Okay, I have saved it properly' }).click();
 
@@ -269,7 +270,7 @@ export const importAccountBySeedPhrase = async ({
   }
 
   // Go to the import page
-  await page.goto(`chrome-extension://${extensionId}/index.html#/welcome/accountimport`);
+  await page.goto(`chrome-extension://${extensionId}/index.html#/welcome/RecoverProfile`);
 
   // Close all pages except the current page (the extension opens them in the background)
   await closeOpenedPages(page);

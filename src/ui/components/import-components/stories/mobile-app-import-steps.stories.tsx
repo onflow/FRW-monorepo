@@ -1,10 +1,10 @@
 import React from 'react';
 import { withRouter } from 'storybook-addon-remix-react-router';
 
-import MobileAppImportSteps from '../ImportComponents/mobile-app-import-steps';
+import MobileAppImportSteps from '@/ui/components/import-components/mobile-app-import-steps';
 
 export default {
-  title: 'views/Welcome/AccountImport/MobileAppImportSteps',
+  title: 'components/import-components/MobileAppImportSteps',
   tags: ['autodocs'],
 
   component: MobileAppImportSteps,
