@@ -3,25 +3,26 @@ import { useMemo } from 'react';
 import {
   CURRENT_ID_KEY,
   KEYRING_STATE_CURRENT_KEY,
+  type KeyringState,
   type VaultEntryV2,
   type VaultEntryV3,
-  type KeyringState,
 } from '@/shared/types/keyring-types';
 import {
+  getActiveAccountTypeForAddress,
   type MainAccount,
   type PendingTransaction,
-  getActiveAccountTypeForAddress,
 } from '@/shared/types/wallet-types';
 import {
   accountBalanceKey,
-  mainAccountsKey,
-  userInfoCachekey,
-  registerStatusKey,
-  type UserInfoStore,
   childAccountAllowTypesKey,
-  type MainAccountStorageBalanceStore,
+  childAccountDescKey,
+  mainAccountsKey,
   mainAccountStorageBalanceKey,
+  type MainAccountStorageBalanceStore,
   pendingAccountCreationTransactionsKey,
+  registerStatusKey,
+  userInfoCachekey,
+  type UserInfoStore,
 } from '@/shared/utils/cache-data-keys';
 import {
   activeAccountsKey,
@@ -39,6 +40,19 @@ export const useMainAccounts = (
   return useCachedData<MainAccount[]>(
     network && publicKey ? mainAccountsKey(network, publicKey) : null
   );
+};
+
+export const useMainAccount = (
+  network: string | undefined | null,
+  address: string | undefined | null
+) => {
+  // The user wallet data - which public key is currently active
+  const userWallets = useUserWallets();
+  // The main accounts for the current public key
+  const mainAccounts = useMainAccounts(network, userWallets?.currentPubkey);
+  // The main account for the address
+  const mainAccount = mainAccounts?.find((account) => account.address === address);
+  return mainAccount;
 };
 
 export const useAccountBalance = (
@@ -144,4 +158,8 @@ export const usePendingAccountCreationTransactions = (
   return useCachedData<PendingTransaction[]>(
     network && pubkey ? pendingAccountCreationTransactionsKey(network, pubkey) : null
   );
+};
+
+export const useChildAccountDescription = (address: string | undefined | null) => {
+  return useCachedData<string>(address ? childAccountDescKey(address) : null);
 };

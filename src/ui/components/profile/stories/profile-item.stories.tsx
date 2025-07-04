@@ -2,6 +2,7 @@ import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 
 import { consoleLog } from '@/shared/utils/console-log';
+import { EditIcon } from '@/ui/assets/icons/settings/Edit';
 
 import { ProfileItemBase } from '../profile-item-base';
 
@@ -70,5 +71,16 @@ export const ActiveProfile: Story = {
     setLoadingId: (id) => consoleLog('Set loading', id),
     userInfo: mockUserInfo,
     activeProfileVariant: true,
+  },
+};
+
+export const WithEditIcon: Story = {
+  args: {
+    profileId: '1',
+    selectedProfileId: '1',
+    onClick: async (id) => consoleLog('Switch to', id),
+    setLoadingId: (id) => consoleLog('Set loading', id),
+    userInfo: mockUserInfo,
+    rightIcon: <EditIcon width={24} height={24} />,
   },
 };

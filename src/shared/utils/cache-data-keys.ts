@@ -3,28 +3,28 @@
  * This is the primary way to get cached data from network calls to the frontend
  */
 import {
-  type TokenFilter,
-  type ExtendedTokenInfo,
-  type EvmTokenInfo,
   type CadenceTokenInfo,
   type CustomFungibleTokenInfo,
+  type EvmTokenInfo,
+  type ExtendedTokenInfo,
+  type TokenFilter,
 } from '../types/coin-types';
 import { type FeatureFlags } from '../types/feature-types';
 import {
-  type NewsItem,
-  type NFTModelV2,
-  type NftCollection,
-  type UserInfoResponse,
   type AccountBalanceInfo,
+  type NewsItem,
+  type NftCollection,
+  type NFTModelV2,
+  type UserInfoResponse,
 } from '../types/network-types';
 import {
-  type NFTCollections,
-  type NFTCollectionData,
-  type EvmNFTIds,
   type EvmNFTCollectionList,
+  type EvmNFTIds,
+  type NFTCollectionData,
+  type NFTCollections,
 } from '../types/nft-types';
 import { type TransferItem } from '../types/transaction-types';
-import { type MainAccount, type Currency, type PublicKeyAccount } from '../types/wallet-types';
+import { type Currency, type MainAccount, type PublicKeyAccount } from '../types/wallet-types';
 
 import { getCachedData, triggerRefresh } from './cache-data-access';
 import { type NetworkScripts } from './script-types';
@@ -330,3 +330,5 @@ export const getCachedChildAccountFt = async (
     childAccountFtKey(network, parentAddress, childAccount)
   );
 };
+
+export const childAccountDescKey = (address: string) => `childaccount-desc-${address}`;

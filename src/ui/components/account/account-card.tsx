@@ -85,7 +85,8 @@ export const AccountCard = ({
   const accountBalance = useAccountBalance(network, address);
   const balance = accountBalance === undefined ? account?.balance : accountBalance;
 
-  const nftCount = nfts || nftCatalogCollections?.reduce((acc, curr) => acc + curr.count, 0);
+  const nftCount = nfts ?? nftCatalogCollections?.reduce((acc, curr) => acc + curr.count, 0) ?? 0;
+
   return (
     <Card
       sx={{
@@ -99,7 +100,6 @@ export const AccountCard = ({
         borderRadius: '16px',
         backgroundColor: showCard ? COLOR_DARKMODE_BACKGROUND_CARDS_1A1A1A : 'transparent',
         overflow: 'hidden',
-        maxWidth: '500px',
       }}
       elevation={showCard ? 1 : 0}
       data-testid={testId}
@@ -149,7 +149,6 @@ export const AccountCard = ({
             }}
           >
             {name || <Skeleton variant="text" width="50px" />}
-
             {isValidEthereumAddress(address) && (
               <span
                 style={{

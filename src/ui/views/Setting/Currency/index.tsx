@@ -37,7 +37,11 @@ const CurrencySettings = () => {
 
   return (
     <div className="page">
-      <LLHeader title={chrome.i18n.getMessage('Display__Currency')} help={false} />
+      <LLHeader
+        title={chrome.i18n.getMessage('Display__Currency')}
+        help={false}
+        goBackLink="/dashboard/setting"
+      />
       <Box
         sx={{
           width: '90%',

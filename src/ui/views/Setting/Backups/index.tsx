@@ -110,7 +110,11 @@ const ManageBackups = () => {
 
   return (
     <div className="page" style={{ display: 'flex', flexDirection: 'column' }}>
-      <LLHeader title={chrome.i18n.getMessage('Manage__Backups')} help={false} />
+      <LLHeader
+        title={chrome.i18n.getMessage('Manage__Backups')}
+        help={false}
+        goBackLink="/dashboard/setting"
+      />
       <Box
         sx={{
           width: 'auto',

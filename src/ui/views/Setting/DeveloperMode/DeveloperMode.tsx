@@ -5,7 +5,6 @@ import {
   CardActionArea,
   Checkbox,
   Divider,
-  Fade,
   FormControlLabel,
   Switch,
   Typography,
@@ -89,8 +88,12 @@ const DeveloperMode = () => {
   };
 
   return (
-    <div className="page">
-      <LLHeader title={chrome.i18n.getMessage('Developer__Settings')} help={false} />
+    <Box sx={{ padding: '0', height: '100%' }}>
+      <LLHeader
+        title={chrome.i18n.getMessage('Developer__Settings')}
+        help={false}
+        goBackLink="/dashboard/setting"
+      />
 
       <Box
         sx={{
@@ -116,7 +119,7 @@ const DeveloperMode = () => {
           }}
         />
       </Box>
-      <Fade in={developerModeOn}>
+      {developerModeOn && (
         <Box sx={{ pb: '20px' }}>
           {emulatorFeatureEnabled && (
             <Box
@@ -386,8 +389,8 @@ const DeveloperMode = () => {
             </CardActionArea>
           </Box>
         </Box>
-      </Fade>
-    </div>
+      )}
+    </Box>
   );
 };
 
