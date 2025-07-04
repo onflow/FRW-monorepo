@@ -3094,12 +3094,13 @@ export class WalletController extends BaseController {
     try {
       transactionService.setPending(network, address, txId, icon, title);
       const fclTx = fcl.tx(txId);
-      // Listen to the transaction until it's sealed.
+      // Wait for the transacton to be executed
+      // Listen to the transaction until it's executed.
       // This will throw an error if there is an error with the transaction
-      const txStatusFinalized = await fclTx.onceFinalized();
+      const txStatusExecuted = await fclTx.onceExecuted();
 
       // Update the pending transaction with the transaction status
-      txHash = await transactionService.updatePending(network, address, txId, txStatusFinalized);
+      txHash = await transactionService.updatePending(network, address, txId, txStatusExecuted);
 
       // Track the transaction result
       mixpanelTrack.track('transaction_result', {
@@ -3114,7 +3115,7 @@ export class WalletController extends BaseController {
           if (baseURL.includes('evm')) {
             // It's an EVM transaction
             // Look through the events in txStatus
-            const evmEvent = txStatusFinalized.events.find(
+            const evmEvent = txStatusExecuted.events.find(
               (event) => event.type.includes('EVM') && !!event.data?.hash
             );
             if (evmEvent) {
@@ -3138,13 +3139,6 @@ export class WalletController extends BaseController {
         consoleError('listenTransaction notification error ', err);
       }
 
-      // Wait for the transacton to be executed
-      // Listen to the transaction until it's sealed.
-      // This will throw an error if there is an error with the transaction
-      const txStatusExecuted = await fclTx.onceExecuted();
-
-      // Update the pending transaction with the transaction status
-      txHash = await transactionService.updatePending(network, address, txId, txStatusExecuted);
       // Refresh the account balance
       triggerRefresh(accountBalanceKey(network, address));
       // Refresh the coin list
