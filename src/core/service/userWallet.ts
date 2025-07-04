@@ -50,7 +50,7 @@ import {
   userMetadataKey,
   type UserMetadataStore,
 } from '@/shared/utils/cache-data-keys';
-import { consoleError, consoleTrace, consoleWarn } from '@/shared/utils/console-log';
+import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 import { getEmojiByIndex } from '@/shared/utils/emoji-util';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import storage from '@/shared/utils/storage';
@@ -1191,7 +1191,6 @@ const preloadAllAccountsWithPubKey = async (
  */
 
 const loadAccountListBalance = async (network: string, addressList: string[]) => {
-  consoleTrace('loadAccountListBalance', network, addressList);
   // Check if the network is valid
   if (!(await fclConfirmNetwork(network))) {
     // Do nothing if the network is not valid
