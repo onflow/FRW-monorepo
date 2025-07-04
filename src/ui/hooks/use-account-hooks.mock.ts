@@ -9,3 +9,13 @@ export const usePendingAccountCreationTransactions = fn(
 )
   .mockName('usePendingAccountCreationTransactions')
   .mockReturnValue([]);
+export const useMainAccount = fn(actual.useMainAccount).mockName('useMainAccount');
+export const useMainAccounts = fn(actual.useMainAccounts).mockName('useMainAccounts');
+export const useChildAccountAllowTypes = fn(actual.useChildAccountAllowTypes).mockName(
+  'useChildAccountAllowTypes'
+);
+export const useChildAccountDescription = fn(actual.useChildAccountDescription).mockName(
+  'useChildAccountDescription'
+);
+export const useCurrentId = fn(actual.useCurrentId).mockName('useCurrentId');
+export const useUserInfo = fn(actual.useUserInfo).mockName('useUserInfo');

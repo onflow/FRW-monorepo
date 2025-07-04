@@ -6,3 +6,7 @@ import * as actual from './useNftHook';
 export const useNftCatalogCollections = fn(actual.useNftCatalogCollections).mockName(
   'useNftCatalogCollections'
 );
+export const useNftCollectionList = fn(actual.useNftCollectionList).mockName(
+  'useNftCollectionList'
+);
+export const useChildAccountNfts = fn(actual.useChildAccountNfts).mockName('useChildAccountNfts');
