@@ -11,8 +11,7 @@ import type {
 import { type WalletAddress } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
-
-import { trimDecimalAmount } from '../../shared/utils/number';
+import { trimDecimalAmount } from '@/shared/utils/number';
 
 export const INITIAL_TRANSACTION_STATE: TransactionState = {
   currentTxState: '',
