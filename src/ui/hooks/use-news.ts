@@ -10,10 +10,10 @@ import {
 } from '@/shared/utils/user-data-keys';
 
 import packageJson from '../../../package.json';
-import { useWallet } from '../utils';
 
 import { useCachedData, useUserData } from './use-data';
 import { useLatestVersion } from './use-feature-flags';
+import { useWallet } from './use-wallet';
 import { useProfiles } from './useProfileHook';
 
 const CURRENT_VERSION = packageJson.version;

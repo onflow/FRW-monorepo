@@ -1,30 +1,29 @@
 import { useMemo } from 'react';
 
-import { setCachedData } from '@/background/utils/data-cache';
 import {
   CURRENT_ID_KEY,
   KEYRING_STATE_CURRENT_KEY,
+  type KeyringState,
   type VaultEntryV2,
   type VaultEntryV3,
-  type KeyringState,
 } from '@/shared/types/keyring-types';
 import {
+  getActiveAccountTypeForAddress,
   type MainAccount,
   type PendingTransaction,
-  getActiveAccountTypeForAddress,
 } from '@/shared/types/wallet-types';
 import {
   accountBalanceKey,
-  mainAccountsKey,
-  userInfoCachekey,
-  registerStatusKey,
-  type UserInfoStore,
   childAccountAllowTypesKey,
-  type MainAccountStorageBalanceStore,
+  childAccountDescKey,
+  mainAccountsKey,
   mainAccountStorageBalanceKey,
+  type MainAccountStorageBalanceStore,
   pendingAccountCreationTransactionsKey,
+  registerStatusKey,
+  userInfoCachekey,
+  type UserInfoStore,
 } from '@/shared/utils/cache-data-keys';
-import storage from '@/shared/utils/storage';
 import {
   activeAccountsKey,
   type ActiveAccountsStore,
@@ -161,13 +160,6 @@ export const usePendingAccountCreationTransactions = (
   );
 };
 
-export const childAccountDescKey = (address: string) => `childaccount-desc-${address}`;
-
 export const useChildAccountDescription = (address: string | undefined | null) => {
   return useCachedData<string>(address ? childAccountDescKey(address) : null);
-};
-
-export const setChildAccountDescription = async (address: string, desc: string): Promise<void> => {
-  if (!address) return;
-  await setCachedData(childAccountDescKey(address), desc, 3600_000);
 };
