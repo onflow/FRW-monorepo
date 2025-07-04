@@ -1,5 +1,3 @@
-import { C } from 'ts-toolbelt';
-
 import { type SignAlgoString, type HashAlgoString, type ImportKeyType } from '../types/algo-types';
 export const FLOW_BIP44_PATH = "m/44'/539'/0'/0/0";
 

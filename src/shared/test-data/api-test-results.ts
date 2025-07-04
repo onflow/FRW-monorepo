@@ -1,6 +1,4 @@
-import { INITIAL_OPENAPI_URL, WEB_NEXT_URL } from '@/constant';
-
-import { CommonParams } from './test-groups';
+import { INITIAL_OPENAPI_URL, WEB_NEXT_URL } from '@/shared/constant/domain-constants';
 
 export type FetchDetail = {
   url: string;
