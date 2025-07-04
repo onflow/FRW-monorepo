@@ -276,7 +276,7 @@ jobs:
           echo "> 💡 **Tip**: Click the report link above to view detailed test results, traces, and screenshots!" >> $GITHUB_STEP_SUMMARY
 
   deploy-storybook:
-    needs: [test]
+    needs: [build]
     runs-on: ubuntu-latest
     if: always()
     strategy:
