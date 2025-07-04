@@ -24,11 +24,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': '/src',
-      utils: '/src/utils',
       ui: '/src/ui',
       background: '/src/background',
-      consts: '/src/constant',
-      assets: '/src/ui/assets',
     },
   },
 });

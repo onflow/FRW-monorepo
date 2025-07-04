@@ -1,10 +1,10 @@
 import React, { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
-import eventBus from '@/eventBus';
+import { EVENTS } from '@/shared/constant/events';
+import eventBus from '@/shared/utils/message/eventBus';
 import { Message } from '@/shared/utils/messaging';
-import { EVENTS } from 'consts';
-import { getUITypeName } from 'ui/utils';
+import { getUITypeName } from '@/ui/utils';
 
 import Views from './views';
 // import './style/index.less';
