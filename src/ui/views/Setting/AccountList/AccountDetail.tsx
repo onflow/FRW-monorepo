@@ -1,14 +1,10 @@
 import { Alert, Box, Divider, List, Snackbar, Typography } from '@mui/material';
 import LinearProgress from '@mui/material/LinearProgress';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useLocation } from 'react-router';
+import { useLocation, useParams } from 'react-router';
 
 import type { StorageInfo } from '@/shared/types/network-types';
-import {
-  type Emoji,
-  type MainAccountWithBalance,
-  type WalletAccountWithBalance,
-} from '@/shared/types/wallet-types';
+import { type Emoji } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress, isValidFlowAddress } from '@/shared/utils/address';
 import { consoleError } from '@/shared/utils/console-log';
 import storage from '@/shared/utils/storage';
@@ -18,12 +14,13 @@ import { AccountCard } from '@/ui/components/account/account-card';
 import SettingsListItem from '@/ui/components/settings/setting-list-item';
 import SettingsSwitchCard from '@/ui/components/settings/settings-switch';
 import { toggleAccountHidden, useAccountHidden } from '@/ui/hooks/preference-hooks';
+import { useMainAccount } from '@/ui/hooks/use-account-hooks';
 import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { COLOR_WHITE_ALPHA_40_FFFFFF66, COLOR_WHITE_ALPHA_80_FFFFFFCC } from '@/ui/style/color';
 
-import EditProfile from './EditProfile';
+import EditAccount from './EditAccount';
 
 function formatBytes(bytes, decimals = 2) {
   if (bytes === 0) return '0 Bytes';
@@ -38,15 +35,15 @@ function formatStorageInfo(used: number | undefined, capacity: number | undefine
   return `${formatBytes((used || 0) * 10)} / ${formatBytes((capacity || 0) * 10)}`;
 }
 
-const WalletDetail = () => {
+const AccountDetail = () => {
   const wallet = useWallet();
-  const location = useLocation();
-
   const { network } = useNetwork();
-  const address = new URLSearchParams(location.search).get('address') || '';
-  const [userWallet, setWallet] = useState<
-    WalletAccountWithBalance | MainAccountWithBalance | null
-  >(null);
+  const params = useParams();
+  const location = useLocation();
+  const urlParams = new URLSearchParams(location.search);
+  const parentAddress = urlParams.get('parentAddress') || null;
+  const address = params.address || '';
+  const userWallet = useMainAccount(network, parentAddress || address);
   const [showProfile, setShowProfile] = useState(false);
   const [gasKillSwitch, setGasKillSwitch] = useState(false);
   const [modeGas, setGasMode] = useState(false);
@@ -100,23 +97,6 @@ const WalletDetail = () => {
     setEmoji(emoji);
   };
 
-  const setUserWallet = useCallback(async () => {
-    await wallet.setDashIndex(3);
-    const walletDetail: {
-      wallet: WalletAccountWithBalance;
-      selectedEmoji: Emoji;
-    } = JSON.parse(await storage.get('walletDetail'));
-    if (walletDetail) {
-      setWallet(walletDetail.wallet);
-      const selectingEmoji: Emoji = {
-        name: walletDetail.wallet.name,
-        emoji: walletDetail.wallet.icon,
-        bgcolor: walletDetail.wallet.color,
-      };
-      setEmoji(selectingEmoji);
-    }
-  }, [wallet]);
-
   const loadStorageInfo = useCallback(async () => {
     if (address && isValidFlowAddress(address)) {
       const info = await wallet.openapi.getStorageInfo(address);
@@ -137,7 +117,6 @@ const WalletDetail = () => {
 
   useEffect(() => {
     try {
-      setUserWallet();
       loadGasKillSwitch();
       loadGasMode();
       loadStorageInfo();
@@ -145,7 +124,7 @@ const WalletDetail = () => {
     } catch (error) {
       consoleError(error);
     }
-  }, [checkKeyphrase, loadGasKillSwitch, loadGasMode, loadStorageInfo, setUserWallet]);
+  }, [checkKeyphrase, loadGasKillSwitch, loadGasMode, loadStorageInfo]);
 
   return (
     <div className="page" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -180,19 +159,30 @@ const WalletDetail = () => {
               pb: 0,
             }}
           >
-            {userWallet && (
-              <AccountCard
-                account={userWallet}
-                network={network}
-                showCard={true}
-                onClick={toggleEditProfile}
-                secondaryIcon={<EditIcon width={24} height={24} />}
-                onClickSecondary={toggleEditProfile}
-              />
-            )}
+            {!isValidEthereumAddress(address)
+              ? userWallet && (
+                  <AccountCard
+                    account={userWallet}
+                    network={network}
+                    showCard={true}
+                    onClick={toggleEditProfile}
+                    secondaryIcon={<EditIcon width={24} height={24} />}
+                    onClickSecondary={toggleEditProfile}
+                  />
+                )
+              : userWallet?.evmAccount && (
+                  <AccountCard
+                    account={userWallet?.evmAccount}
+                    network={network}
+                    showCard={true}
+                    onClick={toggleEditProfile}
+                    secondaryIcon={<EditIcon width={24} height={24} />}
+                    onClickSecondary={toggleEditProfile}
+                  />
+                )}
           </List>
 
-          {userWallet && !isValidEthereumAddress(userWallet.address) && (
+          {address && !isValidEthereumAddress(address) && (
             <>
               <List
                 sx={{
@@ -221,7 +211,7 @@ const WalletDetail = () => {
                   />
                 )}
               </List>
-              {userWallet?.address && (
+              {address && (
                 <Box>
                   <List
                     sx={{
@@ -239,7 +229,7 @@ const WalletDetail = () => {
                   >
                     <SettingsListItem
                       text="Account Keys"
-                      to={`/dashboard/nested/keylist?address=${userWallet.address}`}
+                      to={`/dashboard/nested/keylist?address=${address}`}
                     />
                   </List>
                 </Box>
@@ -335,21 +325,22 @@ const WalletDetail = () => {
           {chrome.i18n.getMessage('You__will__need__to__connect__to__your__wallet__again')}
         </Alert>
       </Snackbar>
-      {showProfile && (
-        <EditProfile
+      {showProfile && address && (
+        <EditAccount
           showMoveBoard={showProfile}
           handleCloseIconClicked={() => setShowProfile(false)}
           handleCancelBtnClicked={() => setShowProfile(false)}
-          handleAddBtnClicked={() => {
+          handleAddBtnClicked={async () => {
             setShowProfile(false);
           }}
           updateProfileEmoji={(emoji) => updateProfileEmoji(emoji)}
           emoji={emoji}
           userWallet={userWallet}
+          address={address}
         />
       )}
     </div>
   );
 };
 
-export default WalletDetail;
+export default AccountDetail;

@@ -1,14 +1,12 @@
 import { Box } from '@mui/material';
-import React, { useCallback, useEffect, useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router';
 
 import { type Emoji, type WalletAccount } from '@/shared/types/wallet-types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
-import storage from '@/shared/utils/storage';
 import { LLHeader } from '@/ui/components';
 import { AccountListing } from '@/ui/components/account/account-listing';
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
-import { useWallet } from '@/ui/hooks/use-wallet';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 
 const tempEmoji: Emoji[] = [
@@ -25,26 +23,16 @@ const tempEmoji: Emoji[] = [
 ];
 
 const AccountList = () => {
-  const usewallet = useWallet();
   const { currentWallet, walletList, network } = useProfiles();
-  const [emojis, setEmojis] = useState<Emoji[]>(tempEmoji);
-  const [isInitialized, setIsInitialized] = useState(false);
   const navigate = useNavigate();
 
   const handleAccountClick = (clickedAccount: WalletAccount, parentAccount?: WalletAccount) => {
-    // Find the emoji by name (clickedAccount.name should match emoji.name)
-    const emojiIndex = emojis.findIndex((emoji) => emoji.name === clickedAccount.name);
-
-    if (emojiIndex !== -1) {
-      const selectedEmoji = emojis[emojiIndex];
-      const walletDetailInfo = { wallet: clickedAccount, selectedEmoji };
-      storage.set('walletDetail', JSON.stringify(walletDetailInfo));
-    }
-
     if (parentAccount && clickedAccount.address !== parentAccount.address) {
       // Check if this is an EVM account or a Flow linked account
       if (isValidEthereumAddress(clickedAccount.address)) {
-        navigate(`/dashboard/setting/accountlist/detail/${clickedAccount.address}`);
+        navigate(
+          `/dashboard/setting/accountlist/detail/${clickedAccount.address}?parentAddress=${parentAccount.address}`
+        );
       } else {
         // For Flow linked accounts, navigate to linked detail page with parent address name
         const parentName = parentAccount.name || '';
@@ -57,17 +45,6 @@ const AccountList = () => {
       navigate(`/dashboard/setting/accountlist/detail/${clickedAccount.address}`);
     }
   };
-
-  const setUserWallet = useCallback(async () => {
-    await usewallet.setDashIndex(3);
-    const emojires = await usewallet.getEmoji();
-    setEmojis(emojires);
-    setIsInitialized(true);
-  }, [usewallet]);
-
-  useEffect(() => {
-    setUserWallet();
-  }, [setUserWallet]);
 
   return (
     <div className="page">

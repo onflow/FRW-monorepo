@@ -1,8 +1,18 @@
-import { Box, Button, Drawer, ListItem, ListItemButton, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Drawer,
+  ListItem,
+  ListItemButton,
+  TextField,
+  Typography,
+} from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import emojis from '@/shared/constant/emoji.json';
 import { isValidEthereumAddress } from '@/shared/utils/address';
+import { consoleError } from '@/shared/utils/console-log';
 import { useWallet } from '@/ui/hooks/use-wallet';
 
 interface MoveBoardProps {
@@ -13,39 +23,71 @@ interface MoveBoardProps {
   updateProfileEmoji: (emoji: any) => void;
   emoji: any;
   userWallet: any;
+  address: string;
 }
 
-const EditProfile = (props: MoveBoardProps) => {
+const EditAccount = (props: MoveBoardProps) => {
   const usewallet = useWallet();
   const [selectedEmoji, setSelectEmoji] = useState<any>(null);
+  const [customName, setCustomName] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const requestChildType = useCallback(async () => {
-    setSelectEmoji(props.emoji);
-  }, [props.emoji]);
+  const requestWalletInfo = useCallback(async () => {
+    // Use userWallet data as default, fall back to props.emoji if no userWallet data
+    const defaultEmoji = {
+      emoji: props.userWallet?.icon || props.emoji?.emoji || '',
+      name: props.userWallet?.name || props.emoji?.name || '',
+      bgcolor: props.userWallet?.color || props.emoji?.bgcolor || '',
+    };
 
-  const changeProfile = async () => {
-    const address = props.userWallet[0].blockchain[0].address;
-    let childType = '';
-    if (isValidEthereumAddress(address)) {
-      childType = 'evm';
+    setSelectEmoji(defaultEmoji);
+    setCustomName(defaultEmoji.name || '');
+  }, [props.emoji, props.userWallet]);
+
+  const changeAccount = async () => {
+    try {
+      setIsLoading(true);
+      let childType = '';
+      if (isValidEthereumAddress(props.address)) {
+        childType = 'evm';
+      }
+
+      // Use custom name if provided, otherwise use emoji name
+      const finalName = customName.trim() || selectedEmoji.name;
+
+      // Call the API to update account metadata
+      await usewallet.updateAccountMetadata(
+        props.address,
+        selectedEmoji.emoji,
+        finalName,
+        selectedEmoji.bgcolor
+      );
+
+      // Update local state with the final name
+      const updatedEmoji = {
+        ...selectedEmoji,
+        name: finalName,
+      };
+
+      setSelectEmoji(updatedEmoji);
+      props.updateProfileEmoji(updatedEmoji);
+      props.handleAddBtnClicked();
+    } catch (error) {
+      consoleError('Failed to update account metadata:', error);
+      // You might want to show an error message to the user here
+    } finally {
+      setIsLoading(false);
     }
-    await usewallet.setEmoji_depreciated(
-      selectedEmoji,
-      childType,
-      props.userWallet[0].blockchain[0].id
-    );
-    setSelectEmoji(selectedEmoji);
-    props.updateProfileEmoji(selectedEmoji);
-    props.handleAddBtnClicked();
   };
 
   const selectEmoji = async (emoji) => {
     setSelectEmoji(emoji);
+    setCustomName(emoji.name || '');
   };
 
   useEffect(() => {
-    requestChildType();
-  }, [props.emoji, requestChildType]);
+    requestWalletInfo();
+  }, [props.emoji, props.userWallet, requestWalletInfo]);
 
   return (
     <Drawer
@@ -104,19 +146,39 @@ const EditProfile = (props: MoveBoardProps) => {
             {selectedEmoji && (
               <Box
                 sx={{
+                  position: 'relative',
                   display: 'flex',
-                  height: '64px',
-                  width: '64px',
-                  borderRadius: '32px',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  backgroundColor: selectedEmoji['bgcolor'],
                   marginRight: '12px',
                 }}
               >
-                <Typography sx={{ fontSize: '50px', fontWeight: '600' }}>
-                  {selectedEmoji.emoji}
-                </Typography>
+                {isLoading && (
+                  <CircularProgress
+                    size={'80px'}
+                    sx={{
+                      position: 'absolute',
+                      color: '#41CC5D',
+                      zIndex: 0,
+                    }}
+                  />
+                )}
+                <Box
+                  sx={{
+                    display: 'flex',
+                    height: '64px',
+                    width: '64px',
+                    borderRadius: '32px',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: selectedEmoji['bgcolor'],
+                    zIndex: 1,
+                  }}
+                >
+                  <Typography sx={{ fontSize: '50px', fontWeight: '600' }}>
+                    {selectedEmoji.emoji}
+                  </Typography>
+                </Box>
               </Box>
             )}
             <Box
@@ -163,22 +225,44 @@ const EditProfile = (props: MoveBoardProps) => {
             </Box>
             <Box
               sx={{
-                px: '16px',
-                border: '1px solid #FFFFFFCC',
-                borderRadius: '16px',
                 width: '100%',
-                height: '46px',
-                display: 'flex',
-                justifyContent: 'start',
-                alignItems: 'center',
                 mb: '24px',
               }}
             >
-              {selectedEmoji && (
-                <Typography sx={{ color: '#FFFFFF', fontSize: '14px', fontWeight: '600' }}>
-                  {selectedEmoji.name}
-                </Typography>
-              )}
+              <TextField
+                fullWidth
+                variant="outlined"
+                placeholder={selectedEmoji?.name || 'Enter custom name'}
+                value={customName}
+                onChange={(e) => setCustomName(e.target.value)}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    color: '#FFFFFF',
+                    backgroundColor: 'transparent',
+                    border: '1px solid #FFFFFFCC',
+                    borderRadius: '16px',
+                    height: '46px',
+                    '& fieldset': {
+                      border: 'none',
+                    },
+                    '&:hover fieldset': {
+                      border: 'none',
+                    },
+                    '&.Mui-focused fieldset': {
+                      border: 'none',
+                    },
+                  },
+                  '& .MuiInputBase-input': {
+                    color: '#FFFFFF',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    '&::placeholder': {
+                      color: '#FFFFFFCC',
+                      opacity: 1,
+                    },
+                  },
+                }}
+              />
             </Box>
 
             <Box
@@ -220,7 +304,8 @@ const EditProfile = (props: MoveBoardProps) => {
               <Button
                 variant="contained"
                 color="primary"
-                onClick={() => changeProfile()}
+                onClick={() => changeAccount()}
+                disabled={isLoading}
                 size="large"
                 sx={{
                   display: 'flex',
@@ -231,16 +316,20 @@ const EditProfile = (props: MoveBoardProps) => {
                   width: '100%',
                 }}
               >
-                <Typography
-                  sx={{
-                    fontWeight: '600',
-                    fontSize: '14px',
-                    fontFamily: 'Inter',
-                  }}
-                  color="#000000CC"
-                >
-                  {chrome.i18n.getMessage('Save')}
-                </Typography>
+                {isLoading ? (
+                  <CircularProgress size={20} sx={{ color: '#000000CC' }} />
+                ) : (
+                  <Typography
+                    sx={{
+                      fontWeight: '600',
+                      fontSize: '14px',
+                      fontFamily: 'Inter',
+                    }}
+                    color="#000000CC"
+                  >
+                    {chrome.i18n.getMessage('Save')}
+                  </Typography>
+                )}
               </Button>
             </Box>
           </Box>
@@ -250,4 +339,4 @@ const EditProfile = (props: MoveBoardProps) => {
   );
 };
 
-export default EditProfile;
+export default EditAccount;

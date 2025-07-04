@@ -26,7 +26,7 @@ const SHOW_DEVICES = false;
 
 const SettingTab = () => {
   const usewallet = useWallet();
-  const { profileIds, activeAccountType } = useProfiles();
+  const { profileIds, activeAccountType, userInfo } = useProfiles();
   const [isKeyphrase, setIsKeyphrase] = useState(false);
 
   const checkIsKeyphrase = useCallback(async () => {
@@ -41,7 +41,7 @@ const SettingTab = () => {
   return (
     <div className="page">
       <LLHeader title={chrome.i18n.getMessage('Settings')} help={false} goBackLink="/dashboard" />
-      {profileIds && profileIds.length > 1 && (
+      {userInfo && profileIds && profileIds.length > 1 && (
         <Box
           sx={{
             margin: '8px auto',
@@ -53,8 +53,8 @@ const SettingTab = () => {
         >
           <Link to="/dashboard/setting/profile" data-testid="setting-goto-account-button">
             <ProfileItem
-              profileId={profileIds[0]}
-              selectedProfileId={profileIds[0]}
+              profileId={userInfo?.id}
+              selectedProfileId={userInfo?.id}
               switchAccount={async () => {}}
               setLoadingId={() => {}}
               rightIcon={<EditIcon width={24} height={24} />}

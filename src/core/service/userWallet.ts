@@ -47,8 +47,10 @@ import {
   pendingAccountCreationTransactionsRefreshRegex,
   placeholderAccountsKey,
   placeholderAccountsRefreshRegex,
+  userMetadataKey,
+  type UserMetadataStore,
 } from '@/shared/utils/cache-data-keys';
-import { consoleError, consoleTrace, consoleWarn } from '@/shared/utils/console-log';
+import { consoleError, consoleWarn } from '@/shared/utils/console-log';
 import { getEmojiByIndex } from '@/shared/utils/emoji-util';
 import { retryOperation } from '@/shared/utils/retryOperation';
 import storage from '@/shared/utils/storage';
@@ -64,6 +66,7 @@ import {
 import { defaultAccountKey, pubKeyAccountToAccountKey } from '../utils/account-key';
 import {
   clearCachedData,
+  getCachedData,
   getValidData,
   registerBatchRefreshListener,
   registerRefreshListener,
@@ -1188,7 +1191,6 @@ const preloadAllAccountsWithPubKey = async (
  */
 
 const loadAccountListBalance = async (network: string, addressList: string[]) => {
-  consoleTrace('loadAccountListBalance', network, addressList);
   // Check if the network is valid
   if (!(await fclConfirmNetwork(network))) {
     // Do nothing if the network is not valid
@@ -1309,6 +1311,61 @@ const getMainAccountsWithPubKey = async (
   return mainAccounts;
 };
 
+// Cache for in-flight requests to prevent race conditions
+const metadataRequestCache = new Map<
+  string,
+  Promise<Record<string, { background: string; icon: string; name: string }>>
+>();
+
+/**
+ * Fetch user metadata from cache or API
+ * @param pubKey - The public key to fetch metadata for
+ * @returns Promise<Record<string, { background: string; icon: string; name: string }>>
+ */
+const fetchUserMetadata = async (
+  pubKey: string
+): Promise<Record<string, { background: string; icon: string; name: string }>> => {
+  let customMetadata: Record<string, { background: string; icon: string; name: string }> = {};
+
+  try {
+    // Try to get from cache first
+    const cachedMetadata = await getCachedData<UserMetadataStore>(userMetadataKey(pubKey));
+
+    if (cachedMetadata) {
+      customMetadata = cachedMetadata as UserMetadataStore;
+    } else {
+      // Check if there's already a request in progress for this pubKey
+      const cacheKey = userMetadataKey(pubKey);
+      if (metadataRequestCache.has(cacheKey)) {
+        customMetadata = await metadataRequestCache.get(cacheKey)!;
+      } else {
+        const requestPromise = (async () => {
+          const metadataResponse = await openapiService.getUserMetadata();
+          let result: Record<string, { background: string; icon: string; name: string }> = {};
+
+          if (metadataResponse?.data) {
+            result = metadataResponse.data as UserMetadataStore;
+          } else if (metadataResponse && typeof metadataResponse === 'object') {
+            result = metadataResponse as UserMetadataStore;
+          }
+
+          // Cache the result
+          await setCachedData(userMetadataKey(pubKey), result, 300_000);
+          return result;
+        })();
+
+        metadataRequestCache.set(cacheKey, requestPromise);
+        customMetadata = await requestPromise;
+        metadataRequestCache.delete(cacheKey);
+      }
+    }
+  } catch (error) {
+    consoleError('Failed to fetch user metadata:', error);
+  }
+
+  return customMetadata;
+};
+
 /**
  * Load the main accounts for a given public key
  * Store in the data cache
@@ -1342,18 +1399,24 @@ const loadMainAccountsWithPubKey = async (
 
   const mainPublicKeyAccounts: PublicKeyAccount[] = [...accounts, ...filteredPlaceholderAccounts];
 
+  // Fetch custom metadata from cache or API
+  const customMetadata = await fetchUserMetadata(pubKey);
+
   // Transform the address array into MainAccount objects
   const mainAccounts: MainAccount[] = mainPublicKeyAccounts.map(
     (publicKeyAccount, index): MainAccount => {
-      const emoji = getEmojiByIndex(index);
+      const defaultEmoji = getEmojiByIndex(index);
+
+      // Check if there's custom metadata for this address
+      const customData = customMetadata[publicKeyAccount.address];
 
       return {
         ...publicKeyAccount,
         chain: networkToChainId(network),
         id: index,
-        name: emoji.name,
-        icon: emoji.emoji,
-        color: emoji.bgcolor,
+        name: customData?.name || defaultEmoji.name,
+        icon: customData?.icon || defaultEmoji.emoji,
+        color: customData?.background || defaultEmoji.bgcolor,
       };
     }
   );
@@ -1366,11 +1429,23 @@ const loadMainAccountsWithPubKey = async (
 
   const mainAccountsWithDetail: MainAccount[] = mainAccounts.map((mainAccount) => {
     const accountDetail = accountDetailMap[mainAccount.address];
+    const evmAccount = !!accountDetail.COAs?.length
+      ? evmAddressToWalletAccount(network, accountDetail.COAs[0])
+      : undefined;
+
+    // Apply custom metadata to evmAccount if it exists
+    if (evmAccount && evmAccount.address) {
+      const evmCustomData = customMetadata[evmAccount.address];
+      if (evmCustomData) {
+        evmAccount.name = evmCustomData.name || evmAccount.name;
+        evmAccount.icon = evmCustomData.icon || evmAccount.icon;
+        evmAccount.color = evmCustomData.background || evmAccount.color;
+      }
+    }
+
     return {
       ...mainAccount,
-      evmAccount: !!accountDetail.COAs?.length
-        ? evmAddressToWalletAccount(network, accountDetail.COAs[0])
-        : undefined,
+      evmAccount,
       childAccounts: childAccountMapToWalletAccounts(network, accountDetail.childrens),
     };
   });

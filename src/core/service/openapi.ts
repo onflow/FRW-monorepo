@@ -1969,6 +1969,29 @@ export class OpenApiService {
     }
     return userEvmTokenList?.data;
   }
+
+  async updateAccountMetadata(
+    address: string,
+    icon: string,
+    name: string,
+    background: string
+  ): Promise<any> {
+    return this.sendRequest(
+      'POST',
+      `/api/metadata/user/${address}`,
+      {},
+      {
+        icon,
+        name,
+        background,
+      },
+      WEB_NEXT_URL
+    );
+  }
+
+  async getUserMetadata(): Promise<any> {
+    return this.sendRequest('GET', '/api/metadata/user/metadatas', {}, {}, WEB_NEXT_URL);
+  }
 }
 
 const openApiService = new OpenApiService();

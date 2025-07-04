@@ -23,9 +23,9 @@ import SendTo from './SendTo';
 import SettingTab from './Setting';
 import About from './Setting/About/About';
 import AccountList from './Setting/AccountList';
+import AccountDetail from './Setting/AccountList/AccountDetail';
 import LinkedDetail from './Setting/AccountList/LinkedDetail';
 import RemoveWallet from './Setting/AccountList/RemoveWallet';
-import WalletDetail from './Setting/AccountList/WalletDetail';
 import AddressBook from './Setting/AddressBook';
 import ManageBackups from './Setting/Backups';
 import BackupsPassword from './Setting/Backups/BackupsPassword';
@@ -351,7 +351,7 @@ const InnerRoute = () => {
               path="setting/accountlist/detail/:address"
               element={
                 <PrivateRoute>
-                  <WalletDetail />
+                  <AccountDetail />
                 </PrivateRoute>
               }
             />
