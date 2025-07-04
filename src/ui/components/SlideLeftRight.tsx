@@ -9,7 +9,7 @@ const SlideLeftRight = React.forwardRef(
     }: {
       show: boolean;
       direction: 'left' | 'right';
-      children: React.ReactElement;
+      children: React.ReactNode;
     },
     ref
   ) => {

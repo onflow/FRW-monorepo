@@ -17,6 +17,7 @@ import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
 import CancelIcon from '@/ui/components/iconfont/IconClose';
 import SlideRelative from '@/ui/components/SlideRelative';
 import { useWallet } from '@/ui/hooks/use-wallet';
+import { COLOR_DARKMODE_WHITE_3pc } from '@/ui/style/color';
 
 const PickNickname = ({
   handleSwitchTab,
@@ -198,7 +199,7 @@ const PickNickname = ({
                 height: '64px',
                 padding: '16px',
                 zIndex: '999',
-                backgroundColor: '#282828',
+                backgroundColor: COLOR_DARKMODE_WHITE_3pc,
                 border: '2px solid #4C4C4C',
                 borderRadius: '12px',
                 boxSizing: 'border-box',

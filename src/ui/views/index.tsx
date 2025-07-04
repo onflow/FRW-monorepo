@@ -18,7 +18,7 @@ import InnerRoute from './InnerRoute';
 import SortHat from './SortHat';
 import Unlock from './Unlock';
 import Welcome from './Welcome';
-import AccountImport from './Welcome/AccountImport';
+import RecoverProfile from './Welcome/RecoverProfile';
 import Register from './Welcome/Register';
 import Sync from './Welcome/Sync';
 
@@ -38,7 +38,7 @@ const AppRoutes = () => {
       <Route path="/unlock" element={<Unlock />} />
       <Route path="/welcome" element={<Welcome />} />
       <Route path="/welcome/register" element={<Register />} />
-      <Route path="/welcome/accountimport" element={<AccountImport />} />
+      <Route path="/welcome/recoverprofile" element={<RecoverProfile />} />
       <Route path="/welcome/sync" element={<Sync />} />
       <Route path="/forgot" element={<Forgot />} />
       <Route path="/forgot/recover" element={<Recover />} />

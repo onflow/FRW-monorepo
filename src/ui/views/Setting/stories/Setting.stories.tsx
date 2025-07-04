@@ -2,11 +2,11 @@ import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 import { withRouter } from 'storybook-addon-remix-react-router';
 
-import * as useAccountHooks from '@/ui/hooks/use-account-hooks';
+import { useUserInfo as useUserInfoMock } from '@/ui/hooks/use-account-hooks.mock';
 import { useUserData } from '@/ui/hooks/use-data.mock';
-import { useWallet } from '@/ui/hooks/use-wallet';
+import { useWallet as useWalletMock } from '@/ui/hooks/use-wallet.mock';
 import { useNetwork } from '@/ui/hooks/useNetworkHook.mock';
-import { useProfiles } from '@/ui/hooks/useProfileHook.mock';
+import { USE_PROFILES_MOCK, useProfiles } from '@/ui/hooks/useProfileHook.mock';
 
 import SettingTab from '../index';
 
@@ -56,7 +56,7 @@ type Story = StoryObj<typeof SettingTab>;
 
 export const Default: Story = {
   render: () => {
-    (useAccountHooks as any).useUserInfo = () => ({
+    useUserInfoMock.mockReturnValue({
       avatar: 'https://lilico.app/api/avatar/beam/120/avatar',
       nickname: 'Test User',
       username: 'testuser',
@@ -77,11 +77,11 @@ export const Default: Story = {
       return undefined;
     });
     useProfiles.mockReturnValue({
-      ...useProfiles(),
+      ...USE_PROFILES_MOCK,
       profileIds: [],
       userInfo: undefined,
     });
-    (useWallet as any).mockReturnValue(mockUseWallet);
+    useWalletMock.mockReturnValue(mockUseWallet);
 
     return <SettingTab />;
   },
@@ -96,7 +96,7 @@ export const Default: Story = {
 
 export const WithProfile: Story = {
   render: () => {
-    (useAccountHooks as any).useUserInfo = () => ({
+    useUserInfoMock.mockReturnValue({
       avatar: 'https://lilico.app/api/avatar/beam/120/avatar',
       nickname: 'Test User',
       username: 'testuser',
@@ -117,7 +117,7 @@ export const WithProfile: Story = {
       return undefined;
     });
     useProfiles.mockReturnValue({
-      ...useProfiles(),
+      ...USE_PROFILES_MOCK,
       profileIds: ['1', '2'],
       userInfo: {
         avatar: 'https://lilico.app/api/avatar/beam/120/avatar',
@@ -128,7 +128,7 @@ export const WithProfile: Story = {
         id: '1',
       },
     });
-    (useWallet as any).mockReturnValue(mockUseWallet);
+    useWalletMock.mockReturnValue(mockUseWallet);
 
     return <SettingTab />;
   },

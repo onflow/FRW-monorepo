@@ -301,10 +301,6 @@ export class WalletController extends BaseController {
     }
   };
 
-  registerAccountImport = async (pubKey: string, account: FclAccount) => {
-    userWalletService.registerCurrentPubkey(pubKey, account);
-  };
-
   importAccountFromMobile = async (address: string, password: string, mnemonic: string) => {
     // Verify password
     await this.verifyPasswordIfBooted(password);

@@ -18,4 +18,5 @@ export const useChildAccountDescription = fn(actual.useChildAccountDescription).
   'useChildAccountDescription'
 );
 export const useCurrentId = fn(actual.useCurrentId).mockName('useCurrentId');
+
 export const useUserInfo = fn(actual.useUserInfo).mockName('useUserInfo');

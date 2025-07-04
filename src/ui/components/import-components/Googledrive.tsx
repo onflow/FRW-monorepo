@@ -6,6 +6,7 @@ import { LLSpinner } from '@/ui/components';
 import BrowserWarning from '@/ui/components/BrowserWarning';
 import IconGoogleDrive from '@/ui/components/iconfont/IconGoogleDrive';
 import { useWallet } from '@/ui/hooks/use-wallet';
+import { COLOR_DARKMODE_WHITE_3pc } from '@/ui/style/color';
 
 const Googledrive = ({ setErrorMessage, setShowError, handleGoogleAccountsFound }) => {
   const wallets = useWallet();
@@ -43,7 +44,7 @@ const Googledrive = ({ setErrorMessage, setShowError, handleGoogleAccountsFound 
           flexDirection: 'column',
           justifyContent: 'space-between',
           alignItems: 'center',
-          backgroundColor: '#2C2C2C',
+          backgroundColor: COLOR_DARKMODE_WHITE_3pc,
           borderRadius: '16px',
           py: '40px',
         }}
