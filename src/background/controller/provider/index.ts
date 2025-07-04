@@ -1,7 +1,7 @@
 import { ethErrors } from 'eth-rpc-errors';
 
-import { sessionService, keyringService, userWalletService } from 'background/service';
-import { tab } from 'background/webapi';
+import tab from '@/background/webapi/tab';
+import { keyringService, sessionService } from '@/core/service';
 
 import internalMethod from './internalMethod';
 import rpcFlow from './rpcFlow';
