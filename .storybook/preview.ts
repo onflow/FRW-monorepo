@@ -3,7 +3,7 @@
 import { ThemeProvider, CssBaseline, createTheme } from '@mui/material';
 import { withThemeFromJSXProvider } from '@storybook/addon-themes';
 import type { Preview } from '@storybook/react-webpack5';
-import { themes, ensure } from 'storybook/theming';
+import { themes } from 'storybook/theming';
 
 import messages from '../src/messages.json';
 import themeOptions from '../src/ui/style/LLTheme'; // Import your theme options
