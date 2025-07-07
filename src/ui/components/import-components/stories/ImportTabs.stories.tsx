@@ -1,6 +1,8 @@
 import { Box } from '@mui/material';
 import type { Meta, StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
+// eslint-disable-next-line import/order
+import { withRouter } from 'storybook-addon-remix-react-router';
 import { action } from 'storybook/actions';
 import { fn } from 'storybook/test';
 
@@ -13,6 +15,7 @@ const meta = {
   title: 'components/import-components/ImportTabs',
   component: ImportTabs,
   decorators: [
+    withRouter,
     (Story) => {
       useWalletMock.mockReset();
       useWalletMock.mockImplementation(() => ({
