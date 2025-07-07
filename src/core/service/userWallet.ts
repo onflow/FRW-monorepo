@@ -69,11 +69,7 @@ import {
   type UserWalletStore,
 } from '@/shared/utils/user-data-keys';
 
-import {
-  defaultAccountKey,
-  pubKeyAccountToAccountKey,
-  pubKeySignAlgoToAccountKey,
-} from '../utils/account-key';
+import { defaultAccountKey, pubKeyAccountToAccountKey } from '../utils/account-key';
 import {
   clearCachedData,
   getCachedData,
@@ -1019,26 +1015,9 @@ class UserWallet {
       }
     }
 
-    // Get the current signing algorithm from keyring
-    let currentSignAlgo: number;
-    let currentPubKey: string;
-    let accountKeyRequest: AccountKeyRequest;
-
-    try {
-      currentSignAlgo = keyringService.getCurrentSignAlgo();
-      currentPubKey =
-        currentSignAlgo === SIGN_ALGO_NUM_ECDSA_P256 ? keyTuple.P256.pubK : keyTuple.SECP256K1.pubK;
-
-      // Try to create account key request directly from keyring
-      accountKeyRequest = pubKeySignAlgoToAccountKey(currentPubKey, currentSignAlgo);
-    } catch (error) {
-      // Fallback: Get accounts from indexer using both public keys
-      const accounts = await getAccountsByPublicKeyTuple(keyTuple, network);
-      accountKeyRequest =
-        accounts.length === 0
-          ? defaultAccountKey(keyTuple)
-          : pubKeyAccountToAccountKey(accounts[0]);
-    }
+    const accounts = await getAccountsByPublicKeyTuple(keyTuple, network);
+    const accountKeyRequest =
+      accounts.length === 0 ? defaultAccountKey(keyTuple) : pubKeyAccountToAccountKey(accounts[0]);
 
     // Get the private key from the private key tuple
     const privateKey = tupleToPrivateKey(keyTuple, accountKeyRequest.sign_algo);
