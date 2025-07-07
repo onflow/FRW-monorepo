@@ -5,7 +5,11 @@ import * as ethUtil from 'ethereumjs-util';
 import { getApp } from 'firebase/app';
 import { getAuth, signInAnonymously } from 'firebase/auth/web-extension';
 
-import { DEFAULT_WEIGHT, FLOW_BIP44_PATH } from '@/shared/constant/algo-constants';
+import {
+  DEFAULT_WEIGHT,
+  FLOW_BIP44_PATH,
+  SIGN_ALGO_NUM_ECDSA_P256,
+} from '@/shared/constant/algo-constants';
 import {
   combinePubPkString,
   type PublicPrivateKeyTuple,
@@ -63,7 +67,11 @@ import {
   type UserWalletStore,
 } from '@/shared/utils/user-data-keys';
 
-import { defaultAccountKey, pubKeyAccountToAccountKey } from '../utils/account-key';
+import {
+  defaultAccountKey,
+  pubKeyAccountToAccountKey,
+  pubKeySignAlgoToAccountKey,
+} from '../utils/account-key';
 import {
   clearCachedData,
   getCachedData,
@@ -78,7 +86,6 @@ import {
   getAccountsWithPublicKey,
 } from '../utils/modules/findAddressWithPubKey';
 import {
-  formPubKeyTuple,
   pk2PubKeyTuple,
   seed2PublicPrivateKey,
   seedWithPathAndPhrase2PublicPrivateKey,
@@ -934,8 +941,6 @@ class UserWallet {
   ): Promise<void> => {
     // Get the network and store before we do anything async
     const network = this.getNetwork();
-    // Get the public key tuple
-    const pubKeyTuple = formPubKeyTuple(keyTuple);
 
     // Login anonymously if needed
     // We'll need to do this before we get the accounts
@@ -951,29 +956,26 @@ class UserWallet {
       }
     }
 
-    // Try to get accounts from the main accounts cache
-    let accounts: PublicKeyAccount[] = [];
-    // Get accounts from cache first, then fallback to indexer
-    const cachedP256 = await getValidData<MainAccount[]>(
-      mainAccountsKey(network, pubKeyTuple.P256.pubK)
-    );
-    const cachedSecp = await getValidData<MainAccount[]>(
-      mainAccountsKey(network, pubKeyTuple.SECP256K1.pubK)
-    );
+    // Get the current signing algorithm from keyring
+    let currentSignAlgo: number;
+    let currentPubKey: string;
+    let accountKeyRequest: AccountKeyRequest;
 
-    accounts =
-      cachedP256 ||
-      cachedSecp ||
-      (await (() => {
-        return getAccountsByPublicKeyTuple(pubKeyTuple, network);
-      })());
+    try {
+      currentSignAlgo = keyringService.getCurrentSignAlgo();
+      currentPubKey =
+        currentSignAlgo === SIGN_ALGO_NUM_ECDSA_P256 ? keyTuple.P256.pubK : keyTuple.SECP256K1.pubK;
 
-    // If no accounts are found, then the registration process may not have been completed
-    // Assume the default account key
-    const accountKeyRequest =
-      accounts.length === 0
-        ? defaultAccountKey(pubKeyTuple)
-        : pubKeyAccountToAccountKey(accounts[0]);
+      // Try to create account key request directly from keyring
+      accountKeyRequest = pubKeySignAlgoToAccountKey(currentPubKey, currentSignAlgo);
+    } catch (error) {
+      // Fallback: Get accounts from indexer using both public keys
+      const accounts = await getAccountsByPublicKeyTuple(keyTuple, network);
+      accountKeyRequest =
+        accounts.length === 0
+          ? defaultAccountKey(keyTuple)
+          : pubKeyAccountToAccountKey(accounts[0]);
+    }
 
     // Get the private key from the private key tuple
     const privateKey = tupleToPrivateKey(keyTuple, accountKeyRequest.sign_algo);
