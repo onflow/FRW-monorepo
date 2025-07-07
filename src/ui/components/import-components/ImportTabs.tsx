@@ -113,7 +113,7 @@ const ImportTabs = ({
       <Box sx={{ padding: '20px 24px' }}>
         <Typography variant="h4">{chrome.i18n.getMessage('Import__Profile')}</Typography>
         <Typography variant="body1" color="text.secondary">
-          {chrome.i18n.getMessage('Support_Flow_Wallet_Blocto')}
+          {chrome.i18n.getMessage('Import_Profile_Subtitle')}
         </Typography>
       </Box>
 
@@ -135,6 +135,9 @@ const ImportTabs = ({
           },
           '& .MuiTabs-indicator': {
             background: 'transparent',
+          },
+          '& .MuiTabs-flexContainer': {
+            gap: '12px',
           },
         }}
         textColor="primary"

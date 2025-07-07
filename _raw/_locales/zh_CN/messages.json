@@ -1165,6 +1165,9 @@
   "Support_Flow_Wallet_Blocto": {
     "message": "支持 Flow 钱包、Blocto、恢复短语、密钥库和私钥"
   },
+  "Import_Profile_Subtitle": {
+    "message": "从以下选项中选择导入您的个人资料"
+  },
   "A_crypto_wallet_on_Flow": {
     "message": "Flow 上的加密钱包适用于"
   },

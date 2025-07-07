@@ -23,7 +23,7 @@ const meta = {
         isBooted: fn().mockResolvedValue(false),
       }));
       return (
-        <Box sx={{ width: '100%', maxWidth: '600px', margin: 'auto' }}>
+        <Box sx={{ width: '100%', margin: 'auto' }}>
           <Story />
         </Box>
       );

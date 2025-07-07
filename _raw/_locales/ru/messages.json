@@ -1165,6 +1165,9 @@
   "Support_Flow_Wallet_Blocto": {
     "message": "Поддержка Flow Wallet, Blocto, Recovery Phrase, Keystore и Private Key"
   },
+  "Import_Profile_Subtitle": {
+    "message": "Выберите один из следующих вариантов для импорта вашего профиля"
+  },
   "A_crypto_wallet_on_Flow": {
     "message": "Криптокошелек на Flow для исследователей, коллекционеров и геймеров"
   },
