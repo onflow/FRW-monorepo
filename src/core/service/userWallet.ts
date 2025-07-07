@@ -951,8 +951,22 @@ class UserWallet {
       }
     }
 
-    // Find any account with public key information
-    const accounts = await getAccountsByPublicKeyTuple(pubKeyTuple, network);
+    // Try to get accounts from the main accounts cache
+    let accounts: PublicKeyAccount[] = [];
+    // Get accounts from cache first, then fallback to indexer
+    const cachedP256 = await getValidData<MainAccount[]>(
+      mainAccountsKey(network, pubKeyTuple.P256.pubK)
+    );
+    const cachedSecp = await getValidData<MainAccount[]>(
+      mainAccountsKey(network, pubKeyTuple.SECP256K1.pubK)
+    );
+
+    accounts =
+      cachedP256 ||
+      cachedSecp ||
+      (await (() => {
+        return getAccountsByPublicKeyTuple(pubKeyTuple, network);
+      })());
 
     // If no accounts are found, then the registration process may not have been completed
     // Assume the default account key
