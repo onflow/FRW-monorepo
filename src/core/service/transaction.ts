@@ -124,7 +124,9 @@ class Transaction {
     );
     if (existingTxStore) {
       existingTxStore.list.unshift(txItem);
-      existingTxStore.pendingCount = existingTxStore.pendingCount + 1;
+      existingTxStore.pendingCount = existingTxStore.list.filter(
+        (item) => item.status.toUpperCase() === 'PENDING'
+      ).length;
       existingTxStore.count = existingTxStore.count + 1;
       await setCachedData(transferListKey(network, address), existingTxStore);
     }
@@ -186,7 +188,7 @@ class Transaction {
       if (storeItemIndex !== -1) {
         existingTxStore.list[storeItemIndex] = txItem;
         existingTxStore.pendingCount = existingTxStore.list.filter(
-          (item) => item.status === 'PENDING'
+          (item) => item.status.toUpperCase() === 'PENDING'
         ).length;
         await setCachedData(transferListKey(network, address), existingTxStore);
       }
@@ -297,7 +299,8 @@ class Transaction {
     const transferListStore: TransferListStore = {
       count: data.total + existingPendingList.length,
       // This is the number of transaction that are in progress
-      pendingCount: existingPendingList.filter((item) => item.status === 'PENDING').length,
+      pendingCount: existingPendingList.filter((item) => item.status.toUpperCase() === 'PENDING')
+        .length,
       list: [...existingPendingList, ...txList],
     };
     await setCachedData(transferListKey(network, address, offset, limit), transferListStore);
