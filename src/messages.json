@@ -1153,6 +1153,9 @@
   "Support_Flow_Wallet_Blocto": {
     "message": "From Recovery Phrase, Keystore or Private Key"
   },
+  "Import_Profile_Subtitle": {
+    "message": "Select from the following options to import your profile"
+  },
   "A_crypto_wallet_on_Flow": {
     "message": "A crypto wallet on Flow built for"
   },

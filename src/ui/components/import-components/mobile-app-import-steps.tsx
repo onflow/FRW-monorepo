@@ -27,6 +27,7 @@ const ImportStep = ({
       sx={{
         width: '142px',
         padding: '16px 4px',
+        display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyItems: 'center',
