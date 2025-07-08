@@ -37,7 +37,7 @@ vi.mock('@/core/service', () => {
   };
 });
 
-vi.mock('background/controller/notification', () => ({
+vi.mock('../notification', () => ({
   default: {
     requestApproval: vi.fn(),
   },
