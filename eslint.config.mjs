@@ -173,7 +173,7 @@ const config = [
                 '../../content-script/**',
               ],
               message:
-                'Files in background folder must use aliases (@/shared/*, etc.) instead of relative paths outside background',
+                'Files in background folder must use aliases (@onflow/flow-wallet-shared/*, etc.) instead of relative paths outside background',
             },
           ],
         },
@@ -208,7 +208,7 @@ const config = [
                 '../../content-script/**',
               ],
               message:
-                'Files in core folder must use aliases (@/shared/*, etc.) instead of relative paths outside core',
+                'Files in core folder must use aliases (@onflow/flow-wallet-shared/*, etc.) instead of relative paths outside core',
             },
           ],
         },
@@ -222,10 +222,19 @@ const config = [
         'error',
         {
           patterns: [
-            // Block all imports from @/ except @/shared and @/core/service (within service)
+            // Block all imports from @/ except @onflow/flow-wallet-shared and @/core/service (within service)
             {
-              group: ['@/*', '!@/shared', '!@/shared/**', '!@/core/service', '!@/core/service/**'],
-              message: 'Files in core/service can only import from @/shared/* or within service',
+              group: [
+                '@/*',
+                '!@/data-model/*',
+                '!@/data-model/**',
+                '!@/extension-shared/*',
+                '!@/extension-shared/**',
+                '!@/core/service',
+                '!@/core/service/**',
+              ],
+              message:
+                'Files in core/service can only import from @/data-model/*, @/extension-shared/* or within service',
             },
             // Block imports from background/* except background/webapi and core/*
             {
@@ -267,7 +276,7 @@ const config = [
               group: ['../../*', '!../../utils/**'],
               message: 'Files in core/service subdirectories can only import from core/utils/*',
             },
-            // Block ALL relative imports to shared - force use of @/shared alias
+            // Block ALL relative imports to shared - force use of @onflow/flow-wallet-shared alias
             {
               group: [
                 '../shared/**',
@@ -275,7 +284,8 @@ const config = [
                 '../../../shared/**',
                 '../../../../shared/**',
               ],
-              message: 'Use @/shared/* alias instead of relative imports to shared',
+              message:
+                'Use @onflow/flow-wallet-shared/* alias instead of relative imports to shared',
             },
           ],
         },
@@ -289,19 +299,21 @@ const config = [
         'error',
         {
           patterns: [
-            // Block all imports from @/ except @/shared, @/core/service, and @/core/utils
+            // Block all imports from @/ except @onflow/flow-wallet-shared, @/core/service, and @/core/utils
             {
               group: [
                 '@/*',
-                '!@/shared',
-                '!@/shared/**',
+                '!@/data-model/*',
+                '!@/data-model/**',
+                '!@onflow/flow-wallet-shared',
+                '!@onflow/flow-wallet-shared/**',
                 '!@/core/service',
                 '!@/core/service/**',
                 '!@/core/utils',
                 '!@/core/utils/**',
               ],
               message:
-                'Files in core/service/keyring can only import from @/shared/*, @/core/utils/* or within service',
+                'Files in core/service/keyring can only import from @onflow/flow-wallet-shared/*, @/core/utils/* or within service',
             },
             // Block imports from background/* except background/webapi and core/*
             {
@@ -338,7 +350,7 @@ const config = [
               message:
                 'Files in core/service/keyring can only import from ../../utils/* or ../../../background/webapi/*',
             },
-            // Block ALL relative imports to shared - force use of @/shared alias
+            // Block ALL relative imports to shared - force use of @onflow/flow-wallet-shared alias
             {
               group: [
                 '../shared/**',
@@ -346,7 +358,8 @@ const config = [
                 '../../../shared/**',
                 '../../../../shared/**',
               ],
-              message: 'Use @/shared/* alias instead of relative imports to shared',
+              message:
+                'Use @onflow/flow-wallet-shared/* alias instead of relative imports to shared',
             },
           ],
         },
@@ -371,13 +384,15 @@ const config = [
                 '../**/shared/**',
               ],
               message:
-                'Files in UI folder must use aliases (@/shared/*, @/background/*) instead of relative paths',
+                'Files in UI folder must use aliases (@onflow/flow-wallet-shared/*, @/background/*) instead of relative paths',
             },
             // Block relative imports to src level that aren't ui
             {
               group: [
                 '**/src/background/*',
                 '**/src/background/**',
+                '**/src/data-model/*',
+                '**/src/data-model/**',
                 '**/src/shared/*',
                 '**/src/shared/**',
                 '**/src/content-script/*',
