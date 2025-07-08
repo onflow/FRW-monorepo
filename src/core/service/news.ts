@@ -1,15 +1,15 @@
-import { type NewsItem } from '@/shared/types/news-types';
-import { newsKey, newsRefreshRegex, type NewsStore } from '@/shared/utils/cache-data-keys';
-import { consoleError } from '@/shared/utils/console-log';
+import { type NewsItem } from '@onflow/flow-wallet-shared/types/news-types';
+import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+
+import { newsKey, newsRefreshRegex, type NewsStore } from '@/data-model/cache-data-keys';
 import {
   readAndDismissedNewsKey,
   type ReadAndDismissedNewsStore,
-} from '@/shared/utils/user-data-keys';
-
-import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
-import createPersistStore from '../utils/persistStore';
+} from '@/data-model/user-data-keys';
 
 import openapi from './openapi';
+import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
+import createPersistStore from '../utils/persistStore';
 
 class NewsService {
   store!: ReadAndDismissedNewsStore;

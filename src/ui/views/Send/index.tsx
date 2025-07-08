@@ -20,11 +20,12 @@ import { StyledEngineProvider, useTheme } from '@mui/material/styles';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
-import { type Contact } from '@/shared/types/network-types';
-import { type WalletAddress } from '@/shared/types/wallet-types';
-import { isValidAddress } from '@/shared/utils/address';
-import { consoleError } from '@/shared/utils/console-log';
-import { checkAddressBookContacts, filterContacts } from '@/shared/utils/contact-utils';
+import { type Contact } from '@onflow/flow-wallet-shared/types/network-types';
+import { type WalletAddress } from '@onflow/flow-wallet-shared/types/wallet-types';
+import { isValidAddress } from '@onflow/flow-wallet-shared/utils/address';
+import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+
+import { checkAddressBookContacts, filterContacts } from '@/extension-shared/utils/contact-utils';
 import AccountsList from '@/ui/components/AddressLists/AccountsList';
 import AddressBookList from '@/ui/components/AddressLists/AddressBookList';
 import RecentList from '@/ui/components/AddressLists/RecentList';

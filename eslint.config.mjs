@@ -83,7 +83,19 @@ const config = [
       'import/order': [
         'error',
         {
-          groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
+          groups: [['builtin', 'external'], 'internal', ['parent', 'sibling', 'index']],
+          pathGroups: [
+            {
+              pattern: '@onflow/flow-wallet-shared/**',
+              group: 'external',
+              position: 'after',
+            },
+            {
+              pattern: '@/**',
+              group: 'internal',
+            },
+          ],
+          pathGroupsExcludedImportTypes: ['builtin'],
           'newlines-between': 'always',
           alphabetize: {
             order: 'asc',
@@ -126,6 +138,7 @@ const config = [
       'no-restricted-globals': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       'no-console': ['off'],
+      'no-restricted-imports': 'off', // Tests can import anything they need to test
     },
   }, // Build files specific config
   {
@@ -154,32 +167,13 @@ const config = [
           patterns: [
             {
               group: ['@/ui/*', '@/ui/**'],
-              message: 'UI components/modules cannot be imported into background scripts',
-            },
-            // Block relative imports outside background folder
-            {
-              group: [
-                '../shared/*',
-                '../shared/**',
-                '../ui/*',
-                '../ui/**',
-                '../content-script/*',
-                '../content-script/**',
-                '../../shared/*',
-                '../../shared/**',
-                '../../ui/*',
-                '../../ui/**',
-                '../../content-script/*',
-                '../../content-script/**',
-              ],
-              message:
-                'Files in background folder must use aliases (@onflow/flow-wallet-shared/*, etc.) instead of relative paths outside background',
+              message: 'Background cannot import from UI layer',
             },
           ],
         },
       ],
     },
-  }, // Core folder cannot import outside of core without aliases
+  }, // Core folder import restrictions
   {
     files: ['**/src/core/**/*.{js,jsx,ts,tsx}'],
     rules: {
@@ -189,183 +183,45 @@ const config = [
           patterns: [
             {
               group: ['@/ui/*', '@/ui/**'],
-              message: 'UI components/modules cannot be imported into core',
+              message: 'Core cannot import from UI layer',
             },
-            // Block relative imports outside core folder
             {
-              group: [
-                '../shared/*',
-                '../shared/**',
-                '../ui/*',
-                '../ui/**',
-                '../content-script/*',
-                '../content-script/**',
-                '../../shared/*',
-                '../../shared/**',
-                '../../ui/*',
-                '../../ui/**',
-                '../../content-script/*',
-                '../../content-script/**',
-              ],
-              message:
-                'Files in core folder must use aliases (@onflow/flow-wallet-shared/*, etc.) instead of relative paths outside core',
+              group: ['@/background/*', '!@/background/webapi/**'],
+              message: 'Core can only import webapi from background',
             },
           ],
         },
       ],
     },
-  }, // Restrict imports from core/service
+  }, // Core service specific restrictions
   {
-    files: ['**/src/core/service/*.{js,jsx,ts,tsx}'],
+    files: ['**/src/core/service/**/*.{js,jsx,ts,tsx}'],
     rules: {
       'no-restricted-imports': [
         'error',
         {
           patterns: [
-            // Block all imports from @/ except @onflow/flow-wallet-shared and @/core/service (within service)
             {
-              group: [
-                '@/*',
-                '!@/data-model/*',
-                '!@/data-model/**',
-                '!@/extension-shared/*',
-                '!@/extension-shared/**',
-                '!@/core/service',
-                '!@/core/service/**',
-              ],
-              message:
-                'Files in core/service can only import from @/data-model/*, @/extension-shared/* or within service',
-            },
-            // Block imports from background/* except background/webapi and core/*
-            {
-              group: ['background/*', '!background/webapi', '!background/webapi/**'],
-              message:
-                'Files in core/service can only import from background/webapi/* or within core',
-            },
-            // Block imports from core/* except core/utils and core/service
-            {
-              group: [
-                'core/*',
-                '!core/utils',
-                '!core/utils/**',
-                '!core/service',
-                '!core/service/**',
-              ],
-              message: 'Files in core/service can only import from core/utils/* or within service',
-            },
-            // Block UI imports
-            {
-              group: ['ui/*', 'ui/**'],
-              message: 'Files in core/service cannot import from UI',
-            },
-            // Block relative imports that go outside allowed directories
-            {
-              group: [
-                '../*',
-                '!../utils',
-                '!../utils/*',
-                '!../utils/**',
-                '!../../background/webapi',
-                '!../../background/webapi/*',
-                '!../../background/webapi/**',
-              ],
-              message:
-                'Files in core/service can only import from core/utils/* or background/webapi/* or within service',
+              group: ['@/ui/*', '@/ui/**'],
+              message: 'Core services cannot import from UI layer',
             },
             {
-              group: ['../../*', '!../../utils/**'],
-              message: 'Files in core/service subdirectories can only import from core/utils/*',
+              group: ['@/background/*', '!@/background/webapi/**'],
+              message: 'Core services can only import webapi from background',
             },
-            // Block ALL relative imports to shared - force use of @onflow/flow-wallet-shared alias
             {
-              group: [
-                '../shared/**',
-                '../../shared/**',
-                '../../../shared/**',
-                '../../../../shared/**',
-              ],
-              message:
-                'Use @onflow/flow-wallet-shared/* alias instead of relative imports to shared',
+              group: ['@/content-script/*', '@/content-script/**'],
+              message: 'Core services cannot import from content scripts',
+            },
+            {
+              group: ['@/core/*', '!@/core/service/**', '!@/core/utils/**'],
+              message: 'Core services can only import from core/service or core/utils',
             },
           ],
         },
       ],
     },
-  }, // Specific rules for core/service/keyring folder
-  {
-    files: ['**/src/core/service/keyring/**/*.{js,jsx,ts,tsx}'],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            // Block all imports from @/ except @onflow/flow-wallet-shared, @/core/service, and @/core/utils
-            {
-              group: [
-                '@/*',
-                '!@/data-model/*',
-                '!@/data-model/**',
-                '!@onflow/flow-wallet-shared',
-                '!@onflow/flow-wallet-shared/**',
-                '!@/core/service',
-                '!@/core/service/**',
-                '!@/core/utils',
-                '!@/core/utils/**',
-              ],
-              message:
-                'Files in core/service/keyring can only import from @onflow/flow-wallet-shared/*, @/core/utils/* or within service',
-            },
-            // Block imports from background/* except background/webapi and core/*
-            {
-              group: ['background/*', '!background/webapi', '!background/webapi/**'],
-              message:
-                'Files in core/service/keyring can only import from background/webapi/* or within core',
-            },
-            // Block imports from core/* except core/utils and core/service
-            {
-              group: [
-                'core/*',
-                '!core/utils',
-                '!core/utils/**',
-                '!core/service',
-                '!core/service/**',
-              ],
-              message:
-                'Files in core/service/keyring can only import from core/utils/* or within service',
-            },
-            // Block UI imports
-            {
-              group: ['ui/*', 'ui/**'],
-              message: 'Files in core/service/keyring cannot import from UI',
-            },
-            // Allow relative imports to utils and webapi from keyring folder
-            {
-              group: [
-                '../../*',
-                '!../../utils',
-                '!../../utils/**',
-                '!../../../background/webapi',
-                '!../../../background/webapi/**',
-              ],
-              message:
-                'Files in core/service/keyring can only import from ../../utils/* or ../../../background/webapi/*',
-            },
-            // Block ALL relative imports to shared - force use of @onflow/flow-wallet-shared alias
-            {
-              group: [
-                '../shared/**',
-                '../../shared/**',
-                '../../../shared/**',
-                '../../../../shared/**',
-              ],
-              message:
-                'Use @onflow/flow-wallet-shared/* alias instead of relative imports to shared',
-            },
-          ],
-        },
-      ],
-    },
-  }, // UI-specific config to block relative imports outside ui folder
+  }, // UI-specific config to block imports from other layers
   {
     files: ['**/src/ui/**/*.{js,jsx,ts,tsx}'],
     rules: {
@@ -373,124 +229,97 @@ const config = [
         'error',
         {
           patterns: [
-            // Block relative imports that explicitly go to background or shared
             {
-              group: [
-                '../background/*',
-                '../background/**',
-                '../**/background/**',
-                '../**/shared/*',
-                '../shared/*',
-                '../**/shared/**',
-              ],
-              message:
-                'Files in UI folder must use aliases (@onflow/flow-wallet-shared/*, @/background/*) instead of relative paths',
+              group: ['@/core/*', '@/core/**'],
+              message: 'UI cannot import from Core layer',
             },
-            // Block relative imports to src level that aren't ui
             {
-              group: [
-                '**/src/background/*',
-                '**/src/background/**',
-                '**/src/data-model/*',
-                '**/src/data-model/**',
-                '**/src/shared/*',
-                '**/src/shared/**',
-                '**/src/content-script/*',
-                '**/src/content-script/**',
-                '**/src/core/*',
-                '**/src/core/**',
-              ],
-              message: 'Files in UI folder must use aliases for imports outside UI',
-            },
-            // Block core imports from UI
-            {
-              group: [
-                '@/core/*',
-                '@/core/**',
-                '../core/*',
-                '../core/**',
-                '../../core/*',
-                '../../core/**',
-              ],
-              message: 'Files in UI folder cannot import from core',
-            },
-            // Block relative imports between UI subfolders (force use of aliases)
-            {
-              group: [
-                '../components/*',
-                '../components/**',
-                '../views/*',
-                '../views/**',
-                '../hooks/*',
-                '../hooks/**',
-                '../utils/*',
-                '../utils/**',
-                '../reducers/*',
-                '../reducers/**',
-                '../style/*',
-                '../style/**',
-                '../assets/*',
-                '../assets/**',
-                '../../components/*',
-                '../../components/**',
-                '../../views/*',
-                '../../views/**',
-                '../../hooks/*',
-                '../../hooks/**',
-                '../../utils/*',
-                '../../utils/**',
-                '../../reducers/*',
-                '../../reducers/**',
-                '../../style/*',
-                '../../style/**',
-                '../../assets/*',
-                '../../assets/**',
-              ],
-              message:
-                'Files in UI subfolders must use aliases (@/ui/*) instead of relative paths to other UI subfolders',
+              group: ['@/background/*', '@/background/**'],
+              message: 'UI cannot import from Background layer',
             },
           ],
         },
       ],
     },
   },
-  // Shared folder cannot import outside of shared
+  // Exception for WalletContext and useWallet - they need the controller type
   {
-    files: ['**/src/shared/**/*.{js,jsx,ts,tsx}'],
+    files: ['**/src/ui/utils/WalletContext.tsx', '**/src/ui/hooks/use-wallet.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
         {
           patterns: [
-            // Block relative imports outside shared folder
             {
-              group: [
-                '../background/*',
-                '../background/**',
-                '../ui/*',
-                '../ui/**',
-                '../content-script/*',
-                '../content-script/**',
-                '../../background/*',
-                '../../background/**',
-                '../../ui/*',
-                '../../ui/**',
-                '../../content-script/*',
-                '../../content-script/**',
-              ],
-              message: 'Files in shared folder cannot import outside of shared folder',
+              group: ['@/core/*', '@/core/**'],
+              message: 'UI cannot import from Core layer',
             },
-            // Block alias imports outside shared
+            // Allow importing types from background controller for these specific files
             {
               group: [
                 '@/background/*',
-                '@/background/**',
-                '@/ui/*',
-                '@/ui/**',
-                '@/content-script/*',
-                '@/content-script/**',
+                '!@/background/controller/wallet',
+                '!@/background/controller/serviceDefinition',
               ],
-              message: 'Files in shared folder cannot import outside of shared folder',
+              message: 'Only wallet controller types can be imported here',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  // UI reducers must be pure - only import from shared
+  {
+    files: ['**/src/ui/reducers/**/*.{js,jsx,ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/ui/*', '@/ui/**'],
+              message: 'Reducers must be pure - cannot import from other UI modules',
+            },
+            {
+              group: ['@/core/*', '@/core/**'],
+              message: 'Reducers must be pure - cannot import from Core layer',
+            },
+            {
+              group: ['@/background/*', '@/background/**'],
+              message: 'Reducers must be pure - cannot import from Background layer',
+            },
+            {
+              group: ['@/content-script/*', '@/content-script/**'],
+              message: 'Reducers must be pure - cannot import from content scripts',
+            },
+            {
+              group: ['@/data-model/*', '@/data-model/**'],
+              message: 'Reducers must be pure - cannot import from data model',
+            },
+            {
+              group: ['@/extension-shared/*', '@/extension-shared/**'],
+              message: 'Reducers must be pure - cannot import from extension-shared',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  // Content script restrictions
+  {
+    files: ['**/src/content-script/**/*.{js,jsx,ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/ui/*', '@/ui/**'],
+              message: 'Content scripts cannot import from UI layer',
+            },
+            {
+              group: ['@/core/*', '@/core/**'],
+              message: 'Content scripts cannot import from Core layer',
             },
           ],
         },

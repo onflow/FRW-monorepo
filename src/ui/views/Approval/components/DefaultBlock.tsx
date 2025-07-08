@@ -1,19 +1,20 @@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import GppGoodRoundedIcon from '@mui/icons-material/GppGoodRounded';
 import {
-  Stack,
-  Box,
-  Typography,
-  Divider,
   Accordion,
-  AccordionSummary,
   AccordionDetails,
+  AccordionSummary,
+  Box,
+  Divider,
+  Stack,
+  Typography,
 } from '@mui/material';
 import Fade from '@mui/material/Fade';
 import React from 'react';
 import Highlight from 'react-highlight';
 
-import { consoleError } from '@/shared/utils/console-log';
+import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+
 import IconFlow from '@/ui/components/iconfont/IconFlow';
 
 export const DefaultBlock = ({

@@ -10,9 +10,10 @@ import {
 } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import emojis from '@/shared/constant/emoji.json';
-import { isValidEthereumAddress } from '@/shared/utils/address';
-import { consoleError } from '@/shared/utils/console-log';
+import emojis from '@onflow/flow-wallet-shared/constant/emoji.json';
+import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils/address';
+import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+
 import { useWallet } from '@/ui/hooks/use-wallet';
 
 interface MoveBoardProps {

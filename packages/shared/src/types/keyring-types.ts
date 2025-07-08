@@ -1,5 +1,3 @@
-import storage from '@/shared/utils/storage';
-
 export type VaultEntryV2 = {
   id: string;
   encryptedData: string;
@@ -38,24 +36,6 @@ export const KEYRING_STATE_VAULT_V2 = 2;
 export const KEYRING_STATE_VAULT_V3 = 3;
 
 export const CURRENT_ID_KEY = 'currentId';
-
-const CURRENT_PUBKEY_KEY = 'currentPubKey';
-
-export const returnCurrentPublicKey = async (): Promise<string | null> => {
-  return await storage.get(CURRENT_PUBKEY_KEY);
-};
-
-export const getCurrentPublicKey = async (): Promise<string> => {
-  const currentPubKey = await returnCurrentPublicKey();
-  if (!currentPubKey) {
-    throw new Error('Current public key is not set.');
-  }
-  return currentPubKey;
-};
-
-export const setCurrentPublicKey = async (pubKey: string) => {
-  await storage.set(CURRENT_PUBKEY_KEY, pubKey);
-};
 
 export const KEYRING_TYPE = {
   HdKeyring: 'HD Key Tree',

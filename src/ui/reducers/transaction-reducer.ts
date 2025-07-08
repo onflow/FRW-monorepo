@@ -1,17 +1,17 @@
 import BN from 'bignumber.js';
 
-import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
-import { type Contact } from '@/shared/types/network-types';
+import { type ExtendedTokenInfo } from '@onflow/flow-wallet-shared/types/coin-types';
+import { type Contact } from '@onflow/flow-wallet-shared/types/network-types';
 import type {
-  NetworkType,
+  AddressType,
   TokenType,
   TransactionState,
   TransactionStateString,
-} from '@/shared/types/transaction-types';
-import { type WalletAddress } from '@/shared/types/wallet-types';
-import { isValidEthereumAddress } from '@/shared/utils/address';
-import { consoleError } from '@/shared/utils/console-log';
-import { trimDecimalAmount } from '@/shared/utils/number';
+} from '@onflow/flow-wallet-shared/types/transaction-types';
+import { type WalletAddress } from '@onflow/flow-wallet-shared/types/wallet-types';
+import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils/address';
+import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+import { trimDecimalAmount } from '@onflow/flow-wallet-shared/utils/number';
 
 export const INITIAL_TRANSACTION_STATE: TransactionState = {
   currentTxState: '',
@@ -75,11 +75,11 @@ type TransactionAction =
     }
   | {
       type: 'setFromNetwork';
-      payload: NetworkType;
+      payload: AddressType;
     }
   | {
       type: 'setToNetwork';
-      payload: NetworkType;
+      payload: AddressType;
     }
   | {
       type: 'setToAddress';

@@ -11,9 +11,13 @@ import {
 import React, { useCallback, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import type { UserInfoResponse } from '@/shared/types/network-types';
-import { type MainAccount, type WalletAccount } from '@/shared/types/wallet-types';
-import { consoleError } from '@/shared/utils/console-log';
+import type { UserInfoResponse } from '@onflow/flow-wallet-shared/types/network-types';
+import {
+  type MainAccount,
+  type WalletAccount,
+} from '@onflow/flow-wallet-shared/types/wallet-types';
+import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+
 import lock from '@/ui/assets/svg/sidebar-lock.svg';
 import plus from '@/ui/assets/svg/sidebar-plus.svg';
 import { AccountListing } from '@/ui/components/account/account-listing';

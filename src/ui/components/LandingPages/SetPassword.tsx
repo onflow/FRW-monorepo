@@ -1,17 +1,18 @@
 import {
-  Box,
-  Typography,
-  FormControlLabel,
-  Checkbox,
-  Link,
-  Button,
-  Snackbar,
   Alert,
+  Box,
+  Button,
+  Checkbox,
+  FormControlLabel,
+  Link,
+  Snackbar,
+  Typography,
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 
-import { DEFAULT_PASSWORD } from '@/shared/utils/default';
-import { BpUncheked, BpCheckedIcon } from '@/ui/assets/icons/CustomCheckboxIcons';
+import { DEFAULT_PASSWORD } from '@onflow/flow-wallet-shared/utils/default';
+
+import { BpCheckedIcon, BpUncheked } from '@/ui/assets/icons/CustomCheckboxIcons';
 import { LLSpinner } from '@/ui/components';
 import { PasswordInput } from '@/ui/components/password/PasswordInput';
 

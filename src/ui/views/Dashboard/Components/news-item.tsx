@@ -1,8 +1,9 @@
 import CloseIcon from '@mui/icons-material/Close';
-import { Card, CardContent, CardMedia, IconButton, Typography, Box, Tooltip } from '@mui/material';
+import { Box, Card, CardContent, CardMedia, IconButton, Tooltip, Typography } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 
-import type { NewsItem } from '@/shared/types/network-types';
+import type { NewsItem } from '@onflow/flow-wallet-shared/types/network-types';
+
 import { useNews } from '@/ui/hooks/use-news';
 import { openInTab } from '@/ui/utils/webapi';
 

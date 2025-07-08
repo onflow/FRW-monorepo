@@ -20,7 +20,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useLocation, useNavigate, useParams } from 'react-router';
 
-import { consoleError } from '@/shared/utils/console-log';
+import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+
 import { LLSpinner } from '@/ui/components';
 import GridView from '@/ui/components/NFTs/GridView';
 import { useWallet } from '@/ui/hooks/use-wallet';

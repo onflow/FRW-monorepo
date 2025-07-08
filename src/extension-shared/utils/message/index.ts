@@ -2,9 +2,8 @@
  * this script is live in content-script / dapp's page
  */
 
-import { EventEmitter } from 'events';
-
 import { ethErrors } from 'eth-rpc-errors';
+import { EventEmitter } from 'events';
 
 abstract class Message extends EventEmitter {
   // avaiable id list

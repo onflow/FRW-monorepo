@@ -1,12 +1,13 @@
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
-import { ListItem, ListItemButton, ListItemIcon, Typography, Box, Tooltip } from '@mui/material';
+import { Box, ListItem, ListItemButton, ListItemIcon, Tooltip, Typography } from '@mui/material';
 import React from 'react';
 
 import {
-  type WalletAccount,
   type ActiveChildType_depreciated,
+  type WalletAccount,
   type WalletAddress,
-} from '@/shared/types/wallet-types';
+} from '@onflow/flow-wallet-shared/types/wallet-types';
+
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import { useAccountBalance } from '@/ui/hooks/use-account-hooks';
 

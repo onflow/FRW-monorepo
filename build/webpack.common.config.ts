@@ -1,12 +1,10 @@
-import fs from 'fs';
-import path from 'path';
-
 import CopyPlugin from 'copy-webpack-plugin';
+import fs from 'fs';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
+import path from 'path';
 import webpack from 'webpack';
 
 import packageJson from '../package.json' with { type: 'json' };
-
 import paths from './paths';
 const { version } = packageJson;
 
@@ -49,7 +47,8 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
       rules: [
         {
           test: /\.jsx?$|\.tsx?$/,
-          exclude: /node_modules/,
+          exclude:
+            /node_modules\/(?!@onflow\/flow-wallet-shared)|\.stories\.(jsx?|tsx?)$|\.test\.(jsx?|tsx?)$|\.spec\.(jsx?|tsx?)$|\/__tests__\//,
           oneOf: [
             {
               // prevent webpack remove this file's output even it's not been used in entry
@@ -173,6 +172,7 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
       alias: {
         moment: 'dayjs',
         'cross-fetch': 'cross-fetch',
+        '@onflow/flow-wallet-shared': paths.rootResolve('packages/shared/src'),
         '@': paths.rootResolve('src'),
       },
       plugins: [],

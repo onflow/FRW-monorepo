@@ -1,13 +1,16 @@
-import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
+import {
+  type FeatureFlagKey,
+  type FeatureFlags,
+} from '@onflow/flow-wallet-shared/types/feature-types';
+
 import {
   type RemoteConfig,
   remoteConfigKey,
   remoteConfigRefreshRegex,
-} from '@/shared/utils/cache-data-keys';
-
-import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
+} from '@/data-model/cache-data-keys';
 
 import openapi from './openapi';
+import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
 
 class RemoteConfigService {
   init = async () => {

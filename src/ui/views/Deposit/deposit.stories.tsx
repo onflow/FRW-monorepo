@@ -3,7 +3,8 @@ import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 import { withRouter } from 'storybook-addon-remix-react-router';
 
-import { type ActiveAccountType } from '@/shared/types/wallet-types';
+import { type ActiveAccountType } from '@onflow/flow-wallet-shared/types/wallet-types';
+
 import { useNetwork as importedMockUseNetwork } from '@/ui/hooks/useNetworkHook.mock';
 import {
   useProfiles as importedMockUseProfiles,

@@ -2,32 +2,37 @@
  * Keys and types to access data in the UI from the background storage cache
  * This is the primary way to get cached data from network calls to the frontend
  */
+
 import {
   type CadenceTokenInfo,
   type CustomFungibleTokenInfo,
   type EvmTokenInfo,
   type ExtendedTokenInfo,
   type TokenFilter,
-} from '../types/coin-types';
-import { type FeatureFlags } from '../types/feature-types';
+} from '@onflow/flow-wallet-shared/types/coin-types';
+import { type FeatureFlags } from '@onflow/flow-wallet-shared/types/feature-types';
 import {
   type AccountBalanceInfo,
   type NewsItem,
   type NftCollection,
   type NFTModelV2,
   type UserInfoResponse,
-} from '../types/network-types';
+} from '@onflow/flow-wallet-shared/types/network-types';
 import {
   type EvmNFTCollectionList,
   type EvmNFTIds,
   type NFTCollectionData,
   type NFTCollections,
-} from '../types/nft-types';
-import { type TransferItem } from '../types/transaction-types';
-import { type Currency, type MainAccount, type PublicKeyAccount } from '../types/wallet-types';
+} from '@onflow/flow-wallet-shared/types/nft-types';
+import { type NetworkScripts } from '@onflow/flow-wallet-shared/types/script-types';
+import { type TransferItem } from '@onflow/flow-wallet-shared/types/transaction-types';
+import {
+  type Currency,
+  type MainAccount,
+  type PublicKeyAccount,
+} from '@onflow/flow-wallet-shared/types/wallet-types';
 
 import { getCachedData, triggerRefresh } from './cache-data-access';
-import { type NetworkScripts } from './script-types';
 
 // Utiltiy function to create the refresh key for a given key function
 const refreshKey = (keyFunction: (...args: string[]) => string) =>

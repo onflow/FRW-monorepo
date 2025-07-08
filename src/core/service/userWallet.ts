@@ -5,18 +5,21 @@ import * as ethUtil from 'ethereumjs-util';
 import { getApp } from 'firebase/app';
 import { getAuth, signInAnonymously } from 'firebase/auth/web-extension';
 
-import { DEFAULT_WEIGHT, FLOW_BIP44_PATH } from '@/shared/constant/algo-constants';
+import {
+  DEFAULT_WEIGHT,
+  FLOW_BIP44_PATH,
+} from '@onflow/flow-wallet-shared/constant/algo-constants';
 import {
   combinePubPkString,
   type PublicPrivateKeyTuple,
   tupleToPrivateKey,
-} from '@/shared/types/key-types';
+} from '@onflow/flow-wallet-shared/types/key-types';
 import {
   type AccountKeyRequest,
   type DeviceInfoRequest,
   type FlowNetwork,
   networkToChainId,
-} from '@/shared/types/network-types';
+} from '@onflow/flow-wallet-shared/types/network-types';
 import {
   type ActiveAccountType,
   type ChildAccountMap,
@@ -28,13 +31,16 @@ import {
   type PublicKeyAccount,
   type WalletAccount,
   type WalletAddress,
-} from '@/shared/types/wallet-types';
+} from '@onflow/flow-wallet-shared/types/wallet-types';
 import {
   ensureEvmAddressPrefix,
   isValidEthereumAddress,
   isValidFlowAddress,
   withPrefix,
-} from '@/shared/utils/address';
+} from '@onflow/flow-wallet-shared/utils/address';
+import { consoleError, consoleWarn } from '@onflow/flow-wallet-shared/utils/console-log';
+import { getEmojiByIndex } from '@onflow/flow-wallet-shared/utils/emoji-util';
+
 import {
   accountBalanceKey,
   accountBalanceRefreshRegex,
@@ -49,20 +55,22 @@ import {
   placeholderAccountsRefreshRegex,
   userMetadataKey,
   type UserMetadataStore,
-} from '@/shared/utils/cache-data-keys';
-import { consoleError, consoleWarn } from '@/shared/utils/console-log';
-import { getEmojiByIndex } from '@/shared/utils/emoji-util';
-import { retryOperation } from '@/shared/utils/retryOperation';
-import storage from '@/shared/utils/storage';
-import { removeUserData, setUserData } from '@/shared/utils/user-data-access';
+} from '@/data-model/cache-data-keys';
+import { removeUserData, setUserData } from '@/data-model/user-data-access';
 import {
   activeAccountsKey,
   type ActiveAccountsStore,
   getActiveAccountsData,
   userWalletsKey,
   type UserWalletStore,
-} from '@/shared/utils/user-data-keys';
+} from '@/data-model/user-data-keys';
+import { retryOperation } from '@/extension-shared/utils/retryOperation';
+import storage from '@/extension-shared/utils/storage';
 
+import keyringService from './keyring';
+import { mixpanelTrack } from './mixpanel';
+import openapiService, { getScripts } from './openapi';
+import remoteConfigService from './remoteConfig';
 import { defaultAccountKey, pubKeyAccountToAccountKey } from '../utils/account-key';
 import {
   clearCachedData,
@@ -85,11 +93,6 @@ import {
   signWithKey,
 } from '../utils/modules/publicPrivateKey';
 import createPersistStore from '../utils/persistStore';
-
-import keyringService from './keyring';
-import { mixpanelTrack } from './mixpanel';
-import openapiService, { getScripts } from './openapi';
-import remoteConfigService from './remoteConfig';
 
 const USER_WALLET_TEMPLATE: UserWalletStore = {
   monitor: 'flowscan',

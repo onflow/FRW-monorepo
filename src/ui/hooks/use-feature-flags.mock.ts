@@ -1,8 +1,7 @@
 import { fn } from 'storybook/test';
 
-import packageJson from '../../../package.json';
-
 import * as actual from './use-feature-flags';
+import packageJson from '../../../package.json';
 
 const { version } = packageJson;
 

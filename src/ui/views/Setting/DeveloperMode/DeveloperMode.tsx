@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import storage from '@/shared/utils/storage';
+import storage from '@/extension-shared/utils/storage';
 import { LLHeader } from '@/ui/components';
 import { useWallet } from '@/ui/hooks/use-wallet';
 

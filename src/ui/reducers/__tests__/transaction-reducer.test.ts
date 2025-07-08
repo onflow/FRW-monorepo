@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
+import { type ExtendedTokenInfo } from '@onflow/flow-wallet-shared/types/coin-types';
 import {
-  type NetworkType,
+  type AddressType,
   type TokenType,
   type TransactionState,
-} from '@/shared/types/transaction-types';
-import { type WalletAddress } from '@/shared/types/wallet-types';
+} from '@onflow/flow-wallet-shared/types/transaction-types';
+import { type WalletAddress } from '@onflow/flow-wallet-shared/types/wallet-types';
 
 import {
   INITIAL_TRANSACTION_STATE,
@@ -22,8 +22,8 @@ describe('Transaction Reducer', () => {
         rootAddress: '',
         fromAddress: '',
         tokenType: 'Flow' as TokenType,
-        fromNetwork: 'Evm' as NetworkType,
-        toNetwork: 'Evm' as NetworkType,
+        fromNetwork: 'Evm' as AddressType,
+        toNetwork: 'Evm' as AddressType,
         toAddress: '',
         amount: '',
         fiatAmount: '',
@@ -44,8 +44,8 @@ describe('Transaction Reducer', () => {
       const state = {
         ...INITIAL_TRANSACTION_STATE,
         tokenType: 'Flow' as TokenType,
-        fromNetwork: 'Evm' as NetworkType,
-        toNetwork: 'Cadence' as NetworkType,
+        fromNetwork: 'Evm' as AddressType,
+        toNetwork: 'Cadence' as AddressType,
       };
       expect(getTransactionStateString(state)).toBe('FlowFromEvmToCadence');
     });
@@ -259,8 +259,8 @@ describe('Transaction Reducer', () => {
           ...stateWithBalance,
           tokenInfo: token4Decimals,
           tokenType: 'FT' as TokenType,
-          fromNetwork: 'Evm' as NetworkType,
-          toNetwork: 'Cadence' as NetworkType,
+          fromNetwork: 'Evm' as AddressType,
+          toNetwork: 'Cadence' as AddressType,
         };
 
         const action = {
@@ -282,8 +282,8 @@ describe('Transaction Reducer', () => {
           {
             ...stateWithBalance,
             tokenType: 'Flow' as TokenType,
-            fromNetwork: 'Evm' as NetworkType,
-            toNetwork: 'Cadence' as NetworkType,
+            fromNetwork: 'Evm' as AddressType,
+            toNetwork: 'Cadence' as AddressType,
           },
           action
         );
@@ -300,8 +300,8 @@ describe('Transaction Reducer', () => {
           {
             ...stateWithBalance,
             tokenType: 'Flow' as TokenType,
-            fromNetwork: 'Evm' as NetworkType,
-            toNetwork: 'Cadence' as NetworkType,
+            fromNetwork: 'Evm' as AddressType,
+            toNetwork: 'Cadence' as AddressType,
           },
           action
         );
@@ -313,8 +313,8 @@ describe('Transaction Reducer', () => {
         it('should handle EVM to EVM transfers with up to 18 decimals', () => {
           const stateWithEvmNetworks: TransactionState = {
             ...stateWithBalance,
-            fromNetwork: 'Evm' as NetworkType,
-            toNetwork: 'Evm' as NetworkType,
+            fromNetwork: 'Evm' as AddressType,
+            toNetwork: 'Evm' as AddressType,
             tokenInfo: {
               ...stateWithBalance.tokenInfo,
               decimals: 18,
@@ -334,8 +334,8 @@ describe('Transaction Reducer', () => {
         it('should limit non-EVM transfers to 8 decimals', () => {
           const stateWithMixedNetworks: TransactionState = {
             ...stateWithBalance,
-            fromNetwork: 'Evm' as NetworkType,
-            toNetwork: 'Cadence' as NetworkType,
+            fromNetwork: 'Evm' as AddressType,
+            toNetwork: 'Cadence' as AddressType,
             tokenInfo: {
               ...stateWithBalance.tokenInfo,
               decimals: 18,
@@ -355,8 +355,8 @@ describe('Transaction Reducer', () => {
         it('should respect token decimals even if less than network maximum', () => {
           const stateWithLowDecimalToken: TransactionState = {
             ...stateWithBalance,
-            fromNetwork: 'Evm' as NetworkType,
-            toNetwork: 'Evm' as NetworkType,
+            fromNetwork: 'Evm' as AddressType,
+            toNetwork: 'Evm' as AddressType,
             tokenInfo: {
               ...stateWithBalance.tokenInfo,
               decimals: 6,
@@ -384,8 +384,8 @@ describe('Transaction Reducer', () => {
           price: '2',
         },
         tokenType: 'Flow' as TokenType,
-        fromNetwork: 'Evm' as NetworkType,
-        toNetwork: 'Cadence' as NetworkType,
+        fromNetwork: 'Evm' as AddressType,
+        toNetwork: 'Cadence' as AddressType,
       };
 
       it('should set maximum amount in coin mode', () => {
@@ -425,8 +425,8 @@ describe('Transaction Reducer', () => {
           {
             ...INITIAL_TRANSACTION_STATE,
             tokenType: 'Flow' as TokenType,
-            fromNetwork: 'Evm' as NetworkType,
-            toNetwork: 'Cadence' as NetworkType,
+            fromNetwork: 'Evm' as AddressType,
+            toNetwork: 'Cadence' as AddressType,
           },
           action
         );

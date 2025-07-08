@@ -8,9 +8,10 @@ import type {
   CoinItem,
   CustomFungibleTokenInfo,
   EvmCustomTokenInfo,
-} from '@/shared/types/coin-types';
-import { getPriceProvider } from '@/shared/types/network-types';
-import { consoleError, consoleWarn } from '@/shared/utils/console-log';
+} from '@onflow/flow-wallet-shared/types/coin-types';
+import { getPriceProvider } from '@onflow/flow-wallet-shared/types/network-types';
+import { consoleError, consoleWarn } from '@onflow/flow-wallet-shared/utils/console-log';
+
 import tips from '@/ui/assets/svg/tips.svg';
 import WarningIcon from '@/ui/assets/svg/warning.svg';
 import SecurityCard from '@/ui/components/SecurityCard';
@@ -21,11 +22,10 @@ import { useWallet } from '@/ui/hooks/use-wallet';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 
-import OnRampList from '../Wallet/OnRampList';
-
 import ClaimTokenCard from './ClaimTokenCard';
 import StackingCard from './StackingCard';
 import TokenInfoCard from './TokenInfoCard';
+import OnRampList from '../Wallet/OnRampList';
 
 const TokenDetail = () => {
   const usewallet = useWallet();

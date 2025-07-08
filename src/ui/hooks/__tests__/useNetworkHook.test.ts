@@ -1,5 +1,5 @@
-import { act, useState, useEffect } from 'react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { act, useEffect, useState } from 'react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock React
 vi.mock('react', async () => {
@@ -15,7 +15,7 @@ vi.mock('react', async () => {
 });
 
 // Mock storage module - must be defined before the vi.mock call
-vi.mock('@/shared/utils/storage', () => {
+vi.mock('@/extension-shared/utils/storage', () => {
   return {
     default: {
       get: vi.fn().mockImplementation((key) => {
@@ -37,8 +37,8 @@ vi.mock('@/shared/utils/storage', () => {
   };
 });
 
-import storage from '@/shared/utils/storage';
-import { userWalletsKey } from '@/shared/utils/user-data-keys';
+import { userWalletsKey } from '@/data-model/user-data-keys';
+import storage from '@/extension-shared/utils/storage';
 
 import { useNetwork } from '../useNetworkHook';
 

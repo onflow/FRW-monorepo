@@ -1,20 +1,23 @@
 import { useCallback, useMemo } from 'react';
 
-import { type NewsConditionType, type NewsItem } from '@/shared/types/news-types';
-import { newsKey } from '@/shared/utils/cache-data-keys';
-import { consoleError } from '@/shared/utils/console-log';
-import { checkLowBalance, evaluateStorage } from '@/shared/utils/evaluate-storage';
+import { type NewsConditionType, type NewsItem } from '@onflow/flow-wallet-shared/types/news-types';
+import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+import {
+  checkLowBalance,
+  evaluateStorage,
+} from '@onflow/flow-wallet-shared/utils/evaluate-storage';
+
+import { newsKey } from '@/data-model/cache-data-keys';
 import {
   readAndDismissedNewsKey,
   type ReadAndDismissedNewsStore,
-} from '@/shared/utils/user-data-keys';
-
-import packageJson from '../../../package.json';
+} from '@/data-model/user-data-keys';
 
 import { useCachedData, useUserData } from './use-data';
 import { useLatestVersion } from './use-feature-flags';
 import { useWallet } from './use-wallet';
 import { useProfiles } from './useProfileHook';
+import packageJson from '../../../package.json';
 
 const CURRENT_VERSION = packageJson.version;
 

@@ -5,10 +5,11 @@ import Grid from '@mui/material/Grid';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { type Contact } from '@/shared/types/network-types';
-import { type WalletAccount } from '@/shared/types/wallet-types';
-import { isValidEthereumAddress } from '@/shared/utils/address';
-import { consoleError } from '@/shared/utils/console-log';
+import { type Contact } from '@onflow/flow-wallet-shared/types/network-types';
+import { type WalletAccount } from '@onflow/flow-wallet-shared/types/wallet-types';
+import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils/address';
+import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+
 import { FRWChildProfile, FRWDropdownProfileCard, LLSpinner } from '@/ui/components';
 import IconFlow from '@/ui/components/iconfont/IconFlow';
 import SlideRelative from '@/ui/components/SlideRelative';

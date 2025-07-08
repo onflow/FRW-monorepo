@@ -9,16 +9,17 @@ import {
 } from 'firebase/auth/web-extension';
 import 'reflect-metadata';
 
+import { EVENTS } from '@onflow/flow-wallet-shared/constant/events';
+import { type WalletAddress } from '@onflow/flow-wallet-shared/types/wallet-types';
+import { isValidFlowAddress } from '@onflow/flow-wallet-shared/utils/address';
+import { consoleError, consoleLog } from '@onflow/flow-wallet-shared/utils/console-log';
+
 import providerController from '@/background/controller/provider';
 import { preAuthzServiceDefinition } from '@/background/controller/serviceDefinition';
 import walletController, { type WalletController } from '@/background/controller/wallet';
-import { EVENTS } from '@/shared/constant/events';
-import { type WalletAddress } from '@/shared/types/wallet-types';
-import { isValidFlowAddress } from '@/shared/utils/address';
-import { consoleError, consoleLog } from '@/shared/utils/console-log';
-import eventBus from '@/shared/utils/message/eventBus';
-import { Message } from '@/shared/utils/messaging';
-import storage from '@/shared/utils/storage';
+import eventBus from '@/extension-shared/utils/message/eventBus';
+import { Message } from '@/extension-shared/utils/messaging';
+import storage from '@/extension-shared/utils/storage';
 
 import {
   addressBookService,
@@ -40,10 +41,9 @@ import {
   userInfoService,
   userWalletService,
 } from '../core/service';
+import notificationService from './controller/notification';
 import { getFirbaseConfig } from '../core/utils/firebaseConfig';
 import { setEnvironmentBadge } from '../core/utils/setEnvironmentBadge';
-
-import notificationService from './controller/notification';
 
 const { PortMessage } = Message;
 

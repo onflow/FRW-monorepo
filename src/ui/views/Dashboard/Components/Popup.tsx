@@ -1,8 +1,9 @@
 import { Box, Drawer, Typography } from '@mui/material';
 import React, { useState } from 'react';
 
-import type { UserInfoResponse } from '@/shared/types/network-types';
-import { type WalletAccount } from '@/shared/types/wallet-types';
+import type { UserInfoResponse } from '@onflow/flow-wallet-shared/types/network-types';
+import { type WalletAccount } from '@onflow/flow-wallet-shared/types/wallet-types';
+
 import userCircleCheck from '@/ui/assets/svg/user-circle-check.svg';
 import userCirclePlus from '@/ui/assets/svg/user-circle-plus.svg';
 import { ProfileButton } from '@/ui/components/profile/profile-button';

@@ -7,7 +7,7 @@ import {
   SIGN_ALGO_NUM_BLS_BLS12_381,
   SIGN_ALGO_NUM_ECDSA_P256,
   SIGN_ALGO_NUM_ECDSA_secp256k1,
-} from '../constants/algo-constants';
+} from '../constant/algo-constants';
 import type { HashAlgoString, SignAlgoString } from '../types/algo-types';
 
 export function getHashAlgo(value: string): number {

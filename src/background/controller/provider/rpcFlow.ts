@@ -1,14 +1,14 @@
 import { ethErrors } from 'eth-rpc-errors';
 
+import { EVENTS } from '@onflow/flow-wallet-shared/constant/events';
+import { consoleLog } from '@onflow/flow-wallet-shared/utils/console-log';
+
 import { permissionService } from '@/core/service';
 import { PromiseFlow, underline2Camelcase } from '@/core/utils';
-import { EVENTS } from '@/shared/constant/events';
-import { consoleLog } from '@/shared/utils/console-log';
-import eventBus from '@/shared/utils/message/eventBus';
+import eventBus from '@/extension-shared/utils/message/eventBus';
 
 import notificationService from '../notification';
 import Wallet from '../wallet';
-
 import providerController from './controller';
 
 const isSignApproval = (type: string) => {

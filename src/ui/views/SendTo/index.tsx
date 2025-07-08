@@ -1,11 +1,15 @@
 import React, { useCallback, useEffect, useReducer } from 'react';
-import { useNavigate, useLocation, useParams } from 'react-router';
+import { useLocation, useNavigate, useParams } from 'react-router';
 
-import { type FlowAddress, type WalletAddress } from '@/shared/types/wallet-types';
-import { isValidAddress, isValidFlowAddress } from '@/shared/utils/address';
+import {
+  type FlowAddress,
+  type WalletAddress,
+} from '@onflow/flow-wallet-shared/types/wallet-types';
+import { isValidAddress, isValidFlowAddress } from '@onflow/flow-wallet-shared/utils/address';
+
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { transactionReducer, INITIAL_TRANSACTION_STATE } from '@/ui/reducers/transaction-reducer';
+import { INITIAL_TRANSACTION_STATE, transactionReducer } from '@/ui/reducers/transaction-reducer';
 
 import SendToCadenceOrEvm from './SendToCadenceOrEvm';
 

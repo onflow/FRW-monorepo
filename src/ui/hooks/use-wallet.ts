@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 
-import { walletLoadedKey } from '@/shared/utils/cache-data-keys';
+import { walletLoadedKey } from '@/data-model/cache-data-keys';
 import { type WalletControllerType, WalletContext } from '@/ui/utils/WalletContext';
 
 import { useCachedData } from './use-data';

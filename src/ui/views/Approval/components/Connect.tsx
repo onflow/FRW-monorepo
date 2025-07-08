@@ -2,11 +2,14 @@ import { Box, CardMedia, Divider, Stack, Typography } from '@mui/material';
 import { WalletUtils } from '@onflow/fcl';
 import React, { useCallback, useEffect, useState } from 'react';
 
+import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@onflow/flow-wallet-shared/types/network-types';
+
+// TODO: TB - move all this to the background
+// eslint-disable-next-line no-restricted-imports
 import {
   authnServiceDefinition,
   serviceDefinition,
 } from '@/background/controller/serviceDefinition';
-import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/types/network-types';
 import flowgrey from '@/ui/assets/svg/flow-grey.svg';
 import linkGlobe from '@/ui/assets/svg/linkGlobe.svg';
 import { LLConnectLoading, LLPrimaryButton, LLSecondaryButton } from '@/ui/components';

@@ -4,9 +4,9 @@ import Button from '@mui/material/Button';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { openIndexPage } from '@/background/webapi/tab';
-import { consoleError } from '@/shared/utils/console-log';
-import { getCurrentProfileId } from '@/shared/utils/current-id';
+import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+
+import { getCurrentProfileId } from '@/extension-shared/utils/current-id';
 import { EditIcon } from '@/ui/assets/icons/settings/Edit';
 import RemoveProfileModal from '@/ui/components/PopupModal/remove-profile-modal';
 import ResetModal from '@/ui/components/PopupModal/resetModal';
@@ -108,13 +108,10 @@ const Profile = () => {
 
       handleCloseRemoveModal();
       if (profileIds && profileIds.length > 1) {
-        wallet.lockWallet().then(() => {
-          navigate('/unlock');
-        });
+        await wallet.lockWallet();
+        navigate('/unlock');
       } else {
-        wallet.lockAdd().then(() => {
-          openIndexPage('welcome?add=true');
-        });
+        await wallet.lockAdd();
       }
     } catch (error) {
       consoleError('Failed to remove profile:', error);

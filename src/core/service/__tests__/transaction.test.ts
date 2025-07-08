@@ -1,13 +1,13 @@
 import type { TransactionExecutionStatus, TransactionStatus } from '@onflow/typedefs';
 import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import openapiService from '@/core/service/openapi';
-import { type FlowNetwork } from '@/shared/types/network-types';
+import { type FlowNetwork } from '@onflow/flow-wallet-shared/types/network-types';
 
+import openapiService from '../openapi';
 import transaction from '../transaction';
 
 // Mock storage functions
-vi.mock('@/shared/utils/storage', () => ({
+vi.mock('@onflow/flow-wallet-shared/utils/storage', () => ({
   default: {
     getSession: vi.fn().mockImplementation((key) => {
       const now = Date.now();
@@ -494,7 +494,7 @@ describe('Transaction Service', () => {
   });
 });
 
-vi.mock('@/shared/utils/cache-data-access', () => ({
+vi.mock('@onflow/flow-wallet-shared/utils/cache-data-access', () => ({
   getCachedData: vi.fn().mockImplementation(async (key) => {
     return mockStorageState.session.get(key);
   }),

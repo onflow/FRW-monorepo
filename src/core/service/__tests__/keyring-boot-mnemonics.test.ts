@@ -2,14 +2,20 @@
 import encryptor from 'browser-passworder';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { FLOW_BIP44_PATH } from '@onflow/flow-wallet-shared/constant/algo-constants';
+import {
+  CURRENT_ID_KEY,
+  KEYRING_STATE_V2_KEY,
+} from '@onflow/flow-wallet-shared/types/keyring-types';
+
 // Internal imports
-import keyringService from '@/core/service/keyring';
-import { FLOW_BIP44_PATH } from '@/shared/constant/algo-constants';
-import { CURRENT_ID_KEY, KEYRING_STATE_V2_KEY } from '@/shared/types/keyring-types';
-import storage from '@/shared/utils/storage';
+import storage from '@/extension-shared/utils/storage';
+
+import keyringService from '../keyring';
+import { MOCK_KEYS, MOCK_MNEMONIC, MOCK_PASSWORD } from './keyring-mock-data';
 
 // Mock dependencies
-vi.mock('@/shared/utils/storage', () => ({
+vi.mock('@/extension-shared/utils/storage', () => ({
   default: {
     get: vi.fn(),
     set: vi.fn(),
@@ -40,7 +46,7 @@ vi.mock('@/core/service/preference', () => ({
   },
 }));
 
-vi.mock('@/shared/utils/current-id', () => ({
+vi.mock('@onflow/flow-wallet-shared/utils/current-id', () => ({
   returnCurrentProfileId: vi.fn().mockResolvedValue('testId1'),
 }));
 
@@ -54,8 +60,6 @@ vi.mock('bip39', () => ({
 }));
 
 // Import the mocked modules after all mocks are defined
-
-import { MOCK_KEYS, MOCK_MNEMONIC, MOCK_PASSWORD } from './keyring-mock-data';
 
 describe('Keyring Boot and Mnemonics Test', () => {
   // Create in-memory storage

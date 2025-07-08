@@ -1,23 +1,22 @@
 /// fork from https://github.com/MetaMask/KeyringController/blob/master/index.js
 
-import { EventEmitter } from 'events';
-
 import * as bip39 from 'bip39';
 import encryptor from 'browser-passworder';
 import * as ethUtil from 'ethereumjs-util';
+import { EventEmitter } from 'events';
 
 import {
   FLOW_BIP44_PATH,
   SIGN_ALGO_NUM_ECDSA_P256,
   SIGN_ALGO_NUM_ECDSA_secp256k1,
-} from '@/shared/constant/algo-constants';
+} from '@onflow/flow-wallet-shared/constant/algo-constants';
 import {
   combinePubPkTuple,
   type PrivateKeyTuple,
   type PublicKeyTuple,
   type PublicPrivateKey,
   type PublicPrivateKeyTuple,
-} from '@/shared/types/key-types';
+} from '@onflow/flow-wallet-shared/types/key-types';
 import {
   CURRENT_ID_KEY,
   KEYRING_DEEP_VAULT_KEY,
@@ -32,11 +31,16 @@ import {
   type KeyringState,
   type VaultEntryV2,
   type VaultEntryV3,
-} from '@/shared/types/keyring-types';
-import { type LoggedInAccount } from '@/shared/types/wallet-types';
-import { consoleError, consoleInfo, consoleWarn } from '@/shared/utils/console-log';
-import { returnCurrentProfileId } from '@/shared/utils/current-id';
-import storage from '@/shared/utils/storage';
+} from '@onflow/flow-wallet-shared/types/keyring-types';
+import { type LoggedInAccount } from '@onflow/flow-wallet-shared/types/wallet-types';
+import {
+  consoleError,
+  consoleInfo,
+  consoleWarn,
+} from '@onflow/flow-wallet-shared/utils/console-log';
+
+import { returnCurrentProfileId } from '@/extension-shared/utils/current-id';
+import storage from '@/extension-shared/utils/storage';
 
 import { normalizeAddress } from '../../utils';
 import { defaultAccountKey, pubKeyAccountToAccountKey } from '../../utils/account-key';
@@ -48,7 +52,6 @@ import {
   seedWithPathAndPhrase2PublicPrivateKey,
 } from '../../utils/modules/publicPrivateKey';
 import preference from '../preference';
-
 import { HDKeyring, type HDKeyringData, type HDKeyringType } from './hdKeyring';
 import { type SimpleKeyPairType, SimpleKeyring, type SimpleKeyringData } from './simpleKeyring';
 

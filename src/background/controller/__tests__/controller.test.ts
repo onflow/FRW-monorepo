@@ -52,12 +52,16 @@ import { afterEach, beforeEach, describe, expect, it, vi, type MockedFunction } 
 // --- Other Specific Imports (ensure these remain as they were) ---
 
 // Change these imports to be named imports from '@/core/service'
+import {
+  HASH_ALGO_NUM_DEFAULT,
+  SIGN_ALGO_NUM_DEFAULT,
+} from '@onflow/flow-wallet-shared/constant/algo-constants';
+import { tupleToPubKey } from '@onflow/flow-wallet-shared/types/key-types';
+import { TESTNET_CHAIN_ID } from '@onflow/flow-wallet-shared/types/network-types';
+
 import { keyringService, signTextHistoryService } from '@/core/service';
 import * as findAddressWithPubKey from '@/core/utils/modules/findAddressWithPubKey';
 import { pk2PubKeyTuple } from '@/core/utils/modules/publicPrivateKey';
-import { HASH_ALGO_NUM_DEFAULT, SIGN_ALGO_NUM_DEFAULT } from '@/shared/constant/algo-constants';
-import { tupleToPubKey } from '@/shared/types/key-types';
-import { TESTNET_CHAIN_ID } from '@/shared/types/network-types';
 
 import notificationService from '../notification';
 import providerController from '../provider/controller';

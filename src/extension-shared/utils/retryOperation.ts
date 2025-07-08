@@ -1,4 +1,4 @@
-import { consoleLog } from './console-log';
+import { consoleLog } from '../../../packages/shared/src/utils/console-log';
 
 export const retryOperation = async <T>(
   operation: () => Promise<T>,

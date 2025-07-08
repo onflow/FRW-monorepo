@@ -23,6 +23,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      '@onflow/flow-wallet-shared': '/packages/shared/src',
       '@': '/src',
       ui: '/src/ui',
       background: '/src/background',

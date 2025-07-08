@@ -2,11 +2,12 @@ import { Box, CardMedia, Divider, Stack, Typography } from '@mui/material';
 import { Contract, ethers } from 'ethers';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { EVM_ENDPOINT } from '@/shared/constant/domain-constants';
-import { type CustomFungibleTokenInfo } from '@/shared/types/coin-types';
-import { networkToChainId } from '@/shared/types/network-types';
-import { withPrefix } from '@/shared/utils/address';
-import { consoleError } from '@/shared/utils/console-log';
+import { EVM_ENDPOINT } from '@onflow/flow-wallet-shared/constant/domain-constants';
+import { type CustomFungibleTokenInfo } from '@onflow/flow-wallet-shared/types/coin-types';
+import { networkToChainId } from '@onflow/flow-wallet-shared/types/network-types';
+import { withPrefix } from '@onflow/flow-wallet-shared/utils/address';
+import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+
 import { LLConnectLoading, LLPrimaryButton, LLSecondaryButton } from '@/ui/components';
 import { useApproval } from '@/ui/hooks/use-approval';
 import { refreshEvmToken } from '@/ui/hooks/use-coin-hooks';

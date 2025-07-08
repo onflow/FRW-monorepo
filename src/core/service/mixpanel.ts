@@ -1,4 +1,4 @@
-import type { TrackingEvents } from '@/shared/types/tracking-types';
+import type { TrackingEvents } from '@onflow/flow-wallet-shared/types/tracking-types';
 
 import { version } from '../utils/package-version';
 

@@ -10,24 +10,24 @@ import {
 } from '@mui/material';
 import React from 'react';
 
-import { type WalletAccount } from '@/shared/types/wallet-types';
-import { isValidEthereumAddress } from '@/shared/utils/address';
+import { type WalletAccount } from '@onflow/flow-wallet-shared/types/wallet-types';
+import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils/address';
+
 import { CopyIcon } from '@/ui/assets/icons/CopyIcon';
 import { LinkIcon } from '@/ui/assets/icons/LinkIcon';
 import { useAccountBalance } from '@/ui/hooks/use-account-hooks';
 import { useNftCatalogCollections } from '@/ui/hooks/useNftHook';
 import {
+  COLOR_ACCENT_EVM_627EEA,
   COLOR_DARKMODE_BACKGROUND_CARDS_1A1A1A,
   COLOR_DARKMODE_TEXT_PRIMARY_FFFFFF,
   COLOR_DARKMODE_TEXT_SECONDARY_B3B3B3,
-  COLOR_ACCENT_EVM_627EEA,
   COLOR_GREY_ICONS_767676,
 } from '@/ui/style/color';
 import { formatAddress } from '@/ui/utils';
 
-import { TokenBalance } from '../TokenLists/TokenBalance';
-
 import { AccountAvatar } from './account-avatar';
+import { TokenBalance } from '../TokenLists/TokenBalance';
 
 type AccountCardWithCopyProps = {
   network?: string;

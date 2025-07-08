@@ -1,8 +1,8 @@
-import storage, { type StorageChange } from '@/shared/utils/storage';
+import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
 
-import { type CacheDataItem } from '../types/data-cache-types';
+import storage, { type StorageChange } from '@/extension-shared/utils/storage';
 
-import { consoleError } from './console-log';
+import { type CacheDataItem } from './data-cache-types';
 
 /**
  * Get cached data from session storage

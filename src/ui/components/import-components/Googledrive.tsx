@@ -1,7 +1,8 @@
 import { Box, Button, Typography } from '@mui/material';
 import React, { useState } from 'react';
 
-import { consoleError } from '@/shared/utils/console-log';
+import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+
 import { LLSpinner } from '@/ui/components';
 import BrowserWarning from '@/ui/components/BrowserWarning';
 import IconGoogleDrive from '@/ui/components/iconfont/IconGoogleDrive';

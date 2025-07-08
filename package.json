@@ -43,6 +43,7 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
+    "@onflow/flow-wallet-shared": "workspace:*",
     "@coinbase/cbpay-js": "^1.10.0",
     "@debank/common": "^0.3.60",
     "@emotion/react": "^11.14.0",

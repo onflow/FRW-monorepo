@@ -1,5 +1,6 @@
-import { consoleError } from '@/shared/utils/console-log';
-import storage from '@/shared/utils/storage';
+import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+
+import storage from '@/extension-shared/utils/storage';
 
 import { jsonToString } from './utils';
 

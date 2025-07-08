@@ -9,6 +9,76 @@ import { getAuth } from 'firebase/auth/web-extension';
 import { encode } from 'rlp';
 import web3, { TransactionError, Web3 } from 'web3';
 
+import { FLOW_BIP44_PATH } from '@onflow/flow-wallet-shared/constant/algo-constants';
+import {
+  EVM_ENDPOINT,
+  HTTP_STATUS_CONFLICT,
+  HTTP_STATUS_TOO_MANY_REQUESTS,
+  INTERNAL_REQUEST_ORIGIN,
+} from '@onflow/flow-wallet-shared/constant/domain-constants';
+import erc20ABI from '@onflow/flow-wallet-shared/constant/erc20.abi.json';
+import { type CustomFungibleTokenInfo } from '@onflow/flow-wallet-shared/types/coin-types';
+import {
+  type FeatureFlagKey,
+  type FeatureFlags,
+} from '@onflow/flow-wallet-shared/types/feature-types';
+import {
+  type PublicKeyTuple,
+  type PublicPrivateKeyTuple,
+} from '@onflow/flow-wallet-shared/types/key-types';
+import { CURRENT_ID_KEY } from '@onflow/flow-wallet-shared/types/keyring-types';
+import {
+  type AccountKeyRequest,
+  type Contact,
+  ContactType,
+  type FlowNetwork,
+  MAINNET_CHAIN_ID,
+  type NFTModelV2,
+  Period,
+  PriceProvider,
+  type TokenPriceHistory,
+  type UserInfoResponse,
+} from '@onflow/flow-wallet-shared/types/network-types';
+import {
+  type NFTCollectionData,
+  type NFTCollections,
+} from '@onflow/flow-wallet-shared/types/nft-types';
+import { type CategoryScripts } from '@onflow/flow-wallet-shared/types/script-types';
+import { type TokenInfo } from '@onflow/flow-wallet-shared/types/token-info';
+import { type TrackingEvents } from '@onflow/flow-wallet-shared/types/tracking-types';
+import {
+  type TransactionState,
+  type TransferItem,
+} from '@onflow/flow-wallet-shared/types/transaction-types';
+import {
+  type ActiveAccountType,
+  type ActiveChildType_depreciated,
+  type Currency,
+  type EvmAddress,
+  type FlowAddress,
+  type LoggedInAccount,
+  type MainAccount,
+  type ProfileBackupStatus,
+  type PublicKeyAccount,
+  type WalletAccount,
+  type WalletAddress,
+} from '@onflow/flow-wallet-shared/types/wallet-types';
+import {
+  ensureEvmAddressPrefix,
+  isValidAddress,
+  isValidEthereumAddress,
+  isValidFlowAddress,
+  withPrefix,
+} from '@onflow/flow-wallet-shared/utils/address';
+import {
+  getStringFromHashAlgo,
+  getStringFromSignAlgo,
+} from '@onflow/flow-wallet-shared/utils/algo';
+import { consoleError, consoleWarn } from '@onflow/flow-wallet-shared/utils/console-log';
+import { getEmojiList } from '@onflow/flow-wallet-shared/utils/emoji-util';
+import { getPeriodFrequency } from '@onflow/flow-wallet-shared/utils/getPeriodFrequency';
+import { convertToIntegerAmount, validateAmount } from '@onflow/flow-wallet-shared/utils/number';
+
 import notification from '@/background/webapi/notification';
 import { openIndexPage } from '@/background/webapi/tab';
 import {
@@ -62,55 +132,6 @@ import {
   seedWithPathAndPhrase2PublicPrivateKey,
 } from '@/core/utils/modules/publicPrivateKey';
 import { generateRandomId } from '@/core/utils/random-id';
-import { FLOW_BIP44_PATH } from '@/shared/constant/algo-constants';
-import {
-  EVM_ENDPOINT,
-  HTTP_STATUS_CONFLICT,
-  HTTP_STATUS_TOO_MANY_REQUESTS,
-  INTERNAL_REQUEST_ORIGIN,
-} from '@/shared/constant/domain-constants';
-import erc20ABI from '@/shared/constant/erc20.abi.json';
-import { type CustomFungibleTokenInfo } from '@/shared/types/coin-types';
-import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types/feature-types';
-import { type PublicKeyTuple, type PublicPrivateKeyTuple } from '@/shared/types/key-types';
-import { CURRENT_ID_KEY } from '@/shared/types/keyring-types';
-import {
-  type AccountKeyRequest,
-  type Contact,
-  ContactType,
-  type FlowNetwork,
-  MAINNET_CHAIN_ID,
-  type NFTModelV2,
-  Period,
-  PriceProvider,
-  type TokenPriceHistory,
-  type UserInfoResponse,
-} from '@/shared/types/network-types';
-import { type NFTCollectionData, type NFTCollections } from '@/shared/types/nft-types';
-import { type TokenInfo } from '@/shared/types/token-info';
-import { type TrackingEvents } from '@/shared/types/tracking-types';
-import { type TransactionState, type TransferItem } from '@/shared/types/transaction-types';
-import {
-  type ActiveAccountType,
-  type ActiveChildType_depreciated,
-  type Currency,
-  type EvmAddress,
-  type FlowAddress,
-  type LoggedInAccount,
-  type MainAccount,
-  type ProfileBackupStatus,
-  type PublicKeyAccount,
-  type WalletAccount,
-  type WalletAddress,
-} from '@/shared/types/wallet-types';
-import {
-  ensureEvmAddressPrefix,
-  isValidAddress,
-  isValidEthereumAddress,
-  isValidFlowAddress,
-  withPrefix,
-} from '@/shared/utils/address';
-import { getStringFromHashAlgo, getStringFromSignAlgo } from '@/shared/utils/algo';
 import {
   accountBalanceKey,
   childAccountAllowTypesKey,
@@ -132,16 +153,11 @@ import {
   userMetadataKey,
   walletLoadedKey,
   walletLoadedRefreshRegex,
-} from '@/shared/utils/cache-data-keys';
-import { consoleError, consoleWarn } from '@/shared/utils/console-log';
-import { returnCurrentProfileId } from '@/shared/utils/current-id';
-import { getEmojiList } from '@/shared/utils/emoji-util';
-import { getPeriodFrequency } from '@/shared/utils/getPeriodFrequency';
-import eventBus from '@/shared/utils/message/eventBus';
-import { convertToIntegerAmount, validateAmount } from '@/shared/utils/number';
-import { retryOperation } from '@/shared/utils/retryOperation';
-import { type CategoryScripts } from '@/shared/utils/script-types';
-import storage from '@/shared/utils/storage';
+} from '@/data-model/cache-data-keys';
+import { returnCurrentProfileId } from '@/extension-shared/utils/current-id';
+import eventBus from '@/extension-shared/utils/message/eventBus';
+import { retryOperation } from '@/extension-shared/utils/retryOperation';
+import storage from '@/extension-shared/utils/storage';
 
 import BaseController from './base';
 import notificationService from './notification';

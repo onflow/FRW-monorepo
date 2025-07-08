@@ -1,8 +1,12 @@
 import { Box, Typography } from '@mui/material';
 import React from 'react';
 
-import { type MainAccount, type WalletAccount } from '@/shared/types/wallet-types';
-import { isValidEthereumAddress } from '@/shared/utils/address';
+import {
+  type MainAccount,
+  type WalletAccount,
+} from '@onflow/flow-wallet-shared/types/wallet-types';
+import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils/address';
+
 import { useHiddenAccounts } from '@/ui/hooks/preference-hooks';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { COLOR_DARKMODE_TEXT_PRIMARY_80_FFFFFF80 } from '@/ui/style/color';

@@ -2,16 +2,17 @@ import {
   Avatar,
   Box,
   CardMedia,
-  ListItemText,
   ListItem,
   ListItemButton,
   ListItemIcon,
-  Typography,
+  ListItemText,
   Skeleton,
+  Typography,
 } from '@mui/material';
 import React from 'react';
 
-import { type UserInfoResponse } from '@/shared/types/network-types';
+import { type UserInfoResponse } from '@onflow/flow-wallet-shared/types/network-types';
+
 import iconCheck from '@/ui/assets/svg/check-circle-fill.svg';
 import iconCheckUnfill from '@/ui/assets/svg/check-circle-unfill.svg';
 import userCircleGear from '@/ui/assets/svg/user-circle-gear.svg';

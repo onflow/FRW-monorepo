@@ -16,9 +16,10 @@ import { isEmpty } from 'lodash';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation } from 'react-router';
 
-import { ContactType, type Contact } from '@/shared/types/network-types';
-import { isValidEthereumAddress, withPrefix } from '@/shared/utils/address';
-import { consoleError } from '@/shared/utils/console-log';
+import { ContactType, type Contact } from '@onflow/flow-wallet-shared/types/network-types';
+import { isValidEthereumAddress, withPrefix } from '@onflow/flow-wallet-shared/utils/address';
+import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+
 import { LLHeader } from '@/ui/components';
 import AccountsList from '@/ui/components/AddressLists/AccountsList';
 import AddressBookList from '@/ui/components/AddressLists/AddressBookList';

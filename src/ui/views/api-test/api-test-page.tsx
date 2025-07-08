@@ -14,17 +14,18 @@ import {
 import * as bip39 from 'bip39';
 import React, { useEffect, useState } from 'react';
 
+import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+
 import {
   API_TEST_RESULTS,
   type ApiTestResult,
   type FetchDetail,
-} from '@/shared/test-data/api-test-results';
+} from '@/extension-shared/utils/test-data/api-test-results';
 import {
   type ApiTestFunction,
   type CommonParams,
   createTestGroups,
-} from '@/shared/test-data/test-groups';
-import { consoleError } from '@/shared/utils/console-log';
+} from '@/extension-shared/utils/test-data/test-groups';
 import { useWallet } from '@/ui/hooks/use-wallet';
 
 const addFunctionResult = (prev: ApiTestResult[], result: ApiTestResult) => {

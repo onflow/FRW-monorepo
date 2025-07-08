@@ -24,13 +24,25 @@
       "types": "./src/types/index.ts",
       "default": "./src/types/index.ts"
     },
-    "./constants": {
-      "types": "./src/constants/index.ts",
-      "default": "./src/constants/index.ts"
+    "./types/*": {
+      "types": "./src/types/*.ts",
+      "default": "./src/types/*.ts"
+    },
+    "./constant": {
+      "types": "./src/constant/index.ts",
+      "default": "./src/constant/index.ts"
+    },
+    "./constant/*": {
+      "types": "./src/constant/*.ts",
+      "default": "./src/constant/*.ts"
     },
     "./utils": {
       "types": "./src/utils/index.ts",
       "default": "./src/utils/index.ts"
+    },
+    "./utils/*": {
+      "types": "./src/utils/*.ts",
+      "default": "./src/utils/*.ts"
     }
   },
   "dependencies": {

@@ -1,22 +1,25 @@
 import type { TransactionStatus } from '@onflow/typedefs';
 
-import { type TransferItem } from '@/shared/types/transaction-types';
-import { isValidEthereumAddress, isValidFlowAddress } from '@/shared/utils/address';
+import { type TransferItem } from '@onflow/flow-wallet-shared/types/transaction-types';
+import {
+  isValidEthereumAddress,
+  isValidFlowAddress,
+} from '@onflow/flow-wallet-shared/utils/address';
+import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+
 import {
   transferListKey,
   transferListRefreshRegex,
   type TransferListStore,
-} from '@/shared/utils/cache-data-keys';
-import { consoleError } from '@/shared/utils/console-log';
+} from '@/data-model/cache-data-keys';
 
+import openapiService, { type FlowTransactionResponse } from './openapi';
 import {
   getInvalidData,
   getValidData,
   registerRefreshListener,
   setCachedData,
 } from '../utils/data-cache';
-
-import openapiService, { type FlowTransactionResponse } from './openapi';
 
 interface TransactionStore {
   pendingItem: {

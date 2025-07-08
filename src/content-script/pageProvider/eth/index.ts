@@ -1,16 +1,15 @@
 // this script is injected into webpage's context
+import { ethErrors, serializeError } from 'eth-rpc-errors';
 import { EventEmitter } from 'events';
 
-import { ethErrors, serializeError } from 'eth-rpc-errors';
-
-import { consoleError, consoleLog } from '@/shared/utils/console-log';
+import { consoleError, consoleLog } from '@onflow/flow-wallet-shared/utils/console-log';
 
 import DedupePromise from './pageProvider/dedupePromise';
 import { switchChainNotice } from './pageProvider/interceptors/switchChain';
 import { switchWalletNotice } from './pageProvider/interceptors/switchWallet';
 import PushEventHandlers from './pageProvider/pushEventHandlers';
 import ReadyPromise from './pageProvider/readyPromise';
-import { domReadyCall, $ } from './pageProvider/utils';
+import { $, domReadyCall } from './pageProvider/utils';
 import BroadcastChannelMessage from './utils/message/broadcastChannelMessage';
 import { patchProvider } from './utils/metamask';
 import { SAFE_RPC_METHODS } from './utils/safeRpcMethods';

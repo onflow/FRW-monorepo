@@ -7,8 +7,9 @@ import Tooltip from '@mui/material/Tooltip';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
-import { isValidEthereumAddress } from '@/shared/utils/address';
-import { consoleError, consoleWarn } from '@/shared/utils/console-log';
+import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils/address';
+import { consoleError, consoleWarn } from '@onflow/flow-wallet-shared/utils/console-log';
+
 import { AccountAvatar } from '@/ui/components/account/account-avatar';
 import IconCopy from '@/ui/components/iconfont/IconCopy';
 import StorageExceededAlert from '@/ui/components/StorageExceededAlert';

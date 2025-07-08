@@ -3,7 +3,7 @@ import { Box } from '@mui/system';
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
-import eventBus from '@/shared/utils/message/eventBus';
+import eventBus from '@/extension-shared/utils/message/eventBus';
 import { ButtonRow } from '@/ui/components/ButtonRow';
 import CoinsIcon from '@/ui/components/CoinsIcon';
 import { IconActivity, IconNfts } from '@/ui/components/iconfont';
@@ -18,7 +18,6 @@ import { useProfiles } from '@/ui/hooks/useProfileHook';
 import MoveBoard from '../MoveBoard';
 import NFTTab from '../NFT';
 import NftEvm from '../NftEvm';
-
 import CoinList from './Coinlist';
 import OnRampList from './OnRampList';
 import TransferList from './TransferList';

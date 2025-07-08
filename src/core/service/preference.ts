@@ -1,12 +1,12 @@
 import compareVersions from 'compare-versions';
 
-import { type FlowNetwork, MAINNET_NETWORK } from '@/shared/types/network-types';
-import { type Currency, DEFAULT_CURRENCY } from '@/shared/types/wallet-types';
-import storage from '@/shared/utils/storage';
+import { type FlowNetwork, MAINNET_NETWORK } from '@onflow/flow-wallet-shared/types/network-types';
+import { type Currency, DEFAULT_CURRENCY } from '@onflow/flow-wallet-shared/types/wallet-types';
 
-import createPersistStore from '../utils/persistStore';
+import storage from '@/extension-shared/utils/storage';
 
 import keyringService from './keyring';
+import createPersistStore from '../utils/persistStore';
 
 const version = process.env.release || '0';
 export interface PreferenceAccount {

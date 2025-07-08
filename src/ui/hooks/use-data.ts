@@ -4,8 +4,8 @@ import {
   addCachedDataListener,
   getCachedData,
   removeCachedDataListener,
-} from '@/shared/utils/cache-data-access';
-import storage, { type AreaName, type StorageChange } from '@/shared/utils/storage';
+} from '@/data-model/cache-data-access';
+import storage, { type AreaName, type StorageChange } from '@/extension-shared/utils/storage';
 
 type DataState = {
   key: string;

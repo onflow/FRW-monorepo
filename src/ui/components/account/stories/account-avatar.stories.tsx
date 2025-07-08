@@ -1,8 +1,10 @@
 import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 
-import emojisJson from '@/shared/constant/emoji.json';
+import emojisJson from '@onflow/flow-wallet-shared/constant/emoji.json';
+
 import AccountAvatar from '@/ui/components/account/account-avatar';
+
 const { emojis } = emojisJson;
 
 const meta: Meta<typeof AccountAvatar> = {

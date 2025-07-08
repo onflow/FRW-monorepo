@@ -1,15 +1,15 @@
-import { isValidEthereumAddress } from '@/shared/utils/address';
+import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils/address';
+
 import {
   evmNftCollectionListKey,
   evmNftCollectionListRefreshRegex,
   evmNftIdsKey,
   evmNftIdsRefreshRegex,
-} from '@/shared/utils/cache-data-keys';
-
-import { registerRefreshListener, setCachedData } from '../utils/data-cache';
-import { fclConfirmNetwork } from '../utils/fclConfig';
+} from '@/data-model/cache-data-keys';
 
 import { openapiService } from '.';
+import { registerRefreshListener, setCachedData } from '../utils/data-cache';
+import { fclConfirmNetwork } from '../utils/fclConfig';
 
 class EvmNfts {
   init = async () => {

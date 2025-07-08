@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 
-import { IS_WINDOWS } from '@/shared/constant/environment';
+import { IS_WINDOWS } from '@/background/webapi/environment';
 
 const event = new EventEmitter();
 

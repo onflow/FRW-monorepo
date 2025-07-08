@@ -1,6 +1,6 @@
 import { type Page } from '@playwright/test';
 
-import { isValidEthereumAddress } from '../../src/shared/utils/address';
+import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils/address';
 
 import { expect, getAuth, saveAuth } from './loader';
 export const getClipboardText = async () => {

@@ -1,13 +1,14 @@
 import * as fcl from '@onflow/fcl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import openapiService from '@/core/service/openapi';
 import {
   HASH_ALGO_NUM_SHA2_256,
   HASH_ALGO_NUM_SHA3_256,
   SIGN_ALGO_NUM_ECDSA_P256,
   SIGN_ALGO_NUM_ECDSA_secp256k1,
-} from '@/shared/constant/algo-constants';
+} from '@onflow/flow-wallet-shared/constant/algo-constants';
+
+import openapiService from '@/core/service/openapi';
 
 import {
   getAccountsByPublicKeyTuple,

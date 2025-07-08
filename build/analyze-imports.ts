@@ -1,9 +1,8 @@
-import fs from 'fs';
-import path from 'path';
-
 import parser from '@babel/parser';
 import traverse from '@babel/traverse';
+import fs from 'fs';
 import { glob } from 'glob';
+import path from 'path';
 
 type PackageLocations = {
   background: Set<string>;

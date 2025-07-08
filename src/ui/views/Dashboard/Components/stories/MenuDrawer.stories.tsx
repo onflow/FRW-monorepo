@@ -2,19 +2,28 @@ import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 import { withRouter } from 'storybook-addon-remix-react-router';
 
-import emojisJson from '@/shared/constant/emoji.json';
-import { type FeatureFlagKey } from '@/shared/types/feature-types';
-import { MAINNET_CHAIN_ID, type UserInfoResponse } from '@/shared/types/network-types';
-import { type Emoji, type MainAccount, type WalletAccount } from '@/shared/types/wallet-types';
+import emojisJson from '@onflow/flow-wallet-shared/constant/emoji.json';
+import { type FeatureFlagKey } from '@onflow/flow-wallet-shared/types/feature-types';
+import {
+  MAINNET_CHAIN_ID,
+  type UserInfoResponse,
+} from '@onflow/flow-wallet-shared/types/network-types';
+import {
+  type Emoji,
+  type MainAccount,
+  type WalletAccount,
+} from '@onflow/flow-wallet-shared/types/wallet-types';
+
 import { useFeatureFlag as importedMockUseFeatureFlag } from '@/ui/hooks/use-feature-flags.mock';
 import { useNftCatalogCollections as importedMockUseNftCatalogCollections } from '@/ui/hooks/useNftHook.mock';
 import {
   useProfiles as importedMockUseProfiles,
   USE_PROFILES_MOCK,
 } from '@/ui/hooks/useProfileHook.mock';
-const { emojis } = emojisJson as { emojis: Emoji[] };
 
 import MenuDrawer from '../MenuDrawer';
+
+const { emojis } = emojisJson as { emojis: Emoji[] };
 
 // Mock wallet accounts - aligned with account-listing stories
 const mockMainAccount: MainAccount = {

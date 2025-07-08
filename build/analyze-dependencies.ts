@@ -1,10 +1,9 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
 import { parse } from '@babel/parser';
 import traverseDefault from '@babel/traverse';
+import fs from 'fs';
 import { glob } from 'glob';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import webpack from 'webpack';
 
 import webpackConfig from '../webpack.config.js';

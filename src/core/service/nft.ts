@@ -1,7 +1,14 @@
 import * as fcl from '@onflow/fcl';
 
-import { type NftCollection, type NFTModelV2 } from '@/shared/types/network-types';
-import { type NFTCollectionData, type NFTCollections } from '@/shared/types/nft-types';
+import {
+  type NftCollection,
+  type NFTModelV2,
+} from '@onflow/flow-wallet-shared/types/network-types';
+import {
+  type NFTCollectionData,
+  type NFTCollections,
+} from '@onflow/flow-wallet-shared/types/nft-types';
+
 import {
   childAccountAllowTypesKey,
   childAccountAllowTypesRefreshRegex,
@@ -15,12 +22,11 @@ import {
   nftCollectionRefreshRegex,
   nftListKey,
   nftListRefreshRegex,
-} from '@/shared/utils/cache-data-keys';
-
-import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
-import { fclConfirmNetwork } from '../utils/fclConfig';
+} from '@/data-model/cache-data-keys';
 
 import openapiService, { getScripts } from './openapi';
+import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
+import { fclConfirmNetwork } from '../utils/fclConfig';
 
 class NFT {
   init = async () => {

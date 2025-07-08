@@ -2,8 +2,9 @@ import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 import { withRouter } from 'storybook-addon-remix-react-router';
 
-import type { NFTCollections } from '@/shared/types/nft-types';
-import type { WalletAccount } from '@/shared/types/wallet-types';
+import type { NFTCollections } from '@onflow/flow-wallet-shared/types/nft-types';
+import type { WalletAccount } from '@onflow/flow-wallet-shared/types/wallet-types';
+
 import {
   useChildAccountAllowTypes,
   useChildAccountDescription,

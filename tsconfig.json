@@ -13,6 +13,7 @@
     "useUnknownInCatchVariables": false,
     "resolveJsonModule": true,
     "paths": {
+      "@onflow/flow-wallet-shared/*": ["./packages/shared/src/*"],
       "@/*": ["./src/*"]
     },
     "lib": ["ES2021.String", "DOM", "DOM.Iterable"],
@@ -36,6 +37,8 @@
     "webpack.config.ts",
     "postcss.config.mjs",
     "svgTransform.js",
-    ".storybook/**/*"
+    ".storybook/**/*",
+    "src/extension-shared/utils/console-log.ts",
+    "packages/shared/src/**/*"
   ]
 }

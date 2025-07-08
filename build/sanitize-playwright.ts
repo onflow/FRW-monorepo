@@ -1,7 +1,6 @@
 import fs from 'fs/promises';
-import path from 'path';
-
 import JSZip from 'jszip';
+import path from 'path';
 
 export async function loadSecrets() {
   const secrets = new Set<string>();

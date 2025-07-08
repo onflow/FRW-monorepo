@@ -1,9 +1,8 @@
+import { prompt } from 'enquirer';
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
-
-import { prompt } from 'enquirer';
 import shell from 'shelljs';
+import { fileURLToPath } from 'url';
 import zipdir from 'zip-dir';
 
 const __filename = fileURLToPath(import.meta.url);

@@ -3,7 +3,7 @@ import encryptor from 'browser-passworder';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock dependencies at the beginning before any imports
-vi.mock('../../../shared/utils/storage', () => ({
+vi.mock('@/extension-shared/utils/storage', () => ({
   default: {
     get: vi.fn(),
     set: vi.fn(),
@@ -49,21 +49,21 @@ import {
   SIGN_ALGO_NUM_DEFAULT,
   SIGN_ALGO_NUM_ECDSA_P256,
   SIGN_ALGO_NUM_ECDSA_secp256k1,
-} from '@/shared/constant/algo-constants';
+} from '@onflow/flow-wallet-shared/constant/algo-constants';
 import {
   CURRENT_ID_KEY,
   KEYRING_STATE_CURRENT_KEY,
   KEYRING_STATE_V1_KEY,
   KEYRING_STATE_V2_KEY,
   type KeyringStateV2,
-} from '@/shared/types/keyring-types';
-import { returnCurrentProfileId } from '@/shared/utils/current-id';
-import storage from '@/shared/utils/storage';
+} from '@onflow/flow-wallet-shared/types/keyring-types';
+
+import { returnCurrentProfileId } from '@/extension-shared/utils/current-id';
+import storage from '@/extension-shared/utils/storage';
 
 import keyringService from '../keyring';
-import { SimpleKeyring } from '../keyring/simpleKeyring';
-
 import { MOCK_KEYS } from './keyring-mock-data';
+import { SimpleKeyring } from '../keyring/simpleKeyring';
 
 // Test constants
 const TEST_PASSWORD = 'test_password_123';

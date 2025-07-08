@@ -1,10 +1,9 @@
 import { sortBy } from 'lodash';
 
-import { INTERNAL_REQUEST_ORIGIN } from '@/shared/constant/domain-constants';
-
-import createPersistStore from '../utils/persistStore';
+import { INTERNAL_REQUEST_ORIGIN } from '@onflow/flow-wallet-shared/constant/domain-constants';
 
 import permissionService, { type ConnectedSite } from './permission';
+import createPersistStore from '../utils/persistStore';
 
 export interface SignTextHistoryItem {
   site: ConnectedSite;

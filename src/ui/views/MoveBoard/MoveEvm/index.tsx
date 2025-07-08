@@ -2,7 +2,8 @@ import { Box } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { consoleError } from '@/shared/utils/console-log';
+import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+
 import alertMark from '@/ui/assets/svg/alertMark.svg';
 import { NFTDrawer } from '@/ui/components/GeneralPages';
 import WarningSnackbar from '@/ui/components/WarningSnackbar';

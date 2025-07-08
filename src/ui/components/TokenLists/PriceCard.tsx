@@ -20,8 +20,9 @@ import {
   Period,
   type PriceProvider,
   type TokenPriceHistory,
-} from '@/shared/types/network-types';
-import { consoleWarn } from '@/shared/utils/console-log';
+} from '@onflow/flow-wallet-shared/types/network-types';
+import { consoleWarn } from '@onflow/flow-wallet-shared/utils/console-log';
+
 import {
   IconBinance,
   IconCoinbase,

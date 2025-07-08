@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { transferListKey, type TransferListStore } from '@/shared/utils/cache-data-keys';
+import { transferListKey, type TransferListStore } from '@/data-model/cache-data-keys';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 

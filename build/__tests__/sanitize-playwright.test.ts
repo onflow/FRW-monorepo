@@ -1,9 +1,8 @@
 /// <reference types="vitest" />
 import { type Stats } from 'fs';
 import fs from 'fs/promises';
-import path from 'path';
-
 import JSZip from 'jszip';
+import path from 'path';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { loadSecrets, scrubValue, sanitizeTrace } from '../sanitize-playwright';

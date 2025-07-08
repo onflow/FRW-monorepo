@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { createTestGroups } from '@/shared/test-data/test-groups';
+import { createTestGroups } from '@/extension-shared/utils/test-data/test-groups';
 
 import methods from '../openapi-methods.json';
 

@@ -21,7 +21,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 // import { useNavigate } from 'react-router';
-import { type ExtendedTokenInfo } from '@/shared/types/coin-types';
+import { type ExtendedTokenInfo } from '@onflow/flow-wallet-shared/types/coin-types';
+
 import VerifiedIcon from '@/ui/assets/svg/verfied-check.svg';
 import IconCreate from '@/ui/components/iconfont/IconCreate';
 import TokenItem from '@/ui/components/TokenLists/TokenItem';

@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { registerBatchRefreshListener, batchRefreshManager } from './batch-refresh';
+import { batchRefreshManager, registerBatchRefreshListener } from './batch-refresh';
 import { setCachedData } from './data-cache';
 
 // Mock the storage module
-vi.mock('@/shared/utils/storage', () => ({
+vi.mock('@onflow/flow-wallet-shared/utils/storage', () => ({
   default: {
     setSession: vi.fn(),
     getSession: vi.fn(),
@@ -147,7 +147,7 @@ describe('Batch Refresh Mechanism', () => {
 
   it('should handle errors gracefully', async () => {
     // Mock consoleError from shared utils
-    const consoleError = await import('@/shared/utils/console-log');
+    const consoleError = await import('@onflow/flow-wallet-shared/utils/console-log');
     const consoleErrorSpy = vi.spyOn(consoleError, 'consoleError').mockImplementation(() => {});
     const batchLoader = vi.fn().mockRejectedValue(new Error('Network error'));
 

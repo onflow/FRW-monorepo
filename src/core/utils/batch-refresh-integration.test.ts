@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getCachedData } from '@/shared/utils/cache-data-access';
-import { accountBalanceKey, accountBalanceRefreshRegex } from '@/shared/utils/cache-data-keys';
-import storage from '@/shared/utils/storage';
+import { getCachedData } from '@/data-model/cache-data-access';
+import { accountBalanceKey, accountBalanceRefreshRegex } from '@/data-model/cache-data-keys';
+import storage from '@/extension-shared/utils/storage';
 
 // Mock the storage module
-vi.mock('@/shared/utils/storage', () => ({
+vi.mock('@/extension-shared/utils/storage', () => ({
   default: {
     setSession: vi.fn().mockResolvedValue(undefined),
     getSession: vi.fn().mockResolvedValue(undefined),
@@ -14,7 +14,7 @@ vi.mock('@/shared/utils/storage', () => ({
 }));
 
 // Mock getCachedData
-vi.mock('@/shared/utils/cache-data-access', () => ({
+vi.mock('@/data-model/cache-data-access', () => ({
   getCachedData: vi.fn(),
 }));
 

@@ -1,7 +1,6 @@
+import base, { type BrowserContext, chromium } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
-
-import base, { type BrowserContext, chromium } from '@playwright/test';
 
 const getKeysFilePath = () => {
   return path.join(import.meta.dirname, `../../playwright/.auth/keys.json`);

@@ -10,9 +10,10 @@ import {
   type AccountKeyRequest,
   type DeviceInfo,
   type DeviceInfoRequest,
-} from '@/shared/types/network-types';
-import { consoleError } from '@/shared/utils/console-log';
-import { FCLWalletConnectMethod } from '@/shared/utils/type';
+} from '@onflow/flow-wallet-shared/types/network-types';
+import { FCLWalletConnectMethod } from '@onflow/flow-wallet-shared/types/type';
+import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+
 import closeCircle from '@/ui/assets/image/closeCircle.png';
 import dicon from '@/ui/assets/image/dicon.png';
 import licon from '@/ui/assets/image/licon.png';
