@@ -18,12 +18,13 @@ src/
 │   ├── components/     # Reusable UI components
 │   ├── views/         # Page-level components and screens
 │   ├── hooks/         # Custom React hooks
-│   ├── reducers/      # State management reducers
 │   ├── utils/         # UI-specific utilities
 │   ├── assets/        # Static assets (images, fonts, etc.)
 │   └── style/         # Styling and theming
 ├── content-script/     # Web page content scripts
-└── shared/            # Shared utilities and types
+└── packages/          # Workspace packages
+    ├── shared/        # Shared utilities and types
+    └── reducers/      # State management reducers
 ```
 
 ## Architecture Diagram
@@ -43,19 +44,16 @@ graph TB
                 VIEWS[views/]
                 COMPONENTS[components/]
                 HOOKS[hooks/]
-                REDUCERS[reducers/]
+                REDUCERS[hooks use reducers package]
                 UI_UTILS[utils/]
                 ASSETS[assets/]
                 STYLE[style/]
 
                 VIEWS --> COMPONENTS
                 VIEWS --> HOOKS
-                VIEWS --> REDUCERS
                 COMPONENTS --> HOOKS
-                COMPONENTS --> REDUCERS
                 HOOKS -.->|messaging| BG
                 HOOKS --> SHARED
-                REDUCERS --> SHARED
             end
         end
 
@@ -63,8 +61,9 @@ graph TB
             CS[content-script/]
         end
 
-        subgraph "Shared Context"
+        subgraph "Workspace Packages"
             SHARED[shared/]
+            REDUCERS[reducers/]
         end
     end
 
@@ -74,7 +73,9 @@ graph TB
     BG --> SHARED
     CORE --> SHARED
     UI --> SHARED
+    UI --> REDUCERS
     CS --> SHARED
+    HOOKS --> REDUCERS
 
     %% Styling
     classDef background fill:#e1f5fe
@@ -83,13 +84,15 @@ graph TB
     classDef uiInternal fill:#c8e6c9
     classDef contentScript fill:#fff3e0
     classDef shared fill:#f5f5f5
+    classDef reducers fill:#e3f2fd
 
     class BG background
     class CORE core
     class UI ui
-    class VIEWS,COMPONENTS,HOOKS,REDUCERS,UI_UTILS,ASSETS,STYLE uiInternal
+    class VIEWS,COMPONENTS,HOOKS,UI_UTILS,ASSETS,STYLE uiInternal
     class CS contentScript
     class SHARED shared
+    class REDUCERS reducers
 ```
 
 ## Layer Responsibilities
@@ -138,7 +141,7 @@ graph TB
   - Page layouts
   - Screen orchestration
   - Complex user flows
-- **Can import from**: `@/ui/components/*`, `@/ui/hooks/*`, `@/ui/reducers/*`, `@/ui/utils/*`, `@/ui/assets/*`, `@/ui/style/*`, `@onflow/flow-wallet-shared/*`
+- **Can import from**: `@/ui/components/*`, `@/ui/hooks/*`, `@/ui/utils/*`, `@/ui/assets/*`, `@/ui/style/*`, `@onflow/flow-wallet-shared/*`, `@onflow/flow-wallet-reducers/*`
 - **Import pattern**: Views compose components and use hooks for state management
 
 ##### 3.2. Components (`src/ui/components/`)
@@ -149,7 +152,7 @@ graph TB
   - Reusable component patterns
   - Component composition
   - UI interactions
-- **Can import from**: `@/ui/hooks/*`, `@/ui/reducers/*`, `@/ui/utils/*`, `@/ui/assets/*`, `@/ui/style/*`, `@onflow/flow-wallet-shared/*`
+- **Can import from**: `@/ui/hooks/*`, `@/ui/utils/*`, `@/ui/assets/*`, `@/ui/style/*`, `@onflow/flow-wallet-shared/*`, `@onflow/flow-wallet-reducers/*`
 - **Cannot import from**: `@/ui/views/*` (components should not depend on views)
 
 ##### 3.3. Hooks (`src/ui/hooks/`)
@@ -160,23 +163,11 @@ graph TB
   - Background communication
   - Storage interactions
   - Custom React patterns
-- **Can import from**: `@/ui/reducers/*`, `@/ui/utils/*`, `@onflow/flow-wallet-shared/*`
+- **Can import from**: `@/ui/utils/*`, `@onflow/flow-wallet-shared/*`, `@onflow/flow-wallet-reducers/*`
 - **Special permissions**: Can communicate with background via messaging
 - **Cannot import from**: `@/ui/views/*`, `@/ui/components/*`
 
-##### 3.4. Reducers (`src/ui/reducers/`)
-
-- **Purpose**: State management and data transformations
-- **Responsibilities**:
-  - State reduction logic
-  - Data transformations
-  - Action handling
-  - Pure state functions
-- **Can import from**: `@onflow/flow-wallet-shared/*` only
-- **Cannot import from**: Any other UI subfolder or external folders
-- **Note**: Must remain pure and isolated for predictable state management
-
-##### 3.5. Utils (`src/ui/utils/`)
+##### 3.4. Utils (`src/ui/utils/`)
 
 - **Purpose**: UI-specific utility functions
 - **Responsibilities**:
@@ -187,7 +178,7 @@ graph TB
 - **Can import from**: `@onflow/flow-wallet-shared/*`
 - **Cannot import from**: Other UI subfolders (to prevent circular dependencies)
 
-##### 3.6. Assets (`src/ui/assets/`)
+##### 3.5. Assets (`src/ui/assets/`)
 
 - **Purpose**: Static assets for the UI
 - **Responsibilities**:
@@ -196,7 +187,7 @@ graph TB
   - SVG assets
 - **Import pattern**: Imported by other UI components using `@/ui/assets/*`
 
-##### 3.7. Style (`src/ui/style/`)
+##### 3.6. Style (`src/ui/style/`)
 
 - **Purpose**: Styling and theming
 - **Responsibilities**:
@@ -216,7 +207,21 @@ graph TB
   - Flow FCL and Ethereum provider interfaces
 - **Can import from**: `@/background/*`, `@onflow/flow-wallet-shared/*`
 
-### 5. Shared Package (`@onflow/flow-wallet-shared`)
+### 5. Reducers Package (`@onflow/flow-wallet-reducers`)
+
+- **Purpose**: State management and data transformations (now as a separate workspace package)
+- **Responsibilities**:
+  - State reduction logic
+  - Data transformations
+  - Action handling
+  - Pure state functions
+- **Location**: `packages/reducers/`
+- **Import as**: `@onflow/flow-wallet-reducers/*`
+- **Can import from**: `@onflow/flow-wallet-shared/*` only
+- **Cannot import from**: Any project folders or other packages
+- **Note**: Must remain pure and isolated for predictable state management
+
+### 6. Shared Package (`@onflow/flow-wallet-shared`)
 
 - **Purpose**: Common utilities and types (now as a separate workspace package)
 - **Responsibilities**:
@@ -275,8 +280,8 @@ import { AccountCard } from '@/ui/components/account/account-card';
 // ✅ Components can import hooks
 import { useWallet } from '@/ui/hooks/use-wallet';
 
-// ✅ Hooks can import reducers
-import { accountReducer } from '@/ui/reducers/account-reducer';
+// ✅ Hooks can import reducers from package
+import { accountReducer } from '@onflow/flow-wallet-reducers/account-reducer';
 
 // ✅ Anyone can import from shared
 import { formatAddress } from '@onflow/flow-wallet-shared/utils/address';
@@ -294,8 +299,10 @@ import { Button } from '@/ui/components/Button';
 // ❌ Wrong - Background importing from UI
 import { useWallet } from '@/ui/hooks/use-wallet';
 
-// ❌ Wrong - Reducers importing from other layers
-import { walletController } from '@/background/controller/wallet';
+// ❌ Wrong - Components importing reducers from old location
+import { accountReducer } from '@/ui/reducers/account-reducer';
+// ✅ Correct - Import from the package
+import { accountReducer } from '@onflow/flow-wallet-reducers/account-reducer';
 
 // ❌ Wrong - Using old shared path
 import { formatAddress } from '@/shared/utils/address';
@@ -341,7 +348,9 @@ const Dashboard = () => {
   );
 };
 
-// Hooks use reducers for state management
+// Hooks use reducers from the package for state management
+import { walletReducer } from '@onflow/flow-wallet-reducers/wallet-reducer';
+
 const useWallet = () => {
   const [state, dispatch] = useReducer(walletReducer, initialState);
   // ...
@@ -379,9 +388,9 @@ The ESLint rules have been simplified to focus on the essential architectural bo
    - Cannot import from `@/core/*` or `@/background/*`
    - All other imports allowed
 
-5. **UI reducers**:
+5. **Reducers package** (`@onflow/flow-wallet-reducers`):
    - Can only import from `@onflow/flow-wallet-shared/*`
-   - Must remain pure (no imports from other layers)
+   - Must remain pure (no imports from other layers or packages)
 
 6. **Content script**:
    - Cannot import from `@/ui/*` or `@/core/*`
@@ -405,12 +414,13 @@ This architecture provides:
 
 1. **Before adding imports**: Check if the import follows the architectural rules
 2. **Use aliases**: Always use `@/folder/*` aliases for cross-folder imports
-3. **Keep layers isolated**: Don't create direct dependencies between UI and core
-4. **Use messaging**: UI should communicate with core through background messaging
-5. **Shared utilities**: Put common code in shared, not in specific layers
-6. **UI hierarchy**: Follow views → components → hooks → reducers pattern
-7. **Pure reducers**: Keep reducers isolated and pure for predictable state management
-8. **Reusable components**: Design components to be reusable across different views
+3. **Use package imports**: Import from `@onflow/flow-wallet-shared/*` and `@onflow/flow-wallet-reducers/*`
+4. **Keep layers isolated**: Don't create direct dependencies between UI and core
+5. **Use messaging**: UI should communicate with core through background messaging
+6. **Shared utilities**: Put common code in shared package, not in specific layers
+7. **UI hierarchy**: Follow views → components → hooks pattern (reducers are now separate)
+8. **Pure reducers**: Reducers must remain in the separate package and stay pure
+9. **Reusable components**: Design components to be reusable across different views
 
 ## Violations and Fixes
 
@@ -419,7 +429,8 @@ If you encounter ESLint violations:
 1. **"UI cannot import from Core layer"**: Use the wallet controller messaging instead
 2. **"Core cannot import from UI layer"**: Core should not depend on UI components
 3. **"Background cannot import from UI layer"**: Background is a service worker without DOM access
-4. **"Reducers must be pure"**: Move side effects to hooks, keep reducers pure
+4. **"Reducers must be pure"**: Reducers are now in a separate package and can only import from shared
 5. **"Core services can only import webapi from background"**: Use the webapi module for browser APIs
+6. **"Cannot import reducers from old location"**: Import from `@onflow/flow-wallet-reducers/*` instead
 
 This architecture ensures a maintainable, secure, and scalable Chrome extension codebase with clear separation of concerns at both the application and UI levels.
