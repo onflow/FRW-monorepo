@@ -5,13 +5,7 @@ import * as ethUtil from 'ethereumjs-util';
 import { getApp } from 'firebase/app';
 import { getAuth, signInAnonymously } from 'firebase/auth/web-extension';
 
-import {
-  DEFAULT_WEIGHT,
-  FLOW_BIP44_PATH,
-  HASH_ALGO_NUM_SHA2_256,
-  HASH_ALGO_NUM_SHA3_256,
-  SIGN_ALGO_NUM_ECDSA_P256,
-} from '@/shared/constant/algo-constants';
+import { DEFAULT_WEIGHT, FLOW_BIP44_PATH } from '@/shared/constant/algo-constants';
 import {
   combinePubPkString,
   type PublicPrivateKeyTuple,
@@ -41,6 +35,7 @@ import {
   isValidFlowAddress,
   withPrefix,
 } from '@/shared/utils/address';
+import { getCompatibleHashAlgo } from '@/shared/utils/algo';
 import {
   accountBalanceKey,
   accountBalanceRefreshRegex,
@@ -936,7 +931,6 @@ class UserWallet {
     publicKey: string,
     privateKey: string,
     signAlgo: number,
-    hashAlgo: number,
     replaceUser = true
   ): Promise<void> => {
     // Login anonymously if needed
@@ -951,6 +945,14 @@ class UserWallet {
         throw new Error('Failed to get idToken - even after signing in anonymously');
       }
     }
+    // Add the user domain tag
+    const rightPaddedHexBuffer = (value, pad) =>
+      Buffer.from(value.padEnd(pad * 2, 0), 'hex').toString('hex');
+    const USER_DOMAIN_TAG = rightPaddedHexBuffer(Buffer.from('FLOW-V0.0-user').toString('hex'), 32);
+    const message = USER_DOMAIN_TAG + Buffer.from(idToken, 'utf8').toString('hex');
+
+    // Determine hash algorithm based on signing algorithm (same logic as pubKeySignAlgoToAccountKey)
+    const hashAlgo = getCompatibleHashAlgo(signAlgo);
 
     // Create account key request directly from the provided key
     const accountKeyRequest: AccountKeyRequest = {
@@ -959,12 +961,6 @@ class UserWallet {
       hash_algo: hashAlgo,
       weight: DEFAULT_WEIGHT,
     };
-
-    // Add the user domain tag
-    const rightPaddedHexBuffer = (value, pad) =>
-      Buffer.from(value.padEnd(pad * 2, 0), 'hex').toString('hex');
-    const USER_DOMAIN_TAG = rightPaddedHexBuffer(Buffer.from('FLOW-V0.0-user').toString('hex'), 32);
-    const message = USER_DOMAIN_TAG + Buffer.from(idToken, 'utf8').toString('hex');
 
     // Sign the message
     const realSignature = await signWithKey(
@@ -1001,25 +997,14 @@ class UserWallet {
     // Get the network and store before we do anything async
     const network = this.getNetwork();
 
-    // Login anonymously if needed
-    // We'll need to do this before we get the accounts
-    const app = getApp(process.env.NODE_ENV!);
-    const auth = getAuth(app);
-    let idToken = await getAuth(app).currentUser?.getIdToken();
-    if (idToken === null || !idToken) {
-      // Sign in anonymously first
-      const userCredential = await signInAnonymously(auth);
-      idToken = await userCredential.user.getIdToken();
-      if (idToken === null || !idToken) {
-        throw new Error('Failed to get idToken - even after signing in anonymously');
-      }
-    }
-
+    // Search for accounts with either of the public keys in the tuple
     const accounts = await getAccountsByPublicKeyTuple(keyTuple, network);
+
+    // Determine which public key, sign algo, and hash algo was used from the accounts returned
     const accountKeyRequest =
       accounts.length === 0 ? defaultAccountKey(keyTuple) : pubKeyAccountToAccountKey(accounts[0]);
 
-    // Get the private key from the private key tuple
+    // Get the corresponding private key from the private key tuple
     const privateKey = tupleToPrivateKey(keyTuple, accountKeyRequest.sign_algo);
 
     // Call the new method with the public private key tuple
@@ -1027,7 +1012,6 @@ class UserWallet {
       accountKeyRequest.public_key,
       privateKey,
       accountKeyRequest.sign_algo,
-      accountKeyRequest.hash_algo,
       replaceUser
     );
   };
@@ -1049,19 +1033,7 @@ class UserWallet {
     const publicKey = await keyringService.getCurrentPublicKey();
     const privateKey = await keyringService.getCurrentPrivateKey();
 
-    // Determine hash algorithm based on signing algorithm (same logic as pubKeySignAlgoToAccountKey)
-    const currentHashAlgo =
-      currentSignAlgo === SIGN_ALGO_NUM_ECDSA_P256
-        ? HASH_ALGO_NUM_SHA3_256
-        : HASH_ALGO_NUM_SHA2_256;
-
-    return this.loginWithPublicPrivateKey(
-      publicKey,
-      privateKey,
-      currentSignAlgo,
-      currentHashAlgo,
-      replaceUser
-    );
+    return this.loginWithPublicPrivateKey(publicKey, privateKey, currentSignAlgo, replaceUser);
   };
 
   /**
