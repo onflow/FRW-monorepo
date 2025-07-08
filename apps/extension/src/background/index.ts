@@ -17,6 +17,7 @@ import { consoleError, consoleLog } from '@onflow/flow-wallet-shared/utils/conso
 import providerController from '@/background/controller/provider';
 import { preAuthzServiceDefinition } from '@/background/controller/serviceDefinition';
 import walletController, { type WalletController } from '@/background/controller/wallet';
+import { initializeChromeLogging } from '@/extension-shared/utils/chrome-logger';
 import eventBus from '@/extension-shared/utils/message/eventBus';
 import { Message } from '@/extension-shared/utils/messaging';
 import storage from '@/extension-shared/utils/storage';
@@ -131,6 +132,9 @@ async function restoreAppState() {
   await remoteConfigService.init();
   await newsService.init();
   // rpcCache.start();
+
+  // Initialize Chrome logging - has to be done after mixpanel is initialized
+  initializeChromeLogging();
 
   appStoreLoaded = true;
 

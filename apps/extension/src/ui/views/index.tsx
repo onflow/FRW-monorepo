@@ -1,10 +1,11 @@
 import { CssBaseline } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Route, HashRouter as Router, Routes, useLocation } from 'react-router';
 
+import { initializeChromeLogging } from '@/extension-shared/utils/chrome-logger';
 import PrivateRoute from '@/ui/components/PrivateRoute';
-import { useWallet } from '@/ui/hooks/use-wallet';
+import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';
 import themeOptions from '@/ui/style/LLTheme';
 import { WalletProvider } from '@/ui/utils/WalletContext';
 
@@ -27,8 +28,15 @@ const theme = createTheme(themeOptions);
 const AppRoutes = () => {
   const location = useLocation();
   const wallet = useWallet();
+  const loaded = useWalletLoaded();
+  useEffect(() => {
+    if (loaded) {
+      // Initialize Chrome logging - has to be done after mixpanel is initialized
+      initializeChromeLogging();
+    }
+  }, [wallet, loaded]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     wallet.trackPageView(location.pathname);
   }, [location, wallet]);
 

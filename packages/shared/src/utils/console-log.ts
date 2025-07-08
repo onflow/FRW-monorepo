@@ -4,13 +4,6 @@ const DEPLOYMENT_ENV = process.env.DEPLOYMENT_ENV;
 const IS_BETA = process.env.IS_BETA === 'true';
 const IS_PROD = process.env.NODE_ENV === 'production' || DEPLOYMENT_ENV === 'production' || IS_BETA;
 
-const extensionId =
-  chrome?.runtime?.id || IS_BETA
-    ? 'lpgbokkinafiehohpkiccnlncmeonkfc'
-    : DEPLOYMENT_ENV === 'production'
-      ? 'hpclkefagolihohboafpheddmmgdffjm'
-      : 'cfiagdgiikmjgfjnlballglniejjgegi';
-
 // Get the formatted stack trace
 const getFormattedStackTrace = () => {
   const error = new Error();
@@ -35,19 +28,32 @@ export type ConsoleMessageType =
   | 'console_debug'
   | 'console_trace';
 
+// Define the tracker function type
+export type ConsoleTracker = (
+  type: ConsoleMessageType,
+  message: string,
+  stack: string,
+  code: number
+) => void;
+
+// Default tracker that does nothing
+const defaultTracker: ConsoleTracker = () => {
+  // No-op by default - consumers can set their own tracker
+};
+
+// Allow custom tracker to be set
+let customTracker: ConsoleTracker | null = null;
+
+export const setConsoleTracker = (tracker: ConsoleTracker) => {
+  customTracker = tracker;
+};
+
 export const trackConsole = (type: ConsoleMessageType, message: string, code: number = 0) => {
   const sanitizedMessage = stripSensitive(message);
-  try {
-    chrome?.runtime?.sendMessage(extensionId, {
-      type,
-      message: sanitizedMessage,
-      stack: getFormattedStackTrace(),
-      code,
-    });
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Could not track console error', error);
-  }
+  const stack = getFormattedStackTrace();
+
+  const tracker = customTracker || defaultTracker;
+  tracker(type, sanitizedMessage, stack, code);
 };
 
 const _consoleLog = (...args: unknown[]) => {
