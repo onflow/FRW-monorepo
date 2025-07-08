@@ -9,7 +9,10 @@ import { isValidAddress, isValidFlowAddress } from '@onflow/flow-wallet-shared/u
 
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { INITIAL_TRANSACTION_STATE, transactionReducer } from '@/ui/reducers/transaction-reducer';
+import {
+  INITIAL_TRANSACTION_STATE,
+  transactionReducer,
+} from '@onflow/flow-wallet-reducers/transaction-reducer';
 
 import SendToCadenceOrEvm from './SendToCadenceOrEvm';
 

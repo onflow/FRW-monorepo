@@ -51,6 +51,7 @@
     "@mui/system": "^7.1.1",
     "@noble/secp256k1": "^1.7.2",
     "@onflow/fcl": "^1.18.0",
+    "@onflow/flow-wallet-reducers": "workspace:*",
     "@onflow/flow-wallet-shared": "workspace:*",
     "@reown/walletkit": "^1.2.7",
     "@trustwallet/wallet-core": "^4.3.6",

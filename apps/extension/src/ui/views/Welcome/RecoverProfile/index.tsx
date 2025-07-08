@@ -16,7 +16,7 @@ import {
   IMPORT_STEPS,
   importProfileReducer,
   INITIAL_IMPORT_STATE,
-} from '@/ui/reducers/import-profile-reducer';
+} from '@onflow/flow-wallet-reducers/import-profile-reducer';
 
 const RecoverProfile = () => {
   const navigate = useNavigate();

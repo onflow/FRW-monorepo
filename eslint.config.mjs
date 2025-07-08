@@ -23,7 +23,7 @@ const config = [
   {
     ...baseConfig,
     ...buildConfig,
-    files: ['*.{js,mjs,ts}', 'scripts/**/*.{js,mjs,ts}'],
+    files: ['*.{js,ts}', 'scripts/**/*.{js,ts}'],
   },
 ];
 

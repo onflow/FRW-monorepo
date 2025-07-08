@@ -97,6 +97,9 @@ importers:
       '@onflow/fcl':
         specifier: ^1.18.0
         version: 1.19.0(@types/react@18.3.23)(google-protobuf@3.21.4)(jiti@2.4.2)(postcss@8.5.6)(react@18.3.1)(ts-node@10.9.2(@swc/core@1.12.11)(@types/node@22.16.0)(typescript@5.8.3))(tsx@4.20.3)(typescript@5.8.3)(zod@3.25.75)
+      '@onflow/flow-wallet-reducers':
+        specifier: workspace:*
+        version: link:../../packages/reducers
       '@onflow/flow-wallet-shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -486,6 +489,31 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
 
+  packages/reducers:
+    dependencies:
+      '@onflow/flow-wallet-shared':
+        specifier: workspace:*
+        version: link:../shared
+      bignumber.js:
+        specifier: ^9.1.2
+        version: 9.3.0
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.2
+        version: 22.16.0
+      '@vitest/coverage-v8':
+        specifier: 3.2.4
+        version: 3.2.4(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.16.0)(jiti@2.4.2)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))
+      tsup:
+        specifier: ^8.3.5
+        version: 8.5.0(@swc/core@1.12.11)(jiti@2.4.2)(postcss@8.5.6)(tsx@4.20.3)(typescript@5.8.3)(yaml@2.8.0)
+      typescript:
+        specifier: ^5.7.2
+        version: 5.8.3
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.16.0)(jiti@2.4.2)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0)
+
   packages/shared:
     dependencies:
       '@onflow/fcl':
@@ -507,12 +535,18 @@ importers:
       '@types/node':
         specifier: ^22.10.2
         version: 22.16.0
+      '@vitest/coverage-v8':
+        specifier: 3.2.4
+        version: 3.2.4(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.16.0)(jiti@2.4.2)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))
       tsup:
         specifier: ^8.3.5
         version: 8.5.0(@swc/core@1.12.11)(jiti@2.4.2)(postcss@8.5.6)(tsx@4.20.3)(typescript@5.8.3)(yaml@2.8.0)
       typescript:
         specifier: ^5.7.2
         version: 5.8.3
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.16.0)(jiti@2.4.2)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0)
 
 packages:
   '@adobe/css-tools@4.4.3':

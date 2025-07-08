@@ -1,7 +1,7 @@
 {
-  "name": "@onflow/flow-wallet-shared",
+  "name": "@onflow/flow-wallet-reducers",
   "version": "0.0.1",
-  "description": "Shared types and utilities for Flow Reference Wallet",
+  "description": "Reducers for Flow Reference Wallet",
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
@@ -24,35 +24,13 @@
       "types": "./src/index.ts",
       "default": "./src/index.ts"
     },
-    "./types": {
-      "types": "./src/types/index.ts",
-      "default": "./src/types/index.ts"
-    },
-    "./types/*": {
-      "types": "./src/types/*.ts",
-      "default": "./src/types/*.ts"
-    },
-    "./constant": {
-      "types": "./src/constant/index.ts",
-      "default": "./src/constant/index.ts"
-    },
-    "./constant/*": {
-      "types": "./src/constant/*.ts",
-      "default": "./src/constant/*.ts"
-    },
-    "./utils": {
-      "types": "./src/utils/index.ts",
-      "default": "./src/utils/index.ts"
-    },
-    "./utils/*": {
-      "types": "./src/utils/*.ts",
-      "default": "./src/utils/*.ts"
+    "./*": {
+      "types": "./src/*.ts",
+      "default": "./src/*.ts"
     }
   },
   "dependencies": {
-    "@onflow/fcl": "^1.13.1",
-    "@onflow/typedefs": "^1.4.0",
-    "@onflow/types": "^1.4.0",
+    "@onflow/flow-wallet-shared": "workspace:*",
     "bignumber.js": "^9.1.2"
   },
   "devDependencies": {
@@ -62,16 +40,13 @@
     "typescript": "^5.7.2",
     "vitest": "^3.2.4"
   },
-  "peerDependencies": {
-    "ethers": "^6.13.4"
-  },
   "engines": {
     "node": ">=22.11.0"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/onflow/FRW-Extension.git",
-    "directory": "packages/shared"
+    "directory": "packages/reducers"
   },
   "license": "MIT"
 }

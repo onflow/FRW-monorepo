@@ -15,7 +15,7 @@ import {
   initRegisterState,
   registerReducer,
   STEPS,
-} from '@/ui/reducers/register-reducer';
+} from '@onflow/flow-wallet-reducers/register-reducer';
 
 const Register = () => {
   const navigate = useNavigate();

@@ -11,7 +11,11 @@
     "allowSyntheticDefaultImports": true,
     "allowJs": true
   },
-  "references": [{ "path": "./apps/extension" }, { "path": "./packages/shared" }],
+  "references": [
+    { "path": "./apps/extension" },
+    { "path": "./packages/shared" },
+    { "path": "./packages/reducers" }
+  ],
   "files": [],
   "include": [],
   "exclude": ["node_modules"]
