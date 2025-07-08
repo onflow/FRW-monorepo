@@ -125,15 +125,10 @@ const RepeatPhrase = ({ handleSwitchTab, mnemonic }) => {
                   <Typography variant="body1" sx={{ padding: '12px 0 12px' }}>
                     {chrome.i18n.getMessage('Select_the_word_at')}
                     <Typography component="span" color="primary.main" display="inline">
-                      {chosenIndex.length >= i ? (
+                      {chosenIndex.length > i ? (
                         ' #' + (chosenIndex[i] + 1) + ' '
                       ) : (
-                        <Skeleton
-                          variant="text"
-                          width={10}
-                          height={10}
-                          sx={{ display: 'inline' }}
-                        />
+                        <Skeleton variant="text" width={100} />
                       )}
                     </Typography>
                   </Typography>
