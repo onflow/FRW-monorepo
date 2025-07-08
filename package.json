@@ -12,7 +12,8 @@
     "lint:fix": "eslint --fix . && pnpm -r lint:fix",
     "format": "prettier .",
     "format:fix": "prettier --write .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "storybook": "pnpm -F flow-wallet-extension build-storybook"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.6.1",

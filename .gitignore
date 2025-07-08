@@ -16,11 +16,11 @@ _raw/manifest.json
 _raw/react-devtools.js
 yarn-error.log
 dist2
-src/core/utils/firebase.config.json
 dist.rar
 dist.7z
+firebase.config.json
 .cursorrules
-/test-results/
+test-results
 playwright-report
 blob-report
 playwright/.cache/
@@ -37,4 +37,4 @@ playwright/.auth
 *storybook.log
 storybook-static
 
-/docs-archive/
+docs-archive
