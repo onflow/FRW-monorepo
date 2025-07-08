@@ -1,5 +1,4 @@
-import { max } from 'lodash';
-import LRU from 'lru-cache';
+import { LRUCache } from 'lru-cache';
 
 import { INTERNAL_REQUEST_ORIGIN } from '@onflow/flow-wallet-shared/constant/domain-constants';
 import { MAINNET_CHAIN_ID } from '@onflow/flow-wallet-shared/types/network-types';
@@ -19,14 +18,14 @@ export interface ConnectedSite {
 }
 
 export type PermissionStore = {
-  dumpCache: ReadonlyArray<LRU.Entry<string, ConnectedSite>>;
+  dumpCache: [string, LRUCache.Entry<ConnectedSite>][];
 };
 
 class PermissionService {
   store: PermissionStore = {
     dumpCache: [],
   };
-  lruCache: LRU<string, ConnectedSite> | undefined;
+  lruCache: LRUCache<string, ConnectedSite> | undefined;
 
   init = async () => {
     this.store = await createPersistStore<PermissionStore>({
@@ -36,19 +35,14 @@ class PermissionService {
       },
     });
 
-    // @todo add a size limit to the LRU cache
-    // We're creating a new LRU cache here with no size limit.
-    // That's the whole point of the LRU cache.
-
-    this.lruCache = new LRU();
-    const cache: ReadonlyArray<LRU.Entry<string, ConnectedSite>> = (this.store.dumpCache || []).map(
-      (item) => ({
-        k: item.k,
-        v: item.v,
-        e: 0,
-      })
-    );
-    this.lruCache.load(cache);
+    // Creating LRU cache with a reasonable size limit
+    this.lruCache = new LRUCache<string, ConnectedSite>({
+      max: 1000, // Maximum number of items to store
+      ttl: 1000 * 60 * 60 * 24 * 30, // 30 days TTL
+    });
+    if (this.store.dumpCache && this.store.dumpCache.length > 0) {
+      this.lruCache.load(this.store.dumpCache);
+    }
   };
 
   sync = () => {
@@ -81,7 +75,7 @@ class PermissionService {
     this.sync();
   };
 
-  touchConnectedSite = (origin) => {
+  touchConnectedSite = (origin: string) => {
     if (!this.lruCache) return;
     if (origin === INTERNAL_REQUEST_ORIGIN) return;
     this.lruCache.get(origin);
@@ -102,7 +96,7 @@ class PermissionService {
     this.sync();
   };
 
-  hasPermission = (origin) => {
+  hasPermission = (origin: string) => {
     if (!this.lruCache) return;
     if (origin === INTERNAL_REQUEST_ORIGIN) return true;
 
@@ -110,18 +104,21 @@ class PermissionService {
   };
 
   setRecentConnectedSites = (sites: ConnectedSite[]) => {
-    this.lruCache?.load(
-      sites.map((item) => ({
-        e: 0,
-        k: item.origin,
-        v: item,
-      }))
-    );
+    if (!this.lruCache) return;
+    const entries: [string, LRUCache.Entry<ConnectedSite>][] = sites.map((item) => [
+      item.origin,
+      {
+        value: item,
+        ttl: 1000 * 60 * 60 * 24 * 30, // 30 days
+        size: 1,
+      },
+    ]);
+    this.lruCache.load(entries);
     this.sync();
   };
 
   getRecentConnectedSites = () => {
-    const sites = this.lruCache?.values() || [];
+    const sites = this.lruCache ? Array.from(this.lruCache.values()) : [];
     const pinnedSites = sites
       .filter((item) => item?.isTop)
       .sort((a, b) => (a.order || 0) - (b.order || 0));
@@ -130,7 +127,7 @@ class PermissionService {
   };
 
   getConnectedSites = () => {
-    return this.lruCache?.values() || [];
+    return this.lruCache ? Array.from(this.lruCache.values()) : [];
   };
 
   getConnectedSite = (key: string) => {
@@ -140,7 +137,11 @@ class PermissionService {
   topConnectedSite = (origin: string, order?: number) => {
     const site = this.getConnectedSite(origin);
     if (!site || !this.lruCache) return;
-    order = order ?? (max(this.getRecentConnectedSites().map((item) => item.order)) || 0) + 1;
+    const orders = this.getRecentConnectedSites()
+      .map((item) => item.order)
+      .filter((o): o is number => o !== undefined);
+    const maxOrder = orders.length > 0 ? Math.max(...orders) : 0;
+    order = order ?? maxOrder + 1;
     this.updateConnectSite(origin, {
       ...site,
       order,
@@ -160,7 +161,7 @@ class PermissionService {
   removeConnectedSite = (origin: string) => {
     if (!this.lruCache) return;
 
-    this.lruCache.del(origin);
+    this.lruCache.delete(origin);
     this.sync();
   };
 

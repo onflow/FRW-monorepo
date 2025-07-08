@@ -125,7 +125,7 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
       new CopyPlugin({
         patterns: [
           {
-            from: 'node_modules/@trustwallet/wallet-core/dist/lib/wallet-core.wasm',
+            from: '../../node_modules/@trustwallet/wallet-core/dist/lib/wallet-core.wasm',
             to: 'wallet-core.wasm',
           },
         ],
@@ -172,7 +172,7 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
       alias: {
         moment: 'dayjs',
         'cross-fetch': 'cross-fetch',
-        '@onflow/flow-wallet-shared': paths.rootResolve('packages/shared/src'),
+        '@onflow/flow-wallet-shared': paths.rootResolve('../../packages/shared/src'),
         '@': paths.rootResolve('src'),
       },
       plugins: [],

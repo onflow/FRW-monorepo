@@ -31,11 +31,11 @@ const config: StorybookConfig = {
       // Specific hook aliases first
       '@onflow/flow-wallet-shared/utils/user-data-access$': path.resolve(
         __dirname,
-        '../packages/shared/src/utils/user-data-access.mock.ts'
+        '../../packages/shared/src/utils/user-data-access.mock.ts'
       ),
       '@onflow/flow-wallet-shared/utils/cache-data-access$': path.resolve(
         __dirname,
-        '../packages/shared/src/utils/cache-data-access.mock.ts'
+        '../../packages/shared/src/utils/cache-data-access.mock.ts'
       ),
       '@/ui/hooks/use-feature-flags$': path.resolve(
         __dirname,
@@ -58,7 +58,7 @@ const config: StorybookConfig = {
 
       // Other aliases
       '@': path.resolve(__dirname, '../src'),
-      '@onflow/flow-wallet-shared': path.resolve(__dirname, '../packages/shared/src'),
+      '@onflow/flow-wallet-shared': path.resolve(__dirname, '../../packages/shared/src'),
       ui: path.resolve(__dirname, '../src/ui'),
       background: path.resolve(__dirname, '../src/background'),
     };

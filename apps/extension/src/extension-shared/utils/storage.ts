@@ -1,4 +1,4 @@
-import { consoleError } from '../../../packages/shared/src/utils/console-log';
+import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
 
 export type StorageChange = chrome.storage.StorageChange;
 export type AreaName = chrome.storage.AreaName;

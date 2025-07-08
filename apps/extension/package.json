@@ -1,5 +1,5 @@
 {
-  "name": "flow-reference-wallet",
+  "name": "flow-wallet-extension",
   "version": "2.9.0",
   "description": "Digital wallet created for everyone.",
   "type": "module",
@@ -43,7 +43,6 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
-    "@onflow/flow-wallet-shared": "workspace:*",
     "@coinbase/cbpay-js": "^1.10.0",
     "@debank/common": "^0.3.60",
     "@emotion/react": "^11.14.0",
@@ -53,6 +52,7 @@
     "@mui/system": "^7.1.1",
     "@noble/secp256k1": "^1.7.2",
     "@onflow/fcl": "^1.18.0",
+    "@onflow/flow-wallet-shared": "workspace:*",
     "@reown/walletkit": "^1.2.7",
     "@trustwallet/wallet-core": "^4.3.6",
     "@tsparticles/engine": "^3.8.1",
@@ -85,7 +85,7 @@
     "koa-compose": "^4.1.0",
     "lodash": "^4.17.21",
     "loglevel": "^1.9.2",
-    "lru-cache": "^6.0.0",
+    "lru-cache": "^11.1.0",
     "nanoid": "^3.3.11",
     "process": "^0.11.10",
     "qr-code-styling": "^1.9.2",
@@ -128,7 +128,6 @@
     "@types/chrome": "^0.0.281",
     "@types/koa-compose": "^3.2.8",
     "@types/lodash": "^4.17.18",
-    "@types/lru-cache": "^5.1.1",
     "@types/node": "^22.15.32",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
@@ -198,5 +197,5 @@
     "node": ">=22.11.0",
     "pnpm": ">=9"
   },
-  "packageManager": "pnpm@10.12.1+sha512.f0dda8580f0ee9481c5c79a1d927b9164f2c478e90992ad268bbb2465a736984391d6333d2c327913578b2804af33474ca554ba29c04a8b13060a717675ae3ac"
+  "packageManager": "pnpm@10.12.1"
 }

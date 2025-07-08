@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "module": "ESNext",
+    "target": "ESNext",
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "strict": true,
+    "resolveJsonModule": true,
+    "jsx": "react",
+    "allowSyntheticDefaultImports": true,
+    "allowJs": true
+  },
+  "references": [{ "path": "./apps/extension" }, { "path": "./packages/shared" }],
+  "files": [],
+  "include": [],
+  "exclude": ["node_modules"]
+}

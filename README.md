@@ -165,7 +165,6 @@ This repository includes tools to analyze high-priority issues across repositori
    ```
 
    Follow the prompts to complete authentication. Make sure to:
-
    - Choose "GitHub.com" for the account
    - Choose "HTTPS" for the protocol
    - Choose "Y" to authenticate Git with your GitHub credentials

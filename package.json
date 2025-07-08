@@ -1,0 +1,43 @@
+{
+  "name": "flow-wallet",
+  "version": "2.9.0",
+  "description": "Flow Wallet monorepo",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm -F flow-wallet-extension build:dev",
+    "build": "pnpm -F flow-wallet-extension build:pro",
+    "test": "pnpm -r test",
+    "lint": "eslint . && pnpm -r lint",
+    "lint:fix": "eslint --fix . && pnpm -r lint:fix",
+    "format": "prettier .",
+    "format:fix": "prettier --write .",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.6.1",
+    "@commitlint/config-conventional": "^19.6.0",
+    "@typescript-eslint/eslint-plugin": "^8.19.0",
+    "@typescript-eslint/parser": "^8.19.0",
+    "eslint": "^9.18.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-import-resolver-alias": "^1.1.2",
+    "eslint-import-resolver-typescript": "^3.7.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-prettier": "^5.2.2",
+    "eslint-plugin-react": "^7.37.3",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-storybook": "^0.11.2",
+    "eslint-plugin-unused-imports": "^4.1.4",
+    "globals": "^15.14.0",
+    "husky": "^9.1.7",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@10.12.1"
+}

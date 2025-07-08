@@ -1,5 +1,6 @@
+import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+
 import Message from './index';
-import { consoleError } from '../../../../packages/shared/src/utils/console-log';
 
 class PortMessage extends Message {
   port: chrome.runtime.Port | null = null;
