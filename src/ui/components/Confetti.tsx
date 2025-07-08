@@ -1,10 +1,13 @@
 import Particles, { initParticlesEngine, type IParticlesProps } from '@tsparticles/react';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { loadFull } from 'tsparticles';
 
 const CONFETTI_OPTIONS: IParticlesProps['options'] = {
+  backgroundMode: {
+    enable: true,
+  },
   fullScreen: {
-    zIndex: 1,
+    zIndex: -1,
   },
   emitters: [
     {
@@ -140,6 +143,8 @@ const CONFETTI_OPTIONS: IParticlesProps['options'] = {
 };
 
 export const useParticlesInit = () => {
+  const [isInitialized, setIsInitialized] = useState(false);
+
   const initRef = useRef<Promise<boolean> | null | boolean>(false);
 
   useEffect(() => {
@@ -147,12 +152,14 @@ export const useParticlesInit = () => {
       initRef.current = initParticlesEngine(async (engine) => {
         await loadFull(engine);
       }).then(() => {
+        setIsInitialized(true);
+
         return true;
       });
     }
   }, []);
 
-  return !!initRef.current;
+  return isInitialized;
 };
 
 // Confetti component
@@ -160,7 +167,6 @@ export const useParticlesInit = () => {
 // It would be a good idea to replace it with react-confetti
 const Confetti = () => {
   const isInitialized = useParticlesInit();
-
   if (!isInitialized) {
     return null;
   }

@@ -72,8 +72,6 @@ const LandingComponents = ({
           transition: 'all .3s ease-in-out',
           borderRadius: '24px',
           boxShadow: '0px 24px 24px rgba(0,0,0,0.36)',
-          overflowY: 'auto',
-          overflowX: 'hidden',
           backgroundColor: COLOR_DARKMODE_WHITE_10pc,
           backdropFilter: 'blur(30px)',
         }}
