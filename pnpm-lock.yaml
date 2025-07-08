@@ -393,9 +393,6 @@ importers:
       html-webpack-plugin:
         specifier: ^5.6.3
         version: 5.6.3(webpack@5.99.9)
-      husky:
-        specifier: ^9.1.7
-        version: 9.1.7
       i18next:
         specifier: ^24.2.3
         version: 24.2.3(typescript@5.8.3)
