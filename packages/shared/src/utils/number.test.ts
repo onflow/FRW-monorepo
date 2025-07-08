@@ -1,12 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import {
-  formatLargeNumber,
   addDotSeparators,
+  convertToIntegerAmount,
+  formatLargeNumber,
   trimDecimalAmount,
   validateAmount,
-  convertToIntegerAmount,
-} from '../number';
+} from './number';
 
 describe('formatLargeNumber', () => {
   it('should format numbers into human readable format', () => {

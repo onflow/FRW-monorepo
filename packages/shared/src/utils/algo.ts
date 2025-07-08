@@ -1,5 +1,3 @@
-import type { HashAlgoString, SignAlgoString } from '@/shared/types/algo-types';
-
 import {
   HASH_ALGO_NUM_KMAC128_BLS_BLS12_381,
   HASH_ALGO_NUM_SHA2_256,
@@ -9,7 +7,8 @@ import {
   SIGN_ALGO_NUM_BLS_BLS12_381,
   SIGN_ALGO_NUM_ECDSA_P256,
   SIGN_ALGO_NUM_ECDSA_secp256k1,
-} from '../constant/algo-constants';
+} from '../constants/algo-constants';
+import type { HashAlgoString, SignAlgoString } from '../types/algo-types';
 
 export function getHashAlgo(value: string): number {
   switch (value) {

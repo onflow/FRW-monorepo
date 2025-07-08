@@ -6,10 +6,10 @@ import { type WalletAddress } from './wallet-types';
 export type TokenType = 'FT' | 'Flow';
 
 // Define the network types
-export type NetworkType = 'Evm' | 'Cadence' | 'Child';
+export type AddressType = 'Evm' | 'Cadence' | 'Child';
 
 // Define the transaction direction
-export type TransactionStateString = `${TokenType}From${NetworkType}To${NetworkType}`;
+export type TransactionStateString = `${TokenType}From${AddressType}To${AddressType}`;
 
 export type TransactionState = {
   // A unique key for the transaction state
@@ -20,14 +20,14 @@ export type TransactionState = {
   // the address of the account we're sending from
   fromAddress: WalletAddress | '';
   // the network type of the root address
-  fromNetwork: NetworkType;
+  fromNetwork: AddressType;
   // the contact of the from address (if it exists)
   fromContact?: Contact;
 
   // the address of the to address
   toAddress: WalletAddress | '';
   // the network type of the to address
-  toNetwork: NetworkType;
+  toNetwork: AddressType;
   // the contact of the to address (if it exists)
   toContact?: Contact;
 
