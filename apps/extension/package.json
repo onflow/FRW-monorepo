@@ -155,7 +155,6 @@
     "husky": "^9.1.7",
     "i18next": "^24.2.3",
     "jszip": "^3.10.1",
-    "lint-staged": "^15.5.2",
     "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",
     "pinst": "^3.0.0",
@@ -189,10 +188,6 @@
   "keywords": [],
   "author": "",
   "license": "LGPL-3.0-or-later",
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx,mjs}": "eslint",
-    "*.{json,js,ts,jsx,tsx,html,md,mdx,mjs}": "prettier --list-different"
-  },
   "engines": {
     "node": ">=22.11.0",
     "pnpm": ">=9"

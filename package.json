@@ -32,8 +32,13 @@
     "eslint-plugin-unused-imports": "^4.1.4",
     "globals": "^15.14.0",
     "husky": "^9.1.7",
+    "lint-staged": "^15.5.2",
     "prettier": "^3.4.2",
     "typescript": "^5.7.2"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,mjs}": "eslint",
+    "*.{json,js,ts,jsx,tsx,html,md,mdx,mjs}": "prettier --list-different"
   },
   "engines": {
     "node": ">=20.0.0",
