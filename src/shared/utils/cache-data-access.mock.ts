@@ -10,3 +10,5 @@ export const addCachedDataListener = fn(actual.addCachedDataListener).mockName(
 export const removeCachedDataListener = fn(actual.removeCachedDataListener).mockName(
   'removeCachedDataListener'
 );
+
+export const triggerRefresh = fn(actual.triggerRefresh).mockName('triggerRefresh');

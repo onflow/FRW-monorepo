@@ -35,6 +35,7 @@ import {
   isValidFlowAddress,
   withPrefix,
 } from '@/shared/utils/address';
+import { getCompatibleHashAlgo } from '@/shared/utils/algo';
 import {
   accountBalanceKey,
   accountBalanceRefreshRegex,
@@ -78,7 +79,6 @@ import {
   getAccountsWithPublicKey,
 } from '../utils/modules/findAddressWithPubKey';
 import {
-  formPubKeyTuple,
   pk2PubKeyTuple,
   seed2PublicPrivateKey,
   seedWithPathAndPhrase2PublicPrivateKey,
@@ -919,26 +919,21 @@ class UserWallet {
    */
 
   /**
-   * Login with the current keyring
-   * This is called immediately after switching unlocking or creating a keyring
-   * That is - the keyring has been switched or created and we need to login with the new pubkey
-   * The problem with this function is that we don't know which pubkey is the one to use
-   * We have to query the indexer to find accounts for each pubkey in the tuple
-   * @param pubKey - The public key to login with
+   * Login with a specific public key and private key
+   * @param publicKey - The public key to login with
+   * @param privateKey - The private key to login with
+   * @param signAlgo - The signing algorithm to use
+   * @param hashAlgo - The hash algorithm to use
    * @param replaceUser - Whether to replace the current user
    * @returns void
    */
   loginWithPublicPrivateKey = async (
-    keyTuple: PublicPrivateKeyTuple,
+    publicKey: string,
+    privateKey: string,
+    signAlgo: number,
     replaceUser = true
   ): Promise<void> => {
-    // Get the network and store before we do anything async
-    const network = this.getNetwork();
-    // Get the public key tuple
-    const pubKeyTuple = formPubKeyTuple(keyTuple);
-
     // Login anonymously if needed
-    // We'll need to do this before we get the accounts
     const app = getApp(process.env.NODE_ENV!);
     const auth = getAuth(app);
     let idToken = await getAuth(app).currentUser?.getIdToken();
@@ -950,25 +945,22 @@ class UserWallet {
         throw new Error('Failed to get idToken - even after signing in anonymously');
       }
     }
-
-    // Find any account with public key information
-    const accounts = await getAccountsByPublicKeyTuple(pubKeyTuple, network);
-
-    // If no accounts are found, then the registration process may not have been completed
-    // Assume the default account key
-    const accountKeyRequest =
-      accounts.length === 0
-        ? defaultAccountKey(pubKeyTuple)
-        : pubKeyAccountToAccountKey(accounts[0]);
-
-    // Get the private key from the private key tuple
-    const privateKey = tupleToPrivateKey(keyTuple, accountKeyRequest.sign_algo);
-
     // Add the user domain tag
     const rightPaddedHexBuffer = (value, pad) =>
       Buffer.from(value.padEnd(pad * 2, 0), 'hex').toString('hex');
     const USER_DOMAIN_TAG = rightPaddedHexBuffer(Buffer.from('FLOW-V0.0-user').toString('hex'), 32);
     const message = USER_DOMAIN_TAG + Buffer.from(idToken, 'utf8').toString('hex');
+
+    // Determine hash algorithm based on signing algorithm (same logic as pubKeySignAlgoToAccountKey)
+    const hashAlgo = getCompatibleHashAlgo(signAlgo);
+
+    // Create account key request directly from the provided key
+    const accountKeyRequest: AccountKeyRequest = {
+      public_key: publicKey,
+      sign_algo: signAlgo,
+      hash_algo: hashAlgo,
+      weight: DEFAULT_WEIGHT,
+    };
 
     // Sign the message
     const realSignature = await signWithKey(
@@ -977,6 +969,7 @@ class UserWallet {
       accountKeyRequest.hash_algo,
       privateKey
     );
+
     // Get the device info
     const deviceInfo = await this.getDeviceInfo();
 
@@ -986,11 +979,47 @@ class UserWallet {
     // Set the current pubkey in userWallet provided we have been able to login
     this.setCurrentPubkey(accountKeyRequest.public_key);
   };
+
+  /**
+   * Login with a public private key tuple (legacy method)
+   * This is called immediately after switching unlocking or creating a keyring
+   * That is - the keyring has been switched or created and we need to login with the new pubkey
+   * The problem with this function is that we don't know which pubkey is the one to use
+   * We have to query the indexer to find accounts for each pubkey in the tuple
+   * @param keyTuple - The public private key tuple to login with
+   * @param replaceUser - Whether to replace the current user
+   * @returns void
+   */
+  loginWithKeyTuple = async (
+    keyTuple: PublicPrivateKeyTuple,
+    replaceUser = true
+  ): Promise<void> => {
+    // Get the network and store before we do anything async
+    const network = this.getNetwork();
+
+    // Search for accounts with either of the public keys in the tuple
+    const accounts = await getAccountsByPublicKeyTuple(keyTuple, network);
+
+    // Determine which public key, sign algo, and hash algo was used from the accounts returned
+    const accountKeyRequest =
+      accounts.length === 0 ? defaultAccountKey(keyTuple) : pubKeyAccountToAccountKey(accounts[0]);
+
+    // Get the corresponding private key from the private key tuple
+    const privateKey = tupleToPrivateKey(keyTuple, accountKeyRequest.sign_algo);
+
+    // Call the new method with the public private key tuple
+    await this.loginWithPublicPrivateKey(
+      accountKeyRequest.public_key,
+      privateKey,
+      accountKeyRequest.sign_algo,
+      replaceUser
+    );
+  };
+
   /**
    * Login with the current keyring
-   * This is called immediately after switching unlocking or creating a keyring
+   * This is called immediately after switching unlocking, creating or importing keyring will use loginWithMnemonic or loginWithPk
    * We also call it if we've been logged out but the wallet is unlocked
-   * @param pubKey - The public key to login with
    * @param replaceUser - Whether to replace the current user
    * @returns The logged in account
    */
@@ -999,11 +1028,12 @@ class UserWallet {
       // If the wallet is locked, we can't sign in
       return;
     }
-    return this.loginWithPublicPrivateKey(
-      // Get the current public private key tuple
-      await keyringService.getCurrentPublicPrivateKeyTuple(),
-      replaceUser
-    );
+
+    const currentSignAlgo = keyringService.getCurrentSignAlgo();
+    const publicKey = await keyringService.getCurrentPublicKey();
+    const privateKey = await keyringService.getCurrentPrivateKey();
+
+    return this.loginWithPublicPrivateKey(publicKey, privateKey, currentSignAlgo, replaceUser);
   };
 
   /**
@@ -1026,7 +1056,7 @@ class UserWallet {
       passphrase
     );
     // Login with the public private key
-    return this.loginWithPublicPrivateKey(publicPrivateKey, replaceUser);
+    return this.loginWithKeyTuple(publicPrivateKey, replaceUser);
   };
 
   /**
@@ -1041,7 +1071,7 @@ class UserWallet {
     // Combine the public key tuple and the private key
     const publicPrivateKey = combinePubPkString(pubKeyTuple, privateKey);
     // Login with the public private key
-    return this.loginWithPublicPrivateKey(publicPrivateKey, replaceUser);
+    return this.loginWithKeyTuple(publicPrivateKey, replaceUser);
   };
 
   /**
