@@ -81,3 +81,14 @@ export function getStringFromSignAlgo(value: number): SignAlgoString {
       return 'unknown'; // Handle unknown values
   }
 }
+
+export function getCompatibleHashAlgo(signAlgo: number): number {
+  switch (signAlgo) {
+    case SIGN_ALGO_NUM_ECDSA_P256:
+      return HASH_ALGO_NUM_SHA3_256;
+    case SIGN_ALGO_NUM_ECDSA_secp256k1:
+      return HASH_ALGO_NUM_SHA2_256;
+    default:
+      throw new Error(`Unsupported sign algorithm: ${signAlgo}`);
+  }
+}
