@@ -1,5 +1,4 @@
 // Re-export all types
-export * from '../../../../src/data-model/data-cache-types';
 export * from './algo-types';
 export * from './coin-types';
 export * from './feature-types';

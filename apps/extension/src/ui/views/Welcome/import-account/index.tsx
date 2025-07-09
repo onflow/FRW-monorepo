@@ -1,4 +1,9 @@
 import { Alert, Box, Snackbar } from '@mui/material';
+import {
+  IMPORT_STEPS,
+  importProfileReducer,
+  INITIAL_IMPORT_STATE,
+} from '@onflow/flow-wallet-reducers/import-profile-reducer';
 import React, { useEffect, useReducer } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -12,11 +17,6 @@ import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
 import PickNickname from '@/ui/components/LandingPages/PickNickname';
 import SetPassword from '@/ui/components/LandingPages/SetPassword';
 import { useWallet } from '@/ui/hooks/use-wallet';
-import {
-  IMPORT_STEPS,
-  importProfileReducer,
-  INITIAL_IMPORT_STATE,
-} from '@onflow/flow-wallet-reducers/import-profile-reducer';
 
 const ImportAccount = () => {
   const navigate = useNavigate();

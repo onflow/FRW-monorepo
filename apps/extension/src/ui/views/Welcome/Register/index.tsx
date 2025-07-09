@@ -1,4 +1,10 @@
 import { Box } from '@mui/material';
+import {
+  INITIAL_REGISTER_STATE,
+  initRegisterState,
+  registerReducer,
+  STEPS,
+} from '@onflow/flow-wallet-reducers/register-reducer';
 import React, { useCallback, useEffect, useReducer } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -10,12 +16,6 @@ import RecoveryPhrase from '@/ui/components/LandingPages/RecoveryPhrase';
 import RepeatPhrase from '@/ui/components/LandingPages/RepeatPhrase';
 import SetPassword from '@/ui/components/LandingPages/SetPassword';
 import { useWallet } from '@/ui/hooks/use-wallet';
-import {
-  INITIAL_REGISTER_STATE,
-  initRegisterState,
-  registerReducer,
-  STEPS,
-} from '@onflow/flow-wallet-reducers/register-reducer';
 
 const Register = () => {
   const navigate = useNavigate();

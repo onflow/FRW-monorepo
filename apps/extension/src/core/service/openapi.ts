@@ -1671,7 +1671,7 @@ export class OpenApiService {
     address: string,
     collectionIdentifier: string,
     limit = 24,
-    offset = 0
+    offset: string | number = 0
   ) => {
     const network = await userWalletService.getNetwork();
     const { data } = await this.sendRequest(
