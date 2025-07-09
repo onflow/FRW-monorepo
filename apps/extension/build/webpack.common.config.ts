@@ -182,6 +182,7 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
         moment: 'dayjs',
         'cross-fetch': 'cross-fetch',
         '@onflow/flow-wallet-shared': paths.rootResolve('../../packages/shared/src'),
+        '@onflow/flow-wallet-reducers': paths.rootResolve('../../packages/reducers/src'),
         '@': paths.rootResolve('src'),
       },
       plugins: [],
