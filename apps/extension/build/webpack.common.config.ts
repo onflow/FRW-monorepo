@@ -128,6 +128,15 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
             from: '../../node_modules/@trustwallet/wallet-core/dist/lib/wallet-core.wasm',
             to: 'wallet-core.wasm',
           },
+          // Add this pattern to copy the manifest.json from _raw to dist
+          {
+            from: '_raw/_locales',
+            to: '_locales',
+          },
+          {
+            from: '_raw/',
+            to: '.',
+          },
         ],
       }),
       new HtmlWebpackPlugin({

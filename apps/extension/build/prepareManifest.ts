@@ -50,8 +50,15 @@ async function fetchDevTools(): Promise<string> {
 }
 
 async function prepare() {
-  const manifestPath = path.resolve(PROJECT_ROOT, '_raw', 'manifest.json');
-  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+  // Determine source manifest based on mode
+  const sourceManifestFile = mode === 'dev' ? 'manifest.dev.json' : 'manifest.pro.json';
+  const sourceManifestPath = path.resolve(PROJECT_ROOT, '_raw', 'manifest', sourceManifestFile);
+  const destinationManifestPath = path.resolve(PROJECT_ROOT, '_raw', 'manifest.json');
+
+  // Copy the correct manifest to the expected location
+  fs.copyFileSync(sourceManifestPath, destinationManifestPath);
+
+  const manifest = JSON.parse(fs.readFileSync(destinationManifestPath, 'utf-8'));
 
   manifest.oauth2 = {
     client_id: process.env.OAUTH2_CLIENT_ID,
@@ -95,7 +102,7 @@ async function prepare() {
     }
   }
 
-  fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+  fs.writeFileSync(destinationManifestPath, JSON.stringify(manifest, null, 2));
 
   return manifest;
 }
