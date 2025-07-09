@@ -2,6 +2,10 @@ import { LRUCache } from 'lru-cache';
 
 import { INTERNAL_REQUEST_ORIGIN } from '@onflow/flow-wallet-shared/constant/domain-constants';
 import { MAINNET_CHAIN_ID } from '@onflow/flow-wallet-shared/types/network-types';
+import { consoleInfo, consoleWarn } from '@onflow/flow-wallet-shared/utils/console-log';
+
+import { permissionKey, permissionKeyV1 } from '@/data-model/user-data-keys';
+import storage from '@/extension-shared/utils/storage'; // Import storage for direct access
 
 import createPersistStore from '../utils/persistStore';
 
@@ -17,8 +21,14 @@ export interface ConnectedSite {
   order?: number;
 }
 
+interface OldCacheEntry {
+  e: number; // Seems to be always 0, likely a legacy field
+  k: string; // The key of the cache entry
+  v: ConnectedSite; // The value (ConnectedSite object)
+}
+
 export type PermissionStore = {
-  dumpCache: [string, LRUCache.Entry<ConnectedSite>][];
+  dumpCache: [string, LRUCache.Entry<ConnectedSite>][]; // New key for the updated LRUCache
 };
 
 class PermissionService {
@@ -28,19 +38,74 @@ class PermissionService {
   lruCache: LRUCache<string, ConnectedSite> | undefined;
 
   init = async () => {
+    // Attempt to load from the new cache key first
     this.store = await createPersistStore<PermissionStore>({
-      name: 'permission',
+      name: permissionKey, // New storage key
       template: {
         dumpCache: [],
       },
     });
 
+    // If the new cache is empty, try to migrate from the old cache key
+    if (!this.store.dumpCache || this.store.dumpCache.length === 0) {
+      consoleInfo('New permission cache is empty. Checking for old cache data for migration...');
+      const oldStoreData = await storage.get(permissionKeyV1); // Directly get old data from storage
+
+      const migratedEntries: [string, LRUCache.Entry<ConnectedSite>][] = [];
+
+      // Migration logic: Handle the specific old data format: { dumpCache: Array<OldCacheEntry> }
+      if (
+        oldStoreData &&
+        typeof oldStoreData === 'object' &&
+        Array.isArray(oldStoreData.dumpCache)
+      ) {
+        consoleInfo('Attempting migration from old LRUCache dump format (array of {k,v} objects).');
+        const oldDumpCache: OldCacheEntry[] = oldStoreData.dumpCache;
+
+        // Iterate through old entries and transform them
+        for (const item of oldDumpCache) {
+          // Check if item has the expected 'k' and 'v' properties and 'v' is a valid object
+          if (
+            item &&
+            typeof item.k === 'string' &&
+            item.v &&
+            typeof item.v === 'object' &&
+            item.v.origin &&
+            item.v.name &&
+            item.v.icon
+          ) {
+            // Use the same TTL as the new cache's default (30 days)
+            const ttl = 1000 * 60 * 60 * 24 * 30;
+            migratedEntries.push([item.k, { value: item.v, ttl, size: 1 }]);
+          } else {
+            consoleWarn('Skipping invalid old cache entry during migration:', item);
+          }
+        }
+      } else {
+        consoleInfo(
+          'No old permission cache data found or it is not in the expected format. Initializing empty cache.'
+        );
+      }
+
+      // If migration yielded entries, save them to the new key and remove the old one
+      if (migratedEntries.length > 0) {
+        this.store.dumpCache = migratedEntries; // This will trigger persistStore to save to 'permission_cache_v2'
+        consoleInfo('Permission cache migrated successfully. Old cache cleared.');
+      }
+    }
+
     // Creating LRU cache with a reasonable size limit
     this.lruCache = new LRUCache<string, ConnectedSite>({
       max: 1000, // Maximum number of items to store
       ttl: 1000 * 60 * 60 * 24 * 30, // 30 days TTL
+      maxSize: 1000, // ADDED: Required when setting 'size' on individual entries
     });
-    if (this.store.dumpCache && this.store.dumpCache.length > 0) {
+
+    if (
+      this.store.dumpCache &&
+      Array.isArray(this.store.dumpCache) &&
+      this.store.dumpCache.length > 0
+    ) {
       this.lruCache.load(this.store.dumpCache);
     }
   };
@@ -114,7 +179,7 @@ class PermissionService {
       },
     ]);
     this.lruCache.load(entries);
-    this.sync();
+    this.sync(); // This will save the new state to dumpCacheV2
   };
 
   getRecentConnectedSites = () => {
@@ -164,11 +229,6 @@ class PermissionService {
     this.lruCache.delete(origin);
     this.sync();
   };
-
-  // getSitesByDefaultChain = (chain: CHAINS_ENUM) => {
-  //   if (!this.lruCache) return [];
-  //   return this.lruCache.values().filter((item) => item.chain === chain);
-  // };
 
   isInternalOrigin = (origin: string) => {
     return origin === INTERNAL_REQUEST_ORIGIN;

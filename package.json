@@ -8,6 +8,7 @@
     "dev": "pnpm -F flow-wallet-extension build:dev",
     "build": "pnpm -F flow-wallet-extension build:pro",
     "test": "pnpm -r test",
+    "test:e2e": "pnpm -r test:e2e",
     "lint": "eslint . && pnpm -r lint",
     "lint:fix": "eslint --fix . && pnpm -r lint:fix",
     "format": "prettier .",

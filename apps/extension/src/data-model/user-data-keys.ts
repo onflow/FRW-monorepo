@@ -91,3 +91,7 @@ export const getReadAndDismissedNewsData = async (): Promise<
 > => {
   return await getUserData<ReadAndDismissedNewsStore>(readAndDismissedNewsKey());
 };
+
+export const permissionKeyV1 = 'permission';
+export const permissionKeyV2 = 'permissionV2';
+export const permissionKey = permissionKeyV2;

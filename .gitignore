@@ -18,19 +18,18 @@ yarn-error.log
 dist2
 dist.rar
 dist.7z
-firebase.config.json
+**/firebase.config.json
 .cursorrules
 test-results
 playwright-report
 blob-report
-playwright/.cache/
+playwright
 dependency-usage.md
 extension-dependencies.md
 emulator-account.pkey
 flow.json
 coverage
 .github-data
-playwright/.auth
 
 **/.claude/settings.local.json
 
