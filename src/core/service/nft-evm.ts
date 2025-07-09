@@ -45,11 +45,15 @@ class EvmNfts {
       return [];
     }
 
+    // For EVM, offset can be a JWT token string
+    // Don't convert to integer if it's a JWT token
+    const offsetParam = offset && !isNaN(Number(offset)) ? parseInt(offset) : offset;
+
     const result = await openapiService.EvmNFTcollectionList(
       address,
       collectionIdentifier,
       50,
-      parseInt(offset) || 0
+      offsetParam as string | number
     );
 
     setCachedData(evmNftCollectionListKey(network, address, collectionIdentifier, offset), result);

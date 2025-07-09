@@ -1,16 +1,16 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { type NFTModelV2, type NftCollection } from '@/shared/types/network-types';
+import { type NftCollection, type NFTModelV2 } from '@/shared/types/network-types';
 import { type NFTCollections, type NFTItem } from '@/shared/types/nft-types';
 import {
+  childAccountNftsKey,
+  type ChildAccountNFTsStore,
+  evmNftCollectionListKey,
+  type EvmNftCollectionListStore,
   evmNftIdsKey,
   type EvmNftIdsStore,
   nftCatalogCollectionsKey,
-  evmNftCollectionListKey,
-  type EvmNftCollectionListStore,
   nftCollectionListKey,
-  childAccountNftsKey,
-  type ChildAccountNFTsStore,
   nftListKey,
 } from '@/shared/utils/cache-data-keys';
 import { consoleError } from '@/shared/utils/console-log';
@@ -81,6 +81,7 @@ export const useNftHook = ({
     allNftsRef.current = [];
     setAllNfts([]);
     hasAttemptedLoadAll.current = false;
+    evmOffset.current = ''; // Reset the EVM offset when collection changes
   }, [ownerAddress, collectionName]);
 
   const evmNextPage = useCallback(
@@ -89,28 +90,34 @@ export const useNftHook = ({
       setLoadingMore(true);
 
       try {
+        // For EVM, offset is a JWT token string returned from the previous API call
         const offsetToUse = evmOffset.current;
 
         const res = await getCollection(ownerAddress, collectionName, offsetToUse);
 
-        setLists((prev) => {
-          // Simple array concat since each page has unique items
-          const newList = [...prev, ...res.nfts];
-          return newList;
-        });
+        if (res.nfts && res.nfts.length > 0) {
+          setLists((prev) => {
+            // Simple array concat since each page has unique items
+            const newList = [...prev, ...res.nfts];
+            return newList;
+          });
+        }
 
-        if (!res.offset) {
+        // Store the next offset (JWT token) for the next page
+        if (res.offset && typeof res.offset === 'string') {
+          evmOffset.current = res.offset;
+        } else {
+          // No more pages available
           setLoadingMore(false);
           return null;
         }
-        evmOffset.current = res.offset;
 
         setPage(currentPage + 1);
         setLoadingMore(false);
 
         // Continue if we got a full page
         return {
-          newItemsCount: res.nfts.length,
+          newItemsCount: res.nfts?.length || 0,
           nextPage: currentPage + 1,
         };
       } catch (error) {

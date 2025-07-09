@@ -69,9 +69,10 @@ const NftEvmCollectionDetail = () => {
   const nftCount = collection_info[2];
 
   const evmNftCollectionList = useEvmNftCollectionList(network, address, collection_name, 0);
-  const getCollection = useCallback(
-    async (ownerAddress, collection, offset) => {
-      return await usewallet.getEvmNftCollectionList(ownerAddress, collection, 50, offset);
+  const getEvmCollection = useCallback(
+    async (ownerAddress: string, collection: string, offset?: string | number) => {
+      // For EVM, the offset can be a JWT token string or undefined for the first call
+      return await usewallet.getEvmNftCollectionList(ownerAddress, collection, 50, offset as any);
     },
     [usewallet]
   );
@@ -96,7 +97,7 @@ const NftEvmCollectionDetail = () => {
     searchTerm,
     setSearchTerm,
   } = useNftHook({
-    getCollection,
+    getCollection: getEvmCollection,
     refreshCollection,
     ownerAddress: address,
     collectionName: collection_name,
