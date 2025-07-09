@@ -183,7 +183,6 @@ registerBatchRefreshListener(
 ```
 
 2. **Parameters Explained**:
-
    - `keyRegex`: The refresh key regex pattern (must include `-refresh` suffix)
    - `batchLoader`: Function that loads data for multiple items at once
    - `getBatchKey`: Function to extract the batch key from regex matches
