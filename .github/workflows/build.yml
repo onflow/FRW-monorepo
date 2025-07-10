@@ -2,6 +2,7 @@ name: Extension Build
 
 on:
   push:
+  workflow_dispatch:
 
 jobs:
   determine-env:
