@@ -23,6 +23,7 @@ const Welcome = () => {
       showSteps={false}
     >
       <Box
+        className="welcomeBox"
         sx={{
           px: '36px',
           background:
@@ -84,6 +85,7 @@ const Welcome = () => {
             component={Link}
             to="/welcome/register"
             size="large"
+            data-testid="create-account-button"
             sx={{
               display: 'flex',
               alignItems: 'center',
@@ -108,6 +110,7 @@ const Welcome = () => {
             component={Link}
             to="/welcome/RecoverProfile"
             size="large"
+            data-testid="recover-account-button"
             sx={{
               display: 'flex',
               width: '297px',

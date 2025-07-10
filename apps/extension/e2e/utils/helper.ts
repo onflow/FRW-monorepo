@@ -145,7 +145,7 @@ export const registerAccount = async ({ page, extensionId, username, password })
   await page.waitForSelector('.welcomeBox', { state: 'visible' });
 
   // Click on register button
-  await page.getByRole('link', { name: 'Create a new wallet' }).click();
+  await page.getByTestId('create-account-button').click();
 
   // Wait for the register page to be fully loaded
   await page.getByText('Your username will be used to').isVisible();
