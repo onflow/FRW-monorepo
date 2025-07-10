@@ -20,6 +20,7 @@ import CancelIcon from '@/ui/components/iconfont/IconClose';
 import IconSwitch from '@/ui/components/iconfont/IconSwitch';
 import SlideRelative from '@/ui/components/SlideRelative';
 import { CurrencyValue } from '@/ui/components/TokenLists/CurrencyValue';
+import TokenAvatar from '@/ui/components/TokenLists/TokenAvatar';
 import { TokenBalance } from '@/ui/components/TokenLists/TokenBalance';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useCoins } from '@/ui/hooks/useCoinHook';
@@ -45,7 +46,14 @@ const TransferAmount = ({
       if (!coins) return null;
       const selectCoin = coins.find((coin) => coin.unit.toLowerCase() === option.toLowerCase());
       if (selectCoin) {
-        return <img src={selectCoin.icon} style={{ height: '24px', width: '24px' }} />;
+        return (
+          <TokenAvatar
+            symbol={selectCoin?.symbol}
+            src={selectCoin?.logoURI}
+            width={24}
+            height={24}
+          />
+        );
       }
       return null;
     },
@@ -182,7 +190,12 @@ const TransferAmount = ({
                   .map((coin) => (
                     <MenuItem value={coin.unit} key={coin.unit} sx={{ zIndex: 2000 }}>
                       <ListItemIcon>
-                        <img src={coin.icon} style={{ height: '24px', width: '24px' }} />
+                        <TokenAvatar
+                          symbol={coin?.symbol}
+                          src={coin?.logoURI}
+                          width={24}
+                          height={24}
+                        />
                       </ListItemIcon>
                       <ListItemText>{coin.coin}</ListItemText>
                     </MenuItem>
@@ -247,9 +260,11 @@ const TransferAmount = ({
           <Typography>≈</Typography>
           {transactionState.fiatOrCoin === 'fiat' ? (
             <>
-              <img
-                src={transactionState.tokenInfo.icon}
-                style={{ height: '18px', width: '18px' }}
+              <TokenAvatar
+                symbol={transactionState.tokenInfo.symbol}
+                src={transactionState.tokenInfo.logoURI}
+                width={18}
+                height={18}
               />{' '}
               <TokenBalance showFull={true} value={amount} />
             </>
