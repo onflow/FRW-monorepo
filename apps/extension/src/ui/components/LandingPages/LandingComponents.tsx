@@ -23,6 +23,7 @@ interface LandingComponentsProps {
   showConfetti: boolean;
   showRegisterHeader: boolean;
   stepCount?: number;
+  showSteps?: boolean;
 }
 
 const LandingComponents = ({
@@ -34,6 +35,7 @@ const LandingComponents = ({
   showConfetti,
   showRegisterHeader,
   stepCount = 6,
+  showSteps = true,
 }: LandingComponentsProps) => (
   <Box
     sx={{
@@ -76,43 +78,45 @@ const LandingComponents = ({
           backdropFilter: 'blur(30px)',
         }}
       >
-        <Box
-          sx={{
-            display: 'flex',
-            padding: '24px 24px 0px 24px',
-          }}
-        >
-          <MobileStepper
-            variant="dots"
-            steps={stepCount}
-            position="static"
-            activeStep={activeIndex}
-            sx={{ flexGrow: 1, backgroundColor: 'transparent' }}
-            backButton={
-              <>
-                {showBackButton && (
-                  <IconButton onClick={onBack} size="small">
-                    <ChevronLeftIcon sx={{ color: COLOR_DARKMODE_WHITE_50pc, fontSize: 27 }} />
-                  </IconButton>
-                )}
-                <Typography
-                  variant="body1"
-                  sx={{
-                    color: '#5E5E5E',
-                    alignSelf: 'end',
-                    lineHeight: '37px',
-                    fontWeight: '700',
-                    fontSize: '16px',
-                  }}
-                >
-                  {chrome.i18n.getMessage('Step_X_of_Y', [`${activeIndex + 1}`, `${stepCount}`])}
-                </Typography>
-                <div style={{ flexGrow: 1 }} />
-              </>
-            }
-            nextButton={<div />}
-          />
-        </Box>
+        {showSteps && (
+          <Box
+            sx={{
+              display: 'flex',
+              padding: '24px 24px 0px 24px',
+            }}
+          >
+            <MobileStepper
+              variant="dots"
+              steps={stepCount}
+              position="static"
+              activeStep={activeIndex}
+              sx={{ flexGrow: 1, backgroundColor: 'transparent' }}
+              backButton={
+                <>
+                  {showBackButton && (
+                    <IconButton onClick={onBack} size="small">
+                      <ChevronLeftIcon sx={{ color: COLOR_DARKMODE_WHITE_50pc, fontSize: 27 }} />
+                    </IconButton>
+                  )}
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      color: '#5E5E5E',
+                      alignSelf: 'end',
+                      lineHeight: '37px',
+                      fontWeight: '700',
+                      fontSize: '16px',
+                    }}
+                  >
+                    {chrome.i18n.getMessage('Step_X_of_Y', [`${activeIndex + 1}`, `${stepCount}`])}
+                  </Typography>
+                  <div style={{ flexGrow: 1 }} />
+                </>
+              }
+              nextButton={<div />}
+            />
+          </Box>
+        )}
 
         <SlideLeftRight direction={direction === 'left' ? 'left' : 'right'} show={true}>
           {children}

@@ -1566,5 +1566,20 @@
   },
   "Contacts": {
     "message": "Contacts"
+  },
+  "I_already_have_an_account": {
+    "message": "I already have an account"
+  },
+  "Get_Started_with_Flow_wallet": {
+    "message": "Get Started with Flow wallet"
+  },
+  "Welcome_to_Flow_Wallet": {
+    "message": "Welcome to Flow Wallet!"
+  },
+  "Create_an_account_to_get_started": {
+    "message": "Create an account to get started."
+  },
+  "By_using_Flow_Wallet_you_agree_to_the": {
+    "message": "By using Flow Wallet you agree to the"
   }
 }
