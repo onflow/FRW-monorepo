@@ -1,4 +1,4 @@
-import { Box, Button, CardMedia, Typography } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import BN from 'bignumber.js';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
@@ -12,6 +12,7 @@ import CancelIcon from '@/ui/components/iconfont/IconClose';
 import { ContactCard } from '@/ui/components/Send/ContactCard';
 import SlideRelative from '@/ui/components/SlideRelative';
 import { CurrencyValue } from '@/ui/components/TokenLists/CurrencyValue';
+import TokenAvatar from '@/ui/components/TokenLists/TokenAvatar';
 import { TokenBalance } from '@/ui/components/TokenLists/TokenBalance';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useWallet } from '@/ui/hooks/use-wallet';
@@ -145,9 +146,11 @@ const SendToCadenceOrEvm = ({
                 </Typography>
 
                 <Box sx={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <CardMedia
-                    sx={{ width: '18px', height: '18px' }}
-                    image={transactionState.tokenInfo.icon}
+                  <TokenAvatar
+                    symbol={transactionState.tokenInfo.symbol}
+                    src={transactionState.tokenInfo.logoURI}
+                    width={18}
+                    height={18}
                   />
                   <Typography
                     variant="body1"
