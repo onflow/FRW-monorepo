@@ -159,6 +159,7 @@ const Welcome = () => {
             <a
               href="https://lilico.app/about/terms"
               target="_blank"
+              rel="noopener noreferrer"
               style={{
                 color: COLOR_GREEN_FLOW_DARKMODE_00EF8B,
                 textDecoration: 'none',
@@ -170,6 +171,7 @@ const Welcome = () => {
             <a
               href="https://lilico.app/about/privacy-policy"
               target="_blank"
+              rel="noopener noreferrer"
               style={{
                 color: COLOR_GREEN_FLOW_DARKMODE_00EF8B,
                 textDecoration: 'none',
