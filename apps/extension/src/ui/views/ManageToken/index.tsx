@@ -298,8 +298,7 @@ const ManageToken = () => {
                 <TokenItem
                   token={token}
                   isLoading={isLoading}
-                  enabled={coins?.map((item) => item.contractName).includes(token.contractName)}
-                  onClick={updateTokenFilter}
+                  enabled={!!coins?.map((item) => item.contractName).includes(token.contractName)}
                   tokenFilter={tokenFilter}
                   updateTokenFilter={updateTokenFilter}
                   key={index}

@@ -15,7 +15,8 @@
     "format": "prettier .",
     "format:fix": "prettier --write .",
     "prepare": "husky",
-    "storybook": "pnpm -F flow-wallet-extension build-storybook"
+    "storybook": "pnpm -F flow-wallet-extension storybook",
+    "build-storybook": "pnpm -F flow-wallet-extension build-storybook"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.6.1",

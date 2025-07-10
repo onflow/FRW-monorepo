@@ -98,7 +98,8 @@ class PermissionService {
     this.lruCache = new LRUCache<string, ConnectedSite>({
       max: 1000, // Maximum number of items to store
       ttl: 1000 * 60 * 60 * 24 * 30, // 30 days TTL
-      maxSize: 1000, // ADDED: Required when setting 'size' on individual entries
+      maxSize: 1000, // Required when setting 'size' on individual entries
+      sizeCalculation: () => 1, // Each entry has size 1
     });
 
     if (

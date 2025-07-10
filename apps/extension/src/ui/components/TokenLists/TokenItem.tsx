@@ -1,5 +1,4 @@
 import {
-  Avatar,
   Box,
   CircularProgress,
   IconButton,
@@ -13,11 +12,18 @@ import {
 import { styled } from '@mui/material/styles';
 import React from 'react';
 
+import {
+  type ExtendedTokenInfo,
+  type TokenFilter,
+} from '@onflow/flow-wallet-shared/types/coin-types';
+
 import VerifiedIcon from '@/ui/assets/svg/verfied-check.svg';
 import IconCheckmark from '@/ui/components/iconfont/IconCheckmark';
 import IconPlus from '@/ui/components/iconfont/IconPlus';
 import { CurrencyValue } from '@/ui/components/TokenLists/CurrencyValue';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
+
+import TokenAvatar from './TokenAvatar';
 
 // Custom styled ListItem to override default secondaryAction styles
 const CustomListItem = styled(ListItem)({
@@ -27,13 +33,22 @@ const CustomListItem = styled(ListItem)({
     transform: 'translateY(-50%)', // Adjust for vertical centering
   },
 });
+type TokenItemProps = {
+  token: ExtendedTokenInfo;
+  isLoading?: boolean;
+  enabled?: boolean;
+  onClick?: (token: ExtendedTokenInfo, enabled: boolean) => void;
+  tokenFilter?: TokenFilter;
+  updateTokenFilter?: (tokenFilter: TokenFilter) => void;
+  showSwitch?: boolean;
+};
 
-const TokenItem = ({
+const TokenItem: React.FC<TokenItemProps> = ({
   token,
-  isLoading,
-  enabled,
-  onClick,
-  tokenFilter,
+  isLoading = false,
+  enabled = false,
+  onClick = undefined,
+  tokenFilter = undefined,
   updateTokenFilter,
   showSwitch = false,
 }) => {
@@ -44,14 +59,19 @@ const TokenItem = ({
     }
   };
 
-  const handleSwitchChange = (event) => {
+  const handleSwitchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (updateTokenFilter) {
       const isChecked = event.target.checked;
       const newFilteredIds = isChecked
-        ? tokenFilter.filteredIds.filter((id) => id !== token.id)
-        : [...tokenFilter.filteredIds, token.id];
+        ? tokenFilter?.filteredIds.filter((id) => id !== token.id)
+        : [...(tokenFilter?.filteredIds ?? []), token.id];
 
-      updateTokenFilter({ ...tokenFilter, filteredIds: newFilteredIds });
+      updateTokenFilter({
+        ...(tokenFilter ?? {}),
+        filteredIds: newFilteredIds ?? [],
+        hideDust: tokenFilter?.hideDust ?? false,
+        hideUnverified: tokenFilter?.hideUnverified ?? false,
+      });
     }
   };
 
@@ -65,15 +85,16 @@ const TokenItem = ({
         borderRadius: '12px',
         border: '1px solid #2A2A2A',
       }}
+      onClick={showSwitch ? undefined : handleClick}
+      disableRipple={showSwitch}
     >
       <CustomListItem
         disablePadding
-        onClick={showSwitch ? undefined : handleClick}
         secondaryAction={
           <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
             {showSwitch ? (
               <Switch
-                checked={!tokenFilter.filteredIds.includes(token.id)}
+                checked={!tokenFilter?.filteredIds?.includes(token.id)}
                 onChange={handleSwitchChange}
                 edge="end"
               />
@@ -92,7 +113,7 @@ const TokenItem = ({
         }
       >
         <ListItemAvatar>
-          <Avatar src={token.logoURI} />
+          <TokenAvatar symbol={token.symbol} src={token.logoURI} width={36} height={36} />
         </ListItemAvatar>
         <ListItemText
           primary={
