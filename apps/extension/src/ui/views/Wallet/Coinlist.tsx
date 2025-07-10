@@ -1,5 +1,4 @@
 import {
-  Avatar,
   IconButton,
   List,
   ListItem,
@@ -22,6 +21,7 @@ import plus from '@/ui/assets/svg/plus.svg';
 import slider from '@/ui/assets/svg/slider.svg';
 import VerifiedIcon from '@/ui/assets/svg/verfied-check.svg';
 import { CurrencyValue } from '@/ui/components/TokenLists/CurrencyValue';
+import TokenAvatar from '@/ui/components/TokenLists/TokenAvatar';
 import { TokenBalance } from '@/ui/components/TokenLists/TokenBalance';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useCoins } from '@/ui/hooks/useCoinHook';
@@ -326,13 +326,12 @@ const CoinList = ({
                 >
                   <ListItemButton sx={{ paddingRight: '0px' }} dense={true}>
                     <ListItemIcon>
-                      {!isLoading ? (
-                        <Avatar src={coin.logoURI} sx={{ width: 36, height: 36 }}>
-                          {coin.symbol?.charAt(0)}
-                        </Avatar>
-                      ) : (
-                        <Skeleton variant="circular" width={36} height={36} />
-                      )}
+                      <TokenAvatar
+                        symbol={isLoading ? undefined : coin.symbol}
+                        src={coin.logoURI}
+                        width={36}
+                        height={36}
+                      />
                     </ListItemIcon>
                     <StartListItemText
                       name={coin.coin}

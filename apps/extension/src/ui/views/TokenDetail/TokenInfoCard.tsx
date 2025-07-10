@@ -19,6 +19,7 @@ import VerifiedIcon from '@/ui/assets/svg/verfied-check.svg';
 import { IconButton } from '@/ui/components/IconButton';
 import IconChevronRight from '@/ui/components/iconfont/IconChevronRight';
 import { CurrencyValue } from '@/ui/components/TokenLists/CurrencyValue';
+import TokenAvatar from '@/ui/components/TokenLists/TokenAvatar';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 
@@ -81,22 +82,12 @@ const TokenInfoCard = ({
     >
       <>
         <Box sx={{ mt: '-12px', display: 'flex', justifyContent: 'flex-start', width: '100%' }}>
-          {extendedTokenInfo?.logoURI ? (
-            <img
-              style={{
-                height: '64px',
-                width: '64px',
-                backgroundColor: '#282828',
-                borderRadius: '32px',
-              }}
-              src={
-                extendedTokenInfo.logoURI ||
-                'https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.1654653399040a61.FlowToken/logo.svg'
-              }
-            ></img>
-          ) : (
-            <Skeleton variant="circular" width={64} height={64} />
-          )}
+          <TokenAvatar
+            symbol={extendedTokenInfo?.symbol}
+            src={extendedTokenInfo?.logoURI}
+            width={64}
+            height={64}
+          />
           <Box sx={{ display: 'flex', alignItems: 'end', flex: 1, minWidth: 0 }}>
             <ButtonBase
               onClick={() => extendedTokenInfo && window.open(getUrl(extendedTokenInfo), '_blank')}
