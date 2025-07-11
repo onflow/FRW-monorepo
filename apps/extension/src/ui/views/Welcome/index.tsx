@@ -14,6 +14,7 @@ import {
   COLOR_GRADIENT_WHITE_FFFFFF_NEGATIVE_09,
 } from '@/ui/style/color';
 import { translateToComponents, createLinkComponent } from '@/ui/utils/i18n-components';
+import { TERMS_OF_SERVICE_URL, PRIVACY_POLICY_URL } from '@onflow/flow-wallet-shared/constant/urls';
 
 const Welcome = () => {
   return (
@@ -162,13 +163,13 @@ const Welcome = () => {
               switch (placeholderKey) {
                 case 'TERMS_LINK':
                   return createLinkComponent(
-                    'https://lilico.app/about/terms',
+                    TERMS_OF_SERVICE_URL,
                     chrome.i18n.getMessage('Terms__of__Service'),
                     COLOR_GREEN_FLOW_DARKMODE_00EF8B
                   );
                 case 'PRIVACY_LINK':
                   return createLinkComponent(
-                    'https://lilico.app/about/privacy-policy',
+                    PRIVACY_POLICY_URL,
                     chrome.i18n.getMessage('Privacy__Policy'),
                     COLOR_GREEN_FLOW_DARKMODE_00EF8B
                   );
