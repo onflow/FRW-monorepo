@@ -1554,5 +1554,20 @@
   },
   "Contacts": {
     "message": "联系人"
+  },
+  "I_already_have_an_account": {
+    "message": "我已经有账户了"
+  },
+  "Get_Started_with_Flow_wallet": {
+    "message": "开始使用Flow钱包"
+  },
+  "Welcome_to_Flow_Wallet": {
+    "message": "欢迎使用Flow钱包！"
+  },
+  "Create_an_account_to_get_started": {
+    "message": "创建一个账户以开始使用。"
+  },
+  "legal_text": {
+    "message": "使用Flow钱包即表示您同意<termslink>服务条款</termslink>和<privacylink>隐私政策</privacylink>"
   }
 }
