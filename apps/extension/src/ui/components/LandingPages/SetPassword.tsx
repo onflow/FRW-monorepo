@@ -15,6 +15,7 @@ import { DEFAULT_PASSWORD } from '@onflow/flow-wallet-shared/utils/default';
 import { BpCheckedIcon, BpUncheked } from '@/ui/assets/icons/CustomCheckboxIcons';
 import { LLSpinner } from '@/ui/components';
 import { PasswordInput } from '@/ui/components/password/PasswordInput';
+import { TERMS_OF_SERVICE_URL, PRIVACY_POLICY_URL } from '@onflow/flow-wallet-shared/constant/urls';
 
 interface SetPasswordProps {
   onSubmit: (password: string) => Promise<void>;
@@ -182,21 +183,11 @@ const TermsCheckbox = ({ onChange }: TermsCheckboxProps) => (
     label={
       <Typography variant="body1" color="text.secondary">
         {chrome.i18n.getMessage('I__agree__to__Lilico') + ' '}
-        <Link
-          underline="none"
-          href="https://lilico.app/about/privacy-policy"
-          target="_blank"
-          color="success.main"
-        >
+        <Link underline="none" href={PRIVACY_POLICY_URL} target="_blank" color="success.main">
           {chrome.i18n.getMessage('Privacy__Policy')}
         </Link>{' '}
         {chrome.i18n.getMessage('and') + ' '}
-        <Link
-          href="https://lilico.app/about/terms"
-          target="_blank"
-          color="success.main"
-          underline="none"
-        >
+        <Link href={TERMS_OF_SERVICE_URL} target="_blank" color="success.main" underline="none">
           {chrome.i18n.getMessage('Terms__of__Service')}
         </Link>{' '}
         .

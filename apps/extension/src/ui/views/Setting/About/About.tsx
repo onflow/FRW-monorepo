@@ -7,6 +7,7 @@ import discord from '@/ui/assets/image/discord.png';
 import lilo from '@/ui/assets/image/lilo.png';
 import X from '@/ui/assets/svg/xLogo.svg';
 import { LLHeader } from '@/ui/components';
+import { TERMS_OF_SERVICE_URL, PRIVACY_POLICY_URL } from '@onflow/flow-wallet-shared/constant/urls';
 const { version } = packageJson;
 const BETA_VERSION = process.env.BETA_VERSION;
 // import '../../Unlock/style.css';
@@ -139,12 +140,12 @@ const About = () => {
         <Box
           sx={{ display: 'flex', gap: '4px', justifyContent: 'center', margin: '30px auto 0 auto' }}
         >
-          <a href="https://lilico.app/about/privacy-policy" target="_blank">
+          <a href={PRIVACY_POLICY_URL} target="_blank">
             <Typography variant="overline" color="text.secondary">
               {chrome.i18n.getMessage('Privacy__Policy')}
             </Typography>
           </a>{' '}
-          <a href="https://lilico.app/about/terms" target="_blank">
+          <a href={TERMS_OF_SERVICE_URL} target="_blank">
             <Typography variant="overline" color="text.secondary">
               {chrome.i18n.getMessage('Terms__of__Service')}
             </Typography>

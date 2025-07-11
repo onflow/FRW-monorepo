@@ -1557,5 +1557,20 @@
   },
   "Contacts": {
     "message": "連絡先"
+  },
+  "I_already_have_an_account": {
+    "message": "アカウントを持っています"
+  },
+  "Get_Started_with_Flow_wallet": {
+    "message": "Flowウォレットを使用してみる"
+  },
+  "Welcome_to_Flow_Wallet": {
+    "message": "Flowウォレットへようこそ！"
+  },
+  "Create_an_account_to_get_started": {
+    "message": "アカウントを作成して開始します。"
+  },
+  "legal_text": {
+    "message": "Flowウォレットを使用することで、<termslink>利用規約</termslink>と<privacylink>プライバシーポリシー</privacylink>に同意します"
   }
 }

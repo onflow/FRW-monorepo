@@ -1,238 +1,230 @@
-import { Typography, Button, CardMedia } from '@mui/material';
+import { Button, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import React from 'react';
 import { Link } from 'react-router';
 
-import appicon from '@/ui/assets/image/appicon.png';
-import create from '@/ui/assets/svg/create.svg';
-import importPng from '@/ui/assets/svg/import.svg';
-import qr from '@/ui/assets/svg/scanIcon.svg';
-import RegisterHeader from '@/ui/components/LandingPages/RegisterHeader';
+import { TERMS_OF_SERVICE_URL, PRIVACY_POLICY_URL } from '@onflow/flow-wallet-shared/constant/urls';
+
+import welcomeWallet from '@/ui/assets/svg/welcomeWallet.svg';
+import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
+import {
+  COLOR_DARK_GRAY_1A1A1A,
+  COLOR_GREEN_FLOW_DARKMODE_00EF8B,
+  COLOR_WHITE_ALPHA_80_FFFFFFCC,
+  COLOR_GRADIENT_GREEN_00EF8B_00,
+  COLOR_GRADIENT_GREEN_00EF8B_20,
+  COLOR_GRADIENT_WHITE_FFFFFF_NEGATIVE_09,
+} from '@/ui/style/color';
+import { translateToComponents } from '@/ui/utils/i18n-components';
 
 const Welcome = () => {
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        width: '100%',
-        height: '100vh',
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}
+    <LandingComponents
+      activeIndex={0}
+      direction="right"
+      showBackButton={false}
+      onBack={() => {}}
+      showConfetti={false}
+      showRegisterHeader={true}
+      showSteps={false}
     >
-      <RegisterHeader />
-
-      <Box sx={{ flexGrow: 1 }} />
-
       <Box
-        className="welcomeBox"
+        className="welcome-box"
         sx={{
-          height: '460px',
-          backgroundColor: 'transparent',
-          marginBottom: '80px',
+          px: '36px',
+          background: `linear-gradient(283deg, ${COLOR_GRADIENT_GREEN_00EF8B_00} 9.38%, ${COLOR_GRADIENT_GREEN_00EF8B_20} 92.07%), ${COLOR_GRADIENT_WHITE_FFFFFF_NEGATIVE_09}`,
+          height: '464px',
+          position: 'relative',
+          borderRadius: '24px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
         }}
       >
         <Box
           sx={{
             display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-end',
-            px: '60px',
-            backgroundColor: '#222',
-            height: '380px',
-            width: '625px',
-            position: 'relative',
-            borderRadius: '24px',
+            flexDirection: 'column',
+            gap: '12px',
           }}
         >
-          <img
-            src={appicon}
-            style={{
-              borderRadius: '24px',
-              margin: '0',
-              width: '368px',
-              position: 'absolute',
-              right: '0px',
-              top: '0px',
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: '700',
+              fontSize: '40px',
+              lineHeight: '120%',
+              width: '363px',
             }}
-          />
+          >
+            {chrome.i18n.getMessage('Get_Started_with_Flow_wallet')}
+          </Typography>
 
-          <Box
+          <Typography
+            sx={{
+              fontWeight: '400',
+              fontSize: '16px',
+              lineHeight: '120%',
+              color: COLOR_WHITE_ALPHA_80_FFFFFFCC,
+            }}
+          >
+            {chrome.i18n.getMessage('Welcome_to_Flow_Wallet')}
+          </Typography>
+
+          <Typography
+            sx={{
+              fontWeight: '400',
+              fontSize: '16px',
+              lineHeight: '120%',
+              color: COLOR_WHITE_ALPHA_80_FFFFFFCC,
+              mt: '-12px',
+              mb: '14px',
+            }}
+          >
+            {chrome.i18n.getMessage('Create_an_account_to_get_started')}
+          </Typography>
+
+          <Button
+            variant="contained"
+            color="primary"
+            component={Link}
+            to="/welcome/register"
+            size="large"
+            data-testid="create-account-button"
             sx={{
               display: 'flex',
-              flexDirection: 'column',
-              marginBottom: '20px',
-              position: 'absolute',
-              left: '-95px',
-              top: '18px',
-              width: '389px',
+              alignItems: 'center',
+              width: '297px',
+              height: '52px',
+              borderRadius: '16px',
+              textTransform: 'capitalize',
             }}
           >
             <Typography
-              variant="h4"
-              sx={{
-                fontWeight: '700',
-                fontSize: '40px',
-                WebkitBackgroundClip: 'text',
-                color: '#fff',
-                lineHeight: '56px',
-              }}
+              variant="subtitle1"
+              sx={{ fontWeight: '600', fontSize: '14px', textAlign: 'center' }}
+              color="primary.contrastText"
             >
-              {chrome.i18n.getMessage('Welcome_to_lilico')}
+              {chrome.i18n.getMessage('Create_a_new_account')}
             </Typography>
+          </Button>
 
+          <Button
+            variant="contained"
+            color="secondary"
+            component={Link}
+            to="/welcome/RecoverProfile"
+            size="large"
+            data-testid="recover-account-button"
+            sx={{
+              display: 'flex',
+              width: '297px',
+              height: '52px',
+              borderRadius: '16px',
+              alignItems: 'center',
+              justifyContent: 'center',
+              textTransform: 'capitalize',
+              border: `1px solid ${COLOR_GREEN_FLOW_DARKMODE_00EF8B}`,
+              backgroundColor: 'transparent',
+              flexDirection: 'column',
+              '&:hover': {
+                backgroundColor: COLOR_GREEN_FLOW_DARKMODE_00EF8B,
+                opacity: 0.8,
+                color: COLOR_DARK_GRAY_1A1A1A,
+              },
+            }}
+          >
             <Typography
-              variant="body1"
+              variant="subtitle1"
               sx={{
-                color: 'text.secondary',
-                pt: '16px',
-                fontSize: '16px',
-                margin: '24px 0 44px',
+                fontWeight: '600',
+                fontSize: '14px',
+                color: '#FFF',
+                textAlign: 'center',
               }}
             >
-              {chrome.i18n.getMessage('A_crypto_wallet_on_Flow')}{' '}
-              <Box component="span" sx={{ color: 'primary.light' }}>
-                {chrome.i18n.getMessage('Explorers_Collectors_and_Gamers')}
-              </Box>
+              {chrome.i18n.getMessage('I_already_have_an_account')}
             </Typography>
+          </Button>
 
-            <Button
-              variant="contained"
-              color="primary"
-              component={Link}
-              to="/welcome/register"
-              size="large"
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'flex-start',
-                width: '332px',
-                height: '48px',
-                borderRadius: '24px',
-                textTransform: 'capitalize',
-                marginBottom: '16px',
-                paddingLeft: '32px',
-              }}
-            >
-              <CardMedia
-                component="img"
-                sx={{ marginRight: '8px', width: '18px', height: '18px' }}
-                image={create}
-              />
-              <Typography
-                variant="subtitle1"
-                sx={{ fontWeight: '600', fontSize: '14px' }}
-                color="primary.contrastText"
-              >
-                {chrome.i18n.getMessage('Create_a_new_wallet')}
-              </Typography>
-            </Button>
-
-            <Button
-              variant="contained"
-              color="secondary"
-              component={Link}
-              to="/welcome/sync"
-              size="large"
-              sx={{
-                display: 'flex',
-                width: '332px',
-                height: '48px',
-                borderRadius: '24px',
-                alignItems: 'center',
-                justifyContent: 'flex-start',
-                textTransform: 'capitalize',
-                border: '1px solid #E5E5E5',
-                marginBottom: '16px',
-                backgroundColor: 'transparent',
-                paddingLeft: '32px',
-              }}
-            >
-              <CardMedia
-                component="img"
-                sx={{ marginRight: '8px', width: '18px', height: '18px' }}
-                image={qr}
-              />
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  fontWeight: '600',
-                  fontSize: '14px',
-                  color: '#FFF',
-                  '&:hover': {
-                    color: 'background.paper',
-                  },
-                }}
-              >
-                {chrome.i18n.getMessage('Sync_with_Mobile_App')}
-              </Typography>
-            </Button>
-
-            <Button
-              variant="contained"
-              color="secondary"
-              component={Link}
-              to="/welcome/RecoverProfile"
-              size="large"
-              sx={{
-                display: 'flex',
-                width: '332px',
-                height: '69px',
-                borderRadius: '120px',
-                alignItems: 'center',
-                justifyContent: 'center',
-                textTransform: 'capitalize',
-                border: '1px solid #E5E5E5',
-                backgroundColor: 'transparent',
-                flexDirection: 'column',
-                paddingLeft: '32px',
-                '&:hover': {
-                  color: 'background.paper',
-                },
-              }}
-            >
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'flex-start',
-                  width: '100%',
-                  alignItems: 'center',
-                }}
-              >
-                <CardMedia
-                  component="img"
-                  sx={{ marginRight: '8px', width: '18px', height: '18px' }}
-                  image={importPng}
-                />
-                <Typography
-                  variant="subtitle1"
-                  sx={{
-                    fontWeight: '600',
-                    fontSize: '14px',
-                    color: '#FFF',
+          <Typography
+            sx={{
+              textAlign: 'center',
+              color: COLOR_WHITE_ALPHA_80_FFFFFFCC,
+              fontSize: '12px',
+              lineHeight: '140%',
+              fontWeight: '400',
+              width: '297px',
+              '& a': {
+                cursor: 'pointer',
+              },
+            }}
+          >
+            {translateToComponents('legal_text', {
+              termslink: ({ children }) => (
+                <Link
+                  to={TERMS_OF_SERVICE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: COLOR_GREEN_FLOW_DARKMODE_00EF8B,
+                    textDecoration: 'none',
                   }}
                 >
-                  {chrome.i18n.getMessage('Import__Wallet')}
-                </Typography>
-              </Box>
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  fontWeight: '400',
-                  fontSize: '12px',
-                  color: 'rgba(255, 255, 255, 0.40)',
-                }}
-              >
-                {chrome.i18n.getMessage('Support_Flow_Wallet_Blocto')}
-              </Typography>
-            </Button>
-          </Box>
+                  {children}
+                </Link>
+              ),
+              privacylink: ({ children }) => (
+                <Link
+                  to={PRIVACY_POLICY_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: COLOR_GREEN_FLOW_DARKMODE_00EF8B,
+                    textDecoration: 'none',
+                  }}
+                >
+                  {children}
+                </Link>
+              ),
+            })}
+          </Typography>
+        </Box>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '62px',
+            padding: '88px 0 61px',
+            alignItems: 'center',
+          }}
+        >
+          <img
+            src={welcomeWallet}
+            style={{
+              borderRadius: '24px',
+              width: '170px',
+            }}
+          />
+
+          <Typography
+            variant="body1"
+            sx={{
+              color: 'text.secondary',
+              pt: '16px',
+              fontSize: '16px',
+              textAlign: 'center',
+              fontWeight: '400',
+            }}
+          >
+            {chrome.i18n.getMessage('A_crypto_wallet_on_Flow')}{' '}
+            <Box component="span" sx={{ color: 'primary.light' }}>
+              {chrome.i18n.getMessage('Explorers_Collectors_and_Gamers')}
+            </Box>
+          </Typography>
         </Box>
       </Box>
-
-      <Box sx={{ flexGrow: 1 }} />
-    </Box>
+    </LandingComponents>
   );
 };
 
