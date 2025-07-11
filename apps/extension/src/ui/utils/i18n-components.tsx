@@ -1,4 +1,6 @@
-import React, { ReactNode } from 'react';
+import React, { type ReactNode } from 'react';
+
+import { consoleWarn } from '@onflow/flow-wallet-shared/utils/console-log';
 
 /**
  * Parse i18n message with XML-like tags and replace them with React components
@@ -13,7 +15,7 @@ export function translateToComponents(
   const text = chrome.i18n.getMessage(messageKey);
 
   if (!text) {
-    console.warn(`Translation key not found: ${messageKey}`);
+    consoleWarn(`Translation key not found: ${messageKey}`);
     return [messageKey];
   }
 
@@ -46,20 +48,3 @@ export function translateToComponents(
 
   return parts;
 }
-
-/**
- * Helper function to create a link component with consistent styling
- */
-export const createLinkComponent = (href: string, children: string, color: string = '#00EF8B') => (
-  <a
-    href={href}
-    target="_blank"
-    rel="noopener noreferrer"
-    style={{
-      color,
-      textDecoration: 'none',
-    }}
-  >
-    {children}
-  </a>
-);
