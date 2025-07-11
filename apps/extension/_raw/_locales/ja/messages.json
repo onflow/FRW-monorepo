@@ -1571,6 +1571,6 @@
     "message": "アカウントを作成して開始します。"
   },
   "By_using_Flow_Wallet_you_agree_to_the": {
-    "message": "Flowウォレットを使用することで、"
+    "message": "Flowウォレットを使用することで、{{TERMS_LINK}}と{{PRIVACY_LINK}}に同意します"
   }
 }

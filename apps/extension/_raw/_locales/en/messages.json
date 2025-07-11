@@ -1580,6 +1580,6 @@
     "message": "Create an account to get started."
   },
   "By_using_Flow_Wallet_you_agree_to_the": {
-    "message": "By using Flow Wallet you agree to the"
+    "message": "By using Flow Wallet you agree to the {{TERMS_LINK}} and {{PRIVACY_LINK}}"
   }
 }

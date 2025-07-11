@@ -9,7 +9,11 @@ import {
   COLOR_DARK_GRAY_1A1A1A,
   COLOR_GREEN_FLOW_DARKMODE_00EF8B,
   COLOR_WHITE_ALPHA_80_FFFFFFCC,
+  COLOR_GRADIENT_GREEN_00EF8B_00,
+  COLOR_GRADIENT_GREEN_00EF8B_20,
+  COLOR_GRADIENT_WHITE_FFFFFF_NEGATIVE_09,
 } from '@/ui/style/color';
+import { translateToComponents, createLinkComponent } from '@/ui/utils/i18n-components';
 
 const Welcome = () => {
   return (
@@ -26,8 +30,7 @@ const Welcome = () => {
         className="welcome-box"
         sx={{
           px: '36px',
-          background:
-            'linear-gradient(283deg, rgba(0, 239, 139, 0.00) 9.38%, rgba(0, 239, 139, 0.20) 92.07%), rgba(255, 255, 255, -0.09)',
+          background: `linear-gradient(283deg, ${COLOR_GRADIENT_GREEN_00EF8B_00} 9.38%, ${COLOR_GRADIENT_GREEN_00EF8B_20} 92.07%), ${COLOR_GRADIENT_WHITE_FFFFFF_NEGATIVE_09}`,
           height: '464px',
           position: 'relative',
           borderRadius: '24px',
@@ -155,30 +158,24 @@ const Welcome = () => {
               },
             }}
           >
-            {chrome.i18n.getMessage('By_using_Flow_Wallet_you_agree_to_the')}{' '}
-            <a
-              href="https://lilico.app/about/terms"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                color: COLOR_GREEN_FLOW_DARKMODE_00EF8B,
-                textDecoration: 'none',
-              }}
-            >
-              {chrome.i18n.getMessage('Terms__of__Service')}
-            </a>{' '}
-            {chrome.i18n.getMessage('and')}{' '}
-            <a
-              href="https://lilico.app/about/privacy-policy"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                color: COLOR_GREEN_FLOW_DARKMODE_00EF8B,
-                textDecoration: 'none',
-              }}
-            >
-              {chrome.i18n.getMessage('Privacy__Policy')}
-            </a>
+            {translateToComponents('By_using_Flow_Wallet_you_agree_to_the', (placeholderKey) => {
+              switch (placeholderKey) {
+                case 'TERMS_LINK':
+                  return createLinkComponent(
+                    'https://lilico.app/about/terms',
+                    chrome.i18n.getMessage('Terms__of__Service'),
+                    COLOR_GREEN_FLOW_DARKMODE_00EF8B
+                  );
+                case 'PRIVACY_LINK':
+                  return createLinkComponent(
+                    'https://lilico.app/about/privacy-policy',
+                    chrome.i18n.getMessage('Privacy__Policy'),
+                    COLOR_GREEN_FLOW_DARKMODE_00EF8B
+                  );
+                default:
+                  return placeholderKey;
+              }
+            })}
           </Typography>
         </Box>
         <Box

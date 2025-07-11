@@ -1571,6 +1571,6 @@
     "message": "Создайте аккаунт, чтобы начать использовать."
   },
   "By_using_Flow_Wallet_you_agree_to_the": {
-    "message": "Используя Flow Wallet, вы соглашаетесь с"
+    "message": "Используя Flow Wallet, вы соглашаетесь с {{TERMS_LINK}} и {{PRIVACY_LINK}}"
   }
 }

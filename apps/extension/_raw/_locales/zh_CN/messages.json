@@ -1568,6 +1568,6 @@
     "message": "创建一个账户以开始使用。"
   },
   "By_using_Flow_Wallet_you_agree_to_the": {
-    "message": "使用Flow钱包即表示您同意"
+    "message": "使用Flow钱包即表示您同意{{TERMS_LINK}}和{{PRIVACY_LINK}}"
   }
 }
