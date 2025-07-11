@@ -1567,7 +1567,7 @@
   "Create_an_account_to_get_started": {
     "message": "创建一个账户以开始使用。"
   },
-  "By_using_Flow_Wallet_you_agree_to_the": {
-    "message": "使用Flow钱包即表示您同意{{TERMS_LINK}}和{{PRIVACY_LINK}}"
+  "legal_text": {
+    "message": "使用Flow钱包即表示您同意<termslink>服务条款</termslink>和<privacylink>隐私政策</privacylink>"
   }
 }

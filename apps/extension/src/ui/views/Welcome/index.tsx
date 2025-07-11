@@ -13,7 +13,7 @@ import {
   COLOR_GRADIENT_GREEN_00EF8B_20,
   COLOR_GRADIENT_WHITE_FFFFFF_NEGATIVE_09,
 } from '@/ui/style/color';
-import { translateToComponents, createLinkComponent } from '@/ui/utils/i18n-components';
+import { translateToComponents } from '@/ui/utils/i18n-components';
 import { TERMS_OF_SERVICE_URL, PRIVACY_POLICY_URL } from '@onflow/flow-wallet-shared/constant/urls';
 
 const Welcome = () => {
@@ -159,23 +159,33 @@ const Welcome = () => {
               },
             }}
           >
-            {translateToComponents('By_using_Flow_Wallet_you_agree_to_the', (placeholderKey) => {
-              switch (placeholderKey) {
-                case 'TERMS_LINK':
-                  return createLinkComponent(
-                    TERMS_OF_SERVICE_URL,
-                    chrome.i18n.getMessage('Terms__of__Service'),
-                    COLOR_GREEN_FLOW_DARKMODE_00EF8B
-                  );
-                case 'PRIVACY_LINK':
-                  return createLinkComponent(
-                    PRIVACY_POLICY_URL,
-                    chrome.i18n.getMessage('Privacy__Policy'),
-                    COLOR_GREEN_FLOW_DARKMODE_00EF8B
-                  );
-                default:
-                  return placeholderKey;
-              }
+            {translateToComponents('legal_text', {
+              termslink: ({ children }) => (
+                <a
+                  href={TERMS_OF_SERVICE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: COLOR_GREEN_FLOW_DARKMODE_00EF8B,
+                    textDecoration: 'none',
+                  }}
+                >
+                  {children}
+                </a>
+              ),
+              privacylink: ({ children }) => (
+                <a
+                  href={PRIVACY_POLICY_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: COLOR_GREEN_FLOW_DARKMODE_00EF8B,
+                    textDecoration: 'none',
+                  }}
+                >
+                  {children}
+                </a>
+              ),
             })}
           </Typography>
         </Box>

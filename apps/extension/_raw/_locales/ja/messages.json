@@ -1570,7 +1570,7 @@
   "Create_an_account_to_get_started": {
     "message": "アカウントを作成して開始します。"
   },
-  "By_using_Flow_Wallet_you_agree_to_the": {
-    "message": "Flowウォレットを使用することで、{{TERMS_LINK}}と{{PRIVACY_LINK}}に同意します"
+  "legal_text": {
+    "message": "Flowウォレットを使用することで、<termslink>利用規約</termslink>と<privacylink>プライバシーポリシー</privacylink>に同意します"
   }
 }

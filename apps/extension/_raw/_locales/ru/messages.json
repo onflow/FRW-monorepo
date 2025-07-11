@@ -1570,7 +1570,7 @@
   "Create_an_account_to_get_started": {
     "message": "Создайте аккаунт, чтобы начать использовать."
   },
-  "By_using_Flow_Wallet_you_agree_to_the": {
-    "message": "Используя Flow Wallet, вы соглашаетесь с {{TERMS_LINK}} и {{PRIVACY_LINK}}"
+  "legal_text": {
+    "message": "Используя Flow Wallet, вы соглашаетесь с <termslink>Условиями использования</termslink> и <privacylink>Политикой конфиденциальности</privacylink>"
   }
 }

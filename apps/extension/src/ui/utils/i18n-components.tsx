@@ -1,36 +1,51 @@
 import React, { ReactNode } from 'react';
 
 /**
- * Utility function to translate text with React component placeholders
- * @param key - The i18n message key
- * @param renderComponent - Function to render a component for a given placeholder key and content
- * @returns ReactNode with translated text and rendered components
+ * Parse i18n message with XML-like tags and replace them with React components
+ * @param messageKey - The i18n message key
+ * @param componentMap - Object mapping tag names to React components
+ * @returns Array of React nodes with components substituted
  */
-export const translateToComponents = (
-  key: string,
-  renderComponent: (placeholderKey: string, content: string) => ReactNode
-): ReactNode => {
-  const message = chrome.i18n.getMessage(key);
+export function translateToComponents(
+  messageKey: string,
+  componentMap: Record<string, React.ComponentType<{ children: ReactNode }>>
+): ReactNode[] {
+  const text = chrome.i18n.getMessage(messageKey);
 
-  if (!message) {
-    console.warn(`Translation key not found: ${key}`);
-    return key;
+  if (!text) {
+    console.warn(`Translation key not found: ${messageKey}`);
+    return [messageKey];
   }
 
-  // Split the message by placeholder patterns like {{TERMS_LINK}} or {{PRIVACY_LINK}}
-  const parts = message.split(/(\{\{[^}]+\}\})/);
+  const parts: ReactNode[] = [];
+  let lastIndex = 0;
+  let key = 0;
 
-  return parts.map((part, index) => {
-    const placeholderMatch = part.match(/^\{\{([^}]+)\}\}$/);
-
-    if (placeholderMatch) {
-      const placeholderKey = placeholderMatch[1];
-      return renderComponent(placeholderKey, part);
+  text.replace(/<(\w+)>(.*?)<\/\1>/g, (match, tag, content, offset) => {
+    // Add text before the tag
+    if (offset > lastIndex) {
+      parts.push(text.slice(lastIndex, offset));
     }
 
-    return part;
+    // Add the component
+    const Component = componentMap[tag];
+    if (Component) {
+      parts.push(<Component key={key++}>{content}</Component>);
+    } else {
+      parts.push(content);
+    }
+
+    lastIndex = offset + match.length;
+    return match;
   });
-};
+
+  // Add remaining text
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+
+  return parts;
+}
 
 /**
  * Helper function to create a link component with consistent styling
