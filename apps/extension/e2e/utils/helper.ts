@@ -142,7 +142,7 @@ export const registerAccount = async ({ page, extensionId, username, password })
   // We're starting from a fresh install, so create a new wallet
   await closeOpenedPages(page);
   // Wait for the welcome page to be fully loaded
-  await page.waitForSelector('.welcomeBox', { state: 'visible' });
+  await page.waitForSelector('.welcome-box', { state: 'visible' });
 
   // Click on register button
   await page.getByTestId('create-account-button').click();

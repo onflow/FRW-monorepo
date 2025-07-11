@@ -23,7 +23,7 @@ const Welcome = () => {
       showSteps={false}
     >
       <Box
-        className="welcomeBox"
+        className="welcome-box"
         sx={{
           px: '36px',
           background:
