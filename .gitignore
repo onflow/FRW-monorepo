@@ -11,6 +11,7 @@ yarn.lock
 .env.dev
 .env.pro
 .env.*
+!.env.example
 dist.zip
 apps/extension/_raw/manifest.json
 apps/extension/_raw/react-devtools.js
