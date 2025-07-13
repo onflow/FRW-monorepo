@@ -6,6 +6,12 @@ fi
 # Get the current branch name
 BRANCH_NAME=$(git symbolic-ref --short HEAD)
 
+# Skip if branch name starts with "cursor". These are created by background agents.
+if [[ $BRANCH_NAME == cursor* ]]; then
+  echo "Skipping commit message for cursor branch"
+  exit 0
+fi
+
 # Extract issue number from branch name (assuming format like "546-feature-remove-background-colour")
 ISSUE_NUMBER=$(echo $BRANCH_NAME | grep -o '^[0-9]\+')
 
