@@ -1,4 +1,4 @@
-import { Button, CardMedia, Typography } from '@mui/material';
+import { Button, CardMedia, Skeleton, Typography } from '@mui/material';
 import React, { useState } from 'react';
 
 interface IconButtonProps {
@@ -7,6 +7,7 @@ interface IconButtonProps {
   showLabel?: boolean;
   icon: string;
   customSx?: object;
+  loading?: boolean;
 }
 
 export const IconButton: React.FC<IconButtonProps> = ({
@@ -15,6 +16,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
   showLabel = true,
   icon,
   customSx = {},
+  loading = false,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -27,42 +29,46 @@ export const IconButton: React.FC<IconButtonProps> = ({
         gap: '4px',
       }}
     >
-      <Button
-        color="info3"
-        variant="contained"
-        data-testid={`${messageKey.toLowerCase()}-button`}
-        sx={{
-          height: '38px',
-          width: '38px',
-          minWidth: '38px',
-          borderRadius: '50%',
-          padding: '0 !important',
-          backgroundColor: '#1DB954', // Spotify-like green color
-          '&:hover': {
-            backgroundColor: '#1ed760', // Slightly lighter green on hover
-          },
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          ...customSx,
-        }}
-        onClick={onClick}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        <CardMedia
+      {loading ? (
+        <Skeleton variant="circular" width={38} height={38} />
+      ) : (
+        <Button
+          color="info3"
+          variant="contained"
+          data-testid={`${messageKey.toLowerCase()}-button`}
           sx={{
-            width: '20px',
-            height: '20px',
-            color: '#FFFFFF', // This will make the SVG white
-            transition: 'color 0.2s ease-in-out',
+            height: '38px',
+            width: '38px',
+            minWidth: '38px',
+            borderRadius: '50%',
+            padding: '0 !important',
+            backgroundColor: '#1DB954', // Spotify-like green color
             '&:hover': {
-              color: '#000000', // This will make the SVG black on hover
+              backgroundColor: '#1ed760', // Slightly lighter green on hover
             },
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            ...customSx,
           }}
-          image={icon}
-        />
-      </Button>
+          onClick={onClick}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
+          <CardMedia
+            sx={{
+              width: '20px',
+              height: '20px',
+              color: '#FFFFFF', // This will make the SVG white
+              transition: 'color 0.2s ease-in-out',
+              '&:hover': {
+                color: '#000000', // This will make the SVG black on hover
+              },
+            }}
+            image={icon}
+          />
+        </Button>
+      )}
       {showLabel && (
         <Typography
           sx={{
@@ -71,7 +77,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
             textAlign: 'center',
           }}
         >
-          {chrome.i18n.getMessage(messageKey)}
+          {loading ? <Skeleton variant="text" width={50} /> : chrome.i18n.getMessage(messageKey)}
         </Typography>
       )}
     </div>

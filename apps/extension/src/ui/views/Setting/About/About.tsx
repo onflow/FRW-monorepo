@@ -2,12 +2,13 @@ import { Box, CardMedia, Typography } from '@mui/material';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
+import { TERMS_OF_SERVICE_URL, PRIVACY_POLICY_URL } from '@onflow/flow-wallet-shared/constant/urls';
+
 import packageJson from '@/../package.json';
 import discord from '@/ui/assets/image/discord.png';
 import lilo from '@/ui/assets/image/lilo.png';
 import X from '@/ui/assets/svg/xLogo.svg';
 import { LLHeader } from '@/ui/components';
-import { TERMS_OF_SERVICE_URL, PRIVACY_POLICY_URL } from '@onflow/flow-wallet-shared/constant/urls';
 const { version } = packageJson;
 const BETA_VERSION = process.env.BETA_VERSION;
 // import '../../Unlock/style.css';

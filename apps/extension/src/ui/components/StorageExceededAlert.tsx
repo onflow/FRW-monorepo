@@ -3,8 +3,6 @@ import { Box, Button, IconButton, Typography } from '@mui/material';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
-import eventBus from '@/extension-shared/utils/message/eventBus';
-
 interface StorageExceededAlertProps {
   open: boolean;
   onClose: () => void;
@@ -15,7 +13,7 @@ const StorageExceededAlert: React.FC<StorageExceededAlertProps> = ({ open, onClo
 
   const handleBuyFlow = () => {
     onClose();
-    eventBus.emit('openOnRamp');
+    navigate('/dashboard?onramp=true');
   };
 
   if (!open) return null;

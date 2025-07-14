@@ -16,6 +16,7 @@ import tips from '@/ui/assets/svg/tips.svg';
 import WarningIcon from '@/ui/assets/svg/warning.svg';
 import SecurityCard from '@/ui/components/SecurityCard';
 import StorageUsageCard from '@/ui/components/StorageUsageCard';
+import { OnRampList } from '@/ui/components/TokenLists/OnRampList';
 import PriceCard from '@/ui/components/TokenLists/PriceCard';
 import { useAllTokenInfo, useEvmCustomTokens } from '@/ui/hooks/use-coin-hooks';
 import { useWallet } from '@/ui/hooks/use-wallet';
@@ -25,7 +26,6 @@ import { useProfiles } from '@/ui/hooks/useProfileHook';
 import ClaimTokenCard from './ClaimTokenCard';
 import StackingCard from './StackingCard';
 import TokenInfoCard from './TokenInfoCard';
-import OnRampList from '../Wallet/OnRampList';
 
 const TokenDetail = () => {
   const usewallet = useWallet();

@@ -38,7 +38,7 @@ export const NetworkIndicator = ({
           fontFamily: 'Inter,sans-serif',
         }}
       >
-        {networkName}
+        {(network === 'testnet' || emulatorMode) && networkName}
       </div>
     </div>
   );

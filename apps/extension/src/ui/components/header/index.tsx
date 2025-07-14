@@ -12,6 +12,7 @@ import { consoleError, consoleWarn } from '@onflow/flow-wallet-shared/utils/cons
 
 import { AccountAvatar } from '@/ui/components/account/account-avatar';
 import IconCopy from '@/ui/components/iconfont/IconCopy';
+import NewsView from '@/ui/components/news/NewsView';
 import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
 import { useNews } from '@/ui/hooks/use-news';
 import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';
@@ -20,10 +21,9 @@ import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useTransferList } from '@/ui/hooks/useTransferListHook';
 import { formatAddress } from '@/ui/utils';
 
-import MenuDrawer from './Components/MenuDrawer';
-import NewsView from './Components/NewsView';
-import Popup from './Components/Popup';
-import SwitchAccountCover from './Components/SwitchAccountCover';
+import MenuDrawer from '../../components/account-menu/MenuDrawer';
+import Popup from '../../components/account-menu/Popup';
+import SwitchAccountCover from '../../components/account-menu/SwitchAccountCover';
 
 const Header = ({ _loading = false }) => {
   const usewallet = useWallet();
