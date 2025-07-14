@@ -25,7 +25,7 @@ import { useProfiles } from '@/ui/hooks/useProfileHook';
 import ClaimTokenCard from './ClaimTokenCard';
 import StackingCard from './StackingCard';
 import TokenInfoCard from './TokenInfoCard';
-import OnRampList from '../Wallet/OnRampList';
+import OnRampList from '../../components/TokenLists/OnRampList';
 
 const TokenDetail = () => {
   const usewallet = useWallet();

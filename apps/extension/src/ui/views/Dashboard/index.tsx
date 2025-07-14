@@ -5,7 +5,7 @@ import { BuildIndicator } from '@/ui/components/build-indicator';
 import { NetworkIndicator } from '@/ui/components/NetworkIndicator';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 
-import WalletTab from '../Wallet';
+import WalletTab from './wallet-tab';
 
 const Dashboard = () => {
   // const [value, setValue] = React.useState('wallet');

@@ -15,12 +15,12 @@ import { useWallet } from '@/ui/hooks/use-wallet';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 
+import OnRampList from '../../components/TokenLists/OnRampList';
+import CoinList from '../CoinList';
 import MoveBoard from '../MoveBoard';
 import NFTTab from '../NFT';
 import NftEvm from '../NftEvm';
-import CoinList from './Coinlist';
-import OnRampList from './OnRampList';
-import TransferList from './TransferList';
+import TransferList from '../TransferList';
 
 const TabPanel = ({
   children,
