@@ -14,7 +14,7 @@ import Coinbase from '@/ui/assets/svg/coinbase-pay.svg';
 import MoonPay from '@/ui/assets/svg/moonpay.svg';
 import { useWallet } from '@/ui/hooks/use-wallet';
 
-const OnRampList = ({ close }) => {
+export const OnRampList = ({ close }) => {
   const wallet = useWallet();
   const [address, setAddress] = useState<string | null>(null);
 
@@ -105,5 +105,3 @@ const OnRampList = ({ close }) => {
     </Box>
   );
 };
-
-export default OnRampList;

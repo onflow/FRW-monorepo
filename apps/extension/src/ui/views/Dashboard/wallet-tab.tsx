@@ -1,26 +1,18 @@
-import { Button, Drawer, Skeleton, Tab, Tabs, Typography } from '@mui/material';
+import { Tab, Tabs, Typography } from '@mui/material';
 import { Box } from '@mui/system';
-import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router';
+import React, { useState } from 'react';
+import { useLocation } from 'react-router';
 
-import eventBus from '@/extension-shared/utils/message/eventBus';
-import { ButtonRow } from '@/ui/components/ButtonRow';
 import CoinsIcon from '@/ui/components/CoinsIcon';
 import { IconActivity, IconNfts } from '@/ui/components/iconfont';
-import LLComingSoon from '@/ui/components/LLComingSoonWarning';
-import { CurrencyValue } from '@/ui/components/TokenLists/CurrencyValue';
-import OnRampList from '@/ui/components/TokenLists/OnRampList';
-import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useChildAccountFt } from '@/ui/hooks/use-coin-hooks';
-import { useWallet } from '@/ui/hooks/use-wallet';
-import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 
 import CoinList from '../CoinList';
-import MoveBoard from '../MoveBoard';
 import NFTTab from '../NFT';
 import NftEvm from '../NftEvm';
 import TransferList from '../TransferList';
+import { DashboardTotal } from './dashboard-total';
 
 const TabPanel = ({
   children,
@@ -44,37 +36,13 @@ const TabPanel = ({
   );
 };
 const WalletTab = ({ network }) => {
-  const wallet = useWallet();
-  const navigate = useNavigate();
   const location = useLocation();
-  const currency = useCurrency();
-  const { balance, coinsLoaded } = useCoins();
-
-  const {
-    currentWallet,
-    parentWallet,
-    activeAccountType,
-    noAddress,
-    registerStatus,
-    canMoveToOtherAccount,
-  } = useProfiles();
-
   // This should be set to 2 if the activity tab is selected and should only be set once
   const [currentTab, setCurrentTab] = useState(location.search.includes('activity') ? 2 : 0);
 
-  const [alertOpen, setAlertOpen] = useState<boolean>(false);
-  const [showOnRamp, setShowOnRamp] = useState(false);
-  const [showMoveBoard, setShowMoveBoard] = useState(false);
+  const { currentWallet, parentWallet, activeAccountType } = useProfiles();
 
   const isMainOrEvmActive = activeAccountType === 'main' || activeAccountType === 'evm';
-  const swapLink =
-    activeAccountType === 'evm'
-      ? network === 'mainnet'
-        ? 'https://swap.kittypunch.xyz/swap'
-        : 'https://swap.kittypunch.xyz/swap'
-      : network === 'mainnet'
-        ? 'https://app.increment.fi/swap'
-        : 'https://demo.increment.fi/swap';
 
   // Note that if any of the arguments are undefined, the hook will return undefined
   // So can safely pass undefined for the childAccount argument if the activeAccountType is not 'child'
@@ -88,25 +56,6 @@ const WalletTab = ({ network }) => {
     setCurrentTab(newValue);
   };
 
-  const goMoveBoard = () => {
-    setShowMoveBoard(true);
-  };
-
-  const handleAddAddress = () => {
-    wallet.createNewAccount(network);
-  };
-
-  useEffect(() => {
-    // Add event listener for opening onramp
-    const onRampHandler = () => setShowOnRamp(true);
-    eventBus.addEventListener('openOnRamp', onRampHandler);
-
-    // Clean up listener
-    return () => {
-      eventBus.removeEventListener('openOnRamp', onRampHandler);
-    };
-  }, []);
-
   return (
     <Box
       test-id="wallet-tab"
@@ -118,65 +67,7 @@ const WalletTab = ({ network }) => {
         height: '100%',
       }}
     >
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          width: '100%',
-          // Fix the height to prevent small pixel scrolling issue
-          height: '151px',
-          backgroundColor: 'background.default',
-        }}
-      >
-        <Typography
-          variant="body1"
-          sx={{
-            py: '8px',
-            alignSelf: 'center',
-            fontSize: '32px',
-            fontWeight: 'semi-bold',
-          }}
-        >
-          {noAddress ? (
-            registerStatus ? (
-              <Typography
-                variant="body1"
-                sx={{
-                  fontSize: '14px',
-                  fontWeight: 500,
-                  color: '#777E90',
-                  height: '51px',
-                  display: 'flex',
-                  alignItems: 'center',
-                }}
-              >
-                {chrome.i18n.getMessage('Address_creation_in_progress')}
-              </Typography>
-            ) : (
-              <Button variant="contained" onClick={handleAddAddress}>
-                {chrome.i18n.getMessage('Add_address')}
-              </Button>
-            )
-          ) : coinsLoaded ? (
-            <CurrencyValue
-              value={balance}
-              currencyCode={currency?.code ?? ''}
-              currencySymbol={currency?.symbol ?? ''}
-            />
-          ) : (
-            <Skeleton variant="text" width={100} />
-          )}
-        </Typography>
-
-        <ButtonRow
-          onSendClick={() => navigate('/dashboard/token/flow/send')}
-          onReceiveClick={() => navigate('/dashboard/wallet/deposit')}
-          onSwapClick={() => window.open(swapLink, '_blank', 'noopener,noreferrer')}
-          onBuyClick={() => setShowOnRamp(true)}
-          onMoveClick={() => goMoveBoard()}
-          canMoveChild={canMoveToOtherAccount ?? false}
-        />
-      </Box>
+      <DashboardTotal network={network} />
       <Tabs
         value={currentTab}
         sx={{
@@ -311,33 +202,6 @@ const WalletTab = ({ network }) => {
           </Box>
         </TabPanel>
       </Box>
-      <LLComingSoon alertOpen={alertOpen} handleCloseIconClicked={() => setAlertOpen(false)} />
-
-      <Drawer
-        anchor="bottom"
-        open={showOnRamp}
-        transitionDuration={300}
-        PaperProps={{
-          sx: {
-            width: '100%',
-            height: '65%',
-            bgcolor: 'background.default',
-            borderRadius: '18px 18px 0px 0px',
-          },
-        }}
-      >
-        <OnRampList close={() => setShowOnRamp(false)} />
-      </Drawer>
-      {showMoveBoard && (
-        <MoveBoard
-          showMoveBoard={showMoveBoard}
-          handleCloseIconClicked={() => setShowMoveBoard(false)}
-          handleCancelBtnClicked={() => setShowMoveBoard(false)}
-          handleAddBtnClicked={() => {
-            setShowMoveBoard(false);
-          }}
-        />
-      )}
     </Box>
   );
 };
