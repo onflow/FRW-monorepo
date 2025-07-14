@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Route, Routes } from 'react-router';
 
+import Header from '@/ui/components/header';
 import PrivateRoute from '@/ui/components/PrivateRoute';
 import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';
 
 import Dashboard from './Dashboard';
-import Header from './Dashboard/Header';
 import Deposit from './Deposit';
 import Enable from './Enable';
 import LinkedCollection from './Linked/LinkedCollection';
