@@ -134,7 +134,7 @@ const Popup = (props: TransferConfirmationProps) => {
               icon={userCircleCheck}
               text={chrome.i18n.getMessage('Recover_an_existing_profile')}
               onClick={async () => await usewallet.lockAdd()}
-              dataTestId="recover-profile-button"
+              dataTestId="import-profile-button"
             />
           )}
         </Box>

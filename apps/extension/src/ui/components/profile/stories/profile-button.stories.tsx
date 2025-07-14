@@ -48,7 +48,7 @@ export const CreateProfile: Story = {
   },
 };
 
-export const RecoverProfile: Story = {
+export const ImportProfile: Story = {
   args: {
     icon: userCircleCheck,
     text: 'Recover an existing profile',

@@ -113,7 +113,7 @@ const Welcome = () => {
             variant="contained"
             color="secondary"
             component={Link}
-            to="/welcome/RecoverProfile"
+            to="/welcome/importprofile"
             size="large"
             data-testid="recover-account-button"
             sx={{

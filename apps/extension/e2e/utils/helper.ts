@@ -264,13 +264,13 @@ export const importAccountBySeedPhrase = async ({
     // We're already logged in so we need to click import profile
     await page.getByTestId('account-menu-button').click();
     await page.getByTestId('switch-profile-button').click();
-    await page.getByTestId('recover-profile-button').click();
+    await page.getByTestId('import-profile-button').click();
     // Close all pages except the current page (the extension opens them in the background)
     await closeOpenedPages(page);
   }
 
   // Go to the import page
-  await page.goto(`chrome-extension://${extensionId}/index.html#/welcome/RecoverProfile`);
+  await page.goto(`chrome-extension://${extensionId}/index.html#/welcome/importprofile`);
 
   // Close all pages except the current page (the extension opens them in the background)
   await closeOpenedPages(page);

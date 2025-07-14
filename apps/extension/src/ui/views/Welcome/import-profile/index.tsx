@@ -18,7 +18,7 @@ import PickNickname from '@/ui/components/LandingPages/PickNickname';
 import SetPassword from '@/ui/components/LandingPages/SetPassword';
 import { useWallet } from '@/ui/hooks/use-wallet';
 
-const RecoverProfile = () => {
+const ImportProfile = () => {
   const navigate = useNavigate();
   const usewallet = useWallet();
 
@@ -128,7 +128,7 @@ const RecoverProfile = () => {
     <LandingComponents
       activeIndex={Object.values(IMPORT_STEPS).indexOf(activeTab)}
       direction="right"
-      showBackButton={activeTab !== IMPORT_STEPS.ALL_SET}
+      showBackButton={activeTab !== IMPORT_STEPS.ALL_SET && activeTab !== IMPORT_STEPS.IMPORT}
       onBack={goBack}
       showConfetti={activeTab === IMPORT_STEPS.ALL_SET}
       showRegisterHeader={true}
@@ -213,4 +213,4 @@ const RecoverProfile = () => {
   );
 };
 
-export default RecoverProfile;
+export default ImportProfile;

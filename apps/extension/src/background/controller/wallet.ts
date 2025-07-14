@@ -686,7 +686,7 @@ export class WalletController extends BaseController {
     await keyringService.lock();
     sessionService.broadcastEvent('accountsChanged', []);
     sessionService.broadcastEvent('lock');
-    openIndexPage('welcome?add=true');
+    openIndexPage('welcome/importprofile?add=true');
   };
 
   // lockadd here
