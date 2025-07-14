@@ -683,8 +683,6 @@ export class WalletController extends BaseController {
 
   // lockadd here
   lockAdd = async () => {
-    sessionService.broadcastEvent('accountsChanged', []);
-    sessionService.broadcastEvent('lock');
     openIndexPage('welcome/importprofile?add=true');
   };
 
