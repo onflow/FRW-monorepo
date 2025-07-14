@@ -319,3 +319,7 @@ The project enforces strict architectural boundaries via ESLint:
    - Reducers can only import from shared package
 
 For detailed architecture documentation, see `docs/architecture-separation.md`
+
+## React Development Guidelines
+
+For React-specific coding standards and best practices, see `docs/react-rules.md`

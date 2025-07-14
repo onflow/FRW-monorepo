@@ -94,6 +94,7 @@ For more details, see:
 - [Architecture Separation](mdc:docs/architecture-separation.md)
 - [Cache Data Model](mdc:docs/cache-data-model.md)
 - [Cadence Scripts Usage Analysis](mdc:docs/cadence-scripts-usage-analysis.md)
+- [React Rules](mdc:docs/react-rules.md)
 - [messages.json](mdc:src/messages.json) for i18n
 - [firebaseConfig.ts](mdc:src/core/utils/firebaseConfig.ts) for remote config
 
@@ -102,6 +103,8 @@ To add new data to the cache:
 1.  **Define Keys**: Add key generation functions and type definitions in `cache-data-keys.ts` or `user-data-keys.ts`.
 2.  **Create Background Loader**: In a background service, use `registerRefreshListener` or `registerBatchRefreshListener` to define how data is fetched.
 3.  **Use Frontend Hooks**: Access data in UI components with the `useCachedData` or `useUserData` hooks.
+4.  **Create Background Loader**: In a background service, use `registerRefreshListener` or `registerBatchRefreshListener` to define how data is fetched.
+5.  **Use Frontend Hooks**: Access data in UI components with the `useCachedData` or `useUserData` hooks.
 
 # Flow Reference Wallet Cursor Rules
 
@@ -195,6 +198,7 @@ For more details, see:
 - [Architecture Separation](mdc:docs/architecture-separation.md)
 - [Cache Data Model](mdc:docs/cache-data-model.md)
 - [Cadence Scripts Usage Analysis](mdc:docs/cadence-scripts-usage-analysis.md)
+- [React Rules](mdc:docs/react-rules.md)
 - [messages.json](mdc:src/messages.json) for i18n
 - [firebaseConfig.ts](mdc:src/core/utils/firebaseConfig.ts) for remote config
 
@@ -203,3 +207,6 @@ To add new data to the cache:
 1.  **Define Keys**: Add key generation functions and type definitions in `cache-data-keys.ts` or `user-data-keys.ts`.
 2.  **Create Background Loader**: In a background service, use `registerRefreshListener` or `registerBatchRefreshListener` to define how data is fetched.
 3.  **Use Frontend Hooks**: Access data in UI components with the `useCachedData` or `useUserData` hooks.
+
+4.  **Create Background Loader**: In a background service, use `registerRefreshListener` or `registerBatchRefreshListener` to define how data is fetched.
+5.  **Use Frontend Hooks**: Access data in UI components with the `useCachedData` or `useUserData` hooks.
