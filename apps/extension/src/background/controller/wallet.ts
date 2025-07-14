@@ -686,7 +686,11 @@ export class WalletController extends BaseController {
     openIndexPage('welcome/importprofile?add=true');
   };
 
-  // lockadd here
+  // create profile here
+  createProfile = async () => {
+    openIndexPage('welcome?add=true');
+  };
+
   resetPwd = async () => {
     // WARNING: This resets absolutely everything
     // This is used when the user forgets their password

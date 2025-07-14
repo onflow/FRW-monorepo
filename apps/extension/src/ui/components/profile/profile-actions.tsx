@@ -15,6 +15,7 @@ const ProfileActions = ({ onActionComplete, showImportButton = true }: ProfileAc
 
   const handleAction = async (action: () => Promise<void>) => {
     await action();
+    //close the popup after new page is opened
     onActionComplete?.();
   };
 
@@ -34,7 +35,7 @@ const ProfileActions = ({ onActionComplete, showImportButton = true }: ProfileAc
       <ProfileButton
         icon={userCirclePlus}
         text={chrome.i18n.getMessage('Create_a_new_profile')}
-        onClick={() => handleAction(async () => await usewallet.lockAdd())}
+        onClick={() => handleAction(async () => await usewallet.createProfile())}
         dataTestId="create-profile-button"
       />
       <div
