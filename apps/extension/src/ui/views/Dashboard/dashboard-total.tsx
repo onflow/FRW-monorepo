@@ -38,8 +38,8 @@ export const DashboardTotal: React.FC<DashboardSummaryProps> = ({
         display: 'flex',
         flexDirection: 'column',
         width: '100%',
+        height: '66px',
         // Fix the height to prevent small pixel scrolling issue
-        height: '151px',
         backgroundColor: 'background.default',
       }}
     >
@@ -56,11 +56,11 @@ export const DashboardTotal: React.FC<DashboardSummaryProps> = ({
           addressCreationInProgress ? (
             <Typography
               variant="body1"
+              component="span"
               sx={{
                 fontSize: '14px',
                 fontWeight: 500,
                 color: '#777E90',
-                height: '51px',
                 display: 'flex',
                 alignItems: 'center',
               }}
@@ -79,7 +79,7 @@ export const DashboardTotal: React.FC<DashboardSummaryProps> = ({
             currencySymbol={currencySymbol ?? ''}
           />
         ) : (
-          <Skeleton variant="text" width={100} />
+          <Skeleton variant="text" width={150} />
         )}
       </Typography>
     </Box>

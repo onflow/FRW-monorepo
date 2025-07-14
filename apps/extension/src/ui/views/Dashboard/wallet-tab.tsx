@@ -12,7 +12,6 @@ import CoinList from '../CoinList';
 import NFTTab from '../NFT';
 import NftEvm from '../NftEvm';
 import TransferList from '../TransferList';
-import { DashboardTotal } from './dashboard-total';
 
 const TabPanel = ({
   children,
@@ -67,7 +66,6 @@ const WalletTab = ({ network }) => {
         height: '100%',
       }}
     >
-      <DashboardTotal network={network} />
       <Tabs
         value={currentTab}
         sx={{
@@ -181,25 +179,17 @@ const WalletTab = ({ network }) => {
       </Tabs>
       <Box sx={{ flex: 1, overflow: 'hidden' }}>
         <TabPanel value={currentTab} index={0}>
-          <Box sx={{ height: '100%', overflow: 'auto' }}>
-            {currentTab === 0 && (
-              <CoinList
-                ableFt={childAccountAccessible ?? []}
-                isActive={isMainOrEvmActive}
-                activeAccountType={activeAccountType}
-              />
-            )}
-          </Box>
+          <CoinList
+            ableFt={childAccountAccessible ?? []}
+            isActive={isMainOrEvmActive}
+            activeAccountType={activeAccountType}
+          />
         </TabPanel>
         <TabPanel value={currentTab} index={1}>
-          <Box sx={{ height: '100%', overflow: 'auto' }}>
-            {currentTab === 1 && (activeAccountType === 'evm' ? <NftEvm /> : <NFTTab />)}
-          </Box>
+          {activeAccountType === 'evm' ? <NftEvm /> : <NFTTab />}
         </TabPanel>
         <TabPanel value={currentTab} index={2}>
-          <Box sx={{ height: '100%', overflow: 'auto' }}>
-            {currentTab === 2 && <TransferList />}
-          </Box>
+          <TransferList />
         </TabPanel>
       </Box>
     </Box>
