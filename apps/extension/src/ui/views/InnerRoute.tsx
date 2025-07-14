@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router';
 
 import Header from '@/ui/components/header';
 import PrivateRoute from '@/ui/components/PrivateRoute';
+import AddCustomEvmToken from '@/ui/components/TokenLists/AddCustomEvmToken';
 import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';
 
 import Dashboard from './Dashboard';
@@ -43,7 +44,6 @@ import Security from './Setting/Security';
 import Switchaccount from './Setting/Switchaccount';
 import TokenDetail from './TokenDetail';
 import TokenList from './TokenList';
-import AddCustomEvmToken from './Wallet/AddCustom/AddCustomEvmToken';
 
 const InnerRoute = () => {
   const [value, setValue] = useState(0);

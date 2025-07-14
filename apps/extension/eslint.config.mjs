@@ -13,6 +13,7 @@ const config = [
       '**/playwright-report/**',
       '**/test-results/**',
       '**/_raw/**',
+      '**/storybook-static/**',
     ],
   },
   // JavaScript and TypeScript files
@@ -138,6 +139,26 @@ const config = [
             {
               group: ['@/background/*', '@/background/**'],
               message: 'UI cannot import from Background layer',
+            },
+          ],
+        },
+      ],
+    },
+  },
+
+  // UI-specific config to block relative imports to components at any depth
+  {
+    files: ['**/src/ui/views/**/*.{js,jsx,ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            // Block all relative imports to components at any depth
+            {
+              group: ['../components/*', '../**/components/*'],
+              message:
+                'Use alias imports (e.g., @/ui/components/...) instead of relative imports for components.',
             },
           ],
         },
