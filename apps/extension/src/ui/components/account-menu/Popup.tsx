@@ -4,11 +4,8 @@ import React, { useState } from 'react';
 import type { UserInfoResponse } from '@onflow/flow-wallet-shared/types/network-types';
 import { type WalletAccount } from '@onflow/flow-wallet-shared/types/wallet-types';
 
-import userCircleCheck from '@/ui/assets/svg/user-circle-check.svg';
-import userCirclePlus from '@/ui/assets/svg/user-circle-plus.svg';
-import { ProfileButton } from '@/ui/components/profile/profile-button';
 import { ProfileItem } from '@/ui/components/profile/profile-item';
-import { useWallet } from '@/ui/hooks/use-wallet';
+import ProfileActions from '@/ui/components/profile/profile-actions';
 
 interface TransferConfirmationProps {
   isConfirmationOpen: boolean;
@@ -23,7 +20,6 @@ interface TransferConfirmationProps {
 }
 
 const Popup = (props: TransferConfirmationProps) => {
-  const usewallet = useWallet();
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
   return (
@@ -103,41 +99,10 @@ const Popup = (props: TransferConfirmationProps) => {
           )}
         </Box>
 
-        <Box
-          sx={{
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexDirection: 'column',
-            display: 'flex',
-            borderRadius: '16px',
-            background: '#2A2A2A',
-            margin: '9px 18px 0',
-            overflow: 'hidden',
-          }}
-        >
-          <ProfileButton
-            icon={userCirclePlus}
-            text={chrome.i18n.getMessage('Create_a_new_profile')}
-            onClick={async () => await usewallet.lockAdd()}
-            dataTestId="create-profile-button"
-          />
-          <Box
-            sx={{
-              height: '1px',
-              width: '100%',
-              padding: '1px 16px',
-              backgroundColor: 'rgba(255, 255, 255, 0.25)',
-            }}
-          />
-          {props.profileIds && (
-            <ProfileButton
-              icon={userCircleCheck}
-              text={chrome.i18n.getMessage('Recover_an_existing_profile')}
-              onClick={async () => await usewallet.lockAdd()}
-              dataTestId="import-profile-button"
-            />
-          )}
-        </Box>
+        <ProfileActions
+          onActionComplete={() => props.handleCancelBtnClicked()}
+          showImportButton={!!props.profileIds}
+        />
       </Box>
 
       <Box sx={{ flexGrow: 1 }} />

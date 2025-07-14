@@ -6,7 +6,6 @@ import { Link } from 'react-router';
 
 import { AboutIcon } from '@/ui/assets/icons/settings/About';
 import { AccountListIcon } from '@/ui/assets/icons/settings/AccountList';
-import { AddProfileIcon } from '@/ui/assets/icons/settings/AddProfile';
 import { AddressIcon } from '@/ui/assets/icons/settings/Address';
 import { BackupIcon } from '@/ui/assets/icons/settings/Backup';
 import { CurrencyIcon } from '@/ui/assets/icons/settings/Currency';
@@ -19,6 +18,8 @@ import { LLHeader } from '@/ui/components';
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import { ProfileItem } from '@/ui/components/profile/profile-item';
 import SettingsListItem from '@/ui/components/settings/setting-list-item';
+import AddProfilePopup from '@/ui/components/settings/add-profile-popup';
+import { AddProfileIcon } from '@/ui/assets/icons/settings/AddProfile';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 // Feature flags
@@ -28,6 +29,7 @@ const SettingTab = () => {
   const usewallet = useWallet();
   const { profileIds, activeAccountType, userInfo } = useProfiles();
   const [isKeyphrase, setIsKeyphrase] = useState(false);
+  const [isAddProfilePopupOpen, setIsAddProfilePopupOpen] = useState(false);
 
   const checkIsKeyphrase = useCallback(async () => {
     const keyrings = await usewallet.checkMnemonics();
@@ -225,13 +227,18 @@ const SettingTab = () => {
           }}
         >
           <SettingsListItem
-            onClick={async () => await usewallet.lockAdd()}
+            onClick={() => setIsAddProfilePopupOpen(true)}
             icon={<AddProfileIcon width={24} height={24} />}
             text={chrome.i18n.getMessage('Add_Profile') || 'Add Profile'}
             endIcon={<IconEnd size={12} />}
           />
         </List>
       </Box>
+
+      <AddProfilePopup
+        isOpen={isAddProfilePopupOpen}
+        onClose={() => setIsAddProfilePopupOpen(false)}
+      />
     </div>
   );
 };
