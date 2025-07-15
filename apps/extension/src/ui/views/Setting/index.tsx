@@ -6,6 +6,7 @@ import { Link } from 'react-router';
 
 import { AboutIcon } from '@/ui/assets/icons/settings/About';
 import { AccountListIcon } from '@/ui/assets/icons/settings/AccountList';
+import { AddProfileIcon } from '@/ui/assets/icons/settings/AddProfile';
 import { AddressIcon } from '@/ui/assets/icons/settings/Address';
 import { BackupIcon } from '@/ui/assets/icons/settings/Backup';
 import { CurrencyIcon } from '@/ui/assets/icons/settings/Currency';
@@ -17,9 +18,8 @@ import { SecurityIcon } from '@/ui/assets/icons/settings/Security';
 import { LLHeader } from '@/ui/components';
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import { ProfileItem } from '@/ui/components/profile/profile-item';
-import SettingsListItem from '@/ui/components/settings/setting-list-item';
 import AddProfilePopup from '@/ui/components/settings/add-profile-popup';
-import { AddProfileIcon } from '@/ui/assets/icons/settings/AddProfile';
+import SettingsListItem from '@/ui/components/settings/setting-list-item';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 // Feature flags

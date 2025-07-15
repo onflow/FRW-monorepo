@@ -4,8 +4,8 @@ import React, { useState } from 'react';
 import type { UserInfoResponse } from '@onflow/flow-wallet-shared/types/network-types';
 import { type WalletAccount } from '@onflow/flow-wallet-shared/types/wallet-types';
 
-import { ProfileItem } from '@/ui/components/profile/profile-item';
 import ProfileActions from '@/ui/components/profile/profile-actions';
+import { ProfileItem } from '@/ui/components/profile/profile-item';
 
 interface TransferConfirmationProps {
   isConfirmationOpen: boolean;
