@@ -13,6 +13,7 @@ If you'd like to contribute to the extension, you'll need to install Node.js, pn
 
 ## Documentation
 
+- [Rules of React](docs/react-rules.md): React coding guidelines
 - [Architecture Separation](docs/architecture-separation.md): Folder structure, import rules, and architectural boundaries enforced by ESLint.
 - [Wallet Account Structure](docs/wallet-account-structure.md): Overview of wallet account organization and structure.
 - [Cache Data Model](docs/cache-data-model.md): Details on the extension's cache data structure and usage.

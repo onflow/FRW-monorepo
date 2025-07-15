@@ -1,99 +1,212 @@
 ---
-description: Flow Wallet Project Guide
-globs:
-alwaysApply: false
+alwaysApply: true
 ---
-# Flow Reference Wallet Project Guide
 
-This document provides a guide to the structure, conventions, and key technologies used in the Flow Reference Wallet Chrome Extension.
+# Flow Reference Wallet Cursor Rules
 
-## Overview
+## 1. Project Structure & Layering
 
-This project is a Web3 wallet for the Flow blockchain, built as a Chrome Extension.
+- **src/background/**: Background scripts, Chrome API, message routing.
+  - **Can import from:** [core](mdc:src/core/), [shared](mdc:packages/shared/)
+  - **Must NOT import from:** [ui](mdc:src/ui/)
+- **src/core/**: Business logic, blockchain, wallet services.
+  - **Can import from:** [shared](mdc:packages/shared/), [background/webapi](mdc:src/background/webapi/)
+  - **Must NOT import from:** [ui](mdc:src/ui/), other background code (except webapi)
+- **src/ui/**: All UI code (React).
+  - **Can import from:** [shared](mdc:packages/shared/), workspace packages
+  - **Must NOT import from:** [core](mdc:src/core/), [background](mdc:src/background/)
+  - **Internal structure:**
+    - **components/**: Reusable UI components.
+      - **Can import from:** hooks, utils, assets, style
+      - **Must NOT import from:** views
+    - **views/**: Page-level components/screens.
+      - **Can import from:** components, hooks, utils, assets, style
+    - **hooks/**: Custom React hooks.
+      - **Can import from:** utils, reducers, shared
+      - **Must NOT import from:** views, components
+      - **Only hooks may initiate background messaging.**
+    - **utils/**: UI-specific utilities.
+      - **Must NOT import from:** other UI subfolders (no cross-imports)
+    - **assets/**: Static assets (images, icons, fonts, SVGs).
+    - **style/**: Theming, CSS, design tokens.
+- **src/content-script/**: Web page integration, dApp provider injection.
+  - **Can import from:** [background](mdc:src/background/), [shared](mdc:packages/shared/)
+- **packages/shared/**: Pure utilities, types, constants.
+  - **Must NOT import from:** any project folders
+- **packages/reducers/**: Pure state reducers, data transformations.
+  - **Can import from:** [shared](mdc:packages/shared/)
+  - **Must NOT import from:** any project folders or other packages
+- **ESLint enforces these boundaries. Violations are critical errors.**
 
-- **Framework**: [React.js](mdc:src/ui/index.tsx)
-- **Language**: [TypeScript](mdc:tsconfig.json)
-- **Styling**: [MUI (Material-UI)](mdc:https:/mui.com)
-- **Routing**: [React Router v5](mdc:package.json)
-- **Testing**: [Vitest](mdc:vitest.config.ts) for unit tests and [Playwright](mdc:playwright.config.ts) for e2e tests.
-- **Component Development**: [Storybook](mdc:.storybook/main.cjs)
+## 2. File Naming & Placement
 
-## Package Management
+- **React Components**: `kebab-case.tsx` (in `components/` or `FRWComponent/`)
+- **Hooks**: `use-kebab-case.ts` (in `hooks/`)
+- **Other TS Files**: `kebab-case.ts`
+- **No `index.ts` or `index.tsx` files** for re-exporting directories unless required by framework.
+- **Shared components**: Place in `src/ui/FRWComponent/` and use PascalCase.
 
-This project uses [pnpm](mdc:https:/pnpm.io) for package management. Always use `pnpm` for installing, removing, or updating packages.
+## 3. Package Management
 
-```bash
-# Install dependencies
-pnpm install
+- Always use `pnpm` for all dependency management and scripts.
 
-# Add a new dependency
-pnpm add <package-name>
-```
+## 4. Data Caching & State
 
-## Scripts
+- Use the custom stale-while-revalidate cache system ([docs/cache-data-model.md](mdc:docs/cache-data-model.md)).
+- **All cache data is set/modified only by the background script.**
+- **All cache keys must be fully self-contained** (no reliance on global state or external context).
+- **Background services must use `registerRefreshListener` or `registerBatchRefreshListener`** for all cacheable data.
+- **Frontend must use hooks like `useCachedData` and `useUserData`** for all data access.
+- **Batch refresh is required for high-frequency or list data** (e.g., balances, NFT lists).
+- UI reads data and requests refreshes via hooks.
+- All cache/user data keys must be self-contained and typed.
 
-- **`pnpm build:dev`**: Creates a development build of the extension in the `dist/` directory.
-- **`pnpm test:run`**: Runs the unit tests using Vitest.
-- **`pnpm test:e2e`**: Runs end-to-end tests using Playwright.
-- **`pnpm lint`**: Lints the codebase with ESLint.
-- **`pnpm format`**: Formats the code with Prettier.
-- **`pnpm storybook`**: Starts the Storybook server for component development.
+## 5. Import/Dependency Rules
 
-## Directory Structure
+- Use path aliases for cross-folder imports (e.g., `@/folder/*`, `@onflow/flow-wallet-shared/*`).
+- Enforce strict layer boundaries (UI ↔ Core/Background separation).
+- Shared and reducers packages must remain pure and isolated (no side effects, no project imports).
 
-- **`src/background`**: Contains the code for the extension's background script.
-    - **`service/`**: Houses various services that run in the background, like API calls and wallet logic. See [userWallet.ts](mdc:src/core/service/userWallet.ts).
-    - **`utils/`**: Utilities for the background script.
-- **`src/ui`**: Contains all UI-related code.
-    - **`components/`**: Shared, reusable React components. See [FRWProfile.tsx](mdc:src/ui/components/FRWProfile.tsx).
-    - **`hooks/`**: Custom React hooks. See [use-account-hooks.ts](mdc:src/ui/hooks/use-account-hooks.ts).
-    - **`views/`**: Components that represent full pages or views within the extension's UI. See [views/Locked/](mdc:src/ui/views/Locked/index.tsx).
-    - **`utils/`**: Utility functions and context providers for the UI.
-- **`src/content-script`**: Code for content scripts that run in the context of web pages.
-- **`src/constant`**: Contains constant definitions.
+## 6. Testing & Type Safety
 
-## File Naming Conventions
+- Use `pnpm test:run` for unit tests ([Vitest](mdc:vitest.config.ts)).
+- Use `pnpm test:e2e` for end-to-end tests ([Playwright](mdc:playwright.config.ts)).
+- All new code must be covered by unit or e2e tests as appropriate.
+- All cache and user data types must be explicitly typed and validated.
+- Reducers and shared packages must remain pure and have no side effects.
+- Use `pnpm lint`, `pnpm format`, and `pnpm storybook` as appropriate.
 
-To maintain consistency, please adhere to the following naming conventions for new files:
+## 7. Messaging & Communication
 
-- **React Components**: `PascalCase.tsx`. (e.g., `MyComponent.tsx`)
-- **Hooks**: `use-kebab-case.ts`. (e.g., `use-my-hook.ts`)
-- **Other TypeScript Files (utils, services, etc.)**: `kebab-case.ts`. (e.g., `my-utility.ts`)
+- UI communicates with background **only via messaging**, never direct imports.
+- **Hooks are the only place in UI allowed to initiate background communication.**
 
-## Key Libraries & Concepts
+## 8. Documentation & References
 
-- **Flow Interaction**: The [@onflow/fcl](mdc:https:/github.com/onflow/fcl-js) library is used for all interactions with the Flow blockchain.
-- **State Management**: The application uses a combination of React hooks, and data cache storage using chrome storage.
-- **Firebase**: Used for remote configuration. See [firebaseConfig.ts](mdc:src/core/utils/firebaseConfig.ts).
-- **Internationalization (i18n)**: Text is managed in [messages.json](mdc:src/messages.json) and loaded via `i18n.ts`.
+- All new architectural or caching patterns must be documented in the appropriate `docs/` file.
+- If in doubt, consult the [Architecture Separation](mdc:docs/architecture-separation.md) and [Cache Data Model](mdc:docs/cache-data-model.md) docs.
+- Challenge assumptions and ask for clarification if a rule or practice seems unclear.
 
-## Data Caching
+---
 
-The extension uses a custom stale-while-revalidate caching system designed for the browser extension environment. This is necessary because the React application state is destroyed each time the popup closes. For a detailed explanation, see the [Cache Data Model Architecture](mdc:docs/cache-data-model.md) documentation.
+For more details, see:
 
-### Core Concepts
-
-- **Two Types of Storage**:
-  1.  **Session Storage (Cache Data)**: For temporary, refreshable data synced between the background script and the UI.
-  2.  **Local Storage (User Data)**: For persistent user settings.
-
-- **Data Flow**:
-    1. The UI requests data using a hook like `useCachedData`.
-    2. If the data is stale or missing, a refresh is triggered in the background service worker.
-    3. The background worker fetches new data, updates the cache using `setCachedData`, and the UI is automatically updated via storage listeners.
-
-- **Key Principle**: Data is **only ever set or modified by the background script**. The UI reads data and requests refreshes.
-
-### Key Files
-
-- **`docs/cache-data-model.md`**: The primary documentation for this system.
-- **`src/shared/utils/cache-data-keys.ts`**: Defines keys and data types for temporary session data.
-- **`src/shared/utils/user-data-keys.ts`**: Defines keys and data types for persistent user data.
-- **`src/core/utils/data-cache.ts`**: Contains the core logic for the caching mechanism, including `registerRefreshListener` for single items and `registerBatchRefreshListener` for batching multiple requests.
-
-### Implementation Pattern
+- [Architecture Separation](mdc:docs/architecture-separation.md)
+- [Cache Data Model](mdc:docs/cache-data-model.md)
+- [Cadence Scripts Usage Analysis](mdc:docs/cadence-scripts-usage-analysis.md)
+- [React Rules](mdc:docs/react-rules.md)
+- [messages.json](mdc:src/messages.json) for i18n
+- [firebaseConfig.ts](mdc:src/core/utils/firebaseConfig.ts) for remote config
 
 To add new data to the cache:
+
 1.  **Define Keys**: Add key generation functions and type definitions in `cache-data-keys.ts` or `user-data-keys.ts`.
 2.  **Create Background Loader**: In a background service, use `registerRefreshListener` or `registerBatchRefreshListener` to define how data is fetched.
 3.  **Use Frontend Hooks**: Access data in UI components with the `useCachedData` or `useUserData` hooks.
+4.  **Create Background Loader**: In a background service, use `registerRefreshListener` or `registerBatchRefreshListener` to define how data is fetched.
+5.  **Use Frontend Hooks**: Access data in UI components with the `useCachedData` or `useUserData` hooks.
+
+# Flow Reference Wallet Cursor Rules
+
+## 1. Project Structure & Layering
+
+- **src/background/**: Background scripts, Chrome API, message routing.
+  - **Can import from:** [core](mdc:src/core/), [shared](mdc:packages/shared/)
+  - **Must NOT import from:** [ui](mdc:src/ui/)
+- **src/core/**: Business logic, blockchain, wallet services.
+  - **Can import from:** [shared](mdc:packages/shared/), [background/webapi](mdc:src/background/webapi/)
+  - **Must NOT import from:** [ui](mdc:src/ui/), other background code (except webapi)
+- **src/ui/**: All UI code (React).
+  - **Can import from:** [shared](mdc:packages/shared/), workspace packages
+  - **Must NOT import from:** [core](mdc:src/core/), [background](mdc:src/background/)
+  - **Internal structure:**
+    - **components/**: Reusable UI components.
+      - **Can import from:** hooks, utils, assets, style
+      - **Must NOT import from:** views
+    - **views/**: Page-level components/screens.
+      - **Can import from:** components, hooks, utils, assets, style
+    - **hooks/**: Custom React hooks.
+      - **Can import from:** utils, reducers, shared
+      - **Must NOT import from:** views, components
+      - **Only hooks may initiate background messaging.**
+    - **utils/**: UI-specific utilities.
+      - **Must NOT import from:** other UI subfolders (no cross-imports)
+    - **assets/**: Static assets (images, icons, fonts, SVGs).
+    - **style/**: Theming, CSS, design tokens.
+- **src/content-script/**: Web page integration, dApp provider injection.
+  - **Can import from:** [background](mdc:src/background/), [shared](mdc:packages/shared/)
+- **packages/shared/**: Pure utilities, types, constants.
+  - **Must NOT import from:** any project folders
+- **packages/reducers/**: Pure state reducers, data transformations.
+  - **Can import from:** [shared](mdc:packages/shared/)
+  - **Must NOT import from:** any project folders or other packages
+- **ESLint enforces these boundaries. Violations are critical errors.**
+
+## 2. File Naming & Placement
+
+- **React Components**: `kebab-case.tsx` (in `components/` or `FRWComponent/`)
+- **Hooks**: `use-kebab-case.ts` (in `hooks/`)
+- **Other TS Files**: `kebab-case.ts`
+- **No `index.ts` or `index.tsx` files** for re-exporting directories unless required by framework.
+- **Shared components**: Place in `src/ui/FRWComponent/` and use PascalCase.
+
+## 3. Package Management
+
+- Always use `pnpm` for all dependency management and scripts.
+
+## 4. Data Caching & State
+
+- Use the custom stale-while-revalidate cache system ([docs/cache-data-model.md](mdc:docs/cache-data-model.md)).
+- **All cache data is set/modified only by the background script.**
+- **All cache keys must be fully self-contained** (no reliance on global state or external context).
+- **Background services must use `registerRefreshListener` or `registerBatchRefreshListener`** for all cacheable data.
+- **Frontend must use hooks like `useCachedData` and `useUserData`** for all data access.
+- **Batch refresh is required for high-frequency or list data** (e.g., balances, NFT lists).
+- UI reads data and requests refreshes via hooks.
+- All cache/user data keys must be self-contained and typed.
+
+## 5. Import/Dependency Rules
+
+- Use path aliases for cross-folder imports (e.g., `@/folder/*`, `@onflow/flow-wallet-shared/*`).
+- Enforce strict layer boundaries (UI ↔ Core/Background separation).
+- Shared and reducers packages must remain pure and isolated (no side effects, no project imports).
+
+## 6. Testing & Type Safety
+
+- Use `pnpm test:run` for unit tests ([Vitest](mdc:vitest.config.ts)).
+- Use `pnpm test:e2e` for end-to-end tests ([Playwright](mdc:playwright.config.ts)).
+- All new code must be covered by unit or e2e tests as appropriate.
+- All cache and user data types must be explicitly typed and validated.
+- Reducers and shared packages must remain pure and have no side effects.
+- Use `pnpm lint`, `pnpm format`, and `pnpm storybook` as appropriate.
+
+## 7. Messaging & Communication
+
+- UI communicates with background **only via messaging**, never direct imports.
+- **Hooks are the only place in UI allowed to initiate background communication.**
+
+## 8. Documentation & References
+
+- All new architectural or caching patterns must be documented in the appropriate `docs/` file.
+- If in doubt, consult the [Architecture Separation](mdc:docs/architecture-separation.md) and [Cache Data Model](mdc:docs/cache-data-model.md) docs.
+- Challenge assumptions and ask for clarification if a rule or practice seems unclear.
+
+---
+
+For more details, see:
+
+- [Architecture Separation](mdc:docs/architecture-separation.md)
+- [Cache Data Model](mdc:docs/cache-data-model.md)
+- [Cadence Scripts Usage Analysis](mdc:docs/cadence-scripts-usage-analysis.md)
+- [React Rules](mdc:docs/react-rules.md)
+- [messages.json](mdc:src/messages.json) for i18n
+- [firebaseConfig.ts](mdc:src/core/utils/firebaseConfig.ts) for remote config
+
+To add new data to the cache:
+
+1.  **Define Keys**: Add key generation functions and type definitions in `cache-data-keys.ts` or `user-data-keys.ts`.
+2.  **Create Background Loader**: In a background service, use `registerRefreshListener` or `registerBatchRefreshListener` to define how data is fetched.
+3.  **Use Frontend Hooks**: Access data in UI components with the `useCachedData` or `useUserData` hooks.
+
+4.  **Create Background Loader**: In a background service, use `registerRefreshListener` or `registerBatchRefreshListener` to define how data is fetched.
+5.  **Use Frontend Hooks**: Access data in UI components with the `useCachedData` or `useUserData` hooks.
