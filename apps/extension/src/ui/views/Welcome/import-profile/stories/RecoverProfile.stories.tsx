@@ -7,11 +7,11 @@ import { fn } from 'storybook/test';
 
 import { useWallet as useWalletMock } from '@/ui/hooks/use-wallet.mock';
 
-import RecoverProfile from '../index';
+import ImportProfile from '../index';
 
 const meta = {
-  title: 'views/Welcome/RecoverProfile',
-  component: RecoverProfile,
+  title: 'views/Welcome/ImportProfile',
+  component: ImportProfile,
   decorators: [
     withRouter,
     (Story) => {
@@ -42,11 +42,11 @@ const meta = {
     layout: 'centered',
   },
   args: {},
-} satisfies Meta<typeof RecoverProfile>;
+} satisfies Meta<typeof ImportProfile>;
 
 export default meta;
 
-type Story = StoryObj<typeof RecoverProfile>;
+type Story = StoryObj<typeof ImportProfile>;
 
 export const Default: Story = {
   args: {},

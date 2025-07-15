@@ -33,19 +33,6 @@ const Register = () => {
     checkWalletStatus();
   }, [usewallet]);
 
-  const loadView = useCallback(async () => {
-    usewallet
-      .getCurrentAccount()
-      .then((res) => {
-        if (res) {
-          navigate('/');
-        }
-      })
-      .catch(() => {
-        return;
-      });
-  }, [usewallet, navigate]);
-
   const submitPassword = useCallback(
     async (newPassword: string) => {
       dispatch({ type: 'SET_PASSWORD', payload: newPassword });
@@ -69,10 +56,6 @@ const Register = () => {
       dispatch({ type: 'GO_BACK' });
     }
   };
-
-  useEffect(() => {
-    loadView();
-  }, [loadView]);
 
   return (
     <LandingComponents

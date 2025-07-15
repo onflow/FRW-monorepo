@@ -48,10 +48,10 @@ export const CreateProfile: Story = {
   },
 };
 
-export const RecoverProfile: Story = {
+export const ImportProfile: Story = {
   args: {
     icon: userCircleCheck,
-    text: 'Recover an existing profile',
-    onClick: async () => consoleLog('Recover profile clicked'),
+    text: 'Import an existing profile',
+    onClick: async () => consoleLog('Import profile clicked'),
   },
 };

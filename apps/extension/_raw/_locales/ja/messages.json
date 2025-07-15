@@ -1502,7 +1502,7 @@
     "message": "プロファイル"
   },
   "Recover_an_existing_profile": {
-    "message": "既存のプロファイルを復元"
+    "message": "既存のプロファイルをインポート"
   },
   "Create_a_new_profile": {
     "message": "新しいプロファイルを作成"

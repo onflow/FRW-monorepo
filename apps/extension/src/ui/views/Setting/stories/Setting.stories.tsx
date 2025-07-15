@@ -88,7 +88,8 @@ export const Default: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Default settings page.',
+        story:
+          'Default settings page with Add Profile button that opens a popup with Create/Import options.',
       },
     },
   },
@@ -135,7 +136,8 @@ export const WithProfile: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Settings page with a user profile displayed at the top.',
+        story:
+          'Settings page with profile switching section and Add Profile button that opens a popup.',
       },
     },
   },

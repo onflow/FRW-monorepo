@@ -683,13 +683,14 @@ export class WalletController extends BaseController {
 
   // lockadd here
   lockAdd = async () => {
-    await keyringService.lock();
-    sessionService.broadcastEvent('accountsChanged', []);
-    sessionService.broadcastEvent('lock');
-    openIndexPage('welcome?add=true');
+    openIndexPage('welcome/importprofile?add=true');
   };
 
-  // lockadd here
+  // create profile here
+  createProfile = async () => {
+    openIndexPage('welcome/register?add=true');
+  };
+
   resetPwd = async () => {
     // WARNING: This resets absolutely everything
     // This is used when the user forgets their password

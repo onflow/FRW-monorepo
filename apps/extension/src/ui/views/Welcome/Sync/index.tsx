@@ -80,24 +80,6 @@ const Sync = () => {
     checkWalletStatus();
   }, [usewallet]);
 
-  // Check if user is already logged in and redirect if necessary
-  const loadView = useCallback(async () => {
-    usewallet
-      .getCurrentAccount()
-      .then((res) => {
-        if (res) {
-          navigate('/');
-        }
-      })
-      .catch(() => {
-        return;
-      });
-  }, [usewallet, navigate]);
-
-  useEffect(() => {
-    loadView();
-  }, [loadView]);
-
   // 1. Initial Setup Functions - These are created once when component mounts
   /**
    * Get the account key from the mnemonic
