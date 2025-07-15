@@ -19,6 +19,10 @@
     "test:coverage": "vitest --coverage",
     "prepublishOnly": "pnpm build"
   },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,mjs}": "eslint",
+    "*.{json,js,ts,jsx,tsx,html,md,mdx,mjs}": "prettier --write"
+  },
   "exports": {
     ".": {
       "types": "./src/index.ts",

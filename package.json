@@ -41,7 +41,7 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs}": "eslint",
-    "*.{json,js,ts,jsx,tsx,html,md,mdx,mjs}": "prettier --list-different"
+    "*.{json,js,ts,jsx,tsx,html,md,mdx,mjs}": "prettier --write"
   },
   "engines": {
     "node": ">=20.0.0",

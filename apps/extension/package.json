@@ -37,6 +37,10 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,mjs}": "eslint",
+    "*.{json,js,ts,jsx,tsx,html,md,mdx,mjs}": "prettier --write"
+  },
   "dependencies": {
     "@coinbase/cbpay-js": "^1.10.0",
     "@debank/common": "^0.3.60",
