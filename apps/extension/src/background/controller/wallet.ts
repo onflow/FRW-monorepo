@@ -688,7 +688,7 @@ export class WalletController extends BaseController {
 
   // create profile here
   createProfile = async () => {
-    openIndexPage('welcome?add=true');
+    openIndexPage('welcome/register?add=true');
   };
 
   resetPwd = async () => {

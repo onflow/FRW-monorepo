@@ -16,13 +16,15 @@ const AddProfilePopup = ({ isOpen, onClose }: AddProfilePopupProps) => {
       open={isOpen}
       onClose={onClose}
       transitionDuration={300}
-      PaperProps={{
-        sx: {
-          width: '100%',
-          height: 'auto',
-          maxHeight: '80%',
-          background: '#121212',
-          borderRadius: '18px 18px 0px 0px',
+      slotProps={{
+        paper: {
+          sx: {
+            width: '100%',
+            height: 'auto',
+            maxHeight: '80%',
+            background: '#121212',
+            borderRadius: '18px 18px 0px 0px',
+          },
         },
       }}
     >
