@@ -41,8 +41,8 @@
     "typescript": "^5.7.2"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,mjs}": "eslint",
-    "*.{json,js,ts,jsx,tsx,html,md,mdx,mjs}": "prettier --write"
+    "*.{js,jsx,ts,tsx,mjs}": "eslint --cache",
+    "*.{json,js,ts,jsx,tsx,html,md,mdx,mjs}": "prettier"
   },
   "engines": {
     "node": ">=20.0.0",

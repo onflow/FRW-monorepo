@@ -1,3 +1,4 @@
 #!/usr/bin/env sh
-# Run lint-staged in the root and all packages/apps
-pnpm -r exec lint-staged
+. "$(dirname -- "$0")/_/husky.sh"
+
+pnpm lint-staged
