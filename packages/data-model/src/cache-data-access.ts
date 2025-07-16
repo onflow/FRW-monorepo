@@ -3,6 +3,14 @@ import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
 
 import { type CacheDataItem } from './data-cache-types';
 
+// The listeners object is used to store a reference to the listener function that is created by _updateCaller.
+// This is necessary because chrome.storage.onChanged.removeListener requires the exact same function instance
+// that was passed to addListener. If we call _updateCaller again in removeCachedDataListener, it will create
+// a new function instance, and the listener will not be removed.
+const listeners: {
+  [key: string]: (changes: { [key: string]: StorageChange }, areaName: string) => void;
+} = {};
+
 /**
  * Get cached data from session storage
  * This will then trigger a background event to refresh the data if is is expired
@@ -57,17 +65,19 @@ export const addCachedDataListener = (
   key: string,
   updateCallback: (key: string, data: unknown) => void
 ) => {
-  chrome.storage.onChanged.addListener(_updateCaller(key, updateCallback));
+  listeners[key] = _updateCaller(key, updateCallback);
+  chrome.storage.onChanged.addListener(listeners[key]);
 };
 
 /**
  * Remove a cached data listener
  * @param key - The key to remove the listener for
- * @param updateCallback - The callback to remove
+ * @param _updateCallback - The callback to remove
  */
 export const removeCachedDataListener = (
   key: string,
-  updateCallback: (key: string, data: unknown) => void
+  _updateCallback: (key: string, data: unknown) => void
 ) => {
-  chrome.storage.onChanged.removeListener(_updateCaller(key, updateCallback));
+  chrome.storage.onChanged.removeListener(listeners[key]);
+  delete listeners[key];
 };
