@@ -8,6 +8,7 @@
     "dev": "pnpm -F flow-wallet-extension build:dev",
     "build": "pnpm -F flow-wallet-extension build:pro",
     "test": "pnpm -r test",
+    "test:run": "pnpm -r test:run",
     "test:e2e": "pnpm -r test:e2e",
     "test:e2e:ui": "pnpm -r test:e2e:ui",
     "lint": "for pkg in apps/* packages/*; do (cd $pkg && echo \"Linting $pkg\" && pnpm lint) || exit 1; done",

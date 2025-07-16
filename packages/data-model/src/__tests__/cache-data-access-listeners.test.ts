@@ -39,7 +39,6 @@ describe('cache-data-access listeners', () => {
     removeCachedDataListener(key, callback);
 
     expect(mockRemoveListener).toHaveBeenCalledTimes(1);
-    // This will fail until the source code is fixed
-    expect(mockListeners.length).toBe(1);
+    expect(mockListeners.length).toBe(0);
   });
 });
