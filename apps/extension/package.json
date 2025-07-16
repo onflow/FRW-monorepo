@@ -26,6 +26,7 @@
     "test:unit:coverage": "vitest --coverage",
     "pub": "pnpx tsx build/release.ts",
     "preinstall": "npx only-allow pnpm",
+    "pre-commit": "pnpm lint-staged",
     "analyze:imports": "pnpx tsx build/analyze-imports.ts",
     "analyze:dependencies": "pnpx tsx build/analyze-dependencies.ts",
     "analyze:fetch": "./build/fetch-project-data.sh",
@@ -39,7 +40,7 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs}": "eslint --cache",
-    "*.{json,js,ts,jsx,tsx,html,md,mdx,mjs}": "prettier"
+    "*.{json,js,ts,jsx,tsx,html,md,mdx,mjs}": "prettier --write"
   },
   "dependencies": {
     "@coinbase/cbpay-js": "^1.10.0",
@@ -54,6 +55,7 @@
     "@onflow/flow-wallet-reducers": "workspace:*",
     "@onflow/flow-wallet-shared": "workspace:*",
     "@onflow/flow-wallet-extension-shared": "workspace:*",
+    "@onflow/flow-wallet-data-model": "workspace:*",
     "@reown/walletkit": "^1.2.8",
     "@trustwallet/wallet-core": "^4.3.6",
     "@tsparticles/engine": "^3.8.1",

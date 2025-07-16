@@ -17,11 +17,12 @@
     "test": "vitest",
     "test:run": "vitest --run",
     "test:coverage": "vitest --coverage",
-    "prepublishOnly": "pnpm build"
+    "prepublishOnly": "pnpm build",
+    "pre-commit": "pnpm lint-staged"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs}": "eslint --cache",
-    "*.{json,js,ts,jsx,tsx,html,md,mdx,mjs}": "prettier"
+    "*.{json,js,ts,jsx,tsx,html,md,mdx,mjs}": "prettier --write"
   },
   "exports": {
     ".": {

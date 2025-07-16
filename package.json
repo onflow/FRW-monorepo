@@ -16,6 +16,7 @@
     "format": "prettier .",
     "format:fix": "prettier --write .",
     "prepare": "husky",
+    "pre-commit": "pnpm --filter \"@onflow/flow-wallet-*\" --filter \"flow-wallet-extension\" pre-commit",
     "storybook": "pnpm -F flow-wallet-extension storybook",
     "build-storybook": "pnpm -F flow-wallet-extension build-storybook"
   },

@@ -1,7 +1,7 @@
 {
-  "name": "@onflow/flow-wallet-shared",
+  "name": "@onflow/flow-wallet-data-model",
   "version": "0.0.1",
-  "description": "Shared types and utilities for Flow Reference Wallet",
+  "description": "Data model for Flow Reference Wallet",
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
@@ -25,39 +25,34 @@
     "*.{json,js,ts,jsx,tsx,html,md,mdx,mjs}": "prettier --write"
   },
   "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "default": "./src/index.ts"
+    "./*": {
+      "types": "./src/*.ts",
+      "default": "./src/*.ts"
     },
-    "./types": {
-      "types": "./src/types/index.ts",
-      "default": "./src/types/index.ts"
+    "./data-cache-types": {
+      "types": "./src/data-cache-types.ts",
+      "default": "./src/data-cache-types.ts"
     },
-    "./types/*": {
-      "types": "./src/types/*.ts",
-      "default": "./src/types/*.ts"
+    "./cache-data-keys": {
+      "types": "./src/cache-data-keys.ts",
+      "default": "./src/cache-data-keys.ts"
     },
-    "./constant": {
-      "types": "./src/constant/index.ts",
-      "default": "./src/constant/index.ts"
+    "./user-data-keys": {
+      "types": "./src/user-data-keys.ts",
+      "default": "./src/user-data-keys.ts"
     },
-    "./constant/*": {
-      "types": "./src/constant/*.ts",
-      "default": "./src/constant/*.ts"
+    "./cache-data-access": {
+      "types": "./src/cache-data-access.ts",
+      "default": "./src/cache-data-access.ts"
     },
-    "./utils": {
-      "types": "./src/utils/index.ts",
-      "default": "./src/utils/index.ts"
-    },
-    "./utils/*": {
-      "types": "./src/utils/*.ts",
-      "default": "./src/utils/*.ts"
+    "./user-data-access": {
+      "types": "./src/user-data-access.ts",
+      "default": "./src/user-data-access.ts"
     }
   },
   "dependencies": {
-    "@onflow/fcl": "^1.13.1",
-    "@onflow/typedefs": "^1.4.0",
-    "@onflow/types": "^1.4.0",
+    "@onflow/flow-wallet-shared": "workspace:*",
+    "@onflow/flow-wallet-extension-shared": "workspace:*",
     "bignumber.js": "^9.1.2"
   },
   "devDependencies": {
