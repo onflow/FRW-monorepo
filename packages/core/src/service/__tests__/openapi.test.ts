@@ -121,8 +121,8 @@ describe('OpenApiService', () => {
     username: 'coolpanda',
     token: 'flow',
     password: process.env.TEST_PASSWORD || '',
-    mnemonicExisting: '',
-    mnemonicGenerated: '',
+    mnemonicExisting: 'test test test test test test test test test test test junk',
+    mnemonicGenerated: 'test test test test test test test test test test test junk',
     publicKey: {
       P256: { pubK: '', pk: '' },
       SECP256K1: { pubK: '', pk: '' },

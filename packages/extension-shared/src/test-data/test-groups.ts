@@ -1,6 +1,7 @@
 import { ethers, HDNodeWallet } from 'ethers';
 
 import {
+  FLOW_BIP44_PATH,
   HASH_ALGO_NUM_SHA2_256,
   SIGN_ALGO_NUM_ECDSA_secp256k1,
 } from '@onflow/flow-wallet-shared/constant/algo-constants';
@@ -46,8 +47,8 @@ export interface CommonParams {
   };
 }
 const getFrontEndAccountKey = (mnemonic: string) => {
-  const hdwallet = HDNodeWallet.fromMnemonic(ethers.Mnemonic.fromPhrase(mnemonic));
-  const publicKey = hdwallet.derivePath("m/44'/539'/0'/0/0").publicKey.toString();
+  const hdwallet = HDNodeWallet.fromMnemonic(ethers.Mnemonic.fromPhrase(mnemonic), FLOW_BIP44_PATH);
+  const publicKey = hdwallet.publicKey.toString();
 
   return {
     hashAlgo: HASH_ALGO_NUM_SHA2_256,

@@ -17,17 +17,15 @@
     "rootDir": "./",
     "composite": true,
     "paths": {
+      "@onflow/flow-wallet-shared/*": ["../shared/src/*"],
+      "@onflow/flow-wallet-extension-shared/*": ["../extension-shared/src/*"],
+      "@onflow/flow-wallet-data-model/*": ["../data-model/src/*"],
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*", "tsup.config.ts", "vitest.config.ts"],
+  "include": ["src/**/*", "tsup.config.ts", "vitest.config.ts", "vitest.init.ts"],
   "exclude": ["node_modules", "dist"],
-  "paths": {
-    "@onflow/flow-wallet-shared/*": ["../shared/src/*"],
-    "@onflow/flow-wallet-extension-shared/*": ["../extension-shared/src/*"],
-    "@onflow/flow-wallet-data-model/*": ["../data-model/src/*"],
-    "@/*": ["./src/*"]
-  },
+
   "references": [
     {
       "path": "../data-model"
