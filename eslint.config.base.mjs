@@ -30,7 +30,9 @@ export const baseConfig = {
   },
   settings: {
     'import/resolver': {
-      typescript: true,
+      typescript: {
+        project: ['packages/*/tsconfig.json', 'apps/*/tsconfig.json'],
+      },
       node: true,
     },
     react: {

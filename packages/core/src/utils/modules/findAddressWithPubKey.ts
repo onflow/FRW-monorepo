@@ -5,8 +5,8 @@ import type { PublicKeyTuple } from '@onflow/flow-wallet-shared/types/key-types'
 import { type AccountKeyRequest } from '@onflow/flow-wallet-shared/types/network-types';
 import { type PublicKeyAccount } from '@onflow/flow-wallet-shared/types/wallet-types';
 
-import openapiService from '@/core/service/openapi';
-import userWalletService from '@/core/service/userWallet';
+import openapiService from '../../service/openapi';
+import userWalletService from '../../service/userWallet';
 
 /**
  * Get accounts with public key tuple

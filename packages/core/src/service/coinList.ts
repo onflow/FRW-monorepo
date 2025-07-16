@@ -11,7 +11,8 @@ import {
   supportedCurrenciesRefreshRegex,
   type ChildAccountFtStore,
   type SupportedCurrenciesStore,
-} from '@onflow/flow-wallet-data-model/cache-data-keys';
+} from '@onflow/flow-wallet-data-model';
+
 import {
   type CadenceTokenInfo,
   type EvmTokenInfo,

@@ -8,8 +8,7 @@ import {
   SIGN_ALGO_NUM_ECDSA_secp256k1,
 } from '@onflow/flow-wallet-shared/constant/algo-constants';
 
-import openapiService from '@/core/service/openapi';
-
+import openapiService from '../../../service/openapi';
 import {
   getAccountsByPublicKeyTuple,
   getOrCheckAccountsByPublicKeyTuple,

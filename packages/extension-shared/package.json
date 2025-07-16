@@ -18,7 +18,9 @@
     "test:run": "vitest --run",
     "test:coverage": "vitest --coverage",
     "prepublishOnly": "pnpm build",
-    "pre-commit": "pnpm lint-staged"
+    "pre-commit": "pnpm lint-staged",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs}": "eslint --cache",
