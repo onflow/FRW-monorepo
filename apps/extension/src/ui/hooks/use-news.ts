@@ -1,17 +1,16 @@
 import { useCallback, useMemo } from 'react';
 
+import { newsKey } from '@onflow/flow-wallet-data-model/cache-data-keys';
+import {
+  readAndDismissedNewsKey,
+  type ReadAndDismissedNewsStore,
+} from '@onflow/flow-wallet-data-model/user-data-keys';
 import { type NewsConditionType, type NewsItem } from '@onflow/flow-wallet-shared/types/news-types';
 import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
 import {
   checkLowBalance,
   evaluateStorage,
 } from '@onflow/flow-wallet-shared/utils/evaluate-storage';
-
-import { newsKey } from '@/data-model/cache-data-keys';
-import {
-  readAndDismissedNewsKey,
-  type ReadAndDismissedNewsStore,
-} from '@/data-model/user-data-keys';
 
 import { useCachedData, useUserData } from './use-data';
 import { useLatestVersion } from './use-feature-flags';

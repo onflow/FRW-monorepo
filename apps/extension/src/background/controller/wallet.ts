@@ -9,6 +9,28 @@ import { getAuth } from 'firebase/auth/web-extension';
 import { encode } from 'rlp';
 import web3, { TransactionError, Web3 } from 'web3';
 
+import {
+  accountBalanceKey,
+  childAccountAllowTypesKey,
+  childAccountDescKey,
+  type ChildAccountFtStore,
+  childAccountNftsKey,
+  type ChildAccountNFTsStore,
+  coinListKey,
+  evmNftCollectionListKey,
+  type EvmNftCollectionListStore,
+  evmNftIdsKey,
+  type EvmNftIdsStore,
+  getCachedNftCollection,
+  getCachedScripts,
+  mainAccountsKey,
+  nftCatalogCollectionsKey,
+  registerStatusKey,
+  registerStatusRefreshRegex,
+  userMetadataKey,
+  walletLoadedKey,
+  walletLoadedRefreshRegex,
+} from '@onflow/flow-wallet-data-model/cache-data-keys';
 import { returnCurrentProfileId } from '@onflow/flow-wallet-extension-shared/current-id';
 import eventBus from '@onflow/flow-wallet-extension-shared/message/eventBus';
 import { retryOperation } from '@onflow/flow-wallet-extension-shared/retryOperation';
@@ -136,28 +158,6 @@ import {
   seedWithPathAndPhrase2PublicPrivateKey,
 } from '@/core/utils/modules/publicPrivateKey';
 import { generateRandomId } from '@/core/utils/random-id';
-import {
-  accountBalanceKey,
-  childAccountAllowTypesKey,
-  childAccountDescKey,
-  type ChildAccountFtStore,
-  childAccountNftsKey,
-  type ChildAccountNFTsStore,
-  coinListKey,
-  evmNftCollectionListKey,
-  type EvmNftCollectionListStore,
-  evmNftIdsKey,
-  type EvmNftIdsStore,
-  getCachedNftCollection,
-  getCachedScripts,
-  mainAccountsKey,
-  nftCatalogCollectionsKey,
-  registerStatusKey,
-  registerStatusRefreshRegex,
-  userMetadataKey,
-  walletLoadedKey,
-  walletLoadedRefreshRegex,
-} from '@/data-model/cache-data-keys';
 
 import BaseController from './base';
 import notificationService from './notification';

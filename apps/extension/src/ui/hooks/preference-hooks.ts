@@ -1,11 +1,13 @@
-import { DEFAULT_CURRENCY } from '@onflow/flow-wallet-shared/types/wallet-types';
-
 import {
   supportedCurrenciesKey,
   type SupportedCurrenciesStore,
-} from '@/data-model/cache-data-keys';
-import { getUserData, setUserData } from '@/data-model/user-data-access';
-import { preferencesKey, type PreferencesStore } from '@/data-model/user-data-keys';
+} from '@onflow/flow-wallet-data-model/cache-data-keys';
+import { getUserData, setUserData } from '@onflow/flow-wallet-data-model/user-data-access';
+import {
+  preferencesKey,
+  type PreferencesStore,
+} from '@onflow/flow-wallet-data-model/user-data-keys';
+import { DEFAULT_CURRENCY } from '@onflow/flow-wallet-shared/types/wallet-types';
 
 import { useCachedData, useUserData } from './use-data';
 

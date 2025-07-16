@@ -1,15 +1,4 @@
 import {
-  type CadenceTokenInfo,
-  type EvmTokenInfo,
-  type ExtendedTokenInfo,
-} from '@onflow/flow-wallet-shared/types/coin-types';
-import {
-  isValidEthereumAddress,
-  isValidFlowAddress,
-} from '@onflow/flow-wallet-shared/utils/address';
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
-
-import {
   cadenceTokenInfoKey,
   cadenceTokenInfoRefreshRegex,
   childAccountFtKey,
@@ -22,7 +11,17 @@ import {
   supportedCurrenciesRefreshRegex,
   type ChildAccountFtStore,
   type SupportedCurrenciesStore,
-} from '@/data-model/cache-data-keys';
+} from '@onflow/flow-wallet-data-model/cache-data-keys';
+import {
+  type CadenceTokenInfo,
+  type EvmTokenInfo,
+  type ExtendedTokenInfo,
+} from '@onflow/flow-wallet-shared/types/coin-types';
+import {
+  isValidEthereumAddress,
+  isValidFlowAddress,
+} from '@onflow/flow-wallet-shared/utils/address';
+import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
 
 import openapiService from './openapi';
 import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';

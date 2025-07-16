@@ -1,9 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { getCachedData } from '@onflow/flow-wallet-data-model/cache-data-access';
+import {
+  accountBalanceKey,
+  accountBalanceRefreshRegex,
+} from '@onflow/flow-wallet-data-model/cache-data-keys';
 import storage from '@onflow/flow-wallet-extension-shared/storage';
-
-import { getCachedData } from '@/data-model/cache-data-access';
-import { accountBalanceKey, accountBalanceRefreshRegex } from '@/data-model/cache-data-keys';
 
 // Mock the storage module
 vi.mock('@onflow/flow-wallet-extension-shared/storage', () => ({
@@ -15,7 +17,7 @@ vi.mock('@onflow/flow-wallet-extension-shared/storage', () => ({
 }));
 
 // Mock getCachedData
-vi.mock('@/data-model/cache-data-access', () => ({
+vi.mock('@onflow/flow-wallet-data-model/cache-data-access', () => ({
   getCachedData: vi.fn(),
 }));
 

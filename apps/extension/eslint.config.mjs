@@ -216,7 +216,7 @@ const config = [
               message: 'Reducers must be pure - cannot import from content scripts',
             },
             {
-              group: ['@/data-model/*', '@/data-model/**'],
+              group: ['@onflow/flow-wallet-data-model/*', '@onflow/flow-wallet-data-model/**'],
               message: 'Reducers must be pure - cannot import from data model',
             },
             {

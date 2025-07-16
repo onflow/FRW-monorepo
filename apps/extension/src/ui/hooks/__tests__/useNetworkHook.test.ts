@@ -37,9 +37,8 @@ vi.mock('@onflow/flow-wallet-extension-shared/storage', () => {
   };
 });
 
+import { userWalletsKey } from '@onflow/flow-wallet-data-model/user-data-keys';
 import storage from '@onflow/flow-wallet-extension-shared/storage';
-
-import { userWalletsKey } from '@/data-model/user-data-keys';
 
 import { useNetwork } from '../useNetworkHook';
 

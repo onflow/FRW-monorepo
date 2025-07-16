@@ -5,6 +5,29 @@ import * as ethUtil from 'ethereumjs-util';
 import { getApp } from 'firebase/app';
 import { getAuth, signInAnonymously } from 'firebase/auth/web-extension';
 
+import {
+  accountBalanceKey,
+  accountBalanceRefreshRegex,
+  mainAccountsKey,
+  mainAccountsRefreshRegex,
+  mainAccountStorageBalanceKey,
+  mainAccountStorageBalanceRefreshRegex,
+  type MainAccountStorageBalanceStore,
+  pendingAccountCreationTransactionsKey,
+  pendingAccountCreationTransactionsRefreshRegex,
+  placeholderAccountsKey,
+  placeholderAccountsRefreshRegex,
+  userMetadataKey,
+  type UserMetadataStore,
+} from '@onflow/flow-wallet-data-model/cache-data-keys';
+import { removeUserData, setUserData } from '@onflow/flow-wallet-data-model/user-data-access';
+import {
+  activeAccountsKey,
+  type ActiveAccountsStore,
+  getActiveAccountsData,
+  userWalletsKey,
+  type UserWalletStore,
+} from '@onflow/flow-wallet-data-model/user-data-keys';
 import { retryOperation } from '@onflow/flow-wallet-extension-shared/retryOperation';
 import storage from '@onflow/flow-wallet-extension-shared/storage';
 import {
@@ -43,30 +66,6 @@ import {
 import { getCompatibleHashAlgo } from '@onflow/flow-wallet-shared/utils/algo';
 import { consoleError, consoleWarn } from '@onflow/flow-wallet-shared/utils/console-log';
 import { getEmojiByIndex } from '@onflow/flow-wallet-shared/utils/emoji-util';
-
-import {
-  accountBalanceKey,
-  accountBalanceRefreshRegex,
-  mainAccountsKey,
-  mainAccountsRefreshRegex,
-  mainAccountStorageBalanceKey,
-  mainAccountStorageBalanceRefreshRegex,
-  type MainAccountStorageBalanceStore,
-  pendingAccountCreationTransactionsKey,
-  pendingAccountCreationTransactionsRefreshRegex,
-  placeholderAccountsKey,
-  placeholderAccountsRefreshRegex,
-  userMetadataKey,
-  type UserMetadataStore,
-} from '@/data-model/cache-data-keys';
-import { removeUserData, setUserData } from '@/data-model/user-data-access';
-import {
-  activeAccountsKey,
-  type ActiveAccountsStore,
-  getActiveAccountsData,
-  userWalletsKey,
-  type UserWalletStore,
-} from '@/data-model/user-data-keys';
 
 import keyringService from './keyring';
 import { mixpanelTrack } from './mixpanel';

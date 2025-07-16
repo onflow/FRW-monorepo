@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 
+import { getUserWalletsData, userWalletsKey } from '@onflow/flow-wallet-data-model/user-data-keys';
 import storage, {
   type AreaName,
   type StorageChange,
 } from '@onflow/flow-wallet-extension-shared/storage';
-
-import { getUserWalletsData, userWalletsKey } from '@/data-model/user-data-keys';
 
 export const useNetwork = () => {
   const [network, setNetwork] = useState<string>('mainnet');

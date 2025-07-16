@@ -1,4 +1,4 @@
-import storage from '@onflow/flow-wallet-extension-shared/storage';
+import storage, { type StorageChange } from '@onflow/flow-wallet-extension-shared/storage';
 
 /**
  * Get user data from local storage
@@ -34,7 +34,7 @@ export const removeUserData = async (key: string) => {
  * @param updateCallback - The callback to call when the data is updated
  */
 const _updateCaller = (key: string, updateCallback: (key: string, data: unknown) => void) => {
-  return (changes, areaName: string) => {
+  return (changes: Record<string, StorageChange>, areaName: string) => {
     if ((areaName === 'local' || areaName === 'sync') && changes[`${key}`]) {
       updateCallback(key, changes[key].newValue);
     }

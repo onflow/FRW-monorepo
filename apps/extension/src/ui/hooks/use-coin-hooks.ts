@@ -1,20 +1,19 @@
-import {
-  type CustomFungibleTokenInfo,
-  type EvmCustomTokenInfo,
-  type ExtendedTokenInfo,
-  type TokenFilter,
-} from '@onflow/flow-wallet-shared/types/coin-types';
-
-import { triggerRefresh } from '@/data-model/cache-data-access';
+import { triggerRefresh } from '@onflow/flow-wallet-data-model/cache-data-access';
 import {
   type ChildAccountFtStore,
   childAccountFtKey,
   coinListKey,
   tokenFilterKey,
   tokenListKey,
-} from '@/data-model/cache-data-keys';
-import { setUserData } from '@/data-model/user-data-access';
-import { evmCustomTokenKey } from '@/data-model/user-data-keys';
+} from '@onflow/flow-wallet-data-model/cache-data-keys';
+import { setUserData } from '@onflow/flow-wallet-data-model/user-data-access';
+import { evmCustomTokenKey } from '@onflow/flow-wallet-data-model/user-data-keys';
+import {
+  type CustomFungibleTokenInfo,
+  type EvmCustomTokenInfo,
+  type ExtendedTokenInfo,
+  type TokenFilter,
+} from '@onflow/flow-wallet-shared/types/coin-types';
 
 import { useCachedData, useUserData } from './use-data';
 

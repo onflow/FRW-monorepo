@@ -1,11 +1,14 @@
-import { type NewsItem } from '@onflow/flow-wallet-shared/types/news-types';
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
-
-import { newsKey, newsRefreshRegex, type NewsStore } from '@/data-model/cache-data-keys';
+import {
+  newsKey,
+  newsRefreshRegex,
+  type NewsStore,
+} from '@onflow/flow-wallet-data-model/cache-data-keys';
 import {
   readAndDismissedNewsKey,
   type ReadAndDismissedNewsStore,
-} from '@/data-model/user-data-keys';
+} from '@onflow/flow-wallet-data-model/user-data-keys';
+import { type NewsItem } from '@onflow/flow-wallet-shared/types/news-types';
+import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
 
 import openapi from './openapi';
 import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';

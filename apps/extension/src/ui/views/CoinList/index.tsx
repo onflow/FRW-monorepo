@@ -13,10 +13,10 @@ import { Box } from '@mui/system';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
+import { type ChildAccountFtStore } from '@onflow/flow-wallet-data-model/cache-data-keys';
 import { type CoinItem } from '@onflow/flow-wallet-shared/types/coin-types';
 import { type ActiveAccountType } from '@onflow/flow-wallet-shared/types/wallet-types';
 
-import { type ChildAccountFtStore } from '@/data-model/cache-data-keys';
 import plus from '@/ui/assets/svg/plus.svg';
 import slider from '@/ui/assets/svg/slider.svg';
 import VerifiedIcon from '@/ui/assets/svg/verfied-check.svg';

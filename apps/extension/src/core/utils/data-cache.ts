@@ -1,7 +1,6 @@
+import { type CacheDataItem } from '@onflow/flow-wallet-data-model/data-cache-types';
 import storage from '@onflow/flow-wallet-extension-shared/storage';
 import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
-
-import { type CacheDataItem } from '@/data-model/data-cache-types';
 
 /**
  * Get valid data from session storage
@@ -32,7 +31,7 @@ export const getInvalidData = async <T>(key: string): Promise<T | undefined> => 
   return sessionData?.value as T | undefined;
 };
 
-export * from '@/data-model/cache-data-access';
+export * from '@onflow/flow-wallet-data-model/cache-data-access';
 /**
  * BACKGROUND ONLY METHODS
  */

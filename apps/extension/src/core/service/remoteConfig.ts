@@ -1,13 +1,12 @@
 import {
-  type FeatureFlagKey,
-  type FeatureFlags,
-} from '@onflow/flow-wallet-shared/types/feature-types';
-
-import {
   type RemoteConfig,
   remoteConfigKey,
   remoteConfigRefreshRegex,
-} from '@/data-model/cache-data-keys';
+} from '@onflow/flow-wallet-data-model/cache-data-keys';
+import {
+  type FeatureFlagKey,
+  type FeatureFlags,
+} from '@onflow/flow-wallet-shared/types/feature-types';
 
 import openapi from './openapi';
 import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';

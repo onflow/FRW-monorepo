@@ -1,11 +1,10 @@
-import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils/address';
-
 import {
   evmNftCollectionListKey,
   evmNftCollectionListRefreshRegex,
   evmNftIdsKey,
   evmNftIdsRefreshRegex,
-} from '@/data-model/cache-data-keys';
+} from '@onflow/flow-wallet-data-model/cache-data-keys';
+import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils/address';
 
 import { openapiService } from '.';
 import { registerRefreshListener, setCachedData } from '../utils/data-cache';

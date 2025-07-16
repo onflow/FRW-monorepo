@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 
+import { triggerRefresh } from '@onflow/flow-wallet-data-model/cache-data-access';
+import { evmNftCollectionListKey } from '@onflow/flow-wallet-data-model/cache-data-keys';
 import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
 
-import { triggerRefresh } from '@/data-model/cache-data-access';
-import { evmNftCollectionListKey } from '@/data-model/cache-data-keys';
 import CollectionDetailGrid from '@/ui/components/NFTs/CollectionDetailGrid';
 import GridView from '@/ui/components/NFTs/GridView';
 import { useWallet } from '@/ui/hooks/use-wallet';
