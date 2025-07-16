@@ -12,8 +12,8 @@ describe('ApiTestPage', () => {
     username: 'test-user',
     token: 'test-token',
     password: 'test-password',
-    mnemonicExisting: 'test-mnemonic',
-    mnemonicGenerated: 'test-mnemonic-new',
+    mnemonicExisting: 'test test test test test test test test test test test apply',
+    mnemonicGenerated: 'test test test test test test test test test test test apply',
     publicKey: {
       P256: { pubK: '', pk: '' },
       SECP256K1: { pubK: '', pk: '' },
