@@ -6,8 +6,7 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "files": [
-    "src",
-    "dist"
+    "src"
   ],
   "scripts": {
     "build": "tsup",
@@ -43,6 +42,15 @@
       "types": "./src/constant/index.ts",
       "default": "./src/constant/index.ts"
     },
+    "./constant/emoji.json": {
+      "default": "./src/constant/emoji.json"
+    },
+    "./constant/erc20.abi.json": {
+      "default": "./src/constant/erc20.abi.json"
+    },
+    "./constant/erc721.abi.json": {
+      "default": "./src/constant/erc721.abi.json"
+    },
     "./constant/*": {
       "types": "./src/constant/*.ts",
       "default": "./src/constant/*.ts"
@@ -52,8 +60,14 @@
       "default": "./src/utils/index.ts"
     },
     "./utils/*": {
-      "types": "./src/utils/*.ts",
-      "default": "./src/utils/*.ts"
+      "types": [
+        "./src/utils/*.ts",
+        "./src/utils/*.json"
+      ],
+      "default": [
+        "./src/utils/*.ts",
+        "./src/utils/*.json"
+      ]
     }
   },
   "dependencies": {

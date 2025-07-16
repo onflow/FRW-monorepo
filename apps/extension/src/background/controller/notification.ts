@@ -2,8 +2,9 @@ import { ethErrors } from 'eth-rpc-errors';
 import { EthereumProviderError } from 'eth-rpc-errors/dist/classes';
 import Events from 'events';
 
+import { setEnvironmentBadge } from '@onflow/flow-wallet-core/utils/setEnvironmentBadge';
+
 import { IS_CHROME, IS_LINUX } from '@/background/webapi/environment';
-import { setEnvironmentBadge } from '@/core/utils/setEnvironmentBadge';
 
 import winMgr from '../webapi/window';
 

@@ -1,5 +1,4 @@
-import { keyringService, preferenceService } from '@/core/service';
-import { type PreferenceAccount } from '@/core/service/preference';
+import { keyringService, preferenceService } from '@onflow/flow-wallet-core';
 
 class BaseController {
   getCurrentAccount = async () => {
@@ -16,7 +15,7 @@ class BaseController {
       preferenceService.setCurrentAccount(account);
     }
 
-    return structuredClone(account) as PreferenceAccount;
+    return structuredClone(account);
   };
 
   syncGetCurrentAccount = () => {

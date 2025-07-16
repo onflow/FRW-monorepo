@@ -22,25 +22,25 @@ vi.mock('@onflow/flow-wallet-extension-shared/storage', () => ({
   },
 }));
 
-vi.mock('@/core/service/openapi', () => ({
+vi.mock('@onflow/flow-wallet-core/service/openapi', () => ({
   default: {
     getAccountsWithPublicKey: vi.fn().mockResolvedValue([]),
   },
 }));
 
-vi.mock('@/core/service/userWallet', () => ({
+vi.mock('@onflow/flow-wallet-core/service/userWallet', () => ({
   default: {
     setupFcl: vi.fn(),
   },
 }));
 
-vi.mock('@/core/service/i18n', () => ({
+vi.mock('@onflow/flow-wallet-core/service/i18n', () => ({
   default: {
     t: (key) => key,
   },
 }));
 
-vi.mock('@/core/service/preference', () => ({
+vi.mock('@onflow/flow-wallet-core/service/preference', () => ({
   default: {
     getHiddenAddresses: vi.fn().mockReturnValue([]),
   },

@@ -56,6 +56,7 @@
     "@onflow/flow-wallet-shared": "workspace:*",
     "@onflow/flow-wallet-extension-shared": "workspace:*",
     "@onflow/flow-wallet-data-model": "workspace:*",
+    "@onflow/flow-wallet-core": "workspace:*",
     "@reown/walletkit": "^1.2.8",
     "@trustwallet/wallet-core": "^4.3.6",
     "@tsparticles/engine": "^3.8.1",

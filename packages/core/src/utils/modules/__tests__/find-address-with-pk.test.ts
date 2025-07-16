@@ -13,7 +13,7 @@ import * as publicPrivateKeyModule from '../publicPrivateKey';
 // Mock the dependent modules
 vi.mock('../publicPrivateKey');
 vi.mock('../findAddressWithPubKey');
-vi.mock('@/core/service', () => ({
+vi.mock('@onflow/flow-wallet-core/service', () => ({
   userWalletService: {
     setupFcl: vi.fn(),
   },

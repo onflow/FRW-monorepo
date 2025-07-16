@@ -6,8 +6,7 @@
   "main": "./src/service/index.ts",
   "types": "./src/service/index.ts",
   "files": [
-    "src",
-    "dist"
+    "src"
   ],
   "scripts": {
     "build": "tsup",
@@ -30,6 +29,32 @@
     ".": {
       "types": "./src/service/index.ts",
       "default": "./src/service/index.ts"
+    },
+    "./service": {
+      "types": "./src/service/index.ts",
+      "default": "./src/service/index.ts"
+    },
+    "./service/*": {
+      "types": "./src/service/*.ts",
+      "default": "./src/service/*.ts"
+    },
+    "./service/keyring": {
+      "types": "./src/service/keyring/index.ts",
+      "default": "./src/service/keyring/index.ts"
+    },
+    "./utils": {
+      "types": "./src/utils/index.ts",
+      "default": "./src/utils/index.ts"
+    },
+    "./utils/*": {
+      "types": [
+        "./src/utils/*.ts",
+        "./src/utils/*.json"
+      ],
+      "default": [
+        "./src/utils/*.ts",
+        "./src/utils/*.json"
+      ]
     },
     "./*": {
       "types": "./src/*.ts",

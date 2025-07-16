@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/core/service/userWallet', async () => {
-  const actual = await vi.importActual('@/core/service/userWallet');
+vi.mock('@onflow/flow-wallet-core/service/userWallet', async () => {
+  const actual = await vi.importActual('@onflow/flow-wallet-core/service/userWallet');
   return {
     default: {
       ...actual,
@@ -16,31 +16,31 @@ vi.mock('@/core/service/userWallet', async () => {
   };
 });
 
-vi.mock('@/core/service/nft', () => ({
+vi.mock('@onflow/flow-wallet-core/service/nft', () => ({
   default: {
     clear: vi.fn(),
   },
 }));
 
-vi.mock('@/core/service/userInfo', () => ({
+vi.mock('@onflow/flow-wallet-core/service/userInfo', () => ({
   default: {
     removeUserInfo: vi.fn(),
   },
 }));
 
-vi.mock('@/core/service/coinList', () => ({
+vi.mock('@onflow/flow-wallet-core/service/coinList', () => ({
   default: {
     clear: vi.fn(),
   },
 }));
 
-vi.mock('@/core/service/addressBook', () => ({
+vi.mock('@onflow/flow-wallet-core/service/addressBook', () => ({
   default: {
     clear: vi.fn(),
   },
 }));
 
-vi.mock('@/core/service/transaction', () => ({
+vi.mock('@onflow/flow-wallet-core/service/transaction', () => ({
   default: {
     clear: vi.fn(),
   },

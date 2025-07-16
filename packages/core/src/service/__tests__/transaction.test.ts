@@ -124,7 +124,7 @@ describe('Transaction Service', () => {
   });
 
   // Add the openapi service mock
-  vi.mock('@/core/service/openapi', () => {
+  vi.mock('@onflow/flow-wallet-core/service/openapi', () => {
     const mockData = {
       transactions: [
         {
@@ -509,7 +509,7 @@ vi.mock('@onflow/flow-wallet-shared/utils/cache-data-access', () => ({
   }),
 }));
 
-vi.mock('@/core/utils/data-cache', () => ({
+vi.mock('@onflow/flow-wallet-core/utils/data-cache', () => ({
   getValidData: vi.fn().mockImplementation(async (key) => {
     return mockStorageState.session.get(key);
   }),

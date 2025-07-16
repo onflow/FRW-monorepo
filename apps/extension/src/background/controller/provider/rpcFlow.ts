@@ -1,11 +1,10 @@
+import { permissionService } from '@onflow/flow-wallet-core';
 import { ethErrors } from 'eth-rpc-errors';
 
+import { PromiseFlow, underline2Camelcase } from '@onflow/flow-wallet-core/utils';
 import eventBus from '@onflow/flow-wallet-extension-shared/message/eventBus';
 import { EVENTS } from '@onflow/flow-wallet-shared/constant/events';
 import { consoleLog } from '@onflow/flow-wallet-shared/utils/console-log';
-
-import { permissionService } from '@/core/service';
-import { PromiseFlow, underline2Camelcase } from '@/core/utils';
 
 import notificationService from '../notification';
 import Wallet from '../wallet';

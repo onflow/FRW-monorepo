@@ -31,10 +31,11 @@ export const baseConfig = {
   settings: {
     'import/resolver': {
       typescript: {
-        project: ['packages/*/tsconfig.json', 'apps/*/tsconfig.json'],
+        alwaysTryTypes: true,
       },
       node: true,
     },
+    'import/extensions': ['.ts', '.tsx', '.js', '.jsx', '.json'],
     react: {
       version: 'detect',
     },

@@ -38,5 +38,23 @@
     "postcss.config.mjs",
     "svgTransform.js",
     ".storybook/**/*"
+  ],
+  "references": [
+    {
+      "path": "../../packages/core",
+      "name": "@onflow/flow-wallet-core"
+    },
+    {
+      "path": "../../packages/shared",
+      "name": "@onflow/flow-wallet-shared"
+    },
+    {
+      "path": "../../packages/data-model",
+      "name": "@onflow/flow-wallet-data-model"
+    },
+    {
+      "path": "../../packages/extension-shared",
+      "name": "@onflow/flow-wallet-extension-shared"
+    }
   ]
 }

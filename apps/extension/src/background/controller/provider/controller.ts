@@ -1,3 +1,9 @@
+import {
+  keyringService,
+  permissionService,
+  sessionService,
+  signTextHistoryService,
+} from '@onflow/flow-wallet-core';
 import BigNumber from 'bignumber.js';
 import { ethErrors } from 'eth-rpc-errors';
 import { intToHex, isHexString } from 'ethereumjs-util';
@@ -6,6 +12,8 @@ import RLP from 'rlp';
 import Web3 from 'web3';
 import { stringToHex } from 'web3-utils';
 
+import { getAccountsByPublicKeyTuple } from '@onflow/flow-wallet-core/utils/modules/findAddressWithPubKey';
+import { signWithKey } from '@onflow/flow-wallet-core/utils/modules/publicPrivateKey';
 import { EVM_ENDPOINT } from '@onflow/flow-wallet-shared/constant/domain-constants';
 import { tupleToPrivateKey } from '@onflow/flow-wallet-shared/types/key-types';
 import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@onflow/flow-wallet-shared/types/network-types';
@@ -17,14 +25,6 @@ import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
 
 import BaseController from '@/background/controller/base';
 import Wallet from '@/background/controller/wallet';
-import {
-  keyringService,
-  permissionService,
-  sessionService,
-  signTextHistoryService,
-} from '@/core/service';
-import { getAccountsByPublicKeyTuple } from '@/core/utils/modules/findAddressWithPubKey';
-import { signWithKey } from '@/core/utils/modules/publicPrivateKey';
 
 import notificationService from '../notification';
 
