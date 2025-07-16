@@ -68,7 +68,7 @@ export const baseConfig = {
         groups: [['builtin', 'external'], 'internal', ['parent', 'sibling', 'index']],
         pathGroups: [
           {
-            pattern: '@onflow/flow-wallet-shared/**',
+            pattern: '@onflow/flow-wallet-*/**',
             group: 'external',
             position: 'after',
           },

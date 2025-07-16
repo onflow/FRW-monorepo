@@ -9,6 +9,10 @@ import { getAuth } from 'firebase/auth/web-extension';
 import { encode } from 'rlp';
 import web3, { TransactionError, Web3 } from 'web3';
 
+import { returnCurrentProfileId } from '@onflow/flow-wallet-extension-shared/current-id';
+import eventBus from '@onflow/flow-wallet-extension-shared/message/eventBus';
+import { retryOperation } from '@onflow/flow-wallet-extension-shared/retryOperation';
+import storage from '@onflow/flow-wallet-extension-shared/storage';
 import { FLOW_BIP44_PATH } from '@onflow/flow-wallet-shared/constant/algo-constants';
 import {
   EVM_ENDPOINT,
@@ -154,10 +158,6 @@ import {
   walletLoadedKey,
   walletLoadedRefreshRegex,
 } from '@/data-model/cache-data-keys';
-import { returnCurrentProfileId } from '@/extension-shared/utils/current-id';
-import eventBus from '@/extension-shared/utils/message/eventBus';
-import { retryOperation } from '@/extension-shared/utils/retryOperation';
-import storage from '@/extension-shared/utils/storage';
 
 import BaseController from './base';
 import notificationService from './notification';

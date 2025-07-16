@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { createTestGroups } from '@/extension-shared/utils/test-data/test-groups';
+import { createTestGroups } from '@onflow/flow-wallet-extension-shared/test-data/test-groups';
 
 import methods from '../openapi-methods.json';
 

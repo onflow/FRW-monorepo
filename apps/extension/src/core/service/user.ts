@@ -1,3 +1,8 @@
+import {
+  getCurrentProfileId,
+  returnCurrentProfileId,
+} from '@onflow/flow-wallet-extension-shared/current-id';
+import storage from '@onflow/flow-wallet-extension-shared/storage';
 import { type UserInfoResponse } from '@onflow/flow-wallet-shared/types/network-types';
 import { type LoggedInAccount } from '@onflow/flow-wallet-shared/types/wallet-types';
 import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
@@ -7,8 +12,6 @@ import {
   userInfoRefreshRegex,
   type UserInfoStore,
 } from '@/data-model/cache-data-keys';
-import { getCurrentProfileId, returnCurrentProfileId } from '@/extension-shared/utils/current-id';
-import storage from '@/extension-shared/utils/storage';
 
 import openapiService from './openapi';
 import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';

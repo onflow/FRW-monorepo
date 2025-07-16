@@ -5,6 +5,8 @@ import * as ethUtil from 'ethereumjs-util';
 import { getApp } from 'firebase/app';
 import { getAuth, signInAnonymously } from 'firebase/auth/web-extension';
 
+import { retryOperation } from '@onflow/flow-wallet-extension-shared/retryOperation';
+import storage from '@onflow/flow-wallet-extension-shared/storage';
 import {
   DEFAULT_WEIGHT,
   FLOW_BIP44_PATH,
@@ -65,8 +67,6 @@ import {
   userWalletsKey,
   type UserWalletStore,
 } from '@/data-model/user-data-keys';
-import { retryOperation } from '@/extension-shared/utils/retryOperation';
-import storage from '@/extension-shared/utils/storage';
 
 import keyringService from './keyring';
 import { mixpanelTrack } from './mixpanel';

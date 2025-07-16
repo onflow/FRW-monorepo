@@ -101,14 +101,14 @@ const mockFetch = vi.fn();
 vi.stubGlobal('fetch', mockFetch);
 
 // Then imports
-import { type FlowNetwork } from '@onflow/flow-wallet-shared/types/network-types';
 
-import { API_TEST_RESULTS } from '@/extension-shared/utils/test-data/api-test-results';
+import { API_TEST_RESULTS } from '@onflow/flow-wallet-extension-shared/test-data/api-test-results';
 import {
   type CommonParams,
   createTestGroups,
   updateTestParamsFromResults,
-} from '@/extension-shared/utils/test-data/test-groups';
+} from '@onflow/flow-wallet-extension-shared/test-data/test-groups';
+import { type FlowNetwork } from '@onflow/flow-wallet-shared/types/network-types';
 
 import openApiService from '../openapi';
 import userWalletService from '../userWallet';

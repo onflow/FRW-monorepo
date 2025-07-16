@@ -1,4 +1,4 @@
-import storage from '@/extension-shared/utils/storage';
+import storage from '@onflow/flow-wallet-extension-shared/storage';
 
 /**
  * Get user data from local storage

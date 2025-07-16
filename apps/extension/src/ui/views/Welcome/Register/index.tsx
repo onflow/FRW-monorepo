@@ -1,12 +1,13 @@
 import { Box } from '@mui/material';
+import React, { useCallback, useEffect, useReducer } from 'react';
+import { useNavigate } from 'react-router';
+
 import {
   INITIAL_REGISTER_STATE,
   initRegisterState,
   registerReducer,
   STEPS,
 } from '@onflow/flow-wallet-reducers/register-reducer';
-import React, { useCallback, useEffect, useReducer } from 'react';
-import { useNavigate } from 'react-router';
 
 import AllSet from '@/ui/components/LandingPages/AllSet';
 import GoogleBackup from '@/ui/components/LandingPages/GoogleBackup';

@@ -5,6 +5,8 @@ import encryptor from 'browser-passworder';
 import * as ethUtil from 'ethereumjs-util';
 import { EventEmitter } from 'events';
 
+import { returnCurrentProfileId } from '@onflow/flow-wallet-extension-shared/current-id';
+import storage from '@onflow/flow-wallet-extension-shared/storage';
 import {
   FLOW_BIP44_PATH,
   SIGN_ALGO_NUM_ECDSA_P256,
@@ -38,9 +40,6 @@ import {
   consoleInfo,
   consoleWarn,
 } from '@onflow/flow-wallet-shared/utils/console-log';
-
-import { returnCurrentProfileId } from '@/extension-shared/utils/current-id';
-import storage from '@/extension-shared/utils/storage';
 
 import { normalizeAddress } from '../../utils';
 import { defaultAccountKey, pubKeyAccountToAccountKey } from '../../utils/account-key';

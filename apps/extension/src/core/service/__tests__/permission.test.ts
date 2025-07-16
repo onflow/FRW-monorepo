@@ -1,15 +1,14 @@
 import { LRUCache } from 'lru-cache';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
+import storage from '@onflow/flow-wallet-extension-shared/storage';
 import { INTERNAL_REQUEST_ORIGIN } from '@onflow/flow-wallet-shared/constant/domain-constants';
 import { MAINNET_CHAIN_ID } from '@onflow/flow-wallet-shared/types/network-types';
-
-import storage from '@/extension-shared/utils/storage';
 
 import permissionService, { type ConnectedSite } from '../permission';
 
 // Mock dependencies
-vi.mock('@/extension-shared/utils/storage', () => ({
+vi.mock('@onflow/flow-wallet-extension-shared/storage', () => ({
   default: {
     get: vi.fn(),
     set: vi.fn(),

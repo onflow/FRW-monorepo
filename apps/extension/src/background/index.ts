@@ -1,3 +1,5 @@
+import 'reflect-metadata';
+
 import { ethErrors } from 'eth-rpc-errors';
 import { initializeApp } from 'firebase/app';
 import {
@@ -7,8 +9,11 @@ import {
   setPersistence,
   signInAnonymously,
 } from 'firebase/auth/web-extension';
-import 'reflect-metadata';
 
+import { initializeChromeLogging } from '@onflow/flow-wallet-extension-shared/chrome-logger';
+import eventBus from '@onflow/flow-wallet-extension-shared/message/eventBus';
+import { Message } from '@onflow/flow-wallet-extension-shared/messaging';
+import storage from '@onflow/flow-wallet-extension-shared/storage';
 import { EVENTS } from '@onflow/flow-wallet-shared/constant/events';
 import { type WalletAddress } from '@onflow/flow-wallet-shared/types/wallet-types';
 import { isValidFlowAddress } from '@onflow/flow-wallet-shared/utils/address';
@@ -17,10 +22,6 @@ import { consoleError, consoleLog } from '@onflow/flow-wallet-shared/utils/conso
 import providerController from '@/background/controller/provider';
 import { preAuthzServiceDefinition } from '@/background/controller/serviceDefinition';
 import walletController, { type WalletController } from '@/background/controller/wallet';
-import { initializeChromeLogging } from '@/extension-shared/utils/chrome-logger';
-import eventBus from '@/extension-shared/utils/message/eventBus';
-import { Message } from '@/extension-shared/utils/messaging';
-import storage from '@/extension-shared/utils/storage';
 
 import {
   addressBookService,

@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react';
 
+import storage, {
+  type AreaName,
+  type StorageChange,
+} from '@onflow/flow-wallet-extension-shared/storage';
+
 import {
   addCachedDataListener,
   getCachedData,
   removeCachedDataListener,
 } from '@/data-model/cache-data-access';
-import storage, { type AreaName, type StorageChange } from '@/extension-shared/utils/storage';
 
 type DataState = {
   key: string;

@@ -1,7 +1,7 @@
+import storage from '@onflow/flow-wallet-extension-shared/storage';
 import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
 
 import { type CacheDataItem } from '@/data-model/data-cache-types';
-import storage from '@/extension-shared/utils/storage';
 
 /**
  * Get valid data from session storage

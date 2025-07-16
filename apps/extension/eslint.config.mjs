@@ -220,7 +220,10 @@ const config = [
               message: 'Reducers must be pure - cannot import from data model',
             },
             {
-              group: ['@/extension-shared/*', '@/extension-shared/**'],
+              group: [
+                '@onflow/flow-wallet-extension-shared/*',
+                '@onflow/flow-wallet-extension-shared/**',
+              ],
               message: 'Reducers must be pure - cannot import from extension-shared',
             },
           ],

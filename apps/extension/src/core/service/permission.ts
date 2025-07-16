@@ -1,11 +1,11 @@
 import { LRUCache } from 'lru-cache';
 
+import storage from '@onflow/flow-wallet-extension-shared/storage'; // Import storage for direct access
 import { INTERNAL_REQUEST_ORIGIN } from '@onflow/flow-wallet-shared/constant/domain-constants';
 import { MAINNET_CHAIN_ID } from '@onflow/flow-wallet-shared/types/network-types';
 import { consoleInfo, consoleWarn } from '@onflow/flow-wallet-shared/utils/console-log';
 
 import { permissionKey, permissionKeyV1 } from '@/data-model/user-data-keys';
-import storage from '@/extension-shared/utils/storage'; // Import storage for direct access
 
 import createPersistStore from '../utils/persistStore';
 

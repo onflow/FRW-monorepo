@@ -15,7 +15,7 @@ vi.mock('react', async () => {
 });
 
 // Mock storage module - must be defined before the vi.mock call
-vi.mock('@/extension-shared/utils/storage', () => {
+vi.mock('@onflow/flow-wallet-extension-shared/storage', () => {
   return {
     default: {
       get: vi.fn().mockImplementation((key) => {
@@ -37,8 +37,9 @@ vi.mock('@/extension-shared/utils/storage', () => {
   };
 });
 
+import storage from '@onflow/flow-wallet-extension-shared/storage';
+
 import { userWalletsKey } from '@/data-model/user-data-keys';
-import storage from '@/extension-shared/utils/storage';
 
 import { useNetwork } from '../useNetworkHook';
 

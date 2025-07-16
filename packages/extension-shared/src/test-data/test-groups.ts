@@ -1,4 +1,4 @@
-import HDWallet from 'ethereum-hdwallet';
+import { ethers, HDNodeWallet } from 'ethers';
 
 import {
   HASH_ALGO_NUM_SHA2_256,
@@ -46,8 +46,8 @@ export interface CommonParams {
   };
 }
 const getFrontEndAccountKey = (mnemonic: string) => {
-  const hdwallet = HDWallet.fromMnemonic(mnemonic);
-  const publicKey = hdwallet.derive("m/44'/539'/0'/0/0").getPublicKey().toString('hex');
+  const hdwallet = HDNodeWallet.fromMnemonic(ethers.Mnemonic.fromPhrase(mnemonic));
+  const publicKey = hdwallet.derivePath("m/44'/539'/0'/0/0").publicKey.toString();
 
   return {
     hashAlgo: HASH_ALGO_NUM_SHA2_256,

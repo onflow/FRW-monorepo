@@ -1,11 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import storage from '@onflow/flow-wallet-extension-shared/storage';
+
 import { getCachedData } from '@/data-model/cache-data-access';
 import { accountBalanceKey, accountBalanceRefreshRegex } from '@/data-model/cache-data-keys';
-import storage from '@/extension-shared/utils/storage';
 
 // Mock the storage module
-vi.mock('@/extension-shared/utils/storage', () => ({
+vi.mock('@onflow/flow-wallet-extension-shared/storage', () => ({
   default: {
     setSession: vi.fn().mockResolvedValue(undefined),
     getSession: vi.fn().mockResolvedValue(undefined),

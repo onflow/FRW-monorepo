@@ -2,6 +2,7 @@
 import encryptor from 'browser-passworder';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import storage from '@onflow/flow-wallet-extension-shared/storage';
 import { FLOW_BIP44_PATH } from '@onflow/flow-wallet-shared/constant/algo-constants';
 import {
   CURRENT_ID_KEY,
@@ -9,13 +10,12 @@ import {
 } from '@onflow/flow-wallet-shared/types/keyring-types';
 
 // Internal imports
-import storage from '@/extension-shared/utils/storage';
 
 import keyringService from '../keyring';
 import { MOCK_KEYS, MOCK_MNEMONIC, MOCK_PASSWORD } from './keyring-mock-data';
 
 // Mock dependencies
-vi.mock('@/extension-shared/utils/storage', () => ({
+vi.mock('@onflow/flow-wallet-extension-shared/storage', () => ({
   default: {
     get: vi.fn(),
     set: vi.fn(),

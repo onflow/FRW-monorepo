@@ -15,6 +15,8 @@ import {
 } from 'firebase/auth/web-extension';
 import { getId, getInstallations } from 'firebase/installations';
 
+import { returnCurrentProfileId } from '@onflow/flow-wallet-extension-shared/current-id';
+import storage from '@onflow/flow-wallet-extension-shared/storage';
 import {
   INITIAL_OPENAPI_URL,
   WEB_NEXT_URL,
@@ -68,8 +70,6 @@ import { consoleError, consoleLog } from '@onflow/flow-wallet-shared/utils/conso
 import { getPeriodFrequency } from '@onflow/flow-wallet-shared/utils/getPeriodFrequency';
 
 import { cadenceScriptsKey } from '@/data-model/cache-data-keys';
-import { returnCurrentProfileId } from '@/extension-shared/utils/current-id';
-import storage from '@/extension-shared/utils/storage';
 
 import { findKeyAndInfo } from '../utils';
 import {

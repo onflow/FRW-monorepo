@@ -1,9 +1,8 @@
 import compareVersions from 'compare-versions';
 
+import storage from '@onflow/flow-wallet-extension-shared/storage';
 import { type FlowNetwork, MAINNET_NETWORK } from '@onflow/flow-wallet-shared/types/network-types';
 import { type Currency, DEFAULT_CURRENCY } from '@onflow/flow-wallet-shared/types/wallet-types';
-
-import storage from '@/extension-shared/utils/storage';
 
 import keyringService from './keyring';
 import createPersistStore from '../utils/persistStore';
