@@ -4,7 +4,7 @@ vi.mock('../wallet', () => ({
     isUnlocked: vi.fn(),
     getNetwork: vi.fn(),
     getParentAddress: vi.fn(),
-    queryEvmAddress: vi.fn(),
+    getEvmAddress: vi.fn(),
     getCurrentAddress: vi.fn(),
     // Add any other Wallet methods used by providerController or its helpers
   },
@@ -26,6 +26,9 @@ vi.mock('@onflow/flow-wallet-core/service', () => {
     mixpanelTrack: vi.fn(),
     userWalletService: {
       setupFcl: vi.fn(),
+      getEvmAccountOfParent: vi.fn().mockResolvedValue({
+        address: '0x000000000000000000000002433D0DD1e2D81b9F',
+      }),
     },
     permissionService: {
       hasPermission: vi.fn(),
@@ -121,7 +124,7 @@ describe('ProviderController - signTypeData (EIP-1271)', async () => {
     walletController.isUnlocked = vi.fn().mockResolvedValue(true);
     walletController.getNetwork = vi.fn().mockResolvedValue('testnet');
     walletController.getParentAddress = vi.fn().mockResolvedValue(mockFlowAddress);
-    walletController.queryEvmAddress = vi.fn().mockResolvedValue(mockEvmAddress);
+    walletController.getEvmAddress = vi.fn().mockResolvedValue(mockEvmAddress);
     walletController.getCurrentAddress = vi.fn().mockResolvedValue(mockEvmAddress);
 
     // Spy and mock for keyringService
