@@ -19,3 +19,5 @@ export { default as remoteConfigService } from './remoteConfig';
 export { mixpanelTrack } from './mixpanel';
 export { default as logListener } from './log-listener';
 export { default as cadenceActionService } from './cadence-actions';
+export { default as accountsService } from './accounts';
+export { default as storageManagementService } from './storage-management';

@@ -14,18 +14,16 @@ import {
   preferenceService,
   remoteConfigService,
   sessionService,
+  storageManagementService,
   tokenListService,
   transactionService,
   userInfoService,
   userWalletService,
+  accountsService,
 } from '@onflow/flow-wallet-core';
 import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
 import BN from 'bignumber.js';
-import * as bip39 from 'bip39';
 import { ethErrors } from 'eth-rpc-errors';
-import * as ethUtil from 'ethereumjs-util';
-import { getApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth/web-extension';
 import { TransactionError } from 'web3';
 
 import {
@@ -37,33 +35,11 @@ import { HDKeyring } from '@onflow/flow-wallet-core/service/keyring/hdKeyring';
 import type { ConnectedSite } from '@onflow/flow-wallet-core/service/permission';
 import type { PreferenceAccount } from '@onflow/flow-wallet-core/service/preference';
 import {
-  addPendingAccountCreationTransaction,
-  addPlaceholderAccount,
-  removePendingAccountCreationTransaction,
-} from '@onflow/flow-wallet-core/service/userWallet';
-import {
-  getAccountKey,
-  pubKeyAccountToAccountKey,
-  pubKeySignAlgoToAccountKey,
-} from '@onflow/flow-wallet-core/utils/account-key';
-import {
   getValidData,
   registerRefreshListener,
   setCachedData,
   triggerRefresh,
 } from '@onflow/flow-wallet-core/utils/data-cache';
-import {
-  findAddressWithPK,
-  findAddressWithSeed,
-} from '@onflow/flow-wallet-core/utils/modules/findAddressWithPK';
-import { getOrCheckAccountsByPublicKeyTuple } from '@onflow/flow-wallet-core/utils/modules/findAddressWithPubKey';
-import {
-  formPubKeyTuple,
-  jsonToKey,
-  pk2PubKeyTuple,
-  seedWithPathAndPhrase2PublicPrivateKey,
-} from '@onflow/flow-wallet-core/utils/modules/publicPrivateKey';
-import { generateRandomId } from '@onflow/flow-wallet-core/utils/random-id';
 import {
   accountBalanceKey,
   childAccountDescKey,
@@ -76,7 +52,6 @@ import {
   evmNftIdsKey,
   type EvmNftIdsStore,
   getCachedNftCollection,
-  getCachedScripts,
   mainAccountsKey,
   nftCatalogCollectionsKey,
   registerStatusKey,
@@ -90,11 +65,7 @@ import eventBus from '@onflow/flow-wallet-extension-shared/message/eventBus';
 import { retryOperation } from '@onflow/flow-wallet-extension-shared/retryOperation';
 import storage from '@onflow/flow-wallet-extension-shared/storage';
 import { FLOW_BIP44_PATH } from '@onflow/flow-wallet-shared/constant/algo-constants';
-import {
-  HTTP_STATUS_CONFLICT,
-  HTTP_STATUS_TOO_MANY_REQUESTS,
-  INTERNAL_REQUEST_ORIGIN,
-} from '@onflow/flow-wallet-shared/constant/domain-constants';
+import { INTERNAL_REQUEST_ORIGIN } from '@onflow/flow-wallet-shared/constant/domain-constants';
 import { type CustomFungibleTokenInfo } from '@onflow/flow-wallet-shared/types/coin-types';
 import {
   type FeatureFlagKey,
@@ -106,7 +77,6 @@ import {
 } from '@onflow/flow-wallet-shared/types/key-types';
 import { CURRENT_ID_KEY } from '@onflow/flow-wallet-shared/types/keyring-types';
 import {
-  type AccountKeyRequest,
   type Contact,
   ContactType,
   type FlowNetwork,
@@ -120,7 +90,7 @@ import {
   type NFTCollectionData,
   type NFTCollections,
 } from '@onflow/flow-wallet-shared/types/nft-types';
-import { type CategoryScripts } from '@onflow/flow-wallet-shared/types/script-types';
+import { type NetworkScripts } from '@onflow/flow-wallet-shared/types/script-types';
 import { type TokenInfo } from '@onflow/flow-wallet-shared/types/token-info';
 import { type TrackingEvents } from '@onflow/flow-wallet-shared/types/tracking-types';
 import {
@@ -146,10 +116,6 @@ import {
   isValidFlowAddress,
   withPrefix,
 } from '@onflow/flow-wallet-shared/utils/address';
-import {
-  getStringFromHashAlgo,
-  getStringFromSignAlgo,
-} from '@onflow/flow-wallet-shared/utils/algo';
 import { consoleError, consoleWarn } from '@onflow/flow-wallet-shared/utils/console-log';
 import { getEmojiList } from '@onflow/flow-wallet-shared/utils/emoji-util';
 
@@ -214,9 +180,7 @@ export class WalletController extends BaseController {
   verifyPassword = async (password: string) => keyringService.verifyPassword(password);
 
   verifyPasswordIfBooted = async (password: string) => {
-    if (await this.isBooted()) {
-      await this.verifyPassword(password);
-    }
+    return await accountsService.verifyPasswordIfBooted(password);
   };
   sendRequest = (data) => {
     return provider({
@@ -241,41 +205,7 @@ export class WalletController extends BaseController {
    * @param mnemonic the mnemonic for the new private key
    */
   registerNewProfile = async (username: string, password: string, mnemonic: string) => {
-    // The account is the public key of the account. It's derived from the mnemonic. We do not support custom curves or passphrases for new accounts
-    const accountKey: AccountKeyRequest = await getAccountKey(mnemonic);
-
-    // We're booting the keyring with the new password
-    // This does not update the vault, it simply sets the password / cypher methods we're going to use to store our private keys in the vault
-    await this.verifyPasswordIfBooted(password);
-    // We're then registering the account with the public key
-    // This calls our backend API which gives us back an account id
-    // This register call ALSO sets the currentId in local storage
-    // In addition, it will sign us in to the new account with our auth (Firebase) on our backend
-    // Note this auth is different to unlocking the wallet with the password.
-    await openapiService.register(accountKey, username);
-
-    // We're creating the keyring with the mnemonic. This will encypt the private keys and store them in the keyring vault and deepVault
-    await this.createKeyringWithMnemonics(
-      accountKey.public_key,
-      accountKey.sign_algo,
-      password,
-      mnemonic
-    );
-    // Set a two minute cache for the register status
-    setCachedData(registerStatusKey(accountKey.public_key), true, 120_000);
-
-    // We're creating the Flow address for the account
-    // Only after this, do we have a valid wallet with a Flow address
-    const result = await openapiService.createFlowAddressV2();
-
-    // Add the pending account creation transaction to the user wallet
-    await addPendingAccountCreationTransaction('mainnet', accountKey.public_key, result.data.txid);
-
-    // Switch to the new public key
-    await userWalletService.setCurrentPubkey(accountKey.public_key);
-
-    // Check for the new address asynchronously
-    this.checkForNewAddress('mainnet', accountKey.public_key, result.data.txid);
+    return await accountsService.registerNewProfile(username, password, mnemonic);
   };
 
   checkForNewAddress = async (
@@ -283,81 +213,11 @@ export class WalletController extends BaseController {
     pubKey: string,
     txid: string
   ): Promise<FclAccount | null> => {
-    try {
-      const txResult = await fcl.tx(txid).onceSealed();
-
-      // Find the AccountCreated event and extract the address
-      const accountCreatedEvent = txResult.events.find(
-        (event) => event.type === 'flow.AccountCreated'
-      );
-
-      if (!accountCreatedEvent) {
-        throw new Error('Account creation event not found in transaction');
-      }
-
-      const newAddress = accountCreatedEvent.data.address;
-
-      // Get the account from the new address
-      const account = await fcl.account(newAddress);
-      if (!account) {
-        throw new Error('Fcl account not found');
-      }
-      // Add the placeholder account to the user wallet
-      await addPlaceholderAccount(network, pubKey, txid, account);
-
-      return account;
-    } catch (error) {
-      // Remove from pending creation transactions on error
-      await removePendingAccountCreationTransaction(network, pubKey, txid);
-
-      throw new Error(`Account creation failed: ${error.message || 'Unknown error'}`);
-    }
+    return await accountsService.checkForNewAddress(network, pubKey, txid);
   };
 
   importAccountFromMobile = async (address: string, password: string, mnemonic: string) => {
-    // Verify password
-    await this.verifyPasswordIfBooted(password);
-    // Switch to mainnet first as the account is on mainnet
-    if ((await this.getNetwork()) !== 'mainnet') {
-      await this.switchNetwork('mainnet');
-    }
-    // Query the account to get the account info befofe we add the key
-    const accountInfo = await this.getAccountInfo(address);
-
-    // The account is the public key of the account. It's derived from the mnemonic. We do not support custom curves or passphrases for new accounts
-    const accountKey: AccountKeyRequest = await getAccountKey(mnemonic);
-
-    // Login to the account - it should already be registered by the mobile app
-    await this.loginWithMnemonic(mnemonic, true);
-
-    // We're creating the keyring with the mnemonic. This will encypt the private keys and store them in the keyring vault and deepVault
-    await this.createKeyringWithMnemonics(
-      accountKey.public_key,
-      accountKey.sign_algo,
-      password,
-      mnemonic
-    );
-
-    // Locally add the key to the account if not there already
-    const indexOfKey = accountInfo.keys.findIndex((key) => key.publicKey === accountKey.public_key);
-    if (indexOfKey === -1) {
-      accountInfo.keys.push({
-        index: accountInfo.keys.length,
-        publicKey: accountKey.public_key,
-        signAlgo: accountKey.sign_algo,
-        hashAlgo: accountKey.hash_algo,
-        weight: accountKey.weight,
-        signAlgoString: getStringFromSignAlgo(accountKey.sign_algo),
-        hashAlgoString: getStringFromHashAlgo(accountKey.hash_algo),
-        sequenceNumber: 0,
-        revoked: false,
-      });
-    }
-
-    setCachedData(registerStatusKey(accountKey.public_key), true, 120_000);
-
-    // Register the account in userWallet
-    userWalletService.registerCurrentPubkey(accountKey.public_key, accountInfo);
+    return await accountsService.importAccountFromMobile(address, password, mnemonic);
   };
   /**
    * Create a new address
@@ -365,54 +225,7 @@ export class WalletController extends BaseController {
    */
 
   createNewAccount = async (network: string) => {
-    const publickey = await keyringService.getCurrentPublicKey();
-    const signAlgo = await keyringService.getCurrentSignAlgo();
-    const accountKey = pubKeySignAlgoToAccountKey(publickey, signAlgo);
-
-    const randomTxId = generateRandomId();
-
-    try {
-      setCachedData(registerStatusKey(publickey), true, 120_000);
-
-      // Add the pending account creation transaction to the user wallet to show the random txid
-      // This is to show the spinner in the UI
-      await addPendingAccountCreationTransaction(network, accountKey.public_key, randomTxId);
-
-      const data = await openapiService.createNewAccount(
-        network,
-        accountKey.hash_algo,
-        accountKey.sign_algo,
-        publickey,
-        1000
-      );
-      if (data.status === HTTP_STATUS_TOO_MANY_REQUESTS) {
-        throw new Error('Rate limit exceeded. Please wait at least 2 minutes between requests.');
-      }
-
-      if (!data || !data.data || !data.data.txid) {
-        throw new Error('Transaction ID not found in response');
-      }
-
-      const txid = data.data.txid;
-
-      // Add the pending account creation transaction to the user wallet replacing the random txid
-      await addPendingAccountCreationTransaction(network, accountKey.public_key, txid, randomTxId);
-
-      // Check for the new address
-      this.checkForNewAddress(network, accountKey.public_key, txid);
-    } catch (error) {
-      // Remove the pending account creation transaction if the operation fails
-      await removePendingAccountCreationTransaction(network, accountKey.public_key, randomTxId);
-
-      // Reset the registration status if the operation fails
-      setCachedData(registerStatusKey(publickey), false);
-
-      // Log the error for debugging
-      consoleError('Failed to create manual address:', error);
-
-      // Re-throw a more specific error
-      throw new Error(`Failed to create manual address. ${error.message}`);
-    }
+    return await accountsService.createNewAccount(network);
   };
 
   /**
@@ -431,55 +244,13 @@ export class WalletController extends BaseController {
     derivationPath: string = FLOW_BIP44_PATH,
     passphrase: string = ''
   ) => {
-    // We should be validating the password as the first thing we do
-    await this.verifyPasswordIfBooted(password);
-
-    // Get the public key tuple from the mnemonic
-    const pubKTuple: PublicKeyTuple = formPubKeyTuple(
-      await seedWithPathAndPhrase2PublicPrivateKey(mnemonic, derivationPath, passphrase)
-    );
-    // Check that there are accounts on the network for this public key
-    const accounts = await getOrCheckAccountsByPublicKeyTuple(pubKTuple);
-    if (accounts.length === 0) {
-      throw new Error('Invalid seed phrase');
-    }
-    // We use the public key from the first account that is returned
-    const accountKeyStruct = pubKeyAccountToAccountKey(accounts[0]);
-    // Check if the account is registered on our backend (i.e. it's been created in wallet or used previously in wallet)
-
-    const importCheckResult = await openapiService.checkImport(accountKeyStruct.public_key);
-    if (importCheckResult.status === HTTP_STATUS_CONFLICT) {
-      // The account has been previously imported, so just sign in with it
-
-      // Sign in with the mnemonic
-      await this.loginWithMnemonic(mnemonic, true, derivationPath, passphrase);
-    } else {
-      // We have to create a new user on our backend
-      // Get the device info so we can do analytics
-      const deviceInfo = await userWalletService.getDeviceInfo();
-      // Import the account creating a new user on our backend and sign in as the new user
-      // TODO: Why can't we just call register here?
-      await openapiService.importKey(
-        accountKeyStruct,
-        deviceInfo,
-        username,
-        {},
-        accounts[0].address
-      );
-    }
-
-    // Now we can create the keyring with the mnemonic (and path and phrase)
-    await this.createKeyringWithMnemonics(
-      accountKeyStruct.public_key,
-      accountKeyStruct.sign_algo,
+    return await accountsService.importProfileUsingMnemonic(
+      username,
       password,
       mnemonic,
       derivationPath,
       passphrase
     );
-
-    // Set the current pubkey in userWallet
-    userWalletService.setCurrentPubkey(accountKeyStruct.public_key);
   };
 
   /**
@@ -496,48 +267,7 @@ export class WalletController extends BaseController {
     pk: string,
     address: FlowAddress | null = null
   ) => {
-    // Boot the keyring with the password
-    // We should be validating the password as the first thing we do
-    await this.verifyPasswordIfBooted(password);
-    // Get the public key tuple from the private key
-    const pubKTuple: PublicKeyTuple = await pk2PubKeyTuple(pk);
-
-    // Check if the public key has any accounts associated with it
-    const accounts = await getOrCheckAccountsByPublicKeyTuple(pubKTuple, address);
-    if (accounts.length === 0) {
-      throw new Error('Invalid private key - no accounts found');
-    }
-
-    // We use the public key from the first account that is returned
-    const publicKey = accounts[0].publicKey;
-    const signAlgo = accounts[0].signAlgo;
-    // Check if the account is registered on our backend (i.e. it's been created in wallet or used previously in wallet)
-    const importCheckResult = await openapiService.checkImport(publicKey);
-    if (importCheckResult.status === HTTP_STATUS_CONFLICT) {
-      // The account has been previously imported, so just sign in with it
-
-      // Sign in with the private key
-      await this.loginWithPrivatekey(pk, true);
-    } else {
-      // We have to create a new user on our backend
-      const accountKeyStruct = pubKeyAccountToAccountKey(accounts[0]);
-      // Get the device info so we can do analytics
-      const deviceInfo = await userWalletService.getDeviceInfo();
-      // Import the account creating a new user on our backend and sign in as the new user
-      // TODO: Why can't we just call register here?
-      await openapiService.importKey(
-        accountKeyStruct,
-        deviceInfo,
-        username,
-        {},
-        accounts[0].address
-      );
-    }
-    // Now we can create the keyring with the mnemonic (and path and phrase)
-    await this.importPrivateKey(publicKey, signAlgo, password, pk);
-
-    // Set the current pubkey in userWallet
-    userWalletService.setCurrentPubkey(publicKey);
+    return await accountsService.importProfileUsingPrivateKey(username, password, pk, address);
   };
 
   /**
@@ -604,7 +334,7 @@ export class WalletController extends BaseController {
   refreshWallets = async () => {
     // Refresh all the wallets after unlocking or switching profiles
     // Refresh the cadence scripts first
-    await this.getCadenceScripts();
+    await openapiService.getCadenceScripts();
     // Refresh the user info
     let userInfo = {};
     try {
@@ -836,33 +566,14 @@ export class WalletController extends BaseController {
   };
 
   importPrivateKey = async (publicKey: string, signAlgo: number, password: string, pk: string) => {
-    const privateKey = ethUtil.stripHexPrefix(pk);
-    const buffer = Buffer.from(privateKey, 'hex');
-
-    const error = new Error('the private key is invalid');
-    try {
-      if (!ethUtil.isValidPrivate(buffer)) {
-        throw error;
-      }
-    } catch {
-      throw error;
-    }
-
-    const keyring = await keyringService.importPrivateKey(
-      publicKey,
-      signAlgo,
-      password,
-      privateKey
-    );
-    return this._setCurrentAccountFromKeyring(keyring);
+    return await accountsService.importPrivateKey(publicKey, signAlgo, password, pk);
   };
 
   jsonToPrivateKeyHex = async (json: string, password: string): Promise<string | null> => {
-    const pk = await jsonToKey(json, password);
-    return pk ? Buffer.from(pk.data()).toString('hex') : null;
+    return await accountsService.jsonToPrivateKeyHex(json, password);
   };
   findAddressWithPrivateKey = async (pk: string, address: string) => {
-    return await findAddressWithPK(pk, address);
+    return await accountsService.findAddressWithPrivateKey(pk, address);
   };
   findAddressWithSeedPhrase = async (
     seed: string,
@@ -870,29 +581,12 @@ export class WalletController extends BaseController {
     derivationPath: string = FLOW_BIP44_PATH,
     passphrase: string = ''
   ): Promise<PublicKeyAccount[]> => {
-    return await findAddressWithSeed(seed, address, derivationPath, passphrase);
-  };
-
-  private createKeyringWithMnemonics = async (
-    publicKey: string,
-    signAlgo: number,
-    password: string,
-    mnemonic: string,
-    derivationPath = FLOW_BIP44_PATH,
-    passphrase = ''
-  ) => {
-    // TODO: NEED REVISIT HERE:
-    await keyringService.clearCurrentKeyring();
-
-    const keyring = await keyringService.createKeyringWithMnemonics(
-      publicKey,
-      signAlgo,
-      password,
-      mnemonic,
+    return await accountsService.findAddressWithSeedPhrase(
+      seed,
+      address,
       derivationPath,
       passphrase
     );
-    return this._setCurrentAccountFromKeyring(keyring);
   };
 
   /**
@@ -976,7 +670,7 @@ export class WalletController extends BaseController {
     const keyring = this._getKeyringByType(KEYRING_CLASS.MNEMONIC);
 
     const result = await keyringService.addNewAccount(password, keyring);
-    this._setCurrentAccountFromKeyring(keyring, -1);
+    await this._setCurrentAccountFromKeyring(keyring, -1);
     return result;
   };
 
@@ -1074,23 +768,7 @@ export class WalletController extends BaseController {
   }
 
   private async _setCurrentAccountFromKeyring(keyring, index = 0) {
-    const accounts = keyring.getAccountsWithBrand
-      ? await keyring.getAccountsWithBrand()
-      : await keyring.getAccounts();
-    const account = accounts[index < 0 ? index + accounts.length : index];
-
-    if (!account) {
-      throw new Error('the current account is empty');
-    }
-
-    const _account = {
-      address: typeof account === 'string' ? account : account.address,
-      type: keyring.type,
-      brandName: typeof account === 'string' ? keyring.type : account.brandName,
-    };
-    preferenceService.setCurrentAccount(_account);
-
-    return [_account];
+    return await accountsService._setCurrentAccountFromKeyring(keyring, index);
   }
 
   getHighlightWalletList = () => {
@@ -1731,7 +1409,7 @@ export class WalletController extends BaseController {
     // If we don't do this, the user wallets will not be refreshed
     this.clearNFT();
     this.refreshAddressBook();
-    await this.getCadenceScripts();
+    await openapiService.getCadenceScripts();
 
     this.abort();
   };
@@ -2015,28 +1693,23 @@ export class WalletController extends BaseController {
   };
 
   clearNFT = () => {
-    nftService.clear();
+    return storageManagementService.clearNFT();
   };
 
   clearNFTCollection = async () => {
-    await nftService.clearNFTCollection();
+    return await storageManagementService.clearNFTCollection();
   };
 
   clearCoinList = async () => {
-    await coinListService.clear();
+    return await storageManagementService.clearCoinList();
   };
 
   clearAllStorage = () => {
-    nftService.clear();
-    userInfoService.removeUserInfo();
-    coinListService.clear();
-    addressBookService.clear();
-    userWalletService.clear();
-    transactionService.clear();
+    return storageManagementService.clearAllStorage();
   };
 
   clearLocalStorage = async () => {
-    await storage.clear();
+    return await storageManagementService.clearLocalStorage();
   };
 
   getSingleCollection = async (
@@ -2086,17 +1759,8 @@ export class WalletController extends BaseController {
     return data;
   };
 
-  getCadenceScripts = async (): Promise<CategoryScripts | undefined> => {
-    try {
-      const cadenceScripts = await getCachedScripts();
-
-      const network = userWalletService.getNetwork();
-      return network === 'mainnet'
-        ? cadenceScripts?.scripts.mainnet
-        : cadenceScripts?.scripts.testnet;
-    } catch (error) {
-      consoleError(error, '=== get scripts error ===');
-    }
+  getCadenceScripts = async (): Promise<NetworkScripts> => {
+    return await openapiService.getCadenceScripts();
   };
 
   // Google Drive - Backup
@@ -2140,24 +1804,7 @@ export class WalletController extends BaseController {
   };
 
   uploadMnemonicToGoogleDrive = async (mnemonic: string, username: string, password: string) => {
-    const isValidMnemonic = bip39.validateMnemonic(mnemonic);
-    if (!isValidMnemonic) {
-      throw new Error('Invalid mnemonic');
-    }
-    const app = getApp(process.env.NODE_ENV!);
-    const user = await getAuth(app).currentUser;
-    try {
-      await googleDriveService.uploadMnemonicToGoogleDrive(mnemonic, username, user!.uid, password);
-      mixpanelTrack.track('multi_backup_created', {
-        address: (await this.getCurrentAddress()) || '',
-        providers: ['GoogleDrive'],
-      });
-    } catch {
-      mixpanelTrack.track('multi_backup_creation_failed', {
-        address: (await this.getCurrentAddress()) || '',
-        providers: ['GoogleDrive'],
-      });
-    }
+    return await accountsService.uploadMnemonicToGoogleDrive(mnemonic, username, password);
   };
 
   loadBackupAccounts = async (): Promise<string[]> => {
@@ -2205,22 +1852,11 @@ export class WalletController extends BaseController {
   };
 
   getAccountInfo = async (address: string): Promise<FclAccount> => {
-    if (!isValidFlowAddress(address)) {
-      throw new Error('Invalid address');
-    }
-    return await fcl.account(address);
+    return await accountsService.getAccountInfo(address);
   };
 
   getMainAccountInfo = async (): Promise<FclAccount> => {
-    const address = await this.getMainAddress();
-
-    if (!address) {
-      throw new Error('No address found');
-    }
-    if (!isValidFlowAddress(address)) {
-      throw new Error('Invalid address');
-    }
-    return await fcl.account(address);
+    return await accountsService.getMainAccountInfo();
   };
 
   getEmoji = async () => {
