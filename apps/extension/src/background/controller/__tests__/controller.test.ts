@@ -51,7 +51,11 @@ vi.mock('../notification', () => ({
 }));
 
 // 2. ADD THE FOLLOWING BLOCK of clean imports here:
-import { keyringService, signTextHistoryService } from '@onflow/flow-wallet-core';
+import {
+  keyringService,
+  signTextHistoryService,
+  userWalletService,
+} from '@onflow/flow-wallet-core';
 import * as ethUtil from 'ethereumjs-util';
 import { bufferToHex, ecrecover, stripHexPrefix } from 'ethereumjs-util';
 import { ethers } from 'ethers';
@@ -194,6 +198,20 @@ describe('ProviderController - signTypeData (EIP-1271)', async () => {
         typeof notificationService.requestApproval
       >
     ).mockResolvedValue({});
+
+    // Mock userWalletService.getEvmAccountOfParent
+    (
+      userWalletService.getEvmAccountOfParent as MockedFunction<
+        typeof userWalletService.getEvmAccountOfParent
+      >
+    ).mockResolvedValue({
+      address: mockEvmAddress,
+      chain: TESTNET_CHAIN_ID,
+      id: 1,
+      name: 'EVM Account',
+      icon: '🚀',
+      color: '#4CAF50',
+    });
   });
 
   afterEach(() => {
