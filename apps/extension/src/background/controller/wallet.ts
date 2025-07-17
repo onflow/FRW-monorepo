@@ -14,6 +14,7 @@ import {
   preferenceService,
   remoteConfigService,
   sessionService,
+  tokenListService,
   transactionService,
   userInfoService,
   userWalletService,
@@ -94,6 +95,7 @@ import {
   HTTP_STATUS_TOO_MANY_REQUESTS,
   INTERNAL_REQUEST_ORIGIN,
 } from '@onflow/flow-wallet-shared/constant/domain-constants';
+import { type CustomFungibleTokenInfo } from '@onflow/flow-wallet-shared/types/coin-types';
 import {
   type FeatureFlagKey,
   type FeatureFlags,
@@ -111,6 +113,8 @@ import {
   MAINNET_CHAIN_ID,
   type NFTModelV2,
   type UserInfoResponse,
+  PriceProvider,
+  Period,
 } from '@onflow/flow-wallet-shared/types/network-types';
 import {
   type NFTCollectionData,
@@ -1601,6 +1605,35 @@ export class WalletController extends BaseController {
     cadenceActionService.sendNFT(recipient, id, token);
   sendNBANFT = async (recipient: string, id: number, token: NFTModelV2): Promise<string> =>
     cadenceActionService.sendNBANFT(recipient, id, token);
+
+  addCustomEvmToken = async (network: string, token: CustomFungibleTokenInfo) => {
+    return await tokenListService.addCustomEvmToken(network, token);
+  };
+
+  removeCustomEvmToken = async (network: string, tokenAddress: string) => {
+    return await tokenListService.removeCustomEvmToken(network, tokenAddress);
+  };
+
+  getTokenPrice = async (token: string, provider = PriceProvider.binance) => {
+    return await openapiService.getTokenPrice(token, provider);
+  };
+
+  getTokenPriceHistory = async (
+    token: string,
+    period = Period.oneDay,
+    provider = PriceProvider.binance
+  ) => {
+    return await openapiService.getTokenPriceHistoryArray(token, period, provider);
+  };
+
+  getChildAccountAllowTypes = async (parentAddress: string, childAddress: string) => {
+    const network = await this.getNetwork();
+    return await nftService.loadChildAccountAllowTypes(network, parentAddress, childAddress);
+  };
+
+  checkCanMoveChild = async (address: string) => {
+    return await openapiService.checkChildAccount(address);
+  };
 
   //transaction
 
