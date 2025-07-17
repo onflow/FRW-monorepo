@@ -1217,7 +1217,7 @@ export class transactionService {
     if (!parentAddress) {
       throw new Error('Parent address not found');
     }
-    const script = await getScripts(network, 'evm', 'reateCoaEmpty');
+    const script = await getScripts(network, 'evm', 'createCoaEmpty');
 
     const txID = await userWalletService.sendTransaction(script, []);
 
