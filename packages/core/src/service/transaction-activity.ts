@@ -33,6 +33,23 @@ interface PendingTransactionOptions {
   token?: string;
 }
 
+/**
+ * Maps FCL transaction status strings to UI format
+ * This replaces the previous i18n.getMessage() calls
+ */
+const mapTransactionStatus = (statusString: string): string => {
+  const statusMap: Record<string, string> = {
+    PENDING: 'PENDING',
+    EXECUTED: 'EXECUTED',
+    SEALED: 'SEALED',
+    EXPIRED: 'EXPIRED',
+    FINALIZED: 'FINALIZED',
+    SUCCESS: 'SUCCESS',
+  };
+
+  return statusMap[statusString.toUpperCase()] || statusString;
+};
+
 class TransactionActivity {
   private store: TransactionStore = {
     pendingItem: {
@@ -158,7 +175,8 @@ class TransactionActivity {
     }
     const txItem = txList[txItemIndex];
 
-    txItem.status = transactionStatus.statusString;
+    // Map the status string to the expected UI format
+    txItem.status = mapTransactionStatus(transactionStatus.statusString);
     txItem.error = transactionStatus.statusCode === 1;
 
     const evmTxIds: string[] = transactionStatus.events?.reduce(
@@ -265,7 +283,7 @@ class TransactionActivity {
       transactionHolder.sender = tx.sender;
       transactionHolder.receiver = tx.receiver;
       transactionHolder.time = new Date(tx.time).getTime();
-      transactionHolder.status = tx.status;
+      transactionHolder.status = mapTransactionStatus(tx.status);
       transactionHolder.hash = tx.txid;
       transactionHolder.error = tx.error;
       transactionHolder.image = tx.image;
