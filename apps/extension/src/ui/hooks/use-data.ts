@@ -4,8 +4,11 @@ import {
   addCachedDataListener,
   getCachedData,
   removeCachedDataListener,
-} from '@/data-model/cache-data-access';
-import storage, { type AreaName, type StorageChange } from '@/extension-shared/utils/storage';
+} from '@onflow/flow-wallet-data-model/cache-data-access';
+import storage, {
+  type AreaName,
+  type StorageChange,
+} from '@onflow/flow-wallet-extension-shared/storage';
 
 type DataState = {
   key: string;

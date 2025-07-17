@@ -1,10 +1,10 @@
+import React, { useCallback, useEffect, useReducer } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router';
+
 import {
   INITIAL_TRANSACTION_STATE,
   transactionReducer,
 } from '@onflow/flow-wallet-reducers/transaction-reducer';
-import React, { useCallback, useEffect, useReducer } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router';
-
 import {
   type FlowAddress,
   type WalletAddress,

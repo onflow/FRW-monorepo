@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { createTestGroups } from '@/extension-shared/utils/test-data/test-groups';
+import { createTestGroups } from '@onflow/flow-wallet-extension-shared/test-data/test-groups';
 
 import methods from '../openapi-methods.json';
 
@@ -12,8 +12,8 @@ describe('ApiTestPage', () => {
     username: 'test-user',
     token: 'test-token',
     password: 'test-password',
-    mnemonicExisting: 'test-mnemonic',
-    mnemonicGenerated: 'test-mnemonic-new',
+    mnemonicExisting: 'test test test test test test test test test test test junk',
+    mnemonicGenerated: 'test test test test test test test test test test test junk',
     publicKey: {
       P256: { pubK: '', pk: '' },
       SECP256K1: { pubK: '', pk: '' },

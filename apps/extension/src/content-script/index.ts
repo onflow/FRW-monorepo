@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid';
 import { v4 as uuid } from 'uuid';
 
-import { Message } from '@/extension-shared/utils/messaging';
+import { Message } from '@onflow/flow-wallet-extension-shared/messaging';
 
 const channelName = nanoid();
 const extensionId = chrome.runtime.id;

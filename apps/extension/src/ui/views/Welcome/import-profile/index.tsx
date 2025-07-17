@@ -1,12 +1,12 @@
 import { Alert, Snackbar } from '@mui/material';
+import React, { useEffect, useReducer } from 'react';
+import { useNavigate } from 'react-router';
+
 import {
   IMPORT_STEPS,
   importProfileReducer,
   INITIAL_IMPORT_STATE,
 } from '@onflow/flow-wallet-reducers/import-profile-reducer';
-import React, { useEffect, useReducer } from 'react';
-import { useNavigate } from 'react-router';
-
 import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
 
 import Google from '@/ui/components/google-import';

@@ -105,7 +105,7 @@ graph TB
   - Message routing between UI and core
   - Chrome API interactions
   - Wallet controller coordination
-- **Can import from**: `@/core/*`, `@onflow/flow-wallet-shared/*`
+- **Can import from**: `@onflow/flow-wallet-core/*`, `@onflow/flow-wallet-shared/*`
 - **Cannot import from**: `@/ui/*`
 
 ### 2. Core (`src/core/`)
@@ -128,7 +128,7 @@ graph TB
   - State management for display
   - User input handling
 - **Can import from**: `@onflow/flow-wallet-shared/*`
-- **Cannot import from**: `@/core/*`, `@/background/*`
+- **Cannot import from**: `@onflow/flow-wallet-core/*`, `@/background/*`
 - **Communication**: Uses messaging to communicate with background/wallet controller
 
 #### UI Internal Structure
@@ -251,7 +251,7 @@ import { SomeType } from '@onflow/flow-wallet-shared/types/some-type';
 import { formatAddress } from '@onflow/flow-wallet-shared/utils/address';
 
 // ✅ Correct - cross-folder imports with aliases
-import { walletService } from '@/core/service/wallet';
+import { walletService } from '@onflow/flow-wallet-core/service/wallet';
 import { Button } from '@/ui/components/Button';
 import { useWallet } from '@/ui/hooks/use-wallet';
 
@@ -291,7 +291,7 @@ import { formatAddress } from '@onflow/flow-wallet-shared/utils/address';
 
 ```typescript
 // ❌ Wrong - UI importing from core
-import { keyringService } from '@/core/service/keyring';
+import { keyringService } from '@onflow/flow-wallet-core/service/keyring';
 
 // ❌ Wrong - Core importing from UI
 import { Button } from '@/ui/components/Button';
@@ -363,7 +363,7 @@ Background directly imports and uses core services:
 
 ```typescript
 // Background
-import { keyringService } from '@/core/service/keyring';
+import { keyringService } from '@onflow/flow-wallet-core/service/keyring';
 const accounts = await keyringService.getAccounts();
 ```
 
@@ -382,10 +382,10 @@ The ESLint rules have been simplified to focus on the essential architectural bo
 
 3. **Core services**:
    - Same as core, plus:
-   - Can only import from `@/core/service/*` or `@/core/utils/*` within core
+   - Can only import from `@onflow/flow-wallet-core/service/*` or `@onflow/flow-wallet-core/utils/*` within core
 
 4. **UI folder**:
-   - Cannot import from `@/core/*` or `@/background/*`
+   - Cannot import from `@onflow/flow-wallet-core/*` or `@/background/*`
    - All other imports allowed
 
 5. **Reducers package** (`@onflow/flow-wallet-reducers`):
@@ -393,7 +393,7 @@ The ESLint rules have been simplified to focus on the essential architectural bo
    - Must remain pure (no imports from other layers or packages)
 
 6. **Content script**:
-   - Cannot import from `@/ui/*` or `@/core/*`
+   - Cannot import from `@/ui/*` or `@onflow/flow-wallet-core/*`
    - Can import from `@/background/*` and shared
 
 ## Benefits

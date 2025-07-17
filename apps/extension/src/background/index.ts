@@ -1,26 +1,4 @@
-import { ethErrors } from 'eth-rpc-errors';
-import { initializeApp } from 'firebase/app';
-import {
-  getAuth,
-  indexedDBLocalPersistence,
-  onAuthStateChanged,
-  setPersistence,
-  signInAnonymously,
-} from 'firebase/auth/web-extension';
 import 'reflect-metadata';
-
-import { EVENTS } from '@onflow/flow-wallet-shared/constant/events';
-import { type WalletAddress } from '@onflow/flow-wallet-shared/types/wallet-types';
-import { isValidFlowAddress } from '@onflow/flow-wallet-shared/utils/address';
-import { consoleError, consoleLog } from '@onflow/flow-wallet-shared/utils/console-log';
-
-import providerController from '@/background/controller/provider';
-import { preAuthzServiceDefinition } from '@/background/controller/serviceDefinition';
-import walletController, { type WalletController } from '@/background/controller/wallet';
-import { initializeChromeLogging } from '@/extension-shared/utils/chrome-logger';
-import eventBus from '@/extension-shared/utils/message/eventBus';
-import { Message } from '@/extension-shared/utils/messaging';
-import storage from '@/extension-shared/utils/storage';
 
 import {
   addressBookService,
@@ -41,10 +19,33 @@ import {
   transactionService,
   userInfoService,
   userWalletService,
-} from '../core/service';
+} from '@onflow/flow-wallet-core';
+import { ethErrors } from 'eth-rpc-errors';
+import { initializeApp } from 'firebase/app';
+import {
+  getAuth,
+  indexedDBLocalPersistence,
+  onAuthStateChanged,
+  setPersistence,
+  signInAnonymously,
+} from 'firebase/auth/web-extension';
+
+import { getFirbaseConfig } from '@onflow/flow-wallet-core/utils/firebaseConfig';
+import { setEnvironmentBadge } from '@onflow/flow-wallet-core/utils/setEnvironmentBadge';
+import { initializeChromeLogging } from '@onflow/flow-wallet-extension-shared/chrome-logger';
+import eventBus from '@onflow/flow-wallet-extension-shared/message/eventBus';
+import { Message } from '@onflow/flow-wallet-extension-shared/messaging';
+import storage from '@onflow/flow-wallet-extension-shared/storage';
+import { EVENTS } from '@onflow/flow-wallet-shared/constant/events';
+import { type WalletAddress } from '@onflow/flow-wallet-shared/types/wallet-types';
+import { isValidFlowAddress } from '@onflow/flow-wallet-shared/utils/address';
+import { consoleError, consoleLog } from '@onflow/flow-wallet-shared/utils/console-log';
+
+import providerController from '@/background/controller/provider';
+import { preAuthzServiceDefinition } from '@/background/controller/serviceDefinition';
+import walletController, { type WalletController } from '@/background/controller/wallet';
+
 import notificationService from './controller/notification';
-import { getFirbaseConfig } from '../core/utils/firebaseConfig';
-import { setEnvironmentBadge } from '../core/utils/setEnvironmentBadge';
 
 const { PortMessage } = Message;
 

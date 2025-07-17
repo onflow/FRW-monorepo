@@ -303,7 +303,7 @@ pnpm test
 The project enforces strict architectural boundaries via ESLint:
 
 1. **UI Layer** (`apps/extension/src/ui/`):
-   - Cannot import from `@/core/*` or `@/background/*`
+   - Cannot import from `@onflow/flow-wallet-core/*` or `@/background/*`
    - Must communicate with background via messaging
 
 2. **Core Layer** (`apps/extension/src/core/`):

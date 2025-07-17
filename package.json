@@ -8,13 +8,16 @@
     "dev": "pnpm -F flow-wallet-extension build:dev",
     "build": "pnpm -F flow-wallet-extension build:pro",
     "test": "pnpm -r test",
+    "test:run": "pnpm -r test:run",
     "test:e2e": "pnpm -r test:e2e",
     "test:e2e:ui": "pnpm -r test:e2e:ui",
-    "lint": "eslint . && pnpm -r lint",
-    "lint:fix": "eslint --fix . && pnpm -r lint:fix",
+    "lint": "for pkg in apps/* packages/*; do (cd $pkg && echo \"Linting $pkg\" && pnpm lint) || exit 1; done",
+    "lint:quiet": "for pkg in apps/* packages/*; do (cd $pkg && echo \"Linting $pkg\" && pnpm lint --quiet) || exit 1; done",
+    "lint:fix": "for pkg in apps/* packages/*; do (cd $pkg && echo \"Linting $pkg\" && pnpm lint:fix) || exit 1; done",
     "format": "prettier .",
     "format:fix": "prettier --write .",
     "prepare": "husky",
+    "pre-commit": "pnpm --filter \"@onflow/flow-wallet-*\" --filter \"flow-wallet-extension\" pre-commit",
     "storybook": "pnpm -F flow-wallet-extension storybook",
     "build-storybook": "pnpm -F flow-wallet-extension build-storybook"
   },
@@ -40,8 +43,8 @@
     "typescript": "^5.7.2"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,mjs}": "eslint",
-    "*.{json,js,ts,jsx,tsx,html,md,mdx,mjs}": "prettier --write"
+    "*.{js,jsx,ts,tsx,mjs}": "eslint --cache",
+    "*.{json,js,ts,jsx,tsx,html,md,mdx,mjs}": "prettier"
   },
   "engines": {
     "node": ">=20.0.0",

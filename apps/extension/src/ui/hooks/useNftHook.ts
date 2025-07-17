@@ -1,13 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
-  type NftCollection,
-  type NFTModelV2,
-} from '@onflow/flow-wallet-shared/types/network-types';
-import { type NFTCollections, type NFTItem } from '@onflow/flow-wallet-shared/types/nft-types';
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
-
-import {
   childAccountNftsKey,
   type ChildAccountNFTsStore,
   evmNftCollectionListKey,
@@ -17,7 +10,13 @@ import {
   nftCatalogCollectionsKey,
   nftCollectionListKey,
   nftListKey,
-} from '@/data-model/cache-data-keys';
+} from '@onflow/flow-wallet-data-model/cache-data-keys';
+import {
+  type NftCollection,
+  type NFTModelV2,
+} from '@onflow/flow-wallet-shared/types/network-types';
+import { type NFTCollections, type NFTItem } from '@onflow/flow-wallet-shared/types/nft-types';
+import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
 
 import { useCachedData } from './use-data';
 

@@ -1,4 +1,23 @@
 import * as fcl from '@onflow/fcl';
+import {
+  addressBookService,
+  coinListService,
+  evmNftService,
+  googleDriveService,
+  keyringService,
+  mixpanelTrack,
+  newsService,
+  nftService,
+  openapiService,
+  permissionService,
+  preferenceService,
+  remoteConfigService,
+  sessionService,
+  tokenListService,
+  transactionService,
+  userInfoService,
+  userWalletService,
+} from '@onflow/flow-wallet-core';
 import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
 import BN from 'bignumber.js';
 import * as bip39 from 'bip39';
@@ -9,6 +28,71 @@ import { getAuth } from 'firebase/auth/web-extension';
 import { encode } from 'rlp';
 import web3, { TransactionError, Web3 } from 'web3';
 
+import {
+  type Keyring,
+  KEYRING_CLASS,
+  type KeyringType,
+} from '@onflow/flow-wallet-core/service/keyring';
+import { HDKeyring } from '@onflow/flow-wallet-core/service/keyring/hdKeyring';
+import { getScripts } from '@onflow/flow-wallet-core/service/openapi';
+import type { ConnectedSite } from '@onflow/flow-wallet-core/service/permission';
+import type { PreferenceAccount } from '@onflow/flow-wallet-core/service/preference';
+import {
+  addPendingAccountCreationTransaction,
+  addPlaceholderAccount,
+  loadAccountBalance,
+  removePendingAccountCreationTransaction,
+} from '@onflow/flow-wallet-core/service/userWallet';
+import { replaceNftKeywords } from '@onflow/flow-wallet-core/utils';
+import {
+  getAccountKey,
+  pubKeyAccountToAccountKey,
+  pubKeySignAlgoToAccountKey,
+} from '@onflow/flow-wallet-core/utils/account-key';
+import {
+  getValidData,
+  registerRefreshListener,
+  setCachedData,
+  triggerRefresh,
+} from '@onflow/flow-wallet-core/utils/data-cache';
+import {
+  findAddressWithPK,
+  findAddressWithSeed,
+} from '@onflow/flow-wallet-core/utils/modules/findAddressWithPK';
+import { getOrCheckAccountsByPublicKeyTuple } from '@onflow/flow-wallet-core/utils/modules/findAddressWithPubKey';
+import {
+  formPubKeyTuple,
+  jsonToKey,
+  pk2PubKeyTuple,
+  seedWithPathAndPhrase2PublicPrivateKey,
+} from '@onflow/flow-wallet-core/utils/modules/publicPrivateKey';
+import { generateRandomId } from '@onflow/flow-wallet-core/utils/random-id';
+import {
+  accountBalanceKey,
+  childAccountAllowTypesKey,
+  childAccountDescKey,
+  type ChildAccountFtStore,
+  childAccountNftsKey,
+  type ChildAccountNFTsStore,
+  coinListKey,
+  evmNftCollectionListKey,
+  type EvmNftCollectionListStore,
+  evmNftIdsKey,
+  type EvmNftIdsStore,
+  getCachedNftCollection,
+  getCachedScripts,
+  mainAccountsKey,
+  nftCatalogCollectionsKey,
+  registerStatusKey,
+  registerStatusRefreshRegex,
+  userMetadataKey,
+  walletLoadedKey,
+  walletLoadedRefreshRegex,
+} from '@onflow/flow-wallet-data-model/cache-data-keys';
+import { returnCurrentProfileId } from '@onflow/flow-wallet-extension-shared/current-id';
+import eventBus from '@onflow/flow-wallet-extension-shared/message/eventBus';
+import { retryOperation } from '@onflow/flow-wallet-extension-shared/retryOperation';
+import storage from '@onflow/flow-wallet-extension-shared/storage';
 import { FLOW_BIP44_PATH } from '@onflow/flow-wallet-shared/constant/algo-constants';
 import {
   EVM_ENDPOINT,
@@ -81,83 +165,6 @@ import { convertToIntegerAmount, validateAmount } from '@onflow/flow-wallet-shar
 
 import notification from '@/background/webapi/notification';
 import { openIndexPage } from '@/background/webapi/tab';
-import {
-  addressBookService,
-  coinListService,
-  evmNftService,
-  googleDriveService,
-  keyringService,
-  mixpanelTrack,
-  newsService,
-  nftService,
-  openapiService,
-  permissionService,
-  preferenceService,
-  remoteConfigService,
-  sessionService,
-  tokenListService,
-  transactionService,
-  userInfoService,
-  userWalletService,
-} from '@/core/service';
-import { type Keyring, KEYRING_CLASS, type KeyringType } from '@/core/service/keyring';
-import { HDKeyring } from '@/core/service/keyring/hdKeyring';
-import { getScripts } from '@/core/service/openapi';
-import type { ConnectedSite } from '@/core/service/permission';
-import type { PreferenceAccount } from '@/core/service/preference';
-import {
-  addPendingAccountCreationTransaction,
-  addPlaceholderAccount,
-  loadAccountBalance,
-  removePendingAccountCreationTransaction,
-} from '@/core/service/userWallet';
-import { replaceNftKeywords } from '@/core/utils';
-import {
-  getAccountKey,
-  pubKeyAccountToAccountKey,
-  pubKeySignAlgoToAccountKey,
-} from '@/core/utils/account-key';
-import {
-  getValidData,
-  registerRefreshListener,
-  setCachedData,
-  triggerRefresh,
-} from '@/core/utils/data-cache';
-import { findAddressWithPK, findAddressWithSeed } from '@/core/utils/modules/findAddressWithPK';
-import { getOrCheckAccountsByPublicKeyTuple } from '@/core/utils/modules/findAddressWithPubKey';
-import {
-  formPubKeyTuple,
-  jsonToKey,
-  pk2PubKeyTuple,
-  seedWithPathAndPhrase2PublicPrivateKey,
-} from '@/core/utils/modules/publicPrivateKey';
-import { generateRandomId } from '@/core/utils/random-id';
-import {
-  accountBalanceKey,
-  childAccountAllowTypesKey,
-  childAccountDescKey,
-  type ChildAccountFtStore,
-  childAccountNftsKey,
-  type ChildAccountNFTsStore,
-  coinListKey,
-  evmNftCollectionListKey,
-  type EvmNftCollectionListStore,
-  evmNftIdsKey,
-  type EvmNftIdsStore,
-  getCachedNftCollection,
-  getCachedScripts,
-  mainAccountsKey,
-  nftCatalogCollectionsKey,
-  registerStatusKey,
-  registerStatusRefreshRegex,
-  userMetadataKey,
-  walletLoadedKey,
-  walletLoadedRefreshRegex,
-} from '@/data-model/cache-data-keys';
-import { returnCurrentProfileId } from '@/extension-shared/utils/current-id';
-import eventBus from '@/extension-shared/utils/message/eventBus';
-import { retryOperation } from '@/extension-shared/utils/retryOperation';
-import storage from '@/extension-shared/utils/storage';
 
 import BaseController from './base';
 import notificationService from './notification';

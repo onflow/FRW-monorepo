@@ -1,0 +1,95 @@
+{
+  "name": "@onflow/flow-wallet-core",
+  "version": "0.0.1",
+  "description": "Core services for Flow Reference Wallet",
+  "type": "module",
+  "main": "./src/service/index.ts",
+  "types": "./src/service/index.ts",
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "test": "vitest",
+    "test:run": "vitest --run",
+    "test:coverage": "vitest --coverage",
+    "prepublishOnly": "pnpm build",
+    "pre-commit": "pnpm lint-staged",
+    "lint": "eslint . --cache",
+    "lint:fix": "eslint . --cache --fix"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,mjs}": "eslint --cache",
+    "*.{json,js,ts,jsx,tsx,html,md,mdx,mjs}": "prettier --write"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/service/index.ts",
+      "default": "./src/service/index.ts"
+    },
+    "./service": {
+      "types": "./src/service/index.ts",
+      "default": "./src/service/index.ts"
+    },
+    "./service/*": {
+      "types": "./src/service/*.ts",
+      "default": "./src/service/*.ts"
+    },
+    "./service/keyring": {
+      "types": "./src/service/keyring/index.ts",
+      "default": "./src/service/keyring/index.ts"
+    },
+    "./utils": {
+      "types": "./src/utils/index.ts",
+      "default": "./src/utils/index.ts"
+    },
+    "./utils/*": {
+      "types": [
+        "./src/utils/*.ts",
+        "./src/utils/*.json"
+      ],
+      "default": [
+        "./src/utils/*.ts",
+        "./src/utils/*.json"
+      ]
+    },
+    "./*": {
+      "types": "./src/*.ts",
+      "default": "./src/*.ts"
+    }
+  },
+  "dependencies": {
+    "@onflow/flow-wallet-shared": "workspace:*",
+    "@onflow/flow-wallet-extension-shared": "workspace:*",
+    "@onflow/flow-wallet-data-model": "workspace:*",
+    "bignumber.js": "^9.1.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@vitest/coverage-v8": "3.2.4",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vitest": "^3.2.4",
+    "@types/react": "^18.3.23",
+    "@types/react-dom": "^18.3.7",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "peerDependencies": {
+    "ethers": "^6.13.4",
+    "react": ">=16.8.0 <17.0.0 || >=17.0.0 <18.0.0 || >=18.0.0 <19.0.0",
+    "react-dom": ">=16.8.0 <17.0.0 || >=17.0.0 <18.0.0 || >=18.0.0 <19.0.0"
+  },
+  "engines": {
+    "node": ">=22.11.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/onflow/FRW-Extension.git",
+    "directory": "packages/shared"
+  },
+  "license": "LGPL-3.0-or-later"
+}
