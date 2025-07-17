@@ -40,11 +40,11 @@ interface PendingTransactionOptions {
 const mapTransactionStatus = (statusString: string): string => {
   const statusMap: Record<string, string> = {
     PENDING: 'PENDING',
-    EXECUTED: 'EXECUTED',
-    SEALED: 'SEALED',
+    EXECUTED: 'Executed',
+    SEALED: 'Sealed',
     EXPIRED: 'EXPIRED',
-    FINALIZED: 'FINALIZED',
-    SUCCESS: 'SUCCESS',
+    FINALIZED: 'Finalized',
+    SUCCESS: 'success',
   };
 
   return statusMap[statusString.toUpperCase()] || statusString;
