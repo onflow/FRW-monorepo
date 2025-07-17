@@ -26,8 +26,12 @@ vi.mock('@onflow/flow-wallet-core/service', () => {
     mixpanelTrack: vi.fn(),
     userWalletService: {
       setupFcl: vi.fn(),
-      getEvmAccountOfParent: vi.fn().mockResolvedValue({
-        address: '0x000000000000000000000002433D0DD1e2D81b9F',
+      getEvmAccountOfParent: vi.fn().mockImplementation(async () => {
+        return {
+          address: '0x000000000000000000000002433D0DD1e2D81b9F',
+          type: 'evm',
+          brandName: 'evm',
+        };
       }),
     },
     permissionService: {

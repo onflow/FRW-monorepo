@@ -569,13 +569,13 @@ export class cadenceActionService {
     );
   }
 
-  async sendFTfromChild(
+  sendFTfromChild = async (
     childAddress: string,
     receiver: string,
     path: string,
     amount: string,
     symbol: string
-  ): Promise<string> {
+  ): Promise<string> => {
     const token = await this.getTokenInfo(symbol);
     if (!token) {
       throw new Error(`Invaild token name - ${symbol}`);
@@ -586,10 +586,9 @@ export class cadenceActionService {
     }
 
     const script = await getScripts(userWalletService.getNetwork(), 'hybridCustody', 'sendChildFT');
-    // This would need replaceNftKeywords utility
-    // const replacedScript = replaceNftKeywords(script, token);
+    const replacedScript = replaceNftKeywords(script, token);
 
-    const result = await userWalletService.sendTransaction(script, [
+    const result = await userWalletService.sendTransaction(replacedScript, [
       fcl.arg(childAddress, fcl.t.Address),
       fcl.arg(receiver, fcl.t.Address),
       fcl.arg(path, fcl.t.String),
@@ -603,7 +602,7 @@ export class cadenceActionService {
       type: 'flow',
     });
     return result;
-  }
+  };
 
   async moveFTfromChild(
     childAddress: string,
@@ -1117,25 +1116,62 @@ export class cadenceActionService {
     hashAlgorithm: number,
     weight: number
   ): Promise<string> {
-    const script = await getScripts(userWalletService.getNetwork(), 'basic', 'addKeyToAccount');
-    return await userWalletService.sendTransaction(script, [
-      fcl.arg(publicKey, fcl.t.String),
-      fcl.arg(signatureAlgorithm, fcl.t.Int),
-      fcl.arg(hashAlgorithm, fcl.t.Int),
-      fcl.arg(weight, fcl.t.Int),
-    ]);
+    return await userWalletService.sendTransaction(
+      `
+      import Crypto
+      transaction(publicKey: String, signatureAlgorithm: UInt8, hashAlgorithm: UInt8, weight: UFix64) {
+          prepare(signer: AuthAccount) {
+              let key = PublicKey(
+                  publicKey: publicKey.decodeHex(),
+                  signatureAlgorithm: SignatureAlgorithm(rawValue: signatureAlgorithm)!
+              )
+              signer.keys.add(
+                  publicKey: key,
+                  hashAlgorithm: HashAlgorithm(rawValue: hashAlgorithm)!,
+                  weight: weight
+              )
+          }
+      }
+      `,
+      [
+        fcl.arg(publicKey, fcl.t.String),
+        fcl.arg(signatureAlgorithm, fcl.t.UInt8),
+        fcl.arg(hashAlgorithm, fcl.t.UInt8),
+        fcl.arg(weight.toFixed(1), fcl.t.UFix64),
+      ]
+    );
   }
 
-  async enableTokenStorage(symbol: string): Promise<string> {
-    const token = await this.getTokenInfo(symbol);
+  async enableTokenStorage(symbol: string): Promise<string | undefined> {
+    const network = await userWalletService.getNetwork();
+    const activeAccountType = await userWalletService.getActiveAccountType();
+    const token = await tokenListService.getTokenInfo(
+      network,
+      activeAccountType === 'evm' ? 'evm' : 'flow',
+      symbol
+    );
     if (!token) {
-      throw new Error(`Invalid token name - ${symbol}`);
+      return;
+    }
+    await userWalletService.getNetwork();
+    const script = await getScripts(
+      userWalletService.getNetwork(),
+      'storage',
+      'enableTokenStorage'
+    );
+    if (!token.contractName || !token.path || !token.address) {
+      throw new Error('Invalid token');
     }
 
-    const script = await getScripts(userWalletService.getNetwork(), 'token', 'enableTokenStorage');
-    const replacedScript = replaceNftKeywords(script, token);
-
-    return await userWalletService.sendTransaction(replacedScript, []);
+    return await userWalletService.sendTransaction(
+      script
+        .replaceAll('<Token>', token.contractName)
+        .replaceAll('<TokenBalancePath>', token.path.balance)
+        .replaceAll('<TokenReceiverPath>', token.path.receiver)
+        .replaceAll('<TokenStoragePath>', token.path.vault)
+        .replaceAll('<TokenAddress>', token.address),
+      []
+    );
   }
 
   async getAssociatedFlowIdentifier(address: string): Promise<string> {
