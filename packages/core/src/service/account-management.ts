@@ -41,7 +41,7 @@ import {
 } from '../utils/modules/publicPrivateKey';
 import { generateRandomId } from '../utils/random-id';
 
-export class accountsService {
+export class accountManagement {
   async registerNewProfile(username: string, password: string, mnemonic: string): Promise<void> {
     // The account is the public key of the account. It's derived from the mnemonic. We do not support custom curves or passphrases for new accounts
     const accountKey: AccountKeyRequest = await getAccountKey(mnemonic);
@@ -457,4 +457,4 @@ export class accountsService {
   }
 }
 
-export default new accountsService();
+export default new accountManagement();

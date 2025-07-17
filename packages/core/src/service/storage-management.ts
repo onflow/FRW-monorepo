@@ -3,7 +3,7 @@ import storage from '@onflow/flow-wallet-extension-shared/storage';
 import addressBookService from './addressBook';
 import coinListService from './coinList';
 import nftService from './nft';
-import transactionService from './transaction';
+import transactionActivityService from './transaction-activity';
 import userInfoService from './user';
 import userWalletService from './userWallet';
 
@@ -26,7 +26,7 @@ class StorageService {
     coinListService.clear();
     addressBookService.clear();
     userWalletService.clear();
-    transactionService.clear();
+    transactionActivityService.clear();
   };
 
   clearLocalStorage = async () => {

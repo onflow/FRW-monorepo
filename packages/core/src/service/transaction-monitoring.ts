@@ -7,16 +7,46 @@ import { consoleError, consoleWarn } from '@onflow/flow-wallet-shared/utils/cons
 
 import { mixpanelTrack } from './mixpanel';
 import preferenceService from './preference';
-import transactionService from './transaction';
+import transactionActivityService from './transaction-activity';
 import userWalletService from './userWallet';
 import { triggerRefresh } from '../utils/data-cache';
 
+// Type definitions for better type safety
+interface PollingFunction<T> {
+  (): Promise<T>;
+}
+
+interface PollingCondition<T> {
+  (result: T): boolean;
+}
+
+interface TransactionNotification {
+  url: string;
+  title: string;
+  body: string;
+  icon: string;
+}
+
+interface TransactionErrorInfo {
+  errorMessage: string;
+  errorCode?: number;
+}
+
+interface TransactionMonitoringOptions {
+  sendNotification?: boolean;
+  title?: string;
+  body?: string;
+  icon?: string;
+  notificationCallback?: (notification: TransactionNotification) => void;
+  errorCallback?: (error: TransactionErrorInfo) => void;
+}
+
 class TransactionMonitoringService {
-  poll = async (
-    fn: () => Promise<any>,
-    fnCondition: (result: any) => boolean,
+  poll = async <T>(
+    fn: PollingFunction<T>,
+    fnCondition: PollingCondition<T>,
     ms: number
-  ): Promise<any> => {
+  ): Promise<T> => {
     const result = await fn();
     if (fnCondition(result)) {
       await this.wait(ms);
@@ -25,11 +55,11 @@ class TransactionMonitoringService {
     return result;
   };
 
-  wait = (ms = 1000) => {
+  wait = (ms = 1000): Promise<void> => {
     return new Promise((resolve) => setTimeout(resolve, ms));
   };
 
-  pollingTrnasaction = async (txId: string, network: string) => {
+  pollingTransaction = async (txId: string, network: string): Promise<any> => {
     if (!txId || !txId.match(/^0?x?[0-9a-fA-F]{64}/)) {
       return;
     }
@@ -40,26 +70,25 @@ class TransactionMonitoringService {
     return await this.poll(fetchReport, validate, 3000);
   };
 
-  pollTransferList = async (address: string, txHash: string, maxAttempts = 5) => {
+  pollTransferList = async (address: string, txHash: string, maxAttempts = 5): Promise<void> => {
     const network = await userWalletService.getNetwork();
     const currency = (await preferenceService.getDisplayCurrency())?.code || 'USD';
     let attempts = 0;
     try {
-      const poll = async () => {
+      const poll = async (): Promise<void> => {
         if (attempts >= maxAttempts) {
           consoleWarn('Max polling attempts reached');
           return;
         }
 
-        const { list: newTransactions } = await transactionService.loadTransactions(
+        const { list: newTransactions } = await transactionActivityService.loadTransactions(
           network,
           address,
           '0',
           '15'
         );
-        // Copy the list as we're going to modify the original list
 
-        const foundTx = newTransactions?.find((tx) => txHash.includes(tx.hash));
+        const foundTx = newTransactions?.find((tx: TransferItem) => txHash.includes(tx.hash));
         if (foundTx && foundTx.indexed) {
           // Refresh the coin list
           triggerRefresh(coinListKey(network, address, currency));
@@ -78,29 +107,43 @@ class TransactionMonitoringService {
 
   listenTransaction = async (
     txId: string,
-    sendNotification = true,
-    title = chrome.i18n.getMessage('Transaction__Sealed'),
-    body = '',
-    icon = chrome.runtime.getURL('./images/icon-64.png'),
-    notificationCallback?: (url: string, title: string, body: string, icon: string) => void
-  ) => {
+    options: TransactionMonitoringOptions = {}
+  ): Promise<void> => {
+    const {
+      sendNotification = true,
+      title = '',
+      body = '',
+      icon = '',
+      notificationCallback,
+      errorCallback,
+    } = options;
+
     if (!txId || !txId.match(/^0?x?[0-9a-fA-F]{64}/)) {
       return;
     }
+
     const address = (await userWalletService.getCurrentAddress()) || '0x';
     const network = await userWalletService.getNetwork();
     const currency = (await preferenceService.getDisplayCurrency())?.code || 'USD';
     let txHash = txId;
+
     try {
-      transactionService.setPending(network, address, txId, icon, title);
+      transactionActivityService.setPending(network, address, txId, icon, title, {
+        status: 'PENDING',
+        token: 'Exec Transaction',
+      });
       const fclTx = fcl.tx(txId);
-      // Wait for the transacton to be executed
-      // Listen to the transaction until it's executed.
-      // This will throw an error if there is an error with the transaction
+
+      // Wait for the transaction to be executed
       const txStatusExecuted = await fclTx.onceExecuted();
 
       // Update the pending transaction with the transaction status
-      txHash = await transactionService.updatePending(network, address, txId, txStatusExecuted);
+      txHash = await transactionActivityService.updatePending(
+        network,
+        address,
+        txId,
+        txStatusExecuted
+      );
 
       // Track the transaction result
       mixpanelTrack.track('transaction_result', {
@@ -112,27 +155,32 @@ class TransactionMonitoringService {
         // Send a notification to the user only on success
         if (sendNotification && notificationCallback) {
           const baseURL = await this.getFlowscanUrl();
+          let notificationUrl = '';
+
           if (baseURL.includes('evm')) {
             // It's an EVM transaction
-            // Look through the events in txStatus
             const evmEvent = txStatusExecuted.events.find(
               (event: any) => event.type.includes('EVM') && !!event.data?.hash
             );
             if (evmEvent) {
               const hashBytes = evmEvent.data.hash.map((byte: number) => byte);
               const hash = '0x' + Buffer.from(hashBytes).toString('hex');
-              // Link to the account page on EVM otherwise we'll have to look up the EVM tx
-              notificationCallback(`${baseURL}/tx/${hash}`, title, body, icon);
+              notificationUrl = `${baseURL}/tx/${hash}`;
             } else {
               const evmAddress = await userWalletService.getCurrentEvmAddress();
-
-              // Link to the account page on EVM as we don't have a tx hash
-              notificationCallback(`${baseURL}/address/${evmAddress}`, title, body, icon);
+              notificationUrl = `${baseURL}/address/${evmAddress}`;
             }
           } else {
             // It's a Flow transaction
-            notificationCallback(`${baseURL}/tx/${txId}`, title, body, icon);
+            notificationUrl = `${baseURL}/tx/${txId}`;
           }
+
+          notificationCallback({
+            url: notificationUrl,
+            title,
+            body,
+            icon,
+          });
         }
       } catch (err: unknown) {
         // We don't want to throw an error if the notification fails
@@ -146,7 +194,12 @@ class TransactionMonitoringService {
       const txStatusSealed = await fclTx.onceSealed();
 
       // Update the pending transaction with the transaction status
-      txHash = await transactionService.updatePending(network, address, txId, txStatusSealed);
+      txHash = await transactionActivityService.updatePending(
+        network,
+        address,
+        txId,
+        txStatusSealed
+      );
 
       // Refresh the account balance after sealed status - just to be sure
       triggerRefresh(coinListKey(network, address, currency));
@@ -183,12 +236,13 @@ class TransactionMonitoringService {
         error_message: errorMessage,
       });
 
-      // Tell the UI that there was an error
-      chrome.runtime.sendMessage({
-        msg: 'transactionError',
-        errorMessage,
-        errorCode,
-      });
+      // Notify about the error through callback
+      if (errorCallback) {
+        errorCallback({
+          errorMessage,
+          errorCode,
+        });
+      }
     } finally {
       if (txHash) {
         // Start polling for transfer list updates
@@ -197,11 +251,11 @@ class TransactionMonitoringService {
     }
   };
 
-  clearPending = async () => {
+  clearPending = async (): Promise<void> => {
     const network = await userWalletService.getNetwork();
     const address = await userWalletService.getCurrentAddress();
     if (address) {
-      transactionService.clearPending(network, address);
+      transactionActivityService.clearPending(network, address);
     }
   };
 
@@ -267,7 +321,7 @@ class TransactionMonitoringService {
     list: TransferItem[];
   }> => {
     return address
-      ? transactionService.listAllTransactions(
+      ? transactionActivityService.listAllTransactions(
           userWalletService.getNetwork(),
           address,
           `${offset}`,
@@ -279,13 +333,13 @@ class TransactionMonitoringService {
         };
   };
 
-  getPendingTx = async () => {
+  getPendingTx = async (): Promise<TransferItem[]> => {
     const network = await userWalletService.getNetwork();
     const address = await userWalletService.getCurrentAddress();
     if (!address) {
       return [];
     }
-    const pending = await transactionService.listPending(network, address);
+    const pending = await transactionActivityService.listPending(network, address);
     return pending;
   };
 }

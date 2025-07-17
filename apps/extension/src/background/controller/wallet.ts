@@ -1,7 +1,7 @@
 import * as fcl from '@onflow/fcl';
 import {
   addressBookService,
-  cadenceActionService,
+  transactionService,
   coinListService,
   evmNftService,
   googleDriveService,
@@ -17,10 +17,10 @@ import {
   storageManagementService,
   tokenListService,
   transactionMonitoringService,
-  transactionService,
+  transactionActivityService,
   userInfoService,
   userWalletService,
-  accountsService,
+  accountManagementService,
 } from '@onflow/flow-wallet-core';
 import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
 import BN from 'bignumber.js';
@@ -44,10 +44,6 @@ import {
   type ChildAccountFtStore,
   childAccountNftsKey,
   type ChildAccountNFTsStore,
-  evmNftCollectionListKey,
-  type EvmNftCollectionListStore,
-  evmNftIdsKey,
-  type EvmNftIdsStore,
   getCachedNftCollection,
   mainAccountsKey,
   nftCatalogCollectionsKey,
@@ -177,7 +173,7 @@ export class WalletController extends BaseController {
   verifyPassword = async (password: string) => keyringService.verifyPassword(password);
 
   verifyPasswordIfBooted = async (password: string) => {
-    return await accountsService.verifyPasswordIfBooted(password);
+    return await accountManagementService.verifyPasswordIfBooted(password);
   };
   sendRequest = (data) => {
     return provider({
@@ -202,7 +198,7 @@ export class WalletController extends BaseController {
    * @param mnemonic the mnemonic for the new private key
    */
   registerNewProfile = async (username: string, password: string, mnemonic: string) => {
-    return await accountsService.registerNewProfile(username, password, mnemonic);
+    return await accountManagementService.registerNewProfile(username, password, mnemonic);
   };
 
   checkForNewAddress = async (
@@ -210,11 +206,11 @@ export class WalletController extends BaseController {
     pubKey: string,
     txid: string
   ): Promise<FclAccount | null> => {
-    return await accountsService.checkForNewAddress(network, pubKey, txid);
+    return await accountManagementService.checkForNewAddress(network, pubKey, txid);
   };
 
   importAccountFromMobile = async (address: string, password: string, mnemonic: string) => {
-    return await accountsService.importAccountFromMobile(address, password, mnemonic);
+    return await accountManagementService.importAccountFromMobile(address, password, mnemonic);
   };
   /**
    * Create a new address
@@ -222,7 +218,7 @@ export class WalletController extends BaseController {
    */
 
   createNewAccount = async (network: string) => {
-    return await accountsService.createNewAccount(network);
+    return await accountManagementService.createNewAccount(network);
   };
 
   /**
@@ -241,7 +237,7 @@ export class WalletController extends BaseController {
     derivationPath: string = FLOW_BIP44_PATH,
     passphrase: string = ''
   ) => {
-    return await accountsService.importProfileUsingMnemonic(
+    return await accountManagementService.importProfileUsingMnemonic(
       username,
       password,
       mnemonic,
@@ -264,7 +260,12 @@ export class WalletController extends BaseController {
     pk: string,
     address: FlowAddress | null = null
   ) => {
-    return await accountsService.importProfileUsingPrivateKey(username, password, pk, address);
+    return await accountManagementService.importProfileUsingPrivateKey(
+      username,
+      password,
+      pk,
+      address
+    );
   };
 
   /**
@@ -563,14 +564,14 @@ export class WalletController extends BaseController {
   };
 
   importPrivateKey = async (publicKey: string, signAlgo: number, password: string, pk: string) => {
-    return await accountsService.importPrivateKey(publicKey, signAlgo, password, pk);
+    return await accountManagementService.importPrivateKey(publicKey, signAlgo, password, pk);
   };
 
   jsonToPrivateKeyHex = async (json: string, password: string): Promise<string | null> => {
-    return await accountsService.jsonToPrivateKeyHex(json, password);
+    return await accountManagementService.jsonToPrivateKeyHex(json, password);
   };
   findAddressWithPrivateKey = async (pk: string, address: string) => {
-    return await accountsService.findAddressWithPrivateKey(pk, address);
+    return await accountManagementService.findAddressWithPrivateKey(pk, address);
   };
   findAddressWithSeedPhrase = async (
     seed: string,
@@ -578,7 +579,7 @@ export class WalletController extends BaseController {
     derivationPath: string = FLOW_BIP44_PATH,
     passphrase: string = ''
   ): Promise<PublicKeyAccount[]> => {
-    return await accountsService.findAddressWithSeedPhrase(
+    return await accountManagementService.findAddressWithSeedPhrase(
       seed,
       address,
       derivationPath,
@@ -765,7 +766,7 @@ export class WalletController extends BaseController {
   }
 
   private async _setCurrentAccountFromKeyring(keyring, index = 0) {
-    return await accountsService._setCurrentAccountFromKeyring(keyring, index);
+    return await accountManagementService._setCurrentAccountFromKeyring(keyring, index);
   }
 
   getHighlightWalletList = () => {
@@ -854,14 +855,13 @@ export class WalletController extends BaseController {
   reqeustEvmNft = async () => {
     const address = await this.getEvmAddress();
     const network = await this.getNetwork();
-    const evmList = await openapiService.EvmNFTID(network, address);
-    return evmList;
+    return await evmNftService.loadEvmNftIds(network, address);
   };
 
   EvmNFTcollectionList = async (collection) => {
     const address = await this.getEvmAddress();
-    const evmList = await openapiService.EvmNFTcollectionList(address, collection);
-    return evmList;
+    const network = await this.getNetwork();
+    return await evmNftService.loadEvmCollectionList(network, address, collection, '0');
   };
 
   requestCadenceNft = async () => {
@@ -1023,7 +1023,7 @@ export class WalletController extends BaseController {
     this.clearNFTCollection();
     this.clearEvmNFTList();
     this.clearCoinList();
-    transactionService.clear();
+    transactionActivityService.clear();
 
     // If switching main wallet, refresh the EVM wallet
     if (key === null) {
@@ -1088,18 +1088,18 @@ export class WalletController extends BaseController {
     return await userWalletService.sendTransaction(cadence, args);
   };
 
-  createCOA = async (amount = '0.0'): Promise<string> => cadenceActionService.createCOA(amount);
-  createCoaEmpty = async (): Promise<string> => cadenceActionService.createCoaEmpty();
+  createCOA = async (amount = '0.0'): Promise<string> => transactionService.createCOA(amount);
+  createCoaEmpty = async (): Promise<string> => transactionService.createCoaEmpty();
   trackCoaCreation = async (txID: string, errorMessage?: string) =>
-    cadenceActionService.trackCoaCreation(txID, errorMessage);
+    transactionService.trackCoaCreation(txID, errorMessage);
   transferTokens = async (transactionState: TransactionState): Promise<string> =>
-    cadenceActionService.transferTokens(transactionState);
+    transactionService.transferTokens(transactionState);
   transferFlowEvm = async (
     recipientEVMAddressHex: string,
     amount = '1.0',
     gasLimit = 30000000
   ): Promise<string> =>
-    cadenceActionService.transferFlowEvm(recipientEVMAddressHex, amount, gasLimit);
+    transactionService.transferFlowEvm(recipientEVMAddressHex, amount, gasLimit);
   transferFTToEvm = async (
     tokenContractAddress: string,
     tokenContractName: string,
@@ -1107,7 +1107,7 @@ export class WalletController extends BaseController {
     contractEVMAddress: string,
     data
   ): Promise<string> =>
-    cadenceActionService.transferFTToEvm(
+    transactionService.transferFTToEvm(
       tokenContractAddress,
       tokenContractName,
       amount,
@@ -1118,62 +1118,61 @@ export class WalletController extends BaseController {
     vaultIdentifier: string,
     amount = '0.0',
     recipient: string
-  ): Promise<string> => cadenceActionService.transferFTToEvmV2(vaultIdentifier, amount, recipient);
+  ): Promise<string> => transactionService.transferFTToEvmV2(vaultIdentifier, amount, recipient);
   transferFTFromEvm = async (
     flowidentifier: string,
     amount: string,
     receiver: string,
     tokenResult: TokenInfo
   ): Promise<string> =>
-    cadenceActionService.transferFTFromEvm(flowidentifier, amount, receiver, tokenResult);
+    transactionService.transferFTFromEvm(flowidentifier, amount, receiver, tokenResult);
   withdrawFlowEvm = async (amount = '0.0', address: string): Promise<string> =>
-    cadenceActionService.withdrawFlowEvm(amount, address);
-  fundFlowEvm = async (amount = '1.0'): Promise<string> => cadenceActionService.fundFlowEvm(amount);
-  coaLink = async (): Promise<string> => cadenceActionService.coaLink();
-  checkCoaLink = async (): Promise<boolean> => cadenceActionService.checkCoaLink();
+    transactionService.withdrawFlowEvm(amount, address);
+  fundFlowEvm = async (amount = '1.0'): Promise<string> => transactionService.fundFlowEvm(amount);
+  coaLink = async (): Promise<string> => transactionService.coaLink();
+  checkCoaLink = async (): Promise<boolean> => transactionService.checkCoaLink();
   bridgeToEvm = async (flowIdentifier, amount = '1.0'): Promise<string> =>
-    cadenceActionService.bridgeToEvm(flowIdentifier, amount);
+    transactionService.bridgeToEvm(flowIdentifier, amount);
   bridgeToFlow = async (flowIdentifier, amount = '1.0', tokenResult): Promise<string> =>
-    cadenceActionService.bridgeToFlow(flowIdentifier, amount, tokenResult);
+    transactionService.bridgeToFlow(flowIdentifier, amount, tokenResult);
   sendEvmTransaction = async (to: string, gas: string | number, value: string, data: string) =>
-    cadenceActionService.sendEvmTransaction(to, gas, value, data);
+    transactionService.sendEvmTransaction(to, gas, value, data);
   dapSendEvmTX = async (to: string, gas: bigint, value: string, data: string) =>
-    cadenceActionService.dapSendEvmTX(to, gas, value, data);
+    transactionService.dapSendEvmTX(to, gas, value, data);
   getNonce = async (hexEncodedAddress: string): Promise<string> =>
-    cadenceActionService.getNonce(hexEncodedAddress);
+    transactionService.getNonce(hexEncodedAddress);
   unlinkChildAccount = async (address: string): Promise<string> =>
-    cadenceActionService.unlinkChildAccount(address);
+    transactionService.unlinkChildAccount(address);
   unlinkChildAccountV2 = async (address: string): Promise<string> =>
-    cadenceActionService.unlinkChildAccountV2(address);
+    transactionService.unlinkChildAccountV2(address);
   editChildAccount = async (
     address: string,
     name: string,
     description: string,
     thumbnail: string
-  ): Promise<string> =>
-    cadenceActionService.editChildAccount(address, name, description, thumbnail);
+  ): Promise<string> => transactionService.editChildAccount(address, name, description, thumbnail);
   transferCadenceTokens = async (
     symbol: string,
     address: string,
     amount: string
-  ): Promise<string> => cadenceActionService.transferCadenceTokens(symbol, address, amount);
-  revokeKey = async (index: string): Promise<string> => cadenceActionService.revokeKey(index);
+  ): Promise<string> => transactionService.transferCadenceTokens(symbol, address, amount);
+  revokeKey = async (index: string): Promise<string> => transactionService.revokeKey(index);
   addKeyToAccount = async (
     publicKey: string,
     signatureAlgorithm: number,
     hashAlgorithm: number,
     weight: number
   ): Promise<string> =>
-    cadenceActionService.addKeyToAccount(publicKey, signatureAlgorithm, hashAlgorithm, weight);
-  enableTokenStorage = async (symbol: string) => cadenceActionService.enableTokenStorage(symbol);
+    transactionService.addKeyToAccount(publicKey, signatureAlgorithm, hashAlgorithm, weight);
+  enableTokenStorage = async (symbol: string) => transactionService.enableTokenStorage(symbol);
   enableNFTStorageLocal = async (token: NFTModelV2) =>
-    cadenceActionService.enableNFTStorageLocal(token);
+    transactionService.enableNFTStorageLocal(token);
   moveFTfromChild = async (
     childAddress: string,
     path: string,
     amount: string,
     symbol: string
-  ): Promise<string> => cadenceActionService.moveFTfromChild(childAddress, path, amount, symbol);
+  ): Promise<string> => transactionService.moveFTfromChild(childAddress, path, amount, symbol);
   sendFTfromChild = async (
     childAddress: string,
     receiver: string,
@@ -1181,14 +1180,14 @@ export class WalletController extends BaseController {
     amount: string,
     symbol: string
   ): Promise<string> =>
-    cadenceActionService.sendFTfromChild(childAddress, receiver, path, amount, symbol);
+    transactionService.sendFTfromChild(childAddress, receiver, path, amount, symbol);
   moveNFTfromChild = async (
     nftContractAddress: string,
     nftContractName: string,
     ids: number,
     token
   ): Promise<string> =>
-    cadenceActionService.moveNFTfromChild(nftContractAddress, nftContractName, ids, token);
+    transactionService.moveNFTfromChild(nftContractAddress, nftContractName, ids, token);
   sendNFTfromChild = async (
     linkedAddress: string,
     receiverAddress: string,
@@ -1196,7 +1195,7 @@ export class WalletController extends BaseController {
     ids: number,
     token
   ): Promise<string> =>
-    cadenceActionService.sendNFTfromChild(
+    transactionService.sendNFTfromChild(
       linkedAddress,
       receiverAddress,
       nftContractName,
@@ -1210,7 +1209,7 @@ export class WalletController extends BaseController {
     id: number,
     token
   ): Promise<string> =>
-    cadenceActionService.bridgeChildNFTToEvmAddress(
+    transactionService.bridgeChildNFTToEvmAddress(
       linkedAddress,
       receiverAddress,
       nftContractName,
@@ -1222,27 +1221,26 @@ export class WalletController extends BaseController {
     path: string,
     ids: number,
     token
-  ): Promise<string> => cadenceActionService.sendNFTtoChild(linkedAddress, path, ids, token);
+  ): Promise<string> => transactionService.sendNFTtoChild(linkedAddress, path, ids, token);
   checkChildLinkedVault = async (parent: string, child: string, path: string): Promise<string> =>
-    cadenceActionService.checkChildLinkedVault(parent, child, path);
+    transactionService.checkChildLinkedVault(parent, child, path);
   batchBridgeNftToEvm = async (flowIdentifier: string, ids: Array<number>): Promise<string> =>
-    cadenceActionService.batchBridgeNftToEvm(flowIdentifier, ids);
+    transactionService.batchBridgeNftToEvm(flowIdentifier, ids);
   batchBridgeNftFromEvm = async (flowIdentifier: string, ids: Array<number>): Promise<string> =>
-    cadenceActionService.batchBridgeNftFromEvm(flowIdentifier, ids);
+    transactionService.batchBridgeNftFromEvm(flowIdentifier, ids);
   batchTransferNFTToChild = async (
     childAddr: string,
     identifier: string,
     ids: Array<number>,
     token
   ): Promise<string> =>
-    cadenceActionService.batchTransferNFTToChild(childAddr, identifier, ids, token);
+    transactionService.batchTransferNFTToChild(childAddr, identifier, ids, token);
   batchTransferChildNft = async (
     childAddr: string,
     identifier: string,
     ids: Array<number>,
     token
-  ): Promise<string> =>
-    cadenceActionService.batchTransferChildNft(childAddr, identifier, ids, token);
+  ): Promise<string> => transactionService.batchTransferChildNft(childAddr, identifier, ids, token);
   sendChildNFTToChild = async (
     childAddr: string,
     receiver: string,
@@ -1250,36 +1248,36 @@ export class WalletController extends BaseController {
     ids: Array<number>,
     token
   ): Promise<string> =>
-    cadenceActionService.sendChildNFTToChild(childAddr, receiver, identifier, ids, token);
+    transactionService.sendChildNFTToChild(childAddr, receiver, identifier, ids, token);
   batchBridgeChildNFTToEvm = async (
     childAddr: string,
     identifier: string,
     ids: Array<number>,
     token
   ): Promise<string> =>
-    cadenceActionService.batchBridgeChildNFTToEvm(childAddr, identifier, ids, token);
+    transactionService.batchBridgeChildNFTToEvm(childAddr, identifier, ids, token);
   batchBridgeChildNFTFromEvm = async (
     childAddr: string,
     identifier: string,
     ids: Array<number>
-  ): Promise<string> => cadenceActionService.batchBridgeChildNFTFromEvm(childAddr, identifier, ids);
+  ): Promise<string> => transactionService.batchBridgeChildNFTFromEvm(childAddr, identifier, ids);
   bridgeNftToEvmAddress = async (
     flowIdentifier: string,
     ids: number,
     recipientEvmAddress: string
   ): Promise<string> =>
-    cadenceActionService.bridgeNftToEvmAddress(flowIdentifier, ids, recipientEvmAddress);
+    transactionService.bridgeNftToEvmAddress(flowIdentifier, ids, recipientEvmAddress);
   bridgeNftFromEvmToFlow = async (
     flowIdentifier: string,
     ids: number,
     receiver: string
-  ): Promise<string> => cadenceActionService.bridgeNftFromEvmToFlow(flowIdentifier, ids, receiver);
+  ): Promise<string> => transactionService.bridgeNftFromEvmToFlow(flowIdentifier, ids, receiver);
   getAssociatedFlowIdentifier = async (address: string): Promise<string> =>
-    cadenceActionService.getAssociatedFlowIdentifier(address);
+    transactionService.getAssociatedFlowIdentifier(address);
   sendNFT = async (recipient: string, id: number, token: NFTModelV2): Promise<string> =>
-    cadenceActionService.sendNFT(recipient, id, token);
+    transactionService.sendNFT(recipient, id, token);
   sendNBANFT = async (recipient: string, id: number, token: NFTModelV2): Promise<string> =>
-    cadenceActionService.sendNBANFT(recipient, id, token);
+    transactionService.sendNBANFT(recipient, id, token);
 
   addCustomEvmToken = async (network: string, token: CustomFungibleTokenInfo) => {
     return await tokenListService.addCustomEvmToken(network, token);
@@ -1450,16 +1448,27 @@ export class WalletController extends BaseController {
     body = '',
     icon = chrome.runtime.getURL('./images/icon-64.png')
   ) => {
-    return await transactionMonitoringService.listenTransaction(
-      txId,
+    return await transactionMonitoringService.listenTransaction(txId, {
       sendNotification,
       title,
       body,
       icon,
-      (url: string, title: string, body: string, icon: string) => {
-        notification.create(url, title, body, icon);
-      }
-    );
+      notificationCallback: (notificationData) => {
+        notification.create(
+          notificationData.url,
+          notificationData.title,
+          notificationData.body,
+          notificationData.icon
+        );
+      },
+      errorCallback: (error) => {
+        chrome.runtime.sendMessage({
+          msg: 'transactionError',
+          errorMessage: error.errorMessage,
+          errorCode: error.errorCode,
+        });
+      },
+    });
   };
 
   clearNFT = () => {
@@ -1525,7 +1534,6 @@ export class WalletController extends BaseController {
   getNftCollectionList = async () => {
     const network = await this.getNetwork();
     const data = (await openapiService.getNFTV2CollectionList(network)) ?? [];
-
     return data;
   };
 
@@ -1574,7 +1582,7 @@ export class WalletController extends BaseController {
   };
 
   uploadMnemonicToGoogleDrive = async (mnemonic: string, username: string, password: string) => {
-    return await accountsService.uploadMnemonicToGoogleDrive(mnemonic, username, password);
+    return await accountManagementService.uploadMnemonicToGoogleDrive(mnemonic, username, password);
   };
 
   loadBackupAccounts = async (): Promise<string[]> => {
@@ -1622,11 +1630,11 @@ export class WalletController extends BaseController {
   };
 
   getAccountInfo = async (address: string): Promise<FclAccount> => {
-    return await accountsService.getAccountInfo(address);
+    return await accountManagementService.getAccountInfo(address);
   };
 
   getMainAccountInfo = async (): Promise<FclAccount> => {
-    return await accountsService.getMainAccountInfo();
+    return await accountManagementService.getMainAccountInfo();
   };
 
   getEmoji = async () => {
@@ -1727,34 +1735,24 @@ export class WalletController extends BaseController {
   };
 
   getEvmNftId = async (address: string) => {
-    if (!isValidEthereumAddress(address)) {
-      throw new Error('Invalid Ethereum address');
-    }
     const network = await this.getNetwork();
-    const cacheData = await getValidData<EvmNftIdsStore>(evmNftIdsKey(network, address));
-    if (cacheData) {
-      return cacheData;
-    }
-    return evmNftService.loadEvmNftIds(network, address);
+    return await evmNftService.getEvmNftId(network, address);
   };
 
   getEvmNftCollectionList = async (
     address: string,
     collectionIdentifier: string,
     _limit = 50,
-    offset = 0
+    offset = '0'
   ) => {
-    if (!isValidEthereumAddress(address)) {
-      throw new Error('Invalid Ethereum address');
-    }
     const network = await this.getNetwork();
-    const cacheData = await getValidData<EvmNftCollectionListStore>(
-      evmNftCollectionListKey(network, address, collectionIdentifier, `${offset}`)
+    return await evmNftService.getEvmNftCollectionList(
+      network,
+      address,
+      collectionIdentifier,
+      _limit,
+      offset
     );
-    if (cacheData) {
-      return cacheData;
-    }
-    return evmNftService.loadEvmCollectionList(network, address, collectionIdentifier, `${offset}`);
   };
 
   clearEvmNFTList = async () => {

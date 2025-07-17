@@ -7,7 +7,7 @@ import {
 import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils/address';
 
 import { openapiService } from '.';
-import { registerRefreshListener, setCachedData } from '../utils/data-cache';
+import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
 import { fclConfirmNetwork } from '../utils/fclConfig';
 
 class EvmNfts {
@@ -60,6 +60,51 @@ class EvmNfts {
   };
 
   clearEvmNfts = async () => {};
+
+  /**
+   * Get EVM NFT IDs for a given address
+   * @param network - The network to get the NFTs for
+   * @param address - The address to get the NFTs for
+   * @returns The list of EVM NFT IDs
+   */
+  getEvmNftId = async (network: string, address: string) => {
+    if (!isValidEthereumAddress(address)) {
+      throw new Error('Invalid Ethereum address');
+    }
+    const cacheData = await getValidData(evmNftIdsKey(network, address));
+    if (cacheData) {
+      return cacheData;
+    }
+    return this.loadEvmNftIds(network, address);
+  };
+
+  /**
+   * Get EVM NFT collection list for a given address and collection
+   * @param network - The network to get the collection for
+   * @param address - The address to get the collection for
+   * @param collectionIdentifier - The collection identifier
+   * @param limit - The limit of items to return
+   * @param offset - The offset for pagination
+   * @returns The list of EVM NFT collections
+   */
+  getEvmNftCollectionList = async (
+    network: string,
+    address: string,
+    collectionIdentifier: string,
+    limit = 50,
+    offset = '0'
+  ) => {
+    if (!isValidEthereumAddress(address)) {
+      throw new Error('Invalid Ethereum address');
+    }
+    const cacheData = await getValidData(
+      evmNftCollectionListKey(network, address, collectionIdentifier, `${offset}`)
+    );
+    if (cacheData) {
+      return cacheData;
+    }
+    return this.loadEvmCollectionList(network, address, collectionIdentifier, `${offset}`);
+  };
 }
 
 export default new EvmNfts();

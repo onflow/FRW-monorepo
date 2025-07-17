@@ -21,7 +21,7 @@ import userWalletService from './userWallet';
 import { replaceNftKeywords } from '../utils';
 import { triggerRefresh } from '../utils/data-cache';
 
-export class cadenceActionService {
+export class transactionService {
   /**
    * Master send token function that takes a transaction state from the front end and returns the transaction ID
    */
@@ -1305,4 +1305,4 @@ export class cadenceActionService {
   }
 }
 
-export default new cadenceActionService();
+export default new transactionService();

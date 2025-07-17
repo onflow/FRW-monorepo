@@ -114,11 +114,11 @@ class NFT {
       network
     );
 
-    data.nfts.map((nft) => {
+    data.nfts.map((nft: any) => {
       nft.unique_id = nft.collectionName + '_' + nft.id;
     });
-    function getUniqueListBy(arr, key) {
-      return [...new Map(arr.map((item) => [item[key], item])).values()];
+    function getUniqueListBy(arr: any[], key: string) {
+      return [...new Map(arr.map((item: any) => [item[key], item])).values()];
     }
     const unique_nfts = getUniqueListBy(data.nfts, 'unique_id');
     data.nfts = unique_nfts;

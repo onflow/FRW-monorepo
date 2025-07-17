@@ -78,7 +78,7 @@ import {
   googleSafeHostService,
   mixpanelTrack,
   nftService,
-  transactionService,
+  transactionActivityService,
   userInfoService,
   userWalletService,
 } from './index';
@@ -745,7 +745,7 @@ export class OpenApiService {
     coinListService.clear();
     addressBookService.clear();
     userWalletService.clear();
-    transactionService.clear();
+    transactionActivityService.clear();
   };
 
   /**
