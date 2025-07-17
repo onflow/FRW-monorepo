@@ -1623,7 +1623,7 @@ export class WalletController extends BaseController {
     period = Period.oneDay,
     provider = PriceProvider.binance
   ) => {
-    return await openapiService.getTokenPriceHistoryArray(token, period, provider);
+    return await openapiService.getTokenPriceHistory(token, period, provider);
   };
 
   getChildAccountAllowTypes = async (parentAddress: string, childAddress: string) => {
