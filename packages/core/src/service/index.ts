@@ -21,3 +21,4 @@ export { default as logListener } from './log-listener';
 export { default as cadenceActionService } from './cadence-actions';
 export { default as accountsService } from './accounts';
 export { default as storageManagementService } from './storage-management';
+export { default as transactionMonitoringService } from './transaction-monitoring';

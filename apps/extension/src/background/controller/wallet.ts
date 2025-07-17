@@ -16,6 +16,7 @@ import {
   sessionService,
   storageManagementService,
   tokenListService,
+  transactionMonitoringService,
   transactionService,
   userInfoService,
   userWalletService,
@@ -24,7 +25,6 @@ import {
 import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
 import BN from 'bignumber.js';
 import { ethErrors } from 'eth-rpc-errors';
-import { TransactionError } from 'web3';
 
 import {
   type Keyring,
@@ -38,15 +38,12 @@ import {
   getValidData,
   registerRefreshListener,
   setCachedData,
-  triggerRefresh,
 } from '@onflow/flow-wallet-core/utils/data-cache';
 import {
-  accountBalanceKey,
   childAccountDescKey,
   type ChildAccountFtStore,
   childAccountNftsKey,
   type ChildAccountNFTsStore,
-  coinListKey,
   evmNftCollectionListKey,
   type EvmNftCollectionListStore,
   evmNftIdsKey,
@@ -1325,27 +1322,17 @@ export class WalletController extends BaseController {
     count: number;
     list: TransferItem[];
   }> => {
-    return address
-      ? transactionService.listAllTransactions(
-          userWalletService.getNetwork(),
-          address,
-          `${offset}`,
-          `${limit}`
-        )
-      : {
-          count: 0,
-          list: [],
-        };
+    return await transactionMonitoringService.getTransactions(
+      address,
+      limit,
+      offset,
+      _expiry,
+      _forceRefresh
+    );
   };
 
   getPendingTx = async () => {
-    const network = await this.getNetwork();
-    const address = await this.getCurrentAddress();
-    if (!address) {
-      return [];
-    }
-    const pending = await transactionService.listPending(network, address);
-    return pending;
+    return await transactionMonitoringService.getPendingTx();
   };
 
   loginWithMnemonic = async (
@@ -1449,115 +1436,11 @@ export class WalletController extends BaseController {
   };
 
   getFlowscanUrl = async (): Promise<string> => {
-    const network = await this.getNetwork();
-    const isEvm = await this.getActiveAccountType();
-    let baseURL = 'https://www.flowscan.io';
-
-    // Check if it's an EVM wallet and update the base URL
-    if (isEvm === 'evm') {
-      switch (network) {
-        case 'testnet':
-          baseURL = 'https://testnet.flowscan.io/evm';
-          break;
-        case 'mainnet':
-          baseURL = 'https://flowscan.io/evm';
-          break;
-      }
-    } else {
-      // Set baseURL based on the network
-      switch (network) {
-        case 'testnet':
-          baseURL = 'https://testnet.flowscan.io';
-          break;
-        case 'mainnet':
-          baseURL = 'https://www.flowscan.io';
-          break;
-        case 'crescendo':
-          baseURL = 'https://flow-view-source.vercel.app/crescendo';
-          break;
-      }
-    }
-
-    return baseURL;
+    return await transactionMonitoringService.getFlowscanUrl();
   };
 
   getViewSourceUrl = async (): Promise<string> => {
-    const network = await this.getNetwork();
-    let baseURL = 'https://f.dnz.dev';
-    switch (network) {
-      case 'mainnet':
-        baseURL = 'https://f.dnz.dev';
-        break;
-      case 'testnet':
-        baseURL = 'https://f.dnz.dev';
-        break;
-      case 'crescendo':
-        baseURL = 'https://f.dnz.dev';
-        break;
-    }
-    return baseURL;
-  };
-
-  poll = async (fn, fnCondition, ms) => {
-    let result = await fn();
-    while (fnCondition(result)) {
-      await this.wait(ms);
-      result = await fn();
-    }
-    return result;
-  };
-
-  wait = (ms = 1000) => {
-    return new Promise((resolve) => {
-      setTimeout(resolve, ms);
-    });
-  };
-
-  pollingTrnasaction = async (txId: string, network: string) => {
-    if (!txId || !txId.match(/^0?x?[0-9a-fA-F]{64}/)) {
-      return;
-    }
-
-    const fetchReport = async () =>
-      (await fetch(`https://rest-${network}.onflow.org/v1/transaction_results/${txId}`)).json();
-    const validate = (result) => result.status !== 'Sealed';
-    return await this.poll(fetchReport, validate, 3000);
-  };
-
-  pollTransferList = async (address: string, txHash: string, maxAttempts = 5) => {
-    const network = await this.getNetwork();
-    const currency = (await this.getDisplayCurrency())?.code || 'USD';
-    let attempts = 0;
-    try {
-      const poll = async () => {
-        if (attempts >= maxAttempts) {
-          consoleWarn('Max polling attempts reached');
-          return;
-        }
-
-        const { list: newTransactions } = await transactionService.loadTransactions(
-          network,
-          address,
-          '0',
-          '15'
-        );
-        // Copy the list as we're going to modify the original list
-
-        const foundTx = newTransactions?.find((tx) => txHash.includes(tx.hash));
-        if (foundTx && foundTx.indexed) {
-          // Refresh the coin list
-          triggerRefresh(coinListKey(network, address, currency));
-        } else {
-          // All of the transactions have not been picked up by the indexer yet
-          attempts++;
-          setTimeout(poll, 5000); // Poll every 5 seconds
-        }
-      };
-
-      await poll();
-    } catch (error) {
-      consoleError('pollTransferList error', error);
-    }
+    return await transactionMonitoringService.getViewSourceUrl();
   };
 
   listenTransaction = async (
@@ -1567,129 +1450,16 @@ export class WalletController extends BaseController {
     body = '',
     icon = chrome.runtime.getURL('./images/icon-64.png')
   ) => {
-    if (!txId || !txId.match(/^0?x?[0-9a-fA-F]{64}/)) {
-      return;
-    }
-    const address = (await this.getCurrentAddress()) || '0x';
-    const network = await this.getNetwork();
-    const currency = (await this.getDisplayCurrency())?.code || 'USD';
-    let txHash = txId;
-    try {
-      transactionService.setPending(network, address, txId, icon, title);
-      const fclTx = fcl.tx(txId);
-      // Wait for the transacton to be executed
-      // Listen to the transaction until it's executed.
-      // This will throw an error if there is an error with the transaction
-      const txStatusExecuted = await fclTx.onceExecuted();
-
-      // Update the pending transaction with the transaction status
-      txHash = await transactionService.updatePending(network, address, txId, txStatusExecuted);
-
-      // Track the transaction result
-      mixpanelTrack.track('transaction_result', {
-        tx_id: txId,
-        is_successful: true,
-      });
-
-      try {
-        // Send a notification to the user only on success
-        if (sendNotification) {
-          const baseURL = await this.getFlowscanUrl();
-          if (baseURL.includes('evm')) {
-            // It's an EVM transaction
-            // Look through the events in txStatus
-            const evmEvent = txStatusExecuted.events.find(
-              (event) => event.type.includes('EVM') && !!event.data?.hash
-            );
-            if (evmEvent) {
-              const hashBytes = evmEvent.data.hash.map((byte) => parseInt(byte));
-              const hash = '0x' + Buffer.from(hashBytes).toString('hex');
-              // Link to the account page on EVM otherwise we'll have to look up the EVM tx
-              notification.create(`${baseURL}/tx/${hash}`, title, body, icon);
-            } else {
-              const evmAddress = await this.getEvmAddress();
-
-              // Link to the account page on EVM as we don't have a tx hash
-              notification.create(`${baseURL}/address/${evmAddress}`, title, body, icon);
-            }
-          } else {
-            // It's a Flow transaction
-            notification.create(`${baseURL}/tx/${txId}`, title, body, icon);
-          }
-        }
-      } catch (err: unknown) {
-        // We don't want to throw an error if the notification fails
-        consoleError('listenTransaction notification error ', err);
+    return await transactionMonitoringService.listenTransaction(
+      txId,
+      sendNotification,
+      title,
+      body,
+      icon,
+      (url: string, title: string, body: string, icon: string) => {
+        notification.create(url, title, body, icon);
       }
-
-      // Refresh the account balance
-      triggerRefresh(accountBalanceKey(network, address));
-      // Refresh the coin list
-      triggerRefresh(coinListKey(network, address, currency));
-
-      // Wait for the transaction to be sealed
-      const txStatusSealed = await fclTx.onceSealed();
-
-      // Update the pending transaction with the transaction status
-      txHash = await transactionService.updatePending(network, address, txId, txStatusSealed);
-
-      // Refresh the account balance after sealed status - just to be sure
-      triggerRefresh(accountBalanceKey(network, address));
-      // Refresh the coin list after sealed status - just to be sure
-      triggerRefresh(coinListKey(network, address, currency));
-    } catch (err: unknown) {
-      // An error has occurred while listening to the transaction
-      let errorMessage = 'unknown error';
-      let errorCode: number | undefined = undefined;
-
-      if (err instanceof TransactionError) {
-        errorCode = err.code;
-        errorMessage = err.message;
-      } else {
-        if (err instanceof Error) {
-          errorMessage = err.message;
-        } else if (typeof err === 'string') {
-          errorMessage = err;
-        }
-        // From fcl-core transaction-error.ts
-        const ERROR_CODE_REGEX = /\[Error Code: (\d+)\]/;
-        const match = errorMessage.match(ERROR_CODE_REGEX);
-        errorCode = match ? parseInt(match[1], 10) : undefined;
-      }
-
-      consoleWarn({
-        msg: 'transactionError',
-        errorMessage,
-        errorCode,
-      });
-
-      // Track the transaction error
-      mixpanelTrack.track('transaction_result', {
-        tx_id: txId,
-        is_successful: false,
-        error_message: errorMessage,
-      });
-
-      // Tell the UI that there was an error
-      chrome.runtime.sendMessage({
-        msg: 'transactionError',
-        errorMessage,
-        errorCode,
-      });
-    } finally {
-      if (txHash) {
-        // Start polling for transfer list updates
-        await this.pollTransferList(address, txHash);
-      }
-    }
-  };
-
-  clearPending = async () => {
-    const network = await this.getNetwork();
-    const address = await this.getCurrentAddress();
-    if (address) {
-      transactionService.clearPending(network, address);
-    }
+    );
   };
 
   clearNFT = () => {
