@@ -18,3 +18,4 @@ export { default as tokenListService } from './token-list';
 export { default as remoteConfigService } from './remoteConfig';
 export { mixpanelTrack } from './mixpanel';
 export { default as logListener } from './log-listener';
+export { default as cadenceActionService } from './cadence-actions';

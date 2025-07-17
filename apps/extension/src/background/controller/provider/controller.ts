@@ -3,6 +3,7 @@ import {
   permissionService,
   sessionService,
   signTextHistoryService,
+  userWalletService,
 } from '@onflow/flow-wallet-core';
 import BigNumber from 'bignumber.js';
 import { ethErrors } from 'eth-rpc-errors';
@@ -243,7 +244,7 @@ class ProviderController extends BaseController {
     }
     try {
       // Attempt to query the EVM address
-      evmAddress = await Wallet.queryEvmAddress(currentWallet);
+      evmAddress = await userWalletService.getEvmAccountOfParent(currentWallet);
       if (!isValidEthereumAddress(evmAddress)) {
         throw new Error('Invalid EVM address');
       }
@@ -258,7 +259,7 @@ class ProviderController extends BaseController {
         },
         { height: 599 }
       );
-      evmAddress = await Wallet.queryEvmAddress(currentWallet);
+      evmAddress = await userWalletService.getEvmAccountOfParent(currentWallet);
       if (!isValidEthereumAddress(evmAddress)) {
         throw new Error('Invalid EVM address');
       }
@@ -330,10 +331,11 @@ class ProviderController extends BaseController {
       return;
     }
 
-    let evmAccount: string | null = null;
+    let evmAccount: string | undefined;
     try {
       // Attempt to query the EVM address
-      evmAccount = await Wallet.queryEvmAddress(currentWallet);
+      const evmAccountObj = await userWalletService.getEvmAccountOfParent(currentWallet);
+      evmAccount = evmAccountObj?.address;
     } catch (error) {
       // If an error occurs, request approval
       consoleError('Error querying EVM address:', error);
@@ -471,7 +473,7 @@ class ProviderController extends BaseController {
     if (!currentWallet) {
       throw new Error('Current wallet not found');
     }
-    const evmaddress = await Wallet.queryEvmAddress(currentWallet);
+    const evmaddress = await userWalletService.getEvmAccountOfParent(currentWallet);
 
     if (network === 'testnet') {
       currentChain = TESTNET_CHAIN_ID;
@@ -502,7 +504,7 @@ class ProviderController extends BaseController {
 
     // Potentially shouldn't change the case to compare - we should be checking ERC-55 conformity
     if (
-      ensureEvmAddressPrefix(evmaddress!.toLowerCase()) !==
+      ensureEvmAddressPrefix(evmaddress!.address.toLowerCase()) !==
       ensureEvmAddressPrefix(address.toLowerCase())
     ) {
       throw new Error('Provided address does not match the current address');
@@ -543,7 +545,7 @@ class ProviderController extends BaseController {
     if (!currentWallet) {
       throw new Error('Current wallet not found');
     }
-    const evmaddress = await Wallet.queryEvmAddress(currentWallet);
+    const evmaddress = await userWalletService.getEvmAccountOfParent(currentWallet);
 
     if (network === 'testnet') {
       currentChain = TESTNET_CHAIN_ID;
@@ -575,7 +577,7 @@ class ProviderController extends BaseController {
 
     // Potentially shouldn't change the case to compare - we should be checking ERC-55 conformity
     if (
-      ensureEvmAddressPrefix(evmaddress!.toLowerCase()) !==
+      ensureEvmAddressPrefix(evmaddress!.address.toLowerCase()) !==
       ensureEvmAddressPrefix(address.toLowerCase())
     ) {
       throw new Error('Provided address does not match the current address');
