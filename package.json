@@ -7,6 +7,10 @@
   "scripts": {
     "dev": "pnpm -F flow-wallet-extension build:dev",
     "build": "pnpm -F flow-wallet-extension build:pro",
+    "build:all": "pnpm -r build",
+    "build:packages": "pnpm -F './packages/**' build",
+    "build:parallel": "pnpm -r --parallel build",
+    "build:stream": "pnpm -r --stream build",
     "test": "pnpm -r test",
     "test:run": "pnpm -r test:run",
     "test:e2e": "pnpm -r test:e2e",
