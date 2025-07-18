@@ -48,7 +48,7 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
         {
           test: /\.jsx?$|\.tsx?$/,
           exclude:
-            /node_modules\/(?!@onflow\/flow-wallet-shared|@onflow\/flow-wallet-reducers)|\.stories\.(jsx?|tsx?)$|\.test\.(jsx?|tsx?)$|\.spec\.(jsx?|tsx?)$|\/__tests__\//,
+            /node_modules|\.stories\.(jsx?|tsx?)$|\.test\.(jsx?|tsx?)$|\.spec\.(jsx?|tsx?)$|\/__tests__\//,
           oneOf: [
             {
               // prevent webpack remove this file's output even it's not been used in entry
@@ -181,8 +181,6 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
       alias: {
         moment: 'dayjs',
         'cross-fetch': 'cross-fetch',
-        '@onflow/flow-wallet-shared': paths.rootResolve('../../packages/shared/src'),
-        '@onflow/flow-wallet-reducers': paths.rootResolve('../../packages/reducers/src'),
         '@': paths.rootResolve('src'),
       },
       plugins: [],

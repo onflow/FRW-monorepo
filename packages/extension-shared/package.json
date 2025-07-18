@@ -3,8 +3,6 @@
   "version": "0.0.1",
   "description": "Shared code for Flow Reference Wallet Extension",
   "type": "module",
-  "main": "./dist/chrome-logger.js",
-  "types": "./dist/chrome-logger.d.ts",
   "files": [
     "src",
     "dist"
@@ -51,11 +49,6 @@
       "types": "./dist/*.d.ts",
       "import": "./dist/*.js",
       "default": "./dist/*.js"
-    },
-    "./src/*": {
-      "types": "./src/*.ts",
-      "import": "./src/*.ts",
-      "default": "./src/*.ts"
     }
   },
   "dependencies": {

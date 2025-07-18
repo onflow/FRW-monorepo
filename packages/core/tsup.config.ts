@@ -1,11 +1,7 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: {
-    'service/index': 'src/service/index.ts',
-    'service/keyring/index': 'src/service/keyring/index.ts',
-    'utils/index': 'src/utils/index.ts',
-  },
+  entry: ['src/service/index.ts', 'src/utils/index.ts'],
   format: ['esm'],
   dts: {
     compilerOptions: {

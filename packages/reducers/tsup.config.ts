@@ -18,9 +18,5 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   treeshake: true,
-  onSuccess: async () => {
-    // Copy TypeScript source files to dist
-    const { cp } = await import('fs/promises');
-    await cp('src', 'dist/src', { recursive: true });
-  },
+  // Removed onSuccess hook that was copying src to dist/src
 });
