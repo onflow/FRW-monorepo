@@ -2,7 +2,7 @@ import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 import { withRouter } from 'storybook-addon-remix-react-router';
 
-import emojisJson from '@onflow/flow-wallet-shared/constant/emoji.json';
+import { emoji as emojisJson } from '@onflow/flow-wallet-shared/constant';
 import { MAINNET_CHAIN_ID } from '@onflow/flow-wallet-shared/types/network-types';
 import { type NFTCollections } from '@onflow/flow-wallet-shared/types/nft-types';
 import {

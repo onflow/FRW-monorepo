@@ -2,14 +2,13 @@ import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 import { withRouter } from 'storybook-addon-remix-react-router';
 
-import emojisJson from '@onflow/flow-wallet-shared/constant/emoji.json';
+import { emoji } from '@onflow/flow-wallet-shared/constant';
 import { type FeatureFlagKey } from '@onflow/flow-wallet-shared/types/feature-types';
 import {
   MAINNET_CHAIN_ID,
   type UserInfoResponse,
 } from '@onflow/flow-wallet-shared/types/network-types';
 import {
-  type Emoji,
   type MainAccount,
   type WalletAccount,
 } from '@onflow/flow-wallet-shared/types/wallet-types';
@@ -23,7 +22,7 @@ import {
 
 import MenuDrawer from '../MenuDrawer';
 
-const { emojis } = emojisJson as { emojis: Emoji[] };
+const { emojis } = emoji;
 
 // Mock wallet accounts - aligned with account-listing stories
 const mockMainAccount: MainAccount = {

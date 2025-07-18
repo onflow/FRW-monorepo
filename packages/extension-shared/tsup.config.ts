@@ -8,6 +8,7 @@ export default defineConfig({
     messaging: 'src/messaging.ts',
     storage: 'src/storage.ts',
     retryOperation: 'src/retryOperation.ts',
+    'contact-utils': 'src/contact-utils.ts',
   },
   format: ['esm'],
   dts: {

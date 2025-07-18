@@ -9,3 +9,4 @@ export * from './formatTokenValue';
 export * from './getPeriodFrequency';
 export * from './number';
 export * from './strip-sensitive';
+export * from './console-log';

@@ -45,6 +45,11 @@
       "import": "./dist/message/storage.js",
       "default": "./dist/message/storage.js"
     },
+    "./contact-utils": {
+      "types": "./dist/contact-utils.d.ts",
+      "import": "./dist/contact-utils.js",
+      "default": "./dist/contact-utils.js"
+    },
     "./*": {
       "types": "./dist/*.d.ts",
       "import": "./dist/*.js",

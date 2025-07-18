@@ -1,6 +1,6 @@
 import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 
-import emojisJson from '@onflow/flow-wallet-shared/constant/emoji.json';
+import { emoji as emojisJson } from '@onflow/flow-wallet-shared/constant';
 import { MAINNET_CHAIN_ID } from '@onflow/flow-wallet-shared/types/network-types';
 import { type WalletAccount } from '@onflow/flow-wallet-shared/types/wallet-types';
 const { emojis } = emojisJson;
