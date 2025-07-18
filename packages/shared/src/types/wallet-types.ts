@@ -26,7 +26,7 @@ export const isEvmAccountType = (type: ActiveChildType_depreciated): type is 'ev
  * @deprecated : use ActiveAccountType instead
  */
 export const isChildAccountType = (type: ActiveChildType_depreciated): type is FlowAddress => {
-  return isValidFlowAddress(type);
+  return type !== null && isValidFlowAddress(type);
 };
 /**
  * @deprecated : use ActiveAccountType instead

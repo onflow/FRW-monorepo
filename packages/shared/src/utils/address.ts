@@ -10,16 +10,16 @@ export function withPrefix(address: string): FlowAddress | EvmAddress | null {
   return ('0x' + sansPrefix(address)) as FlowAddress | EvmAddress;
 }
 
-export function display(address) {
+export function display(address: string) {
   return withPrefix(address);
 }
 
-export const isValidEthereumAddress = (address): address is EvmAddress => {
+export const isValidEthereumAddress = (address: string): address is EvmAddress => {
   const regex = /^(0x)?[0-9a-fA-F]{40}$/;
   return regex.test(address);
 };
 
-export const isValidFlowAddress = (address): address is FlowAddress => {
+export const isValidFlowAddress = (address: string): address is FlowAddress => {
   const regex = /^(0x)?[0-9a-fA-F]{16}$/;
   return regex.test(address);
 };
@@ -30,7 +30,7 @@ export const isValidAddress = (address: unknown) => {
   );
 };
 
-export const ensureEvmAddressPrefix = (address) => {
+export const ensureEvmAddressPrefix = (address: string) => {
   const cleanAddress = address.startsWith('0x') ? address.slice(2) : address;
 
   const prefixedAddress = '0x' + cleanAddress;

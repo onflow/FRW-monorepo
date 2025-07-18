@@ -1,16 +1,24 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: {
-    index: 'src/index.ts',
-    'types/index': 'src/types/index.ts',
-    'constants/index': 'src/constants/index.ts',
-    'utils/index': 'src/utils/index.ts',
+  entry: ['src/**/*.ts', '!src/**/*.test.ts', '!src/**/*.spec.ts'],
+  format: ['esm'],
+  dts: {
+    compilerOptions: {
+      composite: false,
+      module: 'ESNext',
+    },
   },
-  format: ['cjs', 'esm'],
-  dts: true,
   splitting: false,
   sourcemap: true,
   clean: true,
   treeshake: true,
+  loader: {
+    '.json': 'copy',
+  },
+  onSuccess: async () => {
+    // Copy TypeScript source files to dist
+    const { cp } = await import('fs/promises');
+    await cp('src', 'dist/src', { recursive: true });
+  },
 });

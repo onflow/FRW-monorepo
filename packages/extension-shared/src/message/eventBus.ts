@@ -18,7 +18,7 @@ class EventBus {
 
   once = (type: string, fn: Listener) => {
     const listeners = this.events[type];
-    const func = (...params) => {
+    const func = (...params: any[]) => {
       fn(...params);
       this.events[type] = this.events[type].filter((item) => item !== func);
     };

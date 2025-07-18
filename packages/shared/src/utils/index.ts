@@ -1,6 +1,5 @@
 // Re-export all utilities
-export * from '../types/script-types';
-export * from '../types/type';
+
 export * from './address';
 export * from './algo';
 export * from './default';

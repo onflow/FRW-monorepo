@@ -6,10 +6,16 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "files": [
-    "src"
+    "dist",
+    "src",
+    "src/types/index.ts",
+    "src/constant/index.ts",
+    "src/utils/index.ts"
   ],
   "scripts": {
     "build": "tsup",
+    "build:js": "tsup",
+    "build:dts": "tsc --emitDeclarationOnly",
     "build:watch": "tsup --watch",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist",
@@ -27,47 +33,58 @@
   },
   "exports": {
     ".": {
-      "types": "./src/index.ts",
-      "default": "./src/index.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./types": {
-      "types": "./src/types/index.ts",
-      "default": "./src/types/index.ts"
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/types/index.js",
+      "default": "./dist/types/index.js"
     },
     "./types/*": {
-      "types": "./src/types/*.ts",
-      "default": "./src/types/*.ts"
+      "types": "./dist/types/*.d.ts",
+      "import": "./dist/types/*.js",
+      "default": "./dist/types/*.js"
     },
     "./constant": {
-      "types": "./src/constant/index.ts",
-      "default": "./src/constant/index.ts"
+      "types": "./dist/constant/index.d.ts",
+      "import": "./dist/constant/index.ts",
+      "default": "./dist/constant/index.js"
+    },
+    "./constant/index": {
+      "types": "./dist/constant/index.d.ts",
+      "import": "./dist/constant/index.js",
+      "default": "./dist/constant/index.js"
     },
     "./constant/emoji.json": {
-      "default": "./src/constant/emoji.json"
+      "default": "./dist/constant/emoji.json"
     },
     "./constant/erc20.abi.json": {
-      "default": "./src/constant/erc20.abi.json"
+      "default": "./dist/constant/erc20.abi.json"
     },
     "./constant/erc721.abi.json": {
-      "default": "./src/constant/erc721.abi.json"
+      "default": "./dist/constant/erc721.abi.json"
     },
     "./constant/*": {
-      "types": "./src/constant/*.ts",
-      "default": "./src/constant/*.ts"
+      "types": "./dist/constant/*.d.ts",
+      "import": "./dist/constant/*.js",
+      "default": "./dist/constant/*.js"
     },
     "./utils": {
-      "types": "./src/utils/index.ts",
-      "default": "./src/utils/index.ts"
+      "types": "./dist/utils/index.d.ts",
+      "import": "./dist/utils/index.js",
+      "default": "./dist/utils/index.js"
     },
     "./utils/*": {
-      "types": [
-        "./src/utils/*.ts",
-        "./src/utils/*.json"
-      ],
-      "default": [
-        "./src/utils/*.ts",
-        "./src/utils/*.json"
-      ]
+      "types": "./dist/utils/*.d.ts",
+      "import": "./dist/utils/*.js",
+      "default": "./dist/utils/*.js"
+    },
+    "./src/*": {
+      "types": "./src/*.ts",
+      "import": "./src/*.ts",
+      "default": "./src/*.ts"
     }
   },
   "dependencies": {

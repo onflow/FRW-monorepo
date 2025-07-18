@@ -1,22 +1,22 @@
 {
   "compilerOptions": {
-    "baseUrl": "./",
+    "target": "ES2022",
     "module": "ESNext",
-    "target": "ESNext",
+    "lib": ["ES2022"],
     "moduleResolution": "bundler",
-    "esModuleInterop": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
     "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "jsx": "react",
-    "allowSyntheticDefaultImports": true,
-    "allowJs": true
+    "isolatedModules": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "composite": true
   },
-  "references": [
-    { "path": "./apps/extension" },
-    { "path": "./packages/shared" },
-    { "path": "./packages/reducers" }
-  ],
-  "files": [],
-  "include": [],
-  "exclude": ["node_modules"]
+  "include": ["src/**/*.ts", "src/**/*.json"],
+  "exclude": ["node_modules", "dist", "tsup.config.ts", "vitest.config.ts"]
 }

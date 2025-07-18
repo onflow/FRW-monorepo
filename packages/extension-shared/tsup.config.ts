@@ -2,15 +2,27 @@ import { defineConfig } from 'tsup';
 
 export default defineConfig({
   entry: {
-    'chrome-logger': 'src/utils/chrome-logger.ts',
-    'message/eventBus': 'src/utils/message/eventBus.ts',
-    'message/messaging': 'src/utils/messaging.ts',
-    'message/storage': 'src/utils/storage.ts',
+    'chrome-logger': 'src/chrome-logger.ts',
+    'current-id': 'src/current-id.ts',
+    'message/eventBus': 'src/message/eventBus.ts',
+    messaging: 'src/messaging.ts',
+    storage: 'src/storage.ts',
   },
-  format: ['cjs', 'esm'],
-  dts: true,
+  format: ['esm'],
+  dts: {
+    compilerOptions: {
+      composite: false,
+      module: 'ESNext',
+      noImplicitAny: false,
+    },
+  },
   splitting: false,
   sourcemap: true,
   clean: true,
   treeshake: true,
+  onSuccess: async () => {
+    // Copy TypeScript source files to dist
+    const { cp } = await import('fs/promises');
+    await cp('src', 'dist/src', { recursive: true });
+  },
 });

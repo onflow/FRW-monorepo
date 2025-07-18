@@ -3,9 +3,10 @@
   "version": "0.0.1",
   "description": "Core services for Flow Reference Wallet",
   "type": "module",
-  "main": "./src/service/index.ts",
-  "types": "./src/service/index.ts",
+  "main": "./dist/service/index.js",
+  "types": "./dist/service/index.d.ts",
   "files": [
+    "dist",
     "src"
   ],
   "scripts": {
@@ -27,37 +28,43 @@
   },
   "exports": {
     ".": {
-      "types": "./src/service/index.ts",
-      "default": "./src/service/index.ts"
+      "types": "./dist/service/index.d.ts",
+      "import": "./dist/service/index.js",
+      "default": "./dist/service/index.js"
     },
     "./service": {
-      "types": "./src/service/index.ts",
-      "default": "./src/service/index.ts"
+      "types": "./dist/service/index.d.ts",
+      "import": "./dist/service/index.js",
+      "default": "./dist/service/index.js"
     },
     "./service/*": {
-      "types": "./src/service/*.ts",
-      "default": "./src/service/*.ts"
+      "types": "./dist/service/*.d.ts",
+      "import": "./dist/service/*.js",
+      "default": "./dist/service/*.js"
     },
     "./service/keyring": {
-      "types": "./src/service/keyring/index.ts",
-      "default": "./src/service/keyring/index.ts"
+      "types": "./dist/service/keyring/index.d.ts",
+      "import": "./dist/service/keyring/index.js",
+      "default": "./dist/service/keyring/index.js"
     },
     "./utils": {
-      "types": "./src/utils/index.ts",
-      "default": "./src/utils/index.ts"
+      "types": "./dist/utils/index.d.ts",
+      "import": "./dist/utils/index.js",
+      "default": "./dist/utils/index.js"
     },
     "./utils/*": {
-      "types": [
-        "./src/utils/*.ts",
-        "./src/utils/*.json"
-      ],
-      "default": [
-        "./src/utils/*.ts",
-        "./src/utils/*.json"
-      ]
+      "types": "./dist/utils/*.d.ts",
+      "import": "./dist/utils/*.js",
+      "default": "./dist/utils/*.js"
     },
     "./*": {
+      "types": "./dist/*.d.ts",
+      "import": "./dist/*.js",
+      "default": "./dist/*.js"
+    },
+    "./src/*": {
       "types": "./src/*.ts",
+      "import": "./src/*.ts",
       "default": "./src/*.ts"
     }
   },
