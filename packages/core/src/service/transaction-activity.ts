@@ -189,12 +189,13 @@ class TransactionActivity {
     txItem.cadenceTxId = txId;
     txItem.image = icon;
     txItem.title = title;
+
     txList.unshift(txItem);
     this.setPendingList(network, address, txList);
 
     // Get the existing indexed transaction list
     const existingTxStore = await getInvalidData<TransferListStore>(
-      transferListKey(network, address)
+      transferListKey(network, address, '0', '15')
     );
     if (existingTxStore) {
       existingTxStore.list.unshift(txItem);
@@ -202,7 +203,7 @@ class TransactionActivity {
         (item) => item.status.toUpperCase() === 'PENDING'
       ).length;
       existingTxStore.count = existingTxStore.count + 1;
-      await setCachedData(transferListKey(network, address), existingTxStore);
+      await setCachedData(transferListKey(network, address, '0', '15'), existingTxStore);
     }
   };
 
@@ -256,7 +257,7 @@ class TransactionActivity {
 
     // Get the existing indexed transaction list
     const existingTxStore = await getInvalidData<TransferListStore>(
-      transferListKey(network, address)
+      transferListKey(network, address, '0', '15')
     );
     if (existingTxStore) {
       const storeItemIndex = existingTxStore.list.findIndex((item) => item.hash.includes(txId));
@@ -265,7 +266,7 @@ class TransactionActivity {
         existingTxStore.pendingCount = existingTxStore.list.filter(
           (item) => item.status.toUpperCase() === 'PENDING'
         ).length;
-        await setCachedData(transferListKey(network, address), existingTxStore);
+        await setCachedData(transferListKey(network, address, '0', '15'), existingTxStore);
       }
     }
 
