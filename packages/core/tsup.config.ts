@@ -7,7 +7,13 @@ const envFile = process.env.NODE_ENV === 'production' ? '.env.pro' : '.env.dev';
 config({ path: resolve(__dirname, envFile) });
 
 export default defineConfig({
-  entry: ['src/service/index.ts', 'src/utils/index.ts'],
+  entry: [
+    'src/service/index.ts',
+    'src/utils/index.ts',
+    'src/utils/modules/*.ts',
+    '!**__tests__**',
+    '!*.test.ts',
+  ],
   format: ['esm'],
   define: Object.entries(process.env).reduce(
     (acc, [key, value]) => {
@@ -45,9 +51,4 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   treeshake: true,
-  onSuccess: async () => {
-    // Copy TypeScript source files to dist
-    const { cp } = await import('fs/promises');
-    await cp('src', 'dist/src', { recursive: true });
-  },
 });
