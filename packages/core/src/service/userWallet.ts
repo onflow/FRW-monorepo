@@ -2,8 +2,7 @@ import * as secp from '@noble/secp256k1';
 import * as fcl from '@onflow/fcl';
 import type { Account as FclAccount } from '@onflow/typedefs';
 import * as ethUtil from 'ethereumjs-util';
-import { getApp } from 'firebase/app';
-import { getAuth, signInAnonymously } from 'firebase/auth/web-extension';
+import { signInAnonymously } from 'firebase/auth/web-extension';
 import { TransactionError } from 'web3';
 
 import { triggerRefresh, getCachedData } from '@onflow/flow-wallet-data-model/cache-data-access';
@@ -77,6 +76,7 @@ import { getCompatibleHashAlgo } from '@onflow/flow-wallet-shared/utils/algo';
 import { consoleError, consoleWarn } from '@onflow/flow-wallet-shared/utils/console-log';
 import { getEmojiByIndex } from '@onflow/flow-wallet-shared/utils/emoji-util';
 
+import { authenticationService } from '.';
 import keyringService from './keyring';
 import { mixpanelTrack } from './mixpanel';
 import openapiService, { getScripts } from './openapi';
@@ -1109,9 +1109,8 @@ class UserWallet {
     replaceUser = true
   ): Promise<void> => {
     // Login anonymously if needed
-    const app = getApp(process.env.NODE_ENV!);
-    const auth = getAuth(app);
-    let idToken = await getAuth(app).currentUser?.getIdToken();
+    const auth = authenticationService.getAuth();
+    let idToken = await auth.currentUser?.getIdToken();
     if (idToken === null || !idToken) {
       // Sign in anonymously first
       const userCredential = await signInAnonymously(auth);
@@ -1258,9 +1257,8 @@ class UserWallet {
     deviceInfo: DeviceInfoRequest,
     replaceUser = true
   ) => {
-    const app = getApp(process.env.NODE_ENV!);
-    const auth = getAuth(app);
-    const idToken = await getAuth(app).currentUser?.getIdToken();
+    const auth = authenticationService.getAuth();
+    const idToken = await auth.currentUser?.getIdToken();
     if (idToken === null || !idToken) {
       signInAnonymously(auth);
       return;
@@ -1295,9 +1293,7 @@ class UserWallet {
   };
 
   logoutCurrentUser = async () => {
-    const app = getApp(process.env.NODE_ENV!);
-    const auth = getAuth(app);
-    await signInAnonymously(auth);
+    await authenticationService.signInAnonymously();
   };
 
   /**

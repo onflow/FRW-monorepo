@@ -23,14 +23,6 @@ import {
   versionService,
 } from '@onflow/flow-wallet-core';
 import { ethErrors } from 'eth-rpc-errors';
-import { initializeApp } from 'firebase/app';
-import {
-  getAuth,
-  indexedDBLocalPersistence,
-  onAuthStateChanged,
-  setPersistence,
-  signInAnonymously,
-} from 'firebase/auth/web-extension';
 
 import { initializeChromeLogging } from '@onflow/flow-wallet-extension-shared/chrome-logger';
 import eventBus from '@onflow/flow-wallet-extension-shared/message/eventBus';
@@ -56,68 +48,31 @@ const chromeWindow = await chrome.windows.getCurrent();
 
 let appStoreLoaded = false;
 
-async function initAppMeta() {
-  // Initialize Firebase
-  // consoleLog('<- initAppMeta ->')
-  // const document = chromeWindow.document;
-  // const head = document.querySelector('head');
-  // const icon = document.createElement('link');
-  // icon.href = 'https://raw.githubusercontent.com/Outblock/Lilico-Web/main/asset/icon-128.png';
-  // icon.rel = 'icon';
-  // head?.appendChild(icon);
-  // const name = document.createElement('meta');
-  // name.name = 'name';
-  // name.content = 'Lilico';
-  // head?.appendChild(name);
-  // const description = document.createElement('meta');
-  // description.name = 'description';
-  // description.content = i18n.t('appDescription');
-  // head?.appendChild(description);
-
-  firebaseSetup();
-
-  // note fcl setup is async
-  await userWalletService.setupFcl();
-}
-
-async function firebaseSetup() {
-  const env: string = process.env.NODE_ENV!;
-  const firebaseConfig = getFirbaseConfig();
-
-  const app = initializeApp(firebaseConfig, env);
-
-  const auth = getAuth(app);
-  setPersistence(auth, indexedDBLocalPersistence);
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      // User is signed in, see docs for a list of available properties
-      // https://firebase.google.com/docs/reference/js/firebase.User
-      // note fcl setup is async
-      userWalletService.setupFcl();
-    } else {
-      // User is signed out
-      signInAnonymously(auth);
-    }
-  });
-}
-
+// API URLs
 const API_GO_SERVER_URL = process.env.API_GO_SERVER_URL;
 const API_BASE_URL = process.env.API_BASE_URL;
-const FB_FUNCTIONS_URL = process.env.FB_FUNCTIONS_URL;
+const FB_FUNCTIONS_URL = process.env.FB_FUNCTIONS;
+
 async function restoreAppState() {
+  // eslint-disable-next-line no-console
+  console.log('restoreAppState');
   // Init authentication first
   await authenticationService.init(getFirbaseConfig());
+
+  // Now we can init openapi
   if (!API_GO_SERVER_URL || !API_BASE_URL || !FB_FUNCTIONS_URL) {
     throw new Error('API_GO_SERVER_URL, API_BASE_URL, FB_FUNCTIONS_URL must be set');
   }
-
+  // eslint-disable-next-line no-console
+  console.log('restoreAppState - init openapi');
   // Init openapi second. This starts fcl
   await openapiService.init(
     API_GO_SERVER_URL, // registrationURL
     API_BASE_URL, // webNextURL
     FB_FUNCTIONS_URL // functionsURL
   );
-
+  // eslint-disable-next-line no-console
+  console.log('restoreAppState - init keyring');
   // Load keyring store
   await keyringService.loadKeyringStore();
 
@@ -147,6 +102,9 @@ async function restoreAppState() {
   await googleSafeHostService.init();
   if (process.env.MIXPANEL_TOKEN) {
     await mixpanelTrack.init(process.env.MIXPANEL_TOKEN);
+
+    // Initialize Chrome logging - has to be done after mixpanel is initialized
+    initializeChromeLogging();
   }
   await logListener.init();
   await tokenListService.init();
@@ -157,12 +115,7 @@ async function restoreAppState() {
 
   // rpcCache.start();
 
-  // Initialize Chrome logging - has to be done after mixpanel is initialized
-  initializeChromeLogging();
-
   appStoreLoaded = true;
-
-  await initAppMeta();
 
   // Set the loaded flag to true so that the UI knows the app is ready
   await walletController.setLoaded(true);

@@ -5,19 +5,21 @@ import BigNumber from 'bignumber.js';
  * @deprecated
  */
 export const formatLargeNumber = (num: number | string | BigNumber) => {
-  const bn = new BigNumber(num);
+  let cleanNum = num;
   if (typeof num === 'string' && num.startsWith('$')) {
-    num = num.slice(1);
+    cleanNum = num.slice(1);
   }
 
+  const bn = new BigNumber(cleanNum);
+
   if (bn.isLessThan(1e6)) {
-    return num.toString(); // Less than 1M, return as-is
+    return bn.toString(); // Less than 1M, return as-is
   } else if (bn.isLessThan(1e9)) {
-    return `${bn.toFormat(2)} M`; // Millions
+    return `${bn.dividedBy(1e6).toFixed(3)}M`; // Millions
   } else if (bn.isLessThan(1e12)) {
-    return `${bn.toFormat(2)} B`; // Billions
+    return `${bn.dividedBy(1e9).toFixed(3)}B`; // Billions
   } else {
-    return `${bn.toFormat(2)} T`; // Trillions
+    return `${bn.dividedBy(1e12).toFixed(3)}T`; // Trillions
   }
 };
 

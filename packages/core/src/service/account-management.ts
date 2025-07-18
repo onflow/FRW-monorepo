@@ -2,8 +2,6 @@ import * as fcl from '@onflow/fcl';
 import type { Account as FclAccount } from '@onflow/typedefs';
 import * as bip39 from 'bip39';
 import * as ethUtil from 'ethereumjs-util';
-import { getApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth/web-extension';
 
 import {
   userMetadataKey,
@@ -32,7 +30,7 @@ import {
 } from '@onflow/flow-wallet-shared/utils/address';
 import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
 
-import { preferenceService } from '.';
+import { authenticationService, preferenceService } from '.';
 import googleDriveService from './googleDrive';
 import keyringService from './keyring';
 import { mixpanelTrack } from './mixpanel';
@@ -388,8 +386,8 @@ export class AccountManagement {
     if (!isValidMnemonic) {
       throw new Error('Invalid mnemonic');
     }
-    const app = getApp(process.env.NODE_ENV!);
-    const user = await getAuth(app).currentUser;
+    const auth = authenticationService.getAuth();
+    const user = await auth.currentUser;
     try {
       // This would need to be imported from googleDriveService
       await googleDriveService.uploadMnemonicToGoogleDrive(mnemonic, username, user!.uid, password);

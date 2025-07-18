@@ -13,8 +13,7 @@ import RLP from 'rlp';
 import Web3 from 'web3';
 import { stringToHex } from 'web3-utils';
 
-import { getAccountsByPublicKeyTuple } from '@onflow/flow-wallet-core/utils/modules/findAddressWithPubKey';
-import { signWithKey } from '@onflow/flow-wallet-core/utils/modules/publicPrivateKey';
+import { getAccountsByPublicKeyTuple, signWithKey } from '@onflow/flow-wallet-core/utils';
 import { EVM_ENDPOINT } from '@onflow/flow-wallet-shared/constant/domain-constants';
 import { tupleToPrivateKey } from '@onflow/flow-wallet-shared/types/key-types';
 import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@onflow/flow-wallet-shared/types/network-types';

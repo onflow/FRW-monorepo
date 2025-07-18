@@ -1,13 +1,7 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: [
-    'src/service/index.ts',
-    'src/utils/index.ts',
-    'src/utils/modules/*.ts',
-    '!**__tests__**',
-    '!*.test.ts',
-  ],
+  entry: ['src/service/index.ts', 'src/utils/index.ts', '!**__tests__**', '!*.test.ts'],
   format: ['esm'],
   dts: {
     compilerOptions: {
@@ -31,6 +25,7 @@ export default defineConfig({
     '@onflow/flow-wallet-extension-shared',
     '@onflow/flow-wallet-data-model',
     '@onflow/flow-wallet-reducers',
+    '@trustwallet/wallet-core',
   ],
   splitting: false,
   sourcemap: true,

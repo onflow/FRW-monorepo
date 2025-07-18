@@ -64,8 +64,7 @@ import { afterEach, beforeEach, describe, expect, it, vi, type MockedFunction } 
 // --- Other Specific Imports (ensure these remain as they were) ---
 
 // Change these imports to be named imports from '@onflow/flow-wallet-core/service'
-import * as findAddressWithPubKey from '@onflow/flow-wallet-core/utils/modules/findAddressWithPubKey';
-import { pk2PubKeyTuple } from '@onflow/flow-wallet-core/utils/modules/publicPrivateKey';
+import { pk2PubKeyTuple, getAccountsByPublicKeyTuple } from '@onflow/flow-wallet-core/utils';
 import {
   HASH_ALGO_NUM_DEFAULT,
   SIGN_ALGO_NUM_DEFAULT,
@@ -163,7 +162,7 @@ describe('ProviderController - signTypeData (EIP-1271)', async () => {
     };
 
     // Configure mocks for other top-level mocked modules
-    vi.mocked(findAddressWithPubKey).getAccountsByPublicKeyTuple.mockResolvedValue([mockAccount]);
+    vi.mocked(getAccountsByPublicKeyTuple).mockResolvedValue([mockAccount]);
     /*
     vi.mocked(publicPrivateKey).signWithKey = vi
       .fn()

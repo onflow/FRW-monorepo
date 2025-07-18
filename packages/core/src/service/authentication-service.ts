@@ -73,7 +73,7 @@ export class AuthenticationService {
     await setPersistence(auth, indexedDBLocalPersistence);
     await signInWithCustomToken(auth, token);
   };
-
+  // NOTE: Use signInAnonymously to sign out the user
   signOut = async () => {
     const auth = this.getAuth();
     await signOut(auth);

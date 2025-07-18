@@ -136,3 +136,8 @@ export const replaceNftKeywords = (script: string, token: any) => {
     .replaceAll('<CollectionPublicType>', token.path.public_type)
     .replaceAll('<CollectionPublicPath>', publicPath);
 };
+
+// Export utility modules
+export * from './modules/findAddressWithPK';
+export * from './modules/findAddressWithPubKey';
+export * from './modules/publicPrivateKey';

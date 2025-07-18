@@ -52,11 +52,6 @@
       "import": "./dist/utils/index.js",
       "default": "./dist/utils/index.js"
     },
-    "./utils/*": {
-      "types": "./dist/utils/*.d.ts",
-      "import": "./dist/utils/*.js",
-      "default": "./dist/utils/*.js"
-    },
     "./*": {
       "types": "./dist/*.d.ts",
       "import": "./dist/*.js",
@@ -96,7 +91,8 @@
     "vitest": "^3.2.4"
   },
   "peerDependencies": {
-    "ethers": "^6.13.4"
+    "ethers": "^6.13.4",
+    "@trustwallet/wallet-core": "^4.3.6"
   },
   "engines": {
     "node": ">=22.11.0"
