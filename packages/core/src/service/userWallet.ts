@@ -4,10 +4,12 @@ import type { Account as FclAccount } from '@onflow/typedefs';
 import * as ethUtil from 'ethereumjs-util';
 import { getApp } from 'firebase/app';
 import { getAuth, signInAnonymously } from 'firebase/auth/web-extension';
+import { TransactionError } from 'web3';
 
 import {
   accountBalanceKey,
   accountBalanceRefreshRegex,
+  coinListKey,
   mainAccountsKey,
   mainAccountsRefreshRegex,
   mainAccountStorageBalanceKey,
@@ -70,7 +72,9 @@ import { getEmojiByIndex } from '@onflow/flow-wallet-shared/utils/emoji-util';
 import keyringService from './keyring';
 import { mixpanelTrack } from './mixpanel';
 import openapiService, { getScripts } from './openapi';
+import preferenceService from './preference';
 import remoteConfigService from './remoteConfig';
+import transactionActivityService from './transaction-activity';
 import { defaultAccountKey, pubKeyAccountToAccountKey } from '../utils/account-key';
 import {
   clearCachedData,
@@ -79,6 +83,7 @@ import {
   registerBatchRefreshListener,
   registerRefreshListener,
   setCachedData,
+  triggerRefresh,
 } from '../utils/data-cache';
 import { fclConfig, fclConfirmNetwork } from '../utils/fclConfig';
 import {
@@ -92,6 +97,27 @@ import {
   signWithKey,
 } from '../utils/modules/publicPrivateKey';
 import createPersistStore from '../utils/persistStore';
+
+interface TransactionNotification {
+  url: string;
+  title: string;
+  body: string;
+  icon: string;
+}
+
+interface TransactionErrorInfo {
+  errorMessage: string;
+  errorCode?: number;
+}
+
+interface TransactionMonitoringOptions {
+  sendNotification?: boolean;
+  title?: string;
+  body?: string;
+  icon?: string;
+  notificationCallback?: (notification: TransactionNotification) => void;
+  errorCallback?: (error: TransactionErrorInfo) => void;
+}
 
 const USER_WALLET_TEMPLATE: UserWalletStore = {
   monitor: 'flowscan',
@@ -762,6 +788,151 @@ class UserWallet {
       privateKey
     );
     return realSignature;
+  };
+
+  listenTransaction = async (
+    txId: string,
+    options: TransactionMonitoringOptions = {}
+  ): Promise<void> => {
+    const {
+      sendNotification = true,
+      title = '',
+      body = '',
+      icon = '',
+      notificationCallback,
+      errorCallback,
+    } = options;
+
+    if (!txId || !txId.match(/^0?x?[0-9a-fA-F]{64}/)) {
+      return;
+    }
+
+    const address = (await this.getCurrentAddress()) || '0x';
+    const network = await this.getNetwork();
+    const currency = (await preferenceService.getDisplayCurrency())?.code || 'USD';
+    let txHash = txId;
+
+    try {
+      transactionActivityService.setPending(network, address, txId, icon, title, {
+        status: 'PENDING',
+        token: 'Exec Transaction',
+      });
+      const fclTx = fcl.tx(txId);
+
+      // Wait for the transaction to be executed
+      const txStatusExecuted = await fclTx.onceExecuted();
+
+      // Update the pending transaction with the transaction status
+      txHash = await transactionActivityService.updatePending(
+        network,
+        address,
+        txId,
+        txStatusExecuted
+      );
+
+      // Track the transaction result
+      mixpanelTrack.track('transaction_result', {
+        tx_id: txId,
+        is_successful: true,
+      });
+
+      try {
+        // Send a notification to the user only on success
+        if (sendNotification && notificationCallback) {
+          const baseURL = await transactionActivityService.getFlowscanUrl();
+          let notificationUrl = '';
+
+          if (baseURL.includes('evm')) {
+            // It's an EVM transaction
+            const evmEvent = txStatusExecuted.events.find(
+              (event: any) => event.type.includes('EVM') && !!event.data?.hash
+            );
+            if (evmEvent) {
+              const hashBytes = evmEvent.data.hash.map((byte: number) => byte);
+              const hash = '0x' + Buffer.from(hashBytes).toString('hex');
+              notificationUrl = `${baseURL}/tx/${hash}`;
+            } else {
+              const evmAddress = await this.getCurrentEvmAddress();
+              notificationUrl = `${baseURL}/address/${evmAddress}`;
+            }
+          } else {
+            // It's a Flow transaction
+            notificationUrl = `${baseURL}/tx/${txId}`;
+          }
+
+          notificationCallback({
+            url: notificationUrl,
+            title,
+            body,
+            icon,
+          });
+        }
+      } catch (err: unknown) {
+        // We don't want to throw an error if the notification fails
+        consoleError('listenTransaction notification error ', err);
+      }
+
+      // Refresh the account balance
+      triggerRefresh(coinListKey(network, address, currency));
+      // Wait for the transaction to be sealed
+      const txStatusSealed = await fclTx.onceSealed();
+
+      // Update the pending transaction with the transaction status
+      txHash = await transactionActivityService.updatePending(
+        network,
+        address,
+        txId,
+        txStatusSealed
+      );
+
+      // Refresh the account balance after sealed status - just to be sure
+      triggerRefresh(coinListKey(network, address, currency));
+    } catch (err: unknown) {
+      // An error has occurred while listening to the transaction
+      let errorMessage = 'unknown error';
+      let errorCode: number | undefined = undefined;
+
+      if (err instanceof TransactionError) {
+        errorCode = err.code;
+        errorMessage = err.message;
+      } else {
+        if (err instanceof Error) {
+          errorMessage = err.message;
+        } else if (typeof err === 'string') {
+          errorMessage = err;
+        }
+        // From fcl-core transaction-error.ts
+        const ERROR_CODE_REGEX = /\[Error Code: (\d+)\]/;
+        const match = errorMessage.match(ERROR_CODE_REGEX);
+        errorCode = match ? parseInt(match[1], 10) : undefined;
+      }
+
+      consoleWarn({
+        msg: 'transactionError',
+        errorMessage,
+        errorCode,
+      });
+
+      // Track the transaction error
+      mixpanelTrack.track('transaction_result', {
+        tx_id: txId,
+        is_successful: false,
+        error_message: errorMessage,
+      });
+
+      // Notify about the error through callback
+      if (errorCallback) {
+        errorCallback({
+          errorMessage,
+          errorCode,
+        });
+      }
+    } finally {
+      if (txHash) {
+        // Start polling for transfer list updates
+        await transactionActivityService.pollTransferList(address, txHash);
+      }
+    }
   };
 
   authorizationFunction = async (account) => {

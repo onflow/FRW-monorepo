@@ -16,7 +16,6 @@ import {
   sessionService,
   storageManagementService,
   tokenListService,
-  transactionMonitoringService,
   transactionActivityService,
   userInfoService,
   userWalletService,
@@ -45,11 +44,9 @@ import {
   childAccountNftsKey,
   type ChildAccountNFTsStore,
   getCachedNftCollection,
-  mainAccountsKey,
   nftCatalogCollectionsKey,
   registerStatusKey,
   registerStatusRefreshRegex,
-  userMetadataKey,
   walletLoadedKey,
   walletLoadedRefreshRegex,
 } from '@onflow/flow-wallet-data-model/cache-data-keys';
@@ -1320,7 +1317,7 @@ export class WalletController extends BaseController {
     count: number;
     list: TransferItem[];
   }> => {
-    return await transactionMonitoringService.getTransactions(
+    return await transactionActivityService.listAllTransactions(
       address,
       limit,
       offset,
@@ -1330,7 +1327,7 @@ export class WalletController extends BaseController {
   };
 
   getPendingTx = async () => {
-    return await transactionMonitoringService.getPendingTx();
+    return await transactionActivityService.listPending();
   };
 
   loginWithMnemonic = async (
@@ -1434,11 +1431,11 @@ export class WalletController extends BaseController {
   };
 
   getFlowscanUrl = async (): Promise<string> => {
-    return await transactionMonitoringService.getFlowscanUrl();
+    return await transactionActivityService.getFlowscanUrl();
   };
 
   getViewSourceUrl = async (): Promise<string> => {
-    return await transactionMonitoringService.getViewSourceUrl();
+    return await transactionActivityService.getViewSourceUrl();
   };
 
   listenTransaction = async (
@@ -1448,7 +1445,7 @@ export class WalletController extends BaseController {
     body = '',
     icon = chrome.runtime.getURL('./images/icon-64.png')
   ) => {
-    return await transactionMonitoringService.listenTransaction(txId, {
+    return await userWalletService.listenTransaction(txId, {
       sendNotification,
       title,
       body,
@@ -1770,82 +1767,7 @@ export class WalletController extends BaseController {
    * @returns Promise<ProfileBackupStatus[]> - Array of profile backup statuses
    */
   getProfileBackupStatuses = async (currentPassword: string): Promise<ProfileBackupStatus[]> => {
-    try {
-      // Get all backups from Google Drive
-      const backupLists = await googleDriveService.loadBackupAccountLists();
-      // Get all active profiles
-      const userList = userInfoService.getUserList();
-
-      // Get all keyring ids
-      const keyringIds = await this.getKeyringIds();
-
-      // Determine active profiles from the keyring ids
-      const activeProfiles = keyringIds.map((id): UserInfoResponse => {
-        const matchingUser = userList.find((user) => user.id === id);
-        if (!matchingUser) {
-          return {
-            username: `unknown_${id.slice(0, 4)}`,
-            id: id,
-            avatar: '',
-            nickname: 'unknown',
-            private: 0,
-            created: '',
-          };
-        }
-        return matchingUser;
-      });
-
-      // Test decryption for each backup
-      const backupStatuses: ProfileBackupStatus[] = await Promise.all(
-        backupLists.map(async (backup) => {
-          const matchingProfile = activeProfiles.find(
-            (profile) => profile.username === backup.username
-          );
-          const isActive = !!matchingProfile;
-          let canDecrypt = false;
-
-          try {
-            // Attempt to decrypt with current password
-            canDecrypt = await googleDriveService.testProfileBackupDecryption(
-              backup.username,
-              currentPassword
-            );
-          } catch (err) {
-            consoleError(`Cannot decrypt backup for ${backup.username}`, err);
-          }
-
-          return {
-            username: backup.username,
-            uid: backup.uid,
-            id: matchingProfile?.id || '',
-            isActive,
-            isBackedUp: true,
-            canDecrypt,
-            isSelected: canDecrypt, // Pre-select those we can decrypt
-          };
-        })
-      );
-
-      // Add active profiles that aren't backed up
-      activeProfiles.forEach((profile) => {
-        if (!backupStatuses.some((status) => status.username === profile.username)) {
-          backupStatuses.push({
-            username: profile.username,
-            uid: null,
-            id: profile.id,
-            isActive: true,
-            isBackedUp: false,
-            canDecrypt: false,
-            isSelected: false,
-          });
-        }
-      });
-
-      return backupStatuses;
-    } catch (err) {
-      consoleError('Failed to get profile backup statuses:', err);
-      throw new Error('Failed to get profile backup statuses');
-    }
+    return await accountManagementService.getProfileBackupStatuses(currentPassword);
   };
 
   /**
@@ -1862,57 +1784,12 @@ export class WalletController extends BaseController {
     selectedProfiles: string[] = [],
     ignoreBackupsAtUsersOwnRisk: boolean = false
   ): Promise<boolean> => {
-    try {
-      // If ignoring backups, just change the wallet password
-      if (ignoreBackupsAtUsersOwnRisk) {
-        return await keyringService.changePassword(currentPassword, newPassword);
-      }
-
-      // Handle Google backups if we have Google permission
-      const hasGooglePermission = await googleDriveService.hasGooglePermission();
-
-      if (hasGooglePermission && selectedProfiles.length > 0) {
-        // First update the Google backups
-        await googleDriveService.setNewPassword(currentPassword, newPassword, selectedProfiles);
-
-        // Only change the keyring password if the backup update succeeds
-        const success = await keyringService.changePassword(currentPassword, newPassword);
-
-        if (!success) {
-          throw new Error('Failed to change wallet password after updating backups');
-        }
-
-        // Track successful password change
-        mixpanelTrack.track('password_updated', {
-          address: (await this.getCurrentAddress()) || '',
-          success: true,
-          profilesUpdated: selectedProfiles.length,
-        });
-
-        return true;
-      } else {
-        // No backups to update, just change the wallet password
-        const success = await keyringService.changePassword(currentPassword, newPassword);
-
-        if (success) {
-          // Track successful password change
-          mixpanelTrack.track('password_updated', {
-            address: (await this.getCurrentAddress()) || '',
-            success: true,
-            profilesUpdated: 0,
-          });
-        }
-
-        return success;
-      }
-    } catch (err) {
-      consoleError('Error changing password with backups:', err);
-      mixpanelTrack.track('password_update_failed', {
-        address: (await this.getCurrentAddress()) || '',
-        error: err.message,
-      });
-      throw err;
-    }
+    return await accountManagementService.changePassword(
+      currentPassword,
+      newPassword,
+      selectedProfiles,
+      ignoreBackupsAtUsersOwnRisk
+    );
   };
 
   /**
@@ -1924,72 +1801,7 @@ export class WalletController extends BaseController {
     name: string,
     background: string
   ) => {
-    const result = await openapiService.updateAccountMetadata(address, icon, name, background);
-
-    // Update the metadata cache after successful update
-    try {
-      const currentPubKey = userWalletService.getCurrentPubkey();
-      const cacheKey = userMetadataKey(currentPubKey);
-
-      // Get existing metadata from cache
-      const existingMetadata = (await getValidData(cacheKey)) || {};
-      const updatedMetadata = {
-        ...existingMetadata,
-        [address]: {
-          background,
-          icon,
-          name,
-        },
-      };
-
-      // Update the cache with new metadata
-      await setCachedData(cacheKey, updatedMetadata, 300_000);
-
-      // Update the specific account in the main accounts cache
-      try {
-        const network = await userWalletService.getNetwork();
-        const accountsCacheKey = mainAccountsKey(network, currentPubKey);
-        const existingMainAccounts = await getValidData(accountsCacheKey);
-
-        if (existingMainAccounts && Array.isArray(existingMainAccounts)) {
-          const updatedMainAccounts = existingMainAccounts.map((account) => {
-            if (account.address === address) {
-              return {
-                ...account,
-                name: name,
-                icon: icon,
-                color: background,
-              };
-            }
-            //Update evmAccount if the address is a valid EVM address
-            if (
-              account.evmAccount &&
-              isValidEthereumAddress(address) &&
-              account.evmAccount.address === address
-            ) {
-              return {
-                ...account,
-                evmAccount: {
-                  ...account.evmAccount,
-                  name: name,
-                  icon: icon,
-                  color: background,
-                },
-              };
-            }
-            return account;
-          });
-
-          await setCachedData(accountsCacheKey, updatedMainAccounts, 60_000);
-        }
-      } catch (updateError) {
-        consoleError('Failed to update main accounts cache:', updateError);
-      }
-    } catch (error) {
-      consoleError('Failed to update metadata cache:', error);
-    }
-
-    return result;
+    return await accountManagementService.updateAccountMetadata(address, icon, name, background);
   };
 
   /**

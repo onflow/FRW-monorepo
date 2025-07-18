@@ -4,20 +4,24 @@ import {
   transferListKey,
   transferListRefreshRegex,
   type TransferListStore,
+  coinListKey,
 } from '@onflow/flow-wallet-data-model/cache-data-keys';
 import { type TransferItem } from '@onflow/flow-wallet-shared/types/transaction-types';
 import {
   isValidEthereumAddress,
   isValidFlowAddress,
 } from '@onflow/flow-wallet-shared/utils/address';
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+import { consoleError, consoleWarn } from '@onflow/flow-wallet-shared/utils/console-log';
 
 import openapiService, { type FlowTransactionResponse } from './openapi';
+import preferenceService from './preference';
+import userWalletService from './userWallet';
 import {
   getInvalidData,
   getValidData,
   registerRefreshListener,
   setCachedData,
+  triggerRefresh,
 } from '../utils/data-cache';
 
 interface TransactionStore {
@@ -56,6 +60,54 @@ class TransactionActivity {
       mainnet: {},
       testnet: {},
     },
+  };
+
+  // Type definitions for better type safety
+  private poll = async <T>(
+    fn: () => Promise<T>,
+    fnCondition: (result: T) => boolean,
+    ms: number
+  ): Promise<T> => {
+    const result = await fn();
+    if (fnCondition(result)) {
+      await this.wait(ms);
+      return this.poll(fn, fnCondition, ms);
+    }
+    return result;
+  };
+
+  private wait = (ms = 1000): Promise<void> => {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  };
+
+  pollTransferList = async (address: string, txHash: string, maxAttempts = 5): Promise<void> => {
+    const network = await userWalletService.getNetwork();
+    const currency = (await preferenceService.getDisplayCurrency())?.code || 'USD';
+    let attempts = 0;
+    try {
+      const poll = async (): Promise<void> => {
+        if (attempts >= maxAttempts) {
+          consoleWarn('Max polling attempts reached');
+          return;
+        }
+
+        const { list: newTransactions } = await this.loadTransactions(network, address, '0', '15');
+
+        const foundTx = newTransactions?.find((tx: TransferItem) => txHash.includes(tx.hash));
+        if (foundTx && foundTx.indexed) {
+          // Refresh the coin list
+          triggerRefresh(coinListKey(network, address, currency));
+        } else {
+          // All of the transactions have not been picked up by the indexer yet
+          attempts++;
+          setTimeout(poll, 5000); // Poll every 5 seconds
+        }
+      };
+
+      await poll();
+    } catch (error) {
+      consoleError('pollTransferList error', error);
+    }
   };
 
   init = async (): Promise<void> => {
@@ -243,8 +295,12 @@ class TransactionActivity {
   };
 
   // only used when evm TransactionActivity get updated.
-  clearPending = async (network: string, address: string): Promise<void> => {
-    this.setPendingList(network, address, []);
+  clearPending = async (): Promise<void> => {
+    const network = await userWalletService.getNetwork();
+    const address = await userWalletService.getCurrentAddress();
+    if (address) {
+      this.setPendingList(network, address, []);
+    }
   };
 
   private setTransaction = async (
@@ -410,20 +466,35 @@ class TransactionActivity {
   };
 
   listAllTransactions = async (
-    network: string,
     address: string,
-    offset: string = '0',
-    limit: string = '15'
-  ): Promise<TransferListStore> => {
-    const offsetString = offset ?? '0';
-    const limitString = limit ?? '15';
-    // Get the cached TransactionActivity list
+    limit: number,
+    offset: number,
+    _expiry = 60000, // Keep for backward compatibility
+    _forceRefresh = false // Keep for backward compatibility
+  ): Promise<{
+    count: number;
+    list: TransferItem[];
+  }> => {
+    if (!address) {
+      return {
+        count: 0,
+        list: [],
+      };
+    }
+
+    const network = await userWalletService.getNetwork();
+    const offsetString = offset?.toString() ?? '0';
+    const limitString = limit?.toString() ?? '15';
+
+    // Get the cached transaction list
     const transactionListStore = await getValidData<TransferListStore>(
       transferListKey(network, address, offsetString, limitString)
     );
+
     if (!transactionListStore) {
       return await this.loadTransactions(network, address, offsetString, limitString);
     }
+
     return transactionListStore;
   };
 
@@ -433,11 +504,25 @@ class TransactionActivity {
     offset: string = '0',
     limit: string = '15'
   ): Promise<TransferItem[]> => {
-    const transactionListStore = await this.listAllTransactions(network, address, offset, limit);
+    const transactionListStore = await this.listAllTransactions(
+      address,
+      parseInt(limit),
+      parseInt(offset)
+    );
     return transactionListStore.list;
   };
 
-  listPending = async (network: string, address: string): Promise<TransferItem[]> => {
+  listPending = async (network = '', address = ''): Promise<TransferItem[]> => {
+    if (!network) {
+      network = await userWalletService.getNetwork();
+    }
+    if (!address) {
+      const currentAddress = await userWalletService.getCurrentAddress();
+      if (!currentAddress) {
+        return [];
+      }
+      address = currentAddress;
+    }
     return this.getPendingList(network, address);
   };
 
@@ -447,8 +532,63 @@ class TransactionActivity {
     offset: string,
     limit: string
   ): Promise<number> => {
-    const transactionList = await this.listAllTransactions(network, address, offset, limit);
+    const transactionList = await this.listAllTransactions(
+      address,
+      parseInt(limit),
+      parseInt(offset)
+    );
     return transactionList.count;
+  };
+
+  getFlowscanUrl = async (): Promise<string> => {
+    const network = await userWalletService.getNetwork();
+    const isEmulator = await userWalletService.getEmulatorMode();
+    const isEvm = await userWalletService.getActiveAccountType();
+
+    if (isEmulator) {
+      return 'http://localhost:8080';
+    }
+
+    // Check if it's an EVM wallet and update the base URL
+    if (isEvm === 'evm') {
+      switch (network) {
+        case 'testnet':
+          return 'https://testnet.flowscan.io/evm';
+        case 'mainnet':
+          return 'https://flowscan.io/evm';
+        default:
+          return 'https://flowscan.io/evm';
+      }
+    } else {
+      // Set baseURL based on the network
+      switch (network) {
+        case 'testnet':
+          return 'https://testnet.flowscan.io';
+        case 'mainnet':
+          return 'https://www.flowscan.io';
+        case 'crescendo':
+          return 'https://flow-view-source.vercel.app/crescendo';
+        default:
+          return 'https://www.flowscan.io';
+      }
+    }
+  };
+
+  getViewSourceUrl = async (): Promise<string> => {
+    const network = await userWalletService.getNetwork();
+    let baseURL = 'https://f.dnz.dev';
+    switch (network) {
+      case 'mainnet':
+        baseURL = 'https://f.dnz.dev';
+        break;
+      case 'testnet':
+        baseURL = 'https://f.dnz.dev';
+        break;
+      case 'crescendo':
+        baseURL = 'https://f.dnz.dev';
+        break;
+    }
+    return baseURL;
   };
 }
 

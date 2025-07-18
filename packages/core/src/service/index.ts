@@ -19,6 +19,5 @@ export { mixpanelTrack } from './mixpanel';
 export { default as logListener } from './log-listener';
 export { default as transactionService } from './transactions';
 export { default as transactionActivityService } from './transaction-activity';
-export { default as transactionMonitoringService } from './transaction-monitoring';
 export { default as accountManagementService } from './account-management';
 export { default as storageManagementService } from './storage-management';
