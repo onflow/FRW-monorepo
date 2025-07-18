@@ -14,7 +14,6 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "outDir": "./dist",
-    "rootDir": "./src",
     "composite": true
   },
   "include": ["src/**/*.ts", "src/**/*.json", "tsup.config.ts", "vitest.config.ts"],

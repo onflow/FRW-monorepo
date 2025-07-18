@@ -1,8 +1,11 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  tsconfig: 'tsconfig.build.json',
-  entry: ['src/service/index.ts'],
+  entry: {
+    'service/index': 'src/service/index.ts',
+    'service/keyring/index': 'src/service/keyring/index.ts',
+    'utils/index': 'src/utils/index.ts',
+  },
   format: ['esm'],
   dts: {
     compilerOptions: {
@@ -11,6 +14,9 @@ export default defineConfig({
       strict: false,
       noImplicitAny: false,
       skipLibCheck: true,
+      noUnusedLocals: false,
+      noUnusedParameters: false,
+      allowJs: true,
       paths: {
         '@onflow/flow-wallet-shared/*': ['../shared/dist/*'],
         '@onflow/flow-wallet-extension-shared/*': ['../extension-shared/dist/*'],

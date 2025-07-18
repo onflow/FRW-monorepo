@@ -7,6 +7,7 @@ export default defineConfig({
     'message/eventBus': 'src/message/eventBus.ts',
     messaging: 'src/messaging.ts',
     storage: 'src/storage.ts',
+    retryOperation: 'src/retryOperation.ts',
   },
   format: ['esm'],
   dts: {

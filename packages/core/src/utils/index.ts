@@ -95,7 +95,7 @@ export const checkEmulatorAccount = async (
   try {
     const baseURL = getEmulatorBaseURL(network);
     const response = await fetch(`${baseURL}/v1/accounts/${address}`);
-    const data = await response.json();
+    const data = (await response.json()) as { address?: string };
     return !!data.address;
   } catch (error) {
     consoleError('checkEmulatorAccount - error ', error);

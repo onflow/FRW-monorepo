@@ -178,9 +178,9 @@ class GoogleDriveService {
   };
 
   listFiles = async (): Promise<GoogleDriveFileModel> => {
-    const { files } = await this.sendRequest('drive/v3/files/', 'GET', {
+    const { files } = (await this.sendRequest('drive/v3/files/', 'GET', {
       spaces: 'appDataFolder',
-    }).then((response) => response.json());
+    }).then((response) => response.json())) as { files: GoogleDriveFileModel[] };
     const firstOutblockBackup = files.find((file) => file.name === this.backupName);
     return firstOutblockBackup;
   };

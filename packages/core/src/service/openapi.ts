@@ -436,7 +436,7 @@ export class OpenApiService {
     params: Record<string, string> = {},
     data: Record<string, unknown> = {},
     host = this.store.host
-  ) => {
+  ): Promise<any> => {
     // Default options are marked with *
     let requestUrl = '';
 
@@ -1527,7 +1527,7 @@ export class OpenApiService {
     const template = await response.json();
 
     const auditorsResponse = await fetch(`https://flix.flow.com/v1/auditors?network=${network}`);
-    const auditors = await auditorsResponse.json();
+    const auditors = (await auditorsResponse.json()) as Array<{ address: string; name?: string }>;
 
     fcl.config().put(
       'flow.auditors',
@@ -1535,7 +1535,7 @@ export class OpenApiService {
     );
 
     const audits = await fcl.InteractionTemplateUtils.getInteractionTemplateAudits({
-      template: template,
+      template: template as object,
       auditors: auditors.map((item) => item.address),
     });
 
@@ -1928,7 +1928,7 @@ export class OpenApiService {
         signing: string;
         hashing: string;
       }[];
-    } = await result.json();
+    } = (await result.json()) as any;
 
     // Now massage the data to match the type we want
     const accounts: PublicKeyAccount[] = json.accounts

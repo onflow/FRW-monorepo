@@ -9,6 +9,7 @@ import {
   userMetadataKey,
   mainAccountsKey,
   registerStatusKey,
+  type UserMetadataStore,
 } from '@onflow/flow-wallet-data-model/cache-data-keys';
 import { FLOW_BIP44_PATH } from '@onflow/flow-wallet-shared/constant/algo-constants';
 import {
@@ -20,6 +21,7 @@ import {
   type UserInfoResponse,
 } from '@onflow/flow-wallet-shared/types/network-types';
 import {
+  type MainAccount,
   type FlowAddress,
   type ProfileBackupStatus,
 } from '@onflow/flow-wallet-shared/types/wallet-types';
@@ -634,7 +636,7 @@ export class AccountManagement {
       const cacheKey = userMetadataKey(currentPubKey);
 
       // Get existing metadata from cache
-      const existingMetadata = (await getValidData(cacheKey)) || {};
+      const existingMetadata = (await getValidData<UserMetadataStore>(cacheKey)) || {};
       const updatedMetadata = {
         ...existingMetadata,
         [address]: {
@@ -651,7 +653,7 @@ export class AccountManagement {
       try {
         const network = await userWalletService.getNetwork();
         const accountsCacheKey = mainAccountsKey(network, currentPubKey);
-        const existingMainAccounts = await getValidData(accountsCacheKey);
+        const existingMainAccounts = await getValidData<MainAccount[]>(accountsCacheKey);
 
         if (existingMainAccounts && Array.isArray(existingMainAccounts)) {
           const updatedMainAccounts = existingMainAccounts.map((account) => {
