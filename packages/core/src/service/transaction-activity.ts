@@ -31,11 +31,6 @@ interface TransactionStore {
   };
 }
 
-interface PendingTransactionOptions {
-  status?: string;
-  token?: string;
-}
-
 /**
  * Maps FCL transaction status strings to UI format
  * This replaces the previous i18n.getMessage() calls
@@ -112,15 +107,14 @@ class TransactionActivity {
       consoleError('pollTransferList error', error);
     }
   };
-
-  init = async (): Promise<void> => {
+  init = async () => {
     registerRefreshListener(transferListRefreshRegex, this.loadTransactions);
   };
 
-  clear = async (): Promise<void> => {};
+  clear = async () => {};
 
   // Remove pending items older than 120 seconds
-  private removeExpiredPendingItems = (network: string, address: string): void => {
+  private removeExpiredPendingItems = (network: string, address: string) => {
     const timeNow = new Date().getTime();
     const pendingList = this.store.pendingItem[network][address];
     if (pendingList.length > 0) {
@@ -145,7 +139,7 @@ class TransactionActivity {
     return structuredClone(this.store.pendingItem[network][address]);
   };
 
-  private setPendingList = (network: string, address: string, txList: TransferItem[]): void => {
+  private setPendingList = (network: string, address: string, txList: TransferItem[]) => {
     if (network && address) {
       this.store.pendingItem[network][address] = structuredClone(txList);
     }
@@ -156,11 +150,8 @@ class TransactionActivity {
     address: string,
     txId: string,
     icon: string,
-    title: string,
-    options: PendingTransactionOptions = {}
-  ): Promise<void> => {
-    const { status = 'PENDING', token = 'Exec Transaction' } = options;
-
+    title: string
+  ) => {
     const txList = this.getPendingList(network, address);
     const items = txList.filter((txItem) => txItem.hash.includes(txId));
     if (items.length > 0) {
@@ -188,25 +179,20 @@ class TransactionActivity {
       evmTxIds: [],
     } as TransferItem;
 
-    txItem.status = status;
+    // Not sure we have a string for this
+    txItem.status = chrome.i18n.getMessage('PENDING') || 'PENDING';
     txItem.time = now.getTime();
-    txItem.token = token;
+    txItem.token = 'Exec Transaction';
     txItem.sender = address;
     txItem.error = false;
     txItem.hash = txId;
     txItem.cadenceTxId = txId;
     txItem.image = icon;
     txItem.title = title;
-
-    // Extract amount from title if it's in the format "X.XXXXXXX Token Sent"
-    const amountMatch = title.match(/^([\d.]+)\s+(\w+)\s+Sent$/);
-    if (amountMatch) {
-      txItem.amount = amountMatch[1];
-    }
     txList.unshift(txItem);
     this.setPendingList(network, address, txList);
 
-    // Get the existing indexed TransactionActivity list
+    // Get the existing indexed transaction list
     const existingTxStore = await getInvalidData<TransferListStore>(
       transferListKey(network, address)
     );
@@ -236,14 +222,15 @@ class TransactionActivity {
     }
     const txItem = txList[txItemIndex];
 
-    // Map the status string to the expected UI format
-    txItem.status = mapTransactionStatus(transactionStatus.statusString);
+    txItem.status =
+      chrome.i18n.getMessage(transactionStatus.statusString) ||
+      mapTransactionStatus(transactionStatus.statusString);
     txItem.error = transactionStatus.statusCode === 1;
 
     const evmTxIds: string[] = transactionStatus.events?.reduce(
       (transactionIds: string[], event) => {
         if (event.type.includes('EVM') && !!event.data?.hash) {
-          const hashBytes = event.data.hash.map((byte: any) => parseInt(byte));
+          const hashBytes = event.data.hash.map((byte: string) => parseInt(byte));
           const hash = '0x' + Buffer.from(hashBytes).toString('hex');
           if (transactionIds.includes(hash)) {
             return transactionIds;
@@ -257,7 +244,7 @@ class TransactionActivity {
     txItem.evmTxIds = [...evmTxIds];
 
     if (evmTxIds.length > 0) {
-      // We're sending an EVM TransactionActivity, we need to update the hash and may need to duplicate the pending item for each address
+      // We're sending an EVM transaction, we need to update the hash and may need to duplicate the pending item for each address
       if (evmTxIds.length > 10) {
         // TODO: Check there aren't 100s of evmTxIds
       }
@@ -267,7 +254,7 @@ class TransactionActivity {
     // Always set pending transactions to 120 seconds
     this.setPendingList(network, address, txList);
 
-    // Get the existing indexed TransactionActivity list
+    // Get the existing indexed transaction list
     const existingTxStore = await getInvalidData<TransferListStore>(
       transferListKey(network, address)
     );
@@ -282,11 +269,11 @@ class TransactionActivity {
       }
     }
 
-    // Return the hash of the TransactionActivity
+    // Return the hash of the transaction
     return combinedTxHash;
   };
 
-  removePending = async (network: string, address: string, txId: string): Promise<void> => {
+  removePending = async (network: string, address: string, txId: string) => {
     // Get the flow transactions
     const txList = await this.getPendingList(network, address);
 
@@ -303,11 +290,9 @@ class TransactionActivity {
     this.setPendingList(network, address, newList);
   };
 
-  // only used when evm TransactionActivity get updated.
-  clearPending = async (network: string, address: string): Promise<void> => {
-    if (address) {
-      this.setPendingList(network, address, []);
-    }
+  // only used when evm transaction get updated.
+  clearPending = async (network: string, address: string) => {
+    this.setPendingList(network, address, []);
   };
 
   private setTransaction = async (
@@ -356,7 +341,7 @@ class TransactionActivity {
       transactionHolder.type = tx.type;
       transactionHolder.transferType = tx.transfer_type;
       transactionHolder.additionalMessage = tx.additional_message;
-      // see if there's a pending item for this TransactionActivity
+      // see if there's a pending item for this transaction
       const pendingItemIndex = existingPendingList.findIndex(
         (item) =>
           item.hash.includes(tx.txid) ||
@@ -364,12 +349,12 @@ class TransactionActivity {
           item.evmTxIds?.includes(tx.txid)
       );
       if (pendingItemIndex !== -1) {
-        // Store the cadence TransactionActivity id
+        // Store the cadence transaction id
         transactionHolder.cadenceTxId = existingPendingList[pendingItemIndex].cadenceTxId;
         transactionHolder.evmTxIds = existingPendingList[pendingItemIndex].evmTxIds;
         existingPendingList.splice(pendingItemIndex, 1);
       } else {
-        // see if there's an existing TransactionActivity with cadenceId in the store
+        // see if there's an existing transaction with cadenceId in the store
         const existingTx = existingTxList.find(
           (item) =>
             item.hash.includes(tx.txid) ||
@@ -377,7 +362,7 @@ class TransactionActivity {
             item.evmTxIds?.includes(tx.txid)
         );
         if (existingTx && existingTx.cadenceTxId) {
-          // Found existing cadence TransactionActivity id
+          // Found existing cadence transaction id
           transactionHolder.cadenceTxId = existingTx.cadenceTxId;
           transactionHolder.evmTxIds = existingTx.evmTxIds;
         }
@@ -388,7 +373,7 @@ class TransactionActivity {
     this.setPendingList(network, address, existingPendingList);
     const transferListStore: TransferListStore = {
       count: data.total + existingPendingList.length,
-      // This is the number of TransactionActivity that are in progress
+      // This is the number of transaction that are in progress
       pendingCount: existingPendingList.filter((item) => item.status.toUpperCase() === 'PENDING')
         .length,
       list: [...existingPendingList, ...txList],
@@ -465,7 +450,7 @@ class TransactionActivity {
    * @returns
    */
 
-  loadPendingTransactions = async (network: string, address: string): Promise<void> => {
+  loadPendingTransactions = async (network: string, address: string) => {
     // This will clear the pending list if it's expired
     // Pending transactions last 120 seconds
     const pendingList = this.getPendingList(network, address);
