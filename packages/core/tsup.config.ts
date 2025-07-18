@@ -1,8 +1,23 @@
+import { config } from 'dotenv';
+import { resolve } from 'path';
 import { defineConfig } from 'tsup';
+
+// Load environment variables based on NODE_ENV
+const envFile = process.env.NODE_ENV === 'production' ? '.env.pro' : '.env.dev';
+config({ path: resolve(__dirname, envFile) });
 
 export default defineConfig({
   entry: ['src/service/index.ts', 'src/utils/index.ts'],
   format: ['esm'],
+  define: Object.entries(process.env).reduce(
+    (acc, [key, value]) => {
+      if (value !== undefined) {
+        acc[`process.env.${key}`] = JSON.stringify(value);
+      }
+      return acc;
+    },
+    {} as Record<string, string>
+  ),
   dts: {
     compilerOptions: {
       composite: false,

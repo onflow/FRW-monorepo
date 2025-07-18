@@ -504,6 +504,12 @@ importers:
 
   packages/core:
     dependencies:
+      '@noble/secp256k1':
+        specifier: ^1.7.2
+        version: 1.7.2
+      '@onflow/fcl':
+        specifier: ^1.13.1
+        version: 1.19.0(@types/react@18.3.23)(google-protobuf@3.21.4)(jiti@2.4.2)(postcss@8.5.6)(react@18.3.1)(ts-node@10.9.2(@swc/core@1.12.14)(@types/node@22.16.4)(typescript@5.8.3))(tsx@4.20.3)(typescript@5.8.3)(zod@3.25.76)
       '@onflow/flow-wallet-data-model':
         specifier: workspace:*
         version: link:../data-model
@@ -513,31 +519,55 @@ importers:
       '@onflow/flow-wallet-shared':
         specifier: workspace:*
         version: link:../shared
+      '@onflow/typedefs':
+        specifier: ^1.4.0
+        version: 1.6.0
+      aes-js:
+        specifier: ^3.1.2
+        version: 3.1.2
       bignumber.js:
         specifier: ^9.1.2
         version: 9.3.1
+      bip39:
+        specifier: ^3.1.0
+        version: 3.1.0
+      browser-passworder:
+        specifier: ^2.0.3
+        version: 2.0.3
+      compare-versions:
+        specifier: ^4.1.4
+        version: 4.1.4
+      dayjs:
+        specifier: ^1.11.13
+        version: 1.11.13
+      ethereumjs-util:
+        specifier: ^7.1.5
+        version: 7.1.5
       ethers:
         specifier: ^6.13.4
         version: 6.15.0
+      firebase:
+        specifier: ^10.14.1
+        version: 10.14.1
+      lru-cache:
+        specifier: ^11.1.0
+        version: 11.1.0
+      rlp:
+        specifier: ^3.0.0
+        version: 3.0.0
+      web3:
+        specifier: ^4.0.0
+        version: 4.16.0(typescript@5.8.3)(zod@3.25.76)
     devDependencies:
       '@types/node':
         specifier: ^22.10.2
         version: 22.16.4
-      '@types/react':
-        specifier: ^18.3.23
-        version: 18.3.23
-      '@types/react-dom':
-        specifier: ^18.3.7
-        version: 18.3.7(@types/react@18.3.23)
       '@vitest/coverage-v8':
         specifier: 3.2.4
         version: 3.2.4(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.16.4)(jiti@2.4.2)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.6.1
       tsup:
         specifier: ^8.3.5
         version: 8.5.0(@swc/core@1.12.14)(jiti@2.4.2)(postcss@8.5.6)(tsx@4.20.3)(typescript@5.8.3)(yaml@2.8.0)
@@ -556,31 +586,13 @@ importers:
       '@onflow/flow-wallet-shared':
         specifier: workspace:*
         version: link:../shared
-      bignumber.js:
-        specifier: ^9.1.2
-        version: 9.3.1
-      ethers:
-        specifier: ^6.13.4
-        version: 6.15.0
     devDependencies:
       '@types/node':
         specifier: ^22.10.2
         version: 22.16.4
-      '@types/react':
-        specifier: ^18.3.23
-        version: 18.3.23
-      '@types/react-dom':
-        specifier: ^18.3.7
-        version: 18.3.7(@types/react@18.3.23)
       '@vitest/coverage-v8':
         specifier: 3.2.4
         version: 3.2.4(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.16.4)(jiti@2.4.2)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
       tsup:
         specifier: ^8.3.5
         version: 8.5.0(@swc/core@1.12.14)(jiti@2.4.2)(postcss@8.5.6)(tsx@4.20.3)(typescript@5.8.3)(yaml@2.8.0)
@@ -596,9 +608,12 @@ importers:
       '@onflow/flow-wallet-shared':
         specifier: workspace:*
         version: link:../shared
-      bignumber.js:
-        specifier: ^9.1.2
-        version: 9.3.1
+      eth-rpc-errors:
+        specifier: ^4.0.3
+        version: 4.0.3
+      events:
+        specifier: ^3.3.0
+        version: 3.3.0
     devDependencies:
       '@types/node':
         specifier: ^22.10.2
@@ -646,40 +661,19 @@ importers:
 
   packages/shared:
     dependencies:
-      '@onflow/fcl':
-        specifier: ^1.13.1
-        version: 1.19.0(@types/react@18.3.23)(google-protobuf@3.21.4)(jiti@2.4.2)(postcss@8.5.6)(react@18.3.1)(ts-node@10.9.2(@swc/core@1.12.14)(@types/node@22.16.4)(typescript@5.8.3))(tsx@4.20.3)(typescript@5.8.3)(zod@3.25.76)
       '@onflow/typedefs':
         specifier: ^1.4.0
         version: 1.6.0
-      '@onflow/types':
-        specifier: ^1.4.0
-        version: 1.4.1
       bignumber.js:
         specifier: ^9.1.2
         version: 9.3.1
-      ethers:
-        specifier: ^6.13.4
-        version: 6.15.0
     devDependencies:
       '@types/node':
         specifier: ^22.10.2
         version: 22.16.4
-      '@types/react':
-        specifier: ^18.3.23
-        version: 18.3.23
-      '@types/react-dom':
-        specifier: ^18.3.7
-        version: 18.3.7(@types/react@18.3.23)
       '@vitest/coverage-v8':
         specifier: 3.2.4
         version: 3.2.4(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.16.4)(jiti@2.4.2)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
       tsup:
         specifier: ^8.3.5
         version: 8.5.0(@swc/core@1.12.14)(jiti@2.4.2)(postcss@8.5.6)(tsx@4.20.3)(typescript@5.8.3)(yaml@2.8.0)

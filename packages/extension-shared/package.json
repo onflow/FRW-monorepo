@@ -53,7 +53,8 @@
   },
   "dependencies": {
     "@onflow/flow-wallet-shared": "workspace:*",
-    "bignumber.js": "^9.1.2"
+    "eth-rpc-errors": "^4.0.3",
+    "events": "^3.3.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

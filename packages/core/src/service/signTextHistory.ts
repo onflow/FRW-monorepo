@@ -1,5 +1,3 @@
-import { sortBy } from 'lodash';
-
 import { INTERNAL_REQUEST_ORIGIN } from '@onflow/flow-wallet-shared/constant/domain-constants';
 
 import permissionService, { type ConnectedSite } from './permission';
@@ -91,8 +89,8 @@ class PermissionService {
     Object.entries(this.store.history).forEach(([address, list]) => {
       history.push(...list.map((data) => ({ address, data })));
     });
-    const txsToDelete = sortBy(history, (item) => item.data.createAt)
-      .reverse()
+    const txsToDelete = history
+      .sort((a, b) => b.data.createAt - a.data.createAt)
       .slice(this._txHistoryLimit);
 
     txsToDelete.forEach(({ address, data }) => {
