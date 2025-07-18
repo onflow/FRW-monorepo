@@ -11,6 +11,7 @@ import {
   registerStatusKey,
   type UserMetadataStore,
 } from '@onflow/flow-wallet-data-model/cache-data-keys';
+import { getValidData, setCachedData } from '@onflow/flow-wallet-data-model/data-cache';
 import { FLOW_BIP44_PATH } from '@onflow/flow-wallet-shared/constant/algo-constants';
 import {
   HTTP_STATUS_CONFLICT,
@@ -47,7 +48,6 @@ import {
   pubKeyAccountToAccountKey,
   pubKeySignAlgoToAccountKey,
 } from '../utils/account-key';
-import { getValidData, setCachedData } from '../utils/data-cache';
 import { findAddressWithPK, findAddressWithSeed } from '../utils/modules/findAddressWithPK';
 import { getOrCheckAccountsByPublicKeyTuple } from '../utils/modules/findAddressWithPubKey';
 import {

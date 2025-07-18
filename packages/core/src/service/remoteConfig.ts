@@ -4,12 +4,16 @@ import {
   remoteConfigRefreshRegex,
 } from '@onflow/flow-wallet-data-model/cache-data-keys';
 import {
+  getValidData,
+  registerRefreshListener,
+  setCachedData,
+} from '@onflow/flow-wallet-data-model/data-cache';
+import {
   type FeatureFlagKey,
   type FeatureFlags,
 } from '@onflow/flow-wallet-shared/types/feature-types';
 
 import openapi from './openapi';
-import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
 
 class RemoteConfigService {
   init = async () => {

@@ -15,6 +15,11 @@ import {
   nftListRefreshRegex,
 } from '@onflow/flow-wallet-data-model/cache-data-keys';
 import {
+  getValidData,
+  registerRefreshListener,
+  setCachedData,
+} from '@onflow/flow-wallet-data-model/data-cache';
+import {
   type NftCollection,
   type NFTModelV2,
 } from '@onflow/flow-wallet-shared/types/network-types';
@@ -25,7 +30,6 @@ import {
 } from '@onflow/flow-wallet-shared/types/nft-types';
 
 import openapiService, { getScripts } from './openapi';
-import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
 import { fclConfirmNetwork } from '../utils/fclConfig';
 
 class NFT {

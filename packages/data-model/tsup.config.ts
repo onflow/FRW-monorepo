@@ -8,6 +8,7 @@ export default defineConfig({
     'user-data-keys': 'src/user-data-keys.ts',
     'cache-data-access': 'src/cache-data-access.ts',
     'user-data-access': 'src/user-data-access.ts',
+    'data-cache': 'src/data-cache.ts',
   },
   format: ['esm'],
   dts: {

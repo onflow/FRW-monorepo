@@ -21,23 +21,16 @@ import {
   userWalletService,
   accountManagementService,
 } from '@onflow/flow-wallet-core';
-import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
-import BN from 'bignumber.js';
-import { ethErrors } from 'eth-rpc-errors';
-
-import {
-  type Keyring,
-  KEYRING_CLASS,
-  type KeyringType,
-} from '@onflow/flow-wallet-core/service/keyring';
-import { HDKeyring } from '@onflow/flow-wallet-core/service/keyring/hdKeyring';
-import type { ConnectedSite } from '@onflow/flow-wallet-core/service/permission';
-import type { PreferenceAccount } from '@onflow/flow-wallet-core/service/preference';
 import {
   getValidData,
   registerRefreshListener,
   setCachedData,
-} from '@onflow/flow-wallet-core/utils/data-cache';
+} from '@onflow/flow-wallet-data-model';
+import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
+import BN from 'bignumber.js';
+
+import type { ConnectedSite } from '@onflow/flow-wallet-core/service/permission';
+import type { PreferenceAccount } from '@onflow/flow-wallet-core/service/preference';
 import {
   childAccountDescKey,
   type ChildAccountFtStore,
@@ -115,8 +108,6 @@ import { openIndexPage } from '@/background/webapi/tab';
 import BaseController from './base';
 import notificationService from './notification';
 import provider from './provider';
-
-const stashKeyrings: Record<string, Keyring> = {};
 
 interface TokenTransaction {
   symbol: string;
@@ -524,26 +515,11 @@ export class WalletController extends BaseController {
   clearKeyrings = () => keyringService.clearCurrentKeyring();
 
   getMnemonic = async (password: string): Promise<string> => {
-    await this.verifyPassword(password);
-    const keyring = this._getKeyringByType(KEYRING_CLASS.MNEMONIC);
-    if (!(keyring instanceof HDKeyring)) {
-      throw new Error('Keyring is not an HDKeyring');
-    }
-    const serialized = await keyring.serialize();
-    if (!serialized.mnemonic) {
-      throw new Error('Keyring is not an HDKeyring');
-    }
-    const seedWords = serialized.mnemonic;
-    return seedWords;
+    return await keyringService.getMnemonic(password);
   };
 
   checkMnemonics = async () => {
-    const keyring = this._getKeyringByType(KEYRING_CLASS.MNEMONIC);
-    const serialized = await keyring.serialize();
-    if (serialized) {
-      return true;
-    }
-    return false;
+    return await keyringService.checkMnemonics();
   };
 
   getPubKeyPrivateKey = async (password: string): Promise<PublicPrivateKeyTuple> => {
@@ -647,28 +623,6 @@ export class WalletController extends BaseController {
     }
   };
 
-  checkHasMnemonic = async () => {
-    try {
-      const keyring = this._getKeyringByType(KEYRING_CLASS.MNEMONIC);
-      if (!(keyring instanceof HDKeyring)) {
-        throw new Error('Keyring is not an HDKeyring');
-      }
-      return !!(await keyring.getMnemonic()).length;
-    } catch {
-      return false;
-    }
-  };
-  /**
-   * @deprecated not used anymore
-   */
-  deriveNewAccountFromMnemonic = async (password: string) => {
-    const keyring = this._getKeyringByType(KEYRING_CLASS.MNEMONIC);
-
-    const result = await keyringService.addNewAccount(password, keyring);
-    await this._setCurrentAccountFromKeyring(keyring, -1);
-    return result;
-  };
-
   getAccountsCount = async () => {
     const accounts = await keyringService.getAccounts();
     return accounts.filter((x) => x).length;
@@ -686,81 +640,8 @@ export class WalletController extends BaseController {
 
   isUseLedgerLive = () => preferenceService.isUseLedgerLive();
 
-  // updateUseLedgerLive = async (value: boolean) =>
-  //   preferenceService.updateUseLedgerLive(value);
-
-  connectHardware = async ({
-    type,
-    hdPath,
-    needUnlock = false,
-    isWebUSB = false,
-  }: {
-    type: KeyringType;
-    hdPath?: string;
-    needUnlock?: boolean;
-    isWebUSB?: boolean;
-  }) => {
-    let keyring;
-    let stashKeyringId: number | null = null;
-    try {
-      keyring = this._getKeyringByType(type);
-    } catch {
-      const Keyring = keyringService.getKeyringClassForType(type);
-      if (!Keyring) {
-        throw new Error(`No keyring class found for type: ${type}`);
-      }
-      keyring = new Keyring();
-      stashKeyringId = Object.values(stashKeyrings).length;
-      stashKeyrings[stashKeyringId] = keyring;
-    }
-
-    if (hdPath && keyring.setHdPath) {
-      keyring.setHdPath(hdPath);
-    }
-
-    if (needUnlock) {
-      await keyring.unlock();
-    }
-
-    if (keyring.useWebUSB) {
-      keyring.useWebUSB(isWebUSB);
-    }
-
-    return stashKeyringId;
-  };
-
-  requestKeyring = (type, methodName, keyringId: number | null, ...params) => {
-    let keyring;
-    if (keyringId !== null && keyringId !== undefined) {
-      keyring = stashKeyrings[keyringId];
-    } else {
-      try {
-        keyring = this._getKeyringByType(type);
-      } catch {
-        const Keyring = keyringService.getKeyringClassForType(type);
-        if (!Keyring) {
-          throw new Error(`No keyring class found for type: ${type}`);
-        }
-        keyring = new Keyring();
-      }
-    }
-    if (keyring[methodName]) {
-      return keyring[methodName].call(keyring, ...params);
-    }
-  };
-
   setIsDefaultWallet = (val: boolean) => preferenceService.setIsDefaultWallet(val);
   isDefaultWallet = () => preferenceService.getIsDefaultWallet();
-
-  private _getKeyringByType(type): Keyring {
-    const keyring = keyringService.getKeyringsByType(type)[0];
-
-    if (keyring) {
-      return keyring;
-    }
-
-    throw ethErrors.rpc.internal(`No ${type} keyring found`);
-  }
 
   private async _setCurrentAccountFromKeyring(keyring, index = 0) {
     return await accountManagementService._setCurrentAccountFromKeyring(keyring, index);

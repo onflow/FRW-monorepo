@@ -2,26 +2,12 @@ import * as fcl from '@onflow/fcl';
 import type { Account as FclAccount } from '@onflow/typedefs';
 import BigNumber from 'bignumber.js';
 import dayjs from 'dayjs';
-import { getApp, initializeApp } from 'firebase/app';
-import {
-  getAuth,
-  indexedDBLocalPersistence,
-  onAuthStateChanged,
-  setPersistence,
-  signInAnonymously,
-  signInWithCustomToken,
-  type Unsubscribe,
-  type User,
-} from 'firebase/auth/web-extension';
-import { getId, getInstallations } from 'firebase/installations';
 
 import { cadenceScriptsKey } from '@onflow/flow-wallet-data-model/cache-data-keys';
+import { getValidData, setCachedData } from '@onflow/flow-wallet-data-model/data-cache';
 import { returnCurrentProfileId } from '@onflow/flow-wallet-extension-shared/current-id';
 import storage from '@onflow/flow-wallet-extension-shared/storage';
-import {
-  INITIAL_OPENAPI_URL,
-  WEB_NEXT_URL,
-} from '@onflow/flow-wallet-shared/constant/domain-constants';
+import { WEB_NEXT_URL } from '@onflow/flow-wallet-shared/constant/domain-constants';
 import type {
   BalanceMap,
   CadenceTokenInfo,
@@ -81,12 +67,11 @@ import {
   transactionActivityService,
   userInfoService,
   userWalletService,
+  authenticationService,
+  versionService,
 } from './index';
 import fetchConfig from './remoteConfig';
-import { getValidData, setCachedData } from '../utils/data-cache';
-import { getFirbaseConfig, getFirbaseFunctionUrl } from '../utils/firebaseConfig';
 import { verifySignature } from '../utils/modules/publicPrivateKey';
-import { version } from '../utils/package-version';
 
 type CurrencyResponse = {
   data: {
@@ -146,51 +131,18 @@ export interface OpenApiConfigValue {
 }
 
 export interface OpenApiStore {
-  host: string;
+  registrationURL: string;
+  webNextURL: string;
+  functionsURL: string;
   config: Record<string, OpenApiConfigValue>;
 }
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-
-const firebaseConfig = getFirbaseConfig();
-const app = initializeApp(firebaseConfig, process.env.NODE_ENV);
-const auth = getAuth(app);
 // const remoteConfig = getRemoteConfig(app);
 
 const remoteFetch = fetchConfig;
-
-const waitForAuthInit = async () => {
-  let unsubscribe: Unsubscribe;
-  await new Promise<void>((resolve) => {
-    unsubscribe = auth.onAuthStateChanged((_user) => resolve());
-  });
-  (await unsubscribe!)();
-};
-
-onAuthStateChanged(auth, (user: User | null) => {
-  if (user) {
-    // User is signed in, see docs for a list of available properties
-    // https://firebase.google.com/docs/reference/js/firebase.User
-    // const uid = user.uid;
-    if (user.isAnonymous) {
-      consoleLog('User is anonymous');
-    } else {
-      if (mixpanelTrack) {
-        mixpanelTrack.identify(user.uid, user.displayName ?? user.uid);
-      }
-      consoleLog('User is signed in');
-    }
-  } else {
-    // User is signed out
-    consoleLog('User is signed out');
-  }
-  // note fcl setup is async
-  userWalletService.setupFcl();
-});
 
 const dataConfig: Record<string, OpenApiConfigValue> = {
   check_username: {
@@ -409,7 +361,9 @@ const recordFetch = async (response, responseData, ...args: Parameters<typeof fe
 
 export class OpenApiService {
   store: OpenApiStore = {
-    host: INITIAL_OPENAPI_URL,
+    registrationURL: '',
+    functionsURL: '',
+    webNextURL: '',
     config: dataConfig,
   };
 
@@ -417,14 +371,17 @@ export class OpenApiService {
     return userWalletService.getNetwork();
   };
 
-  init = async () => {
+  init = async (registrationURL: string, webNextURL: string, functionsURL: string) => {
+    this.store.registrationURL = registrationURL;
+    this.store.webNextURL = webNextURL;
+    this.store.functionsURL = functionsURL;
+    // Set up fcl
     await userWalletService.setupFcl();
   };
 
   checkAuthStatus = async () => {
-    await waitForAuthInit();
-    const app = getApp(process.env.NODE_ENV!);
-    const user = await getAuth(app).currentUser;
+    await authenticationService.waitForAuthInit();
+    const user = authenticationService.getAuth().currentUser;
     if (user && user.isAnonymous) {
       userWalletService.loginWithKeyring();
     }
@@ -435,7 +392,7 @@ export class OpenApiService {
     url = '',
     params: Record<string, string> = {},
     data: Record<string, unknown> = {},
-    host = this.store.host
+    host = this.store.registrationURL
   ): Promise<any> => {
     // Default options are marked with *
     let requestUrl = '';
@@ -455,9 +412,8 @@ export class OpenApiService {
         ? data.network
         : await userWalletService.getNetwork());
 
-    const app = getApp(process.env.NODE_ENV!);
-    const user = await getAuth(app).currentUser;
-    const init = {
+    const user = authenticationService.getAuth().currentUser;
+    const init: RequestInit = {
       method,
       headers: {
         Network: network,
@@ -471,15 +427,18 @@ export class OpenApiService {
     }
 
     // Wait for firebase auth to complete
-    await waitForAuthInit();
+    await authenticationService.waitForAuthInit();
 
     if (user !== null) {
       const idToken = await user.getIdToken();
-      init.headers['Authorization'] = 'Bearer ' + idToken;
+      init.headers = {
+        ...init.headers,
+        Authorization: 'Bearer ' + idToken,
+      };
     } else {
       // If no user, then sign in as anonymous first
-      await signInAnonymously(auth);
-      const anonymousUser = await getAuth(app).currentUser;
+      await authenticationService.signInAnonymously();
+      const anonymousUser = authenticationService.getAuth().currentUser;
       const idToken = await anonymousUser?.getIdToken();
       init.headers['Authorization'] = 'Bearer ' + idToken;
     }
@@ -731,8 +690,7 @@ export class OpenApiService {
   private _loginWithToken = async (userId: string, token: string) => {
     // we shouldn't need to clear storage here anymore
     // this.clearAllStorage();
-    await setPersistence(auth, indexedDBLocalPersistence);
-    await signInWithCustomToken(auth, token);
+    await authenticationService.signInWithCustomToken(token);
     await storage.set(CURRENT_ID_KEY, userId);
 
     // Kick off loaders that use the current user id
@@ -850,15 +808,10 @@ export class OpenApiService {
   };
 
   proxytoken = async () => {
-    // Default options are marked with *
-
-    const app = getApp(process.env.NODE_ENV!);
-
     // Wait for firebase auth to complete
-    await waitForAuthInit();
-
-    await signInAnonymously(auth);
-    const anonymousUser = await getAuth(app).currentUser;
+    await authenticationService.waitForAuthInit();
+    await authenticationService.signInAnonymously();
+    const anonymousUser = authenticationService.getAuth().currentUser;
     const idToken = await anonymousUser?.getIdToken();
     return idToken;
   };
@@ -912,7 +865,7 @@ export class OpenApiService {
   };
 
   getMoonpayURL = async (url) => {
-    const baseURL = getFirbaseFunctionUrl();
+    const baseURL = this.store.functionsURL;
     const response = await this.sendRequest('POST', '/moonPaySignature', {}, { url: url }, baseURL);
     return response;
   };
@@ -921,7 +874,7 @@ export class OpenApiService {
     const messages = {
       envelope_message: message,
     };
-    const baseURL = getFirbaseFunctionUrl();
+    const baseURL = this.store.functionsURL;
     // 'http://localhost:5001/lilico-dev/us-central1'
     const data = await this.sendRequest(
       'POST',
@@ -952,7 +905,7 @@ export class OpenApiService {
     const messages = {
       envelope_message: message,
     };
-    const baseURL = getFirbaseFunctionUrl();
+    const baseURL = this.store.functionsURL;
     // 'http://localhost:5001/lilico-dev/us-central1'
     const data = await this.sendRequest(
       'POST',
@@ -966,7 +919,7 @@ export class OpenApiService {
   };
 
   getProposer = async () => {
-    const baseURL = getFirbaseFunctionUrl();
+    const baseURL = this.store.functionsURL;
     // 'http://localhost:5001/lilico-dev/us-central1'
     const data = await this.sendRequest('GET', '/getProposer', {}, {}, baseURL);
     // (config.method, config.path, {}, { transaction, message: messages });
@@ -1278,9 +1231,7 @@ export class OpenApiService {
   };
 
   getInstallationId = async () => {
-    const installations = await getInstallations(app);
-    const id = await getId(installations);
-    return id;
+    return authenticationService.getInstallationId();
   };
 
   searchUser = async (
@@ -2094,6 +2045,7 @@ export const getScripts = async (network: string, category: string, scriptName: 
       throw new Error('Script not found');
     }
     const scriptString = Buffer.from(script, 'base64').toString('utf-8');
+    const version = versionService.getVersion();
     const modifiedScriptString = scriptString.replaceAll('<platform_info>', `Extension-${version}`);
     return modifiedScriptString;
   } catch (error) {

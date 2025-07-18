@@ -1,6 +1,6 @@
 import type { TrackingEvents } from '@onflow/flow-wallet-shared/types/tracking-types';
 
-import { version } from '../utils/package-version';
+import versionService from './version-service';
 
 const DISTINCT_ID_KEY = 't_distinct_id';
 const DEVICE_ID_PREFIX = '$device:';
@@ -52,9 +52,9 @@ class MixpanelService {
 
   private distinctId?: string;
   private readonly API_URL = 'https://api.mixpanel.com';
-  private readonly token: string;
+  private token?: string;
   private superProperties: SuperProperties = {
-    app_version: version,
+    app_version: '0.0.0',
     platform: 'extension',
     environment: process.env.NODE_ENV === 'production' ? 'production' : 'development',
     wallet_type: 'flow',
@@ -90,14 +90,7 @@ class MixpanelService {
     await chrome.storage.local.set({ [DISTINCT_ID_KEY]: newInfo });
   }
 
-  private constructor() {
-    // Private constructor for singleton
-    this.token = process.env.MIXPANEL_TOKEN!;
-    if (!this.token) {
-      // eslint-disable-next-line no-console
-      console.error('MIXPANEL_TOKEN is not defined in environment variables');
-    }
-  }
+  private constructor() {}
 
   static getInstance(): MixpanelService {
     if (!MixpanelService.instance) {
@@ -106,9 +99,18 @@ class MixpanelService {
     return MixpanelService.instance;
   }
 
-  async init() {
+  async init(mixPanelToken: string) {
     if (this.initialized) return;
+    // Private constructor for singleton
+    this.token = mixPanelToken;
 
+    if (!mixPanelToken) {
+      // eslint-disable-next-line no-console
+      console.error('MIXPANEL_TOKEN is not defined in environment variables');
+    }
+    // Set app version
+    this.superProperties.app_version = versionService.getVersion();
+    // Set device id
     const ids = await this.getIdInfo();
     if (!ids?.$device_id) {
       await this.setIdInfo({ $device_id: UUID() });
@@ -117,7 +119,7 @@ class MixpanelService {
   }
 
   private async sendRequest(endpoint: string, data: MixpanelRequestData) {
-    await this.init();
+    if (!this.token) return;
 
     const body = {
       ...data,
@@ -159,14 +161,14 @@ class MixpanelService {
   }
 
   async time<T extends keyof TrackingEvents>(eventName: T) {
-    await this.init();
+    if (!this.token) return;
 
     // Start the timer for the event
     this.eventTimers[eventName] = Date.now();
   }
 
   async track<T extends keyof TrackingEvents>(eventName: T, properties: TrackingEvents[T]) {
-    await this.init();
+    if (!this.token) return;
 
     const ids = await this.getIdInfo();
     const deviceId = ids?.$device_id;
@@ -197,8 +199,7 @@ class MixpanelService {
     await this.sendRequest('/track?ip=1', event);
   }
   async trackPageView(pathname: string) {
-    await this.init();
-
+    if (!this.token) return;
     await this.track('$mp_web_page_view', {
       current_page_title: 'Flow Wallet',
       current_domain: 'flow-extension',
@@ -207,7 +208,7 @@ class MixpanelService {
     });
   }
   async identify(userId: string, name?: string) {
-    await this.init();
+    if (!this.token) return;
     // get previous id.
     const ids = await this.getIdInfo();
     const deviceId = ids?.$device_id;

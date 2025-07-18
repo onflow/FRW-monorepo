@@ -14,6 +14,11 @@ import {
 } from '@onflow/flow-wallet-data-model';
 
 import {
+  getValidData,
+  registerRefreshListener,
+  setCachedData,
+} from '@onflow/flow-wallet-data-model/data-cache';
+import {
   type CadenceTokenInfo,
   type EvmTokenInfo,
   type ExtendedTokenInfo,
@@ -25,7 +30,6 @@ import {
 import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
 
 import openapiService from './openapi';
-import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
 
 class CoinList {
   init = async () => {

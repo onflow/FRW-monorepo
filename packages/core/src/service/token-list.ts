@@ -2,6 +2,11 @@ import {
   tokenListKey,
   tokenListRefreshRegex,
 } from '@onflow/flow-wallet-data-model/cache-data-keys';
+import {
+  getValidData,
+  registerRefreshListener,
+  setCachedData,
+} from '@onflow/flow-wallet-data-model/data-cache';
 import { setUserData } from '@onflow/flow-wallet-data-model/user-data-access';
 import {
   evmCustomTokenKey,
@@ -16,7 +21,6 @@ import { MAINNET_CHAIN_ID } from '@onflow/flow-wallet-shared/types/network-types
 
 import { userWalletService } from '.';
 import openapiService from './openapi';
-import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
 
 const defaultFlowToken = {
   name: 'Flow',

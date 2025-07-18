@@ -1016,7 +1016,46 @@ class KeyringService extends EventEmitter {
     // Restore the keyring
     await this._restoreKeyring(decryptedKeyring);
   }
+  private _getKeyringByType(type: string): Keyring {
+    const keyring = this.getKeyringsByType(type)[0];
 
+    if (keyring) {
+      return keyring;
+    }
+
+    throw new Error(`No ${type} keyring found`);
+  }
+
+  /**
+   * Get Mnemonic
+   *
+   * Returns the mnemonic for the current keyring.
+   *
+   * @param {string} password - The keyring controller password.
+   * @returns {Promise<string>} The mnemonic.
+   */
+  getMnemonic = async (password: string): Promise<string> => {
+    await this.verifyPassword(password);
+    const keyring = this._getKeyringByType(KEYRING_CLASS.MNEMONIC);
+    if (!(keyring instanceof HDKeyring)) {
+      throw new Error('Keyring is not an HDKeyring');
+    }
+    const serialized = await keyring.serialize();
+    if (!serialized.mnemonic) {
+      throw new Error('Keyring is not an HDKeyring');
+    }
+    const seedWords = serialized.mnemonic;
+    return seedWords;
+  };
+
+  checkMnemonics = async () => {
+    const keyring = this._getKeyringByType(KEYRING_CLASS.MNEMONIC);
+    const serialized = await keyring.serialize();
+    if (serialized) {
+      return true;
+    }
+    return false;
+  };
   /**
    * Retrieve privatekey from vault
    *

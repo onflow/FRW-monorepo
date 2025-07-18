@@ -31,7 +31,6 @@ export const getInvalidData = async <T>(key: string): Promise<T | undefined> => 
   return sessionData?.value as T | undefined;
 };
 
-export * from '@onflow/flow-wallet-data-model/cache-data-access';
 /**
  * BACKGROUND ONLY METHODS
  */

@@ -6,6 +6,7 @@ import { getApp } from 'firebase/app';
 import { getAuth, signInAnonymously } from 'firebase/auth/web-extension';
 import { TransactionError } from 'web3';
 
+import { triggerRefresh, getCachedData } from '@onflow/flow-wallet-data-model/cache-data-access';
 import {
   accountBalanceKey,
   accountBalanceRefreshRegex,
@@ -22,6 +23,13 @@ import {
   userMetadataKey,
   type UserMetadataStore,
 } from '@onflow/flow-wallet-data-model/cache-data-keys';
+import {
+  clearCachedData,
+  getValidData,
+  registerBatchRefreshListener,
+  registerRefreshListener,
+  setCachedData,
+} from '@onflow/flow-wallet-data-model/data-cache';
 import { removeUserData, setUserData } from '@onflow/flow-wallet-data-model/user-data-access';
 import {
   activeAccountsKey,
@@ -76,15 +84,6 @@ import preferenceService from './preference';
 import remoteConfigService from './remoteConfig';
 import transactionActivityService from './transaction-activity';
 import { defaultAccountKey, pubKeyAccountToAccountKey } from '../utils/account-key';
-import {
-  clearCachedData,
-  getCachedData,
-  getValidData,
-  registerBatchRefreshListener,
-  registerRefreshListener,
-  setCachedData,
-  triggerRefresh,
-} from '../utils/data-cache';
 import { fclConfig, fclConfirmNetwork } from '../utils/fclConfig';
 import {
   getAccountsByPublicKeyTuple,

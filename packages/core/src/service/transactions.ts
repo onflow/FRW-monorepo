@@ -5,6 +5,7 @@ import * as ethUtil from 'ethereumjs-util';
 import { encode } from 'rlp';
 import web3, { Web3 } from 'web3';
 
+import { triggerRefresh } from '@onflow/flow-wallet-data-model/cache-data-access';
 import { mainAccountsKey } from '@onflow/flow-wallet-data-model/cache-data-keys';
 import { erc20Abi as erc20ABI } from '@onflow/flow-wallet-shared/constant';
 import { EVM_ENDPOINT } from '@onflow/flow-wallet-shared/constant/domain-constants';
@@ -19,7 +20,6 @@ import { mixpanelTrack } from './mixpanel';
 import { getScripts } from './openapi';
 import userWalletService from './userWallet';
 import { replaceNftKeywords } from '../utils';
-import { triggerRefresh } from '../utils/data-cache';
 
 export class TransactionService {
   /**

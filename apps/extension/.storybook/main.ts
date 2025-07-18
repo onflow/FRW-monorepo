@@ -73,7 +73,6 @@ const config: StorybookConfig = {
         dayjs: 'dayjs',
       }),
       new webpack.DefinePlugin({
-        'process.env.version': JSON.stringify(`version: ${version}`),
         'process.env.release': JSON.stringify(version),
       })
     );

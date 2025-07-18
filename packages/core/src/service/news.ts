@@ -4,6 +4,11 @@ import {
   type NewsStore,
 } from '@onflow/flow-wallet-data-model/cache-data-keys';
 import {
+  getValidData,
+  registerRefreshListener,
+  setCachedData,
+} from '@onflow/flow-wallet-data-model/data-cache';
+import {
   readAndDismissedNewsKey,
   type ReadAndDismissedNewsStore,
 } from '@onflow/flow-wallet-data-model/user-data-keys';
@@ -11,7 +16,6 @@ import { type NewsItem } from '@onflow/flow-wallet-shared/types/news-types';
 import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
 
 import openapi from './openapi';
-import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
 import createPersistStore from '../utils/persistStore';
 
 class NewsService {

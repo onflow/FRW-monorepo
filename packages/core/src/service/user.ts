@@ -4,6 +4,11 @@ import {
   type UserInfoStore,
 } from '@onflow/flow-wallet-data-model/cache-data-keys';
 import {
+  getValidData,
+  registerRefreshListener,
+  setCachedData,
+} from '@onflow/flow-wallet-data-model/data-cache';
+import {
   getCurrentProfileId,
   returnCurrentProfileId,
 } from '@onflow/flow-wallet-extension-shared/current-id';
@@ -13,7 +18,6 @@ import { type LoggedInAccount } from '@onflow/flow-wallet-shared/types/wallet-ty
 import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
 
 import openapiService from './openapi';
-import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
 import createSessionStore from '../utils/persistStore';
 
 const storedUserListKey = 'stored-user-list';

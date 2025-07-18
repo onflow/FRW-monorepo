@@ -30,8 +30,6 @@ import {
   signInAnonymously,
 } from 'firebase/auth/web-extension';
 
-import { getFirbaseConfig } from '@onflow/flow-wallet-core/utils/firebaseConfig';
-import { setEnvironmentBadge } from '@onflow/flow-wallet-core/utils/setEnvironmentBadge';
 import { initializeChromeLogging } from '@onflow/flow-wallet-extension-shared/chrome-logger';
 import eventBus from '@onflow/flow-wallet-extension-shared/message/eventBus';
 import { Message } from '@onflow/flow-wallet-extension-shared/messaging';
@@ -46,6 +44,9 @@ import { preAuthzServiceDefinition } from '@/background/controller/serviceDefini
 import walletController, { type WalletController } from '@/background/controller/wallet';
 
 import notificationService from './controller/notification';
+import { setEnvironmentBadge } from './utils/setEnvironmentBadge';
+import packageJson from '../../package.json';
+import { getFirbaseFunctionUrl, getFirbaseConfig } from './utils/firebaseConfig';
 
 const { PortMessage } = Message;
 
@@ -98,11 +99,26 @@ async function firebaseSetup() {
   });
 }
 
+const API_GO_SERVER_URL = process.env.API_GO_SERVER_URL;
+const API_BASE_URL = process.env.API_BASE_URL;
+if (!API_GO_SERVER_URL || !API_BASE_URL) {
+  throw new Error('API_GO_SERVER_URL and API_BASE_URL must be set');
+}
+
 async function restoreAppState() {
+  // Init authentication first
+  await authenticationService.init(getFirbaseConfig());
+
+  // Init openapi second. This starts fcl
+  await openapiService.init(
+    API_GO_SERVER_URL, // registrationURL
+    API_BASE_URL, // webNextURL
+    getFirbaseFunctionUrl() // functionsURL
+  );
+
   // Load keyring store
   await keyringService.loadKeyringStore();
-  // Init openapi. This starts fcl
-  await openapiService.init();
+
   // clear premnemonic in storage
   storage.remove('premnemonic');
   storage.remove('tempPassword');
@@ -127,11 +143,14 @@ async function restoreAppState() {
   await nftService.init();
   await evmNftService.init();
   await googleSafeHostService.init();
-  await mixpanelTrack.init();
+  await mixpanelTrack.init(process.env.MIXPANEL_TOKEN);
   await logListener.init();
   await tokenListService.init();
   await remoteConfigService.init();
   await newsService.init();
+
+  await versionService.init(packageJson.version);
+
   // rpcCache.start();
 
   // Initialize Chrome logging - has to be done after mixpanel is initialized
