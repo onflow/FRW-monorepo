@@ -197,6 +197,12 @@ class TransactionActivity {
     txItem.cadenceTxId = txId;
     txItem.image = icon;
     txItem.title = title;
+
+    // Extract amount from title if it's in the format "X.XXXXXXX Token Sent"
+    const amountMatch = title.match(/^([\d.]+)\s+(\w+)\s+Sent$/);
+    if (amountMatch) {
+      txItem.amount = amountMatch[1];
+    }
     txList.unshift(txItem);
     this.setPendingList(network, address, txList);
 
