@@ -47,7 +47,8 @@ const LandingComponents = ({
       height: '100vh',
       justifyContent: 'center',
       alignItems: 'center',
-      overflow: 'hidden',
+      overflowX: 'hidden',
+      overflowY: 'scroll',
     }}
   >
     <Box
