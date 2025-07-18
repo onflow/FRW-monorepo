@@ -156,7 +156,7 @@ const Sync = () => {
       try {
         setAddressToImport(jsonObject.data.walletAddress);
         const address = withPrefix(jsonObject.data.walletAddress);
-        if (!isValidFlowAddress(address)) {
+        if (!address || !isValidFlowAddress(address)) {
           throw new Error('Invalid address');
         }
         const availableKeys = await usewallet.checkAvailableAccountKeys(address);

@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 
 import {
+  authenticationService,
   addressBookService,
   coinListService,
   evmNftService,
@@ -19,6 +20,7 @@ import {
   transactionActivityService,
   userInfoService,
   userWalletService,
+  versionService,
 } from '@onflow/flow-wallet-core';
 import { ethErrors } from 'eth-rpc-errors';
 import { initializeApp } from 'firebase/app';
@@ -46,7 +48,7 @@ import walletController, { type WalletController } from '@/background/controller
 import notificationService from './controller/notification';
 import { setEnvironmentBadge } from './utils/setEnvironmentBadge';
 import packageJson from '../../package.json';
-import { getFirbaseFunctionUrl, getFirbaseConfig } from './utils/firebaseConfig';
+import { getFirbaseConfig } from './utils/firebaseConfig';
 
 const { PortMessage } = Message;
 
@@ -101,19 +103,19 @@ async function firebaseSetup() {
 
 const API_GO_SERVER_URL = process.env.API_GO_SERVER_URL;
 const API_BASE_URL = process.env.API_BASE_URL;
-if (!API_GO_SERVER_URL || !API_BASE_URL) {
-  throw new Error('API_GO_SERVER_URL and API_BASE_URL must be set');
-}
-
+const FB_FUNCTIONS_URL = process.env.FB_FUNCTIONS_URL;
 async function restoreAppState() {
   // Init authentication first
   await authenticationService.init(getFirbaseConfig());
+  if (!API_GO_SERVER_URL || !API_BASE_URL || !FB_FUNCTIONS_URL) {
+    throw new Error('API_GO_SERVER_URL, API_BASE_URL, FB_FUNCTIONS_URL must be set');
+  }
 
   // Init openapi second. This starts fcl
   await openapiService.init(
     API_GO_SERVER_URL, // registrationURL
     API_BASE_URL, // webNextURL
-    getFirbaseFunctionUrl() // functionsURL
+    FB_FUNCTIONS_URL // functionsURL
   );
 
   // Load keyring store
@@ -143,7 +145,9 @@ async function restoreAppState() {
   await nftService.init();
   await evmNftService.init();
   await googleSafeHostService.init();
-  await mixpanelTrack.init(process.env.MIXPANEL_TOKEN);
+  if (process.env.MIXPANEL_TOKEN) {
+    await mixpanelTrack.init(process.env.MIXPANEL_TOKEN);
+  }
   await logListener.init();
   await tokenListService.init();
   await remoteConfigService.init();
@@ -380,7 +384,7 @@ const extMessageHandler = (msg, sender, sendResponse) => {
         // Check if current address is flow address
         try {
           const currentAddress = await userWalletService.getCurrentAddress();
-          if (!isValidFlowAddress(currentAddress)) {
+          if (!currentAddress || !isValidFlowAddress(currentAddress)) {
             const parentAddress = await userWalletService.getParentAddress();
             if (!parentAddress) {
               throw new Error('Parent address not found');

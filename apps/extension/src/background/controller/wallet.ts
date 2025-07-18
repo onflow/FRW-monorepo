@@ -29,8 +29,6 @@ import {
 import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
 import BN from 'bignumber.js';
 
-import type { ConnectedSite } from '@onflow/flow-wallet-core/service/permission';
-import type { PreferenceAccount } from '@onflow/flow-wallet-core/service/preference';
 import {
   childAccountDescKey,
   type ChildAccountFtStore,
@@ -472,9 +470,7 @@ export class WalletController extends BaseController {
 
   getConnectedSite = permissionService.getConnectedSite;
   getConnectedSites = permissionService.getConnectedSites;
-  setRecentConnectedSites = (sites: ConnectedSite[]) => {
-    permissionService.setRecentConnectedSites(sites);
-  };
+
   getRecentConnectedSites = () => {
     return permissionService.getRecentConnectedSites();
   };
@@ -492,17 +488,6 @@ export class WalletController extends BaseController {
     permissionService.addConnectedSite(origin, name, icon, defaultChain, isSigned);
   };
 
-  updateConnectSite = (origin: string, data: ConnectedSite) => {
-    permissionService.updateConnectSite(origin, data);
-    // sessionService.broadcastEvent(
-    //   'chainChanged',
-    //   {
-    //     chain: CHAINS[data.chain].hex,
-    //     networkVersion: CHAINS[data.chain].network,
-    //   },
-    //   data.origin
-    // );
-  };
   removeConnectedSite = (origin: string) => {
     sessionService.broadcastEvent('accountsChanged', [], origin);
     permissionService.removeConnectedSite(origin);
@@ -632,10 +617,6 @@ export class WalletController extends BaseController {
     await this.verifyPassword(password);
     const accounts = await keyringService.getKeyring();
     return accounts;
-  };
-
-  changeAccount = (account: PreferenceAccount) => {
-    preferenceService.setCurrentAccount(account);
   };
 
   isUseLedgerLive = () => preferenceService.isUseLedgerLive();
@@ -941,7 +922,7 @@ export class WalletController extends BaseController {
   getEvmAddress = async () => {
     const address = await this.getRawEvmAddressWithPrefix();
 
-    if (!isValidEthereumAddress(address)) {
+    if (!address || !isValidEthereumAddress(address)) {
       throw new Error(`Invalid Ethereum address ${address}`);
     }
     return address;
@@ -1308,8 +1289,8 @@ export class WalletController extends BaseController {
 
   getEvmEnabled = async (): Promise<boolean> => {
     // Get straight from the userWalletService as getEvmAddress() throws an error if the address is not valid
-    const address = userWalletService.getEvmAccount();
-    return !!address && isValidEthereumAddress(address);
+    const evmAccount = await userWalletService.getEvmAccount();
+    return !!evmAccount && isValidEthereumAddress(evmAccount.address);
   };
 
   clearWallet = () => {

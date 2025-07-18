@@ -14,7 +14,3 @@ export function getFirbaseConfig(): FirebaseOptions {
 
   return firebaseConfig;
 }
-
-export function getFirbaseFunctionUrl() {
-  return process.env.FB_FUNCTIONS;
-}

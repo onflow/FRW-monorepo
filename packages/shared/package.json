@@ -49,7 +49,7 @@
     },
     "./constant": {
       "types": "./dist/constant/index.d.ts",
-      "import": "./dist/constant/index.ts",
+      "import": "./dist/constant/index.js",
       "default": "./dist/constant/index.js"
     },
     "./constant/index": {

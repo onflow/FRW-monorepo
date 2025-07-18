@@ -149,7 +149,7 @@ export const AccountCard = ({
             }}
           >
             {name || <Skeleton variant="text" width="50px" />}
-            {isValidEthereumAddress(address) && (
+            {address && isValidEthereumAddress(address) && (
               <span
                 style={{
                   padding: '0px 4px',
