@@ -839,7 +839,13 @@ class UserWallet {
       try {
         // Send a notification to the user only on success
         if (sendNotification && notificationCallback) {
-          const baseURL = await transactionActivityService.getFlowscanUrl();
+          const isEmulator = await this.getEmulatorMode();
+          const isEvm = await this.getActiveAccountType();
+          const baseURL = await transactionActivityService.getFlowscanUrl(
+            network,
+            isEmulator,
+            isEvm
+          );
           let notificationUrl = '';
 
           if (baseURL.includes('evm')) {
@@ -930,7 +936,7 @@ class UserWallet {
     } finally {
       if (txHash) {
         // Start polling for transfer list updates
-        await transactionActivityService.pollTransferList(address, txHash);
+        await transactionActivityService.pollTransferList(address, txHash, network);
       }
     }
   };

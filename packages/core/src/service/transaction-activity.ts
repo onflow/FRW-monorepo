@@ -15,7 +15,6 @@ import { consoleError, consoleWarn } from '@onflow/flow-wallet-shared/utils/cons
 
 import openapiService, { type FlowTransactionResponse } from './openapi';
 import preferenceService from './preference';
-import userWalletService from './userWallet';
 import {
   getInvalidData,
   getValidData,
@@ -80,8 +79,12 @@ class TransactionActivity {
     return new Promise((resolve) => setTimeout(resolve, ms));
   };
 
-  pollTransferList = async (address: string, txHash: string, maxAttempts = 5): Promise<void> => {
-    const network = await userWalletService.getNetwork();
+  pollTransferList = async (
+    address: string,
+    txHash: string,
+    network: string,
+    maxAttempts = 5
+  ): Promise<void> => {
     const currency = (await preferenceService.getDisplayCurrency())?.code || 'USD';
     let attempts = 0;
     try {
@@ -295,9 +298,7 @@ class TransactionActivity {
   };
 
   // only used when evm TransactionActivity get updated.
-  clearPending = async (): Promise<void> => {
-    const network = await userWalletService.getNetwork();
-    const address = await userWalletService.getCurrentAddress();
+  clearPending = async (network: string, address: string): Promise<void> => {
     if (address) {
       this.setPendingList(network, address, []);
     }
@@ -469,6 +470,7 @@ class TransactionActivity {
     address: string,
     limit: number,
     offset: number,
+    network: string,
     _expiry = 60000, // Keep for backward compatibility
     _forceRefresh = false // Keep for backward compatibility
   ): Promise<{
@@ -482,7 +484,6 @@ class TransactionActivity {
       };
     }
 
-    const network = await userWalletService.getNetwork();
     const offsetString = offset?.toString() ?? '0';
     const limitString = limit?.toString() ?? '15';
 
@@ -507,22 +508,13 @@ class TransactionActivity {
     const transactionListStore = await this.listAllTransactions(
       address,
       parseInt(limit),
-      parseInt(offset)
+      parseInt(offset),
+      network
     );
     return transactionListStore.list;
   };
 
-  listPending = async (network = '', address = ''): Promise<TransferItem[]> => {
-    if (!network) {
-      network = await userWalletService.getNetwork();
-    }
-    if (!address) {
-      const currentAddress = await userWalletService.getCurrentAddress();
-      if (!currentAddress) {
-        return [];
-      }
-      address = currentAddress;
-    }
+  listPending = async (network: string, address: string): Promise<TransferItem[]> => {
     return this.getPendingList(network, address);
   };
 
@@ -535,16 +527,13 @@ class TransactionActivity {
     const transactionList = await this.listAllTransactions(
       address,
       parseInt(limit),
-      parseInt(offset)
+      parseInt(offset),
+      network
     );
     return transactionList.count;
   };
 
-  getFlowscanUrl = async (): Promise<string> => {
-    const network = await userWalletService.getNetwork();
-    const isEmulator = await userWalletService.getEmulatorMode();
-    const isEvm = await userWalletService.getActiveAccountType();
-
+  getFlowscanUrl = async (network: string, isEmulator: boolean, isEvm: string): Promise<string> => {
     if (isEmulator) {
       return 'http://localhost:8080';
     }
@@ -574,8 +563,7 @@ class TransactionActivity {
     }
   };
 
-  getViewSourceUrl = async (): Promise<string> => {
-    const network = await userWalletService.getNetwork();
+  getViewSourceUrl = async (network: string): Promise<string> => {
     let baseURL = 'https://f.dnz.dev';
     switch (network) {
       case 'mainnet':

@@ -1317,17 +1317,22 @@ export class WalletController extends BaseController {
     count: number;
     list: TransferItem[];
   }> => {
+    const network = await this.getNetwork();
     return await transactionActivityService.listAllTransactions(
       address,
       limit,
       offset,
+      network,
       _expiry,
       _forceRefresh
     );
   };
 
   getPendingTx = async () => {
-    return await transactionActivityService.listPending();
+    const network = await this.getNetwork();
+    const address = await this.getCurrentAddress();
+    if (!address) return [];
+    return await transactionActivityService.listPending(network, address);
   };
 
   loginWithMnemonic = async (
@@ -1431,11 +1436,15 @@ export class WalletController extends BaseController {
   };
 
   getFlowscanUrl = async (): Promise<string> => {
-    return await transactionActivityService.getFlowscanUrl();
+    const network = await this.getNetwork();
+    const isEmulator = await this.getEmulatorMode();
+    const isEvm = await this.getActiveAccountType();
+    return await transactionActivityService.getFlowscanUrl(network, isEmulator, isEvm);
   };
 
   getViewSourceUrl = async (): Promise<string> => {
-    return await transactionActivityService.getViewSourceUrl();
+    const network = await this.getNetwork();
+    return await transactionActivityService.getViewSourceUrl(network);
   };
 
   listenTransaction = async (
