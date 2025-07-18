@@ -2,12 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { DEFAULT_PASSWORD } from '@onflow/flow-wallet-shared/utils/default';
 
-import {
-  INITIAL_REGISTER_STATE,
-  initRegisterState,
-  registerReducer,
-  STEPS,
-} from '../register-reducer';
+import { INITIAL_REGISTER_STATE, registerReducer, STEPS } from '../register-reducer';
 
 vi.mock('bip39', () => ({
   generateMnemonic: () => 'test mnemonic',
@@ -23,13 +18,6 @@ describe('Register Reducer', () => {
         mnemonic: '',
         isAddWallet: false,
       });
-    });
-  });
-
-  describe('initRegisterState', () => {
-    it('should initialize with a generated mnemonic', () => {
-      const state = initRegisterState(INITIAL_REGISTER_STATE);
-      expect(state.mnemonic).toBe('test mnemonic');
     });
   });
 

@@ -1,11 +1,12 @@
 import { Box } from '@mui/material';
+import * as bip39 from 'bip39';
 import React, { useCallback, useEffect, useReducer } from 'react';
 import { useNavigate } from 'react-router';
 
 import {
   INITIAL_REGISTER_STATE,
-  initRegisterState,
   registerReducer,
+  type RegisterState,
   STEPS,
 } from '@onflow/flow-wallet-reducers/register-reducer';
 
@@ -17,6 +18,13 @@ import RecoveryPhrase from '@/ui/components/LandingPages/RecoveryPhrase';
 import RepeatPhrase from '@/ui/components/LandingPages/RepeatPhrase';
 import SetPassword from '@/ui/components/LandingPages/SetPassword';
 import { useWallet } from '@/ui/hooks/use-wallet';
+
+export const initRegisterState = (initialState: RegisterState): RegisterState => {
+  return {
+    ...initialState,
+    mnemonic: bip39.generateMnemonic(),
+  };
+};
 
 const Register = () => {
   const navigate = useNavigate();

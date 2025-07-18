@@ -1,5 +1,3 @@
-import * as bip39 from 'bip39';
-
 import { DEFAULT_PASSWORD } from '@onflow/flow-wallet-shared/utils/default';
 
 export const STEPS = {
@@ -29,13 +27,6 @@ export const INITIAL_REGISTER_STATE: RegisterState = {
   password: DEFAULT_PASSWORD,
   mnemonic: '',
   isAddWallet: false,
-};
-
-export const initRegisterState = (initialState: RegisterState): RegisterState => {
-  return {
-    ...initialState,
-    mnemonic: bip39.generateMnemonic(),
-  };
 };
 
 export type RegisterAction =
