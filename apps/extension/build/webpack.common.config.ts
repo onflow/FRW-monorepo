@@ -48,7 +48,7 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
         {
           test: /\.jsx?$|\.tsx?$/,
           exclude:
-            /node_modules|\.stories\.(jsx?|tsx?)$|\.test\.(jsx?|tsx?)$|\.spec\.(jsx?|tsx?)$|\/__tests__\//,
+            /node_modules|\.stories\.(jsx?|tsx?)$|\.test\.(jsx?|tsx?)$|\.spec\.(jsx?|tsx?)$|\/__tests__\/|packages\/.*\/dist\//,
           oneOf: [
             {
               // prevent webpack remove this file's output even it's not been used in entry

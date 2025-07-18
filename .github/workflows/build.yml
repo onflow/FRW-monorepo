@@ -133,6 +133,12 @@ jobs:
       - name: Run tests
         run: pnpm -F flow-wallet-extension test:run
 
+      - name: Build packages
+        run: |
+          echo "Building all packages..."
+          pnpm -F './packages/**' build
+          echo "All packages built successfully"
+
       - name: Build
         run: |
           if [[ "${{ needs.determine-env.outputs.env_name }}" == "development" || "${{ needs.determine-env.outputs.env_name }}" == "staging" ]]; then
