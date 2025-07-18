@@ -813,10 +813,7 @@ class UserWallet {
     let txHash = txId;
 
     try {
-      transactionActivityService.setPending(network, address, txId, icon, title, {
-        status: 'PENDING',
-        token: 'Exec Transaction',
-      });
+      transactionActivityService.setPending(network, address, txId, icon, title);
       const fclTx = fcl.tx(txId);
 
       // Wait for the transaction to be executed
