@@ -21,6 +21,7 @@ import {
 import {
   type NFTCollectionData,
   type NFTCollections,
+  type NFTItem,
 } from '@onflow/flow-wallet-shared/types/nft-types';
 
 import openapiService, { getScripts } from './openapi';
@@ -114,11 +115,11 @@ class NFT {
       network
     );
 
-    data.nfts.map((nft) => {
-      nft.unique_id = nft.collectionName + '_' + nft.id;
+    data.nfts.map((nft: NFTItem) => {
+      (nft as NFTItem & { unique_id: string }).unique_id = nft.collectionName + '_' + nft.id;
     });
-    function getUniqueListBy(arr, key) {
-      return [...new Map(arr.map((item) => [item[key], item])).values()];
+    function getUniqueListBy(arr: (NFTItem & { unique_id: string })[], key: string) {
+      return [...new Map(arr.map((item) => [item[key as keyof typeof item], item])).values()];
     }
     const unique_nfts = getUniqueListBy(data.nfts, 'unique_id');
     data.nfts = unique_nfts;

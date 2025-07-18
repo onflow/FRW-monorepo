@@ -53,12 +53,12 @@ const Detail = () => {
 
   useEffect(() => {
     const checkPermission = async () => {
-      const result = await usewallet.checkCanMoveChild();
+      const result = await usewallet.checkCanMoveChild(currentWallet.address);
       setCanMoveChild(result);
     };
 
     checkPermission();
-  }, [usewallet]);
+  }, [usewallet, currentWallet.address]);
 
   useEffect(() => {
     const savedState = localStorage.getItem('nftDetailState');

@@ -16,7 +16,7 @@ import {
   remoteConfigService,
   sessionService,
   tokenListService,
-  transactionService,
+  transactionActivityService,
   userInfoService,
   userWalletService,
 } from '@onflow/flow-wallet-core';
@@ -123,7 +123,7 @@ async function restoreAppState() {
   await addressBookService.init();
 
   await userWalletService.init();
-  await transactionService.init();
+  await transactionActivityService.init();
   await nftService.init();
   await evmNftService.init();
   await googleSafeHostService.init();

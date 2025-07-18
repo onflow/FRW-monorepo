@@ -48,6 +48,7 @@ import {
   PriceProvider,
   type SignInResponse,
   type StorageInfo,
+  type TokenPriceHistory,
   type UserInfoResponse,
 } from '@onflow/flow-wallet-shared/types/network-types';
 import { type NFTCollections } from '@onflow/flow-wallet-shared/types/nft-types';
@@ -77,7 +78,7 @@ import {
   googleSafeHostService,
   mixpanelTrack,
   nftService,
-  transactionService,
+  transactionActivityService,
   userInfoService,
   userWalletService,
 } from './index';
@@ -650,6 +651,35 @@ export class OpenApiService {
    * @param provider - The provider to get the price history from
    * @returns The price history of the token
    */
+  getTokenPriceHistory = async (
+    token: string,
+    period = Period.oneDay,
+    provider = PriceProvider.binance
+  ): Promise<TokenPriceHistory[]> => {
+    const rawPriceHistory = await this.getTokenPriceHistoryArray(token, period, provider);
+    const frequency = getPeriodFrequency(period);
+    if (!rawPriceHistory[frequency]) {
+      throw new Error('No price history found for this period');
+    }
+
+    return rawPriceHistory[frequency].map((item) => ({
+      closeTime: item[0],
+      openPrice: item[1],
+      highPrice: item[2],
+      lowPrice: item[3],
+      price: item[4],
+      volume: item[5],
+      quoteVolume: item[6],
+    }));
+  };
+
+  /**
+   * Get the price history of a token
+   * @param token - The token to get the price history for
+   * @param period - The period to get the price history for
+   * @param provider - The provider to get the price history from
+   * @returns The price history of the token
+   */
   getTokenPriceHistoryArray = async (
     token: string,
     period = Period.oneDay,
@@ -715,7 +745,7 @@ export class OpenApiService {
     coinListService.clear();
     addressBookService.clear();
     userWalletService.clear();
-    transactionService.clear();
+    transactionActivityService.clear();
   };
 
   /**

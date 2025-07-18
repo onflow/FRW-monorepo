@@ -4,30 +4,51 @@ import {
   transferListKey,
   transferListRefreshRegex,
   type TransferListStore,
+  coinListKey,
 } from '@onflow/flow-wallet-data-model/cache-data-keys';
 import { type TransferItem } from '@onflow/flow-wallet-shared/types/transaction-types';
 import {
   isValidEthereumAddress,
   isValidFlowAddress,
 } from '@onflow/flow-wallet-shared/utils/address';
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+import { consoleError, consoleWarn } from '@onflow/flow-wallet-shared/utils/console-log';
 
 import openapiService, { type FlowTransactionResponse } from './openapi';
+import preferenceService from './preference';
 import {
   getInvalidData,
   getValidData,
   registerRefreshListener,
   setCachedData,
+  triggerRefresh,
 } from '../utils/data-cache';
 
 interface TransactionStore {
   pendingItem: {
     mainnet: Record<string, TransferItem[]>;
     testnet: Record<string, TransferItem[]>;
+    [key: string]: Record<string, TransferItem[]>;
   };
 }
 
-class Transaction {
+/**
+ * Maps FCL transaction status strings to UI format
+ * This replaces the previous i18n.getMessage() calls
+ */
+const mapTransactionStatus = (statusString: string): string => {
+  const statusMap: Record<string, string> = {
+    PENDING: 'PENDING',
+    EXECUTED: 'Executed',
+    SEALED: 'Sealed',
+    EXPIRED: 'EXPIRED',
+    FINALIZED: 'Finalized',
+    SUCCESS: 'success',
+  };
+
+  return statusMap[statusString.toUpperCase()] || statusString;
+};
+
+class TransactionActivity {
   private store: TransactionStore = {
     pendingItem: {
       mainnet: {},
@@ -35,6 +56,57 @@ class Transaction {
     },
   };
 
+  // Type definitions for better type safety
+  private poll = async <T>(
+    fn: () => Promise<T>,
+    fnCondition: (result: T) => boolean,
+    ms: number
+  ): Promise<T> => {
+    const result = await fn();
+    if (fnCondition(result)) {
+      await this.wait(ms);
+      return this.poll(fn, fnCondition, ms);
+    }
+    return result;
+  };
+
+  private wait = (ms = 1000): Promise<void> => {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  };
+
+  pollTransferList = async (
+    address: string,
+    txHash: string,
+    network: string,
+    maxAttempts = 5
+  ): Promise<void> => {
+    const currency = (await preferenceService.getDisplayCurrency())?.code || 'USD';
+    let attempts = 0;
+    try {
+      const poll = async (): Promise<void> => {
+        if (attempts >= maxAttempts) {
+          consoleWarn('Max polling attempts reached');
+          return;
+        }
+
+        const { list: newTransactions } = await this.loadTransactions(network, address, '0', '15');
+
+        const foundTx = newTransactions?.find((tx: TransferItem) => txHash.includes(tx.hash));
+        if (foundTx && foundTx.indexed) {
+          // Refresh the coin list
+          triggerRefresh(coinListKey(network, address, currency));
+        } else {
+          // All of the transactions have not been picked up by the indexer yet
+          attempts++;
+          setTimeout(poll, 5000); // Poll every 5 seconds
+        }
+      };
+
+      await poll();
+    } catch (error) {
+      consoleError('pollTransferList error', error);
+    }
+  };
   init = async () => {
     registerRefreshListener(transferListRefreshRegex, this.loadTransactions);
   };
@@ -108,7 +180,7 @@ class Transaction {
     } as TransferItem;
 
     // Not sure we have a string for this
-    txItem.status = chrome.i18n.getMessage('PENDING');
+    txItem.status = chrome.i18n.getMessage('PENDING') || 'PENDING';
     txItem.time = now.getTime();
     txItem.token = 'Exec Transaction';
     txItem.sender = address;
@@ -117,12 +189,13 @@ class Transaction {
     txItem.cadenceTxId = txId;
     txItem.image = icon;
     txItem.title = title;
+
     txList.unshift(txItem);
     this.setPendingList(network, address, txList);
 
     // Get the existing indexed transaction list
     const existingTxStore = await getInvalidData<TransferListStore>(
-      transferListKey(network, address)
+      transferListKey(network, address, '0', '15')
     );
     if (existingTxStore) {
       existingTxStore.list.unshift(txItem);
@@ -130,7 +203,7 @@ class Transaction {
         (item) => item.status.toUpperCase() === 'PENDING'
       ).length;
       existingTxStore.count = existingTxStore.count + 1;
-      await setCachedData(transferListKey(network, address), existingTxStore);
+      await setCachedData(transferListKey(network, address, '0', '15'), existingTxStore);
     }
   };
 
@@ -151,13 +224,14 @@ class Transaction {
     const txItem = txList[txItemIndex];
 
     txItem.status =
-      chrome.i18n.getMessage(transactionStatus.statusString) || transactionStatus.statusString;
+      chrome.i18n.getMessage(transactionStatus.statusString) ||
+      mapTransactionStatus(transactionStatus.statusString);
     txItem.error = transactionStatus.statusCode === 1;
 
     const evmTxIds: string[] = transactionStatus.events?.reduce(
       (transactionIds: string[], event) => {
         if (event.type.includes('EVM') && !!event.data?.hash) {
-          const hashBytes = event.data.hash.map((byte) => parseInt(byte));
+          const hashBytes = event.data.hash.map((byte: string) => parseInt(byte));
           const hash = '0x' + Buffer.from(hashBytes).toString('hex');
           if (transactionIds.includes(hash)) {
             return transactionIds;
@@ -183,7 +257,7 @@ class Transaction {
 
     // Get the existing indexed transaction list
     const existingTxStore = await getInvalidData<TransferListStore>(
-      transferListKey(network, address)
+      transferListKey(network, address, '0', '15')
     );
     if (existingTxStore) {
       const storeItemIndex = existingTxStore.list.findIndex((item) => item.hash.includes(txId));
@@ -192,7 +266,7 @@ class Transaction {
         existingTxStore.pendingCount = existingTxStore.list.filter(
           (item) => item.status.toUpperCase() === 'PENDING'
         ).length;
-        await setCachedData(transferListKey(network, address), existingTxStore);
+        await setCachedData(transferListKey(network, address, '0', '15'), existingTxStore);
       }
     }
 
@@ -258,7 +332,7 @@ class Transaction {
       transactionHolder.sender = tx.sender;
       transactionHolder.receiver = tx.receiver;
       transactionHolder.time = new Date(tx.time).getTime();
-      transactionHolder.status = tx.status;
+      transactionHolder.status = mapTransactionStatus(tx.status);
       transactionHolder.hash = tx.txid;
       transactionHolder.error = tx.error;
       transactionHolder.image = tx.image;
@@ -385,20 +459,35 @@ class Transaction {
   };
 
   listAllTransactions = async (
-    network: string,
     address: string,
-    offset: string = '0',
-    limit: string = '15'
-  ): Promise<TransferListStore> => {
-    const offsetString = offset ?? '0';
-    const limitString = limit ?? '15';
+    limit: number,
+    offset: number,
+    network: string,
+    _expiry = 60000, // Keep for backward compatibility
+    _forceRefresh = false // Keep for backward compatibility
+  ): Promise<{
+    count: number;
+    list: TransferItem[];
+  }> => {
+    if (!address) {
+      return {
+        count: 0,
+        list: [],
+      };
+    }
+
+    const offsetString = offset?.toString() ?? '0';
+    const limitString = limit?.toString() ?? '15';
+
     // Get the cached transaction list
     const transactionListStore = await getValidData<TransferListStore>(
       transferListKey(network, address, offsetString, limitString)
     );
+
     if (!transactionListStore) {
       return await this.loadTransactions(network, address, offsetString, limitString);
     }
+
     return transactionListStore;
   };
 
@@ -408,7 +497,12 @@ class Transaction {
     offset: string = '0',
     limit: string = '15'
   ): Promise<TransferItem[]> => {
-    const transactionListStore = await this.listAllTransactions(network, address, offset, limit);
+    const transactionListStore = await this.listAllTransactions(
+      address,
+      parseInt(limit),
+      parseInt(offset),
+      network
+    );
     return transactionListStore.list;
   };
 
@@ -422,9 +516,60 @@ class Transaction {
     offset: string,
     limit: string
   ): Promise<number> => {
-    const transactionList = await this.listAllTransactions(network, address, offset, limit);
+    const transactionList = await this.listAllTransactions(
+      address,
+      parseInt(limit),
+      parseInt(offset),
+      network
+    );
     return transactionList.count;
+  };
+
+  getFlowscanUrl = async (network: string, isEmulator: boolean, isEvm: string): Promise<string> => {
+    if (isEmulator) {
+      return 'http://localhost:8080';
+    }
+
+    // Check if it's an EVM wallet and update the base URL
+    if (isEvm === 'evm') {
+      switch (network) {
+        case 'testnet':
+          return 'https://testnet.flowscan.io/evm';
+        case 'mainnet':
+          return 'https://flowscan.io/evm';
+        default:
+          return 'https://flowscan.io/evm';
+      }
+    } else {
+      // Set baseURL based on the network
+      switch (network) {
+        case 'testnet':
+          return 'https://testnet.flowscan.io';
+        case 'mainnet':
+          return 'https://www.flowscan.io';
+        case 'crescendo':
+          return 'https://flow-view-source.vercel.app/crescendo';
+        default:
+          return 'https://www.flowscan.io';
+      }
+    }
+  };
+
+  getViewSourceUrl = async (network: string): Promise<string> => {
+    let baseURL = 'https://f.dnz.dev';
+    switch (network) {
+      case 'mainnet':
+        baseURL = 'https://f.dnz.dev';
+        break;
+      case 'testnet':
+        baseURL = 'https://f.dnz.dev';
+        break;
+      case 'crescendo':
+        baseURL = 'https://f.dnz.dev';
+        break;
+    }
+    return baseURL;
   };
 }
 
-export default new Transaction();
+export default new TransactionActivity();

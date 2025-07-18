@@ -4,7 +4,7 @@ vi.mock('../wallet', () => ({
     isUnlocked: vi.fn(),
     getNetwork: vi.fn(),
     getParentAddress: vi.fn(),
-    queryEvmAddress: vi.fn(),
+    getEvmAddress: vi.fn(),
     getCurrentAddress: vi.fn(),
     // Add any other Wallet methods used by providerController or its helpers
   },
@@ -26,6 +26,13 @@ vi.mock('@onflow/flow-wallet-core/service', () => {
     mixpanelTrack: vi.fn(),
     userWalletService: {
       setupFcl: vi.fn(),
+      getEvmAccountOfParent: vi.fn().mockImplementation(async () => {
+        return {
+          address: '0x000000000000000000000002433D0DD1e2D81b9F',
+          type: 'evm',
+          brandName: 'evm',
+        };
+      }),
     },
     permissionService: {
       hasPermission: vi.fn(),
@@ -44,7 +51,11 @@ vi.mock('../notification', () => ({
 }));
 
 // 2. ADD THE FOLLOWING BLOCK of clean imports here:
-import { keyringService, signTextHistoryService } from '@onflow/flow-wallet-core';
+import {
+  keyringService,
+  signTextHistoryService,
+  userWalletService,
+} from '@onflow/flow-wallet-core';
 import * as ethUtil from 'ethereumjs-util';
 import { bufferToHex, ecrecover, stripHexPrefix } from 'ethereumjs-util';
 import { ethers } from 'ethers';
@@ -121,7 +132,7 @@ describe('ProviderController - signTypeData (EIP-1271)', async () => {
     walletController.isUnlocked = vi.fn().mockResolvedValue(true);
     walletController.getNetwork = vi.fn().mockResolvedValue('testnet');
     walletController.getParentAddress = vi.fn().mockResolvedValue(mockFlowAddress);
-    walletController.queryEvmAddress = vi.fn().mockResolvedValue(mockEvmAddress);
+    walletController.getEvmAddress = vi.fn().mockResolvedValue(mockEvmAddress);
     walletController.getCurrentAddress = vi.fn().mockResolvedValue(mockEvmAddress);
 
     // Spy and mock for keyringService
@@ -187,6 +198,20 @@ describe('ProviderController - signTypeData (EIP-1271)', async () => {
         typeof notificationService.requestApproval
       >
     ).mockResolvedValue({});
+
+    // Mock userWalletService.getEvmAccountOfParent
+    (
+      userWalletService.getEvmAccountOfParent as MockedFunction<
+        typeof userWalletService.getEvmAccountOfParent
+      >
+    ).mockResolvedValue({
+      address: mockEvmAddress,
+      chain: TESTNET_CHAIN_ID,
+      id: 1,
+      name: 'EVM Account',
+      icon: '🚀',
+      color: '#4CAF50',
+    });
   });
 
   afterEach(() => {

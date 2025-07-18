@@ -4,7 +4,7 @@ import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 import { type FlowNetwork } from '@onflow/flow-wallet-shared/types/network-types';
 
 import openapiService from '../openapi';
-import transaction from '../transaction';
+import transaction from '../transaction-activity';
 
 // Mock storage functions
 vi.mock('@onflow/flow-wallet-shared/utils/storage', () => ({

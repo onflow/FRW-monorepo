@@ -162,7 +162,7 @@
   {
     "name": "clearAllStorage",
     "isAsync": false,
-    "fullBody": "() => {\n        _index__WEBPACK_IMPORTED_MODULE_15__.nftService.clear();\n        _index__WEBPACK_IMPORTED_MODULE_15__.userInfoService.removeUserInfo();\n        _index__WEBPACK_IMPORTED_MODULE_15__.coinListService.clear();\n        _index__WEBPACK_IMPORTED_MODULE_15__.addressBookService.clear();\n        _index__WEBPACK_IMPORTED_MODULE_15__.userWalletService.clear();\n        _index__WEBPACK_IMPORTED_MODULE_15__.transactionService.clear();\n    }",
+    "fullBody": "() => {\n        _index__WEBPACK_IMPORTED_MODULE_15__.nftService.clear();\n        _index__WEBPACK_IMPORTED_MODULE_15__.userInfoService.removeUserInfo();\n        _index__WEBPACK_IMPORTED_MODULE_15__.coinListService.clear();\n        _index__WEBPACK_IMPORTED_MODULE_15__.addressBookService.clear();\n        _index__WEBPACK_IMPORTED_MODULE_15__.userWalletService.clear();\n        _index__WEBPACK_IMPORTED_MODULE_15__.transactionActivityService.clear();\n    }",
     "usesSendRequest": false,
     "usesFetchDirectly": false,
     "basicSignature": "() =>",
