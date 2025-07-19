@@ -8,13 +8,6 @@ import {
   SIGN_ALGO_NUM_ECDSA_secp256k1,
 } from '@onflow/flow-wallet-shared/constant';
 
-import { fetchAccountsByPublicKey, getAccountsByPublicKeyTuple } from '@/utils/key-indexer';
-
-import {
-  getOrCheckAccountsByPublicKeyTuple,
-  getOrCheckAccountsWithPublicKey,
-} from '../account-management';
-
 // Mock FCL and userWalletService
 vi.mock('@onflow/fcl');
 vi.mock('@onflow/flow-wallet-core/service/userWallet', () => ({
@@ -32,9 +25,18 @@ vi.mock('@onflow/flow-wallet-core/service/openapi', () => ({
   },
 }));
 
-vi.mock('@/utils/key-indexer', () => ({
-  fetchAccountsByPublicKey: vi.fn().mockResolvedValue([]),
-}));
+// Partial mock - only mock fetchAccountsByPublicKey
+vi.mock('../../key-indexer', () => {
+  return {
+    fetchAccountsByPublicKey: vi.fn().mockResolvedValue([]),
+  };
+});
+import { fetchAccountsByPublicKey } from '../../key-indexer';
+import {
+  getAccountsByPublicKeyTuple,
+  getOrCheckAccountsByPublicKeyTuple,
+  getOrCheckAccountsWithPublicKey,
+} from '../findAddressWithPubKey';
 
 describe('findAddressWithPubKey module', () => {
   const mockPubKey = '0x123456789abcdef';

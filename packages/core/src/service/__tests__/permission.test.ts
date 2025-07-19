@@ -2,8 +2,7 @@ import { LRUCache } from 'lru-cache';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import storage from '@onflow/flow-wallet-extension-shared/storage';
-import { INTERNAL_REQUEST_ORIGIN } from '@onflow/flow-wallet-shared/constant';
-import { MAINNET_CHAIN_ID } from '@onflow/flow-wallet-shared/types';
+import { INTERNAL_REQUEST_ORIGIN, MAINNET_CHAIN_ID } from '@onflow/flow-wallet-shared/constant';
 
 import permissionService, { type ConnectedSite } from '../permission';
 
@@ -20,10 +19,14 @@ vi.mock('../../utils/persistStore', () => ({
   default: vi.fn(),
 }));
 
-vi.mock('@onflow/flow-wallet-shared/utils/console-log', () => ({
-  consoleInfo: vi.fn(),
-  consoleWarn: vi.fn(),
-}));
+vi.mock('@onflow/flow-wallet-shared/utils', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@onflow/flow-wallet-shared/utils')>();
+  return {
+    ...actual,
+    consoleInfo: vi.fn(),
+    consoleWarn: vi.fn(),
+  };
+});
 
 describe('PermissionService', () => {
   beforeEach(async () => {

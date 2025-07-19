@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@onflow/flow-wallet-core/service/userWallet', async () => {
-  const actual = await vi.importActual('@onflow/flow-wallet-core/service/userWallet');
+vi.mock('../userWallet', async () => {
+  const actual = await vi.importActual('../userWallet');
   return {
     default: {
       ...actual,
@@ -16,31 +16,31 @@ vi.mock('@onflow/flow-wallet-core/service/userWallet', async () => {
   };
 });
 
-vi.mock('@onflow/flow-wallet-core/service/nft', () => ({
+vi.mock('../nft', () => ({
   default: {
     clear: vi.fn(),
   },
 }));
 
-vi.mock('@onflow/flow-wallet-core/service/userInfo', () => ({
+vi.mock('../userInfo', () => ({
   default: {
     removeUserInfo: vi.fn(),
   },
 }));
 
-vi.mock('@onflow/flow-wallet-core/service/coinList', () => ({
+vi.mock('../coinList', () => ({
   default: {
     clear: vi.fn(),
   },
 }));
 
-vi.mock('@onflow/flow-wallet-core/service/addressBook', () => ({
+vi.mock('../addressBook', () => ({
   default: {
     clear: vi.fn(),
   },
 }));
 
-vi.mock('@onflow/flow-wallet-core/service/transaction', () => ({
+vi.mock('../transaction', () => ({
   default: {
     clear: vi.fn(),
   },
@@ -102,16 +102,17 @@ vi.stubGlobal('fetch', mockFetch);
 
 // Then imports
 
-import { createTestResults } from '@onflow/flow-wallet-extension-shared/test-data/api-test-results';
+import { type FlowNetwork } from '@onflow/flow-wallet-shared/types';
+
 import {
   type CommonParams,
   createTestGroups,
   updateTestParamsFromResults,
-} from '@onflow/flow-wallet-extension-shared/test-data/test-groups';
-import { type FlowNetwork } from '@onflow/flow-wallet-shared/types';
+} from '@/service/__tests__/test-data/test-groups';
 
 import openApiService from '../openapi';
 import userWalletService from '../userWallet';
+import { createTestResults } from './test-data/api-test-results';
 
 const API_TEST_RESULTS = createTestResults(
   'https://INITIAL_OPENAPI_URL.com',

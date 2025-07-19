@@ -11,7 +11,7 @@ vi.stubEnv('API_BASE_URL', 'https://test.com');
 vi.stubEnv('FB_FUNCTIONS', 'https://test.com');
 
 vi.stubEnv('API_NEWS_PATH', '/config/news.test.json');
-vi.stubEnv('API_CONFIG_PATH', '/config/config.test.json');
+vi.stubEnv('API_CONFIG_PATH', '/config/config.json');
 
 // Mock global fetch
 global.fetch = vi.fn();

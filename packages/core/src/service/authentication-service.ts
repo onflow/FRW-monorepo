@@ -48,7 +48,7 @@ export class AuthenticationService {
 
   getAuth() {
     if (!this.app) {
-      throw new Error('Firebase app not initialized');
+      return getAuth();
     }
     return getAuth(this.app);
   }

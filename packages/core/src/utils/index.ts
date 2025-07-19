@@ -11,6 +11,7 @@ export * from './account-key';
 export * from './key-indexer';
 export * from './modules/publicPrivateKey';
 export * from './random-id';
+export * from './modules/findAddressWithPubKey';
 
 // {a:{b: string}} => {1: 'a.b'}
 // later same [source] value will override [result] key generated before

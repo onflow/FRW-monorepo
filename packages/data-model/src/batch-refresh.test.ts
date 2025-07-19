@@ -6,9 +6,15 @@ import { setCachedData } from './data-cache';
 // Mock consoleError from the shared utils
 vi.mock('@onflow/flow-wallet-shared/utils', () => ({
   consoleError: vi.fn(),
-  setSession: vi.fn(),
-  getSession: vi.fn(),
-  removeSession: vi.fn().mockResolvedValue(undefined),
+}));
+
+// Mock the storage module
+vi.mock('@onflow/flow-wallet-extension-shared/storage', () => ({
+  default: {
+    setSession: vi.fn(),
+    getSession: vi.fn(),
+    removeSession: vi.fn().mockResolvedValue(undefined),
+  },
 }));
 
 // Mock setCachedData

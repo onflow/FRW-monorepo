@@ -487,7 +487,7 @@ export const createTestResults = (
       ],
       fetchDetails: [
         {
-          url: `${webNextURL}${process.env.API_NEWS_PATH}`,
+          url: `${webNextURL}/config/news.json`,
           params: {},
           requestInit: {
             method: 'GET',
@@ -1753,7 +1753,7 @@ export const createTestResults = (
           statusText: '',
         },
         {
-          url: `${webNextURL}${process.env.API_CONFIG_PATH}`,
+          url: `${webNextURL}/config/config.json`,
           params: {},
           requestInit: {
             method: 'GET',
@@ -1805,7 +1805,7 @@ export const createTestResults = (
           statusText: '',
         },
         {
-          url: `${webNextURL}${process.env.API_CONFIG_PATH}`,
+          url: `${webNextURL}/config/config.json`,
           params: {},
           requestInit: {
             method: 'GET',
@@ -1857,7 +1857,7 @@ export const createTestResults = (
           statusText: '',
         },
         {
-          url: `${webNextURL}${process.env.API_CONFIG_PATH}`,
+          url: `${webNextURL}/config/config.json`,
           params: {},
           requestInit: {
             method: 'GET',
@@ -1909,7 +1909,7 @@ export const createTestResults = (
           statusText: '',
         },
         {
-          url: `${webNextURL}${process.env.API_CONFIG_PATH}`,
+          url: `${webNextURL}/config/config.json`,
           params: {},
           requestInit: {
             method: 'GET',
@@ -1961,7 +1961,7 @@ export const createTestResults = (
           statusText: '',
         },
         {
-          url: `${webNextURL}${process.env.API_CONFIG_PATH}`,
+          url: `${webNextURL}/config/config.json`,
           params: {},
           requestInit: {
             method: 'GET',
@@ -2013,7 +2013,7 @@ export const createTestResults = (
           statusText: '',
         },
         {
-          url: `${webNextURL}${process.env.API_CONFIG_PATH}`,
+          url: `${webNextURL}/config/config.json`,
           params: {},
           requestInit: {
             method: 'GET',
@@ -2065,7 +2065,7 @@ export const createTestResults = (
           statusText: '',
         },
         {
-          url: `${webNextURL}${process.env.API_CONFIG_PATH}`,
+          url: `${webNextURL}/config/config.json`,
           params: {},
           requestInit: {
             method: 'GET',
@@ -2117,7 +2117,7 @@ export const createTestResults = (
           statusText: '',
         },
         {
-          url: `${webNextURL}${process.env.API_CONFIG_PATH}`,
+          url: `${webNextURL}/config/config.json`,
           params: {},
           requestInit: {
             method: 'GET',

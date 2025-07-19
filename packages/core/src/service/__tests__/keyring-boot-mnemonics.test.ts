@@ -1,10 +1,10 @@
 // Testing imports
+import { CURRENT_ID_KEY, KEYRING_STATE_V2_KEY } from '@onflow/flow-wallet-data-model';
 import encryptor from 'browser-passworder';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import storage from '@onflow/flow-wallet-extension-shared/storage';
 import { FLOW_BIP44_PATH } from '@onflow/flow-wallet-shared/constant';
-import { CURRENT_ID_KEY, KEYRING_STATE_V2_KEY } from '@onflow/flow-wallet-shared/types';
 
 // Internal imports
 
@@ -19,10 +19,8 @@ vi.mock('@onflow/flow-wallet-extension-shared/storage', () => ({
   },
 }));
 
-vi.mock('@onflow/flow-wallet-core/service/openapi', () => ({
-  default: {
-    getAccountsWithPublicKey: vi.fn().mockResolvedValue([]),
-  },
+vi.mock('../../utils/key-indexer', () => ({
+  fetchAccountsByPublicKey: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock('@onflow/flow-wallet-core/service/userWallet', () => ({
@@ -43,7 +41,7 @@ vi.mock('@onflow/flow-wallet-core/service/preference', () => ({
   },
 }));
 
-vi.mock('@onflow/flow-wallet-shared/utils/current-id', () => ({
+vi.mock('../../utils/current-id', () => ({
   returnCurrentProfileId: vi.fn().mockResolvedValue('testId1'),
 }));
 

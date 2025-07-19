@@ -7,7 +7,7 @@ import {
   getValidData,
   setCachedData,
 } from '@onflow/flow-wallet-data-model';
-import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
+import type { Account as FclAccount } from '@onflow/typedefs';
 import * as bip39 from 'bip39';
 import * as ethUtil from 'ethereumjs-util';
 
@@ -17,14 +17,11 @@ import {
   HTTP_STATUS_TOO_MANY_REQUESTS,
 } from '@onflow/flow-wallet-shared/constant';
 import type {
-  PublicKeyTuple,
-  PublicPrivateKeyTuple,
   AccountKeyRequest,
   UserInfoResponse,
   MainAccount,
   FlowAddress,
   ProfileBackupStatus,
-  PublicKeyAccount,
 } from '@onflow/flow-wallet-shared/types';
 import {
   isValidFlowAddress,
@@ -32,6 +29,8 @@ import {
   consoleError,
   getErrorMessage,
 } from '@onflow/flow-wallet-shared/utils';
+
+import { getOrCheckAccountsByPublicKeyTuple } from '@/utils/modules/findAddressWithPubKey';
 
 import { authenticationService, preferenceService } from '.';
 import googleDriveService from './googleDrive';
@@ -45,9 +44,6 @@ import userWalletService, {
   removePendingAccountCreationTransaction,
 } from './userWallet';
 import {
-  getAccountsByPublicKeyTuple,
-  fetchAccountsByPublicKey,
-  accountKeyRequestForAccount,
   getAccountKey,
   pubKeyAccountToAccountKey,
   pubKeySignAlgoToAccountKey,
@@ -58,6 +54,7 @@ import {
   generateRandomId,
 } from '../utils';
 import { returnCurrentProfileId } from '../utils/current-id';
+import { findAddressWithPK, findAddressWithSeed } from '../utils/modules/findAddressWithPK';
 
 export class AccountManagement {
   async registerNewProfile(username: string, password: string, mnemonic: string): Promise<void> {
@@ -741,108 +738,3 @@ export class AccountManagement {
 }
 
 export default new AccountManagement();
-
-// ------------------------------------------------------------------------------------------------
-// Utility methods for account management
-// ------------------------------------------------------------------------------------------------
-
-export const findAddressWithPK = async (
-  pk: string,
-  address: string
-): Promise<PublicKeyAccount[]> => {
-  const pubKTuple = await pk2PubKeyTuple(pk);
-  return await getOrCheckAccountsByPublicKeyTuple(pubKTuple, address);
-};
-
-export const findAddressWithSeed = async (
-  seed: string,
-  address: string | null = null,
-  derivationPath: string = FLOW_BIP44_PATH,
-  passphrase: string = ''
-): Promise<PublicKeyAccount[]> => {
-  const pubKTuple: PublicPrivateKeyTuple = await seedWithPathAndPhrase2PublicPrivateKey(
-    seed,
-    derivationPath,
-    passphrase
-  );
-
-  return await getOrCheckAccountsByPublicKeyTuple(pubKTuple, address);
-};
-
-export const getPublicAccountForPK = async (pk: string): Promise<PublicKeyAccount> => {
-  const pubKTuple = await pk2PubKeyTuple(pk);
-  const accounts = await getAccountsByPublicKeyTuple(pubKTuple, 'mainnet');
-  if (accounts.length === 0) {
-    throw new Error('No accounts found');
-  }
-  return accounts[0];
-};
-
-export const getAccountKeyRequestForPK = async (pk: string): Promise<AccountKeyRequest> => {
-  const account = await getPublicAccountForPK(pk);
-  return accountKeyRequestForAccount(account);
-};
-
-/**
- * getOrCheckAccountsWithPublicKey
- * This will use fcl to check the key against the account if it is passed in, otherwise it will call the indexer to get the accounts with the public key.
- */
-export const getOrCheckAccountsWithPublicKey = async (
-  pubKeyHex: string,
-  address: string | null = null
-): Promise<PublicKeyAccount[] | null> => {
-  // If the address is not provided, get the accounts from the indexer
-  return address
-    ? await getPublicKeyInfoForAccount(address, pubKeyHex)
-    : await fetchAccountsByPublicKey(pubKeyHex, 'mainnet');
-};
-
-/**
- * getOrCheckAccountsByPublicKeyTuple
- * This is usually called when importing a seed phrase, and the user also specifies an account address.
- * Use fcl to check the key against the account if it is passed in, otherwise it will call the indexer to get the accounts with the public key.
- * TODO: TB July 2025 - the caller should check if the address is specified and if not, call
- */
-export const getOrCheckAccountsByPublicKeyTuple = async (
-  pubKTuple: PublicKeyTuple,
-  address: string | null = null
-): Promise<PublicKeyAccount[]> => {
-  const { P256, SECP256K1 } = pubKTuple;
-  const p256Accounts = (await getOrCheckAccountsWithPublicKey(P256.pubK, address)) || [];
-  const sepc256k1Accounts = (await getOrCheckAccountsWithPublicKey(SECP256K1.pubK, address)) || [];
-  // Combine the accounts
-  const accounts = [...p256Accounts, ...sepc256k1Accounts];
-
-  // Filter out accounts with weight of < 1000
-  const accountsOver1000 = accounts.filter((account) => account.weight >= 1000);
-
-  // Return the accounts
-  return accountsOver1000;
-};
-export const getPublicKeyInfoForAccount = async (
-  address: string,
-  pubKeyHex: string
-): Promise<PublicKeyAccount[] | null> => {
-  // Verfify that the address is associated with the public key
-  // This is the account object from the Flow blockchain
-  const account = await fcl.account(address);
-
-  // Filter the keys to only include the ones that are associated with the public key,
-  // have a weight of 1000 or more, and are not revoked
-  const keys: AccountKey[] = account.keys
-    .filter((key) => key.publicKey === pubKeyHex && !key.revoked)
-    .filter((key) => key.weight >= 1000);
-
-  // If there a valid matching key is not found, return null
-  if (keys.length === 0) {
-    return null;
-  }
-  // Return the keys that match the criteria
-  return keys.map((key) => {
-    return {
-      ...key,
-      address: address,
-      keyIndex: key.index,
-    };
-  });
-};

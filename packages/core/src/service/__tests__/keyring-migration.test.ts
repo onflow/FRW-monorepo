@@ -14,14 +14,13 @@ import {
   SIGN_ALGO_NUM_DEFAULT,
   SIGN_ALGO_NUM_ECDSA_P256,
   SIGN_ALGO_NUM_ECDSA_secp256k1,
-} from '@onflow/flow-wallet-shared/constant/algo-constants';
-import { type KeyringStateV2 } from '@onflow/flow-wallet-shared/types/keyring-types';
+} from '@onflow/flow-wallet-shared/constant';
+import { type KeyringStateV2 } from '@onflow/flow-wallet-shared/types';
 
 import { returnCurrentProfileId } from '../../utils/current-id';
 import keyringService from '../keyring';
 import { MOCK_KEYS } from './keyring-mock-data';
 import { SimpleKeyring } from '../keyring/simpleKeyring';
-
 // Mock dependencies at the beginning before any imports
 vi.mock('@onflow/flow-wallet-extension-shared/storage', () => ({
   default: {
@@ -30,10 +29,8 @@ vi.mock('@onflow/flow-wallet-extension-shared/storage', () => ({
   },
 }));
 
-vi.mock('../openapi', () => ({
-  default: {
-    getAccountsWithPublicKey: vi.fn().mockResolvedValue([]),
-  },
+vi.mock('../../utils/key-indexer', () => ({
+  fetchAccountsByPublicKey: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock('../userWallet', () => ({
