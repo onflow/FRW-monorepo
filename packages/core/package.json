@@ -20,7 +20,8 @@
     "prepublishOnly": "pnpm build",
     "pre-commit": "pnpm lint-staged",
     "lint": "eslint . --cache",
-    "lint:fix": "eslint . --cache --fix"
+    "lint:fix": "eslint . --cache --fix",
+    "analyze-dependencies": "pnpm tsx build/analyze-service-dependencies.ts"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs}": "eslint --cache",

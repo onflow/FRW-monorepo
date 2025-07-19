@@ -70,3 +70,13 @@ export const pubKeySignAlgoToAccountKey = (pubKey: string, signAlgo: number): Ac
     weight: DEFAULT_WEIGHT,
   };
 };
+export const accountKeyRequestForAccount = async (
+  account: PublicKeyAccount
+): Promise<AccountKeyRequest> => {
+  return {
+    public_key: account.publicKey,
+    hash_algo: account.hashAlgo,
+    sign_algo: account.signAlgo,
+    weight: account.weight,
+  };
+};

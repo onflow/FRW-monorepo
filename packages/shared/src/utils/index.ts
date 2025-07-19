@@ -10,3 +10,4 @@ export * from './getPeriodFrequency';
 export * from './number';
 export * from './strip-sensitive';
 export * from './console-log';
+export * from './error-utils';

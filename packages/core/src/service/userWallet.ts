@@ -1,5 +1,6 @@
 import * as secp from '@noble/secp256k1';
 import * as fcl from '@onflow/fcl';
+import { getErrorMessage } from '@onflow/flow-wallet-shared';
 import type { Account as FclAccount } from '@onflow/typedefs';
 import * as ethUtil from 'ethereumjs-util';
 import { signInAnonymously } from 'firebase/auth/web-extension';
@@ -85,10 +86,7 @@ import remoteConfigService from './remoteConfig';
 import transactionActivityService from './transaction-activity';
 import { defaultAccountKey, pubKeyAccountToAccountKey } from '../utils/account-key';
 import { fclConfig, fclConfirmNetwork } from '../utils/fclConfig';
-import {
-  getAccountsByPublicKeyTuple,
-  getAccountsWithPublicKey,
-} from '../utils/modules/findAddressWithPubKey';
+import { fetchAccountsByPublicKey, getAccountsByPublicKeyTuple } from '../utils/key-indexer';
 import {
   pk2PubKeyTuple,
   seed2PublicPrivateKey,
@@ -217,7 +215,7 @@ class UserWallet {
 
       return keyIndex;
     } catch (error) {
-      throw new Error('Failed to get key index: ' + error.message);
+      throw new Error('Failed to get key index: ' + getErrorMessage(error));
     }
   };
 
@@ -544,7 +542,7 @@ class UserWallet {
       // A valid main account is selected
       return activeAccounts;
     }
-    if (isValidEthereumAddress(activeAccounts.currentAddress)) {
+    if (activeAccounts.currentAddress && isValidEthereumAddress(activeAccounts.currentAddress)) {
       // Check that the address matches the evm account address
       const evmAccount = await this.getEvmAccount();
       if (evmAccount?.address === activeAccounts.currentAddress) {
@@ -743,7 +741,7 @@ class UserWallet {
     } catch (error) {
       mixpanelTrack.track('script_error', {
         script_id: scriptName,
-        error: error,
+        error: getErrorMessage(error),
       });
       throw error;
     }
@@ -1329,6 +1327,12 @@ class UserWallet {
 }
 
 // ------------------------------------------------------------------------------------------------
+// Export the userWalletService
+// ------------------------------------------------------------------------------------------------
+const userWalletService = new UserWallet();
+export default userWalletService;
+
+// ------------------------------------------------------------------------------------------------
 // Data loading methods for userWallet
 // ------------------------------------------------------------------------------------------------
 // We're going to keep polling the load of the main accounts for up to 2 mins
@@ -1373,7 +1377,7 @@ const preloadAllAccountsWithPubKey = async (
       POLL_INTERVAL
     );
   } catch (error) {
-    consoleError('Failed to load main accounts after maximum retries:', error.message);
+    consoleError('Failed to load main accounts after maximum retries:', getErrorMessage(error));
   }
 
   if (!mainAccounts || mainAccounts.length === 0) {
@@ -1579,7 +1583,7 @@ const loadMainAccountsWithPubKey = async (
   pubKey: string
 ): Promise<MainAccount[]> => {
   // Get the accounts for the current public key
-  const accounts: PublicKeyAccount[] = await getAccountsWithPublicKey(pubKey, network);
+  const accounts: PublicKeyAccount[] = await fetchAccountsByPublicKey(pubKey, network);
 
   // Get the placeholder accounts for the current public key
   const placeholderAccounts = await getPlaceholderAccounts(network, pubKey);
@@ -1915,5 +1919,3 @@ const initAccountLoaders = () => {
     clearPendingAccountCreationTransactions
   );
 };
-
-export default new UserWallet();

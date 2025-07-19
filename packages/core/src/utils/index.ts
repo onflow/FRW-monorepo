@@ -138,6 +138,6 @@ export const replaceNftKeywords = (script: string, token: any) => {
 };
 
 // Export utility modules
-export * from './modules/findAddressWithPK';
-export * from './modules/findAddressWithPubKey';
+
 export * from './modules/publicPrivateKey';
+export * from './key-indexer';

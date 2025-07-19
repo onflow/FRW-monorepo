@@ -1,5 +1,5 @@
 import * as fcl from '@onflow/fcl';
-import type { Account as FclAccount } from '@onflow/typedefs';
+import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
 import * as bip39 from 'bip39';
 import * as ethUtil from 'ethereumjs-util';
 
@@ -15,6 +15,10 @@ import {
   HTTP_STATUS_CONFLICT,
   HTTP_STATUS_TOO_MANY_REQUESTS,
 } from '@onflow/flow-wallet-shared/constant/domain-constants';
+import type {
+  PublicKeyTuple,
+  PublicPrivateKeyTuple,
+} from '@onflow/flow-wallet-shared/types/key-types';
 import {
   type AccountKeyRequest,
   type UserInfoResponse,
@@ -23,6 +27,7 @@ import {
   type MainAccount,
   type FlowAddress,
   type ProfileBackupStatus,
+  type PublicKeyAccount,
 } from '@onflow/flow-wallet-shared/types/wallet-types';
 import {
   isValidFlowAddress,
@@ -30,9 +35,11 @@ import {
 } from '@onflow/flow-wallet-shared/utils/address';
 import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
 
+import { getAccountsByPublicKeyTuple } from '@/utils/key-indexer';
+
 import { authenticationService, preferenceService } from '.';
 import googleDriveService from './googleDrive';
-import keyringService from './keyring';
+import keyringService, { type Keyring } from './keyring';
 import { mixpanelTrack } from './mixpanel';
 import openapiService from './openapi';
 import userInfoService from './user';
@@ -42,12 +49,12 @@ import userWalletService, {
   removePendingAccountCreationTransaction,
 } from './userWallet';
 import {
+  accountKeyRequestForAccount,
   getAccountKey,
   pubKeyAccountToAccountKey,
   pubKeySignAlgoToAccountKey,
 } from '../utils/account-key';
-import { findAddressWithPK, findAddressWithSeed } from '../utils/modules/findAddressWithPK';
-import { getOrCheckAccountsByPublicKeyTuple } from '../utils/modules/findAddressWithPubKey';
+import { fetchAccountsByPublicKey } from '../utils/key-indexer';
 import {
   formPubKeyTuple,
   jsonToKey,
@@ -345,11 +352,11 @@ export class AccountManagement {
     address: string | null = null,
     derivationPath: string = FLOW_BIP44_PATH,
     passphrase: string = ''
-  ): Promise<any[]> {
+  ) {
     return await findAddressWithSeed(seed, address, derivationPath, passphrase);
   }
 
-  async findAddressWithPrivateKey(pk: string, address: string): Promise<any> {
+  async findAddressWithPrivateKey(pk: string, address: string) {
     return await findAddressWithPK(pk, address);
   }
 
@@ -416,7 +423,7 @@ export class AccountManagement {
     mnemonic: string,
     derivationPath = FLOW_BIP44_PATH,
     passphrase = ''
-  ): Promise<any> {
+  ) {
     await keyringService.clearCurrentKeyring();
     const keyring = await keyringService.createKeyringWithMnemonics(
       publicKey,
@@ -448,13 +455,14 @@ export class AccountManagement {
       password,
       privateKey
     );
+    // TODO: TB July 2025 - this is deprecated, we should remove it
     return this._setCurrentAccountFromKeyring(keyring);
   };
-
-  async _setCurrentAccountFromKeyring(keyring: any, index = 0) {
-    const accounts = keyring.getAccountsWithBrand
-      ? await keyring.getAccountsWithBrand()
-      : await keyring.getAccounts();
+  /**
+   * @deprecated don't use this
+   */
+  private async _setCurrentAccountFromKeyring(keyring: Keyring, index = 0) {
+    const accounts = await keyring.getAccounts();
     const account = accounts[index < 0 ? index + accounts.length : index];
 
     if (!account) {
@@ -462,9 +470,9 @@ export class AccountManagement {
     }
 
     const _account = {
-      address: typeof account === 'string' ? account : account.address,
+      address: account,
       type: keyring.type,
-      brandName: typeof account === 'string' ? keyring.type : account.brandName,
+      brandName: keyring.type,
     };
     preferenceService.setCurrentAccount(_account);
 
@@ -696,3 +704,108 @@ export class AccountManagement {
 }
 
 export default new AccountManagement();
+
+// ------------------------------------------------------------------------------------------------
+// Utility methods for account management
+// ------------------------------------------------------------------------------------------------
+
+export const findAddressWithPK = async (
+  pk: string,
+  address: string
+): Promise<PublicKeyAccount[]> => {
+  const pubKTuple = await pk2PubKeyTuple(pk);
+  return await getOrCheckAccountsByPublicKeyTuple(pubKTuple, address);
+};
+
+export const findAddressWithSeed = async (
+  seed: string,
+  address: string | null = null,
+  derivationPath: string = FLOW_BIP44_PATH,
+  passphrase: string = ''
+): Promise<PublicKeyAccount[]> => {
+  const pubKTuple: PublicPrivateKeyTuple = await seedWithPathAndPhrase2PublicPrivateKey(
+    seed,
+    derivationPath,
+    passphrase
+  );
+
+  return await getOrCheckAccountsByPublicKeyTuple(pubKTuple, address);
+};
+
+export const getPublicAccountForPK = async (pk: string): Promise<PublicKeyAccount> => {
+  const pubKTuple = await pk2PubKeyTuple(pk);
+  const accounts = await getAccountsByPublicKeyTuple(pubKTuple, 'mainnet');
+  if (accounts.length === 0) {
+    throw new Error('No accounts found');
+  }
+  return accounts[0];
+};
+
+export const getAccountKeyRequestForPK = async (pk: string): Promise<AccountKeyRequest> => {
+  const account = await getPublicAccountForPK(pk);
+  return accountKeyRequestForAccount(account);
+};
+
+/**
+ * getOrCheckAccountsWithPublicKey
+ * This will use fcl to check the key against the account if it is passed in, otherwise it will call the indexer to get the accounts with the public key.
+ */
+export const getOrCheckAccountsWithPublicKey = async (
+  pubKeyHex: string,
+  address: string | null = null
+): Promise<PublicKeyAccount[] | null> => {
+  // If the address is not provided, get the accounts from the indexer
+  return address
+    ? await getPublicKeyInfoForAccount(address, pubKeyHex)
+    : await fetchAccountsByPublicKey(pubKeyHex, 'mainnet');
+};
+
+/**
+ * getOrCheckAccountsByPublicKeyTuple
+ * This is usually called when importing a seed phrase, and the user also specifies an account address.
+ * Use fcl to check the key against the account if it is passed in, otherwise it will call the indexer to get the accounts with the public key.
+ * TODO: TB July 2025 - the caller should check if the address is specified and if not, call
+ */
+export const getOrCheckAccountsByPublicKeyTuple = async (
+  pubKTuple: PublicKeyTuple,
+  address: string | null = null
+): Promise<PublicKeyAccount[]> => {
+  const { P256, SECP256K1 } = pubKTuple;
+  const p256Accounts = (await getOrCheckAccountsWithPublicKey(P256.pubK, address)) || [];
+  const sepc256k1Accounts = (await getOrCheckAccountsWithPublicKey(SECP256K1.pubK, address)) || [];
+  // Combine the accounts
+  const accounts = [...p256Accounts, ...sepc256k1Accounts];
+
+  // Filter out accounts with weight of < 1000
+  const accountsOver1000 = accounts.filter((account) => account.weight >= 1000);
+
+  // Return the accounts
+  return accountsOver1000;
+};
+export const getPublicKeyInfoForAccount = async (
+  address: string,
+  pubKeyHex: string
+): Promise<PublicKeyAccount[] | null> => {
+  // Verfify that the address is associated with the public key
+  // This is the account object from the Flow blockchain
+  const account = await fcl.account(address);
+
+  // Filter the keys to only include the ones that are associated with the public key,
+  // have a weight of 1000 or more, and are not revoked
+  const keys: AccountKey[] = account.keys
+    .filter((key) => key.publicKey === pubKeyHex && !key.revoked)
+    .filter((key) => key.weight >= 1000);
+
+  // If there a valid matching key is not found, return null
+  if (keys.length === 0) {
+    return null;
+  }
+  // Return the keys that match the criteria
+  return keys.map((key) => {
+    return {
+      ...key,
+      address: address,
+      keyIndex: key.index,
+    };
+  });
+};

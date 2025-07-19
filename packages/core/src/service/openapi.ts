@@ -59,18 +59,12 @@ import { getPeriodFrequency } from '@onflow/flow-wallet-shared/utils/getPeriodFr
 
 import { findKeyAndInfo } from '../utils';
 import {
-  addressBookService,
-  coinListService,
   googleSafeHostService,
   mixpanelTrack,
-  nftService,
-  transactionActivityService,
-  userInfoService,
   userWalletService,
   authenticationService,
   versionService,
 } from './index';
-import fetchConfig from './remoteConfig';
 import { verifySignature } from '../utils/modules/publicPrivateKey';
 
 type CurrencyResponse = {
@@ -141,8 +135,6 @@ export interface OpenApiStore {
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // const remoteConfig = getRemoteConfig(app);
-
-const remoteFetch = fetchConfig;
 
 const dataConfig: Record<string, OpenApiConfigValue> = {
   check_username: {
@@ -327,7 +319,7 @@ const dataConfig: Record<string, OpenApiConfigValue> = {
   },
 };
 
-const recordFetch = async (response, responseData, ...args: Parameters<typeof fetch>) => {
+const _recordFetch = async (response, responseData, ...args: Parameters<typeof fetch>) => {
   try {
     // Extract URL parameters from the first argument if it's a URL with query params
     const url = args[0].toString();
@@ -347,6 +339,7 @@ const recordFetch = async (response, responseData, ...args: Parameters<typeof fe
       statusText: response.statusText,
       // Note: functionParams and functionResponse will be added by the calling function
     };
+
     consoleLog('fetchCallRecorder - response & messageData', response, messageData);
 
     chrome.runtime.sendMessage({
@@ -406,6 +399,8 @@ export class OpenApiService {
       requestUrl = host + url;
     }
     // If network is provided in params, use it, otherwise get the network from the userWalletService
+    // TODO: TB July 2025: this creates a circular dependency. Network should be passed in as a parameter.
+    // TODO: TB July 2025: APIs should be refactored to accept network as a parameter rather than a header
     const network =
       params.network ||
       (data.network && typeof data.network === 'string'
@@ -440,7 +435,10 @@ export class OpenApiService {
       await authenticationService.signInAnonymously();
       const anonymousUser = authenticationService.getAuth().currentUser;
       const idToken = await anonymousUser?.getIdToken();
-      init.headers['Authorization'] = 'Bearer ' + idToken;
+      init.headers = {
+        ...init.headers,
+        Authorization: 'Bearer ' + idToken,
+      };
     }
 
     const response = await fetch(requestUrl, init);
@@ -689,21 +687,8 @@ export class OpenApiService {
    */
   private _loginWithToken = async (userId: string, token: string) => {
     // we shouldn't need to clear storage here anymore
-    // this.clearAllStorage();
     await authenticationService.signInWithCustomToken(token);
     await storage.set(CURRENT_ID_KEY, userId);
-
-    // Kick off loaders that use the current user id
-    userInfoService.loadUserInfoByUserId(userId);
-  };
-
-  private clearAllStorage = () => {
-    nftService.clear();
-    userInfoService.removeUserInfo();
-    coinListService.clear();
-    addressBookService.clear();
-    userWalletService.clear();
-    transactionActivityService.clear();
   };
 
   /**
@@ -1856,46 +1841,6 @@ export class OpenApiService {
       consoleError('Error fetching supported currencies, using default USD:', error);
     }
     return currencies;
-  };
-
-  getAccountsWithPublicKey = async (
-    publicKey: string,
-    network: string
-  ): Promise<PublicKeyAccount[]> => {
-    const url =
-      network === 'testnet'
-        ? `https://staging.key-indexer.flow.com/key/${publicKey}`
-        : `https://production.key-indexer.flow.com/key/${publicKey}`;
-    const result = await fetch(url);
-    const json: {
-      publicKey: string;
-      accounts: {
-        address: string;
-        keyId: number;
-        weight: number;
-        sigAlgo: number;
-        hashAlgo: number;
-        isRevoked: boolean;
-        signing: string;
-        hashing: string;
-      }[];
-    } = (await result.json()) as any;
-
-    // Now massage the data to match the type we want
-    const accounts: PublicKeyAccount[] = json.accounts
-      .filter((account) => !account.isRevoked && account.weight >= 1000)
-      .map((account) => ({
-        address: account.address,
-        publicKey: json.publicKey,
-        keyIndex: account.keyId,
-        weight: account.weight,
-        signAlgo: account.sigAlgo,
-        signAlgoString: account.signing,
-        hashAlgo: account.hashAlgo,
-        hashAlgoString: account.hashing,
-      }));
-
-    return accounts;
   };
 
   async fetchCadenceTokenInfo(

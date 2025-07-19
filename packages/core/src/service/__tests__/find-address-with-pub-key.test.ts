@@ -8,12 +8,12 @@ import {
   SIGN_ALGO_NUM_ECDSA_secp256k1,
 } from '@onflow/flow-wallet-shared/constant/algo-constants';
 
-import openapiService from '../../../service/openapi';
+import { fetchAccountsByPublicKey, getAccountsByPublicKeyTuple } from '@/utils/key-indexer';
+
 import {
-  getAccountsByPublicKeyTuple,
   getOrCheckAccountsByPublicKeyTuple,
   getOrCheckAccountsWithPublicKey,
-} from '../findAddressWithPubKey';
+} from '../account-management';
 
 // Mock FCL and userWalletService
 vi.mock('@onflow/fcl');
@@ -28,9 +28,12 @@ vi.mock('@onflow/flow-wallet-core/service/userWallet', () => ({
 vi.mock('@onflow/flow-wallet-core/service/openapi', () => ({
   default: {
     getFeatureFlag: vi.fn().mockResolvedValue(false),
-    getAccountsWithPublicKey: vi.fn().mockResolvedValue([]),
     init: vi.fn().mockResolvedValue(undefined),
   },
+}));
+
+vi.mock('@/utils/key-indexer', () => ({
+  fetchAccountsByPublicKey: vi.fn().mockResolvedValue([]),
 }));
 
 describe('findAddressWithPubKey module', () => {
@@ -81,7 +84,7 @@ describe('findAddressWithPubKey module', () => {
         },
       ];
       // Mock the service call for this specific test
-      vi.mocked(openapiService.getAccountsWithPublicKey).mockResolvedValueOnce(mockAccountData);
+      vi.mocked(fetchAccountsByPublicKey).mockResolvedValueOnce(mockAccountData);
 
       // The global.fetch mock below is likely now irrelevant due to code changes in findAddressWithPubKey,
       // but kept for historical context or potential future refactoring.
@@ -105,7 +108,7 @@ describe('findAddressWithPubKey module', () => {
 
       const result = await getOrCheckAccountsWithPublicKey(mockPubKey);
 
-      // Assertion needs to match the structure returned by getAccountsWithPublicKey
+      // Assertion needs to match the structure returned by fetchAccountsByPublicKey
       expect(result).toEqual(mockAccountData);
     });
 
@@ -223,7 +226,7 @@ describe('findAddressWithPubKey module', () => {
       };
 
       // Mock the service call twice: once for P256, once for SECP256k1
-      vi.mocked(openapiService.getAccountsWithPublicKey)
+      vi.mocked(fetchAccountsByPublicKey)
         .mockResolvedValueOnce([mockP256Account]) // First call (P256)
         .mockResolvedValueOnce([mockSecpAccount]); // Second call (SECP256k1)
 
@@ -267,39 +270,33 @@ describe('findAddressWithPubKey module', () => {
       hashAlgoString: 'SHA3_256',
     };
 
-    it('should call getAccountsWithPublicKey for testnet', async () => {
+    it('should call fetchAccountsByPublicKey for testnet', async () => {
       // Mock the service call to return valid data for both keys
-      vi.mocked(openapiService.getAccountsWithPublicKey)
+      vi.mocked(fetchAccountsByPublicKey)
         .mockResolvedValueOnce([{ ...mockAccount, publicKey: mockPubKeyTuple.P256.pubK }])
         .mockResolvedValueOnce([{ ...mockAccount, publicKey: mockPubKeyTuple.SECP256K1.pubK }]);
 
       await getAccountsByPublicKeyTuple(mockPubKeyTuple, 'testnet');
 
       // Verify the service was called correctly
-      expect(openapiService.getAccountsWithPublicKey).toHaveBeenCalledWith(
-        mockPubKeyTuple.P256.pubK,
-        'testnet'
-      );
-      expect(openapiService.getAccountsWithPublicKey).toHaveBeenCalledWith(
+      expect(fetchAccountsByPublicKey).toHaveBeenCalledWith(mockPubKeyTuple.P256.pubK, 'testnet');
+      expect(fetchAccountsByPublicKey).toHaveBeenCalledWith(
         mockPubKeyTuple.SECP256K1.pubK,
         'testnet'
       );
     });
 
-    it('should call getAccountsWithPublicKey for mainnet', async () => {
+    it('should call fetchAccountsByPublicKey for mainnet', async () => {
       // Mock the service call to return valid data for both keys
-      vi.mocked(openapiService.getAccountsWithPublicKey)
+      vi.mocked(fetchAccountsByPublicKey)
         .mockResolvedValueOnce([{ ...mockAccount, publicKey: mockPubKeyTuple.P256.pubK }])
         .mockResolvedValueOnce([{ ...mockAccount, publicKey: mockPubKeyTuple.SECP256K1.pubK }]);
 
       await getAccountsByPublicKeyTuple(mockPubKeyTuple, 'mainnet');
 
       // Verify the service was called correctly
-      expect(openapiService.getAccountsWithPublicKey).toHaveBeenCalledWith(
-        mockPubKeyTuple.P256.pubK,
-        'mainnet'
-      );
-      expect(openapiService.getAccountsWithPublicKey).toHaveBeenCalledWith(
+      expect(fetchAccountsByPublicKey).toHaveBeenCalledWith(mockPubKeyTuple.P256.pubK, 'mainnet');
+      expect(fetchAccountsByPublicKey).toHaveBeenCalledWith(
         mockPubKeyTuple.SECP256K1.pubK,
         'mainnet'
       );
