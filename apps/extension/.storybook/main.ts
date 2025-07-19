@@ -40,6 +40,13 @@ const config: StorybookConfig = {
       ),
 
       '@onflow/flow-wallet-shared': path.resolve(__dirname, '../../../packages/shared/src'),
+      '@onflow/flow-wallet-extension-shared': path.resolve(
+        __dirname,
+        '../../../packages/extension-shared/src'
+      ),
+      '@onflow/flow-wallet-data-model': path.resolve(__dirname, '../../../packages/data-model/src'),
+      '@onflow/flow-wallet-core': path.resolve(__dirname, '../../../packages/core/src'),
+      '@onflow/flow-wallet-reducers': path.resolve(__dirname, '../../../packages/reducers/src'),
 
       '@/ui/hooks/use-feature-flags$': path.resolve(
         __dirname,
