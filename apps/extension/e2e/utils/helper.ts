@@ -1,6 +1,10 @@
 import { type Page } from '@playwright/test';
 
-import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils';
+// Temporarily importing this until we publish the packages
+const isValidEthereumAddress = (address: string): boolean => {
+  const regex = /^(0x)?[0-9a-fA-F]{40}$/;
+  return regex.test(address);
+};
 
 import { expect, getAuth, saveAuth } from './loader';
 export const getClipboardText = async () => {
