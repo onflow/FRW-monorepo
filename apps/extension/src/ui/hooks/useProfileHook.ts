@@ -3,13 +3,13 @@ import { useMemo } from 'react';
 import {
   HASH_ALGO_NUM_DEFAULT,
   SIGN_ALGO_NUM_DEFAULT,
-} from '@onflow/flow-wallet-shared/constant/algo-constants';
-import { MAINNET_CHAIN_ID } from '@onflow/flow-wallet-shared/types/network-types';
+  MAINNET_CHAIN_ID,
+} from '@onflow/flow-wallet-shared/constant';
 import {
   type MainAccount,
   type WalletAccount,
   getActiveAccountTypeForAddress,
-} from '@onflow/flow-wallet-shared/types/wallet-types';
+} from '@onflow/flow-wallet-shared/types';
 
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 

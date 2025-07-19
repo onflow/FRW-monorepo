@@ -5,13 +5,12 @@ import {
   evmNftIdsKey,
   evmNftIdsRefreshRegex,
   type EvmNftIdsStore,
-} from '@onflow/flow-wallet-data-model/cache-data-keys';
-import {
   getValidData,
   registerRefreshListener,
   setCachedData,
-} from '@onflow/flow-wallet-data-model/data-cache';
-import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils/address';
+} from '@onflow/flow-wallet-data-model';
+
+import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils';
 
 import { openapiService } from '.';
 import { fclConfirmNetwork } from '../utils/fclConfig';

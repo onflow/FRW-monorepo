@@ -1,5 +1,6 @@
-import { type RemoteConfig, remoteConfigKey } from '@onflow/flow-wallet-data-model/cache-data-keys';
-import { type FeatureFlagKey } from '@onflow/flow-wallet-shared/types/feature-types';
+import { type RemoteConfig, remoteConfigKey } from '@onflow/flow-wallet-data-model';
+
+import { type FeatureFlagKey } from '@onflow/flow-wallet-shared/types';
 
 import { useCachedData } from './use-data';
 

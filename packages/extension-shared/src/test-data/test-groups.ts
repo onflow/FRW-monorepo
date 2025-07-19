@@ -4,7 +4,7 @@ import {
   FLOW_BIP44_PATH,
   HASH_ALGO_NUM_SHA2_256,
   SIGN_ALGO_NUM_ECDSA_secp256k1,
-} from '@onflow/flow-wallet-shared/constant/algo-constants';
+} from '@onflow/flow-wallet-shared/constant';
 
 import { type ApiTestResult, type ApiTestResults } from './api-test-results';
 

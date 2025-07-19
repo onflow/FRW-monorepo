@@ -74,11 +74,8 @@ import { afterEach, beforeEach, describe, expect, it, vi, type MockedFunction } 
 
 // Change these imports to be named imports from '@onflow/flow-wallet-core/service'
 import { getAccountsByPublicKeyTuple, signWithKey } from '@onflow/flow-wallet-core/utils';
-import {
-  HASH_ALGO_NUM_DEFAULT,
-  SIGN_ALGO_NUM_DEFAULT,
-} from '@onflow/flow-wallet-shared/constant/algo-constants';
-import { TESTNET_CHAIN_ID } from '@onflow/flow-wallet-shared/types/network-types';
+import { HASH_ALGO_NUM_DEFAULT, SIGN_ALGO_NUM_DEFAULT } from '@onflow/flow-wallet-shared/constant';
+import { TESTNET_CHAIN_ID } from '@onflow/flow-wallet-shared/types';
 
 import notificationService from '../notification';
 import providerController from '../provider/controller';

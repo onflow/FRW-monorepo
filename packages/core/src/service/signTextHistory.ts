@@ -1,4 +1,4 @@
-import { INTERNAL_REQUEST_ORIGIN } from '@onflow/flow-wallet-shared/constant/domain-constants';
+import { INTERNAL_REQUEST_ORIGIN } from '@onflow/flow-wallet-shared/constant';
 
 import permissionService, { type ConnectedSite } from './permission';
 import createPersistStore from '../utils/persistStore';

@@ -2,16 +2,13 @@ import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 import { withRouter } from 'storybook-addon-remix-react-router';
 
-import { emoji } from '@onflow/flow-wallet-shared/constant';
-import { type FeatureFlagKey } from '@onflow/flow-wallet-shared/types/feature-types';
+import { emoji, MAINNET_CHAIN_ID } from '@onflow/flow-wallet-shared/constant';
 import {
-  MAINNET_CHAIN_ID,
   type UserInfoResponse,
-} from '@onflow/flow-wallet-shared/types/network-types';
-import {
+  type FeatureFlagKey,
   type MainAccount,
   type WalletAccount,
-} from '@onflow/flow-wallet-shared/types/wallet-types';
+} from '@onflow/flow-wallet-shared/types';
 
 import { useFeatureFlag as importedMockUseFeatureFlag } from '@/ui/hooks/use-feature-flags.mock';
 import { useNftCatalogCollections as importedMockUseNftCatalogCollections } from '@/ui/hooks/useNftHook.mock';

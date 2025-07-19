@@ -4,8 +4,7 @@ import Button from '@mui/material/Button';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { getCurrentProfileId } from '@onflow/flow-wallet-extension-shared/current-id';
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+import { consoleError } from '@onflow/flow-wallet-shared/utils';
 
 import { EditIcon } from '@/ui/assets/icons/settings/Edit';
 import RemoveProfileModal from '@/ui/components/PopupModal/remove-profile-modal';
@@ -19,7 +18,7 @@ const Profile = () => {
   const navigate = useNavigate();
   const wallet = useWallet();
   const { profileIds, userInfo, walletList } = useProfiles();
-
+  // Current profile id
   const [username, setUsername] = useState(userInfo?.username || '');
   const [nickname, setNickname] = useState(userInfo?.nickname || '');
   const [avatar, setAvatar] = useState(userInfo?.avatar || '');
@@ -101,10 +100,10 @@ const Profile = () => {
     setRemoveError('');
 
     try {
-      // Get the current profile ID
-      const profileId = await getCurrentProfileId();
-
-      await wallet.removeProfile(password, profileId);
+      if (!userInfo) {
+        throw new Error('Cannot remove profile: No user info found.');
+      }
+      await wallet.removeProfile(password, userInfo.id);
 
       handleCloseRemoveModal();
       if (profileIds && profileIds.length > 1) {

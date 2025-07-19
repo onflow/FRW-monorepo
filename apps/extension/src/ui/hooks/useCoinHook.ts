@@ -1,11 +1,8 @@
 import BN from 'bignumber.js';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import {
-  type ExtendedTokenInfo,
-  type TokenFilter,
-} from '@onflow/flow-wallet-shared/types/coin-types';
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+import { type ExtendedTokenInfo, type TokenFilter } from '@onflow/flow-wallet-shared/types';
+import { consoleError } from '@onflow/flow-wallet-shared/utils';
 
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 

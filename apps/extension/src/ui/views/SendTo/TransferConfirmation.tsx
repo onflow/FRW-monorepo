@@ -5,8 +5,8 @@ import Grid from '@mui/material/Grid';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { type TransactionState } from '@onflow/flow-wallet-shared/types/transaction-types';
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+import { type TransactionState } from '@onflow/flow-wallet-shared/types';
+import { consoleError } from '@onflow/flow-wallet-shared/utils';
 
 import IconNext from '@/ui/assets/svg/next.svg';
 import { LLSpinner } from '@/ui/components';

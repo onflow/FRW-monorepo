@@ -3,8 +3,6 @@ import Box from '@mui/material/Box';
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
-import { getSwapLink } from '@onflow/flow-wallet-shared/constant/urls';
-
 import { ButtonRow } from '@/ui/components';
 import { BuildIndicator } from '@/ui/components/build-indicator';
 import { NetworkIndicator } from '@/ui/components/NetworkIndicator';
@@ -13,6 +11,7 @@ import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
+import { getSwapLink } from '@/ui/utils/url-constants';
 
 import { DashboardTotal } from './dashboard-total';
 import WalletTab from './wallet-tab';

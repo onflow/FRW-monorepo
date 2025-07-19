@@ -7,9 +7,9 @@ import {
   type CustomFungibleTokenInfo,
   type EvmCustomTokenInfo,
   type ExtendedTokenInfo,
-} from '@onflow/flow-wallet-shared/types/coin-types';
-import { type ActiveAccountType } from '@onflow/flow-wallet-shared/types/wallet-types';
-import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils/address';
+  type ActiveAccountType,
+} from '@onflow/flow-wallet-shared/types';
+import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils';
 
 import buyIcon from '@/ui/assets/svg/buyIcon.svg';
 import receiveIcon from '@/ui/assets/svg/receiveIcon.svg';

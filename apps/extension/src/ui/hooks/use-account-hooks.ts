@@ -1,5 +1,3 @@
-import { useMemo } from 'react';
-
 import {
   accountBalanceKey,
   childAccountAllowTypesKey,
@@ -11,25 +9,23 @@ import {
   registerStatusKey,
   userInfoCachekey,
   type UserInfoStore,
-} from '@onflow/flow-wallet-data-model/cache-data-keys';
-import {
   activeAccountsKey,
   type ActiveAccountsStore,
   userWalletsKey,
   type UserWalletStore,
-} from '@onflow/flow-wallet-data-model/user-data-keys';
-import {
   CURRENT_ID_KEY,
   KEYRING_STATE_CURRENT_KEY,
+} from '@onflow/flow-wallet-data-model';
+import { useMemo } from 'react';
+
+import {
   type KeyringState,
   type VaultEntryV2,
   type VaultEntryV3,
-} from '@onflow/flow-wallet-shared/types/keyring-types';
-import {
-  getActiveAccountTypeForAddress,
   type MainAccount,
   type PendingTransaction,
-} from '@onflow/flow-wallet-shared/types/wallet-types';
+} from '@onflow/flow-wallet-shared/types';
+import { getActiveAccountTypeForAddress } from '@onflow/flow-wallet-shared/utils';
 
 import { useCachedData, useUserData } from './use-data';
 

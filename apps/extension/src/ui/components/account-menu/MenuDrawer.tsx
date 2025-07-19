@@ -11,12 +11,12 @@ import {
 import React, { useCallback, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import type { UserInfoResponse } from '@onflow/flow-wallet-shared/types/network-types';
 import {
+  type UserInfoResponse,
   type MainAccount,
   type WalletAccount,
-} from '@onflow/flow-wallet-shared/types/wallet-types';
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+} from '@onflow/flow-wallet-shared/types';
+import { consoleError } from '@onflow/flow-wallet-shared/utils';
 
 import lock from '@/ui/assets/svg/sidebar-lock.svg';
 import plus from '@/ui/assets/svg/sidebar-plus.svg';

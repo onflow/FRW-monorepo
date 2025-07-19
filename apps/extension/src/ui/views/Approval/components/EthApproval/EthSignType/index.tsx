@@ -7,8 +7,8 @@ import {
   MAINNET_CHAIN_ID,
   TESTNET_CHAIN_ID,
   type UserInfoResponse,
-} from '@onflow/flow-wallet-shared/types/network-types';
-import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils/address';
+} from '@onflow/flow-wallet-shared/types';
+import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils';
 
 import {
   LLConnectLoading,

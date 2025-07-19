@@ -102,16 +102,22 @@ vi.stubGlobal('fetch', mockFetch);
 
 // Then imports
 
-import { API_TEST_RESULTS } from '@onflow/flow-wallet-extension-shared/test-data/api-test-results';
+import { createTestResults } from '@onflow/flow-wallet-extension-shared/test-data/api-test-results';
 import {
   type CommonParams,
   createTestGroups,
   updateTestParamsFromResults,
 } from '@onflow/flow-wallet-extension-shared/test-data/test-groups';
-import { type FlowNetwork } from '@onflow/flow-wallet-shared/types/network-types';
+import { type FlowNetwork } from '@onflow/flow-wallet-shared/types';
 
 import openApiService from '../openapi';
 import userWalletService from '../userWallet';
+
+const API_TEST_RESULTS = createTestResults(
+  'https://INITIAL_OPENAPI_URL.com',
+  'https://WEB_NEXT_URL.com',
+  'https://functions.com'
+);
 
 describe('OpenApiService', () => {
   const commonParams: CommonParams = {
@@ -158,7 +164,12 @@ describe('OpenApiService', () => {
     });
 
     // Initialize openApiService before each test
-    await openApiService.init();
+    await openApiService.init(
+      'https://INITIAL_OPENAPI_URL.com',
+      'https://WEB_NEXT_URL.com',
+      'https://functions.com',
+      false
+    );
 
     // Wait for auth to be initialized
     await new Promise((resolve) => setTimeout(resolve, 0));

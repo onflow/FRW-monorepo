@@ -3,11 +3,8 @@ import encryptor from 'browser-passworder';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import storage from '@onflow/flow-wallet-extension-shared/storage';
-import { FLOW_BIP44_PATH } from '@onflow/flow-wallet-shared/constant/algo-constants';
-import {
-  CURRENT_ID_KEY,
-  KEYRING_STATE_V2_KEY,
-} from '@onflow/flow-wallet-shared/types/keyring-types';
+import { FLOW_BIP44_PATH } from '@onflow/flow-wallet-shared/constant';
+import { CURRENT_ID_KEY, KEYRING_STATE_V2_KEY } from '@onflow/flow-wallet-shared/types';
 
 // Internal imports
 

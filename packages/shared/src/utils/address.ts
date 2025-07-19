@@ -1,4 +1,4 @@
-import { type FlowAddress, type EvmAddress } from '../types/wallet-types';
+import { type FlowAddress, type EvmAddress, type ActiveAccountType } from '../types/wallet-types';
 
 export function sansPrefix(address: string): FlowAddress | EvmAddress | null {
   if (!address) return null;
@@ -42,4 +42,23 @@ export const formatString = (str: string): string => {
   const addressString = ensureEvmAddressPrefix(str);
   if (!addressString || addressString.length < 16) return addressString; // Check if string is too short
   return `${addressString.substring(0, 6)}...${addressString.substring(addressString.length - 10)}`;
+};
+export const getActiveAccountTypeForAddress = (
+  address: string | null,
+  parentAddress: string | null
+): ActiveAccountType => {
+  if (!address) {
+    // No address is selected
+    return 'none';
+  }
+  if (address === parentAddress) {
+    return 'main';
+  }
+  if (isValidEthereumAddress(address)) {
+    return 'evm';
+  }
+  if (isValidFlowAddress(address)) {
+    return 'child';
+  }
+  throw new Error(`Invalid active account address: ${address}`);
 };

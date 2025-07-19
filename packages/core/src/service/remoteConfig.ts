@@ -2,16 +2,12 @@ import {
   type RemoteConfig,
   remoteConfigKey,
   remoteConfigRefreshRegex,
-} from '@onflow/flow-wallet-data-model/cache-data-keys';
-import {
   getValidData,
   registerRefreshListener,
   setCachedData,
-} from '@onflow/flow-wallet-data-model/data-cache';
-import {
-  type FeatureFlagKey,
-  type FeatureFlags,
-} from '@onflow/flow-wallet-shared/types/feature-types';
+} from '@onflow/flow-wallet-data-model';
+
+import { type FeatureFlagKey, type FeatureFlags } from '@onflow/flow-wallet-shared/types';
 
 import openapi from './openapi';
 
@@ -21,13 +17,7 @@ class RemoteConfigService {
   };
 
   loadRemoteConfig = async (): Promise<RemoteConfig> => {
-    const result = await openapi.sendRequest(
-      'GET',
-      process.env.API_CONFIG_PATH,
-      {},
-      {},
-      process.env.API_BASE_URL
-    );
+    const result = await openapi.fetchRemoteConfig();
 
     const config = result;
 

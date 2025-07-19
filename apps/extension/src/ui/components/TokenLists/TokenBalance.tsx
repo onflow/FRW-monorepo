@@ -1,7 +1,6 @@
 import React from 'react';
 
-import { formatTokenValueOrPrice } from '@onflow/flow-wallet-shared/utils/formatTokenValue';
-import { trimDecimalAmount } from '@onflow/flow-wallet-shared/utils/number';
+import { formatTokenValueOrPrice, trimDecimalAmount } from '@onflow/flow-wallet-shared/utils';
 
 interface TokenBalanceProps {
   value: string;

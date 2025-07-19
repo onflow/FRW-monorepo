@@ -1,8 +1,8 @@
 import type { Account as FclAccount } from '@onflow/typedefs';
 import * as ethUtil from 'ethereumjs-util';
 
-import { type FlowNetwork } from '@onflow/flow-wallet-shared/types/network-types';
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+import { type FlowNetwork } from '@onflow/flow-wallet-shared/types';
+import { consoleError } from '@onflow/flow-wallet-shared/utils';
 
 import { EMULATOR_HOST_MAINNET, EMULATOR_HOST_TESTNET } from './fclConfig';
 

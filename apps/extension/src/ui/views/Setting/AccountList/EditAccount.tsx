@@ -11,8 +11,7 @@ import {
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { emoji as emojis } from '@onflow/flow-wallet-shared/constant';
-import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils/address';
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+import { isValidEthereumAddress, consoleError } from '@onflow/flow-wallet-shared/utils';
 
 import { useWallet } from '@/ui/hooks/use-wallet';
 

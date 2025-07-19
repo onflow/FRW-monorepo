@@ -28,10 +28,9 @@ import { initializeChromeLogging } from '@onflow/flow-wallet-extension-shared/ch
 import eventBus from '@onflow/flow-wallet-extension-shared/message/eventBus';
 import { Message } from '@onflow/flow-wallet-extension-shared/messaging';
 import storage from '@onflow/flow-wallet-extension-shared/storage';
-import { EVENTS } from '@onflow/flow-wallet-shared/constant/events';
-import { type WalletAddress } from '@onflow/flow-wallet-shared/types/wallet-types';
-import { isValidFlowAddress } from '@onflow/flow-wallet-shared/utils/address';
-import { consoleError, consoleLog } from '@onflow/flow-wallet-shared/utils/console-log';
+import { EVENTS } from '@onflow/flow-wallet-shared/constant';
+import { type WalletAddress } from '@onflow/flow-wallet-shared/types';
+import { isValidFlowAddress, consoleError, consoleLog } from '@onflow/flow-wallet-shared/utils';
 
 import providerController from '@/background/controller/provider';
 import { preAuthzServiceDefinition } from '@/background/controller/serviceDefinition';

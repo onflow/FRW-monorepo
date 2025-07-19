@@ -1,7 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { DEFAULT_PASSWORD } from '@onflow/flow-wallet-shared/utils/default';
-
 import { INITIAL_REGISTER_STATE, registerReducer, STEPS } from '../register-reducer';
 
 vi.mock('bip39', () => ({
@@ -14,7 +12,7 @@ describe('Register Reducer', () => {
       expect(INITIAL_REGISTER_STATE).toEqual({
         activeTab: STEPS.USERNAME,
         nickname: '',
-        password: DEFAULT_PASSWORD,
+        password: undefined,
         mnemonic: '',
         isAddWallet: false,
       });

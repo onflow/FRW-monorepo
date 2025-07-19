@@ -1,6 +1,5 @@
+import { walletLoadedKey } from '@onflow/flow-wallet-data-model';
 import { useContext } from 'react';
-
-import { walletLoadedKey } from '@onflow/flow-wallet-data-model/cache-data-keys';
 
 import { type WalletControllerType, WalletContext } from '@/ui/utils/WalletContext';
 

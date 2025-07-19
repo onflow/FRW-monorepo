@@ -4,13 +4,12 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router';
 
 import storage from '@onflow/flow-wallet-extension-shared/storage';
-import type { StorageInfo } from '@onflow/flow-wallet-shared/types/network-types';
-import { type Emoji } from '@onflow/flow-wallet-shared/types/wallet-types';
+import { type Emoji, type StorageInfo } from '@onflow/flow-wallet-shared/types';
 import {
+  consoleError,
   isValidEthereumAddress,
   isValidFlowAddress,
-} from '@onflow/flow-wallet-shared/utils/address';
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+} from '@onflow/flow-wallet-shared/utils';
 
 import { EditIcon } from '@/ui/assets/icons/settings/Edit';
 import { LLHeader } from '@/ui/components';

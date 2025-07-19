@@ -2,11 +2,9 @@ import { Box, CardMedia, Divider, Stack, Typography } from '@mui/material';
 import { Contract, ethers } from 'ethers';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { EVM_ENDPOINT } from '@onflow/flow-wallet-shared/constant/domain-constants';
-import { type CustomFungibleTokenInfo } from '@onflow/flow-wallet-shared/types/coin-types';
-import { networkToChainId } from '@onflow/flow-wallet-shared/types/network-types';
-import { withPrefix } from '@onflow/flow-wallet-shared/utils/address';
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+import { EVM_ENDPOINT } from '@onflow/flow-wallet-shared/constant';
+import { type CustomFungibleTokenInfo } from '@onflow/flow-wallet-shared/types';
+import { withPrefix, consoleError, networkToChainId } from '@onflow/flow-wallet-shared/utils';
 
 import { LLConnectLoading, LLPrimaryButton, LLSecondaryButton } from '@/ui/components';
 import { useApproval } from '@/ui/hooks/use-approval';

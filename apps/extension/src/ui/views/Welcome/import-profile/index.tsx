@@ -5,9 +5,10 @@ import { useNavigate } from 'react-router';
 import {
   IMPORT_STEPS,
   importProfileReducer,
+  type ImportState,
   INITIAL_IMPORT_STATE,
 } from '@onflow/flow-wallet-reducers/import-profile-reducer';
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+import { consoleError } from '@onflow/flow-wallet-shared/utils';
 
 import Google from '@/ui/components/google-import';
 import ImportTabs from '@/ui/components/import-components/ImportTabs';
@@ -17,6 +18,12 @@ import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
 import PickNickname from '@/ui/components/LandingPages/PickNickname';
 import SetPassword from '@/ui/components/LandingPages/SetPassword';
 import { useWallet } from '@/ui/hooks/use-wallet';
+
+export const initImportProfileState = (initialState: ImportState): ImportState => {
+  return {
+    ...initialState,
+  };
+};
 
 const ImportProfile = () => {
   const navigate = useNavigate();

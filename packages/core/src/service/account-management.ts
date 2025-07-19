@@ -1,39 +1,37 @@
 import * as fcl from '@onflow/fcl';
-import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
-import * as bip39 from 'bip39';
-import * as ethUtil from 'ethereumjs-util';
-
 import {
   userMetadataKey,
   mainAccountsKey,
   registerStatusKey,
   type UserMetadataStore,
-} from '@onflow/flow-wallet-data-model/cache-data-keys';
-import { getValidData, setCachedData } from '@onflow/flow-wallet-data-model/data-cache';
-import { FLOW_BIP44_PATH } from '@onflow/flow-wallet-shared/constant/algo-constants';
+  getValidData,
+  setCachedData,
+} from '@onflow/flow-wallet-data-model';
+import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
+import * as bip39 from 'bip39';
+import * as ethUtil from 'ethereumjs-util';
+
 import {
+  FLOW_BIP44_PATH,
   HTTP_STATUS_CONFLICT,
   HTTP_STATUS_TOO_MANY_REQUESTS,
-} from '@onflow/flow-wallet-shared/constant/domain-constants';
+} from '@onflow/flow-wallet-shared/constant';
 import type {
   PublicKeyTuple,
   PublicPrivateKeyTuple,
-} from '@onflow/flow-wallet-shared/types/key-types';
-import {
-  type AccountKeyRequest,
-  type UserInfoResponse,
-} from '@onflow/flow-wallet-shared/types/network-types';
-import {
-  type MainAccount,
-  type FlowAddress,
-  type ProfileBackupStatus,
-  type PublicKeyAccount,
-} from '@onflow/flow-wallet-shared/types/wallet-types';
+  AccountKeyRequest,
+  UserInfoResponse,
+  MainAccount,
+  FlowAddress,
+  ProfileBackupStatus,
+  PublicKeyAccount,
+} from '@onflow/flow-wallet-shared/types';
 import {
   isValidFlowAddress,
   isValidEthereumAddress,
-} from '@onflow/flow-wallet-shared/utils/address';
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+  consoleError,
+  getErrorMessage,
+} from '@onflow/flow-wallet-shared/utils';
 
 import { authenticationService, preferenceService } from '.';
 import googleDriveService from './googleDrive';
@@ -59,6 +57,7 @@ import {
   seedWithPathAndPhrase2PublicPrivateKey,
   generateRandomId,
 } from '../utils';
+import { returnCurrentProfileId } from '../utils/current-id';
 
 export class AccountManagement {
   async registerNewProfile(username: string, password: string, mnemonic: string): Promise<void> {
@@ -98,7 +97,48 @@ export class AccountManagement {
     // Check for the new address asynchronously
     this.checkForNewAddress('mainnet', accountKey.public_key, result.data.txid);
   }
+  /**
+   * Remove a profile and its associated keys
+   * If it's the last profile, it behaves like a wallet reset
+   *
+   * @param {string} password - The keyring controller password
+   * @param {string} profileId - The ID of the profile to remove
+   * @returns {Promise<boolean>} - Returns true if successful
+   */
+  removeProfile = async (password: string, profileId: string): Promise<boolean> => {
+    // Remove the profile
+    await keyringService.removeProfile(password, profileId);
+    // Switch to the profile with currentid
+    const currentId = await returnCurrentProfileId();
+    if (!currentId) {
+      // Lock the wallet
+      await userWalletService.logoutCurrentUser();
+    } else {
+      await this.switchProfile(currentId);
+    }
+    return true;
+  };
 
+  /**
+   * Switch the wallet profile to a different profile
+   * @param id - The id of the keyring to switch to.
+   */
+  switchProfile = async (id: string) => {
+    try {
+      await keyringService.switchKeyring(id);
+      // Login with the new keyring
+      await userWalletService.loginWithKeyring();
+    } catch (error) {
+      throw new Error('Failed to switch account: ' + getErrorMessage(error));
+    }
+  };
+
+  /**
+   * Check for a new address in the transaction
+   * @param network - The network to check for a new address
+   * @param pubKey - The public key to check for a new address
+   * @param txid - The transaction id to check for a new address
+   */
   async checkForNewAddress(
     network: string,
     pubKey: string,

@@ -1,5 +1,5 @@
 import { type HashAlgoString, type SignAlgoString } from './algo-types';
-import { isValidEthereumAddress, isValidFlowAddress } from '../utils/address';
+import { isValidFlowAddress } from '../utils/address';
 
 // Matches exactly 16 hex characters, with optional 0x prefix
 export type FlowAddress = `0x${string & { length: 16 }}` | `${string & { length: 16 }}`;
@@ -36,26 +36,6 @@ export const isMainAccountType = (type: ActiveChildType_depreciated): type is nu
 };
 
 export type ActiveAccountType = 'evm' | 'child' | 'main' | 'none';
-
-export const getActiveAccountTypeForAddress = (
-  address: string | null,
-  parentAddress: string | null
-): ActiveAccountType => {
-  if (!address) {
-    // No address is selected
-    return 'none';
-  }
-  if (address === parentAddress) {
-    return 'main';
-  }
-  if (isValidEthereumAddress(address)) {
-    return 'evm';
-  }
-  if (isValidFlowAddress(address)) {
-    return 'child';
-  }
-  throw new Error(`Invalid active account address: ${address}`);
-};
 
 export type LoggedInAccount = {
   // The globally unique id of the account
@@ -166,13 +146,6 @@ export type Currency = {
   name: string;
   symbol: string;
   country: string;
-};
-
-export const DEFAULT_CURRENCY: Currency = {
-  code: 'USD',
-  name: 'United States Dollar',
-  symbol: '$',
-  country: 'United States',
 };
 
 export interface ProfileBackupStatus {

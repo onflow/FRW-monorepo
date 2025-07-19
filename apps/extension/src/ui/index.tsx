@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 
 import eventBus from '@onflow/flow-wallet-extension-shared/message/eventBus';
 import { Message } from '@onflow/flow-wallet-extension-shared/messaging';
-import { EVENTS } from '@onflow/flow-wallet-shared/constant/events';
+import { EVENTS } from '@onflow/flow-wallet-shared/constant';
 
 import { getUITypeName } from '@/ui/utils';
 

@@ -3,13 +3,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { batchRefreshManager, registerBatchRefreshListener } from './batch-refresh';
 import { setCachedData } from './data-cache';
 
-// Mock the storage module
-vi.mock('@onflow/flow-wallet-shared/utils/storage', () => ({
-  default: {
-    setSession: vi.fn(),
-    getSession: vi.fn(),
-    removeSession: vi.fn().mockResolvedValue(undefined),
-  },
+// Mock consoleError from the shared utils
+vi.mock('@onflow/flow-wallet-shared/utils', () => ({
+  consoleError: vi.fn(),
+  setSession: vi.fn(),
+  getSession: vi.fn(),
+  removeSession: vi.fn().mockResolvedValue(undefined),
 }));
 
 // Mock setCachedData
@@ -146,9 +145,8 @@ describe('Batch Refresh Mechanism', () => {
   });
 
   it('should handle errors gracefully', async () => {
-    // Mock consoleError from shared utils
-    const consoleError = await import('@onflow/flow-wallet-shared/utils/console-log');
-    const consoleErrorSpy = vi.spyOn(consoleError, 'consoleError').mockImplementation(() => {});
+    // Get the mocked consoleError
+    const { consoleError } = await import('@onflow/flow-wallet-shared/utils');
     const batchLoader = vi.fn().mockRejectedValue(new Error('Network error'));
 
     const keyPattern = /^account-balance-(\w+)-(\w+)-refresh$/;
@@ -168,9 +166,7 @@ describe('Batch Refresh Mechanism', () => {
     await vi.advanceTimersByTimeAsync(150);
 
     expect(batchLoader).toHaveBeenCalled();
-    expect(consoleErrorSpy).toHaveBeenCalled();
-
-    consoleErrorSpy.mockRestore();
+    expect(consoleError).toHaveBeenCalled();
   });
 
   it('should handle partial results from batch loader', async () => {

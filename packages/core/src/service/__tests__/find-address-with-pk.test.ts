@@ -4,7 +4,7 @@ import {
   FLOW_BIP44_PATH,
   HASH_ALGO_NUM_SHA3_256,
   SIGN_ALGO_NUM_ECDSA_P256,
-} from '@onflow/flow-wallet-shared/constant/algo-constants';
+} from '@onflow/flow-wallet-shared/constant';
 
 import { findAddressWithPK, findAddressWithSeed } from '@/service/account-management';
 

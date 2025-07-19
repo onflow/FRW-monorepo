@@ -1,7 +1,7 @@
 import type { TransactionExecutionStatus, TransactionStatus } from '@onflow/typedefs';
 import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { type FlowNetwork } from '@onflow/flow-wallet-shared/types/network-types';
+import { type FlowNetwork } from '@onflow/flow-wallet-shared/types';
 
 import openapiService from '../openapi';
 import transaction from '../transaction-activity';

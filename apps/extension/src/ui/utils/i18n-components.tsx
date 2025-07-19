@@ -1,6 +1,6 @@
 import React, { type ReactNode } from 'react';
 
-import { consoleWarn } from '@onflow/flow-wallet-shared/utils/console-log';
+import { consoleWarn } from '@onflow/flow-wallet-shared/utils';
 
 /**
  * Parse i18n message with XML-like tags and replace them with React components

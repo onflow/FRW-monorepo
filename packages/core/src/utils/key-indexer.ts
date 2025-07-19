@@ -1,4 +1,4 @@
-import { type PublicKeyAccount, type PublicKeyTuple } from '@onflow/flow-wallet-shared';
+import { type PublicKeyAccount, type PublicKeyTuple } from '@onflow/flow-wallet-shared/types';
 
 export const fetchAccountsByPublicKey = async (
   publicKey: string,

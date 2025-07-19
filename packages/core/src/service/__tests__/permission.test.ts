@@ -2,8 +2,8 @@ import { LRUCache } from 'lru-cache';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import storage from '@onflow/flow-wallet-extension-shared/storage';
-import { INTERNAL_REQUEST_ORIGIN } from '@onflow/flow-wallet-shared/constant/domain-constants';
-import { MAINNET_CHAIN_ID } from '@onflow/flow-wallet-shared/types/network-types';
+import { INTERNAL_REQUEST_ORIGIN } from '@onflow/flow-wallet-shared/constant';
+import { MAINNET_CHAIN_ID } from '@onflow/flow-wallet-shared/types';
 
 import permissionService, { type ConnectedSite } from '../permission';
 

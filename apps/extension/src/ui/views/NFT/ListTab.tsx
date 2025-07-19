@@ -9,11 +9,11 @@ import {
   Typography,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
+import { refreshNftCatalogCollections } from '@onflow/flow-wallet-data-model';
 import React, { forwardRef, useImperativeHandle } from 'react';
 import { useNavigate } from 'react-router';
 
-import { refreshNftCatalogCollections } from '@onflow/flow-wallet-data-model/cache-data-keys';
-import { type NFTCollections } from '@onflow/flow-wallet-shared/types/nft-types';
+import { type NFTCollections } from '@onflow/flow-wallet-shared/types';
 
 import placeholder from '@/ui/assets/image/placeholder.png';
 import ListSkeleton from '@/ui/components/NFTs/ListSkeleton';

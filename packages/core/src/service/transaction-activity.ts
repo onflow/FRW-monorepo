@@ -1,24 +1,23 @@
-import type { TransactionStatus } from '@onflow/typedefs';
-
-import { triggerRefresh } from '@onflow/flow-wallet-data-model/cache-data-access';
 import {
+  triggerRefresh,
   transferListKey,
   transferListRefreshRegex,
   type TransferListStore,
   coinListKey,
-} from '@onflow/flow-wallet-data-model/cache-data-keys';
-import {
   getInvalidData,
   getValidData,
   registerRefreshListener,
   setCachedData,
-} from '@onflow/flow-wallet-data-model/data-cache';
-import { type TransferItem } from '@onflow/flow-wallet-shared/types/transaction-types';
+} from '@onflow/flow-wallet-data-model';
+import type { TransactionStatus } from '@onflow/typedefs';
+
+import { type TransferItem } from '@onflow/flow-wallet-shared/types';
 import {
+  consoleError,
+  consoleWarn,
   isValidEthereumAddress,
   isValidFlowAddress,
-} from '@onflow/flow-wallet-shared/utils/address';
-import { consoleError, consoleWarn } from '@onflow/flow-wallet-shared/utils/console-log';
+} from '@onflow/flow-wallet-shared/utils';
 
 import openapiService, { type FlowTransactionResponse } from './openapi';
 import preferenceService from './preference';

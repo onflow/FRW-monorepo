@@ -1,8 +1,7 @@
 import { Box, Drawer, Typography } from '@mui/material';
 import React, { useState } from 'react';
 
-import type { UserInfoResponse } from '@onflow/flow-wallet-shared/types/network-types';
-import { type WalletAccount } from '@onflow/flow-wallet-shared/types/wallet-types';
+import { type UserInfoResponse, type WalletAccount } from '@onflow/flow-wallet-shared/types';
 
 import ProfileActions from '@/ui/components/profile/profile-actions';
 import { ProfileItem } from '@/ui/components/profile/profile-item';

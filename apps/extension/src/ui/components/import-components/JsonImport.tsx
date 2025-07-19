@@ -10,9 +10,9 @@ import {
 } from '@mui/material';
 import React, { useState } from 'react';
 
-import { KEY_TYPE } from '@onflow/flow-wallet-shared/constant/algo-constants';
-import { type PublicKeyAccount } from '@onflow/flow-wallet-shared/types/wallet-types';
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+import { KEY_TYPE } from '@onflow/flow-wallet-shared/constant';
+import { type PublicKeyAccount } from '@onflow/flow-wallet-shared/types';
+import { consoleError } from '@onflow/flow-wallet-shared/utils';
 
 import { LLSpinner } from '@/ui/components/LLSpinner';
 import PasswordTextarea from '@/ui/components/password/PasswordTextarea';

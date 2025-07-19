@@ -3,10 +3,10 @@ import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import { Box, Button, CircularProgress, DialogActions, Skeleton, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
-import { DEFAULT_PASSWORD } from '@onflow/flow-wallet-shared/utils/default';
+import { consoleError } from '@onflow/flow-wallet-shared/utils';
 
 import { useWallet } from '@/ui/hooks/use-wallet';
+import { DEFAULT_PASSWORD } from '@/ui/utils/default-password';
 
 import { CustomDialog } from '../custom-dialog'; // Reuse the styled dialog base
 import { PasswordInput } from '../password/PasswordInput';

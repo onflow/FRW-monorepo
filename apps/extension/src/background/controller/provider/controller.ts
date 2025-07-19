@@ -14,14 +14,17 @@ import Web3 from 'web3';
 import { stringToHex } from 'web3-utils';
 
 import { getAccountsByPublicKeyTuple, signWithKey } from '@onflow/flow-wallet-core/utils';
-import { EVM_ENDPOINT } from '@onflow/flow-wallet-shared/constant/domain-constants';
-import { tupleToPrivateKey } from '@onflow/flow-wallet-shared/types/key-types';
-import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@onflow/flow-wallet-shared/types/network-types';
 import {
+  EVM_ENDPOINT,
+  MAINNET_CHAIN_ID,
+  TESTNET_CHAIN_ID,
+} from '@onflow/flow-wallet-shared/constant';
+import {
+  tupleToPrivateKey,
   ensureEvmAddressPrefix,
   isValidEthereumAddress,
-} from '@onflow/flow-wallet-shared/utils/address';
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+  consoleError,
+} from '@onflow/flow-wallet-shared/utils';
 
 import BaseController from '@/background/controller/base';
 import Wallet from '@/background/controller/wallet';

@@ -31,41 +31,6 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
-    },
-    "./*": {
-      "types": "./dist/*.d.ts",
-      "import": "./dist/*.js",
-      "default": "./dist/*.js"
-    },
-    "./data-cache-types": {
-      "types": "./dist/data-cache-types.d.ts",
-      "import": "./dist/data-cache-types.js",
-      "default": "./dist/data-cache-types.js"
-    },
-    "./cache-data-keys": {
-      "types": "./dist/cache-data-keys.d.ts",
-      "import": "./dist/cache-data-keys.js",
-      "default": "./dist/cache-data-keys.js"
-    },
-    "./user-data-keys": {
-      "types": "./dist/user-data-keys.d.ts",
-      "import": "./dist/user-data-keys.js",
-      "default": "./dist/user-data-keys.js"
-    },
-    "./cache-data-access": {
-      "types": "./dist/cache-data-access.d.ts",
-      "import": "./dist/cache-data-access.js",
-      "default": "./dist/cache-data-access.js"
-    },
-    "./user-data-access": {
-      "types": "./dist/user-data-access.d.ts",
-      "import": "./dist/user-data-access.js",
-      "default": "./dist/user-data-access.js"
-    },
-    "./src/*": {
-      "types": "./src/*.ts",
-      "import": "./src/*.ts",
-      "default": "./src/*.ts"
     }
   },
   "dependencies": {

@@ -1,7 +1,7 @@
+import { walletLoadedKey } from '@onflow/flow-wallet-data-model';
 import React, { type ReactNode, createContext } from 'react';
 
-import { walletLoadedKey } from '@onflow/flow-wallet-data-model/cache-data-keys';
-import type { IExtractFromPromise } from '@onflow/flow-wallet-shared/types/type';
+import type { IExtractFromPromise } from '@onflow/flow-wallet-shared/types';
 
 // eslint-disable-next-line no-restricted-imports
 import type { WalletController as WalletControllerClass } from '@/background/controller/wallet';

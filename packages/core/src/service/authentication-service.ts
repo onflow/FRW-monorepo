@@ -13,7 +13,7 @@ import {
 } from 'firebase/auth/web-extension';
 import { getId, getInstallations } from 'firebase/installations';
 
-import { consoleLog } from '@onflow/flow-wallet-shared/utils/console-log';
+import { consoleLog } from '@onflow/flow-wallet-shared/utils';
 
 import { mixpanelTrack } from './mixpanel';
 

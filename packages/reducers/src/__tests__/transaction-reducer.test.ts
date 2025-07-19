@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { type ExtendedTokenInfo } from '@onflow/flow-wallet-shared/types/coin-types';
 import {
   type AddressType,
+  type ExtendedTokenInfo,
   type TokenType,
   type TransactionState,
-} from '@onflow/flow-wallet-shared/types/transaction-types';
-import { type WalletAddress } from '@onflow/flow-wallet-shared/types/wallet-types';
+  type WalletAddress,
+} from '@onflow/flow-wallet-shared/types';
 
 import {
   INITIAL_TRANSACTION_STATE,

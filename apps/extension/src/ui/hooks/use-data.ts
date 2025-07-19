@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
-
 import {
   addCachedDataListener,
   getCachedData,
   removeCachedDataListener,
-} from '@onflow/flow-wallet-data-model/cache-data-access';
+} from '@onflow/flow-wallet-data-model';
+import { useEffect, useState } from 'react';
+
 import storage, {
   type AreaName,
   type StorageChange,

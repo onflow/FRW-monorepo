@@ -2,8 +2,7 @@ import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 import { withRouter } from 'storybook-addon-remix-react-router';
 
-import type { StorageInfo } from '@onflow/flow-wallet-shared/types/network-types';
-import type { Emoji, MainAccount } from '@onflow/flow-wallet-shared/types/wallet-types';
+import type { Emoji, MainAccount, StorageInfo } from '@onflow/flow-wallet-shared/types';
 
 import { toggleAccountHidden, useAccountHidden } from '@/ui/hooks/preference-hooks.mock';
 import { useMainAccount } from '@/ui/hooks/use-account-hooks.mock';

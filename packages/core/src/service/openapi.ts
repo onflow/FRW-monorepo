@@ -1,13 +1,22 @@
 import * as fcl from '@onflow/fcl';
+import {
+  cadenceScriptsKey,
+  CURRENT_ID_KEY,
+  type RemoteConfig,
+  getValidData,
+  setCachedData,
+} from '@onflow/flow-wallet-data-model';
 import type { Account as FclAccount } from '@onflow/typedefs';
 import BigNumber from 'bignumber.js';
 import dayjs from 'dayjs';
 
-import { cadenceScriptsKey } from '@onflow/flow-wallet-data-model/cache-data-keys';
-import { getValidData, setCachedData } from '@onflow/flow-wallet-data-model/data-cache';
-import { returnCurrentProfileId } from '@onflow/flow-wallet-extension-shared/current-id';
 import storage from '@onflow/flow-wallet-extension-shared/storage';
-import { WEB_NEXT_URL } from '@onflow/flow-wallet-shared/constant/domain-constants';
+import {
+  DEFAULT_CURRENCY,
+  Period,
+  type PeriodFrequency,
+  PriceProvider,
+} from '@onflow/flow-wallet-shared/constant';
 import type {
   BalanceMap,
   CadenceTokenInfo,
@@ -15,47 +24,39 @@ import type {
   EvmTokenInfo,
   FungibleTokenInfo,
   FungibleTokenListResponse,
-} from '@onflow/flow-wallet-shared/types/coin-types';
-import { CURRENT_ID_KEY } from '@onflow/flow-wallet-shared/types/keyring-types';
+  TokenInfo,
+  AccountBalanceInfo,
+  AccountKeyRequest,
+  CheckResponse,
+  Contact,
+  DeviceInfoRequest,
+  KeyResponseItem,
+  NewsConditionType,
+  NewsItem,
+  NftCollection,
+  NFTModelV2,
+  SignInResponse,
+  StorageInfo,
+  TokenPriceHistory,
+  UserInfoResponse,
+  NFTCollections,
+  NetworkScripts,
+  ActiveAccountType,
+  Currency,
+  FlowAddress,
+  LoggedInAccount,
+  LoggedInAccountWithIndex,
+  PublicKeyAccount,
+} from '@onflow/flow-wallet-shared/types';
 import {
-  type AccountBalanceInfo,
-  type AccountKeyRequest,
-  type CheckResponse,
-  type Contact,
-  type DeviceInfoRequest,
-  getPriceProvider,
-  type KeyResponseItem,
-  type NewsConditionType,
-  type NewsItem,
-  type NftCollection,
-  type NFTModelV2,
-  Period,
-  type PeriodFrequency,
-  PriceProvider,
-  type SignInResponse,
-  type StorageInfo,
-  type TokenPriceHistory,
-  type UserInfoResponse,
-} from '@onflow/flow-wallet-shared/types/network-types';
-import { type NFTCollections } from '@onflow/flow-wallet-shared/types/nft-types';
-import { type NetworkScripts } from '@onflow/flow-wallet-shared/types/script-types';
-import type { TokenInfo } from '@onflow/flow-wallet-shared/types/token-info';
-import {
-  type ActiveAccountType,
-  type Currency,
-  DEFAULT_CURRENCY,
-  type FlowAddress,
-  type LoggedInAccount,
-  type LoggedInAccountWithIndex,
-  type PublicKeyAccount,
-} from '@onflow/flow-wallet-shared/types/wallet-types';
-import { isValidFlowAddress } from '@onflow/flow-wallet-shared/utils/address';
-import {
+  isValidFlowAddress,
   getStringFromHashAlgo,
   getStringFromSignAlgo,
-} from '@onflow/flow-wallet-shared/utils/algo';
-import { consoleError, consoleLog } from '@onflow/flow-wallet-shared/utils/console-log';
-import { getPeriodFrequency } from '@onflow/flow-wallet-shared/utils/getPeriodFrequency';
+  consoleError,
+  consoleLog,
+  getPeriodFrequency,
+  getPriceProvider,
+} from '@onflow/flow-wallet-shared/utils';
 
 import { findKeyAndInfo } from '../utils';
 import {
@@ -65,6 +66,7 @@ import {
   authenticationService,
   versionService,
 } from './index';
+import { returnCurrentProfileId } from '../utils/current-id';
 import { verifySignature } from '../utils/modules/publicPrivateKey';
 
 type CurrencyResponse = {
@@ -125,9 +127,10 @@ export interface OpenApiConfigValue {
 }
 
 export interface OpenApiStore {
-  registrationURL: string;
-  webNextURL: string;
-  functionsURL: string;
+  registrationUrl: string;
+  webNextUrl: string;
+  functionsUrl: string;
+  isDevServer: boolean;
   config: Record<string, OpenApiConfigValue>;
 }
 
@@ -354,9 +357,10 @@ const _recordFetch = async (response, responseData, ...args: Parameters<typeof f
 
 export class OpenApiService {
   store: OpenApiStore = {
-    registrationURL: '',
-    functionsURL: '',
-    webNextURL: '',
+    registrationUrl: '',
+    functionsUrl: '',
+    webNextUrl: '',
+    isDevServer: false,
     config: dataConfig,
   };
 
@@ -364,10 +368,16 @@ export class OpenApiService {
     return userWalletService.getNetwork();
   };
 
-  init = async (registrationURL: string, webNextURL: string, functionsURL: string) => {
-    this.store.registrationURL = registrationURL;
-    this.store.webNextURL = webNextURL;
-    this.store.functionsURL = functionsURL;
+  init = async (
+    registrationUrl: string,
+    webNextUrl: string,
+    functionsUrl: string,
+    isDevServer: boolean
+  ) => {
+    this.store.registrationUrl = registrationUrl;
+    this.store.webNextUrl = webNextUrl;
+    this.store.functionsUrl = functionsUrl;
+    this.store.isDevServer = isDevServer;
     // Set up fcl
     await userWalletService.setupFcl();
   };
@@ -385,7 +395,7 @@ export class OpenApiService {
     url = '',
     params: Record<string, string> = {},
     data: Record<string, unknown> = {},
-    host = this.store.registrationURL
+    host = this.store.registrationUrl
   ): Promise<any> => {
     // Default options are marked with *
     let requestUrl = '';
@@ -464,6 +474,16 @@ export class OpenApiService {
 
     return responseData;
     // Record the response
+  };
+
+  fetchRemoteConfig = async (): Promise<RemoteConfig> => {
+    return await this.sendRequest(
+      'GET',
+      this.store.isDevServer ? '/config/config.dev.json' : '/config/config.json',
+      {},
+      {},
+      this.store.webNextUrl
+    );
   };
 
   /**
@@ -850,7 +870,7 @@ export class OpenApiService {
   };
 
   getMoonpayURL = async (url) => {
-    const baseURL = this.store.functionsURL;
+    const baseURL = this.store.functionsUrl;
     const response = await this.sendRequest('POST', '/moonPaySignature', {}, { url: url }, baseURL);
     return response;
   };
@@ -859,7 +879,7 @@ export class OpenApiService {
     const messages = {
       envelope_message: message,
     };
-    const baseURL = this.store.functionsURL;
+    const baseURL = this.store.functionsUrl;
     // 'http://localhost:5001/lilico-dev/us-central1'
     const data = await this.sendRequest(
       'POST',
@@ -881,7 +901,7 @@ export class OpenApiService {
       '/api/signAsBridgeFeePayer',
       {},
       { transaction, message: messages },
-      WEB_NEXT_URL
+      this.store.webNextUrl
     );
     // (config.method, config.path, {}, { transaction, message: messages });
     return data;
@@ -890,7 +910,7 @@ export class OpenApiService {
     const messages = {
       envelope_message: message,
     };
-    const baseURL = this.store.functionsURL;
+    const baseURL = this.store.functionsUrl;
     // 'http://localhost:5001/lilico-dev/us-central1'
     const data = await this.sendRequest(
       'POST',
@@ -904,7 +924,7 @@ export class OpenApiService {
   };
 
   getProposer = async () => {
-    const baseURL = this.store.functionsURL;
+    const baseURL = this.store.functionsUrl;
     // 'http://localhost:5001/lilico-dev/us-central1'
     const data = await this.sendRequest('GET', '/getProposer', {}, {}, baseURL);
     // (config.method, config.path, {}, { transaction, message: messages });
@@ -921,7 +941,7 @@ export class OpenApiService {
         chain_type: chainType,
       },
       {},
-      WEB_NEXT_URL
+      this.store.webNextUrl
     );
 
     return tokens;
@@ -1129,7 +1149,7 @@ export class OpenApiService {
         limit: limit.toString(),
       },
       {},
-      WEB_NEXT_URL
+      this.store.webNextUrl
     );
 
     return data;
@@ -1145,7 +1165,7 @@ export class OpenApiService {
       `/api/evm/${address}/transactions`,
       {},
       {},
-      WEB_NEXT_URL
+      this.store.webNextUrl
     );
     return data;
   };
@@ -1304,7 +1324,7 @@ export class OpenApiService {
         chain_type: chainType,
       },
       {},
-      WEB_NEXT_URL
+      this.store.webNextUrl
     );
     return data.tokens;
   };
@@ -1319,7 +1339,7 @@ export class OpenApiService {
         chain_type: chainType,
       },
       {},
-      WEB_NEXT_URL
+      this.store.webNextUrl
     );
 
     return data.tokens;
@@ -1540,7 +1560,13 @@ export class OpenApiService {
   };
 
   cadenceScriptsV2 = async (): Promise<NetworkScripts> => {
-    const { data } = await this.sendRequest('GET', '/api/v2/scripts', {}, {}, WEB_NEXT_URL);
+    const { data } = await this.sendRequest(
+      'GET',
+      '/api/v2/scripts',
+      {},
+      {},
+      this.store.webNextUrl
+    );
     return data;
   };
 
@@ -1550,7 +1576,7 @@ export class OpenApiService {
       `/api/v2/nft/list?address=${address}&limit=${limit}&offset=${offset}&network=${network}`,
       {},
       {},
-      WEB_NEXT_URL
+      this.store.webNextUrl
     );
     return data;
   };
@@ -1561,7 +1587,7 @@ export class OpenApiService {
       `/api/v2/nft/id?address=${address}&network=${network}`,
       {},
       {},
-      WEB_NEXT_URL
+      this.store.webNextUrl
     );
     return data;
   };
@@ -1578,7 +1604,7 @@ export class OpenApiService {
       `/api/v2/nft/collectionList?address=${address}&limit=${limit}&offset=${offset}&collectionIdentifier=${contractName}&network=${network}`,
       {},
       {},
-      WEB_NEXT_URL
+      this.store.webNextUrl
     );
     return data;
   };
@@ -1589,12 +1615,18 @@ export class OpenApiService {
    * @deprecated Use getNFTV2CollectionList instead
    */
   nftCollectionList = async () => {
-    const { data } = await this.sendRequest('GET', '/api/nft/collections', {}, {}, WEB_NEXT_URL);
+    const { data } = await this.sendRequest(
+      'GET',
+      '/api/nft/collections',
+      {},
+      {},
+      this.store.webNextUrl
+    );
     return data;
   };
 
   evmFTList = async () => {
-    const { data } = await this.sendRequest('GET', '/api/evm/fts', {}, {}, WEB_NEXT_URL);
+    const { data } = await this.sendRequest('GET', '/api/evm/fts', {}, {}, this.store.webNextUrl);
     return data;
   };
 
@@ -1607,7 +1639,7 @@ export class OpenApiService {
       `/api/v3/evm/${address}/fts?network=${network}`,
       {},
       {},
-      WEB_NEXT_URL
+      this.store.webNextUrl
     );
     return data;
   };
@@ -1618,7 +1650,7 @@ export class OpenApiService {
       `/api/evm/${address}/nfts?network=${network}`,
       {},
       {},
-      WEB_NEXT_URL
+      this.store.webNextUrl
     );
     return data;
   };
@@ -1628,7 +1660,13 @@ export class OpenApiService {
       to: address, // address -- optional
       data: data, // calldata -- required
     };
-    const res = await this.sendRequest('POST', `/api/evm/decodeData`, {}, bodyData, WEB_NEXT_URL);
+    const res = await this.sendRequest(
+      'POST',
+      `/api/evm/decodeData`,
+      {},
+      bodyData,
+      this.store.webNextUrl
+    );
     return res;
   };
 
@@ -1644,7 +1682,7 @@ export class OpenApiService {
       `/api/v3/evm/nft/collectionList?network=${network}&address=${address}&collectionIdentifier=${collectionIdentifier}&limit=${limit}&offset=${offset}`,
       {},
       {},
-      WEB_NEXT_URL
+      this.store.webNextUrl
     );
     return data;
   };
@@ -1655,7 +1693,7 @@ export class OpenApiService {
       `/api/v3/evm/nft/id?network=${network}&address=${address}`,
       {},
       {},
-      WEB_NEXT_URL
+      this.store.webNextUrl
     );
     return data;
   };
@@ -1667,7 +1705,7 @@ export class OpenApiService {
       `/api/v3/evm/nft/list?network=${network}&address=${address}&limit=${limit}&offset=${offset}`,
       {},
       {},
-      WEB_NEXT_URL
+      this.store.webNextUrl
     );
     return data;
   };
@@ -1678,7 +1716,7 @@ export class OpenApiService {
       `/api/v2/nft/id?network=${network}&address=${address}`,
       {},
       {},
-      WEB_NEXT_URL
+      this.store.webNextUrl
     );
     return data;
   };
@@ -1689,7 +1727,7 @@ export class OpenApiService {
       `/api/v2/nft/collections?network=${network}`,
       {},
       {},
-      WEB_NEXT_URL
+      this.store.webNextUrl
     );
     return data;
   };
@@ -1719,10 +1757,10 @@ export class OpenApiService {
     // Get news from firebase function
     const data = await this.sendRequest(
       'GET',
-      process.env.API_NEWS_PATH,
+      this.store.isDevServer ? '/config/news.dev.json' : '/config/news.json',
       {},
       {},
-      process.env.API_BASE_URL
+      this.store.webNextUrl
     );
 
     const news = data.map(
@@ -1833,7 +1871,7 @@ export class OpenApiService {
         `/api/v4/currencies`,
         {},
         {},
-        WEB_NEXT_URL
+        this.store.webNextUrl
       );
 
       currencies = supportedCurrencies?.data?.currencies || [DEFAULT_CURRENCY];
@@ -1853,7 +1891,7 @@ export class OpenApiService {
       `/api/v4/cadence/tokens/ft/${address}`,
       { network, currency: currencyCode },
       {},
-      WEB_NEXT_URL
+      this.store.webNextUrl
     );
     if (!response?.data?.result || !response?.data?.storage) {
       throw new Error('Could not fetch token info');
@@ -1893,7 +1931,7 @@ export class OpenApiService {
       `/api/v4/evm/tokens/ft/${formattedEvmAddress}`,
       { network, currency: currencyCode },
       {},
-      WEB_NEXT_URL
+      this.store.webNextUrl
     );
     if (!userEvmTokenList?.data) {
       throw new Error('No token info found');
@@ -1916,12 +1954,12 @@ export class OpenApiService {
         name,
         background,
       },
-      WEB_NEXT_URL
+      this.store.webNextUrl
     );
   }
 
   async getUserMetadata(): Promise<any> {
-    return this.sendRequest('GET', '/api/metadata/user/metadatas', {}, {}, WEB_NEXT_URL);
+    return this.sendRequest('GET', '/api/metadata/user/metadatas', {}, {}, this.store.webNextUrl);
   }
 }
 

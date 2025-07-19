@@ -5,11 +5,8 @@ import {
   INITIAL_TRANSACTION_STATE,
   transactionReducer,
 } from '@onflow/flow-wallet-reducers/transaction-reducer';
-import {
-  type FlowAddress,
-  type WalletAddress,
-} from '@onflow/flow-wallet-shared/types/wallet-types';
-import { isValidAddress, isValidFlowAddress } from '@onflow/flow-wallet-shared/utils/address';
+import { type FlowAddress, type WalletAddress } from '@onflow/flow-wallet-shared/types';
+import { isValidAddress, isValidFlowAddress } from '@onflow/flow-wallet-shared/utils';
 
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';

@@ -1,23 +1,20 @@
 import {
   tokenListKey,
   tokenListRefreshRegex,
-} from '@onflow/flow-wallet-data-model/cache-data-keys';
-import {
   getValidData,
   registerRefreshListener,
   setCachedData,
-} from '@onflow/flow-wallet-data-model/data-cache';
-import { setUserData } from '@onflow/flow-wallet-data-model/user-data-access';
-import {
+  setUserData,
   evmCustomTokenKey,
   getEvmCustomTokenData,
-} from '@onflow/flow-wallet-data-model/user-data-keys';
+} from '@onflow/flow-wallet-data-model';
+
+import { MAINNET_CHAIN_ID } from '@onflow/flow-wallet-shared/constant';
 import {
   type CustomFungibleTokenInfo,
   type EvmCustomTokenInfo,
   type FungibleTokenInfo,
-} from '@onflow/flow-wallet-shared/types/coin-types';
-import { MAINNET_CHAIN_ID } from '@onflow/flow-wallet-shared/types/network-types';
+} from '@onflow/flow-wallet-shared/types';
 
 import { userWalletService } from '.';
 import openapiService from './openapi';

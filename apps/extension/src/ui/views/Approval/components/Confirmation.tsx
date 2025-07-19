@@ -4,7 +4,7 @@ import dedent from 'dedent';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { type UserInfoResponse } from '@onflow/flow-wallet-shared/types/network-types';
+import { type UserInfoResponse } from '@onflow/flow-wallet-shared/types';
 
 import {
   LLConnectLoading,

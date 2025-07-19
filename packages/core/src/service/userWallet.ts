@@ -1,13 +1,8 @@
 import * as secp from '@noble/secp256k1';
 import * as fcl from '@onflow/fcl';
-import { getErrorMessage } from '@onflow/flow-wallet-shared';
-import type { Account as FclAccount } from '@onflow/typedefs';
-import * as ethUtil from 'ethereumjs-util';
-import { signInAnonymously } from 'firebase/auth/web-extension';
-import { TransactionError } from 'web3';
-
-import { triggerRefresh, getCachedData } from '@onflow/flow-wallet-data-model/cache-data-access';
 import {
+  triggerRefresh,
+  getCachedData,
   accountBalanceKey,
   accountBalanceRefreshRegex,
   coinListKey,
@@ -22,60 +17,57 @@ import {
   placeholderAccountsRefreshRegex,
   userMetadataKey,
   type UserMetadataStore,
-} from '@onflow/flow-wallet-data-model/cache-data-keys';
-import {
   clearCachedData,
   getValidData,
   registerBatchRefreshListener,
   registerRefreshListener,
   setCachedData,
-} from '@onflow/flow-wallet-data-model/data-cache';
-import { removeUserData, setUserData } from '@onflow/flow-wallet-data-model/user-data-access';
-import {
+  removeUserData,
+  setUserData,
   activeAccountsKey,
   type ActiveAccountsStore,
   getActiveAccountsData,
   userWalletsKey,
   type UserWalletStore,
-} from '@onflow/flow-wallet-data-model/user-data-keys';
+} from '@onflow/flow-wallet-data-model';
+import type { Account as FclAccount } from '@onflow/typedefs';
+import * as ethUtil from 'ethereumjs-util';
+import { signInAnonymously } from 'firebase/auth/web-extension';
+import { TransactionError } from 'web3';
+
 import { retryOperation } from '@onflow/flow-wallet-extension-shared/retryOperation';
 import storage from '@onflow/flow-wallet-extension-shared/storage';
+import { DEFAULT_WEIGHT, FLOW_BIP44_PATH } from '@onflow/flow-wallet-shared/constant';
 import {
-  DEFAULT_WEIGHT,
-  FLOW_BIP44_PATH,
-} from '@onflow/flow-wallet-shared/constant/algo-constants';
-import {
-  combinePubPkString,
   type PublicPrivateKeyTuple,
-  tupleToPrivateKey,
-} from '@onflow/flow-wallet-shared/types/key-types';
-import {
   type AccountKeyRequest,
   type DeviceInfoRequest,
   type FlowNetwork,
-  networkToChainId,
-} from '@onflow/flow-wallet-shared/types/network-types';
-import {
   type ActiveAccountType,
   type ChildAccountMap,
   type EvmAddress,
   type FlowAddress,
-  getActiveAccountTypeForAddress,
   type MainAccount,
   type PendingTransaction,
   type PublicKeyAccount,
   type WalletAccount,
   type WalletAddress,
-} from '@onflow/flow-wallet-shared/types/wallet-types';
+} from '@onflow/flow-wallet-shared/types';
 import {
+  getErrorMessage,
+  networkToChainId,
+  combinePubPkString,
   ensureEvmAddressPrefix,
   isValidEthereumAddress,
   isValidFlowAddress,
   withPrefix,
-} from '@onflow/flow-wallet-shared/utils/address';
-import { getCompatibleHashAlgo } from '@onflow/flow-wallet-shared/utils/algo';
-import { consoleError, consoleWarn } from '@onflow/flow-wallet-shared/utils/console-log';
-import { getEmojiByIndex } from '@onflow/flow-wallet-shared/utils/emoji-util';
+  getCompatibleHashAlgo,
+  consoleError,
+  consoleWarn,
+  getEmojiByIndex,
+  getActiveAccountTypeForAddress,
+  tupleToPrivateKey,
+} from '@onflow/flow-wallet-shared/utils';
 
 import { authenticationService } from '.';
 import keyringService from './keyring';

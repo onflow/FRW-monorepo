@@ -25,11 +25,6 @@ import {
   getValidData,
   registerRefreshListener,
   setCachedData,
-} from '@onflow/flow-wallet-data-model';
-import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
-import BN from 'bignumber.js';
-
-import {
   childAccountDescKey,
   type ChildAccountFtStore,
   childAccountNftsKey,
@@ -40,45 +35,39 @@ import {
   registerStatusRefreshRegex,
   walletLoadedKey,
   walletLoadedRefreshRegex,
-} from '@onflow/flow-wallet-data-model/cache-data-keys';
-import { returnCurrentProfileId } from '@onflow/flow-wallet-extension-shared/current-id';
+  CURRENT_ID_KEY,
+} from '@onflow/flow-wallet-data-model';
+import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
+import BN from 'bignumber.js';
+
 import eventBus from '@onflow/flow-wallet-extension-shared/message/eventBus';
 import { retryOperation } from '@onflow/flow-wallet-extension-shared/retryOperation';
 import storage from '@onflow/flow-wallet-extension-shared/storage';
-import { FLOW_BIP44_PATH } from '@onflow/flow-wallet-shared/constant/algo-constants';
-import { INTERNAL_REQUEST_ORIGIN } from '@onflow/flow-wallet-shared/constant/domain-constants';
-import { type CustomFungibleTokenInfo } from '@onflow/flow-wallet-shared/types/coin-types';
 import {
+  FLOW_BIP44_PATH,
+  INTERNAL_REQUEST_ORIGIN,
+  MAINNET_CHAIN_ID,
+  PriceProvider,
+  Period,
+} from '@onflow/flow-wallet-shared/constant';
+import {
+  type CustomFungibleTokenInfo,
   type FeatureFlagKey,
   type FeatureFlags,
-} from '@onflow/flow-wallet-shared/types/feature-types';
-import {
   type PublicKeyTuple,
   type PublicPrivateKeyTuple,
-} from '@onflow/flow-wallet-shared/types/key-types';
-import { CURRENT_ID_KEY } from '@onflow/flow-wallet-shared/types/keyring-types';
-import {
   type Contact,
   ContactType,
   type FlowNetwork,
-  MAINNET_CHAIN_ID,
   type NFTModelV2,
   type UserInfoResponse,
-  PriceProvider,
-  Period,
-} from '@onflow/flow-wallet-shared/types/network-types';
-import {
   type NFTCollectionData,
   type NFTCollections,
-} from '@onflow/flow-wallet-shared/types/nft-types';
-import { type NetworkScripts } from '@onflow/flow-wallet-shared/types/script-types';
-import { type TokenInfo } from '@onflow/flow-wallet-shared/types/token-info';
-import { type TrackingEvents } from '@onflow/flow-wallet-shared/types/tracking-types';
-import {
+  type NetworkScripts,
+  type TokenInfo,
+  type TrackingEvents,
   type TransactionState,
   type TransferItem,
-} from '@onflow/flow-wallet-shared/types/transaction-types';
-import {
   type ActiveAccountType,
   type ActiveChildType_depreciated,
   type Currency,
@@ -90,15 +79,16 @@ import {
   type PublicKeyAccount,
   type WalletAccount,
   type WalletAddress,
-} from '@onflow/flow-wallet-shared/types/wallet-types';
+} from '@onflow/flow-wallet-shared/types';
 import {
   isValidAddress,
   isValidEthereumAddress,
   isValidFlowAddress,
   withPrefix,
-} from '@onflow/flow-wallet-shared/utils/address';
-import { consoleError, consoleWarn } from '@onflow/flow-wallet-shared/utils/console-log';
-import { getEmojiList } from '@onflow/flow-wallet-shared/utils/emoji-util';
+  consoleError,
+  consoleWarn,
+  getEmojiList,
+} from '@onflow/flow-wallet-shared/utils';
 
 import notification from '@/background/webapi/notification';
 import { openIndexPage } from '@/background/webapi/tab';
@@ -186,6 +176,17 @@ export class WalletController extends BaseController {
   registerNewProfile = async (username: string, password: string, mnemonic: string) => {
     return await accountManagementService.registerNewProfile(username, password, mnemonic);
   };
+  /**
+   * Remove a profile and its associated keys
+   * If it's the last profile, it behaves like a wallet reset
+   *
+   * @param {string} password - The keyring controller password
+   * @param {string} profileId - The ID of the profile to remove
+   * @returns {Promise<boolean>} - Returns true if successful
+   */
+  removeProfile = async (password: string, profileId: string): Promise<boolean> => {
+    return await accountManagementService.removeProfile(password, profileId);
+  };
 
   checkForNewAddress = async (
     network: string,
@@ -258,14 +259,8 @@ export class WalletController extends BaseController {
    * Switch the wallet profile to a different profile
    * @param id - The id of the keyring to switch to.
    */
-  switchProfile = async (id: string) => {
-    try {
-      await keyringService.switchKeyring(id);
-      // Login with the new keyring
-      await userWalletService.loginWithKeyring();
-    } catch (error) {
-      throw new Error('Failed to switch account: ' + (error.message || 'Unknown error'));
-    }
+  switchProfile = async (profileId: string) => {
+    return await accountManagementService.switchProfile(profileId);
   };
   /**
    * @deprecated  Checking accounts by user id is deprecated - use the public key or addressinstead
@@ -575,27 +570,6 @@ export class WalletController extends BaseController {
     }
   };
 
-  /**
-   * Remove a profile and its associated keys
-   * If it's the last profile, it behaves like a wallet reset
-   *
-   * @param {string} password - The keyring controller password
-   * @param {string} profileId - The ID of the profile to remove
-   * @returns {Promise<boolean>} - Returns true if successful
-   */
-  removeProfile = async (password: string, profileId: string): Promise<boolean> => {
-    // Remove the profile
-    await keyringService.removeProfile(password, profileId);
-    // Switch to the profile with currentid
-    const currentId = await returnCurrentProfileId();
-    if (!currentId) {
-      // Lock the wallet
-      this.lockWallet();
-    } else {
-      await this.switchProfile(currentId);
-    }
-    return true;
-  };
   /**
    * @deprecated not used anymore
    */

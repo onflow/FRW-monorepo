@@ -1,7 +1,4 @@
-import {
-  type ConsoleTracker,
-  setConsoleTracker,
-} from '@onflow/flow-wallet-shared/utils/console-log';
+import { type ConsoleTracker, setConsoleTracker } from '@onflow/flow-wallet-shared/utils';
 
 const DEPLOYMENT_ENV = process.env.DEPLOYMENT_ENV;
 const IS_BETA = process.env.IS_BETA === 'true';

@@ -3,7 +3,6 @@ import { defineConfig } from 'tsup';
 export default defineConfig({
   entry: {
     'chrome-logger': 'src/chrome-logger.ts',
-    'current-id': 'src/current-id.ts',
     'message/eventBus': 'src/message/eventBus.ts',
     messaging: 'src/messaging.ts',
     storage: 'src/storage.ts',

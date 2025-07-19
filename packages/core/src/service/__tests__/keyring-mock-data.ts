@@ -5,11 +5,8 @@
 
 import encryptor from 'browser-passworder';
 
-import { SIGN_ALGO_NUM_ECDSA_P256 } from '@onflow/flow-wallet-shared/constant/algo-constants';
-import {
-  CURRENT_ID_KEY,
-  KEYRING_STATE_V3_KEY,
-} from '@onflow/flow-wallet-shared/types/keyring-types';
+import { SIGN_ALGO_NUM_ECDSA_P256 } from '@onflow/flow-wallet-shared/constant';
+import { CURRENT_ID_KEY, KEYRING_STATE_V3_KEY } from '@onflow/flow-wallet-shared/types';
 
 /**
  * Constants used for keyring testing

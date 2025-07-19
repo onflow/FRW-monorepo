@@ -11,8 +11,8 @@ import {
 } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { type ProfileBackupStatus } from '@onflow/flow-wallet-shared/types/wallet-types';
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+import { type ProfileBackupStatus } from '@onflow/flow-wallet-shared/types';
+import { consoleError } from '@onflow/flow-wallet-shared/utils';
 
 import { CustomDialog } from '@/ui/components/custom-dialog';
 import { LLPrimaryButton } from '@/ui/components/LLPrimaryButton';

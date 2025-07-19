@@ -247,8 +247,8 @@ graph TB
 
 ```typescript
 // ✅ Correct - importing from shared package
-import { SomeType } from '@onflow/flow-wallet-shared/types/some-type';
-import { formatAddress } from '@onflow/flow-wallet-shared/utils/address';
+import { SomeType } from '@onflow/flow-wallet-shared/types';
+import { formatAddress } from '@onflow/flow-wallet-shared/utils';
 
 // ✅ Correct - cross-folder imports with aliases
 import { walletService } from '@onflow/flow-wallet-core/service/wallet';
@@ -284,7 +284,7 @@ import { useWallet } from '@/ui/hooks/use-wallet';
 import { accountReducer } from '@onflow/flow-wallet-reducers/account-reducer';
 
 // ✅ Anyone can import from shared
-import { formatAddress } from '@onflow/flow-wallet-shared/utils/address';
+import { formatAddress } from '@onflow/flow-wallet-shared/utils';
 ```
 
 ### Forbidden Patterns
@@ -307,7 +307,7 @@ import { accountReducer } from '@onflow/flow-wallet-reducers/account-reducer';
 // ❌ Wrong - Using old shared path
 import { formatAddress } from '@/shared/utils/address';
 // ✅ Correct - Use the package name
-import { formatAddress } from '@onflow/flow-wallet-shared/utils/address';
+import { formatAddress } from '@onflow/flow-wallet-shared/utils';
 ```
 
 ## Communication Patterns
