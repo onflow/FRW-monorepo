@@ -2,7 +2,7 @@ import { Box, CardMedia, Divider, Stack, Typography } from '@mui/material';
 import { WalletUtils } from '@onflow/fcl';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@onflow/flow-wallet-shared/types';
+import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@onflow/flow-wallet-shared/constant';
 
 // TODO: TB - move all this to the background
 

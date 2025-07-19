@@ -68,7 +68,8 @@ async function restoreAppState() {
   await openapiService.init(
     API_GO_SERVER_URL, // registrationURL
     API_BASE_URL, // webNextURL
-    FB_FUNCTIONS_URL // functionsURL
+    FB_FUNCTIONS_URL, // functionsURL
+    process.env.NODE_ENV === 'development'
   );
   // eslint-disable-next-line no-console
   console.log('restoreAppState - init keyring');

@@ -3,11 +3,8 @@ import * as fcl from '@onflow/fcl';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import {
-  MAINNET_CHAIN_ID,
-  TESTNET_CHAIN_ID,
-  type UserInfoResponse,
-} from '@onflow/flow-wallet-shared/types';
+import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@onflow/flow-wallet-shared/constant';
+import { type UserInfoResponse } from '@onflow/flow-wallet-shared/types';
 import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils';
 
 import {

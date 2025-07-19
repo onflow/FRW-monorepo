@@ -69,8 +69,6 @@ import {
   tupleToPrivateKey,
 } from '@onflow/flow-wallet-shared/utils';
 
-import { getAccountsByPublicKeyTuple } from '@/utils/modules/findAddressWithPubKey';
-
 import { authenticationService } from '.';
 import keyringService from './keyring';
 import { mixpanelTrack } from './mixpanel';
@@ -81,6 +79,7 @@ import transactionActivityService from './transaction-activity';
 import { defaultAccountKey, pubKeyAccountToAccountKey } from '../utils/account-key';
 import { fclConfig, fclConfirmNetwork } from '../utils/fclConfig';
 import { fetchAccountsByPublicKey } from '../utils/key-indexer';
+import { getAccountsByPublicKeyTuple } from '../utils/modules/findAddressWithPubKey';
 import {
   pk2PubKeyTuple,
   seed2PublicPrivateKey,

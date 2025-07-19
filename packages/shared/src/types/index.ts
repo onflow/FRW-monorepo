@@ -12,4 +12,3 @@ export * from './tracking-types';
 export * from './transaction-types';
 export * from './wallet-types';
 export * from './script-types';
-export * from './type';

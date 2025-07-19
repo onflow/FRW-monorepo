@@ -30,8 +30,6 @@ import {
   getErrorMessage,
 } from '@onflow/flow-wallet-shared/utils';
 
-import { getOrCheckAccountsByPublicKeyTuple } from '@/utils/modules/findAddressWithPubKey';
-
 import { authenticationService, preferenceService } from '.';
 import googleDriveService from './googleDrive';
 import keyringService, { type Keyring } from './keyring';
@@ -55,6 +53,7 @@ import {
 } from '../utils';
 import { returnCurrentProfileId } from '../utils/current-id';
 import { findAddressWithPK, findAddressWithSeed } from '../utils/modules/findAddressWithPK';
+import { getOrCheckAccountsByPublicKeyTuple } from '../utils/modules/findAddressWithPubKey';
 
 export class AccountManagement {
   async registerNewProfile(username: string, password: string, mnemonic: string): Promise<void> {

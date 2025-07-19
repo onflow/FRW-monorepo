@@ -10,12 +10,11 @@ import {
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 
-import { TERMS_OF_SERVICE_URL, PRIVACY_POLICY_URL } from '@onflow/flow-wallet-shared/constant';
-
 import { BpCheckedIcon, BpUncheked } from '@/ui/assets/icons/CustomCheckboxIcons';
 import { LLSpinner } from '@/ui/components';
 import { PasswordInput } from '@/ui/components/password/PasswordInput';
 import { DEFAULT_PASSWORD } from '@/ui/utils/default-password';
+import { TERMS_OF_SERVICE_URL, PRIVACY_POLICY_URL } from '@/ui/utils/url-constants';
 
 interface SetPasswordProps {
   onSubmit: (password: string) => Promise<void>;

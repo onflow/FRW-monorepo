@@ -15,13 +15,9 @@ import dayjs from 'dayjs';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Area, AreaChart, ResponsiveContainer, Tooltip, YAxis } from 'recharts';
 
-import {
-  getPriceProvider,
-  Period,
-  type PriceProvider,
-  type TokenPriceHistory,
-} from '@onflow/flow-wallet-shared/types';
-import { consoleWarn } from '@onflow/flow-wallet-shared/utils';
+import { Period, type PriceProvider } from '@onflow/flow-wallet-shared/constant';
+import { type TokenPriceHistory } from '@onflow/flow-wallet-shared/types';
+import { getPriceProvider, consoleWarn } from '@onflow/flow-wallet-shared/utils';
 
 import {
   IconBinance,

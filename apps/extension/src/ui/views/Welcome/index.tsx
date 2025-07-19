@@ -3,8 +3,6 @@ import { Box } from '@mui/system';
 import React from 'react';
 import { Link } from 'react-router';
 
-import { TERMS_OF_SERVICE_URL, PRIVACY_POLICY_URL } from '@onflow/flow-wallet-shared/constant';
-
 import welcomeWallet from '@/ui/assets/svg/welcomeWallet.svg';
 import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
 import {
@@ -16,6 +14,7 @@ import {
   COLOR_GRADIENT_WHITE_FFFFFF_NEGATIVE_09,
 } from '@/ui/style/color';
 import { translateToComponents } from '@/ui/utils/i18n-components';
+import { TERMS_OF_SERVICE_URL, PRIVACY_POLICY_URL } from '@/ui/utils/url-constants';
 
 const Welcome = () => {
   return (

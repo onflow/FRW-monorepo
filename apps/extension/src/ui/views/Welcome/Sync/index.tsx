@@ -10,11 +10,8 @@ import { useNavigate } from 'react-router';
 import {
   HASH_ALGO_NUM_SHA2_256,
   SIGN_ALGO_NUM_ECDSA_secp256k1,
-} from '@onflow/flow-wallet-shared/constant';
-import {
   FCLWalletConnectMethod,
-  type FCLWalletConnectSyncAccountInfo,
-} from '@onflow/flow-wallet-shared/types';
+} from '@onflow/flow-wallet-shared/constant';
 import { isValidFlowAddress, withPrefix, consoleError } from '@onflow/flow-wallet-shared/utils';
 
 import AllSet from '@/ui/components/LandingPages/AllSet';
@@ -24,6 +21,15 @@ import { useWallet } from '@/ui/hooks/use-wallet';
 
 import SyncQr from './SyncQr';
 
+type FCLWalletConnectSyncAccountInfo = {
+  method: FCLWalletConnectMethod.accountInfo;
+  data: {
+    userAvatar: string;
+    userName: string;
+    walletAddress: string;
+    userId: string;
+  };
+};
 const STEPS = {
   QR: 'qr',
   PASSWORD: 'password',
