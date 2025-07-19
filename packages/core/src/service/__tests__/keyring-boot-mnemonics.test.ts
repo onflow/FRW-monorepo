@@ -23,19 +23,19 @@ vi.mock('../../utils/key-indexer', () => ({
   fetchAccountsByPublicKey: vi.fn().mockResolvedValue([]),
 }));
 
-vi.mock('@onflow/flow-wallet-core/service/userWallet', () => ({
+vi.mock('../../service/userWallet', () => ({
   default: {
     setupFcl: vi.fn(),
   },
 }));
 
-vi.mock('@onflow/flow-wallet-core/service/i18n', () => ({
+vi.mock('../../service/i18n', () => ({
   default: {
     t: (key) => key,
   },
 }));
 
-vi.mock('@onflow/flow-wallet-core/service/preference', () => ({
+vi.mock('../../service/preference', () => ({
   default: {
     getHiddenAddresses: vi.fn().mockReturnValue([]),
   },

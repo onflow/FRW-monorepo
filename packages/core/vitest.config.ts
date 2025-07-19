@@ -23,6 +23,10 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      '@onflow/flow-wallet-shared': new URL('../shared/src', import.meta.url).pathname,
+      '@onflow/flow-wallet-data-model': new URL('../data-model/src', import.meta.url).pathname,
+      '@onflow/flow-wallet-extension-shared': new URL('../extension-shared/src', import.meta.url)
+        .pathname,
       '@': new URL('./src', import.meta.url).pathname,
     },
   },

@@ -27,6 +27,10 @@ export default defineConfig({
       '@onflow/flow-wallet-core': new URL('../../packages/core/src', import.meta.url).pathname,
       '@onflow/flow-wallet-data-model': new URL('../../packages/data-model/src', import.meta.url)
         .pathname,
+      '@onflow/flow-wallet-extension-shared': new URL(
+        '../../packages/extension-shared/src',
+        import.meta.url
+      ).pathname,
       '@': new URL('./src', import.meta.url).pathname,
     },
   },

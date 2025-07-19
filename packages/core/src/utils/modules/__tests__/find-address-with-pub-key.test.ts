@@ -10,7 +10,7 @@ import {
 
 // Mock FCL and userWalletService
 vi.mock('@onflow/fcl');
-vi.mock('@onflow/flow-wallet-core/service/userWallet', () => ({
+vi.mock('../../service/userWallet', () => ({
   default: {
     setupFcl: vi.fn(),
     getNetwork: vi.fn().mockResolvedValue('testnet'),
@@ -18,7 +18,7 @@ vi.mock('@onflow/flow-wallet-core/service/userWallet', () => ({
 }));
 
 // Add the openapi service mock
-vi.mock('@onflow/flow-wallet-core/service/openapi', () => ({
+vi.mock('../../service/openapi', () => ({
   default: {
     getFeatureFlag: vi.fn().mockResolvedValue(false),
     init: vi.fn().mockResolvedValue(undefined),
