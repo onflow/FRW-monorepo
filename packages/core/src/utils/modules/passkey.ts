@@ -5,7 +5,7 @@ import {
   HASH_ALGO,
   KEY_TYPE,
   SIGN_ALGO,
-} from '@onflow/flow-wallet-shared/constant/algo-constants';
+} from '@onflow/flow-wallet-shared/constant';
 
 import { decodeArray } from './base64';
 import { addCredential, readSettings } from './settings';

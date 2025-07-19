@@ -2,13 +2,13 @@ import { Box, CircularProgress, FormControl, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
-import { DEFAULT_PASSWORD } from '@onflow/flow-wallet-shared/utils/default';
+import { consoleError } from '@onflow/flow-wallet-shared/utils';
 
 import lilo from '@/ui/assets/image/lilo.png';
 import { LLPrimaryButton } from '@/ui/components/LLPrimaryButton';
 import { PasswordInput } from '@/ui/components/password/PasswordInput';
 import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';
+import { DEFAULT_PASSWORD } from '@/ui/utils/default-password';
 import { openInternalPageInTab } from '@/ui/utils/webapi';
 
 import './style.css';

@@ -7,10 +7,16 @@ export default defineConfig({
     'register-reducer': 'src/register-reducer.ts',
     'transaction-reducer': 'src/transaction-reducer.ts',
   },
-  format: ['cjs', 'esm'],
-  dts: true,
+  format: ['esm'],
+  dts: {
+    compilerOptions: {
+      composite: false,
+      module: 'ESNext',
+    },
+  },
   splitting: false,
   sourcemap: true,
   clean: true,
   treeshake: true,
+  // Removed onSuccess hook that was copying src to dist/src
 });

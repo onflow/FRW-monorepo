@@ -11,7 +11,7 @@ vi.stubEnv('API_BASE_URL', 'https://test.com');
 vi.stubEnv('FB_FUNCTIONS', 'https://test.com');
 
 vi.stubEnv('API_NEWS_PATH', '/config/news.test.json');
-vi.stubEnv('API_CONFIG_PATH', '/config/config.test.json');
+vi.stubEnv('API_CONFIG_PATH', '/config/config.json');
 
 // Mock global fetch
 global.fetch = vi.fn();
@@ -127,11 +127,12 @@ vi.mock('firebase/auth/web-extension', () => ({
   initializeApp: vi.fn(() => ({})),
   indexedDBLocalPersistence: vi.fn(),
   setPersistence: vi.fn((_auth, _persistence) => ({})),
+  signOut: vi.fn(),
 }));
 
 // Mock storage utility
-vi.mock('@onflow/flow-wallet-core/utils/storage', () => ({
-  default: {
+vi.mock('@onflow/flow-wallet-extension-shared', () => ({
+  storage: {
     get: vi.fn().mockResolvedValue({}),
     set: vi.fn().mockResolvedValue(undefined),
     getExpiry: vi.fn().mockResolvedValue(null),
@@ -140,7 +141,7 @@ vi.mock('@onflow/flow-wallet-core/utils/storage', () => ({
 }));
 
 // Mock MixpanelService
-vi.mock('@onflow/flow-wallet-core/service/mixpanel', () => ({
+vi.mock('./service/mixpanel', () => ({
   mixpanelTrack: {
     track: vi.fn(),
     identify: vi.fn(),

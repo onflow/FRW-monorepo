@@ -10,13 +10,9 @@ import { useNavigate } from 'react-router';
 import {
   HASH_ALGO_NUM_SHA2_256,
   SIGN_ALGO_NUM_ECDSA_secp256k1,
-} from '@onflow/flow-wallet-shared/constant/algo-constants';
-import {
   FCLWalletConnectMethod,
-  type FCLWalletConnectSyncAccountInfo,
-} from '@onflow/flow-wallet-shared/types/type';
-import { isValidFlowAddress, withPrefix } from '@onflow/flow-wallet-shared/utils/address';
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+} from '@onflow/flow-wallet-shared/constant';
+import { isValidFlowAddress, withPrefix, consoleError } from '@onflow/flow-wallet-shared/utils';
 
 import AllSet from '@/ui/components/LandingPages/AllSet';
 import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
@@ -25,6 +21,15 @@ import { useWallet } from '@/ui/hooks/use-wallet';
 
 import SyncQr from './SyncQr';
 
+type FCLWalletConnectSyncAccountInfo = {
+  method: FCLWalletConnectMethod.accountInfo;
+  data: {
+    userAvatar: string;
+    userName: string;
+    walletAddress: string;
+    userId: string;
+  };
+};
 const STEPS = {
   QR: 'qr',
   PASSWORD: 'password',
@@ -156,7 +161,7 @@ const Sync = () => {
       try {
         setAddressToImport(jsonObject.data.walletAddress);
         const address = withPrefix(jsonObject.data.walletAddress);
-        if (!isValidFlowAddress(address)) {
+        if (!address || !isValidFlowAddress(address)) {
           throw new Error('Invalid address');
         }
         const availableKeys = await usewallet.checkAvailableAccountKeys(address);

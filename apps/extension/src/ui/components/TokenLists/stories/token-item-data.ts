@@ -1,4 +1,4 @@
-import { type ExtendedTokenInfo } from '@onflow/flow-wallet-shared/types/coin-types';
+import { type ExtendedTokenInfo } from '@onflow/flow-wallet-shared/types';
 
 export const flowToken: ExtendedTokenInfo = {
   address: '',

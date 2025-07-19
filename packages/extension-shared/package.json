@@ -3,8 +3,6 @@
   "version": "0.0.1",
   "description": "Shared code for Flow Reference Wallet Extension",
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
   "files": [
     "src",
     "dist"
@@ -27,14 +25,41 @@
     "*.{json,js,ts,jsx,tsx,html,md,mdx,mjs}": "prettier --write"
   },
   "exports": {
+    "./chrome-logger": {
+      "types": "./dist/chrome-logger.d.ts",
+      "import": "./dist/chrome-logger.js",
+      "default": "./dist/chrome-logger.js"
+    },
+    "./message/eventBus": {
+      "types": "./dist/message/eventBus.d.ts",
+      "import": "./dist/message/eventBus.js",
+      "default": "./dist/message/eventBus.js"
+    },
+    "./message/messaging": {
+      "types": "./dist/message/messaging.d.ts",
+      "import": "./dist/message/messaging.js",
+      "default": "./dist/message/messaging.js"
+    },
+    "./message/storage": {
+      "types": "./dist/message/storage.d.ts",
+      "import": "./dist/message/storage.js",
+      "default": "./dist/message/storage.js"
+    },
+    "./contact-utils": {
+      "types": "./dist/contact-utils.d.ts",
+      "import": "./dist/contact-utils.js",
+      "default": "./dist/contact-utils.js"
+    },
     "./*": {
-      "types": "./src/*.ts",
-      "default": "./src/*.ts"
+      "types": "./dist/*.d.ts",
+      "import": "./dist/*.js",
+      "default": "./dist/*.js"
     }
   },
   "dependencies": {
     "@onflow/flow-wallet-shared": "workspace:*",
-    "bignumber.js": "^9.1.2"
+    "eth-rpc-errors": "^4.0.3",
+    "events": "^3.3.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

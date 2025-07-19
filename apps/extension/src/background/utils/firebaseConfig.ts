@@ -1,4 +1,6 @@
-export function getFirbaseConfig() {
+import { type FirebaseOptions } from 'firebase/app';
+
+export function getFirbaseConfig(): FirebaseOptions {
   const firebaseConfig = {
     apiKey: process.env.FB_API_KEY,
     authDomain: process.env.FB_AUTH_DOMAIN,
@@ -11,8 +13,4 @@ export function getFirbaseConfig() {
   };
 
   return firebaseConfig;
-}
-
-export function getFirbaseFunctionUrl() {
-  return process.env.FB_FUNCTIONS;
 }

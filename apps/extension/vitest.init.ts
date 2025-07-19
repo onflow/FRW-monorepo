@@ -119,6 +119,7 @@ vi.mock('firebase/auth/web-extension', () => ({
   })),
   signInWithCustomToken: vi.fn(),
   signInAnonymously: vi.fn(),
+  signOut: vi.fn(),
   onAuthStateChanged: vi.fn((auth, callback) => {
     callback(mockAuth.currentUser);
     return () => {};
@@ -130,8 +131,8 @@ vi.mock('firebase/auth/web-extension', () => ({
 }));
 
 // Mock storage utility
-vi.mock('@onflow/flow-wallet-core/utils/storage', () => ({
-  default: {
+vi.mock('@onflow/flow-wallet-extension-shared', () => ({
+  storage: {
     get: vi.fn().mockResolvedValue({}),
     set: vi.fn().mockResolvedValue(undefined),
     getExpiry: vi.fn().mockResolvedValue(null),
@@ -140,19 +141,11 @@ vi.mock('@onflow/flow-wallet-core/utils/storage', () => ({
 }));
 
 // Mock MixpanelService
-vi.mock('@onflow/flow-wallet-core/service/mixpanel', () => ({
-  mixpanelTrack: {
-    track: vi.fn(),
-    identify: vi.fn(),
-    reset: vi.fn(),
-    setPeople: vi.fn(),
-    trackPageView: vi.fn(),
-    time: vi.fn(),
-    init: vi.fn(),
-    getIdInfo: vi.fn().mockResolvedValue({ $device_id: 'mock-device-id' }),
-  },
-  MixpanelService: {
-    instance: {
+vi.mock('@onflow/flow-wallet-core', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@onflow/flow-wallet-core')>();
+  return {
+    ...actual,
+    mixpanelTrack: {
       track: vi.fn(),
       identify: vi.fn(),
       reset: vi.fn(),
@@ -160,9 +153,21 @@ vi.mock('@onflow/flow-wallet-core/service/mixpanel', () => ({
       trackPageView: vi.fn(),
       time: vi.fn(),
       init: vi.fn(),
+      getIdInfo: vi.fn().mockResolvedValue({ $device_id: 'mock-device-id' }),
     },
-  },
-}));
+    MixpanelService: {
+      instance: {
+        track: vi.fn(),
+        identify: vi.fn(),
+        reset: vi.fn(),
+        setPeople: vi.fn(),
+        trackPageView: vi.fn(),
+        time: vi.fn(),
+        init: vi.fn(),
+      },
+    },
+  };
+});
 
 // Export mockAuth and fetch for use in tests
 export { mockAuth };

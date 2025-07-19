@@ -1,6 +1,7 @@
-import { getCurrentProfileId } from '@onflow/flow-wallet-extension-shared/current-id';
 import storage from '@onflow/flow-wallet-extension-shared/storage';
-import { type LoggedInAccount } from '@onflow/flow-wallet-shared/types/wallet-types';
+import { type LoggedInAccount } from '@onflow/flow-wallet-shared/types';
+
+import { getCurrentProfileId } from './current-id';
 
 export const getLoggedInAccount = async (): Promise<LoggedInAccount> => {
   // Note that currentAccountIndex is only used in keyring for old accounts that don't have an id stored in the keyring

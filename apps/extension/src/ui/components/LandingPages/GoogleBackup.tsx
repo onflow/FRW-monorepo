@@ -3,7 +3,7 @@ import { Button, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { useState } from 'react';
 
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+import { consoleError } from '@onflow/flow-wallet-shared/utils';
 
 import { LLSpinner } from '@/ui/components';
 import IconGoogleDrive from '@/ui/components/iconfont/IconGoogleDrive';

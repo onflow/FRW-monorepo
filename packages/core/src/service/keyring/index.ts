@@ -1,24 +1,5 @@
 /// fork from https://github.com/MetaMask/KeyringController/blob/master/index.js
 
-import * as bip39 from 'bip39';
-import encryptor from 'browser-passworder';
-import * as ethUtil from 'ethereumjs-util';
-import { EventEmitter } from 'events';
-
-import { returnCurrentProfileId } from '@onflow/flow-wallet-extension-shared/current-id';
-import storage from '@onflow/flow-wallet-extension-shared/storage';
-import {
-  FLOW_BIP44_PATH,
-  SIGN_ALGO_NUM_ECDSA_P256,
-  SIGN_ALGO_NUM_ECDSA_secp256k1,
-} from '@onflow/flow-wallet-shared/constant/algo-constants';
-import {
-  combinePubPkTuple,
-  type PrivateKeyTuple,
-  type PublicKeyTuple,
-  type PublicPrivateKey,
-  type PublicPrivateKeyTuple,
-} from '@onflow/flow-wallet-shared/types/key-types';
 import {
   CURRENT_ID_KEY,
   KEYRING_DEEP_VAULT_KEY,
@@ -26,33 +7,62 @@ import {
   KEYRING_STATE_V1_KEY,
   KEYRING_STATE_V2_KEY,
   KEYRING_STATE_V3_KEY,
-  KEYRING_STATE_VAULT_V1,
-  KEYRING_STATE_VAULT_V2,
-  KEYRING_STATE_VAULT_V3,
-  KEYRING_TYPE,
-  type KeyringState,
-  type VaultEntryV2,
-  type VaultEntryV3,
-} from '@onflow/flow-wallet-shared/types/keyring-types';
-import { type LoggedInAccount } from '@onflow/flow-wallet-shared/types/wallet-types';
+} from '@onflow/flow-wallet-data-model';
+import * as bip39 from 'bip39';
+import encryptor from 'browser-passworder';
+import * as ethUtil from 'ethereumjs-util';
+import { EventEmitter } from 'events';
+
+import storage from '@onflow/flow-wallet-extension-shared/storage';
+import {
+  FLOW_BIP44_PATH,
+  SIGN_ALGO_NUM_ECDSA_P256,
+  SIGN_ALGO_NUM_ECDSA_secp256k1,
+} from '@onflow/flow-wallet-shared/constant';
+import type {
+  PrivateKeyTuple,
+  PublicKeyTuple,
+  PublicPrivateKey,
+  PublicPrivateKeyTuple,
+  KeyringState,
+  VaultEntryV2,
+  VaultEntryV3,
+  LoggedInAccount,
+} from '@onflow/flow-wallet-shared/types';
 import {
   consoleError,
   consoleInfo,
   consoleWarn,
-} from '@onflow/flow-wallet-shared/utils/console-log';
+  combinePubPkTuple,
+} from '@onflow/flow-wallet-shared/utils';
 
-import { normalizeAddress } from '../../utils';
-import { defaultAccountKey, pubKeyAccountToAccountKey } from '../../utils/account-key';
-import { getAccountsByPublicKeyTuple } from '../../utils/modules/findAddressWithPubKey';
+import { HDKeyring, type HDKeyringData, type HDKeyringType } from './hdKeyring';
+import { type SimpleKeyPairType, SimpleKeyring, type SimpleKeyringData } from './simpleKeyring';
 import {
+  normalizeAddress,
+  getAccountsByPublicKeyTuple,
+  defaultAccountKey,
+  pubKeyAccountToAccountKey,
   formPubKeyTuple,
   getPublicKeyFromPrivateKey,
   pkTuple2PubKey,
   seedWithPathAndPhrase2PublicPrivateKey,
-} from '../../utils/modules/publicPrivateKey';
+} from '../../utils';
+import { returnCurrentProfileId } from '../../utils/current-id';
 import preference from '../preference';
-import { HDKeyring, type HDKeyringData, type HDKeyringType } from './hdKeyring';
-import { type SimpleKeyPairType, SimpleKeyring, type SimpleKeyringData } from './simpleKeyring';
+
+export const KEYRING_STATE_VAULT_V1 = 1;
+export const KEYRING_STATE_VAULT_V2 = 2;
+export const KEYRING_STATE_VAULT_V3 = 3;
+
+export const KEYRING_TYPE = {
+  HdKeyring: 'HD Key Tree',
+  SimpleKeyring: 'Simple Key Pair',
+  HardwareKeyring: 'hardware',
+  WatchAddressKeyring: 'Watch Address',
+  WalletConnectKeyring: 'WalletConnect',
+  GnosisKeyring: 'Gnosis',
+};
 
 export const KEYRING_SDK_TYPES = {
   SimpleKeyring,
@@ -980,7 +990,7 @@ class KeyringService extends EventEmitter {
     // currentId always takes precedence
     const currentId = await returnCurrentProfileId();
     // Validate the currentId to ensure it's a valid keyring id (Note switchKeyring also does this)
-    const validCurrentId = await this.ensureValidKeyringId(currentId);
+    const validCurrentId = await this.ensureValidKeyringId(currentId ?? null);
     // switch to the keyring with the currentId
     await this.switchKeyring(validCurrentId);
   }
@@ -1016,7 +1026,46 @@ class KeyringService extends EventEmitter {
     // Restore the keyring
     await this._restoreKeyring(decryptedKeyring);
   }
+  private _getKeyringByType(type: string): Keyring {
+    const keyring = this.getKeyringsByType(type)[0];
 
+    if (keyring) {
+      return keyring;
+    }
+
+    throw new Error(`No ${type} keyring found`);
+  }
+
+  /**
+   * Get Mnemonic
+   *
+   * Returns the mnemonic for the current keyring.
+   *
+   * @param {string} password - The keyring controller password.
+   * @returns {Promise<string>} The mnemonic.
+   */
+  getMnemonic = async (password: string): Promise<string> => {
+    await this.verifyPassword(password);
+    const keyring = this._getKeyringByType(KEYRING_CLASS.MNEMONIC);
+    if (!(keyring instanceof HDKeyring)) {
+      throw new Error('Keyring is not an HDKeyring');
+    }
+    const serialized = await keyring.serialize();
+    if (!serialized.mnemonic) {
+      throw new Error('Keyring is not an HDKeyring');
+    }
+    const seedWords = serialized.mnemonic;
+    return seedWords;
+  };
+
+  checkMnemonics = async () => {
+    const keyring = this._getKeyringByType(KEYRING_CLASS.MNEMONIC);
+    const serialized = await keyring.serialize();
+    if (serialized) {
+      return true;
+    }
+    return false;
+  };
   /**
    * Retrieve privatekey from vault
    *

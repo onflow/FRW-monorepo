@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "description": "Data model for Flow Reference Wallet",
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "src",
     "dist"
@@ -28,54 +28,21 @@
   },
   "exports": {
     ".": {
-      "types": "./src/index.ts",
-      "default": "./src/index.ts"
-    },
-    "./*": {
-      "types": "./src/*.ts",
-      "default": "./src/*.ts"
-    },
-    "./data-cache-types": {
-      "types": "./src/data-cache-types.ts",
-      "default": "./src/data-cache-types.ts"
-    },
-    "./cache-data-keys": {
-      "types": "./src/cache-data-keys.ts",
-      "default": "./src/cache-data-keys.ts"
-    },
-    "./user-data-keys": {
-      "types": "./src/user-data-keys.ts",
-      "default": "./src/user-data-keys.ts"
-    },
-    "./cache-data-access": {
-      "types": "./src/cache-data-access.ts",
-      "default": "./src/cache-data-access.ts"
-    },
-    "./user-data-access": {
-      "types": "./src/user-data-access.ts",
-      "default": "./src/user-data-access.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     }
   },
   "dependencies": {
     "@onflow/flow-wallet-shared": "workspace:*",
-    "@onflow/flow-wallet-extension-shared": "workspace:*",
-    "bignumber.js": "^9.1.2"
+    "@onflow/flow-wallet-extension-shared": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
     "@vitest/coverage-v8": "3.2.4",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
-    "vitest": "^3.2.4",
-    "@types/react": "^18.3.23",
-    "@types/react-dom": "^18.3.7",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
-  },
-  "peerDependencies": {
-    "ethers": "^6.13.4",
-    "react": ">=16.8.0 <17.0.0 || >=17.0.0 <18.0.0 || >=18.0.0 <19.0.0",
-    "react-dom": ">=16.8.0 <17.0.0 || >=17.0.0 <18.0.0 || >=18.0.0 <19.0.0"
+    "vitest": "^3.2.4"
   },
   "engines": {
     "node": ">=22.11.0"

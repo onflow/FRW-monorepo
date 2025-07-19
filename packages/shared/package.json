@@ -3,13 +3,19 @@
   "version": "0.0.1",
   "description": "Shared types and utilities for Flow Reference Wallet",
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
-    "src"
+    "dist",
+    "src",
+    "src/types/index.ts",
+    "src/constant/index.ts",
+    "src/utils/index.ts"
   ],
   "scripts": {
     "build": "tsup",
+    "build:js": "tsup",
+    "build:dts": "tsc --emitDeclarationOnly",
     "build:watch": "tsup --watch",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist",
@@ -26,54 +32,24 @@
     "*.{json,js,ts,jsx,tsx,html,md,mdx,mjs}": "prettier --write"
   },
   "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "default": "./src/index.ts"
-    },
     "./types": {
-      "types": "./src/types/index.ts",
-      "default": "./src/types/index.ts"
-    },
-    "./types/*": {
-      "types": "./src/types/*.ts",
-      "default": "./src/types/*.ts"
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/types/index.js",
+      "default": "./dist/types/index.js"
     },
     "./constant": {
-      "types": "./src/constant/index.ts",
-      "default": "./src/constant/index.ts"
-    },
-    "./constant/emoji.json": {
-      "default": "./src/constant/emoji.json"
-    },
-    "./constant/erc20.abi.json": {
-      "default": "./src/constant/erc20.abi.json"
-    },
-    "./constant/erc721.abi.json": {
-      "default": "./src/constant/erc721.abi.json"
-    },
-    "./constant/*": {
-      "types": "./src/constant/*.ts",
-      "default": "./src/constant/*.ts"
+      "types": "./dist/constant/index.d.ts",
+      "import": "./dist/constant/index.js",
+      "default": "./dist/constant/index.js"
     },
     "./utils": {
-      "types": "./src/utils/index.ts",
-      "default": "./src/utils/index.ts"
-    },
-    "./utils/*": {
-      "types": [
-        "./src/utils/*.ts",
-        "./src/utils/*.json"
-      ],
-      "default": [
-        "./src/utils/*.ts",
-        "./src/utils/*.json"
-      ]
+      "types": "./dist/utils/index.d.ts",
+      "import": "./dist/utils/index.js",
+      "default": "./dist/utils/index.js"
     }
   },
   "dependencies": {
-    "@onflow/fcl": "^1.13.1",
     "@onflow/typedefs": "^1.4.0",
-    "@onflow/types": "^1.4.0",
     "bignumber.js": "^9.1.2"
   },
   "devDependencies": {
@@ -81,16 +57,7 @@
     "@vitest/coverage-v8": "3.2.4",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
-    "vitest": "^3.2.4",
-    "@types/react": "^18.3.23",
-    "@types/react-dom": "^18.3.7",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
-  },
-  "peerDependencies": {
-    "ethers": "^6.13.4",
-    "react": ">=16.8.0 <17.0.0 || >=17.0.0 <18.0.0 || >=18.0.0 <19.0.0",
-    "react-dom": ">=16.8.0 <17.0.0 || >=17.0.0 <18.0.0 || >=18.0.0 <19.0.0"
+    "vitest": "^3.2.4"
   },
   "engines": {
     "node": ">=22.11.0"

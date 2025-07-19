@@ -1,17 +1,19 @@
 import BN from 'bignumber.js';
 
-import { type ExtendedTokenInfo } from '@onflow/flow-wallet-shared/types/coin-types';
-import { type Contact } from '@onflow/flow-wallet-shared/types/network-types';
 import type {
   AddressType,
   TokenType,
   TransactionState,
   TransactionStateString,
-} from '@onflow/flow-wallet-shared/types/transaction-types';
-import { type WalletAddress } from '@onflow/flow-wallet-shared/types/wallet-types';
-import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils/address';
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
-import { trimDecimalAmount } from '@onflow/flow-wallet-shared/utils/number';
+  ExtendedTokenInfo,
+  Contact,
+  WalletAddress,
+} from '@onflow/flow-wallet-shared/types';
+import {
+  isValidEthereumAddress,
+  consoleError,
+  trimDecimalAmount,
+} from '@onflow/flow-wallet-shared/utils';
 
 export const INITIAL_TRANSACTION_STATE: TransactionState = {
   currentTxState: '',

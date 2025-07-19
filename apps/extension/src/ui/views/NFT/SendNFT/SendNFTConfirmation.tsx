@@ -6,11 +6,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import Web3 from 'web3';
 
-import { EVM_ENDPOINT } from '@onflow/flow-wallet-shared/constant/domain-constants';
-import erc721 from '@onflow/flow-wallet-shared/constant/erc721.abi.json';
-import { type Contact } from '@onflow/flow-wallet-shared/types/network-types';
-import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils/address';
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+import { erc721Abi as erc721, EVM_ENDPOINT } from '@onflow/flow-wallet-shared/constant';
+import { type Contact } from '@onflow/flow-wallet-shared/types';
+import { isValidEthereumAddress, consoleError } from '@onflow/flow-wallet-shared/utils';
 
 import IconNext from '@/ui/assets/svg/next.svg';
 import { FRWProfile, FRWTargetProfile, LLProfile, LLSpinner } from '@/ui/components';

@@ -1,4 +1,4 @@
-import { consoleLog } from '@onflow/flow-wallet-shared/utils/console-log';
+import { consoleLog } from '@onflow/flow-wallet-shared/utils';
 
 export const retryOperation = async <T>(
   operation: () => Promise<T>,

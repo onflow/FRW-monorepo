@@ -1,37 +1,38 @@
 import * as fcl from '@onflow/fcl';
-import type { Account as FclAccount } from '@onflow/typedefs';
-import * as bip39 from 'bip39';
-import * as ethUtil from 'ethereumjs-util';
-import { getApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth/web-extension';
-
 import {
   userMetadataKey,
   mainAccountsKey,
   registerStatusKey,
-} from '@onflow/flow-wallet-data-model/cache-data-keys';
-import { FLOW_BIP44_PATH } from '@onflow/flow-wallet-shared/constant/algo-constants';
+  type UserMetadataStore,
+  getValidData,
+  setCachedData,
+} from '@onflow/flow-wallet-data-model';
+import type { Account as FclAccount } from '@onflow/typedefs';
+import * as bip39 from 'bip39';
+import * as ethUtil from 'ethereumjs-util';
+
 import {
+  FLOW_BIP44_PATH,
   HTTP_STATUS_CONFLICT,
   HTTP_STATUS_TOO_MANY_REQUESTS,
-} from '@onflow/flow-wallet-shared/constant/domain-constants';
-import {
-  type AccountKeyRequest,
-  type UserInfoResponse,
-} from '@onflow/flow-wallet-shared/types/network-types';
-import {
-  type FlowAddress,
-  type ProfileBackupStatus,
-} from '@onflow/flow-wallet-shared/types/wallet-types';
+} from '@onflow/flow-wallet-shared/constant';
+import type {
+  AccountKeyRequest,
+  UserInfoResponse,
+  MainAccount,
+  FlowAddress,
+  ProfileBackupStatus,
+} from '@onflow/flow-wallet-shared/types';
 import {
   isValidFlowAddress,
   isValidEthereumAddress,
-} from '@onflow/flow-wallet-shared/utils/address';
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+  consoleError,
+  getErrorMessage,
+} from '@onflow/flow-wallet-shared/utils';
 
-import { preferenceService } from '.';
+import { authenticationService, preferenceService } from '.';
 import googleDriveService from './googleDrive';
-import keyringService from './keyring';
+import keyringService, { type Keyring } from './keyring';
 import { mixpanelTrack } from './mixpanel';
 import openapiService from './openapi';
 import userInfoService from './user';
@@ -44,17 +45,15 @@ import {
   getAccountKey,
   pubKeyAccountToAccountKey,
   pubKeySignAlgoToAccountKey,
-} from '../utils/account-key';
-import { getValidData, setCachedData } from '../utils/data-cache';
-import { findAddressWithPK, findAddressWithSeed } from '../utils/modules/findAddressWithPK';
-import { getOrCheckAccountsByPublicKeyTuple } from '../utils/modules/findAddressWithPubKey';
-import {
   formPubKeyTuple,
   jsonToKey,
   pk2PubKeyTuple,
   seedWithPathAndPhrase2PublicPrivateKey,
-} from '../utils/modules/publicPrivateKey';
-import { generateRandomId } from '../utils/random-id';
+  generateRandomId,
+} from '../utils';
+import { returnCurrentProfileId } from '../utils/current-id';
+import { findAddressWithPK, findAddressWithSeed } from '../utils/modules/findAddressWithPK';
+import { getOrCheckAccountsByPublicKeyTuple } from '../utils/modules/findAddressWithPubKey';
 
 export class AccountManagement {
   async registerNewProfile(username: string, password: string, mnemonic: string): Promise<void> {
@@ -94,7 +93,48 @@ export class AccountManagement {
     // Check for the new address asynchronously
     this.checkForNewAddress('mainnet', accountKey.public_key, result.data.txid);
   }
+  /**
+   * Remove a profile and its associated keys
+   * If it's the last profile, it behaves like a wallet reset
+   *
+   * @param {string} password - The keyring controller password
+   * @param {string} profileId - The ID of the profile to remove
+   * @returns {Promise<boolean>} - Returns true if successful
+   */
+  removeProfile = async (password: string, profileId: string): Promise<boolean> => {
+    // Remove the profile
+    await keyringService.removeProfile(password, profileId);
+    // Switch to the profile with currentid
+    const currentId = await returnCurrentProfileId();
+    if (!currentId) {
+      // Lock the wallet
+      await userWalletService.logoutCurrentUser();
+    } else {
+      await this.switchProfile(currentId);
+    }
+    return true;
+  };
 
+  /**
+   * Switch the wallet profile to a different profile
+   * @param id - The id of the keyring to switch to.
+   */
+  switchProfile = async (id: string) => {
+    try {
+      await keyringService.switchKeyring(id);
+      // Login with the new keyring
+      await userWalletService.loginWithKeyring();
+    } catch (error) {
+      throw new Error('Failed to switch account: ' + getErrorMessage(error));
+    }
+  };
+
+  /**
+   * Check for a new address in the transaction
+   * @param network - The network to check for a new address
+   * @param pubKey - The public key to check for a new address
+   * @param txid - The transaction id to check for a new address
+   */
   async checkForNewAddress(
     network: string,
     pubKey: string,
@@ -345,11 +385,11 @@ export class AccountManagement {
     address: string | null = null,
     derivationPath: string = FLOW_BIP44_PATH,
     passphrase: string = ''
-  ): Promise<any[]> {
+  ) {
     return await findAddressWithSeed(seed, address, derivationPath, passphrase);
   }
 
-  async findAddressWithPrivateKey(pk: string, address: string): Promise<any> {
+  async findAddressWithPrivateKey(pk: string, address: string) {
     return await findAddressWithPK(pk, address);
   }
 
@@ -386,8 +426,8 @@ export class AccountManagement {
     if (!isValidMnemonic) {
       throw new Error('Invalid mnemonic');
     }
-    const app = getApp(process.env.NODE_ENV!);
-    const user = await getAuth(app).currentUser;
+    const auth = authenticationService.getAuth();
+    const user = await auth.currentUser;
     try {
       // This would need to be imported from googleDriveService
       await googleDriveService.uploadMnemonicToGoogleDrive(mnemonic, username, user!.uid, password);
@@ -416,7 +456,7 @@ export class AccountManagement {
     mnemonic: string,
     derivationPath = FLOW_BIP44_PATH,
     passphrase = ''
-  ): Promise<any> {
+  ) {
     await keyringService.clearCurrentKeyring();
     const keyring = await keyringService.createKeyringWithMnemonics(
       publicKey,
@@ -448,13 +488,14 @@ export class AccountManagement {
       password,
       privateKey
     );
+    // TODO: TB July 2025 - this is deprecated, we should remove it
     return this._setCurrentAccountFromKeyring(keyring);
   };
-
-  async _setCurrentAccountFromKeyring(keyring: any, index = 0) {
-    const accounts = keyring.getAccountsWithBrand
-      ? await keyring.getAccountsWithBrand()
-      : await keyring.getAccounts();
+  /**
+   * @deprecated don't use this
+   */
+  private async _setCurrentAccountFromKeyring(keyring: Keyring, index = 0) {
+    const accounts = await keyring.getAccounts();
     const account = accounts[index < 0 ? index + accounts.length : index];
 
     if (!account) {
@@ -462,9 +503,9 @@ export class AccountManagement {
     }
 
     const _account = {
-      address: typeof account === 'string' ? account : account.address,
+      address: account,
       type: keyring.type,
-      brandName: typeof account === 'string' ? keyring.type : account.brandName,
+      brandName: keyring.type,
     };
     preferenceService.setCurrentAccount(_account);
 
@@ -634,7 +675,7 @@ export class AccountManagement {
       const cacheKey = userMetadataKey(currentPubKey);
 
       // Get existing metadata from cache
-      const existingMetadata = (await getValidData(cacheKey)) || {};
+      const existingMetadata = (await getValidData<UserMetadataStore>(cacheKey)) || {};
       const updatedMetadata = {
         ...existingMetadata,
         [address]: {
@@ -651,7 +692,7 @@ export class AccountManagement {
       try {
         const network = await userWalletService.getNetwork();
         const accountsCacheKey = mainAccountsKey(network, currentPubKey);
-        const existingMainAccounts = await getValidData(accountsCacheKey);
+        const existingMainAccounts = await getValidData<MainAccount[]>(accountsCacheKey);
 
         if (existingMainAccounts && Array.isArray(existingMainAccounts)) {
           const updatedMainAccounts = existingMainAccounts.map((account) => {

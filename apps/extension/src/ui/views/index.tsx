@@ -11,7 +11,6 @@ import themeOptions from '@/ui/style/LLTheme';
 import { WalletProvider } from '@/ui/utils/WalletContext';
 
 // Uncomment this when we need to test api-test
-import ApiTestPage from './api-test/api-test-page';
 import Approval from './Approval';
 import Forgot from './Forgot';
 import Recover from './Forgot/Recover';
@@ -61,17 +60,6 @@ const AppRoutes = () => {
           </PrivateRoute>
         }
       />
-      {/* uncomment this when we need to test api-test */}
-      {process.env.NODE_ENV === 'development' && (
-        <Route
-          path="/api-test/*"
-          element={
-            <PrivateRoute>
-              <ApiTestPage />
-            </PrivateRoute>
-          }
-        />
-      )}
     </Routes>
   );
 };

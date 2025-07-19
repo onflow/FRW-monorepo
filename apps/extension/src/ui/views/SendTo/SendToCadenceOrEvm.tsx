@@ -3,9 +3,12 @@ import BN from 'bignumber.js';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { type TransactionState } from '@onflow/flow-wallet-shared/types/transaction-types';
-import { isValidAddress, isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils/address';
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+import { type TransactionState } from '@onflow/flow-wallet-shared/types';
+import {
+  isValidAddress,
+  isValidEthereumAddress,
+  consoleError,
+} from '@onflow/flow-wallet-shared/utils';
 
 import { LLHeader } from '@/ui/components';
 import CancelIcon from '@/ui/components/iconfont/IconClose';

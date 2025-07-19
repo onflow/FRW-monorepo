@@ -1,11 +1,18 @@
 import type { Account as FclAccount } from '@onflow/typedefs';
 import * as ethUtil from 'ethereumjs-util';
 
-import { type FlowNetwork } from '@onflow/flow-wallet-shared/types/network-types';
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+import { type FlowNetwork } from '@onflow/flow-wallet-shared/types';
+import { consoleError } from '@onflow/flow-wallet-shared/utils';
 
 import { EMULATOR_HOST_MAINNET, EMULATOR_HOST_TESTNET } from './fclConfig';
 
+// Re-export utility modules
+export * from './account-key';
+export * from './key-indexer';
+export * from './modules/publicPrivateKey';
+export * from './random-id';
+export * from './modules/findAddressWithPubKey';
+export * from './modules/findAddressWithPK';
 // {a:{b: string}} => {1: 'a.b'}
 // later same [source] value will override [result] key generated before
 const retrieveValuePath = (obj) => {
@@ -95,7 +102,7 @@ export const checkEmulatorAccount = async (
   try {
     const baseURL = getEmulatorBaseURL(network);
     const response = await fetch(`${baseURL}/v1/accounts/${address}`);
-    const data = await response.json();
+    const data = (await response.json()) as { address?: string };
     return !!data.address;
   } catch (error) {
     consoleError('checkEmulatorAccount - error ', error);

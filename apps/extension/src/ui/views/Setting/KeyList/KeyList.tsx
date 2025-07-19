@@ -2,10 +2,7 @@ import { Box, IconButton, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation } from 'react-router';
 
-import {
-  type AccountKey,
-  type KeyResponseItem,
-} from '@onflow/flow-wallet-shared/types/network-types';
+import { type AccountKey, type KeyResponseItem } from '@onflow/flow-wallet-shared/types';
 
 import curve from '@/ui/assets/image/curve.png';
 import hash from '@/ui/assets/image/hash.png';

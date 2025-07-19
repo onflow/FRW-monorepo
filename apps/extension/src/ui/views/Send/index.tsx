@@ -24,10 +24,8 @@ import {
   checkAddressBookContacts,
   filterContacts,
 } from '@onflow/flow-wallet-extension-shared/contact-utils';
-import { type Contact } from '@onflow/flow-wallet-shared/types/network-types';
-import { type WalletAddress } from '@onflow/flow-wallet-shared/types/wallet-types';
-import { isValidAddress } from '@onflow/flow-wallet-shared/utils/address';
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+import { type Contact, type WalletAddress } from '@onflow/flow-wallet-shared/types';
+import { isValidAddress, consoleError } from '@onflow/flow-wallet-shared/utils';
 
 import AccountsList from '@/ui/components/AddressLists/AccountsList';
 import AddressBookList from '@/ui/components/AddressLists/AddressBookList';

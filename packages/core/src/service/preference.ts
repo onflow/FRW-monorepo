@@ -1,10 +1,17 @@
+/**
+ * Preference service
+ * This service is used to store the preference of the user
+ * ******************************************************
+ * TODO: TB Jul 2025: This service is hardly used and should be removed or re-written
+ * ******************************************************
+ **/
+
 import compareVersions from 'compare-versions';
 
 import storage from '@onflow/flow-wallet-extension-shared/storage';
-import { type FlowNetwork, MAINNET_NETWORK } from '@onflow/flow-wallet-shared/types/network-types';
-import { type Currency, DEFAULT_CURRENCY } from '@onflow/flow-wallet-shared/types/wallet-types';
+import { MAINNET_NETWORK, DEFAULT_CURRENCY } from '@onflow/flow-wallet-shared/constant';
+import { type FlowNetwork, type Currency } from '@onflow/flow-wallet-shared/types';
 
-import keyringService from './keyring';
 import createPersistStore from '../utils/persistStore';
 
 const version = process.env.release || '0';
@@ -209,8 +216,10 @@ class PreferenceService {
    * to the first address in address list
    */
   resetCurrentAccount = async () => {
-    const [account] = await keyringService.getAllVisibleAccountsArray();
-    this.setCurrentAccount(account);
+    // TODO: TB Jul 2025: Remove this
+    //  const [account] = await keyringService.getAllVisibleAccountsArray();
+    //    this.setCurrentAccount(account);
+    // TODO: TB Jul 2025: Implement this
   };
 
   showAddress = (type: string, address: string) => {

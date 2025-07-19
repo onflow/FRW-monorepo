@@ -1,6 +1,6 @@
+import { getUserWalletsData, userWalletsKey } from '@onflow/flow-wallet-data-model';
 import { useEffect, useState } from 'react';
 
-import { getUserWalletsData, userWalletsKey } from '@onflow/flow-wallet-data-model/user-data-keys';
 import storage, {
   type AreaName,
   type StorageChange,

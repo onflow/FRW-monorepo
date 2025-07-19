@@ -1,27 +1,32 @@
+import BigNumber from 'bignumber.js';
+
 // TODO: remove this function. It's called from CoinList and Wallet
 /**
  * @deprecated
  */
-export const formatLargeNumber = (num) => {
+export const formatLargeNumber = (num: number | string | BigNumber) => {
+  let cleanNum = num;
   if (typeof num === 'string' && num.startsWith('$')) {
-    num = num.slice(1);
+    cleanNum = num.slice(1);
   }
 
-  if (num >= 1e12) {
-    return (num / 1e12).toFixed(3) + 'T'; // Trillions
-  } else if (num >= 1e9) {
-    return (num / 1e9).toFixed(3) + 'B'; // Billions
-  } else if (num >= 1e6) {
-    return (num / 1e6).toFixed(3) + 'M'; // Millions
+  const bn = new BigNumber(cleanNum);
+
+  if (bn.isLessThan(1e6)) {
+    return bn.toString(); // Less than 1M, return as-is
+  } else if (bn.isLessThan(1e9)) {
+    return `${bn.dividedBy(1e6).toFixed(3)}M`; // Millions
+  } else if (bn.isLessThan(1e12)) {
+    return `${bn.dividedBy(1e9).toFixed(3)}B`; // Billions
   } else {
-    return num.toString(); // Less than 1M, return as-is
+    return `${bn.dividedBy(1e12).toFixed(3)}T`; // Trillions
   }
 };
 
 // TODO: remove this function. It's called from TokenInfoCard.tsx
-export const addDotSeparators = (num) => {
+export const addDotSeparators = (num: number | string) => {
   // replace with http://numeraljs.com/ if more requirements
-  const [integerPart, decimalPart] = parseFloat(num).toFixed(8).split('.');
+  const [integerPart, decimalPart] = parseFloat(num.toString()).toFixed(8).split('.');
 
   // Format the integer part with comma separators
   const newIntegerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');

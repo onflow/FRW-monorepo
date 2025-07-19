@@ -1,13 +1,13 @@
 import type { TransactionExecutionStatus, TransactionStatus } from '@onflow/typedefs';
 import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { type FlowNetwork } from '@onflow/flow-wallet-shared/types/network-types';
+import { type FlowNetwork } from '@onflow/flow-wallet-shared/types';
 
 import openapiService from '../openapi';
 import transaction from '../transaction-activity';
 
 // Mock storage functions
-vi.mock('@onflow/flow-wallet-shared/utils/storage', () => ({
+vi.mock('@onflow/flow-wallet-extension-shared/storage', () => ({
   default: {
     getSession: vi.fn().mockImplementation((key) => {
       const now = Date.now();
@@ -124,7 +124,7 @@ describe('Transaction Service', () => {
   });
 
   // Add the openapi service mock
-  vi.mock('@onflow/flow-wallet-core/service/openapi', () => {
+  vi.mock('../../service/openapi', () => {
     const mockData = {
       transactions: [
         {
@@ -468,7 +468,7 @@ describe('Transaction Service', () => {
         sender: '0x1234567890abcdef',
         receiver: '0x2234567890abcdef',
         hash: '0x1234567890abcdef1234567890abcdef',
-        status: 'SEALED',
+        status: 'Sealed',
         token: 'FLOW',
         indexed: true,
       });
@@ -494,30 +494,23 @@ describe('Transaction Service', () => {
   });
 });
 
-vi.mock('@onflow/flow-wallet-shared/utils/cache-data-access', () => ({
-  getCachedData: vi.fn().mockImplementation(async (key) => {
-    return mockStorageState.session.get(key);
-  }),
-  setCachedData: vi.fn().mockImplementation((key, value, expiry) => {
-    mockStorageState.session.set(key, value);
-  }),
-  getValidData: vi.fn().mockImplementation(async (key) => {
-    return mockStorageState.session.get(key);
-  }),
-  getInvalidData: vi.fn().mockImplementation(async (key) => {
-    return mockStorageState.session.get(key);
-  }),
-}));
+vi.mock('@onflow/flow-wallet-data-model', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@onflow/flow-wallet-data-model')>();
+  return {
+    ...actual,
+    getCachedData: vi.fn().mockImplementation(async (key) => {
+      return mockStorageState.session.get(key);
+    }),
+    setCachedData: vi.fn().mockImplementation((key, value, expiry) => {
+      mockStorageState.session.set(key, value);
+    }),
+    getValidData: vi.fn().mockImplementation(async (key) => {
+      return mockStorageState.session.get(key);
+    }),
+    getInvalidData: vi.fn().mockImplementation(async (key) => {
+      return mockStorageState.session.get(key);
+    }),
 
-vi.mock('@onflow/flow-wallet-core/utils/data-cache', () => ({
-  getValidData: vi.fn().mockImplementation(async (key) => {
-    return mockStorageState.session.get(key);
-  }),
-  getInvalidData: vi.fn().mockImplementation(async (key) => {
-    return mockStorageState.session.get(key);
-  }),
-  setCachedData: vi.fn().mockImplementation((key, value, expiry) => {
-    mockStorageState.session.set(key, value);
-  }),
-  registerRefreshListener: vi.fn(),
-}));
+    registerRefreshListener: vi.fn(),
+  };
+});

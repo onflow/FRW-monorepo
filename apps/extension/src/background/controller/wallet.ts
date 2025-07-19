@@ -21,24 +21,10 @@ import {
   userWalletService,
   accountManagementService,
 } from '@onflow/flow-wallet-core';
-import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
-import BN from 'bignumber.js';
-import { ethErrors } from 'eth-rpc-errors';
-
-import {
-  type Keyring,
-  KEYRING_CLASS,
-  type KeyringType,
-} from '@onflow/flow-wallet-core/service/keyring';
-import { HDKeyring } from '@onflow/flow-wallet-core/service/keyring/hdKeyring';
-import type { ConnectedSite } from '@onflow/flow-wallet-core/service/permission';
-import type { PreferenceAccount } from '@onflow/flow-wallet-core/service/preference';
 import {
   getValidData,
   registerRefreshListener,
   setCachedData,
-} from '@onflow/flow-wallet-core/utils/data-cache';
-import {
   childAccountDescKey,
   type ChildAccountFtStore,
   childAccountNftsKey,
@@ -49,45 +35,39 @@ import {
   registerStatusRefreshRegex,
   walletLoadedKey,
   walletLoadedRefreshRegex,
-} from '@onflow/flow-wallet-data-model/cache-data-keys';
-import { returnCurrentProfileId } from '@onflow/flow-wallet-extension-shared/current-id';
+  CURRENT_ID_KEY,
+} from '@onflow/flow-wallet-data-model';
+import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
+import BN from 'bignumber.js';
+
 import eventBus from '@onflow/flow-wallet-extension-shared/message/eventBus';
 import { retryOperation } from '@onflow/flow-wallet-extension-shared/retryOperation';
 import storage from '@onflow/flow-wallet-extension-shared/storage';
-import { FLOW_BIP44_PATH } from '@onflow/flow-wallet-shared/constant/algo-constants';
-import { INTERNAL_REQUEST_ORIGIN } from '@onflow/flow-wallet-shared/constant/domain-constants';
-import { type CustomFungibleTokenInfo } from '@onflow/flow-wallet-shared/types/coin-types';
 import {
+  FLOW_BIP44_PATH,
+  INTERNAL_REQUEST_ORIGIN,
+  MAINNET_CHAIN_ID,
+  PriceProvider,
+  Period,
+} from '@onflow/flow-wallet-shared/constant';
+import {
+  type CustomFungibleTokenInfo,
   type FeatureFlagKey,
   type FeatureFlags,
-} from '@onflow/flow-wallet-shared/types/feature-types';
-import {
   type PublicKeyTuple,
   type PublicPrivateKeyTuple,
-} from '@onflow/flow-wallet-shared/types/key-types';
-import { CURRENT_ID_KEY } from '@onflow/flow-wallet-shared/types/keyring-types';
-import {
   type Contact,
   ContactType,
   type FlowNetwork,
-  MAINNET_CHAIN_ID,
   type NFTModelV2,
   type UserInfoResponse,
-  PriceProvider,
-  Period,
-} from '@onflow/flow-wallet-shared/types/network-types';
-import {
   type NFTCollectionData,
   type NFTCollections,
-} from '@onflow/flow-wallet-shared/types/nft-types';
-import { type NetworkScripts } from '@onflow/flow-wallet-shared/types/script-types';
-import { type TokenInfo } from '@onflow/flow-wallet-shared/types/token-info';
-import { type TrackingEvents } from '@onflow/flow-wallet-shared/types/tracking-types';
-import {
+  type NetworkScripts,
+  type TokenInfo,
+  type TrackingEvents,
   type TransactionState,
   type TransferItem,
-} from '@onflow/flow-wallet-shared/types/transaction-types';
-import {
   type ActiveAccountType,
   type ActiveChildType_depreciated,
   type Currency,
@@ -99,15 +79,16 @@ import {
   type PublicKeyAccount,
   type WalletAccount,
   type WalletAddress,
-} from '@onflow/flow-wallet-shared/types/wallet-types';
+} from '@onflow/flow-wallet-shared/types';
 import {
   isValidAddress,
   isValidEthereumAddress,
   isValidFlowAddress,
   withPrefix,
-} from '@onflow/flow-wallet-shared/utils/address';
-import { consoleError, consoleWarn } from '@onflow/flow-wallet-shared/utils/console-log';
-import { getEmojiList } from '@onflow/flow-wallet-shared/utils/emoji-util';
+  consoleError,
+  consoleWarn,
+  getEmojiList,
+} from '@onflow/flow-wallet-shared/utils';
 
 import notification from '@/background/webapi/notification';
 import { openIndexPage } from '@/background/webapi/tab';
@@ -115,8 +96,6 @@ import { openIndexPage } from '@/background/webapi/tab';
 import BaseController from './base';
 import notificationService from './notification';
 import provider from './provider';
-
-const stashKeyrings: Record<string, Keyring> = {};
 
 interface TokenTransaction {
   symbol: string;
@@ -197,6 +176,17 @@ export class WalletController extends BaseController {
   registerNewProfile = async (username: string, password: string, mnemonic: string) => {
     return await accountManagementService.registerNewProfile(username, password, mnemonic);
   };
+  /**
+   * Remove a profile and its associated keys
+   * If it's the last profile, it behaves like a wallet reset
+   *
+   * @param {string} password - The keyring controller password
+   * @param {string} profileId - The ID of the profile to remove
+   * @returns {Promise<boolean>} - Returns true if successful
+   */
+  removeProfile = async (password: string, profileId: string): Promise<boolean> => {
+    return await accountManagementService.removeProfile(password, profileId);
+  };
 
   checkForNewAddress = async (
     network: string,
@@ -269,14 +259,8 @@ export class WalletController extends BaseController {
    * Switch the wallet profile to a different profile
    * @param id - The id of the keyring to switch to.
    */
-  switchProfile = async (id: string) => {
-    try {
-      await keyringService.switchKeyring(id);
-      // Login with the new keyring
-      await userWalletService.loginWithKeyring();
-    } catch (error) {
-      throw new Error('Failed to switch account: ' + (error.message || 'Unknown error'));
-    }
+  switchProfile = async (profileId: string) => {
+    return await accountManagementService.switchProfile(profileId);
   };
   /**
    * @deprecated  Checking accounts by user id is deprecated - use the public key or addressinstead
@@ -481,9 +465,7 @@ export class WalletController extends BaseController {
 
   getConnectedSite = permissionService.getConnectedSite;
   getConnectedSites = permissionService.getConnectedSites;
-  setRecentConnectedSites = (sites: ConnectedSite[]) => {
-    permissionService.setRecentConnectedSites(sites);
-  };
+
   getRecentConnectedSites = () => {
     return permissionService.getRecentConnectedSites();
   };
@@ -501,17 +483,6 @@ export class WalletController extends BaseController {
     permissionService.addConnectedSite(origin, name, icon, defaultChain, isSigned);
   };
 
-  updateConnectSite = (origin: string, data: ConnectedSite) => {
-    permissionService.updateConnectSite(origin, data);
-    // sessionService.broadcastEvent(
-    //   'chainChanged',
-    //   {
-    //     chain: CHAINS[data.chain].hex,
-    //     networkVersion: CHAINS[data.chain].network,
-    //   },
-    //   data.origin
-    // );
-  };
   removeConnectedSite = (origin: string) => {
     sessionService.broadcastEvent('accountsChanged', [], origin);
     permissionService.removeConnectedSite(origin);
@@ -524,26 +495,11 @@ export class WalletController extends BaseController {
   clearKeyrings = () => keyringService.clearCurrentKeyring();
 
   getMnemonic = async (password: string): Promise<string> => {
-    await this.verifyPassword(password);
-    const keyring = this._getKeyringByType(KEYRING_CLASS.MNEMONIC);
-    if (!(keyring instanceof HDKeyring)) {
-      throw new Error('Keyring is not an HDKeyring');
-    }
-    const serialized = await keyring.serialize();
-    if (!serialized.mnemonic) {
-      throw new Error('Keyring is not an HDKeyring');
-    }
-    const seedWords = serialized.mnemonic;
-    return seedWords;
+    return await keyringService.getMnemonic(password);
   };
 
   checkMnemonics = async () => {
-    const keyring = this._getKeyringByType(KEYRING_CLASS.MNEMONIC);
-    const serialized = await keyring.serialize();
-    if (serialized) {
-      return true;
-    }
-    return false;
+    return await keyringService.checkMnemonics();
   };
 
   getPubKeyPrivateKey = async (password: string): Promise<PublicPrivateKeyTuple> => {
@@ -615,27 +571,6 @@ export class WalletController extends BaseController {
   };
 
   /**
-   * Remove a profile and its associated keys
-   * If it's the last profile, it behaves like a wallet reset
-   *
-   * @param {string} password - The keyring controller password
-   * @param {string} profileId - The ID of the profile to remove
-   * @returns {Promise<boolean>} - Returns true if successful
-   */
-  removeProfile = async (password: string, profileId: string): Promise<boolean> => {
-    // Remove the profile
-    await keyringService.removeProfile(password, profileId);
-    // Switch to the profile with currentid
-    const currentId = await returnCurrentProfileId();
-    if (!currentId) {
-      // Lock the wallet
-      this.lockWallet();
-    } else {
-      await this.switchProfile(currentId);
-    }
-    return true;
-  };
-  /**
    * @deprecated not used anymore
    */
   resetCurrentAccount = async () => {
@@ -645,28 +580,6 @@ export class WalletController extends BaseController {
     } else {
       preferenceService.setCurrentAccount(null);
     }
-  };
-
-  checkHasMnemonic = async () => {
-    try {
-      const keyring = this._getKeyringByType(KEYRING_CLASS.MNEMONIC);
-      if (!(keyring instanceof HDKeyring)) {
-        throw new Error('Keyring is not an HDKeyring');
-      }
-      return !!(await keyring.getMnemonic()).length;
-    } catch {
-      return false;
-    }
-  };
-  /**
-   * @deprecated not used anymore
-   */
-  deriveNewAccountFromMnemonic = async (password: string) => {
-    const keyring = this._getKeyringByType(KEYRING_CLASS.MNEMONIC);
-
-    const result = await keyringService.addNewAccount(password, keyring);
-    await this._setCurrentAccountFromKeyring(keyring, -1);
-    return result;
   };
 
   getAccountsCount = async () => {
@@ -680,91 +593,10 @@ export class WalletController extends BaseController {
     return accounts;
   };
 
-  changeAccount = (account: PreferenceAccount) => {
-    preferenceService.setCurrentAccount(account);
-  };
-
   isUseLedgerLive = () => preferenceService.isUseLedgerLive();
-
-  // updateUseLedgerLive = async (value: boolean) =>
-  //   preferenceService.updateUseLedgerLive(value);
-
-  connectHardware = async ({
-    type,
-    hdPath,
-    needUnlock = false,
-    isWebUSB = false,
-  }: {
-    type: KeyringType;
-    hdPath?: string;
-    needUnlock?: boolean;
-    isWebUSB?: boolean;
-  }) => {
-    let keyring;
-    let stashKeyringId: number | null = null;
-    try {
-      keyring = this._getKeyringByType(type);
-    } catch {
-      const Keyring = keyringService.getKeyringClassForType(type);
-      if (!Keyring) {
-        throw new Error(`No keyring class found for type: ${type}`);
-      }
-      keyring = new Keyring();
-      stashKeyringId = Object.values(stashKeyrings).length;
-      stashKeyrings[stashKeyringId] = keyring;
-    }
-
-    if (hdPath && keyring.setHdPath) {
-      keyring.setHdPath(hdPath);
-    }
-
-    if (needUnlock) {
-      await keyring.unlock();
-    }
-
-    if (keyring.useWebUSB) {
-      keyring.useWebUSB(isWebUSB);
-    }
-
-    return stashKeyringId;
-  };
-
-  requestKeyring = (type, methodName, keyringId: number | null, ...params) => {
-    let keyring;
-    if (keyringId !== null && keyringId !== undefined) {
-      keyring = stashKeyrings[keyringId];
-    } else {
-      try {
-        keyring = this._getKeyringByType(type);
-      } catch {
-        const Keyring = keyringService.getKeyringClassForType(type);
-        if (!Keyring) {
-          throw new Error(`No keyring class found for type: ${type}`);
-        }
-        keyring = new Keyring();
-      }
-    }
-    if (keyring[methodName]) {
-      return keyring[methodName].call(keyring, ...params);
-    }
-  };
 
   setIsDefaultWallet = (val: boolean) => preferenceService.setIsDefaultWallet(val);
   isDefaultWallet = () => preferenceService.getIsDefaultWallet();
-
-  private _getKeyringByType(type): Keyring {
-    const keyring = keyringService.getKeyringsByType(type)[0];
-
-    if (keyring) {
-      return keyring;
-    }
-
-    throw ethErrors.rpc.internal(`No ${type} keyring found`);
-  }
-
-  private async _setCurrentAccountFromKeyring(keyring, index = 0) {
-    return await accountManagementService._setCurrentAccountFromKeyring(keyring, index);
-  }
 
   getHighlightWalletList = () => {
     return preferenceService.getWalletSavedList();
@@ -1060,7 +892,7 @@ export class WalletController extends BaseController {
   getEvmAddress = async () => {
     const address = await this.getRawEvmAddressWithPrefix();
 
-    if (!isValidEthereumAddress(address)) {
+    if (!address || !isValidEthereumAddress(address)) {
       throw new Error(`Invalid Ethereum address ${address}`);
     }
     return address;
@@ -1427,8 +1259,8 @@ export class WalletController extends BaseController {
 
   getEvmEnabled = async (): Promise<boolean> => {
     // Get straight from the userWalletService as getEvmAddress() throws an error if the address is not valid
-    const address = userWalletService.getEvmAccount();
-    return !!address && isValidEthereumAddress(address);
+    const evmAccount = await userWalletService.getEvmAccount();
+    return !!evmAccount && isValidEthereumAddress(evmAccount.address);
   };
 
   clearWallet = () => {

@@ -1,25 +1,28 @@
 import * as fcl from '@onflow/fcl';
-import { convertToIntegerAmount, validateAmount } from '@onflow/flow-wallet-shared';
+import { triggerRefresh, mainAccountsKey } from '@onflow/flow-wallet-data-model';
 import BN from 'bignumber.js';
 import * as ethUtil from 'ethereumjs-util';
 import { encode } from 'rlp';
 import web3, { Web3 } from 'web3';
 
-import { mainAccountsKey } from '@onflow/flow-wallet-data-model/cache-data-keys';
-import { EVM_ENDPOINT } from '@onflow/flow-wallet-shared/constant/domain-constants';
-import erc20ABI from '@onflow/flow-wallet-shared/constant/erc20.abi.json';
-import { type CustomFungibleTokenInfo } from '@onflow/flow-wallet-shared/types/coin-types';
-import { type NFTModelV2 } from '@onflow/flow-wallet-shared/types/network-types';
-import { type TokenInfo } from '@onflow/flow-wallet-shared/types/token-info';
-import { type TransactionState } from '@onflow/flow-wallet-shared/types/transaction-types';
-import { ensureEvmAddressPrefix } from '@onflow/flow-wallet-shared/utils/address';
+import { erc20Abi as erc20ABI, EVM_ENDPOINT } from '@onflow/flow-wallet-shared/constant';
+import {
+  type CustomFungibleTokenInfo,
+  type NFTModelV2,
+  type TokenInfo,
+  type TransactionState,
+} from '@onflow/flow-wallet-shared/types';
+import {
+  convertToIntegerAmount,
+  ensureEvmAddressPrefix,
+  validateAmount,
+} from '@onflow/flow-wallet-shared/utils';
 
 import { tokenListService } from '.';
 import { mixpanelTrack } from './mixpanel';
 import { getScripts } from './openapi';
 import userWalletService from './userWallet';
 import { replaceNftKeywords } from '../utils';
-import { triggerRefresh } from '../utils/data-cache';
 
 export class TransactionService {
   /**

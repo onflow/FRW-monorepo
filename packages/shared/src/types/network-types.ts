@@ -1,43 +1,13 @@
 // Import the fcl types
 
+import { type FlowDomain } from '../constant/network-constants';
+
 export type { Account, AccountKey } from '@onflow/typedefs';
 
 export interface CheckResponse {
   unique: boolean;
   username: string;
 }
-
-export enum PriceProvider {
-  binance = 'binance',
-  kakren = 'kraken',
-  huobi = 'huobi',
-  coinbase = 'coinbase-pro',
-  kucoin = 'kucoin',
-  increment = 'increment',
-}
-
-/**
- * Return the price providers to use for a given token
- * @param token - The token to get the price providers for
- * @returns The price providers to use for the token
- */
-
-export const getPriceProvider = (token: string): PriceProvider[] => {
-  switch (token) {
-    case 'usdc':
-      return [PriceProvider.binance, PriceProvider.kakren, PriceProvider.huobi];
-    case 'flow':
-      return [
-        PriceProvider.binance,
-        PriceProvider.kakren,
-        PriceProvider.coinbase,
-        PriceProvider.kucoin,
-        PriceProvider.huobi,
-      ];
-    default:
-      return [];
-  }
-};
 
 export type TokenPriceHistory = {
   closeTime: number;
@@ -131,56 +101,7 @@ export interface FlowTokenStoragePath {
 }
 
 export type FlowNetwork = 'mainnet' | 'testnet' | 'crescendo';
-export const isValidNetwork = (network: string): network is FlowNetwork => {
-  return network === 'mainnet' || network === 'testnet' || network === 'crescendo';
-};
-export const MAINNET_NETWORK: FlowNetwork = 'mainnet';
-export const TESTNET_NETWORK: FlowNetwork = 'testnet';
-
 export type FlowChainId = 747 | 545;
-
-export const MAINNET_CHAIN_ID: FlowChainId = 747;
-export const TESTNET_CHAIN_ID: FlowChainId = 545;
-
-export const networkToChainId = (network: string): FlowChainId => {
-  switch (network) {
-    case MAINNET_NETWORK:
-      return MAINNET_CHAIN_ID;
-    case TESTNET_NETWORK:
-      return TESTNET_CHAIN_ID;
-    default:
-      throw new Error(`Unknown network: ${network}`);
-  }
-};
-
-export const chainIdToNetwork = (chainId: number): FlowNetwork => {
-  switch (chainId) {
-    case MAINNET_CHAIN_ID:
-      return MAINNET_NETWORK;
-    case TESTNET_CHAIN_ID:
-      return TESTNET_NETWORK;
-    default:
-      throw new Error(`Unknown chainId: ${chainId}`);
-  }
-};
-
-export enum Period {
-  oneDay = '1D',
-  oneWeek = '1W',
-  oneMonth = '1M',
-  threeMonth = '3M',
-  oneYear = '1Y',
-  all = 'All',
-}
-
-export enum PeriodFrequency {
-  fiveMinute = 300,
-  halfHour = 1800,
-  oneHour = 3600,
-  oneDay = 86400,
-  threeDay = 259200,
-  oneWeek = 604800,
-}
 
 /**
  * 0: External - an external address
@@ -205,13 +126,6 @@ export interface Contact {
   username?: string;
   contact_type?: (typeof ContactType)[keyof typeof ContactType];
   group?: string;
-}
-
-export enum FlowDomain {
-  find = 0,
-  flowns = 1,
-  meow = 2,
-  none = 999,
 }
 
 export interface NFTData {

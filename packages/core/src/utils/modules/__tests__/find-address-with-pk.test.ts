@@ -4,16 +4,15 @@ import {
   FLOW_BIP44_PATH,
   HASH_ALGO_NUM_SHA3_256,
   SIGN_ALGO_NUM_ECDSA_P256,
-} from '@onflow/flow-wallet-shared/constant/algo-constants';
+} from '@onflow/flow-wallet-shared/constant';
 
 import { findAddressWithPK, findAddressWithSeed } from '../findAddressWithPK';
 import * as findAddressWithPubKeyModule from '../findAddressWithPubKey';
-import * as publicPrivateKeyModule from '../publicPrivateKey';
-
-// Mock the dependent modules
+import * as publicPrivateKeyModule from '../publicPrivateKey'; // Mock the dependent modules
 vi.mock('../publicPrivateKey');
+vi.mock('../key-indexer');
 vi.mock('../findAddressWithPubKey');
-vi.mock('@onflow/flow-wallet-core/service', () => ({
+vi.mock('../../service', () => ({
   userWalletService: {
     setupFcl: vi.fn(),
   },

@@ -1,7 +1,4 @@
-import {
-  INITIAL_OPENAPI_URL,
-  WEB_NEXT_URL,
-} from '@onflow/flow-wallet-shared/constant/domain-constants';
+import {} from '@onflow/flow-wallet-shared/constant';
 
 export type FetchDetail = {
   url: string;
@@ -23,8 +20,11 @@ export type ApiTestResult = {
 };
 
 export type ApiTestResults = Record<string, ApiTestResult[]>;
-
-export const createTestResults = (): ApiTestResults => ({
+export const createTestResults = (
+  registrationURL: string,
+  webNextURL: string,
+  functionsURL: string
+): ApiTestResults => ({
   core: [
     {
       functionName: 'sendRequest',
@@ -40,7 +40,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: INITIAL_OPENAPI_URL,
+          url: registrationURL,
           params: {},
           requestInit: {
             method: 'GET',
@@ -79,7 +79,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/user/check?username=coolpanda`,
+          url: `${registrationURL}/v1/user/check?username=coolpanda`,
           params: {
             username: 'coolpanda',
           },
@@ -130,7 +130,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/register`,
+          url: `${registrationURL}/v1/register`,
           params: {},
           requestInit: {
             method: 'post',
@@ -165,7 +165,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/user/location`,
+          url: `${registrationURL}/v1/user/location`,
           params: {},
           requestInit: {
             method: 'get',
@@ -203,7 +203,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: 'OK',
         },
         {
-          url: `${INITIAL_OPENAPI_URL}/v3/login`,
+          url: `${registrationURL}/v3/login`,
           params: {},
           requestInit: {
             method: 'post',
@@ -264,7 +264,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${INITIAL_OPENAPI_URL}/v3/import`,
+          url: `${registrationURL}/v3/import`,
           params: {},
           requestInit: {
             method: 'post',
@@ -487,7 +487,7 @@ export const createTestResults = (): ApiTestResults => ({
       ],
       fetchDetails: [
         {
-          url: `${process.env.API_BASE_URL}${process.env.API_NEWS_PATH}`,
+          url: `${webNextURL}/config/news.json`,
           params: {},
           requestInit: {
             method: 'GET',
@@ -686,7 +686,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/user/recaptcha?token=flow`,
+          url: `${registrationURL}/v1/user/recaptcha?token=flow`,
           params: {
             token: 'flow',
           },
@@ -770,7 +770,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${process.env.FB_FUNCTIONS}/moonPaySignature`,
+          url: `${functionsURL}/moonPaySignature`,
           params: {},
           requestInit: {
             method: 'POST',
@@ -818,7 +818,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${WEB_NEXT_URL}/api/evm/decodeData`,
+          url: `${webNextURL}/api/evm/decodeData`,
           params: {},
           requestInit: {
             method: 'POST',
@@ -855,7 +855,7 @@ export const createTestResults = (): ApiTestResults => ({
       functionGroup: 'misc',
       fetchDetails: [
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/user/check?username=coolpanda`,
+          url: `${registrationURL}/v1/user/check?username=coolpanda`,
           params: {
             username: 'coolpanda',
           },
@@ -880,7 +880,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: 'OK',
         },
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/login`,
+          url: `${registrationURL}/v1/login`,
           params: {},
           requestInit: {
             method: 'post',
@@ -909,7 +909,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: 'Not Acceptable',
         },
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/crypto/history?provider=binance&pair=flowusdt&after=1736463324&periods=86400`,
+          url: `${registrationURL}/v1/crypto/history?provider=binance&pair=flowusdt&after=1736463324&periods=86400`,
           params: {
             provider: 'binance',
             pair: 'flowusdt',
@@ -944,7 +944,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: 'OK',
         },
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/user/info`,
+          url: `${registrationURL}/v1/user/info`,
           params: {},
           requestInit: {
             method: 'get',
@@ -959,7 +959,7 @@ export const createTestResults = (): ApiTestResults => ({
             data: {
               nickname: 'coolpanda',
               username: 'coolpanda_247',
-              avatar: `${WEB_NEXT_URL}/api/avatar/beam/120/coolpanda_247?colors=FFDD32,FC814A,7678ED,B3DEE2,BCF0DA`,
+              avatar: `${webNextURL}/api/avatar/beam/120/coolpanda_247?colors=FFDD32,FC814A,7678ED,B3DEE2,BCF0DA`,
               private: 1,
               created: '2025-01-09T22:55:12.542531Z',
               id: '91408b5f-6021-4516-b938-bb41f1d9d595',
@@ -971,7 +971,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: 'OK',
         },
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/user/wallet`,
+          url: `${registrationURL}/v1/user/wallet`,
           params: {},
           requestInit: {
             method: 'get',
@@ -1005,7 +1005,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: 'OK',
         },
         {
-          url: `${INITIAL_OPENAPI_URL}/v2/user/wallet`,
+          url: `${registrationURL}/v2/user/wallet`,
           params: {},
           requestInit: {
             method: 'get',
@@ -1047,7 +1047,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: 'OK',
         },
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/user/search?keyword=test`,
+          url: `${registrationURL}/v1/user/search?keyword=test`,
           params: {
             keyword: 'test',
           },
@@ -1071,7 +1071,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: 'OK',
         },
         {
-          url: `${INITIAL_OPENAPI_URL}/v3/checkimport?key=test`,
+          url: `${registrationURL}/v3/checkimport?key=test`,
           params: {
             key: 'test',
           },
@@ -1092,7 +1092,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: 'OK',
         },
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/user/address`,
+          url: `${registrationURL}/v1/user/address`,
           params: {},
           requestInit: {
             method: 'post',
@@ -1112,7 +1112,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: 'OK',
         },
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/user/address/crescendo`,
+          url: `${registrationURL}/v1/user/address/crescendo`,
           params: {},
           requestInit: {
             method: 'post',
@@ -1129,7 +1129,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: 'Bad Request',
         },
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/user/address/network`,
+          url: `${registrationURL}/v1/user/address/network`,
           params: {},
           requestInit: {
             method: 'post',
@@ -1146,7 +1146,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: 'Bad Request',
         },
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/coin/rate?coinId=flow`,
+          url: `${registrationURL}/v1/coin/rate?coinId=flow`,
           params: {
             coinId: 'flow',
           },
@@ -1164,7 +1164,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: 'Bad Gateway',
         },
         {
-          url: `${INITIAL_OPENAPI_URL}/v3/sync`,
+          url: `${registrationURL}/v3/sync`,
           params: {},
           requestInit: {
             method: 'post',
@@ -1184,7 +1184,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: 'OK',
         },
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/user/keys`,
+          url: `${registrationURL}/v1/user/keys`,
           params: {},
           requestInit: {
             method: 'get',
@@ -1249,7 +1249,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: 'OK',
         },
         {
-          url: `${INITIAL_OPENAPI_URL}/v3/user/device`,
+          url: `${registrationURL}/v3/user/device`,
           params: {},
           requestInit: {
             method: 'put',
@@ -1447,7 +1447,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: '',
         },
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/account/presign`,
+          url: `${registrationURL}/v1/account/presign`,
           params: {},
           requestInit: {
             method: 'post',
@@ -1464,7 +1464,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: 'Not Acceptable',
         },
         {
-          url: `${WEB_NEXT_URL}/api/evm/0xb3ffbb29df0b3555/transactions`,
+          url: `${webNextURL}/api/evm/0xb3ffbb29df0b3555/transactions`,
           params: {},
           requestInit: {
             method: 'GET',
@@ -1497,7 +1497,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: 'Service Unavailable',
         },
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/addressbook/contact`,
+          url: `${registrationURL}/v1/addressbook/contact`,
           params: {},
           requestInit: {
             method: 'put',
@@ -1514,7 +1514,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: 'Not Acceptable',
         },
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/addressbook/contact`,
+          url: `${registrationURL}/v1/addressbook/contact`,
           params: {},
           requestInit: {
             method: 'post',
@@ -1531,7 +1531,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: 'Not Found',
         },
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/addressbook/contact?id=1`,
+          url: `${registrationURL}/v1/addressbook/contact?id=1`,
           params: {
             id: '1',
           },
@@ -1550,7 +1550,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: 'Internal Server Error',
         },
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/addressbook/external`,
+          url: `${registrationURL}/v1/addressbook/external`,
           params: {},
           requestInit: {
             method: 'put',
@@ -1570,7 +1570,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: 'OK',
         },
         {
-          url: `${WEB_NEXT_URL}/api/v2/nft/list?address=0xb3ffbb29df0b3555&limit=10&offset=0&network=testnet`,
+          url: `${webNextURL}/api/v2/nft/list?address=0xb3ffbb29df0b3555&limit=10&offset=0&network=testnet`,
           params: {
             address: '0xb3ffbb29df0b3555',
             limit: '10',
@@ -1597,7 +1597,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: '',
         },
         {
-          url: `${WEB_NEXT_URL}/api/v2/nft/id?address=0xb3ffbb29df0b3555&network=testnet`,
+          url: `${webNextURL}/api/v2/nft/id?address=0xb3ffbb29df0b3555&network=testnet`,
           params: {
             address: '0xb3ffbb29df0b3555',
             network: 'testnet',
@@ -1619,7 +1619,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: '',
         },
         {
-          url: `${WEB_NEXT_URL}/api/v3/evm/nft/collectionList?network=mainnet&address=0xb3ffbb29df0b3555&collectionIdentifier=&limit=24&offset=0`,
+          url: `${webNextURL}/api/v3/evm/nft/collectionList?network=mainnet&address=0xb3ffbb29df0b3555&collectionIdentifier=&limit=24&offset=0`,
           params: {
             network: 'mainnet',
             address: '0xb3ffbb29df0b3555',
@@ -1649,7 +1649,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: '',
         },
         {
-          url: `${WEB_NEXT_URL}/api/v2/nft/id?network=testnet&address=0xb3ffbb29df0b3555`,
+          url: `${webNextURL}/api/v2/nft/id?network=testnet&address=0xb3ffbb29df0b3555`,
           params: {
             network: 'testnet',
             address: '0xb3ffbb29df0b3555',
@@ -1671,7 +1671,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: '',
         },
         {
-          url: `${WEB_NEXT_URL}/api/nft/gentx?collectionIdentifier=`,
+          url: `${webNextURL}/api/nft/gentx?collectionIdentifier=`,
           params: {
             collectionIdentifier: '',
           },
@@ -1685,7 +1685,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: '',
         },
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/profile/preference`,
+          url: `${registrationURL}/v1/profile/preference`,
           params: {},
           requestInit: {
             method: 'post',
@@ -1702,7 +1702,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: 'Not Acceptable',
         },
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/profile`,
+          url: `${registrationURL}/v1/profile`,
           params: {},
           requestInit: {
             method: 'post',
@@ -1719,7 +1719,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: 'Not Acceptable',
         },
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/flowns/signature`,
+          url: `${registrationURL}/v1/flowns/signature`,
           params: {},
           requestInit: {
             method: 'post',
@@ -1736,7 +1736,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: 'Not Acceptable',
         },
         {
-          url: `${process.env.FB_FUNCTIONS}/moonPaySignature`,
+          url: `${functionsURL}/moonPaySignature`,
           params: {},
           requestInit: {
             method: 'POST',
@@ -1753,7 +1753,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: '',
         },
         {
-          url: `${process.env.API_BASE_URL}${process.env.API_CONFIG_PATH}`,
+          url: `${webNextURL}/config/config.json`,
           params: {},
           requestInit: {
             method: 'GET',
@@ -1805,7 +1805,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: '',
         },
         {
-          url: `${process.env.API_BASE_URL}${process.env.API_CONFIG_PATH}`,
+          url: `${webNextURL}/config/config.json`,
           params: {},
           requestInit: {
             method: 'GET',
@@ -1857,7 +1857,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: '',
         },
         {
-          url: `${process.env.API_BASE_URL}${process.env.API_CONFIG_PATH}`,
+          url: `${webNextURL}/config/config.json`,
           params: {},
           requestInit: {
             method: 'GET',
@@ -1909,7 +1909,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: '',
         },
         {
-          url: `${process.env.API_BASE_URL}${process.env.API_CONFIG_PATH}`,
+          url: `${webNextURL}/config/config.json`,
           params: {},
           requestInit: {
             method: 'GET',
@@ -1961,7 +1961,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: '',
         },
         {
-          url: `${process.env.API_BASE_URL}${process.env.API_CONFIG_PATH}`,
+          url: `${webNextURL}/config/config.json`,
           params: {},
           requestInit: {
             method: 'GET',
@@ -2013,7 +2013,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: '',
         },
         {
-          url: `${process.env.API_BASE_URL}${process.env.API_CONFIG_PATH}`,
+          url: `${webNextURL}/config/config.json`,
           params: {},
           requestInit: {
             method: 'GET',
@@ -2065,7 +2065,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: '',
         },
         {
-          url: `${process.env.API_BASE_URL}${process.env.API_CONFIG_PATH}`,
+          url: `${webNextURL}/config/config.json`,
           params: {},
           requestInit: {
             method: 'GET',
@@ -2117,7 +2117,7 @@ export const createTestResults = (): ApiTestResults => ({
           statusText: '',
         },
         {
-          url: `${process.env.API_BASE_URL}${process.env.API_CONFIG_PATH}`,
+          url: `${webNextURL}/config/config.json`,
           params: {},
           requestInit: {
             method: 'GET',
@@ -2188,7 +2188,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/crypto/map?provider=binance&pair=usdcusdt`,
+          url: `${registrationURL}/v1/crypto/map?provider=binance&pair=usdcusdt`,
           params: {
             provider: 'binance',
             pair: 'usdcusdt',
@@ -2243,7 +2243,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/crypto/summary?provider=binance&pair=flowusdt`,
+          url: `${registrationURL}/v1/crypto/summary?provider=binance&pair=flowusdt`,
           params: {
             provider: 'binance',
             pair: 'flowusdt',
@@ -2296,7 +2296,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/crypto/history?provider=binance&pair=flowusdt&after=1736973455&periods=86400`,
+          url: `${registrationURL}/v1/crypto/history?provider=binance&pair=flowusdt&after=1736973455&periods=86400`,
           params: {
             provider: 'binance',
             pair: 'flowusdt',
@@ -2346,7 +2346,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/coin/map`,
+          url: `${registrationURL}/v1/coin/map`,
           params: {},
           requestInit: {
             method: 'get',
@@ -2372,7 +2372,7 @@ export const createTestResults = (): ApiTestResults => ({
         data: {
           nickname: 'webdev60',
           username: 'webdev60_741',
-          avatar: `${WEB_NEXT_URL}/api/avatar/beam/120/webdev60_741?colors=FFDD32,FC814A,7678ED,B3DEE2,BCF0DA`,
+          avatar: `${webNextURL}/api/avatar/beam/120/webdev60_741?colors=FFDD32,FC814A,7678ED,B3DEE2,BCF0DA`,
           private: 1,
           created: '2024-10-09T23:19:31.237534Z',
           id: '36a69852-0f41-4da4-9a08-b3b50e8f1e8a',
@@ -2382,7 +2382,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/user/info`,
+          url: `${registrationURL}/v1/user/info`,
           params: {},
           requestInit: {
             method: 'get',
@@ -2397,7 +2397,7 @@ export const createTestResults = (): ApiTestResults => ({
             data: {
               nickname: 'webdev60',
               username: 'webdev60_741',
-              avatar: `${WEB_NEXT_URL}/api/avatar/beam/120/webdev60_741?colors=FFDD32,FC814A,7678ED,B3DEE2,BCF0DA`,
+              avatar: `${webNextURL}/api/avatar/beam/120/webdev60_741?colors=FFDD32,FC814A,7678ED,B3DEE2,BCF0DA`,
               private: 1,
               created: '2024-10-09T23:19:31.237534Z',
               id: '36a69852-0f41-4da4-9a08-b3b50e8f1e8a',
@@ -2422,7 +2422,7 @@ export const createTestResults = (): ApiTestResults => ({
           users: [
             {
               username: 'webdev18_862',
-              avatar: `${WEB_NEXT_URL}/api/avatar/beam/120/webdev18_862?colors=FFDD32,FC814A,7678ED,B3DEE2,BCF0DA`,
+              avatar: `${webNextURL}/api/avatar/beam/120/webdev18_862?colors=FFDD32,FC814A,7678ED,B3DEE2,BCF0DA`,
               nickname: 'webdev18',
               address: '0x552013bd8742476c',
             },
@@ -2433,7 +2433,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/user/search?keyword=webdev18_862`,
+          url: `${registrationURL}/v1/user/search?keyword=webdev18_862`,
           params: {
             keyword: 'webdev18_862',
           },
@@ -2451,7 +2451,7 @@ export const createTestResults = (): ApiTestResults => ({
               users: [
                 {
                   username: 'webdev18_862',
-                  avatar: `${WEB_NEXT_URL}/api/avatar/beam/120/webdev18_862?colors=FFDD32,FC814A,7678ED,B3DEE2,BCF0DA`,
+                  avatar: `${webNextURL}/api/avatar/beam/120/webdev18_862?colors=FFDD32,FC814A,7678ED,B3DEE2,BCF0DA`,
                   nickname: 'webdev18',
                   address: '0x552013bd8742476c',
                 },
@@ -2478,7 +2478,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${INITIAL_OPENAPI_URL}/v3/checkimport?key=test`,
+          url: `${registrationURL}/v3/checkimport?key=test`,
           params: {
             key: 'test',
           },
@@ -2513,7 +2513,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/user/address`,
+          url: `${registrationURL}/v1/user/address`,
           params: {},
           requestInit: {
             method: 'post',
@@ -2547,7 +2547,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/user/manualaddress`,
+          url: `${registrationURL}/v1/user/manualaddress`,
           params: {},
           requestInit: {
             method: 'get',
@@ -2595,7 +2595,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${INITIAL_OPENAPI_URL}/v3/sync`,
+          url: `${registrationURL}/v3/sync`,
           params: {},
           requestInit: {
             method: 'post',
@@ -2656,7 +2656,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/user/device`,
+          url: `${registrationURL}/v1/user/device`,
           params: {},
           requestInit: {
             method: 'get',
@@ -3659,7 +3659,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/user/keys`,
+          url: `${registrationURL}/v1/user/keys`,
           params: {},
           requestInit: {
             method: 'get',
@@ -4652,7 +4652,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/user/location`,
+          url: `${registrationURL}/v1/user/location`,
           params: {},
           requestInit: {
             method: 'get',
@@ -4713,7 +4713,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${INITIAL_OPENAPI_URL}/v3/user/device`,
+          url: `${registrationURL}/v3/user/device`,
           params: {},
           requestInit: {
             method: 'put',
@@ -5762,7 +5762,7 @@ export const createTestResults = (): ApiTestResults => ({
       ],
       fetchDetails: [
         {
-          url: `${WEB_NEXT_URL}/api/v3/fts?network=mainnet&chain_type=flow`,
+          url: `${webNextURL}/api/v3/fts?network=mainnet&chain_type=flow`,
           params: {},
           requestInit: {
             method: 'get',
@@ -6980,7 +6980,7 @@ export const createTestResults = (): ApiTestResults => ({
       ],
       fetchDetails: [
         {
-          url: `${WEB_NEXT_URL}/api/v3/nfts?network=testnet&chain_type=flow`,
+          url: `${webNextURL}/api/v3/nfts?network=testnet&chain_type=flow`,
           params: {},
           requestInit: {
             method: 'get',
@@ -7121,7 +7121,7 @@ export const createTestResults = (): ApiTestResults => ({
       functionResponse: '18feaec34120af74faacdc053e5a6fdc50ef695024d1e971f4d97f9b11fa8cce',
       fetchDetails: [
         {
-          url: `${process.env.FB_FUNCTIONS}/signAsPayer`,
+          url: `${functionsURL}/signAsPayer`,
           params: {},
           requestInit: {
             method: 'POST',
@@ -7156,7 +7156,7 @@ export const createTestResults = (): ApiTestResults => ({
       functionResponse: null,
       fetchDetails: [
         {
-          url: `${process.env.FB_FUNCTIONS}/signAsProposer`,
+          url: `${functionsURL}/signAsProposer`,
           params: {},
           requestInit: {
             method: 'POST',
@@ -7183,7 +7183,7 @@ export const createTestResults = (): ApiTestResults => ({
       functionResponse: null,
       fetchDetails: [
         {
-          url: `${process.env.FB_FUNCTIONS}/getProposer`,
+          url: `${functionsURL}/getProposer`,
           params: {},
           requestInit: {
             method: 'GET',
@@ -7215,7 +7215,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/account/transaction`,
+          url: `${registrationURL}/v1/account/transaction`,
           params: {},
           requestInit: {
             method: 'post',
@@ -7412,7 +7412,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${WEB_NEXT_URL}/api/v1/account/transfers?address=0x2cdc100430551409&after=&limit=10`,
+          url: `${webNextURL}/api/v1/account/transfers?address=0x2cdc100430551409&after=&limit=10`,
           params: {
             address: '0x2cdc100430551409',
             after: '',
@@ -8481,7 +8481,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${WEB_NEXT_URL}/api/evm/0x0000000000000000000000028621701dd981dcce/transactions`,
+          url: `${webNextURL}/api/evm/0x0000000000000000000000028621701dd981dcce/transactions`,
           params: {},
           requestInit: {
             method: 'GET',
@@ -9396,7 +9396,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/addressbook/contact`,
+          url: `${registrationURL}/v1/addressbook/contact`,
           params: {},
           requestInit: {
             method: 'get',
@@ -9449,7 +9449,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/addressbook/contact`,
+          url: `${registrationURL}/v1/addressbook/contact`,
           params: {},
           requestInit: {
             method: 'put',
@@ -9487,7 +9487,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/addressbook/contact`,
+          url: `${registrationURL}/v1/addressbook/contact`,
           params: {},
           requestInit: {
             method: 'post',
@@ -9521,7 +9521,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/addressbook/contact?id=26`,
+          url: `${registrationURL}/v1/addressbook/contact?id=26`,
           params: {
             id: '26',
           },
@@ -9560,7 +9560,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/addressbook/external`,
+          url: `${registrationURL}/v1/addressbook/external`,
           params: {},
           requestInit: {
             method: 'put',
@@ -9595,7 +9595,7 @@ export const createTestResults = (): ApiTestResults => ({
           id: 642,
           user_id: '7b9b55de-64dd-4fa5-a57d-42ea0f986f7d',
           nickname: 'webdev20',
-          avatar: `${WEB_NEXT_URL}/api/avatar/beam/120/webdev18_862?colors=FFDD32,FC814A,7678ED,B3DEE2,BCF0DA`,
+          avatar: `${webNextURL}/api/avatar/beam/120/webdev18_862?colors=FFDD32,FC814A,7678ED,B3DEE2,BCF0DA`,
           private: 2,
           push_token: null,
           created_at: '2024-04-17T07:44:06.162587Z',
@@ -9606,7 +9606,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/profile/preference`,
+          url: `${registrationURL}/v1/profile/preference`,
           params: {},
           requestInit: {
             method: 'post',
@@ -9623,7 +9623,7 @@ export const createTestResults = (): ApiTestResults => ({
               id: 642,
               user_id: '7b9b55de-64dd-4fa5-a57d-42ea0f986f7d',
               nickname: 'webdev20',
-              avatar: `${WEB_NEXT_URL}/api/avatar/beam/120/webdev18_862?colors=FFDD32,FC814A,7678ED,B3DEE2,BCF0DA`,
+              avatar: `${webNextURL}/api/avatar/beam/120/webdev18_862?colors=FFDD32,FC814A,7678ED,B3DEE2,BCF0DA`,
               private: 2,
               push_token: null,
               created_at: '2024-04-17T07:44:06.162587Z',
@@ -9643,14 +9643,14 @@ export const createTestResults = (): ApiTestResults => ({
       functionGroup: 'profile',
       functionParams: {
         nickname: 'test',
-        avatar: `${WEB_NEXT_URL}/api/avatar/beam/120/test_862?colors=FFDD32,FC814A,7678ED,B3DEE2,BCF0DA`,
+        avatar: `${webNextURL}/api/avatar/beam/120/test_862?colors=FFDD32,FC814A,7678ED,B3DEE2,BCF0DA`,
       },
       functionResponse: {
         data: {
           id: 642,
           user_id: '7b9b55de-64dd-4fa5-a57d-42ea0f986f7d',
           nickname: 'test',
-          avatar: `${WEB_NEXT_URL}/api/avatar/beam/120/test_862?colors=FFDD32,FC814A,7678ED,B3DEE2,BCF0DA`,
+          avatar: `${webNextURL}/api/avatar/beam/120/test_862?colors=FFDD32,FC814A,7678ED,B3DEE2,BCF0DA`,
           private: 2,
           push_token: null,
           created_at: '2024-04-17T07:44:06.162587Z',
@@ -9661,7 +9661,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${INITIAL_OPENAPI_URL}/v1/profile`,
+          url: `${registrationURL}/v1/profile`,
           params: {},
           requestInit: {
             method: 'post',
@@ -9671,14 +9671,14 @@ export const createTestResults = (): ApiTestResults => ({
               Authorization: 'Bearer mock-token',
               'Content-Type': 'application/json',
             },
-            body: `{"nickname":"test","avatar":"${WEB_NEXT_URL}/api/avatar/beam/120/test_862?colors=FFDD32,FC814A,7678ED,B3DEE2,BCF0DA"}`,
+            body: `{"nickname":"test","avatar":"${webNextURL}/api/avatar/beam/120/test_862?colors=FFDD32,FC814A,7678ED,B3DEE2,BCF0DA"}`,
           },
           responseData: {
             data: {
               id: 642,
               user_id: '7b9b55de-64dd-4fa5-a57d-42ea0f986f7d',
               nickname: 'test',
-              avatar: `${WEB_NEXT_URL}/api/avatar/beam/120/test_862?colors=FFDD32,FC814A,7678ED,B3DEE2,BCF0DA`,
+              avatar: `${webNextURL}/api/avatar/beam/120/test_862?colors=FFDD32,FC814A,7678ED,B3DEE2,BCF0DA`,
               private: 2,
               push_token: null,
               created_at: '2024-04-17T07:44:06.162587Z',
@@ -10858,7 +10858,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${WEB_NEXT_URL}/api/v2/scripts`,
+          url: `${webNextURL}/api/v2/scripts`,
           params: {},
           requestInit: {
             method: 'GET',
@@ -12144,7 +12144,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${WEB_NEXT_URL}/api/v2/nft/list?address=0x552013bd8742476c&limit=10&offset=0&network=testnet`,
+          url: `${webNextURL}/api/v2/nft/list?address=0x552013bd8742476c&limit=10&offset=0&network=testnet`,
           params: {
             address: '0x552013bd8742476c',
             limit: '10',
@@ -12302,7 +12302,7 @@ export const createTestResults = (): ApiTestResults => ({
       ],
       fetchDetails: [
         {
-          url: `${WEB_NEXT_URL}/api/v2/nft/id?address=0xbaaf5b95594ce9d7&network=mainnet`,
+          url: `${webNextURL}/api/v2/nft/id?address=0xbaaf5b95594ce9d7&network=mainnet`,
           params: {
             address: '0xbaaf5b95594ce9d7',
             network: 'mainnet',
@@ -12483,7 +12483,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${WEB_NEXT_URL}/api/v2/nft/collectionList?address=0x552013bd8742476c&limit=10&offset=0&collectionIdentifier=cadenceExampleNFTCollection&network=testnet`,
+          url: `${webNextURL}/api/v2/nft/collectionList?address=0x552013bd8742476c&limit=10&offset=0&collectionIdentifier=cadenceExampleNFTCollection&network=testnet`,
           params: {
             address: '0x552013bd8742476c',
             limit: '10',
@@ -12740,7 +12740,7 @@ export const createTestResults = (): ApiTestResults => ({
       ],
       fetchDetails: [
         {
-          url: `${WEB_NEXT_URL}/api/nft/collections`,
+          url: `${webNextURL}/api/nft/collections`,
           params: {},
           requestInit: {
             method: 'GET',
@@ -12907,7 +12907,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${WEB_NEXT_URL}/api/evm/fts`,
+          url: `${webNextURL}/api/evm/fts`,
           params: {},
           requestInit: {
             method: 'GET',
@@ -12990,7 +12990,7 @@ export const createTestResults = (): ApiTestResults => ({
       ],
       fetchDetails: [
         {
-          url: `${WEB_NEXT_URL}/api/v3/evm/0x0000000000000000000000028621701dd981dcce/fts?network=testnet`,
+          url: `${webNextURL}/api/v3/evm/0x0000000000000000000000028621701dd981dcce/fts?network=testnet`,
           params: {
             network: 'testnet',
           },
@@ -13097,7 +13097,7 @@ export const createTestResults = (): ApiTestResults => ({
       ],
       fetchDetails: [
         {
-          url: `${WEB_NEXT_URL}/api/evm/0x0000000000000000000000028621701dd981dcce/nfts?network=testnet`,
+          url: `${webNextURL}/api/evm/0x0000000000000000000000028621701dd981dcce/nfts?network=testnet`,
           params: {
             network: 'testnet',
           },
@@ -13192,7 +13192,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${WEB_NEXT_URL}/api/v3/evm/nft/collectionList?network=testnet&address=0x552013bd8742476c&collectionIdentifier=cadenceExampleNFTCollection&limit=24&offset=0`,
+          url: `${webNextURL}/api/v3/evm/nft/collectionList?network=testnet&address=0x552013bd8742476c&collectionIdentifier=cadenceExampleNFTCollection&limit=24&offset=0`,
           params: {
             network: 'testnet',
             address: '0x552013bd8742476c',
@@ -13251,7 +13251,7 @@ export const createTestResults = (): ApiTestResults => ({
       ],
       fetchDetails: [
         {
-          url: `${WEB_NEXT_URL}/api/v3/evm/nft/id?network=testnet&address=0x0000000000000000000000028621701dd981dcce`,
+          url: `${webNextURL}/api/v3/evm/nft/id?network=testnet&address=0x0000000000000000000000028621701dd981dcce`,
           params: {
             network: 'testnet',
             address: '0x0000000000000000000000028621701dd981dcce',
@@ -13383,7 +13383,7 @@ export const createTestResults = (): ApiTestResults => ({
       },
       fetchDetails: [
         {
-          url: `${WEB_NEXT_URL}/api/v3/evm/nft/list?network=testnet&address=0x0000000000000000000000028621701dd981dcce&limit=24&offset=0`,
+          url: `${webNextURL}/api/v3/evm/nft/list?network=testnet&address=0x0000000000000000000000028621701dd981dcce&limit=24&offset=0`,
           params: {
             network: 'testnet',
             address: '0x0000000000000000000000028621701dd981dcce',
@@ -13528,7 +13528,7 @@ export const createTestResults = (): ApiTestResults => ({
       ],
       fetchDetails: [
         {
-          url: `${WEB_NEXT_URL}/api/v2/nft/id?network=testnet&address=0x552013bd8742476c`,
+          url: `${webNextURL}/api/v2/nft/id?network=testnet&address=0x552013bd8742476c`,
           params: {
             network: 'testnet',
             address: '0x552013bd8742476c',
@@ -13695,7 +13695,7 @@ export const createTestResults = (): ApiTestResults => ({
       ],
       fetchDetails: [
         {
-          url: `${WEB_NEXT_URL}/api/v2/nft/collections?network=testnet`,
+          url: `${webNextURL}/api/v2/nft/collections?network=testnet`,
           params: {
             network: 'testnet',
           },
@@ -13840,5 +13840,3 @@ export const createTestResults = (): ApiTestResults => ({
     },
   ],
 });
-
-export const API_TEST_RESULTS = createTestResults();

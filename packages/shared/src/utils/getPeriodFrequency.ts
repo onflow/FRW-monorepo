@@ -1,4 +1,4 @@
-import { Period, PeriodFrequency } from '../types/network-types';
+import { PeriodFrequency, Period } from '../constant/network-constants';
 
 export const getPeriodFrequency = (period: Period): PeriodFrequency => {
   switch (period) {

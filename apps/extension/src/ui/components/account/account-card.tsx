@@ -10,8 +10,8 @@ import {
 } from '@mui/material';
 import React from 'react';
 
-import { type WalletAccount } from '@onflow/flow-wallet-shared/types/wallet-types';
-import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils/address';
+import { type WalletAccount } from '@onflow/flow-wallet-shared/types';
+import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils';
 
 import { CopyIcon } from '@/ui/assets/icons/CopyIcon';
 import { LinkIcon } from '@/ui/assets/icons/LinkIcon';
@@ -149,7 +149,7 @@ export const AccountCard = ({
             }}
           >
             {name || <Skeleton variant="text" width="50px" />}
-            {isValidEthereumAddress(address) && (
+            {address && isValidEthereumAddress(address) && (
               <span
                 style={{
                   padding: '0px 4px',

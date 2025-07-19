@@ -1,13 +1,18 @@
 import {
   evmNftCollectionListKey,
   evmNftCollectionListRefreshRegex,
+  type EvmNftCollectionListStore,
   evmNftIdsKey,
   evmNftIdsRefreshRegex,
-} from '@onflow/flow-wallet-data-model/cache-data-keys';
-import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils/address';
+  type EvmNftIdsStore,
+  getValidData,
+  registerRefreshListener,
+  setCachedData,
+} from '@onflow/flow-wallet-data-model';
+
+import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils';
 
 import { openapiService } from '.';
-import { getValidData, registerRefreshListener, setCachedData } from '../utils/data-cache';
 import { fclConfirmNetwork } from '../utils/fclConfig';
 
 class EvmNfts {
@@ -71,7 +76,7 @@ class EvmNfts {
     if (!isValidEthereumAddress(address)) {
       throw new Error('Invalid Ethereum address');
     }
-    const cacheData = await getValidData(evmNftIdsKey(network, address));
+    const cacheData = await getValidData<EvmNftIdsStore>(evmNftIdsKey(network, address));
     if (cacheData) {
       return cacheData;
     }
@@ -97,7 +102,7 @@ class EvmNfts {
     if (!isValidEthereumAddress(address)) {
       throw new Error('Invalid Ethereum address');
     }
-    const cacheData = await getValidData(
+    const cacheData = await getValidData<EvmNftCollectionListStore>(
       evmNftCollectionListKey(network, address, collectionIdentifier, `${offset}`)
     );
     if (cacheData) {

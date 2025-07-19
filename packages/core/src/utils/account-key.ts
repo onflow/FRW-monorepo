@@ -7,10 +7,13 @@ import {
   SIGN_ALGO_NUM_DEFAULT,
   SIGN_ALGO_NUM_ECDSA_P256,
   SIGN_ALGO_NUM_ECDSA_secp256k1,
-} from '@onflow/flow-wallet-shared/constant/algo-constants';
-import { type PublicKeyTuple, tupleToPubKey } from '@onflow/flow-wallet-shared/types/key-types';
-import type { AccountKeyRequest } from '@onflow/flow-wallet-shared/types/network-types';
-import { type PublicKeyAccount } from '@onflow/flow-wallet-shared/types/wallet-types';
+} from '@onflow/flow-wallet-shared/constant';
+import type {
+  AccountKeyRequest,
+  PublicKeyAccount,
+  PublicKeyTuple,
+} from '@onflow/flow-wallet-shared/types';
+import { tupleToPubKey } from '@onflow/flow-wallet-shared/utils';
 
 import { seedWithPathAndPhrase2PublicPrivateKey } from './modules/publicPrivateKey';
 
@@ -68,5 +71,15 @@ export const pubKeySignAlgoToAccountKey = (pubKey: string, signAlgo: number): Ac
     hash_algo:
       signAlgo === SIGN_ALGO_NUM_ECDSA_P256 ? HASH_ALGO_NUM_SHA3_256 : HASH_ALGO_NUM_SHA2_256,
     weight: DEFAULT_WEIGHT,
+  };
+};
+export const accountKeyRequestForAccount = async (
+  account: PublicKeyAccount
+): Promise<AccountKeyRequest> => {
+  return {
+    public_key: account.publicKey,
+    hash_algo: account.hashAlgo,
+    sign_algo: account.signAlgo,
+    weight: account.weight,
   };
 };

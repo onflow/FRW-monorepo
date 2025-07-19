@@ -1,11 +1,10 @@
+import { walletLoadedKey } from '@onflow/flow-wallet-data-model';
 import React, { type ReactNode, createContext } from 'react';
-
-import { walletLoadedKey } from '@onflow/flow-wallet-data-model/cache-data-keys';
-import type { IExtractFromPromise } from '@onflow/flow-wallet-shared/types/type';
 
 // eslint-disable-next-line no-restricted-imports
 import type { WalletController as WalletControllerClass } from '@/background/controller/wallet';
 import { useCachedData } from '@/ui/hooks/use-data';
+type IExtractFromPromise<T> = T extends Promise<infer U> ? U : T;
 
 export type WalletControllerType = {
   [key in keyof WalletControllerClass]: WalletControllerClass[key] extends (

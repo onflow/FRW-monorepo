@@ -1,12 +1,8 @@
 import * as secp from '@noble/secp256k1';
 import * as fcl from '@onflow/fcl';
-import type { Account as FclAccount } from '@onflow/typedefs';
-import * as ethUtil from 'ethereumjs-util';
-import { getApp } from 'firebase/app';
-import { getAuth, signInAnonymously } from 'firebase/auth/web-extension';
-import { TransactionError } from 'web3';
-
 import {
+  triggerRefresh,
+  getCachedData,
   accountBalanceKey,
   accountBalanceRefreshRegex,
   coinListKey,
@@ -21,54 +17,59 @@ import {
   placeholderAccountsRefreshRegex,
   userMetadataKey,
   type UserMetadataStore,
-} from '@onflow/flow-wallet-data-model/cache-data-keys';
-import { removeUserData, setUserData } from '@onflow/flow-wallet-data-model/user-data-access';
-import {
+  clearCachedData,
+  getValidData,
+  registerBatchRefreshListener,
+  registerRefreshListener,
+  setCachedData,
+  removeUserData,
+  setUserData,
   activeAccountsKey,
   type ActiveAccountsStore,
   getActiveAccountsData,
   userWalletsKey,
   type UserWalletStore,
-} from '@onflow/flow-wallet-data-model/user-data-keys';
+} from '@onflow/flow-wallet-data-model';
+import type { Account as FclAccount } from '@onflow/typedefs';
+import * as ethUtil from 'ethereumjs-util';
+import { signInAnonymously } from 'firebase/auth/web-extension';
+import { TransactionError } from 'web3';
+
 import { retryOperation } from '@onflow/flow-wallet-extension-shared/retryOperation';
 import storage from '@onflow/flow-wallet-extension-shared/storage';
+import { DEFAULT_WEIGHT, FLOW_BIP44_PATH } from '@onflow/flow-wallet-shared/constant';
 import {
-  DEFAULT_WEIGHT,
-  FLOW_BIP44_PATH,
-} from '@onflow/flow-wallet-shared/constant/algo-constants';
-import {
-  combinePubPkString,
   type PublicPrivateKeyTuple,
-  tupleToPrivateKey,
-} from '@onflow/flow-wallet-shared/types/key-types';
-import {
   type AccountKeyRequest,
   type DeviceInfoRequest,
   type FlowNetwork,
-  networkToChainId,
-} from '@onflow/flow-wallet-shared/types/network-types';
-import {
   type ActiveAccountType,
   type ChildAccountMap,
   type EvmAddress,
   type FlowAddress,
-  getActiveAccountTypeForAddress,
   type MainAccount,
   type PendingTransaction,
   type PublicKeyAccount,
   type WalletAccount,
   type WalletAddress,
-} from '@onflow/flow-wallet-shared/types/wallet-types';
+} from '@onflow/flow-wallet-shared/types';
 import {
+  getErrorMessage,
+  networkToChainId,
+  combinePubPkString,
   ensureEvmAddressPrefix,
   isValidEthereumAddress,
   isValidFlowAddress,
   withPrefix,
-} from '@onflow/flow-wallet-shared/utils/address';
-import { getCompatibleHashAlgo } from '@onflow/flow-wallet-shared/utils/algo';
-import { consoleError, consoleWarn } from '@onflow/flow-wallet-shared/utils/console-log';
-import { getEmojiByIndex } from '@onflow/flow-wallet-shared/utils/emoji-util';
+  getCompatibleHashAlgo,
+  consoleError,
+  consoleWarn,
+  getEmojiByIndex,
+  getActiveAccountTypeForAddress,
+  tupleToPrivateKey,
+} from '@onflow/flow-wallet-shared/utils';
 
+import { authenticationService } from '.';
 import keyringService from './keyring';
 import { mixpanelTrack } from './mixpanel';
 import openapiService, { getScripts } from './openapi';
@@ -76,20 +77,9 @@ import preferenceService from './preference';
 import remoteConfigService from './remoteConfig';
 import transactionActivityService from './transaction-activity';
 import { defaultAccountKey, pubKeyAccountToAccountKey } from '../utils/account-key';
-import {
-  clearCachedData,
-  getCachedData,
-  getValidData,
-  registerBatchRefreshListener,
-  registerRefreshListener,
-  setCachedData,
-  triggerRefresh,
-} from '../utils/data-cache';
 import { fclConfig, fclConfirmNetwork } from '../utils/fclConfig';
-import {
-  getAccountsByPublicKeyTuple,
-  getAccountsWithPublicKey,
-} from '../utils/modules/findAddressWithPubKey';
+import { fetchAccountsByPublicKey } from '../utils/key-indexer';
+import { getAccountsByPublicKeyTuple } from '../utils/modules/findAddressWithPubKey';
 import {
   pk2PubKeyTuple,
   seed2PublicPrivateKey,
@@ -218,7 +208,7 @@ class UserWallet {
 
       return keyIndex;
     } catch (error) {
-      throw new Error('Failed to get key index: ' + error.message);
+      throw new Error('Failed to get key index: ' + getErrorMessage(error));
     }
   };
 
@@ -545,7 +535,7 @@ class UserWallet {
       // A valid main account is selected
       return activeAccounts;
     }
-    if (isValidEthereumAddress(activeAccounts.currentAddress)) {
+    if (activeAccounts.currentAddress && isValidEthereumAddress(activeAccounts.currentAddress)) {
       // Check that the address matches the evm account address
       const evmAccount = await this.getEvmAccount();
       if (evmAccount?.address === activeAccounts.currentAddress) {
@@ -744,7 +734,7 @@ class UserWallet {
     } catch (error) {
       mixpanelTrack.track('script_error', {
         script_id: scriptName,
-        error: error,
+        error: getErrorMessage(error),
       });
       throw error;
     }
@@ -1110,9 +1100,8 @@ class UserWallet {
     replaceUser = true
   ): Promise<void> => {
     // Login anonymously if needed
-    const app = getApp(process.env.NODE_ENV!);
-    const auth = getAuth(app);
-    let idToken = await getAuth(app).currentUser?.getIdToken();
+    const auth = authenticationService.getAuth();
+    let idToken = await auth.currentUser?.getIdToken();
     if (idToken === null || !idToken) {
       // Sign in anonymously first
       const userCredential = await signInAnonymously(auth);
@@ -1259,9 +1248,8 @@ class UserWallet {
     deviceInfo: DeviceInfoRequest,
     replaceUser = true
   ) => {
-    const app = getApp(process.env.NODE_ENV!);
-    const auth = getAuth(app);
-    const idToken = await getAuth(app).currentUser?.getIdToken();
+    const auth = authenticationService.getAuth();
+    const idToken = await auth.currentUser?.getIdToken();
     if (idToken === null || !idToken) {
       signInAnonymously(auth);
       return;
@@ -1296,9 +1284,7 @@ class UserWallet {
   };
 
   logoutCurrentUser = async () => {
-    const app = getApp(process.env.NODE_ENV!);
-    const auth = getAuth(app);
-    await signInAnonymously(auth);
+    await authenticationService.signInAnonymously();
   };
 
   /**
@@ -1332,6 +1318,12 @@ class UserWallet {
     return deviceInfo;
   };
 }
+
+// ------------------------------------------------------------------------------------------------
+// Export the userWalletService
+// ------------------------------------------------------------------------------------------------
+const userWalletService = new UserWallet();
+export default userWalletService;
 
 // ------------------------------------------------------------------------------------------------
 // Data loading methods for userWallet
@@ -1378,7 +1370,7 @@ const preloadAllAccountsWithPubKey = async (
       POLL_INTERVAL
     );
   } catch (error) {
-    consoleError('Failed to load main accounts after maximum retries:', error.message);
+    consoleError('Failed to load main accounts after maximum retries:', getErrorMessage(error));
   }
 
   if (!mainAccounts || mainAccounts.length === 0) {
@@ -1584,7 +1576,7 @@ const loadMainAccountsWithPubKey = async (
   pubKey: string
 ): Promise<MainAccount[]> => {
   // Get the accounts for the current public key
-  const accounts: PublicKeyAccount[] = await getAccountsWithPublicKey(pubKey, network);
+  const accounts: PublicKeyAccount[] = await fetchAccountsByPublicKey(pubKey, network);
 
   // Get the placeholder accounts for the current public key
   const placeholderAccounts = await getPlaceholderAccounts(network, pubKey);
@@ -1920,5 +1912,3 @@ const initAccountLoaders = () => {
     clearPendingAccountCreationTransactions
   );
 };
-
-export default new UserWallet();

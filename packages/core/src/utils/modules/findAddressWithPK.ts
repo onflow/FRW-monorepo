@@ -1,14 +1,15 @@
-import { FLOW_BIP44_PATH } from '@onflow/flow-wallet-shared/constant/algo-constants';
-import { type PublicPrivateKeyTuple } from '@onflow/flow-wallet-shared/types/key-types';
-import { type AccountKeyRequest } from '@onflow/flow-wallet-shared/types/network-types';
-import { type PublicKeyAccount } from '@onflow/flow-wallet-shared/types/wallet-types';
+import { FLOW_BIP44_PATH } from '@onflow/flow-wallet-shared/constant';
+import type { PublicKeyAccount, PublicPrivateKeyTuple } from '@onflow/flow-wallet-shared/types';
 
 import {
-  accountKeyRequestForAccount,
   getAccountsByPublicKeyTuple,
   getOrCheckAccountsByPublicKeyTuple,
 } from './findAddressWithPubKey';
 import { pk2PubKeyTuple, seedWithPathAndPhrase2PublicPrivateKey } from './publicPrivateKey';
+
+// ------------------------------------------------------------------------------------------------
+// Utility methods for account management
+// ------------------------------------------------------------------------------------------------
 
 export const findAddressWithPK = async (
   pk: string,
@@ -40,9 +41,4 @@ export const getPublicAccountForPK = async (pk: string): Promise<PublicKeyAccoun
     throw new Error('No accounts found');
   }
   return accounts[0];
-};
-
-export const getAccountKeyRequestForPK = async (pk: string): Promise<AccountKeyRequest> => {
-  const account = await getPublicAccountForPK(pk);
-  return accountKeyRequestForAccount(account);
 };

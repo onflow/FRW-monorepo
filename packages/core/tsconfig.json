@@ -2,12 +2,14 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
-    "lib": ["ES2022"],
+    "lib": ["ES2022", "DOM"],
     "moduleResolution": "bundler",
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
     "strict": true,
+    "checkJs": true,
+    "noImplicitAny": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
@@ -23,12 +25,18 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*", "tsup.config.ts", "vitest.config.ts", "vitest.init.ts"],
+  "include": ["src/**/*", "tsup.config.ts", "vitest.config.ts", "vitest.init.ts", "build/**/*"],
   "exclude": ["node_modules", "dist"],
 
   "references": [
     {
+      "path": "../shared"
+    },
+    {
       "path": "../data-model"
+    },
+    {
+      "path": "../extension-shared"
     }
   ]
 }

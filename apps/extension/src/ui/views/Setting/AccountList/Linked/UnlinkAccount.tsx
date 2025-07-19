@@ -5,8 +5,8 @@ import React, { useState } from 'react';
 import { useForm, type FieldValues } from 'react-hook-form';
 import { useNavigate } from 'react-router';
 
-import { type WalletAccount } from '@onflow/flow-wallet-shared/types/wallet-types';
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+import { type WalletAccount } from '@onflow/flow-wallet-shared/types';
+import { consoleError } from '@onflow/flow-wallet-shared/utils';
 
 import UnlinkSVG from '@/ui/assets/svg/unlink.svg';
 import { LLPrimaryButton, LLSecondaryButton, LLSpinner } from '@/ui/components';

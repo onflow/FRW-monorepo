@@ -1,5 +1,5 @@
 import storage, { type StorageChange } from '@onflow/flow-wallet-extension-shared/storage';
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+import { consoleError } from '@onflow/flow-wallet-shared/utils';
 
 import { type CacheDataItem } from './data-cache-types';
 

@@ -9,28 +9,22 @@ import {
   type EvmTokenInfo,
   type ExtendedTokenInfo,
   type TokenFilter,
-} from '@onflow/flow-wallet-shared/types/coin-types';
-import { type FeatureFlags } from '@onflow/flow-wallet-shared/types/feature-types';
-import {
+  type FeatureFlags,
   type AccountBalanceInfo,
   type NewsItem,
   type NftCollection,
   type NFTModelV2,
   type UserInfoResponse,
-} from '@onflow/flow-wallet-shared/types/network-types';
-import {
   type EvmNFTCollectionList,
   type EvmNFTIds,
   type NFTCollectionData,
   type NFTCollections,
-} from '@onflow/flow-wallet-shared/types/nft-types';
-import { type NetworkScripts } from '@onflow/flow-wallet-shared/types/script-types';
-import { type TransferItem } from '@onflow/flow-wallet-shared/types/transaction-types';
-import {
+  type NetworkScripts,
+  type TransferItem,
   type Currency,
   type MainAccount,
   type PublicKeyAccount,
-} from '@onflow/flow-wallet-shared/types/wallet-types';
+} from '@onflow/flow-wallet-shared/types';
 
 import { getCachedData, triggerRefresh } from './cache-data-access';
 

@@ -1,7 +1,7 @@
+import { userWalletsKey } from '@onflow/flow-wallet-data-model';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { userWalletsKey } from '@onflow/flow-wallet-data-model/user-data-keys';
-import { type ExtendedTokenInfo } from '@onflow/flow-wallet-shared/types/coin-types';
+import { type ExtendedTokenInfo } from '@onflow/flow-wallet-shared/types';
 
 import { useWallet } from '../use-wallet';
 import { useCoins } from '../useCoinHook';

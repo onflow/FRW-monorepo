@@ -2,11 +2,8 @@ import * as ethSigUtil from '@metamask/eth-sig-util';
 import { ethers } from 'ethers';
 import { describe, expect, test, vi } from 'vitest';
 
-// Import TypedDataUtils directly from the controller
-import { TypedDataUtils } from '../provider/controller';
-
 // Mock all necessary services
-vi.mock('@onflow/flow-wallet-core/service', () => ({
+vi.mock('@onflow/flow-wallet-core', () => ({
   openapiService: {
     getFeatureFlag: vi.fn().mockResolvedValue(false),
   },
@@ -54,6 +51,9 @@ vi.mock('../provider/controller', async () => {
     },
   };
 });
+
+// Import TypedDataUtils directly from the controller
+import { TypedDataUtils } from '../provider/controller';
 
 /**
  * EIP-712 Hash Implementation Comparison

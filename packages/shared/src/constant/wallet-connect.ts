@@ -1,5 +1,3 @@
-export type IExtractFromPromise<T> = T extends Promise<infer U> ? U : T;
-
 export enum FCLWalletConnectMethod {
   preAuthz = 'flow_pre_authz',
   authn = 'flow_authn',
@@ -40,12 +38,3 @@ export enum FCLServiceType {
   localView = 'local-view',
   openID = 'open-id',
 }
-export type FCLWalletConnectSyncAccountInfo = {
-  method: FCLWalletConnectMethod.accountInfo;
-  data: {
-    userAvatar: string;
-    userName: string;
-    walletAddress: string;
-    userId: string;
-  };
-};

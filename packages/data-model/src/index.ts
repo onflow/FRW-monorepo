@@ -5,3 +5,6 @@ export * from './user-data-keys';
 
 export * from './cache-data-access';
 export * from './user-data-access';
+
+export * from './data-cache';
+export * from './batch-refresh';

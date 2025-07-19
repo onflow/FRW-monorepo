@@ -8,9 +8,8 @@ import type {
   CoinItem,
   CustomFungibleTokenInfo,
   EvmCustomTokenInfo,
-} from '@onflow/flow-wallet-shared/types/coin-types';
-import { getPriceProvider } from '@onflow/flow-wallet-shared/types/network-types';
-import { consoleError, consoleWarn } from '@onflow/flow-wallet-shared/utils/console-log';
+} from '@onflow/flow-wallet-shared/types';
+import { consoleError, consoleWarn, getPriceProvider } from '@onflow/flow-wallet-shared/utils';
 
 import tips from '@/ui/assets/svg/tips.svg';
 import WarningIcon from '@/ui/assets/svg/warning.svg';

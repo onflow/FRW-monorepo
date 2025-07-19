@@ -3,17 +3,29 @@
  * Persistant data is data that is stored between sessions
  */
 
-import { type EvmCustomTokenInfo } from '@onflow/flow-wallet-shared/types/coin-types';
-import { type FlowNetwork } from '@onflow/flow-wallet-shared/types/network-types';
 import {
+  type FlowNetwork,
   type Currency,
   type FlowAddress,
   type WalletAddress,
-} from '@onflow/flow-wallet-shared/types/wallet-types';
+  type EvmCustomTokenInfo,
+} from '@onflow/flow-wallet-shared/types';
 
 import { getUserData } from './user-data-access';
 
-// Persistent storage keys
+// Keyring Keys
+export const KEYRING_STATE_V1_KEY = 'keyringState';
+export const KEYRING_STATE_V2_KEY = 'keyringStateV2';
+export const KEYRING_STATE_V3_KEY = 'keyringStateV3';
+
+export const KEYRING_DEEP_VAULT_KEY = 'deepVault';
+
+export const KEYRING_STATE_CURRENT_KEY = KEYRING_STATE_V3_KEY;
+
+// Current user ID
+export const CURRENT_ID_KEY = 'currentId';
+
+// The active user wallet
 export const userWalletsKey = 'userWalletsV2';
 
 // Stored in local storage

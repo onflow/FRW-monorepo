@@ -2,8 +2,7 @@ import { Box } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils/address';
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+import { isValidEthereumAddress, consoleError } from '@onflow/flow-wallet-shared/utils';
 
 import alertMark from '@/ui/assets/svg/alertMark.svg';
 import { NFTDrawer } from '@/ui/components/GeneralPages';

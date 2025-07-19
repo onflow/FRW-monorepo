@@ -1,4 +1,4 @@
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+import { consoleError } from '@onflow/flow-wallet-shared/utils';
 
 import fallback from '@/ui/assets/image/errorImage.png';
 

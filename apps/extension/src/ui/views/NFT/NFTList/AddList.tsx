@@ -13,8 +13,8 @@ import {
 import Grid from '@mui/material/Grid';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { type NFTModelV2 } from '@onflow/flow-wallet-shared/types/network-types';
-import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
+import { type NFTModelV2 } from '@onflow/flow-wallet-shared/types';
+import { consoleError } from '@onflow/flow-wallet-shared/utils';
 
 import alertMark from '@/ui/assets/svg/alert.svg';
 import { LLHeader } from '@/ui/components';
