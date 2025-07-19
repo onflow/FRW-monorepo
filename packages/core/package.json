@@ -33,35 +33,10 @@
       "import": "./dist/service/index.js",
       "default": "./dist/service/index.js"
     },
-    "./service": {
-      "types": "./dist/service/index.d.ts",
-      "import": "./dist/service/index.js",
-      "default": "./dist/service/index.js"
-    },
-    "./service/*": {
-      "types": "./dist/service/*.d.ts",
-      "import": "./dist/service/*.js",
-      "default": "./dist/service/*.js"
-    },
-    "./service/keyring": {
-      "types": "./dist/service/keyring/index.d.ts",
-      "import": "./dist/service/keyring/index.js",
-      "default": "./dist/service/keyring/index.js"
-    },
     "./utils": {
       "types": "./dist/utils/index.d.ts",
       "import": "./dist/utils/index.js",
       "default": "./dist/utils/index.js"
-    },
-    "./*": {
-      "types": "./dist/*.d.ts",
-      "import": "./dist/*.js",
-      "default": "./dist/*.js"
-    },
-    "./src/*": {
-      "types": "./src/*.ts",
-      "import": "./src/*.ts",
-      "default": "./src/*.ts"
     }
   },
   "dependencies": {

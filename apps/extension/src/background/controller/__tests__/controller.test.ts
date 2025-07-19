@@ -1,3 +1,5 @@
+/* eslint-disable import/order */
+
 // --- Top-Level Mocks ---
 vi.mock('../wallet', () => ({
   default: {
@@ -10,28 +12,9 @@ vi.mock('../wallet', () => ({
   },
 }));
 
-vi.mock('@onflow/flow-wallet-core/utils', () => ({
-  getAccountsByPublicKeyTuple: vi.fn(),
-  pk2PubKeyTuple: vi.fn().mockResolvedValue({
-    SECP256K1: {
-      pubK: '04e7e3a5f6b3f7f3e8f7f2f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7',
-    },
-    P256: {
-      pubK: '04e7e3a5f6b3f7f3e8f7f2f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7',
-    },
-  }),
-  signWithKey: vi.fn(),
-}));
-
 // Consolidate mocks for services imported from '@onflow/flow-wallet-core/service'
-vi.mock('@onflow/flow-wallet-core/service', () => {
+vi.mock('@onflow/flow-wallet-core', () => {
   return {
-    keyringService: {
-      getCurrentPublicPrivateKeyTuple: vi.fn(),
-    },
-    signTextHistoryService: {
-      createHistory: vi.fn(),
-    },
     mixpanelTrack: vi.fn(),
     userWalletService: {
       setupFcl: vi.fn(),
@@ -50,8 +33,27 @@ vi.mock('@onflow/flow-wallet-core/service', () => {
     sessionService: {
       broadcastEvent: vi.fn(),
     },
+    keyringService: {
+      getCurrentPublicPrivateKeyTuple: vi.fn(),
+    },
+    signTextHistoryService: {
+      createHistory: vi.fn(),
+    },
   };
 });
+vi.mock('@onflow/flow-wallet-core/utils', () => ({
+  getAccountsByPublicKeyTuple: vi.fn(),
+  pk2PubKeyTuple: vi.fn().mockResolvedValue({
+    SECP256K1: {
+      pubK: '04e7e3a5f6b3f7f3e8f7f2f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7',
+    },
+    P256: {
+      pubK: '04e7e3a5f6b3f7f3e8f7f2f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7',
+    },
+  }),
+
+  signWithKey: vi.fn(),
+}));
 
 vi.mock('../notification', () => ({
   default: {
@@ -60,20 +62,22 @@ vi.mock('../notification', () => ({
 }));
 
 // 2. ADD THE FOLLOWING BLOCK of clean imports here:
-import {
-  keyringService,
-  signTextHistoryService,
-  userWalletService,
-} from '@onflow/flow-wallet-core';
 import * as ethUtil from 'ethereumjs-util';
 import { bufferToHex, ecrecover } from 'ethereumjs-util';
 import { ethers } from 'ethers';
 import RLP from 'rlp';
 import { afterEach, beforeEach, describe, expect, it, vi, type MockedFunction } from 'vitest';
+
+import {
+  keyringService,
+  signTextHistoryService,
+  userWalletService,
+} from '@onflow/flow-wallet-core';
+import { getAccountsByPublicKeyTuple, signWithKey } from '@onflow/flow-wallet-core/utils';
+
 // --- Other Specific Imports (ensure these remain as they were) ---
 
 // Change these imports to be named imports from '@onflow/flow-wallet-core/service'
-import { getAccountsByPublicKeyTuple, signWithKey } from '@onflow/flow-wallet-core/utils';
 import {
   HASH_ALGO_NUM_DEFAULT,
   SIGN_ALGO_NUM_DEFAULT,

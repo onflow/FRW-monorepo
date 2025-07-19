@@ -12,7 +12,7 @@ export * from './key-indexer';
 export * from './modules/publicPrivateKey';
 export * from './random-id';
 export * from './modules/findAddressWithPubKey';
-
+export * from './modules/findAddressWithPK';
 // {a:{b: string}} => {1: 'a.b'}
 // later same [source] value will override [result] key generated before
 const retrieveValuePath = (obj) => {
