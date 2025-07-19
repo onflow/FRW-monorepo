@@ -127,6 +127,7 @@ vi.mock('firebase/auth/web-extension', () => ({
   initializeApp: vi.fn(() => ({})),
   indexedDBLocalPersistence: vi.fn(),
   setPersistence: vi.fn((_auth, _persistence) => ({})),
+  signOut: vi.fn(),
 }));
 
 // Mock storage utility

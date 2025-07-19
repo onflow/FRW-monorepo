@@ -35,8 +35,6 @@ import {
 } from '@onflow/flow-wallet-shared/utils/address';
 import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
 
-import { getAccountsByPublicKeyTuple } from '@/utils/key-indexer';
-
 import { authenticationService, preferenceService } from '.';
 import googleDriveService from './googleDrive';
 import keyringService, { type Keyring } from './keyring';
@@ -49,19 +47,18 @@ import userWalletService, {
   removePendingAccountCreationTransaction,
 } from './userWallet';
 import {
+  getAccountsByPublicKeyTuple,
+  fetchAccountsByPublicKey,
   accountKeyRequestForAccount,
   getAccountKey,
   pubKeyAccountToAccountKey,
   pubKeySignAlgoToAccountKey,
-} from '../utils/account-key';
-import { fetchAccountsByPublicKey } from '../utils/key-indexer';
-import {
   formPubKeyTuple,
   jsonToKey,
   pk2PubKeyTuple,
   seedWithPathAndPhrase2PublicPrivateKey,
-} from '../utils/modules/publicPrivateKey';
-import { generateRandomId } from '../utils/random-id';
+  generateRandomId,
+} from '../utils';
 
 export class AccountManagement {
   async registerNewProfile(username: string, password: string, mnemonic: string): Promise<void> {

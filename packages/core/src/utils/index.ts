@@ -6,6 +6,12 @@ import { consoleError } from '@onflow/flow-wallet-shared/utils/console-log';
 
 import { EMULATOR_HOST_MAINNET, EMULATOR_HOST_TESTNET } from './fclConfig';
 
+// Re-export utility modules
+export * from './account-key';
+export * from './key-indexer';
+export * from './modules/publicPrivateKey';
+export * from './random-id';
+
 // {a:{b: string}} => {1: 'a.b'}
 // later same [source] value will override [result] key generated before
 const retrieveValuePath = (obj) => {
@@ -136,8 +142,3 @@ export const replaceNftKeywords = (script: string, token: any) => {
     .replaceAll('<CollectionPublicType>', token.path.public_type)
     .replaceAll('<CollectionPublicPath>', publicPath);
 };
-
-// Export utility modules
-
-export * from './modules/publicPrivateKey';
-export * from './key-indexer';

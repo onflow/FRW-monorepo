@@ -41,18 +41,18 @@ import {
   consoleWarn,
 } from '@onflow/flow-wallet-shared/utils/console-log';
 
-import { getAccountsByPublicKeyTuple } from '@/utils/key-indexer';
-
 import { HDKeyring, type HDKeyringData, type HDKeyringType } from './hdKeyring';
 import { type SimpleKeyPairType, SimpleKeyring, type SimpleKeyringData } from './simpleKeyring';
-import { normalizeAddress } from '../../utils';
-import { defaultAccountKey, pubKeyAccountToAccountKey } from '../../utils/account-key';
 import {
+  normalizeAddress,
+  getAccountsByPublicKeyTuple,
+  defaultAccountKey,
+  pubKeyAccountToAccountKey,
   formPubKeyTuple,
   getPublicKeyFromPrivateKey,
   pkTuple2PubKey,
   seedWithPathAndPhrase2PublicPrivateKey,
-} from '../../utils/modules/publicPrivateKey';
+} from '../../utils';
 import preference from '../preference';
 
 export const KEYRING_SDK_TYPES = {

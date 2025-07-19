@@ -119,6 +119,7 @@ vi.mock('firebase/auth/web-extension', () => ({
   })),
   signInWithCustomToken: vi.fn(),
   signInAnonymously: vi.fn(),
+  signOut: vi.fn(),
   onAuthStateChanged: vi.fn((auth, callback) => {
     callback(mockAuth.currentUser);
     return () => {};

@@ -10,8 +10,17 @@ vi.mock('../wallet', () => ({
   },
 }));
 
-vi.mock('@onflow/flow-wallet-core/utils/modules/findAddressWithPubKey', () => ({
+vi.mock('@onflow/flow-wallet-core/utils', () => ({
   getAccountsByPublicKeyTuple: vi.fn(),
+  pk2PubKeyTuple: vi.fn().mockResolvedValue({
+    SECP256K1: {
+      pubK: '04e7e3a5f6b3f7f3e8f7f2f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7',
+    },
+    P256: {
+      pubK: '04e7e3a5f6b3f7f3e8f7f2f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7',
+    },
+  }),
+  signWithKey: vi.fn(),
 }));
 
 // Consolidate mocks for services imported from '@onflow/flow-wallet-core/service'
@@ -57,29 +66,35 @@ import {
   userWalletService,
 } from '@onflow/flow-wallet-core';
 import * as ethUtil from 'ethereumjs-util';
-import { bufferToHex, ecrecover, stripHexPrefix } from 'ethereumjs-util';
+import { bufferToHex, ecrecover } from 'ethereumjs-util';
 import { ethers } from 'ethers';
 import RLP from 'rlp';
 import { afterEach, beforeEach, describe, expect, it, vi, type MockedFunction } from 'vitest';
 // --- Other Specific Imports (ensure these remain as they were) ---
 
 // Change these imports to be named imports from '@onflow/flow-wallet-core/service'
-import { pk2PubKeyTuple, getAccountsByPublicKeyTuple } from '@onflow/flow-wallet-core/utils';
+import { getAccountsByPublicKeyTuple, signWithKey } from '@onflow/flow-wallet-core/utils';
 import {
   HASH_ALGO_NUM_DEFAULT,
   SIGN_ALGO_NUM_DEFAULT,
 } from '@onflow/flow-wallet-shared/constant/algo-constants';
-import { tupleToPubKey } from '@onflow/flow-wallet-shared/types/key-types';
 import { TESTNET_CHAIN_ID } from '@onflow/flow-wallet-shared/types/network-types';
 
 import notificationService from '../notification';
 import providerController from '../provider/controller';
 import walletController from '../wallet';
 
-describe('ProviderController - signTypeData (EIP-1271)', async () => {
+describe('ProviderController - signTypeData (EIP-1271)', () => {
   const mockPrivateKeyHex = '0x2a48b006348213f6f78b7c8cf443a32737b8f6013734d8f937c68556641f02b9';
-  const mockPubKeyTuple = await pk2PubKeyTuple(stripHexPrefix(mockPrivateKeyHex));
-  const mockPubKey = tupleToPubKey(mockPubKeyTuple, SIGN_ALGO_NUM_DEFAULT);
+  const mockPubKeyTuple = {
+    SECP256K1: {
+      pubK: '04e7e3a5f6b3f7f3e8f7f2f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7',
+    },
+    P256: {
+      pubK: '04e7e3a5f6b3f7f3e8f7f2f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7',
+    },
+  };
+  const mockPubKey = mockPubKeyTuple.SECP256K1.pubK; // Use SECP256K1 for the default
   const mockEvmAddress = '0x000000000000000000000002433D0DD1e2D81b9F'; // Address derived from private key
   const mockFlowAddress = '0xf8d6e0586b0a20c7'; // Example Flow address
   const mockKeyIndex = 1;
@@ -163,29 +178,26 @@ describe('ProviderController - signTypeData (EIP-1271)', async () => {
 
     // Configure mocks for other top-level mocked modules
     vi.mocked(getAccountsByPublicKeyTuple).mockResolvedValue([mockAccount]);
-    /*
-    vi.mocked(publicPrivateKey).signWithKey = vi
-      .fn()
-      .mockImplementation(
-        async (
-          dataToSignHex: string,
-          signAlgo: number,
-          hashAlgo: number,
-          privateKeyHex: string
-        ) => {
-          if (signAlgo !== SIGN_ALGO_NUM_ECDSA_P256) {
-            throw new Error('signWithKey mock called with non-ECDSA_P256 algo');
-          }
-          const messageHashBytes = Buffer.from(dataToSignHex, 'hex');
-          const signingKey = new ethers.SigningKey('0x' + privateKeyHex);
-          const sig = signingKey.sign(messageHashBytes);
-          const rHex = sig.r.slice(2);
-          const sHex = sig.s.slice(2);
-          const vHex = sig.yParity.toString(16).padStart(2, '0');
-          return rHex + sHex + vHex;
+    vi.mocked(signWithKey).mockImplementation(
+      async (dataToSignHex: string, signAlgo: number, hashAlgo: number, privateKeyHex: string) => {
+        if (signAlgo !== SIGN_ALGO_NUM_DEFAULT) {
+          throw new Error('signWithKey mock called with non-ECDSA_secp256k1 algo');
         }
-      );
- */
+        // The dataToSignHex is the full message, but ethers expects a 32-byte hash
+        // So we need to ensure it's the right length
+        let messageHashBytes = Buffer.from(dataToSignHex, 'hex');
+        if (messageHashBytes.length > 32) {
+          // Take only the last 32 bytes (which should be the actual hash)
+          messageHashBytes = messageHashBytes.slice(-32);
+        }
+        const signingKey = new ethers.SigningKey('0x' + privateKeyHex);
+        const sig = signingKey.sign(messageHashBytes);
+        const rHex = sig.r.slice(2);
+        const sHex = sig.s.slice(2);
+        const vHex = sig.yParity.toString(16).padStart(2, '0');
+        return rHex + sHex + vHex;
+      }
+    );
     // Configure functions imported for mocking their modules
     (
       signTextHistoryService.createHistory as MockedFunction<

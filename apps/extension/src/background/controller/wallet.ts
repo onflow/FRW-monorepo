@@ -624,10 +624,6 @@ export class WalletController extends BaseController {
   setIsDefaultWallet = (val: boolean) => preferenceService.setIsDefaultWallet(val);
   isDefaultWallet = () => preferenceService.getIsDefaultWallet();
 
-  private async _setCurrentAccountFromKeyring(keyring, index = 0) {
-    return await accountManagementService._setCurrentAccountFromKeyring(keyring, index);
-  }
-
   getHighlightWalletList = () => {
     return preferenceService.getWalletSavedList();
   };
