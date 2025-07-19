@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ['src/**/*.ts', '!src/**/*.test.ts', '!src/**/*.spec.ts'],
+  entry: ['src/constant/index.ts', 'src/utils/index.ts', 'src/types/index.ts'],
   format: ['esm'],
   dts: {
     compilerOptions: {
@@ -13,8 +13,6 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   treeshake: true,
-  loader: {
-    '.json': 'copy',
-  },
+
   // Removed onSuccess hook that was copying src to dist/src
 });

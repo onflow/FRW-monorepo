@@ -17,12 +17,6 @@
     "rootDir": "./",
     "composite": true
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.json",
-    "tsup.config.ts",
-    "vitest.config.ts",
-    "../../apps/extension/src/ui/utils/url-constants.ts"
-  ],
+  "include": ["src/**/*.ts", "src/**/*.json", "tsup.config.ts", "vitest.config.ts"],
   "exclude": ["node_modules", "dist"]
 }
