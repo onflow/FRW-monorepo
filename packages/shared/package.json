@@ -1,5 +1,5 @@
 {
-  "name": "@onflow/flow-wallet-shared",
+  "name": "@onflow/frw-shared",
   "version": "0.0.1",
   "description": "Shared types and utilities for Flow Reference Wallet",
   "type": "module",
