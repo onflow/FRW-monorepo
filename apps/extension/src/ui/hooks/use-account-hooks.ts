@@ -15,7 +15,7 @@ import {
   type UserWalletStore,
   CURRENT_ID_KEY,
   KEYRING_STATE_CURRENT_KEY,
-} from '@onflow/flow-wallet-data-model';
+} from '@onflow/frw-data-model';
 import { useMemo } from 'react';
 
 import {
@@ -24,8 +24,8 @@ import {
   type VaultEntryV3,
   type MainAccount,
   type PendingTransaction,
-} from '@onflow/flow-wallet-shared/types';
-import { getActiveAccountTypeForAddress } from '@onflow/flow-wallet-shared/utils';
+} from '@onflow/frw-shared/types';
+import { getActiveAccountTypeForAddress } from '@onflow/frw-shared/utils';
 
 import { useCachedData, useUserData } from './use-data';
 

@@ -1,5 +1,5 @@
-import storage from '@onflow/flow-wallet-extension-shared/storage';
-import { consoleError } from '@onflow/flow-wallet-shared/utils';
+import storage from '@onflow/frw-extension-shared/storage';
+import { consoleError } from '@onflow/frw-shared/utils';
 
 import { jsonToString } from './utils';
 

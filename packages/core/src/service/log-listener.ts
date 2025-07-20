@@ -1,4 +1,4 @@
-import { stripSensitive } from '@onflow/flow-wallet-shared/utils';
+import { stripSensitive } from '@onflow/frw-shared/utils';
 
 import { mixpanelTrack } from './mixpanel';
 

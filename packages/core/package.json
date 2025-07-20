@@ -1,5 +1,5 @@
 {
-  "name": "@onflow/flow-wallet-core",
+  "name": "@onflow/frw-core",
   "version": "0.0.1",
   "description": "Core services for Flow Reference Wallet",
   "type": "module",
@@ -40,9 +40,9 @@
     }
   },
   "dependencies": {
-    "@onflow/flow-wallet-shared": "workspace:*",
-    "@onflow/flow-wallet-extension-shared": "workspace:*",
-    "@onflow/flow-wallet-data-model": "workspace:*",
+    "@onflow/frw-shared": "workspace:*",
+    "@onflow/frw-extension-shared": "workspace:*",
+    "@onflow/frw-data-model": "workspace:*",
     "@noble/secp256k1": "^1.7.2",
     "@onflow/fcl": "^1.13.1",
     "@onflow/typedefs": "^1.4.0",

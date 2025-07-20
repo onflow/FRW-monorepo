@@ -1,5 +1,5 @@
 {
-  "name": "@onflow/flow-wallet-reducers",
+  "name": "@onflow/frw-reducers",
   "version": "0.0.1",
   "description": "Reducers for Flow Reference Wallet",
   "type": "module",
@@ -39,7 +39,7 @@
     }
   },
   "dependencies": {
-    "@onflow/flow-wallet-shared": "workspace:*",
+    "@onflow/frw-shared": "workspace:*",
     "bignumber.js": "^9.1.2"
   },
   "devDependencies": {

@@ -16,8 +16,8 @@ import _ from 'lodash';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { type Contact } from '@onflow/flow-wallet-shared/types';
-import { consoleError } from '@onflow/flow-wallet-shared/utils';
+import { type Contact } from '@onflow/frw-shared/types';
+import { consoleError } from '@onflow/frw-shared/utils';
 
 import EmptyStateImage from '@/ui/assets/image/search_user.png';
 import { LLHeader } from '@/ui/components/LLHeader';

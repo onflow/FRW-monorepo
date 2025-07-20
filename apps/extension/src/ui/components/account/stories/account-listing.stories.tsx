@@ -2,13 +2,13 @@ import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 import { withRouter } from 'storybook-addon-remix-react-router';
 
-import { emoji as emojisJson, MAINNET_CHAIN_ID } from '@onflow/flow-wallet-shared/constant';
+import { emoji as emojisJson, MAINNET_CHAIN_ID } from '@onflow/frw-shared/constant';
 import {
   type Emoji,
   type MainAccount,
   type WalletAccount,
   type NFTCollections,
-} from '@onflow/flow-wallet-shared/types';
+} from '@onflow/frw-shared/types';
 
 import { AccountListing } from '@/ui/components/account/account-listing';
 import {

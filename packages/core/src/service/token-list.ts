@@ -7,14 +7,14 @@ import {
   setUserData,
   evmCustomTokenKey,
   getEvmCustomTokenData,
-} from '@onflow/flow-wallet-data-model';
+} from '@onflow/frw-data-model';
 
-import { MAINNET_CHAIN_ID } from '@onflow/flow-wallet-shared/constant';
+import { MAINNET_CHAIN_ID } from '@onflow/frw-shared/constant';
 import {
   type CustomFungibleTokenInfo,
   type EvmCustomTokenInfo,
   type FungibleTokenInfo,
-} from '@onflow/flow-wallet-shared/types';
+} from '@onflow/frw-shared/types';
 
 import { userWalletService } from '.';
 import openapiService from './openapi';

@@ -4,7 +4,7 @@ import Button from '@mui/material/Button';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { consoleError } from '@onflow/flow-wallet-shared/utils';
+import { consoleError } from '@onflow/frw-shared/utils';
 
 import { EditIcon } from '@/ui/assets/icons/settings/Edit';
 import RemoveProfileModal from '@/ui/components/PopupModal/remove-profile-modal';

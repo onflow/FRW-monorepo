@@ -8,9 +8,9 @@
 
 import compareVersions from 'compare-versions';
 
-import storage from '@onflow/flow-wallet-extension-shared/storage';
-import { MAINNET_NETWORK, DEFAULT_CURRENCY } from '@onflow/flow-wallet-shared/constant';
-import { type FlowNetwork, type Currency } from '@onflow/flow-wallet-shared/types';
+import storage from '@onflow/frw-extension-shared/storage';
+import { MAINNET_NETWORK, DEFAULT_CURRENCY } from '@onflow/frw-shared/constant';
+import { type FlowNetwork, type Currency } from '@onflow/frw-shared/types';
 
 import createPersistStore from '../utils/persistStore';
 

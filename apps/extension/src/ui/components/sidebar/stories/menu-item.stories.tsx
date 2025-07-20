@@ -2,7 +2,7 @@ import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 
 // Import some example icons
-import { consoleLog } from '@onflow/flow-wallet-shared/utils';
+import { consoleLog } from '@onflow/frw-shared/utils';
 
 import lock from '@/ui/assets/svg/sidebar-lock.svg';
 import plus from '@/ui/assets/svg/sidebar-plus.svg';

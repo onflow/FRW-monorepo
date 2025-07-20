@@ -6,8 +6,8 @@ import {
   IMPORT_STEPS,
   importProfileReducer,
   INITIAL_IMPORT_STATE,
-} from '@onflow/flow-wallet-reducers/import-profile-reducer';
-import { consoleError } from '@onflow/flow-wallet-shared/utils';
+} from '@onflow/frw-reducers/import-profile-reducer';
+import { consoleError } from '@onflow/frw-shared/utils';
 
 import Google from '@/ui/components/google-import';
 import ImportTabs from '@/ui/components/import-components/ImportTabs';

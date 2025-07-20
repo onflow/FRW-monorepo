@@ -1,7 +1,7 @@
 import aesjs from 'aes-js';
 import * as bip39 from 'bip39';
 
-import { consoleError, consoleWarn } from '@onflow/flow-wallet-shared/utils';
+import { consoleError, consoleWarn } from '@onflow/frw-shared/utils';
 
 interface GoogleDriveFileModel {
   kind: string;

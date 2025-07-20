@@ -4,12 +4,12 @@ import { batchRefreshManager, registerBatchRefreshListener } from './batch-refre
 import { setCachedData } from './data-cache';
 
 // Mock consoleError from the shared utils
-vi.mock('@onflow/flow-wallet-shared/utils', () => ({
+vi.mock('@onflow/frw-shared/utils', () => ({
   consoleError: vi.fn(),
 }));
 
 // Mock the storage module
-vi.mock('@onflow/flow-wallet-extension-shared/storage', () => ({
+vi.mock('@onflow/frw-extension-shared/storage', () => ({
   default: {
     setSession: vi.fn(),
     getSession: vi.fn(),
@@ -152,7 +152,7 @@ describe('Batch Refresh Mechanism', () => {
 
   it('should handle errors gracefully', async () => {
     // Get the mocked consoleError
-    const { consoleError } = await import('@onflow/flow-wallet-shared/utils');
+    const { consoleError } = await import('@onflow/frw-shared/utils');
     const batchLoader = vi.fn().mockRejectedValue(new Error('Network error'));
 
     const keyPattern = /^account-balance-(\w+)-(\w+)-refresh$/;

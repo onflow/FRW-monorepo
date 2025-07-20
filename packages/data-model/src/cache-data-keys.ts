@@ -24,7 +24,7 @@ import {
   type Currency,
   type MainAccount,
   type PublicKeyAccount,
-} from '@onflow/flow-wallet-shared/types';
+} from '@onflow/frw-shared/types';
 
 import { getCachedData, triggerRefresh } from './cache-data-access';
 

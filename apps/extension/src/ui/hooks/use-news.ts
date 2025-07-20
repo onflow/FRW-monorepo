@@ -2,11 +2,11 @@ import {
   newsKey,
   readAndDismissedNewsKey,
   type ReadAndDismissedNewsStore,
-} from '@onflow/flow-wallet-data-model';
+} from '@onflow/frw-data-model';
 import { useCallback, useMemo } from 'react';
 
-import { type NewsConditionType, type NewsItem } from '@onflow/flow-wallet-shared/types';
-import { checkLowBalance, consoleError, evaluateStorage } from '@onflow/flow-wallet-shared/utils';
+import { type NewsConditionType, type NewsItem } from '@onflow/frw-shared/types';
+import { checkLowBalance, consoleError, evaluateStorage } from '@onflow/frw-shared/utils';
 
 import { useCachedData, useUserData } from './use-data';
 import { useLatestVersion } from './use-feature-flags';

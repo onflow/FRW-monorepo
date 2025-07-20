@@ -2,7 +2,7 @@ import { Box, Button, IconButton, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
-import { consoleError } from '@onflow/flow-wallet-shared/utils';
+import { consoleError } from '@onflow/frw-shared/utils';
 
 import { LLHeader, LLSpinner } from '@/ui/components';
 import BrowserWarning from '@/ui/components/BrowserWarning';

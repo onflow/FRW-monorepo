@@ -1,5 +1,5 @@
 {
-  "name": "@onflow/flow-wallet-data-model",
+  "name": "@onflow/frw-data-model",
   "version": "0.0.1",
   "description": "Data model for Flow Reference Wallet",
   "type": "module",
@@ -34,8 +34,8 @@
     }
   },
   "dependencies": {
-    "@onflow/flow-wallet-shared": "workspace:*",
-    "@onflow/flow-wallet-extension-shared": "workspace:*"
+    "@onflow/frw-shared": "workspace:*",
+    "@onflow/frw-extension-shared": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

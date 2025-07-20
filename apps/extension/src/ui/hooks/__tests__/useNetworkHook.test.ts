@@ -1,8 +1,8 @@
-import { userWalletsKey } from '@onflow/flow-wallet-data-model';
+import { userWalletsKey } from '@onflow/frw-data-model';
 import { act, useEffect, useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import storage from '@onflow/flow-wallet-extension-shared/storage';
+import storage from '@onflow/frw-extension-shared/storage';
 
 import { useNetwork } from '../useNetworkHook';
 
@@ -20,7 +20,7 @@ vi.mock('react', async () => {
 });
 
 // Mock storage module - must be defined before the vi.mock call
-vi.mock('@onflow/flow-wallet-extension-shared/storage', () => {
+vi.mock('@onflow/frw-extension-shared/storage', () => {
   return {
     default: {
       get: vi.fn().mockImplementation((key) => {

@@ -1,8 +1,8 @@
 import { Box, Typography } from '@mui/material';
 import React from 'react';
 
-import { type MainAccount, type WalletAccount } from '@onflow/flow-wallet-shared/types';
-import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils';
+import { type MainAccount, type WalletAccount } from '@onflow/frw-shared/types';
+import { isValidEthereumAddress } from '@onflow/frw-shared/utils';
 
 import { useHiddenAccounts } from '@/ui/hooks/preference-hooks';
 import { useProfiles } from '@/ui/hooks/useProfileHook';

@@ -3,7 +3,7 @@ import Grid from '@mui/material/Grid';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
-import { consoleError } from '@onflow/flow-wallet-shared/utils';
+import { consoleError } from '@onflow/frw-shared/utils';
 
 import { LLHeader } from '@/ui/components';
 import IconCopy from '@/ui/components/iconfont/IconCopy';

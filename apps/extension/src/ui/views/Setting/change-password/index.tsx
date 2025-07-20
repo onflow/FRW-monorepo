@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { consoleError } from '@onflow/flow-wallet-shared/utils';
+import { consoleError } from '@onflow/frw-shared/utils';
 
 import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
 import { LLHeader } from '@/ui/components/LLHeader';

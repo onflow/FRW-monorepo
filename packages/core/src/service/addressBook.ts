@@ -1,4 +1,4 @@
-import { type Contact } from '@onflow/flow-wallet-shared/types';
+import { type Contact } from '@onflow/frw-shared/types';
 
 import createPersistStore from '../utils/persistStore';
 

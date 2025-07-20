@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router';
 
-import { consoleError } from '@onflow/flow-wallet-shared/utils';
+import { consoleError } from '@onflow/frw-shared/utils';
 
 import warning from '@/ui/assets/image/warning.png';
 import { LLPrimaryButton } from '@/ui/components';

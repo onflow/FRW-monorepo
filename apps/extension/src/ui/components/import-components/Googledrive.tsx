@@ -1,7 +1,7 @@
 import { Box, Button, Typography } from '@mui/material';
 import React, { useState } from 'react';
 
-import { consoleError } from '@onflow/flow-wallet-shared/utils';
+import { consoleError } from '@onflow/frw-shared/utils';
 
 import { LLSpinner } from '@/ui/components';
 import BrowserWarning from '@/ui/components/BrowserWarning';

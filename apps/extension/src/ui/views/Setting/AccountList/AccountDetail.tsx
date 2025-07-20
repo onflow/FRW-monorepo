@@ -3,13 +3,9 @@ import LinearProgress from '@mui/material/LinearProgress';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router';
 
-import storage from '@onflow/flow-wallet-extension-shared/storage';
-import { type Emoji, type StorageInfo } from '@onflow/flow-wallet-shared/types';
-import {
-  consoleError,
-  isValidEthereumAddress,
-  isValidFlowAddress,
-} from '@onflow/flow-wallet-shared/utils';
+import storage from '@onflow/frw-extension-shared/storage';
+import { type Emoji, type StorageInfo } from '@onflow/frw-shared/types';
+import { consoleError, isValidEthereumAddress, isValidFlowAddress } from '@onflow/frw-shared/utils';
 
 import { EditIcon } from '@/ui/assets/icons/settings/Edit';
 import { LLHeader } from '@/ui/components';

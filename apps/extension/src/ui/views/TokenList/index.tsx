@@ -16,7 +16,7 @@ import { StyledEngineProvider } from '@mui/material/styles';
 import React, { useCallback, useEffect, useState } from 'react';
 
 // import { useNavigate } from 'react-router';
-import { type ExtendedTokenInfo } from '@onflow/flow-wallet-shared/types';
+import { type ExtendedTokenInfo } from '@onflow/frw-shared/types';
 
 import VerifiedIcon from '@/ui/assets/svg/verfied-check.svg';
 import { LLHeader } from '@/ui/components';

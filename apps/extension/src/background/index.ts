@@ -21,16 +21,16 @@ import {
   userInfoService,
   userWalletService,
   versionService,
-} from '@onflow/flow-wallet-core';
+} from '@onflow/frw-core';
 import { ethErrors } from 'eth-rpc-errors';
 
-import { initializeChromeLogging } from '@onflow/flow-wallet-extension-shared/chrome-logger';
-import eventBus from '@onflow/flow-wallet-extension-shared/message/eventBus';
-import { Message } from '@onflow/flow-wallet-extension-shared/messaging';
-import storage from '@onflow/flow-wallet-extension-shared/storage';
-import { EVENTS } from '@onflow/flow-wallet-shared/constant';
-import { type WalletAddress } from '@onflow/flow-wallet-shared/types';
-import { isValidFlowAddress, consoleError, consoleLog } from '@onflow/flow-wallet-shared/utils';
+import { initializeChromeLogging } from '@onflow/frw-extension-shared/chrome-logger';
+import eventBus from '@onflow/frw-extension-shared/message/eventBus';
+import { Message } from '@onflow/frw-extension-shared/messaging';
+import storage from '@onflow/frw-extension-shared/storage';
+import { EVENTS } from '@onflow/frw-shared/constant';
+import { type WalletAddress } from '@onflow/frw-shared/types';
+import { isValidFlowAddress, consoleError, consoleLog } from '@onflow/frw-shared/utils';
 
 import providerController from '@/background/controller/provider';
 import { preAuthzServiceDefinition } from '@/background/controller/serviceDefinition';

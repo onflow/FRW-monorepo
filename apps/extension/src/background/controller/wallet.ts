@@ -20,7 +20,7 @@ import {
   userInfoService,
   userWalletService,
   accountManagementService,
-} from '@onflow/flow-wallet-core';
+} from '@onflow/frw-core';
 import {
   getValidData,
   registerRefreshListener,
@@ -36,20 +36,20 @@ import {
   walletLoadedKey,
   walletLoadedRefreshRegex,
   CURRENT_ID_KEY,
-} from '@onflow/flow-wallet-data-model';
+} from '@onflow/frw-data-model';
 import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
 import BN from 'bignumber.js';
 
-import eventBus from '@onflow/flow-wallet-extension-shared/message/eventBus';
-import { retryOperation } from '@onflow/flow-wallet-extension-shared/retryOperation';
-import storage from '@onflow/flow-wallet-extension-shared/storage';
+import eventBus from '@onflow/frw-extension-shared/message/eventBus';
+import { retryOperation } from '@onflow/frw-extension-shared/retryOperation';
+import storage from '@onflow/frw-extension-shared/storage';
 import {
   FLOW_BIP44_PATH,
   INTERNAL_REQUEST_ORIGIN,
   MAINNET_CHAIN_ID,
   PriceProvider,
   Period,
-} from '@onflow/flow-wallet-shared/constant';
+} from '@onflow/frw-shared/constant';
 import {
   type CustomFungibleTokenInfo,
   type FeatureFlagKey,
@@ -79,7 +79,7 @@ import {
   type PublicKeyAccount,
   type WalletAccount,
   type WalletAddress,
-} from '@onflow/flow-wallet-shared/types';
+} from '@onflow/frw-shared/types';
 import {
   isValidAddress,
   isValidEthereumAddress,
@@ -88,7 +88,7 @@ import {
   consoleError,
   consoleWarn,
   getEmojiList,
-} from '@onflow/flow-wallet-shared/utils';
+} from '@onflow/frw-shared/utils';
 
 import notification from '@/background/webapi/notification';
 import { openIndexPage } from '@/background/webapi/tab';

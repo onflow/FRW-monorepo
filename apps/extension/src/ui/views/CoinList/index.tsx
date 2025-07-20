@@ -10,11 +10,11 @@ import {
   Typography,
 } from '@mui/material';
 import { Box } from '@mui/system';
-import { type ChildAccountFtStore } from '@onflow/flow-wallet-data-model';
+import { type ChildAccountFtStore } from '@onflow/frw-data-model';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
-import { type ActiveAccountType, type CoinItem } from '@onflow/flow-wallet-shared/types';
+import { type ActiveAccountType, type CoinItem } from '@onflow/frw-shared/types';
 
 import plus from '@/ui/assets/svg/plus.svg';
 import slider from '@/ui/assets/svg/slider.svg';

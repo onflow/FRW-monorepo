@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 
-import { consoleError } from '@onflow/flow-wallet-shared/utils';
+import { consoleError } from '@onflow/frw-shared/utils';
 
 import CollectionDetailGrid from '@/ui/components/NFTs/CollectionDetailGrid';
 import GridView from '@/ui/components/NFTs/GridView';

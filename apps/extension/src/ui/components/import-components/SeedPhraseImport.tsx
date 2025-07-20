@@ -1,8 +1,8 @@
 import { Box, Button, TextareaAutosize, Typography } from '@mui/material';
 import React, { useState } from 'react';
 
-import { KEY_TYPE } from '@onflow/flow-wallet-shared/constant';
-import { type PublicKeyAccount } from '@onflow/flow-wallet-shared/types';
+import { KEY_TYPE } from '@onflow/frw-shared/constant';
+import { type PublicKeyAccount } from '@onflow/frw-shared/types';
 
 import KeyPathInput from '@/ui/components/KeyPathInputs';
 import { LLSpinner } from '@/ui/components/LLSpinner';

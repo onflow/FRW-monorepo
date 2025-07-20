@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 import React, { useEffect } from 'react';
 
-import { type Contact } from '@onflow/flow-wallet-shared/types';
+import { type Contact } from '@onflow/frw-shared/types';
 
 import { formatAddress, isEmoji } from '@/ui/utils';
 

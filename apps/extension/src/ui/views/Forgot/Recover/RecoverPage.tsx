@@ -2,7 +2,7 @@
 import { Box, FormControl, Typography } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 
-import { consoleError } from '@onflow/flow-wallet-shared/utils';
+import { consoleError } from '@onflow/frw-shared/utils';
 
 import { LLPrimaryButton } from '@/ui/components';
 import { PasswordInput } from '@/ui/components/password/PasswordInput';

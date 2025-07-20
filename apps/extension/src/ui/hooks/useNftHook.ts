@@ -8,7 +8,7 @@ import {
   nftCatalogCollectionsKey,
   nftCollectionListKey,
   nftListKey,
-} from '@onflow/flow-wallet-data-model';
+} from '@onflow/frw-data-model';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
@@ -16,8 +16,8 @@ import {
   type NFTItem,
   type NftCollection,
   type NFTModelV2,
-} from '@onflow/flow-wallet-shared/types';
-import { consoleError } from '@onflow/flow-wallet-shared/utils';
+} from '@onflow/frw-shared/types';
+import { consoleError } from '@onflow/frw-shared/utils';
 
 import { useCachedData } from './use-data';
 

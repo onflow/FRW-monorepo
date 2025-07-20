@@ -1,4 +1,4 @@
-import storage, { type StorageChange } from '@onflow/flow-wallet-extension-shared/storage';
+import storage, { type StorageChange } from '@onflow/frw-extension-shared/storage';
 
 /**
  * Get user data from local storage

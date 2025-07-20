@@ -8,12 +8,8 @@ import type {
   ExtendedTokenInfo,
   Contact,
   WalletAddress,
-} from '@onflow/flow-wallet-shared/types';
-import {
-  isValidEthereumAddress,
-  consoleError,
-  trimDecimalAmount,
-} from '@onflow/flow-wallet-shared/utils';
+} from '@onflow/frw-shared/types';
+import { isValidEthereumAddress, consoleError, trimDecimalAmount } from '@onflow/frw-shared/utils';
 
 export const INITIAL_TRANSACTION_STATE: TransactionState = {
   currentTxState: '',

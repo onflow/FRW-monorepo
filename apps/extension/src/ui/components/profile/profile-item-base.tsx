@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import React from 'react';
 
-import { type UserInfoResponse } from '@onflow/flow-wallet-shared/types';
+import { type UserInfoResponse } from '@onflow/frw-shared/types';
 
 import iconCheck from '@/ui/assets/svg/check-circle-fill.svg';
 import iconCheckUnfill from '@/ui/assets/svg/check-circle-unfill.svg';

@@ -1,9 +1,9 @@
-import { permissionKey, permissionKeyV1 } from '@onflow/flow-wallet-data-model';
+import { permissionKey, permissionKeyV1 } from '@onflow/frw-data-model';
 import { LRUCache } from 'lru-cache';
 
-import storage from '@onflow/flow-wallet-extension-shared/storage'; // Import storage for direct access
-import { INTERNAL_REQUEST_ORIGIN, MAINNET_CHAIN_ID } from '@onflow/flow-wallet-shared/constant';
-import { consoleInfo, consoleWarn } from '@onflow/flow-wallet-shared/utils';
+import storage from '@onflow/frw-extension-shared/storage'; // Import storage for direct access
+import { INTERNAL_REQUEST_ORIGIN, MAINNET_CHAIN_ID } from '@onflow/frw-shared/constant';
+import { consoleInfo, consoleWarn } from '@onflow/frw-shared/utils';
 
 import createPersistStore from '../utils/persistStore';
 

@@ -131,7 +131,7 @@ jobs:
           fi
 
       - name: Run tests
-        run: pnpm -F flow-wallet-extension test:run
+        run: pnpm -F frw-extension test:run
 
       - name: Build packages
         run: |
@@ -142,9 +142,9 @@ jobs:
       - name: Build
         run: |
           if [[ "${{ needs.determine-env.outputs.env_name }}" == "development" || "${{ needs.determine-env.outputs.env_name }}" == "staging" ]]; then
-            pnpm -F flow-wallet-extension build:dev-ci
+            pnpm -F frw-extension build:dev-ci
           else
-            pnpm -F flow-wallet-extension build:ci
+            pnpm -F frw-extension build:ci
           fi
         env:
           CI: true
@@ -219,7 +219,7 @@ jobs:
       - name: Install Playwright Browsers
         run: pnpm playwright install --with-deps chromium
       - name: Run Playwright tests
-        run: pnpm -F flow-wallet-extension test:e2e
+        run: pnpm -F frw-extension test:e2e
         env:
           CI: true
           HEADLESS: true
@@ -307,7 +307,7 @@ jobs:
         run: pnpm install
 
       - name: Build Storybook
-        run: pnpm -F flow-wallet-extension build-storybook
+        run: pnpm -F frw-extension build-storybook
 
       - name: Publish to Chromatic
         uses: chromaui/action@v1

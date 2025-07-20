@@ -5,11 +5,11 @@ import {
   getValidData,
   registerRefreshListener,
   setCachedData,
-} from '@onflow/flow-wallet-data-model';
+} from '@onflow/frw-data-model';
 
-import storage from '@onflow/flow-wallet-extension-shared/storage';
-import { type UserInfoResponse, type LoggedInAccount } from '@onflow/flow-wallet-shared/types';
-import { consoleError } from '@onflow/flow-wallet-shared/utils';
+import storage from '@onflow/frw-extension-shared/storage';
+import { type UserInfoResponse, type LoggedInAccount } from '@onflow/frw-shared/types';
+import { consoleError } from '@onflow/frw-shared/utils';
 
 import openapiService from './openapi';
 import { getCurrentProfileId, returnCurrentProfileId } from '../utils/current-id';

@@ -1,6 +1,6 @@
 import { vi, describe, it, expect, beforeEach, type Mock } from 'vitest';
 
-import storage from '@onflow/flow-wallet-extension-shared/storage';
+import storage from '@onflow/frw-extension-shared/storage';
 
 import {
   getCachedData,
@@ -10,7 +10,7 @@ import {
 } from '../cache-data-access';
 import { type CacheDataItem } from '../data-cache-types';
 
-vi.mock('@onflow/flow-wallet-extension-shared/storage', () => ({
+vi.mock('@onflow/frw-extension-shared/storage', () => ({
   default: {
     getSession: vi.fn(),
     setSession: vi.fn(),

@@ -359,7 +359,7 @@ function generateMarkdown(
   let markdown = `# Core Package Dependency Diagram
 
 ## Overview
-This diagram shows the dependencies between services and utilities in the \`@onflow/flow-wallet-core\` package.
+This diagram shows the dependencies between services and utilities in the \`@onflow/frw-core\` package.
 Generated on: ${new Date().toISOString()}
 
 ## Statistics

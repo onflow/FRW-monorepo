@@ -1,6 +1,6 @@
 import { ethers, HDNodeWallet } from 'ethers';
 
-import { FLOW_BIP44_PATH } from '@onflow/flow-wallet-shared/constant';
+import { FLOW_BIP44_PATH } from '@onflow/frw-shared/constant';
 
 export type HDKeyringSerializedData = {
   mnemonic?: string;

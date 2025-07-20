@@ -3,7 +3,7 @@ import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import { Box, Button, CircularProgress, DialogActions, Skeleton, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { consoleError } from '@onflow/flow-wallet-shared/utils';
+import { consoleError } from '@onflow/frw-shared/utils';
 
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { DEFAULT_PASSWORD } from '@/ui/utils/default-password';

@@ -102,7 +102,7 @@ vi.stubGlobal('fetch', mockFetch);
 
 // Then imports
 
-import { type FlowNetwork } from '@onflow/flow-wallet-shared/types';
+import { type FlowNetwork } from '@onflow/frw-shared/types';
 
 import {
   type CommonParams,

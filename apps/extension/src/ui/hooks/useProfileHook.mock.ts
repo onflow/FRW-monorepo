@@ -1,6 +1,6 @@
 import { fn } from 'storybook/test';
 
-import { MAINNET_CHAIN_ID } from '@onflow/flow-wallet-shared/constant';
+import { MAINNET_CHAIN_ID } from '@onflow/frw-shared/constant';
 
 import * as actual from './useProfileHook';
 

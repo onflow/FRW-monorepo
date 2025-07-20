@@ -2,7 +2,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Box, IconButton, Input, InputAdornment } from '@mui/material';
 import React, { useCallback, useEffect, useMemo } from 'react';
 
-import { type NFTItem } from '@onflow/flow-wallet-shared/types';
+import { type NFTItem } from '@onflow/frw-shared/types';
 
 import { ReactComponent as SearchIcon } from '@/ui/assets/svg/searchIcon.svg';
 

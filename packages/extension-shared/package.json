@@ -1,5 +1,5 @@
 {
-  "name": "@onflow/flow-wallet-extension-shared",
+  "name": "@onflow/frw-extension-shared",
   "version": "0.0.1",
   "description": "Shared code for Flow Reference Wallet Extension",
   "type": "module",
@@ -57,7 +57,7 @@
     }
   },
   "dependencies": {
-    "@onflow/flow-wallet-shared": "workspace:*",
+    "@onflow/frw-shared": "workspace:*",
     "eth-rpc-errors": "^4.0.3",
     "events": "^3.3.0"
   },

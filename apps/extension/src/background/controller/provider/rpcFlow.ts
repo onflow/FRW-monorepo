@@ -1,10 +1,10 @@
-import { permissionService } from '@onflow/flow-wallet-core';
+import { permissionService } from '@onflow/frw-core';
 import { ethErrors } from 'eth-rpc-errors';
 
-import { PromiseFlow, underline2Camelcase } from '@onflow/flow-wallet-core/utils';
-import eventBus from '@onflow/flow-wallet-extension-shared/message/eventBus';
-import { EVENTS } from '@onflow/flow-wallet-shared/constant';
-import { consoleLog } from '@onflow/flow-wallet-shared/utils';
+import { PromiseFlow, underline2Camelcase } from '@onflow/frw-core/utils';
+import eventBus from '@onflow/frw-extension-shared/message/eventBus';
+import { EVENTS } from '@onflow/frw-shared/constant';
+import { consoleLog } from '@onflow/frw-shared/utils';
 
 import notificationService from '../notification';
 import Wallet from '../wallet';

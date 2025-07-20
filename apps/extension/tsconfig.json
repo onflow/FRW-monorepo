@@ -42,19 +42,19 @@
   "references": [
     {
       "path": "../../packages/core",
-      "name": "@onflow/flow-wallet-core"
+      "name": "@onflow/frw-core"
     },
     {
       "path": "../../packages/shared",
-      "name": "@onflow/flow-wallet-shared"
+      "name": "@onflow/frw-shared"
     },
     {
       "path": "../../packages/data-model",
-      "name": "@onflow/flow-wallet-data-model"
+      "name": "@onflow/frw-data-model"
     },
     {
       "path": "../../packages/extension-shared",
-      "name": "@onflow/flow-wallet-extension-shared"
+      "name": "@onflow/frw-extension-shared"
     }
   ]
 }

@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import React, { useCallback } from 'react';
 
-import { type TransactionState } from '@onflow/flow-wallet-shared/types';
+import { type TransactionState } from '@onflow/frw-shared/types';
 
 import CancelIcon from '@/ui/components/iconfont/IconClose';
 import IconSwitch from '@/ui/components/iconfont/IconSwitch';

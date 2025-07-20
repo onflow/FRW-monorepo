@@ -4,9 +4,9 @@ import { useLocation, useNavigate, useParams } from 'react-router';
 import {
   INITIAL_TRANSACTION_STATE,
   transactionReducer,
-} from '@onflow/flow-wallet-reducers/transaction-reducer';
-import { type FlowAddress, type WalletAddress } from '@onflow/flow-wallet-shared/types';
-import { isValidAddress, isValidFlowAddress } from '@onflow/flow-wallet-shared/utils';
+} from '@onflow/frw-reducers/transaction-reducer';
+import { type FlowAddress, type WalletAddress } from '@onflow/frw-shared/types';
+import { isValidAddress, isValidFlowAddress } from '@onflow/frw-shared/utils';
 
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';

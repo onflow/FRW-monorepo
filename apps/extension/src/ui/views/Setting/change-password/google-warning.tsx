@@ -2,7 +2,7 @@ import { Warning } from '@mui/icons-material';
 import { DialogContent, DialogContentText, DialogTitle, Stack } from '@mui/material';
 import React from 'react';
 
-import { consoleError } from '@onflow/flow-wallet-shared/utils';
+import { consoleError } from '@onflow/frw-shared/utils';
 
 import { CustomDialog } from '@/ui/components/custom-dialog';
 import { LLPrimaryButton } from '@/ui/components/LLPrimaryButton';

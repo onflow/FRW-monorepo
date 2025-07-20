@@ -15,7 +15,7 @@ import {
   getValidData,
   registerRefreshListener,
   setCachedData,
-} from '@onflow/flow-wallet-data-model';
+} from '@onflow/frw-data-model';
 
 import {
   type NftCollection,
@@ -23,7 +23,7 @@ import {
   type NFTCollectionData,
   type NFTCollections,
   type NFTItem,
-} from '@onflow/flow-wallet-shared/types';
+} from '@onflow/frw-shared/types';
 
 import openapiService, { getScripts } from './openapi';
 import { fclConfirmNetwork } from '../utils/fclConfig';
