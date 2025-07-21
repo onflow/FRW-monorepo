@@ -29,15 +29,15 @@ import {
   getActiveAccountsData,
   userWalletsKey,
   type UserWalletStore,
-} from '@onflow/flow-wallet-data-model';
+} from '@onflow/frw-data-model';
 import type { Account as FclAccount } from '@onflow/typedefs';
 import * as ethUtil from 'ethereumjs-util';
 import { signInAnonymously } from 'firebase/auth/web-extension';
 import { TransactionError } from 'web3';
 
-import { retryOperation } from '@onflow/flow-wallet-extension-shared/retryOperation';
-import storage from '@onflow/flow-wallet-extension-shared/storage';
-import { DEFAULT_WEIGHT, FLOW_BIP44_PATH } from '@onflow/flow-wallet-shared/constant';
+import { retryOperation } from '@onflow/frw-extension-shared/retryOperation';
+import storage from '@onflow/frw-extension-shared/storage';
+import { DEFAULT_WEIGHT, FLOW_BIP44_PATH } from '@onflow/frw-shared/constant';
 import {
   type PublicPrivateKeyTuple,
   type AccountKeyRequest,
@@ -52,7 +52,7 @@ import {
   type PublicKeyAccount,
   type WalletAccount,
   type WalletAddress,
-} from '@onflow/flow-wallet-shared/types';
+} from '@onflow/frw-shared/types';
 import {
   getErrorMessage,
   networkToChainId,
@@ -67,7 +67,7 @@ import {
   getEmojiByIndex,
   getActiveAccountTypeForAddress,
   tupleToPrivateKey,
-} from '@onflow/flow-wallet-shared/utils';
+} from '@onflow/frw-shared/utils';
 
 import { authenticationService } from '.';
 import keyringService from './keyring';

@@ -6,7 +6,7 @@ import { withRouter } from 'storybook-addon-remix-react-router';
 import { action } from 'storybook/actions';
 import { fn } from 'storybook/test';
 
-import { FLOW_BIP44_PATH } from '@onflow/flow-wallet-shared/constant';
+import { FLOW_BIP44_PATH } from '@onflow/frw-shared/constant';
 
 import { useWallet as useWalletMock } from '@/ui/hooks/use-wallet.mock';
 

@@ -10,8 +10,8 @@ import {
 } from '@mui/material';
 import React from 'react';
 
-import { type WalletAccount } from '@onflow/flow-wallet-shared/types';
-import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils';
+import { type WalletAccount } from '@onflow/frw-shared/types';
+import { isValidEthereumAddress } from '@onflow/frw-shared/utils';
 
 import { CopyIcon } from '@/ui/assets/icons/CopyIcon';
 import { LinkIcon } from '@/ui/assets/icons/LinkIcon';

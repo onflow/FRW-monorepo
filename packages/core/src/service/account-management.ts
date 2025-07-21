@@ -6,7 +6,7 @@ import {
   type UserMetadataStore,
   getValidData,
   setCachedData,
-} from '@onflow/flow-wallet-data-model';
+} from '@onflow/frw-data-model';
 import type { Account as FclAccount } from '@onflow/typedefs';
 import * as bip39 from 'bip39';
 import * as ethUtil from 'ethereumjs-util';
@@ -15,20 +15,20 @@ import {
   FLOW_BIP44_PATH,
   HTTP_STATUS_CONFLICT,
   HTTP_STATUS_TOO_MANY_REQUESTS,
-} from '@onflow/flow-wallet-shared/constant';
+} from '@onflow/frw-shared/constant';
 import type {
   AccountKeyRequest,
   UserInfoResponse,
   MainAccount,
   FlowAddress,
   ProfileBackupStatus,
-} from '@onflow/flow-wallet-shared/types';
+} from '@onflow/frw-shared/types';
 import {
   isValidFlowAddress,
   isValidEthereumAddress,
   consoleError,
   getErrorMessage,
-} from '@onflow/flow-wallet-shared/utils';
+} from '@onflow/frw-shared/utils';
 
 import { authenticationService, preferenceService } from '.';
 import googleDriveService from './googleDrive';

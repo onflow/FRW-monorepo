@@ -4,9 +4,9 @@ import {
   HASH_ALGO_NUM_DEFAULT,
   SIGN_ALGO_NUM_DEFAULT,
   MAINNET_CHAIN_ID,
-} from '@onflow/flow-wallet-shared/constant';
-import { type MainAccount, type WalletAccount } from '@onflow/flow-wallet-shared/types';
-import { getActiveAccountTypeForAddress } from '@onflow/flow-wallet-shared/utils';
+} from '@onflow/frw-shared/constant';
+import { type MainAccount, type WalletAccount } from '@onflow/frw-shared/types';
+import { getActiveAccountTypeForAddress } from '@onflow/frw-shared/utils';
 
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 

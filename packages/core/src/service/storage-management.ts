@@ -1,4 +1,4 @@
-import storage from '@onflow/flow-wallet-extension-shared/storage';
+import storage from '@onflow/frw-extension-shared/storage';
 
 import addressBookService from './addressBook';
 import coinListService from './coinList';

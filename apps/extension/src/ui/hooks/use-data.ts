@@ -2,13 +2,10 @@ import {
   addCachedDataListener,
   getCachedData,
   removeCachedDataListener,
-} from '@onflow/flow-wallet-data-model';
+} from '@onflow/frw-data-model';
 import { useEffect, useState } from 'react';
 
-import storage, {
-  type AreaName,
-  type StorageChange,
-} from '@onflow/flow-wallet-extension-shared/storage';
+import storage, { type AreaName, type StorageChange } from '@onflow/frw-extension-shared/storage';
 
 type DataState = {
   key: string;

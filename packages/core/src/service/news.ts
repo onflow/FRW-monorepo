@@ -7,10 +7,10 @@ import {
   setCachedData,
   readAndDismissedNewsKey,
   type ReadAndDismissedNewsStore,
-} from '@onflow/flow-wallet-data-model';
+} from '@onflow/frw-data-model';
 
-import { type NewsItem } from '@onflow/flow-wallet-shared/types';
-import { consoleError } from '@onflow/flow-wallet-shared/utils';
+import { type NewsItem } from '@onflow/frw-shared/types';
+import { consoleError } from '@onflow/frw-shared/utils';
 
 import openapi from './openapi';
 import createPersistStore from '../utils/persistStore';

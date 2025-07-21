@@ -23,9 +23,9 @@ import { useNavigate, useParams } from 'react-router';
 import {
   checkAddressBookContacts,
   filterContacts,
-} from '@onflow/flow-wallet-extension-shared/contact-utils';
-import { type Contact, type WalletAddress } from '@onflow/flow-wallet-shared/types';
-import { isValidAddress, consoleError } from '@onflow/flow-wallet-shared/utils';
+} from '@onflow/frw-extension-shared/contact-utils';
+import { type Contact, type WalletAddress } from '@onflow/frw-shared/types';
+import { isValidAddress, consoleError } from '@onflow/frw-shared/utils';
 
 import AccountsList from '@/ui/components/AddressLists/AccountsList';
 import AddressBookList from '@/ui/components/AddressLists/AddressBookList';

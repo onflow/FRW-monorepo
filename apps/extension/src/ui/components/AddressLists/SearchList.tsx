@@ -2,7 +2,7 @@ import { Box, ButtonBase, CardMedia, List, ListSubheader, Typography } from '@mu
 import { groupBy } from 'lodash';
 import React, { useEffect, useState } from 'react';
 
-import { type Contact } from '@onflow/flow-wallet-shared/types';
+import { type Contact } from '@onflow/frw-shared/types';
 
 import emptyAddress from '@/ui/assets/emptyAddress.svg';
 

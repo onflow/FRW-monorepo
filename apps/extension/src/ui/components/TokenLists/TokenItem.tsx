@@ -12,7 +12,7 @@ import {
 import { styled } from '@mui/material/styles';
 import React from 'react';
 
-import { type ExtendedTokenInfo, type TokenFilter } from '@onflow/flow-wallet-shared/types';
+import { type ExtendedTokenInfo, type TokenFilter } from '@onflow/frw-shared/types';
 
 import VerifiedIcon from '@/ui/assets/svg/verfied-check.svg';
 import IconCheckmark from '@/ui/components/iconfont/IconCheckmark';

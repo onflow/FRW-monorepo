@@ -131,7 +131,7 @@ vi.mock('firebase/auth/web-extension', () => ({
 }));
 
 // Mock storage utility
-vi.mock('@onflow/flow-wallet-extension-shared', () => ({
+vi.mock('@onflow/frw-extension-shared', () => ({
   storage: {
     get: vi.fn().mockResolvedValue({}),
     set: vi.fn().mockResolvedValue(undefined),

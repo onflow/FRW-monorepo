@@ -7,11 +7,7 @@ import Tooltip from '@mui/material/Tooltip';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
-import {
-  isValidEthereumAddress,
-  consoleError,
-  consoleWarn,
-} from '@onflow/flow-wallet-shared/utils';
+import { isValidEthereumAddress, consoleError, consoleWarn } from '@onflow/frw-shared/utils';
 
 import { AccountAvatar } from '@/ui/components/account/account-avatar';
 import IconCopy from '@/ui/components/iconfont/IconCopy';

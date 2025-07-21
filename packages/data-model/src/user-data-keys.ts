@@ -9,7 +9,7 @@ import {
   type FlowAddress,
   type WalletAddress,
   type EvmCustomTokenInfo,
-} from '@onflow/flow-wallet-shared/types';
+} from '@onflow/frw-shared/types';
 
 import { getUserData } from './user-data-access';
 

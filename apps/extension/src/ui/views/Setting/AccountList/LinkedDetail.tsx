@@ -14,7 +14,7 @@ import {
 import React, { useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 
-import { type NFTCollections } from '@onflow/flow-wallet-shared/types';
+import { type NFTCollections } from '@onflow/frw-shared/types';
 
 import { EditIcon } from '@/ui/assets/icons/settings/Edit';
 import { LLHeader, LLSecondaryButton } from '@/ui/components';

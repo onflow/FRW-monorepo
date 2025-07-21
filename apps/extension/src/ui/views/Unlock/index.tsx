@@ -2,7 +2,7 @@ import { Box, CircularProgress, FormControl, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { consoleError } from '@onflow/flow-wallet-shared/utils';
+import { consoleError } from '@onflow/frw-shared/utils';
 
 import lilo from '@/ui/assets/image/lilo.png';
 import { LLPrimaryButton } from '@/ui/components/LLPrimaryButton';

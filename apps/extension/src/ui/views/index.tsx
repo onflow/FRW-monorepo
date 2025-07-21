@@ -3,7 +3,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import React, { useEffect } from 'react';
 import { Route, HashRouter as Router, Routes, useLocation } from 'react-router';
 
-import { initializeChromeLogging } from '@onflow/flow-wallet-extension-shared/chrome-logger';
+import { initializeChromeLogging } from '@onflow/frw-extension-shared/chrome-logger';
 
 import PrivateRoute from '@/ui/components/PrivateRoute';
 import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';

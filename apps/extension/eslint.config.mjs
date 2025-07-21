@@ -117,9 +117,9 @@ const config = [
             },
             {
               group: [
-                '@onflow/flow-wallet-core/*',
-                '!@onflow/flow-wallet-core/service/**',
-                '!@onflow/flow-wallet-core/utils/**',
+                '@onflow/frw-core/*',
+                '!@onflow/frw-core/service/**',
+                '!@onflow/frw-core/utils/**',
               ],
               message: 'Core services can only import from core/service or core/utils',
             },
@@ -137,7 +137,7 @@ const config = [
         {
           patterns: [
             {
-              group: ['@onflow/flow-wallet-core/*', '@onflow/flow-wallet-core/**'],
+              group: ['@onflow/frw-core/*', '@onflow/frw-core/**'],
               message: 'UI cannot import from Core layer',
             },
             {
@@ -178,7 +178,7 @@ const config = [
         {
           patterns: [
             {
-              group: ['@onflow/flow-wallet-core/*', '@onflow/flow-wallet-core/**'],
+              group: ['@onflow/frw-core/*', '@onflow/frw-core/**'],
               message: 'UI cannot import from Core layer',
             },
             // Allow importing types from background controller for these specific files
@@ -208,7 +208,7 @@ const config = [
               message: 'Reducers must be pure - cannot import from other UI modules',
             },
             {
-              group: ['@onflow/flow-wallet-core/*', '@onflow/flow-wallet-core/**'],
+              group: ['@onflow/frw-core/*', '@onflow/frw-core/**'],
               message: 'Reducers must be pure - cannot import from Core layer',
             },
             {
@@ -220,14 +220,11 @@ const config = [
               message: 'Reducers must be pure - cannot import from content scripts',
             },
             {
-              group: ['@onflow/flow-wallet-data-model/*', '@onflow/flow-wallet-data-model/**'],
+              group: ['@onflow/frw-data-model/*', '@onflow/frw-data-model/**'],
               message: 'Reducers must be pure - cannot import from data model',
             },
             {
-              group: [
-                '@onflow/flow-wallet-extension-shared/*',
-                '@onflow/flow-wallet-extension-shared/**',
-              ],
+              group: ['@onflow/frw-extension-shared/*', '@onflow/frw-extension-shared/**'],
               message: 'Reducers must be pure - cannot import from extension-shared',
             },
           ],
@@ -248,7 +245,7 @@ const config = [
               message: 'Content scripts cannot import from UI layer',
             },
             {
-              group: ['@onflow/flow-wallet-core/*', '@onflow/flow-wallet-core/**'],
+              group: ['@onflow/frw-core/*', '@onflow/frw-core/**'],
               message: 'Content scripts cannot import from Core layer',
             },
           ],

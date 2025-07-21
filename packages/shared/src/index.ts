@@ -1,4 +1,4 @@
-// Main entry point for @onflow/flow-wallet-shared
+// Main entry point for @onflow/frw-shared
 
 // Re-export all types
 export * from './types';

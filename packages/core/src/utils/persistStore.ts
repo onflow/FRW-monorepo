@@ -1,4 +1,4 @@
-import storage from '@onflow/flow-wallet-extension-shared/storage';
+import storage from '@onflow/frw-extension-shared/storage';
 
 const persistStorage = (name: string, obj: object) => {
   storage.set(name, obj);

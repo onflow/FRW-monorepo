@@ -3,8 +3,8 @@ import { Box, Button, IconButton, Skeleton, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { type UserInfoResponse } from '@onflow/flow-wallet-shared/types';
-import { withPrefix } from '@onflow/flow-wallet-shared/utils';
+import { type UserInfoResponse } from '@onflow/frw-shared/types';
+import { withPrefix } from '@onflow/frw-shared/utils';
 
 import reset from '@/ui/assets/svg/reset.svg';
 import { LLSecondaryButton } from '@/ui/components';

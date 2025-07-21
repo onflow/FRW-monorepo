@@ -19,9 +19,9 @@
     "rootDir": "./",
     "composite": true,
     "paths": {
-      "@onflow/flow-wallet-shared/*": ["../shared/src/*"],
-      "@onflow/flow-wallet-extension-shared/*": ["../extension-shared/src/*"],
-      "@onflow/flow-wallet-data-model/*": ["../data-model/src/*"],
+      "@onflow/frw-shared/*": ["../shared/src/*"],
+      "@onflow/frw-extension-shared/*": ["../extension-shared/src/*"],
+      "@onflow/frw-data-model/*": ["../data-model/src/*"],
       "@/*": ["./src/*"]
     }
   },

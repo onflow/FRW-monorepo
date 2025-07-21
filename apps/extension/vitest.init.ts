@@ -131,7 +131,7 @@ vi.mock('firebase/auth/web-extension', () => ({
 }));
 
 // Mock storage utility
-vi.mock('@onflow/flow-wallet-extension-shared', () => ({
+vi.mock('@onflow/frw-extension-shared', () => ({
   storage: {
     get: vi.fn().mockResolvedValue({}),
     set: vi.fn().mockResolvedValue(undefined),
@@ -141,8 +141,8 @@ vi.mock('@onflow/flow-wallet-extension-shared', () => ({
 }));
 
 // Mock MixpanelService
-vi.mock('@onflow/flow-wallet-core', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@onflow/flow-wallet-core')>();
+vi.mock('@onflow/frw-core', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@onflow/frw-core')>();
   return {
     ...actual,
     mixpanelTrack: {

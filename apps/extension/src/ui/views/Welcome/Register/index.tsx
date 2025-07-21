@@ -8,7 +8,7 @@ import {
   registerReducer,
   type RegisterState,
   STEPS,
-} from '@onflow/flow-wallet-reducers/register-reducer';
+} from '@onflow/frw-reducers/register-reducer';
 
 import AllSet from '@/ui/components/LandingPages/AllSet';
 import GoogleBackup from '@/ui/components/LandingPages/GoogleBackup';

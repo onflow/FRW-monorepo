@@ -1,4 +1,4 @@
-import {} from '@onflow/flow-wallet-shared/constant';
+import {} from '@onflow/frw-shared/constant';
 
 export type FetchDetail = {
   url: string;

@@ -2,8 +2,8 @@ import { Box } from '@mui/material';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
-import { type Emoji, type WalletAccount } from '@onflow/flow-wallet-shared/types';
-import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils';
+import { type Emoji, type WalletAccount } from '@onflow/frw-shared/types';
+import { isValidEthereumAddress } from '@onflow/frw-shared/utils';
 
 import { LLHeader } from '@/ui/components';
 import { AccountListing } from '@/ui/components/account/account-listing';

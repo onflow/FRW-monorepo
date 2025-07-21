@@ -6,7 +6,7 @@ import {
   type ActiveChildType_depreciated,
   type WalletAccount,
   type WalletAddress,
-} from '@onflow/flow-wallet-shared/types';
+} from '@onflow/frw-shared/types';
 
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import { useAccountBalance } from '@/ui/hooks/use-account-hooks';

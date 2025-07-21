@@ -1,4 +1,4 @@
-import { keyringService, preferenceService } from '@onflow/flow-wallet-core';
+import { keyringService, preferenceService } from '@onflow/frw-core';
 
 class BaseController {
   getCurrentAccount = async () => {

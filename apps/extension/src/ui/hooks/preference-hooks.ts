@@ -5,9 +5,9 @@ import {
   type PreferencesStore,
   getUserData,
   setUserData,
-} from '@onflow/flow-wallet-data-model';
+} from '@onflow/frw-data-model';
 
-import { DEFAULT_CURRENCY } from '@onflow/flow-wallet-shared/constant';
+import { DEFAULT_CURRENCY } from '@onflow/frw-shared/constant';
 
 import { useCachedData, useUserData } from './use-data';
 

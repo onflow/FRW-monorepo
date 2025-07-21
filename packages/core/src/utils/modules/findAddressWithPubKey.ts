@@ -1,10 +1,6 @@
 import * as fcl from '@onflow/fcl';
 
-import type {
-  PublicKeyTuple,
-  PublicKeyAccount,
-  AccountKey,
-} from '@onflow/flow-wallet-shared/types';
+import type { PublicKeyTuple, PublicKeyAccount, AccountKey } from '@onflow/frw-shared/types';
 
 import { fetchAccountsByPublicKey } from '../key-indexer';
 

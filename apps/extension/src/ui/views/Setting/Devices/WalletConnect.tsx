@@ -6,13 +6,13 @@ import { formatJsonRpcResult } from '@walletconnect/jsonrpc-utils';
 import { getSdkError } from '@walletconnect/utils';
 import React, { useEffect, useState } from 'react';
 
-import { FCLWalletConnectMethod } from '@onflow/flow-wallet-shared/constant';
+import { FCLWalletConnectMethod } from '@onflow/frw-shared/constant';
 import {
   type AccountKeyRequest,
   type DeviceInfo,
   type DeviceInfoRequest,
-} from '@onflow/flow-wallet-shared/types';
-import { consoleError } from '@onflow/flow-wallet-shared/utils';
+} from '@onflow/frw-shared/types';
+import { consoleError } from '@onflow/frw-shared/utils';
 
 import closeCircle from '@/ui/assets/image/closeCircle.png';
 import dicon from '@/ui/assets/image/dicon.png';

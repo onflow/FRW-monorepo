@@ -4,7 +4,7 @@ import {
   sessionService,
   signTextHistoryService,
   userWalletService,
-} from '@onflow/flow-wallet-core';
+} from '@onflow/frw-core';
 import BigNumber from 'bignumber.js';
 import { ethErrors } from 'eth-rpc-errors';
 import { intToHex, isHexString } from 'ethereumjs-util';
@@ -13,18 +13,14 @@ import RLP from 'rlp';
 import Web3 from 'web3';
 import { stringToHex } from 'web3-utils';
 
-import { getAccountsByPublicKeyTuple, signWithKey } from '@onflow/flow-wallet-core/utils';
-import {
-  EVM_ENDPOINT,
-  MAINNET_CHAIN_ID,
-  TESTNET_CHAIN_ID,
-} from '@onflow/flow-wallet-shared/constant';
+import { getAccountsByPublicKeyTuple, signWithKey } from '@onflow/frw-core/utils';
+import { EVM_ENDPOINT, MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@onflow/frw-shared/constant';
 import {
   tupleToPrivateKey,
   ensureEvmAddressPrefix,
   isValidEthereumAddress,
   consoleError,
-} from '@onflow/flow-wallet-shared/utils';
+} from '@onflow/frw-shared/utils';
 
 import BaseController from '@/background/controller/base';
 import Wallet from '@/background/controller/wallet';

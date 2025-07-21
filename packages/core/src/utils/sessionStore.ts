@@ -1,4 +1,4 @@
-import { getCachedData, setCachedData } from '@onflow/flow-wallet-data-model';
+import { getCachedData, setCachedData } from '@onflow/frw-data-model';
 
 interface CreateSessionStoreParams<T> {
   name: string;

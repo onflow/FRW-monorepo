@@ -5,25 +5,25 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "pnpm -F flow-wallet-extension build:dev",
-    "build": "pnpm -F flow-wallet-extension build:pro",
+    "dev": "pnpm -F frw-extension build:dev",
+    "build": "pnpm -F frw-extension build:pro",
     "build:all": "pnpm -r build",
     "build:packages": "pnpm -F './packages/**' build",
     "build:parallel": "pnpm -r --parallel build",
     "build:stream": "pnpm -r --stream build",
     "test": "pnpm -r test",
     "test:run": "pnpm -r test:run",
-    "test:e2e": "pnpm -F flow-wallet-extension test:e2e",
-    "test:e2e:ui": "pnpm -F flow-wallet-extension test:e2e:ui",
+    "test:e2e": "pnpm -F frw-extension test:e2e",
+    "test:e2e:ui": "pnpm -F frw-extension test:e2e:ui",
     "lint": "for pkg in apps/* packages/*; do (cd $pkg && echo \"Linting $pkg\" && pnpm lint) || exit 1; done",
     "lint:quiet": "for pkg in apps/* packages/*; do (cd $pkg && echo \"Linting $pkg\" && pnpm lint --quiet) || exit 1; done",
     "lint:fix": "for pkg in apps/* packages/*; do (cd $pkg && echo \"Linting $pkg\" && pnpm lint:fix) || exit 1; done",
     "format": "prettier .",
     "format:fix": "prettier --write .",
     "prepare": "husky",
-    "pre-commit": "pnpm --filter \"@onflow/flow-wallet-*\" --filter \"flow-wallet-extension\" pre-commit",
-    "storybook": "pnpm -F flow-wallet-extension storybook",
-    "build-storybook": "pnpm -F flow-wallet-extension build-storybook"
+    "pre-commit": "pnpm --filter \"@onflow/frw-*\" --filter \"frw-extension\" pre-commit",
+    "storybook": "pnpm -F frw-extension storybook",
+    "build-storybook": "pnpm -F frw-extension build-storybook"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.6.1",
@@ -54,5 +54,5 @@
     "node": ">=20.0.0",
     "pnpm": ">=9.0.0"
   },
-  "packageManager": "pnpm@10.12.4"
+  "packageManager": "pnpm@10.13.1+sha512.37ebf1a5c7a30d5fabe0c5df44ee8da4c965ca0c5af3dbab28c3a1681b70a256218d05c81c9c0dcf767ef6b8551eb5b960042b9ed4300c59242336377e01cfad"
 }

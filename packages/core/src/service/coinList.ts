@@ -14,18 +14,14 @@ import {
   getValidData,
   registerRefreshListener,
   setCachedData,
-} from '@onflow/flow-wallet-data-model';
+} from '@onflow/frw-data-model';
 
 import {
   type CadenceTokenInfo,
   type EvmTokenInfo,
   type ExtendedTokenInfo,
-} from '@onflow/flow-wallet-shared/types';
-import {
-  isValidEthereumAddress,
-  isValidFlowAddress,
-  consoleError,
-} from '@onflow/flow-wallet-shared/utils';
+} from '@onflow/frw-shared/types';
+import { isValidEthereumAddress, isValidFlowAddress, consoleError } from '@onflow/frw-shared/utils';
 
 import openapiService from './openapi';
 

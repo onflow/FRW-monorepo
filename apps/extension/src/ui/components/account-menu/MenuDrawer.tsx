@@ -15,8 +15,8 @@ import {
   type UserInfoResponse,
   type MainAccount,
   type WalletAccount,
-} from '@onflow/flow-wallet-shared/types';
-import { consoleError } from '@onflow/flow-wallet-shared/utils';
+} from '@onflow/frw-shared/types';
+import { consoleError } from '@onflow/frw-shared/utils';
 
 import lock from '@/ui/assets/svg/sidebar-lock.svg';
 import plus from '@/ui/assets/svg/sidebar-plus.svg';

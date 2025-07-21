@@ -5,9 +5,9 @@ import {
   getValidData,
   registerRefreshListener,
   setCachedData,
-} from '@onflow/flow-wallet-data-model';
+} from '@onflow/frw-data-model';
 
-import { type FeatureFlagKey, type FeatureFlags } from '@onflow/flow-wallet-shared/types';
+import { type FeatureFlagKey, type FeatureFlags } from '@onflow/frw-shared/types';
 
 import openapi from './openapi';
 

@@ -1,7 +1,7 @@
 import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React, { useState } from 'react';
 
-import { type TokenFilter } from '@onflow/flow-wallet-shared/types';
+import { type TokenFilter } from '@onflow/frw-shared/types';
 
 import TokenItem from '@/ui/components/TokenLists/TokenItem';
 

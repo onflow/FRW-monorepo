@@ -9,7 +9,7 @@ import {
 } from '@mui/material';
 import React, { useState } from 'react';
 
-import { consoleError } from '@onflow/flow-wallet-shared/utils';
+import { consoleError } from '@onflow/frw-shared/utils';
 
 import networkLink from '@/ui/assets/svg/networkLink.svg';
 import { useWallet } from '@/ui/hooks/use-wallet';

@@ -1,4 +1,4 @@
-import { ContactType, type Contact } from '@onflow/flow-wallet-shared/types';
+import { ContactType, type Contact } from '@onflow/frw-shared/types';
 
 export const filterContacts = (keyword: string, contacts: Contact[]) => {
   // Look for the keyword in any of the contact properties

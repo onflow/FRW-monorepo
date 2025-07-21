@@ -3,26 +3,26 @@ import {
   KEYRING_STATE_CURRENT_KEY,
   KEYRING_STATE_V1_KEY,
   KEYRING_STATE_V2_KEY,
-} from '@onflow/flow-wallet-data-model';
+} from '@onflow/frw-data-model';
 import encryptor from 'browser-passworder';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import storage from '@onflow/flow-wallet-extension-shared/storage';
+import storage from '@onflow/frw-extension-shared/storage';
 // Internal imports - after all mocks are defined
 import {
   FLOW_BIP44_PATH,
   SIGN_ALGO_NUM_DEFAULT,
   SIGN_ALGO_NUM_ECDSA_P256,
   SIGN_ALGO_NUM_ECDSA_secp256k1,
-} from '@onflow/flow-wallet-shared/constant';
-import { type KeyringStateV2 } from '@onflow/flow-wallet-shared/types';
+} from '@onflow/frw-shared/constant';
+import { type KeyringStateV2 } from '@onflow/frw-shared/types';
 
 import { returnCurrentProfileId } from '../../utils/current-id';
 import keyringService from '../keyring';
 import { MOCK_KEYS } from './keyring-mock-data';
 import { SimpleKeyring } from '../keyring/simpleKeyring';
 // Mock dependencies at the beginning before any imports
-vi.mock('@onflow/flow-wallet-extension-shared/storage', () => ({
+vi.mock('@onflow/frw-extension-shared/storage', () => ({
   default: {
     get: vi.fn(),
     set: vi.fn(),

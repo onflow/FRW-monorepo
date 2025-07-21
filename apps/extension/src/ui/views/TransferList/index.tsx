@@ -17,7 +17,7 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import React from 'react';
 
-import { formatString } from '@onflow/flow-wallet-shared/utils';
+import { formatString } from '@onflow/frw-shared/utils';
 
 import activity from '@/ui/assets/svg/activity.svg';
 import { TokenBalance } from '@/ui/components/TokenLists/TokenBalance';

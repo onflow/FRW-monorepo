@@ -1,4 +1,4 @@
-import { consoleError } from '@onflow/flow-wallet-shared/utils';
+import { consoleError } from '@onflow/frw-shared/utils';
 
 // keep isMetaMask and remove isFrw
 const impersonateMetamaskWhitelist = [

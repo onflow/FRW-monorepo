@@ -8,9 +8,9 @@ import {
   getValidData,
   registerRefreshListener,
   setCachedData,
-} from '@onflow/flow-wallet-data-model';
+} from '@onflow/frw-data-model';
 
-import { isValidEthereumAddress } from '@onflow/flow-wallet-shared/utils';
+import { isValidEthereumAddress } from '@onflow/frw-shared/utils';
 
 import { openapiService } from '.';
 import { fclConfirmNetwork } from '../utils/fclConfig';

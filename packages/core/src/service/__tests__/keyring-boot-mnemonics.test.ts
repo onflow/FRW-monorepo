@@ -1,10 +1,10 @@
 // Testing imports
-import { CURRENT_ID_KEY, KEYRING_STATE_V2_KEY } from '@onflow/flow-wallet-data-model';
+import { CURRENT_ID_KEY, KEYRING_STATE_V2_KEY } from '@onflow/frw-data-model';
 import encryptor from 'browser-passworder';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import storage from '@onflow/flow-wallet-extension-shared/storage';
-import { FLOW_BIP44_PATH } from '@onflow/flow-wallet-shared/constant';
+import storage from '@onflow/frw-extension-shared/storage';
+import { FLOW_BIP44_PATH } from '@onflow/frw-shared/constant';
 
 // Internal imports
 
@@ -12,7 +12,7 @@ import keyringService from '../keyring';
 import { MOCK_KEYS, MOCK_MNEMONIC, MOCK_PASSWORD } from './keyring-mock-data';
 
 // Mock dependencies
-vi.mock('@onflow/flow-wallet-extension-shared/storage', () => ({
+vi.mock('@onflow/frw-extension-shared/storage', () => ({
   default: {
     get: vi.fn(),
     set: vi.fn(),

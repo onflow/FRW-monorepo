@@ -10,8 +10,8 @@ import {
 } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { emoji as emojis } from '@onflow/flow-wallet-shared/constant';
-import { isValidEthereumAddress, consoleError } from '@onflow/flow-wallet-shared/utils';
+import { emoji as emojis } from '@onflow/frw-shared/constant';
+import { isValidEthereumAddress, consoleError } from '@onflow/frw-shared/utils';
 
 import { useWallet } from '@/ui/hooks/use-wallet';
 

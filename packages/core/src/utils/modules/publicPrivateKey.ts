@@ -1,20 +1,20 @@
-import { CURRENT_ID_KEY } from '@onflow/flow-wallet-data-model';
+import { CURRENT_ID_KEY } from '@onflow/frw-data-model';
 import { initWasm } from '@trustwallet/wallet-core';
 
-import storage from '@onflow/flow-wallet-extension-shared/storage';
+import storage from '@onflow/frw-extension-shared/storage';
 import {
   FLOW_BIP44_PATH,
   HASH_ALGO_NUM_SHA2_256,
   HASH_ALGO_NUM_SHA3_256,
   SIGN_ALGO_NUM_ECDSA_P256,
   SIGN_ALGO_NUM_ECDSA_secp256k1,
-} from '@onflow/flow-wallet-shared/constant';
+} from '@onflow/frw-shared/constant';
 import {
   type PrivateKeyTuple,
   type PublicKeyTuple,
   type PublicPrivateKeyTuple,
-} from '@onflow/flow-wallet-shared/types';
-import { consoleError } from '@onflow/flow-wallet-shared/utils';
+} from '@onflow/frw-shared/types';
+import { consoleError } from '@onflow/frw-shared/utils';
 
 const jsonToKey = async (json: string, password: string) => {
   try {

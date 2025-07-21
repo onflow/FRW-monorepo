@@ -5,18 +5,18 @@ import {
   type RemoteConfig,
   getValidData,
   setCachedData,
-} from '@onflow/flow-wallet-data-model';
+} from '@onflow/frw-data-model';
 import type { Account as FclAccount } from '@onflow/typedefs';
 import BigNumber from 'bignumber.js';
 import dayjs from 'dayjs';
 
-import storage from '@onflow/flow-wallet-extension-shared/storage';
+import storage from '@onflow/frw-extension-shared/storage';
 import {
   DEFAULT_CURRENCY,
   Period,
   type PeriodFrequency,
   PriceProvider,
-} from '@onflow/flow-wallet-shared/constant';
+} from '@onflow/frw-shared/constant';
 import type {
   BalanceMap,
   CadenceTokenInfo,
@@ -47,7 +47,7 @@ import type {
   LoggedInAccount,
   LoggedInAccountWithIndex,
   PublicKeyAccount,
-} from '@onflow/flow-wallet-shared/types';
+} from '@onflow/frw-shared/types';
 import {
   isValidFlowAddress,
   getStringFromHashAlgo,
@@ -56,7 +56,7 @@ import {
   consoleLog,
   getPeriodFrequency,
   getPriceProvider,
-} from '@onflow/flow-wallet-shared/utils';
+} from '@onflow/frw-shared/utils';
 
 import { findKeyAndInfo } from '../utils';
 import {

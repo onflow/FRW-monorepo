@@ -1,22 +1,22 @@
 import * as fcl from '@onflow/fcl';
-import { triggerRefresh, mainAccountsKey } from '@onflow/flow-wallet-data-model';
+import { triggerRefresh, mainAccountsKey } from '@onflow/frw-data-model';
 import BN from 'bignumber.js';
 import * as ethUtil from 'ethereumjs-util';
 import { encode } from 'rlp';
 import web3, { Web3 } from 'web3';
 
-import { erc20Abi as erc20ABI, EVM_ENDPOINT } from '@onflow/flow-wallet-shared/constant';
+import { erc20Abi as erc20ABI, EVM_ENDPOINT } from '@onflow/frw-shared/constant';
 import {
   type CustomFungibleTokenInfo,
   type NFTModelV2,
   type TokenInfo,
   type TransactionState,
-} from '@onflow/flow-wallet-shared/types';
+} from '@onflow/frw-shared/types';
 import {
   convertToIntegerAmount,
   ensureEvmAddressPrefix,
   validateAmount,
-} from '@onflow/flow-wallet-shared/utils';
+} from '@onflow/frw-shared/utils';
 
 import { tokenListService } from '.';
 import { mixpanelTrack } from './mixpanel';

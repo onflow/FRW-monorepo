@@ -1,4 +1,4 @@
-import { keyringService, sessionService } from '@onflow/flow-wallet-core';
+import { keyringService, sessionService } from '@onflow/frw-core';
 import { ethErrors } from 'eth-rpc-errors';
 
 import tab from '@/background/webapi/tab';
