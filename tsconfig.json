@@ -1,22 +1,42 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
+    "baseUrl": "./",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "module": "ESNext",
-    "lib": ["ES2022"],
+    "target": "ESNext",
     "moduleResolution": "bundler",
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
+    "noImplicitAny": false,
+    "composite": false,
+    "checkJs": true,
     "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
+    "useUnknownInCatchVariables": false,
     "resolveJsonModule": true,
-    "isolatedModules": true,
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "composite": true
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "lib": ["ES2021.String", "DOM", "DOM.Iterable"],
+    "types": ["chrome", "node", "react", "react-dom"],
+    "jsx": "react",
+    "allowSyntheticDefaultImports": true,
+    "allowJs": true,
+    "plugins": [
+      {
+        "transform": "typescript-transform-paths",
+        "afterDeclarations": true
+      }
+    ],
+    "outDir": "./dist"
   },
-  "include": ["src/**/*.ts", "src/**/*.json"],
-  "exclude": ["node_modules", "dist", "tsup.config.ts", "vitest.config.ts"]
+  "exclude": ["./node_modules"],
+  "include": [
+    "src",
+    "__tests__",
+    "build",
+    "webpack.config.ts",
+    "postcss.config.mjs",
+    "svgTransform.js",
+    ".storybook/**/*"
+  ]
 }

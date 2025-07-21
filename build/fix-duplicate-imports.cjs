@@ -9,7 +9,7 @@ const t = require('@babel/types');
 
 function fixDuplicateImports(filePath) {
   const code = fs.readFileSync(filePath, 'utf-8');
-  
+
   try {
     const ast = parse(code, {
       sourceType: 'module',
@@ -23,7 +23,7 @@ function fixDuplicateImports(filePath) {
       ImportDeclaration(path) {
         const source = path.node.source.value;
         const basePackage = source.split('/').slice(0, 2).join('/');
-        
+
         if (!importsBySource.has(basePackage)) {
           importsBySource.set(basePackage, []);
         }
@@ -37,7 +37,7 @@ function fixDuplicateImports(filePath) {
 
       // Group by exact source
       const byExactSource = new Map();
-      imports.forEach(importPath => {
+      imports.forEach((importPath) => {
         const source = importPath.node.source.value;
         if (!byExactSource.has(source)) {
           byExactSource.set(source, []);
@@ -52,7 +52,7 @@ function fixDuplicateImports(filePath) {
         const allSpecifiers = [];
         const allComments = [];
 
-        sameSrcImports.forEach(importPath => {
+        sameSrcImports.forEach((importPath) => {
           allSpecifiers.push(...importPath.node.specifiers);
           if (importPath.node.leadingComments) {
             allComments.push(...importPath.node.leadingComments);
@@ -94,11 +94,11 @@ function fixDuplicateImports(filePath) {
 // Get all TypeScript/JavaScript files
 function getAllFiles(dir, fileList = []) {
   const files = fs.readdirSync(dir);
-  
-  files.forEach(file => {
+
+  files.forEach((file) => {
     const filePath = path.join(dir, file);
     const stat = fs.statSync(filePath);
-    
+
     if (stat.isDirectory()) {
       if (!file.includes('node_modules') && !file.includes('dist') && !file.startsWith('.')) {
         getAllFiles(filePath, fileList);
@@ -107,7 +107,7 @@ function getAllFiles(dir, fileList = []) {
       fileList.push(filePath);
     }
   });
-  
+
   return fileList;
 }
 
@@ -118,7 +118,7 @@ let fixedCount = 0;
 
 console.log(`Checking ${files.length} files for duplicate imports...`);
 
-files.forEach(file => {
+files.forEach((file) => {
   if (fixDuplicateImports(file)) {
     console.log(`Fixed: ${path.relative(projectRoot, file)}`);
     fixedCount++;
