@@ -29,25 +29,6 @@ const config: StorybookConfig = {
     config.resolve.alias = {
       ...config.resolve.alias,
 
-      // Specific hook aliases first
-      '@onflow/frw-shared/utils/user-data-access$': path.resolve(
-        __dirname,
-        '../../../packages/shared/src/utils/user-data-access.mock.ts'
-      ),
-      '@onflow/frw-shared/utils/cache-data-access$': path.resolve(
-        __dirname,
-        '../../../packages/shared/src/utils/cache-data-access.mock.ts'
-      ),
-
-      '@onflow/frw-shared': path.resolve(__dirname, '../../../packages/shared/src'),
-      '@onflow/frw-extension-shared': path.resolve(
-        __dirname,
-        '../../../packages/extension-shared/src'
-      ),
-      '@onflow/frw-data-model': path.resolve(__dirname, '../../../packages/data-model/src'),
-      '@onflow/frw-core': path.resolve(__dirname, '../../../packages/core/src'),
-      '@onflow/frw-reducers': path.resolve(__dirname, '../../../packages/reducers/src'),
-
       '@/ui/hooks/use-feature-flags$': path.resolve(
         __dirname,
         '../src/ui/hooks/use-feature-flags.mock.ts'

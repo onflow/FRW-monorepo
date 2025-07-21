@@ -1,4 +1,4 @@
-import { type ActiveAccountType } from '../../../../../packages/shared/src/types';
+import { type ActiveAccountType } from '@onflow/frw-shared/types';
 
 export const TERMS_OF_SERVICE_URL =
   process.env.TERMS_OF_SERVICE_URL || 'https://wallet.flow.com/terms-of-service';

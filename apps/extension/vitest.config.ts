@@ -23,13 +23,6 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@onflow/frw-shared': new URL('../../packages/shared/src', import.meta.url).pathname,
-      '@onflow/frw-core': new URL('../../packages/core/src', import.meta.url).pathname,
-      '@onflow/frw-data-model': new URL('../../packages/data-model/src', import.meta.url).pathname,
-      '@onflow/frw-extension-shared': new URL(
-        '../../packages/extension-shared/src',
-        import.meta.url
-      ).pathname,
       '@': new URL('./src', import.meta.url).pathname,
     },
   },
