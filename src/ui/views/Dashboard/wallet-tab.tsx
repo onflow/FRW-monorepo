@@ -63,7 +63,7 @@ const WalletTab = ({ network }) => {
         flexDirection: 'column',
         backgroundColor: 'black',
         width: '100%',
-        height: '100%',
+        height: 'auto',
       }}
     >
       <Tabs
