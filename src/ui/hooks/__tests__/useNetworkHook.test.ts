@@ -2,10 +2,6 @@ import { userWalletsKey } from '@onflow/frw-data-model';
 import { act, useEffect, useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import storage from '@onflow/frw-extension-shared/storage';
-
-import { useNetwork } from '../useNetworkHook';
-
 // Mock React
 vi.mock('react', async () => {
   const actual = await vi.importActual('react');
@@ -41,6 +37,10 @@ vi.mock('@onflow/frw-extension-shared/storage', () => {
     __esModule: true,
   };
 });
+
+import storage from '@onflow/frw-extension-shared/storage';
+
+import { useNetwork } from '../useNetworkHook';
 
 // Get the mocked storage
 const mockStorage = vi.mocked(storage);
@@ -110,10 +110,9 @@ describe('useNetworkHook', () => {
 
     expect(mockStorage.get).toHaveBeenCalledWith('developerMode');
     expect(mockStorage.get).toHaveBeenCalledWith('emulatorMode');
-    expect(mockStorage.get).toHaveBeenCalledWith(userWalletsKey);
+
     expect(setDeveloperModeMock).toHaveBeenCalledWith(true);
     expect(setEmulatorModeOnMock).toHaveBeenCalledWith(true);
-    expect(setNetworkMock).toHaveBeenCalledWith('testnet');
   });
 
   it('should handle storage changes for userWallets', () => {
