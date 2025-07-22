@@ -3,6 +3,9 @@ import { Navigate } from 'react-router';
 
 import { useWallet } from '@/ui/hooks/use-wallet';
 
+import { getUiType } from '../utils';
+import { openInternalPageInTab } from '../utils/webapi';
+
 const PrivateRoute = ({ children }) => {
   const wallet = useWallet();
 
@@ -10,6 +13,7 @@ const PrivateRoute = ({ children }) => {
   const [unlocked, setUnlocked] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  const uiType = getUiType();
   // Everything through the wallet controller is async, so we need to check if the wallet is booted and unlocked in a useEffect
   useEffect(() => {
     let mounted = true;
@@ -40,11 +44,18 @@ const PrivateRoute = ({ children }) => {
   }, [wallet]);
 
   if (loading) {
+    // If we haven't loaded, we can't make a decision on whether to render the children
+    // so we return null
     return null;
   }
 
   if (!booted) {
-    return <Navigate to="/welcome" replace />;
+    if (uiType.isTab) {
+      return <Navigate to="/welcome" replace />;
+    } else {
+      openInternalPageInTab('welcome');
+      return null;
+    }
   }
 
   if (!unlocked) {
