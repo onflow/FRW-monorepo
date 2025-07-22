@@ -35,8 +35,13 @@ const SortHat = () => {
       approval = undefined;
     }
 
-    if (!(await wallet.isBooted()) && !isInTab) {
-      openInternalPageInTab('welcome');
+    // For fresh installation, go to welcome page regardless of popup/tab mode
+    if (!(await wallet.isBooted())) {
+      if (isInTab) {
+        setTo('/welcome');
+      } else {
+        openInternalPageInTab('welcome');
+      }
       return;
     }
 
