@@ -21,7 +21,6 @@ const SortHat = () => {
     let approval = await getApproval();
     if (!wallet) {
       setTo('/unlock');
-      return;
     }
 
     if (isInNotification && !approval) {
