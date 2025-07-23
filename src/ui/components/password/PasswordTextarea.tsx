@@ -61,11 +61,13 @@ const PasswordTextarea = ({
     // The actual textarea styling
     '& .MuiInputBase-input': {
       padding: '20px',
+      paddingRight: '40px',
       resize: 'none',
       fontSize: '16px',
       fontFamily: 'Inter',
       fontWeight: 400,
       color: '#fff',
+
       WebkitTextSecurity: showPassword ? 'none' : 'disc',
       '&::placeholder': {
         color: '#767676',
