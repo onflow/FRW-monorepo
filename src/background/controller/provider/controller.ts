@@ -235,17 +235,20 @@ class ProviderController extends BaseController {
     }
 
     const currentWallet = await Wallet.getParentAddress();
-    let evmAddress;
+    let evmAddress: string;
 
     if (!currentWallet) {
       throw new Error('Current wallet not found');
     }
     try {
       // Attempt to query the EVM address
-      evmAddress = await userWalletService.getEvmAccountOfParent(currentWallet);
-      if (!isValidEthereumAddress(evmAddress)) {
+
+      const evmAccount = await userWalletService.getEvmAccountOfParent(currentWallet);
+
+      if (!evmAccount || !isValidEthereumAddress(evmAccount.address)) {
         throw new Error('Invalid EVM address');
       }
+      evmAddress = evmAccount.address;
     } catch (error) {
       // If an error occurs, request approval
       consoleError('ethRequestAccounts - Error querying EVM address:', error);
@@ -257,10 +260,12 @@ class ProviderController extends BaseController {
         },
         { height: 599 }
       );
-      evmAddress = await userWalletService.getEvmAccountOfParent(currentWallet);
-      if (!isValidEthereumAddress(evmAddress)) {
+      const evmAccount = await userWalletService.getEvmAccountOfParent(currentWallet);
+
+      if (!evmAccount || !isValidEthereumAddress(evmAccount.address)) {
         throw new Error('Invalid EVM address');
       }
+      evmAddress = evmAccount.address;
     }
 
     const account = evmAddress ? [ensureEvmAddressPrefix(evmAddress)] : [];
