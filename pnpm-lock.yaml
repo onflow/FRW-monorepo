@@ -4,12 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-overrides:
-  '@onflow/frw-core': link:../FRW-core/packages/core
-  '@onflow/frw-shared': link:../FRW-core/packages/shared
-  '@onflow/frw-data-model': link:../FRW-core/packages/data-model
-  '@onflow/frw-extension-shared': link:../FRW-core/packages/extension-shared
-
 importers:
 
   .:
@@ -45,20 +39,20 @@ importers:
         specifier: ^1.19.0
         version: 1.19.0(@types/react@18.3.23)(google-protobuf@3.21.4)(jiti@2.4.2)(postcss@8.5.6)(react@18.3.1)(ts-node@10.9.2(@swc/core@1.12.14)(@types/node@22.16.4)(typescript@5.8.3))(tsx@4.20.3)(typescript@5.8.3)(zod@3.25.76)
       '@onflow/frw-core':
-        specifier: link:../FRW-core/packages/core
-        version: link:../FRW-core/packages/core
+        specifier: ^0.2.1
+        version: 0.2.1(@trustwallet/wallet-core@4.3.6)(@types/react@18.3.23)(ethers@6.15.0)(firebase@10.14.1)(google-protobuf@3.21.4)(jiti@2.4.2)(postcss@8.5.6)(react@18.3.1)(ts-node@10.9.2(@swc/core@1.12.14)(@types/node@22.16.4)(typescript@5.8.3))(tsx@4.20.3)(typescript@5.8.3)(zod@3.25.76)
       '@onflow/frw-data-model':
-        specifier: link:../FRW-core/packages/data-model
-        version: link:../FRW-core/packages/data-model
+        specifier: ^0.2.1
+        version: 0.2.1
       '@onflow/frw-extension-shared':
-        specifier: link:../FRW-core/packages/extension-shared
-        version: link:../FRW-core/packages/extension-shared
+        specifier: ^0.2.1
+        version: 0.2.1
       '@onflow/frw-reducers':
-        specifier: ^0.2.0
-        version: 0.2.0
+        specifier: ^0.2.1
+        version: 0.2.1
       '@onflow/frw-shared':
-        specifier: link:../FRW-core/packages/shared
-        version: link:../FRW-core/packages/shared
+        specifier: ^0.2.1
+        version: 0.2.1
       '@reown/walletkit':
         specifier: ^1.2.8
         version: 1.2.8(typescript@5.8.3)(zod@3.25.76)
@@ -1839,8 +1833,28 @@ packages:
   '@onflow/fcl@1.19.0':
     resolution: {integrity: sha512-PtABHza3oSVFIQRd8knOM+jqEcWsqRNIwNtWmElnLY7kuBRJJuoOT84Kxua0dWcE567IiDOPtjRoFpfqqnosyQ==}
 
-  '@onflow/frw-reducers@0.2.0':
-    resolution: {integrity: sha512-tV2CuNao25U2o8IhJo3Qj1sRH74OpGkdSKan6+OZY8PKux26FWx7eztKGzVVZnOT/2/pzsB9wJzqY1OkDauQJQ==}
+  '@onflow/frw-core@0.2.1':
+    resolution: {integrity: sha512-2I4A3K0LaXvz9TkzXZY3SWTEvDLv+KzJVjjxKUW40MFX4KcAMguTeUrD63ouJEa5H9FEvRf5xqujPs78MjNJYA==}
+    engines: {node: '>=22.11.0'}
+    peerDependencies:
+      '@trustwallet/wallet-core': ^4.3.6
+      ethers: ^6.13.4
+      firebase: ^10.14.1
+
+  '@onflow/frw-data-model@0.2.1':
+    resolution: {integrity: sha512-NORlyoOhajEkYtYNZ1/TGfdyF7Cv9PMPr4qj+hnEItWvdXU65xbXo0aGKHMJ0HvY/tLjNU4TzKQ6SuwvvXO/QQ==}
+    engines: {node: '>=22.11.0'}
+
+  '@onflow/frw-extension-shared@0.2.1':
+    resolution: {integrity: sha512-dikWsAQC+eamAsWd2IBYVttSQTHU+B0Q+ZdLeXrYCklTfA8xmdrKYQX40r/dtoigSWp78rhmMTpt2EXsUJjsvw==}
+    engines: {node: '>=22.11.0'}
+
+  '@onflow/frw-reducers@0.2.1':
+    resolution: {integrity: sha512-++0X39UIhV1j/nBlnZL8A4y/y5LPo/GayVXJd+n23oOPWTo3dWScU5Cn/LgGeG4VdprMHoCNI/8n1EPyEsdDWw==}
+    engines: {node: '>=22.11.0'}
+
+  '@onflow/frw-shared@0.2.1':
+    resolution: {integrity: sha512-yQDy/II+unmLIMnHzJM6AUlgXReZbHrtQHLkV36uJPWyRdQulgQjT09dzsxuDutX/47az2arXUT/SMgTq1NVBw==}
     engines: {node: '>=22.11.0'}
 
   '@onflow/interaction@0.0.11':
@@ -9576,9 +9590,77 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@onflow/frw-reducers@0.2.0':
+  '@onflow/frw-core@0.2.1(@trustwallet/wallet-core@4.3.6)(@types/react@18.3.23)(ethers@6.15.0)(firebase@10.14.1)(google-protobuf@3.21.4)(jiti@2.4.2)(postcss@8.5.6)(react@18.3.1)(ts-node@10.9.2(@swc/core@1.12.14)(@types/node@22.16.4)(typescript@5.8.3))(tsx@4.20.3)(typescript@5.8.3)(zod@3.25.76)':
     dependencies:
-      '@onflow/frw-shared': link:../FRW-core/packages/shared
+      '@noble/secp256k1': 1.7.2
+      '@onflow/fcl': 1.19.0(@types/react@18.3.23)(google-protobuf@3.21.4)(jiti@2.4.2)(postcss@8.5.6)(react@18.3.1)(ts-node@10.9.2(@swc/core@1.12.14)(@types/node@22.16.4)(typescript@5.8.3))(tsx@4.20.3)(typescript@5.8.3)(zod@3.25.76)
+      '@onflow/frw-data-model': 0.2.1
+      '@onflow/frw-shared': 0.2.1
+      '@onflow/typedefs': 1.6.0
+      '@trustwallet/wallet-core': 4.3.6
+      aes-js: 3.1.2
+      bignumber.js: 9.3.1
+      bip39: 3.1.0
+      browser-passworder: 2.0.3
+      compare-versions: 4.1.4
+      dayjs: 1.11.13
+      ethereumjs-util: 7.1.5
+      ethers: 6.15.0
+      firebase: 10.14.1
+      lru-cache: 11.1.0
+      rlp: 3.0.0
+      web3: 4.16.0(typescript@5.8.3)(zod@3.25.76)
+    transitivePeerDependencies:
+      - '@azure/app-configuration'
+      - '@azure/cosmos'
+      - '@azure/data-tables'
+      - '@azure/identity'
+      - '@azure/keyvault-secrets'
+      - '@azure/storage-blob'
+      - '@capacitor/preferences'
+      - '@deno/kv'
+      - '@netlify/blobs'
+      - '@onflow/util-config'
+      - '@planetscale/database'
+      - '@react-native-async-storage/async-storage'
+      - '@types/react'
+      - '@upstash/redis'
+      - '@vercel/blob'
+      - '@vercel/kv'
+      - aws4fetch
+      - bufferutil
+      - db0
+      - encoding
+      - google-protobuf
+      - ioredis
+      - jiti
+      - postcss
+      - react
+      - ts-node
+      - tsx
+      - typescript
+      - uploadthing
+      - utf-8-validate
+      - zod
+
+  '@onflow/frw-data-model@0.2.1':
+    dependencies:
+      '@onflow/frw-shared': 0.2.1
+
+  '@onflow/frw-extension-shared@0.2.1':
+    dependencies:
+      '@onflow/frw-shared': 0.2.1
+      eth-rpc-errors: 4.0.3
+      events: 3.3.0
+
+  '@onflow/frw-reducers@0.2.1':
+    dependencies:
+      '@onflow/frw-shared': 0.2.1
+      bignumber.js: 9.3.1
+
+  '@onflow/frw-shared@0.2.1':
+    dependencies:
+      '@onflow/typedefs': 1.6.0
       bignumber.js: 9.3.1
 
   '@onflow/interaction@0.0.11': {}
