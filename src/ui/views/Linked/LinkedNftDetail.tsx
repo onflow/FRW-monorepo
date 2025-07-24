@@ -8,7 +8,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
 import fallback from '@/ui/assets/image/errorImage.png';
-import DetailMove from '@/ui/assets/svg/detailMove.svg';
 import SendIcon from '@/ui/assets/svg/detailSend.svg';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -481,7 +480,8 @@ const LinkedNftDetail = () => {
               {chrome.i18n.getMessage('Send')}
             </Button>
           )}
-
+          {/* TODO: TB July 2025. This is not working as the script doesn't exist. Turning off for now */}
+          {/*
           {nftDetail?.collectionID && (
             <Button
               sx={{
@@ -498,7 +498,6 @@ const LinkedNftDetail = () => {
               disabled={!isAccessibleNft}
               onClick={() => setMoveOpen(true)}
             >
-              {/* <IosShareOutlinedIcon color="primary" /> */}
               <CardMedia
                 image={DetailMove}
                 sx={{ width: '20px', height: '20px', color: '#fff', marginRight: '8px' }}
@@ -506,6 +505,7 @@ const LinkedNftDetail = () => {
               {chrome.i18n.getMessage('Move')}
             </Button>
           )}
+          */}
         </Box>
 
         {moveOpen && (
