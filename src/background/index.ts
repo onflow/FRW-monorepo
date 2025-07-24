@@ -41,6 +41,7 @@ import notificationService from './controller/notification';
 import { setEnvironmentBadge } from './utils/setEnvironmentBadge';
 import packageJson from '../../package.json';
 import { getFirbaseConfig } from './utils/firebaseConfig';
+import { getAuthTokenWrapper } from './utils/googleDriveAuthToken';
 
 const { PortMessage } = Message;
 
@@ -111,6 +112,7 @@ async function restoreAppState() {
     scope: 'https://www.googleapis.com/auth/drive.appdata',
     AES_KEY: process.env.GD_AES_KEY!,
     IV: process.env.GD_IV!,
+    getAuthTokenWrapper,
   });
   await googleSafeHostService.init({
     baseURL: 'https://safebrowsing.googleapis.com/',
