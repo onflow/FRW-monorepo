@@ -3,8 +3,8 @@ import {
   type SupportedCurrenciesStore,
   preferencesKey,
   type PreferencesStore,
-  getUserData,
-  setUserData,
+  getLocalData,
+  setLocalData,
 } from '@onflow/frw-data-model';
 
 import { DEFAULT_CURRENCY } from '@onflow/frw-shared/constant';
@@ -31,14 +31,14 @@ export const useAccountHidden = (address: string) => {
 };
 
 export const toggleAccountHidden = async (address: string) => {
-  const preferences = await getUserData<PreferencesStore>(preferencesKey);
+  const preferences = await getLocalData<PreferencesStore>(preferencesKey);
   const currentHiddenAccounts = preferences?.hiddenAccounts || [];
 
   const newHiddenAccounts = currentHiddenAccounts.includes(address)
     ? currentHiddenAccounts.filter((addr) => addr !== address)
     : [...currentHiddenAccounts, address];
 
-  await setUserData<PreferencesStore>(preferencesKey, {
+  await setLocalData<PreferencesStore>(preferencesKey, {
     ...preferences,
     displayCurrency: preferences?.displayCurrency || DEFAULT_CURRENCY,
     hiddenAccounts: newHiddenAccounts,

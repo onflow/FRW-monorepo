@@ -21,4 +21,4 @@ class LogListener {
   }
 }
 
-export default new LogListener();
+export const logListener = new LogListener();

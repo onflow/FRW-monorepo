@@ -145,7 +145,7 @@ vi.mock('@onflow/frw-core', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@onflow/frw-core')>();
   return {
     ...actual,
-    mixpanelTrack: {
+    analyticsService: {
       track: vi.fn(),
       identify: vi.fn(),
       reset: vi.fn(),

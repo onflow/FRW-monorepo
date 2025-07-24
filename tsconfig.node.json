@@ -1,9 +1,9 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "module": "ESNext",
+    "module": "NodeNext",
     "target": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "NodeNext",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true
   },
@@ -12,7 +12,7 @@
     "experimentalSpecifierResolution": "node",
     "transpileOnly": true,
     "compilerOptions": {
-      "module": "ESNext",
+      "module": "NodeNext",
       "target": "ESNext",
       "allowJs": true
     }

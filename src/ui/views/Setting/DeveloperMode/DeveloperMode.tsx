@@ -9,9 +9,8 @@ import {
   Switch,
   Typography,
 } from '@mui/material';
+import { getLocalData, setLocalData } from '@onflow/frw-data-model';
 import React, { useCallback, useEffect, useState } from 'react';
-
-import storage from '@onflow/frw-extension-shared/storage';
 
 import { LLHeader } from '@/ui/components';
 import { useWallet } from '@/ui/hooks/use-wallet';
@@ -26,7 +25,7 @@ const DeveloperMode = () => {
 
   const loadStuff = useCallback(async () => {
     const network = await usewallet.getNetwork();
-    const developerMode = await storage.get('developerMode');
+    const developerMode = await getLocalData<boolean>('developerMode');
     const enableEmulatorMode = await usewallet.getFeatureFlag('emulator_mode');
     const emulatorMode = enableEmulatorMode ? await usewallet.getEmulatorMode() : false;
     const monitor = await usewallet.getMonitor();
@@ -40,7 +39,7 @@ const DeveloperMode = () => {
     loadStuff().then(({ network, developerMode, enableEmulatorMode, emulatorMode, monitor }) => {
       if (!mounted) return;
       setNetwork(network);
-      setDeveloperModeOn(developerMode);
+      setDeveloperModeOn(developerMode ?? false);
       setEmulatorFeatureEnabled(enableEmulatorMode);
       setEmulatorModeOn(emulatorMode);
       setMonitor(monitor);
@@ -69,7 +68,7 @@ const DeveloperMode = () => {
     setDeveloperModeOn((prev) => {
       const newMode = !prev;
       // This should probably be done in the background
-      storage.set('developerMode', newMode);
+      setLocalData('developerMode', newMode);
       return newMode;
     });
   };

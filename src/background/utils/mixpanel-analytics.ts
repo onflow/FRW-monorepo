@@ -1,4 +1,8 @@
-import { type AnalyticsService } from '@onflow/frw-core';
+import {
+  versionService,
+  type AnalyticsServiceInterface,
+  baseAnalyticsService,
+} from '@onflow/frw-core';
 import { getLocalData, setLocalData, removeLocalData } from '@onflow/frw-data-model';
 
 import type { TrackingEvents } from '@onflow/frw-shared/types';
@@ -46,11 +50,10 @@ type SuperProperties = {
   wallet_type: 'flow';
 };
 
-class MixpanelService implements AnalyticsService {
+class MixpanelService implements AnalyticsServiceInterface {
   private static instance: MixpanelService;
-  private initialized = false;
   private eventTimers: Partial<Record<keyof TrackingEvents, number>> = {};
-
+  private initialized = false;
   private distinctId?: string;
   private readonly API_URL = 'https://api.mixpanel.com';
   private token?: string;
@@ -98,11 +101,24 @@ class MixpanelService implements AnalyticsService {
     }
     return MixpanelService.instance;
   }
-
   async init(mixPanelToken: string) {
-    super.init(this);
-
     if (this.initialized) return;
+    // Private constructor for singleton
+    this.token = mixPanelToken;
+
+    if (!mixPanelToken) {
+      // eslint-disable-next-line no-console
+      console.error('MIXPANEL_TOKEN is not defined in environment variables');
+    }
+    // Set app version
+    this.superProperties.app_version = versionService.getVersion();
+    // Set device id
+    const ids = await this.getIdInfo();
+    if (!ids?.$device_id) {
+      await this.setIdInfo({ $device_id: UUID() });
+    }
+    this.initialized = true;
+    await baseAnalyticsService.init(this);
   }
 
   private async sendRequest(endpoint: string, data: MixpanelRequestData) {
@@ -219,7 +235,7 @@ class MixpanelService implements AnalyticsService {
   }
 }
 
-export const analyticsService = MixpanelService.getInstance();
+export const mixpanelService = MixpanelService.getInstance();
 
 // https://github.com/mixpanel/mixpanel-js/blob/3623fe0132860386eeed31756e0d7eb4e61997ed/src/utils.js#L862C5-L889C7
 function UUID() {

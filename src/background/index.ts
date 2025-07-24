@@ -7,8 +7,6 @@ import {
   evmNftService,
   googleSafeHostService,
   keyringService,
-  logListener,
-  mixpanelTrack,
   newsService,
   nftService,
   openapiService,
@@ -23,12 +21,11 @@ import {
   versionService,
   googleDriveService,
 } from '@onflow/frw-core';
+import { getLocalData, removeLocalData, setLocalData } from '@onflow/frw-data-model';
 import { ethErrors } from 'eth-rpc-errors';
 
 import { initializeChromeLogging } from '@onflow/frw-extension-shared/chrome-logger';
-import eventBus from '@onflow/frw-extension-shared/message/eventBus';
-import { Message } from '@onflow/frw-extension-shared/messaging';
-import storage from '@onflow/frw-extension-shared/storage';
+import { Message, eventBus } from '@onflow/frw-extension-shared/messaging';
 import { EVENTS } from '@onflow/frw-shared/constant';
 import { type WalletAddress } from '@onflow/frw-shared/types';
 import { isValidFlowAddress, consoleError, consoleLog } from '@onflow/frw-shared/utils';
@@ -38,10 +35,12 @@ import { preAuthzServiceDefinition } from '@/background/controller/serviceDefini
 import walletController, { type WalletController } from '@/background/controller/wallet';
 
 import notificationService from './controller/notification';
-import { setEnvironmentBadge } from './utils/setEnvironmentBadge';
 import packageJson from '../../package.json';
 import { getFirbaseConfig } from './utils/firebaseConfig';
 import { getAuthTokenWrapper } from './utils/googleDriveAuthToken';
+import { logListener } from './utils/log-listener';
+import { mixpanelService } from './utils/mixpanel-analytics';
+import { setEnvironmentBadge } from './utils/setEnvironmentBadge';
 
 const { PortMessage } = Message;
 
@@ -83,12 +82,12 @@ async function restoreAppState() {
   await keyringService.loadKeyringStore();
 
   // clear premnemonic in storage
-  storage.remove('premnemonic');
-  storage.remove('tempPassword');
+  removeLocalData('premnemonic');
+  removeLocalData('tempPassword');
   // enable free gas fee
-  storage.get('lilicoPayer').then((value) => {
+  getLocalData('lilicoPayer').then((value) => {
     if (value === null || value === undefined) {
-      storage.set('lilicoPayer', true);
+      setLocalData('lilicoPayer', true);
     }
   });
 
@@ -120,7 +119,8 @@ async function restoreAppState() {
   });
 
   if (process.env.MIXPANEL_TOKEN) {
-    await mixpanelTrack.init(process.env.MIXPANEL_TOKEN);
+    // This will set the analytics service to mixpanel
+    await mixpanelService.init(process.env.MIXPANEL_TOKEN);
 
     // Initialize Chrome logging - has to be done after mixpanel is initialized
     initializeChromeLogging();
