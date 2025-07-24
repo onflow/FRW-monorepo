@@ -3,12 +3,13 @@ import { Navigate } from 'react-router';
 
 import Spin from '@/ui/components/Spin';
 import { useApproval } from '@/ui/hooks/use-approval';
-import { useWallet } from '@/ui/hooks/use-wallet';
+import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';
 import { getUiType } from '@/ui/utils';
 import { openInternalPageInTab } from '@/ui/utils/webapi';
 
 const SortHat = () => {
   const wallet = useWallet();
+  const walletLoaded = useWalletLoaded();
   const [to, setTo] = useState('');
   // eslint-disable-next-line prefer-const
   let [getApproval, , rejectApproval] = useApproval();
@@ -68,8 +69,10 @@ const SortHat = () => {
   }, [getApproval, rejectApproval, wallet]);
 
   useEffect(() => {
-    loadView();
-  }, [loadView]);
+    if (walletLoaded) {
+      loadView();
+    }
+  }, [loadView, walletLoaded]);
 
   return (
     // <Box sx={{}}>

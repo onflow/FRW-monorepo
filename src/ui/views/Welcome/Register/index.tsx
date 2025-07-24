@@ -7,7 +7,7 @@ import {
 } from '@onflow/frw-reducers';
 import * as bip39 from 'bip39';
 import React, { useCallback, useEffect, useReducer } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 
 import AllSet from '@/ui/components/LandingPages/AllSet';
 import GoogleBackup from '@/ui/components/LandingPages/GoogleBackup';
@@ -27,6 +27,8 @@ export const initRegisterState = (initialState: RegisterState): RegisterState =>
 
 const Register = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
   const usewallet = useWallet();
 
   const [state, dispatch] = useReducer(registerReducer, INITIAL_REGISTER_STATE, initRegisterState);
@@ -65,11 +67,15 @@ const Register = () => {
     }
   };
 
+  // Only show the back button if there is a page to go back to
+  const showBackButton =
+    activeTab !== STEPS.ALL_SET && (activeTab !== STEPS.USERNAME || location.key !== 'default');
+
   return (
     <LandingComponents
       activeIndex={Object.values(STEPS).indexOf(activeTab)}
       direction="right"
-      showBackButton={activeTab !== STEPS.ALL_SET}
+      showBackButton={showBackButton}
       onBack={goBack}
       showConfetti={activeTab === STEPS.ALL_SET}
       showRegisterHeader={true}

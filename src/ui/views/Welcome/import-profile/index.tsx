@@ -6,7 +6,7 @@ import {
   INITIAL_IMPORT_STATE,
 } from '@onflow/frw-reducers';
 import React, { useEffect, useReducer } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 
 import { consoleError } from '@onflow/frw-shared/utils';
 
@@ -27,6 +27,7 @@ export const initImportProfileState = (initialState: ImportState): ImportState =
 
 const ImportProfile = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const usewallet = useWallet();
 
   const [state, dispatch] = useReducer(importProfileReducer, INITIAL_IMPORT_STATE);
@@ -107,8 +108,14 @@ const ImportProfile = () => {
   };
 
   const goBack = () => {
-    if (activeTab === IMPORT_STEPS.GOOGLE_BACKUP || activeTab === IMPORT_STEPS.ALL_SET) {
-      navigate(-1);
+    if (
+      activeTab === IMPORT_STEPS.GOOGLE_BACKUP ||
+      activeTab === IMPORT_STEPS.ALL_SET ||
+      activeTab === IMPORT_STEPS.IMPORT
+    ) {
+      if (location.key !== 'default') {
+        navigate(-1);
+      }
       return;
     }
     dispatch({ type: 'GO_BACK' });
@@ -131,11 +138,15 @@ const ImportProfile = () => {
       />
     );
   }
+
+  const showBackButton =
+    activeTab !== IMPORT_STEPS.ALL_SET &&
+    (activeTab !== IMPORT_STEPS.IMPORT || location.key !== 'default');
   return (
     <LandingComponents
       activeIndex={Object.values(IMPORT_STEPS).indexOf(activeTab)}
       direction="right"
-      showBackButton={activeTab !== IMPORT_STEPS.ALL_SET && activeTab !== IMPORT_STEPS.IMPORT}
+      showBackButton={showBackButton}
       onBack={goBack}
       showConfetti={activeTab === IMPORT_STEPS.ALL_SET}
       showRegisterHeader={true}
