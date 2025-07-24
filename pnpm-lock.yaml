@@ -45,8 +45,8 @@ importers:
         specifier: ^0.2.1
         version: 0.2.1
       '@onflow/frw-extension-shared':
-        specifier: ^0.2.1
-        version: 0.2.1
+        specifier: ^0.2.2
+        version: 0.2.2
       '@onflow/frw-reducers':
         specifier: ^0.2.1
         version: 0.2.1
@@ -1845,8 +1845,8 @@ packages:
     resolution: {integrity: sha512-NORlyoOhajEkYtYNZ1/TGfdyF7Cv9PMPr4qj+hnEItWvdXU65xbXo0aGKHMJ0HvY/tLjNU4TzKQ6SuwvvXO/QQ==}
     engines: {node: '>=22.11.0'}
 
-  '@onflow/frw-extension-shared@0.2.1':
-    resolution: {integrity: sha512-dikWsAQC+eamAsWd2IBYVttSQTHU+B0Q+ZdLeXrYCklTfA8xmdrKYQX40r/dtoigSWp78rhmMTpt2EXsUJjsvw==}
+  '@onflow/frw-extension-shared@0.2.2':
+    resolution: {integrity: sha512-EpzKq8+KXIE2ulY10lT6BhLHjVOihxPOzXnhSEzBvBsAztayhMPqhzYd+gc/6AQ4JPDSkJgquBNl7uESpqoOJw==}
     engines: {node: '>=22.11.0'}
 
   '@onflow/frw-reducers@0.2.1':
@@ -9647,8 +9647,9 @@ snapshots:
     dependencies:
       '@onflow/frw-shared': 0.2.1
 
-  '@onflow/frw-extension-shared@0.2.1':
+  '@onflow/frw-extension-shared@0.2.2':
     dependencies:
+      '@onflow/frw-data-model': 0.2.1
       '@onflow/frw-shared': 0.2.1
       eth-rpc-errors: 4.0.3
       events: 3.3.0

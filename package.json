@@ -55,7 +55,7 @@
     "@onflow/fcl": "^1.19.0",
     "@onflow/frw-core": "^0.2.1",
     "@onflow/frw-data-model": "^0.2.1",
-    "@onflow/frw-extension-shared": "^0.2.1",
+    "@onflow/frw-extension-shared": "^0.2.2",
     "@onflow/frw-reducers": "^0.2.1",
     "@onflow/frw-shared": "^0.2.1",
     "@reown/walletkit": "^1.2.8",
