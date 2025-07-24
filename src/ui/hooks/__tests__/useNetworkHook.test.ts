@@ -21,7 +21,8 @@ vi.mock('react', async () => {
 });
 
 // Mock storage module - must be defined before the vi.mock call
-vi.mock('@onflow/frw-data-model', () => ({
+vi.mock('@onflow/frw-data-model', async (importOriginal) => ({
+  ...(await importOriginal()),
   getLocalData: vi.fn().mockImplementation((key) => {
     if (key === 'developerMode') {
       return Promise.resolve(false);
