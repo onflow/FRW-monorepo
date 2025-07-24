@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router';
 
-import { useWallet } from '@/ui/hooks/use-wallet';
+import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';
 
 import { getUiType } from '../utils';
 import { openInternalPageInTab } from '../utils/webapi';
 
 const PrivateRoute = ({ children }) => {
   const wallet = useWallet();
+  const walletLoaded = useWalletLoaded();
 
   const [booted, setBooted] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
@@ -28,20 +29,21 @@ const PrivateRoute = ({ children }) => {
         return { booted, unlocked };
       }
     };
-
-    // Initial check
-    fetchLockState().then(({ booted, unlocked }) => {
-      if (mounted) {
-        setBooted(booted);
-        setUnlocked(unlocked);
-        setLoading(false);
-      }
-    });
+    if (walletLoaded) {
+      // Initial check
+      fetchLockState().then(({ booted, unlocked }) => {
+        if (mounted) {
+          setBooted(booted);
+          setUnlocked(unlocked);
+          setLoading(false);
+        }
+      });
+    }
 
     return () => {
       mounted = false;
     };
-  }, [wallet]);
+  }, [wallet, walletLoaded]);
 
   if (loading) {
     // If we haven't loaded, we can't make a decision on whether to render the children

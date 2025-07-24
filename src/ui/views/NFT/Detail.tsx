@@ -51,7 +51,9 @@ const Detail = () => {
   const [isAccessibleNft, setisAccessibleNft] = useState<any>(false);
 
   // TB July 2025. This always fails as the script doesn't exist. Turning off for now
-  const [canMoveChild, setCanMoveChild] = useState(false);
+  // const [canMoveChild, setCanMoveChild] = useState(false);
+
+  const canMoveChild = activeAccountType !== 'child' && currentWallet.address;
   /*
   useEffect(() => {
     const checkPermission = async () => {
