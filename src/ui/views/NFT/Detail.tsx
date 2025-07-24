@@ -49,17 +49,20 @@ const Detail = () => {
   const [contactOne, setContactOne] = useState<any>(emptyContact);
   const [contactTwo, setContactTwo] = useState<any>(emptyContact);
   const [isAccessibleNft, setisAccessibleNft] = useState<any>(false);
-  const [canMoveChild, setCanMoveChild] = useState(true);
 
+  // TB July 2025. This always fails as the script doesn't exist. Turning off for now
+  const [canMoveChild, setCanMoveChild] = useState(false);
+  /*
   useEffect(() => {
     const checkPermission = async () => {
+      // TODO: TB July 2025. This always fails as the script doesn't exist. Turning off for now
       const result = await usewallet.checkCanMoveChild(currentWallet.address);
       setCanMoveChild(result);
     };
 
     checkPermission();
   }, [usewallet, currentWallet.address]);
-
+ */
   useEffect(() => {
     const savedState = localStorage.getItem('nftDetailState');
     if (savedState) {
