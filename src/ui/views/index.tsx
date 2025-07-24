@@ -3,8 +3,6 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import React, { useEffect } from 'react';
 import { Route, HashRouter as Router, Routes, useLocation } from 'react-router';
 
-import { initializeChromeLogging } from '@onflow/frw-extension-shared/chrome-logger';
-
 import PrivateRoute from '@/ui/components/PrivateRoute';
 import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';
 import themeOptions from '@/ui/style/LLTheme';
@@ -29,16 +27,12 @@ const AppRoutes = () => {
   const location = useLocation();
   const wallet = useWallet();
   const loaded = useWalletLoaded();
-  useEffect(() => {
-    if (loaded) {
-      // Initialize Chrome logging - has to be done after mixpanel is initialized
-      initializeChromeLogging();
-    }
-  }, [wallet, loaded]);
 
   useEffect(() => {
-    wallet.trackPageView(location.pathname);
-  }, [location, wallet]);
+    if (loaded) {
+      wallet.trackPageView(location.pathname);
+    }
+  }, [location, wallet, loaded]);
 
   return (
     <Routes>

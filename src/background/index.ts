@@ -21,10 +21,16 @@ import {
   versionService,
   googleDriveService,
 } from '@onflow/frw-core';
-import { getLocalData, removeLocalData, setLocalData } from '@onflow/frw-data-model';
+import {
+  getLocalData,
+  removeLocalData,
+  setLocalData,
+  initializeStorage,
+} from '@onflow/frw-data-model';
 import { ethErrors } from 'eth-rpc-errors';
 
 import { initializeChromeLogging } from '@onflow/frw-extension-shared/chrome-logger';
+import { chromeStorage } from '@onflow/frw-extension-shared/chrome-storage';
 import { Message, eventBus } from '@onflow/frw-extension-shared/messaging';
 import { EVENTS } from '@onflow/frw-shared/constant';
 import { type WalletAddress } from '@onflow/frw-shared/types';
@@ -59,7 +65,7 @@ async function restoreAppState() {
   console.log('restoreAppState');
   // Init authentication first
   await authenticationService.init(getFirbaseConfig());
-
+  await initializeStorage({ implementation: chromeStorage });
   // Now we can init openapi
   if (!API_GO_SERVER_URL || !API_BASE_URL || !FB_FUNCTIONS_URL || !SCRIPTS_PUBLIC_KEY) {
     throw new Error(
