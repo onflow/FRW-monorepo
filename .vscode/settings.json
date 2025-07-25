@@ -19,12 +19,6 @@
   "typescript.updateImportsOnFileMove.enabled": "always",
   "eslint.useFlatConfig": true,
   "cSpell.words": ["Cbor", "keccak", "secp"],
-  "[dotenv]": {
-    "editor.defaultFormatter": "foxundermoon.shell-format"
-  },
-  "[xml]": {
-    "editor.defaultFormatter": "DotJoshJohnson.xml"
-  },
   "eslint.lintTask.enable": true,
   "eslint.options": {
     "cache": true

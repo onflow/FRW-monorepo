@@ -7,7 +7,7 @@ vi.mock('@onflow/frw-core', () => ({
   openapiService: {
     getFeatureFlag: vi.fn().mockResolvedValue(false),
   },
-  mixpanelTrack: {
+  analyticsService: {
     identify: vi.fn(),
     track: vi.fn(),
   },

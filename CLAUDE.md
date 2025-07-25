@@ -6,320 +6,218 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Flow Reference Wallet (FRW) is a Chrome extension that serves as a digital wallet for the Flow blockchain. It's built using TypeScript, React, and Material-UI (MUI v7), with a background service worker architecture for secure blockchain interactions.
 
-The project is organized as a **pnpm monorepo** with the following structure:
+This repository contains the Chrome extension application. Core packages are maintained in a separate repository ([FRW-core](https://github.com/onflow/FRW-core)) and published to npm.
 
-- `apps/extension/` - The main Chrome extension application
-- `packages/shared/` - Shared types, constants, and utilities (`@onflow/frw-shared`)
-- `packages/reducers/` - State management reducers (`@onflow/frw-reducers`)
+**Note**: If the FRW-core repository is checked out locally at `../FRW-core`, you can use `pnpm link` for local package development.
 
 ## Development Commands
 
 ### Build Commands
 
-All commands use pnpm workspace filters and run from the root directory:
-
-- **Development**: `pnpm dev` - Runs `pnpm -F frw-extension build:dev` (file watching enabled)
-- **Development (Windows)**: `pnpm winDev` - Windows-specific development build
-- **Production**: `pnpm build` - Production build (`pnpm -F frw-extension build:pro`)
-- **Test Build**: Extension-specific test build: `cd apps/extension && pnpm build:test`
-
-Note: The extension-specific commands are still available in `apps/extension/` directory:
-
-- `pnpm build:dev` (Mac/Linux) or `pnpm winBuild:dev` (Windows)
-- `pnpm build:dev-ci` - CI build without watch mode
-- `pnpm build:pro` - Production build
-- `pnpm build:test` - Test build
+- **Development**: `pnpm build:dev` (file watching enabled)
+- **Production**: `pnpm build:pro`
+- **CI Build dev**: `pnpm build:dev-ci` (no watch mode)
+- **CI Build production**: `pnpm build:ci` (no watch mode)
 
 ### Testing & Quality
 
-- **Unit Tests**: `pnpm test` - Runs tests across all workspaces
-- **Test Coverage**: `pnpm test:unit:coverage` - Coverage report (extension-specific)
-- **E2E Tests**: `pnpm test:e2e` - Playwright tests (extension-specific)
-- **Linting**: `pnpm lint` - Lints root and all workspaces
-- **Linting Fix**: `pnpm lint:fix` - Auto-fix linting issues
-- **Format**: `pnpm format:fix` - Format code with Prettier across all workspaces
+- **Unit Tests (Watch mode)**: `pnpm test` - Run Vitest tests
+- **Unit Tests (Run mode)**: `pnpm test:run` - Watch mode
+- **Test Coverage**: `pnpm test:unit:coverage`
+- **E2E Tests**: `pnpm test:e2e` - Playwright tests
+- **E2E Tests (UI)**: `pnpm test:e2e:ui` - Playwright with UI
+- **Linting**: `pnpm lint` / `pnpm lint:fix`
+- **Format**: `pnpm format:fix` - Prettier formatting
 
 ### Development Tools
 
-- **React DevTools**: `cd apps/extension && pnpm react-devtools` - Run before build to include React DevTools
-- **Storybook**: `cd apps/extension && pnpm storybook` - Component development environment
+- **React DevTools**: `pnpm react-devtools` (run before build)
+- **Storybook**: `pnpm storybook` - Component development
 
 ## Architecture Overview
 
-### Monorepo Structure
+### Directory Structure
 
 ```
-/
-├── apps/
-│   └── extension/          # Main Chrome extension application
-│       ├── src/
-│       │   ├── background/     # Service worker
-│       │   ├── core/          # Core business logic
-│       │   ├── ui/            # React UI
-│       │   └── content-script/ # Web page integration
-│       ├── _raw/              # Extension static files
-│       └── build/             # Build configuration
-├── packages/
-│   ├── shared/            # @onflow/frw-shared
-│   │   ├── src/
-│   │   │   ├── types/     # TypeScript type definitions
-│   │   │   ├── constant/  # Shared constants
-│   │   │   └── utils/     # Utility functions
-│   │   └── package.json
-│   └── reducers/          # @onflow/frw-reducers
-│       ├── src/           # State reducers
-│       └── package.json
-└── pnpm-workspace.yaml    # Workspace configuration
+FRW-Extension/
+├── src/
+│   ├── background/         # Service worker (backend)
+│   │   ├── controller/     # Main wallet controller
+│   │   ├── service/        # Background services
+│   │   └── index.ts        # Service worker entry
+│   ├── ui/                 # React popup interface
+│   │   ├── components/     # Reusable components
+│   │   ├── pages/          # Route pages
+│   │   ├── services/       # UI services
+│   │   └── index.tsx       # React app entry
+│   ├── content-script/     # Web page integration
+│   │   └── pageProvider/   # Ethereum provider
+│   └── core/               # Core business logic
+├── _raw/                   # Static extension files
+│   ├── manifest.json       # Extension manifest
+│   └── _locales/          # Localization files
+├── dist/                   # Built extension output
+├── docs/                   # Architecture documentation
+├── e2e/                    # Playwright E2E tests
+└── build/                  # Webpack configuration
 ```
 
-### Core Structure
+### Core Architecture
 
-The extension (in `apps/extension/`) follows a strict separation of concerns:
-
-1. **Background Service Worker** (`apps/extension/src/background/`)
-   - Handles all blockchain interactions, key management, and secure operations
+1. **Background Service Worker** (`src/background/`)
+   - Handles all blockchain interactions and key management
    - Cannot access DOM or window objects
    - Communicates via Chrome runtime messaging
-   - Main controller: `apps/extension/src/background/controller/wallet.ts`
+   - Main controller: `src/background/controller/wallet.ts`
 
-2. **Core Layer** (`apps/extension/src/core/`)
-   - Core business logic and services
-   - Wallet services, blockchain interactions
-   - Isolated from UI and background specifics
-
-3. **UI Layer** (`apps/extension/src/ui/`)
+2. **UI Layer** (`src/ui/`)
    - React-based popup interface
    - Communicates with background via `WalletController` proxy
-   - Uses MUI v7 for component library
-   - Routing with React Router v5
+   - Uses MUI v7 components
+   - React Router v5 for navigation
 
-4. **Content Scripts** (`apps/extension/src/content-script/`)
+3. **Content Scripts** (`src/content-script/`)
    - Injects wallet provider into web pages
    - Handles dApp communication
    - Implements Flow FCL and Ethereum provider interfaces
 
-5. **Shared Package** (`packages/shared/`)
-   - Common types, utilities, and constants
-   - Published as `@onflow/frw-shared`
-   - Used across all packages and apps
+4. **Core Layer** (`src/core/`)
+   - Isolated business logic
+   - Shared between UI and background where appropriate
 
-6. **Reducers Package** (`packages/reducers/`)
-   - State management reducers
-   - Published as `@onflow/frw-reducers`
-   - Pure functions for predictable state management
+### External Packages
 
-### State Management
+Core functionality is provided by npm packages from the `frw-core` repository:
 
-- Background service maintains authoritative wallet state
-- UI uses React hooks and local state for display
-- No global state management library (no Redux/MobX)
-- Critical data stored in Chrome storage API
+- **`@onflow/frw-shared`** - Types, constants, utilities
+- **`@onflow/frw-core`** - Core wallet services and blockchain logic
+- **`@onflow/frw-reducers`** - State management reducers
+- **`@onflow/frw-data-model`** - Caching system
+- **`@onflow/frw-extension-shared`** - Extension-specific utilities
 
 ## Environment Setup
 
 1. **Prerequisites**:
    - Node.js >= 22.11.0
-   - pnpm >= 9.0.0 (enforced version: 10.12.4)
-   - Install dependencies: `pnpm install` (from root)
+   - pnpm 10.12.1 (enforced in package.json)
 
-2. **Required Environment Variables** (in `apps/extension/.env.dev`):
-   - Firebase configuration keys
+2. **Environment Variables** (`.env.dev`):
+   - Firebase configuration
    - API endpoints
    - Feature flags
-   - `DEV_PASSWORD` (optional, for development convenience)
+   - `DEV_PASSWORD` (optional)
 
 3. **Chrome Extension Loading**:
-   - Build creates output in `apps/extension/dist/` folder
-   - Load unpacked extension from `apps/extension/dist/` in Chrome developer mode
-   - Enable Developer Mode in extension settings for network switching
+   - Build outputs to `dist/` folder
+   - Load unpacked extension from `dist/` in Chrome
+   - Enable Developer Mode for network switching
 
 ## Critical Patterns
 
-### Security Considerations
+### Security
 
-- Private keys never leave the background service worker
-- All signing operations happen in background context
-- UI can only request operations, not access sensitive data directly
-- Encrypted storage for sensitive information
+- Private keys never leave background service worker
+- All signing operations in background context
+- Encrypted storage for sensitive data
+- UI can only request operations via messaging
 
-### Multi-Account Architecture
+### Multi-Account Support
 
-- Supports multiple Flow accounts per profile
-- Each account can have child accounts
+- Multiple Flow accounts per profile
+- Child account support
 - EVM addresses linked to Flow accounts
-- Account switching managed by background service
+- Account switching managed by background
 
 ### Network Support
 
 - Flow Mainnet and Testnet
-- EVM networks (via linked addresses)
-- Network switching requires developer mode enabled
-
-### MUI v7 Migration Notes
-
-- Using standard Grid component (not Grid2)
-- Grid API uses `container`, `item`, and breakpoint props
-- Styled components from `@mui/material/styles`
-- No makeStyles usage (migrated to sx prop)
-
-## Common Development Tasks
-
-### Adding New Wallet Methods
-
-1. Define method in `apps/extension/src/background/controller/wallet.ts`
-2. Add type definitions in `packages/shared/src/types/`
-3. Expose via message handler in background
-4. Add proxy method in UI's WalletController
+- EVM networks via linked addresses
+- Network switching requires developer mode
 
 ### Import Patterns
 
 ```typescript
-// Import from shared package
-import { SomeType } from '@onflow/frw-shared/types';
-import { formatAddress } from '@onflow/frw-shared/utils';
+// External packages
+import { types } from '@onflow/frw-shared';
+import { WalletService } from '@onflow/frw-core';
 
-// Import from reducers package
-import { accountReducer } from '@onflow/frw-reducers';
-
-// Import within extension (use aliases)
-import { WalletController } from '@/background/controller/wallet';
+// Internal imports (use @ alias)
 import { Button } from '@/ui/components/Button';
+import { WalletController } from '@/background/controller/wallet';
 ```
 
-### Working with Firebase Auth
+### Adding New Wallet Methods
 
-- Uses Firebase Auth with web-extension package
-- Authentication state managed in background
-- UI requests auth status via messaging
+1. Define method in `src/background/controller/wallet.ts`
+2. Add types in `@onflow/frw-shared` if needed
+3. Expose via message handler in background
+4. Add proxy method in UI's WalletController
 
-### Flow Blockchain Integration
+### Working with Firebase
 
-- Uses @onflow/fcl for Flow interactions
-- Custom transaction building for complex operations
-- Account key management for multi-sig support
+- Firebase Auth with web-extension package
+- Authentication state in background
+- UI requests auth via messaging
+
+### Flow Blockchain
+
+- @onflow/fcl for Flow interactions
+- Custom transaction building
+- Multi-sig account key management
 
 ## Build System
 
-- Webpack 5 with custom configuration
+- Webpack 5 with environment-specific configs
 - TypeScript with strict mode
-- Environment-specific builds (dev/prod)
-- Automatic manifest generation based on environment
+- Automatic manifest generation
+- Support for WASM and top-level await
 
-## Testing Strategy
+## Testing
 
-- Unit tests with Vitest
-- E2E tests with Playwright
-- Component testing with Storybook
-- Mocking Chrome APIs for testing
+- **Unit Tests**: Vitest with Chrome API mocks
+- **E2E Tests**: Playwright with extension loading
+- **Component Tests**: Storybook for UI components
 
 ## Data Cache Model
 
-The extension implements a sophisticated caching system to optimize API calls and improve performance:
+Session storage-based caching with TTL:
 
-### Cache Architecture
+- `getCachedData(key)` - Frontend access
+- `registerRefreshListener()` - Background refresh
+- `registerBatchRefreshListener()` - Batch operations
+- React hooks: `useCachedData()`, `useUserData()`
 
-- **Session Storage Based**: Uses Chrome's session storage for temporary data
-- **TTL Support**: Each cached item has an expiry timestamp (default 30 seconds)
-- **Automatic Refresh**: Expired data triggers background refresh automatically
-- **Event-Driven Updates**: UI components receive real-time updates when cache changes
+Common cache keys:
 
-### Key Components
-
-1. **Frontend Access** (`getCachedData`):
-
-   ```typescript
-   const data = await getCachedData(key); // Returns cached data or triggers refresh
-   ```
-
-2. **Background Registration** (`registerRefreshListener`):
-
-   ```typescript
-   registerRefreshListener(keyRegex, async (...args) => {
-     const freshData = await fetchFromAPI();
-     await setCachedData(key, freshData, ttl);
-   });
-   ```
-
-3. **Batch Operations** (`registerBatchRefreshListener`):
-   - Collects multiple refresh requests within a time window
-   - Executes batch API calls for efficiency
-   - Used for fetching multiple tokens, NFTs, etc.
-
-4. **React Hooks**:
-   - `useCachedData(key)`: Reactive hook for cached data
-   - `useUserData(key)`: Hook for persistent user data
-
-### Cache Flow
-
-1. UI requests data via `getCachedData(key)`
-2. If expired/missing, sets `${key}-refresh` timestamp
-3. Background listener detects refresh request
-4. Background fetches fresh data and calls `setCachedData`
-5. UI receives update via storage change listener
-
-### Common Cache Keys
-
-- Token prices: `token-price-{address}`
-- NFT collections: `nft-collection-{address}`
-- User balances: `balance-{userId}-{network}`
-- Feature flags: `feature-flags`
+- `token-price-{address}`
+- `nft-collection-{address}`
+- `balance-{userId}-{network}`
+- `feature-flags`
 
 ## Localization
 
-- Language files in `apps/extension/_raw/_locales/`
-- Use `chrome.i18n.getMessage()` for translations
-- Keys must not contain spaces and be unique (case-insensitive)
+- Files in `_raw/_locales/`
+- Use `chrome.i18n.getMessage()`
+- Case-insensitive unique keys
 
-## Workspace Management
+## Architecture Rules
 
-### Package Dependencies
+ESLint enforces strict boundaries:
 
-- Root workspace manages shared dev dependencies
-- Each package has its own dependencies
-- Use workspace protocol: `"@onflow/frw-shared": "workspace:*"`
+1. **UI Layer** (`src/ui/`):
+   - Cannot import from `@onflow/frw-core` or `@/background`
+   - Must use messaging to communicate with background
 
-### Common Tasks
-
-```bash
-# Install dependencies for all workspaces
-pnpm install
-
-# Add dependency to specific workspace
-pnpm -F frw-extension add <package-name>
-pnpm -F @onflow/frw-shared add <package-name>
-
-# Run command in specific workspace
-pnpm -F <workspace-name> <command>
-
-# Build all workspaces
-pnpm -r build
-
-# Run tests across all workspaces
-pnpm test
-```
-
-### Architecture Rules
-
-The project enforces strict architectural boundaries via ESLint:
-
-1. **UI Layer** (`apps/extension/src/ui/`):
-   - Cannot import from `@onflow/frw-core/*` or `@/background/*`
-   - Must communicate with background via messaging
-
-2. **Core Layer** (`apps/extension/src/core/`):
-   - Cannot import from `@/ui/*`
-   - Can only import `@/background/webapi/*` from background
-
-3. **Background Layer** (`apps/extension/src/background/`):
-   - Cannot import from `@/ui/*`
+2. **Background Layer** (`src/background/`):
+   - Cannot import from `@/ui`
    - Direct access to core services
 
-4. **Shared Packages**:
-   - Must remain pure with no dependencies on app-specific code
-   - Reducers can only import from shared package
+3. **External Packages**:
+   - Must remain independent of extension code
+   - Published separately to npm
 
-For detailed architecture documentation, see `docs/architecture-separation.md`
+For detailed documentation:
 
-## React Development Guidelines
-
-For React-specific coding standards and best practices, see `docs/react-rules.md`
+- Architecture: `docs/architecture-separation.md`
+- React guidelines: `docs/react-rules.md`
+- Cache model: `docs/cache-data-model.md`

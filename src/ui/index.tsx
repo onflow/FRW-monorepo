@@ -1,8 +1,10 @@
+import { initializeStorage } from '@onflow/frw-data-model';
 import React, { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
-import eventBus from '@onflow/frw-extension-shared/message/eventBus';
-import { Message } from '@onflow/frw-extension-shared/messaging';
+import { initializeChromeLogging } from '@onflow/frw-extension-shared/chrome-logger';
+import { chromeStorage } from '@onflow/frw-extension-shared/chrome-storage';
+import { Message, eventBus } from '@onflow/frw-extension-shared/messaging';
 import { EVENTS } from '@onflow/frw-shared/constant';
 
 import { getUITypeName } from '@/ui/utils';
@@ -25,6 +27,9 @@ function initAppMeta() {
   description.name = 'description';
   description.content = chrome.i18n.getMessage('appDescription');
   head?.appendChild(description);
+
+  initializeChromeLogging();
+  initializeStorage({ implementation: chromeStorage });
 }
 
 initAppMeta();
