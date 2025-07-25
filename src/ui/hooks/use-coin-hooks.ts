@@ -4,7 +4,7 @@ import {
   coinListKey,
   tokenFilterKey,
   tokenListKey,
-  setUserData,
+  setLocalData,
   evmCustomTokenKey,
   triggerRefresh,
 } from '@onflow/frw-data-model';
@@ -39,7 +39,7 @@ export const setTokenFilter = (network: string, address: string, filter: TokenFi
   if (!network || !address) {
     throw new Error('Network and address are required');
   }
-  setUserData<TokenFilter>(tokenFilterKey(network, address), filter);
+  setLocalData<TokenFilter>(tokenFilterKey(network, address), filter);
 };
 
 export const useChildAccountFt = (

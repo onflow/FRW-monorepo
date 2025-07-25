@@ -6,7 +6,7 @@ import {
   evmNftService,
   googleDriveService,
   keyringService,
-  mixpanelTrack,
+  analyticsService,
   newsService,
   nftService,
   openapiService,
@@ -36,13 +36,16 @@ import {
   walletLoadedKey,
   walletLoadedRefreshRegex,
   CURRENT_ID_KEY,
+  setLocalData,
+  removeLocalData,
+  clearLocalData,
+  getLocalData,
 } from '@onflow/frw-data-model';
 import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
 import BN from 'bignumber.js';
 
-import eventBus from '@onflow/frw-extension-shared/message/eventBus';
-import { retryOperation } from '@onflow/frw-extension-shared/retryOperation';
-import storage from '@onflow/frw-extension-shared/storage';
+import { retryOperation } from '@onflow/frw-core/utils';
+import { eventBus } from '@onflow/frw-extension-shared/messaging';
 import {
   FLOW_BIP44_PATH,
   INTERNAL_REQUEST_ORIGIN,
@@ -408,7 +411,7 @@ export class WalletController extends BaseController {
     // e.g. call signOutCurrentUser
 
     // This clears local storage but a lot is still kept in memory
-    await storage.clear();
+    await clearLocalData();
 
     // Note that this does not clear the 'booted' state
     // We should fix this, but it would involve making changes to keyringService
@@ -1254,7 +1257,7 @@ export class WalletController extends BaseController {
   };
 
   clearChildAccount = () => {
-    storage.remove('checkUserChildAccount');
+    removeLocalData('checkUserChildAccount');
   };
 
   getEvmEnabled = async (): Promise<boolean> => {
@@ -1518,14 +1521,14 @@ export class WalletController extends BaseController {
   // Tracking stuff
 
   trackOnRampClicked = async (source: 'moonpay' | 'coinbase') => {
-    mixpanelTrack.track('on_ramp_clicked', {
+    analyticsService.track('on_ramp_clicked', {
       source: source,
     });
   };
 
   // This is called from the front end, we should find a better way to track this event
   trackAccountRecovered = async () => {
-    mixpanelTrack.track('account_recovered', {
+    analyticsService.track('account_recovered', {
       address: (await this.getCurrentAddress()) || '',
       mechanism: 'Multi-Backup',
       methods: [],
@@ -1533,11 +1536,11 @@ export class WalletController extends BaseController {
   };
 
   trackPageView = async (pathname: string) => {
-    mixpanelTrack.trackPageView(pathname);
+    analyticsService.trackPageView(pathname);
   };
 
   trackTime = async (eventName: keyof TrackingEvents) => {
-    mixpanelTrack.time(eventName);
+    analyticsService.time(eventName);
   };
 
   decodeEvmCall = async (callData: string, address = '') => {
@@ -1546,7 +1549,7 @@ export class WalletController extends BaseController {
 
   // Todo - I don't think this works as expected in any case
   saveIndex = async (username = '', userId = null) => {
-    const loggedInAccounts: LoggedInAccount[] = (await storage.get('loggedInAccounts')) || [];
+    const loggedInAccounts: LoggedInAccount[] = (await getLocalData('loggedInAccounts')) || [];
     let currentindex = 0;
 
     if (!loggedInAccounts || loggedInAccounts.length === 0) {
@@ -1556,19 +1559,19 @@ export class WalletController extends BaseController {
       currentindex = index !== -1 ? index : loggedInAccounts.length;
     }
 
-    const path = (await storage.get('temp_path')) || "m/44'/539'/0'/0/0";
-    const passphrase = (await storage.get('temp_phrase')) || '';
-    await storage.set(`user${currentindex}_path`, path);
-    await storage.set(`user${currentindex}_phrase`, passphrase);
-    await storage.set(`user${userId}_path`, path);
-    await storage.set(`user${userId}_phrase`, passphrase);
-    await storage.remove(`temp_path`);
-    await storage.remove(`temp_phrase`);
+    const path = (await getLocalData('temp_path')) || "m/44'/539'/0'/0/0";
+    const passphrase = (await getLocalData('temp_phrase')) || '';
+    await setLocalData(`user${currentindex}_path`, path);
+    await setLocalData(`user${currentindex}_phrase`, passphrase);
+    await setLocalData(`user${userId}_path`, path);
+    await setLocalData(`user${userId}_phrase`, passphrase);
+    await removeLocalData(`temp_path`);
+    await removeLocalData(`temp_phrase`);
     // Note that currentAccountIndex is only used in keyring for old accounts that don't have an id stored in the keyring
     // currentId always takes precedence
-    await storage.set('currentAccountIndex', currentindex);
+    await setLocalData('currentAccountIndex', currentindex);
     if (userId) {
-      await storage.set(CURRENT_ID_KEY, userId);
+      await setLocalData(CURRENT_ID_KEY, userId);
     }
   };
 

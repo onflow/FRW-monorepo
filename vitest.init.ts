@@ -130,22 +130,12 @@ vi.mock('firebase/auth/web-extension', () => ({
   setPersistence: vi.fn((_auth, _persistence) => ({})),
 }));
 
-// Mock storage utility
-vi.mock('@onflow/frw-extension-shared/storage', () => ({
-  default: {
-    get: vi.fn().mockResolvedValue({}),
-    set: vi.fn().mockResolvedValue(undefined),
-    getExpiry: vi.fn().mockResolvedValue(null),
-    setExpiry: vi.fn().mockResolvedValue(undefined),
-  },
-}));
-
 // Mock MixpanelService
 vi.mock('@onflow/frw-core', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@onflow/frw-core')>();
   return {
     ...actual,
-    mixpanelTrack: {
+    analyticsService: {
       track: vi.fn(),
       identify: vi.fn(),
       reset: vi.fn(),

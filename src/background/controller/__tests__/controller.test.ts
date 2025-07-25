@@ -15,7 +15,7 @@ vi.mock('../wallet', () => ({
 // Consolidate mocks for services imported from '@onflow/frw-core/service'
 vi.mock('@onflow/frw-core', () => {
   return {
-    mixpanelTrack: vi.fn(),
+    analyticsService: vi.fn(),
     userWalletService: {
       setupFcl: vi.fn(),
       getEvmAccountOfParent: vi.fn().mockImplementation(async () => {

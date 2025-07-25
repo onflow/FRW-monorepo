@@ -134,7 +134,7 @@ export const newUserDataKey = 'new-user-data';
 export type NewUserDataStore = YourDataType;
 
 export const getNewUserData = async () => {
-  return getUserData<NewUserDataStore>(newUserDataKey);
+  return getLocalData<NewUserDataStore>(newUserDataKey);
 };
 ```
 

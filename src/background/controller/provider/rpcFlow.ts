@@ -1,14 +1,15 @@
 import { permissionService } from '@onflow/frw-core';
 import { ethErrors } from 'eth-rpc-errors';
 
-import { PromiseFlow, underline2Camelcase } from '@onflow/frw-core/utils';
-import eventBus from '@onflow/frw-extension-shared/message/eventBus';
+import { underline2Camelcase } from '@onflow/frw-core/utils';
+import { eventBus } from '@onflow/frw-extension-shared/messaging';
 import { EVENTS } from '@onflow/frw-shared/constant';
 import { consoleLog } from '@onflow/frw-shared/utils';
 
 import notificationService from '../notification';
 import Wallet from '../wallet';
 import providerController from './controller';
+import PromiseFlow from '../../utils/promiseFlow';
 
 const isSignApproval = (type: string) => {
   const SIGN_APPROVALS = ['SignText', 'SignTypedData', 'SignTx', 'EthConfirm'];

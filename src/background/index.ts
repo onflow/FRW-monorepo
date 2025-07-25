@@ -7,8 +7,6 @@ import {
   evmNftService,
   googleSafeHostService,
   keyringService,
-  logListener,
-  mixpanelTrack,
   newsService,
   nftService,
   openapiService,
@@ -23,12 +21,17 @@ import {
   versionService,
   googleDriveService,
 } from '@onflow/frw-core';
+import {
+  getLocalData,
+  removeLocalData,
+  setLocalData,
+  initializeStorage,
+} from '@onflow/frw-data-model';
 import { ethErrors } from 'eth-rpc-errors';
 
 import { initializeChromeLogging } from '@onflow/frw-extension-shared/chrome-logger';
-import eventBus from '@onflow/frw-extension-shared/message/eventBus';
-import { Message } from '@onflow/frw-extension-shared/messaging';
-import storage from '@onflow/frw-extension-shared/storage';
+import { chromeStorage } from '@onflow/frw-extension-shared/chrome-storage';
+import { Message, eventBus } from '@onflow/frw-extension-shared/messaging';
 import { EVENTS } from '@onflow/frw-shared/constant';
 import { type WalletAddress } from '@onflow/frw-shared/types';
 import { isValidFlowAddress, consoleError, consoleLog } from '@onflow/frw-shared/utils';
@@ -38,9 +41,12 @@ import { preAuthzServiceDefinition } from '@/background/controller/serviceDefini
 import walletController, { type WalletController } from '@/background/controller/wallet';
 
 import notificationService from './controller/notification';
-import { setEnvironmentBadge } from './utils/setEnvironmentBadge';
 import packageJson from '../../package.json';
 import { getFirbaseConfig } from './utils/firebaseConfig';
+import { getAuthTokenWrapper } from './utils/googleDriveAuthToken';
+import { logListener } from './utils/log-listener';
+import { mixpanelService } from './utils/mixpanel-analytics';
+import { setEnvironmentBadge } from './utils/setEnvironmentBadge';
 
 const { PortMessage } = Message;
 
@@ -55,20 +61,20 @@ const FB_FUNCTIONS_URL = process.env.FB_FUNCTIONS;
 const SCRIPTS_PUBLIC_KEY = process.env.SCRIPTS_PUBLIC_KEY;
 
 async function restoreAppState() {
-  // eslint-disable-next-line no-console
-  console.log('restoreAppState');
-  // Init authentication first
+  // 1. Initialize storage first
+  initializeStorage({ implementation: chromeStorage });
+  // 2. Initialize version service to use the extension version
+  await versionService.init(packageJson.version);
+
+  // 3. Init authentication service after that
   await authenticationService.init(getFirbaseConfig());
 
-  // Now we can init openapi
+  // 4. Now we can init openapi
   if (!API_GO_SERVER_URL || !API_BASE_URL || !FB_FUNCTIONS_URL || !SCRIPTS_PUBLIC_KEY) {
     throw new Error(
       'API_GO_SERVER_URL, API_BASE_URL, FB_FUNCTIONS_URL, SCRIPTS_PUBLIC_KEY must be set'
     );
   }
-  // eslint-disable-next-line no-console
-  console.log('restoreAppState - init openapi');
-  // Init openapi second. This starts fcl
   await openapiService.init(
     API_GO_SERVER_URL, // registrationURL
     API_BASE_URL, // webNextURL
@@ -76,24 +82,32 @@ async function restoreAppState() {
     SCRIPTS_PUBLIC_KEY, // scriptsPublicKey
     process.env.NODE_ENV === 'development' // isDev
   );
-  // eslint-disable-next-line no-console
-  console.log('restoreAppState - init keyring');
-  // Load keyring store
+
+  // 5. Initialize mixpanel and chrome logging
+  if (process.env.MIXPANEL_TOKEN) {
+    // This will set the analytics service to mixpanel
+    await mixpanelService.init(process.env.MIXPANEL_TOKEN);
+
+    // Initialize Chrome logging - has to be done after mixpanel is initialized
+    initializeChromeLogging();
+    // Listen to log events
+    await logListener.init();
+  }
+
+  // 5. Load keyring store
   await keyringService.loadKeyringStore();
 
   // clear premnemonic in storage
-  storage.remove('premnemonic');
-  storage.remove('tempPassword');
+  removeLocalData('premnemonic');
+  removeLocalData('tempPassword');
   // enable free gas fee
-  storage.get('lilicoPayer').then((value) => {
+  getLocalData('lilicoPayer').then((value) => {
     if (value === null || value === undefined) {
-      storage.set('lilicoPayer', true);
+      setLocalData('lilicoPayer', true);
     }
   });
 
-  // Init keyring and openapi first since this two service will not be migrated
-  // await migrateData();
-
+  // 6. Initialize other services in any order
   await permissionService.init();
   await preferenceService.init();
   await coinListService.init();
@@ -111,26 +125,16 @@ async function restoreAppState() {
     scope: 'https://www.googleapis.com/auth/drive.appdata',
     AES_KEY: process.env.GD_AES_KEY!,
     IV: process.env.GD_IV!,
+    getAuthTokenWrapper,
   });
   await googleSafeHostService.init({
     baseURL: 'https://safebrowsing.googleapis.com/',
     key: process.env.GOOGLE_API!,
   });
 
-  if (process.env.MIXPANEL_TOKEN) {
-    await mixpanelTrack.init(process.env.MIXPANEL_TOKEN);
-
-    // Initialize Chrome logging - has to be done after mixpanel is initialized
-    initializeChromeLogging();
-  }
-  await logListener.init();
   await tokenListService.init();
   await remoteConfigService.init();
   await newsService.init();
-
-  await versionService.init(packageJson.version);
-
-  // rpcCache.start();
 
   appStoreLoaded = true;
 

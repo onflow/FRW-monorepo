@@ -1,0 +1,13 @@
+packages:
+  - '.'
+
+onlyBuiltDependencies:
+  - '@swc/core'
+  - '@tsparticles/engine'
+  - electron
+  - esbuild
+  - keccak
+  - protobufjs
+  - secp256k1
+  - storybook-addon-remix-react-router
+  - unrs-resolver
