@@ -1,4 +1,4 @@
-import Button, { type ButtonProps as MuiButtonProps } from '@mui/material/Button';
+import MuiButton, { type ButtonProps as MuiButtonProps } from '@mui/material/Button';
 import { styled, useTheme } from '@mui/material/styles';
 import React from 'react';
 
@@ -9,7 +9,7 @@ export interface ButtonProps extends Omit<MuiButtonProps, 'variant' | 'size' | '
 }
 
 // Default styling
-const StyledButton = styled(Button)(({ theme }) => ({
+const StyledButton = styled(MuiButton)(({ theme }) => ({
   display: 'flex',
   width: '100%',
   padding: '16px 20px',
@@ -23,7 +23,7 @@ const StyledButton = styled(Button)(({ theme }) => ({
   borderRadius: '16px',
 }));
 
-export const FRWButton: React.FC<ButtonProps> = ({
+export const Button: React.FC<ButtonProps> = ({
   children,
   disabled = false,
   loading = false,
