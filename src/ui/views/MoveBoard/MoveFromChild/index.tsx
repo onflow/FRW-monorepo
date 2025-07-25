@@ -10,7 +10,7 @@ import WarningSnackbar from '@/ui/components/WarningSnackbar';
 import { WarningStorageLowSnackbar } from '@/ui/components/WarningStorageLowSnackbar';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
-import { useNftCatalogCollections } from '@/ui/hooks/useNftHook';
+import { useCadenceNftCollectionsAndIds } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { useStorageCheck } from '@/ui/hooks/useStorageCheck';
 
@@ -46,7 +46,7 @@ const MoveFromChild = (props: MoveBoardProps) => {
   const { network } = useNetwork();
 
   const { currentWallet, mainAddress, evmWallet } = useProfiles();
-  const nftCollections = useNftCatalogCollections(network, currentWallet.address);
+  const nftCollections = useCadenceNftCollectionsAndIds(network, currentWallet.address);
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [collectionList, setCollectionList] = useState<any>(null);
@@ -132,7 +132,11 @@ const MoveFromChild = (props: MoveBoardProps) => {
     if (selectedCollection) {
       try {
         const address = await usewallet.getCurrentAddress();
-        const cadenceResult = await usewallet.getSingleCollection(address!, selectedCollection, 0);
+        const cadenceResult = await usewallet.getCadenceCollectionNfts(
+          address!,
+          selectedCollection,
+          0
+        );
         setCollectionDetail(cadenceResult);
       } catch (error) {
         consoleError('Error requesting collection info:', error);

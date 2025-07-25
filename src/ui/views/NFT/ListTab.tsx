@@ -19,7 +19,7 @@ import placeholder from '@/ui/assets/image/placeholder.png';
 import ListSkeleton from '@/ui/components/NFTs/ListSkeleton';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
-import { useNftCatalogCollections } from '@/ui/hooks/useNftHook';
+import { useCadenceNftCollectionsAndIds } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 
 import EmptyStatus from '../EmptyStatus';
@@ -174,7 +174,7 @@ const ListTab = forwardRef((props: ListTabProps, ref) => {
 
   const { currentWallet } = useProfiles();
   const { network } = useNetwork();
-  const nftCollectionsList = useNftCatalogCollections(network, currentWallet.address);
+  const nftCollectionsList = useCadenceNftCollectionsAndIds(network, currentWallet.address);
   const collectionLoading = nftCollectionsList === undefined;
 
   const isCollectionEmpty = nftCollectionsList?.length === 0;

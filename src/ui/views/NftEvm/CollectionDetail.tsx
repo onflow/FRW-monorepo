@@ -1,4 +1,4 @@
-import { triggerRefresh, evmNftCollectionListKey } from '@onflow/frw-data-model';
+import { triggerRefresh, evmCollectionNftsKey } from '@onflow/frw-data-model';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 
@@ -79,7 +79,7 @@ const NftEvmCollectionDetail = () => {
 
   const refreshCollection = useCallback(
     async (ownerAddress, collection, offset) => {
-      triggerRefresh(evmNftCollectionListKey(network, ownerAddress, collection, `${offset}`));
+      triggerRefresh(evmCollectionNftsKey(network, ownerAddress, collection, `${offset}`));
     },
     [network]
   );
@@ -139,7 +139,7 @@ const NftEvmCollectionDetail = () => {
         data={data}
         blockList={[]}
         accessible={uselocation.state ? uselocation.state.accessible : []}
-        key={data.unique_id || data.id}
+        key={`${data.collectionName}_${data.id}`}
         index={index}
         ownerAddress={ownerAddress}
         isEvm={true}

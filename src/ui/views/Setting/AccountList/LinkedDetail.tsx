@@ -30,7 +30,10 @@ import {
 } from '@/ui/hooks/use-account-hooks';
 import { useChildAccountFt } from '@/ui/hooks/use-coin-hooks';
 import { useWallet } from '@/ui/hooks/use-wallet';
-import { useNftCatalogCollections, useNftCollectionList } from '@/ui/hooks/useNftHook';
+import {
+  useCadenceNftCollectionsAndIds,
+  useFullCadenceNftCollectionList,
+} from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import {
   COLOR_GRAY_808080,
@@ -166,8 +169,8 @@ const LinkedDetail = () => {
     childAccountAddress
   );
 
-  const allCollectionList = useNftCollectionList(network);
-  const nftCollectionsList = useNftCatalogCollections(network, childAccountAddress);
+  const allCollectionList = useFullCadenceNftCollectionList(network);
+  const nftCollectionsList = useCadenceNftCollectionsAndIds(network, childAccountAddress);
 
   const availableFt = useChildAccountFt(network, parentAddress, childAccountAddress);
   const description = useChildAccountDescription(childAccountAddress || '');
