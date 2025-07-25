@@ -61,20 +61,20 @@ const FB_FUNCTIONS_URL = process.env.FB_FUNCTIONS;
 const SCRIPTS_PUBLIC_KEY = process.env.SCRIPTS_PUBLIC_KEY;
 
 async function restoreAppState() {
-  // eslint-disable-next-line no-console
-  console.log('restoreAppState');
-  // Init authentication first
+  // 1. Initialize storage first
+  initializeStorage({ implementation: chromeStorage });
+  // 2. Initialize version service to use the extension version
+  await versionService.init(packageJson.version);
+
+  // 3. Init authentication service after that
   await authenticationService.init(getFirbaseConfig());
-  await initializeStorage({ implementation: chromeStorage });
-  // Now we can init openapi
+
+  // 4. Now we can init openapi
   if (!API_GO_SERVER_URL || !API_BASE_URL || !FB_FUNCTIONS_URL || !SCRIPTS_PUBLIC_KEY) {
     throw new Error(
       'API_GO_SERVER_URL, API_BASE_URL, FB_FUNCTIONS_URL, SCRIPTS_PUBLIC_KEY must be set'
     );
   }
-  // eslint-disable-next-line no-console
-  console.log('restoreAppState - init openapi');
-  // Init openapi second. This starts fcl
   await openapiService.init(
     API_GO_SERVER_URL, // registrationURL
     API_BASE_URL, // webNextURL
@@ -82,9 +82,19 @@ async function restoreAppState() {
     SCRIPTS_PUBLIC_KEY, // scriptsPublicKey
     process.env.NODE_ENV === 'development' // isDev
   );
-  // eslint-disable-next-line no-console
-  console.log('restoreAppState - init keyring');
-  // Load keyring store
+
+  // 5. Initialize mixpanel and chrome logging
+  if (process.env.MIXPANEL_TOKEN) {
+    // This will set the analytics service to mixpanel
+    await mixpanelService.init(process.env.MIXPANEL_TOKEN);
+
+    // Initialize Chrome logging - has to be done after mixpanel is initialized
+    initializeChromeLogging();
+    // Listen to log events
+    await logListener.init();
+  }
+
+  // 5. Load keyring store
   await keyringService.loadKeyringStore();
 
   // clear premnemonic in storage
@@ -97,9 +107,7 @@ async function restoreAppState() {
     }
   });
 
-  // Init keyring and openapi first since this two service will not be migrated
-  // await migrateData();
-
+  // 6. Initialize other services in any order
   await permissionService.init();
   await preferenceService.init();
   await coinListService.init();
@@ -124,21 +132,9 @@ async function restoreAppState() {
     key: process.env.GOOGLE_API!,
   });
 
-  if (process.env.MIXPANEL_TOKEN) {
-    // This will set the analytics service to mixpanel
-    await mixpanelService.init(process.env.MIXPANEL_TOKEN);
-
-    // Initialize Chrome logging - has to be done after mixpanel is initialized
-    initializeChromeLogging();
-  }
-  await logListener.init();
   await tokenListService.init();
   await remoteConfigService.init();
   await newsService.init();
-
-  await versionService.init(packageJson.version);
-
-  // rpcCache.start();
 
   appStoreLoaded = true;
 
