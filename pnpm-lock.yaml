@@ -39,20 +39,20 @@ importers:
         specifier: ^1.19.0
         version: 1.19.0(@types/react@18.3.23)(google-protobuf@3.21.4)(jiti@2.4.2)(postcss@8.5.6)(react@18.3.1)(ts-node@10.9.2(@swc/core@1.12.14)(@types/node@22.16.4)(typescript@5.8.3))(tsx@4.20.3)(typescript@5.8.3)(zod@3.25.76)
       '@onflow/frw-core':
-        specifier: ^0.2.3
-        version: 0.2.3(@trustwallet/wallet-core@4.3.6)(@types/react@18.3.23)(ethers@6.15.0)(firebase@10.14.1)(google-protobuf@3.21.4)(jiti@2.4.2)(postcss@8.5.6)(react@18.3.1)(ts-node@10.9.2(@swc/core@1.12.14)(@types/node@22.16.4)(typescript@5.8.3))(tsx@4.20.3)(typescript@5.8.3)(zod@3.25.76)
+        specifier: ^0.2.4
+        version: 0.2.4(@trustwallet/wallet-core@4.3.6)(@types/react@18.3.23)(ethers@6.15.0)(firebase@10.14.1)(google-protobuf@3.21.4)(jiti@2.4.2)(postcss@8.5.6)(react@18.3.1)(ts-node@10.9.2(@swc/core@1.12.14)(@types/node@22.16.4)(typescript@5.8.3))(tsx@4.20.3)(typescript@5.8.3)(zod@3.25.76)
       '@onflow/frw-data-model':
-        specifier: ^0.2.3
-        version: 0.2.3
-      '@onflow/frw-extension-shared':
         specifier: ^0.2.4
         version: 0.2.4
+      '@onflow/frw-extension-shared':
+        specifier: ^0.2.5
+        version: 0.2.5
       '@onflow/frw-reducers':
-        specifier: ^0.2.3
-        version: 0.2.3
+        specifier: ^0.2.4
+        version: 0.2.4
       '@onflow/frw-shared':
-        specifier: ^0.2.3
-        version: 0.2.3
+        specifier: ^0.2.4
+        version: 0.2.4
       '@reown/walletkit':
         specifier: ^1.2.8
         version: 1.2.8(typescript@5.8.3)(zod@3.25.76)
@@ -1837,28 +1837,28 @@ packages:
   '@onflow/fcl@1.19.0':
     resolution: {integrity: sha512-PtABHza3oSVFIQRd8knOM+jqEcWsqRNIwNtWmElnLY7kuBRJJuoOT84Kxua0dWcE567IiDOPtjRoFpfqqnosyQ==}
 
-  '@onflow/frw-core@0.2.3':
-    resolution: {integrity: sha512-bhcDqIyQASILSDpGTqgQHJiKl86PYahaWqOL1l0Ge43qVGpe4nTB39JWt2q/H0n9J4CMkXbxfF7zFnwc2V4sqA==}
+  '@onflow/frw-core@0.2.4':
+    resolution: {integrity: sha512-6jZ68pLI4JjB1b8K9TCHAN6fxOt+VN2vtAiwpyOL5Qus25kpghH8507Xqph1RtUa3INQlUQUe0wjt8xnE2jQ2A==}
     engines: {node: '>=22.11.0'}
     peerDependencies:
       '@trustwallet/wallet-core': ^4.3.6
       ethers: ^6.13.4
       firebase: ^10.14.1
 
-  '@onflow/frw-data-model@0.2.3':
-    resolution: {integrity: sha512-CmzvDifbVwU2c+tzpVwvwr3W2TK5/h9ntDY7u2jDihDPjIrGqFJt+Soz2FPswyMhJOPYbt3tEuLCtHuDDgqdaw==}
+  '@onflow/frw-data-model@0.2.4':
+    resolution: {integrity: sha512-VtP0PTrLDrbHSH659Rc2F5vl3x4fQ+XpSmdfjG1Dbv/1bP/O6HH04n0LKjloKjW2o7NwHL5IJKqoc8TNqLQ7zg==}
     engines: {node: '>=22.11.0'}
 
-  '@onflow/frw-extension-shared@0.2.4':
-    resolution: {integrity: sha512-O3+h+NismPCxnNdT7QEF4emh8+IzlWbJKlyU21kAicqpDgGi45M1QGVpnD626hXJNQ9dW+6TC4Hs6goxKIvzfg==}
+  '@onflow/frw-extension-shared@0.2.5':
+    resolution: {integrity: sha512-aEy5sQwAEEwGuxXp7Ub/KS/NUmVQ5C2CZtDo1eeTPMZlhtCcoeYrknH5ucy8pc5jkIV35YvgIK5vEbyBxMFk1Q==}
     engines: {node: '>=22.11.0'}
 
-  '@onflow/frw-reducers@0.2.3':
-    resolution: {integrity: sha512-zFjuf8rjoEuBjofSBrA78Mmu4DspWXrXWBDhnbFPpb4xo162j04KgTg1eygqJXOFNtyoX3JStF8l3PhG2M4Nbg==}
+  '@onflow/frw-reducers@0.2.4':
+    resolution: {integrity: sha512-S/nwoNzwY27W9BnO93A2oXBWbcXB7aZBlb6tIxhyRfL2VmmObkd7ThfqtzjmTSR0GVrjJq7rGFtqfS6mlIyM7g==}
     engines: {node: '>=22.11.0'}
 
-  '@onflow/frw-shared@0.2.3':
-    resolution: {integrity: sha512-T17F1fy1VyMI7f5TCRKJTjBNjU6RnJqX7ohQDHApn+UA4HE/7/Wvi3W9Ot8/kUU/fGQumgLbrnc9ws8xkUGY4A==}
+  '@onflow/frw-shared@0.2.4':
+    resolution: {integrity: sha512-yshG0Ue5Z47EIPmS9SJE6+4mQ8svpgP6vwqqbd0CGR4DhB2DyAWUbnfnSdPLarnzRzUsYzwN4brYh+Lkz34IUA==}
     engines: {node: '>=22.11.0'}
 
   '@onflow/interaction@0.0.11':
@@ -9596,12 +9596,12 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@onflow/frw-core@0.2.3(@trustwallet/wallet-core@4.3.6)(@types/react@18.3.23)(ethers@6.15.0)(firebase@10.14.1)(google-protobuf@3.21.4)(jiti@2.4.2)(postcss@8.5.6)(react@18.3.1)(ts-node@10.9.2(@swc/core@1.12.14)(@types/node@22.16.4)(typescript@5.8.3))(tsx@4.20.3)(typescript@5.8.3)(zod@3.25.76)':
+  '@onflow/frw-core@0.2.4(@trustwallet/wallet-core@4.3.6)(@types/react@18.3.23)(ethers@6.15.0)(firebase@10.14.1)(google-protobuf@3.21.4)(jiti@2.4.2)(postcss@8.5.6)(react@18.3.1)(ts-node@10.9.2(@swc/core@1.12.14)(@types/node@22.16.4)(typescript@5.8.3))(tsx@4.20.3)(typescript@5.8.3)(zod@3.25.76)':
     dependencies:
       '@noble/secp256k1': 1.7.2
       '@onflow/fcl': 1.19.0(@types/react@18.3.23)(google-protobuf@3.21.4)(jiti@2.4.2)(postcss@8.5.6)(react@18.3.1)(ts-node@10.9.2(@swc/core@1.12.14)(@types/node@22.16.4)(typescript@5.8.3))(tsx@4.20.3)(typescript@5.8.3)(zod@3.25.76)
-      '@onflow/frw-data-model': 0.2.3
-      '@onflow/frw-shared': 0.2.3
+      '@onflow/frw-data-model': 0.2.4
+      '@onflow/frw-shared': 0.2.4
       '@onflow/typedefs': 1.6.0
       '@trustwallet/wallet-core': 4.3.6
       aes-js: 3.1.2
@@ -9649,23 +9649,23 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@onflow/frw-data-model@0.2.3':
+  '@onflow/frw-data-model@0.2.4':
     dependencies:
-      '@onflow/frw-shared': 0.2.3
+      '@onflow/frw-shared': 0.2.4
 
-  '@onflow/frw-extension-shared@0.2.4':
+  '@onflow/frw-extension-shared@0.2.5':
     dependencies:
-      '@onflow/frw-data-model': 0.2.3
-      '@onflow/frw-shared': 0.2.3
+      '@onflow/frw-data-model': 0.2.4
+      '@onflow/frw-shared': 0.2.4
       eth-rpc-errors: 4.0.3
       events: 3.3.0
 
-  '@onflow/frw-reducers@0.2.3':
+  '@onflow/frw-reducers@0.2.4':
     dependencies:
-      '@onflow/frw-shared': 0.2.3
+      '@onflow/frw-shared': 0.2.4
       bignumber.js: 9.3.1
 
-  '@onflow/frw-shared@0.2.3':
+  '@onflow/frw-shared@0.2.4':
     dependencies:
       '@onflow/typedefs': 1.6.0
       bignumber.js: 9.3.1
