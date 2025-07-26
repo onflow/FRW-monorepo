@@ -7,7 +7,7 @@ import {
   type Emoji,
   type MainAccount,
   type WalletAccount,
-  type NFTCollections,
+  type NftCollectionAndIds,
 } from '@onflow/frw-shared/types';
 
 import { AccountListing } from '@/ui/components/account/account-listing';
@@ -155,7 +155,7 @@ const meta: Meta<typeof AccountListing> = {
             if (typeof address === 'string' && mockData.nfts) {
               return [
                 { collection: { name: 'test' }, ids: ['test'], count: mockData.nfts[address] },
-              ] as NFTCollections[];
+              ] as NftCollectionAndIds[];
             }
             return [];
           }

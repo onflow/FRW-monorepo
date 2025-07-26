@@ -85,16 +85,22 @@ const MoveToChild = (props: MoveBoardProps) => {
       const cadenceResult = nftCollections;
       if (cadenceResult && cadenceResult.length > 0 && cadenceResult[0].collection) {
         setSelected(cadenceResult![0].collection.id);
-        const extractedObjects = cadenceResult!.map((obj) => {
-          return {
-            CollectionName: obj.collection.contract_name,
-            NftCount: obj.count,
-            id: obj.collection.id,
-            address: obj.collection.address,
-            logo: obj.collection.logo,
-            nftTypeId: obj.collection.nftTypeId,
-          };
-        });
+        const extractedObjects = cadenceResult!
+          .map((obj) => {
+            const flowIdentifierParts = obj.collection.flowIdentifier?.split('.');
+            if (!flowIdentifierParts) {
+              return null;
+            }
+            return {
+              CollectionName: obj.collection.contractName,
+              NftCount: obj.count,
+              id: obj.collection.id,
+              address: obj.collection.address,
+              logo: obj.collection.logo,
+              flowIdentifier: obj.collection.flowIdentifier,
+            };
+          })
+          .filter((item) => item !== null);
 
         setCollectionList(extractedObjects);
         setCadenceNft(cadenceResult);
@@ -164,7 +170,7 @@ const MoveToChild = (props: MoveBoardProps) => {
             txId,
             true,
             `Move complete`,
-            `You have moved ${nftIdArray.length} ${collectionDetail.collection.contract_name} to your evm address. \nClick to view this transaction.`
+            `You have moved ${nftIdArray.length} ${collectionDetail.collection.contractName} to your evm address. \nClick to view this transaction.`
           );
           props.handleReturnHome();
           props.handleCloseIconClicked();
@@ -189,7 +195,7 @@ const MoveToChild = (props: MoveBoardProps) => {
           txId,
           true,
           `Move complete`,
-          `You have moved ${nftIdArray.length} ${collectionDetail.collection.contract_name} to your evm address. \nClick to view this transaction.`
+          `You have moved ${nftIdArray.length} ${collectionDetail.collection.contractName} to your evm address. \nClick to view this transaction.`
         );
         props.handleReturnHome();
         props.handleCloseIconClicked();

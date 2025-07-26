@@ -8,7 +8,7 @@ import CollectionDetailGrid from '@/ui/components/NFTs/CollectionDetailGrid';
 import GridView from '@/ui/components/NFTs/GridView';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
-import { useEvmNftCollectionList, useNftHook } from '@/ui/hooks/useNftHook';
+import { useEvmCollectionNfts, useNftHook } from '@/ui/hooks/useNftHook';
 import { type PostMedia } from '@/ui/utils/url';
 
 interface CollectionDisplay {
@@ -68,7 +68,7 @@ const NftEvmCollectionDetail = () => {
   const collection_name = collection_info[1];
   const nftCount = collection_info[2];
 
-  const evmNftCollectionList = useEvmNftCollectionList(network, address, collection_name, 0);
+  const evmNftCollectionList = useEvmCollectionNfts(network, address, collection_name, 0);
   const getEvmCollection = useCallback(
     async (ownerAddress: string, collection: string, offset?: string | number) => {
       // For EVM, the offset can be a JWT token string or undefined for the first call

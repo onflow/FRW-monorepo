@@ -2,7 +2,7 @@ import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 import { withRouter } from 'storybook-addon-remix-react-router';
 
-import type { NFTCollections, WalletAccount } from '@onflow/frw-shared/types';
+import type { NftCollectionAndIds, WalletAccount } from '@onflow/frw-shared/types';
 
 import {
   useChildAccountAllowTypes,
@@ -51,23 +51,23 @@ const mockParentAccount = {
 };
 
 // Mock NFT collections data
-const mockNFTCollections: NFTCollections[] = [
+const mockNFTCollections: NftCollectionAndIds[] = [
   {
     collection: {
       id: 'TestCollection',
-      contract_name: 'TestCollection',
+      contractName: 'TestCollection',
       address: '0x1234567890123456',
       name: 'Test NFT Collection',
       logo: 'https://example.com/logo.png',
       banner: 'https://example.com/banner.png',
       description: 'A test NFT collection',
+      evmAddress: '0x12345678901234561234567890123456',
       path: {
-        storage_path: '/storage/TestCollection',
-        public_path: '/public/TestCollection',
-        private_path: 'deprecated/private_path',
+        storagePath: '/storage/TestCollection',
+        publicPath: '/public/TestCollection',
       },
       socials: {},
-      nftTypeId: 'A.1234567890123456.TestCollection',
+      flowIdentifier: 'A.1234567890123456.TestCollection',
     },
     ids: ['1', '2', '3'],
     count: 3,
@@ -75,19 +75,19 @@ const mockNFTCollections: NFTCollections[] = [
   {
     collection: {
       id: 'EmptyCollection',
-      contract_name: 'EmptyCollection',
+      contractName: 'EmptyCollection',
       address: '0x1234567890123457',
       name: 'Empty NFT Collection',
       logo: 'https://example.com/empty-logo.png',
       banner: 'https://example.com/empty-banner.png',
       description: 'An empty NFT collection',
+      evmAddress: '0x12345678901234571234567890123457',
       path: {
-        storage_path: '/storage/EmptyCollection',
-        public_path: '/public/EmptyCollection',
-        private_path: 'deprecated/private_path',
+        storagePath: '/storage/EmptyCollection',
+        publicPath: '/public/EmptyCollection',
       },
       socials: {},
-      nftTypeId: 'A.1234567890123457.EmptyCollection',
+      flowIdentifier: 'A.1234567890123457.EmptyCollection',
     },
     ids: [],
     count: 0,
@@ -106,7 +106,7 @@ const mockCollectionList = [
   {
     id: 'TestCollection',
     address: '0x1234567890123456',
-    contract_name: 'TestCollection',
+    contractName: 'TestCollection',
     name: 'Test NFT Collection',
     logo: 'https://example.com/logo.png',
     banner: 'https://example.com/banner.png',
@@ -116,7 +116,7 @@ const mockCollectionList = [
   {
     id: 'EmptyCollection',
     address: '0x1234567890123457',
-    contract_name: 'EmptyCollection',
+    contractName: 'EmptyCollection',
     name: 'Empty NFT Collection',
     logo: 'https://example.com/empty-logo.png',
     banner: 'https://example.com/empty-banner.png',

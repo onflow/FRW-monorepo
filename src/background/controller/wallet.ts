@@ -61,7 +61,6 @@ import {
   type FlowNetwork,
   type NFTModelV2,
   type UserInfoResponse,
-  type NFTCollections,
   type NetworkScripts,
   type TokenInfo,
   type TrackingEvents,
@@ -79,6 +78,7 @@ import {
   type WalletAccount,
   type WalletAddress,
   type CollectionNfts,
+  type NftCollectionAndIds,
 } from '@onflow/frw-shared/types';
 import {
   isValidAddress,
@@ -678,13 +678,13 @@ export class WalletController extends BaseController {
   reqeustEvmNft = async () => {
     const address = await this.getEvmAddress();
     const network = await this.getNetwork();
-    return await evmNftService.loadEvmNftIds(network, address);
+    return await nftService.loadEvmNftCollectionsAndIds(network, address);
   };
 
   EvmNFTcollectionList = async (collection) => {
     const address = await this.getEvmAddress();
     const network = await this.getNetwork();
-    return await evmNftService.loadEvmCollectionList(network, address, collection, '0');
+    return await nftService.loadEvmCollectionNfts(network, address, collection, '0');
   };
 
   // addressBook
@@ -1323,7 +1323,7 @@ export class WalletController extends BaseController {
 
   getCollectionCache = async (address: string) => {
     const network = await this.getNetwork();
-    const list = await getValidData<NFTCollections[]>(
+    const list = await getValidData<NftCollectionAndIds[]>(
       cadenceNftCollectionsAndIdsKey(network, address)
     );
     if (!list || list.length === 0) {
@@ -1539,7 +1539,7 @@ export class WalletController extends BaseController {
 
   getEvmNftId = async (address: string) => {
     const network = await this.getNetwork();
-    return await evmNftService.getEvmNftId(network, address);
+    return await nftService.getEvmNftCollectionsAndIds(network, address);
   };
 
   getEvmNftCollectionList = async (
@@ -1549,17 +1549,11 @@ export class WalletController extends BaseController {
     offset = '0'
   ) => {
     const network = await this.getNetwork();
-    return await evmNftService.getEvmNftCollectionList(
-      network,
-      address,
-      collectionIdentifier,
-      _limit,
-      offset
-    );
+    return await nftService.getEvmCollectionNfts(network, address, collectionIdentifier, offset);
   };
 
   clearEvmNFTList = async () => {
-    await evmNftService.clearEvmNfts();
+    await nftService.clear();
   };
 
   getKeyringIds = async () => {

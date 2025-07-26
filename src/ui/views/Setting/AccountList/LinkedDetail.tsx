@@ -14,7 +14,7 @@ import {
 import React, { useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 
-import { type NFTCollections } from '@onflow/frw-shared/types';
+import { type NftCollectionAndIds } from '@onflow/frw-shared/types';
 
 import { EditIcon } from '@/ui/assets/icons/settings/Edit';
 import { LLHeader, LLSecondaryButton } from '@/ui/components';
@@ -54,9 +54,9 @@ const NftContent = ({
   hideEmpty,
   navigateWithState,
 }: {
-  availableNftCollection: NFTCollections[];
+  availableNftCollection: NftCollectionAndIds[];
   hideEmpty: boolean;
-  navigateWithState: (data: NFTCollections) => void;
+  navigateWithState: (data: NftCollectionAndIds) => void;
 }) => {
   const filteredNftCollection = hideEmpty
     ? availableNftCollection.filter((item) => item.count > 0)
@@ -175,7 +175,7 @@ const LinkedDetail = () => {
   const availableFt = useChildAccountFt(network, parentAddress, childAccountAddress);
   const description = useChildAccountDescription(childAccountAddress || '');
 
-  const availableNftCollection: NFTCollections[] | undefined = useMemo(() => {
+  const availableNftCollection: NftCollectionAndIds[] | undefined = useMemo(() => {
     if (!nftCollectionsList || !childAccountAllowTypes) {
       return undefined;
     }
@@ -186,7 +186,7 @@ const LinkedDetail = () => {
     // Create a set of existing collection keys to avoid duplicates
     const existingCollectionKeys = new Set();
     nftCollectionsList.forEach((item) => {
-      const key = `${item.collection.address}.${item.collection.contract_name}`;
+      const key = `${item.collection.address}.${item.collection.contractName}`;
       existingCollectionKeys.add(key);
     });
 
@@ -208,16 +208,16 @@ const LinkedDetail = () => {
         const emptyCollection = {
           collection: {
             id: collectionDetails?.id || `${contractName}Collection`,
-            contract_name: contractName,
+            contractName: contractName,
             address: `0x${address}`,
             name: collectionDetails?.name || contractName,
             logo: collectionDetails?.logo || '',
             banner: collectionDetails?.banner || '',
             description: collectionDetails?.description || '',
+            evmAddress: collectionDetails?.evmAddress || '',
             path: {
-              storage_path: `/storage/${contractName}Collection`,
-              public_path: `/public/${contractName}Collection`,
-              private_path: 'deprecated/private_path',
+              storagePath: `/storage/${contractName}Collection`,
+              publicPath: `/public/${contractName}Collection`,
             },
             socials: {},
             nftTypeId: allowType,
@@ -249,10 +249,10 @@ const LinkedDetail = () => {
     setHide(!prevEmpty);
   };
 
-  const navigateWithState = (data: NFTCollections) => {
+  const navigateWithState = (data: NftCollectionAndIds) => {
     const state = { nft: data };
     localStorage.setItem('nftLinkedState', JSON.stringify(state));
-    const storagePath = data.collection.path.storage_path.split('/')[2];
+    const storagePath = data.collection.path?.storagePath.split('/')[2];
     if (data.count) {
       navigate(
         `/dashboard/nested/linked/collectiondetail/${childAccountAddress + '.' + storagePath + '.' + data.count + '.linked'}`,
