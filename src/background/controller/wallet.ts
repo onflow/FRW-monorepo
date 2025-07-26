@@ -22,15 +22,11 @@ import {
 } from '@onflow/frw-core';
 import {
   getValidData,
-  registerRefreshListener,
   setCachedData,
   childAccountDescKey,
   type ChildAccountFtStore,
   cadenceNftCollectionsAndIdsKey,
-  registerStatusKey,
-  registerStatusRefreshRegex,
   walletLoadedKey,
-  walletLoadedRefreshRegex,
   CURRENT_ID_KEY,
   setLocalData,
   removeLocalData,
@@ -38,6 +34,8 @@ import {
   getLocalData,
   triggerRefresh,
   cadenceCollectionNftsKey,
+  registerRefreshListener,
+  walletLoadedRefreshRegex,
 } from '@onflow/frw-data-model';
 import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
 
@@ -110,16 +108,6 @@ export class WalletController extends BaseController {
 
   constructor() {
     super();
-
-    registerRefreshListener(registerStatusRefreshRegex, async (pubKey: string) => {
-      // The ttl is set to 2 minutes. After that we set the cache to false
-      setCachedData(registerStatusKey(pubKey), false, 120_000);
-    });
-
-    registerRefreshListener(walletLoadedRefreshRegex, async () => {
-      // This should never be called normally...
-      setCachedData(walletLoadedKey(), this.loaded, 1_000_000_000); // Really long ttl
-    });
   }
   // Adding as tests load the extension really, really fast
   // It's possible to call the wallet controller before services are loaded
@@ -128,6 +116,10 @@ export class WalletController extends BaseController {
   setLoaded = async (loaded: boolean) => {
     this.loaded = loaded;
     if (loaded) {
+      registerRefreshListener(walletLoadedRefreshRegex, async () => {
+        // This should never be called normally...
+        setCachedData(walletLoadedKey(), true, 1_000_000_000); // Really long ttl
+      });
       setCachedData(walletLoadedKey(), true, 1_000_000_000); // Really long ttl
     }
   };

@@ -27,8 +27,6 @@
     "pub": "pnpx tsx build/release.ts",
     "preinstall": "npx only-allow pnpm",
     "pre-commit": "pnpm lint-staged",
-    "link:local": "pnpm link --global @onflow/frw-core @onflow/frw-shared @onflow/frw-reducers @onflow/frw-extension-shared @onflow/frw-data-model",
-    "unlink:local": "pnpm unlink @onflow/frw-core @onflow/frw-shared @onflow/frw-reducers @onflow/frw-extension-shared @onflow/frw-data-model",
     "analyze:imports": "pnpx tsx build/analyze-imports.ts",
     "analyze:dependencies": "pnpx tsx build/analyze-dependencies.ts",
     "analyze:fetch": "./build/fetch-project-data.sh",
