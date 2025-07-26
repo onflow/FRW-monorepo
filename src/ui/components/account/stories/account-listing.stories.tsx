@@ -12,7 +12,7 @@ import {
 
 import { AccountListing } from '@/ui/components/account/account-listing';
 import {
-  useNftCatalogCollections as importedMockUseNftCatalogCollections, // Aliased import from the mock file
+  useCadenceNftCollectionsAndIds as importedMockUseCadenceNftCollectionsAndIds, // Aliased import from the mock file
 } from '@/ui/hooks/useNftHook.mock';
 import {
   USE_PROFILES_MOCK,
@@ -146,11 +146,11 @@ const meta: Meta<typeof AccountListing> = {
   decorators: [
     withRouter,
     (Story, context) => {
-      importedMockUseNftCatalogCollections.mockReset();
+      importedMockUseCadenceNftCollectionsAndIds.mockReset();
       importedMockUseProfiles.mockReset();
       const { mockData } = context.parameters;
       if (mockData) {
-        importedMockUseNftCatalogCollections.mockImplementation(
+        importedMockUseCadenceNftCollectionsAndIds.mockImplementation(
           (network?: string, address?: string) => {
             if (typeof address === 'string' && mockData.nfts) {
               return [
