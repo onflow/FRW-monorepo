@@ -2,6 +2,7 @@ import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 import { withRouter } from 'storybook-addon-remix-react-router';
 
+import { emoji as emojisJson } from '@onflow/frw-shared/constant';
 import type {
   MainAccount,
   NftCollection,
@@ -26,6 +27,8 @@ import { USE_PROFILES_MOCK, useProfiles } from '@/ui/hooks/useProfileHook.mock';
 
 import LinkedDetail from '../LinkedDetail';
 
+const { emojis } = emojisJson;
+
 // Mock the useWallet hook
 const mockUseWallet = {
   getActiveAccountType: () => Promise.resolve('main'),
@@ -35,13 +38,13 @@ const mockUseWallet = {
 };
 
 // Mock child account data
-const _mockChildAccount: WalletAccount = {
+const mockChildAccount: WalletAccount = {
   address: '0x1234567890123456',
   chain: 1,
   id: 2,
-  name: 'Linked Account',
-  icon: '🔗',
-  color: '#4CAF50',
+  name: 'Dapper Account',
+  icon: 'https://accounts.meetdapper.com/static/img/dapper/dapper.png',
+  color: emojis[6].bgcolor,
   balance: '25.5',
   nfts: 3,
 };
@@ -51,8 +54,8 @@ const mockParentAccount: MainAccount = {
   address: '0x1234567890123456',
   chain: 1,
   id: 1,
-  name: 'Parent Account',
-  icon: '👤',
+  name: 'Lion',
+  icon: '🦁',
   color: '#000000',
   balance: '100.5',
   nfts: 5,
@@ -63,6 +66,7 @@ const mockParentAccount: MainAccount = {
   signAlgoString: 'ECDSA',
   hashAlgo: 0,
   hashAlgoString: 'SHA256',
+  childAccounts: [mockChildAccount],
 };
 
 // Mock NFT collections data
@@ -73,8 +77,8 @@ const mockNFTCollections: NftCollectionAndIds[] = [
       contractName: 'TestCollection',
       address: '0x1234567890123456',
       name: 'Test NFT Collection',
-      logo: 'https://example.com/logo.png',
-      banner: 'https://example.com/banner.png',
+      logo: 'https://nbatopshot.com/static/favicon/favicon.svg',
+      banner: 'https://nbatopshot.com/static/img/top-shot-logo-horizontal-white.svg',
       description: 'A test NFT collection',
       evmAddress: '0x12345678901234561234567890123456',
       path: {
@@ -93,8 +97,8 @@ const mockNFTCollections: NftCollectionAndIds[] = [
       contractName: 'EmptyCollection',
       address: '0x1234567890123457',
       name: 'Empty NFT Collection',
-      logo: 'https://example.com/empty-logo.png',
-      banner: 'https://example.com/empty-banner.png',
+      logo: 'https://images.flovatar.com/logo.svg',
+      banner: 'https://images.flovatar.com/logo-horizontal.svg',
       description: 'An empty NFT collection',
       evmAddress: '0x12345678901234571234567890123457',
       path: {
@@ -123,8 +127,8 @@ const mockCollectionList: NftCollection[] = [
     address: '0x1234567890123456',
     contractName: 'TestCollection',
     name: 'Test NFT Collection',
-    logo: 'https://example.com/logo.png',
-    banner: 'https://example.com/banner.png',
+    logo: 'https://nbatopshot.com/static/favicon/favicon.svg',
+    banner: 'https://nbatopshot.com/static/img/top-shot-logo-horizontal-white.svg',
     description: 'A test NFT collection',
     flowIdentifier: 'A.1234567890123456.TestCollection',
     evmAddress: '0x12345678901234561234567890123456',
@@ -139,8 +143,8 @@ const mockCollectionList: NftCollection[] = [
     address: '0x1234567890123457',
     contractName: 'EmptyCollection',
     name: 'Empty NFT Collection',
-    logo: 'https://example.com/empty-logo.png',
-    banner: 'https://example.com/empty-banner.png',
+    logo: 'https://images.flovatar.com/logo.svg',
+    banner: 'https://images.flovatar.com/logo-horizontal.svg',
     description: 'An empty NFT collection',
     flowIdentifier: 'A.1234567890123457.EmptyCollection',
     evmAddress: '0x12345678901234571234567890123457',
@@ -229,10 +233,10 @@ export const Default: Story = {
       },
     },
     reactRouter: {
-      routePath: '/dashboard/setting/accountlist/linked/:key',
+      routePath: '/dashboard/setting/accountlist/linkeddetail/:key',
       routeParams: { key: '0x1234567890123456' },
       searchParams: {
-        parentName: 'Parent Account',
+        parentName: 'ParentAccount',
         parentAddress: '0x1234567890123456789012345678901234567890',
       },
     },
