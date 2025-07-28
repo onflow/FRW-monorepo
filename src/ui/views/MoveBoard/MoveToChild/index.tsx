@@ -189,7 +189,7 @@ const MoveToChild = (props: MoveBoardProps) => {
   const moveNFTEvm = async () => {
     setSending(true);
     usewallet
-      .batchBridgeNftToEvm(collectionDetail.collection.nftTypeId, nftIdArray)
+      .batchBridgeNftToEvm(collectionDetail.collection.flowIdentifier, nftIdArray)
       .then(async (txId) => {
         usewallet.listenTransaction(
           txId,

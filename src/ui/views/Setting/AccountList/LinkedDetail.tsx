@@ -220,7 +220,7 @@ const LinkedDetail = () => {
               publicPath: `/public/${contractName}Collection`,
             },
             socials: {},
-            nftTypeId: allowType,
+            flowIdentifier: allowType,
           },
           ids: [],
           count: 0,

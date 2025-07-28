@@ -239,7 +239,7 @@ const MoveFromChild = (props: MoveBoardProps) => {
     usewallet
       .batchBridgeChildNFTToEvm(
         address!,
-        collectionDetail.collection.nftTypeId,
+        collectionDetail.collection.flowIdentifier,
         nftIdArray,
         collectionDetail.collection
       )
