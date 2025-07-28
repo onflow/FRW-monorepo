@@ -39,7 +39,7 @@ const mockUseWallet = {
 
 // Mock child account data
 const mockChildAccount: WalletAccount = {
-  address: '0x1234567890123456',
+  address: '0x1234567890123457',
   chain: 1,
   id: 2,
   name: 'Dapper Account',
@@ -234,10 +234,10 @@ export const Default: Story = {
     },
     reactRouter: {
       routePath: '/dashboard/setting/accountlist/linkeddetail/:key',
-      routeParams: { key: '0x1234567890123456' },
+      routeParams: { key: mockChildAccount.address },
       searchParams: {
-        parentName: 'ParentAccount',
-        parentAddress: '0x1234567890123456789012345678901234567890',
+        parentName: mockParentAccount.name,
+        parentAddress: mockParentAccount.address,
       },
     },
   },
