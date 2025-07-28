@@ -1,25 +1,32 @@
-import { Box } from '@mui/material';
+import { Box, type SxProps, type Theme } from '@mui/material';
 import React from 'react';
 
-interface SlidingTabSwitchProps {
+import { COLOR_WHITE_FFFFFF, COLOR_MUTED_BLUE_GRAY_777E90 } from '@/ui/style/color';
+
+interface TabProps {
   value: string;
   onChange: (val: string) => void;
   leftLabel?: string;
   rightLabel?: string;
   leftValue?: string;
   rightValue?: string;
+  className?: string;
+  sx?: SxProps<Theme>;
 }
 
-const SlidingTabSwitch: React.FC<SlidingTabSwitchProps> = ({
+export const Tab: React.FC<TabProps> = ({
   value,
   onChange,
   leftLabel = 'Collections',
   rightLabel = 'Coins',
   leftValue = 'one',
   rightValue = 'two',
+  className,
+  sx,
 }) => {
   return (
     <Box
+      className={className}
       sx={{
         display: 'flex',
         background: '#232323',
@@ -29,6 +36,7 @@ const SlidingTabSwitch: React.FC<SlidingTabSwitchProps> = ({
         position: 'relative',
         height: 40,
         mb: 2,
+        ...sx,
       }}
     >
       <Box
@@ -57,11 +65,15 @@ const SlidingTabSwitch: React.FC<SlidingTabSwitchProps> = ({
             flex: 1,
             textAlign: 'center',
             cursor: 'pointer',
-            color: value === leftValue ? '#fff' : '#aaa',
+            color: value === leftValue ? COLOR_WHITE_FFFFFF : COLOR_MUTED_BLUE_GRAY_777E90,
             fontWeight: 600,
             lineHeight: '34px',
-            fontSize: '12px',
+            fontSize: '14px',
             userSelect: 'none',
+            transition: 'color 0.2s ease',
+            '&:hover': {
+              color: value === leftValue ? COLOR_WHITE_FFFFFF : COLOR_WHITE_FFFFFF,
+            },
           }}
           onClick={() => onChange(leftValue)}
         >
@@ -72,11 +84,15 @@ const SlidingTabSwitch: React.FC<SlidingTabSwitchProps> = ({
             flex: 1,
             textAlign: 'center',
             cursor: 'pointer',
-            color: value === rightValue ? '#fff' : '#aaa',
+            color: value === rightValue ? COLOR_WHITE_FFFFFF : COLOR_MUTED_BLUE_GRAY_777E90,
             fontWeight: 600,
             lineHeight: '34px',
-            fontSize: '12px',
+            fontSize: '14px',
             userSelect: 'none',
+            transition: 'color 0.2s ease',
+            '&:hover': {
+              color: value === rightValue ? COLOR_WHITE_FFFFFF : COLOR_WHITE_FFFFFF,
+            },
           }}
           onClick={() => onChange(rightValue)}
         >
@@ -87,4 +103,5 @@ const SlidingTabSwitch: React.FC<SlidingTabSwitchProps> = ({
   );
 };
 
-export default SlidingTabSwitch;
+// Export as default for backward compatibility
+export default Tab;

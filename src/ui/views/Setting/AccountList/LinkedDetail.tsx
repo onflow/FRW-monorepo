@@ -20,7 +20,7 @@ import { EditIcon } from '@/ui/assets/icons/settings/Edit';
 import { LLHeader, LLSecondaryButton } from '@/ui/components';
 import { AccountCard } from '@/ui/components/account/account-card';
 import SettingsListCard from '@/ui/components/settings/settings-list-card';
-import SlidingTabSwitch from '@/ui/components/settings/sliding-tab-switch';
+import Tab from '@/ui/components/tab';
 import {
   useChildAccountAllowTypes,
   useChildAccountDescription,
@@ -255,7 +255,9 @@ const LinkedDetail = () => {
     const storagePath = data.collection.path?.storagePath.split('/')[2];
     if (data.count) {
       navigate(
-        `/dashboard/nested/linked/collectiondetail/${childAccountAddress + '.' + storagePath + '.' + data.count + '.linked'}`,
+        `/dashboard/nested/linked/collectiondetail/${
+          childAccountAddress + '.' + storagePath + '.' + data.count + '.linked'
+        }`,
         {
           state: {
             collection: data,
@@ -392,7 +394,7 @@ const LinkedDetail = () => {
                 />
               </CardActionArea>
             </Box>
-            <SlidingTabSwitch
+            <Tab
               value={value}
               onChange={setValue}
               leftLabel="Collections"
