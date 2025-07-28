@@ -45,7 +45,7 @@ export const Tab: React.FC<TabProps> = ({
           top: 3,
           left: value === leftValue ? 3 : 'calc(50% + 3px)',
           width: 'calc(50% - 6px)',
-          height: 34,
+          height: 'calc(100% - 6px)',
           background: '#444',
           borderRadius: '17px',
           transition: 'left 0.2s',
