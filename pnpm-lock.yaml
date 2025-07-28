@@ -39,8 +39,8 @@ importers:
         specifier: ^1.19.0
         version: 1.19.0(@types/react@18.3.23)(google-protobuf@3.21.4)(jiti@2.4.2)(postcss@8.5.6)(react@18.3.1)(ts-node@10.9.2(@swc/core@1.12.14)(@types/node@22.16.4)(typescript@5.8.3))(tsx@4.20.3)(typescript@5.8.3)(zod@3.25.76)
       '@onflow/frw-core':
-        specifier: ^0.2.5
-        version: 0.2.5(@trustwallet/wallet-core@4.3.6)(@types/react@18.3.23)(ethers@6.15.0)(firebase@10.14.1)(google-protobuf@3.21.4)(jiti@2.4.2)(postcss@8.5.6)(react@18.3.1)(ts-node@10.9.2(@swc/core@1.12.14)(@types/node@22.16.4)(typescript@5.8.3))(tsx@4.20.3)(typescript@5.8.3)(zod@3.25.76)
+        specifier: ^0.2.6
+        version: 0.2.6(@trustwallet/wallet-core@4.3.6)(@types/react@18.3.23)(ethers@6.15.0)(firebase@10.14.1)(google-protobuf@3.21.4)(jiti@2.4.2)(postcss@8.5.6)(react@18.3.1)(ts-node@10.9.2(@swc/core@1.12.14)(@types/node@22.16.4)(typescript@5.8.3))(tsx@4.20.3)(typescript@5.8.3)(zod@3.25.76)
       '@onflow/frw-data-model':
         specifier: ^0.2.5
         version: 0.2.5
@@ -1837,8 +1837,8 @@ packages:
   '@onflow/fcl@1.19.0':
     resolution: {integrity: sha512-PtABHza3oSVFIQRd8knOM+jqEcWsqRNIwNtWmElnLY7kuBRJJuoOT84Kxua0dWcE567IiDOPtjRoFpfqqnosyQ==}
 
-  '@onflow/frw-core@0.2.5':
-    resolution: {integrity: sha512-ATTotrQDNrNptr8HhEQ076wUmj44rJBXgtwT/KBL1vLCUFCBE+SdSLSxqmsNHKamiZlyIOCPO7xSvtJAHaHG+Q==}
+  '@onflow/frw-core@0.2.6':
+    resolution: {integrity: sha512-jJd/GbE1M7Zr85z54NhDq9boF0a+0LugkSI8qnKc26EU6VcVCEq/yUghWD9jyd9q5t37SjDPdexLuvbfDt/ZKA==}
     engines: {node: '>=22.11.0'}
     peerDependencies:
       '@trustwallet/wallet-core': ^4.3.6
@@ -9596,7 +9596,7 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@onflow/frw-core@0.2.5(@trustwallet/wallet-core@4.3.6)(@types/react@18.3.23)(ethers@6.15.0)(firebase@10.14.1)(google-protobuf@3.21.4)(jiti@2.4.2)(postcss@8.5.6)(react@18.3.1)(ts-node@10.9.2(@swc/core@1.12.14)(@types/node@22.16.4)(typescript@5.8.3))(tsx@4.20.3)(typescript@5.8.3)(zod@3.25.76)':
+  '@onflow/frw-core@0.2.6(@trustwallet/wallet-core@4.3.6)(@types/react@18.3.23)(ethers@6.15.0)(firebase@10.14.1)(google-protobuf@3.21.4)(jiti@2.4.2)(postcss@8.5.6)(react@18.3.1)(ts-node@10.9.2(@swc/core@1.12.14)(@types/node@22.16.4)(typescript@5.8.3))(tsx@4.20.3)(typescript@5.8.3)(zod@3.25.76)':
     dependencies:
       '@noble/secp256k1': 1.7.2
       '@onflow/fcl': 1.19.0(@types/react@18.3.23)(google-protobuf@3.21.4)(jiti@2.4.2)(postcss@8.5.6)(react@18.3.1)(ts-node@10.9.2(@swc/core@1.12.14)(@types/node@22.16.4)(typescript@5.8.3))(tsx@4.20.3)(typescript@5.8.3)(zod@3.25.76)
