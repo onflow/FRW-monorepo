@@ -220,7 +220,7 @@ const LinkedDetail = () => {
               publicPath: `/public/${contractName}Collection`,
             },
             socials: {},
-            nftTypeId: allowType,
+            flowIdentifier: allowType,
           },
           ids: [],
           count: 0,
@@ -301,25 +301,24 @@ const LinkedDetail = () => {
               pb: 0,
             }}
           >
-            {childAccount && (
-              <AccountCard
-                account={childAccount}
-                network={network}
-                showCard={false}
-                onClick={toggleEdit}
-                onClickSecondary={toggleEdit}
-                secondaryIcon={<EditIcon width={24} height={24} />}
-                showLink={true}
-                parentAccount={{
-                  address: parentAddress,
-                  name: parentName,
-                  icon: '👤',
-                  color: '#000000',
-                  chain: network === 'mainnet' ? 747 : 545,
-                  id: 1,
-                }}
-              />
-            )}
+            <AccountCard
+              account={childAccount}
+              network={network}
+              showCard={false}
+              onClick={toggleEdit}
+              onClickSecondary={toggleEdit}
+              secondaryIcon={<EditIcon width={24} height={24} />}
+              showLink={true}
+              parentAccount={{
+                address: parentAddress,
+                name: parentName,
+                icon: '👤',
+                color: '#000000',
+                chain: network === 'mainnet' ? 747 : 545,
+                id: 1,
+              }}
+            />
+
             <Divider sx={{ margin: '0 16px' }} />
             <Box sx={{ padding: '16px' }}>
               <Typography

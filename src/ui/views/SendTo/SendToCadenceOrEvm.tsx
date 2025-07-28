@@ -51,7 +51,7 @@ const SendToCadenceOrEvm = ({
     const checkAddress = async () => {
       //wallet controller api
       try {
-        if (transactionState.toNetwork === 'Evm') {
+        if (transactionState.toAddressType === 'Evm') {
           // We're sending to an EVM network. Check the address format
           setValidated(!!isValidEthereumAddress(transactionState.toAddress));
         } else {
@@ -72,7 +72,7 @@ const SendToCadenceOrEvm = ({
     return () => {
       mounted = false;
     };
-  }, [transactionState.toAddress, transactionState.toNetwork, wallet]);
+  }, [transactionState.toAddress, transactionState.toAddressType, wallet]);
 
   return (
     <div className="page">

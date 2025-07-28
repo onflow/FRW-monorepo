@@ -51,8 +51,8 @@ const TransferConfirmation = ({
 
   // Check if the transfer is between EVM and Flow networks
   const movingBetweenEVMAndFlow =
-    (transactionState.fromNetwork === 'Evm' && transactionState.toNetwork !== 'Evm') ||
-    (transactionState.fromNetwork !== 'Evm' && transactionState.toNetwork === 'Evm');
+    (transactionState.fromAddressType === 'Evm' && transactionState.toAddressType !== 'Evm') ||
+    (transactionState.fromAddressType !== 'Evm' && transactionState.toAddressType === 'Evm');
 
   const { sufficient: isSufficient, sufficientAfterAction: isSufficientAfterAction } =
     useStorageCheck({

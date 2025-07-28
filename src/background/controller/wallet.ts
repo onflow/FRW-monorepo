@@ -990,7 +990,7 @@ export class WalletController extends BaseController {
     ids: number,
     token
   ): Promise<string> =>
-    transactionService.sendNFTfromChild(
+    transactionService.sendNftFromChild(
       linkedAddress,
       receiverAddress,
       nftContractName,
