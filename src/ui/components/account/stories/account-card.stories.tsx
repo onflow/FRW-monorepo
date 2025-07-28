@@ -87,6 +87,7 @@ export const SmallFlow: Story = {
           description: 'test',
           banner: 'test',
           evmAddress: 'test',
+          flowIdentifier: 'test',
           path: {
             storagePath: 'test',
             publicPath: 'test',
