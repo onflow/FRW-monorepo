@@ -389,7 +389,10 @@ export class WalletController extends BaseController {
 
   // lockadd here
   lockAdd = async () => {
-    openIndexPage('welcome/importprofile?add=true');
+    await keyringService.lock();
+    sessionService.broadcastEvent('accountsChanged', []);
+    sessionService.broadcastEvent('lock');
+    openIndexPage('welcome?add=true');
   };
 
   // create profile here
