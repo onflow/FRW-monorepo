@@ -3,6 +3,8 @@
   "version": "0.0.3",
   "description": "Package for flow wallet cadence scripts",
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "src",
     "dist",
@@ -37,7 +39,9 @@
     "access": "public"
   },
   "dependencies": {
-    "@onflow/fcl": "^1.13.1"
+    "@babel/runtime": "^7.28.2",
+    "@onflow/fcl": "^1.13.1",
+    "buffer": "^6.0.3"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

@@ -28,6 +28,7 @@
     "@gorhom/bottom-sheet": "^5.1.8",
     "@onflow/fcl": "^1.19.0",
     "@onflow/frw-api": "workspace:*",
+    "@onflow/frw-stores": "workspace:*",
     "@onflow/frw-types": "workspace:*",
     "@onflow/transport-http": "^1.13.0",
     "@onflow/types": "^1.4.1",

@@ -1,6 +1,3 @@
-import dotenv from 'dotenv';
-dotenv.config();
-
 const accounts = {
   main: {
     address: '0xf380b22ef386ac7e',

@@ -1,7 +1,6 @@
 import NativeFRWBridge from '@/bridge/NativeFRWBridge';
+import { goServiceOptions, serviceOptions } from '@onflow/frw-api';
 import axios from 'axios';
-import { serviceOptions as goServiceOptions } from './goService';
-import { serviceOptions } from './service';
 
 const instance = axios.create({
   baseURL: __DEV__ ? 'https://web-dev.api.wallet.flow.com' : 'https://web.api.wallet.flow.com',

@@ -8,7 +8,7 @@ import { Edit as EditIcon, Link } from 'icons';
 import AddressText from '../typography/AddressText';
 import { WalletAvatar } from '../media/WalletAvatar';
 import { ContactAvatar } from '../media/ContactAvatar';
-import { AddressBookService } from '@/service/AddressBookService';
+import { AddressBookService } from '@onflow/frw-stores';
 
 interface ToAccountSectionProps {
   account: WalletAccount;

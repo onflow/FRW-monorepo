@@ -3,6 +3,8 @@
   "version": "0.0.3",
   "description": "Package for flow wallet network layer with backend server api",
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "src",
     "dist",
@@ -38,6 +40,7 @@
     "access": "public"
   },
   "dependencies": {
+    "@babel/runtime": "^7.28.2",
     "axios": "^1.4.0",
     "swagger-axios-codegen": "^0.17.4"
   },
