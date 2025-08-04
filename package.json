@@ -8,6 +8,7 @@
     "dev": "pnpm -F frw-extension build:dev",
     "build": "pnpm -F frw-extension build:pro",
     "test": "pnpm -r test",
+    "test:run": "pnpm -r test:run",
     "test:e2e": "pnpm -r test:e2e",
     "test:e2e:ui": "pnpm -r test:e2e:ui",
     "lint": "eslint . && pnpm -r lint",
