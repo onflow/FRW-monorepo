@@ -2,13 +2,17 @@ import CopyPlugin from 'copy-webpack-plugin';
 import fs from 'fs';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import webpack from 'webpack';
 
-import packageJson from '../package.json' assert { type: 'json' };
 import paths from './paths';
-const { version } = packageJson;
 
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const packageJson = JSON.parse(
+  fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf-8')
+);
+const { version } = packageJson;
 
 const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration => {
   const isDevelopment = env.config === 'dev';

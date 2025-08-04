@@ -3,9 +3,6 @@ import React, { useCallback } from 'react';
 
 import { COLOR_PRIMARY_TEXT_282828 } from '@/ui/style/color';
 
-import packageJson from '../../../package.json' assert { type: 'json' };
-const { version } = packageJson;
-
 const deploymentEnv = process.env.DEPLOYMENT_ENV || 'local';
 const isBeta = process.env.IS_BETA === 'true';
 const betaVersion = process.env.BETA_VERSION || ''; // This is the whole tag name like 2.8.5-beta.1
@@ -55,11 +52,16 @@ export const BuildIndicator = () => {
               <Typography variant="caption">{`Build: ${process.env.DEPLOYMENT_ENV}`}</Typography>
               {process.env.LATEST_TAG && process.env.COMMIT_SHA && (
                 <Typography variant="caption" display="block">
-                  {`Compare: ${process.env.LATEST_TAG}...${process.env.COMMIT_SHA?.substring(0, 7)}`}
+                  {`Compare: ${process.env.LATEST_TAG}...${process.env.COMMIT_SHA?.substring(
+                    0,
+                    7
+                  )}`}
                 </Typography>
               )}
               <Typography variant="caption" display="block">
-                {`Repo: ${process.env.REPO_URL?.replace('https://github.com/', '') || 'onflow/FRW-Extension'}`}
+                {`Repo: ${
+                  process.env.REPO_URL?.replace('https://github.com/', '') || 'onflow/FRW-Extension'
+                }`}
               </Typography>
               <Typography variant="caption" display="block">
                 Click to view changes
@@ -73,8 +75,8 @@ export const BuildIndicator = () => {
               deploymentEnv === 'staging' || isBeta
                 ? 'default'
                 : deploymentEnv === 'development'
-                  ? 'warning'
-                  : 'error'
+                ? 'warning'
+                : 'error'
             }
             sx={{
               height: '18px',
