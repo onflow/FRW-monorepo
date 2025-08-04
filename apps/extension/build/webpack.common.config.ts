@@ -4,7 +4,7 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 import path from 'path';
 import webpack from 'webpack';
 
-import packageJson from '../package.json' with { type: 'json' };
+import packageJson from '../package.json' assert { type: 'json' };
 import paths from './paths';
 const { version } = packageJson;
 
@@ -125,7 +125,7 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
       new CopyPlugin({
         patterns: [
           {
-            from: 'node_modules/@trustwallet/wallet-core/dist/lib/wallet-core.wasm',
+            from: '../../node_modules/@trustwallet/wallet-core/dist/lib/wallet-core.wasm',
             to: 'wallet-core.wasm',
           },
           // Add this pattern to copy the manifest.json from _raw to dist
