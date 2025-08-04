@@ -1,0 +1,60 @@
+# Cursor Workspace Configuration for FRW (Flow React Workspace)
+
+## Project Overview
+
+This workspace contains two main projects:
+
+- `frw-core/`: A React/TypeScript monorepo with multiple packages
+- `FRW-RN/`: A React Native project
+
+## General Rules
+
+- Use TypeScript for all new code
+- Follow existing code style and patterns
+- Use pnpm as the package manager (as indicated by pnpm-lock.yaml files)
+- Maintain consistency with existing ESLint and Prettier configurations
+
+## React/TypeScript Rules (frw-core)
+
+- Use functional components with hooks
+- Prefer named exports over default exports
+- Use proper TypeScript types and interfaces
+- Follow the existing monorepo structure in packages/
+- Use the base TypeScript configuration from tsconfig.base.json
+
+## React Native Rules (FRW-RN)
+
+- Follow React Native best practices
+- Use NativeWind for styling (as indicated by tailwind.config.js)
+- Maintain compatibility with both iOS and Android
+- Use the existing Metro configuration
+- Follow the established project structure in src/
+
+## Code Quality
+
+- Write meaningful commit messages
+- Add proper JSDoc comments for complex functions
+- Use descriptive variable and function names
+- Follow the existing ESLint rules in both projects
+- Maintain test coverage where applicable
+
+## File Organization
+
+- Keep related files together
+- Use consistent naming conventions
+- Follow the existing directory structure
+- Place shared utilities in appropriate locations
+
+## Dependencies
+
+- Use pnpm for package management
+- Keep dependencies up to date
+- Avoid duplicate dependencies across packages
+- Follow the workspace configuration in pnpm-workspace.yaml
+
+## Development Workflow
+
+- Use the existing Git hooks (Husky)
+- Follow the changeset workflow for versioning
+- Use the established CI/CD pipeline
+- Maintain compatibility with the existing build processes

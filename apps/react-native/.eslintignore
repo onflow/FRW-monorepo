@@ -1,0 +1,14 @@
+# Ignore flow-wallet-kit directory
+flow-wallet-kit/
+
+# Ignore node_modules
+node_modules/
+
+# Ignore build outputs
+dist/
+build/
+android/app/build/
+ios/build/
+
+# Ignore generated files
+*.generated.*

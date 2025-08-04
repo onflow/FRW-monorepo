@@ -1,0 +1,35 @@
+{
+  "name": "frw-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Flow Reference Wallet Monorepo",
+  "scripts": {
+    "build": "pnpm -r build",
+    "build:packages": "pnpm -F './packages/**' build",
+    "build:extension": "pnpm -F extension build:dev",
+    "build:rn": "pnpm -F react-native android",
+    "dev": "pnpm -r --parallel build:watch",
+    "dev:packages": "pnpm -F './packages/**' --parallel build:watch",
+    "dev:extension": "pnpm -F extension build:dev",
+    "dev:rn": "pnpm -F react-native start",
+    "clean": "pnpm -r clean && rm -rf **/node_modules && pnpm install",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "lint:fix": "pnpm -r lint:fix",
+    "format": "pnpm -r format:fix",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.19.0",
+    "@typescript-eslint/parser": "^8.19.0",
+    "eslint": "^9.18.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@10.13.1+sha512.37ebf1a5c7a30d5fabe0c5df44ee8da4c965ca0c5af3dbab28c3a1681b70a256218d05c81c9c0dcf767ef6b8551eb5b960042b9ed4300c59242336377e01cfad"
+}

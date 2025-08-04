@@ -1,0 +1,340 @@
+# FRW-RN Cursor Rules
+
+## Project Overview
+
+This is a React Native application called "FRW-RN" (Flow React Native) that integrates with the Flow blockchain. The app uses React Navigation for navigation and supports both light and dark themes with a custom design system.
+
+## Technology Stack
+
+- **React Native 0.80.1** with React 19.1.0
+- **React Navigation v7** with native stack navigation
+- **NativeWind 4.x** for styling (Tailwind CSS for React Native)
+- **React Native Reusables UI** components with custom theme system
+- **Zustand** for state management with **MMKV** persistence
+- **MMKV** for fast, encrypted key-value storage
+- **Nitro Modules** for native bridge functionality
+- **TypeScript** for type safety
+
+## File Structure & Architecture
+
+```
+src/
+├── screens/           # Screen components organized by feature
+├── components/        # Reusable components
+│   └── ui/           # React Native Reusables UI components
+├── contexts/         # React contexts for global state
+├── stores/           # Zustand stores for state management
+├── lib/              # Utility functions and helpers
+│   ├── storage.ts    # MMKV storage utilities
+│   └── zustand-mmkv.ts # Zustand + MMKV integration
+├── navigation/       # Navigation configuration
+└── bridge/           # Nitro modules for native functionality
+```
+
+## Module Resolution
+
+- **Babel aliases**: `@` point to `src/`
+- **Metro aliases**: `@` resolves to `src/`
+- Import components with `@/components/ui` or `~/components/ui`
+
+## Theme System Guidelines
+
+### Color Token System
+
+Use the tokenized color system with these classes:
+
+**Surface Colors:**
+
+- `bg-sf` (base surface)
+- `bg-sf-1` (secondary surface)
+- `bg-sf-2` (tertiary surface with 50% opacity)
+- `bg-sf-3` (quaternary surface with 25% opacity)
+
+**Text/Foreground Colors:**
+
+- `text-fg-1` (primary text)
+- `text-fg-2` (secondary text)
+- `text-fg-3` (tertiary text with 10% opacity)
+
+**Accent Colors:**
+
+- `bg-dark-1`, `bg-dark-2`, `bg-dark-3`, `bg-dark-4` (dark accents for light mode)
+- `bg-light-1`, `bg-light-2`, `bg-light-3`, `bg-light-4`, `bg-light-5` (light accents for dark mode)
+
+**System Colors:**
+
+- `bg-primary`, `bg-success`, `bg-warning`, `bg-error`
+- Add `-15` suffix for 15% opacity variants (e.g., `bg-success-15`)
+
+### Theme Context Usage
+
+```typescript
+import { useTheme } from "@/contexts/ThemeContext";
+
+const MyComponent = () => {
+  const { theme, isDark, toggleTheme } = useTheme();
+
+  return (
+    <View
+      className={`bg-sf ${isDark ? "extra-dark-class" : "extra-light-class"}`}
+    >
+      <Text className="text-fg-1">Current theme: {theme}</Text>
+    </View>
+  );
+};
+```
+
+## State Management with Zustand
+
+### Store Structure
+- All stores are located in `src/stores/`
+- Use TypeScript interfaces for type safety
+- Export stores and selectors from `@/stores`
+- Follow the pattern: state + actions in a single store
+
+### Simple Store Creation Pattern
+```typescript
+import { create } from 'zustand';
+
+interface UserState {
+  // Simple state
+  user: User | null;
+  isLoading: boolean;
+  
+  // Simple actions
+  setUser: (user: User) => void;
+  clearUser: () => void;
+  setLoading: (loading: boolean) => void;
+}
+
+export const useUserStore = create<UserState>((set) => ({
+  // Initial state
+  user: null,
+  isLoading: false,
+  
+  // Actions
+  setUser: (user) => set({ user, isLoading: false }),
+  clearUser: () => set({ user: null }),
+  setLoading: (isLoading) => set({ isLoading }),
+}));
+```
+
+### Using Stores in Components
+```typescript
+import { useSettingsStore } from '@/stores';
+
+const SettingsScreen = () => {
+  // Simple destructuring approach (easy for beginners)
+  const { darkMode, notifications, sound, toggleDarkMode, toggleNotifications, toggleSound } = useSettingsStore();
+
+  return (
+    <View>
+      <Switch value={darkMode} onValueChange={toggleDarkMode} />
+      <Switch value={notifications} onValueChange={toggleNotifications} />
+      <Switch value={sound} onValueChange={toggleSound} />
+    </View>
+  );
+};
+
+// Alternative: accessing individual pieces
+const MyComponent = () => {
+  const user = useUserStore((state) => state.user);
+  const setUser = useUserStore((state) => state.setUser);
+  
+  return (
+    <View>
+      <Text>{user ? `Welcome ${user.name}` : 'Please login'}</Text>
+      <Button onPress={() => setUser(newUser)}>Login</Button>
+    </View>
+  );
+};
+```
+
+### Store Best Practices
+- **Keep it simple** - start with basic stores and add complexity only when needed
+- **Keep stores focused** - separate concerns (user, app, settings, etc.)
+- **Use TypeScript** for all store interfaces and implementations
+- **Use actions** for all state mutations, never mutate state directly
+- **Use persistence** for data that should survive app restarts
+- **Test store behavior** by checking if state persists after app restart
+
+## MMKV Storage Integration
+
+### Simple MMKV Setup
+- Single MMKV instance for app storage
+- Simple storage adapter for Zustand integration
+- Easy to understand for beginners
+
+### Storage Usage
+```typescript
+import { storage, mmkvStorage } from '@/lib/storage';
+
+// Direct MMKV usage
+storage.set('key', 'value');
+const value = storage.getString('key');
+
+// Through storage adapter
+mmkvStorage.setItem('user-name', 'John');
+const name = mmkvStorage.getItem('user-name');
+```
+
+### Persistent Zustand Stores
+```typescript
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { mmkvStorageAdapter } from '@/lib/zustand-mmkv';
+
+interface SettingsState {
+  darkMode: boolean;
+  notifications: boolean;
+  sound: boolean;
+  toggleDarkMode: () => void;
+  toggleNotifications: () => void;
+  toggleSound: () => void;
+}
+
+export const useSettingsStore = create<SettingsState>()(
+  persist(
+    (set) => ({
+      darkMode: false,
+      notifications: true,
+      sound: true,
+      toggleDarkMode: () => set((state) => ({ darkMode: !state.darkMode })),
+      toggleNotifications: () => set((state) => ({ notifications: !state.notifications })),
+      toggleSound: () => set((state) => ({ sound: !state.sound })),
+    }),
+    {
+      name: 'app-settings',
+      storage: mmkvStorageAdapter,
+    }
+  )
+);
+```
+
+### Storage Best Practices
+- **Keep it simple** - use single MMKV instance unless specific needs arise
+- **Only persist necessary state** - exclude loading states, errors, etc.
+- **Use clear naming** for store persistence keys
+- **Handle storage errors** gracefully
+- **Test persistence** by restarting the app
+
+### CSS Variables
+
+Theme colors are defined in `src/global.css` using CSS variables:
+
+- Light mode: `:root { --surface-base: 255 255 255; }`
+- Dark mode: `.dark { --surface-base: 0 0 0; }`
+
+## Component Guidelines
+
+### React Navigation
+
+- Use native stack navigation
+- Theme integration with React Navigation's theme provider
+- Support for embedded mode (headers can be hidden for iOS integration)
+- All screens have access to theme context and navigation props
+
+### UI Components
+
+- Use React Native Reusables components from `@/components/ui`
+- Follow semantic color classes instead of hardcoded colors
+- Ensure responsive design with proper light/dark mode support
+- Always use TypeScript for type safety
+
+### Styling Conventions
+
+- Use NativeWind (Tailwind CSS) classes for styling
+- Prefer semantic color classes like `text-fg-1` over hardcoded colors
+- Use `bg-sf` for surfaces, `text-fg-*` for text colors
+- Apply theme-aware classes consistently
+
+## Development Commands
+
+```bash
+# Start Metro bundler
+pnpm start
+
+# Run on iOS (development scheme)
+pnpm run ios
+
+# Run on iOS (production scheme)
+pnpm run ios:prod
+
+# Run on Android
+pnpm run android
+
+# Lint code
+pnpm run lint
+
+# Run tests
+pnpm run test
+
+# Install iOS dependencies (after native dep updates)
+bundle install && bundle exec pod install
+```
+
+## Code Style Rules
+
+### TypeScript
+
+- Always use TypeScript for type safety
+- Define proper interfaces for component props
+- Use proper typing for navigation params
+
+### React Native Patterns
+
+- Use functional components with hooks
+- Leverage React Navigation v7 patterns
+- Follow React Native performance best practices
+
+### Styling Rules
+
+- Always use NativeWind classes over inline styles where possible
+- Use semantic color tokens consistently
+- Ensure theme switching works properly
+- Test both light and dark modes
+
+### Import Organization
+
+```typescript
+// React imports first
+import React from "react";
+import { View, Text } from "react-native";
+
+// Navigation imports
+import { useNavigation } from "@react-navigation/native";
+
+// Local imports with aliases
+import { useTheme } from "@/contexts/ThemeContext";
+import { Button } from "@/components/ui";
+```
+
+## Native Integration
+
+- **Nitro modules** configured for iOS/Android native bridge
+- **iOS CocoaPods** integration for native dependencies
+- **Embedded mode** support for integration with existing iOS apps
+- Use development scheme for development, production scheme for production builds
+
+## Important Notes
+
+- **iOS Development**: Use `pnpm run ios` for development, `pnpm run ios:prod` for production
+- **Theme Classes**: Always use semantic color classes like `text-fg-1` instead of hardcoded colors
+- **Navigation**: All screens have access to theme context and navigation props
+- **Native Dependencies**: Run `bundle exec pod install` after updating native dependencies
+- **Embedded Mode**: App supports being embedded in iOS with conditional header display
+
+## Error Prevention
+
+- Never use hardcoded colors - always use the token system
+- Always test theme switching functionality
+- Ensure TypeScript types are properly defined
+- Test on both iOS and Android platforms
+- Use proper module resolution paths (`@/`)
+
+## File Naming Conventions
+
+- Components: PascalCase (e.g., `HomeScreen.tsx`)
+- Utilities: camelCase (e.g., `themeUtils.ts`)
+- Contexts: PascalCase with Context suffix (e.g., `ThemeContext.tsx`)
+- Screens: PascalCase with Screen suffix in dedicated folders

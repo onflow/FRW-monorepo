@@ -1,0 +1,59 @@
+# Cursor Rules for FRW-RN Project
+
+## Code Style Guidelines
+
+### Comments
+- **REQUIRED**: All comments must be written in English only
+- **FORBIDDEN**: Non-English comments (Chinese, etc.) are not allowed
+- This ensures code maintainability and accessibility for all developers
+
+#### ✅ Good Examples:
+```typescript
+// Load account data when accounts change
+const loadAccountData = async () => {
+  // Handle account loading logic
+}
+
+// Initialize token store with cached data
+export const useTokenStore = create<TokenStore>((set, get) => ({
+  // Store implementation
+}));
+
+/**
+ * Fetches token balance for the given address
+ * @param address - Wallet address to check
+ * @returns Promise resolving to balance string
+ */
+const fetchBalance = async (address: string) => { ... }
+```
+
+#### ❌ Bad Examples:
+```typescript
+// 当账户变化时加载账户数据
+const loadAccountData = async () => { ... }
+
+// 初始化token store
+export const useTokenStore = create<TokenStore>(...);
+
+/**
+ * 获取指定地址的代币余额
+ * @param address - 钱包地址
+ */
+const fetchBalance = async (address: string) => { ... }
+```
+
+### Architecture Guidelines
+- Use zustand stores instead of custom hooks for state management
+- Avoid circular dependencies between React state and zustand subscriptions
+- Use local state with async data loading for complex UI components
+- Follow existing patterns for theme integration and navigation
+
+### Import Aliases
+- Use `@/` for src/ directory
+- Use `ui` for src/components/ui
+- Use `icons` for src/assets/icons
+
+### React Native Specific
+- Use NativeWind for styling with semantic color classes
+- Follow the established theme system for light/dark mode
+- Use proper TypeScript typing for all components and functions

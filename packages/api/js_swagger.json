@@ -1,0 +1,3101 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Flow Wallet API",
+    "description": "API for the Flow Wallet",
+    "version": "1.0"
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "x-api-key": {
+        "type": "apiKey",
+        "name": "x-api-key",
+        "in": "header"
+      }
+    },
+    "schemas": {
+      "CadenceStorageInfo": {
+        "type": "object",
+        "description": "Storage details for the Flow account.",
+        "properties": {
+          "storageUsedInMB": {
+            "type": "string",
+            "description": "Storage used in MB.",
+            "example": "1.23"
+          },
+          "storageAvailableInMB": {
+            "type": "string",
+            "description": "Storage available based on unlocked FLOW balance.",
+            "example": "10.50"
+          },
+          "storageCapacityInMB": {
+            "type": "string",
+            "description": "Total storage capacity allocated.",
+            "example": "11.73"
+          },
+          "lockedFLOWforStorage": {
+            "type": "string",
+            "description": "Amount of FLOW locked for storage.",
+            "example": "0.1173"
+          },
+          "availableBalanceToUse": {
+            "type": "string",
+            "description": "Available FLOW balance that could be used for storage.",
+            "example": "1.05"
+          }
+        }
+      },
+      "CadenceTokenDataWithCurrency": {
+        "type": "object",
+        "description": "Represents a fungible token vault with pricing and currency conversion.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "description": "Token name from metadata (can be null).",
+            "example": "FlowToken"
+          },
+          "symbol": {
+            "type": "string",
+            "nullable": true,
+            "description": "Token symbol from metadata (can be null).",
+            "example": "FLOW"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "Token description from metadata (can be null).",
+            "example": "The native token of the Flow blockchain."
+          },
+          "logos": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "file": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "example": "ipfs://.../flow-logo.svg"
+                  }
+                }
+              }
+            },
+            "description": "Logo media information (structure based on common return types)."
+          },
+          "socials": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "url"
+                }
+              }
+            },
+            "description": "A dictionary of social media links (structure based on common return types).",
+            "example": {
+              "website": {
+                "url": "https://flow.com"
+              },
+              "twitter": {
+                "url": "https://twitter.com/flow_blockchain"
+              }
+            }
+          },
+          "displayBalance": {
+            "type": "string",
+            "description": "Token balance formatted for display (shifted by decimals).",
+            "example": "123.456"
+          },
+          "contractAddress": {
+            "type": "string",
+            "description": "The contract address where the token is defined.",
+            "example": "0x1654653399040a61"
+          },
+          "contractName": {
+            "type": "string",
+            "description": "The name of the contract defining the token.",
+            "example": "FlowToken"
+          },
+          "storagePath": {
+            "type": "object",
+            "description": "The storage path for the vault.",
+            "properties": {
+              "domain": {
+                "type": "string",
+                "example": "storage"
+              },
+              "identifier": {
+                "type": "string",
+                "example": "flowTokenVault"
+              }
+            }
+          },
+          "receiverPath": {
+            "type": "object",
+            "nullable": true,
+            "description": "The public receiver path for the vault.",
+            "properties": {
+              "domain": {
+                "type": "string",
+                "example": "public"
+              },
+              "identifier": {
+                "type": "string",
+                "example": "flowTokenReceiver"
+              }
+            }
+          },
+          "balancePath": {
+            "type": "object",
+            "nullable": true,
+            "description": "The public balance path for the vault.",
+            "properties": {
+              "domain": {
+                "type": "string",
+                "example": "public"
+              },
+              "identifier": {
+                "type": "string",
+                "example": "flowTokenBalance"
+              }
+            }
+          },
+          "identifier": {
+            "type": "string",
+            "description": "The full type identifier of the vault.",
+            "example": "A.1654653399040a61.FlowToken.Vault"
+          },
+          "logoURI": {
+            "type": "string",
+            "nullable": true,
+            "description": "The logo URI for the token. Prefers the verified list logo, falls back to the first logo in metadata.",
+            "example": "ipfs://.../flow-logo.svg"
+          },
+          "isVerified": {
+            "type": "boolean",
+            "description": "Whether the token is part of the default Flow list."
+          },
+          "priceInUSD": {
+            "type": "string",
+            "description": "Price of the token in USD (mainnet only, empty string if unavailable).",
+            "example": "2.50"
+          },
+          "balanceInUSD": {
+            "type": "string",
+            "description": "Value of the balance in USD (mainnet only, empty string if unavailable).",
+            "example": "308.64"
+          },
+          "priceInFLOW": {
+            "type": "string",
+            "description": "Price of the token in FLOW (mainnet only, empty string if unavailable).",
+            "example": "1.0"
+          },
+          "balanceInFLOW": {
+            "type": "string",
+            "description": "Value of the balance in FLOW (mainnet only, empty string if unavailable).",
+            "example": "123.45600000"
+          },
+          "currency": {
+            "type": "string",
+            "description": "The currency code used for converted price/balance for this token.",
+            "example": "EUR"
+          },
+          "priceInCurrency": {
+            "type": "string",
+            "description": "Price in the requested currency (empty string if unavailable or conversion failed).",
+            "example": "2.25"
+          },
+          "balanceInCurrency": {
+            "type": "string",
+            "description": "Value of the balance in the requested currency (empty string if unavailable or conversion failed).",
+            "example": "277.78"
+          },
+          "evmAddress": {
+            "type": "string",
+            "description": "The EVM address associated with this token (if available) empty string if no evm address.",
+            "example": "0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b"
+          }
+        }
+      },
+      "CadenceFTApiResponseWithCurrencyInData": {
+        "type": "object",
+        "description": "Structure of the successful API response.",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "result": {
+                "type": "array",
+                "description": "Array of token data with currency conversion.",
+                "items": {
+                  "$ref": "#/components/schemas/CadenceTokenDataWithCurrency"
+                }
+              },
+              "storage": {
+                "$ref": "#/components/schemas/CadenceStorageInfo"
+              },
+              "error": {
+                "type": "string",
+                "nullable": true,
+                "description": "Error message if request failed."
+              }
+            }
+          }
+        }
+      },
+      "CadenceFTApiResponseWithCurrency": {
+        "type": "object",
+        "description": "Structure of the successful API response.",
+        "properties": {
+          "result": {
+            "type": "array",
+            "description": "Array of token data with currency conversion.",
+            "items": {
+              "$ref": "#/components/schemas/CadenceTokenDataWithCurrency"
+            }
+          },
+          "storage": {
+            "$ref": "#/components/schemas/CadenceStorageInfo"
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "description": "Error message if request failed."
+          }
+        }
+      },
+      "PublicKeyAccount": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "The address of the account"
+          },
+          "publicKey": {
+            "type": "string",
+            "description": "The public key associated with the account (matches the query parameter)"
+          },
+          "keyIndex": {
+            "type": "integer",
+            "description": "The index of the key in the account"
+          },
+          "weight": {
+            "type": "integer",
+            "description": "The weight of the key"
+          },
+          "signAlgo": {
+            "type": "integer",
+            "description": "The signature algorithm code"
+          },
+          "signAlgoString": {
+            "type": "string",
+            "description": "The signature algorithm name"
+          },
+          "hashAlgo": {
+            "type": "integer",
+            "description": "The hash algorithm code"
+          },
+          "hashAlgoString": {
+            "type": "string",
+            "description": "The hash algorithm name"
+          }
+        },
+        "required": [
+          "address",
+          "publicKey",
+          "keyIndex",
+          "weight",
+          "signAlgo",
+          "signAlgoString",
+          "hashAlgo",
+          "hashAlgoString"
+        ],
+        "example": {
+          "address": 11114000254959286000,
+          "publicKey": "b7ead20cebc8fe7e8ad825db2e7489a0ebeb37b2845ba5ce781776be30375a3708e954a53c76c88a9b8cb7e5ab43252cc013401c0e017d8f598dad74f719c593",
+          "keyIndex": 0,
+          "weight": 1000,
+          "signAlgo": 1,
+          "signAlgoString": "ECDSA_P256",
+          "hashAlgo": 1,
+          "hashAlgoString": "SHA2_256"
+        }
+      },
+      "Account": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "The Flow account address",
+            "example": "0x9a3cdc58ee72f9d0"
+          },
+          "keyId": {
+            "type": "integer",
+            "description": "The ID of the key on the account",
+            "example": 0
+          },
+          "weight": {
+            "type": "integer",
+            "description": "The weight of the key for multi-sig",
+            "example": 1000
+          },
+          "sigAlgo": {
+            "type": "integer",
+            "description": "The signature algorithm ID",
+            "example": 1
+          },
+          "hashAlgo": {
+            "type": "integer",
+            "description": "The hash algorithm ID",
+            "example": 1
+          },
+          "isRevoked": {
+            "type": "boolean",
+            "description": "Whether the key has been revoked",
+            "example": false
+          },
+          "signing": {
+            "type": "string",
+            "description": "The signing algorithm name",
+            "example": "ECDSA_P256"
+          },
+          "hashing": {
+            "type": "string",
+            "description": "The hashing algorithm name",
+            "example": "SHA2_256"
+          }
+        }
+      },
+      "KeyIndexerData": {
+        "type": "object",
+        "properties": {
+          "publicKey": {
+            "type": "string",
+            "description": "The public key in hex format",
+            "example": "b7ead20cebc8fe7e8ad825db2e7489a0ebeb37b2845ba5ce781776be30375a3708e954a53c76c88a9b8cb7e5ab43252cc013401c0e017d8f598dad74f719c593"
+          },
+          "accounts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Account"
+            }
+          }
+        }
+      },
+      "KeyIndexerResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/KeyIndexerData"
+          },
+          "status": {
+            "type": "integer",
+            "description": "HTTP status code",
+            "example": 200
+          },
+          "error": {
+            "type": "string",
+            "description": "Error message if applicable",
+            "example": ""
+          }
+        }
+      },
+      "QueryRequest": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "address of the account",
+            "example": "0x9a3cdc58ee72f9d0"
+          },
+          "limit": {
+            "type": "number",
+            "description": "the number of transactions to return",
+            "example": 20
+          },
+          "offset": {
+            "type": "number",
+            "description": "the number of transactions to skip",
+            "example": 0
+          }
+        }
+      },
+      "TransactionReturnContentV2": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "the image url of the transaction",
+            "example": ""
+          },
+          "time": {
+            "type": "string",
+            "description": "the time of the transaction",
+            "example": "2022-06-01T16:54:59.040Z"
+          },
+          "type": {
+            "type": "number",
+            "description": "the type of the transaction",
+            "example": 0
+          },
+          "title": {
+            "type": "string",
+            "description": "the title of the transaction",
+            "example": "Smart Contract Interaction"
+          },
+          "status": {
+            "type": "string",
+            "description": "the status of the transaction",
+            "example": "Success"
+          },
+          "error": {
+            "type": "boolean",
+            "description": "whether the transaction is successful",
+            "example": false
+          },
+          "txid": {
+            "type": "string",
+            "description": "the transaction id",
+            "example": "0x9a3cdc58ee72f9d0"
+          },
+          "amount": {
+            "type": "string",
+            "description": "the amount of the transaction",
+            "example": "1.0"
+          },
+          "transfer_type": {
+            "type": "number",
+            "description": "the type of the transaction",
+            "example": 1
+          },
+          "receiver": {
+            "type": "string",
+            "description": "the receiver of the transaction",
+            "example": "0x9a3cdc58ee72f9d0"
+          },
+          "sender": {
+            "type": "string",
+            "description": "the sender of the transaction",
+            "example": "0x9a3cdc58ee72f9d0"
+          },
+          "token": {
+            "type": "string",
+            "description": "the token of the transaction",
+            "example": "FlowToken"
+          },
+          "additional_message": {
+            "type": "string",
+            "description": "the additional message of the transaction",
+            "example": ""
+          }
+        }
+      },
+      "TransactionReturnV2": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number",
+            "description": "the total number of transactions",
+            "example": 20
+          },
+          "transactions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransactionReturnContentV2"
+            }
+          },
+          "next": {
+            "type": "boolean",
+            "description": "whether there is a next page",
+            "example": false
+          },
+          "string": {
+            "type": "string",
+            "description": "the next page url",
+            "example": ""
+          }
+        }
+      },
+      "NFTCollection": {
+        "type": "object",
+        "properties": {
+          "contractName": {
+            "type": "string",
+            "description": "Name of the contract",
+            "example": "Lilico",
+            "nullable": true
+          },
+          "logoURI": {
+            "type": "string",
+            "description": "the logo url of the NFT collection",
+            "example": ""
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the collection"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true,
+            "description": "Flow address of the collection"
+          },
+          "contract_name": {
+            "type": "string",
+            "nullable": true,
+            "description": "Alternative name of the contract"
+          },
+          "evmAddress": {
+            "type": "string",
+            "description": "EVM address of the collection"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name of the collection"
+          },
+          "logo": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL to the collection logo"
+          },
+          "banner": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL to the collection banner"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "Description of the collection"
+          },
+          "flowIdentifier": {
+            "type": "string",
+            "description": "Flow identifier for the collection"
+          },
+          "externalURL": {
+            "type": "string",
+            "nullable": true,
+            "description": "External URL for the collection (optional)"
+          },
+          "contractType": {
+            "type": "string",
+            "description": "Type of the contract ERC721 / ERC1155"
+          },
+          "path": {
+            "$ref": "#/components/schemas/NFTPath",
+            "description": "Media information for the NFT"
+          }
+        }
+      },
+      "FTListItem": {
+        "type": "object",
+        "properties": {
+          "contractName": {
+            "type": "string",
+            "description": "the name of the FT",
+            "example": "FlowToken"
+          },
+          "logoURI": {
+            "type": "string",
+            "description": "the logo url of the FT",
+            "example": ""
+          }
+        }
+      },
+      "TransferListErrorResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "description": "the status of the response",
+            "example": 400
+          },
+          "message": {
+            "type": "string",
+            "description": "the message of the response",
+            "example": "Invalid address"
+          }
+        },
+        "required": [
+          "status",
+          "message *"
+        ]
+      },
+      "Network": {
+        "type": "string",
+        "enum": [
+          "mainnet",
+          "testnet"
+        ],
+        "description": "Flow-EVM network (mainnet/testnet)",
+        "example": "mainnet",
+        "default": "mainnet"
+      },
+      "Response": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "description": "Response data payload",
+            "items": {
+              "$ref": "#/components/schemas/CurrencyEVMTokenData"
+            }
+          },
+          "status": {
+            "type": "integer",
+            "description": "HTTP status code",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "nullable": true,
+            "description": "Optional message, typically used for errors.",
+            "example": "Invalid EVM address format"
+          }
+        },
+        "required": [
+          "data",
+          "status"
+        ]
+      },
+      "FungibleToken": {
+        "type": "object",
+        "required": [
+          "chainId",
+          "address",
+          "symbol",
+          "name",
+          "decimals"
+        ],
+        "properties": {
+          "chainId": {
+            "type": "integer",
+            "description": "The chain ID of the token",
+            "example": 747
+          },
+          "address": {
+            "type": "string",
+            "description": "The contract address of the token",
+            "example": "0x7f27352d5f83db87a5a3e00f4b07cc2138d8ee52"
+          },
+          "symbol": {
+            "type": "string",
+            "description": "The symbol of the token",
+            "example": "USDC.e"
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the token",
+            "example": "Bridged USDC (Celer)"
+          },
+          "decimals": {
+            "type": "integer",
+            "description": "The number of decimals for the token",
+            "example": 6
+          },
+          "logoURI": {
+            "type": "string",
+            "description": "The URI for the token logo"
+          },
+          "flowIdentifier": {
+            "type": "string",
+            "description": "The Flow blockchain identifier for the token"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Tags associated with the token"
+          },
+          "extensions": {
+            "type": "object",
+            "properties": {
+              "website": {
+                "type": "string",
+                "description": "The website URL for the token"
+              }
+            }
+          }
+        }
+      },
+      "CurrencyEVMTokenData": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "integer",
+            "description": "The chain ID where the token resides.",
+            "example": 747
+          },
+          "address": {
+            "type": "string",
+            "description": "The contract address of the token.",
+            "example": "0x123abc..."
+          },
+          "symbol": {
+            "type": "string",
+            "description": "The token symbol.",
+            "example": "USDC"
+          },
+          "name": {
+            "type": "string",
+            "description": "The token name.",
+            "example": "USD Coin"
+          },
+          "decimals": {
+            "type": "integer",
+            "description": "The number of decimals the token uses.",
+            "example": 6
+          },
+          "logoURI": {
+            "type": "string",
+            "description": "URI for the token logo.",
+            "example": "https://example.com/logo.png"
+          },
+          "flowIdentifier": {
+            "type": "string",
+            "description": "Corresponding Flow identifier if applicable.",
+            "example": "A.123...USDC"
+          },
+          "balance": {
+            "type": "string",
+            "description": "The token balance held by the address, adjusted for decimals.",
+            "example": "123.45"
+          },
+          "priceInUSD": {
+            "type": "string",
+            "description": "The price of the token in USD.",
+            "example": "1.00"
+          },
+          "balanceInUSD": {
+            "type": "string",
+            "description": "The value of the balance in USD.",
+            "example": "123.45"
+          },
+          "priceInFLOW": {
+            "type": "string",
+            "description": "The price of the token in FLOW.",
+            "example": "0.45"
+          },
+          "balanceInFLOW": {
+            "type": "string",
+            "description": "The value of the balance in FLOW.",
+            "example": "55.55"
+          },
+          "currency": {
+            "type": "string",
+            "description": "The currency code used for priceInCurrency and balanceInCurrency.",
+            "example": "USD"
+          },
+          "priceInCurrency": {
+            "type": "string",
+            "description": "The price of the token in the requested currency (if different from USD).",
+            "example": "0.90"
+          },
+          "balanceInCurrency": {
+            "type": "string",
+            "description": "The value of the balance in the requested currency (if different from USD).",
+            "example": "111.10"
+          }
+        },
+        "required": [
+          "chainId",
+          "address",
+          "symbol",
+          "name",
+          "decimals",
+          "balance",
+          "priceInUSD",
+          "balanceInUSD",
+          "priceInFLOW",
+          "balanceInFLOW",
+          "currency",
+          "priceInCurrency",
+          "balanceInCurrency"
+        ]
+      },
+      "ERC20Token": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "integer",
+            "description": "The chain ID of the blockchain network",
+            "example": 747
+          },
+          "address": {
+            "type": "string",
+            "description": "The contract address of the token",
+            "example": "0x5598c0652b899eb40f169dd5949bdbe0bf36ffde"
+          },
+          "symbol": {
+            "type": "string",
+            "description": "The token symbol",
+            "example": "stFlow"
+          },
+          "name": {
+            "type": "string",
+            "description": "The token name",
+            "example": "Increment Staked FLOW"
+          },
+          "decimals": {
+            "type": "integer",
+            "description": "The number of decimals for the token",
+            "example": 18
+          },
+          "logoURI": {
+            "type": "string",
+            "description": "URI for the token logo",
+            "example": ""
+          },
+          "balance": {
+            "type": "string",
+            "description": "The token balance as a string (to handle large numbers)",
+            "example": "10800000000000001230"
+          }
+        }
+      },
+      "ERC20TokenResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ERC20Token"
+            }
+          },
+          "status": {
+            "type": "integer",
+            "description": "HTTP status code",
+            "example": 200
+          }
+        }
+      },
+      "TokenPath": {
+        "type": "object",
+        "properties": {
+          "vault": {
+            "type": "string",
+            "description": "Path to the vault resource."
+          },
+          "receiver": {
+            "type": "string",
+            "description": "Path to the receiver resource."
+          },
+          "balance": {
+            "type": "string",
+            "description": "Path to the balance resource."
+          }
+        },
+        "required": [
+          "vault",
+          "receiver",
+          "balance"
+        ]
+      },
+      "TokenExtensions": {
+        "type": "object",
+        "description": "Additional token extension properties.",
+        "additionalProperties": {
+          "type": "string"
+        }
+      },
+      "Token": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "integer",
+            "description": "The chain ID of the token."
+          },
+          "address": {
+            "type": "string",
+            "description": "The contract address of the token."
+          },
+          "contractName": {
+            "type": "string",
+            "description": "The name of the token contract."
+          },
+          "path": {
+            "$ref": "#/components/schemas/TokenPath"
+          },
+          "evmAddress": {
+            "type": "string",
+            "description": "The EVM compatible address, if applicable."
+          },
+          "flowAddress": {
+            "type": "string",
+            "description": "The Flow address, if applicable."
+          },
+          "symbol": {
+            "type": "string",
+            "description": "The symbol of the token (e.g., \"FLOW\")."
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the token (e.g., \"Flow Token\")."
+          },
+          "description": {
+            "type": "string",
+            "description": "A brief description of the token."
+          },
+          "decimals": {
+            "type": "integer",
+            "description": "The number of decimal places the token uses."
+          },
+          "logoURI": {
+            "type": "string",
+            "format": "uri",
+            "description": "The URI of the token's logo."
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "A list of tags associated with the token."
+          },
+          "extensions": {
+            "$ref": "#/components/schemas/TokenExtensions"
+          },
+          "flowIdentifier": {
+            "type": "string",
+            "description": "The unique Flow identifier for the token."
+          },
+          "website": {
+            "type": "string",
+            "format": "uri",
+            "description": "The official website URL of the token."
+          }
+        },
+        "required": [
+          "chainId",
+          "address",
+          "symbol",
+          "name",
+          "decimals",
+          "logoURI",
+          "tags"
+        ]
+      },
+      "TokenListTag": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the tag."
+          },
+          "description": {
+            "type": "string",
+            "description": "A description of the tag."
+          }
+        },
+        "required": [
+          "name",
+          "description"
+        ]
+      },
+      "TokenListVersion": {
+        "type": "object",
+        "properties": {
+          "major": {
+            "type": "integer"
+          },
+          "minor": {
+            "type": "integer"
+          },
+          "patch": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "major",
+          "minor",
+          "patch"
+        ]
+      },
+      "FTList": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the token list."
+          },
+          "network": {
+            "type": "string",
+            "description": "The network the token list is associated with."
+          },
+          "chainId": {
+            "type": "integer",
+            "description": "The chain ID the token list is associated with."
+          },
+          "tokens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Token"
+            },
+            "description": "The list of tokens."
+          },
+          "totalAmount": {
+            "type": "integer",
+            "description": "The total number of tokens in the list."
+          },
+          "filterType": {
+            "type": "string",
+            "description": "The type used for filtering the list."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The timestamp when the list was generated."
+          },
+          "logoURI": {
+            "type": "string",
+            "format": "uri",
+            "description": "The URI of the list's logo."
+          },
+          "keywords": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Keywords associated with the list."
+          },
+          "tags": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/TokenListTag"
+            },
+            "description": "Tags associated with the list."
+          },
+          "version": {
+            "$ref": "#/components/schemas/TokenListVersion"
+          }
+        },
+        "required": [
+          "name",
+          "tokens",
+          "totalAmount",
+          "timestamp",
+          "logoURI",
+          "keywords",
+          "tags"
+        ]
+      },
+      "NFTPostMedia": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "URL to the NFT image"
+          },
+          "isSvg": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Indicates if the image is an SVG"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "Description of the NFT"
+          },
+          "title": {
+            "type": "string",
+            "description": "Title of the NFT"
+          }
+        }
+      },
+      "NFTPath": {
+        "type": "object",
+        "properties": {
+          "storage_path": {
+            "type": "string",
+            "description": "Storage path"
+          },
+          "public_path": {
+            "type": "string",
+            "description": "Public path"
+          },
+          "private_path": {
+            "type": "string",
+            "description": "Deprecated path"
+          }
+        }
+      },
+      "NFT": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the NFT"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "description": "Name of the NFT"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "Description of the NFT"
+          },
+          "thumbnail": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL to the NFT thumbnail"
+          },
+          "externalURL": {
+            "type": "string",
+            "nullable": true,
+            "description": "External URL for the NFT"
+          },
+          "collectionName": {
+            "type": "string",
+            "description": "Name of the collection"
+          },
+          "collectionContractName": {
+            "type": "string",
+            "description": "Contract name of the collection"
+          },
+          "contractAddress": {
+            "type": "string",
+            "nullable": true,
+            "description": "Flow contract address"
+          },
+          "evmAddress": {
+            "type": "string",
+            "description": "EVM contract address"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true,
+            "description": "Flow address"
+          },
+          "contractName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Name of the contract"
+          },
+          "collectionDescription": {
+            "type": "string",
+            "nullable": true,
+            "description": "Description of the collection"
+          },
+          "collectionSquareImage": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL to the collection square image"
+          },
+          "collectionBannerImage": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL to the collection banner image"
+          },
+          "collectionExternalURL": {
+            "type": "string",
+            "nullable": true,
+            "description": "External URL for the collection"
+          },
+          "flowIdentifier": {
+            "type": "string",
+            "nullable": true,
+            "description": "Flow identifier"
+          },
+          "postMedia": {
+            "$ref": "#/components/schemas/NFTPostMedia",
+            "description": "Media information for the NFT"
+          },
+          "contractType": {
+            "type": "string",
+            "description": "Type of the contract ERC721 / ERC1155"
+          },
+          "amount": {
+            "type": "string",
+            "description": "Amount of the NFT"
+          }
+        }
+      },
+      "NFTCollectionListData": {
+        "type": "object",
+        "properties": {
+          "offset": {
+            "type": "string",
+            "nullable": true,
+            "description": "Pagination offset for the next set of results"
+          },
+          "nfts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NFT"
+            },
+            "description": "Array of NFTs in the collection"
+          },
+          "nftCount": {
+            "type": "integer",
+            "description": "Total number of NFTs in the response"
+          },
+          "collection": {
+            "$ref": "#/components/schemas/NFTCollection",
+            "description": "Information about the NFT collection"
+          }
+        }
+      },
+      "NFTCollectionListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/NFTCollectionListData",
+            "description": "NFT collection list data"
+          },
+          "status": {
+            "type": "integer",
+            "description": "HTTP status code",
+            "example": 200
+          }
+        }
+      },
+      "CollectionDisplay": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the collection"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the collection"
+          },
+          "externalURL": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string",
+                "nullable": true,
+                "description": "External URL for the collection"
+              }
+            }
+          },
+          "squareImage": {
+            "type": "object",
+            "properties": {
+              "file": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "URL to the collection square image"
+                  }
+                }
+              },
+              "mediaType": {
+                "type": "string",
+                "description": "Media type of the square image"
+              }
+            }
+          }
+        }
+      },
+      "NFTCollectionDetailData": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the collection"
+          },
+          "path": {
+            "type": "string",
+            "description": "Path for the collection"
+          },
+          "collectionDisplay": {
+            "$ref": "#/components/schemas/CollectionDisplay",
+            "description": "Display information for the collection"
+          }
+        }
+      },
+      "NFTCollectionDetailResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/NFTCollectionDetailData",
+            "description": "NFT collection detail data"
+          },
+          "status": {
+            "type": "integer",
+            "description": "HTTP status code",
+            "example": 200
+          }
+        }
+      },
+      "NFTCollectionData": {
+        "type": "object",
+        "properties": {
+          "collection": {
+            "$ref": "#/components/schemas/NFTCollection",
+            "description": "Collection information"
+          },
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Array of NFT IDs in the collection"
+          },
+          "count": {
+            "type": "integer",
+            "description": "Total number of NFTs in the collection"
+          }
+        }
+      },
+      "NFTCollectionIdsResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NFTCollectionData"
+            },
+            "description": "Array of NFT collection data"
+          },
+          "status": {
+            "type": "integer",
+            "description": "HTTP status code",
+            "example": 200
+          }
+        }
+      },
+      "NFTListData": {
+        "type": "object",
+        "properties": {
+          "offset": {
+            "type": "string",
+            "nullable": true,
+            "description": "Pagination offset for the next set of results"
+          },
+          "nfts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NFT"
+            },
+            "description": "Array of NFTs"
+          },
+          "nftCount": {
+            "type": "integer",
+            "description": "Total number of NFTs in the response"
+          }
+        }
+      },
+      "NFTListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/NFTListData",
+            "description": "NFT list data"
+          },
+          "status": {
+            "type": "integer",
+            "description": "HTTP status code",
+            "example": 200
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": [],
+      "x-api-key": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Account",
+      "description": "Endpoints for account operations"
+    },
+    {
+      "name": "NFT",
+      "description": "Endpoints for NFT operations"
+    },
+    {
+      "name": "Flow-EVM Tokens",
+      "description": "Endpoints for EVM token operations"
+    },
+    {
+      "name": "Flow-EVM NFT",
+      "description": "Endpoints for EVM NFT operations"
+    }
+  ],
+  "paths": {
+    "/api/metadata/user/{address}": {
+      "get": {
+        "summary": "Get user address metadata",
+        "tags": [
+          "Metadata"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "address",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "icon": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "background": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create or update user metadata",
+        "tags": [
+          "Metadata"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "address",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "icon": {
+                    "type": "string",
+                    "required": true,
+                    "description": "The emoji icon of the user"
+                  },
+                  "name": {
+                    "type": "string",
+                    "required": true,
+                    "description": "The name of the user"
+                  },
+                  "background": {
+                    "type": "string",
+                    "required": true,
+                    "description": "The background color of the user"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User metadata updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "icon": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "background": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/metadata/user/metadatas": {
+      "get": {
+        "summary": "Get user metadatas",
+        "tags": [
+          "Metadata"
+        ],
+        "responses": {
+          "200": {
+            "description": "User addresses metadatas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "example": {
+                    "0x00000000000000000000000266Ddb89AaAAe0CA0": {
+                      "name": "name",
+                      "background": "E91E63",
+                      "icon": "🍋"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/account/token-transfers": {
+      "get": {
+        "summary": "Get account transfer history by token types",
+        "description": "Retrieves the transaction history for a specific account address and token type.",
+        "tags": [
+          "Account"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "address",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The account address to get transfers for"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 20
+            },
+            "description": "The number of transactions to return (max 100)"
+          },
+          {
+            "in": "query",
+            "name": "after",
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "description": "The offset for pagination"
+          },
+          {
+            "in": "query",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The token identifier to filter transfers by",
+            "example": "A.1654653399040a61.FlowToken.Vault"
+          },
+          {
+            "in": "header",
+            "name": "network",
+            "schema": {
+              "$ref": "#/components/schemas/Network"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with transfer history",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "All Addresss"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/TransactionReturnV2"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferListErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferListErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/account/transfers": {
+      "get": {
+        "summary": "Get account transfer history",
+        "description": "Retrieves the transaction history for a specific account address",
+        "tags": [
+          "Account"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "address",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The account address to get transfers for"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 20
+            },
+            "description": "The number of transactions to return (max 100)"
+          },
+          {
+            "in": "query",
+            "name": "after",
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "description": "The offset for pagination"
+          },
+          {
+            "in": "header",
+            "name": "network",
+            "schema": {
+              "$ref": "#/components/schemas/Network"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with transfer history",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "All Addresss"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/TransactionReturnV2"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferListErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferListErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/nft/collectionList": {
+      "get": {
+        "summary": "Get specific collection NFT under flow address with pagination",
+        "description": "Returns the specific collection NFT under flow address with pagination",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "address",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Flow address to get NFTs from"
+          },
+          {
+            "in": "header",
+            "name": "network",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "mainnet",
+                "testnet"
+              ]
+            },
+            "description": "Flow network (mainnet/testnet)",
+            "default": "mainnet"
+          },
+          {
+            "in": "query",
+            "name": "collectionIdentifier",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "ref": "#/components/schemas/CollectionIdentifier"
+            },
+            "description": "Collection identifier"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Number of records to skip"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Maximum number of records to return",
+            "default": 50
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "NFT List with pagination",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NFTListResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "NFT"
+        ]
+      }
+    },
+    "/api/v2/nft/collections": {
+      "get": {
+        "summary": "Get list of NFT collections",
+        "description": "Returns a list of all NFT collections with their details",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "network",
+            "schema": {
+              "$ref": "#/components/schemas/Network"
+            },
+            "description": "Flow network (mainnet/testnet)",
+            "default": "mainnet"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of NFT collections",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/NFTCollection"
+                      }
+                    },
+                    "status": {
+                      "type": "number"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "NFT"
+        ]
+      }
+    },
+    "/api/v2/nft/id": {
+      "get": {
+        "summary": "Get NFT collections with IDs for an address",
+        "description": "Retrieves a list of NFT collections and their IDs owned by the specified address",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "address",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "0x4d6800d557c29590"
+            },
+            "description": "The wallet address to get NFT collections for"
+          },
+          {
+            "in": "header",
+            "name": "network",
+            "schema": {
+              "$ref": "#/components/schemas/Network",
+              "default": "mainnet"
+            },
+            "description": "The network to query (mainnet or testnet)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NFTCollectionIdsResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "NFT"
+        ]
+      }
+    },
+    "/api/v2/nft/list": {
+      "get": {
+        "summary": "Get all NFTs under flow address with pagination",
+        "description": "Returns all NFTs under flow address with pagination",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "address",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Flow address to get NFTs from"
+          },
+          {
+            "in": "header",
+            "name": "network",
+            "schema": {
+              "$ref": "#/components/schemas/Network"
+            },
+            "default": "mainnet"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Number of records to skip"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Maximum number of records to return",
+            "default": 50
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "NFT List with pagination",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NFTListResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "NFT"
+        ]
+      }
+    },
+    "/api/v2/scripts": {
+      "get": {
+        "summary": "Get the cadence scripts",
+        "description": "Returns the cadence scripts",
+        "tags": [
+          "Scripts"
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "version",
+            "schema": {
+              "type": "string"
+            },
+            "description": "version of the scripts",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The list of scripts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "version": {
+                          "type": "string",
+                          "description": "version of the scripts",
+                          "example": 2.65
+                        },
+                        "scripts": {
+                          "type": "object",
+                          "description": "Scripts for different networks",
+                          "properties": {
+                            "mainnet": {
+                              "type": "object",
+                              "description": "mainnet scripts mapping",
+                              "example": {
+                                "ft": {
+                                  "isTokenListEnabled": "base64 encoded string"
+                                },
+                                "nft": {
+                                  "isTokenListEnabled": "base64 encoded string"
+                                },
+                                "version": "1.0"
+                              }
+                            },
+                            "testnet": {
+                              "type": "object",
+                              "description": "testnet scripts mapping",
+                              "example": {
+                                "ft": {
+                                  "isTokenListEnabled": "base64 encoded string"
+                                },
+                                "nft": {
+                                  "isTokenListEnabled": "base64 encoded string"
+                                },
+                                "version": "1.0"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "status": {
+                      "type": "number",
+                      "description": "the status of the response",
+                      "example": 200
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/evm/{address}/fts": {
+      "get": {
+        "summary": "V3 ERC20 tokens for  EVM address",
+        "description": "Retrieves all ERC20 tokens owned by the specified EVM address",
+        "tags": [
+          "User FT Tokens"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "address",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The EVM address to query"
+          },
+          {
+            "in": "header",
+            "name": "network",
+            "schema": {
+              "$ref": "#/components/schemas/Network"
+            },
+            "description": "The network to query (mainnet or testnet)"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Pagination offset for fetching next set of results"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 100
+            },
+            "description": "Number of results to return per page"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved token data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ERC20TokenResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request, address is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/evm/nft/collectionList": {
+      "get": {
+        "summary": "Get specific collection NFT under flow-EVM address with pagination",
+        "description": "Returns the specific collection NFT under flow-EVM address with pagination",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "network",
+            "schema": {
+              "$ref": "#/components/schemas/Network",
+              "default": "mainnet"
+            },
+            "description": "The blockchain network (mainnet, testnet, etc.)"
+          },
+          {
+            "in": "query",
+            "name": "address",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Flow-EVM address to get NFTs from"
+          },
+          {
+            "in": "query",
+            "name": "collectionIdentifier",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Collection identifier"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Number of records to skip"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Maximum number of records to return",
+            "default": 50
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "NFT List with pagination",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NFTCollectionListResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Flow-EVM NFT"
+        ]
+      }
+    },
+    "/api/v3/evm/nft/id": {
+      "get": {
+        "summary": "Get all NFT collections for an address",
+        "description": "Retrieves all NFT collections associated with a specific address",
+        "tags": [
+          "Flow-EVM NFT"
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "network",
+            "schema": {
+              "$ref": "#/components/schemas/Network",
+              "default": "mainnet"
+            },
+            "description": "The blockchain network (mainnet, testnet, etc.)"
+          },
+          {
+            "in": "query",
+            "name": "address",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The wallet address to fetch collections for"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Pagination cursor for the next set of results"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 50
+            },
+            "description": "Maximum number of collections to return"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with collections data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NFTCollectionIdsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/evm/nft/list": {
+      "get": {
+        "summary": "Get NFTs for an address",
+        "description": "Retrieves NFTs associated with a specific address with pagination",
+        "tags": [
+          "Flow-EVM NFT"
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "network",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "mainnet",
+                "testnet"
+              ],
+              "default": "mainnet"
+            },
+            "description": "The blockchain network (mainnet, testnet, etc.)"
+          },
+          {
+            "in": "query",
+            "name": "address",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The wallet address to fetch NFTs for"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Pagination cursor for the next set of results"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 50
+            },
+            "description": "Maximum number of NFTs to return"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with NFTs data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NFTListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/fts/full": {
+      "get": {
+        "summary": "V3 FT list including automated additions.",
+        "description": "Retrieves a comprehensive list of Fungible Tokens for a specified network and chain type, merging the default list with automatically discovered tokens.",
+        "tags": [
+          "FT"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "network",
+            "schema": {
+              "$ref": "#/components/schemas/Network"
+            },
+            "description": "The network to query (e.g., 'mainnet', 'testnet'). Defaults to 'mainnet'.",
+            "required": false,
+            "default": "mainnet"
+          },
+          {
+            "in": "query",
+            "name": "chain_type",
+            "schema": {
+              "type": "string",
+              "default": "flow",
+              "enum": [
+                "flow",
+                "evm"
+              ]
+            },
+            "required": false,
+            "description": "The chain type (e.g., 'flow', 'evm'). Defaults to 'flow'."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response containing the full FT list.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FTList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Invalid query parameters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FTListErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found - The specified network or chain type was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FTListErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method Not Allowed - Only GET requests are permitted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FTListErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v4/cadence/tokens/ft/{address}": {
+      "get": {
+        "summary": "V4 Flow tokens for a Flow address (with currency)",
+        "description": "Retrieves a list of fungible tokens owned by a specific Flow address, including balances, metadata, and price information with currency conversion.",
+        "tags": [
+          "User FT Tokens"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "address",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The Flow address (e.g., 0xabcdef1234567890) to query for tokens.",
+            "example": "0xf85e4526610b571b"
+          },
+          {
+            "in": "query",
+            "name": "network",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "mainnet",
+                "testnet"
+              ],
+              "default": "mainnet"
+            },
+            "description": "The Flow network to query (mainnet or testnet)."
+          },
+          {
+            "in": "query",
+            "name": "currency",
+            "schema": {
+              "type": "string",
+              "default": "USD"
+            },
+            "description": "Currency code for price conversion (e.g., USD, EUR). See /api/v4/currencies."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of fungible tokens with balance, storage info, and converted price data.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CadenceFTApiResponseWithCurrencyInData"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Invalid address, network parameter, or unsupported currency.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Unsupported currency: XYZ"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method Not Allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Method GET Not Allowed"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v4/currencies": {
+      "get": {
+        "summary": "Get a list of supported currencies",
+        "description": "Returns an array of supported currency details for the wallet",
+        "tags": [
+          "Currencies"
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of supported currencies",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "currencies": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "code": {
+                                "type": "string",
+                                "example": "USD"
+                              },
+                              "name": {
+                                "type": "string",
+                                "example": "United States Dollar"
+                              },
+                              "symbol": {
+                                "type": "string",
+                                "example": "$"
+                              },
+                              "country": {
+                                "type": "string",
+                                "example": "United States"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "status": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    },
+                    "status": {
+                      "type": "integer",
+                      "example": 500
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v4/evm/tokens/ft/{address}": {
+      "get": {
+        "summary": "V4 ERC20 tokens for an EVM address",
+        "description": "Retrieves a list of fungible tokens owned by a specific EVM address, including balances and price information.",
+        "tags": [
+          "User FT Tokens"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "address",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The EVM address (with or without 0x prefix) to query for tokens.",
+            "example": "0xC5Dc9a2597534De2c294A00784d38e30e13312c2"
+          },
+          {
+            "in": "query",
+            "name": "network",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "mainnet",
+                "testnet"
+              ],
+              "default": "mainnet"
+            },
+            "description": "The network to query (mainnet or testnet)."
+          },
+          {
+            "in": "query",
+            "name": "currency",
+            "schema": {
+              "type": "string",
+              "default": "USD"
+            },
+            "description": "The currency code (e.g., USD, EUR, JPY) to return prices in. See /api/v4/currencies for supported codes."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of fungible tokens with balance and price data.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response",
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "chainId": {
+                            "type": "number",
+                            "description": "Chain ID for the network (747 for mainnet, 545 for testnet)."
+                          },
+                          "address": {
+                            "type": "string",
+                            "description": "Token contract address."
+                          },
+                          "symbol": {
+                            "type": "string",
+                            "description": "Token symbol."
+                          },
+                          "name": {
+                            "type": "string",
+                            "description": "Token name."
+                          },
+                          "decimals": {
+                            "type": "number",
+                            "description": "Token decimal places."
+                          },
+                          "logoURI": {
+                            "type": "string",
+                            "description": "URL to token logo image."
+                          },
+                          "flowIdentifier": {
+                            "type": "string",
+                            "description": "Flow identifier for the token."
+                          },
+                          "displayBalance": {
+                            "type": "string",
+                            "description": "User's token balance adjusted for decimals."
+                          },
+                          "rawBalance": {
+                            "type": "string",
+                            "description": "Raw token balance."
+                          },
+                          "priceInUSD": {
+                            "type": "string",
+                            "description": "Token price in USD."
+                          },
+                          "balanceInUSD": {
+                            "type": "string",
+                            "description": "Token balance value in USD."
+                          },
+                          "priceInFLOW": {
+                            "type": "string",
+                            "description": "Token price in FLOW."
+                          },
+                          "balanceInFLOW": {
+                            "type": "string",
+                            "description": "Token balance value in FLOW."
+                          },
+                          "currency": {
+                            "type": "string",
+                            "description": "The currency code used for price conversion."
+                          },
+                          "priceInCurrency": {
+                            "type": "string",
+                            "description": "Token price in the requested currency."
+                          },
+                          "balanceInCurrency": {
+                            "type": "string",
+                            "description": "Token balance value in the requested currency."
+                          },
+                          "isVerified": {
+                            "type": "boolean",
+                            "description": "Whether the token is verified.\\"
+                          },
+                          "contractType": {
+                            "type": "string",
+                            "description": "Type of the contract ERC20"
+                          }
+                        }
+                      }
+                    },
+                    "status": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Missing or invalid address, or unsupported currency.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response",
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "status": {
+                      "type": "number",
+                      "example": 500
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v4/evm/tokens/ft/lookup": {
+      "post": {
+        "summary": "Lookup EVM token data with price information",
+        "description": "Returns metadata and price information for specified EVM token addresses",
+        "tags": [
+          "Flow-EVM Tokens"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "addresses"
+                ],
+                "properties": {
+                  "addresses": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Array of EVM token addresses to fetch data for"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "network",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "mainnet",
+                "testnet"
+              ],
+              "default": "mainnet"
+            },
+            "description": "The network to query (mainnet or testnet)"
+          },
+          {
+            "in": "query",
+            "name": "currency",
+            "schema": {
+              "type": "string",
+              "default": "USD"
+            },
+            "description": "The currency code (e.g., USD, EUR, JPY) to return prices in. See /api/v4/currencies for supported codes."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved token data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CurrencyEVMTokenData"
+                      }
+                    },
+                    "status": {
+                      "type": "integer",
+                      "example": 200
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request, invalid addresses or unsupported currency",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "status": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "No valid EVM addresses provided"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "status": {
+                      "type": "integer",
+                      "example": 500
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v4/key-indexer/{publicKey}": {
+      "get": {
+        "summary": "Flow accounts associated with a public key",
+        "description": "Retrieves all Flow accounts that have the specified public key registered.\nThis endpoint proxies requests to the Flow Key Indexer service, transforms the data, and adds caching.\n",
+        "tags": [
+          "Account"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "publicKey",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The public key in hex format (with or without 0x prefix)",
+            "example": "b7ead20cebc8fe7e8ad825db2e7489a0ebeb37b2845ba5ce781776be30375a3708e954a53c76c88a9b8cb7e5ab43252cc013401c0e017d8f598dad74f719c593"
+          },
+          {
+            "in": "header",
+            "name": "network",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "mainnet",
+                "testnet"
+              ],
+              "default": "mainnet"
+            },
+            "description": "The network to query (mainnet or testnet)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved accounts data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PublicKeyAccount"
+                  }
+                },
+                "example": [
+                  {
+                    "address": 11114000254959286000,
+                    "publicKey": "b7ead20cebc8fe7e8ad825db2e7489a0ebeb37b2845ba5ce781776be30375a3708e954a53c76c88a9b8cb7e5ab43252cc013401c0e017d8f598dad74f719c593",
+                    "keyIndex": 0,
+                    "weight": 1000,
+                    "signAlgo": 1,
+                    "signAlgoString": "ECDSA_P256",
+                    "hashAlgo": 1,
+                    "hashAlgoString": "SHA2_256"
+                  }
+                ]
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request, invalid public key format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "response": {
+                      "type": "array",
+                      "items": {}
+                    }
+                  }
+                },
+                "example": {
+                  "error": "Invalid public key format",
+                  "response": []
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "response": {
+                      "type": "array",
+                      "items": {}
+                    }
+                  }
+                },
+                "example": {
+                  "error": "Key-indexer API returned status 500",
+                  "response": []
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v4/prices": {
+      "get": {
+        "summary": "Get token prices",
+        "description": "Returns price data for Flow and EVM tokens, with optional currency conversion",
+        "tags": [
+          "Prices"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "currency",
+            "schema": {
+              "type": "string",
+              "default": "USD"
+            },
+            "description": "Currency code to convert prices to (e.g., USD, EUR, JPY)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of token price data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "contractAddress": {
+                            "type": "string",
+                            "example": "0x1654653399040a61"
+                          },
+                          "contractName": {
+                            "type": "string",
+                            "example": "FlowToken"
+                          },
+                          "priceInFLOW": {
+                            "type": "string",
+                            "example": "1.0"
+                          },
+                          "priceInUSD": {
+                            "type": "string",
+                            "example": "2.34"
+                          },
+                          "symbol": {
+                            "type": "string",
+                            "example": "FLOW"
+                          },
+                          "evmAddress": {
+                            "type": "string",
+                            "example": "0xd3bF53DAC106A0290B0483EcBC89d40FcC961f3e"
+                          },
+                          "priceInCurrency": {
+                            "type": "string",
+                            "example": "2.15",
+                            "description": "Price in the requested currency (if not USD)"
+                          }
+                        }
+                      }
+                    },
+                    "status": {
+                      "type": "integer",
+                      "example": 200
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Unsupported currency",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Unsupported currency: XYZ"
+                    },
+                    "status": {
+                      "type": "integer",
+                      "example": 400
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    },
+                    "status": {
+                      "type": "integer",
+                      "example": 500
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

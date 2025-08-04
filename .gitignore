@@ -1,0 +1,116 @@
+# Dependencies
+node_modules/
+*/node_modules/
+.pnpm-debug.log*
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+*.log
+
+# Environment variables and sensitive files
+.env
+.env.dev
+.env.development
+.env.pro
+.env.production
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+# Keep example files
+!.env.example
+!**/.env.example
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# React Native specific - ios, android, and flow-wallet-kit are git submodules
+# Exclude entire directories (managed as submodules)
+apps/react-native/ios/
+apps/react-native/android/
+apps/react-native/flow-wallet-kit/
+
+# React Native build outputs that might leak outside submodules
+**/ios/build/
+**/android/build/
+**/android/.gradle/
+main.jsbundle
+main.jsbundle.map
+
+# Metro
+.metro-health-check*
+metro-cache/
+
+# Flipper
+ios/Pods/Flipper*/
+ios/Pods/boost-for-react-native/
+
+# Fastlane
+ios/fastlane/report.xml
+ios/fastlane/Preview.html
+ios/fastlane/screenshots/**/*.png
+ios/fastlane/test_output
+android/fastlane/report.xml
+android/fastlane/Preview.html
+android/fastlane/screenshots
+android/fastlane/test_output
+
+# Chrome Extension specific
+*/dist/
+*/dist.zip
+*/_raw/manifest.json
+
+# Ruby/CocoaPods
+*.gem
+/.bundle/
+/vendor/bundle/
+cache/
+gems/
+specifications/
+
+# Testing
+coverage/
+.nyc_output
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Storybook
+storybook-static/
+
+# Turbo
+.turbo
+
+# Local configuration
+.npmrc.local
+.yarnrc.local

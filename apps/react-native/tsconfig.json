@@ -1,0 +1,15 @@
+{
+  "extends": "@react-native/typescript-config",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "jsx": "react-jsx",
+    "resolveJsonModule": true,
+    "paths": {
+      "@/*": ["src/*"],
+      "ui": ["src/components/ui"],
+      "ui/*": ["src/components/ui/*"],
+      "icons": ["src/assets/icons"],
+      "icons/*": ["src/assets/icons/*"]
+    }
+  }
+}

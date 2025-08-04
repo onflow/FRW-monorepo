@@ -1,0 +1,20 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+# Enable automatic linking of workspace packages
+linkWorkspacePackages: true
+
+# Build dependencies that need to be built from source
+onlyBuiltDependencies:
+  - '@swc/core'
+  - '@tsparticles/engine'
+  - bufferutil
+  - electron
+  - esbuild
+  - keccak
+  - protobufjs
+  - secp256k1
+  - storybook-addon-remix-react-router
+  - unrs-resolver
+  - utf-8-validate

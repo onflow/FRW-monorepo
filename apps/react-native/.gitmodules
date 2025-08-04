@@ -1,0 +1,8 @@
+[submodule "android"]
+	path = android
+	url = https://github.com/onflow/FRW-Android
+	branch = develop
+[submodule "ios"]
+	path = ios
+	url = https://github.com/onflow/FRW-iOS
+	branch = develop

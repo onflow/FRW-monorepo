@@ -1,0 +1,40 @@
+{
+    "name": "@onflow/frw-types",
+    "version": "0.0.3",
+    "description": "Package for flow wallet data types",
+    "type": "module",
+    "main": "./src/index.ts",
+    "types": "./src/index.ts",
+    "files": [
+        "src",
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsup",
+        "build:watch": "tsup --watch",
+        "type-check": "tsc --noEmit",
+        "clean": "rm -rf dist",
+        "test": "vitest",
+        "test:run": "vitest --run",
+        "test:coverage": "vitest --coverage",
+        "prepublishOnly": "pnpm build",
+        "lint": "eslint . --cache",
+        "lint:fix": "eslint . --cache --fix"
+    },
+    "exports": {
+        ".": {
+            "types": "./src/index.ts",
+            "default": "./src/index.ts"
+        },
+        "./*": {
+            "types": "./src/*.ts",
+            "default": "./src/*.ts"
+        }
+    },
+    "dependencies": {
+        "@onflow/frw-api": "0.0.3"
+    },
+    "devDependencies": {
+        "tsup": "^8.5.0"
+    }
+}
