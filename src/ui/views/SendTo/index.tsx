@@ -1,11 +1,8 @@
+import { INITIAL_TRANSACTION_STATE, transactionReducer } from '@onflow/frw-reducers';
 import React, { useCallback, useEffect, useReducer } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 
-import {
-  INITIAL_TRANSACTION_STATE,
-  transactionReducer,
-} from '@onflow/frw-reducers/transaction-reducer';
-import { type FlowAddress, type WalletAddress } from '@onflow/frw-shared/types';
+import { type FlowNetwork, type WalletAddress } from '@onflow/frw-shared/types';
 import { isValidAddress, isValidFlowAddress } from '@onflow/frw-shared/utils';
 
 import { useCoins } from '@/ui/hooks/useCoinHook';
@@ -16,7 +13,8 @@ import SendToCadenceOrEvm from './SendToCadenceOrEvm';
 export const SendTo = () => {
   // Remove or use only in development
 
-  const { mainAddress, currentWallet, userInfo } = useProfiles();
+  const { network, mainAddress, evmAddress, childAccounts, currentWallet, userInfo } =
+    useProfiles();
   const { coins, coinsLoaded } = useCoins();
   const params = useParams();
   const token = params.id;
@@ -49,11 +47,14 @@ export const SendTo = () => {
   );
 
   useEffect(() => {
-    if (isValidFlowAddress(mainAddress) && isValidAddress(currentWallet?.address)) {
+    if (mainAddress && isValidFlowAddress(mainAddress) && isValidAddress(currentWallet?.address)) {
       dispatch({
         type: 'initTransactionState',
         payload: {
-          rootAddress: mainAddress as FlowAddress,
+          network: network as FlowNetwork,
+          parentAddress: mainAddress,
+          parentCoaAddress: evmAddress as WalletAddress,
+          parentChildAddresses: childAccounts?.map((child) => child.address as WalletAddress) ?? [],
           fromAddress: currentWallet.address as WalletAddress,
           fromContact: {
             id: 0,
@@ -88,7 +89,7 @@ export const SendTo = () => {
     }
   }, [
     mainAddress,
-    currentWallet?.address,
+    currentWallet.address,
     userInfo?.nickname,
     userInfo?.username,
     userInfo?.avatar,
@@ -96,6 +97,9 @@ export const SendTo = () => {
     toAddress,
     handleTokenChange,
     location.search,
+    evmAddress,
+    childAccounts,
+    network,
   ]);
 
   const handleAmountChange = (amount: string) => {

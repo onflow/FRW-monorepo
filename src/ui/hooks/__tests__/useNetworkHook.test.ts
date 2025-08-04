@@ -1,4 +1,9 @@
-import { userWalletsKey } from '@onflow/frw-data-model';
+import {
+  addStorageListener,
+  getLocalData,
+  removeStorageListener,
+  userWalletsKey,
+} from '@onflow/frw-data-model';
 import { act, useEffect, useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -16,34 +21,29 @@ vi.mock('react', async () => {
 });
 
 // Mock storage module - must be defined before the vi.mock call
-vi.mock('@onflow/frw-extension-shared/storage', () => {
-  return {
-    default: {
-      get: vi.fn().mockImplementation((key) => {
-        if (key === 'developerMode') {
-          return Promise.resolve(false);
-        }
-        if (key === 'emulatorMode') {
-          return Promise.resolve(false);
-        }
-        if (key === userWalletsKey) {
-          return Promise.resolve({ network: 'mainnet' });
-        }
-        return Promise.resolve({});
-      }),
-      addStorageListener: vi.fn(),
-      removeStorageListener: vi.fn(),
-    },
-    __esModule: true,
-  };
-});
-
-import storage from '@onflow/frw-extension-shared/storage';
+vi.mock('@onflow/frw-data-model', async (importOriginal) => ({
+  ...(await importOriginal()),
+  getLocalData: vi.fn().mockImplementation((key) => {
+    if (key === 'developerMode') {
+      return Promise.resolve(false);
+    }
+    if (key === 'emulatorMode') {
+      return Promise.resolve(false);
+    }
+    if (key === userWalletsKey) {
+      return Promise.resolve({ network: 'mainnet' });
+    }
+    return Promise.resolve({});
+  }),
+  addStorageListener: vi.fn(),
+  removeStorageListener: vi.fn(),
+}));
 
 import { useNetwork } from '../useNetworkHook';
 
 // Get the mocked storage
-const mockStorage = vi.mocked(storage);
+const mockGetLocalData = vi.mocked(getLocalData);
+const mockAddStorageListener = vi.mocked(addStorageListener);
 
 describe('useNetworkHook', () => {
   let setNetworkMock: ReturnType<typeof vi.fn>;
@@ -63,7 +63,7 @@ describe('useNetworkHook', () => {
     vi.mocked(useState).mockImplementationOnce(() => [false, setEmulatorModeOnMock]);
 
     // Reset storage mock with default values
-    mockStorage.get.mockImplementation((key) => {
+    mockGetLocalData.mockImplementation((key) => {
       if (key === 'developerMode') {
         return Promise.resolve(false);
       }
@@ -83,12 +83,12 @@ describe('useNetworkHook', () => {
     expect(network).toBe('mainnet');
     expect(developerMode).toBe(false);
     expect(emulatorModeOn).toBe(false);
-    expect(mockStorage.addStorageListener).toHaveBeenCalled();
+    expect(addStorageListener).toHaveBeenCalled();
   });
 
   it('should load initial data from storage', async () => {
     // Mock storage returns for initial load
-    mockStorage.get.mockImplementation((key) => {
+    mockGetLocalData.mockImplementation((key) => {
       if (key === 'developerMode') {
         return Promise.resolve(true);
       }
@@ -108,8 +108,8 @@ describe('useNetworkHook', () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
-    expect(mockStorage.get).toHaveBeenCalledWith('developerMode');
-    expect(mockStorage.get).toHaveBeenCalledWith('emulatorMode');
+    expect(mockGetLocalData).toHaveBeenCalledWith('developerMode');
+    expect(mockGetLocalData).toHaveBeenCalledWith('emulatorMode');
 
     expect(setDeveloperModeMock).toHaveBeenCalledWith(true);
     expect(setEmulatorModeOnMock).toHaveBeenCalledWith(true);
@@ -119,7 +119,7 @@ describe('useNetworkHook', () => {
     useNetwork();
 
     // Simulate storage change event for userWallets
-    const handleStorageChange = mockStorage.addStorageListener.mock.calls[0][0];
+    const handleStorageChange = mockAddStorageListener.mock.calls[0][0];
 
     handleStorageChange(
       {
@@ -139,7 +139,7 @@ describe('useNetworkHook', () => {
     useNetwork();
 
     // Simulate storage change event for developerMode
-    const handleStorageChange = mockStorage.addStorageListener.mock.calls[0][0];
+    const handleStorageChange = mockAddStorageListener.mock.calls[0][0];
 
     handleStorageChange(
       {
@@ -164,7 +164,7 @@ describe('useNetworkHook', () => {
       // Call the cleanup function
       cleanupFn();
 
-      expect(mockStorage.removeStorageListener).toHaveBeenCalled();
+      expect(removeStorageListener).toHaveBeenCalled();
     }
   });
 
@@ -202,7 +202,7 @@ describe('useNetworkHook', () => {
     ]);
 
     // Mock storage to return delayed promises
-    mockStorage.get.mockImplementation((key) => {
+    mockGetLocalData.mockImplementation((key) => {
       return new Promise((resolve) => {
         setTimeout(() => {
           if (key === 'developerMode') {

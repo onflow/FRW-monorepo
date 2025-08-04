@@ -109,8 +109,8 @@ const MovefromParent = (props: SendNFTConfirmationProps) => {
 
   const moveNFTToEvm = async () => {
     setSending(true);
-    const identifier = props.data.contract.nftTypeId
-      ? props.data.contract.nftTypeId
+    const identifier = props.data.contract.flowIdentifier
+      ? props.data.contract.flowIdentifier
       : props.data.contract.flowIdentifier;
     usewallet
       .batchBridgeNftToEvm(identifier, [props.data.nft.id])

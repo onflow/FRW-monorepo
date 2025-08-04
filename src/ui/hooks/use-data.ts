@@ -1,11 +1,14 @@
 import {
   addCachedDataListener,
   getCachedData,
+  getLocalData,
   removeCachedDataListener,
+  addStorageListener,
+  removeStorageListener,
+  type StorageChange,
+  type AreaName,
 } from '@onflow/frw-data-model';
 import { useEffect, useState } from 'react';
-
-import storage, { type AreaName, type StorageChange } from '@onflow/frw-extension-shared/storage';
 
 type DataState = {
   key: string;
@@ -57,7 +60,7 @@ export const useUserData = <T>(key: string | undefined | null): T | undefined =>
     // Handle undefined key
     const fetchData = async () => {
       if (!key) return;
-      const data = await storage.get(key);
+      const data = await getLocalData<T>(key);
       if (mounted) {
         setDataState({ key, data });
       }
@@ -80,11 +83,13 @@ export const useUserData = <T>(key: string | undefined | null): T | undefined =>
     if (!key) return;
 
     fetchData();
-    storage.addStorageListener(handleStorageChange);
+    // TODO: We should store these by key to avoid removing the wrong listener
+    addStorageListener(handleStorageChange);
 
     return () => {
       mounted = false;
-      storage.removeStorageListener(handleStorageChange);
+      // TODO: We should store these by key to avoid removing the wrong listener
+      removeStorageListener(handleStorageChange);
     };
   }, [key]);
 

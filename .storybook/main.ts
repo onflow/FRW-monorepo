@@ -67,7 +67,7 @@ const config: StorybookConfig = {
 
     config.resolve.fallback = {
       ...config.resolve.fallback,
-      process: require.resolve('process/browser'),
+      process: 'process/browser',
     };
 
     // START: -------- SVG and PNG Handling --------

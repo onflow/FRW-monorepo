@@ -1,9 +1,9 @@
 import { Alert, Box, Divider, List, Snackbar, Typography } from '@mui/material';
 import LinearProgress from '@mui/material/LinearProgress';
+import { getLocalData, setLocalData } from '@onflow/frw-data-model';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router';
 
-import storage from '@onflow/frw-extension-shared/storage';
 import { type Emoji, type StorageInfo } from '@onflow/frw-shared/types';
 import { consoleError, isValidEthereumAddress, isValidFlowAddress } from '@onflow/frw-shared/utils';
 
@@ -63,7 +63,7 @@ const AccountDetail = () => {
   };
 
   const loadGasMode = useCallback(async () => {
-    const isFreeGasFeeEnabled = await storage.get('lilicoPayer');
+    const isFreeGasFeeEnabled = await getLocalData<boolean>('lilicoPayer');
     if (isFreeGasFeeEnabled) {
       setGasMode(isFreeGasFeeEnabled);
     }
@@ -78,7 +78,7 @@ const AccountDetail = () => {
 
   const switchGasMode = async () => {
     setGasMode(!modeGas);
-    storage.set('lilicoPayer', !modeGas);
+    setLocalData('lilicoPayer', !modeGas);
     setShowError(true);
   };
 

@@ -1,7 +1,13 @@
-import { getUserWalletsData, userWalletsKey } from '@onflow/frw-data-model';
+import {
+  addStorageListener,
+  type AreaName,
+  getLocalData,
+  getUserWalletsData,
+  removeStorageListener,
+  type StorageChange,
+  userWalletsKey,
+} from '@onflow/frw-data-model';
 import { useEffect, useState } from 'react';
-
-import storage, { type AreaName, type StorageChange } from '@onflow/frw-extension-shared/storage';
 
 export const useNetwork = () => {
   const [network, setNetwork] = useState<string>('mainnet');
@@ -19,25 +25,26 @@ export const useNetwork = () => {
         // Changes is to local storage
         // Check network change
         if (changes[userWalletsKey] && changes[userWalletsKey].newValue) {
-          const userWallets = changes[userWalletsKey].newValue;
-          if (userWallets.network) {
-            setNetwork(userWallets.network);
+          const userWallets: { network?: string; emulatorMode?: boolean } =
+            changes[userWalletsKey].newValue;
+          if (userWallets && 'network' in userWallets) {
+            setNetwork(userWallets.network as string);
           }
-          if (userWallets.emulatorMode !== undefined) {
-            setEmulatorModeOn(userWallets.emulatorMode);
+          if (userWallets && 'emulatorMode' in userWallets) {
+            setEmulatorModeOn(userWallets.emulatorMode as boolean);
           }
         }
         // Check developer mode change
         if (changes['developerMode'] !== undefined) {
-          setDeveloperMode(changes['developerMode'].newValue);
+          setDeveloperMode(changes['developerMode'].newValue as boolean);
         }
       }
     };
 
     // Initial load from storage
     const loadInitialData = async () => {
-      const developerModeValue = await storage.get('developerMode');
-      const emulatorModeValue = await storage.get('emulatorMode');
+      const developerModeValue = await getLocalData<boolean>('developerMode');
+      const emulatorModeValue = await getLocalData<boolean>('emulatorMode');
       const userWalletsStorage = await getUserWalletsData();
       if (mounted) {
         if (developerModeValue !== undefined) {
@@ -53,11 +60,11 @@ export const useNetwork = () => {
     };
 
     loadInitialData();
-    storage.addStorageListener(handleStorageChange);
+    addStorageListener(handleStorageChange);
 
     return () => {
       mounted = false;
-      storage.removeStorageListener(handleStorageChange);
+      removeStorageListener(handleStorageChange);
     };
   }, []);
 
