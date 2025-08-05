@@ -1,8 +1,8 @@
 import type { Account as FclAccount } from '@onflow/typedefs';
 import * as ethUtil from 'ethereumjs-util';
 
-import { type NftCollection, type FlowNetwork, type NFTModelV2 } from '@onflow/frw-shared/types';
-import { consoleError } from '@onflow/frw-shared/utils';
+import { type NftCollection, type FlowNetwork, type NFTModelV2 } from '@/shared/types';
+import { consoleError } from '@/shared/utils';
 
 import { EMULATOR_HOST_MAINNET, EMULATOR_HOST_TESTNET } from './fclConfig';
 

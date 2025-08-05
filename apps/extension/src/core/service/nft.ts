@@ -1,4 +1,5 @@
 import * as fcl from '@onflow/fcl';
+
 import {
   childAccountAllowTypesKey,
   childAccountAllowTypesRefreshRegex,
@@ -20,15 +21,14 @@ import {
   evmNftCollectionsAndIdsRefreshRegex,
   evmCollectionNftsRefreshRegex,
 } from '@/data-model';
-
 import {
   type NftCollection,
   type NFTModelV2,
   type CollectionNfts,
   type NftCollectionAndIds,
   type ChildAccountNftMap,
-} from '@onflow/frw-shared/types';
-import { isValidEthereumAddress } from '@onflow/frw-shared/utils';
+} from '@/shared/types';
+import { isValidEthereumAddress } from '@/shared/utils';
 
 import openapiService, { getScripts } from './openapi';
 import { fclConfirmNetwork } from '../utils/fclConfig';

@@ -1,11 +1,12 @@
+import { act, useEffect, useState } from 'react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import {
   addStorageListener,
   getLocalData,
   removeStorageListener,
   userWalletsKey,
 } from '@/data-model';
-import { act, useEffect, useState } from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock React
 vi.mock('react', async () => {

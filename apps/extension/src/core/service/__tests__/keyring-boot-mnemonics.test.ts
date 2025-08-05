@@ -1,9 +1,9 @@
 // Testing imports
-import { CURRENT_ID_KEY, KEYRING_STATE_V2_KEY, getLocalData, setLocalData } from '@/data-model';
 import encryptor from 'browser-passworder';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { FLOW_BIP44_PATH } from '@onflow/frw-shared/constant';
+import { CURRENT_ID_KEY, KEYRING_STATE_V2_KEY, getLocalData, setLocalData } from '@/data-model';
+import { FLOW_BIP44_PATH } from '@/shared/constant';
 
 // Internal imports
 

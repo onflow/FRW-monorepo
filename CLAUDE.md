@@ -85,16 +85,6 @@ FRW-Extension/
    - Isolated business logic
    - Shared between UI and background where appropriate
 
-### External Packages
-
-Core functionality is provided by npm packages from the `frw-core` repository:
-
-- **`@onflow/frw-shared`** - Types, constants, utilities
-- **`@onflow/frw-core`** - Core wallet services and blockchain logic
-- **`@onflow/frw-reducers`** - State management reducers
-- **`@onflow/frw-data-model`** - Caching system
-- **`@onflow/frw-extension-shared`** - Extension-specific utilities
-
 ## Environment Setup
 
 1. **Prerequisites**:

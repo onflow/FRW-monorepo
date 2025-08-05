@@ -1,5 +1,5 @@
-import { FLOW_BIP44_PATH } from '@onflow/frw-shared/constant';
-import type { PublicKeyAccount, PublicPrivateKeyTuple } from '@onflow/frw-shared/types';
+import { FLOW_BIP44_PATH } from '@/shared/constant';
+import type { PublicKeyAccount, PublicPrivateKeyTuple } from '@/shared/types';
 
 import {
   getAccountsByPublicKeyTuple,

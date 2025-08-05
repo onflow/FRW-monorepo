@@ -1,8 +1,8 @@
-import { permissionKey, permissionKeyV1, getLocalData } from '@/data-model';
 import { LRUCache } from 'lru-cache';
 
-import { INTERNAL_REQUEST_ORIGIN, MAINNET_CHAIN_ID } from '@onflow/frw-shared/constant';
-import { consoleInfo, consoleWarn } from '@onflow/frw-shared/utils';
+import { permissionKey, permissionKeyV1, getLocalData } from '@/data-model';
+import { INTERNAL_REQUEST_ORIGIN, MAINNET_CHAIN_ID } from '@/shared/constant';
+import { consoleInfo, consoleWarn } from '@/shared/utils';
 
 import createPersistStore from '../utils/persistStore';
 

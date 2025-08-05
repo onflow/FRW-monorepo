@@ -6,11 +6,11 @@
  * ******************************************************
  **/
 
-import { getLocalData } from '@/data-model';
 import compareVersions from 'compare-versions';
 
-import { MAINNET_NETWORK, DEFAULT_CURRENCY } from '@onflow/frw-shared/constant';
-import { type FlowNetwork, type Currency } from '@onflow/frw-shared/types';
+import { getLocalData } from '@/data-model';
+import { MAINNET_NETWORK, DEFAULT_CURRENCY } from '@/shared/constant';
+import { type FlowNetwork, type Currency } from '@/shared/types';
 
 import createPersistStore from '../utils/persistStore';
 

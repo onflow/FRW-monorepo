@@ -8,9 +8,8 @@ import {
   getLocalData,
   setLocalData,
 } from '@/data-model';
-
-import { type UserInfoResponse, type LoggedInAccount } from '@onflow/frw-shared/types';
-import { consoleError } from '@onflow/frw-shared/utils';
+import { type UserInfoResponse, type LoggedInAccount } from '@/shared/types';
+import { consoleError } from '@/shared/utils';
 
 import openapiService from './openapi';
 import { getCurrentProfileId, returnCurrentProfileId } from '../utils/current-id';

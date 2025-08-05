@@ -1,11 +1,11 @@
+import { getLocalData, setLocalData, removeLocalData } from '@/data-model';
+import type { TrackingEvents } from '@/shared/types';
+
 import {
   versionService,
   type AnalyticsServiceInterface,
   baseAnalyticsService,
 } from '../../core/service';
-import { getLocalData, setLocalData, removeLocalData } from '@/data-model';
-
-import type { TrackingEvents } from '@/shared/types';
 
 const DISTINCT_ID_KEY = 't_distinct_id';
 const DEVICE_ID_PREFIX = '$device:';

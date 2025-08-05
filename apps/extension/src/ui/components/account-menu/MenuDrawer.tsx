@@ -15,9 +15,8 @@ import {
   type UserInfoResponse,
   type MainAccount,
   type WalletAccount,
-} from '@onflow/frw-shared/types';
-import { consoleError } from '@onflow/frw-shared/utils';
-
+} from '@/shared/types';
+import { consoleError } from '@/shared/utils';
 import lock from '@/ui/assets/svg/sidebar-lock.svg';
 import plus from '@/ui/assets/svg/sidebar-plus.svg';
 import { AccountListing } from '@/ui/components/account/account-listing';

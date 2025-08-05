@@ -7,9 +7,9 @@ import {
   SIGN_ALGO_NUM_DEFAULT,
   SIGN_ALGO_NUM_ECDSA_P256,
   SIGN_ALGO_NUM_ECDSA_secp256k1,
-} from '@onflow/frw-shared/constant';
-import type { AccountKeyRequest, PublicKeyAccount, PublicKeyTuple } from '@onflow/frw-shared/types';
-import { tupleToPubKey } from '@onflow/frw-shared/utils';
+} from '@/shared/constant';
+import type { AccountKeyRequest, PublicKeyAccount, PublicKeyTuple } from '@/shared/types';
+import { tupleToPubKey } from '@/shared/utils';
 
 import { seedWithPathAndPhrase2PublicPrivateKey } from './modules/publicPrivateKey';
 

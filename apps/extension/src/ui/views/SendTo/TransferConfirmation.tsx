@@ -5,9 +5,8 @@ import Grid from '@mui/material/Grid';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { type TransactionState } from '@onflow/frw-shared/types';
-import { consoleError } from '@onflow/frw-shared/utils';
-
+import { type TransactionState } from '@/shared/types';
+import { consoleError } from '@/shared/utils';
 import IconNext from '@/ui/assets/svg/next.svg';
 import { LLSpinner } from '@/ui/components';
 import { Profile } from '@/ui/components/Send/Profile';

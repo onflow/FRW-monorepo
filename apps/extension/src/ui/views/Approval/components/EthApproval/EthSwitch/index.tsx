@@ -3,8 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
 
-import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@onflow/frw-shared/constant';
-
+import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/constant';
 import Link from '@/ui/assets/svg/link.svg';
 import mainnetsvg from '@/ui/assets/svg/mainnet.svg';
 import testnetsvg from '@/ui/assets/svg/testnet.svg';

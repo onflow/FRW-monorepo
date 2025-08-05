@@ -1,10 +1,9 @@
-import { INITIAL_TRANSACTION_STATE, transactionReducer } from '@/reducers';
 import React, { useCallback, useEffect, useReducer } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 
+import { INITIAL_TRANSACTION_STATE, transactionReducer } from '@/reducers';
 import { type FlowNetwork, type WalletAddress } from '@/shared/types';
-import { isValidAddress, isValidFlowAddress } from '@onflow/frw-shared/utils';
-
+import { isValidAddress, isValidFlowAddress } from '@/shared/utils';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 

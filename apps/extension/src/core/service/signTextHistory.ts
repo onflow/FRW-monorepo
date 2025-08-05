@@ -1,4 +1,4 @@
-import { INTERNAL_REQUEST_ORIGIN } from '@onflow/frw-shared/constant';
+import { INTERNAL_REQUEST_ORIGIN } from '@/shared/constant';
 
 import permissionService, { type ConnectedSite } from './permission';
 import createPersistStore from '../utils/persistStore';

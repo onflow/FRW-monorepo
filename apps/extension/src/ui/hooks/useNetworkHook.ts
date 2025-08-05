@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 import {
   addStorageListener,
   type AreaName,
@@ -7,7 +9,6 @@ import {
   type StorageChange,
   userWalletsKey,
 } from '@/data-model';
-import { useEffect, useState } from 'react';
 
 export const useNetwork = () => {
   const [network, setNetwork] = useState<string>('mainnet');

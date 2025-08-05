@@ -1,5 +1,5 @@
-import { FLOW_BIP44_PATH } from '@onflow/frw-shared/constant';
-import { type PublicKeyAccount } from '@onflow/frw-shared/types';
+import { FLOW_BIP44_PATH } from '@/shared/constant';
+import { type PublicKeyAccount } from '@/shared/types';
 
 export const IMPORT_STEPS = {
   IMPORT: 'import',

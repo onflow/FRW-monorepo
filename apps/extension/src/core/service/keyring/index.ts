@@ -1,5 +1,10 @@
 /// fork from https://github.com/MetaMask/KeyringController/blob/master/index.js
 
+import * as bip39 from 'bip39';
+import encryptor from 'browser-passworder';
+import * as ethUtil from 'ethereumjs-util';
+import { EventEmitter } from 'events';
+
 import {
   CURRENT_ID_KEY,
   KEYRING_DEEP_VAULT_KEY,
@@ -11,16 +16,11 @@ import {
   setLocalData,
   removeLocalData,
 } from '@/data-model';
-import * as bip39 from 'bip39';
-import encryptor from 'browser-passworder';
-import * as ethUtil from 'ethereumjs-util';
-import { EventEmitter } from 'events';
-
 import {
   FLOW_BIP44_PATH,
   SIGN_ALGO_NUM_ECDSA_P256,
   SIGN_ALGO_NUM_ECDSA_secp256k1,
-} from '@onflow/frw-shared/constant';
+} from '@/shared/constant';
 import type {
   PrivateKeyTuple,
   PublicKeyTuple,
@@ -30,13 +30,13 @@ import type {
   VaultEntryV2,
   VaultEntryV3,
   LoggedInAccount,
-} from '@onflow/frw-shared/types';
+} from '@/shared/types';
 import {
   consoleError,
   consoleInfo,
   consoleWarn,
   combinePubPkTuple,
-} from '@onflow/frw-shared/utils';
+} from '@/shared/utils';
 
 import { HDKeyring, type HDKeyringData, type HDKeyringType } from './hdKeyring';
 import { type SimpleKeyPairType, SimpleKeyring, type SimpleKeyringData } from './simpleKeyring';

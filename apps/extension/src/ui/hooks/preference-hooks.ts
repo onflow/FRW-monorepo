@@ -6,8 +6,7 @@ import {
   getLocalData,
   setLocalData,
 } from '@/data-model';
-
-import { DEFAULT_CURRENCY } from '@onflow/frw-shared/constant';
+import { DEFAULT_CURRENCY } from '@/shared/constant';
 
 import { useCachedData, useUserData } from './use-data';
 

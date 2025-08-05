@@ -1,8 +1,8 @@
-import { getLocalData } from '@/data-model';
 import { LRUCache } from 'lru-cache';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-import { INTERNAL_REQUEST_ORIGIN, MAINNET_CHAIN_ID } from '@onflow/frw-shared/constant';
+import { getLocalData } from '@/data-model';
+import { INTERNAL_REQUEST_ORIGIN, MAINNET_CHAIN_ID } from '@/shared/constant';
 
 import permissionService, { type ConnectedSite } from '../permission';
 
@@ -19,8 +19,8 @@ vi.mock('../../utils/persistStore', () => ({
   default: vi.fn(),
 }));
 
-vi.mock('@onflow/frw-shared/utils', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@onflow/frw-shared/utils')>();
+vi.mock('@/shared/utils', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/shared/utils')>();
   return {
     ...actual,
     consoleInfo: vi.fn(),

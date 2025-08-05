@@ -1,9 +1,8 @@
-import { triggerRefresh, evmCollectionNftsKey } from '@/data-model';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 
-import { consoleError } from '@onflow/frw-shared/utils';
-
+import { triggerRefresh, evmCollectionNftsKey } from '@/data-model';
+import { consoleError } from '@/shared/utils';
 import CollectionDetailGrid from '@/ui/components/NFTs/CollectionDetailGrid';
 import GridView from '@/ui/components/NFTs/GridView';
 import { useWallet } from '@/ui/hooks/use-wallet';

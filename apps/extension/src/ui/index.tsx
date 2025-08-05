@@ -1,12 +1,11 @@
-import { initializeStorage } from '@/data-model';
 import React, { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
+import { initializeStorage } from '@/data-model';
 import { initializeChromeLogging } from '@/extension-shared/chrome-logger';
 import { chromeStorage } from '@/extension-shared/chrome-storage';
 import { Message, eventBus } from '@/extension-shared/messaging';
 import { EVENTS } from '@/shared/constant';
-
 import { getUITypeName } from '@/ui/utils';
 
 import Views from './views';

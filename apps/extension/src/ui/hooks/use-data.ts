@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 import {
   addCachedDataListener,
   getCachedData,
@@ -8,7 +10,6 @@ import {
   type StorageChange,
   type AreaName,
 } from '@/data-model';
-import { useEffect, useState } from 'react';
 
 type DataState = {
   key: string;

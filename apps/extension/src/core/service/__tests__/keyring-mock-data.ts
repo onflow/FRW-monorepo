@@ -3,10 +3,10 @@
  * Generated from keyring-boot-mnemonics.test.ts
  */
 
-import { CURRENT_ID_KEY, KEYRING_STATE_V3_KEY } from '@/data-model';
 import encryptor from 'browser-passworder';
 
-import { SIGN_ALGO_NUM_ECDSA_P256 } from '@onflow/frw-shared/constant';
+import { CURRENT_ID_KEY, KEYRING_STATE_V3_KEY } from '@/data-model';
+import { SIGN_ALGO_NUM_ECDSA_P256 } from '@/shared/constant';
 
 /**
  * Constants used for keyring testing

@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+
 import {
   accountBalanceKey,
   childAccountAllowTypesKey,
@@ -16,16 +18,14 @@ import {
   CURRENT_ID_KEY,
   KEYRING_STATE_CURRENT_KEY,
 } from '@/data-model';
-import { useMemo } from 'react';
-
 import {
   type KeyringState,
   type VaultEntryV2,
   type VaultEntryV3,
   type MainAccount,
   type PendingTransaction,
-} from '@onflow/frw-shared/types';
-import { getActiveAccountTypeForAddress } from '@onflow/frw-shared/utils';
+} from '@/shared/types';
+import { getActiveAccountTypeForAddress } from '@/shared/utils';
 
 import { useCachedData, useUserData } from './use-data';
 

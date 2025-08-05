@@ -10,10 +10,9 @@ import {
 } from '@mui/material';
 import React, { useState } from 'react';
 
-import { KEY_TYPE } from '@onflow/frw-shared/constant';
-import { type PublicKeyAccount } from '@onflow/frw-shared/types';
-import { consoleError } from '@onflow/frw-shared/utils';
-
+import { KEY_TYPE } from '@/shared/constant';
+import { type PublicKeyAccount } from '@/shared/types';
+import { consoleError } from '@/shared/utils';
 import { LLSpinner } from '@/ui/components/LLSpinner';
 import PasswordTextarea from '@/ui/components/password/PasswordTextarea';
 import ErrorModel from '@/ui/components/PopupModal/errorModel';

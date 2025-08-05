@@ -3,8 +3,7 @@ import { Button, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { useState } from 'react';
 
-import { consoleError } from '@onflow/frw-shared/utils';
-
+import { consoleError } from '@/shared/utils';
 import { LLSpinner } from '@/ui/components';
 import IconGoogleDrive from '@/ui/components/iconfont/IconGoogleDrive';
 import SlideRelative from '@/ui/components/SlideRelative';

@@ -1,3 +1,6 @@
+import type { TransactionExecutionStatus, TransactionStatus } from '@onflow/typedefs';
+import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
+
 import {
   getLocalData,
   setLocalData,
@@ -7,10 +10,7 @@ import {
   setCachedData,
   getCachedData,
 } from '@/data-model';
-import type { TransactionExecutionStatus, TransactionStatus } from '@onflow/typedefs';
-import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
-
-import { type FlowNetwork } from '@onflow/frw-shared/types';
+import { type FlowNetwork } from '@/shared/types';
 
 import openapiService from '../openapi';
 import transaction from '../transaction-activity';

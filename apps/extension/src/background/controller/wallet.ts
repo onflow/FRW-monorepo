@@ -1,4 +1,8 @@
 import * as fcl from '@onflow/fcl';
+import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
+
+import notification from '@/background/webapi/notification';
+import { openIndexPage } from '@/background/webapi/tab';
 import {
   addressBookService,
   transactionService,
@@ -20,6 +24,7 @@ import {
   userWalletService,
   accountManagementService,
 } from '@/core/service';
+import { retryOperation } from '@/core/utils';
 import {
   getValidData,
   setCachedData,
@@ -37,9 +42,6 @@ import {
   registerRefreshListener,
   walletLoadedRefreshRegex,
 } from '@/data-model';
-import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
-
-import { retryOperation } from '@/core/utils';
 import { eventBus } from '@/extension-shared/messaging';
 import {
   FLOW_BIP44_PATH,
@@ -87,9 +89,6 @@ import {
   consoleWarn,
   getEmojiList,
 } from '@/shared/utils';
-
-import notification from '@/background/webapi/notification';
-import { openIndexPage } from '@/background/webapi/tab';
 
 import BaseController from './base';
 import notificationService from './notification';

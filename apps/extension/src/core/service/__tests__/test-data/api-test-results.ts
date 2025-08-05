@@ -1,4 +1,4 @@
-import {} from '@onflow/frw-shared/constant';
+import {} from '@/shared/constant';
 
 export type FetchDetail = {
   url: string;

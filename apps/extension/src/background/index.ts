@@ -1,5 +1,10 @@
 import 'reflect-metadata';
 
+import { ethErrors } from 'eth-rpc-errors';
+
+import providerController from '@/background/controller/provider';
+import { preAuthzServiceDefinition } from '@/background/controller/serviceDefinition';
+import walletController, { type WalletController } from '@/background/controller/wallet';
 import {
   authenticationService,
   addressBookService,
@@ -21,18 +26,12 @@ import {
   googleDriveService,
 } from '@/core/service';
 import { getLocalData, removeLocalData, setLocalData, initializeStorage } from '@/data-model';
-import { ethErrors } from 'eth-rpc-errors';
-
 import { initializeChromeLogging } from '@/extension-shared/chrome-logger';
 import { chromeStorage } from '@/extension-shared/chrome-storage';
 import { Message, eventBus } from '@/extension-shared/messaging';
 import { EVENTS } from '@/shared/constant';
 import { type WalletAddress } from '@/shared/types';
 import { isValidFlowAddress, consoleError, consoleLog } from '@/shared/utils';
-
-import providerController from '@/background/controller/provider';
-import { preAuthzServiceDefinition } from '@/background/controller/serviceDefinition';
-import walletController, { type WalletController } from '@/background/controller/wallet';
 
 import notificationService from './controller/notification';
 import packageJson from '../../package.json';

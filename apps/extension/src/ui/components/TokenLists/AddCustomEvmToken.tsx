@@ -14,15 +14,14 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router';
 
-import { EVM_ENDPOINT } from '@onflow/frw-shared/constant';
-import { type CustomFungibleTokenInfo } from '@onflow/frw-shared/types';
+import { EVM_ENDPOINT } from '@/shared/constant';
+import { type CustomFungibleTokenInfo } from '@/shared/types';
 import {
   isValidEthereumAddress,
   withPrefix,
   consoleError,
   networkToChainId,
-} from '@onflow/frw-shared/utils';
-
+} from '@/shared/utils';
 import { LLFormHelperText, LLPrimaryButton } from '@/ui/components';
 import { refreshEvmToken } from '@/ui/hooks/use-coin-hooks';
 import { useWallet } from '@/ui/hooks/use-wallet';

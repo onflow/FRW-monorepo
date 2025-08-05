@@ -1,7 +1,7 @@
 import BN from 'bignumber.js';
 import { ethers, parseUnits } from 'ethers';
 
-import { type NftTransactionState, type TransactionState } from '@onflow/frw-shared/types';
+import { type NftTransactionState, type TransactionState } from '@/shared/types';
 /**
  * Encodes EVM contract call data for token and NFT transfers
  * Supports ERC20, ERC721, and ERC1155 standards

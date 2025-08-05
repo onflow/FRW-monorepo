@@ -6,8 +6,7 @@ import {
   registerRefreshListener,
   setCachedData,
 } from '@/data-model';
-
-import { type FeatureFlagKey, type FeatureFlags } from '@onflow/frw-shared/types';
+import { type FeatureFlagKey, type FeatureFlags } from '@/shared/types';
 
 import openapi from './openapi';
 

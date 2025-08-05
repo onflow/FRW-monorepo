@@ -1,8 +1,8 @@
-import { walletLoadedKey } from '@/data-model';
 import React, { type ReactNode, createContext } from 'react';
 
 // eslint-disable-next-line no-restricted-imports
 import type { WalletController as WalletControllerClass } from '@/background/controller/wallet';
+import { walletLoadedKey } from '@/data-model';
 import { useCachedData } from '@/ui/hooks/use-data';
 type IExtractFromPromise<T> = T extends Promise<infer U> ? U : T;
 

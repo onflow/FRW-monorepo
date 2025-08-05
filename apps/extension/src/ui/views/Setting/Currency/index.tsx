@@ -1,8 +1,7 @@
 import { Box, CircularProgress, List, ListItem, ListItemButton, Typography } from '@mui/material';
 import React, { useCallback } from 'react';
 
-import { consoleError } from '@onflow/frw-shared/utils';
-
+import { consoleError } from '@/shared/utils';
 import { LLHeader } from '@/ui/components';
 import { useCurrency, useSupportedCurrencies } from '@/ui/hooks/preference-hooks';
 import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';

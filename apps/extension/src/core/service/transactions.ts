@@ -1,24 +1,24 @@
 import * as fcl from '@onflow/fcl';
-import { triggerRefresh, mainAccountsKey } from '@/data-model';
 import BN from 'bignumber.js';
 import * as ethUtil from 'ethereumjs-util';
 import { encode } from 'rlp';
 import web3, { Web3 } from 'web3';
 
-import { erc20Abi as erc20ABI, EVM_ENDPOINT } from '@onflow/frw-shared/constant';
+import { triggerRefresh, mainAccountsKey } from '@/data-model';
+import { erc20Abi as erc20ABI, EVM_ENDPOINT } from '@/shared/constant';
 import {
   type NftTransactionState,
   type CustomFungibleTokenInfo,
   type NFTModelV2,
   type TokenInfo,
   type TransactionState,
-} from '@onflow/frw-shared/types';
+} from '@/shared/types';
 import {
   convertToIntegerAmount,
   ensureEvmAddressPrefix,
   getErrorMessage,
   validateAmount,
-} from '@onflow/frw-shared/utils';
+} from '@/shared/utils';
 
 import { tokenListService } from '.';
 import { analyticsService } from './analytics';

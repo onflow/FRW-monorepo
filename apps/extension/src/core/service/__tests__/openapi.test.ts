@@ -1,7 +1,7 @@
-import { getLocalData } from '@/data-model';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { type FlowNetwork } from '@onflow/frw-shared/types';
+import { getLocalData } from '@/data-model';
+import { type FlowNetwork } from '@/shared/types';
 
 import openApiService from '../openapi';
 import userWalletService from '../userWallet';

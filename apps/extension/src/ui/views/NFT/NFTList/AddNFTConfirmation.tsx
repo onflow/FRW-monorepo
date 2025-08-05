@@ -4,9 +4,8 @@ import Grid from '@mui/material/Grid';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { type NFTModelV2 } from '@onflow/frw-shared/types';
-import { consoleError } from '@onflow/frw-shared/utils';
-
+import { type NFTModelV2 } from '@/shared/types';
+import { consoleError } from '@/shared/utils';
 import { LLSpinner } from '@/ui/components';
 import { useWallet } from '@/ui/hooks/use-wallet';
 

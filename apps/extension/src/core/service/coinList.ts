@@ -15,13 +15,12 @@ import {
   registerRefreshListener,
   setCachedData,
 } from '@/data-model';
-
 import {
   type CadenceTokenInfo,
   type EvmTokenInfo,
   type ExtendedTokenInfo,
-} from '@onflow/frw-shared/types';
-import { isValidEthereumAddress, isValidFlowAddress, consoleError } from '@onflow/frw-shared/utils';
+} from '@/shared/types';
+import { isValidEthereumAddress, isValidFlowAddress, consoleError } from '@/shared/utils';
 
 import openapiService from './openapi';
 

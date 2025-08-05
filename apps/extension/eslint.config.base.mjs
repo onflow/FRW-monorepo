@@ -71,11 +71,6 @@ export const baseConfig = {
         groups: [['builtin', 'external'], 'internal', ['parent', 'sibling', 'index']],
         pathGroups: [
           {
-            pattern: '@onflow/frw-*/**',
-            group: 'external',
-            position: 'after',
-          },
-          {
             pattern: '@/**',
             group: 'internal',
           },

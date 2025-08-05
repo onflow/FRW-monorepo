@@ -1,12 +1,11 @@
 import { Alert, Box, Divider, List, Snackbar, Typography } from '@mui/material';
 import LinearProgress from '@mui/material/LinearProgress';
-import { getLocalData, setLocalData } from '@/data-model';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router';
 
-import { type Emoji, type StorageInfo } from '@onflow/frw-shared/types';
-import { consoleError, isValidEthereumAddress, isValidFlowAddress } from '@onflow/frw-shared/utils';
-
+import { getLocalData, setLocalData } from '@/data-model';
+import { type Emoji, type StorageInfo } from '@/shared/types';
+import { consoleError, isValidEthereumAddress, isValidFlowAddress } from '@/shared/utils';
 import { EditIcon } from '@/ui/assets/icons/settings/Edit';
 import { LLHeader } from '@/ui/components';
 import { AccountCard } from '@/ui/components/account/account-card';

@@ -1,3 +1,5 @@
+import type { TransactionStatus } from '@onflow/typedefs';
+
 import {
   triggerRefresh,
   transferListKey,
@@ -9,15 +11,13 @@ import {
   registerRefreshListener,
   setCachedData,
 } from '@/data-model';
-import type { TransactionStatus } from '@onflow/typedefs';
-
-import { type TransferItem } from '@onflow/frw-shared/types';
+import { type TransferItem } from '@/shared/types';
 import {
   consoleError,
   consoleWarn,
   isValidEthereumAddress,
   isValidFlowAddress,
-} from '@onflow/frw-shared/utils';
+} from '@/shared/utils';
 
 import openapiService, { type FlowTransactionResponse } from './openapi';
 import preferenceService from './preference';

@@ -1,5 +1,4 @@
 import { analyticsService } from '@/core/service';
-
 import { stripSensitive } from '@/shared/utils';
 
 class LogListener {

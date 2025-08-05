@@ -21,9 +21,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
 import { checkAddressBookContacts, filterContacts } from '@/extension-shared/contact-utils';
-import { type Contact, type WalletAddress } from '@onflow/frw-shared/types';
-import { isValidAddress, consoleError } from '@onflow/frw-shared/utils';
-
+import { type Contact, type WalletAddress } from '@/shared/types';
+import { isValidAddress, consoleError } from '@/shared/utils';
 import AccountsList from '@/ui/components/AddressLists/AccountsList';
 import AddressBookList from '@/ui/components/AddressLists/AddressBookList';
 import RecentList from '@/ui/components/AddressLists/RecentList';

@@ -1,9 +1,9 @@
 import webpack from 'webpack';
 import { merge } from 'webpack-merge';
 
-import commonConfig from './build/webpack.common.config';
-import dev from './build/webpack.dev.config';
-import pro from './build/webpack.pro.config';
+import commonConfig from './apps/extension/build/webpack.common.config';
+import dev from './apps/extension/build/webpack.dev.config';
+import pro from './apps/extension/build/webpack.pro.config';
 
 const configs: Record<'dev' | 'pro' | 'none', webpack.Configuration> = {
   dev,

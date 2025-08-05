@@ -1,6 +1,5 @@
 import { type RemoteConfig, remoteConfigKey } from '@/data-model';
-
-import { type FeatureFlagKey } from '@onflow/frw-shared/types';
+import { type FeatureFlagKey } from '@/shared/types';
 
 import { useCachedData } from './use-data';
 

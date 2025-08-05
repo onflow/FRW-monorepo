@@ -1,6 +1,6 @@
-import { permissionService } from '@/core/service';
 import { ethErrors } from 'eth-rpc-errors';
 
+import { permissionService } from '@/core/service';
 import { underline2Camelcase } from '@/core/utils';
 import { eventBus } from '@/extension-shared/messaging';
 import { EVENTS } from '@/shared/constant';

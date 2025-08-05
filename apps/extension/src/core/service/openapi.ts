@@ -1,4 +1,8 @@
 import * as fcl from '@onflow/fcl';
+import type { Account as FclAccount } from '@onflow/typedefs';
+import BigNumber from 'bignumber.js';
+import dayjs from 'dayjs';
+
 import {
   cadenceScriptsKey,
   CURRENT_ID_KEY,
@@ -8,16 +12,12 @@ import {
   getLocalData,
   setLocalData,
 } from '@/data-model';
-import type { Account as FclAccount } from '@onflow/typedefs';
-import BigNumber from 'bignumber.js';
-import dayjs from 'dayjs';
-
 import {
   DEFAULT_CURRENCY,
   Period,
   type PeriodFrequency,
   PriceProvider,
-} from '@onflow/frw-shared/constant';
+} from '@/shared/constant';
 import type {
   BalanceMap,
   CadenceTokenInfo,
@@ -50,7 +50,7 @@ import type {
   PublicKeyAccount,
   CollectionNfts,
   Nft,
-} from '@onflow/frw-shared/types';
+} from '@/shared/types';
 import {
   isValidFlowAddress,
   getStringFromHashAlgo,
@@ -60,7 +60,7 @@ import {
   getPeriodFrequency,
   getPriceProvider,
   consoleInfo,
-} from '@onflow/frw-shared/utils';
+} from '@/shared/utils';
 
 import { findKeyAndInfo } from '../utils';
 import {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { checkEnoughBalanceForFees, evaluateStorage } from '@onflow/frw-shared/utils';
+import { checkEnoughBalanceForFees, evaluateStorage } from '@/shared/utils';
 
 import { useFeatureFlag } from './use-feature-flags';
 import { useProfiles } from './useProfileHook';

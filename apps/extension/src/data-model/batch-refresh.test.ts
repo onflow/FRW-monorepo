@@ -4,7 +4,7 @@ import { batchRefreshManager, registerBatchRefreshListener } from './batch-refre
 import { setCachedData } from './data-cache';
 
 // Mock consoleError from the shared utils
-vi.mock('@onflow/frw-shared/utils', () => ({
+vi.mock('@/shared/utils', () => ({
   consoleError: vi.fn(),
 }));
 
@@ -152,7 +152,7 @@ describe('Batch Refresh Mechanism', () => {
 
   it('should handle errors gracefully', async () => {
     // Get the mocked consoleError
-    const { consoleError } = await import('@onflow/frw-shared/utils');
+    const { consoleError } = await import('@/shared/utils');
     const batchLoader = vi.fn().mockRejectedValue(new Error('Network error'));
 
     const keyPattern = /^account-balance-(\w+)-(\w+)-refresh$/;

@@ -8,13 +8,12 @@ import {
   evmCustomTokenKey,
   getEvmCustomTokenData,
 } from '@/data-model';
-
-import { MAINNET_CHAIN_ID } from '@onflow/frw-shared/constant';
+import { MAINNET_CHAIN_ID } from '@/shared/constant';
 import {
   type CustomFungibleTokenInfo,
   type EvmCustomTokenInfo,
   type FungibleTokenInfo,
-} from '@onflow/frw-shared/types';
+} from '@/shared/types';
 
 import { userWalletService } from '.';
 import openapiService from './openapi';

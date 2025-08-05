@@ -1,6 +1,5 @@
 import { getLocalData } from '@/data-model';
-
-import { type LoggedInAccount } from '@onflow/frw-shared/types';
+import { type LoggedInAccount } from '@/shared/types';
 
 import { getCurrentProfileId } from './current-id';
 

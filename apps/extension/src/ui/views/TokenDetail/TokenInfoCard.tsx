@@ -8,9 +8,8 @@ import {
   type EvmCustomTokenInfo,
   type ExtendedTokenInfo,
   type ActiveAccountType,
-} from '@onflow/frw-shared/types';
-import { isValidEthereumAddress } from '@onflow/frw-shared/utils';
-
+} from '@/shared/types';
+import { isValidEthereumAddress } from '@/shared/utils';
 import buyIcon from '@/ui/assets/svg/buyIcon.svg';
 import receiveIcon from '@/ui/assets/svg/receiveIcon.svg';
 import sendIcon from '@/ui/assets/svg/sendIcon.svg';

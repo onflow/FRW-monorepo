@@ -1,8 +1,7 @@
 import { Box, Skeleton, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { isValidEthereumAddress } from '@onflow/frw-shared/utils';
-
+import { isValidEthereumAddress } from '@/shared/utils';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { formatAddress } from '@/ui/utils';
 

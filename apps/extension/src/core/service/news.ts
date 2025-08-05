@@ -8,9 +8,8 @@ import {
   readAndDismissedNewsKey,
   type ReadAndDismissedNewsStore,
 } from '@/data-model';
-
-import { type NewsItem } from '@onflow/frw-shared/types';
-import { consoleError } from '@onflow/frw-shared/utils';
+import { type NewsItem } from '@/shared/types';
+import { consoleError } from '@/shared/utils';
 
 import openapi from './openapi';
 import createPersistStore from '../utils/persistStore';

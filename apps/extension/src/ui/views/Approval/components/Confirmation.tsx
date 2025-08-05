@@ -4,8 +4,7 @@ import dedent from 'dedent';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { type UserInfoResponse } from '@onflow/frw-shared/types';
-
+import { type UserInfoResponse } from '@/shared/types';
 import {
   LLConnectLoading,
   LLLinkingLoading,

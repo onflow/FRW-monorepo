@@ -3,8 +3,7 @@ import { Box, IconButton, Link, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { consoleError } from '@onflow/frw-shared/utils';
-
+import { consoleError } from '@/shared/utils';
 import { LLPrimaryButton, LLSpinner } from '@/ui/components';
 import { EnableEvm } from '@/ui/components/EnableEvm';
 import { useWallet } from '@/ui/hooks/use-wallet';

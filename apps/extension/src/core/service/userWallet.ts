@@ -1,5 +1,10 @@
 import * as secp from '@noble/secp256k1';
 import * as fcl from '@onflow/fcl';
+import type { Account as FclAccount } from '@onflow/typedefs';
+import * as ethUtil from 'ethereumjs-util';
+import { signInAnonymously } from 'firebase/auth/web-extension';
+import { TransactionError } from 'web3';
+
 import {
   triggerRefresh,
   getCachedData,
@@ -33,12 +38,7 @@ import {
   registerStatusKey,
   registerStatusRefreshRegex,
 } from '@/data-model';
-import type { Account as FclAccount } from '@onflow/typedefs';
-import * as ethUtil from 'ethereumjs-util';
-import { signInAnonymously } from 'firebase/auth/web-extension';
-import { TransactionError } from 'web3';
-
-import { DEFAULT_WEIGHT, FLOW_BIP44_PATH } from '@onflow/frw-shared/constant';
+import { DEFAULT_WEIGHT, FLOW_BIP44_PATH } from '@/shared/constant';
 import {
   type PublicPrivateKeyTuple,
   type AccountKeyRequest,
@@ -53,7 +53,7 @@ import {
   type PublicKeyAccount,
   type WalletAccount,
   type WalletAddress,
-} from '@onflow/frw-shared/types';
+} from '@/shared/types';
 import {
   getErrorMessage,
   networkToChainId,
@@ -68,7 +68,7 @@ import {
   getEmojiByIndex,
   getActiveAccountTypeForAddress,
   tupleToPrivateKey,
-} from '@onflow/frw-shared/utils';
+} from '@/shared/utils';
 
 import { authenticationService } from '.';
 import { analyticsService } from './analytics';

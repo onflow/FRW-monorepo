@@ -7,7 +7,7 @@ import {
   type TokenType,
   type TransactionState,
   type WalletAddress,
-} from '@onflow/frw-shared/types';
+} from '@/shared/types';
 
 import {
   INITIAL_TRANSACTION_STATE,

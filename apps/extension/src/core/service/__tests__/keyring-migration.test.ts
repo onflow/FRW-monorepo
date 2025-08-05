@@ -1,3 +1,6 @@
+import encryptor from 'browser-passworder';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
 import {
   CURRENT_ID_KEY,
   KEYRING_STATE_CURRENT_KEY,
@@ -8,8 +11,6 @@ import {
   setLocalData,
   removeLocalData,
 } from '@/data-model';
-import encryptor from 'browser-passworder';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Internal imports - after all mocks are defined
 import {
@@ -17,8 +18,8 @@ import {
   SIGN_ALGO_NUM_DEFAULT,
   SIGN_ALGO_NUM_ECDSA_P256,
   SIGN_ALGO_NUM_ECDSA_secp256k1,
-} from '@onflow/frw-shared/constant';
-import { type KeyringStateV3, type KeyringStateV2 } from '@onflow/frw-shared/types';
+} from '@/shared/constant';
+import { type KeyringStateV3, type KeyringStateV2 } from '@/shared/types';
 
 import { returnCurrentProfileId } from '../../utils/current-id';
 import keyringService from '../keyring';

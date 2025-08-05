@@ -2,9 +2,8 @@ import { Box, Stack } from '@mui/material';
 import * as fcl from '@onflow/fcl';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { MAINNET_CHAIN_ID } from '@onflow/frw-shared/constant';
-import { consoleError } from '@onflow/frw-shared/utils';
-
+import { MAINNET_CHAIN_ID } from '@/shared/constant';
+import { consoleError } from '@/shared/utils';
 import { LLPrimaryButton, LLSecondaryButton } from '@/ui/components';
 import { useApproval } from '@/ui/hooks/use-approval';
 import { useWallet } from '@/ui/hooks/use-wallet';

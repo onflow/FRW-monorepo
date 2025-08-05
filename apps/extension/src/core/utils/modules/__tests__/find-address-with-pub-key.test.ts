@@ -6,7 +6,7 @@ import {
   HASH_ALGO_NUM_SHA3_256,
   SIGN_ALGO_NUM_ECDSA_P256,
   SIGN_ALGO_NUM_ECDSA_secp256k1,
-} from '@onflow/frw-shared/constant';
+} from '@/shared/constant';
 
 // Mock FCL and userWalletService
 vi.mock('@onflow/fcl');

@@ -1,4 +1,8 @@
 import * as fcl from '@onflow/fcl';
+import type { Account as FclAccount } from '@onflow/typedefs';
+import * as bip39 from 'bip39';
+import * as ethUtil from 'ethereumjs-util';
+
 import {
   userMetadataKey,
   mainAccountsKey,
@@ -7,28 +11,24 @@ import {
   getValidData,
   setCachedData,
 } from '@/data-model';
-import type { Account as FclAccount } from '@onflow/typedefs';
-import * as bip39 from 'bip39';
-import * as ethUtil from 'ethereumjs-util';
-
 import {
   FLOW_BIP44_PATH,
   HTTP_STATUS_CONFLICT,
   HTTP_STATUS_TOO_MANY_REQUESTS,
-} from '@onflow/frw-shared/constant';
+} from '@/shared/constant';
 import type {
   AccountKeyRequest,
   UserInfoResponse,
   MainAccount,
   FlowAddress,
   ProfileBackupStatus,
-} from '@onflow/frw-shared/types';
+} from '@/shared/types';
 import {
   isValidFlowAddress,
   isValidEthereumAddress,
   consoleError,
   getErrorMessage,
-} from '@onflow/frw-shared/utils';
+} from '@/shared/utils';
 
 import { authenticationService, preferenceService } from '.';
 import { analyticsService } from './analytics';

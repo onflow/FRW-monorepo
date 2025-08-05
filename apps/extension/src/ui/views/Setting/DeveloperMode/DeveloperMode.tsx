@@ -9,9 +9,9 @@ import {
   Switch,
   Typography,
 } from '@mui/material';
-import { getLocalData, setLocalData } from '@/data-model';
 import React, { useCallback, useEffect, useState } from 'react';
 
+import { getLocalData, setLocalData } from '@/data-model';
 import { LLHeader } from '@/ui/components';
 import { useWallet } from '@/ui/hooks/use-wallet';
 

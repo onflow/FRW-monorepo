@@ -13,7 +13,7 @@ import {
 } from 'firebase/auth/web-extension';
 import { getId, getInstallations } from 'firebase/installations';
 
-import { consoleLog } from '@onflow/frw-shared/utils';
+import { consoleLog } from '@/shared/utils';
 
 import { analyticsService } from './analytics';
 

@@ -1,4 +1,4 @@
-import { type Contact } from '@onflow/frw-shared/types';
+import { type Contact } from '@/shared/types';
 
 import createPersistStore from '../utils/persistStore';
 

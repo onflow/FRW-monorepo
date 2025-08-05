@@ -1,9 +1,8 @@
 import { Box, CardMedia, Divider, Stack, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@onflow/frw-shared/constant';
-import { isValidEthereumAddress, consoleError } from '@onflow/frw-shared/utils';
-
+import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/constant';
+import { isValidEthereumAddress, consoleError } from '@/shared/utils';
 import flowgrey from '@/ui/assets/svg/flow-grey.svg';
 import linkGlobe from '@/ui/assets/svg/linkGlobe.svg';
 import { LLConnectLoading, LLPrimaryButton, LLSecondaryButton } from '@/ui/components';

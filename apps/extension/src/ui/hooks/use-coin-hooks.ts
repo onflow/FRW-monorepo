@@ -8,13 +8,12 @@ import {
   evmCustomTokenKey,
   triggerRefresh,
 } from '@/data-model';
-
 import {
   type CustomFungibleTokenInfo,
   type EvmCustomTokenInfo,
   type ExtendedTokenInfo,
   type TokenFilter,
-} from '@onflow/frw-shared/types';
+} from '@/shared/types';
 
 import { useCachedData, useUserData } from './use-data';
 

@@ -1,5 +1,4 @@
-import { consoleError } from '@onflow/frw-shared/utils';
-
+import { consoleError } from '@/shared/utils';
 import fallback from '@/ui/assets/image/errorImage.png';
 
 export const query2obj = (str: string) => {

@@ -1,4 +1,4 @@
-import { type ExtendedTokenInfo } from '@onflow/frw-shared/types';
+import { type ExtendedTokenInfo } from '@/shared/types';
 
 export const flowToken: ExtendedTokenInfo = {
   address: '',

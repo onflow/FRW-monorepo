@@ -10,9 +10,8 @@ import {
 } from '@mui/material';
 import React from 'react';
 
-import { type WalletAccount } from '@onflow/frw-shared/types';
-import { isValidEthereumAddress } from '@onflow/frw-shared/utils';
-
+import { type WalletAccount } from '@/shared/types';
+import { isValidEthereumAddress } from '@/shared/utils';
 import { CopyIcon } from '@/ui/assets/icons/CopyIcon';
 import { LinkIcon } from '@/ui/assets/icons/LinkIcon';
 import { useAccountBalance } from '@/ui/hooks/use-account-hooks';

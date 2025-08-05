@@ -1,5 +1,4 @@
 import { type Storage, type StorageChange, type AreaName } from '@/data-model';
-
 import { consoleError } from '@/shared/utils';
 
 /**

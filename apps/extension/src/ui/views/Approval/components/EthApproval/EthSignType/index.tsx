@@ -3,10 +3,9 @@ import * as fcl from '@onflow/fcl';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@onflow/frw-shared/constant';
-import { type UserInfoResponse } from '@onflow/frw-shared/types';
-import { isValidEthereumAddress } from '@onflow/frw-shared/utils';
-
+import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/constant';
+import { type UserInfoResponse } from '@/shared/types';
+import { isValidEthereumAddress } from '@/shared/utils';
 import {
   LLConnectLoading,
   LLLinkingLoading,

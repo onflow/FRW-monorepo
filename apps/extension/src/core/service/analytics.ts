@@ -1,4 +1,4 @@
-import type { TrackingEvents } from '@onflow/frw-shared/types';
+import type { TrackingEvents } from '@/shared/types';
 
 export interface AnalyticsServiceInterface {
   time: <T extends keyof TrackingEvents>(eventName: T) => Promise<void>;

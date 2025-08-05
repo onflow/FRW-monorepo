@@ -16,9 +16,8 @@ import { isEmpty } from 'lodash';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation } from 'react-router';
 
-import { ContactType, type Contact } from '@onflow/frw-shared/types';
-import { isValidEthereumAddress, withPrefix, consoleError } from '@onflow/frw-shared/utils';
-
+import { ContactType, type Contact } from '@/shared/types';
+import { isValidEthereumAddress, withPrefix, consoleError } from '@/shared/utils';
 import { LLHeader } from '@/ui/components';
 import AccountsList from '@/ui/components/AddressLists/AccountsList';
 import AddressBookList from '@/ui/components/AddressLists/AddressBookList';

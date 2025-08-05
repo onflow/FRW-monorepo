@@ -1,7 +1,7 @@
 import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 
-import { emoji as emojisJson, MAINNET_CHAIN_ID } from '@onflow/frw-shared/constant';
-import { type WalletAccount } from '@onflow/frw-shared/types';
+import { emoji as emojisJson, MAINNET_CHAIN_ID } from '@/shared/constant';
+import { type WalletAccount } from '@/shared/types';
 
 const { emojis } = emojisJson;
 

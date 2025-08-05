@@ -1,8 +1,8 @@
-import { newsKey, readAndDismissedNewsKey, type ReadAndDismissedNewsStore } from '@/data-model';
 import { useCallback, useMemo } from 'react';
 
-import { type NewsConditionType, type NewsItem } from '@onflow/frw-shared/types';
-import { checkLowBalance, consoleError, evaluateStorage } from '@onflow/frw-shared/utils';
+import { newsKey, readAndDismissedNewsKey, type ReadAndDismissedNewsStore } from '@/data-model';
+import { type NewsConditionType, type NewsItem } from '@/shared/types';
+import { checkLowBalance, consoleError, evaluateStorage } from '@/shared/utils';
 
 import { useCachedData, useUserData } from './use-data';
 import { useLatestVersion } from './use-feature-flags';

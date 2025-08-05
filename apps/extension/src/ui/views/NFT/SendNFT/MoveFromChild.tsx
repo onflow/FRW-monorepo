@@ -5,9 +5,8 @@ import Grid from '@mui/material/Grid';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { type Contact, type WalletAccount } from '@onflow/frw-shared/types';
-import { isValidEthereumAddress, consoleError } from '@onflow/frw-shared/utils';
-
+import { type Contact, type WalletAccount } from '@/shared/types';
+import { isValidEthereumAddress, consoleError } from '@/shared/utils';
 import { FRWChildProfile, FRWDropdownProfileCard, LLSpinner } from '@/ui/components';
 import IconFlow from '@/ui/components/iconfont/IconFlow';
 import SlideRelative from '@/ui/components/SlideRelative';
