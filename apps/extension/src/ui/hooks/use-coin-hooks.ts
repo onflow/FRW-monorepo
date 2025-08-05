@@ -7,7 +7,7 @@ import {
   setLocalData,
   evmCustomTokenKey,
   triggerRefresh,
-} from '@onflow/frw-data-model';
+} from '@/data-model';
 
 import {
   type CustomFungibleTokenInfo,

@@ -1,4 +1,4 @@
-import { keyringService, preferenceService } from '@onflow/frw-core';
+import { keyringService, preferenceService } from '@/core';
 
 class BaseController {
   getCurrentAccount = async () => {

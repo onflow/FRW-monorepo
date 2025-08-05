@@ -2,7 +2,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Box, CircularProgress, Drawer, InputBase, Stack, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { styled } from '@mui/material/styles';
-import { setLocalData } from '@onflow/frw-data-model';
+import { setLocalData } from '@/data-model';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useForm, type FieldValues } from 'react-hook-form';
 

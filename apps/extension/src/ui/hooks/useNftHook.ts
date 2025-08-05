@@ -6,7 +6,7 @@ import {
   fullCadenceNftCollectionListKey,
   nftListKey,
   cadenceCollectionNftsKey,
-} from '@onflow/frw-data-model';
+} from '@/data-model';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {

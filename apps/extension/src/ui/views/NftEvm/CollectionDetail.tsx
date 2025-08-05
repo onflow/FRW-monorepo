@@ -1,4 +1,4 @@
-import { triggerRefresh, evmCollectionNftsKey } from '@onflow/frw-data-model';
+import { triggerRefresh, evmCollectionNftsKey } from '@/data-model';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 

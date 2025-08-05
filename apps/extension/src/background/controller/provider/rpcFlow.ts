@@ -1,8 +1,8 @@
-import { permissionService } from '@onflow/frw-core';
+import { permissionService } from '@/core';
 import { ethErrors } from 'eth-rpc-errors';
 
-import { underline2Camelcase } from '@onflow/frw-core/utils';
-import { eventBus } from '@onflow/frw-extension-shared/messaging';
+import { underline2Camelcase } from '@/core/utils';
+import { eventBus } from '@/extension-shared/messaging';
 import { EVENTS } from '@onflow/frw-shared/constant';
 import { consoleLog } from '@onflow/frw-shared/utils';
 

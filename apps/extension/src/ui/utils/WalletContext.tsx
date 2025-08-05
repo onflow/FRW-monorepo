@@ -1,4 +1,4 @@
-import { walletLoadedKey } from '@onflow/frw-data-model';
+import { walletLoadedKey } from '@/data-model';
 import React, { type ReactNode, createContext } from 'react';
 
 // eslint-disable-next-line no-restricted-imports

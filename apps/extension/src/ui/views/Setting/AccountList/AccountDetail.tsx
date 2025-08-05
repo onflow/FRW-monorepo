@@ -1,6 +1,6 @@
 import { Alert, Box, Divider, List, Snackbar, Typography } from '@mui/material';
 import LinearProgress from '@mui/material/LinearProgress';
-import { getLocalData, setLocalData } from '@onflow/frw-data-model';
+import { getLocalData, setLocalData } from '@/data-model';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router';
 

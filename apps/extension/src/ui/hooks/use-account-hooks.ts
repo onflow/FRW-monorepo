@@ -15,7 +15,7 @@ import {
   type UserWalletStore,
   CURRENT_ID_KEY,
   KEYRING_STATE_CURRENT_KEY,
-} from '@onflow/frw-data-model';
+} from '@/data-model';
 import { useMemo } from 'react';
 
 import {

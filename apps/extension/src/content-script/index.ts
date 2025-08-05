@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid';
 import { v4 as uuid } from 'uuid';
 
-import { Message } from '@onflow/frw-extension-shared/messaging';
+import { Message } from '@/extension-shared/messaging';
 
 const channelName = nanoid();
 const extensionId = chrome.runtime.id;

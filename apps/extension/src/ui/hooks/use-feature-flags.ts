@@ -1,4 +1,4 @@
-import { type RemoteConfig, remoteConfigKey } from '@onflow/frw-data-model';
+import { type RemoteConfig, remoteConfigKey } from '@/data-model';
 
 import { type FeatureFlagKey } from '@onflow/frw-shared/types';
 

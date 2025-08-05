@@ -9,7 +9,7 @@ import {
   Switch,
   Typography,
 } from '@mui/material';
-import { getLocalData, setLocalData } from '@onflow/frw-data-model';
+import { getLocalData, setLocalData } from '@/data-model';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { LLHeader } from '@/ui/components';

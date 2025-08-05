@@ -9,7 +9,7 @@ import {
   Typography,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
-import { refreshNftCatalogCollections } from '@onflow/frw-data-model';
+import { refreshNftCatalogCollections } from '@/data-model';
 import React, { forwardRef, useImperativeHandle } from 'react';
 import { useNavigate } from 'react-router';
 

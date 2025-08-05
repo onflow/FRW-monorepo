@@ -2,8 +2,8 @@ import {
   versionService,
   type AnalyticsServiceInterface,
   baseAnalyticsService,
-} from '@onflow/frw-core';
-import { getLocalData, setLocalData, removeLocalData } from '@onflow/frw-data-model';
+} from '../../core/service';
+import { getLocalData, setLocalData, removeLocalData } from '@/data-model';
 
 import type { TrackingEvents } from '@onflow/frw-shared/types';
 

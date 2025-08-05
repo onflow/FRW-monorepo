@@ -1,4 +1,4 @@
-import { userWalletsKey } from '@onflow/frw-data-model';
+import { userWalletsKey } from '@/data-model';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type ExtendedTokenInfo } from '@onflow/frw-shared/types';

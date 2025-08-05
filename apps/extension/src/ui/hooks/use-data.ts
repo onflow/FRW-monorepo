@@ -7,7 +7,7 @@ import {
   removeStorageListener,
   type StorageChange,
   type AreaName,
-} from '@onflow/frw-data-model';
+} from '@/data-model';
 import { useEffect, useState } from 'react';
 
 type DataState = {

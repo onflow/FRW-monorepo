@@ -4,7 +4,7 @@ import {
   sessionService,
   signTextHistoryService,
   userWalletService,
-} from '@onflow/frw-core';
+} from '@/core';
 import BigNumber from 'bignumber.js';
 import { ethErrors } from 'eth-rpc-errors';
 import { intToHex, isHexString } from 'ethereumjs-util';
@@ -13,7 +13,7 @@ import RLP from 'rlp';
 import Web3 from 'web3';
 import { stringToHex } from 'web3-utils';
 
-import { getAccountsByPublicKeyTuple, signWithKey } from '@onflow/frw-core/utils';
+import { getAccountsByPublicKeyTuple, signWithKey } from '@/core/utils';
 import { EVM_ENDPOINT, MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@onflow/frw-shared/constant';
 import {
   tupleToPrivateKey,

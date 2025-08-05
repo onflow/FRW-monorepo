@@ -19,7 +19,7 @@ import {
   userInfoService,
   userWalletService,
   accountManagementService,
-} from '@onflow/frw-core';
+} from '@/core';
 import {
   getValidData,
   setCachedData,
@@ -36,11 +36,11 @@ import {
   cadenceCollectionNftsKey,
   registerRefreshListener,
   walletLoadedRefreshRegex,
-} from '@onflow/frw-data-model';
+} from '@/data-model';
 import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
 
-import { retryOperation } from '@onflow/frw-core/utils';
-import { eventBus } from '@onflow/frw-extension-shared/messaging';
+import { retryOperation } from '@/core/utils';
+import { eventBus } from '@/extension-shared/messaging';
 import {
   FLOW_BIP44_PATH,
   INTERNAL_REQUEST_ORIGIN,

@@ -75,8 +75,8 @@ export const BuildIndicator = () => {
               deploymentEnv === 'staging' || isBeta
                 ? 'default'
                 : deploymentEnv === 'development'
-                ? 'warning'
-                : 'error'
+                  ? 'warning'
+                  : 'error'
             }
             sx={{
               height: '18px',

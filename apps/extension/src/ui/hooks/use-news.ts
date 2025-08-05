@@ -1,8 +1,4 @@
-import {
-  newsKey,
-  readAndDismissedNewsKey,
-  type ReadAndDismissedNewsStore,
-} from '@onflow/frw-data-model';
+import { newsKey, readAndDismissedNewsKey, type ReadAndDismissedNewsStore } from '@/data-model';
 import { useCallback, useMemo } from 'react';
 
 import { type NewsConditionType, type NewsItem } from '@onflow/frw-shared/types';

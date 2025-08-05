@@ -6,7 +6,7 @@ import {
   removeStorageListener,
   type StorageChange,
   userWalletsKey,
-} from '@onflow/frw-data-model';
+} from '@/data-model';
 import { useEffect, useState } from 'react';
 
 export const useNetwork = () => {

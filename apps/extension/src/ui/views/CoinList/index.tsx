@@ -10,7 +10,7 @@ import {
   Typography,
 } from '@mui/material';
 import { Box } from '@mui/system';
-import { type ChildAccountFtStore } from '@onflow/frw-data-model';
+import { type ChildAccountFtStore } from '@/data-model';
 import React from 'react';
 import { useNavigate } from 'react-router';
 

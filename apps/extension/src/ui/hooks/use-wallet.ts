@@ -1,4 +1,4 @@
-import { walletLoadedKey } from '@onflow/frw-data-model';
+import { walletLoadedKey } from '@/data-model';
 import { useContext } from 'react';
 
 import { type WalletControllerType, WalletContext } from '@/ui/utils/WalletContext';

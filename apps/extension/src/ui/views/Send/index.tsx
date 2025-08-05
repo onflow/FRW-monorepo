@@ -20,10 +20,7 @@ import { StyledEngineProvider, useTheme } from '@mui/material/styles';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
-import {
-  checkAddressBookContacts,
-  filterContacts,
-} from '@onflow/frw-extension-shared/contact-utils';
+import { checkAddressBookContacts, filterContacts } from '@/extension-shared/contact-utils';
 import { type Contact, type WalletAddress } from '@onflow/frw-shared/types';
 import { isValidAddress, consoleError } from '@onflow/frw-shared/utils';
 

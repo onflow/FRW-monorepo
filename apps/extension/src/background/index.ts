@@ -19,18 +19,13 @@ import {
   userWalletService,
   versionService,
   googleDriveService,
-} from '@onflow/frw-core';
-import {
-  getLocalData,
-  removeLocalData,
-  setLocalData,
-  initializeStorage,
-} from '@onflow/frw-data-model';
+} from '@/core';
+import { getLocalData, removeLocalData, setLocalData, initializeStorage } from '@/data-model';
 import { ethErrors } from 'eth-rpc-errors';
 
-import { initializeChromeLogging } from '@onflow/frw-extension-shared/chrome-logger';
-import { chromeStorage } from '@onflow/frw-extension-shared/chrome-storage';
-import { Message, eventBus } from '@onflow/frw-extension-shared/messaging';
+import { initializeChromeLogging } from '@/extension-shared/chrome-logger';
+import { chromeStorage } from '@/extension-shared/chrome-storage';
+import { Message, eventBus } from '@/extension-shared/messaging';
 import { EVENTS } from '@onflow/frw-shared/constant';
 import { type WalletAddress } from '@onflow/frw-shared/types';
 import { isValidFlowAddress, consoleError, consoleLog } from '@onflow/frw-shared/utils';
