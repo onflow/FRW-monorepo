@@ -13,7 +13,7 @@ vi.mock('../wallet', () => ({
 }));
 
 // Consolidate mocks for services imported from '@onflow/frw-core/service'
-vi.mock('@/core', () => {
+vi.mock('@/core/service', () => {
   return {
     analyticsService: vi.fn(),
     userWalletService: {
