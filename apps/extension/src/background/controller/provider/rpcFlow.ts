@@ -1,4 +1,4 @@
-import { permissionService } from '@/core';
+import { permissionService } from '@/core/service';
 import { ethErrors } from 'eth-rpc-errors';
 
 import { underline2Camelcase } from '@/core/utils';

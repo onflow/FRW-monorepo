@@ -19,7 +19,7 @@ import {
   userWalletService,
   versionService,
   googleDriveService,
-} from '@/core';
+} from '@/core/service';
 import { getLocalData, removeLocalData, setLocalData, initializeStorage } from '@/data-model';
 import { ethErrors } from 'eth-rpc-errors';
 

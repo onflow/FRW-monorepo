@@ -1,4 +1,4 @@
-import { analyticsService } from '@/core';
+import { analyticsService } from '@/core/service';
 
 import { stripSensitive } from '@onflow/frw-shared/utils';
 

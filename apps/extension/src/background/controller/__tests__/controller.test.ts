@@ -68,7 +68,7 @@ import { ethers } from 'ethers';
 import RLP from 'rlp';
 import { afterEach, beforeEach, describe, expect, it, vi, type MockedFunction } from 'vitest';
 
-import { keyringService, signTextHistoryService, userWalletService } from '@/core';
+import { keyringService, signTextHistoryService, userWalletService } from '@/core/service';
 import { getAccountsByPublicKeyTuple, signWithKey } from '@/core/utils';
 
 // --- Other Specific Imports (ensure these remain as they were) ---

@@ -19,7 +19,7 @@ import {
   userInfoService,
   userWalletService,
   accountManagementService,
-} from '@/core';
+} from '@/core/service';
 import {
   getValidData,
   setCachedData,

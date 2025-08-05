@@ -4,7 +4,7 @@ import {
   sessionService,
   signTextHistoryService,
   userWalletService,
-} from '@/core';
+} from '@/core/service';
 import BigNumber from 'bignumber.js';
 import { ethErrors } from 'eth-rpc-errors';
 import { intToHex, isHexString } from 'ethereumjs-util';

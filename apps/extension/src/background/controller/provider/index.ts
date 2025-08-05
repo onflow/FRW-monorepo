@@ -1,4 +1,4 @@
-import { keyringService, sessionService } from '@/core';
+import { keyringService, sessionService } from '@/core/service';
 import { ethErrors } from 'eth-rpc-errors';
 
 import tab from '@/background/webapi/tab';
