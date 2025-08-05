@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 import {
   addCachedDataListener,
   getCachedData,
@@ -7,8 +9,7 @@ import {
   removeStorageListener,
   type StorageChange,
   type AreaName,
-} from '@onflow/frw-data-model';
-import { useEffect, useState } from 'react';
+} from '@/data-model';
 
 type DataState = {
   key: string;

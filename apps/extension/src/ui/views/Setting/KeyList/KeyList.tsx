@@ -2,8 +2,7 @@ import { Box, IconButton, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation } from 'react-router';
 
-import { type AccountKey, type KeyResponseItem } from '@onflow/frw-shared/types';
-
+import { type AccountKey, type KeyResponseItem } from '@/shared/types';
 import curve from '@/ui/assets/image/curve.png';
 import hash from '@/ui/assets/image/hash.png';
 import key from '@/ui/assets/image/key.png';

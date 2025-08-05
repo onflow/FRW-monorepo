@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { formatTokenValueOrPrice, trimDecimalAmount } from '@onflow/frw-shared/utils';
+import { formatTokenValueOrPrice, trimDecimalAmount } from '@/shared/utils';
 
 interface TokenBalanceProps {
   value: string;

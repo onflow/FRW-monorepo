@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 
-import { type Contact, ContactType, type WalletAddress } from '@onflow/frw-shared/types';
-import { isValidEthereumAddress, withPrefix } from '@onflow/frw-shared/utils';
-
+import { type Contact, ContactType, type WalletAddress } from '@/shared/types';
+import { isValidEthereumAddress, withPrefix } from '@/shared/utils';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 

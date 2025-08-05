@@ -2,8 +2,7 @@ import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 
 // Import some example icons
-import { consoleLog } from '@onflow/frw-shared/utils';
-
+import { consoleLog } from '@/shared/utils';
 import lock from '@/ui/assets/svg/sidebar-lock.svg';
 import plus from '@/ui/assets/svg/sidebar-plus.svg';
 import userCircleGear from '@/ui/assets/svg/user-circle-gear.svg';

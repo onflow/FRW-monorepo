@@ -1,6 +1,5 @@
-import { analyticsService } from '@onflow/frw-core';
-
-import { stripSensitive } from '@onflow/frw-shared/utils';
+import { analyticsService } from '@/core/service';
+import { stripSensitive } from '@/shared/utils';
 
 class LogListener {
   constructor() {}

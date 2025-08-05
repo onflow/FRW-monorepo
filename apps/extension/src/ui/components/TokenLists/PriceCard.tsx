@@ -15,10 +15,9 @@ import dayjs from 'dayjs';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Area, AreaChart, ResponsiveContainer, Tooltip, YAxis } from 'recharts';
 
-import { Period, type PriceProvider } from '@onflow/frw-shared/constant';
-import { type TokenPriceHistory } from '@onflow/frw-shared/types';
-import { getPriceProvider, consoleWarn } from '@onflow/frw-shared/utils';
-
+import { Period, type PriceProvider } from '@/shared/constant';
+import { type TokenPriceHistory } from '@/shared/types';
+import { getPriceProvider, consoleWarn } from '@/shared/utils';
 import {
   IconBinance,
   IconCoinbase,

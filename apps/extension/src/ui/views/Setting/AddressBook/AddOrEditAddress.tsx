@@ -6,9 +6,8 @@ import { isAddress } from 'ethers';
 import React, { useEffect, useState } from 'react';
 import { useForm, type FieldValues } from 'react-hook-form';
 
-import type { Contact } from '@onflow/frw-shared/types';
-import { withPrefix, consoleError } from '@onflow/frw-shared/utils';
-
+import type { Contact } from '@/shared/types';
+import { withPrefix, consoleError } from '@/shared/utils';
 import { LLFormHelperText, LLPrimaryButton, LLSecondaryButton } from '@/ui/components';
 import { useWallet } from '@/ui/hooks/use-wallet';
 

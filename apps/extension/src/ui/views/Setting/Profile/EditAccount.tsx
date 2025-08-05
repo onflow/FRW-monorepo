@@ -5,8 +5,7 @@ import { styled } from '@mui/material/styles';
 import React, { useEffect } from 'react';
 import { useForm, type FieldValues } from 'react-hook-form';
 
-import { consoleError } from '@onflow/frw-shared/utils';
-
+import { consoleError } from '@/shared/utils';
 import { LLFormHelperText, LLPrimaryButton, LLSecondaryButton } from '@/ui/components';
 import { useWallet } from '@/ui/hooks/use-wallet';
 

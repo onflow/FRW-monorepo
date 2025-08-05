@@ -1,10 +1,3 @@
-import {
-  keyringService,
-  permissionService,
-  sessionService,
-  signTextHistoryService,
-  userWalletService,
-} from '@onflow/frw-core';
 import BigNumber from 'bignumber.js';
 import { ethErrors } from 'eth-rpc-errors';
 import { intToHex, isHexString } from 'ethereumjs-util';
@@ -13,17 +6,24 @@ import RLP from 'rlp';
 import Web3 from 'web3';
 import { stringToHex } from 'web3-utils';
 
-import { getAccountsByPublicKeyTuple, signWithKey } from '@onflow/frw-core/utils';
-import { EVM_ENDPOINT, MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@onflow/frw-shared/constant';
+import BaseController from '@/background/controller/base';
+import Wallet from '@/background/controller/wallet';
+import {
+  keyringService,
+  permissionService,
+  sessionService,
+  signTextHistoryService,
+  userWalletService,
+} from '@/core/service';
+import { getAccountsByPublicKeyTuple, signWithKey } from '@/core/utils';
+import { EVM_ENDPOINT, MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/constant';
 import {
   tupleToPrivateKey,
   ensureEvmAddressPrefix,
   isValidEthereumAddress,
   consoleError,
-} from '@onflow/frw-shared/utils';
+} from '@/shared/utils';
 
-import BaseController from '@/background/controller/base';
-import Wallet from '@/background/controller/wallet';
 
 import notificationService from '../notification';
 

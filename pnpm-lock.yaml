@@ -257,21 +257,6 @@ importers:
       '@onflow/fcl':
         specifier: ^1.19.0
         version: 1.19.0(@types/react@18.3.23)(google-protobuf@3.21.4)(jiti@2.4.2)(postcss@8.5.6)(react@18.3.1)(ts-node@10.9.2(@swc/core@1.12.14)(@types/node@22.16.4)(typescript@5.8.3))(tsx@4.20.3)(typescript@5.8.3)(zod@3.25.76)
-      '@onflow/frw-core':
-        specifier: ^0.2.6
-        version: 0.2.7(@trustwallet/wallet-core@4.3.6)(@types/react@18.3.23)(ethers@6.15.0)(firebase@10.14.1)(google-protobuf@3.21.4)(jiti@2.4.2)(postcss@8.5.6)(react@18.3.1)(ts-node@10.9.2(@swc/core@1.12.14)(@types/node@22.16.4)(typescript@5.8.3))(tsx@4.20.3)(typescript@5.8.3)(zod@3.25.76)
-      '@onflow/frw-data-model':
-        specifier: ^0.2.5
-        version: 0.2.6
-      '@onflow/frw-extension-shared':
-        specifier: ^0.2.6
-        version: 0.2.7
-      '@onflow/frw-reducers':
-        specifier: ^0.2.5
-        version: 0.2.6
-      '@onflow/frw-shared':
-        specifier: ^0.2.5
-        version: 0.2.6
       '@reown/walletkit':
         specifier: ^1.2.8
         version: 1.2.8(typescript@5.8.3)(zod@3.25.76)
@@ -669,191 +654,6 @@ importers:
       zip-dir:
         specifier: ^2.0.0
         version: 2.0.0
-
-  packages/core:
-    dependencies:
-      '@noble/secp256k1':
-        specifier: ^1.7.2
-        version: 1.7.2
-      '@onflow/fcl':
-        specifier: ^1.13.1
-        version: 1.19.0(@types/react@18.3.23)(google-protobuf@3.21.4)(jiti@2.4.2)(postcss@8.5.6)(react@18.3.1)(ts-node@10.9.2(@swc/core@1.12.14)(@types/node@22.16.4)(typescript@5.8.3))(tsx@4.20.3)(typescript@5.8.3)(zod@3.25.76)
-      '@onflow/frw-data-model':
-        specifier: workspace:*
-        version: link:../data-model
-      '@onflow/frw-shared':
-        specifier: workspace:*
-        version: link:../shared
-      '@onflow/typedefs':
-        specifier: ^1.4.0
-        version: 1.6.0
-      '@trustwallet/wallet-core':
-        specifier: ^4.3.6
-        version: 4.3.6
-      aes-js:
-        specifier: ^3.1.2
-        version: 3.1.2
-      bignumber.js:
-        specifier: ^9.1.2
-        version: 9.3.1
-      bip39:
-        specifier: ^3.1.0
-        version: 3.1.0
-      browser-passworder:
-        specifier: ^2.0.3
-        version: 2.0.3
-      compare-versions:
-        specifier: ^4.1.4
-        version: 4.1.4
-      dayjs:
-        specifier: ^1.11.13
-        version: 1.11.13
-      ethereumjs-util:
-        specifier: ^7.1.5
-        version: 7.1.5
-      ethers:
-        specifier: ^6.13.4
-        version: 6.15.0
-      firebase:
-        specifier: ^10.14.1
-        version: 10.14.1
-      lru-cache:
-        specifier: ^11.1.0
-        version: 11.1.0
-      rlp:
-        specifier: ^3.0.0
-        version: 3.0.0
-      web3:
-        specifier: ^4.0.0
-        version: 4.16.0(typescript@5.8.3)(zod@3.25.76)
-    devDependencies:
-      '@types/node':
-        specifier: ^22.10.2
-        version: 22.16.4
-      '@vitest/coverage-v8':
-        specifier: 3.2.4
-        version: 3.2.4(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.16.4)(jiti@2.4.2)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))
-      dotenv:
-        specifier: ^16.4.5
-        version: 16.6.1
-      tsup:
-        specifier: ^8.3.5
-        version: 8.5.0(@swc/core@1.12.14)(jiti@2.4.2)(postcss@8.5.6)(tsx@4.20.3)(typescript@5.8.3)(yaml@2.8.0)
-      typescript:
-        specifier: ^5.7.2
-        version: 5.8.3
-      vitest:
-        specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.16.4)(jiti@2.4.2)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0)
-
-  packages/data-model:
-    dependencies:
-      '@onflow/frw-shared':
-        specifier: workspace:*
-        version: link:../shared
-    devDependencies:
-      '@types/node':
-        specifier: ^22.10.2
-        version: 22.16.4
-      '@vitest/coverage-v8':
-        specifier: 3.2.4
-        version: 3.2.4(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.16.4)(jiti@2.4.2)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))
-      tsup:
-        specifier: ^8.3.5
-        version: 8.5.0(@swc/core@1.12.14)(jiti@2.4.2)(postcss@8.5.6)(tsx@4.20.3)(typescript@5.8.3)(yaml@2.8.0)
-      typescript:
-        specifier: ^5.7.2
-        version: 5.8.3
-      vitest:
-        specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.16.4)(jiti@2.4.2)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0)
-
-  packages/extension-shared:
-    dependencies:
-      '@onflow/frw-data-model':
-        specifier: workspace:*
-        version: link:../data-model
-      '@onflow/frw-shared':
-        specifier: workspace:*
-        version: link:../shared
-      eth-rpc-errors:
-        specifier: ^4.0.3
-        version: 4.0.3
-      events:
-        specifier: ^3.3.0
-        version: 3.3.0
-    devDependencies:
-      '@types/chrome':
-        specifier: ^0.1.1
-        version: 0.1.1
-      '@types/node':
-        specifier: ^22.10.2
-        version: 22.16.4
-      '@vitest/coverage-v8':
-        specifier: 3.2.4
-        version: 3.2.4(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.16.4)(jiti@2.4.2)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))
-      ethers:
-        specifier: ^6.15.0
-        version: 6.15.0
-      tsup:
-        specifier: ^8.3.5
-        version: 8.5.0(@swc/core@1.12.14)(jiti@2.4.2)(postcss@8.5.6)(tsx@4.20.3)(typescript@5.8.3)(yaml@2.8.0)
-      typescript:
-        specifier: ^5.7.2
-        version: 5.8.3
-      vitest:
-        specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.16.4)(jiti@2.4.2)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0)
-
-  packages/reducers:
-    dependencies:
-      '@onflow/frw-shared':
-        specifier: workspace:*
-        version: link:../shared
-      bignumber.js:
-        specifier: ^9.1.2
-        version: 9.3.1
-    devDependencies:
-      '@types/node':
-        specifier: ^22.10.2
-        version: 22.16.4
-      '@vitest/coverage-v8':
-        specifier: 3.2.4
-        version: 3.2.4(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.16.4)(jiti@2.4.2)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))
-      tsup:
-        specifier: ^8.3.5
-        version: 8.5.0(@swc/core@1.12.14)(jiti@2.4.2)(postcss@8.5.6)(tsx@4.20.3)(typescript@5.8.3)(yaml@2.8.0)
-      typescript:
-        specifier: ^5.7.2
-        version: 5.8.3
-      vitest:
-        specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.16.4)(jiti@2.4.2)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0)
-
-  packages/shared:
-    dependencies:
-      '@onflow/typedefs':
-        specifier: ^1.4.0
-        version: 1.6.0
-      bignumber.js:
-        specifier: ^9.1.2
-        version: 9.3.1
-    devDependencies:
-      '@types/node':
-        specifier: ^22.10.2
-        version: 22.16.4
-      '@vitest/coverage-v8':
-        specifier: 3.2.4
-        version: 3.2.4(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.16.4)(jiti@2.4.2)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))
-      tsup:
-        specifier: ^8.3.5
-        version: 8.5.0(@swc/core@1.12.14)(jiti@2.4.2)(postcss@8.5.6)(tsx@4.20.3)(typescript@5.8.3)(yaml@2.8.0)
-      typescript:
-        specifier: ^5.7.2
-        version: 5.8.3
-      vitest:
-        specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.16.4)(jiti@2.4.2)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0)
 
 packages:
 
@@ -2237,30 +2037,6 @@ packages:
   '@onflow/fcl@1.19.0':
     resolution: {integrity: sha512-PtABHza3oSVFIQRd8knOM+jqEcWsqRNIwNtWmElnLY7kuBRJJuoOT84Kxua0dWcE567IiDOPtjRoFpfqqnosyQ==}
 
-  '@onflow/frw-core@0.2.7':
-    resolution: {integrity: sha512-/zWYdrnnwKG0Z/9vgQqHK7Fa0H4+LZdinGnC0DwLLFWXkNye/3BnyT3mlsTab1GstKFl2Yx2n76juiXp3fiJrQ==}
-    engines: {node: '>=22.11.0'}
-    peerDependencies:
-      '@trustwallet/wallet-core': ^4.3.6
-      ethers: ^6.13.4
-      firebase: ^10.14.1
-
-  '@onflow/frw-data-model@0.2.6':
-    resolution: {integrity: sha512-GqucNe9Vlor3hPvhIwsKfKpsJIsGNWuk4VoRyLyfh8wCMu89xdwWw9NHgCh6FQNXTB1knwJvVFwFSlTxJhT/9w==}
-    engines: {node: '>=22.11.0'}
-
-  '@onflow/frw-extension-shared@0.2.7':
-    resolution: {integrity: sha512-ajKc4S2yDrUE5vvj/DN7P6FJfb8MfDylMRV05OCBE8w3hv0BOkJ6xbJ34ROCMpuexN32BMRQ40+/rxjLjhHFxA==}
-    engines: {node: '>=22.11.0'}
-
-  '@onflow/frw-reducers@0.2.6':
-    resolution: {integrity: sha512-mlw0xar58cks+F4JleiCFX4CIApKYzM+jsW9zicJQP32vbNz8KaP+Dx7qS5BHMPD9IxRuAiIXttFx8Yn3YYRWQ==}
-    engines: {node: '>=22.11.0'}
-
-  '@onflow/frw-shared@0.2.6':
-    resolution: {integrity: sha512-cF5W7fQ0ftTChelMArVfNOBksO4kEIjy7ivG/C3/p/suB+lZtZuUFpcEFMjHph0fiWPSRDwBSm+fXEIuimNviQ==}
-    engines: {node: '>=22.11.0'}
-
   '@onflow/interaction@0.0.11':
     resolution: {integrity: sha512-Xuq1Mmx6Wyba/F/L+QLQs0yJeQDsIDwy5SKk5vrCuVgIj0yD8k506g5L8ODrbM1LWll8i0tQsoOi0F85vNl5sA==}
 
@@ -2941,9 +2717,6 @@ packages:
 
   '@types/chrome@0.0.281':
     resolution: {integrity: sha512-MH+8FFrJ1POZwKnKRBa+jZcVp+yCFxes6PYKvgFd0qLTzoQe+TdejC3dkA8gSs8UGjFKrKzu4AkZypmswv0NOg==}
-
-  '@types/chrome@0.1.1':
-    resolution: {integrity: sha512-MLtFW++/n+OPQIaf5hA6pmURd3Zn+OxuvASyf2mYh8B8pHDpbhHjwlVHMw3H/aJC9Z7Z3itO0AFaZeegrGk0yA==}
 
   '@types/connect@3.4.38':
     resolution: {integrity: sha512-K6uROf1LD88uDQqJCktA4yzL1YYAK6NgfsI0v/mTgyPKWsX1CnJ0XPSDhViejru1GcRkLWb8RlzFYJRqGUbaug==}
@@ -3855,12 +3628,6 @@ packages:
   builtin-status-codes@3.0.0:
     resolution: {integrity: sha512-HpGFw18DgFWlncDfjTa2rcQ4W88O1mC8e8yZ2AvQY5KDaktSTwo+KRf6nHK6FRI5FyRyb/5T6+TSxfP7QyGsmQ==}
 
-  bundle-require@5.1.0:
-    resolution: {integrity: sha512-3WrrOuZiyaaZPWiEt4G3+IffISVC9HYlWueJEBWED4ZH4aIAC2PnkdnuRrR94M+w6yGWn4AglWtJtBI8YqvgoA==}
-    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
-    peerDependencies:
-      esbuild: '>=0.18'
-
   cac@6.7.14:
     resolution: {integrity: sha512-b6Ilus+c3RrdDk+JhLKUAQfzzgLEPy6wcXqS7f/xe1EETvsDP6GORG7SFuOs6cID5YkqchW/LXZbX5bc8j7ZcQ==}
     engines: {node: '>=8'}
@@ -4069,16 +3836,9 @@ packages:
   concat-map@0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
 
-  confbox@0.1.8:
-    resolution: {integrity: sha512-RMtmw0iFkeR4YV+fUOSucriAQNb9g8zFR52MWCtl+cCZOFRNL6zeB395vPzFhEjjn4fMxXudmELnl/KF/WrK6w==}
-
   configstore@3.1.5:
     resolution: {integrity: sha512-nlOhI4+fdzoK5xmJ+NY+1gZK56bwEaWZr8fYuXohZ9Vkc1o3a4T/R3M+yE/w7x/ZVJ1zF8c+oaOvF0dztdUgmA==}
     engines: {node: '>=4'}
-
-  consola@3.4.2:
-    resolution: {integrity: sha512-5IKcdX0nnYavi6G7TtOhwkYzyjfJlatbjMjuLSfE2kYT5pMDOilZ4OvMhi637CcDICTmz3wARPoyhqyX1Y+XvA==}
-    engines: {node: ^14.18.0 || >=16.10.0}
 
   convert-source-map@1.9.0:
     resolution: {integrity: sha512-ASFBup0Mz1uyiIjANan1jzLQami9z1PoYSZCiiYW2FczPbenXc45FZdBZLzOT+r6+iciuEModtmCti+hjaAk0A==}
@@ -4934,9 +4694,6 @@ packages:
   firebase@10.14.1:
     resolution: {integrity: sha512-0KZxU+Ela9rUCULqFsUUOYYkjh7OM1EWdIfG6///MtXd0t2/uUIf0iNV5i0KariMhRQ5jve/OY985nrAXFaZeQ==}
 
-  fix-dts-default-cjs-exports@1.0.1:
-    resolution: {integrity: sha512-pVIECanWFC61Hzl2+oOCtoJ3F17kglZC/6N94eRWycFgBH35hHx0Li604ZIzhseh97mf2p0cv7vVrOZGoqhlEg==}
-
   flat-cache@3.2.0:
     resolution: {integrity: sha512-CYcENa+FtcUKLmhhqyctpclsq7QF38pKjZHsGNiSQF5r4FtoKDWabFDl3hzaEQMvT1LHEysw5twgLvpYYb4vbw==}
     engines: {node: ^10.12.0 || >=12.0.0}
@@ -5597,10 +5354,6 @@ packages:
     resolution: {integrity: sha512-rg9zJN+G4n2nfJl5MW3BMygZX56zKPNVEYYqq7adpmMh4Jn2QNEwhvQlFy6jPVdcod7txZtKHWnyZiA3a0zP7A==}
     hasBin: true
 
-  joycon@3.1.1:
-    resolution: {integrity: sha512-34wB/Y7MW7bzjKRjUKTa46I2Z7eV62Rkhva+KkopW7Qvv/OSWBqvkSY7vusOPrNuZcUG3tApvdVgNB8POj3SPw==}
-    engines: {node: '>=10'}
-
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
@@ -5735,10 +5488,6 @@ packages:
     resolution: {integrity: sha512-Kx8hMakjX03tiGTLAIdJ+lL0htKnXjEZN6hk/tozf/WOuYGdZBJrZ+rCJRbVCugsjB3jMLn9746NsQIf5VjBMw==}
     engines: {node: '>=4'}
 
-  load-tsconfig@0.2.5:
-    resolution: {integrity: sha512-IXO6OCs9yg8tMKzfPZ1YmheJbZCiEsnBdcB03l0OcfK9prKnJb96siuHCr5Fl37/yo9DnKU+TLpxzTUspw9shg==}
-    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
-
   loader-runner@4.3.0:
     resolution: {integrity: sha512-3R/1M+yS3j5ou80Me59j7F9IMs4PXs3VqRrm0TU3AbKPxlmpoY1TNscJV/oGJXo8qCatFGTfDbY6W6ipGOYXfg==}
     engines: {node: '>=6.11.5'}
@@ -5778,9 +5527,6 @@ packages:
 
   lodash.merge@4.6.2:
     resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==}
-
-  lodash.sortby@4.7.0:
-    resolution: {integrity: sha512-HDWXG8isMntAyRF5vZ7xKuEvOhT4AhlRt/3czTSjvGUxjYCBVRQY48ViDHyfYz9VIoBkW4TMGQNapx+l3RUwdA==}
 
   lodash.truncate@4.4.2:
     resolution: {integrity: sha512-jttmRe7bRse52OsWIMDLaXxWqRAmtIUccAQ3garviCqJjafXOfNMO0yMfNpdD6zbGaTU0P5Nz7e7gAT6cKmJRw==}
@@ -5975,9 +5721,6 @@ packages:
   mkdirp@0.5.6:
     resolution: {integrity: sha512-FP+p8RB8OWpF3YZBCrP5gtADmtXApB5AMLn+vdyA+PyxCjrCs00mjyUozssO33cwDeT3wNGdLxJ5M//YqtHAJw==}
     hasBin: true
-
-  mlly@1.7.4:
-    resolution: {integrity: sha512-qmdSIPC4bDJXgZTCR7XosJiNKySV7O215tsPtDN9iEO/7q/76b/ijtgRu/+epFXSJhijtTCCGp3DWS549P3xKw==}
 
   motion@10.16.2:
     resolution: {integrity: sha512-p+PurYqfUdcJZvtnmAqu5fJgV2kR0uLFQuBKtLeFVTrYEVllI99tiOTSefVNYuip9ELTEkepIIDftNdze76NAQ==}
@@ -6372,9 +6115,6 @@ packages:
     resolution: {integrity: sha512-HRDzbaKjC+AOWVXxAU/x54COGeIv9eb+6CkDSQoNTt4XyWoIJvuPsXizxu/Fr23EiekbtZwmh1IcIG/l/a10GQ==}
     engines: {node: '>=8'}
 
-  pkg-types@1.3.1:
-    resolution: {integrity: sha512-/Jm5M4RvtBFVkKWRu2BLUTNP8/M2a+UwuAX+ae4770q1qVGtfjG+WTCupoZixokjmHiry8uI+dlY8KXYV5HVVQ==}
-
   playwright-core@1.54.1:
     resolution: {integrity: sha512-Nbjs2zjj0htNhzgiy5wu+3w09YetDx5pkrpI/kZotDlDUaYk0HVA5xrBVPdow4SAUIlhgKcJeJg4GRKW6xHusA==}
     engines: {node: '>=18'}
@@ -6453,24 +6193,6 @@ packages:
       postcss:
         optional: true
       tsx:
-        optional: true
-
-  postcss-load-config@6.0.1:
-    resolution: {integrity: sha512-oPtTM4oerL+UXmx+93ytZVN82RrlY/wPUV8IeDxFrzIjXOLF1pN+EmKPLbubvKHT2HC20xXsCAH2Z+CKV6Oz/g==}
-    engines: {node: '>= 18'}
-    peerDependencies:
-      jiti: '>=1.21.0'
-      postcss: '>=8.0.9'
-      tsx: ^4.8.1
-      yaml: ^2.4.2
-    peerDependenciesMeta:
-      jiti:
-        optional: true
-      postcss:
-        optional: true
-      tsx:
-        optional: true
-      yaml:
         optional: true
 
   postcss-loader@5.3.0:
@@ -7169,11 +6891,6 @@ packages:
     resolution: {integrity: sha512-l3BikUxvPOcn5E74dZiq5BGsTb5yEwhaTSzccU6t4sDOH8NWJCstKO5QT2CvtFoK6F0saL7p9xHAqHOlCPJygA==}
     engines: {node: '>= 8'}
 
-  source-map@0.8.0-beta.0:
-    resolution: {integrity: sha512-2ymg6oRBpebeZi9UUNsgQ89bhx01TcTkmNTGnNO88imTmbSgy4nfujrgVEFKWpMTEGA11EDkTt7mqObTPdigIA==}
-    engines: {node: '>= 8'}
-    deprecated: The work that was done in this beta branch won't be included in future versions
-
   spdx-correct@3.2.0:
     resolution: {integrity: sha512-kN9dJbvnySHULIluDHy32WHRUu3Og7B9sbY7tsFLctQkIqnMh3hErYgdMjTYuqmcXX+lK5T1lnUt3G7zNswmZA==}
 
@@ -7509,13 +7226,6 @@ packages:
   tr46@0.0.3:
     resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
 
-  tr46@1.0.1:
-    resolution: {integrity: sha512-dTpowEjclQ7Kgx5SdBkqRzVhERQXov8/l9Ft9dVM9fmg0W0KQSVaXX9T4i6twCPNtYiZM53lpSSUAwJbFPOHxA==}
-
-  tree-kill@1.2.2:
-    resolution: {integrity: sha512-L0Orpi8qGpRG//Nd+H90vFB+3iHnue1zSSGmNOOCh1GLJ7rUKVwV2HvijphGQS2UmhUZewS9VgvxYIdgr+fG1A==}
-    hasBin: true
-
   trim-newlines@2.0.0:
     resolution: {integrity: sha512-MTBWv3jhVjTU7XR3IQHllbiJs8sc75a80OEhB6or/q7pLTWgQ0bMGQXXYQSrSuXe6WiKWDZ5txXY5P59a/coVA==}
     engines: {node: '>=4'}
@@ -7575,25 +7285,6 @@ packages:
 
   tsparticles@3.6.0:
     resolution: {integrity: sha512-Rn5MEgooQtFSqUOmBtwFYsStUeldv+8cJ0TTeHT5xKb4B3VnyU3ic1bw9ueTP19UNnBIIzs0jfdrC5Utfpo6JA==}
-
-  tsup@8.5.0:
-    resolution: {integrity: sha512-VmBp77lWNQq6PfuMqCHD3xWl22vEoWsKajkF8t+yMBawlUS8JzEI+vOVMeuNZIuMML8qXRizFKi9oD5glKQVcQ==}
-    engines: {node: '>=18'}
-    hasBin: true
-    peerDependencies:
-      '@microsoft/api-extractor': ^7.36.0
-      '@swc/core': ^1
-      postcss: ^8.4.12
-      typescript: '>=4.5.0'
-    peerDependenciesMeta:
-      '@microsoft/api-extractor':
-        optional: true
-      '@swc/core':
-        optional: true
-      postcss:
-        optional: true
-      typescript:
-        optional: true
 
   tsx@4.20.3:
     resolution: {integrity: sha512-qjbnuR9Tr+FJOMBqJCW5ehvIo/buZq7vH7qD7JziU98h6l3qGy0a/yPFjwO+y0/T7GFpNgNAvEcPPVfyT8rrPQ==}
@@ -8047,9 +7738,6 @@ packages:
   webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
 
-  webidl-conversions@4.0.2:
-    resolution: {integrity: sha512-YQ+BmxuTgd6UXZW3+ICGfyqRyHXVlD5GtQr5+qjiNW7bF0cqrzX500HVXPBOvgXb5YnzDd+h0zqyv61KUD7+Sg==}
-
   webpack-cli@4.10.0:
     resolution: {integrity: sha512-NLhDfH/h4O6UOy+0LSso42xvYypClINuMNBVVzX4vX98TmTaTUxwRbXdhucbFMd2qLaCTcLq/PdYrvi8onw90w==}
     engines: {node: '>=10.13.0'}
@@ -8113,9 +7801,6 @@ packages:
 
   whatwg-url@5.0.0:
     resolution: {integrity: sha512-saE57nupxk6v3HY35+jzBwYa0rKSy0XR8JSxZPwgLr7ys0IBzhGviA1/TUGJLmSVqs8pb9AnvICXEuOHLprYTw==}
-
-  whatwg-url@7.1.0:
-    resolution: {integrity: sha512-WUu7Rg1DroM7oQvGWfOiAK21n74Gg+T4elXEQYkOhtyLeWiJFoOGLXPKI/9gzIie9CtwVLm8wtw6YJdKyxSjeg==}
 
   which-boxed-primitive@1.1.1:
     resolution: {integrity: sha512-TbX3mj8n0odCBFVlY8AxkqcHASw3L60jIuF8jFP78az3C2YhmGvqbHBpAjTRH2/xqYunrJ9g1jSyjCjpoWzIAA==}
@@ -10085,80 +9770,6 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@onflow/frw-core@0.2.7(@trustwallet/wallet-core@4.3.6)(@types/react@18.3.23)(ethers@6.15.0)(firebase@10.14.1)(google-protobuf@3.21.4)(jiti@2.4.2)(postcss@8.5.6)(react@18.3.1)(ts-node@10.9.2(@swc/core@1.12.14)(@types/node@22.16.4)(typescript@5.8.3))(tsx@4.20.3)(typescript@5.8.3)(zod@3.25.76)':
-    dependencies:
-      '@noble/secp256k1': 1.7.2
-      '@onflow/fcl': 1.19.0(@types/react@18.3.23)(google-protobuf@3.21.4)(jiti@2.4.2)(postcss@8.5.6)(react@18.3.1)(ts-node@10.9.2(@swc/core@1.12.14)(@types/node@22.16.4)(typescript@5.8.3))(tsx@4.20.3)(typescript@5.8.3)(zod@3.25.76)
-      '@onflow/frw-data-model': 0.2.6
-      '@onflow/frw-shared': 0.2.6
-      '@onflow/typedefs': 1.6.0
-      '@trustwallet/wallet-core': 4.3.6
-      aes-js: 3.1.2
-      bignumber.js: 9.3.1
-      bip39: 3.1.0
-      browser-passworder: 2.0.3
-      compare-versions: 4.1.4
-      dayjs: 1.11.13
-      ethereumjs-util: 7.1.5
-      ethers: 6.15.0
-      firebase: 10.14.1
-      lru-cache: 11.1.0
-      rlp: 3.0.0
-      web3: 4.16.0(typescript@5.8.3)(zod@3.25.76)
-    transitivePeerDependencies:
-      - '@azure/app-configuration'
-      - '@azure/cosmos'
-      - '@azure/data-tables'
-      - '@azure/identity'
-      - '@azure/keyvault-secrets'
-      - '@azure/storage-blob'
-      - '@capacitor/preferences'
-      - '@deno/kv'
-      - '@netlify/blobs'
-      - '@onflow/util-config'
-      - '@planetscale/database'
-      - '@react-native-async-storage/async-storage'
-      - '@types/react'
-      - '@upstash/redis'
-      - '@vercel/blob'
-      - '@vercel/kv'
-      - aws4fetch
-      - bufferutil
-      - db0
-      - encoding
-      - google-protobuf
-      - ioredis
-      - jiti
-      - postcss
-      - react
-      - ts-node
-      - tsx
-      - typescript
-      - uploadthing
-      - utf-8-validate
-      - zod
-
-  '@onflow/frw-data-model@0.2.6':
-    dependencies:
-      '@onflow/frw-shared': 0.2.6
-
-  '@onflow/frw-extension-shared@0.2.7':
-    dependencies:
-      '@onflow/frw-data-model': 0.2.6
-      '@onflow/frw-shared': 0.2.6
-      eth-rpc-errors: 4.0.3
-      events: 3.3.0
-
-  '@onflow/frw-reducers@0.2.6':
-    dependencies:
-      '@onflow/frw-shared': 0.2.6
-      bignumber.js: 9.3.1
-
-  '@onflow/frw-shared@0.2.6':
-    dependencies:
-      '@onflow/typedefs': 1.6.0
-      bignumber.js: 9.3.1
-
   '@onflow/interaction@0.0.11': {}
 
   '@onflow/rlp@1.2.3':
@@ -11089,11 +10700,6 @@ snapshots:
       '@types/deep-eql': 4.0.2
 
   '@types/chrome@0.0.281':
-    dependencies:
-      '@types/filesystem': 0.0.36
-      '@types/har-format': 1.2.16
-
-  '@types/chrome@0.1.1':
     dependencies:
       '@types/filesystem': 0.0.36
       '@types/har-format': 1.2.16
@@ -12377,11 +11983,6 @@ snapshots:
 
   builtin-status-codes@3.0.0: {}
 
-  bundle-require@5.1.0(esbuild@0.25.6):
-    dependencies:
-      esbuild: 0.25.6
-      load-tsconfig: 0.2.5
-
   cac@6.7.14: {}
 
   cacheable-lookup@5.0.4: {}
@@ -12579,8 +12180,6 @@ snapshots:
 
   concat-map@0.0.1: {}
 
-  confbox@0.1.8: {}
-
   configstore@3.1.5:
     dependencies:
       dot-prop: 4.2.1
@@ -12589,8 +12188,6 @@ snapshots:
       unique-string: 1.0.0
       write-file-atomic: 2.4.3
       xdg-basedir: 3.0.0
-
-  consola@3.4.2: {}
 
   convert-source-map@1.9.0: {}
 
@@ -13703,12 +13300,6 @@ snapshots:
     transitivePeerDependencies:
       - '@react-native-async-storage/async-storage'
 
-  fix-dts-default-cjs-exports@1.0.1:
-    dependencies:
-      magic-string: 0.30.17
-      mlly: 1.7.4
-      rollup: 4.45.1
-
   flat-cache@3.2.0:
     dependencies:
       flatted: 3.3.3
@@ -14398,8 +13989,6 @@ snapshots:
   jiti@2.4.2:
     optional: true
 
-  joycon@3.1.1: {}
-
   js-tokens@4.0.0: {}
 
   js-tokens@9.0.1: {}
@@ -14552,8 +14141,6 @@ snapshots:
       pify: 3.0.0
       strip-bom: 3.0.0
 
-  load-tsconfig@0.2.5: {}
-
   loader-runner@4.3.0: {}
 
   loader-utils@2.0.4:
@@ -14588,8 +14175,6 @@ snapshots:
   lodash.memoize@4.1.2: {}
 
   lodash.merge@4.6.2: {}
-
-  lodash.sortby@4.7.0: {}
 
   lodash.truncate@4.4.2: {}
 
@@ -14768,13 +14353,6 @@ snapshots:
   mkdirp@0.5.6:
     dependencies:
       minimist: 1.2.8
-
-  mlly@1.7.4:
-    dependencies:
-      acorn: 8.15.0
-      pathe: 2.0.3
-      pkg-types: 1.3.1
-      ufo: 1.6.1
 
   motion@10.16.2:
     dependencies:
@@ -15176,12 +14754,6 @@ snapshots:
     dependencies:
       find-up: 4.1.0
 
-  pkg-types@1.3.1:
-    dependencies:
-      confbox: 0.1.8
-      mlly: 1.7.4
-      pathe: 2.0.3
-
   playwright-core@1.54.1: {}
 
   playwright@1.54.1:
@@ -15258,15 +14830,6 @@ snapshots:
       jiti: 2.4.2
       postcss: 8.5.6
       tsx: 4.20.3
-
-  postcss-load-config@6.0.1(jiti@2.4.2)(postcss@8.5.6)(tsx@4.20.3)(yaml@2.8.0):
-    dependencies:
-      lilconfig: 3.1.3
-    optionalDependencies:
-      jiti: 2.4.2
-      postcss: 8.5.6
-      tsx: 4.20.3
-      yaml: 2.8.0
 
   postcss-loader@5.3.0(postcss@8.5.6)(webpack@5.100.2):
     dependencies:
@@ -16072,10 +15635,6 @@ snapshots:
 
   source-map@0.7.4: {}
 
-  source-map@0.8.0-beta.0:
-    dependencies:
-      whatwg-url: 7.1.0
-
   spdx-correct@3.2.0:
     dependencies:
       spdx-expression-parse: 3.0.1
@@ -16476,12 +16035,6 @@ snapshots:
 
   tr46@0.0.3: {}
 
-  tr46@1.0.1:
-    dependencies:
-      punycode: 2.3.1
-
-  tree-kill@1.2.2: {}
-
   trim-newlines@2.0.0: {}
 
   ts-api-utils@2.1.0(typescript@5.8.3):
@@ -16558,35 +16111,6 @@ snapshots:
       '@tsparticles/updater-tilt': 3.8.1
       '@tsparticles/updater-twinkle': 3.8.1
       '@tsparticles/updater-wobble': 3.8.1
-
-  tsup@8.5.0(@swc/core@1.12.14)(jiti@2.4.2)(postcss@8.5.6)(tsx@4.20.3)(typescript@5.8.3)(yaml@2.8.0):
-    dependencies:
-      bundle-require: 5.1.0(esbuild@0.25.6)
-      cac: 6.7.14
-      chokidar: 4.0.3
-      consola: 3.4.2
-      debug: 4.4.1
-      esbuild: 0.25.6
-      fix-dts-default-cjs-exports: 1.0.1
-      joycon: 3.1.1
-      picocolors: 1.1.1
-      postcss-load-config: 6.0.1(jiti@2.4.2)(postcss@8.5.6)(tsx@4.20.3)(yaml@2.8.0)
-      resolve-from: 5.0.0
-      rollup: 4.45.1
-      source-map: 0.8.0-beta.0
-      sucrase: 3.35.0
-      tinyexec: 0.3.2
-      tinyglobby: 0.2.14
-      tree-kill: 1.2.2
-    optionalDependencies:
-      '@swc/core': 1.12.14
-      postcss: 8.5.6
-      typescript: 5.8.3
-    transitivePeerDependencies:
-      - jiti
-      - supports-color
-      - tsx
-      - yaml
 
   tsx@4.20.3:
     dependencies:
@@ -17188,8 +16712,6 @@ snapshots:
 
   webidl-conversions@3.0.1: {}
 
-  webidl-conversions@4.0.2: {}
-
   webpack-cli@4.10.0(webpack@5.100.2):
     dependencies:
       '@discoveryjs/json-ext': 0.5.7
@@ -17312,12 +16834,6 @@ snapshots:
     dependencies:
       tr46: 0.0.3
       webidl-conversions: 3.0.1
-
-  whatwg-url@7.1.0:
-    dependencies:
-      lodash.sortby: 4.7.0
-      tr46: 1.0.1
-      webidl-conversions: 4.0.2
 
   which-boxed-primitive@1.1.1:
     dependencies:

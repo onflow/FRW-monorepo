@@ -1,11 +1,11 @@
+import { getLocalData, setLocalData, removeLocalData } from '@/data-model';
+import type { TrackingEvents } from '@/shared/types';
+
 import {
   versionService,
   type AnalyticsServiceInterface,
   baseAnalyticsService,
-} from '@onflow/frw-core';
-import { getLocalData, setLocalData, removeLocalData } from '@onflow/frw-data-model';
-
-import type { TrackingEvents } from '@onflow/frw-shared/types';
+} from '../../core/service';
 
 const DISTINCT_ID_KEY = 't_distinct_id';
 const DEVICE_ID_PREFIX = '$device:';

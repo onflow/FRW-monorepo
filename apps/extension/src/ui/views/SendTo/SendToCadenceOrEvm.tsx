@@ -3,9 +3,8 @@ import BN from 'bignumber.js';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { type TransactionState } from '@onflow/frw-shared/types';
-import { isValidAddress, isValidEthereumAddress, consoleError } from '@onflow/frw-shared/utils';
-
+import { type TransactionState } from '@/shared/types';
+import { isValidAddress, isValidEthereumAddress, consoleError } from '@/shared/utils';
 import { LLHeader } from '@/ui/components';
 import CancelIcon from '@/ui/components/iconfont/IconClose';
 import { ContactCard } from '@/ui/components/Send/ContactCard';

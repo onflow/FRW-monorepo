@@ -11,9 +11,8 @@ import {
   HASH_ALGO_NUM_SHA2_256,
   SIGN_ALGO_NUM_ECDSA_secp256k1,
   FCLWalletConnectMethod,
-} from '@onflow/frw-shared/constant';
-import { isValidFlowAddress, withPrefix, consoleError } from '@onflow/frw-shared/utils';
-
+} from '@/shared/constant';
+import { isValidFlowAddress, withPrefix, consoleError } from '@/shared/utils';
 import AllSet from '@/ui/components/LandingPages/AllSet';
 import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
 import SetPassword from '@/ui/components/LandingPages/SetPassword';

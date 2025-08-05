@@ -1,9 +1,8 @@
 import BN from 'bignumber.js';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { type ExtendedTokenInfo, type TokenFilter } from '@onflow/frw-shared/types';
-import { consoleError } from '@onflow/frw-shared/utils';
-
+import { type ExtendedTokenInfo, type TokenFilter } from '@/shared/types';
+import { consoleError } from '@/shared/utils';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 
 import { useCurrency } from './preference-hooks';

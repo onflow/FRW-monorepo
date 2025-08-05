@@ -5,9 +5,8 @@ import {
   type PreferencesStore,
   getLocalData,
   setLocalData,
-} from '@onflow/frw-data-model';
-
-import { DEFAULT_CURRENCY } from '@onflow/frw-shared/constant';
+} from '@/data-model';
+import { DEFAULT_CURRENCY } from '@/shared/constant';
 
 import { useCachedData, useUserData } from './use-data';
 

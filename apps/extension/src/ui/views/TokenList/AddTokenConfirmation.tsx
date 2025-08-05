@@ -4,8 +4,7 @@ import Grid from '@mui/material/Grid';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { type TokenInfo } from '@onflow/frw-shared/types';
-
+import { type TokenInfo } from '@/shared/types';
 import IconPlus from '@/ui/components/iconfont/IconPlus';
 import { useWallet } from '@/ui/hooks/use-wallet';
 

@@ -1,7 +1,7 @@
 import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 
-import { consoleLog } from '@onflow/frw-shared/utils';
+import { consoleLog } from '@/shared/utils';
 
 import ProfileActions from '../profile-actions';
 

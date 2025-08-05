@@ -1,12 +1,11 @@
-import { initializeStorage } from '@onflow/frw-data-model';
 import React, { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
-import { initializeChromeLogging } from '@onflow/frw-extension-shared/chrome-logger';
-import { chromeStorage } from '@onflow/frw-extension-shared/chrome-storage';
-import { Message, eventBus } from '@onflow/frw-extension-shared/messaging';
-import { EVENTS } from '@onflow/frw-shared/constant';
-
+import { initializeStorage } from '@/data-model';
+import { initializeChromeLogging } from '@/extension-shared/chrome-logger';
+import { chromeStorage } from '@/extension-shared/chrome-storage';
+import { Message, eventBus } from '@/extension-shared/messaging';
+import { EVENTS } from '@/shared/constant';
 import { getUITypeName } from '@/ui/utils';
 
 import Views from './views';

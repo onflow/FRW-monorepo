@@ -6,10 +6,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import Web3 from 'web3';
 
-import { erc721Abi as erc721, EVM_ENDPOINT } from '@onflow/frw-shared/constant';
-import { type Contact } from '@onflow/frw-shared/types';
-import { consoleError } from '@onflow/frw-shared/utils';
-
+import { erc721Abi as erc721, EVM_ENDPOINT } from '@/shared/constant';
+import { type Contact } from '@/shared/types';
+import { consoleError } from '@/shared/utils';
 import IconNext from '@/ui/assets/svg/next.svg';
 import { FRWProfile, LLProfile, LLSpinner } from '@/ui/components';
 import IconFlow from '@/ui/components/iconfont/IconFlow';

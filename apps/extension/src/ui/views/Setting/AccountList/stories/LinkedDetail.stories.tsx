@@ -2,14 +2,13 @@ import { type Meta, type StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 import { withRouter } from 'storybook-addon-remix-react-router';
 
-import { emoji as emojisJson } from '@onflow/frw-shared/constant';
+import { emoji as emojisJson } from '@/shared/constant';
 import type {
   MainAccount,
   NftCollection,
   NftCollectionAndIds,
   WalletAccount,
-} from '@onflow/frw-shared/types';
-
+} from '@/shared/types';
 import {
   useChildAccountAllowTypes,
   useChildAccountDescription,

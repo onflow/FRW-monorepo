@@ -11,9 +11,8 @@ import {
 } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { type ProfileBackupStatus } from '@onflow/frw-shared/types';
-import { consoleError } from '@onflow/frw-shared/utils';
-
+import { type ProfileBackupStatus } from '@/shared/types';
+import { consoleError } from '@/shared/utils';
 import { CustomDialog } from '@/ui/components/custom-dialog';
 import { LLPrimaryButton } from '@/ui/components/LLPrimaryButton';
 import { LLSecondaryButton } from '@/ui/components/LLSecondaryButton';

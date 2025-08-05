@@ -3,7 +3,7 @@ import { ethers } from 'ethers';
 import { describe, expect, test, vi } from 'vitest';
 
 // Mock all necessary services
-vi.mock('@onflow/frw-core', () => ({
+vi.mock('@/core/service', () => ({
   openapiService: {
     getFeatureFlag: vi.fn().mockResolvedValue(false),
   },

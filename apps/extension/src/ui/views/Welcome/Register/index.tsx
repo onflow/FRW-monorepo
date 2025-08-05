@@ -1,14 +1,14 @@
 import { Box } from '@mui/material';
+import * as bip39 from 'bip39';
+import React, { useCallback, useEffect, useReducer } from 'react';
+import { useLocation, useNavigate } from 'react-router';
+
 import {
   INITIAL_REGISTER_STATE,
   registerReducer,
   type RegisterState,
   STEPS,
-} from '@onflow/frw-reducers';
-import * as bip39 from 'bip39';
-import React, { useCallback, useEffect, useReducer } from 'react';
-import { useLocation, useNavigate } from 'react-router';
-
+} from '@/reducers';
 import AllSet from '@/ui/components/LandingPages/AllSet';
 import GoogleBackup from '@/ui/components/LandingPages/GoogleBackup';
 import LandingComponents from '@/ui/components/LandingPages/LandingComponents';

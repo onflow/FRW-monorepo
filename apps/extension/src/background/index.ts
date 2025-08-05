@@ -1,5 +1,10 @@
 import 'reflect-metadata';
 
+import { ethErrors } from 'eth-rpc-errors';
+
+import providerController from '@/background/controller/provider';
+import { preAuthzServiceDefinition } from '@/background/controller/serviceDefinition';
+import walletController, { type WalletController } from '@/background/controller/wallet';
 import {
   authenticationService,
   addressBookService,
@@ -19,25 +24,14 @@ import {
   userWalletService,
   versionService,
   googleDriveService,
-} from '@onflow/frw-core';
-import {
-  getLocalData,
-  removeLocalData,
-  setLocalData,
-  initializeStorage,
-} from '@onflow/frw-data-model';
-import { ethErrors } from 'eth-rpc-errors';
-
-import { initializeChromeLogging } from '@onflow/frw-extension-shared/chrome-logger';
-import { chromeStorage } from '@onflow/frw-extension-shared/chrome-storage';
-import { Message, eventBus } from '@onflow/frw-extension-shared/messaging';
-import { EVENTS } from '@onflow/frw-shared/constant';
-import { type WalletAddress } from '@onflow/frw-shared/types';
-import { isValidFlowAddress, consoleError, consoleLog } from '@onflow/frw-shared/utils';
-
-import providerController from '@/background/controller/provider';
-import { preAuthzServiceDefinition } from '@/background/controller/serviceDefinition';
-import walletController, { type WalletController } from '@/background/controller/wallet';
+} from '@/core/service';
+import { getLocalData, removeLocalData, setLocalData, initializeStorage } from '@/data-model';
+import { initializeChromeLogging } from '@/extension-shared/chrome-logger';
+import { chromeStorage } from '@/extension-shared/chrome-storage';
+import { Message, eventBus } from '@/extension-shared/messaging';
+import { EVENTS } from '@/shared/constant';
+import { type WalletAddress } from '@/shared/types';
+import { isValidFlowAddress, consoleError, consoleLog } from '@/shared/utils';
 
 import notificationService from './controller/notification';
 import packageJson from '../../package.json';

@@ -3,8 +3,7 @@ import { Avatar, Box, CardMedia, IconButton, Skeleton, Typography } from '@mui/m
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { ContactType } from '@onflow/frw-shared/types';
-
+import { ContactType } from '@/shared/types';
 import closex from '@/ui/assets/closex.svg';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { formatAddress, isEmoji } from '@/ui/utils';

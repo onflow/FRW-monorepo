@@ -1,7 +1,7 @@
 import QrScanner from 'qr-scanner';
 import React, { useEffect, useRef, useState } from 'react';
 
-import { consoleError } from '@onflow/frw-shared/utils';
+import { consoleError } from '@/shared/utils';
 
 const QrScannerComponent = ({ setUrl }) => {
   const videoRef = useRef(null);

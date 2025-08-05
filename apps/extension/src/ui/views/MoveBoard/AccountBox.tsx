@@ -1,9 +1,8 @@
 import { Box, CardMedia, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { type Contact } from '@onflow/frw-shared/types';
-import { formatString } from '@onflow/frw-shared/utils';
-
+import { type Contact } from '@/shared/types';
+import { formatString } from '@/shared/utils';
 import accountMove from '@/ui/assets/svg/accountMove.svg';
 import { FWMoveDropdown } from '@/ui/components';
 import { useContacts } from '@/ui/hooks/useContactHook';

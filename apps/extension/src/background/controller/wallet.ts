@@ -1,4 +1,8 @@
 import * as fcl from '@onflow/fcl';
+import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
+
+import notification from '@/background/webapi/notification';
+import { openIndexPage } from '@/background/webapi/tab';
 import {
   addressBookService,
   transactionService,
@@ -19,7 +23,8 @@ import {
   userInfoService,
   userWalletService,
   accountManagementService,
-} from '@onflow/frw-core';
+} from '@/core/service';
+import { retryOperation } from '@/core/utils';
 import {
   getValidData,
   setCachedData,
@@ -36,18 +41,15 @@ import {
   cadenceCollectionNftsKey,
   registerRefreshListener,
   walletLoadedRefreshRegex,
-} from '@onflow/frw-data-model';
-import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
-
-import { retryOperation } from '@onflow/frw-core/utils';
-import { eventBus } from '@onflow/frw-extension-shared/messaging';
+} from '@/data-model';
+import { eventBus } from '@/extension-shared/messaging';
 import {
   FLOW_BIP44_PATH,
   INTERNAL_REQUEST_ORIGIN,
   MAINNET_CHAIN_ID,
   PriceProvider,
   Period,
-} from '@onflow/frw-shared/constant';
+} from '@/shared/constant';
 import {
   type CustomFungibleTokenInfo,
   type FeatureFlagKey,
@@ -77,7 +79,7 @@ import {
   type WalletAddress,
   type CollectionNfts,
   type NftCollectionAndIds,
-} from '@onflow/frw-shared/types';
+} from '@/shared/types';
 import {
   isValidAddress,
   isValidEthereumAddress,
@@ -86,10 +88,7 @@ import {
   consoleError,
   consoleWarn,
   getEmojiList,
-} from '@onflow/frw-shared/utils';
-
-import notification from '@/background/webapi/notification';
-import { openIndexPage } from '@/background/webapi/tab';
+} from '@/shared/utils';
 
 import BaseController from './base';
 import notificationService from './notification';

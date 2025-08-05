@@ -1,10 +1,9 @@
 import { Alert, Box, Snackbar } from '@mui/material';
-import { IMPORT_STEPS, importProfileReducer, INITIAL_IMPORT_STATE } from '@onflow/frw-reducers';
 import React, { useEffect, useReducer } from 'react';
 import { useNavigate } from 'react-router';
 
-import { consoleError } from '@onflow/frw-shared/utils';
-
+import { IMPORT_STEPS, importProfileReducer, INITIAL_IMPORT_STATE } from '@/reducers';
+import { consoleError } from '@/shared/utils';
 import Google from '@/ui/components/google-import';
 import ImportTabs from '@/ui/components/import-components/ImportTabs';
 import AllSet from '@/ui/components/LandingPages/AllSet';

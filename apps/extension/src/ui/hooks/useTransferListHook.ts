@@ -1,6 +1,6 @@
-import { transferListKey, type TransferListStore } from '@onflow/frw-data-model';
 import { useEffect, useState } from 'react';
 
+import { transferListKey, type TransferListStore } from '@/data-model';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 

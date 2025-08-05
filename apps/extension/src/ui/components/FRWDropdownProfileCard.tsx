@@ -10,8 +10,7 @@ import {
 } from '@mui/material';
 import React, { useEffect } from 'react';
 
-import { type Contact } from '@onflow/frw-shared/types';
-
+import { type Contact } from '@/shared/types';
 import { formatAddress, isEmoji } from '@/ui/utils';
 
 export const FRWDropdownProfileCard = ({

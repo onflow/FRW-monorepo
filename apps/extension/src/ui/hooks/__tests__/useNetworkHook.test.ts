@@ -1,11 +1,12 @@
+import { act, useEffect, useState } from 'react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import {
   addStorageListener,
   getLocalData,
   removeStorageListener,
   userWalletsKey,
-} from '@onflow/frw-data-model';
-import { act, useEffect, useState } from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+} from '@/data-model';
 
 // Mock React
 vi.mock('react', async () => {
@@ -21,7 +22,7 @@ vi.mock('react', async () => {
 });
 
 // Mock storage module - must be defined before the vi.mock call
-vi.mock('@onflow/frw-data-model', async (importOriginal) => ({
+vi.mock('@/data-model', async (importOriginal) => ({
   ...(await importOriginal()),
   getLocalData: vi.fn().mockImplementation((key) => {
     if (key === 'developerMode') {

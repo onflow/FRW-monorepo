@@ -13,7 +13,7 @@ vi.mock('../wallet', () => ({
 }));
 
 // Consolidate mocks for services imported from '@onflow/frw-core/service'
-vi.mock('@onflow/frw-core', () => {
+vi.mock('@/core/service', () => {
   return {
     analyticsService: vi.fn(),
     userWalletService: {
@@ -41,7 +41,7 @@ vi.mock('@onflow/frw-core', () => {
     },
   };
 });
-vi.mock('@onflow/frw-core/utils', () => ({
+vi.mock('@/core/utils', () => ({
   getAccountsByPublicKeyTuple: vi.fn(),
   pk2PubKeyTuple: vi.fn().mockResolvedValue({
     SECP256K1: {
@@ -68,8 +68,8 @@ import { ethers } from 'ethers';
 import RLP from 'rlp';
 import { afterEach, beforeEach, describe, expect, it, vi, type MockedFunction } from 'vitest';
 
-import { keyringService, signTextHistoryService, userWalletService } from '@onflow/frw-core';
-import { getAccountsByPublicKeyTuple, signWithKey } from '@onflow/frw-core/utils';
+import { keyringService, signTextHistoryService, userWalletService } from '@/core/service';
+import { getAccountsByPublicKeyTuple, signWithKey } from '@/core/utils';
 
 // --- Other Specific Imports (ensure these remain as they were) ---
 
@@ -78,7 +78,7 @@ import {
   HASH_ALGO_NUM_DEFAULT,
   SIGN_ALGO_NUM_DEFAULT,
   TESTNET_CHAIN_ID,
-} from '@onflow/frw-shared/constant';
+} from '@/shared/constant';
 
 import notificationService from '../notification';
 import providerController from '../provider/controller';

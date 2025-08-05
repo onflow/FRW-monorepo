@@ -13,9 +13,8 @@ import {
 import Grid from '@mui/material/Grid';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { type NFTModelV2 } from '@onflow/frw-shared/types';
-import { consoleError } from '@onflow/frw-shared/utils';
-
+import { type NFTModelV2 } from '@/shared/types';
+import { consoleError } from '@/shared/utils';
 import alertMark from '@/ui/assets/svg/alert.svg';
 import { LLHeader } from '@/ui/components';
 import WarningSnackbar from '@/ui/components/WarningSnackbar';

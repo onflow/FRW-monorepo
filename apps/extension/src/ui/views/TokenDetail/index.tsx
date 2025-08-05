@@ -8,9 +8,8 @@ import type {
   CoinItem,
   CustomFungibleTokenInfo,
   EvmCustomTokenInfo,
-} from '@onflow/frw-shared/types';
-import { consoleError, consoleWarn, getPriceProvider } from '@onflow/frw-shared/utils';
-
+} from '@/shared/types';
+import { consoleError, consoleWarn, getPriceProvider } from '@/shared/utils';
 import tips from '@/ui/assets/svg/tips.svg';
 import WarningIcon from '@/ui/assets/svg/warning.svg';
 import SecurityCard from '@/ui/components/SecurityCard';

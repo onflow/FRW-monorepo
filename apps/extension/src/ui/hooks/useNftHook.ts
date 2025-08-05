@@ -1,3 +1,5 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+
 import {
   childAccountNftsKey,
   evmCollectionNftsKey,
@@ -6,9 +8,7 @@ import {
   fullCadenceNftCollectionListKey,
   nftListKey,
   cadenceCollectionNftsKey,
-} from '@onflow/frw-data-model';
-import { useCallback, useEffect, useRef, useState } from 'react';
-
+} from '@/data-model';
 import {
   type NftCollection,
   type NFTModelV2,
@@ -16,8 +16,8 @@ import {
   type CollectionNfts,
   type ChildAccountNftMap,
   type Nft,
-} from '@onflow/frw-shared/types';
-import { consoleError } from '@onflow/frw-shared/utils';
+} from '@/shared/types';
+import { consoleError } from '@/shared/utils';
 
 import { useCachedData } from './use-data';
 

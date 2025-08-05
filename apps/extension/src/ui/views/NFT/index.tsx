@@ -2,8 +2,7 @@ import { Box, Button } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 
-import { type ActiveAccountType } from '@onflow/frw-shared/types';
-
+import { type ActiveAccountType } from '@/shared/types';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 

@@ -1,8 +1,7 @@
 import { Box, Tab, Tabs, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 
-import { type PublicKeyAccount } from '@onflow/frw-shared/types';
-
+import { type PublicKeyAccount } from '@/shared/types';
 import { QrCodeIcon } from '@/ui/assets/icons/QrCodeIcon';
 import Googledrive from '@/ui/components/import-components/Googledrive';
 import JsonImport from '@/ui/components/import-components/JsonImport';

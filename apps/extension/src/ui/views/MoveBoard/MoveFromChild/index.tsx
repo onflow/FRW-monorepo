@@ -2,8 +2,7 @@ import { Box } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { isValidEthereumAddress, consoleError } from '@onflow/frw-shared/utils';
-
+import { isValidEthereumAddress, consoleError } from '@/shared/utils';
 import alertMark from '@/ui/assets/svg/alertMark.svg';
 import { NFTDrawer } from '@/ui/components/GeneralPages';
 import WarningSnackbar from '@/ui/components/WarningSnackbar';

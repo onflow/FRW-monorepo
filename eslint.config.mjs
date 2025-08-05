@@ -115,14 +115,6 @@ const config = [
               group: ['@/content-script/*', '@/content-script/**'],
               message: 'Core services cannot import from content scripts',
             },
-            {
-              group: [
-                '@onflow/frw-core/*',
-                '!@onflow/frw-core/service/**',
-                '!@onflow/frw-core/utils/**',
-              ],
-              message: 'Core services can only import from core/service or core/utils',
-            },
           ],
         },
       ],

@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 import {
   addStorageListener,
   type AreaName,
@@ -6,8 +8,7 @@ import {
   removeStorageListener,
   type StorageChange,
   userWalletsKey,
-} from '@onflow/frw-data-model';
-import { useEffect, useState } from 'react';
+} from '@/data-model';
 
 export const useNetwork = () => {
   const [network, setNetwork] = useState<string>('mainnet');
