@@ -1,0 +1,107 @@
+# React Rules for Optimal Code Quality
+
+First rule of react...
+
+## 1. Use as little React as possible
+
+- Keep components small - less than 100 lines
+- Views reference components
+- Remove as much logic as possible from components and views
+- Externalize functions rather and keep external functions _vanilla typescript_
+- Vanilla typescript is easier to test, and package for other uses
+
+## 2. Avoid using useEffect
+
+- Avoid using useEffect to fetch data or initialise state
+- Use hooks, tanstack query, or the new `use` feature in react 19
+- use useEffect to update state when something else changes
+
+## 3. Use useState sparingly
+
+- Using a local variable is often more optimal - even if something has to be calculated
+- useState uses reducers under the hood
+- If you have more than 3 useStates you might as well use reducers
+
+## 4. Use React.FC and expand props
+
+- Expand props so that each parameter is named
+- It's easier to know which props are not used
+
+## 5. Avoid globals and global state
+
+- Globals including auth globals, often lead to race conditions
+- Global state is only useful in rare cases. SPAs with signifant complexity
+- Start with reducers which are passed through props
+- If that's too complicated, use React context
+- As a last resort for very complicated SPAs - use zustand
+
+## 6. Use reducers
+
+- Reducers are great - read up on them and understand them
+- They keep all state update logic in one place
+- They are vanilla typescript - keep them that way
+- Use them to update state based on other state.
+- Note that updating any part of the state returned from a reducer will cause a re-render if the whole state is a parameter - you can pass just parts of it
+
+## 7. Avoid passing style to components
+
+- Avoid passing styles to components, or styling your components in views
+- Create a component that is pre-styled
+- Create variants - e.g. small, medium, large - rather than size={18}
+- Avoid using styles in views as much as possible
+
+## 8. Use the theme
+
+- Create constants for your theme or use a consistent structure
+- Use the theme fonts and colors
+- Avoid naming fonts and inluding color values directly in views and components
+
+## 9. Use flexbox
+
+- Use flexbox for every component
+
+## 10. Avoid margin
+
+- Don't pre-add padding or margin to the outside of components, unless there is a specific reason to
+- Use flexbox gap instead
+
+## 11. Use kebab-case for file names
+
+- Use PascalCase for component names, but kebab case for file-names
+- PascalCase can often give you issues in git as case sensitive file names is not supported on all platforms
+
+## 12. Create a component library
+
+- If using a 3rd party component library, wrap those components then include your wrapped components. It makes it easier to change libraries
+- Shadcn makes this easy - it includes the source in your repo, and imports only primitives from that source.
+- You don't need to wrap Shadcn generated components - just edit the component source with your changes
+- Don't create duplicates of components for minor variations. Create a variation
+- Customise the component if there's a new variation - don't style from the outside
+- Put your components into a high level components folder
+- Use an aliases or subpath imports "~" to import components from views.
+
+## 13. Avoid hard coding width or height
+
+- Use flexbox and create rules for screen sizes
+
+## 14. Use a prop to hide
+
+- Avoid code that conditionally shows a complex component - this creates janky ui
+- Instead use the display css property to hide or show - this will precalculate everything in the component but not render it
+
+## 15. Use eslint or equivalent
+
+- Ensure the rules of hooks linting rule is on
+
+## 16. Views are routes
+
+- All views should be routable - meaning you can get to them via a route
+- No view should rely on variables or parameters from another
+- A view can be accessed in any order
+- Pass params on the url. You can use url segments for ids, search params should be optional
+- Name views with the same name as the route - or place in a folder with that name
+
+## 17. Avoid default exports
+
+- It's more efficient to export the component directly than to import a default
+- Avoid barrelled imports as much as possible _unless_ you are planning to package that library for others
