@@ -1,12 +1,12 @@
+import { RecentRecipientsService } from '@onflow/frw-services';
+import { useSendStore } from '@onflow/frw-stores';
+import { WalletAccount } from '@onflow/frw-types';
 import { useCallback, useState } from 'react';
 import { Clipboard } from 'react-native';
-import { useSendStore } from '@/stores';
-import { RecentRecipientsService } from '@/service/RecentRecipientsService';
-import { validateSearchAddress } from '../utils/recipientUtils';
 import { showToast } from '../components/renderHelpers';
-import type { ExtendedWalletAccount } from '../types/recipientTypes';
 import type { RecipientTabType } from '../SendToScreen';
-import { WalletAccount } from '@/types/bridge';
+import type { ExtendedWalletAccount } from '../types/recipientTypes';
+import { validateSearchAddress } from '../utils/recipientUtils';
 
 interface UseEventHandlersProps {
   navigation: any;
@@ -81,7 +81,7 @@ export const useEventHandlers = ({
   const isFirstTimeSend = useCallback(
     (address: string): boolean => {
       // Check if address is in recent recipients
-      const isInRecents = RecentRecipientsService.isAddressInRecents(address);
+      const isInRecents = RecentRecipientsService.getInstance().isAddressInRecents(address);
 
       // Also check if it's user's own account
       const isOwnAccount = walletAccounts.some(acc => acc.address === address);
@@ -103,7 +103,7 @@ export const useEventHandlers = ({
       const isMyOwnAccount = walletAccounts.some(acc => acc.address === account.address);
 
       if (!isFromMyAccounts && !isMyOwnAccount) {
-        RecentRecipientsService.addRecentRecipient({
+        RecentRecipientsService.getInstance().addRecentRecipient({
           id: account.id,
           name: account.name,
           address: account.address,
@@ -159,7 +159,7 @@ export const useEventHandlers = ({
       const addressValidation = validateSearchAddress(address);
 
       // Add to recent recipients in MMKV for future use
-      RecentRecipientsService.addRecentRecipient({
+      RecentRecipientsService.getInstance().addRecentRecipient({
         id: `unknown-${address}`,
         name: address, // Use address as name for unknown addresses
         address: address,

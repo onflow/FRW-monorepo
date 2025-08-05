@@ -1,10 +1,9 @@
 import NativeFRWBridge from '@/bridge/NativeFRWBridge';
-import { useTheme } from '@/contexts/ThemeContext';
 import { useConfirmationDrawer } from '@/contexts/ConfirmationDrawerContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useAccountCompatibilityModal } from '@/lib';
-import { sendSelectors, useSendStore, useTokenStore } from '@/stores';
-import { type NavigationProp } from '@/types';
-import { type WalletAccount } from '@/types/bridge';
+import { sendSelectors, useSendStore, useTokenStore } from '@onflow/frw-stores';
+import { type NavigationProp, type WalletAccount } from '@onflow/frw-types';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView, ScrollView, StatusBar, View } from 'react-native';
@@ -219,22 +218,11 @@ const SendMultipleNFTsScreen = ({ navigation }: { navigation: NavigationProp }) 
                         thumbnail: nft.thumbnail,
                       })),
                     onConfirm: async () => {
-                      // Create send payload using store
-                      const { createSendPayload, resetSendFlow } = useSendStore.getState();
-                      const payload = await createSendPayload();
-
-                      if (payload) {
-                        const { SendTransaction, isValidSendTransactionPayload } = await import(
-                          '@/network/cadence'
-                        );
-
-                        if (isValidSendTransactionPayload(payload)) {
-                          const result = await SendTransaction(payload);
-                          console.log('[SendMultipleNFTsScreen] Transfer result:', result);
-                          resetSendFlow();
-                          NativeFRWBridge.closeRN();
-                        }
-                      }
+                      // Execute transaction using store method
+                      const { executeTransaction } = useSendStore.getState();
+                      const result = await executeTransaction();
+                      console.log('[SendMultipleNFTsScreen] Transaction result:', result);
+                      NativeFRWBridge.closeRN();
                     },
                     children:
                       selectedNFTs && selectedNFTs.length > 0 ? (

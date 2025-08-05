@@ -1,14 +1,14 @@
 import { isEVMAccount } from '@/lib';
-import { type WalletAccount } from '@/types/bridge';
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { View, TouchableOpacity } from 'react-native';
-import { Text, EVMChip } from 'ui';
+import { type WalletAccount } from '@onflow/frw-types';
+import { AddressBookService } from '@onflow/frw-services';
 import { Edit as EditIcon, Link } from 'icons';
-import AddressText from '../typography/AddressText';
-import { WalletAvatar } from '../media/WalletAvatar';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { TouchableOpacity, View } from 'react-native';
+import { EVMChip, Text } from 'ui';
 import { ContactAvatar } from '../media/ContactAvatar';
-import { AddressBookService } from '@onflow/frw-stores';
+import { WalletAvatar } from '../media/WalletAvatar';
+import AddressText from '../typography/AddressText';
 
 interface ToAccountSectionProps {
   account: WalletAccount;
@@ -39,7 +39,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
   useEffect(() => {
     const checkAddressBook = async () => {
       try {
-        const addressBookData = await AddressBookService.getAddressBook();
+        const addressBookData = await AddressBookService.getInstance().getAddressBook();
         const isInAddressBook = addressBookData.contacts?.some(
           (contact: any) => contact.address.toLowerCase() === account.address.toLowerCase()
         );

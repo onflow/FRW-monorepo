@@ -1,7 +1,7 @@
+import { IconView } from '@/components/ui/media/IconView';
+import { type NFTModel } from '@onflow/frw-types';
 import { View } from 'react-native';
 import { Text } from 'ui';
-import { IconView } from '@/components/ui/media/IconView';
-import { type NFTModel } from '@/types';
 
 interface NFTPreviewProps {
   nft: NFTModel;

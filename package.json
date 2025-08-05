@@ -6,11 +6,11 @@
   "scripts": {
     "build": "pnpm -r build",
     "build:packages": "pnpm -F './packages/**' build",
-    "build:extension": "pnpm -F extension build:dev",
+    "build:extension": "pnpm -F frw-extension build:dev",
     "build:rn": "pnpm -F FRWRN android",
     "dev": "pnpm -r --parallel build:watch",
     "dev:packages": "pnpm -F './packages/**' --parallel build:watch",
-    "dev:extension": "pnpm -F extension build:dev",
+    "dev:extension": "pnpm -F frw-extension build:dev",
     "dev:rn": "pnpm -F FRWRN start",
     "clean": "pnpm -r clean && rm -rf **/node_modules && pnpm install",
     "test": "pnpm -r test",

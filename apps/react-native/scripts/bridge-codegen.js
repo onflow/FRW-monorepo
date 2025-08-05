@@ -5,7 +5,7 @@ const path = require('path');
 
 // Configuration
 const CONFIG = {
-  input: 'src/types/bridge.ts',
+  input: '../../packages/types/src/bridge.ts',
   output: {
     swift: 'ios/FRW/Foundation/Bridge/BridgeModels.swift',
     kotlin: 'android/app/src/main/java/com/flowfoundation/wallet/bridge/BridgeModels.kt',

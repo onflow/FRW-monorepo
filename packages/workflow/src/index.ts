@@ -2,8 +2,6 @@ import * as fcl from '@onflow/fcl';
 import { addresses, CadenceService } from '@onflow/frw-cadence';
 import { send as httpSend } from '@onflow/transport-http';
 
-import { authz } from './utils/authz';
-
 export * from './send';
 export * from './send/utils';
 
@@ -31,32 +29,27 @@ export function configureFCL(network: 'mainnet' | 'testnet') {
   }
 }
 
-const cadenceService = new CadenceService();
+/**
+ * Create CadenceService instance factory function
+ * @param network - Network configuration
+ * @param bridge - Bridge instance that will configure all interceptors
+ * @returns CadenceService instance fully configured with bridge interceptors
+ */
+export function createCadenceService(
+  network: 'mainnet' | 'testnet',
+  bridge: any
+): CadenceService {
+  configureFCL(network);
+  const service = new CadenceService();
 
-cadenceService.useRequestInterceptor(async (config) => {
-  if (config.type === 'transaction') {
-    config.payer = authz;
-  }
-  return config;
-});
+  // Basic response interceptor for logging
+  service.useResponseInterceptor(async (response) => {
+    console.log('cadenceService response', response);
+    return response;
+  });
 
-cadenceService.useRequestInterceptor(async (config) => {
-  if (config.type === 'transaction') {
-    config.proposer = authz;
-  }
-  return config;
-});
+  // Let bridge configure the service with all its interceptors
+  bridge.configureCadenceService(service);
 
-cadenceService.useRequestInterceptor(async (config) => {
-  if (config.type === 'transaction') {
-    config.authorizations = [authz];
-  }
-  return config;
-});
-
-cadenceService.useResponseInterceptor(async (response) => {
-  console.log('cadenceService response', response);
-  return response;
-});
-
-export { cadenceService };
+  return service;
+}

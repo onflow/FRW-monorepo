@@ -1,10 +1,9 @@
 import NativeFRWBridge from '@/bridge/NativeFRWBridge';
-import { useTheme } from '@/contexts/ThemeContext';
 import { useConfirmationDrawer } from '@/contexts/ConfirmationDrawerContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useAccountCompatibilityModal } from '@/lib';
-import { sendSelectors, useSendStore, useTokenStore } from '@/stores';
-import { type NavigationProp } from '@/types';
-import { type WalletAccount } from '@/types/bridge';
+import { sendSelectors, useSendStore, useTokenStore } from '@onflow/frw-stores';
+import { type NavigationProp, type WalletAccount } from '@onflow/frw-types';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView, ScrollView, StatusBar, View } from 'react-native';
@@ -105,23 +104,12 @@ const SendSingleNFTScreen = ({ navigation }: { navigation: NavigationProp }) => 
             ]
           : [],
         onConfirm: async () => {
-          // Create send payload using store
-          const { createSendPayload, resetSendFlow, setTransactionType } = useSendStore.getState();
+          // Execute transaction using store method
+          const { executeTransaction, setTransactionType } = useSendStore.getState();
           setTransactionType('single-nft');
-          const payload = await createSendPayload();
-
-          if (payload) {
-            const { SendTransaction, isValidSendTransactionPayload } = await import(
-              '@/network/cadence'
-            );
-
-            if (isValidSendTransactionPayload(payload)) {
-              const result = await SendTransaction(payload);
-              console.log('[SendSingleNFTScreen] Transfer result:', result);
-              resetSendFlow();
-              NativeFRWBridge.closeRN();
-            }
-          }
+          const result = await executeTransaction();
+          console.log('[SendSingleNFTScreen] Transaction result:', result);
+          NativeFRWBridge.closeRN();
         },
         children: (
           <View className="w-full p-4 bg-surface-2 rounded-2xl">

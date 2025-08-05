@@ -1,9 +1,9 @@
-import { View, TouchableOpacity } from 'react-native';
-import { Text } from '../typography/text';
-import { IconView } from '../media/IconView';
-import { VerifiedToken as VerifiedIcon } from 'icons';
-import { TokenInfo } from '@/types';
 import { formatCurrencyStringForDisplay } from '@/lib/string';
+import { TokenInfo } from '@onflow/frw-types';
+import { VerifiedToken as VerifiedIcon } from 'icons';
+import { TouchableOpacity, View } from 'react-native';
+import { IconView } from '../media/IconView';
+import { Text } from '../typography/text';
 export interface TokenCardProps {
   token: TokenInfo;
   onPress?: () => void;

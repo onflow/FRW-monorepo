@@ -1,7 +1,7 @@
+import { getServiceContext } from '@onflow/frw-context';
+import { sendSelectors, useSendStore } from '@onflow/frw-stores';
+import { type WalletAccount } from '@onflow/frw-types';
 import { useCallback, useEffect, useState } from 'react';
-import { CadenceGen } from '@/network/cadence/CadenceGen';
-import { type WalletAccount } from '@/types/bridge';
-import { sendSelectors, useSendStore } from '@/stores';
 
 interface StorageWarningState {
   shouldShow: boolean;
@@ -41,15 +41,8 @@ export const useStorageWarning = () => {
     setState(prev => ({ ...prev, isLoading: true }));
 
     try {
-      // Check if CadenceGen is available before using
-      if (typeof CadenceGen === 'undefined' || !CadenceGen.prototype) {
-        console.warn('CadenceGen not available, skipping storage check');
-        setState(prev => ({ ...prev, shouldShow: false, isLoading: false }));
-        return;
-      }
-
-      const cadenceGen = new CadenceGen();
-      const accountInfo = await cadenceGen.getAccountInfo(account.address);
+      const cadenceService = getServiceContext().cadence;
+      const accountInfo = await cadenceService.getAccountInfo(account.address);
 
       if (!accountInfo) {
         console.warn('No account info received from Cadence');

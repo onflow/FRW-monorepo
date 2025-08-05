@@ -1,13 +1,13 @@
-import React, { useState, useMemo } from 'react';
-import { Modal, View, Text, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
-import { useTheme } from '@/contexts/ThemeContext';
-import { useTokenStore } from '@/stores';
 import NativeFRWBridge from '@/bridge/NativeFRWBridge';
+import { useTheme } from '@/contexts/ThemeContext';
+import { AddressSearchBox } from '@/screens/Send/SendTo/components/AddressSearchBox';
+import { useTokenStore } from '@onflow/frw-stores';
+import { TokenInfo } from '@onflow/frw-types';
+import React, { useMemo, useState } from 'react';
+import { Modal, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { TokenCard as SelectTokenCard } from '../cards/TokenCard';
 import { CloseIcon, Skeleton } from '../index';
 import { Divider } from '../layout/divider';
-import { AddressSearchBox } from '@/screens/Send/SendTo/components/AddressSearchBox';
-import { TokenCard as SelectTokenCard } from '../cards/TokenCard';
-import { TokenInfo } from '@/types';
 
 interface TokenSelectorModalProps {
   visible: boolean;

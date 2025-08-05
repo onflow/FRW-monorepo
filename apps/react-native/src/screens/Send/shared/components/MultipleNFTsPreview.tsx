@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
-import { View, ScrollView, TouchableOpacity } from 'react-native';
-import { Text } from 'ui';
-import { Trash as TrashIcon } from 'icons';
 import { IconView } from '@/components/ui/media/IconView';
 import { useTheme } from '@/contexts/ThemeContext';
-import { ChevronDown, ChevronUp } from 'icons';
-import { type ExpandedNFTData } from '@/types';
+import { type ExpandedNFTData } from '@onflow/frw-types';
+import { ChevronDown, ChevronUp, Trash as TrashIcon } from 'icons';
+import { useState } from 'react';
+import { ScrollView, TouchableOpacity, View } from 'react-native';
+import { Text } from 'ui';
 
 interface MultipleNFTsPreviewProps {
   nfts: any[];

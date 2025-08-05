@@ -1,10 +1,10 @@
-import React, { createContext, useContext, useRef, ReactNode, useState } from 'react';
 import {
   ConfirmationBottomSheet,
   ConfirmationBottomSheetRef,
 } from '@/components/ConfirmationBottomSheet';
 import { ConfirmationDrawerContent } from '@/components/ConfirmationDrawerContent';
-import type { WalletAccount } from '@/types/bridge';
+import type { WalletAccount } from '@onflow/frw-types';
+import React, { createContext, ReactNode, useContext, useRef, useState } from 'react';
 
 interface Token {
   symbol?: string;

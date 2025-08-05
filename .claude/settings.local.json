@@ -15,7 +15,9 @@
       "Bash(git reset:*)",
       "Bash(mkdir:*)",
       "Bash(mv:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(git restore:*)",
+      "Bash(true)"
     ],
     "deny": []
   }

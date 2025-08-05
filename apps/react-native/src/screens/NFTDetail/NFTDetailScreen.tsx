@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import { View, ScrollView, TouchableOpacity } from 'react-native';
-import { useRoute } from '@react-navigation/native';
-import type { RouteProp } from '@react-navigation/native';
-import type { RootStackParamList } from '@/navigation/AppNavigator';
-import { BackgroundWrapper, Text } from 'ui';
-import { CheckCircle as CheckCircleIcon, CheckCircleFill as CheckCircleFillIcon } from 'icons';
-import { IconView } from '@/components/ui/media/IconView';
-import { getNFTCover } from '@/types/NFTModel';
 import BottomConfirmBar from '@/components/NFTList/BottomConfirmBar';
+import { IconView } from '@/components/ui/media/IconView';
+import type { RootStackParamList } from '@/navigation/AppNavigator';
+import { getNFTCover } from '@onflow/frw-types';
+import type { RouteProp } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
+import { CheckCircleFill as CheckCircleFillIcon, CheckCircle as CheckCircleIcon } from 'icons';
+import React, { useState } from 'react';
+import { ScrollView, TouchableOpacity, View } from 'react-native';
+import { BackgroundWrapper, Text } from 'ui';
 
 interface PropertyTagProps {
   label: string;

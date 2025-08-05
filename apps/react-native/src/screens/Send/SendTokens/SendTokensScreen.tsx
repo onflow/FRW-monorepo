@@ -1,11 +1,9 @@
+import NativeFRWBridge from '@/bridge/NativeFRWBridge';
 import { useConfirmationDrawer } from '@/contexts/ConfirmationDrawerContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAccountCompatibilityModal } from '@/lib';
-import { sendSelectors, useSendStore, useTokenStore } from '@/stores';
-import { TokenInfo } from '@/types';
-import { type WalletAccount } from '@/types/bridge';
-import { SendTransaction, isValidSendTransactionPayload } from '@/network/cadence';
-import NativeFRWBridge from '@/bridge/NativeFRWBridge';
+import { sendSelectors, useSendStore, useTokenStore } from '@onflow/frw-stores';
+import { TokenInfo, type WalletAccount } from '@onflow/frw-types';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView, ScrollView, StatusBar, View } from 'react-native';
@@ -335,19 +333,11 @@ const SendTokensScreen = () => {
                       : undefined,
                     formData,
                     onConfirm: async () => {
-                      // Create send payload using store
-                      const { createSendPayload, resetSendFlow } = useSendStore.getState();
-                      const payload = await createSendPayload();
-
-                      if (payload) {
-
-                        if (isValidSendTransactionPayload(payload)) {
-                          const result = await SendTransaction(payload);
-                          console.log('[SendTokensScreen] Transfer result:', result);
-                          resetSendFlow();
-                          NativeFRWBridge.closeRN();
-                        }
-                      }
+                      // Execute transaction using store method
+                      const { executeTransaction } = useSendStore.getState();
+                      const result = await executeTransaction();
+                      console.log('[SendTokensScreen] Transaction result:', result);
+                      NativeFRWBridge.closeRN();
                     },
                     children: selectedToken ? (
                       <View className="w-full p-4 bg-surface-2 rounded-2xl">

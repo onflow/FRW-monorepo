@@ -1,13 +1,15 @@
 import { parseUnits } from 'ethers';
+import type { CadenceService } from '@onflow/frw-cadence';
 
-import { cadenceService } from '../index';
 import type { SendPayload, TransferStrategy } from './types';
 import { encodeEvmContractCallData } from './utils';
 import { validateEvmAddress, validateFlowAddress } from './validation';
+
 /**
  * Strategy for child account to child account token transfers
  */
 export class ChildToChildTokenStrategy implements TransferStrategy {
+  constructor(private cadenceService: CadenceService) {}
   canHandle(payload: SendPayload): boolean {
     const { childAddrs, receiver, sender, type } = payload;
     return (
@@ -20,7 +22,7 @@ export class ChildToChildTokenStrategy implements TransferStrategy {
 
   async execute(payload: SendPayload): Promise<any> {
     const { flowIdentifier, sender, receiver, amount } = payload;
-    return await cadenceService.sendChildFtToChild(flowIdentifier, sender, receiver, amount);
+    return await this.cadenceService.sendChildFtToChild(flowIdentifier, sender, receiver, amount);
   }
 }
 
@@ -28,6 +30,8 @@ export class ChildToChildTokenStrategy implements TransferStrategy {
  * Strategy for sending tokens from child account
  */
 export class ChildToOthersTokenStrategy implements TransferStrategy {
+  constructor(private cadenceService: CadenceService) {}
+  
   canHandle(payload: SendPayload): boolean {
     const { childAddrs, sender, assetType, type } = payload;
     return (
@@ -43,17 +47,17 @@ export class ChildToOthersTokenStrategy implements TransferStrategy {
 
     // Send child tokens to parent account
     if (receiver === proposer) {
-      return await cadenceService.transferChildFt(flowIdentifier, sender, amount);
+      return await this.cadenceService.transferChildFt(flowIdentifier, sender, amount);
     }
 
     // Bridge to COA (Cadence Owned Account)
     if (receiver === coaAddr) {
-      return await cadenceService.bridgeChildFtToEvm(flowIdentifier, sender, amount);
+      return await this.cadenceService.bridgeChildFtToEvm(flowIdentifier, sender, amount);
     }
 
     // Bridge to EOA (Externally Owned Account) - EVM address
     if (validateEvmAddress(receiver)) {
-      return await cadenceService.bridgeChildFtToEvmAddress(
+      return await this.cadenceService.bridgeChildFtToEvmAddress(
         flowIdentifier,
         sender,
         amount,
@@ -62,7 +66,7 @@ export class ChildToOthersTokenStrategy implements TransferStrategy {
     }
 
     // Default child token transfer within Flow network
-    return await cadenceService.sendChildFt(flowIdentifier, sender, receiver, amount);
+    return await this.cadenceService.sendChildFt(flowIdentifier, sender, receiver, amount);
   }
 }
 
@@ -70,6 +74,8 @@ export class ChildToOthersTokenStrategy implements TransferStrategy {
  * Strategy for sending tokens to child account
  */
 export class ParentToChildTokenStrategy implements TransferStrategy {
+  constructor(private cadenceService: CadenceService) {}
+  
   canHandle(payload: SendPayload): boolean {
     const { childAddrs, receiver, assetType, sender, coaAddr, type } = payload;
     return (
@@ -84,7 +90,7 @@ export class ParentToChildTokenStrategy implements TransferStrategy {
   async execute(payload: SendPayload): Promise<any> {
     const { flowIdentifier, receiver, amount, decimal } = payload;
     const valueBig = parseUnits(amount, decimal);
-    return await cadenceService.bridgeChildFtFromEvm(flowIdentifier, receiver, valueBig.toString());
+    return await this.cadenceService.bridgeChildFtFromEvm(flowIdentifier, receiver, valueBig.toString());
   }
 }
 
@@ -92,6 +98,8 @@ export class ParentToChildTokenStrategy implements TransferStrategy {
  * Strategy for Flow to Flow token transfers
  */
 export class FlowToFlowTokenStrategy implements TransferStrategy {
+  constructor(private cadenceService: CadenceService) {}
+  
   canHandle(payload: SendPayload): boolean {
     const { assetType, receiver, type } = payload;
     return type === 'token' && assetType === 'flow' && validateFlowAddress(receiver);
@@ -99,7 +107,7 @@ export class FlowToFlowTokenStrategy implements TransferStrategy {
 
   async execute(payload: SendPayload): Promise<any> {
     const { flowIdentifier, receiver, amount } = payload;
-    return await cadenceService.transferTokensV3(flowIdentifier, receiver, amount);
+    return await this.cadenceService.transferTokensV3(flowIdentifier, receiver, amount);
   }
 }
 
@@ -107,6 +115,8 @@ export class FlowToFlowTokenStrategy implements TransferStrategy {
  * Strategy for Flow to EVM token transfers
  */
 export class FlowToEvmTokenStrategy implements TransferStrategy {
+  constructor(private cadenceService: CadenceService) {}
+  
   canHandle(payload: SendPayload): boolean {
     const { assetType, flowIdentifier, receiver, type } = payload;
     return (
@@ -119,7 +129,7 @@ export class FlowToEvmTokenStrategy implements TransferStrategy {
 
   async execute(payload: SendPayload): Promise<any> {
     const { receiver, amount } = payload;
-    return await cadenceService.transferFlowToEvmAddress(receiver, amount, 30_000_000);
+    return await this.cadenceService.transferFlowToEvmAddress(receiver, amount, 30_000_000);
   }
 }
 
@@ -127,6 +137,8 @@ export class FlowToEvmTokenStrategy implements TransferStrategy {
  * Strategy for Flow token bridge to EVM
  */
 export class FlowTokenBridgeToEvmStrategy implements TransferStrategy {
+  constructor(private cadenceService: CadenceService) {}
+  
   canHandle(payload: SendPayload): boolean {
     const { assetType, receiver, type } = payload;
     return type === 'token' && assetType === 'flow' && validateEvmAddress(receiver);
@@ -134,7 +146,7 @@ export class FlowTokenBridgeToEvmStrategy implements TransferStrategy {
 
   async execute(payload: SendPayload): Promise<any> {
     const { flowIdentifier, amount, receiver } = payload;
-    return await cadenceService.bridgeTokensToEvmAddressV2(flowIdentifier, amount, receiver);
+    return await this.cadenceService.bridgeTokensToEvmAddressV2(flowIdentifier, amount, receiver);
   }
 }
 
@@ -142,6 +154,8 @@ export class FlowTokenBridgeToEvmStrategy implements TransferStrategy {
  * Strategy for EVM to Flow token transfers (COA withdrawal)
  */
 export class EvmToFlowCoaWithdrawalStrategy implements TransferStrategy {
+  constructor(private cadenceService: CadenceService) {}
+  
   canHandle(payload: SendPayload): boolean {
     const { assetType, flowIdentifier, receiver, type } = payload;
     return (
@@ -154,7 +168,7 @@ export class EvmToFlowCoaWithdrawalStrategy implements TransferStrategy {
 
   async execute(payload: SendPayload): Promise<any> {
     const { amount, receiver } = payload;
-    return await cadenceService.withdrawCoa(amount, receiver);
+    return await this.cadenceService.withdrawCoa(amount, receiver);
   }
 }
 
@@ -162,6 +176,8 @@ export class EvmToFlowCoaWithdrawalStrategy implements TransferStrategy {
  * Strategy for EVM to Flow token bridge
  */
 export class EvmToFlowTokenBridgeStrategy implements TransferStrategy {
+  constructor(private cadenceService: CadenceService) {}
+  
   canHandle(payload: SendPayload): boolean {
     const { assetType, receiver, type } = payload;
     return type === 'token' && assetType === 'evm' && validateFlowAddress(receiver);
@@ -169,7 +185,7 @@ export class EvmToFlowTokenBridgeStrategy implements TransferStrategy {
 
   async execute(payload: SendPayload): Promise<any> {
     const { flowIdentifier, amount, receiver } = payload;
-    return await cadenceService.bridgeTokensFromEvmToFlowV3(flowIdentifier, amount, receiver);
+    return await this.cadenceService.bridgeTokensFromEvmToFlowV3(flowIdentifier, amount, receiver);
   }
 }
 
@@ -177,6 +193,8 @@ export class EvmToFlowTokenBridgeStrategy implements TransferStrategy {
  * Strategy for EVM to EVM token transfers
  */
 export class EvmToEvmTokenStrategy implements TransferStrategy {
+  constructor(private cadenceService: CadenceService) {}
+  
   canHandle(payload: SendPayload): boolean {
     const { assetType, receiver, type } = payload;
     return type === 'token' && assetType === 'evm' && validateEvmAddress(receiver);
@@ -185,7 +203,7 @@ export class EvmToEvmTokenStrategy implements TransferStrategy {
   async execute(payload: SendPayload): Promise<any> {
     const { tokenContractAddr, amount, flowIdentifier, decimal } = payload;
     if (flowIdentifier.includes('FlowToken')) {
-      return await cadenceService.callContract(
+      return await this.cadenceService.callContract(
         '0x0000000000000000000000000000000000000000',
         amount,
         [],
@@ -193,7 +211,7 @@ export class EvmToEvmTokenStrategy implements TransferStrategy {
       );
     } else {
       const data = encodeEvmContractCallData(payload);
-      return await cadenceService.callContract(tokenContractAddr, '0.0', data, 30000000);
+      return await this.cadenceService.callContract(tokenContractAddr, '0.0', data, 30000000);
     }
   }
 }

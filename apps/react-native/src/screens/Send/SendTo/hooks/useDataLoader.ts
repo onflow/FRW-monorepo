@@ -1,9 +1,8 @@
-import { useState, useCallback, useEffect } from 'react';
 import NativeFRWBridge from '@/bridge/NativeFRWBridge';
-import { AddressBookService } from '@/service/AddressBookService';
-import { RecentRecipientsService } from '@/service/RecentRecipientsService';
-import { useTokenStore, useWalletStore } from '@/stores';
-import { WalletAccount } from '@/types/bridge';
+import { AddressBookService, RecentRecipientsService } from '@onflow/frw-services';
+import { useTokenStore, useWalletStore } from '@onflow/frw-stores';
+import { WalletAccount } from '@onflow/frw-types';
+import { useCallback, useEffect, useState } from 'react';
 import type { ExtendedWalletAccount } from '../types/recipientTypes';
 
 export const useDataLoader = (t: (key: string, options?: any) => string) => {
@@ -96,7 +95,7 @@ export const useDataLoader = (t: (key: string, options?: any) => string) => {
       // Load address book contacts using direct network request
       try {
         console.log('[SendTo] Loading address book contacts from service...');
-        const addressBookData = await AddressBookService.getAddressBook();
+        const addressBookData = await AddressBookService.getInstance().getAddressBook();
 
         console.log('[SendTo] Raw address book from service:', addressBookData);
         console.log('[SendTo] Address book contact count:', addressBookData.contacts?.length);
@@ -130,7 +129,8 @@ export const useDataLoader = (t: (key: string, options?: any) => string) => {
       setIsContactsLoading(false);
 
       // Load recent contacts using the new service (MMKV + bridge hybrid)
-      const recentWalletAccounts = await RecentRecipientsService.getAllRecentRecipients();
+      const recentWalletAccounts =
+        await RecentRecipientsService.getInstance().getAllRecentRecipients();
       setRecentContacts(recentWalletAccounts);
       setIsRecentLoading(false);
 
@@ -190,7 +190,8 @@ export const useDataLoader = (t: (key: string, options?: any) => string) => {
   // Refresh recent contacts only
   const refreshRecentContacts = useCallback(async () => {
     try {
-      const recentWalletAccounts = await RecentRecipientsService.getAllRecentRecipients();
+      const recentWalletAccounts =
+        await RecentRecipientsService.getInstance().getAllRecentRecipients();
       setRecentContacts(recentWalletAccounts);
     } catch (error) {
       console.error('Failed to refresh recent contacts:', error);

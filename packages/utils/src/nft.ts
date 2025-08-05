@@ -1,0 +1,48 @@
+import { NFTModel } from '@onflow/frw-types';
+
+/**
+ * Gets the cover image URL from an NFT
+ */
+export function getNFTCover(nft: NFTModel): string {
+  if (nft.thumbnail) {
+    return nft.thumbnail;
+  }
+  if (nft.postMedia?.image) {
+    return nft.postMedia.image;
+  }
+  return '';
+}
+
+/**
+ * Gets a unique identifier for an NFT
+ */
+export function getNFTId(nft: NFTModel): string {
+  return nft.id ?? nft.address ?? '';
+}
+
+/**
+ * Gets searchable text content from an NFT
+ */
+export function getNFTSearchText(nft: NFTModel): string {
+  return (
+    (nft.name ?? '') +
+    ' ' +
+    (nft.description ?? '') +
+    ' ' +
+    (nft.postMedia?.description ?? '')
+  );
+}
+
+/**
+ * Checks if an NFT has valid media content
+ */
+export function hasNFTMedia(nft: NFTModel): boolean {
+  return !!(nft.thumbnail || nft.postMedia?.image);
+}
+
+/**
+ * Gets the display name for an NFT, falling back to ID if name is not available
+ */
+export function getNFTDisplayName(nft: NFTModel): string {
+  return nft.name || nft.id || 'Unnamed NFT';
+}

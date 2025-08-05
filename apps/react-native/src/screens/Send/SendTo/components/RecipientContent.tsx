@@ -1,25 +1,25 @@
+import { FirstTimeSendModal } from '@/components/ui/modals';
 import { useTheme } from '@/contexts/ThemeContext';
-import React, { useCallback, useMemo, useState, useRef } from 'react';
+import { sendSelectors, useSendStore } from '@onflow/frw-stores';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, View } from 'react-native';
-import { sendSelectors, useSendStore } from '@/stores';
-import { FirstTimeSendModal } from '@/components/ui/modals';
-import { AlphabetIndex } from './AlphabetIndex';
+import { useDataLoader } from '../hooks/useDataLoader';
+import { useEventHandlers } from '../hooks/useEventHandlers';
 import type {
-  RecipientContentProps,
-  ListItem,
   ExtendedWalletAccount,
+  ListItem,
+  RecipientContentProps,
 } from '../types/recipientTypes';
 import {
   generateAccountsListData,
-  generateRecentListData,
   generateContactsListData,
+  generateRecentListData,
   generateSearchAllTabsData,
   selectListData,
 } from '../utils/listDataGenerators';
+import { AlphabetIndex } from './AlphabetIndex';
 import { createRenderItem, renderEmptyState, renderSkeletonRows } from './renderHelpers';
-import { useEventHandlers } from '../hooks/useEventHandlers';
-import { useDataLoader } from '../hooks/useDataLoader';
 
 // Container style constant for better performance - adjusted to match Figma specs
 const CONTAINER_STYLE = { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 20 };

@@ -1,7 +1,7 @@
-import { validateSearchAddress, addressExistsInLists } from './recipientUtils';
-import type { ListItem, ExtendedWalletAccount, GroupedContacts } from '../types/recipientTypes';
+import { WalletAccount } from '@onflow/frw-types';
 import type { RecipientTabType } from '../SendToScreen';
-import { WalletAccount } from '@/types/bridge';
+import type { ExtendedWalletAccount, GroupedContacts, ListItem } from '../types/recipientTypes';
+import { addressExistsInLists, validateSearchAddress } from './recipientUtils';
 
 /**
  * Generate list data for accounts tab

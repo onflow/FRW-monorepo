@@ -1,4 +1,4 @@
-import type { RecentContactsResponse, WalletAccountsResponse } from '@/types';
+import type { RecentContactsResponse, WalletAccountsResponse } from '@onflow/frw-types';
 import type { TurboModule } from 'react-native';
 import { TurboModuleRegistry } from 'react-native';
 
@@ -22,6 +22,11 @@ export interface Spec extends TurboModule {
   isFreeGasEnabled(): Promise<boolean>;
   // Listen to a transaction
   listenTransaction(txid: string): void;
+  
+  // Flow authorization functions for Cadence transactions
+  getProposer(): Promise<any>;
+  getPayer(): Promise<any>;
+  getAuthorizations(): Promise<any[]>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeFRWBridge');

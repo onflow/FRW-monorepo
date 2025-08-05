@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FRW Architecture Diagram</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .diagram-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #e1e5e9;
+        }
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 30px 0;
+        }
+        .legend-item {
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid;
+        }
+        .legend-item h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.1em;
+        }
+        .legend-item p {
+            margin: 0;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .app-layer { border-left-color: #2196F3; background: #e3f2fd; }
+        .business-layer { border-left-color: #9C27B0; background: #f3e5f5; }
+        .service-layer { border-left-color: #4CAF50; background: #e8f5e8; }
+        .core-layer { border-left-color: #FF9800; background: #fff3e0; }
+        .foundation-layer { border-left-color: #757575; background: #fafafa; }
+        .bridge-layer { border-left-color: #F44336; background: #ffebee; }
+        
+        .key-concepts {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .key-concepts h2 {
+            color: #333;
+            margin-top: 0;
+        }
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .concept-card {
+            background: white;
+            padding: 20px;
+            border-radius: 6px;
+            border: 1px solid #e1e5e9;
+        }
+        .concept-card h3 {
+            color: #667eea;
+            margin-top: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2em; }
+            .header p { font-size: 1em; }
+            .content { padding: 20px; }
+            .legend { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏗️ FRW Architecture</h1>
+            <p>Flow Reference Wallet - Monorepo Architecture Overview</p>
+        </div>
+        
+        <div class="content">
+            <div class="key-concepts">
+                <h2>🎯 Core Design Philosophy</h2>
+                <div class="concept-grid">
+                    <div class="concept-card">
+                        <h3>🏢 Layered Architecture</h3>
+                        <p>Clear separation of concerns with each layer having distinct functional positioning. Upper layers can call lower layers, but lower layers cannot depend on upper layers.</p>
+                    </div>
+                    <div class="concept-card">
+                        <h3>🔧 ServiceContext Pattern</h3>
+                        <p>Lightweight dependency injection container that solves cross-package dependencies and facilitates testing and mocking.</p>
+                    </div>
+                    <div class="concept-card">
+                        <h3>🌉 Bridge Abstraction</h3>
+                        <p>Platform bridging layer supporting React Native, browsers and other platforms through interface abstraction for decoupling.</p>
+                    </div>
+                    <div class="concept-card">
+                        <h3>📦 Monorepo Management</h3>
+                        <p>Unified code management facilitating code sharing and dependency management using pnpm workspaces.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="diagram-container">
+                <h2>📊 Architecture Layer Diagram</h2>
+                <div class="mermaid">
+                    graph TB
+                        subgraph "🏢 Applications Layer"
+                            RN[📱 React Native App<br/>UI • Navigation • Themes]
+                            EXT[🌐 Browser Extension<br/>Future Platform]
+                        end
+                        
+                        subgraph "🧠 Business Logic Layer"
+                            STORES[📊 stores<br/>State Management<br/>Zustand • Caching]
+                            WORKFLOW[⚡ workflow<br/>Transaction Logic<br/>Strategy Pattern]
+                        end
+                        
+                        subgraph "🔧 Service Layer"
+                            SERVICES[🛠️ services<br/>Business Services<br/>FlowService • TokenService]
+                            SC[🏗️ ServiceContext<br/>DI Container<br/>Bridge Integration]
+                        end
+                        
+                        subgraph "⚡ Core Layer"
+                            CADENCE[🔗 cadence<br/>Flow Integration<br/>FCL • Transactions]
+                            API[🌐 api<br/>Network Layer<br/>HTTP • REST APIs]
+                        end
+                        
+                        subgraph "🏗️ Foundation Layer"
+                            TYPES[📝 types<br/>Type Definitions<br/>TypeScript Interfaces]
+                            UTILS[🔧 utils<br/>Utilities<br/>Pure Functions]
+                        end
+                        
+                        subgraph "🌉 Platform Bridge"
+                            BRIDGE[🔌 Bridge Layer<br/>Native Integration<br/>iOS • Android]
+                        end
+
+                        %% Dependencies
+                        RN --> STORES
+                        RN --> WORKFLOW
+                        RN --> SERVICES
+                        RN --> BRIDGE
+                        
+                        EXT --> STORES
+                        EXT --> WORKFLOW
+                        EXT --> SERVICES
+                        
+                        STORES --> SERVICES
+                        WORKFLOW --> CADENCE
+                        WORKFLOW --> SERVICES
+                        
+                        SERVICES --> SC
+                        SERVICES --> API
+                        SERVICES --> CADENCE
+                        SERVICES --> BRIDGE
+                        
+                        CADENCE --> TYPES
+                        API --> TYPES
+                        SERVICES --> TYPES
+                        STORES --> TYPES
+                        WORKFLOW --> TYPES
+                        
+                        SERVICES --> UTILS
+                        STORES --> UTILS
+                        
+                        SC -.-> BRIDGE
+                        
+                        %% Styling
+                        classDef appLayer fill:#e3f2fd,stroke:#2196F3,stroke-width:2px
+                        classDef businessLayer fill:#f3e5f5,stroke:#9C27B0,stroke-width:2px
+                        classDef serviceLayer fill:#e8f5e8,stroke:#4CAF50,stroke-width:2px
+                        classDef coreLayer fill:#fff3e0,stroke:#FF9800,stroke-width:2px
+                        classDef foundationLayer fill:#fafafa,stroke:#757575,stroke-width:2px
+                        classDef bridgeLayer fill:#ffebee,stroke:#F44336,stroke-width:2px
+                        
+                        class RN,EXT appLayer
+                        class STORES,WORKFLOW businessLayer
+                        class SERVICES,SC serviceLayer
+                        class CADENCE,API coreLayer
+                        class TYPES,UTILS foundationLayer
+                        class BRIDGE bridgeLayer
+                </div>
+            </div>
+
+            <div class="legend">
+                <div class="legend-item app-layer">
+                    <h3>📱 Applications Layer</h3>
+                    <p>User interface and platform entry points. React Native apps, browser extensions, etc. Responsible for UI rendering, user interaction, and theme management.</p>
+                </div>
+                <div class="legend-item business-layer">
+                    <h3>🧠 Business Logic Layer</h3>
+                    <p>Business logic layer. State management (stores) and transaction strategies (workflow). Handles complex business processes and data caching.</p>
+                </div>
+                <div class="legend-item service-layer">
+                    <h3>🔧 Service Layer</h3>
+                    <p>Service layer and dependency injection. ServiceContext manages all service instances, services package encapsulates business service logic.</p>
+                </div>
+                <div class="legend-item core-layer">
+                    <h3>⚡ Core Layer</h3>
+                    <p>Core functionality layer. Blockchain interactions (cadence) and network requests (api). Handles low-level technical implementation.</p>
+                </div>
+                <div class="legend-item foundation-layer">
+                    <h3>🏗️ Foundation Layer</h3>
+                    <p>Infrastructure layer. Type definitions (types) and utility functions (utils). Provides foundational support for upper layers.</p>
+                </div>
+                <div class="legend-item bridge-layer">
+                    <h3>🌉 Platform Bridge</h3>
+                    <p>Platform bridging layer. Connects JavaScript and native code, handles platform-specific function calls.</p>
+                </div>
+            </div>
+
+            <div class="diagram-container">
+                <h2>🔄 Data Flow Example: User Sends Transaction</h2>
+                <div class="mermaid">
+                    sequenceDiagram
+                        participant UI as 📱 UI Components
+                        participant Store as 📊 Zustand Store
+                        participant Service as 🛠️ Service Layer
+                        participant Bridge as 🔌 Native Bridge
+                        participant Flow as 🔗 Flow Network
+
+                        UI->>Store: 1. User clicks send button
+                        Store->>Service: 2. Call transfer service
+                        Service->>Bridge: 3. Request signature authorization
+                        Bridge->>Service: 4. Return signature data
+                        Service->>Flow: 5. Send transaction to Flow
+                        Flow->>Service: 6. Return transaction result
+                        Service->>Store: 7. Update transaction status
+                        Store->>UI: 8. Trigger UI update
+
+                        Note over UI,Flow: ServiceContext manages all inter-service dependencies
+                </div>
+            </div>
+
+            <div class="key-concepts">
+                <h2>⚡ Key Technical Decisions</h2>
+                <div class="concept-grid">
+                    <div class="concept-card">
+                        <h3>🎨 Why Choose Layered Architecture?</h3>
+                        <p><strong>Clear Separation of Concerns</strong> - Each layer has distinct functionality, facilitating team collaboration and code maintenance.</p>
+                        <p><strong>Scalability</strong> - New features can be added at corresponding layers without affecting other layers.</p>
+                        <p><strong>Testability</strong> - Each layer can be tested independently, improving code quality.</p>
+                    </div>
+                    <div class="concept-card">
+                        <h3>🔧 ServiceContext vs Traditional DI</h3>
+                        <p><strong>Lightweight</strong> - Specifically designed for our architecture, avoiding complex framework learning curves.</p>
+                        <p><strong>Type Safety</strong> - Complete TypeScript support with compile-time error checking.</p>
+                        <p><strong>Easy Debugging</strong> - Simple implementation, easy problem location and debugging.</p>
+                    </div>
+                    <div class="concept-card">
+                        <h3>🌉 Bridge Design Philosophy</h3>
+                        <p><strong>Platform Abstraction</strong> - Unified interface supporting different platform implementations.</p>
+                        <p><strong>Authentication Integration</strong> - Built-in Flow transaction authentication support.</p>
+                        <p><strong>Extensibility</strong> - New platforms only need to implement BridgeSpec interface.</p>
+                    </div>
+                    <div class="concept-card">
+                        <h3>📦 Monorepo Advantages</h3>
+                        <p><strong>Code Sharing</strong> - Packages reused across multiple applications.</p>
+                        <p><strong>Unified Management</strong> - Dependency versions and build configurations managed uniformly.</p>
+                        <p><strong>Atomic Commits</strong> - Cross-package modifications can be committed at once.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            themeVariables: {
+                primaryColor: '#667eea',
+                primaryTextColor: '#333',
+                primaryBorderColor: '#667eea',
+                lineColor: '#666',
+                secondaryColor: '#f8f9fa',
+                tertiaryColor: '#fff'
+            }
+        });
+    </script>
+</body>
+</html>

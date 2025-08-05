@@ -1,5 +1,5 @@
-// Re-export type from types directory (maintaining current import)
-export { type Account } from '../../types';
+// Re-export type from frw-types package
+export { type WalletAccount as Account } from '@onflow/frw-types';
 
 // Icons
 export {
@@ -33,18 +33,17 @@ export {
   CardContent,
   CardFooter,
   CardHeader,
-  type CardProps,
   ProfileHeader,
   ToAccountSection,
   TokenCard,
   TransactionFeeSection,
   WalletAccountSection,
+  type CardProps,
 } from './cards';
 
 // Forms & Controls
 export {
   Button,
-  type ButtonProps,
   CloseButton,
   EditButton,
   SegmentedControl,
@@ -53,6 +52,7 @@ export {
   TabsContent,
   TabsList,
   TabsTrigger,
+  type ButtonProps,
 } from './forms';
 
 // Layout

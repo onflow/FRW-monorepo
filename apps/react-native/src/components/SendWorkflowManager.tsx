@@ -1,18 +1,17 @@
-import React from 'react';
-import { View, Alert } from 'react-native';
+import NativeFRWBridge from '@/bridge/NativeFRWBridge';
+import { useConfirmationDrawer } from '@/contexts/ConfirmationDrawerContext';
 import {
   SelectTokensScreen,
+  SendMultipleNFTsScreen,
+  SendSingleNFTScreen,
   SendToScreen,
   SendTokensScreen,
-  SendSingleNFTScreen,
-  SendMultipleNFTsScreen,
 } from '@/screens';
-import { Text } from 'ui';
-import { useConfirmationDrawer } from '@/contexts/ConfirmationDrawerContext';
-import { useSendStore } from '@/stores/sendStore';
-import { SendTransaction, isValidSendTransactionPayload } from '@/network/cadence';
-import NativeFRWBridge from '@/bridge/NativeFRWBridge';
+import { useSendStore } from '@onflow/frw-stores';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { Alert, View } from 'react-native';
+import { Text } from 'ui';
 
 export type SendWorkflowStep =
   | 'SelectTokens'
@@ -36,16 +35,8 @@ export const SendWorkflowManager: React.FC<SendWorkflowManagerProps> = ({
 }) => {
   const { t } = useTranslation();
   const { openConfirmation } = useConfirmationDrawer();
-  const {
-    fromAccount,
-    toAccount,
-    selectedToken,
-    selectedNFTs,
-    formData,
-    transactionType,
-    createSendPayload,
-    resetSendFlow,
-  } = useSendStore();
+  const { fromAccount, toAccount, selectedToken, selectedNFTs, formData, transactionType } =
+    useSendStore();
 
   // Create a mock navigation object for the screens
   const mockNavigation = {
@@ -63,43 +54,44 @@ export const SendWorkflowManager: React.FC<SendWorkflowManagerProps> = ({
     // Add other navigation methods as needed
   };
 
-  const handleConfirmationRequest = () => {
+  const handleConfirmationRequest = async () => {
     if (!fromAccount || !toAccount) {
       console.error('[SendWorkflowManager] Missing required accounts for confirmation');
       return;
     }
 
-    // Create transaction details content based on transaction type
-    const renderTransactionDetails = () => {
-      const isTokenTransaction = transactionType === 'tokens';
-      const isNFTTransaction = ['single-nft', 'multiple-nfts'].includes(transactionType);
+    // Get transaction details from store
+    const { getTransactionDetailsForDisplay, executeTransaction } = useSendStore.getState();
+    const transactionDetails = getTransactionDetailsForDisplay();
 
+    // Create transaction details content
+    const renderTransactionDetails = () => {
       return (
         <View className="w-full p-4 bg-surface-2 rounded-2xl">
           <Text className="text-fg-1 font-semibold text-base mb-2">Transaction Details</Text>
-          {isTokenTransaction && selectedToken && (
+          {transactionDetails.isTokenTransaction && (
             <>
               <View className="flex-row justify-between">
                 <Text className="text-fg-2">Amount</Text>
                 <Text className="text-fg-1 font-semibold">
-                  {formData.tokenAmount} {selectedToken.symbol}
+                  {transactionDetails.tokenAmount} {transactionDetails.tokenSymbol}
                 </Text>
               </View>
               <View className="flex-row justify-between mt-2">
                 <Text className="text-fg-2">Token</Text>
-                <Text className="text-fg-1 font-semibold">{selectedToken.name}</Text>
+                <Text className="text-fg-1 font-semibold">{transactionDetails.tokenName}</Text>
               </View>
             </>
           )}
-          {isNFTTransaction && selectedNFTs && (
+          {transactionDetails.isNFTTransaction && (
             <View className="flex-row justify-between">
               <Text className="text-fg-2">NFTs</Text>
-              <Text className="text-fg-1 font-semibold">{selectedNFTs.length} NFT(s)</Text>
+              <Text className="text-fg-1 font-semibold">{transactionDetails.nftCount} NFT(s)</Text>
             </View>
           )}
           <View className="flex-row justify-between mt-2">
             <Text className="text-fg-2">Network Fee</Text>
-            <Text className="text-fg-1 font-semibold">~0.001 FLOW</Text>
+            <Text className="text-fg-1 font-semibold">{transactionDetails.networkFee}</Text>
           </View>
         </View>
       );
@@ -129,32 +121,14 @@ export const SendWorkflowManager: React.FC<SendWorkflowManagerProps> = ({
       formData,
       onConfirm: async () => {
         try {
-          // Create payload using the store
-          const payload = await createSendPayload();
-
-          if (!payload) {
-            console.error('[SendWorkflowManager] Failed to create payload');
-            Alert.alert(t('errors.title'), t('errors.failedToCreateTransaction'));
-            throw new Error('Failed to create payload');
-          }
-
-          console.log('[SendWorkflowManager] Send payload:', payload);
-
-          if (isValidSendTransactionPayload(payload)) {
-            const result = await SendTransaction(payload);
-            console.log('[SendWorkflowManager] Transfer result:', result);
-            resetSendFlow();
-            onClose();
-            NativeFRWBridge.closeRN();
-          } else {
-            console.error('[SendWorkflowManager] Invalid send payload:', payload);
-            Alert.alert(t('errors.title'), t('errors.invalidTransaction'));
-            throw new Error('Invalid transaction payload');
-          }
+          const result = await executeTransaction();
+          console.log('[SendWorkflowManager] Transaction result:', result);
+          onClose();
+          NativeFRWBridge.closeRN();
         } catch (error) {
-          console.error('[SendWorkflowManager] Transfer error:', error);
+          console.error('[SendWorkflowManager] Transaction error:', error);
           Alert.alert(t('errors.title'), t('errors.transactionFailed'));
-          throw error; // Let the drawer handle the error state
+          throw error;
         }
       },
       children: renderTransactionDetails(),

@@ -56,31 +56,32 @@ export class TransferContext {
 
 /**
  * Creates and configures a TransferContext with all available strategies
+ * @param cadenceService - CadenceService instance for executing transactions
  * @returns Configured TransferContext instance
  */
-export const createTransferContext = (): TransferContext => {
+export const createTransferContext = (cadenceService: any): TransferContext => {
   const context = new TransferContext();
 
   // Add token transfer strategies
-  context.addStrategy(new ChildToChildTokenStrategy());
-  context.addStrategy(new ChildToOthersTokenStrategy());
-  context.addStrategy(new ParentToChildTokenStrategy());
-  context.addStrategy(new FlowToFlowTokenStrategy());
-  context.addStrategy(new FlowToEvmTokenStrategy());
-  context.addStrategy(new FlowTokenBridgeToEvmStrategy());
-  context.addStrategy(new EvmToFlowCoaWithdrawalStrategy());
-  context.addStrategy(new EvmToFlowTokenBridgeStrategy());
-  context.addStrategy(new EvmToEvmTokenStrategy());
+  context.addStrategy(new ChildToChildTokenStrategy(cadenceService));
+  context.addStrategy(new ChildToOthersTokenStrategy(cadenceService));
+  context.addStrategy(new ParentToChildTokenStrategy(cadenceService));
+  context.addStrategy(new FlowToFlowTokenStrategy(cadenceService));
+  context.addStrategy(new FlowToEvmTokenStrategy(cadenceService));
+  context.addStrategy(new FlowTokenBridgeToEvmStrategy(cadenceService));
+  context.addStrategy(new EvmToFlowCoaWithdrawalStrategy(cadenceService));
+  context.addStrategy(new EvmToFlowTokenBridgeStrategy(cadenceService));
+  context.addStrategy(new EvmToEvmTokenStrategy(cadenceService));
 
   // Add NFT transfer strategies
-  context.addStrategy(new ChildToChildNftStrategy());
-  context.addStrategy(new ChildToOthersNftStrategy());
-  context.addStrategy(new ParentToChildNftStrategy());
-  context.addStrategy(new TopShotNftStrategy());
-  context.addStrategy(new FlowToFlowNftStrategy());
-  context.addStrategy(new FlowToEvmNftBridgeStrategy());
-  context.addStrategy(new EvmToFlowNftBridgeStrategy());
-  context.addStrategy(new EvmToEvmNftStrategy());
+  context.addStrategy(new ChildToChildNftStrategy(cadenceService));
+  context.addStrategy(new ChildToOthersNftStrategy(cadenceService));
+  context.addStrategy(new ParentToChildNftStrategy(cadenceService));
+  context.addStrategy(new TopShotNftStrategy(cadenceService));
+  context.addStrategy(new FlowToFlowNftStrategy(cadenceService));
+  context.addStrategy(new FlowToEvmNftBridgeStrategy(cadenceService));
+  context.addStrategy(new EvmToFlowNftBridgeStrategy(cadenceService));
+  context.addStrategy(new EvmToEvmNftStrategy(cadenceService));
 
   return context;
 };

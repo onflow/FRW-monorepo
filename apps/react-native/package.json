@@ -27,8 +27,13 @@
   "dependencies": {
     "@gorhom/bottom-sheet": "^5.1.8",
     "@onflow/fcl": "^1.19.0",
+    "@onflow/frw-context": "workspace:*",
     "@onflow/frw-api": "workspace:*",
+    "@onflow/frw-cadence": "workspace:*",
+    "@onflow/frw-services": "workspace:*",
     "@onflow/frw-stores": "workspace:*",
+    "@onflow/frw-utils": "workspace:*",
+    "@onflow/frw-workflow": "workspace:*",
     "@onflow/frw-types": "workspace:*",
     "@onflow/transport-http": "^1.13.0",
     "@onflow/types": "^1.4.1",

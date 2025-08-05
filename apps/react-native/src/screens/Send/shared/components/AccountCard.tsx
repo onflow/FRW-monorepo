@@ -1,13 +1,13 @@
-import { type WalletAccount } from '@/types/bridge';
-import { View } from 'react-native';
-import { isEVMAccount } from '@/lib';
-import { AddressText, Text, EVMChip, EditButton, Skeleton } from 'ui';
 import { WalletAvatar } from '@/components/ui/media/WalletAvatar';
-import { useTokenStore } from '@/stores/tokenStore';
-import { formatCurrencyStringForDisplay, truncateBalance } from '@/lib/string';
-import { Link } from 'icons';
-import React, { useMemo } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { isEVMAccount } from '@/lib';
+import { formatCurrencyStringForDisplay, truncateBalance } from '@/lib/string';
+import { useTokenStore } from '@onflow/frw-stores';
+import { type WalletAccount } from '@onflow/frw-types';
+import { Link } from 'icons';
+import { useMemo } from 'react';
+import { View } from 'react-native';
+import { AddressText, EVMChip, EditButton, Skeleton, Text } from 'ui';
 
 interface AccountCardProps {
   account: WalletAccount;

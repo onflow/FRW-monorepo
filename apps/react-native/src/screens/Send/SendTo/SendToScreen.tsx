@@ -1,5 +1,5 @@
 import { useTheme } from '@/contexts/ThemeContext';
-import { sendSelectors, useSendStore } from '@/stores';
+import { sendSelectors, useSendStore } from '@onflow/frw-stores';
 import { useNavigation } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';

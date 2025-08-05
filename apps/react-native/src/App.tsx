@@ -1,15 +1,16 @@
+import { ServiceContext } from '@onflow/frw-context';
+import { useWalletStore } from '@onflow/frw-stores';
 import { useEffect } from 'react';
 import { Platform, Text as RNText } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { ThemeProvider } from './contexts/ThemeContext';
+import 'react-native-get-random-values';
+import { bridge } from './bridge/RNBridge';
 import { ConfirmationDrawerProvider } from './contexts/ConfirmationDrawerContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import './global.css';
 import { getGlobalTextProps } from './lib/androidTextFix';
-import AppNavigator from './navigation/AppNavigator';
-import { configureFCL } from './network/cadence';
-import { useWalletStore } from './stores/walletStore';
 import './lib/i18n';
-import './types/i18n';
+import AppNavigator from './navigation/AppNavigator';
 
 // Configure default text props for Android to prevent text cutoff issues
 if (Platform.OS === 'android') {
@@ -27,24 +28,35 @@ interface AppProps {
 }
 
 const App = (props: AppProps) => {
-  configureFCL(props.network as 'mainnet' | 'testnet');
-
   // Initialize walletStore when the app starts
   const { loadAccountsFromBridge } = useWalletStore();
 
   useEffect(() => {
-    // Initialize walletStore when app starts to have account data ready
-    loadAccountsFromBridge();
-  }, [loadAccountsFromBridge]);
+    const initializeApp = async () => {
+      try {
+        // Initialize services with RNBridge dependency injection
+        ServiceContext.initialize(bridge);
+        console.log('[App] Services initialized with RNBridge successfully');
+
+        // Initialize walletStore when app starts to have account data ready
+        await loadAccountsFromBridge();
+        console.log('[App] Wallet store initialized successfully');
+      } catch (error) {
+        console.error('[App] Failed to initialize app:', error);
+      }
+    };
+
+    initializeApp();
+  }, []); // Remove loadAccountsFromBridge dependency to prevent re-initialization
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider>
+    <ThemeProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
         <ConfirmationDrawerProvider>
           <AppNavigator {...props} />
         </ConfirmationDrawerProvider>
-      </ThemeProvider>
-    </GestureHandlerRootView>
+      </GestureHandlerRootView>
+    </ThemeProvider>
   );
 };
 

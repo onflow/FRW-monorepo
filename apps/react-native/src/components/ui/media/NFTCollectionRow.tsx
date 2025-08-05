@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
-import { View, TouchableOpacity, Image } from 'react-native';
-import { SvgUri } from 'react-native-svg';
-import { Text } from '../typography/text';
-import { Divider } from '../layout/divider';
-import { ArrowRight } from 'icons';
-import { CollectionModel } from '@/types/NFTModel';
 import { useTheme } from '@/contexts/ThemeContext';
+import { CollectionModel } from '@onflow/frw-types';
+import { ArrowRight } from 'icons';
+import { useEffect, useState } from 'react';
+import { Image, TouchableOpacity, View } from 'react-native';
+import { SvgUri } from 'react-native-svg';
+import { Divider } from '../layout/divider';
+import { Text } from '../typography/text';
 
 interface NFTCollectionRowProps {
   collection?: CollectionModel;

@@ -1,21 +1,22 @@
-import { useEffect, useRef, useState } from 'react';
-import {
-  Animated,
-  View,
-  Text,
-  TouchableOpacity,
-  Dimensions,
-  ScrollView,
-  Alert,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
 import { IconView } from '@/components/ui/media/IconView';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useSendStore } from '@onflow/frw-stores';
+import { NFTModel } from '@onflow/frw-types';
+import { getNFTCover, getNFTId } from '@onflow/frw-utils';
+import { useNavigation } from '@react-navigation/native';
 import { ChevronDown, Trash as TrashIcon } from 'icons';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSendStore } from '@/stores';
-import NFTModel, { getNFTId, getNFTCover } from '@/types/NFTModel';
+import {
+  Alert,
+  Animated,
+  Dimensions,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 interface BottomConfirmBarProps {
   selectedNFTs: NFTModel[];
   onRemoveNFT?: (nftId: string) => void;

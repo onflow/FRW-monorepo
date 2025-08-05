@@ -1,12 +1,12 @@
-import { View, Image, TouchableOpacity } from 'react-native';
-import { Text } from 'ui';
 import { IconView } from '@/components/ui/media/IconView';
-import NFTModel from '../../types/NFTModel';
-import { CheckCircle as CheckCircleIcon, CheckCircleFill as CheckCircleFillIcon } from 'icons';
-import { WalletAccount } from '@/types';
-import { useNavigation } from '@react-navigation/native';
-import type { NavigationProp } from '@react-navigation/native';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
+import { WalletAccount } from '@onflow/frw-types';
+import type { NavigationProp } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
+import { CheckCircleFill as CheckCircleFillIcon, CheckCircle as CheckCircleIcon } from 'icons';
+import { Image, TouchableOpacity, View } from 'react-native';
+import { Text } from 'ui';
+import { NFTModel } from '@onflow/frw-types';
 interface NFTListCardProps {
   nft: NFTModel;
   selected: boolean;

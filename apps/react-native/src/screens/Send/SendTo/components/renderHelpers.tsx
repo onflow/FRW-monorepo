@@ -1,9 +1,8 @@
-import React from 'react';
-import { View, Platform, ToastAndroid, Alert } from 'react-native';
-import { WalletAccountSection, Text, Skeleton } from 'ui';
-import type { ListItem, ExtendedWalletAccount } from '../types/recipientTypes';
+import { WalletAccount } from '@onflow/frw-types';
+import { Alert, Platform, ToastAndroid, View } from 'react-native';
+import { Skeleton, Text, WalletAccountSection } from 'ui';
 import type { RecipientTabType } from '../SendToScreen';
-import { WalletAccount } from '@/types/bridge';
+import type { ExtendedWalletAccount, ListItem } from '../types/recipientTypes';
 
 interface RenderHelpersProps {
   isDark: boolean;

@@ -3,7 +3,7 @@ import NavigationCloseButton from '@/components/NavigationCloseButton';
 import NavigationTitle from '@/components/NavigationTitle';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useTheme } from '@/contexts/ThemeContext';
-import NFTModel from '@/types/NFTModel';
+import NFTModel from '@onflow/frw-types';
 import {
   HomeScreen,
   NFTDetailScreen,

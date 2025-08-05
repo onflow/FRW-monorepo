@@ -1,5 +1,5 @@
-import { validateEvmAddress, validateFlowAddress } from '@/network/cadence/send/validation';
-import { WalletAccount } from '@/types/bridge';
+import { WalletAccount } from '@onflow/frw-types';
+import { validateEvmAddress, validateFlowAddress } from '@onflow/frw-workflow';
 
 /**
  * Utility function to check if a search query is a valid Flow or EVM address

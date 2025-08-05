@@ -1,5 +1,11 @@
 // Bridge-related types for native module communication
 
+export interface EmojiInfo {
+  emoji: string;
+  name: string;
+  color: string;
+}
+
 export interface Contact {
   id: string;
   name: string;
@@ -22,7 +28,8 @@ export interface WalletAccount {
   id: string;
   name: string;
   address: string;
-  emoji: string;
+  emojiInfo?: EmojiInfo;
+  parentEmoji?: EmojiInfo;
   avatar?: string;
   isActive: boolean;
   type?: 'main' | 'child' | 'evm';
