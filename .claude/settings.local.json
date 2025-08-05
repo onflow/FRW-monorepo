@@ -17,7 +17,8 @@
       "Bash(mv:*)",
       "Bash(tree:*)",
       "Bash(git restore:*)",
-      "Bash(true)"
+      "Bash(true)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }
