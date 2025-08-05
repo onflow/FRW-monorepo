@@ -1,4 +1,4 @@
-import { consoleLog } from '@onflow/frw-shared/utils';
+import { consoleLog } from '@/shared/utils';
 
 export const retryOperation = async <T>(
   operation: () => Promise<T>,

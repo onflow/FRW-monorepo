@@ -1,4 +1,4 @@
-import { consoleError } from '@onflow/frw-shared/utils';
+import { consoleError } from '@/shared/utils';
 
 import { setCachedData } from './data-cache';
 import { addStorageListener, removeSessionData } from './storage';

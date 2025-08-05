@@ -1,4 +1,4 @@
-import { consoleError } from '@onflow/frw-shared/utils';
+import { consoleError } from '@/shared/utils';
 
 import { type Storage, type StorageChange, type AreaName } from './storage-types';
 

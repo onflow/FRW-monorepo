@@ -26,9 +26,9 @@ import { ethErrors } from 'eth-rpc-errors';
 import { initializeChromeLogging } from '@/extension-shared/chrome-logger';
 import { chromeStorage } from '@/extension-shared/chrome-storage';
 import { Message, eventBus } from '@/extension-shared/messaging';
-import { EVENTS } from '@onflow/frw-shared/constant';
-import { type WalletAddress } from '@onflow/frw-shared/types';
-import { isValidFlowAddress, consoleError, consoleLog } from '@onflow/frw-shared/utils';
+import { EVENTS } from '@/shared/constant';
+import { type WalletAddress } from '@/shared/types';
+import { isValidFlowAddress, consoleError, consoleLog } from '@/shared/utils';
 
 import providerController from '@/background/controller/provider';
 import { preAuthzServiceDefinition } from '@/background/controller/serviceDefinition';

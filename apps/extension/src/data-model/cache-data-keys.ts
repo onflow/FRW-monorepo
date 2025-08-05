@@ -23,7 +23,7 @@ import {
   type MainAccount,
   type PublicKeyAccount,
   type ChildAccountNftMap,
-} from '@onflow/frw-shared/types';
+} from '@/shared/types';
 
 import { getCachedData, triggerRefresh } from './cache-data-access';
 

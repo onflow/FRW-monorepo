@@ -47,7 +47,7 @@ import {
   MAINNET_CHAIN_ID,
   PriceProvider,
   Period,
-} from '@onflow/frw-shared/constant';
+} from '@/shared/constant';
 import {
   type CustomFungibleTokenInfo,
   type FeatureFlagKey,
@@ -77,7 +77,7 @@ import {
   type WalletAddress,
   type CollectionNfts,
   type NftCollectionAndIds,
-} from '@onflow/frw-shared/types';
+} from '@/shared/types';
 import {
   isValidAddress,
   isValidEthereumAddress,
@@ -86,7 +86,7 @@ import {
   consoleError,
   consoleWarn,
   getEmojiList,
-} from '@onflow/frw-shared/utils';
+} from '@/shared/utils';
 
 import notification from '@/background/webapi/notification';
 import { openIndexPage } from '@/background/webapi/tab';

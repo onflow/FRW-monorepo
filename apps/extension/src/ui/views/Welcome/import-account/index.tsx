@@ -1,5 +1,5 @@
 import { Alert, Box, Snackbar } from '@mui/material';
-import { IMPORT_STEPS, importProfileReducer, INITIAL_IMPORT_STATE } from '@onflow/frw-reducers';
+import { IMPORT_STEPS, importProfileReducer, INITIAL_IMPORT_STATE } from '@/reducers';
 import React, { useEffect, useReducer } from 'react';
 import { useNavigate } from 'react-router';
 

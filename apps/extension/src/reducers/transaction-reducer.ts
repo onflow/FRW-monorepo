@@ -8,8 +8,8 @@ import type {
   Contact,
   WalletAddress,
   FlowNetwork,
-} from '@onflow/frw-shared/types';
-import { isValidEthereumAddress, consoleError, trimDecimalAmount } from '@onflow/frw-shared/utils';
+} from '@/shared/types';
+import { isValidEthereumAddress, consoleError, trimDecimalAmount } from '@/shared/utils';
 
 export const INITIAL_TRANSACTION_STATE: TransactionState = {
   network: 'testnet',

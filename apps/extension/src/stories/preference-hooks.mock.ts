@@ -1,5 +1,5 @@
 // Mock for preference-hooks that doesn't use Chrome APIs
-import { DEFAULT_CURRENCY } from '@onflow/frw-shared/constant';
+import { DEFAULT_CURRENCY } from '@/shared/constant';
 
 export const useCurrency = () => {
   return DEFAULT_CURRENCY;

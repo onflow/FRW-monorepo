@@ -14,13 +14,13 @@ import Web3 from 'web3';
 import { stringToHex } from 'web3-utils';
 
 import { getAccountsByPublicKeyTuple, signWithKey } from '@/core/utils';
-import { EVM_ENDPOINT, MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@onflow/frw-shared/constant';
+import { EVM_ENDPOINT, MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/constant';
 import {
   tupleToPrivateKey,
   ensureEvmAddressPrefix,
   isValidEthereumAddress,
   consoleError,
-} from '@onflow/frw-shared/utils';
+} from '@/shared/utils';
 
 import BaseController from '@/background/controller/base';
 import Wallet from '@/background/controller/wallet';

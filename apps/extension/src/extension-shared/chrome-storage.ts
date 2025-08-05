@@ -1,6 +1,6 @@
 import { type Storage, type StorageChange, type AreaName } from '@/data-model';
 
-import { consoleError } from '@onflow/frw-shared/utils';
+import { consoleError } from '@/shared/utils';
 
 /**
  * Chrome Extension Storage Implementation

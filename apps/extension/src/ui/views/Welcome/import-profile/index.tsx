@@ -4,7 +4,7 @@ import {
   importProfileReducer,
   type ImportState,
   INITIAL_IMPORT_STATE,
-} from '@onflow/frw-reducers';
+} from '@/reducers';
 import React, { useEffect, useReducer } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 

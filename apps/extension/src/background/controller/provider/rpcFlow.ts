@@ -3,8 +3,8 @@ import { ethErrors } from 'eth-rpc-errors';
 
 import { underline2Camelcase } from '@/core/utils';
 import { eventBus } from '@/extension-shared/messaging';
-import { EVENTS } from '@onflow/frw-shared/constant';
-import { consoleLog } from '@onflow/frw-shared/utils';
+import { EVENTS } from '@/shared/constant';
+import { consoleLog } from '@/shared/utils';
 
 import notificationService from '../notification';
 import Wallet from '../wallet';

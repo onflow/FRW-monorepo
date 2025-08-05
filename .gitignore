@@ -13,8 +13,8 @@ yarn.lock
 .env.*
 !.env.example
 dist.zip
-_raw/manifest.json
-_raw/react-devtools.js
+**/_raw/manifest.json
+**/_raw/react-devtools.js
 yarn-error.log
 dist2
 dist.rar

@@ -78,7 +78,7 @@ import {
   HASH_ALGO_NUM_DEFAULT,
   SIGN_ALGO_NUM_DEFAULT,
   TESTNET_CHAIN_ID,
-} from '@onflow/frw-shared/constant';
+} from '@/shared/constant';
 
 import notificationService from '../notification';
 import providerController from '../provider/controller';

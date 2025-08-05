@@ -4,7 +4,7 @@ import {
   registerReducer,
   type RegisterState,
   STEPS,
-} from '@onflow/frw-reducers';
+} from '@/reducers';
 import * as bip39 from 'bip39';
 import React, { useCallback, useEffect, useReducer } from 'react';
 import { useLocation, useNavigate } from 'react-router';
