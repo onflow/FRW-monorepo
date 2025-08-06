@@ -120,6 +120,9 @@ const USER_WALLET_TEMPLATE: UserWalletStore = {
   currentPubkey: '',
 };
 
+// Create an instance of the CadenceService
+const cadenceService = new CadenceService();
+
 class UserWallet {
   // PERSISTENT DATA
   // The user settings - network and other global settings
@@ -1398,9 +1401,6 @@ const loadAccountListBalance = async (network: string, addressList: string[]) =>
     // Do nothing if the network is not valid
     throw new Error('Network has been switched');
   }
-
-  // Create an instance of the CadenceService
-  const cadenceService = new CadenceService();
 
   // Use the external getFlowBalanceForAnyAccounts method
   const accountsBalances: Record<string, string | undefined> =
