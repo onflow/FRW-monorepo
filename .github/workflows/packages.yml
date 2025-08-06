@@ -1,4 +1,4 @@
-name: Package Build Validation
+name: Continuous Integration
 
 on:
   push:
@@ -11,41 +11,9 @@ on:
     branches: [main, dev]
 
 jobs:
-  detect-changes:
+  ci:
     runs-on: ubuntu-latest
-    outputs:
-      packages: ${{ steps.changes.outputs.packages }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Detect changed packages
-        id: changes
-        run: |
-          # Get list of changed files
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
-          else
-            CHANGED_FILES=$(git diff --name-only HEAD~1)
-          fi
-
-          echo "Changed files:"
-          echo "$CHANGED_FILES"
-
-          # Extract unique package names from changed files
-          PACKAGES=$(echo "$CHANGED_FILES" | grep '^packages/' | cut -d'/' -f2 | sort -u | tr '\n' ' ')
-          echo "Changed packages: $PACKAGES"
-          echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
-
-  build-packages:
-    runs-on: ubuntu-latest
-    needs: detect-changes
-    if: needs.detect-changes.outputs.packages != ''
-    strategy:
-      matrix:
-        package: ${{ fromJson(format('["{}"]', join(split(needs.detect-changes.outputs.packages, ' '), '","'))) }}
-      fail-fast: false
+    name: CI - Build, Test, and Security Audit
 
     steps:
       - uses: actions/checkout@v4
@@ -59,66 +27,32 @@ jobs:
           node-version: "20"
           cache: "pnpm"
 
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build package
-        run: pnpm -F "@onflow/frw-${{ matrix.package }}" build
+      - name: Build all packages
+        run: pnpm build
 
       - name: Run tests
-        run: pnpm -F "@onflow/frw-${{ matrix.package }}" test
+        run: pnpm test
         continue-on-error: true
 
-  lint-packages:
-    runs-on: ubuntu-latest
-    needs: detect-changes
-    if: needs.detect-changes.outputs.packages != ''
+      - name: Type check packages
+        run: pnpm -r --filter='./packages/*' typecheck
 
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Lint changed packages
-        run: |
-          for package in ${{ needs.detect-changes.outputs.packages }}; do
-            echo "Linting package: $package"
-            pnpm -F "@onflow/frw-$package" lint
-          done
-
-  typecheck-packages:
-    runs-on: ubuntu-latest
-    needs: detect-changes
-    if: needs.detect-changes.outputs.packages != ''
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: TypeScript check changed packages
-        run: |
-          for package in ${{ needs.detect-changes.outputs.packages }}; do
-            echo "Type checking package: $package"
-            pnpm -F "@onflow/frw-$package" typecheck || true
-          done
+      - name: Run security audit
+        run: pnpm audit --audit-level moderate
+        continue-on-error: true

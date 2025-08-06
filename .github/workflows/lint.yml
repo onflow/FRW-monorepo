@@ -1,0 +1,22 @@
+name: Lint Check
+
+on:
+  pull_request:
+    branches: [main, dev]
+  push:
+    branches: [main, dev]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: ESLint Check
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lint Action
+        uses: wearerequired/lint-action@v2.3.0
+        with:
+          eslint: true
+          eslint_extensions: ts,tsx,js,jsx
+          eslint_args: "--ext .ts,.tsx,.js,.jsx"
