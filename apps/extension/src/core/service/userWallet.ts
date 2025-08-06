@@ -4,6 +4,8 @@ import type { Account as FclAccount } from '@onflow/typedefs';
 import * as ethUtil from 'ethereumjs-util';
 import { signInAnonymously } from 'firebase/auth/web-extension';
 import { TransactionError } from 'web3';
+// Import the cadence package that contains getFlowBalanceForAnyAccounts
+import { CadenceService } from 'packages/cadence';
 
 import {
   triggerRefresh,
@@ -1397,21 +1399,19 @@ const loadAccountListBalance = async (network: string, addressList: string[]) =>
     throw new Error('Network has been switched');
   }
 
-  const script = await getScripts(network, 'basic', 'getFlowBalanceForAnyAccounts');
+  // Create an instance of the CadenceService
+  const cadenceService = new CadenceService();
 
-  const accountsBalances: { [address: string]: string } = await fcl.query({
-    cadence: script,
-    args: (arg, t) => [arg(addressList, t.Array(t.String))],
-  });
+  // Use the external getFlowBalanceForAnyAccounts method
+  const accountsBalances: Record<string, string | undefined> =
+    await cadenceService.getFlowBalanceForAnyAccounts(addressList);
+
   // Cache all the balances
   return Promise.all(
     addressList.map(async (address) => {
-      await setCachedData(
-        accountBalanceKey(network, address),
-        accountsBalances[address] || '0.00000000',
-        5_000
-      );
-      return accountsBalances[address];
+      const balance = accountsBalances[address] || '0.00000000';
+      await setCachedData(accountBalanceKey(network, address), balance, 5_000);
+      return balance;
     })
   );
 };
