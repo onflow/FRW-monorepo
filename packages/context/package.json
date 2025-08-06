@@ -36,6 +36,7 @@
     "@onflow/frw-utils": "workspace:*"
   },
   "devDependencies": {
+    "@types/node": "^22.11.0",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2"
   },
