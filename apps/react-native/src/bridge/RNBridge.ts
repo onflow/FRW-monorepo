@@ -1,14 +1,15 @@
-import { type BridgeSpec, type Storage } from '@onflow/frw-context';
+import { type PlatformSpec, type Storage } from '@onflow/frw-context';
 import type { RecentContactsResponse, WalletAccountsResponse } from '@onflow/frw-types';
 import { isTransactionId } from '@onflow/frw-utils';
 import { MMKV } from 'react-native-mmkv';
 
 import NativeFRWBridge from './NativeFRWBridge';
 
-class RNBridge implements BridgeSpec {
+class RNBridge implements PlatformSpec {
   private debugMode: boolean = __DEV__;
 
   log(level: 'debug' | 'info' | 'warn' | 'error', message: string, ...args: any[]): void {
+    // TODO: Add logging report to Instabug
     if (level === 'debug' && !this.debugMode) {
       return;
     }

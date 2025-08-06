@@ -21,8 +21,10 @@
     "typescript": "^5.7.2"
   },
   "peerDependencies": {},
+  "source": "./src/index.ts",
   "exports": {
     ".": {
+      "@onflow/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.js"
