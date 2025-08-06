@@ -59,15 +59,15 @@ jobs:
             TS_JS_FILES=$(echo "$CHANGED_FILES" | grep -E '\.(ts|tsx|js|jsx)$' || true)
             
             if [ -n "$TS_JS_FILES" ]; then
-              # Run ESLint on changed files
-              echo "$TS_JS_FILES" | xargs pnpm dlx eslint --ext .ts,.tsx,.js,.jsx
+              # Run ESLint on changed files using project dependencies
+              echo "$TS_JS_FILES" | xargs pnpm eslint --ext .ts,.tsx,.js,.jsx
             fi
             
             # Check JSON files with prettier
             JSON_FILES=$(echo "$CHANGED_FILES" | grep '\.json$' || true)
             if [ -n "$JSON_FILES" ]; then
               echo "Checking JSON formatting..."
-              echo "$JSON_FILES" | xargs pnpm dlx prettier --check
+              echo "$JSON_FILES" | xargs pnpm prettier --check
             fi
           else
             echo "No lintable files changed"
@@ -110,6 +110,6 @@ jobs:
             
             if [ -n "$PRETTIER_FILES" ]; then
               echo "Checking Prettier formatting..."
-              echo "$PRETTIER_FILES" | xargs pnpm dlx prettier --check
+              echo "$PRETTIER_FILES" | xargs pnpm prettier --check
             fi
           fi
