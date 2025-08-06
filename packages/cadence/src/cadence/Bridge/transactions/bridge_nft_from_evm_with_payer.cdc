@@ -98,7 +98,7 @@ transaction(nftIdentifier: String, id: UInt256) {
         // Ensure the bridged nft is the correct type
         assert(
             nft.getType() == self.nftType,
-            message: "Bridged nft type mismatch - requeswted: ".concat(self.nftType.identifier)
+            message: "Bridged nft type mismatch - requested: ".concat(self.nftType.identifier)
                 .concat(", received: ").concat(nft.getType().identifier)
         )
         // Deposit the bridged NFT into the signer's collection

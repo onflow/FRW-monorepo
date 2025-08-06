@@ -4,14 +4,6 @@
     "outDir": "./dist",
     "types": ["node"]
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.json",
-    "src/codgen/**/*.ts",
-    "tests/**/*.ts",
-    "__tests__/**/*.ts",
-    "tsup.config.ts",
-    "vitest.config.ts"
-  ],
+  "include": ["src/**/*.ts", "tsup.config.ts"],
   "exclude": ["dist", "node_modules"]
 }
