@@ -1,0 +1,10 @@
+# Code Owners for Flow Reference Wallet (FRW)
+# 
+# This file defines who owns different parts of the codebase.
+# Code owners are automatically requested for review when someone 
+# opens a pull request that modifies code in a directory they own.
+#
+# More info: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+*                      @onflow/wallet-web
+apps/react-native/*    @onflow/wallet-mobile

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-import { serviceOptions as goServiceOptions } from './goService';
-import { serviceOptions } from './service';
+import { serviceOptions as goServiceOptions } from './goService.generated';
+import { serviceOptions } from './service.generated';
 import { getJwtToken } from './utils';
 
 const instance = axios.create({

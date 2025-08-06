@@ -32,9 +32,10 @@
     "@babel/runtime": "^7.28.2",
     "@onflow/frw-api": "workspace:*",
     "@onflow/frw-context": "workspace:*",
-    "@onflow/frw-types": "workspace:*",
-    "@onflow/frw-workflow": "workspace:*",
     "@onflow/frw-services": "workspace:*",
+    "@onflow/frw-types": "workspace:*",
+    "@onflow/frw-utils": "workspace:*",
+    "@onflow/frw-workflow": "workspace:*",
     "zustand": "^5.0.6"
   },
   "devDependencies": {

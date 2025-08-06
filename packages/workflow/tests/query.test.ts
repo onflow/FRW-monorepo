@@ -1,6 +1,7 @@
+import { configureFCL } from '@onflow/frw-cadence';
 import { describe, it, expect, beforeEach } from 'vitest';
 
-import { configureFCL, cadenceService } from '../src';
+import { cadenceService } from '../src';
 import { accounts } from '../src/utils/accounts';
 
 const mainAccount = accounts.main;

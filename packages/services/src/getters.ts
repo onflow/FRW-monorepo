@@ -1,5 +1,6 @@
 import { getServiceContext } from '@onflow/frw-context';
-import { WalletType } from '@onflow/frw-types';
+import { type WalletType } from '@onflow/frw-types';
+
 import { AddressBookService } from './AddressBookService';
 import FlowService from './FlowService';
 import { NFTService } from './NFTService';

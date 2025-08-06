@@ -1,6 +1,7 @@
 import axios from 'axios';
-import { serviceOptions as goServiceOptions } from './codgen/goService';
-import { serviceOptions } from './codgen/service';
+
+import { serviceOptions as goServiceOptions } from './codgen/goService.generated';
+import { serviceOptions } from './codgen/service.generated';
 
 /**
  * Configure API endpoints and authentication dynamically
@@ -11,7 +12,7 @@ export function configureApiEndpoints(
   goApiEndpoint: string,
   getJWT: () => Promise<string>,
   getNetwork: () => string
-) {
+): void {
   // Configure main API service
   const instance = axios.create({
     baseURL: apiEndpoint,
@@ -24,7 +25,7 @@ export function configureApiEndpoints(
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       } else {
-        console.warn('[API Debug] WARNING: No JWT token available for API request!');
+        // TODO: Replace with proper logger when context is available
       }
       config.headers.network = getNetwork();
       return config;
@@ -53,11 +54,11 @@ export function configureApiEndpoints(
   goInstance.interceptors.request.use(
     async (config) => {
       const token = await getJWT();
-      console.log(`[Go API Debug] JWT Token length: ${token?.length || 0}`);
+      // TODO: Add debug logging when context is available
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       } else {
-        console.warn('[Go API Debug] WARNING: No JWT token available for Go API request!');
+        // TODO: Replace with proper logger when context is available
       }
       config.headers.network = getNetwork();
       return config;
@@ -67,10 +68,8 @@ export function configureApiEndpoints(
 
   goServiceOptions.axios = goInstance;
 
-  console.log('[API Config] Configured API endpoints:', {
-    apiEndpoint,
-    goApiEndpoint,
-  });
+  // TODO: Add debug logging when context is available
+  // logger.debug('Configured API endpoints', { apiEndpoint, goApiEndpoint });
 }
 
 /**

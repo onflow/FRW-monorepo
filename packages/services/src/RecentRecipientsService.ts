@@ -1,7 +1,6 @@
+import { getServiceContext, type PlatformSpec, type Storage } from '@onflow/frw-context';
 import type { WalletAccount } from '@onflow/frw-types';
-
-import type { BridgeSpec, Storage } from '@onflow/frw-context';
-import { getServiceContext } from '@onflow/frw-context';
+import { logger } from '@onflow/frw-utils';
 
 const RECENT_RECIPIENTS_KEY = 'recent_recipients';
 const MAX_RECENT_RECIPIENTS = 10;
@@ -21,38 +20,42 @@ export class RecentRecipientsService {
    * Get all recent recipients (merged from MMKV + bridge)
    */
   private static instance: RecentRecipientsService;
-  private bridge: BridgeSpec;
+  private bridge: PlatformSpec;
   private storage: Storage;
 
-  private constructor(bridge: BridgeSpec, storage: Storage) {
+  private constructor(bridge: PlatformSpec, storage: Storage) {
     this.bridge = bridge;
     this.storage = storage;
   }
 
   // add bridge params
-  public static getInstance(bridge?: BridgeSpec, storage?: Storage): RecentRecipientsService {
+  public static getInstance(bridge?: PlatformSpec, storage?: Storage): RecentRecipientsService {
     if (!RecentRecipientsService.instance) {
       let bridgeToUse = bridge;
       let storageToUse = storage;
-      
+
       // If bridge is not provided, try to get it from ServiceContext
       if (!bridgeToUse) {
         try {
           bridgeToUse = getServiceContext().bridge;
         } catch (error) {
-          throw new Error('RecentRecipientsService requires bridge parameter or initialized ServiceContext');
+          throw new Error(
+            'RecentRecipientsService requires bridge parameter or initialized ServiceContext'
+          );
         }
       }
-      
+
       // If storage is not provided, try to get it from ServiceContext
       if (!storageToUse) {
         try {
           storageToUse = getServiceContext().storage;
         } catch (error) {
-          throw new Error('RecentRecipientsService requires storage parameter or initialized ServiceContext');
+          throw new Error(
+            'RecentRecipientsService requires storage parameter or initialized ServiceContext'
+          );
         }
       }
-      
+
       RecentRecipientsService.instance = new RecentRecipientsService(bridgeToUse, storageToUse);
     }
     return RecentRecipientsService.instance;
@@ -79,7 +82,7 @@ export class RecentRecipientsService {
         isActive: false,
       }));
     } catch (error) {
-      console.error('Failed to get recent recipients:', error);
+      logger.error('Failed to get recent recipients', error);
       return [];
     }
   }
@@ -95,7 +98,7 @@ export class RecentRecipientsService {
       const recents: RecentRecipient[] = JSON.parse(data);
       return recents.sort((a, b) => b.lastUsed - a.lastUsed); // Most recent first
     } catch (error) {
-      console.error('Failed to get local recent recipients:', error);
+      logger.error('Failed to get local recent recipients', error);
       return [];
     }
   }
@@ -117,7 +120,7 @@ export class RecentRecipientsService {
         source: 'server' as const,
       }));
     } catch (error) {
-      console.error('Failed to get server recent recipients:', error);
+      logger.error('Failed to get server recent recipients', error);
       return [];
     }
   }
@@ -154,9 +157,9 @@ export class RecentRecipientsService {
       // Save to MMKV
       this.storage.set(RECENT_RECIPIENTS_KEY, JSON.stringify(updated));
 
-      console.log('Added recent recipient:', recipient.name, recipient.address);
+      logger.debug('Added recent recipient', { name: recipient.name, address: recipient.address });
     } catch (error) {
-      console.error('Failed to add recent recipient:', error);
+      logger.error('Failed to add recent recipient', error);
     }
   }
 
@@ -166,9 +169,9 @@ export class RecentRecipientsService {
   clearLocalRecentRecipients(): void {
     try {
       this.storage.delete(RECENT_RECIPIENTS_KEY);
-      console.log('Cleared local recent recipients');
+      logger.debug('Cleared local recent recipients');
     } catch (error) {
-      console.error('Failed to clear recent recipients:', error);
+      logger.error('Failed to clear recent recipients', error);
     }
   }
 

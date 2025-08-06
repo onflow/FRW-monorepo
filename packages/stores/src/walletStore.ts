@@ -1,5 +1,5 @@
-import { create } from 'zustand';
 import { flowService } from '@onflow/frw-services';
+import { create } from 'zustand';
 
 // import NativeFRWBridge from '@/bridge/NativeFRWBridge'; // TODO: Update import path when bridge is available
 
@@ -108,7 +108,6 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
     });
   },
 }));
-
 
 // Selectors for easy access
 export const walletSelectors = {

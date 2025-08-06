@@ -15,7 +15,8 @@
     "resolveJsonModule": true,
     "customConditions": ["@onflow/source"],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@onflow/frw-cadence": ["./node_modules/@onflow/frw-cadence/src/index.ts"]
     },
     "lib": ["ES2021.String", "DOM", "DOM.Iterable"],
     "types": ["chrome", "node", "react", "react-dom"],
@@ -38,6 +39,6 @@
     "webpack.config.ts",
     "postcss.config.mjs",
     "svgTransform.js",
-    "apps/extension/.storybook/**/*"
+    ".storybook/**/*"
   ]
 }

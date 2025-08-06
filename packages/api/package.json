@@ -19,14 +19,9 @@
     "test:run": "vitest --run",
     "test:coverage": "vitest --coverage",
     "prepublishOnly": "pnpm build",
-    "pre-commit": "pnpm lint-staged",
     "codegen": "node scripts/codegen.cjs && node scripts/codegen-go.cjs",
     "lint": "eslint . --cache",
     "lint:fix": "eslint . --cache --fix"
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx,mjs}": "eslint --cache",
-    "*.{json,js,ts,jsx,tsx,html,md,mdx,mjs}": "prettier --write"
   },
   "exports": {
     ".": {
@@ -41,12 +36,12 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.28.2",
-    "axios": "^1.4.0",
-    "swagger-axios-codegen": "^0.17.4"
+    "axios": "^1.4.0"
   },
   "devDependencies": {
-    "@types/node": "^22.10.2",
+    "@types/node": "^22.11.0",
     "@vitest/coverage-v8": "3.2.4",
+    "swagger-axios-codegen": "^0.17.4",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
     "vitest": "^3.2.4"

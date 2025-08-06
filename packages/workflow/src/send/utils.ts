@@ -1,3 +1,4 @@
+import { logger } from '@onflow/frw-utils';
 import { ethers, parseUnits } from 'ethers';
 
 import type { SendPayload } from './types';
@@ -69,7 +70,7 @@ export const safeConvertToUFix64 = (
   try {
     return convertToUFix64(amount);
   } catch (error) {
-    console.warn('Failed to convert amount to UFix64:', error);
+    logger.warn('Failed to convert amount to UFix64', error);
     return defaultValue;
   }
 };
