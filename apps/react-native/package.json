@@ -22,10 +22,11 @@
     "bundle:android:sourcemap": "react-native bundle --platform android --entry-file index.js --dev false --bundle-output android/app/src/main/assets/index.android.bundle --sourcemap-output ./android-sourcemap.json",
     "icon": "node scripts/icon-generator.js",
     "icon:force": "node scripts/icon-generator.js --force",
-    "codepush:android:staging": "appcenter codepush release-react -a your-org/your-app-android -d Staging",
-    "codepush:android:production": "appcenter codepush release-react -a your-org/your-app-android -d Production"
+    "codepush:android:staging": "appcenter codepush release-react -a your-org/your-app-android -d Staging --sourcemap-output android-sourcemap.json",
+    "codepush:android:production": "appcenter codepush release-react -a your-org/your-app-android -d Production --sourcemap-output android-sourcemap.json"
   },
   "dependencies": {
+    "@bravemobile/react-native-code-push": "^11.0.0",
     "@gorhom/bottom-sheet": "^5.1.8",
     "@onflow/fcl": "^1.19.0",
     "@onflow/frw-api": "workspace:*",
@@ -61,7 +62,6 @@
     "react-freeze": "^1.0.4",
     "react-i18next": "^15.6.1",
     "react-native": "0.80.1",
-    "react-native-code-push": "^9.0.1",
     "react-native-css-interop": "^0.1.22",
     "react-native-gesture-handler": "^2.27.2",
     "react-native-get-random-values": "^1.11.0",

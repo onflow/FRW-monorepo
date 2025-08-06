@@ -18,7 +18,12 @@
       "Bash(tree:*)",
       "Bash(git restore:*)",
       "Bash(true)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(npx react-native:*)",
+      "Bash(timeout:*)",
+      "Bash(gtimeout:*)",
+      "Bash(/dev/null)",
+      "Bash(./gradlew:*)"
     ],
     "deny": []
   }

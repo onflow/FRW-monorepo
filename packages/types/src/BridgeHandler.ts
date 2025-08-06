@@ -1,7 +1,7 @@
-import { WalletAccount } from './bridge';
-import NFTModel from './NFTModel';
-import { WalletType } from './Wallet';
+import { type WalletAccount } from './Bridge';
+import type NFTModel from './NFTModel';
 import { TokenInfo } from './TokenInfo';
+import { WalletType } from './Wallet';
 
 // This is used to create a WalletAccount from the config data received from the bridge
 

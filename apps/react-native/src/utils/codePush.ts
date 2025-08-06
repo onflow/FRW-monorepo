@@ -1,4 +1,4 @@
-import CodePush from 'react-native-code-push';
+import CodePush from '@bravemobile/react-native-code-push';
 
 export const checkForUpdate = async (): Promise<boolean> => {
   try {
@@ -13,7 +13,7 @@ export const checkForUpdate = async (): Promise<boolean> => {
 export const downloadAndInstallUpdate = async (): Promise<void> => {
   try {
     await CodePush.sync({
-      installMode: 1, // ON_NEXT_RESTART
+      installMode: CodePush.InstallMode.ON_NEXT_RESTART,
       updateDialog: {
         title: 'Update available',
         appendReleaseDescription: true,

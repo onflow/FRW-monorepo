@@ -1,9 +1,9 @@
+import CodePush from '@bravemobile/react-native-code-push';
 import { ServiceContext } from '@onflow/frw-context';
 import { useWalletStore } from '@onflow/frw-stores';
 import Instabug, { InvocationEvent } from 'instabug-reactnative';
 import { useEffect } from 'react';
 import { Platform, Text as RNText } from 'react-native';
-import CodePush from 'react-native-code-push';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -84,14 +84,14 @@ const App = (props: AppProps) => {
   );
 };
 
-// CodePush configuration - disabled in development mode
+// CodePush configuration - enabled with BraveMobile fork (RN 0.70+ compatible)
 let AppWithCodePush = App;
 
 if (!__DEV__) {
   try {
     const codePushOptions = {
-      checkFrequency: 0, // ON_APP_START
-      installMode: 1, // ON_NEXT_RESTART
+      checkFrequency: CodePush.CheckFrequency.ON_APP_START,
+      installMode: CodePush.InstallMode.ON_NEXT_RESTART,
     };
     AppWithCodePush = CodePush(codePushOptions)(App);
   } catch (error) {
