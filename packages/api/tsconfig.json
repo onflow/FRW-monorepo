@@ -1,6 +1,8 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": {},
+  "compilerOptions": {
+    "types": ["node", "vitest"]
+  },
   "include": [
     "src/**/*.ts",
     "src/**/*.json",
@@ -9,5 +11,6 @@
     "__tests__/**/*.ts",
     "tsup.config.ts",
     "vitest.config.ts"
-  ]
+  ],
+  "exclude": ["scripts/**/*", "node_modules", "dist"]
 }
