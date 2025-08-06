@@ -53,7 +53,7 @@ jobs:
             Be constructive and helpful in your feedback.
 
           # Optional: Use sticky comments to make Claude reuse the same comment on subsequent pushes to the same PR
-          # use_sticky_comment: true
+          use_sticky_comment: true
 
           # Optional: Customize review based on file types
           # direct_prompt: |
@@ -72,6 +72,6 @@ jobs:
           # Optional: Add specific tools for running tests or linting
           # allowed_tools: "Bash(npm run test),Bash(npm run lint),Bash(npm run typecheck)"
 
-          Optional: Skip review for certain conditions
+          # Optional: Skip review for certain conditions
           if: |
             !contains(github.event.pull_request.title, '[WIP]')
