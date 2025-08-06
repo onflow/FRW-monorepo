@@ -9,7 +9,26 @@
       "ui": ["src/components/ui"],
       "ui/*": ["src/components/ui/*"],
       "icons": ["src/assets/icons"],
-      "icons/*": ["src/assets/icons/*"]
+      "icons/*": ["src/assets/icons/*"],
+      "@onflow/frw-api": ["../../packages/api/src"],
+      "@onflow/frw-cadence": ["../../packages/cadence/src"],
+      "@onflow/frw-context": ["../../packages/context/src"],
+      "@onflow/frw-services": ["../../packages/services/src"],
+      "@onflow/frw-stores": ["../../packages/stores/src"],
+      "@onflow/frw-types": ["../../packages/types/src"],
+      "@onflow/frw-utils": ["../../packages/utils/src"],
+      "@onflow/frw-workflow": ["../../packages/workflow/src"]
     }
-  }
+  },
+  "include": ["src/**/*"],
+  "references": [
+    { "path": "../../packages/types" },
+    { "path": "../../packages/utils" },
+    { "path": "../../packages/api" },
+    { "path": "../../packages/cadence" },
+    { "path": "../../packages/context" },
+    { "path": "../../packages/services" },
+    { "path": "../../packages/stores" },
+    { "path": "../../packages/workflow" }
+  ]
 }
