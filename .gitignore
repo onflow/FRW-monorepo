@@ -7,23 +7,24 @@ node_modules/
 .yarn/build-state.yml
 .yarn/install-state.gz
 
+# Package manager files
+package-lock.json
+yarn.lock
+yarn-error.log*
+.npmrc.local
+.yarnrc.local
+
 # Build outputs
 dist/
 build/
+*/dist/
+*/dist.zip
 *.tsbuildinfo
 *.log
 
 # Environment variables and sensitive files
 .env
-.env.dev
-.env.development
-.env.pro
-.env.production
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-# Keep example files
+.env.*
 !.env.example
 !**/.env.example
 
@@ -75,9 +76,8 @@ android/fastlane/screenshots
 android/fastlane/test_output
 
 # Chrome Extension specific
-*/dist/
-*/dist.zip
-*/_raw/manifest.json
+**/_raw/manifest.json
+**/_raw/react-devtools.js
 
 # Ruby/CocoaPods
 *.gem
@@ -90,6 +90,10 @@ specifications/
 # Testing
 coverage/
 .nyc_output
+test-results
+playwright-report
+blob-report
+playwright
 
 # Temporary files
 *.tmp
@@ -104,6 +108,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
+*storybook.log
 
 # Storybook
 storybook-static/
@@ -112,5 +117,18 @@ storybook-static/
 .turbo
 
 # Local configuration
-.npmrc.local
-.yarnrc.local
+.cursorrules
+**/.claude/settings.local.json
+
+# Documentation
+docs-archive
+dependency-usage.md
+extension-dependencies.md
+
+# Flow specific
+flow.json
+emulator-account.pkey
+**/firebase.config.json
+
+# ESLint
+.eslintcache
