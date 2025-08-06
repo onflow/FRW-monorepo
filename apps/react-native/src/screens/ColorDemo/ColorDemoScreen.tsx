@@ -1,8 +1,11 @@
 import React from 'react';
-import { ScrollView, View, Text, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../../contexts/ThemeContext';
+import { ScrollView, View, Text, TouchableOpacity } from 'react-native';
+
 import { useAndroidTextFix } from '@/lib/androidTextFix';
+
+import { useTheme } from '../../contexts/ThemeContext';
+
 
 const ColorDemoScreen = () => {
   const { t } = useTranslation();

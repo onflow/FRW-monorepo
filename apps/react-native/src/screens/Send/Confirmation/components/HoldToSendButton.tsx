@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Animated } from 'react-native';
-import { useAndroidTextFix } from '@/lib/androidTextFix';
 import { useTranslation } from 'react-i18next';
+import { View, Text, TouchableOpacity, Animated } from 'react-native';
+
+import { useAndroidTextFix } from '@/lib/androidTextFix';
 
 interface HoldToSendButtonProps {
   onPress: () => Promise<void>;

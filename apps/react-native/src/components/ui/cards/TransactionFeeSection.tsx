@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Text } from 'ui';
-import { FlowLogo } from '../index';
+import { View } from 'react-native';
+
 import NativeFRWBridge from '@/bridge/NativeFRWBridge';
+import { Text } from 'ui';
+
+import { FlowLogo } from '../index';
+
 
 interface TransactionFeeSectionProps {
   transactionFee: string;

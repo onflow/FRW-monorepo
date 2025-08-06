@@ -3,12 +3,13 @@ import type { CadenceService } from "@onflow/frw-cadence";
 import type { SendPayload, TransferStrategy } from "./types";
 import { encodeEvmContractCallData } from "./utils";
 import { validateEvmAddress, validateFlowAddress } from "./validation";
+import { GAS_LIMITS } from "./utils";
 
 /**
  * Strategy for child account to child account NFT transfers
  */
 export class ChildToChildNftStrategy implements TransferStrategy {
-  constructor(private cadenceService: CadenceService) {}
+  constructor(private cadenceService: CadenceService) { }
 
   canHandle(payload: SendPayload): boolean {
     const { childAddrs, receiver, sender, type } = payload;
@@ -35,7 +36,7 @@ export class ChildToChildNftStrategy implements TransferStrategy {
  * Strategy for sending NFTs from child account
  */
 export class ChildToOthersNftStrategy implements TransferStrategy {
-  constructor(private cadenceService: CadenceService) {}
+  constructor(private cadenceService: CadenceService) { }
 
   canHandle(payload: SendPayload): boolean {
     const { childAddrs, sender, assetType, type } = payload;
@@ -93,7 +94,7 @@ export class ChildToOthersNftStrategy implements TransferStrategy {
  * Strategy for sending NFTs to child account
  */
 export class ParentToChildNftStrategy implements TransferStrategy {
-  constructor(private cadenceService: CadenceService) {}
+  constructor(private cadenceService: CadenceService) { }
 
   canHandle(payload: SendPayload): boolean {
     const { childAddrs, receiver, assetType, sender, coaAddr, type } = payload;
@@ -120,7 +121,7 @@ export class ParentToChildNftStrategy implements TransferStrategy {
  * Strategy for TopShot NFT transfers
  */
 export class TopShotNftStrategy implements TransferStrategy {
-  constructor(private cadenceService: CadenceService) {}
+  constructor(private cadenceService: CadenceService) { }
 
   canHandle(payload: SendPayload): boolean {
     const { assetType, flowIdentifier, type, receiver } = payload;
@@ -146,7 +147,7 @@ export class TopShotNftStrategy implements TransferStrategy {
  * Strategy for Flow to Flow NFT transfers
  */
 export class FlowToFlowNftStrategy implements TransferStrategy {
-  constructor(private cadenceService: CadenceService) {}
+  constructor(private cadenceService: CadenceService) { }
 
   canHandle(payload: SendPayload): boolean {
     const { assetType, receiver, ids, type } = payload;
@@ -168,7 +169,7 @@ export class FlowToFlowNftStrategy implements TransferStrategy {
  * Strategy for Flow NFT bridge to EVM
  */
 export class FlowToEvmNftBridgeStrategy implements TransferStrategy {
-  constructor(private cadenceService: CadenceService) {}
+  constructor(private cadenceService: CadenceService) { }
 
   canHandle(payload: SendPayload): boolean {
     const { assetType, receiver, type } = payload;
@@ -191,7 +192,7 @@ export class FlowToEvmNftBridgeStrategy implements TransferStrategy {
  * Strategy for EVM to Flow NFT bridge
  */
 export class EvmToFlowNftBridgeStrategy implements TransferStrategy {
-  constructor(private cadenceService: CadenceService) {}
+  constructor(private cadenceService: CadenceService) { }
 
   canHandle(payload: SendPayload): boolean {
     const { assetType, receiver, type } = payload;
@@ -214,7 +215,7 @@ export class EvmToFlowNftBridgeStrategy implements TransferStrategy {
  * Strategy for EVM to EVM NFT transfers
  */
 export class EvmToEvmNftStrategy implements TransferStrategy {
-  constructor(private cadenceService: CadenceService) {}
+  constructor(private cadenceService: CadenceService) { }
 
   canHandle(payload: SendPayload): boolean {
     const { assetType, receiver, type } = payload;
@@ -228,26 +229,21 @@ export class EvmToEvmNftStrategy implements TransferStrategy {
     const data = encodeEvmContractCallData(payload);
     const value = "0.0";
     if (ids.length > 1) {
-      const contracts: string[] = [];
-      const datas: number[][] = [];
-      const values: string[] = [];
-      for (const id of ids) {
-        contracts.push(tokenContractAddr);
-        datas.push(encodeEvmContractCallData({ ...payload, ids: [id] }));
-        values.push("0.0");
-      }
+      const contracts = ids.map(() => tokenContractAddr);
+      const datas = ids.map((id) => encodeEvmContractCallData({ ...payload, ids: [id] }));
+      const values = ids.map(() => "0.0");
       return await this.cadenceService.batchCallContract(
         contracts,
         values,
         datas,
-        30_000_000
+        GAS_LIMITS.EVM_DEFAULT
       );
     }
     return await this.cadenceService.callContract(
       tokenContractAddr,
       value,
       data,
-      30_000_000
+      GAS_LIMITS.EVM_DEFAULT
     );
   }
 }

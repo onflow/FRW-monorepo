@@ -3,11 +3,7 @@
 import { Box, Tooltip, Typography } from '@mui/material';
 import React from 'react';
 
-import type {
-  CoinItem,
-  CustomFungibleTokenInfo,
-  EvmCustomTokenInfo,
-} from '@/shared/types';
+import type { CoinItem, CustomFungibleTokenInfo, EvmCustomTokenInfo } from '@/shared/types';
 import { isValidFlowAddress } from '@/shared/utils';
 
 export const SecurityCard: React.FC<{

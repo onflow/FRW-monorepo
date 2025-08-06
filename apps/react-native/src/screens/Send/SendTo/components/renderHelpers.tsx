@@ -1,6 +1,8 @@
-import { WalletAccount } from '@onflow/frw-types';
+import { type WalletAccount } from '@onflow/frw-types';
 import { Alert, Platform, ToastAndroid, View } from 'react-native';
+
 import { Skeleton, Text, WalletAccountSection } from 'ui';
+
 import type { RecipientTabType } from '../SendToScreen';
 import type { ExtendedWalletAccount, ListItem } from '../types/recipientTypes';
 

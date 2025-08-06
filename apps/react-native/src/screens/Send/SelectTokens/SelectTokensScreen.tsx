@@ -1,10 +1,8 @@
-import NativeFRWBridge from '@/bridge/NativeFRWBridge';
-import { useTheme } from '@/contexts/ThemeContext';
 import { TokenService } from '@onflow/frw-services';
 import { useSendStore, useTokenStore, useWalletStore } from '@onflow/frw-stores';
 import {
   addressType,
-  TokenInfo,
+  type TokenInfo,
   WalletType,
   type CollectionModel,
   type WalletAccount,
@@ -12,9 +10,12 @@ import {
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RefreshControl, ScrollView, View } from 'react-native';
+
+import NativeFRWBridge from '@/bridge/NativeFRWBridge';
+import { useTheme } from '@/contexts/ThemeContext';
 import {
   AccountSelectorModal,
-  AccountSelectorModalRef,
+  type AccountSelectorModalRef,
   BackgroundWrapper,
   Divider,
   NFTCollectionRow,
@@ -24,6 +25,7 @@ import {
   Text,
   TokenCard,
 } from 'ui';
+
 import { AccountCard } from '../shared/components/AccountCard';
 
 // Tab options constants and types, similar to Swift enum

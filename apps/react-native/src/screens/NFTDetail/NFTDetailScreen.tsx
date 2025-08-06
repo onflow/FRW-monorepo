@@ -1,12 +1,13 @@
-import BottomConfirmBar from '@/components/NFTList/BottomConfirmBar';
-import { IconView } from '@/components/ui/media/IconView';
-import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { getNFTCover } from '@onflow/frw-types';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
-import { CheckCircleFill as CheckCircleFillIcon, CheckCircle as CheckCircleIcon } from 'icons';
 import React, { useState } from 'react';
 import { ScrollView, TouchableOpacity, View } from 'react-native';
+
+import BottomConfirmBar from '@/components/NFTList/BottomConfirmBar';
+import { IconView } from '@/components/ui/media/IconView';
+import type { RootStackParamList } from '@/navigation/AppNavigator';
+import { CheckCircleFill as CheckCircleFillIcon, CheckCircle as CheckCircleIcon } from 'icons';
 import { BackgroundWrapper, Text } from 'ui';
 
 interface PropertyTagProps {

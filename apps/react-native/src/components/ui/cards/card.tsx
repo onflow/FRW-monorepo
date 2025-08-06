@@ -1,6 +1,7 @@
-import React from 'react';
-import { View, ViewProps } from 'react-native';
 import { cva, type VariantProps } from 'class-variance-authority';
+import React from 'react';
+import { View, type ViewProps } from 'react-native';
+
 import { cn } from '@/lib/utils';
 
 const cardVariants = cva('rounded-lg bg-white shadow-sm', {

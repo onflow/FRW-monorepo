@@ -1,8 +1,10 @@
 import React from 'react';
-import { TouchableOpacity } from 'react-native';
-import { Text } from 'ui';
-import { useTheme } from '../contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
+import { TouchableOpacity } from 'react-native';
+
+import { Text } from 'ui';
+
+import { useTheme } from '../contexts/ThemeContext';
 
 interface ThemeToggleProps {
   size?: number;

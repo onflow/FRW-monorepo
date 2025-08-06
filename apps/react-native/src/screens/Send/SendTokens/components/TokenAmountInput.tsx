@@ -1,10 +1,11 @@
-import { useTheme } from '@/contexts/ThemeContext';
-import { useAndroidTextFix } from '@/lib';
-import { TokenInfo } from '@onflow/frw-types';
-import { SwitchVertical, VerifiedToken as VerifiedIcon } from 'icons';
+import { type TokenInfo } from '@onflow/frw-types';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+
+import { useTheme } from '@/contexts/ThemeContext';
+import { useAndroidTextFix } from '@/lib';
+import { SwitchVertical, VerifiedToken as VerifiedIcon } from 'icons';
 import { ChevronDown, FlowLogo } from 'ui';
 
 interface TokenAmountInputProps {

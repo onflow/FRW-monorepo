@@ -74,11 +74,7 @@ import { getAccountsByPublicKeyTuple, signWithKey } from '@/core/utils';
 // --- Other Specific Imports (ensure these remain as they were) ---
 
 // Change these imports to be named imports from '@onflow/frw-core/service'
-import {
-  HASH_ALGO_NUM_DEFAULT,
-  SIGN_ALGO_NUM_DEFAULT,
-  TESTNET_CHAIN_ID,
-} from '@/shared/constant';
+import { HASH_ALGO_NUM_DEFAULT, SIGN_ALGO_NUM_DEFAULT, TESTNET_CHAIN_ID } from '@/shared/constant';
 
 import notificationService from '../notification';
 import providerController from '../provider/controller';

@@ -24,7 +24,6 @@ import {
   consoleError,
 } from '@/shared/utils';
 
-
 import notificationService from '../notification';
 
 interface Web3WalletPermission {

@@ -21,7 +21,7 @@ declare const __frw__isOpera;
 
 const log = (event, ...args) => {
   if (process.env.NODE_ENV !== 'production') {
-    // eslint-disable-next-line
+     
     consoleLog(
       `%c [frw] (${new Date().toTimeString().slice(0, 8)}) ${event}`,
       'font-weight: bold; background-color: #7d6ef9; color: white;',

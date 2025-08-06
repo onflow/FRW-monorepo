@@ -12,13 +12,13 @@ export const EMULATOR_HOST_MAINNET = 'http://localhost:8888';
 
 // Configure FCL for Mainnet
 export const fclMainnetConfig = async (emulatorMode?: boolean) => {
-  const host = !!emulatorMode ? EMULATOR_HOST_MAINNET : HOST_MAINNET;
+  const host = emulatorMode ? EMULATOR_HOST_MAINNET : HOST_MAINNET;
   fcl.config().put('accessNode.api', host).put('flow.network', 'mainnet');
 };
 
 // Configure FCL for Testnet
 export const fclTestnetConfig = async (emulatorMode?: boolean) => {
-  const host = !!emulatorMode ? EMULATOR_HOST_TESTNET : HOST_TESTNET;
+  const host = emulatorMode ? EMULATOR_HOST_TESTNET : HOST_TESTNET;
   fcl.config().put('accessNode.api', host).put('flow.network', 'testnet');
 };
 

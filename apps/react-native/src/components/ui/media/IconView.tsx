@@ -1,6 +1,7 @@
-import { Image, View } from 'react-native';
 import React, { useEffect, useState, useMemo } from 'react';
+import { Image, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
+
 import { useTheme } from '@/contexts/ThemeContext';
 
 // Constant definitions

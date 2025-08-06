@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { View, TouchableOpacity, Animated, LayoutChangeEvent } from 'react-native';
-import { Text } from 'ui';
+import { View, TouchableOpacity, Animated, type LayoutChangeEvent } from 'react-native';
+
 import { useTheme } from '@/contexts/ThemeContext';
+import { Text } from 'ui';
 
 interface SlidingTabsProps {
   tabs: string[];

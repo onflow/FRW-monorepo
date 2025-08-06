@@ -107,8 +107,8 @@ class FlowService {
   async getEvmAddress(flowAddress: string): Promise<string | null> {
     // TODO: Implement this using CadenceService if needed
     // For now, return null since the main use case is balance fetching
-    logger.warn('FlowService: getEvmAddress not yet implemented via CadenceService');
-    return null;
+    const address = await cadenceService.getAddr(flowAddress) || null
+    return address;
   }
 }
 

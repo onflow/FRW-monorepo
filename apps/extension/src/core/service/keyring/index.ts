@@ -31,12 +31,7 @@ import type {
   VaultEntryV3,
   LoggedInAccount,
 } from '@/shared/types';
-import {
-  consoleError,
-  consoleInfo,
-  consoleWarn,
-  combinePubPkTuple,
-} from '@/shared/utils';
+import { consoleError, consoleInfo, consoleWarn, combinePubPkTuple } from '@/shared/utils';
 
 import { HDKeyring, type HDKeyringData, type HDKeyringType } from './hdKeyring';
 import { type SimpleKeyPairType, SimpleKeyring, type SimpleKeyringData } from './simpleKeyring';

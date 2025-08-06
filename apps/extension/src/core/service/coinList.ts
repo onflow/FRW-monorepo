@@ -15,11 +15,7 @@ import {
   registerRefreshListener,
   setCachedData,
 } from '@/data-model';
-import {
-  type CadenceTokenInfo,
-  type EvmTokenInfo,
-  type ExtendedTokenInfo,
-} from '@/shared/types';
+import { type CadenceTokenInfo, type EvmTokenInfo, type ExtendedTokenInfo } from '@/shared/types';
 import { isValidEthereumAddress, isValidFlowAddress, consoleError } from '@/shared/utils';
 
 import openapiService from './openapi';

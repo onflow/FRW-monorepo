@@ -1,7 +1,8 @@
-import { View, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Text } from 'ui';
+import { View, TouchableOpacity } from 'react-native';
+
 import { useTheme } from '@/contexts/ThemeContext';
+import { Text } from 'ui';
 
 interface SendButtonProps {
   isAccountIncompatible: boolean;

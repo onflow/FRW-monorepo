@@ -1,12 +1,13 @@
-import NativeFRWBridge from '@/bridge/NativeFRWBridge';
-import { useConfirmationDrawer } from '@/contexts/ConfirmationDrawerContext';
-import { useTheme } from '@/contexts/ThemeContext';
-import { useAccountCompatibilityModal } from '@/lib';
 import { sendSelectors, useSendStore, useTokenStore } from '@onflow/frw-stores';
 import { type NavigationProp, type WalletAccount } from '@onflow/frw-types';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView, ScrollView, StatusBar, View } from 'react-native';
+
+import NativeFRWBridge from '@/bridge/NativeFRWBridge';
+import { useConfirmationDrawer } from '@/contexts/ConfirmationDrawerContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useAccountCompatibilityModal } from '@/lib';
 import {
   AccountCompatibilityModal,
   StorageWarning,

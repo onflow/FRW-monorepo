@@ -1,7 +1,10 @@
-import { formatCurrencyStringForDisplay } from '@/lib/string';
-import { TokenInfo } from '@onflow/frw-types';
-import { VerifiedToken as VerifiedIcon } from 'icons';
+import { type TokenInfo } from '@onflow/frw-types';
 import { TouchableOpacity, View } from 'react-native';
+
+import { formatCurrencyStringForDisplay } from '@/lib/string';
+import { VerifiedToken as VerifiedIcon } from 'icons';
+
+
 import { IconView } from '../media/IconView';
 import { Text } from '../typography/text';
 export interface TokenCardProps {

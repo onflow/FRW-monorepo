@@ -16,12 +16,7 @@ import { useLocation, useNavigate } from 'react-router';
 
 import { EVM_ENDPOINT } from '@/shared/constant';
 import { type CustomFungibleTokenInfo } from '@/shared/types';
-import {
-  isValidEthereumAddress,
-  withPrefix,
-  consoleError,
-  networkToChainId,
-} from '@/shared/utils';
+import { isValidEthereumAddress, withPrefix, consoleError, networkToChainId } from '@/shared/utils';
 import { LLFormHelperText, LLPrimaryButton } from '@/ui/components';
 import { refreshEvmToken } from '@/ui/hooks/use-coin-hooks';
 import { useWallet } from '@/ui/hooks/use-wallet';

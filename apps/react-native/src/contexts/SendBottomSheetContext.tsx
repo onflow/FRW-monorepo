@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useRef, ReactNode, useState } from 'react';
-import { SendBottomSheet, SendBottomSheetRef } from '@/components/SendBottomSheet';
-import { SendWorkflowManager, SendWorkflowStep } from '@/components/SendWorkflowManager';
+import React, { createContext, useContext, useRef, type ReactNode, useState } from 'react';
+
+import { SendBottomSheet, type SendBottomSheetRef } from '@/components/SendBottomSheet';
+import { SendWorkflowManager, type SendWorkflowStep } from '@/components/SendWorkflowManager';
 
 interface SendBottomSheetContextType {
   openSend: (initialStep?: SendWorkflowStep, params?: Record<string, unknown>) => void;

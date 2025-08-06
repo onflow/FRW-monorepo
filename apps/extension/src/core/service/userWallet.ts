@@ -1,11 +1,11 @@
 import * as secp from '@noble/secp256k1';
 import * as fcl from '@onflow/fcl';
+import { CadenceService } from '@onflow/frw-cadence';
 import type { Account as FclAccount } from '@onflow/typedefs';
 import * as ethUtil from 'ethereumjs-util';
 import { signInAnonymously } from 'firebase/auth/web-extension';
 import { TransactionError } from 'web3';
 // Import the cadence package that contains getFlowBalanceForAnyAccounts
-import { CadenceService } from '@onflow/frw-cadence';
 
 import {
   triggerRefresh,
@@ -1629,7 +1629,7 @@ const loadMainAccountsWithPubKey = async (
 
   const mainAccountsWithDetail: MainAccount[] = mainAccounts.map((mainAccount) => {
     const accountDetail = accountDetailMap[mainAccount.address];
-    const evmAccount = !!accountDetail.COAs?.length
+    const evmAccount = accountDetail.COAs?.length
       ? evmAddressToWalletAccount(network, accountDetail.COAs[0])
       : undefined;
 

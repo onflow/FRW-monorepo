@@ -1,7 +1,8 @@
 import React from 'react';
 import { View } from 'react-native';
-import { Text, WalletAvatar } from 'ui';
+
 import { Link } from 'icons';
+import { Text, WalletAvatar } from 'ui';
 
 interface AccountCardProps {
   emoji: string | { emoji: string } | undefined;

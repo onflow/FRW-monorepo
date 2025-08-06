@@ -1,6 +1,8 @@
-import NativeFRWBridge from '@/bridge/NativeFRWBridge';
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
+
+import NativeFRWBridge from '@/bridge/NativeFRWBridge';
+
 import { CloseIcon } from './ui/icons/CloseIcon';
 
 interface NavigationCloseButtonProps {
