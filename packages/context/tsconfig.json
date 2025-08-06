@@ -1,8 +1,17 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "lib": ["ES2022", "DOM"]
   },
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.json",
+    "src/codgen/**/*.ts",
+    "tests/**/*.ts",
+    "__tests__/**/*.ts",
+    "tsup.config.ts",
+    "vitest.config.ts"
+  ],
   "exclude": ["dist", "node_modules"]
 }
