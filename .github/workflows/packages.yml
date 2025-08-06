@@ -44,7 +44,7 @@ jobs:
     if: needs.detect-changes.outputs.packages != ''
     strategy:
       matrix:
-        package: ${{ fromJson(format('[{0}]', '"' + join(split(needs.detect-changes.outputs.packages, ' '), '", "') + '"')) }}
+        package: ${{ fromJson(format('["{}"]', join(split(needs.detect-changes.outputs.packages, ' '), '","'))) }}
       fail-fast: false
 
     steps:
