@@ -43,19 +43,15 @@ appcenter codepush deployment list -a your-username/YourApp-Android -k
 
 ### 6. Update Android Configuration
 
-Replace the placeholder keys in these files:
+Add your deployment keys to the `android/key.properties` file:
 
-**Debug builds:** `android/app/src/debug/res/values/codepush.xml`
-
-```xml
-<string name="codepush_deployment_key_staging">YOUR_STAGING_KEY_HERE</string>
+```properties
+# CodePush deployment keys
+CODEPUSH_KEY_ANDROID_STAGING=YOUR_STAGING_KEY_HERE
+CODEPUSH_KEY_ANDROID_PRODUCTION=YOUR_PRODUCTION_KEY_HERE
 ```
 
-**Release builds:** `android/app/src/main/res/values/codepush.xml`
-
-```xml
-<string name="codepush_deployment_key_production">YOUR_PRODUCTION_KEY_HERE</string>
-```
+**Security Note:** The keys are now stored in gradle.properties instead of XML resources for better security. Make sure to add this file to your .gitignore and use GitHub secrets in CI/CD.
 
 ### 7. Deploy Updates
 
@@ -69,9 +65,19 @@ pnpm run codepush:android:production
 
 ## Current Placeholder Keys
 
-The app is configured with these placeholder keys:
+The app is configured with these placeholder keys in the gradle.properties:
 
-- Staging: `staging-deployment-key-placeholder-replace-with-real-key`
-- Production: `production-deployment-key-placeholder-replace-with-real-key`
+- `CODEPUSH_KEY_ANDROID_STAGING`: `staging-placeholder`
+- `CODEPUSH_KEY_ANDROID_PRODUCTION`: `production-placeholder`
 
 **The app will run normally but CodePush updates won't work until you replace these with real keys from App Center.**
+
+## Example key.properties Configuration
+
+Your `android/key.properties` file should look like this:
+
+```properties
+# ... other keys ...
+CODEPUSH_KEY_ANDROID_STAGING=your-actual-staging-key-from-app-center
+CODEPUSH_KEY_ANDROID_PRODUCTION=your-actual-production-key-from-app-center
+```
