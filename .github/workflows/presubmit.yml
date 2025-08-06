@@ -6,11 +6,11 @@ permissions:
   issues: write
 
 on:
-  # pull_request_target:
-  #   types: [opened, synchronize]
-  # pull_request_review_comment:
-  #   types: [created]
-  workflow_dispatch:
+  pull_request_target:
+    types: [opened, synchronize]
+  pull_request_review_comment:
+    types: [created]
+
 jobs:
   review:
     runs-on: ubuntu-latest
@@ -18,11 +18,11 @@ jobs:
       - name: Check required secrets
         run: |
           if [ -z "${{ secrets.ANTHROPIC_API_KEY }}" ]; then
-            echo "Error: LLM_API_KEY secret is not configured"
+            echo "Error: ANTHROPIC_API_KEY secret is not configured"
             exit 1
           fi
       - uses: presubmit/ai-reviewer@latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LLM_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          LLM_MODEL: "claude-sonnet-4-20250514"
+          LLM_MODEL: "claude-3-5-sonnet-20241022"
