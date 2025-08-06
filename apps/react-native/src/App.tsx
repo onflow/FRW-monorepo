@@ -1,9 +1,13 @@
 import { ServiceContext } from '@onflow/frw-context';
 import { useWalletStore } from '@onflow/frw-stores';
+import Instabug, { InvocationEvent } from 'instabug-reactnative';
 import { useEffect } from 'react';
 import { Platform, Text as RNText } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { version } from '@/../package.json';
+
+import NativeFRWBridge from './bridge/NativeFRWBridge';
 import 'react-native-get-random-values';
 import { bridge } from './bridge/RNBridge';
 import { ConfirmationDrawerProvider } from './contexts/ConfirmationDrawerContext';
@@ -28,6 +32,19 @@ interface AppProps {
   embedded?: boolean;
 }
 
+const initializeInstabug = (props: AppProps) => {
+  const envKeys = NativeFRWBridge.getEnvKeys();
+  Instabug.init({
+    token: envKeys.INSTABUG_TOKEN,
+    invocationEvents: [InvocationEvent.none],
+  });
+
+  // Set user attributes for debugging
+  Instabug.setUserAttribute('SelectedAccount', props.address ?? '');
+  Instabug.setUserAttribute('Network', props.network ?? '');
+  Instabug.setUserAttribute('Version', version);
+};
+
 const App = (props: AppProps) => {
   // Initialize walletStore when the app starts
   const { loadAccountsFromBridge } = useWalletStore();
@@ -41,6 +58,8 @@ const App = (props: AppProps) => {
 
         // Initialize walletStore when app starts to have account data ready
         await loadAccountsFromBridge();
+        initializeInstabug(props);
+
         console.log('[App] Wallet store initialized successfully');
       } catch (error) {
         console.error('[App] Failed to initialize app:', error);

@@ -22,7 +22,13 @@ export interface Spec extends TurboModule {
   isFreeGasEnabled(): Promise<boolean>;
   // Listen to a transaction
   listenTransaction(txid: string): void;
-  
+  // Get all environment keys
+  getEnvKeys(): {
+    NODE_API_URL: string;
+    GO_API_URL: string;
+    INSTABUG_TOKEN: string;
+  };
+
   // Flow authorization functions for Cadence transactions
   getProposer(): Promise<any>;
   getPayer(): Promise<any>;
