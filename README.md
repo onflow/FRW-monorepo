@@ -205,22 +205,27 @@ setSelectedToken(tokens[0]); // TypeScript ensures correct type
 
 ## 🤝 Contributing
 
+We welcome contributions! Please read our
+**[Contributing Guide](./docs/CONTRIBUTING.md)** for detailed instructions on:
+
+- 📝 **Commit Message Guidelines** (Conventional Commits format)
+- 🧹 **Code Quality Standards** (ESLint, Prettier, TypeScript)
+- 🔄 **Pull Request Process**
+- 🏗️ **Architecture Guidelines** (MVVM patterns)
+
+### Quick Start
+
 1. **Fork the repository**
-2. **Create feature branch**: `git checkout -b feature/amazing-feature`
-3. **Follow MVVM workflow**: Start with types, then network, business logic,
-   viewmodels, and views
-4. **Add tests** for new functionality
-5. **Ensure all packages build**: `pnpm build`
-6. **Run quality checks**: `pnpm lint && pnpm typecheck`
-7. **Submit pull request**
+2. **Create feature branch**: `git checkout -b feat/amazing-feature`
+3. **Make your changes** following our coding standards
+4. **Commit with conventional format**:
+   `git commit -m "feat: add amazing feature"`
+5. **Run quality checks**: `pnpm lint && pnpm typecheck && pnpm build`
+6. **Submit pull request**
 
-### Code Style
-
-- **TypeScript**: Strict mode enabled
-- **ESLint**: Configured for monorepo
-- **Prettier**: Consistent formatting
-- **Comments**: English only, clear and concise
-- **Naming**: Descriptive names over extensive comments
+> 💡 **Tip**: All commits must follow
+> [Conventional Commits](https://www.conventionalcommits.org/) format to pass
+> our automated checks!
 
 ## 📊 CI/CD
 
@@ -239,7 +244,8 @@ GitHub Actions workflows automatically:
   documentation
 - **[React Native Guide](./apps/react-native/README.md)** - React Native app
   specific documentation
-- **[Contributing Guide](./CONTRIBUTING.md)** - How to contribute to the project
+- **[Contributing Guide](./docs/CONTRIBUTING.md)** - Development workflow and
+  commit message guidelines
 - **[API Documentation](./docs/API.md)** - API reference and examples
 
 ## 📄 License
