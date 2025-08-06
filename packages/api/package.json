@@ -19,14 +19,9 @@
     "test:run": "vitest --run",
     "test:coverage": "vitest --coverage",
     "prepublishOnly": "pnpm build",
-    "pre-commit": "pnpm lint-staged",
     "codegen": "node scripts/codegen.cjs && node scripts/codegen-go.cjs",
     "lint": "eslint . --cache",
     "lint:fix": "eslint . --cache --fix"
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx,mjs}": "eslint --cache",
-    "*.{json,js,ts,jsx,tsx,html,md,mdx,mjs}": "prettier --write"
   },
   "exports": {
     ".": {
