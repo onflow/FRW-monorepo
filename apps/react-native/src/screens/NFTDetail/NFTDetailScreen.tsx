@@ -1,13 +1,15 @@
+import { useWalletStore } from '@onflow/frw-stores';
+import { getNFTCover } from '@onflow/frw-utils';
+import { useRoute } from '@react-navigation/native';
+import type { RouteProp } from '@react-navigation/native';
+import React, { useState } from 'react';
+import { View, ScrollView, TouchableOpacity } from 'react-native';
+
 import BottomConfirmBar from '@/components/NFTList/BottomConfirmBar';
 import { IconView } from '@/components/ui/media/IconView';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
-import { getNFTCover } from '@onflow/frw-types';
-import type { RouteProp } from '@react-navigation/native';
-import { useRoute } from '@react-navigation/native';
-import { CheckCircleFill as CheckCircleFillIcon, CheckCircle as CheckCircleIcon } from 'icons';
-import React, { useState } from 'react';
-import { ScrollView, TouchableOpacity, View } from 'react-native';
-import { BackgroundWrapper, Text } from 'ui';
+import { CheckCircle as CheckCircleIcon, CheckCircleFill as CheckCircleFillIcon } from 'icons';
+import { BackgroundWrapper, Text, WalletAvatar } from 'ui';
 
 interface PropertyTagProps {
   label: string;
@@ -21,18 +23,9 @@ const PropertyTag: React.FC<PropertyTagProps> = ({ label, value }) => (
   </View>
 );
 
-interface AccountIconProps {
-  emoji: string;
-}
-
-const AccountIcon: React.FC<AccountIconProps> = ({ emoji }) => (
-  <View className="w-6 h-6 bg-neutral-300 rounded-full items-center justify-center">
-    <Text className="text-xs">{emoji}</Text>
-  </View>
-);
-
 export const NFTDetailScreen: React.FC = () => {
   const route = useRoute<RouteProp<RootStackParamList, 'NFTDetail'>>();
+  const { activeAccount } = useWalletStore();
 
   const { nft, selectedNFTs, onSelectionChange } = route.params || {};
 
@@ -154,7 +147,14 @@ export const NFTDetailScreen: React.FC = () => {
                 <Text className="text-fg-1 text-2xl font-semibold">
                   {nft.name || 'Untitled NFT'}
                 </Text>
-                <AccountIcon emoji="🐼" />
+                {activeAccount && (
+                  <WalletAvatar
+                    value={activeAccount.avatar || activeAccount.emojiInfo?.emoji || '👤'}
+                    fallback={activeAccount.emojiInfo?.emoji || '👤'}
+                    size={24}
+                    backgroundColor={activeAccount.emojiInfo?.color}
+                  />
+                )}
               </View>
               <Text className="text-fg-2 text-sm">{nft.collectionName || ' '}</Text>
             </View>

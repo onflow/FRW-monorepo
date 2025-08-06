@@ -107,39 +107,6 @@ graph TB
   }
   ```
 
-- **Asset Models**:
-
-  ```typescript
-  export interface TokenInfo {
-    symbol: string;
-    name: string;
-    address: string;
-    decimal: number;
-    logoURI: string;
-    identifier: string;
-  }
-
-  export interface NFTModel {
-    id: string | number;
-    name: string;
-    thumbnail: string;
-    collection: CollectionModel;
-    type: WalletType;
-  }
-  ```
-
-- **Transaction Models**:
-  ```typescript
-  export interface SendPayload {
-    type: 'token' | 'nft';
-    assetType: AddressType;
-    sender: string;
-    receiver: string;
-    amount?: string;
-    ids?: number[];
-  }
-  ```
-
 **Features**:
 
 - ✅ Zero dependencies (pure models)
@@ -475,7 +442,7 @@ This MVVM architecture powers the Flow Reference Wallet iOS app, handling:
 
 ```bash
 # Clone and setup
-git clone [repository]
+git clone https://github.com/onflow/FRW-monorepo
 cd FRW
 pnpm install
 

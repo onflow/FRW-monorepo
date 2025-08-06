@@ -1,6 +1,9 @@
-import NativeFRWBridge from '@/bridge/NativeFRWBridge';
+import { useSendStore } from '@onflow/frw-stores';
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
+
+import NativeFRWBridge from '@/bridge/NativeFRWBridge';
+
 import { CloseIcon } from './ui/icons/CloseIcon';
 
 interface NavigationCloseButtonProps {
@@ -14,10 +17,15 @@ const NavigationCloseButton: React.FC<NavigationCloseButtonProps> = ({
   height = 24,
   onPress,
 }) => {
+  const { clearTransactionData } = useSendStore();
+
   const handlePress = () => {
     if (onPress) {
       onPress();
     } else {
+      // Clear form data before closing to prevent persistence
+      clearTransactionData();
+      // Close the RN bridge
       NativeFRWBridge.closeRN();
     }
   };
