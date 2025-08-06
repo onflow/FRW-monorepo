@@ -1,8 +1,8 @@
+import { configureFCL } from '@onflow/frw-cadence';
 import dotenv from 'dotenv';
 import { describe, it, expect, beforeEach } from 'vitest';
 
 import {
-  configureFCL,
   // SendTransaction,
   cadenceService,
 } from '../src';

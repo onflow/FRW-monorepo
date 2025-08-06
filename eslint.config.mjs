@@ -40,16 +40,6 @@ export default [
         },
       },
     },
-    settings: {
-      react: {
-        version: 'detect',
-      },
-    },
-  },
-  js.configs.recommended,
-  ...tseslint.configs.recommended,
-  {
-    files: ['**/*.{ts,tsx}'],
     plugins: {
       react,
       'react-hooks': reactHooks,
@@ -68,6 +58,11 @@ export default [
         version: 'detect',
       },
     },
+  },
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  {
+    files: ['**/*.{ts,tsx}'],
     rules: {
       // TypeScript rules
       '@typescript-eslint/no-unused-vars': 'off', // Let unused-imports handle this
@@ -294,6 +289,7 @@ export default [
       'packages/cadence/src/scripts/generated/**', // Generated Cadence code
       '**/generated/**',
       '**/*.generated.{ts,js}',
+      '**/*.gen.{ts,js}', // Generated files with .gen extension
 
       // Build artifacts
       '**/.turbo/**',

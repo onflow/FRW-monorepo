@@ -24,6 +24,8 @@ packages/cadence/src/scripts/generated/
 **/generated/
 **/*.generated.ts
 **/*.generated.js
+**/*.gen.ts
+**/*.gen.js
 
 # Package manager
 .pnpm-store/

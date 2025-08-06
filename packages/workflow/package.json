@@ -1,44 +1,45 @@
 {
-    "name": "@onflow/frw-workflow",
-    "version": "0.0.4",
-    "description": "Package for flow wallet workflow",
-    "type": "module",
-    "main": "./dist/index.js",
-    "types": "./dist/index.d.ts",
-    "files": [
-        "src",
-        "dist"
-    ],
-    "scripts": {
-        "build": "tsup",
-        "build:watch": "tsup --watch",
-        "type-check": "tsc --noEmit",
-        "clean": "rm -rf dist",
-        "test": "vitest",
-        "test:run": "vitest --run",
-        "test:coverage": "vitest --coverage",
-        "prepublishOnly": "pnpm build",
-        "lint": "eslint . --cache",
-        "lint:fix": "eslint . --cache --fix"
-    },
-    "exports": {
-        ".": {
-            "types": "./dist/index.d.ts",
-            "import": "./dist/index.js",
-            "default": "./dist/index.js"
-        }
-    },
-    "dependencies": {
-        "@babel/runtime": "^7.28.2",
-        "@onflow/fcl": "^1.13.1",
-        "@onflow/frw-cadence": "0.0.3",
-        "@onflow/transport-http": "^1.13.0",
-        "@onflow/util-encode-key": "^1.2.4",
-        "ethers": "^6.15.0",
-        "elliptic": "^6.5.7",
-        "sha3": "^2.1.4"
-    },
-    "devDependencies": {
-        "tsup": "^8.5.0"
+  "name": "@onflow/frw-workflow",
+  "version": "0.0.4",
+  "description": "Package for flow wallet workflow",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "src",
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "test": "vitest",
+    "test:run": "vitest --run",
+    "test:coverage": "vitest --coverage",
+    "prepublishOnly": "pnpm build",
+    "lint": "eslint . --cache",
+    "lint:fix": "eslint . --cache --fix"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     }
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.28.2",
+    "@onflow/fcl": "^1.13.1",
+    "@onflow/frw-cadence": "0.0.3",
+    "@onflow/frw-context": "workspace:*",
+    "@onflow/transport-http": "^1.13.0",
+    "@onflow/util-encode-key": "^1.2.4",
+    "ethers": "^6.15.0",
+    "elliptic": "^6.5.7",
+    "sha3": "^2.1.4"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.0"
+  }
 }

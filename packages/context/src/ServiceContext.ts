@@ -1,7 +1,6 @@
 import { configureApiEndpoints } from '@onflow/frw-api';
-import type { CadenceService } from '@onflow/frw-cadence';
+import { createCadenceService, type CadenceService } from '@onflow/frw-cadence';
 import { createLogger, type Logger } from '@onflow/frw-utils';
-import { createCadenceService } from '@onflow/frw-workflow';
 
 import type { BridgeSpec } from './interfaces/BridgeSpec';
 import type { Storage } from './interfaces/Storage';
@@ -61,8 +60,7 @@ export class ServiceContext {
     );
 
     // Create CadenceService with bridge configuration
-    const network = bridge.getNetwork() as 'mainnet' | 'testnet';
-    ServiceContext.instance._cadenceService = createCadenceService(network, bridge);
+    ServiceContext.instance._cadenceService = createCadenceService(bridge);
 
     ServiceContext.instance.logger.debug('Initialized with bridge', bridge.constructor.name);
     return ServiceContext.instance;

@@ -33,7 +33,7 @@
     "@onflow/frw-api": "workspace:*",
     "@onflow/frw-cadence": "workspace:*",
     "@onflow/frw-types": "workspace:*",
-    "@onflow/frw-workflow": "workspace:*"
+    "@onflow/frw-utils": "workspace:*"
   },
   "devDependencies": {
     "tsup": "^8.3.5",

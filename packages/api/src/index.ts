@@ -12,12 +12,12 @@ export {
   ProfileService as ProfileGoService,
   UserService as UserGoService,
   Userv3Service as Userv3GoService,
-} from './codgen/goService';
-export * from './codgen/service';
+} from './codgen/goService.generated';
+export * from './codgen/service.generated';
 
 // Export service options
-export { serviceOptions as goServiceOptions } from './codgen/goService';
-export { serviceOptions } from './codgen/service';
+export { serviceOptions as goServiceOptions } from './codgen/goService.generated';
+export { serviceOptions } from './codgen/service.generated';
 
 // Export dynamic configuration functions
 export { configureApiEndpoints, isApiConfigured } from './config';
