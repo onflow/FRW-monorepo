@@ -1,12 +1,14 @@
+import { sendSelectors, useSendStore, useTokenStore } from '@onflow/frw-stores';
+import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { SafeAreaView, ScrollView, StatusBar, View } from 'react-native';
+
 import NativeFRWBridge from '@/bridge/NativeFRWBridge';
 import { useConfirmationDrawer } from '@/contexts/ConfirmationDrawerContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAccountCompatibilityModal } from '@/lib';
-import { sendSelectors, useSendStore, useTokenStore } from '@onflow/frw-stores';
-import { type NavigationProp, type WalletAccount } from '@onflow/frw-types';
-import { useCallback, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { SafeAreaView, ScrollView, StatusBar, View } from 'react-native';
+import { type NavigationProp } from '@/types';
+import { type WalletAccount } from '@/types/bridge';
 import {
   AccountCompatibilityModal,
   StorageWarning,
@@ -104,23 +106,48 @@ const SendSingleNFTScreen = ({ navigation }: { navigation: NavigationProp }) => 
             ]
           : [],
         onConfirm: async () => {
-          // Execute transaction using store method
-          const { executeTransaction, setTransactionType } = useSendStore.getState();
+          // Create send payload using store
+          const { createSendPayload, resetSendFlow, setTransactionType } = useSendStore.getState();
           setTransactionType('single-nft');
-          const result = await executeTransaction();
-          console.log('[SendSingleNFTScreen] Transaction result:', result);
-          NativeFRWBridge.closeRN();
+          const payload = await createSendPayload();
+
+          if (payload) {
+            const { SendTransaction, isValidSendTransactionPayload } = await import(
+              '@onflow/frw-workflow'
+            );
+            const { getCadenceService } = await import('@onflow/frw-context');
+
+            if (isValidSendTransactionPayload(payload)) {
+              const cadenceService = getCadenceService();
+              const result = await SendTransaction(payload, cadenceService);
+              console.log('[SendSingleNFTScreen] Transfer result:', result);
+              resetSendFlow();
+              NativeFRWBridge.closeRN();
+            }
+          }
         },
         children: (
           <View className="w-full p-4 bg-surface-2 rounded-2xl">
             <Text className="text-fg-1 font-semibold text-base mb-2">Transaction Details</Text>
             <View className="flex-row justify-between">
               <Text className="text-fg-2">NFT</Text>
-              <Text className="text-fg-1 font-semibold">{selectedNFT.name || 'NFT'}</Text>
+              <Text
+                className="text-fg-1 font-semibold flex-1 text-right"
+                numberOfLines={2}
+                ellipsizeMode="tail"
+                style={{ marginLeft: 8 }}
+              >
+                {selectedNFT.name || 'NFT'}
+              </Text>
             </View>
             <View className="flex-row justify-between mt-2">
               <Text className="text-fg-2">Collection</Text>
-              <Text className="text-fg-1 font-semibold">
+              <Text
+                className="text-fg-1 font-semibold flex-1 text-right"
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={{ marginLeft: 8 }}
+              >
                 {selectedNFT.collectionName || 'Unknown'}
               </Text>
             </View>

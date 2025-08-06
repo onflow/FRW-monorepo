@@ -1,9 +1,16 @@
+import type NFTModel from '@onflow/frw-types';
+import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
 import NavigationBackButton from '@/components/NavigationBackButton';
 import NavigationCloseButton from '@/components/NavigationCloseButton';
 import NavigationTitle from '@/components/NavigationTitle';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useTheme } from '@/contexts/ThemeContext';
-import NFTModel from '@onflow/frw-types';
 import {
   HomeScreen,
   NFTDetailScreen,
@@ -15,12 +22,7 @@ import {
 } from '@/screens';
 import ColorDemoScreen from '@/screens/ColorDemo/ColorDemoScreen';
 import NFTListScreen from '@/screens/NFTList/NFTListScreen';
-import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+
 
 export type RootStackParamList = {
   Home: { address?: string; network?: string };
@@ -113,6 +115,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
                 headerShown: true,
                 headerTitle: () => <NavigationTitle title={route.params?.nft?.name || 'NFT'} />,
                 headerLeft: () => <NavigationBackButton />,
+                headerRight: undefined,
               })}
             />
             <Stack.Group
