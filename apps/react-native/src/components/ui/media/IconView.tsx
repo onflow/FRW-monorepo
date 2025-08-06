@@ -1,6 +1,7 @@
-import { Image, View } from 'react-native';
 import React, { useEffect, useState, useMemo } from 'react';
+import { Image, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
+
 import { useTheme } from '@/contexts/ThemeContext';
 
 // Constant definitions
@@ -107,11 +108,6 @@ export function IconView({
     }
   }, [src, imageType, imageLoaded]);
 
-  // Return placeholder directly for empty src
-  if (imageType === 'empty') {
-    return <View style={badgeStyle} />;
-  }
-
   useEffect(() => {
     // Only handle SVG type
     if (imageType !== 'svg') return;
@@ -171,6 +167,11 @@ export function IconView({
       if (timeoutId) clearTimeout(timeoutId);
     };
   }, [src, imageType]);
+
+  // Return placeholder directly for empty src
+  if (imageType === 'empty') {
+    return <View style={badgeStyle} />;
+  }
 
   // SVG processing logic
   if (imageType === 'svg') {

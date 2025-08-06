@@ -1,7 +1,8 @@
 import React from 'react';
 import { View } from 'react-native';
-import { Text } from 'ui';
+
 import { IconView } from '@/components/ui/media/IconView';
+import { Text } from 'ui';
 
 interface NFT {
   id: string | number;

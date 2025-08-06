@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Platform } from 'react-native';
+
 import { Text } from 'ui';
 interface ContactAvatarProps {
   name: string;

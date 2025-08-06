@@ -145,7 +145,7 @@ export const convertToIntegerAmount = (amount: string, decimals: number): string
   // Check if the amount is valid
   if (!validateAmount(amount, decimals)) {
     throw new Error(
-      `Invalid amount or decimal places - amount: \'${amount}\', decimals: ${decimals}`
+      `Invalid amount or decimal places - amount: '${amount}', decimals: ${decimals}`
     );
   }
 

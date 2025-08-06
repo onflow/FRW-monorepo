@@ -1,7 +1,8 @@
-import { Text } from '@/components/ui/typography';
 import { sendSelectors, useSendStore } from '@onflow/frw-stores';
 import { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
+
+import { Text } from '@/components/ui/typography';
 
 interface FlowCoaBalanceProps {
   flowAddress: string;

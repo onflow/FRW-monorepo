@@ -235,7 +235,7 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
     return () => {
       sessionStorage.removeItem('pendingRefBlockId');
 
-      // @ts-ignore
+      // @ts-ignore: Optional chaining for chrome.storage.session - may not exist in all contexts
       chrome.storage.session?.remove('pendingRefBlockId');
     };
   }, [loadPayer, checkNetwork]);

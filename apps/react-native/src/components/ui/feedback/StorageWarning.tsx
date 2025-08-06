@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { View, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { Text } from 'ui';
+
 import { useStorageWarning } from '@/hooks/useStorageWarning';
+import { Text } from 'ui';
+
 import { InfoIcon } from '../icons/InfoIcon';
 import { StorageInfoModal } from '../modals/StorageInfoModal';
 

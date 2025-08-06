@@ -1,7 +1,9 @@
+import { cva, type VariantProps } from 'class-variance-authority';
 import React from 'react';
 import { TouchableOpacity, type TouchableOpacityProps } from 'react-native';
-import { cva, type VariantProps } from 'class-variance-authority';
+
 import { cn } from '@/lib/utils';
+
 import { Text } from '../typography/text';
 
 const buttonVariants = cva(

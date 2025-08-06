@@ -1,4 +1,4 @@
-import { WalletAccount } from '@onflow/frw-types';
+import { type WalletAccount } from '@onflow/frw-types';
 import { validateEvmAddress, validateFlowAddress } from '@onflow/frw-workflow';
 
 /**

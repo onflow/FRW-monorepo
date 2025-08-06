@@ -153,8 +153,6 @@ const checkContractAddressInCollections = (
   const contractAddressWithout0x = nftCollections.collection.contractName;
   const isActiveCollect = activeCollection.some((collection) => {
     const extractedAddress = extractContractAddress(collection);
-    if (extractedAddress === contractAddressWithout0x) {
-    }
     return extractedAddress === contractAddressWithout0x;
   });
   return isActiveCollect;

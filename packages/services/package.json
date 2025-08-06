@@ -19,8 +19,8 @@
     "test:run": "vitest --run",
     "test:coverage": "vitest --coverage",
     "prepublishOnly": "pnpm build",
-    "lint": "eslint . --cache",
-    "lint:fix": "eslint . --cache --fix"
+    "lint": "eslint src --cache",
+    "lint:fix": "eslint src --cache --fix"
   },
   "exports": {
     ".": {

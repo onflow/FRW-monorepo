@@ -1,4 +1,6 @@
-import React, { useEffect } from 'react';
+import type React from 'react';
+import { useEffect } from 'react';
+
 import { useSendBottomSheet } from '@/contexts/SendBottomSheetContext';
 
 interface SendFlowTriggerProps {

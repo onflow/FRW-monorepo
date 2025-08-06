@@ -1,12 +1,9 @@
-import NativeFRWBridge from '@/bridge/NativeFRWBridge';
-import { useTheme } from '@/contexts/ThemeContext';
-import { useAndroidTextFix } from '@/lib';
-import type { WalletAccount } from '@onflow/frw-types';
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetScrollView,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
+import type { WalletAccount } from '@onflow/frw-types';
 import React, {
   forwardRef,
   useCallback,
@@ -16,6 +13,11 @@ import React, {
   useState,
 } from 'react';
 import { ActivityIndicator, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+
+import NativeFRWBridge from '@/bridge/NativeFRWBridge';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useAndroidTextFix } from '@/lib';
+
 import { WalletAccountSection } from '../index';
 
 interface AccountSelectorModalProps {

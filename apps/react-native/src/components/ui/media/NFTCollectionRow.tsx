@@ -1,9 +1,11 @@
-import { useTheme } from '@/contexts/ThemeContext';
-import { CollectionModel } from '@onflow/frw-types';
-import { ArrowRight } from 'icons';
+import { type CollectionModel } from '@onflow/frw-types';
 import { useEffect, useState } from 'react';
 import { Image, TouchableOpacity, View } from 'react-native';
 import { SvgUri } from 'react-native-svg';
+
+import { useTheme } from '@/contexts/ThemeContext';
+import { ArrowRight } from 'icons';
+
 import { Divider } from '../layout/divider';
 import { Text } from '../typography/text';
 

@@ -1,12 +1,14 @@
+import { sendSelectors, useSendStore, useTokenStore } from '@onflow/frw-stores';
+import { type TokenInfo, type WalletAccount } from '@onflow/frw-types';
+import { useNavigation } from '@react-navigation/native';
+import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { SafeAreaView, ScrollView, StatusBar, View } from 'react-native';
+
 import NativeFRWBridge from '@/bridge/NativeFRWBridge';
 import { useConfirmationDrawer } from '@/contexts/ConfirmationDrawerContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAccountCompatibilityModal } from '@/lib';
-import { sendSelectors, useSendStore, useTokenStore } from '@onflow/frw-stores';
-import { TokenInfo, type WalletAccount } from '@onflow/frw-types';
-import { useCallback, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { SafeAreaView, ScrollView, StatusBar, View } from 'react-native';
 import {
   AccountCompatibilityModal,
   StorageWarning,
@@ -17,14 +19,14 @@ import {
 } from 'ui';
 
 // Import shared components
+import { TokenAmountInput } from './components/TokenAmountInput';
 import { AccountCard } from '../shared/components/AccountCard';
 import { ContentContainer } from '../shared/components/ContentContainer';
 import { DownArrowButton } from '../shared/components/DownArrowButton';
 import { SectionDivider } from '../shared/components/SectionDivider';
 import { SendButton } from '../shared/components/SendButton';
+
 // Import local token-specific components
-import { useNavigation } from '@react-navigation/native';
-import { TokenAmountInput } from './components/TokenAmountInput';
 
 // Types
 
