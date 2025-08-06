@@ -1,12 +1,14 @@
-import { IconView } from '@/components/ui/media/IconView';
-import type { RootStackParamList } from '@/navigation/AppNavigator';
-import { WalletAccount } from '@onflow/frw-types';
+import { type WalletAccount } from '@onflow/frw-types';
+import { type NFTModel, isERC1155 } from '@onflow/frw-types';
 import type { NavigationProp } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
-import { CheckCircleFill as CheckCircleFillIcon, CheckCircle as CheckCircleIcon } from 'icons';
 import { Image, TouchableOpacity, View } from 'react-native';
+
+import { IconView } from '@/components/ui/media/IconView';
+import type { RootStackParamList } from '@/navigation/AppNavigator';
+import { CheckCircleFill as CheckCircleFillIcon, CheckCircle as CheckCircleIcon } from 'icons';
 import { Text } from 'ui';
-import { NFTModel } from '@onflow/frw-types';
+
 interface NFTListCardProps {
   nft: NFTModel;
   selected: boolean;
@@ -53,6 +55,13 @@ export default function NFTListCard({
             resizeMode="cover"
             fillContainer={true}
           />
+
+          {/* ERC1155 Account Badge */}
+          {isERC1155(nft) && nft.amount && (
+            <View className="absolute top-2 left-2 bg-sf-1 rounded-full px-2 py-1">
+              <Text className="text-fg-1 text-xs font-medium font-inter">{nft.amount}</Text>
+            </View>
+          )}
         </TouchableOpacity>
         {/* Title */}
         <Text className="font-semibold text-fg-1 text-base" numberOfLines={1}>

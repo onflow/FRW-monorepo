@@ -1,13 +1,15 @@
-import ConfirmDialogBg from '@/assets/icons/send/ConfirmDialogBg';
 import type { WalletAccount } from '@onflow/frw-types';
+import React, { type ReactNode } from 'react';
+import { SafeAreaView, ScrollView, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import ConfirmDialogBg from '@/assets/icons/send/ConfirmDialogBg';
 import {
   AccountTransferDisplay,
   ConfirmationHeader,
   HoldToSendButton,
   TransactionDetailsCard,
 } from '@/screens/Send/Confirmation/components';
-import React, { ReactNode } from 'react';
-import { SafeAreaView, ScrollView, View } from 'react-native';
 
 interface Token {
   symbol?: string;
@@ -54,6 +56,7 @@ export const ConfirmationDrawerContent: React.FC<ConfirmationDrawerContentProps>
   onClose,
   onConfirm,
 }) => {
+  const insets = useSafeAreaInsets();
   const handleGoBack = () => {
     onGoBack?.();
   };
@@ -111,7 +114,9 @@ export const ConfirmationDrawerContent: React.FC<ConfirmationDrawerContentProps>
           </ScrollView>
 
           {/* Hold to Send Button - Outside content container */}
-          <HoldToSendButton onPress={handleConfirm} />
+          <View style={{ paddingBottom: insets.bottom + 8 }}>
+            <HoldToSendButton onPress={handleConfirm} />
+          </View>
         </View>
       </View>
     </SafeAreaView>

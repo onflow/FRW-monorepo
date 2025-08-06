@@ -4,6 +4,7 @@ import Instabug, { InvocationEvent } from 'instabug-reactnative';
 import { useEffect } from 'react';
 import { Platform, Text as RNText } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { version } from '@/../package.json';
 
@@ -70,13 +71,15 @@ const App = (props: AppProps) => {
   }, []); // Remove loadAccountsFromBridge dependency to prevent re-initialization
 
   return (
-    <ThemeProvider>
+    <SafeAreaProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <ConfirmationDrawerProvider>
-          <AppNavigator {...props} />
-        </ConfirmationDrawerProvider>
+        <ThemeProvider>
+          <ConfirmationDrawerProvider>
+            <AppNavigator {...props} />
+          </ConfirmationDrawerProvider>
+        </ThemeProvider>
       </GestureHandlerRootView>
-    </ThemeProvider>
+    </SafeAreaProvider>
   );
 };
 
