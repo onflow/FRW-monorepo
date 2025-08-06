@@ -44,6 +44,10 @@ pnpm install
 # Install iOS dependencies (required after native dep updates)
 bundle install
 bundle exec pod install
+
+# CodePush OTA Updates
+pnpm run codepush:android:staging
+pnpm run codepush:android:production
 ```
 
 ## Architecture
@@ -100,6 +104,14 @@ bundle exec pod install
 - **iOS CocoaPods** integration for native dependencies
 - **Android text fix** utility for preventing text cutoff issues
 - **Embedded mode** support for integration with existing iOS apps
+- **CodePush** for OTA updates (Android configured, iOS pending)
+
+### CodePush Setup
+
+- **Android**: Fully configured with staging/production deployment keys
+- **Deployment**: Use `pnpm run codepush:android:staging` and `pnpm run codepush:android:production`
+- **Configuration**: CodePush keys stored in `android/key.properties` file
+- **Integration**: App component wrapped with CodePush HOC for automatic updates
 
 ### Theme Development
 

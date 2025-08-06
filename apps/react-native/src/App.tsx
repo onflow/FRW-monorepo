@@ -3,6 +3,7 @@ import { useWalletStore } from '@onflow/frw-stores';
 import Instabug, { InvocationEvent } from 'instabug-reactnative';
 import { useEffect } from 'react';
 import { Platform, Text as RNText } from 'react-native';
+import CodePush from 'react-native-code-push';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -83,4 +84,20 @@ const App = (props: AppProps) => {
   );
 };
 
-export default App;
+// CodePush configuration - disabled in development mode
+let AppWithCodePush = App;
+
+if (!__DEV__) {
+  try {
+    const codePushOptions = {
+      checkFrequency: 0, // ON_APP_START
+      installMode: 1, // ON_NEXT_RESTART
+    };
+    AppWithCodePush = CodePush(codePushOptions)(App);
+  } catch (error) {
+    console.warn('CodePush initialization failed:', error);
+    AppWithCodePush = App;
+  }
+}
+
+export default AppWithCodePush;
