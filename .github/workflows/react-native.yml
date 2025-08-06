@@ -32,6 +32,9 @@ jobs:
       - name: Build packages first
         run: pnpm -r --filter='./packages/*' build
 
+      - name: Regenerate bridge models after package build
+        run: pnpm -F "frw-rn" codegen:bridge
+
       - name: Lint React Native app
         run: pnpm -F "frw-rn" lint
 
@@ -64,6 +67,9 @@ jobs:
 
       - name: Build packages first
         run: pnpm -r --filter='./packages/*' build
+
+      - name: Regenerate bridge models after package build
+        run: pnpm -F "frw-rn" codegen:bridge
 
       - name: Build React Native Android (Debug)
         run: |
@@ -98,6 +104,9 @@ jobs:
 
       - name: Build packages first
         run: pnpm -r --filter='./packages/*' build
+
+      - name: Regenerate bridge models after package build
+        run: pnpm -F "frw-rn" codegen:bridge
 
       - name: Install CocoaPods dependencies
         run: |
