@@ -172,42 +172,44 @@ export const CustomStyling: Story = {
   },
 };
 
-export const MultipleSwitches: Story = {
-  render: () => {
-    const [viewMode, setViewMode] = useState('grid');
-    const [filterMode, setFilterMode] = useState('all');
+const MultipleSwitchesComponent = () => {
+  const [viewMode, setViewMode] = useState('grid');
+  const [filterMode, setFilterMode] = useState('all');
 
-    return (
-      <Box sx={{ width: '100%' }}>
+  return (
+    <Box sx={{ width: '100%' }}>
+      <Tab
+        value={viewMode}
+        onChange={setViewMode}
+        leftLabel="Grid"
+        rightLabel="List"
+        leftValue="grid"
+        rightValue="list"
+      />
+
+      <Box sx={{ mt: 2 }}>
         <Tab
-          value={viewMode}
-          onChange={setViewMode}
-          leftLabel="Grid"
-          rightLabel="List"
-          leftValue="grid"
-          rightValue="list"
+          value={filterMode}
+          onChange={setFilterMode}
+          leftLabel="All"
+          rightLabel="Favorites"
+          leftValue="all"
+          rightValue="favorites"
+          sx={{ height: 36, fontSize: '12px' }}
         />
-
-        <Box sx={{ mt: 2 }}>
-          <Tab
-            value={filterMode}
-            onChange={setFilterMode}
-            leftLabel="All"
-            rightLabel="Favorites"
-            leftValue="all"
-            rightValue="favorites"
-            sx={{ height: 36, fontSize: '12px' }}
-          />
-        </Box>
-
-        <Box sx={{ mt: 2, p: 2, backgroundColor: '#282828', borderRadius: '8px' }}>
-          <Typography>
-            View: {viewMode}, Filter: {filterMode}
-          </Typography>
-        </Box>
       </Box>
-    );
-  },
+
+      <Box sx={{ mt: 2, p: 2, backgroundColor: '#282828', borderRadius: '8px' }}>
+        <Typography>
+          View: {viewMode}, Filter: {filterMode}
+        </Typography>
+      </Box>
+    </Box>
+  );
+};
+
+export const MultipleSwitches: Story = {
+  render: () => <MultipleSwitchesComponent />,
   parameters: {
     docs: {
       description: {

@@ -1,3 +1,8 @@
+import { useSendStore } from '@onflow/frw-stores';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { Alert, View } from 'react-native';
+
 import NativeFRWBridge from '@/bridge/NativeFRWBridge';
 import { useConfirmationDrawer } from '@/contexts/ConfirmationDrawerContext';
 import {
@@ -7,10 +12,6 @@ import {
   SendToScreen,
   SendTokensScreen,
 } from '@/screens';
-import { useSendStore } from '@onflow/frw-stores';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { Alert, View } from 'react-native';
 import { Text } from 'ui';
 
 export type SendWorkflowStep =

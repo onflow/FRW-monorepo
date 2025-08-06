@@ -1,8 +1,10 @@
-import NativeFRWBridge from '@/bridge/NativeFRWBridge';
 import { AddressBookService, RecentRecipientsService } from '@onflow/frw-services';
 import { useTokenStore, useWalletStore } from '@onflow/frw-stores';
-import { WalletAccount } from '@onflow/frw-types';
+import { type WalletAccount } from '@onflow/frw-types';
 import { useCallback, useEffect, useState } from 'react';
+
+import NativeFRWBridge from '@/bridge/NativeFRWBridge';
+
 import type { ExtendedWalletAccount } from '../types/recipientTypes';
 
 export const useDataLoader = (t: (key: string, options?: any) => string) => {

@@ -25,7 +25,6 @@ function injectExtService(service) {
     }
     window.fcl_extensions.push(service);
   } else {
-    // eslint-disable-next-line no-console
     console.error('Authn service is required');
   }
 }

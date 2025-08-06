@@ -113,7 +113,7 @@ export class TokenService {
     } else {
       try {
         this.bridge = getServiceContext().bridge;
-      } catch (error) {
+      } catch {
         logger.warn('[TokenService] ServiceContext not initialized, bridge will be null');
         this.bridge = undefined;
       }

@@ -22,7 +22,7 @@ export class AddressBookService {
       if (!bridgeToUse) {
         try {
           bridgeToUse = context.bridge;
-        } catch (error) {
+        } catch {
           throw new Error(
             'AddressBookService requires bridge parameter or initialized ServiceContext'
           );

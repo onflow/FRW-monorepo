@@ -1,7 +1,8 @@
 import React from 'react';
 import { View } from 'react-native';
-import { Text } from 'ui';
+
 import { useTheme } from '@/contexts/ThemeContext';
+import { Text } from 'ui';
 
 interface ConfirmationHeaderProps {
   onGoBack: () => void;

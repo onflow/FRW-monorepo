@@ -1,8 +1,9 @@
 import { RecentRecipientsService } from '@onflow/frw-services';
 import { useSendStore } from '@onflow/frw-stores';
-import { WalletAccount } from '@onflow/frw-types';
+import { type WalletAccount } from '@onflow/frw-types';
 import { useCallback, useState } from 'react';
 import { Clipboard } from 'react-native';
+
 import { showToast } from '../components/renderHelpers';
 import type { RecipientTabType } from '../SendToScreen';
 import type { ExtendedWalletAccount } from '../types/recipientTypes';

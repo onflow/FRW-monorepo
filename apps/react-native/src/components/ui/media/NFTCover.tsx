@@ -1,6 +1,7 @@
-import { IconView } from './IconView';
 import { useState } from 'react';
 import { View } from 'react-native';
+
+import { IconView } from './IconView';
 /**
  * Badge component - Supports SVG and image display with loading states and placeholder
  *

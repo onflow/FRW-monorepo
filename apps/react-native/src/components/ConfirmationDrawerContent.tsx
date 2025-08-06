@@ -1,13 +1,14 @@
-import ConfirmDialogBg from '@/assets/icons/send/ConfirmDialogBg';
 import type { WalletAccount } from '@onflow/frw-types';
+import React, { type ReactNode } from 'react';
+import { SafeAreaView, ScrollView, View } from 'react-native';
+
+import ConfirmDialogBg from '@/assets/icons/send/ConfirmDialogBg';
 import {
   AccountTransferDisplay,
   ConfirmationHeader,
   HoldToSendButton,
   TransactionDetailsCard,
 } from '@/screens/Send/Confirmation/components';
-import React, { ReactNode } from 'react';
-import { SafeAreaView, ScrollView, View } from 'react-native';
 
 interface Token {
   symbol?: string;

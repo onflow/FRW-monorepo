@@ -1,8 +1,8 @@
-import packageJson from '@/../package.json';
 import { Box, CardMedia, Typography } from '@mui/material';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
+import packageJson from '@/../package.json';
 import discord from '@/ui/assets/image/discord.png';
 import lilo from '@/ui/assets/image/lilo.png';
 import X from '@/ui/assets/svg/xLogo.svg';

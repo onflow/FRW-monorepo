@@ -1,12 +1,14 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, TouchableOpacity } from 'react-native';
-import { cn } from '@/lib/utils';
+
 import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
+import { TabMyAccountsIcon, TabRecentIcon, TabAddressBookIcon, Text } from 'ui';
+
 import type { RecipientTabType } from '../SendToScreen';
 
 // Import themed icon components
-import { TabMyAccountsIcon, TabRecentIcon, TabAddressBookIcon, Text } from 'ui';
 
 interface TabItem {
   id: RecipientTabType;

@@ -100,9 +100,7 @@ export type TrackingEvents = {
     hash_algo: HashAlgoString; // Hash algo Hash algorithm of the key
   };
 
-  account_creation_time: {
-    // Timing Events
-  };
+  account_creation_time: Record<string, never>;
   account_recovered: {
     address: string; // Address that was recovered
     mechanism: RecoveryMechanismType; // The way the account was recovered

@@ -1,4 +1,3 @@
-import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { WalletType } from '@onflow/frw-types';
 import { cadenceService } from '@onflow/frw-workflow';
 import type { NavigationProp, RouteProp } from '@react-navigation/native';
@@ -6,6 +5,8 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StatusBar, View } from 'react-native';
+
+import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { Button, Card, Text } from 'ui';
 const HomeScreen = () => {
   const { t } = useTranslation();

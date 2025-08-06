@@ -38,7 +38,7 @@ export class RecentRecipientsService {
       if (!bridgeToUse) {
         try {
           bridgeToUse = getServiceContext().bridge;
-        } catch (error) {
+        } catch {
           throw new Error(
             'RecentRecipientsService requires bridge parameter or initialized ServiceContext'
           );
@@ -49,7 +49,7 @@ export class RecentRecipientsService {
       if (!storageToUse) {
         try {
           storageToUse = getServiceContext().storage;
-        } catch (error) {
+        } catch {
           throw new Error(
             'RecentRecipientsService requires storage parameter or initialized ServiceContext'
           );
@@ -81,8 +81,8 @@ export class RecentRecipientsService {
         address: recent.address,
         isActive: false,
       }));
-    } catch (error) {
-      logger.error('Failed to get recent recipients', error);
+    } catch (_error) {
+      logger.error('Catch block error', _error);
       return [];
     }
   }
@@ -97,8 +97,8 @@ export class RecentRecipientsService {
 
       const recents: RecentRecipient[] = JSON.parse(data);
       return recents.sort((a, b) => b.lastUsed - a.lastUsed); // Most recent first
-    } catch (error) {
-      logger.error('Failed to get local recent recipients', error);
+    } catch (_error) {
+      logger.error('Catch block error', _error);
       return [];
     }
   }
@@ -119,8 +119,8 @@ export class RecentRecipientsService {
         lastUsed: Date.now(), // Server doesn't provide timestamp, use current time
         source: 'server' as const,
       }));
-    } catch (error) {
-      logger.error('Failed to get server recent recipients', error);
+    } catch (_error) {
+      logger.error('Catch block error', _error);
       return [];
     }
   }
@@ -158,8 +158,8 @@ export class RecentRecipientsService {
       this.storage.set(RECENT_RECIPIENTS_KEY, JSON.stringify(updated));
 
       logger.debug('Added recent recipient', { name: recipient.name, address: recipient.address });
-    } catch (error) {
-      logger.error('Failed to add recent recipient', error);
+    } catch (_error) {
+      logger.error('Catch block error', _error);
     }
   }
 
@@ -170,8 +170,8 @@ export class RecentRecipientsService {
     try {
       this.storage.delete(RECENT_RECIPIENTS_KEY);
       logger.debug('Cleared local recent recipients');
-    } catch (error) {
-      logger.error('Failed to clear recent recipients', error);
+    } catch (_error) {
+      logger.error('Catch block error', _error);
     }
   }
 
