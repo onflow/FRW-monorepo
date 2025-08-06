@@ -38,7 +38,7 @@ export class RecentRecipientsService {
       if (!bridgeToUse) {
         try {
           bridgeToUse = getServiceContext().bridge;
-        } catch (_error) {
+        } catch {
           throw new Error(
             'RecentRecipientsService requires bridge parameter or initialized ServiceContext'
           );
@@ -49,7 +49,7 @@ export class RecentRecipientsService {
       if (!storageToUse) {
         try {
           storageToUse = getServiceContext().storage;
-        } catch (_error) {
+        } catch {
           throw new Error(
             'RecentRecipientsService requires storage parameter or initialized ServiceContext'
           );
@@ -82,7 +82,7 @@ export class RecentRecipientsService {
         isActive: false,
       }));
     } catch (_error) {
-      logger.error('Failed to get recent recipients', error);
+      logger.error('Catch block error', _error);
       return [];
     }
   }
@@ -98,7 +98,7 @@ export class RecentRecipientsService {
       const recents: RecentRecipient[] = JSON.parse(data);
       return recents.sort((a, b) => b.lastUsed - a.lastUsed); // Most recent first
     } catch (_error) {
-      logger.error('Failed to get local recent recipients', error);
+      logger.error('Catch block error', _error);
       return [];
     }
   }
@@ -120,7 +120,7 @@ export class RecentRecipientsService {
         source: 'server' as const,
       }));
     } catch (_error) {
-      logger.error('Failed to get server recent recipients', error);
+      logger.error('Catch block error', _error);
       return [];
     }
   }
@@ -159,7 +159,7 @@ export class RecentRecipientsService {
 
       logger.debug('Added recent recipient', { name: recipient.name, address: recipient.address });
     } catch (_error) {
-      logger.error('Failed to add recent recipient', error);
+      logger.error('Catch block error', _error);
     }
   }
 
@@ -171,7 +171,7 @@ export class RecentRecipientsService {
       this.storage.delete(RECENT_RECIPIENTS_KEY);
       logger.debug('Cleared local recent recipients');
     } catch (_error) {
-      logger.error('Failed to clear recent recipients', error);
+      logger.error('Catch block error', _error);
     }
   }
 

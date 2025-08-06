@@ -127,13 +127,13 @@ class EvmNFTProvider implements NFTProvider {
         address,
         duration: `${duration}ms`,
         error:
-          error instanceof Error
+          _error instanceof Error
             ? {
-                name: error.name,
-                message: error.message,
-                stack: error.stack,
+                name: _error.name,
+                message: _error.message,
+                stack: _error.stack,
               }
-            : error,
+            : _error,
         timestamp: new Date().toISOString(),
         provider: 'EvmNFTProvider',
         method: 'getCollections',
@@ -224,13 +224,13 @@ class EvmNFTProvider implements NFTProvider {
         limit,
         duration: `${duration}ms`,
         error:
-          error instanceof Error
+          _error instanceof Error
             ? {
-                name: error.name,
-                message: error.message,
-                stack: error.stack,
+                name: _error.name,
+                message: _error.message,
+                stack: _error.stack,
               }
-            : error,
+            : _error,
         timestamp: new Date().toISOString(),
         provider: 'EvmNFTProvider',
         method: 'getNFTs',
@@ -254,7 +254,7 @@ export class NFTService {
     } else {
       try {
         this.bridge = getServiceContext().bridge;
-      } catch (_error) {
+      } catch {
         logger.warn('[NFTService] ServiceContext not initialized, bridge will be null');
         this.bridge = undefined;
       }
@@ -310,13 +310,13 @@ export class NFTService {
         providerType,
         duration: `${duration}ms`,
         error:
-          error instanceof Error
+          _error instanceof Error
             ? {
-                name: error.name,
-                message: error.message,
-                stack: error.stack,
+                name: _error.name,
+                message: _error.message,
+                stack: _error.stack,
               }
-            : error,
+            : _error,
         timestamp: new Date().toISOString(),
         method: 'getNFTCollections',
       });
@@ -381,13 +381,13 @@ export class NFTService {
         limit,
         duration: `${duration}ms`,
         error:
-          error instanceof Error
+          _error instanceof Error
             ? {
-                name: error.name,
-                message: error.message,
-                stack: error.stack,
+                name: _error.name,
+                message: _error.message,
+                stack: _error.stack,
               }
-            : error,
+            : _error,
         timestamp: new Date().toISOString(),
         method: 'getNFTs',
       });
