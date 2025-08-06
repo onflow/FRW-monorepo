@@ -5,7 +5,7 @@ import * as ethUtil from 'ethereumjs-util';
 import { signInAnonymously } from 'firebase/auth/web-extension';
 import { TransactionError } from 'web3';
 // Import the cadence package that contains getFlowBalanceForAnyAccounts
-import { CadenceService } from 'packages/cadence';
+import { CadenceService } from '@onflow/frw-cadence';
 
 import {
   triggerRefresh,
