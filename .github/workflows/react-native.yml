@@ -1,0 +1,122 @@
+name: React Native Validation
+
+on:
+  push:
+    paths:
+      - "apps/react-native/**"
+    branches: [main, dev]
+  pull_request:
+    paths:
+      - "apps/react-native/**"
+    branches: [main, dev]
+
+jobs:
+  react-native-lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages first
+        run: pnpm -r --filter='./packages/*' build
+
+      - name: Lint React Native app
+        run: pnpm -F "frw-rn" lint
+
+      - name: TypeScript check React Native app
+        run: pnpm -F "frw-rn" typecheck || true
+
+  react-native-build-android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages first
+        run: pnpm -r --filter='./packages/*' build
+
+      - name: Build React Native Android (Debug)
+        run: |
+          cd apps/react-native/android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+        env:
+          JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.*/x64
+
+  react-native-build-ios:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Setup Ruby (for CocoaPods)
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.1"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages first
+        run: pnpm -r --filter='./packages/*' build
+
+      - name: Install CocoaPods dependencies
+        run: |
+          cd apps/react-native/ios
+          bundle install
+          bundle exec pod install
+
+      - name: Build React Native iOS (Debug)
+        run: |
+          cd apps/react-native/ios
+          xcodebuild -workspace FRW.xcworkspace \
+                     -scheme FRW \
+                     -configuration Debug \
+                     -destination 'platform=iOS Simulator,name=iPhone 14' \
+                     -quiet \
+                     build

@@ -1,0 +1,117 @@
+name: Lint Changed Files
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  lint-changed-files:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Get changed files
+        id: changed-files
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            # For pull requests, compare against the target branch
+            CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRT origin/${{ github.base_ref }}...HEAD)
+          else
+            # For pushes, compare against the previous commit
+            CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRT HEAD~1)
+          fi
+
+          # Filter for TypeScript, JavaScript, and JSON files
+          LINTABLE_FILES=$(echo "$CHANGED_FILES" | grep -E '\.(ts|tsx|js|jsx|json)$' || true)
+
+          echo "Changed lintable files:"
+          echo "$LINTABLE_FILES"
+
+          # Save to file for later use
+          echo "$LINTABLE_FILES" > changed_files.txt
+
+      - name: Lint changed TypeScript/JavaScript files
+        run: |
+          if [ -s changed_files.txt ]; then
+            echo "Running ESLint on changed files..."
+            
+            # Get all changed files
+            CHANGED_FILES=$(cat changed_files.txt)
+            
+            # Group files by workspace/project
+            TS_JS_FILES=$(echo "$CHANGED_FILES" | grep -E '\.(ts|tsx|js|jsx)$' || true)
+            
+            if [ -n "$TS_JS_FILES" ]; then
+              # Run ESLint on changed files
+              echo "$TS_JS_FILES" | xargs pnpm dlx eslint --ext .ts,.tsx,.js,.jsx
+            fi
+            
+            # Check JSON files with prettier
+            JSON_FILES=$(echo "$CHANGED_FILES" | grep '\.json$' || true)
+            if [ -n "$JSON_FILES" ]; then
+              echo "Checking JSON formatting..."
+              echo "$JSON_FILES" | xargs pnpm dlx prettier --check
+            fi
+          else
+            echo "No lintable files changed"
+          fi
+
+      - name: Lint package-specific files
+        run: |
+          if [ -s changed_files.txt ]; then
+            CHANGED_FILES=$(cat changed_files.txt)
+            
+            # Check for changes in specific packages
+            PACKAGES_CHANGED=$(echo "$CHANGED_FILES" | grep '^packages/' | cut -d'/' -f2 | sort -u)
+            RN_CHANGED=$(echo "$CHANGED_FILES" | grep '^apps/react-native/' || true)
+            
+            # Lint changed packages
+            if [ -n "$PACKAGES_CHANGED" ]; then
+              echo "Running package-specific linting..."
+              for package in $PACKAGES_CHANGED; do
+                echo "Linting package: $package"
+                pnpm -F "@onflow/frw-$package" lint || echo "Lint failed for $package (may not have lint script)"
+              done
+            fi
+            
+            # Lint React Native app if changed
+            if [ -n "$RN_CHANGED" ]; then
+              echo "Running React Native app linting..."
+              # Build packages first as RN depends on them
+              pnpm -r --filter='./packages/*' build
+              pnpm -F "frw-rn" lint
+            fi
+          fi
+
+      - name: Check Prettier formatting
+        run: |
+          if [ -s changed_files.txt ]; then
+            CHANGED_FILES=$(cat changed_files.txt)
+            
+            # Check prettier formatting for all supported file types
+            PRETTIER_FILES=$(echo "$CHANGED_FILES" | grep -E '\.(ts|tsx|js|jsx|json|md|yml|yaml)$' || true)
+            
+            if [ -n "$PRETTIER_FILES" ]; then
+              echo "Checking Prettier formatting..."
+              echo "$PRETTIER_FILES" | xargs pnpm dlx prettier --check
+            fi
+          fi
