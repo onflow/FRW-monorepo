@@ -1,6 +1,6 @@
 import * as fcl from '@onflow/fcl';
 import { addresses, CadenceService } from '@onflow/frw-cadence';
-import { getLogger } from '@onflow/frw-context';
+import { logger } from '@onflow/frw-context';
 import { send as httpSend } from '@onflow/transport-http';
 
 export * from './send';
@@ -43,7 +43,6 @@ export function createCadenceService(network: 'mainnet' | 'testnet', bridge: any
   // Basic response interceptor for logging
   service.useResponseInterceptor(async (response) => {
     try {
-      const logger = getLogger();
       logger.debug('cadenceService response', response);
     } catch {
       // Fallback if logger not available (context not initialized)

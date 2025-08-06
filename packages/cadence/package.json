@@ -44,7 +44,6 @@
     "buffer": "^6.0.3"
   },
   "devDependencies": {
-    "@types/node": "^22.10.2",
     "@vitest/coverage-v8": "3.2.4",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
