@@ -1,4 +1,4 @@
-import { addressType, WalletType } from '@onflow/frw-types';
+import { addressType, type WalletType } from '@onflow/frw-types';
 
 /**
  * Validates if a string is a valid Flow address
@@ -29,11 +29,7 @@ export function getAddressType(address: string): WalletType {
 /**
  * Truncates an address for display purposes
  */
-export function truncateAddress(
-  address: string,
-  startChars = 6,
-  endChars = 4
-): string {
+export function truncateAddress(address: string, startChars = 6, endChars = 4): string {
   if (address.length <= startChars + endChars) {
     return address;
   }

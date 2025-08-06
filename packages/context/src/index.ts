@@ -1,6 +1,17 @@
 // Core interfaces
-export type { BridgeSpec } from './interfaces/BridgeSpec';
+export type { PlatformSpec } from './interfaces/PlatformSpec';
 export type { Storage } from './interfaces/Storage';
 
 // Service Context
-export { ServiceContext, getServiceContext, getCadenceService, getBridge, getStorage } from './ServiceContext';
+export {
+  bridge,
+  cadence,
+  context,
+  getBridge,
+  getCadenceService,
+  getServiceContext,
+  getStorage,
+  logger,
+  ServiceContext,
+  storage,
+} from './ServiceContext';

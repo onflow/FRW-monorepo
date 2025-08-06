@@ -26,7 +26,6 @@
     "test:unit:coverage": "vitest --coverage",
     "pub": "pnpx tsx build/release.ts",
     "preinstall": "npx only-allow pnpm",
-    "pre-commit": "pnpm lint-staged",
     "analyze:imports": "pnpx tsx build/analyze-imports.ts",
     "analyze:dependencies": "pnpx tsx build/analyze-dependencies.ts",
     "analyze:fetch": "./build/fetch-project-data.sh",
@@ -38,10 +37,6 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "build:zip": "pnpm build && node scripts/build-zip.js"
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx,mjs}": "eslint --cache",
-    "*.{json,js,ts,jsx,tsx,html,md,mdx,mjs}": "prettier --write"
   },
   "dependencies": {
     "@coinbase/cbpay-js": "^1.10.0",

@@ -19,13 +19,8 @@
     "test:run": "vitest --run",
     "test:coverage": "vitest --coverage",
     "prepublishOnly": "pnpm build",
-    "pre-commit": "pnpm lint-staged",
     "lint": "eslint . --cache",
     "lint:fix": "eslint . --cache --fix"
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx,mjs}": "eslint --cache",
-    "*.{json,js,ts,jsx,tsx,html,md,mdx,mjs}": "prettier --write"
   },
   "exports": {
     ".": {
@@ -41,10 +36,12 @@
   "dependencies": {
     "@babel/runtime": "^7.28.2",
     "@onflow/fcl": "^1.13.1",
+    "@onflow/frw-utils": "workspace:*",
+    "@onflow/transport-http": "^1.13.0",
     "buffer": "^6.0.3"
   },
   "devDependencies": {
-    "@types/node": "^22.10.2",
+    "@types/node": "^22.11.0",
     "@vitest/coverage-v8": "3.2.4",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",

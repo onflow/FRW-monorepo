@@ -1,4 +1,4 @@
-import { NFTModel } from '@onflow/frw-types';
+import { type NFTModel } from '@onflow/frw-types';
 
 /**
  * Gets the cover image URL from an NFT
@@ -25,11 +25,7 @@ export function getNFTId(nft: NFTModel): string {
  */
 export function getNFTSearchText(nft: NFTModel): string {
   return (
-    (nft.name ?? '') +
-    ' ' +
-    (nft.description ?? '') +
-    ' ' +
-    (nft.postMedia?.description ?? '')
+    (nft.name ?? '') + ' ' + (nft.description ?? '') + ' ' + (nft.postMedia?.description ?? '')
   );
 }
 

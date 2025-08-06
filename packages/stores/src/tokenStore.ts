@@ -1,12 +1,13 @@
+import { getCadenceService } from '@onflow/frw-context';
+import { tokenService, nftService } from '@onflow/frw-services';
 import {
   addressType,
   formatCurrencyStringForDisplay,
   type CollectionModel,
   type TokenInfo,
 } from '@onflow/frw-types';
+import { logger } from '@onflow/frw-utils';
 import { create } from 'zustand';
-import { getCadenceService } from '@onflow/frw-context';
-import { tokenService, nftService } from '@onflow/frw-services';
 
 // Balance data interface
 interface BalanceData {
@@ -50,11 +51,7 @@ interface TokenStoreState {
 
 interface TokenStoreActions {
   // Core data fetching
-  fetchTokens: (
-    address: string,
-    network?: string,
-    forceRefresh?: boolean
-  ) => Promise<void>;
+  fetchTokens: (address: string, network?: string, forceRefresh?: boolean) => Promise<void>;
   fetchFreshBalance: (
     address: string,
     accountType?: string,
@@ -67,9 +64,7 @@ interface TokenStoreActions {
   ) => Promise<void>;
 
   // Batch balance fetching
-  fetchBatchFlowBalances: (
-    addressList: string[]
-  ) => Promise<Array<[string, string]>>;
+  fetchBatchFlowBalances: (addressList: string[]) => Promise<Array<[string, string]>>;
 
   // Public API for wallet integration
   getAccountBalance: (
@@ -84,14 +79,8 @@ interface TokenStoreActions {
   ) => Promise<BalanceData>;
 
   // Address-specific cache access for wallet integration
-  getTokensForAddress: (
-    address: string,
-    network?: string
-  ) => TokenInfo[] | null;
-  getNFTCollectionsForAddress: (
-    address: string,
-    network?: string
-  ) => CollectionModel[] | null;
+  getTokensForAddress: (address: string, network?: string) => TokenInfo[] | null;
+  getNFTCollectionsForAddress: (address: string, network?: string) => CollectionModel[] | null;
   getCachedBalanceForAddress: (address: string) => BalanceData | null;
   isCacheValidForAddress: (address: string, network?: string) => boolean;
 
@@ -105,8 +94,7 @@ interface TokenStoreActions {
 type TokenStore = TokenStoreState & TokenStoreActions;
 
 // Generate cache key
-const getCacheKey = (address: string, network: string = 'mainnet') =>
-  `${address}-${network}`;
+const getCacheKey = (address: string, network: string = 'mainnet') => `${address}-${network}`;
 
 export const useTokenStore = create<TokenStore>((set, get) => ({
   // Initial state - unified cache structure
@@ -121,11 +109,7 @@ export const useTokenStore = create<TokenStore>((set, get) => ({
   },
 
   // Fetch fresh balance from API and update memory
-  fetchFreshBalance: async (
-    address: string,
-    accountType?: string,
-    network: string = 'mainnet'
-  ) => {
+  fetchFreshBalance: async (address: string, accountType?: string, network: string = 'mainnet') => {
     if (!address) {
       const defaultBalance = {
         balance: '0 FLOW',
@@ -143,9 +127,7 @@ export const useTokenStore = create<TokenStore>((set, get) => ({
       // Special handling for EVM accounts
       if (accountType === 'evm') {
         const cadenceService = getCadenceService();
-        const coaBalance = await cadenceService.getFlowBalanceForAnyAccounts([
-          address,
-        ]);
+        const coaBalance = await cadenceService.getFlowBalanceForAnyAccounts([address]);
         const balanceNumber = parseFloat(coaBalance[address] || '0');
         const formattedBalance = formatCurrencyStringForDisplay({
           value: balanceNumber,
@@ -185,9 +167,7 @@ export const useTokenStore = create<TokenStore>((set, get) => ({
 
         // Extract FLOW balance
         const flowToken = cached.tokens?.find(
-          (token) =>
-            token.symbol === 'FLOW' ||
-            token.contractName?.toLowerCase().includes('flow')
+          (token) => token.symbol === 'FLOW' || token.contractName?.toLowerCase().includes('flow')
         );
 
         let balance = '0 FLOW';
@@ -254,7 +234,7 @@ export const useTokenStore = create<TokenStore>((set, get) => ({
         lastUpdated: now,
       };
     } catch (error) {
-      // console.error('[TokenStore] Failed to fetch fresh balance:', error);
+      // logger.error('[TokenStore] Failed to fetch fresh balance:', error);
       // Return stale data if available, otherwise default
       const cacheKey = getCacheKey(address, network);
       const stale = get().addressCache[cacheKey];
@@ -299,8 +279,7 @@ export const useTokenStore = create<TokenStore>((set, get) => ({
     try {
       // Call cadence service to get balances for all addresses
       const cadenceService = getCadenceService();
-      const balanceResults =
-        await cadenceService.getFlowBalanceForAnyAccounts(addressList);
+      const balanceResults = await cadenceService.getFlowBalanceForAnyAccounts(addressList);
 
       // Convert to array of [address, displayBalance] tuples
       const resultArray: Array<[string, string]> = [];
@@ -318,20 +297,14 @@ export const useTokenStore = create<TokenStore>((set, get) => ({
 
       return resultArray;
     } catch (error) {
-      console.error('[TokenStore] Failed to fetch batch Flow balances:', error);
+      logger.error('[TokenStore] Failed to fetch batch Flow balances:', error);
       // Return default values for all addresses on error
-      return addressList.map(
-        (address) => [address, '0 FLOW'] as [string, string]
-      );
+      return addressList.map((address) => [address, '0 FLOW'] as [string, string]);
     }
   },
 
   // Get balance with stale-while-revalidate pattern
-  getBalance: async (
-    address: string,
-    accountType?: string,
-    options = { fresh: false }
-  ) => {
+  getBalance: async (address: string, accountType?: string, options = { fresh: false }) => {
     const network = 'mainnet';
 
     if (options.fresh) {
@@ -344,10 +317,7 @@ export const useTokenStore = create<TokenStore>((set, get) => ({
 
     if (cached && !get().isStale(cached.lastUpdated, CACHE_STRATEGIES.ttl)) {
       // Trigger background refresh for next time
-      setTimeout(
-        () => get().refreshBalanceInBackground(address, accountType, network),
-        0
-      );
+      setTimeout(() => get().refreshBalanceInBackground(address, accountType, network), 0);
       return {
         balance: cached.balance,
         displayBalance: cached.displayBalance,
@@ -362,11 +332,7 @@ export const useTokenStore = create<TokenStore>((set, get) => ({
   },
 
   // Public API - get account balance (for wallet integration)
-  getAccountBalance: async (
-    address: string,
-    accountType?: string,
-    network: string = 'mainnet'
-  ) => {
+  getAccountBalance: async (address: string, accountType?: string, network: string = 'mainnet') => {
     return await get().getBalance(address, accountType, { fresh: false });
   },
 
@@ -379,16 +345,13 @@ export const useTokenStore = create<TokenStore>((set, get) => ({
   },
 
   // Get cached NFT collections for specific address (for wallet integration)
-  getNFTCollectionsForAddress: (
-    address: string,
-    network: string = 'mainnet'
-  ) => {
+  getNFTCollectionsForAddress: (address: string, network: string = 'mainnet') => {
     if (!address) return null;
     const cacheKey = getCacheKey(address, network);
     const cached = get().addressCache[cacheKey];
     const collections = cached?.nftCollections || null;
 
-    console.log('[TokenStore] Retrieving NFT collections from cache', {
+    logger.debug('[TokenStore] Retrieving NFT collections from cache', {
       address,
       network,
       cacheKey,
@@ -411,10 +374,7 @@ export const useTokenStore = create<TokenStore>((set, get) => ({
   },
 
   // Get cached balance for specific address (for wallet integration)
-  getCachedBalanceForAddress: (
-    address: string,
-    network: string = 'mainnet'
-  ) => {
+  getCachedBalanceForAddress: (address: string, network: string = 'mainnet') => {
     if (!address) return null;
     const cacheKey = getCacheKey(address, network);
     const cached = get().addressCache[cacheKey];
@@ -444,15 +404,14 @@ export const useTokenStore = create<TokenStore>((set, get) => ({
     const cacheKey = getCacheKey(address, _network);
 
     set((state) => {
-      const { [cacheKey]: _removedCache, ...restAddressCache } =
-        state.addressCache;
+      const { [cacheKey]: _removedCache, ...restAddressCache } = state.addressCache;
       return {
         ...state,
         addressCache: restAddressCache,
       };
     });
 
-    console.log(`[TokenStore] Cleared unified cache for address: ${address}`);
+    logger.debug(`[TokenStore] Cleared unified cache for address: ${address}`);
   },
 
   // Fetch tokens with unified caching
@@ -510,7 +469,7 @@ export const useTokenStore = create<TokenStore>((set, get) => ({
         nftSvc.getNFTCollections(address),
       ]);
 
-      console.log('[TokenStore] Storing NFT collections in cache', {
+      logger.debug('[TokenStore] Storing NFT collections in cache', {
         address,
         network,
         cacheKey,
@@ -540,8 +499,7 @@ export const useTokenStore = create<TokenStore>((set, get) => ({
             error: null,
             // Keep existing balance data
             balance: state.addressCache[cacheKey]?.balance || '0 FLOW',
-            displayBalance:
-              state.addressCache[cacheKey]?.displayBalance || '0 FLOW',
+            displayBalance: state.addressCache[cacheKey]?.displayBalance || '0 FLOW',
             nftCount: nftCollections.reduce(
               (total, collection) => total + (collection.count || 0),
               0
@@ -550,10 +508,7 @@ export const useTokenStore = create<TokenStore>((set, get) => ({
               (total, collection) => total + (collection.count || 0),
               0
             )} NFT${
-              nftCollections.reduce(
-                (total, collection) => total + (collection.count || 0),
-                0
-              ) !== 1
+              nftCollections.reduce((total, collection) => total + (collection.count || 0), 0) !== 1
                 ? 's'
                 : ''
             }`,
@@ -562,7 +517,7 @@ export const useTokenStore = create<TokenStore>((set, get) => ({
         },
       }));
     } catch (error: any) {
-      console.error('[TokenStore] Error fetching tokens:', error);
+      logger.error('[TokenStore] Error fetching tokens:', error);
 
       set((state) => ({
         ...state,
@@ -697,11 +652,7 @@ export const tokenSelectors = {
 // Helper functions for easier usage
 export const tokenHelpers = {
   // Initialize account data with stale-while-revalidate
-  initializeAccount: async (
-    address: string,
-    accountType?: string,
-    network: string = 'mainnet'
-  ) => {
+  initializeAccount: async (address: string, accountType?: string, network: string = 'mainnet') => {
     const store = useTokenStore.getState();
 
     // Get stale data immediately for fast UI
@@ -719,21 +670,13 @@ export const tokenHelpers = {
   },
 
   // Refresh account data (force fresh)
-  refreshAccount: async (
-    address: string,
-    accountType?: string,
-    network: string = 'mainnet'
-  ) => {
+  refreshAccount: async (address: string, accountType?: string, network: string = 'mainnet') => {
     const store = useTokenStore.getState();
     return await store.forceRefresh(address, network);
   },
 
   // Get balance with explicit freshness control
-  getBalanceWithOptions: async (
-    address: string,
-    accountType?: string,
-    fresh: boolean = false
-  ) => {
+  getBalanceWithOptions: async (address: string, accountType?: string, fresh: boolean = false) => {
     const store = useTokenStore.getState();
     return await store.getBalance(address, accountType, { fresh });
   },

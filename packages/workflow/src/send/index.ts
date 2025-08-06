@@ -14,7 +14,9 @@ export { createTransferContext, TransferContext } from './context';
 export * from './nftStrategies';
 export * from './tokenStrategies';
 
-// Main entry point
+// Main entry point - use global logger from utils
+import { logger } from '@onflow/frw-utils';
+
 import { createTransferContext } from './context';
 import type { SendPayload } from './types';
 
@@ -25,11 +27,8 @@ import type { SendPayload } from './types';
  * @param cadenceService - CadenceService instance for executing transactions
  * @returns Transaction result
  */
-export const SendTransaction = async (
-  payload: SendPayload,
-  cadenceService: any
-) => {
-  console.log('AAAAAAA ==> SendTransaction', payload);
+export const SendTransaction = async (payload: SendPayload, cadenceService: any) => {
+  logger.debug('SendTransaction payload', payload);
   const context = createTransferContext(cadenceService);
   return await context.execute(payload);
 };

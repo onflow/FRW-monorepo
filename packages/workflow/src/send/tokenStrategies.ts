@@ -1,5 +1,5 @@
-import { parseUnits } from 'ethers';
 import type { CadenceService } from '@onflow/frw-cadence';
+import { parseUnits } from 'ethers';
 
 import type { SendPayload, TransferStrategy } from './types';
 import { encodeEvmContractCallData } from './utils';
@@ -31,7 +31,7 @@ export class ChildToChildTokenStrategy implements TransferStrategy {
  */
 export class ChildToOthersTokenStrategy implements TransferStrategy {
   constructor(private cadenceService: CadenceService) {}
-  
+
   canHandle(payload: SendPayload): boolean {
     const { childAddrs, sender, assetType, type } = payload;
     return (
@@ -75,7 +75,7 @@ export class ChildToOthersTokenStrategy implements TransferStrategy {
  */
 export class ParentToChildTokenStrategy implements TransferStrategy {
   constructor(private cadenceService: CadenceService) {}
-  
+
   canHandle(payload: SendPayload): boolean {
     const { childAddrs, receiver, assetType, sender, coaAddr, type } = payload;
     return (
@@ -90,7 +90,11 @@ export class ParentToChildTokenStrategy implements TransferStrategy {
   async execute(payload: SendPayload): Promise<any> {
     const { flowIdentifier, receiver, amount, decimal } = payload;
     const valueBig = parseUnits(amount, decimal);
-    return await this.cadenceService.bridgeChildFtFromEvm(flowIdentifier, receiver, valueBig.toString());
+    return await this.cadenceService.bridgeChildFtFromEvm(
+      flowIdentifier,
+      receiver,
+      valueBig.toString()
+    );
   }
 }
 
@@ -99,7 +103,7 @@ export class ParentToChildTokenStrategy implements TransferStrategy {
  */
 export class FlowToFlowTokenStrategy implements TransferStrategy {
   constructor(private cadenceService: CadenceService) {}
-  
+
   canHandle(payload: SendPayload): boolean {
     const { assetType, receiver, type } = payload;
     return type === 'token' && assetType === 'flow' && validateFlowAddress(receiver);
@@ -116,7 +120,7 @@ export class FlowToFlowTokenStrategy implements TransferStrategy {
  */
 export class FlowToEvmTokenStrategy implements TransferStrategy {
   constructor(private cadenceService: CadenceService) {}
-  
+
   canHandle(payload: SendPayload): boolean {
     const { assetType, flowIdentifier, receiver, type } = payload;
     return (
@@ -138,7 +142,7 @@ export class FlowToEvmTokenStrategy implements TransferStrategy {
  */
 export class FlowTokenBridgeToEvmStrategy implements TransferStrategy {
   constructor(private cadenceService: CadenceService) {}
-  
+
   canHandle(payload: SendPayload): boolean {
     const { assetType, receiver, type } = payload;
     return type === 'token' && assetType === 'flow' && validateEvmAddress(receiver);
@@ -155,7 +159,7 @@ export class FlowTokenBridgeToEvmStrategy implements TransferStrategy {
  */
 export class EvmToFlowCoaWithdrawalStrategy implements TransferStrategy {
   constructor(private cadenceService: CadenceService) {}
-  
+
   canHandle(payload: SendPayload): boolean {
     const { assetType, flowIdentifier, receiver, type } = payload;
     return (
@@ -177,7 +181,7 @@ export class EvmToFlowCoaWithdrawalStrategy implements TransferStrategy {
  */
 export class EvmToFlowTokenBridgeStrategy implements TransferStrategy {
   constructor(private cadenceService: CadenceService) {}
-  
+
   canHandle(payload: SendPayload): boolean {
     const { assetType, receiver, type } = payload;
     return type === 'token' && assetType === 'evm' && validateFlowAddress(receiver);
@@ -194,7 +198,7 @@ export class EvmToFlowTokenBridgeStrategy implements TransferStrategy {
  */
 export class EvmToEvmTokenStrategy implements TransferStrategy {
   constructor(private cadenceService: CadenceService) {}
-  
+
   canHandle(payload: SendPayload): boolean {
     const { assetType, receiver, type } = payload;
     return type === 'token' && assetType === 'evm' && validateEvmAddress(receiver);

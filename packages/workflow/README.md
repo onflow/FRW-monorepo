@@ -4,7 +4,10 @@ Transaction workflow and strategy patterns for Flow Reference Wallet.
 
 ## Overview
 
-This package provides a comprehensive transaction workflow system using the Strategy pattern. It handles various transaction types across Flow and EVM networks, including token transfers, NFT transfers, and cross-network operations.
+This package provides a comprehensive transaction workflow system using the
+Strategy pattern. It handles various transaction types across Flow and EVM
+networks, including token transfers, NFT transfers, and cross-network
+operations.
 
 ## Features
 
@@ -12,7 +15,8 @@ This package provides a comprehensive transaction workflow system using the Stra
 - **Multi-Network Support**: Handles Flow mainnet/testnet and EVM transactions
 - **Cross-Network Transfers**: Supports transfers between Flow and EVM addresses
 - **Account Management**: Child account and multi-account support
-- **Transaction Validation**: Comprehensive payload validation and error handling
+- **Transaction Validation**: Comprehensive payload validation and error
+  handling
 - **Context Management**: Maintains transaction context throughout the workflow
 
 ## Architecture
@@ -109,7 +113,8 @@ console.log('Encoded call data:', callData);
 
 ## Strategy Selection
 
-The workflow automatically selects the appropriate strategy based on payload analysis:
+The workflow automatically selects the appropriate strategy based on payload
+analysis:
 
 ```typescript
 // Internal strategy selection logic
@@ -194,7 +199,11 @@ const account = getAccountByAddress(accounts, address);
 ### Cryptographic Operations
 
 ```typescript
-import { generateKeyPair, signTransaction, hashTransaction } from '@onflow/frw-workflow';
+import {
+  generateKeyPair,
+  signTransaction,
+  hashTransaction,
+} from '@onflow/frw-workflow';
 
 // Generate new key pair
 const { publicKey, privateKey } = generateKeyPair();
@@ -268,7 +277,7 @@ it('should transfer FLOW tokens between accounts', async () => {
 ### Network Configuration
 
 ```typescript
-import { configureFCL } from '@onflow/frw-workflow';
+import { configureFCL } from '@onflow/frw-cadence';
 
 // Configure for mainnet
 configureFCL('mainnet');
@@ -280,9 +289,12 @@ configureFCL('testnet');
 ### Service Integration
 
 ```typescript
-import { cadenceService } from '@onflow/frw-workflow';
+import { CadenceService, createCadenceService } from '@onflow/frw-cadence';
 
-// The workflow integrates with the Cadence service for Flow operations
+// Create Cadence service instance (network configuration read from bridge)
+const cadenceService = createCadenceService(bridge);
+
+// Use for Flow operations
 const balance = await cadenceService.getFlowBalanceForAnyAccounts([address]);
 ```
 

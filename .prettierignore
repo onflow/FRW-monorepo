@@ -1,0 +1,76 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+lib/
+.next/
+coverage/
+
+# React Native
+apps/react-native/android/
+apps/react-native/ios/
+apps/react-native/.expo/
+apps/react-native/gems/
+apps/react-native/cache/
+apps/react-native/extensions/
+apps/react-native/specifications/
+
+# Generated files
+packages/api/src/codgen/
+packages/cadence/src/scripts/generated/
+**/generated/
+**/*.generated.ts
+**/*.generated.js
+**/*.gen.ts
+**/*.gen.js
+
+# Package manager
+.pnpm-store/
+.yarn/
+.npm/
+
+# Cache
+.cache/
+.turbo/
+tmp/
+temp/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+logs/
+
+# Lock files (don't format these)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Binary files
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+*.woff
+*.woff2
+*.ttf
+*.eot
+
+# Podfile.lock and other generated lockfiles
+Podfile.lock
+Gemfile.lock

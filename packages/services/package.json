@@ -33,6 +33,7 @@
     "@onflow/frw-api": "workspace:*",
     "@onflow/frw-context": "workspace:*",
     "@onflow/frw-types": "workspace:*",
+    "@onflow/frw-utils": "workspace:*",
     "@onflow/frw-workflow": "workspace:*"
   },
   "devDependencies": {
