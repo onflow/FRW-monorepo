@@ -1,19 +1,8 @@
 // Address utilities
-export {
-  isValidFlowAddress,
-  formatFlowAddress,
-  getAddressType,
-  truncateAddress,
-} from './address';
+export { isValidFlowAddress, formatFlowAddress, getAddressType, truncateAddress } from './address';
 
 // NFT utilities
-export {
-  getNFTCover,
-  getNFTId,
-  getNFTSearchText,
-  hasNFTMedia,
-  getNFTDisplayName,
-} from './nft';
+export { getNFTCover, getNFTId, getNFTSearchText, hasNFTMedia, getNFTDisplayName } from './nft';
 
 // General utilities
 export {
@@ -26,6 +15,10 @@ export {
   isEmpty,
   isTransactionId,
 } from './utils';
+
+// Logger utilities
+export { createLogger, Logger } from './logger';
+export type { BridgeLogger } from './logger';
 
 // Re-export types from @onflow/frw-types for convenience
 export type { WalletType, NFTModel } from '@onflow/frw-types';

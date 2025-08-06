@@ -5,6 +5,35 @@ import { MMKV } from 'react-native-mmkv';
 import NativeFRWBridge from './NativeFRWBridge';
 
 class RNBridge implements BridgeSpec {
+  private debugMode: boolean = __DEV__;
+
+  log(level: 'debug' | 'info' | 'warn' | 'error', message: string, ...args: any[]): void {
+    if (level === 'debug' && !this.debugMode) {
+      return;
+    }
+    const timestamp = new Date().toISOString();
+    const prefix = `[FRW-${level.toUpperCase()}] ${timestamp}`;
+
+    switch (level) {
+      case 'debug':
+        console.log(prefix, message, ...args);
+        break;
+      case 'info':
+        console.info(prefix, message, ...args);
+        break;
+      case 'warn':
+        console.warn(prefix, message, ...args);
+        break;
+      case 'error':
+        console.error(prefix, message, ...args);
+        break;
+    }
+  }
+
+  isDebug(): boolean {
+    return this.debugMode;
+  }
+
   getSelectedAddress(): string | null {
     return NativeFRWBridge.getSelectedAddress();
   }
@@ -67,7 +96,7 @@ class RNBridge implements BridgeSpec {
     const version = this.getVersion();
     const buildNumber = this.getBuildNumber();
     const network = this.getNetwork();
-    
+
     // Add version and platform headers to transactions
     cadenceService.useRequestInterceptor(async (config: any) => {
       if (config.type === 'transaction') {
@@ -94,13 +123,13 @@ class RNBridge implements BridgeSpec {
               // Call your existing signPayer logic here
               const token = await this.getJWT();
               const baseURL = 'https://us-central1-lilico-334404.cloudfunctions.net';
-              
+
               // You might want to extract this to a separate method
               const response = await fetch(`${baseURL}/signAsPayer`, {
                 method: 'POST',
                 headers: {
-                  'Authorization': `Bearer ${token}`,
-                  'network': network,
+                  Authorization: `Bearer ${token}`,
+                  network: network,
                   'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
@@ -110,10 +139,10 @@ class RNBridge implements BridgeSpec {
                   },
                 }),
               });
-              
+
               const data = await response.json();
               const signature = data.envelopeSigs.sig;
-              
+
               return {
                 addr: ADDRESS,
                 keyId: Number(KEY_ID),
@@ -126,7 +155,7 @@ class RNBridge implements BridgeSpec {
       return config;
     });
 
-    // Configure proposer authorization  
+    // Configure proposer authorization
     cadenceService.useRequestInterceptor(async (config: any) => {
       if (config.type === 'transaction') {
         config.proposer = async (account: any) => {
