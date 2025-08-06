@@ -38,6 +38,6 @@
     "webpack.config.ts",
     "postcss.config.mjs",
     "svgTransform.js",
-    "apps/extension/.storybook/**/*"
+    ".storybook/**/*"
   ]
 }
