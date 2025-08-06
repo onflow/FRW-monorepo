@@ -94,8 +94,9 @@ if (!__DEV__) {
       installMode: CodePush.InstallMode.ON_NEXT_RESTART,
     };
     AppWithCodePush = CodePush(codePushOptions)(App);
+    console.log('CodePush initialized successfully');
   } catch (error) {
-    console.warn('CodePush initialization failed:', error);
+    console.warn('CodePush initialization failed (this is normal with placeholder keys):', error);
     AppWithCodePush = App;
   }
 }
