@@ -59,6 +59,10 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
               sideEffects: true,
               test: /[\\/]pageProvider[\\/]index.ts/,
               loader: 'ts-loader',
+              options: {
+                transpileOnly: true,
+                onlyCompileBundledFiles: true,
+              },
             },
             {
               test: /[\\/]ui[\\/]index.tsx/,
@@ -67,6 +71,7 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
                   loader: 'ts-loader',
                   options: {
                     transpileOnly: true,
+                    onlyCompileBundledFiles: true,
                     compilerOptions: {
                       module: 'es2015',
                     },
@@ -76,6 +81,10 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
             },
             {
               loader: 'ts-loader',
+              options: {
+                transpileOnly: true,
+                onlyCompileBundledFiles: true,
+              },
             },
           ],
         },
@@ -129,7 +138,7 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
       new CopyPlugin({
         patterns: [
           {
-            from: '../../node_modules/@trustwallet/wallet-core/dist/lib/wallet-core.wasm',
+            from: path.resolve(__dirname, '../node_modules/@trustwallet/wallet-core/dist/lib/wallet-core.wasm'),
             to: 'wallet-core.wasm',
           },
           // Add this pattern to copy the manifest.json from _raw to dist
@@ -186,6 +195,7 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
         moment: 'dayjs',
         'cross-fetch': 'cross-fetch',
         '@': paths.rootResolve('src'),
+        '@onflow/frw-cadence': path.resolve(__dirname, '../node_modules/@onflow/frw-cadence/src/index.ts'),
       },
       plugins: [],
       fallback: {
