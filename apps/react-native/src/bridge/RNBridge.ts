@@ -12,8 +12,7 @@ class RNBridge implements BridgeSpec {
     if (level === 'debug' && !this.debugMode) {
       return;
     }
-    const timestamp = new Date().toISOString();
-    const prefix = `[FRW-${level.toUpperCase()}] ${timestamp}`;
+    const prefix = `[FRW-${level.toUpperCase()}]`;
 
     switch (level) {
       case 'debug':
