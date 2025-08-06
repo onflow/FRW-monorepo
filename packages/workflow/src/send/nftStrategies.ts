@@ -1,7 +1,7 @@
 import type { CadenceService } from "@onflow/frw-cadence";
 
 import type { SendPayload, TransferStrategy } from "./types";
-import { encodeEvmContractCallData } from "./utils";
+import { encodeEvmContractCallData, GAS_LIMITS } from "./utils";
 import { validateEvmAddress, validateFlowAddress } from "./validation";
 
 /**
@@ -228,26 +228,22 @@ export class EvmToEvmNftStrategy implements TransferStrategy {
     const data = encodeEvmContractCallData(payload);
     const value = "0.0";
     if (ids.length > 1) {
-      const contracts: string[] = [];
-      const datas: number[][] = [];
-      const values: string[] = [];
-      for (const id of ids) {
-        contracts.push(tokenContractAddr);
-        datas.push(encodeEvmContractCallData({ ...payload, ids: [id] }));
-        values.push("0.0");
-      }
+      const contracts = ids.map(() => tokenContractAddr);
+      const datas = ids.map((id) => encodeEvmContractCallData({ ...payload, ids: [id] }));
+      const values = ids.map(() => "0.0");
+      
       return await this.cadenceService.batchCallContract(
         contracts,
         values,
         datas,
-        30_000_000
+        GAS_LIMITS.EVM_DEFAULT
       );
     }
     return await this.cadenceService.callContract(
       tokenContractAddr,
       value,
       data,
-      30_000_000
+      GAS_LIMITS.EVM_DEFAULT
     );
   }
 }
