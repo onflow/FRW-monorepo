@@ -4,10 +4,8 @@ export default defineConfig({
   entry: ['src/index.ts'],
   format: ['esm'],
   dts: {
-    compilerOptions: {
-      composite: false,
-      module: 'ESNext',
-    },
+    resolve: true,
+    // Don't override compilerOptions, let it use tsconfig.json
   },
   splitting: false,
   sourcemap: true,
