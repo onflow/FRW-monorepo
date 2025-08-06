@@ -1,19 +1,21 @@
-import dotenv from 'dotenv';
+// import dotenv from 'dotenv';
 import { describe, it, expect, beforeEach } from 'vitest';
 
 import {
   configureFCL,
   // SendTransaction,
-  cadenceService,
+  createCadenceService
 } from '../src';
 // import { getTrx } from '../src/utils';
 import { accounts } from '../src/utils/accounts';
 
-dotenv.config();
+// dotenv.config();
 
 const mainAccount = accounts.main;
 const child1Account = accounts.child1;
 const child2Account = accounts.child2;
+
+const cadenceService = createCadenceService('mainnet', null)
 
 describe('Test NFT send strategies', () => {
   beforeEach(() => {
