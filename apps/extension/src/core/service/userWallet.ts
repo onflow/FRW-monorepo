@@ -1361,17 +1361,13 @@ const preloadAllAccountsWithPubKey = async (
   try {
     mainAccounts = await retryOperation(
       async () => {
-        try {
-          const accounts = await getMainAccountsWithPubKey(network, pubKey);
+        const accounts = await getMainAccountsWithPubKey(network, pubKey);
 
-          if (accounts && accounts.length > 0) {
-            return accounts;
-          }
-
-          throw new Error('Main accounts not yet loaded');
-        } catch (error) {
-          throw error;
+        if (accounts && accounts.length > 0) {
+          return accounts;
         }
+
+        throw new Error('Main accounts not yet loaded');
       },
       MAX_LOAD_TIME / POLL_INTERVAL,
       POLL_INTERVAL
@@ -1629,7 +1625,7 @@ const loadMainAccountsWithPubKey = async (
 
   const mainAccountsWithDetail: MainAccount[] = mainAccounts.map((mainAccount) => {
     const accountDetail = accountDetailMap[mainAccount.address];
-    const evmAccount = !!accountDetail.COAs?.length
+    const evmAccount = accountDetail.COAs?.length
       ? evmAddressToWalletAccount(network, accountDetail.COAs[0])
       : undefined;
 

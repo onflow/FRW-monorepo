@@ -297,8 +297,8 @@ export default [
       'apps/react-native/extensions/**',
       'apps/react-native/specifications/**',
 
-      // Extension specific - temporarily excluded due to many lint issues
-      'apps/extension/**',
+      // Extension specific
+      'apps/extension/_raw/**',
 
       // Generated files
       'packages/api/src/codgen/**', // Generated API code

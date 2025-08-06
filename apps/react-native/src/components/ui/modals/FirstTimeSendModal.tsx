@@ -1,8 +1,9 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Modal, Pressable } from 'react-native';
-import { useAndroidTextFix } from '@/lib/androidTextFix';
-import { useTheme } from '@/contexts/ThemeContext';
 import Svg, { Path } from 'react-native-svg';
+
+import { useTheme } from '@/contexts/ThemeContext';
+import { useAndroidTextFix } from '@/lib/androidTextFix';
 
 interface FirstTimeSendModalProps {
   visible: boolean;

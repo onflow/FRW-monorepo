@@ -1,10 +1,7 @@
-import { IconView } from '@/components/ui/media/IconView';
-import { useTheme } from '@/contexts/ThemeContext';
 import { useSendStore } from '@onflow/frw-stores';
-import { NFTModel } from '@onflow/frw-types';
+import { type NFTModel } from '@onflow/frw-types';
 import { getNFTCover, getNFTId } from '@onflow/frw-utils';
 import { useNavigation } from '@react-navigation/native';
-import { ChevronDown, Trash as TrashIcon } from 'icons';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -17,6 +14,10 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { IconView } from '@/components/ui/media/IconView';
+import { useTheme } from '@/contexts/ThemeContext';
+import { ChevronDown, Trash as TrashIcon } from 'icons';
 interface BottomConfirmBarProps {
   selectedNFTs: NFTModel[];
   onRemoveNFT?: (nftId: string) => void;

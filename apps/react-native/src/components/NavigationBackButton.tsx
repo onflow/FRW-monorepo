@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
+
 import { BackArrow } from './ui/icons/BackArrow';
 
 interface NavigationBackButtonProps {

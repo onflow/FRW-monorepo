@@ -1,7 +1,9 @@
 import type { WalletAccount } from '@onflow/frw-types';
-import { SendConfirmation as SendConfirmationIcon } from 'icons';
 import React from 'react';
 import { View } from 'react-native';
+
+import { SendConfirmation as SendConfirmationIcon } from 'icons';
+
 import { AccountCard } from './AccountCard';
 
 interface AccountTransferDisplayProps {

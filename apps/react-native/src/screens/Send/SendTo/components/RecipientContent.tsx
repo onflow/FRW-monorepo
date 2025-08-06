@@ -1,9 +1,13 @@
-import { FirstTimeSendModal } from '@/components/ui/modals';
-import { useTheme } from '@/contexts/ThemeContext';
 import { sendSelectors, useSendStore } from '@onflow/frw-stores';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, View } from 'react-native';
+
+import { FirstTimeSendModal } from '@/components/ui/modals';
+import { useTheme } from '@/contexts/ThemeContext';
+
+import { AlphabetIndex } from './AlphabetIndex';
+import { createRenderItem, renderEmptyState, renderSkeletonRows } from './renderHelpers';
 import { useDataLoader } from '../hooks/useDataLoader';
 import { useEventHandlers } from '../hooks/useEventHandlers';
 import type {
@@ -18,8 +22,6 @@ import {
   generateSearchAllTabsData,
   selectListData,
 } from '../utils/listDataGenerators';
-import { AlphabetIndex } from './AlphabetIndex';
-import { createRenderItem, renderEmptyState, renderSkeletonRows } from './renderHelpers';
 
 // Container style constant for better performance - adjusted to match Figma specs
 const CONTAINER_STYLE = { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 20 };

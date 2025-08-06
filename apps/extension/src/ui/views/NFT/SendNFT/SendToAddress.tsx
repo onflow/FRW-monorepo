@@ -165,7 +165,7 @@ const SendToAddress = () => {
 
     let userContact = { ...USER_CONTACT };
     if (accountType === 'child') {
-      const cwallet = childAccounts?.[currentWallet?.address!];
+      const cwallet = currentWallet?.address ? childAccounts?.[currentWallet.address] : undefined;
       userContact = {
         ...USER_CONTACT,
         address: withPrefix(currentWallet?.address ?? '') || '',

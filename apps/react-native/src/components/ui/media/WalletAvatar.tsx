@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Image, View, StyleSheet, ViewStyle, TextStyle } from 'react-native';
-import { Text } from 'ui';
+import { Image, View, StyleSheet, type ViewStyle, type TextStyle } from 'react-native';
 import { SvgXml } from 'react-native-svg';
+
+import { Text } from 'ui';
 
 interface WalletAvatarProps {
   value: string; // emoji or url

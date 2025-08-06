@@ -1,11 +1,13 @@
-import { isEVMAccount } from '@/lib';
-import { type WalletAccount } from '@onflow/frw-types';
 import { AddressBookService } from '@onflow/frw-services';
-import { Edit as EditIcon, Link } from 'icons';
+import { type WalletAccount } from '@onflow/frw-types';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TouchableOpacity, View } from 'react-native';
+
+import { isEVMAccount } from '@/lib';
+import { Edit as EditIcon, Link } from 'icons';
 import { EVMChip, Text } from 'ui';
+
 import { ContactAvatar } from '../media/ContactAvatar';
 import { WalletAvatar } from '../media/WalletAvatar';
 import AddressText from '../typography/AddressText';

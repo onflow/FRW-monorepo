@@ -1,5 +1,6 @@
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
+
 import { Edit as EditIcon } from 'icons';
 
 interface EditButtonProps {

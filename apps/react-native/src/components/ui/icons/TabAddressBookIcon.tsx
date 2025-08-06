@@ -1,5 +1,6 @@
 import React from 'react';
 import Svg, { Path } from 'react-native-svg';
+
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface TabAddressBookIconProps {
@@ -21,8 +22,8 @@ export const TabAddressBookIcon: React.FC<TabAddressBookIconProps> = ({
       ? '#00EF8B'
       : '#00B877' // Bright green for dark mode, darker green for light mode
     : isDark
-    ? 'rgba(255, 255, 255, 0.6)'
-    : '#767676';
+      ? 'rgba(255, 255, 255, 0.6)'
+      : '#767676';
 
   return (
     <Svg width={width} height={height} viewBox="0 0 25 24" fill="none">

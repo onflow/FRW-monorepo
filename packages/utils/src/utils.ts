@@ -1,10 +1,7 @@
 /**
  * Converts a value to a readable format with proper decimal places
  */
-export function formatTokenAmount(
-  amount: string | number,
-  decimals = 8
-): string {
+export function formatTokenAmount(amount: string | number, decimals = 8): string {
   const num = typeof amount === 'string' ? parseFloat(amount) : amount;
   if (isNaN(num)) return '0';
 
@@ -35,7 +32,7 @@ export function deepClone<T>(obj: T): T {
   if (typeof obj === 'object') {
     const cloned = {} as T;
     for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
         cloned[key] = deepClone(obj[key]);
       }
     }
@@ -82,7 +79,7 @@ export function formatNumber(num: number | string): string {
  * Checks if a value is empty (null, undefined, empty string, or empty array)
  */
 export function isEmpty(value: any): boolean {
-  if (value == null) return true;
+  if (value === null || value === undefined) return true;
   if (typeof value === 'string') return value.trim() === '';
   if (Array.isArray(value)) return value.length === 0;
   if (typeof value === 'object') return Object.keys(value).length === 0;

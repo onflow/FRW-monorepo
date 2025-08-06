@@ -1,5 +1,5 @@
-import { Image } from 'react-native';
 import React, { useEffect, useState } from 'react';
+import { Image } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 
 export function Badge({ src }: { src: string }) {

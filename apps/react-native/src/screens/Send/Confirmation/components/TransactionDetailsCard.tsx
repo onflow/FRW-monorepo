@@ -1,8 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, Image } from 'react-native';
-import { FlowLogo, Text } from 'ui';
+
 import { VerifiedToken as VerifiedIcon } from 'icons';
+import { FlowLogo, Text } from 'ui';
+
 import { NFTDisplayGrid } from './NFTDisplayGrid';
 
 interface Token {
