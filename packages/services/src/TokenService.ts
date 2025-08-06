@@ -1,4 +1,9 @@
-import { UserFtTokensService, type CadenceFTApiResponseWithCurrency, type CurrencyEVMTokenData } from '@onflow/frw-api';
+import {
+  UserFtTokensService,
+  type CadenceFTApiResponseWithCurrency,
+  type CurrencyEVMTokenData,
+} from '@onflow/frw-api';
+import { getServiceContext, logger, type BridgeSpec } from '@onflow/frw-context';
 import {
   mapCadenceTokenDataWithCurrencyToTokenInfo,
   mapERC20TokenToTokenInfo,
@@ -6,8 +11,6 @@ import {
   type TokenInfo,
 } from '@onflow/frw-types';
 
-import type { BridgeSpec } from '@onflow/frw-context';
-import { getServiceContext } from '@onflow/frw-context';
 
 /**
  * TokenProvider is an interface that defines the methods for a token provider.
@@ -35,7 +38,7 @@ class FlowTokenProvider implements TokenProvider {
 
       return res?.data;
     } catch (error) {
-      console.error('[FlowTokenProvider] Failed to fetch token data:', error);
+      logger.error('[FlowTokenProvider] Failed to fetch token data:', error);
       return undefined;
     }
   }
@@ -44,7 +47,7 @@ class FlowTokenProvider implements TokenProvider {
     const typedData = data as CadenceFTApiResponseWithCurrency | undefined;
 
     if (!typedData) {
-      console.warn('[FlowTokenProvider] No data to process');
+      logger.warn('[FlowTokenProvider] No data to process');
       return [];
     }
 
@@ -75,7 +78,7 @@ class ERC20TokenProvider implements TokenProvider {
 
       return res?.data ?? [];
     } catch (error) {
-      console.error('[ERC20TokenProvider] Failed to fetch token data:', error);
+      logger.error('[ERC20TokenProvider] Failed to fetch token data:', error);
       return [];
     }
   }
@@ -84,7 +87,7 @@ class ERC20TokenProvider implements TokenProvider {
     const typedData = data as CurrencyEVMTokenData[];
 
     if (!Array.isArray(typedData)) {
-      console.warn('[ERC20TokenProvider] Invalid data format, expected array');
+      logger.warn('[ERC20TokenProvider] Invalid data format, expected array');
       return [];
     }
 
@@ -103,7 +106,7 @@ export class TokenService {
   constructor(type: WalletType, bridge?: BridgeSpec) {
     this.tokenProvider =
       type === WalletType.Flow ? new FlowTokenProvider() : new ERC20TokenProvider();
-    
+
     // If bridge is not provided, try to get it from ServiceContext
     if (bridge) {
       this.bridge = bridge;
@@ -111,7 +114,7 @@ export class TokenService {
       try {
         this.bridge = getServiceContext().bridge;
       } catch (error) {
-        console.warn('[TokenService] ServiceContext not initialized, bridge will be null');
+        logger.warn('[TokenService] ServiceContext not initialized, bridge will be null');
         this.bridge = undefined;
       }
     }
@@ -119,11 +122,11 @@ export class TokenService {
 
   static getInstance(type: WalletType, bridge?: BridgeSpec): TokenService {
     const key = `${type}-${bridge ? 'with-bridge' : 'no-bridge'}`;
-    
+
     if (!TokenService.instances.has(key)) {
       TokenService.instances.set(key, new TokenService(type, bridge));
     }
-    
+
     return TokenService.instances.get(key)!;
   }
 
@@ -135,7 +138,7 @@ export class TokenService {
       const data = await this.tokenProvider.getData(address, network, defaultCurrency);
       return this.tokenProvider.processData(data);
     } catch (error) {
-      console.error('[TokenService] Failed to get token info:', error);
+      logger.error('[TokenService] Failed to get token info:', error);
       return [];
     }
   }

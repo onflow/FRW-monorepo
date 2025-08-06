@@ -1,8 +1,7 @@
 import { AddressbookService } from '@onflow/frw-api';
+import { getServiceContext, logger, type BridgeSpec } from '@onflow/frw-context';
 import type { AddressBookResponse } from '@onflow/frw-types';
 
-import type { BridgeSpec } from '@onflow/frw-context';
-import { getServiceContext } from '@onflow/frw-context';
 
 /**
  * AddressBook service using direct network requests instead of native bridge
@@ -18,16 +17,18 @@ export class AddressBookService {
   public static getInstance(bridge?: BridgeSpec): AddressBookService {
     if (!AddressBookService.instance) {
       let bridgeToUse = bridge;
-      
+
       // If bridge is not provided, try to get it from ServiceContext
       if (!bridgeToUse) {
         try {
           bridgeToUse = getServiceContext().bridge;
         } catch (error) {
-          throw new Error('AddressBookService requires bridge parameter or initialized ServiceContext');
+          throw new Error(
+            'AddressBookService requires bridge parameter or initialized ServiceContext'
+          );
         }
       }
-      
+
       AddressBookService.instance = new AddressBookService(bridgeToUse);
     }
     return AddressBookService.instance;
@@ -96,7 +97,7 @@ export class AddressBookService {
         };
       }
     } catch (error) {
-      console.error('[AddressBookService] Failed to fetch address book:', error);
+      logger.error('[AddressBookService] Failed to fetch address book:', error);
       // Return empty array on error
       return {
         contacts: [],

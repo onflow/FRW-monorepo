@@ -1,9 +1,15 @@
+import { getCadenceService, logger } from '@onflow/frw-context';
+import { flowService } from '@onflow/frw-services';
 import { type NFTModel, type TokenInfo, addressType } from '@onflow/frw-types';
-import { type SendPayload, isFlowToken, SendTransaction, isValidSendTransactionPayload } from '@onflow/frw-workflow';
+import {
+  type SendPayload,
+  isFlowToken,
+  SendTransaction,
+  isValidSendTransactionPayload,
+} from '@onflow/frw-workflow';
 import { create } from 'zustand';
 
-import { getCadenceService } from '@onflow/frw-context';
-import { flowService } from '@onflow/frw-services';
+
 import {
   type BalanceData,
   type SendFormData,
@@ -46,14 +52,11 @@ export const useSendStore = create<SendState>((set, get) => ({
   },
 
   // Actions
-  setSelectedToken: (token: TokenInfo | null) =>
-    set({ selectedToken: token, error: null }),
+  setSelectedToken: (token: TokenInfo | null) => set({ selectedToken: token, error: null }),
 
-  setFromAccount: (account: WalletAccount | null) =>
-    set({ fromAccount: account, error: null }),
+  setFromAccount: (account: WalletAccount | null) => set({ fromAccount: account, error: null }),
 
-  setToAccount: (account: WalletAccount | null) =>
-    set({ toAccount: account, error: null }),
+  setToAccount: (account: WalletAccount | null) => set({ toAccount: account, error: null }),
 
   setTransactionType: (type: TransactionType) =>
     set((state) => {
@@ -64,19 +67,13 @@ export const useSendStore = create<SendState>((set, get) => ({
       };
 
       // If switching from tokens to NFT, clear token-specific data
-      if (
-        state.transactionType === 'tokens' &&
-        ['single-nft', 'multiple-nfts'].includes(type)
-      ) {
+      if (state.transactionType === 'tokens' && ['single-nft', 'multiple-nfts'].includes(type)) {
         updates.selectedToken = null;
         updates.formData = { ...defaultFormData };
       }
 
       // If switching from NFT to tokens, clear NFT-specific data
-      if (
-        ['single-nft', 'multiple-nfts'].includes(state.transactionType) &&
-        type === 'tokens'
-      ) {
+      if (['single-nft', 'multiple-nfts'].includes(state.transactionType) && type === 'tokens') {
         updates.selectedNFTs = [];
       }
 
@@ -89,8 +86,7 @@ export const useSendStore = create<SendState>((set, get) => ({
       error: null,
     })),
 
-  setSelectedNFTs: (nfts: NFTModel[]) =>
-    set({ selectedNFTs: nfts, error: null }),
+  setSelectedNFTs: (nfts: NFTModel[]) => set({ selectedNFTs: nfts, error: null }),
 
   addSelectedNFT: (nft: NFTModel) =>
     set((state) => {
@@ -109,8 +105,7 @@ export const useSendStore = create<SendState>((set, get) => ({
       error: null,
     })),
 
-  setCurrentStep: (step: SendState['currentStep']) =>
-    set({ currentStep: step, error: null }),
+  setCurrentStep: (step: SendState['currentStep']) => set({ currentStep: step, error: null }),
 
   setLoading: (loading: boolean) => set({ isLoading: loading }),
 
@@ -155,8 +150,7 @@ export const useSendStore = create<SendState>((set, get) => ({
         },
       });
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to fetch COA balance';
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch COA balance';
       const updatedBalances = get().balances;
       set({
         balances: {
@@ -213,8 +207,7 @@ export const useSendStore = create<SendState>((set, get) => ({
         },
       });
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to fetch EVM balance';
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch EVM balance';
       const updatedBalances = get().balances;
       set({
         balances: {
@@ -289,32 +282,24 @@ export const useSendStore = create<SendState>((set, get) => ({
   // Create send payload for transaction execution
   createSendPayload: async (): Promise<SendPayload | null> => {
     const state = get();
-    const {
-      fromAccount,
-      toAccount,
-      selectedToken,
-      selectedNFTs,
-      formData,
-      transactionType,
-    } = state;
+    const { fromAccount, toAccount, selectedToken, selectedNFTs, formData, transactionType } =
+      state;
 
     if (!fromAccount || !toAccount) {
-      console.error('[SendStore] Missing fromAccount or toAccount');
+      logger.error('[SendStore] Missing fromAccount or toAccount');
       return null;
     }
 
     const isTokenTransaction = transactionType === 'tokens';
-    const isNFTTransaction = ['single-nft', 'multiple-nfts'].includes(
-      transactionType
-    );
+    const isNFTTransaction = ['single-nft', 'multiple-nfts'].includes(transactionType);
 
     if (isTokenTransaction && !selectedToken) {
-      console.error('[SendStore] Missing selectedToken for token transaction');
+      logger.error('[SendStore] Missing selectedToken for token transaction');
       return null;
     }
 
     if (isNFTTransaction && selectedNFTs.length === 0) {
-      console.error('[SendStore] Missing selectedNFTs for NFT transaction');
+      logger.error('[SendStore] Missing selectedNFTs for NFT transaction');
       return null;
     }
 
@@ -322,17 +307,14 @@ export const useSendStore = create<SendState>((set, get) => ({
       // Get wallet accounts for child addresses and COA
       const flow = flowService();
       const { accounts } = await flow.getWalletAccounts();
-      const coaAddr =
-        accounts.filter((account) => account.type === 'evm')[0]?.address || '';
+      const coaAddr = accounts.filter((account) => account.type === 'evm')[0]?.address || '';
       const childAddrs = accounts
         .filter((account) => account.type === 'child')
         .map((account) => account.address);
-      const mainAccount = accounts.filter(
-        (account) => account.type === 'main'
-      )[0];
+      const mainAccount = accounts.filter((account) => account.type === 'main')[0];
 
       if (!mainAccount) {
-        console.error('[SendStore] No main account found');
+        logger.error('[SendStore] No main account found');
         return null;
       }
 
@@ -347,9 +329,7 @@ export const useSendStore = create<SendState>((set, get) => ({
         ids: isNFTTransaction
           ? (selectedNFTs
               .map((nft) =>
-                nft.id !== null && nft.id !== undefined
-                  ? parseInt(nft.id as string)
-                  : undefined
+                nft.id !== null && nft.id !== undefined ? parseInt(nft.id as string) : undefined
               )
               .filter((id) => typeof id === 'number' && !isNaN(id)) as number[])
           : [],
@@ -358,17 +338,15 @@ export const useSendStore = create<SendState>((set, get) => ({
         coaAddr: coaAddr,
         // For Flow tokens, contract address can be empty since they're identified by flowIdentifier
         tokenContractAddr:
-          selectedToken &&
-          selectedToken.identifier &&
-          isFlowToken(selectedToken.identifier)
+          selectedToken && selectedToken.identifier && isFlowToken(selectedToken.identifier)
             ? ''
             : selectedToken?.contractAddress || '',
       };
 
-      console.log('[SendStore] Created send payload:', payload);
+      logger.debug('[SendStore] Created send payload:', payload);
       return payload;
     } catch (error) {
-      console.error('[SendStore] Error creating send payload:', error);
+      logger.error('[SendStore] Error creating send payload:', error);
       return null;
     }
   },
@@ -381,7 +359,7 @@ export const useSendStore = create<SendState>((set, get) => ({
     try {
       // Create payload
       const payload = await state.createSendPayload();
-      
+
       if (!payload) {
         throw new Error('Failed to create transaction payload');
       }
@@ -391,28 +369,28 @@ export const useSendStore = create<SendState>((set, get) => ({
         throw new Error('Invalid transaction payload');
       }
 
-      console.log('[SendStore] Executing transaction with payload:', payload);
+      logger.debug('[SendStore] Executing transaction with payload:', payload);
 
       // Get cadence service and execute transaction
       const cadenceService = getCadenceService();
       const result = await SendTransaction(payload, cadenceService);
-      
-      console.log('[SendStore] Transaction result:', result);
-      
+
+      logger.debug('[SendStore] Transaction result:', result);
+
       // Reset flow on success
       set({ isLoading: false });
       state.resetSendFlow();
-      
+
       return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Transaction failed';
-      console.error('[SendStore] Transaction error:', error);
-      
-      set({ 
-        isLoading: false, 
-        error: errorMessage 
+      logger.error('[SendStore] Transaction error:', error);
+
+      set({
+        isLoading: false,
+        error: errorMessage,
       });
-      
+
       throw error;
     }
   },
@@ -421,7 +399,7 @@ export const useSendStore = create<SendState>((set, get) => ({
   getTransactionDetailsForDisplay: () => {
     const state = get();
     const { transactionType, selectedToken, selectedNFTs, formData } = state;
-    
+
     const isTokenTransaction = transactionType === 'tokens';
     const isNFTTransaction = ['single-nft', 'multiple-nfts'].includes(transactionType);
 
@@ -451,10 +429,8 @@ export const sendSelectors = {
 
   // Computed selectors
   isTokensFlow: (state: SendState) => state.transactionType === 'tokens',
-  isNFTFlow: (state: SendState) =>
-    ['single-nft', 'multiple-nfts'].includes(state.transactionType),
-  isMultipleNFTsFlow: (state: SendState) =>
-    state.transactionType === 'multiple-nfts',
+  isNFTFlow: (state: SendState) => ['single-nft', 'multiple-nfts'].includes(state.transactionType),
+  isMultipleNFTsFlow: (state: SendState) => state.transactionType === 'multiple-nfts',
   hasSelectedToken: (state: SendState) => !!state.selectedToken,
   hasFromAccount: (state: SendState) => !!state.fromAccount,
   hasToAccount: (state: SendState) => !!state.toAccount,
@@ -474,18 +450,12 @@ export const sendSelectors = {
     !!state.selectedToken || state.selectedNFTs.length > 0,
   canProceedFromSendTo: (state: SendState) => !!state.toAccount,
   canProceedFromSendTokens: (state: SendState) =>
-    !!state.selectedToken &&
-    !!state.toAccount &&
-    parseFloat(state.formData.tokenAmount) > 0,
+    !!state.selectedToken && !!state.toAccount && parseFloat(state.formData.tokenAmount) > 0,
   canConfirmTransaction: (state: SendState) => {
     const baseValid = !!state.fromAccount && !!state.toAccount;
 
     if (state.transactionType === 'tokens') {
-      return (
-        baseValid &&
-        !!state.selectedToken &&
-        parseFloat(state.formData.tokenAmount) > 0
-      );
+      return baseValid && !!state.selectedToken && parseFloat(state.formData.tokenAmount) > 0;
     }
 
     return baseValid && state.selectedNFTs.length > 0;
@@ -533,10 +503,7 @@ export const sendHelpers = {
     return fetchEvmBalance(evmAddress);
   },
 
-  isBalanceStale: (
-    balanceData: BalanceData | null,
-    maxAgeMs: number = 30000
-  ) => {
+  isBalanceStale: (balanceData: BalanceData | null, maxAgeMs: number = 30000) => {
     if (!balanceData?.lastFetched) return true;
     return Date.now() - balanceData.lastFetched > maxAgeMs;
   },

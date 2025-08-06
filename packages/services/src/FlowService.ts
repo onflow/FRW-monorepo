@@ -1,8 +1,7 @@
+import { getServiceContext, logger, type BridgeSpec } from '@onflow/frw-context';
 import type { WalletAccountsResponse } from '@onflow/frw-types';
 import { configureFCL } from '@onflow/frw-workflow';
 
-import type { BridgeSpec } from '@onflow/frw-context';
-import { getServiceContext } from '@onflow/frw-context';
 
 /**
  * Flow blockchain service using the existing CadenceService
@@ -21,7 +20,7 @@ class FlowService {
   public static getInstance(bridge?: BridgeSpec): FlowService {
     if (!FlowService.instance) {
       let bridgeToUse = bridge;
-      
+
       // If bridge is not provided, try to get it from ServiceContext
       if (!bridgeToUse) {
         try {
@@ -30,7 +29,7 @@ class FlowService {
           throw new Error('FlowService requires bridge parameter or initialized ServiceContext');
         }
       }
-      
+
       FlowService.instance = new FlowService(bridgeToUse);
     }
     return FlowService.instance;
@@ -43,7 +42,7 @@ class FlowService {
         configureFCL(network as 'mainnet' | 'testnet');
         this.initialized = true;
       } catch (error) {
-        console.warn('[FlowService] Failed to get network from bridge, using mainnet');
+        logger.warn('FlowService: Failed to get network from bridge, using mainnet');
         configureFCL('mainnet');
         this.initialized = true;
       }
@@ -71,7 +70,7 @@ class FlowService {
         throw new Error('No balance found for address');
       }
     } catch (error) {
-      console.error('Error fetching balance via CadenceService:', error);
+      logger.error('Error fetching balance via CadenceService', error);
       throw new Error(
         `Failed to fetch balance: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -108,7 +107,7 @@ class FlowService {
   async getEvmAddress(flowAddress: string): Promise<string | null> {
     // TODO: Implement this using CadenceService if needed
     // For now, return null since the main use case is balance fetching
-    console.warn('[FlowService] getEvmAddress not yet implemented via CadenceService');
+    logger.warn('FlowService: getEvmAddress not yet implemented via CadenceService');
     return null;
   }
 }
