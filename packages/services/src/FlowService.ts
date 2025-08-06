@@ -24,7 +24,7 @@ class FlowService {
       if (!bridgeToUse) {
         try {
           bridgeToUse = context.bridge;
-        } catch (error) {
+        } catch (_error) {
           throw new Error('FlowService requires bridge parameter or initialized ServiceContext');
         }
       }

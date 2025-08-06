@@ -28,8 +28,8 @@ class FlowNFTProvider implements NFTProvider {
           count: collection.count,
         })) ?? []
       );
-    } catch (error) {
-      logger.error('[NFTService] Failed to fetch Flow NFT collections:', error);
+    } catch (_error) {
+      logger.error('Unused error parameter', _error);
       return [];
     }
   }
@@ -121,7 +121,7 @@ class EvmNFTProvider implements NFTProvider {
       });
 
       return collections;
-    } catch (error) {
+    } catch (_error) {
       const duration = Date.now() - startTime;
       logger.error('[NFTService] Failed to fetch EVM NFT collections', {
         address,
@@ -213,7 +213,7 @@ class EvmNFTProvider implements NFTProvider {
       });
 
       return nfts;
-    } catch (error) {
+    } catch (_error) {
       const duration = Date.now() - startTime;
       logger.error('[NFTService] Failed to fetch EVM NFTs', {
         address,
@@ -254,7 +254,7 @@ export class NFTService {
     } else {
       try {
         this.bridge = getServiceContext().bridge;
-      } catch (error) {
+      } catch (_error) {
         logger.warn('[NFTService] ServiceContext not initialized, bridge will be null');
         this.bridge = undefined;
       }
@@ -303,7 +303,7 @@ export class NFTService {
       });
 
       return collections;
-    } catch (error) {
+    } catch (_error) {
       const duration = Date.now() - startTime;
       logger.error('[NFTService] Error in getNFTCollections', {
         address,
@@ -370,7 +370,7 @@ export class NFTService {
       });
 
       return nfts;
-    } catch (error) {
+    } catch (_error) {
       const duration = Date.now() - startTime;
       logger.error('[NFTService] Error in getNFTs', {
         address,

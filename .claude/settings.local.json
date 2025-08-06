@@ -20,7 +20,8 @@
       "Bash(true)",
       "Bash(git commit:*)",
       "Bash(npx eslint:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(sed:*)"
     ],
     "deny": []
   }
