@@ -17,7 +17,7 @@ export {
 } from './utils';
 
 // Logger utilities
-export { createLogger, Logger } from './logger';
+export { createLogger, Logger, logger, setGlobalLogger } from './logger';
 export type { BridgeLogger } from './logger';
 
 // Re-export types from @onflow/frw-types for convenience

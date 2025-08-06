@@ -1,27 +1,27 @@
 import { AddressbookService } from '@onflow/frw-api';
-import { getServiceContext, logger, type BridgeSpec } from '@onflow/frw-context';
+import { context, type PlatformSpec } from '@onflow/frw-context';
 import type { AddressBookResponse } from '@onflow/frw-types';
-
+import { logger } from '@onflow/frw-utils';
 
 /**
  * AddressBook service using direct network requests instead of native bridge
  */
 export class AddressBookService {
   private static instance: AddressBookService;
-  private bridge: BridgeSpec;
+  private bridge: PlatformSpec;
 
-  private constructor(bridge: BridgeSpec) {
+  private constructor(bridge: PlatformSpec) {
     this.bridge = bridge;
   }
 
-  public static getInstance(bridge?: BridgeSpec): AddressBookService {
+  public static getInstance(bridge?: PlatformSpec): AddressBookService {
     if (!AddressBookService.instance) {
       let bridgeToUse = bridge;
 
       // If bridge is not provided, try to get it from ServiceContext
       if (!bridgeToUse) {
         try {
-          bridgeToUse = getServiceContext().bridge;
+          bridgeToUse = context.bridge;
         } catch (error) {
           throw new Error(
             'AddressBookService requires bridge parameter or initialized ServiceContext'

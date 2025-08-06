@@ -1,7 +1,8 @@
-import { BridgeSpec, type Storage } from '@onflow/frw-context';
+import { type BridgeSpec, type Storage } from '@onflow/frw-context';
 import type { RecentContactsResponse, WalletAccountsResponse } from '@onflow/frw-types';
 import { isTransactionId } from '@onflow/frw-utils';
 import { MMKV } from 'react-native-mmkv';
+
 import NativeFRWBridge from './NativeFRWBridge';
 
 class RNBridge implements BridgeSpec {

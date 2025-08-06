@@ -14,8 +14,8 @@ export { createTransferContext, TransferContext } from './context';
 export * from './nftStrategies';
 export * from './tokenStrategies';
 
-// Main entry point
-import { logger } from '@onflow/frw-context';
+// Main entry point - use global logger from utils
+import { logger } from '@onflow/frw-utils';
 
 import { createTransferContext } from './context';
 import type { SendPayload } from './types';

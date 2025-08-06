@@ -1,7 +1,7 @@
 import { NftService, FlowEvmNftService } from '@onflow/frw-api';
-import { getServiceContext, logger, type BridgeSpec } from '@onflow/frw-context';
+import { getServiceContext, type PlatformSpec } from '@onflow/frw-context';
 import { WalletType, type CollectionModel, type NFTModel } from '@onflow/frw-types';
-
+import { logger } from '@onflow/frw-utils';
 
 interface NFTProvider {
   getCollections(address: string): Promise<CollectionModel[]>;
@@ -50,7 +50,7 @@ class FlowNFTProvider implements NFTProvider {
       offset,
       limit,
     });
-    logger.debug(res.data);
+    logger.debug('NFT list response:', res.data);
     return (
       res.data?.nfts?.map((nft) => ({
         ...nft,
@@ -243,9 +243,9 @@ class EvmNFTProvider implements NFTProvider {
 export class NFTService {
   private static instances: Map<string, NFTService> = new Map();
   private nftProvider: NFTProvider;
-  private bridge?: BridgeSpec;
+  private bridge?: PlatformSpec;
 
-  constructor(type: WalletType, bridge?: BridgeSpec) {
+  constructor(type: WalletType, bridge?: PlatformSpec) {
     this.nftProvider = type === WalletType.Flow ? new FlowNFTProvider() : new EvmNFTProvider();
 
     // If bridge is not provided, try to get it from ServiceContext
@@ -261,7 +261,7 @@ export class NFTService {
     }
   }
 
-  static getInstance(type: WalletType, bridge?: BridgeSpec): NFTService {
+  static getInstance(type: WalletType, bridge?: PlatformSpec): NFTService {
     const key = `${type}-${bridge ? 'with-bridge' : 'no-bridge'}`;
 
     if (!NFTService.instances.has(key)) {

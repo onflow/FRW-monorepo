@@ -1,4 +1,4 @@
-import { logger } from '@onflow/frw-context';
+import { logger } from '@onflow/frw-utils';
 import { ethers, parseUnits } from 'ethers';
 
 import type { SendPayload } from './types';

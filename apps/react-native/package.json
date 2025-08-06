@@ -17,7 +17,6 @@
     "pod": "npx -y pod-install",
     "codegen": "node scripts/codegen.js && react-native codegen",
     "codegen:bridge": "node scripts/bridge-codegen.js",
-    "prepare": "husky",
     "postinstall": "pnpm run codegen:bridge && pnpm run icon",
     "bundle:ios": "react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/main.jsbundle --assets-dest ios",
     "bundle:android": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res",

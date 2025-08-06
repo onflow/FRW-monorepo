@@ -174,6 +174,16 @@ export default [
     },
   },
   {
+    // Chrome extension injection scripts - very permissive
+    files: ['apps/extension/src/content-script/script.js'],
+    rules: {
+      '@typescript-eslint/ban-ts-comment': 'off', // Allow @ts-nocheck for injection scripts
+      'no-console': 'off',
+      'no-undef': 'off',
+      'import/no-unresolved': 'off',
+    },
+  },
+  {
     // Package-specific ignores and rules
     files: ['packages/**/*.{ts,tsx,js,jsx}'],
     rules: {
@@ -271,6 +281,11 @@ export default [
       'playwright-report/**',
       'test-results/**',
       'storybook-static/**',
+
+      // Generated files
+      '**/*.gen.{ts,js}',
+      '**/*.generated.{ts,js}',
+      '**/dist/**/*.d.ts',
 
       // React Native specific
       'apps/react-native/android/**',

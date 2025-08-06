@@ -3,6 +3,7 @@ import { useWalletStore } from '@onflow/frw-stores';
 import { useEffect } from 'react';
 import { Platform, Text as RNText } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
 import 'react-native-get-random-values';
 import { bridge } from './bridge/RNBridge';
 import { ConfirmationDrawerProvider } from './contexts/ConfirmationDrawerContext';

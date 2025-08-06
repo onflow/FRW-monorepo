@@ -6,6 +6,7 @@ import {
   type CollectionModel,
   type TokenInfo,
 } from '@onflow/frw-types';
+import { logger } from '@onflow/frw-utils';
 import { create } from 'zustand';
 
 // Balance data interface

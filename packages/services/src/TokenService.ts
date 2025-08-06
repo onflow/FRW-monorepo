@@ -3,14 +3,14 @@ import {
   type CadenceFTApiResponseWithCurrency,
   type CurrencyEVMTokenData,
 } from '@onflow/frw-api';
-import { getServiceContext, logger, type BridgeSpec } from '@onflow/frw-context';
+import { getServiceContext, type PlatformSpec } from '@onflow/frw-context';
 import {
   mapCadenceTokenDataWithCurrencyToTokenInfo,
   mapERC20TokenToTokenInfo,
   WalletType,
   type TokenInfo,
 } from '@onflow/frw-types';
-
+import { logger } from '@onflow/frw-utils';
 
 /**
  * TokenProvider is an interface that defines the methods for a token provider.
@@ -101,9 +101,9 @@ class ERC20TokenProvider implements TokenProvider {
 export class TokenService {
   private static instances: Map<string, TokenService> = new Map();
   private tokenProvider: TokenProvider;
-  private bridge?: BridgeSpec;
+  private bridge?: PlatformSpec;
 
-  constructor(type: WalletType, bridge?: BridgeSpec) {
+  constructor(type: WalletType, bridge?: PlatformSpec) {
     this.tokenProvider =
       type === WalletType.Flow ? new FlowTokenProvider() : new ERC20TokenProvider();
 
@@ -120,7 +120,7 @@ export class TokenService {
     }
   }
 
-  static getInstance(type: WalletType, bridge?: BridgeSpec): TokenService {
+  static getInstance(type: WalletType, bridge?: PlatformSpec): TokenService {
     const key = `${type}-${bridge ? 'with-bridge' : 'no-bridge'}`;
 
     if (!TokenService.instances.has(key)) {

@@ -1,6 +1,6 @@
-import { getServiceContext, logger, type BridgeSpec, type Storage } from '@onflow/frw-context';
+import { getServiceContext, type PlatformSpec, type Storage } from '@onflow/frw-context';
 import type { WalletAccount } from '@onflow/frw-types';
-
+import { logger } from '@onflow/frw-utils';
 
 const RECENT_RECIPIENTS_KEY = 'recent_recipients';
 const MAX_RECENT_RECIPIENTS = 10;
@@ -20,16 +20,16 @@ export class RecentRecipientsService {
    * Get all recent recipients (merged from MMKV + bridge)
    */
   private static instance: RecentRecipientsService;
-  private bridge: BridgeSpec;
+  private bridge: PlatformSpec;
   private storage: Storage;
 
-  private constructor(bridge: BridgeSpec, storage: Storage) {
+  private constructor(bridge: PlatformSpec, storage: Storage) {
     this.bridge = bridge;
     this.storage = storage;
   }
 
   // add bridge params
-  public static getInstance(bridge?: BridgeSpec, storage?: Storage): RecentRecipientsService {
+  public static getInstance(bridge?: PlatformSpec, storage?: Storage): RecentRecipientsService {
     if (!RecentRecipientsService.instance) {
       let bridgeToUse = bridge;
       let storageToUse = storage;

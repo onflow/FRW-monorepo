@@ -1,5 +1,5 @@
 import * as fcl from '@onflow/fcl';
-import { createLogger } from '@onflow/frw-utils';
+import { createLogger, type BridgeLogger } from '@onflow/frw-utils';
 import { send as httpSend } from '@onflow/transport-http';
 
 import { addresses, CadenceService } from './cadence.generated';
@@ -34,7 +34,7 @@ export function configureFCL(network: 'mainnet' | 'testnet'): void {
 /**
  * Bridge interface for CadenceService creation
  */
-interface CadenceBridge {
+interface CadenceBridge extends BridgeLogger {
   getNetwork(): string;
   configureCadenceService(service: CadenceService): void;
 }
@@ -67,3 +67,6 @@ export function createCadenceService(bridge: CadenceBridge): CadenceService {
 
   return service;
 }
+
+// Re-export types and services from generated file
+export { CadenceService, addresses } from './cadence.generated';

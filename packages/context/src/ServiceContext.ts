@@ -1,8 +1,8 @@
 import { configureApiEndpoints } from '@onflow/frw-api';
 import { createCadenceService, type CadenceService } from '@onflow/frw-cadence';
-import { createLogger, type Logger } from '@onflow/frw-utils';
+import { createLogger, setGlobalLogger, type Logger } from '@onflow/frw-utils';
 
-import type { BridgeSpec } from './interfaces/BridgeSpec';
+import type { PlatformSpec } from './interfaces/PlatformSpec';
 import type { Storage } from './interfaces/Storage';
 
 /**
@@ -11,7 +11,7 @@ import type { Storage } from './interfaces/Storage';
  */
 export class ServiceContext {
   private static instance: ServiceContext | null = null;
-  private _bridge: BridgeSpec | null = null;
+  private _bridge: PlatformSpec | null = null;
   private _cadenceService: CadenceService | null = null;
   private _storage: Storage | null = null;
   private _logger: Logger | null = null;
@@ -42,7 +42,7 @@ export class ServiceContext {
    * Initialize the service context with bridge
    * Should be called once at application startup
    */
-  public static initialize(bridge: BridgeSpec): ServiceContext {
+  public static initialize(bridge: PlatformSpec): ServiceContext {
     if (!ServiceContext.instance) {
       ServiceContext.instance = new ServiceContext();
     }
@@ -61,6 +61,9 @@ export class ServiceContext {
 
     // Create CadenceService with bridge configuration
     ServiceContext.instance._cadenceService = createCadenceService(bridge);
+
+    // Set global logger for other packages to use
+    setGlobalLogger(bridge);
 
     ServiceContext.instance.logger.debug('Initialized with bridge', bridge.constructor.name);
     return ServiceContext.instance;
@@ -111,7 +114,7 @@ export class ServiceContext {
   /**
    * Get the current bridge instance
    */
-  get bridge(): BridgeSpec {
+  get bridge(): PlatformSpec {
     if (!this._bridge) {
       throw new Error('Bridge not available in ServiceContext');
     }
@@ -159,9 +162,9 @@ export const cadence = new Proxy({} as CadenceService, {
   },
 });
 
-export const bridge = new Proxy({} as BridgeSpec, {
+export const bridge = new Proxy({} as PlatformSpec, {
   get(target, prop): unknown {
-    return ServiceContext.current().bridge[prop as keyof BridgeSpec];
+    return ServiceContext.current().bridge[prop as keyof PlatformSpec];
   },
 });
 
@@ -188,7 +191,7 @@ export const getServiceContext = (): ServiceContext => ServiceContext.current();
 /** @deprecated Use `cadence` instead */
 export const getCadenceService = (): CadenceService => context.cadence;
 /** @deprecated Use `bridge` instead */
-export const getBridge = (): BridgeSpec => context.bridge;
+export const getBridge = (): PlatformSpec => context.bridge;
 /** @deprecated Use `storage` instead */
 export const getStorage = (): Storage => context.storage;
 /** @deprecated Use `logger` instead */

@@ -1,6 +1,7 @@
-import { getCadenceService, logger } from '@onflow/frw-context';
+import { getCadenceService } from '@onflow/frw-context';
 import { flowService } from '@onflow/frw-services';
 import { type NFTModel, type TokenInfo, addressType } from '@onflow/frw-types';
+import { logger } from '@onflow/frw-utils';
 import {
   type SendPayload,
   isFlowToken,
@@ -8,7 +9,6 @@ import {
   isValidSendTransactionPayload,
 } from '@onflow/frw-workflow';
 import { create } from 'zustand';
-
 
 import {
   type BalanceData,

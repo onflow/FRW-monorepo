@@ -7,10 +7,10 @@ export type CadenceRequestInterceptor = (config: any) => any | Promise<any>;
 export type CadenceResponseInterceptor = (response: any) => any | Promise<any>;
 
 /**
- * Bridge specification interface for platform abstraction
- * This interface defines all methods that platform-specific bridges must implement
+ * Platform specification interface for platform abstraction
+ * This interface defines all methods that platform-specific implementations must implement
  */
-export interface BridgeSpec {
+export interface PlatformSpec {
   // Basic platform methods
   getSelectedAddress(): string | null;
   getNetwork(): string;

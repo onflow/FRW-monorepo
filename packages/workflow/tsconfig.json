@@ -1,13 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "types": ["node"]
+    "types": []
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.json",
-    "tests/**/*.ts",
-    "tsup.config.ts",
-    "vitest.config.ts"
-  ]
+  "include": ["src/**/*.ts", "src/**/*.json", "tsup.config.ts"]
 }
