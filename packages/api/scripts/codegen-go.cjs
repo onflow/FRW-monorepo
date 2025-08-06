@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const { codegen } = require('swagger-axios-codegen')
 const path = require('path');
 const servicePath = path.resolve(__dirname, '../src/codgen');

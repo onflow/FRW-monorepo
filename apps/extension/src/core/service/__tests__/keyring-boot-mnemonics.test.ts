@@ -5,8 +5,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CURRENT_ID_KEY, KEYRING_STATE_V2_KEY, getLocalData, setLocalData } from '@/data-model';
 import { FLOW_BIP44_PATH } from '@/shared/constant';
 
-// Internal imports
-
 import keyringService from '../keyring';
 import { MOCK_KEYS, MOCK_MNEMONIC, MOCK_PASSWORD } from './keyring-mock-data';
 

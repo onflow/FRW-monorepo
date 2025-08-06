@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, TextProps } from 'react-native';
+import { Text, type TextProps } from 'react-native';
 
 interface AddressTextProps extends TextProps {
   value: string;

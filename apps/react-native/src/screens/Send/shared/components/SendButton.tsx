@@ -1,7 +1,8 @@
-import { View, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Text } from 'ui';
+import { View, TouchableOpacity } from 'react-native';
+
 import { useTheme } from '@/contexts/ThemeContext';
+import { Text } from 'ui';
 
 interface SendButtonProps {
   isAccountIncompatible: boolean;
@@ -23,8 +24,8 @@ export const SendButton = ({ isAccountIncompatible, onPress, buttonText }: SendB
           isAccountIncompatible
             ? 'bg-overlay/20 border-overlay/20'
             : isDark
-            ? 'bg-white border-white'
-            : 'bg-black border-black'
+              ? 'bg-white border-white'
+              : 'bg-black border-black'
         }`}
         style={{
           width: '100%',

@@ -1,8 +1,3 @@
-import BottomConfirmBar from '@/components/NFTList/BottomConfirmBar';
-import NFTListCard from '@/components/NFTList/NFTListCard';
-import { IconView } from '@/components/ui/media/IconView';
-import { useTheme } from '@/contexts/ThemeContext';
-import { AddressSearchBox } from '@/screens/Send/SendTo/components/AddressSearchBox';
 import { NFTService } from '@onflow/frw-services';
 import { type CollectionModel, type NFTModel, addressType } from '@onflow/frw-types';
 import { getNFTId } from '@onflow/frw-utils';
@@ -10,6 +5,12 @@ import { useRoute } from '@react-navigation/native';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Animated, Dimensions, FlatList, TouchableOpacity, View } from 'react-native';
+
+import BottomConfirmBar from '@/components/NFTList/BottomConfirmBar';
+import NFTListCard from '@/components/NFTList/NFTListCard';
+import { IconView } from '@/components/ui/media/IconView';
+import { useTheme } from '@/contexts/ThemeContext';
+import { AddressSearchBox } from '@/screens/Send/SendTo/components/AddressSearchBox';
 import { BackgroundWrapper, Skeleton, Text } from 'ui';
 
 export default function NFTListScreen() {

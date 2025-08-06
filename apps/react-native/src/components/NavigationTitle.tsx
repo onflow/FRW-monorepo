@@ -1,6 +1,7 @@
-import { useTheme } from '@/contexts/ThemeContext';
 import React from 'react';
 import { Text, View } from 'react-native';
+
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface NavigationTitleProps {
   title: string;

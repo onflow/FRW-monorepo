@@ -1,5 +1,6 @@
 import React from 'react';
 import { View } from 'react-native';
+
 import { Button, Text } from 'ui';
 
 export type StateType = 'empty' | 'error';

@@ -159,7 +159,7 @@ export const PasswordInput = ({
         <Collapse in={!!errorText || !!helperText} orientation="vertical">
           <PasswordHelperText
             message={errorText || helperText || ''}
-            variant={!!errorText ? 'error' : 'success'}
+            variant={errorText ? 'error' : 'success'}
           />
         </Collapse>
       </Box>

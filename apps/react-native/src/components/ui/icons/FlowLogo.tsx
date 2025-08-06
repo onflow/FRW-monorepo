@@ -1,6 +1,7 @@
 import React from 'react';
 import { View } from 'react-native';
 import Svg, { G, Path, Defs, ClipPath, Rect } from 'react-native-svg';
+
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface FlowLogoProps {

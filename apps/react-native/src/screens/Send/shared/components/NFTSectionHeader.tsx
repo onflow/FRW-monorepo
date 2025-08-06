@@ -1,6 +1,7 @@
 import { View, TouchableOpacity } from 'react-native';
-import { Text } from 'ui';
+
 import { Edit as EditIcon } from 'icons';
+import { Text } from 'ui';
 
 interface NFTSectionHeaderProps {
   title: string;

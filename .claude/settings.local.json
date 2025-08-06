@@ -18,7 +18,10 @@
       "Bash(tree:*)",
       "Bash(git restore:*)",
       "Bash(true)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(npx eslint:*)",
+      "Bash(git checkout:*)",
+      "Bash(sed:*)"
     ],
     "deny": []
   }

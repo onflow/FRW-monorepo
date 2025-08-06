@@ -11,8 +11,6 @@ import {
   setLocalData,
   removeLocalData,
 } from '@/data-model';
-
-// Internal imports - after all mocks are defined
 import {
   FLOW_BIP44_PATH,
   SIGN_ALGO_NUM_DEFAULT,

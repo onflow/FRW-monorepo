@@ -1,8 +1,9 @@
 import React from 'react';
 import { View } from 'react-native';
-import { Text } from 'ui';
 import Svg, { G, Path } from 'react-native-svg';
+
 import { useTheme } from '@/contexts/ThemeContext';
+import { Text } from 'ui';
 
 interface ProfileHeaderProps {
   name: string;

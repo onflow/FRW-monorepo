@@ -1,11 +1,12 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { View, TextInput, TouchableOpacity, Alert } from 'react-native';
-import { cn } from '@/lib/utils';
+
+import NativeFRWBridge from '@/bridge/NativeFRWBridge';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAndroidTextFix } from '@/lib/androidTextFix';
+import { cn } from '@/lib/utils';
 import { SearchIcon, ScanIcon, CloseIcon } from 'ui';
-import NativeFRWBridge from '@/bridge/NativeFRWBridge';
-import { useTranslation } from 'react-i18next';
 
 interface AddressSearchBoxProps {
   value: string;

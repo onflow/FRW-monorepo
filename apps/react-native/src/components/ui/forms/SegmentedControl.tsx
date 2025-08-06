@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, View } from 'react-native';
+
 import { Text } from 'ui';
 
 interface SegmentedControlProps {

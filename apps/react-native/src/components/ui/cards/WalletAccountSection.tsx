@@ -1,16 +1,18 @@
+import type { WalletAccount } from '@onflow/frw-types';
+import React from 'react';
+import { TouchableOpacity, View } from 'react-native';
+
 import { useTheme } from '@/contexts/ThemeContext';
 import { isEVMAccount } from '@/lib';
 import { Link } from 'icons';
-import React from 'react';
-import { TouchableOpacity, View } from 'react-native';
 import { EVMChip, Skeleton, Text } from 'ui';
+
 import { CopyIcon } from '../icons/CopyIcon';
 import { ContactAvatar } from '../media/ContactAvatar';
 import { WalletAvatar } from '../media/WalletAvatar';
 import AddressText from '../typography/AddressText';
 
 // Import unified type instead of defining locally
-import type { WalletAccount } from '@onflow/frw-types';
 
 interface WalletAccountSectionProps {
   account: WalletAccount;

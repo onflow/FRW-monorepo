@@ -24,7 +24,7 @@ class FlowService {
       if (!bridgeToUse) {
         try {
           bridgeToUse = context.bridge;
-        } catch (error) {
+        } catch {
           throw new Error('FlowService requires bridge parameter or initialized ServiceContext');
         }
       }
@@ -69,10 +69,10 @@ class FlowService {
         // If no balance found, it might be an invalid address or no COA exists
         throw new Error('No balance found for address');
       }
-    } catch (error) {
-      logger.error('Error fetching balance via CadenceService', error);
+    } catch (_error) {
+      logger.error('Error fetching balance via CadenceService', _error);
       throw new Error(
-        `Failed to fetch balance: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to fetch balance: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       );
     }
   }
@@ -104,7 +104,7 @@ class FlowService {
    * @param flowAddress - The Flow address
    * @returns Promise<string | null> - The EVM address or null if no COA exists
    */
-  async getEvmAddress(flowAddress: string): Promise<string | null> {
+  async getEvmAddress(_flowAddress: string): Promise<string | null> {
     // TODO: Implement this using CadenceService if needed
     // For now, return null since the main use case is balance fetching
     logger.warn('FlowService: getEvmAddress not yet implemented via CadenceService');

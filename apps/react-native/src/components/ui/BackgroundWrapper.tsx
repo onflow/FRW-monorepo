@@ -1,6 +1,7 @@
-import { useTheme } from '@/contexts/ThemeContext';
 import React from 'react';
 import { SafeAreaView, StatusBar, View } from 'react-native';
+
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface BackgroundWrapperProps {
   children: React.ReactNode;

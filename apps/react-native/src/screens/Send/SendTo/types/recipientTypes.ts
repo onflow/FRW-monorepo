@@ -1,4 +1,5 @@
-import { WalletAccount } from '@onflow/frw-types';
+import { type WalletAccount } from '@onflow/frw-types';
+
 import type { RecipientTabType } from '../SendToScreen';
 
 export interface GroupedContacts {

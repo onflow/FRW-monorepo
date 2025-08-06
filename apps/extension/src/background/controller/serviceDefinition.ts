@@ -1,7 +1,36 @@
-// @ts-nocheck
 // import { walletController } from './index';
 
-export function serviceDefinition(address, keyId, type, network, opts = {}) {
+interface ServiceDefinition {
+  f_type: string;
+  f_vsn: string;
+  type: string;
+  uid: string;
+  network: string;
+  endpoint: string;
+  id?: string;
+  identity?: {
+    address: string;
+    keyId?: number;
+  };
+  provider?: {
+    f_type: string;
+    f_vsn: string;
+    address: string;
+    name: string;
+    icon: string;
+    description: string;
+  };
+  method?: string;
+  data?: any;
+}
+
+export function serviceDefinition(
+  address: string,
+  keyId: string | number,
+  type: string,
+  network: string,
+  opts: any = {}
+): ServiceDefinition {
   const definition = {
     f_type: 'Service',
     f_vsn: '1.0.0',
@@ -54,7 +83,13 @@ export function serviceDefinition(address, keyId, type, network, opts = {}) {
   return definition;
 }
 
-export function preAuthzServiceDefinition(address, keyId, payerAddress, payerKeyId, network) {
+export function preAuthzServiceDefinition(
+  address: string,
+  keyId: string | number,
+  payerAddress: string,
+  payerKeyId: string | number,
+  network: string
+) {
   return {
     f_type: 'PreAuthzResponse',
     f_vsn: '1.0.0',

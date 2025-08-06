@@ -1,4 +1,3 @@
-// @ts-nocheck
 const PositiveInteger = 0;
 const NegativeInteger = 1;
 const ByteString = 2;
@@ -91,17 +90,19 @@ export class CborSimpleDecoder {
         return -1 - header.length;
       case ByteString:
         return reader.readBytes(header.length);
-      case TextString:
+      case TextString: {
         const utf = new TextDecoder('utf-8');
         return utf.decode(reader.readBytes(header.length));
-      case Array:
+      }
+      case Array: {
         const array = [];
         for (let i = 0; i < header.length; i++) {
           const obj = CborSimpleDecoder.readObject(reader);
           array.push(obj);
         }
         return array;
-      case Map:
+      }
+      case Map: {
         const map = {};
         for (let i = 0; i < header.length; i++) {
           const key = CborSimpleDecoder.readObject(reader);
@@ -109,6 +110,7 @@ export class CborSimpleDecoder {
           map[key] = value;
         }
         return map;
+      }
       default:
         throw new Error(`not implemented: major=${header.major} information=${header.information}`);
     }
