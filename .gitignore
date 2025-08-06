@@ -22,6 +22,9 @@ build/
 *.tsbuildinfo
 *.log
 
+# Exception: Don't ignore extension build folder
+!apps/extension/build/
+
 # Environment variables and sensitive files
 .env
 .env.*
