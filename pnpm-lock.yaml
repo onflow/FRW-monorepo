@@ -549,6 +549,9 @@ importers:
       '@react-native/gradle-plugin':
         specifier: ^0.80.1
         version: 0.80.2
+      '@react-native/normalize-colors':
+        specifier: ^0.80.2
+        version: 0.80.2
       '@react-navigation/elements':
         specifier: ^2.5.2
         version: 2.6.2(@react-navigation/native@7.1.17(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0))(react-native-safe-area-context@5.4.0(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0))(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0)
@@ -588,12 +591,18 @@ importers:
       immer:
         specifier: ^10.1.1
         version: 10.1.1
+      instabug-reactnative:
+        specifier: ^15.0.1
+        version: 15.0.1(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0)
       nativewind:
         specifier: ^4.1.23
         version: 4.1.23(react-native-reanimated@4.0.1(@babel/core@7.28.0)(react-native-worklets@0.4.1(@babel/core@7.28.0)(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0))(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0))(react-native-safe-area-context@5.4.0(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0))(react-native-svg@15.12.1(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0))(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0)(tailwindcss@3.4.17(ts-node@10.9.2(@swc/core@1.13.3)(@types/node@22.17.0)(typescript@5.0.4)))
       react:
         specifier: 19.1.0
         version: 19.1.0
+      react-freeze:
+        specifier: ^1.0.4
+        version: 1.0.4(react@19.1.0)
       react-i18next:
         specifier: ^15.6.1
         version: 15.6.1(i18next@25.3.2(typescript@5.0.4))(react-dom@19.1.1(react@19.1.0))(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0)(typescript@5.0.4)
@@ -3076,6 +3085,9 @@ packages:
 
   '@react-native/normalize-colors@0.80.1':
     resolution: {integrity: sha512-YP12bjz0bzo2lFxZDOPkRJSOkcqAzXCQQIV1wd7lzCTXE0NJNwoaeNBobJvcPhiODEWUYCXPANrZveFhtFu5vw==}
+
+  '@react-native/normalize-colors@0.80.2':
+    resolution: {integrity: sha512-08Ax7554Z31NXi5SQ6h1GsiSrlZEOYHQNSC7u+x91Tdiq87IXldW8Ib1N3ThXoDcD8bjr+I+MdlabEJw36/fFg==}
 
   '@react-native/typescript-config@0.80.1':
     resolution: {integrity: sha512-rcDV6BMh+rjsYIh/f0pd6mWOKN4eTS9nov7CyeU2cAfuIEslScEJ7Kv6YZtlLZ5PgC9teUf5L9pqzx9GwmzY/w==}
@@ -6893,6 +6905,13 @@ packages:
   ini@4.1.1:
     resolution: {integrity: sha512-QQnnxNyfvmHFIsj7gkPcYymR8Jdw/o7mp5ZFihxn6h8Ci6fh3Dx4E1gPjpQEpIuPo9XVNY/ZUwh4BPMjGyL01g==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
+
+  instabug-reactnative@15.0.1:
+    resolution: {integrity: sha512-bO7DybaW1xH9yeEQWAoz6zVGNONVEDX16blapvq8E2LEwnUfZAdYxyNq53gsQM44GT4hDtouzZ3zcY5L+DUNCw==}
+    hasBin: true
+    peerDependencies:
+      react: '>=16.8.6'
+      react-native: '>=0.60.0'
 
   internal-ip@6.2.0:
     resolution: {integrity: sha512-D8WGsR6yDt8uq7vDMu7mjcR+yRMm3dW8yufyChmszWRjcSHuxLBkR3GdS2HZAjodsaGuCvXeEJpueisXJULghg==}
@@ -13910,6 +13929,8 @@ snapshots:
 
   '@react-native/normalize-colors@0.80.1': {}
 
+  '@react-native/normalize-colors@0.80.2': {}
+
   '@react-native/typescript-config@0.80.1': {}
 
   '@react-native/virtualized-lists@0.80.1(@types/react@19.1.9)(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0)':
@@ -19079,6 +19100,11 @@ snapshots:
   ini@1.3.8: {}
 
   ini@4.1.1: {}
+
+  instabug-reactnative@15.0.1(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0):
+    dependencies:
+      react: 19.1.0
+      react-native: 0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0)
 
   internal-ip@6.2.0:
     dependencies:

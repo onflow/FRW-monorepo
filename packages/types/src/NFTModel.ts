@@ -19,6 +19,11 @@ export interface NFTModel extends NFT {
   type: WalletType;
 }
 
+// only for native nft model, don't use this on react native
+export interface RNNFTModel extends NFTModel {
+  placeholder?: string;
+}
+
 export function getNFTCover(nft: NFTModel): string {
   if (nft.thumbnail) {
     return nft.thumbnail;
@@ -27,6 +32,10 @@ export function getNFTCover(nft: NFTModel): string {
     return nft.postMedia.image;
   }
   return '';
+}
+
+export function isERC1155(nft: NFTModel): boolean {
+  return nft.contractType === 'ERC1155';
 }
 
 export default NFTModel;

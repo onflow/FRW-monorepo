@@ -5,8 +5,8 @@ import { serviceOptions } from './service.generated';
 import { getJwtToken } from './utils';
 
 const instance = axios.create({
-  baseURL: 'https://test.lilico.app', // todo dev var
-  timeout: 1000,
+  baseURL: NativeFRWBridge.getEnvKeys().NODE_API_URL,
+  timeout: 30000,
 });
 
 instance.interceptors.request.use(
@@ -24,8 +24,8 @@ serviceOptions.axios = instance;
 
 // go service
 const goInstance = axios.create({
-  baseURL: 'https://dev.lilico.app', // todo dev var
-  timeout: 1000,
+  baseURL: NativeFRWBridge.getEnvKeys().NODE_API_URL,
+  timeout: 30000,
 });
 
 goInstance.interceptors.request.use(
