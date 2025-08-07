@@ -1,5 +1,5 @@
 import { type WalletAccount, type NFTModel } from '@onflow/frw-types';
-import { isERC1155 } from '@onflow/frw-types';
+import { isERC1155 } from '@onflow/frw-utils';
 import { useNavigation } from '@react-navigation/native';
 import type { NavigationProp } from '@react-navigation/native';
 import { View, Image, TouchableOpacity } from 'react-native';
@@ -8,7 +8,6 @@ import { IconView } from '@/components/ui/media/IconView';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { CheckCircle as CheckCircleIcon, CheckCircleFill as CheckCircleFillIcon } from 'icons';
 import { Text } from 'ui';
-
 
 interface NFTListCardProps {
   nft: NFTModel;

@@ -42,3 +42,10 @@ export function hasNFTMedia(nft: NFTModel): boolean {
 export function getNFTDisplayName(nft: NFTModel): string {
   return nft.name || nft.id || 'Unnamed NFT';
 }
+
+/**
+ * Checks if an NFT is an ERC1155 token
+ */
+export function isERC1155(nft: NFTModel): boolean {
+  return nft.contractType === 'ERC1155';
+}

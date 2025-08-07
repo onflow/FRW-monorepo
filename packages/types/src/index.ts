@@ -19,7 +19,6 @@ export type { NFTListNFT } from './NFTListTypes';
 
 // NFT Model types
 export type { CollectionPath, CollectionModel, NFTModel, RNNFTModel } from './NFTModel';
-export { isERC1155 } from './NFTModel';
 
 // Token Info types and utilities
 export type { FlowPath } from './TokenInfo';
