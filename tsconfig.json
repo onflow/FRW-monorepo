@@ -9,6 +9,7 @@
       "@onflow/frw-services": ["./packages/services/src"],
       "@onflow/frw-stores": ["./packages/stores/src"],
       "@onflow/frw-types": ["./packages/types/src"],
+      "@onflow/frw-ui": ["./packages/ui/src"],
       "@onflow/frw-utils": ["./packages/utils/src"],
       "@onflow/frw-workflow": ["./packages/workflow/src"]
     }
@@ -30,6 +31,7 @@
     { "path": "./packages/context" },
     { "path": "./packages/services" },
     { "path": "./packages/stores" },
+    { "path": "./packages/ui" },
     { "path": "./packages/workflow" }
   ]
 }
