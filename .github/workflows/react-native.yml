@@ -1,0 +1,68 @@
+name: React Native Validation
+
+on:
+  push:
+    paths:
+      - "apps/react-native/**"
+    branches: [main, dev]
+  pull_request:
+    paths:
+      - "apps/react-native/**"
+    branches: [main, dev]
+
+jobs:
+  react-native-bundle-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages first
+        run: pnpm -r --filter='./packages/*' build
+
+      - name: Regenerate bridge models after package build
+        run: pnpm -F "frw-rn" codegen:bridge
+
+      - name: Build React Native Android Bundle
+        run: |
+          cd apps/react-native
+          pnpm bundle:android
+
+  react-native-bundle-ios:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages first
+        run: pnpm -r --filter='./packages/*' build
+
+      - name: Regenerate bridge models after package build
+        run: pnpm -F "frw-rn" codegen:bridge
+
+      - name: Build React Native iOS Bundle
+        run: |
+          cd apps/react-native
+          pnpm bundle:ios

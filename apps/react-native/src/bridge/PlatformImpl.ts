@@ -202,10 +202,8 @@ class PlatformImpl implements PlatformSpec {
     });
 
     // Configure response interceptor
-    cadenceService.useResponseInterceptor(async (response: any) => {
-      // eslint-disable-next-line no-console
-      console.log('cadenceService response', response);
-      if (isTransactionId(response)) {
+    cadenceService.useResponseInterceptor(async (config: any, response: any) => {
+      if (config.type === 'transaction' && isTransactionId(response)) {
         NativeFRWBridge.listenTransaction(response);
       }
       return response;
