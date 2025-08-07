@@ -4,12 +4,10 @@ on:
   push:
     paths:
       - "apps/extension/**"
-      - "packages/**"
       - ".github/workflows/extension-build.yml"
   pull_request:
     paths:
       - "apps/extension/**"
-      - "packages/**"
       - ".github/workflows/extension-build.yml"
   workflow_dispatch:
 
