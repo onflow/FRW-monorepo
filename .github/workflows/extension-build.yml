@@ -144,7 +144,7 @@ jobs:
           echo "All packages built successfully"
 
       - name: Run tests
-        run: pnpm test
+        run: pnpm -F frw-extension test:run
 
       - name: Build extension
         run: |
