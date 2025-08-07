@@ -1,19 +1,17 @@
-import { configureFCL } from '@onflow/frw-cadence';
-import dotenv from 'dotenv';
+import { configureFCL, CadenceService } from '@onflow/frw-cadence';
 import { describe, it, expect, beforeEach } from 'vitest';
 
-import {
-  //  SendTransaction,
-  cadenceService,
-} from '../src';
+// import { SendTransaction, } from '../src'
 // import { getTrx } from '../src/utils';
-import { accounts } from '../src/utils/accounts';
+import { accounts } from './utils/accounts';
 
-dotenv.config();
+// dotenv.config();
 
 const mainAccount = accounts.main;
 const child1Account = accounts.child1;
 const child2Account = accounts.child2;
+
+const cadenceService = new CadenceService();
 
 describe('Test send strategies', () => {
   beforeEach(() => {

@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "build": "pnpm run bundle:android && pnpm run bundle:ios",
     "android": "react-native run-android",
     "ios": "react-native run-ios --scheme FlowWallet-dev",
     "ios:prod": "react-native run-ios --scheme FlowWallet",

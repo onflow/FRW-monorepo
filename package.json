@@ -7,7 +7,7 @@
     "build": "pnpm -r build",
     "build:packages": "pnpm -F './packages/**' build",
     "build:extension": "pnpm -F frw-extension build:dev",
-    "build:rn": "pnpm -F FRWRN android",
+    "build:rn": "pnpm -F FRWRN bundle:android && pnpm -F FRWRN bundle:ios",
     "dev": "pnpm -r --parallel build:watch",
     "dev:packages": "pnpm -F './packages/**' --parallel build:watch",
     "dev:extension": "pnpm -F frw-extension build:dev",

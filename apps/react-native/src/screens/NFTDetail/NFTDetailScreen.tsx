@@ -11,8 +11,6 @@ import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { CheckCircle as CheckCircleIcon, CheckCircleFill as CheckCircleFillIcon } from 'icons';
 import { BackgroundWrapper, Text, WalletAvatar } from 'ui';
 
-
-
 interface PropertyTagProps {
   label: string;
   value: string;

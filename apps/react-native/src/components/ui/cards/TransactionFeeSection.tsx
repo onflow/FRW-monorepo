@@ -7,7 +7,6 @@ import { Text } from 'ui';
 
 import { FlowLogo } from '../index';
 
-
 interface TransactionFeeSectionProps {
   transactionFee: string;
 }

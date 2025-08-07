@@ -6,7 +6,6 @@ import NativeFRWBridge from '@/bridge/NativeFRWBridge';
 
 import { CloseIcon } from './ui/icons/CloseIcon';
 
-
 interface NavigationCloseButtonProps {
   width?: number;
   height?: number;
