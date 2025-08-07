@@ -3,5 +3,6 @@
   "compilerOptions": {
     "types": []
   },
-  "include": ["src/**/*.ts", "src/**/*.json", "tsup.config.ts"]
+  "include": ["src/**/*.ts", "src/**/*.json", "tsup.config.ts"],
+  "exclude": ["tests/**/*.ts"]
 }

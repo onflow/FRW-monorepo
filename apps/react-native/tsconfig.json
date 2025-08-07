@@ -20,15 +20,31 @@
       "@onflow/frw-workflow": ["../../packages/workflow/src"]
     }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "nativewind-env.d.ts"],
   "references": [
-    { "path": "../../packages/types" },
-    { "path": "../../packages/utils" },
-    { "path": "../../packages/api" },
-    { "path": "../../packages/cadence" },
-    { "path": "../../packages/context" },
-    { "path": "../../packages/services" },
-    { "path": "../../packages/stores" },
-    { "path": "../../packages/workflow" }
+    {
+      "path": "../../packages/types"
+    },
+    {
+      "path": "../../packages/utils"
+    },
+    {
+      "path": "../../packages/api"
+    },
+    {
+      "path": "../../packages/cadence"
+    },
+    {
+      "path": "../../packages/context"
+    },
+    {
+      "path": "../../packages/services"
+    },
+    {
+      "path": "../../packages/stores"
+    },
+    {
+      "path": "../../packages/workflow"
+    }
   ]
 }

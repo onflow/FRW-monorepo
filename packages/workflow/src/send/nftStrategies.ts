@@ -1,7 +1,7 @@
 import type { CadenceService } from '@onflow/frw-cadence';
 
 import type { SendPayload, TransferStrategy } from './types';
-import { encodeEvmContractCallData } from './utils';
+import { encodeEvmContractCallData, GAS_LIMITS } from './utils';
 import { validateEvmAddress, validateFlowAddress } from './validation';
 
 /**
@@ -9,7 +9,7 @@ import { validateEvmAddress, validateFlowAddress } from './validation';
  */
 export class ChildToChildNftStrategy implements TransferStrategy {
   constructor(private cadenceService: CadenceService) {}
-  
+
   canHandle(payload: SendPayload): boolean {
     const { childAddrs, receiver, sender, type } = payload;
     return (
@@ -22,7 +22,12 @@ export class ChildToChildNftStrategy implements TransferStrategy {
 
   async execute(payload: SendPayload): Promise<any> {
     const { flowIdentifier, sender, receiver, ids } = payload;
-    return await this.cadenceService.batchSendChildNftToChild(flowIdentifier, sender, receiver, ids);
+    return await this.cadenceService.batchSendChildNftToChild(
+      flowIdentifier,
+      sender,
+      receiver,
+      ids
+    );
   }
 }
 
@@ -31,7 +36,7 @@ export class ChildToChildNftStrategy implements TransferStrategy {
  */
 export class ChildToOthersNftStrategy implements TransferStrategy {
   constructor(private cadenceService: CadenceService) {}
-  
+
   canHandle(payload: SendPayload): boolean {
     const { childAddrs, sender, assetType, type } = payload;
     return (
@@ -72,7 +77,7 @@ export class ChildToOthersNftStrategy implements TransferStrategy {
  */
 export class ParentToChildNftStrategy implements TransferStrategy {
   constructor(private cadenceService: CadenceService) {}
-  
+
   canHandle(payload: SendPayload): boolean {
     const { childAddrs, receiver, assetType, sender, coaAddr, type } = payload;
     return (
@@ -99,7 +104,7 @@ export class ParentToChildNftStrategy implements TransferStrategy {
  */
 export class TopShotNftStrategy implements TransferStrategy {
   constructor(private cadenceService: CadenceService) {}
-  
+
   canHandle(payload: SendPayload): boolean {
     const { assetType, flowIdentifier, type, receiver } = payload;
     return (
@@ -112,7 +117,7 @@ export class TopShotNftStrategy implements TransferStrategy {
 
   async execute(payload: SendPayload): Promise<any> {
     const { flowIdentifier, receiver, ids } = payload;
-    return await this.cadenceService.sendNbaNftV3(flowIdentifier, receiver, ids[0]);
+    return await this.cadenceService.batchSendNftV3(flowIdentifier, receiver, ids);
   }
 }
 
@@ -121,7 +126,7 @@ export class TopShotNftStrategy implements TransferStrategy {
  */
 export class FlowToFlowNftStrategy implements TransferStrategy {
   constructor(private cadenceService: CadenceService) {}
-  
+
   canHandle(payload: SendPayload): boolean {
     const { assetType, receiver, ids, type } = payload;
     return (
@@ -140,7 +145,7 @@ export class FlowToFlowNftStrategy implements TransferStrategy {
  */
 export class FlowToEvmNftBridgeStrategy implements TransferStrategy {
   constructor(private cadenceService: CadenceService) {}
-  
+
   canHandle(payload: SendPayload): boolean {
     const { assetType, receiver, type } = payload;
     return type === 'nft' && assetType === 'flow' && validateEvmAddress(receiver);
@@ -157,7 +162,7 @@ export class FlowToEvmNftBridgeStrategy implements TransferStrategy {
  */
 export class EvmToFlowNftBridgeStrategy implements TransferStrategy {
   constructor(private cadenceService: CadenceService) {}
-  
+
   canHandle(payload: SendPayload): boolean {
     const { assetType, receiver, type } = payload;
     return type === 'nft' && assetType === 'evm' && validateFlowAddress(receiver);
@@ -178,16 +183,33 @@ export class EvmToFlowNftBridgeStrategy implements TransferStrategy {
  */
 export class EvmToEvmNftStrategy implements TransferStrategy {
   constructor(private cadenceService: CadenceService) {}
-  
+
   canHandle(payload: SendPayload): boolean {
     const { assetType, receiver, type } = payload;
     return type === 'nft' && assetType === 'evm' && validateEvmAddress(receiver);
   }
 
   async execute(payload: SendPayload): Promise<any> {
-    const { tokenContractAddr, amount } = payload;
+    const { tokenContractAddr, ids, amount } = payload;
     const data = encodeEvmContractCallData(payload);
     const value = '0.0';
-    return await this.cadenceService.callContract(tokenContractAddr, value, data, 30_000_000);
+    if (ids.length > 1) {
+      const contracts = ids.map(() => tokenContractAddr);
+      const datas = ids.map((id) => encodeEvmContractCallData({ ...payload, ids: [id] }));
+      const values = ids.map(() => '0.0');
+
+      return await this.cadenceService.batchCallContract(
+        contracts,
+        values,
+        datas,
+        GAS_LIMITS.EVM_DEFAULT
+      );
+    }
+    return await this.cadenceService.callContract(
+      tokenContractAddr,
+      value,
+      data,
+      GAS_LIMITS.EVM_DEFAULT
+    );
   }
 }
