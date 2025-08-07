@@ -99,7 +99,12 @@ export const ConfirmationDrawerContent: React.FC<ConfirmationDrawerContentProps>
             keyboardShouldPersistTaps="handled"
           >
             {/* Account Transfer Display */}
-            <AccountTransferDisplay fromAccount={fromAccount} toAccount={toAccount} />
+            <AccountTransferDisplay
+              fromAccount={fromAccount}
+              toAccount={toAccount}
+              selectedToken={selectedToken}
+              transactionType={transactionType}
+            />
 
             {/* Transaction Details Card */}
             <TransactionDetailsCard
