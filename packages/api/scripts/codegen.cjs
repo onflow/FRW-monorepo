@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
-const { codegen } = require('swagger-axios-codegen')
+const { codegen } = require('swagger-axios-codegen');
 const path = require('path');
-const servicePath = path.resolve(__dirname, '../src/codgen');
+const servicePath = path.resolve(__dirname, '../src/codegen');
 
 codegen({
   methodNameMode: 'path',
@@ -9,6 +9,5 @@ codegen({
   // remoteUrl: 'https://lilico.app/swagger.json',
   source: require('../js_swagger.json'),
   outputDir: servicePath,
-  fileName: 'service.ts',
-})
-
+  fileName: 'service.generated.ts',
+});
