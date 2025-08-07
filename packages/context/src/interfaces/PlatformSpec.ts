@@ -21,6 +21,7 @@ export interface PlatformSpec {
   // API endpoint methods
   getApiEndpoint(): string;
   getGoApiEndpoint(): string;
+  getInstabugToken(): string;
 
   // Storage access
   getStorage(): Storage;

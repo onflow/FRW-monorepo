@@ -11,6 +11,7 @@ export type {
   RecentContactsResponse,
   WalletAccount,
   WalletAccountsResponse,
+  EnvironmentVariables,
 } from './Bridge';
 
 // NFT List types

@@ -60,13 +60,18 @@ class PlatformImpl implements PlatformSpec {
   }
 
   getApiEndpoint(): string {
-    // Determine API endpoint based on environment
-    return __DEV__ ? 'https://web-dev.api.wallet.flow.com' : 'https://web.api.wallet.flow.com';
+    const env = NativeFRWBridge.getEnv();
+    return env.NODE_API_URL;
   }
 
   getGoApiEndpoint(): string {
-    // For now, use the hardcoded endpoint - can be made dynamic later
-    return 'https://dev.lilico.app';
+    const env = NativeFRWBridge.getEnv();
+    return env.GO_API_URL;
+  }
+
+  getInstabugToken(): string {
+    const env = NativeFRWBridge.getEnv();
+    return env.INSTABUG_TOKEN;
   }
 
   getStorage(): Storage {
