@@ -206,6 +206,8 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
         crypto: 'crypto-browserify',
         os: 'os-browserify/browser',
         path: 'path-browserify',
+        buffer: require.resolve('buffer'),
+        events: require.resolve('events'),
         fs: false,
         'fs/promises': false,
       },
