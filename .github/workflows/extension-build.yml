@@ -149,7 +149,7 @@ jobs:
       - name: Build extension
         run: |
           if [[ "${{ needs.determine-env.outputs.env_name }}" == "development" || "${{ needs.determine-env.outputs.env_name }}" == "staging" ]]; then
-            pnpm build:extension
+            pnpm -F frw-extension build:dev-ci
           else
             pnpm -F frw-extension build:ci
           fi
