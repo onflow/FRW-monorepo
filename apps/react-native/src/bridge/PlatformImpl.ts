@@ -1,6 +1,7 @@
 import { type PlatformSpec, type Storage } from '@onflow/frw-context';
 import type { RecentContactsResponse, WalletAccountsResponse } from '@onflow/frw-types';
 import { isTransactionId } from '@onflow/frw-utils';
+import Instabug from 'instabug-reactnative';
 import { MMKV } from 'react-native-mmkv';
 
 import NativeFRWBridge from './NativeFRWBridge';
@@ -9,12 +10,14 @@ class PlatformImpl implements PlatformSpec {
   private debugMode: boolean = __DEV__;
 
   log(level: 'debug' | 'info' | 'warn' | 'error' = 'debug', message: string, ...args: any[]): void {
-    // TODO: Add logging report to Instabug
     if (level === 'debug' && !this.debugMode) {
       return;
     }
-    const prefix = `[FRW-${level.toUpperCase()}]`;
 
+    const prefix = `[FRW-${level.toUpperCase()}]`;
+    const fullMessage = args.length > 0 ? `${message} ${args.join(' ')}` : message;
+
+    // Console logging for development
     switch (level) {
       case 'debug':
         // eslint-disable-next-line no-console
@@ -32,6 +35,33 @@ class PlatformImpl implements PlatformSpec {
         // eslint-disable-next-line no-console
         console.error(prefix, message, ...args);
         break;
+    }
+
+    // Instabug logging for all environments
+    try {
+      const instabugMessage = `${prefix} ${fullMessage}`;
+
+      switch (level) {
+        case 'debug':
+          // Only send debug logs in debug mode to avoid spam
+          if (this.debugMode) {
+            Instabug.logDebug(instabugMessage);
+          }
+          break;
+        case 'info':
+          Instabug.logInfo(instabugMessage);
+          break;
+        case 'warn':
+          Instabug.logWarn(instabugMessage);
+          break;
+        case 'error':
+          Instabug.logError(instabugMessage);
+          break;
+      }
+    } catch (error) {
+      // Fallback to console if Instabug fails (e.g., not initialized yet)
+      // eslint-disable-next-line no-console
+      console.warn('[PlatformImpl] Failed to log to Instabug:', error);
     }
   }
 

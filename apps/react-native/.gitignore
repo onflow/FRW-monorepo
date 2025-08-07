@@ -27,6 +27,7 @@ android/gradle.properties
 android/app/google-services.json
 android/app/src/debug/
 android/app/src/release/
+android-sourcemap.json
 
 # iOS
 ios/Pods/

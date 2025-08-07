@@ -20,6 +20,7 @@
     "postinstall": "pnpm run codegen:bridge && pnpm run icon",
     "bundle:ios": "react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/main.jsbundle --assets-dest ios",
     "bundle:android": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res",
+    "bundle:android:sourcemap": "react-native bundle --platform android --entry-file index.js --dev false --bundle-output android/app/src/main/assets/index.android.bundle --sourcemap-output ./android-sourcemap.json",
     "icon": "node scripts/icon-generator.js",
     "icon:force": "node scripts/icon-generator.js --force"
   },
@@ -52,6 +53,7 @@
     "ethers": "^6.15.0",
     "i18next": "^25.3.2",
     "immer": "^10.1.1",
+    "instabug-reactnative": "^15.0.1",
     "nativewind": "^4.1.23",
     "react": "19.1.0",
     "react-i18next": "^15.6.1",
