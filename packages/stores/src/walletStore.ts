@@ -1,18 +1,8 @@
 import { flowService } from '@onflow/frw-services';
+import type { WalletAccount } from '@onflow/frw-types';
 import { create } from 'zustand';
 
 // import NativeFRWBridge from '@/bridge/NativeFRWBridge'; // TODO: Update import path when bridge is available
-
-// Simple wallet account - only account identity, no financial data
-interface WalletAccount {
-  id: string;
-  name: string;
-  emoji: string;
-  avatar?: string;
-  address: string;
-  type: 'main' | 'child' | 'evm';
-  isActive: boolean;
-}
 
 interface WalletStoreState {
   accounts: WalletAccount[];
@@ -53,15 +43,7 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
       }
 
       // Clean account data - only identity information
-      const accounts: WalletAccount[] = walletAccountsData.accounts.map((account: any) => ({
-        id: account.id,
-        name: account.name,
-        emoji: account.emoji,
-        avatar: account.avatar,
-        address: account.address,
-        type: account.type,
-        isActive: account.isActive,
-      }));
+      const accounts: WalletAccount[] = walletAccountsData.accounts;
 
       // Find active account
       const activeAccount = accounts.find((acc) => acc.isActive) || accounts[0] || null;
