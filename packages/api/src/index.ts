@@ -1,6 +1,3 @@
-// Import static configuration (will be overridden by dynamic config)
-import './codegen/axios';
-
 // Export generated services
 export {
   AccountService as AccountGoService,

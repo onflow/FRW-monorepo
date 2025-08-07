@@ -16,7 +16,7 @@ export function configureApiEndpoints(
   // Configure main API service
   const instance = axios.create({
     baseURL: apiEndpoint,
-    timeout: 10000,
+    timeout: 30000, // 30 seconds timeout
   });
 
   instance.interceptors.request.use(
@@ -48,7 +48,7 @@ export function configureApiEndpoints(
   // Configure Go API service
   const goInstance = axios.create({
     baseURL: goApiEndpoint,
-    timeout: 10000,
+    timeout: 30000, // 30 seconds timeout
   });
 
   goInstance.interceptors.request.use(
