@@ -3,20 +3,21 @@ import { describe, it, expect, beforeEach } from 'vitest';
 
 // import { getTrx } from '../src/utils';
 import { accounts } from './utils/accounts';
-import { authz } from './utils/authz';
 // dotenv.config();
+import { authz } from './utils/authz';
 
 const mainAccount = accounts.main;
 const child1Account = accounts.child1;
 const child2Account = accounts.child2;
 
 const cadenceService = new CadenceService();
+let configCache: any;
 
 describe('Test send strategies', () => {
   beforeEach(() => {
     configureFCL('mainnet');
-
     cadenceService.useRequestInterceptor(async (config: any) => {
+      configCache = config;
       if (config.type === 'transaction') {
         config.payer = authz;
         config.proposer = authz;
@@ -47,11 +48,10 @@ describe('Test send strategies', () => {
   //     tokenContractAddr: '',
   //   };
 
-  //   const txid = await SendTransaction(payload);
+  //   await SendTransaction(payload, cadenceService);
+  //   console.log(configCache, '=======')
+  //   expect(configCache.name).toBe('transferTokensV3')
 
-  //   expect(txid.length).toBe(64);
-
-  //   // const transaction = await getTrx(txid);
   // });
 
   // it('Test send USDC from main account to main account', async () => {
@@ -70,11 +70,10 @@ describe('Test send strategies', () => {
   //     tokenContractAddr: '',
   //   };
 
-  //   const txid = await SendTransaction(payload);
+  //   await SendTransaction(payload, cadenceService);
 
-  //   expect(txid.length).toBe(64);
-
-  //   // const transaction = await getTrx(txid);
+  //   console.log(configCache, '=======')
+  //   expect(configCache.name).toBe('transferTokensV3')
   // });
 
   // it('Test FlowToEvmTokenStrategy - Bridge USDC token to EVM address', async () => {
@@ -93,8 +92,8 @@ describe('Test send strategies', () => {
   //     tokenContractAddr: '',
   //   };
 
-  //   const txid = await SendTransaction(payload);
-  //   expect(txid.length).toBe(64);
+  //   await SendTransaction(payload, cadenceService);
+  //   expect(configCache.name).toBe('bridgeTokensToEvmAddressV2');
   // });
 
   // it('Test FlowTokenBridgeToEvmStrategy - FLOW tokens to CoA address', async () => {
@@ -113,8 +112,8 @@ describe('Test send strategies', () => {
   //     tokenContractAddr: '',
   //   };
 
-  //   const txid = await SendTransaction(payload);
-  //   expect(txid.length).toBe(64);
+  //   await SendTransaction(payload, cadenceService);
+  //   expect(configCache.name).toBe('transferFlowToEvmAddress');
   // });
 
   // it('Test FlowTokenBridgeToEvmStrategy - FLOW tokens to EVM address', async () => {
@@ -133,8 +132,8 @@ describe('Test send strategies', () => {
   //     tokenContractAddr: '',
   //   };
 
-  //   const txid = await SendTransaction(payload);
-  //   expect(txid.length).toBe(64);
+  //   await SendTransaction(payload, cadenceService);
+  //   expect(configCache.name).toBe('transferFlowToEvmAddress');
   // });
 
   // it('Test EvmToFlowCoaWithdrawalStrategy - COA withdrawal to Flow address', async () => {
@@ -153,8 +152,8 @@ describe('Test send strategies', () => {
   //     tokenContractAddr: '',
   //   };
 
-  //   const txid = await SendTransaction(payload);
-  //   expect(txid.length).toBe(64);
+  //   await SendTransaction(payload, cadenceService);
+  //   expect(configCache.name).toBe('withdrawCoa');
   // });
 
   // it('Test EvmToFlowTokenBridgeStrategy - Bridge USDC from EVM to Flow', async () => {
@@ -173,8 +172,8 @@ describe('Test send strategies', () => {
   //     tokenContractAddr: '0x1234567890123456789012345678901234567890',
   //   };
 
-  //   const txid = await SendTransaction(payload);
-  //   expect(txid.length).toBe(64);
+  //   await SendTransaction(payload, cadenceService);
+  //   expect(configCache.name).toBe('bridgeTokensFromEvmToFlowV3');
   // });
 
   // it('Test EvmToEvmTokenStrategy - EVM to EVM token transfer', async () => {
@@ -193,8 +192,8 @@ describe('Test send strategies', () => {
   //     tokenContractAddr: '0x7f27352D5F83Db87a5A3E00f4B07Cc2138D8ee52',
   //   };
 
-  //   const txid = await SendTransaction(payload, cadenceService);
-  //   expect(txid.length).toBe(64);
+  //   await SendTransaction(payload, cadenceService);
+  //   expect(configCache.name).toBe('callContract');
   // });
 
   // it('Test ChildToChildTokenStrategy - Child to child token transfer', async () => {
@@ -213,8 +212,8 @@ describe('Test send strategies', () => {
   //     tokenContractAddr: '',
   //   };
 
-  //   const txid = await SendTransaction(payload);
-  //   expect(txid.length).toBe(64);
+  //   await SendTransaction(payload, cadenceService);
+  //   expect(configCache.name).toBe('sendChildFtToChild');
   // });
 
   // it('Test ChildToOthersTokenStrategy - Child to parent transfer', async () => {
@@ -233,8 +232,8 @@ describe('Test send strategies', () => {
   //     tokenContractAddr: '',
   //   };
 
-  //   const txid = await SendTransaction(payload);
-  //   expect(txid.length).toBe(64);
+  //   await SendTransaction(payload, cadenceService);
+  //   expect(configCache.name).toBe('transferChildFt');
   // });
 
   // it('Test ChildToOthersTokenStrategy - Bridge child to COA', async () => {
@@ -253,8 +252,8 @@ describe('Test send strategies', () => {
   //     tokenContractAddr: '',
   //   };
 
-  //   const txid = await SendTransaction(payload);
-  //   expect(txid.length).toBe(64);
+  //   await SendTransaction(payload, cadenceService);
+  //   expect(configCache.name).toBe('bridgeChildFtToEvm');
   // });
 
   // it('Test ChildToOthersTokenStrategy - Bridge child to EVM address', async () => {
@@ -273,8 +272,8 @@ describe('Test send strategies', () => {
   //     tokenContractAddr: '',
   //   };
 
-  //   const txid = await SendTransaction(payload);
-  //   expect(txid.length).toBe(64);
+  //   await SendTransaction(payload, cadenceService);
+  //   expect(configCache.name).toBe('bridgeChildFtToEvmAddress');
   // });
 
   // it('Test ChildToOthersTokenStrategy - Child to Flow address', async () => {
@@ -293,8 +292,8 @@ describe('Test send strategies', () => {
   //     tokenContractAddr: '',
   //   };
 
-  //   const txid = await SendTransaction(payload);
-  //   expect(txid.length).toBe(64);
+  //   await SendTransaction(payload, cadenceService);
+  //   expect(configCache.name).toBe('sendChildFt');
   // });
 
   // it('Test ParentToChildTokenStrategy - Bridge from EVM to child', async () => {
@@ -313,27 +312,7 @@ describe('Test send strategies', () => {
   //     tokenContractAddr: '0x7f27352d5f83db87a5a3e00f4b07cc2138d8ee52',
   //   };
 
-  //   const txid = await SendTransaction(payload);
-  //   expect(txid.length).toBe(64);
-  // });
-
-  // it('Test bridge Flow - Bridge from EVM to Flow', async () => {
-  //   const payload = {
-  //     type: 'token',
-  //     assetType: 'evm',
-  //     proposer: mainAccount.address,
-  //     receiver: mainAccount.address,
-  //     flowIdentifier: 'A.1654653399040a61.FlowToken.Vault',
-  //     sender: mainAccount.evmAddr,
-  //     amount: '0.001',
-  //     childAddrs: [child1Account.address, child2Account.address],
-  //     ids: [],
-  //     decimal: 6,
-  //     coaAddr: mainAccount.evmAddr,
-  //     tokenContractAddr: '0x0000000000000000000000000000000000000000',
-  //   };
-
-  //   const txid = await SendTransaction(payload);
-  //   expect(txid.length).toBe(64);
+  //   await SendTransaction(payload, cadenceService);
+  //   expect(configCache.name).toBe('bridgeChildFtFromEvm');
   // });
 });

@@ -1,22 +1,21 @@
 import { configureFCL, CadenceService } from '@onflow/frw-cadence';
 import { describe, it, expect, beforeEach } from 'vitest';
 
-// import { getTrx } from '../src/utils';
 import { accounts } from './utils/accounts';
 import { authz } from './utils/authz';
-
-// dotenv.config();
 
 const mainAccount = accounts.main;
 const child1Account = accounts.child1;
 const child2Account = accounts.child2;
 
 const cadenceService = new CadenceService();
+let configCache: any;
 
 describe('Test NFT send strategies', () => {
   beforeEach(() => {
     configureFCL('mainnet');
     cadenceService.useRequestInterceptor(async (config: any) => {
+      configCache = config;
       if (config.type === 'transaction') {
         config.payer = authz;
         config.proposer = authz;
@@ -47,8 +46,8 @@ describe('Test NFT send strategies', () => {
   //     tokenContractAddr: '',
   //   };
 
-  //   const txid = await SendTransaction(payload);
-  //   expect(txid.length).toBe(64);
+  //   await SendTransaction(payload, cadenceService);
+  //   expect(configCache.name).toBe('sendNft');
   // });
 
   // it('Test TopShotNftStrategy - TopShot NFT transfer', async () => {
@@ -67,8 +66,8 @@ describe('Test NFT send strategies', () => {
   //     tokenContractAddr: '',
   //   };
 
-  //   const txid = await SendTransaction(payload);
-  //   expect(txid.length).toBe(64);
+  //   await SendTransaction(payload, cadenceService);
+  //   expect(configCache.name).toBe('batchSendNbaNftV3');
   // });
 
   // it('Test FlowToEvmNftBridgeStrategy - Bridge NFT to EVM address', async () => {
@@ -87,8 +86,8 @@ describe('Test NFT send strategies', () => {
   //     tokenContractAddr: '',
   //   };
 
-  //   const txid = await SendTransaction(payload);
-  //   expect(txid.length).toBe(64);
+  //   await SendTransaction(payload, cadenceService);
+  //   expect(configCache.name).toBe('batchBridgeNftToEvmAddress');
   // });
 
   // it('Test EvmToFlowNftBridgeStrategy - Bridge NFT from EVM to Flow', async () => {
@@ -107,8 +106,8 @@ describe('Test NFT send strategies', () => {
   //     tokenContractAddr: '0x50ab3a827ad268e9d5a24d340108fad5c25dad5f',
   //   };
 
-  //   const txid = await SendTransaction(payload);
-  //   expect(txid.length).toBe(64);
+  //   await SendTransaction(payload, cadenceService);
+  //   expect(configCache.name).toBe('batchBridgeNftFromEvmToFlow');
   // });
 
   // it('Test EvmToEvmNftStrategy - EVM to EVM NFT transfer', async () => {
@@ -127,29 +126,8 @@ describe('Test NFT send strategies', () => {
   //     tokenContractAddr: '0x50ab3a827ad268e9d5a24d340108fad5c25dad5f',
   //   };
 
-  //   const txid = await SendTransaction(payload);
-  //   expect(txid.length).toBe(64);
-  // });
-
-  // it('Test EvmToEvmNftStrategy - EVM to EVM 1155 NFT transfer', async () => {
-  //   // 1155
-  //   const payload = {
-  //     type: 'nft',
-  //     assetType: 'evm',
-  //     proposer: mainAccount.address,
-  //     receiver: '0x3b44f144B97A0402C0e206522c28052C1025A8AA',
-  //     flowIdentifier: '',
-  //     sender: mainAccount.evmAddr,
-  //     amount: '4.0',
-  //     childAddrs: [],
-  //     ids: [1],
-  //     decimal: 0,
-  //     coaAddr: mainAccount.evmAddr,
-  //     tokenContractAddr: '0x3E00930ED9DB5b78D2c1B470cF9dC635BB405f39',
-  //   };
-
-  //   const txid = await SendTransaction(payload, cadenceService);
-  //   expect(txid.length).toBe(64);
+  //   await SendTransaction(payload, cadenceService);
+  //   expect(configCache.name).toBe('callContract');
   // });
 
   // it('Test ChildToChildNftStrategy - Child1 to child2 NFT transfer', async () => {
@@ -168,8 +146,8 @@ describe('Test NFT send strategies', () => {
   //     tokenContractAddr: '',
   //   };
 
-  //   const txid = await SendTransaction(payload);
-  //   expect(txid.length).toBe(64);
+  //   await SendTransaction(payload, cadenceService);
+  //   expect(configCache.name).toBe('batchSendChildNftToChild');
   // });
 
   // it('Test ChildToChildNftStrategy - Child2 to child1 NFT transfer', async () => {
@@ -188,8 +166,8 @@ describe('Test NFT send strategies', () => {
   //     tokenContractAddr: '',
   //   };
 
-  //   const txid = await SendTransaction(payload);
-  //   expect(txid.length).toBe(64);
+  //   await SendTransaction(payload, cadenceService);
+  //   expect(configCache.name).toBe('batchSendChildNftToChild');
   // });
 
   // it('Test ChildToOthersNftStrategy - Child to parent NFT transfer', async () => {
@@ -208,8 +186,8 @@ describe('Test NFT send strategies', () => {
   //     tokenContractAddr: '',
   //   };
 
-  //   const txid = await SendTransaction(payload);
-  //   expect(txid.length).toBe(64);
+  //   await SendTransaction(payload, cadenceService);
+  //   expect(configCache.name).toBe('batchTransferChildNft');
   // });
 
   // it('Test ChildToOthersNftStrategy - Bridge child NFT to COA', async () => {
@@ -228,8 +206,8 @@ describe('Test NFT send strategies', () => {
   //     tokenContractAddr: '',
   //   };
 
-  //   const txid = await SendTransaction(payload);
-  //   expect(txid.length).toBe(64);
+  //   await SendTransaction(payload, cadenceService);
+  //   expect(configCache.name).toBe('batchBridgeChildNftToEvm');
   // });
 
   // it('Test ChildToOthersNftStrategy - Bridge child NFT to EVM address', async () => {
@@ -248,8 +226,8 @@ describe('Test NFT send strategies', () => {
   //     tokenContractAddr: '',
   //   };
 
-  //   const txid = await SendTransaction(payload);
-  //   expect(txid.length).toBe(64);
+  //   await SendTransaction(payload, cadenceService);
+  //   expect(configCache.name).toBe('batchBridgeChildNftToEvmAddress');
   // });
 
   // it('Test ChildToOthersNftStrategy - Child NFT to Flow address', async () => {
@@ -268,8 +246,8 @@ describe('Test NFT send strategies', () => {
   //     tokenContractAddr: '',
   //   };
 
-  //   const txid = await SendTransaction(payload);
-  //   expect(txid.length).toBe(64);
+  //   await SendTransaction(payload, cadenceService);
+  //   expect(configCache.name).toBe('batchSendChildNft');
   // });
 
   // it('Test ParentToChildNftStrategy - Bridge NFT from EVM to child', async () => {
@@ -288,7 +266,7 @@ describe('Test NFT send strategies', () => {
   //     tokenContractAddr: '0x1234567890123456789012345678901234567890',
   //   };
 
-  //   const txid = await SendTransaction(payload);
-  //   expect(txid.length).toBe(64);
+  //   await SendTransaction(payload, cadenceService);
+  //   expect(configCache.name).toBe('batchBridgeChildNftFromEvm');
   // });
 });
