@@ -510,12 +510,15 @@ importers:
 
   apps/react-native:
     dependencies:
+      '@bravemobile/react-native-code-push':
+        specifier: ^11.0.0
+        version: 11.0.0(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))
       '@gorhom/bottom-sheet':
         specifier: ^5.1.8
         version: 5.1.8(@types/react@19.1.9)(react-native-gesture-handler@2.28.0(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0))(react-native-reanimated@4.0.1(@babel/core@7.28.0)(react-native-worklets@0.4.1(@babel/core@7.28.0)(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0))(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0))(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0)
       '@onflow/fcl':
         specifier: ^1.19.0
-        version: 1.20.0(@react-native-async-storage/async-storage@2.2.0(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0)))(@types/react@19.1.9)(google-protobuf@3.21.4)(jiti@2.5.1)(postcss@8.5.6)(react@19.1.0)(ts-node@10.9.2(@swc/core@1.13.3)(@types/node@22.17.0)(typescript@5.0.4))(typescript@5.0.4)
+        version: 1.20.0(@react-native-async-storage/async-storage@2.2.0(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0)))(@types/react@19.1.9)(google-protobuf@3.21.4)(jiti@2.5.1)(postcss@8.5.6)(react@19.1.0)(ts-node@10.9.2(@swc/core@1.13.3)(@types/node@22.17.0)(typescript@5.0.4))(tsx@4.20.3)(typescript@5.0.4)
       '@onflow/frw-api':
         specifier: workspace:*
         version: link:../../packages/api
@@ -554,6 +557,9 @@ importers:
         version: 4.5.7
       '@react-native/gradle-plugin':
         specifier: ^0.80.1
+        version: 0.80.2
+      '@react-native/normalize-colors':
+        specifier: ^0.80.2
         version: 0.80.2
       '@react-navigation/elements':
         specifier: ^2.5.2
@@ -594,12 +600,21 @@ importers:
       immer:
         specifier: ^10.1.1
         version: 10.1.1
+      instabug-reactnative:
+        specifier: ^15.0.1
+        version: 15.0.1(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0)
+      lottie-react-native:
+        specifier: ^7.3.1
+        version: 7.3.1(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0)
       nativewind:
         specifier: ^4.1.23
         version: 4.1.23(react-native-reanimated@4.0.1(@babel/core@7.28.0)(react-native-worklets@0.4.1(@babel/core@7.28.0)(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0))(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0))(react-native-safe-area-context@5.4.0(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0))(react-native-svg@15.12.1(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0))(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0)(tailwindcss@3.4.17(ts-node@10.9.2(@swc/core@1.13.3)(@types/node@22.17.0)(typescript@5.0.4)))
       react:
         specifier: 19.1.0
         version: 19.1.0
+      react-freeze:
+        specifier: ^1.0.4
+        version: 1.0.4(react@19.1.0)
       react-i18next:
         specifier: ^15.6.1
         version: 15.6.1(i18next@25.3.2(typescript@5.0.4))(react-dom@18.3.1(react@19.1.0))(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0)(typescript@5.0.4)
@@ -1680,6 +1695,17 @@ packages:
   '@bcoe/v8-coverage@1.0.2':
     resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
     engines: {node: '>=18'}
+
+  '@bravemobile/react-native-code-push@11.0.0':
+    resolution: {integrity: sha512-FYnHuTieaX2qtOzombEOw1u36aNKz5YaBz5jbaWKuxARiN4cK1Wx7IgfdxZZRJ0Dls8Rcui7ZNmJvRfzBKqvhw==}
+    engines: {node: '>=18'}
+    hasBin: true
+    peerDependencies:
+      expo: '>=50.0.0'
+      react-native: '*'
+    peerDependenciesMeta:
+      expo:
+        optional: true
 
   '@coinbase/cbpay-js@1.10.0':
     resolution: {integrity: sha512-jQ4rqJFNbsCMZ74ATucAUv2IpkbPFXsY+6AVBvFVNKmG4rEgc10Fa87pw/idm6Tlrs7EERQRXEs21DvJpMzi8A==}
@@ -3082,6 +3108,9 @@ packages:
 
   '@react-native/normalize-colors@0.80.1':
     resolution: {integrity: sha512-YP12bjz0bzo2lFxZDOPkRJSOkcqAzXCQQIV1wd7lzCTXE0NJNwoaeNBobJvcPhiODEWUYCXPANrZveFhtFu5vw==}
+
+  '@react-native/normalize-colors@0.80.2':
+    resolution: {integrity: sha512-08Ax7554Z31NXi5SQ6h1GsiSrlZEOYHQNSC7u+x91Tdiq87IXldW8Ib1N3ThXoDcD8bjr+I+MdlabEJw36/fFg==}
 
   '@react-native/typescript-config@0.80.1':
     resolution: {integrity: sha512-rcDV6BMh+rjsYIh/f0pd6mWOKN4eTS9nov7CyeU2cAfuIEslScEJ7Kv6YZtlLZ5PgC9teUf5L9pqzx9GwmzY/w==}
@@ -4948,6 +4977,10 @@ packages:
 
   buffer-crc32@0.2.13:
     resolution: {integrity: sha512-VO9Ht/+p3SN7SKWqcrgEzjGbRSJYTx+Q1pTQC0wrWqHx0vpJraQ6GtHx8tvcg1rlK1byhU5gccxgOgj7B0TDkQ==}
+
+  buffer-crc32@1.0.0:
+    resolution: {integrity: sha512-Db1SbgBS/fg/392AblrMJk97KggmvYhr4pB5ZIMTWtaivCPMWLkmb7m21cJvpvgK+J3nsU2CmmixNBZx4vFj/w==}
+    engines: {node: '>=8.0.0'}
 
   buffer-from@1.1.2:
     resolution: {integrity: sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==}
@@ -6900,6 +6933,13 @@ packages:
     resolution: {integrity: sha512-QQnnxNyfvmHFIsj7gkPcYymR8Jdw/o7mp5ZFihxn6h8Ci6fh3Dx4E1gPjpQEpIuPo9XVNY/ZUwh4BPMjGyL01g==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
 
+  instabug-reactnative@15.0.1:
+    resolution: {integrity: sha512-bO7DybaW1xH9yeEQWAoz6zVGNONVEDX16blapvq8E2LEwnUfZAdYxyNq53gsQM44GT4hDtouzZ3zcY5L+DUNCw==}
+    hasBin: true
+    peerDependencies:
+      react: '>=16.8.6'
+      react-native: '>=0.60.0'
+
   internal-ip@6.2.0:
     resolution: {integrity: sha512-D8WGsR6yDt8uq7vDMu7mjcR+yRMm3dW8yufyChmszWRjcSHuxLBkR3GdS2HZAjodsaGuCvXeEJpueisXJULghg==}
     engines: {node: '>=10'}
@@ -7722,6 +7762,19 @@ packages:
   loose-envify@1.4.0:
     resolution: {integrity: sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==}
     hasBin: true
+
+  lottie-react-native@7.3.1:
+    resolution: {integrity: sha512-VW0gtiP1i3Jv6+PaVaNg6QDIqAXwAqmxVp1UOJFqsB6FeBN0zc8M/XR8DE8YiayZzd149nlqGOgmwoV7FbRGDw==}
+    peerDependencies:
+      '@lottiefiles/dotlottie-react': ^0.6.5
+      react: '*'
+      react-native: '>=0.46'
+      react-native-windows: '>=0.63.x'
+    peerDependenciesMeta:
+      '@lottiefiles/dotlottie-react':
+        optional: true
+      react-native-windows:
+        optional: true
 
   loud-rejection@1.6.0:
     resolution: {integrity: sha512-RPNliZOFkqFumDhvYqOaNY4Uz9oJM2K9tC6JWsJJsNdhuONW4LQHRBpb0qf4pJApVffI5N39SwzWZJuEhfd7eQ==}
@@ -10820,6 +10873,9 @@ packages:
   yauzl@2.10.0:
     resolution: {integrity: sha512-p4a9I6X6nu6IhoGmBqAcbJy1mlC4j27vEPZX9F4L4/vZT3Lyq1VkFHw/V/PUcB9Buo+DG3iHkT0x3Qya58zc3g==}
 
+  yazl@3.3.1:
+    resolution: {integrity: sha512-BbETDVWG+VcMUle37k5Fqp//7SDOK2/1+T7X8TD96M3D9G8jK5VLUdQVdVjGi8im7FGkazX7kk5hkU8X4L5Bng==}
+
   yn@3.1.1:
     resolution: {integrity: sha512-Ux4ygGWsu2c7isFWe8Yu1YluJmqVhxqK2cLXNQA5AcC3QfbGNpM7fu0Y8b/z16pXLnFxZYvWhd3fhBY9DLmC6Q==}
     engines: {node: '>=6'}
@@ -11735,6 +11791,15 @@ snapshots:
   '@bcoe/v8-coverage@0.2.3': {}
 
   '@bcoe/v8-coverage@1.0.2': {}
+
+  '@bravemobile/react-native-code-push@11.0.0(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))':
+    dependencies:
+      commander: 12.1.0
+      hoist-non-react-statics: 3.3.2
+      react-native: 0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0)
+      semver: 7.7.2
+      shelljs: 0.8.5
+      yazl: 3.3.1
 
   '@coinbase/cbpay-js@1.10.0(regenerator-runtime@0.13.11)':
     optionalDependencies:
@@ -13021,7 +13086,7 @@ snapshots:
       - google-protobuf
       - utf-8-validate
 
-  '@onflow/fcl-wc@6.0.5(@onflow/fcl-core@1.21.0(google-protobuf@3.21.4))(@react-native-async-storage/async-storage@2.2.0(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0)))(@types/react@19.1.9)(jiti@2.5.1)(postcss@8.5.6)(react@19.1.0)(ts-node@10.9.2(@swc/core@1.13.3)(@types/node@22.17.0)(typescript@5.0.4))(typescript@5.0.4)':
+  '@onflow/fcl-wc@6.0.5(@onflow/fcl-core@1.21.0(google-protobuf@3.21.4))(@react-native-async-storage/async-storage@2.2.0(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0)))(@types/react@19.1.9)(jiti@2.5.1)(postcss@8.5.6)(react@19.1.0)(ts-node@10.9.2(@swc/core@1.13.3)(@types/node@22.17.0)(typescript@5.0.4))(tsx@4.20.3)(typescript@5.0.4)':
     dependencies:
       '@babel/runtime': 7.28.2
       '@onflow/config': 1.6.0
@@ -13126,7 +13191,7 @@ snapshots:
       '@walletconnect/utils': 2.21.6(typescript@5.9.2)
       postcss-cli: 11.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.3)
       preact: 10.27.0
-      tailwindcss: 3.4.17(ts-node@10.9.2(@swc/core@1.13.3)(@types/node@22.17.0)(typescript@5.0.4))
+      tailwindcss: 3.4.17(ts-node@10.9.2(@swc/core@1.13.3)(@types/node@22.17.0)(typescript@5.9.2))
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -13159,12 +13224,12 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@onflow/fcl@1.20.0(@react-native-async-storage/async-storage@2.2.0(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0)))(@types/react@19.1.9)(google-protobuf@3.21.4)(jiti@2.5.1)(postcss@8.5.6)(react@19.1.0)(ts-node@10.9.2(@swc/core@1.13.3)(@types/node@22.17.0)(typescript@5.0.4))(typescript@5.0.4)':
+  '@onflow/fcl@1.20.0(@react-native-async-storage/async-storage@2.2.0(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0)))(@types/react@19.1.9)(google-protobuf@3.21.4)(jiti@2.5.1)(postcss@8.5.6)(react@19.1.0)(ts-node@10.9.2(@swc/core@1.13.3)(@types/node@22.17.0)(typescript@5.0.4))(tsx@4.20.3)(typescript@5.0.4)':
     dependencies:
       '@babel/runtime': 7.28.2
       '@onflow/config': 1.6.0
       '@onflow/fcl-core': 1.21.0(google-protobuf@3.21.4)
-      '@onflow/fcl-wc': 6.0.5(@onflow/fcl-core@1.21.0(google-protobuf@3.21.4))(@react-native-async-storage/async-storage@2.2.0(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0)))(@types/react@19.1.9)(jiti@2.5.1)(postcss@8.5.6)(react@19.1.0)(ts-node@10.9.2(@swc/core@1.13.3)(@types/node@22.17.0)(typescript@5.0.4))(typescript@5.0.4)
+      '@onflow/fcl-wc': 6.0.5(@onflow/fcl-core@1.21.0(google-protobuf@3.21.4))(@react-native-async-storage/async-storage@2.2.0(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0)))(@types/react@19.1.9)(jiti@2.5.1)(postcss@8.5.6)(react@19.1.0)(ts-node@10.9.2(@swc/core@1.13.3)(@types/node@22.17.0)(typescript@5.0.4))(tsx@4.20.3)(typescript@5.0.4)
       '@onflow/interaction': 0.0.11
       '@onflow/rlp': 1.2.3
       '@onflow/sdk': 1.10.0
@@ -13908,6 +13973,8 @@ snapshots:
       - supports-color
 
   '@react-native/normalize-colors@0.80.1': {}
+
+  '@react-native/normalize-colors@0.80.2': {}
 
   '@react-native/typescript-config@0.80.1': {}
 
@@ -15663,7 +15730,7 @@ snapshots:
 
   '@walletconnect/modal-core@2.7.0':
     dependencies:
-      valtio: 1.11.2(@types/react@19.1.9)(react@19.1.0)
+      valtio: 1.11.2(@types/react@18.3.23)(react@18.3.1)
     transitivePeerDependencies:
       - '@types/react'
       - react
@@ -16826,6 +16893,8 @@ snapshots:
       node-int64: 0.4.0
 
   buffer-crc32@0.2.13: {}
+
+  buffer-crc32@1.0.0: {}
 
   buffer-from@1.1.2: {}
 
@@ -19079,6 +19148,11 @@ snapshots:
 
   ini@4.1.1: {}
 
+  instabug-reactnative@15.0.1(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0):
+    dependencies:
+      react: 19.1.0
+      react-native: 0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0)
+
   internal-ip@6.2.0:
     dependencies:
       default-gateway: 6.0.3
@@ -20064,6 +20138,11 @@ snapshots:
   loose-envify@1.4.0:
     dependencies:
       js-tokens: 4.0.0
+
+  lottie-react-native@7.3.1(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0):
+    dependencies:
+      react: 19.1.0
+      react-native: 0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0)
 
   loud-rejection@1.6.0:
     dependencies:
@@ -23737,6 +23816,10 @@ snapshots:
     dependencies:
       buffer-crc32: 0.2.13
       fd-slicer: 1.1.0
+
+  yazl@3.3.1:
+    dependencies:
+      buffer-crc32: 1.0.0
 
   yn@3.1.1: {}
 

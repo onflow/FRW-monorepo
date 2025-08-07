@@ -44,11 +44,7 @@ export interface Spec extends TurboModule {
   // Listen to a transaction
   listenTransaction(txid: string): void;
   // Get all environment keys
-  getEnvKeys(): {
-    NODE_API_URL: string;
-    GO_API_URL: string;
-    INSTABUG_TOKEN: string;
-  };
+  getEnvKeys(): EnvironmentVariables;
 
   // Flow authorization functions for Cadence transactions
   getProposer(): Promise<any>;

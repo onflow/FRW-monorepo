@@ -2,7 +2,7 @@ import type { WalletAccount } from '@onflow/frw-types';
 import React from 'react';
 import { View } from 'react-native';
 
-import { SendConfirmation as SendConfirmationIcon } from 'icons';
+import { SendConfirmationAnimation } from '@/components/ui/animations/SendConfirmationAnimation';
 
 import { AccountCard } from './AccountCard';
 
@@ -17,8 +17,8 @@ export const AccountTransferDisplay: React.FC<AccountTransferDisplayProps> = ({
 }) => {
   return (
     <View className="items-center" style={{ width: '100%', gap: 16 }}>
-      {/* SendConfirmation SVG */}
-      <SendConfirmationIcon width={399} height={148} />
+      {/* SendConfirmation Animation */}
+      <SendConfirmationAnimation width={399} height={148} autoPlay={true} />
 
       {/* Transfer Visual with Account Cards */}
       <View
