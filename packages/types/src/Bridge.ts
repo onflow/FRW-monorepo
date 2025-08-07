@@ -56,3 +56,8 @@ export interface SendToConfig {
   selectedNFTs?: RNNFTModel[];
   targetAddress?: string;
 }
+export interface EnvironmentVariables {
+  NODE_API_URL: string;
+  GO_API_URL: string;
+  INSTABUG_TOKEN: string;
+}
