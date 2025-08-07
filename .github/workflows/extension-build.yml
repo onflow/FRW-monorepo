@@ -222,7 +222,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install
       - name: Install Playwright Browsers
-        run: pnpm playwright install --with-deps chromium
+        run: pnpm -F frw-extension playwright install --with-deps chromium
       - name: Run Playwright tests
         run: pnpm -F frw-extension test:e2e
         env:
