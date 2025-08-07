@@ -13,10 +13,17 @@ interface Token {
   identifier?: string;
 }
 
+interface NFT {
+  id: string | number;
+  name?: string;
+  thumbnail?: string | object;
+}
+
 interface AccountTransferDisplayProps {
   fromAccount: WalletAccount;
   toAccount: WalletAccount;
   selectedToken?: Token;
+  selectedNFTs?: NFT[];
   transactionType?: string;
 }
 
@@ -24,6 +31,7 @@ export const AccountTransferDisplay: React.FC<AccountTransferDisplayProps> = ({
   fromAccount,
   toAccount,
   selectedToken,
+  selectedNFTs,
   transactionType,
 }) => {
   return (
@@ -34,6 +42,7 @@ export const AccountTransferDisplay: React.FC<AccountTransferDisplayProps> = ({
         height={148}
         autoPlay={true}
         selectedToken={selectedToken}
+        selectedNFTs={selectedNFTs}
         transactionType={transactionType}
       />
 

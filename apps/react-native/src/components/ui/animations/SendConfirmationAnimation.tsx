@@ -19,6 +19,12 @@ interface Token {
   identifier?: string;
 }
 
+interface NFT {
+  id: string | number;
+  name?: string;
+  thumbnail?: string | object;
+}
+
 interface SendConfirmationAnimationProps {
   width?: number;
   height?: number;
@@ -26,6 +32,7 @@ interface SendConfirmationAnimationProps {
   autoPlay?: boolean;
   loop?: boolean;
   selectedToken?: Token;
+  selectedNFTs?: NFT[];
   transactionType?: string;
 }
 
@@ -36,13 +43,34 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
   autoPlay = true,
   loop = false,
   selectedToken,
+  selectedNFTs,
   transactionType,
 }) => {
   const animationRef = useRef<LottieView>(null);
 
-  // For NFTs or when no token is specified, show default Flow logo
-  const shouldShowFlowLogo = !selectedToken || transactionType?.includes('nft');
-  const tokenImageUri = selectedToken?.logoURI;
+  // Determine what to show based on transaction type and available data
+  const isNFTTransaction = transactionType?.includes('nft');
+  const shouldShowFlowLogo = !selectedToken && !isNFTTransaction;
+
+  // Get image URI - prioritize NFT thumbnail for NFT transactions, then token logo
+  const getImageUri = () => {
+    if (isNFTTransaction && selectedNFTs && selectedNFTs.length > 0) {
+      const firstNFT = selectedNFTs[0];
+      // Handle both string and object thumbnail formats
+      if (typeof firstNFT.thumbnail === 'string') {
+        return firstNFT.thumbnail;
+      } else if (
+        firstNFT.thumbnail &&
+        typeof firstNFT.thumbnail === 'object' &&
+        'url' in firstNFT.thumbnail
+      ) {
+        return (firstNFT.thumbnail as any).url;
+      }
+    }
+    return selectedToken?.logoURI;
+  };
+
+  const imageUri = getImageUri();
 
   // Animation values for the token overlay
   const translateX = useSharedValue(0);
@@ -78,15 +106,15 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
       const centerX = width / 2; // 199.5px
       const centerY = height / 2; // 74px
 
-      // Adjust positioning slightly to ensure complete coverage
-      const relativeStartX = scaledStartX - centerX - 2; // Shift 2px left to cover better
-      const relativePeakX = scaledPeakX - centerX - 2;
-      const relativeStartY = scaledStartY - centerY;
-      const relativePeakY = scaledPeakY - centerY;
+      // Adjust positioning to ensure complete coverage of Flow coin
+      const relativeStartX = scaledStartX - centerX - 10; // Shift 10px left (reduced from 12px to slide right slightly)
+      const relativePeakX = scaledPeakX - centerX - 10;
+      const relativeStartY = scaledStartY - centerY - 8; // Shift 8px up to match Flow coin jump
+      const relativePeakY = scaledPeakY - centerY - 8;
 
-      // Timing based on exact frame positions: 0->25->59 frames
-      const firstPhaseRatio = 25 / 60; // 0.417 (41.7% of total time)
-      const secondPhaseRatio = 34 / 60; // 0.567 (56.7% of total time)
+      // Timing based on exact frame positions but adjusted for better coverage: 0->25->59 frames
+      const firstPhaseRatio = 25 / 60; // 0.417 (41.7% of total time) - going up
+      const secondPhaseRatio = 26 / 60; // 0.433 (43.3% of total time) - coming down much faster
 
       // Horizontal movement matching Flow coin exactly
       translateX.value = withSequence(
@@ -169,11 +197,11 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
               position: 'absolute',
               top: '50%',
               left: '50%',
-              width: 54,
-              height: 54,
-              borderRadius: 27,
-              marginLeft: -27,
-              marginTop: -27,
+              width: 56,
+              height: 56,
+              borderRadius: isNFTTransaction ? 8 : 28, // Square with rounded corners for NFTs, circular for tokens
+              marginLeft: -28,
+              marginTop: -28,
               zIndex: 3,
               shadowColor: '#000',
               shadowOffset: { width: 0, height: 3 },
@@ -184,13 +212,13 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
             animatedTokenStyle,
           ]}
         >
-          {tokenImageUri ? (
+          {imageUri ? (
             <Image
-              source={{ uri: tokenImageUri }}
+              source={{ uri: imageUri }}
               style={{
-                width: 54,
-                height: 54,
-                borderRadius: 27,
+                width: 56,
+                height: 56,
+                borderRadius: isNFTTransaction ? 8 : 28, // Square with rounded corners for NFTs, circular for tokens
               }}
               resizeMode="cover"
             />
@@ -198,9 +226,9 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
             // Fallback to Flow logo with circular background
             <View
               style={{
-                width: 54,
-                height: 54,
-                borderRadius: 27,
+                width: 56,
+                height: 56,
+                borderRadius: isNFTTransaction ? 8 : 28, // Square with rounded corners for NFTs, circular for tokens
                 backgroundColor: '#00EF8B',
                 justifyContent: 'center',
                 alignItems: 'center',

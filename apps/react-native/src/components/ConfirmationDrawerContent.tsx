@@ -103,6 +103,7 @@ export const ConfirmationDrawerContent: React.FC<ConfirmationDrawerContentProps>
               fromAccount={fromAccount}
               toAccount={toAccount}
               selectedToken={selectedToken}
+              selectedNFTs={selectedNFTs}
               transactionType={transactionType}
             />
 
