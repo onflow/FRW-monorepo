@@ -1,11 +1,12 @@
 import { ServiceContext } from '@onflow/frw-context';
 import { useWalletStore } from '@onflow/frw-stores';
-import { useEffect } from 'react';
+import { logger } from '@onflow/frw-utils';
+import { useCallback, useEffect } from 'react';
 import { Platform, Text as RNText } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import 'react-native-get-random-values';
-import { bridge } from './bridge/RNBridge';
+import { platform } from './bridge/PlatformImpl';
 import { ConfirmationDrawerProvider } from './contexts/ConfirmationDrawerContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import './global.css';
@@ -32,23 +33,23 @@ const App = (props: AppProps) => {
   // Initialize walletStore when the app starts
   const { loadAccountsFromBridge } = useWalletStore();
 
+  const initializeApp = useCallback(async () => {
+    try {
+      // Initialize services with RNBridge dependency injection
+      ServiceContext.initialize(platform);
+      logger.debug('[App] Services initialized with RNBridge successfully');
+
+      // Initialize walletStore when app starts to have account data ready
+      await loadAccountsFromBridge();
+      logger.debug('[App] Wallet store initialized successfully');
+    } catch (error) {
+      logger.error('[App] Failed to initialize app:', error);
+    }
+  }, [loadAccountsFromBridge]);
+
   useEffect(() => {
-    const initializeApp = async () => {
-      try {
-        // Initialize services with RNBridge dependency injection
-        ServiceContext.initialize(bridge);
-        console.log('[App] Services initialized with RNBridge successfully');
-
-        // Initialize walletStore when app starts to have account data ready
-        await loadAccountsFromBridge();
-        console.log('[App] Wallet store initialized successfully');
-      } catch (error) {
-        console.error('[App] Failed to initialize app:', error);
-      }
-    };
-
     initializeApp();
-  }, []); // Remove loadAccountsFromBridge dependency to prevent re-initialization
+  }, [initializeApp]);
 
   return (
     <ThemeProvider>
