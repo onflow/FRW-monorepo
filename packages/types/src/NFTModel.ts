@@ -18,6 +18,10 @@ export interface CollectionModel extends NFTCollection {
 export interface NFTModel extends NFT {
   type: WalletType;
 }
+// only for native nft model, don't use this on react native
+export interface RNNFTModel extends NFTModel {
+  placeholder?: string;
+}
 
 export function getNFTCover(nft: NFTModel): string {
   if (nft.thumbnail) {
@@ -27,6 +31,20 @@ export function getNFTCover(nft: NFTModel): string {
     return nft.postMedia.image;
   }
   return '';
+}
+
+export function getNFTId(nft: NFTModel): string {
+  return nft.id ?? nft.address ?? '';
+}
+
+export function getNFTSearchText(nft: NFTModel): string {
+  return (
+    (nft.name ?? '') + ' ' + (nft.description ?? '') + ' ' + (nft.postMedia?.description ?? '')
+  );
+}
+
+export function isERC1155(nft: NFTModel): boolean {
+  return nft.contractType === 'ERC1155';
 }
 
 export default NFTModel;

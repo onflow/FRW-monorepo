@@ -1,7 +1,13 @@
-import type NFTModel from '@onflow/frw-types';
+import { useSendStore } from '@onflow/frw-stores';
+import { type NFTModel, type SendToConfig } from '@onflow/frw-types';
+import {
+  createWalletAccountFromConfig,
+  createNFTModelsFromConfig,
+  createTokenInfoFromConfig,
+} from '@onflow/frw-types';
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -57,15 +63,66 @@ interface AppNavigatorProps {
   network?: string;
   initialRoute?: string;
   embedded?: boolean;
-  openSendFlow?: boolean;
+  sendToConfig?: SendToConfig;
 }
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const AppNavigator: React.FC<AppNavigatorProps> = props => {
   const { t } = useTranslation();
-  const { address, network, initialRoute } = props;
+  const { address, network, initialRoute, sendToConfig } = props;
   const { isDark } = useTheme();
+
+  // Send store actions
+  const { setSelectedToken, setCurrentStep, setTransactionType, setFromAccount, setSelectedNFTs } =
+    useSendStore();
+
+  // Initialize SendTo flow if requested
+  useEffect(() => {
+    if (sendToConfig) {
+      try {
+        // Set selected token
+        if (sendToConfig.selectedToken) {
+          console.log('🚀 DEBUG: Setting selected token', sendToConfig.selectedToken);
+          // Convert to TokenInfo type
+          const tokenInfo = createTokenInfoFromConfig(sendToConfig.selectedToken);
+          setSelectedToken(tokenInfo);
+        }
+
+        if (sendToConfig.fromAccount) {
+          console.log('🚀 DEBUG: Setting from account', sendToConfig.fromAccount);
+          const walletAccount = createWalletAccountFromConfig(sendToConfig.fromAccount);
+          setFromAccount(walletAccount);
+        }
+
+        // Set selected NFTs if provided
+        if (sendToConfig.selectedNFTs && Array.isArray(sendToConfig.selectedNFTs)) {
+          console.log('🚀 DEBUG: Setting selected NFTs', sendToConfig.selectedNFTs);
+          const nftModels = createNFTModelsFromConfig(sendToConfig.selectedNFTs);
+          setSelectedNFTs(nftModels);
+        }
+
+        // Set transaction type
+        if (sendToConfig.transactionType) {
+          setTransactionType(
+            sendToConfig.transactionType as 'tokens' | 'single-nft' | 'multiple-nfts'
+          );
+        }
+
+        // Set current step to send-to
+        setCurrentStep('send-to');
+      } catch (error) {
+        console.error('Failed to initialize SendTo flow:', error);
+      }
+    }
+  }, [
+    sendToConfig,
+    setSelectedToken,
+    setCurrentStep,
+    setTransactionType,
+    setFromAccount,
+    setSelectedNFTs,
+  ]);
 
   const customLightTheme = {
     ...DefaultTheme,
@@ -115,7 +172,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
                 headerShown: true,
                 headerTitle: () => <NavigationTitle title={route.params?.nft?.name || 'NFT'} />,
                 headerLeft: () => <NavigationBackButton />,
-                headerRight: undefined,
+                headerRight: () => <NavigationCloseButton />,
               })}
             />
             <Stack.Group

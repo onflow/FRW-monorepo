@@ -11,13 +11,15 @@ export type {
   RecentContactsResponse,
   WalletAccountsResponse,
   AddressBookResponse,
+  SendToConfig,
 } from './Bridge';
 
 // NFT List types
 export type { NFTListNFT } from './NFTListTypes';
 
 // NFT Model types
-export type { CollectionPath, CollectionModel, NFTModel } from './NFTModel';
+export type { CollectionPath, CollectionModel, NFTModel, RNNFTModel } from './NFTModel';
+export { isERC1155 } from './NFTModel';
 
 // Token Info types and utilities
 export type { FlowPath } from './TokenInfo';
@@ -32,6 +34,13 @@ export { WalletType, addressType } from './Wallet';
 
 // Send transaction types
 export type { NavigationProp, ExpandedNFTData, ConfirmationScreenProps } from './Send';
+
+// Bridge handler types
+export {
+  createWalletAccountFromConfig,
+  createNFTModelsFromConfig,
+  createTokenInfoFromConfig,
+} from './BridgeHandler';
 
 export type * from './StoreTypes';
 
