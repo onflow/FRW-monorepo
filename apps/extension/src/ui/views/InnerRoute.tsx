@@ -42,6 +42,7 @@ import RecoveryPhasesDetail from './Setting/recoveryphase/Recoveryphasedetail';
 import Recoveryphrasepassword from './Setting/recoveryphase/Recoveryphrasepassword';
 import Security from './Setting/Security';
 import Switchaccount from './Setting/Switchaccount';
+import TestUI from './TestUI';
 import TokenDetail from './TokenDetail';
 import TokenList from './TokenList';
 
@@ -408,6 +409,14 @@ const InnerRoute = () => {
               element={
                 <PrivateRoute>
                   <Enable />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="testui"
+              element={
+                <PrivateRoute>
+                  <TestUI />
                 </PrivateRoute>
               }
             />
