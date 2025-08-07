@@ -8,7 +8,6 @@ export type {
   AddressBookContact,
   AddressBookResponse,
   Contact,
-  EnvironmentVariables,
   RecentContactsResponse,
   WalletAccount,
   WalletAccountsResponse,
@@ -35,8 +34,5 @@ export { addressType, WalletType } from './Wallet';
 export type { ConfirmationScreenProps, ExpandedNFTData, NavigationProp } from './Send';
 
 export type * from './StoreTypes';
-
-// Codegen utilities
-export type { AssertIdentical, CodegenMirror, ValidateCodegenMirror } from './codegen-utils';
 
 export * from './utils/string';
