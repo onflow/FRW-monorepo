@@ -4,6 +4,7 @@ import { logger } from '@onflow/frw-utils';
 import { useCallback, useEffect } from 'react';
 import { Platform, Text as RNText } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import 'react-native-get-random-values';
 import { platform } from './bridge/PlatformImpl';
@@ -11,8 +12,8 @@ import { ConfirmationDrawerProvider } from './contexts/ConfirmationDrawerContext
 import { ThemeProvider } from './contexts/ThemeContext';
 import './global.css';
 import { getGlobalTextProps } from './lib/androidTextFix';
-import './lib/i18n';
 import AppNavigator from './navigation/AppNavigator';
+import './lib/i18n';
 
 // Configure default text props for Android to prevent text cutoff issues
 if (Platform.OS === 'android') {
@@ -52,13 +53,15 @@ const App = (props: AppProps) => {
   }, [initializeApp]);
 
   return (
-    <ThemeProvider>
+    <SafeAreaProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <ConfirmationDrawerProvider>
-          <AppNavigator {...props} />
-        </ConfirmationDrawerProvider>
+        <ThemeProvider>
+          <ConfirmationDrawerProvider>
+            <AppNavigator {...props} />
+          </ConfirmationDrawerProvider>
+        </ThemeProvider>
       </GestureHandlerRootView>
-    </ThemeProvider>
+    </SafeAreaProvider>
   );
 };
 

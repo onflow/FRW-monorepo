@@ -1,4 +1,6 @@
 // Bridge-related types for native module communication
+import type RNNFTModel from './NFTModel';
+import type { RNTokenModel } from './TokenInfo';
 
 export interface EmojiInfo {
   emoji: string;
@@ -45,4 +47,17 @@ export interface WalletAccountsResponse {
 
 export interface AddressBookResponse {
   contacts: AddressBookContact[];
+}
+
+export interface SendToConfig {
+  selectedToken?: RNTokenModel;
+  fromAccount?: WalletAccount;
+  transactionType: 'tokens' | 'single-nft' | 'multiple-nfts' | 'target-address';
+  selectedNFTs?: RNNFTModel[];
+  targetAddress?: string;
+}
+export interface EnvironmentVariables {
+  NODE_API_URL: string;
+  GO_API_URL: string;
+  INSTABUG_TOKEN: string;
 }

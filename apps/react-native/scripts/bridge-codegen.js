@@ -104,10 +104,16 @@ function mapType(tsType, targetLang, propertyName = '') {
     const enumValues = extractEnumValues(tsType);
     if (enumValues.length > 1) {
       // Create enum name from property name
-      const baseName =
-        propertyName === 'type'
-          ? 'AccountType'
-          : propertyName.charAt(0).toUpperCase() + propertyName.slice(1) + 'Type';
+      let baseName;
+      if (propertyName === 'type' && tsType.includes('Flow') && tsType.includes('EVM')) {
+        baseName = 'WalletType';
+      } else if (propertyName === 'type' && tsType.includes('main') && tsType.includes('child')) {
+        baseName = 'AccountType';
+      } else if (propertyName === 'transactionType') {
+        baseName = 'TransactionType';
+      } else {
+        baseName = propertyName.charAt(0).toUpperCase() + propertyName.slice(1) + 'Type';
+      }
       const enumName = baseName;
       return enumName;
     }
@@ -132,7 +138,9 @@ function mapType(tsType, targetLang, propertyName = '') {
 function generateSwiftEnum(enumName, values) {
   let code = `    enum ${enumName}: String, Codable {\n`;
   values.forEach(value => {
-    code += `        case ${value} = "${value}"\n`;
+    // Convert kebab-case to camelCase for Swift enum cases
+    let swiftCase = value.replace(/-(\w)/g, (match, letter) => letter.toUpperCase());
+    code += `        case ${swiftCase} = "${value}"\n`;
   });
   code += `    }\n\n`;
   return code;
@@ -163,10 +171,20 @@ enum RNBridge {
       if (prop.type.includes('|') && prop.type.includes("'")) {
         const enumValues = extractEnumValues(prop.type);
         if (enumValues.length > 1) {
-          const enumName =
-            prop.name === 'type'
-              ? 'AccountType'
-              : prop.name.charAt(0).toUpperCase() + prop.name.slice(1) + 'Type';
+          let enumName;
+          if (prop.name === 'type' && prop.type.includes('Flow') && prop.type.includes('EVM')) {
+            enumName = 'WalletType';
+          } else if (
+            prop.name === 'type' &&
+            prop.type.includes('main') &&
+            prop.type.includes('child')
+          ) {
+            enumName = 'AccountType';
+          } else if (prop.name === 'transactionType') {
+            enumName = 'TransactionType';
+          } else {
+            enumName = prop.name.charAt(0).toUpperCase() + prop.name.slice(1) + 'Type';
+          }
           enums.set(enumName, enumValues);
         }
       }
@@ -235,10 +253,20 @@ class RNBridge {
       if (prop.type.includes('|') && prop.type.includes("'")) {
         const enumValues = extractEnumValues(prop.type);
         if (enumValues.length > 1) {
-          const enumName =
-            prop.name === 'type'
-              ? 'AccountType'
-              : prop.name.charAt(0).toUpperCase() + prop.name.slice(1) + 'Type';
+          let enumName;
+          if (prop.name === 'type' && prop.type.includes('Flow') && prop.type.includes('EVM')) {
+            enumName = 'WalletType';
+          } else if (
+            prop.name === 'type' &&
+            prop.type.includes('main') &&
+            prop.type.includes('child')
+          ) {
+            enumName = 'AccountType';
+          } else if (prop.name === 'transactionType') {
+            enumName = 'TransactionType';
+          } else {
+            enumName = prop.name.charAt(0).toUpperCase() + prop.name.slice(1) + 'Type';
+          }
           enums.set(enumName, enumValues);
         }
       }
