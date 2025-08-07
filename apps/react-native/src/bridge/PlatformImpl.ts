@@ -5,10 +5,10 @@ import { MMKV } from 'react-native-mmkv';
 
 import NativeFRWBridge from './NativeFRWBridge';
 
-class RNBridge implements PlatformSpec {
+class PlatformImpl implements PlatformSpec {
   private debugMode: boolean = __DEV__;
 
-  log(level: 'debug' | 'info' | 'warn' | 'error', message: string, ...args: any[]): void {
+  log(level: 'debug' | 'info' | 'warn' | 'error' = 'debug', message: string, ...args: any[]): void {
     // TODO: Add logging report to Instabug
     if (level === 'debug' && !this.debugMode) {
       return;
@@ -17,15 +17,19 @@ class RNBridge implements PlatformSpec {
 
     switch (level) {
       case 'debug':
+        // eslint-disable-next-line no-console
         console.log(prefix, message, ...args);
         break;
       case 'info':
+        // eslint-disable-next-line no-console
         console.info(prefix, message, ...args);
         break;
       case 'warn':
+        // eslint-disable-next-line no-console
         console.warn(prefix, message, ...args);
         break;
       case 'error':
+        // eslint-disable-next-line no-console
         console.error(prefix, message, ...args);
         break;
     }
@@ -141,7 +145,7 @@ class RNBridge implements PlatformSpec {
                 }),
               });
 
-              const data = await response.json();
+              const data = (await response.json()) as { envelopeSigs: { sig: string } };
               const signature = data.envelopeSigs.sig;
 
               return {
@@ -199,6 +203,7 @@ class RNBridge implements PlatformSpec {
 
     // Configure response interceptor
     cadenceService.useResponseInterceptor(async (response: any) => {
+      // eslint-disable-next-line no-console
       console.log('cadenceService response', response);
       if (isTransactionId(response)) {
         NativeFRWBridge.listenTransaction(response);
@@ -209,4 +214,4 @@ class RNBridge implements PlatformSpec {
 }
 
 export const storage = new MMKV();
-export const bridge = new RNBridge();
+export const platform = new PlatformImpl();

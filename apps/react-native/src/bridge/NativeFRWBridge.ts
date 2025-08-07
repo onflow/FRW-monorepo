@@ -1,6 +1,27 @@
-import type { RecentContactsResponse, WalletAccountsResponse } from '@onflow/frw-types';
+import type {
+  EnvironmentVariables as SharedEnvironmentVariables,
+  RecentContactsResponse,
+  WalletAccountsResponse,
+} from '@onflow/frw-types';
 import type { TurboModule } from 'react-native';
 import { TurboModuleRegistry } from 'react-native';
+
+/**
+ * Local interface for Codegen - must be defined in the same file
+ * @see {@link SharedEnvironmentVariables} in @onflow/frw-types
+ *
+ * React Native Codegen limitation: Cannot resolve imported types.
+ * This must stay in sync with SharedEnvironmentVariables manually.
+ */
+interface EnvironmentVariables {
+  NODE_API_URL: string;
+  GO_API_URL: string;
+  INSTABUG_TOKEN: string;
+}
+
+// Compile-time sync validation
+const _syncCheck: EnvironmentVariables = {} as SharedEnvironmentVariables;
+const _reverseSyncCheck: SharedEnvironmentVariables = {} as EnvironmentVariables;
 
 export interface Spec extends TurboModule {
   getSelectedAddress(): string | null;
@@ -22,11 +43,8 @@ export interface Spec extends TurboModule {
   isFreeGasEnabled(): Promise<boolean>;
   // Listen to a transaction
   listenTransaction(txid: string): void;
-  
-  // Flow authorization functions for Cadence transactions
-  getProposer(): Promise<any>;
-  getPayer(): Promise<any>;
-  getAuthorizations(): Promise<any[]>;
+
+  getEnv(): EnvironmentVariables;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeFRWBridge');
