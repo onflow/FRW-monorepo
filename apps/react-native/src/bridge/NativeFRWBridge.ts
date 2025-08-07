@@ -43,8 +43,17 @@ export interface Spec extends TurboModule {
   isFreeGasEnabled(): Promise<boolean>;
   // Listen to a transaction
   listenTransaction(txid: string): void;
-  // Get environment variables
-  getEnv(): EnvironmentVariables;
+  // Get all environment keys
+  getEnvKeys(): {
+    NODE_API_URL: string;
+    GO_API_URL: string;
+    INSTABUG_TOKEN: string;
+  };
+
+  // Flow authorization functions for Cadence transactions
+  getProposer(): Promise<any>;
+  getPayer(): Promise<any>;
+  getAuthorizations(): Promise<any[]>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeFRWBridge');

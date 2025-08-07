@@ -1,3 +1,4 @@
+import CodePush from '@bravemobile/react-native-code-push';
 import { ServiceContext } from '@onflow/frw-context';
 import { useWalletStore } from '@onflow/frw-stores';
 import { logger } from '@onflow/frw-utils';
@@ -65,4 +66,21 @@ const App = (props: AppProps) => {
   );
 };
 
-export default App;
+// CodePush configuration - enabled with BraveMobile fork (RN 0.70+ compatible)
+let AppWithCodePush = App;
+
+if (!__DEV__) {
+  try {
+    const codePushOptions = {
+      checkFrequency: CodePush.CheckFrequency.ON_APP_START,
+      installMode: CodePush.InstallMode.ON_NEXT_RESTART,
+    };
+    AppWithCodePush = CodePush(codePushOptions)(App);
+    console.log('CodePush initialized successfully');
+  } catch (error) {
+    console.warn('CodePush initialization failed (this is normal with placeholder keys):', error);
+    AppWithCodePush = App;
+  }
+}
+
+export default AppWithCodePush;
