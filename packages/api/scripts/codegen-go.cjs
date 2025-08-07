@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 const { codegen } = require('swagger-axios-codegen')
 const path = require('path');
-const servicePath = path.resolve(__dirname, '../src/codgen');
+const servicePath = path.resolve(__dirname, '../src/codegen');
 codegen({
   methodNameMode: 'path',
   // remoteUrl: 'https://dev.lilico.app/swagger/doc.json', // go dev env

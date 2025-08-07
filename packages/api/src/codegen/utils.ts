@@ -1,3 +1,3 @@
 export const getJwtToken = async () => {
-  return 'Bear Token'
-}
+  return 'Bear Token';
+};

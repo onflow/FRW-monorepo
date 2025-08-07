@@ -15,7 +15,7 @@
     "start": "react-native start",
     "test": "jest",
     "pod": "npx -y pod-install",
-    "codegen": "node scripts/codegen.js && react-native codegen",
+    "codegen": "react-native codegen",
     "codegen:bridge": "node scripts/bridge-codegen.js",
     "postinstall": "pnpm run codegen:bridge && pnpm run icon",
     "bundle:ios": "react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/main.jsbundle --assets-dest ios",

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-import { serviceOptions as goServiceOptions } from './codgen/goService.generated';
-import { serviceOptions } from './codgen/service.generated';
+import { serviceOptions as goServiceOptions } from './codegen/goService.generated';
+import { serviceOptions } from './codegen/service.generated';
 
 /**
  * Configure API endpoints and authentication dynamically
