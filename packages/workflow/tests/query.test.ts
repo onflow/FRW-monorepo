@@ -1,10 +1,11 @@
-import { configureFCL } from '@onflow/frw-cadence';
+import { configureFCL, CadenceService } from '@onflow/frw-cadence';
 import { describe, it, expect, beforeEach } from 'vitest';
 
-import { cadenceService } from '../src';
-import { accounts } from '../src/utils/accounts';
+import { accounts } from './utils/accounts';
 
 const mainAccount = accounts.main;
+
+const cadenceService = new CadenceService();
 
 describe('Test query scripts', () => {
   beforeEach(() => {

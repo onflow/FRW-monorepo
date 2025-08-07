@@ -23,7 +23,6 @@ import {
 import ColorDemoScreen from '@/screens/ColorDemo/ColorDemoScreen';
 import NFTListScreen from '@/screens/NFTList/NFTListScreen';
 
-
 export type RootStackParamList = {
   Home: { address?: string; network?: string };
   ColorDemo: undefined;
