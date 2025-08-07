@@ -163,7 +163,7 @@ class EvmNFTProvider implements NFTProvider {
     try {
       logger.debug('[NFTService] Calling FlowEvmNftService.collectionList API', {
         address,
-        collectionIdentifier: collection.flowIdentifier || 'undefined',
+        collectionIdentifier: collection.id || 'undefined',
         offset,
         limit,
         method: 'FlowEvmNftService.collectionList',
@@ -172,7 +172,7 @@ class EvmNFTProvider implements NFTProvider {
 
       const res = await FlowEvmNftService.collectionList({
         address,
-        collectionIdentifier: collection.flowIdentifier || '',
+        collectionIdentifier: collection.id || '',
         offset,
         limit,
       });

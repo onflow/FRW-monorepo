@@ -7,6 +7,7 @@ export type { AccountCacheData, UseCachedAccountDataOptions } from './Account';
 export type {
   AddressBookContact,
   AddressBookResponse,
+  SendToConfig,
   Contact,
   RecentContactsResponse,
   WalletAccount,
@@ -18,7 +19,7 @@ export type {
 export type { NFTListNFT } from './NFTListTypes';
 
 // NFT Model types
-export type { CollectionModel, CollectionPath, NFTModel } from './NFTModel';
+export type { CollectionPath, CollectionModel, NFTModel, RNNFTModel } from './NFTModel';
 
 // Token Info types and utilities
 export {
@@ -33,6 +34,13 @@ export { addressType, WalletType } from './Wallet';
 
 // Send transaction types
 export type { ConfirmationScreenProps, ExpandedNFTData, NavigationProp } from './Send';
+
+// Bridge handler types
+export {
+  createWalletAccountFromConfig,
+  createNFTModelsFromConfig,
+  createTokenInfoFromConfig,
+} from './BridgeHandler';
 
 export type * from './StoreTypes';
 

@@ -28,6 +28,3 @@ export interface ConfirmationScreenProps {
   };
   navigation: NavigationProp;
 }
-
-// Re-export WalletAccount type for convenience
-export type { WalletAccount } from './Bridge';

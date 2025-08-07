@@ -2,7 +2,14 @@
 export { isValidFlowAddress, formatFlowAddress, getAddressType, truncateAddress } from './address';
 
 // NFT utilities
-export { getNFTCover, getNFTId, getNFTSearchText, hasNFTMedia, getNFTDisplayName } from './nft';
+export {
+  getNFTCover,
+  getNFTId,
+  getNFTSearchText,
+  hasNFTMedia,
+  getNFTDisplayName,
+  isERC1155,
+} from './nft';
 
 // General utilities
 export {
