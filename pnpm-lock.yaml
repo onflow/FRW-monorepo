@@ -913,6 +913,9 @@ importers:
 
   packages/ui:
     dependencies:
+      '@onflow/frw-context':
+        specifier: workspace:*
+        version: link:../context
       '@onflow/frw-services':
         specifier: workspace:*
         version: link:../services

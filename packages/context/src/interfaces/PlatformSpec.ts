@@ -1,5 +1,6 @@
 import type { RecentContactsResponse, WalletAccountsResponse } from '@onflow/frw-types';
 
+import type { PlatformInfo } from './Platform';
 import type { Storage } from './Storage';
 
 // Re-export CadenceService interceptor types
@@ -11,6 +12,9 @@ export type CadenceResponseInterceptor = (response: any) => any | Promise<any>;
  * This interface defines all methods that platform-specific implementations must implement
  */
 export interface PlatformSpec {
+  // Platform information
+  getPlatformInfo(): PlatformInfo;
+
   // Basic platform methods
   getSelectedAddress(): string | null;
   getNetwork(): string;

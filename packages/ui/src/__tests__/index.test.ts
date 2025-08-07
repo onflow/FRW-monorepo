@@ -1,25 +1,21 @@
 import { describe, it, expect } from 'vitest';
 
-import { Platform, getPlatformInfo } from '../primitives/Platform';
+import { Platform, PlatformType, SelectTokensScreen } from '../index';
 
 describe('UI Package', () => {
-  it('should export Platform utilities', () => {
+  it('should export Platform utilities from context', () => {
     expect(Platform).toBeDefined();
-    expect(getPlatformInfo).toBeDefined();
-    expect(typeof Platform.isReactNative).toBe('boolean');
-    expect(typeof Platform.isWeb).toBe('boolean');
-    expect(typeof Platform.isExtension).toBe('boolean');
+    expect(PlatformType).toBeDefined();
+
+    // Platform enum values should be defined
+    expect(PlatformType.WEB).toBe('web');
+    expect(PlatformType.CHROME_EXTENSION).toBe('extension');
+    expect(PlatformType.REACT_NATIVE_IOS).toBe('ios');
+    expect(PlatformType.REACT_NATIVE_ANDROID).toBe('android');
   });
 
-  it('should detect platform correctly', () => {
-    const platformInfo = getPlatformInfo();
-    expect(platformInfo).toHaveProperty('isReactNative');
-    expect(platformInfo).toHaveProperty('isWeb');
-    expect(platformInfo).toHaveProperty('isExtension');
-
-    // In test environment, should detect as web
-    expect(platformInfo.isWeb).toBe(true);
-    expect(platformInfo.isReactNative).toBe(false);
-    expect(platformInfo.isExtension).toBe(false);
+  it('should export UI components', () => {
+    expect(SelectTokensScreen).toBeDefined();
+    expect(typeof SelectTokensScreen).toBe('function');
   });
 });

@@ -32,6 +32,7 @@
     }
   },
   "dependencies": {
+    "@onflow/frw-context": "workspace:*",
     "@onflow/frw-stores": "workspace:*",
     "@onflow/frw-services": "workspace:*",
     "@onflow/frw-types": "workspace:*",

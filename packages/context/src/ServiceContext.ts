@@ -2,6 +2,7 @@ import { configureApiEndpoints } from '@onflow/frw-api';
 import { createCadenceService, type CadenceService } from '@onflow/frw-cadence';
 import { createLogger, setGlobalLogger, type Logger } from '@onflow/frw-utils';
 
+import { Platform } from './interfaces/Platform';
 import type { PlatformSpec } from './interfaces/PlatformSpec';
 import type { Storage } from './interfaces/Storage';
 
@@ -47,6 +48,12 @@ export class ServiceContext {
       ServiceContext.instance = new ServiceContext();
     }
     ServiceContext.instance._bridge = bridge;
+
+    // Initialize Platform with bridge's platform info
+    Platform.init({
+      getPlatformInfo: () => bridge.getPlatformInfo(),
+      getPlatformType: () => bridge.getPlatformInfo().type,
+    });
 
     // Store storage instance from bridge
     ServiceContext.instance._storage = bridge.getStorage();
