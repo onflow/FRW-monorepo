@@ -22,17 +22,7 @@ interface Token {
 interface NFT {
   id: string | number;
   name?: string;
-  thumbnail?: string | object;
-  collectionName?: string;
-  collection_logo?: string;
-  logoURI?: string;
-  logo?: string;
   collectionSquareImage?: string;
-  collection?: {
-    logo?: string;
-    logoURI?: string;
-    name?: string;
-  };
 }
 
 interface SendConfirmationAnimationProps {
@@ -62,43 +52,11 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
   const isNFTTransaction = transactionType?.includes('nft');
   const shouldShowFlowLogo = !selectedToken && !isNFTTransaction;
 
-  // Get image URI - prioritize NFT collection image for NFT transactions, then token logo
+  // Get image URI - only use collection square image for NFT transactions
   const getImageUri = () => {
     if (isNFTTransaction && selectedNFTs && selectedNFTs.length > 0) {
       const firstNFT = selectedNFTs[0];
-
-      console.log('NFT data for collection image:', {
-        collectionSquareImage: firstNFT.collectionSquareImage,
-        collectionName: firstNFT.collectionName,
-        collection: firstNFT.collection,
-        collection_logo: firstNFT.collection_logo,
-        logoURI: firstNFT.logoURI,
-        logo: firstNFT.logo,
-      });
-
-      // Use collection square image for NFT transactions
-      if (firstNFT.collectionSquareImage) {
-        console.log('Using collectionSquareImage:', firstNFT.collectionSquareImage);
-        return firstNFT.collectionSquareImage;
-      }
-
-      // Fallback to other collection properties if collectionSquareImage is not available
-      if (firstNFT.collection?.logoURI) {
-        console.log('Using collection.logoURI:', firstNFT.collection.logoURI);
-        return firstNFT.collection.logoURI;
-      }
-      if (firstNFT.collection?.logo) {
-        console.log('Using collection.logo:', firstNFT.collection.logo);
-        return firstNFT.collection.logo;
-      }
-      if (firstNFT.collection_logo) {
-        console.log('Using collection_logo:', firstNFT.collection_logo);
-        return firstNFT.collection_logo;
-      }
-
-      console.log('No collection image found for NFT');
-      // No collection image found, return null to hide overlay
-      return null;
+      return firstNFT.collectionSquareImage || null;
     }
     return selectedToken?.logoURI;
   };
