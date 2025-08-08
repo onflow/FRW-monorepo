@@ -1,7 +1,7 @@
 // Shared types for all stores
 import type { WalletAccount } from './Bridge';
 import type { NFTModel } from './NFTModel';
-import type { TokenInfo } from './TokenInfo';
+import type { TokenModel } from './TokenModel';
 
 export interface User {
   id: string;
@@ -67,7 +67,7 @@ export interface SendFormData {
 
 export interface SendState {
   // Current flow data
-  selectedToken: TokenInfo | null;
+  selectedToken: TokenModel | null;
   fromAccount: WalletAccount | null;
   toAccount: WalletAccount | null;
   transactionType: TransactionType;
@@ -80,7 +80,7 @@ export interface SendState {
   error: string | null;
 
   // Actions
-  setSelectedToken: (token: TokenInfo | null) => void;
+  setSelectedToken: (token: TokenModel | null) => void;
   setFromAccount: (account: WalletAccount | null) => void;
   setToAccount: (account: WalletAccount | null) => void;
   setTransactionType: (type: TransactionType) => void;

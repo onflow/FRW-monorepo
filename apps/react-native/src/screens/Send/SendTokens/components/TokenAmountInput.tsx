@@ -1,4 +1,4 @@
-import { type TokenInfo } from '@onflow/frw-types';
+import { type TokenModel } from '@onflow/frw-types';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -9,7 +9,7 @@ import { SwitchVertical, VerifiedToken as VerifiedIcon } from 'icons';
 import { ChevronDown, FlowLogo } from 'ui';
 
 interface TokenAmountInputProps {
-  selectedToken: TokenInfo | null;
+  selectedToken: TokenModel | null;
   formData: {
     tokenAmount: string;
     fiatAmount: string;

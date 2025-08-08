@@ -4,7 +4,7 @@ import {
   addressType,
   formatCurrencyStringForDisplay,
   type CollectionModel,
-  type TokenInfo,
+  type TokenModel,
 } from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
 import { create } from 'zustand';
@@ -26,7 +26,7 @@ const CACHE_STRATEGIES = {
 // Unified cache structure per address
 interface AddressCache {
   // Token and NFT data
-  tokens: TokenInfo[];
+  tokens: TokenModel[];
   nftCollections: CollectionModel[];
 
   // Balance data
@@ -79,7 +79,7 @@ interface TokenStoreActions {
   ) => Promise<BalanceData>;
 
   // Address-specific cache access for wallet integration
-  getTokensForAddress: (address: string, network?: string) => TokenInfo[] | null;
+  getTokensForAddress: (address: string, network?: string) => TokenModel[] | null;
   getNFTCollectionsForAddress: (address: string, network?: string) => CollectionModel[] | null;
   getCachedBalanceForAddress: (address: string) => BalanceData | null;
   isCacheValidForAddress: (address: string, network?: string) => boolean;
