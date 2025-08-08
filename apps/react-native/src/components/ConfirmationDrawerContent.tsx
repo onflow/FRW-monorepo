@@ -1,29 +1,15 @@
-import type { WalletAccount } from '@onflow/frw-types';
+import type { WalletAccount, NFTModel } from '@onflow/frw-types';
 import React, { type ReactNode } from 'react';
 import { SafeAreaView, ScrollView, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import ConfirmDialogBg from '@/assets/icons/send/ConfirmDialogBg';
 import {
   AccountTransferDisplay,
-  ConfirmationHeader,
   HoldToSendButton,
   TransactionDetailsCard,
+  ConfirmationHeader,
 } from '@/screens/Send/Confirmation/components';
-
-interface Token {
-  symbol?: string;
-  name?: string;
-  logoURI?: string;
-  identifier?: string;
-  decimal?: number;
-  contractAddress?: string;
-}
-
-interface NFT {
-  id: string | number;
-  name?: string;
-  thumbnail?: string | object;
-}
 
 interface FormData {
   tokenAmount: string;
@@ -34,8 +20,15 @@ interface ConfirmationDrawerContentProps {
   fromAccount: WalletAccount;
   toAccount: WalletAccount;
   transactionType?: string;
-  selectedToken?: Token;
-  selectedNFTs?: NFT[];
+  selectedToken?: {
+    symbol?: string;
+    name?: string;
+    logoURI?: string;
+    identifier?: string;
+    decimal?: number;
+    contractAddress?: string;
+  };
+  selectedNFTs?: NFTModel[];
   formData?: FormData;
   children?: ReactNode;
   onGoBack?: () => void;
@@ -55,6 +48,7 @@ export const ConfirmationDrawerContent: React.FC<ConfirmationDrawerContentProps>
   onClose,
   onConfirm,
 }) => {
+  const insets = useSafeAreaInsets();
   const handleGoBack = () => {
     onGoBack?.();
   };
@@ -97,7 +91,13 @@ export const ConfirmationDrawerContent: React.FC<ConfirmationDrawerContentProps>
             keyboardShouldPersistTaps="handled"
           >
             {/* Account Transfer Display */}
-            <AccountTransferDisplay fromAccount={fromAccount} toAccount={toAccount} />
+            <AccountTransferDisplay
+              fromAccount={fromAccount}
+              toAccount={toAccount}
+              selectedToken={selectedToken}
+              selectedNFTs={selectedNFTs}
+              transactionType={transactionType}
+            />
 
             {/* Transaction Details Card */}
             <TransactionDetailsCard
@@ -112,7 +112,9 @@ export const ConfirmationDrawerContent: React.FC<ConfirmationDrawerContentProps>
           </ScrollView>
 
           {/* Hold to Send Button - Outside content container */}
-          <HoldToSendButton onPress={handleConfirm} />
+          <View style={{ paddingBottom: insets.bottom + 8 }}>
+            <HoldToSendButton onPress={handleConfirm} />
+          </View>
         </View>
       </View>
     </SafeAreaView>

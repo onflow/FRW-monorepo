@@ -1,7 +1,7 @@
 // Send-related types for transactions, NFTs, and confirmation screens
 import type { WalletAccount } from './Bridge';
 import type { NFTModel } from './NFTModel';
-import type { TokenInfo } from './TokenInfo';
+import type { TokenModel } from './TokenModel';
 
 // Navigation type for screen components
 export interface NavigationProp {
@@ -20,7 +20,7 @@ export interface ConfirmationScreenProps {
       fromAccount: WalletAccount;
       toAccount: WalletAccount;
       amount?: string;
-      selectedToken?: TokenInfo;
+      selectedToken?: TokenModel;
       usdValue?: string;
       transactionType: 'tokens' | 'single-nft' | 'multiple-nfts';
       nftData?: NFTModel | NFTModel[];
@@ -28,6 +28,3 @@ export interface ConfirmationScreenProps {
   };
   navigation: NavigationProp;
 }
-
-// Re-export WalletAccount type for convenience
-export type { WalletAccount } from './Bridge';

@@ -1,14 +1,17 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "types": ["node"]
+    "types": ["node"],
+    "rootDir": "./src",
+    "outDir": "./dist"
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.json",
-    "src/codgen/**/*.ts",
-    "tests/**/*.ts",
-    "__tests__/**/*.ts"
-  ],
-  "exclude": ["scripts/**/*", "node_modules", "dist"]
+  "include": ["src/**/*.ts"],
+  "exclude": [
+    "scripts/**/*",
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "__tests__/**/*",
+    "tests/**/*"
+  ]
 }

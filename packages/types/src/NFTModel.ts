@@ -19,14 +19,4 @@ export interface NFTModel extends NFT {
   type: WalletType;
 }
 
-export function getNFTCover(nft: NFTModel): string {
-  if (nft.thumbnail) {
-    return nft.thumbnail;
-  }
-  if (nft.postMedia?.image) {
-    return nft.postMedia.image;
-  }
-  return '';
-}
-
 export default NFTModel;

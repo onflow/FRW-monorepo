@@ -1,13 +1,13 @@
-import { type TokenInfo } from '@onflow/frw-types';
+import { type TokenModel } from '@onflow/frw-types';
+import { getDisplayBalanceWithSymbol } from '@onflow/frw-utils';
 import { TouchableOpacity, View } from 'react-native';
 
-import { formatCurrencyStringForDisplay } from '@/lib/string';
 import { VerifiedToken as VerifiedIcon } from 'icons';
 
 import { IconView } from '../media/IconView';
 import { Text } from '../typography/text';
 export interface TokenCardProps {
-  token: TokenInfo;
+  token: TokenModel;
   onPress?: () => void;
 }
 
@@ -34,14 +34,7 @@ export function TokenCard({ token, onPress }: TokenCardProps) {
               numberOfLines={1}
               ellipsizeMode="tail"
             >
-              {(() => {
-                const balance = token.displayBalance ?? token.balance ?? '0';
-                const numericBalance = parseFloat(balance);
-                const formattedBalance = isNaN(numericBalance)
-                  ? '0'
-                  : formatCurrencyStringForDisplay({ value: numericBalance });
-                return `${formattedBalance} ${token.symbol ?? ''}`;
-              })()}
+              {getDisplayBalanceWithSymbol(token) || '0'}
             </Text>
           </View>
 

@@ -75,9 +75,9 @@ export const ConfirmationDrawerProvider: React.FC<ConfirmationDrawerProviderProp
   const handleConfirm = async () => {
     if (!confirmationData || isProcessing) return;
 
-    setIsProcessing(true);
     try {
       await confirmationData.onConfirm();
+      setIsProcessing(true);
       closeConfirmation();
     } finally {
       setIsProcessing(false);

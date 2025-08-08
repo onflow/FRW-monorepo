@@ -186,7 +186,7 @@ pattern
   ```typescript
   class FlowTokenProvider implements TokenProvider {
     async getData(address: string): Promise<TokenData[]>;
-    processData(data: unknown): TokenInfo[];
+    processData(data: unknown): TokenModel[];
   }
 
   class ERC20TokenProvider implements TokenProvider {

@@ -1,5 +1,5 @@
 // Shared types for all stores
-import type { NFTModel, TokenInfo, WalletAccount } from '@onflow/frw-types';
+import type { NFTModel, TokenModel, WalletAccount } from '@onflow/frw-types';
 import type { SendPayload } from '@onflow/frw-workflow';
 
 export interface User {
@@ -73,7 +73,7 @@ export interface BalanceData {
 
 export interface SendState {
   // Current flow data
-  selectedToken: TokenInfo | null;
+  selectedToken: TokenModel | null;
   fromAccount: WalletAccount | null;
   toAccount: WalletAccount | null;
   transactionType: TransactionType;
@@ -92,7 +92,7 @@ export interface SendState {
   error: string | null;
 
   // Actions
-  setSelectedToken: (token: TokenInfo | null) => void;
+  setSelectedToken: (token: TokenModel | null) => void;
   setFromAccount: (account: WalletAccount | null) => void;
   setToAccount: (account: WalletAccount | null) => void;
   setTransactionType: (type: TransactionType) => void;
@@ -116,10 +116,10 @@ export interface SendState {
 
   // Transaction payload creation
   createSendPayload: () => Promise<SendPayload | null>;
-  
+
   // Transaction execution
   executeTransaction: () => Promise<any>;
-  
+
   // Transaction details for UI
   getTransactionDetailsForDisplay: () => {
     isTokenTransaction: boolean;
@@ -132,4 +132,4 @@ export interface SendState {
   };
 }
 
-export type { NFTModel, TokenInfo, WalletAccount };
+export type { NFTModel, TokenModel, WalletAccount };

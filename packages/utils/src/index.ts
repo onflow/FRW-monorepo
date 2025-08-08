@@ -2,7 +2,14 @@
 export { isValidFlowAddress, formatFlowAddress, getAddressType, truncateAddress } from './address';
 
 // NFT utilities
-export { getNFTCover, getNFTId, getNFTSearchText, hasNFTMedia, getNFTDisplayName } from './nft';
+export {
+  getNFTCover,
+  getNFTId,
+  getNFTSearchText,
+  hasNFTMedia,
+  getNFTDisplayName,
+  isERC1155,
+} from './nft';
 
 // General utilities
 export {
@@ -15,6 +22,9 @@ export {
   isEmpty,
   isTransactionId,
 } from './utils';
+
+// Token utilities
+export { getDisplayBalanceInFLOW, getDisplayBalanceWithSymbol } from './token';
 
 // Logger utilities
 export { createLogger, Logger, logger, setGlobalLogger } from './logger';
