@@ -2,7 +2,7 @@ import { configureFCL, CadenceService } from '@onflow/frw-cadence';
 import dotenv from 'dotenv';
 import { describe, it, expect, beforeEach } from 'vitest';
 
-import { SendTransaction } from '../src';
+import { SendTransaction, isValidSendTransactionPayload } from '../src';
 import { accounts } from './utils/accounts';
 dotenv.config();
 import { authz } from './utils/authz';
@@ -313,5 +313,215 @@ describe('Test send strategies', () => {
 
     await SendTransaction(payload, cadenceService);
     expect(configCache.name).toBe('bridgeChildFtFromEvm');
+  });
+
+  describe('Validation failure tests', () => {
+    it('Should throw error for invalid proposer address format', async () => {
+      const payload = {
+        type: 'token',
+        assetType: 'flow',
+        proposer: '0x123', // Invalid format - too short
+        receiver: mainAccount.address,
+        flowIdentifier: 'A.1654653399040a61.FlowToken.Vault',
+        sender: mainAccount.address,
+        amount: '0.001',
+        childAddrs: [],
+        ids: [],
+        decimal: 8,
+        coaAddr: mainAccount.evmAddr,
+        tokenContractAddr: '',
+      };
+
+      expect(() => isValidSendTransactionPayload(payload)).toThrow('invalid proposer address');
+    });
+
+    it('Should throw error for missing proposer field', async () => {
+      const payload = {
+        type: 'token',
+        assetType: 'flow',
+        proposer: mainAccount.address, // Empty proposer
+        receiver: mainAccount.address,
+        flowIdentifier: '',
+        sender: mainAccount.address,
+        amount: '0.001',
+        childAddrs: [],
+        ids: [],
+        decimal: 8,
+        coaAddr: mainAccount.evmAddr,
+        tokenContractAddr: '',
+      };
+
+      expect(() => isValidSendTransactionPayload(payload)).toThrow(
+        'invalid send transaction payload'
+      );
+    });
+
+    it('Should throw error for missing receiver field', async () => {
+      const payload = {
+        type: 'token',
+        assetType: 'flow',
+        proposer: mainAccount.address,
+        receiver: '', // Empty receiver
+        flowIdentifier: 'A.1654653399040a61.FlowToken.Vault',
+        sender: mainAccount.address,
+        amount: '0.001',
+        childAddrs: [],
+        ids: [],
+        decimal: 8,
+        coaAddr: mainAccount.evmAddr,
+        tokenContractAddr: '',
+      };
+
+      expect(() => isValidSendTransactionPayload(payload)).toThrow(
+        'invalid send transaction payload'
+      );
+    });
+
+    it('Should throw error for invalid token amount (zero)', async () => {
+      const payload = {
+        type: 'token',
+        assetType: 'flow',
+        proposer: mainAccount.address,
+        receiver: mainAccount.address,
+        flowIdentifier: 'A.1654653399040a61.FlowToken.Vault',
+        sender: mainAccount.address,
+        amount: '0', // Invalid amount
+        childAddrs: [],
+        ids: [],
+        decimal: 8,
+        coaAddr: mainAccount.evmAddr,
+        tokenContractAddr: '',
+      };
+
+      expect(() => isValidSendTransactionPayload(payload)).toThrow(
+        'invalid send token transaction payload'
+      );
+    });
+
+    it('Should throw error for invalid token amount (negative)', async () => {
+      const payload = {
+        type: 'token',
+        assetType: 'flow',
+        proposer: mainAccount.address,
+        receiver: mainAccount.address,
+        flowIdentifier: 'A.1654653399040a61.FlowToken.Vault',
+        sender: mainAccount.address,
+        amount: '-0.001', // Negative amount
+        childAddrs: [],
+        ids: [],
+        decimal: 8,
+        coaAddr: mainAccount.evmAddr,
+        tokenContractAddr: '',
+      };
+
+      expect(() => isValidSendTransactionPayload(payload)).toThrow(
+        'invalid send token transaction payload'
+      );
+    });
+
+    it('Should throw error for missing decimal field in token transaction', async () => {
+      const payload = {
+        type: 'token',
+        assetType: 'flow',
+        proposer: mainAccount.address,
+        receiver: mainAccount.address,
+        flowIdentifier: 'A.1654653399040a61.FlowToken.Vault',
+        sender: mainAccount.address,
+        amount: '0.001',
+        childAddrs: [],
+        ids: [],
+        decimal: null, // Missing decimal
+        coaAddr: mainAccount.evmAddr,
+        tokenContractAddr: '',
+      };
+
+      expect(() => isValidSendTransactionPayload(payload)).toThrow(
+        'invalid send token transaction payload'
+      );
+    });
+
+    it('Should throw error for empty NFT IDs in NFT transaction', async () => {
+      const payload = {
+        type: 'nft',
+        assetType: 'flow',
+        proposer: mainAccount.address,
+        receiver: mainAccount.address,
+        flowIdentifier: 'A.some_nft_contract.NFT.Collection',
+        sender: mainAccount.address,
+        amount: '1',
+        childAddrs: [],
+        ids: [], // Empty IDs array
+        decimal: 0,
+        coaAddr: mainAccount.evmAddr,
+        tokenContractAddr: '',
+      };
+
+      expect(() => isValidSendTransactionPayload(payload)).toThrow(
+        'invalid send nft transaction payload'
+      );
+    });
+
+    it('Should throw error for missing tokenContractAddr in non-Flow token', async () => {
+      const payload = {
+        type: 'token',
+        assetType: 'flow',
+        proposer: mainAccount.address,
+        receiver: mainAccount.address,
+        flowIdentifier: 'A.f1ab99c82dee3526.USDCFlow.Vault', // Non-Flow token
+        sender: mainAccount.address,
+        amount: '0.001',
+        childAddrs: [],
+        ids: [],
+        decimal: 8,
+        coaAddr: mainAccount.evmAddr,
+        tokenContractAddr: '', // Missing contract address
+      };
+
+      expect(() => isValidSendTransactionPayload(payload)).toThrow(
+        'invalid send token transaction payload'
+      );
+    });
+
+    it('Should throw error for invalid Flow contract address format', async () => {
+      const payload = {
+        type: 'token',
+        assetType: 'flow',
+        proposer: mainAccount.address,
+        receiver: mainAccount.address,
+        flowIdentifier: 'A.f1ab99c82dee3526.USDCFlow.Vault',
+        sender: mainAccount.address,
+        amount: '0.001',
+        childAddrs: [],
+        ids: [],
+        decimal: 8,
+        coaAddr: mainAccount.evmAddr,
+        tokenContractAddr: '0x123', // Invalid Flow address format
+      };
+
+      expect(() => isValidSendTransactionPayload(payload)).toThrow(
+        'invalid send flow transaction payload'
+      );
+    });
+
+    it('Should throw error for invalid EVM contract address format', async () => {
+      const payload = {
+        type: 'token',
+        assetType: 'evm',
+        proposer: mainAccount.address,
+        receiver: mainAccount.address,
+        flowIdentifier: 'A.f1ab99c82dee3526.USDCFlow.Vault',
+        sender: mainAccount.evmAddr,
+        amount: '0.001',
+        childAddrs: [],
+        ids: [],
+        decimal: 8,
+        coaAddr: mainAccount.evmAddr,
+        tokenContractAddr: '0x123', // Invalid EVM address format - too short
+      };
+
+      expect(() => isValidSendTransactionPayload(payload)).toThrow(
+        'invalid send evm transaction payload - invalid contract address'
+      );
+    });
   });
 });

@@ -2,7 +2,7 @@ import { configureFCL, CadenceService } from '@onflow/frw-cadence';
 import dotenv from 'dotenv';
 import { describe, it, expect, beforeEach } from 'vitest';
 
-import { SendTransaction } from '../src';
+import { SendTransaction, isValidSendTransactionPayload } from '../src';
 import { accounts } from './utils/accounts';
 import { authz } from './utils/authz';
 
@@ -272,5 +272,152 @@ describe('Test NFT send strategies', () => {
 
     await SendTransaction(payload, cadenceService);
     expect(configCache.name).toBe('batchBridgeChildNftFromEvm');
+  });
+
+  describe('Validation failure tests', () => {
+    it('Should throw error for invalid proposer address format', () => {
+      const payload = {
+        type: 'nft',
+        assetType: 'flow',
+        proposer: '0x123', // Invalid format - too short
+        receiver: mainAccount.address,
+        flowIdentifier: 'A.2d4c3caffbeab845.FLOAT.NFT',
+        sender: mainAccount.address,
+        amount: '1',
+        childAddrs: [],
+        ids: [12345],
+        decimal: 0,
+        coaAddr: mainAccount.evmAddr,
+        tokenContractAddr: '',
+      };
+
+      expect(() => isValidSendTransactionPayload(payload)).toThrow('invalid proposer address');
+    });
+
+    it('Should throw error for missing receiver field', () => {
+      const payload = {
+        type: 'nft',
+        assetType: 'flow',
+        proposer: mainAccount.address,
+        receiver: '', // Empty receiver
+        flowIdentifier: 'A.2d4c3caffbeab845.FLOAT.NFT',
+        sender: mainAccount.address,
+        amount: '1',
+        childAddrs: [],
+        ids: [12345],
+        decimal: 0,
+        coaAddr: mainAccount.evmAddr,
+        tokenContractAddr: '',
+      };
+
+      expect(() => isValidSendTransactionPayload(payload)).toThrow(
+        'invalid send transaction payload'
+      );
+    });
+
+    it('Should throw error for missing flowIdentifier field', () => {
+      const payload = {
+        type: 'nft',
+        assetType: 'flow',
+        proposer: mainAccount.address,
+        receiver: mainAccount.address,
+        flowIdentifier: '', // Empty flowIdentifier
+        sender: mainAccount.address,
+        amount: '1',
+        childAddrs: [],
+        ids: [12345],
+        decimal: 0,
+        coaAddr: mainAccount.evmAddr,
+        tokenContractAddr: '',
+      };
+
+      expect(() => isValidSendTransactionPayload(payload)).toThrow(
+        'invalid send transaction payload'
+      );
+    });
+
+    it('Should throw error for missing sender field', () => {
+      const payload = {
+        type: 'nft',
+        assetType: 'flow',
+        proposer: mainAccount.address,
+        receiver: mainAccount.address,
+        flowIdentifier: 'A.2d4c3caffbeab845.FLOAT.NFT',
+        sender: '', // Empty sender
+        amount: '1',
+        childAddrs: [],
+        ids: [12345],
+        decimal: 0,
+        coaAddr: mainAccount.evmAddr,
+        tokenContractAddr: '',
+      };
+
+      expect(() => isValidSendTransactionPayload(payload)).toThrow(
+        'invalid send transaction payload'
+      );
+    });
+
+    it('Should throw error for empty NFT IDs in NFT transaction', () => {
+      const payload = {
+        type: 'nft',
+        assetType: 'flow',
+        proposer: mainAccount.address,
+        receiver: mainAccount.address,
+        flowIdentifier: 'A.2d4c3caffbeab845.FLOAT.NFT',
+        sender: mainAccount.address,
+        amount: '1',
+        childAddrs: [],
+        ids: [], // Empty IDs array
+        decimal: 0,
+        coaAddr: mainAccount.evmAddr,
+        tokenContractAddr: '',
+      };
+
+      expect(() => isValidSendTransactionPayload(payload)).toThrow(
+        'invalid send nft transaction payload'
+      );
+    });
+
+    it('Should throw error for invalid Flow contract address format', () => {
+      const payload = {
+        type: 'nft',
+        assetType: 'flow',
+        proposer: mainAccount.address,
+        receiver: mainAccount.address,
+        flowIdentifier: 'A.2d4c3caffbeab845.FLOAT.NFT',
+        sender: mainAccount.address,
+        amount: '1',
+        childAddrs: [],
+        ids: [12345],
+        decimal: 0,
+        coaAddr: mainAccount.evmAddr,
+        tokenContractAddr: '0x123', // Invalid Flow address format
+      };
+
+      expect(() => isValidSendTransactionPayload(payload)).toThrow(
+        'invalid send flow transaction payload'
+      );
+    });
+
+    it('Should throw error for invalid EVM contract address format', () => {
+      const payload = {
+        type: 'nft',
+        assetType: 'evm',
+        proposer: mainAccount.address,
+        receiver: mainAccount.address,
+        flowIdentifier: 'A.2d4c3caffbeab845.FLOAT.NFT',
+        sender: mainAccount.evmAddr,
+        amount: '1',
+        childAddrs: [],
+        ids: [12345],
+        decimal: 0,
+        coaAddr: mainAccount.evmAddr,
+        tokenContractAddr: '0x123', // Invalid EVM address format - too short
+      };
+
+      expect(() => isValidSendTransactionPayload(payload)).toThrow(
+        'invalid send evm transaction payload - invalid contract address'
+      );
+    });
   });
 });
