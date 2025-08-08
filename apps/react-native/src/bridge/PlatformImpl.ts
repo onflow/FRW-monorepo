@@ -1,10 +1,12 @@
 import { type PlatformSpec, type Storage } from '@onflow/frw-context';
 import type { RecentContactsResponse, WalletAccountsResponse } from '@onflow/frw-types';
 import { isTransactionId } from '@onflow/frw-utils';
+import { GAS_LIMITS } from '@onflow/frw-workflow';
 import Instabug from 'instabug-reactnative';
 import { MMKV } from 'react-native-mmkv';
 
 import NativeFRWBridge from './NativeFRWBridge';
+import { bridgeAuthorization, payer, proposer } from './signWithRole';
 
 class PlatformImpl implements PlatformSpec {
   private debugMode: boolean = __DEV__;
@@ -148,90 +150,24 @@ class PlatformImpl implements PlatformSpec {
       return config;
     });
 
-    // Configure payer authorization
-    cadenceService.useRequestInterceptor(async (config: any) => {
-      if (config.type === 'transaction') {
-        config.payer = async (account: any) => {
-          const ADDRESS = '0x319e67f2ef9d937f'; // Fixed payer address
-          const KEY_ID = 0;
-          return {
-            ...account,
-            tempId: `${ADDRESS}-${KEY_ID}`,
-            addr: ADDRESS.replace('0x', ''),
-            keyId: Number(KEY_ID),
-            signingFunction: async (signable: any) => {
-              // Call your existing signPayer logic here
-              const token = await this.getJWT();
-              const baseURL = 'https://us-central1-lilico-334404.cloudfunctions.net';
-
-              // You might want to extract this to a separate method
-              const response = await fetch(`${baseURL}/signAsPayer`, {
-                method: 'POST',
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                  network: network,
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  transaction: signable.voucher,
-                  message: {
-                    envelope_message: signable.message,
-                  },
-                }),
-              });
-
-              const data = (await response.json()) as { envelopeSigs: { sig: string } };
-              const signature = data.envelopeSigs.sig;
-
-              return {
-                addr: ADDRESS,
-                keyId: Number(KEY_ID),
-                signature: signature,
-              };
-            },
-          };
-        };
-      }
-      return config;
-    });
-
-    // Configure proposer authorization
-    cadenceService.useRequestInterceptor(async (config: any) => {
-      if (config.type === 'transaction') {
-        config.proposer = async (account: any) => {
-          const address = this.getSelectedAddress() || '';
-          const ADDRESS = address.startsWith('0x') ? address : `0x${address}`;
-          const KEY_ID = this.getSignKeyIndex();
-          return {
-            ...account,
-            tempId: `${ADDRESS}-${KEY_ID}`,
-            addr: ADDRESS.replace('0x', ''),
-            keyId: Number(KEY_ID),
-            signingFunction: async (signable: { message: string }) => {
-              return {
-                addr: ADDRESS,
-                keyId: Number(KEY_ID),
-                signature: await this.sign(signable.message),
-              };
-            },
-          };
-        };
-      }
-      return config;
-    });
-
-    // Configure authorizations (same as proposer)
-    cadenceService.useRequestInterceptor(async (config: any) => {
-      if (config.type === 'transaction') {
-        config.authorizations = [config.proposer];
-      }
-      return config;
-    });
-
     // Configure gas limits
     cadenceService.useRequestInterceptor(async (config: any) => {
       if (config.type === 'transaction') {
-        config.limit = 1000; // Default gas limit, you can adjust this
+        config.limit = GAS_LIMITS.CADENCE_DEFAULT;
+        config.payer = payer;
+        config.proposer = proposer;
+      }
+      return config;
+    });
+
+    // Configure authorizations
+    cadenceService.useRequestInterceptor(async (config: any) => {
+      if (config.type === 'transaction') {
+        config.authorizations = [config.proposer];
+
+        if (config.name.endsWith('WithPayer')) {
+          config.authorizations = [config.proposer, bridgeAuthorization];
+        }
       }
       return config;
     });
