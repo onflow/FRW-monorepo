@@ -22,7 +22,9 @@
       "Bash(npx eslint:*)",
       "Bash(git checkout:*)",
       "Bash(sed:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "mcp__figma__get_code",
+      "mcp__figma__get_image"
     ],
     "deny": []
   }

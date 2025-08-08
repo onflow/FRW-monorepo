@@ -3,10 +3,18 @@
  * This page tests loading SelectTokensScreen from @onflow/frw-ui
  */
 
+import { Platform, PlatformType, ServiceContext } from '@onflow/frw-context';
+import {
+  Card,
+  SelectTokensScreen,
+  tamaguiConfig,
+  TamaguiProvider,
+  Text,
+  YStack,
+} from '@onflow/frw-ui';
+import React, { useEffect, useState } from 'react';
 
-import { ServiceContext, Platform, PlatformType } from '@onflow/frw-context';
-import { SelectTokensScreen } from '@onflow/frw-ui';
-import React, { useEffect, useMemo } from 'react';
+// Import Tamagui provider and configuration from the UI package
 
 import { useExtensionPlatformSpec } from '@/ui/bridge/ExtensionPlatformSpec';
 
@@ -33,96 +41,90 @@ const mockTranslation = (key: string, options?: Record<string, unknown>): string
   return translations[key] || key;
 };
 
-// Mock navigation
+// Mock navigation function
 const mockNavigation = {
   navigate: (screen: string, params?: Record<string, unknown>) => {
-    console.log(`[Extension Navigation] Navigate to ${screen}`, params);
-    // In a real extension, this would trigger routing
+    console.log(`Navigating to ${screen} with params:`, params);
   },
 };
 
 const TestUI: React.FC = () => {
   const platformSpec = useExtensionPlatformSpec();
+  const [platformInfo, setPlatformInfo] = useState<any>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Initialize ServiceContext with our platform spec
   useEffect(() => {
-    console.log('Initializing ServiceContext with Extension platform...');
-    try {
-      ServiceContext.initialize(platformSpec);
-      console.log('ServiceContext initialized successfully');
-      console.log('Platform info:', Platform.info);
-    } catch (error) {
-      console.error('Failed to initialize ServiceContext:', error);
-    }
+    const initializeContext = async () => {
+      console.log('Initializing ServiceContext with Extension platform...');
+      try {
+        await ServiceContext.initialize(platformSpec);
+        console.log('ServiceContext initialized successfully');
+
+        // Wait a bit for everything to be properly set up
+        setTimeout(() => {
+          try {
+            const info = Platform.info;
+            console.log('Platform info:', info);
+            setPlatformInfo(info);
+            setIsInitialized(true);
+          } catch (error) {
+            console.warn('Platform still not ready:', error);
+            setPlatformInfo(null);
+          }
+        }, 100);
+      } catch (error) {
+        console.error('Failed to initialize ServiceContext:', error);
+        setIsInitialized(true); // Still set to true to show error state
+      }
+    };
+
+    initializeContext();
   }, [platformSpec]);
 
-  // Check if platform is properly detected
-  const platformInfo = useMemo(() => {
-    try {
-      if (Platform.info) {
-        return Platform.info;
-      }
-    } catch (error) {
-      console.warn('Platform not yet initialized:', error);
-    }
-    return null;
-  }, []);
-
   return (
-    <div style={{ padding: '20px', maxWidth: '400px', margin: '0 auto' }}>
-      <h2>UI Package Test - Extension</h2>
-
-      {/* Platform Information */}
-      <div
+    <TamaguiProvider config={tamaguiConfig} defaultTheme="dark">
+      <YStack
+        flex={1}
+        backgroundColor="$background"
+        padding="$5"
+        maxWidth={400}
+        alignSelf="center"
+        minHeight="100vh"
         style={{
-          marginBottom: '20px',
-          padding: '10px',
-          background: '#f5f5f5',
-          borderRadius: '4px',
+          backgroundColor: '#1a1a1a !important',
+          color: '#ffffff !important',
         }}
       >
-        <h3>Platform Info</h3>
-        {platformInfo ? (
-          <ul>
-            <li>Type: {platformInfo.type}</li>
-            <li>Is Extension: {platformInfo.isExtension ? '✅' : '❌'}</li>
-            <li>Is React Native: {platformInfo.isReactNative ? '✅' : '❌'}</li>
-            <li>Is Web: {platformInfo.isWeb ? '✅' : '❌'}</li>
-            <li>Is Mobile: {platformInfo.isMobile ? '✅' : '❌'}</li>
-          </ul>
-        ) : (
-          <p>Platform not initialized</p>
-        )}
-      </div>
-
-      {/* SelectTokensScreen Test */}
-      <div style={{ border: '1px solid #ddd', borderRadius: '4px', padding: '10px' }}>
-        <h3>SelectTokensScreen Test</h3>
-        {platformInfo && platformInfo.type === PlatformType.CHROME_EXTENSION ? (
-          <div style={{ height: '500px', overflow: 'auto' }}>
-            <SelectTokensScreen
-              navigation={mockNavigation}
-              bridge={platformSpec}
-              t={mockTranslation}
-            />
-          </div>
-        ) : (
-          <div>
-            <p>Waiting for platform initialization...</p>
-            <p>Expected: Chrome Extension</p>
-            <p>Current: {platformInfo?.type || 'Not detected'}</p>
-          </div>
-        )}
-      </div>
-
-      {/* Debug Information */}
-      <div style={{ marginTop: '20px', fontSize: '12px', color: '#666' }}>
-        <details>
-          <summary>Debug Info</summary>
-          <pre>{JSON.stringify({ platformInfo }, null, 2)}</pre>
-        </details>
-      </div>
-    </div>
+        {/* SelectTokensScreen Test */}
+        <Card
+          borderWidth={1}
+          borderColor="$borderColor"
+          borderRadius="$4"
+          padding="$3"
+          backgroundColor="$backgroundHover"
+        >
+          {!isInitialized ? (
+            <YStack>
+              <Text color="$secondary">Initializing ServiceContext...</Text>
+            </YStack>
+          ) : platformInfo && platformInfo.type === PlatformType.CHROME_EXTENSION ? (
+            <YStack height={500} overflow="auto">
+              <SelectTokensScreen navigation={mockNavigation} t={mockTranslation} />
+            </YStack>
+          ) : (
+            <YStack space="$2">
+              <Text color="$color">Platform initialization completed but type mismatch:</Text>
+              <Text color="$secondary">Expected: Chrome Extension</Text>
+              <Text color="$secondary">Current: {platformInfo?.type || 'Not detected'}</Text>
+              <Text color="$secondary" fontSize="$2">
+                Platform Info: {JSON.stringify(platformInfo)}
+              </Text>
+            </YStack>
+          )}
+        </Card>
+      </YStack>
+    </TamaguiProvider>
   );
 };
 

@@ -1,28 +1,23 @@
+import { bridge } from '@onflow/frw-context';
 import { TokenService } from '@onflow/frw-services';
 import { useSendStore, useTokenStore, useWalletStore } from '@onflow/frw-stores';
 import {
   addressType,
-  type TokenInfo,
   WalletType,
   type CollectionModel,
+  type TokenInfo,
   type WalletAccount,
 } from '@onflow/frw-types';
-import React, { useCallback, useEffect, useState, useMemo } from 'react';
-import { YStack, XStack, Text, H4, Button, Card, Separator, Spinner, ScrollView } from 'tamagui';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Avatar, Button, Card, ScrollView, Text, View, XStack, YStack } from 'tamagui';
 
-// Platform-agnostic interfaces
-interface PlatformBridge {
-  getSelectedAddress(): string | null;
-  getNetwork(): string;
-}
-
+// Navigation interface - each platform implements differently
 interface NavigationProp {
   navigate(screen: string, params?: Record<string, unknown>): void;
 }
 
 interface SelectTokensScreenProps {
   navigation: NavigationProp;
-  bridge: PlatformBridge;
   t: (key: string, options?: Record<string, unknown>) => string;
 }
 
@@ -30,11 +25,7 @@ interface SelectTokensScreenProps {
 export type TabType = 'Tokens' | 'NFTs';
 
 // SelectTokensScreen main component
-export function SelectTokensScreen({
-  navigation,
-  bridge,
-  t,
-}: SelectTokensScreenProps): React.ReactElement {
+export function SelectTokensScreen({ navigation, t }: SelectTokensScreenProps): React.ReactElement {
   const [tab, setTab] = useState<TabType>('Tokens');
   const [tokens, setTokens] = useState<TokenInfo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -329,104 +320,260 @@ export function SelectTokensScreen({
   }
 
   return (
-    <YStack flex={1} padding="$4" backgroundColor="$background">
+    <YStack flex={1} paddingHorizontal="$4" paddingTop="$2" backgroundColor="#121212">
+      {/* Header */}
+      <XStack justifyContent="center" alignItems="center" paddingVertical="$4" position="relative">
+        <Text fontSize={18} fontWeight="700" color="#ffffff" lineHeight={32} letterSpacing={-0.306}>
+          Send
+        </Text>
+        <Button
+          position="absolute"
+          right={0}
+          backgroundColor="transparent"
+          borderWidth={0}
+          size="$6"
+          padding="$0"
+          minHeight="auto"
+          height="auto"
+        >
+          <Text fontSize={16} color="#ffffff">
+            ✕
+          </Text>
+        </Button>
+      </XStack>
+
       {/* Account Card */}
       {isAccountLoading ? (
-        <Card padding="$4" marginBottom="$4">
-          <XStack space="$2" alignItems="center">
-            <Spinner size="small" />
-            <Text>{t('messages.loadingAccount')}</Text>
-          </XStack>
+        <Card
+          backgroundColor="rgba(255,255,255,0.1)"
+          borderRadius="$7"
+          padding="$4"
+          marginBottom="$5"
+          height={120}
+          justifyContent="center"
+          alignItems="center"
+        >
+          <Text color="rgba(255,255,255,0.8)">{t('messages.loadingAccount')}</Text>
         </Card>
       ) : (
-        <Card padding="$4" marginBottom="$4">
-          <YStack space="$2">
-            <XStack justifyContent="space-between" alignItems="center">
-              <H4>{t('labels.fromAccount')}</H4>
+        <Card
+          backgroundColor="rgba(255,255,255,0.1)"
+          borderRadius="$7"
+          paddingTop="$4"
+          paddingBottom="$6"
+          paddingHorizontal="$4"
+          marginBottom="$5"
+        >
+          <YStack space="$3">
+            <Text
+              fontSize={12}
+              fontFamily="Inter"
+              fontWeight="400"
+              color="rgba(255,255,255,0.8)"
+              lineHeight={16}
+            >
+              From Account
+            </Text>
+            <XStack
+              alignItems="center"
+              justifyContent="space-between"
+              paddingLeft="$1"
+              paddingRight={0}
+              paddingVertical="$2"
+              height={52}
+            >
+              <XStack space="$4" alignItems="center">
+                <Avatar circular size={36} backgroundColor="#d6d6d6">
+                  <Avatar.Image src="" />
+                  <Avatar.Fallback>
+                    <Text
+                      fontSize={18}
+                      color="#ffffff"
+                      fontWeight="600"
+                      letterSpacing={-0.252}
+                      lineHeight={24}
+                    >
+                      {fromAccount?.emojiInfo?.emoji || '🐼'}
+                    </Text>
+                  </Avatar.Fallback>
+                </Avatar>
+                <YStack space="$0.5" width={151}>
+                  <Text
+                    fontSize={14}
+                    fontFamily="Inter"
+                    fontWeight="600"
+                    color="#ffffff"
+                    letterSpacing={-0.084}
+                    lineHeight="1.2"
+                  >
+                    {fromAccount?.name || 'Panda'}
+                  </Text>
+                  <Text
+                    fontSize={12}
+                    fontFamily="Inter"
+                    fontWeight="400"
+                    color="#b3b3b3"
+                    lineHeight="1.4"
+                    width="min-content"
+                  >
+                    {fromAccount?.address || '0x0c666c888d8fb259'}
+                  </Text>
+                  <Text
+                    fontSize={12}
+                    fontFamily="Inter"
+                    fontWeight="400"
+                    color="#b3b3b3"
+                    lineHeight="1.4"
+                    width="min-content"
+                  >
+                    {fromAccountBalance || '550.66 FLOW'}
+                  </Text>
+                </YStack>
+              </XStack>
               <Button
-                size="$2"
-                variant="outlined"
+                backgroundColor="transparent"
+                borderWidth={0}
+                size={24}
+                padding="$0"
+                minHeight={24}
+                height={24}
+                width={24}
                 onPress={() => {
-                  // Handle account selector modal
                   console.log('Account selector pressed');
                 }}
               >
-                {t('buttons.edit')}
-              </Button>
-            </XStack>
-            <XStack space="$3" alignItems="center">
-              <Text fontSize="$6">{fromAccount?.emojiInfo?.emoji || '👤'}</Text>
-              <YStack flex={1}>
-                <Text fontWeight="bold">{fromAccount?.name || t('messages.loading')}</Text>
-                <Text color="$gray10" fontSize="$2">
-                  {fromAccount?.address || '0x...'}
+                <Text fontSize={14} color="#767676">
+                  ✎
                 </Text>
-                <XStack space="$2" alignItems="center">
-                  {isBalanceLoading ? (
-                    <Spinner size="small" />
-                  ) : (
-                    <Text color="$gray11">{fromAccountBalance}</Text>
-                  )}
-                </XStack>
-              </YStack>
+              </Button>
             </XStack>
           </YStack>
         </Card>
       )}
 
       {/* Tab Selector */}
-      <XStack space="$2" marginBottom="$4">
-        <Button
-          flex={1}
-          variant={tab === 'Tokens' ? 'outlined' : undefined}
-          onPress={() => handleTabChange('Tokens')}
+      <YStack marginBottom="$5">
+        <XStack
+          borderWidth={2}
+          borderColor="#292929"
+          borderRadius={200}
+          paddingHorizontal="$1"
+          paddingVertical={5}
+          space="$2"
+          width={178}
+          height={43}
+          alignItems="center"
+          justifyContent="flex-start"
         >
-          {t('tabs.tokens')}
-        </Button>
-        <Button
-          flex={1}
-          variant={tab === 'NFTs' ? 'outlined' : undefined}
-          onPress={() => handleTabChange('NFTs')}
-        >
-          {t('tabs.nfts')}
-        </Button>
-      </XStack>
+          <Button
+            size="$3"
+            fontSize={16}
+            fontWeight="600"
+            backgroundColor={tab === 'Tokens' ? '#242424' : 'transparent'}
+            color={tab === 'Tokens' ? 'rgba(255,255,255,0.8)' : '#ffffff'}
+            borderWidth={0}
+            borderRadius={24}
+            letterSpacing={-0.096}
+            paddingHorizontal="$1"
+            paddingVertical="$1"
+            width={90}
+            height={33}
+            minHeight={33}
+            onPress={() => handleTabChange('Tokens')}
+          >
+            Tokens
+          </Button>
+          <Button
+            fontSize={16}
+            fontWeight="600"
+            backgroundColor={tab === 'NFTs' ? '#242424' : 'transparent'}
+            color={tab === 'NFTs' ? 'rgba(255,255,255,0.8)' : '#ffffff'}
+            borderWidth={0}
+            borderRadius={0}
+            letterSpacing={-0.096}
+            padding="$0"
+            width={57}
+            height={33}
+            minHeight={33}
+            textAlign="center"
+            onPress={() => handleTabChange('NFTs')}
+          >
+            NFTs
+          </Button>
+        </XStack>
+      </YStack>
 
       {/* Content */}
       <ScrollView flex={1}>
         {tab === 'Tokens' && (
-          <YStack space="$2">
+          <YStack>
             {isLoading ? (
-              <YStack space="$3" padding="$4">
+              <YStack space="$0" paddingVertical="$4">
                 {[1, 2, 3, 4, 5].map((index) => (
-                  <Card key={`token-skeleton-${index}`} padding="$3">
-                    <XStack space="$3" alignItems="center">
-                      <YStack width={48} height={48} backgroundColor="$gray5" borderRadius="$4" />
-                      <YStack flex={1} space="$2">
-                        <YStack
-                          width="40%"
-                          height={16}
-                          backgroundColor="$gray5"
-                          borderRadius="$2"
-                        />
-                        <YStack
-                          width="60%"
-                          height={12}
-                          backgroundColor="$gray5"
-                          borderRadius="$2"
-                        />
+                  <YStack key={`token-skeleton-${index}`}>
+                    <XStack
+                      alignItems="center"
+                      paddingVertical="$4"
+                      paddingHorizontal="$0"
+                      height={80}
+                    >
+                      {/* Token icon skeleton */}
+                      <Avatar
+                        circular
+                        size={48}
+                        backgroundColor="rgba(255,255,255,0.1)"
+                        marginRight="$2"
+                      />
+                      <YStack flex={1} space="$1">
+                        <XStack justifyContent="space-between" alignItems="flex-start">
+                          <YStack
+                            width="35%"
+                            height={16}
+                            backgroundColor="rgba(255,255,255,0.1)"
+                            borderRadius="$2"
+                          />
+                          <YStack
+                            width="25%"
+                            height={16}
+                            backgroundColor="rgba(255,255,255,0.1)"
+                            borderRadius="$2"
+                          />
+                        </XStack>
+                        <XStack justifyContent="space-between" alignItems="center">
+                          <YStack
+                            width="30%"
+                            height={14}
+                            backgroundColor="rgba(255,255,255,0.1)"
+                            borderRadius="$2"
+                          />
+                          <YStack
+                            width={36}
+                            height={20}
+                            backgroundColor="rgba(255,255,255,0.1)"
+                            borderRadius="$3"
+                          />
+                        </XStack>
                       </YStack>
                     </XStack>
-                  </Card>
+                    {index !== 5 && <View height={1} backgroundColor="rgba(255,255,255,0.1)" />}
+                  </YStack>
                 ))}
               </YStack>
             ) : error ? (
-              <Card padding="$4">
-                <YStack space="$3" alignItems="center">
-                  <Text color="$red10">{error}</Text>
-                  <Button onPress={refreshTokens}>{t('buttons.retry')}</Button>
-                </YStack>
-              </Card>
+              <YStack padding="$4" alignItems="center" space="$3">
+                <Text color="#f04438" textAlign="center">
+                  {error}
+                </Text>
+                <Button
+                  backgroundColor="rgba(240,68,56,0.1)"
+                  color="#f04438"
+                  borderWidth={0}
+                  size="$3"
+                  onPress={refreshTokens}
+                >
+                  {t('buttons.retry')}
+                </Button>
+              </YStack>
             ) : (
               (() => {
                 const tokensWithBalance = tokens.filter((token) => {
@@ -436,56 +583,85 @@ export function SelectTokensScreen({
                 });
 
                 return tokensWithBalance.length === 0 ? (
-                  <Card padding="$4">
-                    <YStack space="$3" alignItems="center">
-                      <Text>{t('messages.noTokensWithBalance')}</Text>
-                      <Button onPress={refreshTokens}>{t('buttons.refresh')}</Button>
-                    </YStack>
-                  </Card>
+                  <YStack padding="$4" alignItems="center" space="$3">
+                    <Text color="#ffffff">{t('messages.noTokensWithBalance')}</Text>
+                    <Button
+                      backgroundColor="rgba(0,239,139,0.1)"
+                      color="#00ef8b"
+                      borderWidth={0}
+                      onPress={refreshTokens}
+                    >
+                      {t('buttons.refresh')}
+                    </Button>
+                  </YStack>
                 ) : (
                   tokensWithBalance.map((token, idx) => (
                     <YStack key={`token-${token.identifier || token.symbol}-${idx}`}>
-                      <Card
-                        padding="$3"
-                        pressStyle={{ scale: 0.98 }}
+                      <XStack
+                        alignItems="center"
+                        paddingVertical="$4"
+                        paddingHorizontal="$0"
+                        pressStyle={{ opacity: 0.8 }}
                         onPress={() => handleTokenPress(token)}
+                        height={80}
                       >
-                        <XStack space="$3" alignItems="center">
-                          <YStack
-                            width={48}
-                            height={48}
-                            backgroundColor="$gray5"
-                            borderRadius="$4"
-                            justifyContent="center"
-                            alignItems="center"
-                          >
-                            <Text fontSize="$6">{token.symbol?.charAt(0) || '?'}</Text>
-                          </YStack>
-                          <YStack flex={1} space="$1">
-                            <Text fontWeight="bold">{token.symbol}</Text>
-                            <Text color="$gray11" fontSize="$2">
+                        {/* Token icon */}
+                        <Avatar circular size={48} backgroundColor="#00ef8b" marginRight="$2">
+                          <Avatar.Image src="" />
+                          <Avatar.Fallback>
+                            <Text fontSize={16} color="#ffffff" fontWeight="600">
+                              {token.symbol?.charAt(0) || '?'}
+                            </Text>
+                          </Avatar.Fallback>
+                        </Avatar>
+
+                        <YStack flex={1} space="$1">
+                          <XStack justifyContent="space-between" alignItems="flex-start">
+                            <XStack space="$1" alignItems="flex-start">
+                              <Text
+                                fontSize={14}
+                                fontWeight="600"
+                                color="#ffffff"
+                                letterSpacing={-0.084}
+                                lineHeight="1.2"
+                              >
+                                {token.symbol}
+                              </Text>
+                              <Text fontSize={14} color="#41cc5d">
+                                ✓
+                              </Text>
+                            </XStack>
+                            <Text fontSize={14} color="#ffffff" lineHeight="1.2">
                               {token.displayBalance || token.balance} {token.symbol}
                             </Text>
-                          </YStack>
-                          {(token as any).usdValue && (
-                            <YStack alignItems="flex-end">
-                              <Text fontWeight="bold">${(token as any).usdValue}</Text>
-                              {(token as any).changePercentage && (
-                                <Text
-                                  fontSize="$2"
-                                  color={
-                                    (token as any).changePercentage > 0 ? '$green10' : '$red10'
-                                  }
-                                >
-                                  {(token as any).changePercentage > 0 ? '+' : ''}
-                                  {(token as any).changePercentage}%
-                                </Text>
-                              )}
+                          </XStack>
+
+                          <XStack justifyContent="space-between" alignItems="center">
+                            <Text fontSize={14} color="rgba(255,255,255,0.8)" lineHeight="1.2">
+                              {token.displayBalance || token.balance} FLOW
+                            </Text>
+                            <YStack
+                              backgroundColor="rgba(0,239,139,0.1)"
+                              paddingHorizontal="$1"
+                              paddingVertical={4}
+                              borderRadius="$3"
+                            >
+                              <Text
+                                fontSize={12}
+                                color="#00ef8b"
+                                lineHeight="1.4"
+                                width={36}
+                                textAlign="center"
+                              >
+                                +5.2%
+                              </Text>
                             </YStack>
-                          )}
-                        </XStack>
-                      </Card>
-                      {idx !== tokensWithBalance.length - 1 && <Separator marginVertical="$1" />}
+                          </XStack>
+                        </YStack>
+                      </XStack>
+                      {idx !== tokensWithBalance.length - 1 && (
+                        <View height={1} backgroundColor="rgba(255,255,255,0.1)" />
+                      )}
                     </YStack>
                   ))
                 );
@@ -495,76 +671,112 @@ export function SelectTokensScreen({
         )}
 
         {tab === 'NFTs' && (
-          <YStack space="$2">
+          <YStack>
             {nftLoading ? (
-              <YStack space="$3" padding="$4">
+              <YStack space="$0" paddingVertical="$4">
                 {[1, 2, 3, 4].map((index) => (
-                  <Card key={`nft-skeleton-${index}`} padding="$3">
-                    <XStack space="$3" alignItems="center">
-                      <YStack width={48} height={48} backgroundColor="$gray5" borderRadius="$4" />
+                  <YStack key={`nft-skeleton-${index}`}>
+                    <XStack
+                      alignItems="center"
+                      paddingVertical="$4"
+                      paddingHorizontal="$0"
+                      height={80}
+                    >
+                      <Avatar
+                        circular
+                        size={48}
+                        backgroundColor="rgba(255,255,255,0.1)"
+                        marginRight="$2"
+                      />
                       <YStack flex={1} space="$2">
                         <YStack
                           width="60%"
                           height={16}
-                          backgroundColor="$gray5"
+                          backgroundColor="rgba(255,255,255,0.1)"
                           borderRadius="$2"
                         />
                         <YStack
                           width="30%"
                           height={12}
-                          backgroundColor="$gray5"
+                          backgroundColor="rgba(255,255,255,0.1)"
                           borderRadius="$2"
                         />
                       </YStack>
+                      <Text color="rgba(255,255,255,0.3)">›</Text>
                     </XStack>
-                  </Card>
+                    {index !== 4 && <View height={1} backgroundColor="rgba(255,255,255,0.1)" />}
+                  </YStack>
                 ))}
               </YStack>
             ) : nftError ? (
-              <Card padding="$4">
-                <YStack space="$3" alignItems="center">
-                  <Text color="$red10">{nftError}</Text>
-                  <Button onPress={refreshNFTCollections}>{t('buttons.retry')}</Button>
-                </YStack>
-              </Card>
+              <YStack padding="$4" alignItems="center" space="$3">
+                <Text color="#f04438">{nftError}</Text>
+                <Button
+                  backgroundColor="rgba(240,68,56,0.1)"
+                  color="#f04438"
+                  borderWidth={0}
+                  onPress={refreshNFTCollections}
+                >
+                  {t('buttons.retry')}
+                </Button>
+              </YStack>
             ) : filteredNFTCollections.length === 0 ? (
-              <Card padding="$4">
-                <YStack space="$3" alignItems="center">
-                  <Text>{t('messages.noNFTCollectionsForAccount')}</Text>
-                  <Button onPress={refreshNFTCollections}>{t('buttons.refresh')}</Button>
-                </YStack>
-              </Card>
+              <YStack padding="$4" alignItems="center" space="$3">
+                <Text color="#ffffff">{t('messages.noNFTCollectionsForAccount')}</Text>
+                <Button
+                  backgroundColor="rgba(0,239,139,0.1)"
+                  color="#00ef8b"
+                  borderWidth={0}
+                  onPress={refreshNFTCollections}
+                >
+                  {t('buttons.refresh')}
+                </Button>
+              </YStack>
             ) : (
               filteredNFTCollections.map((collection, idx) => (
                 <YStack
                   key={`nft-collection-${collection.id || collection.contractName || collection.name}-${idx}`}
                 >
-                  <Card
-                    padding="$3"
-                    pressStyle={{ scale: 0.98 }}
+                  <XStack
+                    alignItems="center"
+                    paddingVertical="$4"
+                    paddingHorizontal="$0"
+                    pressStyle={{ opacity: 0.8 }}
                     onPress={() => handleNFTPress(collection)}
+                    height={80}
                   >
-                    <XStack space="$3" alignItems="center">
-                      <YStack
-                        width={48}
-                        height={48}
-                        backgroundColor="$gray5"
-                        borderRadius="$4"
-                        justifyContent="center"
-                        alignItems="center"
+                    <Avatar
+                      circular
+                      size={48}
+                      backgroundColor="rgba(255,255,255,0.1)"
+                      marginRight="$2"
+                    >
+                      <Avatar.Image src="" />
+                      <Avatar.Fallback>
+                        <Text fontSize={24}>🖼️</Text>
+                      </Avatar.Fallback>
+                    </Avatar>
+                    <YStack flex={1} space="$1">
+                      <Text
+                        fontSize={14}
+                        fontWeight="600"
+                        color="#ffffff"
+                        letterSpacing={-0.084}
+                        lineHeight="1.2"
                       >
-                        <Text fontSize="$4">🖼️</Text>
-                      </YStack>
-                      <YStack flex={1} space="$1">
-                        <Text fontWeight="bold">{collection.name || collection.contractName}</Text>
-                        <Text color="$gray11" fontSize="$2">
-                          {collection.count} {collection.count === 1 ? 'item' : 'items'}
-                        </Text>
-                      </YStack>
-                      <Text color="$gray11">›</Text>
-                    </XStack>
-                  </Card>
-                  {idx !== filteredNFTCollections.length - 1 && <Separator marginVertical="$1" />}
+                        {collection.name || collection.contractName}
+                      </Text>
+                      <Text fontSize={12} color="#b3b3b3" lineHeight="1.4">
+                        {collection.count} {collection.count === 1 ? 'item' : 'items'}
+                      </Text>
+                    </YStack>
+                    <Text fontSize={16} color="#b3b3b3">
+                      ›
+                    </Text>
+                  </XStack>
+                  {idx !== filteredNFTCollections.length - 1 && (
+                    <View height={1} backgroundColor="rgba(255,255,255,0.1)" />
+                  )}
                 </YStack>
               ))
             )}

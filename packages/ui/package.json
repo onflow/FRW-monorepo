@@ -37,6 +37,7 @@
     "@onflow/frw-services": "workspace:*",
     "@onflow/frw-types": "workspace:*",
     "tamagui": "^1.112.0",
+    "@tamagui/config": "^1.117.12",
     "react": "^19.1.0",
     "react-i18next": "^15.3.3"
   },
@@ -48,10 +49,5 @@
   },
   "peerDependencies": {
     "react": "*"
-  },
-  "peerDependenciesMeta": {
-    "react-native": {
-      "optional": true
-    }
   }
 }

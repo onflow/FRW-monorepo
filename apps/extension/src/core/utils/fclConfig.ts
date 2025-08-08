@@ -1,4 +1,5 @@
 import * as fcl from '@onflow/fcl';
+import { addresses } from '@onflow/frw-cadence';
 
 import { type FlowNetwork } from '@/shared/types';
 import { isValidNetwork } from '@/shared/utils';
@@ -14,12 +15,22 @@ export const EMULATOR_HOST_MAINNET = 'http://localhost:8888';
 export const fclMainnetConfig = async (emulatorMode?: boolean) => {
   const host = emulatorMode ? EMULATOR_HOST_MAINNET : HOST_MAINNET;
   fcl.config().put('accessNode.api', host).put('flow.network', 'mainnet');
+
+  const addrMap = addresses.mainnet;
+  for (const key in addrMap) {
+    fcl.config().put(key, addrMap[key as keyof typeof addrMap]);
+  }
 };
 
 // Configure FCL for Testnet
 export const fclTestnetConfig = async (emulatorMode?: boolean) => {
   const host = emulatorMode ? EMULATOR_HOST_TESTNET : HOST_TESTNET;
   fcl.config().put('accessNode.api', host).put('flow.network', 'testnet');
+
+  const addrMap = addresses.testnet;
+  for (const key in addrMap) {
+    fcl.config().put(key, addrMap[key as keyof typeof addrMap]);
+  }
 };
 
 export const fclConfig = async (network: FlowNetwork, emulatorMode?: boolean) => {

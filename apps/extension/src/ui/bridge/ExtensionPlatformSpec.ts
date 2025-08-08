@@ -3,6 +3,7 @@
  * This is a mock implementation for testing UI components
  */
 
+
 import {
   type PlatformSpec,
   type PlatformInfo,
@@ -10,6 +11,7 @@ import {
   type Storage,
 } from '@onflow/frw-context';
 import type { RecentContactsResponse, WalletAccountsResponse } from '@onflow/frw-types';
+import React from 'react';
 
 import { useWallet } from '@/ui/hooks/use-wallet';
 
@@ -105,13 +107,56 @@ export class ExtensionPlatformSpec implements PlatformSpec {
 
   async getRecentContacts(): Promise<RecentContactsResponse> {
     return {
-      contacts: [],
+      contacts: [
+        {
+          address: '0x1234567890abcdef',
+          name: 'Test Contact',
+          avatar: '👤',
+          domain: {
+            domain_type: 99,
+            value: 'test.fn',
+          },
+        },
+      ],
     };
   }
 
   async getWalletAccounts(): Promise<WalletAccountsResponse> {
     return {
-      accounts: [],
+      accounts: [
+        {
+          id: 1,
+          address: '0x1234567890abcdef',
+          name: 'Main Account',
+          type: 'main',
+          keyId: 0,
+          publicKey: 'mock-public-key',
+          signAlgo: 1,
+          hashAlgo: 1,
+          weight: 1000,
+          emojiInfo: {
+            emoji: '🟢',
+            name: 'green_circle',
+            bgcolor: '#4CAF50',
+          },
+        },
+        {
+          id: 2,
+          address: '0xabcdef1234567890',
+          name: 'Child Account',
+          type: 'child',
+          keyId: 1,
+          publicKey: 'mock-public-key-2',
+          signAlgo: 1,
+          hashAlgo: 1,
+          weight: 1000,
+          emojiInfo: {
+            emoji: '🔵',
+            name: 'blue_circle',
+            bgcolor: '#2196F3',
+          },
+        },
+      ],
     };
   }
 
@@ -140,5 +185,5 @@ export class ExtensionPlatformSpec implements PlatformSpec {
 // Hook to create Extension platform spec
 export function useExtensionPlatformSpec(): ExtensionPlatformSpec {
   const wallet = useWallet();
-  return new ExtensionPlatformSpec(wallet);
+  return React.useMemo(() => new ExtensionPlatformSpec(wallet), [wallet]);
 }

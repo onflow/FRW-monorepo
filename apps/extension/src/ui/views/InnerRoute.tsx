@@ -413,7 +413,7 @@ const InnerRoute = () => {
               }
             />
             <Route
-              path="testui"
+              path="testUI"
               element={
                 <PrivateRoute>
                   <TestUI />
