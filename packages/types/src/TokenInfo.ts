@@ -123,11 +123,6 @@ export class TokenInfo {
   }
 }
 
-// only for native token model, don't use this on react native
-export interface RNTokenModel extends TokenInfo {
-  placeholder?: string;
-}
-
 export function mapCadenceTokenDataWithCurrencyToTokenInfo(
   token: CadenceTokenDataWithCurrency,
   storage?: string

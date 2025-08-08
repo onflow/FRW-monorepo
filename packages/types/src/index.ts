@@ -19,7 +19,7 @@ export type {
 export type { NFTListNFT } from './NFTListTypes';
 
 // NFT Model types
-export type { CollectionPath, CollectionModel, NFTModel, RNNFTModel } from './NFTModel';
+export type { CollectionPath, CollectionModel, NFTModel } from './NFTModel';
 
 // Token Info types and utilities
 export {
