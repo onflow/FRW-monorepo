@@ -5,10 +5,10 @@ import {
 } from '@onflow/frw-api';
 import { getServiceContext, type PlatformSpec } from '@onflow/frw-context';
 import {
-  mapCadenceTokenDataWithCurrencyToTokenInfo,
-  mapERC20TokenToTokenInfo,
+  mapCadenceTokenDataWithCurrencyToTokenModel,
+  mapERC20TokenToTokenModel,
   WalletType,
-  type TokenInfo,
+  type TokenModel,
 } from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
 
@@ -17,7 +17,7 @@ import { logger } from '@onflow/frw-utils';
  */
 interface TokenProvider {
   getData(address: string, network?: string, currency?: string): Promise<unknown>;
-  processData(data: unknown): TokenInfo[];
+  processData(data: unknown): TokenModel[];
 }
 /**
  * FlowTokenProvider is a class that implements the TokenProvider interface.
@@ -43,7 +43,7 @@ class FlowTokenProvider implements TokenProvider {
     }
   }
 
-  processData(data: unknown): TokenInfo[] {
+  processData(data: unknown): TokenModel[] {
     const typedData = data as CadenceFTApiResponseWithCurrency | undefined;
 
     if (!typedData) {
@@ -52,7 +52,7 @@ class FlowTokenProvider implements TokenProvider {
     }
 
     const mappedTokens = typedData?.result?.map((token) =>
-      mapCadenceTokenDataWithCurrencyToTokenInfo(token)
+      mapCadenceTokenDataWithCurrencyToTokenModel(token)
     );
     // availableBalanceToUse
     return mappedTokens ?? [];
@@ -83,7 +83,7 @@ class ERC20TokenProvider implements TokenProvider {
     }
   }
 
-  processData(data: unknown): TokenInfo[] {
+  processData(data: unknown): TokenModel[] {
     const typedData = data as CurrencyEVMTokenData[];
 
     if (!Array.isArray(typedData)) {
@@ -91,7 +91,7 @@ class ERC20TokenProvider implements TokenProvider {
       return [];
     }
 
-    return typedData.map((token) => mapERC20TokenToTokenInfo(token));
+    return typedData.map((token) => mapERC20TokenToTokenModel(token));
   }
 }
 
@@ -130,7 +130,7 @@ export class TokenService {
     return TokenService.instances.get(key)!;
   }
 
-  async getTokenInfo(address: string, network?: string, currency?: string): Promise<TokenInfo[]> {
+  async getTokenInfo(address: string, network?: string, currency?: string): Promise<TokenModel[]> {
     try {
       // Default to USD if no currency provided, as this seems to be required for balance data
       const defaultCurrency = currency || 'USD';

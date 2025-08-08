@@ -1,6 +1,5 @@
 import type { CadenceTokenDataWithCurrency } from '@onflow/frw-api';
 
-import { formatCurrencyStringForDisplay } from './utils/string';
 import { WalletType } from './Wallet';
 
 export interface FlowPath {
@@ -8,7 +7,7 @@ export interface FlowPath {
   identifier?: string;
 }
 
-interface TokenInfoProps {
+export interface TokenModel {
   type: WalletType;
   name: string;
   symbol?: string;
@@ -37,101 +36,14 @@ interface TokenInfoProps {
   website?: string;
 }
 
-export class TokenInfo {
-  type: WalletType;
-  name: string;
-  symbol?: string;
-  description?: string;
-  balance?: string;
-  contractAddress?: string;
-  contractName?: string;
-  storagePath?: FlowPath;
-  receiverPath?: FlowPath;
-  balancePath?: FlowPath;
-  identifier?: string;
-  isVerified?: boolean;
-  logoURI?: string;
-  priceInUSD?: string;
-  balanceInUSD?: string;
-  priceInFLOW?: string;
-  balanceInFLOW?: string;
-  currency?: string;
-  priceInCurrency?: string;
-  balanceInCurrency?: string;
-  displayBalance?: string;
-  availableBalanceToUse?: string;
-  change?: string;
-  decimal?: number;
-  evmAddress?: string;
-  website?: string;
-
-  constructor(props: TokenInfoProps) {
-    this.type = props.type;
-    this.name = props.name;
-    this.symbol = props.symbol;
-    this.description = props.description;
-    this.balance = props.balance;
-    this.contractAddress = props.contractAddress;
-    this.contractName = props.contractName;
-    this.storagePath = props.storagePath;
-    this.receiverPath = props.receiverPath;
-    this.balancePath = props.balancePath;
-    this.identifier = props.identifier;
-    this.isVerified = props.isVerified;
-    this.logoURI = props.logoURI;
-    this.priceInUSD = props.priceInUSD;
-    this.balanceInUSD = props.balanceInUSD;
-    this.priceInFLOW = props.priceInFLOW;
-    this.balanceInFLOW = props.balanceInFLOW;
-    this.currency = props.currency;
-    this.priceInCurrency = props.priceInCurrency;
-    this.balanceInCurrency = props.balanceInCurrency;
-    this.displayBalance = props.displayBalance;
-    this.availableBalanceToUse = props.availableBalanceToUse;
-    this.change = props.change;
-    this.decimal = props.decimal;
-    this.evmAddress = props.evmAddress;
-    this.website = props.website;
-  }
-
-  getDisplayBalanceInFLOW(): string {
-    if (
-      this.balanceInFLOW === undefined ||
-      this.balanceInFLOW === null ||
-      this.balanceInFLOW === ''
-    )
-      return '';
-    const num = Number(this.balanceInFLOW);
-    if (isNaN(num)) return '';
-    return `${formatCurrencyStringForDisplay({ value: num })} FLOW`;
-  }
-
-  getDisplayBalanceWithSymbol(): string {
-    if (
-      this.displayBalance === undefined ||
-      this.displayBalance === null ||
-      this.displayBalance === ''
-    )
-      return '';
-    const num = Number(this.displayBalance);
-    if (isNaN(num)) return '';
-    return `${formatCurrencyStringForDisplay({ value: num })} ${this.symbol ?? ''}`.trim();
-  }
-
-  isFlow(): boolean {
-    return this.symbol?.toUpperCase() === 'FLOW';
-  }
+export function isFlow(token: TokenModel): boolean {
+  return token.symbol?.toUpperCase() === 'FLOW';
 }
 
-// only for native token model, don't use this on react native
-export interface RNTokenModel extends TokenInfo {
-  placeholder?: string;
-}
-
-export function mapCadenceTokenDataWithCurrencyToTokenInfo(
+export function mapCadenceTokenDataWithCurrencyToTokenModel(
   token: CadenceTokenDataWithCurrency,
   storage?: string
-): TokenInfo {
+): TokenModel {
   function toFlowPath(obj: any): FlowPath | undefined {
     if (obj && typeof obj === 'object') {
       return {
@@ -142,7 +54,7 @@ export function mapCadenceTokenDataWithCurrencyToTokenInfo(
     return undefined;
   }
 
-  return new TokenInfo({
+  return {
     type: WalletType.Flow,
     name: token.name ?? '',
     symbol: token.symbol,
@@ -169,15 +81,15 @@ export function mapCadenceTokenDataWithCurrencyToTokenInfo(
     decimal: 8,
     evmAddress: token.evmAddress,
     website: '',
-  });
+  };
 }
 
-export function mapERC20TokenToTokenInfo(token: any): TokenInfo {
+export function mapERC20TokenToTokenModel(token: any): TokenModel {
   // The actual API response has different field names than the TypeScript interface
   // Use the actual field names from the API response
   const displayBalance = token.displayBalance || token.balance || '0';
 
-  return new TokenInfo({
+  return {
     type: WalletType.EVM,
     name: token.name ?? '',
     symbol: token.symbol,
@@ -204,5 +116,5 @@ export function mapERC20TokenToTokenInfo(token: any): TokenInfo {
     decimal: token.decimals ?? 18,
     evmAddress: token.address,
     website: '',
-  });
+  };
 }

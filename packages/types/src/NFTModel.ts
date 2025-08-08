@@ -18,9 +18,5 @@ export interface CollectionModel extends NFTCollection {
 export interface NFTModel extends NFT {
   type: WalletType;
 }
-// only for native nft model, don't use this on react native
-export interface RNNFTModel extends NFTModel {
-  placeholder?: string;
-}
 
 export default NFTModel;

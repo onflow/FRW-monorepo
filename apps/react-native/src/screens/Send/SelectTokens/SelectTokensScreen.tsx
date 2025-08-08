@@ -2,7 +2,7 @@ import { TokenService } from '@onflow/frw-services';
 import { useSendStore, useTokenStore, useWalletStore } from '@onflow/frw-stores';
 import {
   addressType,
-  type TokenInfo,
+  type TokenModel,
   WalletType,
   type CollectionModel,
   type WalletAccount,
@@ -47,7 +47,7 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
   const { t } = useTranslation();
   const TABS = [t('tabs.tokens'), t('tabs.nfts')] as const;
   const [tab, setTab] = React.useState<TabType>('Tokens');
-  const [tokens, setTokens] = React.useState<TokenInfo[]>([]);
+  const [tokens, setTokens] = React.useState<TokenModel[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -382,7 +382,7 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
     return searchFiltered;
   }, [nftSearch, nftCollections.length]);
 
-  function handleTokenPress(token: TokenInfo) {
+  function handleTokenPress(token: TokenModel) {
     setSelectedToken(token);
     setTransactionType('tokens');
     setCurrentStep('send-to');

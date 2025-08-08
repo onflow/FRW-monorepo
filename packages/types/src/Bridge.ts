@@ -1,6 +1,12 @@
 // Bridge-related types for native module communication
-import type RNNFTModel from './NFTModel';
-import type { RNTokenModel } from './TokenInfo';
+
+import type { NFTModel } from './NFTModel';
+import type { TokenModel } from './TokenModel';
+
+export type { NFTModel } from './NFTModel';
+export type { TokenModel } from './TokenModel';
+export type { WalletType } from './Wallet';
+export type { FlowPath } from './TokenModel';
 
 export interface EmojiInfo {
   emoji: string;
@@ -50,10 +56,10 @@ export interface AddressBookResponse {
 }
 
 export interface SendToConfig {
-  selectedToken?: RNTokenModel;
+  selectedToken?: TokenModel;
   fromAccount?: WalletAccount;
   transactionType: 'tokens' | 'single-nft' | 'multiple-nfts' | 'target-address';
-  selectedNFTs?: RNNFTModel[];
+  selectedNFTs?: NFTModel[];
   targetAddress?: string;
 }
 export interface EnvironmentVariables {

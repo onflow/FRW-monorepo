@@ -23,6 +23,9 @@ export {
   isTransactionId,
 } from './utils';
 
+// Token utilities
+export { getDisplayBalanceInFLOW, getDisplayBalanceWithSymbol } from './token';
+
 // Logger utilities
 export { createLogger, Logger, logger, setGlobalLogger } from './logger';
 export type { BridgeLogger } from './logger';
