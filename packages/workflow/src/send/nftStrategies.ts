@@ -117,7 +117,7 @@ export class TopShotNftStrategy implements TransferStrategy {
 
   async execute(payload: SendPayload): Promise<any> {
     const { flowIdentifier, receiver, ids } = payload;
-    return await this.cadenceService.batchSendNftV3(flowIdentifier, receiver, ids);
+    return await this.cadenceService.batchSendNbaNftV3(flowIdentifier, receiver, ids);
   }
 }
 
@@ -191,8 +191,7 @@ export class EvmToEvmNftStrategy implements TransferStrategy {
 
   async execute(payload: SendPayload): Promise<any> {
     const { tokenContractAddr, ids, amount } = payload;
-    const data = encodeEvmContractCallData(payload);
-    const value = '0.0';
+
     if (ids.length > 1) {
       const contracts = ids.map(() => tokenContractAddr);
       const datas = ids.map((id) => encodeEvmContractCallData({ ...payload, ids: [id] }));
@@ -205,6 +204,9 @@ export class EvmToEvmNftStrategy implements TransferStrategy {
         GAS_LIMITS.EVM_DEFAULT
       );
     }
+
+    const data = encodeEvmContractCallData(payload);
+    const value = '0.0';
     return await this.cadenceService.callContract(
       tokenContractAddr,
       value,

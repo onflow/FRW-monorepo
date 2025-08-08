@@ -1,9 +1,9 @@
 import { configureFCL, CadenceService } from '@onflow/frw-cadence';
 import { describe, it, expect, beforeEach } from 'vitest';
 
-// import { SendTransaction, } from '../src'
 // import { getTrx } from '../src/utils';
 import { accounts } from './utils/accounts';
+import { authz } from './utils/authz';
 
 // dotenv.config();
 
@@ -16,6 +16,14 @@ const cadenceService = new CadenceService();
 describe('Test NFT send strategies', () => {
   beforeEach(() => {
     configureFCL('mainnet');
+    cadenceService.useRequestInterceptor(async (config: any) => {
+      if (config.type === 'transaction') {
+        config.payer = authz;
+        config.proposer = authz;
+        config.authorizations = [authz];
+      }
+      return config;
+    });
   });
 
   it('Test query coa', async () => {
@@ -120,6 +128,27 @@ describe('Test NFT send strategies', () => {
   //   };
 
   //   const txid = await SendTransaction(payload);
+  //   expect(txid.length).toBe(64);
+  // });
+
+  // it('Test EvmToEvmNftStrategy - EVM to EVM 1155 NFT transfer', async () => {
+  //   // 1155
+  //   const payload = {
+  //     type: 'nft',
+  //     assetType: 'evm',
+  //     proposer: mainAccount.address,
+  //     receiver: '0x3b44f144B97A0402C0e206522c28052C1025A8AA',
+  //     flowIdentifier: '',
+  //     sender: mainAccount.evmAddr,
+  //     amount: '4.0',
+  //     childAddrs: [],
+  //     ids: [1],
+  //     decimal: 0,
+  //     coaAddr: mainAccount.evmAddr,
+  //     tokenContractAddr: '0x3E00930ED9DB5b78D2c1B470cF9dC635BB405f39',
+  //   };
+
+  //   const txid = await SendTransaction(payload, cadenceService);
   //   expect(txid.length).toBe(64);
   // });
 

@@ -46,6 +46,16 @@ jobs:
       - name: Build all packages
         run: pnpm build:packages
 
+      - name: Run tests
+        run: pnpm test
+        env:
+          TEST_MAIN_ACCOUNT_KEY: ${{ secrets.TEST_MAIN_ACCOUNT_KEY }}
+          TEST_MAIN_ACCOUNT_ADDRESS: ${{ vars.TEST_MAIN_ACCOUNT_ADDRESS }}
+          TEST_MAIN_ACCOUNT_PUBKEY: ${{ vars.TEST_MAIN_ACCOUNT_PUBKEY }}
+          TEST_MAIN_ACCOUNT_COA: ${{ vars.TEST_MAIN_ACCOUNT_COA }}
+          TEST_CHILD_ACCOUNT_ONE_ADDR: ${{ vars.TEST_CHILD_ACCOUNT_ONE_ADDR }}
+          TEST_CHILD_ACCOUNT_TWO_ADDR: ${{ vars.TEST_CHILD_ACCOUNT_TWO_ADDR }}
+
       - name: Type check packages
         run: pnpm -r --filter='./packages/*' typecheck
 
