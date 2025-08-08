@@ -23,6 +23,16 @@ interface NFT {
   id: string | number;
   name?: string;
   thumbnail?: string | object;
+  collectionName?: string;
+  collection_logo?: string;
+  logoURI?: string;
+  logo?: string;
+  collectionSquareImage?: string;
+  collection?: {
+    logo?: string;
+    logoURI?: string;
+    name?: string;
+  };
 }
 
 interface SendConfirmationAnimationProps {
@@ -52,20 +62,43 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
   const isNFTTransaction = transactionType?.includes('nft');
   const shouldShowFlowLogo = !selectedToken && !isNFTTransaction;
 
-  // Get image URI - prioritize NFT thumbnail for NFT transactions, then token logo
+  // Get image URI - prioritize NFT collection image for NFT transactions, then token logo
   const getImageUri = () => {
     if (isNFTTransaction && selectedNFTs && selectedNFTs.length > 0) {
       const firstNFT = selectedNFTs[0];
-      // Handle both string and object thumbnail formats
-      if (typeof firstNFT.thumbnail === 'string') {
-        return firstNFT.thumbnail;
-      } else if (
-        firstNFT.thumbnail &&
-        typeof firstNFT.thumbnail === 'object' &&
-        'url' in firstNFT.thumbnail
-      ) {
-        return (firstNFT.thumbnail as any).url;
+
+      console.log('NFT data for collection image:', {
+        collectionSquareImage: firstNFT.collectionSquareImage,
+        collectionName: firstNFT.collectionName,
+        collection: firstNFT.collection,
+        collection_logo: firstNFT.collection_logo,
+        logoURI: firstNFT.logoURI,
+        logo: firstNFT.logo,
+      });
+
+      // Use collection square image for NFT transactions
+      if (firstNFT.collectionSquareImage) {
+        console.log('Using collectionSquareImage:', firstNFT.collectionSquareImage);
+        return firstNFT.collectionSquareImage;
       }
+
+      // Fallback to other collection properties if collectionSquareImage is not available
+      if (firstNFT.collection?.logoURI) {
+        console.log('Using collection.logoURI:', firstNFT.collection.logoURI);
+        return firstNFT.collection.logoURI;
+      }
+      if (firstNFT.collection?.logo) {
+        console.log('Using collection.logo:', firstNFT.collection.logo);
+        return firstNFT.collection.logo;
+      }
+      if (firstNFT.collection_logo) {
+        console.log('Using collection_logo:', firstNFT.collection_logo);
+        return firstNFT.collection_logo;
+      }
+
+      console.log('No collection image found for NFT');
+      // No collection image found, return null to hide overlay
+      return null;
     }
     return selectedToken?.logoURI;
   };
@@ -190,7 +223,7 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
       />
 
       {/* Animated Token/Coin Overlay - positioned to match Flow coin exactly */}
-      {!shouldShowFlowLogo && (
+      {!shouldShowFlowLogo && imageUri && (
         <Animated.View
           style={[
             {
@@ -199,7 +232,7 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
               left: '50%',
               width: 56,
               height: 56,
-              borderRadius: isNFTTransaction ? 8 : 28, // Square with rounded corners for NFTs, circular for tokens
+              borderRadius: 28, // Always circular for collection images and tokens
               marginLeft: -28,
               marginTop: -28,
               zIndex: 3,
@@ -218,7 +251,7 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
               style={{
                 width: 56,
                 height: 56,
-                borderRadius: isNFTTransaction ? 8 : 28, // Square with rounded corners for NFTs, circular for tokens
+                borderRadius: 28, // Always circular for collection images and tokens
               }}
               resizeMode="cover"
             />
@@ -228,7 +261,7 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
               style={{
                 width: 56,
                 height: 56,
-                borderRadius: isNFTTransaction ? 8 : 28, // Square with rounded corners for NFTs, circular for tokens
+                borderRadius: 28, // Always circular for collection images and tokens
                 backgroundColor: '#00EF8B',
                 justifyContent: 'center',
                 alignItems: 'center',

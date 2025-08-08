@@ -17,6 +17,15 @@ interface NFT {
   id: string | number;
   name?: string;
   thumbnail?: string | object;
+  collectionName?: string;
+  collection_logo?: string;
+  logoURI?: string;
+  logo?: string;
+  collection?: {
+    logo?: string;
+    logoURI?: string;
+    name?: string;
+  };
 }
 
 interface AccountTransferDisplayProps {
