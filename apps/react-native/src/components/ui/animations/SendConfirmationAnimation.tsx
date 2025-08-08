@@ -1,3 +1,4 @@
+import type { NFTModel } from '@onflow/frw-types';
 import LottieView from 'lottie-react-native';
 import React, { useRef, useEffect } from 'react';
 import { type ViewStyle, View, Image } from 'react-native';
@@ -12,27 +13,14 @@ import Animated, {
 import sendConfirmationAnimation from '@/assets/animations/send-confirmation.json';
 import FlowLogo from '@/assets/icons/tokens/FlowLogo';
 
-interface Token {
-  symbol?: string;
-  name?: string;
-  logoURI?: string;
-  identifier?: string;
-}
-
-interface NFT {
-  id: string | number;
-  name?: string;
-  collectionSquareImage?: string;
-}
-
 interface SendConfirmationAnimationProps {
   width?: number;
   height?: number;
   style?: ViewStyle;
   autoPlay?: boolean;
   loop?: boolean;
-  selectedToken?: Token;
-  selectedNFTs?: NFT[];
+  selectedToken?: { symbol?: string; name?: string; logoURI?: string; identifier?: string };
+  selectedNFTs?: NFTModel[];
   transactionType?: string;
 }
 
