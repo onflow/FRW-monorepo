@@ -46,12 +46,11 @@ jobs:
       - name: Build all packages
         run: pnpm build:packages
 
-      - name: Run tests
-        run: pnpm test
-        continue-on-error: true
-
       - name: Type check packages
         run: pnpm -r --filter='./packages/*' typecheck
+
+      - name: Run tests
+        run: pnpm test
 
       - name: Run security audit
         run: pnpm audit --audit-level moderate
