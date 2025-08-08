@@ -1,5 +1,5 @@
+import { parseUnits } from '@ethersproject/units';
 import type { CadenceService } from '@onflow/frw-cadence';
-import { parseUnits } from 'ethers';
 
 import type { SendPayload, TransferStrategy } from './types';
 import { encodeEvmContractCallData } from './utils';
