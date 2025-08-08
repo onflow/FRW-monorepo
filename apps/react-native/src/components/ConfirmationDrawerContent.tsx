@@ -1,4 +1,4 @@
-import type { WalletAccount } from '@onflow/frw-types';
+import type { WalletAccount, NFTModel } from '@onflow/frw-types';
 import React, { type ReactNode } from 'react';
 import { SafeAreaView, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,30 +11,6 @@ import {
   ConfirmationHeader,
 } from '@/screens/Send/Confirmation/components';
 
-interface Token {
-  symbol?: string;
-  name?: string;
-  logoURI?: string;
-  identifier?: string;
-  decimal?: number;
-  contractAddress?: string;
-}
-
-interface NFT {
-  id: string | number;
-  name?: string;
-  thumbnail?: string | object;
-  collectionName?: string;
-  collection_logo?: string;
-  logoURI?: string;
-  logo?: string;
-  collection?: {
-    logo?: string;
-    logoURI?: string;
-    name?: string;
-  };
-}
-
 interface FormData {
   tokenAmount: string;
   fiatAmount: string;
@@ -44,8 +20,15 @@ interface ConfirmationDrawerContentProps {
   fromAccount: WalletAccount;
   toAccount: WalletAccount;
   transactionType?: string;
-  selectedToken?: Token;
-  selectedNFTs?: NFT[];
+  selectedToken?: {
+    symbol?: string;
+    name?: string;
+    logoURI?: string;
+    identifier?: string;
+    decimal?: number;
+    contractAddress?: string;
+  };
+  selectedNFTs?: NFTModel[];
   formData?: FormData;
   children?: ReactNode;
   onGoBack?: () => void;
