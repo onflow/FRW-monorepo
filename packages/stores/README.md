@@ -4,13 +4,16 @@ State management for Flow Reference Wallet projects using Zustand.
 
 ## Overview
 
-This package contains all Zustand stores that manage application state for the Flow Reference Wallet ecosystem. It provides reactive state management with a clean API for UI components.
+This package contains all Zustand stores that manage application state for the
+Flow Reference Wallet ecosystem. It provides reactive state management with a
+clean API for UI components.
 
 ## Stores
 
 ### useSendStore
 
-Manages transaction sending state including form data, validation, and transaction progress.
+Manages transaction sending state including form data, validation, and
+transaction progress.
 
 ```typescript
 import { useSendStore, sendSelectors, sendHelpers } from '@onflow/frw-stores';
@@ -30,13 +33,21 @@ sendHelpers.updateRecipient(address);
 Manages token balances, NFT collections, and asset-related state.
 
 ```typescript
-import { useTokenStore, tokenSelectors, tokenHelpers } from '@onflow/frw-stores';
+import {
+  useTokenStore,
+  tokenSelectors,
+  tokenHelpers,
+} from '@onflow/frw-stores';
 
 // In components
 const { balances, nfts, isLoading } = useTokenStore();
 
 // Get account balance
-const balance = await tokenHelpers.getAccountBalance(address, 'flow', 'mainnet');
+const balance = await tokenHelpers.getAccountBalance(
+  address,
+  'flow',
+  'mainnet'
+);
 
 // Fetch batch balances
 const balances = await tokenHelpers.fetchBatchFlowBalances(addresses);
@@ -47,7 +58,11 @@ const balances = await tokenHelpers.fetchBatchFlowBalances(addresses);
 Manages wallet accounts, active account selection, and wallet-level state.
 
 ```typescript
-import { useWalletStore, walletSelectors, walletHelpers } from '@onflow/frw-stores';
+import {
+  useWalletStore,
+  walletSelectors,
+  walletHelpers,
+} from '@onflow/frw-stores';
 
 // In components
 const { accounts, activeAccount, isLoading } = useWalletStore();
@@ -64,7 +79,7 @@ walletHelpers.switchAccount(accountId);
 The package also exports TypeScript types for state management:
 
 ```typescript
-import type { NFTModel, TokenInfo, SendState } from '@onflow/frw-stores';
+import type { NFTModel, TokenModel, SendState } from '@onflow/frw-stores';
 ```
 
 ## Store Architecture
@@ -83,11 +98,11 @@ import { useTokenStore } from '@onflow/frw-store';
 
 function TokenBalance({ address }: { address: string }) {
   const { balances, getAccountBalance } = useTokenStore();
-  
+
   useEffect(() => {
     getAccountBalance(address, 'flow', 'mainnet');
   }, [address]);
-  
+
   return <Text>{balances[address] || '0 FLOW'}</Text>;
 }
 ```

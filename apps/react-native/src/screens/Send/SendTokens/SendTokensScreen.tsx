@@ -1,5 +1,5 @@
 import { sendSelectors, useSendStore, useTokenStore } from '@onflow/frw-stores';
-import { type TokenInfo, type WalletAccount } from '@onflow/frw-types';
+import { type TokenModel, type WalletAccount } from '@onflow/frw-types';
 import { useNavigation } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -193,7 +193,7 @@ const SendTokensScreen = () => {
   };
 
   // Handle token selection from modal
-  const handleTokenSelection = (token: TokenInfo) => {
+  const handleTokenSelection = (token: TokenModel) => {
     setSelectedToken(token);
     setIsTokenSelectorVisible(false);
 

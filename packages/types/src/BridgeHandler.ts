@@ -1,6 +1,6 @@
 import type { WalletAccount } from './Bridge';
 import type { NFTModel } from './NFTModel';
-import { TokenInfo } from './TokenInfo';
+import type { TokenModel } from './TokenModel';
 import { WalletType } from './Wallet';
 
 // This is used to create a WalletAccount from the config data received from the bridge
@@ -73,11 +73,11 @@ export function createNFTModelsFromConfig(iosNFTs: any[]): NFTModel[] {
   return iosNFTs.map(createNFTModelFromConfig);
 }
 
-// This is used to create a TokenInfo from the config data received from the bridge
+// This is used to create a TokenModel from the config data received from the bridge
 // when click send from token detail from native
-// the model from native must be like TokenInfo
-export function createTokenInfoFromConfig(tokenConfig: any): TokenInfo {
-  return new TokenInfo({
+// the model from native must be like TokenModel
+export function createTokenModelFromConfig(tokenConfig: any): TokenModel {
+  return {
     type: tokenConfig.type === 'Flow' ? WalletType.Flow : WalletType.EVM,
     name: tokenConfig.name,
     symbol: tokenConfig.symbol,
@@ -104,5 +104,5 @@ export function createTokenInfoFromConfig(tokenConfig: any): TokenInfo {
     decimal: tokenConfig.decimal,
     evmAddress: tokenConfig.evmAddress,
     website: tokenConfig.website,
-  });
+  };
 }

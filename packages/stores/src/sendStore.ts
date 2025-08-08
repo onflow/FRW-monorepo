@@ -1,6 +1,6 @@
 import { getCadenceService } from '@onflow/frw-context';
 import { flowService } from '@onflow/frw-services';
-import { type NFTModel, type TokenInfo, addressType } from '@onflow/frw-types';
+import { type NFTModel, type TokenModel, addressType } from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
 import {
   type SendPayload,
@@ -52,7 +52,7 @@ export const useSendStore = create<SendState>((set, get) => ({
   },
 
   // Actions
-  setSelectedToken: (token: TokenInfo | null) => set({ selectedToken: token, error: null }),
+  setSelectedToken: (token: TokenModel | null) => set({ selectedToken: token, error: null }),
 
   setFromAccount: (account: WalletAccount | null) => set({ fromAccount: account, error: null }),
 

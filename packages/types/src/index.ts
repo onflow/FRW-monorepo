@@ -19,15 +19,15 @@ export type {
 export type { NFTListNFT } from './NFTListTypes';
 
 // NFT Model types
-export type { CollectionPath, CollectionModel, NFTModel, RNNFTModel } from './NFTModel';
+export type { CollectionPath, CollectionModel, NFTModel } from './NFTModel';
 
-// Token Info types and utilities
+// Token Model types and utilities
 export {
-  mapCadenceTokenDataWithCurrencyToTokenInfo,
-  mapERC20TokenToTokenInfo,
-  TokenInfo,
-} from './TokenInfo';
-export type { FlowPath } from './TokenInfo';
+  mapCadenceTokenDataWithCurrencyToTokenModel,
+  mapERC20TokenToTokenModel,
+  isFlow,
+} from './TokenModel';
+export type { FlowPath, TokenModel } from './TokenModel';
 
 // Wallet types and utilities
 export { addressType, WalletType } from './Wallet';
@@ -39,9 +39,9 @@ export type { ConfirmationScreenProps, ExpandedNFTData, NavigationProp } from '.
 export {
   createWalletAccountFromConfig,
   createNFTModelsFromConfig,
-  createTokenInfoFromConfig,
+  createTokenModelFromConfig,
 } from './BridgeHandler';
 
 export type * from './StoreTypes';
 
-export * from './utils/string';
+export { formatCurrencyStringForDisplay } from './utils/string';
