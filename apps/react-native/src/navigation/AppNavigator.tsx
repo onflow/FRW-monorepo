@@ -158,22 +158,6 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               headerRight: () => <ThemeToggle />,
             }}
           >
-            <Stack.Screen name="Home" component={HomeScreen} initialParams={{ address, network }} />
-            <Stack.Screen
-              name="ColorDemo"
-              component={ColorDemoScreen}
-              options={{ title: t('navigation.colorDemo') }}
-            />
-            <Stack.Screen
-              name="NFTDetail"
-              component={NFTDetailScreen}
-              options={({ route }) => ({
-                headerShown: true,
-                headerTitle: () => <NavigationTitle title={route.params?.nft?.name || 'NFT'} />,
-                headerLeft: () => <NavigationBackButton />,
-                headerRight: () => <NavigationCloseButton />,
-              })}
-            />
             <Stack.Group
               screenOptions={{
                 headerShown: true,
@@ -181,6 +165,24 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
                 headerRight: () => <NavigationCloseButton />,
               }}
             >
+              <Stack.Screen
+                name="Home"
+                component={HomeScreen}
+                initialParams={{ address, network }}
+              />
+              <Stack.Screen
+                name="ColorDemo"
+                component={ColorDemoScreen}
+                options={{ title: t('navigation.colorDemo') }}
+              />
+              <Stack.Screen
+                name="NFTDetail"
+                component={NFTDetailScreen}
+                options={({ route }) => ({
+                  headerTitle: () => <NavigationTitle title={route.params?.nft?.name || 'NFT'} />,
+                })}
+              />
+
               <Stack.Screen
                 name="SendTokens"
                 component={SendTokensScreen}
