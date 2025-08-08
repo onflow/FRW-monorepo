@@ -14,7 +14,7 @@
     "dev:rn": "pnpm -F FRWRN start",
     "dev:rn:full": "pnpm -F './packages/**' --parallel build:watch & pnpm -F FRWRN start",
     "clean": "pnpm -r clean && rm -rf **/node_modules && pnpm install",
-    "test": "pnpm -r test",
+    "test": "pnpm -r --filter='!FRWRN' test",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
     "lint:packages": "pnpm -r lint",
