@@ -54,12 +54,16 @@ export class ChildToOthersNftStrategy implements TransferStrategy {
 
     // Bridge to COA (Cadence Owned Account)
     if (receiver === coaAddr) {
-      return await this.cadenceService.batchBridgeChildNftToEvm(flowIdentifier, sender, ids);
+      return await this.cadenceService.batchBridgeChildNftToEvmWithPayer(
+        flowIdentifier,
+        sender,
+        ids
+      );
     }
 
     // Bridge to EOA (Externally Owned Account) - EVM address
     if (validateEvmAddress(receiver)) {
-      return await this.cadenceService.batchBridgeChildNftToEvmAddress(
+      return await this.cadenceService.batchBridgeChildNftToEvmAddressWithPayer(
         flowIdentifier,
         sender,
         ids,
@@ -91,7 +95,7 @@ export class ParentToChildNftStrategy implements TransferStrategy {
 
   async execute(payload: SendPayload): Promise<any> {
     const { flowIdentifier, receiver, ids } = payload;
-    return await this.cadenceService.batchBridgeChildNftFromEvm(
+    return await this.cadenceService.batchBridgeChildNftFromEvmWithPayer(
       flowIdentifier,
       receiver,
       ids.map((id) => `${id}`)
@@ -117,7 +121,7 @@ export class TopShotNftStrategy implements TransferStrategy {
 
   async execute(payload: SendPayload): Promise<any> {
     const { flowIdentifier, receiver, ids } = payload;
-    return await this.cadenceService.batchSendNftV3(flowIdentifier, receiver, ids);
+    return await this.cadenceService.batchSendNbaNftV3(flowIdentifier, receiver, ids);
   }
 }
 
@@ -153,7 +157,11 @@ export class FlowToEvmNftBridgeStrategy implements TransferStrategy {
 
   async execute(payload: SendPayload): Promise<any> {
     const { flowIdentifier, ids, receiver } = payload;
-    return await this.cadenceService.batchBridgeNftToEvmAddress(flowIdentifier, ids, receiver);
+    return await this.cadenceService.batchBridgeNftToEvmAddressWithPayer(
+      flowIdentifier,
+      ids,
+      receiver
+    );
   }
 }
 
@@ -170,7 +178,7 @@ export class EvmToFlowNftBridgeStrategy implements TransferStrategy {
 
   async execute(payload: SendPayload): Promise<any> {
     const { flowIdentifier, ids, receiver } = payload;
-    return await this.cadenceService.batchBridgeNftFromEvmToFlow(
+    return await this.cadenceService.batchBridgeNftFromEvmToFlowWithPayer(
       flowIdentifier,
       ids.map((id) => `${id}`),
       receiver
@@ -191,8 +199,7 @@ export class EvmToEvmNftStrategy implements TransferStrategy {
 
   async execute(payload: SendPayload): Promise<any> {
     const { tokenContractAddr, ids, amount } = payload;
-    const data = encodeEvmContractCallData(payload);
-    const value = '0.0';
+
     if (ids.length > 1) {
       const contracts = ids.map(() => tokenContractAddr);
       const datas = ids.map((id) => encodeEvmContractCallData({ ...payload, ids: [id] }));
@@ -205,6 +212,9 @@ export class EvmToEvmNftStrategy implements TransferStrategy {
         GAS_LIMITS.EVM_DEFAULT
       );
     }
+
+    const data = encodeEvmContractCallData(payload);
+    const value = '0.0';
     return await this.cadenceService.callContract(
       tokenContractAddr,
       value,

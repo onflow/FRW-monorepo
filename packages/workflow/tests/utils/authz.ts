@@ -1,7 +1,7 @@
 import fcl from '@onflow/fcl';
 
 import { accounts } from './accounts';
-import { sign } from './crypto';
+import { sign, signSecp256k1 } from './crypto';
 
 export const child1Addr = accounts.child1.address;
 export const child2Addr = accounts.child2.address;
@@ -30,7 +30,7 @@ export async function authz(account) {
 }
 
 export function authFunc(opt: any) {
-  const { addr, keyId = 0, tempId = 'SERVICE_ACCOUNT', key } = opt;
+  const { addr, keyId = 0, tempId = 'SERVICE_ACCOUNT', key, signType = 'p256' } = opt;
 
   return (account) => {
     return {
@@ -41,13 +41,55 @@ export function authFunc(opt: any) {
       signingFunction: (signable) => ({
         addr: fcl.withPrefix(addr), // must match the address that requested the signature, but with a prefix
         keyId: Number(keyId), // must match the keyId in the account that requested the signature
-        signature: sign(key, signable.message), // signable.message |> hexToBinArray |> hash |> sign |> binArrayToHex
+        signature:
+          signType === 'p256' ? sign(key, signable.message) : signSecp256k1(key, signable.message), // signable.message |> hexToBinArray |> hash |> sign |> binArrayToHex
         // if you arent in control of the transaction that is being signed we recommend constructing the
         // message from signable.voucher using the @onflow/encode module
       }),
     };
   };
 }
+
+export const bridgeAuthorization = async (account: any) => {
+  // TODO: get payer address and key id from config
+  const ADDRESS = '0xc33b4f1884ae1ea4'; // Fixed payer address
+  const KEY_ID = 0;
+  return {
+    ...account,
+    tempId: `${ADDRESS}-${KEY_ID}`,
+    addr: ADDRESS.replace('0x', ''),
+    keyId: Number(KEY_ID),
+    signingFunction: async (signable: any) => {
+      return {
+        addr: ADDRESS,
+        keyId: Number(KEY_ID),
+        signature: await getPayerSignature(
+          'http://localhost:3000/api/signAsBridgeFeePayer',
+          signable
+        ),
+      };
+    },
+  };
+};
+
+const getPayerSignature = async (endPoint: string, signable: any) => {
+  const response = await fetch(endPoint, {
+    method: 'POST',
+    headers: {
+      network: 'mainnet',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      transaction: signable.voucher,
+      message: {
+        envelope_message: signable.message,
+      },
+    }),
+  });
+  const data = (await response.json()) as { envelopeSigs: { sig: string } };
+  const signature = data.envelopeSigs.sig;
+  return signature;
+};
 
 export function test1Authz() {
   const authz = authFunc({

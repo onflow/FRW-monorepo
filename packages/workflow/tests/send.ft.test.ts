@@ -1,10 +1,9 @@
 import { configureFCL, CadenceService } from '@onflow/frw-cadence';
 import { describe, it, expect, beforeEach } from 'vitest';
 
-// import { SendTransaction, } from '../src'
 // import { getTrx } from '../src/utils';
 import { accounts } from './utils/accounts';
-
+import { authz } from './utils/authz';
 // dotenv.config();
 
 const mainAccount = accounts.main;
@@ -16,6 +15,15 @@ const cadenceService = new CadenceService();
 describe('Test send strategies', () => {
   beforeEach(() => {
     configureFCL('mainnet');
+
+    cadenceService.useRequestInterceptor(async (config: any) => {
+      if (config.type === 'transaction') {
+        config.payer = authz;
+        config.proposer = authz;
+        config.authorizations = [authz];
+      }
+      return config;
+    });
   });
 
   it('Test query coa', async () => {
@@ -185,7 +193,7 @@ describe('Test send strategies', () => {
   //     tokenContractAddr: '0x7f27352D5F83Db87a5A3E00f4B07Cc2138D8ee52',
   //   };
 
-  //   const txid = await SendTransaction(payload);
+  //   const txid = await SendTransaction(payload, cadenceService);
   //   expect(txid.length).toBe(64);
   // });
 
