@@ -1,4 +1,5 @@
 import { configureFCL, CadenceService } from '@onflow/frw-cadence';
+import { isValidSendTransactionPayload } from '@onflow/frw-workflow';
 import dotenv from 'dotenv';
 import { describe, it, expect, beforeEach } from 'vitest';
 
