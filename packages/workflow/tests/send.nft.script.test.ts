@@ -1,5 +1,6 @@
 import { configureFCL, CadenceService } from '@onflow/frw-cadence';
 import { isValidSendTransactionPayload } from '@onflow/frw-workflow';
+import * as t from '@onflow/types';
 import dotenv from 'dotenv';
 import { describe, it, expect, beforeEach } from 'vitest';
 
@@ -420,5 +421,404 @@ describe('Test NFT send strategies', () => {
         'invalid send evm transaction payload - invalid contract address'
       );
     });
+  });
+
+  it('Test ParentToChildNftStrategy args', async () => {
+    const payload = {
+      type: 'nft',
+      assetType: 'evm',
+      proposer: mainAccount.address,
+      receiver: child1Account.address,
+      flowIdentifier: 'A.f1ab99c82dee3526.FlowtyDrops.NFT',
+      sender: mainAccount.evmAddr,
+      amount: '0',
+      childAddrs: [child1Account.address, child2Account.address],
+      ids: [11111, 22222],
+      decimal: 0,
+      coaAddr: mainAccount.evmAddr,
+      tokenContractAddr: '0x1234567890123456789012345678901234567890',
+    };
+
+    await SendTransaction(payload, cadenceService);
+    // check args funcs
+    let idx = 0;
+    const checkArgs = (arg) => {
+      if (idx === 0) {
+        expect(arg).toBe(payload.flowIdentifier);
+      }
+      if (idx === 1) {
+        expect(arg).toBe(payload.receiver);
+      }
+      if (idx === 2) {
+        expect(arg).toStrictEqual(payload.ids.map((id) => id.toString()));
+      }
+      idx++;
+    };
+    // check args
+    configCache.args(checkArgs, t);
+  });
+
+  it('Test ChildToChildNftStrategy args', async () => {
+    const payload = {
+      type: 'nft',
+      assetType: 'flow',
+      proposer: mainAccount.address,
+      receiver: child2Account.address,
+      flowIdentifier: 'A.2d4c3caffbeab845.FLOAT.NFT',
+      sender: child1Account.address,
+      amount: '0',
+      childAddrs: [child1Account.address, child2Account.address],
+      ids: [75866303338937],
+      decimal: 0,
+      coaAddr: mainAccount.evmAddr,
+      tokenContractAddr: '',
+    };
+
+    await SendTransaction(payload, cadenceService);
+    // check args funcs
+    let idx = 0;
+    const checkArgs = (arg) => {
+      if (idx === 0) {
+        expect(arg).toBe(payload.flowIdentifier);
+      }
+      if (idx === 1) {
+        expect(arg).toBe(payload.sender);
+      }
+      if (idx === 2) {
+        expect(arg).toBe(payload.receiver);
+      }
+      if (idx === 3) {
+        expect(arg).toStrictEqual(payload.ids);
+      }
+      idx++;
+    };
+    // check args
+    configCache.args(checkArgs, t);
+  });
+
+  it('Test ChildToOthersNftStrategy - Parent receiver args', async () => {
+    const payload = {
+      type: 'nft',
+      assetType: 'flow',
+      proposer: mainAccount.address,
+      receiver: mainAccount.address,
+      flowIdentifier: 'A.2d4c3caffbeab845.FLOAT.NFT',
+      sender: child2Account.address,
+      amount: '',
+      childAddrs: [child1Account.address, child2Account.address],
+      ids: [217703303195673],
+      decimal: 0,
+      coaAddr: mainAccount.evmAddr,
+      tokenContractAddr: '',
+    };
+
+    await SendTransaction(payload, cadenceService);
+    // check args funcs
+    let idx = 0;
+    const checkArgs = (arg) => {
+      if (idx === 0) {
+        expect(arg).toBe(payload.flowIdentifier);
+      }
+      if (idx === 1) {
+        expect(arg).toBe(payload.sender);
+      }
+      if (idx === 2) {
+        expect(arg).toStrictEqual(payload.ids);
+      }
+      idx++;
+    };
+    // check args
+    configCache.args(checkArgs, t);
+  });
+
+  it('Test ChildToOthersNftStrategy - COA receiver args', async () => {
+    const payload = {
+      type: 'nft',
+      assetType: 'flow',
+      proposer: mainAccount.address,
+      receiver: mainAccount.evmAddr,
+      flowIdentifier: 'A.2d4c3caffbeab845.FLOAT.NFT',
+      sender: child2Account.address,
+      amount: '0',
+      childAddrs: [child1Account.address, child2Account.address],
+      ids: [239693535195987],
+      decimal: 0,
+      coaAddr: mainAccount.evmAddr,
+      tokenContractAddr: '',
+    };
+
+    await SendTransaction(payload, cadenceService);
+    // check args funcs
+    let idx = 0;
+    const checkArgs = (arg) => {
+      if (idx === 0) {
+        expect(arg).toBe(payload.flowIdentifier);
+      }
+      if (idx === 1) {
+        expect(arg).toBe(payload.sender);
+      }
+      if (idx === 2) {
+        expect(arg).toStrictEqual(payload.ids);
+      }
+      idx++;
+    };
+    // check args
+    configCache.args(checkArgs, t);
+  });
+
+  it('Test ChildToOthersNftStrategy - EVM address receiver args', async () => {
+    const payload = {
+      type: 'nft',
+      assetType: 'flow',
+      proposer: mainAccount.address,
+      receiver: '0x3b44f144B97A0402C0e206522c28052C1025A8AA',
+      flowIdentifier: 'A.2d4c3caffbeab845.FLOAT.NFT',
+      sender: child2Account.address,
+      amount: '0',
+      childAddrs: [child1Account.address, child2Account.address],
+      ids: [102254581997205],
+      decimal: 0,
+      coaAddr: mainAccount.evmAddr,
+      tokenContractAddr: '',
+    };
+
+    await SendTransaction(payload, cadenceService);
+    // check args funcs
+    let idx = 0;
+    const checkArgs = (arg) => {
+      if (idx === 0) {
+        expect(arg).toBe(payload.flowIdentifier);
+      }
+      if (idx === 1) {
+        expect(arg).toBe(payload.sender);
+      }
+      if (idx === 2) {
+        expect(arg).toStrictEqual(payload.ids);
+      }
+      if (idx === 3) {
+        expect(arg).toBe(payload.receiver);
+      }
+      idx++;
+    };
+    // check args
+    configCache.args(checkArgs, t);
+  });
+
+  it('Test ChildToOthersNftStrategy - Flow address receiver args', async () => {
+    const payload = {
+      type: 'nft',
+      assetType: 'flow',
+      proposer: mainAccount.address,
+      receiver: child1Account.address,
+      flowIdentifier: 'A.2d4c3caffbeab845.FLOAT.NFT',
+      sender: child2Account.address,
+      amount: '0',
+      childAddrs: [child2Account.address],
+      ids: [217703303195673],
+      decimal: 0,
+      coaAddr: mainAccount.evmAddr,
+      tokenContractAddr: '',
+    };
+
+    await SendTransaction(payload, cadenceService);
+    // check args funcs
+    let idx = 0;
+    const checkArgs = (arg) => {
+      if (idx === 0) {
+        expect(arg).toBe(payload.flowIdentifier);
+      }
+      if (idx === 1) {
+        expect(arg).toBe(payload.sender);
+      }
+      if (idx === 2) {
+        expect(arg).toBe(payload.receiver);
+      }
+      if (idx === 3) {
+        expect(arg).toStrictEqual(payload.ids);
+      }
+      idx++;
+    };
+    // check args
+    configCache.args(checkArgs, t);
+  });
+
+  it('Test TopShotNftStrategy args', async () => {
+    const payload = {
+      type: 'nft',
+      assetType: 'flow',
+      proposer: mainAccount.address,
+      receiver: mainAccount.address,
+      flowIdentifier: 'A.0b2a3299cc857e29.TopShot.NFT',
+      sender: mainAccount.address,
+      amount: '0',
+      childAddrs: [],
+      ids: [17884712],
+      decimal: 0,
+      coaAddr: mainAccount.evmAddr,
+      tokenContractAddr: '',
+    };
+
+    await SendTransaction(payload, cadenceService);
+    // check args funcs
+    let idx = 0;
+    const checkArgs = (arg) => {
+      if (idx === 0) {
+        expect(arg).toBe(payload.flowIdentifier);
+      }
+      if (idx === 1) {
+        expect(arg).toBe(payload.receiver);
+      }
+      if (idx === 2) {
+        expect(arg).toStrictEqual(payload.ids);
+      }
+      idx++;
+    };
+    // check args
+    configCache.args(checkArgs, t);
+  });
+
+  it('Test FlowToFlowNftStrategy args', async () => {
+    const payload = {
+      type: 'nft',
+      assetType: 'flow',
+      proposer: mainAccount.address,
+      receiver: mainAccount.address,
+      flowIdentifier: 'A.921ea449dffec68a.FlovatarComponent.NFT',
+      sender: mainAccount.address,
+      amount: '0.0',
+      childAddrs: [],
+      ids: [127190],
+      decimal: 0,
+      coaAddr: mainAccount.evmAddr,
+      tokenContractAddr: '',
+    };
+
+    await SendTransaction(payload, cadenceService);
+    // check args funcs
+    let idx = 0;
+    const checkArgs = (arg) => {
+      if (idx === 0) {
+        expect(arg).toBe(payload.flowIdentifier);
+      }
+      if (idx === 1) {
+        expect(arg).toBe(payload.receiver);
+      }
+      if (idx === 2) {
+        expect(arg).toBe(payload.ids[0]);
+      }
+      idx++;
+    };
+    // check args
+    configCache.args(checkArgs, t);
+  });
+
+  it('Test FlowToEvmNftBridgeStrategy args', async () => {
+    const payload = {
+      type: 'nft',
+      assetType: 'flow',
+      proposer: mainAccount.address,
+      receiver: '0x3b44f144B97A0402C0e206522c28052C1025A8AA',
+      flowIdentifier: 'A.0b2a3299cc857e29.TopShot.NFT',
+      sender: mainAccount.address,
+      amount: '0',
+      childAddrs: [],
+      ids: [17884712],
+      decimal: 0,
+      coaAddr: mainAccount.evmAddr,
+      tokenContractAddr: '',
+    };
+
+    await SendTransaction(payload, cadenceService);
+    // check args funcs
+    let idx = 0;
+    const checkArgs = (arg) => {
+      if (idx === 0) {
+        expect(arg).toBe(payload.flowIdentifier);
+      }
+      if (idx === 1) {
+        expect(arg).toStrictEqual(payload.ids);
+      }
+      if (idx === 2) {
+        expect(arg).toBe(payload.receiver);
+      }
+      idx++;
+    };
+    // check args
+    configCache.args(checkArgs, t);
+  });
+
+  it('Test EvmToFlowNftBridgeStrategy args', async () => {
+    const payload = {
+      type: 'nft',
+      assetType: 'evm',
+      proposer: mainAccount.address,
+      receiver: mainAccount.address,
+      flowIdentifier: 'A.0b2a3299cc857e29.TopShot.NFT',
+      sender: mainAccount.evmAddr,
+      amount: '0',
+      childAddrs: [],
+      ids: [67890],
+      decimal: 0,
+      coaAddr: mainAccount.evmAddr,
+      tokenContractAddr: '0x50ab3a827ad268e9d5a24d340108fad5c25dad5f',
+    };
+
+    await SendTransaction(payload, cadenceService);
+    // check args funcs
+    let idx = 0;
+    const checkArgs = (arg) => {
+      if (idx === 0) {
+        expect(arg).toBe(payload.flowIdentifier);
+      }
+      if (idx === 1) {
+        expect(arg).toStrictEqual(payload.ids.map((id) => id.toString()));
+      }
+      if (idx === 2) {
+        expect(arg).toBe(payload.receiver);
+      }
+      idx++;
+    };
+    // check args
+    configCache.args(checkArgs, t);
+  });
+
+  it('Test EvmToEvmNftStrategy - Single NFT args', async () => {
+    const payload = {
+      type: 'nft',
+      assetType: 'evm',
+      proposer: mainAccount.address,
+      receiver: '0x3b44f144B97A0402C0e206522c28052C1025A8AA',
+      flowIdentifier: 'A.0b2a3299cc857e29.TopShot.NFT',
+      sender: mainAccount.evmAddr,
+      amount: '',
+      childAddrs: [],
+      ids: [36786962],
+      decimal: 0,
+      coaAddr: mainAccount.evmAddr,
+      tokenContractAddr: '0x50ab3a827ad268e9d5a24d340108fad5c25dad5f',
+    };
+
+    await SendTransaction(payload, cadenceService);
+    // check args funcs
+    let idx = 0;
+    const checkArgs = (arg) => {
+      if (idx === 0) {
+        expect(arg).toBe(payload.tokenContractAddr);
+      }
+      if (idx === 1) {
+        expect(arg).toBe('0.0');
+      }
+      if (idx === 2) {
+        // This is the encoded data, we just check it's a string
+        expect(typeof arg).toBe('object');
+      }
+      if (idx === 3) {
+        // This is the gas limit
+        expect(typeof arg).toBe('number');
+      }
+      idx++;
+    };
+    // check args
+    configCache.args(checkArgs, t);
   });
 });
