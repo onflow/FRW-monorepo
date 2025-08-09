@@ -11,7 +11,6 @@ import { type NavigationProp } from '@/types';
 import { type WalletAccount } from '@/types/bridge';
 import {
   AccountCompatibilityModal,
-  StorageWarning,
   Text,
   ToAccountSection,
   TransactionFeeSection,
@@ -238,9 +237,6 @@ const SendSingleNFTScreen = ({ navigation }: { navigation: NavigationProp }) => 
 
             {/* Transaction Fee Section */}
             <TransactionFeeSection transactionFee={transactionFee} />
-
-            {/* Storage Warning */}
-            <StorageWarning />
           </ScrollView>
 
           {/* Send Button */}
