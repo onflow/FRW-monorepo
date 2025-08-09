@@ -3,7 +3,6 @@ import elliptic from 'elliptic';
 import { SHA3 } from 'sha3';
 
 import { accounts } from './accounts';
-const e = new elliptic.ec('p256');
 
 const mainAccount = accounts.main;
 
@@ -16,6 +15,17 @@ export const hashMsgHex = (msgHex) => {
 };
 
 export function sign(privateKey, msgHex) {
+  const e = new elliptic.ec('p256');
+  const key = e.keyFromPrivate(Buffer.from(privateKey, 'hex'));
+  const sig = key.sign(hashMsgHex(msgHex));
+  const n = 32; // half of signature length?
+  const r = sig.r.toArrayLike(Buffer, 'be', n);
+  const s = sig.s.toArrayLike(Buffer, 'be', n);
+  return Buffer.concat([r, s]).toString('hex');
+}
+
+export function signSecp256k1(privateKey, msgHex) {
+  const e = new elliptic.ec('secp256k1');
   const key = e.keyFromPrivate(Buffer.from(privateKey, 'hex'));
   const sig = key.sign(hashMsgHex(msgHex));
   const n = 32; // half of signature length?

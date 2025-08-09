@@ -1,8 +1,9 @@
 import { configureFCL, CadenceService } from '@onflow/frw-cadence';
+import { isValidSendTransactionPayload } from '@onflow/frw-workflow';
 import dotenv from 'dotenv';
 import { describe, it, expect, beforeEach } from 'vitest';
 
-import { SendTransaction, isValidSendTransactionPayload } from '../src';
+import { SendTransaction } from '../src';
 import { accounts } from './utils/accounts';
 import { authz } from './utils/authz';
 
@@ -91,7 +92,7 @@ describe('Test NFT send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    expect(configCache.name).toBe('batchBridgeNftToEvmAddress');
+    expect(configCache.name).toBe('batchBridgeNftToEvmAddressWithPayer');
   });
 
   it('Test EvmToFlowNftBridgeStrategy - Bridge NFT from EVM to Flow', async () => {
@@ -111,7 +112,7 @@ describe('Test NFT send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    expect(configCache.name).toBe('batchBridgeNftFromEvmToFlow');
+    expect(configCache.name).toBe('batchBridgeNftFromEvmToFlowWithPayer');
   });
 
   it('Test EvmToEvmNftStrategy - EVM to EVM NFT transfer', async () => {
@@ -211,7 +212,7 @@ describe('Test NFT send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    expect(configCache.name).toBe('batchBridgeChildNftToEvm');
+    expect(configCache.name).toBe('batchBridgeChildNftToEvmWithPayer');
   });
 
   it('Test ChildToOthersNftStrategy - Bridge child NFT to EVM address', async () => {
@@ -231,7 +232,7 @@ describe('Test NFT send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    expect(configCache.name).toBe('batchBridgeChildNftToEvmAddress');
+    expect(configCache.name).toBe('batchBridgeChildNftToEvmAddressWithPayer');
   });
 
   it('Test ChildToOthersNftStrategy - Child NFT to Flow address', async () => {
@@ -271,7 +272,7 @@ describe('Test NFT send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    expect(configCache.name).toBe('batchBridgeChildNftFromEvm');
+    expect(configCache.name).toBe('batchBridgeChildNftFromEvmWithPayer');
   });
 
   describe('Validation failure tests', () => {
