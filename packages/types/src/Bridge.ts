@@ -54,7 +54,9 @@ export interface WalletAccountsResponse {
 export interface AddressBookResponse {
   contacts: AddressBookContact[];
 }
-
+/**
+ * When transmitting data from the native side to react and sending resources
+ */
 export interface SendToConfig {
   selectedToken?: TokenModel;
   fromAccount?: WalletAccount;
@@ -62,6 +64,15 @@ export interface SendToConfig {
   selectedNFTs?: NFTModel[];
   targetAddress?: string;
 }
+
+/**
+ * Initial props for the app
+ */
+export interface InitialProps {
+  screen: 'sendTo' | 'sendTokens';
+  sendToConfig?: SendToConfig;
+}
+
 export interface EnvironmentVariables {
   NODE_API_URL: string;
   GO_API_URL: string;

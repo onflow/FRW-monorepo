@@ -1,5 +1,5 @@
 import { useSendStore } from '@onflow/frw-stores';
-import { type NFTModel, type SendToConfig } from '@onflow/frw-types';
+import { type NFTModel, type InitialProps } from '@onflow/frw-types';
 import {
   createWalletAccountFromConfig,
   createNFTModelsFromConfig,
@@ -62,23 +62,33 @@ interface AppNavigatorProps {
   network?: string;
   initialRoute?: string;
   embedded?: boolean;
-  sendToConfig?: SendToConfig;
+  initialProps?: InitialProps;
 }
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const AppNavigator: React.FC<AppNavigatorProps> = props => {
   const { t } = useTranslation();
-  const { address, network, initialRoute, sendToConfig } = props;
+  const { address, network, initialRoute, initialProps } = props;
   const { isDark } = useTheme();
 
   // Send store actions
-  const { setSelectedToken, setCurrentStep, setTransactionType, setFromAccount, setSelectedNFTs } =
-    useSendStore();
+  const {
+    setSelectedToken,
+    setCurrentStep,
+    setTransactionType,
+    setFromAccount,
+    setSelectedNFTs,
+    setToAccount,
+  } = useSendStore();
 
   // Initialize SendTo flow if requested
   useEffect(() => {
-    if (sendToConfig) {
+    if (initialProps?.screen === 'sendTo' || initialProps?.screen === 'sendTokens') {
+      const sendToConfig = initialProps?.sendToConfig;
+      if (!sendToConfig) {
+        return;
+      }
       try {
         // Set selected token
         if (sendToConfig.selectedToken) {
@@ -107,7 +117,14 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
             sendToConfig.transactionType as 'tokens' | 'single-nft' | 'multiple-nfts'
           );
         }
-
+        if (sendToConfig.targetAddress) {
+          const walletAccount = createWalletAccountFromConfig({
+            address: sendToConfig.targetAddress,
+            name: sendToConfig.targetAddress,
+            emojiInfo: { emoji: '', name: '', color: '' },
+          });
+          setToAccount(walletAccount);
+        }
         // Set current step to send-to
         setCurrentStep('send-to');
       } catch (error) {
@@ -115,7 +132,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
       }
     }
   }, [
-    sendToConfig,
+    initialProps?.sendToConfig,
     setSelectedToken,
     setCurrentStep,
     setTransactionType,
