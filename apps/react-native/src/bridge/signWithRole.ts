@@ -71,13 +71,13 @@ export const payer = async (account: any) => {
 
 export const bridgeAuthorization = async (account: any) => {
   // TODO: get bridge address and key id from config
-  let ADDRESS = '0x319e67f2ef9d937f'; // Fixed bridge address
+  let ADDRESS = '0xc33b4f1884ae1ea4'; // Fixed bridge address
   const KEY_ID = 0;
   const network = platform.getNetwork();
   if (network === 'testnet') {
-    ADDRESS = '0xcb1cf3196916f9e2';
+    ADDRESS = '0xb8028ddb6592deec';
   } else if (network === 'mainnet') {
-    ADDRESS = '0x319e67f2ef9d937f';
+    ADDRESS = '0xc33b4f1884ae1ea4';
   }
 
   return {
