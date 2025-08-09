@@ -3,7 +3,7 @@ import { type NFTModel, type SendToConfig } from '@onflow/frw-types';
 import {
   createWalletAccountFromConfig,
   createNFTModelsFromConfig,
-  createTokenInfoFromConfig,
+  createTokenModelFromConfig,
 } from '@onflow/frw-types';
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -84,7 +84,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
         if (sendToConfig.selectedToken) {
           console.log('🚀 DEBUG: Setting selected token', sendToConfig.selectedToken);
           // Convert to TokenInfo type
-          const tokenInfo = createTokenInfoFromConfig(sendToConfig.selectedToken);
+          const tokenInfo = createTokenModelFromConfig(sendToConfig.selectedToken);
           setSelectedToken(tokenInfo);
         }
 
