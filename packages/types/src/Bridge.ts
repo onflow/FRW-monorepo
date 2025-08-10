@@ -69,7 +69,7 @@ export interface SendToConfig {
  * Initial props for the app
  */
 export interface InitialProps {
-  screen: 'sendTo' | 'sendTokens';
+  screen: 'send-asset' | 'token-detail';
   sendToConfig?: SendToConfig;
 }
 

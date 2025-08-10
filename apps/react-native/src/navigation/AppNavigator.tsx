@@ -84,39 +84,12 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
 
   // Initialize SendTo flow if requested
   useEffect(() => {
-    if (initialProps?.screen === 'sendTo' || initialProps?.screen === 'sendTokens') {
+    if (initialProps?.screen === 'send-asset') {
       const sendToConfig = initialProps?.sendToConfig;
       if (!sendToConfig) {
         return;
       }
       try {
-        // Set selected token
-        if (sendToConfig.selectedToken) {
-          console.log('🚀 DEBUG: Setting selected token', sendToConfig.selectedToken);
-          // Convert to TokenInfo type
-          const tokenInfo = createTokenModelFromConfig(sendToConfig.selectedToken);
-          setSelectedToken(tokenInfo);
-        }
-
-        if (sendToConfig.fromAccount) {
-          console.log('🚀 DEBUG: Setting from account', sendToConfig.fromAccount);
-          const walletAccount = createWalletAccountFromConfig(sendToConfig.fromAccount);
-          setFromAccount(walletAccount);
-        }
-
-        // Set selected NFTs if provided
-        if (sendToConfig.selectedNFTs && Array.isArray(sendToConfig.selectedNFTs)) {
-          console.log('🚀 DEBUG: Setting selected NFTs', sendToConfig.selectedNFTs);
-          const nftModels = createNFTModelsFromConfig(sendToConfig.selectedNFTs);
-          setSelectedNFTs(nftModels);
-        }
-
-        // Set transaction type
-        if (sendToConfig.transactionType) {
-          setTransactionType(
-            sendToConfig.transactionType as 'tokens' | 'single-nft' | 'multiple-nfts'
-          );
-        }
         if (sendToConfig.targetAddress) {
           const walletAccount = createWalletAccountFromConfig({
             address: sendToConfig.targetAddress,
@@ -124,9 +97,35 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
             emojiInfo: { emoji: '', name: '', color: '' },
           });
           setToAccount(walletAccount);
+          // Set current step to send-to
+          setCurrentStep('send-to');
+        } else {
+          if (sendToConfig.fromAccount) {
+            console.log('🚀 DEBUG: Setting from account', sendToConfig.fromAccount);
+            const walletAccount = createWalletAccountFromConfig(sendToConfig.fromAccount);
+            setFromAccount(walletAccount);
+          }
+
+          if (sendToConfig.selectedToken) {
+            console.log('🚀 DEBUG: Setting selected token', sendToConfig.selectedToken);
+            // Convert to TokenInfo type
+            const tokenInfo = createTokenModelFromConfig(sendToConfig.selectedToken);
+            setSelectedToken(tokenInfo);
+          }
+          // Set selected NFTs if provided
+          if (sendToConfig.selectedNFTs && Array.isArray(sendToConfig.selectedNFTs)) {
+            console.log('🚀 DEBUG: Setting selected NFTs', sendToConfig.selectedNFTs);
+            const nftModels = createNFTModelsFromConfig(sendToConfig.selectedNFTs);
+            setSelectedNFTs(nftModels);
+          }
+
+          // Set transaction type
+          if (sendToConfig.transactionType) {
+            setTransactionType(
+              sendToConfig.transactionType as 'tokens' | 'single-nft' | 'multiple-nfts'
+            );
+          }
         }
-        // Set current step to send-to
-        setCurrentStep('send-to');
       } catch (error) {
         console.error('Failed to initialize SendTo flow:', error);
       }
