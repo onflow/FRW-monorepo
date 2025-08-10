@@ -99,11 +99,6 @@ export const IconWrapper: React.FC<IconWrapperProps> = ({
 
   const finalTheme = detectTheme();
 
-  // Debug logging - remove in production
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`Icon theme detected: ${finalTheme}, color: ${color}`);
-  }
-
   // Process children to replace colors based on theme
   const processedChildren = React.Children.map(children, (child) => {
     if (React.isValidElement(child)) {
