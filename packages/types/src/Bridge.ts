@@ -60,7 +60,6 @@ export interface AddressBookResponse {
 export interface SendToConfig {
   selectedToken?: TokenModel;
   fromAccount?: WalletAccount;
-  transactionType: 'tokens' | 'single-nft' | 'multiple-nfts' | 'target-address';
   selectedNFTs?: NFTModel[];
   targetAddress?: string;
 }
