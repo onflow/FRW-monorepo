@@ -1,5 +1,5 @@
 {
-  "name": "@onflow/frw-screen",
+  "name": "@onflow/frw-screens",
   "version": "1.0.0",
   "description": "Screen components and logic for Flow Wallet",
   "main": "dist/index.js",
