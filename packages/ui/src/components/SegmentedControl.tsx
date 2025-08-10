@@ -23,27 +23,27 @@ export function SegmentedControl({
   const sizeProps = getSizeProps();
 
   return (
-    <XStack backgroundColor="$gray3" borderRadius="$4" padding="$1" alignItems="center">
+    <XStack bg="$gray3" rounded="$4" p="$1" items="center">
       {options.map((option, index) => (
         <Button
           key={option}
           onPress={() => onChange(index)}
           flex={1}
-          height={sizeProps.height - 8}
-          backgroundColor={selectedIndex === index ? '$background' : 'transparent'}
-          borderRadius="$3"
+          height={(sizeProps.height as number) - 8}
+          bg={selectedIndex === index ? '$background' : 'transparent'}
+          rounded="$3"
           borderWidth={0}
-          paddingHorizontal={sizeProps.paddingHorizontal}
+          px={sizeProps.paddingHorizontal as any}
           pressStyle={{
-            backgroundColor: selectedIndex === index ? '$gray1' : '$gray4',
+            bg: selectedIndex === index ? '$gray1' : '$gray4',
           }}
           hoverStyle={{
-            backgroundColor: selectedIndex === index ? '$gray1' : '$gray4',
+            bg: selectedIndex === index ? '$gray1' : '$gray4',
           }}
         >
           <Text
-            fontSize={sizeProps.fontSize}
-            fontWeight={selectedIndex === index ? '600' : '500'}
+            fontSize={sizeProps.fontSize as any}
+            fontWeight={selectedIndex === index ? 600 : 500}
             color={selectedIndex === index ? '$gray12' : '$gray10'}
           >
             {option}

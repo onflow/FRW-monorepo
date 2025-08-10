@@ -1,10 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import React from 'react';
 
-import { YStack, XStack } from '../src';
+import { XStack, YStack } from '../src';
 import { Text } from '../src/components/Text';
 
 const meta = {
-  title: 'UI/Text',
+  title: 'Foundation/Text',
   component: Text,
   parameters: {
     layout: 'centered',
@@ -163,28 +164,28 @@ export const Typography: Story = {
           TYPOGRAPHY SCALE
         </Text>
 
-        <XStack space="$4" alignItems="baseline">
+        <XStack space="$4" items="baseline">
           <Text variant="caption" color="$gray10" width={80}>
             24px
           </Text>
           <Text variant="heading">Heading Text</Text>
         </XStack>
 
-        <XStack space="$4" alignItems="baseline">
+        <XStack space="$4" items="baseline">
           <Text variant="caption" color="$gray10" width={80}>
             16px
           </Text>
           <Text variant="body">Body Text</Text>
         </XStack>
 
-        <XStack space="$4" alignItems="baseline">
+        <XStack space="$4" items="baseline">
           <Text variant="caption" color="$gray10" width={80}>
             14px
           </Text>
           <Text variant="label">Label Text</Text>
         </XStack>
 
-        <XStack space="$4" alignItems="baseline">
+        <XStack space="$4" items="baseline">
           <Text variant="caption" color="$gray10" width={80}>
             12px
           </Text>

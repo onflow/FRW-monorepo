@@ -5,7 +5,7 @@ import { YStack } from '../src';
 import { Input } from '../src/components/Input';
 
 const meta = {
-  title: 'UI/Input',
+  title: 'Foundation/Input',
   component: Input,
   parameters: {
     layout: 'centered',

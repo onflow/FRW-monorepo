@@ -11,20 +11,20 @@ export function Skeleton({
 }: SkeletonProps): React.ReactElement {
   return (
     <View
-      width={width}
-      height={height}
-      borderRadius={borderRadius}
-      backgroundColor="$gray4"
+      width={width as any}
+      height={height as any}
+      rounded={borderRadius}
+      bg="$gray4"
       animation={animated ? 'lazy' : undefined}
       animateOnly={['opacity']}
       opacity={animated ? 0.6 : 1}
       // Simple pulse animation using Tamagui's built-in animations
       {...(animated && {
         '$theme-light': {
-          backgroundColor: '$gray3',
+          bg: '$gray3',
         },
         '$theme-dark': {
-          backgroundColor: '$gray5',
+          bg: '$gray5',
         },
       })}
     />

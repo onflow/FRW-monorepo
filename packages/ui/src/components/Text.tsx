@@ -29,23 +29,28 @@ export function Text({
     }
   };
 
-  const getWeightValue = (): string => {
+  const getWeightValue = (): number => {
     switch (weight) {
       case 'light':
-        return '300';
+        return 300;
       case 'medium':
-        return '500';
+        return 500;
       case 'semibold':
-        return '600';
+        return 600;
       case 'bold':
-        return '700';
+        return 700;
       default:
-        return '400';
+        return 400;
     }
   };
 
   return (
-    <TamaguiText {...getVariantProps()} fontWeight={getWeightValue()} color="$gray12" {...props}>
+    <TamaguiText
+      {...getVariantProps()}
+      fontWeight={getWeightValue() as any}
+      color="$gray12"
+      {...props}
+    >
       {children}
     </TamaguiText>
   );

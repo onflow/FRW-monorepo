@@ -5,7 +5,7 @@ import { Text, YStack } from '../src';
 import { Card } from '../src/components/Card';
 
 const meta = {
-  title: 'UI/Card',
+  title: 'Foundation/Card',
   component: Card,
   parameters: {
     layout: 'centered',

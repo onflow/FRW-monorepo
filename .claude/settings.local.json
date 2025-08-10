@@ -25,7 +25,13 @@
       "Bash(git push:*)",
       "WebFetch(domain:tamagui.dev)",
       "WebFetch(domain:storybookjs.github.io)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(cp:*)",
+      "Bash(chmod:*)",
+      "Bash(npx @svgr/cli:*)",
+      "Bash(npm run generate:icons:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(npm run build:*)"
     ],
     "deny": []
   }

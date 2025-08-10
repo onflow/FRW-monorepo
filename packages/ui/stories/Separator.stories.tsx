@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { YStack, Text, XStack } from '../src';
+import { Text, XStack, YStack } from '../src';
 import { Separator } from '../src/components/Separator';
 
 const meta = {
-  title: 'UI/Separator',
+  title: 'Foundation/Separator',
   component: Separator,
   parameters: {
     layout: 'centered',

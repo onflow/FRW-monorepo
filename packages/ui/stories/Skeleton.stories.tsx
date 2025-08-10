@@ -1,10 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import React from 'react';
 
-import { YStack, XStack, Text } from '../src';
+import { Text, XStack, YStack } from '../src';
 import { Skeleton } from '../src/components/Skeleton';
 
 const meta = {
-  title: 'UI/Skeleton',
+  title: 'Foundation/Skeleton',
   component: Skeleton,
   parameters: {
     layout: 'centered',
@@ -83,10 +84,10 @@ export const Static: Story = {
 
 export const CardSkeleton: Story = {
   render: (): React.ReactElement => (
-    <YStack width={280} padding="$4" space="$3" backgroundColor="$background" borderRadius="$4">
-      <XStack space="$3" alignItems="center">
+    <YStack width={280} p="$4" gap="$3" bg="$background" rounded="$4">
+      <XStack gap="$3" items="center">
         <Skeleton width={50} height={50} borderRadius={25} animated={true} />
-        <YStack flex={1} space="$2">
+        <YStack flex={1} gap="$2">
           <Skeleton width="70%" height={16} animated={true} />
           <Skeleton width="50%" height={14} animated={true} />
         </YStack>
@@ -94,7 +95,7 @@ export const CardSkeleton: Story = {
 
       <Skeleton width="100%" height={120} borderRadius={8} animated={true} />
 
-      <YStack space="$2">
+      <YStack gap="$2">
         <Skeleton width="100%" height={14} animated={true} />
         <Skeleton width="80%" height={14} animated={true} />
         <Skeleton width="60%" height={14} animated={true} />
@@ -105,15 +106,15 @@ export const CardSkeleton: Story = {
 
 export const ListSkeleton: Story = {
   render: (): React.ReactElement => (
-    <YStack width={300} space="$3">
+    <YStack width={300} gap="$3">
       <Text variant="label" color="$gray11">
         LIST LOADING STATE
       </Text>
 
       {[1, 2, 3, 4].map((item) => (
-        <XStack key={item} space="$3" alignItems="center" padding="$3">
+        <XStack key={item} gap="$3" items="center" p="$3">
           <Skeleton width={40} height={40} borderRadius={20} animated={true} />
-          <YStack flex={1} space="$2">
+          <YStack flex={1} gap="$2">
             <Skeleton width="60%" height={16} animated={true} />
             <Skeleton width="40%" height={12} animated={true} />
           </YStack>
@@ -126,23 +127,23 @@ export const ListSkeleton: Story = {
 
 export const Sizes: Story = {
   render: (): React.ReactElement => (
-    <YStack space="$4" width={250}>
-      <YStack space="$2">
+    <YStack gap="$4" width={250}>
+      <YStack gap="$2">
         <Text variant="caption">Small (12px height)</Text>
         <Skeleton width="100%" height={12} animated={true} />
       </YStack>
 
-      <YStack space="$2">
+      <YStack gap="$2">
         <Text variant="caption">Medium (20px height)</Text>
         <Skeleton width="100%" height={20} animated={true} />
       </YStack>
 
-      <YStack space="$2">
+      <YStack gap="$2">
         <Text variant="caption">Large (32px height)</Text>
         <Skeleton width="100%" height={32} animated={true} />
       </YStack>
 
-      <YStack space="$2">
+      <YStack gap="$2">
         <Text variant="caption">Extra Large (48px height)</Text>
         <Skeleton width="100%" height={48} borderRadius={8} animated={true} />
       </YStack>

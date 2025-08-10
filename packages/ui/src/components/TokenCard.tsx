@@ -18,23 +18,23 @@ export function TokenCard({
   return (
     <Card
       {...(onPress && {
-        pressStyle: { backgroundColor: '$gray3' },
+        pressStyle: { bg: '$gray3' },
         onPress: onPress,
       })}
-      backgroundColor="$background"
+      bg="$background"
       borderColor="$gray5"
       borderWidth={1}
-      padding="$4"
-      borderRadius="$4"
-      hoverStyle={{ backgroundColor: '$gray2' }}
+      p="$4"
+      rounded="$4"
+      hoverStyle={{ bg: '$gray2' }}
     >
-      <XStack alignItems="center" space="$3">
+      <XStack items="center" space="$3">
         {/* Token Logo */}
         <Avatar src={logo} alt={symbol} fallback={symbol[0]} size={44} />
 
         {/* Token Info */}
         <YStack flex={1} space="$1">
-          <XStack justifyContent="space-between" alignItems="flex-start">
+          <XStack justify="space-between" items="flex-start">
             <YStack space="$1">
               <Text fontSize={16} fontWeight="600" color="$gray12">
                 {symbol}
@@ -44,18 +44,18 @@ export function TokenCard({
               </Text>
             </YStack>
 
-            <YStack alignItems="flex-end" space="$1">
+            <YStack items="flex-end" space="$1">
               <Text fontSize={16} fontWeight="600" color="$gray12">
                 {balance}
               </Text>
               {price && (
-                <XStack alignItems="center" space="$2">
+                <XStack items="center" space="$2">
                   <Text fontSize={14} color="$gray10">
                     ${price}
                   </Text>
                   {change24h !== undefined && (
-                    <XStack alignItems="center" space="$1">
-                      <Circle size={6} backgroundColor={isPositiveChange ? '$green10' : '$red10'} />
+                    <XStack items="center" space="$1">
+                      <Circle size={6} bg={isPositiveChange ? '$green10' : '$red10'} />
                       <Text
                         fontSize={12}
                         fontWeight="500"
