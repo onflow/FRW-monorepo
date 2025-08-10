@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import React from 'react';
 
 import { YStack } from '../src';
-import { Input } from '../src/components/Input';
+import { Input } from '../src/foundation/Input';
 
 const meta = {
   title: 'Foundation/Input',

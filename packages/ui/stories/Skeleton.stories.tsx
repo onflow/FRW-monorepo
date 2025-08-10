@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import React from 'react';
 
 import { Text, XStack, YStack } from '../src';
-import { Skeleton } from '../src/components/Skeleton';
+import { Skeleton } from '../src/foundation/Skeleton';
 
 const meta = {
   title: 'Foundation/Skeleton',

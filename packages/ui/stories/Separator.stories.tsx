@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { Text, XStack, YStack } from '../src';
-import { Separator } from '../src/components/Separator';
+import { Separator } from '../src/foundation/Separator';
 
 const meta = {
   title: 'Foundation/Separator',

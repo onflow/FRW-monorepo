@@ -1,5 +1,6 @@
 import * as Icons from '@onflow/frw-icons';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useTheme } from '@tamagui/core';
 import React, { useState } from 'react';
 
 import { Input, Text, View, XStack, YStack } from '../src';
@@ -51,6 +52,7 @@ const IconShowcase = (): React.ReactElement => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
   const [iconSize, setIconSize] = useState(24);
+  const theme = useTheme();
 
   const categories = categorizeIcons();
 
@@ -109,12 +111,12 @@ const IconShowcase = (): React.ReactElement => {
 
       {/* Selected Icon Details */}
       {selectedIcon && (
-        <View bg="$gray2" p="$4" rounded="$4" borderWidth={1} borderColor="$gray5">
+        <View bg="$background" p="$4" rounded="$4" borderWidth={1} borderColor="$gray5">
           <XStack items="center" gap="$3">
             <View p="$2">
               {((): React.ReactNode => {
                 const IconComponent = iconEntries.find(([name]) => name === selectedIcon)?.[1];
-                return IconComponent ? <IconComponent size={32} color="#3b82f6" /> : null;
+                return IconComponent ? <IconComponent size={32} color={theme.blue7?.val} /> : null;
               })()}
             </View>
             <YStack>
@@ -125,7 +127,7 @@ const IconShowcase = (): React.ReactElement => {
                 Import: {`import { ${selectedIcon} } from '@onflow/frw-icons'`}
               </Text>
               <Text variant="caption" color="$gray10">
-                Usage: {`<${selectedIcon} size={${iconSize}} color="#374151" />`}
+                Usage: {`<${selectedIcon} size={${iconSize}} color={theme.blue7?.val} />`}
               </Text>
             </YStack>
           </XStack>
@@ -150,13 +152,14 @@ const IconShowcase = (): React.ReactElement => {
               {icons.map(([iconName, IconComponent]) => (
                 <YStack
                   key={iconName}
+                  bg="$backgroundHover"
                   p="$4"
                   rounded="$3"
-                  bg={selectedIcon === iconName ? '$blue3' : '$gray1'}
+                  // bg={selectedIcon === iconName ? '$blue3' : '$gray1'}
                   borderWidth={selectedIcon === iconName ? 1 : 0}
                   borderColor={selectedIcon === iconName ? '$blue7' : 'transparent'}
                   hoverStyle={{
-                    bg: selectedIcon === iconName ? '$blue4' : '$gray2',
+                    bg: selectedIcon === iconName ? '$blue4' : '$backgroundFocus',
                   }}
                   pressStyle={{
                     bg: selectedIcon === iconName ? '$blue5' : '$gray3',
@@ -176,7 +179,7 @@ const IconShowcase = (): React.ReactElement => {
                   >
                     <IconComponent
                       size={iconSize}
-                      color={selectedIcon === iconName ? '#3b82f6' : '#374151'}
+                      color={selectedIcon === iconName ? theme.blue7?.val : theme.gray11?.val}
                     />
                   </View>
                   <Text
@@ -206,25 +209,25 @@ const IconShowcase = (): React.ReactElement => {
           <YStack gap="$3">
             <Text variant="label">Basic Usage</Text>
             <XStack gap="$2" items="center">
-              <Icons.ArrowRight size={20} color="#374151" />
+              <Icons.ArrowRight size={20} color={theme.gray11?.val || '#374151'} />
               <Text variant="body" fontSize={14}>
-                {`<ArrowRight size={20} color="#374151" />`}
+                {`<ArrowRight size={20} color="${theme.gray11?.val || '#374151'}" />`}
               </Text>
             </XStack>
 
             <Text variant="label">With Custom Color</Text>
             <XStack gap="$2" items="center">
-              <Icons.CheckCircle size={20} color="#10b981" />
+              <Icons.CheckCircle size={20} color={theme.green10?.val || '#10b981'} />
               <Text variant="body" fontSize={14}>
-                {`<CheckCircle size={20} color="#10b981" />`}
+                {`<CheckCircle size={20} color="${theme.green10?.val || '#10b981'}" />`}
               </Text>
             </XStack>
 
             <Text variant="label">With Click Handler</Text>
             <XStack gap="$2" items="center">
-              <Icons.Copy size={20} color="#3b82f6" />
+              <Icons.Copy size={20} color={theme.blue10?.val || '#3b82f6'} />
               <Text variant="body" fontSize={14}>
-                {`<Copy size={20} color="#3b82f6" onClick={handleCopy} />`}
+                {`<Copy size={20} color="${theme.blue10?.val || '#3b82f6'}" onClick={handleCopy} />`}
               </Text>
             </XStack>
           </YStack>
@@ -278,6 +281,7 @@ export const IconGrid: Story = {
 export const IconSizes: Story = {
   render: (): React.ReactElement => {
     const sizes = [16, 20, 24, 32, 48, 64];
+    const theme = useTheme();
     return (
       <YStack gap="$4" p="$4">
         <Text variant="heading">Icon Sizes</Text>
@@ -287,11 +291,11 @@ export const IconSizes: Story = {
               {size}px:
             </Text>
             <XStack gap="$3" items="center">
-              <Icons.ArrowRight size={size} color="#374151" />
-              <Icons.CheckCircle size={size} color="#374151" />
-              <Icons.Copy size={size} color="#374151" />
-              <Icons.Edit size={size} color="#374151" />
-              <Icons.Search size={size} color="#374151" />
+              <Icons.ArrowRight size={size} color={theme.gray11?.val || '#374151'} />
+              <Icons.CheckCircle size={size} color={theme.gray11?.val || '#374151'} />
+              <Icons.Copy size={size} color={theme.gray11?.val || '#374151'} />
+              <Icons.Edit size={size} color={theme.gray11?.val || '#374151'} />
+              <Icons.Search size={size} color={theme.gray11?.val || '#374151'} />
             </XStack>
           </XStack>
         ))}
@@ -302,7 +306,14 @@ export const IconSizes: Story = {
 
 export const IconThemes: Story = {
   render: (): React.ReactElement => {
-    const colors = ['#374151', '#3b82f6', '#10b981', '#ef4444', '#f59e0b'];
+    const theme = useTheme();
+    const colors = [
+      theme.gray11?.val || '#374151',
+      theme.blue10?.val || '#3b82f6',
+      theme.green10?.val || '#10b981',
+      theme.red10?.val || '#ef4444',
+      theme.orange10?.val || '#f59e0b',
+    ];
 
     return (
       <YStack gap="$4" p="$4">

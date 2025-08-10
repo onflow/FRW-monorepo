@@ -50,10 +50,13 @@ export const IconWrapper: React.FC<IconWrapperProps> = ({
         }
       }
 
-      // Check for opacity effects
-      if (element.props.opacity && parseFloat(element.props.opacity) < 1) {
+      // Check for opacity effects - only consider very low opacity as special effects (like backgrounds)
+      if (element.props.opacity && parseFloat(element.props.opacity) <= 0.2) {
         hasSpecialEffects = true;
       }
+
+      // Don't consider fillOpacity or strokeOpacity as special effects - these are common styling
+      // They will be removed anyway by our color processing
 
       // Recursively check nested elements
       React.Children.forEach(element.props.children, (child) => {
@@ -96,6 +99,11 @@ export const IconWrapper: React.FC<IconWrapperProps> = ({
 
   const finalTheme = detectTheme();
 
+  // Debug logging - remove in production
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`Icon theme detected: ${finalTheme}, color: ${color}`);
+  }
+
   // Process children to replace colors based on theme
   const processedChildren = React.Children.map(children, (child) => {
     if (React.isValidElement(child)) {
@@ -108,12 +116,20 @@ export const IconWrapper: React.FC<IconWrapperProps> = ({
           // For outline icons, always set stroke to color and fill to none
           newProps.stroke = color;
           newProps.fill = 'none';
+          // Reset opacity to 1 for consistent styling - let users control opacity externally
+          newProps.strokeOpacity = 1;
+          newProps.fillOpacity = 1;
+          newProps.opacity = 1;
           break;
 
         case 'filled':
           // For filled icons, always set fill to color and remove stroke
           newProps.fill = color;
           newProps.stroke = 'none';
+          // Reset opacity to 1 for consistent styling - let users control opacity externally
+          newProps.strokeOpacity = 1;
+          newProps.fillOpacity = 1;
+          newProps.opacity = 1;
           break;
 
         case 'dual-tone':
@@ -121,7 +137,8 @@ export const IconWrapper: React.FC<IconWrapperProps> = ({
           if (child.props.stroke) {
             newProps.stroke = color;
           }
-          // Keep original fill colors for dual-tone effect
+          // Keep original fill colors for dual-tone effect but reset stroke opacity
+          newProps.strokeOpacity = 1;
           break;
 
         case 'multicolor':
@@ -130,10 +147,7 @@ export const IconWrapper: React.FC<IconWrapperProps> = ({
           break;
       }
 
-      // Remove opacity attributes that might interfere with color control
-      delete newProps.strokeOpacity;
-      delete newProps.fillOpacity;
-      delete newProps.opacity;
+      // Opacity attributes are now explicitly set above based on theme
 
       // Recursively process nested children
       if (newProps.children) {
@@ -146,25 +160,29 @@ export const IconWrapper: React.FC<IconWrapperProps> = ({
               case 'outline':
                 nestedProps.stroke = color;
                 nestedProps.fill = 'none';
+                nestedProps.strokeOpacity = 1;
+                nestedProps.fillOpacity = 1;
+                nestedProps.opacity = 1;
                 break;
               case 'filled':
                 nestedProps.fill = color;
                 nestedProps.stroke = 'none';
+                nestedProps.strokeOpacity = 1;
+                nestedProps.fillOpacity = 1;
+                nestedProps.opacity = 1;
                 break;
               case 'dual-tone':
                 if (nestedChild.props.stroke) {
                   nestedProps.stroke = color;
                 }
+                nestedProps.strokeOpacity = 1;
                 break;
               case 'multicolor':
                 // Preserve original colors for multicolor icons
                 break;
             }
 
-            // Remove opacity attributes
-            delete nestedProps.strokeOpacity;
-            delete nestedProps.fillOpacity;
-            delete nestedProps.opacity;
+            // Opacity attributes are now explicitly set above based on theme
 
             return React.cloneElement(nestedChild, nestedProps);
           }

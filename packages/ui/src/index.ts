@@ -18,17 +18,17 @@ export {
 
 // Export our custom UI foundation components
 // These are enhanced versions with custom variants and better design system integration
-export * from './components/Avatar';
-export * from './components/Button';
-export * from './components/Card';
-export * from './components/Input';
-export * from './components/Separator';
-export * from './components/Skeleton';
-export * from './components/Text';
+export * from './foundation/Avatar';
+export * from './foundation/Button';
+export * from './foundation/Card';
+export * from './foundation/Input';
+export * from './foundation/Separator';
+export * from './foundation/Skeleton';
+export * from './foundation/Text';
 
 // Export specialized components
-export * from './components/SegmentedControl';
 export * from './components/TokenCard';
+export * from './foundation/SegmentedControl';
 
 export * from './tamagui.config';
 

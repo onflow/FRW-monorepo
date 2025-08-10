@@ -45,12 +45,7 @@ export function Text({
   };
 
   return (
-    <TamaguiText
-      {...getVariantProps()}
-      fontWeight={getWeightValue() as any}
-      color="$gray12"
-      {...props}
-    >
+    <TamaguiText {...getVariantProps()} fontWeight={getWeightValue() as any} {...props}>
       {children}
     </TamaguiText>
   );

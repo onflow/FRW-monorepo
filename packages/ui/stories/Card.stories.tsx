@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import React from 'react';
 
 import { Text, YStack } from '../src';
-import { Card } from '../src/components/Card';
+import { Card } from '../src/foundation/Card';
 
 const meta = {
   title: 'Foundation/Card',

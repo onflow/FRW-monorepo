@@ -1,7 +1,7 @@
 import React from 'react';
-import { Card, XStack, YStack, Text, Circle } from 'tamagui';
+import { Card, Circle, Text, XStack, YStack } from 'tamagui';
 
-import { Avatar } from './Avatar';
+import { Avatar } from '../foundation/Avatar';
 import type { TokenCardProps } from '../types';
 
 export function TokenCard({
