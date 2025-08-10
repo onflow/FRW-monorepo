@@ -13,6 +13,7 @@ export type {
   WalletAccount,
   WalletAccountsResponse,
   EnvironmentVariables,
+  InitialProps,
 } from './Bridge';
 
 // NFT List types

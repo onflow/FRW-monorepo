@@ -11,7 +11,6 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useAccountCompatibilityModal } from '@/lib';
 import {
   AccountCompatibilityModal,
-  StorageWarning,
   Text,
   ToAccountSection,
   TokenSelectorModal,
@@ -295,11 +294,6 @@ const SendTokensScreen = () => {
 
             {/* Transaction Fee Section */}
             <TransactionFeeSection transactionFee={formData.transactionFee} />
-
-            {/* Storage Warning */}
-            <View className="mt-6">
-              <StorageWarning />
-            </View>
           </ScrollView>
 
           {/* Send Button */}
