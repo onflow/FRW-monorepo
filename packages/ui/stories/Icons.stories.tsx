@@ -143,7 +143,7 @@ const IconShowcase = (): React.ReactElement => {
             <View
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                gridTemplateColumns: 'repeat(6, 1fr)',
                 gap: '12px',
               }}
             >

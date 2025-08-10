@@ -26,24 +26,63 @@ export const IconWrapper: React.FC<IconWrapperProps> = ({
   const finalHeight = height ?? size;
 
   // Auto-detect icon type if theme is not provided
-  const detectTheme = (): 'outline' | 'filled' | 'dual-tone' => {
-    if (theme) return theme;
+  const detectTheme = (): 'outline' | 'filled' | 'dual-tone' | 'multicolor' => {
+    if (theme) return theme as 'outline' | 'filled' | 'dual-tone';
 
-    // Check children to detect if it's outline or filled
+    // Check children to detect if it's outline, filled, or multicolor
     let hasStroke = false;
     let hasFill = false;
+    const colorCount = new Set<string>();
+
+    const checkColors = (element: React.ReactElement): { hasSpecialEffects: boolean } => {
+      let hasSpecialEffects = false;
+
+      if (element.props.stroke && element.props.stroke !== 'none') {
+        hasStroke = true;
+        colorCount.add(element.props.stroke);
+      }
+      if (element.props.fill && element.props.fill !== 'none') {
+        hasFill = true;
+        colorCount.add(element.props.fill);
+        // Check for special effects
+        if (element.props.fill.startsWith('url(')) {
+          hasSpecialEffects = true; // Gradients, patterns
+        }
+      }
+
+      // Check for opacity effects
+      if (element.props.opacity && parseFloat(element.props.opacity) < 1) {
+        hasSpecialEffects = true;
+      }
+
+      // Recursively check nested elements
+      React.Children.forEach(element.props.children, (child) => {
+        if (React.isValidElement(child)) {
+          const nested = checkColors(child);
+          if (nested.hasSpecialEffects) {
+            hasSpecialEffects = true;
+          }
+        }
+      });
+
+      return { hasSpecialEffects };
+    };
+
+    let hasAnySpecialEffects = false;
 
     React.Children.forEach(children, (child) => {
       if (React.isValidElement(child)) {
-        if (child.props.stroke && child.props.stroke !== 'none') {
-          hasStroke = true;
-        }
-        if (child.props.fill && child.props.fill !== 'none') {
-          hasFill = true;
+        const result = checkColors(child);
+        if (result.hasSpecialEffects) {
+          hasAnySpecialEffects = true;
         }
       }
     });
 
+    // If it has special effects (gradients, opacity), preserve original colors
+    if (hasAnySpecialEffects) return 'multicolor';
+    // If it has multiple colors (3 or more), it's multicolor - preserve original colors
+    if (colorCount.size >= 3) return 'multicolor';
     // If it has both stroke and fill, it's dual-tone
     if (hasStroke && hasFill) return 'dual-tone';
     // If it only has stroke, it's outline
@@ -66,23 +105,15 @@ export const IconWrapper: React.FC<IconWrapperProps> = ({
       // Apply color theming
       switch (finalTheme) {
         case 'outline':
-          // For outline icons, set stroke to color and fill to transparent
-          if (child.props.stroke) {
-            newProps.stroke = color;
-          }
-          if (child.props.fill && child.props.fill !== 'none') {
-            newProps.fill = 'none';
-          }
+          // For outline icons, always set stroke to color and fill to none
+          newProps.stroke = color;
+          newProps.fill = 'none';
           break;
 
         case 'filled':
-          // For filled icons, set fill to color
-          if (child.props.fill) {
-            newProps.fill = color;
-          }
-          if (child.props.stroke) {
-            newProps.stroke = color;
-          }
+          // For filled icons, always set fill to color and remove stroke
+          newProps.fill = color;
+          newProps.stroke = 'none';
           break;
 
         case 'dual-tone':
@@ -91,6 +122,11 @@ export const IconWrapper: React.FC<IconWrapperProps> = ({
             newProps.stroke = color;
           }
           // Keep original fill colors for dual-tone effect
+          break;
+
+        case 'multicolor':
+          // For multicolor icons (like logos), preserve original colors completely
+          // Don't modify any colors to maintain the original design
           break;
       }
 
@@ -108,25 +144,20 @@ export const IconWrapper: React.FC<IconWrapperProps> = ({
             // Apply the same color theming to nested elements
             switch (finalTheme) {
               case 'outline':
-                if (nestedChild.props.stroke) {
-                  nestedProps.stroke = color;
-                }
-                if (nestedChild.props.fill && nestedChild.props.fill !== 'none') {
-                  nestedProps.fill = 'none';
-                }
+                nestedProps.stroke = color;
+                nestedProps.fill = 'none';
                 break;
               case 'filled':
-                if (nestedChild.props.fill) {
-                  nestedProps.fill = color;
-                }
-                if (nestedChild.props.stroke) {
-                  nestedProps.stroke = color;
-                }
+                nestedProps.fill = color;
+                nestedProps.stroke = 'none';
                 break;
               case 'dual-tone':
                 if (nestedChild.props.stroke) {
                   nestedProps.stroke = color;
                 }
+                break;
+              case 'multicolor':
+                // Preserve original colors for multicolor icons
                 break;
             }
 
