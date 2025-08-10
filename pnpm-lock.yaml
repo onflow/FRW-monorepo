@@ -859,7 +859,7 @@ importers:
         specifier: ^5.7.2
         version: 5.9.2
 
-  packages/screen:
+  packages/screens:
     dependencies:
       '@onflow/frw-services':
         specifier: workspace:*
