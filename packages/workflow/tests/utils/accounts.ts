@@ -30,6 +30,10 @@ const accounts = {
       privateKey: process.env.CHILD_ACCOUNT_TWO_KEY || '',
     },
   },
+  payer: {
+    addr: process.env.PAYER_ADDRESS,
+    key: process.env.PAYER_ACCOUNT_KEY,
+  },
 };
 
 export { accounts };

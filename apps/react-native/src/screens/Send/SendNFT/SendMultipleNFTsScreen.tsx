@@ -8,13 +8,7 @@ import NativeFRWBridge from '@/bridge/NativeFRWBridge';
 import { useConfirmationDrawer } from '@/contexts/ConfirmationDrawerContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAccountCompatibilityModal } from '@/lib';
-import {
-  AccountCompatibilityModal,
-  StorageWarning,
-  Text,
-  ToAccountSection,
-  TransactionFeeSection,
-} from 'ui';
+import { AccountCompatibilityModal, Text, ToAccountSection, TransactionFeeSection } from 'ui';
 
 // Import shared components
 import { AccountCard } from '../shared/components/AccountCard';
@@ -184,11 +178,6 @@ const SendMultipleNFTsScreen = ({ navigation }: { navigation: NavigationProp }) 
 
             {/* Transaction Fee Section */}
             <TransactionFeeSection transactionFee={transactionFee} />
-
-            {/* Storage Warning */}
-            <View className="mt-6">
-              <StorageWarning />
-            </View>
           </ScrollView>
 
           {/* Send Button */}

@@ -9,13 +9,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useAccountCompatibilityModal } from '@/lib';
 import { type NavigationProp } from '@/types';
 import { type WalletAccount } from '@/types/bridge';
-import {
-  AccountCompatibilityModal,
-  StorageWarning,
-  Text,
-  ToAccountSection,
-  TransactionFeeSection,
-} from 'ui';
+import { AccountCompatibilityModal, Text, ToAccountSection, TransactionFeeSection } from 'ui';
 
 // Import shared components
 import { AccountCard } from '../shared/components/AccountCard';
@@ -238,9 +232,6 @@ const SendSingleNFTScreen = ({ navigation }: { navigation: NavigationProp }) => 
 
             {/* Transaction Fee Section */}
             <TransactionFeeSection transactionFee={transactionFee} />
-
-            {/* Storage Warning */}
-            <StorageWarning />
           </ScrollView>
 
           {/* Send Button */}

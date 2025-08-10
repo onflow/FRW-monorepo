@@ -1,8 +1,10 @@
 import { configureFCL, CadenceService } from '@onflow/frw-cadence';
+import { isValidSendTransactionPayload } from '@onflow/frw-workflow';
+import * as t from '@onflow/types';
 import dotenv from 'dotenv';
 import { describe, it, expect, beforeEach } from 'vitest';
 
-import { SendTransaction, isValidSendTransactionPayload } from '../src';
+import { SendTransaction } from '../src';
 import { accounts } from './utils/accounts';
 dotenv.config();
 import { authz } from './utils/authz';
@@ -523,5 +525,475 @@ describe('Test send strategies', () => {
         'invalid send evm transaction payload - invalid contract address'
       );
     });
+  });
+
+  it('Test ChildToChildTokenStrategy args', async () => {
+    const payload = {
+      type: 'token',
+      assetType: 'flow',
+      proposer: mainAccount.address,
+      receiver: child2Account.address,
+      flowIdentifier: 'A.f1ab99c82dee3526.USDCFlow.Vault',
+      sender: child1Account.address,
+      amount: '0.001',
+      childAddrs: [child1Account.address, child2Account.address],
+      ids: [],
+      decimal: 8,
+      coaAddr: mainAccount.evmAddr,
+      tokenContractAddr: '',
+    };
+
+    await SendTransaction(payload, cadenceService);
+    // check args funcs
+    let idx = 0;
+    const checkArgs = (arg) => {
+      if (idx === 0) {
+        expect(arg).toBe(payload.flowIdentifier);
+      }
+      if (idx === 1) {
+        expect(arg).toBe(payload.sender);
+      }
+      if (idx === 2) {
+        expect(arg).toBe(payload.receiver);
+      }
+      if (idx === 3) {
+        expect(arg).toBe(payload.amount);
+      }
+      idx++;
+    };
+    // check args
+    configCache.args(checkArgs, t);
+  });
+
+  it('Test ChildToOthersTokenStrategy - Parent receiver args', async () => {
+    const payload = {
+      type: 'token',
+      assetType: 'flow',
+      proposer: mainAccount.address,
+      receiver: mainAccount.address,
+      flowIdentifier: 'A.f1ab99c82dee3526.USDCFlow.Vault',
+      sender: child1Account.address,
+      amount: '0.001',
+      childAddrs: [child1Account.address, child2Account.address],
+      ids: [],
+      decimal: 8,
+      coaAddr: mainAccount.evmAddr,
+      tokenContractAddr: '',
+    };
+
+    await SendTransaction(payload, cadenceService);
+    // check args funcs
+    let idx = 0;
+    const checkArgs = (arg) => {
+      if (idx === 0) {
+        expect(arg).toBe(payload.flowIdentifier);
+      }
+      if (idx === 1) {
+        expect(arg).toBe(payload.sender);
+      }
+      if (idx === 2) {
+        expect(arg).toBe(payload.amount);
+      }
+      idx++;
+    };
+    // check args
+    configCache.args(checkArgs, t);
+  });
+
+  it('Test ChildToOthersTokenStrategy - COA receiver args', async () => {
+    const payload = {
+      type: 'token',
+      assetType: 'flow',
+      proposer: mainAccount.address,
+      receiver: mainAccount.evmAddr,
+      flowIdentifier: 'A.f1ab99c82dee3526.USDCFlow.Vault',
+      sender: child1Account.address,
+      amount: '0.001',
+      childAddrs: [child1Account.address, child2Account.address],
+      ids: [],
+      decimal: 8,
+      coaAddr: mainAccount.evmAddr,
+      tokenContractAddr: '',
+    };
+
+    await SendTransaction(payload, cadenceService);
+    // check args funcs
+    let idx = 0;
+    const checkArgs = (arg) => {
+      if (idx === 0) {
+        expect(arg).toBe(payload.flowIdentifier);
+      }
+      if (idx === 1) {
+        expect(arg).toBe(payload.sender);
+      }
+      if (idx === 2) {
+        expect(arg).toBe(payload.amount);
+      }
+      idx++;
+    };
+    // check args
+    configCache.args(checkArgs, t);
+  });
+
+  it('Test ChildToOthersTokenStrategy - EVM address receiver args', async () => {
+    const payload = {
+      type: 'token',
+      assetType: 'flow',
+      proposer: mainAccount.address,
+      receiver: '0x3b44f144B97A0402C0e206522c28052C1025A8AA',
+      flowIdentifier: 'A.f1ab99c82dee3526.USDCFlow.Vault',
+      sender: child1Account.address,
+      amount: '0.001',
+      childAddrs: [child1Account.address, child2Account.address],
+      ids: [],
+      decimal: 6,
+      coaAddr: mainAccount.evmAddr,
+      tokenContractAddr: '',
+    };
+
+    await SendTransaction(payload, cadenceService);
+    // check args funcs
+    let idx = 0;
+    const checkArgs = (arg) => {
+      if (idx === 0) {
+        expect(arg).toBe(payload.flowIdentifier);
+      }
+      if (idx === 1) {
+        expect(arg).toBe(payload.sender);
+      }
+      if (idx === 2) {
+        expect(arg).toBe(payload.amount);
+      }
+      if (idx === 3) {
+        expect(arg).toBe(payload.receiver);
+      }
+      idx++;
+    };
+    // check args
+    configCache.args(checkArgs, t);
+  });
+
+  it('Test ChildToOthersTokenStrategy - Flow address receiver args', async () => {
+    const payload = {
+      type: 'token',
+      assetType: 'flow',
+      proposer: mainAccount.address,
+      receiver: '0x32a6af84f2f54476',
+      flowIdentifier: 'A.f1ab99c82dee3526.USDCFlow.Vault',
+      sender: child1Account.address,
+      amount: '0.001',
+      childAddrs: [child1Account.address, child2Account.address],
+      ids: [],
+      decimal: 6,
+      coaAddr: mainAccount.evmAddr,
+      tokenContractAddr: '',
+    };
+
+    await SendTransaction(payload, cadenceService);
+    // check args funcs
+    let idx = 0;
+    const checkArgs = (arg) => {
+      if (idx === 0) {
+        expect(arg).toBe(payload.flowIdentifier);
+      }
+      if (idx === 1) {
+        expect(arg).toBe(payload.sender);
+      }
+      if (idx === 2) {
+        expect(arg).toBe(payload.receiver);
+      }
+      if (idx === 3) {
+        expect(arg).toBe(payload.amount);
+      }
+      idx++;
+    };
+    // check args
+    configCache.args(checkArgs, t);
+  });
+
+  it('Test ParentToChildTokenStrategy args', async () => {
+    const payload = {
+      type: 'token',
+      assetType: 'evm',
+      proposer: mainAccount.address,
+      receiver: child1Account.address,
+      flowIdentifier: 'A.f1ab99c82dee3526.USDCFlow.Vault',
+      sender: mainAccount.evmAddr,
+      amount: '0.001',
+      childAddrs: [child1Account.address, child2Account.address],
+      ids: [],
+      decimal: 6,
+      coaAddr: mainAccount.evmAddr,
+      tokenContractAddr: '0x7f27352d5f83db87a5a3e00f4b07cc2138d8ee52',
+    };
+
+    await SendTransaction(payload, cadenceService);
+    // check args funcs
+    let idx = 0;
+    const checkArgs = (arg) => {
+      if (idx === 0) {
+        expect(arg).toBe(payload.flowIdentifier);
+      }
+      if (idx === 1) {
+        expect(arg).toBe(payload.receiver);
+      }
+      if (idx === 2) {
+        // This should be parseUnits(amount, decimal).toString()
+        expect(typeof arg).toBe('string');
+        expect(arg).toMatch(/^\d+$/); // Should be a numeric string
+      }
+      idx++;
+    };
+    // check args
+    configCache.args(checkArgs, t);
+  });
+
+  it('Test FlowToFlowTokenStrategy args', async () => {
+    const payload = {
+      type: 'token',
+      assetType: 'flow',
+      proposer: mainAccount.address,
+      receiver: mainAccount.address,
+      flowIdentifier: 'A.1654653399040a61.FlowToken.Vault',
+      sender: mainAccount.address,
+      amount: '0.001',
+      childAddrs: [],
+      ids: [],
+      decimal: 8,
+      coaAddr: mainAccount.evmAddr,
+      tokenContractAddr: '',
+    };
+
+    await SendTransaction(payload, cadenceService);
+    // check args funcs
+    let idx = 0;
+    const checkArgs = (arg) => {
+      if (idx === 0) {
+        expect(arg).toBe(payload.flowIdentifier);
+      }
+      if (idx === 1) {
+        expect(arg).toBe(payload.receiver);
+      }
+      if (idx === 2) {
+        expect(arg).toBe(payload.amount);
+      }
+      idx++;
+    };
+    // check args
+    configCache.args(checkArgs, t);
+  });
+
+  it('Test FlowToEvmTokenStrategy args', async () => {
+    const payload = {
+      type: 'token',
+      assetType: 'flow',
+      proposer: mainAccount.address,
+      receiver: mainAccount.evmAddr,
+      flowIdentifier: 'A.1654653399040a61.FlowToken.Vault',
+      sender: mainAccount.address,
+      amount: '0.001',
+      childAddrs: [],
+      ids: [],
+      decimal: 8,
+      coaAddr: mainAccount.evmAddr,
+      tokenContractAddr: '',
+    };
+
+    await SendTransaction(payload, cadenceService);
+    // check args funcs
+    let idx = 0;
+    const checkArgs = (arg) => {
+      if (idx === 0) {
+        expect(arg).toBe(payload.receiver);
+      }
+      if (idx === 1) {
+        expect(arg).toBe(payload.amount);
+      }
+      if (idx === 2) {
+        expect(arg).toBe(30_000_000); // Gas limit
+      }
+      idx++;
+    };
+    // check args
+    configCache.args(checkArgs, t);
+  });
+
+  it('Test FlowTokenBridgeToEvmStrategy args', async () => {
+    const payload = {
+      type: 'token',
+      assetType: 'flow',
+      proposer: mainAccount.address,
+      receiver: mainAccount.evmAddr,
+      flowIdentifier: 'A.f1ab99c82dee3526.USDCFlow.Vault',
+      sender: mainAccount.address,
+      amount: '0.001',
+      childAddrs: [],
+      ids: [],
+      decimal: 8,
+      coaAddr: mainAccount.evmAddr,
+      tokenContractAddr: '',
+    };
+
+    await SendTransaction(payload, cadenceService);
+    // check args funcs
+    let idx = 0;
+    const checkArgs = (arg) => {
+      if (idx === 0) {
+        expect(arg).toBe(payload.flowIdentifier);
+      }
+      if (idx === 1) {
+        expect(arg).toBe(payload.amount);
+      }
+      if (idx === 2) {
+        expect(arg).toBe(payload.receiver);
+      }
+      idx++;
+    };
+    // check args
+    configCache.args(checkArgs, t);
+  });
+
+  it('Test EvmToFlowCoaWithdrawalStrategy args', async () => {
+    const payload = {
+      type: 'token',
+      assetType: 'evm',
+      proposer: mainAccount.address,
+      receiver: mainAccount.address,
+      flowIdentifier: 'A.1654653399040a61.FlowToken.Vault',
+      sender: mainAccount.evmAddr,
+      amount: '0.001',
+      childAddrs: [],
+      ids: [],
+      decimal: 8,
+      coaAddr: mainAccount.evmAddr,
+      tokenContractAddr: '',
+    };
+
+    await SendTransaction(payload, cadenceService);
+    // check args funcs
+    let idx = 0;
+    const checkArgs = (arg) => {
+      if (idx === 0) {
+        expect(arg).toBe(payload.amount);
+      }
+      if (idx === 1) {
+        expect(arg).toBe(payload.receiver);
+      }
+      idx++;
+    };
+    // check args
+    configCache.args(checkArgs, t);
+  });
+
+  it('Test EvmToFlowTokenBridgeStrategy args', async () => {
+    const payload = {
+      type: 'token',
+      assetType: 'evm',
+      proposer: mainAccount.address,
+      receiver: mainAccount.address,
+      flowIdentifier: 'A.f1ab99c82dee3526.USDCFlow.Vault',
+      sender: mainAccount.evmAddr,
+      amount: '0.001',
+      childAddrs: [],
+      ids: [],
+      decimal: 8,
+      coaAddr: mainAccount.evmAddr,
+      tokenContractAddr: '0x1234567890123456789012345678901234567890',
+    };
+
+    await SendTransaction(payload, cadenceService);
+    // check args funcs
+    let idx = 0;
+    const checkArgs = (arg) => {
+      if (idx === 0) {
+        expect(arg).toBe(payload.flowIdentifier);
+      }
+      if (idx === 1) {
+        expect(arg).toBe(payload.amount);
+      }
+      if (idx === 2) {
+        expect(arg).toBe(payload.receiver);
+      }
+      idx++;
+    };
+    // check args
+    configCache.args(checkArgs, t);
+  });
+
+  it('Test EvmToEvmTokenStrategy - Non-Flow token args', async () => {
+    const payload = {
+      type: 'token',
+      assetType: 'evm',
+      proposer: mainAccount.address,
+      receiver: '0x3b44f144b97a0402c0e206522c28052c1025a8aa',
+      flowIdentifier: 'A.f1ab99c82dee3526.USDCFlow.Vault',
+      sender: mainAccount.evmAddr,
+      amount: '0.00001',
+      childAddrs: [],
+      ids: [],
+      decimal: 6,
+      coaAddr: mainAccount.evmAddr,
+      tokenContractAddr: '0x7f27352D5F83Db87a5A3E00f4B07Cc2138D8ee52',
+    };
+
+    await SendTransaction(payload, cadenceService);
+    // check args funcs
+    let idx = 0;
+    const checkArgs = (arg) => {
+      if (idx === 0) {
+        expect(arg).toBe(payload.tokenContractAddr);
+      }
+      if (idx === 1) {
+        expect(arg).toBe('0.0');
+      }
+      if (idx === 2) {
+        // This is the encoded data
+        expect(typeof arg).toBe('object');
+      }
+      if (idx === 3) {
+        expect(arg).toBe(30000000); // Gas limit
+      }
+      idx++;
+    };
+    // check args
+    configCache.args(checkArgs, t);
+  });
+
+  it('Test EvmToEvmTokenStrategy - Flow token args', async () => {
+    const payload = {
+      type: 'token',
+      assetType: 'evm',
+      proposer: mainAccount.address,
+      receiver: '0x3b44f144b97a0402c0e206522c28052c1025a8aa',
+      flowIdentifier: 'A.1654653399040a61.FlowToken.Vault',
+      sender: mainAccount.evmAddr,
+      amount: '0.00001',
+      childAddrs: [],
+      ids: [],
+      decimal: 6,
+      coaAddr: mainAccount.evmAddr,
+      tokenContractAddr: '0x0000000000000000000000000000000000000000',
+    };
+
+    await SendTransaction(payload, cadenceService);
+    // check args funcs
+    let idx = 0;
+    const checkArgs = (arg) => {
+      if (idx === 0) {
+        expect(arg).toBe('0x0000000000000000000000000000000000000000');
+      }
+      if (idx === 1) {
+        expect(arg).toBe(payload.amount);
+      }
+      if (idx === 2) {
+        expect(arg).toStrictEqual([]);
+      }
+      if (idx === 3) {
+        expect(arg).toBe(30000000); // Gas limit
+      }
+      idx++;
+    };
+    // check args
+    configCache.args(checkArgs, t);
   });
 });

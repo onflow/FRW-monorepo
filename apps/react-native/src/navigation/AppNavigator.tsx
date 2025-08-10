@@ -1,9 +1,9 @@
 import { useSendStore } from '@onflow/frw-stores';
-import { type NFTModel, type SendToConfig } from '@onflow/frw-types';
+import { type NFTModel, type InitialProps } from '@onflow/frw-types';
 import {
   createWalletAccountFromConfig,
   createNFTModelsFromConfig,
-  createTokenInfoFromConfig,
+  createTokenModelFromConfig,
 } from '@onflow/frw-types';
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -62,60 +62,76 @@ interface AppNavigatorProps {
   network?: string;
   initialRoute?: string;
   embedded?: boolean;
-  sendToConfig?: SendToConfig;
+  initialProps?: InitialProps;
 }
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const AppNavigator: React.FC<AppNavigatorProps> = props => {
   const { t } = useTranslation();
-  const { address, network, initialRoute, sendToConfig } = props;
+  const { address, network, initialRoute, initialProps } = props;
   const { isDark } = useTheme();
 
   // Send store actions
-  const { setSelectedToken, setCurrentStep, setTransactionType, setFromAccount, setSelectedNFTs } =
-    useSendStore();
+  const {
+    setSelectedToken,
+    setCurrentStep,
+    setTransactionType,
+    setFromAccount,
+    setSelectedNFTs,
+    setToAccount,
+  } = useSendStore();
 
   // Initialize SendTo flow if requested
   useEffect(() => {
-    if (sendToConfig) {
+    if (initialProps?.screen === 'send-asset') {
+      const sendToConfig = initialProps?.sendToConfig;
+      if (!sendToConfig) {
+        return;
+      }
       try {
-        // Set selected token
-        if (sendToConfig.selectedToken) {
-          console.log('🚀 DEBUG: Setting selected token', sendToConfig.selectedToken);
-          // Convert to TokenInfo type
-          const tokenInfo = createTokenInfoFromConfig(sendToConfig.selectedToken);
-          setSelectedToken(tokenInfo);
-        }
-
         if (sendToConfig.fromAccount) {
           console.log('🚀 DEBUG: Setting from account', sendToConfig.fromAccount);
           const walletAccount = createWalletAccountFromConfig(sendToConfig.fromAccount);
           setFromAccount(walletAccount);
         }
+        if (sendToConfig.selectedToken) {
+          console.log('🚀 DEBUG: Setting selected token', sendToConfig.selectedToken);
+          // Convert to TokenInfo type
+          const tokenInfo = createTokenModelFromConfig(sendToConfig.selectedToken);
+          setSelectedToken(tokenInfo);
+          setCurrentStep('send-to');
+        }
 
-        // Set selected NFTs if provided
         if (sendToConfig.selectedNFTs && Array.isArray(sendToConfig.selectedNFTs)) {
+          // Set selected NFTs if provided
           console.log('🚀 DEBUG: Setting selected NFTs', sendToConfig.selectedNFTs);
           const nftModels = createNFTModelsFromConfig(sendToConfig.selectedNFTs);
           setSelectedNFTs(nftModels);
         }
 
-        // Set transaction type
-        if (sendToConfig.transactionType) {
-          setTransactionType(
-            sendToConfig.transactionType as 'tokens' | 'single-nft' | 'multiple-nfts'
-          );
+        if (sendToConfig.targetAddress) {
+          const walletAccount = createWalletAccountFromConfig({
+            address: sendToConfig.targetAddress,
+            name: sendToConfig.targetAddress,
+            emojiInfo: { emoji: '', name: '', color: '' },
+          });
+          setToAccount(walletAccount);
+          setTransactionType('tokens');
+          setCurrentStep('send-tokens');
+        } else if (sendToConfig.selectedNFTs?.length === 1) {
+          setTransactionType('single-nft');
+          setCurrentStep('send-to');
+        } else if (sendToConfig.selectedNFTs && sendToConfig.selectedNFTs.length > 1) {
+          setTransactionType('multiple-nfts');
+          setCurrentStep('send-to');
         }
-
-        // Set current step to send-to
-        setCurrentStep('send-to');
       } catch (error) {
         console.error('Failed to initialize SendTo flow:', error);
       }
     }
   }, [
-    sendToConfig,
+    initialProps?.sendToConfig,
     setSelectedToken,
     setCurrentStep,
     setTransactionType,
@@ -158,22 +174,6 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               headerRight: () => <ThemeToggle />,
             }}
           >
-            <Stack.Screen name="Home" component={HomeScreen} initialParams={{ address, network }} />
-            <Stack.Screen
-              name="ColorDemo"
-              component={ColorDemoScreen}
-              options={{ title: t('navigation.colorDemo') }}
-            />
-            <Stack.Screen
-              name="NFTDetail"
-              component={NFTDetailScreen}
-              options={({ route }) => ({
-                headerShown: true,
-                headerTitle: () => <NavigationTitle title={route.params?.nft?.name || 'NFT'} />,
-                headerLeft: () => <NavigationBackButton />,
-                headerRight: () => <NavigationCloseButton />,
-              })}
-            />
             <Stack.Group
               screenOptions={{
                 headerShown: true,
@@ -181,6 +181,24 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
                 headerRight: () => <NavigationCloseButton />,
               }}
             >
+              <Stack.Screen
+                name="Home"
+                component={HomeScreen}
+                initialParams={{ address, network }}
+              />
+              <Stack.Screen
+                name="ColorDemo"
+                component={ColorDemoScreen}
+                options={{ title: t('navigation.colorDemo') }}
+              />
+              <Stack.Screen
+                name="NFTDetail"
+                component={NFTDetailScreen}
+                options={({ route }) => ({
+                  headerTitle: () => <NavigationTitle title={route.params?.nft?.name || 'NFT'} />,
+                })}
+              />
+
               <Stack.Screen
                 name="SendTokens"
                 component={SendTokensScreen}
