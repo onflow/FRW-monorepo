@@ -22,7 +22,10 @@
       "Bash(npx eslint:*)",
       "Bash(git checkout:*)",
       "Bash(sed:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "WebFetch(domain:tamagui.dev)",
+      "WebFetch(domain:storybookjs.github.io)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": []
   }

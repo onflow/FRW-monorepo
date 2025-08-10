@@ -1,0 +1,56 @@
+{
+  "name": "@onflow/frw-ui",
+  "version": "1.0.0",
+  "description": "Pure Tamagui UI components for Flow Wallet (no React Native dependencies)",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "rimraf dist",
+    "lint": "eslint .",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@tamagui/animations-react-native": "^1.132.16",
+    "@tamagui/config": "^1.132.16",
+    "@tamagui/core": "^1.132.16",
+    "@tamagui/web": "^1.132.16",
+    "react-native-web": "^0.21.0",
+    "tamagui": "^1.132.16"
+  },
+  "devDependencies": {
+    "@storybook/addon-docs": "^9.1.1",
+    "@storybook/addon-links": "^9.1.1",
+    "@storybook/react-vite": "^9.1.1",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "eslint": "^9.31.0",
+    "eslint-plugin-storybook": "9.1.1",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "rimraf": "^5.0.1",
+    "storybook": "^9.1.1",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.4",
+    "vite": "^5.0.0",
+    "vitest": "^1.0.0"
+  },
+  "peerDependencies": {
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  }
+}
