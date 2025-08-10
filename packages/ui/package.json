@@ -24,6 +24,7 @@
     "tamagui": "^1.132.16"
   },
   "devDependencies": {
+    "@types/node": "^22.11.0",
     "@storybook/addon-docs": "^9.1.1",
     "@storybook/addon-links": "^9.1.1",
     "@storybook/react-vite": "^9.1.1",

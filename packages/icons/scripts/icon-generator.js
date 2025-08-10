@@ -112,9 +112,7 @@ function convertSvgFile(file) {
       depth > 0 ? '../'.repeat(depth + 1) + 'runtime/IconWrapper' : '../runtime/IconWrapper';
 
     // Generate TypeScript component using IconWrapper
-    const componentContent = `import React from 'react';
-import type { SVGProps } from 'react';
-import { IconWrapper, type IconWrapperProps } from '${runtimePath}';
+    const componentContent = `import { IconWrapper, type IconWrapperProps } from '${runtimePath}';
 
 const Svg${componentName} = (props: IconWrapperProps) => (
   <IconWrapper viewBox="${viewBox}" {...props}>
