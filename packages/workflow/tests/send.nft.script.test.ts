@@ -253,7 +253,7 @@ describe('Test NFT send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    expect(configCache.name).toBe('batchSendChildNftToChild');
+    expect(configCache.name).toBe('batchSendChildNft');
   });
 
   it('Test ParentToChildNftStrategy - Bridge NFT from EVM to child', async () => {
