@@ -6,9 +6,12 @@
       "@onflow/frw-api": ["./packages/api/src"],
       "@onflow/frw-cadence": ["./packages/cadence/src"],
       "@onflow/frw-context": ["./packages/context/src"],
+      "@onflow/frw-icons": ["./packages/icons/src"],
+      "@onflow/frw-screens": ["./packages/screens/src"],
       "@onflow/frw-services": ["./packages/services/src"],
       "@onflow/frw-stores": ["./packages/stores/src"],
       "@onflow/frw-types": ["./packages/types/src"],
+      "@onflow/frw-ui": ["./packages/ui/src"],
       "@onflow/frw-utils": ["./packages/utils/src"],
       "@onflow/frw-workflow": ["./packages/workflow/src"]
     }
@@ -28,8 +31,11 @@
     { "path": "./packages/api" },
     { "path": "./packages/cadence" },
     { "path": "./packages/context" },
+    { "path": "./packages/icons" },
+    { "path": "./packages/screens" },
     { "path": "./packages/services" },
     { "path": "./packages/stores" },
+    { "path": "./packages/ui" },
     { "path": "./packages/workflow" }
   ]
 }

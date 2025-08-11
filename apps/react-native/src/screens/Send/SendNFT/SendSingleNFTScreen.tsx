@@ -9,12 +9,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useAccountCompatibilityModal } from '@/lib';
 import { type NavigationProp } from '@/types';
 import { type WalletAccount } from '@/types/bridge';
-import {
-  AccountCompatibilityModal,
-  Text,
-  ToAccountSection,
-  TransactionFeeSection,
-} from 'ui';
+import { AccountCompatibilityModal, Text, ToAccountSection, TransactionFeeSection } from 'ui';
 
 // Import shared components
 import { AccountCard } from '../shared/components/AccountCard';

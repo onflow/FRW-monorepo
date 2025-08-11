@@ -8,12 +8,7 @@ import NativeFRWBridge from '@/bridge/NativeFRWBridge';
 import { useConfirmationDrawer } from '@/contexts/ConfirmationDrawerContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAccountCompatibilityModal } from '@/lib';
-import {
-  AccountCompatibilityModal,
-  Text,
-  ToAccountSection,
-  TransactionFeeSection,
-} from 'ui';
+import { AccountCompatibilityModal, Text, ToAccountSection, TransactionFeeSection } from 'ui';
 
 // Import shared components
 import { AccountCard } from '../shared/components/AccountCard';
