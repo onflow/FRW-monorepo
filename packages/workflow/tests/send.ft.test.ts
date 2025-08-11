@@ -4,6 +4,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 // import { getTrx } from '../src/utils';
 import { accounts } from './utils/accounts';
 import { authz } from './utils/authz';
+
 // dotenv.config();
 
 const mainAccount = accounts.main;
@@ -122,7 +123,7 @@ describe('Test send strategies', () => {
   //     type: 'token',
   //     assetType: 'flow',
   //     proposer: mainAccount.address,
-  //     receiver: '0x3b44f144B97A0402C0e206522c28052C1025A8AA',
+  //     receiver: mainAccount.evmAddr,
   //     flowIdentifier: 'A.1654653399040a61.FlowToken.Vault',
   //     sender: mainAccount.address,
   //     amount: '0.001',
@@ -133,7 +134,7 @@ describe('Test send strategies', () => {
   //     tokenContractAddr: '',
   //   };
 
-  //   const txid = await SendTransaction(payload);
+  //   const txid = await SendTransaction(payload, cadenceService);
   //   expect(txid.length).toBe(64);
   // });
 

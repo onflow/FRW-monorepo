@@ -254,6 +254,8 @@ describe('Test send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
+    console.log(payload, '====payload');
+    console.log(configCache, '====config cache');
     expect(configCache.name).toBe('bridgeChildFtToEvm');
   });
 
