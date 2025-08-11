@@ -283,7 +283,7 @@ const handlePreAuthz = async (id) => {
 
   const keyIndex = await userWalletService.getKeyIndex();
   const services = preAuthzServiceDefinition(
-    address,
+    address as string,
     keyIndex,
     payer.address,
     payer.keyId,
