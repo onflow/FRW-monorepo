@@ -179,7 +179,7 @@ class PlatformImpl implements PlatformSpec {
       if (config.type === 'transaction' && isTransactionId(response)) {
         NativeFRWBridge.listenTransaction(response);
       }
-      return response;
+      return { config, response };
     });
   }
 }
