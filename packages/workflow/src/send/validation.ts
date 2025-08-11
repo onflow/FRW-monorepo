@@ -79,11 +79,6 @@ export const isValidSendTransactionPayload = (payload: SendPayload): boolean => 
     validateNftPayload(payload);
   }
 
-  // Validate token contract address format based on asset type
-  if (assetType === 'flow' && !validateFlowAddress(tokenContractAddr)) {
-    throw new Error('invalid send flow transaction payload');
-  }
-
   if (assetType === 'evm') {
     // Skip validation if Flow token (tokenContractAddr can be null/undefined)
     if (!isFlowToken(flowIdentifier) && !validateEvmAddress(tokenContractAddr)) {
