@@ -10,9 +10,9 @@ export function Card({ variant = 'default', children, ...props }: CardProps): Re
     switch (variant) {
       case 'elevated':
         return {
-          backgroundColor: '$background',
-          borderRadius: '$4',
-          shadowColor: '$shadowColor',
+          bg: '$bg',
+          rounded: '$4',
+          shadowColor: '$shadow',
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.1,
           shadowRadius: 8,
@@ -20,15 +20,15 @@ export function Card({ variant = 'default', children, ...props }: CardProps): Re
         };
       case 'outlined':
         return {
-          backgroundColor: '$background',
-          borderColor: '$borderColor',
+          bg: '$bg',
+          borderColor: '$border',
           borderWidth: 1,
-          borderRadius: '$4',
+          rounded: '$4',
         };
       default:
         return {
-          backgroundColor: '$background',
-          borderRadius: '$4',
+          bg: '$bg',
+          rounded: '$4',
         };
     }
   };

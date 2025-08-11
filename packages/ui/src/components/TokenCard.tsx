@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Circle, Text, XStack, YStack } from 'tamagui';
+import { Text, XStack, YStack, Stack } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
 import type { TokenCardProps } from '../types';
@@ -12,67 +12,67 @@ export function TokenCard({
   price,
   change24h,
   onPress,
+  isVerified = false,
 }: TokenCardProps): React.ReactElement {
   const isPositiveChange = change24h && change24h >= 0;
 
   return (
-    <Card
+    <Stack
       {...(onPress && {
-        pressStyle: { bg: '$bg3' },
+        pressStyle: { opacity: 0.7 },
         onPress: onPress,
+        cursor: 'pointer',
       })}
-      bg="$bg"
-      borderColor="$border"
-      borderWidth={1}
-      p="$4"
-      rounded="$4"
-      hoverStyle={{ bg: '$bg2' }}
+      py="$4"
+      px="$0"
+      w="100%"
     >
-      <XStack items="center" space="$3">
-        {/* Token Logo */}
-        <Avatar src={logo} alt={symbol} fallback={symbol[0]} size={44} />
+      <XStack items="center" gap="$2" w="100%">
+        <Avatar src={logo} alt={symbol} fallback={symbol?.[0] || name?.[0] || '?'} size={48} />
 
-        {/* Token Info */}
-        <YStack flex={1} space="$1">
-          <XStack justify="space-between" items="flex-start">
-            <YStack space="$1">
-              <Text fontSize={16} fontWeight="600" color="$text">
-                {symbol}
+        {/* Token info */}
+        <YStack flex={1} ml="$2" gap="$1">
+          {/* Top row: Token name + verified + balance */}
+          <XStack justify="space-between" items="center">
+            <XStack items="center" gap="$1" flex={1}>
+              <Text fontWeight="600" fontSize="$3" color="$color" numberOfLines={1}>
+                {name || symbol}
               </Text>
-              <Text fontSize={14} color="$textSecondary">
-                {name}
-              </Text>
-            </YStack>
-
-            <YStack items="flex-end" space="$1">
-              <Text fontSize={16} fontWeight="600" color="$text">
-                {balance}
-              </Text>
-              {price && (
-                <XStack items="center" space="$2">
-                  <Text fontSize={14} color="$textSecondary">
-                    ${price}
-                  </Text>
-                  {change24h !== undefined && (
-                    <XStack items="center" space="$1">
-                      <Circle size={6} bg={isPositiveChange ? '$success' : '$error'} />
-                      <Text
-                        fontSize={12}
-                        fontWeight="500"
-                        color={isPositiveChange ? '$success' : '$error'}
-                      >
-                        {isPositiveChange ? '+' : ''}
-                        {change24h.toFixed(2)}%
-                      </Text>
-                    </XStack>
-                  )}
-                </XStack>
+              {isVerified && (
+                <Text color="$primary" fontSize="$2">
+                  ✓
+                </Text>
               )}
+            </XStack>
+            <Text fontSize="$3" color="$color" numberOfLines={1} textAlign="right" minWidth="$3">
+              {balance || '0'}
+            </Text>
+          </XStack>
+
+          {/* Bottom row: USD value + change percentage */}
+          <XStack justify="space-between" items="center">
+            <YStack flex={1}>
+              <Text color="$textSecondary" fontSize="$3" numberOfLines={1}>
+                {price && parseFloat(price) > 0 ? `$${parseFloat(price).toFixed(2)}` : ''}
+              </Text>
             </YStack>
+
+            {change24h !== undefined && change24h !== null && (
+              <XStack bg="$bg2" rounded="$3" px="$1.5" py="$1">
+                <Text
+                  color={isPositiveChange ? '$success' : '$error'}
+                  fontSize="$1"
+                  fontWeight="500"
+                >
+                  {isPositiveChange ? '+' : ''}
+                  {change24h.toFixed(2)}%
+                </Text>
+              </XStack>
+            )}
           </XStack>
         </YStack>
       </XStack>
-    </Card>
+    </Stack>
   );
 }
 

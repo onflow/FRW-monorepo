@@ -21,6 +21,7 @@ export {
 export * from './foundation/Avatar';
 export * from './foundation/Button';
 export * from './foundation/Card';
+export * from './foundation/Divider';
 export * from './foundation/Input';
 export * from './foundation/Separator';
 export * from './foundation/Skeleton';
@@ -28,7 +29,19 @@ export * from './foundation/Text';
 
 // Export specialized components
 export * from './components/TokenCard';
+export * from './components/RefreshView';
+export * from './components/NFTCollectionRow';
+export * from './components/AccountCard';
+export * from './components/AccountSelectorModal';
+export * from './components/AddressText';
+export * from './components/Badge';
 export * from './foundation/SegmentedControl';
+
+// TODO: Fix TypeScript issues in the following components:
+// export * from './components/Chip';
+// export * from './components/NFTCover';
+// export * from './components/NFTListCard';
+// export * from './components/TokenAmountInput';
 
 export * from './tamagui.config';
 
