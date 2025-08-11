@@ -112,8 +112,10 @@ export class CadenceService {
     let r = response;
     for (const interceptor of this.responseInterceptors) {
       const result = await interceptor(c, r);
-      c = result.config;
-      r = result.response;
+      if (result) {
+        c = result.config ?? c;
+        r = result.response ?? r;
+      }
     }
     return { config: c, response: r };
   }

@@ -51,7 +51,7 @@ export function createCadenceService(bridge: CadenceBridge): CadenceService {
   const service = new CadenceService();
 
   // Basic response interceptor for logging
-  service.useResponseInterceptor(async (response) => {
+  service.useResponseInterceptor(async (config, response) => {
     try {
       const logger = createLogger(bridge, 'CadenceService');
       logger.debug('cadenceService response', response);
@@ -59,7 +59,7 @@ export function createCadenceService(bridge: CadenceBridge): CadenceService {
       // Fallback if logger not available
       // Do nothing in this case - logging is optional
     }
-    return response;
+    return { config, response };
   });
 
   // Let bridge configure the service with all its interceptors

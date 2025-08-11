@@ -1,14 +1,15 @@
 packages:
-  - 'apps/*'
-  - 'packages/*'
+  - "apps/*"
+  - "packages/*"
+  - "packages/ui/ui-app"
 
 # Enable automatic linking of workspace packages
 linkWorkspacePackages: true
 
 # Build dependencies that need to be built from source
 onlyBuiltDependencies:
-  - '@swc/core'
-  - '@tsparticles/engine'
+  - "@swc/core"
+  - "@tsparticles/engine"
   - bufferutil
   - electron
   - esbuild

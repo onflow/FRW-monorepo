@@ -300,6 +300,9 @@ export default [
       'apps/react-native/extensions/**',
       'apps/react-native/specifications/**',
 
+      // UI package Expo app - demo app with different setup
+      'packages/ui/ui-app/**',
+
       // Extension specific
       'apps/extension/_raw/**',
 
