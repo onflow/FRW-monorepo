@@ -1,8 +1,8 @@
-import { configureFCL, CadenceService } from '@onflow/frw-cadence';
+import { CadenceService, configureFCL } from '@onflow/frw-cadence';
 import { isValidSendTransactionPayload } from '@onflow/frw-workflow';
 import * as t from '@onflow/types';
 import dotenv from 'dotenv';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { SendTransaction } from '../src';
 import { accounts } from './utils/accounts';
@@ -253,7 +253,7 @@ describe('Test NFT send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    expect(configCache.name).toBe('batchSendChildNft');
+    expect(configCache.name).toBe('batchSendChildNftToChild');
   });
 
   it('Test ParentToChildNftStrategy - Bridge NFT from EVM to child', async () => {
