@@ -1,5 +1,7 @@
+import { tamaguiConfig } from '@onflow/frw-ui';
 import React, { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { TamaguiProvider } from 'tamagui';
 
 import { initializeStorage } from '@/data-model';
 import { initializeChromeLogging } from '@/extension-shared/chrome-logger';
@@ -99,6 +101,8 @@ const container = document.getElementById('root');
 const root = createRoot(container!); // createRoot(container!) if you use TypeScript
 root.render(
   <StrictMode>
-    <Views wallet={wallet} />
+    <TamaguiProvider config={tamaguiConfig} defaultTheme="light">
+      <Views wallet={wallet} />
+    </TamaguiProvider>
   </StrictMode>
 );

@@ -31,6 +31,7 @@ export * from './components/TokenCard';
 export * from './foundation/SegmentedControl';
 
 export * from './tamagui.config';
+export { default as tamaguiConfig } from './tamagui.config';
 
 // Export theme system
 export * from './theme';
