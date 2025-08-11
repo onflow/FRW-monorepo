@@ -1,6 +1,6 @@
 import {
-  ChildToChildNftStrategy,
   ChildToOthersNftStrategy,
+  ChildToChildNftStrategy,
   EvmToEvmNftStrategy,
   EvmToFlowNftBridgeStrategy,
   FlowToEvmNftBridgeStrategy,
