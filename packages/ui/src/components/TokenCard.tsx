@@ -18,15 +18,15 @@ export function TokenCard({
   return (
     <Card
       {...(onPress && {
-        pressStyle: { bg: '$gray3' },
+        pressStyle: { bg: '$bg3' },
         onPress: onPress,
       })}
-      bg="$background"
-      borderColor="$gray5"
+      bg="$bg"
+      borderColor="$border"
       borderWidth={1}
       p="$4"
       rounded="$4"
-      hoverStyle={{ bg: '$gray2' }}
+      hoverStyle={{ bg: '$bg2' }}
     >
       <XStack items="center" space="$3">
         {/* Token Logo */}
@@ -36,30 +36,30 @@ export function TokenCard({
         <YStack flex={1} space="$1">
           <XStack justify="space-between" items="flex-start">
             <YStack space="$1">
-              <Text fontSize={16} fontWeight="600" color="$gray12">
+              <Text fontSize={16} fontWeight="600" color="$text">
                 {symbol}
               </Text>
-              <Text fontSize={14} color="$gray10">
+              <Text fontSize={14} color="$textSecondary">
                 {name}
               </Text>
             </YStack>
 
             <YStack items="flex-end" space="$1">
-              <Text fontSize={16} fontWeight="600" color="$gray12">
+              <Text fontSize={16} fontWeight="600" color="$text">
                 {balance}
               </Text>
               {price && (
                 <XStack items="center" space="$2">
-                  <Text fontSize={14} color="$gray10">
+                  <Text fontSize={14} color="$textSecondary">
                     ${price}
                   </Text>
                   {change24h !== undefined && (
                     <XStack items="center" space="$1">
-                      <Circle size={6} bg={isPositiveChange ? '$green10' : '$red10'} />
+                      <Circle size={6} bg={isPositiveChange ? '$success' : '$error'} />
                       <Text
                         fontSize={12}
                         fontWeight="500"
-                        color={isPositiveChange ? '$green10' : '$red10'}
+                        color={isPositiveChange ? '$success' : '$error'}
                       >
                         {isPositiveChange ? '+' : ''}
                         {change24h.toFixed(2)}%

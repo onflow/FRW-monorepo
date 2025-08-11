@@ -32,6 +32,9 @@ export * from './foundation/SegmentedControl';
 
 export * from './tamagui.config';
 
+// Export theme system
+export * from './theme';
+
 // Export layout components
 export * from './layout/BackgroundWrapper';
 

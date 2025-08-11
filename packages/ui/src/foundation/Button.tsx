@@ -21,36 +21,36 @@ export function Button({
     switch (variant) {
       case 'primary':
         return {
-          bg: '$blue10',
-          color: '$white1',
-          borderColor: '$blue10',
-          hoverStyle: { bg: '$blue11' },
-          pressStyle: { bg: '$blue9' },
+          bg: '$primaryColor',
+          color: '$white',
+          borderColor: '$primaryColor',
+          hoverStyle: { bg: '$primaryColor' },
+          pressStyle: { bg: '$primaryColor' },
         };
       case 'secondary':
         return {
-          bg: '$gray2',
-          color: '$gray12',
-          borderColor: '$gray6',
-          hoverStyle: { bg: '$gray3' },
-          pressStyle: { bg: '$gray4' },
+          bg: '$surface2',
+          color: '$text1',
+          borderColor: '$borderColor',
+          hoverStyle: { bg: '$surface3' },
+          pressStyle: { bg: '$surface4' },
         };
       case 'ghost':
         return {
           bg: 'transparent',
-          color: '$gray11',
+          color: '$text2',
           borderColor: 'transparent',
-          hoverStyle: { bg: '$gray2' },
-          pressStyle: { bg: '$gray3' },
+          hoverStyle: { bg: '$surface2' },
+          pressStyle: { bg: '$surface3' },
         };
       case 'outline':
         return {
           bg: 'transparent',
-          color: '$blue10',
-          borderColor: '$blue8',
+          color: '$primaryColor',
+          borderColor: '$borderColor',
           borderWidth: 1,
-          hoverStyle: { bg: '$blue2' },
-          pressStyle: { bg: '$blue3' },
+          hoverStyle: { bg: '$surface1' },
+          pressStyle: { bg: '$surface2' },
         };
       default:
         return {};

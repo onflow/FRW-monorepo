@@ -56,7 +56,7 @@ export const Outline: Story = {
 
 export const Loading: Story = {
   args: {
-    variant: 'primary',
+    variant: 'ghost',
     loading: true,
     loadingText: 'Loading...',
     children: 'Button',

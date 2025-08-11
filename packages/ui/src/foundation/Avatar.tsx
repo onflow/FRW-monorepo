@@ -13,8 +13,12 @@ export function Avatar({
   return (
     <TamaguiAvatar circular size={size}>
       <TamaguiAvatar.Image accessibilityLabel={alt} src={src} />
-      <TamaguiAvatar.Fallback backgroundColor="$gray6" alignItems="center" justifyContent="center">
-        <Text color="$gray12" fontSize={size * 0.4} fontWeight="600">
+      <TamaguiAvatar.Fallback
+        backgroundColor="$surface2"
+        alignItems="center"
+        justifyContent="center"
+      >
+        <Text color="$text1" fontSize={size * 0.4} fontWeight="600">
           {fallback || alt?.[0]?.toUpperCase() || '?'}
         </Text>
       </TamaguiAvatar.Fallback>
@@ -25,7 +29,7 @@ export function Avatar({
           b="$0"
           r="$0"
           size={size * 0.3}
-          bg="$green9"
+          bg="$successColor"
           borderWidth={2}
           borderColor="$background"
         />
