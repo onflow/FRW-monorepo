@@ -34,7 +34,11 @@ export * from './components/NFTCollectionRow';
 export * from './components/AccountCard';
 export * from './components/AccountSelectorModal';
 export * from './components/AddressText';
+export * from './components/AddressSearchBox';
 export * from './components/Badge';
+export * from './components/RecipientItem';
+export * from './components/RecipientList';
+export * from './components/SearchableTabLayout';
 export * from './foundation/SegmentedControl';
 
 // TODO: Fix TypeScript issues in the following components:

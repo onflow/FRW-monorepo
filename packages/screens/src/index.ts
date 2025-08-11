@@ -1,5 +1,6 @@
 // Export screen components
 export * from './send/SelectTokensScreen';
+export * from './send/SendToScreen';
 
 // Export types
 export * from './types';

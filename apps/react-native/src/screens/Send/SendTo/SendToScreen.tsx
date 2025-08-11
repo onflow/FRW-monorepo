@@ -5,8 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { SafeAreaView, StatusBar, View } from 'react-native';
 
 import { useTheme } from '@/contexts/ThemeContext';
-import { SegmentedControl, AddressSearchBox } from 'ui';
+import { SegmentedControl } from 'ui';
 
+import { AddressSearchBox } from './components/AddressSearchBox';
 import { RecipientContent } from './components/RecipientContent';
 
 export type RecipientTabType = 'accounts' | 'recent' | 'contacts';
@@ -68,11 +69,6 @@ const SendToScreen = () => {
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 placeholder={t('send.searchAddress')}
-                showScanButton={true}
-                onScanPress={async () => {
-                  // TODO: Implement QR scanning functionality
-                  console.log('Scan QR code');
-                }}
               />
             </View>
 
