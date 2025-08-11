@@ -13,6 +13,7 @@ dotenv.config();
 const mainAccount = accounts.main;
 const child1Account = accounts.child1;
 const child2Account = accounts.child2;
+const payer = accounts.payer;
 
 const cadenceService = new CadenceService();
 let configCache: any;
@@ -241,7 +242,7 @@ describe('Test NFT send strategies', () => {
       type: 'nft',
       assetType: 'flow',
       proposer: mainAccount.address,
-      receiver: child1Account.address,
+      receiver: payer.addr,
       flowIdentifier: 'A.2d4c3caffbeab845.FLOAT.NFT',
       sender: child2Account.address,
       amount: '0',
