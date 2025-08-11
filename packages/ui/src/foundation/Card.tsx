@@ -21,7 +21,7 @@ export function Card({ variant = 'default', children, ...props }: CardProps): Re
       case 'outlined':
         return {
           backgroundColor: '$background',
-          borderColor: '$gray5',
+          borderColor: '$borderColor',
           borderWidth: 1,
           borderRadius: '$4',
         };

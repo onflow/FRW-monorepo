@@ -13,32 +13,32 @@ export function Input({ label, error, helperText, ...props }: UIInputProps): Rea
   return (
     <YStack space="$2">
       {label && (
-        <Text fontSize={14} fontWeight="500" color="$gray11">
+        <Text fontSize={14} fontWeight="500" color="$text2">
           {label}
         </Text>
       )}
 
       <TamaguiInput
-        borderColor={error ? '$red8' : '$gray5'}
+        borderColor={error ? '$errorColor' : '$borderColor'}
         borderWidth={1}
         rounded="$3"
         bg="$background"
         p="$3"
         fontSize={16}
-        color="$gray12"
-        placeholderTextColor="$gray9"
+        color="$color"
+        placeholderTextColor="$placeholderColor"
         focusStyle={{
-          borderColor: error ? '$red9' : '$blue7',
+          borderColor: error ? '$errorColor' : '$primaryColor',
           borderWidth: 2,
         }}
         hoverStyle={{
-          borderColor: error ? '$red8' : '$gray6',
+          borderColor: error ? '$errorColor' : '$borderColorHover',
         }}
         {...props}
       />
 
       {(error || helperText) && (
-        <Text fontSize={12} color={error ? '$red10' : '$gray10'}>
+        <Text fontSize={12} color={error ? '$errorColor' : '$text2'}>
           {error || helperText}
         </Text>
       )}

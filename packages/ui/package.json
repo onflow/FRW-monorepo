@@ -19,15 +19,16 @@
     "@tamagui/animations-react-native": "^1.132.16",
     "@tamagui/config": "^1.132.16",
     "@tamagui/core": "^1.132.16",
+    "@tamagui/theme-builder": "^1.132.17",
     "@tamagui/web": "^1.132.16",
     "react-native-web": "^0.21.0",
     "tamagui": "^1.132.16"
   },
   "devDependencies": {
-    "@types/node": "^22.11.0",
     "@storybook/addon-docs": "^9.1.1",
     "@storybook/addon-links": "^9.1.1",
     "@storybook/react-vite": "^9.1.1",
+    "@types/node": "^22.11.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "eslint": "^9.31.0",

@@ -1,82 +1,72 @@
-import { createTheme } from '@tamagui/core';
+import { createThemeBuilder } from '@tamagui/theme-builder';
 
-// Color palettes
-const colors = {
-  // Gray scale
-  gray1: '#fcfcfc',
-  gray2: '#f9f9f9',
-  gray3: '#f0f0f0',
-  gray4: '#e8e8e8',
-  gray5: '#e0e0e0',
-  gray6: '#d9d9d9',
-  gray7: '#cecece',
-  gray8: '#bbbbbb',
-  gray9: '#8d8d8d',
-  gray10: '#838383',
-  gray11: '#646464',
-  gray12: '#202020',
+// Flow Wallet Brand Colors (from Figma design system)
+const flowColors = {
+  // Primary brand color (from Figma)
+  primary: '#00EF8B', // Flow brand green - consistent across both modes
+  primary20: 'rgba(0, 239, 139, 0.2)', // 20% opacity
+  primary10: 'rgba(0, 239, 139, 0.1)', // 10% opacity
 
-  // Blue scale
-  blue1: '#fbfdff',
-  blue2: '#f4faff',
-  blue3: '#e6f4fe',
-  blue4: '#d0e9ff',
-  blue5: '#b2daff',
-  blue6: '#8cc8ff',
-  blue7: '#5eb0ef',
-  blue8: '#0091ff',
-  blue9: '#0588f0',
-  blue10: '#0d74ce',
-  blue11: '#0c5f9e',
-  blue12: '#113264',
+  // Light Mode surfaces (from Figma)
+  surfaceLight1: '#FFFFFF', // 100% - primary background
+  surfaceLight2: '#F2F2F7', // light mode cards/surfaces
+  surfaceLight3: '#767676', // 50% - secondary surfaces
+  surfaceLight4: '#000D07', // 25% - tertiary surfaces
 
-  // Green scale
-  green1: '#fbfefc',
-  green2: '#f4fbf6',
-  green3: '#e6f6ea',
-  green4: '#d6f1dd',
-  green5: '#c4e8ca',
-  green6: '#addcb9',
-  green7: '#8ecea2',
-  green8: '#65ba83',
-  green9: '#46a758',
-  green10: '#3d9a50',
-  green11: '#297c3b',
-  green12: '#1b5e20',
+  // Dark Mode surfaces (from Figma)
+  surfaceDark1: '#000000', // 100% - primary background
+  surfaceDark2: '#1A1A1A', // 100% - cards/surfaces
+  surfaceDark3: '#FFFFFF', // 50% - secondary (inverted)
+  surfaceDark4: '#AAAAB0', // 25% - tertiary surfaces
 
-  // Red scale
-  red1: '#fffcfc',
-  red2: '#fff7f7',
-  red3: '#feebec',
-  red4: '#ffdbdc',
-  red5: '#ffc9cb',
-  red6: '#f9b2b5',
-  red7: '#f09497',
-  red8: '#e5686b',
-  red9: '#e54d2e',
-  red10: '#dc4d2e',
-  red11: '#cd372b',
-  red12: '#8c1e1a',
+  // Text colors Light Mode (from Figma)
+  textLight1: '#000000', // 100% - primary text
+  textLight2: '#767676', // 100% - secondary text
+  textLight3: '#000D07', // 10% - tertiary text
 
-  // Yellow scale
-  yellow1: '#fdfdf9',
-  yellow2: '#fefce8',
-  yellow3: '#fffbeb',
-  yellow4: '#fef3c7',
-  yellow5: '#fde68a',
-  yellow6: '#fcd34d',
-  yellow7: '#fbbf24',
-  yellow8: '#f59e0b',
-  yellow9: '#d97706',
-  yellow10: '#b45309',
-  yellow11: '#92400e',
-  yellow12: '#78350f',
+  // Text colors Dark Mode (from Figma)
+  textDark1: '#FFFFFF', // 100% - primary text
+  textDark2: '#B3B3B3', // 100% - secondary text
+  textDark3: '#FFFFFF', // 10% - tertiary text
 
-  // White and black
-  white1: '#ffffff',
-  white2: '#fefefe',
-  black1: '#000000',
-  black2: '#1a1a1a',
+  // System colors (consistent across modes from Figma)
+  success: '#12B76A', // Success green
+  warning: '#FDB022', // Warning orange
+  error: '#F04438', // Error red
+
+  // System colors with transparency (10%)
+  success10: 'rgba(18, 183, 106, 0.1)', // Success green 10%
+  warning10: 'rgba(253, 176, 34, 0.1)', // Warning orange 10%
+  error10: 'rgba(240, 68, 56, 0.1)', // Error red 10%
+
+  // Essential grayscale (minimal set)
+  white: '#ffffff',
+  black: '#000000',
+
+  // Light accent colors (for use with opacity in dark mode)
+  light80: 'rgba(255, 255, 255, 0.8)', // 80% white
+  light40: 'rgba(255, 255, 255, 0.4)', // 40% white
+  light25: 'rgba(255, 255, 255, 0.25)', // 25% white
+  light10: 'rgba(255, 255, 255, 0.1)', // 10% white
+  light5: 'rgba(255, 255, 255, 0.05)', // 5% white
+
+  // Dark accent colors (for use with opacity in light mode)
+  dark80: 'rgba(0, 0, 0, 0.8)', // 80% black
+  dark40: 'rgba(0, 0, 0, 0.4)', // 40% black
+  dark25: 'rgba(0, 0, 0, 0.25)', // 25% black
+  dark10: 'rgba(0, 0, 0, 0.1)', // 10% black
+
+  // Shadow colors for light mode
+  shadowLight: 'rgba(0, 0, 0, 0.1)',
+  shadowLightHover: 'rgba(0, 0, 0, 0.15)',
+  shadowLightPress: 'rgba(0, 0, 0, 0.2)',
+  shadowLightFocus: 'rgba(0, 239, 139, 0.3)',
+
+  // Shadow colors for dark mode
+  shadowDark: 'rgba(0, 0, 0, 0.3)',
+  shadowDarkHover: 'rgba(0, 0, 0, 0.4)',
+  shadowDarkPress: 'rgba(0, 0, 0, 0.5)',
+  shadowDarkFocus: 'rgba(0, 239, 139, 0.3)',
 };
 
 // Size system
@@ -172,92 +162,173 @@ export const radius = {
   12: 50,
 };
 
-// Light theme
-export const lightTheme = createTheme({
-  background: colors.white1,
-  backgroundHover: colors.gray2,
-  backgroundPress: colors.gray3,
-  backgroundFocus: colors.blue2,
-  backgroundStrong: colors.gray4,
-  backgroundTransparent: 'transparent',
+// Create themes using createThemeBuilder
+const themesBuilder = createThemeBuilder()
+  // Add palettes - these define the color gradients from background to foreground
+  .addPalettes({
+    // Light palette: light background to dark foreground
+    light: [
+      flowColors.surfaceLight1, // 0 - lightest background
+      flowColors.surfaceLight2, // 1 - light background
+      flowColors.surfaceLight3, // 2 - medium background
+      flowColors.surfaceLight4, // 3 - dark background
+      flowColors.textLight3, // 4 - light text
+      flowColors.textLight2, // 5 - medium text
+      flowColors.textLight1, // 6 - darkest text
+    ],
+    // Dark palette: dark background to light foreground
+    dark: [
+      flowColors.surfaceDark1, // 0 - darkest background
+      flowColors.surfaceDark2, // 1 - dark background
+      flowColors.surfaceDark4, // 2 - medium background
+      flowColors.surfaceDark3, // 3 - light background (inverted)
+      flowColors.textDark2, // 4 - dim text
+      flowColors.textDark3, // 5 - medium text
+      flowColors.textDark1, // 6 - brightest text
+    ],
+  })
+  // Add templates - these map palette indices to theme property names
+  .addTemplates({
+    base: {
+      // Background colors
+      background: 0, // Use palette[0] for main background
+      backgroundHover: 1, // Use palette[1] for hover states
+      backgroundPress: 2, // Use palette[2] for press states
+      backgroundFocus: flowColors.primary10, // Custom focus color
+      backgroundStrong: 1, // Use palette[1] for strong backgrounds
+      backgroundTransparent: 'transparent',
 
-  borderColor: colors.gray6,
-  borderColorHover: colors.gray7,
-  borderColorPress: colors.gray8,
-  borderColorFocus: colors.blue8,
+      // Surface colors - long names
+      surface1: 0,
+      surface2: 1,
+      surface3: 2,
+      surface4: 3,
 
-  color: colors.gray12,
-  colorHover: colors.gray12,
-  colorPress: colors.gray12,
-  colorFocus: colors.gray12,
-  colorTransparent: 'transparent',
+      // Surface colors - shortcuts like Tailwind
+      bg: 0, // $bg - primary background
+      bg2: 1, // $bg2 - secondary background
+      bg3: 2, // $bg3 - tertiary background
+      bg4: 3, // $bg4 - quaternary background
 
-  placeholderColor: colors.gray9,
-  outlineColor: colors.blue8,
-  shadowColor: 'rgba(0, 0, 0, 0.1)',
-  shadowColorHover: 'rgba(0, 0, 0, 0.15)',
-  shadowColorPress: 'rgba(0, 0, 0, 0.2)',
-  shadowColorFocus: 'rgba(0, 145, 255, 0.3)',
+      // Border colors - long names
+      borderColor: 2,
+      borderColorHover: 3,
+      borderColorPress: flowColors.primary,
+      borderColorFocus: flowColors.primary,
 
-  // Color tokens
-  ...colors,
-});
+      // Border colors - shortcuts
+      border: 2, // $border
+      borderHover: 3, // $borderHover
+      borderFocus: flowColors.primary, // $borderFocus
 
-// Dark theme
-export const darkTheme = createTheme({
-  background: colors.black2,
-  backgroundHover: '#2a2a2a',
-  backgroundPress: '#3a3a3a',
-  backgroundFocus: '#1e3a5f',
-  backgroundStrong: '#4a4a4a',
-  backgroundTransparent: 'transparent',
+      // Text colors - long names
+      color: 6, // Use palette[6] for primary text
+      colorHover: 6,
+      colorPress: 6,
+      colorFocus: 6,
+      colorTransparent: 'transparent',
 
-  borderColor: '#404040',
-  borderColorHover: '#505050',
-  borderColorPress: '#606060',
-  borderColorFocus: colors.blue8,
+      // Text variations - numbered
+      text1: 6, // primary text
+      text2: 5, // secondary text
+      text3: 4, // tertiary text
 
-  color: colors.gray1,
-  colorHover: colors.gray1,
-  colorPress: colors.gray1,
-  colorFocus: colors.gray1,
-  colorTransparent: 'transparent',
+      // Text shortcuts - semantic names like Tailwind
+      text: 6, // $text - primary text
+      textSecondary: 5, // $textSecondary
+      textTertiary: 4, // $textTertiary
+      textMuted: 5, // $textMuted
 
-  placeholderColor: colors.gray8,
-  outlineColor: colors.blue8,
-  shadowColor: 'rgba(0, 0, 0, 0.3)',
-  shadowColorHover: 'rgba(0, 0, 0, 0.4)',
-  shadowColorPress: 'rgba(0, 0, 0, 0.5)',
-  shadowColorFocus: 'rgba(0, 145, 255, 0.4)',
+      // Interactive states
+      placeholderColor: 5,
+      placeholder: 5, // $placeholder shortcut
+      outlineColor: flowColors.primary,
+      outline: flowColors.primary, // $outline shortcut
 
-  // Color tokens (inverted grays for dark mode)
-  gray1: colors.gray12,
-  gray2: colors.gray11,
-  gray3: colors.gray10,
-  gray4: colors.gray9,
-  gray5: colors.gray8,
-  gray6: colors.gray7,
-  gray7: colors.gray6,
-  gray8: colors.gray5,
-  gray9: colors.gray4,
-  gray10: colors.gray3,
-  gray11: colors.gray2,
-  gray12: colors.gray1,
+      // Shadows - using theme-specific values
+      shadowColor: flowColors.shadowLight,
+      shadowColorHover: flowColors.shadowLightHover,
+      shadowColorPress: flowColors.shadowLightPress,
+      shadowColorFocus: flowColors.shadowLightFocus,
+      // Shadow shortcuts
+      shadow: flowColors.shadowLight, // $shadow
+      shadowHover: flowColors.shadowLightHover, // $shadowHover
+      shadowPress: flowColors.shadowLightPress, // $shadowPress
+      shadowFocus: flowColors.shadowLightFocus, // $shadowFocus
 
-  // Keep blues the same
-  ...Object.fromEntries(
-    Object.entries(colors).filter(
-      ([key]) => key.startsWith('blue') || key.startsWith('white') || key.startsWith('black')
-    )
-  ),
-});
+      // System colors - long names
+      successColor: flowColors.success,
+      warningColor: flowColors.warning,
+      errorColor: flowColors.error,
+
+      // System colors - shortcuts
+      success: flowColors.success, // $success
+      warning: flowColors.warning, // $warning
+      error: flowColors.error, // $error
+      success10: flowColors.success10, // $success10 (10% transparency)
+      warning10: flowColors.warning10, // $warning10 (10% transparency)
+      error10: flowColors.error10, // $error10 (10% transparency)
+
+      // Primary colors - long names
+      primaryColor: flowColors.primary,
+      primary20: flowColors.primary20,
+      primary10: flowColors.primary10,
+
+      // Primary colors - shortcuts
+      primary: flowColors.primary, // $primary
+      primaryLight: flowColors.primary10, // $primaryLight (10%)
+      primaryStrong: flowColors.primary, // $primaryStrong
+
+      // Essential grayscale colors
+      white: flowColors.white,
+      black: flowColors.black,
+
+      // Light accent shortcuts (for dark mode usage)
+      light80: flowColors.light80, // $light80
+      light40: flowColors.light40, // $light40
+      light25: flowColors.light25, // $light25
+      light10: flowColors.light10, // $light10
+      light5: flowColors.light5, // $light5
+
+      // Dark accent shortcuts (for light mode usage)
+      dark80: flowColors.dark80, // $dark80
+      dark40: flowColors.dark40, // $dark40
+      dark25: flowColors.dark25, // $dark25
+      dark10: flowColors.dark10, // $dark10
+    },
+  })
+  // Add specific themes that use the templates and palettes
+  .addThemes({
+    light: {
+      template: 'base',
+      palette: 'light',
+    },
+    dark: {
+      template: 'base',
+      palette: 'dark',
+      // Override dark-specific shadow colors
+      shadowColor: flowColors.shadowDark,
+      shadowColorHover: flowColors.shadowDarkHover,
+      shadowColorPress: flowColors.shadowDarkPress,
+      shadowColorFocus: flowColors.shadowDarkFocus,
+      shadow: flowColors.shadowDark, // $shadow
+      shadowHover: flowColors.shadowDarkHover, // $shadowHover
+      shadowPress: flowColors.shadowDarkPress, // $shadowPress
+      shadowFocus: flowColors.shadowDarkFocus, // $shadowFocus
+    },
+  });
+
+// Build and export the themes
+export const themes = themesBuilder.build();
+
+// For backward compatibility - export individual themes
+export const lightTheme = themes.light;
+export const darkTheme = themes.dark;
 
 // Export color tokens for use in tamagui config
 export const colorTokens = {
-  color: colors,
+  color: flowColors,
 };
 
-export const themes = {
-  light: lightTheme,
-  dark: darkTheme,
-};
+// Also export individual colors as tokens for direct use
+export const flowColorTokens = flowColors;

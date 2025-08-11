@@ -1,6 +1,7 @@
 import type { Preview } from '@storybook/react-vite';
-import { TamaguiProvider } from '@tamagui/core';
+import { TamaguiProvider, Theme } from '@tamagui/core';
 import React from 'react';
+import { View } from 'tamagui';
 
 import config from '../src/tamagui.config';
 
@@ -25,8 +26,13 @@ const preview: Preview = {
       default: 'light',
       values: [
         { name: 'light', value: '#ffffff' },
-        { name: 'dark', value: '#1a1a1a' },
+        { name: 'dark', value: '#000000' },
       ],
+    },
+    options: {
+      storySort: {
+        order: ['Design System', 'Foundation', 'Components'],
+      },
     },
   },
   globalTypes: {
@@ -51,23 +57,21 @@ const preview: Preview = {
 
       return (
         <TamaguiProvider config={config} defaultTheme={theme}>
-          <div
-            style={{
-              margin: '1rem',
-              minHeight: '200px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontFamily: 'system-ui, sans-serif',
-              backgroundColor: theme === 'dark' ? '#1a1a1a' : '#ffffff',
-              color: theme === 'dark' ? '#fcfcfc' : '#202020',
-              padding: '2rem',
-              borderRadius: '8px',
-              transition: 'all 0.3s ease',
-            }}
-          >
-            <Story />
-          </div>
+          <Theme name={theme}>
+            <View
+              bg="$bg"
+              m="$4"
+              minH={200}
+              display="flex"
+              items="center"
+              justify="center"
+              // fontFamily="system-ui, sans-serif"
+              p="$6"
+              rounded="$4"
+            >
+              <Story />
+            </View>
+          </Theme>
         </TamaguiProvider>
       );
     },

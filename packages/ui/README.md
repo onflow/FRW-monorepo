@@ -1,93 +1,247 @@
-# Flow Wallet UI Components
+# @onflow/frw-ui
 
-这是 Flow Wallet 的纯 Tamagui UI 组件库，没有 React Native 依赖。
+Flow Reference Wallet UI components package with integrated Flow brand theme
+system.
 
-## 运行 Storybook
+## Features
 
-要运行 Storybook 进行组件预览和调试，请按以下步骤操作：
+- **Universal Components**: Works across Web, React Native, and Browser
+  Extensions
+- **Flow Brand Integration**: Includes official Flow wallet colors and design
+  tokens
+- **Dual Theme System**: Supports both Tamagui and Tailwind CSS styling
+- **Dark Mode**: Built-in light/dark mode support with Flow brand colors
+- **TypeScript**: Full type safety with TypeScript
 
-### 1. 进入 UI 包目录
+## Installation
+
+```bash
+pnpm add @onflow/frw-ui
+```
+
+## Quick Start
+
+### Tamagui Configuration
+
+```tsx
+import { TamaguiProvider } from 'tamagui';
+import { tamaguiConfig, lightTheme, darkTheme } from '@onflow/frw-ui';
+
+function App() {
+  return (
+    <TamaguiProvider config={tamaguiConfig} defaultTheme="light">
+      {/* Your app components */}
+    </TamaguiProvider>
+  );
+}
+```
+
+### Using Components
+
+```tsx
+import { Button, Text, YStack, TokenCard } from '@onflow/frw-ui';
+
+function MyComponent() {
+  return (
+    <YStack space="$4" padding="$4">
+      <Text variant="heading">Welcome to Flow Wallet</Text>
+      <Button variant="primary">Connect Wallet</Button>
+    </YStack>
+  );
+}
+```
+
+## Flow Brand Theme System
+
+### Flow Brand Colors
+
+The package includes Flow wallet's official brand colors:
+
+- **Primary Green**: `#00B877` (light mode) / `#16FF99` (dark mode)
+- **System Colors**: Success (`#12B76A`), Warning (`#FDB022`), Error (`#F04438`)
+- **Surface Colors**: Consistent background and surface colors for both themes
+- **EVM Accent**: `#627EEA` for Ethereum-related features
+
+### Tailwind CSS Integration
+
+For projects using Tailwind CSS or NativeWind, you can use the exported theme:
+
+```javascript
+// tailwind.config.js
+import { flowTailwindTheme } from '@onflow/frw-ui';
+
+module.exports = {
+  theme: flowTailwindTheme,
+  // ... other config
+};
+```
+
+### CSS Variables
+
+```css
+/* Use Flow brand CSS variables */
+:root {
+  --primary: 0 184 119; /* Flow brand green */
+  --surface-base: 242 242 247; /* Light mode surface */
+  --fg-1: 0 13 7; /* Primary text */
+}
+
+.dark {
+  --surface-base: 26 26 26; /* Dark mode surface */
+  --fg-1: 255 255 255; /* Dark mode text */
+}
+```
+
+## Available Components
+
+### Foundation Components
+
+- **Avatar** - User avatar with online status indicator
+- **Button** - Multiple variants (primary, secondary, ghost, outline) with Flow
+  branding
+- **Card** - Container components with elevation (default, elevated, outlined)
+- **Input** - Form inputs with proper Flow theme integration
+- **SegmentedControl** - Tab-like selection component
+- **Skeleton** - Loading state placeholder components
+- **Text** - Semantic text variants (heading, body, caption, label)
+- **Separator** - Divider components
+
+### Specialized Components
+
+- **TokenCard** - Display token information with balance, metadata, and Flow
+  styling
+- **BackgroundWrapper** - Layout wrapper with Flow theme support
+
+### Layout Components
+
+- **Stack** - Flexbox-based layout components (XStack, YStack)
+- **ScrollView** - Scrollable containers
+- **View** - Basic view containers
+
+## Usage Examples
+
+### Token Display with Flow Branding
+
+```tsx
+import { TokenCard, YStack } from '@onflow/frw-ui';
+
+function TokenList({ tokens }) {
+  return (
+    <YStack space="$2" backgroundColor="$surfaceBase">
+      {tokens.map((token) => (
+        <TokenCard
+          key={token.address}
+          token={token}
+          onPress={() => handleTokenPress(token)}
+        />
+      ))}
+    </YStack>
+  );
+}
+```
+
+### Flow-Branded Form Components
+
+```tsx
+import { Button, Input, Text, YStack } from '@onflow/frw-ui';
+
+function LoginForm() {
+  return (
+    <YStack space="$4" padding="$4" backgroundColor="$surfaceBase">
+      <Text variant="heading" color="$fg1">
+        Sign In to Flow Wallet
+      </Text>
+      <Input placeholder="Email address" />
+      <Input placeholder="Password" secureTextEntry />
+      <Button variant="primary" fullWidth>
+        Sign In
+      </Button>
+    </YStack>
+  );
+}
+```
+
+## Storybook Development
+
+To run Storybook for component development and preview:
+
+### 1. Navigate to UI package
 
 ```bash
 cd packages/ui
 ```
 
-### 2. 安装依赖（如果还没有安装）
+### 2. Install dependencies
 
 ```bash
 pnpm install
 ```
 
-### 3. 启动 Storybook
+### 3. Start Storybook
 
 ```bash
 pnpm run storybook
 ```
 
-Storybook 将在 `http://localhost:6006/` 启动，您可以在浏览器中查看所有组件。
+Storybook will start at `http://localhost:6006/` where you can view all
+components with Flow branding.
 
-### 4. 构建 Storybook（可选）
+### 4. Build Storybook (optional)
 
 ```bash
 pnpm run build-storybook
 ```
 
-这会生成静态文件到 `storybook-static/` 目录。
+This generates static files to `storybook-static/` directory.
 
-## 可用组件
+## Platform Support
 
-- **Avatar** - 头像组件，支持在线状态指示器
-- **Button** - 按钮组件，支持多种变体（primary, secondary, ghost, outline）
-- **Card** - 卡片组件，支持多种变体（default, elevated, outlined）
-- **Input** - 输入框组件，支持标签和错误提示
-- **SegmentedControl** - 分段控制器
-- **TokenCard** - 代币卡片组件，显示代币信息、余额和价格变化
-- **Skeleton** - 骨架屏组件，用于加载状态
-- **Text** - 文本组件，支持不同变体和字重
-- **Separator** - 分割线组件
-- **BackgroundWrapper** - 背景包装组件
+- ✅ **Web**: Full support with Tamagui and Flow branding
+- ✅ **React Native**: Full support with universal components
+- ✅ **Browser Extensions**: Works in extension contexts
+- ✅ **Server-Side Rendering**: Compatible with Next.js and other SSR frameworks
 
-## 使用方式
+## Migration from NativeWind/Tailwind
 
-```typescript
-import { Button, TokenCard, SegmentedControl } from '@onflow/frw-ui'
+If migrating from a NativeWind/Tailwind setup:
 
-// 使用按钮
-<Button variant="primary" onPress={() => console.log('点击')}>
-  点击我
-</Button>
+1. Install `@onflow/frw-ui`
+2. Import Flow brand colors and theme
+3. Replace Tailwind classes with Tamagui components where possible
+4. Use the unified Flow brand theme system
 
-// 使用代币卡片
-<TokenCard
-  symbol="FLOW"
-  name="Flow Token"
-  balance="1,234.56"
-  price="0.95"
-  change24h={5.2}
-  onPress={() => {}}
-/>
+```tsx
+// Before (NativeWind)
+<View className="bg-surface-base p-4">
+  <Text className="text-fg-1 font-semibold text-primary">Flow Wallet</Text>
+</View>
 
-// 使用分段控制器
-<SegmentedControl
-  options={['选项1', '选项2']}
-  selectedIndex={0}
-  onChange={(index) => console.log(index)}
-/>
+// After (Flow UI)
+<YStack backgroundColor="$surfaceBase" padding="$4">
+  <Text color="$primaryColor" fontWeight="$semibold">Flow Wallet</Text>
+</YStack>
 ```
 
-## 主题支持
+## Development
 
-所有组件都支持 Tamagui 的主题系统，包括：
+```bash
+# Install dependencies
+pnpm install
 
-- 明暗主题切换
-- 自定义颜色
-- 响应式设计
-- 动画和手势
+# Build the package
+pnpm build
 
-## 开发
+# Start Storybook for development
+pnpm storybook
 
-- 组件源代码在 `src/components/` 目录
-- Stories 文件在 `stories/` 目录
-- 类型定义在 `src/types/` 目录
+# Run tests
+pnpm test
+```
 
-修改组件后，Storybook 会自动热重载显示更改。
+## Contributing
+
+1. Follow the existing Flow brand guidelines and design system
+2. Add proper TypeScript types for all components
+3. Include Storybook stories for new components with Flow theme examples
+4. Test components in both light and dark themes
+5. Ensure cross-platform compatibility (Web, React Native, Extensions)

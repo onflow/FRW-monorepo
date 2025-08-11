@@ -31,7 +31,10 @@
       "Bash(npx @svgr/cli:*)",
       "Bash(npm run generate:icons:*)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run storybook:*)",
+      "Bash(y)"
     ],
     "deny": []
   }
