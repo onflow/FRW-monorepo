@@ -10,19 +10,20 @@
     "dev": "tsup --watch",
     "clean": "rimraf dist",
     "lint": "eslint .",
-    "test": "vitest"
+    "test": "vitest --run --passWithNoTests"
   },
   "dependencies": {
-    "@onflow/frw-ui": "workspace:*",
     "@onflow/frw-services": "workspace:*",
     "@onflow/frw-stores": "workspace:*",
     "@onflow/frw-types": "workspace:*",
+    "@onflow/frw-ui": "workspace:*",
     "react": "^19.1.0",
     "react-i18next": "^15.6.1"
   },
   "devDependencies": {
     "@types/react": "^19.1.0",
     "eslint": "^9.31.0",
+    "jsdom": "^26.1.0",
     "rimraf": "^5.0.1",
     "tsup": "^8.0.0",
     "typescript": "^5.0.4",
