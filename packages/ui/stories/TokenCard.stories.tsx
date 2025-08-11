@@ -23,7 +23,7 @@ export const Default: Story = {
   args: {
     symbol: 'FLOW',
     name: 'Flow Token',
-    balance: '1,234.56 FLOW',
+    balance: '2.16',
     logo: 'https://cdn.jsdelivr.net/gh/trustwallet/assets@master/blockchains/flow/info/logo.png',
     price: '1173.61',
     change24h: 5.2,

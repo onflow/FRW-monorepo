@@ -1,9 +1,9 @@
+import { ChevronRight } from '@onflow/frw-icons';
 import React from 'react';
-import { XStack, YStack } from 'tamagui';
+import { XStack, YStack, Text } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
 import { Separator } from '../foundation/Separator';
-import { Text } from '../foundation/Text';
 import type { NFTCollectionRowProps } from '../types';
 
 export function NFTCollectionRow({
@@ -16,41 +16,41 @@ export function NFTCollectionRow({
     return <YStack {...props} />;
   }
 
-  const count = collection.count && collection.count > 0 ? `${collection.count} items` : '';
+  const count = collection.count && collection.count > 0 ? `${collection.count} Items` : '';
 
   return (
     <YStack {...props}>
       <XStack
-        ai="center"
-        py="$4"
-        px="$0"
-        w="100%"
-        gap="$4"
-        pressStyle={{ opacity: 0.7 }}
-        onPress={onPress}
-        cursor="pointer"
+        items="center"
+        gap={18}
+        paddingVertical={18}
+        paddingHorizontal={0}
+        width="100%"
+        {...(onPress && {
+          pressStyle: { opacity: 0.7 },
+          onPress: onPress,
+          cursor: 'pointer',
+        })}
       >
         {/* Collection Avatar */}
         <Avatar
           src={collection.logoURI || collection.logo}
           fallback={collection.name?.charAt(0) || 'N'}
-          size={54}
+          size={53}
         />
 
         {/* Collection Info */}
-        <YStack f={1} ml="$0.5" gap="$1">
-          <Text color="$text" fontWeight="600" fontSize="$4">
+        <YStack flex={1} gap="$1">
+          <Text color="$color" fontWeight="600" fontSize={16}>
             {collection.name}
           </Text>
-          <Text color="$textSecondary" fontSize="$3">
+          <Text color="rgba(255, 255, 255, 0.8)" fontSize={14}>
             {count}
           </Text>
         </YStack>
 
-        {/* Arrow Icon Placeholder - would need to be passed as a prop or use a Tamagui icon */}
-        <Text color="$textSecondary" fontSize="$4">
-          →
-        </Text>
+        {/* Chevron Icon */}
+        <ChevronRight size={24} color="rgba(255, 255, 255, 0.5)" />
       </XStack>
 
       {showDivider && <Separator />}

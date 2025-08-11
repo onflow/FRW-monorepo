@@ -12,6 +12,8 @@ export interface AvatarProps {
   alt?: string;
   size?: number;
   fallback?: string;
+  borderColor?: string;
+  borderWidth?: number;
 }
 
 export interface TokenCardProps {

@@ -1,3 +1,4 @@
+import { VerifiedToken } from '@onflow/frw-icons';
 import React from 'react';
 import { Text, XStack, YStack, Stack } from 'tamagui';
 
@@ -9,7 +10,6 @@ export function TokenCard({
   name,
   balance,
   logo,
-  price,
   change24h,
   onPress,
   isVerified = false,
@@ -23,49 +23,44 @@ export function TokenCard({
         onPress: onPress,
         cursor: 'pointer',
       })}
-      py="$4"
-      px="$0"
-      w="100%"
+      p="$2"
+      width="100%"
     >
-      <XStack items="center" gap="$2" w="100%">
+      <XStack items="center" gap="$2" width="100%">
         <Avatar src={logo} alt={symbol} fallback={symbol?.[0] || name?.[0] || '?'} size={48} />
 
-        {/* Token info */}
-        <YStack flex={1} ml="$2" gap="$1">
-          {/* Top row: Token name + verified + balance */}
+        <YStack flex={1} gap="$1">
+          {/* Top row: Token name + verified badge + balance */}
           <XStack justify="space-between" items="center">
             <XStack items="center" gap="$1" flex={1}>
-              <Text fontWeight="600" fontSize="$3" color="$color" numberOfLines={1}>
+              <Text fontWeight="600" fontSize={14} color="$color" numberOfLines={1}>
                 {name || symbol}
               </Text>
-              {isVerified && (
-                <Text color="$primary" fontSize="$2">
-                  ✓
-                </Text>
-              )}
+              {isVerified && <VerifiedToken size={16} color="#41CC5D" />}
             </XStack>
-            <Text fontSize="$3" color="$color" numberOfLines={1} textAlign="right" minWidth="$3">
-              {balance || '0'}
+            <Text fontSize={14} color="$color" numberOfLines={1} text="right">
+              {balance} {symbol}
             </Text>
           </XStack>
 
-          {/* Bottom row: USD value + change percentage */}
+          {/* Bottom row: Token amount + change percentage tag */}
           <XStack justify="space-between" items="center">
-            <YStack flex={1}>
-              <Text color="$textSecondary" fontSize="$3" numberOfLines={1}>
-                {price && parseFloat(price) > 0 ? `$${parseFloat(price).toFixed(2)}` : ''}
-              </Text>
-            </YStack>
+            <Text color="$gray10" fontSize={14} numberOfLines={1}>
+              {balance} {symbol}
+            </Text>
 
             {change24h !== undefined && change24h !== null && (
-              <XStack bg="$bg2" rounded="$3" px="$1.5" py="$1">
-                <Text
-                  color={isPositiveChange ? '$success' : '$error'}
-                  fontSize="$1"
-                  fontWeight="500"
-                >
+              <XStack
+                bg="rgba(0, 239, 139, 0.1)"
+                borderRadius={12}
+                paddingHorizontal={6}
+                paddingVertical={4}
+                justify="center"
+                items="center"
+              >
+                <Text color="#00EF8B" fontSize={12} fontWeight="400" width={36} textAlign="left">
                   {isPositiveChange ? '+' : ''}
-                  {change24h.toFixed(2)}%
+                  {change24h.toFixed(1)}%
                 </Text>
               </XStack>
             )}
