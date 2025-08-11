@@ -779,7 +779,7 @@ importers:
         version: 7.28.2
       '@onflow/fcl':
         specifier: ^1.13.1
-        version: 1.20.0(@types/react@19.1.9)(google-protobuf@3.21.4)(jiti@2.5.1)(postcss@8.5.6)(react@19.1.0)(tsx@4.20.3)(typescript@5.9.2)
+        version: 1.20.0(google-protobuf@3.21.4)(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.3)(typescript@5.9.2)
       '@onflow/frw-utils':
         specifier: workspace:*
         version: link:../utils
@@ -790,6 +790,9 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3
     devDependencies:
+      '@outblock/cadence-codegen':
+        specifier: ^0.0.9
+        version: 0.0.9
       '@types/node':
         specifier: ^22.11.0
         version: 22.17.0
@@ -1094,7 +1097,7 @@ importers:
         version: 5.8.0
       '@onflow/fcl':
         specifier: ^1.13.1
-        version: 1.20.0(@types/react@19.1.9)(google-protobuf@3.21.4)(jiti@2.5.1)(postcss@8.5.6)(react@19.1.0)(tsx@4.20.3)(typescript@5.9.2)
+        version: 1.20.0(google-protobuf@3.21.4)(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.3)(typescript@5.9.2)
       '@onflow/frw-cadence':
         specifier: workspace:*
         version: link:../cadence
@@ -3137,6 +3140,13 @@ packages:
 
   '@onflow/util-uid@1.2.3':
     resolution: {integrity: sha512-gCTVvBBgDcZFX6SGyHPwoPVbK4e9sp0DC1kaQ0cgAt83YgodqiBiJLlwMBYNKuL03zSI6Ic5/TJVMVsruG7l9w==}
+
+  '@outblock/cadence-codegen@0.0.9':
+    resolution: {integrity: sha512-PfUl0UWCH8Q94hRNo1twzpfwqySvBpFeqS1Nod7WHNwTJ9gcR0QUT15U7BEXSG3E0APmv7Nf2VJqb9G8+mschQ==}
+    engines: {node: '>=14'}
+    cpu: [x64, arm64]
+    os: [darwin, linux, win32]
+    hasBin: true
 
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
@@ -14737,20 +14747,20 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@onflow/fcl-wc@6.0.5(@onflow/fcl-core@1.21.0(google-protobuf@3.21.4))(@types/react@19.1.9)(jiti@2.5.1)(postcss@8.5.6)(react@19.1.0)(tsx@4.20.3)(typescript@5.9.2)':
+  '@onflow/fcl-wc@6.0.5(@onflow/fcl-core@1.21.0(google-protobuf@3.21.4))(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.3)(typescript@5.9.2)':
     dependencies:
       '@babel/runtime': 7.28.2
       '@onflow/config': 1.6.0
       '@onflow/fcl-core': 1.21.0(google-protobuf@3.21.4)
       '@onflow/util-invariant': 1.2.4
       '@onflow/util-logger': 1.3.3
-      '@walletconnect/modal': 2.7.0(@types/react@19.1.9)(react@19.1.0)
+      '@walletconnect/modal': 2.7.0
       '@walletconnect/types': 2.21.6(@react-native-async-storage/async-storage@2.2.0(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0)))
       '@walletconnect/universal-provider': 2.21.6(typescript@5.9.2)
       '@walletconnect/utils': 2.21.6(typescript@5.9.2)
       postcss-cli: 11.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.3)
       preact: 10.27.0
-      tailwindcss: 3.4.17(ts-node@10.9.2(@swc/core@1.13.3)(@types/node@22.17.0)(typescript@5.0.4))
+      tailwindcss: 3.4.17(ts-node@10.9.2(@swc/core@1.13.3)(@types/node@22.17.0)(typescript@5.9.2))
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -14895,12 +14905,12 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@onflow/fcl@1.20.0(@types/react@19.1.9)(google-protobuf@3.21.4)(jiti@2.5.1)(postcss@8.5.6)(react@19.1.0)(tsx@4.20.3)(typescript@5.9.2)':
+  '@onflow/fcl@1.20.0(google-protobuf@3.21.4)(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.3)(typescript@5.9.2)':
     dependencies:
       '@babel/runtime': 7.28.2
       '@onflow/config': 1.6.0
       '@onflow/fcl-core': 1.21.0(google-protobuf@3.21.4)
-      '@onflow/fcl-wc': 6.0.5(@onflow/fcl-core@1.21.0(google-protobuf@3.21.4))(@types/react@19.1.9)(jiti@2.5.1)(postcss@8.5.6)(react@19.1.0)(tsx@4.20.3)(typescript@5.9.2)
+      '@onflow/fcl-wc': 6.0.5(@onflow/fcl-core@1.21.0(google-protobuf@3.21.4))(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.3)(typescript@5.9.2)
       '@onflow/interaction': 0.0.11
       '@onflow/rlp': 1.2.3
       '@onflow/sdk': 1.10.0
@@ -15056,6 +15066,8 @@ snapshots:
   '@onflow/util-uid@1.2.3':
     dependencies:
       '@babel/runtime': 7.28.2
+
+  '@outblock/cadence-codegen@0.0.9': {}
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
@@ -18688,6 +18700,13 @@ snapshots:
       '@walletconnect/safe-json': 1.0.2
       pino: 7.11.0
 
+  '@walletconnect/modal-core@2.7.0':
+    dependencies:
+      valtio: 1.11.2(@types/react@18.3.23)(react@19.1.0)
+    transitivePeerDependencies:
+      - '@types/react'
+      - react
+
   '@walletconnect/modal-core@2.7.0(@types/react@18.3.23)(react@19.1.0)':
     dependencies:
       valtio: 1.11.2(@types/react@18.3.23)(react@19.1.0)
@@ -18698,6 +18717,16 @@ snapshots:
   '@walletconnect/modal-core@2.7.0(@types/react@19.1.9)(react@19.1.0)':
     dependencies:
       valtio: 1.11.2(@types/react@19.1.9)(react@19.1.0)
+    transitivePeerDependencies:
+      - '@types/react'
+      - react
+
+  '@walletconnect/modal-ui@2.7.0':
+    dependencies:
+      '@walletconnect/modal-core': 2.7.0
+      lit: 2.8.0
+      motion: 10.16.2
+      qrcode: 1.5.3
     transitivePeerDependencies:
       - '@types/react'
       - react
@@ -18718,6 +18747,14 @@ snapshots:
       lit: 2.8.0
       motion: 10.16.2
       qrcode: 1.5.3
+    transitivePeerDependencies:
+      - '@types/react'
+      - react
+
+  '@walletconnect/modal@2.7.0':
+    dependencies:
+      '@walletconnect/modal-core': 2.7.0
+      '@walletconnect/modal-ui': 2.7.0
     transitivePeerDependencies:
       - '@types/react'
       - react
