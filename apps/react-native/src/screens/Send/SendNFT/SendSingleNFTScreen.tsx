@@ -90,15 +90,7 @@ const SendSingleNFTScreen = ({ navigation }: { navigation: NavigationProp }) => 
         fromAccount: currentFromAccount,
         toAccount: currentToAccount,
         transactionType: 'single-nft',
-        selectedNFTs: selectedNFT?.id
-          ? [
-              {
-                id: selectedNFT.id,
-                name: selectedNFT.name,
-                thumbnail: selectedNFT.thumbnail,
-              },
-            ]
-          : [],
+        selectedNFTs: selectedNFT ? [selectedNFT] : [],
         onConfirm: async () => {
           // Create send payload using store
           const { createSendPayload, resetSendFlow, setTransactionType } = useSendStore.getState();

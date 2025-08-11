@@ -323,7 +323,7 @@ export const useSendStore = create<SendState>((set, get) => ({
         assetType: addressType(fromAccount.address),
         proposer: mainAccount.address,
         receiver: toAccount.address,
-        flowIdentifier: selectedToken?.identifier || '',
+        flowIdentifier: selectedToken?.identifier || selectedNFTs[0]?.flowIdentifier || '',
         sender: fromAccount.address,
         childAddrs: childAddrs,
         ids: isNFTTransaction
