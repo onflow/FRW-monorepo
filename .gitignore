@@ -136,3 +136,6 @@ emulator-account.pkey
 
 # ESLint
 .eslintcache
+
+# Cadence Code gen
+cadence.generated.ts

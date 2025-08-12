@@ -23,6 +23,7 @@ import CrossVMMetadataViews from 0xCrossVMMetadataViews
 ///
 transaction(nftIdentifier: String, ids: [UInt256], recipient: Address) {
     let nftType: Type
+    let collection: &{NonFungibleToken.Collection}
     let receiver: &{NonFungibleToken.Receiver}
     let scopedProvider: @ScopedFTProviders.ScopedFTProvider
     let coa: auth(EVM.Call, EVM.Bridge) &EVM.CadenceOwnedAccount
@@ -64,7 +65,8 @@ transaction(nftIdentifier: String, ids: [UInt256], recipient: Address) {
         }
         self.receiver = getAccount(recipient).capabilities.borrow<&{NonFungibleToken.Receiver}>(collectionData.publicPath)
             ?? panic("Could not borrow Receiver from recipient's public capability path")
-
+        self.collection = signer.storage.borrow<&{NonFungibleToken.Collection}>(from: collectionData.storagePath)
+            ?? panic("Could not borrow collection from storage path")
         /* --- Configure a ScopedFTProvider --- */
         //
         // Calculate the bridge fee - bridging from EVM consumes no storage, so flat fee

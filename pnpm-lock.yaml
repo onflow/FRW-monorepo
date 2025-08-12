@@ -811,6 +811,9 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3
     devDependencies:
+      '@outblock/cadence-codegen':
+        specifier: ^0.0.9
+        version: 0.0.9
       '@types/node':
         specifier: ^22.11.0
         version: 22.17.0
@@ -3185,6 +3188,13 @@ packages:
 
   '@onflow/util-uid@1.2.3':
     resolution: {integrity: sha512-gCTVvBBgDcZFX6SGyHPwoPVbK4e9sp0DC1kaQ0cgAt83YgodqiBiJLlwMBYNKuL03zSI6Ic5/TJVMVsruG7l9w==}
+
+  '@outblock/cadence-codegen@0.0.9':
+    resolution: {integrity: sha512-PfUl0UWCH8Q94hRNo1twzpfwqySvBpFeqS1Nod7WHNwTJ9gcR0QUT15U7BEXSG3E0APmv7Nf2VJqb9G8+mschQ==}
+    engines: {node: '>=14'}
+    cpu: [x64, arm64]
+    os: [darwin, linux, win32]
+    hasBin: true
 
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==, tarball: https://registry.npmjs.org/@pkgjs/parseargs/-/parseargs-0.11.0.tgz}
@@ -10135,7 +10145,6 @@ packages:
     engines: {node: '>=0.6.0', teleport: '>=0.2.0'}
     deprecated: |-
       You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
-
       (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
 
   qr-code-styling@1.9.2:
@@ -15209,6 +15218,8 @@ snapshots:
   '@onflow/util-uid@1.2.3':
     dependencies:
       '@babel/runtime': 7.28.2
+
+  '@outblock/cadence-codegen@0.0.9': {}
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
