@@ -1,7 +1,6 @@
 import * as secp from '@noble/secp256k1';
 import * as fcl from '@onflow/fcl';
 import type { Account as FclAccount } from '@onflow/fcl';
-import { CadenceService } from '@onflow/frw-cadence';
 import * as ethUtil from 'ethereumjs-util';
 import { signInAnonymously } from 'firebase/auth/web-extension';
 import { TransactionError } from 'web3';
@@ -74,6 +73,11 @@ import {
 
 import { authenticationService } from '.';
 import { analyticsService } from './analytics';
+import {
+  getCadenceService,
+  updateCadenceBridgeNetwork,
+  recreateCadenceService,
+} from './cadence-bridge';
 import keyringService from './keyring';
 import openapiService, { getScripts } from './openapi';
 import preferenceService from './preference';
@@ -120,8 +124,8 @@ const USER_WALLET_TEMPLATE: UserWalletStore = {
   currentPubkey: '',
 };
 
-// Create an instance of the CadenceService
-const cadenceService = new CadenceService();
+// Get the cadence service instance
+const cadenceService = getCadenceService();
 
 class UserWallet {
   // PERSISTENT DATA
@@ -136,6 +140,9 @@ class UserWallet {
 
     // Initialize the account loaders
     initAccountLoaders();
+
+    // Initialize the cadence bridge with the current network
+    updateCadenceBridgeNetwork(() => this.getNetwork());
   };
 
   clear = async () => {
@@ -235,6 +242,10 @@ class UserWallet {
       throw new Error('Invalid network');
     }
     this.store.network = network;
+
+    // Update the cadence bridge with the new network and recreate the service
+    updateCadenceBridgeNetwork(() => this.getNetwork());
+    recreateCadenceService();
 
     // Load all data for the new network. This is async but don't await it
     this.preloadAllAccounts(network, this.store.currentPubkey);

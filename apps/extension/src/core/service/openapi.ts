@@ -58,6 +58,7 @@ import {
 } from '@/shared/utils';
 
 import { findKeyAndInfo } from '../utils';
+import { getCadenceService } from './cadence-bridge';
 import {
   googleSafeHostService,
   analyticsService,
@@ -155,6 +156,9 @@ type NftCollectionResponse = {
   flowIdentifier?: string;
   nftTypeId?: string;
 };
+
+// Get the cadence service instance
+const cadenceService = getCadenceService();
 
 export const responseToNftCollection = (item: NftCollectionResponse): NftCollection => {
   return {
@@ -1093,58 +1097,73 @@ export class OpenApiService {
   };
 
   /**
-   * @deprecated script is not found
+   * Check if an account is a child account
+   *
+   * MIGRATED: This method has been migrated from script-based approach to use CadenceService
+   * - Old: Used getScripts() + fcl.query() (deprecated script)
+   * - New: Uses cadenceService.getChildAccountMeta() to check if account has child metadata
+   *
+   * @param address - The account address to check
+   * @returns Child account metadata or null if not a child account
    */
   checkChildAccount = async (address: string) => {
-    const script = await getScripts(
-      userWalletService.getNetwork(),
-      'hybridCustody',
-      'checkChildAccount'
-    );
-    const result = await fcl.query({
-      cadence: script,
-      args: (arg, t) => [arg(address, t.Address)],
-    });
-    return result;
+    // Use cadence service instead of script-based approach
+    try {
+      const result = await cadenceService.getChildAccountMeta(address);
+      return result;
+    } catch (err) {
+      return null;
+    }
   };
   /**
-   * @deprecated script is not found
+   * Query accessible resources for a child account
+   *
+   * MIGRATED: This method has been migrated from script-based approach to use CadenceService
+   * - Old: Used getScripts() + fcl.query() (deprecated script)
+   * - New: Uses cadenceService.getAccessibleCoinInfo() to get accessible tokens
+   *
+   * @param address - The parent account address
+   * @param childAccount - The child account address
+   * @returns Array of accessible token information
    */
   queryAccessible = async (address: string, childAccount: string) => {
-    const script = await getScripts(
-      userWalletService.getNetwork(),
-      'hybridCustody',
-      'checkChildAccount'
-    );
-
-    const result = await fcl.query({
-      cadence: script,
-      args: (arg, t) => [arg(address, t.Address), arg(childAccount, t.Address)],
-    });
+    // Use cadence service instead of script-based approach
+    const result = await cadenceService.getAccessibleCoinInfo(address, childAccount);
     return result;
   };
 
+  /**
+   * Query accessible fungible tokens for a child account
+   *
+   * MIGRATED: This method has been migrated from script-based approach to use CadenceService
+   * - Old: Used getScripts() + fcl.query()
+   * - New: Uses cadenceService.getAccessibleCoinInfo()
+   *
+   * @param network - The network to query
+   * @param address - The parent account address
+   * @param childAccount - The child account address
+   * @returns Array of accessible token information
+   */
   queryAccessibleFt = async (network: string, address: string, childAccount: string) => {
-    const script = await getScripts(network, 'hybridCustody', 'getAccessibleCoinInfo');
-
-    const result = await fcl.query({
-      cadence: script,
-      args: (arg, t) => [arg(address, t.Address), arg(childAccount, t.Address)],
-    });
+    // Use cadence service instead of script-based approach
+    const result = await cadenceService.getAccessibleCoinInfo(address, childAccount);
     return result;
   };
 
+  /**
+   * Check child account metadata
+   *
+   * MIGRATED: This method has been migrated from script-based approach to use CadenceService
+   * - Old: Used getScripts() + fcl.query()
+   * - New: Uses cadenceService.getChildAccountMeta()
+   *
+   * @param address - The parent account address
+   * @returns Child account metadata or null if not found
+   */
   checkChildAccountMeta = async (address: string) => {
-    const script = await getScripts(
-      userWalletService.getNetwork(),
-      'hybridCustody',
-      'getChildAccountMeta'
-    );
+    // Use cadence service instead of script-based approach
     try {
-      const res = await fcl.query({
-        cadence: script,
-        args: (arg, t) => [arg(address, t.Address)],
-      });
+      const res = await cadenceService.getChildAccountMeta(address);
       return res;
     } catch (err) {
       return null;
@@ -1161,13 +1180,20 @@ export class OpenApiService {
     return address;
   };
 
+  /**
+   * Get the minimum Flow balance required for storage
+   *
+   * MIGRATED: This method has been migrated from script-based approach to use CadenceService
+   * - Old: Used getScripts() + fcl.query()
+   * - New: Uses cadenceService.getAccountMinFlow()
+   *
+   * @param address - The Flow address to get minimum balance for
+   * @returns The minimum Flow balance as a string
+   */
   getAccountMinFlow = async (address: string) => {
-    const script = await getScripts(userWalletService.getNetwork(), 'basic', 'getAccountMinFlow');
+    // Use cadence service instead of script-based approach
     if (isValidFlowAddress(address)) {
-      const minFlow = await fcl.query({
-        cadence: script,
-        args: (arg, t) => [arg(address, t.Address)],
-      });
+      const minFlow = await cadenceService.getAccountMinFlow(address);
       return minFlow;
     }
   };
@@ -1178,20 +1204,6 @@ export class OpenApiService {
     const address = await fcl.query({
       cadence: script,
       args: (arg, t) => [arg(domain, t.String)],
-    });
-    return address;
-  };
-
-  getFindDomainByAddress = async (domain: string) => {
-    const script = await getScripts(
-      userWalletService.getNetwork(),
-      'basic',
-      'getFindDomainByAddress'
-    );
-
-    const address = await fcl.query({
-      cadence: script,
-      args: (arg, t) => [arg(domain, t.Address)],
     });
     return address;
   };
@@ -1323,35 +1335,48 @@ export class OpenApiService {
     return data;
   };
 
+  /**
+   * Get storage information for a Flow account
+   *
+   * MIGRATED: This method has been migrated from script-based approach to use CadenceService
+   * - Old: Used getScripts() + fcl.query()
+   * - New: Uses cadenceService.accountStorage()
+   *
+   * @param address - The Flow address to get storage info for
+   * @returns StorageInfo with capacity, used, and available storage
+   */
   getStorageInfo = async (address: string): Promise<StorageInfo> => {
-    const script = await getScripts(userWalletService.getNetwork(), 'basic', 'getStorageInfo');
-
-    const result = await fcl.query({
-      cadence: script,
-      args: (arg, t) => [arg(address, t.Address)],
-    });
+    // Use cadence service instead of script-based approach
+    const result = await cadenceService.accountStorage(address);
 
     return {
-      available: result['available'],
-      used: result['used'],
-      capacity: result['capacity'],
+      available: result.available,
+      used: result.used,
+      capacity: result.capacity,
     };
   };
 
+  /**
+   * Get Flow account information including balance and storage details
+   *
+   * MIGRATED: This method has been migrated from script-based approach to use CadenceService
+   * - Old: Used getScripts() + fcl.query()
+   * - New: Uses cadenceService.getAccountInfo()
+   *
+   * @param network - The network to query (mainnet/testnet)
+   * @param address - The Flow address to get info for
+   * @returns AccountBalanceInfo with balance and storage details
+   */
   getFlowAccountInfo = async (network: string, address: string): Promise<AccountBalanceInfo> => {
-    const script = await getScripts(network, 'basic', 'getAccountInfo');
-
-    const result = await fcl.query({
-      cadence: script,
-      args: (arg, t) => [arg(address, t.Address)],
-    });
+    // Use cadence service instead of script-based approach
+    const result = await cadenceService.getAccountInfo(address);
 
     return {
-      address: result['address'],
-      balance: result['balance'],
-      availableBalance: result['availableBalance'],
-      storageUsed: result['storageUsed'],
-      storageCapacity: result['storageCapacity'],
+      address: result.address,
+      balance: result.balance,
+      availableBalance: result.availableBalance,
+      storageUsed: result.storageUsed.toString(),
+      storageCapacity: result.storageCapacity.toString(),
     };
   };
   getTokenBalanceWithModel = async (address: string, token: CustomFungibleTokenInfo) => {
@@ -1464,12 +1489,19 @@ export class OpenApiService {
     return balanceList;
   };
 
+  /**
+   * Get token balance storage for all fungible tokens in an account
+   *
+   * MIGRATED: This method has been migrated from script-based approach to use CadenceService
+   * - Old: Used getScripts() + fcl.query()
+   * - New: Uses cadenceService.getTokenBalanceStorage()
+   *
+   * @param address - The Flow address to get token balances for
+   * @returns BalanceMap with token type identifiers and their balances
+   */
   getTokenBalanceStorage = async (address: string): Promise<BalanceMap> => {
-    const script = await getScripts(userWalletService.getNetwork(), 'ft', 'getTokenBalanceStorage');
-    const balanceList = await fcl.query({
-      cadence: script,
-      args: (arg, t) => [arg(address, t.Address)],
-    });
+    // Use cadence service instead of script-based approach
+    const balanceList = await cadenceService.getTokenBalanceStorage(address);
 
     return balanceList;
   };
