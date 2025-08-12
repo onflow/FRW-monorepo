@@ -306,20 +306,22 @@ export const useSendStore = create<SendState>((set, get) => ({
       // Get wallet accounts for child addresses and COA
       const { accounts } = await bridge.getWalletAccounts();
       const selectedAccount = await bridge.getSelectedAccount();
+      const mainAccount =
+        selectedAccount.type === 'main'
+          ? selectedAccount
+          : accounts.find(
+              (account) =>
+                account.type === 'main' && account.address === selectedAccount.parentAddress
+            );
       const coaAddr =
         accounts.filter(
-          (account) =>
-            account.type === 'evm' && account.parentAddress === selectedAccount.parentAddress
+          (account) => account.type === 'evm' && account.parentAddress === mainAccount?.address
         )[0]?.address || '';
       const childAddrs = accounts
         .filter(
-          (account) =>
-            account.type === 'child' && account.parentAddress === selectedAccount.parentAddress
+          (account) => account.type === 'child' && account.parentAddress === mainAccount?.address
         )
         .map((account) => account.address);
-      const mainAccount = accounts.find(
-        (account) => account.type === 'main' || account.address === selectedAccount.parentAddress
-      );
 
       if (!mainAccount) {
         logger.error('[SendStore] No main account found');
