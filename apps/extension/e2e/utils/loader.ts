@@ -171,18 +171,14 @@ export const test = base.extend<{
         console.log(`Worker URL: ${worker.url()}`);
       }
 
-      // Use fallback extension ID from environment variable
-      const fallbackId = process.env.TEST_EXTENSION_ID;
-      console.log(`TEST_EXTENSION_ID env var: ${fallbackId}`);
-      if (fallbackId) {
-        console.log(`Using fallback extension ID: ${fallbackId}`);
-        extensionId = fallbackId;
-      } else {
+      // Use fallback extension ID (hardcoded from manifest key)
+      const fallbackId = process.env.TEST_EXTENSION_ID || 'cfiagdgiikmjgfjnlballglniejjgegi';
+      console.log(`TEST_EXTENSION_ID env var: ${process.env.TEST_EXTENSION_ID}`);
+      if (!process.env.TEST_EXTENSION_ID) {
         console.log(`No fallback extension ID available in env vars`);
-        throw new Error(
-          `Extension ID not found. Available service workers: ${workers.length}, Pages: ${pages.length}`
-        );
       }
+      console.log(`Using fallback extension ID: ${fallbackId}`);
+      extensionId = fallbackId;
     }
 
     console.log(`Final extension ID: ${extensionId}`);
