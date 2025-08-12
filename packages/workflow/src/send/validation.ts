@@ -79,6 +79,7 @@ export const isValidSendTransactionPayload = (payload: SendPayload): boolean => 
     validateNftPayload(payload);
   }
 
+  // TODO: send nft from evm to flow, tokenContractAddr is not required, handle by bridge use flowIdentifier
   // if (assetType === 'evm') {
   //   // Skip validation if Flow token (tokenContractAddr can be null/undefined)
   //   if (!isFlowToken(flowIdentifier) && !validateEvmAddress(tokenContractAddr)) {
