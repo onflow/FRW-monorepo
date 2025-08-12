@@ -70,14 +70,22 @@ function parseExportTypeStatements(content, basePath) {
         const extendedType = extendsMatch[1].trim();
         const ownProperties = parseInterfaceProperties(extendsMatch[2]);
 
-        // Dynamically resolve base properties
-        const baseProperties = resolveExtendedInterface(extendedType, fullPath);
+        // Dynamically resolve base properties and collect referenced interfaces
+        const collectedReferencedInterfaces = [];
+        const baseProperties = resolveExtendedInterface(
+          extendedType,
+          fullPath,
+          collectedReferencedInterfaces
+        );
         const allProperties = [...baseProperties, ...ownProperties];
 
         reexportedInterfaces.push({
           name: interfaceName,
           properties: allProperties,
         });
+
+        // Add any collected referenced interfaces
+        reexportedInterfaces.push(...collectedReferencedInterfaces);
       } else if (interfaceMatch) {
         const properties = parseInterfaceProperties(interfaceMatch[1]);
         reexportedInterfaces.push({
@@ -137,9 +145,9 @@ function parseTypeScriptInterfaces(content, filePath) {
 }
 
 /**
- * Resolve external interface from node_modules
+ * Resolve external interface from node_modules and collect referenced interfaces
  */
-function resolveExternalInterface(interfaceName, packagePath) {
+function resolveExternalInterface(interfaceName, packagePath, collectedInterfaces = []) {
   try {
     // Try to find the interface in the external package
     const packageDir = path.resolve('./node_modules', packagePath);
@@ -162,7 +170,61 @@ function resolveExternalInterface(interfaceName, packagePath) {
         const match = interfaceRegex.exec(content);
 
         if (match) {
-          return parseInterfaceProperties(match[1]);
+          const properties = parseInterfaceProperties(match[1]);
+
+          // Recursively collect referenced interfaces from the same file
+          const collectReferencedInterfaces = (props, content, processed = new Set()) => {
+            props.forEach(prop => {
+              // Check if property type references another interface (starts with uppercase)
+              const typeMatch = prop.type
+                .replace(/\?$/, '')
+                .replace(/\[\]$/, '')
+                .match(/^([A-Z]\w*)/);
+              if (typeMatch) {
+                const referencedType = typeMatch[1];
+
+                // Avoid infinite recursion and duplicates
+                const alreadyCollected = collectedInterfaces.some(
+                  iface => iface.name === referencedType
+                );
+                const alreadyProcessed = processed.has(referencedType);
+
+                if (
+                  !alreadyCollected &&
+                  !alreadyProcessed &&
+                  referencedType !== interfaceName &&
+                  !['String', 'Number', 'Boolean', 'Array', 'Object', 'Date'].includes(
+                    referencedType
+                  )
+                ) {
+                  processed.add(referencedType);
+
+                  // Try to find the referenced interface in the same file
+                  const referencedRegex = new RegExp(
+                    `export\\s+interface\\s+${referencedType}\\s*\\{([\\s\\S]*?)\\}`,
+                    'g'
+                  );
+                  const referencedMatch = referencedRegex.exec(content);
+
+                  if (referencedMatch) {
+                    console.log(`📦 Found referenced interface: ${referencedType}`);
+                    const referencedProperties = parseInterfaceProperties(referencedMatch[1]);
+                    collectedInterfaces.push({
+                      name: referencedType,
+                      properties: referencedProperties,
+                    });
+
+                    // Recursively process the referenced interface's properties
+                    collectReferencedInterfaces(referencedProperties, content, processed);
+                  }
+                }
+              }
+            });
+          };
+
+          collectReferencedInterfaces(properties, content);
+
+          return properties;
         }
       }
     }
@@ -178,7 +240,12 @@ function resolveExternalInterface(interfaceName, packagePath) {
 /**
  * Resolve extended interface properties dynamically
  */
-function resolveExtendedInterface(extendedType, currentFilePath, cache = new Set()) {
+function resolveExtendedInterface(
+  extendedType,
+  currentFilePath,
+  collectedInterfaces = [],
+  cache = new Set()
+) {
   // Prevent infinite recursion
   if (cache.has(extendedType)) {
     return [];
@@ -209,7 +276,7 @@ function resolveExtendedInterface(extendedType, currentFilePath, cache = new Set
 
     // Handle external dependencies (node_modules)
     if (importPath.startsWith('@')) {
-      return resolveExternalInterface(extendedType, importPath);
+      return resolveExternalInterface(extendedType, importPath, collectedInterfaces);
     }
 
     const fullImportPath = path.resolve(path.dirname(currentFilePath), importPath + '.ts');
@@ -238,7 +305,12 @@ function resolveExtendedInterface(extendedType, currentFilePath, cache = new Set
       if (importedExtendsMatch) {
         const baseType = importedExtendsMatch[1].trim();
         const ownProps = parseInterfaceProperties(importedExtendsMatch[2]);
-        const baseProps = resolveExtendedInterface(baseType, fullImportPath, cache);
+        const baseProps = resolveExtendedInterface(
+          baseType,
+          fullImportPath,
+          collectedInterfaces,
+          cache
+        );
         return [...baseProps, ...ownProps];
       }
     }
@@ -448,7 +520,8 @@ enum RNBridge {
 function generateKotlinEnum(enumName, values) {
   let code = `    enum class ${enumName} {\n`;
   values.forEach((value, index) => {
-    const enumCase = value.toUpperCase();
+    // Convert kebab-case to UPPER_SNAKE_CASE for Kotlin enum constants
+    const enumCase = value.toUpperCase().replace(/-/g, '_');
     const comma = index < values.length - 1 ? ',' : '';
     code += `        @SerializedName("${value}") ${enumCase}${comma}\n`;
   });
@@ -516,7 +589,9 @@ class RNBridge {
       code += `    enum class ${iface.name} {\n`;
       iface.enumValues.forEach((enumValue, index) => {
         const comma = index < iface.enumValues.length - 1 ? ',' : '';
-        code += `        @SerializedName("${enumValue.value}") ${enumValue.key.toUpperCase()}${comma}\n`;
+        // Convert kebab-case to UPPER_SNAKE_CASE for Kotlin enum constants
+        const kotlinEnumCase = enumValue.key.toUpperCase().replace(/-/g, '_');
+        code += `        @SerializedName("${enumValue.value}") ${kotlinEnumCase}${comma}\n`;
       });
       code += `    }\n\n`;
     } else {

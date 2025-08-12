@@ -16,11 +16,12 @@
     "customConditions": ["@onflow/source"],
     "paths": {
       "@/*": ["./src/*"],
-      "@onflow/frw-cadence": ["./node_modules/@onflow/frw-cadence/src/index.ts"]
+      "@onflow/frw-cadence": ["./node_modules/@onflow/frw-cadence/src/index.ts"],
+      "@onflow/frw-ui": ["./node_modules/@onflow/frw-ui/src/index.ts"]
     },
     "lib": ["ES2021.String", "DOM", "DOM.Iterable"],
     "types": ["chrome", "node", "react", "react-dom"],
-    "jsx": "react",
+    "jsx": "react-jsx",
     "allowSyntheticDefaultImports": true,
     "allowJs": true,
     "plugins": [

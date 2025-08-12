@@ -22,15 +22,15 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 // Interactive story
-const InteractiveTemplate = (args: unknown): React.ReactElement => {
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  return <SegmentedControl {...args} selectedIndex={selectedIndex} onChange={setSelectedIndex} />;
+const InteractiveTemplate = (args: any): React.ReactElement => {
+  const [value, setValue] = useState(args.segments[0]);
+  return <SegmentedControl {...args} value={value} onChange={setValue} />;
 };
 
 export const Default: Story = {
   render: InteractiveTemplate,
   args: {
-    options: ['Tokens', 'NFTs'],
+    segments: ['Tokens', 'NFTs'],
     size: 'medium',
   },
 };
@@ -38,7 +38,7 @@ export const Default: Story = {
 export const Small: Story = {
   render: InteractiveTemplate,
   args: {
-    options: ['One', 'Two', 'Three'],
+    segments: ['One', 'Two', 'Three'],
     size: 'small',
   },
 };
@@ -46,7 +46,7 @@ export const Small: Story = {
 export const Large: Story = {
   render: InteractiveTemplate,
   args: {
-    options: ['Option A', 'Option B'],
+    segments: ['Option A', 'Option B'],
     size: 'large',
   },
 };
@@ -54,7 +54,16 @@ export const Large: Story = {
 export const FourOptions: Story = {
   render: InteractiveTemplate,
   args: {
-    options: ['Home', 'Browse', 'Search', 'Profile'],
+    segments: ['Home', 'Browse', 'Search', 'Profile'],
     size: 'medium',
+  },
+};
+
+export const FullWidth: Story = {
+  render: InteractiveTemplate,
+  args: {
+    segments: ['Tokens', 'NFTs'],
+    size: 'medium',
+    fullWidth: true,
   },
 };

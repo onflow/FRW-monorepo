@@ -196,6 +196,7 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
         'cross-fetch': 'cross-fetch',
         '@': paths.rootResolve('src'),
         '@onflow/frw-cadence': path.resolve(__dirname, '../node_modules/@onflow/frw-cadence/src/index.ts'),
+        '@onflow/frw-ui': path.resolve(__dirname, '../node_modules/@onflow/frw-ui/src/index.ts'),
       },
       plugins: [],
       fallback: {

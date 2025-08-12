@@ -13,7 +13,7 @@ export function Text({
   weight = 'normal',
   children,
   ...props
-}: UITextProps): React.ReactElement {
+}: UITextProps): React.JSX.Element {
   const getVariantProps = (): Record<string, unknown> => {
     switch (variant) {
       case 'heading':

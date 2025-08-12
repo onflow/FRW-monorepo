@@ -9,7 +9,6 @@ import {
 } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
-  Button,
   SegmentedControl,
   Skeleton,
   Text,
@@ -17,6 +16,12 @@ import {
   YStack,
   XStack,
   ScrollView,
+  RefreshView,
+  NFTCollectionRow,
+  AccountCard,
+  Badge,
+  AddressText,
+  Divider,
 } from '@onflow/frw-ui';
 import React, { useCallback, useEffect, useState } from 'react';
 
@@ -26,17 +31,11 @@ interface SelectTokensScreenProps extends BaseScreenProps {
   theme?: { isDark: boolean };
 }
 
-export function SelectTokensScreen({
-  navigation,
-  bridge,
-  t,
-  theme = { isDark: false },
-}: SelectTokensScreenProps) {
+export function SelectTokensScreen({ navigation, bridge, t }: SelectTokensScreenProps) {
   // State management
   const [tab, setTab] = React.useState<TabType>('Tokens');
   const [tokens, setTokens] = React.useState<TokenModel[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
-  const [isRefreshing, setIsRefreshing] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [fromAccount, setLocalFromAccount] = React.useState<WalletAccount | null>(null);
   const [fromAccountBalance, setFromAccountBalance] = React.useState<string>('0 FLOW');
@@ -106,11 +105,7 @@ export function SelectTokensScreen({
   // Fetch tokens
   const fetchTokens = useCallback(
     async (accountAddress?: string, accountType?: string, isRefreshAction = false) => {
-      if (isRefreshAction) {
-        setIsRefreshing(true);
-      } else {
-        setIsLoading(true);
-      }
+      setIsLoading(true);
       setError(null);
 
       try {
@@ -141,7 +136,6 @@ export function SelectTokensScreen({
         setTokens([]);
       } finally {
         setIsLoading(false);
-        setIsRefreshing(false);
       }
     },
     [bridge, t]
@@ -281,201 +275,166 @@ export function SelectTokensScreen({
   });
 
   return (
-    <BackgroundWrapper backgroundColor="#121212">
-      <YStack flex={1} paddingHorizontal="$4" paddingTop="$2">
+    <BackgroundWrapper backgroundColor="$background">
+      <YStack flex={1} px="$4" pt="$2">
         {/* Header */}
-        <XStack
-          justifyContent="center"
-          alignItems="center"
-          paddingVertical="$4"
-          position="relative"
-        >
-          <Text
-            fontSize={18}
-            fontWeight="700"
-            color="#ffffff"
-            lineHeight={32}
-            letterSpacing={-0.306}
-          >
+        <XStack justify="center" items="center" py="$4" pos="relative">
+          <Text fontSize="$6" fontWeight="700" color="$color" lineHeight="$2" letterSpacing="$-1">
             {t('send.title')}
           </Text>
         </XStack>
 
         {/* Account Card */}
         {isAccountLoading ? (
-          <YStack
-            backgroundColor="rgba(255, 255, 255, 0.1)"
-            borderRadius="$4"
-            padding="$4"
-            marginVertical="$4"
-            height={120}
-            justifyContent="center"
-            alignItems="center"
-          >
-            <Text color="$gray10">{t('messages.loadingAccount')}</Text>
+          <YStack bg="$bg2" rounded="$4" p="$4" my="$4" h="$10" justify="center" items="center">
+            <Text color="$textSecondary">{t('messages.loadingAccount')}</Text>
           </YStack>
         ) : fromAccount ? (
-          <YStack
-            backgroundColor="rgba(255, 255, 255, 0.1)"
-            borderRadius="$4"
-            padding="$4"
-            marginVertical="$4"
-          >
-            <XStack alignItems="center" justifyContent="space-between">
-              <YStack flex={1}>
-                <Text fontSize={14} color="$gray11" marginBottom="$1">
-                  {t('labels.fromAccount')}
-                </Text>
-                <Text fontSize={16} fontWeight="600" color="#ffffff">
-                  {fromAccount.name}
-                </Text>
-                <Text fontSize={14} color="$gray10" marginTop="$1">
-                  {isBalanceLoading ? t('messages.loading') : fromAccountBalance}
-                </Text>
-              </YStack>
-              <Button variant="secondary" size="small" onPress={() => {}}>
-                {t('buttons.edit')}
-              </Button>
-            </XStack>
-          </YStack>
+          <AccountCard
+            account={{
+              ...fromAccount,
+              balance: isBalanceLoading ? t('messages.loading') : fromAccountBalance,
+            }}
+            title={t('labels.fromAccount')}
+            isLoading={isBalanceLoading}
+            showBackground={true}
+          />
         ) : null}
 
         {/* Tab Selector */}
-        <YStack marginVertical="$4">
+        <YStack my="$4">
           <SegmentedControl
-            options={TABS as unknown as string[]}
-            selectedIndex={tab === 'Tokens' ? 0 : 1}
-            onChange={(index) => handleTabChange(index === 0 ? 'Tokens' : 'NFTs')}
+            segments={TABS as unknown as string[]}
+            value={tab === 'Tokens' ? TABS[0] : TABS[1]}
+            onChange={(value) => handleTabChange(value === TABS[0] ? 'Tokens' : 'NFTs')}
+            fullWidth={true}
           />
         </YStack>
 
         {/* Content */}
         <ScrollView flex={1} showsVerticalScrollIndicator={false}>
           {tab === 'Tokens' && (
-            <YStack space="$3">
+            <YStack gap="$3">
               {isLoading ? (
                 <>
                   {[1, 2, 3, 4, 5].map((index) => (
-                    <YStack key={`token-skeleton-${index}`} padding="$3">
-                      <XStack alignItems="center" space="$3">
-                        <Skeleton width={48} height={48} borderRadius={24} />
-                        <YStack flex={1} space="$2">
-                          <Skeleton height={16} width="60%" />
-                          <Skeleton height={12} width="40%" />
+                    <YStack key={`token-skeleton-${index}`} p="$3">
+                      <XStack items="center" gap="$3">
+                        <Skeleton width="$4" height="$4" borderRadius="$10" />
+                        <YStack flex={1} gap="$2">
+                          <Skeleton height="$1" width="60%" />
+                          <Skeleton height="$0.75" width="40%" />
                         </YStack>
-                        <YStack alignItems="flex-end" space="$1">
-                          <Skeleton height={16} width={60} />
-                          <Skeleton height={12} width={40} />
+                        <YStack items="flex-end" gap="$1">
+                          <Skeleton height="$1" width="$4" />
+                          <Skeleton height="$0.75" width="$3" />
                         </YStack>
                       </XStack>
                     </YStack>
                   ))}
                 </>
               ) : error ? (
-                <YStack alignItems="center" justifyContent="center" paddingVertical="$8">
-                  <Text color="$red10" marginBottom="$4">
-                    {error}
-                  </Text>
-                  <Button variant="secondary" onPress={refreshTokens}>
-                    {t('buttons.retry')}
-                  </Button>
-                </YStack>
+                <RefreshView
+                  type="error"
+                  message={error}
+                  onRefresh={refreshTokens}
+                  refreshText={t('buttons.retry')}
+                />
               ) : tokensWithBalance.length === 0 ? (
-                <YStack alignItems="center" justifyContent="center" paddingVertical="$8">
-                  <Text color="$gray10" marginBottom="$4">
-                    {t('messages.noTokensWithBalance')}
-                  </Text>
-                  <Button variant="secondary" onPress={refreshTokens}>
-                    {t('buttons.refresh')}
-                  </Button>
-                </YStack>
+                <RefreshView
+                  type="empty"
+                  message={t('messages.noTokensWithBalance')}
+                  onRefresh={refreshTokens}
+                  refreshText={t('buttons.refresh')}
+                />
               ) : (
-                tokensWithBalance.map((token, idx) => (
-                  <TokenCard
-                    key={`token-${token.identifier || token.symbol}-${idx}`}
-                    symbol={token.symbol || ''}
-                    name={token.name || ''}
-                    balance={token.displayBalance || token.balance || '0'}
-                    logo={token.icon}
-                    price={token.usdValue?.toString()}
-                    change24h={token.change ? parseFloat(token.change) : undefined}
-                    onPress={() => handleTokenPress(token)}
-                  />
-                ))
+                <YStack gap="$2">
+                  {/* Token Count Badge */}
+                  <XStack justify="space-between" items="center" px="$2" pb="$2">
+                    <Badge variant="secondary" size="small">
+                      {tokensWithBalance.length}{' '}
+                      {tokensWithBalance.length === 1 ? 'Token' : 'Tokens'}
+                    </Badge>
+                  </XStack>
+
+                  {tokensWithBalance.map((token, idx) => (
+                    <React.Fragment key={`token-${token.identifier || token.symbol}-${idx}`}>
+                      <TokenCard
+                        symbol={token.symbol || ''}
+                        name={token.name || ''}
+                        balance={token.displayBalance || token.balance || '0'}
+                        logo={token.icon}
+                        price={token.usdValue?.toString()}
+                        change24h={token.change ? parseFloat(token.change) : undefined}
+                        isVerified={token.isVerified}
+                        onPress={() => handleTokenPress(token)}
+                      />
+                      {idx < tokensWithBalance.length - 1 && <Divider />}
+                    </React.Fragment>
+                  ))}
+                </YStack>
               )}
             </YStack>
           )}
 
           {tab === 'NFTs' && (
-            <YStack space="$3">
+            <YStack gap="$3">
               {nftLoading ? (
                 <>
                   {[1, 2, 3, 4].map((index) => (
-                    <YStack key={`nft-skeleton-${index}`} padding="$3">
-                      <XStack alignItems="center" space="$3">
-                        <Skeleton width={48} height={48} borderRadius={24} />
-                        <YStack flex={1} space="$2">
-                          <Skeleton height={16} width="70%" />
-                          <Skeleton height={12} width="30%" />
+                    <YStack key={`nft-skeleton-${index}`} p="$3">
+                      <XStack items="center" gap="$3">
+                        <Skeleton width="$4" height="$4" borderRadius="$10" />
+                        <YStack flex={1} gap="$2">
+                          <Skeleton height="$1" width="70%" />
+                          <Skeleton height="$0.75" width="30%" />
                         </YStack>
-                        <Skeleton width={24} height={24} />
+                        <Skeleton width="$1.5" height="$1.5" />
                       </XStack>
                     </YStack>
                   ))}
                 </>
               ) : nftError ? (
-                <YStack alignItems="center" justifyContent="center" paddingVertical="$8">
-                  <Text color="$red10" marginBottom="$4">
-                    {nftError}
-                  </Text>
-                  <Button variant="secondary" onPress={refreshNFTCollections}>
-                    {t('buttons.retry')}
-                  </Button>
-                </YStack>
+                <RefreshView
+                  type="error"
+                  message={nftError}
+                  onRefresh={refreshNFTCollections}
+                  refreshText={t('buttons.retry')}
+                />
               ) : nftCollections.length === 0 ? (
-                <YStack alignItems="center" justifyContent="center" paddingVertical="$8">
-                  <Text color="$gray10" marginBottom="$4">
-                    {t('messages.noNFTCollectionsForAccount')}
-                  </Text>
-                  <Button variant="secondary" onPress={refreshNFTCollections}>
-                    {t('buttons.refresh')}
-                  </Button>
-                </YStack>
+                <RefreshView
+                  type="empty"
+                  message={t('messages.noNFTCollectionsForAccount')}
+                  onRefresh={refreshNFTCollections}
+                  refreshText={t('buttons.refresh')}
+                />
               ) : (
-                nftCollections.map((collection, idx) => (
-                  <YStack
-                    key={`nft-collection-${collection.id || collection.contractName || collection.name}-${idx}`}
-                    backgroundColor="rgba(255, 255, 255, 0.05)"
-                    borderRadius="$3"
-                    padding="$3"
-                    pressStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
-                    onPress={() => handleNFTPress(collection)}
-                  >
-                    <XStack alignItems="center" space="$3">
-                      <YStack
-                        width={48}
-                        height={48}
-                        backgroundColor="$gray6"
-                        borderRadius="$3"
-                        alignItems="center"
-                        justifyContent="center"
-                      >
-                        <Text fontSize={18}>🖼️</Text>
-                      </YStack>
-                      <YStack flex={1}>
-                        <Text fontSize={16} fontWeight="600" color="#ffffff">
-                          {collection.name || collection.contractName}
-                        </Text>
-                        <Text fontSize={14} color="$gray10">
-                          {collection.count} {t('labels.items')}
-                        </Text>
-                      </YStack>
-                      <Text fontSize={16} color="$gray8">
-                        ›
-                      </Text>
-                    </XStack>
-                  </YStack>
-                ))
+                <YStack gap="$2">
+                  {/* NFT Collections Count Badge */}
+                  <XStack justify="space-between" items="center" px="$2" pb="$2">
+                    <Badge variant="primary" size="small">
+                      {nftCollections.length}{' '}
+                      {nftCollections.length === 1 ? 'Collection' : 'Collections'}
+                    </Badge>
+                    {fromAccount && (
+                      <AddressText
+                        address={fromAccount.address}
+                        truncate={true}
+                        startLength={4}
+                        endLength={4}
+                      />
+                    )}
+                  </XStack>
+
+                  {nftCollections.map((collection, idx) => (
+                    <NFTCollectionRow
+                      key={`nft-collection-${collection.id || collection.contractName || collection.name}-${idx}`}
+                      collection={collection}
+                      showDivider={idx !== nftCollections.length - 1}
+                      onPress={() => handleNFTPress(collection)}
+                    />
+                  ))}
+                </YStack>
               )}
             </YStack>
           )}
