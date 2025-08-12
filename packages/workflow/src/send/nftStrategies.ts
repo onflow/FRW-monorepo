@@ -198,7 +198,7 @@ export class EvmToEvmNftStrategy implements TransferStrategy {
   }
 
   async execute(payload: SendPayload): Promise<any> {
-    const { tokenContractAddr, ids, amount } = payload;
+    const { tokenContractAddr, ids } = payload;
 
     if (ids.length > 1) {
       const contracts = ids.map(() => tokenContractAddr);

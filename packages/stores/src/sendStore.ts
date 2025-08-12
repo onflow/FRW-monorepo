@@ -1,11 +1,11 @@
-import { cadence } from '@onflow/frw-context';
+import { bridge, cadence } from '@onflow/frw-context';
 import { flowService } from '@onflow/frw-services';
 import { type NFTModel, type TokenModel, addressType } from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
 import {
   type SendPayload,
-  isFlowToken,
   SendTransaction,
+  isFlowToken,
   isValidSendTransactionPayload,
 } from '@onflow/frw-workflow';
 import { create } from 'zustand';
@@ -305,13 +305,22 @@ export const useSendStore = create<SendState>((set, get) => ({
 
     try {
       // Get wallet accounts for child addresses and COA
-      const flow = flowService();
-      const { accounts } = await flow.getWalletAccounts();
-      const coaAddr = accounts.filter((account) => account.type === 'evm')[0]?.address || '';
+      const { accounts } = await bridge.getWalletAccounts();
+      const selectedAccount = await bridge.getSelectedAccount();
+      const coaAddr =
+        accounts.filter(
+          (account) =>
+            account.type === 'evm' && account.parentAddress === selectedAccount.parentAddress
+        )[0]?.address || '';
       const childAddrs = accounts
-        .filter((account) => account.type === 'child')
+        .filter(
+          (account) =>
+            account.type === 'child' && account.parentAddress === selectedAccount.parentAddress
+        )
         .map((account) => account.address);
-      const mainAccount = accounts.filter((account) => account.type === 'main')[0];
+      const mainAccount = accounts.find(
+        (account) => account.type === 'main' || account.address === selectedAccount.parentAddress
+      );
 
       if (!mainAccount) {
         logger.error('[SendStore] No main account found');

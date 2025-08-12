@@ -1,5 +1,9 @@
 import { type PlatformSpec, type Storage } from '@onflow/frw-context';
-import type { RecentContactsResponse, WalletAccountsResponse } from '@onflow/frw-types';
+import type {
+  RecentContactsResponse,
+  WalletAccount,
+  WalletAccountsResponse,
+} from '@onflow/frw-types';
 import { isTransactionId } from '@onflow/frw-utils';
 import { GAS_LIMITS } from '@onflow/frw-workflow';
 import Instabug from 'instabug-reactnative';
@@ -81,6 +85,10 @@ class PlatformImpl implements PlatformSpec {
 
   getJWT(): Promise<string> {
     return NativeFRWBridge.getJWT();
+  }
+
+  getSelectedAccount(): Promise<WalletAccount> {
+    return NativeFRWBridge.getSelectedAccount();
   }
 
   getVersion(): string {

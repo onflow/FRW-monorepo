@@ -1,8 +1,9 @@
 import { platform } from './PlatformImpl';
 
 export const proposer = async (account: any) => {
-  const address = platform.getSelectedAddress() || '';
-  const ADDRESS = address.startsWith('0x') ? address : `0x${address}`;
+  const selectedAccount = await platform.getSelectedAccount();
+  const address = selectedAccount.parentAddress || selectedAccount.address;
+  const ADDRESS = address?.startsWith('0x') ? address : `0x${address}`;
   const KEY_ID = platform.getSignKeyIndex();
   return {
     ...account,
