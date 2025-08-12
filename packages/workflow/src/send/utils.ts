@@ -26,7 +26,7 @@ const FLOW_TOKEN_ADDRESSES = {
  * @returns True if the identifier is for Flow token, false otherwise
  */
 export const isFlowToken = (flowIdentifier: string): boolean => {
-  return Object.values(FLOW_TOKEN_ADDRESSES).includes(flowIdentifier as any);
+  return flowIdentifier.includes('.FlowToken.Vault');
 };
 
 export const isVaultIdentifier = (flowIdentifier: string): boolean => {
