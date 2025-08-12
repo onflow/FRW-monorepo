@@ -5,6 +5,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 // import { getTrx } from '../src/utils';
 import { accounts } from './utils/accounts';
 import { authz, bridgeAuthorization } from './utils/authz';
+// import { SendTransaction } from '../src'
 
 dotenv.config();
 
