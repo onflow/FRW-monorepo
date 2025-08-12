@@ -5,7 +5,6 @@ import { logger } from '@onflow/frw-utils';
 import {
   type SendPayload,
   SendTransaction,
-  isFlowToken,
   isValidSendTransactionPayload,
 } from '@onflow/frw-workflow';
 import { create } from 'zustand';
@@ -326,6 +325,9 @@ export const useSendStore = create<SendState>((set, get) => ({
         logger.error('[SendStore] No main account found');
         return null;
       }
+      const contractAddress = isTokenTransaction
+        ? selectedToken?.evmAddress || ''
+        : selectedNFTs[0]?.evmAddress || '';
 
       const payload: SendPayload = {
         type: isTokenTransaction ? 'token' : 'nft',
@@ -345,11 +347,7 @@ export const useSendStore = create<SendState>((set, get) => ({
         amount: isTokenTransaction ? formatAmount(formData.tokenAmount) : '',
         decimal: selectedToken?.decimal || 8,
         coaAddr: coaAddr,
-        // For Flow tokens, contract address can be empty since they're identified by flowIdentifier
-        tokenContractAddr:
-          selectedToken && selectedToken.identifier && isFlowToken(selectedToken.identifier)
-            ? ''
-            : selectedToken?.contractAddress || '',
+        tokenContractAddr: contractAddress,
       };
 
       logger.debug('[SendStore] Created send payload:', payload);
