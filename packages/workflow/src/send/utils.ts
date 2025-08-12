@@ -30,7 +30,7 @@ export const isFlowToken = (flowIdentifier: string): boolean => {
 };
 
 export const isVaultIdentifier = (flowIdentifier: string): boolean => {
-  const vaultRegex = /^A\.[0-9a-fA-F]{16}\.[a-zA-Z0-9_]+\.Vault$/;
+  const vaultRegex = /^A\.[0-9a-fA-F]{16}\.[a-zA-Z0-9_]+\.(Vault|NFT)$/;
   return vaultRegex.test(flowIdentifier);
 };
 
