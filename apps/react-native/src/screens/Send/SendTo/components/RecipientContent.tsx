@@ -5,8 +5,8 @@ import { FlatList, View } from 'react-native';
 
 import { FirstTimeSendModal } from '@/components/ui/modals';
 import { useTheme } from '@/contexts/ThemeContext';
+import { AlphabetIndex } from 'ui';
 
-import { AlphabetIndex } from './AlphabetIndex';
 import { createRenderItem, renderEmptyState, renderSkeletonRows } from './renderHelpers';
 import { useDataLoader } from '../hooks/useDataLoader';
 import { useEventHandlers } from '../hooks/useEventHandlers';
@@ -297,6 +297,7 @@ export const RecipientContent: React.FC<RecipientContentProps> = React.memo(
             letters={alphabetLetters}
             activeIndex={activeIndexLetter}
             onLetterPress={handleAlphabetPress}
+            position="right"
           />
         )}
 

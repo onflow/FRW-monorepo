@@ -23,6 +23,15 @@ function isSvgUrl(str: string) {
   return str.endsWith('.svg');
 }
 
+function isValidUrl(str: string) {
+  try {
+    new URL(str);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export const WalletAvatar: React.FC<WalletAvatarProps> = ({
   value,
   fallback,
@@ -36,8 +45,9 @@ export const WalletAvatar: React.FC<WalletAvatarProps> = ({
   const [imgError, setImgError] = useState(false);
   const [svgError, setSvgError] = useState(false);
 
-  // Calculate final display content
-  const showValue = !imgError && !svgError ? value : fallback || '👤';
+  // Improved fallback logic - check if value is valid first
+  const shouldUseFallback = imgError || svgError || (!isEmoji(value) && !isValidUrl(value));
+  const showValue = shouldUseFallback ? fallback || '👤' : value;
   const isSvg = isSvgUrl(showValue);
   const isEmojiValue = isEmoji(showValue);
 
@@ -58,6 +68,12 @@ export const WalletAvatar: React.FC<WalletAvatarProps> = ({
         .catch(() => setSvgError(true));
     }
   }, [showValue, isSvg, isEmojiValue]);
+
+  // Reset error states when value changes
+  useEffect(() => {
+    setImgError(false);
+    setSvgError(false);
+  }, [value]);
 
   // Unified View structure
   return (
@@ -100,7 +116,15 @@ export const WalletAvatar: React.FC<WalletAvatarProps> = ({
               height={contentSize}
               style={{ borderRadius: contentSize / 2 }}
             />
-          ) : null
+          ) : (
+            // Show fallback while loading SVG or if SVG fails
+            <Text
+              style={[styles.emoji, { fontSize: contentSize * 0.5, lineHeight: contentSize }]}
+              disableAndroidFix={true}
+            >
+              {fallback || '👤'}
+            </Text>
+          )
         ) : (
           <Image
             source={{ uri: showValue }}

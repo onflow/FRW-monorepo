@@ -122,6 +122,7 @@ storybook-static/
 # Local configuration
 .cursorrules
 **/.claude/settings.local.json
+.cursor
 
 # Documentation
 docs-archive
