@@ -7,7 +7,10 @@ type SeparatorProps = ComponentProps<typeof TamaguiSeparator> & {
 
 export function Separator({ variant = 'default', ...props }: SeparatorProps): React.ReactElement {
   return (
-    <TamaguiSeparator borderColor={variant === 'strong' ? '$borderHover' : '$border'} {...props} />
+    <TamaguiSeparator
+      borderColor={variant === 'strong' ? '$textSecondary' : '$border'}
+      {...props}
+    />
   );
 }
 

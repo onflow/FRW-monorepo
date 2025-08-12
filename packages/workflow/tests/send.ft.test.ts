@@ -1,15 +1,15 @@
 import { configureFCL, CadenceService } from '@onflow/frw-cadence';
 import { describe, it, expect, beforeEach } from 'vitest';
 
-// import { getTrx } from '../src/utils';
 import { accounts } from './utils/accounts';
 import { authz } from './utils/authz';
+// import { SendTransaction } from '../src';
 
 // dotenv.config();
 
 const mainAccount = accounts.main;
-const child1Account = accounts.child1;
-const child2Account = accounts.child2;
+// const child1Account = accounts.child1;
+// const child2Account = accounts.child2;
 
 const cadenceService = new CadenceService();
 
@@ -186,12 +186,12 @@ describe('Test send strategies', () => {
   //     receiver: '0x3b44f144b97a0402c0e206522c28052c1025a8aa',
   //     flowIdentifier: 'A.1654653399040a61.FlowToken.Vault',
   //     sender: mainAccount.evmAddr,
-  //     amount: '0.00001',
+  //     amount: '0.0001',
   //     childAddrs: [],
   //     ids: [],
-  //     decimal: 6,
+  //     decimal: 8,
   //     coaAddr: mainAccount.evmAddr,
-  //     tokenContractAddr: '0x7f27352D5F83Db87a5A3E00f4B07Cc2138D8ee52',
+  //     tokenContractAddr: '0x0000000000000000000000000000000000000000',
   //   };
 
   //   const txid = await SendTransaction(payload, cadenceService);

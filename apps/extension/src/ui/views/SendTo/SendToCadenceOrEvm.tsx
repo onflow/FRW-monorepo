@@ -1,4 +1,5 @@
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button } from '@mui/material';
+import { Text } from '@onflow/frw-ui';
 import BN from 'bignumber.js';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
@@ -103,24 +104,25 @@ const SendToCadenceOrEvm = ({
                     }}
                   >
                     <CancelIcon size={24} color={'#E54040'} style={{ margin: '8px' }} />
-                    <Typography variant="body1" color="text.secondary">
+                    <Text variant="body" weight="normal" color="$error">
                       {chrome.i18n.getMessage('Invalid_address_in')}
                       {` ${network}`}
-                    </Typography>
+                    </Text>
                   </Box>
                 </Box>
               </SlideRelative>
             </Box>
 
-            <Typography
-              variant="body1"
-              sx={{
+            <Text
+              variant="label"
+              weight="medium"
+              style={{
                 alignSelf: 'start',
-                fontSize: '14px',
               }}
+              color="$light80"
             >
               {chrome.i18n.getMessage('Transfer__Amount')}
-            </Typography>
+            </Text>
             {transactionState.tokenInfo.unit && (
               <TransferAmount
                 transactionState={transactionState}
@@ -133,15 +135,16 @@ const SendToCadenceOrEvm = ({
 
             {transactionState.tokenInfo.unit && (
               <>
-                <Typography
-                  variant="body1"
-                  sx={{
+                <Text
+                  variant="label"
+                  weight="medium"
+                  style={{
                     alignSelf: 'start',
-                    fontSize: '14px',
                   }}
+                  color="$light80"
                 >
                   {chrome.i18n.getMessage('Available__Balance')}
-                </Typography>
+                </Text>
 
                 <Box sx={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   <TokenAvatar
@@ -150,12 +153,13 @@ const SendToCadenceOrEvm = ({
                     width={18}
                     height={18}
                   />
-                  <Typography
-                    variant="body1"
-                    sx={{
+                  <Text
+                    variant="body"
+                    weight="normal"
+                    style={{
                       alignSelf: 'start',
-                      fontSize: '15px',
                     }}
+                    color="$light80"
                   >
                     <TokenBalance
                       value={String(transactionState.tokenInfo.balance)}
@@ -168,7 +172,7 @@ const SendToCadenceOrEvm = ({
                       currencyCode={currency?.code ?? ''}
                       currencySymbol={currency?.symbol ?? ''}
                     />
-                  </Typography>
+                  </Text>
                 </Box>
               </>
             )}
@@ -190,9 +194,9 @@ const SendToCadenceOrEvm = ({
                 textTransform: 'capitalize',
               }}
             >
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }} color="text.primary">
+              <Text variant="body" weight="bold" color="$light80">
                 {chrome.i18n.getMessage('Cancel')}
-              </Typography>
+              </Text>
             </Button>
 
             <Button
@@ -217,9 +221,9 @@ const SendToCadenceOrEvm = ({
                 new BN(transactionState.amount || '-1').isLessThanOrEqualTo(0)
               }
             >
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }} color="text.primary">
+              <Text variant="body" weight="bold" color="$light80">
                 {chrome.i18n.getMessage('Next')}
-              </Typography>
+              </Text>
             </Button>
           </Box>
           {validated !== null && validated && (

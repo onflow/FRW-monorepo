@@ -2,7 +2,7 @@
 
 import { type FlowDomain } from '../constant/network-constants';
 
-export type { Account, AccountKey } from '@onflow/typedefs';
+export type { Account, AccountKey } from '@onflow/fcl';
 
 export interface CheckResponse {
   unique: boolean;

@@ -1,55 +1,58 @@
 import React from 'react';
-import { Button, XStack, Text } from 'tamagui';
+import { XStack, Stack, Text } from 'tamagui';
 
 import type { SegmentedControlProps } from '../types';
 
 export function SegmentedControl({
-  options,
-  selectedIndex,
+  segments,
+  value,
   onChange,
   size = 'medium',
+  fullWidth = false,
+  ...props
 }: SegmentedControlProps): React.ReactElement {
-  const getSizeProps = (): Record<string, unknown> => {
-    switch (size) {
-      case 'small':
-        return { height: 32, paddingHorizontal: '$3', fontSize: 14 };
-      case 'large':
-        return { height: 44, paddingHorizontal: '$5', fontSize: 16 };
-      default:
-        return { height: 38, paddingHorizontal: '$4', fontSize: 15 };
-    }
+  const selectedIndex = segments.indexOf(value);
+
+  // Size configurations
+  const sizeConfig = {
+    small: { height: 32, px: 12, fontSize: 14 },
+    medium: { height: 40, px: 16, fontSize: 16 },
+    large: { height: 48, px: 20, fontSize: 18 },
   };
 
-  const sizeProps = getSizeProps();
+  const { height, px, fontSize } = sizeConfig[size];
 
   return (
-    <XStack bg="$surface3" rounded="$4" p="$1" items="center">
-      {options.map((option, index) => (
-        <Button
-          key={option}
-          onPress={() => onChange(index)}
-          flex={1}
-          height={(sizeProps.height as number) - 8}
-          bg={selectedIndex === index ? '$background' : 'transparent'}
-          rounded="$3"
-          borderWidth={0}
-          px={sizeProps.paddingHorizontal as any}
-          pressStyle={{
-            bg: selectedIndex === index ? '$surface1' : '$surface4',
-          }}
-          hoverStyle={{
-            bg: selectedIndex === index ? '$surface1' : '$surface4',
-          }}
-        >
-          <Text
-            fontSize={sizeProps.fontSize as any}
-            fontWeight={selectedIndex === index ? 600 : 500}
-            color={selectedIndex === index ? '$text1' : '$text2'}
+    <XStack bg="$bg2" rounded="$10" items="center" w={fullWidth ? '100%' : 'auto'} {...props}>
+      {segments.map((segment, index) => {
+        const isSelected = selectedIndex === index;
+
+        return (
+          <Stack
+            key={segment}
+            flex={fullWidth ? 1 : undefined}
+            h={height}
+            bg={isSelected ? '$text' : 'transparent'}
+            rounded="$6"
+            items="center"
+            justify="center"
+            px={px}
+            pressStyle={{ opacity: 0.8, bg: isSelected ? '$text' : '$bg3' }}
+            onPress={() => onChange(segment)}
+            cursor="pointer"
           >
-            {option}
-          </Text>
-        </Button>
-      ))}
+            <Text
+              fontSize={fontSize}
+              fontWeight={isSelected ? '600' : '500'}
+              color={isSelected ? '$bg' : '$textSecondary'}
+              numberOfLines={1}
+              my="$0.5"
+            >
+              {segment}
+            </Text>
+          </Stack>
+        );
+      })}
     </XStack>
   );
 }
