@@ -1,3 +1,4 @@
+import { parseUnits } from '@ethersproject/units';
 import { configureFCL, CadenceService } from '@onflow/frw-cadence';
 import { isValidSendTransactionPayload } from '@onflow/frw-workflow';
 import * as t from '@onflow/types';
@@ -6,8 +7,10 @@ import { describe, it, expect, beforeEach } from 'vitest';
 
 import { SendTransaction } from '../src';
 import { accounts } from './utils/accounts';
-dotenv.config();
 import { authz } from './utils/authz';
+import { convertToUFix64 } from '../src/send/utils';
+
+dotenv.config();
 
 const mainAccount = accounts.main;
 const child1Account = accounts.child1;
@@ -52,7 +55,6 @@ describe('Test send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-
     expect(configCache.name).toBe('transferTokensV3');
   });
 
@@ -557,7 +559,7 @@ describe('Test send strategies', () => {
         expect(arg).toBe(payload.receiver);
       }
       if (idx === 3) {
-        expect(arg).toBe(payload.amount);
+        expect(arg).toBe(convertToUFix64(payload.amount));
       }
       idx++;
     };
@@ -592,7 +594,7 @@ describe('Test send strategies', () => {
         expect(arg).toBe(payload.sender);
       }
       if (idx === 2) {
-        expect(arg).toBe(payload.amount);
+        expect(arg).toBe(convertToUFix64(payload.amount));
       }
       idx++;
     };
@@ -627,7 +629,7 @@ describe('Test send strategies', () => {
         expect(arg).toBe(payload.sender);
       }
       if (idx === 2) {
-        expect(arg).toBe(payload.amount);
+        expect(arg).toBe(convertToUFix64(payload.amount));
       }
       idx++;
     };
@@ -662,7 +664,7 @@ describe('Test send strategies', () => {
         expect(arg).toBe(payload.sender);
       }
       if (idx === 2) {
-        expect(arg).toBe(payload.amount);
+        expect(arg).toBe(convertToUFix64(payload.amount));
       }
       if (idx === 3) {
         expect(arg).toBe(payload.receiver);
@@ -703,7 +705,7 @@ describe('Test send strategies', () => {
         expect(arg).toBe(payload.receiver);
       }
       if (idx === 3) {
-        expect(arg).toBe(payload.amount);
+        expect(arg).toBe(convertToUFix64(payload.amount));
       }
       idx++;
     };
@@ -775,7 +777,7 @@ describe('Test send strategies', () => {
         expect(arg).toBe(payload.receiver);
       }
       if (idx === 2) {
-        expect(arg).toBe(payload.amount);
+        expect(arg).toBe(convertToUFix64(payload.amount));
       }
       idx++;
     };
@@ -807,7 +809,7 @@ describe('Test send strategies', () => {
         expect(arg).toBe(payload.receiver);
       }
       if (idx === 1) {
-        expect(arg).toBe(payload.amount);
+        expect(arg).toBe(convertToUFix64(payload.amount));
       }
       if (idx === 2) {
         expect(arg).toBe(30_000_000); // Gas limit
@@ -842,7 +844,7 @@ describe('Test send strategies', () => {
         expect(arg).toBe(payload.flowIdentifier);
       }
       if (idx === 1) {
-        expect(arg).toBe(payload.amount);
+        expect(arg).toBe(convertToUFix64(payload.amount));
       }
       if (idx === 2) {
         expect(arg).toBe(payload.receiver);
@@ -874,7 +876,7 @@ describe('Test send strategies', () => {
     let idx = 0;
     const checkArgs = (arg) => {
       if (idx === 0) {
-        expect(arg).toBe(payload.amount);
+        expect(arg).toBe(convertToUFix64(payload.amount));
       }
       if (idx === 1) {
         expect(arg).toBe(payload.receiver);
@@ -909,7 +911,7 @@ describe('Test send strategies', () => {
         expect(arg).toBe(payload.flowIdentifier);
       }
       if (idx === 1) {
-        expect(arg).toBe(payload.amount);
+        expect(arg).toBe(parseUnits(payload.amount, payload.decimal).toString());
       }
       if (idx === 2) {
         expect(arg).toBe(payload.receiver);
@@ -980,10 +982,10 @@ describe('Test send strategies', () => {
     let idx = 0;
     const checkArgs = (arg) => {
       if (idx === 0) {
-        expect(arg).toBe('0x0000000000000000000000000000000000000000');
+        expect(arg).toBe(payload.receiver);
       }
       if (idx === 1) {
-        expect(arg).toBe(payload.amount);
+        expect(arg).toBe(convertToUFix64(payload.amount));
       }
       if (idx === 2) {
         expect(arg).toStrictEqual([]);

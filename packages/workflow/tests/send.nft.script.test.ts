@@ -53,7 +53,7 @@ describe('Test NFT send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    expect(configCache.name).toBe('sendNft');
+    expect(configCache.name).toBe('batchSendNftV3');
   });
 
   it('Test TopShotNftStrategy - TopShot NFT transfer', async () => {
@@ -251,7 +251,6 @@ describe('Test NFT send strategies', () => {
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '',
     };
-
     await SendTransaction(payload, cadenceService);
     expect(configCache.name).toBe('batchSendChildNft');
   });
@@ -704,7 +703,7 @@ describe('Test NFT send strategies', () => {
         expect(arg).toBe(payload.receiver);
       }
       if (idx === 2) {
-        expect(arg).toBe(payload.ids[0]);
+        expect(arg).toStrictEqual(payload.ids);
       }
       idx++;
     };
