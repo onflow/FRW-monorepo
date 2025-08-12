@@ -91,11 +91,7 @@ transaction(nftIdentifier: String, child: Address, ids: [UInt256]) {
 
             assert(
                 nft.getType() == nftType,
-<<<<<<< HEAD
-                message: "Bridged nft type mismatch - requeswted: ".concat(nftType.identifier)
-=======
                 message: "Bridged nft type mismatch - requested: ".concat(nftType.identifier)
->>>>>>> six/recompose-ui
                     .concat(", received: ").concat(nft.getType().identifier)
             )
 
