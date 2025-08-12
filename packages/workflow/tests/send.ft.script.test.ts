@@ -55,7 +55,6 @@ describe('Test send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-
     expect(configCache.name).toBe('transferTokensV3');
   });
 
