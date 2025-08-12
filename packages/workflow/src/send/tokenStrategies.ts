@@ -221,11 +221,11 @@ export class EvmToFlowTokenBridgeStrategy implements TransferStrategy {
   }
 
   async execute(payload: SendPayload): Promise<any> {
-    const { flowIdentifier, amount, receiver } = payload;
-    const formattedAmount = safeConvertToUFix64(amount);
+    const { flowIdentifier, amount, receiver, decimal } = payload;
+    const valueBig = parseUnits(safeConvertToUFix64(amount), decimal);
     return await this.cadenceService.bridgeTokensFromEvmToFlowV3(
       flowIdentifier,
-      formattedAmount,
+      valueBig.toString(),
       receiver
     );
   }

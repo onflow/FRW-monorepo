@@ -159,23 +159,40 @@ describe('Test send strategies', () => {
   // });
 
   // it('Test EvmToFlowTokenBridgeStrategy - Bridge USDC from EVM to Flow', async () => {
-  //   const payload = {
-  //     type: 'token',
-  //     assetType: 'evm',
-  //     proposer: mainAccount.address,
-  //     receiver: mainAccount.address,
-  //     flowIdentifier: 'A.f1ab99c82dee3526.USDCFlow.Vault',
-  //     sender: mainAccount.evmAddr,
-  //     amount: '0.001',
-  //     childAddrs: [],
-  //     ids: [],
-  //     decimal: 8,
-  //     coaAddr: mainAccount.evmAddr,
-  //     tokenContractAddr: '0x1234567890123456789012345678901234567890',
-  //   };
+  // const payload = {
+  //   type: 'token',
+  //   assetType: 'evm',
+  //   proposer: mainAccount.address,
+  //   receiver: mainAccount.address,
+  //   flowIdentifier: 'A.f1ab99c82dee3526.USDCFlow.Vault',
+  //   sender: mainAccount.evmAddr,
+  //   amount: '0.001',
+  //   childAddrs: [],
+  //   ids: [],
+  //   decimal: 8,
+  //   coaAddr: mainAccount.evmAddr,
+  //   tokenContractAddr: '0x1234567890123456789012345678901234567890',
+  // };
 
-  //   const txid = await SendTransaction(payload);
-  //   expect(txid.length).toBe(64);
+  // const payload = {
+  //   "type": "token",
+  //   "assetType": "evm",
+  //   "proposer": mainAccount.address,
+  //   "receiver": mainAccount.address,
+  //   "flowIdentifier": "A.1e4aa0b87d10b141.EVMVMBridgedToken_1b97100ea1d7126c4d60027e231ea4cb25314bdb.Vault",
+  //   "sender": mainAccount.evmAddr,
+  //   "childAddrs": [
+  //     "0x8e5a02ccc537163f"
+  //   ],
+  //   "ids": [],
+  //   "amount": "0.001",
+  //   "decimal": 18,
+  //   "coaAddr": mainAccount.evmAddr,
+  //   "tokenContractAddr": "0x1b97100ea1d7126c4d60027e231ea4cb25314bdb"
+  // }
+
+  // const txid = await SendTransaction(payload, cadenceService);
+  // expect(txid.length).toBe(64);
   // });
 
   // it('Test EvmToEvmTokenStrategy - EVM to EVM token transfer', async () => {

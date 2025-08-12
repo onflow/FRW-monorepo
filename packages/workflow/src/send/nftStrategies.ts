@@ -140,7 +140,7 @@ export class FlowToFlowNftStrategy implements TransferStrategy {
 
   async execute(payload: SendPayload): Promise<any> {
     const { flowIdentifier, receiver, ids } = payload;
-    return await this.cadenceService.sendNft(flowIdentifier, receiver, ids[0]);
+    return await this.cadenceService.batchSendNftV3(flowIdentifier, receiver, ids);
   }
 }
 
