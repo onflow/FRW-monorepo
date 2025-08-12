@@ -134,7 +134,7 @@ export class FlowToFlowNftStrategy implements TransferStrategy {
   canHandle(payload: SendPayload): boolean {
     const { assetType, receiver, ids, type } = payload;
     return (
-      type === 'nft' && assetType === 'flow' && validateFlowAddress(receiver) && ids.length === 1
+      type === 'nft' && assetType === 'flow' && validateFlowAddress(receiver) && ids.length > 0
     );
   }
 
