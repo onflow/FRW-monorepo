@@ -1,5 +1,5 @@
 import React from 'react';
-import { YStack, XStack, Text } from 'tamagui';
+import { YStack } from 'tamagui';
 
 import { AddressSearchBox } from './AddressSearchBox';
 import { SegmentedControl } from '../foundation/SegmentedControl';
@@ -56,15 +56,6 @@ export function SearchableTabLayout({
   return (
     <BackgroundWrapper backgroundColor={backgroundColor}>
       <YStack flex={1} px={contentPadding} pt="$2">
-        {/* Header */}
-        {showHeader && title && (
-          <XStack justify="center" items="center" py={headerSpacing} pos="relative">
-            <Text fontSize="$6" fontWeight="700" color="$color" lineHeight="$2" letterSpacing="$-1">
-              {title}
-            </Text>
-          </XStack>
-        )}
-
         {/* Search Box */}
         <YStack mb={searchSpacing}>
           <AddressSearchBox

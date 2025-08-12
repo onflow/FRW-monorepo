@@ -39,6 +39,15 @@ export * from './components/Badge';
 export * from './components/RecipientItem';
 export * from './components/RecipientList';
 export * from './components/SearchableTabLayout';
+export * from './components/CollectionHeader';
+export * from './components/NFTGrid';
+export * from './components/NFTCard';
+export * from './components/NFTSelectionBar';
+export * from './components/NFTDetailView';
+export * from './components/NFTInfoSection';
+export * from './components/NFTPropertyTag';
+export * from './components/NFTPropertiesGrid';
+export * from './components/SelectableNFTImage';
 export * from './foundation/SegmentedControl';
 
 // TODO: Fix TypeScript issues in the following components:
