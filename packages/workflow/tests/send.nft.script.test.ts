@@ -251,7 +251,6 @@ describe('Test NFT send strategies', () => {
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '',
     };
-
     await SendTransaction(payload, cadenceService);
     expect(configCache.name).toBe('batchSendChildNft');
   });
