@@ -1,4 +1,6 @@
+import { cadence } from '@onflow/frw-context';
 import { sendSelectors, useSendStore, useTokenStore } from '@onflow/frw-stores';
+import { SendTransaction, isValidSendTransactionPayload } from '@onflow/frw-workflow';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView, ScrollView, StatusBar, View } from 'react-native';
@@ -98,14 +100,8 @@ const SendSingleNFTScreen = ({ navigation }: { navigation: NavigationProp }) => 
           const payload = await createSendPayload();
 
           if (payload) {
-            const { SendTransaction, isValidSendTransactionPayload } = await import(
-              '@onflow/frw-workflow'
-            );
-            const { getCadenceService } = await import('@onflow/frw-context');
-
             if (isValidSendTransactionPayload(payload)) {
-              const cadenceService = getCadenceService();
-              const result = await SendTransaction(payload, cadenceService);
+              const result = await SendTransaction(payload, cadence);
               console.log('[SendSingleNFTScreen] Transfer result:', result);
               resetSendFlow();
               NativeFRWBridge.closeRN();

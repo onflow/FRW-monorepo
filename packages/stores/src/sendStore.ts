@@ -1,4 +1,4 @@
-import { getCadenceService } from '@onflow/frw-context';
+import { cadence } from '@onflow/frw-context';
 import { flowService } from '@onflow/frw-services';
 import { type NFTModel, type TokenModel, addressType } from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
@@ -372,8 +372,7 @@ export const useSendStore = create<SendState>((set, get) => ({
       logger.debug('[SendStore] Executing transaction with payload:', payload);
 
       // Get cadence service and execute transaction
-      const cadenceService = getCadenceService();
-      const result = await SendTransaction(payload, cadenceService);
+      const result = await SendTransaction(payload, cadence);
 
       logger.debug('[SendStore] Transaction result:', result);
 

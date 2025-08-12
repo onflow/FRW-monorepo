@@ -79,12 +79,12 @@ export const isValidSendTransactionPayload = (payload: SendPayload): boolean => 
     validateNftPayload(payload);
   }
 
-  if (assetType === 'evm') {
-    // Skip validation if Flow token (tokenContractAddr can be null/undefined)
-    if (!isFlowToken(flowIdentifier) && !validateEvmAddress(tokenContractAddr)) {
-      throw new Error('invalid send evm transaction payload - invalid contract address');
-    }
-  }
+  // if (assetType === 'evm') {
+  //   // Skip validation if Flow token (tokenContractAddr can be null/undefined)
+  //   if (!isFlowToken(flowIdentifier) && !validateEvmAddress(tokenContractAddr)) {
+  //     throw new Error('invalid send evm transaction payload - invalid contract address');
+  //   }
+  // }
 
   return true;
 };
