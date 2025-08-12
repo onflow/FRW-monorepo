@@ -173,10 +173,12 @@ export const test = base.extend<{
 
       // Use fallback extension ID from environment variable
       const fallbackId = process.env.TEST_EXTENSION_ID;
+      console.log(`TEST_EXTENSION_ID env var: ${fallbackId}`);
       if (fallbackId) {
         console.log(`Using fallback extension ID: ${fallbackId}`);
         extensionId = fallbackId;
       } else {
+        console.log(`No fallback extension ID available in env vars`);
         throw new Error(
           `Extension ID not found. Available service workers: ${workers.length}, Pages: ${pages.length}`
         );
