@@ -62,24 +62,79 @@ export const test = base.extend<{
     await context.close();
   },
   extensionId: async ({ context }, call) => {
-    // for manifest v3:
+    // Alternative approach: try to get extension ID from a page first
+    let extensionId: string | null = null;
+
+    // Method 1: Try service worker approach
     let [background] = context.serviceWorkers();
-    if (!background) {
+    console.log(`Initial service workers: ${context.serviceWorkers().length}`);
+
+    if (background) {
+      extensionId = background.url().split('/')[2];
+      console.log(`Extension ID from service worker: ${extensionId}`);
+    } else {
+      // Method 2: Try creating a page to trigger extension loading
       try {
-        // Add timeout and better error handling
-        background = await context.waitForEvent('serviceworker', { timeout: 30000 });
-      } catch (error) {
-        // Try to get service worker again or wait a bit
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        console.log('Trying to load extension popup to get ID...');
+        const extensionPages = context.pages();
+        console.log(`Current pages: ${extensionPages.length}`);
+
+        // Create a new tab to potentially trigger extension initialization
+        const page = await context.newPage();
+        await page.goto('chrome://extensions/');
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // Try service worker again
         [background] = context.serviceWorkers();
-        if (!background) {
-          throw new Error(
-            `Service worker not found after timeout. Available service workers: ${context.serviceWorkers().length}`
-          );
+        console.log(`Service workers after page creation: ${context.serviceWorkers().length}`);
+
+        if (background) {
+          extensionId = background.url().split('/')[2];
+        } else {
+          // Method 3: Wait for service worker event
+          try {
+            console.log('Waiting for service worker event...');
+            background = await context.waitForEvent('serviceworker', { timeout: 30000 });
+            console.log(`Service worker found via event: ${background.url()}`);
+            extensionId = background.url().split('/')[2];
+          } catch (error) {
+            console.log(`Service worker event timeout: ${error.message}`);
+
+            // Method 4: Try to extract from any extension page URLs
+            const allPages = context.pages();
+            for (const pg of allPages) {
+              const url = pg.url();
+              if (url.startsWith('chrome-extension://')) {
+                extensionId = url.split('/')[2];
+                console.log(`Extension ID from page URL: ${extensionId}`);
+                break;
+              }
+            }
+          }
         }
+      } catch (err) {
+        console.log(`Error in alternative approach: ${err.message}`);
       }
     }
-    const extensionId = background.url().split('/')[2];
+
+    if (!extensionId) {
+      // Final debugging
+      const pages = context.pages();
+      const workers = context.serviceWorkers();
+      console.log(`Debug info - Pages: ${pages.length}, Workers: ${workers.length}`);
+      for (const page of pages) {
+        console.log(`Page URL: ${page.url()}`);
+      }
+      for (const worker of workers) {
+        console.log(`Worker URL: ${worker.url()}`);
+      }
+
+      throw new Error(
+        `Extension ID not found. Available service workers: ${workers.length}, Pages: ${pages.length}`
+      );
+    }
+
+    console.log(`Final extension ID: ${extensionId}`);
     await call(extensionId);
   },
 });
