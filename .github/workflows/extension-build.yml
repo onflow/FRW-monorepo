@@ -217,6 +217,8 @@ jobs:
           TEST_RECEIVER_METAMASK_EVM_ADDR="${{ secrets.TEST_RECEIVER_METAMASK_EVM_ADDR }}"
           TEST_MULTI_ACCOUNT_TESTER_ADDR2="${{ secrets.TEST_MULTI_ACCOUNT_TESTER_ADDR2 }}"
           TEST_MULTI_ACCOUNT_TESTER_EVM_ADDR2="${{ secrets.TEST_MULTI_ACCOUNT_TESTER_EVM_ADDR2 }}"
+          # Extension ID for Playwright tests
+          TEST_EXTENSION_ID="${{ vars.TEST_EXTENSION_ID || 'cfiagdgiikmjgfjnlballglniejjgegi' }}"
           EOF
 
       - name: Install dependencies
