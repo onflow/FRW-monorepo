@@ -1,5 +1,4 @@
-import { Box, Button } from '@mui/material';
-import { Text } from '@onflow/frw-ui';
+import { Box, Button, Typography } from '@mui/material';
 import BN from 'bignumber.js';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
@@ -104,25 +103,25 @@ const SendToCadenceOrEvm = ({
                     }}
                   >
                     <CancelIcon size={24} color={'#E54040'} style={{ margin: '8px' }} />
-                    <Text variant="body" weight="normal" color="$error">
+                    <Typography variant="body2" color="error">
                       {chrome.i18n.getMessage('Invalid_address_in')}
                       {` ${network}`}
-                    </Text>
+                    </Typography>
                   </Box>
                 </Box>
               </SlideRelative>
             </Box>
 
-            <Text
-              variant="label"
-              weight="medium"
-              style={{
+            <Typography
+              variant="caption"
+              sx={{
                 alignSelf: 'start',
+                fontWeight: 'medium',
+                color: 'text.secondary',
               }}
-              color="$light80"
             >
               {chrome.i18n.getMessage('Transfer__Amount')}
-            </Text>
+            </Typography>
             {transactionState.tokenInfo.unit && (
               <TransferAmount
                 transactionState={transactionState}
@@ -135,16 +134,16 @@ const SendToCadenceOrEvm = ({
 
             {transactionState.tokenInfo.unit && (
               <>
-                <Text
-                  variant="label"
-                  weight="medium"
-                  style={{
+                <Typography
+                  variant="caption"
+                  sx={{
                     alignSelf: 'start',
+                    fontWeight: 'medium',
+                    color: 'text.secondary',
                   }}
-                  color="$light80"
                 >
                   {chrome.i18n.getMessage('Available__Balance')}
-                </Text>
+                </Typography>
 
                 <Box sx={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   <TokenAvatar
@@ -153,13 +152,12 @@ const SendToCadenceOrEvm = ({
                     width={18}
                     height={18}
                   />
-                  <Text
-                    variant="body"
-                    weight="normal"
-                    style={{
+                  <Typography
+                    variant="body2"
+                    sx={{
                       alignSelf: 'start',
+                      color: 'text.secondary',
                     }}
-                    color="$light80"
                   >
                     <TokenBalance
                       value={String(transactionState.tokenInfo.balance)}
@@ -172,7 +170,7 @@ const SendToCadenceOrEvm = ({
                       currencyCode={currency?.code ?? ''}
                       currencySymbol={currency?.symbol ?? ''}
                     />
-                  </Text>
+                  </Typography>
                 </Box>
               </>
             )}
@@ -194,9 +192,9 @@ const SendToCadenceOrEvm = ({
                 textTransform: 'capitalize',
               }}
             >
-              <Text variant="body" weight="bold" color="$light80">
+              <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'text.secondary' }}>
                 {chrome.i18n.getMessage('Cancel')}
-              </Text>
+              </Typography>
             </Button>
 
             <Button
@@ -221,9 +219,9 @@ const SendToCadenceOrEvm = ({
                 new BN(transactionState.amount || '-1').isLessThanOrEqualTo(0)
               }
             >
-              <Text variant="body" weight="bold" color="$light80">
+              <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'text.secondary' }}>
                 {chrome.i18n.getMessage('Next')}
-              </Text>
+              </Typography>
             </Button>
           </Box>
           {validated !== null && validated && (
