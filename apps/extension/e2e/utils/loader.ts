@@ -43,6 +43,8 @@ export const test = base.extend<{
         '--allow-read-clipboard',
         '--allow-write-clipboard',
         '--lang=en-US',
+        '--no-sandbox',
+        '--disable-dev-shm-usage',
       ],
       locale: 'en-US',
       env: {
@@ -53,13 +55,30 @@ export const test = base.extend<{
       permissions: ['clipboard-read', 'clipboard-write'],
     });
 
+    // Give the extension time to initialize
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
     await call(context);
     await context.close();
   },
   extensionId: async ({ context }, call) => {
     // for manifest v3:
     let [background] = context.serviceWorkers();
-    if (!background) background = await context.waitForEvent('serviceworker');
+    if (!background) {
+      try {
+        // Add timeout and better error handling
+        background = await context.waitForEvent('serviceworker', { timeout: 30000 });
+      } catch (error) {
+        // Try to get service worker again or wait a bit
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        [background] = context.serviceWorkers();
+        if (!background) {
+          throw new Error(
+            `Service worker not found after timeout. Available service workers: ${context.serviceWorkers().length}`
+          );
+        }
+      }
+    }
     const extensionId = background.url().split('/')[2];
     await call(extensionId);
   },
