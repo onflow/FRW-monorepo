@@ -111,9 +111,6 @@ importers:
       '@onflow/frw-cadence':
         specifier: workspace:*
         version: link:../../packages/cadence
-      '@onflow/frw-ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
       '@reown/walletkit':
         specifier: ^1.2.8
         version: 1.2.9(typescript@5.9.2)(zod@3.25.76)
@@ -15760,7 +15757,9 @@ snapshots:
       metro-runtime: 0.82.5
     transitivePeerDependencies:
       - '@babel/core'
+      - bufferutil
       - supports-color
+      - utf-8-validate
 
   '@react-native/normalize-color@2.1.0': {}
 
