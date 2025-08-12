@@ -82,7 +82,49 @@ export const test = base.extend<{
         // Create a new tab to potentially trigger extension initialization
         const page = await context.newPage();
         await page.goto('chrome://extensions/');
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        // Try to get extension ID from chrome://extensions page
+        try {
+          const extensionCards = await page.$$('extensions-item');
+          console.log(`Found ${extensionCards.length} extension cards`);
+
+          for (const card of extensionCards) {
+            const idAttr = await card.getAttribute('id');
+            if (idAttr) {
+              extensionId = idAttr;
+              console.log(`Extension ID from chrome://extensions: ${extensionId}`);
+              break;
+            }
+          }
+        } catch (err) {
+          console.log(`Error reading extensions page: ${err.message}`);
+        }
+
+        // Also try to directly access the extension popup
+        if (!extensionId) {
+          try {
+            // Navigate to extension management to find ID
+            const extensionElements = await page.$$eval('extensions-item', (elements) => {
+              return elements.map((el) => ({
+                id: el.getAttribute('id'),
+                name: el.querySelector('.name')?.textContent,
+              }));
+            });
+            console.log('Extensions found:', extensionElements);
+
+            const flowWallet = extensionElements.find(
+              (ext) => ext.name && ext.name.toLowerCase().includes('flow')
+            );
+
+            if (flowWallet && flowWallet.id) {
+              extensionId = flowWallet.id;
+              console.log(`Flow Wallet extension ID: ${extensionId}`);
+            }
+          } catch (err) {
+            console.log(`Error finding extension in list: ${err.message}`);
+          }
+        }
 
         // Try service worker again
         [background] = context.serviceWorkers();
@@ -129,9 +171,16 @@ export const test = base.extend<{
         console.log(`Worker URL: ${worker.url()}`);
       }
 
-      throw new Error(
-        `Extension ID not found. Available service workers: ${workers.length}, Pages: ${pages.length}`
-      );
+      // Use fallback extension ID from environment variable
+      const fallbackId = process.env.TEST_EXTENSION_ID;
+      if (fallbackId) {
+        console.log(`Using fallback extension ID: ${fallbackId}`);
+        extensionId = fallbackId;
+      } else {
+        throw new Error(
+          `Extension ID not found. Available service workers: ${workers.length}, Pages: ${pages.length}`
+        );
+      }
     }
 
     console.log(`Final extension ID: ${extensionId}`);
