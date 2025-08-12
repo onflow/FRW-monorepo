@@ -3,7 +3,6 @@ import { describe, it, expect, beforeEach } from 'vitest';
 
 import { accounts } from './utils/accounts';
 import { authz } from './utils/authz';
-// import { SendTransaction } from '../src';
 
 // dotenv.config();
 
