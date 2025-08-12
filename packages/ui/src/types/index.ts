@@ -80,7 +80,6 @@ export interface AccountCardProps {
   account: Account;
   title: string;
   isLoading?: boolean;
-  showBackground?: boolean;
   // Modal-style selection props
   accounts?: Account[];
   onAccountSelect?: (account: Account) => void;

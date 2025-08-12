@@ -21,9 +21,9 @@ const meta: Meta<typeof AccountCard> = {
       control: 'boolean',
       description: 'Loading state',
     },
-    showBackground: {
+    enableModalSelection: {
       control: 'boolean',
-      description: 'Whether to show background container',
+      description: 'Whether to enable modal selection',
     },
   },
 };
@@ -59,16 +59,6 @@ export const Default: Story = {
     account: mockAccount,
     title: 'From Account',
     isLoading: false,
-    showBackground: false,
-  },
-};
-
-export const WithBackground: Story = {
-  args: {
-    account: mockAccount,
-    title: 'From Account',
-    isLoading: false,
-    showBackground: true,
   },
 };
 
@@ -77,16 +67,6 @@ export const Loading: Story = {
     account: mockAccount,
     title: 'From Account',
     isLoading: true,
-    showBackground: false,
-  },
-};
-
-export const LoadingWithBackground: Story = {
-  args: {
-    account: mockAccount,
-    title: 'From Account',
-    isLoading: true,
-    showBackground: true,
   },
 };
 
@@ -98,7 +78,6 @@ export const NoBalance: Story = {
     },
     title: 'To Account',
     isLoading: false,
-    showBackground: false,
   },
 };
 
@@ -111,7 +90,6 @@ export const LongAccountName: Story = {
     },
     title: 'From Account',
     isLoading: false,
-    showBackground: true,
   },
 };
 
@@ -120,7 +98,6 @@ export const WithModalSelection: Story = {
     account: mockAccount,
     title: 'From Account',
     isLoading: false,
-    showBackground: true,
     enableModalSelection: true,
     accounts: mockAccounts,
     modalTitle: 'Select Account',
