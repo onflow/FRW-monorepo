@@ -1,4 +1,4 @@
-import { AlertTriangle } from '@onflow/frw-icons';
+import { InfoIcon } from '@onflow/frw-icons';
 import { type WalletAccount } from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack } from 'tamagui';
@@ -67,7 +67,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
       {/* Account Compatibility Warning */}
       {isAccountIncompatible && (
         <XStack bg="$yellow2" rounded="$3" p="$3" gap="$2" items="flex-start">
-          <AlertTriangle size={16} color="$yellow11" mt="$1" />
+          <InfoIcon size={16} color="$yellow11" mt="$1" />
           <YStack flex={1} gap="$2">
             <Text fontSize="$3" color="$yellow12" fontWeight="500">
               Account Compatibility Warning

@@ -1,4 +1,4 @@
-import { ArrowDown } from '@onflow/frw-icons';
+import { DownArrow } from '@onflow/frw-icons';
 import React from 'react';
 import { YStack } from 'tamagui';
 
@@ -32,7 +32,7 @@ export const SendArrowDivider: React.FC<SendArrowDividerProps> = ({
         justify="center"
       >
         {variant === 'arrow' ? (
-          <ArrowDown size={size * 0.5} color={iconColor} />
+          <DownArrow size={size * 0.5} color={iconColor} />
         ) : (
           <Text fontSize="$4" color={iconColor} textAlign="center">
             {text}
