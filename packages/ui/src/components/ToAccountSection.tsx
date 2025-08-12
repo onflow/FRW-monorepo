@@ -1,4 +1,5 @@
 import { AlertTriangle } from '@onflow/frw-icons';
+import { type WalletAccount } from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack } from 'tamagui';
 
@@ -6,13 +7,6 @@ import { SendSectionHeader } from './SendSectionHeader';
 import { Avatar } from '../foundation/Avatar';
 import { Button } from '../foundation/Button';
 import { Text } from '../foundation/Text';
-
-export interface WalletAccount {
-  address: string;
-  name?: string;
-  avatar?: string;
-  type?: string;
-}
 
 export interface ToAccountSectionProps {
   account: WalletAccount;

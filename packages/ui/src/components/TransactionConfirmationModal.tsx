@@ -1,17 +1,11 @@
 import { X, ArrowRight } from '@onflow/frw-icons';
+import { type WalletAccount } from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack, Button, View } from 'tamagui';
 
 import { type TokenModel } from './TokenSelectorModal';
 import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
-
-export interface WalletAccount {
-  address: string;
-  name?: string;
-  avatar?: string;
-  type?: string;
-}
 
 export interface TransactionFormData {
   tokenAmount: string;
