@@ -66,6 +66,7 @@ export * from './components/TokenAmountInput';
 // export * from './components/NFTListCard';
 
 export * from './tamagui.config';
+export { default as tamaguiConfig } from './tamagui.config';
 
 // Export theme system
 export * from './theme';
