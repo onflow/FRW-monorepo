@@ -46,6 +46,7 @@ export interface Spec extends TurboModule {
   listenTransaction(txid: string): void;
   // Get environment variables
   getEnv(): EnvironmentVariables;
+  // Get selected account
   getSelectedAccount(): Promise<WalletAccount>;
 }
 
