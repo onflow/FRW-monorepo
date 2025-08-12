@@ -193,8 +193,13 @@ export class EvmToEvmNftStrategy implements TransferStrategy {
   constructor(private cadenceService: CadenceService) {}
 
   canHandle(payload: SendPayload): boolean {
-    const { assetType, receiver, type } = payload;
-    return type === 'nft' && assetType === 'evm' && validateEvmAddress(receiver);
+    const { assetType, receiver, type, tokenContractAddr } = payload;
+    return (
+      type === 'nft' &&
+      assetType === 'evm' &&
+      validateEvmAddress(receiver) &&
+      validateEvmAddress(tokenContractAddr)
+    );
   }
 
   async execute(payload: SendPayload): Promise<any> {

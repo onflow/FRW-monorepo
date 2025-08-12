@@ -2,7 +2,13 @@ import { parseUnits } from '@ethersproject/units';
 import type { CadenceService } from '@onflow/frw-cadence';
 
 import type { SendPayload, TransferStrategy } from './types';
-import { encodeEvmContractCallData, GAS_LIMITS, isFlowToken, safeConvertToUFix64 } from './utils';
+import {
+  encodeEvmContractCallData,
+  GAS_LIMITS,
+  isFlowToken,
+  isVaultIdentifier,
+  safeConvertToUFix64,
+} from './utils';
 import { validateEvmAddress, validateFlowAddress } from './validation';
 
 /**
@@ -205,8 +211,13 @@ export class EvmToFlowTokenBridgeStrategy implements TransferStrategy {
   constructor(private cadenceService: CadenceService) {}
 
   canHandle(payload: SendPayload): boolean {
-    const { assetType, receiver, type } = payload;
-    return type === 'token' && assetType === 'evm' && validateFlowAddress(receiver);
+    const { assetType, receiver, type, flowIdentifier } = payload;
+    return (
+      type === 'token' &&
+      assetType === 'evm' &&
+      validateFlowAddress(receiver) &&
+      isVaultIdentifier(flowIdentifier)
+    );
   }
 
   async execute(payload: SendPayload): Promise<any> {

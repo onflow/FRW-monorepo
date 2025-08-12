@@ -29,6 +29,11 @@ export const isFlowToken = (flowIdentifier: string): boolean => {
   return Object.values(FLOW_TOKEN_ADDRESSES).includes(flowIdentifier as any);
 };
 
+export const isVaultIdentifier = (flowIdentifier: string): boolean => {
+  const vaultRegex = /^A\.[0-9a-fA-F]{16}\.[a-zA-Z0-9_]+\.Vault$/;
+  return vaultRegex.test(flowIdentifier);
+};
+
 /**
  * Gets the Flow token address for a specific network
  * @param network - The network ('mainnet' or 'testnet')
