@@ -181,6 +181,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                         address = mainAddress,
                         emojiInfo = mainEmojiInfo,
                         parentEmoji = null,
+                        parentAddress = null,
                         avatar = null,
                         isActive = isSelectedWalletAddress(mainAddress),
                         type = RNBridge.AccountType.MAIN
@@ -201,6 +202,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                             address = childAccount.address,
                             emojiInfo = null,
                             parentEmoji = mainEmojiInfo,
+                            parentAddress = mainAddress,
                             avatar = childAccount.icon, // Include the squid avatar!
                             isActive = isSelectedWalletAddress(childAccount.address),
                             type = RNBridge.AccountType.CHILD
@@ -222,6 +224,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                             id = "evm",
                             name = evmEmojiInfo?.name ?: "EVM Account",
                             address = evmAddress,
+                            parentAddress = mainAddress,
                             emojiInfo = evmEmojiInfo,
                             parentEmoji = mainEmojiInfo,
                             avatar = null,
