@@ -50,6 +50,8 @@
     "@noble/secp256k1": "^1.7.2",
     "@onflow/fcl": "^1.19.0",
     "@onflow/frw-cadence": "workspace:*",
+    "@onflow/frw-screens": "workspace:*",
+    "@onflow/frw-types": "workspace:*",
     "@tamagui/animations-react-native": "^1.132.16",
     "@tamagui/config": "^1.132.16",
     "@tamagui/core": "^1.132.16",

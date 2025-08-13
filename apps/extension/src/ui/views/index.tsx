@@ -1,8 +1,11 @@
 import { CssBaseline } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { tamaguiConfig } from '@onflow/frw-ui';
 import React, { useEffect } from 'react';
 import { Route, HashRouter as Router, Routes, useLocation } from 'react-router';
+import { TamaguiProvider } from 'tamagui';
 
+import { PlatformProvider } from '@/bridge/PlatformContext';
 import PrivateRoute from '@/ui/components/PrivateRoute';
 import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';
 import themeOptions from '@/ui/style/LLTheme';
@@ -68,12 +71,16 @@ function Main() {
 
 const App = ({ wallet }: { wallet: any }) => {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <WalletProvider wallet={wallet}>
-        <Main />
-      </WalletProvider>
-    </ThemeProvider>
+    <TamaguiProvider config={tamaguiConfig}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <WalletProvider wallet={wallet}>
+          <PlatformProvider>
+            <Main />
+          </PlatformProvider>
+        </WalletProvider>
+      </ThemeProvider>
+    </TamaguiProvider>
   );
 };
 

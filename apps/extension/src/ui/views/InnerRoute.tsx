@@ -21,6 +21,7 @@ import NftEvmDetail from './NftEvm/Detail';
 import SendNftEvm from './NftEvm/SendNFT/SendToAddress';
 import SendAddress from './Send';
 import SendTo from './SendTo';
+import SendTokensScreenView from './SendTokensScreen';
 import SettingTab from './Setting';
 import About from './Setting/About/About';
 import AccountList from './Setting/AccountList';
@@ -264,6 +265,14 @@ const InnerRoute = () => {
               element={
                 <PrivateRoute>
                   <SendTo />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="token/send-tokens"
+              element={
+                <PrivateRoute>
+                  <SendTokensScreenView />
                 </PrivateRoute>
               }
             />
