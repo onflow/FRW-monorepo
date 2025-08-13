@@ -329,7 +329,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
                 // Determine account type based on address using utility methods
                 val mainAddress = WalletManager.wallet()?.walletAddress()
-                
+
                 val accountType = when {
                     EVMWalletManager.isEVMWalletAddress(selectedAddress) -> RNBridge.AccountType.EVM
                     WalletManager.isChildAccount(selectedAddress) -> RNBridge.AccountType.CHILD
@@ -365,8 +365,14 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
     // Helper method to convert Bridge models to React Native data
     private fun bridgeModelToWritableMap(model: Any): WritableNativeMap {
-        val json = gson.toJson(model)
-        return jsonToWritableMap(json)
+        return try {
+            val json = gson.toJson(model)
+            jsonToWritableMap(json)
+        } catch (e: Exception) {
+            println("Error converting bridge model to WritableMap: ${e.message}")
+            e.printStackTrace()
+            WritableNativeMap()
+        }
     }
 
     // Helper method to convert JSON string to WritableMap
@@ -380,10 +386,17 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                     is String -> map.putString(key, value)
                     is Boolean -> map.putBoolean(key, value)
                     is Int -> map.putInt(key, value)
+                    is Long -> map.putDouble(key, value.toDouble())
+                    is Float -> map.putDouble(key, value.toDouble())
                     is Double -> map.putDouble(key, value)
                     is JSONArray -> map.putArray(key, jsonArrayToWritableArray(value))
                     is JSONObject -> map.putMap(key, jsonToWritableMap(value.toString()))
                     JSONObject.NULL -> map.putNull(key)
+                    null -> map.putNull(key)
+                    else -> {
+                        // Handle any other types by converting to string
+                        map.putString(key, value.toString())
+                    }
                 }
             }
         } catch (e: Exception) {
@@ -402,10 +415,17 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                     is String -> array.pushString(value)
                     is Boolean -> array.pushBoolean(value)
                     is Int -> array.pushInt(value)
+                    is Long -> array.pushDouble(value.toDouble())
+                    is Float -> array.pushDouble(value.toDouble())
                     is Double -> array.pushDouble(value)
                     is JSONObject -> array.pushMap(jsonToWritableMap(value.toString()))
                     is JSONArray -> array.pushArray(jsonArrayToWritableArray(value))
                     JSONObject.NULL -> array.pushNull()
+                    null -> array.pushNull()
+                    else -> {
+                        // Handle any other types by converting to string
+                        array.pushString(value.toString())
+                    }
                 }
             }
         } catch (e: Exception) {
