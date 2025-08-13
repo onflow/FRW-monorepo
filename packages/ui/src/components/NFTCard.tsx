@@ -1,5 +1,4 @@
-import { CheckCircleFill } from '@onflow/frw-icons';
-import React from 'react';
+import { CheckCircleFill, ArrowRight } from '@onflow/frw-icons';
 import { YStack, XStack, Text, Image } from 'tamagui';
 
 import type { NFTData } from './NFTGrid';
@@ -47,7 +46,6 @@ export function NFTCard({
         bg="$gray3"
         pos="relative"
         pressStyle={{ bg: 'transparent' }}
-        s
         onPress={onPress}
       >
         {nft.thumbnail || nft.image ? (
@@ -130,6 +128,11 @@ export function NFTCard({
             <Text fontSize="$4" fontWeight="400" color="$gray10" numberOfLines={1} flex={1}>
               {nft.collection}
             </Text>
+
+            {/* Right Chevron */}
+            <YStack justify="center">
+              <ArrowRight size={24} />
+            </YStack>
           </XStack>
         )}
       </YStack>
