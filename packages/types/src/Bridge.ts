@@ -38,6 +38,7 @@ export interface WalletAccount {
   address: string;
   emojiInfo?: EmojiInfo;
   parentEmoji?: EmojiInfo;
+  parentAddress?: string;
   avatar?: string;
   isActive: boolean;
   type?: 'main' | 'child' | 'evm';

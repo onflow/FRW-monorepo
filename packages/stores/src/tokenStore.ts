@@ -1,4 +1,4 @@
-import { getCadenceService } from '@onflow/frw-context';
+import { cadence } from '@onflow/frw-context';
 import { tokenService, nftService } from '@onflow/frw-services';
 import {
   addressType,
@@ -126,8 +126,7 @@ export const useTokenStore = create<TokenStore>((set, get) => ({
 
       // Special handling for EVM accounts
       if (accountType === 'evm') {
-        const cadenceService = getCadenceService();
-        const coaBalance = await cadenceService.getFlowBalanceForAnyAccounts([address]);
+        const coaBalance = await cadence.getFlowBalanceForAnyAccounts([address]);
         const balanceNumber = parseFloat(coaBalance[address] || '0');
         const formattedBalance = formatCurrencyStringForDisplay({
           value: balanceNumber,
@@ -278,8 +277,7 @@ export const useTokenStore = create<TokenStore>((set, get) => ({
 
     try {
       // Call cadence service to get balances for all addresses
-      const cadenceService = getCadenceService();
-      const balanceResults = await cadenceService.getFlowBalanceForAnyAccounts(addressList);
+      const balanceResults = await cadence.getFlowBalanceForAnyAccounts(addressList);
 
       // Convert to array of [address, displayBalance] tuples
       const resultArray: Array<[string, string]> = [];
