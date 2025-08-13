@@ -1,5 +1,7 @@
 package com.flowfoundation.wallet.utils.image
 
+/*
+// Commented out due to SVG library conflicts
 import android.graphics.drawable.PictureDrawable
 import android.util.Base64
 import com.bumptech.glide.Priority
@@ -67,3 +69,4 @@ class SvgModelLoaderFactory : ModelLoaderFactory<SvgModel, PictureDrawable> {
         // no-op
     }
 }
+*/

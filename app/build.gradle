@@ -133,13 +133,13 @@ android {
         }
 
         dev {
-            minifyEnabled true
-            shrinkResources true
-            multiDexEnabled false
-            debuggable false
+            minifyEnabled false  // Temporarily disable to test SVG crash
+            shrinkResources false  
+            multiDexEnabled true   // Enable multidex like debug
+            debuggable true        // Enable debugging
             applicationIdSuffix = ".dev"
             signingConfig signingConfigs.release
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro' // Disable ProGuard temporarily
             matchingFallbacks = ['debug', 'qa', 'release']
 
             firebaseAppDistribution {
@@ -157,6 +157,7 @@ android {
             shrinkResources true
             multiDexEnabled false
             debuggable false
+            matchingFallbacks.add('releaseDebug')
             signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             firebaseAppDistribution {
@@ -229,11 +230,11 @@ configurations.all {
 
 dependencies {
     implementation("com.facebook.react:react-android")
-    
+
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
     }
-    
+
     api fileTree(dir: "libs", include: ["*.aar", "*.jar"], exclude: ["trustwalletcore.aar"])
 
     implementation project(':wallet')
@@ -345,7 +346,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-appcheck-playintegrity'
     implementation 'com.google.firebase:firebase-appcheck'
     implementation 'com.google.firebase:firebase-appcheck-debug'
-    
+
     /** Instabug **/
     implementation 'com.instabug.library:instabug:15.0.1'
     implementation 'com.instabug.library:instabug-with-okhttp-interceptor:15.0.1'
@@ -355,7 +356,7 @@ dependencies {
 
     implementation 'com.github.bumptech.glide:glide:5.0.0-rc01'
     ksp 'com.github.bumptech.glide:ksp:5.0.0-rc01'
-    implementation 'com.caverock:androidsvg-aar:1.4'
+    // implementation 'com.caverock:androidsvg-aar:1.4'
 
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
@@ -390,14 +391,14 @@ dependencies {
     }
     implementation 'com.github.onflow.flow-kmm:flow:0.0.25'
     implementation 'io.grpc:grpc-okhttp:1.59.0'
-    
+
      implementation "io.ktor:ktor-client-core:2.3.7"
      implementation "io.ktor:ktor-client-cio:2.3.7"
      implementation "io.ktor:ktor-client-websockets:2.3.7"
      implementation "io.ktor:ktor-client-content-negotiation:2.3.7"
      implementation "io.ktor:ktor-serialization-kotlinx-json:2.3.7"
      implementation "io.ktor:ktor-client-logging:2.3.7"
-    
+
     implementation(platform("com.reown:android-bom:1.3.3"))
     implementation("com.reown:android-core") {
         exclude group: 'org.bouncycastle', module: 'bcprov-jdk18on'
@@ -450,15 +451,15 @@ dependencies {
 // jacoco {
 //     toolVersion = "0.8.11"
 // }
-// 
+//
 // tasks.register('jacocoTestReport', JacocoReport) {
 //     dependsOn 'testDebugUnitTest'
-// 
+//
 //     reports {
 //         xml.required = true
 //         html.required = true
 //     }
-// 
+//
 //     def fileFilter = [
 //         '**/R.class',
 //         '**/R$*.class',
@@ -469,7 +470,7 @@ dependencies {
 //     ]
 //     def debugTree = fileTree(dir: "${buildDir}/tmp/kotlin-classes/debug", excludes: fileFilter)
 //     def mainSrc = "${project.projectDir}/src/main/java"
-// 
+//
 //     sourceDirectories.setFrom(files([mainSrc]))
 //     classDirectories.setFrom(files([debugTree]))
 //     executionData.setFrom(fileTree(dir: project.buildDir, includes: [

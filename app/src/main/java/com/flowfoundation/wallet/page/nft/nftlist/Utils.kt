@@ -10,7 +10,7 @@ import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.page.nft.nftlist.model.*
-import com.flowfoundation.wallet.utils.image.SvgModel
+// import com.flowfoundation.wallet.utils.image.SvgModel
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.wallet.toAddress
 import java.net.URLEncoder
@@ -48,9 +48,11 @@ val nftListDiffCallback = object : DiffUtil.ItemCallback<Any>() {
 }
 
 fun Nft.getNFTCover(): Any? {
-    return cover()?.getBase64SvgModel() ?: cover()
+    return cover() // Simplified - no SVG processing
 }
 
+/*
+// Commented out due to SVG library conflicts
 fun String?.getBase64SvgModel(): SvgModel? {
     try {
         if (this?.startsWith("data:image/svg+xml;base64,") == true) {
@@ -64,6 +66,7 @@ fun String?.getBase64SvgModel(): SvgModel? {
         return null
     }
 }
+*/
 
 fun Nft.cover(): String? {
     var image = postMedia?.image

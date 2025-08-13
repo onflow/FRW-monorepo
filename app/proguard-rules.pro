@@ -290,3 +290,25 @@
 -dontwarn sun.security.x509.X500Name
 -dontwarn sun.security.x509.X509CertImpl
 -dontwarn sun.security.x509.X509CertInfo
+
+# react-native
+-keep public class com.horcrux.svg.** {*;}
+-keep class com.horcrux.svg.** { *; }
+-keepclassmembers class com.horcrux.svg.** { *; }
+-keep class * extends com.horcrux.svg.** { *; }
+-keep interface com.horcrux.svg.** { *; }
+-keepattributes InnerClasses,EnclosingMethod
+-keep class com.swmansion.reanimated.** { *; }
+-keep class com.facebook.hermes.unicode.* { *; }
+-keep class com.facebook.jni.* { *; }
+-keep class com.facebook.react.turbomodule.* { *; }
+
+# CRITICAL: Fabric TSpan Props crash fix
+-keep class com.facebook.react.viewmanagers.** { *; }
+-keepclassmembers class com.facebook.react.viewmanagers.** { *; }
+-keep class facebook.react.** { *; }
+-keep class com.facebook.react.bridge.** { *; }
+
+# Prevent Fabric C++ Props constructor crashes
+-keep class * extends com.facebook.react.** { *; }
+-keepattributes Signature,RuntimeVisibleAnnotations,RuntimeVisibleParameterAnnotations

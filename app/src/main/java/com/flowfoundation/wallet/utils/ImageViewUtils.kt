@@ -6,7 +6,7 @@ import android.widget.ImageView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.Transformation
 import com.flowfoundation.wallet.R
-import com.flowfoundation.wallet.page.nft.nftlist.getBase64SvgModel
+// import com.flowfoundation.wallet.page.nft.nftlist.getBase64SvgModel
 import java.net.URLEncoder
 
 
@@ -33,7 +33,7 @@ fun String.parseBoringAvatar(): String {
 }
 
 private fun ImageView.loadAvatarNormal(url: String, placeholderEnable: Boolean = true, transformation: Transformation<Bitmap>? = null) {
-    var request = Glide.with(this).load(url.getBase64SvgModel() ?: url)
+    var request = Glide.with(this).load(url) // Simplified - no SVG processing
 
     if (placeholderEnable) {
         request = request.placeholder(R.drawable.ic_placeholder)

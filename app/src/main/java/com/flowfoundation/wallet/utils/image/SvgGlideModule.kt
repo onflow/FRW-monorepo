@@ -1,5 +1,7 @@
 package com.flowfoundation.wallet.utils.image
 
+/*
+// Commented out due to SVG library conflicts
 import android.content.Context
 import android.graphics.drawable.PictureDrawable
 import com.bumptech.glide.Glide
@@ -13,3 +15,4 @@ class SvgGlideModule : AppGlideModule() {
         registry.append(SvgModel::class.java, PictureDrawable::class.java, SvgModelLoaderFactory())
     }
 }
+*/
