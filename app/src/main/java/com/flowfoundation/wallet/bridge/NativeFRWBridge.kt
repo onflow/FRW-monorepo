@@ -302,7 +302,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         }
     }
 
-    override fun getEnvKeys(): WritableMap {
+    override fun getEnv(): WritableMap {
         val environmentVariables = RNBridge.EnvironmentVariables(
             NODE_API_URL = BASE_HOST,
             GO_API_URL = API_HOST,
@@ -316,6 +316,50 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         return bridgeModelToWritableMap(environmentVariables)
     }
 
+    override fun getSelectedAccount(promise: Promise) {
+        ioScope {
+            try {
+                val selectedAddress = WalletManager.selectedWalletAddress()
+                if (selectedAddress.isNullOrEmpty()) {
+                    uiScope {
+                        promise.reject("NO_SELECTED_ACCOUNT", "No wallet address selected", null)
+                    }
+                    return@ioScope
+                }
+
+                // Determine account type based on address using utility methods
+                val mainAddress = WalletManager.wallet()?.walletAddress()
+                
+                val accountType = when {
+                    EVMWalletManager.isEVMWalletAddress(selectedAddress) -> RNBridge.AccountType.EVM
+                    WalletManager.isChildAccount(selectedAddress) -> RNBridge.AccountType.CHILD
+                    else -> RNBridge.AccountType.MAIN
+                }
+
+                val selectedEmojiInfo = createEmojiInfo(selectedAddress)
+                val selectedAccount = RNBridge.WalletAccount(
+                    id = "selected",
+                    name = selectedEmojiInfo?.name ?: "Selected Account",
+                    address = selectedAddress,
+                    emojiInfo = selectedEmojiInfo,
+                    parentEmoji = if (accountType != RNBridge.AccountType.MAIN) createEmojiInfo(mainAddress) else null,
+                    parentAddress = if (accountType != RNBridge.AccountType.MAIN) mainAddress else null,
+                    avatar = null,
+                    isActive = true,
+                    type = accountType
+                )
+
+                val result = bridgeModelToWritableMap(selectedAccount)
+                uiScope {
+                    promise.resolve(result)
+                }
+            } catch (e: Exception) {
+                uiScope {
+                    promise.reject("SELECTED_ACCOUNT_ERROR", "Failed to get selected account: ${e.message}", e)
+                }
+            }
+        }
+    }
 
     private val gson = Gson()
 
@@ -395,21 +439,6 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
         val selectedAddress = WalletManager.selectedWalletAddress()
         return selectedAddress.equals(address, ignoreCase = true)
-    }
-
-    override fun getProposer(promise: Promise) {
-        // TODO: Implement getProposer method
-        promise.reject("NOT_IMPLEMENTED", "getProposer method not implemented")
-    }
-
-    override fun getPayer(promise: Promise) {
-        // TODO: Implement getPayer method  
-        promise.reject("NOT_IMPLEMENTED", "getPayer method not implemented")
-    }
-
-    override fun getAuthorizations(promise: Promise) {
-        // TODO: Implement getAuthorizations method
-        promise.reject("NOT_IMPLEMENTED", "getAuthorizations method not implemented")
     }
 
     companion object {
