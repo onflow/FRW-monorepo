@@ -288,37 +288,3 @@ jobs:
           echo "- 📋 **[View Full Report](${{ env.REPORT_URL }})**" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "> 💡 **Tip**: Click the report link above to view detailed test results, traces, and screenshots!" >> $GITHUB_STEP_SUMMARY
-
-  deploy-storybook:
-    needs: [build]
-    runs-on: ubuntu-latest
-    if: always()
-    strategy:
-      matrix:
-        node-version: [22.x]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Build Storybook
-        run: pnpm -F frw-extension build-storybook
-
-      - name: Publish to Chromatic
-        uses: chromaui/action@v1
-        with:
-          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
-          storybookBuildDir: apps/extension/storybook-static
-          exitZeroOnChanges: true
