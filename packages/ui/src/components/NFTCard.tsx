@@ -36,26 +36,26 @@ export function NFTCard({
       gap="$1"
       pressStyle={{ bg: 'transparent' }}
       onPress={onPress}
-      pos="relative"
+      position="relative"
     >
       {/* NFT Image */}
       <YStack
         borderRadius="$4"
         overflow="hidden"
         aspectRatio={aspectRatio}
-        bg="$gray3"
-        pos="relative"
+        bg="$surface2"
+        position="relative"
         pressStyle={{ bg: 'transparent' }}
         onPress={onPress}
       >
         {nft.thumbnail || nft.image ? (
           <Image src={nft.thumbnail || nft.image} width="100%" height="100%" resizeMode="cover" />
         ) : (
-          <YStack flex={1} items="center" justify="center" bg="$gray3" borderRadius="$4">
+          <YStack flex={1} items="center" justify="center" bg="$surface2" borderRadius="$4">
             <Text fontSize="$6" opacity={0.3}>
               🖼️
             </Text>
-            <Text fontSize="$2" color="$gray8" mt="$2">
+            <Text fontSize="$2" color="$textSecondary" mt="$2">
               NFT
             </Text>
           </YStack>
@@ -64,7 +64,7 @@ export function NFTCard({
         {/* Amount Badge for ERC1155 tokens */}
         {showAmount && nft.amount && (
           <YStack
-            pos="absolute"
+            position="absolute"
             top="$2"
             left="$2"
             bg="$backgroundTransparent"
@@ -81,7 +81,7 @@ export function NFTCard({
 
         {/* Selection Indicator - top right */}
         {selected && (
-          <YStack pos="absolute" top="$0.05" right="$0.25" borderRadius="$6" p="$0.5">
+          <YStack position="absolute" top="$0.05" right="$0.25" borderRadius="$6" padding="$0.5">
             <CheckCircleFill size={24} color="#00EF8B" />
           </YStack>
         )}
@@ -125,7 +125,7 @@ export function NFTCard({
             )}
 
             {/* Collection Name */}
-            <Text fontSize="$4" fontWeight="400" color="$gray10" numberOfLines={1} flex={1}>
+            <Text fontSize="$4" fontWeight="400" color="$textSecondary" numberOfLines={1} flex={1}>
               {nft.collection}
             </Text>
 

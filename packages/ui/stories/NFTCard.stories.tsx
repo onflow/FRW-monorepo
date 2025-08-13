@@ -36,7 +36,7 @@ const meta: Meta<typeof NFTCard> = {
   },
   decorators: [
     (Story) => (
-      <YStack p="$4" width={200}>
+      <YStack padding="$4" width={200}>
         <Story />
       </YStack>
     ),
@@ -117,7 +117,7 @@ export const SmallSize: Story = {
   },
   decorators: [
     (Story) => (
-      <YStack p="$4" width={150}>
+      <YStack padding="$4" width={150}>
         <Story />
       </YStack>
     ),
@@ -219,7 +219,7 @@ export const Grid: Story = {
   },
   decorators: [
     (Story) => (
-      <YStack p="$4">
+      <YStack padding="$4">
         <Story />
       </YStack>
     ),
