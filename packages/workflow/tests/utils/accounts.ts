@@ -8,7 +8,7 @@ const accounts = {
     evmAddr: process.env.TEST_MAIN_ACCOUNT_COA,
     key: {
       type: 'hex',
-      index: 6,
+      index: process.env.TEST_MAIN_ACCOUNT_KEY_INDEX,
       signatureAlgorithm: 'ECDSA_P256',
       hashAlgorithm: 'SHA3_256',
       privateKey: process.env.TEST_MAIN_ACCOUNT_KEY,

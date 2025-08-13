@@ -5,6 +5,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 // import { getTrx } from '../src/utils';
 import { accounts } from './utils/accounts';
 import { authz, bridgeAuthorization } from './utils/authz';
+// import { SendTransaction } from '../src'
 
 dotenv.config();
 
@@ -76,20 +77,39 @@ describe('Test NFT send strategies', () => {
 
   // it('Test FlowToEvmNftBridgeStrategy - Bridge NFT to EVM address', async () => {
   //   // todo
+  //   // const payload = {
+  //   //   type: 'nft',
+  //   //   assetType: 'flow',
+  //   //   proposer: mainAccount.address,
+  //   //   receiver: mainAccount.evmAddr,
+  //   //   flowIdentifier: 'A.2d4c3caffbeab845.FLOAT.NFT',
+  //   //   sender: mainAccount.address,
+  //   //   amount: '0',
+  //   //   childAddrs: [],
+  //   //   ids: [239693535195987],
+  //   //   decimal: 0,
+  //   //   coaAddr: mainAccount.evmAddr,
+  //   //   tokenContractAddr: '',
+  //   // };
+
   //   const payload = {
-  //     type: 'nft',
-  //     assetType: 'flow',
-  //     proposer: mainAccount.address,
-  //     receiver: mainAccount.evmAddr,
-  //     flowIdentifier: 'A.2d4c3caffbeab845.FLOAT.NFT',
-  //     sender: mainAccount.address,
-  //     amount: '0',
-  //     childAddrs: [],
-  //     ids: [239693535195987],
-  //     decimal: 0,
-  //     coaAddr: mainAccount.evmAddr,
-  //     tokenContractAddr: '',
-  //   };
+  //     "type": "nft",
+  //     "assetType": "flow",
+  //     "proposer": "0xe7aded0979f825d0",
+  //     "receiver": "0x00000000000000000000000230755851c836914F",
+  //     "flowIdentifier": "A.2d4c3caffbeab845.FLOAT.NFT",
+  //     "sender": "0xe7aded0979f825d0",
+  //     "childAddrs": [
+  //       "0x8e5a02ccc537163f"
+  //     ],
+  //     "ids": [
+  //       91259466020066
+  //     ],
+  //     "amount": "",
+  //     "decimal": 8,
+  //     "coaAddr": "0x00000000000000000000000230755851c836914F",
+  //     "tokenContractAddr": ""
+  //   }
 
   //   const txid = await SendTransaction(payload, cadenceService);
   //   expect(txid.length).toBe(64);

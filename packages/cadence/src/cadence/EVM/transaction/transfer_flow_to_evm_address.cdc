@@ -39,7 +39,7 @@ transaction(recipientEVMAddressHex: String, amount: UFix64, gasLimit: UInt64) {
         )
         assert(
             txResult.status == EVM.Status.failed || txResult.status == EVM.Status.successful,
-            message: "evm_error=".concat(txResult.errorMessage).concat("\n")
+            message: "evm_error=".concat(txResult.errorMessage)
         )
 
     }

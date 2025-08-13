@@ -2,7 +2,13 @@ import { parseUnits } from '@ethersproject/units';
 import type { CadenceService } from '@onflow/frw-cadence';
 
 import type { SendPayload, TransferStrategy } from './types';
-import { encodeEvmContractCallData, GAS_LIMITS, safeConvertToUFix64 } from './utils';
+import {
+  encodeEvmContractCallData,
+  GAS_LIMITS,
+  isFlowToken,
+  isVaultIdentifier,
+  safeConvertToUFix64,
+} from './utils';
 import { validateEvmAddress, validateFlowAddress } from './validation';
 
 /**
@@ -137,7 +143,7 @@ export class FlowToEvmTokenStrategy implements TransferStrategy {
     return (
       type === 'token' &&
       assetType === 'flow' &&
-      flowIdentifier.indexOf('FlowToken') > -1 &&
+      isFlowToken(flowIdentifier) &&
       validateEvmAddress(receiver)
     );
   }
@@ -148,7 +154,7 @@ export class FlowToEvmTokenStrategy implements TransferStrategy {
     return await this.cadenceService.transferFlowToEvmAddress(
       receiver,
       formattedAmount,
-      30_000_000
+      GAS_LIMITS.EVM_DEFAULT
     );
   }
 }
@@ -186,7 +192,7 @@ export class EvmToFlowCoaWithdrawalStrategy implements TransferStrategy {
     return (
       type === 'token' &&
       assetType === 'evm' &&
-      flowIdentifier.indexOf('FlowToken') > -1 &&
+      isFlowToken(flowIdentifier) &&
       validateFlowAddress(receiver)
     );
   }
@@ -205,16 +211,21 @@ export class EvmToFlowTokenBridgeStrategy implements TransferStrategy {
   constructor(private cadenceService: CadenceService) {}
 
   canHandle(payload: SendPayload): boolean {
-    const { assetType, receiver, type } = payload;
-    return type === 'token' && assetType === 'evm' && validateFlowAddress(receiver);
+    const { assetType, receiver, type, flowIdentifier } = payload;
+    return (
+      type === 'token' &&
+      assetType === 'evm' &&
+      validateFlowAddress(receiver) &&
+      isVaultIdentifier(flowIdentifier)
+    );
   }
 
   async execute(payload: SendPayload): Promise<any> {
-    const { flowIdentifier, amount, receiver } = payload;
-    const formattedAmount = safeConvertToUFix64(amount);
+    const { flowIdentifier, amount, receiver, decimal } = payload;
+    const valueBig = parseUnits(safeConvertToUFix64(amount), decimal);
     return await this.cadenceService.bridgeTokensFromEvmToFlowV3(
       flowIdentifier,
-      formattedAmount,
+      valueBig.toString(),
       receiver
     );
   }
@@ -232,18 +243,23 @@ export class EvmToEvmTokenStrategy implements TransferStrategy {
   }
 
   async execute(payload: SendPayload): Promise<any> {
-    const { tokenContractAddr, amount, flowIdentifier } = payload;
-    if (flowIdentifier.includes('FlowToken')) {
+    const { tokenContractAddr, amount, flowIdentifier, receiver } = payload;
+    if (isFlowToken(flowIdentifier)) {
       const formattedAmount = safeConvertToUFix64(amount);
       return await this.cadenceService.callContract(
-        '0x0000000000000000000000000000000000000000',
+        receiver,
         formattedAmount,
         [],
         GAS_LIMITS.EVM_DEFAULT
       );
     } else {
       const data = encodeEvmContractCallData(payload);
-      return await this.cadenceService.callContract(tokenContractAddr, '0.0', data, 30000000);
+      return await this.cadenceService.callContract(
+        tokenContractAddr,
+        '0.0',
+        data,
+        GAS_LIMITS.EVM_DEFAULT
+      );
     }
   }
 }

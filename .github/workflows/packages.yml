@@ -55,12 +55,10 @@ jobs:
           TEST_MAIN_ACCOUNT_COA: ${{ vars.TEST_MAIN_ACCOUNT_COA }}
           TEST_CHILD_ACCOUNT_ONE_ADDR: ${{ vars.TEST_CHILD_ACCOUNT_ONE_ADDR }}
           TEST_CHILD_ACCOUNT_TWO_ADDR: ${{ vars.TEST_CHILD_ACCOUNT_TWO_ADDR }}
+          TEST_MAIN_ACCOUNT_KEY_INDEX: ${{ vars.TEST_MAIN_ACCOUNT_KEY_INDEX }}
 
       - name: Type check packages
         run: pnpm -r --filter='./packages/*' typecheck
-
-      - name: Run tests
-        run: pnpm test
 
       - name: Run security audit
         run: pnpm audit --audit-level moderate

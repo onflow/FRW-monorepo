@@ -134,13 +134,13 @@ export class FlowToFlowNftStrategy implements TransferStrategy {
   canHandle(payload: SendPayload): boolean {
     const { assetType, receiver, ids, type } = payload;
     return (
-      type === 'nft' && assetType === 'flow' && validateFlowAddress(receiver) && ids.length === 1
+      type === 'nft' && assetType === 'flow' && validateFlowAddress(receiver) && ids.length > 0
     );
   }
 
   async execute(payload: SendPayload): Promise<any> {
     const { flowIdentifier, receiver, ids } = payload;
-    return await this.cadenceService.sendNft(flowIdentifier, receiver, ids[0]);
+    return await this.cadenceService.batchSendNftV3(flowIdentifier, receiver, ids);
   }
 }
 
@@ -193,12 +193,17 @@ export class EvmToEvmNftStrategy implements TransferStrategy {
   constructor(private cadenceService: CadenceService) {}
 
   canHandle(payload: SendPayload): boolean {
-    const { assetType, receiver, type } = payload;
-    return type === 'nft' && assetType === 'evm' && validateEvmAddress(receiver);
+    const { assetType, receiver, type, tokenContractAddr } = payload;
+    return (
+      type === 'nft' &&
+      assetType === 'evm' &&
+      validateEvmAddress(receiver) &&
+      validateEvmAddress(tokenContractAddr)
+    );
   }
 
   async execute(payload: SendPayload): Promise<any> {
-    const { tokenContractAddr, ids, amount } = payload;
+    const { tokenContractAddr, ids } = payload;
 
     if (ids.length > 1) {
       const contracts = ids.map(() => tokenContractAddr);

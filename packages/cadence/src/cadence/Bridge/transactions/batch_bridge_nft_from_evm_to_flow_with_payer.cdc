@@ -9,6 +9,7 @@ import EVM from 0xEVM
 import FlowEVMBridgeUtils from 0xFlowEVMBridge
 import FlowEVMBridge from 0xFlowEVMBridge
 import FlowEVMBridgeConfig from 0xFlowEVMBridge
+import StorageRent from 0xStorageRent
 import CrossVMMetadataViews from 0xCrossVMMetadataViews
 
 /// This transaction bridges an NFT from EVM to Cadence assuming it has already been onboarded to the FlowEVMBridge.
@@ -23,13 +24,12 @@ import CrossVMMetadataViews from 0xCrossVMMetadataViews
 ///
 transaction(nftIdentifier: String, ids: [UInt256], recipient: Address) {
     let nftType: Type
-    let collection: &{NonFungibleToken.Collection}
     let receiver: &{NonFungibleToken.Receiver}
     let scopedProvider: @ScopedFTProviders.ScopedFTProvider
     let coa: auth(EVM.Call, EVM.Bridge) &EVM.CadenceOwnedAccount
     let viewResolver: &{ViewResolver}
 
-    prepare(signer: auth(BorrowValue, CopyValue, IssueStorageCapabilityController, PublishCapability, SaveValue, UnpublishCapability) &Account) {
+    prepare(signer: auth(BorrowValue, CopyValue, IssueStorageCapabilityController, PublishCapability, SaveValue, UnpublishCapability) &Account, payer: auth(BorrowValue, CopyValue, IssueStorageCapabilityController, PublishCapability, SaveValue, UnpublishCapability) &Account) {
         /* --- Reference the signer's CadenceOwnedAccount --- */
         //
         // Borrow a reference to the signer's COA
@@ -65,21 +65,20 @@ transaction(nftIdentifier: String, ids: [UInt256], recipient: Address) {
         }
         self.receiver = getAccount(recipient).capabilities.borrow<&{NonFungibleToken.Receiver}>(collectionData.publicPath)
             ?? panic("Could not borrow Receiver from recipient's public capability path")
-        self.collection = signer.storage.borrow<&{NonFungibleToken.Collection}>(from: collectionData.storagePath)
-            ?? panic("Could not borrow collection from storage path")
+
         /* --- Configure a ScopedFTProvider --- */
         //
         // Calculate the bridge fee - bridging from EVM consumes no storage, so flat fee
         let approxFee = FlowEVMBridgeUtils.calculateBridgeFee(bytes: 400_000) + (FlowEVMBridgeConfig.baseFee * UFix64(ids.length))
         // Issue and store bridge-dedicated Provider Capability in storage if necessary
-        if signer.storage.type(at: FlowEVMBridgeConfig.providerCapabilityStoragePath) == nil {
-            let providerCap = signer.capabilities.storage.issue<auth(FungibleToken.Withdraw) &{FungibleToken.Provider}>(
+        if payer.storage.type(at: FlowEVMBridgeConfig.providerCapabilityStoragePath) == nil {
+            let providerCap = payer.capabilities.storage.issue<auth(FungibleToken.Withdraw) &{FungibleToken.Provider}>(
                 /storage/flowTokenVault
             )
-            signer.storage.save(providerCap, to: FlowEVMBridgeConfig.providerCapabilityStoragePath)
+            payer.storage.save(providerCap, to: FlowEVMBridgeConfig.providerCapabilityStoragePath)
         }
         // Copy the stored Provider capability and create a ScopedFTProvider
-        let providerCapCopy = signer.storage.copy<Capability<auth(FungibleToken.Withdraw) &{FungibleToken.Provider}>>(
+        let providerCapCopy = payer.storage.copy<Capability<auth(FungibleToken.Withdraw) &{FungibleToken.Provider}>>(
                 from: FlowEVMBridgeConfig.providerCapabilityStoragePath
             ) ?? panic("Invalid Provider Capability found in storage.")
         let providerFilter = ScopedFTProviders.AllowanceFilter(approxFee)
@@ -110,11 +109,14 @@ transaction(nftIdentifier: String, ids: [UInt256], recipient: Address) {
                 message: "Bridged nft type mismatch - requested: ".concat(self.nftType.identifier)
                     .concat(", received: ").concat(nft.getType().identifier)
             )
-            // Deposit the bridged NFT into the signer's collection
-            self.collection.deposit(token: <-nft)
+            // Deposit the bridged NFT into the recipient's collection
+            self.receiver.deposit(token: <-nft)
             idx = idx + 1
         }
         destroy self.scopedProvider
+
+        StorageRent.tryRefill(recipient)
+
     }
 }
 

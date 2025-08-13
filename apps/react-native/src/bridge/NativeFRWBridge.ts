@@ -2,6 +2,7 @@ import type {
   EnvironmentVariables as SharedEnvironmentVariables,
   RecentContactsResponse,
   WalletAccountsResponse,
+  WalletAccount,
 } from '@onflow/frw-types';
 import type { TurboModule } from 'react-native';
 import { TurboModuleRegistry } from 'react-native';
@@ -45,6 +46,8 @@ export interface Spec extends TurboModule {
   listenTransaction(txid: string): void;
   // Get environment variables
   getEnv(): EnvironmentVariables;
+  // Get selected account
+  getSelectedAccount(): Promise<WalletAccount>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeFRWBridge');
