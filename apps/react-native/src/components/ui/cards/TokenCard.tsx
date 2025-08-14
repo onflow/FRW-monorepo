@@ -4,14 +4,17 @@ import { TouchableOpacity, View } from 'react-native';
 
 import { VerifiedToken as VerifiedIcon } from 'icons';
 
+import { AccessibilityStatus } from '../media/AccessibilityStatus';
 import { IconView } from '../media/IconView';
 import { Text } from '../typography/text';
+
 export interface TokenCardProps {
   token: TokenModel;
+  isAccessible?: boolean;
   onPress?: () => void;
 }
 
-export function TokenCard({ token, onPress }: TokenCardProps) {
+export function TokenCard({ token, onPress, isAccessible = true }: TokenCardProps) {
   return (
     <TouchableOpacity onPress={onPress} className="w-full" activeOpacity={0.7}>
       <View className="flex-row items-center py-4 px-0 w-full gap-2">
@@ -40,7 +43,7 @@ export function TokenCard({ token, onPress }: TokenCardProps) {
 
           {/* Bottom row: Balance + change percentage */}
           <View className="flex-row justify-between items-center">
-            <View className="flex-1">
+            <View className="flex-row items-center gap-2">
               <Text className="text-fg-2 text-left text-sm" numberOfLines={1} ellipsizeMode="tail">
                 {(() => {
                   if (
@@ -53,6 +56,7 @@ export function TokenCard({ token, onPress }: TokenCardProps) {
                   return !isNaN(usdValue) && usdValue > 0 ? `$${usdValue.toFixed(2)}` : '';
                 })()}
               </Text>
+              <AccessibilityStatus isAccessible={isAccessible} />
             </View>
             {token.change !== null && token.change !== '' && (
               <View className="bg-primary/10 rounded-xl px-1.5 py-1">

@@ -30,7 +30,8 @@
     "to": "Para",
     "amount": "Cantidad",
     "fee": "Tarifa",
-    "total": "Total"
+    "total": "Total",
+    "inaccessible": "Inaccesible"
   },
   "buttons": {
     "back": "Atrás",

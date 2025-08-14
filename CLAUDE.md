@@ -1,15 +1,45 @@
-# Claude Development Notes
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with
+code in this repository.
 
 ## Project Overview
 
-This is the Flow Reference Wallet (FRW) project - a monorepo containing packages
-for UI, icons, and applications (extension, react-native).
+This is the Flow Reference Wallet (FRW) - a production-ready Flow blockchain
+wallet built on **MVVM architecture** in a TypeScript monorepo. The project
+supports both React Native mobile apps and browser extensions, with a clean
+separation between View, ViewModel, Network, and Model layers.
+
+**Key Architecture**: `types` → `api/cadence` → `services/workflow` → `stores` →
+`screens` → `apps`
 
 ## Development Commands
 
+**IMPORTANT: This project uses pnpm, not npm!**
+
+### Core Commands
+
 - `pnpm install` - Install dependencies
 - `pnpm build` - Build all packages
-- `pnpm dev` - Start development servers
+- `pnpm build:packages` - Build only packages (excludes apps)
+- `pnpm dev` - Watch build all packages in parallel
+- `pnpm dev:packages` - Watch build packages only
+- `pnpm clean` - Clean build artifacts and reinstall
+
+### Platform-Specific Commands
+
+- `pnpm dev:extension` - Build extension in dev mode
+- `pnpm dev:rn` - Start React Native Metro bundler
+- `pnpm dev:rn:full` - Watch packages + start RN (single terminal)
+- `pnpm build:rn` - Build React Native for both platforms
+
+### Quality & Testing
+
+- `pnpm lint` - Lint all code
+- `pnpm lint:fix` - Auto-fix lint issues
+- `pnpm format` - Format with Prettier
+- `pnpm typecheck` - TypeScript validation
+- `pnpm test` - Run unit tests (excluding React Native)
 
 ## Tamagui V4 Shorthands
 
@@ -170,11 +200,184 @@ The core `IconWrapper` component handles runtime color conversion:
 - Supports all standard SVG props
 - Automatically handles viewBox and sizing
 
+## MVVM Architecture
+
+This project follows strict MVVM (Model-View-ViewModel) architecture with clear
+layer separation:
+
+### Package Structure by Layer
+
+**📋 Model Layer**
+
+- `packages/types` - Pure data structures and interfaces (zero dependencies)
+
+**🌐 Network Layer**
+
+- `packages/api` - HTTP API clients with auto-generated services from
+  OpenAPI/Swagger
+- `packages/cadence` - Flow blockchain interaction via Cadence scripts and
+  transactions
+
+**⚙️ Business Logic Layer**
+
+- `packages/services` - Domain services using provider pattern for data
+  transformation
+- `packages/workflow` - Transaction orchestration and complex business processes
+
+**🧠 ViewModel Layer**
+
+- `packages/stores` - UI state management with Zustand, automatic caching, and
+  data transformation for UI consumption
+
+**🎨 UI Layer**
+
+- `packages/ui` - Pure, stateless UI components with Tamagui (no business logic)
+- `packages/icons` - Universal React SVG components with runtime theming
+
+**📺 Screen Layer (UI + ViewModel Integration)**
+
+- `packages/screens` - Pre-built screens combining UI components with
+  ViewModels, ready for direct use by applications
+
+**📱 Application Layer**
+
+- `apps/react-native` - iOS/Android mobile app with React Native 0.80 + React 19
+- `apps/extension` - Chrome extension using shared screens and components
+
+**🔧 Infrastructure**
+
+- `packages/context` - Dependency injection container and platform abstraction
+- `packages/utils` - Pure utility functions (zero dependencies)
+
+### Development Flow (MVVM + Universal Screens)
+
+1. **Model First**: Define data structures in `packages/types`
+2. **Network Layer**: Implement API clients in `packages/api` and
+   `packages/cadence`
+3. **Business Logic**: Add domain services in `packages/services` and workflows
+   in `packages/workflow`
+4. **ViewModel**: Manage UI state in `packages/stores` (ViewModels)
+5. **UI Components**: Build pure, stateless components in `packages/ui`
+6. **Screen Integration**: Combine UI + ViewModels in `packages/screens`
+7. **Application**: Use pre-built screens directly in `apps/react-native` and
+   `apps/extension`
+
+This pattern ensures **maximum code reuse** - both platforms share not just
+business logic, but entire screen implementations.
+
+### Key Architecture Rules
+
+- **Strict Layer Boundaries**: ESLint enforces import restrictions
+- **Pure UI Components**: `packages/ui` has no business logic or state
+  management
+- **Screen-Level Integration**: `packages/screens` combines UI + ViewModels for
+  complete functionality
+- **Application Simplicity**: Apps import ready-to-use screens, minimal
+  platform-specific code
+- **Universal Code Reuse**: Both React Native and Extension share screens, UI,
+  and business logic
+- **ServiceContext DI**: All services use dependency injection via
+  ServiceContext
+
 ## Storybook Integration
 
-The UI package includes comprehensive Storybook integration with:
+The UI package includes comprehensive Storybook integration:
 
+- `pnpm storybook` - Start Storybook for component development
 - Icon showcase with search and interactive features
 - Component documentation with argTypes
 - CSS Grid layouts for responsive displays
 - Proper color theming and visibility handling
+
+## Workspace Configuration
+
+### Package Management
+
+- **pnpm workspaces** with automatic linking enabled
+- **Node.js >= 20.0.0** and **pnpm >= 9.0.0** required
+- **React 19.1.0** override across all packages for consistency
+- Shared TypeScript configuration via `tsconfig.base.json`
+
+### Environment Requirements
+
+- **TypeScript 5.7+** with strict mode enabled
+- **ESLint 9.x** with TypeScript integration
+- **Prettier 3.x** for code formatting
+- **Husky** for Git hooks and **lint-staged** for commit validation
+- **Commitlint** with conventional commits format
+
+## Code Quality Rules
+
+### Comments (CRITICAL)
+
+- **ALL comments MUST be written in English only**
+- No Chinese, Japanese, or other non-English comments allowed
+- This ensures code maintainability and accessibility for all developers
+
+### File Naming Conventions
+
+- **React Components**: `kebab-case.tsx` (in `components/` folders)
+- **Hooks**: `use-kebab-case.ts` (in `hooks/` folders)
+- **Other TypeScript**: `kebab-case.ts`
+- **Shared components**: Use PascalCase in `src/ui/FRWComponent/`
+- **Avoid `index.ts`** files for re-exports unless required by framework
+
+### Import Patterns
+
+- **Path aliases**: `@/folder/*` for cross-folder imports
+- **Workspace packages**: `import { TokenStore } from '@onflow/frw-stores'`
+- **Prefer named exports** over default exports
+- **Strict boundaries**: ESLint enforces layer separation (View ↔ ViewModel ↔
+  Business Logic)
+
+### Testing Requirements
+
+- **Unit tests**: Vitest for all packages (run with `pnpm test`)
+- **E2E tests**: Playwright for extension (`pnpm test:e2e`)
+- **Type safety**: All cache and data types must be explicitly typed
+- **Coverage**: New code requires appropriate test coverage
+
+## Platform-Specific Notes
+
+### React Native (`apps/react-native`)
+
+- **NativeWind 4.x** for styling (Tailwind CSS for React Native)
+- **React Navigation v7** with native stack navigation
+- **MMKV** for persistent storage
+- **Theme system** with CSS variables and light/dark mode
+- **Nitro modules** for native iOS/Android bridge functionality
+- **Bundle commands**: iOS (`pnpm bundle:ios`), Android (`pnpm bundle:android`)
+
+### Browser Extension (`apps/extension`)
+
+- **Chrome Manifest V3** service worker architecture
+- **Background scripts** handle blockchain/key management (secure context)
+- **UI components** communicate via Chrome messaging API
+- **Content scripts** inject wallet provider for dApp integration
+- **Custom caching system** with stale-while-revalidate pattern
+- **E2E testing** with Playwright extension loading
+
+## Monorepo Development Workflow
+
+### Typical Development Session
+
+```bash
+# Terminal 1: Watch all packages for changes
+pnpm dev:packages
+
+# Terminal 2A: React Native development
+pnpm dev:rn
+
+# Terminal 2B: Extension development
+pnpm dev:extension
+
+# Or combined (single terminal)
+pnpm dev:rn:full
+```
+
+### Package Development
+
+- **Build specific package**: `pnpm -F @onflow/frw-types build`
+- **Test specific package**: `pnpm -F @onflow/frw-services test`
+- **Lint specific package**: `pnpm -F @onflow/frw-workflow lint`
+- **Local linking**: If FRW-core repo is at `../FRW-core`, use `pnpm link`

@@ -95,32 +95,6 @@ export const MultipleProperties: Story = {
   ),
 };
 
-export const VariantComparison: Story = {
-  render: () => (
-    <YStack gap="$4">
-      <YStack gap="$2">
-        <YStack fontSize="$4" fontWeight="600" color="$color">
-          Default Variant
-        </YStack>
-        <XStack gap="$2">
-          <NFTPropertyTag label="ID" value="1234" variant="default" />
-          <NFTPropertyTag label="Rarity" value="Common" variant="default" />
-        </XStack>
-      </YStack>
-
-      <YStack gap="$2">
-        <YStack fontSize="$4" fontWeight="600" color="$color">
-          Compact Variant
-        </YStack>
-        <XStack gap="$2">
-          <NFTPropertyTag label="ID" value="1234" variant="compact" />
-          <NFTPropertyTag label="Rarity" value="Common" variant="compact" />
-        </XStack>
-      </YStack>
-    </YStack>
-  ),
-};
-
 export const ColorVariations: Story = {
   render: () => (
     <YStack gap="$3">

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import React, { useState } from 'react';
+import React from 'react';
 import { YStack } from 'tamagui';
 
 import { ToAccountSection, type WalletAccount } from '../src/components/ToAccountSection';
@@ -70,20 +70,6 @@ export const WithoutName: Story = {
   },
 };
 
-export const WithoutAvatar: Story = {
-  args: {
-    account: mockAccount,
-    showAvatar: false,
-  },
-};
-
-export const WithoutEditButton: Story = {
-  args: {
-    account: mockAccount,
-    showEditButton: false,
-  },
-};
-
 export const CustomTitle: Story = {
   args: {
     account: mockAccount,
@@ -95,29 +81,6 @@ export const IncompatibleAccount: Story = {
   args: {
     account: mockAccount,
     isAccountIncompatible: true,
-  },
-};
-
-export const IncompatibleWithCustomMessage: Story = {
-  args: {
-    account: mockAccount,
-    isAccountIncompatible: true,
-    incompatibilityMessage:
-      'This account does not support NFT transfers. Please select a different account.',
-  },
-};
-
-export const LargeAvatar: Story = {
-  args: {
-    account: mockAccount,
-    avatarSize: 60,
-  },
-};
-
-export const SmallAvatar: Story = {
-  args: {
-    account: mockAccount,
-    avatarSize: 30,
   },
 };
 
@@ -152,145 +115,6 @@ export const LongAddress: Story = {
   },
 };
 
-export const DifferentAccountTypes: Story = {
-  render: () => (
-    <YStack gap="$4" width={400}>
-      <ToAccountSection
-        account={{ address: '0x1234...5678', name: 'Personal Wallet' }}
-        title="Personal Account"
-      />
-      <ToAccountSection
-        account={{ address: '0xabcd...efgh', name: 'Business Account' }}
-        title="Business Account"
-      />
-      <ToAccountSection account={{ address: '0x9876...5432' }} title="External Account" />
-    </YStack>
-  ),
-  decorators: [
-    (Story) => (
-      <YStack p="$4">
-        <Story />
-      </YStack>
-    ),
-  ],
-};
-
-export const Interactive: Story = {
-  render: function InteractiveRender() {
-    const [isIncompatible, setIsIncompatible] = useState(false);
-    const [editCount, setEditCount] = useState(0);
-
-    const handleEditPress = () => {
-      setEditCount((prev) => prev + 1);
-      alert(`Edit pressed ${editCount + 1} times!`);
-    };
-
-    const handleToggleCompatibility = () => {
-      setIsIncompatible(!isIncompatible);
-    };
-
-    const handleLearnMore = () => {
-      alert('Learn more about account compatibility!');
-    };
-
-    return (
-      <YStack gap="$4" width={400}>
-        <ToAccountSection
-          account={{
-            ...mockAccount,
-            name: editCount > 0 ? `${mockAccount.name} (Edited ${editCount}x)` : mockAccount.name,
-          }}
-          isAccountIncompatible={isIncompatible}
-          onEditPress={handleEditPress}
-          onLearnMorePress={handleLearnMore}
-        />
-
-        <YStack gap="$2" flexDirection="row">
-          <YStack
-            bg="$blue9"
-            rounded="$3"
-            px="$3"
-            py="$2"
-            pressStyle={{ opacity: 0.8 }}
-            onPress={handleToggleCompatibility}
-            cursor="pointer"
-          >
-            <YStack fontSize="$3" color="$white" fontWeight="500">
-              Toggle Compatibility
-            </YStack>
-          </YStack>
-        </YStack>
-
-        <YStack fontSize="$3" color="$gray11">
-          Compatible: {isIncompatible ? 'No' : 'Yes'}
-        </YStack>
-      </YStack>
-    );
-  },
-};
-
-export const SendFlowExamples: Story = {
-  render: () => (
-    <YStack gap="$4" width={400}>
-      <YStack fontSize="$5" fontWeight="600" color="$color" mb="$2">
-        Send Flow Examples
-      </YStack>
-
-      <ToAccountSection account={mockAccount} title="Token Recipient" />
-
-      <ToAccountSection account={mockAccount} title="NFT Recipient" />
-
-      <ToAccountSection
-        account={mockAccount}
-        title="Multi-NFT Recipient"
-        isAccountIncompatible={true}
-        incompatibilityMessage="This account does not support batch NFT transfers"
-      />
-    </YStack>
-  ),
-  decorators: [
-    (Story) => (
-      <YStack p="$4">
-        <Story />
-      </YStack>
-    ),
-  ],
-};
-
-export const WarningStates: Story = {
-  render: () => (
-    <YStack gap="$4" width={400}>
-      <ToAccountSection
-        account={mockAccount}
-        isAccountIncompatible={true}
-        title="Token Transfer"
-        incompatibilityMessage="This account may not support this token type"
-      />
-
-      <ToAccountSection
-        account={mockAccount}
-        isAccountIncompatible={true}
-        title="NFT Transfer"
-        incompatibilityMessage="This account does not have NFT capabilities enabled"
-      />
-
-      <ToAccountSection
-        account={mockAccount}
-        isAccountIncompatible={true}
-        title="Batch Transfer"
-        incompatibilityMessage="Batch transfers require account upgrade. Please contact support."
-      />
-    </YStack>
-  ),
-  decorators: [
-    (Story) => (
-      <YStack p="$4">
-        <Story />
-      </YStack>
-    ),
-  ],
-};
-
 export const NoAvatar: Story = {
   args: {
     account: {
@@ -298,28 +122,4 @@ export const NoAvatar: Story = {
       name: 'No Avatar Account',
     },
   },
-};
-
-export const ColorVariations: Story = {
-  render: () => (
-    <YStack gap="$4" width={400}>
-      <ToAccountSection account={mockAccount} backgroundColor="$green2" title="Verified Account" />
-
-      <ToAccountSection
-        account={mockAccount}
-        backgroundColor="$red2"
-        title="Restricted Account"
-        isAccountIncompatible={true}
-      />
-
-      <ToAccountSection account={mockAccount} backgroundColor="$purple2" title="Premium Account" />
-    </YStack>
-  ),
-  decorators: [
-    (Story) => (
-      <YStack p="$4">
-        <Story />
-      </YStack>
-    ),
-  ],
 };

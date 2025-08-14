@@ -1,6 +1,9 @@
-import { ChevronRight, Copy, Edit } from '@onflow/frw-icons';
+import { Copy, Edit } from '@onflow/frw-icons';
 import React from 'react';
-import { Card, XStack, YStack, Avatar, Text, Button } from 'tamagui';
+import { Card, XStack, YStack, Avatar, Text } from 'tamagui';
+
+import { AddressText } from './AddressText';
+import { Button } from '../foundation/Button';
 
 export interface RecipientItemProps {
   // Core recipient data
@@ -43,7 +46,7 @@ export function RecipientItem({
   isSelected = false,
   isDisabled = false,
   avatar,
-  avatarSize = 40,
+  avatarSize = 36,
   onPress,
   onEdit,
   onCopy,
@@ -55,29 +58,24 @@ export function RecipientItem({
     // Can be enhanced later with specific icons for each type
     return (
       <YStack
-        width={avatarSize * 0.6}
-        height={avatarSize * 0.6}
+        width={avatarSize}
+        height={avatarSize}
         borderRadius="$10"
-        backgroundColor="$bg3"
+        backgroundColor="$orange8"
         items="center"
         justify="center"
       >
-        <Text fontSize="$2" color="$textSecondary" fontWeight="600">
-          {type.charAt(0).toUpperCase()}
+        <Text fontSize={18} color="$white1" fontWeight="600">
+          {type === 'account' ? '🦊' : type.charAt(0).toUpperCase()}
         </Text>
       </YStack>
     );
   };
 
-  const truncateAddress = (addr: string, startLength = 6, endLength = 4) => {
-    if (addr.length <= startLength + endLength + 3) return addr;
-    return `${addr.slice(0, startLength)}...${addr.slice(-endLength)}`;
-  };
-
   return (
     <Card
-      p="$3"
-      bg={backgroundColor || '$bg2'}
+      p={0}
+      bg="transparent"
       borderRadius="$4"
       pressStyle={pressStyle || { opacity: 0.8, scale: 0.98 }}
       disabled={isDisabled}
@@ -86,30 +84,61 @@ export function RecipientItem({
       borderColor={isSelected ? '$primary' : 'transparent'}
       borderWidth={isSelected ? 2 : 0}
     >
-      <XStack items="center" gap="$3">
-        {/* Avatar/Icon */}
-        <Avatar circular size={avatarSize}>
-          {avatar ? (
-            <Avatar.Image src={avatar} />
-          ) : (
-            <Avatar.Fallback bg="$bg3" items="center" justify="center">
-              {getTypeIcon()}
-            </Avatar.Fallback>
-          )}
-        </Avatar>
+      <XStack items="center" gap={12} p="$3">
+        {/* Avatar/Icon Container with fixed frame */}
+        <XStack w={46} h={36} items="center" justify="flex-start" position="relative">
+          <YStack
+            position="absolute"
+            left={5}
+            top={0}
+            w={avatarSize}
+            h={avatarSize}
+            borderRadius="$10"
+            bg="$orange8"
+            items="center"
+            justify="center"
+          >
+            {avatar ? (
+              <Avatar circular size={avatarSize}>
+                <Avatar.Image src={avatar} />
+              </Avatar>
+            ) : (
+              getTypeIcon()
+            )}
+          </YStack>
+        </XStack>
 
         {/* Content */}
-        <YStack flex={1} gap="$1">
-          <Text fontSize="$4" fontWeight="600" color="$color" numberOfLines={1}>
-            {name}
-          </Text>
+        <YStack flex={1} gap={2} w={151.34}>
+          <XStack items="center" gap="$1">
+            <Text
+              fontSize={14}
+              fontWeight="600"
+              color="$white1"
+              numberOfLines={1}
+              lineHeight={20}
+              letterSpacing={-0.084}
+            >
+              {name}
+            </Text>
+          </XStack>
 
-          <Text fontSize="$3" color="$textSecondary" numberOfLines={1} fontFamily="$mono">
-            {truncateAddress(address)}
-          </Text>
+          <AddressText
+            address={address}
+            fontSize={12}
+            fontWeight="400"
+            color="#B3B3B3"
+            lineHeight={16.8}
+          />
 
           {showBalance && balance && (
-            <Text fontSize="$3" color="$textSecondary" numberOfLines={1}>
+            <Text
+              fontSize={12}
+              fontWeight="400"
+              color="#B3B3B3"
+              numberOfLines={1}
+              lineHeight={16.8}
+            >
               {isLoading ? '...' : balance}
             </Text>
           )}
@@ -118,32 +147,32 @@ export function RecipientItem({
         {/* Action Buttons */}
         <XStack gap="$2" items="center">
           {showCopyButton && onCopy && (
-            <Button
-              size="$2"
-              variant="ghost"
-              icon={Copy}
+            <XStack
+              width={24}
+              height={24}
+              opacity={0.5}
               onPress={(e) => {
                 e.stopPropagation();
                 onCopy();
               }}
-              circular
-            />
+              cursor="pointer"
+            >
+              <Copy size={24} color="#FFFFFF" />
+            </XStack>
           )}
 
           {showEditButton && onEdit && (
             <Button
-              size="$2"
+              size="small"
               variant="ghost"
-              icon={Edit}
               onPress={(e) => {
                 e.stopPropagation();
                 onEdit();
               }}
-              circular
-            />
+            >
+              <Edit size={16} />
+            </Button>
           )}
-
-          {onPress && <ChevronRight size={16} color="gray" />}
         </XStack>
       </XStack>
     </Card>
@@ -156,7 +185,7 @@ export const AccountItem = (props: Omit<RecipientItemProps, 'type'>) => (
 );
 
 export const ContactItem = (props: Omit<RecipientItemProps, 'type'>) => (
-  <RecipientItem {...props} type="contact" showEditButton />
+  <RecipientItem {...props} type="contact" showCopyButton />
 );
 
 export const RecentItem = (props: Omit<RecipientItemProps, 'type'>) => (

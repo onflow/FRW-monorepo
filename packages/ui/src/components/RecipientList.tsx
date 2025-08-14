@@ -131,7 +131,7 @@ export function RecipientList({
           <Text fontSize="$3" fontWeight="600" color="$textSecondary" mb="$1">
             {section.title}
           </Text>
-          {showSeparators && <Separator />}
+          {showSeparators && <Separator borderColor="rgba(255, 255, 255, 0.1)" />}
         </YStack>
       )}
 
@@ -140,7 +140,7 @@ export function RecipientList({
         <YStack key={item.id}>
           {renderItem(item)}
           {showSeparators && itemIndex < section.data.length - 1 && (
-            <Separator my={itemSpacing / 2} />
+            <Separator my={itemSpacing / 2} borderColor="rgba(255, 255, 255, 0.1)" />
           )}
         </YStack>
       ))}

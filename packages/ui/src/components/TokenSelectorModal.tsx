@@ -1,8 +1,9 @@
 import { Search, Close } from '@onflow/frw-icons';
 import React, { useState, useMemo } from 'react';
-import { YStack, XStack, ScrollView, Button, Input, View } from 'tamagui';
+import { YStack, XStack, ScrollView, Input, View } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
+import { Button } from '../foundation/Button';
 import { Text } from '../foundation/Text';
 
 export interface TokenModel {
@@ -100,7 +101,9 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
           <Text fontSize="$5" fontWeight="600" color="$color">
             {title}
           </Text>
-          <Button size="$2" variant="ghost" circular onPress={onClose} icon={<Close size={20} />} />
+          <Button size="small" variant="ghost" onPress={onClose}>
+            <Close size={20} />
+          </Button>
         </XStack>
 
         {/* Search Input */}

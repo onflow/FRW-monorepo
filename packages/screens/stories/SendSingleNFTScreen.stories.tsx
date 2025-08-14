@@ -22,8 +22,14 @@ const meta: Meta<typeof SendSingleNFTScreen> = {
     backgroundColor: { control: 'color' },
     contentPadding: { control: 'number', min: 8, max: 32 },
     transactionFee: { control: 'text' },
+    usdFee: { control: 'text' },
+    isBalanceLoading: { control: 'boolean' },
+    showStorageWarning: { control: 'boolean' },
+    storageWarningMessage: { control: 'text' },
+    isFeesFree: { control: 'boolean' },
     onEditNFTPress: { action: 'edit-nft-pressed' },
     onEditAccountPress: { action: 'edit-account-pressed' },
+    onLearnMorePress: { action: 'learn-more-pressed' },
     onSendPress: { action: 'send-pressed' },
     onConfirmationClose: { action: 'confirmation-closed' },
     onTransactionConfirm: { action: 'transaction-confirmed' },
@@ -99,6 +105,11 @@ export const Default: Story = {
     selectedNFT: mockNFT,
     fromAccount: mockFromAccount,
     toAccount: mockToAccount,
+    usdFee: '$0.004',
+    isBalanceLoading: false,
+    showStorageWarning: false,
+    isFeesFree: false,
+    showEditButtons: true,
   },
 };
 
@@ -140,7 +151,9 @@ export const CustomFee: Story = {
     selectedNFT: mockNFT,
     fromAccount: mockFromAccount,
     toAccount: mockToAccount,
-    transactionFee: '0.005 FLOW (~$0.004)',
+    transactionFee: '0.005 FLOW',
+    usdFee: '$0.004',
+    showEditButtons: true,
   },
 };
 
@@ -298,6 +311,87 @@ export const HighFee: Story = {
     selectedNFT: mockNFT,
     fromAccount: mockFromAccount,
     toAccount: mockToAccount,
-    transactionFee: '0.1 FLOW (~$0.075)',
+    transactionFee: '0.1 FLOW',
+    usdFee: '$0.075',
+    showEditButtons: true,
+  },
+};
+
+// New enhanced stories
+export const WithStorageWarning: Story = {
+  args: {
+    selectedNFT: mockNFT,
+    fromAccount: mockFromAccount,
+    toAccount: mockToAccount,
+    showStorageWarning: true,
+    storageWarningMessage:
+      'This NFT transfer may require additional storage setup on the recipient account.',
+    usdFee: '$0.004',
+    showEditButtons: true,
+  },
+};
+
+export const BalanceLoading: Story = {
+  args: {
+    selectedNFT: mockNFT,
+    fromAccount: mockFromAccount,
+    toAccount: mockToAccount,
+    isBalanceLoading: true,
+    usdFee: '$0.004',
+    showEditButtons: true,
+  },
+};
+
+export const FreeFees: Story = {
+  args: {
+    selectedNFT: mockNFT,
+    fromAccount: mockFromAccount,
+    toAccount: mockToAccount,
+    transactionFee: '0.000 FLOW',
+    usdFee: '$0.00',
+    isFeesFree: true,
+    showEditButtons: true,
+  },
+};
+
+export const AllEnhancedFeatures: Story = {
+  args: {
+    selectedNFT: basketballNFT,
+    fromAccount: mockFromAccount,
+    toAccount: mockToAccount,
+    showStorageWarning: true,
+    storageWarningMessage:
+      'This NBA Top Shot moment requires special collection setup on the recipient account.',
+    transactionFee: '0.000 FLOW',
+    usdFee: '$0.00',
+    isFeesFree: true,
+    isBalanceLoading: false,
+    showEditButtons: true,
+  },
+};
+
+export const CustomStorageMessage: Story = {
+  args: {
+    selectedNFT: pixelArtNFT,
+    fromAccount: mockFromAccount,
+    toAccount: mockToAccount,
+    showStorageWarning: true,
+    storageWarningMessage:
+      'Warning: Pixel Warriors NFTs require 0.001 FLOW storage deposit for new collections.',
+    usdFee: '$0.004',
+    showEditButtons: true,
+  },
+};
+
+export const LoadingWithWarning: Story = {
+  args: {
+    selectedNFT: mockNFT,
+    fromAccount: mockFromAccount,
+    toAccount: mockToAccount,
+    isBalanceLoading: true,
+    showStorageWarning: true,
+    storageWarningMessage: 'Account balance is loading. Please wait before proceeding.',
+    usdFee: '$0.004',
+    showEditButtons: true,
   },
 };
