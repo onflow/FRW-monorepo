@@ -277,6 +277,14 @@ const InnerRoute = () => {
               }
             />
             <Route
+              path="token/:id/send-tokens/:toAddress"
+              element={
+                <PrivateRoute>
+                  <SendTokensScreenView />
+                </PrivateRoute>
+              }
+            />
+            <Route
               path="tokenlist"
               element={
                 <PrivateRoute>

@@ -1,6 +1,8 @@
 import { SendTokensScreen, type TokenModel, type WalletAccount } from '@onflow/frw-screens';
+import { tamaguiConfig as uiConfig } from '@onflow/frw-ui';
 import React, { useCallback, useEffect, useReducer, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
+import { TamaguiProvider } from 'tamagui';
 
 import { INITIAL_TRANSACTION_STATE, transactionReducer } from '@/reducers';
 import { type FlowNetwork, type WalletAddress } from '@/shared/types';
@@ -98,7 +100,7 @@ const SendTokensScreenView = () => {
   }, []);
 
   const handleSendPress = useCallback(() => {
-    console.log('Send transaction triggered');
+    setIsConfirmationVisible(true);
   }, []);
 
   const handleTransactionConfirm = useCallback(async () => {
@@ -112,71 +114,102 @@ const SendTokensScreenView = () => {
     }
   }, [wallet, transactionState]);
 
-  // Initialize transaction state on mount
+  // Initialize transaction state on mount - include toAddress from params if available
   useEffect(() => {
     if (mainAddress && isValidFlowAddress(mainAddress) && isValidAddress(currentWallet?.address)) {
+      const initPayload = {
+        network: network as FlowNetwork,
+        parentAddress: mainAddress,
+        parentCoaAddress: evmAddress as WalletAddress,
+        parentChildAddresses: childAccounts?.map((child) => child.address as WalletAddress) ?? [],
+        fromAddress: currentWallet.address as WalletAddress,
+        fromContact: {
+          id: 0,
+          address: currentWallet.address as WalletAddress,
+          contact_name: userInfo?.nickname || '',
+          username: userInfo?.username || '',
+          avatar: userInfo?.avatar || '',
+        },
+      };
+
       dispatch({
         type: 'initTransactionState',
-        payload: {
-          network: network as FlowNetwork,
-          parentAddress: mainAddress,
-          parentCoaAddress: evmAddress as WalletAddress,
-          parentChildAddresses: childAccounts?.map((child) => child.address as WalletAddress) ?? [],
-          fromAddress: currentWallet.address as WalletAddress,
-          fromContact: {
-            id: 0,
-            address: currentWallet.address as WalletAddress,
-            contact_name: userInfo?.nickname || '',
-            username: userInfo?.username || '',
-            avatar: userInfo?.avatar || '',
-          },
-        },
+        payload: initPayload,
       });
-    }
-  }, [mainAddress, currentWallet?.address, userInfo, evmAddress, childAccounts, network]);
 
-  // Set recipient from route params
-  useEffect(() => {
-    if (params.toAddress) {
-      dispatch({
-        type: 'setToAddress',
-        payload: {
+      // Set recipient from route params immediately after init
+      if (params.toAddress) {
+        const toAddressPayload = {
           address: params.toAddress as WalletAddress,
           contact: {
             id: 0,
             address: params.toAddress as WalletAddress,
-            contact_name: '',
+            contact_name: 'Recipient',
             username: '',
             avatar: '',
           },
-        },
-      });
+        };
+        dispatch({
+          type: 'setToAddress',
+          payload: toAddressPayload,
+        });
+      }
     }
-  }, [params.toAddress]);
+  }, [
+    mainAddress,
+    currentWallet?.address,
+    userInfo,
+    evmAddress,
+    childAccounts,
+    network,
+    params.toAddress,
+  ]);
 
-  // Set default token when coins are loaded
+  // Set token from route params or default token when coins are loaded
   useEffect(() => {
-    if (coins && coins.length > 0 && !transactionState.tokenInfo.name) {
-      const flowToken = coins.find((token) => token.symbol.toLowerCase() === 'flow');
-      const defaultToken = flowToken || coins[0];
-      dispatch({
-        type: 'setTokenInfo',
-        payload: { tokenInfo: defaultToken },
-      });
+    if (coinsLoaded && coins && coins.length > 0) {
+      let selectedToken;
+
+      // Try to find token by ID from route params
+      if (params.id) {
+        selectedToken = coins.find(
+          (token) =>
+            token.symbol.toLowerCase() === params.id.toLowerCase() ||
+            token.name.toLowerCase() === params.id.toLowerCase() ||
+            token.address.toLowerCase() === params.id.toLowerCase()
+        );
+      }
+
+      // Fall back to FLOW token or first token if not found
+      if (!selectedToken) {
+        const flowToken = coins.find((token) => token.symbol.toLowerCase() === 'flow');
+        selectedToken = flowToken || coins[0];
+      }
+
+      // Only update if different from current token
+      if (selectedToken && selectedToken.symbol !== transactionState.tokenInfo.symbol) {
+        dispatch({
+          type: 'setTokenInfo',
+          payload: { tokenInfo: selectedToken },
+        });
+      }
     }
-  }, [coins, transactionState.tokenInfo.name]);
+  }, [coinsLoaded, coins, params.id]);
 
   // Create screen props
+  const fromAccount = convertAddressToWalletAccount(
+    transactionState.fromAddress,
+    transactionState.fromContact
+  );
+  const toAccount = convertAddressToWalletAccount(
+    transactionState.toAddress,
+    transactionState.toContact
+  );
+
   const screenProps = {
     selectedToken: convertExtendedTokenInfoToTokenModel(transactionState.tokenInfo),
-    fromAccount: convertAddressToWalletAccount(
-      transactionState.fromAddress,
-      transactionState.fromContact
-    ),
-    toAccount: convertAddressToWalletAccount(
-      transactionState.toAddress,
-      transactionState.toContact
-    ),
+    fromAccount,
+    toAccount,
     amount:
       transactionState.fiatOrCoin === 'coin'
         ? transactionState.amount
@@ -196,11 +229,15 @@ const SendTokensScreenView = () => {
     onConfirmationClose: () => setIsConfirmationVisible(false),
     onTransactionConfirm: handleTransactionConfirm,
     backgroundColor: '$bg',
-    contentPadding: '$1',
+    contentPadding: 8, // Use smaller extension-specific padding
     transactionFee: '~0.001 FLOW',
   };
 
-  return <SendTokensScreen {...screenProps} />;
+  return (
+    <TamaguiProvider config={uiConfig} defaultTheme="dark">
+      <SendTokensScreen {...screenProps} />
+    </TamaguiProvider>
+  );
 };
 
 export default SendTokensScreenView;

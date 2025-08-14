@@ -56,6 +56,7 @@
     "@tamagui/animations-react-native": "^1.132.16",
     "@tamagui/config": "^1.132.16",
     "@tamagui/core": "^1.132.16",
+    "@tamagui/font-inter": "^1.132.16",
     "@tamagui/theme-builder": "^1.132.17",
     "@tamagui/web": "^1.132.16",
     "tamagui": "^1.132.16",
