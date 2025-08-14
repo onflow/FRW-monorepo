@@ -40,7 +40,7 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
     : {};
 
   return (
-    <YStack gap="$3" {...containerProps}>
+    <YStack gap={8} {...containerProps}>
       {/* Main fee row */}
       <XStack justifyContent="space-between" alignItems="center">
         {/* Left side - Title */}

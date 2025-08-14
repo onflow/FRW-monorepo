@@ -4,18 +4,18 @@ import { Text, XStack, YStack, Stack } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
 import type { TokenCardProps } from '../types';
+import { PercentageChangeBadge } from './PercentageChangeBadge';
 
 export function TokenCard({
   symbol,
   name,
   balance,
   logo,
+  usdBalance,
   change24h,
   onPress,
   isVerified = false,
 }: TokenCardProps): React.ReactElement {
-  const isPositiveChange = change24h && change24h >= 0;
-
   return (
     <Stack
       {...(onPress && {
@@ -23,47 +23,37 @@ export function TokenCard({
         onPress: onPress,
         cursor: 'pointer',
       })}
-      p="$2"
+      px="$4"
+      py="$3"
       width="100%"
     >
-      <XStack items="center" gap="$2" width="100%">
+      <XStack items="center" gap="$3" width="100%">
         <Avatar src={logo} alt={symbol} fallback={symbol?.[0] || name?.[0] || '?'} size={48} />
 
-        <YStack flex={1} gap="$1">
+        <YStack flex={1} gap="$1.5">
           {/* Top row: Token name + verified badge + balance */}
-          <XStack justify="space-between" items="center">
-            <XStack items="center" gap="$1" flex={1}>
-              <Text fontWeight="600" fontSize={14} color="$color" numberOfLines={1}>
-                {name || symbol}
-              </Text>
-              {isVerified && <VerifiedToken size={16} color="#41CC5D" />}
-            </XStack>
-            <Text fontSize={14} color="$color" numberOfLines={1} text="right">
-              {balance} {symbol}
-            </Text>
-          </XStack>
-
-          {/* Bottom row: Token amount + change percentage tag */}
-          <XStack justify="space-between" items="center">
-            <Text color="$gray10" fontSize={14} numberOfLines={1}>
-              {balance} {symbol}
-            </Text>
-
-            {change24h !== undefined && change24h !== null && (
-              <XStack
-                bg="rgba(0, 239, 139, 0.1)"
-                borderRadius={12}
-                paddingHorizontal={6}
-                paddingVertical={4}
-                justify="center"
-                items="center"
-              >
-                <Text color="#00EF8B" fontSize={12} fontWeight="400" width={36} textAlign="left">
-                  {isPositiveChange ? '+' : ''}
-                  {change24h.toFixed(1)}%
+          <XStack justify="space-between" items="flex-start">
+            <YStack flex={1}>
+              <XStack ai="center" flex={1}>
+                <Text fontWeight="600" fontSize={16} color="$color" numberOfLines={1} flex={1}>
+                  {name || symbol}
                 </Text>
+                {isVerified && <VerifiedToken size={16} color="#41CC5D" marginLeft={4} />}
               </XStack>
-            )}
+              {usdBalance && (
+                <Text color="$gray10" fontSize={14} numberOfLines={1} mt="$0.5">
+                  {usdBalance}
+                </Text>
+              )}
+            </YStack>
+            <YStack ai="flex-end" ml="$2">
+              <Text fontWeight="600" fontSize={16} color="$color" numberOfLines={1} ta="right">
+                {balance} {symbol}
+              </Text>
+              {change24h !== undefined && change24h !== null && usdBalance && (
+                <PercentageChangeBadge value={change24h} size="small" />
+              )}
+            </YStack>
           </XStack>
         </YStack>
       </XStack>

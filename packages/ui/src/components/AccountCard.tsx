@@ -23,7 +23,7 @@ export function AccountCard({
   const [modalOpen, setModalOpen] = useState(false);
 
   const content = (
-    <YStack gap="$3">
+    <YStack gap="$0.75">
       {/* Title */}
       <Text fontSize="$2" fontWeight="400" color="rgba(255, 255, 255, 0.8)" lineHeight={16}>
         {title}
@@ -33,9 +33,7 @@ export function AccountCard({
       <YStack
         bg="rgba(255, 255, 255, 0.1)"
         rounded="$4"
-        pt="$4"
-        px="$4"
-        pb="$6"
+        p="$2.5"
         pressStyle={{
           bg: 'rgba(255, 255, 255, 0.12)',
         }}
@@ -45,7 +43,7 @@ export function AccountCard({
       >
         {/* Account Row */}
         <XStack items="center" justify="space-between">
-          <XStack items="center" gap="$4" flex={1}>
+          <XStack items="center" gap="$2.5" flex={1}>
             {/* Account Avatar */}
             <Avatar
               src={account.avatar}

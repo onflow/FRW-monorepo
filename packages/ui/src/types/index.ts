@@ -22,6 +22,7 @@ export interface TokenCardProps {
   balance: string;
   logo?: string;
   price?: string;
+  usdBalance?: string;
   change24h?: number;
   isVerified?: boolean;
   onPress?: () => void;
