@@ -32,7 +32,8 @@
     "to": "To",
     "amount": "Amount",
     "fee": "Fee",
-    "total": "Total"
+    "total": "Total",
+    "inaccessible": "Inaccessible"
   },
   "buttons": {
     "back": "Back",
