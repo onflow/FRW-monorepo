@@ -27,7 +27,7 @@
     "dev": "tsup --watch",
     "generate:icons": "node scripts/icon-generator.js --force",
     "generate:icons:incremental": "node scripts/icon-generator.js",
-    "postinstall": "npm run generate:icons",
+    "postinstall": "npm run generate:icons:incremental",
     "clean": "rm -rf dist src/web src/react-native",
     "clean:generated": "find src -name '*.generated.tsx' -delete && find src -name 'index.ts' -delete",
     "lint": "eslint .",
