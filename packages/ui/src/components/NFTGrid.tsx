@@ -39,7 +39,6 @@ export interface NFTGridProps {
   onClearSearch?: () => void;
 
   // Layout
-  columns?: number;
   gap?: number;
   aspectRatio?: number;
 }
@@ -58,30 +57,34 @@ export function NFTGrid({
   onNFTPress,
   onRetry,
   onClearSearch,
-  columns = 2,
   gap = 12,
   aspectRatio = 1,
 }: NFTGridProps) {
-  // Loading skeleton
-  const renderSkeleton = () => (
-    <XStack flexWrap="wrap" gap={gap}>
-      {Array.from({ length: 6 }).map((_, index) => (
-        <YStack key={`skeleton-${index}`} width={`${(100 - (columns - 1) * gap * 2) / columns}%`}>
-          <YStack bg="$bg2" rounded="$4" p="$3">
-            <Skeleton
-              width="100%"
-              height="auto"
-              aspectRatio={aspectRatio}
-              borderRadius="$3"
-              mb="$3"
-            />
-            <Skeleton height="$1" width="80%" mb="$2" />
-            <Skeleton height="$0.75" width="60%" />
+  const columns = 2;
+
+  // Loading skeleton - group into rows like the main content
+  const renderSkeleton = () => {
+    const skeletonRows = [];
+    for (let i = 0; i < 6; i += columns) {
+      const rowItems = Array.from({ length: Math.min(columns, 6 - i) }, (_, index) => (
+        <YStack key={`skeleton-${i + index}`} gap={7}>
+          <Skeleton width={164} height={164} borderRadius="$4" />
+          <YStack gap={-3}>
+            <Skeleton height={24} width="80%" mb="$2" />
+            <Skeleton height={20} width="60%" />
           </YStack>
         </YStack>
-      ))}
-    </XStack>
-  );
+      ));
+
+      skeletonRows.push(
+        <XStack key={`skeleton-row-${i}`} justify="space-between" width={343}>
+          {rowItems}
+        </XStack>
+      );
+    }
+
+    return <YStack gap={25}>{skeletonRows}</YStack>;
+  };
 
   // Error state
   const renderError = () => (
@@ -133,25 +136,30 @@ export function NFTGrid({
     return renderEmpty();
   }
 
+  // Group NFTs into rows
+  const rows = [];
+  for (let i = 0; i < data.length; i += columns) {
+    rows.push(data.slice(i, i + columns));
+  }
+
   // Main grid content
   return (
-    <XStack flexWrap="wrap" gap={gap} justifyContent="space-between">
-      {data.map((nft) => (
-        <YStack
-          key={nft.id}
-          width={`${(100 - (columns - 1) * gap * 2) / columns}%`}
-          maxWidth={`${(100 - (columns - 1) * gap * 2) / columns}%`}
-        >
-          <NFTCard
-            nft={nft}
-            selected={selectedIds.includes(nft.id)}
-            onPress={() => onNFTPress?.(nft)}
-            onSelect={() => onNFTSelect?.(nft.id)}
-            showAmount={!!nft.amount}
-            aspectRatio={aspectRatio}
-          />
-        </YStack>
+    <YStack gap={25}>
+      {rows.map((row, rowIndex) => (
+        <XStack key={`row-${rowIndex}`} justify="space-between" width={343}>
+          {row.map((nft) => (
+            <NFTCard
+              key={nft.id}
+              nft={nft}
+              selected={selectedIds.includes(nft.id)}
+              onPress={() => onNFTPress?.(nft)}
+              onSelect={() => onNFTSelect?.(nft.id)}
+              showAmount={!!nft.amount}
+              aspectRatio={aspectRatio}
+            />
+          ))}
+        </XStack>
       ))}
-    </XStack>
+    </YStack>
   );
 }

@@ -91,25 +91,9 @@ export const ManyNFTs: Story = {
   },
 };
 
-export const EditingMode: Story = {
-  args: {
-    selectedNFTs: mockSelectedNFTs,
-    isEditing: true,
-    continueText: 'Update Selection',
-  },
-};
-
 export const NoNFTs: Story = {
   args: {
     selectedNFTs: [],
-    continueText: 'Continue',
-  },
-};
-
-export const CustomHeight: Story = {
-  args: {
-    selectedNFTs: largeMockSelection,
-    maxHeight: 200,
     continueText: 'Continue',
   },
 };
@@ -154,20 +138,5 @@ export const Interactive: Story = {
         continueText={`Continue with ${selectedNFTs.length} NFTs`}
       />
     );
-  },
-};
-
-export const WithoutContinueButton: Story = {
-  args: {
-    selectedNFTs: mockSelectedNFTs,
-    // No onContinue prop, so no button will show
-  },
-};
-
-export const WithoutRemoveButton: Story = {
-  args: {
-    selectedNFTs: mockSelectedNFTs,
-    // No onRemoveNFT prop, so no remove buttons will show
-    continueText: 'View Only Mode',
   },
 };
