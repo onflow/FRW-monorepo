@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import { describe, it, expect, beforeEach } from 'vitest';
 
 import { SendTransaction } from '../src';
+import { makeArgument, getIX } from './utils';
 import { accounts } from './utils/accounts';
 import { authz } from './utils/authz';
 import { convertToUFix64 } from '../src/send/utils';
@@ -540,25 +541,36 @@ describe('Test send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    // check args funcs
-    let idx = 0;
-    const checkArgs = (arg) => {
+
+    const interaction = getIX();
+    let id = 0;
+
+    // check args
+    configCache.args((arg, argType) => {
+      const argResolver = {
+        value: arg,
+        xfrom: argType,
+        resolve: (value, xform) => ({ value, xform }),
+      };
+      makeArgument(argResolver, id)(interaction);
+      id++;
+    }, t);
+
+    for (const idx of interaction.message.arguments) {
+      const { value } = interaction.arguments[idx];
       if (idx === 0) {
-        expect(arg).toBe(payload.flowIdentifier);
+        expect(value).toBe(payload.flowIdentifier);
       }
       if (idx === 1) {
-        expect(arg).toBe(payload.sender);
+        expect(value).toBe(payload.sender);
       }
       if (idx === 2) {
-        expect(arg).toBe(payload.receiver);
+        expect(value).toBe(payload.receiver);
       }
       if (idx === 3) {
-        expect(arg).toBe(convertToUFix64(payload.amount));
+        expect(value).toBe(convertToUFix64(payload.amount));
       }
-      idx++;
-    };
-    // check args
-    configCache.args(checkArgs, t);
+    }
   });
 
   it('Test ChildToOthersTokenStrategy - Parent receiver args', async () => {
@@ -578,22 +590,33 @@ describe('Test send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    // check args funcs
-    let idx = 0;
-    const checkArgs = (arg) => {
+
+    const interaction = getIX();
+    let id = 0;
+
+    // check args
+    configCache.args((arg, argType) => {
+      const argResolver = {
+        value: arg,
+        xfrom: argType,
+        resolve: (value, xform) => ({ value, xform }),
+      };
+      makeArgument(argResolver, id)(interaction);
+      id++;
+    }, t);
+
+    for (const idx of interaction.message.arguments) {
+      const { value } = interaction.arguments[idx];
       if (idx === 0) {
-        expect(arg).toBe(payload.flowIdentifier);
+        expect(value).toBe(payload.flowIdentifier);
       }
       if (idx === 1) {
-        expect(arg).toBe(payload.sender);
+        expect(value).toBe(payload.sender);
       }
       if (idx === 2) {
-        expect(arg).toBe(convertToUFix64(payload.amount));
+        expect(value).toBe(convertToUFix64(payload.amount));
       }
-      idx++;
-    };
-    // check args
-    configCache.args(checkArgs, t);
+    }
   });
 
   it('Test ChildToOthersTokenStrategy - COA receiver args', async () => {
@@ -613,22 +636,33 @@ describe('Test send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    // check args funcs
-    let idx = 0;
-    const checkArgs = (arg) => {
+
+    const interaction = getIX();
+    let id = 0;
+
+    // check args
+    configCache.args((arg, argType) => {
+      const argResolver = {
+        value: arg,
+        xfrom: argType,
+        resolve: (value, xform) => ({ value, xform }),
+      };
+      makeArgument(argResolver, id)(interaction);
+      id++;
+    }, t);
+
+    for (const idx of interaction.message.arguments) {
+      const { value } = interaction.arguments[idx];
       if (idx === 0) {
-        expect(arg).toBe(payload.flowIdentifier);
+        expect(value).toBe(payload.flowIdentifier);
       }
       if (idx === 1) {
-        expect(arg).toBe(payload.sender);
+        expect(value).toBe(payload.sender);
       }
       if (idx === 2) {
-        expect(arg).toBe(convertToUFix64(payload.amount));
+        expect(value).toBe(convertToUFix64(payload.amount));
       }
-      idx++;
-    };
-    // check args
-    configCache.args(checkArgs, t);
+    }
   });
 
   it('Test ChildToOthersTokenStrategy - EVM address receiver args', async () => {
@@ -648,25 +682,36 @@ describe('Test send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    // check args funcs
-    let idx = 0;
-    const checkArgs = (arg) => {
+
+    const interaction = getIX();
+    let id = 0;
+
+    // check args
+    configCache.args((arg, argType) => {
+      const argResolver = {
+        value: arg,
+        xfrom: argType,
+        resolve: (value, xform) => ({ value, xform }),
+      };
+      makeArgument(argResolver, id)(interaction);
+      id++;
+    }, t);
+
+    for (const idx of interaction.message.arguments) {
+      const { value } = interaction.arguments[idx];
       if (idx === 0) {
-        expect(arg).toBe(payload.flowIdentifier);
+        expect(value).toBe(payload.flowIdentifier);
       }
       if (idx === 1) {
-        expect(arg).toBe(payload.sender);
+        expect(value).toBe(payload.sender);
       }
       if (idx === 2) {
-        expect(arg).toBe(convertToUFix64(payload.amount));
+        expect(value).toBe(convertToUFix64(payload.amount));
       }
       if (idx === 3) {
-        expect(arg).toBe(payload.receiver);
+        expect(value).toBe(payload.receiver);
       }
-      idx++;
-    };
-    // check args
-    configCache.args(checkArgs, t);
+    }
   });
 
   it('Test ChildToOthersTokenStrategy - Flow address receiver args', async () => {
@@ -686,25 +731,36 @@ describe('Test send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    // check args funcs
-    let idx = 0;
-    const checkArgs = (arg) => {
+
+    const interaction = getIX();
+    let id = 0;
+
+    // check args
+    configCache.args((arg, argType) => {
+      const argResolver = {
+        value: arg,
+        xfrom: argType,
+        resolve: (value, xform) => ({ value, xform }),
+      };
+      makeArgument(argResolver, id)(interaction);
+      id++;
+    }, t);
+
+    for (const idx of interaction.message.arguments) {
+      const { value } = interaction.arguments[idx];
       if (idx === 0) {
-        expect(arg).toBe(payload.flowIdentifier);
+        expect(value).toBe(payload.flowIdentifier);
       }
       if (idx === 1) {
-        expect(arg).toBe(payload.sender);
+        expect(value).toBe(payload.sender);
       }
       if (idx === 2) {
-        expect(arg).toBe(payload.receiver);
+        expect(value).toBe(payload.receiver);
       }
       if (idx === 3) {
-        expect(arg).toBe(convertToUFix64(payload.amount));
+        expect(value).toBe(convertToUFix64(payload.amount));
       }
-      idx++;
-    };
-    // check args
-    configCache.args(checkArgs, t);
+    }
   });
 
   it('Test ParentToChildTokenStrategy args', async () => {
@@ -724,23 +780,34 @@ describe('Test send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    // check args funcs
-    let idx = 0;
-    const checkArgs = (arg) => {
+
+    const interaction = getIX();
+    let id = 0;
+
+    // check args
+    configCache.args((arg, argType) => {
+      const argResolver = {
+        value: arg,
+        xfrom: argType,
+        resolve: (value, xform) => ({ value, xform }),
+      };
+      makeArgument(argResolver, id)(interaction);
+      id++;
+    }, t);
+
+    for (const idx of interaction.message.arguments) {
+      const { value } = interaction.arguments[idx];
       if (idx === 0) {
-        expect(arg).toBe(payload.flowIdentifier);
+        expect(value).toBe(payload.flowIdentifier);
       }
       if (idx === 1) {
-        expect(arg).toBe(payload.receiver);
+        expect(value).toBe(payload.receiver);
       }
       if (idx === 2) {
-        expect(arg).toBe(parseUnits(payload.amount, payload.decimal).toString());
-        expect(arg).toMatch(/^\d+$/); // Should be a numeric string
+        expect(value).toBe(parseUnits(payload.amount, payload.decimal).toString());
+        expect(value).toMatch(/^\d+$/); // Should be a numeric string
       }
-      idx++;
-    };
-    // check args
-    configCache.args(checkArgs, t);
+    }
   });
 
   it('Test FlowToFlowTokenStrategy args', async () => {
@@ -760,22 +827,33 @@ describe('Test send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    // check args funcs
-    let idx = 0;
-    const checkArgs = (arg) => {
+
+    const interaction = getIX();
+    let id = 0;
+
+    // check args
+    configCache.args((arg, argType) => {
+      const argResolver = {
+        value: arg,
+        xfrom: argType,
+        resolve: (value, xform) => ({ value, xform }),
+      };
+      makeArgument(argResolver, id)(interaction);
+      id++;
+    }, t);
+
+    for (const idx of interaction.message.arguments) {
+      const { value } = interaction.arguments[idx];
       if (idx === 0) {
-        expect(arg).toBe(payload.flowIdentifier);
+        expect(value).toBe(payload.flowIdentifier);
       }
       if (idx === 1) {
-        expect(arg).toBe(payload.receiver);
+        expect(value).toBe(payload.receiver);
       }
       if (idx === 2) {
-        expect(arg).toBe(convertToUFix64(payload.amount));
+        expect(value).toBe(convertToUFix64(payload.amount));
       }
-      idx++;
-    };
-    // check args
-    configCache.args(checkArgs, t);
+    }
   });
 
   it('Test FlowToEvmTokenStrategy args', async () => {
@@ -795,22 +873,33 @@ describe('Test send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    // check args funcs
-    let idx = 0;
-    const checkArgs = (arg) => {
+
+    const interaction = getIX();
+    let id = 0;
+
+    // check args
+    configCache.args((arg, argType) => {
+      const argResolver = {
+        value: arg,
+        xfrom: argType,
+        resolve: (value, xform) => ({ value, xform }),
+      };
+      makeArgument(argResolver, id)(interaction);
+      id++;
+    }, t);
+
+    for (const idx of interaction.message.arguments) {
+      const { value } = interaction.arguments[idx];
       if (idx === 0) {
-        expect(arg).toBe(payload.receiver);
+        expect(value).toBe(payload.receiver);
       }
       if (idx === 1) {
-        expect(arg).toBe(convertToUFix64(payload.amount));
+        expect(value).toBe(convertToUFix64(payload.amount));
       }
       if (idx === 2) {
-        expect(arg).toBe(30_000_000); // Gas limit
+        expect(value).toBe(30_000_000); // Gas limit
       }
-      idx++;
-    };
-    // check args
-    configCache.args(checkArgs, t);
+    }
   });
 
   it('Test FlowTokenBridgeToEvmStrategy args', async () => {
@@ -830,22 +919,33 @@ describe('Test send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    // check args funcs
-    let idx = 0;
-    const checkArgs = (arg) => {
+
+    const interaction = getIX();
+    let id = 0;
+
+    // check args
+    configCache.args((arg, argType) => {
+      const argResolver = {
+        value: arg,
+        xfrom: argType,
+        resolve: (value, xform) => ({ value, xform }),
+      };
+      makeArgument(argResolver, id)(interaction);
+      id++;
+    }, t);
+
+    for (const idx of interaction.message.arguments) {
+      const { value } = interaction.arguments[idx];
       if (idx === 0) {
-        expect(arg).toBe(payload.flowIdentifier);
+        expect(value).toBe(payload.flowIdentifier);
       }
       if (idx === 1) {
-        expect(arg).toBe(convertToUFix64(payload.amount));
+        expect(value).toBe(convertToUFix64(payload.amount));
       }
       if (idx === 2) {
-        expect(arg).toBe(payload.receiver);
+        expect(value).toBe(payload.receiver);
       }
-      idx++;
-    };
-    // check args
-    configCache.args(checkArgs, t);
+    }
   });
 
   it('Test EvmToFlowCoaWithdrawalStrategy args', async () => {
@@ -865,19 +965,30 @@ describe('Test send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    // check args funcs
-    let idx = 0;
-    const checkArgs = (arg) => {
+
+    const interaction = getIX();
+    let id = 0;
+
+    // check args
+    configCache.args((arg, argType) => {
+      const argResolver = {
+        value: arg,
+        xfrom: argType,
+        resolve: (value, xform) => ({ value, xform }),
+      };
+      makeArgument(argResolver, id)(interaction);
+      id++;
+    }, t);
+
+    for (const idx of interaction.message.arguments) {
+      const { value } = interaction.arguments[idx];
       if (idx === 0) {
-        expect(arg).toBe(convertToUFix64(payload.amount));
+        expect(value).toBe(convertToUFix64(payload.amount));
       }
       if (idx === 1) {
-        expect(arg).toBe(payload.receiver);
+        expect(value).toBe(payload.receiver);
       }
-      idx++;
-    };
-    // check args
-    configCache.args(checkArgs, t);
+    }
   });
 
   it('Test EvmToFlowTokenBridgeStrategy args', async () => {
@@ -897,22 +1008,33 @@ describe('Test send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    // check args funcs
-    let idx = 0;
-    const checkArgs = (arg) => {
+
+    const interaction = getIX();
+    let id = 0;
+
+    // check args
+    configCache.args((arg, argType) => {
+      const argResolver = {
+        value: arg,
+        xfrom: argType,
+        resolve: (value, xform) => ({ value, xform }),
+      };
+      makeArgument(argResolver, id)(interaction);
+      id++;
+    }, t);
+
+    for (const idx of interaction.message.arguments) {
+      const { value } = interaction.arguments[idx];
       if (idx === 0) {
-        expect(arg).toBe(payload.flowIdentifier);
+        expect(value).toBe(payload.flowIdentifier);
       }
       if (idx === 1) {
-        expect(arg).toBe(parseUnits(payload.amount, payload.decimal).toString());
+        expect(value).toBe(parseUnits(payload.amount, payload.decimal).toString());
       }
       if (idx === 2) {
-        expect(arg).toBe(payload.receiver);
+        expect(value).toBe(payload.receiver);
       }
-      idx++;
-    };
-    // check args
-    configCache.args(checkArgs, t);
+    }
   });
 
   it('Test EvmToEvmTokenStrategy - Non-Flow token args', async () => {
@@ -932,26 +1054,37 @@ describe('Test send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    // check args funcs
-    let idx = 0;
-    const checkArgs = (arg) => {
+
+    const interaction = getIX();
+    let id = 0;
+
+    // check args
+    configCache.args((arg, argType) => {
+      const argResolver = {
+        value: arg,
+        xfrom: argType,
+        resolve: (value, xform) => ({ value, xform }),
+      };
+      makeArgument(argResolver, id)(interaction);
+      id++;
+    }, t);
+
+    for (const idx of interaction.message.arguments) {
+      const { value } = interaction.arguments[idx];
       if (idx === 0) {
-        expect(arg).toBe(payload.tokenContractAddr);
+        expect(value).toBe(payload.tokenContractAddr);
       }
       if (idx === 1) {
-        expect(arg).toBe('0.0');
+        expect(value).toBe('0.0');
       }
       if (idx === 2) {
         // This is the encoded data
-        expect(typeof arg).toBe('object');
+        expect(typeof value).toBe('object');
       }
       if (idx === 3) {
-        expect(arg).toBe(30000000); // Gas limit
+        expect(value).toBe(30000000); // Gas limit
       }
-      idx++;
-    };
-    // check args
-    configCache.args(checkArgs, t);
+    }
   });
 
   it('Test EvmToEvmTokenStrategy - Flow token args', async () => {
@@ -971,24 +1104,35 @@ describe('Test send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    // check args funcs
-    let idx = 0;
-    const checkArgs = (arg) => {
+
+    const interaction = getIX();
+    let id = 0;
+
+    // check args
+    configCache.args((arg, argType) => {
+      const argResolver = {
+        value: arg,
+        xfrom: argType,
+        resolve: (value, xform) => ({ value, xform }),
+      };
+      makeArgument(argResolver, id)(interaction);
+      id++;
+    }, t);
+
+    for (const idx of interaction.message.arguments) {
+      const { value } = interaction.arguments[idx];
       if (idx === 0) {
-        expect(arg).toBe(payload.receiver);
+        expect(value).toBe(payload.receiver);
       }
       if (idx === 1) {
-        expect(arg).toBe(convertToUFix64(payload.amount));
+        expect(value).toBe(convertToUFix64(payload.amount));
       }
       if (idx === 2) {
-        expect(arg).toStrictEqual([]);
+        expect(value).toStrictEqual([]);
       }
       if (idx === 3) {
-        expect(arg).toBe(30000000); // Gas limit
+        expect(value).toBe(30000000); // Gas limit
       }
-      idx++;
-    };
-    // check args
-    configCache.args(checkArgs, t);
+    }
   });
 });
