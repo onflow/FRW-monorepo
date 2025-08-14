@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import React, { useState } from 'react';
+import React from 'react';
 import { YStack } from 'tamagui';
 
 import { SelectableNFTImage } from '../src/components/SelectableNFTImage';
@@ -121,31 +121,6 @@ export const CustomBorderRadius: Story = {
     borderRadius: '$6',
     selectable: true,
     selected: true,
-    size: 'medium',
-  },
-};
-
-export const Interactive: Story = {
-  render: function InteractiveRender() {
-    const [selected, setSelected] = useState(false);
-
-    return (
-      <SelectableNFTImage
-        src={mockImage}
-        selected={selected}
-        selectable={true}
-        size="medium"
-        onToggleSelection={() => setSelected(!selected)}
-        onImagePress={() => alert('Image pressed!')}
-      />
-    );
-  },
-};
-
-export const FallbackImage: Story = {
-  args: {
-    src: 'invalid-url',
-    selectable: true,
     size: 'medium',
   },
 };

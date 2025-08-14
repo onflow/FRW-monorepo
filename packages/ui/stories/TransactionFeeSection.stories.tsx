@@ -12,24 +12,26 @@ const meta: Meta<typeof TransactionFeeSection> = {
     docs: {
       description: {
         component:
-          'TransactionFeeSection displays transaction fees with optional descriptions and customizable styling.',
+          'TransactionFeeSection displays transaction fees with Flow and USD amounts, including strikethrough styling when fees are covered.',
       },
     },
   },
   argTypes: {
-    transactionFee: { control: 'text' },
+    flowFee: { control: 'text' },
+    usdFee: { control: 'text' },
     title: { control: 'text' },
-    description: { control: 'text' },
+    showCovered: { control: 'boolean' },
+    coveredMessage: { control: 'text' },
+    isFree: { control: 'boolean' },
     backgroundColor: { control: 'color' },
     borderRadius: { control: 'text' },
     contentPadding: { control: 'number', min: 8, max: 32 },
     titleColor: { control: 'color' },
     feeColor: { control: 'color' },
-    showEstimate: { control: 'boolean' },
   },
   decorators: [
     (Story) => (
-      <YStack width={300} p="$4">
+      <YStack width={400} padding="$4" backgroundColor="$bg" borderRadius="$4">
         <Story />
       </YStack>
     ),
@@ -41,179 +43,46 @@ type Story = StoryObj<typeof TransactionFeeSection>;
 
 export const Default: Story = {
   args: {
-    transactionFee: '0.001 FLOW',
+    flowFee: '0.001 FLOW',
+    usdFee: '$0.02',
+    showCovered: true,
   },
 };
 
-export const WithEstimate: Story = {
+export const FreeFee: Story = {
   args: {
-    transactionFee: '0.001 FLOW',
-    showEstimate: true,
+    flowFee: '0.001 FLOW',
+    usdFee: '$0.02',
+    isFree: true,
+    showCovered: true,
+    coveredMessage: 'Covered by Flow Wallet',
   },
 };
 
-export const WithoutEstimate: Story = {
+export const WithoutCoveredMessage: Story = {
   args: {
-    transactionFee: '0.001 FLOW',
-    showEstimate: false,
-  },
-};
-
-export const CustomTitle: Story = {
-  args: {
-    transactionFee: '0.001 FLOW',
-    title: 'Gas Fee',
-  },
-};
-
-export const WithDescription: Story = {
-  args: {
-    transactionFee: '0.001 FLOW',
-    description: 'This fee goes to validators to process your transaction',
-  },
-};
-
-export const HighFee: Story = {
-  args: {
-    transactionFee: '0.1 FLOW (~$0.075)',
-    title: 'Priority Fee',
-    description: 'Higher fee for faster transaction processing',
-  },
-};
-
-export const MultipleFees: Story = {
-  args: {
-    transactionFee: '0.001 FLOW + 0.0001 FLOW',
-    title: 'Total Network Fees',
-    description: 'Transaction fee + storage fee',
+    flowFee: '0.001 FLOW',
+    usdFee: '$0.02',
+    showCovered: false,
   },
 };
 
 export const CustomStyling: Story = {
   args: {
-    transactionFee: '0.001 FLOW',
-    backgroundColor: '$blue2',
-    borderRadius: '$6',
-    contentPadding: 20,
-    titleColor: '$blue11',
-    feeColor: '$blue12',
-  },
-};
-
-export const CompactPadding: Story = {
-  args: {
-    transactionFee: '0.001 FLOW',
-    contentPadding: 8,
-  },
-};
-
-export const LargePadding: Story = {
-  args: {
-    transactionFee: '0.001 FLOW',
-    contentPadding: 24,
-  },
-};
-
-export const DifferentTokens: Story = {
-  render: () => (
-    <YStack gap="$4" width={300}>
-      <TransactionFeeSection transactionFee="0.001 FLOW" title="Flow Fee" />
-      <TransactionFeeSection transactionFee="0.21 USDC" title="USDC Fee" />
-      <TransactionFeeSection transactionFee="$0.50" title="USD Equivalent" />
-      <TransactionFeeSection transactionFee="0.0000123 BTC" title="Bitcoin Fee" />
-    </YStack>
-  ),
-  decorators: [
-    (Story) => (
-      <YStack p="$4">
-        <Story />
-      </YStack>
-    ),
-  ],
-};
-
-export const SendFlowExamples: Story = {
-  render: () => (
-    <YStack gap="$4" width={350}>
-      <YStack fontSize="$5" fontWeight="600" color="$color" mb="$2">
-        Send Flow Examples
-      </YStack>
-
-      <TransactionFeeSection
-        transactionFee="0.001 FLOW"
-        title="Token Transfer Fee"
-        description="Standard fee for token transfers"
-      />
-
-      <TransactionFeeSection
-        transactionFee="0.001 FLOW"
-        title="NFT Transfer Fee"
-        description="Fee for transferring NFTs"
-      />
-
-      <TransactionFeeSection
-        transactionFee="0.005 FLOW"
-        title="Multi-NFT Transfer Fee"
-        description="Fee for transferring multiple NFTs"
-      />
-
-      <TransactionFeeSection
-        transactionFee="0.001 FLOW"
-        title="Account Setup Fee"
-        description="One-time fee for account initialization"
-        backgroundColor="$yellow2"
-        titleColor="$yellow11"
-        feeColor="$yellow12"
-      />
-    </YStack>
-  ),
-  decorators: [
-    (Story) => (
-      <YStack p="$4">
-        <Story />
-      </YStack>
-    ),
-  ],
-};
-
-export const ErrorState: Story = {
-  args: {
-    transactionFee: 'Fee calculation failed',
+    flowFee: '0.005 FLOW',
+    usdFee: '$0.10',
     title: 'Network Fee',
-    backgroundColor: '$red2',
-    titleColor: '$red11',
-    feeColor: '$red12',
-    showEstimate: false,
+    backgroundColor: 'rgba(0, 239, 139, 0.1)',
+    titleColor: '#00EF8B',
+    feeColor: '#00EF8B',
   },
 };
 
-export const LoadingState: Story = {
+export const HighFee: Story = {
   args: {
-    transactionFee: 'Calculating...',
-    title: 'Network Fee',
-    backgroundColor: '$gray2',
-    titleColor: '$gray11',
-    feeColor: '$gray10',
-    showEstimate: false,
-  },
-};
-
-export const FreeTransaction: Story = {
-  args: {
-    transactionFee: 'FREE',
-    title: 'Network Fee',
-    description: 'No fees for this transaction type',
-    backgroundColor: '$green2',
-    titleColor: '$green11',
-    feeColor: '$green12',
-    showEstimate: false,
-  },
-};
-
-export const ComplexFee: Story = {
-  args: {
-    transactionFee: '0.001 FLOW',
-    title: 'Transaction Breakdown',
-    description: 'Base: 0.0005 FLOW • Priority: 0.0003 FLOW • Storage: 0.0002 FLOW',
+    flowFee: '0.1 FLOW',
+    usdFee: '$2.50',
+    title: 'Priority Fee',
+    showCovered: false,
   },
 };
