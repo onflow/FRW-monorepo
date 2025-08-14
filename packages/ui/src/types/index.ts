@@ -38,7 +38,7 @@ export interface SegmentedControlProps {
 export interface SkeletonProps {
   width?: number | string;
   height?: number | string;
-  borderRadius?: number;
+  borderRadius?: number | string;
   animated?: boolean;
 }
 
@@ -80,7 +80,6 @@ export interface AccountCardProps {
   account: Account;
   title: string;
   isLoading?: boolean;
-  showBackground?: boolean;
   // Modal-style selection props
   accounts?: Account[];
   onAccountSelect?: (account: Account) => void;
