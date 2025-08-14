@@ -11,9 +11,18 @@ architecture follows clean separation of concerns with clear data flow: **Model
 
 ```mermaid
 graph TB
-    subgraph "📱 View Layer (Applications)"
-        RN[React Native App<br/>UI Components]
-        EXT[Browser Extension<br/>UI Components]
+    subgraph "📱 Application Layer"
+        RN[React Native App<br/>Platform Integration]
+        EXT[Browser Extension<br/>Platform Integration]
+    end
+
+    subgraph "📺 Screen Layer (UI + ViewModel Integration)"
+        SCREENS[📦 screens<br/>Complete Screen Logic<br/><i>Ready-to-use Screens</i>]
+    end
+
+    subgraph "🎨 UI Layer (Pure Components)"
+        UI[📦 ui<br/>Stateless UI Components]
+        ICONS[📦 icons<br/>Universal SVG Icons]
     end
 
     subgraph "🧠 ViewModel Layer"
@@ -40,9 +49,13 @@ graph TB
         BRIDGE[Native Bridge<br/>Platform Integration]
     end
 
-    %% MVVM Data Flow
-    RN --> STORES
-    EXT --> STORES
+    %% MVVM Data Flow with Screen Layer
+    RN --> SCREENS
+    EXT --> SCREENS
+
+    SCREENS --> UI
+    SCREENS --> STORES
+    UI --> ICONS
 
     STORES --> SERVICES
     STORES --> WORKFLOW
@@ -71,14 +84,17 @@ graph TB
 
 ## MVVM Pattern Implementation
 
-### Data Flow: Model → Network → Business Logic → ViewModel → View
+### Data Flow: Model → Network → Business Logic → ViewModel → UI → Screen → Application
 
 1. **Model Layer** (`types`) - Defines data structures and interfaces
 2. **Network Layer** (`api`, `cadence`) - Data fetching from blockchain and APIs
 3. **Business Logic** (`services`, `workflow`) - Domain logic and transaction
    orchestration
 4. **ViewModel** (`stores`) - UI state management and data transformation
-5. **View** (`apps`) - UI components and user interaction
+5. **UI Layer** (`ui`, `icons`) - Pure, stateless UI components
+6. **Screen Layer** (`screens`) - Integration of UI components with ViewModels
+7. **Application Layer** (`apps`) - Platform-specific implementations using
+   shared screens
 
 ---
 
@@ -279,56 +295,173 @@ business data for UI consumption
 
 ---
 
-### 📱 View Layer - User Interface
+### 🎨 UI Layer - Pure Components
 
-#### React Native App (`apps/react-native`)
+#### 📦 UI (`packages/ui`)
 
-**Role**: **View** in MVVM pattern - UI components that observe ViewModels
+**Role**: Pure, stateless UI components with no business logic
 
-**Purpose**: iOS/Android mobile application with reactive UI
+**Purpose**: Reusable UI building blocks that work across all platforms
 
-**Key Features**:
+**Features**:
 
-- **Theme System**: Complete light/dark mode with CSS variables
-- **Navigation**: React Navigation v7 with native stack
-- **Bridge Integration**: Native iOS/Android integration
-- **UI Components**: Custom design system with React Native Reusables
-- **Reactive UI**: Components automatically update when ViewModels change
+- **Tamagui Components**: Modern styling with theme support
+- **Zero Business Logic**: Pure presentation components only
+- **Universal Compatibility**: Works in React Native and web environments
+- **Storybook Integration**: Complete component documentation and testing
 
 ```typescript
-// View observes ViewModel
-import { useSendStore, useTokenStore } from '@onflow/frw-stores';
+// Pure UI component - no state or business logic
+export const TokenCard = ({ token, onPress, isSelected }: TokenCardProps) => (
+  <Card onPress={onPress} variant={isSelected ? 'selected' : 'default'}>
+    <TokenIcon address={token.address} />
+    <Text>{token.name}</Text>
+    <Text>{token.balance}</Text>
+  </Card>
+);
+```
 
-const SelectTokensScreen = () => {
+#### 📦 Icons (`packages/icons`)
+
+**Role**: Universal SVG icon components with runtime theming
+
+**Features**:
+
+- **Runtime Color Control**: Dynamic theming without hardcoded values
+- **Universal Platform Support**: Web, React Native, Extensions
+- **Multiple Themes**: Outline, filled, dual-tone variants
+- **Automatic Generation**: SVG to React component conversion
+
+---
+
+### 📺 Screen Layer - UI + ViewModel Integration
+
+#### 📦 Screens (`packages/screens`)
+
+**Role**: **Complete Screen Logic** - Pre-built screens combining UI components
+with ViewModels
+
+**Purpose**: Ready-to-use screens that applications can import directly,
+ensuring consistency and maximum code reuse
+
+**Key Innovation**: Both React Native and Extension apps use the exact same
+screen implementations
+
+**Core Screens**:
+
+- **Send Flow Screens**: Complete transaction workflow
+  ```typescript
+  // From packages/screens/src/send/
+  -SelectTokensScreen - // Token selection with balance display
+    SendToScreen - // Recipient selection and validation
+    SendTokensScreen - // Amount input and confirmation
+    NFTDetailScreen - // NFT details and transfer options
+    SendMultipleNFTsScreen; // Batch NFT operations
+  ```
+
+**Screen Implementation Pattern**:
+
+```typescript
+// Screen combines UI + ViewModel
+import { useSendStore, useTokenStore } from '@onflow/frw-stores';
+import { TokenCard, Button } from '@onflow/frw-ui';
+
+export const SelectTokensScreen = () => {
+  // ViewModel integration
   const { selectedToken, setSelectedToken } = useSendStore();
   const { tokens, fetchTokens } = useTokenStore();
 
-  // UI automatically updates when store state changes
+  // Pure UI composition
   return (
-    <TokenList
-      tokens={tokens}
-      onSelect={setSelectedToken}
-      selectedToken={selectedToken}
-    />
+    <ScrollView>
+      {tokens.map(token => (
+        <TokenCard
+          key={token.address}
+          token={token}
+          isSelected={selectedToken?.address === token.address}
+          onPress={() => setSelectedToken(token)}
+        />
+      ))}
+    </ScrollView>
   );
 };
 ```
 
-**Tech Stack**:
+**Benefits**:
 
-- React Native 0.80, React 19, TypeScript
-- NativeWind (Tailwind CSS), React Navigation, Zustand
-- Native Turbo Modules, MMKV storage
+- ✅ **Maximum Code Reuse**: Both platforms share complete screen logic
+- ✅ **Consistent UX**: Identical behavior across React Native and Extension
+- ✅ **Rapid Development**: Apps simply import and use pre-built screens
+- ✅ **Easy Testing**: Screen logic can be tested independently
+- ✅ **Storybook Support**: Screen-level component stories for documentation
+
+---
+
+### 📱 Application Layer - Platform Integration
+
+#### React Native App (`apps/react-native`)
+
+**Role**: **Platform Integration** - Minimal app layer using shared screens
+
+**Purpose**: iOS/Android mobile application with maximum code reuse
+
+**Implementation Pattern**:
+
+```typescript
+// App simply imports and uses pre-built screens
+import { SelectTokensScreen } from '@onflow/frw-screens';
+
+const App = () => {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen
+          name="SelectTokens"
+          component={SelectTokensScreen}  // ← Direct usage of shared screen
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+};
+```
+
+**Platform-Specific Features**:
+
+- **React Navigation v7**: Native stack navigation
+- **NativeWind**: Tailwind CSS for React Native
+- **MMKV Storage**: Persistent state management
+- **Native Bridge**: iOS/Android platform integration
+- **Theme System**: CSS variables with light/dark mode
 
 #### Browser Extension (`apps/extension`)
 
-**Role**: **View** for web platform
+**Role**: **Platform Integration** - Chrome extension using shared screens
 
-**Current Status**: Fully functional extension with complete wallet features
+**Purpose**: Web platform wallet using identical screen logic as React Native
 
-- Transaction signing, account management, dApp integration
-- Complete Flow blockchain integration
-- Background service workers and content scripts
+**Implementation Pattern**:
+
+```typescript
+// Extension imports same screens as React Native
+import { SelectTokensScreen } from '@onflow/frw-screens';
+
+const PopupApp = () => (
+  <Router>
+    <Route
+      path="/select-tokens"
+      component={SelectTokensScreen}  // ← Same screen as React Native
+    />
+  </Router>
+);
+```
+
+**Platform-Specific Features**:
+
+- **Chrome Manifest V3**: Service worker architecture
+- **Background Scripts**: Secure blockchain/key management
+- **Content Scripts**: dApp provider injection
+- **Chrome Storage API**: Extension-specific persistence
+- **Stale-while-revalidate Cache**: Custom caching system
 
 ---
 
@@ -377,7 +510,7 @@ export const getBridge = () => ServiceContext.current().bridge;
 
 ## Development Workflow
 
-### 🔄 MVVM Development Flow
+### 🔄 MVVM + Universal Screens Development Flow
 
 1. **Model First**: Define data structures in `packages/types`
 2. **Network Layer**: Implement API clients in `packages/api` and
@@ -385,14 +518,27 @@ export const getBridge = () => ServiceContext.current().bridge;
 3. **Business Logic**: Add domain services in `packages/services` and workflows
    in `packages/workflow`
 4. **ViewModel**: Manage UI state in `packages/stores` (ViewModels)
-5. **View**: Build reactive UI components in applications
+5. **UI Components**: Build pure, stateless components in `packages/ui`
+6. **Screen Integration**: Combine UI + ViewModels in `packages/screens`
+7. **Application**: Import and use pre-built screens in both React Native and
+   Extension
 
-### 📦 Package Dependencies (MVVM Flow)
+**Revolutionary Benefit**: Both platforms share not just business logic, but
+complete screen implementations, dramatically reducing platform-specific code.
+
+### 📦 Package Dependencies (MVVM + Universal Screens Flow)
 
 ```
-📱 View Layer
-├── apps/react-native (depends on: stores, context, types)
-└── apps/extension (depends on: stores, context, types)
+📱 Application Layer
+├── apps/react-native (depends on: screens, ui, stores, context, types)
+└── apps/extension (depends on: screens, ui, stores, context, types)
+
+📺 Screen Layer (UI + ViewModel Integration)
+└── packages/screens (depends on: ui, icons, stores, types)
+
+🎨 UI Layer (Pure Components)
+├── packages/ui (depends on: types)
+└── packages/icons (depends on: none)
 
 🧠 ViewModel Layer
 └── packages/stores (depends on: services, workflow, context, types, utils)
@@ -413,18 +559,27 @@ export const getBridge = () => ServiceContext.current().bridge;
 └── packages/utils (depends on: none)
 ```
 
+**Key Innovation**: The `screens` package acts as the integration layer,
+allowing both applications to share complete screen logic while maintaining
+platform-specific optimizations.
+
 ## Key Benefits
 
-### ✅ MVVM Architecture Advantages
+### ✅ MVVM + Universal Screens Architecture Advantages
 
-1. **Clear Separation**: Each layer has distinct responsibilities
-2. **Reactive UI**: Views automatically update when ViewModels change
-3. **Testability**: ViewModels can be tested independently of UI
-4. **Platform Agnostic**: Business logic shared between React Native and
-   Extension
-5. **Type Safety**: Complete TypeScript coverage with shared models
-6. **Maintainability**: Clear dependency flow makes code easy to understand and
-   modify
+1. **Revolutionary Code Reuse**: Both platforms share complete screen
+   implementations, not just business logic
+2. **Consistent User Experience**: Identical behavior and interface across React
+   Native and Extension
+3. **Rapid Platform Development**: New platforms can immediately use existing
+   screens
+4. **Clear Separation**: Each layer has distinct, well-defined responsibilities
+5. **Reactive UI**: Screens automatically update when ViewModels change
+6. **Enhanced Testability**: Screen logic can be tested independently of
+   platform-specific code
+7. **Type Safety**: Complete TypeScript coverage across all layers
+8. **Maintainability**: Clear dependency flow and universal screen logic reduces
+   complexity
 
 ### 🎯 Proven in Production
 
@@ -442,15 +597,15 @@ This MVVM architecture powers the Flow Reference Wallet iOS app, handling:
 
 ```bash
 # Clone and setup
-git clone https://github.com/onflow/FRW-monorepo
+git clone https://github.com/onflow/FRW
 cd FRW
 pnpm install
 
-# Start development (MVVM workflow)
-pnpm dev:packages  # Terminal 1: Watch packages (Models, Network, Business Logic, ViewModels)
-pnpm dev:rn        # Terminal 2: Start React Native (View layer)
+# Start development (MVVM + Universal Screens workflow)
+pnpm dev:packages  # Terminal 1: Watch all packages (Models, Network, Business Logic, ViewModels, UI, Screens)
+pnpm dev:rn        # Terminal 2: Start React Native (Application layer)
 
-# Your app is now running with full MVVM hot reload! 🚀
+# Your app is now running with full MVVM + Universal Screens hot reload! 🚀
 ```
 
 ---
