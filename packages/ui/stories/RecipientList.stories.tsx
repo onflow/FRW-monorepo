@@ -185,27 +185,6 @@ export const Refreshing: Story = {
   },
 };
 
-export const NoSeparators: Story = {
-  args: {
-    data: mockAccounts,
-    showSeparators: false,
-    itemSpacing: 12,
-  },
-};
-
-export const CustomSpacing: Story = {
-  args: {
-    sections: [
-      { title: 'Accounts', data: mockAccounts },
-      { title: 'Contacts', data: mockContacts },
-    ],
-    showSectionHeaders: true,
-    itemSpacing: 16,
-    sectionSpacing: 32,
-    contentPadding: 24,
-  },
-};
-
 export const NoSectionHeaders: Story = {
   args: {
     sections: [

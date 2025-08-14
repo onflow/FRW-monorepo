@@ -56,13 +56,3 @@ export const EmptyWithoutButton: Story = {
     message: 'No NFT collections found for this account',
   },
 };
-
-export const LongMessage: Story = {
-  args: {
-    type: 'empty',
-    message:
-      'This is a much longer message that explains in detail what happened and why there might not be any content to display here.',
-    refreshText: 'Try Again',
-    onRefresh: () => console.log('Try again clicked'),
-  },
-};

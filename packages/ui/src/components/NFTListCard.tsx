@@ -1,3 +1,4 @@
+import { ChevronRight } from '@onflow/frw-icons';
 import React from 'react';
 import { XStack, YStack } from 'tamagui';
 
@@ -19,67 +20,84 @@ export function NFTListCard({
   return (
     <YStack
       width="100%"
-      backgroundColor="$gray2"
-      borderRadius={8}
+      backgroundColor="rgba(255, 255, 255, 0.05)"
+      borderRadius="$4"
+      borderWidth={1}
+      borderColor="rgba(255, 255, 255, 0.1)"
       position="relative"
-      padding={4}
-      pressStyle={{ opacity: 0.8 }}
+      padding="$3"
+      pressStyle={{
+        opacity: 0.8,
+        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+        borderColor: 'rgba(255, 255, 255, 0.15)',
+      }}
       onPress={onPress}
       cursor="pointer"
       {...props}
     >
-      {/* NFT Image */}
-      <YStack
-        borderRadius={8}
-        overflow="hidden"
-        aspectRatio={1}
-        backgroundColor="$gray3"
-        marginBottom={8}
-        pressStyle={{ opacity: 0.9 }}
-        onPress={onDetailPress}
-        cursor="pointer"
-      >
-        <NFTCover src={nft.thumbnail || nft.image} size="100%" borderRadius="$3" />
+      <XStack gap="$3" alignItems="center">
+        {/* NFT Image */}
+        <YStack
+          borderRadius="$3"
+          overflow="hidden"
+          width={60}
+          height={60}
+          backgroundColor="$gray3"
+          pressStyle={{ opacity: 0.9 }}
+          onPress={onDetailPress}
+          cursor="pointer"
+          position="relative"
+        >
+          <NFTCover src={nft.thumbnail || nft.image} size="100%" borderRadius="$3" />
 
-        {/* Amount Badge for ERC1155 tokens */}
-        {showAmount && nft.amount && (
-          <YStack
-            position="absolute"
-            top={8}
-            left={8}
-            backgroundColor="$gray2"
-            borderRadius={24}
-            paddingHorizontal={8}
-            paddingVertical={4}
-          >
-            <Text fontSize={12} fontWeight="500" color="$gray12">
-              {nft.amount}
-            </Text>
-          </YStack>
-        )}
-      </YStack>
+          {/* Amount Badge for ERC1155 tokens */}
+          {showAmount && nft.amount && (
+            <YStack
+              position="absolute"
+              top={4}
+              right={4}
+              backgroundColor="rgba(0, 0, 0, 0.7)"
+              borderRadius={12}
+              paddingHorizontal={6}
+              paddingVertical={2}
+            >
+              <Text fontSize={10} fontWeight="600" color="$white">
+                {nft.amount}
+              </Text>
+            </YStack>
+          )}
+        </YStack>
 
-      {/* NFT Title */}
-      <Text fontSize={16} fontWeight="600" color="$gray12" numberOfLines={1}>
-        {nft.name}
-      </Text>
-
-      {/* Account Info */}
-      {account && (
-        <XStack alignItems="center" marginTop={4}>
-          <Avatar src={account.avatar} fallback={account.name?.charAt(0) || '?'} size={20} />
-          <Text fontSize={14} color="$gray11" marginLeft={8} numberOfLines={1}>
-            {account.name}
+        {/* NFT Content */}
+        <YStack flex={1} gap="$1.5">
+          {/* NFT Title */}
+          <Text fontSize="$4" fontWeight="600" color="$white" numberOfLines={1}>
+            {nft.name || 'Unnamed NFT'}
           </Text>
+
+          {/* Account Info */}
+          {account && (
+            <XStack alignItems="center" gap="$2">
+              <Avatar src={account.avatar} fallback={account.name?.charAt(0) || '?'} size={16} />
+              <Text fontSize="$2" color="$textSecondary" numberOfLines={1}>
+                {account.name}
+              </Text>
+            </XStack>
+          )}
+        </YStack>
+
+        {/* Right Chevron Icon */}
+        <XStack width={24} height={24} alignItems="center" justifyContent="center" opacity={0.6}>
+          <ChevronRight size={16} color="rgba(255, 255, 255, 0.6)" />
         </XStack>
-      )}
+      </XStack>
 
       {/* Selection Icon */}
       {selectionIcon && (
         <YStack
           position="absolute"
-          top={10}
-          right={10}
+          top="$2"
+          right="$2"
           pressStyle={{ opacity: 0.8 }}
           onPress={onPress}
           cursor="pointer"

@@ -1,51 +1,129 @@
+import { FlowLogo } from '@onflow/frw-icons';
 import React from 'react';
-import { YStack } from 'tamagui';
+import { YStack, XStack } from 'tamagui';
 
 import { Text } from '../foundation/Text';
 
 export interface TransactionFeeSectionProps {
-  transactionFee: string;
+  flowFee?: string;
+  usdFee?: string;
   title?: string;
-  description?: string;
+  showCovered?: boolean;
+  coveredMessage?: string;
+  isFree?: boolean;
   backgroundColor?: string;
   borderRadius?: string | number;
   contentPadding?: number;
   titleColor?: string;
   feeColor?: string;
-  showEstimate?: boolean;
 }
 
 export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
-  transactionFee,
-  title = 'Network Fee',
-  description,
-  backgroundColor = '$gray1',
-  borderRadius = '$4',
-  contentPadding = 16,
-  titleColor = '$gray11',
-  feeColor = '$color',
-  showEstimate = true,
+  flowFee = '0.001 FLOW',
+  usdFee = '$0.00',
+  title = 'Transaction Fee',
+  showCovered = true,
+  coveredMessage = 'Covered by Flow Wallet',
+  isFree = false,
+  backgroundColor,
+  borderRadius,
+  contentPadding,
+  titleColor = '#FFFFFF',
+  feeColor = '#FFFFFF',
 }) => {
-  // Format the fee to ensure it shows estimate symbol if needed
-  const formatFee = (fee: string) => {
-    if (showEstimate && !fee.startsWith('~')) {
-      return `~${fee}`;
-    }
-    return fee;
-  };
+  const containerProps = backgroundColor
+    ? {
+        bg: backgroundColor,
+        rounded: borderRadius,
+        p: contentPadding,
+      }
+    : {};
 
   return (
-    <YStack bg={backgroundColor} rounded={borderRadius} p={contentPadding}>
-      <Text fontSize="$3" fontWeight="600" color={titleColor} mb="$2">
-        {title}
-      </Text>
-      <Text fontSize="$4" color={feeColor}>
-        {formatFee(transactionFee)}
-      </Text>
-      {description && (
-        <Text fontSize="$2" color="$gray10" mt="$1">
-          {description}
+    <YStack gap="$3" {...containerProps}>
+      {/* Main fee row */}
+      <XStack justifyContent="space-between" alignItems="center">
+        {/* Left side - Title */}
+        <Text
+          fontSize="$3"
+          fontWeight="600"
+          color={titleColor}
+          lineHeight={20}
+          letterSpacing="-0.6%"
+        >
+          {title}
         </Text>
+
+        {/* Right side - Fee amount and Flow logo */}
+        <XStack alignItems="center" gap="$2">
+          {isFree ? (
+            // Show strikethrough when free
+            <XStack alignItems="center" gap="$2" position="relative">
+              <Text
+                fontSize="$4"
+                fontWeight="400"
+                color={feeColor}
+                lineHeight={20}
+                letterSpacing="-0.6%"
+                textDecorationLine="line-through"
+                opacity={0.6}
+              >
+                {flowFee}
+              </Text>
+              <Text
+                fontSize="$4"
+                fontWeight="400"
+                color={feeColor}
+                lineHeight={20}
+                letterSpacing="-0.6%"
+                textDecorationLine="line-through"
+                opacity={0.6}
+              >
+                {usdFee}
+              </Text>
+              <FlowLogo size={18} style={{ opacity: 0.6 }} />
+            </XStack>
+          ) : (
+            // Show normal fee display
+            <XStack alignItems="center" gap="$2">
+              <Text
+                fontSize="$4"
+                fontWeight="400"
+                color="rgba(255, 255, 255, 0.6)"
+                lineHeight={20}
+                letterSpacing="-0.6%"
+              >
+                {flowFee}
+              </Text>
+              <Text
+                fontSize="$4"
+                fontWeight="400"
+                color={feeColor}
+                lineHeight={20}
+                letterSpacing="-0.6%"
+              >
+                {usdFee}
+              </Text>
+              <FlowLogo size={18} />
+            </XStack>
+          )}
+        </XStack>
+      </XStack>
+
+      {/* Covered message row */}
+      {showCovered && (
+        <XStack justifyContent="flex-end" alignItems="center">
+          <Text
+            fontSize="$2"
+            fontWeight="400"
+            color="rgba(255, 255, 255, 0.4)"
+            lineHeight={17}
+            letterSpacing="-0.6%"
+            textAlign="right"
+          >
+            {coveredMessage}
+          </Text>
+        </XStack>
       )}
     </YStack>
   );

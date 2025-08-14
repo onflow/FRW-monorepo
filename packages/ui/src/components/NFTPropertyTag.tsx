@@ -29,11 +29,20 @@ export function NFTPropertyTag({
       borderRadius="$6"
       px={padding}
       py="$1.5"
+      maxWidth="100%"
+      overflow="hidden"
     >
-      <Text fontSize={fontSize} color={labelColor || '$textSecondary'}>
+      <Text fontSize={fontSize} color={labelColor || '$textSecondary'} flexShrink={0}>
         {label}:
       </Text>
-      <Text fontSize={fontSize} fontWeight="500" color={textColor || '$color'}>
+      <Text
+        fontSize={fontSize}
+        fontWeight="500"
+        color={textColor || '$color'}
+        numberOfLines={1}
+        flex={1}
+        overflow="hidden"
+      >
         {value}
       </Text>
     </XStack>

@@ -7,7 +7,6 @@ import {
   AccountItem,
   ContactItem,
   RecentItem,
-  UnknownAddressItem,
 } from '../src/components/RecipientItem';
 
 const meta: Meta<typeof RecipientItem> = {
@@ -78,7 +77,7 @@ export const Contact: Story = {
     name: 'John Doe',
     address: '0x9876543210fedcba9876543210fedcba98765432',
     type: 'contact',
-    showEditButton: true,
+    showCopyButton: true,
   },
 };
 
@@ -142,16 +141,6 @@ export const Disabled: Story = {
   },
 };
 
-export const LargeAvatar: Story = {
-  args: {
-    name: 'Large Avatar',
-    address: '0x1234abcd5678efgh9012ijkl3456mnop7890qrst',
-    type: 'contact',
-    avatarSize: 60,
-    showEditButton: true,
-  },
-};
-
 // Preset variants stories
 export const AccountVariant: Story = {
   render: (args) => (
@@ -170,7 +159,7 @@ export const ContactVariant: Story = {
       name="Alice Cooper"
       address="0x9876543210fedcba9876543210fedcba98765432"
       onPress={() => console.log('Contact pressed')}
-      onEdit={() => console.log('Edit contact')}
+      onCopy={() => console.log('Copy contact')}
     />
   ),
 };
@@ -183,52 +172,4 @@ export const RecentVariant: Story = {
       onPress={() => console.log('Recent pressed')}
     />
   ),
-};
-
-export const UnknownVariant: Story = {
-  render: (args) => (
-    <UnknownAddressItem
-      name="0x5555...4444"
-      address="0x5555666677778888999900001111222233334444"
-      onPress={() => console.log('Unknown pressed')}
-      onCopy={() => console.log('Copy address')}
-    />
-  ),
-};
-
-export const AllVariants: Story = {
-  render: () => (
-    <YStack gap="$3">
-      <AccountItem
-        name="Main Flow Account"
-        address="0x1234567890abcdef1234567890abcdef12345678"
-        balance="1,250.50 FLOW"
-        onPress={() => console.log('Account pressed')}
-      />
-      <ContactItem
-        name="Alice Cooper"
-        address="0x9876543210fedcba9876543210fedcba98765432"
-        onPress={() => console.log('Contact pressed')}
-        onEdit={() => console.log('Edit contact')}
-      />
-      <RecentItem
-        name="Recent Transfer"
-        address="0xabcdef1234567890abcdef1234567890abcdef12"
-        onPress={() => console.log('Recent pressed')}
-      />
-      <UnknownAddressItem
-        name="Unknown Address"
-        address="0x5555666677778888999900001111222233334444"
-        onPress={() => console.log('Unknown pressed')}
-        onCopy={() => console.log('Copy address')}
-      />
-    </YStack>
-  ),
-  decorators: [
-    (Story) => (
-      <YStack p="$4" width={400}>
-        <Story />
-      </YStack>
-    ),
-  ],
 };

@@ -3,17 +3,16 @@ import React, { useState } from 'react';
 import { XStack, YStack } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
-import { Card } from '../foundation/Card';
 import { Skeleton } from '../foundation/Skeleton';
 import { Text } from '../foundation/Text';
 import type { AccountCardProps, Account } from '../types';
 import { AccountSelectorModal } from './AccountSelectorModal';
+import { AddressText } from './AddressText';
 
 export function AccountCard({
   account,
   title,
   isLoading = false,
-  showBackground = false,
   // Modal-style selection props
   accounts,
   onAccountSelect,
@@ -22,52 +21,72 @@ export function AccountCard({
   ...props
 }: AccountCardProps): React.ReactElement {
   const [modalOpen, setModalOpen] = useState(false);
+
   const content = (
-    <YStack {...props}>
-      <Text fontSize="$2" mb="$3" fontWeight="400" color="$textSecondary">
+    <YStack gap="$3">
+      {/* Title */}
+      <Text fontSize="$2" fontWeight="400" color="rgba(255, 255, 255, 0.8)" lineHeight={16}>
         {title}
       </Text>
 
-      {/* Account Row */}
-      <XStack items="center" justify="space-between" py="$2.5" px="$1.5">
-        <XStack items="center" gap="$4" flex={1}>
-          {/* Account Avatar */}
-          <Avatar
-            src={account.avatar}
-            fallback={account.name?.charAt(0) || '?'}
-            size={36}
-            borderColor="#00EF8B"
-            borderWidth={1}
-          />
+      {/* Account Container */}
+      <YStack
+        bg="rgba(255, 255, 255, 0.1)"
+        rounded="$4"
+        pt="$4"
+        px="$4"
+        pb="$6"
+        pressStyle={{
+          bg: 'rgba(255, 255, 255, 0.12)',
+        }}
+        onPress={enableModalSelection ? () => setModalOpen(true) : undefined}
+        cursor={enableModalSelection ? 'pointer' : 'default'}
+        {...props}
+      >
+        {/* Account Row */}
+        <XStack items="center" justify="space-between">
+          <XStack items="center" gap="$4" flex={1}>
+            {/* Account Avatar */}
+            <Avatar
+              src={account.avatar}
+              fallback={account.name?.charAt(0) || '?'}
+              size={36}
+              borderColor="#00EF8B"
+              borderWidth={1}
+            />
 
-          {/* Account Details */}
-          <YStack flex={1} gap="$0.5">
-            {/* Account Name */}
-            <Text color="$white" fontSize={14} fontWeight="600" lineHeight="$1">
-              {account.name}
-            </Text>
-
-            {/* Account Address */}
-            <Text fontSize={12} color="$textSecondary" fontWeight="400">
-              {account.address}
-            </Text>
-
-            {/* Balance */}
-            {isLoading ? (
-              <Skeleton width="$6" height="$1" />
-            ) : account.balance ? (
-              <Text color="$textSecondary" fontWeight="400" fontSize={12}>
-                {account.balance}
+            {/* Account Details */}
+            <YStack flex={1} gap="$0.5">
+              {/* Account Name */}
+              <Text color="$white" fontSize="$3" fontWeight="600" lineHeight={17} numberOfLines={1}>
+                {account.name || 'Unnamed Account'}
               </Text>
-            ) : null}
-          </YStack>
-        </XStack>
 
-        {/* Edit Icon */}
-        <XStack width={24} height={24} items="center" justify="center">
-          <Edit size={18} color="#767676" theme="outline" />
+              {/* Account Address */}
+              <AddressText
+                address={account.address}
+                truncate={true}
+                startLength={6}
+                endLength={4}
+              />
+
+              {/* Balance */}
+              {isLoading ? (
+                <Skeleton width="$8" height="$4" borderRadius="$2" />
+              ) : account.balance ? (
+                <Text color="#B3B3B3" fontWeight="400" fontSize="$2" lineHeight={17}>
+                  {account.balance}
+                </Text>
+              ) : null}
+            </YStack>
+          </XStack>
+
+          {/* Edit Icon */}
+          <XStack width={24} height={24} items="center" justify="center">
+            <Edit size={18} color="#767676" theme="outline" />
+          </XStack>
         </XStack>
-      </XStack>
+      </YStack>
     </YStack>
   );
 
@@ -80,21 +99,7 @@ export function AccountCard({
 
   return (
     <>
-      {showBackground ? (
-        <Card
-          width="100%"
-          rounded={16}
-          pt="$4"
-          px="$4"
-          pb="$6"
-          mt="$5"
-          bg="rgba(255, 255, 255, 0.1)"
-        >
-          {content}
-        </Card>
-      ) : (
-        content
-      )}
+      {content}
 
       {/* Account Selector Modal */}
       {enableModalSelection && accounts && (
