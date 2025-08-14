@@ -38,8 +38,11 @@
       "WebFetch(domain:www.figma.com)",
       "Bash(claude mcp:*)",
       "mcp__framelink-figma__get_figma_data",
+      "Bash(node:*)",
+      "Bash(npx -y @svgr/cli:*)",
       "mcp__fcl-js__search_fcl_js_code"
     ],
-    "deny": []
+    "deny": [],
+    "defaultMode": "acceptEdits"
   }
 }

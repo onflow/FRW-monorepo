@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, X } from '@onflow/frw-icons';
+import { ChevronDown, ChevronUp, Close } from '@onflow/frw-icons';
 import React, { useState } from 'react';
 import { YStack, XStack, ScrollView, Image, View } from 'tamagui';
 
@@ -115,7 +115,7 @@ const ExpandedNFTItem: React.FC<ExpandedNFTItemProps> = ({ nft, onRemove, itemHe
           variant="ghost"
           circular
           onPress={() => onRemove(nft.id)}
-          icon={<X size={16} color="$gray11" />}
+          icon={<Close size={16} color="$gray11" />}
         />
       )}
     </XStack>

@@ -2,28 +2,34 @@
   "name": "@onflow/frw-icons",
   "version": "1.0.0",
   "description": "SVG icons package for Flow Reference Wallet with automatic React component generation",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
+  "main": "./dist/web/index.js",
+  "module": "./dist/web/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "react-native": {
+        "import": "./dist/native/index.mjs",
+        "require": "./dist/native/index.js"
+      },
+      "import": "./dist/web/index.mjs",
+      "require": "./dist/web/index.js"
     }
   },
   "files": [
     "dist",
-    "src/components",
+    "src/web",
+    "src/react-native",
     "README.md"
   ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "generate:icons": "node scripts/icon-generator.js",
-    "generate:icons:force": "node scripts/icon-generator.js --force",
-    "postinstall": "npm run generate:icons",
-    "clean": "rm -rf dist src/components",
+    "generate:icons": "node scripts/icon-generator.js --force",
+    "generate:icons:incremental": "node scripts/icon-generator.js",
+    "postinstall": "npm run generate:icons:incremental",
+    "clean": "rm -rf dist src/web src/react-native",
+    "clean:generated": "find src -name '*.generated.tsx' -delete && find src -name 'index.ts' -delete",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },
@@ -39,14 +45,20 @@
   "author": "Flow Reference Wallet Team",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^22.11.0",
     "@svgr/cli": "^8.1.0",
+    "@types/node": "^22.11.0",
     "eslint": "^9.17.0",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2"
   },
   "peerDependencies": {
-    "react": "19.1.0"
+    "react": "19.1.0",
+    "react-native-svg": ">=15.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react-native-svg": {
+      "optional": true
+    }
   },
   "repository": {
     "type": "git",
@@ -55,5 +67,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.28.3"
   }
 }

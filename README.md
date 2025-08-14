@@ -10,8 +10,8 @@
 
 ## ✨ Features
 
-- 🏗️ **MVVM Architecture**: Clean Model-ViewModel-View separation with reactive
-  UI
+- 🏗️ **MVVM Architecture**: Clean Model-ViewModel-View separation with
+  reactiveUI
 - 📱 **Multi-Platform**: React Native (iOS/Android) + Browser Extension
 - 🌙 **Theme System**: Complete light/dark mode with CSS variables
 - 🔗 **Flow + EVM**: Full Flow and Ethereum blockchain support
