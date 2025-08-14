@@ -26,19 +26,15 @@ class PlatformImpl implements PlatformSpec {
     // Console logging for development
     switch (level) {
       case 'debug':
-        // eslint-disable-next-line no-console
         console.log(prefix, message, ...args);
         break;
       case 'info':
-        // eslint-disable-next-line no-console
         console.info(prefix, message, ...args);
         break;
       case 'warn':
-        // eslint-disable-next-line no-console
         console.warn(prefix, message, ...args);
         break;
       case 'error':
-        // eslint-disable-next-line no-console
         console.error(prefix, message, ...args);
         break;
     }
@@ -66,7 +62,7 @@ class PlatformImpl implements PlatformSpec {
       }
     } catch (error) {
       // Fallback to console if Instabug fails (e.g., not initialized yet)
-      // eslint-disable-next-line no-console
+
       console.warn('[PlatformImpl] Failed to log to Instabug:', error);
     }
   }

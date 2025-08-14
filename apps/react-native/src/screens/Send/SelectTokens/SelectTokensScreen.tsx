@@ -26,6 +26,7 @@ import {
   TokenCard,
 } from 'ui';
 
+import { createAccessibleAssetStore } from './store/AccessibleAssetStore';
 import { AccountCard } from '../shared/components/AccountCard';
 
 // Tab options constants and types, similar to Swift enum
@@ -66,7 +67,37 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
     setCurrentStep,
     clearTransactionData,
     setFromAccount: setStoreFromAccount,
+    getAccessibleAssetStore,
+    setAccessibleAssetStore,
   } = useSendStore();
+
+  // Initialize and manage accessible asset store for current account
+  const initializeAccessibleAssetStore = useCallback(
+    async (account: WalletAccount) => {
+      if (!account?.address) return;
+
+      // Check if we already have an accessible asset store for this address
+      let assetStore = getAccessibleAssetStore(account.address);
+
+      if (!assetStore) {
+        // Create new store and associate it with this address
+        assetStore = createAccessibleAssetStore();
+        setAccessibleAssetStore(account.address, assetStore);
+      }
+
+      // For child accounts, fetch accessible IDs
+      if (account.type === 'child' && account.parentAddress) {
+        try {
+          const network = await NativeFRWBridge.getNetwork();
+          await assetStore.getState().fetchChildAccountAllowTypes(network || 'mainnet', account);
+          console.log('[SelectTokens] Fetched accessible IDs for child account:', account.address);
+        } catch (error) {
+          console.error('[SelectTokens] Failed to fetch accessible IDs:', error);
+        }
+      }
+    },
+    [getAccessibleAssetStore, setAccessibleAssetStore]
+  );
 
   // Function to fetch Flow balance for a specific account (FORCE FRESH ON INITIAL LOAD)
   const fetchAccountBalance = useCallback(
@@ -244,6 +275,9 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
         setNftLoading(true);
         setNftError(null);
 
+        // Initialize accessible asset store for the new account
+        await initializeAccessibleAssetStore(selectedAccount);
+
         // Fetch balance data from tokenStore (force fresh for account switching)
         await updateFromAccountBalance(selectedAccount.address, selectedAccount.type, true);
 
@@ -256,7 +290,13 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
         console.error('Failed to update account:', error);
       }
     },
-    [setStoreFromAccount, updateFromAccountBalance, fetchTokens, fetchNFTCollections]
+    [
+      setStoreFromAccount,
+      updateFromAccountBalance,
+      fetchTokens,
+      fetchNFTCollections,
+      initializeAccessibleAssetStore,
+    ]
   );
 
   // Get walletStore state using the hook (must be called at top level)
@@ -289,6 +329,9 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
           setStoreFromAccount(activeAccount);
           setIsAccountLoading(false);
 
+          // Initialize accessible asset store for active account
+          await initializeAccessibleAssetStore(activeAccount);
+
           // Start loading balance and other data in parallel
           const dataPromises = [
             updateFromAccountBalance(activeAccount.address, activeAccount.type),
@@ -304,6 +347,9 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
           setLocalFromAccount(firstAccount);
           setStoreFromAccount(firstAccount);
           setIsAccountLoading(false);
+
+          // Initialize accessible asset store for first account
+          await initializeAccessibleAssetStore(firstAccount);
 
           const dataPromises = [
             updateFromAccountBalance(firstAccount.address, firstAccount.type),
@@ -323,6 +369,64 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
 
     initializeActiveAccount();
   }, [walletStoreState.isLoading]); // Only depend on loading state to prevent infinite loops
+
+  // Get current accessible asset store for fromAccount
+  const getCurrentAssetStore = useCallback(() => {
+    if (!fromAccount?.address) return null;
+    return getAccessibleAssetStore(fromAccount.address);
+  }, [fromAccount?.address, getAccessibleAssetStore]);
+
+  // Check if a token is accessible for child accounts
+  const isTokenAccessible = useCallback(
+    (token: TokenModel) => {
+      // For non-child accounts, all tokens are accessible
+      if (fromAccount?.type !== 'child') return true;
+
+      const assetStore = getCurrentAssetStore();
+      if (!assetStore) {
+        console.log(
+          `[SelectTokens] No asset store found for child account ${fromAccount?.address}`
+        );
+        return true; // Default to accessible if store not available
+      }
+
+      const isAllowed = assetStore.getState().isTokenAllowed(token);
+      if (!isAllowed) {
+        console.log(
+          `[SelectTokens] Token ${token.symbol || token.identifier} not accessible for child account`
+        );
+      }
+
+      return isAllowed;
+    },
+    [fromAccount?.type, getCurrentAssetStore]
+  );
+
+  // Check if an NFT collection is accessible for child accounts
+  const isNFTCollectionAccessible = useCallback(
+    (collection: any) => {
+      // For non-child accounts, all NFT collections are accessible
+      if (fromAccount?.type !== 'child') return true;
+
+      const assetStore = getCurrentAssetStore();
+      if (!assetStore) {
+        console.log(
+          `[SelectTokens] No asset store found for child account ${fromAccount?.address}`
+        );
+        return true; // Default to accessible if store not available
+      }
+
+      const isAllowed = assetStore.getState().isCollectionAllowed(collection);
+      if (!isAllowed) {
+        console.log(
+          `[SelectTokens] NFT collection ${collection.name || collection.id} not accessible for child account`
+        );
+      }
+
+      return isAllowed;
+    },
+    [fromAccount?.type, getCurrentAssetStore]
+  );
 
   // Clear transaction data when user actively switches between Tokens and NFTs tabs
   // Note: We don't clear on mount to preserve data during navigation
@@ -348,7 +452,7 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
     fetchNFTCollections(fromAccount?.address, fromAccount?.type, true);
   }, [fromAccount, fetchNFTCollections]);
 
-  // Filter NFT collections based on search and exclude empty collections
+  // Filter NFT collections based on search, exclude empty collections, and check accessibility
   const filteredNFTCollections = React.useMemo(() => {
     useMemoCount++;
     console.log(
@@ -357,10 +461,11 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
 
     const startTime = performance.now();
 
-    // First filter out collections with 0 items
-    const collectionsWithItems = nftCollections.filter(
-      (collection: any) => collection.count && collection.count > 0
-    );
+    // First filter out collections with 0 items and check accessibility
+    const collectionsWithItems = nftCollections.filter((collection: any) => {
+      const hasItems = collection.count && collection.count > 0;
+      return hasItems;
+    });
 
     // Removed console.log to reduce noise
 
@@ -380,9 +485,16 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
       `[SelectTokens] useMemo completed in ${(performance.now() - startTime).toFixed(2)}ms, result count: ${searchFiltered.length}`
     );
     return searchFiltered;
-  }, [nftSearch, nftCollections.length]);
+  }, [nftSearch, nftCollections.length, isNFTCollectionAccessible]);
 
   function handleTokenPress(token: TokenModel) {
+    // Check if the token is accessible for child accounts
+    if (fromAccount?.type === 'child' && !isTokenAccessible(token)) {
+      console.log(
+        `[SelectTokens] Token ${token.symbol || token.identifier} not accessible for child account`
+      );
+      return;
+    }
     setSelectedToken(token);
     setTransactionType('tokens');
     setCurrentStep('send-to');
@@ -391,6 +503,12 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
   }
 
   function handleNFTPress(collection: CollectionModel) {
+    if (fromAccount?.type === 'child' && !isNFTCollectionAccessible(collection)) {
+      console.log(
+        `[SelectTokens] NFT collection ${collection.name || collection.id} not accessible for child account`
+      );
+      return;
+    }
     // Navigate to NFTList screen with collection data
     // Use the selected sender account's address instead of the native bridge's address
     const address = fromAccount?.address || NativeFRWBridge.getSelectedAddress();
@@ -511,7 +629,9 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
                     // For tokens with 0 raw balance, also check if there's any available balance
                     const availableBalance = parseFloat(token.availableBalanceToUse || '0');
 
-                    return rawBalance > 0 || availableBalance > 0;
+                    const hasBalance = rawBalance > 0 || availableBalance > 0;
+
+                    return hasBalance;
                   });
 
                   return tokensWithBalance.length === 0 ? (
@@ -524,7 +644,11 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
                   ) : (
                     tokensWithBalance.map((token, idx) => (
                       <React.Fragment key={`token-${token.identifier || token.symbol}-${idx}`}>
-                        <TokenCard token={token} onPress={() => handleTokenPress(token)} />
+                        <TokenCard
+                          token={token}
+                          onPress={() => handleTokenPress(token)}
+                          isAccessible={isTokenAccessible(token)}
+                        />
                         {idx !== tokensWithBalance.length - 1 && <Divider />}
                       </React.Fragment>
                     ))
@@ -603,6 +727,7 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
                     }-${idx}`}
                     collection={collection}
                     showDivider={idx !== filteredNFTCollections.length - 1}
+                    isAccessible={isNFTCollectionAccessible(collection)}
                     onPress={() => handleNFTPress(collection)}
                   />
                 ))
