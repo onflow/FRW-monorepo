@@ -281,7 +281,7 @@ function updateIndexFiles() {
     }
 
     if (exports.length > 0) {
-      const indexPath = path.join(dir, 'index.ts');
+      const indexPath = path.join(dir, 'index.generated.ts');
       fs.writeFileSync(indexPath, exports.join('\n') + '\n');
     }
   }
