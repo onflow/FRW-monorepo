@@ -1,184 +1,206 @@
-import { SendTokensScreen } from '@onflow/frw-screens';
-import type { TokenModel, WalletAccount } from '@onflow/frw-ui';
-import React, { useState, useCallback, useEffect } from 'react';
+import { SendTokensScreen, type TokenModel, type WalletAccount } from '@onflow/frw-screens';
+import React, { useCallback, useEffect, useReducer, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
-import {
-  usePlatformNavigation,
-  usePlatformBridge,
-  usePlatformTranslation,
-} from '@/bridge/PlatformContext';
-import { useActiveAccounts, useUserWallets } from '@/ui/hooks/use-account-hooks';
+import { INITIAL_TRANSACTION_STATE, transactionReducer } from '@/reducers';
+import { type FlowNetwork, type WalletAddress } from '@/shared/types';
+import { isValidAddress, isValidFlowAddress } from '@/shared/utils';
 import { useWallet } from '@/ui/hooks/use-wallet';
-import { useNetwork } from '@/ui/hooks/useNetworkHook';
+import { useCoins } from '@/ui/hooks/useCoinHook';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 
 const SendTokensScreenView = () => {
   const navigate = useNavigate();
   const params = useParams();
   const wallet = useWallet();
-  const { network } = useNetwork();
-  const userWallets = useUserWallets();
-  const activeAccounts = useActiveAccounts(network, userWallets?.currentPubkey);
+  const { network, mainAddress, evmAddress, childAccounts, currentWallet, userInfo } =
+    useProfiles();
+  const { coins, coinsLoaded } = useCoins();
 
-  // Get platform services
-  const navigation = usePlatformNavigation(navigate);
-  const bridge = usePlatformBridge();
-  const t = usePlatformTranslation();
+  // Use transaction reducer directly like SendTo screen
+  const [transactionState, dispatch] = useReducer(transactionReducer, INITIAL_TRANSACTION_STATE);
 
-  // State management for the screen
-  const [selectedToken, setSelectedToken] = useState<TokenModel | null>(null);
-  const [fromAccount, setFromAccount] = useState<WalletAccount | null>(null);
-  const [toAccount, setToAccount] = useState<WalletAccount | null>(null);
-  const [amount, setAmount] = useState('');
-  const [tokens, setTokens] = useState<TokenModel[]>([]);
-  const [isTokenMode, setIsTokenMode] = useState(true);
+  // UI state for modals
   const [isTokenSelectorVisible, setIsTokenSelectorVisible] = useState(false);
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
 
-  // Load initial data
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        // Set from account from current address
-        if (activeAccounts?.currentAddress) {
-          setFromAccount({
-            address: activeAccounts.currentAddress,
-            name: 'Current Account', // You might want to get the actual name
-            balance: '0', // You might want to get the actual balance
-          });
-        }
+  // Convert transaction state to screen props
+  const convertExtendedTokenInfoToTokenModel = useCallback(
+    (tokenInfo: any): TokenModel => ({
+      name: tokenInfo.name || 'Unknown Token',
+      symbol: tokenInfo.symbol || '',
+      balance: tokenInfo.balance || '0',
+      priceInUSD: tokenInfo.price || '0',
+      decimals: tokenInfo.decimals || 8,
+      logoURI: tokenInfo.logoURI || '',
+      address: tokenInfo.address || '',
+    }),
+    []
+  );
 
-        // Load tokens - you'll need to implement this based on your token loading logic
-        // const tokenList = await wallet.getTokenList();
-        // setTokens(tokenList);
-
-        // Set default token (e.g., FLOW)
-        const defaultToken: TokenModel = {
-          address: '0x1654653399040a61.FlowToken',
-          name: 'Flow',
-          symbol: 'FLOW',
-          decimals: 8,
-          logoURI:
-            'https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.1654653399040a61.FlowToken/logo.svg',
-          balance: '0',
-          priceInUSD: '0',
-        };
-        setSelectedToken(defaultToken);
-      } catch (error) {
-        console.error('Error loading send tokens data:', error);
-      }
-    };
-
-    loadData();
-  }, [activeAccounts?.currentAddress, wallet]);
-
-  // Get recipient from route params or previous screen
-  useEffect(() => {
-    // If there's a recipient address in route params, set it
-    if (params.toAddress) {
-      setToAccount({
-        address: params.toAddress as string,
-        name: 'Recipient',
+  const convertAddressToWalletAccount = useCallback(
+    (address: WalletAddress | '', contact?: any): WalletAccount | null => {
+      if (!address) return null;
+      return {
+        address: address as WalletAddress,
+        name: contact?.contact_name || 'Account',
         balance: '0',
-      });
-    }
-  }, [params.toAddress]);
+      };
+    },
+    []
+  );
 
-  // Event handlers
+  // Get available tokens
+  const availableTokens: TokenModel[] = React.useMemo(() => {
+    return coins ? coins.map(convertExtendedTokenInfoToTokenModel) : [];
+  }, [coins, convertExtendedTokenInfoToTokenModel]);
+
+  // Handler functions
   const handleTokenSelect = useCallback((token: TokenModel) => {
-    setSelectedToken(token);
+    const tokenInfo = {
+      name: token.name,
+      symbol: token.symbol || '',
+      balance: token.balance || '0',
+      price: token.priceInUSD || '0',
+      decimals: token.decimals || 8,
+      logoURI: token.logoURI || '',
+      address: token.address || '',
+      contractName: '',
+      path: { balance: '', receiver: '', vault: '' },
+      id: '',
+      coin: '',
+      unit: '',
+      change24h: 0,
+      total: '0',
+      icon: token.logoURI || '',
+      priceInUSD: token.priceInUSD || '0',
+      priceInFLOW: '0',
+      balanceInFLOW: '0',
+      balanceInUSD: '0',
+    };
+    dispatch({
+      type: 'setTokenInfo',
+      payload: { tokenInfo },
+    });
     setIsTokenSelectorVisible(false);
   }, []);
 
-  const handleAmountChange = useCallback((newAmount: string) => {
-    setAmount(newAmount);
+  const handleAmountChange = useCallback((amount: string) => {
+    dispatch({ type: 'setAmount', payload: amount });
   }, []);
 
   const handleToggleInputMode = useCallback(() => {
-    setIsTokenMode(!isTokenMode);
-  }, [isTokenMode]);
+    dispatch({ type: 'switchFiatOrCoin' });
+  }, []);
 
   const handleMaxPress = useCallback(() => {
-    if (selectedToken?.balance) {
-      setAmount(selectedToken.balance);
-    }
-  }, [selectedToken?.balance]);
+    dispatch({ type: 'setAmountToMax' });
+  }, []);
 
   const handleSendPress = useCallback(() => {
-    setIsConfirmationVisible(true);
-  }, []);
-
-  const handleTokenSelectorOpen = useCallback(() => {
-    setIsTokenSelectorVisible(true);
-  }, []);
-
-  const handleTokenSelectorClose = useCallback(() => {
-    setIsTokenSelectorVisible(false);
-  }, []);
-
-  const handleConfirmationOpen = useCallback(() => {
-    setIsConfirmationVisible(true);
-  }, []);
-
-  const handleConfirmationClose = useCallback(() => {
-    setIsConfirmationVisible(false);
+    console.log('Send transaction triggered');
   }, []);
 
   const handleTransactionConfirm = useCallback(async () => {
     try {
-      if (!selectedToken || !fromAccount || !toAccount || !amount) {
-        throw new Error('Missing required transaction data');
-      }
-
-      // Perform the transaction using wallet
-      // const result = await wallet.sendTransaction({
-      //   token: selectedToken,
-      //   from: fromAccount.address,
-      //   to: toAccount.address,
-      //   amount: amount,
-      // });
-
-      console.log('Transaction confirmed:', {
-        token: selectedToken,
-        from: fromAccount.address,
-        to: toAccount.address,
-        amount: amount,
-      });
-
-      // Close confirmation modal
-      setIsConfirmationVisible(false);
-
-      // Navigate to success screen or back to dashboard
-      navigate('/dashboard');
+      dispatch({ type: 'finalizeAmount' });
+      const txId = await wallet.transferTokens(transactionState);
+      console.log('Transaction submitted successfully:', txId);
     } catch (error) {
       console.error('Transaction failed:', error);
-      // Handle error (show error message, etc.)
+      throw error;
     }
-  }, [selectedToken, fromAccount, toAccount, amount, wallet, navigate]);
+  }, [wallet, transactionState]);
 
-  return (
-    <SendTokensScreen
-      selectedToken={selectedToken}
-      fromAccount={fromAccount}
-      toAccount={toAccount}
-      amount={amount}
-      isTokenMode={isTokenMode}
-      tokens={tokens}
-      isTokenSelectorVisible={isTokenSelectorVisible}
-      isConfirmationVisible={isConfirmationVisible}
-      onTokenSelect={handleTokenSelect}
-      onAmountChange={handleAmountChange}
-      onToggleInputMode={handleToggleInputMode}
-      onMaxPress={handleMaxPress}
-      onSendPress={handleSendPress}
-      onTokenSelectorOpen={handleTokenSelectorOpen}
-      onTokenSelectorClose={handleTokenSelectorClose}
-      onConfirmationOpen={handleConfirmationOpen}
-      onConfirmationClose={handleConfirmationClose}
-      onTransactionConfirm={handleTransactionConfirm}
-      transactionFee="~0.001 FLOW"
-    />
-  );
+  // Initialize transaction state on mount
+  useEffect(() => {
+    if (mainAddress && isValidFlowAddress(mainAddress) && isValidAddress(currentWallet?.address)) {
+      dispatch({
+        type: 'initTransactionState',
+        payload: {
+          network: network as FlowNetwork,
+          parentAddress: mainAddress,
+          parentCoaAddress: evmAddress as WalletAddress,
+          parentChildAddresses: childAccounts?.map((child) => child.address as WalletAddress) ?? [],
+          fromAddress: currentWallet.address as WalletAddress,
+          fromContact: {
+            id: 0,
+            address: currentWallet.address as WalletAddress,
+            contact_name: userInfo?.nickname || '',
+            username: userInfo?.username || '',
+            avatar: userInfo?.avatar || '',
+          },
+        },
+      });
+    }
+  }, [mainAddress, currentWallet?.address, userInfo, evmAddress, childAccounts, network]);
+
+  // Set recipient from route params
+  useEffect(() => {
+    if (params.toAddress) {
+      dispatch({
+        type: 'setToAddress',
+        payload: {
+          address: params.toAddress as WalletAddress,
+          contact: {
+            id: 0,
+            address: params.toAddress as WalletAddress,
+            contact_name: '',
+            username: '',
+            avatar: '',
+          },
+        },
+      });
+    }
+  }, [params.toAddress]);
+
+  // Set default token when coins are loaded
+  useEffect(() => {
+    if (coins && coins.length > 0 && !transactionState.tokenInfo.name) {
+      const flowToken = coins.find((token) => token.symbol.toLowerCase() === 'flow');
+      const defaultToken = flowToken || coins[0];
+      dispatch({
+        type: 'setTokenInfo',
+        payload: { tokenInfo: defaultToken },
+      });
+    }
+  }, [coins, transactionState.tokenInfo.name]);
+
+  // Create screen props
+  const screenProps = {
+    selectedToken: convertExtendedTokenInfoToTokenModel(transactionState.tokenInfo),
+    fromAccount: convertAddressToWalletAccount(
+      transactionState.fromAddress,
+      transactionState.fromContact
+    ),
+    toAccount: convertAddressToWalletAccount(
+      transactionState.toAddress,
+      transactionState.toContact
+    ),
+    amount:
+      transactionState.fiatOrCoin === 'coin'
+        ? transactionState.amount
+        : transactionState.fiatAmount,
+    isTokenMode: transactionState.fiatOrCoin === 'coin',
+    tokens: availableTokens,
+    isTokenSelectorVisible,
+    isConfirmationVisible,
+    onTokenSelect: handleTokenSelect,
+    onAmountChange: handleAmountChange,
+    onToggleInputMode: handleToggleInputMode,
+    onMaxPress: handleMaxPress,
+    onSendPress: handleSendPress,
+    onTokenSelectorOpen: () => setIsTokenSelectorVisible(true),
+    onTokenSelectorClose: () => setIsTokenSelectorVisible(false),
+    onConfirmationOpen: () => setIsConfirmationVisible(true),
+    onConfirmationClose: () => setIsConfirmationVisible(false),
+    onTransactionConfirm: handleTransactionConfirm,
+    backgroundColor: '$bg',
+    contentPadding: '$1',
+    transactionFee: '~0.001 FLOW',
+  };
+
+  return <SendTokensScreen {...screenProps} />;
 };
 
 export default SendTokensScreenView;

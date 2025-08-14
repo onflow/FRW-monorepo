@@ -1,4 +1,4 @@
-import { X, ArrowRight } from '@onflow/frw-icons';
+import { Close, ArrowRight } from '@onflow/frw-icons';
 import { type WalletAccount } from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack, Button, View } from 'tamagui';
@@ -89,7 +89,7 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
             variant="ghost"
             circular
             onPress={onClose}
-            icon={<X size={20} />}
+            icon={<Close size={20} />}
             disabled={isLoading}
           />
         </XStack>
