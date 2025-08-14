@@ -101,6 +101,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
                 lineHeight="1.2"
                 letterSpacing="-0.6%"
                 numberOfLines={1}
+                ellipsizeMode="tail"
               >
                 {account.name || 'Unknown Account'}
               </Text>

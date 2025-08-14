@@ -111,12 +111,6 @@ export const TenNFTs: Story = {
   },
 };
 
-export const ManyNFTs: Story = {
-  args: {
-    nfts: twentyNFTs,
-  },
-};
-
 export const NotExpandable: Story = {
   args: {
     nfts: fiveNFTs,
@@ -252,30 +246,5 @@ export const SingleNFTFallback: Story = {
 export const EmptyState: Story = {
   args: {
     nfts: [],
-  },
-};
-
-export const CompactLayout: Story = {
-  args: {
-    nfts: tenNFTs,
-    thumbnailSize: 50,
-    maxVisibleThumbnails: 6,
-  },
-  decorators: [
-    (Story) => (
-      <YStack width={300} p="$3">
-        <Story />
-      </YStack>
-    ),
-  ],
-};
-
-export const CustomStyling: Story = {
-  args: {
-    nfts: fiveNFTs,
-    backgroundColor: '$blue1',
-    borderRadius: '$6',
-    contentPadding: 20,
-    thumbnailSize: 90,
   },
 };

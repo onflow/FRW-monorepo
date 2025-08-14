@@ -102,16 +102,28 @@ interface ExpandedNFTItemProps {
 
 const ExpandedNFTItem: React.FC<ExpandedNFTItemProps> = ({ nft, onRemove, itemHeight = 71 }) => {
   return (
-    <XStack alignItems="center" gap={8} width={292} height={71} px={0} py={0}>
+    <XStack alignItems="center" gap={12} width="100%" height={71} px={0} py={0}>
       {/* NFT Thumbnail */}
       <NFTThumbnail nft={nft} size={53.44} borderRadius={16} />
 
       {/* NFT Details */}
-      <YStack justifyContent="center" gap={6} width={201} height={35}>
-        <Text fontSize={14} fontWeight="600" color="rgba(255, 255, 255, 0.8)" numberOfLines={1}>
+      <YStack justifyContent="center" gap={6} flex={1} minWidth={0}>
+        <Text
+          fontSize={14}
+          fontWeight="600"
+          color="rgba(255, 255, 255, 0.8)"
+          numberOfLines={1}
+          ellipsizeMode="tail"
+        >
           {nft.name || 'Unnamed NFT'}
         </Text>
-        <Text fontSize={14} fontWeight="400" color="rgba(255, 255, 255, 0.8)" numberOfLines={1}>
+        <Text
+          fontSize={14}
+          fontWeight="400"
+          color="rgba(255, 255, 255, 0.8)"
+          numberOfLines={1}
+          ellipsizeMode="tail"
+        >
           {nft.collection || 'Unknown Collection'}
         </Text>
       </YStack>
@@ -119,15 +131,16 @@ const ExpandedNFTItem: React.FC<ExpandedNFTItemProps> = ({ nft, onRemove, itemHe
       {/* Remove Button */}
       {onRemove && (
         <XStack
-          width={24}
-          height={24}
+          width={32}
+          height={32}
           alignItems="center"
           justifyContent="center"
           pressStyle={{ opacity: 0.8 }}
           onPress={() => onRemove(nft.id)}
           cursor="pointer"
+          flexShrink={0}
         >
-          <Trash size={24} color="rgba(255, 255, 255, 0.5)" />
+          <Trash size={20} color="rgba(255, 255, 255, 0.6)" />
         </XStack>
       )}
     </XStack>
@@ -160,7 +173,7 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
         pb={30}
         gap={12}
         width="100%"
-        style={{ maxWidth: 343 }}
+        style={{ maxWidth: 400 }}
       >
         {/* Optional Top Divider for component composition */}
         {showTopDivider && <View height={1} bg="rgba(255, 255, 255, 0.1)" width="100%" />}
@@ -185,7 +198,7 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
 
         {/* NFT Count and Collapse Button */}
         <XStack alignItems="center" justifyContent="space-between">
-          <Text fontSize={14} fontWeight="500" color="$white">
+          <Text fontSize={20} fontWeight="500" color="$white" lineHeight="0.8em">
             {totalCount} NFT{totalCount !== 1 ? 's' : ''}
           </Text>
           {expandable && (
@@ -203,13 +216,13 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
 
         {/* Expanded List */}
         <ScrollView maxHeight={300} showsVerticalScrollIndicator={false}>
-          <YStack gap={8}>
+          <YStack gap={12}>
             {nfts.map((nft, index) => (
-              <YStack key={nft.id}>
+              <YStack key={nft.id} gap={8}>
                 <ExpandedNFTItem nft={nft} onRemove={onRemoveNFT} />
                 {/* Divider */}
                 {index < nfts.length - 1 && (
-                  <View height={1} bg="rgba(255, 255, 255, 0.1)" mx={8} />
+                  <View height={1} bg="rgba(255, 255, 255, 0.1)" width="100%" />
                 )}
               </YStack>
             ))}
@@ -227,7 +240,7 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
       pb={30}
       gap={12}
       width="100%"
-      style={{ maxWidth: 343 }}
+      style={{ maxWidth: 400 }}
     >
       {/* Optional Top Divider for component composition */}
       {showTopDivider && <View height={1} bg="rgba(255, 255, 255, 0.1)" width="100%" />}
