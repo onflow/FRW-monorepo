@@ -23,11 +23,12 @@ const meta: Meta<typeof NFTSendPreview> = {
     backgroundColor: { control: 'color' },
     borderRadius: { control: 'text' },
     contentPadding: { control: 'number', min: 8, max: 32 },
+    showEvmChip: { control: 'boolean' },
     onEditPress: { action: 'edit-pressed' },
   },
   decorators: [
     (Story) => (
-      <YStack width={400} p="$4">
+      <YStack width={375} p="$4" backgroundColor="$gray12" alignItems="center">
         <Story />
       </YStack>
     ),
@@ -37,7 +38,16 @@ const meta: Meta<typeof NFTSendPreview> = {
 export default meta;
 type Story = StoryObj<typeof NFTSendPreview>;
 
-// Mock NFT data
+// Mock NFT data - matching Figma design
+const springTideNFT: NFTSendData = {
+  id: '1',
+  name: 'Spring Tide #1',
+  image: 'https://via.placeholder.com/400x400/4A9FFF/FFFFFF?text=Spring+Tide',
+  collection: 'NBA Top Shot',
+  collectionContractName: 'TopShot',
+  description: 'A unique NBA Top Shot moment featuring spring action.',
+};
+
 const mockNFT: NFTSendData = {
   id: '1234',
   name: 'Cool Cat #1234',
@@ -68,7 +78,22 @@ const pixelArtNFT: NFTSendData = {
 
 export const Default: Story = {
   args: {
-    nft: mockNFT,
+    nft: springTideNFT,
+  },
+};
+
+export const SpringTideFigmaExample: Story = {
+  args: {
+    nft: springTideNFT,
+    sectionTitle: 'Send NFTs',
+  },
+};
+
+export const WithEvmChip: Story = {
+  args: {
+    nft: springTideNFT,
+    sectionTitle: 'Send NFTs',
+    showEvmChip: true,
   },
 };
 
@@ -179,6 +204,7 @@ export const Interactive: Story = {
           alert(`Edit pressed ${editCount + 1} times!`);
         }}
         sectionTitle={`Send NFT ${editCount > 0 ? `(Edited ${editCount}x)` : ''}`}
+        showEvmChip={true}
       />
     );
   },
@@ -188,7 +214,7 @@ export const Gallery: Story = {
   render: () => (
     <YStack gap="$4" width={400}>
       <NFTSendPreview nft={mockNFT} sectionTitle="Cool Cat" />
-      <NFTSendPreview nft={basketballNFT} sectionTitle="NBA Moment" />
+      <NFTSendPreview nft={basketballNFT} sectionTitle="NBA Moment" showEvmChip={true} />
       <NFTSendPreview nft={pixelArtNFT} sectionTitle="Pixel Art" />
     </YStack>
   ),

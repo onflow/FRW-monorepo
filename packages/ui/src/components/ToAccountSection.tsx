@@ -130,7 +130,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
               cursor="pointer"
               opacity={isAccountIncompatible ? 0.5 : 1}
             >
-              <Edit size={18} color="#767676" theme="outline" />
+              <Edit size={24} color="#767676" theme="outline" />
             </XStack>
           </XStack>
         )}

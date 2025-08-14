@@ -21,14 +21,14 @@ const meta: Meta<typeof MultipleNFTsPreview> = {
     maxVisibleThumbnails: { control: 'number', min: 1, max: 6 },
     expandable: { control: 'boolean' },
     thumbnailSize: { control: 'number', min: 40, max: 120 },
-    backgroundColor: { control: 'color' },
-    borderRadius: { control: 'text' },
-    contentPadding: { control: 'number', min: 0, max: 32 },
+    sectionTitle: { control: 'text' },
+    showTopDivider: { control: 'boolean' },
     onRemoveNFT: { action: 'nft-removed' },
+    onEditPress: { action: 'edit-pressed' },
   },
   decorators: [
     (Story) => (
-      <YStack width={400} p="$4">
+      <YStack width={375} p="$4" backgroundColor="$gray12" alignItems="center">
         <Story />
       </YStack>
     ),
@@ -56,21 +56,52 @@ const fiveNFTs = createMockNFTs(5);
 const tenNFTs = createMockNFTs(10);
 const twentyNFTs = createMockNFTs(20);
 
-export const TwoNFTs: Story = {
-  args: {
-    nfts: twoNFTs,
-  },
-};
-
-export const ThreeNFTs: Story = {
+export const Default: Story = {
   args: {
     nfts: threeNFTs,
   },
 };
 
-export const FiveNFTs: Story = {
+export const FigmaDesignExample: Story = {
+  args: {
+    nfts: [
+      {
+        id: '1',
+        name: 'NFT #1',
+        image: 'https://via.placeholder.com/400x400/4A9FFF/FFFFFF?text=NFT+1',
+        collection: 'Collection A',
+        description: 'First NFT',
+      },
+      {
+        id: '2',
+        name: 'NFT #2',
+        image: 'https://via.placeholder.com/400x400/00EF8B/FFFFFF?text=NFT+2',
+        collection: 'Collection B',
+        description: 'Second NFT',
+      },
+      {
+        id: '3',
+        name: 'NFT #3',
+        image: 'https://via.placeholder.com/400x400/FF6B6B/FFFFFF?text=NFT+3',
+        collection: 'Collection C',
+        description: 'Third NFT',
+      },
+      {
+        id: '4',
+        name: 'NFT #4',
+        image: 'https://via.placeholder.com/400x400/8B5CF6/FFFFFF?text=NFT+4',
+        collection: 'Collection D',
+        description: 'Fourth NFT',
+      },
+    ],
+    sectionTitle: 'Send NFTs',
+  },
+};
+
+export const WithTopDivider: Story = {
   args: {
     nfts: fiveNFTs,
+    showTopDivider: true,
   },
 };
 
@@ -93,27 +124,6 @@ export const NotExpandable: Story = {
   },
 };
 
-export const CustomThumbnailCount: Story = {
-  args: {
-    nfts: tenNFTs,
-    maxVisibleThumbnails: 5,
-  },
-};
-
-export const SmallThumbnails: Story = {
-  args: {
-    nfts: fiveNFTs,
-    thumbnailSize: 60,
-  },
-};
-
-export const LargeThumbnails: Story = {
-  args: {
-    nfts: fiveNFTs,
-    thumbnailSize: 100,
-  },
-};
-
 export const WithBackground: Story = {
   args: {
     nfts: fiveNFTs,
@@ -129,6 +139,13 @@ export const WithoutImages: Story = {
   },
 };
 
+export const WithEditButton: Story = {
+  args: {
+    nfts: fiveNFTs,
+    sectionTitle: 'Send NFTs',
+  },
+};
+
 export const Interactive: Story = {
   render: function InteractiveRender() {
     const [nfts, setNfts] = useState(fiveNFTs);
@@ -137,63 +154,12 @@ export const Interactive: Story = {
       setNfts((prev) => prev.filter((nft) => nft.id !== nftId));
     };
 
-    const handleAddNFT = () => {
-      const newNFT: NFTSendData = {
-        id: `nft-${Date.now()}`,
-        name: `New NFT #${nfts.length + 1}`,
-        image: `https://via.placeholder.com/400x400/EC4899/FFFFFF?text=New+${nfts.length + 1}`,
-        collection: 'New Collection',
-        description: 'A newly added NFT',
-      };
-      setNfts((prev) => [...prev, newNFT]);
-    };
-
-    const handleReset = () => {
-      setNfts(fiveNFTs);
+    const handleEdit = () => {
+      alert('Edit pressed!');
     };
 
     return (
-      <YStack gap="$4" width={400}>
-        <YStack gap="$2">
-          <YStack fontSize="$4" fontWeight="600" color="$color">
-            Interactive Demo
-          </YStack>
-          <YStack fontSize="$3" color="$gray11">
-            Try expanding the list and removing NFTs
-          </YStack>
-        </YStack>
-
-        <MultipleNFTsPreview nfts={nfts} onRemoveNFT={handleRemoveNFT} />
-
-        <YStack gap="$2" flexDirection="row">
-          <YStack
-            bg="$blue9"
-            rounded="$3"
-            px="$3"
-            py="$2"
-            pressStyle={{ opacity: 0.8 }}
-            onPress={handleAddNFT}
-            cursor="pointer"
-          >
-            <YStack fontSize="$3" color="$white" fontWeight="500">
-              Add NFT
-            </YStack>
-          </YStack>
-          <YStack
-            bg="$gray8"
-            rounded="$3"
-            px="$3"
-            py="$2"
-            pressStyle={{ opacity: 0.8 }}
-            onPress={handleReset}
-            cursor="pointer"
-          >
-            <YStack fontSize="$3" color="$white" fontWeight="500">
-              Reset
-            </YStack>
-          </YStack>
-        </YStack>
-      </YStack>
+      <MultipleNFTsPreview nfts={nfts} onRemoveNFT={handleRemoveNFT} onEditPress={handleEdit} />
     );
   },
 };
@@ -223,6 +189,7 @@ export const LongNames: Story = {
         description: 'Short description',
       },
     ],
+    showTopDivider: true,
   },
 };
 
