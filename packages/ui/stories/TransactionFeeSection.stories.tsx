@@ -31,7 +31,7 @@ const meta: Meta<typeof TransactionFeeSection> = {
   },
   decorators: [
     (Story) => (
-      <YStack width={400} padding="$4" backgroundColor="$bg" borderRadius="$4">
+      <YStack width={400} padding="$4">
         <Story />
       </YStack>
     ),
@@ -67,12 +67,14 @@ export const WithoutCoveredMessage: Story = {
   },
 };
 
-export const CustomStyling: Story = {
+export const WithBackground: Story = {
   args: {
     flowFee: '0.005 FLOW',
     usdFee: '$0.10',
     title: 'Network Fee',
     backgroundColor: 'rgba(0, 239, 139, 0.1)',
+    borderRadius: 16,
+    contentPadding: 16,
     titleColor: '#00EF8B',
     feeColor: '#00EF8B',
   },
