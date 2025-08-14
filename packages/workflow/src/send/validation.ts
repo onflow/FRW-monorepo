@@ -79,13 +79,17 @@ export const isValidSendTransactionPayload = (payload: SendPayload): boolean => 
     validateNftPayload(payload);
   }
 
-  // TODO: send nft from evm to flow, tokenContractAddr is not required, handle by bridge use flowIdentifier
-  // if (assetType === 'evm') {
-  //   // Skip validation if Flow token (tokenContractAddr can be null/undefined)
-  //   if (!isFlowToken(flowIdentifier) && !validateEvmAddress(tokenContractAddr)) {
-  //     throw new Error('invalid send evm transaction payload - invalid contract address');
-  //   }
-  // }
+  // Validate token contract address format based on asset type
+  if (assetType === 'flow' && !validateFlowAddress(tokenContractAddr)) {
+    throw new Error('invalid send flow transaction payload');
+  }
+
+  if (assetType === 'evm') {
+    // Skip validation if Flow token (tokenContractAddr can be null/undefined)
+    if (!isFlowToken(flowIdentifier) && !validateEvmAddress(tokenContractAddr)) {
+      throw new Error('invalid send evm transaction payload - invalid contract address');
+    }
+  }
 
   return true;
 };

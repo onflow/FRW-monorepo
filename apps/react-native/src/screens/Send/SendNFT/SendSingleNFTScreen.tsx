@@ -1,6 +1,4 @@
-import { cadence } from '@onflow/frw-context';
 import { sendSelectors, useSendStore, useTokenStore } from '@onflow/frw-stores';
-import { SendTransaction, isValidSendTransactionPayload } from '@onflow/frw-workflow';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView, ScrollView, StatusBar, View } from 'react-native';
@@ -92,7 +90,15 @@ const SendSingleNFTScreen = ({ navigation }: { navigation: NavigationProp }) => 
         fromAccount: currentFromAccount,
         toAccount: currentToAccount,
         transactionType: 'single-nft',
-        selectedNFTs: selectedNFT ? [selectedNFT] : [],
+        selectedNFTs: selectedNFT?.id
+          ? [
+              {
+                id: selectedNFT.id,
+                name: selectedNFT.name,
+                thumbnail: selectedNFT.thumbnail,
+              },
+            ]
+          : [],
         onConfirm: async () => {
           // Create send payload using store
           const { createSendPayload, resetSendFlow, setTransactionType } = useSendStore.getState();
@@ -100,8 +106,14 @@ const SendSingleNFTScreen = ({ navigation }: { navigation: NavigationProp }) => 
           const payload = await createSendPayload();
 
           if (payload) {
+            const { SendTransaction, isValidSendTransactionPayload } = await import(
+              '@onflow/frw-workflow'
+            );
+            const { getCadenceService } = await import('@onflow/frw-context');
+
             if (isValidSendTransactionPayload(payload)) {
-              const result = await SendTransaction(payload, cadence);
+              const cadenceService = getCadenceService();
+              const result = await SendTransaction(payload, cadenceService);
               console.log('[SendSingleNFTScreen] Transfer result:', result);
               resetSendFlow();
               NativeFRWBridge.closeRN();

@@ -40,6 +40,14 @@ export const Default: Story = {
   args: {},
 };
 
+export const FigmaDesign: Story = {
+  args: {
+    size: 44,
+    backgroundColor: '#00EF8B',
+    iconColor: 'rgba(0, 0, 0, 0.8)',
+  },
+};
+
 export const TextVariant: Story = {
   args: {
     variant: 'text',

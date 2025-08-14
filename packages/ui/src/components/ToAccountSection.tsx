@@ -76,7 +76,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
               {incompatibilityMessage}
             </Text>
             {onLearnMorePress && (
-              <Button size="$2" variant="ghost" alignSelf="flex-start" onPress={onLearnMorePress}>
+              <Button size="small" variant="ghost" onPress={onLearnMorePress}>
                 Learn More
               </Button>
             )}

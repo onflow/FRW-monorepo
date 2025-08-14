@@ -19,7 +19,6 @@ const meta: Meta<typeof NFTGrid> = {
   argTypes: {
     isLoading: { control: 'boolean' },
     showClearSearch: { control: 'boolean' },
-    columns: { control: 'number', min: 1, max: 4 },
     gap: { control: 'number', min: 4, max: 32 },
     aspectRatio: { control: 'number', min: 0.5, max: 2, step: 0.1 },
     emptyTitle: { control: 'text' },
@@ -115,35 +114,11 @@ export const Empty: Story = {
   },
 };
 
-export const EmptyWithClearSearch: Story = {
-  args: {
-    data: [],
-    emptyTitle: 'No Search Results',
-    emptyMessage: 'No NFTs match your search. Try different keywords.',
-    showClearSearch: true,
-    clearSearchText: 'Clear Search',
-  },
-};
-
 export const Error: Story = {
   args: {
     data: [],
     error: 'Failed to load NFTs. Please check your connection and try again.',
     retryText: 'Retry Loading',
-  },
-};
-
-export const ThreeColumns: Story = {
-  args: {
-    data: mockNFTs,
-    columns: 3,
-  },
-};
-
-export const SingleColumn: Story = {
-  args: {
-    data: mockNFTs.slice(0, 3),
-    columns: 1,
   },
 };
 
@@ -182,17 +157,6 @@ export const Interactive: Story = {
         onNFTPress={(nft) => alert(`Pressed: ${nft.name}`)}
       />
     );
-  },
-};
-
-export const LargeDataset: Story = {
-  args: {
-    data: Array.from({ length: 20 }, (_, index) => ({
-      id: `${index + 1}`,
-      name: `NFT #${index + 1}`,
-      image: `https://via.placeholder.com/300x300/${Math.floor(Math.random() * 16777215).toString(16)}/FFFFFF?text=${index + 1}`,
-      collection: `Collection ${Math.floor(index / 4) + 1}`,
-    })),
   },
 };
 

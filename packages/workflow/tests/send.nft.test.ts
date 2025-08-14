@@ -304,7 +304,7 @@ describe('Test NFT send strategies', () => {
   //     receiver: child1Account.address,
   //     flowIdentifier: 'A.2d4c3caffbeab845.FLOAT.NFT',
   //     sender: mainAccount.evmAddr,
-  //     amount: '0.0',
+  //     amount: '0',
   //     childAddrs: [child1Account.address, child2Account.address],
   //     ids: [239693535195987],
   //     decimal: 0,

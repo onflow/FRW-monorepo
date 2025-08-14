@@ -21,7 +21,7 @@ export function Avatar({
       rounded={size / 2}
       overflow="hidden"
       pos="relative"
-      borderColor={borderColor}
+      borderColor={borderColor as any}
       borderWidth={borderWidth}
     >
       {src ? (

@@ -78,7 +78,7 @@ export const Contact: Story = {
     name: 'John Doe',
     address: '0x9876543210fedcba9876543210fedcba98765432',
     type: 'contact',
-    showEditButton: true,
+    showCopyButton: true,
   },
 };
 
@@ -170,7 +170,7 @@ export const ContactVariant: Story = {
       name="Alice Cooper"
       address="0x9876543210fedcba9876543210fedcba98765432"
       onPress={() => console.log('Contact pressed')}
-      onEdit={() => console.log('Edit contact')}
+      onCopy={() => console.log('Copy contact')}
     />
   ),
 };
@@ -209,7 +209,7 @@ export const AllVariants: Story = {
         name="Alice Cooper"
         address="0x9876543210fedcba9876543210fedcba98765432"
         onPress={() => console.log('Contact pressed')}
-        onEdit={() => console.log('Edit contact')}
+        onCopy={() => console.log('Copy contact')}
       />
       <RecentItem
         name="Recent Transfer"

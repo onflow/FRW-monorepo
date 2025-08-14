@@ -22,7 +22,7 @@ export function NFTCollectionRow({
     <YStack {...props}>
       <XStack
         items="center"
-        gap={18}
+        gap={12}
         paddingVertical={18}
         paddingHorizontal={0}
         width="100%"
@@ -40,7 +40,7 @@ export function NFTCollectionRow({
         />
 
         {/* Collection Info */}
-        <YStack flex={1} gap="$1">
+        <YStack flex={1} gap="$0.5">
           <Text color="$color" fontWeight="600" fontSize={16}>
             {collection.name}
           </Text>
@@ -50,7 +50,7 @@ export function NFTCollectionRow({
         </YStack>
 
         {/* Chevron Icon */}
-        <ChevronRight size={24} color="rgba(255, 255, 255, 0.5)" />
+        <ChevronRight size={24} />
       </XStack>
 
       {showDivider && <Separator />}

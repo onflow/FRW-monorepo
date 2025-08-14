@@ -23,7 +23,7 @@ export function CollectionHeader({
   const spacing = size === 'large' ? '$5' : size === 'medium' ? '$4' : '$3';
 
   return (
-    <XStack items="center" gap={spacing} p="$3" minHeight={avatarSize + 24}>
+    <XStack items="center" gap="$1" p="$3" minHeight={avatarSize + 24}>
       {/* Collection Avatar */}
       <Avatar circular size={avatarSize}>
         {image ? (
@@ -38,7 +38,7 @@ export function CollectionHeader({
       </Avatar>
 
       {/* Collection Info */}
-      <YStack flex={1} gap="$2">
+      <YStack flex={1} gap="$0.75">
         <Text fontSize={nameSize} fontWeight="700" color="$color" lineHeight="$1" numberOfLines={2}>
           {name}
         </Text>

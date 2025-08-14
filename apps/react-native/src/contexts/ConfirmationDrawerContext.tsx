@@ -1,4 +1,4 @@
-import type { NFTModel, TokenModel, WalletAccount } from '@onflow/frw-types';
+import type { WalletAccount } from '@onflow/frw-types';
 import React, { createContext, type ReactNode, useContext, useRef, useState } from 'react';
 
 import {
@@ -6,6 +6,21 @@ import {
   type ConfirmationBottomSheetRef,
 } from '@/components/ConfirmationBottomSheet';
 import { ConfirmationDrawerContent } from '@/components/ConfirmationDrawerContent';
+
+interface Token {
+  symbol?: string;
+  name?: string;
+  logoURI?: string;
+  identifier?: string;
+  decimal?: number;
+  contractAddress?: string;
+}
+
+interface NFT {
+  id: string | number;
+  name?: string;
+  thumbnail?: string | object;
+}
 
 interface FormData {
   tokenAmount: string;
@@ -16,8 +31,8 @@ interface ConfirmationData {
   fromAccount: WalletAccount;
   toAccount: WalletAccount;
   transactionType?: string;
-  selectedToken?: TokenModel;
-  selectedNFTs?: NFTModel[];
+  selectedToken?: Token;
+  selectedNFTs?: NFT[];
   formData?: FormData;
   children?: ReactNode;
   onConfirm: () => Promise<void>;

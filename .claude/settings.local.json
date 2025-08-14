@@ -39,6 +39,7 @@
       "Bash(claude mcp:*)",
       "mcp__framelink-figma__get_figma_data"
     ],
-    "deny": []
+    "deny": [],
+    "defaultMode": "acceptEdits"
   }
 }

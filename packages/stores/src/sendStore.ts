@@ -1,9 +1,10 @@
-import { bridge, cadence } from '@onflow/frw-context';
+import { getCadenceService } from '@onflow/frw-context';
 import { flowService } from '@onflow/frw-services';
 import { type NFTModel, type TokenModel, addressType } from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
 import {
   type SendPayload,
+  isFlowToken,
   SendTransaction,
   isValidSendTransactionPayload,
 } from '@onflow/frw-workflow';
@@ -304,39 +305,25 @@ export const useSendStore = create<SendState>((set, get) => ({
 
     try {
       // Get wallet accounts for child addresses and COA
-      const { accounts } = await bridge.getWalletAccounts();
-      const selectedAccount = await bridge.getSelectedAccount();
-      const mainAccount =
-        selectedAccount.type === 'main'
-          ? selectedAccount
-          : accounts.find(
-              (account) =>
-                account.type === 'main' && account.address === selectedAccount.parentAddress
-            );
-      const coaAddr =
-        accounts.filter(
-          (account) => account.type === 'evm' && account.parentAddress === mainAccount?.address
-        )[0]?.address || '';
+      const flow = flowService();
+      const { accounts } = await flow.getWalletAccounts();
+      const coaAddr = accounts.filter((account) => account.type === 'evm')[0]?.address || '';
       const childAddrs = accounts
-        .filter(
-          (account) => account.type === 'child' && account.parentAddress === mainAccount?.address
-        )
+        .filter((account) => account.type === 'child')
         .map((account) => account.address);
+      const mainAccount = accounts.filter((account) => account.type === 'main')[0];
 
       if (!mainAccount) {
         logger.error('[SendStore] No main account found');
         return null;
       }
-      const contractAddress = isTokenTransaction
-        ? selectedToken?.evmAddress || ''
-        : selectedNFTs[0]?.evmAddress || '';
 
       const payload: SendPayload = {
         type: isTokenTransaction ? 'token' : 'nft',
         assetType: addressType(fromAccount.address),
         proposer: mainAccount.address,
         receiver: toAccount.address,
-        flowIdentifier: selectedToken?.identifier || selectedNFTs[0]?.flowIdentifier || '',
+        flowIdentifier: selectedToken?.identifier || '',
         sender: fromAccount.address,
         childAddrs: childAddrs,
         ids: isNFTTransaction
@@ -349,7 +336,11 @@ export const useSendStore = create<SendState>((set, get) => ({
         amount: isTokenTransaction ? formatAmount(formData.tokenAmount) : '',
         decimal: selectedToken?.decimal || 8,
         coaAddr: coaAddr,
-        tokenContractAddr: contractAddress,
+        // For Flow tokens, contract address can be empty since they're identified by flowIdentifier
+        tokenContractAddr:
+          selectedToken && selectedToken.identifier && isFlowToken(selectedToken.identifier)
+            ? ''
+            : selectedToken?.contractAddress || '',
       };
 
       logger.debug('[SendStore] Created send payload:', payload);
@@ -381,7 +372,8 @@ export const useSendStore = create<SendState>((set, get) => ({
       logger.debug('[SendStore] Executing transaction with payload:', payload);
 
       // Get cadence service and execute transaction
-      const result = await SendTransaction(payload, cadence);
+      const cadenceService = getCadenceService();
+      const result = await SendTransaction(payload, cadenceService);
 
       logger.debug('[SendStore] Transaction result:', result);
 

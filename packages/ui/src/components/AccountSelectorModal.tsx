@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { Dialog, XStack, YStack, ScrollView, Button as TamaguiButton } from 'tamagui';
+import { XStack, YStack, ScrollView } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
-import { Button } from '../foundation/Button';
 import { Text } from '../foundation/Text';
 import type { Account } from '../types';
 
@@ -40,132 +39,135 @@ export function AccountSelectorModal({
     return null;
   }
 
+  if (!open) {
+    return trigger ? <>{trigger}</> : null;
+  }
+
   return (
-    <Dialog modal open={open} onOpenChange={setOpen}>
-      {trigger && <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>}
+    <>
+      {trigger && <YStack onPress={() => setOpen(true)}>{trigger}</YStack>}
 
-      <Dialog.Portal>
-        <Dialog.Overlay
-          key="overlay"
-          animation="quick"
-          opacity={0.5}
-          enterStyle={{ opacity: 0 }}
-          exitStyle={{ opacity: 0 }}
-        />
+      {/* Overlay */}
+      <YStack
+        position="absolute"
+        top={0}
+        left={0}
+        right={0}
+        bottom={0}
+        bg="rgba(0, 0, 0, 0.5)"
+        onPress={() => setOpen(false)}
+        zIndex={1000}
+      />
 
-        <Dialog.Content
-          bordered
-          elevate
-          key="content"
-          animateOnly={['transform', 'opacity']}
-          animation={[
-            'quick',
-            {
-              opacity: {
-                overshootClamping: true,
-              },
-            },
-          ]}
-          enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
-          exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
-          w={400}
-          maxHeight="80vh"
-        >
+      {/* Bottom Drawer */}
+      <YStack
+        position="absolute"
+        bottom={0}
+        left={0}
+        right={0}
+        alignSelf="center"
+        maxWidth={375}
+        bg="#141415"
+        borderTopLeftRadius={16}
+        borderTopRightRadius={16}
+        shadowColor="$shadowColor"
+        shadowOffset={{ width: 0, height: -2 }}
+        shadowOpacity={0.1}
+        shadowRadius={8}
+        elevation={8}
+        pt={12}
+        px={16}
+        pb={20}
+        zIndex={1001}
+      >
+        <YStack gap={16}>
           {/* Header */}
-          <XStack
-            items="center"
-            justify="space-between"
-            p="$4"
-            borderBottomWidth={1}
-            borderBottomColor="$border"
-          >
-            <Dialog.Title asChild>
-              <Text fontSize="$5" fontWeight="600">
-                {title}
-              </Text>
-            </Dialog.Title>
+          <XStack items="center" justify="space-between" pt={10} position="relative">
+            <Text fontSize={14} fontWeight="400" color="#FFFFFF">
+              {title}
+            </Text>
 
-            <Dialog.Close asChild>
-              <TamaguiButton size="$2" circular variant="outlined">
+            <XStack
+              position="absolute"
+              right={0}
+              top={10}
+              onPress={() => setOpen(false)}
+              cursor="pointer"
+            >
+              <Text color="#FFFFFF" fontSize={18}>
                 ✕
-              </TamaguiButton>
-            </Dialog.Close>
+              </Text>
+            </XStack>
           </XStack>
 
           {/* Account List */}
-          <ScrollView maxHeight={400}>
-            <YStack p="$2">
-              {accounts.map((account, index) => {
-                const isSelected = currentAccount?.address === account.address;
+          <YStack maxHeight={400} bg="#141415" borderRadius={16} gap={2} pb={8}>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <YStack>
+                {accounts.map((account, index) => {
+                  const isSelected = currentAccount?.address === account.address;
 
-                return (
-                  <XStack
-                    key={account.address || index}
-                    items="center"
-                    p="$3"
-                    mx="$2"
-                    rounded="$3"
-                    pressStyle={{ bg: '$bg3' }}
-                    hoverStyle={{ bg: '$bg2' }}
-                    bg={isSelected ? '$primary10' : 'transparent'}
-                    onPress={() => handleAccountSelect(account)}
-                    cursor="pointer"
-                  >
-                    {/* Account Avatar */}
-                    <Avatar
-                      src={account.avatar}
-                      fallback={account.name?.charAt(0) || '?'}
-                      size={40}
-                    />
-
-                    {/* Account Details */}
-                    <YStack flex={1} ml="$3">
-                      <Text
-                        fontSize="$4"
-                        fontWeight="500"
-                        color={isSelected ? '$primary' : '$text'}
-                      >
-                        {account.name || 'Unnamed Account'}
-                      </Text>
-                      <Text fontSize="$3" color="$textSecondary" numberOfLines={1}>
-                        {account.address}
-                      </Text>
-                      {account.balance && (
-                        <Text fontSize="$2" color="$textTertiary" mt="$0.5">
-                          {account.balance}
-                        </Text>
-                      )}
-                    </YStack>
-
-                    {/* Selection Indicator */}
-                    {isSelected && (
-                      <YStack
-                        w={20}
-                        h={20}
-                        rounded="$10"
-                        bg="$primary"
+                  return (
+                    <React.Fragment key={account.address || index}>
+                      <XStack
                         items="center"
-                        justify="center"
+                        justify="space-between"
+                        gap={8}
+                        onPress={() => handleAccountSelect(account)}
+                        cursor="pointer"
                       >
-                        <Text color="$black" fontSize="$1" fontWeight="600">
-                          ✓
-                        </Text>
-                      </YStack>
-                    )}
-                  </XStack>
-                );
-              })}
-            </YStack>
-          </ScrollView>
+                        <XStack items="center" gap={8}>
+                          {/* Account Avatar */}
+                          <Avatar
+                            src={account.avatar}
+                            fallback={account.name?.charAt(0) || '?'}
+                            size={53.44}
+                          />
 
-          {/* Footer */}
-          <XStack justify="flex-end" gap="$3" p="$4" borderTopWidth={1} borderTopColor="$border">
-            <Dialog.Close asChild>
-              <Button variant="outlined">Cancel</Button>
-            </Dialog.Close>
-          </XStack>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog>
+                          {/* Account Details */}
+                          <YStack gap={6} width={201} height={35} justify="center">
+                            <Text
+                              fontSize={14}
+                              fontWeight="600"
+                              color="rgba(255, 255, 255, 0.8)"
+                              numberOfLines={1}
+                            >
+                              {account.name || 'Unnamed Account'}
+                            </Text>
+                            <Text
+                              fontSize={14}
+                              fontWeight="400"
+                              color="rgba(255, 255, 255, 0.8)"
+                              numberOfLines={1}
+                            >
+                              {account.address}
+                            </Text>
+                          </YStack>
+                        </XStack>
+
+                        {/* Selection Indicator */}
+                        {isSelected && (
+                          <YStack width={24} height={24} items="center" justify="center">
+                            <Text color="#00EF8B" fontSize={18}>
+                              ✓
+                            </Text>
+                          </YStack>
+                        )}
+                      </XStack>
+
+                      {index < accounts.length - 1 && (
+                        <YStack py={8} items="center">
+                          <YStack height={1} bg="rgba(255, 255, 255, 0.15)" width={343} />
+                        </YStack>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </YStack>
+            </ScrollView>
+          </YStack>
+        </YStack>
+      </YStack>
+    </>
   );
 }

@@ -378,6 +378,48 @@ describe('Test NFT send strategies', () => {
         'invalid send nft transaction payload'
       );
     });
+
+    it('Should throw error for invalid Flow contract address format', () => {
+      const payload = {
+        type: 'nft',
+        assetType: 'flow',
+        proposer: mainAccount.address,
+        receiver: mainAccount.address,
+        flowIdentifier: 'A.2d4c3caffbeab845.FLOAT.NFT',
+        sender: mainAccount.address,
+        amount: '1',
+        childAddrs: [],
+        ids: [12345],
+        decimal: 0,
+        coaAddr: mainAccount.evmAddr,
+        tokenContractAddr: '0x123', // Invalid Flow address format
+      };
+
+      expect(() => isValidSendTransactionPayload(payload)).toThrow(
+        'invalid send flow transaction payload'
+      );
+    });
+
+    it('Should throw error for invalid EVM contract address format', () => {
+      const payload = {
+        type: 'nft',
+        assetType: 'evm',
+        proposer: mainAccount.address,
+        receiver: mainAccount.address,
+        flowIdentifier: 'A.2d4c3caffbeab845.FLOAT.NFT',
+        sender: mainAccount.evmAddr,
+        amount: '1',
+        childAddrs: [],
+        ids: [12345],
+        decimal: 0,
+        coaAddr: mainAccount.evmAddr,
+        tokenContractAddr: '0x123', // Invalid EVM address format - too short
+      };
+
+      expect(() => isValidSendTransactionPayload(payload)).toThrow(
+        'invalid send evm transaction payload - invalid contract address'
+      );
+    });
   });
 
   it('Test ParentToChildNftStrategy args', async () => {

@@ -26,12 +26,7 @@ const FLOW_TOKEN_ADDRESSES = {
  * @returns True if the identifier is for Flow token, false otherwise
  */
 export const isFlowToken = (flowIdentifier: string): boolean => {
-  return flowIdentifier.includes('.FlowToken.Vault');
-};
-
-export const isVaultIdentifier = (flowIdentifier: string): boolean => {
-  const vaultRegex = /^A\.[0-9a-fA-F]{16}\.[a-zA-Z0-9_]+\.(Vault|NFT)$/;
-  return vaultRegex.test(flowIdentifier);
+  return Object.values(FLOW_TOKEN_ADDRESSES).includes(flowIdentifier as any);
 };
 
 /**

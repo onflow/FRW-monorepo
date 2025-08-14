@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import React, { useState } from 'react';
-import { YStack, XStack } from 'tamagui';
+import { YStack } from 'tamagui';
 
 import { SelectableNFTImage } from '../src/components/SelectableNFTImage';
 
@@ -148,79 +148,4 @@ export const FallbackImage: Story = {
     selectable: true,
     size: 'medium',
   },
-};
-
-export const Gallery: Story = {
-  render: function GalleryRender() {
-    const [selectedIds, setSelectedIds] = useState<string[]>(['2']);
-
-    const images = [
-      { id: '1', src: 'https://via.placeholder.com/300x300/EF4444/FFFFFF?text=1' },
-      { id: '2', src: 'https://via.placeholder.com/300x300/10B981/FFFFFF?text=2' },
-      { id: '3', src: 'https://via.placeholder.com/300x300/F59E0B/FFFFFF?text=3' },
-      { id: '4', src: 'https://via.placeholder.com/300x300/8B5CF6/FFFFFF?text=4' },
-    ];
-
-    const handleToggle = (id: string) => {
-      setSelectedIds((prev) =>
-        prev.includes(id) ? prev.filter((selectedId) => selectedId !== id) : [...prev, id]
-      );
-    };
-
-    return (
-      <XStack flexWrap="wrap" gap="$3" maxWidth={400}>
-        {images.map((image) => (
-          <YStack key={image.id} width="45%">
-            <SelectableNFTImage
-              src={image.src}
-              selected={selectedIds.includes(image.id)}
-              selectable={true}
-              onToggleSelection={() => handleToggle(image.id)}
-            />
-          </YStack>
-        ))}
-      </XStack>
-    );
-  },
-  decorators: [
-    (Story) => (
-      <YStack p="$4" items="center" justify="center">
-        <Story />
-      </YStack>
-    ),
-  ],
-};
-
-export const AllSizes: Story = {
-  render: () => (
-    <XStack gap="$4" items="center">
-      <YStack items="center" gap="$2">
-        <SelectableNFTImage src={mockImage} size="small" selectable={true} />
-        <YStack fontSize="$3" color="$textSecondary">
-          Small
-        </YStack>
-      </YStack>
-
-      <YStack items="center" gap="$2">
-        <SelectableNFTImage src={mockImage} size="medium" selectable={true} selected={true} />
-        <YStack fontSize="$3" color="$textSecondary">
-          Medium
-        </YStack>
-      </YStack>
-
-      <YStack items="center" gap="$2">
-        <SelectableNFTImage src={mockImage} size="large" selectable={true} />
-        <YStack fontSize="$3" color="$textSecondary">
-          Large
-        </YStack>
-      </YStack>
-    </XStack>
-  ),
-  decorators: [
-    (Story) => (
-      <YStack p="$4" items="center" justify="center">
-        <Story />
-      </YStack>
-    ),
-  ],
 };
