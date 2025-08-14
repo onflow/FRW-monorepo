@@ -23,6 +23,11 @@ const meta: Meta<typeof SendMultipleNFTsScreen> = {
     backgroundColor: { control: 'color' },
     contentPadding: { control: 'number', min: 8, max: 32 },
     transactionFee: { control: 'text' },
+    usdFee: { control: 'text' },
+    isBalanceLoading: { control: 'boolean' },
+    showStorageWarning: { control: 'boolean' },
+    storageWarningMessage: { control: 'text' },
+    isFeesFree: { control: 'boolean' },
     onEditNFTsPress: { action: 'edit-nfts-pressed' },
     onEditAccountPress: { action: 'edit-account-pressed' },
     onLearnMorePress: { action: 'learn-more-pressed' },
@@ -78,6 +83,11 @@ export const TwoNFTs: Story = {
     selectedNFTs: twoNFTs,
     fromAccount: mockFromAccount,
     toAccount: mockToAccount,
+    usdFee: '$0.004',
+    isBalanceLoading: false,
+    showStorageWarning: false,
+    isFeesFree: false,
+    showEditButtons: true,
   },
 };
 
@@ -152,7 +162,9 @@ export const CustomFee: Story = {
     selectedNFTs: fiveNFTs,
     fromAccount: mockFromAccount,
     toAccount: mockToAccount,
-    transactionFee: '0.005 FLOW (~$0.004)',
+    transactionFee: '0.005 FLOW',
+    usdFee: '$0.004',
+    showEditButtons: true,
   },
 };
 
@@ -388,7 +400,104 @@ export const HighFee: Story = {
     selectedNFTs: fiveNFTs,
     fromAccount: mockFromAccount,
     toAccount: mockToAccount,
-    transactionFee: '0.1 FLOW (~$0.075)',
+    transactionFee: '0.1 FLOW',
+    usdFee: '$0.075',
+    showEditButtons: true,
+  },
+};
+
+// New enhanced stories
+export const WithStorageWarning: Story = {
+  args: {
+    selectedNFTs: fiveNFTs,
+    fromAccount: mockFromAccount,
+    toAccount: mockToAccount,
+    showStorageWarning: true,
+    storageWarningMessage:
+      'Sending multiple NFTs may require additional storage setup on the recipient account.',
+    usdFee: '$0.004',
+    showEditButtons: true,
+  },
+};
+
+export const BalanceLoading: Story = {
+  args: {
+    selectedNFTs: threeNFTs,
+    fromAccount: mockFromAccount,
+    toAccount: mockToAccount,
+    isBalanceLoading: true,
+    usdFee: '$0.004',
+    showEditButtons: true,
+  },
+};
+
+export const FreeFees: Story = {
+  args: {
+    selectedNFTs: twoNFTs,
+    fromAccount: mockFromAccount,
+    toAccount: mockToAccount,
+    transactionFee: '0.000 FLOW',
+    usdFee: '$0.00',
+    isFeesFree: true,
+    showEditButtons: true,
+  },
+};
+
+export const IncompatibleWithWarning: Story = {
+  args: {
+    selectedNFTs: threeNFTs,
+    fromAccount: mockFromAccount,
+    toAccount: mockToAccount,
+    isAccountIncompatible: true,
+    showStorageWarning: true,
+    storageWarningMessage:
+      'This account cannot receive these NFT types. Setup is required before transfer.',
+    usdFee: '$0.004',
+    showEditButtons: true,
+  },
+};
+
+export const AllEnhancedFeatures: Story = {
+  args: {
+    selectedNFTs: twentyNFTs,
+    fromAccount: mockFromAccount,
+    toAccount: mockToAccount,
+    isAccountIncompatible: true,
+    showStorageWarning: true,
+    storageWarningMessage:
+      'Large NFT batch transfers to incompatible accounts require significant storage setup.',
+    transactionFee: '0.000 FLOW',
+    usdFee: '$0.00',
+    isFeesFree: true,
+    isBalanceLoading: false,
+    showEditButtons: true,
+  },
+};
+
+export const CustomStorageMessage: Story = {
+  args: {
+    selectedNFTs: fiveNFTs,
+    fromAccount: mockFromAccount,
+    toAccount: mockToAccount,
+    showStorageWarning: true,
+    storageWarningMessage:
+      'Warning: Multiple NFT collections require 0.001 FLOW storage deposit per unique collection.',
+    usdFee: '$0.004',
+    showEditButtons: true,
+  },
+};
+
+export const LoadingLargeCollection: Story = {
+  args: {
+    selectedNFTs: tenNFTs,
+    fromAccount: mockFromAccount,
+    toAccount: mockToAccount,
+    isBalanceLoading: true,
+    showStorageWarning: true,
+    storageWarningMessage:
+      'Loading account balance for large NFT collection transfer. Please wait.',
+    usdFee: '$0.006',
+    showEditButtons: true,
   },
 };
 
