@@ -25,6 +25,8 @@ export const getIX = () => {
 }`);
 };
 
+export const isFn = (d: any) => typeof d === 'function';
+
 export const makeArgument = (arg: Record<string, any>, idx) => (ix: any) => {
   const tempId = idx;
   ix.message.arguments.push(tempId);
