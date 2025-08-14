@@ -2,28 +2,34 @@
   "name": "@onflow/frw-icons",
   "version": "1.0.0",
   "description": "SVG icons package for Flow Reference Wallet with automatic React component generation",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/web/index.js",
+  "module": "./dist/web/index.mjs",
+  "types": "./dist/types.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "types": "./dist/types.d.ts",
+      "react-native": {
+        "import": "./dist/native/index.mjs",
+        "require": "./dist/native/index.js"
+      },
+      "import": "./dist/web/index.mjs",
+      "require": "./dist/web/index.js"
     }
   },
   "files": [
     "dist",
-    "src/components",
+    "src/web",
+    "src/react-native",
     "README.md"
   ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "generate:icons": "node scripts/icon-generator.js",
-    "generate:icons:force": "node scripts/icon-generator.js --force",
+    "generate:icons": "node scripts/icon-generator.js --force",
+    "generate:icons:incremental": "node scripts/icon-generator.js",
     "postinstall": "npm run generate:icons",
-    "clean": "rm -rf dist src/components",
+    "clean": "rm -rf dist src/web src/react-native",
+    "clean:generated": "find src -name '*.generated.tsx' -delete && find src -name 'index.ts' -delete",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },
@@ -46,7 +52,13 @@
     "typescript": "^5.7.2"
   },
   "peerDependencies": {
-    "react": "19.1.0"
+    "react": "19.1.0",
+    "react-native-svg": ">=15.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react-native-svg": {
+      "optional": true
+    }
   },
   "repository": {
     "type": "git",

@@ -1,6 +1,5 @@
-import { CheckCircleFill } from '@onflow/frw-icons';
-import React from 'react';
-import { YStack, Card, Text, Image, Button } from 'tamagui';
+import { CheckCircle } from '@onflow/frw-icons';
+import { Button, Card, Image, Text, YStack } from 'tamagui';
 
 import type { NFTData } from './NFTGrid';
 
@@ -84,7 +83,7 @@ export function NFTCard({
         {/* Selection Indicator */}
         {selected && (
           <YStack pos="absolute" top="$2" right="$2" bg="$primary" borderRadius="$6" p="$1">
-            <CheckCircleFill size={20} color="white" />
+            <CheckCircle size={20} color="white" />
           </YStack>
         )}
 

@@ -1,7 +1,7 @@
-import { X, ArrowRight } from '@onflow/frw-icons';
+import { ChevronRight, Close } from '@onflow/frw-icons';
 import { type WalletAccount } from '@onflow/frw-types';
 import React from 'react';
-import { YStack, XStack, Button, View } from 'tamagui';
+import { Button, View, XStack, YStack } from 'tamagui';
 
 import { type TokenModel } from './TokenSelectorModal';
 import { Avatar } from '../foundation/Avatar';
@@ -89,7 +89,7 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
             variant="ghost"
             circular
             onPress={onClose}
-            icon={<X size={20} />}
+            icon={<Close size={20} />}
             disabled={isLoading}
           />
         </XStack>
@@ -123,7 +123,7 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
             </YStack>
 
             {/* Arrow */}
-            <ArrowRight size={20} color="$gray10" />
+            <ChevronRight size={20} color="$gray10" />
 
             {/* To Account */}
             <YStack flex={1} gap="$2" bg="$gray2" rounded="$3" p="$3">

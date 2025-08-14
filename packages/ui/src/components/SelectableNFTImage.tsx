@@ -1,6 +1,5 @@
-import { CheckCircle, CheckCircleFill } from '@onflow/frw-icons';
-import React from 'react';
-import { YStack, Image, Button } from 'tamagui';
+import { CheckCircle } from '@onflow/frw-icons';
+import { Button, Image, YStack } from 'tamagui';
 
 export interface SelectableNFTImageProps {
   src: string;
@@ -84,11 +83,7 @@ export function SelectableNFTImage({
           }}
           pressStyle={{ opacity: 0.8 }}
         >
-          {selected ? (
-            <CheckCircleFill size={20} color="white" />
-          ) : (
-            <CheckCircle size={20} color="white" />
-          )}
+          <CheckCircle size={20} color={selected ? '#10b981' : 'white'} />
         </Button>
       )}
 

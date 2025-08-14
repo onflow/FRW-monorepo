@@ -209,9 +209,9 @@ const IconShowcase = (): React.ReactElement => {
           <YStack gap="$3">
             <Text variant="label">Basic Usage</Text>
             <XStack gap="$2" items="center">
-              <Icons.ArrowRight size={20} color={theme.gray11?.val || '#374151'} />
+              <Icons.ChevronRight size={20} color={theme.gray11?.val || '#374151'} />
               <Text variant="body" fontSize={14}>
-                {`<ArrowRight size={20} color="${theme.gray11?.val || '#374151'}" />`}
+                {`<ChevronRight size={20} color="${theme.gray11?.val || '#374151'}" />`}
               </Text>
             </XStack>
 
@@ -291,7 +291,7 @@ export const IconSizes: Story = {
               {size}px:
             </Text>
             <XStack gap="$3" items="center">
-              <Icons.ArrowRight size={size} color={theme.gray11?.val || '#374151'} />
+              <Icons.ChevronRight size={size} color={theme.gray11?.val || '#374151'} />
               <Icons.CheckCircle size={size} color={theme.gray11?.val || '#374151'} />
               <Icons.Copy size={size} color={theme.gray11?.val || '#374151'} />
               <Icons.Edit size={size} color={theme.gray11?.val || '#374151'} />
@@ -340,7 +340,7 @@ export const IconThemes: Story = {
             Different Icons with Same Theme
           </Text>
           <XStack gap="$4" items="center">
-            <Icons.ArrowRight size={32} color="#3b82f6" theme="outline" />
+            <Icons.ChevronRight size={32} color="#3b82f6" theme="outline" />
             <Icons.CheckCircle size={32} color="#10b981" theme="filled" />
             <Icons.Copy size={32} color="#f59e0b" theme="outline" />
             <Icons.Edit size={32} color="#ef4444" theme="outline" />
