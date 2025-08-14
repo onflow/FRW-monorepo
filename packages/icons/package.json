@@ -45,8 +45,8 @@
   "author": "Flow Reference Wallet Team",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^22.11.0",
     "@svgr/cli": "^8.1.0",
+    "@types/node": "^22.11.0",
     "eslint": "^9.17.0",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2"
@@ -67,5 +67,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.28.3"
   }
 }

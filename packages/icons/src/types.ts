@@ -1,2 +1,2 @@
 // Shared type definitions
-export type { IconWrapperProps } from './runtime/IconWrapper';
+export type { IconWrapperProps } from './IconWrapper';

@@ -32,6 +32,10 @@ export default defineConfig([
     minify: false,
     sourcemap: true,
     target: 'es2020',
+    esbuildOptions(options, _context): void {
+      // Keep object spread syntax for React Native compatibility
+      options.target = 'es2020';
+    },
   },
   // Types build (shared between both platforms)
   {

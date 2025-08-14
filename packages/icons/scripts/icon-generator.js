@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 
 const SVG_DIR = 'assets';
 const WEB_OUTPUT_DIR = 'src/web';
@@ -62,6 +63,109 @@ function shouldConvertFile(file) {
   return !fs.existsSync(file.webOutputFile) || !fs.existsSync(file.nativeOutputFile);
 }
 
+function generateReactNativeIcon(componentName, svgPath, outputDir) {
+  // Use svgr CLI to generate React Native components, similar to the React Native project approach
+  try {
+    console.log(`Generating React Native icon: ${componentName}`);
+
+    // Use svgr CLI with minimal optimizations to preserve exact shapes
+    execSync(
+      `npx -y @svgr/cli --out-dir "${outputDir}" "${svgPath}" --typescript --native --icon`,
+      { stdio: 'pipe' }
+    );
+
+    // The svgr CLI generates with PascalCase filename, not the original SVG filename
+    const svgrOutputPath = path.join(outputDir, `${componentName}.tsx`);
+    const finalOutputPath = path.join(outputDir, `${componentName}.generated.tsx`);
+
+    if (fs.existsSync(svgrOutputPath)) {
+      // Read the generated content and modify it to match our API
+      let content = fs.readFileSync(svgrOutputPath, 'utf8');
+
+      // Extract the SVG components used in this icon
+      const svgComponents = new Set();
+      const componentMatches = content.match(/<([A-Z][a-zA-Z]*)/g);
+      if (componentMatches) {
+        componentMatches.forEach((match) => {
+          const componentName = match.substring(1);
+          // Only include actual react-native-svg components, not Svg itself
+          if (componentName !== 'Svg' && componentName !== 'IconWrapper') {
+            svgComponents.add(componentName);
+          }
+        });
+      }
+
+      const svgImports = Array.from(svgComponents).sort().join(', ');
+
+      // Update the component to use dynamic colors and fix issues
+      content = content
+        // Use exact same import format as svgr CLI output
+        .replace(
+          /import \* as React from 'react';|import React from 'react';/,
+          `import * as React from "react"\nimport Svg, { type SvgProps, ${svgImports} } from "react-native-svg"`
+        )
+        // Remove old react-native-svg imports
+        .replace(/import Svg, \{[^}]+\} from 'react-native-svg';\n?/, '')
+        .replace(/import type \{ SvgProps \} from 'react-native-svg';\n?/, '')
+        // Update component function declaration with size and color support
+        .replace(
+          /const Svg\w+ = \(props: SvgProps\) => \(/,
+          `const ${componentName} = ({ color = "currentColor", size = 24, width, height, ...props }: SvgProps & { size?: number }) => (`
+        )
+        // Update Svg wrapper to add dynamic size support while preserving other attributes
+        .replace(/<Svg([^>]*)>/, (match, attributes) => {
+          // Extract viewBox from attributes
+          const viewBoxMatch = attributes.match(/viewBox="([^"]+)"/);
+          const viewBox = viewBoxMatch ? viewBoxMatch[1] : '0 0 24 24';
+
+          // Extract fill attribute if present
+          const fillMatch = attributes.match(/fill="([^"]+)"/);
+          const fill = fillMatch ? ` fill="${fillMatch[1]}"` : '';
+
+          return `<Svg xmlns="http://www.w3.org/2000/svg" width={width ?? size} height={height ?? size}${fill} viewBox="${viewBox}" {...props}>`;
+        })
+        // Replace hardcoded colors with dynamic color (both quoted and unquoted)
+        // But preserve fill="none" in Svg elements
+        .replace(/<Svg([^>]*)\sfill={color}([^>]*)>/g, (match, before, after) => {
+          return `<Svg${before} fill="none"${after}>`;
+        })
+        // Replace fill/stroke in Path and other elements (not Svg)
+        .replace(
+          /<(Path|Circle|Rect|Ellipse|Line|Polyline|Polygon)([^>]*)\sfill="[^"]*"([^>]*)/g,
+          '<$1$2 fill={color}$3'
+        )
+        .replace(
+          /<(Path|Circle|Rect|Ellipse|Line|Polyline|Polygon)([^>]*)\sstroke="[^"]*"([^>]*)/g,
+          '<$1$2 stroke={color}$3'
+        )
+        .replace(
+          /<(Path|Circle|Rect|Ellipse|Line|Polyline|Polygon)([^>]*)\sfill='[^']*'([^>]*)/g,
+          '<$1$2 fill={color}$3'
+        )
+        .replace(
+          /<(Path|Circle|Rect|Ellipse|Line|Polyline|Polygon)([^>]*)\sstroke='[^']*'([^>]*)/g,
+          '<$1$2 stroke={color}$3'
+        )
+        // Keep stroke-opacity and fill-opacity as they're important for visual accuracy
+        // Only remove general opacity which can be controlled externally
+        .replace(/\s+opacity=\{[^}]+\}/g, '')
+        // Update export statement to match svgr CLI format
+        .replace(/export default Svg\w+;/, `export default ${componentName}`);
+
+      // Write the modified content to our target file
+      fs.writeFileSync(finalOutputPath, content);
+
+      // Remove the original svgr output file
+      fs.unlinkSync(svgrOutputPath);
+    }
+
+    return true;
+  } catch (error) {
+    console.error(`Failed to generate React Native icon ${componentName}:`, error.message);
+    return false;
+  }
+}
+
 function convertSvgFile(file) {
   console.log(`Converting: ${file.relativePath}`);
 
@@ -73,14 +177,15 @@ function convertSvgFile(file) {
     fs.mkdirSync(file.nativeOutputDir, { recursive: true });
   }
 
+  const componentName = path
+    .basename(file.name)
+    .split(/[-_]/)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('');
+
   try {
-    // Generate a custom React component using our IconWrapper
+    // Generate Web version using the existing method
     const svgContent = fs.readFileSync(file.svgPath, 'utf8');
-    const componentName = path
-      .basename(file.name)
-      .split(/[-_]/)
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join('');
 
     // Extract SVG content (everything inside <svg> tags)
     const svgMatch = svgContent.match(/<svg[^>]*>([\s\S]*?)<\/svg>/);
@@ -113,17 +218,13 @@ function convertSvgFile(file) {
     const viewBoxMatch = svgContent.match(/viewBox="([^"]+)"/);
     const viewBox = viewBoxMatch ? viewBoxMatch[1] : '0 0 24 24';
 
-    // Calculate relative paths to runtime based on depth
+    // Calculate relative paths to IconWrapper based on depth
     const depth = file.relativePath.split('/').length - 1;
-    const webRuntimePath =
-      depth > 0 ? '../'.repeat(depth + 1) + 'runtime/IconWrapper' : '../runtime/IconWrapper';
-    const nativeRuntimePath =
-      depth > 0
-        ? '../'.repeat(depth + 1) + 'runtime/IconWrapper.native'
-        : '../runtime/IconWrapper.native';
+    const webIconWrapperPath =
+      depth > 0 ? '../'.repeat(depth + 1) + 'IconWrapper' : '../IconWrapper';
 
     // Generate Web version (HTML SVG)
-    const webComponentContent = `import { IconWrapper, type IconWrapperProps } from '${webRuntimePath}';
+    const webComponentContent = `import { IconWrapper, type IconWrapperProps } from '${webIconWrapperPath}';
 
 const ${componentName} = (props: IconWrapperProps) => (
   <IconWrapper viewBox="${viewBox}" {...props}>
@@ -134,68 +235,18 @@ const ${componentName} = (props: IconWrapperProps) => (
 export default ${componentName};
 `;
 
-    // Generate Native version (react-native-svg)
-    // Convert SVG elements to react-native-svg components
-    const nativeInnerContent = innerSvgContent
-      .replace(/<path/g, '<Path')
-      .replace(/<\/path>/g, '</Path>')
-      .replace(/<circle/g, '<Circle')
-      .replace(/<\/circle>/g, '</Circle>')
-      .replace(/<rect/g, '<Rect')
-      .replace(/<\/rect>/g, '</Rect>')
-      .replace(/<line/g, '<Line')
-      .replace(/<\/line>/g, '</Line>')
-      .replace(/<polyline/g, '<Polyline')
-      .replace(/<\/polyline>/g, '</Polyline>')
-      .replace(/<polygon/g, '<Polygon')
-      .replace(/<\/polygon>/g, '</Polygon>')
-      .replace(/<ellipse/g, '<Ellipse')
-      .replace(/<\/ellipse>/g, '</Ellipse>')
-      .replace(/<text/g, '<Text')
-      .replace(/<\/text>/g, '</Text>')
-      .replace(/<g/g, '<G')
-      .replace(/<\/g>/g, '</G>')
-      .replace(/<defs/g, '<Defs')
-      .replace(/<\/defs>/g, '</Defs>')
-      .replace(/<linearGradient/g, '<LinearGradient')
-      .replace(/<\/linearGradient>/g, '</LinearGradient>')
-      .replace(/<stop/g, '<Stop')
-      .replace(/<\/stop>/g, '</Stop>')
-      .replace(/<clipPath/g, '<ClipPath')
-      .replace(/<\/clipPath>/g, '</ClipPath>');
-
-    // Extract unique SVG components used
-    const svgComponents = new Set();
-    const componentMatches = nativeInnerContent.match(/<([A-Z][a-zA-Z]*)/g);
-    if (componentMatches) {
-      componentMatches.forEach((match) => {
-        const componentName = match.substring(1);
-        svgComponents.add(componentName);
-      });
-    }
-
-    const svgImports = Array.from(svgComponents).sort().join(', ');
-
-    const nativeComponentContent = `import { IconWrapper, type IconWrapperProps } from '${nativeRuntimePath}';
-${svgComponents.size > 0 ? `import { ${svgImports} } from 'react-native-svg';` : ''}
-
-const ${componentName} = (props: IconWrapperProps) => (
-  <IconWrapper viewBox="${viewBox}" {...props}>
-    ${nativeInnerContent}
-  </IconWrapper>
-);
-
-export default ${componentName};
-`;
-
-    // Write both versions
+    // Write Web version
     const webOutputPath = path.join(file.webOutputDir, `${componentName}.generated.tsx`);
-    const nativeOutputPath = path.join(file.nativeOutputDir, `${componentName}.generated.tsx`);
-
     fs.writeFileSync(webOutputPath, webComponentContent);
-    fs.writeFileSync(nativeOutputPath, nativeComponentContent);
 
-    return true;
+    // Generate React Native version using svgr CLI
+    const nativeSuccess = generateReactNativeIcon(
+      componentName,
+      file.svgPath,
+      file.nativeOutputDir
+    );
+
+    return nativeSuccess; // Both web and native must succeed
   } catch (error) {
     console.error(`Failed to convert ${file.relativePath}:`, error.message);
     return false;
