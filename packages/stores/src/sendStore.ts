@@ -10,6 +10,7 @@ import {
 import { create } from 'zustand';
 
 import {
+  type AccessibleAssetStore,
   type BalanceData,
   type SendFormData,
   type SendState,
@@ -49,6 +50,9 @@ export const useSendStore = create<SendState>((set, get) => ({
     coa: {},
     evm: {},
   },
+
+  // Accessible asset stores state - keyed by address
+  accessibleAssetStores: {},
 
   // Actions
   setSelectedToken: (token: TokenModel | null) => set({ selectedToken: token, error: null }),
@@ -233,6 +237,32 @@ export const useSendStore = create<SendState>((set, get) => ({
     return get().balances.evm[evmAddress] || null;
   },
 
+  // Accessible asset store management
+  getAccessibleAssetStore: (address: string) => {
+    return get().accessibleAssetStores[address] || null;
+  },
+
+  setAccessibleAssetStore: (address: string, store: AccessibleAssetStore) => {
+    set((state) => ({
+      accessibleAssetStores: {
+        ...state.accessibleAssetStores,
+        [address]: store,
+      },
+    }));
+  },
+
+  clearAccessibleAssetStore: (address: string) => {
+    set((state) => {
+      const newStores = { ...state.accessibleAssetStores };
+      delete newStores[address];
+      return { accessibleAssetStores: newStores };
+    });
+  },
+
+  clearAllAccessibleAssetStores: () => {
+    set({ accessibleAssetStores: {} });
+  },
+
   clearBalances: () => {
     set(() => ({
       balances: {
@@ -265,6 +295,7 @@ export const useSendStore = create<SendState>((set, get) => ({
         coa: {},
         evm: {},
       },
+      accessibleAssetStores: {},
     }),
 
   // Clear transaction-specific data while preserving accounts
@@ -452,6 +483,11 @@ export const sendSelectors = {
     state.balances.evm[evmAddress] || null,
   getAllCoaBalances: (state: SendState) => state.balances.coa,
   getAllEvmBalances: (state: SendState) => state.balances.evm,
+
+  // Accessible asset store selectors
+  getAccessibleAssetStore: (state: SendState) => (address: string) =>
+    state.accessibleAssetStores[address] || null,
+  getAllAccessibleAssetStores: (state: SendState) => state.accessibleAssetStores,
 
   // Validation selectors
   canProceedFromSelectTokens: (state: SendState) =>

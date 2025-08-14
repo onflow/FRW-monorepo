@@ -24,11 +24,21 @@ const meta: Meta<typeof SendTokensScreen> = {
     backgroundColor: { control: 'color' },
     contentPadding: { control: 'number', min: 8, max: 32 },
     transactionFee: { control: 'text' },
+    usdFee: { control: 'text' },
+    isAccountIncompatible: { control: 'boolean' },
+    isBalanceLoading: { control: 'boolean' },
+    showStorageWarning: { control: 'boolean' },
+    storageWarningMessage: { control: 'text' },
+    showEditButtons: { control: 'boolean' },
+    isFeesFree: { control: 'boolean' },
     onTokenSelect: { action: 'token-selected' },
     onAmountChange: { action: 'amount-changed' },
     onToggleInputMode: { action: 'input-mode-toggled' },
     onMaxPress: { action: 'max-pressed' },
     onSendPress: { action: 'send-pressed' },
+    onEditTokenPress: { action: 'edit-token-pressed' },
+    onEditAccountPress: { action: 'edit-account-pressed' },
+    onLearnMorePress: { action: 'learn-more-pressed' },
   },
   decorators: [
     (Story) => (
@@ -98,6 +108,11 @@ export const Default: Story = {
     amount: '100.0',
     isTokenMode: true,
     tokens: mockTokens,
+    usdFee: '$75.00',
+    isBalanceLoading: false,
+    showStorageWarning: false,
+    isFeesFree: false,
+    showEditButtons: true,
   },
 };
 
@@ -164,7 +179,9 @@ export const CustomFee: Story = {
     amount: '100.0',
     isTokenMode: true,
     tokens: mockTokens,
-    transactionFee: '0.005 FLOW (~$0.004)',
+    transactionFee: '0.005 FLOW',
+    usdFee: '$0.004',
+    showEditButtons: true,
   },
 };
 
@@ -290,5 +307,116 @@ export const LargeAmount: Story = {
     amount: '10000.123456',
     isTokenMode: true,
     tokens: mockTokens,
+    usdFee: '$7,500.09',
+    showEditButtons: true,
+  },
+};
+
+// New enhanced stories
+export const WithStorageWarning: Story = {
+  args: {
+    selectedToken: mockFlowToken,
+    fromAccount: mockFromAccount,
+    toAccount: mockToAccount,
+    amount: '100.0',
+    isTokenMode: true,
+    tokens: mockTokens,
+    showStorageWarning: true,
+    storageWarningMessage:
+      'This transaction may require additional storage on the recipient account.',
+    usdFee: '$75.00',
+    showEditButtons: true,
+  },
+};
+
+export const BalanceLoading: Story = {
+  args: {
+    selectedToken: mockFlowToken,
+    fromAccount: mockFromAccount,
+    toAccount: mockToAccount,
+    amount: '100.0',
+    isTokenMode: true,
+    tokens: mockTokens,
+    isBalanceLoading: true,
+    usdFee: '$75.00',
+    showEditButtons: true,
+  },
+};
+
+export const FreeFees: Story = {
+  args: {
+    selectedToken: mockFlowToken,
+    fromAccount: mockFromAccount,
+    toAccount: mockToAccount,
+    amount: '100.0',
+    isTokenMode: true,
+    tokens: mockTokens,
+    transactionFee: '0.000 FLOW',
+    usdFee: '$0.00',
+    isFeesFree: true,
+    showEditButtons: true,
+  },
+};
+
+export const AccountIncompatible: Story = {
+  args: {
+    selectedToken: mockFlowToken,
+    fromAccount: mockFromAccount,
+    toAccount: mockToAccount,
+    amount: '100.0',
+    isTokenMode: true,
+    tokens: mockTokens,
+    isAccountIncompatible: true,
+    usdFee: '$75.00',
+    showEditButtons: true,
+  },
+};
+
+export const WithoutEditButtons: Story = {
+  args: {
+    selectedToken: mockFlowToken,
+    fromAccount: mockFromAccount,
+    toAccount: mockToAccount,
+    amount: '100.0',
+    isTokenMode: true,
+    tokens: mockTokens,
+    showEditButtons: false,
+    usdFee: '$75.00',
+  },
+};
+
+export const AllEnhancedFeatures: Story = {
+  args: {
+    selectedToken: mockFlowToken,
+    fromAccount: mockFromAccount,
+    toAccount: mockToAccount,
+    amount: '100.0',
+    isTokenMode: true,
+    tokens: mockTokens,
+    isAccountIncompatible: true,
+    showStorageWarning: true,
+    storageWarningMessage:
+      'This recipient account may not support this token type. Additional setup may be required.',
+    transactionFee: '0.000 FLOW',
+    usdFee: '$0.00',
+    isFeesFree: true,
+    isBalanceLoading: false,
+    showEditButtons: true,
+  },
+};
+
+export const CustomStorageMessage: Story = {
+  args: {
+    selectedToken: mockFlowToken,
+    fromAccount: mockFromAccount,
+    toAccount: mockToAccount,
+    amount: '100.0',
+    isTokenMode: true,
+    tokens: mockTokens,
+    showStorageWarning: true,
+    storageWarningMessage:
+      'Warning: This transaction will create a new token vault on the recipient account, which requires 0.001 FLOW for storage.',
+    usdFee: '$75.00',
+    showEditButtons: true,
   },
 };

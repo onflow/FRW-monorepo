@@ -1,10 +1,11 @@
-import { ChevronRight, Close } from '@onflow/frw-icons';
+import { Close, ChevronRight } from '@onflow/frw-icons';
 import { type WalletAccount } from '@onflow/frw-types';
 import React from 'react';
-import { Button, View, XStack, YStack } from 'tamagui';
+import { YStack, XStack, View } from 'tamagui';
 
 import { type TokenModel } from './TokenSelectorModal';
 import { Avatar } from '../foundation/Avatar';
+import { Button } from '../foundation/Button';
 import { Text } from '../foundation/Text';
 
 export interface TransactionFormData {
@@ -84,14 +85,9 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
           <Text fontSize="$5" fontWeight="600" color="$color">
             {title}
           </Text>
-          <Button
-            size="$2"
-            variant="ghost"
-            circular
-            onPress={onClose}
-            icon={<Close size={20} />}
-            disabled={isLoading}
-          />
+          <Button size="small" variant="ghost" onPress={onClose} disabled={isLoading}>
+            <Close size={20} />
+          </Button>
         </XStack>
 
         {/* Transaction Details */}

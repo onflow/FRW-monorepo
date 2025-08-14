@@ -1,5 +1,6 @@
 import { CheckCircle } from '@onflow/frw-icons';
-import { Button, Image, YStack } from 'tamagui';
+import React from 'react';
+import { YStack, Image } from 'tamagui';
 
 export interface SelectableNFTImageProps {
   src: string;
@@ -29,7 +30,7 @@ export function SelectableNFTImage({
       case 'medium':
         return { width: 200, height: 200 };
       case 'large':
-        return { width: 300, height: 300 };
+        return { width: 343, height: 343 };
       default:
         return { width: '100%', aspectRatio };
     }
@@ -68,38 +69,22 @@ export function SelectableNFTImage({
         }
       />
 
-      {/* Selection Button */}
-      {selectable && (
-        <Button
+      {/* Selection Indicator */}
+      {selectable && selected && (
+        <YStack
           pos="absolute"
-          top="$3"
-          right="$3"
-          bg={selected ? '$primary' : 'rgba(0,0,0,0.3)'}
-          borderRadius="$6"
-          p="$2"
+          top={14}
+          right={14}
+          w={30}
+          h={30}
           onPress={(e) => {
             e.stopPropagation();
             onToggleSelection?.();
           }}
-          pressStyle={{ opacity: 0.8 }}
+          cursor="pointer"
         >
-          <CheckCircle size={20} color={selected ? '#10b981' : 'white'} />
-        </Button>
-      )}
-
-      {/* Selection Overlay */}
-      {selected && (
-        <YStack
-          pos="absolute"
-          top={0}
-          left={0}
-          right={0}
-          bottom={0}
-          bg="rgba(99, 102, 241, 0.1)"
-          borderWidth={2}
-          borderColor="$primary"
-          borderRadius={borderRadius}
-        />
+          <CheckCircle size={30} color="#00EF8B" />
+        </YStack>
       )}
     </YStack>
   );
