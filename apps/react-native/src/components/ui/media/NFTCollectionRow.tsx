@@ -6,16 +6,23 @@ import { SvgUri } from 'react-native-svg';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ArrowRight } from 'icons';
 
+import { AccessibilityStatus } from './AccessibilityStatus';
 import { Divider } from '../layout/divider';
 import { Text } from '../typography/text';
 
 interface NFTCollectionRowProps {
   collection?: CollectionModel;
   showDivider?: boolean;
+  isAccessible?: boolean;
   onPress?: () => void;
 }
 
-export function NFTCollectionRow({ collection, showDivider, onPress }: NFTCollectionRowProps) {
+export function NFTCollectionRow({
+  collection,
+  showDivider,
+  isAccessible = true,
+  onPress,
+}: NFTCollectionRowProps) {
   const { isDark } = useTheme();
   const [imageError, setImageError] = useState(false);
   const [svgLoadAttempted, setSvgLoadAttempted] = useState(false);
@@ -179,7 +186,10 @@ export function NFTCollectionRow({ collection, showDivider, onPress }: NFTCollec
 
           <View className="flex-1 ml-0.5 gap-1">
             <Text className="text-fg-1 font-semibold text-base">{collection?.name}</Text>
-            <Text className="text-fg-2 text-sm">{count}</Text>
+            <View className="flex-row items-center gap-2">
+              <Text className="text-fg-2 text-sm">{count}</Text>
+              <AccessibilityStatus isAccessible={isAccessible} />
+            </View>
           </View>
           <ArrowRight />
         </View>
