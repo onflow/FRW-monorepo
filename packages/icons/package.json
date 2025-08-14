@@ -4,10 +4,10 @@
   "description": "SVG icons package for Flow Reference Wallet with automatic React component generation",
   "main": "./dist/web/index.js",
   "module": "./dist/web/index.mjs",
-  "types": "./dist/types.d.ts",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/types.d.ts",
+      "types": "./dist/index.d.ts",
       "react-native": {
         "import": "./dist/native/index.mjs",
         "require": "./dist/native/index.js"

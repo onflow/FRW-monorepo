@@ -7,7 +7,7 @@ export default defineConfig([
     entry: { index: 'src/web.ts' },
     format: ['cjs', 'esm'],
     outDir: 'dist/web',
-    dts: false, // We'll generate types separately
+    dts: false, // Types will be generated separately
     clean: false, // We'll clean the entire dist folder first
     external: ['react'],
     treeshake: true,
@@ -36,8 +36,8 @@ export default defineConfig([
   // Types build (shared between both platforms)
   {
     name: 'types',
-    entry: { types: 'src/types.ts' },
-    format: ['esm'],
+    entry: { index: 'src/web.ts' },
+    format: ['cjs'],
     outDir: 'dist',
     dts: {
       only: true,
