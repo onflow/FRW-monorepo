@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { SendTransaction } from '../src';
+import { makeArgument, getIX } from './utils';
 import { accounts } from './utils/accounts';
 import { authz } from './utils/authz';
 
@@ -397,22 +398,33 @@ describe('Test NFT send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    // check args funcs
-    let idx = 0;
-    const checkArgs = (arg) => {
+
+    const interaction = getIX();
+    let id = 0;
+
+    // check args
+    configCache.args((arg, argType) => {
+      const argResolver = {
+        value: arg,
+        xfrom: argType,
+        resolve: (value, xform) => ({ value, xform }),
+      };
+      makeArgument(argResolver, id)(interaction);
+      id++;
+    }, t);
+
+    for (const idx of interaction.message.arguments) {
+      const { value } = interaction.arguments[idx];
       if (idx === 0) {
-        expect(arg).toBe(payload.flowIdentifier);
+        expect(value).toBe(payload.flowIdentifier);
       }
       if (idx === 1) {
-        expect(arg).toBe(payload.receiver);
+        expect(value).toBe(payload.receiver);
       }
       if (idx === 2) {
-        expect(arg).toStrictEqual(payload.ids.map((id) => id.toString()));
+        expect(value).toStrictEqual(payload.ids.map((id) => id.toString()));
       }
-      idx++;
-    };
-    // check args
-    configCache.args(checkArgs, t);
+    }
   });
 
   it('Test ChildToChildNftStrategy args', async () => {
@@ -432,25 +444,36 @@ describe('Test NFT send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    // check args funcs
-    let idx = 0;
-    const checkArgs = (arg) => {
+
+    const interaction = getIX();
+    let id = 0;
+
+    // check args
+    configCache.args((arg, argType) => {
+      const argResolver = {
+        value: arg,
+        xfrom: argType,
+        resolve: (value, xform) => ({ value, xform }),
+      };
+      makeArgument(argResolver, id)(interaction);
+      id++;
+    }, t);
+
+    for (const idx of interaction.message.arguments) {
+      const { value } = interaction.arguments[idx];
       if (idx === 0) {
-        expect(arg).toBe(payload.flowIdentifier);
+        expect(value).toBe(payload.flowIdentifier);
       }
       if (idx === 1) {
-        expect(arg).toBe(payload.sender);
+        expect(value).toBe(payload.sender);
       }
       if (idx === 2) {
-        expect(arg).toBe(payload.receiver);
+        expect(value).toBe(payload.receiver);
       }
       if (idx === 3) {
-        expect(arg).toStrictEqual(payload.ids);
+        expect(value).toStrictEqual(payload.ids);
       }
-      idx++;
-    };
-    // check args
-    configCache.args(checkArgs, t);
+    }
   });
 
   it('Test ChildToOthersNftStrategy - Parent receiver args', async () => {
@@ -470,22 +493,33 @@ describe('Test NFT send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    // check args funcs
-    let idx = 0;
-    const checkArgs = (arg) => {
+
+    const interaction = getIX();
+    let id = 0;
+
+    // check args
+    configCache.args((arg, argType) => {
+      const argResolver = {
+        value: arg,
+        xfrom: argType,
+        resolve: (value, xform) => ({ value, xform }),
+      };
+      makeArgument(argResolver, id)(interaction);
+      id++;
+    }, t);
+
+    for (const idx of interaction.message.arguments) {
+      const { value } = interaction.arguments[idx];
       if (idx === 0) {
-        expect(arg).toBe(payload.flowIdentifier);
+        expect(value).toBe(payload.flowIdentifier);
       }
       if (idx === 1) {
-        expect(arg).toBe(payload.sender);
+        expect(value).toBe(payload.sender);
       }
       if (idx === 2) {
-        expect(arg).toStrictEqual(payload.ids);
+        expect(value).toStrictEqual(payload.ids);
       }
-      idx++;
-    };
-    // check args
-    configCache.args(checkArgs, t);
+    }
   });
 
   it('Test ChildToOthersNftStrategy - COA receiver args', async () => {
@@ -505,22 +539,33 @@ describe('Test NFT send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    // check args funcs
-    let idx = 0;
-    const checkArgs = (arg) => {
+
+    const interaction = getIX();
+    let id = 0;
+
+    // check args
+    configCache.args((arg, argType) => {
+      const argResolver = {
+        value: arg,
+        xfrom: argType,
+        resolve: (value, xform) => ({ value, xform }),
+      };
+      makeArgument(argResolver, id)(interaction);
+      id++;
+    }, t);
+
+    for (const idx of interaction.message.arguments) {
+      const { value } = interaction.arguments[idx];
       if (idx === 0) {
-        expect(arg).toBe(payload.flowIdentifier);
+        expect(value).toBe(payload.flowIdentifier);
       }
       if (idx === 1) {
-        expect(arg).toBe(payload.sender);
+        expect(value).toBe(payload.sender);
       }
       if (idx === 2) {
-        expect(arg).toStrictEqual(payload.ids);
+        expect(value).toStrictEqual(payload.ids);
       }
-      idx++;
-    };
-    // check args
-    configCache.args(checkArgs, t);
+    }
   });
 
   it('Test ChildToOthersNftStrategy - EVM address receiver args', async () => {
@@ -540,25 +585,36 @@ describe('Test NFT send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    // check args funcs
-    let idx = 0;
-    const checkArgs = (arg) => {
+
+    const interaction = getIX();
+    let id = 0;
+
+    // check args
+    configCache.args((arg, argType) => {
+      const argResolver = {
+        value: arg,
+        xfrom: argType,
+        resolve: (value, xform) => ({ value, xform }),
+      };
+      makeArgument(argResolver, id)(interaction);
+      id++;
+    }, t);
+
+    for (const idx of interaction.message.arguments) {
+      const { value } = interaction.arguments[idx];
       if (idx === 0) {
-        expect(arg).toBe(payload.flowIdentifier);
+        expect(value).toBe(payload.flowIdentifier);
       }
       if (idx === 1) {
-        expect(arg).toBe(payload.sender);
+        expect(value).toBe(payload.sender);
       }
       if (idx === 2) {
-        expect(arg).toStrictEqual(payload.ids);
+        expect(value).toStrictEqual(payload.ids);
       }
       if (idx === 3) {
-        expect(arg).toBe(payload.receiver);
+        expect(value).toBe(payload.receiver);
       }
-      idx++;
-    };
-    // check args
-    configCache.args(checkArgs, t);
+    }
   });
 
   it('Test ChildToOthersNftStrategy - Flow address receiver args', async () => {
@@ -578,25 +634,36 @@ describe('Test NFT send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    // check args funcs
-    let idx = 0;
-    const checkArgs = (arg) => {
+
+    const interaction = getIX();
+    let id = 0;
+
+    // check args
+    configCache.args((arg, argType) => {
+      const argResolver = {
+        value: arg,
+        xfrom: argType,
+        resolve: (value, xform) => ({ value, xform }),
+      };
+      makeArgument(argResolver, id)(interaction);
+      id++;
+    }, t);
+
+    for (const idx of interaction.message.arguments) {
+      const { value } = interaction.arguments[idx];
       if (idx === 0) {
-        expect(arg).toBe(payload.flowIdentifier);
+        expect(value).toBe(payload.flowIdentifier);
       }
       if (idx === 1) {
-        expect(arg).toBe(payload.sender);
+        expect(value).toBe(payload.sender);
       }
       if (idx === 2) {
-        expect(arg).toBe(payload.receiver);
+        expect(value).toBe(payload.receiver);
       }
       if (idx === 3) {
-        expect(arg).toStrictEqual(payload.ids);
+        expect(value).toStrictEqual(payload.ids);
       }
-      idx++;
-    };
-    // check args
-    configCache.args(checkArgs, t);
+    }
   });
 
   it('Test TopShotNftStrategy args', async () => {
@@ -616,22 +683,33 @@ describe('Test NFT send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    // check args funcs
-    let idx = 0;
-    const checkArgs = (arg) => {
+
+    const interaction = getIX();
+    let id = 0;
+
+    // check args
+    configCache.args((arg, argType) => {
+      const argResolver = {
+        value: arg,
+        xfrom: argType,
+        resolve: (value, xform) => ({ value, xform }),
+      };
+      makeArgument(argResolver, id)(interaction);
+      id++;
+    }, t);
+
+    for (const idx of interaction.message.arguments) {
+      const { value } = interaction.arguments[idx];
       if (idx === 0) {
-        expect(arg).toBe(payload.flowIdentifier);
+        expect(value).toBe(payload.flowIdentifier);
       }
       if (idx === 1) {
-        expect(arg).toBe(payload.receiver);
+        expect(value).toBe(payload.receiver);
       }
       if (idx === 2) {
-        expect(arg).toStrictEqual(payload.ids);
+        expect(value).toStrictEqual(payload.ids);
       }
-      idx++;
-    };
-    // check args
-    configCache.args(checkArgs, t);
+    }
   });
 
   it('Test FlowToFlowNftStrategy args', async () => {
@@ -651,22 +729,33 @@ describe('Test NFT send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    // check args funcs
-    let idx = 0;
-    const checkArgs = (arg) => {
+
+    const interaction = getIX();
+    let id = 0;
+
+    // check args
+    configCache.args((arg, argType) => {
+      const argResolver = {
+        value: arg,
+        xfrom: argType,
+        resolve: (value, xform) => ({ value, xform }),
+      };
+      makeArgument(argResolver, id)(interaction);
+      id++;
+    }, t);
+
+    for (const idx of interaction.message.arguments) {
+      const { value } = interaction.arguments[idx];
       if (idx === 0) {
-        expect(arg).toBe(payload.flowIdentifier);
+        expect(value).toBe(payload.flowIdentifier);
       }
       if (idx === 1) {
-        expect(arg).toBe(payload.receiver);
+        expect(value).toBe(payload.receiver);
       }
       if (idx === 2) {
-        expect(arg).toStrictEqual(payload.ids);
+        expect(value).toStrictEqual(payload.ids);
       }
-      idx++;
-    };
-    // check args
-    configCache.args(checkArgs, t);
+    }
   });
 
   it('Test FlowToEvmNftBridgeStrategy args', async () => {
@@ -686,22 +775,33 @@ describe('Test NFT send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    // check args funcs
-    let idx = 0;
-    const checkArgs = (arg) => {
+
+    const interaction = getIX();
+    let id = 0;
+
+    // check args
+    configCache.args((arg, argType) => {
+      const argResolver = {
+        value: arg,
+        xfrom: argType,
+        resolve: (value, xform) => ({ value, xform }),
+      };
+      makeArgument(argResolver, id)(interaction);
+      id++;
+    }, t);
+
+    for (const idx of interaction.message.arguments) {
+      const { value } = interaction.arguments[idx];
       if (idx === 0) {
-        expect(arg).toBe(payload.flowIdentifier);
+        expect(value).toBe(payload.flowIdentifier);
       }
       if (idx === 1) {
-        expect(arg).toStrictEqual(payload.ids);
+        expect(value).toStrictEqual(payload.ids);
       }
       if (idx === 2) {
-        expect(arg).toBe(payload.receiver);
+        expect(value).toBe(payload.receiver);
       }
-      idx++;
-    };
-    // check args
-    configCache.args(checkArgs, t);
+    }
   });
 
   it('Test EvmToFlowNftBridgeStrategy args', async () => {
@@ -721,22 +821,33 @@ describe('Test NFT send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    // check args funcs
-    let idx = 0;
-    const checkArgs = (arg) => {
+
+    const interaction = getIX();
+    let id = 0;
+
+    // check args
+    configCache.args((arg, argType) => {
+      const argResolver = {
+        value: arg,
+        xfrom: argType,
+        resolve: (value, xform) => ({ value, xform }),
+      };
+      makeArgument(argResolver, id)(interaction);
+      id++;
+    }, t);
+
+    for (const idx of interaction.message.arguments) {
+      const { value } = interaction.arguments[idx];
       if (idx === 0) {
-        expect(arg).toBe(payload.flowIdentifier);
+        expect(value).toBe(payload.flowIdentifier);
       }
       if (idx === 1) {
-        expect(arg).toStrictEqual(payload.ids.map((id) => id.toString()));
+        expect(value).toStrictEqual(payload.ids.map((id) => id.toString()));
       }
       if (idx === 2) {
-        expect(arg).toBe(payload.receiver);
+        expect(value).toBe(payload.receiver);
       }
-      idx++;
-    };
-    // check args
-    configCache.args(checkArgs, t);
+    }
   });
 
   it('Test EvmToEvmNftStrategy - Single NFT args', async () => {
@@ -756,26 +867,37 @@ describe('Test NFT send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    // check args funcs
-    let idx = 0;
-    const checkArgs = (arg) => {
+
+    const interaction = getIX();
+    let id = 0;
+
+    // check args
+    configCache.args((arg, argType) => {
+      const argResolver = {
+        value: arg,
+        xfrom: argType,
+        resolve: (value, xform) => ({ value, xform }),
+      };
+      makeArgument(argResolver, id)(interaction);
+      id++;
+    }, t);
+
+    for (const idx of interaction.message.arguments) {
+      const { value } = interaction.arguments[idx];
       if (idx === 0) {
-        expect(arg).toBe(payload.tokenContractAddr);
+        expect(value).toBe(payload.tokenContractAddr);
       }
       if (idx === 1) {
-        expect(arg).toBe('0.0');
+        expect(value).toBe('0.0');
       }
       if (idx === 2) {
         // This is the encoded data, we just check it's a string
-        expect(typeof arg).toBe('object');
+        expect(typeof value).toBe('object');
       }
       if (idx === 3) {
         // This is the gas limit
-        expect(typeof arg).toBe('number');
+        expect(typeof value).toBe('number');
       }
-      idx++;
-    };
-    // check args
-    configCache.args(checkArgs, t);
+    }
   });
 });
