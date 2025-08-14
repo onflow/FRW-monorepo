@@ -37,8 +37,11 @@
       "Bash(y)",
       "WebFetch(domain:www.figma.com)",
       "Bash(claude mcp:*)",
-      "mcp__framelink-figma__get_figma_data"
+      "mcp__framelink-figma__get_figma_data",
+      "Bash(node:*)",
+      "Bash(npx -y @svgr/cli:*)"
     ],
-    "deny": []
+    "deny": [],
+    "defaultMode": "acceptEdits"
   }
 }
