@@ -13,6 +13,7 @@ export interface NFTPropertiesGridProps {
   title?: string;
   columns?: number;
   gap?: number;
+  propertyGap?: number;
   variant?: 'default' | 'compact';
   showTitle?: boolean;
 }
@@ -22,6 +23,7 @@ export function NFTPropertiesGrid({
   title = 'Properties',
   columns = 2,
   gap = 8,
+  propertyGap,
   variant = 'default',
   showTitle = true,
 }: NFTPropertiesGridProps) {
@@ -45,7 +47,7 @@ export function NFTPropertiesGrid({
 
       <YStack gap={gap}>
         {rows.map((row, rowIndex) => (
-          <XStack key={rowIndex} gap={gap} flexWrap="wrap">
+          <XStack key={rowIndex} gap={propertyGap ?? gap} flexWrap="wrap">
             {row.map((property, propIndex) => (
               <NFTPropertyTag
                 key={`${rowIndex}-${propIndex}`}

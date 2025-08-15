@@ -29,29 +29,34 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
   title = 'To account',
   backgroundColor = 'rgba(255, 255, 255, 0.1)',
   borderRadius = 16,
-  contentPadding = 16,
   showAvatar = true,
   avatarSize = 36,
 }) => {
   return (
-    <YStack bg={backgroundColor} rounded={borderRadius} gap="$3" pt="$4" px="$4" pb="$6">
+    <YStack bg={backgroundColor} rounded={borderRadius} gap={12} p={16} pb={24} w={343}>
       {/* Section Header */}
-      <Text fontSize="$2" fontWeight="400" color="rgba(255, 255, 255, 0.8)" lineHeight={16}>
+      <Text
+        fontSize={12}
+        fontWeight="400"
+        color="rgba(255, 255, 255, 0.8)"
+        lineHeight="1.33"
+        alignSelf="stretch"
+      >
         {title}
       </Text>
 
       {/* Incompatible Account Header */}
       {isAccountIncompatible && (
-        <XStack justifyContent="space-between" alignItems="flex-end">
-          <Text fontSize="$3" fontWeight="400" color="rgba(255, 255, 255, 0.8)" lineHeight={16}>
+        <XStack justify="space-between" items="flex-end">
+          <Text fontSize={12} fontWeight="400" color="rgba(255, 255, 255, 0.8)" lineHeight="1.33">
             Incompatible Account
           </Text>
           {onLearnMorePress && (
             <Text
-              fontSize="$3"
+              fontSize={12}
               fontWeight="400"
               color="#16FF99"
-              lineHeight={16}
+              lineHeight="1.33"
               onPress={onLearnMorePress}
               cursor="pointer"
               pressStyle={{ opacity: 0.7 }}
@@ -64,30 +69,50 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
 
       {/* Account Row */}
       <XStack
-        alignItems="center"
-        justifyContent="space-between"
-        px="$1"
-        py="$2"
+        items="center"
+        justify="space-between"
+        alignSelf="stretch"
+        gap={12}
         opacity={isAccountIncompatible ? 0.6 : 1}
       >
-        <XStack alignItems="center" gap="$4" flex={1}>
-          {/* Avatar */}
-          {showAvatar && (
-            <Avatar
-              src={account.avatar}
-              fallback={account.name?.charAt(0) || 'A'}
-              size={avatarSize}
-              borderColor={isAccountIncompatible ? '#D9D9D9' : '#00EF8B'}
-              borderWidth={1}
-            />
-          )}
+        {/* Account Display */}
+        <XStack items="center" gap={12} w={217}>
+          {/* Avatar Container */}
+          <YStack w={46} h={36} justify="center" items="flex-start">
+            {showAvatar && (
+              <Avatar
+                src={account.avatar}
+                fallback={account.name?.charAt(0) || 'A'}
+                size={avatarSize}
+                borderColor={isAccountIncompatible ? '#D9D9D9' : '#FFD787'}
+                borderWidth={0}
+                bg="#FFD787"
+              />
+            )}
+          </YStack>
 
           {/* Account Details */}
-          <YStack flex={1} gap="$0.5">
-            <Text color="$white" fontSize="$3" fontWeight="600" lineHeight={17} numberOfLines={1}>
-              {account.name || 'Unknown Account'}
-            </Text>
-            <Text color="#B3B3B3" fontWeight="400" fontSize="$2" lineHeight={17}>
+          <YStack gap={2} w={151} flex={1}>
+            <XStack items="center" gap={4}>
+              <Text
+                color="#FFFFFF"
+                fontSize={14}
+                fontWeight="600"
+                lineHeight="1.2"
+                letterSpacing="-0.6%"
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {account.name || 'Unknown Account'}
+              </Text>
+            </XStack>
+            <Text
+              color="#B3B3B3"
+              fontWeight="400"
+              fontSize={12}
+              lineHeight="1.4"
+              alignSelf="stretch"
+            >
               {account.address}
             </Text>
           </YStack>
@@ -95,17 +120,19 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
 
         {/* Edit Icon */}
         {showEditButton && onEditPress && (
-          <XStack
-            width={24}
-            height={24}
-            alignItems="center"
-            justifyContent="center"
-            pressStyle={{ opacity: 0.7 }}
-            onPress={onEditPress}
-            cursor="pointer"
-            opacity={isAccountIncompatible ? 0.5 : 1}
-          >
-            <Edit size={18} color={isAccountIncompatible ? '#FFFFFF' : '#767676'} theme="outline" />
+          <XStack justify="flex-end" items="center" gap={16}>
+            <XStack
+              w={24}
+              h={24}
+              items="center"
+              justify="center"
+              pressStyle={{ opacity: 0.7 }}
+              onPress={onEditPress}
+              cursor="pointer"
+              opacity={isAccountIncompatible ? 0.5 : 1}
+            >
+              <Edit size={24} color="#767676" theme="outline" />
+            </XStack>
           </XStack>
         )}
       </XStack>
