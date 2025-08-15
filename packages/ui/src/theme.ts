@@ -50,12 +50,18 @@ const flowColors = {
   light10: 'rgba(255, 255, 255, 0.1)', // 10% white
   light5: 'rgba(255, 255, 255, 0.05)', // 5% white
 
+  lightBg1: 'rgba(242, 242, 247, 1)',
+
+  lightBorder1: 'rgba(0, 0, 0, 0.1)',
   // Dark accent colors (for use with opacity in light mode)
   dark80: 'rgba(0, 0, 0, 0.8)', // 80% black
   dark40: 'rgba(0, 0, 0, 0.4)', // 40% black
   dark25: 'rgba(0, 0, 0, 0.25)', // 25% black
   dark10: 'rgba(0, 0, 0, 0.1)', // 10% black
 
+  darkBg1: 'rgba(255, 255, 255, 0.1)',
+
+  darkBorder1: 'rgba(41, 41, 41, 1)',
   // Shadow colors for light mode
   shadowLight: 'rgba(0, 0, 0, 0.1)',
   shadowLightHover: 'rgba(0, 0, 0, 0.15)',
@@ -72,66 +78,66 @@ const flowColors = {
 // Size system
 export const size = {
   $0: 0,
-  '$0.25': 2,
-  '$0.5': 4,
-  '$0.75': 8,
-  $1: 20,
-  '$1.5': 24,
-  $2: 28,
-  '$2.5': 32,
-  $3: 36,
-  '$3.5': 40,
-  $4: 44,
-  $true: 44,
-  '$4.5': 48,
-  $5: 52,
-  $6: 64,
-  $7: 74,
-  $8: 84,
-  $9: 94,
-  $10: 104,
-  $11: 124,
-  $12: 144,
-  $13: 164,
-  $14: 184,
-  $15: 204,
-  $16: 224,
-  $17: 224,
-  $18: 244,
-  $19: 264,
-  $20: 284,
+  '$0.25': 1,
+  '$0.5': 2,
+  '$0.75': 3,
+  $1: 4,
+  '$1.5': 6,
+  $2: 8,
+  '$2.5': 10,
+  $3: 12,
+  '$3.5': 14,
+  $4: 16,
+  $true: 16,
+  '$4.5': 18,
+  $5: 20,
+  $6: 24,
+  $7: 28,
+  $8: 32,
+  $9: 36,
+  $10: 40,
+  $11: 44,
+  $12: 48,
+  $13: 52,
+  $14: 56,
+  $15: 60,
+  $16: 64,
+  $17: 68,
+  $18: 72,
+  $19: 76,
+  $20: 80,
 };
 
 // Space system (includes negative values)
 export const space = {
   ...size,
-  '$-0.25': -2,
-  '$-0.5': -4,
-  '$-0.75': -8,
-  '$-1': -20,
-  '$-1.5': -24,
-  '$-2': -28,
-  '$-2.5': -32,
-  '$-3': -36,
-  '$-3.5': -40,
-  '$-4': -44,
-  '$-4.5': -48,
-  '$-5': -52,
-  '$-6': -64,
-  '$-7': -74,
-  '$-8': -84,
-  '$-9': -94,
-  '$-10': -104,
-  '$-11': -124,
-  '$-12': -144,
-  '$-13': -164,
-  '$-14': -184,
-  '$-15': -204,
-  '$-16': -224,
-  '$-17': -224,
-  '$-18': -244,
-  '$-19': -264,
-  '$-20': -284,
+  '$-0.25': -1,
+  '$-0.5': -2,
+  '$-0.75': -3,
+  '$-1': -4,
+  '$-1.5': -6,
+  '$-2': -8,
+  '$-2.5': -10,
+  '$-3': -12,
+  '$-3.5': -14,
+  '$-4': -16,
+  '$-4.5': -18,
+  '$-5': -20,
+  '$-6': -24,
+  '$-7': -28,
+  '$-8': -32,
+  '$-9': -36,
+  '$-10': -40,
+  '$-11': -44,
+  '$-12': -48,
+  '$-13': -52,
+  '$-14': -56,
+  '$-15': -60,
+  '$-16': -64,
+  '$-17': -68,
+  '$-18': -72,
+  '$-19': -76,
+  '$-20': -80,
 };
 
 // Z-index system
@@ -147,19 +153,19 @@ export const zIndex = {
 // Radius system
 export const radius = {
   0: 0,
-  1: 3,
-  2: 5,
-  3: 7,
-  4: 9,
-  true: 9,
-  5: 10,
-  6: 16,
-  7: 19,
-  8: 22,
-  9: 26,
-  10: 34,
-  11: 42,
-  12: 50,
+  1: 4,
+  2: 8,
+  3: 12,
+  4: 16,
+  true: 16,
+  5: 20,
+  6: 24,
+  7: 28,
+  8: 32,
+  9: 36,
+  10: 40,
+  11: 44,
+  12: 48,
 };
 
 // Create themes using createThemeBuilder
@@ -175,6 +181,8 @@ const themesBuilder = createThemeBuilder()
       flowColors.textLight3, // 4 - light text
       flowColors.textLight2, // 5 - medium text
       flowColors.textLight1, // 6 - darkest text
+      flowColors.lightBg1, // 7 - light background
+      flowColors.lightBorder1, // 8 - light border
     ],
     // Dark palette: dark background to light foreground
     dark: [
@@ -185,6 +193,8 @@ const themesBuilder = createThemeBuilder()
       flowColors.textDark2, // 4 - dim text
       flowColors.textDark3, // 5 - medium text
       flowColors.textDark1, // 6 - brightest text
+      flowColors.darkBg1, // 7 - light background
+      flowColors.darkBorder1, // 8 - dark border
     ],
   })
   // Add templates - these map palette indices to theme property names
@@ -196,6 +206,7 @@ const themesBuilder = createThemeBuilder()
       backgroundPress: 2, // Use palette[2] for press states
       backgroundFocus: flowColors.primary10, // Custom focus color
       backgroundStrong: 1, // Use palette[1] for strong backgrounds
+
       backgroundTransparent: 'transparent',
 
       // Surface colors - long names
@@ -206,11 +217,13 @@ const themesBuilder = createThemeBuilder()
 
       // Surface colors - shortcuts like Tailwind
       bg: 0, // $bg - primary background
+      bg1: 7,
       bg2: 1, // $bg2 - secondary background
       bg3: 2, // $bg3 - tertiary background
       bg4: 3, // $bg4 - quaternary background
 
       // Border colors - long names
+      border1: 8,
       borderColor: 2,
       borderColorHover: 3,
       borderColorPress: flowColors.primary,
@@ -315,6 +328,7 @@ const themesBuilder = createThemeBuilder()
       shadowHover: flowColors.shadowDarkHover, // $shadowHover
       shadowPress: flowColors.shadowDarkPress, // $shadowPress
       shadowFocus: flowColors.shadowDarkFocus, // $shadowFocus
+      // Override theme-aware muted text for dark mode
     },
   });
 

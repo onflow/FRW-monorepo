@@ -23,7 +23,18 @@ export function SegmentedControl({
   const { height, px, fontSize } = sizeConfig[size];
 
   return (
-    <XStack bg="$bg2" rounded="$10" items="center" w={fullWidth ? '100%' : 'auto'} {...props}>
+    <XStack
+      bg="$bg2"
+      rounded="$10"
+      items="center"
+      width={fullWidth ? '100%' : 'auto'}
+      py={5}
+      px={6}
+      bg="$bg"
+      borderWidth={2}
+      borderColor="$border1"
+      {...props}
+    >
       {segments.map((segment, index) => {
         const isSelected = selectedIndex === index;
 
@@ -31,8 +42,8 @@ export function SegmentedControl({
           <Stack
             key={segment}
             flex={fullWidth ? 1 : undefined}
-            h={height}
-            bg={isSelected ? '$text' : 'transparent'}
+            height={height}
+            bg={isSelected ? '$border1' : 'transparent'}
             rounded="$6"
             items="center"
             justify="center"
@@ -43,8 +54,8 @@ export function SegmentedControl({
           >
             <Text
               fontSize={fontSize}
-              fontWeight={isSelected ? '600' : '500'}
-              color={isSelected ? '$bg' : '$textSecondary'}
+              fontWeight={600}
+              color={isSelected ? '$textTertiary' : '$textSecondary'}
               numberOfLines={1}
               my="$0.5"
             >
