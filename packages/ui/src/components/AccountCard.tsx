@@ -5,7 +5,7 @@ import { XStack, YStack } from 'tamagui';
 import { Avatar } from '../foundation/Avatar';
 import { Skeleton } from '../foundation/Skeleton';
 import { Text } from '../foundation/Text';
-import type { AccountCardProps, Account } from '../types';
+import type { Account, AccountCardProps } from '../types';
 import { AccountSelectorModal } from './AccountSelectorModal';
 import { AddressText } from './AddressText';
 
@@ -26,6 +26,7 @@ export function AccountCard({
     <YStack
       bg="$bg1"
       rounded="$4"
+      width="100%"
       pt="$4"
       px="$4"
       pb="$6"
