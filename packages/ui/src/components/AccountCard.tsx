@@ -37,7 +37,7 @@ export function AccountCard({
       cursor={enableModalSelection ? 'pointer' : 'default'}
       {...props}
     >
-      <Text fontSize="$3" fontWeight="400" color="$text" lineHeight={16}>
+      <Text fontSize="$3" fontWeight="400" color="$text2" lineHeight={16}>
         {title}
       </Text>
       {/* Account Row */}
@@ -60,13 +60,19 @@ export function AccountCard({
             </Text>
 
             {/* Account Address */}
-            <AddressText address={account.address} truncate={true} startLength={6} endLength={4} />
+            <AddressText
+              address={account.address}
+              color="$text2"
+              truncate={true}
+              startLength={6}
+              endLength={4}
+            />
 
             {/* Balance */}
             {isLoading ? (
               <Skeleton width="$8" height="$4" borderRadius="$2" />
             ) : account.balance ? (
-              <Text color="#B3B3B3" fontWeight="400" fontSize="$3" lineHeight={17}>
+              <Text color="$text2" fontWeight="400" fontSize="$3" lineHeight={17}>
                 {account.balance}
               </Text>
             ) : null}
