@@ -8,6 +8,13 @@ import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 
 import SendToCadenceOrEvm from './SendToCadenceOrEvm';
+import SendToScreenEmbed from './SendToScreenEmbed';
+
+// Export the new embedded screens for use in routing
+export { default as SendToScreenEmbed } from './SendToScreenEmbed';
+export { default as SendTokensScreenEmbed } from './SendTokensScreenEmbed';
+export { default as TransferAmountScreenEmbed } from './TransferAmountScreenEmbed';
+export { default as TransferConfirmationScreenEmbed } from './TransferConfirmationScreenEmbed';
 
 export const SendTo = () => {
   // Remove or use only in development
@@ -22,6 +29,11 @@ export const SendTo = () => {
   const navigate = useNavigate();
 
   const [transactionState, dispatch] = useReducer(transactionReducer, INITIAL_TRANSACTION_STATE);
+
+  // Check if we should use the new migrated screen
+  const useNewScreen =
+    new URLSearchParams(location.search).get('newScreen') === 'true' ||
+    process.env.NODE_ENV === 'development';
 
   const handleTokenChange = useCallback(
     async (symbol: string) => {
@@ -125,6 +137,11 @@ export const SendTo = () => {
       type: 'finalizeAmount',
     });
   };
+
+  // If using new screen, render the embedded component
+  if (useNewScreen) {
+    return <SendToScreenEmbed />;
+  }
 
   return (
     <SendToCadenceOrEvm

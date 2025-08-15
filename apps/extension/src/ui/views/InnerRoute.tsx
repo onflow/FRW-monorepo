@@ -5,6 +5,7 @@ import Header from '@/ui/components/header';
 import PrivateRoute from '@/ui/components/PrivateRoute';
 import AddCustomEvmToken from '@/ui/components/TokenLists/AddCustomEvmToken';
 import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';
+import { AppRouter } from '@/ui/navigation';
 
 import Dashboard from './Dashboard';
 import Deposit from './Deposit';
@@ -19,7 +20,7 @@ import SendToAddress from './NFT/SendNFT/SendToAddress';
 import EvmCollectionDetail from './NftEvm/CollectionDetail';
 import NftEvmDetail from './NftEvm/Detail';
 import SendNftEvm from './NftEvm/SendNFT/SendToAddress';
-import SendAddress from './Send';
+import SelectTokensScreenEmbed from './Send/SelectTokensScreenEmbed';
 import SendTo from './SendTo';
 import SendTokensScreenView from './SendTokensScreen';
 import SettingTab from './Setting';
@@ -100,6 +101,10 @@ const InnerRoute = () => {
 
         <div id="scrollableTab" style={{ flex: 1, overflowY: 'scroll' }}>
           <Routes>
+            {/* New AppRouter routes - these take precedence */}
+            <Route path="/dashboard/*" element={<AppRouter />} />
+
+            {/* Existing routes */}
             <Route
               index
               element={
@@ -256,7 +261,7 @@ const InnerRoute = () => {
               path="token/:id/send"
               element={
                 <PrivateRoute>
-                  <SendAddress />
+                  <SelectTokensScreenEmbed />
                 </PrivateRoute>
               }
             />

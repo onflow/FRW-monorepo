@@ -1,19 +1,11 @@
-import { type WalletAccount } from '@onflow/frw-types';
 import {
-  BackgroundWrapper,
   YStack,
   ScrollView,
-  View,
   TokenAmountInput,
   TokenSelectorModal,
   TransactionConfirmationModal,
-  AccountCard,
-  ToAccountSection,
-  TransactionFeeSection,
-  SendArrowDivider,
-  SendSectionHeader,
-  StorageWarning,
   type TokenModel,
+  type WalletAccount,
   type TransactionFormData,
   Text,
 } from '@onflow/frw-ui';
@@ -41,17 +33,6 @@ export interface SendTokensScreenProps {
   backgroundColor?: string;
   contentPadding?: number;
   transactionFee?: string;
-  usdFee?: string;
-  // New props for enhanced components
-  isAccountIncompatible?: boolean;
-  isBalanceLoading?: boolean;
-  showStorageWarning?: boolean;
-  storageWarningMessage?: string;
-  showEditButtons?: boolean;
-  onEditTokenPress?: () => void;
-  onEditAccountPress?: () => void;
-  onLearnMorePress?: () => void;
-  isFeesFree?: boolean;
 }
 
 export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
@@ -76,17 +57,6 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
   backgroundColor = '$background',
   contentPadding = 20,
   transactionFee,
-  usdFee = '$0.02',
-  // New props
-  isAccountIncompatible = false,
-  isBalanceLoading = false,
-  showStorageWarning = false,
-  storageWarningMessage = 'Account balance will fall below the minimum FLOW required for storage after this transaction.',
-  showEditButtons = true,
-  onEditTokenPress,
-  onEditAccountPress,
-  onLearnMorePress,
-  isFeesFree = false,
 }) => {
   // Calculate if send button should be disabled
   const isSendDisabled =
@@ -103,134 +73,91 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
   };
 
   return (
-    <BackgroundWrapper backgroundColor={backgroundColor}>
-      <YStack flex={1}>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <YStack p={contentPadding} gap="$4">
-            {/* From Account Section */}
-            {fromAccount && (
-              <AccountCard
-                account={fromAccount}
-                title="From Account"
-                isLoading={isBalanceLoading}
-              />
-            )}
-
-            {/* Token Amount Input Section */}
-            <YStack bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$4" gap="$3">
-              <SendSectionHeader
-                title="Send Tokens"
-                onEditPress={onEditTokenPress}
-                showEditButton={showEditButtons && !!onEditTokenPress}
-                editButtonText="Change"
-              />
-              <TokenAmountInput
-                selectedToken={
-                  selectedToken
-                    ? {
-                        symbol: selectedToken.symbol,
-                        name: selectedToken.name,
-                        logo: selectedToken.logoURI,
-                        logoURI: selectedToken.logoURI,
-                        balance: selectedToken.balance?.toString(),
-                        price: selectedToken.priceInUSD
-                          ? parseFloat(selectedToken.priceInUSD)
-                          : undefined,
-                        isVerified: selectedToken.isVerified,
-                      }
-                    : undefined
-                }
-                amount={amount}
-                onAmountChange={onAmountChange}
-                isTokenMode={isTokenMode}
-                onToggleInputMode={onToggleInputMode}
-                onTokenSelectorPress={onTokenSelectorOpen}
-                onMaxPress={onMaxPress}
-                placeholder="0.00"
-                showBalance={true}
-                showConverter={true}
-                disabled={false}
-              />
+    <YStack flex={1} bg={backgroundColor}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <YStack p={contentPadding} gap="$4">
+          {/* From Account Section */}
+          {fromAccount && (
+            <YStack bg="$gray1" rounded="$4" p="$4">
+              <Text fontSize="$3" fontWeight="600" color="$gray11" mb="$2">
+                From Account
+              </Text>
+              <Text fontSize="$4" fontWeight="600" color="$color">
+                {fromAccount.name || fromAccount.address}
+              </Text>
+              {fromAccount.name && (
+                <Text fontSize="$3" color="$gray11" mt="$1">
+                  {fromAccount.address}
+                </Text>
+              )}
             </YStack>
+          )}
 
-            {/* Storage Warning */}
-            {showStorageWarning && (
-              <StorageWarning
-                message={storageWarningMessage}
-                showIcon={true}
-                title="Storage warning"
-                visible={true}
-              />
-            )}
-
-            {/* Arrow Down Indicator */}
-            <SendArrowDivider variant="text" />
-
-            {/* To Account Section */}
-            {toAccount && (
-              <ToAccountSection
-                account={toAccount}
-                isAccountIncompatible={isAccountIncompatible}
-                onEditPress={onEditAccountPress}
-                onLearnMorePress={onLearnMorePress}
-                showEditButton={showEditButtons}
-                title="To account"
-              />
-            )}
-
-            {/* Transaction Fee Section */}
-            <TransactionFeeSection
-              flowFee={transactionFee || '0.001 FLOW'}
-              usdFee={usdFee}
-              isFree={isFeesFree}
-              showCovered={true}
-              title="Transaction Fee"
-              backgroundColor="rgba(255, 255, 255, 0.1)"
-              borderRadius={16}
-              contentPadding={16}
+          {/* Token Amount Input Section */}
+          <YStack bg="$gray1" rounded="$4" p="$4">
+            <TokenAmountInput
+              selectedToken={selectedToken}
+              amount={amount}
+              onAmountChange={onAmountChange}
+              isTokenMode={isTokenMode}
+              onToggleInputMode={onToggleInputMode}
+              onTokenSelectorPress={onTokenSelectorOpen}
+              onMaxPress={onMaxPress}
+              placeholder="0.00"
+              showBalance={true}
+              showConverter={true}
+              disabled={false}
             />
           </YStack>
-        </ScrollView>
 
-        {/* Send Button */}
-        <View p={contentPadding} pt="$2">
-          <YStack
-            bg={isSendDisabled ? 'rgba(255, 255, 255, 0.2)' : '#007AFF'}
-            rounded="$4"
-            p="$4"
-            items="center"
-            opacity={isSendDisabled ? 0.5 : 1}
-            pressStyle={{ opacity: 0.8 }}
-            onPress={isSendDisabled ? undefined : onSendPress}
-            cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
-          >
-            <Text fontSize="$4" fontWeight="600" color="$white">
-              Send Tokens
+          {/* To Account Section */}
+          {toAccount && (
+            <YStack bg="$gray1" rounded="$4" p="$4">
+              <Text fontSize="$3" fontWeight="600" color="$gray11" mb="$2">
+                To Account
+              </Text>
+              <Text fontSize="$4" fontWeight="600" color="$color">
+                {toAccount.name || toAccount.address}
+              </Text>
+              {toAccount.name && (
+                <Text fontSize="$3" color="$gray11" mt="$1">
+                  {toAccount.address}
+                </Text>
+              )}
+            </YStack>
+          )}
+
+          {/* Transaction Fee Section */}
+          <YStack bg="$gray1" rounded="$4" p="$4">
+            <Text fontSize="$3" fontWeight="600" color="$gray11" mb="$2">
+              Network Fee
+            </Text>
+            <Text fontSize="$4" color="$color">
+              {transactionFee || '~0.001 FLOW'}
             </Text>
           </YStack>
-        </View>
+        </YStack>
+      </ScrollView>
+      {/* Token Selector Modal */}
+      <TokenSelectorModal
+        visible={isTokenSelectorVisible}
+        selectedToken={selectedToken}
+        tokens={tokens}
+        onTokenSelect={onTokenSelect || (() => {})}
+        onClose={onTokenSelectorClose || (() => {})}
+      />
 
-        {/* Token Selector Modal */}
-        <TokenSelectorModal
-          visible={isTokenSelectorVisible}
-          selectedToken={selectedToken}
-          tokens={tokens}
-          onTokenSelect={onTokenSelect || (() => {})}
-          onClose={onTokenSelectorClose || (() => {})}
-        />
-
-        {/* Transaction Confirmation Modal */}
-        <TransactionConfirmationModal
-          visible={isConfirmationVisible}
-          transactionType="tokens"
-          selectedToken={selectedToken}
-          fromAccount={fromAccount}
-          toAccount={toAccount}
-          formData={formData}
-          onConfirm={onTransactionConfirm}
-          onClose={onConfirmationClose || (() => {})}
-        />
-      </YStack>
-    </BackgroundWrapper>
+      {/* Transaction Confirmation Modal */}
+      <TransactionConfirmationModal
+        visible={isConfirmationVisible}
+        transactionType="tokens"
+        selectedToken={selectedToken}
+        fromAccount={fromAccount}
+        toAccount={toAccount}
+        formData={formData}
+        onConfirm={onTransactionConfirm}
+        onClose={onConfirmationClose || (() => {})}
+      />
+    </YStack>
   );
 };

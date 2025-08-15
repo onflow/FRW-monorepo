@@ -1,12 +1,5 @@
-import { TokenService } from '@onflow/frw-services';
 import { useSendStore, useTokenStore, useWalletStore } from '@onflow/frw-stores';
-import {
-  addressType,
-  type TokenModel,
-  WalletType,
-  type CollectionModel,
-  type WalletAccount,
-} from '@onflow/frw-types';
+import { type TokenModel, type CollectionModel, type WalletAccount } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   SegmentedControl,
@@ -21,10 +14,10 @@ import {
   AccountCard,
   Badge,
   AddressText,
-  Divider,
 } from '@onflow/frw-ui';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect } from 'react';
 
+import { useDemoDataStore } from '../stores/DemoDataStore';
 import type { BaseScreenProps, TabType } from '../types';
 
 interface SelectTokensScreenProps extends BaseScreenProps {
@@ -32,20 +25,29 @@ interface SelectTokensScreenProps extends BaseScreenProps {
 }
 
 export function SelectTokensScreen({ navigation, bridge, t }: SelectTokensScreenProps) {
+  // Demo data store
+  const {
+    tokens,
+    collections: nftCollections,
+    accounts,
+    activeAccount,
+    isLoadingTokens: isLoading,
+    isLoadingNFTs: nftLoading,
+    tokensError: error,
+    nftsError: nftError,
+    fetchTokens: fetchDemoTokens,
+    fetchNFTs: fetchDemoNFTs,
+    fetchCollections: fetchDemoCollections,
+    fetchAccounts: fetchDemoAccounts,
+    setActiveAccount,
+  } = useDemoDataStore();
+
   // State management
   const [tab, setTab] = React.useState<TabType>('Tokens');
-  const [tokens, setTokens] = React.useState<TokenModel[]>([]);
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
   const [fromAccount, setLocalFromAccount] = React.useState<WalletAccount | null>(null);
   const [fromAccountBalance, setFromAccountBalance] = React.useState<string>('0 FLOW');
   const [isBalanceLoading, setIsBalanceLoading] = React.useState(false);
   const [isAccountLoading, setIsAccountLoading] = React.useState(true);
-
-  // NFT state
-  const [nftCollections, setNftCollections] = useState<CollectionModel[]>([]);
-  const [nftLoading, setNftLoading] = useState(false);
-  const [nftError, setNftError] = useState<string | null>(null);
 
   // Store hooks
   const {
@@ -102,82 +104,23 @@ export function SelectTokensScreen({ navigation, bridge, t }: SelectTokensScreen
     [fetchAccountBalance]
   );
 
-  // Fetch tokens
+  // Fetch tokens using demo data
   const fetchTokens = useCallback(
     async (accountAddress?: string, accountType?: string, isRefreshAction = false) => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const targetAddress = accountAddress || bridge.getSelectedAddress();
-        const network = bridge.getNetwork();
-
-        if (!targetAddress) {
-          setTokens([]);
-          return;
-        }
-
-        // Determine wallet type
-        let walletType: WalletType;
-        if (accountType === 'evm') {
-          walletType = WalletType.EVM;
-        } else if (accountType === 'main' || accountType === 'child') {
-          walletType = WalletType.Flow;
-        } else {
-          walletType = addressType(targetAddress);
-        }
-
-        const tokenService = new TokenService(walletType);
-        const tokenInfos = await tokenService.getTokenInfo(targetAddress, network);
-        setTokens(tokenInfos);
-      } catch (err: any) {
-        console.error('Error fetching tokens:', err);
-        setError(err.message || t('errors.failedToLoadTokens'));
-        setTokens([]);
-      } finally {
-        setIsLoading(false);
-      }
+      // Use demo data store to fetch tokens
+      await fetchDemoTokens(accountAddress);
     },
-    [bridge, t]
+    [fetchDemoTokens]
   );
 
   // Fetch NFT collections
   const fetchNFTCollections = useCallback(
     async (accountAddress?: string, accountType?: string, isRefreshAction = false) => {
-      setNftLoading(!isRefreshAction);
-      setNftError(null);
-
-      try {
-        const targetAddress = accountAddress || bridge.getSelectedAddress();
-        const network = bridge.getNetwork();
-
-        if (!targetAddress) {
-          setNftCollections([]);
-          return;
-        }
-
-        const tokenStore = useTokenStore.getState();
-
-        if (isRefreshAction) {
-          await tokenStore.forceRefresh(targetAddress, network || 'mainnet');
-        } else {
-          await tokenStore.fetchTokens(targetAddress, network || 'mainnet', true);
-        }
-
-        const collections =
-          tokenStore.getNFTCollectionsForAddress(targetAddress, network || 'mainnet') || [];
-
-        setNftCollections(collections || []);
-      } catch (err: any) {
-        const errorMessage = err?.message || err?.toString() || 'Unknown error';
-        console.error('Failed to fetch NFT collections:', errorMessage);
-        setNftError(`Failed to load NFT collections: ${errorMessage}`);
-        setNftCollections([]);
-      } finally {
-        setNftLoading(false);
-      }
+      // Use demo data store to fetch NFT collections
+      await fetchDemoCollections(accountAddress);
+      await fetchDemoNFTs(accountAddress);
     },
-    [bridge]
+    [fetchDemoCollections, fetchDemoNFTs]
   );
 
   // Handle account selection
@@ -186,8 +129,6 @@ export function SelectTokensScreen({ navigation, bridge, t }: SelectTokensScreen
       try {
         setLocalFromAccount(selectedAccount);
         setStoreFromAccount(selectedAccount);
-        setNftLoading(true);
-        setNftError(null);
 
         await updateFromAccountBalance(selectedAccount.address, selectedAccount.type, true);
 
@@ -275,18 +216,19 @@ export function SelectTokensScreen({ navigation, bridge, t }: SelectTokensScreen
   });
 
   return (
-    <BackgroundWrapper backgroundColor="$background">
-      <YStack flex={1} px="$4" pt="$2">
-        {/* Header */}
-        <XStack justify="center" items="center" py="$4" pos="relative">
-          <Text fontSize="$6" fontWeight="700" color="$color" lineHeight="$2" letterSpacing="$-1">
-            {t('send.title')}
-          </Text>
-        </XStack>
-
+    <BackgroundWrapper>
+      <YStack flex={1} px="$5" pt="$2">
         {/* Account Card */}
         {isAccountLoading ? (
-          <YStack bg="$bg2" rounded="$4" p="$4" my="$4" h="$10" justify="center" items="center">
+          <YStack
+            bg="$bg2"
+            rounded="$4"
+            p="$4"
+            my="$4"
+            height={120}
+            justify="center"
+            items="center"
+          >
             <Text color="$textSecondary">{t('messages.loadingAccount')}</Text>
           </YStack>
         ) : fromAccount ? (
@@ -297,7 +239,6 @@ export function SelectTokensScreen({ navigation, bridge, t }: SelectTokensScreen
             }}
             title={t('labels.fromAccount')}
             isLoading={isBalanceLoading}
-            showBackground={true}
           />
         ) : null}
 
@@ -348,29 +289,23 @@ export function SelectTokensScreen({ navigation, bridge, t }: SelectTokensScreen
                   refreshText={t('buttons.refresh')}
                 />
               ) : (
-                <YStack gap="$2">
-                  {/* Token Count Badge */}
-                  <XStack justify="space-between" items="center" px="$2" pb="$2">
-                    <Badge variant="secondary" size="small">
-                      {tokensWithBalance.length}{' '}
-                      {tokensWithBalance.length === 1 ? 'Token' : 'Tokens'}
-                    </Badge>
-                  </XStack>
-
+                <YStack gap="$1">
                   {tokensWithBalance.map((token, idx) => (
-                    <React.Fragment key={`token-${token.identifier || token.symbol}-${idx}`}>
-                      <TokenCard
-                        symbol={token.symbol || ''}
-                        name={token.name || ''}
-                        balance={token.displayBalance || token.balance || '0'}
-                        logo={token.icon}
-                        price={token.usdValue?.toString()}
-                        change24h={token.change ? parseFloat(token.change) : undefined}
-                        isVerified={token.isVerified}
-                        onPress={() => handleTokenPress(token)}
-                      />
-                      {idx < tokensWithBalance.length - 1 && <Divider />}
-                    </React.Fragment>
+                    <TokenCard
+                      key={`token-${token.identifier || token.symbol}-${idx}`}
+                      symbol={token.symbol || ''}
+                      name={token.name || ''}
+                      balance={`${token.balance || '0'} ${token.symbol || ''}`}
+                      logo={token.logoURI}
+                      price={token.balanceInUSD ? `$${token.balanceInUSD}` : undefined}
+                      change24h={
+                        token.change
+                          ? parseFloat(token.change.replace('%', '').replace('+', ''))
+                          : 5.2
+                      }
+                      isVerified={token.isVerified || true}
+                      onPress={() => handleTokenPress(token)}
+                    />
                   ))}
                 </YStack>
               )}
@@ -406,7 +341,7 @@ export function SelectTokensScreen({ navigation, bridge, t }: SelectTokensScreen
                   type="empty"
                   message={t('messages.noNFTCollectionsForAccount')}
                   onRefresh={refreshNFTCollections}
-                  refreshText={t('buttons.refresh')}
+                  refreshText={t('buttons.refasresh')}
                 />
               ) : (
                 <YStack gap="$2">

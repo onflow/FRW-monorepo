@@ -16,6 +16,7 @@ export interface AccessibleAssetStore {
   isNFTAllowed: (nft: NFTModel) => boolean;
   isCollectionAllowed: (collection: CollectionModel) => boolean;
   reset: () => void;
+  getState: () => AccessibleAssetStore;
 }
 
 export interface User {

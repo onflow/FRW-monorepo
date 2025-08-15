@@ -1,11 +1,15 @@
 // Export screen components
-export * from './send/SelectTokensScreen';
-export * from './send/SendToScreen';
-export * from './send/NFTListScreen';
-export * from './send/NFTDetailScreen';
-export * from './send/SendTokensScreen';
-export * from './send/SendSingleNFTScreen';
-export * from './send/SendMultipleNFTsScreen';
+export * from './ColorDemo';
+export * from './Home';
+export * from './NFTDetail';
+export * from './NFTList';
+export * from './send';
+
+// Export stores
+export * from './stores';
+
+// Export demo components
+export * from './demo';
 
 // Export types
 export * from './types';
