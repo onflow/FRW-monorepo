@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Close, Edit, Trash } from '@onflow/frw-icons';
+import { ChevronDown, ChevronUp, Close, Edit } from '@onflow/frw-icons';
 import React, { useState } from 'react';
 import { YStack, XStack, ScrollView, Image, View } from 'tamagui';
 
