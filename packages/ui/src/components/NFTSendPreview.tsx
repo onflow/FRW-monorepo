@@ -2,7 +2,6 @@ import { Edit } from '@onflow/frw-icons';
 import React, { useState } from 'react';
 import { YStack, XStack, Image, View } from 'tamagui';
 
-import { Button } from '../foundation/Button';
 import { Text } from '../foundation/Text';
 
 export interface NFTSendData {
@@ -24,17 +23,19 @@ export interface NFTSendPreviewProps {
   backgroundColor?: string;
   borderRadius?: string | number;
   contentPadding?: number;
+  showEvmChip?: boolean;
 }
 
 export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
   nft,
   onEditPress,
   showEditButton = true,
-  sectionTitle = 'Send NFT',
-  imageSize = 92,
-  backgroundColor = '$gray1',
-  borderRadius = '$4',
+  sectionTitle = 'Send NFTs',
+  imageSize = 92.17,
+  backgroundColor = 'rgba(255, 255, 255, 0.1)',
+  borderRadius = 16,
   contentPadding = 16,
+  showEvmChip = false,
 }) => {
   const [imageError, setImageError] = useState(false);
 
@@ -43,29 +44,66 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
   const displayImage = imageUrl && !imageError;
 
   return (
-    <YStack bg={backgroundColor} rounded={borderRadius} p={contentPadding} gap="$3">
+    <YStack
+      bg="rgba(255, 255, 255, 0.1)"
+      rounded="$4"
+      padding={contentPadding}
+      paddingBottom={30}
+      gap={12}
+      width="100%"
+      style={{ maxWidth: 343 }}
+    >
       {/* Section Header */}
-      <XStack items="center" justify="space-between">
-        <Text fontSize="$3" fontWeight="600" color="$gray11">
-          {sectionTitle}
-        </Text>
+      <XStack alignItems="center" justifyContent="space-between">
+        <XStack alignItems="center" gap={8}>
+          <Text fontSize={12} fontWeight="500" color="$white">
+            {sectionTitle}
+          </Text>
+          {showEvmChip && (
+            <View
+              bg="#627EEA"
+              rounded={18}
+              px={8}
+              py={0}
+              height={16}
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Text
+                fontSize={9}
+                fontWeight="400"
+                color="$white"
+                letterSpacing={0.16}
+                lineHeight={16}
+              >
+                EVM
+              </Text>
+            </View>
+          )}
+        </XStack>
         {showEditButton && onEditPress && (
-          <Button size="$2" variant="ghost" onPress={onEditPress} icon={<Edit size={16} />}>
-            Edit
-          </Button>
+          <XStack
+            alignItems="center"
+            gap={4}
+            pressStyle={{ opacity: 0.8 }}
+            onPress={onEditPress}
+            cursor="pointer"
+          >
+            <Edit size={24} color="rgba(255, 255, 255, 0.8)" />
+          </XStack>
         )}
       </XStack>
 
       {/* NFT Preview */}
-      <XStack gap="$4" items="center">
+      <XStack gap={12} alignItems="flex-start">
         {/* NFT Image */}
         <View
           width={imageSize}
           height={imageSize}
           rounded="$4"
-          bg="$gray6"
-          items="center"
-          justify="center"
+          bg="rgba(255, 255, 255, 0.05)"
+          alignItems="center"
+          justifyContent="center"
           overflow="hidden"
         >
           {displayImage ? (
@@ -76,20 +114,20 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
               onError={() => setImageError(true)}
             />
           ) : (
-            <YStack items="center" justify="center" gap="$2">
+            <YStack alignItems="center" justifyContent="center" gap={4}>
               <YStack
                 width={24}
                 height={24}
-                bg="$gray8"
+                bg="rgba(255, 255, 255, 0.1)"
                 rounded="$2"
-                items="center"
-                justify="center"
+                alignItems="center"
+                justifyContent="center"
               >
-                <Text fontSize="$2" color="$gray11">
+                <Text fontSize={12} color="rgba(255, 255, 255, 0.6)">
                   🖼️
                 </Text>
               </YStack>
-              <Text fontSize="$2" color="$gray11" textAlign="center">
+              <Text fontSize={12} color="rgba(255, 255, 255, 0.6)" textAlign="center">
                 NFT
               </Text>
             </YStack>
@@ -97,29 +135,16 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
         </View>
 
         {/* NFT Details */}
-        <YStack flex={1} gap="$2" justify="center">
+        <YStack flex={1} gap={4}>
           {/* Collection Name */}
-          <YStack>
-            <Text fontSize="$3" fontWeight="600" color="$color" numberOfLines={1}>
-              {nft.collection || 'Unknown Collection'}
-            </Text>
-          </YStack>
+          <Text fontSize={14} fontWeight="400" color="rgba(255, 255, 255, 0.8)" numberOfLines={1}>
+            {nft.collection || 'Unknown Collection'}
+          </Text>
 
           {/* NFT Name */}
-          <YStack>
-            <Text fontSize="$5" fontWeight="500" color="$gray11" numberOfLines={2}>
-              {nft.name || 'Unnamed NFT'}
-            </Text>
-          </YStack>
-
-          {/* Description (if available) */}
-          {nft.description && (
-            <YStack mt="$1">
-              <Text fontSize="$2" color="$gray10" numberOfLines={2}>
-                {nft.description}
-              </Text>
-            </YStack>
-          )}
+          <Text fontSize={20} fontWeight="500" color="$white" numberOfLines={2} lineHeight="$1">
+            {nft.name || 'Unnamed NFT'}
+          </Text>
         </YStack>
       </XStack>
     </YStack>

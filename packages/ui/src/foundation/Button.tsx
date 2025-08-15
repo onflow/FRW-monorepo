@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button as TamaguiButton, Spinner, XStack, Text } from 'tamagui';
+import { Spinner, Button as TamaguiButton, Text, XStack } from 'tamagui';
 
 interface UIButtonProps {
   variant?: 'primary' | 'secondary' | 'ghost' | 'outline' | 'destructive' | 'success';

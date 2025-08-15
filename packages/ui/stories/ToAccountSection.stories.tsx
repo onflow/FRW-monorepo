@@ -31,7 +31,7 @@ const meta: Meta<typeof ToAccountSection> = {
   },
   decorators: [
     (Story) => (
-      <YStack width={400} p="$4">
+      <YStack width={375} p="$4" bg="$gray12">
         <Story />
       </YStack>
     ),
@@ -43,19 +43,19 @@ type Story = StoryObj<typeof ToAccountSection>;
 
 // Mock accounts
 const mockAccount: WalletAccount = {
-  address: '0xabcdef1234567890abcdef1234567890abcdef12',
-  name: 'John Doe',
-  avatar: 'https://via.placeholder.com/40x40/6366F1/FFFFFF?text=JD',
+  address: '0x0c666c888d8fb259',
+  name: 'Fox',
+  avatar: 'https://via.placeholder.com/36x36/FFD787/FFFFFF?text=🦊',
 };
 
 const mockAccountWithoutName: WalletAccount = {
-  address: '0xabcdef1234567890abcdef1234567890abcdef12',
+  address: '0x0c666c888d8fb259',
 };
 
 const mockAccountLongName: WalletAccount = {
-  address: '0xabcdef1234567890abcdef1234567890abcdef12',
+  address: '0x0c666c888d8fb259',
   name: 'Very Long Account Name That Should Be Handled Properly',
-  avatar: 'https://via.placeholder.com/40x40/F59E0B/FFFFFF?text=VL',
+  avatar: 'https://via.placeholder.com/36x36/FFD787/FFFFFF?text=VL',
 };
 
 export const Default: Story = {

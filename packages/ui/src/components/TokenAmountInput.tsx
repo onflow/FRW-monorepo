@@ -1,8 +1,8 @@
+import { VerifiedToken, SwitchVertical, ChevronDown } from '@onflow/frw-icons';
 import React, { useState } from 'react';
 import { Input, XStack, YStack } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
-import { Button } from '../foundation/Button';
 import { Text } from '../foundation/Text';
 import type { TokenAmountInputProps } from '../types';
 
@@ -22,32 +22,38 @@ export function TokenAmountInput({
 }: TokenAmountInputProps): React.ReactElement {
   const [focused, setFocused] = useState(false);
 
-  const displayAmount = amount || '0';
+  const displayAmount = amount || '';
   const tokenSymbol = selectedToken?.symbol || 'Token';
   const tokenBalance = selectedToken?.balance || '0';
 
   return (
-    <YStack gap="$3" {...props}>
+    <YStack
+      bg="rgba(255, 255, 255, 0.1)"
+      rounded={16}
+      p={16}
+      gap={16}
+      width="100%"
+      maxWidth={343}
+      {...props}
+    >
       {/* Header */}
-      <XStack items="center" gap="$4">
-        <Text fontSize="$2" color="$textSecondary" minW={75}>
-          Send Tokens
-        </Text>
-      </XStack>
+      <Text fontSize={12} fontWeight="400" color="rgba(255, 255, 255, 0.8)">
+        Send Tokens
+      </Text>
 
       {/* Main Input Row */}
-      <XStack items="center" gap="$3">
+      <XStack alignItems="center" justifyContent="space-between" gap={12}>
         {/* Token Icon */}
         <Avatar
           src={selectedToken?.logo || selectedToken?.logoURI}
           fallback={selectedToken?.symbol?.charAt(0) || 'T'}
-          size={36}
+          size={40}
         />
 
         {/* Amount Input */}
-        <XStack items="center" flex={1}>
+        <XStack alignItems="center" flex={1}>
           {!isTokenMode && (
-            <Text fontSize="$7" fontWeight="500" color="$text" mr="$1">
+            <Text fontSize={32} fontWeight="500" color="$white">
               $
             </Text>
           )}
@@ -57,14 +63,32 @@ export function TokenAmountInput({
             onChangeText={onAmountChange}
             placeholder={placeholder}
             keyboardType="numeric"
-            fontSize="$7"
+            fontSize={32}
             fontWeight="500"
-            color="$text"
-            flex={1}
+            color="$white"
+            textAlign="left"
             borderWidth={0}
-            backgroundColor="transparent"
+            bg="transparent"
+            outlineWidth={0}
             focusStyle={{
+              borderWidth: 0,
               borderColor: 'transparent',
+              backgroundColor: 'transparent',
+              outlineWidth: 0,
+              outlineColor: 'transparent',
+            }}
+            hoverStyle={{
+              borderWidth: 0,
+              borderColor: 'transparent',
+              backgroundColor: 'transparent',
+            }}
+            pressStyle={{
+              borderWidth: 0,
+              borderColor: 'transparent',
+              backgroundColor: 'transparent',
+            }}
+            style={{
+              textAlign: 'left',
             }}
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
@@ -74,48 +98,77 @@ export function TokenAmountInput({
         </XStack>
 
         {/* Token Selector */}
-        <Button variant="secondary" size="small" onPress={onTokenSelectorPress} disabled={disabled}>
-          <XStack items="center" gap="$2">
-            <Text fontSize="$3" fontWeight="600" numberOfLines={1}>
-              {tokenSymbol}
-            </Text>
-            {selectedToken?.isVerified && (
-              <YStack width={12} height={12} alignItems="center" justifyContent="center">
-                ✓
-              </YStack>
-            )}
-            <Text fontSize="$2">▼</Text>
-          </XStack>
-        </Button>
+        <XStack
+          bg="rgba(255, 255, 255, 0.1)"
+          rounded={20}
+          alignItems="center"
+          gap={6}
+          px={12}
+          py={8}
+          pressStyle={{ opacity: 0.8 }}
+          onPress={onTokenSelectorPress}
+          disabled={disabled}
+          cursor="pointer"
+        >
+          <Text fontSize={12} fontWeight="600" color="$white" numberOfLines={1}>
+            {tokenSymbol}
+          </Text>
+          {selectedToken?.isVerified && <VerifiedToken size={12} color="#41CC5D" />}
+          <ChevronDown size={12} color="#FFFFFF" />
+        </XStack>
       </XStack>
 
       {/* Bottom Row */}
-      <XStack items="center" justify="space-between">
-        {/* Converter */}
+      <XStack alignItems="center" justifyContent="space-between">
+        {/* Left Side - Converter */}
         {showConverter && (
-          <XStack items="center" gap="$3">
-            <Button variant="ghost" size="small" onPress={onToggleInputMode} disabled={disabled}>
-              ⇄
-            </Button>
+          <XStack alignItems="center" gap={8}>
+            <XStack
+              bg="rgba(255, 255, 255, 0.1)"
+              rounded={12}
+              p={6}
+              pressStyle={{ opacity: 0.8 }}
+              onPress={onToggleInputMode}
+              disabled={disabled}
+              cursor="pointer"
+            >
+              <SwitchVertical size={12} color="rgba(255, 255, 255, 0.4)" />
+            </XStack>
 
-            <Text fontSize="$3" color="$textSecondary" numberOfLines={1}>
-              {isTokenMode
-                ? `$${(parseFloat(displayAmount || '0') * (selectedToken?.price || 0)).toFixed(2)}`
-                : `${(parseFloat(displayAmount || '0') / (selectedToken?.price || 1)).toFixed(6)} ${tokenSymbol}`}
-            </Text>
+            <YStack gap={2}>
+              <Text fontSize={14} fontWeight="400" color="rgba(255, 255, 255, 0.8)">
+                {isTokenMode
+                  ? `$${(parseFloat(displayAmount || '0') * (selectedToken?.price || 0)).toFixed(2)}`
+                  : `$${displayAmount || '0.00'}`}
+              </Text>
+            </YStack>
           </XStack>
         )}
 
-        {/* Balance and MAX */}
+        {/* Right Side - Balance and MAX */}
         {showBalance && (
-          <XStack items="center" gap="$3" flex={1} justify="flex-end">
-            <Text fontSize="$3" color="$textSecondary" text="right" numberOfLines={1}>
-              {tokenBalance}
+          <XStack alignItems="center" gap={8}>
+            <Text fontSize={14} fontWeight="400" color="rgba(255, 255, 255, 0.8)" textAlign="right">
+              {tokenBalance} {tokenSymbol}
             </Text>
 
-            <Button variant="ghost" size="small" onPress={onMaxPress} disabled={disabled}>
-              MAX
-            </Button>
+            {onMaxPress && (
+              <XStack
+                bg="rgba(255, 255, 255, 0.1)"
+                rounded={20}
+                alignItems="center"
+                px={12}
+                py={6}
+                pressStyle={{ opacity: 0.8 }}
+                onPress={onMaxPress}
+                disabled={disabled}
+                cursor="pointer"
+              >
+                <Text fontSize={12} fontWeight="600" color="$white" textAlign="center">
+                  MAX
+                </Text>
+              </XStack>
+            )}
           </XStack>
         )}
       </XStack>

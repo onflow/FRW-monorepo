@@ -26,6 +26,7 @@ export const Default: Story = {
     balance: '2.16',
     logo: 'https://cdn.jsdelivr.net/gh/trustwallet/assets@master/blockchains/flow/info/logo.png',
     price: '1173.61',
+    usdBalance: '$2,534.99',
     change24h: 5.2,
     isVerified: true,
   },
@@ -35,9 +36,10 @@ export const Negative: Story = {
   args: {
     symbol: 'USDC',
     name: 'USD Coin',
-    balance: '999.99 USDC',
+    balance: '999.99',
     logo: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png',
     price: '999.99',
+    usdBalance: '$999.99',
     change24h: -0.1,
     isVerified: true,
   },
@@ -76,13 +78,14 @@ export const LongNames: Story = {
 
 export const TokenList: Story = {
   render: () => (
-    <YStack w={400} gap="$0">
+    <YStack width={400} gap="$0">
       <TokenCard
         symbol="FLOW"
         name="Flow Token"
-        balance="1,234.56 FLOW"
+        balance="1,234.56"
         logo="https://cdn.jsdelivr.net/gh/trustwallet/assets@master/blockchains/flow/info/logo.png"
         price="1173.61"
+        usdBalance="$1,448,756.84"
         change24h={5.2}
         isVerified={true}
       />
@@ -90,8 +93,9 @@ export const TokenList: Story = {
       <TokenCard
         symbol="USDC"
         name="USD Coin"
-        balance="999.99 USDC"
+        balance="999.99"
         price="999.99"
+        usdBalance="$999.99"
         change24h={-0.1}
         isVerified={true}
       />
@@ -99,18 +103,14 @@ export const TokenList: Story = {
       <TokenCard
         symbol="BTC"
         name="Bitcoin"
-        balance="0.05421 BTC"
+        balance="0.05421"
         price="2671.05"
+        usdBalance="$2,671.05"
         change24h={12.5}
         isVerified={true}
       />
       <Divider />
-      <TokenCard
-        symbol="MYTOKEN"
-        name="My Custom Token"
-        balance="50,000.00 MYTOKEN"
-        isVerified={false}
-      />
+      <TokenCard symbol="MYTOKEN" name="My Custom Token" balance="50,000.00" isVerified={false} />
     </YStack>
   ),
 };
