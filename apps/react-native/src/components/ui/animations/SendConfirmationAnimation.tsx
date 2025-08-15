@@ -59,85 +59,121 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
 
   useEffect(() => {
     if (autoPlay) {
-      // Extract exact timing from Lottie animation: 60 frames at 29.97fps ≈ 2 seconds
       const animationDuration = 2000;
 
-      // Flow coin position animation extracted from Lottie JSON:
-      // Original animation canvas: 1500x816, Flow coin moves from [795.706,349.752] to [829.597,172] to [795.706,349.752]
-      // Our canvas: 399x148, so we need to scale coordinates
-      const scaleX = 399 / 1500; // 0.266
-      const scaleY = 148 / 816; // 0.181
+      if (isNFTTransaction) {
+        // For NFT transactions: simple fade-in and gentle float animation
+        translateX.value = withTiming(0, { duration: 0 });
+        translateY.value = withSequence(
+          withTiming(10, { duration: 0 }), // Start slightly lower
+          withTiming(-5, {
+            duration: animationDuration / 2,
+            easing: Easing.bezier(0.25, 0.46, 0.45, 0.94),
+          }), // Float up gently
+          withTiming(0, {
+            duration: animationDuration / 2,
+            easing: Easing.bezier(0.25, 0.46, 0.45, 0.94),
+          }) // Settle to center
+        );
+        rotation.value = withSequence(
+          withTiming(0, { duration: 0 }),
+          withTiming(-2, {
+            duration: animationDuration / 2,
+            easing: Easing.bezier(0.25, 0.46, 0.45, 0.94),
+          }),
+          withTiming(0, {
+            duration: animationDuration / 2,
+            easing: Easing.bezier(0.25, 0.46, 0.45, 0.94),
+          })
+        );
+        scale.value = withSequence(
+          withTiming(0.8, { duration: 0 }),
+          withTiming(1, {
+            duration: animationDuration,
+            easing: Easing.bezier(0.175, 0.885, 0.32, 1.275), // Gentle bounce
+          })
+        );
+      } else {
+        // For token transactions: Follow the Flow coin animation exactly
+        // Extract exact timing from Lottie animation: 60 frames at 29.97fps ≈ 2 seconds
 
-      // Flow coin positions from Lottie keyframes (on 1500x816 canvas)
-      const lottieStartX = 795.706;
-      const lottiePeakX = 829.597;
-      const lottieStartY = 349.752;
-      const lottiePeakY = 172;
+        // Flow coin position animation extracted from Lottie JSON:
+        // Original animation canvas: 1500x816, Flow coin moves from [795.706,349.752] to [829.597,172] to [795.706,349.752]
+        // Our canvas: 399x148, so we need to scale coordinates
+        const scaleX = 399 / 1500; // 0.266
+        const scaleY = 148 / 816; // 0.181
 
-      // Scale to our display size (399x148)
-      const scaledStartX = lottieStartX * scaleX; // ~211.6px from left
-      const scaledPeakX = lottiePeakX * scaleX; // ~220.7px from left
-      const scaledStartY = lottieStartY * scaleY; // ~63.4px from top
-      const scaledPeakY = lottiePeakY * scaleY; // ~31.1px from top
+        // Flow coin positions from Lottie keyframes (on 1500x816 canvas)
+        const lottieStartX = 795.706;
+        const lottiePeakX = 829.597;
+        const lottieStartY = 349.752;
+        const lottiePeakY = 172;
 
-      // Our overlay is positioned with transform origin at center (50%, 50%)
-      // So we need to convert absolute positions to relative offsets from center
-      const centerX = width / 2; // 199.5px
-      const centerY = height / 2; // 74px
+        // Scale to our display size (399x148)
+        const scaledStartX = lottieStartX * scaleX; // ~211.6px from left
+        const scaledPeakX = lottiePeakX * scaleX; // ~220.7px from left
+        const scaledStartY = lottieStartY * scaleY; // ~63.4px from top
+        const scaledPeakY = lottiePeakY * scaleY; // ~31.1px from top
 
-      // Adjust positioning to ensure complete coverage of Flow coin
-      const relativeStartX = scaledStartX - centerX - 10; // Shift 10px left (reduced from 12px to slide right slightly)
-      const relativePeakX = scaledPeakX - centerX - 10;
-      const relativeStartY = scaledStartY - centerY - 8; // Shift 8px up to match Flow coin jump
-      const relativePeakY = scaledPeakY - centerY - 8;
+        // Our overlay is positioned with transform origin at center (50%, 50%)
+        // So we need to convert absolute positions to relative offsets from center
+        const centerX = width / 2; // 199.5px
+        const centerY = height / 2; // 74px
 
-      // Timing based on exact frame positions but adjusted for better coverage: 0->25->59 frames
-      const firstPhaseRatio = 25 / 60; // 0.417 (41.7% of total time) - going up
-      const secondPhaseRatio = 26 / 60; // 0.433 (43.3% of total time) - coming down much faster
+        // Adjust positioning to ensure complete coverage of Flow coin
+        const relativeStartX = scaledStartX - centerX - 10; // Shift 10px left (reduced from 12px to slide right slightly)
+        const relativePeakX = scaledPeakX - centerX - 10;
+        const relativeStartY = scaledStartY - centerY - 8; // Shift 8px up to match Flow coin jump
+        const relativePeakY = scaledPeakY - centerY - 8;
 
-      // Horizontal movement matching Flow coin exactly
-      translateX.value = withSequence(
-        withTiming(relativeStartX, { duration: 0, easing: Easing.linear }),
-        withTiming(relativePeakX, {
-          duration: animationDuration * firstPhaseRatio,
-          easing: Easing.bezier(0.667, 0.658, 0.333, 0),
-        }),
-        withTiming(relativeStartX, {
-          duration: animationDuration * secondPhaseRatio,
-          easing: Easing.bezier(0.667, 1, 0.333, 0.686),
-        })
-      );
+        // Timing based on exact frame positions but adjusted for better coverage: 0->25->59 frames
+        const firstPhaseRatio = 25 / 60; // 0.417 (41.7% of total time) - going up
+        const secondPhaseRatio = 26 / 60; // 0.433 (43.3% of total time) - coming down much faster
 
-      // Vertical movement matching Flow coin arc
-      translateY.value = withSequence(
-        withTiming(relativeStartY, { duration: 0, easing: Easing.linear }),
-        withTiming(relativePeakY, {
-          duration: animationDuration * firstPhaseRatio,
-          easing: Easing.bezier(0.667, 0.658, 0.333, 0),
-        }),
-        withTiming(relativeStartY, {
-          duration: animationDuration * secondPhaseRatio,
-          easing: Easing.bezier(0.667, 1, 0.333, 0.686),
-        })
-      );
+        // Horizontal movement matching Flow coin exactly
+        translateX.value = withSequence(
+          withTiming(relativeStartX, { duration: 0, easing: Easing.linear }),
+          withTiming(relativePeakX, {
+            duration: animationDuration * firstPhaseRatio,
+            easing: Easing.bezier(0.667, 0.658, 0.333, 0),
+          }),
+          withTiming(relativeStartX, {
+            duration: animationDuration * secondPhaseRatio,
+            easing: Easing.bezier(0.667, 1, 0.333, 0.686),
+          })
+        );
 
-      // Rotation matching Flow coin exactly: -5° -> -19° -> -5°
-      rotation.value = withSequence(
-        withTiming(-5, { duration: 0, easing: Easing.linear }),
-        withTiming(-19, {
-          duration: animationDuration * firstPhaseRatio,
-          easing: Easing.bezier(0.833, 1, 0.167, 0),
-        }),
-        withTiming(-5, {
-          duration: animationDuration * secondPhaseRatio,
-          easing: Easing.bezier(0.833, 1, 0.519, 0),
-        })
-      );
+        // Vertical movement matching Flow coin arc
+        translateY.value = withSequence(
+          withTiming(relativeStartY, { duration: 0, easing: Easing.linear }),
+          withTiming(relativePeakY, {
+            duration: animationDuration * firstPhaseRatio,
+            easing: Easing.bezier(0.667, 0.658, 0.333, 0),
+          }),
+          withTiming(relativeStartY, {
+            duration: animationDuration * secondPhaseRatio,
+            easing: Easing.bezier(0.667, 1, 0.333, 0.686),
+          })
+        );
 
-      // Scale stays at 1 (since we're already sizing the overlay correctly)
-      scale.value = withTiming(1, { duration: 0, easing: Easing.linear });
+        // Rotation matching Flow coin exactly: -5° -> -19° -> -5°
+        rotation.value = withSequence(
+          withTiming(-5, { duration: 0, easing: Easing.linear }),
+          withTiming(-19, {
+            duration: animationDuration * firstPhaseRatio,
+            easing: Easing.bezier(0.833, 1, 0.167, 0),
+          }),
+          withTiming(-5, {
+            duration: animationDuration * secondPhaseRatio,
+            easing: Easing.bezier(0.833, 1, 0.519, 0),
+          })
+        );
+
+        // Scale stays at 1 (since we're already sizing the overlay correctly)
+        scale.value = withTiming(1, { duration: 0, easing: Easing.linear });
+      }
     }
-  }, [autoPlay, translateX, translateY, rotation, scale, width, height]);
+  }, [autoPlay, isNFTTransaction, translateX, translateY, rotation, scale, width, height]);
 
   const animatedTokenStyle = useAnimatedStyle(() => {
     return {
@@ -152,6 +188,23 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
 
   return (
     <View style={[{ width, height, position: 'relative' }, style]}>
+      {/* Static background for NFT transactions */}
+      {isNFTTransaction && (
+        <View
+          style={{
+            width,
+            height,
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            backgroundColor: 'transparent',
+            borderRadius: 12,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        />
+      )}
+
       {/* Lottie Animation Background */}
       <LottieView
         ref={animationRef}
@@ -164,12 +217,14 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
           position: 'absolute',
           top: 0,
           left: 0,
+          // For NFT transactions, we show a static background, otherwise show the full Flow coin animation
+          opacity: isNFTTransaction ? 0 : 1,
         }}
         resizeMode="contain"
       />
 
       {/* Animated Token/Coin Overlay - positioned to match Flow coin exactly */}
-      {!shouldShowFlowLogo && imageUri && (
+      {((!shouldShowFlowLogo && imageUri) || (isNFTTransaction && !imageUri)) && (
         <Animated.View
           style={[
             {

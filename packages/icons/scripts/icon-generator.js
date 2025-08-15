@@ -2,9 +2,11 @@
 
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 
 const SVG_DIR = 'assets';
-const OUTPUT_DIR = 'src/components';
+const WEB_OUTPUT_DIR = 'src/web';
+const NATIVE_OUTPUT_DIR = 'src/react-native';
 
 // Check command line arguments
 const forceRegenerate = process.argv.includes('--force');
@@ -22,13 +24,16 @@ function getAllSvgFiles(dir, baseDir = dir) {
       files.push(...getAllSvgFiles(fullPath, baseDir));
     } else if (item.endsWith('.svg')) {
       const relativePath = path.relative(baseDir, fullPath);
-      const outputFile = getOutputFilePath(relativePath);
+      const webOutputFile = getOutputFilePath(relativePath, WEB_OUTPUT_DIR);
+      const nativeOutputFile = getOutputFilePath(relativePath, NATIVE_OUTPUT_DIR);
 
       files.push({
         svgPath: fullPath,
         relativePath: relativePath,
-        outputDir: path.join(OUTPUT_DIR, path.dirname(relativePath)),
-        outputFile: outputFile,
+        webOutputDir: path.join(WEB_OUTPUT_DIR, path.dirname(relativePath)),
+        nativeOutputDir: path.join(NATIVE_OUTPUT_DIR, path.dirname(relativePath)),
+        webOutputFile: webOutputFile,
+        nativeOutputFile: nativeOutputFile,
         name: path.basename(item, '.svg'),
       });
     }
@@ -37,7 +42,7 @@ function getAllSvgFiles(dir, baseDir = dir) {
   return files;
 }
 
-function getOutputFilePath(svgRelativePath) {
+function getOutputFilePath(svgRelativePath, outputDir) {
   // Convert SVG filename to React component filename
   const name = path.basename(svgRelativePath, '.svg');
   const componentName = name
@@ -46,7 +51,7 @@ function getOutputFilePath(svgRelativePath) {
     .join('');
 
   const dir = path.dirname(svgRelativePath);
-  return path.join(OUTPUT_DIR, dir, `${componentName}.tsx`);
+  return path.join(outputDir, dir, `${componentName}.generated.tsx`);
 }
 
 function shouldConvertFile(file) {
@@ -54,26 +59,133 @@ function shouldConvertFile(file) {
     return true;
   }
 
-  // Only convert if output file doesn't exist
-  return !fs.existsSync(file.outputFile);
+  // Only convert if either output file doesn't exist
+  return !fs.existsSync(file.webOutputFile) || !fs.existsSync(file.nativeOutputFile);
+}
+
+function generateReactNativeIcon(componentName, svgPath, outputDir) {
+  // Use svgr CLI to generate React Native components, similar to the React Native project approach
+  try {
+    console.log(`Generating React Native icon: ${componentName}`);
+
+    // Use svgr CLI with minimal optimizations to preserve exact shapes
+    execSync(
+      `npx -y @svgr/cli --out-dir "${outputDir}" "${svgPath}" --typescript --native --icon`,
+      { stdio: 'pipe' }
+    );
+
+    // The svgr CLI generates with PascalCase filename, not the original SVG filename
+    const svgrOutputPath = path.join(outputDir, `${componentName}.tsx`);
+    const finalOutputPath = path.join(outputDir, `${componentName}.generated.tsx`);
+
+    if (fs.existsSync(svgrOutputPath)) {
+      // Read the generated content and modify it to match our API
+      let content = fs.readFileSync(svgrOutputPath, 'utf8');
+
+      // Extract the SVG components used in this icon
+      const svgComponents = new Set();
+      const componentMatches = content.match(/<([A-Z][a-zA-Z]*)/g);
+      if (componentMatches) {
+        componentMatches.forEach((match) => {
+          const componentName = match.substring(1);
+          // Only include actual react-native-svg components, not Svg itself
+          if (componentName !== 'Svg' && componentName !== 'IconWrapper') {
+            svgComponents.add(componentName);
+          }
+        });
+      }
+
+      const svgImports = Array.from(svgComponents).sort().join(', ');
+
+      // Update the component to use dynamic colors and fix issues
+      content = content
+        // Use exact same import format as svgr CLI output
+        .replace(
+          /import \* as React from 'react';|import React from 'react';/,
+          `import * as React from "react"\nimport Svg, { type SvgProps, ${svgImports} } from "react-native-svg"`
+        )
+        // Remove old react-native-svg imports
+        .replace(/import Svg, \{[^}]+\} from 'react-native-svg';\n?/, '')
+        .replace(/import type \{ SvgProps \} from 'react-native-svg';\n?/, '')
+        // Update component function declaration with size and color support
+        .replace(
+          /const Svg\w+ = \(props: SvgProps\) => \(/,
+          `const ${componentName} = ({ color = "currentColor", size = 24, width, height, ...props }: SvgProps & { size?: number }) => (`
+        )
+        // Update Svg wrapper to add dynamic size support while preserving other attributes
+        .replace(/<Svg([^>]*)>/, (match, attributes) => {
+          // Extract viewBox from attributes
+          const viewBoxMatch = attributes.match(/viewBox="([^"]+)"/);
+          const viewBox = viewBoxMatch ? viewBoxMatch[1] : '0 0 24 24';
+
+          // Extract fill attribute if present
+          const fillMatch = attributes.match(/fill="([^"]+)"/);
+          const fill = fillMatch ? ` fill="${fillMatch[1]}"` : '';
+
+          return `<Svg xmlns="http://www.w3.org/2000/svg" width={width ?? size} height={height ?? size}${fill} viewBox="${viewBox}" {...props}>`;
+        })
+        // Replace hardcoded colors with dynamic color (both quoted and unquoted)
+        // But preserve fill="none" in Svg elements
+        .replace(/<Svg([^>]*)\sfill={color}([^>]*)>/g, (match, before, after) => {
+          return `<Svg${before} fill="none"${after}>`;
+        })
+        // Replace fill/stroke in Path and other elements (not Svg)
+        .replace(
+          /<(Path|Circle|Rect|Ellipse|Line|Polyline|Polygon)([^>]*)\sfill="[^"]*"([^>]*)/g,
+          '<$1$2 fill={color}$3'
+        )
+        .replace(
+          /<(Path|Circle|Rect|Ellipse|Line|Polyline|Polygon)([^>]*)\sstroke="[^"]*"([^>]*)/g,
+          '<$1$2 stroke={color}$3'
+        )
+        .replace(
+          /<(Path|Circle|Rect|Ellipse|Line|Polyline|Polygon)([^>]*)\sfill='[^']*'([^>]*)/g,
+          '<$1$2 fill={color}$3'
+        )
+        .replace(
+          /<(Path|Circle|Rect|Ellipse|Line|Polyline|Polygon)([^>]*)\sstroke='[^']*'([^>]*)/g,
+          '<$1$2 stroke={color}$3'
+        )
+        // Keep stroke-opacity and fill-opacity as they're important for visual accuracy
+        // Only remove general opacity which can be controlled externally
+        .replace(/\s+opacity=\{[^}]+\}/g, '')
+        // Update export statement to match svgr CLI format
+        .replace(/export default Svg\w+;/, `export default ${componentName}`);
+
+      // Write the modified content to our target file
+      fs.writeFileSync(finalOutputPath, content);
+
+      // Remove the original svgr output file
+      fs.unlinkSync(svgrOutputPath);
+    }
+
+    return true;
+  } catch (error) {
+    console.error(`Failed to generate React Native icon ${componentName}:`, error.message);
+    return false;
+  }
 }
 
 function convertSvgFile(file) {
   console.log(`Converting: ${file.relativePath}`);
 
-  // Ensure output directory exists
-  if (!fs.existsSync(file.outputDir)) {
-    fs.mkdirSync(file.outputDir, { recursive: true });
+  // Ensure output directories exist
+  if (!fs.existsSync(file.webOutputDir)) {
+    fs.mkdirSync(file.webOutputDir, { recursive: true });
+  }
+  if (!fs.existsSync(file.nativeOutputDir)) {
+    fs.mkdirSync(file.nativeOutputDir, { recursive: true });
   }
 
+  const componentName = path
+    .basename(file.name)
+    .split(/[-_]/)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('');
+
   try {
-    // Generate a custom React component using our IconWrapper
+    // Generate Web version using the existing method
     const svgContent = fs.readFileSync(file.svgPath, 'utf8');
-    const componentName = path
-      .basename(file.name)
-      .split(/[-_]/)
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join('');
 
     // Extract SVG content (everything inside <svg> tags)
     const svgMatch = svgContent.match(/<svg[^>]*>([\s\S]*?)<\/svg>/);
@@ -81,7 +193,7 @@ function convertSvgFile(file) {
       throw new Error(`Could not parse SVG content from ${file.svgPath}`);
     }
 
-    // Convert HTML attributes to React camelCase attributes and apply IconPark color classes
+    // Convert HTML attributes to React camelCase attributes
     let innerSvgContent = svgMatch[1]
       .replace(/stroke-width/g, 'strokeWidth')
       .replace(/stroke-opacity/g, 'strokeOpacity')
@@ -106,30 +218,90 @@ function convertSvgFile(file) {
     const viewBoxMatch = svgContent.match(/viewBox="([^"]+)"/);
     const viewBox = viewBoxMatch ? viewBoxMatch[1] : '0 0 24 24';
 
-    // Calculate relative path to runtime based on depth
+    // Calculate relative paths to IconWrapper based on depth
     const depth = file.relativePath.split('/').length - 1;
-    const runtimePath =
-      depth > 0 ? '../'.repeat(depth + 1) + 'runtime/IconWrapper' : '../runtime/IconWrapper';
+    const webIconWrapperPath =
+      depth > 0 ? '../'.repeat(depth + 1) + 'IconWrapper' : '../IconWrapper';
 
-    // Generate TypeScript component using IconWrapper
-    const componentContent = `import { IconWrapper, type IconWrapperProps } from '${runtimePath}';
+    // Generate Web version (HTML SVG)
+    const webComponentContent = `import { IconWrapper, type IconWrapperProps } from '${webIconWrapperPath}';
 
-const Svg${componentName} = (props: IconWrapperProps) => (
+const ${componentName} = (props: IconWrapperProps) => (
   <IconWrapper viewBox="${viewBox}" {...props}>
     ${innerSvgContent}
   </IconWrapper>
 );
 
-export default Svg${componentName};
+export default ${componentName};
 `;
 
-    const outputPath = path.join(file.outputDir, `${componentName}.tsx`);
-    fs.writeFileSync(outputPath, componentContent);
+    // Write Web version
+    const webOutputPath = path.join(file.webOutputDir, `${componentName}.generated.tsx`);
+    fs.writeFileSync(webOutputPath, webComponentContent);
 
-    return true;
+    // Generate React Native version using svgr CLI
+    const nativeSuccess = generateReactNativeIcon(
+      componentName,
+      file.svgPath,
+      file.nativeOutputDir
+    );
+
+    return nativeSuccess; // Both web and native must succeed
   } catch (error) {
     console.error(`Failed to convert ${file.relativePath}:`, error.message);
     return false;
+  }
+}
+
+function cleanOrphanedFiles(currentSvgFiles) {
+  console.log('🧹 Cleaning orphaned generated files...');
+
+  let cleanedCount = 0;
+
+  // Get all expected generated files from current SVG files
+  const expectedFiles = new Set();
+  currentSvgFiles.forEach((file) => {
+    expectedFiles.add(file.webOutputFile);
+    expectedFiles.add(file.nativeOutputFile);
+  });
+
+  // Clean orphaned files in both directories
+  [WEB_OUTPUT_DIR, NATIVE_OUTPUT_DIR].forEach((outputDir) => {
+    if (!fs.existsSync(outputDir)) return;
+
+    function cleanDirectory(dir) {
+      const items = fs.readdirSync(dir);
+
+      for (const item of items) {
+        const fullPath = path.join(dir, item);
+        const stat = fs.statSync(fullPath);
+
+        if (stat.isDirectory()) {
+          cleanDirectory(fullPath);
+          // Remove empty directories
+          const remainingItems = fs.readdirSync(fullPath);
+          if (remainingItems.length === 0) {
+            fs.rmdirSync(fullPath);
+            console.log(`  🗂️  Removed empty directory: ${path.relative('.', fullPath)}`);
+          }
+        } else if (item.endsWith('.generated.tsx')) {
+          // Check if this generated file should exist
+          if (!expectedFiles.has(fullPath)) {
+            fs.unlinkSync(fullPath);
+            cleanedCount++;
+            console.log(`  🗑️  Removed orphaned file: ${path.relative('.', fullPath)}`);
+          }
+        }
+      }
+    }
+
+    cleanDirectory(outputDir);
+  });
+
+  if (cleanedCount > 0) {
+    console.log(`✅ Cleaned ${cleanedCount} orphaned files`);
+  } else {
+    console.log('✅ No orphaned files found');
   }
 }
 
@@ -138,6 +310,8 @@ function updateIndexFiles() {
 
   // Generate index files for each directory
   function generateIndexForDir(dir) {
+    if (!fs.existsSync(dir)) return;
+
     const items = fs.readdirSync(dir);
     const exports = [];
 
@@ -150,53 +324,22 @@ function updateIndexFiles() {
         generateIndexForDir(fullPath);
         const dirName = item;
         exports.push(`export * from './${dirName}';`);
-      } else if (item.endsWith('.tsx') && item !== 'index.ts') {
-        // Handle component file
-        const componentName = path.basename(item, '.tsx');
-        exports.push(`export { default as ${componentName} } from './${componentName}';`);
+      } else if (item.endsWith('.generated.tsx')) {
+        // Handle generated component file
+        const componentName = path.basename(item, '.generated.tsx');
+        exports.push(`export { default as ${componentName} } from './${componentName}.generated';`);
       }
     }
 
     if (exports.length > 0) {
-      const indexPath = path.join(dir, 'index.ts');
+      const indexPath = path.join(dir, 'index.generated.ts');
       fs.writeFileSync(indexPath, exports.join('\n') + '\n');
     }
   }
 
-  if (fs.existsSync(OUTPUT_DIR)) {
-    generateIndexForDir(OUTPUT_DIR);
-  }
-
-  // Generate root index file
-  const rootIndexPath = path.join('src', 'index.ts');
-  const rootExports = [];
-
-  if (fs.existsSync(OUTPUT_DIR)) {
-    const items = fs.readdirSync(OUTPUT_DIR);
-    for (const item of items) {
-      const fullPath = path.join(OUTPUT_DIR, item);
-      const stat = fs.statSync(fullPath);
-
-      if (stat.isDirectory()) {
-        rootExports.push(`export * from './components/${item}';`);
-      } else if (item.endsWith('.tsx') && item !== 'index.ts') {
-        const componentName = path.basename(item, '.tsx');
-        rootExports.push(
-          `export { default as ${componentName} } from './components/${componentName}';`
-        );
-      }
-    }
-
-    // Also export the components barrel
-    rootExports.push(`export * from './components';`);
-  }
-
-  if (rootExports.length > 0) {
-    if (!fs.existsSync('src')) {
-      fs.mkdirSync('src', { recursive: true });
-    }
-    fs.writeFileSync(rootIndexPath, rootExports.join('\n') + '\n');
-  }
+  // Generate index files for both web and native components
+  generateIndexForDir(WEB_OUTPUT_DIR);
+  generateIndexForDir(NATIVE_OUTPUT_DIR);
 }
 
 function main() {
@@ -216,6 +359,9 @@ function main() {
   }
 
   console.log(`Found ${svgFiles.length} SVG files`);
+
+  // Clean orphaned files (files that exist but no longer have corresponding SVG)
+  cleanOrphanedFiles(svgFiles);
 
   // Check which files need to be processed
   const filesToProcess = svgFiles.filter((file) => shouldConvertFile(file));

@@ -21,12 +21,11 @@ const meta: Meta<typeof NFTDetailView> = {
     selectable: { control: 'boolean' },
     showOwner: { control: 'boolean' },
     backgroundColor: { control: 'color' },
-    contentPadding: { control: 'number', min: 8, max: 32 },
     onToggleSelection: { action: 'selection-toggled' },
   },
   decorators: [
     (Story) => (
-      <YStack height={700} width="100%">
+      <YStack height={700} width="100%" items="center" bg="$gray12" p="$4">
         <Story />
       </YStack>
     ),
@@ -36,17 +35,28 @@ const meta: Meta<typeof NFTDetailView> = {
 export default meta;
 type Story = StoryObj<typeof NFTDetailView>;
 
-// Mock NFT data
+// Mock NFT data - using Figma design reference
 const mockNFT: NFTDetailData = {
-  id: '1234',
-  name: 'Cool Cat #1234',
-  image: 'https://via.placeholder.com/600x600/6366F1/FFFFFF?text=Cool+Cat',
-  collection: 'Cool Cats Collection',
+  id: '1',
+  name: 'Spring Tide #1',
+  image: 'https://via.placeholder.com/343x343/6366F1/FFFFFF?text=Spring+Tide',
+  collection: 'NBA Top Shot',
   description:
-    'Cool Cat #1234 is a unique digital collectible featuring a stylish cat with rare traits. This NFT is part of the Cool Cats collection, known for its distinctive art style and vibrant community.',
-  contractName: 'CoolCats',
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad min',
+  contractName: 'TopShot',
   contractAddress: '0x1234567890abcdef1234567890abcdef12345678',
-  collectionContractName: 'CoolCatsCollection',
+  collectionContractName: 'FutureScience',
+  properties: [
+    { label: 'Background', value: 'Green' },
+    { label: 'Shapes', value: 'Obstructed' },
+    { label: 'Choker', value: 'Gold' },
+    { label: 'Pendant', value: 'Studded' },
+    { label: 'Eyes', value: 'Standard' },
+    { label: 'Head', value: 'Straw Hat' },
+    { label: 'Series', value: '3' },
+    { label: 'Mask', value: 'Blue' },
+    { label: 'Halo', value: 'Gold' },
+  ],
 };
 
 const basketballNFT: NFTDetailData = {
@@ -191,16 +201,7 @@ export const CustomStyling: Story = {
   args: {
     nft: mockNFT,
     backgroundColor: '$gray1',
-    contentPadding: 24,
     owner: mockOwner,
     showOwner: true,
-  },
-};
-
-export const CompactPadding: Story = {
-  args: {
-    nft: pixelArtNFT,
-    contentPadding: 8,
-    selectable: true,
   },
 };

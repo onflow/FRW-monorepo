@@ -43,6 +43,8 @@ export const test = base.extend<{
         '--allow-read-clipboard',
         '--allow-write-clipboard',
         '--lang=en-US',
+        '--no-sandbox',
+        '--disable-dev-shm-usage',
       ],
       locale: 'en-US',
       env: {
@@ -53,14 +55,133 @@ export const test = base.extend<{
       permissions: ['clipboard-read', 'clipboard-write'],
     });
 
+    // Give the extension time to initialize
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
     await call(context);
     await context.close();
   },
   extensionId: async ({ context }, call) => {
-    // for manifest v3:
+    // Alternative approach: try to get extension ID from a page first
+    let extensionId: string | null = null;
+
+    // Method 1: Try service worker approach
     let [background] = context.serviceWorkers();
-    if (!background) background = await context.waitForEvent('serviceworker');
-    const extensionId = background.url().split('/')[2];
+    console.log(`Initial service workers: ${context.serviceWorkers().length}`);
+
+    if (background) {
+      extensionId = background.url().split('/')[2];
+      console.log(`Extension ID from service worker: ${extensionId}`);
+    } else {
+      // Method 2: Try creating a page to trigger extension loading
+      try {
+        console.log('Trying to load extension popup to get ID...');
+        const extensionPages = context.pages();
+        console.log(`Current pages: ${extensionPages.length}`);
+
+        // Create a new tab to potentially trigger extension initialization
+        const page = await context.newPage();
+        await page.goto('chrome://extensions/');
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        // Try to get extension ID from chrome://extensions page
+        try {
+          const extensionCards = await page.$$('extensions-item');
+          console.log(`Found ${extensionCards.length} extension cards`);
+
+          for (const card of extensionCards) {
+            const idAttr = await card.getAttribute('id');
+            if (idAttr) {
+              extensionId = idAttr;
+              console.log(`Extension ID from chrome://extensions: ${extensionId}`);
+              break;
+            }
+          }
+        } catch (err) {
+          console.log(`Error reading extensions page: ${err.message}`);
+        }
+
+        // Also try to directly access the extension popup
+        if (!extensionId) {
+          try {
+            // Navigate to extension management to find ID
+            const extensionElements = await page.$$eval('extensions-item', (elements) => {
+              return elements.map((el) => ({
+                id: el.getAttribute('id'),
+                name: el.querySelector('.name')?.textContent,
+              }));
+            });
+            console.log('Extensions found:', extensionElements);
+
+            const flowWallet = extensionElements.find(
+              (ext) => ext.name && ext.name.toLowerCase().includes('flow')
+            );
+
+            if (flowWallet && flowWallet.id) {
+              extensionId = flowWallet.id;
+              console.log(`Flow Wallet extension ID: ${extensionId}`);
+            }
+          } catch (err) {
+            console.log(`Error finding extension in list: ${err.message}`);
+          }
+        }
+
+        // Try service worker again
+        [background] = context.serviceWorkers();
+        console.log(`Service workers after page creation: ${context.serviceWorkers().length}`);
+
+        if (background) {
+          extensionId = background.url().split('/')[2];
+        } else {
+          // Method 3: Wait for service worker event
+          try {
+            console.log('Waiting for service worker event...');
+            background = await context.waitForEvent('serviceworker', { timeout: 30000 });
+            console.log(`Service worker found via event: ${background.url()}`);
+            extensionId = background.url().split('/')[2];
+          } catch (error) {
+            console.log(`Service worker event timeout: ${error.message}`);
+
+            // Method 4: Try to extract from any extension page URLs
+            const allPages = context.pages();
+            for (const pg of allPages) {
+              const url = pg.url();
+              if (url.startsWith('chrome-extension://')) {
+                extensionId = url.split('/')[2];
+                console.log(`Extension ID from page URL: ${extensionId}`);
+                break;
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.log(`Error in alternative approach: ${err.message}`);
+      }
+    }
+
+    if (!extensionId) {
+      // Final debugging
+      const pages = context.pages();
+      const workers = context.serviceWorkers();
+      console.log(`Debug info - Pages: ${pages.length}, Workers: ${workers.length}`);
+      for (const page of pages) {
+        console.log(`Page URL: ${page.url()}`);
+      }
+      for (const worker of workers) {
+        console.log(`Worker URL: ${worker.url()}`);
+      }
+
+      // Use fallback extension ID (hardcoded from manifest key)
+      const fallbackId = process.env.TEST_EXTENSION_ID || 'cfiagdgiikmjgfjnlballglniejjgegi';
+      console.log(`TEST_EXTENSION_ID env var: ${process.env.TEST_EXTENSION_ID}`);
+      if (!process.env.TEST_EXTENSION_ID) {
+        console.log(`No fallback extension ID available in env vars`);
+      }
+      console.log(`Using fallback extension ID: ${fallbackId}`);
+      extensionId = fallbackId;
+    }
+
+    console.log(`Final extension ID: ${extensionId}`);
     await call(extensionId);
   },
 });

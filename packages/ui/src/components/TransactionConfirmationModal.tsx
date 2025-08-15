@@ -1,4 +1,4 @@
-import { Close, ArrowRight } from '@onflow/frw-icons';
+import { Close, ChevronRight } from '@onflow/frw-icons';
 import { type WalletAccount } from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack, View } from 'tamagui';
@@ -119,7 +119,7 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
             </YStack>
 
             {/* Arrow */}
-            <ArrowRight size={20} color="$gray10" />
+            <ChevronRight size={20} color="$gray10" />
 
             {/* To Account */}
             <YStack flex={1} gap="$2" bg="$gray2" rounded="$3" p="$3">
