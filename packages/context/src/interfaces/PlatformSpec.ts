@@ -50,5 +50,5 @@ export interface PlatformSpec {
 
   // UI interaction methods
   scanQRCode(): Promise<string>;
-  closeRN(): void;
+  closeRN(id?: string | null): void;
 }

@@ -1,4 +1,4 @@
-import { CheckCircleFill } from '@onflow/frw-icons';
+import { CheckCircle } from '@onflow/frw-icons';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import React from 'react';
 import { YStack } from 'tamagui';
@@ -109,7 +109,7 @@ export const Selected: Story = {
     nft: mockNFT,
     selected: true,
     account: mockAccount,
-    selectionIcon: <CheckCircleFill size={20} color="#00EF8B" />,
+    selectionIcon: <CheckCircle size={20} color="#00EF8B" theme="filled" />,
   },
 };
 
@@ -128,7 +128,7 @@ export const WithAmountSelected: Story = {
     selected: true,
     showAmount: true,
     account: mockAccount,
-    selectionIcon: <CheckCircleFill size={20} color="#00EF8B" />,
+    selectionIcon: <CheckCircle size={20} color="#00EF8B" theme="filled" />,
   },
 };
 
@@ -174,7 +174,7 @@ export const InList: Story = {
         selected={true}
         showAmount={true}
         account={mockAccount}
-        selectionIcon={<CheckCircleFill size={20} color="#00EF8B" />}
+        selectionIcon={<CheckCircle size={20} color="#00EF8B" theme="filled" />}
         onPress={() => console.log('Card 2 pressed')}
         onDetailPress={() => console.log('Card 2 detail pressed')}
       />

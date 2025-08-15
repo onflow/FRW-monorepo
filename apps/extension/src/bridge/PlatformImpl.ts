@@ -178,7 +178,7 @@ class ExtensionPlatformImpl implements PlatformSpec {
     });
   }
 
-  closeRN(): void {
+  closeRN(id?: string | null): void {
     // Extension equivalent - close current popup/tab
     if (window.close) {
       window.close();

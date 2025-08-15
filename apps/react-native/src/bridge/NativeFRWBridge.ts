@@ -1,8 +1,8 @@
 import type {
-  EnvironmentVariables as SharedEnvironmentVariables,
   RecentContactsResponse,
-  WalletAccountsResponse,
+  EnvironmentVariables as SharedEnvironmentVariables,
   WalletAccount,
+  WalletAccountsResponse,
 } from '@onflow/frw-types';
 import type { TurboModule } from 'react-native';
 import { TurboModuleRegistry } from 'react-native';
@@ -39,7 +39,7 @@ export interface Spec extends TurboModule {
   // QR code scanning method
   scanQRCode(): Promise<string>;
   // Close react native method
-  closeRN(): void;
+  closeRN(id?: string | null): void;
   // Free gas settings method
   isFreeGasEnabled(): Promise<boolean>;
   // Listen to a transaction
