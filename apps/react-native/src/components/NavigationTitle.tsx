@@ -8,11 +8,11 @@ interface NavigationTitleProps {
   marginLeft?: number;
 }
 
-const NavigationTitle: React.FC<NavigationTitleProps> = ({ title, marginLeft = 15 }) => {
+const NavigationTitle: React.FC<NavigationTitleProps> = ({ title }) => {
   const { isDark } = useTheme();
 
   return (
-    <View style={{ marginLeft }}>
+    <View className="flex-row items-center justify-center">
       <Text
         style={{
           fontSize: 17,

@@ -260,7 +260,7 @@ export default function BottomConfirmBar({
 
   return (
     <Animated.View
-      className="absolute left-0 bottom-0 rounded-t-[16px] bg-sf-1"
+      className="absolute left-0 bottom-0 rounded-t-[16px] bg-sf"
       style={[
         {
           transform: [{ translateY }],
@@ -319,7 +319,7 @@ export default function BottomConfirmBar({
         style={{ paddingBottom: insets.bottom + 16, paddingTop: 16 }}
       >
         <TouchableOpacity
-          className="w-full bg-white items-center justify-center"
+          className={`w-full items-center justify-center ${isDark ? 'bg-white' : 'bg-black'}`}
           style={{
             borderRadius: 16, // Changed from 999px to 16px to match Figma
             paddingVertical: 16, // Changed from h-[52px] to padding approach
