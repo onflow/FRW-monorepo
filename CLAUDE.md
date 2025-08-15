@@ -308,11 +308,14 @@ The UI package includes comprehensive Storybook integration:
 
 ## Code Quality Rules
 
-### Comments (CRITICAL)
+### Comments and Communication (CRITICAL)
 
-- **ALL comments MUST be written in English only**
-- No Chinese, Japanese, or other non-English comments allowed
+- **ALL code comments, documentation, and commit messages MUST be written in
+  English only**
+- No Chinese, Japanese, or other non-English comments allowed in code files
 - This ensures code maintainability and accessibility for all developers
+- **Conversational communication with Claude Code can be in Chinese or English**
+- **Variable names, function names, and API responses should be in English**
 
 ### File Naming Conventions
 
