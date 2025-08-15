@@ -112,20 +112,21 @@ export function AccountSelectorModal({
                       <XStack
                         items="center"
                         justify="space-between"
-                        gap={8}
+                        gap={4}
+                        height="$16"
                         onPress={() => handleAccountSelect(account)}
                         cursor="pointer"
                       >
-                        <XStack items="center" gap={8}>
+                        <XStack items="center" gap="$2">
                           {/* Account Avatar */}
                           <Avatar
                             src={account.avatar}
                             fallback={account.name?.charAt(0) || '?'}
-                            size={53.44}
+                            size={36}
                           />
 
                           {/* Account Details */}
-                          <YStack gap={6} width={201} height={35} justify="center">
+                          <YStack gap="$0.5" height="$9" justify="center">
                             <Text
                               fontSize={14}
                               fontWeight="600"
@@ -135,7 +136,7 @@ export function AccountSelectorModal({
                               {account.name || 'Unnamed Account'}
                             </Text>
                             <Text
-                              fontSize={14}
+                              fontSize={12}
                               fontWeight="400"
                               color="rgba(255, 255, 255, 0.8)"
                               numberOfLines={1}

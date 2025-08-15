@@ -22,33 +22,35 @@ export function NFTCollectionRow({
     <YStack {...props}>
       <XStack
         items="center"
-        gap={12}
-        paddingVertical={18}
-        paddingHorizontal={0}
+        gap="$4.5"
+        py="$4.5"
+        px={0}
         width="100%"
+        justify="space-between"
         {...(onPress && {
           pressStyle: { opacity: 0.7 },
           onPress: onPress,
           cursor: 'pointer',
         })}
       >
-        {/* Collection Avatar */}
-        <Avatar
-          src={collection.logoURI || collection.logo}
-          fallback={collection.name?.charAt(0) || 'N'}
-          size={53}
-        />
+        <XStack items="center" gap="$4.5" flex={1}>
+          {/* Collection Avatar */}
+          <Avatar
+            src={collection.logoURI || collection.logo}
+            fallback={collection.name?.charAt(0) || 'N'}
+            size={53}
+          />
 
-        {/* Collection Info */}
-        <YStack flex={1} gap="$0.5">
-          <Text color="$color" fontWeight="600" fontSize={16}>
-            {collection.name}
-          </Text>
-          <Text color="rgba(255, 255, 255, 0.8)" fontSize={14}>
-            {count}
-          </Text>
-        </YStack>
-
+          {/* Collection Info */}
+          <YStack flex={1} gap="$1">
+            <Text color="$color" fontWeight="600" fontSize={16}>
+              {collection.name}
+            </Text>
+            <Text color="rgba(255, 255, 255, 0.8)" fontSize={14}>
+              {count}
+            </Text>
+          </YStack>
+        </XStack>
         {/* Chevron Icon */}
         <ChevronRight size={24} />
       </XStack>
