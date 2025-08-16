@@ -18,7 +18,7 @@ const ConfirmDialogBg = ({
     <Circle cx={187.696} cy={364.089} r={364.044} fill={color} />
     <Defs>
       <RadialGradient
-        id="confirm-dialog-bg_svg__a"
+        id="confirm_dialog_bg_svg__a"
         cx={0}
         cy={0}
         r={1}

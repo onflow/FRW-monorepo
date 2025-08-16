@@ -1,5 +1,8 @@
 import dotenv from 'dotenv';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 dotenv.config({ path: ['.env.test'] });
 
@@ -24,6 +27,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': new URL('./src', import.meta.url).pathname,
+      'react-native$': 'react-native-web',
+      '@onflow/frw-ui': path.resolve(__dirname, '../../packages/ui/src/index.ts'),
     },
   },
 });

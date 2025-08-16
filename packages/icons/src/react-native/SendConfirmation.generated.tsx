@@ -52,13 +52,13 @@ const SendConfirmation = ({
       data-figma-bg-blur-radius={13.624}
     />
     <Defs>
-      <ClipPath id="send-confirmation_svg__a" transform="translate(36.355 8.175)">
+      <ClipPath id="send_confirmation_svg__a" transform="translate(36.355 8.175)">
         <Path d="M14.288 79.556a13.475 13.475 0 0 1 7.168-15.74L64.27 43.308c7.569-3.625 16.574.476 18.809 8.565l19.698 71.31c1.982 7.173-2.227 14.595-9.4 16.576l-45.043 12.442c-7.173 1.982-14.595-2.227-16.576-9.4z" />
       </ClipPath>
-      <ClipPath id="send-confirmation_svg__b" transform="translate(33.6 1.293)">
+      <ClipPath id="send_confirmation_svg__b" transform="translate(33.6 1.293)">
         <Path d="M17.045 89.251c-1.982-7.173 2.227-14.594 9.4-16.575l84.434-23.324c7.173-1.981 14.594 2.227 16.575 9.4l14.787 53.531c1.982 7.173-2.227 14.594-9.4 16.576l-84.434 23.323c-7.172 1.982-14.594-2.227-16.575-9.4z" />
       </ClipPath>
-      <ClipPath id="send-confirmation_svg__c" transform="translate(-98.429 -62.701)">
+      <ClipPath id="send_confirmation_svg__c" transform="translate(-98.429 -62.701)">
         <Path d="M112.473 87.121a4.99 4.99 0 0 1 3.529-6.112l16.34-4.378 4.343 16.205-16.341 4.378a4.99 4.99 0 0 1-6.112-3.528z" />
       </ClipPath>
     </Defs>
