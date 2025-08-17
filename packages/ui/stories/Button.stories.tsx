@@ -20,6 +20,9 @@ const meta = {
     disabled: {
       control: { type: 'boolean' },
     },
+    fullWidth: {
+      control: { type: 'boolean' },
+    },
   },
 } satisfies Meta<typeof Button>;
 

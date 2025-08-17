@@ -40,7 +40,8 @@
       "mcp__framelink-figma__get_figma_data",
       "Bash(node:*)",
       "Bash(npx -y @svgr/cli:*)",
-      "mcp__fcl-js__search_fcl_js_code"
+      "mcp__fcl-js__search_fcl_js_code",
+      "WebFetch(domain:storybook.js.org)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
