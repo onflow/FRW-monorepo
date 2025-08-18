@@ -1,9 +1,13 @@
 import base, { type BrowserContext, chromium } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const getKeysFilePath = () => {
-  return path.join(import.meta.dirname, `../../playwright/.auth/keys.json`);
+  return path.join(__dirname, `../../playwright/.auth/keys.json`);
 };
 
 export const test = base.extend<{
@@ -12,7 +16,7 @@ export const test = base.extend<{
 }>({
   context: async ({}, call) => {
     // In CI, the extension might be in a different location due to artifact download
-    let pathToExtension = path.join(import.meta.dirname, '../../dist');
+    let pathToExtension = path.join(__dirname, '../../dist');
 
     // If we're in CI and the extension doesn't exist at the expected path, try alternative locations
     if (process.env.CI && !fs.existsSync(pathToExtension)) {
@@ -73,18 +77,20 @@ export const test = base.extend<{
     const context = await chromium.launchPersistentContext(dataDir, {
       channel: 'chromium',
       args: [
-        `--disable-extensions-except=${pathToExtension}`,
-        `--load-extension=${pathToExtension}`,
         '--allow-read-clipboard',
         '--allow-write-clipboard',
         '--lang=en-US',
         '--no-sandbox',
         '--disable-dev-shm-usage',
         '--disable-web-security',
-        '--disable-features=VizDisplayCompositor',
         '--disable-background-timer-throttling',
         '--disable-backgrounding-occluded-windows',
         '--disable-renderer-backgrounding',
+        '--enable-automation',
+        '--disable-blink-features=AutomationControlled',
+        '--enable-extensions',
+        '--load-extension=' + pathToExtension,
+        '--disable-extensions-except=' + pathToExtension,
       ],
       locale: 'en-US',
       env: {
@@ -98,28 +104,36 @@ export const test = base.extend<{
     // Give the extension time to initialize
     await new Promise((resolve) => setTimeout(resolve, 5000));
 
-    // Verify extension is loaded
+    // Verify extension is loaded by checking the extensions page
     const page = await context.newPage();
     await page.goto('chrome://extensions/');
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 3000));
 
     try {
+      // Enable developer mode if not already enabled
+      const devModeToggle = await page.$('#devMode');
+      if (devModeToggle) {
+        const isChecked = await devModeToggle.isChecked();
+        if (!isChecked) {
+          console.log('Enabling developer mode...');
+          await devModeToggle.click();
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        }
+      }
+
+      // Check for extensions
       const extensionCards = await page.$$('extensions-item');
       console.log(`Extension verification: Found ${extensionCards.length} extensions`);
 
       if (extensionCards.length === 0) {
-        console.log('No extensions found - checking if extension directory exists');
-        const extensionExists = fs.existsSync(pathToExtension);
-        console.log(`Extension directory exists: ${extensionExists}`);
-        if (extensionExists) {
-          const manifestPath = path.join(pathToExtension, 'manifest.json');
-          const manifestExists = fs.existsSync(manifestPath);
-          console.log(`Manifest exists: ${manifestExists}`);
-          if (manifestExists) {
-            const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
-            console.log(`Manifest name: ${manifest.name}`);
-          }
-        }
+        console.log('No extensions found - extension may not be loaded properly');
+
+        // Try to reload the page and check again
+        await page.reload();
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+
+        const extensionCardsAfter = await page.$$('extensions-item');
+        console.log(`Extensions after reload: ${extensionCardsAfter.length}`);
       }
     } catch (err) {
       console.log(`Error verifying extension: ${err.message}`);
