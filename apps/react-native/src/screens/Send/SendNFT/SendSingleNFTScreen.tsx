@@ -1,3 +1,4 @@
+import { useCadence } from '@onflow/frw-context';
 import { sendSelectors, useSendStore, useTokenStore } from '@onflow/frw-stores';
 import { SendTransaction, isValidSendTransactionPayload } from '@onflow/frw-workflow';
 import { useCallback, useEffect, useState } from 'react';
@@ -27,6 +28,7 @@ const SendSingleNFTScreen = ({ navigation }: { navigation: NavigationProp }) => 
   const { openConfirmation } = useConfirmationDrawer();
   const [transactionFee] = useState('0.001');
   const { isModalVisible, closeModal } = useAccountCompatibilityModal();
+  const cadence = useCadence();
 
   // Get data from sendStore
   const selectedNFTs = useSendStore(sendSelectors.selectedNFTs);
