@@ -7,7 +7,7 @@
     "prepare:dev": "pnpx tsx ./build/prepareManifest.ts dev",
     "prepare:pro": "pnpx tsx ./build/prepareManifest.ts pro",
     "clean": "rimraf dist",
-    "build:dev": "pnpm run prepare:dev && pnpm run clean && cross-env BUILD_ENV=DEV vite build --mode development --watch",
+    "build:dev": "pnpm run prepare:dev && pnpm run clean && cross-env NODE_OPTIONS=--max-old-space-size=8192 BUILD_ENV=DEV vite build --mode development --watch",
     "build:dev-ci": "pnpm run prepare:dev && pnpm run clean && cross-env BUILD_ENV=DEV vite build --mode development",
     "build:ci": "pnpm run prepare:pro && pnpm run clean && cross-env BUILD_ENV=PRO vite build --mode production",
     "build:pro": "pnpm run prepare:pro && pnpm run clean && cross-env BUILD_ENV=PRO vite build --mode production",

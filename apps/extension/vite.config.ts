@@ -1,5 +1,5 @@
-import react from '@vitejs/plugin-react';
 import { crx } from '@crxjs/vite-plugin';
+import react from '@vitejs/plugin-react';
 import fs from 'fs';
 import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
@@ -11,7 +11,7 @@ function loadEnvFile(filePath: string) {
   const env: Record<string, string> = {};
   try {
     const content = fs.readFileSync(filePath, 'utf-8');
-    content.split('\n').forEach(line => {
+    content.split('\n').forEach((line) => {
       const [key, ...valueParts] = line.split('=');
       if (key && valueParts.length > 0) {
         const value = valueParts.join('=');
@@ -26,10 +26,9 @@ function loadEnvFile(filePath: string) {
 
 // Function to get the manifest based on build environment
 function getManifest(buildEnv: string) {
-  const manifestPath = buildEnv === 'PRO' 
-    ? '_raw/manifest/manifest.pro.json'
-    : '_raw/manifest/manifest.dev.json';
-  
+  const manifestPath =
+    buildEnv === 'PRO' ? '_raw/manifest/manifest.pro.json' : '_raw/manifest/manifest.dev.json';
+
   try {
     return JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
   } catch {
@@ -41,36 +40,39 @@ function getManifest(buildEnv: string) {
 export default defineConfig(({ mode }) => {
   // Load environment variables
   const viteEnv = loadEnv(mode, process.cwd(), '');
-  const buildEnv = process.env.BUILD_ENV || viteEnv.BUILD_ENV || (mode === 'production' ? 'PRO' : 'DEV');
-  
+  const buildEnv =
+    process.env.BUILD_ENV || viteEnv.BUILD_ENV || (mode === 'production' ? 'PRO' : 'DEV');
+
   // Load environment file based on build environment
   const envFileName = buildEnv === 'PRO' ? '.env.pro' : '.env.dev';
   const customEnv = loadEnvFile(envFileName);
   const env = { ...viteEnv, ...customEnv };
-  
+
   const isDev = mode === 'development';
   const isProd = mode === 'production';
-  
+
   // Get package version
   const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf-8'));
-  
+
   return {
     plugins: [
       // Node.js polyfills
       nodePolyfills({
-        include: ['buffer', 'process', 'crypto', 'stream', 'events', 'path', 'url', 'os'],
+        include: ['buffer', 'process', 'crypto', 'stream', 'events', 'path', 'url', 'os', 'util'],
         globals: {
           Buffer: true,
           global: true,
           process: true,
         },
+        // Ensure Buffer is injected at the top level
+        protocolImports: true,
       }),
       // React plugin
       react(),
       // SVGR plugin for SVG imports
       svgr({
         svgrOptions: {
-          exportType: "default",
+          exportType: 'default',
           ref: true,
           svgo: false,
           titleProp: true,
@@ -81,18 +83,23 @@ export default defineConfig(({ mode }) => {
         manifest: getManifest(buildEnv),
       }),
     ],
-    
+
     define: {
       'process.env.BUILD_ENV': JSON.stringify(buildEnv),
       'process.env.NODE_ENV': JSON.stringify(mode),
       'process.env.version': JSON.stringify(`version: ${packageJson.version}`),
       'process.env.release': JSON.stringify(packageJson.version),
       global: 'globalThis',
+      // Ensure Buffer is globally available
+      Buffer: 'Buffer',
       // Pass through all environment variables
-      ...Object.keys(env).reduce((acc, key) => {
-        acc[`process.env.${key}`] = JSON.stringify(env[key]);
-        return acc;
-      }, {} as Record<string, string>),
+      ...Object.keys(env).reduce(
+        (acc, key) => {
+          acc[`process.env.${key}`] = JSON.stringify(env[key]);
+          return acc;
+        },
+        {} as Record<string, string>
+      ),
     },
 
     resolve: {
@@ -110,15 +117,15 @@ export default defineConfig(({ mode }) => {
         '@onflow/frw-context': path.resolve(__dirname, '../../packages/context/src/index.ts'),
         '@onflow/frw-icons': path.resolve(__dirname, '../../packages/icons/src/web.ts'),
         // Additional aliases from webpack
-        'moment': 'dayjs',
+        moment: 'dayjs',
         'cross-fetch': 'cross-fetch',
         // Polyfills (handled by node-polyfills plugin but kept for compatibility)
-        'stream': 'stream-browserify',
-        'crypto': 'crypto-browserify',
-        'os': 'os-browserify/browser',
-        'path': 'path-browserify',
-        'buffer': 'buffer',
-        'events': 'events',
+        stream: 'stream-browserify',
+        crypto: 'crypto-browserify',
+        os: 'os-browserify/browser',
+        path: 'path-browserify',
+        buffer: 'buffer',
+        events: 'events',
       },
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
     },
@@ -149,15 +156,16 @@ export default defineConfig(({ mode }) => {
         'react',
         'react-dom',
         'webextension-polyfill',
+        'ethereum-cryptography',
+        'crypto-browserify',
+        'stream-browserify',
       ],
-      exclude: [
-        '@trustwallet/wallet-core',
-      ],
+      exclude: ['@trustwallet/wallet-core'],
     },
 
     // Handle WebAssembly and other special file types
     assetsInclude: ['**/*.wasm', '**/*.md'],
-    
+
     // Experiments equivalent
     esbuild: {
       target: 'esnext',
