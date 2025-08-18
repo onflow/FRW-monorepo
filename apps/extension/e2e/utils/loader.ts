@@ -83,14 +83,29 @@ export const test = base.extend<{
         '--no-sandbox',
         '--disable-dev-shm-usage',
         '--disable-web-security',
-        '--disable-background-timer-throttling',
-        '--disable-backgrounding-occluded-windows',
-        '--disable-renderer-backgrounding',
         '--enable-automation',
         '--disable-blink-features=AutomationControlled',
         '--enable-extensions',
         '--load-extension=' + pathToExtension,
         '--disable-extensions-except=' + pathToExtension,
+        // CI-specific flags
+        '--disable-gpu',
+        '--no-first-run',
+        '--no-default-browser-check',
+        '--disable-default-apps',
+        '--disable-popup-blocking',
+        '--disable-translate',
+        '--disable-background-networking',
+        '--disable-sync',
+        '--metrics-recording-only',
+        '--no-report-upload',
+        // Additional flags for better CI compatibility
+        '--disable-background-timer-throttling',
+        '--disable-backgrounding-occluded-windows',
+        '--disable-renderer-backgrounding',
+        '--disable-features=VizDisplayCompositor',
+        '--disable-extensions-file-access-check',
+        '--disable-extensions-http-throttling',
       ],
       locale: 'en-US',
       env: {
@@ -101,21 +116,35 @@ export const test = base.extend<{
       permissions: ['clipboard-read', 'clipboard-write'],
     });
 
-    // Give the extension time to initialize
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    // Give the extension time to initialize (longer for CI)
+    const initTime = process.env.CI ? 10000 : 5000;
+    await new Promise((resolve) => setTimeout(resolve, initTime));
 
     // Verify extension is loaded by checking the extensions page
     const page = await context.newPage();
     await page.goto('chrome://extensions/');
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
+    // Add debugging for CI
+    if (process.env.CI) {
+      console.log('CI environment - checking extension loading...');
+      const pageContent = await page.content();
+      console.log('Extensions page loaded, checking for extension elements...');
+    }
+
     try {
       // Enable developer mode if not already enabled
       const devModeToggle = await page.$('#devMode');
       if (devModeToggle) {
-        const isChecked = await devModeToggle.isChecked();
-        if (!isChecked) {
-          console.log('Enabling developer mode...');
+        try {
+          const isChecked = await devModeToggle.isChecked();
+          if (!isChecked) {
+            console.log('Enabling developer mode...');
+            await devModeToggle.click();
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+          }
+        } catch (err) {
+          console.log('Developer mode toggle not a checkbox, trying click anyway...');
           await devModeToggle.click();
           await new Promise((resolve) => setTimeout(resolve, 2000));
         }
