@@ -12,7 +12,7 @@ const meta: Meta<typeof ErrorDialog> = {
     docs: {
       description: {
         component:
-          'ErrorDialog displays an error message in a modal dialog with a close button and confirmation action.',
+          'ErrorDialog displays error, warning, or informational messages in a modal dialog with proper accessibility features, keyboard support, and theming.',
       },
     },
   },
@@ -21,12 +21,13 @@ const meta: Meta<typeof ErrorDialog> = {
     title: { control: 'text' },
     message: { control: 'text' },
     buttonText: { control: 'text' },
+
     onClose: { action: 'dialog-closed' },
     onConfirm: { action: 'dialog-confirmed' },
   },
   decorators: [
     (Story) => (
-      <YStack w={400} h={400} items="center" justify="center">
+      <YStack w="100vw" h="100vh" items="center" justify="center" bg="$bg">
         <Story />
       </YStack>
     ),
@@ -43,44 +44,29 @@ export const Default: Story = {
     message:
       'Flow Wallet manages your EVM and your Cadence accounts on Flow. EVM accounts are compatible with EVM apps, and Cadence accounts are compatible with Cadence apps.\n\nIf an application is on EVM or Cadence, only compatible accounts will be available to connect.',
     buttonText: 'Okay',
+    variant: 'info',
   },
 };
 
-export const SimpleError: Story = {
+export const WarningVariant: Story = {
   args: {
     visible: true,
-    title: 'Transaction Failed',
-    message: 'The transaction could not be completed. Please try again later.',
-    buttonText: 'Try Again',
-  },
-};
-
-export const NetworkError: Story = {
-  args: {
-    visible: true,
-    title: 'Network Error',
+    title: 'Network Congestion',
     message:
-      'Unable to connect to the Flow network. Please check your internet connection and try again.',
-    buttonText: 'Retry',
-  },
-};
-
-export const ValidationError: Story = {
-  args: {
-    visible: true,
-    title: 'Invalid Input',
-    message: 'The amount you entered is invalid. Please enter a valid number.',
-    buttonText: 'Fix Input',
+      'The Flow network is experiencing high traffic. Your transaction may take longer than usual to process.',
+    buttonText: 'Continue Anyway',
+    variant: 'warning',
   },
 };
 
 export const LongMessage: Story = {
   args: {
     visible: true,
-    title: 'Detailed Error Information',
+    title: 'Security Notice',
     message:
-      'This is a longer error message that provides more detailed information about what went wrong. It includes multiple sentences and explains the context of the error, what the user was trying to do, and potential next steps they can take to resolve the issue.',
-    buttonText: 'I Understand',
+      'Your wallet has detected suspicious activity on your account. For your security, certain features have been temporarily restricted. Please review your recent transactions and contact support if you notice any unauthorized activity. This is a precautionary measure to protect your assets.',
+    buttonText: 'Review Account',
+    variant: 'warning',
   },
 };
 
@@ -105,14 +91,5 @@ export const Interactive: Story = {
         />
       </YStack>
     );
-  },
-};
-
-export const CustomButton: Story = {
-  args: {
-    visible: true,
-    title: 'Wallet Locked',
-    message: 'Your wallet has been locked for security. Please enter your password to unlock it.',
-    buttonText: 'Unlock Wallet',
   },
 };

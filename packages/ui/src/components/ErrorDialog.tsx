@@ -1,6 +1,6 @@
 import { Close } from '@onflow/frw-icons';
-import React from 'react';
-import { YStack, XStack } from 'tamagui';
+import React, { useEffect } from 'react';
+import { YStack } from 'tamagui';
 
 import { Text } from '../foundation/Text';
 
@@ -11,6 +11,7 @@ export interface ErrorDialogProps {
   buttonText?: string;
   onClose: () => void;
   onConfirm?: () => void;
+  variant?: 'error' | 'warning' | 'info';
 }
 
 export const ErrorDialog: React.FC<ErrorDialogProps> = ({
@@ -20,11 +21,56 @@ export const ErrorDialog: React.FC<ErrorDialogProps> = ({
   buttonText = 'Okay',
   onClose,
   onConfirm,
+  variant = 'error',
 }) => {
   const handleConfirm = () => {
     onConfirm?.();
     onClose();
   };
+
+  // Get colors based on variant
+  const getTextColors = () => {
+    switch (variant) {
+      case 'warning':
+        return {
+          title: '#FFFFFF', // White for warning title
+          message: '#FFC107', // Yellow for warning message/body text
+        };
+      case 'error':
+        return {
+          title: '#FFFFFF', // White for error title
+          message: '#FF5722', // Red for error message
+        };
+      case 'info':
+      default:
+        return {
+          title: '#FFFFFF', // White for info/default title
+          message: '#FFFFFF', // White for info/default message
+        };
+    }
+  };
+
+  const textColors = getTextColors();
+
+  // Handle escape key press and body scroll prevention
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && visible) {
+        onClose();
+      }
+    };
+
+    if (visible) {
+      document.addEventListener('keydown', handleKeyDown);
+      // Prevent body scroll when dialog is open
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'unset';
+    };
+  }, [visible, onClose]);
 
   if (!visible) return null;
 
@@ -41,10 +87,15 @@ export const ErrorDialog: React.FC<ErrorDialogProps> = ({
       zIndex={1000}
       pressStyle={{ opacity: 1 }}
       onPress={onClose}
+      aria-modal="true"
+      role="dialog"
+      aria-labelledby="error-dialog-title"
+      aria-describedby="error-dialog-message"
     >
       <YStack
-        w={343}
-        h={308}
+        minW={400}
+        maxW="90vw"
+        w={400}
         bg="#2A2A2A"
         rounded={16}
         p={16}
@@ -58,46 +109,50 @@ export const ErrorDialog: React.FC<ErrorDialogProps> = ({
         onPress={(e) => e.stopPropagation()}
       >
         {/* Content Frame */}
-        <YStack items="center" gap={16} w={311}>
+        <YStack items="center" gap={16} alignSelf="stretch">
           {/* Header Frame */}
           <YStack items="flex-end" alignSelf="stretch" gap={16}>
             {/* Title and Close Button */}
-            <XStack items="center">
+            <YStack alignSelf="stretch" items="center" position="relative">
               <Text
-                w={264}
+                id="error-dialog-title"
                 fontSize={18}
                 fontWeight="700"
                 lineHeight="1.78em"
                 letterSpacing="-1.7%"
-                text="center"
-                color="#FFFFFF"
+                textAlign="center"
+                color={textColors.title}
               >
                 {title}
               </Text>
               <YStack
-                w={24}
-                h={24}
+                position="absolute"
+                top={0}
+                right={0}
                 items="center"
                 justify="center"
-                bg="rgba(0, 0, 0, 0.03)"
-                rounded={12}
+                bg="rgba(255, 255, 255, 0.1)"
+                rounded={16}
+                p={8}
                 pressStyle={{ opacity: 0.7 }}
                 onPress={onClose}
                 cursor="pointer"
+                aria-label="Close dialog"
               >
-                <Close size={10} color="#FFFFFF" />
+                <Close size={8} color="rgba(255, 255, 255, 0.3)" />
               </YStack>
-            </XStack>
+            </YStack>
 
             {/* Message Text */}
             <Text
+              id="error-dialog-message"
               alignSelf="stretch"
               fontSize={14}
               fontWeight="300"
               lineHeight="1.43em"
               letterSpacing="-0.6%"
-              text="center"
-              color="#FFFFFF"
+              textAlign="center"
+              color={textColors.message}
             >
               {message}
             </Text>
@@ -106,13 +161,14 @@ export const ErrorDialog: React.FC<ErrorDialogProps> = ({
           {/* Double button group */}
           <YStack alignSelf="stretch" items="center" justify="center" gap={16}>
             <YStack
-              w={297}
+              alignSelf="stretch"
               h={44}
               bg="#FFFFFF"
               rounded={12}
               items="center"
               justify="center"
-              p="12px 16px"
+              px={16}
+              py={12}
               pressStyle={{ opacity: 0.8 }}
               onPress={handleConfirm}
               cursor="pointer"
@@ -122,7 +178,7 @@ export const ErrorDialog: React.FC<ErrorDialogProps> = ({
                 fontWeight="700"
                 lineHeight="1.43em"
                 letterSpacing="-1%"
-                text="center"
+                textAlign="center"
                 color="rgba(0, 0, 0, 0.9)"
               >
                 {buttonText}
