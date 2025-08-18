@@ -51,13 +51,7 @@ function NFTListItem({
     <View key={getNFTId(nft)}>
       <View className="flex-row justify-between items-center py-3">
         <View className="flex-row items-center gap-2">
-          <IconView
-            src={getNFTCover(nft)}
-            size={54}
-            borderRadius={16}
-            backgroundColor="#eee"
-            resizeMode="cover"
-          />
+          <IconView src={getNFTCover(nft)} size={54} borderRadius={16} resizeMode="cover" />
           <View className="gap-1.5">
             <Text className="text-fg-1 text-sm font-inter-semibold" numberOfLines={1}>
               {nft.name}
@@ -260,13 +254,18 @@ export default function BottomConfirmBar({
 
   return (
     <Animated.View
-      className="absolute left-0 bottom-0 rounded-t-[16px] bg-sf-1"
       style={[
         {
+          position: 'absolute',
+          left: 0,
+          bottom: 0,
+          borderTopLeftRadius: 16,
+          borderTopRightRadius: 16,
           transform: [{ translateY }],
           height: containerHeight,
           width: SCREEN_WIDTH,
           zIndex: 2, // Ensure drawer appears above the tint overlay
+          backgroundColor: isDark ? '#FFFFFF15' : '#F2F2F7', // Surface background colors
         },
       ]}
       pointerEvents={selectedNFTs.length > 0 ? 'auto' : 'none'}
@@ -319,13 +318,13 @@ export default function BottomConfirmBar({
         style={{ paddingBottom: insets.bottom + 16, paddingTop: 16 }}
       >
         <TouchableOpacity
-          className="w-full bg-white items-center justify-center"
+          className={`w-full items-center justify-center ${isDark ? 'bg-white' : 'bg-black'}`}
           style={{
             borderRadius: 16, // Changed from 999px to 16px to match Figma
             paddingVertical: 16, // Changed from h-[52px] to padding approach
             paddingHorizontal: 20, // Added horizontal padding as per Figma
             borderWidth: 1,
-            borderColor: '#FFFFFF', // Added white border as per Figma
+            borderColor: isDark ? '#FFFFFF15' : '#F2F2F7', // Added white border as per Figma
             shadowColor: 'rgba(16, 24, 40, 0.05)', // Updated shadow to match Figma
             shadowOffset: { width: 0, height: 1 },
             shadowOpacity: 1,

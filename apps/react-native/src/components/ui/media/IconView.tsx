@@ -2,8 +2,8 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { Image, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 
+import placeholder from '@/assets/placeholder.png';
 import { useTheme } from '@/contexts/ThemeContext';
-
 // Constant definitions
 const TIMEOUT_DURATION = 3000;
 
@@ -24,6 +24,7 @@ const TIMEOUT_DURATION = 3000;
  * @param size - Badge size (width & height), default 48
  * @param borderRadius - Badge border radius, default 24
  * @param backgroundColor - Badge background color, defaults to theme-aware surface color
+ * @param placeholder - Placeholder image source, defaults to placeholder.png
  * @returns React component
  */
 export function IconView({
@@ -168,16 +169,23 @@ export function IconView({
     };
   }, [src, imageType]);
 
-  // Return placeholder directly for empty src
-  if (imageType === 'empty') {
-    return <View style={badgeStyle} />;
-  }
-
   // SVG processing logic
   if (imageType === 'svg') {
     // Show placeholder when SVG loading fails or times out
-    if (!svgContent || imageError || imageTimeout) {
-      return <View style={badgeStyle} />;
+    if (imageError || imageTimeout) {
+      return (
+        <View style={badgeStyle}>
+          <Image
+            source={placeholder}
+            style={{
+              width: shouldFillContainer ? '100%' : size,
+              height: shouldFillContainer ? '100%' : size,
+              borderRadius,
+            }}
+            resizeMode={resizeMode}
+          />
+        </View>
+      );
     }
     return (
       <View style={badgeStyle}>
@@ -191,38 +199,50 @@ export function IconView({
     );
   }
 
-  // Determine when to show placeholder vs image
-  const shouldShowPlaceholder = imageError || (imageType !== 'image' && imageType !== 'unknown');
+  // Only show placeholder when image request fails
+  const shouldShowPlaceholder = imageError;
 
   return (
     <View style={badgeStyle}>
-      {shouldShowPlaceholder ? null : (
+      {shouldShowPlaceholder ? (
         <Image
-          source={{ uri: src }}
+          source={placeholder}
           style={{
             width: shouldFillContainer ? '100%' : size,
             height: shouldFillContainer ? '100%' : size,
             borderRadius,
           }}
-          onLoad={event => {
-            // Extra validation to ensure image has actual content
-            if (
-              event.nativeEvent.source &&
-              event.nativeEvent.source.width > 0 &&
-              event.nativeEvent.source.height > 0
-            ) {
-              setImageLoaded(true);
-            } else {
-              // Image loaded but has no content - treat as error
-              setImageError(true);
-            }
-          }}
-          onError={() => {
-            setImageError(true);
-          }}
           resizeMode={resizeMode}
-          fadeDuration={0}
         />
+      ) : (
+        !shouldShowPlaceholder && (
+          <Image
+            source={{ uri: src }}
+            style={{
+              width: shouldFillContainer ? '100%' : size,
+              height: shouldFillContainer ? '100%' : size,
+              borderRadius,
+            }}
+            onLoad={event => {
+              // Extra validation to ensure image has actual content
+              if (
+                event.nativeEvent.source &&
+                event.nativeEvent.source.width > 0 &&
+                event.nativeEvent.source.height > 0
+              ) {
+                setImageLoaded(true);
+              } else {
+                // Image loaded but has no content - treat as error
+                setImageError(true);
+              }
+            }}
+            onError={() => {
+              setImageError(true);
+            }}
+            resizeMode={resizeMode}
+            fadeDuration={0}
+          />
+        )
       )}
     </View>
   );
