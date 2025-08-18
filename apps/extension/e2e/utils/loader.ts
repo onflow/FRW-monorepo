@@ -45,15 +45,6 @@ export const test = base.extend<{
         '--lang=en-US',
         '--no-sandbox',
         '--disable-dev-shm-usage',
-        '--disable-web-security',
-        '--disable-features=VizDisplayCompositor',
-        '--enable-extensions',
-        '--disable-background-timer-throttling',
-        '--disable-backgrounding-occluded-windows',
-        '--disable-renderer-backgrounding',
-        '--disable-component-update',
-        '--enable-logging=stderr',
-        '--log-level=0',
       ],
       locale: 'en-US',
       env: {
@@ -64,32 +55,8 @@ export const test = base.extend<{
       permissions: ['clipboard-read', 'clipboard-write'],
     });
 
-    // Give the extension time to initialize (longer timeout for CI)
-    const initTimeout = process.env.CI ? 10000 : 3000;
-    await new Promise((resolve) => setTimeout(resolve, initTimeout));
-
-    // Debug: Check if extension files exist
-    if (process.env.CI) {
-      console.log('CI Environment detected - performing extension validation');
-      console.log(`Extension path: ${pathToExtension}`);
-
-      try {
-        const manifestExists = fs.existsSync(path.join(pathToExtension, 'manifest.json'));
-        const backgroundExists = fs.existsSync(path.join(pathToExtension, 'background.js'));
-        console.log(
-          `Manifest exists: ${manifestExists}, Background script exists: ${backgroundExists}`
-        );
-
-        if (manifestExists) {
-          const manifest = JSON.parse(
-            fs.readFileSync(path.join(pathToExtension, 'manifest.json'), 'utf-8')
-          );
-          console.log(`Extension name: ${manifest.name}, version: ${manifest.version}`);
-        }
-      } catch (err) {
-        console.log(`Extension validation error: ${err.message}`);
-      }
-    }
+    // Give the extension time to initialize
+    await new Promise((resolve) => setTimeout(resolve, 3000));
 
     await call(context);
     await context.close();
@@ -166,29 +133,14 @@ export const test = base.extend<{
         if (background) {
           extensionId = background.url().split('/')[2];
         } else {
-          // Method 3: Wait for service worker event with retries
+          // Method 3: Wait for service worker event
           try {
             console.log('Waiting for service worker event...');
-            const serviceWorkerTimeout = process.env.CI ? 60000 : 30000; // Longer timeout for CI
-            background = await context.waitForEvent('serviceworker', {
-              timeout: serviceWorkerTimeout,
-            });
+            background = await context.waitForEvent('serviceworker', { timeout: 30000 });
             console.log(`Service worker found via event: ${background.url()}`);
             extensionId = background.url().split('/')[2];
           } catch (error) {
             console.log(`Service worker event timeout: ${error.message}`);
-
-            // Additional retry attempt in CI
-            if (process.env.CI) {
-              console.log('CI detected - attempting service worker retry...');
-              await new Promise((resolve) => setTimeout(resolve, 5000));
-
-              [background] = context.serviceWorkers();
-              if (background) {
-                extensionId = background.url().split('/')[2];
-                console.log(`Service worker found on retry: ${extensionId}`);
-              }
-            }
 
             // Method 4: Try to extract from any extension page URLs
             const allPages = context.pages();

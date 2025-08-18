@@ -147,12 +147,7 @@ jobs:
         run: pnpm -F frw-extension test:run
 
       - name: Build extension
-        run: |
-          if [[ "${{ needs.determine-env.outputs.env_name }}" == "development" || "${{ needs.determine-env.outputs.env_name }}" == "staging" ]]; then
-            pnpm -F frw-extension build:dev-ci
-          else
-            pnpm -F frw-extension build:ci
-          fi
+        run: pnpm -F frw-extension build:dev-ci
         env:
           CI: true
           COMMIT_SHA: ${{ github.sha }}
@@ -220,15 +215,6 @@ jobs:
           # Extension ID for Playwright tests
           TEST_EXTENSION_ID="${{ vars.TEST_EXTENSION_ID || 'cfiagdgiikmjgfjnlballglniejjgegi' }}"
           EOF
-
-      - name: Verify build artifacts
-        run: |
-          echo "Verifying extension build artifacts..."
-          ls -la apps/extension/dist/
-          echo "Checking manifest.json..."
-          cat apps/extension/dist/manifest.json
-          echo "Checking for background.js..."
-          ls -la apps/extension/dist/background.js
 
       - name: Install dependencies
         run: pnpm install
