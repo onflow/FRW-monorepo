@@ -221,6 +221,15 @@ jobs:
           TEST_EXTENSION_ID="${{ vars.TEST_EXTENSION_ID || 'cfiagdgiikmjgfjnlballglniejjgegi' }}"
           EOF
 
+      - name: Verify build artifacts
+        run: |
+          echo "Verifying extension build artifacts..."
+          ls -la apps/extension/dist/
+          echo "Checking manifest.json..."
+          cat apps/extension/dist/manifest.json
+          echo "Checking for background.js..."
+          ls -la apps/extension/dist/background.js
+
       - name: Install dependencies
         run: pnpm install
       - name: Install Playwright Browsers
