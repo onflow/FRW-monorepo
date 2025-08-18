@@ -61,6 +61,7 @@ describe('isVaultIdentifier', () => {
       expect(isVaultIdentifier('A.1654653399040a61.FlowToken.Receiver')).toBe(false);
       expect(isVaultIdentifier('A.1654653399040a61.FlowToken.Provider')).toBe(false);
       expect(isVaultIdentifier('A.1654653399040a61.NFTStorefrontV2.Collection')).toBe(false);
+      expect(isVaultIdentifier('A.1654653399040a61.FlowToken.NFT')).toBe(false);
     });
 
     it('should return false for invalid address formats', () => {

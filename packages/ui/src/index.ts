@@ -72,6 +72,8 @@ export { default as tamaguiConfig } from './tamagui.config';
 
 // Export theme system
 export * from './theme';
+// Export extension-specific theme config
+export { extensionTamaguiConfig } from './theme/extension';
 
 // Export layout components
 export * from './layout/BackgroundWrapper';
