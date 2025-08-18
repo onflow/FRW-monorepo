@@ -44,7 +44,7 @@
     "buffer": "^6.0.3"
   },
   "devDependencies": {
-    "@types/node": "^22.11.0",
+    "@types/node": "^20.19.4",
     "@vitest/coverage-v8": "3.2.4",
     "@outblock/cadence-codegen": "^0.0.9",
     "tsup": "^8.3.5",
