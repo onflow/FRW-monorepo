@@ -1,15 +1,8 @@
-// Service classes (direct access)
+// Modern factory approach (RECOMMENDED with ServiceProvider + hooks)
+export { FlowServiceFactory, createFlowService } from './FlowServiceFactory';
+
+// Legacy service classes (use these with dependency injection)
 export { AddressBookService } from './AddressBookService';
-export { default as FlowService } from './FlowService';
 export { NFTService } from './NFTService';
 export { RecentRecipientsService } from './RecentRecipientsService';
 export { TokenService } from './TokenService';
-
-// Convenience functions for accessing services through context
-export {
-  addressBookService,
-  flowService,
-  nftService,
-  recentRecipientsService,
-  tokenService,
-} from './getters';

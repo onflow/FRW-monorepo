@@ -1,5 +1,5 @@
 import { AddressbookService } from '@onflow/frw-api';
-import { context, type PlatformSpec } from '@onflow/frw-context';
+import type { PlatformSpec } from '@onflow/frw-context';
 import type { AddressBookResponse } from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
 
@@ -16,17 +16,11 @@ export class AddressBookService {
 
   public static getInstance(bridge?: PlatformSpec): AddressBookService {
     if (!AddressBookService.instance) {
-      let bridgeToUse = bridge;
+      const bridgeToUse = bridge;
 
-      // If bridge is not provided, try to get it from ServiceContext
+      // Bridge parameter is now required
       if (!bridgeToUse) {
-        try {
-          bridgeToUse = context.bridge;
-        } catch {
-          throw new Error(
-            'AddressBookService requires bridge parameter or initialized ServiceContext'
-          );
-        }
+        throw new Error('AddressBookService requires bridge parameter');
       }
 
       AddressBookService.instance = new AddressBookService(bridgeToUse);

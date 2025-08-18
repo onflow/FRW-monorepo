@@ -1,4 +1,3 @@
-import { cadence } from '@onflow/frw-context';
 import { sendSelectors, useSendStore, useTokenStore } from '@onflow/frw-stores';
 import { SendTransaction, isValidSendTransactionPayload } from '@onflow/frw-workflow';
 import { useCallback, useEffect, useState } from 'react';

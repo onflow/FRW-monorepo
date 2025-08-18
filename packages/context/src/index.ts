@@ -2,16 +2,18 @@
 export type { PlatformSpec } from './interfaces/PlatformSpec';
 export type { Storage } from './interfaces/Storage';
 
-// Service Context
+// Re-export types for convenience
+export type { CadenceService } from '@onflow/frw-cadence';
+
+// Modern React Context API
 export {
-  bridge,
-  cadence,
-  context,
-  getBridge,
-  getCadenceService,
-  getServiceContext,
-  getStorage,
-  logger,
-  ServiceContext,
-  storage,
+  ServiceProvider,
+  useServiceContext,
+  usePlatform,
+  useCadence,
+  useStorage,
+  useLogger,
+  useIsDebug,
+  type ServiceContextValue,
+  type ServiceProviderProps,
 } from './ServiceContext';

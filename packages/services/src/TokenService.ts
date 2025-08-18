@@ -3,7 +3,7 @@ import {
   type CadenceFTApiResponseWithCurrency,
   type CurrencyEVMTokenData,
 } from '@onflow/frw-api';
-import { getServiceContext, type PlatformSpec } from '@onflow/frw-context';
+import type { PlatformSpec } from '@onflow/frw-context';
 import {
   mapCadenceTokenDataWithCurrencyToTokenModel,
   mapERC20TokenToTokenModel,
@@ -112,7 +112,7 @@ export class TokenService {
       this.bridge = bridge;
     } else {
       try {
-        this.bridge = getServiceContext().bridge;
+        throw new Error('TokenService requires bridge parameter');
       } catch {
         logger.warn('[TokenService] ServiceContext not initialized, bridge will be null');
         this.bridge = undefined;

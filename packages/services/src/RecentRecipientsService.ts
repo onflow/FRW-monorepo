@@ -1,4 +1,4 @@
-import { getServiceContext, type PlatformSpec, type Storage } from '@onflow/frw-context';
+import type { PlatformSpec, Storage } from '@onflow/frw-context';
 import type { WalletAccount } from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
 
@@ -31,13 +31,13 @@ export class RecentRecipientsService {
   // add bridge params
   public static getInstance(bridge?: PlatformSpec, storage?: Storage): RecentRecipientsService {
     if (!RecentRecipientsService.instance) {
-      let bridgeToUse = bridge;
-      let storageToUse = storage;
+      const bridgeToUse = bridge;
+      const storageToUse = storage;
 
       // If bridge is not provided, try to get it from ServiceContext
       if (!bridgeToUse) {
         try {
-          bridgeToUse = getServiceContext().bridge;
+          throw new Error('RecentRecipientsService requires bridge parameter');
         } catch {
           throw new Error(
             'RecentRecipientsService requires bridge parameter or initialized ServiceContext'
@@ -48,7 +48,7 @@ export class RecentRecipientsService {
       // If storage is not provided, try to get it from ServiceContext
       if (!storageToUse) {
         try {
-          storageToUse = getServiceContext().storage;
+          throw new Error('RecentRecipientsService requires storage parameter');
         } catch {
           throw new Error(
             'RecentRecipientsService requires storage parameter or initialized ServiceContext'

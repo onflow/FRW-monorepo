@@ -1,5 +1,5 @@
 import { NftService, FlowEvmNftService } from '@onflow/frw-api';
-import { getServiceContext, type PlatformSpec } from '@onflow/frw-context';
+import type { PlatformSpec } from '@onflow/frw-context';
 import { WalletType, type CollectionModel, type NFTModel } from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
 
@@ -253,7 +253,7 @@ export class NFTService {
       this.bridge = bridge;
     } else {
       try {
-        this.bridge = getServiceContext().bridge;
+        throw new Error('NFTService requires bridge parameter');
       } catch {
         logger.warn('[NFTService] ServiceContext not initialized, bridge will be null');
         this.bridge = undefined;

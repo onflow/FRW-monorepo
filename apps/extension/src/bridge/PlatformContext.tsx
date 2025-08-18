@@ -1,6 +1,6 @@
-import type { PlatformSpec } from '@onflow/frw-context';
+import { ServiceProvider, type PlatformSpec } from '@onflow/frw-context';
 import type { NavigationProp, PlatformBridge, TranslationFunction } from '@onflow/frw-screens';
-import React, { createContext, useContext, useEffect, type ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react';
 
 import { useUserWallets } from '@/ui/hooks/use-account-hooks';
 import { useWallet } from '@/ui/hooks/use-wallet';
@@ -27,8 +27,8 @@ interface PlatformContextValue {
 const PlatformContext = createContext<PlatformContextValue | null>(null);
 
 /**
- * Platform provider that initializes the platform implementation
- * and keeps it synchronized with extension state
+ * Platform provider that initializes the platform implementation,
+ * keeps it synchronized with extension state, and provides ServiceProvider
  */
 export const PlatformProvider = ({ children }: { children: ReactNode }) => {
   const { network } = useNetwork();
@@ -37,8 +37,8 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
   const wallet = useWallet();
   const { coins } = useCoins();
 
-  // Initialize platform singleton
-  const platform = initializePlatform();
+  // Initialize platform implementation
+  const platform = useMemo(() => initializePlatform(), []);
 
   // Keep platform synchronized with extension state
   useEffect(() => {
@@ -157,16 +157,21 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
     getTranslation,
   };
 
-  return <PlatformContext.Provider value={contextValue}>{children}</PlatformContext.Provider>;
+  return (
+    <ServiceProvider platform={platform}>
+      <PlatformContext.Provider value={contextValue}>{children}</PlatformContext.Provider>
+    </ServiceProvider>
+  );
 };
 
 /**
  * Hook to access the platform context
+ * Note: This is different from the usePlatform hook in @onflow/frw-context
  */
-export const usePlatform = (): PlatformContextValue => {
+export const useExtensionPlatform = (): PlatformContextValue => {
   const context = useContext(PlatformContext);
   if (!context) {
-    throw new Error('usePlatform must be used within a PlatformProvider');
+    throw new Error('useExtensionPlatform must be used within a PlatformProvider');
   }
   return context;
 };
@@ -175,19 +180,19 @@ export const usePlatform = (): PlatformContextValue => {
  * Hooks for specific platform functionality
  */
 export const usePlatformSpec = (): PlatformSpec => {
-  return usePlatform().platform;
+  return useExtensionPlatform().platform;
 };
 
 export const usePlatformNavigation = (
   navigate: (path: string, state?: any) => void
 ): NavigationProp => {
-  return usePlatform().getNavigation(navigate);
+  return useExtensionPlatform().getNavigation(navigate);
 };
 
 export const usePlatformBridge = (): PlatformBridge => {
-  return usePlatform().getBridge();
+  return useExtensionPlatform().getBridge();
 };
 
 export const usePlatformTranslation = (): TranslationFunction => {
-  return usePlatform().getTranslation();
+  return useExtensionPlatform().getTranslation();
 };

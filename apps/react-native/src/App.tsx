@@ -1,4 +1,4 @@
-import { ServiceContext } from '@onflow/frw-context';
+import { ServiceProvider } from '@onflow/frw-context';
 import { useWalletStore } from '@onflow/frw-stores';
 import { logger } from '@onflow/frw-utils';
 import Instabug, { InvocationEvent } from 'instabug-reactnative';
@@ -33,16 +33,25 @@ interface AppProps {
 }
 
 const App = (props: AppProps) => {
-  // Initialize walletStore when the app starts
+  return (
+    <ServiceProvider platform={platform}>
+      <AppContent {...props} />
+    </ServiceProvider>
+  );
+};
+
+/**
+ * App content component that uses service hooks
+ */
+const AppContent = (props: AppProps) => {
   const { loadAccountsFromBridge } = useWalletStore();
 
   const initializeApp = useCallback(async () => {
     try {
-      // Initialize services with RNBridge dependency injection
-      ServiceContext.initialize(platform);
-      logger.debug('[App] Services initialized with RNBridge successfully');
+      // Services are already initialized by ServiceProvider
+      logger.debug('[App] Services initialized successfully');
 
-      // Initialize Instabug after ServiceContext is ready
+      // Initialize Instabug
       initializeInstabug(props);
       logger.debug('[App] Instabug initialized successfully');
 
