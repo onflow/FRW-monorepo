@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isVaultIdentifier } from '../../src/send/utils';
+import { isNFTIdentifier, isVaultIdentifier } from '../../src/send/utils';
 
 describe('isVaultIdentifier', () => {
   describe('Valid Flow Resource Identifiers', () => {
@@ -27,7 +27,7 @@ describe('isVaultIdentifier', () => {
       ).toBe(true);
 
       // Mainnet NFT resources
-      expect(isVaultIdentifier('A.2d4c3caffbeab845.FLOAT.NFT')).toBe(true);
+      expect(isNFTIdentifier('A.2d4c3caffbeab845.FLOAT.NFT')).toBe(true);
     });
 
     it('should return true for valid testnet vault and nft identifiers', () => {
@@ -42,7 +42,7 @@ describe('isVaultIdentifier', () => {
       expect(isVaultIdentifier('A.e223d8a629e49c68.FUSD.Vault')).toBe(true);
 
       // Testnet NFT resources
-      expect(isVaultIdentifier('A.631e88ae7f1d7c20.TestNFT.NFT')).toBe(true);
+      expect(isNFTIdentifier('A.631e88ae7f1d7c20.TestNFT.NFT')).toBe(true);
     });
 
     it('should return true for vault and nft identifiers with various contract name patterns', () => {
@@ -59,9 +59,9 @@ describe('isVaultIdentifier', () => {
       expect(isVaultIdentifier('A.1654653399040a61.TOKEN.Vault')).toBe(true);
 
       // NFT identifiers with various patterns
-      expect(isVaultIdentifier('A.1654653399040a61.MyNFT123.NFT')).toBe(true);
-      expect(isVaultIdentifier('A.1654653399040a61.NFT_Collection.NFT')).toBe(true);
-      expect(isVaultIdentifier('A.1654653399040a61.Collection123.NFT')).toBe(true);
+      expect(isNFTIdentifier('A.1654653399040a61.MyNFT123.NFT')).toBe(true);
+      expect(isNFTIdentifier('A.1654653399040a61.NFT_Collection.NFT')).toBe(true);
+      expect(isNFTIdentifier('A.1654653399040a61.Collection123.NFT')).toBe(true);
     });
   });
 
@@ -153,21 +153,21 @@ describe('isVaultIdentifier', () => {
     it('should handle boundary conditions', () => {
       // Minimum valid contract name (1 character)
       expect(isVaultIdentifier('A.1654653399040a61.A.Vault')).toBe(true);
-      expect(isVaultIdentifier('A.1654653399040a61.A.NFT')).toBe(true);
+      expect(isNFTIdentifier('A.1654653399040a61.A.NFT')).toBe(true);
 
       // Long contract name
       expect(isVaultIdentifier('A.1654653399040a61.VeryLongContractName123456789.Vault')).toBe(
         true
       );
-      expect(isVaultIdentifier('A.1654653399040a61.VeryLongContractName123456789.NFT')).toBe(true);
+      expect(isNFTIdentifier('A.1654653399040a61.VeryLongContractName123456789.NFT')).toBe(true);
 
       // Contract name with only numbers
       expect(isVaultIdentifier('A.1654653399040a61.123456.Vault')).toBe(true);
-      expect(isVaultIdentifier('A.1654653399040a61.123456.NFT')).toBe(true);
+      expect(isNFTIdentifier('A.1654653399040a61.123456.NFT')).toBe(true);
 
       // Contract name with only letters
       expect(isVaultIdentifier('A.1654653399040a61.ABCDEF.Vault')).toBe(true);
-      expect(isVaultIdentifier('A.1654653399040a61.ABCDEF.NFT')).toBe(true);
+      expect(isNFTIdentifier('A.1654653399040a61.ABCDEF.NFT')).toBe(true);
     });
   });
 });

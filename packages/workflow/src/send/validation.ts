@@ -1,5 +1,5 @@
 import type { SendPayload } from './types';
-import { isFlowToken } from './utils';
+import { isNFTIdentifier, isVaultIdentifier } from './utils';
 
 /**
  * Validates Flow blockchain addresses (0x + 16 hex characters)
@@ -27,6 +27,9 @@ export const validateEvmAddress = (address: string): boolean => {
  * @throws Error if token amount is invalid or decimal is missing
  */
 export const validateTokenPayload = (payload: SendPayload): void => {
+  if (payload.flowIdentifier && !isVaultIdentifier(payload.flowIdentifier)) {
+    throw new Error('invalid send token identifier');
+  }
   if (Number(payload.amount) <= 0) {
     throw new Error('invalid send token transaction payload');
   }
@@ -41,6 +44,9 @@ export const validateTokenPayload = (payload: SendPayload): void => {
  * @throws Error if no NFT IDs are provided
  */
 export const validateNftPayload = (payload: SendPayload): void => {
+  if (payload.flowIdentifier && !isNFTIdentifier(payload.flowIdentifier)) {
+    throw new Error('invalid send nft identifier');
+  }
   if (payload.ids.length === 0) {
     throw new Error('invalid send nft transaction payload');
   }
@@ -54,8 +60,7 @@ export const validateNftPayload = (payload: SendPayload): void => {
  * @throws Error with descriptive message if validation fails
  */
 export const isValidSendTransactionPayload = (payload: SendPayload): boolean => {
-  const { type, assetType, proposer, receiver, flowIdentifier, sender, tokenContractAddr } =
-    payload;
+  const { type, assetType, proposer, receiver, flowIdentifier = '', sender } = payload;
 
   // Validate proposer address format (must be Flow address)
   if (!validateFlowAddress(proposer)) {
@@ -69,9 +74,6 @@ export const isValidSendTransactionPayload = (payload: SendPayload): boolean => 
 
   // Validate asset-specific requirements
   if (type === 'token') {
-    if (!isFlowToken(flowIdentifier) && !tokenContractAddr) {
-      throw new Error('invalid send token transaction payload');
-    }
     validateTokenPayload(payload);
   }
 
