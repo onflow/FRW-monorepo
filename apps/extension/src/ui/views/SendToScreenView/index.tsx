@@ -1,6 +1,7 @@
 import { SendToScreen } from '@onflow/frw-screens';
+import { useSendStore } from '@onflow/frw-stores';
 import { type RecipientData } from '@onflow/frw-ui';
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
 import { type Contact } from '@/shared/types';
@@ -22,8 +23,19 @@ const SendToScreenView = () => {
   } = useContacts();
   const { childAccounts, currentWallet, userInfo, evmAddress } = useProfiles();
 
-  // Get token ID from URL params or default to 'flow'
-  const tokenId = params.id || 'flow';
+  // Access send store state
+  const { selectedToken, currentStep } = useSendStore();
+
+  // Get token ID from URL params, selected token, or default to 'flow'
+  const tokenId = params.id || selectedToken?.symbol?.toLowerCase() || 'flow';
+
+  // If accessed from select-tokens flow, check for selected token
+  useEffect(() => {
+    if (window.location.pathname === '/dashboard/sendtoscreen' && !selectedToken) {
+      // Redirect back to token selection if accessed via select-tokens flow but no token selected
+      navigate('/dashboard/select-tokens');
+    }
+  }, [selectedToken, navigate]);
 
   // Convert extension contacts to RecipientData format
   const convertContactToRecipient = useCallback((contact: Contact): RecipientData => {
@@ -172,7 +184,14 @@ const SendToScreenView = () => {
         width: '100%',
       }}
     >
-      <LLHeader title={chrome.i18n.getMessage('Send_to')} help={true} />
+      <LLHeader
+        title={
+          selectedToken
+            ? `Send ${selectedToken.name || selectedToken.symbol}`
+            : chrome.i18n.getMessage('Send_to')
+        }
+        help={true}
+      />
       <div style={{ flex: 1, overflow: 'hidden' }}>
         <SendToScreen {...screenProps} />
       </div>

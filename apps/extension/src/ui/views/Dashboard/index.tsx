@@ -52,7 +52,7 @@ const Dashboard = () => {
         />
         {/* Button Row */}
         <ButtonRow
-          onSendClick={() => navigate('/dashboard/token/flow/send')}
+          onSendClick={() => navigate('/dashboard/select-tokens')}
           onReceiveClick={() => navigate('/dashboard/wallet/deposit')}
           onSwapClick={() => window.open(swapLink, '_blank', 'noopener,noreferrer')}
           onBuyClick={() => setShowOnRamp(true)}
