@@ -17,12 +17,9 @@ import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivityNftDetailBinding
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
-import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.page.collection.CollectionActivity
-import com.flowfoundation.wallet.page.evm.EnableEVMActivity
-import com.flowfoundation.wallet.page.nft.move.MoveNFTDialog
 import com.flowfoundation.wallet.page.nft.nftdetail.model.NftDetailModel
 import com.flowfoundation.wallet.page.nft.nftdetail.widget.NftMorePopupMenu
 import com.flowfoundation.wallet.page.nft.nftlist.desc
@@ -31,7 +28,6 @@ import com.flowfoundation.wallet.page.nft.nftlist.isDomain
 import com.flowfoundation.wallet.page.nft.nftlist.title
 import com.flowfoundation.wallet.page.nft.nftlist.video
 import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollectionManager
-import com.flowfoundation.wallet.page.send.nft.NftSendAddressDialog
 import com.flowfoundation.wallet.utils.ScreenUtils
 import com.flowfoundation.wallet.utils.downloadToGallery
 import com.flowfoundation.wallet.utils.exoplayer.createExoPlayer
@@ -49,6 +45,10 @@ import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import jp.wasabeef.glide.transformations.BlurTransformation
+import com.flowfoundation.wallet.ReactNativeDemoActivity
+import com.flowfoundation.wallet.bridge.toRNBridgeNFTModel
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
+
 import java.net.URL
 import kotlin.math.min
 
@@ -108,21 +108,8 @@ class NftDetailPresenter(
                     }).show() }
             }
             sendButton.setOnClickListener {
-                val uniqueId = nft?.uniqueId() ?: return@setOnClickListener
-                NftSendAddressDialog.newInstance(uniqueId, fromAddress ?: WalletManager
-                    .selectedWalletAddress(), nft?.getCollectionContractId(), nft?.contractName())
-                    .show(activity.supportFragmentManager, "")
-            }
-
-            moveButton.setOnClickListener {
-                nft?.let {
-                    if (EVMWalletManager.haveEVMAddress() || WalletManager.haveChildAccount()) {
-                        MoveNFTDialog.show(activity.supportFragmentManager, it.uniqueId(), it.getCollectionContractId(),
-                            it.contractName(), fromAddress ?: WalletManager.selectedWalletAddress())
-                    } else {
-                        EnableEVMActivity.launch(activity)
-                    }
-                }
+                val nftModel = nft?.toRNBridgeNFTModel() ?: return@setOnClickListener
+                ReactNativeDemoActivity.launchNFTSend(activity, listOf(nftModel))
             }
         }
     }
@@ -176,22 +163,15 @@ class NftDetailPresenter(
             ioScope { updateSelectionState() }
 
             sendButton.setVisible(!nft.isDomain() && AppConfig.showNFTTransfer())
-            
+
             val canBridgeToFlow = nft.canBridgeToFlow()
             val canBridgeToEVM = nft.canBridgeToEVM()
             val isChildAccountSelected = WalletManager.isChildAccountSelected()
             val haveChildAccount = WalletManager.haveChildAccount()
             val hasFlowIdentifier = !nft.flowIdentifier.isNullOrBlank()
-            
+
             // Require flowIdentifier for any bridge transfer functionality
             val bridgeCapable = hasFlowIdentifier && (canBridgeToFlow || canBridgeToEVM)
-            val shouldShowMoveButton = bridgeCapable || isChildAccountSelected || haveChildAccount
-            
-            if (shouldShowMoveButton) {
-                moveButton.visible()
-            } else {
-                moveButton.gone()
-            }
 
             if (nft.isERC1155NFT()) {
                 groupAmount.visible()
@@ -222,10 +202,6 @@ class NftDetailPresenter(
                 this.isEnabled = isEnable
                 this.alpha = if (isEnable) 1f else 0.5f
             }
-            moveButton.apply {
-                this.isEnabled = isEnable
-                this.alpha = if (isEnable) 1f else 0.5f
-            }
         }
     }
 
@@ -247,8 +223,8 @@ class NftDetailPresenter(
     private fun bindCover(nft: Nft) {
         // Smart load with SVG support for cover image
         val svgWebView = SVGUtils.replaceImageViewWithSvgWebView(
-            binding.coverView, 
-            nft.getNFTCover() as? String, 
+            binding.coverView,
+            nft.getNFTCover() as? String,
             true
         )
         if (svgWebView != null) {

@@ -14,6 +14,8 @@ plugins {
 //    id 'com.google.ar.sceneform.plugin'
 }
 
+apply from: "../../node_modules/@revopush/react-native-code-push/android/codepush.gradle"
+
 def properties = new Properties()
 def inputStream = project.rootProject.file('local.properties').newDataInputStream()
 properties.load(inputStream)
@@ -74,6 +76,7 @@ android {
         buildConfigField("String", "INSTABUG_RN_TOKEN_PROD", "\"${apiKeys.getProperty('INSTABUG_RN_TOKEN_PROD')}\"")
         buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyProd}\"")
         buildConfigField("String", "CODEPUSH_KEY", "\"${codePushKeyProduction}\"")
+        resValue "string", "CodePushDeploymentKey", "${codePushKeyProduction}"
         manifestPlaceholders = new HashMap<String, String>()
         manifestPlaceholders.put("dropboxKey", dropboxKeyProd)
     }
@@ -116,6 +119,7 @@ android {
             applicationIdSuffix = ".dev"
             buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyDev}\"")
             buildConfigField("String", "CODEPUSH_KEY", "\"${codePushKeyStaging}\"")
+            resValue "string", "CodePushDeploymentKey", "${codePushKeyStaging}"
             manifestPlaceholders = [dropboxKey: dropboxKeyDev]
             ndk {
                 debugSymbolLevel 'NONE'
@@ -129,6 +133,7 @@ android {
             signingConfig signingConfigs.release
             matchingFallbacks = ['debug', 'qa', 'release'] as List<String>
             buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyProd}\"")
+            resValue "string", "CodePushDeploymentKey", "${codePushKeyProduction}"
             manifestPlaceholders = [dropboxKey: dropboxKeyProd]
         }
 
@@ -149,6 +154,7 @@ android {
                 testers = mergedTesters
             }
             buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyDev}\"")
+            resValue "string", "CodePushDeploymentKey", "${codePushKeyStaging}"
             manifestPlaceholders = [dropboxKey: dropboxKeyDev]
         }
 
@@ -170,6 +176,7 @@ android {
                 mappingFileUploadEnabled true
             }
             buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyProd}\"")
+            resValue "string", "CodePushDeploymentKey", "${codePushKeyProduction}"
             manifestPlaceholders = [dropboxKey: dropboxKeyProd]
         }
     }

@@ -28,6 +28,7 @@ import com.flowfoundation.wallet.page.send.transaction.SelectSendAddressViewMode
 import com.flowfoundation.wallet.page.send.transaction.adapter.TransactionSendPageAdapter
 import com.flowfoundation.wallet.page.send.transaction.model.TransactionSendModel
 import com.flowfoundation.wallet.ReactNativeDemoActivity
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.utils.addressPattern
 import com.flowfoundation.wallet.utils.evmAddressPattern
@@ -195,12 +196,7 @@ class TransactionSendPresenter(
 
     private fun launchSendAmountActivity(address: AddressBookContact) {
         // Launch React Native send workflow instead of native SendAmountActivity
-        ReactNativeDemoActivity.launch(
-            activity,
-            "SelectTokens",
-            WalletManager.selectedWalletAddress().toAddress(),
-            if (isTestnet()) "testnet" else "mainnet"
-        )
+        ReactNativeDemoActivity.launchWalletSend(activity, null, address.address)
     }
 
     private fun onSearchFocusChange(hasFocus: Boolean) {
