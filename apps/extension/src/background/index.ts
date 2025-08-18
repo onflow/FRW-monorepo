@@ -43,8 +43,7 @@ import { setEnvironmentBadge } from './utils/setEnvironmentBadge';
 
 const { PortMessage } = Message;
 
-const chromeWindow = await chrome.windows.getCurrent();
-
+let chromeWindow: chrome.windows.Window | null = null;
 let appStoreLoaded = false;
 
 // API URLs
@@ -251,15 +250,34 @@ declare global {
   }
 }
 
-// for popup operate
-chromeWindow['wallet'] = new Proxy(walletController, {
-  get(target, propKey, receiver) {
-    if (!appStoreLoaded) {
-      throw ethErrors.provider.disconnected();
+// Initialize chrome window and wallet proxy
+async function initializeChromeWindow() {
+  try {
+    chromeWindow = await chrome.windows.getCurrent();
+    // For popup operate - attach wallet to global context
+    if (chromeWindow) {
+      (chromeWindow as any)['wallet'] = new Proxy(walletController, {
+        get(target, propKey, receiver) {
+          if (!appStoreLoaded) {
+            throw ethErrors.provider.disconnected();
+          }
+          return Reflect.get(target, propKey, receiver);
+        },
+      });
     }
-    return Reflect.get(target, propKey, receiver);
-  },
-});
+  } catch (error) {
+    console.warn('Failed to get current window:', error);
+    // Fallback: attach to globalThis for service worker context
+    (globalThis as any)['wallet'] = new Proxy(walletController, {
+      get(target, propKey, receiver) {
+        if (!appStoreLoaded) {
+          throw ethErrors.provider.disconnected();
+        }
+        return Reflect.get(target, propKey, receiver);
+      },
+    });
+  }
+}
 
 const findPath = (service) => {
   switch (service.type) {
@@ -409,6 +427,9 @@ function onMessage(msg, port) {
 
 // Call it when extension starts
 setEnvironmentBadge();
+
+// Initialize chrome window and wallet proxy
+initializeChromeWindow();
 
 function saveTimestamp() {
   const timestamp = new Date().toISOString();

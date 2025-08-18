@@ -1,9 +1,10 @@
 <!doctype html>
-<html translate="no" style="height: 100%; overflow: hidden; display: flex; justify-content: center">
+<html translate="no" style="height: 100%; overflow: hidden">
   <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="google" content="notranslate" />
+    <link rel="icon" href="/images/icon-64.png" />
     <meta
       name="viewport"
       content="initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover"
@@ -19,10 +20,6 @@
       .root-container {
         height: 100%;
         overflow: hidden;
-      }
-
-      #root {
-        height: 100%;
       }
 
       /* Reset CSS */
@@ -124,15 +121,13 @@
 
       .h-full {
         height: 100%;
-        width: 100%;
-        max-width: 400px;
         margin: 0px;
       }
     </style>
   </head>
 
-  <body class="h-full" style="background-color: #121212">
-    <div id="root" class="overflow-x-hidden overflow-y-auto"></div>
-    <script type="module" src="index.tsx"></script>
+  <body class="h-full">
+    <div id="root" class="root-container"></div>
+    <script type="module" src="./ui/index.tsx"></script>
   </body>
 </html>

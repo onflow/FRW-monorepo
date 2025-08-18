@@ -23,16 +23,16 @@
       "48": "images/icon-48.png",
       "128": "images/icon-128.png"
     },
-    "default_popup": "popup.html",
+    "default_popup": "src/ui/popup.html",
     "default_title": "Flow Wallet"
   },
   "author": "https://core.flow.com/",
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "src/background/index.ts"
   },
   "content_scripts": [
     {
-      "js": ["content-script.js", "script.js"],
+      "js": ["src/content-script/index.ts", "src/content-script/script.js"],
       "matches": ["file://*/*", "http://*/*", "https://*/*"],
       "all_frames": false
     }
@@ -46,17 +46,17 @@
     {
       "resources": [
         "node_modules/@trustwallet/wallet-core/dist/lib/wallet-core.wasm",
-        "pageProvider.js",
+        "src/content-script/pageProvider/eth/index.ts",
         "user-media-permission.html"
       ],
       "matches": ["<all_urls>"]
     },
     {
-      "resources": ["script.js"],
+      "resources": ["src/content-script/script.js"],
       "matches": ["<all_urls>"]
     },
     {
-      "resources": ["index.html"],
+      "resources": ["src/ui/index.html"],
       "matches": ["<all_urls>"]
     }
   ],
