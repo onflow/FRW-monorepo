@@ -26,19 +26,25 @@ I'll handle the following steps automatically:
    - Ensure current branch is different from target branch
    - Validate target branch exists
 
-2. **Commit Handling**:
+2. **Issue Integration** (Optional):
+   - Search for related issues based on branch name or commit messages
+   - Auto-link to existing issues using keywords like "fixes", "closes"
+   - Suggest creating a new issue if none found but changes are substantial
+
+3. **Commit Handling**:
    - Check for uncommitted changes
    - Stage and commit any pending changes with appropriate message
    - Generate meaningful commit messages based on file changes
 
-3. **PR Creation**:
+4. **PR Creation**:
    - Analyze commits between current branch and target
    - Generate comprehensive PR title and description
    - Include changed files list and test checklist
+   - Auto-link related issues in PR description
    - Push branch to origin if needed
    - Create PR using GitHub CLI
 
-4. **Validation Steps**:
+5. **Validation Steps**:
    - Run `pnpm build:packages` to ensure build passes
    - Run `pnpm typecheck` for TypeScript validation
    - Run `pnpm lint` for code quality

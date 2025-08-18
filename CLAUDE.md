@@ -43,10 +43,17 @@ separation between View, ViewModel, Network, and Model layers.
 
 ### Custom Claude Commands
 
-- `/create-pr` - Automated PR creation to dev branch with validation
+- `/create-issue` - Automated GitHub issue creation with intelligent formatting
+  - `/create-issue` - Auto-generate issue from current changes
+  - `/create-issue "Add dark mode"` - Custom title with auto description
+  - `/create-issue "Fix bug" "Description here"` - Custom title and description
+
+- `/create-pr` - Automated PR creation to dev branch with validation and issue
+  linking
   - `/create-pr` - Create PR to dev with auto-generated title
   - `/create-pr main` - Create PR to main branch
   - `/create-pr dev "feat: new feature"` - Create PR with custom title
+  - Automatically searches and links related GitHub issues
 
 ## Tamagui V4 Shorthands
 
