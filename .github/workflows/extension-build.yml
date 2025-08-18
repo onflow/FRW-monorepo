@@ -147,7 +147,14 @@ jobs:
         run: pnpm -F frw-extension test:run
 
       - name: Build extension
-        run: pnpm -F frw-extension build:dev-ci
+        run: |
+          if [[ "${{ needs.determine-env.outputs.env_name }}" == "development" || "${{ needs.determine-env.outputs.env_name }}" == "staging" ]]; then
+            echo "Building for development/staging environment"
+            pnpm -F frw-extension build:dev-ci
+          else
+            echo "Building for production environment"
+            pnpm -F frw-extension build:ci
+          fi
         env:
           CI: true
           COMMIT_SHA: ${{ github.sha }}
