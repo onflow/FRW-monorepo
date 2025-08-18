@@ -8,6 +8,8 @@ import svgr from 'vite-plugin-svgr';
 import topLevelAwait from 'vite-plugin-top-level-await';
 import wasm from 'vite-plugin-wasm';
 
+import manifest from './manifest.config';
+
 // Function to load environment variables similar to dotenv-webpack
 function loadEnvFile(filePath: string) {
   const env: Record<string, string> = {};
@@ -26,19 +28,6 @@ function loadEnvFile(filePath: string) {
   return env;
 }
 
-// Function to get the manifest based on build environment
-function getManifest(buildEnv: string) {
-  const manifestPath =
-    buildEnv === 'PRO' ? '_raw/manifest/manifest.pro.json' : '_raw/manifest/manifest.dev.json';
-
-  try {
-    return JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
-  } catch {
-    // Fallback to default manifest
-    return JSON.parse(fs.readFileSync('_raw/manifest.json', 'utf-8'));
-  }
-}
-
 export default defineConfig(({ mode }) => {
   // Load environment variables
   const viteEnv = loadEnv(mode, process.cwd(), '');
@@ -53,12 +42,9 @@ export default defineConfig(({ mode }) => {
   const isDev = mode === 'development';
   const isProd = mode === 'production';
 
-  // Get package version
-  const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf-8'));
-
   return {
     plugins: [
-      // Node.js polyfills
+      // Node.js polyfills - essential for crypto packages
       nodePolyfills({
         include: ['buffer', 'process', 'crypto', 'stream', 'events', 'path', 'url', 'os', 'util'],
         globals: {
@@ -66,11 +52,12 @@ export default defineConfig(({ mode }) => {
           global: true,
           process: true,
         },
-        // Ensure Buffer is injected at the top level
         protocolImports: true,
       }),
+
       // React plugin
       react(),
+
       // SVGR plugin for SVG imports
       svgr({
         svgrOptions: {
@@ -80,22 +67,19 @@ export default defineConfig(({ mode }) => {
           titleProp: true,
         },
       }),
-      // WASM support
+
+      // WASM support - essential for @trustwallet/wallet-core
       wasm(),
       topLevelAwait(),
-      // CRXJS plugin for Chrome Extension
-      crx({
-        manifest: getManifest(buildEnv),
-      }),
+
+      // CRXJS plugin for Chrome Extension - this handles everything!
+      crx({ manifest }),
     ],
 
     define: {
       'process.env.BUILD_ENV': JSON.stringify(buildEnv),
       'process.env.NODE_ENV': JSON.stringify(mode),
-      'process.env.version': JSON.stringify(`version: ${packageJson.version}`),
-      'process.env.release': JSON.stringify(packageJson.version),
       global: 'globalThis',
-      // Ensure Buffer is globally available
       Buffer: 'Buffer',
       // Pass through all environment variables
       ...Object.keys(env).reduce(
@@ -121,10 +105,9 @@ export default defineConfig(({ mode }) => {
         '@onflow/frw-workflow': path.resolve(__dirname, '../../packages/workflow/src/index.ts'),
         '@onflow/frw-context': path.resolve(__dirname, '../../packages/context/src/index.ts'),
         '@onflow/frw-icons': path.resolve(__dirname, '../../packages/icons/src/web.ts'),
-        // Additional aliases from webpack
+        // Node.js polyfills
         moment: 'dayjs',
         'cross-fetch': 'cross-fetch',
-        // Polyfills (handled by node-polyfills plugin but kept for compatibility)
         stream: 'stream-browserify',
         crypto: 'crypto-browserify',
         os: 'os-browserify/browser',
@@ -141,7 +124,6 @@ export default defineConfig(({ mode }) => {
       target: 'esnext',
       minify: isProd,
       sourcemap: isDev ? 'inline' : false,
-      // Disable file size warnings for extensions
       chunkSizeWarningLimit: 2000,
     },
 
@@ -168,13 +150,10 @@ export default defineConfig(({ mode }) => {
       exclude: ['@trustwallet/wallet-core'],
     },
 
-    // Handle WebAssembly and other special file types
+    // Handle WebAssembly files
     assetsInclude: ['**/*.wasm', '**/*.md'],
 
-    // Copy WASM file to a more accessible location for Chrome extension
-    publicDir: 'public',
-
-    // Experiments equivalent
+    // Support for top-level await
     esbuild: {
       target: 'esnext',
       supported: {
