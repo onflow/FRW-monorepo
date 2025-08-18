@@ -61,6 +61,7 @@ export * from './components/MultipleNFTsPreview';
 export * from './components/TransactionFeeSection';
 export * from './components/ToAccountSection';
 export * from './components/StorageWarning';
+export * from './components/ErrorDialog';
 export * from './foundation/SegmentedControl';
 
 export * from './components/TokenAmountInput';
