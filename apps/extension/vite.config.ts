@@ -28,6 +28,41 @@ function loadEnvFile(filePath: string) {
   return env;
 }
 
+// Plugin to inject Buffer at the top of every module
+function injectBufferPlugin() {
+  return {
+    name: 'inject-buffer-global',
+    transform(code: string, id: string) {
+      // Skip node_modules and certain files
+      if (id.includes('node_modules') || id.includes('virtual:')) {
+        return null;
+      }
+
+      // Only inject in JS/TS files
+      if (!/\.(js|jsx|ts|tsx|mjs|cjs)$/.test(id)) {
+        return null;
+      }
+
+      // Check if Buffer is used in the code
+      if (code.includes('Buffer.') || code.includes('Buffer[')) {
+        // Inject Buffer import at the beginning
+        const injection = `
+import { Buffer } from 'buffer';
+if (typeof globalThis.Buffer === 'undefined') {
+  globalThis.Buffer = Buffer;
+}
+if (typeof window !== 'undefined' && typeof window.Buffer === 'undefined') {
+  window.Buffer = Buffer;
+}
+`;
+        return injection + code;
+      }
+
+      return null;
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => {
   // Load environment variables
   const viteEnv = loadEnv(mode, process.cwd(), '');
@@ -44,6 +79,9 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [
+      // Inject Buffer at the module level
+      injectBufferPlugin(),
+
       // Node.js polyfills - this should handle Buffer properly
       nodePolyfills({
         // Include all necessary Node.js modules
@@ -82,8 +120,9 @@ export default defineConfig(({ mode }) => {
     define: {
       'process.env.BUILD_ENV': JSON.stringify(buildEnv),
       'process.env.NODE_ENV': JSON.stringify(mode),
-      // Ensure global and Buffer are available
+      // Ensure global and Buffer are available everywhere
       global: 'globalThis',
+      Buffer: 'Buffer',
       // Pass through all environment variables
       ...Object.keys(env).reduce(
         (acc, key) => {
@@ -149,8 +188,14 @@ export default defineConfig(({ mode }) => {
         'ethereum-cryptography',
         'crypto-browserify',
         'stream-browserify',
+        'hdkey',
+        'bip39',
+        'ethereumjs-util',
+        'secp256k1',
       ],
       exclude: ['@trustwallet/wallet-core'],
+      // Force pre-bundling of Buffer polyfill
+      force: true,
     },
 
     // Handle WebAssembly files
