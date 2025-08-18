@@ -1,0 +1,88 @@
+{
+  "navigation": {
+    "send": "Enviar",
+    "sendTo": "Enviar a",
+    "sending": "Enviando",
+    "selectTokens": "Seleccionar Tokens",
+    "colorDemo": "Demo de Colores"
+  },
+  "common": {
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "back": "Atrás",
+    "close": "Cerrar",
+    "done": "Hecho",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito"
+  },
+  "send": {
+    "myAccounts": "Mis Cuentas",
+    "recent": "Reciente",
+    "addressBook": "Libreta de Direcciones",
+    "sendTo": {
+      "title": "Enviar a"
+    },
+    "searchAddress": "Buscar dirección o contacto...",
+    "selectedToken": "Token Seleccionado",
+    "noAccounts": {
+      "title": "Sin Cuentas",
+      "message": "Aún no tienes ninguna cuenta."
+    },
+    "noRecent": {
+      "title": "Sin Destinatarios Recientes",
+      "message": "No has enviado a nadie recientemente."
+    },
+    "noContacts": {
+      "title": "Sin Contactos",
+      "message": "Tu libreta de direcciones está vacía."
+    },
+    "noRecipients": "No se encontraron destinatarios",
+    "selectToken": "Seleccionar Token",
+    "selectRecipient": "Seleccionar Destinatario",
+    "enterAmount": "Ingresar Cantidad",
+    "reviewTransaction": "Revisar Transacción",
+    "transactionFee": "Tarifa de Transacción",
+    "total": "Total",
+    "balance": "Saldo",
+    "available": "Disponible",
+    "insufficient": "Saldo Insuficiente",
+    "recipient": "Destinatario",
+    "from": "De",
+    "to": "Para",
+    "amount": "Cantidad",
+    "asset": "Activo",
+    "confirm": "Confirmar Transacción",
+    "sending": "Enviando...",
+    "sent": "Transacción Enviada",
+    "failed": "Transacción Fallida",
+    "searchRecipients": "Buscar destinatarios...",
+    "recentRecipients": "Destinatarios Recientes",
+    "contactsList": "Contactos",
+    "enterAddress": "Ingresar dirección Flow",
+    "invalidAddress": "Dirección inválida",
+    "sameAddress": "No se puede enviar a la misma dirección",
+    "selectNFTs": "Seleccionar NFTs",
+    "selectedNFTs": "NFTs Seleccionados",
+    "nftDetails": "Detalles del NFT",
+    "collectionName": "Colección",
+    "tokenId": "ID del Token",
+    "properties": "Propiedades",
+    "description": "Descripción",
+    "creator": "Creador"
+  },
+  "errors": {
+    "networkError": "Ocurrió un error de red",
+    "invalidInput": "Entrada inválida",
+    "transactionFailed": "La transacción falló",
+    "insufficientFunds": "Fondos insuficientes",
+    "addressNotFound": "Dirección no encontrada",
+    "nftNotFound": "NFT no encontrado",
+    "tokenNotSupported": "Token no soportado",
+    "unauthorized": "Acceso no autorizado",
+    "timeout": "Tiempo de espera agotado",
+    "unknown": "Ocurrió un error desconocido"
+  }
+}

@@ -215,6 +215,11 @@ class ExtensionPlatformImpl implements PlatformSpec {
     }
   }
 
+  getNavigation() {
+    // Return the extension navigation implementation
+    return require('./ExtensionNavigation').extensionNavigation;
+  }
+
   // Helper methods
   private getAuthorization() {
     return async (account: any) => {

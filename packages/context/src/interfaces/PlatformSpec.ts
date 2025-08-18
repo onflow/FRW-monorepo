@@ -5,6 +5,7 @@ import type {
   WalletAccountsResponse,
 } from '@onflow/frw-types';
 
+import type { Navigation } from './Navigation';
 import type { Storage } from './Storage';
 
 // Re-export CadenceService interceptor types
@@ -29,8 +30,9 @@ export interface PlatformSpec {
   getGoApiEndpoint(): string;
   getInstabugToken(): string;
 
-  // Storage access
+  // Storage and navigation access
   getStorage(): Storage;
+  getNavigation(): Navigation;
 
   // Cryptographic operations
   // Turbo Modules do not support Uint8Array or ArrayBuffer, so we need to convert to hex string instead

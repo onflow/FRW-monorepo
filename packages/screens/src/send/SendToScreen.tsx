@@ -1,3 +1,4 @@
+import { useNavigation } from '@onflow/frw-context';
 import { sendSelectors, useSendStore } from '@onflow/frw-stores';
 import {
   SearchableTabLayout,
@@ -8,6 +9,7 @@ import {
 } from '@onflow/frw-ui';
 import React, { useCallback, useEffect, useState } from 'react';
 
+import { withScreensI18n } from '../lib/withScreensI18n';
 import type { BaseScreenProps } from '../types';
 
 export type RecipientTabType = 'accounts' | 'recent' | 'contacts';
@@ -25,14 +27,14 @@ interface SendToScreenProps extends BaseScreenProps {
   loadContactsData?: () => Promise<RecipientData[]>;
 }
 
-export function SendToScreen({
-  navigation,
+function SendToScreenBase({
   bridge,
   t,
   loadAccountsData,
   loadRecentData,
   loadContactsData,
 }: SendToScreenProps) {
+  const navigation = useNavigation();
   const TABS: TabConfig[] = [
     { type: 'accounts', title: t('send.myAccounts') },
     { type: 'recent', title: t('send.recent') },
@@ -247,3 +249,6 @@ export function SendToScreen({
     </SearchableTabLayout>
   );
 }
+
+// Export wrapped component with i18n support
+export const SendToScreen = withScreensI18n(SendToScreenBase);

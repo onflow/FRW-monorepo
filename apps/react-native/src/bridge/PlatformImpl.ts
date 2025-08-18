@@ -192,6 +192,11 @@ class PlatformImpl implements PlatformSpec {
       return { config, response };
     });
   }
+
+  getNavigation() {
+    // Return the navigation implementation - will be set up separately
+    return require('./ReactNativeNavigation').reactNativeNavigation;
+  }
 }
 
 export const storage = new MMKV();

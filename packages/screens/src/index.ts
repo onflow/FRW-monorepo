@@ -10,5 +10,12 @@ export * from './send/SendMultipleNFTsScreen';
 // Export types
 export * from './types';
 
+// Export i18n utilities
+export * from './lib/withScreensI18n';
+export { default as screensI18n, resources as screensTranslations } from './lib/i18n';
+
+// Export navigation hook for easy access from screens
+export { useNavigation } from '@onflow/frw-context';
+
 // Re-export commonly used types from UI package
 export type { TokenCardProps, SegmentedControlProps } from '@onflow/frw-ui';

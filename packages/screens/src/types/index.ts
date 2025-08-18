@@ -2,16 +2,11 @@
  * Platform abstraction interfaces for screen package
  */
 
-// Platform bridge interface
+// Platform bridge interface - for screen-specific functionality
 export interface PlatformBridge {
   getSelectedAddress(): string | null;
   getNetwork(): string;
   getCoins?(): any[] | null;
-}
-
-// Navigation interface
-export interface NavigationProp {
-  navigate(screen: string, params?: Record<string, unknown>): void;
 }
 
 // Translation interface
@@ -26,7 +21,6 @@ export interface ThemeContext {
 
 // Common screen props
 export interface BaseScreenProps {
-  navigation: NavigationProp;
   bridge: PlatformBridge;
   t: TranslationFunction;
 }
