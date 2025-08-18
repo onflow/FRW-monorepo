@@ -41,6 +41,7 @@ export interface SkeletonProps {
   height?: number | string;
   borderRadius?: number | string;
   animated?: boolean;
+  [key: string]: any; // Allow additional props like mb, mt, etc.
 }
 
 export interface BackgroundWrapperProps {
