@@ -15,9 +15,9 @@ export const GAS_LIMITS = {
 /**
  * Flow token contract addresses for different networks
  */
-const FLOW_TOKEN_ADDRESSES = {
-  mainnet: 'A.1654653399040a61.FlowToken',
-  testnet: 'A.7e60df042a9c0868.FlowToken',
+const FLOW_TOKEN_VAULT = {
+  mainnet: 'A.1654653399040a61.FlowToken.Vault',
+  testnet: 'A.7e60df042a9c0868.FlowToken.Vault',
 } as const;
 
 /**
@@ -26,12 +26,30 @@ const FLOW_TOKEN_ADDRESSES = {
  * @returns True if the identifier is for Flow token, false otherwise
  */
 export const isFlowToken = (flowIdentifier: string): boolean => {
-  return flowIdentifier.includes('.FlowToken.Vault');
+  return Object.values(FLOW_TOKEN_VAULT).includes(flowIdentifier as any);
 };
 
 export const isVaultIdentifier = (flowIdentifier: string): boolean => {
-  const vaultRegex = /^A\.[0-9a-fA-F]{16}\.[a-zA-Z0-9_]+\.(Vault|NFT)$/;
+  const vaultRegex = /^A\.[0-9a-fA-F]{16}\.[a-zA-Z0-9_]+\.(Vault)$/;
   return vaultRegex.test(flowIdentifier);
+};
+
+export const isNFTIdentifier = (flowIdentifier: string): boolean => {
+  const nftRegex = /^A\.[0-9a-fA-F]{16}\.[a-zA-Z0-9_]+\.(NFT)$/;
+  return nftRegex.test(flowIdentifier);
+};
+
+export const isCollectionIdentifier = (flowIdentifier: string): boolean => {
+  const collectionRegex = /^A\.[0-9a-fA-F]{16}\.[a-zA-Z0-9_]+\.(Collection)$/;
+  return collectionRegex.test(flowIdentifier);
+};
+
+export const isFlowIdentifier = (flowIdentifier: string): boolean => {
+  return (
+    isVaultIdentifier(flowIdentifier) ||
+    isNFTIdentifier(flowIdentifier) ||
+    isCollectionIdentifier(flowIdentifier)
+  );
 };
 
 /**
@@ -39,8 +57,8 @@ export const isVaultIdentifier = (flowIdentifier: string): boolean => {
  * @param network - The network ('mainnet' or 'testnet')
  * @returns The Flow token address for the specified network
  */
-export const getFlowTokenAddress = (network: 'mainnet' | 'testnet'): string => {
-  return FLOW_TOKEN_ADDRESSES[network];
+export const getFlowTokenVault = (network: 'mainnet' | 'testnet'): string => {
+  return FLOW_TOKEN_VAULT[network];
 };
 
 /**
