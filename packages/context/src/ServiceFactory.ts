@@ -62,10 +62,14 @@ createServices.reset = (): void => {
 };
 
 /**
- * Internal function to create service container
- * Used by both createServices and getGlobalServices
+ * Create service container for React context (non-singleton)
+ * This doesn't affect global state and is suitable for React components
+ *
+ * @internal This function is used by ServiceProvider and should not be called directly
+ * @param platform - Platform implementation
+ * @returns Service container with initialized services (independent instance)
  */
-function createServiceContainer(platform: PlatformSpec): ServiceContainer {
+export function createServiceContainer(platform: PlatformSpec): ServiceContainer {
   // Configure API endpoints from platform
   configureApiEndpoints(
     platform.getApiEndpoint(),

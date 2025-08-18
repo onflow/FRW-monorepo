@@ -4,7 +4,7 @@ import { createContext, useContext, useMemo, type ReactNode } from 'react';
 
 import type { PlatformSpec } from './interfaces/PlatformSpec';
 import type { Storage } from './interfaces/Storage';
-import { createServices } from './ServiceFactory';
+import { createServiceContainer } from './ServiceFactory';
 
 /**
  * Service context value - Contains all initialized services
@@ -35,7 +35,7 @@ export interface ServiceProviderProps {
  * Platform should be pre-configured with all necessary implementations
  */
 export const ServiceProvider = ({ platform, children }: ServiceProviderProps) => {
-  const services = useMemo(() => createServices(platform), [platform]);
+  const services = useMemo(() => createServiceContainer(platform), [platform]);
 
   return <ServiceReactContext.Provider value={services}>{children}</ServiceReactContext.Provider>;
 };
