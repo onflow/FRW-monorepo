@@ -1,21 +1,18 @@
+import { colorTokens as packageColorTokens, themes as packageThemes } from '@onflow/frw-ui';
 import { defaultConfig } from '@tamagui/config/v4';
 import { createTamagui } from 'tamagui';
 
-import {
-  extensionColorTokens,
-  extensionRadius,
-  extensionSize,
-  extensionSpace,
-  extensionThemes,
-  extensionZIndex,
-} from './extension-theme';
+import { extensionRadius, extensionSize, extensionSpace, extensionZIndex } from './extension-theme';
 
 const extensionTamaguiConfig = createTamagui({
   ...defaultConfig,
-  themes: extensionThemes,
+  // Use package themes for consistent colors
+  themes: packageThemes,
   tokens: {
     ...defaultConfig.tokens,
-    ...extensionColorTokens,
+    // Use package color tokens
+    ...packageColorTokens,
+    // Use extension-specific sizing tokens for compact UI
     size: extensionSize,
     space: extensionSpace,
     zIndex: extensionZIndex,

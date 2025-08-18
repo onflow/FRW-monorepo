@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 import { type Contact, ContactType, type WalletAddress } from '@/shared/types';
 import { isValidEthereumAddress, withPrefix } from '@/shared/utils';
@@ -64,9 +64,29 @@ export function useContacts() {
     };
   }, [wallet]);
 
-  useEffect(() => {
-    // Handle changes from the useProfiles hook
+  // Use refs to store previous serialized state for comparison
+  const prevStateRef = useRef<string>('');
 
+  useEffect(() => {
+    // Serialize current state for comparison
+    const currentState = JSON.stringify({
+      walletList,
+      mainAddress,
+      childAccountsProfile,
+      evmAddress,
+      evmWallet: evmWallet
+        ? { name: evmWallet.name, icon: evmWallet.icon, id: evmWallet.id }
+        : null,
+    });
+
+    // Only update if state has actually changed
+    if (currentState === prevStateRef.current) {
+      return;
+    }
+
+    prevStateRef.current = currentState;
+
+    // Handle changes from the useProfiles hook
     // List out accounts that are part of this profile
     setCadenceAccounts(
       walletList
@@ -105,6 +125,7 @@ export function useContacts() {
             }))
         : []
     );
+
     // List out child accounts
     setChildAccounts(
       childAccountsProfile
@@ -132,6 +153,8 @@ export function useContacts() {
         contact_name: evmWallet.name || '',
       };
       setEvmAccounts([evmData]);
+    } else {
+      setEvmAccounts([]);
     }
   }, [childAccountsProfile, evmAddress, evmWallet, mainAddress, walletList]);
 

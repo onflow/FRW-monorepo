@@ -100,6 +100,29 @@ class ExtensionPlatformImpl implements PlatformSpec {
     return await this.walletController.getSelectedAccount();
   }
 
+  // Extended data access methods for SendToScreen
+  async getAddressBookContacts(): Promise<any[]> {
+    if (!this.walletController) return [];
+    return await this.walletController.getAddressBook();
+  }
+
+  async getRecent(): Promise<any[]> {
+    if (!this.walletController) return [];
+    return await this.walletController.getRecent();
+  }
+
+  async searchUsername(username: string): Promise<any[]> {
+    if (!this.walletController) return [];
+    return await this.walletController.searchByUsername(username);
+  }
+
+  // Get account data from profiles/hooks
+  getAccountsData(): any[] {
+    // This will be set by the component when it has the data
+    // For now, return empty array - component will override this
+    return [];
+  }
+
   // CadenceService configuration
   configureCadenceService(cadenceService: any): void {
     // Configure FCL and other Cadence-related services for extension
