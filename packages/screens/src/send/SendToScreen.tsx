@@ -19,9 +19,20 @@ interface TabConfig {
 
 interface SendToScreenProps extends BaseScreenProps {
   theme?: { isDark: boolean };
+  // Optional data loading functions that platforms can provide
+  loadAccountsData?: () => Promise<RecipientData[]>;
+  loadRecentData?: () => Promise<RecipientData[]>;
+  loadContactsData?: () => Promise<RecipientData[]>;
 }
 
-export function SendToScreen({ navigation, bridge, t }: SendToScreenProps) {
+export function SendToScreen({
+  navigation,
+  bridge,
+  t,
+  loadAccountsData,
+  loadRecentData,
+  loadContactsData,
+}: SendToScreenProps) {
   const TABS: TabConfig[] = [
     { type: 'accounts', title: t('send.myAccounts') },
     { type: 'recent', title: t('send.recent') },
@@ -73,40 +84,85 @@ export function SendToScreen({ navigation, bridge, t }: SendToScreenProps) {
     console.log('Scan QR code');
   }, []);
 
-  const loadRecipientsForTab = useCallback(async (tab: RecipientTabType) => {
-    setIsLoading(true);
-    try {
-      // TODO: Implement actual data loading based on tab
-      // This is a placeholder implementation
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+  const loadRecipientsForTab = useCallback(
+    async (tab: RecipientTabType) => {
+      setIsLoading(true);
+      try {
+        let recipientsData: RecipientData[] = [];
 
-      const mockRecipients: RecipientData[] = [
-        {
-          id: '1',
-          name: `Sample ${tab} 1`,
-          address: '0x1234567890123456',
-          type: tab === 'accounts' ? 'account' : tab,
-          balance: tab === 'accounts' ? '100.50 FLOW' : undefined,
-          showBalance: tab === 'accounts',
-        },
-        {
-          id: '2',
-          name: `Sample ${tab} 2`,
-          address: '0x9876543210987654',
-          type: tab === 'accounts' ? 'account' : tab,
-          balance: tab === 'accounts' ? '50.25 FLOW' : undefined,
-          showBalance: tab === 'accounts',
-        },
-      ];
+        // Use platform-provided data loaders if available, otherwise use mock data
+        switch (tab) {
+          case 'accounts':
+            if (loadAccountsData) {
+              recipientsData = await loadAccountsData();
+            } else {
+              // Fallback mock data for accounts
+              recipientsData = [
+                {
+                  id: '1',
+                  name: 'Sample Account 1',
+                  address: '0x1234567890123456',
+                  type: 'account',
+                  balance: '100.50 FLOW',
+                  showBalance: true,
+                },
+                {
+                  id: '2',
+                  name: 'Sample Account 2',
+                  address: '0x9876543210987654',
+                  type: 'account',
+                  balance: '50.25 FLOW',
+                  showBalance: true,
+                },
+              ];
+            }
+            break;
 
-      setRecipients(mockRecipients);
-    } catch (error) {
-      console.error('Failed to load recipients:', error);
-      setRecipients([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+          case 'recent':
+            if (loadRecentData) {
+              recipientsData = await loadRecentData();
+            } else {
+              // Fallback mock data for recent
+              recipientsData = [
+                {
+                  id: '3',
+                  name: 'Recent Contact 1',
+                  address: '0xabcdef1234567890',
+                  type: 'recent',
+                  showBalance: false,
+                },
+              ];
+            }
+            break;
+
+          case 'contacts':
+            if (loadContactsData) {
+              recipientsData = await loadContactsData();
+            } else {
+              // Fallback mock data for contacts
+              recipientsData = [
+                {
+                  id: '4',
+                  name: 'Address Book Contact 1',
+                  address: '0xfedcba0987654321',
+                  type: 'contact',
+                  showBalance: false,
+                },
+              ];
+            }
+            break;
+        }
+
+        setRecipients(recipientsData);
+      } catch (error) {
+        console.error('Failed to load recipients:', error);
+        setRecipients([]);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [loadAccountsData, loadRecentData, loadContactsData]
+  );
 
   // Load initial data
   useEffect(() => {
@@ -115,9 +171,9 @@ export function SendToScreen({ navigation, bridge, t }: SendToScreenProps) {
 
   const handleRecipientPress = useCallback(
     (recipient: RecipientData) => {
-      // TODO: Handle recipient selection and navigation
       console.log('Selected recipient:', recipient);
-      navigation.navigate('SendAmount', { recipient });
+      // Navigate to send tokens screen - platforms should handle this appropriately
+      navigation.navigate('SendTokens', { address: recipient.address, recipient });
     },
     [navigation]
   );
