@@ -10,24 +10,26 @@ const flowColors = {
   // Light Mode surfaces (from Figma)
   surfaceLight1: '#FFFFFF', // 100% - primary background
   surfaceLight2: '#F2F2F7', // light mode cards/surfaces
-  surfaceLight3: '#767676', // 50% - secondary surfaces
-  surfaceLight4: '#000D07', // 25% - tertiary surfaces
+  surfaceLight3: 'rgba(118, 118, 118, 0.5)', // 50% - secondary surfaces
+  surfaceLight4: 'rgba(0, 13, 7, 0.25)', // 25% - tertiary surfaces
 
   // Dark Mode surfaces (from Figma)
   surfaceDark1: '#000000', // 100% - primary background
   surfaceDark2: '#1A1A1A', // 100% - cards/surfaces
-  surfaceDark3: '#FFFFFF', // 50% - secondary (inverted)
-  surfaceDark4: '#AAAAB0', // 25% - tertiary surfaces
+  surfaceDark3: 'rgba(255, 255, 255, 0.5)', // 50% - secondary (inverted)
+  surfaceDark4: 'rgba(170, 170, 176, 0.25)', // 25% - tertiary surfaces
 
   // Text colors Light Mode (from Figma)
   textLight1: '#000000', // 100% - primary text
   textLight2: '#767676', // 100% - secondary text
-  textLight3: '#000D07', // 10% - tertiary text
+  textLight3: 'rgba(0, 13, 7, 0.1)', // 10% - tertiary text
+  textLight4: '#FFFFFF',
 
   // Text colors Dark Mode (from Figma)
   textDark1: '#FFFFFF', // 100% - primary text
   textDark2: '#B3B3B3', // 100% - secondary text
-  textDark3: '#FFFFFF', // 10% - tertiary text
+  textDark3: 'rgba(255, 255, 255, 0.1)', // 10% - tertiary text
+  textDark4: '#000D07',
 
   // System colors (consistent across modes from Figma)
   success: '#12B76A', // Success green
@@ -156,7 +158,7 @@ export const radius = {
   1: 4,
   2: 8,
   3: 12,
-  4: 16,
+  4: 14,
   true: 16,
   5: 20,
   6: 24,
@@ -183,6 +185,7 @@ const themesBuilder = createThemeBuilder()
       flowColors.textLight1, // 6 - darkest text
       flowColors.lightBg1, // 7 - light background
       flowColors.lightBorder1, // 8 - light border
+      flowColors.textLight4, // 9 - light text
     ],
     // Dark palette: dark background to light foreground
     dark: [
@@ -190,11 +193,12 @@ const themesBuilder = createThemeBuilder()
       flowColors.surfaceDark2, // 1 - dark background
       flowColors.surfaceDark4, // 2 - medium background
       flowColors.surfaceDark3, // 3 - light background (inverted)
-      flowColors.textDark2, // 4 - dim text
-      flowColors.textDark3, // 5 - medium text
+      flowColors.textDark3, // 4 - dim text
+      flowColors.textDark2, // 5 - medium text
       flowColors.textDark1, // 6 - brightest text
       flowColors.darkBg1, // 7 - light background
       flowColors.darkBorder1, // 8 - dark border
+      flowColors.textDark4, // 9 - dark text
     ],
   })
   // Add templates - these map palette indices to theme property names
@@ -245,6 +249,7 @@ const themesBuilder = createThemeBuilder()
       text1: 6, // primary text
       text2: 5, // secondary text
       text3: 4, // tertiary text
+      text4: 9, // quaternary text
 
       // Text shortcuts - semantic names like Tailwind
       text: 6, // $text - primary text
