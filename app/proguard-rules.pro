@@ -72,12 +72,8 @@
 -keep class * implements com.google.gson.JsonDeserializer
 -keep class com.google.gson.reflect.TypeToken {*;}
 
-# SvgModel
--keep class com.flowfoundation.wallet.utils.image.SvgModel
--keep class com.flowfoundation.wallet.utils.image.SvgModelLoader
--keep class com.flowfoundation.wallet.utils.image.SvgDataFetcher
--keep class com.flowfoundation.wallet.utils.image.SvgModelLoaderFactory
--keep class com.flowfoundation.wallet.utils.image.SvgGlideModule extends com.bumptech.glide.module.AppGlideModule { *; }
+# SVGWebView
+-keep class com.flowfoundation.wallet.widgets.SVGWebView { *; }
 
 # GoogleDrive
 -keep class com.google.** { *;}
@@ -290,3 +286,25 @@
 -dontwarn sun.security.x509.X500Name
 -dontwarn sun.security.x509.X509CertImpl
 -dontwarn sun.security.x509.X509CertInfo
+
+# react-native
+-keep public class com.horcrux.svg.** {*;}
+-keep class com.horcrux.svg.** { *; }
+-keepclassmembers class com.horcrux.svg.** { *; }
+-keep class * extends com.horcrux.svg.** { *; }
+-keep interface com.horcrux.svg.** { *; }
+-keepattributes InnerClasses,EnclosingMethod
+-keep class com.swmansion.reanimated.** { *; }
+-keep class com.facebook.hermes.unicode.* { *; }
+-keep class com.facebook.jni.* { *; }
+-keep class com.facebook.react.turbomodule.* { *; }
+
+# CRITICAL: Fabric TSpan Props crash fix
+-keep class com.facebook.react.viewmanagers.** { *; }
+-keepclassmembers class com.facebook.react.viewmanagers.** { *; }
+-keep class facebook.react.** { *; }
+-keep class com.facebook.react.bridge.** { *; }
+
+# Prevent Fabric C++ Props constructor crashes
+-keep class * extends com.facebook.react.** { *; }
+-keepattributes Signature,RuntimeVisibleAnnotations,RuntimeVisibleParameterAnnotations
