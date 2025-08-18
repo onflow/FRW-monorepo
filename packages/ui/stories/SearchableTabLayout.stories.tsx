@@ -66,7 +66,7 @@ export const Default: Story = {
   args: {
     title: 'Send To',
     searchValue: '',
-    searchPlaceholder: 'Search addresses...',
+    searchPlaceholder: 'Search address',
     tabSegments: ['Accounts', 'Recent', 'Contacts'],
     activeTab: 'Accounts',
     showScanButton: true,
@@ -158,7 +158,7 @@ export const WithRecipientList: Story = {
       <SearchableTabLayout
         title="Send To"
         searchValue={searchValue}
-        searchPlaceholder="Search addresses..."
+        searchPlaceholder="Search address"
         tabSegments={['Accounts', 'Recent', 'Contacts']}
         activeTab={activeTab}
         showScanButton={true}
