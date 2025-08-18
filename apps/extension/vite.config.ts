@@ -44,14 +44,17 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [
-      // Node.js polyfills - essential for crypto packages
+      // Node.js polyfills - this should handle Buffer properly
       nodePolyfills({
+        // Include all necessary Node.js modules
         include: ['buffer', 'process', 'crypto', 'stream', 'events', 'path', 'url', 'os', 'util'],
+        // Enable globals to inject Buffer, process, etc. globally
         globals: {
           Buffer: true,
           global: true,
           process: true,
         },
+        // Enable protocol imports like node:buffer
         protocolImports: true,
       }),
 
@@ -79,8 +82,8 @@ export default defineConfig(({ mode }) => {
     define: {
       'process.env.BUILD_ENV': JSON.stringify(buildEnv),
       'process.env.NODE_ENV': JSON.stringify(mode),
+      // Ensure global and Buffer are available
       global: 'globalThis',
-      Buffer: 'Buffer',
       // Pass through all environment variables
       ...Object.keys(env).reduce(
         (acc, key) => {
