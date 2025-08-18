@@ -2,7 +2,6 @@ import { SendTokensScreen, type TokenModel, type WalletAccount } from '@onflow/f
 import React, { useCallback, useEffect, useReducer, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
-
 import { INITIAL_TRANSACTION_STATE, transactionReducer } from '@/reducers';
 import { type FlowNetwork, type WalletAddress } from '@/shared/types';
 import { isValidAddress, isValidFlowAddress } from '@/shared/utils';
