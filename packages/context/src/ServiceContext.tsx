@@ -1,10 +1,10 @@
-import { configureApiEndpoints } from '@onflow/frw-api';
-import { createCadenceService, type CadenceService } from '@onflow/frw-cadence';
-import { createLogger, setGlobalLogger, type Logger } from '@onflow/frw-utils';
+import type { CadenceService } from '@onflow/frw-cadence';
+import type { Logger } from '@onflow/frw-utils';
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 
 import type { PlatformSpec } from './interfaces/PlatformSpec';
 import type { Storage } from './interfaces/Storage';
+import { createServices } from './ServiceFactory';
 
 /**
  * Service context value - Contains all initialized services
@@ -35,40 +35,7 @@ export interface ServiceProviderProps {
  * Platform should be pre-configured with all necessary implementations
  */
 export const ServiceProvider = ({ platform, children }: ServiceProviderProps) => {
-  const services = useMemo(() => {
-    // Configure API endpoints from platform
-    configureApiEndpoints(
-      platform.getApiEndpoint(),
-      platform.getGoApiEndpoint(),
-      () => platform.getJWT(),
-      () => platform.getNetwork()
-    );
-
-    // Create cadence service
-    const cadence = createCadenceService(platform);
-
-    // Get storage from platform
-    const storage = platform.getStorage();
-
-    // Create logger
-    const logger = createLogger(platform, 'ServiceProvider');
-
-    // Set global logger for other packages to use
-    setGlobalLogger(platform);
-
-    // Get debug flag
-    const isDebug = platform.isDebug();
-
-    logger.debug('Services initialized successfully', platform.constructor.name);
-
-    return {
-      platform,
-      cadence,
-      storage,
-      logger,
-      isDebug,
-    };
-  }, [platform]);
+  const services = useMemo(() => createServices(platform), [platform]);
 
   return <ServiceReactContext.Provider value={services}>{children}</ServiceReactContext.Provider>;
 };

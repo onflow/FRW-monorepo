@@ -290,8 +290,61 @@ business logic, but entire screen implementations.
   platform-specific code
 - **Universal Code Reuse**: Both React Native and Extension share screens, UI,
   and business logic
-- **ServiceContext DI**: All services use dependency injection via
-  ServiceContext
+- **Dual Service APIs**: Support both React hooks and non-React factory
+  functions
+
+### Service Architecture - Dual Entry Points
+
+The `@onflow/frw-context` package provides **two ways** to access services:
+
+**1. React Context + Hooks (Recommended for React projects)**
+
+```tsx
+import { ServiceProvider, useCadence, usePlatform } from '@onflow/frw-context';
+
+// Wrap your app with ServiceProvider
+<ServiceProvider platform={platform}>
+  <MyApp />
+</ServiceProvider>;
+
+// Use hooks in components
+const MyComponent = () => {
+  const cadence = useCadence();
+  const platform = usePlatform();
+  // ... use services
+};
+```
+
+**2. Factory Functions (For non-React projects)**
+
+```typescript
+import { createServices, type ServiceContainer } from '@onflow/frw-context';
+
+// Initialize singleton (first call)
+const platform = new MyPlatformImpl();
+const services = createServices(platform);
+
+// Get existing singleton (subsequent calls)
+const sameServices = createServices(); // platform is optional now
+// services === sameServices (same instance)
+
+// For testing - reset and reinitialize
+createServices.reset();
+const newServices = createServices(newPlatform);
+
+// Use services directly
+const balance = await services.cadence.getAccountBalance('0x123');
+services.logger.info('Balance loaded:', balance);
+```
+
+**Benefits:**
+
+- **React projects**: Automatic dependency injection, context management, and
+  hook-based API
+- **Non-React projects**: Direct service access without React dependencies
+- **Consistent initialization**: Both approaches use the same service creation
+  logic
+- **Type safety**: Full TypeScript support for both entry points
 
 ## Storybook Integration
 

@@ -17,3 +17,6 @@ export {
   type ServiceContextValue,
   type ServiceProviderProps,
 } from './ServiceContext';
+
+// Non-React API for standalone/vanilla JS projects
+export { createServices, type ServiceContainer } from './ServiceFactory';
