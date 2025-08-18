@@ -5,6 +5,8 @@ import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import svgr from 'vite-plugin-svgr';
+import topLevelAwait from 'vite-plugin-top-level-await';
+import wasm from 'vite-plugin-wasm';
 
 // Function to load environment variables similar to dotenv-webpack
 function loadEnvFile(filePath: string) {
@@ -78,6 +80,9 @@ export default defineConfig(({ mode }) => {
           titleProp: true,
         },
       }),
+      // WASM support
+      wasm(),
+      topLevelAwait(),
       // CRXJS plugin for Chrome Extension
       crx({
         manifest: getManifest(buildEnv),
@@ -165,6 +170,9 @@ export default defineConfig(({ mode }) => {
 
     // Handle WebAssembly and other special file types
     assetsInclude: ['**/*.wasm', '**/*.md'],
+
+    // Copy WASM file to a more accessible location for Chrome extension
+    publicDir: 'public',
 
     // Experiments equivalent
     esbuild: {
