@@ -124,12 +124,11 @@
         margin: 0px;
       }
     </style>
-    <% if (devMode && hasDevTools) { %>
-    <script src="react-devtools.js"></script>
-    <% } %>
+    <!-- DevTools script will be injected by build process if needed -->
   </head>
 
   <body class="h-full">
     <div id="root" class="root-container"></div>
+    <script type="module" src="index.tsx"></script>
   </body>
 </html>

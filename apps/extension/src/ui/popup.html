@@ -132,15 +132,14 @@
         margin: 0px;
       }
     </style>
-    <title></title>
-    <% if (devMode && hasDevTools) { %>
-    <script src="react-devtools.js"></script>
-    <% } %>
+    <title>Flow Wallet</title>
+    <!-- DevTools script will be injected by build process if needed -->
   </head>
 
   <body class="h-full root-container">
     <div id="root" class="h-full overflow-x-hidden">
       <div class="h-full bg-gray-bg animate-pulse"></div>
     </div>
+    <script type="module" src="index.tsx"></script>
   </body>
 </html>
