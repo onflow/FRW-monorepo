@@ -11,7 +11,6 @@ export * from './send/SendMultipleNFTsScreen';
 export * from './types';
 
 // Export i18n utilities
-export * from './lib/withScreensI18n';
 export { default as screensI18n, resources as screensTranslations } from './lib/i18n';
 
 // Export navigation hook for easy access from screens

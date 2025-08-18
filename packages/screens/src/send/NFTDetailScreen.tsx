@@ -1,3 +1,4 @@
+import { useNavigation } from '@onflow/frw-context';
 import { useWalletStore } from '@onflow/frw-stores';
 import { type NFTModel } from '@onflow/frw-types';
 import {
@@ -9,23 +10,17 @@ import {
 } from '@onflow/frw-ui';
 import { getNFTCover, getNFTId } from '@onflow/frw-utils';
 import React, { useState, useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
-import type { BaseScreenProps } from '../types';
-
-interface NFTDetailScreenProps extends BaseScreenProps {
+interface NFTDetailScreenProps {
   nft?: NFTModel;
   selectedNFTs?: NFTModel[];
   onSelectionChange?: (nftId: string, selected: boolean) => void;
 }
 
-export function NFTDetailScreen({
-  navigation,
-  bridge,
-  t,
-  nft,
-  selectedNFTs,
-  onSelectionChange,
-}: NFTDetailScreenProps) {
+export function NFTDetailScreen({ nft, selectedNFTs, onSelectionChange }: NFTDetailScreenProps) {
+  const navigation = useNavigation();
+  const { t } = useTranslation();
   const { activeAccount } = useWalletStore();
 
   // Determine if selection is enabled
