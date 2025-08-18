@@ -1,4 +1,5 @@
 import type {
+  Platform,
   RecentContactsResponse,
   WalletAccount,
   WalletAccountsResponse,
@@ -21,6 +22,7 @@ export interface PlatformSpec {
   getJWT(): Promise<string>;
   getVersion(): string;
   getBuildNumber(): string;
+  getPlatform(): Platform;
 
   // API endpoint methods
   getApiEndpoint(): string;
