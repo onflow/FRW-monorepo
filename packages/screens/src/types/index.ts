@@ -9,20 +9,9 @@ export interface PlatformBridge {
   getCoins?(): any[] | null;
 }
 
-// Translation interface
-export interface TranslationFunction {
-  (key: string, options?: Record<string, unknown>): string;
-}
-
 // Theme interface
 export interface ThemeContext {
   isDark: boolean;
-}
-
-// Common screen props
-export interface BaseScreenProps {
-  bridge: PlatformBridge;
-  t: TranslationFunction;
 }
 
 // Tab types

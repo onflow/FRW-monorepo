@@ -8,9 +8,7 @@ import {
   YStack,
 } from '@onflow/frw-ui';
 import React, { useCallback, useEffect, useState } from 'react';
-
-import { withScreensI18n } from '../lib/withScreensI18n';
-import type { BaseScreenProps } from '../types';
+import { useTranslation } from 'react-i18next';
 
 export type RecipientTabType = 'accounts' | 'recent' | 'contacts';
 
@@ -19,7 +17,7 @@ interface TabConfig {
   title: string;
 }
 
-interface SendToScreenProps extends BaseScreenProps {
+interface SendToScreenProps {
   theme?: { isDark: boolean };
   // Optional data loading functions that platforms can provide
   loadAccountsData?: () => Promise<RecipientData[]>;
@@ -27,14 +25,13 @@ interface SendToScreenProps extends BaseScreenProps {
   loadContactsData?: () => Promise<RecipientData[]>;
 }
 
-function SendToScreenBase({
-  bridge,
-  t,
+export function SendToScreen({
   loadAccountsData,
   loadRecentData,
   loadContactsData,
 }: SendToScreenProps) {
   const navigation = useNavigation();
+  const { t } = useTranslation();
   const TABS: TabConfig[] = [
     { type: 'accounts', title: t('send.myAccounts') },
     { type: 'recent', title: t('send.recent') },
@@ -249,6 +246,3 @@ function SendToScreenBase({
     </SearchableTabLayout>
   );
 }
-
-// Export wrapped component with i18n support
-export const SendToScreen = withScreensI18n(SendToScreenBase);
