@@ -204,7 +204,7 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
         '@onflow/frw-utils': path.resolve(__dirname, '../../../packages/utils/src/index.ts'),
         '@onflow/frw-workflow': path.resolve(__dirname, '../../../packages/workflow/src/index.ts'),
         '@onflow/frw-context': path.resolve(__dirname, '../../../packages/context/src/index.ts'),
-        '@onflow/frw-icons': path.resolve(__dirname, '../../../packages/icons/src/index.ts'),
+        '@onflow/frw-icons': path.resolve(__dirname, '../../../packages/icons/src/web.ts'),
       },
       plugins: [],
       fallback: {

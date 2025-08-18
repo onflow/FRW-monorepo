@@ -72,6 +72,13 @@ export const AddressSearchBox: React.FC<AddressSearchBoxProps> = ({
             {
               fontWeight: '400',
               includeFontPadding: false,
+              textAlignVertical: 'center',
+              paddingVertical: 0,
+              paddingTop: 0,
+              paddingBottom: 0,
+              lineHeight: 20,
+              height: 44,
+              marginTop: -2,
             },
           ]}
           value={value}

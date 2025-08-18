@@ -5,7 +5,7 @@ import { XStack, YStack } from 'tamagui';
 import { Avatar } from '../foundation/Avatar';
 import { Skeleton } from '../foundation/Skeleton';
 import { Text } from '../foundation/Text';
-import type { AccountCardProps, Account } from '../types';
+import type { Account, AccountCardProps } from '../types';
 import { AccountSelectorModal } from './AccountSelectorModal';
 import { AddressText } from './AddressText';
 
@@ -26,6 +26,7 @@ export function AccountCard({
     <YStack
       bg="$bg1"
       rounded="$4"
+      width="100%"
       pt="$4"
       px="$4"
       pb="$6"
@@ -36,7 +37,7 @@ export function AccountCard({
       cursor={enableModalSelection ? 'pointer' : 'default'}
       {...props}
     >
-      <Text fontSize="$3" fontWeight="400" color="$text" lineHeight={16}>
+      <Text fontSize="$3" fontWeight="400" color="$text2" lineHeight={16}>
         {title}
       </Text>
       {/* Account Row */}
@@ -59,13 +60,19 @@ export function AccountCard({
             </Text>
 
             {/* Account Address */}
-            <AddressText address={account.address} truncate={true} startLength={6} endLength={4} />
+            <AddressText
+              address={account.address}
+              color="$text2"
+              truncate={true}
+              startLength={6}
+              endLength={4}
+            />
 
             {/* Balance */}
             {isLoading ? (
               <Skeleton width="$8" height="$4" borderRadius="$2" />
             ) : account.balance ? (
-              <Text color="#B3B3B3" fontWeight="400" fontSize="$3" lineHeight={17}>
+              <Text color="$text2" fontWeight="400" fontSize="$3" lineHeight={17}>
                 {account.balance}
               </Text>
             ) : null}

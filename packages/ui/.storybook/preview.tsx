@@ -1,7 +1,11 @@
 import type { Preview } from '@storybook/react-vite';
 import { TamaguiProvider, Theme } from '@tamagui/core';
 import React from 'react';
+import { INITIAL_VIEWPORTS } from 'storybook/viewport';
 import { View } from 'tamagui';
+
+// Select specific viewports from INITIAL_VIEWPORTS
+const { iphone14pro, iphone14promax, pixel, pixelxl } = INITIAL_VIEWPORTS;
 
 import config from '../src/tamagui.config';
 
@@ -34,6 +38,36 @@ const preview: Preview = {
         order: ['Design System', 'Foundation', 'Components'],
       },
     },
+    viewport: {
+      options: {
+        iphone14pro,
+        iphone14promax,
+        pixel,
+        pixelxl,
+        // Custom Extension viewport
+        extension: {
+          name: 'Extension Window',
+          styles: {
+            width: '400px',
+            height: '600px',
+          },
+          type: 'desktop',
+        },
+
+        desktop: {
+          name: 'Desktop',
+          styles: {
+            width: '100%',
+            height: '100%',
+          },
+          type: 'desktop',
+        },
+      },
+    },
+  },
+  initialGlobals: {
+    theme: 'dark',
+    viewport: { value: 'extension', isRotated: false },
   },
   globalTypes: {
     theme: {
@@ -58,17 +92,7 @@ const preview: Preview = {
       return (
         <TamaguiProvider config={config} defaultTheme={theme}>
           <Theme name={theme}>
-            <View
-              bg="$bg"
-              m="$4"
-              minH={200}
-              display="flex"
-              items="center"
-              justify="center"
-              // fontFamily="system-ui, sans-serif"
-              p="$6"
-              rounded="$4"
-            >
+            <View bg="$bg" display="flex" items="center" justify="center">
               <Story />
             </View>
           </Theme>

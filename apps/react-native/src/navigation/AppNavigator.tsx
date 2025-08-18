@@ -170,6 +170,8 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
           <Stack.Navigator
             initialRouteName={(initialRoute as keyof RootStackParamList) || 'Home'}
             screenOptions={{
+              headerTitleAlign: 'center',
+              headerShadowVisible: false,
               headerShown: true,
               headerRight: () => <ThemeToggle />,
             }}

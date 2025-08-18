@@ -1,5 +1,6 @@
 import { type PlatformSpec, type Storage } from '@onflow/frw-context';
 import type {
+  Platform,
   RecentContactsResponse,
   WalletAccount,
   WalletAccountsResponse,
@@ -52,6 +53,10 @@ class ExtensionPlatformImpl implements PlatformSpec {
     return chrome.runtime.getManifest().version_name || this.getVersion();
   }
 
+  getPlatform(): Platform {
+    return Platform.Extension;
+  }
+
   // API endpoint methods
   getApiEndpoint(): string {
     const network = this.getNetwork();
@@ -98,6 +103,29 @@ class ExtensionPlatformImpl implements PlatformSpec {
 
   async getSelectedAccount(): Promise<WalletAccount> {
     return await this.walletController.getSelectedAccount();
+  }
+
+  // Extended data access methods for SendToScreen
+  async getAddressBookContacts(): Promise<any[]> {
+    if (!this.walletController) return [];
+    return await this.walletController.getAddressBook();
+  }
+
+  async getRecent(): Promise<any[]> {
+    if (!this.walletController) return [];
+    return await this.walletController.getRecent();
+  }
+
+  async searchUsername(username: string): Promise<any[]> {
+    if (!this.walletController) return [];
+    return await this.walletController.searchByUsername(username);
+  }
+
+  // Get account data from profiles/hooks
+  getAccountsData(): any[] {
+    // This will be set by the component when it has the data
+    // For now, return empty array - component will override this
+    return [];
   }
 
   // CadenceService configuration

@@ -74,7 +74,6 @@ const createAccessibleAssetStore = () =>
             parentAddress,
             childAddress
           );
-
           set({
             accessibleIds: accessibleIds || [],
             isLoading: false,
@@ -95,20 +94,46 @@ const createAccessibleAssetStore = () =>
       // Specific asset accessibility checks
       isTokenAllowed: (token: TokenModel) => {
         const { accessibleIds } = get();
-        // Check if the token's id is in accessibleIds array
-        return token.identifier ? accessibleIds.includes(token.identifier) : false;
+        if (!token.contractAddress) {
+          return false;
+        }
+        const address = token.contractAddress?.startsWith('0x')
+          ? token.contractAddress.slice(2)
+          : token.contractAddress;
+        const contractName = token.contractName;
+        const tokenIdentifier = `A.${address}.${contractName}`;
+
+        return accessibleIds.some(id => id.toLowerCase().includes(tokenIdentifier.toLowerCase()));
       },
 
       isNFTAllowed: (nft: NFTModel) => {
         const { accessibleIds } = get();
-        // Check if the NFT's id is in accessibleIds array
-        return nft.id ? accessibleIds.includes(nft.id) : false;
+        if (!nft.contractAddress) {
+          return false;
+        }
+        const address = nft.contractAddress?.startsWith('0x')
+          ? nft.contractAddress.slice(2)
+          : nft.contractAddress;
+        const contractName = nft.contractName;
+        const nftIdentifier = `A.${address}.${contractName}`;
+        return accessibleIds.some(id => id.toLowerCase().includes(nftIdentifier.toLowerCase()));
       },
 
       isCollectionAllowed: (collection: CollectionModel) => {
         const { accessibleIds } = get();
-        // Check if the collection's id is in accessibleIds array
-        return collection.id ? accessibleIds.includes(collection.id) : false;
+        if (!collection.address || !collection.contractName) {
+          return false;
+        }
+        const address = collection.address?.startsWith('0x')
+          ? collection.address.slice(2)
+          : collection.address;
+        const contractName = collection.contractName;
+        const collectionIdentifier = `A.${address}.${contractName}.Collection`;
+
+        console.log('collectionIdentifier', collectionIdentifier);
+        return accessibleIds.some(id =>
+          id.toLowerCase().includes(collectionIdentifier.toLowerCase())
+        );
       },
 
       // Utility

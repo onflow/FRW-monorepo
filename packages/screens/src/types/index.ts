@@ -6,6 +6,7 @@
 export interface PlatformBridge {
   getSelectedAddress(): string | null;
   getNetwork(): string;
+  getCoins?(): any[] | null;
 }
 
 // Navigation interface

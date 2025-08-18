@@ -1,12 +1,11 @@
 import { SendTokensScreen, type TokenModel, type WalletAccount } from '@onflow/frw-screens';
-import { tamaguiConfig as uiConfig } from '@onflow/frw-ui';
 import React, { useCallback, useEffect, useReducer, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { TamaguiProvider } from 'tamagui';
 
 import { INITIAL_TRANSACTION_STATE, transactionReducer } from '@/reducers';
 import { type FlowNetwork, type WalletAddress } from '@/shared/types';
 import { isValidAddress, isValidFlowAddress } from '@/shared/utils';
+import { LLHeader } from '@/ui/components/LLHeader';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -105,14 +104,35 @@ const SendTokensScreenView = () => {
 
   const handleTransactionConfirm = useCallback(async () => {
     try {
+      // Finalize the amount before transaction
       dispatch({ type: 'finalizeAmount' });
-      const txId = await wallet.transferTokens(transactionState);
-      console.log('Transaction submitted successfully:', txId);
+
+      // Execute the transaction
+      const txId: string = await wallet.transferTokens(transactionState);
+
+      // Start transaction monitoring with notification
+      wallet.listenTransaction(
+        txId,
+        true,
+        `${transactionState.amount} ${transactionState.tokenInfo.coin} Sent`,
+        `You have sent ${transactionState.amount} ${transactionState.tokenInfo?.symbol} to ${transactionState.toAddress}. \nClick to view this transaction.`,
+        transactionState.tokenInfo.icon
+      );
+
+      // Record the recent contact
+      await wallet.setRecent(transactionState.toContact);
+
+      // Update the dashboard index to first tab
+      await wallet.setDashIndex(0);
+
+      // Navigate to dashboard activity tab with transaction ID
+      navigate(`/dashboard?activity=1&txId=${txId}`);
     } catch (error) {
       console.error('Transaction failed:', error);
+      // Re-throw error so the screen can handle it (show error state, keep modal open, etc.)
       throw error;
     }
-  }, [wallet, transactionState]);
+  }, [wallet, transactionState, navigate]);
 
   // Initialize transaction state on mount - include toAddress from params if available
   useEffect(() => {
@@ -234,9 +254,18 @@ const SendTokensScreenView = () => {
   };
 
   return (
-    <TamaguiProvider config={uiConfig} defaultTheme="dark">
-      <SendTokensScreen {...screenProps} />
-    </TamaguiProvider>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%',
+      }}
+    >
+      <LLHeader title={chrome.i18n.getMessage('Send_to')} help={true} />
+      <div style={{ flex: 1, overflow: 'hidden' }}>
+        <SendTokensScreen {...screenProps} />
+      </div>
+    </div>
   );
 };
 

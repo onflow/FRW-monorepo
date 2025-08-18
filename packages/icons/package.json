@@ -9,8 +9,8 @@
     ".": {
       "types": "./dist/index.d.ts",
       "react-native": {
-        "import": "./dist/native/index.mjs",
-        "require": "./dist/native/index.js"
+        "import": "./dist/react-native/index.mjs",
+        "require": "./dist/react-native/index.js"
       },
       "import": "./dist/web/index.mjs",
       "require": "./dist/web/index.js"
