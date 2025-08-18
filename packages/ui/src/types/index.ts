@@ -14,6 +14,7 @@ export interface AvatarProps {
   fallback?: string;
   borderColor?: string;
   borderWidth?: number;
+  style?: React.CSSProperties;
 }
 
 export interface TokenCardProps {
@@ -141,7 +142,7 @@ export interface TokenAmountInputProps {
   disabled?: boolean;
 }
 
-export interface AddressTextProps {
+export interface AddressTextProps extends Omit<TextProps, 'children'> {
   address: string;
   truncate?: boolean;
   startLength?: number;

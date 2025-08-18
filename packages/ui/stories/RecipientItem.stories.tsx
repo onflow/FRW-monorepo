@@ -5,8 +5,6 @@ import { YStack } from 'tamagui';
 import {
   RecipientItem,
   AccountItem,
-  ContactItem,
-  RecentItem,
 } from '../src/components/RecipientItem';
 
 const meta: Meta<typeof RecipientItem> = {
@@ -98,16 +96,6 @@ export const UnknownAddress: Story = {
   },
 };
 
-export const WithAvatar: Story = {
-  args: {
-    name: 'Avatar User',
-    address: '0x1111222233334444555566667777888899990000',
-    type: 'contact',
-    avatar: 'https://via.placeholder.com/40x40/4F46E5/FFFFFF?text=AU',
-    showEditButton: true,
-  },
-};
-
 export const Loading: Story = {
   args: {
     name: 'Loading Account',
@@ -116,17 +104,6 @@ export const Loading: Story = {
     balance: '...',
     showBalance: true,
     isLoading: true,
-  },
-};
-
-export const Selected: Story = {
-  args: {
-    name: 'Selected Account',
-    address: '0xaaaaaabbbbbbccccccddddddeeeeeeffffffffff',
-    type: 'account',
-    balance: '750.25 FLOW',
-    showBalance: true,
-    isSelected: true,
   },
 };
 
@@ -153,23 +130,38 @@ export const AccountVariant: Story = {
   ),
 };
 
-export const ContactVariant: Story = {
-  render: (args) => (
-    <ContactItem
-      name="Alice Cooper"
-      address="0x9876543210fedcba9876543210fedcba98765432"
-      onPress={() => console.log('Contact pressed')}
-      onCopy={() => console.log('Copy contact')}
-    />
-  ),
+export const LinkedAccount: Story = {
+  args: {
+    name: 'Penguin',
+    address: '0x0c666c888d8fb259',
+    type: 'account',
+    balance: "550.66 Flow | 12 NFT's",
+    showBalance: true,
+    isLinked: true,
+    avatar: '🐧',
+  },
 };
 
-export const RecentVariant: Story = {
-  render: (args) => (
-    <RecentItem
-      name="Recent Transfer to Bob"
-      address="0xabcdef1234567890abcdef1234567890abcdef12"
-      onPress={() => console.log('Recent pressed')}
-    />
-  ),
+export const EVMAccount: Story = {
+  args: {
+    name: 'EVM Account',
+    address: '0x1234567890abcdef1234567890abcdef12345678',
+    type: 'account',
+    balance: '100.50 ETH',
+    showBalance: true,
+    isEVM: true,
+  },
+};
+
+export const LinkedEVMAccount: Story = {
+  args: {
+    name: 'Linked EVM',
+    address: '0x0c666c888d8fb259',
+    type: 'account',
+    balance: "550.66 ETH | 5 NFT's",
+    showBalance: true,
+    isLinked: true,
+    isEVM: true,
+    avatar: '🐧',
+  },
 };

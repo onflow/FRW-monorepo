@@ -1,9 +1,8 @@
-import { Copy, Edit } from '@onflow/frw-icons';
-import React from 'react';
+import { Copy, Link } from '@onflow/frw-icons';
 import { Card, XStack, YStack, Avatar, Text } from 'tamagui';
 
 import { AddressText } from './AddressText';
-import { Button } from '../foundation/Button';
+import { Skeleton } from '../foundation/Skeleton';
 
 export interface RecipientItemProps {
   // Core recipient data
@@ -15,10 +14,11 @@ export interface RecipientItemProps {
   balance?: string;
   isLoading?: boolean;
   showBalance?: boolean;
-  showEditButton?: boolean;
   showCopyButton?: boolean;
   isSelected?: boolean;
   isDisabled?: boolean;
+  isLinked?: boolean;
+  isEVM?: boolean;
 
   // Avatar/Icon
   avatar?: string;
@@ -26,11 +26,9 @@ export interface RecipientItemProps {
 
   // Actions
   onPress?: () => void;
-  onEdit?: () => void;
   onCopy?: () => void;
 
   // Styling
-  backgroundColor?: string;
   pressStyle?: object;
 }
 
@@ -41,37 +39,17 @@ export function RecipientItem({
   balance,
   isLoading = false,
   showBalance = false,
-  showEditButton = false,
   showCopyButton = false,
   isSelected = false,
   isDisabled = false,
+  isLinked = false,
+  isEVM = false,
   avatar,
   avatarSize = 36,
   onPress,
-  onEdit,
   onCopy,
-  backgroundColor,
   pressStyle,
 }: RecipientItemProps) {
-  const getTypeIcon = () => {
-    // For now, we'll use a simple circle as placeholder
-    // Can be enhanced later with specific icons for each type
-    return (
-      <YStack
-        width={avatarSize}
-        height={avatarSize}
-        borderRadius="$10"
-        backgroundColor="$orange8"
-        items="center"
-        justify="center"
-      >
-        <Text fontSize={18} color="$white1" fontWeight="600">
-          {type === 'account' ? '🦊' : type.charAt(0).toUpperCase()}
-        </Text>
-      </YStack>
-    );
-  };
-
   return (
     <Card
       p={0}
@@ -85,42 +63,73 @@ export function RecipientItem({
       borderWidth={isSelected ? 2 : 0}
     >
       <XStack items="center" gap={12} p="$3">
-        {/* Avatar/Icon Container with fixed frame */}
-        <XStack w={46} h={36} items="center" justify="flex-start" position="relative">
-          <YStack
-            position="absolute"
-            left={5}
-            top={0}
-            w={avatarSize}
-            h={avatarSize}
-            borderRadius="$10"
-            bg="$orange8"
-            items="center"
-            justify="center"
-          >
-            {avatar ? (
-              <Avatar circular size={avatarSize}>
-                <Avatar.Image src={avatar} />
-              </Avatar>
-            ) : (
-              getTypeIcon()
-            )}
-          </YStack>
+        {/* Avatar/Icon Container with fixed frame matching Figma specs */}
+        <XStack width={46} height={36} position="relative">
+          {avatar ? (
+            <Avatar
+              src={avatar}
+              size={avatarSize}
+              fallback={type === 'account' ? '🦊' : type.charAt(0).toUpperCase()}
+              style={{
+                position: 'absolute',
+                left: 5,
+                top: 0,
+              }}
+            />
+          ) : (
+            <YStack
+              position="absolute"
+              left={5}
+              top={0}
+              width={avatarSize}
+              height={avatarSize}
+              borderRadius={avatarSize / 2}
+              backgroundColor="rgba(255, 255, 255, 0.25)"
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Text
+                fontSize={18}
+                color="rgba(255, 255, 255, 0.8)"
+                fontWeight="600"
+                lineHeight={18 * 1.2}
+                letterSpacing={-0.1}
+              >
+                {type === 'account' ? '🦊' : type.charAt(0).toUpperCase()}
+              </Text>
+            </YStack>
+          )}
         </XStack>
 
         {/* Content */}
-        <YStack flex={1} gap={2} w={151.34}>
+        <YStack flex={1} gap={2} width={151.34}>
           <XStack items="center" gap="$1">
-            <Text
-              fontSize={14}
-              fontWeight="600"
-              color="$white1"
-              numberOfLines={1}
-              lineHeight={20}
-              letterSpacing={-0.084}
-            >
-              {name}
-            </Text>
+            <XStack items="center" gap={4}>
+              {isLinked && <Link size={12.8} color="rgba(255, 255, 255, 0.5)" />}
+              <Text
+                fontSize={14}
+                fontWeight="600"
+                color="#FFFFFF"
+                numberOfLines={1}
+                lineHeight={16.8}
+                letterSpacing={-0.084}
+              >
+                {name}
+              </Text>
+            </XStack>
+            {isEVM && (
+              <XStack bg="#627EEA" rounded="$4" px={4} items="center" justify="center" height={16}>
+                <Text
+                  fontSize={8}
+                  fontWeight="400"
+                  color="#FFFFFF"
+                  lineHeight={9.7}
+                  letterSpacing={0.128}
+                >
+                  EVM
+                </Text>
+              </XStack>
+            )}
           </XStack>
 
           <AddressText
@@ -131,17 +140,20 @@ export function RecipientItem({
             lineHeight={16.8}
           />
 
-          {showBalance && balance && (
-            <Text
-              fontSize={12}
-              fontWeight="400"
-              color="#B3B3B3"
-              numberOfLines={1}
-              lineHeight={16.8}
-            >
-              {isLoading ? '...' : balance}
-            </Text>
-          )}
+          {showBalance &&
+            (isLoading ? (
+              <Skeleton width={80} height={16} />
+            ) : balance ? (
+              <Text
+                fontSize={12}
+                fontWeight="400"
+                color="#B3B3B3"
+                numberOfLines={1}
+                lineHeight={16.8}
+              >
+                {balance}
+              </Text>
+            ) : null)}
         </YStack>
 
         {/* Action Buttons */}
@@ -151,7 +163,7 @@ export function RecipientItem({
               width={24}
               height={24}
               opacity={0.5}
-              onPress={(e) => {
+              onPress={(e: any) => {
                 e.stopPropagation();
                 onCopy();
               }}
@@ -159,19 +171,6 @@ export function RecipientItem({
             >
               <Copy size={24} color="#FFFFFF" />
             </XStack>
-          )}
-
-          {showEditButton && onEdit && (
-            <Button
-              size="small"
-              variant="ghost"
-              onPress={(e) => {
-                e.stopPropagation();
-                onEdit();
-              }}
-            >
-              <Edit size={16} />
-            </Button>
           )}
         </XStack>
       </XStack>
