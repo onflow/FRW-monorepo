@@ -78,13 +78,13 @@ export function RecipientItem({
             width={avatarSize}
             height={avatarSize}
             rounded={avatarSize / 2}
-            bg="rgba(255, 255, 255, 0.25)"
+            bg="$light25"
             items="center"
             justify="center"
           >
             <Text
               fontSize={18}
-              color="rgba(255, 255, 255, 0.8)"
+              color="$light80"
               fontWeight="600"
               lineHeight={18 * 1.2}
               letterSpacing={-0.1}
@@ -104,9 +104,9 @@ export function RecipientItem({
               width={18}
               height={18}
               rounded={9}
-              bg="#D9D9D9"
+              bg="$textSecondary"
               borderWidth={2}
-              borderColor="#0A0A0B"
+              borderColor="$bg"
               items="center"
               justify="center"
               p={1}
@@ -126,7 +126,7 @@ export function RecipientItem({
               <Text
                 fontSize={14}
                 fontWeight="600"
-                color="#FFFFFF"
+                color="$white"
                 numberOfLines={1}
                 lineHeight={16.8}
                 letterSpacing={-0.084}
@@ -139,7 +139,7 @@ export function RecipientItem({
                 <Text
                   fontSize={8}
                   fontWeight="400"
-                  color="#FFFFFF"
+                  color="$white"
                   lineHeight={9.7}
                   letterSpacing={0.128}
                 >
@@ -153,7 +153,7 @@ export function RecipientItem({
             address={address}
             fontSize={12}
             fontWeight="400"
-            color="#B3B3B3"
+            color="$textMuted"
             lineHeight={16.8}
           />
 
@@ -164,7 +164,7 @@ export function RecipientItem({
               <Text
                 fontSize={12}
                 fontWeight="400"
-                color="#B3B3B3"
+                color="$textMuted"
                 numberOfLines={1}
                 lineHeight={16.8}
               >
