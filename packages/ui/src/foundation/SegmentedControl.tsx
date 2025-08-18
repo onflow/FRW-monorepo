@@ -55,7 +55,7 @@ export function SegmentedControl({
             <Text
               fontSize={fontSize}
               fontWeight={600}
-              color={isSelected ? '$textTertiary' : '$textSecondary'}
+              opacity={isSelected ? 0.8 : 1}
               numberOfLines={1}
               my="$0.5"
             >

@@ -46,7 +46,7 @@ export function RecipientItem({
   isSelected = false,
   isDisabled = false,
   avatar,
-  avatarSize = 36,
+  avatarSize = '$4',
   onPress,
   onEdit,
   onCopy,
@@ -60,7 +60,6 @@ export function RecipientItem({
       <YStack
         width={avatarSize}
         height={avatarSize}
-        borderRadius="$10"
         backgroundColor="$orange8"
         items="center"
         justify="center"
@@ -82,7 +81,7 @@ export function RecipientItem({
       onPress={onPress}
       opacity={isDisabled ? 0.5 : 1}
       borderColor={isSelected ? '$primary' : 'transparent'}
-      borderWidth={isSelected ? 2 : 0}
+      borderWidth={isSelected ? '$0.5' : 0}
     >
       <XStack items="center" gap={12} p="$3">
         {/* Avatar/Icon Container with fixed frame */}
@@ -94,7 +93,7 @@ export function RecipientItem({
             w={avatarSize}
             h={avatarSize}
             borderRadius="$10"
-            bg="$orange8"
+            // bg="$orange8"
             items="center"
             justify="center"
           >
