@@ -1,5 +1,6 @@
 import { type PlatformSpec, type Storage } from '@onflow/frw-context';
 import type {
+  Platform,
   RecentContactsResponse,
   WalletAccount,
   WalletAccountsResponse,
@@ -50,6 +51,10 @@ class ExtensionPlatformImpl implements PlatformSpec {
 
   getBuildNumber(): string {
     return chrome.runtime.getManifest().version_name || this.getVersion();
+  }
+
+  getPlatform(): Platform {
+    return Platform.Extension;
   }
 
   // API endpoint methods
