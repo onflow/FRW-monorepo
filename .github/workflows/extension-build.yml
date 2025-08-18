@@ -227,11 +227,10 @@ jobs:
         run: pnpm install
       - name: Install Playwright Browsers
         run: pnpm -F frw-extension exec playwright install --with-deps chromium
-      - name: Run Playwright tests
-        run: pnpm -F frw-extension test:e2e
+      - name: Run Playwright tests (headed via Xvfb)
+        run: xvfb-run -a pnpm -F frw-extension test:e2e
         env:
           CI: true
-          HEADLESS: true
       - name: Sanitize Playwright Report
         if: always()
         run: cd apps/extension && pnpm tsx build/sanitize-playwright.ts
