@@ -151,7 +151,15 @@ export interface AddressTextProps {
 }
 
 export interface BadgeProps {
-  variant?: 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'outline';
+  variant?:
+    | 'default'
+    | 'primary'
+    | 'secondary'
+    | 'success'
+    | 'warning'
+    | 'error'
+    | 'outline'
+    | 'evm';
   size?: 'small' | 'medium' | 'large';
   children: React.ReactNode;
 }
