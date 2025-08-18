@@ -34,7 +34,7 @@ const meta: Meta<typeof RecipientList> = {
     onRetry: { action: 'retry' },
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack height={600} width="100%" p="$4">
         <Story />
       </YStack>
@@ -182,43 +182,5 @@ export const Refreshing: Story = {
   args: {
     data: mockAccounts,
     isRefreshing: true,
-  },
-};
-
-export const NoSectionHeaders: Story = {
-  args: {
-    sections: [
-      { title: 'Accounts', data: mockAccounts },
-      { title: 'Contacts', data: mockContacts },
-    ],
-    showSectionHeaders: false,
-  },
-};
-
-export const LongList: Story = {
-  args: {
-    data: [
-      ...mockAccounts,
-      ...mockContacts,
-      ...mockRecent,
-      // Add more items to demonstrate scrolling
-      ...Array.from({ length: 20 }, (_, i) => ({
-        id: `long-${i}`,
-        name: `Generated Item ${i + 1}`,
-        address: `0x${i.toString().padStart(40, '0')}`,
-        type: 'contact' as const,
-        showEditButton: true,
-      })),
-    ],
-  },
-};
-
-export const Interactive: Story = {
-  args: {
-    data: mockAccounts,
-    onItemPress: (item) => alert(`Pressed: ${item.name}`),
-    onItemEdit: (item) => alert(`Edit: ${item.name}`),
-    onItemCopy: (item) => alert(`Copy: ${item.address}`),
-    onRefresh: () => console.log('Refreshing...'),
   },
 };

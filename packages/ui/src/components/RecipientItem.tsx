@@ -1,5 +1,6 @@
 import { Copy, Link } from '@onflow/frw-icons';
-import { Card, XStack, YStack, Avatar, Text } from 'tamagui';
+import React from 'react';
+import { Card, XStack, YStack, Text } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { Skeleton } from '../foundation/Skeleton';
@@ -23,6 +24,7 @@ export interface RecipientItemProps {
   // Avatar/Icon
   avatar?: string;
   avatarSize?: number;
+  parentAvatar?: string; // Small overlay avatar for linked accounts
 
   // Actions
   onPress?: () => void;
@@ -46,13 +48,14 @@ export function RecipientItem({
   isEVM = false,
   avatar,
   avatarSize = 36,
+  parentAvatar,
   onPress,
   onCopy,
   pressStyle,
-}: RecipientItemProps) {
+}: RecipientItemProps): React.JSX.Element {
   return (
     <Card
-      p={0}
+      mb="$0.75"
       bg="transparent"
       borderRadius="$4"
       pressStyle={pressStyle || { opacity: 0.8, scale: 0.98 }}
@@ -62,40 +65,54 @@ export function RecipientItem({
       borderColor={isSelected ? '$primary' : 'transparent'}
       borderWidth={isSelected ? 2 : 0}
     >
-      <XStack items="center" gap={12} p="$3">
+      <XStack items="center">
         {/* Avatar/Icon Container with fixed frame matching Figma specs */}
         <XStack width={46} height={36} position="relative">
-          {avatar ? (
-            <Avatar
-              src={avatar}
-              size={avatarSize}
-              fallback={type === 'account' ? '🦊' : type.charAt(0).toUpperCase()}
-              style={{
-                position: 'absolute',
-                left: 5,
-                top: 0,
-              }}
-            />
-          ) : (
+          {/* Main Avatar Circle - Always show background */}
+          <YStack
+            position="absolute"
+            style={{
+              left: 5,
+              top: 0,
+            }}
+            width={avatarSize}
+            height={avatarSize}
+            rounded={avatarSize / 2}
+            bg="rgba(255, 255, 255, 0.25)"
+            items="center"
+            justify="center"
+          >
+            <Text
+              fontSize={18}
+              color="rgba(255, 255, 255, 0.8)"
+              fontWeight="600"
+              lineHeight={18 * 1.2}
+              letterSpacing={-0.1}
+            >
+              {avatar || (type === 'account' ? '🦊' : type.charAt(0).toUpperCase())}
+            </Text>
+          </YStack>
+
+          {/* Small overlay avatar for parent account */}
+          {parentAvatar && (
             <YStack
               position="absolute"
-              left={5}
-              top={0}
-              width={avatarSize}
-              height={avatarSize}
-              borderRadius={avatarSize / 2}
-              backgroundColor="rgba(255, 255, 255, 0.25)"
-              alignItems="center"
-              justifyContent="center"
+              style={{
+                left: -1,
+                top: -2,
+              }}
+              width={18}
+              height={18}
+              rounded={9}
+              bg="#D9D9D9"
+              borderWidth={2}
+              borderColor="#0A0A0B"
+              items="center"
+              justify="center"
+              p={1}
             >
-              <Text
-                fontSize={18}
-                color="rgba(255, 255, 255, 0.8)"
-                fontWeight="600"
-                lineHeight={18 * 1.2}
-                letterSpacing={-0.1}
-              >
-                {type === 'account' ? '🦊' : type.charAt(0).toUpperCase()}
+              <Text fontSize={10} fontWeight="600">
+                {parentAvatar}
               </Text>
             </YStack>
           )}
@@ -163,7 +180,7 @@ export function RecipientItem({
               width={24}
               height={24}
               opacity={0.5}
-              onPress={(e: any) => {
+              onPress={(e: React.BaseSyntheticEvent) => {
                 e.stopPropagation();
                 onCopy();
               }}
@@ -179,18 +196,18 @@ export function RecipientItem({
 }
 
 // Type variants for easier usage
-export const AccountItem = (props: Omit<RecipientItemProps, 'type'>) => (
+export const AccountItem = (props: Omit<RecipientItemProps, 'type'>): React.JSX.Element => (
   <RecipientItem {...props} type="account" showBalance />
 );
 
-export const ContactItem = (props: Omit<RecipientItemProps, 'type'>) => (
+export const ContactItem = (props: Omit<RecipientItemProps, 'type'>): React.JSX.Element => (
   <RecipientItem {...props} type="contact" showCopyButton />
 );
 
-export const RecentItem = (props: Omit<RecipientItemProps, 'type'>) => (
+export const RecentItem = (props: Omit<RecipientItemProps, 'type'>): React.JSX.Element => (
   <RecipientItem {...props} type="recent" />
 );
 
-export const UnknownAddressItem = (props: Omit<RecipientItemProps, 'type'>) => (
+export const UnknownAddressItem = (props: Omit<RecipientItemProps, 'type'>): React.JSX.Element => (
   <RecipientItem {...props} type="unknown" showCopyButton />
 );

@@ -40,6 +40,7 @@ export * from './components/Badge';
 export * from './components/PercentageChangeBadge';
 export * from './components/RecipientItem';
 export * from './components/RecipientList';
+export * from './components/AddressBookSection';
 export * from './components/SearchableTabLayout';
 export * from './components/CollectionHeader';
 export * from './components/NFTGrid';

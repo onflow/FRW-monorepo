@@ -2,10 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import React from 'react';
 import { YStack } from 'tamagui';
 
-import {
-  RecipientItem,
-  AccountItem,
-} from '../src/components/RecipientItem';
+import { RecipientItem, AccountItem } from '../src/components/RecipientItem';
 
 const meta: Meta<typeof RecipientItem> = {
   title: 'Components/RecipientItem',
@@ -39,7 +36,7 @@ const meta: Meta<typeof RecipientItem> = {
     onCopy: { action: 'copy' },
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack p="$4" width={400}>
         <Story />
       </YStack>
@@ -120,12 +117,12 @@ export const Disabled: Story = {
 
 // Preset variants stories
 export const AccountVariant: Story = {
-  render: (args) => (
+  render: (): React.JSX.Element => (
     <AccountItem
       name="My Main Account"
       address="0x1234567890abcdef1234567890abcdef12345678"
       balance="1,250.50 FLOW"
-      onPress={() => console.log('Account pressed')}
+      onPress={() => void 0}
     />
   ),
 };
@@ -163,5 +160,18 @@ export const LinkedEVMAccount: Story = {
     isLinked: true,
     isEVM: true,
     avatar: '🐧',
+  },
+};
+
+export const LinkedAccountWithParent: Story = {
+  args: {
+    name: 'Penguin',
+    address: '0x0c666c888d8fb259',
+    type: 'account',
+    balance: "550.66 Flow | 12 NFT's",
+    showBalance: true,
+    isLinked: true,
+    avatar: '🐧',
+    parentAvatar: '🐼',
   },
 };
