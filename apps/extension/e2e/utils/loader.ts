@@ -11,7 +11,27 @@ export const test = base.extend<{
   extensionId: string;
 }>({
   context: async ({}, call) => {
-    const pathToExtension = path.join(import.meta.dirname, '../../dist');
+    // In CI, the extension might be in a different location due to artifact download
+    let pathToExtension = path.join(import.meta.dirname, '../../dist');
+
+    // If we're in CI and the extension doesn't exist at the expected path, try alternative locations
+    if (process.env.CI && !fs.existsSync(pathToExtension)) {
+      console.log('CI environment detected, checking alternative extension paths...');
+
+      // Try the current working directory + dist
+      const cwdDist = path.join(process.cwd(), 'dist');
+      if (fs.existsSync(cwdDist)) {
+        pathToExtension = cwdDist;
+        console.log(`Using extension from CWD: ${pathToExtension}`);
+      } else {
+        // Try the absolute path from the workspace root
+        const workspaceDist = path.join(process.cwd(), 'apps', 'extension', 'dist');
+        if (fs.existsSync(workspaceDist)) {
+          pathToExtension = workspaceDist;
+          console.log(`Using extension from workspace: ${pathToExtension}`);
+        }
+      }
+    }
     // Figure out folder to use
     // Check if setup, test, or teardown
     const projectName = test.info().project.name;
@@ -34,6 +54,21 @@ export const test = base.extend<{
     }
 
     console.log(`Launching extension for project ${projectName} with data dir ${dataDir}`);
+    console.log(`Extension path: ${pathToExtension}`);
+    console.log(`Extension directory exists: ${fs.existsSync(pathToExtension)}`);
+
+    if (fs.existsSync(pathToExtension)) {
+      const files = fs.readdirSync(pathToExtension);
+      console.log(`Extension directory contents: ${files.join(', ')}`);
+
+      const manifestPath = path.join(pathToExtension, 'manifest.json');
+      if (fs.existsSync(manifestPath)) {
+        const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+        console.log(`Manifest name: ${manifest.name}, version: ${manifest.version}`);
+      } else {
+        console.log('Manifest.json not found in extension directory');
+      }
+    }
 
     const context = await chromium.launchPersistentContext(dataDir, {
       channel: 'chromium',
@@ -45,6 +80,11 @@ export const test = base.extend<{
         '--lang=en-US',
         '--no-sandbox',
         '--disable-dev-shm-usage',
+        '--disable-web-security',
+        '--disable-features=VizDisplayCompositor',
+        '--disable-background-timer-throttling',
+        '--disable-backgrounding-occluded-windows',
+        '--disable-renderer-backgrounding',
       ],
       locale: 'en-US',
       env: {
@@ -57,6 +97,35 @@ export const test = base.extend<{
 
     // Give the extension time to initialize
     await new Promise((resolve) => setTimeout(resolve, 5000));
+
+    // Verify extension is loaded
+    const page = await context.newPage();
+    await page.goto('chrome://extensions/');
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    try {
+      const extensionCards = await page.$$('extensions-item');
+      console.log(`Extension verification: Found ${extensionCards.length} extensions`);
+
+      if (extensionCards.length === 0) {
+        console.log('No extensions found - checking if extension directory exists');
+        const extensionExists = fs.existsSync(pathToExtension);
+        console.log(`Extension directory exists: ${extensionExists}`);
+        if (extensionExists) {
+          const manifestPath = path.join(pathToExtension, 'manifest.json');
+          const manifestExists = fs.existsSync(manifestPath);
+          console.log(`Manifest exists: ${manifestExists}`);
+          if (manifestExists) {
+            const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+            console.log(`Manifest name: ${manifest.name}`);
+          }
+        }
+      }
+    } catch (err) {
+      console.log(`Error verifying extension: ${err.message}`);
+    }
+
+    await page.close();
 
     await call(context);
     await context.close();
@@ -94,21 +163,33 @@ export const test = base.extend<{
         await page.goto('chrome://extensions/');
         await new Promise((resolve) => setTimeout(resolve, 2000));
 
-        // Try to trigger the extension popup to start the service worker
+        // Try to trigger the extension service worker by opening background page
         try {
           const testExtensionId =
             process.env.TEST_EXTENSION_ID || 'cfiagdgiikmjgfjnlballglniejjgegi';
-          await page.goto(`chrome-extension://${testExtensionId}/popup.html`);
+
+          // Try to open the background page first
+          await page.goto(`chrome-extension://${testExtensionId}/background.html`);
           await new Promise((resolve) => setTimeout(resolve, 2000));
 
           // Check for service worker again
           [background] = context.serviceWorkers();
           if (background) {
             extensionId = background.url().split('/')[2];
-            console.log(`Extension ID from popup trigger: ${extensionId}`);
+            console.log(`Extension ID from background page trigger: ${extensionId}`);
+          } else {
+            // Try popup as fallback
+            await page.goto(`chrome-extension://${testExtensionId}/popup.html`);
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+
+            [background] = context.serviceWorkers();
+            if (background) {
+              extensionId = background.url().split('/')[2];
+              console.log(`Extension ID from popup trigger: ${extensionId}`);
+            }
           }
         } catch (err) {
-          console.log(`Error triggering popup: ${err.message}`);
+          console.log(`Error triggering extension: ${err.message}`);
         }
 
         // Try to get extension ID from chrome://extensions page
