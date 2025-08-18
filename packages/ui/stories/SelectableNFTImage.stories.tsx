@@ -46,13 +46,6 @@ export const Default: Story = {
   },
 };
 
-export const Selectable: Story = {
-  args: {
-    src: mockImage,
-    selectable: true,
-  },
-};
-
 export const Selected: Story = {
   args: {
     src: mockImage,
@@ -113,14 +106,4 @@ export const TallAspectRatio: Story = {
       </YStack>
     ),
   ],
-};
-
-export const CustomBorderRadius: Story = {
-  args: {
-    src: mockImage,
-    borderRadius: '$6',
-    selectable: true,
-    selected: true,
-    size: 'medium',
-  },
 };
