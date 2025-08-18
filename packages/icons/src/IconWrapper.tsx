@@ -36,22 +36,23 @@ export const IconWrapper: React.FC<IconWrapperProps> = ({
 
     const checkColors = (element: React.ReactElement): { hasSpecialEffects: boolean } => {
       let hasSpecialEffects = false;
+      const props = element.props as any;
 
-      if (element.props.stroke && element.props.stroke !== 'none') {
+      if (props.stroke && props.stroke !== 'none') {
         hasStroke = true;
-        colorCount.add(element.props.stroke);
+        colorCount.add(props.stroke);
       }
-      if (element.props.fill && element.props.fill !== 'none') {
+      if (props.fill && props.fill !== 'none') {
         hasFill = true;
-        colorCount.add(element.props.fill);
+        colorCount.add(props.fill);
         // Check for special effects
-        if (element.props.fill.startsWith('url(')) {
+        if (props.fill.startsWith('url(')) {
           hasSpecialEffects = true; // Gradients, patterns
         }
       }
 
       // Check for opacity effects - only consider very low opacity as special effects (like backgrounds)
-      if (element.props.opacity && parseFloat(element.props.opacity) <= 0.2) {
+      if (props.opacity && parseFloat(props.opacity) <= 0.2) {
         hasSpecialEffects = true;
       }
 
@@ -59,7 +60,7 @@ export const IconWrapper: React.FC<IconWrapperProps> = ({
       // They will be removed anyway by our color processing
 
       // Recursively check nested elements
-      React.Children.forEach(element.props.children, (child) => {
+      React.Children.forEach(props.children, (child) => {
         if (React.isValidElement(child)) {
           const nested = checkColors(child);
           if (nested.hasSpecialEffects) {
@@ -103,7 +104,8 @@ export const IconWrapper: React.FC<IconWrapperProps> = ({
   const processedChildren = React.Children.map(children, (child) => {
     if (React.isValidElement(child)) {
       // Clone the child and modify its props based on theme
-      const newProps = { ...child.props } as React.SVGProps<SVGElement>;
+      const childProps = child.props as any;
+      const newProps = { ...childProps };
 
       // Apply color theming
       switch (finalTheme) {
@@ -129,7 +131,7 @@ export const IconWrapper: React.FC<IconWrapperProps> = ({
 
         case 'dual-tone':
           // For dual-tone, keep original colors but allow override for stroke
-          if (child.props.stroke) {
+          if (childProps.stroke) {
             newProps.stroke = color;
           }
           // Keep original fill colors for dual-tone effect but reset stroke opacity
@@ -148,7 +150,8 @@ export const IconWrapper: React.FC<IconWrapperProps> = ({
       if (newProps.children) {
         newProps.children = React.Children.map(newProps.children, (nestedChild) => {
           if (React.isValidElement(nestedChild)) {
-            const nestedProps = { ...nestedChild.props } as React.SVGProps<SVGElement>;
+            const nestedChildProps = nestedChild.props as any;
+            const nestedProps = { ...nestedChildProps };
 
             // Apply the same color theming to nested elements
             switch (finalTheme) {
@@ -167,7 +170,7 @@ export const IconWrapper: React.FC<IconWrapperProps> = ({
                 nestedProps.opacity = 1;
                 break;
               case 'dual-tone':
-                if (nestedChild.props.stroke) {
+                if (nestedChildProps.stroke) {
                   nestedProps.stroke = color;
                 }
                 nestedProps.strokeOpacity = 1;
