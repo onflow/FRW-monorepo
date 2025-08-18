@@ -55,7 +55,6 @@ export default function NFTListCard({
             resizeMode="cover"
             fillContainer={true}
           />
-
           {/* ERC1155 Account Badge */}
           {isERC1155(nft) && nft.amount && (
             <View className="absolute top-2 left-2 bg-sf-1 rounded-full px-2 py-1">

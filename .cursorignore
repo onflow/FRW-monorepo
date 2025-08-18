@@ -4,7 +4,6 @@ pnpm-lock.yaml
 
 # Build outputs
 dist/
-build/
 .next/
 out/
 
@@ -155,4 +154,4 @@ fastlane/test_output
 .yarn/unplugged
 .yarn/build-state.yml
 .yarn/install-state.gz
-.pnp.* 
+.pnp.*

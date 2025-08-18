@@ -1,5 +1,6 @@
 import { CssBaseline } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { extensionTamaguiConfig } from '@onflow/frw-ui';
 import React, { useEffect } from 'react';
 import { Route, HashRouter as Router, Routes, useLocation } from 'react-router';
 import { TamaguiProvider } from 'tamagui';
@@ -13,7 +14,6 @@ import { PlatformProvider } from '@/bridge/PlatformContext';
 import PrivateRoute from '@/ui/components/PrivateRoute';
 import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';
 import themeOptions from '@/ui/style/LLTheme';
-import { extensionTamaguiConfig } from '@/ui/theme';
 import { WalletProvider } from '@/ui/utils/WalletContext';
 
 // Uncomment this when we need to test api-test
