@@ -24,3 +24,17 @@ export function getDisplayBalanceWithSymbol(token: TokenModel): string {
   if (isNaN(num)) return '';
   return `${formatCurrencyStringForDisplay({ value: num })} ${token.symbol ?? ''}`.trim();
 }
+/// A.{address}.{contractName}.Vault
+export function getTokenResourceIdentifier(token: TokenModel | null): string | null {
+  if (token?.identifier) {
+    if (token.identifier.includes('Vault')) {
+      return token.identifier;
+    } else {
+      return `${token.identifier}.Vault`;
+    }
+  }
+  if (!token || !token.contractAddress || !token.contractName) {
+    return null;
+  }
+  return `A.${token.contractAddress}.${token.contractName}.Vault`;
+}

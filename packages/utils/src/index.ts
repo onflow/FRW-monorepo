@@ -9,6 +9,8 @@ export {
   hasNFTMedia,
   getNFTDisplayName,
   isERC1155,
+  getNFTResourceIdentifier,
+  getCollectionResourceIdentifier,
 } from './nft';
 
 // General utilities
@@ -24,7 +26,11 @@ export {
 } from './utils';
 
 // Token utilities
-export { getDisplayBalanceInFLOW, getDisplayBalanceWithSymbol } from './token';
+export {
+  getDisplayBalanceInFLOW,
+  getDisplayBalanceWithSymbol,
+  getTokenResourceIdentifier,
+} from './token';
 
 // Logger utilities
 export { createLogger, Logger, logger, setGlobalLogger } from './logger';
