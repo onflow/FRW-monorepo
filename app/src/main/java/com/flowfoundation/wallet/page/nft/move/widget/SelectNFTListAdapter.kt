@@ -12,7 +12,7 @@ import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.ItemSelectNftBinding
 import com.flowfoundation.wallet.page.nft.move.SelectNFTViewModel
 import com.flowfoundation.wallet.page.nft.move.model.NFTInfo
-// import com.flowfoundation.wallet.page.nft.nftlist.getBase64SvgModel
+import com.flowfoundation.wallet.utils.SVGUtils
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.toast
@@ -64,10 +64,30 @@ private class SelectNFTItemViewHolder(
     override fun bind(model: NFTInfo) {
         this.nft = model
         with(binding) {
-            Glide.with(ivNftImage)
-                .load(model.cover) // Simplified - no SVG processing
-                .transform(RoundedCorners(16.dp2px().toInt()))
-                .placeholder(R.drawable.ic_placeholder).into(ivNftImage)
+            // Smart load with SVG support and transformations
+            val borderRadius = 16.dp2px()
+            val svgWebView = SVGUtils.smartLoadImageWithTransforms(
+                ivNftImage,
+                model.cover,
+            )
+            if (svgWebView != null) {
+                // SVG loaded with WebView
+                svgWebView.onLoadError = { error ->
+                    // Fallback to regular image loading with transformations
+                    Glide.with(ivNftImage)
+                        .load(model.cover)
+                        .transform(RoundedCorners(borderRadius.toInt()))
+                        .placeholder(R.drawable.ic_placeholder)
+                        .into(ivNftImage)
+                }
+            } else {
+                // Regular image loading with transformations
+                Glide.with(ivNftImage)
+                    .load(model.cover)
+                    .transform(RoundedCorners(borderRadius.toInt()))
+                    .placeholder(R.drawable.ic_placeholder)
+                    .into(ivNftImage)
+            }
         }
         changeSelectStatus(false)
     }

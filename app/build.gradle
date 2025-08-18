@@ -133,13 +133,13 @@ android {
         }
 
         dev {
-            minifyEnabled false  // Temporarily disable to test SVG crash
-            shrinkResources false  
-            multiDexEnabled true   // Enable multidex like debug
-            debuggable true        // Enable debugging
+            minifyEnabled true
+            shrinkResources true
+            multiDexEnabled false
+            debuggable false
             applicationIdSuffix = ".dev"
             signingConfig signingConfigs.release
-            // proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro' // Disable ProGuard temporarily
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             matchingFallbacks = ['debug', 'qa', 'release']
 
             firebaseAppDistribution {

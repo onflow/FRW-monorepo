@@ -6,7 +6,8 @@ import android.widget.ImageView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.Transformation
 import com.flowfoundation.wallet.R
-// import com.flowfoundation.wallet.page.nft.nftlist.getBase64SvgModel
+import com.flowfoundation.wallet.page.nft.nftlist.isSvgUrl
+import com.flowfoundation.wallet.widgets.SVGWebView
 import java.net.URLEncoder
 
 
@@ -33,7 +34,7 @@ fun String.parseBoringAvatar(): String {
 }
 
 private fun ImageView.loadAvatarNormal(url: String, placeholderEnable: Boolean = true, transformation: Transformation<Bitmap>? = null) {
-    var request = Glide.with(this).load(url) // Simplified - no SVG processing
+    var request = Glide.with(this).load(url)
 
     if (placeholderEnable) {
         request = request.placeholder(R.drawable.ic_placeholder)
@@ -42,4 +43,35 @@ private fun ImageView.loadAvatarNormal(url: String, placeholderEnable: Boolean =
         request = request.transform(transformation)
     }
     request.into(this)
+}
+
+/**
+ * Load image with SVG support
+ * If the URL is SVG, creates and returns SVGWebView, otherwise uses normal ImageView loading
+ */
+fun ImageView.loadImageWithSvgSupport(url: String?, placeholderEnable: Boolean = true): SVGWebView? {
+    if (url.isSvgUrl()) {
+        // Create SVGWebView to replace ImageView functionality
+        val svgWebView = SVGWebView(context)
+        svgWebView.loadSvg(url!!)
+
+        // Set up error handling
+        svgWebView.onLoadError = { error ->
+            logd("SVGWebView", "Failed to load SVG: $error")
+            // Fallback to regular image loading
+            if (placeholderEnable) {
+                setImageResource(R.drawable.ic_placeholder)
+            }
+        }
+
+        return svgWebView
+    } else {
+        // Regular image loading
+        var request = Glide.with(this).load(url)
+        if (placeholderEnable) {
+            request = request.placeholder(R.drawable.ic_placeholder)
+        }
+        request.into(this)
+        return null
+    }
 }

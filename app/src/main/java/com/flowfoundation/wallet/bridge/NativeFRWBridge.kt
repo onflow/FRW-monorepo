@@ -254,7 +254,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         }
     }
 
-    override fun closeRN() {
+    override fun closeRN(id: String?) {
         try {
             val currentActivity = reactApplicationContext.currentActivity
             currentActivity?.finish()

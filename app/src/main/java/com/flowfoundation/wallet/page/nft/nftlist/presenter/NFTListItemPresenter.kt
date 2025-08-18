@@ -16,6 +16,8 @@ import com.flowfoundation.wallet.page.nft.nftlist.widget.NftItemPopupMenu
 import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollectionManager
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.SVGUtils
+import com.flowfoundation.wallet.utils.logd
 
 class NFTListItemPresenter(
     private val view: View,
@@ -28,16 +30,40 @@ class NFTListItemPresenter(
         val nft = model.nft
         val fromAddress = model.accountAddress
         with(binding) {
-            Glide.with(coverView).load(nft.getNFTCover())
-                .transform(RoundedCorners(10.dp2px().toInt()))
-                .placeholder(R.drawable.ic_placeholder).into(coverView)
+            // Smart load with SVG support and preserved transformations
+            val borderRadius = 10.dp2px()
+            val svgWebView = SVGUtils.smartLoadImageWithTransforms(
+                coverView,
+                nft.getNFTCover() as? String,
+            ) { _ ->
+                // Handle SVGWebView click - same as coverViewWrapper click
+                logd("NFTListItemPresenter", "SVGWebView clicked for NFT: ${nft.uniqueId()}")
+                NftDetailActivity.launch(context, nft.uniqueId(), nft.getCollectionContractId(), nft.contractName(), fromAddress)
+            }
+            if (svgWebView != null) {
+                // SVG loaded with WebView - rounded corners handled by CSS
+                svgWebView.onLoadError = { error ->
+                    // Fallback to regular image loading with transformations
+                    Glide.with(coverView).load(nft.getNFTCover())
+                        .transform(RoundedCorners(borderRadius.toInt()))
+                        .placeholder(R.drawable.ic_placeholder)
+                        .into(coverView)
+                }
+            } else {
+                // Regular image loading with transformations
+                Glide.with(coverView).load(nft.getNFTCover())
+                    .transform(RoundedCorners(borderRadius.toInt()))
+                    .placeholder(R.drawable.ic_placeholder)
+                    .into(coverView)
+            }
             nameView.text = nft.title() ?: nft.title ?: nft.contractName()
             priceView.text = nft.postMedia?.description ?: ""
-
             coverViewWrapper.setOnClickListener {
+                logd("NFTListItemPresenter", "coverViewWrapper clicked for NFT: ${nft.uniqueId()}")
                 NftDetailActivity.launch(context, nft.uniqueId(), nft.getCollectionContractId(), nft.contractName(), fromAddress)
             }
             coverViewWrapper.setOnLongClickListener {
+                logd("NFTListItemPresenter", "coverViewWrapper long clicked for NFT: ${nft.uniqueId()}")
                 NftItemPopupMenu(coverView, model.nft).show()
                 true
             }
@@ -48,6 +74,7 @@ class NFTListItemPresenter(
             tvAmount.text = nft.amount ?: "1"
         }
         view.setOnClickListener {
+            logd("NFTListItemPresenter", "main view clicked for NFT: ${nft.uniqueId()}")
             NftDetailActivity.launch(context, nft.uniqueId(), nft.getCollectionContractId(), nft.contractName(), fromAddress)
         }
         bindAccessible(model)

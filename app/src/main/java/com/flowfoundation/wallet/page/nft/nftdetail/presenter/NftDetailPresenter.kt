@@ -44,6 +44,7 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.safeRun
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
+import com.flowfoundation.wallet.utils.SVGUtils
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
@@ -244,9 +245,26 @@ class NftDetailPresenter(
     }
 
     private fun bindCover(nft: Nft) {
-        Glide.with(binding.coverView)
-            .load(nft.getNFTCover())
-            .into(binding.coverView)
+        // Smart load with SVG support for cover image
+        val svgWebView = SVGUtils.replaceImageViewWithSvgWebView(
+            binding.coverView, 
+            nft.getNFTCover() as? String, 
+            true
+        )
+        if (svgWebView != null) {
+            // SVG loaded with WebView
+            svgWebView.onLoadError = { error ->
+                // Fallback to regular image loading
+                Glide.with(binding.coverView)
+                    .load(nft.getNFTCover())
+                    .into(binding.coverView)
+            }
+        } else {
+            // Regular image loading
+            Glide.with(binding.coverView)
+                .load(nft.getNFTCover())
+                .into(binding.coverView)
+        }
     }
 
     private fun bindTags(nft: Nft) {

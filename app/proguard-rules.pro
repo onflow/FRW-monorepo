@@ -72,12 +72,8 @@
 -keep class * implements com.google.gson.JsonDeserializer
 -keep class com.google.gson.reflect.TypeToken {*;}
 
-# SvgModel
--keep class com.flowfoundation.wallet.utils.image.SvgModel
--keep class com.flowfoundation.wallet.utils.image.SvgModelLoader
--keep class com.flowfoundation.wallet.utils.image.SvgDataFetcher
--keep class com.flowfoundation.wallet.utils.image.SvgModelLoaderFactory
--keep class com.flowfoundation.wallet.utils.image.SvgGlideModule extends com.bumptech.glide.module.AppGlideModule { *; }
+# SVGWebView
+-keep class com.flowfoundation.wallet.widgets.SVGWebView { *; }
 
 # GoogleDrive
 -keep class com.google.** { *;}
