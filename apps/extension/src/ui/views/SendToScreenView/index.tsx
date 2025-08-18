@@ -1,19 +1,24 @@
 import { SendToScreen } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import { type RecipientData } from '@onflow/frw-ui';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
+import { getCachedData, accountBalanceKey } from '@/data-model';
 import { type Contact } from '@/shared/types';
+import { isValidEthereumAddress } from '@/shared/utils';
 import { LLHeader } from '@/ui/components/LLHeader';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useContacts } from '@/ui/hooks/useContactHook';
+import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 
 const SendToScreenView = () => {
   const navigate = useNavigate();
   const params = useParams();
   const wallet = useWallet();
+
+  const [accountBalances, setAccountBalances] = useState<Record<string, string>>({});
   const {
     recentContacts,
     addressBookContacts,
@@ -21,10 +26,18 @@ const SendToScreenView = () => {
     evmAccounts,
     childAccountsContacts,
   } = useContacts();
-  const { childAccounts, currentWallet, userInfo, evmAddress } = useProfiles();
+  const {
+    childAccounts,
+    currentWallet,
+    userInfo,
+    evmAddress,
+    walletList,
+    evmWallet,
+    currentBalance,
+  } = useProfiles();
+  const { network } = useNetwork();
 
-  // Access send store state
-  const { selectedToken, currentStep } = useSendStore();
+  const { selectedToken } = useSendStore();
 
   // Get token ID from URL params, selected token, or default to 'flow'
   const tokenId = params.id || selectedToken?.symbol?.toLowerCase() || 'flow';
@@ -37,11 +50,77 @@ const SendToScreenView = () => {
     }
   }, [selectedToken, navigate]);
 
+  // Load balances when accounts become available
+  useEffect(() => {
+    const loadBalances = async () => {
+      const newBalances: Record<string, string> = {};
+
+      // Load balances for wallet accounts
+      if (walletList?.length > 0) {
+        for (const account of walletList) {
+          try {
+            const balanceKey = accountBalanceKey(network, account.address);
+            const balance = (await getCachedData(balanceKey)) as string;
+            if (balance !== undefined) {
+              const formattedBalance = formatBalance(balance);
+              newBalances[account.address] = formattedBalance || '0 FLOW';
+            } else {
+              newBalances[account.address] = 'Loading...';
+            }
+          } catch (error) {
+            console.error('Error loading balance for', account.address, error);
+            newBalances[account.address] = 'Error';
+          }
+        }
+      }
+
+      // Load balance for EVM account
+      if (evmWallet?.address) {
+        try {
+          const balanceKey = accountBalanceKey(network, evmWallet.address);
+          const balance = (await getCachedData(balanceKey)) as string;
+          if (balance !== undefined) {
+            const formattedBalance = formatBalance(balance);
+            newBalances[evmWallet.address] = formattedBalance || '0 FLOW';
+          } else {
+            newBalances[evmWallet.address] = 'Loading...';
+          }
+        } catch (error) {
+          console.error('Error loading EVM balance', error);
+          newBalances[evmWallet.address] = 'Error';
+        }
+      }
+
+      // Load balances for child accounts
+      if (childAccounts && childAccounts.length > 0) {
+        for (const account of childAccounts) {
+          try {
+            const balanceKey = accountBalanceKey(network, account.address);
+            const balance = (await getCachedData(balanceKey)) as string;
+            if (balance !== undefined) {
+              const formattedBalance = formatBalance(balance);
+              newBalances[account.address] = formattedBalance || '0 FLOW';
+            } else {
+              newBalances[account.address] = 'Loading...';
+            }
+          } catch (error) {
+            console.error('Error loading child balance for', account.address, error);
+            newBalances[account.address] = 'Error';
+          }
+        }
+      }
+
+      setAccountBalances(newBalances);
+    };
+
+    loadBalances();
+  }, [walletList, evmWallet, childAccounts, network]);
+
   // Convert extension contacts to RecipientData format
   const convertContactToRecipient = useCallback((contact: Contact): RecipientData => {
     try {
       // Handle different contact structures (regular contacts vs EVM contacts)
-      const isEvmContact = contact.chain !== undefined || !contact.contact_type;
+      const isEvmContact = isValidEthereumAddress(contact.address);
 
       // Map contact types to RecipientItem accepted types
       let recipientType: 'account' | 'contact' | 'recent' | 'unknown';
@@ -66,55 +145,141 @@ const SendToScreenView = () => {
 
       return {
         id: uniqueId,
-        name: contact.contact_name || contact.name || contact.username || 'Contact',
+        name: contact.contact_name || contact.username || 'Contact',
         address: contact.address,
         type: recipientType,
         balance: recipientType === 'account' ? '0 FLOW' : undefined,
         showBalance: recipientType === 'account',
-        avatar: contact.avatar || contact.icon,
+        avatar: contact.avatar,
       };
     } catch (error) {
       console.error('Error converting contact:', contact, error);
-      // Return a fallback recipient
       return {
         id: contact.address || 'unknown',
-        name: contact.contact_name || contact.name || 'Unknown Contact',
+        name: contact.contact_name || 'Unknown Contact',
         address: contact.address || '',
         type: 'contact',
         balance: undefined,
         showBalance: false,
-        avatar: contact.avatar || contact.icon,
+        avatar: contact.avatar,
       };
     }
   }, []);
+
+  // Helper to format balance for display
+  const formatBalance = useCallback((bal?: string) => {
+    if (!bal) return undefined;
+    if (bal === '0') return '0 FLOW';
+    const numBalance = parseFloat(bal);
+    if (numBalance < 0.01) return '< 0.01 FLOW';
+    return `${numBalance.toFixed(2)} FLOW`;
+  }, []);
+
+  // Convert wallet account to RecipientData (balance will be passed in)
+  const convertWalletToRecipient = useCallback(
+    (account: any, accountType: string, balance?: string): RecipientData => {
+      const getAccountName = () => {
+        if (account.name) return account.name;
+        if (account.contact_name) return account.contact_name;
+
+        switch (accountType) {
+          case 'main':
+            return 'Main Account';
+          case 'evm':
+            return 'EVM Account';
+          case 'child':
+            return 'Child Account';
+          default:
+            return `${accountType.toUpperCase()} Account`;
+        }
+      };
+
+      const getAccountAvatar = () => {
+        if (account.icon) return account.icon;
+        if (account.avatar) return account.avatar;
+      };
+
+      return {
+        id: `${accountType}-${account.address}`,
+        name: getAccountName(),
+        address: account.address,
+        type: 'account' as const,
+        balance: balance === '...' ? '...' : balance,
+        isLoading: balance === '...',
+        showBalance: true,
+        avatar: getAccountAvatar(),
+        showEditButton: false,
+        showCopyButton: true,
+      };
+    },
+    [formatBalance]
+  );
 
   // Data loading functions for the SendToScreen
   const loadAccountsData = useCallback(async (): Promise<RecipientData[]> => {
     const recipientsData: RecipientData[] = [];
 
-    // Add cadence accounts (main wallet accounts)
-    if (cadenceAccounts?.length > 0) {
-      cadenceAccounts.forEach((account) => {
-        recipientsData.push(convertContactToRecipient(account));
-      });
-    }
+    try {
+      // Add main wallet accounts with loaded balances
+      if (walletList?.length > 0) {
+        walletList.forEach((account) => {
+          const balance = accountBalances[account.address] || '...';
+          recipientsData.push(convertWalletToRecipient(account, 'main', balance));
+        });
+      }
 
-    // Add EVM accounts
-    if (evmAccounts?.length > 0) {
-      evmAccounts.forEach((account) => {
-        recipientsData.push(convertContactToRecipient(account));
-      });
-    }
+      // Add EVM account if available with loaded balance
+      if (evmWallet && evmWallet.address) {
+        const balance = accountBalances[evmWallet.address] || '...';
+        recipientsData.push(convertWalletToRecipient(evmWallet, 'evm', balance));
+      }
 
-    // Add child accounts
-    if (childAccountsContacts?.length > 0) {
-      childAccountsContacts.forEach((account) => {
-        recipientsData.push(convertContactToRecipient(account));
-      });
+      // Add child accounts with loaded balances
+      if (childAccounts && childAccounts.length > 0) {
+        childAccounts.forEach((account) => {
+          const balance = accountBalances[account.address] || '...';
+          recipientsData.push(convertWalletToRecipient(account, 'child', balance));
+        });
+      }
+
+      console.log('Generated recipients data:', recipientsData.length, recipientsData); // Debug
+
+      // Fallback: Add cadence, EVM, and child accounts from contacts if wallet data is not available
+      if (recipientsData.length === 0) {
+        if (cadenceAccounts?.length > 0) {
+          cadenceAccounts.forEach((account) => {
+            recipientsData.push(convertContactToRecipient(account));
+          });
+        }
+
+        if (evmAccounts?.length > 0) {
+          evmAccounts.forEach((account) => {
+            recipientsData.push(convertContactToRecipient(account));
+          });
+        }
+
+        if (childAccountsContacts?.length > 0) {
+          childAccountsContacts.forEach((account) => {
+            recipientsData.push(convertContactToRecipient(account));
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error loading accounts data:', error);
     }
 
     return recipientsData;
-  }, [cadenceAccounts, evmAccounts, childAccountsContacts, convertContactToRecipient]);
+  }, [
+    walletList,
+    evmWallet,
+    childAccounts,
+    cadenceAccounts,
+    evmAccounts,
+    childAccountsContacts,
+    convertWalletToRecipient,
+    convertContactToRecipient,
+    accountBalances,
+  ]);
 
   const loadRecentData = useCallback(async (): Promise<RecipientData[]> => {
     if (recentContacts) {
@@ -161,6 +326,7 @@ const SendToScreenView = () => {
       'send.addressBook': 'AddressBook',
       'send.sendTo': 'Send_to',
       'send.searchPlaceholder': 'Search__PlaceHolder',
+      'send.noAccounts.message': 'No_accounts_found',
     };
 
     const chromeKey = keyMap[key] || key;
