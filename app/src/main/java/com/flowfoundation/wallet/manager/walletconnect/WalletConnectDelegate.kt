@@ -7,14 +7,9 @@ import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.walletconnect.model.toWcRequest
 import com.flowfoundation.wallet.page.browser.browserInstance
-import com.flowfoundation.wallet.ReactNativeDemoActivity
-import com.flowfoundation.wallet.manager.app.isTestnet
-import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.page.window.WindowFrame
 import com.flowfoundation.wallet.utils.extensions.openInSystemBrowser
 import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.utils.isShowMoveDialog
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.toast
@@ -53,12 +48,12 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
             ioScope {
                 var reconnectAttempts = 0
                 val maxReconnectAttempts = 3
-                
+
                 while (!isConnected && reconnectAttempts < maxReconnectAttempts) {
                     try {
                         delay(1000L * (reconnectAttempts + 1))
                         logd(TAG, "Reconnection attempt ${reconnectAttempts + 1} of $maxReconnectAttempts")
-                        
+
                         // Only clean up sessions if we're not processing a request
                         if (!isProcessingRequest) {
                             try {
@@ -79,7 +74,7 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                         } else {
                             logd(TAG, "Skipping session cleanup while processing request")
                         }
-                        
+
                         CoreClient.Relay.connect { error: Core.Model.Error ->
                             loge(TAG, "CoreClient.Relay connect error: $error")
                         }
@@ -90,7 +85,7 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                         reconnectAttempts++
                     }
                 }
-                
+
                 if (!isConnected) {
                     loge(TAG, "Failed to reconnect after $maxReconnectAttempts attempts")
                 }
@@ -123,7 +118,7 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
     override fun onError(error: Sign.Model.Error) {
         logd(TAG, "onError() error:$error")
         loge(error.throwable)
-        
+
         // Show user-friendly error message
         uiScope {
             val errorMessage = when {
@@ -290,18 +285,9 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                             // Determine if this is an EVM dApp request based on session proposal
                             val isEVMRequest = isEVMSessionProposal(sessionProposal)
                             logd(TAG, "Session proposal detected as EVM: $isEVMRequest")
-                            
+
                             val approve = if (isEVMRequest) {
                                 logd(TAG, "EVM request detected, showing EVM dialog")
-                                if (isShowMoveDialog()) {
-                                    logd(TAG, "Launching React Native send workflow")
-                                    ReactNativeDemoActivity.launch(
-                                        foundActivity,
-                                        "SelectTokens",
-                                        WalletManager.selectedWalletAddress().toAddress(),
-                                        if (isTestnet()) "testnet" else "mainnet"
-                                    )
-                                }
                                 EvmRequestAccountDialog().show(
                                     foundActivity.supportFragmentManager,
                                     EVMDialogModel(
@@ -316,14 +302,14 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                                     title = name,
                                     url = url,
                                     logo = icons.firstOrNull()?.toString(),
-                                    network = if (isEVMRequest) "evm" else network() // Mark as EVM if detected
+                                    network = network()
                                 )
                                 FclAuthnDialog().show(
                                     foundActivity.supportFragmentManager,
                                     data
                                 )
                             }
-                            
+
                             // Check if dialog was actually shown
                             if (approve) {
                                 isSessionApproved = true
@@ -338,7 +324,7 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                                         toast(R.string.wallet_connect_approval_error)
                                     }
                                 }
-                                
+
                                 // Show toast only if no redirect URL and browser is not active
                                 if (sessionProposal.redirect.isEmpty()) {
                                     logd(TAG, "No redirect URL, checking if browser is active")
@@ -554,17 +540,17 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
     private fun isEVMSessionProposal(sessionProposal: Sign.Model.SessionProposal): Boolean {
         try {
             logd(TAG, "Analyzing session proposal for EVM indicators")
-            
+
             // Check required namespaces for EVM chains
             sessionProposal.requiredNamespaces.forEach { (namespace, requirement) ->
                 logd(TAG, "Checking required namespace: $namespace")
-                
+
                 // EIP-155 namespace indicates Ethereum/EVM
                 if (namespace.equals("eip155", ignoreCase = true)) {
                     logd(TAG, "Found EIP-155 namespace - this is an EVM request")
                     return true
                 }
-                
+
                 // Check for specific EVM chain IDs in the chains
                 requirement.chains?.forEach { chain ->
                     logd(TAG, "Checking chain: $chain")
@@ -574,16 +560,16 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                     }
                 }
             }
-            
+
             // Check optional namespaces for EVM chains
             sessionProposal.optionalNamespaces?.forEach { (namespace, requirement) ->
                 logd(TAG, "Checking optional namespace: $namespace")
-                
+
                 if (namespace.equals("eip155", ignoreCase = true)) {
                     logd(TAG, "Found EIP-155 in optional namespace - this is an EVM request")
                     return true
                 }
-                
+
                 requirement.chains?.forEach { chain ->
                     logd(TAG, "Checking optional chain: $chain")
                     if (isEVMChain(chain)) {
@@ -592,10 +578,10 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                     }
                 }
             }
-            
+
             logd(TAG, "No EVM indicators found - treating as Flow request")
             return false
-            
+
         } catch (e: Exception) {
             loge(TAG, "Error analyzing session proposal: ${e.message}")
             loge(e)
@@ -603,7 +589,7 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
             return false
         }
     }
-    
+
     /**
      * Checks if a chain identifier represents an EVM-compatible chain
      */
@@ -613,19 +599,19 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
             chain.contains("eip155:1", ignoreCase = true) -> true     // Ethereum Mainnet
             chain.contains("eip155:5", ignoreCase = true) -> true     // Goerli Testnet
             chain.contains("eip155:11155111", ignoreCase = true) -> true // Sepolia Testnet
-            
+
             // Flow EVM chains
             chain.contains("eip155:747", ignoreCase = true) -> true   // Flow EVM Mainnet
             chain.contains("eip155:545", ignoreCase = true) -> true   // Flow EVM Testnet
-            
+
             // Other common EVM chains
             chain.contains("eip155:137", ignoreCase = true) -> true   // Polygon
             chain.contains("eip155:56", ignoreCase = true) -> true    // BSC
-            
+
             // Generic EVM indicators
             chain.contains("ethereum", ignoreCase = true) -> true
             chain.contains("evm", ignoreCase = true) -> true
-            
+
             else -> false
         }
     }

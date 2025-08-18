@@ -12,6 +12,7 @@ import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
 import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.page.browser.openBrowser
 import com.flowfoundation.wallet.ReactNativeDemoActivity
+import com.flowfoundation.wallet.bridge.RNBridge
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.wallet.dialog.SwapDialog
@@ -45,13 +46,13 @@ enum class DeepLinkPath(val path: String) {
 
 suspend fun dispatchDeepLinking(context: Context, uri: Uri) {
     logd(TAG, "dispatchDeepLinking: Processing URI: $uri")
-    
+
     // Try to handle with the new UriHandler first
     if (uri.scheme == DeepLinkScheme.TG.scheme) {
         UriHandler.processUri(context, uri)
         return
     }
-    
+
     // For backward compatibility, continue with the existing logic
     val wcUri = UriHandler.extractWalletConnectUri(uri)
     if (wcUri?.startsWith(DeepLinkScheme.WC.scheme + ":") == true) {
@@ -116,27 +117,27 @@ private suspend fun dispatchWalletConnect(uri: Uri): Boolean {
             }
             return@runCatching false
         }
-        
+
         // Initialize WalletConnect if needed
         if (!WalletConnect.isInitialized()) {
             logd(TAG, "WalletConnect is not initialized, waiting for initialization...")
-            
+
             // Wait for WalletConnect to initialize with timeout
             val initialized = withTimeoutOrNull(10000) {
                 var waitTime = 200L
                 var attempts = 0
                 val maxAttempts = 10
-                
+
                 while (!WalletConnect.isInitialized() && attempts < maxAttempts) {
                     logd(TAG, "Waiting for WalletConnect initialization, attempt ${attempts + 1} of $maxAttempts")
                     delay(waitTime)
                     attempts++
                     waitTime = minOf(waitTime * 2, 1000)
                 }
-                
+
                 WalletConnect.isInitialized()
             } ?: false
-            
+
             if (!initialized) {
                 loge(TAG, "WalletConnect initialization failed or timed out")
                 uiScope {
@@ -144,26 +145,26 @@ private suspend fun dispatchWalletConnect(uri: Uri): Boolean {
                 }
                 return@runCatching false
             }
-            
+
             logd(TAG, "WalletConnect successfully initialized")
         }
-        
+
         // Get instance and proceed with pairing
         try {
             // Try to get an instance of WalletConnect and pair
             val wcInstance = WalletConnect.get()
-            
+
             // Add a short delay to ensure all UI transitions are complete
             delay(300)
-            
+
             // Call the improved pairing method
             logd(TAG, "Initiating WalletConnect pairing with URI: $data")
             wcInstance.pair(data)
-            
+
             // Return success immediately, but the actual connection will happen asynchronously
             logd(TAG, "WalletConnect pairing initiated successfully")
             return@runCatching true
-        
+
         } catch (e: Exception) {
             loge(TAG, "Error during WalletConnect pairing: ${e.message}")
             loge(e)
@@ -227,12 +228,7 @@ private fun dispatchSend(uri: Uri, recipient: String, network: String?, value: B
             }
         } else {
             // Launch React Native send workflow instead of native SendAmountActivity
-            ReactNativeDemoActivity.launch(
-                it,
-                "SelectTokens",
-                WalletManager.selectedWalletAddress().toAddress(),
-                if (isTestnet()) "testnet" else "mainnet"
-            )
+            ReactNativeDemoActivity.launch(it, RNBridge.ScreenType.SEND_ASSET)
         }
     }
 }

@@ -10,6 +10,8 @@ import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.ReactNativeDemoActivity
 import com.flowfoundation.wallet.base.presenter.BasePresenter
+import com.flowfoundation.wallet.bridge.RNBridge
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.LayoutWalletCoordinatorHeaderBinding
 import com.flowfoundation.wallet.manager.app.isTestnet
@@ -72,7 +74,7 @@ class WalletHeaderPresenter(
 
             cvSend.setOnClickListener {
                 // Launch React Native Demo Activity instead of TransactionSendActivity
-                ReactNativeDemoActivity.launch(view.context, "SelectTokens", WalletManager.selectedWalletAddress().toAddress(), if (isTestnet()) "testnet" else "mainnet")
+                ReactNativeDemoActivity.launch(view.context, RNBridge.ScreenType.SEND_ASSET)
             }
             cvReceive.setOnClickListener { ReceiveActivity.launch(view.context) }
             val address = shortenEVMString(WalletManager.selectedWalletAddress().toAddress())

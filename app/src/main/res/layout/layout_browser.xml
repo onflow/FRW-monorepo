@@ -113,7 +113,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:background="?attr/actionBarItemBackground"
-                android:scaleType="centerInside"
+                android:scaleType="centerCrop"
                 android:src="@drawable/ic_send_simple"
                 android:tint="@color/text_1"
                 app:layout_constraintBottom_toBottomOf="@id/text_wrapper"

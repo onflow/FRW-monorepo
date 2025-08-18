@@ -14,6 +14,7 @@ import com.flowfoundation.wallet.page.browser.openBrowser
 import com.flowfoundation.wallet.page.component.deeplinking.getWalletConnectUri
 import com.flowfoundation.wallet.ReactNativeDemoActivity
 import com.flowfoundation.wallet.manager.app.isTestnet
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.utils.addressPattern
 import com.flowfoundation.wallet.utils.evmAddressPattern
 import com.flowfoundation.wallet.utils.logd
@@ -52,23 +53,13 @@ fun dispatchScanResult(context: Context, str: String) {
             return
         }
         // Launch React Native send workflow instead of native SendAmountActivity
-        ReactNativeDemoActivity.launch(
-            context,
-            "SelectTokens",
-            WalletManager.selectedWalletAddress().toAddress(),
-            if (isTestnet()) "testnet" else "mainnet"
-        )
+        ReactNativeDemoActivity.launchWalletSend(context as Activity, null, addressText)
     } else if (addressPattern.matches(text) || evmAddressPattern.matches(text)) {
         if (WalletManager.isChildAccountSelected()) {
             return
         }
         // Launch React Native send workflow instead of native SendAmountActivity
-        ReactNativeDemoActivity.launch(
-            context,
-            "SelectTokens",
-            WalletManager.selectedWalletAddress().toAddress(),
-            if (isTestnet()) "testnet" else "mainnet"
-        )
+        ReactNativeDemoActivity.launchWalletSend(context as Activity, null, text)
     } else if (URLUtil.isValidUrl(text.httpPrefix())) {
         openBrowser(context as Activity, text.httpPrefix())
     }

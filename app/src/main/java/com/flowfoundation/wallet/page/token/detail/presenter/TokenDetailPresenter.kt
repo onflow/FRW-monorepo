@@ -25,9 +25,10 @@ import com.flowfoundation.wallet.page.receive.ReceiveActivity
 import com.flowfoundation.wallet.ReactNativeDemoActivity
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.wallet.toAddress
+import com.flowfoundation.wallet.bridge.RNBridge
+import com.flowfoundation.wallet.bridge.toRNBridgeTokenModel
 import com.flowfoundation.wallet.page.staking.openStakingPage
 import com.flowfoundation.wallet.page.token.detail.model.TokenDetailModel
-import com.flowfoundation.wallet.page.token.detail.widget.MoveTokenDialog
 import com.flowfoundation.wallet.page.wallet.dialog.SwapDialog
 import com.flowfoundation.wallet.page.wallet.dialog.SwapProviderDialog
 import com.flowfoundation.wallet.utils.debug.ResourceUtility.getString
@@ -43,6 +44,7 @@ import com.flowfoundation.wallet.utils.toHumanReadableSIPrefixes
 import com.flowfoundation.wallet.utils.uiScope
 import com.zackratos.ultimatebarx.ultimatebarx.addNavigationBarBottomPadding
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
 
 class TokenDetailPresenter(
     private val activity: AppCompatActivity,
@@ -60,13 +62,9 @@ class TokenDetailPresenter(
             Glide.with(iconView).load(token.tokenIcon()).into(iconView)
             getMoreWrapper.setOnClickListener { }
             btnSend.setOnClickListener {
-                // Launch React Native send workflow instead of native TransactionSendActivity
-                ReactNativeDemoActivity.launch(
-                    activity,
-                    "SelectTokens",
-                    WalletManager.selectedWalletAddress().toAddress(),
-                    if (isTestnet()) "testnet" else "mainnet"
-                )
+                // Launch React Native token send workflow with token data
+                val tokenModel = token.toRNBridgeTokenModel()
+                ReactNativeDemoActivity.launchTokenSend(activity, tokenModel)
             }
             ivVerified.setVisible(token.isVerified)
             ivVerifiedSecondary.setVisible(token.isVerified)
@@ -89,18 +87,6 @@ class TokenDetailPresenter(
                 SwapDialog.show(activity.supportFragmentManager)
             }
             btnSend.isEnabled = !WalletManager.isChildAccountSelected()
-            val moveVisible = !WalletManager.isChildAccountSelected()
-                    && (token.isFlowToken() || token.canBridgeToEVM() || token.canBridgeToCadence())
-            llEvmMoveToken.setVisible(moveVisible)
-            llEvmMoveToken.setOnClickListener {
-                if (EVMWalletManager.haveEVMAddress()) {
-                    uiScope {
-                        MoveTokenDialog().showDialog(activity, token.contractId())
-                    }
-                } else {
-                    EnableEVMActivity.launch(activity)
-                }
-            }
             if (token.tokenWebsite().isEmpty()) {
                 ivLink.gone()
             } else {
