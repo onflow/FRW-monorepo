@@ -55,6 +55,7 @@ export * from './components/TokenSelectorModal';
 export * from './components/TransactionConfirmationModal';
 export * from './components/NFTSendPreview';
 export * from './components/SendSectionHeader';
+export * from './components/ScreenHeader';
 export * from './components/SendArrowDivider';
 export * from './components/MultipleNFTsPreview';
 export * from './components/TransactionFeeSection';

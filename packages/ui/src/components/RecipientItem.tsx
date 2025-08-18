@@ -119,7 +119,7 @@ export function RecipientItem({
         </XStack>
 
         {/* Content */}
-        <YStack flex={1} gap={2} width={151.34}>
+        <YStack flex={1} gap={2} width={151.34} ml="$0.75">
           <XStack items="center" gap="$1">
             <XStack items="center" gap={4}>
               {isLinked && <Link size={12.8} color="rgba(255, 255, 255, 0.5)" />}

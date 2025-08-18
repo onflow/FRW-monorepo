@@ -22,6 +22,7 @@ const meta: Meta<typeof SearchBar> = {
     width: { control: 'number', min: 200, max: 400 },
     disabled: { control: 'boolean' },
     onChangeText: { action: 'text-changed' },
+    onClear: { action: 'cleared' },
   },
   decorators: [
     (Story) => (
@@ -45,7 +46,7 @@ export const Default: Story = {
   render: function DefaultRender(args) {
     const [value, setValue] = useState(args.value || '');
 
-    return <SearchBar {...args} value={value} onChangeText={setValue} />;
+    return <SearchBar {...args} value={value} onChangeText={setValue} onClear={args.onClear} />;
   },
 };
 
@@ -59,7 +60,7 @@ export const WithValue: Story = {
   render: function WithValueRender(args) {
     const [value, setValue] = useState(args.value || '');
 
-    return <SearchBar {...args} value={value} onChangeText={setValue} />;
+    return <SearchBar {...args} value={value} onChangeText={setValue} onClear={args.onClear} />;
   },
 };
 
@@ -75,7 +76,7 @@ export const FullWidth: Story = {
 
     return (
       <YStack w={400}>
-        <SearchBar {...args} value={value} onChangeText={setValue} />
+        <SearchBar {...args} value={value} onChangeText={setValue} onClear={args.onClear} />
       </YStack>
     );
   },
@@ -91,7 +92,7 @@ export const CustomPlaceholder: Story = {
   render: function CustomPlaceholderRender(args) {
     const [value, setValue] = useState(args.value || '');
 
-    return <SearchBar {...args} value={value} onChangeText={setValue} />;
+    return <SearchBar {...args} value={value} onChangeText={setValue} onClear={args.onClear} />;
   },
 };
 
@@ -105,7 +106,32 @@ export const Disabled: Story = {
   render: function DisabledRender(args) {
     const [value, setValue] = useState(args.value || '');
 
-    return <SearchBar {...args} value={value} onChangeText={setValue} />;
+    return <SearchBar {...args} value={value} onChangeText={setValue} onClear={args.onClear} />;
+  },
+};
+
+export const WithClearButton: Story = {
+  args: {
+    value: '0x1234567890abcdef',
+    placeholder: 'Search address',
+    width: '100%',
+    disabled: false,
+  },
+  render: function WithClearButtonRender(args) {
+    const [value, setValue] = useState(args.value || '');
+    const [clearCount, setClearCount] = useState(0);
+
+    const handleClear = () => {
+      setClearCount((prev) => prev + 1);
+      args.onClear?.();
+    };
+
+    return (
+      <YStack gap="$4">
+        <SearchBar {...args} value={value} onChangeText={setValue} onClear={handleClear} />
+        <text>Clear button clicked: {clearCount} times</text>
+      </YStack>
+    );
   },
 };
 

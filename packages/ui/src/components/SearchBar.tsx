@@ -1,10 +1,11 @@
-import { Search } from '@onflow/frw-icons';
+import { Search, Close } from '@onflow/frw-icons';
 import React from 'react';
-import { XStack, Input } from 'tamagui';
+import { XStack, Input, Stack } from 'tamagui';
 
 export interface SearchBarProps {
   value: string;
   onChangeText: (text: string) => void;
+  onClear?: () => void;
   placeholder?: string;
   width?: number | string;
   disabled?: boolean;
@@ -13,10 +14,16 @@ export interface SearchBarProps {
 export function SearchBar({
   value,
   onChangeText,
+  onClear,
   placeholder = 'Search address',
   width = '100%',
   disabled = false,
 }: SearchBarProps): React.ReactElement {
+  const handleClear = () => {
+    onChangeText('');
+    onClear?.();
+  };
+
   return (
     <XStack
       width={width}
@@ -56,6 +63,29 @@ export function SearchBar({
           color: '#FFFFFF',
         }}
       />
+
+      {/* Clear Button - only show when there's text */}
+      {value.length > 0 && (
+        <Stack
+          onPress={handleClear}
+          p={0}
+          bg="transparent"
+          width={20}
+          height={20}
+          items="center"
+          justify="center"
+          cursor={disabled ? 'default' : 'pointer'}
+          opacity={disabled ? 0.3 : 0.6}
+          hoverStyle={{
+            opacity: disabled ? 0.3 : 1,
+          }}
+          pressStyle={{
+            opacity: disabled ? 0.3 : 0.8,
+          }}
+        >
+          <Close size={12} color="rgba(255, 255, 255, 0.4)" theme="outline" />
+        </Stack>
+      )}
     </XStack>
   );
 }
