@@ -333,7 +333,7 @@ const SendTokensScreen = () => {
                       const { executeTransaction } = useSendStore.getState();
                       const result = await executeTransaction();
                       console.log('[SendTokensScreen] Transaction result:', result);
-                      NativeFRWBridge.closeRN();
+                      NativeFRWBridge.closeRN(null);
                     },
                     children: selectedToken ? (
                       <View className="w-full p-4 bg-surface-2 rounded-2xl">

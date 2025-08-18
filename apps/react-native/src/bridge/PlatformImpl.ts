@@ -141,7 +141,7 @@ class PlatformImpl implements PlatformSpec {
   }
 
   closeRN(): void {
-    NativeFRWBridge.closeRN();
+    NativeFRWBridge.closeRN(null);
   }
 
   configureCadenceService(cadenceService: any): void {

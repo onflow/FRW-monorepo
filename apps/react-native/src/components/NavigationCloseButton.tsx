@@ -26,7 +26,7 @@ const NavigationCloseButton: React.FC<NavigationCloseButtonProps> = ({
       // Clear form data before closing to prevent persistence
       clearTransactionData();
       // Close the RN bridge
-      NativeFRWBridge.closeRN();
+      NativeFRWBridge.closeRN(null);
     }
   };
 

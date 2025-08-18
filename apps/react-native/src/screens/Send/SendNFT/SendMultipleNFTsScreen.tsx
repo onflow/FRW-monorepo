@@ -212,7 +212,7 @@ const SendMultipleNFTsScreen = ({ navigation }: { navigation: NavigationProp }) 
                       const { executeTransaction } = useSendStore.getState();
                       const result = await executeTransaction();
                       console.log('[SendMultipleNFTsScreen] Transaction result:', result);
-                      NativeFRWBridge.closeRN();
+                      NativeFRWBridge.closeRN(null);
                     },
                     children:
                       selectedNFTs && selectedNFTs.length > 0 ? (

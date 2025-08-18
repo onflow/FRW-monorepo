@@ -125,7 +125,7 @@ export const SendWorkflowManager: React.FC<SendWorkflowManagerProps> = ({
           const result = await executeTransaction();
           console.log('[SendWorkflowManager] Transaction result:', result);
           onClose();
-          NativeFRWBridge.closeRN();
+          NativeFRWBridge.closeRN(null);
         } catch (error) {
           console.error('[SendWorkflowManager] Transaction error:', error);
           Alert.alert(t('errors.title'), t('errors.transactionFailed'));
