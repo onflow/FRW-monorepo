@@ -56,7 +56,7 @@ export const test = base.extend<{
     });
 
     // Give the extension time to initialize
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    await new Promise((resolve) => setTimeout(resolve, 5000));
 
     await call(context);
     await context.close();
@@ -73,6 +73,16 @@ export const test = base.extend<{
       extensionId = background.url().split('/')[2];
       console.log(`Extension ID from service worker: ${extensionId}`);
     } else {
+      // Wait a bit more for service worker to start
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      [background] = context.serviceWorkers();
+      if (background) {
+        extensionId = background.url().split('/')[2];
+        console.log(`Extension ID from service worker after wait: ${extensionId}`);
+      }
+    }
+
+    if (!extensionId) {
       // Method 2: Try creating a page to trigger extension loading
       try {
         console.log('Trying to load extension popup to get ID...');
@@ -83,6 +93,23 @@ export const test = base.extend<{
         const page = await context.newPage();
         await page.goto('chrome://extensions/');
         await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        // Try to trigger the extension popup to start the service worker
+        try {
+          const testExtensionId =
+            process.env.TEST_EXTENSION_ID || 'cfiagdgiikmjgfjnlballglniejjgegi';
+          await page.goto(`chrome-extension://${testExtensionId}/popup.html`);
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+
+          // Check for service worker again
+          [background] = context.serviceWorkers();
+          if (background) {
+            extensionId = background.url().split('/')[2];
+            console.log(`Extension ID from popup trigger: ${extensionId}`);
+          }
+        } catch (err) {
+          console.log(`Error triggering popup: ${err.message}`);
+        }
 
         // Try to get extension ID from chrome://extensions page
         try {
