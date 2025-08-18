@@ -97,7 +97,7 @@ export function NFTSelectionBar({
       <YStack gap={16}>
         {/* Header */}
         <XStack items="center" justify="space-between" pt={10} position="relative">
-          <Text fontSize={14} fontWeight="400" color="#FFFFFF">
+          <Text fontSize={16} fontWeight="600" color="#FFFFFF">
             {selectedNFTs.length} Selected NFTs
           </Text>
 
@@ -151,11 +151,10 @@ export function NFTSelectionBar({
               borderWidth: 1,
               borderRadius: 16,
             }}
-            fontSize={16}
-            fontWeight="600"
-            lineHeight={1.2}
           >
-            Confirm {selectedNFTs.length} NFTs
+            <Text fontSize={16} fontWeight="600" color="#252B34">
+              Confirm {selectedNFTs.length} NFTs
+            </Text>
           </Button>
         )}
       </YStack>
