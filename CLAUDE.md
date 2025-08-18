@@ -41,6 +41,13 @@ separation between View, ViewModel, Network, and Model layers.
 - `pnpm typecheck` - TypeScript validation
 - `pnpm test` - Run unit tests (excluding React Native)
 
+### Custom Claude Commands
+
+- `/create-pr` - Automated PR creation to dev branch with validation
+  - `/create-pr` - Create PR to dev with auto-generated title
+  - `/create-pr main` - Create PR to main branch
+  - `/create-pr dev "feat: new feature"` - Create PR with custom title
+
 ## Tamagui V4 Shorthands
 
 When working with Tamagui components, always use these V4 shorthand properties
