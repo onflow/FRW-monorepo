@@ -27,14 +27,14 @@ export function TokenAmountInput({
   const tokenBalance = selectedToken?.balance || '0';
 
   return (
-    <YStack gap={12} p={16} pb={24} bg="$light10" rounded={16} width={343} {...props}>
+    <YStack gap={12} p={16} pb={24} rounded={16} width="100%" {...props}>
       {/* Send Tokens Header - exactly 75px width */}
       <XStack items="center" gap={15}>
         <Text
           fontSize={12}
           fontWeight="400"
           color="rgba(255, 255, 255, 0.8)"
-          width={75}
+          width="100%"
           lineHeight={16}
         >
           Send Tokens
@@ -67,7 +67,8 @@ export function TokenAmountInput({
               fontSize={28}
               fontWeight="500"
               color="$white"
-              lineHeight={16}
+              lineHeight={35}
+              height={35}
               width={!isTokenMode ? 145 : 169}
               borderWidth={0}
               bg="transparent"
@@ -106,14 +107,7 @@ export function TokenAmountInput({
           disabled={disabled}
         >
           <XStack items="center" gap={3}>
-            <Text
-              fontSize={12}
-              fontWeight="600"
-              color="$white"
-              lineHeight={18}
-              width={34.55}
-              numberOfLines={1}
-            >
+            <Text fontSize={12} fontWeight="600" color="$white" lineHeight={18} numberOfLines={1}>
               {tokenSymbol}
             </Text>
             {selectedToken?.isVerified && <CheckCircle size={10} color="#41CC5D" />}

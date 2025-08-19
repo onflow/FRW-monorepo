@@ -85,7 +85,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
       <YStack
         bg={backgroundColor}
         rounded="$4"
-        p="$4"
+        p="$3"
         minW={320}
         maxW="90%"
         maxH={maxHeight}

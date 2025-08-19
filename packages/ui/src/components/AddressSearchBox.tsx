@@ -66,6 +66,9 @@ export function AddressSearchBox({
           focusStyle={{
             outlineWidth: 0,
           }}
+          minH="$11"
+          px="$4"
+          py="$2.5"
         />
 
         {/* Clear Button */}

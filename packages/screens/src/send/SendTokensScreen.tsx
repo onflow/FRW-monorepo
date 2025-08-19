@@ -11,11 +11,11 @@ import {
   ToAccountSection,
   TransactionFeeSection,
   SendArrowDivider,
-  SendSectionHeader,
   StorageWarning,
   type TokenModel,
   type TransactionFormData,
   Text,
+  Separator,
 } from '@onflow/frw-ui';
 import React from 'react';
 
@@ -104,53 +104,50 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
 
   return (
     <BackgroundWrapper backgroundColor={backgroundColor}>
-      <YStack flex={1}>
+      <YStack flex={1} px="$4">
         <ScrollView showsVerticalScrollIndicator={false}>
-          <YStack p={contentPadding} gap="$4">
-            {/* From Account Section */}
-            {fromAccount && (
-              <AccountCard
-                account={fromAccount}
-                title="From Account"
-                isLoading={isBalanceLoading}
-              />
-            )}
+          <YStack>
+            <YStack p={contentPadding}>
+              {/* From Account Section */}
+              {fromAccount && (
+                <AccountCard
+                  account={fromAccount}
+                  title="From Account"
+                  isLoading={isBalanceLoading}
+                />
+              )}
+              <Separator mx="$4" my={-1} borderColor="$textTertiary" />
 
-            {/* Token Amount Input Section */}
-            <YStack bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$4" gap="$3">
-              <SendSectionHeader
-                title="Send Tokens"
-                onEditPress={onEditTokenPress}
-                showEditButton={showEditButtons && !!onEditTokenPress}
-                editButtonText="Change"
-              />
-              <TokenAmountInput
-                selectedToken={
-                  selectedToken
-                    ? {
-                        symbol: selectedToken.symbol,
-                        name: selectedToken.name,
-                        logo: selectedToken.logoURI,
-                        logoURI: selectedToken.logoURI,
-                        balance: selectedToken.balance?.toString(),
-                        price: selectedToken.priceInUSD
-                          ? parseFloat(selectedToken.priceInUSD)
-                          : undefined,
-                        isVerified: selectedToken.isVerified,
-                      }
-                    : undefined
-                }
-                amount={amount}
-                onAmountChange={onAmountChange}
-                isTokenMode={isTokenMode}
-                onToggleInputMode={onToggleInputMode}
-                onTokenSelectorPress={onTokenSelectorOpen}
-                onMaxPress={onMaxPress}
-                placeholder="0.00"
-                showBalance={true}
-                showConverter={true}
-                disabled={false}
-              />
+              {/* Token Amount Input Section */}
+              <YStack bg="$background4" p="$4" gap="$3">
+                <TokenAmountInput
+                  selectedToken={
+                    selectedToken
+                      ? {
+                          symbol: selectedToken.symbol,
+                          name: selectedToken.name,
+                          logo: selectedToken.logoURI,
+                          logoURI: selectedToken.logoURI,
+                          balance: selectedToken.balance?.toString(),
+                          price: selectedToken.priceInUSD
+                            ? parseFloat(selectedToken.priceInUSD)
+                            : undefined,
+                          isVerified: selectedToken.isVerified,
+                        }
+                      : undefined
+                  }
+                  amount={amount}
+                  onAmountChange={onAmountChange}
+                  isTokenMode={isTokenMode}
+                  onToggleInputMode={onToggleInputMode}
+                  onTokenSelectorPress={onTokenSelectorOpen}
+                  onMaxPress={onMaxPress}
+                  placeholder="0.00"
+                  showBalance={true}
+                  showConverter={true}
+                  disabled={false}
+                />
+              </YStack>
             </YStack>
 
             {/* Storage Warning */}

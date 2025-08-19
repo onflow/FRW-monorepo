@@ -1,6 +1,7 @@
 export { default as ArrowBack } from './ArrowBack.generated';
 export { default as ArrowDown } from './ArrowDown.generated';
 export { default as CheckCircle } from './CheckCircle.generated';
+export { default as CheckCircleFill } from './CheckCircleFill.generated';
 export { default as ChevronDown } from './ChevronDown.generated';
 export { default as ChevronRight } from './ChevronRight.generated';
 export { default as ChevronUp } from './ChevronUp.generated';

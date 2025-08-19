@@ -210,7 +210,7 @@ const themesBuilder = createThemeBuilder()
       backgroundPress: 2, // Use palette[2] for press states
       backgroundFocus: flowColors.primary10, // Custom focus color
       backgroundStrong: 1, // Use palette[1] for strong backgrounds
-
+      background4: 4,
       backgroundTransparent: 'transparent',
 
       // Surface colors - long names

@@ -96,24 +96,7 @@ export function SendToScreen({
               recipientsData = await loadAccountsData();
             } else {
               // Fallback mock data for accounts
-              recipientsData = [
-                {
-                  id: '1',
-                  name: 'Sample Account 1',
-                  address: '0x1234567890123456',
-                  type: 'account',
-                  balance: '100.50 FLOW',
-                  showBalance: true,
-                },
-                {
-                  id: '2',
-                  name: 'Sample Account 2',
-                  address: '0x9876543210987654',
-                  type: 'account',
-                  balance: '50.25 FLOW',
-                  showBalance: true,
-                },
-              ];
+              recipientsData = [];
             }
             break;
 
@@ -122,15 +105,7 @@ export function SendToScreen({
               recipientsData = await loadRecentData();
             } else {
               // Fallback mock data for recent
-              recipientsData = [
-                {
-                  id: '3',
-                  name: 'Recent Contact 1',
-                  address: '0xabcdef1234567890',
-                  type: 'recent',
-                  showBalance: false,
-                },
-              ];
+              recipientsData = [];
             }
             break;
 
@@ -139,15 +114,7 @@ export function SendToScreen({
               recipientsData = await loadContactsData();
             } else {
               // Fallback mock data for contacts
-              recipientsData = [
-                {
-                  id: '4',
-                  name: 'Address Book Contact 1',
-                  address: '0xfedcba0987654321',
-                  type: 'contact',
-                  showBalance: false,
-                },
-              ];
+              recipientsData = [];
             }
             break;
         }

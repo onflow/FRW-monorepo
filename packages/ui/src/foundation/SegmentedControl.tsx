@@ -53,7 +53,7 @@ export function SegmentedControl({
             <Text
               fontSize={fontSize}
               fontWeight={600}
-              color={isSelected ? 'rgba(255, 255, 255, 0.8)' : '#FFFFFF'}
+              opacity={isSelected ? 0.8 : 1}
               numberOfLines={1}
               my="$0.5"
             >

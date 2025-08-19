@@ -23,13 +23,12 @@ export function AccountCard({
 
   const content = (
     <YStack
-      width={300}
+      width="100%"
       bg="$light10"
-      rounded="$4"
-      pt={16}
-      px={16}
-      pb={32}
-      gap={12}
+      pt="$4"
+      px="$4"
+      pb="$8"
+      gap="$3"
       height={135}
       pressStyle={{
         bg: '$light25',
@@ -78,7 +77,7 @@ export function AccountCard({
                 mb="$3"
                 numberOfLines={1}
               >
-                {account.balance}
+                {account.balance} | {account.nfts}
               </Text>
             ) : null}
           </YStack>
