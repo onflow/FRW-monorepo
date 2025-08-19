@@ -74,9 +74,11 @@ export const test = base.extend<{
       }
     }
 
-    const context = await chromium.launchPersistentContext(dataDir, {
+    // Use system Chrome in CI, Chromium locally
+    const browserOptions = {
       headless: process.env.HEADLESS === 'true',
-      channel: 'chromium',
+      channel: process.env.CI ? 'chrome' : 'chromium',
+      executablePath: process.env.CI ? '/usr/bin/google-chrome' : undefined,
       args: [
         '--no-sandbox',
         '--disable-dev-shm-usage',
@@ -136,7 +138,9 @@ export const test = base.extend<{
       permissions: ['clipboard-read', 'clipboard-write'],
       // Increase timeout for extension loading
       timeout: process.env.CI ? 120000 : 60000,
-    });
+    };
+
+    const context = await chromium.launchPersistentContext(dataDir, browserOptions);
 
     // Give the extension more time to initialize in CI
     const initDelay = process.env.CI ? 10000 : 5000;
@@ -174,55 +178,50 @@ export const test = base.extend<{
           console.log(`Error accessing chrome://extensions: ${err.message}`);
         }
 
-        // Method 2: Try multiple extension pages with retry logic
-        const extensionUrls = [
-          `chrome-extension://${testExtensionId}/popup.html`,
-          `chrome-extension://${testExtensionId}/index.html`,
-          `chrome-extension://${testExtensionId}/notification.html`,
-          `chrome-extension://${testExtensionId}/background.html`,
-        ];
+        // Method 2: Wait for service worker without direct navigation (avoid ERR_BLOCKED_BY_CLIENT)
+        console.log('Waiting for extension service worker to auto-start...');
+        let waitAttempts = 0;
+        const maxWaitAttempts = 15; // Wait up to 30 seconds
 
-        for (const url of extensionUrls) {
-          let retries = 3;
-          while (retries > 0) {
-            try {
-              console.log(`Attempting to load ${url} (${4 - retries}/3)...`);
-              await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 10000 });
-
-              const currentUrl = page.url();
-              console.log(`Current URL after navigation: ${currentUrl}`);
-
-              if (
-                !currentUrl.includes('chrome-error://') &&
-                currentUrl.startsWith('chrome-extension://')
-              ) {
-                console.log(`✓ Successfully loaded extension page: ${url}`);
-                break;
-              } else if (currentUrl.includes('chrome-error://')) {
-                console.log(`✗ Chrome error loading ${url}: ${currentUrl}`);
-                retries--;
-                if (retries > 0) {
-                  await new Promise((resolve) => setTimeout(resolve, 2000));
-                }
-              } else {
-                console.log(`Unexpected URL: ${currentUrl}`);
-                break;
-              }
-            } catch (err) {
-              console.log(`Error loading ${url}: ${err.message}`);
-              retries--;
-              if (retries > 0) {
-                await new Promise((resolve) => setTimeout(resolve, 2000));
-              }
-            }
-          }
-
-          // Check if service worker started after each attempt
+        while (waitAttempts < maxWaitAttempts) {
           const workers = context.serviceWorkers();
           if (workers.length > 0) {
-            console.log(`✓ Service worker detected after loading ${url}`);
+            console.log(`✓ Service worker auto-started after ${waitAttempts * 2}s`);
             break;
           }
+          console.log(
+            `Waiting for service worker... attempt ${waitAttempts + 1}/${maxWaitAttempts}`
+          );
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+          waitAttempts++;
+        }
+
+        // Final check for service workers
+        const finalWorkers = context.serviceWorkers();
+        if (finalWorkers.length === 0) {
+          console.log(
+            '⚠️ Service worker did not start automatically, extension may not be properly loaded'
+          );
+          console.log('This might be due to Chrome security restrictions in CI environment');
+
+          // One last attempt - try to trigger via browser action click simulation
+          try {
+            console.log('Trying to simulate browser action trigger...');
+            await page.evaluate(() => {
+              // Simulate clicking on the extension icon area
+              const event = new MouseEvent('click', {
+                view: window,
+                bubbles: true,
+                cancelable: true,
+              });
+              document.dispatchEvent(event);
+            });
+            await new Promise((resolve) => setTimeout(resolve, 3000));
+          } catch (err) {
+            console.log(`Browser action simulation failed: ${err.message}`);
+          }
+        } else {
+          console.log(`✓ Found ${finalWorkers.length} service worker(s)`);
         }
 
         await page.close();
