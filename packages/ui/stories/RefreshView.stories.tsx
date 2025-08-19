@@ -54,5 +54,6 @@ export const EmptyWithoutButton: Story = {
   args: {
     type: 'empty',
     message: 'No NFT collections found for this account',
+    onRefresh: undefined,
   },
 };
