@@ -55,8 +55,12 @@ const meta: Meta<typeof ScreenHeader> = {
     },
   },
   args: {
-    onBackPress: () => console.log('Back pressed'),
-    onClosePress: () => console.log('Close pressed'),
+    onBackPress: () => {
+      /* Back pressed */
+    },
+    onClosePress: () => {
+      /* Close pressed */
+    },
   },
 };
 

@@ -13,14 +13,14 @@ export function TokenAmountInput({
   isTokenMode = true,
   onToggleInputMode,
   onTokenSelectorPress,
-  onMaxPress,
+  _onMaxPress,
   placeholder = '0.00',
   showBalance = true,
   showConverter = true,
   disabled = false,
   ...props
 }: TokenAmountInputProps): React.ReactElement {
-  const [focused, setFocused] = useState(false);
+  const [_focused, setFocused] = useState(false);
 
   const displayAmount = amount || '';
   const tokenSymbol = selectedToken?.symbol || 'Token';

@@ -27,7 +27,7 @@ const meta: Meta<typeof MultipleNFTsPreview> = {
     onRemoveNFT: { action: 'nft-removed' },
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack width={400} padding="$4">
         <Story />
       </YStack>
@@ -53,7 +53,7 @@ const createMockNFTs = (count: number): NFTSendData[] =>
 const twoNFTs = createMockNFTs(2);
 const threeNFTs = createMockNFTs(3);
 const fiveNFTs = createMockNFTs(5);
-const tenNFTs = createMockNFTs(10);
+const _tenNFTs = createMockNFTs(10);
 const twentyNFTs = createMockNFTs(20);
 
 // Mock NFT data with missing images for fallback testing
@@ -72,7 +72,9 @@ export const Default: Story = {
   args: {
     nfts: twoNFTs,
     showEditButton: true,
-    onEditPress: () => console.log('Edit pressed'),
+    onEditPress: () => {
+      /* Edit pressed */
+    },
   },
 };
 
@@ -80,7 +82,9 @@ export const EmptyState: Story = {
   args: {
     nfts: [],
     showEditButton: true,
-    onEditPress: () => console.log('Edit pressed'),
+    onEditPress: () => {
+      /* Edit pressed */
+    },
   },
 };
 
@@ -88,7 +92,9 @@ export const WithFallbackThumbnails: Story = {
   args: {
     nfts: nftsWithoutImages,
     showEditButton: true,
-    onEditPress: () => console.log('Edit pressed'),
+    onEditPress: () => {
+      /* Edit pressed */
+    },
   },
 };
 
@@ -96,7 +102,9 @@ export const ThreeNFTs: Story = {
   args: {
     nfts: threeNFTs,
     showEditButton: true,
-    onEditPress: () => console.log('Edit pressed'),
+    onEditPress: () => {
+      /* Edit pressed */
+    },
   },
 };
 
@@ -104,7 +112,9 @@ export const FiveNFTs: Story = {
   args: {
     nfts: fiveNFTs,
     showEditButton: true,
-    onEditPress: () => console.log('Edit pressed'),
+    onEditPress: () => {
+      /* Edit pressed */
+    },
   },
 };
 
@@ -112,7 +122,9 @@ export const TwentyNFTs: Story = {
   args: {
     nfts: twentyNFTs,
     showEditButton: true,
-    onEditPress: () => console.log('Edit pressed'),
+    onEditPress: () => {
+      /* Edit pressed */
+    },
   },
 };
 
@@ -120,7 +132,9 @@ export const MixedImages: Story = {
   args: {
     nfts: [...createMockNFTs(2), ...createMockNFTsWithoutImages(2)],
     showEditButton: true,
-    onEditPress: () => console.log('Edit pressed'),
+    onEditPress: () => {
+      /* Edit pressed */
+    },
   },
 };
 
@@ -137,6 +151,8 @@ export const WithRemovalInteraction: Story = {
   args: {
     nfts: fiveNFTs,
     showEditButton: true,
-    onEditPress: () => console.log('Edit pressed'),
+    onEditPress: () => {
+      /* Edit pressed */
+    },
   },
 };

@@ -26,7 +26,7 @@ const meta: Meta<typeof ConfirmAddressDialog> = {
     onConfirm: { action: 'address-confirmed' },
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack w="100vw" h="100vh" items="center" justify="center" bg="$bg">
         <Story />
       </YStack>
@@ -64,7 +64,7 @@ export const Interactive: Story = {
           buttonText="Confirm address"
           onClose={() => setVisible(false)}
           onConfirm={() => {
-            console.log('Address confirmed');
+            // Address confirmed
             setVisible(false);
           }}
         />

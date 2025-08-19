@@ -33,7 +33,7 @@ const meta: Meta<typeof SearchableTabLayout> = {
     onTabChange: { action: 'tab-changed' },
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack height={600} width="100%">
         <Story />
       </YStack>
@@ -45,7 +45,13 @@ export default meta;
 type Story = StoryObj<typeof SearchableTabLayout>;
 
 // Sample content for different tabs
-const TabContent = ({ tab, searchQuery }: { tab: string; searchQuery: string }) => (
+const TabContent = ({
+  tab,
+  searchQuery,
+}: {
+  tab: string;
+  searchQuery: string;
+}): React.JSX.Element => (
   <YStack flex={1} justify="center" items="center" gap="$2">
     <Text fontSize="$6" fontWeight="600" color="$color">
       {tab} Tab

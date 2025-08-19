@@ -30,7 +30,7 @@ const meta: Meta<typeof ToAccountSection> = {
     onLearnMorePress: { action: 'learn-more-pressed' },
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack width={400} padding="$4">
         <Story />
       </YStack>

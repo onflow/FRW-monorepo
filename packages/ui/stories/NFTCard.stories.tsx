@@ -33,7 +33,7 @@ const meta: Meta<typeof NFTCard> = {
     onPress: { action: 'pressed' },
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack padding="$4" width={200}>
         <Story />
       </YStack>
@@ -95,7 +95,7 @@ export const SmallSize: Story = {
     accountEmoji: '🦊',
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack padding="$4" width={150}>
         <Story />
       </YStack>

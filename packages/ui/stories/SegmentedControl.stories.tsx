@@ -22,7 +22,10 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 // Interactive story
-const InteractiveTemplate = (args: any): React.ReactElement => {
+const InteractiveTemplate = (args: {
+  segments: string[];
+  [key: string]: unknown;
+}): React.ReactElement => {
   const [value, setValue] = useState(args.segments[0]);
   return <SegmentedControl {...args} value={value} onChange={setValue} />;
 };

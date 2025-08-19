@@ -36,7 +36,7 @@ const meta = {
     },
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack width={400} p="$4" bg="$bg" rounded="$4">
         <Story />
       </YStack>

@@ -31,7 +31,7 @@ const meta: Meta<typeof TransactionConfirmationModal> = {
     onClose: { action: 'modal-closed' },
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack width={400} height={300} items="center" justify="center">
         <Story />
       </YStack>
@@ -189,7 +189,7 @@ export const Interactive: Story = {
     const [visible, setVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleConfirm = async () => {
+    const handleConfirm = async (): Promise<void> => {
       setIsLoading(true);
       // Simulate transaction delay
       await new Promise((resolve) => setTimeout(resolve, 2000));

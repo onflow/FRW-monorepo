@@ -25,7 +25,7 @@ const meta: Meta<typeof CollectionHeader> = {
     size: { control: 'select', options: ['small', 'medium', 'large'] },
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack p="$4" width={400}>
         <Story />
       </YStack>
@@ -147,7 +147,7 @@ export const AllSizes: Story = {
     </YStack>
   ),
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack p="$4" width={500}>
         <Story />
       </YStack>

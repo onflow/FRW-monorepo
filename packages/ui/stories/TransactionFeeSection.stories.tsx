@@ -30,7 +30,7 @@ const meta: Meta<typeof TransactionFeeSection> = {
     feeColor: { control: 'color' },
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack width={400} padding="$4">
         <Story />
       </YStack>

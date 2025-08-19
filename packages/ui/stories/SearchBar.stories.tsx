@@ -25,7 +25,7 @@ const meta: Meta<typeof SearchBar> = {
     onClear: { action: 'cleared' },
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack p="$4" bg="$background">
         <Story />
       </YStack>
@@ -121,7 +121,7 @@ export const WithClearButton: Story = {
     const [value, setValue] = useState(args.value || '');
     const [clearCount, setClearCount] = useState(0);
 
-    const handleClear = () => {
+    const handleClear = (): void => {
       setClearCount((prev) => prev + 1);
       args.onClear?.();
     };

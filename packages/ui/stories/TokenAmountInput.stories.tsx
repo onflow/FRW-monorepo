@@ -83,13 +83,13 @@ const meta = {
     },
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <div style={{ width: '400px', padding: '20px' }}>
         <Story />
       </div>
     ),
   ],
-  render: (args) => {
+  render: (args): React.JSX.Element => {
     const [isTokenMode, setIsTokenMode] = useState(args.isTokenMode ?? true);
     const [amount, setAmount] = useState(args.amount ?? '');
 
@@ -101,10 +101,14 @@ const meta = {
         onAmountChange={setAmount}
         onToggleInputMode={() => {
           setIsTokenMode(!isTokenMode);
-          console.log('Input mode toggled to:', !isTokenMode ? 'token' : 'fiat');
+          // Input mode toggled to: !isTokenMode ? 'token' : 'fiat'
         }}
-        onTokenSelectorPress={() => console.log('Token selector pressed')}
-        onMaxPress={() => console.log('Max pressed')}
+        onTokenSelectorPress={() => {
+          /* Token selector pressed */
+        }}
+        onMaxPress={() => {
+          /* Max pressed */
+        }}
       />
     );
   },

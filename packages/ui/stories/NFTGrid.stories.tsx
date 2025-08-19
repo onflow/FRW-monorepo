@@ -30,7 +30,7 @@ const meta: Meta<typeof NFTGrid> = {
     onClearSearch: { action: 'clear-search' },
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack height={600} width="100%" p="$4">
         <Story />
       </YStack>

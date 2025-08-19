@@ -26,7 +26,7 @@ const meta: Meta<typeof NFTSendPreview> = {
     onEditPress: { action: 'edit-pressed' },
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack width={400} padding="$4">
         <Story />
       </YStack>

@@ -25,7 +25,7 @@ const meta: Meta<typeof NFTDetailView> = {
     onToggleSelection: { action: 'selection-toggled' },
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack height={700} width="100%">
         <Story />
       </YStack>

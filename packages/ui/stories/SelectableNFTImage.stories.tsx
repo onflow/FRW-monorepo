@@ -27,7 +27,7 @@ const meta: Meta<typeof SelectableNFTImage> = {
     onImagePress: { action: 'image-pressed' },
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack p="$4" width={400} height={400} items="center" justify="center">
         <Story />
       </YStack>
@@ -85,7 +85,7 @@ export const WideAspectRatio: Story = {
     selectable: true,
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack p="$4" width={500} height={300} items="center" justify="center">
         <Story />
       </YStack>
@@ -100,7 +100,7 @@ export const TallAspectRatio: Story = {
     selectable: true,
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack p="$4" width={300} height={600} items="center" justify="center">
         <Story />
       </YStack>
