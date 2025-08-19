@@ -68,7 +68,9 @@ const AppRoutes = () => {
 function Main() {
   return (
     <Router>
-      <AppRoutes />
+      <PlatformProvider>
+        <AppRoutes />
+      </PlatformProvider>
     </Router>
   );
 }
@@ -80,9 +82,7 @@ const App = ({ wallet }: { wallet: any }) => {
       <TamaguiProvider config={extensionTamaguiConfig} defaultTheme="dark">
         <div className="t_dark" style={{ minHeight: '100vh' }}>
           <WalletProvider wallet={wallet}>
-            <PlatformProvider>
-              <Main />
-            </PlatformProvider>
+            <Main />
           </WalletProvider>
         </div>
       </TamaguiProvider>
