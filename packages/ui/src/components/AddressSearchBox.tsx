@@ -16,7 +16,7 @@ export interface AddressSearchBoxProps {
 export function AddressSearchBox({
   value,
   onChangeText,
-  placeholder = 'Search address',
+  placeholder = 'Search / Paste address',
   showScanButton = false,
   showClearButton = true,
   onScanPress,

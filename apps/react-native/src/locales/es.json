@@ -19,7 +19,7 @@
     "viewColors": "Ver Colores"
   },
   "send": {
-    "searchAddress": "Buscar dirección",
+    "searchAddress": "Buscar / Pegar dirección",
     "myAccounts": "Mis cuentas",
     "recent": "Reciente",
     "addressBook": "Libreta de direcciones",
@@ -44,7 +44,7 @@
     "cancel": "Cancelar"
   },
   "placeholders": {
-    "searchAddress": "Buscar dirección",
+    "searchAddress": "Buscar / Pegar dirección",
     "enterAmount": "Ingrese cantidad",
     "selectToken": "Seleccionar token",
     "selectNFT": "Seleccionar NFT"
