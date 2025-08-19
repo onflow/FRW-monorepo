@@ -1,6 +1,6 @@
 import { Copy, Link } from '@onflow/frw-icons';
 import React from 'react';
-import { Card, XStack, YStack, Text } from 'tamagui';
+import { Card, XStack, YStack, Text, Image } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { Skeleton } from '../foundation/Skeleton';
@@ -25,7 +25,8 @@ export interface RecipientItemProps {
   avatar?: string;
   avatarSize?: number;
   parentAvatar?: string; // Small overlay avatar for linked accounts
-
+  emojiInfo: any;
+  parentEmojiInfo: any;
   // Actions
   onPress?: () => void;
   onCopy?: () => void;
@@ -47,8 +48,9 @@ export function RecipientItem({
   isLinked = false,
   isEVM = false,
   avatar,
-  avatarSize = 16,
+  avatarSize = 36,
   parentAvatar,
+  emojiInfo,
   onPress,
   onCopy,
   pressStyle,
@@ -82,19 +84,23 @@ export function RecipientItem({
             items="center"
             justify="center"
           >
-            <Text
-              fontSize={18}
-              color="$light80"
-              fontWeight="600"
-              lineHeight={18 * 1.2}
-              letterSpacing={-0.1}
-            >
-              {avatar || (type === 'account' ? '🦊' : type.charAt(0).toUpperCase())}
-            </Text>
+            {avatar?.includes('https://') ? (
+              <Image width={avatarSize} height={avatarSize} source={{ uri: avatar }} />
+            ) : (
+              <Text
+                fontSize={18}
+                color={emojiInfo?.color}
+                fontWeight="600"
+                lineHeight={18 * 1.2}
+                letterSpacing={-0.1}
+              >
+                {avatar || emojiInfo?.emoji || type.charAt(0).toUpperCase()}
+              </Text>
+            )}
           </YStack>
 
           {/* Small overlay avatar for parent account */}
-          {parentAvatar && (
+          {isLinked && parentAvatar && (
             <YStack
               position="absolute"
               style={{
@@ -131,7 +137,7 @@ export function RecipientItem({
                 lineHeight={16.8}
                 letterSpacing={-0.084}
               >
-                {name}
+                {name || emojiInfo?.name}
               </Text>
             </XStack>
             {isEVM && (
