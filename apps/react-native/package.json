@@ -27,6 +27,7 @@
     "@onflow/frw-screens": "workspace:^",
     "@onflow/frw-stores": "workspace:*",
     "@onflow/frw-types": "workspace:*",
+    "@onflow/frw-ui": "workspace:*",
     "@onflow/frw-utils": "workspace:*",
     "@react-native/gradle-plugin": "^0.80.1",
     "@react-navigation/elements": "^2.5.2",

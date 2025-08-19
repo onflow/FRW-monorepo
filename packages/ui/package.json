@@ -17,13 +17,13 @@
   },
   "dependencies": {
     "@onflow/frw-icons": "workspace:*",
-    "@tamagui/animations-react-native": "^1.132.16",
-    "@tamagui/config": "^1.132.16",
-    "@tamagui/core": "^1.132.16",
-    "@tamagui/theme-builder": "^1.132.17",
-    "@tamagui/web": "^1.132.16",
+    "@tamagui/animations-react-native": "^1.132.20",
+    "@tamagui/config": "^1.132.20",
+    "@tamagui/core": "^1.132.20",
+    "@tamagui/theme-builder": "^1.132.20",
+    "@tamagui/web": "^1.132.20",
     "react-native-web": "^0.21.0",
-    "tamagui": "^1.132.16"
+    "tamagui": "^1.132.20"
   },
   "devDependencies": {
     "@babel/runtime": "^7.28.3",
