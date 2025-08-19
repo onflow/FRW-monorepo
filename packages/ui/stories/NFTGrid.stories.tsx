@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import React, { useState } from 'react';
+import React from 'react';
 import { YStack } from 'tamagui';
 
 import { NFTGrid, type NFTData } from '../src/components/NFTGrid';
@@ -118,14 +118,7 @@ export const Error: Story = {
   args: {
     data: [],
     error: 'Failed to load NFTs. Please check your connection and try again.',
-    retryText: 'Retry Loading',
-  },
-};
-
-export const LargeGap: Story = {
-  args: {
-    data: mockNFTs,
-    gap: 24,
+    retryText: 'Retry',
   },
 };
 
@@ -136,33 +129,5 @@ export const WideAspectRatio: Story = {
       image: nft.image.replace('300x300', '400x200'),
     })),
     aspectRatio: 2,
-  },
-};
-
-export const Interactive: Story = {
-  render: function InteractiveRender() {
-    const [selectedIds, setSelectedIds] = useState<string[]>(['1']);
-
-    const handleNFTSelect = (id: string) => {
-      setSelectedIds((prev) =>
-        prev.includes(id) ? prev.filter((selectedId) => selectedId !== id) : [...prev, id]
-      );
-    };
-
-    return (
-      <NFTGrid
-        data={mockNFTs}
-        selectedIds={selectedIds}
-        onNFTSelect={handleNFTSelect}
-        onNFTPress={(nft) => alert(`Pressed: ${nft.name}`)}
-      />
-    );
-  },
-};
-
-export const WithAmounts: Story = {
-  args: {
-    data: mockNFTsWithAmounts,
-    selectedIds: ['2', '4'],
   },
 };

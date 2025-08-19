@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import React, { useState } from 'react';
+import React from 'react';
 import { YStack } from 'tamagui';
 
 import { NFTDetailView, type NFTDetailData } from '../src/components/NFTDetailView';
@@ -21,11 +21,12 @@ const meta: Meta<typeof NFTDetailView> = {
     selectable: { control: 'boolean' },
     showOwner: { control: 'boolean' },
     backgroundColor: { control: 'color' },
+    contentPadding: { control: 'number', min: 8, max: 32 },
     onToggleSelection: { action: 'selection-toggled' },
   },
   decorators: [
     (Story) => (
-      <YStack height={700} width="100%" items="center" bg="$gray12" p="$4">
+      <YStack height={700} width="100%">
         <Story />
       </YStack>
     ),
@@ -35,17 +36,28 @@ const meta: Meta<typeof NFTDetailView> = {
 export default meta;
 type Story = StoryObj<typeof NFTDetailView>;
 
-// Mock NFT data - using Figma design reference
+// Mock NFT data
 const mockNFT: NFTDetailData = {
+  id: '1234',
+  name: 'Cool Cat #1234',
+  image: 'https://via.placeholder.com/600x600/6366F1/FFFFFF?text=Cool+Cat',
+  collection: 'Cool Cats Collection',
+  description:
+    'Cool Cat #1234 is a unique digital collectible featuring a stylish cat with rare traits. This NFT is part of the Cool Cats collection, known for its distinctive art style and vibrant community.',
+  contractName: 'CoolCats',
+  contractAddress: '0x1234567890abcdef1234567890abcdef12345678',
+  collectionContractName: 'CoolCatsCollection',
+};
+
+const springTideNFT: NFTDetailData = {
   id: '1',
   name: 'Spring Tide #1',
   image: 'https://via.placeholder.com/343x343/6366F1/FFFFFF?text=Spring+Tide',
   collection: 'NBA Top Shot',
   description:
     'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad min',
-  contractName: 'TopShot',
-  contractAddress: '0x1234567890abcdef1234567890abcdef12345678',
-  collectionContractName: 'FutureScience',
+  contractName: 'FutureScience',
+  contractAddress: '0xabcdef1234567890abcdef1234567890abcdef12',
   properties: [
     { label: 'Background', value: 'Green' },
     { label: 'Shapes', value: 'Obstructed' },
@@ -56,24 +68,6 @@ const mockNFT: NFTDetailData = {
     { label: 'Series', value: '3' },
     { label: 'Mask', value: 'Blue' },
     { label: 'Halo', value: 'Gold' },
-  ],
-};
-
-const basketballNFT: NFTDetailData = {
-  id: '5678',
-  name: 'LeBron James Dunk #45',
-  image: 'https://via.placeholder.com/600x600/F59E0B/FFFFFF?text=LeBron',
-  collection: 'NBA Top Shot',
-  description:
-    'An epic dunk by LeBron James during the 2023 playoffs. This moment captures the intensity and athleticism that defines greatness on the basketball court.',
-  contractName: 'TopShotContract',
-  contractAddress: '0xabcdef1234567890abcdef1234567890abcdef12',
-  properties: [
-    { label: 'Player', value: 'LeBron James' },
-    { label: 'Team', value: 'Los Angeles Lakers' },
-    { label: 'Date', value: 'May 15, 2023' },
-    { label: 'Rarity', value: 'Legendary' },
-    { label: 'Serial', value: '45/100' },
   ],
 };
 
@@ -89,8 +83,8 @@ const pixelArtNFT: NFTDetailData = {
 };
 
 const mockOwner = {
-  name: 'John Doe',
-  avatar: 'https://via.placeholder.com/40x40/10B981/FFFFFF?text=JD',
+  name: '🐼',
+  avatar: '',
   address: '0x1234567890abcdef1234567890abcdef12345678',
 };
 
@@ -108,13 +102,6 @@ export const WithOwner: Story = {
   },
 };
 
-export const Selectable: Story = {
-  args: {
-    nft: mockNFT,
-    selectable: true,
-  },
-};
-
 export const Selected: Story = {
   args: {
     nft: mockNFT,
@@ -127,7 +114,7 @@ export const Selected: Story = {
 
 export const WithProperties: Story = {
   args: {
-    nft: basketballNFT,
+    nft: springTideNFT,
     owner: mockOwner,
     showOwner: true,
   },
@@ -155,52 +142,6 @@ export const LongDescription: Story = {
       description:
         "This is a very long description that should demonstrate how the component handles extensive text content. The description can contain multiple sentences and should wrap properly within the available space. It might include details about the NFT's creation, inspiration, artistic process, rarity, and significance within the broader collection or art movement.",
     },
-    owner: mockOwner,
-    showOwner: true,
-  },
-};
-
-export const ManyProperties: Story = {
-  args: {
-    nft: {
-      ...mockNFT,
-      properties: [
-        { label: 'Background', value: 'Cosmic' },
-        { label: 'Body', value: 'Rainbow' },
-        { label: 'Eyes', value: 'Laser' },
-        { label: 'Hat', value: 'Crown' },
-        { label: 'Mouth', value: 'Smile' },
-        { label: 'Clothes', value: 'Tuxedo' },
-        { label: 'Accessory', value: 'Sunglasses' },
-        { label: 'Special', value: 'Glowing' },
-        { label: 'Edition', value: '1 of 1' },
-        { label: 'Generation', value: 'Gen 2' },
-      ],
-    },
-  },
-};
-
-export const Interactive: Story = {
-  render: function InteractiveRender() {
-    const [selected, setSelected] = useState(false);
-
-    return (
-      <NFTDetailView
-        nft={basketballNFT}
-        selected={selected}
-        selectable={true}
-        onToggleSelection={() => setSelected(!selected)}
-        owner={mockOwner}
-        showOwner={true}
-      />
-    );
-  },
-};
-
-export const CustomStyling: Story = {
-  args: {
-    nft: mockNFT,
-    backgroundColor: '$gray1',
     owner: mockOwner,
     showOwner: true,
   },

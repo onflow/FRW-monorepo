@@ -26,18 +26,16 @@ const meta: Meta<typeof RecipientItem> = {
     balance: { control: 'text' },
     isLoading: { control: 'boolean' },
     showBalance: { control: 'boolean' },
-    showEditButton: { control: 'boolean' },
     showCopyButton: { control: 'boolean' },
     isSelected: { control: 'boolean' },
     isDisabled: { control: 'boolean' },
     avatarSize: { control: 'number', min: 24, max: 80, step: 4 },
     onPress: { action: 'pressed' },
-    onEdit: { action: 'edit' },
     onCopy: { action: 'copy' },
   },
   decorators: [
     (Story): React.JSX.Element => (
-      <YStack p="$4" width={400}>
+      <YStack padding="$4" width={400}>
         <Story />
       </YStack>
     ),

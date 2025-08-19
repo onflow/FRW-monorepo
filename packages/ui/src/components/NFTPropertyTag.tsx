@@ -18,26 +18,36 @@ export function NFTPropertyTag({
   textColor,
   labelColor,
 }: NFTPropertyTagProps) {
-  const padding = variant === 'compact' ? '$2' : '$3';
-  const fontSize = variant === 'compact' ? '$2' : '$3';
+  const paddingX = variant === 'compact' ? 8 : 12;
+  const paddingY = variant === 'compact' ? 4 : 6;
 
   return (
     <XStack
-      items="center"
-      gap="$1"
+      alignItems="center"
+      justifyContent="center"
+      gap={4}
       bg={backgroundColor || '$bg2'}
-      borderRadius="$6"
-      px={padding}
-      py="$1.5"
+      borderRadius={100}
+      px={paddingX}
+      py={paddingY}
       maxWidth="100%"
       overflow="hidden"
+      backdropFilter="blur(10px)"
     >
-      <Text fontSize={fontSize} color={labelColor || '$textSecondary'} flexShrink={0}>
+      <Text
+        fontSize={14}
+        fontWeight="400"
+        lineHeight={19.6}
+        color={labelColor || '$textSecondary'}
+        opacity={0.4}
+        flexShrink={0}
+      >
         {label}:
       </Text>
       <Text
-        fontSize={fontSize}
+        fontSize={14}
         fontWeight="500"
+        lineHeight={19.6}
         color={textColor || '$color'}
         numberOfLines={1}
         flex={1}

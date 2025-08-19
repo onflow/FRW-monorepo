@@ -35,7 +35,7 @@ const meta: Meta<typeof RecipientList> = {
   },
   decorators: [
     (Story): React.JSX.Element => (
-      <YStack height={600} width="100%" p="$4">
+      <YStack height={600} width="100%" padding="$4">
         <Story />
       </YStack>
     ),
@@ -174,7 +174,7 @@ export const Error: Story = {
   args: {
     data: [],
     error: 'Failed to load recipients. Please check your connection and try again.',
-    retryButtonText: 'Retry Loading',
+    retryButtonText: 'Retry',
   },
 };
 
