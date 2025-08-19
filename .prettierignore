@@ -27,6 +27,9 @@ packages/cadence/src/scripts/generated/
 **/*.gen.ts
 **/*.gen.js
 
+# Translation automation scripts
+**/scripts/translate-i18n.js
+
 # Package manager
 .pnpm-store/
 .yarn/

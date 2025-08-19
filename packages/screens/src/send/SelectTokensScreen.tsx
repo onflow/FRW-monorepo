@@ -1,3 +1,4 @@
+import { navigation } from '@onflow/frw-context';
 import { TokenService } from '@onflow/frw-services';
 import { useSendStore, useTokenStore, useWalletStore } from '@onflow/frw-stores';
 import {
@@ -24,20 +25,24 @@ import {
   Divider,
 } from '@onflow/frw-ui';
 import React, { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
-import type { BaseScreenProps, TabType } from '../types';
+import type { TabType } from '../types';
 
-interface SelectTokensScreenProps extends BaseScreenProps {
+interface SelectTokensScreenProps {
   theme?: { isDark: boolean };
+  // Platform bridge for platform-specific data access
+  bridge: {
+    getSelectedAddress(): string | null;
+    getNetwork(): string;
+    getCoins?(): any[] | null;
+  };
   showTitle?: boolean;
 }
 
-export function SelectTokensScreen({
-  navigation,
-  bridge,
-  t,
-  showTitle = true,
-}: SelectTokensScreenProps) {
+export function SelectTokensScreen({ bridge, showTitle = true }: SelectTokensScreenProps) {
+  // navigation is imported directly from ServiceContext
+  const { t } = useTranslation();
   // State management
   const [tab, setTab] = React.useState<TabType>('Tokens');
   const [tokens, setTokens] = React.useState<TokenModel[]>([]);

@@ -2,6 +2,7 @@ import { configureApiEndpoints } from '@onflow/frw-api';
 import { createCadenceService, type CadenceService } from '@onflow/frw-cadence';
 import { createLogger, setGlobalLogger, type Logger } from '@onflow/frw-utils';
 
+import type { Navigation } from './interfaces/Navigation';
 import type { PlatformSpec } from './interfaces/PlatformSpec';
 import type { Storage } from './interfaces/Storage';
 
@@ -14,6 +15,7 @@ export class ServiceContext {
   private _bridge: PlatformSpec | null = null;
   private _cadenceService: CadenceService | null = null;
   private _storage: Storage | null = null;
+  private _navigation: Navigation | null = null;
   private _logger: Logger | null = null;
 
   private constructor() {}
@@ -48,8 +50,9 @@ export class ServiceContext {
     }
     ServiceContext.instance._bridge = bridge;
 
-    // Store storage instance from bridge
+    // Store storage and navigation instances from bridge
     ServiceContext.instance._storage = bridge.getStorage();
+    ServiceContext.instance._navigation = bridge.getNavigation();
 
     // Configure API endpoints dynamically from bridge
     configureApiEndpoints(
@@ -132,6 +135,16 @@ export class ServiceContext {
   }
 
   /**
+   * Get the navigation instance
+   */
+  get navigation(): Navigation {
+    if (!this._navigation) {
+      throw new Error('Navigation not available in ServiceContext');
+    }
+    return this._navigation;
+  }
+
+  /**
    * Get the logger instance
    */
   getLogger(): Logger {
@@ -174,6 +187,12 @@ export const storage = new Proxy({} as Storage, {
   },
 });
 
+export const navigation = new Proxy({} as Navigation, {
+  get(target, prop): unknown {
+    return ServiceContext.current().navigation[prop as keyof Navigation];
+  },
+});
+
 export const logger = new Proxy({} as Logger, {
   get(target, prop): unknown {
     try {
@@ -194,6 +213,8 @@ export const getCadenceService = (): CadenceService => context.cadence;
 export const getBridge = (): PlatformSpec => context.bridge;
 /** @deprecated Use `storage` instead */
 export const getStorage = (): Storage => context.storage;
+/** @deprecated Use `navigation` instead */
+export const getNavigation = (): Navigation => context.navigation;
 /** @deprecated Use `logger` instead */
 export const getLogger = (): Logger => context.getLogger();
 /** @deprecated Use `bridge.isDebug()` instead */

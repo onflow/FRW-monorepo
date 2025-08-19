@@ -7,11 +7,12 @@ import {
 } from '@onflow/frw-types';
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { reactNativeNavigation } from '@/bridge/ReactNativeNavigation';
 import NavigationBackButton from '@/components/NavigationBackButton';
 import NavigationCloseButton from '@/components/NavigationCloseButton';
 import NavigationTitle from '@/components/NavigationTitle';
@@ -71,6 +72,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
   const { t } = useTranslation();
   const { address, network, initialRoute, initialProps } = props;
   const { isDark } = useTheme();
+  const navigationRef = useRef<any>();
 
   // Send store actions
   const {
@@ -81,6 +83,11 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
     setSelectedNFTs,
     setToAccount,
   } = useSendStore();
+
+  // Set navigation ref for the platform implementation
+  useEffect(() => {
+    reactNativeNavigation.setNavigationRef(navigationRef);
+  }, []);
 
   // Initialize SendTo flow if requested
   useEffect(() => {
@@ -166,7 +173,10 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
   return (
     <SafeAreaProvider>
       <View className={isDark ? 'dark' : ''} style={{ flex: 1 }}>
-        <NavigationContainer theme={isDark ? customDarkTheme : customLightTheme}>
+        <NavigationContainer
+          ref={navigationRef}
+          theme={isDark ? customDarkTheme : customLightTheme}
+        >
           <Stack.Navigator
             initialRouteName={(initialRoute as keyof RootStackParamList) || 'Home'}
             screenOptions={{

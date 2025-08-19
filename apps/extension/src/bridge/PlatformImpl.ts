@@ -9,6 +9,8 @@ import type {
 
 import { chromeStorage } from '@/extension-shared/chrome-storage';
 
+import { extensionNavigation } from './ExtensionNavigation';
+
 class ExtensionPlatformImpl implements PlatformSpec {
   private debugMode: boolean = process.env.NODE_ENV === 'development';
   private storage: Storage;
@@ -221,6 +223,11 @@ class ExtensionPlatformImpl implements PlatformSpec {
     } else {
       chrome.runtime.sendMessage({ type: 'CLOSE_POPUP' });
     }
+  }
+
+  getNavigation() {
+    // Return the extension navigation implementation
+    return extensionNavigation;
   }
 
   // Helper methods

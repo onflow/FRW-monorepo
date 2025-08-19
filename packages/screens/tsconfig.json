@@ -9,7 +9,8 @@
     "allowImportingTsExtensions": false,
     "noEmit": false,
     "composite": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "resolveJsonModule": true
   },
   "include": ["src/**/*", "src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["dist", "node_modules", "**/*.test.*", "**/*.spec.*"]
