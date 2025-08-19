@@ -1,4 +1,4 @@
-import { ChevronUp, ChevronDown, Trash } from '@onflow/frw-icons';
+// import { ChevronUp, ChevronDown, Trash } from '@onflow/frw-icons';
 import React, { useState } from 'react';
 import { YStack, XStack, ScrollView, Text, Image } from 'tamagui';
 
@@ -69,7 +69,8 @@ export function NFTSelectionBar({
       {/* Remove Button */}
       {onRemoveNFT && (
         <XStack width={24} height={24} onPress={() => onRemoveNFT(nft.id)} cursor="pointer">
-          <Trash size={24} color="#767676" />
+          {/* <Trash size={24} color="#767676" /> */}
+          Trash
         </XStack>
       )}
     </XStack>
@@ -108,11 +109,11 @@ export function NFTSelectionBar({
             onPress={handleToggleExpanded}
             cursor="pointer"
           >
-            {isExpanded ? (
+            {/* {isExpanded ? (
               <ChevronDown size={24} color="#FFFFFF" />
             ) : (
               <ChevronUp size={24} color="#FFFFFF" />
-            )}
+            )} */}
           </XStack>
         </XStack>
 

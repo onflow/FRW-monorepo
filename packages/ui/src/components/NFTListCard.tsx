@@ -1,4 +1,4 @@
-import { ChevronRight } from '@onflow/frw-icons';
+// import { ChevronRight } from '@onflow/frw-icons';
 import React from 'react';
 import { XStack, YStack } from 'tamagui';
 
@@ -88,7 +88,8 @@ export function NFTListCard({
 
         {/* Right Chevron Icon */}
         <XStack width={24} height={24} alignItems="center" justifyContent="center" opacity={0.6}>
-          <ChevronRight size={16} color="rgba(255, 255, 255, 0.6)" />
+          {/* <ChevronRight size={16} color="rgba(255, 255, 255, 0.6)" /> */}
+          ChevronRight
         </XStack>
       </XStack>
 

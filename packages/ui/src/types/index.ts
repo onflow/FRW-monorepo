@@ -4,7 +4,9 @@ import type { Button as TamaguiButton, Input as TamaguiInput, Text as TamaguiTex
 // Base component props
 export type ButtonProps = ComponentProps<typeof TamaguiButton>;
 export type InputProps = ComponentProps<typeof TamaguiInput>;
-export type TextProps = ComponentProps<typeof TamaguiText>;
+export type TextProps = ComponentProps<typeof TamaguiText> & {
+  children?: React.ReactNode;
+};
 
 // Custom component props
 export interface AvatarProps {

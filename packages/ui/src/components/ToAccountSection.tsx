@@ -1,5 +1,6 @@
 import { Edit } from '@onflow/frw-icons';
 import { type WalletAccount } from '@onflow/frw-types';
+import { SendArrowDivider } from '@onflow/frw-ui';
 import React from 'react';
 import { YStack, XStack } from 'tamagui';
 
@@ -27,14 +28,35 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
   onLearnMorePress,
   showEditButton = true,
   title = 'To account',
-  backgroundColor = 'rgba(255, 255, 255, 0.1)',
+  backgroundColor = 'rgb(49, 49, 49)',
   borderRadius = 16,
   showAvatar = true,
   avatarSize = 36,
 }) => {
   return (
-    <YStack bg={backgroundColor} rounded={borderRadius} gap={12} p={16} pb={24} w={343}>
+    <YStack
+      bg={backgroundColor}
+      rounded={borderRadius}
+      gap={12}
+      p={16}
+      pb={24}
+      w={343}
+      mt={5}
+      style={{ position: 'relative' }}
+    >
       {/* Section Header */}
+      <div
+        style={{
+          height: '0',
+          paddingTop: '0px',
+          margin: '0',
+          position: 'relative',
+          top: '-48px',
+        }}
+      >
+        <SendArrowDivider variant="text" />
+      </div>
+
       <Text
         fontSize={12}
         fontWeight="400"
@@ -119,7 +141,8 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
         </XStack>
 
         {/* Edit Icon */}
-        {showEditButton && onEditPress && (
+        {/* {showEditButton && onEditPress && ( */}
+        {showEditButton && (
           <XStack justify="flex-end" items="center" gap={16}>
             <XStack
               w={24}

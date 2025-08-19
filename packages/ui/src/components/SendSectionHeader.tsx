@@ -1,4 +1,4 @@
-import { Edit } from '@onflow/frw-icons';
+// import { Edit } from '@onflow/frw-icons';
 import React from 'react';
 import { XStack } from 'tamagui';
 
@@ -34,7 +34,7 @@ export const SendSectionHeader: React.FC<SendSectionHeaderProps> = ({
           size={editButtonSize}
           variant={editButtonVariant}
           onPress={onEditPress}
-          icon={<Edit size={16} />}
+          // icon={<Edit size={16} />}
         >
           {editButtonText}
         </Button>

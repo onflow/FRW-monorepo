@@ -13,13 +13,16 @@
     "test": "vitest --run --passWithNoTests"
   },
   "dependencies": {
+    "@onflow/frw-cadence": "workspace:*",
+    "@onflow/frw-icons": "workspace:*",
     "@onflow/frw-services": "workspace:*",
     "@onflow/frw-stores": "workspace:*",
     "@onflow/frw-types": "workspace:*",
     "@onflow/frw-ui": "workspace:*",
     "@onflow/frw-utils": "workspace:*",
     "react": "^19.1.0",
-    "react-i18next": "^15.6.1"
+    "react-i18next": "^15.6.1",
+    "zustand": "^5.0.6"
   },
   "devDependencies": {
     "@types/react": "^19.1.0",

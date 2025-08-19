@@ -1,4 +1,4 @@
-import { Edit } from '@onflow/frw-icons';
+// import { Edit } from '@onflow/frw-icons';
 import React, { useState } from 'react';
 import { XStack, YStack } from 'tamagui';
 
@@ -24,25 +24,19 @@ export function AccountCard({
 
   const content = (
     <YStack
-      bg="$bg1"
-      rounded="$4"
       width="100%"
-      pt="$4"
-      px="$4"
-      pb="$6"
-      pressStyle={{
-        bg: 'rgba(255, 255, 255, 0.12)',
-      }}
+      pt="$2"
+      px="$2"
+      pb="$2"
       onPress={enableModalSelection ? () => setModalOpen(true) : undefined}
-      cursor={enableModalSelection ? 'pointer' : 'default'}
       {...props}
     >
       <Text fontSize="$3" fontWeight="400" color="$text2" lineHeight={16}>
         {title}
       </Text>
       {/* Account Row */}
-      <XStack items="center" justify="space-between" mt="$3">
-        <XStack items="center" gap="$4" flex={1}>
+      <XStack items="center" mt="$1">
+        <XStack items="center" gap="$2" flex={1}>
           {/* Account Avatar */}
           <Avatar
             src={account.avatar}
@@ -53,7 +47,7 @@ export function AccountCard({
           />
 
           {/* Account Details */}
-          <YStack flex={1} gap="$0.5">
+          <YStack flex={1}>
             {/* Account Name */}
             <Text color="$text" fontSize="$3.5" fontWeight="600" lineHeight={17} numberOfLines={1}>
               {account.name || 'Unnamed Account'}
@@ -70,7 +64,7 @@ export function AccountCard({
 
             {/* Balance */}
             {isLoading ? (
-              <Skeleton width="$8" height="$4" borderRadius="$2" />
+              <Skeleton width="$8" height="$4" />
             ) : account.balance ? (
               <Text color="$text2" fontWeight="400" fontSize="$3" lineHeight={17}>
                 {account.balance}
@@ -80,9 +74,9 @@ export function AccountCard({
         </XStack>
 
         {/* Edit Icon */}
-        <XStack width="$6" height="$6" items="center" justify="center">
-          <Edit size="$4.5" color="#767676" theme="outline" />
-        </XStack>
+        {/* <XStack width="$6" height="$6" items="center" justify="center">
+          Edit
+        </XStack> */}
       </XStack>
     </YStack>
   );

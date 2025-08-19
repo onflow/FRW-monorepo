@@ -4,6 +4,9 @@ export * from './send/SendToScreen';
 export * from './send/NFTListScreen';
 export * from './send/NFTDetailScreen';
 export * from './send/SendTokensScreen';
+
+// Export dashboard components
+export * from './dashboard';
 export * from './send/SendSingleNFTScreen';
 export * from './send/SendMultipleNFTsScreen';
 

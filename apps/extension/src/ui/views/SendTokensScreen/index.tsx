@@ -1,3 +1,5 @@
+import { IconButton } from '@mui/material';
+import { CloseIcon } from '@onflow/frw-icons';
 import { SendTokensScreen, type TokenModel, type WalletAccount } from '@onflow/frw-screens';
 import React, { useCallback, useEffect, useReducer, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
@@ -9,6 +11,8 @@ import { LLHeader } from '@/ui/components/LLHeader';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
+
+// import { background } from 'storybook/internal/theming';
 
 const SendTokensScreenView = () => {
   const navigate = useNavigate();
@@ -251,6 +255,7 @@ const SendTokensScreenView = () => {
     backgroundColor: '$bg',
     contentPadding: 8, // Use smaller extension-specific padding
     transactionFee: '~0.001 FLOW',
+    showEditButtons: true,
   };
 
   return (
@@ -259,9 +264,23 @@ const SendTokensScreenView = () => {
         display: 'flex',
         flexDirection: 'column',
         width: '100%',
+        padding: '15px',
+        background: 'black',
       }}
     >
-      <LLHeader title={chrome.i18n.getMessage('Send_to')} help={true} />
+      <LLHeader
+        title={'Sending'}
+        help={false}
+        right={
+          <IconButton
+            onClick={() => {
+              navigate('/dashboard');
+            }}
+          >
+            <CloseIcon sx={{ color: 'icon.navi' }} />
+          </IconButton>
+        }
+      />
       <div style={{ flex: 1, overflow: 'hidden' }}>
         <SendTokensScreen {...screenProps} />
       </div>

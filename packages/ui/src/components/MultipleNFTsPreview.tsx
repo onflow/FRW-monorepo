@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Close, Edit } from '@onflow/frw-icons';
+// import { ChevronDown, ChevronUp, Close, Edit } from '@onflow/frw-icons';
 import React, { useState } from 'react';
 import { YStack, XStack, ScrollView, Image, View } from 'tamagui';
 
@@ -137,7 +137,7 @@ const ExpandedNFTItem: React.FC<ExpandedNFTItemProps> = ({ nft, onRemove, itemHe
           justifyContent="center"
           pressStyle={{ opacity: 0.8 }}
           onPress={() => onRemove(nft.id)}
-          icon={<Close size={16} color="$gray11" />}
+          // icon={<Close size={16} color="$gray11" />}
         />
       )}
     </XStack>
@@ -188,7 +188,8 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
               onPress={onEditPress}
               cursor="pointer"
             >
-              <Edit size={24} color="rgba(255, 255, 255, 0.8)" />
+              Edit
+              {/* <Edit size={24} color="rgba(255, 255, 255, 0.8)" /> */}
             </XStack>
           )}
         </XStack>
@@ -206,7 +207,8 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
               onPress={() => setIsExpanded(false)}
               cursor="pointer"
             >
-              <ChevronUp size={24} color="rgba(255, 255, 255, 0.8)" />
+              ChevronUp
+              {/* <ChevronUp size={24} color="rgba(255, 255, 255, 0.8)" /> */}
             </XStack>
           )}
         </XStack>
@@ -287,7 +289,8 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
             onPress={() => setIsExpanded(true)}
             cursor="pointer"
           >
-            <ChevronDown size={21.6} color="#767676" />
+            ChevronDown
+            {/* <ChevronDown size={21.6} color="#767676" /> */}
           </XStack>
         )}
       </XStack>

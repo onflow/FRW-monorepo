@@ -1,4 +1,4 @@
-import { Edit } from '@onflow/frw-icons';
+// import { Edit } from '@onflow/frw-icons';
 import React, { useState } from 'react';
 import { YStack, XStack, Image, View } from 'tamagui';
 
@@ -89,7 +89,8 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
             onPress={onEditPress}
             cursor="pointer"
           >
-            <Edit size={24} color="rgba(255, 255, 255, 0.8)" />
+            Edit
+            {/* <Edit size={24} color="rgba(255, 255, 255, 0.8)" /> */}
           </XStack>
         )}
       </XStack>

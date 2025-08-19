@@ -281,7 +281,8 @@ const InnerRoute = () => {
               path="token/send-tokens"
               element={
                 <PrivateRoute>
-                  <SendTokensScreenView />
+                  <SelectTokensScreenView />
+                  {/* <SendTokensScreenView /> */}
                 </PrivateRoute>
               }
             />

@@ -30,7 +30,6 @@ export function SegmentedControl({
       width={fullWidth ? '100%' : 'auto'}
       py={5}
       px={6}
-      bg="$bg"
       borderWidth={2}
       borderColor="$border1"
       {...props}

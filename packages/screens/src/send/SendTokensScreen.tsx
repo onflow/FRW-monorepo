@@ -10,8 +10,6 @@ import {
   AccountCard,
   ToAccountSection,
   TransactionFeeSection,
-  SendArrowDivider,
-  SendSectionHeader,
   StorageWarning,
   type TokenModel,
   type TransactionFormData,
@@ -20,14 +18,21 @@ import {
 import React from 'react';
 
 export interface SendTokensScreenProps {
+  // Core data
   selectedToken: TokenModel | null;
   fromAccount: WalletAccount | null;
   toAccount: WalletAccount | null;
   amount: string;
-  isTokenMode?: boolean;
   tokens?: TokenModel[];
+
+  // Input configuration
+  isTokenMode?: boolean;
+
+  // Modal states
   isTokenSelectorVisible?: boolean;
   isConfirmationVisible?: boolean;
+
+  // Event handlers
   onTokenSelect?: (token: TokenModel) => void;
   onAmountChange?: (amount: string) => void;
   onToggleInputMode?: () => void;
@@ -38,31 +43,39 @@ export interface SendTokensScreenProps {
   onConfirmationOpen?: () => void;
   onConfirmationClose?: () => void;
   onTransactionConfirm?: () => Promise<void>;
-  backgroundColor?: string;
+  onEditAccountPress?: () => void;
+  onLearnMorePress?: () => void;
+
+  // Styling
   contentPadding?: number;
+
+  // Transaction details
   transactionFee?: string;
   usdFee?: string;
-  // New props for enhanced components
+  isFeesFree?: boolean;
+
+  // UI states
   isAccountIncompatible?: boolean;
   isBalanceLoading?: boolean;
   showStorageWarning?: boolean;
   storageWarningMessage?: string;
   showEditButtons?: boolean;
-  onEditTokenPress?: () => void;
-  onEditAccountPress?: () => void;
-  onLearnMorePress?: () => void;
-  isFeesFree?: boolean;
 }
 
 export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
+  // Core data
   selectedToken,
   fromAccount,
   toAccount,
   amount,
   isTokenMode = true,
   tokens = [],
+
+  // Modal states
   isTokenSelectorVisible = false,
   isConfirmationVisible = false,
+
+  // Event handlers
   onTokenSelect,
   onAmountChange,
   onToggleInputMode,
@@ -70,29 +83,47 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
   onSendPress,
   onTokenSelectorOpen,
   onTokenSelectorClose,
-  onConfirmationOpen,
   onConfirmationClose,
   onTransactionConfirm,
-  backgroundColor = '$background',
+
+  // Styling
   contentPadding = 20,
+
+  // Transaction details
   transactionFee,
   usdFee = '$0.02',
-  // New props
+  isFeesFree = false,
+
+  // UI states
   isAccountIncompatible = false,
   isBalanceLoading = false,
   showStorageWarning = false,
   storageWarningMessage = 'Account balance will fall below the minimum FLOW required for storage after this transaction.',
   showEditButtons = true,
-  onEditTokenPress,
   onEditAccountPress,
   onLearnMorePress,
-  isFeesFree = false,
 }) => {
-  // Calculate if send button should be disabled
+  // Helper functions
+  const handleTokenSelect =
+    onTokenSelect ||
+    ((_token: TokenModel): void => {
+      /* no-op */
+    });
+  const handleTokenSelectorClose =
+    onTokenSelectorClose ||
+    ((): void => {
+      /* no-op */
+    });
+  const handleConfirmationClose =
+    onConfirmationClose ||
+    ((): void => {
+      /* no-op */
+    });
+
+  // Computed values
   const isSendDisabled =
     !selectedToken || !fromAccount || !toAccount || parseFloat(amount || '0') <= 0;
 
-  // Create form data for transaction confirmation
   const formData: TransactionFormData = {
     tokenAmount: amount,
     fiatAmount: selectedToken?.priceInUSD
@@ -102,44 +133,40 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
     transactionFee: transactionFee || '~0.001 FLOW',
   };
 
+  const tokenInputData = selectedToken
+    ? {
+        symbol: selectedToken.symbol,
+        name: selectedToken.name,
+        logo: selectedToken.logoURI,
+        logoURI: selectedToken.logoURI,
+        balance: selectedToken.balance?.toString(),
+        price: selectedToken.priceInUSD ? parseFloat(selectedToken.priceInUSD) : undefined,
+        isVerified: selectedToken.isVerified,
+      }
+    : undefined;
+
   return (
-    <BackgroundWrapper backgroundColor={backgroundColor}>
+    <BackgroundWrapper>
       <YStack flex={1}>
         <ScrollView showsVerticalScrollIndicator={false}>
-          <YStack p={contentPadding} gap="$4">
-            {/* From Account Section */}
-            {fromAccount && (
-              <AccountCard
-                account={fromAccount}
-                title="From Account"
-                isLoading={isBalanceLoading}
-              />
-            )}
+          <YStack p={contentPadding}>
+            {/* Main Transaction Card */}
+            <YStack bg="rgb(49, 49, 49)" rounded="$5" overflow="hidden">
+              {/* From Account Section */}
+              {fromAccount && (
+                <AccountCard
+                  account={fromAccount}
+                  title="From Account"
+                  isLoading={isBalanceLoading}
+                />
+              )}
 
-            {/* Token Amount Input Section */}
-            <YStack bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$4" gap="$3">
-              <SendSectionHeader
-                title="Send Tokens"
-                onEditPress={onEditTokenPress}
-                showEditButton={showEditButtons && !!onEditTokenPress}
-                editButtonText="Change"
-              />
+              {/* Divider */}
+              <View height={1} bg="rgba(255, 255, 255, 0.1)" mx={15} />
+
+              {/* Token Amount Input Section */}
               <TokenAmountInput
-                selectedToken={
-                  selectedToken
-                    ? {
-                        symbol: selectedToken.symbol,
-                        name: selectedToken.name,
-                        logo: selectedToken.logoURI,
-                        logoURI: selectedToken.logoURI,
-                        balance: selectedToken.balance?.toString(),
-                        price: selectedToken.priceInUSD
-                          ? parseFloat(selectedToken.priceInUSD)
-                          : undefined,
-                        isVerified: selectedToken.isVerified,
-                      }
-                    : undefined
-                }
+                selectedToken={tokenInputData}
                 amount={amount}
                 onAmountChange={onAmountChange}
                 isTokenMode={isTokenMode}
@@ -163,9 +190,6 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
               />
             )}
 
-            {/* Arrow Down Indicator */}
-            <SendArrowDivider variant="text" />
-
             {/* To Account Section */}
             {toAccount && (
               <ToAccountSection
@@ -185,7 +209,7 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
               isFree={isFeesFree}
               showCovered={true}
               title="Transaction Fee"
-              backgroundColor="rgba(255, 255, 255, 0.1)"
+              backgroundColor="black"
               borderRadius={16}
               contentPadding={16}
             />
@@ -195,31 +219,30 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
         {/* Send Button */}
         <View p={contentPadding} pt="$2">
           <YStack
-            bg={isSendDisabled ? 'rgba(255, 255, 255, 0.2)' : '#007AFF'}
+            bg={isSendDisabled ? 'rgba(255, 255, 255, 0.2)' : 'white'}
             rounded="$4"
-            p="$4"
+            p="$1"
             items="center"
             opacity={isSendDisabled ? 0.5 : 1}
             pressStyle={{ opacity: 0.8 }}
             onPress={isSendDisabled ? undefined : onSendPress}
             cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
           >
-            <Text fontSize="$4" fontWeight="600" color="$white">
+            <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '$white' : 'black'}>
               Send Tokens
             </Text>
           </YStack>
         </View>
 
-        {/* Token Selector Modal */}
+        {/* Modals */}
         <TokenSelectorModal
           visible={isTokenSelectorVisible}
           selectedToken={selectedToken}
           tokens={tokens}
-          onTokenSelect={onTokenSelect || (() => {})}
-          onClose={onTokenSelectorClose || (() => {})}
+          onTokenSelect={handleTokenSelect}
+          onClose={handleTokenSelectorClose}
         />
 
-        {/* Transaction Confirmation Modal */}
         <TransactionConfirmationModal
           visible={isConfirmationVisible}
           transactionType="tokens"
@@ -228,7 +251,7 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
           toAccount={toAccount}
           formData={formData}
           onConfirm={onTransactionConfirm}
-          onClose={onConfirmationClose || (() => {})}
+          onClose={handleConfirmationClose}
         />
       </YStack>
     </BackgroundWrapper>

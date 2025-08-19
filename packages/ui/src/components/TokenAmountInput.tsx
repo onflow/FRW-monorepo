@@ -27,22 +27,14 @@ export function TokenAmountInput({
   const tokenBalance = selectedToken?.balance || '0';
 
   return (
-    <YStack
-      bg="rgba(255, 255, 255, 0.1)"
-      rounded={16}
-      p={16}
-      gap={16}
-      width="100%"
-      maxWidth={343}
-      {...props}
-    >
+    <YStack pt="$2" px="$2" pb="$2" gap={4} width="100%" {...props}>
       {/* Header */}
       <Text fontSize={12} fontWeight="400" color="rgba(255, 255, 255, 0.8)">
         Send Tokens
       </Text>
 
       {/* Main Input Row */}
-      <XStack alignItems="center" justifyContent="space-between" gap={12}>
+      <XStack alignItems="center" justifyContent="space-between" gap={1}>
         {/* Token Icon */}
         <Avatar
           src={selectedToken?.logo || selectedToken?.logoURI}
@@ -51,7 +43,7 @@ export function TokenAmountInput({
         />
 
         {/* Amount Input */}
-        <XStack alignItems="center" flex={1}>
+        <XStack flex={1}>
           {!isTokenMode && (
             <Text fontSize={32} fontWeight="500" color="$white">
               $
@@ -102,9 +94,8 @@ export function TokenAmountInput({
           bg="rgba(255, 255, 255, 0.1)"
           rounded={20}
           alignItems="center"
-          gap={6}
-          px={12}
-          py={8}
+          gap={3}
+          px={6}
           pressStyle={{ opacity: 0.8 }}
           onPress={onTokenSelectorPress}
           disabled={disabled}
@@ -113,7 +104,7 @@ export function TokenAmountInput({
           <Text fontSize={12} fontWeight="600" color="$white" numberOfLines={1}>
             {tokenSymbol}
           </Text>
-          {selectedToken?.isVerified && <VerifiedToken size={12} color="#41CC5D" />}
+          {selectedToken?.isVeriffied && <VerifiedToken size={12} color="#41CC5D" />}
           <ChevronDown size={12} color="#FFFFFF" />
         </XStack>
       </XStack>
@@ -158,7 +149,6 @@ export function TokenAmountInput({
                 rounded={20}
                 alignItems="center"
                 px={12}
-                py={6}
                 pressStyle={{ opacity: 0.8 }}
                 onPress={onMaxPress}
                 disabled={disabled}
