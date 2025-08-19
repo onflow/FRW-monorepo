@@ -28,13 +28,13 @@ export function SearchBar({
     <XStack
       width={width}
       height={44}
-      bg="rgba(255, 255, 255, 0.1)"
+      bg="$light10"
       borderRadius={16}
       px={16}
       items="center"
       gap={8}
       focusStyle={{
-        bg: 'rgba(255, 255, 255, 0.15)',
+        bg: '$light25',
       }}
     >
       {/* Search Icon */}
@@ -60,7 +60,7 @@ export function SearchBar({
         borderWidth={0}
         focusStyle={{
           outlineWidth: 0,
-          color: '#FFFFFF',
+          color: '$white',
         }}
       />
 

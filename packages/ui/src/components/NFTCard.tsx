@@ -80,7 +80,7 @@ export function NFTCard({
               <YStack
                 width={15.36}
                 height={15.36}
-                bg="#FFBD68"
+                bg="$warning"
                 rounded="$12"
                 items="center"
                 justify="center"
