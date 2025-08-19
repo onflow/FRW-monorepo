@@ -94,7 +94,8 @@ const InnerRoute = () => {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          height: '100%',
+          height: '100vh',
+          maxHeight: '100vh',
         }}
       >
         <Header />
@@ -274,14 +275,6 @@ const InnerRoute = () => {
               element={
                 <PrivateRoute>
                   <SendTo />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="token/send-tokens"
-              element={
-                <PrivateRoute>
-                  <SendTokensScreenView />
                 </PrivateRoute>
               }
             />

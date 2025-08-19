@@ -37,9 +37,10 @@ interface SelectTokensScreenProps {
     getNetwork(): string;
     getCoins?(): any[] | null;
   };
+  showTitle?: boolean;
 }
 
-export function SelectTokensScreen({ bridge }: SelectTokensScreenProps) {
+export function SelectTokensScreen({ bridge, showTitle = true }: SelectTokensScreenProps) {
   // navigation is imported directly from ServiceContext
   const { t } = useTranslation();
   // State management
@@ -355,11 +356,13 @@ export function SelectTokensScreen({ bridge }: SelectTokensScreenProps) {
     <BackgroundWrapper backgroundColor="$background">
       <YStack flex={1} px="$4" pt="$2">
         {/* Header */}
-        <XStack justify="center" items="center" py="$4" pos="relative">
-          <Text fontSize="$6" fontWeight="700" color="$color" lineHeight="$2" letterSpacing="$-1">
-            {t('send.title')}
-          </Text>
-        </XStack>
+        {showTitle && (
+          <XStack justify="center" items="center" py="$4" pos="relative">
+            <Text fontSize="$6" fontWeight="700" color="$color" lineHeight="$2" letterSpacing="$-1">
+              {t('send.title')}
+            </Text>
+          </XStack>
+        )}
 
         {/* Account Card */}
         {isAccountLoading ? (
