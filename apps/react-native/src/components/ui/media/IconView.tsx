@@ -61,12 +61,12 @@ export function IconView({
       width: shouldFillContainer ? '100%' : size,
       height: shouldFillContainer ? '100%' : size,
       borderRadius: borderRadius,
-      backgroundColor: '#9CA3AF',
+      backgroundColor: finalBackgroundColor,
       overflow: 'hidden' as const,
       alignItems: 'center' as const,
       justifyContent: 'center' as const,
     }),
-    [size, borderRadius, shouldFillContainer]
+    [size, borderRadius, shouldFillContainer, finalBackgroundColor]
   );
 
   const svgStyle = useMemo(

@@ -51,12 +51,38 @@ function NFTListItem({
     <View key={getNFTId(nft)}>
       <View className="flex-row justify-between items-center py-3">
         <View className="flex-row items-center gap-2">
-          <IconView src={getNFTCover(nft)} size={54} borderRadius={16} resizeMode="cover" />
-          <View className="gap-1.5">
-            <Text className="text-fg-1 text-sm font-inter-semibold" numberOfLines={1}>
+          <IconView
+            src={getNFTCover(nft)}
+            size={54}
+            borderRadius={16}
+            resizeMode="cover"
+            backgroundColor="transparent"
+          />
+          <View style={{ gap: 6 }}>
+            <Text
+              numberOfLines={1}
+              style={{
+                fontFamily: 'Inter',
+                fontWeight: '600',
+                fontSize: 14,
+                lineHeight: 20, // 1.4285714285714286em * 14px ≈ 20px
+                letterSpacing: -0.084, // -0.6% of 14px
+                color: 'rgba(255, 255, 255, 0.8)',
+              }}
+            >
               {nft.name}
             </Text>
-            <Text className="text-fg-2 text-sm font-inter" numberOfLines={1}>
+            <Text
+              numberOfLines={1}
+              style={{
+                fontFamily: 'Inter',
+                fontWeight: '400',
+                fontSize: 14,
+                lineHeight: 20, // 1.4285714285714286em * 14px ≈ 20px
+                letterSpacing: -0.084, // -0.6% of 14px
+                color: 'rgba(255, 255, 255, 0.8)',
+              }}
+            >
               {nft.collectionName}
             </Text>
           </View>
@@ -315,7 +341,7 @@ export default function BottomConfirmBar({
 
       <View
         className="absolute left-0 right-0 bottom-0 px-4"
-        style={{ paddingBottom: insets.bottom + 16, paddingTop: 16 }}
+        style={{ paddingBottom: insets.bottom + 16, paddingTop: 54 }}
       >
         <TouchableOpacity
           className={`w-full items-center justify-center ${isDark ? 'bg-white' : 'bg-black'}`}
