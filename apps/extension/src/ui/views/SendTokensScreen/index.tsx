@@ -12,8 +12,6 @@ import { useWallet } from '@/ui/hooks/use-wallet';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 
-// import { background } from 'storybook/internal/theming';
-
 const SendTokensScreenView = () => {
   const navigate = useNavigate();
   const params = useParams();
@@ -255,7 +253,6 @@ const SendTokensScreenView = () => {
     backgroundColor: '$bg',
     contentPadding: 8, // Use smaller extension-specific padding
     transactionFee: '~0.001 FLOW',
-    showEditButtons: true,
   };
 
   return (

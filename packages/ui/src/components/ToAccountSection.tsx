@@ -141,8 +141,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
         </XStack>
 
         {/* Edit Icon */}
-        {/* {showEditButton && onEditPress && ( */}
-        {showEditButton && (
+        {showEditButton && onEditPress && (
           <XStack justify="flex-end" items="center" gap={16}>
             <XStack
               w={24}

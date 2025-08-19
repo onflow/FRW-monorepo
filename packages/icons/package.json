@@ -17,7 +17,10 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "src/web",
+    "src/react-native",
+    "README.md"
   ],
   "scripts": {
     "build": "tsup",

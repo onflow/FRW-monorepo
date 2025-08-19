@@ -282,7 +282,6 @@ const InnerRoute = () => {
               element={
                 <PrivateRoute>
                   <SelectTokensScreenView />
-                  {/* <SendTokensScreenView /> */}
                 </PrivateRoute>
               }
             />
