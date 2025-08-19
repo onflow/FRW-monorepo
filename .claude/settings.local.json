@@ -46,7 +46,8 @@
       "Bash(gh auth:*)",
       "Bash(gh issue:*)",
       "Bash(gh pr:*)",
-      "Bash(gh repo:*)"
+      "Bash(gh repo:*)",
+      "Bash(rg:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

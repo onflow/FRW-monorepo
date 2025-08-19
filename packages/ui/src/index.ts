@@ -67,7 +67,6 @@ export * from './components/TokenAmountInput';
 // TODO: Fix TypeScript issues in the following components:
 // export * from './components/Chip';
 // export * from './components/NFTCover';
-// export * from './components/NFTListCard';
 
 export * from './tamagui.config';
 export { default as tamaguiConfig } from './tamagui.config';

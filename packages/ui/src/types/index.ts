@@ -105,19 +105,6 @@ export interface NFTModel {
   amount?: string | number;
 }
 
-export interface NFTListCardProps {
-  nft: NFTModel;
-  selected?: boolean;
-  onPress?: () => void;
-  onDetailPress?: () => void;
-  account?: {
-    name?: string;
-    avatar?: string;
-  };
-  showAmount?: boolean;
-  selectionIcon?: React.ReactNode;
-}
-
 export interface Token {
   symbol?: string;
   name?: string;

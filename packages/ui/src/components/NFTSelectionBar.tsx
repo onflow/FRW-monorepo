@@ -98,7 +98,7 @@ export function NFTSelectionBar({
         {/* Header */}
         <XStack items="center" justify="space-between" pt={10} position="relative">
           <Text fontSize={16} fontWeight="600" color="#FFFFFF">
-            {selectedNFTs.length} Selected NFTs
+            {selectedNFTs.length} Selected NFT{selectedNFTs.length === 1 ? '' : 's'}
           </Text>
 
           <XStack
@@ -153,7 +153,7 @@ export function NFTSelectionBar({
             }}
           >
             <Text fontSize={16} fontWeight="600" color="#252B34">
-              Confirm {selectedNFTs.length} NFTs
+              Confirm {selectedNFTs.length} NFT{selectedNFTs.length === 1 ? '' : 's'}
             </Text>
           </Button>
         )}
