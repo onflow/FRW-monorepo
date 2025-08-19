@@ -1,6 +1,25 @@
-import type { PlatformSpec } from '@onflow/frw-context';
-import type { NavigationProp, PlatformBridge, TranslationFunction } from '@onflow/frw-screens';
+import { ServiceContext, type PlatformSpec } from '@onflow/frw-context';
 import React, { createContext, useContext, useEffect, type ReactNode } from 'react';
+import { useLocation, useNavigate } from 'react-router';
+
+// Define types for platform bridge and translation
+type NavigationProp = {
+  navigate: (screen: string, params?: any) => void;
+  goBack: () => void;
+  canGoBack: () => boolean;
+  reset: (routes: string[]) => void;
+  replace: (screen: string, params?: Record<string, unknown>) => void;
+  push: (screen: string, params?: Record<string, unknown>) => void;
+  pop: () => void;
+  getCurrentRoute: () => { name: string; params?: Record<string, unknown> } | null;
+};
+type PlatformBridge = {
+  getSelectedAddress(): string | null;
+  getNetwork(): string;
+  getCurrency(): any;
+  getCoins?(): any[] | null;
+};
+type TranslationFunction = (key: string) => string;
 
 import { useUserWallets } from '@/ui/hooks/use-account-hooks';
 import { useWallet } from '@/ui/hooks/use-wallet';
@@ -8,6 +27,7 @@ import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 
+import { extensionNavigation } from './ExtensionNavigation';
 import { initializePlatform } from './PlatformImpl';
 
 /**
@@ -36,9 +56,16 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
   const { currentWallet } = useProfiles();
   const wallet = useWallet();
   const { coins } = useCoins();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Initialize platform singleton
   const platform = initializePlatform();
+
+  // Initialize ServiceContext with platform
+  useEffect(() => {
+    ServiceContext.initialize(platform);
+  }, [platform]);
 
   // Keep platform synchronized with extension state
   useEffect(() => {
@@ -53,6 +80,12 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     platform.setWalletController(wallet);
   }, [platform, wallet]);
+
+  // Set up extension navigation
+  useEffect(() => {
+    extensionNavigation.setNavigateCallback(navigate);
+    extensionNavigation.setLocationRef({ current: location });
+  }, [navigate, location]);
 
   // Convenience method to create navigation for screens
   const getNavigation = (navigate: (path: string, state?: any) => void): NavigationProp => ({
@@ -76,6 +109,26 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
           break;
         }
       }
+    },
+    goBack: () => window.history.back(),
+    canGoBack: () => true,
+    reset: (routes: string[]) => {
+      if (routes.length > 0) {
+        navigate(routes[0]);
+      }
+    },
+    replace: (screen: string, params?: Record<string, unknown>) => {
+      navigate(screen, { replace: true, ...params });
+    },
+    push: (screen: string, params?: Record<string, unknown>) => {
+      navigate(screen, params);
+    },
+    pop: () => window.history.back(),
+    getCurrentRoute: () => {
+      return {
+        name: location.pathname,
+        params: location.state,
+      };
     },
   });
 

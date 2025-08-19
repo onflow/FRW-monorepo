@@ -1,3 +1,4 @@
+import { navigation } from '@onflow/frw-context';
 import { NFTService } from '@onflow/frw-services';
 import { useSendStore } from '@onflow/frw-stores';
 import { type CollectionModel, type NFTModel, addressType } from '@onflow/frw-types';
@@ -12,10 +13,9 @@ import {
 } from '@onflow/frw-ui';
 import { getNFTId } from '@onflow/frw-utils';
 import React, { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
-import type { BaseScreenProps } from '../types';
-
-interface NFTListScreenProps extends BaseScreenProps {
+interface NFTListScreenProps {
   collection?: CollectionModel;
   address?: string;
   selectedNFTIds?: string[];
@@ -23,14 +23,13 @@ interface NFTListScreenProps extends BaseScreenProps {
 }
 
 export function NFTListScreen({
-  navigation,
-  bridge,
-  t,
   collection,
   address,
   selectedNFTIds = [],
   isEditing = false,
 }: NFTListScreenProps) {
+  // navigation is imported directly from ServiceContext
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [nfts, setNfts] = useState<NFTModel[]>([]);
   const [isLoading, setIsLoading] = useState(false);

@@ -1,0 +1,88 @@
+{
+  "navigation": {
+    "send": "发送",
+    "sendTo": "发送至",
+    "sending": "发送中",
+    "selectTokens": "选择代币",
+    "colorDemo": "颜色演示"
+  },
+  "common": {
+    "cancel": "取消",
+    "confirm": "确认",
+    "back": "返回",
+    "close": "关闭",
+    "done": "完成",
+    "next": "下一步",
+    "previous": "上一步",
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功"
+  },
+  "send": {
+    "myAccounts": "我的账户",
+    "recent": "最近",
+    "addressBook": "地址簿",
+    "sendTo": {
+      "title": "发送至"
+    },
+    "searchAddress": "搜索地址或联系人...",
+    "selectedToken": "已选代币",
+    "noAccounts": {
+      "title": "无账户",
+      "message": "您还没有任何账户。"
+    },
+    "noRecent": {
+      "title": "无最近收件人",
+      "message": "您最近没有发送给任何人。"
+    },
+    "noContacts": {
+      "title": "无联系人",
+      "message": "您的地址簿为空。"
+    },
+    "noRecipients": "未找到收件人",
+    "selectToken": "选择代币",
+    "selectRecipient": "选择收件人",
+    "enterAmount": "输入金额",
+    "reviewTransaction": "审查交易",
+    "transactionFee": "交易费",
+    "total": "总计",
+    "balance": "余额",
+    "available": "可用",
+    "insufficient": "余额不足",
+    "recipient": "收件人",
+    "from": "从",
+    "to": "至",
+    "amount": "金额",
+    "asset": "资产",
+    "confirm": "确认交易",
+    "sending": "发送中...",
+    "sent": "交易已发送",
+    "failed": "交易失败",
+    "searchRecipients": "搜索收件人...",
+    "recentRecipients": "最近收件人",
+    "contactsList": "联系人",
+    "enterAddress": "输入Flow地址",
+    "invalidAddress": "无效地址",
+    "sameAddress": "不能发送到同一地址",
+    "selectNFTs": "选择NFT",
+    "selectedNFTs": "已选择的NFT",
+    "nftDetails": "NFT详情",
+    "collectionName": "集合",
+    "tokenId": "代币ID",
+    "properties": "属性",
+    "description": "描述",
+    "creator": "创建者"
+  },
+  "errors": {
+    "networkError": "网络错误",
+    "invalidInput": "输入无效",
+    "transactionFailed": "交易失败",
+    "insufficientFunds": "资金不足",
+    "addressNotFound": "地址未找到",
+    "nftNotFound": "NFT未找到",
+    "tokenNotSupported": "不支持的代币",
+    "unauthorized": "未授权访问",
+    "timeout": "请求超时",
+    "unknown": "发生未知错误"
+  }
+}

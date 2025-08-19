@@ -6,7 +6,6 @@ import { Route, HashRouter as Router, Routes, useLocation } from 'react-router';
 import { TamaguiProvider } from 'tamagui';
 
 // Import Tamagui CSS for web support
-import '@tamagui/core/reset.css';
 import '@tamagui/font-inter/css/400.css';
 import '@tamagui/font-inter/css/700.css';
 
@@ -69,7 +68,9 @@ const AppRoutes = () => {
 function Main() {
   return (
     <Router>
-      <AppRoutes />
+      <PlatformProvider>
+        <AppRoutes />
+      </PlatformProvider>
     </Router>
   );
 }
@@ -81,9 +82,7 @@ const App = ({ wallet }: { wallet: any }) => {
       <TamaguiProvider config={extensionTamaguiConfig} defaultTheme="dark">
         <div className="t_dark" style={{ minHeight: '100vh' }}>
           <WalletProvider wallet={wallet}>
-            <PlatformProvider>
-              <Main />
-            </PlatformProvider>
+            <Main />
           </WalletProvider>
         </div>
       </TamaguiProvider>
