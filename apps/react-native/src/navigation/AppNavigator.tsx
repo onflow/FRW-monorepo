@@ -161,7 +161,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
       {/* <View className={isDark ? 'dark' : ''} style={{ flex: 1 }}> */}
       <NavigationContainer ref={navigationRef} theme={customDarkTheme}>
         <Stack.Navigator
-          initialRouteName={'Home'}
+          initialRouteName={(initialRoute as keyof RootStackParamList) || 'Home'}
           screenOptions={{
             headerTitleAlign: 'center',
             headerShadowVisible: false,

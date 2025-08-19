@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "type": "module",
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -25,6 +26,7 @@
     "tamagui": "^1.132.16"
   },
   "devDependencies": {
+    "@babel/runtime": "^7.28.3",
     "@storybook/addon-docs": "^9.1.1",
     "@storybook/addon-links": "^9.1.1",
     "@storybook/react-vite": "^9.1.1",
@@ -52,8 +54,8 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     }
   }
 }

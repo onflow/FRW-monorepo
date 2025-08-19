@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "type": "module",
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -16,6 +17,7 @@
     "translate:force": "node scripts/translate-i18n.js --force"
   },
   "dependencies": {
+    "@onflow/frw-context": "workspace:*",
     "@onflow/frw-services": "workspace:*",
     "@onflow/frw-stores": "workspace:*",
     "@onflow/frw-types": "workspace:*",
@@ -44,8 +46,8 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     }
   }
 }
