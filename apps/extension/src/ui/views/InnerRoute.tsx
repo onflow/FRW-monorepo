@@ -19,6 +19,7 @@ import SendToAddress from './NFT/SendNFT/SendToAddress';
 import EvmCollectionDetail from './NftEvm/CollectionDetail';
 import NftEvmDetail from './NftEvm/Detail';
 import SendNftEvm from './NftEvm/SendNFT/SendToAddress';
+import SelectTokensScreenView from './SelectTokensScreenView';
 import SendTo from './SendTo';
 import SendTokensScreenView from './SendTokensScreen';
 import SendToScreenView from './SendToScreenView';
@@ -249,6 +250,14 @@ const InnerRoute = () => {
               element={
                 <PrivateRoute>
                   <TokenDetail />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="select-tokens"
+              element={
+                <PrivateRoute>
+                  <SelectTokensScreenView />
                 </PrivateRoute>
               }
             />

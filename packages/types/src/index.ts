@@ -45,4 +45,7 @@ export {
 
 export type * from './StoreTypes';
 
+// Platform types
+export { Platform } from './Platform';
+
 export { formatCurrencyStringForDisplay } from './utils/string';

@@ -22,7 +22,7 @@ export default defineConfig([
     name: 'native',
     entry: { index: 'src/native.ts' },
     format: ['cjs', 'esm'],
-    outDir: 'dist/native',
+    outDir: 'dist/react-native',
     dts: false, // We'll generate types separately
     clean: false,
     external: ['react', 'react-native-svg'],
