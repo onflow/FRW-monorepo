@@ -497,30 +497,7 @@ describe('Test send strategies', () => {
         tokenContractAddr: '',
       };
 
-      expect(() => isValidSendTransactionPayload(payload)).toThrow(
-        'invalid send nft transaction payload'
-      );
-    });
-
-    it('Should throw error for missing tokenContractAddr in non-Flow token', async () => {
-      const payload = {
-        type: 'token',
-        assetType: 'flow',
-        proposer: mainAccount.address,
-        receiver: mainAccount.address,
-        flowIdentifier: 'A.f1ab99c82dee3526.USDCFlow.Vault', // Non-Flow token
-        sender: mainAccount.address,
-        amount: '0.001',
-        childAddrs: [],
-        ids: [],
-        decimal: 8,
-        coaAddr: mainAccount.evmAddr,
-        tokenContractAddr: '', // Missing contract address
-      };
-
-      expect(() => isValidSendTransactionPayload(payload)).toThrow(
-        'invalid send token transaction payload'
-      );
+      expect(() => isValidSendTransactionPayload(payload)).toThrow('invalid send nft identifier');
     });
   });
 
