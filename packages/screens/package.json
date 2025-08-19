@@ -26,6 +26,7 @@
     "react-i18next": "^15.6.1"
   },
   "devDependencies": {
+    "@babel/runtime": "^7.28.3",
     "@types/react": "^19.1.0",
     "eslint": "^9.31.0",
     "jsdom": "^26.1.0",
@@ -43,7 +44,7 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
+      "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     }
   }

@@ -1,5 +1,4 @@
 const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
-const { withNativeWind } = require('nativewind/metro');
 const path = require('path');
 
 /**
@@ -19,8 +18,6 @@ const config = {
     unstable_enablePackageExports: true,
     alias: {
       '@': path.resolve(projectRoot, 'src'),
-      ui: path.resolve(projectRoot, 'src/components/ui'),
-      icons: path.resolve(projectRoot, 'src/assets/icons'),
     },
   },
   transformer: {
@@ -31,6 +28,4 @@ const config = {
   watchFolders: [monorepoRoot],
 };
 
-module.exports = withNativeWind(mergeConfig(getDefaultConfig(projectRoot), config), {
-  input: './src/global.css',
-});
+module.exports = mergeConfig(getDefaultConfig(projectRoot), config);

@@ -1,34 +1,20 @@
+import { SelectTokensScreen } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
-import { type NFTModel, type InitialProps } from '@onflow/frw-types';
 import {
-  createWalletAccountFromConfig,
   createNFTModelsFromConfig,
   createTokenModelFromConfig,
+  createWalletAccountFromConfig,
+  type InitialProps,
+  type NFTModel,
 } from '@onflow/frw-types';
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { reactNativeNavigation } from '@/bridge/ReactNativeNavigation';
-import NavigationBackButton from '@/components/NavigationBackButton';
-import NavigationCloseButton from '@/components/NavigationCloseButton';
-import NavigationTitle from '@/components/NavigationTitle';
-import { ThemeToggle } from '@/components/ThemeToggle';
-import { useTheme } from '@/contexts/ThemeContext';
-import {
-  HomeScreen,
-  NFTDetailScreen,
-  SelectTokensScreen,
-  SendMultipleNFTsScreen,
-  SendSingleNFTScreen,
-  SendTokensScreen,
-  SendToScreen,
-} from '@/screens';
-import ColorDemoScreen from '@/screens/ColorDemo/ColorDemoScreen';
-import NFTListScreen from '@/screens/NFTList/NFTListScreen';
+import { HomeScreen } from '@/screens';
 
 export type RootStackParamList = {
   Home: { address?: string; network?: string };
@@ -71,8 +57,8 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const AppNavigator: React.FC<AppNavigatorProps> = props => {
   const { t } = useTranslation();
   const { address, network, initialRoute, initialProps } = props;
-  const { isDark } = useTheme();
-  const navigationRef = useRef<any>();
+  // const { isDark } = useTheme();
+  const navigationRef = useRef<any>(null);
 
   // Send store actions
   const {
@@ -172,92 +158,37 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
 
   return (
     <SafeAreaProvider>
-      <View className={isDark ? 'dark' : ''} style={{ flex: 1 }}>
-        <NavigationContainer
-          ref={navigationRef}
-          theme={isDark ? customDarkTheme : customLightTheme}
+      {/* <View className={isDark ? 'dark' : ''} style={{ flex: 1 }}> */}
+      <NavigationContainer ref={navigationRef} theme={customDarkTheme}>
+        <Stack.Navigator
+          initialRouteName={'Home'}
+          screenOptions={{
+            headerTitleAlign: 'center',
+            headerShadowVisible: false,
+            headerShown: true,
+          }}
         >
-          <Stack.Navigator
-            initialRouteName={(initialRoute as keyof RootStackParamList) || 'Home'}
+          <Stack.Screen name="Home" component={HomeScreen} initialParams={{ address, network }} />
+
+          <Stack.Group
             screenOptions={{
-              headerTitleAlign: 'center',
-              headerShadowVisible: false,
               headerShown: true,
-              headerRight: () => <ThemeToggle />,
+              // headerLeft: () => <NavigationBackButton />,
+              // headerRight: () => <NavigationCloseButton />,
             }}
           >
-            <Stack.Group
-              screenOptions={{
-                headerShown: true,
-                headerLeft: () => <NavigationBackButton />,
-                headerRight: () => <NavigationCloseButton />,
-              }}
-            >
-              <Stack.Screen
-                name="Home"
-                component={HomeScreen}
-                initialParams={{ address, network }}
-              />
-              <Stack.Screen
-                name="ColorDemo"
-                component={ColorDemoScreen}
-                options={{ title: t('navigation.colorDemo') }}
-              />
-              <Stack.Screen
-                name="NFTDetail"
-                component={NFTDetailScreen}
-                options={({ route }) => ({
-                  headerTitle: () => <NavigationTitle title={route.params?.nft?.name || 'NFT'} />,
-                })}
-              />
-
-              <Stack.Screen
-                name="SendTokens"
-                component={SendTokensScreen}
-                options={{
-                  headerTitle: () => <NavigationTitle title={t('navigation.sending')} />,
-                }}
-              />
-              <Stack.Screen
-                name="SendSingleNFT"
-                component={SendSingleNFTScreen}
-                options={{
-                  headerTitle: () => <NavigationTitle title={t('navigation.sending')} />,
-                }}
-              />
-              <Stack.Screen
-                name="SendMultipleNFTs"
-                component={SendMultipleNFTsScreen}
-                options={{
-                  headerTitle: () => <NavigationTitle title={t('navigation.sending')} />,
-                }}
-              />
-
-              <Stack.Screen
-                name="SelectTokens"
-                component={SelectTokensScreen}
-                options={{
-                  headerTitle: () => <NavigationTitle title={t('navigation.selectTokens')} />,
-                }}
-              />
-              <Stack.Screen
-                name="NFTList"
-                component={NFTListScreen}
-                options={{
-                  headerTitle: () => <NavigationTitle title={t('navigation.send')} />,
-                }}
-              />
-              <Stack.Screen
-                name="SendTo"
-                component={SendToScreen}
-                options={{
-                  headerTitle: () => <NavigationTitle title={t('navigation.sendTo')} />,
-                }}
-              />
-            </Stack.Group>
-          </Stack.Navigator>
-        </NavigationContainer>
-      </View>
+            <Stack.Screen
+              name="SelectTokens"
+              component={SelectTokensScreen}
+              options={
+                {
+                  // headerTitle: () => <NavigationTitle title={t('navigation.selectTokens')} />,
+                }
+              }
+            />
+          </Stack.Group>
+        </Stack.Navigator>
+      </NavigationContainer>
     </SafeAreaProvider>
   );
 };

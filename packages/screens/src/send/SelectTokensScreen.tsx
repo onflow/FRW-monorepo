@@ -1,46 +1,35 @@
-import { navigation } from '@onflow/frw-context';
+import { bridge, navigation } from '@onflow/frw-context';
 import { TokenService } from '@onflow/frw-services';
 import { useSendStore, useTokenStore, useWalletStore } from '@onflow/frw-stores';
 import {
   addressType,
-  type TokenModel,
   WalletType,
   type CollectionModel,
+  type TokenModel,
   type WalletAccount,
 } from '@onflow/frw-types';
 import {
+  AccountCard,
+  AddressText,
   BackgroundWrapper,
+  Badge,
+  Divider,
+  NFTCollectionRow,
+  RefreshView,
+  ScrollView,
   SegmentedControl,
   Skeleton,
   Text,
   TokenCard,
-  YStack,
   XStack,
-  ScrollView,
-  RefreshView,
-  NFTCollectionRow,
-  AccountCard,
-  Badge,
-  AddressText,
-  Divider,
+  YStack,
 } from '@onflow/frw-ui';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { TabType } from '../types';
+import type { TabType } from './types';
 
-interface SelectTokensScreenProps {
-  theme?: { isDark: boolean };
-  // Platform bridge for platform-specific data access
-  bridge: {
-    getSelectedAddress(): string | null;
-    getNetwork(): string;
-    getCoins?(): any[] | null;
-  };
-  showTitle?: boolean;
-}
-
-export function SelectTokensScreen({ bridge, showTitle = true }: SelectTokensScreenProps) {
+export function SelectTokensScreen(): React.ReactElement {
   // navigation is imported directly from ServiceContext
   const { t } = useTranslation();
   // State management
@@ -120,38 +109,6 @@ export function SelectTokensScreen({ bridge, showTitle = true }: SelectTokensScr
       setError(null);
 
       try {
-        // Try to get coins from the bridge first
-        if (bridge.getCoins) {
-          const coinsFromBridge = bridge.getCoins();
-
-          if (coinsFromBridge && coinsFromBridge.length > 0) {
-            // Convert coins to token format
-            const convertedTokens: TokenModel[] = coinsFromBridge
-              .filter((coin) => coin && coin.balance && parseFloat(coin.balance) > 0)
-              .map((coin) => ({
-                type:
-                  coin.address?.startsWith('0x') && coin.address.length === 42
-                    ? WalletType.EVM
-                    : WalletType.Flow,
-                identifier: coin.address || coin.contract_address || coin.symbol,
-                symbol: coin.unit || coin.symbol || '',
-                name: coin.coin || coin.name || coin.unit || '',
-                balance: coin.balance || '0',
-                displayBalance: coin.balance || '0',
-                availableBalanceToUse: coin.balance || '0',
-                logoURI: coin.icon || '',
-                balanceInUSD: coin.total?.toString(),
-                change: coin.change24h?.toString(),
-                isVerified: true,
-                decimal: coin.decimal || 18,
-                contractAddress: coin.address || coin.contract_address || '',
-              }));
-
-            setTokens(convertedTokens);
-            return;
-          }
-        }
-
         // Fallback to original TokenService logic if bridge doesn't provide coins
         const targetAddress = accountAddress || bridge.getSelectedAddress();
         const network = bridge.getNetwork();
@@ -250,7 +207,7 @@ export function SelectTokensScreen({ bridge, showTitle = true }: SelectTokensScr
   useEffect(() => {
     setCurrentStep('select-tokens');
 
-    const initializeActiveAccount = async () => {
+    const initializeActiveAccount = async (): Promise<void> => {
       try {
         if (walletStoreState.isLoading) {
           return;
@@ -314,7 +271,7 @@ export function SelectTokensScreen({ bridge, showTitle = true }: SelectTokensScr
   }, [bridge]);
 
   // Handle tab change
-  const handleTabChange = (newTab: TabType) => {
+  const handleTabChange = (newTab: TabType): void => {
     if (newTab !== tab) {
       clearTransactionData();
     }
@@ -322,7 +279,7 @@ export function SelectTokensScreen({ bridge, showTitle = true }: SelectTokensScr
   };
 
   // Handle token press
-  const handleTokenPress = (token: TokenModel) => {
+  const handleTokenPress = (token: TokenModel): void => {
     setSelectedToken(token);
     setTransactionType('tokens');
     setCurrentStep('send-to');
@@ -330,7 +287,7 @@ export function SelectTokensScreen({ bridge, showTitle = true }: SelectTokensScr
   };
 
   // Handle NFT press
-  const handleNFTPress = (collection: CollectionModel) => {
+  const handleNFTPress = (collection: CollectionModel): void => {
     const address = fromAccount?.address || bridge.getSelectedAddress();
     navigation.navigate('NFTList', { collection, address });
   };
