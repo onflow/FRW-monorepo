@@ -12,7 +12,7 @@ export function Badge({
 }: BadgeProps): React.ReactElement {
   // Size configurations
   const sizeConfig = {
-    small: { height: 20, px: 8, fontSize: 12, rounded: 4 },
+    small: { height: '$2.5', px: '$1', fontSize: 8, rounded: 16 },
     medium: { height: 24, px: 12, fontSize: 13, rounded: 6 },
     large: { height: 32, px: 16, fontSize: 14, rounded: 8 },
   };
@@ -26,6 +26,7 @@ export function Badge({
     warning: { bg: '$warning10', textColor: '$warning' },
     error: { bg: '$error10', textColor: '$error' },
     outline: { bg: 'transparent', textColor: '$textSecondary' },
+    evm: { bg: '#627EEA', textColor: '$white' },
   };
 
   const sizeProps = sizeConfig[size];

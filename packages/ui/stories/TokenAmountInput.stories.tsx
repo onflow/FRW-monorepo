@@ -1,11 +1,28 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import React from 'react';
-import { YStack } from 'tamagui';
+import { useState } from 'react';
 
 import { TokenAmountInput } from '../src/components/TokenAmountInput';
-import type { Token } from '../src/types';
 
-const meta: Meta<typeof TokenAmountInput> = {
+const mockToken = {
+  symbol: 'FLOW',
+  name: 'Flow',
+  logoURI:
+    'https://cdn.jsdelivr.net/gh/FlowFoundation/flow-token-list@main/token-registry/A.1654653399040a61.FlowToken/logo.svg',
+  balance: '550.66',
+  price: 0.69,
+  isVerified: true,
+};
+
+const mockUSDCToken = {
+  symbol: 'USDC',
+  name: 'USD Coin',
+  logoURI: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png',
+  balance: '1,234.56',
+  price: 1.0,
+  isVerified: true,
+};
+
+const meta = {
   title: 'Components/TokenAmountInput',
   component: TokenAmountInput,
   parameters: {
@@ -13,158 +30,164 @@ const meta: Meta<typeof TokenAmountInput> = {
     docs: {
       description: {
         component:
-          'TokenAmountInput allows users to input token amounts with token selection, USD conversion, and balance management features.',
+          'Token amount input component with token selector, converter, and balance display',
       },
     },
   },
+  tags: ['autodocs'],
   argTypes: {
-    amount: { control: 'text' },
-    isTokenMode: { control: 'boolean' },
-    placeholder: { control: 'text' },
-    showBalance: { control: 'boolean' },
-    showConverter: { control: 'boolean' },
-    disabled: { control: 'boolean' },
-    onAmountChange: { action: 'amount-changed' },
-    onToggleInputMode: { action: 'input-mode-toggled' },
-    onTokenSelectorPress: { action: 'token-selector-pressed' },
-    onMaxPress: { action: 'max-pressed' },
+    selectedToken: {
+      description:
+        'Selected token object with symbol, name, logo, balance, price, and verification status',
+      control: { type: 'object' },
+    },
+    amount: {
+      description: 'Current amount value',
+      control: { type: 'text' },
+    },
+    onAmountChange: {
+      description: 'Callback when amount changes',
+      action: 'amount changed',
+    },
+    isTokenMode: {
+      description: 'Whether input is in token mode (true) or fiat mode (false)',
+      control: { type: 'boolean' },
+    },
+    onToggleInputMode: {
+      description: 'Callback to toggle between token and fiat input modes',
+      action: 'input mode toggled',
+    },
+    onTokenSelectorPress: {
+      description: 'Callback when token selector is pressed',
+      action: 'token selector pressed',
+    },
+    onMaxPress: {
+      description: 'Callback when MAX button is pressed',
+      action: 'max pressed',
+    },
+    placeholder: {
+      description: 'Input placeholder text',
+      control: { type: 'text' },
+    },
+    showBalance: {
+      description: 'Whether to show balance and MAX button',
+      control: { type: 'boolean' },
+    },
+    showConverter: {
+      description: 'Whether to show currency converter toggle and converted amount',
+      control: { type: 'boolean' },
+    },
+    disabled: {
+      description: 'Whether the component is disabled',
+      control: { type: 'boolean' },
+    },
   },
   decorators: [
-    (Story) => (
-      <YStack width={375} padding="$4" backgroundColor="$gray12" alignItems="center">
+    (Story): React.JSX.Element => (
+      <div style={{ width: '400px', padding: '20px' }}>
         <Story />
-      </YStack>
+      </div>
     ),
   ],
-};
+  render: (args): React.JSX.Element => {
+    const [isTokenMode, setIsTokenMode] = useState(args.isTokenMode ?? true);
+    const [amount, setAmount] = useState(args.amount ?? '');
+
+    return (
+      <TokenAmountInput
+        {...args}
+        isTokenMode={isTokenMode}
+        amount={amount}
+        onAmountChange={setAmount}
+        onToggleInputMode={() => {
+          setIsTokenMode(!isTokenMode);
+          // Input mode toggled to: !isTokenMode ? 'token' : 'fiat'
+        }}
+        onTokenSelectorPress={() => {
+          /* Token selector pressed */
+        }}
+        onMaxPress={() => {
+          /* Max pressed */
+        }}
+      />
+    );
+  },
+} satisfies Meta<typeof TokenAmountInput>;
 
 export default meta;
-type Story = StoryObj<typeof TokenAmountInput>;
-
-// Mock tokens - matching Figma design
-const flowToken: Token = {
-  symbol: 'FLOW',
-  name: 'Flow',
-  logo: 'https://via.placeholder.com/35x35/2775CA/FFFFFF?text=FLOW',
-  balance: '134.912',
-  price: 1.01,
-  isVerified: true,
-};
-
-const usdcToken: Token = {
-  symbol: 'USDC',
-  name: 'USD Coin',
-  logo: 'https://via.placeholder.com/36x36/2775CA/FFFFFF?text=USDC',
-  balance: '500.00',
-  price: 1.0,
-  isVerified: true,
-};
-
-const unverifiedToken: Token = {
-  symbol: 'TEST',
-  name: 'Test Token',
-  logo: 'https://via.placeholder.com/36x36/FF6B6B/FFFFFF?text=TEST',
-  balance: '10,000.00',
-  price: 0.001,
-  isVerified: false,
-};
-
-const tokenWithoutLogo: Token = {
-  symbol: 'NOLOGO',
-  name: 'Token Without Logo',
-  balance: '25.75',
-  price: 2.5,
-  isVerified: true,
-};
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    selectedToken: flowToken,
-    amount: '0',
+    selectedToken: mockToken,
+    amount: '0.69092',
+    isTokenMode: true,
     placeholder: '0.00',
+    showBalance: true,
+    showConverter: true,
+    disabled: false,
   },
 };
 
-export const WithAmount: Story = {
+export const WithFiatMode: Story = {
   args: {
-    selectedToken: flowToken,
-    amount: '100.50',
-  },
-};
-
-export const USDMode: Story = {
-  args: {
-    selectedToken: usdcToken,
-    amount: '85.25',
+    selectedToken: mockToken,
+    amount: '0.48',
     isTokenMode: false,
+    placeholder: '0.00',
+    showBalance: true,
+    showConverter: true,
+    disabled: false,
   },
 };
 
-export const VerifiedToken: Story = {
+export const WithUSDC: Story = {
   args: {
-    selectedToken: flowToken,
-    amount: '50.00',
+    selectedToken: mockUSDCToken,
+    amount: '100.00',
+    isTokenMode: true,
+    placeholder: '0.00',
+    showBalance: true,
+    showConverter: true,
+    disabled: false,
+  },
+};
+
+export const EmptyState: Story = {
+  args: {
+    selectedToken: mockToken,
+    amount: '',
+    isTokenMode: true,
+    placeholder: '0.00',
+    showBalance: true,
+    showConverter: true,
+    disabled: false,
   },
 };
 
 export const UnverifiedToken: Story = {
   args: {
-    selectedToken: unverifiedToken,
-    amount: '1000.00',
-  },
-};
-
-export const NoLogo: Story = {
-  args: {
-    selectedToken: tokenWithoutLogo,
-    amount: '10.25',
-  },
-};
-
-export const Disabled: Story = {
-  args: {
-    selectedToken: flowToken,
-    amount: '100.00',
-    disabled: true,
-  },
-};
-
-export const NoBalance: Story = {
-  args: {
-    selectedToken: flowToken,
-    amount: '25.50',
-    showBalance: false,
-  },
-};
-
-export const LongTokenName: Story = {
-  args: {
     selectedToken: {
-      ...flowToken,
-      symbol: 'VERYLONGTOKEN',
-      name: 'Very Long Token Name That Might Overflow',
+      ...mockToken,
+      isVerified: false,
     },
-    amount: '123.45',
+    amount: '10.0',
+    isTokenMode: true,
+    placeholder: '0.00',
+    showBalance: true,
+    showConverter: true,
+    disabled: false,
   },
 };
 
-export const HighValue: Story = {
+export const LargeAmount: Story = {
   args: {
-    selectedToken: {
-      ...flowToken,
-      balance: '1,234,567.89',
-      price: 1250.75,
-    },
-    amount: '999.99',
-  },
-};
-
-export const LowValue: Story = {
-  args: {
-    selectedToken: {
-      ...unverifiedToken,
-      price: 0.000001,
-    },
-    amount: '1000000.00',
+    selectedToken: mockToken,
+    amount: '123456.789123',
+    isTokenMode: true,
+    placeholder: '0.00',
+    showBalance: true,
+    showConverter: true,
+    disabled: false,
   },
 };

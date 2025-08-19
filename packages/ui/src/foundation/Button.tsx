@@ -40,22 +40,56 @@ export function Button({
   // Map variant to Flow theme styles
   switch (variant) {
     case 'secondary':
-      buttonStyles = { bg: '$bg2', color: '$text', borderColor: '$border', borderWidth: 1 };
+      buttonStyles = {
+        bg: '$bg2',
+        color: '$text',
+        borderColor: '$border',
+        borderWidth: 1,
+        hoverStyle: { bg: '$bg3' },
+        pressStyle: { bg: '$bg4' },
+      };
       break;
     case 'destructive':
-      buttonStyles = { bg: '$error', color: '$white' };
+      buttonStyles = {
+        bg: '$error',
+        color: '$white',
+        hoverStyle: { opacity: 0.9 },
+        pressStyle: { opacity: 0.8 },
+      };
       break;
     case 'success':
-      buttonStyles = { bg: '$success', color: '$white' };
+      buttonStyles = {
+        bg: '$success',
+        color: '$white',
+        hoverStyle: { opacity: 0.9 },
+        pressStyle: { opacity: 0.8 },
+      };
       break;
     case 'outline':
-      buttonStyles = { bg: 'transparent', color: '$text', borderColor: '$border', borderWidth: 1 };
+      buttonStyles = {
+        bg: 'transparent',
+        color: '$text',
+        borderColor: '$border',
+        borderWidth: 1,
+        hoverStyle: { bg: '$bg1' },
+        pressStyle: { bg: '$bg2' },
+      };
       break;
     case 'ghost':
-      buttonStyles = { bg: 'transparent', color: '$text' };
+      buttonStyles = {
+        bg: 'transparent',
+        color: '$text',
+        hoverStyle: { bg: '$bg1' },
+        pressStyle: { bg: '$bg2' },
+      };
       break;
     default:
-      buttonStyles = { bg: '$primary', color: '$black' };
+      buttonStyles = {
+        bg: '$primary',
+        color: '$black',
+        hoverStyle: { opacity: 0.9 },
+        pressStyle: { opacity: 0.8 },
+      };
   }
 
   return (

@@ -1,5 +1,6 @@
 import { type PlatformSpec, type Storage } from '@onflow/frw-context';
 import type {
+  Currency,
   Platform,
   RecentContactsResponse,
   WalletAccount,
@@ -97,6 +98,9 @@ class PlatformImpl implements PlatformSpec {
     return NativeFRWBridge.getBuildNumber();
   }
 
+  getCurrency(): Currency {
+    return NativeFRWBridge.getCurrency();
+  }
   getPlatform(): Platform {
     return RNPlatform.OS === 'ios' ? Platform.iOS : Platform.Android;
   }
@@ -141,7 +145,7 @@ class PlatformImpl implements PlatformSpec {
   }
 
   closeRN(): void {
-    NativeFRWBridge.closeRN();
+    NativeFRWBridge.closeRN(null);
   }
 
   configureCadenceService(cadenceService: any): void {

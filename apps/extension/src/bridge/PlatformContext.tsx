@@ -97,6 +97,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
       return platformAddress;
     },
     getNetwork: () => platform.getNetwork(),
+    getCurrency: () => platform.getCurrency(),
     getCoins: () => {
       return coins || null;
     },

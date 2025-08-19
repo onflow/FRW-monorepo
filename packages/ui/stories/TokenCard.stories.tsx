@@ -49,7 +49,7 @@ export const WithoutPrice: Story = {
   args: {
     symbol: 'MYTOKEN',
     name: 'My Custom Token',
-    balance: '50,000.00 MYTOKEN',
+    balance: '50,000.00',
     isVerified: false,
   },
 };
@@ -58,7 +58,7 @@ export const Verified: Story = {
   args: {
     symbol: 'BTC',
     name: 'Bitcoin',
-    balance: '0.05421 BTC',
+    balance: '0.05421',
     price: '2671.05',
     change24h: 12.5,
     isVerified: true,

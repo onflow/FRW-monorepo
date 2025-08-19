@@ -40,13 +40,13 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
     : {};
 
   return (
-    <YStack gap={8} {...containerProps}>
+    <YStack gap="$0.5" {...containerProps}>
       {/* Main fee row */}
-      <XStack justifyContent="space-between" alignItems="center">
+      <XStack justify="space-between" items="center">
         {/* Left side - Title */}
         <Text
           fontSize="$3"
-          fontWeight="600"
+          fontWeight="400"
           color={titleColor}
           lineHeight={20}
           letterSpacing="-0.6%"
@@ -55,10 +55,10 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
         </Text>
 
         {/* Right side - Fee amount and Flow logo */}
-        <XStack alignItems="center" gap="$2">
+        <XStack items="center" gap="$0.5">
           {isFree ? (
             // Show strikethrough when free
-            <XStack alignItems="center" gap="$2" position="relative">
+            <XStack items="center" gap="$0.5" pos="relative">
               <Text
                 fontSize="$4"
                 fontWeight="400"
@@ -85,7 +85,7 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
             </XStack>
           ) : (
             // Show normal fee display
-            <XStack alignItems="center" gap="$2">
+            <XStack items="center" gap="$0.75">
               <Text
                 fontSize="$4"
                 fontWeight="400"
@@ -112,14 +112,14 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
 
       {/* Covered message row */}
       {showCovered && (
-        <XStack justifyContent="flex-end" alignItems="center">
+        <XStack justify="flex-end" items="center">
           <Text
             fontSize="$2"
             fontWeight="400"
             color="rgba(255, 255, 255, 0.4)"
             lineHeight={17}
             letterSpacing="-0.6%"
-            textAlign="right"
+            text="right"
           >
             {coveredMessage}
           </Text>

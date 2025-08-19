@@ -4,6 +4,7 @@ import type {
   RecentContactsResponse,
   WalletAccount,
   WalletAccountsResponse,
+  Currency,
 } from '@onflow/frw-types';
 
 import { chromeStorage } from '@/extension-shared/chrome-storage';
@@ -53,6 +54,13 @@ class ExtensionPlatformImpl implements PlatformSpec {
     return chrome.runtime.getManifest().version_name || this.getVersion();
   }
 
+  getCurrency(): Currency {
+    return {
+      name: 'USD',
+      symbol: '$',
+      rate: '1',
+    };
+  }
   getPlatform(): Platform {
     return Platform.Extension;
   }

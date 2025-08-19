@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Close, Edit } from '@onflow/frw-icons';
+import { ChevronDown, ChevronUp, Trash, Edit } from '@onflow/frw-icons';
 import React, { useState } from 'react';
 import { YStack, XStack, ScrollView, Image, View } from 'tamagui';
 
@@ -9,11 +9,14 @@ export interface MultipleNFTsPreviewProps {
   nfts: NFTSendData[];
   onRemoveNFT?: (nftId: string) => void;
   onEditPress?: () => void;
+  showEditButton?: boolean;
+  sectionTitle?: string;
   maxVisibleThumbnails?: number;
   expandable?: boolean;
   thumbnailSize?: number;
-  sectionTitle?: string;
-  showTopDivider?: boolean;
+  backgroundColor?: string;
+  borderRadius?: string | number;
+  contentPadding?: number;
 }
 
 interface NFTThumbnailProps {
@@ -21,7 +24,6 @@ interface NFTThumbnailProps {
   size: number;
   showOverlay?: boolean;
   overlayText?: string;
-  borderRadius?: number;
 }
 
 const NFTThumbnail: React.FC<NFTThumbnailProps> = ({
@@ -29,7 +31,6 @@ const NFTThumbnail: React.FC<NFTThumbnailProps> = ({
   size,
   showOverlay = false,
   overlayText,
-  borderRadius = 14.4,
 }) => {
   const [imageError, setImageError] = useState(false);
   const imageUrl = nft.image || nft.thumbnail;
@@ -39,10 +40,10 @@ const NFTThumbnail: React.FC<NFTThumbnailProps> = ({
     <View
       width={size}
       height={size}
-      rounded={borderRadius}
+      rounded={14.4}
       bg="rgba(255, 255, 255, 0.05)"
-      alignItems="center"
-      justifyContent="center"
+      items="center"
+      justify="center"
       overflow="hidden"
       position="relative"
     >
@@ -52,25 +53,10 @@ const NFTThumbnail: React.FC<NFTThumbnailProps> = ({
           width={size}
           height={size}
           onError={() => setImageError(true)}
+          style={{ objectFit: 'cover' }}
         />
       ) : (
-        <YStack alignItems="center" justifyContent="center" gap={4}>
-          <YStack
-            width={16}
-            height={16}
-            bg="rgba(255, 255, 255, 0.1)"
-            rounded={4}
-            alignItems="center"
-            justifyContent="center"
-          >
-            <Text fontSize={8} color="rgba(255, 255, 255, 0.6)">
-              🖼️
-            </Text>
-          </YStack>
-          <Text fontSize={8} color="rgba(255, 255, 255, 0.6)">
-            NFT
-          </Text>
-        </YStack>
+        <View flex={1} bg="$light10" rounded={14.4} />
       )}
 
       {/* Overlay */}
@@ -78,12 +64,9 @@ const NFTThumbnail: React.FC<NFTThumbnailProps> = ({
         <>
           <View
             position="absolute"
-            top={0}
-            left={0}
-            right={0}
-            bottom={0}
             bg="rgba(0, 0, 0, 0.2)"
-            rounded={borderRadius}
+            rounded={14.4}
+            style={{ top: -0.5, left: 0, right: 0, bottom: 0 }}
           />
           <Text position="absolute" fontSize={21.6} fontWeight="700" color="$white" opacity={0.6}>
             {overlayText}
@@ -97,33 +80,44 @@ const NFTThumbnail: React.FC<NFTThumbnailProps> = ({
 interface ExpandedNFTItemProps {
   nft: NFTSendData;
   onRemove?: (nftId: string) => void;
-  itemHeight?: number;
 }
 
-const ExpandedNFTItem: React.FC<ExpandedNFTItemProps> = ({ nft, onRemove, itemHeight = 71 }) => {
+const ExpandedNFTItem: React.FC<ExpandedNFTItemProps> = ({ nft, onRemove }) => {
+  const [imageError, setImageError] = useState(false);
+  const imageUrl = nft.image || nft.thumbnail;
+  const displayImage = imageUrl && !imageError;
+
   return (
-    <XStack alignItems="center" gap={12} width="100%" height={71} px={0} py={0}>
-      {/* NFT Thumbnail */}
-      <NFTThumbnail nft={nft} size={53.44} borderRadius={16} />
+    <XStack items="center" gap={8} height={71}>
+      {/* NFT Image */}
+      <View
+        width={53.44}
+        height={53.44}
+        rounded={16}
+        bg="$light5"
+        items="center"
+        justify="center"
+        overflow="hidden"
+      >
+        {displayImage ? (
+          <Image
+            source={{ uri: imageUrl }}
+            width={53.44}
+            height={53.44}
+            onError={() => setImageError(true)}
+            style={{ objectFit: 'cover' }}
+          />
+        ) : (
+          <View flex={1} bg="$light10" rounded={16} />
+        )}
+      </View>
 
       {/* NFT Details */}
-      <YStack justifyContent="center" gap={6} flex={1} minWidth={0}>
-        <Text
-          fontSize={14}
-          fontWeight="600"
-          color="rgba(255, 255, 255, 0.8)"
-          numberOfLines={1}
-          ellipsizeMode="tail"
-        >
+      <YStack flex={1} justify="center" gap={2}>
+        <Text fontSize={14} fontWeight="600" color="$light80" numberOfLines={1}>
           {nft.name || 'Unnamed NFT'}
         </Text>
-        <Text
-          fontSize={14}
-          fontWeight="400"
-          color="rgba(255, 255, 255, 0.8)"
-          numberOfLines={1}
-          ellipsizeMode="tail"
-        >
+        <Text fontSize={14} fontWeight="400" color="$light80" numberOfLines={1}>
           {nft.collection || 'Unknown Collection'}
         </Text>
       </YStack>
@@ -131,14 +125,16 @@ const ExpandedNFTItem: React.FC<ExpandedNFTItemProps> = ({ nft, onRemove, itemHe
       {/* Remove Button */}
       {onRemove && (
         <XStack
-          width={32}
-          height={32}
-          alignItems="center"
-          justifyContent="center"
-          pressStyle={{ opacity: 0.8 }}
+          width={24}
+          height={24}
+          items="center"
+          justify="center"
+          pressStyle={{ opacity: 0.7 }}
           onPress={() => onRemove(nft.id)}
-          icon={<Close size={16} color="$gray11" />}
-        />
+          cursor="pointer"
+        >
+          <Trash size={24} color="rgba(255, 255, 255, 0.5)" theme="outline" />
+        </XStack>
       )}
     </XStack>
   );
@@ -148,11 +144,14 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
   nfts,
   onRemoveNFT,
   onEditPress,
+  showEditButton = true,
+  sectionTitle = 'Send NFTs',
   maxVisibleThumbnails = 3,
   expandable = true,
   thumbnailSize = 77.33,
-  sectionTitle = 'Send NFTs',
-  showTopDivider = false,
+  backgroundColor = 'transparent',
+  borderRadius = 14.4,
+  contentPadding = 0,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -161,66 +160,86 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
   const remainingCount = Math.max(0, totalCount - maxVisibleThumbnails);
   const showOverlay = remainingCount > 0;
 
-  if (isExpanded) {
+  // Handle empty state
+  if (totalCount === 0) {
     return (
-      <YStack
-        bg="rgba(255, 255, 255, 0.1)"
-        rounded={16}
-        p={16}
-        pb={30}
-        gap={12}
-        width="100%"
-        style={{ maxWidth: 400 }}
-      >
-        {/* Optional Top Divider for component composition */}
-        {showTopDivider && <View height={1} bg="rgba(255, 255, 255, 0.1)" width="100%" />}
-
-        {/* Send NFTs Header */}
-        <XStack alignItems="center" justifyContent="space-between">
-          <Text fontSize={12} fontWeight="400" color="rgba(255, 255, 255, 0.8)">
+      <YStack bg={backgroundColor} borderRadius={borderRadius} padding={contentPadding} gap={12}>
+        {/* Section Header */}
+        <XStack items="center" justify="space-between" gap={15} width="100%">
+          <Text fontSize={12} fontWeight="400" color="$light80" lineHeight={16} width={69}>
             {sectionTitle}
           </Text>
-          {onEditPress && (
-            <XStack
-              alignItems="center"
-              gap={4}
-              pressStyle={{ opacity: 0.8 }}
-              onPress={onEditPress}
-              cursor="pointer"
-            >
-              <Edit size={24} color="rgba(255, 255, 255, 0.8)" />
+        </XStack>
+
+        {/* Empty State */}
+        <XStack items="center" justify="center" gap={14.4} width={304} height={thumbnailSize}>
+          <Text fontSize={14} color="$textMuted" fontWeight="400">
+            No NFTs selected
+          </Text>
+        </XStack>
+      </YStack>
+    );
+  }
+
+  if (isExpanded) {
+    return (
+      <YStack bg={backgroundColor} borderRadius={borderRadius} padding={contentPadding} gap={12}>
+        {/* Section Header */}
+        <XStack items="center" justify="space-between" gap={15} width="100%">
+          <Text fontSize={12} fontWeight="400" color="$light80" lineHeight={16} width={77.08}>
+            {sectionTitle}
+          </Text>
+          {showEditButton && onEditPress && (
+            <XStack items="center" justify="flex-end" gap={16}>
+              <XStack
+                width={24}
+                height={24}
+                items="center"
+                justify="center"
+                pressStyle={{ opacity: 0.7 }}
+                onPress={onEditPress}
+                cursor="pointer"
+              >
+                <Edit size={24} color="#767676" theme="outline" />
+              </XStack>
             </XStack>
           )}
         </XStack>
 
-        {/* NFT Count and Collapse Button */}
-        <XStack alignItems="center" justifyContent="space-between">
-          <Text fontSize={20} fontWeight="500" color="$white" lineHeight="0.8em">
+        {/* NFT Count Row */}
+        <XStack items="center" justify="space-between" gap={12} width={304}>
+          <Text
+            fontSize={20}
+            fontWeight="500"
+            color="$light80"
+            lineHeight={16}
+            width={169}
+            height={24}
+          >
             {totalCount} NFT{totalCount !== 1 ? 's' : ''}
           </Text>
           {expandable && (
             <XStack
-              alignItems="center"
-              gap={4}
-              pressStyle={{ opacity: 0.8 }}
+              width={24}
+              height={24}
+              items="center"
+              justify="center"
               onPress={() => setIsExpanded(false)}
               cursor="pointer"
             >
-              <ChevronUp size={24} color="rgba(255, 255, 255, 0.8)" />
+              <ChevronUp size={24} color="#767676" theme="outline" />
             </XStack>
           )}
         </XStack>
 
         {/* Expanded List */}
-        <ScrollView maxHeight={300} showsVerticalScrollIndicator={false}>
-          <YStack gap={12}>
+        <ScrollView height={300} showsVerticalScrollIndicator={false}>
+          <YStack gap="$2">
             {nfts.map((nft, index) => (
-              <YStack key={nft.id} gap={8}>
+              <YStack key={nft.id}>
                 <ExpandedNFTItem nft={nft} onRemove={onRemoveNFT} />
                 {/* Divider */}
-                {index < nfts.length - 1 && (
-                  <View height={1} bg="rgba(255, 255, 255, 0.1)" width="100%" />
-                )}
+                {index < nfts.length - 1 && <View height={1} bg="$gray6" marginHorizontal="$2" />}
               </YStack>
             ))}
           </YStack>
@@ -230,39 +249,39 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
   }
 
   return (
-    <YStack
-      bg="rgba(255, 255, 255, 0.1)"
-      rounded={16}
-      p={16}
-      pb={30}
-      gap={12}
-      width="100%"
-      style={{ maxWidth: 400 }}
-    >
-      {/* Optional Top Divider for component composition */}
-      {showTopDivider && <View height={1} bg="rgba(255, 255, 255, 0.1)" width="100%" />}
-
-      {/* Send NFTs Header */}
-      <XStack alignItems="center" justifyContent="space-between">
-        <Text fontSize={12} fontWeight="400" color="rgba(255, 255, 255, 0.8)">
+    <YStack bg={backgroundColor} borderRadius={borderRadius} padding={contentPadding} gap={12}>
+      {/* Section Header */}
+      <XStack items="center" justify="space-between" gap={15} width="100%">
+        <Text
+          fontSize={12}
+          fontWeight="400"
+          color="rgba(255, 255, 255, 0.8)"
+          lineHeight={16}
+          width={69}
+        >
           {sectionTitle}
         </Text>
-        {onEditPress && (
-          <XStack
-            alignItems="center"
-            gap={4}
-            pressStyle={{ opacity: 0.8 }}
-            onPress={onEditPress}
-            cursor="pointer"
-          >
-            <Edit size={24} color="rgba(255, 255, 255, 0.8)" />
+        {showEditButton && onEditPress && (
+          <XStack items="center" justify="flex-end" gap={16}>
+            <XStack
+              width={24}
+              height={24}
+              alignItems="center"
+              justifyContent="center"
+              pressStyle={{ opacity: 0.7 }}
+              onPress={onEditPress}
+              cursor="pointer"
+            >
+              <Edit size={24} color="#767676" theme="outline" />
+            </XStack>
           </XStack>
         )}
       </XStack>
 
-      {/* NFT Thumbnails Row */}
-      <XStack alignItems="center" gap={14.4} width="100%">
-        <XStack alignItems="center" gap={9}>
+      {/* NFT Preview Row */}
+      <XStack items="center" justify="space-between" gap={14.4} width={304}>
+        {/* NFT Thumbnails */}
+        <XStack items="center" gap={9}>
           {visibleNFTs.map((nft, index) => {
             const isLast = index === visibleNFTs.length - 1;
             const shouldShowOverlay = isLast && showOverlay;
@@ -280,14 +299,17 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
         </XStack>
 
         {/* Expand Button */}
-        {expandable && (
+        {expandable && totalCount > maxVisibleThumbnails && (
           <XStack
-            alignItems="center"
-            pressStyle={{ opacity: 0.8 }}
+            width={21.6}
+            height={21.6}
+            items="center"
+            justify="center"
+            pressStyle={{ opacity: 0.7 }}
             onPress={() => setIsExpanded(true)}
             cursor="pointer"
           >
-            <ChevronDown size={21.6} color="#767676" />
+            <ChevronDown size={21.6} color="#767676" theme="outline" />
           </XStack>
         )}
       </XStack>
