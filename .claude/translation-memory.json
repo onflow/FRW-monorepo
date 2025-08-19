@@ -1,0 +1,53 @@
+{
+  "confirmed_translations": {
+    "zh": {
+      "navigation.send": "发送",
+      "navigation.sendTo": "发送至",
+      "common.cancel": "取消",
+      "common.confirm": "确认"
+    },
+    "es": {
+      "navigation.send": "Enviar",
+      "navigation.sendTo": "Enviar a",
+      "common.cancel": "Cancelar",
+      "common.confirm": "Confirmar"
+    }
+  },
+  "preserve_terms": [
+    "NFT",
+    "Flow",
+    "DeFi",
+    "dApp",
+    "EVM",
+    "HODL",
+    "staking",
+    "validator",
+    "mainnet",
+    "testnet",
+    "gas fee",
+    "smart contract",
+    "seed phrase",
+    "custody",
+    "self-custody"
+  ],
+  "context_notes": {
+    "wallet_terms": {
+      "zh": {
+        "wallet": "钱包",
+        "account": "账户",
+        "token": "代币",
+        "balance": "余额",
+        "address": "地址"
+      },
+      "es": {
+        "wallet": "billetera",
+        "account": "cuenta",
+        "token": "token",
+        "balance": "saldo",
+        "address": "dirección"
+      }
+    }
+  },
+  "last_updated": "2025-08-19",
+  "version": "1.0"
+}
