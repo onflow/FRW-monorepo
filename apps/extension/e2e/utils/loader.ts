@@ -85,6 +85,15 @@ export const test = base.extend<{
         '--allow-write-clipboard',
         '--load-extension=' + path.resolve(pathToExtension),
         '--disable-extensions-except=' + path.resolve(pathToExtension),
+        '--disable-web-security',
+        '--disable-features=VizDisplayCompositor',
+        '--disable-background-timer-throttling',
+        '--disable-backgrounding-occluded-windows',
+        '--disable-renderer-backgrounding',
+        '--disable-extensions-file-access-check',
+        '--disable-extensions-http-throttling',
+        '--enable-automation',
+        '--disable-blink-features=AutomationControlled',
       ],
       locale: 'en-US',
       env: {
@@ -97,6 +106,34 @@ export const test = base.extend<{
 
     // Give the extension time to initialize
     await new Promise((resolve) => setTimeout(resolve, 5000));
+
+    // In CI, try to load the extension programmatically if it's not loaded
+    if (process.env.CI) {
+      console.log('CI environment detected, attempting to load extension programmatically...');
+
+      // Try to access the extension's background page to trigger loading
+      try {
+        const page = await context.newPage();
+        const testExtensionId = process.env.TEST_EXTENSION_ID || 'cfiagdgiikmjgfjnlballglniejjgegi';
+
+        // Try to navigate to the extension's background page
+        await page.goto(`chrome-extension://${testExtensionId}/background.html`);
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+
+        const url = page.url();
+        console.log(`Background page URL: ${url}`);
+
+        if (!url.includes('chrome-error://')) {
+          console.log('Extension background page loaded successfully');
+        } else {
+          console.log('Extension background page failed to load');
+        }
+
+        await page.close();
+      } catch (err) {
+        console.log(`Error loading extension programmatically: ${err.message}`);
+      }
+    }
 
     await call(context);
     await context.close();
