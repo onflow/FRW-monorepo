@@ -2,23 +2,12 @@ import { ServiceContext } from '@onflow/frw-context';
 import { useWalletStore } from '@onflow/frw-stores';
 import Instabug, { InvocationEvent } from 'instabug-reactnative';
 import { useCallback, useEffect } from 'react';
-import { Platform, Text as RNText } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import 'react-native-get-random-values';
 import { version } from '../package.json';
 import { platform } from './bridge/PlatformImpl';
-import { getGlobalTextProps } from './lib/androidTextFix';
 import AppNavigator from './navigation/AppNavigator';
-
-// Configure default text props for Android to prevent text cutoff issues
-if (Platform.OS === 'android') {
-  const defaultTextProps = (RNText as any).defaultProps || {};
-  (RNText as any).defaultProps = {
-    ...defaultTextProps,
-    ...getGlobalTextProps(),
-  };
-}
 interface AppProps {
   address?: string;
   network?: string;
