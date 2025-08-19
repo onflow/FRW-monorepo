@@ -33,9 +33,9 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
 }) => {
   const containerProps = backgroundColor
     ? {
-        bg: backgroundColor,
-        rounded: borderRadius,
-        p: contentPadding,
+        backgroundColor: backgroundColor,
+        borderRadius: borderRadius,
+        padding: contentPadding,
       }
     : {};
 
@@ -44,13 +44,7 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
       {/* Main fee row */}
       <XStack justify="space-between" items="center">
         {/* Left side - Title */}
-        <Text
-          fontSize="$3"
-          fontWeight="400"
-          color={titleColor}
-          lineHeight={20}
-          letterSpacing="-0.6%"
-        >
+        <Text fontSize="$3" fontWeight="400" color={titleColor as any} lineHeight={20}>
           {title}
         </Text>
 
@@ -58,13 +52,12 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
         <XStack items="center" gap="$0.5">
           {isFree ? (
             // Show strikethrough when free
-            <XStack items="center" gap="$0.5" pos="relative">
+            <XStack items="center" gap="$0.5" position="relative">
               <Text
                 fontSize="$4"
                 fontWeight="400"
-                color={feeColor}
+                color={feeColor as any}
                 lineHeight={20}
-                letterSpacing="-0.6%"
                 textDecorationLine="line-through"
                 opacity={0.6}
               >
@@ -73,9 +66,8 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
               <Text
                 fontSize="$4"
                 fontWeight="400"
-                color={feeColor}
+                color={feeColor as any}
                 lineHeight={20}
-                letterSpacing="-0.6%"
                 textDecorationLine="line-through"
                 opacity={0.6}
               >
@@ -85,23 +77,16 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
             </XStack>
           ) : (
             // Show normal fee display
-            <XStack items="center" gap="$0.75">
+            <XStack items="center" gap="$1">
               <Text
                 fontSize="$4"
                 fontWeight="400"
-                color="rgba(255, 255, 255, 0.6)"
+                color={'rgba(255, 255, 255, 0.6)' as any}
                 lineHeight={20}
-                letterSpacing="-0.6%"
               >
                 {flowFee}
               </Text>
-              <Text
-                fontSize="$4"
-                fontWeight="400"
-                color={feeColor}
-                lineHeight={20}
-                letterSpacing="-0.6%"
-              >
+              <Text fontSize="$4" fontWeight="400" color={feeColor as any} lineHeight={20}>
                 {usdFee}
               </Text>
               <FlowLogo size={18} />
@@ -116,10 +101,8 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
           <Text
             fontSize="$2"
             fontWeight="400"
-            color="rgba(255, 255, 255, 0.4)"
+            color={'rgba(255, 255, 255, 0.4)' as any}
             lineHeight={17}
-            letterSpacing="-0.6%"
-            text="right"
           >
             {coveredMessage}
           </Text>

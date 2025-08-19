@@ -48,7 +48,9 @@
       "Bash(gh pr:*)",
       "Bash(gh repo:*)",
       "Bash(rg:*)",
-      "Bash(git submodule:*)"
+      "Bash(git submodule:*)",
+      "Bash(./android/gradlew:*)",
+      "Bash(adb:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
