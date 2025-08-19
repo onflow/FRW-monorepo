@@ -642,7 +642,7 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
                       refreshText={t('buttons.refresh')}
                     />
                   ) : (
-                    tokensWithBalance.map((token, idx) => (
+                    tokensWithBalance.safeMapTokens((token, idx) => (
                       <React.Fragment key={`token-${token.identifier || token.symbol}-${idx}`}>
                         <TokenCard
                           token={token}

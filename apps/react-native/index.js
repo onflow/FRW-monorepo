@@ -2,6 +2,9 @@
  * @format
  */
 
+// Import array extensions FIRST before any other imports
+import '@onflow/frw-utils';
+
 import CodePush from '@revopush/react-native-code-push';
 import { AppRegistry } from 'react-native';
 import { name as appName } from './app.json';
