@@ -1,11 +1,13 @@
 /**
  * Platform abstraction interfaces for screen package
  */
+import type { Currency } from '@onflow/frw-types';
 
 // Platform bridge interface
 export interface PlatformBridge {
   getSelectedAddress(): string | null;
   getNetwork(): string;
+  getCurrency(): Currency;
 }
 
 // Navigation interface

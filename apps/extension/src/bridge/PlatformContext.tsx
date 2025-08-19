@@ -80,6 +80,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
   const getBridge = (): PlatformBridge => ({
     getSelectedAddress: () => platform.getSelectedAddress(),
     getNetwork: () => platform.getNetwork(),
+    getCurrency: () => platform.getCurrency(),
   });
 
   // Convenience method to get translation function

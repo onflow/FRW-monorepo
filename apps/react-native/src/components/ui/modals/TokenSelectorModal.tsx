@@ -210,7 +210,11 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
                 ) : (
                   filteredTokens.map((token, index) => (
                     <React.Fragment key={`${token.symbol || 'unknown'}-${index}`}>
-                      <SelectTokenCard token={token} onPress={() => handleTokenPress(token)} />
+                      <SelectTokenCard
+                        token={token}
+                        currency={NativeFRWBridge.getCurrency()}
+                        onPress={() => handleTokenPress(token)}
+                      />
                       {/* Divider - only show between items, not after the last one */}
                       {index < filteredTokens.length - 1 && <Divider />}
                     </React.Fragment>

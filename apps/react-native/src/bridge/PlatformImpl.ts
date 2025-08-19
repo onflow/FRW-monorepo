@@ -1,5 +1,6 @@
 import { type PlatformSpec, type Storage } from '@onflow/frw-context';
 import type {
+  Currency,
   RecentContactsResponse,
   WalletAccount,
   WalletAccountsResponse,
@@ -93,6 +94,10 @@ class PlatformImpl implements PlatformSpec {
 
   getBuildNumber(): string {
     return NativeFRWBridge.getBuildNumber();
+  }
+
+  getCurrency(): Currency {
+    return NativeFRWBridge.getCurrency();
   }
 
   getApiEndpoint(): string {

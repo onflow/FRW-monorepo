@@ -23,6 +23,7 @@ export {
   formatNumber,
   isEmpty,
   isTransactionId,
+  stripHexPrefix,
 } from './utils';
 
 // Token utilities
@@ -30,6 +31,7 @@ export {
   getDisplayBalanceInFLOW,
   getDisplayBalanceWithSymbol,
   getTokenResourceIdentifier,
+  getTokenIdentifier,
 } from './token';
 
 // Logger utilities
