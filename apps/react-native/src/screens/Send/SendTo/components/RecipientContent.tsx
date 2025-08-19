@@ -22,6 +22,7 @@ import {
   generateSearchAllTabsData,
   selectListData,
 } from '../utils/listDataGenerators';
+import { validateSearchAddress } from '../utils/recipientUtils';
 
 // Container style constant for better performance - adjusted to match Figma specs
 const CONTAINER_STYLE = { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 20 };
@@ -187,6 +188,24 @@ export const RecipientContent: React.FC<RecipientContentProps> = React.memo(
       walletAccounts,
       refreshRecentContacts,
     });
+
+    // Handle valid address in search box - trigger same FirstTimeSendModal logic
+    React.useEffect(() => {
+      if (debouncedSearchQuery.trim()) {
+        const addressValidation = validateSearchAddress(debouncedSearchQuery.trim());
+
+        if (addressValidation.isValid) {
+          // Create a debounced delay to prevent immediate action while user is typing
+          const timer = setTimeout(() => {
+            const address = debouncedSearchQuery.trim();
+            // Use the same logic as clicking on an unknown address
+            handleUnknownAddressPress(address);
+          }, 500); // 500ms delay
+
+          return () => clearTimeout(timer);
+        }
+      }
+    }, [debouncedSearchQuery, handleUnknownAddressPress]);
 
     // Create render item function using extracted helper
     const renderItem = useCallback(

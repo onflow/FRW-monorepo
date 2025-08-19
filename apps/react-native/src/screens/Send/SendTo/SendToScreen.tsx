@@ -1,6 +1,4 @@
-import { RecentRecipientsService } from '@onflow/frw-services';
 import { sendSelectors, useSendStore } from '@onflow/frw-stores';
-import { type WalletAccount } from '@onflow/frw-types';
 import { useNavigation } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -11,7 +9,6 @@ import { SegmentedControl } from 'ui';
 
 import { AddressSearchBox } from './components/AddressSearchBox';
 import { RecipientContent } from './components/RecipientContent';
-import { validateSearchAddress } from './utils/recipientUtils';
 
 export type RecipientTabType = 'accounts' | 'recent' | 'contacts';
 
@@ -46,56 +43,7 @@ const SendToScreen = () => {
   }, []);
 
   // Auto-navigate when searchQuery is a valid address
-  useEffect(() => {
-    if (searchQuery.trim()) {
-      const addressValidation = validateSearchAddress(searchQuery.trim());
-
-      if (addressValidation.isValid) {
-        // Create a debounced delay to prevent immediate navigation while user is typing
-        const timer = setTimeout(() => {
-          const address = searchQuery.trim();
-
-          // Add to recent recipients in MMKV for future use
-          RecentRecipientsService.getInstance().addRecentRecipient({
-            id: `unknown-${address}`,
-            name: address, // Use address as name for unknown addresses
-            address: address,
-            emoji: '🔗', // Default emoji for unknown addresses
-          });
-
-          // Convert to store format and save to store
-          const storeAccount: WalletAccount = {
-            id: `unknown-${address}`,
-            name: address, // Use address as display name
-            emojiInfo: { emoji: '🔗', name: '', color: '' },
-            address: address,
-            type: addressValidation.addressType === 'evm' ? 'evm' : 'main',
-            isActive: false,
-          };
-
-          setToAccount(storeAccount);
-
-          // Navigate to the appropriate screen based on transaction type
-          if (transactionType === 'tokens') {
-            setCurrentStep('send-tokens');
-            (navigation as any).navigate('SendTokens');
-          } else if (transactionType === 'single-nft') {
-            setCurrentStep('send-nft');
-            (navigation as any).navigate('SendSingleNFT');
-          } else if (transactionType === 'multiple-nfts') {
-            setCurrentStep('send-nft');
-            (navigation as any).navigate('SendMultipleNFTs');
-          } else {
-            // Fallback to tokens if transaction type is not set
-            setCurrentStep('send-tokens');
-            (navigation as any).navigate('SendTokens');
-          }
-        }, 500); // 500ms delay to allow user to finish typing
-
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [searchQuery, transactionType, setToAccount, setCurrentStep, navigation]);
+  // This logic has been moved to RecipientContent to use the same FirstTimeSendModal flow
 
   const getTitleByType = (type: RecipientTabType): string => {
     return TABS.find(tab => tab.type === type)?.title || '';
