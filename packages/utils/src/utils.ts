@@ -178,3 +178,7 @@ export function isTransactionId(str: unknown): boolean {
   const ethPattern = /^0x[0-9a-fA-F]{64}$/;
   return flowPattern.test(cleaned) || ethPattern.test(cleaned);
 }
+
+export function stripHexPrefix(str: string): string {
+  return str.startsWith('0x') ? str.slice(2) : str;
+}

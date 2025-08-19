@@ -159,9 +159,9 @@ export function SelectTokensScreen({ navigation, bridge, t }: SelectTokensScreen
         } else {
           walletType = addressType(targetAddress);
         }
-
+        const currency = bridge.getCurrency();
         const tokenService = new TokenService(walletType);
-        const tokenInfos = await tokenService.getTokenInfo(targetAddress, network);
+        const tokenInfos = await tokenService.getTokenInfo(targetAddress, network, currency.name);
         setTokens(tokenInfos);
       } catch (err: any) {
         console.error('Error fetching tokens:', err);

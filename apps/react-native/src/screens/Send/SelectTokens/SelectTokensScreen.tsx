@@ -59,7 +59,7 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
   const [isBalanceLoading, setIsBalanceLoading] = React.useState(false);
   const [isAccountLoading, setIsAccountLoading] = React.useState(true);
   const { isDark } = useTheme();
-
+  const currency = NativeFRWBridge.getCurrency();
   // Send store actions
   const {
     setSelectedToken,
@@ -185,7 +185,7 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
 
         // Create TokenService instance for the detected wallet type
         const tokenService = new TokenService(walletType);
-        const tokenInfos = await tokenService.getTokenInfo(targetAddress, network);
+        const tokenInfos = await tokenService.getTokenInfo(targetAddress, network, currency.name);
         setTokens(tokenInfos);
       } catch (err: any) {
         console.error('Error fetching tokens:', err);
@@ -646,6 +646,7 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
                       <React.Fragment key={`token-${token.identifier || token.symbol}-${idx}`}>
                         <TokenCard
                           token={token}
+                          currency={currency}
                           onPress={() => handleTokenPress(token)}
                           isAccessible={isTokenAccessible(token)}
                         />

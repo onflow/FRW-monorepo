@@ -3,16 +3,17 @@ import type {
   EnvironmentVariables as SharedEnvironmentVariables,
   WalletAccount,
   WalletAccountsResponse,
+  Currency as SharedCurrency,
 } from '@onflow/frw-types';
 import type { TurboModule } from 'react-native';
 import { TurboModuleRegistry } from 'react-native';
 
 /**
- * Local interface for Codegen - must be defined in the same file
- * @see {@link SharedEnvironmentVariables} in @onflow/frw-types
+ * Local interfaces for Codegen - must be defined in the same file
+ * @see {@link SharedEnvironmentVariables} and {@link SharedCurrency} in @onflow/frw-types
  *
  * React Native Codegen limitation: Cannot resolve imported types.
- * This must stay in sync with SharedEnvironmentVariables manually.
+ * These must stay in sync with the source types manually.
  */
 interface EnvironmentVariables {
   NODE_API_URL: string;
@@ -20,9 +21,17 @@ interface EnvironmentVariables {
   INSTABUG_TOKEN: string;
 }
 
+interface Currency {
+  name: string;
+  symbol: string;
+  rate: string;
+}
+
 // Compile-time sync validation
 const _syncCheck: EnvironmentVariables = {} as SharedEnvironmentVariables;
 const _reverseSyncCheck: SharedEnvironmentVariables = {} as EnvironmentVariables;
+const _currencySyncCheck: Currency = {} as SharedCurrency;
+const _currencyReverseSyncCheck: SharedCurrency = {} as Currency;
 
 export interface Spec extends TurboModule {
   getSelectedAddress(): string | null;
@@ -48,6 +57,8 @@ export interface Spec extends TurboModule {
   getEnv(): EnvironmentVariables;
   // Get selected account
   getSelectedAccount(): Promise<WalletAccount>;
+  getCurrency(): Currency;
+  getTokenRate(token: string): string;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeFRWBridge');
