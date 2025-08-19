@@ -29,9 +29,15 @@ import type { BaseScreenProps, TabType } from '../types';
 
 interface SelectTokensScreenProps extends BaseScreenProps {
   theme?: { isDark: boolean };
+  showTitle?: boolean;
 }
 
-export function SelectTokensScreen({ navigation, bridge, t }: SelectTokensScreenProps) {
+export function SelectTokensScreen({
+  navigation,
+  bridge,
+  t,
+  showTitle = true,
+}: SelectTokensScreenProps) {
   // State management
   const [tab, setTab] = React.useState<TabType>('Tokens');
   const [tokens, setTokens] = React.useState<TokenModel[]>([]);
@@ -345,11 +351,13 @@ export function SelectTokensScreen({ navigation, bridge, t }: SelectTokensScreen
     <BackgroundWrapper backgroundColor="$background">
       <YStack flex={1} px="$4" pt="$2">
         {/* Header */}
-        <XStack justify="center" items="center" py="$4" pos="relative">
-          <Text fontSize="$6" fontWeight="700" color="$color" lineHeight="$2" letterSpacing="$-1">
-            {t('send.title')}
-          </Text>
-        </XStack>
+        {showTitle && (
+          <XStack justify="center" items="center" py="$4" pos="relative">
+            <Text fontSize="$6" fontWeight="700" color="$color" lineHeight="$2" letterSpacing="$-1">
+              {t('send.title')}
+            </Text>
+          </XStack>
+        )}
 
         {/* Account Card */}
         {isAccountLoading ? (
