@@ -2,12 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import React from 'react';
 import { YStack } from 'tamagui';
 
-import {
-  RecipientItem,
-  AccountItem,
-  ContactItem,
-  RecentItem,
-} from '../src/components/RecipientItem';
+import { RecipientItem, AccountItem } from '../src/components/RecipientItem';
 
 const meta: Meta<typeof RecipientItem> = {
   title: 'Components/RecipientItem',
@@ -31,18 +26,16 @@ const meta: Meta<typeof RecipientItem> = {
     balance: { control: 'text' },
     isLoading: { control: 'boolean' },
     showBalance: { control: 'boolean' },
-    showEditButton: { control: 'boolean' },
     showCopyButton: { control: 'boolean' },
     isSelected: { control: 'boolean' },
     isDisabled: { control: 'boolean' },
     avatarSize: { control: 'number', min: 24, max: 80, step: 4 },
     onPress: { action: 'pressed' },
-    onEdit: { action: 'edit' },
     onCopy: { action: 'copy' },
   },
   decorators: [
-    (Story) => (
-      <YStack p="$4" width={400}>
+    (Story): React.JSX.Element => (
+      <YStack padding="$4" width={400}>
         <Story />
       </YStack>
     ),
@@ -98,16 +91,6 @@ export const UnknownAddress: Story = {
   },
 };
 
-export const WithAvatar: Story = {
-  args: {
-    name: 'Avatar User',
-    address: '0x1111222233334444555566667777888899990000',
-    type: 'contact',
-    avatar: 'https://via.placeholder.com/40x40/4F46E5/FFFFFF?text=AU',
-    showEditButton: true,
-  },
-};
-
 export const Loading: Story = {
   args: {
     name: 'Loading Account',
@@ -116,17 +99,6 @@ export const Loading: Story = {
     balance: '...',
     showBalance: true,
     isLoading: true,
-  },
-};
-
-export const Selected: Story = {
-  args: {
-    name: 'Selected Account',
-    address: '0xaaaaaabbbbbbccccccddddddeeeeeeffffffffff',
-    type: 'account',
-    balance: '750.25 FLOW',
-    showBalance: true,
-    isSelected: true,
   },
 };
 
@@ -143,33 +115,61 @@ export const Disabled: Story = {
 
 // Preset variants stories
 export const AccountVariant: Story = {
-  render: (args) => (
+  render: (): React.JSX.Element => (
     <AccountItem
       name="My Main Account"
       address="0x1234567890abcdef1234567890abcdef12345678"
       balance="1,250.50 FLOW"
-      onPress={() => console.log('Account pressed')}
+      onPress={() => void 0}
     />
   ),
 };
 
-export const ContactVariant: Story = {
-  render: (args) => (
-    <ContactItem
-      name="Alice Cooper"
-      address="0x9876543210fedcba9876543210fedcba98765432"
-      onPress={() => console.log('Contact pressed')}
-      onCopy={() => console.log('Copy contact')}
-    />
-  ),
+export const LinkedAccount: Story = {
+  args: {
+    name: 'Penguin',
+    address: '0x0c666c888d8fb259',
+    type: 'account',
+    balance: "550.66 Flow | 12 NFT's",
+    showBalance: true,
+    isLinked: true,
+    avatar: '🐧',
+  },
 };
 
-export const RecentVariant: Story = {
-  render: (args) => (
-    <RecentItem
-      name="Recent Transfer to Bob"
-      address="0xabcdef1234567890abcdef1234567890abcdef12"
-      onPress={() => console.log('Recent pressed')}
-    />
-  ),
+export const EVMAccount: Story = {
+  args: {
+    name: 'EVM Account',
+    address: '0x1234567890abcdef1234567890abcdef12345678',
+    type: 'account',
+    balance: '100.50 ETH',
+    showBalance: true,
+    isEVM: true,
+  },
+};
+
+export const LinkedEVMAccount: Story = {
+  args: {
+    name: 'Linked EVM',
+    address: '0x0c666c888d8fb259',
+    type: 'account',
+    balance: "550.66 ETH | 5 NFT's",
+    showBalance: true,
+    isLinked: true,
+    isEVM: true,
+    avatar: '🐧',
+  },
+};
+
+export const LinkedAccountWithParent: Story = {
+  args: {
+    name: 'Penguin',
+    address: '0x0c666c888d8fb259',
+    type: 'account',
+    balance: "550.66 Flow | 12 NFT's",
+    showBalance: true,
+    isLinked: true,
+    avatar: '🐧',
+    parentAvatar: '🐼',
+  },
 };

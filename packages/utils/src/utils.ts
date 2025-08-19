@@ -1,3 +1,82 @@
+// Extend Array prototype with Swift-like methods
+declare global {
+  interface Array<T> {
+    compactMap<U>(transform: (item: T, index: number) => U | null | undefined): U[];
+    safeMapTokens<U>(
+      this: Array<{ name?: string }>,
+      transform: (token: T & { name: string }, index: number) => U
+    ): U[];
+  }
+}
+
+// Implementation for compactMap
+if (!Array.prototype.compactMap) {
+  Array.prototype.compactMap = function <T, U>(
+    this: T[],
+    transform: (item: T, index: number) => U | null | undefined
+  ): U[] {
+    const result: U[] = [];
+    for (let i = 0; i < this.length; i++) {
+      const transformed = transform(this[i], i);
+      if (transformed !== null && transformed !== undefined) {
+        result.push(transformed);
+      }
+    }
+    return result;
+  };
+}
+
+// Implementation for safeMapTokens (chainable version)
+if (!Array.prototype.safeMapTokens) {
+  Array.prototype.safeMapTokens = function <T extends { name?: string }, U>(
+    this: T[],
+    transform: (token: T & { name: string }, index: number) => U
+  ): U[] {
+    return this.compactMap((token, index) => {
+      if (!isValidToken(token)) return null;
+      return transform(token as T & { name: string }, index);
+    });
+  };
+}
+
+/**
+ * Swift-like compactMap: maps array and filters out null/undefined results
+ * @deprecated Use Array.prototype.compactMap instead for better chaining
+ */
+export function compactMap<T, U>(
+  array: readonly T[],
+  transform: (item: T, index: number) => U | null | undefined
+): U[] {
+  return Array.from(array).compactMap(transform);
+}
+
+/**
+ * Safe token validator for React components
+ */
+export function isValidToken<T extends { name?: string }>(token: unknown): token is T {
+  return (
+    token !== null &&
+    typeof token === 'object' &&
+    token !== null &&
+    'name' in token &&
+    typeof (token as { name?: string }).name === 'string' &&
+    (token as { name: string }).name.length > 0
+  );
+}
+
+/**
+ * Safe map for tokens with automatic filtering
+ */
+export function safeMapTokens<T extends { name?: string }, U>(
+  tokens: readonly T[],
+  transform: (token: T, index: number) => U
+): U[] {
+  return compactMap(tokens, (token, index) => {
+    if (!isValidToken(token)) return null;
+    return transform(token as T, index);
+  });
+}
+
 /**
  * Converts a value to a readable format with proper decimal places
  */
@@ -11,7 +90,7 @@ export function formatTokenAmount(amount: string | number, decimals = 8): string
 /**
  * Debounce function utility
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: never[]) => unknown>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
@@ -44,7 +123,7 @@ export function deepClone<T>(obj: T): T {
 /**
  * Throttle function utility
  */
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: never[]) => unknown>(
   func: T,
   limit: number
 ): (...args: Parameters<T>) => void {
@@ -78,7 +157,7 @@ export function formatNumber(num: number | string): string {
 /**
  * Checks if a value is empty (null, undefined, empty string, or empty array)
  */
-export function isEmpty(value: any): boolean {
+export function isEmpty(value: unknown): boolean {
   if (value === null || value === undefined) return true;
   if (typeof value === 'string') return value.trim() === '';
   if (Array.isArray(value)) return value.length === 0;
@@ -90,7 +169,7 @@ export function isEmpty(value: any): boolean {
  * Checks if a string is a valid transaction ID
  * Supports both Flow and Ethereum transaction ID formats
  */
-export function isTransactionId(str: any): boolean {
+export function isTransactionId(str: unknown): boolean {
   if (!str || typeof str !== 'string') {
     return false;
   }
@@ -98,4 +177,8 @@ export function isTransactionId(str: any): boolean {
   const flowPattern = /^[0-9a-fA-F]{64}$/;
   const ethPattern = /^0x[0-9a-fA-F]{64}$/;
   return flowPattern.test(cleaned) || ethPattern.test(cleaned);
+}
+
+export function stripHexPrefix(str: string): string {
+  return str.startsWith('0x') ? str.slice(2) : str;
 }

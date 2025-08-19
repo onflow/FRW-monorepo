@@ -1,5 +1,7 @@
 import { type TokenModel, formatCurrencyStringForDisplay } from '@onflow/frw-types';
 
+import { stripHexPrefix } from './utils';
+
 // Utility functions for TokenModel
 export function getDisplayBalanceInFLOW(token: TokenModel): string {
   if (
@@ -23,4 +25,27 @@ export function getDisplayBalanceWithSymbol(token: TokenModel): string {
   const num = Number(token.displayBalance);
   if (isNaN(num)) return '';
   return `${formatCurrencyStringForDisplay({ value: num })} ${token.symbol ?? ''}`.trim();
+}
+/// A.{address}.{contractName}.Vault
+export function getTokenResourceIdentifier(token: TokenModel | null): string | null {
+  if (token?.identifier) {
+    if (token.identifier.includes('Vault')) {
+      return token.identifier;
+    } else {
+      return `${token.identifier}.Vault`;
+    }
+  }
+  if (!token || !token.contractAddress || !token.contractName) {
+    return null;
+  }
+  const cleanAddress = stripHexPrefix(token.contractAddress);
+  return `A.${cleanAddress}.${token.contractName}.Vault`;
+}
+
+export function getTokenIdentifier(token: TokenModel | null): string | null {
+  if (!token || !token.contractAddress || !token.contractName) {
+    return null;
+  }
+  const cleanAddress = stripHexPrefix(token.contractAddress);
+  return `A.${cleanAddress}.${token.contractName}`;
 }

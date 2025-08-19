@@ -12,7 +12,7 @@ export function NFTCover({
   ...props
 }: NFTCoverProps): React.ReactElement {
   const [imageError, setImageError] = useState(false);
-  const [imageLoading, setImageLoading] = useState(true);
+  const [_imageLoading, setImageLoading] = useState(true);
 
   const handleImageError = () => {
     setImageError(true);

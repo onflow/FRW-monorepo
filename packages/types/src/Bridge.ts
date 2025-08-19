@@ -78,3 +78,9 @@ export interface EnvironmentVariables {
   GO_API_URL: string;
   INSTABUG_TOKEN: string;
 }
+
+export interface Currency {
+  name: string;
+  symbol: string;
+  rate: string;
+}

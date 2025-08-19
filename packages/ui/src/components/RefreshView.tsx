@@ -13,16 +13,20 @@ export function RefreshView({
   ...props
 }: RefreshViewProps): React.ReactElement {
   return (
-    <YStack flex={1} justify="center" items="center" py="$8" {...props}>
+    <YStack flex={1} justify="center" items="center" pt="$4" pb="$8" {...props}>
       <Text
         color={type === 'error' ? '$error' : '$textSecondary'}
         text="center"
-        mb="$4"
+        mb="$3"
         fontSize="$4"
       >
         {message}
       </Text>
-      {onRefresh && <Button onPress={onRefresh}>{refreshText}</Button>}
+      {onRefresh && (
+        <Button size="small" variant="secondary" onPress={onRefresh}>
+          {refreshText}
+        </Button>
+      )}
     </YStack>
   );
 }

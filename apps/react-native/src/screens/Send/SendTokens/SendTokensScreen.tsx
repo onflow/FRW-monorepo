@@ -1,5 +1,6 @@
 import { sendSelectors, useSendStore, useTokenStore } from '@onflow/frw-stores';
 import { type TokenModel, type WalletAccount } from '@onflow/frw-types';
+import { getTokenIdentifier } from '@onflow/frw-utils';
 import { useNavigation } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -121,12 +122,13 @@ const SendTokensScreen = () => {
 
   // Account compatibility should be determined by UI logic based on transaction requirements
   // No longer reading from account.isIncompatible since it's not part of WalletAccount interface
-
+  const currency = NativeFRWBridge.getCurrency();
   // Get actual USD rate from selected token
   const getTokenToUsdRate = () => {
     if (!selectedToken?.priceInUSD) return 0;
-    const price = parseFloat(selectedToken.priceInUSD);
-    return isNaN(price) ? 0 : price;
+    const rate = NativeFRWBridge.getTokenRate(getTokenIdentifier(selectedToken) || '');
+    const tokenToUsdRate = parseFloat(rate) * parseFloat(currency.rate);
+    return isNaN(tokenToUsdRate) ? 0 : tokenToUsdRate;
   };
 
   const tokenToUsdRate = getTokenToUsdRate();
@@ -262,6 +264,7 @@ const SendTokensScreen = () => {
                   onTokenSelectorPress={() => setIsTokenSelectorVisible(true)}
                   onMaxPress={handleMaxPress}
                   tokenToUsdRate={tokenToUsdRate}
+                  currency={currency}
                 />
               </View>
             </ContentContainer>
@@ -333,7 +336,7 @@ const SendTokensScreen = () => {
                       const { executeTransaction } = useSendStore.getState();
                       const result = await executeTransaction();
                       console.log('[SendTokensScreen] Transaction result:', result);
-                      NativeFRWBridge.closeRN();
+                      NativeFRWBridge.closeRN(null);
                     },
                     children: selectedToken ? (
                       <View className="w-full p-4 bg-surface-2 rounded-2xl">

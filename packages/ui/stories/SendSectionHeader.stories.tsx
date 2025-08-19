@@ -26,7 +26,7 @@ const meta: Meta<typeof SendSectionHeader> = {
     onEditPress: { action: 'edit-pressed' },
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack width={300} p="$4">
         <Story />
       </YStack>
@@ -122,7 +122,7 @@ export const AllVariants: Story = {
     </YStack>
   ),
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack p="$4">
         <Story />
       </YStack>
@@ -139,7 +139,7 @@ export const AllSizes: Story = {
     </YStack>
   ),
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack p="$4">
         <Story />
       </YStack>
@@ -157,7 +157,7 @@ export const SendFlowExamples: Story = {
     </YStack>
   ),
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack p="$4">
         <Story />
       </YStack>
@@ -174,7 +174,7 @@ export const NFTSendExample: Story = {
     </YStack>
   ),
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack p="$4">
         <Story />
       </YStack>
