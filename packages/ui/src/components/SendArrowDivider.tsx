@@ -29,13 +29,13 @@ export const SendArrowDivider: React.FC<SendArrowDividerProps> = ({
         items="center"
         justify="center"
       >
-        <ArrowDown size={size * 0.5} color={iconColor} />
-        {/* {variant === 'arrow' ? (
+        {variant === 'arrow' ? (
+          <ArrowDown size={size * 0.5} color={iconColor} />
         ) : (
           <Text fontSize="$4" color={iconColor} textAlign="center">
             {text}
           </Text>
-        )} */}
+        )}
       </YStack>
     </YStack>
   );

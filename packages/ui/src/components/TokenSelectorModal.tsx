@@ -1,4 +1,4 @@
-// import { Search, Close } from '@onflow/frw-icons';
+import { Search, Close } from '@onflow/frw-icons';
 import React, { useState, useMemo } from 'react';
 import { YStack, XStack, ScrollView, Input, View } from 'tamagui';
 
@@ -102,8 +102,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
             {title}
           </Text>
           <Button size="small" variant="ghost" onPress={onClose}>
-            {/* <Close size={20} /> */}
-            CLose
+            <Close size={20} />
           </Button>
         </XStack>
 
@@ -120,7 +119,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
               borderWidth={1}
               borderColor="$gray6"
             >
-              {/* <Search size={16} color="$gray10" /> */}
+              <Search size={16} color="$gray10" />
               <Input
                 flex={1}
                 value={searchQuery}

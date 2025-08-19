@@ -1,4 +1,4 @@
-// import { InfoIcon } from '@onflow/frw-icons';
+import { InfoIcon } from '@onflow/frw-icons';
 import React from 'react';
 import { XStack, YStack } from 'tamagui';
 
@@ -40,7 +40,7 @@ export const StorageWarning: React.FC<StorageWarningProps> = ({
         <Text fontSize="$2" fontWeight="400" color="$white" lineHeight={16}>
           {title}
         </Text>
-        {/* {showIcon && <InfoIcon size={15} color="rgba(255, 255, 255, 0.4)" />} */}
+        {showIcon && <InfoIcon size={15} color="rgba(255, 255, 255, 0.4)" />}
       </XStack>
 
       {/* Warning message */}

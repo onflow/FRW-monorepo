@@ -1,4 +1,3 @@
-// import { Edit } from '@onflow/frw-icons';
 import React, { useState } from 'react';
 import { XStack, YStack } from 'tamagui';
 
@@ -74,9 +73,9 @@ export function AccountCard({
         </XStack>
 
         {/* Edit Icon */}
-        {/* <XStack width="$6" height="$6" items="center" justify="center">
+        <XStack width="$6" height="$6" items="center" justify="center">
           Edit
-        </XStack> */}
+        </XStack>
       </XStack>
     </YStack>
   );

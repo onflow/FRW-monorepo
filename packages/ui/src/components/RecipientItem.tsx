@@ -1,4 +1,4 @@
-// import { Copy, Edit } from '@onflow/frw-icons';
+import { Copy, Edit } from '@onflow/frw-icons';
 import React from 'react';
 import { Card, XStack, YStack, Avatar, Text } from 'tamagui';
 
@@ -157,8 +157,7 @@ export function RecipientItem({
               }}
               cursor="pointer"
             >
-              {/* <Copy size={24} color="#FFFFFF" /> */}
-              Copy
+              <Copy size={24} color="#FFFFFF" />
             </XStack>
           )}
 
@@ -171,8 +170,7 @@ export function RecipientItem({
                 onEdit();
               }}
             >
-              Edit
-              {/* <Edit size={16} /> */}
+              <Edit size={16} />
             </Button>
           )}
         </XStack>

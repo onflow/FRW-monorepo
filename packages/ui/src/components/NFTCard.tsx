@@ -1,3 +1,4 @@
+import { CheckCircle, ChevronRight } from '@onflow/frw-icons';
 import { YStack, XStack, Text, Image } from 'tamagui';
 
 import type { NFTData } from './NFTGrid';
@@ -81,8 +82,7 @@ export function NFTCard({
         {/* Selection Indicator - top right */}
         {selected && (
           <YStack pos="absolute" top="$2" right="$2" bg="$primary" borderRadius="$6" p="$1">
-            {/* <CheckCircle size={20} color="#00EF8B" /> */}
-            CheckCircle
+            <CheckCircle size={20} color="#00EF8B" />
           </YStack>
         )}
 
@@ -144,8 +144,7 @@ export function NFTCard({
 
             {/* Right Chevron */}
             <YStack justify="center">
-              ChevronRight
-              {/* <ChevronRight size={24} /> */}
+              <ChevronRight size={24} />
             </YStack>
           </XStack>
         )}

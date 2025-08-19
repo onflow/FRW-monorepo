@@ -1,4 +1,4 @@
-// import { FlowLogo } from '@onflow/frw-icons';
+import { FlowLogo } from '@onflow/frw-icons';
 import React from 'react';
 import { YStack, XStack } from 'tamagui';
 
@@ -81,7 +81,7 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
               >
                 {usdFee}
               </Text>
-              {/* <FlowLogo size={18} style={{ opacity: 0.6 }} /> */}
+              <FlowLogo size={18} style={{ opacity: 0.6 }} />
             </XStack>
           ) : (
             // Show normal fee display
@@ -104,7 +104,7 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
               >
                 {usdFee}
               </Text>
-              {/* <FlowLogo size={18} /> */}
+              <FlowLogo size={18} />
             </XStack>
           )}
         </XStack>

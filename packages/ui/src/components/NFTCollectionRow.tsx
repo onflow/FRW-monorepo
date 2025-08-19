@@ -1,4 +1,4 @@
-// import { ChevronRight } from '@onflow/frw-icons';
+import { ChevronRight } from '@onflow/frw-icons';
 import React from 'react';
 import { XStack, YStack, Text } from 'tamagui';
 
@@ -52,7 +52,7 @@ export function NFTCollectionRow({
           </YStack>
         </XStack>
         {/* Chevron Icon */}
-        {/* <ChevronRight size={24} /> */}
+        <ChevronRight size={24} />
       </XStack>
 
       {showDivider && <Separator />}
