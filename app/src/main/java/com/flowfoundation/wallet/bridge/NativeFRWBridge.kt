@@ -29,7 +29,10 @@ import com.flowfoundation.wallet.network.BASE_HOST
 import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.transaction.TransactionState
+import com.flowfoundation.wallet.manager.price.CurrencyManager
+import com.flowfoundation.wallet.page.profile.subpage.currency.model.selectedCurrency
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import org.onflow.flow.models.TransactionStatus
 import java.math.BigDecimal
 import org.onflow.flow.models.hexToBytes
@@ -358,6 +361,39 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                     promise.reject("SELECTED_ACCOUNT_ERROR", "Failed to get selected account: ${e.message}", e)
                 }
             }
+        }
+    }
+
+    override fun getCurrency(): WritableMap {
+        return try {
+            val selectedCurrency = selectedCurrency()
+            val currentCurrencyPrice = CurrencyManager.currencyPrice()
+
+            val currency = RNBridge.Currency(
+                name = selectedCurrency.name,
+                symbol = selectedCurrency.symbol,
+                rate = currentCurrencyPrice.toString()
+            )
+
+            bridgeModelToWritableMap(currency)
+        } catch (e: Exception) {
+            // Return default USD currency on error
+            val defaultCurrency = RNBridge.Currency(
+                name = "USD",
+                symbol = "$",
+                rate = "1.0"
+            )
+            bridgeModelToWritableMap(defaultCurrency)
+        }
+    }
+
+    override fun getTokenRate(token: String): String {
+        return try {
+            val fungibleToken = FungibleTokenListManager.getTokenById(token)
+            fungibleToken?.tokenPrice()?.toString() ?: "0.0"
+        } catch (e: Exception) {
+            // Return "0.0" on error
+            "0.0"
         }
     }
 
