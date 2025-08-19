@@ -1,6 +1,7 @@
 import type { PlatformSpec } from '@onflow/frw-context';
 import type { NavigationProp, PlatformBridge, TranslationFunction } from '@onflow/frw-screens';
 import React, { createContext, useContext, useEffect, type ReactNode } from 'react';
+import { useLocation, useNavigate } from 'react-router';
 
 import { useUserWallets } from '@/ui/hooks/use-account-hooks';
 import { useWallet } from '@/ui/hooks/use-wallet';
@@ -8,6 +9,7 @@ import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 
+import { extensionNavigation } from './ExtensionNavigation';
 import { initializePlatform } from './PlatformImpl';
 
 /**
@@ -36,6 +38,8 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
   const { currentWallet } = useProfiles();
   const wallet = useWallet();
   const { coins } = useCoins();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Initialize platform singleton
   const platform = initializePlatform();
@@ -53,6 +57,12 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     platform.setWalletController(wallet);
   }, [platform, wallet]);
+
+  // Set up extension navigation
+  useEffect(() => {
+    extensionNavigation.setNavigateCallback(navigate);
+    extensionNavigation.setLocationRef({ current: location });
+  }, [navigate, location]);
 
   // Convenience method to create navigation for screens
   const getNavigation = (navigate: (path: string, state?: any) => void): NavigationProp => ({

@@ -5,7 +5,7 @@ export default defineConfig({
   format: ['cjs', 'esm'],
   dts: false,
   clean: true,
-  external: ['react', 'react-i18next'],
+  external: ['react', 'react-i18next', 'i18next'],
   treeshake: true,
   minify: false,
   sourcemap: true,

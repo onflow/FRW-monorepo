@@ -1,3 +1,4 @@
+import { navigation } from '@onflow/frw-context';
 import { sendSelectors, useSendStore } from '@onflow/frw-stores';
 import {
   SearchableTabLayout,
@@ -7,8 +8,7 @@ import {
   YStack,
 } from '@onflow/frw-ui';
 import React, { useCallback, useEffect, useState } from 'react';
-
-import type { BaseScreenProps } from '../types';
+import { useTranslation } from 'react-i18next';
 
 export type RecipientTabType = 'accounts' | 'recent' | 'contacts';
 
@@ -17,7 +17,7 @@ interface TabConfig {
   title: string;
 }
 
-interface SendToScreenProps extends BaseScreenProps {
+interface SendToScreenProps {
   theme?: { isDark: boolean };
   // Optional data loading functions that platforms can provide
   loadAccountsData?: () => Promise<RecipientData[]>;
@@ -26,13 +26,12 @@ interface SendToScreenProps extends BaseScreenProps {
 }
 
 export function SendToScreen({
-  navigation,
-  bridge,
-  t,
   loadAccountsData,
   loadRecentData,
   loadContactsData,
 }: SendToScreenProps) {
+  // navigation is imported directly from ServiceContext
+  const { t } = useTranslation();
   const TABS: TabConfig[] = [
     { type: 'accounts', title: t('send.myAccounts') },
     { type: 'recent', title: t('send.recent') },

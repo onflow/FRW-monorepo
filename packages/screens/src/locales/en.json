@@ -1,0 +1,88 @@
+{
+  "navigation": {
+    "send": "Send",
+    "sendTo": "Send To",
+    "sending": "Sending",
+    "selectTokens": "Select Tokens",
+    "colorDemo": "Color Demo"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "back": "Back",
+    "close": "Close",
+    "done": "Done",
+    "next": "Next",
+    "previous": "Previous",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "send": {
+    "myAccounts": "My Accounts",
+    "recent": "Recent",
+    "addressBook": "Address Book",
+    "sendTo": {
+      "title": "Send To"
+    },
+    "searchAddress": "Search address or contact...",
+    "selectedToken": "Selected Token",
+    "noAccounts": {
+      "title": "No Accounts",
+      "message": "You don't have any accounts yet."
+    },
+    "noRecent": {
+      "title": "No Recent Recipients",
+      "message": "You haven't sent to anyone recently."
+    },
+    "noContacts": {
+      "title": "No Contacts",
+      "message": "Your address book is empty."
+    },
+    "noRecipients": "No recipients found",
+    "selectToken": "Select Token",
+    "selectRecipient": "Select Recipient",
+    "enterAmount": "Enter Amount",
+    "reviewTransaction": "Review Transaction",
+    "transactionFee": "Transaction Fee",
+    "total": "Total",
+    "balance": "Balance",
+    "available": "Available",
+    "insufficient": "Insufficient Balance",
+    "recipient": "Recipient",
+    "from": "From",
+    "to": "To",
+    "amount": "Amount",
+    "asset": "Asset",
+    "confirm": "Confirm Transaction",
+    "sending": "Sending...",
+    "sent": "Transaction Sent",
+    "failed": "Transaction Failed",
+    "searchRecipients": "Search recipients...",
+    "recentRecipients": "Recent Recipients",
+    "contactsList": "Contacts",
+    "enterAddress": "Enter Flow address",
+    "invalidAddress": "Invalid address",
+    "sameAddress": "Cannot send to the same address",
+    "selectNFTs": "Select NFTs",
+    "selectedNFTs": "Selected NFTs",
+    "nftDetails": "NFT Details",
+    "collectionName": "Collection",
+    "tokenId": "Token ID",
+    "properties": "Properties",
+    "description": "Description",
+    "creator": "Creator"
+  },
+  "errors": {
+    "networkError": "Network error occurred",
+    "invalidInput": "Invalid input",
+    "transactionFailed": "Transaction failed",
+    "insufficientFunds": "Insufficient funds",
+    "addressNotFound": "Address not found",
+    "nftNotFound": "NFT not found",
+    "tokenNotSupported": "Token not supported",
+    "unauthorized": "Unauthorized access",
+    "timeout": "Request timed out",
+    "unknown": "An unknown error occurred"
+  }
+}

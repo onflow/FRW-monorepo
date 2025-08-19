@@ -163,6 +163,7 @@ export default [
       'apps/extension/build/**/*.{ts,js,cjs}', // Extension build scripts
       '.storybook/**/*.{ts,js}', // Storybook config
       'scripts/**/*.{ts,js,cjs}', // Project scripts
+      '**/scripts/**/*.{ts,js,cjs}', // Package scripts
     ],
     rules: {
       '@typescript-eslint/no-require-imports': 'off',
@@ -307,6 +308,9 @@ export default [
       // Generated files
       'packages/api/src/codgen/**', // Generated API code
       'packages/cadence/src/scripts/generated/**', // Generated Cadence code
+
+      // Translation scripts
+      '**/scripts/translate-i18n.js', // Translation automation scripts
       '**/generated/**',
       '**/*.generated.{ts,js}',
       '**/*.gen.{ts,js}', // Generated files with .gen extension
