@@ -10,6 +10,7 @@ export function Avatar({
   fallback,
   borderColor,
   borderWidth,
+  style,
 }: AvatarProps): React.ReactElement {
   return (
     <YStack
@@ -23,6 +24,7 @@ export function Avatar({
       pos="relative"
       borderColor={borderColor as any}
       borderWidth={borderWidth}
+      style={style}
     >
       {src ? (
         <img

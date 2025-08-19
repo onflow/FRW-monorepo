@@ -1,8 +1,9 @@
+import { type WalletAccount } from '@onflow/frw-types';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import React from 'react';
 import { YStack } from 'tamagui';
 
-import { ToAccountSection, type WalletAccount } from '../src/components/ToAccountSection';
+import { ToAccountSection } from '../src/components/ToAccountSection';
 
 const meta: Meta<typeof ToAccountSection> = {
   title: 'Components/ToAccountSection',
@@ -25,13 +26,12 @@ const meta: Meta<typeof ToAccountSection> = {
     borderRadius: { control: 'text' },
     contentPadding: { control: 'number', min: 8, max: 32 },
     avatarSize: { control: 'number', min: 24, max: 80 },
-    incompatibilityMessage: { control: 'text' },
     onEditPress: { action: 'edit-pressed' },
     onLearnMorePress: { action: 'learn-more-pressed' },
   },
   decorators: [
-    (Story) => (
-      <YStack width={375} p="$4" bg="$gray12">
+    (Story): React.JSX.Element => (
+      <YStack width={400} padding="$4">
         <Story />
       </YStack>
     ),
@@ -43,19 +43,19 @@ type Story = StoryObj<typeof ToAccountSection>;
 
 // Mock accounts
 const mockAccount: WalletAccount = {
-  address: '0x0c666c888d8fb259',
-  name: 'Fox',
-  avatar: 'https://via.placeholder.com/36x36/FFD787/FFFFFF?text=🦊',
+  address: '0xabcdef1234567890abcdef1234567890abcdef12',
+  name: 'John Doe',
+  avatar: 'https://via.placeholder.com/40x40/6366F1/FFFFFF?text=JD',
 };
 
 const mockAccountWithoutName: WalletAccount = {
-  address: '0x0c666c888d8fb259',
+  address: '0xabcdef1234567890abcdef1234567890abcdef12',
 };
 
 const mockAccountLongName: WalletAccount = {
-  address: '0x0c666c888d8fb259',
+  address: '0xabcdef1234567890abcdef1234567890abcdef12',
   name: 'Very Long Account Name That Should Be Handled Properly',
-  avatar: 'https://via.placeholder.com/36x36/FFD787/FFFFFF?text=VL',
+  avatar: 'https://via.placeholder.com/40x40/F59E0B/FFFFFF?text=VL',
 };
 
 export const Default: Story = {
@@ -81,22 +81,6 @@ export const IncompatibleAccount: Story = {
   args: {
     account: mockAccount,
     isAccountIncompatible: true,
-  },
-};
-
-export const CustomStyling: Story = {
-  args: {
-    account: mockAccount,
-    backgroundColor: '$blue2',
-    borderRadius: '$6',
-    contentPadding: 20,
-  },
-};
-
-export const CompactPadding: Story = {
-  args: {
-    account: mockAccount,
-    contentPadding: 8,
   },
 };
 

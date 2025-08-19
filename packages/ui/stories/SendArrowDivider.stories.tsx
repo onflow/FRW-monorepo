@@ -25,7 +25,7 @@ const meta: Meta<typeof SendArrowDivider> = {
     padding: { control: 'number', min: 0, max: 32 },
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack width={200} items="center" p="$4">
         <Story />
       </YStack>
@@ -120,7 +120,7 @@ export const SendFlowExample: Story = {
     </YStack>
   ),
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack p="$4">
         <Story />
       </YStack>
@@ -161,7 +161,7 @@ export const DifferentVariants: Story = {
     </YStack>
   ),
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack p="$4">
         <Story />
       </YStack>
@@ -195,7 +195,7 @@ export const DifferentSizes: Story = {
     </YStack>
   ),
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack p="$4">
         <Story />
       </YStack>
@@ -213,7 +213,7 @@ export const ColorVariations: Story = {
     </YStack>
   ),
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack p="$4">
         <Story />
       </YStack>

@@ -37,7 +37,9 @@ export const Empty: Story = {
     type: 'empty',
     message: 'No tokens found with balance',
     refreshText: 'Refresh',
-    onRefresh: () => console.log('Refresh clicked'),
+    onRefresh: () => {
+      /* Refresh clicked */
+    },
   },
 };
 
@@ -46,7 +48,9 @@ export const Error: Story = {
     type: 'error',
     message: 'Failed to load tokens. Please try again.',
     refreshText: 'Retry',
-    onRefresh: () => console.log('Retry clicked'),
+    onRefresh: () => {
+      /* Retry clicked */
+    },
   },
 };
 
@@ -54,5 +58,6 @@ export const EmptyWithoutButton: Story = {
   args: {
     type: 'empty',
     message: 'No NFT collections found for this account',
+    onRefresh: undefined,
   },
 };

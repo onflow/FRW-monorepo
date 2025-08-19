@@ -32,13 +32,14 @@ export * from './components/TokenCard';
 export * from './components/RefreshView';
 export * from './components/NFTCollectionRow';
 export * from './components/AccountCard';
-export * from './components/AccountSelectorModal';
 export * from './components/AddressText';
 export * from './components/AddressSearchBox';
+export * from './components/SearchBar';
 export * from './components/Badge';
 export * from './components/PercentageChangeBadge';
 export * from './components/RecipientItem';
 export * from './components/RecipientList';
+export * from './components/AddressBookSection';
 export * from './components/SearchableTabLayout';
 export * from './components/CollectionHeader';
 export * from './components/NFTGrid';
@@ -53,11 +54,14 @@ export * from './components/TokenSelectorModal';
 export * from './components/TransactionConfirmationModal';
 export * from './components/NFTSendPreview';
 export * from './components/SendSectionHeader';
+export * from './components/ScreenHeader';
 export * from './components/SendArrowDivider';
 export * from './components/MultipleNFTsPreview';
 export * from './components/TransactionFeeSection';
 export * from './components/ToAccountSection';
 export * from './components/StorageWarning';
+export * from './components/ErrorDialog';
+export * from './components/ConfirmAddressDialog';
 export * from './foundation/SegmentedControl';
 
 export * from './components/TokenAmountInput';
@@ -65,7 +69,6 @@ export * from './components/TokenAmountInput';
 // TODO: Fix TypeScript issues in the following components:
 // export * from './components/Chip';
 // export * from './components/NFTCover';
-// export * from './components/NFTListCard';
 
 export * from './tamagui.config';
 export { default as tamaguiConfig } from './tamagui.config';

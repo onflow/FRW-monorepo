@@ -39,7 +39,9 @@ export const Default: Story = {
   args: {
     collection: mockCollection,
     showDivider: false,
-    onPress: () => console.log('Collection pressed'),
+    onPress: () => {
+      /* Collection pressed */
+    },
   },
 };
 
@@ -47,7 +49,9 @@ export const WithDivider: Story = {
   args: {
     collection: mockCollection,
     showDivider: true,
-    onPress: () => console.log('Collection pressed'),
+    onPress: () => {
+      /* Collection pressed */
+    },
   },
 };
 
@@ -59,7 +63,9 @@ export const SingleItem: Story = {
       count: 1,
     },
     showDivider: false,
-    onPress: () => console.log('Collection pressed'),
+    onPress: () => {
+      /* Collection pressed */
+    },
   },
 };
 
@@ -71,7 +77,9 @@ export const LongName: Story = {
       count: 42,
     },
     showDivider: true,
-    onPress: () => console.log('Collection pressed'),
+    onPress: () => {
+      /* Collection pressed */
+    },
   },
 };
 
@@ -83,7 +91,9 @@ export const NoLogo: Story = {
       count: 8,
     },
     showDivider: false,
-    onPress: () => console.log('Collection pressed'),
+    onPress: () => {
+      /* Collection pressed */
+    },
   },
 };
 
@@ -91,6 +101,8 @@ export const EmptyCollection: Story = {
   args: {
     collection: undefined,
     showDivider: false,
-    onPress: () => console.log('Collection pressed'),
+    onPress: () => {
+      /* Collection pressed */
+    },
   },
 };

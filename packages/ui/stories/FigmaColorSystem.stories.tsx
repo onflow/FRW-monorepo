@@ -8,14 +8,14 @@ const ColorPalette = () => {
   const theme = useTheme();
   const isDark = theme.name === 'dark';
 
-  console.log('Available theme keys:', Object.keys(theme));
-  console.log('Theme colors:', {
-    primary: theme.primary,
-    background: theme.background,
-    success: theme.success,
-    error: theme.error,
-    color: theme.color,
-  });
+  // Available theme keys: Object.keys(theme)
+  // Theme colors: {
+  //   primary: theme.primary,
+  //   background: theme.background,
+  //   success: theme.success,
+  //   error: theme.error,
+  //   color: theme.color,
+  // });
 
   // Single color sections - theme handles light/dark automatically
   const colorSections = {

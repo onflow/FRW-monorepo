@@ -55,7 +55,7 @@ const meta: Meta<typeof NFTPropertiesGrid> = {
     showTitle: { control: 'boolean' },
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack p="$4" width={400}>
         <Story />
       </YStack>
@@ -101,7 +101,7 @@ export const ThreeColumns: Story = {
     title: 'Game Statistics',
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack p="$4" width={600}>
         <Story />
       </YStack>
@@ -140,7 +140,7 @@ export const ManyProperties: Story = {
     title: 'Game Character Stats',
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack p="$4" width={700}>
         <Story />
       </YStack>
@@ -195,7 +195,7 @@ export const NFTShowcase: Story = {
     </YStack>
   ),
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack p="$4">
         <Story />
       </YStack>
@@ -228,7 +228,7 @@ export const ResponsiveExample: Story = {
     </YStack>
   ),
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack p="$4">
         <Story />
       </YStack>

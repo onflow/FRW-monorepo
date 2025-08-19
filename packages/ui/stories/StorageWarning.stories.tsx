@@ -36,7 +36,7 @@ const meta = {
     },
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack width={400} p="$4" bg="$bg" rounded="$4">
         <Story />
       </YStack>
@@ -103,75 +103,5 @@ export const CustomMessage: Story = {
     showIcon: true,
     title: 'Transaction Alert',
     visible: true,
-  },
-};
-
-export const Hidden: Story = {
-  args: {
-    message: 'This warning is hidden',
-    showIcon: true,
-    title: 'Storage warning',
-    visible: false,
-  },
-};
-
-// Showcase different scenarios
-export const AllVariants: Story = {
-  render: () => (
-    <YStack gap="$4" width={400}>
-      <StorageWarning
-        title="Default Warning"
-        message="Account balance will fall below the minimum FLOW required for storage after this transaction."
-        showIcon={true}
-        visible={true}
-      />
-
-      <StorageWarning
-        title="Without Icon"
-        message="Simple warning message without an icon indicator."
-        showIcon={false}
-        visible={true}
-      />
-
-      <StorageWarning
-        title="Critical Alert"
-        message="Urgent: Transaction will fail due to insufficient storage balance!"
-        showIcon={true}
-        visible={true}
-      />
-
-      <StorageWarning
-        title="Info Notice"
-        message="This is a longer informational message that explains the storage requirements and potential consequences of proceeding with this transaction. It provides detailed context to help users make informed decisions."
-        showIcon={true}
-        visible={true}
-      />
-    </YStack>
-  ),
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Shows multiple StorageWarning components with different configurations side by side.',
-      },
-    },
-  },
-};
-
-// Playground story for testing
-export const Playground: Story = {
-  args: {
-    message:
-      'Account balance will fall below the minimum FLOW required for storage after this transaction, causing this transaction to fail.',
-    showIcon: true,
-    title: 'Storage warning',
-    visible: true,
-  },
-  parameters: {
-    docs: {
-      description: {
-        story: 'Interactive playground to test different StorageWarning configurations.',
-      },
-    },
   },
 };

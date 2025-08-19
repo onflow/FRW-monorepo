@@ -101,6 +101,8 @@ export const WithModalSelection: Story = {
     enableModalSelection: true,
     accounts: mockAccounts,
     modalTitle: 'Select Account',
-    onAccountSelect: (account) => console.log('Account selected:', account),
+    onAccountSelect: (_account) => {
+      /* Account selected: ${account} */
+    },
   },
 };

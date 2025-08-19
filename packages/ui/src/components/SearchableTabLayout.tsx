@@ -1,7 +1,8 @@
+import { Scan } from '@onflow/frw-icons';
 import React from 'react';
-import { YStack } from 'tamagui';
+import { YStack, XStack, Button } from 'tamagui';
 
-import { AddressSearchBox } from './AddressSearchBox';
+import { SearchBar } from './SearchBar';
 import { SegmentedControl } from '../foundation/SegmentedControl';
 import { BackgroundWrapper } from '../layout/BackgroundWrapper';
 
@@ -58,13 +59,33 @@ export function SearchableTabLayout({
       <YStack flex={1} px={contentPadding} pt="$2">
         {/* Search Box */}
         <YStack mb={searchSpacing}>
-          <AddressSearchBox
-            value={searchValue}
-            onChangeText={onSearchChange}
-            placeholder={searchPlaceholder}
-            showScanButton={showScanButton}
-            onScanPress={onScanPress}
-          />
+          <XStack gap={17} items="center">
+            <YStack flex={1}>
+              <SearchBar
+                value={searchValue}
+                onChangeText={onSearchChange}
+                placeholder={searchPlaceholder}
+                width="100%"
+              />
+            </YStack>
+
+            {/* Scan Button */}
+            {showScanButton && (
+              <Button
+                w={44}
+                h={44}
+                circular
+                bg="transparent"
+                borderWidth={0}
+                onPress={onScanPress}
+                pressStyle={{ bg: 'rgba(255, 255, 255, 0.1)' }}
+                hoverStyle={{ bg: 'rgba(255, 255, 255, 0.1)' }}
+                disabled={!onScanPress}
+              >
+                <Scan size={24} color="#FFFFFF" theme="outline" />
+              </Button>
+            )}
+          </XStack>
         </YStack>
 
         {/* Tabs */}

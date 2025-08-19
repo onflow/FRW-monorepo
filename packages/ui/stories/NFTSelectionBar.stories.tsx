@@ -25,7 +25,7 @@ const meta: Meta<typeof NFTSelectionBar> = {
     onContinue: { action: 'continue' },
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack height={500} width="100%" position="relative" bg="$bg1">
         <YStack flex={1} items="center" justify="center">
           <YStack p="$4" bg="$bg2" borderRadius="$4">
