@@ -1,6 +1,11 @@
 import { CadenceService } from '@onflow/frw-cadence';
 import type { TokenModel, CollectionModel, NFTModel } from '@onflow/frw-types';
 import type { WalletAccount } from '@onflow/frw-types';
+import {
+  getCollectionResourceIdentifier,
+  getNFTResourceIdentifier,
+  getTokenResourceIdentifier,
+} from '@onflow/frw-utils';
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
@@ -97,11 +102,11 @@ const createAccessibleAssetStore = () =>
         if (!token.contractAddress) {
           return false;
         }
-        const address = token.contractAddress?.startsWith('0x')
-          ? token.contractAddress.slice(2)
-          : token.contractAddress;
-        const contractName = token.contractName;
-        const tokenIdentifier = `A.${address}.${contractName}`;
+
+        const tokenIdentifier = getTokenResourceIdentifier(token);
+        if (!tokenIdentifier) {
+          return false;
+        }
 
         return accessibleIds.some(id => id.toLowerCase().includes(tokenIdentifier.toLowerCase()));
       },
@@ -111,11 +116,10 @@ const createAccessibleAssetStore = () =>
         if (!nft.contractAddress) {
           return false;
         }
-        const address = nft.contractAddress?.startsWith('0x')
-          ? nft.contractAddress.slice(2)
-          : nft.contractAddress;
-        const contractName = nft.contractName;
-        const nftIdentifier = `A.${address}.${contractName}`;
+        const nftIdentifier = getNFTResourceIdentifier(nft);
+        if (!nftIdentifier) {
+          return false;
+        }
         return accessibleIds.some(id => id.toLowerCase().includes(nftIdentifier.toLowerCase()));
       },
 
@@ -124,13 +128,11 @@ const createAccessibleAssetStore = () =>
         if (!collection.address || !collection.contractName) {
           return false;
         }
-        const address = collection.address?.startsWith('0x')
-          ? collection.address.slice(2)
-          : collection.address;
-        const contractName = collection.contractName;
-        const collectionIdentifier = `A.${address}.${contractName}.Collection`;
 
-        console.log('collectionIdentifier', collectionIdentifier);
+        const collectionIdentifier = getCollectionResourceIdentifier(collection);
+        if (!collectionIdentifier) {
+          return false;
+        }
         return accessibleIds.some(id =>
           id.toLowerCase().includes(collectionIdentifier.toLowerCase())
         );
