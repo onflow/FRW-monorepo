@@ -9,6 +9,8 @@ import type {
 
 import { chromeStorage } from '@/extension-shared/chrome-storage';
 
+import { extensionNavigation } from './ExtensionNavigation';
+
 class ExtensionPlatformImpl implements PlatformSpec {
   private debugMode: boolean = process.env.NODE_ENV === 'development';
   private storage: Storage;
@@ -225,7 +227,7 @@ class ExtensionPlatformImpl implements PlatformSpec {
 
   getNavigation() {
     // Return the extension navigation implementation
-    return require('./ExtensionNavigation').extensionNavigation;
+    return extensionNavigation;
   }
 
   // Helper methods

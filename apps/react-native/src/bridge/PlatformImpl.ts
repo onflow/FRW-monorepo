@@ -13,6 +13,7 @@ import { Platform as RNPlatform } from 'react-native';
 import { MMKV } from 'react-native-mmkv';
 
 import NativeFRWBridge from './NativeFRWBridge';
+import { reactNativeNavigation } from './ReactNativeNavigation';
 import { bridgeAuthorization, payer, proposer } from './signWithRole';
 
 class PlatformImpl implements PlatformSpec {
@@ -199,7 +200,7 @@ class PlatformImpl implements PlatformSpec {
 
   getNavigation() {
     // Return the navigation implementation - will be set up separately
-    return require('./ReactNativeNavigation').reactNativeNavigation;
+    return reactNativeNavigation;
   }
 }
 
