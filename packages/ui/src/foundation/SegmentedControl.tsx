@@ -24,15 +24,13 @@ export function SegmentedControl({
 
   return (
     <XStack
-      bg="$bg2"
-      rounded="$10"
-      items="center"
-      width={fullWidth ? '100%' : 'auto'}
-      py={5}
-      px={6}
-      bg="$bg"
+      bg="transparent"
       borderWidth={2}
-      borderColor="$border1"
+      borderColor="#292929"
+      rounded={200}
+      p={5}
+      items="center"
+      w={fullWidth ? '100%' : 'auto'}
       {...props}
     >
       {segments.map((segment, index) => {
@@ -42,20 +40,20 @@ export function SegmentedControl({
           <Stack
             key={segment}
             flex={fullWidth ? 1 : undefined}
-            height={height}
-            bg={isSelected ? '$border1' : 'transparent'}
-            rounded="$6"
+            h={height}
+            bg={isSelected ? '#242424' : 'transparent'}
+            rounded={24}
             items="center"
             justify="center"
             px={px}
-            pressStyle={{ opacity: 0.8, bg: isSelected ? '$text' : '$bg3' }}
+            pressStyle={{ opacity: 0.8, bg: isSelected ? '#242424' : 'rgba(255, 255, 255, 0.1)' }}
             onPress={() => onChange(segment)}
             cursor="pointer"
           >
             <Text
               fontSize={fontSize}
               fontWeight={600}
-              color={isSelected ? '$textTertiary' : '$textSecondary'}
+              color={isSelected ? 'rgba(255, 255, 255, 0.8)' : '#FFFFFF'}
               numberOfLines={1}
               my="$0.5"
             >
