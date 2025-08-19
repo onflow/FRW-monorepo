@@ -177,9 +177,10 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
       disabled={isDisabled}
     >
       <Animated.View
-        className={`bg-sf-1 rounded-2xl mx-4 p-4 min-h-16 items-center justify-center self-stretch`}
+        className="rounded-2xl mx-4 p-4 min-h-16 items-center justify-center self-stretch"
         style={[
           {
+            backgroundColor: '#FFFFFF',
             transform: [{ scale: scaleValue }],
           },
         ]}
@@ -202,8 +203,8 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
               ]}
             />
             <Text
-              className="text-fg-1 text-base font-medium font-inter"
-              style={[androidTextFix, { includeFontPadding: false }]}
+              className="text-fg-1 font-semibold font-inter"
+              style={[androidTextFix, { fontSize: 16, includeFontPadding: false }]}
               allowFontScaling={false}
             >
               {t('send.holdToSend')}
@@ -211,8 +212,8 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
           </View>
         ) : (
           <View className="flex-row items-center justify-center gap-3">
-            {(isHolding || isCompleted) && (
-              <View className="w-5 h-5 items-center justify-center">
+            <View className="w-5 h-5 items-center justify-center">
+              {isHolding || isCompleted ? (
                 <Svg width={24} height={24} viewBox="0 0 24 24">
                   <Circle
                     cx={12}
@@ -238,13 +239,16 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
                     transform="rotate(-90 12 12)"
                   />
                 </Svg>
-              </View>
-            )}
+              ) : (
+                <View className="w-5 h-5 border-4 border-gray-300 border-t-gray-600 rounded-full" />
+              )}
+            </View>
             <Text
-              className="text-fg-1 text-base font-semibold font-inter text-center flex-shrink-0"
+              className="text-fg-1 font-semibold font-inter text-center flex-shrink-0"
               style={[
                 androidTextFix,
                 {
+                  fontSize: 16,
                   includeFontPadding: false,
                 },
               ]}

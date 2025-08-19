@@ -38,13 +38,22 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
 
   // Determine what to show based on transaction type and available data
   const isNFTTransaction = transactionType?.includes('nft');
+  const isFlowToken = selectedToken?.symbol === 'FLOW' || selectedToken?.name === 'FLOW';
   const shouldShowFlowLogo = !selectedToken && !isNFTTransaction;
 
-  // Get image URI - only use collection square image for NFT transactions
+  // Get image URI - for NFT transactions, try multiple image sources
   const getImageUri = () => {
     if (isNFTTransaction && selectedNFTs && selectedNFTs.length > 0) {
       const firstNFT = selectedNFTs[0];
-      return firstNFT.collectionSquareImage || null;
+      // Try multiple image sources for NFTs
+      return (
+        firstNFT.collectionSquareImage ||
+        firstNFT.thumbnail ||
+        firstNFT.logo ||
+        firstNFT.collection?.logo ||
+        firstNFT.collection?.logoURI ||
+        null
+      );
     }
     return selectedToken?.logoURI;
   };
@@ -217,14 +226,14 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
           position: 'absolute',
           top: 0,
           left: 0,
-          // For NFT transactions, we show a static background, otherwise show the full Flow coin animation
-          opacity: isNFTTransaction ? 0 : 1,
+          // Show animation for both NFT and token transactions
+          opacity: 1,
         }}
         resizeMode="contain"
       />
 
       {/* Animated Token/Coin Overlay - positioned to match Flow coin exactly */}
-      {((!shouldShowFlowLogo && imageUri) || (isNFTTransaction && !imageUri)) && (
+      {(isNFTTransaction || (!shouldShowFlowLogo && imageUri && !isFlowToken)) && (
         <Animated.View
           style={[
             {
@@ -252,9 +261,12 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
               style={{
                 width: 56,
                 height: 56,
-                borderRadius: 28, // Always circular for collection images and tokens
+                borderRadius: isNFTTransaction ? 8 : 28, // Square for NFTs, circular for tokens
               }}
               resizeMode="cover"
+              onError={() =>
+                console.log('[SendConfirmationAnimation] Failed to load image:', imageUri)
+              }
             />
           ) : (
             // Fallback to Flow logo with circular background

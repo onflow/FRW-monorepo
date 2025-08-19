@@ -82,7 +82,7 @@ export const AccountTransferDisplay: React.FC<AccountTransferDisplayProps> = ({
           style={{
             flexDirection: 'row',
             alignItems: 'center',
-            gap: 4,
+            gap: 14,
             justifyContent: 'center',
             flex: 1,
           }}
