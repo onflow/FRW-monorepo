@@ -75,7 +75,7 @@ export const test = base.extend<{
     }
 
     const context = await chromium.launchPersistentContext(dataDir, {
-      headless: false,
+      headless: process.env.HEADLESS === 'true',
       channel: 'chromium',
       args: [
         '--no-sandbox',
