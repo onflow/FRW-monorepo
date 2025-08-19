@@ -123,6 +123,15 @@ class RNBridge {
         val INSTABUG_TOKEN: String
     )
 
+    data class Currency(
+        @SerializedName("name")
+        val name: String,
+        @SerializedName("symbol")
+        val symbol: String,
+        @SerializedName("rate")
+        val rate: String
+    )
+
     data class NFTModel(
         @SerializedName("id")
         val id: String?,
