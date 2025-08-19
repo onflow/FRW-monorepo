@@ -227,11 +227,66 @@ jobs:
         run: pnpm install
       - name: Install Playwright Browsers
         run: pnpm -F frw-extension exec playwright install --with-deps chromium
+
+      - name: Setup Chrome for CI
+        run: |
+          # Install additional dependencies for Chrome in headless mode
+          sudo apt-get update
+          sudo apt-get install -y \
+            libnss3-dev \
+            libatk-bridge2.0-dev \
+            libdrm2 \
+            libgtk-3-dev \
+            libgbm-dev \
+            libasound2-dev
+
+          # Create chrome policies directory to allow extension loading
+          sudo mkdir -p /etc/opt/chrome/policies/managed
+          sudo tee /etc/opt/chrome/policies/managed/test_policy.json > /dev/null <<EOF
+          {
+            "ExtensionInstallForcelist": [],
+            "ExtensionInstallWhitelist": ["*"],
+            "DeveloperToolsAvailability": 1,
+            "ExtensionAllowedTypes": ["extension", "packaged_app"],
+            "ExtensionSettings": {
+              "*": {
+                "allowed_types": ["extension"],
+                "blocked_install_message": "Custom extension blocked.",
+                "install_sources": ["*"],
+                "installation_mode": "allowed"
+              }
+            }
+          }
+          EOF
+
+      - name: Verify extension build
+        run: |
+          echo "Verifying extension build..."
+          ls -la apps/extension/dist/
+          echo "Checking manifest.json..."
+          cat apps/extension/dist/manifest.json | jq -r '.name, .version, .manifest_version'
+          echo "Checking service worker exists..."
+          [ -f apps/extension/dist/background.js ] && echo "✓ background.js exists" || echo "✗ background.js missing"
+          [ -f apps/extension/dist/sw.js ] && echo "✓ sw.js exists" || echo "✗ sw.js missing"
+
+          # Set proper permissions for extension directory
+          chmod -R 755 apps/extension/dist/
+
       - name: Run Playwright tests (headless via Xvfb)
-        run: xvfb-run -a pnpm -F frw-extension test:e2e
+        run: |
+          # Start Xvfb with larger shared memory and specific display
+          export DISPLAY=:99
+          Xvfb :99 -ac -screen 0 1280x720x24 -nolisten tcp -dpi 96 +extension GLX &
+          sleep 3
+
+          # Run tests with proper environment
+          pnpm -F frw-extension test:e2e
         env:
           CI: true
           HEADLESS: true
+          DISPLAY: :99
+          CHROME_DEVEL_SANDBOX: /usr/lib/chromium-browser/chrome-sandbox
+          CHROME_NO_SANDBOX: true
       - name: Sanitize Playwright Report
         if: always()
         run: cd apps/extension && pnpm tsx build/sanitize-playwright.ts

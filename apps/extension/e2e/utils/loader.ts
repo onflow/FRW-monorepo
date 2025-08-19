@@ -83,8 +83,8 @@ export const test = base.extend<{
         '--lang=en-US',
         '--allow-read-clipboard',
         '--allow-write-clipboard',
-        '--load-extension=' + path.resolve(pathToExtension),
-        '--disable-extensions-except=' + path.resolve(pathToExtension),
+        `--load-extension=${path.resolve(pathToExtension)}`,
+        `--disable-extensions-except=${path.resolve(pathToExtension)}`,
         '--disable-web-security',
         '--disable-features=VizDisplayCompositor',
         '--disable-background-timer-throttling',
@@ -94,6 +94,38 @@ export const test = base.extend<{
         '--disable-extensions-http-throttling',
         '--enable-automation',
         '--disable-blink-features=AutomationControlled',
+        // Extension loading specific args
+        '--enable-extensions',
+        '--disable-extensions-unsupported-policy',
+        '--allow-running-insecure-content',
+        '--disable-popup-blocking',
+        '--disable-default-apps',
+        '--no-default-browser-check',
+        '--disable-background-networking',
+        '--disable-sync',
+        '--allow-insecure-localhost',
+        // Force enable service workers and extensions
+        '--enable-service-worker-script-cache',
+        '--force-enable-extensions',
+        // Critical args to fix ERR_BLOCKED_BY_CLIENT
+        '--disable-features=TranslateUI',
+        '--disable-ipc-flooding-protection',
+        '--disable-backgrounding-occluded-windows',
+        '--disable-renderer-backgrounding',
+        '--disable-background-timer-throttling',
+        '--disable-client-side-phishing-detection',
+        '--disable-component-extensions-with-background-pages',
+        '--disable-default-apps',
+        '--disable-domain-reliability',
+        '--disable-extensions-http-throttling',
+        '--disable-features=InterestFeedContentSuggestions',
+        '--disable-hang-monitor',
+        '--disable-prompt-on-repost',
+        '--disable-backgrounding-occluded-windows',
+        '--disable-renderer-backgrounding',
+        '--disable-background-timer-throttling',
+        '--allow-pre-commit-input',
+        '--disable-background-networking',
       ],
       locale: 'en-US',
       env: {
@@ -102,60 +134,143 @@ export const test = base.extend<{
         LANGUAGE: 'en_US',
       },
       permissions: ['clipboard-read', 'clipboard-write'],
+      // Increase timeout for extension loading
+      timeout: process.env.CI ? 120000 : 60000,
     });
 
-    // Give the extension time to initialize
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    // Give the extension more time to initialize in CI
+    const initDelay = process.env.CI ? 10000 : 5000;
+    console.log(`Waiting ${initDelay}ms for extension initialization...`);
+    await new Promise((resolve) => setTimeout(resolve, initDelay));
 
-    // In CI, try to load the extension programmatically if it's not loaded
+    // CI-specific extension loading workaround
     if (process.env.CI) {
-      console.log('CI environment detected, attempting to load extension programmatically...');
+      console.log('CI environment detected, using enhanced extension loading strategy...');
 
-      // Try to access the extension's background page to trigger loading
       try {
+        // In CI, we need to be more aggressive about triggering extension loading
         const page = await context.newPage();
         const testExtensionId = process.env.TEST_EXTENSION_ID || 'cfiagdgiikmjgfjnlballglniejjgegi';
 
-        // Try to navigate to the extension's background page
-        await page.goto(`chrome-extension://${testExtensionId}/background.html`);
-        await new Promise((resolve) => setTimeout(resolve, 3000));
+        // Method 1: Try to enable developer mode and trigger extension loading
+        try {
+          await page.goto('chrome://extensions/');
+          await new Promise((resolve) => setTimeout(resolve, 3000));
 
-        const url = page.url();
-        console.log(`Background page URL: ${url}`);
+          // Try to trigger developer mode (if possible)
+          await page
+            .evaluate(() => {
+              const devModeToggle = document.querySelector('#devMode');
+              if (devModeToggle && !devModeToggle.checked) {
+                devModeToggle.click();
+              }
+            })
+            .catch(() => {
+              console.log('Could not toggle developer mode');
+            });
 
-        if (!url.includes('chrome-error://')) {
-          console.log('Extension background page loaded successfully');
-        } else {
-          console.log('Extension background page failed to load');
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        } catch (err) {
+          console.log(`Error accessing chrome://extensions: ${err.message}`);
+        }
+
+        // Method 2: Try multiple extension pages with retry logic
+        const extensionUrls = [
+          `chrome-extension://${testExtensionId}/popup.html`,
+          `chrome-extension://${testExtensionId}/index.html`,
+          `chrome-extension://${testExtensionId}/notification.html`,
+          `chrome-extension://${testExtensionId}/background.html`,
+        ];
+
+        for (const url of extensionUrls) {
+          let retries = 3;
+          while (retries > 0) {
+            try {
+              console.log(`Attempting to load ${url} (${4 - retries}/3)...`);
+              await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 10000 });
+
+              const currentUrl = page.url();
+              console.log(`Current URL after navigation: ${currentUrl}`);
+
+              if (
+                !currentUrl.includes('chrome-error://') &&
+                currentUrl.startsWith('chrome-extension://')
+              ) {
+                console.log(`✓ Successfully loaded extension page: ${url}`);
+                break;
+              } else if (currentUrl.includes('chrome-error://')) {
+                console.log(`✗ Chrome error loading ${url}: ${currentUrl}`);
+                retries--;
+                if (retries > 0) {
+                  await new Promise((resolve) => setTimeout(resolve, 2000));
+                }
+              } else {
+                console.log(`Unexpected URL: ${currentUrl}`);
+                break;
+              }
+            } catch (err) {
+              console.log(`Error loading ${url}: ${err.message}`);
+              retries--;
+              if (retries > 0) {
+                await new Promise((resolve) => setTimeout(resolve, 2000));
+              }
+            }
+          }
+
+          // Check if service worker started after each attempt
+          const workers = context.serviceWorkers();
+          if (workers.length > 0) {
+            console.log(`✓ Service worker detected after loading ${url}`);
+            break;
+          }
         }
 
         await page.close();
       } catch (err) {
-        console.log(`Error loading extension programmatically: ${err.message}`);
+        console.log(`Error in CI extension loading: ${err.message}`);
+      }
+    } else {
+      // Local development extension loading
+      try {
+        const page = await context.newPage();
+        const testExtensionId = process.env.TEST_EXTENSION_ID || 'cfiagdgiikmjgfjnlballglniejjgegi';
+
+        await page.goto(`chrome-extension://${testExtensionId}/popup.html`);
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        await page.close();
+      } catch (err) {
+        console.log(`Error in local extension loading: ${err.message}`);
       }
     }
+
+    // Final wait for service worker initialization
+    await new Promise((resolve) => setTimeout(resolve, process.env.CI ? 5000 : 3000));
 
     await call(context);
     await context.close();
   },
   extensionId: async ({ context }, call) => {
-    // Alternative approach: try to get extension ID from a page first
     let extensionId: string | null = null;
 
-    // Method 1: Try service worker approach
-    let [background] = context.serviceWorkers();
-    console.log(`Initial service workers: ${context.serviceWorkers().length}`);
+    // Method 1: Try service worker approach with retries
+    const maxRetries = 5;
+    let attempts = 0;
 
-    if (background) {
-      extensionId = background.url().split('/')[2];
-      console.log(`Extension ID from service worker: ${extensionId}`);
-    } else {
-      // Wait a bit more for service worker to start
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      [background] = context.serviceWorkers();
-      if (background) {
+    while (attempts < maxRetries && !extensionId) {
+      const workers = context.serviceWorkers();
+      console.log(`Attempt ${attempts + 1}: Found ${workers.length} service workers`);
+
+      if (workers.length > 0) {
+        const [background] = workers;
         extensionId = background.url().split('/')[2];
-        console.log(`Extension ID from service worker after wait: ${extensionId}`);
+        console.log(`Extension ID from service worker: ${extensionId}`);
+        break;
+      }
+
+      attempts++;
+      if (attempts < maxRetries) {
+        console.log(`No service workers found, waiting ${2000 * attempts}ms before retry...`);
+        await new Promise((resolve) => setTimeout(resolve, 2000 * attempts));
       }
     }
 
@@ -171,33 +286,43 @@ export const test = base.extend<{
         await page.goto('chrome://extensions/');
         await new Promise((resolve) => setTimeout(resolve, 2000));
 
-        // Try to trigger the extension service worker by opening background page
-        try {
-          const testExtensionId =
-            process.env.TEST_EXTENSION_ID || 'cfiagdgiikmjgfjnlballglniejjgegi';
+        // Try to trigger the extension service worker by opening extension pages
+        const testExtensionId = process.env.TEST_EXTENSION_ID || 'cfiagdgiikmjgfjnlballglniejjgegi';
+        const extensionUrls = [
+          `chrome-extension://${testExtensionId}/popup.html`,
+          `chrome-extension://${testExtensionId}/index.html`,
+          `chrome-extension://${testExtensionId}/notification.html`,
+        ];
 
-          // Try to open the background page first
-          await page.goto(`chrome-extension://${testExtensionId}/background.html`);
-          await new Promise((resolve) => setTimeout(resolve, 2000));
+        for (const url of extensionUrls) {
+          try {
+            console.log(`Trying to load: ${url}`);
+            await page.goto(url);
+            await new Promise((resolve) => setTimeout(resolve, 3000));
 
-          // Check for service worker again
-          [background] = context.serviceWorkers();
-          if (background) {
-            extensionId = background.url().split('/')[2];
-            console.log(`Extension ID from background page trigger: ${extensionId}`);
-          } else {
-            // Try popup as fallback
-            await page.goto(`chrome-extension://${testExtensionId}/popup.html`);
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-
-            [background] = context.serviceWorkers();
-            if (background) {
+            // Check for service worker after each attempt
+            const workers = context.serviceWorkers();
+            if (workers.length > 0) {
+              const [background] = workers;
               extensionId = background.url().split('/')[2];
-              console.log(`Extension ID from popup trigger: ${extensionId}`);
+              console.log(`Extension ID from ${url}: ${extensionId}`);
+              break;
             }
+
+            // Also check if we're on a valid extension page
+            const currentUrl = page.url();
+            if (
+              currentUrl.startsWith('chrome-extension://') &&
+              !currentUrl.includes('chrome-error://')
+            ) {
+              extensionId = currentUrl.split('/')[2];
+              console.log(`Extension ID from valid page URL ${currentUrl}: ${extensionId}`);
+              break;
+            }
+          } catch (err) {
+            console.log(`Error loading ${url}: ${err.message}`);
+            continue;
           }
-        } catch (err) {
-          console.log(`Error triggering extension: ${err.message}`);
         }
 
         // Try to get extension ID from chrome://extensions page
