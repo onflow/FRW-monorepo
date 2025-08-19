@@ -33,19 +33,19 @@ export const ErrorDialog: React.FC<ErrorDialogProps> = ({
     switch (variant) {
       case 'warning':
         return {
-          title: '#FFFFFF', // White for warning title
-          message: '#FFC107', // Yellow for warning message/body text
+          title: '$white', // White for warning title
+          message: '$warning', // Yellow for warning message/body text
         };
       case 'error':
         return {
-          title: '#FFFFFF', // White for error title
-          message: '#FF5722', // Red for error message
+          title: '$white', // White for error title
+          message: '$error', // Red for error message
         };
       case 'info':
       default:
         return {
-          title: '#FFFFFF', // White for info/default title
-          message: '#FFFFFF', // White for info/default message
+          title: '$white', // White for info/default title
+          message: '$white', // White for info/default message
         };
     }
   };
@@ -93,10 +93,10 @@ export const ErrorDialog: React.FC<ErrorDialogProps> = ({
       aria-describedby="error-dialog-message"
     >
       <YStack
-        minW={400}
-        maxW="90vw"
-        w={400}
-        bg="#2A2A2A"
+        minWidtheight={400}
+        maxWidth="90vw"
+        widtheight={400}
+        bg="$bg2"
         rounded={16}
         p={16}
         gap={10}
@@ -131,7 +131,7 @@ export const ErrorDialog: React.FC<ErrorDialogProps> = ({
                 right={0}
                 items="center"
                 justify="center"
-                bg="rgba(255, 255, 255, 0.1)"
+                bg="$light10"
                 rounded={16}
                 p={8}
                 pressStyle={{ opacity: 0.7 }}
@@ -162,8 +162,8 @@ export const ErrorDialog: React.FC<ErrorDialogProps> = ({
           <YStack alignSelf="stretch" items="center" justify="center" gap={16}>
             <YStack
               alignSelf="stretch"
-              h={44}
-              bg="#FFFFFF"
+              height={44}
+              bg="$white"
               rounded={12}
               items="center"
               justify="center"

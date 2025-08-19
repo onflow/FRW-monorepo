@@ -69,10 +69,10 @@ export const ConfirmAddressDialog: React.FC<ConfirmAddressDialogProps> = ({
       aria-describedby="confirm-address-dialog-message"
     >
       <YStack
-        minW={400}
-        maxW="90vw"
-        w={400}
-        bg="#2A2A2A"
+        minWidtheight={400}
+        maxWidth="90vw"
+        widtheight={400}
+        bg="$bg2"
         rounded={16}
         p={16}
         gap={10}
@@ -97,7 +97,7 @@ export const ConfirmAddressDialog: React.FC<ConfirmAddressDialogProps> = ({
                 lineHeight="1.78em"
                 letterSpacing="-1.7%"
                 textAlign="center"
-                color="#FFFFFF"
+                color="$white"
               >
                 {title}
               </Text>
@@ -107,7 +107,7 @@ export const ConfirmAddressDialog: React.FC<ConfirmAddressDialogProps> = ({
                 right={0}
                 items="center"
                 justify="center"
-                bg="rgba(255, 255, 255, 0.1)"
+                bg="$light10"
                 rounded={16}
                 p={8}
                 pressStyle={{ opacity: 0.7 }}
@@ -136,9 +136,9 @@ export const ConfirmAddressDialog: React.FC<ConfirmAddressDialogProps> = ({
 
             {/* Address Display Box */}
             <YStack
-              w={290}
-              h={64}
-              bg="rgba(255, 255, 255, 0.1)"
+              widtheight={290}
+              height={64}
+              bg="$light10"
               rounded={8}
               items="center"
               justify="center"
@@ -152,7 +152,7 @@ export const ConfirmAddressDialog: React.FC<ConfirmAddressDialogProps> = ({
                 lineHeight="1.2em"
                 letterSpacing="-0.6%"
                 textAlign="left"
-                color="#FFFFFF"
+                color="$white"
                 numberOfLines={2}
                 ellipsizeMode="middle"
               >
@@ -164,9 +164,9 @@ export const ConfirmAddressDialog: React.FC<ConfirmAddressDialogProps> = ({
           {/* Double button group */}
           <YStack alignSelf="stretch" items="center" justify="center" gap={16}>
             <YStack
-              w={297}
-              h={44}
-              bg="#FFFFFF"
+              widtheight={297}
+              height={44}
+              bg="$white"
               rounded={12}
               items="center"
               justify="center"

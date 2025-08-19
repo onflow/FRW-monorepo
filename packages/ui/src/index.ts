@@ -32,7 +32,6 @@ export * from './components/TokenCard';
 export * from './components/RefreshView';
 export * from './components/NFTCollectionRow';
 export * from './components/AccountCard';
-export * from './components/AccountSelectorModal';
 export * from './components/AddressText';
 export * from './components/AddressSearchBox';
 export * from './components/SearchBar';
