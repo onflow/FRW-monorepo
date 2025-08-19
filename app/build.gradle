@@ -235,6 +235,21 @@ configurations.all {
     }
 }
 
+// Fix RevoPush CodePush duplicate class conflict
+android.packagingOptions.pickFirsts += [
+    '**/NativeFRWBridgeSpec.class'
+]
+
+// Clean task to remove conflicting generated classes
+task cleanCodegenClasses {
+    doLast {
+        delete "${buildDir}/generated/source/codegen"
+        delete "${buildDir}/tmp/kotlin-classes"
+        delete "${buildDir}/intermediates/javac"
+        delete "${buildDir}/intermediates/runtime_library_classes_jar"
+    }
+}
+
 dependencies {
     implementation("com.facebook.react:react-android")
 
