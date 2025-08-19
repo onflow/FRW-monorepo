@@ -21,7 +21,7 @@
     "viewColors": "View Colors"
   },
   "send": {
-    "searchAddress": "Search address",
+    "searchAddress": "Search / Paste address",
     "myAccounts": "My accounts",
     "recent": "Recent",
     "addressBook": "Address book",
@@ -50,7 +50,7 @@
     "next": "Next"
   },
   "placeholders": {
-    "searchAddress": "Search address",
+    "searchAddress": "Search / Paste address",
     "enterAmount": "Enter amount",
     "selectToken": "Select token",
     "selectNFT": "Select NFT",
