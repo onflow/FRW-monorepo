@@ -32,9 +32,31 @@ class ExtensionNavigation implements Navigation {
   }
 
   navigate(screen: string, params?: Record<string, unknown>): void {
+    console.log('[DEBUG] ExtensionNavigation.navigate called:', screen, params);
     if (this.navigateCallback) {
       // Convert screen name to path and include params as state
-      const path = this.convertScreenToPath(screen);
+      let path = this.convertScreenToPath(screen);
+
+      // Handle dynamic routes with parameters
+      if (screen === 'SendTo' || screen === 'SendToScreen') {
+        // Use proper token route for SendToScreen
+        const tokenId = params?.tokenId || 'flow';
+        path = `/dashboard/token/${tokenId}/send`;
+      } else if (screen === 'SendTokens' && params) {
+        const tokenId = params.tokenId || 'flow';
+        const address = params.address;
+        if (address) {
+          path = `/dashboard/token/${tokenId}/send-tokens/${address}`;
+        } else {
+          path = `/dashboard/token/${tokenId}/send`;
+        }
+      } else if (screen === 'NFTDetail' && params?.id) {
+        path = `/dashboard/nested/nftdetail/${params.id}`;
+      } else if (screen === 'NFTList' && params?.collection && params?.address) {
+        path = `/dashboard/nested/collectiondetail/${params.collection}_${params.address}`;
+      }
+
+      console.log('[DEBUG] ExtensionNavigation navigating to:', path);
       this.navigateCallback(path, { state: params });
     } else {
       console.warn('[ExtensionNavigation] Navigation attempted but no navigate callback available');
@@ -42,13 +64,16 @@ class ExtensionNavigation implements Navigation {
   }
 
   goBack(): void {
-    if (this.historyRef?.current) {
-      this.historyRef.current.back();
+    console.log('[DEBUG] ExtensionNavigation.goBack called');
+    if (typeof window !== 'undefined' && window.history) {
+      console.log('[DEBUG] ExtensionNavigation using window.history.back()');
+      window.history.back();
     } else if (this.navigateCallback) {
       // Fallback - navigate to dashboard
+      console.log('[DEBUG] ExtensionNavigation fallback to dashboard');
       this.navigateCallback('/dashboard');
     } else {
-      console.warn('[ExtensionNavigation] goBack attempted but no history reference available');
+      console.warn('[ExtensionNavigation] goBack attempted but no history available');
     }
   }
 
@@ -87,7 +112,14 @@ class ExtensionNavigation implements Navigation {
 
   pop(): void {
     // Same as goBack in React Router context
-    this.goBack();
+    if (typeof window !== 'undefined' && window.history) {
+      window.history.back();
+    } else if (this.navigateCallback) {
+      // Fallback - navigate to dashboard
+      this.navigateCallback('/dashboard');
+    } else {
+      console.warn('[ExtensionNavigation] pop attempted but no history available');
+    }
   }
 
   getCurrentRoute(): { name: string; params?: Record<string, unknown> } | null {
@@ -107,17 +139,18 @@ class ExtensionNavigation implements Navigation {
   private convertScreenToPath(screen: string): string {
     const screenMapping: Record<string, string> = {
       Home: '/dashboard',
-      SendTo: '/send-to-screen',
-      SendTokens: '/send-tokens-screen',
-      SelectTokens: '/select-tokens-screen',
-      SendSingleNFT: '/send-nft',
-      SendMultipleNFTs: '/send-nft',
-      NFTDetail: '/nft-detail',
-      NFTList: '/nft-list',
-      Confirmation: '/confirmation',
+      SendTo: '/dashboard/token/flow/send',
+      SendTokens: '/dashboard/token/flow/send', // Default fallback
+      SelectTokens: '/dashboard/select-tokens',
+      SendToScreen: '/dashboard/token/flow/send', // Use proper token route
+      SendSingleNFT: '/dashboard/nft/send',
+      SendMultipleNFTs: '/dashboard/nft/send',
+      SendNftEvm: '/dashboard/nftevm/send',
+      NFTDetail: '/dashboard/nested/nftdetail',
+      NFTList: '/dashboard/nested/collectiondetail',
     };
 
-    return screenMapping[screen] || `/${screen.toLowerCase()}`;
+    return screenMapping[screen] || `/dashboard/${screen.toLowerCase()}`;
   }
 
   /**
@@ -126,16 +159,15 @@ class ExtensionNavigation implements Navigation {
   private convertPathToScreen(path: string): string {
     const pathMapping: Record<string, string> = {
       '/dashboard': 'Home',
-      '/send-to-screen': 'SendTo',
-      '/send-tokens-screen': 'SendTokens',
-      '/select-tokens-screen': 'SelectTokens',
-      '/send-nft': 'SendSingleNFT',
-      '/nft-detail': 'NFTDetail',
-      '/nft-list': 'NFTList',
-      '/confirmation': 'Confirmation',
+      '/dashboard/sendtoscreen': 'SendToScreen',
+      '/dashboard/select-tokens': 'SelectTokens',
+      '/dashboard/nft/send': 'SendSingleNFT',
+      '/dashboard/nftevm/send': 'SendNftEvm',
+      '/dashboard/nested/nftdetail': 'NFTDetail',
+      '/dashboard/nested/collectiondetail': 'NFTList',
     };
 
-    return pathMapping[path] || path.replace('/', '');
+    return pathMapping[path] || path.replace('/dashboard/', '');
   }
 }
 

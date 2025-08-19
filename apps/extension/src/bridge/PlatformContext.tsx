@@ -1,7 +1,25 @@
-import type { PlatformSpec } from '@onflow/frw-context';
-import type { NavigationProp, PlatformBridge, TranslationFunction } from '@onflow/frw-screens';
+import { ServiceContext, type PlatformSpec } from '@onflow/frw-context';
 import React, { createContext, useContext, useEffect, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router';
+
+// Define types for platform bridge and translation
+type NavigationProp = {
+  navigate: (screen: string, params?: any) => void;
+  goBack: () => void;
+  canGoBack: () => boolean;
+  reset: (routes: string[]) => void;
+  replace: (screen: string, params?: Record<string, unknown>) => void;
+  push: (screen: string, params?: Record<string, unknown>) => void;
+  pop: () => void;
+  getCurrentRoute: () => { name: string; params?: Record<string, unknown> } | null;
+};
+type PlatformBridge = {
+  getSelectedAddress(): string | null;
+  getNetwork(): string;
+  getCurrency(): any;
+  getCoins?(): any[] | null;
+};
+type TranslationFunction = (key: string) => string;
 
 import { useUserWallets } from '@/ui/hooks/use-account-hooks';
 import { useWallet } from '@/ui/hooks/use-wallet';
@@ -43,6 +61,11 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
 
   // Initialize platform singleton
   const platform = initializePlatform();
+
+  // Initialize ServiceContext with platform
+  useEffect(() => {
+    ServiceContext.initialize(platform);
+  }, [platform]);
 
   // Keep platform synchronized with extension state
   useEffect(() => {
@@ -86,6 +109,26 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
           break;
         }
       }
+    },
+    goBack: () => window.history.back(),
+    canGoBack: () => true,
+    reset: (routes: string[]) => {
+      if (routes.length > 0) {
+        navigate(routes[0]);
+      }
+    },
+    replace: (screen: string, params?: Record<string, unknown>) => {
+      navigate(screen, { replace: true, ...params });
+    },
+    push: (screen: string, params?: Record<string, unknown>) => {
+      navigate(screen, params);
+    },
+    pop: () => window.history.back(),
+    getCurrentRoute: () => {
+      return {
+        name: location.pathname,
+        params: location.state,
+      };
     },
   });
 

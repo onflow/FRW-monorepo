@@ -143,16 +143,12 @@ class ExtensionPlatformImpl implements PlatformSpec {
     // Configure FCL and other Cadence-related services for extension
     // This method allows the bridge to set up authorization, proposer, payer, etc.
 
-    // Set up authorization
-    cadenceService.config({
-      'accessNode.api': this.getApiEndpoint(),
-      'discovery.wallet': chrome.runtime.getURL('popup.html'),
-      'app.detail.title': 'Flow Reference Wallet',
-      'app.detail.icon': chrome.runtime.getURL('icon.png'),
-    });
+    // Note: FCL configuration is handled by the cadence package's configureFCL function
+    // The CadenceService doesn't have config or currentUser methods
+    // Instead, we can add interceptors or other configuration here if needed
 
-    // Set up authorization function
-    cadenceService.currentUser.authorization = this.getAuthorization();
+    // For now, we'll just log that the service is configured
+    this.log('debug', 'CadenceService configured for extension');
   }
 
   // Logging methods

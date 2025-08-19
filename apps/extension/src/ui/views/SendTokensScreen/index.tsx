@@ -1,5 +1,5 @@
 import { SendTokensScreen, type TokenModel, type WalletAccount } from '@onflow/frw-screens';
-import React, { useCallback, useEffect, useReducer, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
 import { INITIAL_TRANSACTION_STATE, transactionReducer } from '@/reducers';
@@ -226,32 +226,49 @@ const SendTokensScreenView = () => {
     transactionState.toContact
   );
 
-  const screenProps = {
-    selectedToken: convertExtendedTokenInfoToTokenModel(transactionState.tokenInfo),
-    fromAccount,
-    toAccount,
-    amount:
-      transactionState.fiatOrCoin === 'coin'
-        ? transactionState.amount
-        : transactionState.fiatAmount,
-    isTokenMode: transactionState.fiatOrCoin === 'coin',
-    tokens: availableTokens,
-    isTokenSelectorVisible,
-    isConfirmationVisible,
-    onTokenSelect: handleTokenSelect,
-    onAmountChange: handleAmountChange,
-    onToggleInputMode: handleToggleInputMode,
-    onMaxPress: handleMaxPress,
-    onSendPress: handleSendPress,
-    onTokenSelectorOpen: () => setIsTokenSelectorVisible(true),
-    onTokenSelectorClose: () => setIsTokenSelectorVisible(false),
-    onConfirmationOpen: () => setIsConfirmationVisible(true),
-    onConfirmationClose: () => setIsConfirmationVisible(false),
-    onTransactionConfirm: handleTransactionConfirm,
-    backgroundColor: '$bg',
-    contentPadding: 8, // Use smaller extension-specific padding
-    transactionFee: '~0.001 FLOW',
-  };
+  const screenProps = useMemo(
+    () => ({
+      selectedToken: convertExtendedTokenInfoToTokenModel(transactionState.tokenInfo),
+      fromAccount,
+      toAccount,
+      amount:
+        transactionState.fiatOrCoin === 'coin'
+          ? transactionState.amount
+          : transactionState.fiatAmount,
+      isTokenMode: transactionState.fiatOrCoin === 'coin',
+      tokens: availableTokens,
+      isTokenSelectorVisible,
+      isConfirmationVisible,
+      onTokenSelect: handleTokenSelect,
+      onAmountChange: handleAmountChange,
+      onToggleInputMode: handleToggleInputMode,
+      onMaxPress: handleMaxPress,
+      onSendPress: handleSendPress,
+      onTokenSelectorOpen: () => setIsTokenSelectorVisible(true),
+      onTokenSelectorClose: () => setIsTokenSelectorVisible(false),
+      onConfirmationOpen: () => setIsConfirmationVisible(true),
+      onConfirmationClose: () => setIsConfirmationVisible(false),
+      onTransactionConfirm: handleTransactionConfirm,
+      backgroundColor: '$bg',
+      contentPadding: 8, // Use smaller extension-specific padding
+      transactionFee: '~0.001 FLOW',
+    }),
+    [
+      transactionState,
+      fromAccount,
+      toAccount,
+      availableTokens,
+      isTokenSelectorVisible,
+      isConfirmationVisible,
+      handleTokenSelect,
+      handleAmountChange,
+      handleToggleInputMode,
+      handleMaxPress,
+      handleSendPress,
+      handleTransactionConfirm,
+      convertExtendedTokenInfoToTokenModel,
+    ]
+  );
 
   return (
     <div
@@ -262,7 +279,7 @@ const SendTokensScreenView = () => {
       }}
     >
       <LLHeader title={chrome.i18n.getMessage('Send_to')} help={true} />
-      <div style={{ flex: 1, overflow: 'hidden' }}>
+      <div style={{ flex: 1, overflow: 'auto' }}>
         <SendTokensScreen {...screenProps} />
       </div>
     </div>
