@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, type ReactNode } from 'rea
 
 import { useUserWallets } from '@/ui/hooks/use-account-hooks';
 import { useWallet } from '@/ui/hooks/use-wallet';
+import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 
@@ -34,6 +35,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
   const userWallets = useUserWallets();
   const { currentWallet } = useProfiles();
   const wallet = useWallet();
+  const { coins } = useCoins();
 
   // Initialize platform singleton
   const platform = initializePlatform();
@@ -44,7 +46,8 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
   }, [platform, network]);
 
   useEffect(() => {
-    platform.setCurrentAddress(currentWallet?.address || null);
+    const address = currentWallet?.address || null;
+    platform.setCurrentAddress(address);
   }, [platform, currentWallet?.address]);
 
   useEffect(() => {
@@ -78,32 +81,73 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
 
   // Convenience method to get platform bridge (simplified interface)
   const getBridge = (): PlatformBridge => ({
-    getSelectedAddress: () => platform.getSelectedAddress(),
+    getSelectedAddress: () => {
+      const platformAddress = platform.getSelectedAddress();
+
+      // Fallback: if platform doesn't have address but currentWallet does, use it
+      if (!platformAddress && currentWallet?.address) {
+        return currentWallet.address;
+      }
+
+      // Additional fallback: try to get from userWallets if available
+      if (!platformAddress && !currentWallet?.address && userWallets?.[0]?.address) {
+        return userWallets[0].address;
+      }
+
+      return platformAddress;
+    },
     getNetwork: () => platform.getNetwork(),
     getCurrency: () => platform.getCurrency(),
+    getCoins: () => {
+      return coins || null;
+    },
   });
 
   // Convenience method to get translation function
   const getTranslation = (): TranslationFunction => {
     return (key: string, options?: Record<string, unknown>) => {
-      // Convert dot notation keys to chrome i18n format
+      // Simple fallback translations for common keys
+      const fallbackTranslations: Record<string, string> = {
+        'send.title': 'Send',
+        'messages.noTokensWithBalance': 'No tokens with balance',
+        'messages.loadingAccount': 'Loading account...',
+        'messages.loading': 'Loading...',
+        'labels.fromAccount': 'From Account',
+        'tabs.tokens': 'Tokens',
+        'tabs.nfts': 'NFTs',
+        'buttons.retry': 'Retry',
+        'buttons.refresh': 'Refresh',
+        'errors.failedToLoadTokens': 'Failed to load tokens',
+        'messages.noNFTCollectionsForAccount': 'No NFT collections for this account',
+      };
+
+      // Try chrome i18n first
       const chromeKey = key.replace(/\./g, '__');
       const message = chrome.i18n.getMessage(chromeKey);
 
-      // If no translation found, return the key or a fallback
-      if (!message) {
-        // For development, you might want to see the key
-        return process.env.NODE_ENV === 'development' ? `[${key}]` : key;
+      if (message) {
+        // Handle string interpolation with options
+        if (options && typeof message === 'string') {
+          return message.replace(/\{(\w+)\}/g, (match, variable) => {
+            return String(options[variable] ?? match);
+          });
+        }
+        return message;
       }
 
-      // Handle string interpolation with options
-      if (options && typeof message === 'string') {
-        return message.replace(/\{(\w+)\}/g, (match, variable) => {
-          return String(options[variable] ?? match);
-        });
+      // Use fallback translations
+      const fallback = fallbackTranslations[key];
+      if (fallback) {
+        if (options && typeof fallback === 'string') {
+          return fallback.replace(/\{(\w+)\}/g, (match, variable) => {
+            return String(options[variable] ?? match);
+          });
+        }
+        return fallback;
       }
 
-      return message;
+      // Last resort - return the key without brackets
+      return key;
     };
   };
 

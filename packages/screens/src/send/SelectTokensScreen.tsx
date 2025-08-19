@@ -109,6 +109,39 @@ export function SelectTokensScreen({ navigation, bridge, t }: SelectTokensScreen
       setError(null);
 
       try {
+        // Try to get coins from the bridge first
+        if (bridge.getCoins) {
+          const coinsFromBridge = bridge.getCoins();
+
+          if (coinsFromBridge && coinsFromBridge.length > 0) {
+            // Convert coins to token format
+            const convertedTokens: TokenModel[] = coinsFromBridge
+              .filter((coin) => coin && coin.balance && parseFloat(coin.balance) > 0)
+              .map((coin) => ({
+                type:
+                  coin.address?.startsWith('0x') && coin.address.length === 42
+                    ? WalletType.EVM
+                    : WalletType.Flow,
+                identifier: coin.address || coin.contract_address || coin.symbol,
+                symbol: coin.unit || coin.symbol || '',
+                name: coin.coin || coin.name || coin.unit || '',
+                balance: coin.balance || '0',
+                displayBalance: coin.balance || '0',
+                availableBalanceToUse: coin.balance || '0',
+                logoURI: coin.icon || '',
+                balanceInUSD: coin.total?.toString(),
+                change: coin.change24h?.toString(),
+                isVerified: true,
+                decimal: coin.decimal || 18,
+                contractAddress: coin.address || coin.contract_address || '',
+              }));
+
+            setTokens(convertedTokens);
+            return;
+          }
+        }
+
+        // Fallback to original TokenService logic if bridge doesn't provide coins
         const targetAddress = accountAddress || bridge.getSelectedAddress();
         const network = bridge.getNetwork();
 
@@ -236,6 +269,39 @@ export function SelectTokensScreen({ navigation, bridge, t }: SelectTokensScreen
     initializeActiveAccount();
   }, [walletStoreState.isLoading]);
 
+  // Convert coins directly when they become available
+  useEffect(() => {
+    const coins = bridge.getCoins?.();
+
+    if (coins && coins.length > 0) {
+      // Convert coins to token format directly
+      const convertedTokens: TokenModel[] = coins
+        .filter((coin) => coin && coin.balance && parseFloat(coin.balance) > 0)
+        .map((coin) => ({
+          type:
+            coin.address?.startsWith('0x') && coin.address.length === 42
+              ? WalletType.EVM
+              : WalletType.Flow,
+          identifier: coin.address || coin.contract_address || coin.symbol,
+          symbol: coin.unit || coin.symbol || '',
+          name: coin.coin || coin.name || coin.unit || '',
+          balance: coin.balance || '0',
+          displayBalance: coin.balance || '0',
+          availableBalanceToUse: coin.balance || '0',
+          icon: coin.icon || '',
+          logoURI: coin.icon || '',
+          balanceInUSD: coin.total?.toString(),
+          change: coin.change24h?.toString(),
+          isVerified: true,
+          decimal: coin.decimal || 18,
+          contractAddress: coin.address || coin.contract_address || '',
+        }));
+
+      setTokens(convertedTokens);
+      setIsLoading(false);
+    }
+  }, [bridge]);
+
   // Handle tab change
   const handleTabChange = (newTab: TabType) => {
     if (newTab !== tab) {
@@ -271,7 +337,8 @@ export function SelectTokensScreen({ navigation, bridge, t }: SelectTokensScreen
   const tokensWithBalance = tokens.filter((token) => {
     const rawBalance = parseFloat(token.displayBalance || token.balance || '0');
     const availableBalance = parseFloat(token.availableBalanceToUse || '0');
-    return rawBalance > 0 || availableBalance > 0;
+    const hasBalance = rawBalance > 0 || availableBalance > 0;
+    return hasBalance;
   });
 
   return (

@@ -1,5 +1,6 @@
 import { type PlatformSpec, type Storage } from '@onflow/frw-context';
 import type {
+  Platform,
   RecentContactsResponse,
   WalletAccount,
   WalletAccountsResponse,
@@ -59,6 +60,9 @@ class ExtensionPlatformImpl implements PlatformSpec {
       symbol: '$',
       rate: '1',
     };
+  }
+  getPlatform(): Platform {
+    return Platform.Extension;
   }
 
   // API endpoint methods

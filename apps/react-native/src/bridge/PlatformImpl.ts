@@ -1,6 +1,7 @@
 import { type PlatformSpec, type Storage } from '@onflow/frw-context';
 import type {
   Currency,
+  Platform,
   RecentContactsResponse,
   WalletAccount,
   WalletAccountsResponse,
@@ -8,6 +9,7 @@ import type {
 import { isTransactionId } from '@onflow/frw-utils';
 import { GAS_LIMITS } from '@onflow/frw-workflow';
 import Instabug from 'instabug-reactnative';
+import { Platform as RNPlatform } from 'react-native';
 import { MMKV } from 'react-native-mmkv';
 
 import NativeFRWBridge from './NativeFRWBridge';
@@ -98,6 +100,9 @@ class PlatformImpl implements PlatformSpec {
 
   getCurrency(): Currency {
     return NativeFRWBridge.getCurrency();
+  }
+  getPlatform(): Platform {
+    return RNPlatform.OS === 'ios' ? Platform.iOS : Platform.Android;
   }
 
   getApiEndpoint(): string {
