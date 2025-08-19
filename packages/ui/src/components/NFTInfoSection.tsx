@@ -20,26 +20,34 @@ export function NFTInfoSection({
   description,
   owner,
   showOwner = false,
-  spacing = 16,
+  spacing = 18,
 }: NFTInfoSectionProps) {
   return (
-    <YStack gap="$4">
-      {/* Name and Owner */}
-      <YStack gap="$2">
-        <XStack items="center" justify="space-between">
-          <Text fontSize="$7" fontWeight="700" color="$color" flex={1} numberOfLines={2}>
+    <YStack gap={spacing}>
+      {/* Name and Collection */}
+      <YStack gap={7}>
+        <XStack alignItems="center" justifyContent="space-between">
+          <Text
+            fontSize={24}
+            fontWeight="600"
+            lineHeight={24}
+            letterSpacing={-0.006}
+            color="$color"
+            flex={1}
+            numberOfLines={2}
+          >
             {name}
           </Text>
 
           {showOwner && owner && (
-            <XStack items="center" gap="$2">
-              <Avatar circular size={32}>
+            <XStack alignItems="center" gap={4}>
+              <Avatar circular size={24}>
                 {owner.avatar ? (
                   <Avatar.Image src={owner.avatar} />
                 ) : (
-                  <Avatar.Fallback bg="$bg3" items="center" justify="center">
-                    <Text fontSize="$3" color="$textSecondary">
-                      {owner.name?.charAt(0) || '?'}
+                  <Avatar.Fallback bg="$bg3" alignItems="center" justifyContent="center">
+                    <Text fontSize={18} fontWeight="600" color="$textSecondary">
+                      {owner.name?.charAt(0) || '🐼'}
                     </Text>
                   </Avatar.Fallback>
                 )}
@@ -49,7 +57,7 @@ export function NFTInfoSection({
         </XStack>
 
         {collection && (
-          <Text fontSize="$4" color="$textSecondary">
+          <Text fontSize={14} fontWeight="400" lineHeight={19.6} color="$color" opacity={0.6}>
             {collection}
           </Text>
         )}
@@ -57,11 +65,18 @@ export function NFTInfoSection({
 
       {/* Description */}
       {description && (
-        <YStack gap="$2">
-          <Text fontSize="$4" fontWeight="600" color="$color">
+        <YStack gap={8}>
+          <Text fontSize={14} fontWeight="500" lineHeight={19.6} color="$color">
             About
           </Text>
-          <Text fontSize="$4" color="$textSecondary" lineHeight="$1">
+          <Text
+            fontSize={14}
+            fontWeight="300"
+            lineHeight={20}
+            letterSpacing={-0.006}
+            color="$color"
+            opacity={0.6}
+          >
             {description}
           </Text>
         </YStack>

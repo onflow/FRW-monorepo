@@ -1,4 +1,4 @@
-import { cadence } from '@onflow/frw-context';
+import { cadence, context } from '@onflow/frw-context';
 import { tokenService, nftService } from '@onflow/frw-services';
 import {
   addressType,
@@ -460,10 +460,10 @@ export const useTokenStore = create<TokenStore>((set, get) => ({
       const walletType = addressType(address);
       const tokenSvc = tokenService(walletType);
       const nftSvc = nftService(walletType);
-
+      const currency = context.bridge.getCurrency();
       // Fetch data in parallel
       const [tokens, nftCollections] = await Promise.all([
-        tokenSvc.getTokenInfo(address, network),
+        tokenSvc.getTokenInfo(address, network, currency.name),
         nftSvc.getNFTCollections(address),
       ]);
 

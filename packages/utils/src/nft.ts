@@ -1,4 +1,4 @@
-import { type NFTModel } from '@onflow/frw-types';
+import { type CollectionModel, type NFTModel } from '@onflow/frw-types';
 
 /**
  * Gets the cover image URL from an NFT
@@ -48,4 +48,32 @@ export function getNFTDisplayName(nft: NFTModel): string {
  */
 export function isERC1155(nft: NFTModel): boolean {
   return nft.contractType === 'ERC1155';
+}
+
+/**
+ * Gets the resource identifier for an NFT
+ * A.{address}.{contractName}.NFT
+ */
+export function getNFTResourceIdentifier(nft: NFTModel | null): string | null {
+  if (nft?.flowIdentifier) {
+    if (nft.flowIdentifier.includes('NFT')) {
+      return nft.flowIdentifier;
+    } else {
+      return `${nft.flowIdentifier}.NFT`;
+    }
+  }
+  if (!nft || !nft.address || !nft.contractName) {
+    return null;
+  }
+  return `A.${nft.address}.${nft.contractName}.NFT`;
+}
+
+/**
+ * A.{address}.{contractName}.Collection
+ */
+export function getCollectionResourceIdentifier(collection: CollectionModel | null): string | null {
+  if (!collection || !collection.address || !collection.contractName) {
+    return null;
+  }
+  return `A.${collection.address}.${collection.contractName}.Collection`;
 }

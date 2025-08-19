@@ -27,7 +27,7 @@ const meta: Meta<typeof TokenSelectorModal> = {
     onClose: { action: 'modal-closed' },
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack width={400} height={300} items="center" justify="center">
         <Story />
       </YStack>
@@ -202,7 +202,7 @@ export const SearchDemo: Story = {
     const [visible, setVisible] = useState(true);
     const [selectedToken, setSelectedToken] = useState<TokenModel | null>(null);
 
-    const handleTokenSelect = (token: TokenModel) => {
+    const handleTokenSelect = (token: TokenModel): void => {
       setSelectedToken(token);
       alert(`Selected: ${token.name} (${token.symbol})`);
       setVisible(false);

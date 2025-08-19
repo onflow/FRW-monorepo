@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import React from 'react';
-import { XStack, YStack } from 'tamagui';
+import { YStack } from 'tamagui';
 
 import { NFTCard } from '../src/components/NFTCard';
 import type { NFTData } from '../src/components/NFTGrid';
@@ -19,7 +19,6 @@ const meta: Meta<typeof NFTCard> = {
   },
   argTypes: {
     selected: { control: 'boolean' },
-    showAmount: { control: 'boolean' },
     aspectRatio: { control: 'number', min: 0.5, max: 2, step: 0.1 },
     size: { control: 'select', options: ['small', 'medium', 'large'] },
     collectionAvatar: {
@@ -32,10 +31,9 @@ const meta: Meta<typeof NFTCard> = {
       description: 'URL for account avatar image in collection info',
     },
     onPress: { action: 'pressed' },
-    onSelect: { action: 'selected' },
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack padding="$4" width={200}>
         <Story />
       </YStack>
@@ -67,17 +65,6 @@ const mockNFTArt: NFTData = {
   collection: 'Abstract Arts',
 };
 
-const mockNFTWithAmount: NFTData = {
-  id: '3',
-  name: 'Gaming Asset #156',
-  image:
-    'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400&h=400&fit=crop&crop=center',
-  thumbnail:
-    'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=200&h=200&fit=crop&crop=center',
-  amount: '5',
-  collection: 'Game Items',
-};
-
 export const Default: Story = {
   args: {
     nft: mockNFT,
@@ -90,14 +77,6 @@ export const Selected: Story = {
     nft: mockNFT,
     selected: true,
     accountEmoji: '🦊',
-  },
-};
-
-export const WithAmount: Story = {
-  args: {
-    nft: mockNFTWithAmount,
-    showAmount: true,
-    accountEmoji: '👤',
   },
 };
 
@@ -116,7 +95,7 @@ export const SmallSize: Story = {
     accountEmoji: '🦊',
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack padding="$4" width={150}>
         <Story />
       </YStack>
@@ -133,95 +112,4 @@ export const LongName: Story = {
     },
     // No accountEmoji or accountAvatar provided - text should still align left
   },
-};
-
-export const Interactive: Story = {
-  args: {
-    nft: mockNFT,
-    onPress: () => alert('NFT pressed!'),
-    onSelect: () => alert('NFT selected!'),
-  },
-};
-
-export const Grid: Story = {
-  render: () => {
-    const nftData = [
-      {
-        ...mockNFT,
-        id: '1',
-        name: 'Spring Tide #1',
-        image:
-          'https://images.unsplash.com/photo-1634973357973-f2ed2657db3c?w=400&h=400&fit=crop&crop=center',
-        collection: 'Ocean Collection',
-      },
-      {
-        ...mockNFTArt,
-        id: '2',
-        name: 'Digital Harmony #42',
-        image:
-          'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=400&fit=crop&crop=center',
-        collection: 'Abstract Arts',
-      },
-      {
-        ...mockNFTWithAmount,
-        id: '3',
-        name: 'Gaming Asset #156',
-        image:
-          'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400&h=400&fit=crop&crop=center',
-        collection: 'Game Items',
-      },
-      {
-        id: '4',
-        name: 'Cosmic Journey #88',
-        image:
-          'https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=400&h=400&fit=crop&crop=center',
-        collection: 'Space Explorers',
-      },
-      {
-        id: '5',
-        name: 'Forest Guardian #21',
-        image:
-          'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=400&fit=crop&crop=center',
-        collection: 'Nature Spirits',
-      },
-      {
-        id: '6',
-        name: 'Urban Pulse #333',
-        image:
-          'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=400&fit=crop&crop=center',
-        collection: 'City Life',
-      },
-    ];
-
-    const accountEmojis = ['🦊', '🎨', '🎮', '🚀', '🌲', '🏙️'];
-    const avatars = [
-      'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=32&h=32&fit=crop&crop=center',
-      'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=32&h=32&fit=crop&crop=center',
-    ];
-
-    return (
-      <XStack flexWrap="wrap" gap="$3" maxWidth={520}>
-        {nftData.map((nft, index) => (
-          <YStack key={nft.id} width="48%">
-            <NFTCard
-              nft={nft}
-              selected={index === 3}
-              showAmount={index === 2}
-              accountEmoji={accountEmojis[index]}
-              collectionAvatar={index >= 4 ? avatars[index % 2] : undefined}
-              onPress={() => console.log(`Pressed ${nft.name}`)}
-              onSelect={() => console.log(`Selected ${nft.name}`)}
-            />
-          </YStack>
-        ))}
-      </XStack>
-    );
-  },
-  decorators: [
-    (Story) => (
-      <YStack padding="$4">
-        <Story />
-      </YStack>
-    ),
-  ],
 };
