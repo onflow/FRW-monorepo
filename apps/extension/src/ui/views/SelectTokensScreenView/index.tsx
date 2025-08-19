@@ -44,8 +44,13 @@ const SelectTokensScreenView = () => {
 
   return (
     <>
-      <LLHeader title="Select Token" help={false} />
-      <SelectTokensScreen navigation={navigation} bridge={platformBridge} t={platformTranslation} />
+      <LLHeader title="Send" help={false} />
+      <SelectTokensScreen
+        navigation={navigation}
+        bridge={platformBridge}
+        t={platformTranslation}
+        showTitle={false}
+      />
     </>
   );
 };
