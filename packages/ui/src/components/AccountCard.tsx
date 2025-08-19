@@ -1,3 +1,4 @@
+import { Edit } from '@onflow/frw-icons';
 import React, { useState } from 'react';
 import { XStack, YStack } from 'tamagui';
 
@@ -46,7 +47,7 @@ export function AccountCard({
           />
 
           {/* Account Details */}
-          <YStack flex={1}>
+          <YStack flex={1} gap="$0.5">
             {/* Account Name */}
             <Text color="$text" fontSize="$3.5" fontWeight="600" lineHeight={17} numberOfLines={1}>
               {account.name || 'Unnamed Account'}
@@ -63,7 +64,7 @@ export function AccountCard({
 
             {/* Balance */}
             {isLoading ? (
-              <Skeleton width="$8" height="$4" />
+              <Skeleton width="$8" height="$4" borderRadius="$2" />
             ) : account.balance ? (
               <Text color="$text2" fontWeight="400" fontSize="$3" lineHeight={17}>
                 {account.balance}
@@ -74,7 +75,7 @@ export function AccountCard({
 
         {/* Edit Icon */}
         <XStack width="$6" height="$6" items="center" justify="center">
-          Edit
+          <Edit size={24} color="#767676" theme="outline" />
         </XStack>
       </XStack>
     </YStack>
