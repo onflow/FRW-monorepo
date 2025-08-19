@@ -1,4 +1,4 @@
-import { useNavigation } from '@onflow/frw-context';
+import { navigation } from '@onflow/frw-context';
 import { sendSelectors, useSendStore } from '@onflow/frw-stores';
 import {
   SearchableTabLayout,
@@ -30,7 +30,7 @@ export function SendToScreen({
   loadRecentData,
   loadContactsData,
 }: SendToScreenProps) {
-  const navigation = useNavigation();
+  // navigation is imported directly from ServiceContext
   const { t } = useTranslation();
   const TABS: TabConfig[] = [
     { type: 'accounts', title: t('send.myAccounts') },

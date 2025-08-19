@@ -1,4 +1,4 @@
-import { useNavigation } from '@onflow/frw-context';
+import { navigation } from '@onflow/frw-context';
 import { NFTService } from '@onflow/frw-services';
 import { useSendStore } from '@onflow/frw-stores';
 import { type CollectionModel, type NFTModel, addressType } from '@onflow/frw-types';
@@ -28,7 +28,7 @@ export function NFTListScreen({
   selectedNFTIds = [],
   isEditing = false,
 }: NFTListScreenProps) {
-  const navigation = useNavigation();
+  // navigation is imported directly from ServiceContext
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [nfts, setNfts] = useState<NFTModel[]>([]);

@@ -1,4 +1,4 @@
-import { useNavigation } from '@onflow/frw-context';
+import { navigation } from '@onflow/frw-context';
 import { useWalletStore } from '@onflow/frw-stores';
 import { type NFTModel } from '@onflow/frw-types';
 import {
@@ -19,7 +19,7 @@ interface NFTDetailScreenProps {
 }
 
 export function NFTDetailScreen({ nft, selectedNFTs, onSelectionChange }: NFTDetailScreenProps) {
-  const navigation = useNavigation();
+  // navigation is imported directly from ServiceContext
   const { t } = useTranslation();
   const { activeAccount } = useWalletStore();
 

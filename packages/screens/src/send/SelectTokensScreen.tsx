@@ -1,4 +1,4 @@
-import { useNavigation } from '@onflow/frw-context';
+import { navigation } from '@onflow/frw-context';
 import { TokenService } from '@onflow/frw-services';
 import { useSendStore, useTokenStore, useWalletStore } from '@onflow/frw-stores';
 import {
@@ -40,7 +40,7 @@ interface SelectTokensScreenProps {
 }
 
 export function SelectTokensScreen({ bridge }: SelectTokensScreenProps) {
-  const navigation = useNavigation();
+  // navigation is imported directly from ServiceContext
   const { t } = useTranslation();
   // State management
   const [tab, setTab] = React.useState<TabType>('Tokens');
