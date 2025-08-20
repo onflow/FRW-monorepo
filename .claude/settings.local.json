@@ -48,7 +48,8 @@
       "Bash(gh pr:*)",
       "Bash(gh repo:*)",
       "Bash(rg:*)",
-      "Bash(git submodule:*)"
+      "Bash(git submodule:*)",
+      "Bash(git pull:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

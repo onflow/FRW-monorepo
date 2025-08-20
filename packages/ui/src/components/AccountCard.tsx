@@ -1,4 +1,4 @@
-import { CheckCircle, Close } from '@onflow/frw-icons';
+import { CheckCircle, Close, Edit } from '@onflow/frw-icons';
 import React, { useState } from 'react';
 import { ScrollView, XStack, YStack } from 'tamagui';
 
@@ -85,7 +85,7 @@ export function AccountCard({
 
         {/* Edit Icon */}
         <XStack width={24} height={24} items="center" justify="center" mt={6}>
-          {/* <Edit size={24} color="#767676" theme="outline" /> */}
+          <Edit size={24} color="#767676" theme="outline" />
         </XStack>
       </XStack>
     </YStack>

@@ -1,3 +1,4 @@
+import { VerifiedToken } from '@onflow/frw-icons';
 import React from 'react';
 import { Stack, Text, XStack, YStack } from 'tamagui';
 
@@ -44,7 +45,7 @@ export function TokenCard({
                 >
                   {name || symbol}
                 </Text>
-                {/* {isVerified && <VerifiedToken size={16} color="#41CC5D" />} */}
+                {isVerified && <VerifiedToken size={16} color="#41CC5D" />}
               </XStack>
             </XStack>
             <Text

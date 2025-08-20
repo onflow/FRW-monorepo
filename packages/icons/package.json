@@ -2,8 +2,8 @@
   "name": "@onflow/frw-icons",
   "version": "1.0.0",
   "description": "SVG icons package for Flow Reference Wallet with automatic React component generation",
-  "main": "./dist/react-native/index.js",
-  "module": "./dist/react-native/index.mjs",
+  "main": "./dist/web/index.js",
+  "module": "./dist/web/index.mjs",
   "react-native": "./dist/react-native/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
