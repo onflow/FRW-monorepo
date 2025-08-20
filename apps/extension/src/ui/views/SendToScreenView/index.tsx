@@ -1,7 +1,7 @@
 import { SendToScreen } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import { type RecipientData } from '@onflow/frw-ui';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
 import { getCachedData, accountBalanceKey } from '@/data-model';
@@ -19,6 +19,7 @@ const SendToScreenView = () => {
   const wallet = useWallet();
 
   const [accountBalances, setAccountBalances] = useState<Record<string, string>>({});
+  const [isInitialLoadComplete, setIsInitialLoadComplete] = useState(false);
   const {
     recentContacts,
     addressBookContacts,
@@ -38,18 +39,64 @@ const SendToScreenView = () => {
   } = useProfiles();
   const { network } = useNetwork();
 
+  // Use refs to access current data without causing re-renders
+  const dataRefs = useRef({
+    walletList: undefined as any,
+    evmWallet: undefined as any,
+    childAccounts: undefined as any,
+    cadenceAccounts: undefined as any,
+    evmAccounts: undefined as any,
+    childAccountsContacts: undefined as any,
+    accountBalances: {},
+    recentContacts: undefined as any,
+    addressBookContacts: undefined as any,
+  });
+
+  // Update refs when data changes and mark as loaded
+  useEffect(() => {
+    dataRefs.current = {
+      walletList,
+      evmWallet,
+      childAccounts,
+      cadenceAccounts,
+      evmAccounts,
+      childAccountsContacts,
+      accountBalances,
+      recentContacts,
+      addressBookContacts,
+    };
+
+    // Mark as loaded after a small delay to allow hooks to stabilize
+    if (!isInitialLoadComplete) {
+      const timer = setTimeout(() => {
+        setIsInitialLoadComplete(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [
+    walletList,
+    evmWallet,
+    childAccounts,
+    cadenceAccounts,
+    evmAccounts,
+    childAccountsContacts,
+    accountBalances,
+    recentContacts,
+    addressBookContacts,
+    isInitialLoadComplete,
+  ]);
+
   const { selectedToken } = useSendStore();
 
   // Get token ID from URL params, selected token, or default to 'flow'
   const tokenId = params.id || selectedToken?.symbol?.toLowerCase() || 'flow';
 
-  // If accessed from select-tokens flow, check for selected token
+  // Redirect to proper token route if accessed via wrong URL
   useEffect(() => {
-    if (window.location.pathname === '/dashboard/sendtoscreen' && !selectedToken) {
-      // Redirect back to token selection if accessed via select-tokens flow but no token selected
-      navigate('/dashboard/select-tokens');
+    if (!params.id && window.location.pathname.includes('sendtoscreen')) {
+      navigate(`/dashboard/token/flow/send`, { replace: true });
     }
-  }, [selectedToken, navigate]);
+  }, [params.id, navigate]);
 
   // Load balances when accounts become available
   useEffect(() => {
@@ -114,8 +161,11 @@ const SendToScreenView = () => {
       setAccountBalances(newBalances);
     };
 
-    loadBalances();
-  }, [walletList, evmWallet, childAccounts, network]);
+    // Only load balances if we have wallet data available
+    if (walletList || evmWallet || childAccounts) {
+      loadBalances();
+    }
+  }, [network, walletList, evmWallet, childAccounts]); // Include wallet data in dependencies
 
   // Convert extension contacts to RecipientData format
   const convertContactToRecipient = useCallback((contact: Contact): RecipientData => {
@@ -178,7 +228,6 @@ const SendToScreenView = () => {
 
   const convertToRecipient = useCallback(
     (account: any, accountType: string, balance?: string): RecipientData => {
-      console.log(currentWallet, 'currentWallet');
       let isLinked = false;
       let isEVM = false;
       let parentAvatar = null;
@@ -303,94 +352,88 @@ const SendToScreenView = () => {
 
   // Data loading functions for the SendToScreen
   const loadAccountsData = useCallback(async (): Promise<RecipientData[]> => {
+    const data = dataRefs.current;
     const recipientsData: RecipientData[] = [];
 
     try {
       // Add main wallet accounts with loaded balances
-      if (walletList?.length > 0) {
-        walletList.forEach((account) => {
-          const balance = accountBalances[account.address] || '...';
-          recipientsData.push(convertToRecipient(account, 'main', balance));
+      if (data.walletList?.length > 0) {
+        data.walletList.forEach((account) => {
+          const balance = data.accountBalances[account.address] || '...';
+          recipientsData.push(convertWalletToRecipient(account, 'main', balance));
         });
       }
 
       // Add EVM account if available with loaded balance
-      if (evmWallet && evmWallet.address) {
-        const balance = accountBalances[evmWallet.address] || '...';
-        recipientsData.push(convertToRecipient(evmWallet, 'evm', balance));
+      if (data.evmWallet && data.evmWallet.address) {
+        const balance = data.accountBalances[data.evmWallet.address] || '...';
+        recipientsData.push(convertWalletToRecipient(data.evmWallet, 'evm', balance));
       }
 
       // Add child accounts with loaded balances
-      if (childAccounts && childAccounts.length > 0) {
-        childAccounts.forEach((account) => {
-          const balance = accountBalances[account.address] || '...';
-          recipientsData.push(convertToRecipient(account, 'child', balance));
+      if (data.childAccounts && data.childAccounts.length > 0) {
+        data.childAccounts.forEach((account) => {
+          const balance = data.accountBalances[account.address] || '...';
+          recipientsData.push(convertWalletToRecipient(account, 'child', balance));
         });
       }
 
-      console.log('Generated recipients data:', recipientsData.length, recipientsData); // Debug
-
       // Fallback: Add cadence, EVM, and child accounts from contacts if wallet data is not available
-      // if (recipientsData.length === 0) {
-      //   if (cadenceAccounts?.length > 0) {
-      //     cadenceAccounts.forEach((account) => {
-      //       recipientsData.push(convertContactToRecipient(account));
-      //     });
-      //   }
+      if (recipientsData.length === 0) {
+        if (data.cadenceAccounts?.length > 0) {
+          data.cadenceAccounts.forEach((account) => {
+            recipientsData.push(convertContactToRecipient(account));
+          });
+        }
 
-      //   if (evmAccounts?.length > 0) {
-      //     evmAccounts.forEach((account) => {
-      //       recipientsData.push(convertContactToRecipient(account));
-      //     });
-      //   }
+        if (data.evmAccounts?.length > 0) {
+          data.evmAccounts.forEach((account) => {
+            recipientsData.push(convertContactToRecipient(account));
+          });
+        }
 
-      //   if (childAccountsContacts?.length > 0) {
-      //     childAccountsContacts.forEach((account) => {
-      //       recipientsData.push(convertContactToRecipient(account));
-      //     });
-      //   }
-      // }
+        if (data.childAccountsContacts?.length > 0) {
+          data.childAccountsContacts.forEach((account) => {
+            recipientsData.push(convertContactToRecipient(account));
+          });
+        }
+      }
     } catch (error) {
       console.error('Error loading accounts data:', error);
     }
 
     return recipientsData;
-  }, [
-    walletList,
-    evmWallet,
-    childAccounts,
-    cadenceAccounts,
-    evmAccounts,
-    childAccountsContacts,
-    convertWalletToRecipient,
-    convertContactToRecipient,
-    accountBalances,
-  ]);
+  }, []); // Empty dependency array like dev branch
 
   const loadRecentData = useCallback(async (): Promise<RecipientData[]> => {
-    if (recentContacts) {
-      return recentContacts.map(convertContactToRecipient);
+    const data = dataRefs.current;
+    if (data.recentContacts) {
+      return data.recentContacts.map(convertContactToRecipient);
     }
     return [];
-  }, [recentContacts, convertContactToRecipient]);
+  }, []); // Empty dependency array like dev branch
 
   const loadContactsData = useCallback(async (): Promise<RecipientData[]> => {
-    if (addressBookContacts) {
-      return addressBookContacts.map(convertContactToRecipient);
+    const data = dataRefs.current;
+    if (data.addressBookContacts) {
+      return data.addressBookContacts.map(convertContactToRecipient);
     }
     return [];
-  }, [addressBookContacts, convertContactToRecipient]);
+  }, []); // Empty dependency array like dev branch
 
   // Create the platform bridge interface
-  const bridge = {
-    getSelectedAddress: () => currentWallet?.address || '',
-    getNetwork: () => 'mainnet', // Default network
-  };
+  const bridge = useMemo(
+    () => ({
+      getSelectedAddress: () => currentWallet?.address || '',
+      getNetwork: () => 'mainnet', // Default network
+    }),
+    [currentWallet?.address]
+  );
 
   // Create the navigation interface
-  const navigation = {
-    navigate: useCallback(
-      (screen: string, screenParams?: Record<string, unknown>) => {
+  const navigation = useMemo(
+    () => ({
+      navigate: (screen: string, screenParams?: Record<string, unknown>) => {
         // Handle navigation based on screen name
         if (screen === 'SendTokens') {
           const address = screenParams?.address;
@@ -399,9 +442,31 @@ const SendToScreenView = () => {
           }
         }
       },
-      [navigate, tokenId]
-    ),
-  };
+      goBack: () => {
+        navigate(-1);
+      },
+      canGoBack: () => true,
+      reset: (routes: string[]) => {
+        if (routes.length > 0) {
+          navigate(routes[0]);
+        }
+      },
+      replace: (screen: string, params?: Record<string, unknown>) => {
+        navigate(screen, { replace: true, ...params });
+      },
+      push: (screen: string, params?: Record<string, unknown>) => {
+        navigate(screen, params);
+      },
+      pop: () => navigate(-1),
+      getCurrentRoute: () => {
+        return {
+          name: window.location.pathname,
+          params: undefined,
+        };
+      },
+    }),
+    [navigate, tokenId]
+  );
 
   // Translation function using chrome i18n
   const t = useCallback((key: string) => {
@@ -419,14 +484,17 @@ const SendToScreenView = () => {
     return chrome.i18n.getMessage(chromeKey) || key;
   }, []);
 
-  const screenProps = {
-    navigation,
-    bridge,
-    t,
-    loadAccountsData,
-    loadRecentData,
-    loadContactsData,
-  };
+  const screenProps = useMemo(
+    () => ({
+      navigation,
+      bridge,
+      t,
+      loadAccountsData,
+      loadRecentData,
+      loadContactsData,
+    }),
+    []
+  );
 
   return (
     <div
@@ -444,8 +512,12 @@ const SendToScreenView = () => {
         }
         help={true}
       />
-      <div style={{ flex: 1, overflow: 'hidden' }}>
-        <SendToScreen {...screenProps} />
+      <div style={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
+        {isInitialLoadComplete ? (
+          <SendToScreen {...screenProps} />
+        ) : (
+          <div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>
+        )}
       </div>
     </div>
   );
