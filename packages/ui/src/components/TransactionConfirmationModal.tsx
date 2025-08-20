@@ -1,8 +1,7 @@
-import { ChevronRight, ChevronDown, WalletCard } from '@onflow/frw-icons';
+import { ChevronRight, ChevronDown, WalletCard, Close } from '@onflow/frw-icons';
 import { type WalletAccount } from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack, View } from 'tamagui';
-
 
 import { type TokenModel } from './TokenSelectorModal';
 import { Avatar } from '../foundation/Avatar';
@@ -80,31 +79,19 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
         zIndex: 1000,
       }}
     >
-      {/* Header with Back Arrow, Summary, and Close */}
       <XStack
         items="center"
-        justify="space-between"
+        justify="flex-end"
         width="100%"
         height={36}
         paddingHorizontal="$4"
         paddingVertical="$1"
       >
         <Button onPress={onClose} backgroundColor="transparent" borderWidth={0} padding="$2">
-          <Text color="$color" fontSize="$3">
-            ←
-          </Text>
-        </Button>
-        <Text fontSize="$5" fontWeight="700" color="$color" flex={1} textAlign="center">
-          {title}
-        </Text>
-        <Button onPress={onClose} backgroundColor="transparent" borderWidth={0} padding="$2">
-          <Text color="$color" fontSize="$3">
-            ×
-          </Text>
+          <Close size={32} color="$color" />
         </Button>
       </XStack>
 
-      {/* Visual Flow Diagram with Gradient Background */}
       <View
         height={170}
         width="100%"
@@ -150,7 +137,7 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
         <YStack flex={1} items="center" gap="$1" maxW={130}>
           <Avatar
             src={fromAccount?.avatar}
-            fallback={fromAccount?.name?.charAt(0) || 'A'}
+            fallback={(fromAccount as any)?.emoji || fromAccount?.name?.charAt(0) || 'A'}
             size={36}
           />
           <YStack items="center" gap="$1">
@@ -183,7 +170,14 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
 
         {/* To Account */}
         <YStack flex={1} items="center" gap="$1" maxW={130}>
-          <Avatar src={toAccount?.avatar} fallback={toAccount?.name?.charAt(0) || 'A'} size={36} />
+          {/* Debug logging */}
+          {console.log('TransactionConfirmationModal toAccount:', toAccount)}
+          {console.log('TransactionConfirmationModal toAccount.emoji:', (toAccount as any)?.emoji)}
+          <Avatar
+            src={toAccount?.avatar}
+            fallback={(toAccount as any)?.emoji || toAccount?.name?.charAt(0) || 'A'}
+            size={36}
+          />
           <YStack items="center" gap="$1">
             <Text fontSize="$3" fontWeight="600" color="$color" textAlign="center">
               {toAccount?.name || 'Unknown'}

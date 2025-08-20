@@ -77,6 +77,8 @@ export interface Account {
   address: string;
   avatar?: string;
   balance?: string;
+  emoji?: string;
+  nfts?: string;
 }
 
 export interface AccountCardProps {

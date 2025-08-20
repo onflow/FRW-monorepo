@@ -14,7 +14,7 @@ const SendTokensScreenView = () => {
   const navigate = useNavigate();
   const params = useParams();
   const wallet = useWallet();
-  const { network, mainAddress, evmAddress, childAccounts, currentWallet, userInfo } =
+  const { network, mainAddress, evmAddress, childAccounts, currentWallet, userInfo, walletList } =
     useProfiles();
   const { coins, coinsLoaded } = useCoins();
 
@@ -46,6 +46,9 @@ const SendTokensScreenView = () => {
         address: address as WalletAddress,
         name: contact?.contact_name || 'Account',
         balance: '0',
+        avatar: contact?.avatar || '',
+        emoji: contact?.emoji || contact?.emojiInfo?.emoji || '',
+        emojiInfo: contact?.emojiInfo || null,
       };
     },
     []
@@ -148,7 +151,7 @@ const SendTokensScreenView = () => {
           address: currentWallet.address as WalletAddress,
           contact_name: userInfo?.nickname || '',
           username: userInfo?.username || '',
-          avatar: userInfo?.avatar || '',
+          emoji: currentWallet?.icon || '',
         },
       };
 
@@ -159,14 +162,18 @@ const SendTokensScreenView = () => {
 
       // Set recipient from route params immediately after init
       if (params.toAddress) {
+        // Check if recipient is from current wallet list
+        const walletAccount = walletList?.find((account) => account?.address === params.toAddress);
+        console.log('walletAccount', walletAccount);
         const toAddressPayload = {
           address: params.toAddress as WalletAddress,
           contact: {
             id: 0,
             address: params.toAddress as WalletAddress,
-            contact_name: 'Recipient',
+            contact_name: walletAccount?.name || 'Recipient',
             username: '',
             avatar: '',
+            emoji: walletAccount?.icon || '',
           },
         };
         dispatch({
@@ -183,6 +190,7 @@ const SendTokensScreenView = () => {
     childAccounts,
     network,
     params.toAddress,
+    walletList,
   ]);
 
   // Set token from route params or default token when coins are loaded
@@ -225,6 +233,11 @@ const SendTokensScreenView = () => {
     transactionState.toAddress,
     transactionState.toContact
   );
+
+  // Debug logging
+  console.log('transactionState.toContact:', transactionState.toContact);
+  console.log('toAccount:', toAccount);
+  console.log('toAccount.emoji:', toAccount?.emoji);
 
   const screenProps = useMemo(
     () => ({
