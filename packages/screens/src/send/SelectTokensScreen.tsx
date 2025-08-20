@@ -3,6 +3,7 @@ import { TokenService } from '@onflow/frw-services';
 import { useSendStore, useTokenStore, useWalletStore } from '@onflow/frw-stores';
 import {
   addressType,
+  Platform,
   WalletType,
   type CollectionModel,
   type TokenModel,
@@ -27,7 +28,7 @@ import {
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { TabType } from './types';
+import type { TabType } from '../types';
 
 export function SelectTokensScreen(): React.ReactElement {
   // navigation is imported directly from ServiceContext
@@ -237,39 +238,6 @@ export function SelectTokensScreen(): React.ReactElement {
     initializeActiveAccount();
   }, [walletStoreState.isLoading]);
 
-  // Convert coins directly when they become available
-  useEffect(() => {
-    const coins = bridge.getCoins?.();
-
-    if (coins && coins.length > 0) {
-      // Convert coins to token format directly
-      const convertedTokens: TokenModel[] = coins
-        .filter((coin) => coin && coin.balance && parseFloat(coin.balance) > 0)
-        .map((coin) => ({
-          type:
-            coin.address?.startsWith('0x') && coin.address.length === 42
-              ? WalletType.EVM
-              : WalletType.Flow,
-          identifier: coin.address || coin.contract_address || coin.symbol,
-          symbol: coin.unit || coin.symbol || '',
-          name: coin.coin || coin.name || coin.unit || '',
-          balance: coin.balance || '0',
-          displayBalance: coin.balance || '0',
-          availableBalanceToUse: coin.balance || '0',
-          icon: coin.icon || '',
-          logoURI: coin.icon || '',
-          balanceInUSD: coin.total?.toString(),
-          change: coin.change24h?.toString(),
-          isVerified: true,
-          decimal: coin.decimal || 18,
-          contractAddress: coin.address || coin.contract_address || '',
-        }));
-
-      setTokens(convertedTokens);
-      setIsLoading(false);
-    }
-  }, [bridge]);
-
   // Handle tab change
   const handleTabChange = (newTab: TabType): void => {
     if (newTab !== tab) {
@@ -313,7 +281,7 @@ export function SelectTokensScreen(): React.ReactElement {
     <BackgroundWrapper backgroundColor="$background">
       <YStack flex={1} px="$4" pt="$2">
         {/* Header */}
-        {showTitle && (
+        {bridge.getPlatform() === Platform.Extension && (
           <XStack justify="center" items="center" py="$4" pos="relative">
             <Text fontSize="$6" fontWeight="700" color="$color" lineHeight="$2" letterSpacing="$-1">
               {t('send.title')}
