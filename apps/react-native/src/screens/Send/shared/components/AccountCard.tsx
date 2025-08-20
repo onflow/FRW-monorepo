@@ -143,7 +143,14 @@ export const AccountCard = ({
                   backgroundColor: account.parentEmoji?.color || '#F0F0F0',
                 }}
               >
-                <Text className="text-center text-[8px] leading-3" disableAndroidFix={true}>
+                <Text
+                  className="text-center text-[8px] leading-3"
+                  style={{
+                    textAlignVertical: 'center',
+                    includeFontPadding: false,
+                  }}
+                  disableAndroidFix={true}
+                >
                   {account.parentEmoji?.emoji}
                 </Text>
               </View>
@@ -166,14 +173,14 @@ export const AccountCard = ({
               <View className="flex-row items-center gap-1">
                 {isLinkedAccount((account as any).type) && (
                   <View className="mr-0.5">
-                    <Link width={12} height={12} />
+                    <Link width={14} height={14} />
                   </View>
                 )}
                 <Text
                   className="text-fg-1"
                   style={{
                     fontSize: 14,
-                    fontWeight: '400',
+                    fontWeight: 'semibold',
                     lineHeight: 20,
                     letterSpacing: -0.084,
                     includeFontPadding: false,

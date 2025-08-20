@@ -44,7 +44,7 @@ const SegmentedControl: React.FC<SegmentedControlProps> = ({
             .join(' ');
 
           const textClasses = [
-            'text-base font-medium text-center',
+            'text-base font-semibold text-center',
             textClassName,
             'text-fg-1',
             isActive ? activeTextClassName : '',
