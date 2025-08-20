@@ -289,8 +289,8 @@ export default [
       'storybook-static/**',
 
       // Generated files
-      '**/*.gen.{ts,js}',
-      '**/*.generated.{ts,js}',
+      '**/*.gen.{ts,js,tsx}',
+      '**/*.generated.{ts,js,tsx}',
       '**/dist/**/*.d.ts',
 
       // React Native specific
@@ -312,8 +312,8 @@ export default [
       // Translation scripts
       '**/scripts/translate-i18n.js', // Translation automation scripts
       '**/generated/**',
-      '**/*.generated.{ts,js}',
-      '**/*.gen.{ts,js}', // Generated files with .gen extension
+      '**/*.generated.{ts,js,tsx}',
+      '**/*.gen.{ts,js,tsx}', // Generated files with .gen extension
 
       // Build artifacts
       '**/.turbo/**',
