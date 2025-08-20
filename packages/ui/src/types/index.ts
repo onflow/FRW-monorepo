@@ -88,6 +88,7 @@ export interface AccountCardProps {
   onAccountSelect?: (account: Account) => void;
   modalTitle?: string;
   enableModalSelection?: boolean;
+  showEditButton?: boolean;
 }
 
 export interface NFTCoverProps {
