@@ -290,8 +290,8 @@ export default function BottomConfirmBar({
           transform: [{ translateY }],
           height: containerHeight,
           width: SCREEN_WIDTH,
-          zIndex: 2, // Ensure drawer appears above the tint overlay
-          backgroundColor: isDark ? '#FFFFFF15' : '#F2F2F7', // Surface background colors
+          zIndex: 1001, // Ensure drawer appears above the tint overlay
+          backgroundColor: isDark ? '#1A1A1A' : '#F2F2F7', // Solid surface background colors
         },
       ]}
       pointerEvents={selectedNFTs.length > 0 ? 'auto' : 'none'}
