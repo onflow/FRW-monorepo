@@ -26,12 +26,6 @@
     "prepare": "husky",
     "commitlint": "commitlint --from HEAD~1 --to HEAD --verbose"
   },
-  "dependencies": {
-    "react": "19.0.0",
-    "react-dom": "19.0.0",
-    "react-native": "0.79.2",
-    "@tamagui/animations-react-native": "^1.132.20"
-  },
   "devDependencies": {
     "@commitlint/cli": "^19.6.0",
     "@commitlint/config-conventional": "^19.6.0",
@@ -60,50 +54,17 @@
     "pnpm": ">=9.0.0"
   },
   "packageManager": "pnpm@10.14.0",
+  "dependencies": {
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "react-native": "0.79.2",
+    "@tamagui/animations-react-native": "^1.132.20"
+  },
   "pnpm": {
     "overrides": {
       "react": "19.0.0",
       "react-dom": "19.0.0",
       "react-native": "0.79.2"
-    },
-    "peerDependencyRules": {
-      "allowedVersions": {
-        "react": "19.0.0",
-        "react-native": "0.79.2"
-      },
-      "ignoreMissing": [
-        "react",
-        "react-native"
-      ]
-    },
-    "packageExtensions": {
-      "@tamagui/animations-react-native": {
-        "peerDependencies": {
-          "react-native": "0.79.2"
-        }
-      },
-      "@tamagui/core": {
-        "peerDependencies": {
-          "react-native": "0.79.2"
-        }
-      },
-      "@tamagui/web": {
-        "peerDependencies": {
-          "react-native": "0.79.2"
-        }
-      }
-    },
-    "hoistingLimits": "workspaces",
-    "dedupe-peer-dependents": true,
-    "updateConfig": {
-      "ignoreDependencies": [
-        "react-native"
-      ]
     }
-  },
-  "resolutions": {
-    "react": "19.0.0",
-    "react-dom": "19.0.0",
-    "react-native": "0.79.2"
   }
 }

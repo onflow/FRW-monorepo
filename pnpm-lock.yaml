@@ -9,8 +9,6 @@ overrides:
   react-dom: 19.0.0
   react-native: 0.79.2
 
-packageExtensionsChecksum: sha256-8gdzf6Om8shiPDL2EeE4nB0mRuAQui8j1K2JIm7vMeA=
-
 importers:
 
   .:
