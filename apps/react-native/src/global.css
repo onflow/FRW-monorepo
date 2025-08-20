@@ -96,8 +96,8 @@
 
 .dark {
   /* Surface colors */
-  --surface-base: 0 0 0;
-  --surface-1: 0 0 0;
+  --surface-base: 18 18 18;
+  --surface-1: 18 18 18;
   --surface-2: 255 255 255;
   --surface-3: 255 255 255;
   --surface-quaternary-alt: 0 10 8;
