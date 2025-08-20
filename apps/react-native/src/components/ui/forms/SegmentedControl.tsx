@@ -61,6 +61,9 @@ const SegmentedControl: React.FC<SegmentedControlProps> = ({
             >
               <Text
                 className={textClasses}
+                style={{
+                  fontWeight: '600', // Ensure semi-bold
+                }}
                 numberOfLines={1}
                 adjustsFontSizeToFit={true}
                 minimumFontScale={0.8}

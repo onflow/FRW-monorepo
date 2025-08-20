@@ -57,6 +57,7 @@ export const AddressSearchBox: React.FC<AddressSearchBoxProps> = ({
         )}
         style={{
           height: 44,
+          maxWidth: 346, // Figma specification: 346px max width
         }}
       >
         {/* Search icon container */}

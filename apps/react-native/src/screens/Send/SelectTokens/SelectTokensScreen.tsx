@@ -59,7 +59,17 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
   const [isBalanceLoading, setIsBalanceLoading] = React.useState(false);
   const [isAccountLoading, setIsAccountLoading] = React.useState(true);
   const { isDark } = useTheme();
-  const currency = NativeFRWBridge.getCurrency();
+
+  // Safe currency access with fallback
+  const currency = (() => {
+    try {
+      return NativeFRWBridge.getCurrency();
+    } catch (error) {
+      console.error('Bridge getCurrency error:', error);
+      // Fallback to USD
+      return { name: 'USD', symbol: '$', rate: '1.0' };
+    }
+  })();
   // Send store actions
   const {
     setSelectedToken,
@@ -540,12 +550,17 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
         ) : (
           <AccountCard
             account={
-              fromAccount ||
-              ({
-                name: t('messages.loading'),
-                address: '0x...',
-                emojiInfo: { emoji: '👤' },
-              } as any)
+              fromAccount
+                ? {
+                    ...fromAccount,
+                    isActive: true, // Ensure the active account shows green border
+                  }
+                : ({
+                    name: t('messages.loading'),
+                    address: '0x...',
+                    emojiInfo: { emoji: '👤' },
+                    isActive: false,
+                  } as any)
             }
             title={t('labels.fromAccount')}
             showEditButton={true}

@@ -5,14 +5,22 @@ import { Text } from 'ui';
 
 export const EVMChip: React.FC = () => {
   return (
-    <View className="bg-accent-evm rounded-2xl px-1.5 py-0.5 justify-center items-center">
+    <View
+      className="bg-accent-evm justify-center items-center"
+      style={{
+        paddingHorizontal: 3,
+        paddingVertical: 2,
+        borderRadius: 16,
+        minHeight: 16,
+      }}
+    >
       <Text
-        className="text-fg-1 font-inter text-[8px] font-normal leading-[8px] tracking-[0.128px]"
         style={{
-          textAlignVertical: 'center',
-          includeFontPadding: false,
+          fontSize: 8,
+          fontWeight: '400',
+          color: '#FFFFFF',
+          letterSpacing: 0.128,
         }}
-        disableAndroidFix={true}
       >
         EVM
       </Text>

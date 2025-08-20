@@ -50,7 +50,11 @@
       "Bash(rg:*)",
       "Bash(git submodule:*)",
       "Bash(./android/gradlew:*)",
-      "Bash(adb:*)"
+      "Bash(adb:*)",
+      "Bash(pntml lint:*)",
+      "Bash(avdmanager list:*)",
+      "Bash($ANDROID_HOME/cmdline-tools/latest/bin/avdmanager list:*)",
+      "Bash(./gradlew:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
