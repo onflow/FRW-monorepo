@@ -8,7 +8,8 @@ export const EVMChip: React.FC = () => {
     <View
       className="bg-accent-evm"
       style={{
-        paddingHorizontal: 6,
+        paddingLeft: 5,
+        paddingRight: 2,
         paddingVertical: 2,
         borderRadius: 16,
         minHeight: 16,
@@ -24,6 +25,7 @@ export const EVMChip: React.FC = () => {
           letterSpacing: 0.128,
           textAlign: 'center',
           includeFontPadding: false,
+          paddingLeft: 1, // Add tiny bit of left padding
         }}
       >
         EVM
