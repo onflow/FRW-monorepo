@@ -6,12 +6,14 @@ import { Text } from 'ui';
 export const EVMChip: React.FC = () => {
   return (
     <View
-      className="bg-accent-evm justify-center items-center"
+      className="bg-accent-evm"
       style={{
-        paddingHorizontal: 3,
+        paddingHorizontal: 6,
         paddingVertical: 2,
         borderRadius: 16,
         minHeight: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
       }}
     >
       <Text
@@ -20,6 +22,8 @@ export const EVMChip: React.FC = () => {
           fontWeight: '400',
           color: '#FFFFFF',
           letterSpacing: 0.128,
+          textAlign: 'center',
+          includeFontPadding: false,
         }}
       >
         EVM

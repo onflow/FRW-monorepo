@@ -13,10 +13,10 @@
   --green-dark: 0 239 139; /* #00EF8B - Updated to match Figma */
 
   /* Surface colors */
-  --surface-base: 242 242 247;
-  --surface-1: 242 242 247;
-  --surface-2: 118 118 118;
-  --surface-3: 0 0 7;
+  --surface-base: 255 255 255; /* Main background - white */
+  --surface-1: 255 255 255; /* Main background - white */
+  --surface-2: 242 242 247; /* Cards - light gray #F2F2F7 */
+  --surface-3: 118 118 118; /* Icons/secondary elements */
 
   /* Input/search backgrounds */
   --input-bg: 242 242 247; /* #F2F2F7 */
@@ -26,15 +26,15 @@
   --overlay: 255 255 255;
 
   /* Foreground/text colors */
-  --fg-1: 0 13 7;
-  --fg-2: 118 118 118;
-  --fg-3: 0 0 7;
+  --fg-1: 0 0 0; /* Primary text - pure black #000000 */
+  --fg-2: 118 118 118; /* Secondary text - #767676 */
+  --fg-3: 0 13 7; /* Tertiary text - #000D07 */
 
   /* Dark accents for light mode */
-  --dark-1: 0 0 0;
-  --dark-2: 0 0 0;
-  --dark-3: 0 0 0;
-  --dark-4: 0 0 0;
+  --dark-1: 0 0 0; /* 80% opacity - for subtle backgrounds */
+  --dark-2: 0 0 0; /* 40% opacity - for secondary elements */
+  --dark-3: 0 0 0; /* 25% opacity - for borders and dividers */
+  --dark-4: 0 0 0; /* 10% opacity - for very subtle accents */
 
   /* Light accents for dark mode (not visible in light mode) */
   --light-1: 255 255 255; /* 80% opacity */
@@ -233,5 +233,38 @@
 
   .light-5 {
     opacity: 0.05;
+  }
+
+  /* Dark opacity utilities for light mode */
+  .dark-80 {
+    color: rgba(var(--dark-1), 0.8);
+  }
+
+  .dark-40 {
+    color: rgba(var(--dark-2), 0.4);
+  }
+
+  .dark-25 {
+    color: rgba(var(--dark-3), 0.25);
+  }
+
+  .dark-10 {
+    color: rgba(var(--dark-4), 0.1);
+  }
+
+  .bg-dark-80 {
+    background-color: rgba(var(--dark-1), 0.8);
+  }
+
+  .bg-dark-40 {
+    background-color: rgba(var(--dark-2), 0.4);
+  }
+
+  .bg-dark-25 {
+    background-color: rgba(var(--dark-3), 0.25);
+  }
+
+  .bg-dark-10 {
+    background-color: rgba(var(--dark-4), 0.1);
   }
 }
