@@ -1,6 +1,6 @@
 import { NFTService } from '@onflow/frw-services';
 import { type CollectionModel, type NFTModel, addressType } from '@onflow/frw-types';
-import { getNFTId } from '@onflow/frw-utils';
+import { getCollectionLogo, getNFTId } from '@onflow/frw-utils';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -101,7 +101,7 @@ export default function NFTListScreen() {
 
   const getCollectionImage = () => {
     // Try logoURI first, then logo
-    return collection?.logoURI || collection?.logo || '';
+    return getCollectionLogo(collection) || collection?.logoURI || collection?.logo || '';
   };
 
   const collectionImage = getCollectionImage();

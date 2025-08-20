@@ -1,4 +1,5 @@
 import { type CollectionModel } from '@onflow/frw-types';
+import { getCollectionLogo } from '@onflow/frw-utils';
 import { TouchableOpacity, View } from 'react-native';
 
 import { ArrowRight } from 'icons';
@@ -32,7 +33,7 @@ export function NFTCollectionRow({
       <TouchableOpacity activeOpacity={0.7} onPress={onPress}>
         <View className="flex-row items-center py-4 px-0 w-full gap-4">
           {/* Collection Image */}
-          <IconView src={collection.logo ?? ''} />
+          <IconView src={getCollectionLogo(collection)} />
 
           <View className="flex-1 ml-0.5 gap-1">
             <Text className="text-fg-1 font-semibold text-base">{collection?.name}</Text>

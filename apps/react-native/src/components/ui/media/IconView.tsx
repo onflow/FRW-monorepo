@@ -84,6 +84,10 @@ export function IconView({
     if (!src || src.trim() === '') return 'empty';
 
     const lowerSrc = src.toLowerCase();
+
+    // Check for SVG-to-PNG conversion services (should be treated as PNG images)
+    if (lowerSrc.includes('svg2png')) return 'image';
+
     if (lowerSrc.endsWith('.svg') || lowerSrc.startsWith('data:image/svg+xml')) return 'svg';
     if (lowerSrc.match(/\.(png|jpg|jpeg|gif|webp|bmp|ico)$/)) return 'image';
     return 'unknown';

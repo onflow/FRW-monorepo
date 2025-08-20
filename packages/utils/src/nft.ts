@@ -1,5 +1,6 @@
 import { type CollectionModel, type NFTModel } from '@onflow/frw-types';
 
+import { convertedSVGURL } from './svgToPng';
 import { stripHexPrefix } from './utils';
 
 /**
@@ -7,10 +8,10 @@ import { stripHexPrefix } from './utils';
  */
 export function getNFTCover(nft: NFTModel): string {
   if (nft.thumbnail) {
-    return nft.thumbnail;
+    return convertedSVGURL(nft.thumbnail);
   }
   if (nft.postMedia?.image) {
-    return nft.postMedia.image;
+    return convertedSVGURL(nft.postMedia.image);
   }
   return '';
 }

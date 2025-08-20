@@ -1,5 +1,5 @@
 import { type WalletAccount, type NFTModel } from '@onflow/frw-types';
-import { isERC1155 } from '@onflow/frw-utils';
+import { getNFTCover, isERC1155 } from '@onflow/frw-utils';
 import { useNavigation } from '@react-navigation/native';
 import type { NavigationProp } from '@react-navigation/native';
 import { View, Image, TouchableOpacity } from 'react-native';
@@ -49,7 +49,7 @@ export default function NFTListCard({
           className="rounded-lg overflow-hidden aspect-square bg-sf-1 mb-2"
         >
           <IconView
-            src={nft.thumbnail || ''}
+            src={getNFTCover(nft)}
             size={200}
             borderRadius={8}
             resizeMode="cover"
