@@ -13,6 +13,9 @@ export {
   getCollectionResourceIdentifier,
 } from './nft';
 
+// Collection utilities
+export { getCollectionLogo } from './collection';
+
 // General utilities
 export {
   formatTokenAmount,
@@ -40,3 +43,6 @@ export type { BridgeLogger } from './logger';
 
 // Re-export types from @onflow/frw-types for convenience
 export type { WalletType, NFTModel } from '@onflow/frw-types';
+
+// SVG utilities
+export { convertedSVGURL } from './svgToPng';

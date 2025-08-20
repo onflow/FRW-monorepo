@@ -61,12 +61,12 @@ export function IconView({
       width: shouldFillContainer ? '100%' : size,
       height: shouldFillContainer ? '100%' : size,
       borderRadius: borderRadius,
-      backgroundColor: '#9CA3AF',
+      backgroundColor: finalBackgroundColor,
       overflow: 'hidden' as const,
       alignItems: 'center' as const,
       justifyContent: 'center' as const,
     }),
-    [size, borderRadius, shouldFillContainer]
+    [size, borderRadius, shouldFillContainer, finalBackgroundColor]
   );
 
   const svgStyle = useMemo(
@@ -84,6 +84,10 @@ export function IconView({
     if (!src || src.trim() === '') return 'empty';
 
     const lowerSrc = src.toLowerCase();
+
+    // Check for SVG-to-PNG conversion services (should be treated as PNG images)
+    if (lowerSrc.includes('svg2png')) return 'image';
+
     if (lowerSrc.endsWith('.svg') || lowerSrc.startsWith('data:image/svg+xml')) return 'svg';
     if (lowerSrc.match(/\.(png|jpg|jpeg|gif|webp|bmp|ico)$/)) return 'image';
     return 'unknown';

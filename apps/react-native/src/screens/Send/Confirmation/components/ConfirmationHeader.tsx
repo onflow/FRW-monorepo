@@ -18,8 +18,9 @@ export const ConfirmationHeader: React.FC<ConfirmationHeaderProps> = ({
   return (
     <View className="h-12 mb-4 items-center justify-center">
       <Text
-        className="text-center text-lg font-semibold"
+        className="text-center font-bold"
         style={{
+          fontSize: 16,
           color: isDark ? '#FFFFFF' : '#000000',
           includeFontPadding: false,
         }}

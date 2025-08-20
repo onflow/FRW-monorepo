@@ -103,7 +103,14 @@ const WalletAccountSectionComponent: React.FC<WalletAccountSectionProps> = ({
                       backgroundColor: account.parentEmoji?.color || '#F0F0F0',
                     }}
                   >
-                    <Text className="text-center text-[8px] leading-3" disableAndroidFix={true}>
+                    <Text
+                      className="text-center text-[8px] leading-3"
+                      style={{
+                        textAlignVertical: 'center',
+                        includeFontPadding: false,
+                      }}
+                      disableAndroidFix={true}
+                    >
                       {account.parentEmoji?.emoji}
                     </Text>
                   </View>

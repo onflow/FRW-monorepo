@@ -103,7 +103,15 @@ export const WalletAvatar: React.FC<WalletAvatarProps> = ({
       >
         {isEmojiValue ? (
           <Text
-            style={[styles.emoji, { fontSize: contentSize * 0.5, lineHeight: contentSize }]}
+            style={[
+              styles.emoji,
+              {
+                fontSize: contentSize * 0.5,
+                lineHeight: contentSize * 0.6,
+                textAlignVertical: 'center',
+                includeFontPadding: false,
+              },
+            ]}
             disableAndroidFix={true}
           >
             {showValue}
@@ -119,7 +127,15 @@ export const WalletAvatar: React.FC<WalletAvatarProps> = ({
           ) : (
             // Show fallback while loading SVG or if SVG fails
             <Text
-              style={[styles.emoji, { fontSize: contentSize * 0.5, lineHeight: contentSize }]}
+              style={[
+                styles.emoji,
+                {
+                  fontSize: contentSize * 0.5,
+                  lineHeight: contentSize * 0.6,
+                  textAlignVertical: 'center',
+                  includeFontPadding: false,
+                },
+              ]}
               disableAndroidFix={true}
             >
               {fallback || '👤'}
