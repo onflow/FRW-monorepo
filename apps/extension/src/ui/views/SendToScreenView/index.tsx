@@ -285,7 +285,7 @@ const SendToScreenView = () => {
         isEVM,
       };
     },
-    [formatBalance, walletList]
+    [formatBalance, walletList, currentWallet]
   );
 
   // Convert wallet account to RecipientData (balance will be passed in)
@@ -360,21 +360,21 @@ const SendToScreenView = () => {
       if (data.walletList?.length > 0) {
         data.walletList.forEach((account) => {
           const balance = data.accountBalances[account.address] || '...';
-          recipientsData.push(convertWalletToRecipient(account, 'main', balance));
+          recipientsData.push(convertToRecipient(account, 'main', balance));
         });
       }
 
       // Add EVM account if available with loaded balance
       if (data.evmWallet && data.evmWallet.address) {
         const balance = data.accountBalances[data.evmWallet.address] || '...';
-        recipientsData.push(convertWalletToRecipient(data.evmWallet, 'evm', balance));
+        recipientsData.push(convertToRecipient(data.evmWallet, 'evm', balance));
       }
 
       // Add child accounts with loaded balances
       if (data.childAccounts && data.childAccounts.length > 0) {
         data.childAccounts.forEach((account) => {
           const balance = data.accountBalances[account.address] || '...';
-          recipientsData.push(convertWalletToRecipient(account, 'child', balance));
+          recipientsData.push(convertToRecipient(account, 'child', balance));
         });
       }
 

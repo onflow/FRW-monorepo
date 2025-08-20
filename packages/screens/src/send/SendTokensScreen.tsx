@@ -2,7 +2,6 @@ import { type WalletAccount } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
-  ScrollView,
   View,
   TokenAmountInput,
   TokenSelectorModal,
@@ -16,6 +15,8 @@ import {
   type TransactionFormData,
   Text,
   Separator,
+  XStack,
+  Stack,
 } from '@onflow/frw-ui';
 import React from 'react';
 
@@ -80,7 +81,7 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
   // New props
   isAccountIncompatible = false,
   isBalanceLoading = false,
-  showStorageWarning = false,
+  showStorageWarning = true,
   storageWarningMessage = 'Account balance will fall below the minimum FLOW required for storage after this transaction.',
   showEditButtons = true,
   onEditTokenPress,
@@ -104,66 +105,62 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
 
   return (
     <BackgroundWrapper backgroundColor={backgroundColor}>
-      <YStack flex={1} px="$4">
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <YStack>
-            <YStack p={contentPadding}>
-              {/* From Account Section */}
-              {fromAccount && (
-                <AccountCard
-                  account={fromAccount}
-                  title="From Account"
-                  isLoading={isBalanceLoading}
-                />
-              )}
-              <Separator mx="$4" my={-1} borderColor="$textTertiary" />
-
-              {/* Token Amount Input Section */}
-              <YStack bg="$background4" p="$4" gap="$3">
-                <TokenAmountInput
-                  selectedToken={
-                    selectedToken
-                      ? {
-                          symbol: selectedToken.symbol,
-                          name: selectedToken.name,
-                          logo: selectedToken.logoURI,
-                          logoURI: selectedToken.logoURI,
-                          balance: selectedToken.balance?.toString(),
-                          price: selectedToken.priceInUSD
-                            ? parseFloat(selectedToken.priceInUSD)
-                            : undefined,
-                          isVerified: selectedToken.isVerified,
-                        }
-                      : undefined
-                  }
-                  amount={amount}
-                  onAmountChange={onAmountChange}
-                  isTokenMode={isTokenMode}
-                  onToggleInputMode={onToggleInputMode}
-                  onTokenSelectorPress={onTokenSelectorOpen}
-                  onMaxPress={onMaxPress}
-                  placeholder="0.00"
-                  showBalance={true}
-                  showConverter={true}
-                  disabled={false}
-                />
-              </YStack>
-            </YStack>
-
-            {/* Storage Warning */}
-            {showStorageWarning && (
-              <StorageWarning
-                message={storageWarningMessage}
-                showIcon={true}
-                title="Storage warning"
-                visible={true}
+      <YStack flex={1} p="$4">
+        <YStack gap={0}>
+          <YStack mx="$2" rounded={16} background="$background4" mb="$1">
+            {/* From Account Section */}
+            {fromAccount && (
+              <AccountCard
+                account={fromAccount}
+                title="From Account"
+                isLoading={isBalanceLoading}
               />
             )}
+            <Separator mx="$4" my={-1} borderColor="$textTertiary" />
 
-            {/* Arrow Down Indicator */}
-            <SendArrowDivider variant="text" />
+            {/* Token Amount Input Section */}
+            <YStack gap="$3">
+              <TokenAmountInput
+                selectedToken={
+                  selectedToken
+                    ? {
+                        symbol: selectedToken.symbol,
+                        name: selectedToken.name,
+                        logo: selectedToken.logoURI,
+                        logoURI: selectedToken.logoURI,
+                        balance: selectedToken.balance?.toString(),
+                        price: selectedToken.priceInUSD
+                          ? parseFloat(selectedToken.priceInUSD)
+                          : undefined,
+                        isVerified: selectedToken.isVerified,
+                      }
+                    : undefined
+                }
+                amount={amount}
+                onAmountChange={onAmountChange}
+                isTokenMode={isTokenMode}
+                onToggleInputMode={onToggleInputMode}
+                onTokenSelectorPress={onTokenSelectorOpen}
+                onMaxPress={onMaxPress}
+                placeholder="0.00"
+                showBalance={true}
+                showConverter={true}
+                disabled={false}
+              />
+            </YStack>
+          </YStack>
 
-            {/* To Account Section */}
+          {/* Storage Warning */}
+
+          {/* Arrow Down Indicator */}
+          <XStack position="relative" height={0}>
+            <XStack width="100%" position="absolute" t={-35} justify="center">
+              <SendArrowDivider variant="text" />
+            </XStack>
+          </XStack>
+
+          {/* To Account Section */}
+          <Stack px="$2">
             {toAccount && (
               <ToAccountSection
                 account={toAccount}
@@ -174,20 +171,30 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
                 title="To account"
               />
             )}
+          </Stack>
 
-            {/* Transaction Fee Section */}
-            <TransactionFeeSection
-              flowFee={transactionFee || '0.001 FLOW'}
-              usdFee={usdFee}
-              isFree={isFeesFree}
-              showCovered={true}
-              title="Transaction Fee"
-              backgroundColor="rgba(255, 255, 255, 0.1)"
-              borderRadius={16}
-              contentPadding={16}
-            />
-          </YStack>
-        </ScrollView>
+          {/* Transaction Fee Section */}
+          <TransactionFeeSection
+            flowFee={transactionFee || '0.001 FLOW'}
+            usdFee={usdFee}
+            isFree={isFeesFree}
+            showCovered={true}
+            title="Transaction Fee"
+            backgroundColor="transparent"
+            borderRadius={16}
+            contentPadding={16}
+          />
+          <Stack p="$4">
+            {showStorageWarning && (
+              <StorageWarning
+                message={storageWarningMessage}
+                showIcon={true}
+                title="Storage warning"
+                visible={true}
+              />
+            )}
+          </Stack>
+        </YStack>
 
         {/* Send Button */}
         <View p={contentPadding} pt="$2">

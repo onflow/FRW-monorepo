@@ -42,7 +42,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
       pt={16}
       px={16}
       pb={24}
-      width={343}
+      width="100%"
     >
       {/* Section Header */}
       <Text fontSize="$2" fontWeight="400" color="rgba(255, 255, 255, 0.8)" lineHeight={16}>
