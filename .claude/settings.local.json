@@ -55,6 +55,9 @@
       "Bash(avdmanager list:*)",
       "Bash($ANDROID_HOME/cmdline-tools/latest/bin/avdmanager list:*)",
       "Bash(./gradlew:*)"
+      "Bash(./gradlew:*)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(npx react-native:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
