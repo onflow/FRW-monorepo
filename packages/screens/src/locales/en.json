@@ -19,6 +19,8 @@
     "success": "Success"
   },
   "send": {
+    "tokens": "Tokens",
+    "nfts": "NFTs",
     "myAccounts": "My Accounts",
     "recent": "Recent",
     "addressBook": "Address Book",

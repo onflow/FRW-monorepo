@@ -1,10 +1,11 @@
+import { Button, ScrollView, Text } from '@onflow/frw-ui';
 import type { NavigationProp, RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StatusBar, Text } from 'react-native';
 
 import type { RootStackParamList } from '@/navigation/AppNavigator';
+
 const HomeScreen = () => {
   const { t } = useTranslation();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -17,8 +18,10 @@ const HomeScreen = () => {
 
   return (
     <ScrollView>
-      <StatusBar barStyle="dark-content" backgroundColor="#f0fdf4" />
       <Text style={{ color: 'red' }}>HomeScreen</Text>
+      <Button onPress={() => navigation.navigate('SelectTokens')}>
+        <Text>Send</Text>
+      </Button>
     </ScrollView>
   );
 };

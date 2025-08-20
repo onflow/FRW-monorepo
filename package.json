@@ -56,8 +56,41 @@
   "packageManager": "pnpm@10.14.0",
   "pnpm": {
     "overrides": {
-      "react": "19.1.0",
-      "react-dom": "19.1.0"
+      "react": "19.0.0",
+      "react-dom": "19.0.0",
+      "react-native": "0.79.2"
+    },
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "react": "19.0.0",
+        "react-native": "0.79.2"
+      },
+      "ignoreMissing": [
+        "react",
+        "react-native"
+      ]
+    },
+    "packageExtensions": {
+      "@tamagui/animations-react-native": {
+        "peerDependencies": {
+          "react-native": "0.79.2"
+        }
+      },
+      "@tamagui/core": {
+        "peerDependencies": {
+          "react-native": "0.79.2"
+        }
+      },
+      "@tamagui/web": {
+        "peerDependencies": {
+          "react-native": "0.79.2"
+        }
+      }
     }
+  },
+  "resolutions": {
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "react-native": "0.79.2"
   }
 }

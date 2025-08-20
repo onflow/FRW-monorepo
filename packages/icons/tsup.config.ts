@@ -21,7 +21,7 @@ export default defineConfig([
   {
     name: 'native',
     entry: { index: 'src/native.ts' },
-    format: ['esm'],
+    format: ['esm', 'cjs'],
     outDir: 'dist/react-native',
     dts: false, // We'll generate types separately
     clean: false,

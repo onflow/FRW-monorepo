@@ -16,8 +16,34 @@ const config = {
     unstable_enableSymlinks: true,
     // Enable package.json exports field support
     unstable_enablePackageExports: true,
+    // Ensure proper platform resolution for React Native
+    platforms: ['ios', 'android', 'native', 'web'],
+    // Define node_modules resolution paths
+    nodeModulesPaths: [
+      path.resolve(projectRoot, 'node_modules'),
+      path.resolve(monorepoRoot, 'node_modules'),
+    ],
     alias: {
       '@': path.resolve(projectRoot, 'src'),
+    },
+    // Force Metro to use single instances of critical packages from monorepo root
+    extraNodeModules: {
+      react: path.resolve(monorepoRoot, 'node_modules/react'),
+      'react-native': path.resolve(monorepoRoot, 'node_modules/react-native'),
+      'react-native-web': path.resolve(monorepoRoot, 'node_modules/react-native-web'),
+      'react-native-svg': path.resolve(monorepoRoot, 'node_modules/react-native-svg'),
+      '@tamagui/core': path.resolve(monorepoRoot, 'node_modules/@tamagui/core'),
+      '@tamagui/web': path.resolve(monorepoRoot, 'node_modules/@tamagui/web'),
+      '@tamagui/animations-react-native': path.resolve(
+        monorepoRoot,
+        'node_modules/@tamagui/animations-react-native'
+      ),
+      tamagui: path.resolve(monorepoRoot, 'node_modules/tamagui'),
+      zustand: path.resolve(
+        monorepoRoot,
+        'node_modules/.pnpm/zustand@5.0.8_@types+react@19.1.10_immer@10.1.1_react@19.0.0_use-sync-external-store@1.5.0_react@19.0.0_/node_modules/zustand'
+      ),
+      immer: path.resolve(monorepoRoot, 'node_modules/.pnpm/immer@10.1.1/node_modules/immer'),
     },
   },
   transformer: {
