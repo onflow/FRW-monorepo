@@ -1,9 +1,9 @@
-import { Copy, Edit } from '@onflow/frw-icons';
+import { Copy, Link } from '@onflow/frw-icons';
 import React from 'react';
-import { Card, XStack, YStack, Avatar, Text } from 'tamagui';
+import { Card, XStack, YStack, Text, Image } from 'tamagui';
 
 import { AddressText } from './AddressText';
-import { Button } from '../foundation/Button';
+import { Skeleton } from '../foundation/Skeleton';
 
 export interface RecipientItemProps {
   // Core recipient data
@@ -15,22 +15,23 @@ export interface RecipientItemProps {
   balance?: string;
   isLoading?: boolean;
   showBalance?: boolean;
-  showEditButton?: boolean;
   showCopyButton?: boolean;
   isSelected?: boolean;
   isDisabled?: boolean;
+  isLinked?: boolean;
+  isEVM?: boolean;
 
   // Avatar/Icon
   avatar?: string;
   avatarSize?: number;
-
+  parentAvatar?: string; // Small overlay avatar for linked accounts
+  emojiInfo: any;
+  parentEmojiInfo: any;
   // Actions
   onPress?: () => void;
-  onEdit?: () => void;
   onCopy?: () => void;
 
   // Styling
-  backgroundColor?: string;
   pressStyle?: object;
 }
 
@@ -41,40 +42,22 @@ export function RecipientItem({
   balance,
   isLoading = false,
   showBalance = false,
-  showEditButton = false,
   showCopyButton = false,
   isSelected = false,
   isDisabled = false,
+  isLinked = false,
+  isEVM = false,
   avatar,
   avatarSize = 36,
+  parentAvatar,
+  emojiInfo,
   onPress,
-  onEdit,
   onCopy,
-  backgroundColor,
   pressStyle,
-}: RecipientItemProps) {
-  const getTypeIcon = () => {
-    // For now, we'll use a simple circle as placeholder
-    // Can be enhanced later with specific icons for each type
-    return (
-      <YStack
-        width={avatarSize}
-        height={avatarSize}
-        borderRadius="$10"
-        backgroundColor="$orange8"
-        items="center"
-        justify="center"
-      >
-        <Text fontSize={18} color="$white1" fontWeight="600">
-          {type === 'account' ? '🦊' : type.charAt(0).toUpperCase()}
-        </Text>
-      </YStack>
-    );
-  };
-
+}: RecipientItemProps): React.JSX.Element {
   return (
     <Card
-      p={0}
+      mb="$0.75"
       bg="transparent"
       borderRadius="$4"
       pressStyle={pressStyle || { opacity: 0.8, scale: 0.98 }}
@@ -82,66 +65,118 @@ export function RecipientItem({
       onPress={onPress}
       opacity={isDisabled ? 0.5 : 1}
       borderColor={isSelected ? '$primary' : 'transparent'}
-      borderWidth={isSelected ? 2 : 0}
+      borderWidth={isSelected ? '$0.5' : 0}
     >
-      <XStack items="center" gap={12} p="$3">
-        {/* Avatar/Icon Container with fixed frame */}
-        <XStack w={46} h={36} items="center" justify="flex-start" position="relative">
+      <XStack items="center">
+        {/* Avatar/Icon Container with fixed frame matching Figma specs */}
+        <XStack width={46} height={36} position="relative">
+          {/* Main Avatar Circle - Always show background */}
           <YStack
             position="absolute"
-            left={5}
-            top={0}
-            w={avatarSize}
-            h={avatarSize}
-            borderRadius="$10"
-            bg="$orange8"
+            style={{
+              left: 5,
+              top: 0,
+            }}
+            width={avatarSize}
+            height={avatarSize}
+            rounded={avatarSize / 2}
+            bg="$light25"
             items="center"
             justify="center"
           >
-            {avatar ? (
-              <Avatar circular size={avatarSize}>
-                <Avatar.Image src={avatar} />
-              </Avatar>
+            {avatar?.includes('https://') ? (
+              <Image width={avatarSize} height={avatarSize} source={{ uri: avatar }} />
             ) : (
-              getTypeIcon()
+              <Text
+                fontSize={18}
+                color={emojiInfo?.color}
+                fontWeight="600"
+                lineHeight={18 * 1.2}
+                letterSpacing={-0.1}
+              >
+                {avatar || emojiInfo?.emoji || type.charAt(0).toUpperCase()}
+              </Text>
             )}
           </YStack>
+
+          {/* Small overlay avatar for parent account */}
+          {isLinked && parentAvatar && (
+            <YStack
+              position="absolute"
+              style={{
+                left: -1,
+                top: -2,
+              }}
+              width={18}
+              height={18}
+              rounded={9}
+              bg="$textSecondary"
+              borderWidth={2}
+              borderColor="$bg"
+              items="center"
+              justify="center"
+              p={1}
+            >
+              <Text fontSize={10} fontWeight="600">
+                {parentAvatar}
+              </Text>
+            </YStack>
+          )}
         </XStack>
 
         {/* Content */}
-        <YStack flex={1} gap={2} w={151.34}>
+        <YStack flex={1} gap={2} width={151.34} ml="$0.75">
           <XStack items="center" gap="$1">
-            <Text
-              fontSize={14}
-              fontWeight="600"
-              color="$white1"
-              numberOfLines={1}
-              lineHeight={20}
-              letterSpacing={-0.084}
-            >
-              {name}
-            </Text>
+            <XStack items="center" gap={4}>
+              {isLinked && <Link size={12.8} color="rgba(255, 255, 255, 0.5)" />}
+              <Text
+                fontSize={14}
+                fontWeight="600"
+                color="$white"
+                numberOfLines={1}
+                lineHeight={16.8}
+                letterSpacing={-0.084}
+              >
+                {name || emojiInfo?.name}
+              </Text>
+            </XStack>
+            {isEVM && (
+              <XStack bg="#627EEA" rounded="$4" px={4} items="center" justify="center" height={16}>
+                <Text
+                  fontSize={8}
+                  fontWeight="400"
+                  color="$white"
+                  lineHeight={9.7}
+                  letterSpacing={0.128}
+                >
+                  EVM
+                </Text>
+              </XStack>
+            )}
           </XStack>
 
           <AddressText
             address={address}
             fontSize={12}
             fontWeight="400"
-            color="#B3B3B3"
+            color="$textMuted"
             lineHeight={16.8}
           />
 
-          {showBalance && balance && (
-            <Text
-              fontSize={12}
-              fontWeight="400"
-              color="#B3B3B3"
-              numberOfLines={1}
-              lineHeight={16.8}
-            >
-              {isLoading ? '...' : balance}
-            </Text>
-          )}
+          {showBalance &&
+            (isLoading ? (
+              <Skeleton width={80} height={16} />
+            ) : balance ? (
+              <Text
+                fontSize={12}
+                fontWeight="400"
+                color="$textMuted"
+                numberOfLines={1}
+                lineHeight={16.8}
+              >
+                {balance}
+              </Text>
+            ) : null)}
         </YStack>
 
         {/* Action Buttons */}
@@ -151,7 +186,7 @@ export function RecipientItem({
               width={24}
               height={24}
               opacity={0.5}
-              onPress={(e) => {
+              onPress={(e: React.BaseSyntheticEvent) => {
                 e.stopPropagation();
                 onCopy();
               }}
@@ -160,19 +195,6 @@ export function RecipientItem({
               <Copy size={24} color="#FFFFFF" />
             </XStack>
           )}
-
-          {showEditButton && onEdit && (
-            <Button
-              size="small"
-              variant="ghost"
-              onPress={(e) => {
-                e.stopPropagation();
-                onEdit();
-              }}
-            >
-              <Edit size={16} />
-            </Button>
-          )}
         </XStack>
       </XStack>
     </Card>
@@ -180,18 +202,18 @@ export function RecipientItem({
 }
 
 // Type variants for easier usage
-export const AccountItem = (props: Omit<RecipientItemProps, 'type'>) => (
+export const AccountItem = (props: Omit<RecipientItemProps, 'type'>): React.JSX.Element => (
   <RecipientItem {...props} type="account" showBalance />
 );
 
-export const ContactItem = (props: Omit<RecipientItemProps, 'type'>) => (
+export const ContactItem = (props: Omit<RecipientItemProps, 'type'>): React.JSX.Element => (
   <RecipientItem {...props} type="contact" showCopyButton />
 );
 
-export const RecentItem = (props: Omit<RecipientItemProps, 'type'>) => (
+export const RecentItem = (props: Omit<RecipientItemProps, 'type'>): React.JSX.Element => (
   <RecipientItem {...props} type="recent" />
 );
 
-export const UnknownAddressItem = (props: Omit<RecipientItemProps, 'type'>) => (
+export const UnknownAddressItem = (props: Omit<RecipientItemProps, 'type'>): React.JSX.Element => (
   <RecipientItem {...props} type="unknown" showCopyButton />
 );

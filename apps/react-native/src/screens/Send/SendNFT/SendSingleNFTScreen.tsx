@@ -104,7 +104,7 @@ const SendSingleNFTScreen = ({ navigation }: { navigation: NavigationProp }) => 
               const result = await SendTransaction(payload, cadence);
               console.log('[SendSingleNFTScreen] Transfer result:', result);
               resetSendFlow();
-              NativeFRWBridge.closeRN();
+              NativeFRWBridge.closeRN(null);
             }
           }
         },

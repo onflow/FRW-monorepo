@@ -14,6 +14,7 @@ import {
   type TokenModel,
   type TransactionFormData,
   Text,
+  Separator,
 } from '@onflow/frw-ui';
 import React from 'react';
 
@@ -160,24 +161,38 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
                   isLoading={isBalanceLoading}
                 />
               )}
-
-              {/* Divider */}
-              <View height={1} bg="rgba(255, 255, 255, 0.1)" mx={15} />
+              <Separator mx="$4" my={-1} borderColor="$textTertiary" />
 
               {/* Token Amount Input Section */}
-              <TokenAmountInput
-                selectedToken={tokenInputData}
-                amount={amount}
-                onAmountChange={onAmountChange}
-                isTokenMode={isTokenMode}
-                onToggleInputMode={onToggleInputMode}
-                onTokenSelectorPress={onTokenSelectorOpen}
-                onMaxPress={onMaxPress}
-                placeholder="0.00"
-                showBalance={true}
-                showConverter={true}
-                disabled={false}
-              />
+              <YStack bg="$background4" p="$4" gap="$3">
+                <TokenAmountInput
+                  selectedToken={
+                    selectedToken
+                      ? {
+                          symbol: selectedToken.symbol,
+                          name: selectedToken.name,
+                          logo: selectedToken.logoURI,
+                          logoURI: selectedToken.logoURI,
+                          balance: selectedToken.balance?.toString(),
+                          price: selectedToken.priceInUSD
+                            ? parseFloat(selectedToken.priceInUSD)
+                            : undefined,
+                          isVerified: selectedToken.isVerified,
+                        }
+                      : undefined
+                  }
+                  amount={amount}
+                  onAmountChange={onAmountChange}
+                  isTokenMode={isTokenMode}
+                  onToggleInputMode={onToggleInputMode}
+                  onTokenSelectorPress={onTokenSelectorOpen}
+                  onMaxPress={onMaxPress}
+                  placeholder="0.00"
+                  showBalance={true}
+                  showConverter={true}
+                  disabled={false}
+                />
+              </YStack>
             </YStack>
 
             {/* Storage Warning */}

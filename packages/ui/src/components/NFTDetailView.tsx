@@ -30,6 +30,7 @@ export interface NFTDetailViewProps {
   };
   showOwner?: boolean;
   backgroundColor?: string;
+  contentPadding?: number;
 }
 
 export function NFTDetailView({
@@ -40,6 +41,7 @@ export function NFTDetailView({
   owner,
   showOwner = false,
   backgroundColor = '$background',
+  contentPadding = 14,
 }: NFTDetailViewProps) {
   // Generate properties from NFT data
   const generateProperties = (): NFTProperty[] => {
@@ -74,46 +76,40 @@ export function NFTDetailView({
   return (
     <BackgroundWrapper backgroundColor={backgroundColor}>
       <ScrollView flex={1} showsVerticalScrollIndicator={false}>
-        <YStack w={345} gap={20}>
+        <YStack px={contentPadding} pb={20}>
           {/* NFT Image */}
-          <YStack items="center" alignSelf="stretch">
+          <YStack mb={23}>
             <SelectableNFTImage
               src={nft.image}
               selected={selected}
               selectable={selectable}
               onToggleSelection={onToggleSelection}
               borderRadius={16}
-              width={343}
-              height={343}
             />
           </YStack>
 
-          {/* NFT Content */}
-          <YStack items="flex-end" gap={20} w={343}>
-            {/* NFT Info Section */}
-            <YStack alignSelf="stretch" gap={18}>
-              <NFTInfoSection
-                name={nft.name}
-                collection={nft.collection}
-                description={nft.description}
-                owner={owner}
-                showOwner={showOwner}
-              />
-            </YStack>
-
-            {/* Properties Section */}
-            {allProperties.length > 0 && (
-              <YStack alignSelf="stretch" gap={20}>
-                <NFTPropertiesGrid
-                  properties={allProperties}
-                  title="Properties"
-                  columns={2}
-                  gap={13}
-                  propertyGap={9}
-                />
-              </YStack>
-            )}
+          {/* NFT Info */}
+          <YStack mb={20}>
+            <NFTInfoSection
+              name={nft.name}
+              collection={nft.collection}
+              description={nft.description}
+              owner={owner}
+              showOwner={showOwner}
+              spacing={18}
+            />
           </YStack>
+
+          {/* Properties */}
+          {allProperties.length > 0 && (
+            <NFTPropertiesGrid
+              properties={allProperties}
+              title="Properties"
+              columns={2}
+              gap={9}
+              titleSpacing={13}
+            />
+          )}
         </YStack>
       </ScrollView>
     </BackgroundWrapper>

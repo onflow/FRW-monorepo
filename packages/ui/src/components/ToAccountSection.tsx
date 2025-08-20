@@ -4,6 +4,7 @@ import { SendArrowDivider } from '@onflow/frw-ui';
 import React from 'react';
 import { YStack, XStack } from 'tamagui';
 
+import { AddressText } from './AddressText';
 import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
 
@@ -30,6 +31,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
   title = 'To account',
   backgroundColor = 'rgb(49, 49, 49)',
   borderRadius = 16,
+  contentPadding: _contentPadding = 16,
   showAvatar = true,
   avatarSize = 36,
 }) => {
@@ -70,15 +72,15 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
       {/* Incompatible Account Header */}
       {isAccountIncompatible && (
         <XStack justify="space-between" items="flex-end">
-          <Text fontSize={12} fontWeight="400" color="rgba(255, 255, 255, 0.8)" lineHeight="1.33">
+          <Text fontSize="$3" fontWeight="400" color="rgba(255, 255, 255, 0.8)" lineHeight={16}>
             Incompatible Account
           </Text>
           {onLearnMorePress && (
             <Text
-              fontSize={12}
+              fontSize="$3"
               fontWeight="400"
               color="#16FF99"
-              lineHeight="1.33"
+              lineHeight={16}
               onPress={onLearnMorePress}
               cursor="pointer"
               pressStyle={{ opacity: 0.7 }}
@@ -93,59 +95,46 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
       <XStack
         items="center"
         justify="space-between"
-        alignSelf="stretch"
         gap={12}
         opacity={isAccountIncompatible ? 0.6 : 1}
       >
-        {/* Account Display */}
-        <XStack items="center" gap={12} w={217}>
-          {/* Avatar Container */}
-          <YStack w={46} h={36} justify="center" items="flex-start">
-            {showAvatar && (
+        {/* Left Side: Account Info - Fixed width of 217px */}
+        <XStack items="center" width={217}>
+          {/* Avatar Container - 46x36 with 5px left offset */}
+          {showAvatar && (
+            <XStack width={46} height={36} items="center" justify="flex-start" pl={5}>
               <Avatar
                 src={account.avatar}
                 fallback={account.name?.charAt(0) || 'A'}
                 size={avatarSize}
-                borderColor={isAccountIncompatible ? '#D9D9D9' : '#FFD787'}
-                borderWidth={0}
-                bg="#FFD787"
+                borderColor={isAccountIncompatible ? '#D9D9D9' : '#00EF8B'}
+                borderWidth={1}
               />
-            )}
-          </YStack>
+            </XStack>
+          )}
 
-          {/* Account Details */}
-          <YStack gap={2} w={151} flex={1}>
-            <XStack items="center" gap={4}>
-              <Text
-                color="#FFFFFF"
-                fontSize={14}
-                fontWeight="600"
-                lineHeight="1.2"
-                letterSpacing="-0.6%"
-                numberOfLines={1}
-                ellipsizeMode="tail"
-              >
+          {/* Account Details - Fixed width with 12px gap from avatar */}
+          <XStack ml={12}>
+            <YStack width={151.34} gap={2}>
+              <Text color="$white" fontSize="$3" fontWeight="600" lineHeight={17} numberOfLines={1}>
                 {account.name || 'Unknown Account'}
               </Text>
-            </XStack>
-            <Text
-              color="#B3B3B3"
-              fontWeight="400"
-              fontSize={12}
-              lineHeight="1.4"
-              alignSelf="stretch"
-            >
-              {account.address}
-            </Text>
-          </YStack>
+              <AddressText
+                address={account.address}
+                truncate={true}
+                startLength={6}
+                endLength={4}
+              />
+            </YStack>
+          </XStack>
         </XStack>
 
-        {/* Edit Icon */}
+        {/* Right Side: Edit Icon */}
         {showEditButton && onEditPress && (
           <XStack justify="flex-end" items="center" gap={16}>
             <XStack
-              w={24}
-              h={24}
+              width={24}
+              height={24}
               items="center"
               justify="center"
               pressStyle={{ opacity: 0.7 }}
@@ -153,7 +142,11 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
               cursor="pointer"
               opacity={isAccountIncompatible ? 0.5 : 1}
             >
-              <Edit size={24} color="#767676" theme="outline" />
+              <Edit
+                size={24}
+                color={isAccountIncompatible ? '#FFFFFF' : '#767676'}
+                theme="outline"
+              />
             </XStack>
           </XStack>
         )}

@@ -1,34 +1,19 @@
 /**
  * Platform abstraction interfaces for screen package
  */
+import type { Currency } from '@onflow/frw-types';
 
-// Platform bridge interface
+// Platform bridge interface - for screen-specific functionality
 export interface PlatformBridge {
   getSelectedAddress(): string | null;
   getNetwork(): string;
+  getCurrency(): Currency;
   getCoins?(): any[] | null;
-}
-
-// Navigation interface
-export interface NavigationProp {
-  navigate(screen: string, params?: Record<string, unknown>): void;
-}
-
-// Translation interface
-export interface TranslationFunction {
-  (key: string, options?: Record<string, unknown>): string;
 }
 
 // Theme interface
 export interface ThemeContext {
   isDark: boolean;
-}
-
-// Common screen props
-export interface BaseScreenProps {
-  navigation: NavigationProp;
-  bridge: PlatformBridge;
-  t: TranslationFunction;
 }
 
 // Tab types

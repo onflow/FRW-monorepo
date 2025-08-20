@@ -1,5 +1,6 @@
+import { Search, Scan, Close } from '@onflow/frw-icons';
 import React from 'react';
-import { XStack, Input, Button, Text } from 'tamagui';
+import { XStack, Input, Button } from 'tamagui';
 
 export interface AddressSearchBoxProps {
   value: string;
@@ -15,7 +16,7 @@ export interface AddressSearchBoxProps {
 export function AddressSearchBox({
   value,
   onChangeText,
-  placeholder = 'Search address...',
+  placeholder = 'Search address',
   showScanButton = false,
   showClearButton = true,
   onScanPress,
@@ -27,32 +28,24 @@ export function AddressSearchBox({
   };
 
   return (
-    <XStack gap="$2" items="center" w={width}>
+    <XStack gap={17} items="center" w={width}>
       {/* Search Input Container */}
       <XStack
         flex={showScanButton ? 1 : undefined}
         w={showScanButton ? undefined : '100%'}
-        bg="$bg2"
+        bg="rgba(255, 255, 255, 0.1)"
         borderRadius="$4"
-        px="$3"
-        h="$4"
+        px="$4"
+        h={44}
         items="center"
         gap="$2"
-        borderWidth={1}
-        borderColor="$border"
+        borderWidth={0}
         focusStyle={{
-          borderColor: '$primary',
-          shadowColor: '$primary10',
-          shadowOffset: { width: 0, height: 0 },
-          shadowOpacity: 0.4,
-          shadowRadius: 4,
-          elevation: 2,
+          bg: 'rgba(255, 255, 255, 0.15)',
         }}
       >
         {/* Search Icon */}
-        <Text color="$textSecondary" fontSize="$3">
-          🔍
-        </Text>
+        <Search size={20} color="rgba(255, 255, 255, 0.4)" theme="outline" />
 
         {/* Input Field */}
         <Input
@@ -61,11 +54,11 @@ export function AddressSearchBox({
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
-          placeholderTextColor="$textSecondary"
+          placeholderTextColor="rgba(255, 255, 255, 0.4)"
           autoCapitalize="none"
           autoCorrect={false}
-          color="$text"
-          fontSize="$4"
+          color="$white"
+          fontSize={16}
           fontWeight="400"
           disabled={disabled}
           bg="transparent"
@@ -73,6 +66,9 @@ export function AddressSearchBox({
           focusStyle={{
             outlineWidth: 0,
           }}
+          minH="$11"
+          px="$4"
+          py="$2.5"
         />
 
         {/* Clear Button */}
@@ -83,13 +79,11 @@ export function AddressSearchBox({
             bg="transparent"
             borderWidth={0}
             onPress={handleClear}
-            pressStyle={{ bg: '$bg3' }}
-            hoverStyle={{ bg: '$bg3' }}
+            pressStyle={{ bg: 'rgba(255, 255, 255, 0.1)' }}
+            hoverStyle={{ bg: 'rgba(255, 255, 255, 0.1)' }}
             disabled={disabled}
           >
-            <Text color="$textSecondary" fontSize="$2">
-              ✕
-            </Text>
+            <Close size={16} color="rgba(255, 255, 255, 0.4)" theme="outline" />
           </Button>
         )}
       </XStack>
@@ -97,19 +91,17 @@ export function AddressSearchBox({
       {/* Scan Button */}
       {showScanButton && (
         <Button
-          size="$4"
+          w={44}
+          h={44}
           circular
-          bg="$bg2"
-          borderWidth={1}
-          borderColor="$border"
+          bg="transparent"
+          borderWidth={0}
           onPress={onScanPress}
-          pressStyle={{ bg: '$bg3' }}
-          hoverStyle={{ bg: '$bg3' }}
+          pressStyle={{ bg: 'rgba(255, 255, 255, 0.1)' }}
+          hoverStyle={{ bg: 'rgba(255, 255, 255, 0.1)' }}
           disabled={disabled || !onScanPress}
         >
-          <Text color="$text" fontSize="$3">
-            📷
-          </Text>
+          <Scan size={24} color="#FFFFFF" theme="outline" />
         </Button>
       )}
     </XStack>

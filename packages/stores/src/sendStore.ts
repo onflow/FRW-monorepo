@@ -1,7 +1,7 @@
 import { bridge, cadence } from '@onflow/frw-context';
 import { flowService } from '@onflow/frw-services';
 import { type NFTModel, type TokenModel, addressType } from '@onflow/frw-types';
-import { logger } from '@onflow/frw-utils';
+import { getNFTResourceIdentifier, getTokenResourceIdentifier, logger } from '@onflow/frw-utils';
 import {
   type SendPayload,
   SendTransaction,
@@ -367,7 +367,10 @@ export const useSendStore = create<SendState>((set, get) => ({
         assetType: addressType(fromAccount.address),
         proposer: mainAccount.address,
         receiver: toAccount.address,
-        flowIdentifier: selectedToken?.identifier || selectedNFTs[0]?.flowIdentifier || '',
+        flowIdentifier:
+          getTokenResourceIdentifier(selectedToken) ||
+          getNFTResourceIdentifier(selectedNFTs[0]) ||
+          '',
         sender: fromAccount.address,
         childAddrs: childAddrs,
         ids: isNFTTransaction

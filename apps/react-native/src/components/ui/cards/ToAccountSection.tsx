@@ -1,6 +1,5 @@
-import { AddressBookService } from '@onflow/frw-services';
 import { type WalletAccount } from '@onflow/frw-types';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { TouchableOpacity, View } from 'react-native';
 
@@ -31,29 +30,9 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
   onLearnMorePress,
 }) => {
   const { t } = useTranslation();
-  const [isFromAddressBook, setIsFromAddressBook] = useState(false);
-
   // Check if should show parent emoji
   const shouldShowParentEmoji =
     isLinkedAccount((account as any).type) && account.parentEmoji?.emoji;
-
-  // Check if account is from address book
-  useEffect(() => {
-    const checkAddressBook = async () => {
-      try {
-        const addressBookData = await AddressBookService.getInstance().getAddressBook();
-        const isInAddressBook = addressBookData.contacts?.some(
-          (contact: any) => contact.address.toLowerCase() === account.address.toLowerCase()
-        );
-        setIsFromAddressBook(!!isInAddressBook);
-      } catch (error) {
-        console.error('Failed to check address book:', error);
-        setIsFromAddressBook(false);
-      }
-    };
-
-    checkAddressBook();
-  }, [account.address]);
 
   return (
     <View>
@@ -131,8 +110,8 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
                   </View>
                 )}
 
-                {/* Main account icon - use ContactAvatar for address book contacts */}
-                {isFromAddressBook ? (
+                {/* Main account icon - use ContactAvatar when no avatar/emoji, WalletAvatar otherwise */}
+                {!account.avatar && !account.emojiInfo?.emoji ? (
                   <ContactAvatar name={account.name} size={40} />
                 ) : (
                   <WalletAvatar

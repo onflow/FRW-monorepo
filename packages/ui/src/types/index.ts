@@ -16,6 +16,7 @@ export interface AvatarProps {
   fallback?: string;
   borderColor?: string;
   borderWidth?: number;
+  style?: React.CSSProperties;
 }
 
 export interface TokenCardProps {
@@ -43,6 +44,7 @@ export interface SkeletonProps {
   height?: number | string;
   borderRadius?: number | string;
   animated?: boolean;
+  [key: string]: any; // Allow additional props like mb, mt, etc.
 }
 
 export interface BackgroundWrapperProps {
@@ -105,19 +107,6 @@ export interface NFTModel {
   amount?: string | number;
 }
 
-export interface NFTListCardProps {
-  nft: NFTModel;
-  selected?: boolean;
-  onPress?: () => void;
-  onDetailPress?: () => void;
-  account?: {
-    name?: string;
-    avatar?: string;
-  };
-  showAmount?: boolean;
-  selectionIcon?: React.ReactNode;
-}
-
 export interface Token {
   symbol?: string;
   name?: string;
@@ -142,7 +131,7 @@ export interface TokenAmountInputProps {
   disabled?: boolean;
 }
 
-export interface AddressTextProps {
+export interface AddressTextProps extends Omit<TextProps, 'children'> {
   address: string;
   truncate?: boolean;
   startLength?: number;
@@ -153,7 +142,15 @@ export interface AddressTextProps {
 }
 
 export interface BadgeProps {
-  variant?: 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'outline';
+  variant?:
+    | 'default'
+    | 'primary'
+    | 'secondary'
+    | 'success'
+    | 'warning'
+    | 'error'
+    | 'outline'
+    | 'evm';
   size?: 'small' | 'medium' | 'large';
   children: React.ReactNode;
 }

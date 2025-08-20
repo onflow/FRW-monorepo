@@ -1,4 +1,4 @@
-import { VerifiedToken, SwitchVertical, ChevronDown } from '@onflow/frw-icons';
+import { SwitchVertical, ChevronDown, CheckCircle } from '@onflow/frw-icons';
 import React, { useState } from 'react';
 import { Input, XStack, YStack } from 'tamagui';
 
@@ -13,14 +13,14 @@ export function TokenAmountInput({
   isTokenMode = true,
   onToggleInputMode,
   onTokenSelectorPress,
-  onMaxPress,
+  _onMaxPress,
   placeholder = '0.00',
   showBalance = true,
   showConverter = true,
   disabled = false,
   ...props
 }: TokenAmountInputProps): React.ReactElement {
-  const [focused, setFocused] = useState(false);
+  const [_focused, setFocused] = useState(false);
 
   const displayAmount = amount || '';
   const tokenSymbol = selectedToken?.symbol || 'Token';
@@ -87,79 +87,120 @@ export function TokenAmountInput({
             disabled={disabled}
             selectTextOnFocus
           />
+
+          {/* Amount Input - fixed width 169px, height 26px */}
+          <XStack items="center" width={169} height={26}>
+            {!isTokenMode && (
+              <Text fontSize={28} fontWeight="500" color="$white" lineHeight={16} mr={4}>
+                $
+              </Text>
+            )}
+            <Input
+              value={displayAmount}
+              onChangeText={onAmountChange}
+              placeholder={placeholder}
+              keyboardType="numeric"
+              fontSize={28}
+              fontWeight="500"
+              color="$white"
+              lineHeight={35}
+              height={35}
+              width={!isTokenMode ? 145 : 169}
+              borderWidth={0}
+              bg="transparent"
+              p={0}
+              m={0}
+              focusStyle={{
+                borderColor: 'transparent',
+                borderWidth: 0,
+                outlineWidth: 0,
+                boxShadow: 'none',
+              }}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+              disabled={disabled}
+              selectTextOnFocus
+              textAlign="left"
+            />
+          </XStack>
         </XStack>
 
-        {/* Token Selector */}
+        {/* Token Selector - exactly 85px width, 35.2px height */}
         <XStack
-          bg="rgba(255, 255, 255, 0.1)"
-          rounded={20}
-          alignItems="center"
-          gap={3}
-          px={6}
+          items="center"
+          justify="space-between"
+          bg="$light10"
+          rounded={39}
+          width={85}
+          height={35.2}
+          pt={3}
+          pr={9}
+          pb={3}
+          pl={10}
+          gap={8}
           pressStyle={{ opacity: 0.8 }}
           onPress={onTokenSelectorPress}
           disabled={disabled}
-          cursor="pointer"
         >
-          <Text fontSize={12} fontWeight="600" color="$white" numberOfLines={1}>
-            {tokenSymbol}
-          </Text>
-          {selectedToken?.isVeriffied && <VerifiedToken size={12} color="#41CC5D" />}
-          <ChevronDown size={12} color="#FFFFFF" />
+          <XStack items="center" gap={3}>
+            <Text fontSize={12} fontWeight="600" color="$white" lineHeight={18} numberOfLines={1}>
+              {tokenSymbol}
+            </Text>
+            {selectedToken?.isVerified && <CheckCircle size={10} color="#41CC5D" />}
+          </XStack>
+          <ChevronDown size={14} color="$white" />
         </XStack>
       </XStack>
 
-      {/* Bottom Row */}
-      <XStack alignItems="center" justifyContent="space-between">
-        {/* Left Side - Converter */}
+      {/* Bottom Row - space-between layout */}
+      <XStack items="center" justify="space-between">
+        {/* Left Side - Converter Toggle and USD Value */}
         {showConverter && (
-          <XStack alignItems="center" gap={8}>
+          <XStack items="center" gap={4} flex={1} minW={0}>
+            {/* Swap Button - exactly 25x25px with 4.545px padding */}
             <XStack
-              bg="rgba(255, 255, 255, 0.1)"
-              rounded={12}
-              p={6}
+              items="center"
+              justify="center"
+              width={25}
+              height={25}
+              bg="$light10"
+              rounded={56.818}
+              p={4.545}
+              mr="$1"
               pressStyle={{ opacity: 0.8 }}
               onPress={onToggleInputMode}
               disabled={disabled}
-              cursor="pointer"
             >
-              <SwitchVertical size={12} color="rgba(255, 255, 255, 0.4)" />
+              <SwitchVertical size={11.36} color="rgba(255, 255, 255, 0.4)" />
             </XStack>
 
-            <YStack gap={2}>
-              <Text fontSize={14} fontWeight="400" color="rgba(255, 255, 255, 0.8)">
-                {isTokenMode
-                  ? `$${(parseFloat(displayAmount || '0') * (selectedToken?.price || 0)).toFixed(2)}`
-                  : `$${displayAmount || '0.00'}`}
-              </Text>
-            </YStack>
+            <Text
+              fontSize={14}
+              fontWeight="400"
+              color="rgba(255, 255, 255, 0.8)"
+              lineHeight={16}
+              flex={1}
+              minW={0}
+            >
+              {isTokenMode
+                ? `$${(parseFloat(displayAmount || '0') * (selectedToken?.price || 0)).toFixed(2)}`
+                : `${(parseFloat(displayAmount || '0') / (selectedToken?.price || 1)).toFixed(5)} ${tokenSymbol}`}
+            </Text>
           </XStack>
         )}
 
-        {/* Right Side - Balance and MAX */}
+        {/* Right Side - Balance */}
         {showBalance && (
-          <XStack alignItems="center" gap={8}>
-            <Text fontSize={14} fontWeight="400" color="rgba(255, 255, 255, 0.8)" textAlign="right">
-              {tokenBalance} {tokenSymbol}
-            </Text>
-
-            {onMaxPress && (
-              <XStack
-                bg="rgba(255, 255, 255, 0.1)"
-                rounded={20}
-                alignItems="center"
-                px={12}
-                pressStyle={{ opacity: 0.8 }}
-                onPress={onMaxPress}
-                disabled={disabled}
-                cursor="pointer"
-              >
-                <Text fontSize={12} fontWeight="600" color="$white" textAlign="center">
-                  MAX
-                </Text>
-              </XStack>
-            )}
-          </XStack>
+          <Text
+            fontSize={14}
+            fontWeight="400"
+            color="rgba(255, 255, 255, 0.8)"
+            lineHeight={16}
+            text="right"
+            flexShrink={0}
+          >
+            {tokenBalance} {tokenSymbol}
+          </Text>
         )}
       </XStack>
     </YStack>

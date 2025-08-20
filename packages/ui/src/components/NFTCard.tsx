@@ -7,8 +7,6 @@ export interface NFTCardProps {
   nft: NFTData;
   selected?: boolean;
   onPress?: () => void;
-  onSelect?: () => void;
-  showAmount?: boolean;
   aspectRatio?: number;
   size?: 'small' | 'medium' | 'large';
   collectionAvatar?: string;
@@ -20,8 +18,6 @@ export function NFTCard({
   nft,
   selected = false,
   onPress,
-  onSelect,
-  showAmount = false,
   aspectRatio = 1,
   size = 'medium',
   collectionAvatar,
@@ -40,7 +36,7 @@ export function NFTCard({
     >
       {/* NFT Image */}
       <YStack
-        borderRadius="$4"
+        rounded="$4"
         overflow="hidden"
         aspectRatio={aspectRatio}
         bg="$surface2"
@@ -49,9 +45,9 @@ export function NFTCard({
         onPress={onPress}
       >
         {nft.thumbnail || nft.image ? (
-          <Image src={nft.thumbnail || nft.image} width="100%" height="100%" resizeMode="cover" />
+          <Image src={nft.thumbnail || nft.image} width="100%" height="100%" objectFit="cover" />
         ) : (
-          <YStack flex={1} items="center" justify="center" bg="$surface2" borderRadius="$4">
+          <YStack flex={1} items="center" justify="center" bg="$surface2" rounded="$4">
             <Text fontSize="$6" opacity={0.3}>
               🖼️
             </Text>
@@ -61,48 +57,12 @@ export function NFTCard({
           </YStack>
         )}
 
-        {/* Amount Badge for ERC1155 tokens */}
-        {showAmount && nft.amount && (
-          <YStack
-            position="absolute"
-            top="$2"
-            left="$2"
-            bg="$backgroundTransparent"
-            borderRadius="$6"
-            px="$2"
-            py="$1"
-            backdropFilter="blur(8px)"
-          >
-            <Text fontSize="$2" fontWeight="600" color="$color">
-              {nft.amount}
-            </Text>
-          </YStack>
-        )}
-
-        {/* Selection Indicator - top right */}
+        {/* Selection Indicator - top right corner */}
         {selected && (
-          <YStack pos="absolute" top="$2" right="$2" bg="$primary" borderRadius="$6" p="$1">
-            <CheckCircle size={20} color="#00EF8B" />
+          <YStack position="absolute" top="$0.5" right="$0.5">
+            <CheckCircle size={20} color="#00EF8B" theme="filled" />
           </YStack>
         )}
-
-        {/* Selection Overlay */}
-        {/* {onSelect && (
-          <Button
-            pos="absolute"
-            top={0}
-            left={0}
-            right={0}
-            bottom={0}
-            bg="transparent"
-            borderRadius={0}
-            onPress={(e) => {
-              e.stopPropagation();
-              onSelect();
-            }}
-            pressStyle={{ bg: 'transparent' }}
-          />
-        )} */}
       </YStack>
 
       {/* NFT Info */}
@@ -120,7 +80,7 @@ export function NFTCard({
               <YStack
                 width={15.36}
                 height={15.36}
-                bg="#FFBD68"
+                bg="$warning"
                 rounded="$12"
                 items="center"
                 justify="center"
@@ -130,11 +90,9 @@ export function NFTCard({
                 </Text>
               </YStack>
             )}
-            {accountAvatar && (
-              <Image src={accountAvatar} width={20} height={20} borderRadius="$6" />
-            )}
+            {accountAvatar && <Image src={accountAvatar} width={20} height={20} rounded="$6" />}
             {!accountEmoji && !accountAvatar && collectionAvatar && (
-              <Image src={collectionAvatar} width={20} height={20} borderRadius="$6" />
+              <Image src={collectionAvatar} width={20} height={20} rounded="$6" />
             )}
 
             {/* Collection Name */}

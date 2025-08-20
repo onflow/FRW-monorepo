@@ -60,7 +60,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
   }, [tokens, searchQuery]);
 
   // Handle token selection
-  const handleTokenSelect = (token: TokenModel) => {
+  const handleTokenSelect = (token: TokenModel): void => {
     onTokenSelect(token);
     setSearchQuery('');
     onClose();
@@ -85,7 +85,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
       <YStack
         bg={backgroundColor}
         rounded="$4"
-        p="$4"
+        p="$3"
         minW={320}
         maxW="90%"
         maxH={maxHeight}
@@ -144,7 +144,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
                 </Text>
               </YStack>
             ) : (
-              filteredTokens.map((token, index) => (
+              filteredTokens.safeMapTokens((token, index) => (
                 <XStack
                   key={token.id || `${token.symbol}-${index}`}
                   items="center"

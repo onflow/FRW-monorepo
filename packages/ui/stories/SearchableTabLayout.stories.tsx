@@ -33,7 +33,7 @@ const meta: Meta<typeof SearchableTabLayout> = {
     onTabChange: { action: 'tab-changed' },
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack height={600} width="100%">
         <Story />
       </YStack>
@@ -45,7 +45,13 @@ export default meta;
 type Story = StoryObj<typeof SearchableTabLayout>;
 
 // Sample content for different tabs
-const TabContent = ({ tab, searchQuery }: { tab: string; searchQuery: string }) => (
+const TabContent = ({
+  tab,
+  searchQuery,
+}: {
+  tab: string;
+  searchQuery: string;
+}): React.JSX.Element => (
   <YStack flex={1} justify="center" items="center" gap="$2">
     <Text fontSize="$6" fontWeight="600" color="$color">
       {tab} Tab
@@ -66,7 +72,7 @@ export const Default: Story = {
   args: {
     title: 'Send To',
     searchValue: '',
-    searchPlaceholder: 'Search addresses...',
+    searchPlaceholder: 'Search address',
     tabSegments: ['Accounts', 'Recent', 'Contacts'],
     activeTab: 'Accounts',
     showScanButton: true,
@@ -158,7 +164,7 @@ export const WithRecipientList: Story = {
       <SearchableTabLayout
         title="Send To"
         searchValue={searchValue}
-        searchPlaceholder="Search addresses..."
+        searchPlaceholder="Search address"
         tabSegments={['Accounts', 'Recent', 'Contacts']}
         activeTab={activeTab}
         showScanButton={true}
@@ -180,33 +186,6 @@ export const WithRecipientList: Story = {
   },
 };
 
-export const NoHeader: Story = {
-  args: {
-    showHeader: false,
-    searchValue: '',
-    searchPlaceholder: 'Search...',
-    tabSegments: ['Tab 1', 'Tab 2', 'Tab 3'],
-    activeTab: 'Tab 1',
-    children: <TabContent tab="Tab 1" searchQuery="" />,
-  },
-  render: function NoHeaderRender(args) {
-    const [searchValue, setSearchValue] = useState(args.searchValue || '');
-    const [activeTab, setActiveTab] = useState(args.activeTab || 'Tab 1');
-
-    return (
-      <SearchableTabLayout
-        {...args}
-        searchValue={searchValue}
-        activeTab={activeTab}
-        onSearchChange={setSearchValue}
-        onTabChange={setActiveTab}
-      >
-        <TabContent tab={activeTab} searchQuery={searchValue} />
-      </SearchableTabLayout>
-    );
-  },
-};
-
 export const NoScanButton: Story = {
   args: {
     title: 'Simple Layout',
@@ -220,65 +199,6 @@ export const NoScanButton: Story = {
   render: function NoScanButtonRender(args) {
     const [searchValue, setSearchValue] = useState(args.searchValue || '');
     const [activeTab, setActiveTab] = useState(args.activeTab || 'One');
-
-    return (
-      <SearchableTabLayout
-        {...args}
-        searchValue={searchValue}
-        activeTab={activeTab}
-        onSearchChange={setSearchValue}
-        onTabChange={setActiveTab}
-      >
-        <TabContent tab={activeTab} searchQuery={searchValue} />
-      </SearchableTabLayout>
-    );
-  },
-};
-
-export const CustomSpacing: Story = {
-  args: {
-    title: 'Custom Spacing',
-    searchValue: '',
-    searchPlaceholder: 'Search...',
-    tabSegments: ['A', 'B', 'C'],
-    activeTab: 'A',
-    headerSpacing: 32,
-    searchSpacing: 24,
-    tabSpacing: 24,
-    contentPadding: 24,
-    children: <TabContent tab="A" searchQuery="" />,
-  },
-  render: function CustomSpacingRender(args) {
-    const [searchValue, setSearchValue] = useState(args.searchValue || '');
-    const [activeTab, setActiveTab] = useState(args.activeTab || 'A');
-
-    return (
-      <SearchableTabLayout
-        {...args}
-        searchValue={searchValue}
-        activeTab={activeTab}
-        onSearchChange={setSearchValue}
-        onTabChange={setActiveTab}
-      >
-        <TabContent tab={activeTab} searchQuery={searchValue} />
-      </SearchableTabLayout>
-    );
-  },
-};
-
-export const ManyTabs: Story = {
-  args: {
-    title: 'Many Tabs',
-    searchValue: '',
-    searchPlaceholder: 'Search all tabs...',
-    tabSegments: ['Accounts', 'Recent', 'Contacts', 'Favorites', 'Groups'],
-    activeTab: 'Accounts',
-    showScanButton: true,
-    children: <TabContent tab="Accounts" searchQuery="" />,
-  },
-  render: function ManyTabsRender(args) {
-    const [searchValue, setSearchValue] = useState(args.searchValue || '');
-    const [activeTab, setActiveTab] = useState(args.activeTab || 'Accounts');
 
     return (
       <SearchableTabLayout

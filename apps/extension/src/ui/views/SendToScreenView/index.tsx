@@ -34,6 +34,7 @@ const SendToScreenView = () => {
     walletList,
     evmWallet,
     currentBalance,
+    mainAddress,
   } = useProfiles();
   const { network } = useNetwork();
 
@@ -175,9 +176,19 @@ const SendToScreenView = () => {
     return `${numBalance.toFixed(2)} FLOW`;
   }, []);
 
-  // Convert wallet account to RecipientData (balance will be passed in)
-  const convertWalletToRecipient = useCallback(
+  const convertToRecipient = useCallback(
     (account: any, accountType: string, balance?: string): RecipientData => {
+      console.log(currentWallet, 'currentWallet');
+      let isLinked = false;
+      let isEVM = false;
+      let parentAvatar = null;
+      if (accountType === 'evm') {
+        isEVM = true;
+      }
+      if (accountType === 'child') {
+        isLinked = true;
+        parentAvatar = currentWallet ? currentWallet.icon : null;
+      }
       const getAccountName = () => {
         if (account.name) return account.name;
         if (account.contact_name) return account.contact_name;
@@ -199,6 +210,77 @@ const SendToScreenView = () => {
         if (account.avatar) return account.avatar;
       };
 
+      const getAccountEmoji = () => {
+        return {
+          emoji: account.icon,
+          name: getAccountName(),
+          color: account.color,
+        };
+      };
+
+      return {
+        id: `${accountType}-${account.address}`,
+        name: getAccountName(),
+        address: account.address,
+        type: accountType,
+        balance: balance === '...' ? '...' : balance,
+        isLoading: balance === '...',
+        showBalance: true,
+        avatar: getAccountAvatar(),
+        parentAddress: mainAddress,
+        showEditButton: false,
+        showCopyButton: true,
+        emojiInfo: getAccountEmoji(),
+        parentAvatar,
+        isLinked,
+        isEVM,
+      };
+    },
+    [formatBalance, walletList]
+  );
+
+  // Convert wallet account to RecipientData (balance will be passed in)
+  const convertWalletToRecipient = useCallback(
+    (account: any, accountType: string, balance?: string): any => {
+      let isLinked = false;
+
+      let isEVM = false;
+      if (accountType === 'evm') {
+        isEVM = true;
+      }
+      if (accountType === 'child') {
+        isLinked = true;
+      }
+      const getAccountName = () => {
+        if (account.name) return account.name;
+        if (account.contact_name) return account.contact_name;
+
+        switch (accountType) {
+          case 'main':
+            return 'Main Account';
+          case 'evm':
+            return 'EVM Account';
+          case 'child':
+            return 'Child Account';
+          default:
+            return `${accountType.toUpperCase()} Account`;
+        }
+      };
+
+      const getAccountAvatar = () => {
+        if (account.icon) return account.icon;
+        if (account.avatar) return account.avatar;
+      };
+
+      const getAccountEmoji = () => {
+        if (account.icon) return account.icon;
+        if (account.avatar) return account.avatar;
+        return {
+          emoji: account.icon,
+          name: getAccountName(),
+          color: account.color,
+        };
+      };
       return {
         id: `${accountType}-${account.address}`,
         name: getAccountName(),
@@ -210,6 +292,10 @@ const SendToScreenView = () => {
         avatar: getAccountAvatar(),
         showEditButton: false,
         showCopyButton: true,
+        emojiInfo: getAccountEmoji(),
+        parentEmoji: null,
+        isLinked,
+        isEVM,
       };
     },
     [formatBalance]
@@ -224,46 +310,46 @@ const SendToScreenView = () => {
       if (walletList?.length > 0) {
         walletList.forEach((account) => {
           const balance = accountBalances[account.address] || '...';
-          recipientsData.push(convertWalletToRecipient(account, 'main', balance));
+          recipientsData.push(convertToRecipient(account, 'main', balance));
         });
       }
 
       // Add EVM account if available with loaded balance
       if (evmWallet && evmWallet.address) {
         const balance = accountBalances[evmWallet.address] || '...';
-        recipientsData.push(convertWalletToRecipient(evmWallet, 'evm', balance));
+        recipientsData.push(convertToRecipient(evmWallet, 'evm', balance));
       }
 
       // Add child accounts with loaded balances
       if (childAccounts && childAccounts.length > 0) {
         childAccounts.forEach((account) => {
           const balance = accountBalances[account.address] || '...';
-          recipientsData.push(convertWalletToRecipient(account, 'child', balance));
+          recipientsData.push(convertToRecipient(account, 'child', balance));
         });
       }
 
       console.log('Generated recipients data:', recipientsData.length, recipientsData); // Debug
 
       // Fallback: Add cadence, EVM, and child accounts from contacts if wallet data is not available
-      if (recipientsData.length === 0) {
-        if (cadenceAccounts?.length > 0) {
-          cadenceAccounts.forEach((account) => {
-            recipientsData.push(convertContactToRecipient(account));
-          });
-        }
+      // if (recipientsData.length === 0) {
+      //   if (cadenceAccounts?.length > 0) {
+      //     cadenceAccounts.forEach((account) => {
+      //       recipientsData.push(convertContactToRecipient(account));
+      //     });
+      //   }
 
-        if (evmAccounts?.length > 0) {
-          evmAccounts.forEach((account) => {
-            recipientsData.push(convertContactToRecipient(account));
-          });
-        }
+      //   if (evmAccounts?.length > 0) {
+      //     evmAccounts.forEach((account) => {
+      //       recipientsData.push(convertContactToRecipient(account));
+      //     });
+      //   }
 
-        if (childAccountsContacts?.length > 0) {
-          childAccountsContacts.forEach((account) => {
-            recipientsData.push(convertContactToRecipient(account));
-          });
-        }
-      }
+      //   if (childAccountsContacts?.length > 0) {
+      //     childAccountsContacts.forEach((account) => {
+      //       recipientsData.push(convertContactToRecipient(account));
+      //     });
+      //   }
+      // }
     } catch (error) {
       console.error('Error loading accounts data:', error);
     }

@@ -28,7 +28,7 @@ export function useContacts() {
     let mounted = true;
     // fetch address book
     const fetchAddressBook = async () => {
-      const walletAddressBook = await wallet.getAddressBook();
+      const walletAddressBook = (await wallet.getAddressBook()) || [];
       const recentContacts = await wallet.getRecent();
 
       // Mark which recent contacts are in the address book

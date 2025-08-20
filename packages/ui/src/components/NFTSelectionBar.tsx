@@ -36,14 +36,14 @@ export function NFTSelectionBar({
     <XStack key={nft.id} items="center" justify="space-between" gap={8}>
       <XStack items="center" gap={8}>
         {/* NFT Image */}
-        <YStack borderRadius={16} overflow="hidden" width={53.44} height={53.44} bg="$bg3">
+        <YStack borderRadius={16} overflow="hidden" width={53.44} height={53.44} bg="$light5">
           <Image
             src={nft.thumbnail || nft.image}
             width="100%"
             height="100%"
             resizeMode="cover"
             fallback={
-              <YStack flex={1} items="center" justify="center" bg="$bg3">
+              <YStack flex={1} items="center" justify="center" bg="$light10">
                 <Text fontSize="$2" color="$textTertiary">
                   NFT
                 </Text>
@@ -54,12 +54,12 @@ export function NFTSelectionBar({
 
         {/* NFT Info */}
         <YStack gap={6} width={201} height={35} justify="center">
-          <Text fontSize={14} fontWeight="600" color="rgba(255, 255, 255, 0.8)" numberOfLines={1}>
+          <Text fontSize={14} fontWeight="600" color="$light80" numberOfLines={1}>
             {nft.name}
           </Text>
 
           {nft.collection && (
-            <Text fontSize={14} fontWeight="400" color="rgba(255, 255, 255, 0.8)" numberOfLines={1}>
+            <Text fontSize={14} fontWeight="400" color="$light80" numberOfLines={1}>
               {nft.collection}
             </Text>
           )}
@@ -82,7 +82,7 @@ export function NFTSelectionBar({
       left={0}
       right={0}
       width={375}
-      bg="#141415"
+      bg="$bg2"
       borderTopLeftRadius={16}
       borderTopRightRadius={16}
       shadowColor="$shadowColor"
@@ -97,8 +97,8 @@ export function NFTSelectionBar({
       <YStack gap={16}>
         {/* Header */}
         <XStack items="center" justify="space-between" pt={10} position="relative">
-          <Text fontSize={14} fontWeight="400" color="#FFFFFF">
-            {selectedNFTs.length} Selected NFTs
+          <Text fontSize={16} fontWeight="600" color="$white">
+            {selectedNFTs.length} Selected NFT{selectedNFTs.length === 1 ? '' : 's'}
           </Text>
 
           <XStack
@@ -126,7 +126,7 @@ export function NFTSelectionBar({
                     {renderNFTItem(nft)}
                     {index < selectedNFTs.length - 1 && (
                       <YStack py={8} items="center">
-                        <YStack height={1} bg="rgba(255, 255, 255, 0.15)" width={343} />
+                        <YStack height={1} bg="$light10" width={343} />
                       </YStack>
                     )}
                   </React.Fragment>
@@ -144,18 +144,14 @@ export function NFTSelectionBar({
             fullWidth
             disabled={selectedNFTs.length === 0}
             onPress={onContinue}
-            style={{
-              backgroundColor: '#FFFFFF',
-              color: '#252B34',
-              borderColor: '#FFFFFF',
-              borderWidth: 1,
-              borderRadius: 16,
-            }}
-            fontSize={16}
-            fontWeight="600"
-            lineHeight={1.2}
+            bg="$white"
+            borderColor="$white"
+            borderWidth={1}
+            borderRadius={16}
           >
-            Confirm {selectedNFTs.length} NFTs
+            <Text fontSize={16} fontWeight="600" color="$black">
+              Confirm {selectedNFTs.length} NFT{selectedNFTs.length === 1 ? '' : 's'}
+            </Text>
           </Button>
         )}
       </YStack>

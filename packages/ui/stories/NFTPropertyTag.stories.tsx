@@ -25,7 +25,7 @@ const meta: Meta<typeof NFTPropertyTag> = {
     labelColor: { control: 'color' },
   },
   decorators: [
-    (Story) => (
+    (Story): React.JSX.Element => (
       <YStack p="$4" width={300}>
         <Story />
       </YStack>

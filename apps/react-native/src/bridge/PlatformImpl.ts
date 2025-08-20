@@ -1,5 +1,6 @@
 import { type PlatformSpec, type Storage } from '@onflow/frw-context';
 import type {
+  Currency,
   Platform,
   RecentContactsResponse,
   WalletAccount,
@@ -12,6 +13,7 @@ import { Platform as RNPlatform } from 'react-native';
 import { MMKV } from 'react-native-mmkv';
 
 import NativeFRWBridge from './NativeFRWBridge';
+import { reactNativeNavigation } from './ReactNativeNavigation';
 import { bridgeAuthorization, payer, proposer } from './signWithRole';
 
 class PlatformImpl implements PlatformSpec {
@@ -97,6 +99,9 @@ class PlatformImpl implements PlatformSpec {
     return NativeFRWBridge.getBuildNumber();
   }
 
+  getCurrency(): Currency {
+    return NativeFRWBridge.getCurrency();
+  }
   getPlatform(): Platform {
     return RNPlatform.OS === 'ios' ? Platform.iOS : Platform.Android;
   }
@@ -141,7 +146,7 @@ class PlatformImpl implements PlatformSpec {
   }
 
   closeRN(): void {
-    NativeFRWBridge.closeRN();
+    NativeFRWBridge.closeRN(null);
   }
 
   configureCadenceService(cadenceService: any): void {
@@ -191,6 +196,11 @@ class PlatformImpl implements PlatformSpec {
       }
       return { config, response };
     });
+  }
+
+  getNavigation() {
+    // Return the navigation implementation - will be set up separately
+    return reactNativeNavigation;
   }
 }
 

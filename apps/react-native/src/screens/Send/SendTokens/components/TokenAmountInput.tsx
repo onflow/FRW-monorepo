@@ -1,4 +1,5 @@
 import { type TokenModel } from '@onflow/frw-types';
+import { type Currency } from '@onflow/frw-types';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -20,6 +21,7 @@ interface TokenAmountInputProps {
   onTokenSelectorPress: () => void;
   onMaxPress: () => void;
   tokenToUsdRate: number;
+  currency: Currency;
 }
 
 export const TokenAmountInput = ({
@@ -29,7 +31,8 @@ export const TokenAmountInput = ({
   onToggleInputMode,
   onTokenSelectorPress,
   onMaxPress,
-  _tokenToUsdRate,
+  tokenToUsdRate,
+  currency = { name: 'USD', symbol: '$', rate: '1' },
 }: TokenAmountInputProps) => {
   const { t } = useTranslation();
   const { isDark } = useTheme();
@@ -95,7 +98,7 @@ export const TokenAmountInput = ({
                   },
                 ]}
               >
-                $
+                {currency.symbol}
               </Text>
             )}
 
@@ -198,7 +201,7 @@ export const TokenAmountInput = ({
             numberOfLines={1}
           >
             {formData.isTokenMode
-              ? `$${formData.fiatAmount}`
+              ? `${currency.symbol}${formData.fiatAmount}`
               : `${formData.tokenAmount} ${selectedToken?.symbol || 'FLOW'}`}
           </Text>
         </View>
