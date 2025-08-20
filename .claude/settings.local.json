@@ -54,7 +54,8 @@
       "Bash(pntml lint:*)",
       "Bash(avdmanager list:*)",
       "Bash($ANDROID_HOME/cmdline-tools/latest/bin/avdmanager list:*)",
-      "Bash(./gradlew:*)"
+      "Bash(./gradlew:*)",
+      "Bash(pntml typecheck:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

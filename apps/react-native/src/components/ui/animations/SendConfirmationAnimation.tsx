@@ -1,6 +1,7 @@
 import type { NFTModel } from '@onflow/frw-types';
+import { getNFTCover } from '@onflow/frw-utils';
 import LottieView from 'lottie-react-native';
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { type ViewStyle, View, Image } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -34,6 +35,7 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
   transactionType,
 }) => {
   const animationRef = useRef<LottieView>(null);
+  const [imageLoadError, setImageLoadError] = useState(false);
 
   // Determine what to show based on transaction type and available data
   const isNFTTransaction = transactionType?.includes('nft');
@@ -44,19 +46,79 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
   const getImageUri = () => {
     if (isNFTTransaction && selectedNFTs && selectedNFTs.length > 0) {
       const firstNFT = selectedNFTs[0];
-      // For NFT transactions, prioritize collection square image for better overlay effect
-      // Return null if no collection image is found to avoid showing overlay
-      return (
-        firstNFT.collectionSquareImage ||
-        firstNFT.collection?.logo ||
-        firstNFT.collection?.logoURI ||
-        null
-      );
+
+      // Try collection images first (these provide better branding)
+      const collectionSquareImage = firstNFT.collectionSquareImage?.trim();
+      const collectionLogo = firstNFT.collection?.logo?.trim();
+      const collectionLogoURI = firstNFT.collection?.logoURI?.trim();
+
+      if (collectionSquareImage) {
+        return collectionSquareImage;
+      }
+      if (collectionLogo) {
+        return collectionLogo;
+      }
+      if (collectionLogoURI) {
+        return collectionLogoURI;
+      }
+
+      // Fallback to NFT-specific images using the standard utility
+      const nftCover = getNFTCover(firstNFT);
+      if (nftCover?.trim()) {
+        return nftCover;
+      }
+
+      // Final fallback - sometimes NFT images are directly available
+      const thumbnail = firstNFT.thumbnail?.trim();
+      const postMediaImage = firstNFT.postMedia?.image?.trim();
+
+      return thumbnail || postMediaImage || null;
     }
-    return selectedToken?.logoURI;
+    return selectedToken?.logoURI?.trim() || null;
   };
 
   const imageUri = getImageUri();
+
+  // Reset error state when imageUri changes
+  useEffect(() => {
+    setImageLoadError(false);
+
+    // Always log basic transaction info for debugging
+    console.log('[SendConfirmationAnimation] Transaction Debug:', {
+      transactionType,
+      isNFTTransaction,
+      hasSelectedNFTs: !!(selectedNFTs && selectedNFTs.length > 0),
+      selectedNFTsCount: selectedNFTs?.length || 0,
+      finalImageUri: imageUri,
+      imageLoadError,
+      shouldShowOverlay:
+        imageUri && !imageLoadError && (isNFTTransaction || (!shouldShowFlowLogo && !isFlowToken)),
+    });
+
+    if (isNFTTransaction && selectedNFTs && selectedNFTs.length > 0) {
+      const firstNFT = selectedNFTs[0];
+      console.log('[SendConfirmationAnimation] NFT Animation Debug:', {
+        finalImageUri: imageUri,
+        collectionSquareImage: firstNFT.collectionSquareImage,
+        collectionLogo: firstNFT.collection?.logo,
+        collectionLogoURI: firstNFT.collection?.logoURI,
+        nftCover: getNFTCover(firstNFT),
+        thumbnail: firstNFT.thumbnail,
+        postMediaImage: firstNFT.postMedia?.image,
+        hasNestedCollection: !!firstNFT.collection,
+        nftName: firstNFT.name,
+        collectionName: firstNFT.collectionName,
+      });
+    }
+  }, [
+    imageUri,
+    isNFTTransaction,
+    selectedNFTs,
+    imageLoadError,
+    transactionType,
+    shouldShowFlowLogo,
+    isFlowToken,
+  ]);
 
   // Animation values for the token overlay
   const translateX = useSharedValue(0);
@@ -197,8 +259,9 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
       />
 
       {/* Animated Token/Coin Overlay - positioned to match Flow coin exactly */}
-      {/* Only show overlay if we have a valid image (NFT collection image or token logo) */}
-      {imageUri && (isNFTTransaction || (!shouldShowFlowLogo && !isFlowToken)) && (
+      {/* Show overlay for NFT transactions (with fallback) or token transactions with valid image */}
+      {(isNFTTransaction && selectedNFTs && selectedNFTs.length > 0) ||
+      (imageUri && !imageLoadError && !shouldShowFlowLogo && !isFlowToken) ? (
         <Animated.View
           style={[
             {
@@ -221,23 +284,52 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
             animatedTokenStyle,
           ]}
         >
-          <Image
-            source={{ uri: imageUri }}
-            style={{
-              width: 56,
-              height: 56,
-              borderRadius: isNFTTransaction ? 12 : 28, // Apply border radius to image only
-              backgroundColor: isNFTTransaction ? '#f8f9fa' : 'transparent',
-              borderWidth: isNFTTransaction ? 0.5 : 0,
-              borderColor: 'rgba(0, 0, 0, 0.1)',
-            }}
-            resizeMode="cover"
-            onError={() =>
-              console.log('[SendConfirmationAnimation] Failed to load image:', imageUri)
-            }
-          />
+          {imageUri ? (
+            <Image
+              source={{ uri: imageUri }}
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: isNFTTransaction ? 12 : 28,
+                backgroundColor: isNFTTransaction ? '#ffffff' : 'transparent', // White background for NFTs to handle transparency
+                borderWidth: isNFTTransaction ? 0.5 : 0,
+                borderColor: 'rgba(0, 0, 0, 0.1)',
+              }}
+              resizeMode="cover"
+              onError={error => {
+                console.log('[SendConfirmationAnimation] Failed to load image:', imageUri, error);
+                console.log(
+                  '[SendConfirmationAnimation] Consider checking if the URL is valid and accessible'
+                );
+                setImageLoadError(true);
+              }}
+            />
+          ) : (
+            // Fallback placeholder for NFT transactions without images
+            <View
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: isNFTTransaction ? 12 : 28,
+                backgroundColor: isNFTTransaction ? '#6366f1' : '#10b981',
+                borderWidth: isNFTTransaction ? 0.5 : 0,
+                borderColor: 'rgba(0, 0, 0, 0.1)',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <View
+                style={{
+                  width: 24,
+                  height: 24,
+                  backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                  borderRadius: 4,
+                }}
+              />
+            </View>
+          )}
         </Animated.View>
-      )}
+      ) : null}
     </View>
   );
 };
