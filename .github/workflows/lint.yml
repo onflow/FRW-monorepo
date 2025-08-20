@@ -2,14 +2,14 @@ name: Lint
 
 on:
   # Trigger the workflow on push or pull request,
-  # but only for the main branch
+  # for main, dev, and release/* branches
   push:
-    branches: [main, dev]
+    branches: [main, dev, "release/*"]
 
   # Replace pull_request with pull_request_target if you
   # plan to use this action with forks, see the Limitations section
   pull_request:
-    branches: [main, dev]
+    branches: [main, dev, "release/*"]
 
 # Down scope as necessary via https://docs.github.com/en/actions/security-guides/automatic-token-authentication#modifying-the-permissions-for-the-github_token
 permissions:
