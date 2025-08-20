@@ -50,7 +50,10 @@
       "Bash(rg:*)",
       "Bash(git submodule:*)",
       "Bash(./android/gradlew:*)",
-      "Bash(adb:*)"
+      "Bash(adb:*)",
+      "Bash(./gradlew:*)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(npx react-native:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
