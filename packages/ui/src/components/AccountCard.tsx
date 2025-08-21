@@ -17,6 +17,7 @@ export function AccountCard({
   onAccountSelect,
   modalTitle = 'Select Account',
   enableModalSelection = false,
+  showEditButton = false,
   ...props
 }: AccountCardProps): React.ReactElement {
   const [modalOpen, setModalOpen] = useState(false);
@@ -24,7 +25,6 @@ export function AccountCard({
   const content = (
     <YStack
       width="100%"
-      bg="$light10"
       pt="$4"
       px="$4"
       pb="$8"
@@ -49,7 +49,7 @@ export function AccountCard({
           {/* Account Avatar */}
           <Avatar
             src={account.avatar}
-            fallback={account.name?.charAt(0) || '?'}
+            fallback={account.emoji || account.name?.charAt(0) || '?'}
             size={36}
             borderColor="$primary"
             borderWidth={1}
@@ -84,9 +84,11 @@ export function AccountCard({
         </XStack>
 
         {/* Edit Icon */}
-        <XStack width={24} height={24} items="center" justify="center" mt={6}>
-          <Edit size={24} color="#767676" theme="outline" />
-        </XStack>
+        {showEditButton && (
+          <XStack width={24} height={24} items="center" justify="center" mt={6}>
+            <Edit size={24} color="#767676" theme="outline" />
+          </XStack>
+        )}
       </XStack>
     </YStack>
   );
@@ -176,7 +178,7 @@ export function AccountCard({
                               {/* Account Avatar */}
                               <Avatar
                                 src={acc.avatar}
-                                fallback={acc.name?.charAt(0) || '?'}
+                                fallback={acc.emoji || acc.name?.charAt(0) || '?'}
                                 size={53.44}
                                 borderColor={isSelected ? '$primary' : undefined}
                                 borderWidth={isSelected ? 1 : undefined}

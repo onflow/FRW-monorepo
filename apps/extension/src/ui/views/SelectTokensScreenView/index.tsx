@@ -1,4 +1,5 @@
 import { SelectTokensScreen } from '@onflow/frw-screens';
+import { useSendStore } from '@onflow/frw-stores';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
@@ -11,6 +12,7 @@ import { LLHeader } from '@/ui/components/LLHeader';
 
 const SelectTokensScreenView = () => {
   const navigate = useNavigate();
+  const { selectedToken } = useSendStore();
 
   // Use platform services
   const platformBridge = usePlatformBridge();
@@ -25,9 +27,12 @@ const SelectTokensScreenView = () => {
         console.log(`Navigating to ${screen}`, params);
 
         switch (screen) {
-          case 'SendTo':
-            navigate('/dashboard/sendtoscreen');
+          case 'SendTo': {
+            // Get token information from the send store instead of params
+            const tokenId = selectedToken?.symbol || selectedToken?.identifier || 'flow';
+            navigate(`/dashboard/token/${tokenId}/send`);
             break;
+          }
           case 'NFTList':
             if (params?.collection && params?.address) {
               console.log('NFT collection selected:', params.collection);
@@ -39,7 +44,7 @@ const SelectTokensScreenView = () => {
         }
       },
     }),
-    [navigate, platformNavigation]
+    [navigate, platformNavigation, selectedToken]
   );
 
   return (

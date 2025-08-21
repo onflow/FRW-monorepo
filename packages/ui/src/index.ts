@@ -63,6 +63,11 @@ export * from './components/TokenCard';
 export * from './components/TokenSelectorModal';
 export * from './components/TransactionConfirmationModal';
 export * from './components/TransactionFeeSection';
+export * from './components/ToAccountSection';
+export * from './components/StorageWarning';
+export * from './components/ErrorDialog';
+export * from './components/ConfirmAddressDialog';
+export * from './components/ExtensionHeader';
 export * from './foundation/SegmentedControl';
 
 export * from './components/TokenAmountInput';

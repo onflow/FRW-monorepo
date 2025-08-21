@@ -42,7 +42,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
       pt={16}
       px={16}
       pb={24}
-      width={343}
+      width="100%"
     >
       {/* Section Header */}
       <Text fontSize="$2" fontWeight="400" color="rgba(255, 255, 255, 0.8)" lineHeight={16}>
@@ -85,7 +85,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
             <XStack width={46} height={36} items="center" justify="flex-start" pl={5}>
               <Avatar
                 src={account.avatar}
-                fallback={account.name?.charAt(0) || 'A'}
+                fallback={(account as any)?.emoji || account.name?.charAt(0) || 'A'}
                 size={avatarSize}
                 borderColor={isAccountIncompatible ? '#D9D9D9' : '#00EF8B'}
                 borderWidth={1}
