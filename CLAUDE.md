@@ -55,6 +55,78 @@ separation between View, ViewModel, Network, and Model layers.
   - `/create-pr dev "feat: new feature"` - Create PR with custom title
   - Automatically searches and links related GitHub issues
 
+## GitHub Workflows
+
+The project includes automated GitHub Actions workflows for improved development
+efficiency:
+
+### AI-Powered Release Notes Generation (`.github/workflows/release-notes.yml`)
+
+Automatically generates engaging, user-friendly release notes using Claude AI
+when creating GitHub releases:
+
+**🤖 AI Features:**
+
+- Uses Claude AI (Claude-3.5-Sonnet) to intelligently analyze commits
+- Transforms technical commit messages into user-friendly language
+- Focuses on end-user benefits rather than technical details
+- Automatically categorizes and prioritizes changes
+- Generates engaging, marketing-friendly descriptions
+- Handles any commit format (conventional commits or free-form)
+
+**🔧 Technical Features:**
+
+- Collects commit titles, descriptions, authors, and dates
+- Analyzes commit range between releases
+- Provides comprehensive context about Flow Reference Wallet to Claude
+- Includes fallback mechanism if AI is unavailable
+- Updates release notes via GitHub API
+
+**⚙️ Configuration:**
+
+- **Required:** `ANTHROPIC_API_KEY` secret must be set in repository
+- **Trigger:** Runs automatically when a release is published or created
+- **Monorepo Support:** Automatically detects and handles monorepo tags like:
+  - `release/rn-0.0.1` → `release/rn-0.0.2` (React Native releases)
+  - `release/extension-1.2.0` → `release/extension-1.2.1` (Extension releases)
+  - `release/packages-2.1.0` → `release/packages-2.1.1` (Package releases)
+- **Smart Commit Range:** Analyzes all commits between matching tag prefixes
+- **Customization:** Modify the AI prompt in the workflow file
+
+**📝 Example AI-Generated Output:**
+
+```markdown
+## 🆕 What's New
+
+- Enjoy faster transaction processing with our improved Flow blockchain
+  integration
+- New biometric authentication keeps your wallet secure and convenient
+
+## 🔧 Improvements
+
+- Smoother user interface with enhanced animations and responsiveness
+- Better error messages help you understand and resolve issues quickly
+
+## 🐛 Bug Fixes
+
+- Fixed rare issue where token balances might display incorrectly
+- Resolved connection problems on slower networks
+
+---
+
+Thank you for using Flow Reference Wallet! 🚀
+```
+
+**🧠 AI Prompt Engineering:**
+
+The workflow provides Claude with:
+
+- Repository context (Flow Reference Wallet, blockchain, mobile/extension)
+- Target audience (end users, not developers)
+- Commit analysis with titles, descriptions, authors, and dates
+- Clear guidelines for user-focused, engaging language
+- Structured output format with appropriate emojis
+
 ## Tamagui V4 Shorthands
 
 When working with Tamagui components, always use these V4 shorthand properties
