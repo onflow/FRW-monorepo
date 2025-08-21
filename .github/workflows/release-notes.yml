@@ -148,21 +148,30 @@ jobs:
           echo "" >> claude_prompt.md
           echo "Now, please analyze these commits and create engaging, user-focused release notes that highlight what users will experience and benefit from." >> claude_prompt.md
 
-          # Use curl to call Claude API directly
+          # Create JSON payload file for security
+          cat > claude_request.json << 'JSON_EOF'
+          {
+            "model": "claude-3-5-sonnet-20241022",
+            "max_tokens": 8000,
+            "messages": [
+              {
+                "role": "user", 
+                "content": ""
+              }
+            ]
+          }
+          JSON_EOF
+
+          # Safely inject the prompt content into JSON
+          PROMPT_CONTENT=$(cat claude_prompt.md | jq -Rs .)
+          jq --argjson content "$PROMPT_CONTENT" '.messages[0].content = $content' claude_request.json > claude_request_final.json
+
+          # Use curl with file input for better security
           RESPONSE=$(curl -s -X POST https://api.anthropic.com/v1/messages \
             -H "Content-Type: application/json" \
             -H "x-api-key: ${{ secrets.ANTHROPIC_API_KEY }}" \
             -H "anthropic-version: 2023-06-01" \
-            -d '{
-              "model": "claude-3-5-sonnet-20241022",
-              "max_tokens": 2000,
-              "messages": [
-                {
-                  "role": "user",
-                  "content": "'"$(cat claude_prompt.md | sed 's/"/\\"/g' | tr '\n' ' ')"'"
-                }
-              ]
-            }')
+            -d @claude_request_final.json)
 
           # Extract the content from Claude's response
           RELEASE_NOTES=$(echo "$RESPONSE" | jq -r '.content[0].text' 2>/dev/null || echo "")
@@ -191,6 +200,9 @@ jobs:
 
           echo "✅ AI-generated release notes:"
           echo "$RELEASE_NOTES"
+
+          # Clean up temporary files for security
+          rm -f claude_prompt.md claude_request.json claude_request_final.json commit_info.md
 
       - name: Update Release with AI-Generated Notes
         env:
