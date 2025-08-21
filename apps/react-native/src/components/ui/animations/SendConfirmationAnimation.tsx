@@ -133,24 +133,6 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
         // Full nested collection object for debugging
         fullNestedCollection: firstNFT.collection,
       });
-
-      // Special TopShot debugging
-      if (
-        firstNFT.collectionName?.toLowerCase().includes('topshot') ||
-        firstNFT.collectionContractName?.toLowerCase().includes('topshot')
-      ) {
-        console.log('[SendConfirmationAnimation] TopShot Specific Debug:', {
-          allCollectionProperties: Object.keys(firstNFT).filter(key =>
-            key.toLowerCase().includes('collection')
-          ),
-          allImageProperties: Object.keys(firstNFT).filter(
-            key =>
-              key.toLowerCase().includes('image') ||
-              key.toLowerCase().includes('logo') ||
-              key.toLowerCase().includes('uri')
-          ),
-        });
-      }
     }
   }, [
     imageUri,
