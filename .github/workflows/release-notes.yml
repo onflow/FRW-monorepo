@@ -148,23 +148,23 @@ jobs:
           echo "" >> claude_prompt.md
           echo "Now, please analyze these commits and create engaging, user-focused release notes that highlight what users will experience and benefit from." >> claude_prompt.md
 
-          # Create JSON payload file for security
-          cat > claude_request.json << 'JSON_EOF'
+          # Create JSON payload file for security (without content first)
+          cat > claude_request_template.json << 'JSON_EOF'
           {
             "model": "claude-3-5-sonnet-20241022",
             "max_tokens": 8000,
             "messages": [
               {
                 "role": "user", 
-                "content": ""
+                "content": null
               }
             ]
           }
           JSON_EOF
 
-          # Safely inject the prompt content into JSON
-          PROMPT_CONTENT=$(cat claude_prompt.md | jq -Rs .)
-          jq --argjson content "$PROMPT_CONTENT" '.messages[0].content = $content' claude_request.json > claude_request_final.json
+          # Safely inject the prompt content into JSON using file operations
+          # This avoids command substitution issues with large or special content
+          jq --rawfile content claude_prompt.md '.messages[0].content = $content' claude_request_template.json > claude_request_final.json
 
           # Use curl with file input for better security
           RESPONSE=$(curl -s -X POST https://api.anthropic.com/v1/messages \
@@ -202,7 +202,7 @@ jobs:
           echo "$RELEASE_NOTES"
 
           # Clean up temporary files for security
-          rm -f claude_prompt.md claude_request.json claude_request_final.json commit_info.md
+          rm -f claude_prompt.md claude_request_template.json claude_request_final.json commit_info.md
 
       - name: Update Release with AI-Generated Notes
         env:
