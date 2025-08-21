@@ -103,7 +103,7 @@
                             android:layout_marginEnd="8dp"
                             android:translationZ="10dp"
                             app:layout_constrainedWidth="true"
-                            app:layout_constraintEnd_toStartOf="@id/ll_evm_move_token"
+                            app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintHorizontal_bias="0"
                             app:layout_constraintStart_toEndOf="@id/icon_view"
                             app:layout_constraintTop_toTopOf="@id/icon_view">
@@ -141,7 +141,7 @@
                                     android:visibility="gone" />
                             </androidx.appcompat.widget.LinearLayoutCompat>
                         </FrameLayout>
-                        
+
                         <androidx.constraintlayout.utils.widget.ImageFilterView
                             android:id="@+id/iv_verified"
                             android:layout_width="24dp"
@@ -161,36 +161,6 @@
                             app:layout_constraintBottom_toBottomOf="@id/name_wrapper"
                             app:layout_constraintStart_toEndOf="@id/name_wrapper"
                             android:src="@drawable/ic_verified"/>
-
-                        <!-- EVM Move Token Button -->
-                        <LinearLayout
-                            android:id="@+id/ll_evm_move_token"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:background="@drawable/bg_round_8dp"
-                            android:backgroundTint="@color/colorSecondary_16"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal"
-                            android:paddingHorizontal="9dp"
-                            android:paddingVertical="4dp"
-                            app:layout_constraintBottom_toBottomOf="@id/name_wrapper"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintTop_toTopOf="@id/name_wrapper">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginEnd="8dp"
-                                android:fontFamily="@font/inter"
-                                android:text="@string/move"
-                                android:textColor="@color/accent_green"
-                                android:textSize="14sp" />
-
-                            <ImageView
-                                android:layout_width="11dp"
-                                android:layout_height="12dp"
-                                android:src="@drawable/ic_evm_move_token" />
-                        </LinearLayout>
 
                         <!-- Balance amount & coin type -->
                         <TextView

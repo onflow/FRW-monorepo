@@ -16,9 +16,7 @@ import com.flowfoundation.wallet.page.browser.toFavIcon
 import com.flowfoundation.wallet.page.browser.widgets.LilicoWebView
 import com.flowfoundation.wallet.page.evm.EnableEVMDialog
 import com.flowfoundation.wallet.page.token.custom.widget.AddCustomTokenDialog
-import com.flowfoundation.wallet.page.wallet.dialog.MoveDialog
 import com.flowfoundation.wallet.utils.findActivity
-import com.flowfoundation.wallet.utils.isShowMoveDialog
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
@@ -73,9 +71,6 @@ class EvmInterface(
                 }
                 uiScope {
                     if (EVMWalletManager.haveEVMAddress()) {
-                        if (isShowMoveDialog()) {
-                            MoveDialog().showMove(activity.supportFragmentManager, webView.title)
-                        }
                         val connect = EvmRequestAccountDialog().show(
                             activity.supportFragmentManager,
                             EVMDialogModel(

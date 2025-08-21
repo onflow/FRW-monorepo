@@ -8,7 +8,10 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.R
+import com.flowfoundation.wallet.ReactNativeDemoActivity
 import com.flowfoundation.wallet.base.presenter.BasePresenter
+import com.flowfoundation.wallet.bridge.RNBridge
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.LayoutWalletCoordinatorHeaderBinding
 import com.flowfoundation.wallet.manager.app.isTestnet
@@ -25,7 +28,6 @@ import com.flowfoundation.wallet.page.notification.model.Type
 import com.flowfoundation.wallet.page.notification.model.WalletNotification
 import com.flowfoundation.wallet.page.profile.subpage.walletconnect.session.model.PendingRequestModel
 import com.flowfoundation.wallet.page.receive.ReceiveActivity
-import com.flowfoundation.wallet.page.send.transaction.TransactionSendActivity
 import com.flowfoundation.wallet.page.token.addtoken.AddTokenActivity
 import com.flowfoundation.wallet.page.token.custom.AddCustomTokenActivity
 import com.flowfoundation.wallet.page.token.manage.ManageTokenActivity
@@ -70,7 +72,10 @@ class WalletHeaderPresenter(
             val count = if (model.coinCount > 0 ) model.coinCount else FungibleTokenListManager.getCurrentDisplayTokenListSnapshot().size
             tvTokenCount.text = view.context.getString(R.string.token_count, count)
 
-            cvSend.setOnClickListener { TransactionSendActivity.launch(view.context) }
+            cvSend.setOnClickListener {
+                // Launch React Native Demo Activity instead of TransactionSendActivity
+                ReactNativeDemoActivity.launch(view.context, RNBridge.ScreenType.SEND_ASSET)
+            }
             cvReceive.setOnClickListener { ReceiveActivity.launch(view.context) }
             val address = shortenEVMString(WalletManager.selectedWalletAddress().toAddress())
             tvAddress.text = address

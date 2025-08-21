@@ -10,10 +10,8 @@ import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.page.nft.nftlist.model.*
-import com.flowfoundation.wallet.utils.image.SvgModel
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.wallet.toAddress
-import java.net.URLEncoder
 import kotlin.math.min
 
 val nftListDiffCallback = object : DiffUtil.ItemCallback<Any>() {
@@ -48,31 +46,27 @@ val nftListDiffCallback = object : DiffUtil.ItemCallback<Any>() {
 }
 
 fun Nft.getNFTCover(): Any? {
-    return cover()?.getBase64SvgModel() ?: cover()
+    return cover() // Simplified - no SVG processing
 }
 
-fun String?.getBase64SvgModel(): SvgModel? {
-    try {
-        if (this?.startsWith("data:image/svg+xml;base64,") == true) {
-            val base64Data = this.substringAfter("base64,")
-            return SvgModel(base64Data)
-        } else {
-            return null
-        }
-    } catch (e: Exception) {
-        e.printStackTrace()
-        return null
-    }
+/**
+ * Check if string is SVG data URL (base64 or regular)
+ */
+fun String?.isSvgDataUrl(): Boolean {
+    return this?.startsWith("data:image/svg+xml") == true
+}
+
+/**
+ * Check if URL points to SVG file
+ */
+fun String?.isSvgUrl(): Boolean {
+    return this?.lowercase()?.let { url ->
+        url.endsWith(".svg") || url.contains("svg") || isSvgDataUrl()
+    } ?: false
 }
 
 fun Nft.cover(): String? {
-    var image = postMedia?.image
-
-    if (!image.isNullOrBlank() && postMedia?.isSvg == "true") {
-        image = "https://lilico.app/api/svg2png?url=${URLEncoder.encode(image, "UTF-8")}"
-    }
-
-    return image ?: video()
+    return postMedia?.image ?: video()
 }
 
 fun Nft.name(): String? {
@@ -98,7 +92,7 @@ fun Nft.websiteUrl(walletAddress: String): String? {
     if (!collectionExternalURL.isNullOrBlank()) {
         return collectionExternalURL
     }
-    
+
     // Second priority: Fallback URLs based on NFT type
     // For Flow-EVM NFTs, use OpenSea profile
     if (canBridgeToEVM() || !evmAddress.isNullOrBlank()) {
@@ -107,12 +101,12 @@ fun Nft.websiteUrl(walletAddress: String): String? {
             return "https://opensea.io/$evmAddr"
         }
     }
-    
+
     // For Flow NFTs, use FlowPort
     if (canBridgeToFlow() || !flowIdentifier.isNullOrBlank()) {
         return "https://port.flow.com/nfts/$walletAddress"
     }
-    
+
     // If no URL can be determined, return null to hide the option
     return null
 }
@@ -142,11 +136,11 @@ fun nftWalletAddress(): String {
 //    }
     val rawAddress = WalletManager.selectedWalletAddress()
     val formattedAddress = rawAddress.toAddress()
-    
+
     // Log for debugging
     logd("nftWalletAddress", "Raw address: '$rawAddress'")
     logd("nftWalletAddress", "Formatted address: '$formattedAddress'")
-    
+
     // Return the formatted address with 0x prefix
     return formattedAddress
 }

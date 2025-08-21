@@ -5,12 +5,16 @@ plugins {
     id "org.jetbrains.kotlin.plugin.serialization" version "1.9.0"
     id 'com.google.gms.google-services'
     id 'com.google.firebase.crashlytics'
-    id("instabug-apm")
+//    id("instabug-apm")  // Disabled to fix ASM instrumentation issue
     id 'com.google.devtools.ksp'
     id 'com.google.firebase.appdistribution'
-    id 'jacoco'
+    // id 'jacoco'
+    id 'com.facebook.react'
+    id 'org.jetbrains.kotlin.plugin.compose'
 //    id 'com.google.ar.sceneform.plugin'
 }
+
+apply from: "../../node_modules/@revopush/react-native-code-push/android/codepush.gradle"
 
 def properties = new Properties()
 def inputStream = project.rootProject.file('local.properties').newDataInputStream()
@@ -23,8 +27,8 @@ repositories {
     maven {
         url = uri("https://maven.pkg.github.com/trustwallet/wallet-core")
         credentials {
-            username = properties.getProperty("gpr.user") as String?: System.getenv("TW_ACCESS_USER")
-            password = properties.getProperty("gpr.key") as String?: System.getenv("TW_ACCESS_TOKEN")
+            username = properties.getProperty("gpr.user") as String?: System.getenv("GITHUB_USER")
+            password = properties.getProperty("gpr.key") as String?: System.getenv("GITHUB_TOKEN")
         }
     }
 }
@@ -38,14 +42,20 @@ if (apiKeysFile.exists()) {
 }
 def dropboxKeyDev = apiKeys.getProperty("DROPBOX_APP_KEY_DEV") ?: "fallbackDevKey"
 def dropboxKeyProd = apiKeys.getProperty("DROPBOX_APP_KEY_PROD") ?: "fallbackProdKey"
+def codePushKeyStaging = apiKeys.getProperty("CODEPUSH_KEY_ANDROID_STAGING") ?: "staging-placeholder"
+def codePushKeyProduction = apiKeys.getProperty("CODEPUSH_KEY_ANDROID_PRODUCTION") ?: "production-placeholder"
+
+react {
+    autolinkLibrariesWithApp()
+}
 
 android {
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         applicationId "com.flowfoundation.wallet"
-        minSdk 26
-        targetSdk 34
+        minSdk 24
+        targetSdk 35
         versionCode vCode as Integer
         versionName vName
 
@@ -62,7 +72,11 @@ android {
         buildConfigField("String", "MIXPANEL_TOKEN_DEV", "\"${apiKeys.getProperty('MIXPANEL_TOKEN_DEV')}\"")
         buildConfigField("String", "MIXPANEL_TOKEN_PROD", "\"${apiKeys.getProperty('MIXPANEL_TOKEN_PROD')}\"")
         buildConfigField("String", "X_SIGNATURE_KEY", "\"${apiKeys.getProperty('X_SIGNATURE_KEY')}\"")
+        buildConfigField("String", "INSTABUG_RN_TOKEN_DEV", "\"${apiKeys.getProperty('INSTABUG_RN_TOKEN_DEV')}\"")
+        buildConfigField("String", "INSTABUG_RN_TOKEN_PROD", "\"${apiKeys.getProperty('INSTABUG_RN_TOKEN_PROD')}\"")
         buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyProd}\"")
+        buildConfigField("String", "CODEPUSH_KEY", "\"${codePushKeyProduction}\"")
+        resValue "string", "CodePushDeploymentKey", "${codePushKeyProduction}"
         manifestPlaceholders = new HashMap<String, String>()
         manifestPlaceholders.put("dropboxKey", dropboxKeyProd)
     }
@@ -104,7 +118,12 @@ android {
             debuggable true
             applicationIdSuffix = ".dev"
             buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyDev}\"")
+            buildConfigField("String", "CODEPUSH_KEY", "\"${codePushKeyStaging}\"")
+            resValue "string", "CodePushDeploymentKey", "${codePushKeyStaging}"
             manifestPlaceholders = [dropboxKey: dropboxKeyDev]
+            ndk {
+                debugSymbolLevel 'NONE'
+            }
         }
 
         releaseDebug {
@@ -114,6 +133,7 @@ android {
             signingConfig signingConfigs.release
             matchingFallbacks = ['debug', 'qa', 'release'] as List<String>
             buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyProd}\"")
+            resValue "string", "CodePushDeploymentKey", "${codePushKeyProduction}"
             manifestPlaceholders = [dropboxKey: dropboxKeyProd]
         }
 
@@ -124,7 +144,7 @@ android {
             debuggable false
             applicationIdSuffix = ".dev"
             signingConfig signingConfigs.release
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             matchingFallbacks = ['debug', 'qa', 'release']
 
             firebaseAppDistribution {
@@ -134,6 +154,7 @@ android {
                 testers = mergedTesters
             }
             buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyDev}\"")
+            resValue "string", "CodePushDeploymentKey", "${codePushKeyStaging}"
             manifestPlaceholders = [dropboxKey: dropboxKeyDev]
         }
 
@@ -142,6 +163,7 @@ android {
             shrinkResources true
             multiDexEnabled false
             debuggable false
+            matchingFallbacks.add('releaseDebug')
             signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             firebaseAppDistribution {
@@ -154,6 +176,7 @@ android {
                 mappingFileUploadEnabled true
             }
             buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyProd}\"")
+            resValue "string", "CodePushDeploymentKey", "${codePushKeyProduction}"
             manifestPlaceholders = [dropboxKey: dropboxKeyProd]
         }
     }
@@ -163,17 +186,18 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.0"
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
 
     kotlinOptions {
-        jvmTarget = '17'
+        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     buildFeatures {
         compose true
         viewBinding true
         dataBinding true
+        buildConfig true
     }
     packagingOptions {
         resources {
@@ -211,11 +235,32 @@ configurations.all {
     }
 }
 
+// Fix RevoPush CodePush duplicate class conflict
+android.packagingOptions.pickFirsts += [
+    '**/NativeFRWBridgeSpec.class'
+]
+
+// Clean task to remove conflicting generated classes
+task cleanCodegenClasses {
+    doLast {
+        delete "${buildDir}/generated/source/codegen"
+        delete "${buildDir}/tmp/kotlin-classes"
+        delete "${buildDir}/intermediates/javac"
+        delete "${buildDir}/intermediates/runtime_library_classes_jar"
+    }
+}
+
 dependencies {
+    implementation("com.facebook.react:react-android")
+
+    if (hermesEnabled.toBoolean()) {
+        implementation("com.facebook.react:hermes-android")
+    }
+
     api fileTree(dir: "libs", include: ["*.aar", "*.jar"], exclude: ["trustwalletcore.aar"])
 
     implementation project(':wallet')
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.0"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.22"
     /** Android Architecture **/
     implementation 'androidx.core:core-ktx:1.13.1'
     implementation 'androidx.appcompat:appcompat:1.7.0'
@@ -333,7 +378,7 @@ dependencies {
 
     implementation 'com.github.bumptech.glide:glide:5.0.0-rc01'
     ksp 'com.github.bumptech.glide:ksp:5.0.0-rc01'
-    implementation 'com.caverock:androidsvg-aar:1.4'
+    // implementation 'com.caverock:androidsvg-aar:1.4'
 
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
@@ -425,33 +470,33 @@ dependencies {
 }
 
 // Add after android {} block
-jacoco {
-    toolVersion = "0.8.11"
-}
-
-tasks.register('jacocoTestReport', JacocoReport) {
-    dependsOn 'testDebugUnitTest'
-
-    reports {
-        xml.required = true
-        html.required = true
-    }
-
-    def fileFilter = [
-        '**/R.class',
-        '**/R$*.class',
-        '**/BuildConfig.*',
-        '**/Manifest*.*',
-        '**/*Test*.*',
-        'android/**/*.*'
-    ]
-    def debugTree = fileTree(dir: "${buildDir}/tmp/kotlin-classes/debug", excludes: fileFilter)
-    def mainSrc = "${project.projectDir}/src/main/java"
-
-    sourceDirectories.setFrom(files([mainSrc]))
-    classDirectories.setFrom(files([debugTree]))
-    executionData.setFrom(fileTree(dir: project.buildDir, includes: [
-        'jacoco/testDebugUnitTest.exec',
-        'outputs/code-coverage/connected/*coverage.ec'
-    ]))
-}
+// jacoco {
+//     toolVersion = "0.8.11"
+// }
+//
+// tasks.register('jacocoTestReport', JacocoReport) {
+//     dependsOn 'testDebugUnitTest'
+//
+//     reports {
+//         xml.required = true
+//         html.required = true
+//     }
+//
+//     def fileFilter = [
+//         '**/R.class',
+//         '**/R$*.class',
+//         '**/BuildConfig.*',
+//         '**/Manifest*.*',
+//         '**/*Test*.*',
+//         'android/**/*.*'
+//     ]
+//     def debugTree = fileTree(dir: "${buildDir}/tmp/kotlin-classes/debug", excludes: fileFilter)
+//     def mainSrc = "${project.projectDir}/src/main/java"
+//
+//     sourceDirectories.setFrom(files([mainSrc]))
+//     classDirectories.setFrom(files([debugTree]))
+//     executionData.setFrom(fileTree(dir: project.buildDir, includes: [
+//         'jacoco/testDebugUnitTest.exec',
+//         'outputs/code-coverage/connected/*coverage.ec'
+//     ]))
+// }

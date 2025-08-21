@@ -43,3 +43,4 @@ Please fill in the values for each item according to your project's requirements
 Now you are ready to run the Flow Wallet Android project. Simply open the project in Android Studio and run it on an emulator or a physical device.
 
 If you encounter any issues during the setup process, please refer to the project's documentation or contact the project's developer for assistance.
+

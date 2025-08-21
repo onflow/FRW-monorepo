@@ -11,3 +11,18 @@ MIXPANEL_TOKEN_PROD
 DROPBOX_APP_KEY_DEV
 DROPBOX_APP_KEY_PROD
 X_SIGNATURE_KEY
+INSTABUG_RN_TOKEN_DEV
+INSTABUG_RN_TOKEN_PROD
+CODEPUSH_KEY_ANDROID_STAGING
+CODEPUSH_KEY_ANDROID_PRODUCTION
+
+# CodePush deployment for Android
+
+# To get your deployment keys:
+# 1. Install App Center CLI: npm install -g appcenter-cli
+# 2. Login: appcenter login
+# 3. Create your app: appcenter apps create -d "YourApp-Android" -o Android -p React-Native
+# 4. Create deployments:
+#    appcenter codepush deployment add Staging -a your-username/YourApp-Android
+#    appcenter codepush deployment add Production -a your-username/YourApp-Android
+# 5. List keys: appcenter codepush deployment list -a your-username/YourApp-Android -k

@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.page.browser.presenter
 
 import com.flowfoundation.wallet.base.activity.BaseActivity
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.zackratos.ultimatebarx.ultimatebarx.navigationBarHeight
 import com.zackratos.ultimatebarx.ultimatebarx.statusBarHeight
 import com.flowfoundation.wallet.base.presenter.BasePresenter
@@ -13,7 +14,10 @@ import com.flowfoundation.wallet.page.browser.tools.*
 import com.flowfoundation.wallet.page.browser.widgets.BrowserPopupMenu
 import com.flowfoundation.wallet.page.browser.widgets.WebviewCallback
 import com.flowfoundation.wallet.page.evm.EnableEVMDialog
-import com.flowfoundation.wallet.page.wallet.dialog.MoveDialog
+import com.flowfoundation.wallet.ReactNativeDemoActivity
+import com.flowfoundation.wallet.bridge.RNBridge
+import com.flowfoundation.wallet.manager.app.isTestnet
+import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.page.window.WindowFrame
 import com.flowfoundation.wallet.page.window.bubble.tools.inBubbleStack
 import com.flowfoundation.wallet.utils.extensions.isVisible
@@ -43,9 +47,10 @@ class BrowserPresenter(
                     val activity =
                         BaseActivity.getCurrentActivity() ?: return@setOnClickListener
                     if (WalletManager.haveChildAccount() || WalletManager.isChildAccountSelected() || EVMWalletManager.haveEVMAddress()) {
-                        uiScope {
-                            MoveDialog().showMove(activity.supportFragmentManager)
-                        }
+                        // Launch React Native send workflow directly instead of MoveDialog
+                        ReactNativeDemoActivity.launch(activity, RNBridge.ScreenType.SEND_ASSET)
+                        // Minimize browser to allow React Native to show prominently
+                        shrinkBrowser()
                     } else {
                         uiScope {
                             EnableEVMDialog.show(activity.supportFragmentManager)

@@ -72,12 +72,8 @@
 -keep class * implements com.google.gson.JsonDeserializer
 -keep class com.google.gson.reflect.TypeToken {*;}
 
-# SvgModel
--keep class com.flowfoundation.wallet.utils.image.SvgModel
--keep class com.flowfoundation.wallet.utils.image.SvgModelLoader
--keep class com.flowfoundation.wallet.utils.image.SvgDataFetcher
--keep class com.flowfoundation.wallet.utils.image.SvgModelLoaderFactory
--keep class com.flowfoundation.wallet.utils.image.SvgGlideModule extends com.bumptech.glide.module.AppGlideModule { *; }
+# SVGWebView
+-keep class com.flowfoundation.wallet.widgets.SVGWebView { *; }
 
 # GoogleDrive
 -keep class com.google.** { *;}
@@ -274,3 +270,41 @@
 -dontwarn javax.mail.**
 -dontwarn javax.servlet.**
 -dontwarn org.apache.**
+
+# Fix for R8 missing classes from gRPC/Netty
+-dontwarn com.ning.compress.lzf.util.ChunkDecoderFactory
+-dontwarn com.ning.compress.lzf.util.ChunkEncoderFactory
+-dontwarn net.jpountz.lz4.LZ4Factory
+-dontwarn sun.security.x509.AlgorithmId
+-dontwarn sun.security.x509.CertificateAlgorithmId
+-dontwarn sun.security.x509.CertificateIssuerName
+-dontwarn sun.security.x509.CertificateSerialNumber
+-dontwarn sun.security.x509.CertificateSubjectName
+-dontwarn sun.security.x509.CertificateValidity
+-dontwarn sun.security.x509.CertificateVersion
+-dontwarn sun.security.x509.CertificateX509Key
+-dontwarn sun.security.x509.X500Name
+-dontwarn sun.security.x509.X509CertImpl
+-dontwarn sun.security.x509.X509CertInfo
+
+# react-native
+-keep public class com.horcrux.svg.** {*;}
+-keep class com.horcrux.svg.** { *; }
+-keepclassmembers class com.horcrux.svg.** { *; }
+-keep class * extends com.horcrux.svg.** { *; }
+-keep interface com.horcrux.svg.** { *; }
+-keepattributes InnerClasses,EnclosingMethod
+-keep class com.swmansion.reanimated.** { *; }
+-keep class com.facebook.hermes.unicode.* { *; }
+-keep class com.facebook.jni.* { *; }
+-keep class com.facebook.react.turbomodule.* { *; }
+
+# CRITICAL: Fabric TSpan Props crash fix
+-keep class com.facebook.react.viewmanagers.** { *; }
+-keepclassmembers class com.facebook.react.viewmanagers.** { *; }
+-keep class facebook.react.** { *; }
+-keep class com.facebook.react.bridge.** { *; }
+
+# Prevent Fabric C++ Props constructor crashes
+-keep class * extends com.facebook.react.** { *; }
+-keepattributes Signature,RuntimeVisibleAnnotations,RuntimeVisibleParameterAnnotations
