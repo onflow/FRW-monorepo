@@ -1,4 +1,4 @@
-import { Button, ScrollView, Text } from '@onflow/frw-ui';
+import { Button, Text, YStack } from '@onflow/frw-ui';
 import type { NavigationProp, RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useEffect } from 'react';
@@ -17,12 +17,12 @@ const HomeScreen = () => {
   }, [address, network]);
 
   return (
-    <ScrollView>
+    <YStack flex={1} p="$4">
       <Text style={{ color: 'red' }}>HomeScreen</Text>
       <Button onPress={() => navigation.navigate('SelectTokens')}>
         <Text>Send</Text>
       </Button>
-    </ScrollView>
+    </YStack>
   );
 };
 
