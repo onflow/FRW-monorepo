@@ -125,9 +125,6 @@ importers:
       '@onflow/frw-context':
         specifier: workspace:*
         version: link:../../packages/context
-      '@onflow/frw-icons':
-        specifier: workspace:*
-        version: link:../../packages/icons
       '@onflow/frw-screens':
         specifier: workspace:*
         version: link:../../packages/screens
@@ -145,7 +142,7 @@ importers:
         version: 1.132.20(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0)
       '@tamagui/config':
         specifier: ^1.132.16
-        version: 1.132.20(react-dom@19.0.0(react@19.0.0))(react-native-reanimated@4.0.2(@babel/core@7.28.3)(react-native-worklets@0.4.1(@babel/core@7.28.3)(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0)
+        version: 1.132.20(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0)
       '@tamagui/core':
         specifier: ^1.132.16
         version: 1.132.20(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0)
@@ -996,12 +993,9 @@ importers:
 
   packages/ui:
     dependencies:
-      '@onflow/frw-icons':
-        specifier: workspace:*
-        version: link:../icons
       '@tamagui/config':
         specifier: ^1.132.20
-        version: 1.132.20(react-dom@19.0.0(react@19.0.0))(react-native-reanimated@4.0.2(@babel/core@7.28.3)(react-native-worklets@0.4.1(@babel/core@7.28.3)(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0)
+        version: 1.132.20(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0)
       '@tamagui/core':
         specifier: ^1.132.20
         version: 1.132.20(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0)
@@ -1018,6 +1012,9 @@ importers:
       '@babel/runtime':
         specifier: ^7.28.3
         version: 7.28.3
+      '@onflow/frw-icons':
+        specifier: workspace:*
+        version: link:../icons
       '@storybook/addon-docs':
         specifier: ^9.1.1
         version: 9.1.2(@types/react@19.1.10)(storybook@9.1.2(prettier@3.6.2)(vite@5.4.19(@types/node@22.17.2)(terser@5.43.1)))
@@ -15630,11 +15627,11 @@ snapshots:
       - react-dom
       - react-native-reanimated
 
-  '@tamagui/animations-moti@1.132.20(react-dom@19.0.0(react@19.0.0))(react-native-reanimated@4.0.2(@babel/core@7.28.3)(react-native-worklets@0.4.1(@babel/core@7.28.3)(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0)':
+  '@tamagui/animations-moti@1.132.20(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0)':
     dependencies:
       '@tamagui/core': 1.132.20(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0)
       '@tamagui/use-presence': 1.132.20(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0)
-      moti: 0.30.0(react-dom@19.0.0(react@19.0.0))(react-native-reanimated@4.0.2(@babel/core@7.28.3)(react-native-worklets@0.4.1(@babel/core@7.28.3)(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0))(react@19.0.0)
+      moti: 0.30.0(react-dom@19.0.0(react@19.0.0))(react-native-reanimated@4.0.2(@babel/core@7.28.3)(react-native-worklets@0.4.1(@babel/core@7.28.3)(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0))(react@19.0.0)
       react: 19.0.0
       react-native: 0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0)
     transitivePeerDependencies:
@@ -15927,10 +15924,10 @@ snapshots:
       - react-native
       - react-native-reanimated
 
-  '@tamagui/config@1.132.20(react-dom@19.0.0(react@19.0.0))(react-native-reanimated@4.0.2(@babel/core@7.28.3)(react-native-worklets@0.4.1(@babel/core@7.28.3)(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0)':
+  '@tamagui/config@1.132.20(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0)':
     dependencies:
       '@tamagui/animations-css': 1.132.20(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0)
-      '@tamagui/animations-moti': 1.132.20(react-dom@19.0.0(react@19.0.0))(react-native-reanimated@4.0.2(@babel/core@7.28.3)(react-native-worklets@0.4.1(@babel/core@7.28.3)(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0)
+      '@tamagui/animations-moti': 1.132.20(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0)
       '@tamagui/animations-react-native': 1.132.20(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0)
       '@tamagui/colors': 1.132.20
       '@tamagui/core': 1.132.20(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0)
@@ -23122,14 +23119,6 @@ snapshots:
       - react
       - react-dom
 
-  moti@0.30.0(react-dom@19.0.0(react@19.0.0))(react-native-reanimated@4.0.2(@babel/core@7.28.3)(react-native-worklets@0.4.1(@babel/core@7.28.3)(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0))(react@19.0.0):
-    dependencies:
-      framer-motion: 6.5.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
-      react-native-reanimated: 4.0.2(@babel/core@7.28.3)(react-native-worklets@0.4.1(@babel/core@7.28.3)(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0)
-    transitivePeerDependencies:
-      - react
-      - react-dom
-
   motion@10.16.2:
     dependencies:
       '@motionone/animation': 10.18.0
@@ -24136,11 +24125,6 @@ snapshots:
       react: 19.0.0
       react-native: 0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.10)(react@19.0.0)
 
-  react-native-is-edge-to-edge@1.2.1(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0):
-    dependencies:
-      react: 19.0.0
-      react-native: 0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0)
-
   react-native-mmkv@3.3.0(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0):
     dependencies:
       react: 19.0.0
@@ -24153,15 +24137,6 @@ snapshots:
       react-native: 0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.10)(react@19.0.0)
       react-native-is-edge-to-edge: 1.2.1(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0)
       react-native-worklets: 0.4.1(@babel/core@7.28.3)(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0)
-      semver: 7.7.2
-
-  react-native-reanimated@4.0.2(@babel/core@7.28.3)(react-native-worklets@0.4.1(@babel/core@7.28.3)(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0):
-    dependencies:
-      '@babel/core': 7.28.3
-      react: 19.0.0
-      react-native: 0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0)
-      react-native-is-edge-to-edge: 1.2.1(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0)
-      react-native-worklets: 0.4.1(@babel/core@7.28.3)(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0)
       semver: 7.7.2
 
   react-native-safe-area-context@5.4.0(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0):
@@ -24215,24 +24190,6 @@ snapshots:
       convert-source-map: 2.0.0
       react: 19.0.0
       react-native: 0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.10)(react@19.0.0)
-    transitivePeerDependencies:
-      - supports-color
-
-  react-native-worklets@0.4.1(@babel/core@7.28.3)(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0))(react@19.0.0):
-    dependencies:
-      '@babel/core': 7.28.3
-      '@babel/plugin-transform-arrow-functions': 7.27.1(@babel/core@7.28.3)
-      '@babel/plugin-transform-class-properties': 7.27.1(@babel/core@7.28.3)
-      '@babel/plugin-transform-classes': 7.28.3(@babel/core@7.28.3)
-      '@babel/plugin-transform-nullish-coalescing-operator': 7.27.1(@babel/core@7.28.3)
-      '@babel/plugin-transform-optional-chaining': 7.27.1(@babel/core@7.28.3)
-      '@babel/plugin-transform-shorthand-properties': 7.27.1(@babel/core@7.28.3)
-      '@babel/plugin-transform-template-literals': 7.27.1(@babel/core@7.28.3)
-      '@babel/plugin-transform-unicode-regex': 7.27.1(@babel/core@7.28.3)
-      '@babel/preset-typescript': 7.27.1(@babel/core@7.28.3)
-      convert-source-map: 2.0.0
-      react: 19.0.0
-      react-native: 0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.10)(react@19.0.0)
     transitivePeerDependencies:
       - supports-color
 
