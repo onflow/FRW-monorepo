@@ -1,0 +1,185 @@
+{
+  "navigation": {
+    "home": "首页",
+    "selectTokens": "选择代币",
+    "sendTo": "发送至",
+    "confirmation": "确认",
+    "colorDemo": "颜色演示",
+    "nftList": "NFT 列表",
+    "sending": "发送中",
+    "send": "发送"
+  },
+  "home": {
+    "title": "🏠 首页",
+    "address": "地址",
+    "network": "网络",
+    "notProvided": "未提供",
+    "sendToActions": "发送操作",
+    "sendTx": "发送交易",
+    "send": "发送",
+    "navigation": "导航",
+    "viewColors": "查看颜色"
+  },
+  "send": {
+    "searchAddress": "搜索/粘贴地址",
+    "myAccounts": "我的账户",
+    "recent": "最近使用",
+    "addressBook": "地址簿",
+    "holdToSend": "长按发送",
+    "confirmation": "确认",
+    "transactionDetails": "交易详情",
+    "from": "发送方",
+    "to": "接收方",
+    "amount": "数量",
+    "fee": "手续费",
+    "total": "总计",
+    "inaccessible": "无法访问"
+  },
+  "buttons": {
+    "back": "返回",
+    "close": "关闭",
+    "edit": "编辑",
+    "copy": "复制",
+    "scan": "扫描",
+    "send": "发送",
+    "confirm": "确认",
+    "cancel": "取消",
+    "retry": "重试",
+    "refresh": "刷新",
+    "clearSearch": "清除搜索",
+    "next": "下一步"
+  },
+  "placeholders": {
+    "searchAddress": "搜索/粘贴地址",
+    "enterAmount": "输入数量",
+    "selectToken": "选择代币",
+    "selectNFT": "选择 NFT",
+    "searchNFTs": "搜索 NFT",
+    "searchCollections": "搜索收藏品",
+    "searchToken": "搜索代币"
+  },
+  "validation": {
+    "required": "此字段为必填项",
+    "invalidAddress": "无效地址",
+    "insufficientBalance": "余额不足",
+    "amountTooLow": "数量太少",
+    "networkError": "发生网络错误"
+  },
+  "common": {
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "warning": "警告",
+    "info": "信息",
+    "ok": "确定",
+    "yes": "是",
+    "no": "否",
+    "save": "保存",
+    "delete": "删除",
+    "retry": "重试",
+    "switchToLightMode": "切换到浅色模式",
+    "switchToDarkMode": "切换到深色模式",
+    "unknown": "未知",
+    "item": "项目",
+    "items": "项目"
+  },
+  "nft": {
+    "collection": "收藏品",
+    "tokenId": "代币ID",
+    "selectMultiple": "多选",
+    "selected": "已选择",
+    "nfts": "NFT",
+    "selectedCount_one": "已选择 {{count}} 个 NFT",
+    "selectedCount_other": "已选择 {{count}} 个 NFT",
+    "confirmCount_one": "确认 {{count}} 个 NFT",
+    "confirmCount_other": "确认 {{count}} 个 NFT"
+  },
+  "account": {
+    "balance": "余额",
+    "address": "地址",
+    "type": "类型",
+    "evm": "EVM",
+    "flow": "Flow",
+    "child": "子账户"
+  },
+  "transaction": {
+    "pending": "待处理",
+    "confirmed": "已确认",
+    "failed": "失败",
+    "fee": "交易手续费",
+    "coveredByFlowWallet": "由 Flow Wallet 承担",
+    "hash": "交易哈希",
+    "blockHeight": "区块高度",
+    "sendTokens": "发送代币",
+    "sendNFTs": "发送 NFT"
+  },
+  "alerts": {
+    "notice": "注意",
+    "error": "错误",
+    "maxNFTSelection": "最多只能选择 9 个 NFT",
+    "selectAtLeastOneNFT": "请至少选择一个 NFT"
+  },
+  "messages": {
+    "noSearchResults": "无搜索结果",
+    "noNFTsFound": "未找到 NFT",
+    "noNFTsMatchSearch": "此收藏品中没有与「{{search}}」匹配的 NFT",
+    "collectionEmpty": "此收藏品不包含任何 NFT",
+    "loadingAccount": "正在加载账户...",
+    "noNFTCollectionsFound": "未找到 NFT 收藏品",
+    "noCollectionsMatchSearch": "没有与「{{search}}」匹配的收藏品",
+    "noNFTCollectionsForAccount": "此账户未找到 NFT 收藏品",
+    "noTokensFound": "未找到代币",
+    "noTokensAvailable": "没有可用的代币",
+    "noTokensWithBalance": "未找到有余额的代币",
+    "addressCopied": "地址已复制到剪贴板",
+    "failedToCopyAddress": "复制地址失败",
+    "loading": "加载中..."
+  },
+  "errors": {
+    "failedToLoadNFTs": "加载 NFT 失败",
+    "failedToLoadTokens": "加载代币失败",
+    "failedToLoadNFTCollections": "加载 NFT 收藏品失败"
+  },
+  "tabs": {
+    "tokens": "代币",
+    "nfts": "NFT"
+  },
+  "sections": {
+    "myAccounts": "我的账户",
+    "recent": "最近使用",
+    "addressBook": "地址簿"
+  },
+  "labels": {
+    "fromAccount": "发送账户",
+    "toAccount": "接收账户",
+    "nfts": "NFT",
+    "sendNFT": "发送 NFT",
+    "sendNFTs": "发送 NFT",
+    "incompatibleAccount": "不兼容的账户",
+    "learnMore": "了解更多"
+  },
+  "emptyState": {
+    "noResultsFoundTitle": "未找到结果",
+    "noResultsFoundDescription": "没有账户或联系人与「{{query}}」匹配。请尝试不同的搜索词。",
+    "noAccountsTitle": "无账户",
+    "noAccountsDescription": "您还没有添加任何账户。创建您的第一个账户开始使用。",
+    "noRecentRecipientsTitle": "无最近收款人",
+    "noRecentRecipientsDescription": "发送代币后，您的最近收款人将显示在这里。",
+    "noContactsTitle": "无联系人",
+    "noContactsDescription": "将联系人添加到您的地址簿以便快速访问。",
+    "noDataTitle": "无数据",
+    "noDataDescription": "此部分没有可用数据。"
+  },
+  "contact": {
+    "unknownContact": "未知联系人"
+  },
+  "colorDemo": {
+    "lightModeColors": "浅色模式颜色",
+    "darkModeColors": "深色模式颜色",
+    "switchToDark": "切换到深色",
+    "switchToLight": "切换到浅色",
+    "primaryColors": "主色调",
+    "text": "文本",
+    "system": "系统"
+  }
+}

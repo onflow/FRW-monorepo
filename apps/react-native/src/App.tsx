@@ -14,8 +14,8 @@ import { ConfirmationDrawerProvider } from './contexts/ConfirmationDrawerContext
 import { ThemeProvider } from './contexts/ThemeContext';
 import './global.css';
 import { getGlobalTextProps } from './lib/androidTextFix';
+import initI18n from './lib/i18n';
 import AppNavigator from './navigation/AppNavigator';
-import './lib/i18n';
 
 // Configure default text props for Android to prevent text cutoff issues
 if (Platform.OS === 'android') {
@@ -30,6 +30,7 @@ interface AppProps {
   network?: string;
   initialRoute?: string;
   embedded?: boolean;
+  language?: string;
 }
 
 const App = (props: AppProps) => {
@@ -48,6 +49,7 @@ const App = (props: AppProps) => {
 
       // Initialize walletStore when app starts to have account data ready
       await loadAccountsFromBridge();
+      await initI18n(props.language);
       logger.debug('[App] Wallet store initialized successfully');
     } catch (error) {
       logger.error('[App] Failed to initialize app:', error);
