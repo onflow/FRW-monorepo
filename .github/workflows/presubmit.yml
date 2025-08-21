@@ -11,7 +11,7 @@ on:
   pull_request_review_comment:
     types: [created]
   push:
-    branches: [main, dev]
+    branches: [main, dev, "release/*"]
 
 jobs:
   review:

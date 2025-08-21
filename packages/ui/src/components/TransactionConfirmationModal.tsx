@@ -1,4 +1,4 @@
-import { Close, ChevronRight } from '@onflow/frw-icons';
+import { ChevronRight, ChevronDown, WalletCard } from '@onflow/frw-icons';
 import { type WalletAccount } from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack, View } from 'tamagui';
@@ -27,6 +27,7 @@ export interface TransactionConfirmationModalProps {
   title?: string;
   backgroundColor?: string;
   isLoading?: boolean;
+  isSending?: boolean;
 }
 
 export const TransactionConfirmationModal: React.FC<TransactionConfirmationModalProps> = ({
@@ -38,16 +39,23 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
   formData,
   onConfirm,
   onClose,
-  title = 'Confirm Transaction',
+  title = 'Summary',
   backgroundColor = '$background',
   isLoading = false,
+  isSending = false,
 }) => {
+  // Internal sending state
+  const [internalIsSending, setInternalIsSending] = React.useState(false);
+
   // Handle transaction confirmation
   const handleConfirm = async () => {
     try {
+      setInternalIsSending(true);
       await onConfirm?.();
     } catch (error) {
       console.error('Transaction failed:', error);
+    } finally {
+      setInternalIsSending(false);
     }
   };
 
@@ -56,149 +64,209 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
   return (
     <YStack
       position="absolute"
-      top={0}
-      left={0}
-      right={0}
-      bottom={0}
-      bg="$backgroundTransparent"
+      bg="$background"
       items="center"
-      justify="center"
-      zIndex={1000}
-      pressStyle={{ opacity: 1 }}
-      onPress={onClose}
+      justify="flex-start"
+      paddingHorizontal="$4"
+      paddingVertical="$0"
+      gap="$4"
+      width="100%"
+      style={{
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 1000,
+      }}
     >
-      <YStack
-        bg={backgroundColor}
-        rounded="$4"
-        p="$4"
-        minW={360}
-        maxW="90%"
-        shadowColor="$shadowColor"
-        shadowOpacity={0.25}
-        shadowRadius="$4"
-        elevation={8}
-        pressStyle={{ opacity: 1 }}
-        onPress={(e) => e.stopPropagation()}
+      {/* Header with Back Arrow, Summary, and Close */}
+      <XStack
+        items="center"
+        justify="space-between"
+        width="100%"
+        height={36}
+        paddingHorizontal="$4"
+        paddingVertical="$1"
       >
-        {/* Header */}
-        <XStack items="center" justify="space-between" mb="$4">
-          <Text fontSize="$5" fontWeight="600" color="$color">
-            {title}
+        <Button onPress={onClose} backgroundColor="transparent" borderWidth={0} padding="$2">
+          <Text color="$color" fontSize="$3">
+            ←
           </Text>
-          <Button size="small" variant="ghost" onPress={onClose} disabled={isLoading}>
-            <Close size={20} />
-          </Button>
-        </XStack>
+        </Button>
+        <Text fontSize="$5" fontWeight="700" color="$color" flex={1} textAlign="center">
+          {title}
+        </Text>
+        <Button onPress={onClose} backgroundColor="transparent" borderWidth={0} padding="$2">
+          <Text color="$color" fontSize="$3">
+            ×
+          </Text>
+        </Button>
+      </XStack>
 
-        {/* Transaction Details */}
-        <YStack gap="$4" mb="$4">
-          {/* Accounts Row */}
-          <XStack items="center" gap="$3">
-            {/* From Account */}
-            <YStack flex={1} gap="$2" bg="$gray2" rounded="$3" p="$3">
-              <Text fontSize="$2" color="$gray11" fontWeight="600">
-                FROM
-              </Text>
-              <XStack items="center" gap="$2">
-                <Avatar
-                  src={fromAccount?.avatar}
-                  fallback={fromAccount?.name?.charAt(0) || 'A'}
-                  size={24}
-                />
-                <YStack flex={1}>
-                  <Text fontSize="$3" fontWeight="500" color="$color" numberOfLines={1}>
-                    {fromAccount?.name || 'Unknown'}
-                  </Text>
-                  <Text fontSize="$2" color="$gray11" numberOfLines={1}>
-                    {fromAccount?.address
-                      ? `${fromAccount.address.slice(0, 6)}...${fromAccount.address.slice(-4)}`
-                      : ''}
-                  </Text>
-                </YStack>
-              </XStack>
-            </YStack>
+      {/* Visual Flow Diagram with Gradient Background */}
+      <View
+        height={170}
+        width="100%"
+        position="relative"
+        items="center"
+        justify="center"
+        marginTop="$4"
+      >
+        {/* Gradient Background Circle */}
+        <View
+          position="absolute"
+          width={728}
+          height={728}
+          style={{
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            borderRadius: '728.088px',
+            opacity: 0.1,
+            background:
+              'radial-gradient(27.35% 27.35% at 50% 50%, #00EF8B 25.48%, rgba(0, 239, 139, 0.00) 100%)',
+          }}
+        />
 
-            {/* Arrow */}
-            <ChevronRight size={20} color="$gray10" />
+        <View
+          width={0}
+          height={0}
+          items="center"
+          justify="center"
+          position="relative"
+          style={{ zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        >
+          <View transform={[{ rotate: '344.558deg' }]}>
+            {/* Wallet Card Icon */}
+            <WalletCard width={114.62} height={129.195} />
+          </View>
+        </View>
+      </View>
 
-            {/* To Account */}
-            <YStack flex={1} gap="$2" bg="$gray2" rounded="$3" p="$3">
-              <Text fontSize="$2" color="$gray11" fontWeight="600">
-                TO
-              </Text>
-              <XStack items="center" gap="$2">
-                <Avatar
-                  src={toAccount?.avatar}
-                  fallback={toAccount?.name?.charAt(0) || 'A'}
-                  size={24}
-                />
-                <YStack flex={1}>
-                  <Text fontSize="$3" fontWeight="500" color="$color" numberOfLines={1}>
-                    {toAccount?.name || 'Unknown'}
-                  </Text>
-                  <Text fontSize="$2" color="$gray11" numberOfLines={1}>
-                    {toAccount?.address
-                      ? `${toAccount.address.slice(0, 6)}...${toAccount.address.slice(-4)}`
-                      : ''}
-                  </Text>
-                </YStack>
-              </XStack>
-            </YStack>
-          </XStack>
-
-          {/* Transaction Amount */}
-          {transactionType === 'tokens' && selectedToken && (
-            <YStack bg="$gray2" rounded="$3" p="$3" gap="$2">
-              <Text fontSize="$2" color="$gray11" fontWeight="600">
-                AMOUNT
-              </Text>
-              <XStack items="center" gap="$3">
-                <Avatar
-                  src={selectedToken.logoURI}
-                  fallback={selectedToken.symbol.charAt(0)}
-                  size={32}
-                />
-                <YStack flex={1}>
-                  <Text fontSize="$4" fontWeight="600" color="$color">
-                    {formData.tokenAmount} {selectedToken.symbol}
-                  </Text>
-                  <Text fontSize="$3" color="$gray11">
-                    ≈ ${formData.fiatAmount} USD
-                  </Text>
-                </YStack>
-              </XStack>
-            </YStack>
-          )}
-
-          {/* Transaction Fee */}
-          <XStack items="center" justify="space-between" py="$2">
-            <Text fontSize="$3" color="$gray11">
-              Network Fee
+      {/* Accounts Row */}
+      <XStack items="center" justify="space-between" width="100%" gap="$2" paddingHorizontal="$2">
+        {/* From Account */}
+        <YStack flex={1} items="center" gap="$1" maxW={130}>
+          <Avatar
+            src={fromAccount?.avatar}
+            fallback={fromAccount?.name?.charAt(0) || 'A'}
+            size={36}
+          />
+          <YStack items="center" gap="$1">
+            <Text fontSize="$3" fontWeight="600" color="$color" textAlign="center">
+              {fromAccount?.name || 'Unknown'}
             </Text>
-            <Text fontSize="$3" fontWeight="500" color="$color">
-              {formData.transactionFee || '~0.001 FLOW'}
+            <Text fontSize="$2" color="$gray11" textAlign="center">
+              {fromAccount?.address
+                ? fromAccount.address.length < 20
+                  ? fromAccount.address
+                  : `${fromAccount.address.slice(0, 6)}...${fromAccount.address.slice(-4)}`
+                : ''}
             </Text>
-          </XStack>
-
-          {/* Total */}
-          {transactionType === 'tokens' && <View height={1} bg="$gray6" />}
+          </YStack>
         </YStack>
 
-        {/* Action Buttons */}
-        <XStack gap="$3">
-          <Button flex={1} variant="secondary" onPress={onClose} disabled={isLoading}>
-            Cancel
-          </Button>
-          <Button
-            flex={1}
-            onPress={handleConfirm}
-            disabled={isLoading}
-            opacity={isLoading ? 0.7 : 1}
+        {/* Flow Arrow */}
+        <View flex={1} items="center" justify="center">
+          <View
+            width={117}
+            height="$2"
+            bg="$gray2"
+            borderRadius="$1"
+            items="center"
+            justify="center"
           >
-            {isLoading ? 'Confirming...' : 'Confirm'}
-          </Button>
+            <ChevronRight size={12} color="$gray10" />
+          </View>
+        </View>
+
+        {/* To Account */}
+        <YStack flex={1} items="center" gap="$1" maxW={130}>
+          <Avatar src={toAccount?.avatar} fallback={toAccount?.name?.charAt(0) || 'A'} size={36} />
+          <YStack items="center" gap="$1">
+            <Text fontSize="$3" fontWeight="600" color="$color" textAlign="center">
+              {toAccount?.name || 'Unknown'}
+            </Text>
+            <Text fontSize="$2" color="$gray11" textAlign="center">
+              {toAccount?.address
+                ? toAccount.address.length < 20
+                  ? toAccount.address
+                  : `${toAccount.address.slice(0, 6)}...${toAccount.address.slice(-4)}`
+                : ''}
+            </Text>
+          </YStack>
+        </YStack>
+      </XStack>
+
+      {/* Transaction Details Card */}
+      <YStack bg="$light10" borderRadius="$4" padding="$4" gap="$3" width="100%" height={141}>
+        {/* Transaction Type */}
+        <Text fontSize="$2" color="$light80" fontFamily="Inter" fontWeight="400">
+          Send Tokens
+        </Text>
+
+        {/* Token Amount */}
+        <XStack items="center" justify="space-between" width="100%">
+          <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            {selectedToken?.logoURI ? (
+              <Avatar
+                src={selectedToken.logoURI}
+                fallback={selectedToken.symbol.charAt(0)}
+                size={35.2}
+              />
+            ) : (
+              <FlowLogo size={35.2} />
+            )}
+            <Text fontSize={28} fontWeight="500" color="$white" fontFamily="Inter">
+              {formData.tokenAmount}
+            </Text>
+          </View>
+          <View
+            bg="$light10"
+            borderRadius="$10"
+            paddingHorizontal="$2.5"
+            paddingVertical="$1"
+            flexDirection="row"
+            items="center"
+            gap="$1"
+            height={35}
+            width={77}
+          >
+            <Text
+              fontSize="$2"
+              fontWeight="600"
+              color="$white"
+              fontFamily="Inter"
+              letterSpacing={-0.072}
+            >
+              {selectedToken?.symbol || 'FLOW'}
+            </Text>
+            <ChevronDown size={10} color="$white" />
+          </View>
+        </XStack>
+
+        {/* Fiat Amount */}
+        <XStack justify="flex-start" width="100%">
+          <Text fontSize="$3" color="$light80" fontFamily="Inter" fontWeight="400" textAlign="left">
+            ${formData.fiatAmount || '0.69'}
+          </Text>
         </XStack>
       </YStack>
+
+      {/* Confirm Button */}
+      <Button
+        width="100%"
+        height={52}
+        bg="$white"
+        borderRadius="$4"
+        onPress={handleConfirm}
+        disabled={isLoading || internalIsSending}
+        opacity={isLoading || internalIsSending ? 0.7 : 1}
+      >
+        <Text fontSize="$4" fontWeight="600" color="$black">
+          {internalIsSending ? 'Sending...' : isLoading ? 'Confirming...' : 'Confirm send'}
+        </Text>
+      </Button>
     </YStack>
   );
 };

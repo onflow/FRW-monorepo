@@ -4,11 +4,11 @@ on:
   push:
     paths:
       - "packages/**"
-    branches: [main, dev]
+    branches: [main, dev, "release/*"]
   pull_request:
     paths:
       - "packages/**"
-    branches: [main, dev]
+    branches: [main, dev, "release/*"]
 
 jobs:
   ci:

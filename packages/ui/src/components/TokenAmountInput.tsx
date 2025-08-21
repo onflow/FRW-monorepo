@@ -13,7 +13,7 @@ export function TokenAmountInput({
   isTokenMode = true,
   onToggleInputMode,
   onTokenSelectorPress,
-  _onMaxPress,
+  onMaxPress,
   placeholder = '0.00',
   showBalance = true,
   showConverter = true,
@@ -25,7 +25,6 @@ export function TokenAmountInput({
   const displayAmount = amount || '';
   const tokenSymbol = selectedToken?.symbol || 'Token';
   const tokenBalance = selectedToken?.balance || '0';
-
   return (
     <YStack pt="$2" px="$2" pb="$2" gap={4} width="100%" {...props}>
       {/* Header */}
@@ -131,7 +130,7 @@ export function TokenAmountInput({
           justify="space-between"
           bg="$light10"
           rounded={39}
-          width={85}
+          minW={85}
           height={35.2}
           pt={3}
           pr={9}
@@ -146,9 +145,9 @@ export function TokenAmountInput({
             <Text fontSize={12} fontWeight="600" color="$white" lineHeight={18} numberOfLines={1}>
               {tokenSymbol}
             </Text>
-            {selectedToken?.isVerified && <CheckCircle size={10} color="#41CC5D" />}
+            {selectedToken?.isVerified && <CheckCircle size={10} color="#FFFFFF" />}
           </XStack>
-          <ChevronDown size={14} color="$white" />
+          <ChevronDown size={14} color="#FFFFFF" />
         </XStack>
       </XStack>
 
@@ -190,18 +189,33 @@ export function TokenAmountInput({
         )}
 
         {/* Right Side - Balance */}
-        {showBalance && (
-          <Text
-            fontSize={14}
-            fontWeight="400"
-            color="rgba(255, 255, 255, 0.8)"
-            lineHeight={16}
-            text="right"
-            flexShrink={0}
+        <XStack justify="space-between" items="center" gap="$2.5">
+          {showBalance && (
+            <Text
+              fontSize={14}
+              fontWeight="400"
+              opacity={0.8}
+              lineHeight={16}
+              text="right"
+              flexShrink={0}
+            >
+              {tokenBalance} {tokenSymbol}
+            </Text>
+          )}
+          <YStack
+            bg={'rgba(255, 255, 255, 0.2)'}
+            rounded={40}
+            height="$6"
+            items="center"
+            pressStyle={{ opacity: 0.8 }}
+            onPress={onMaxPress}
+            px="$2.5"
           >
-            {tokenBalance} {tokenSymbol}
-          </Text>
-        )}
+            <Text fontSize="$3" fontWeight="600">
+              MAX
+            </Text>
+          </YStack>
+        </XStack>
       </XStack>
     </YStack>
   );

@@ -2,7 +2,6 @@ import { type WalletAccount } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
-  ScrollView,
   View,
   TokenAmountInput,
   TokenSelectorModal,
@@ -15,6 +14,7 @@ import {
   type TransactionFormData,
   Text,
   Separator,
+  Stack,
 } from '@onflow/frw-ui';
 import React from 'react';
 
@@ -98,7 +98,7 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
   // UI states
   isAccountIncompatible = false,
   isBalanceLoading = false,
-  showStorageWarning = false,
+  showStorageWarning = true,
   storageWarningMessage = 'Account balance will fall below the minimum FLOW required for storage after this transaction.',
   showEditButtons = true,
   onEditAccountPress,
@@ -164,7 +164,7 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
               <Separator mx="$4" my={-1} borderColor="$textTertiary" />
 
               {/* Token Amount Input Section */}
-              <YStack bg="$background4" p="$4" gap="$3">
+              <YStack gap="$3">
                 <TokenAmountInput
                   selectedToken={
                     selectedToken
@@ -206,16 +206,18 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
             )}
 
             {/* To Account Section */}
-            {toAccount && (
-              <ToAccountSection
-                account={toAccount}
-                isAccountIncompatible={isAccountIncompatible}
-                onEditPress={onEditAccountPress}
-                onLearnMorePress={onLearnMorePress}
-                showEditButton={showEditButtons}
-                title="To account"
-              />
-            )}
+            <Stack px="$2">
+              {toAccount && (
+                <ToAccountSection
+                  account={toAccount}
+                  isAccountIncompatible={isAccountIncompatible}
+                  onEditPress={onEditAccountPress}
+                  onLearnMorePress={onLearnMorePress}
+                  showEditButton={showEditButtons}
+                  title="To account"
+                />
+              )}
+            </Stack>
 
             {/* Transaction Fee Section */}
             <TransactionFeeSection

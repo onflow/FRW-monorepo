@@ -9,6 +9,7 @@ export interface SendArrowDividerProps {
   variant?: 'arrow' | 'text';
   text?: string;
   padding?: number;
+  margin?: number;
 }
 
 export const SendArrowDivider: React.FC<SendArrowDividerProps> = ({
@@ -18,9 +19,10 @@ export const SendArrowDivider: React.FC<SendArrowDividerProps> = ({
   variant = 'arrow',
   text = '↓',
   padding = 8,
+  margin = 0,
 }) => {
   return (
-    <YStack items="center" py={padding}>
+    <YStack items="center" py={padding} my={margin}>
       <YStack
         bg={backgroundColor}
         rounded="$12"
