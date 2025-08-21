@@ -1,0 +1,185 @@
+{
+  "navigation": {
+    "home": "ホーム",
+    "selectTokens": "トークンを選択",
+    "sendTo": "送信先",
+    "confirmation": "確認",
+    "colorDemo": "カラーデモ",
+    "nftList": "NFTリスト",
+    "sending": "送信中",
+    "send": "送信"
+  },
+  "home": {
+    "title": "🏠 ホーム",
+    "address": "アドレス",
+    "network": "ネットワーク",
+    "notProvided": "提供されていません",
+    "sendToActions": "送信アクション",
+    "sendTx": "送信取引",
+    "send": "送信",
+    "navigation": "ナビゲーション",
+    "viewColors": "カラーを表示"
+  },
+  "send": {
+    "searchAddress": "アドレスを検索/貼り付け",
+    "myAccounts": "マイアカウント",
+    "recent": "最近",
+    "addressBook": "アドレス帳",
+    "holdToSend": "長押しして送信",
+    "confirmation": "確認",
+    "transactionDetails": "取引詳細",
+    "from": "送信者",
+    "to": "受信者",
+    "amount": "金額",
+    "fee": "手数料",
+    "total": "合計",
+    "inaccessible": "アクセスできません"
+  },
+  "buttons": {
+    "back": "戻る",
+    "close": "閉じる",
+    "edit": "編集",
+    "copy": "コピー",
+    "scan": "スキャン",
+    "send": "送信",
+    "confirm": "確認",
+    "cancel": "キャンセル",
+    "retry": "再試行",
+    "refresh": "更新",
+    "clearSearch": "検索をクリア",
+    "next": "次へ"
+  },
+  "placeholders": {
+    "searchAddress": "アドレスを検索/貼り付け",
+    "enterAmount": "金額を入力",
+    "selectToken": "トークンを選択",
+    "selectNFT": "NFTを選択",
+    "searchNFTs": "NFTを検索",
+    "searchCollections": "コレクションを検索",
+    "searchToken": "トークンを検索"
+  },
+  "validation": {
+    "required": "この項目は必須です",
+    "invalidAddress": "無効なアドレスです",
+    "insufficientBalance": "残高不足",
+    "amountTooLow": "金額が少なすぎます",
+    "networkError": "ネットワークエラーが発生しました"
+  },
+  "common": {
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "success": "成功",
+    "warning": "警告",
+    "info": "情報",
+    "ok": "OK",
+    "yes": "はい",
+    "no": "いいえ",
+    "save": "保存",
+    "delete": "削除",
+    "retry": "再試行",
+    "switchToLightMode": "ライトモードに切り替え",
+    "switchToDarkMode": "ダークモードに切り替え",
+    "unknown": "不明",
+    "item": "アイテム",
+    "items": "アイテム"
+  },
+  "nft": {
+    "collection": "コレクション",
+    "tokenId": "トークンID",
+    "selectMultiple": "複数選択",
+    "selected": "選択済み",
+    "nfts": "NFT",
+    "selectedCount_one": "選択されたNFT: {{count}}個",
+    "selectedCount_other": "選択されたNFT: {{count}}個",
+    "confirmCount_one": "{{count}}個のNFTを確認",
+    "confirmCount_other": "{{count}}個のNFTを確認"
+  },
+  "account": {
+    "balance": "残高",
+    "address": "アドレス",
+    "type": "種類",
+    "evm": "EVM",
+    "flow": "Flow",
+    "child": "子アカウント"
+  },
+  "transaction": {
+    "pending": "保留中",
+    "confirmed": "確認済み",
+    "failed": "失敗",
+    "fee": "取引手数料",
+    "coveredByFlowWallet": "Flow Walletが負担",
+    "hash": "取引ハッシュ",
+    "blockHeight": "ブロック高",
+    "sendTokens": "トークンを送信",
+    "sendNFTs": "NFTを送信"
+  },
+  "alerts": {
+    "notice": "お知らせ",
+    "error": "エラー",
+    "maxNFTSelection": "最大9個のNFTまで選択できます",
+    "selectAtLeastOneNFT": "少なくとも1つのNFTを選択してください"
+  },
+  "messages": {
+    "noSearchResults": "検索結果がありません",
+    "noNFTsFound": "NFTが見つかりません",
+    "noNFTsMatchSearch": "このコレクションで「{{search}}」に一致するNFTが見つかりません",
+    "collectionEmpty": "このコレクションにはNFTが含まれていません",
+    "loadingAccount": "アカウントを読み込み中...",
+    "noNFTCollectionsFound": "NFTコレクションが見つかりません",
+    "noCollectionsMatchSearch": "「{{search}}」に一致するコレクションが見つかりません",
+    "noNFTCollectionsForAccount": "このアカウントのNFTコレクションが見つかりません",
+    "noTokensFound": "トークンが見つかりません",
+    "noTokensAvailable": "利用可能なトークンがありません",
+    "noTokensWithBalance": "残高のあるトークンが見つかりません",
+    "addressCopied": "アドレスをクリップボードにコピーしました",
+    "failedToCopyAddress": "アドレスのコピーに失敗しました",
+    "loading": "読み込み中..."
+  },
+  "errors": {
+    "failedToLoadNFTs": "NFTの読み込みに失敗しました",
+    "failedToLoadTokens": "トークンの読み込みに失敗しました",
+    "failedToLoadNFTCollections": "NFTコレクションの読み込みに失敗しました"
+  },
+  "tabs": {
+    "tokens": "トークン",
+    "nfts": "NFT"
+  },
+  "sections": {
+    "myAccounts": "マイアカウント",
+    "recent": "最近",
+    "addressBook": "アドレス帳"
+  },
+  "labels": {
+    "fromAccount": "送信元アカウント",
+    "toAccount": "送信先アカウント",
+    "nfts": "NFT",
+    "sendNFT": "NFTを送信",
+    "sendNFTs": "NFTを送信",
+    "incompatibleAccount": "互換性のないアカウント",
+    "learnMore": "詳細を見る"
+  },
+  "emptyState": {
+    "noResultsFoundTitle": "検索結果が見つかりません",
+    "noResultsFoundDescription": "「{{query}}」に一致するアカウントや連絡先がありません。別の検索語句を試してください。",
+    "noAccountsTitle": "アカウントがありません",
+    "noAccountsDescription": "まだアカウントを追加していません。最初のアカウントを作成して開始しましょう。",
+    "noRecentRecipientsTitle": "最近の受信者がありません",
+    "noRecentRecipientsDescription": "トークンを送信すると、最近の受信者がここに表示されます。",
+    "noContactsTitle": "連絡先がありません",
+    "noContactsDescription": "クイックアクセスのためにアドレス帳に連絡先を追加してください。",
+    "noDataTitle": "データがありません",
+    "noDataDescription": "このセクションには利用可能なデータがありません。"
+  },
+  "contact": {
+    "unknownContact": "不明な連絡先"
+  },
+  "colorDemo": {
+    "lightModeColors": "ライトモードの色",
+    "darkModeColors": "ダークモードの色",
+    "switchToDark": "ダークに切り替え",
+    "switchToLight": "ライトに切り替え",
+    "primaryColors": "プライマリ色",
+    "text": "テキスト",
+    "system": "システム"
+  }
+}
