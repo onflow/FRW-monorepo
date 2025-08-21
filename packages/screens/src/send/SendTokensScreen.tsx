@@ -1,3 +1,4 @@
+import { bridge } from '@onflow/frw-context';
 import { type WalletAccount } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
@@ -10,6 +11,7 @@ import {
   ToAccountSection,
   TransactionFeeSection,
   StorageWarning,
+  ExtensionHeader,
   type TokenModel,
   type TransactionFormData,
   Text,
@@ -48,6 +50,7 @@ export interface SendTokensScreenProps {
   onLearnMorePress?: () => void;
 
   // Styling
+  backgroundColor?: string;
   contentPadding?: number;
 
   // Transaction details
@@ -87,6 +90,7 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
   onTransactionConfirm,
 
   // Styling
+  backgroundColor = '$background',
   contentPadding = 20,
 
   // Transaction details
@@ -133,20 +137,11 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
     transactionFee: transactionFee || '~0.001 FLOW',
   };
 
-  const tokenInputData = selectedToken
-    ? {
-        symbol: selectedToken.symbol,
-        name: selectedToken.name,
-        logo: selectedToken.logoURI,
-        logoURI: selectedToken.logoURI,
-        balance: selectedToken.balance?.toString(),
-        price: selectedToken.priceInUSD ? parseFloat(selectedToken.priceInUSD) : undefined,
-        isVerified: selectedToken.isVerified,
-      }
-    : undefined;
+  const isExtension = bridge.getPlatform() === 'extension';
 
   return (
-    <BackgroundWrapper>
+    <BackgroundWrapper backgroundColor={backgroundColor}>
+      {isExtension && <ExtensionHeader title="Send to" help={true} />}
       <YStack flex={1}>
         <ScrollView showsVerticalScrollIndicator={false}>
           <YStack p={contentPadding}>

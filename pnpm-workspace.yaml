@@ -1,14 +1,28 @@
 packages:
-  - 'apps/*'
-  - 'packages/*'
+  - "apps/*"
+  - "packages/*"
 
 # Enable automatic linking of workspace packages
 linkWorkspacePackages: true
 
+# Force single instance resolution - strongest setting
+shared-workspace-lockfile: true
+
+# Hoist ALL packages to root to prevent duplicates
+public-hoist-pattern:
+  - "*"
+
+# Force single resolution for all peer dependencies
+dedupe-peer-dependents: true
+
+# Force hoisting everything to root
+hoist-pattern:
+  - "*"
+
 # Build dependencies that need to be built from source
 onlyBuiltDependencies:
-  - '@swc/core'
-  - '@tsparticles/engine'
+  - "@swc/core"
+  - "@tsparticles/engine"
   - bufferutil
   - electron
   - esbuild

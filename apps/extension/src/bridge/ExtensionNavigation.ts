@@ -43,7 +43,36 @@ class ExtensionNavigation implements Navigation {
         const tokenId = params?.tokenId || 'flow';
         path = `/dashboard/token/${tokenId}/send`;
       } else if (screen === 'SendTokens' && params) {
-        const tokenId = params.tokenId || 'flow';
+        // Get token ID from params, or try to extract from current URL, or fallback to 'flow'
+        let tokenId = params.tokenId;
+
+        if (!tokenId && this.locationRef?.current) {
+          // Try to extract token ID from current URL path
+          const currentPath = this.locationRef.current.pathname;
+          const tokenMatch = currentPath.match(/\/token\/([^/]+)\//);
+          if (tokenMatch) {
+            tokenId = tokenMatch[1];
+          }
+        }
+
+        // If still no token ID, check window location as fallback
+        if (!tokenId && typeof window !== 'undefined') {
+          const windowPath = window.location.pathname;
+          const tokenMatch = windowPath.match(/\/token\/([^/]+)\//);
+          if (tokenMatch) {
+            tokenId = tokenMatch[1];
+          }
+        }
+
+        tokenId = tokenId || 'flow'; // Final fallback
+
+        console.log('[DEBUG] SendTokens tokenId resolution:', {
+          paramsTokenId: params.tokenId,
+          extractedTokenId: tokenId,
+          currentPath: this.locationRef?.current?.pathname,
+          windowPath: typeof window !== 'undefined' ? window.location.pathname : 'undefined',
+        });
+
         const address = params.address;
         if (address) {
           path = `/dashboard/token/${tokenId}/send-tokens/${address}`;

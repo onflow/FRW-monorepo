@@ -5,7 +5,7 @@ export default defineConfig([
   {
     name: 'web',
     entry: { index: 'src/web.ts' },
-    format: ['cjs', 'esm'],
+    format: ['esm'],
     outDir: 'dist/web',
     dts: false, // Types will be generated separately
     clean: false, // We'll clean the entire dist folder first
@@ -21,7 +21,7 @@ export default defineConfig([
   {
     name: 'native',
     entry: { index: 'src/native.ts' },
-    format: ['cjs', 'esm'],
+    format: ['esm', 'cjs'],
     outDir: 'dist/react-native',
     dts: false, // We'll generate types separately
     clean: false,
@@ -41,7 +41,7 @@ export default defineConfig([
   {
     name: 'types',
     entry: { index: 'src/web.ts' },
-    format: ['cjs'],
+    format: ['esm'],
     outDir: 'dist',
     dts: {
       only: true,

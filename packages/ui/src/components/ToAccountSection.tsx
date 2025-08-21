@@ -105,7 +105,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
             <XStack width={46} height={36} items="center" justify="flex-start" pl={5}>
               <Avatar
                 src={account.avatar}
-                fallback={account.name?.charAt(0) || 'A'}
+                fallback={(account as any)?.emoji || account.name?.charAt(0) || 'A'}
                 size={avatarSize}
                 borderColor={isAccountIncompatible ? '#D9D9D9' : '#00EF8B'}
                 borderWidth={1}

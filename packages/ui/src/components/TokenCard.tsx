@@ -1,6 +1,6 @@
 import { VerifiedToken } from '@onflow/frw-icons';
 import React from 'react';
-import { Text, XStack, YStack, Stack } from 'tamagui';
+import { Stack, Text, XStack, YStack } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
 import type { TokenCardProps } from '../types';

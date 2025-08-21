@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "type": "module",
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -16,6 +17,7 @@
     "translate:force": "node scripts/translate-i18n.js --force"
   },
   "dependencies": {
+    "@onflow/frw-context": "workspace:*",
     "@onflow/frw-services": "workspace:*",
     "@onflow/frw-stores": "workspace:*",
     "@onflow/frw-types": "workspace:*",
@@ -26,6 +28,7 @@
     "react-i18next": "^15.6.1"
   },
   "devDependencies": {
+    "@babel/runtime": "^7.28.3",
     "@types/react": "^19.1.0",
     "eslint": "^9.31.0",
     "jsdom": "^26.1.0",
@@ -44,7 +47,7 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "require": "./dist/index.js"
+      "default": "./dist/index.js"
     }
   }
 }

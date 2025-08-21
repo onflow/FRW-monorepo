@@ -1,5 +1,3 @@
-import { IconButton } from '@mui/material';
-import { Close } from '@onflow/frw-icons';
 import { SendTokensScreen, type TokenModel, type WalletAccount } from '@onflow/frw-screens';
 import React, { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
@@ -7,7 +5,6 @@ import { useNavigate, useParams } from 'react-router';
 import { INITIAL_TRANSACTION_STATE, transactionReducer } from '@/reducers';
 import { type FlowNetwork, type WalletAddress } from '@/shared/types';
 import { isValidAddress, isValidFlowAddress } from '@/shared/utils';
-import { LLHeader } from '@/ui/components/LLHeader';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -16,7 +13,7 @@ const SendTokensScreenView = () => {
   const navigate = useNavigate();
   const params = useParams();
   const wallet = useWallet();
-  const { network, mainAddress, evmAddress, childAccounts, currentWallet, userInfo } =
+  const { network, mainAddress, evmAddress, childAccounts, currentWallet, userInfo, walletList } =
     useProfiles();
   const { coins, coinsLoaded } = useCoins();
 
@@ -48,6 +45,9 @@ const SendTokensScreenView = () => {
         address: address as WalletAddress,
         name: contact?.contact_name || 'Account',
         balance: '0',
+        avatar: contact?.avatar || '',
+        emoji: contact?.emoji || contact?.emojiInfo?.emoji || '',
+        emojiInfo: contact?.emojiInfo || null,
       };
     },
     []
@@ -146,7 +146,7 @@ const SendTokensScreenView = () => {
           address: currentWallet.address as WalletAddress,
           contact_name: userInfo?.nickname || '',
           username: userInfo?.username || '',
-          avatar: userInfo?.avatar || '',
+          emoji: currentWallet?.icon || '',
         },
       };
 
@@ -157,14 +157,18 @@ const SendTokensScreenView = () => {
 
       // Set recipient from route params immediately after init
       if (params.toAddress) {
+        // Check if recipient is from current wallet list
+        const walletAccount = walletList?.find((account) => account?.address === params.toAddress);
+        console.log('walletAccount', walletAccount);
         const toAddressPayload = {
           address: params.toAddress as WalletAddress,
           contact: {
             id: 0,
             address: params.toAddress as WalletAddress,
-            contact_name: 'Recipient',
+            contact_name: walletAccount?.name || 'Recipient',
             username: '',
             avatar: '',
+            emoji: walletAccount?.icon || '',
           },
         };
         dispatch({
@@ -181,6 +185,7 @@ const SendTokensScreenView = () => {
     childAccounts,
     network,
     params.toAddress,
+    walletList,
   ]);
 
   // Set token from route params or default token when coins are loaded
@@ -223,6 +228,11 @@ const SendTokensScreenView = () => {
     transactionState.toAddress,
     transactionState.toContact
   );
+
+  // Debug logging
+  console.log('transactionState.toContact:', transactionState.toContact);
+  console.log('toAccount:', toAccount);
+  console.log('toAccount.emoji:', toAccount?.emoji);
 
   const screenProps = useMemo(
     () => ({
@@ -276,20 +286,7 @@ const SendTokensScreenView = () => {
         background: 'black',
       }}
     >
-      <LLHeader
-        title={'Sending'}
-        help={false}
-        right={
-          <IconButton
-            onClick={() => {
-              navigate('/dashboard');
-            }}
-          >
-            <Close sx={{ color: 'icon.navi' }} />
-          </IconButton>
-        }
-      />
-      <div style={{ flex: 1, overflow: 'hidden' }}>
+      <div style={{ flex: 1, overflow: 'auto' }}>
         <SendTokensScreen {...screenProps} />
       </div>
     </div>

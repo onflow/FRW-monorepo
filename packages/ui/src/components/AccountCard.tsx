@@ -1,11 +1,11 @@
-import { Edit, CheckCircle, Close } from '@onflow/frw-icons';
+import { CheckCircle, Close, Edit } from '@onflow/frw-icons';
 import React, { useState } from 'react';
-import { XStack, YStack, ScrollView } from 'tamagui';
+import { ScrollView, XStack, YStack } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
 import { Skeleton } from '../foundation/Skeleton';
 import { Text } from '../foundation/Text';
-import type { AccountCardProps, Account } from '../types';
+import type { Account, AccountCardProps } from '../types';
 import { AddressText } from './AddressText';
 
 export function AccountCard({
@@ -48,7 +48,8 @@ export function AccountCard({
           {/* Account Avatar */}
           <Avatar
             src={account.avatar}
-            fallback={account.name?.charAt(0) || '?'}
+            fallback={account.emoji || account.name?.charAt(0) || '?'}
+            size={36}
             borderColor="$primary"
             borderWidth={1}
           />
@@ -176,7 +177,7 @@ export function AccountCard({
                               {/* Account Avatar */}
                               <Avatar
                                 src={acc.avatar}
-                                fallback={acc.name?.charAt(0) || '?'}
+                                fallback={acc.emoji || acc.name?.charAt(0) || '?'}
                                 size={53.44}
                                 borderColor={isSelected ? '$primary' : undefined}
                                 borderWidth={isSelected ? 1 : undefined}

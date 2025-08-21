@@ -38,7 +38,7 @@ export function Avatar({
           }}
         />
       ) : (
-        <Text color="$text" fontSize={size * 0.35} fontWeight="600">
+        <Text color="$text" fontSize="$4" fontWeight="600">
           {fallback || alt?.[0]?.toUpperCase() || '?'}
         </Text>
       )}

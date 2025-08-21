@@ -11,6 +11,7 @@ export {
   ScrollView,
   Spinner,
   Stack,
+  TamaguiProvider,
   View,
   XStack,
   YStack,
@@ -28,40 +29,45 @@ export * from './foundation/Skeleton';
 export * from './foundation/Text';
 
 // Export specialized components
-export * from './components/TokenCard';
-export * from './components/RefreshView';
-export * from './components/NFTCollectionRow';
 export * from './components/AccountCard';
-export * from './components/AddressText';
+export * from './components/AddressBookSection';
 export * from './components/AddressSearchBox';
-export * from './components/SearchBar';
+export * from './components/AddressText';
 export * from './components/Badge';
+export * from './components/CollectionHeader';
+export * from './components/ConfirmAddressDialog';
+export * from './components/ErrorDialog';
+export * from './components/MultipleNFTsPreview';
+export * from './components/NFTCard';
+export * from './components/NFTCollectionRow';
+export * from './components/NFTDetailView';
+export * from './components/NFTGrid';
+export * from './components/NFTInfoSection';
+export * from './components/NFTPropertiesGrid';
+export * from './components/NFTPropertyTag';
+export * from './components/NFTSelectionBar';
+export * from './components/NFTSendPreview';
 export * from './components/PercentageChangeBadge';
 export * from './components/RecipientItem';
 export * from './components/RecipientList';
-export * from './components/AddressBookSection';
+export * from './components/RefreshView';
+export * from './components/ScreenHeader';
 export * from './components/SearchableTabLayout';
-export * from './components/CollectionHeader';
-export * from './components/NFTGrid';
-export * from './components/NFTCard';
-export * from './components/NFTSelectionBar';
-export * from './components/NFTDetailView';
-export * from './components/NFTInfoSection';
-export * from './components/NFTPropertyTag';
-export * from './components/NFTPropertiesGrid';
+export * from './components/SearchBar';
 export * from './components/SelectableNFTImage';
+export * from './components/SendArrowDivider';
+export * from './components/SendSectionHeader';
+export * from './components/StorageWarning';
+export * from './components/ToAccountSection';
+export * from './components/TokenCard';
 export * from './components/TokenSelectorModal';
 export * from './components/TransactionConfirmationModal';
-export * from './components/NFTSendPreview';
-export * from './components/SendSectionHeader';
-export * from './components/ScreenHeader';
-export * from './components/SendArrowDivider';
-export * from './components/MultipleNFTsPreview';
 export * from './components/TransactionFeeSection';
 export * from './components/ToAccountSection';
 export * from './components/StorageWarning';
 export * from './components/ErrorDialog';
 export * from './components/ConfirmAddressDialog';
+export * from './components/ExtensionHeader';
 export * from './foundation/SegmentedControl';
 
 export * from './components/TokenAmountInput';
