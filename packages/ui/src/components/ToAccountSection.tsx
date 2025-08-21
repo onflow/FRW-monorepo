@@ -29,7 +29,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
   onLearnMorePress,
   showEditButton = true,
   title = 'To account',
-  backgroundColor = 'rgb(49, 49, 49)',
+  backgroundColor = 'rgba(255, 255, 255, 0.1)',
   borderRadius = 16,
   contentPadding: _contentPadding = 16,
   showAvatar = true,

@@ -16,7 +16,6 @@
     "test": "vitest --run --passWithNoTests"
   },
   "dependencies": {
-    "@onflow/frw-icons": "workspace:*",
     "@tamagui/config": "^1.132.20",
     "@tamagui/core": "^1.132.20",
     "@tamagui/theme-builder": "^1.132.20",

@@ -146,7 +146,7 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
         <ScrollView showsVerticalScrollIndicator={false}>
           <YStack p={contentPadding}>
             {/* Main Transaction Card */}
-            <YStack bg="rgb(49, 49, 49)" rounded="$5" overflow="hidden">
+            <YStack bg="rgba(255, 255, 255, 0.1)" rounded="$5" overflow="hidden">
               {/* From Account Section */}
               {fromAccount && (
                 <AccountCard

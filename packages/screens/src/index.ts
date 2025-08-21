@@ -4,6 +4,8 @@ export * from './send/SendToScreen';
 export * from './send/NFTListScreen';
 export * from './send/NFTDetailScreen';
 export * from './send/SendTokensScreen';
+export * from './send/SendSingleNFTScreen';
+export * from './send/SendMultipleNFTsScreen';
 
 // Export types
 export * from './types';

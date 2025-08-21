@@ -24,12 +24,7 @@ export function SegmentedControl({
 
   return (
     <XStack
-      bg="$bg2"
-      rounded="$10"
-      items="center"
-      width={fullWidth ? '100%' : 'auto'}
-      py={5}
-      px={6}
+      bg="transparent"
       borderWidth={2}
       borderColor="#292929"
       rounded={200}

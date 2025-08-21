@@ -34,6 +34,7 @@ export function AccountCard({
         bg: '$light25',
       }}
       onPress={enableModalSelection ? () => setModalOpen(true) : undefined}
+      cursor={enableModalSelection ? 'pointer' : 'default'}
       {...props}
     >
       {/* Title */}
