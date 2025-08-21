@@ -181,6 +181,9 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
                 headerShown: true,
                 headerLeft: () => <NavigationBackButton />,
                 headerRight: () => <NavigationCloseButton />,
+                headerStyle: {
+                  backgroundColor: isDark ? 'rgb(var(--surface-base))' : 'rgb(var(--surface-1))', // Use CSS variables from theme
+                },
               }}
             >
               <Stack.Screen
