@@ -55,6 +55,53 @@ separation between View, ViewModel, Network, and Model layers.
   - `/create-pr dev "feat: new feature"` - Create PR with custom title
   - Automatically searches and links related GitHub issues
 
+## GitHub Workflows
+
+The project includes automated GitHub Actions workflows for improved development
+efficiency:
+
+### Release Notes Generation (`.github/workflows/release-notes.yml`)
+
+Automatically generates user-friendly release notes when creating GitHub
+releases:
+
+**Features:**
+
+- Parses conventional commits and transforms them into user-friendly language
+- Categorizes changes into sections (New Features, Bug Fixes, Improvements,
+  etc.)
+- Handles edge cases (no commits, duplicate releases)
+- Updates release notes via GitHub API
+- Supports both mobile app and browser extension releases
+
+**Trigger:** Runs automatically when a release is published or created
+
+**Configuration:** Customizable via `.github/release-notes-template.yml`
+
+**Example Output:**
+
+```markdown
+## 🆕 New Features
+
+- Added biometric authentication for enhanced security
+
+## 🐛 Bug Fixes
+
+- Fixed issue where token balances weren't displaying correctly
+
+## 🔧 Improvements
+
+- Updated underlying dependencies for better performance
+```
+
+**Conventional Commit Support:**
+
+- `feat:` → New Features
+- `fix:` → Bug Fixes
+- `perf:`, `refactor:`, `style:` → Improvements
+- Breaking changes (with `!`) → Breaking Changes section
+- Other types categorized appropriately
+
 ## Tamagui V4 Shorthands
 
 When working with Tamagui components, always use these V4 shorthand properties
