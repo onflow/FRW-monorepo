@@ -86,6 +86,11 @@ when creating GitHub releases:
 
 - **Required:** `ANTHROPIC_API_KEY` secret must be set in repository
 - **Trigger:** Runs automatically when a release is published or created
+- **Monorepo Support:** Automatically detects and handles monorepo tags like:
+  - `release/rn-0.0.1` → `release/rn-0.0.2` (React Native releases)
+  - `release/extension-1.2.0` → `release/extension-1.2.1` (Extension releases)
+  - `release/packages-2.1.0` → `release/packages-2.1.1` (Package releases)
+- **Smart Commit Range:** Analyzes all commits between matching tag prefixes
 - **Customization:** Modify the AI prompt in the workflow file
 
 **📝 Example AI-Generated Output:**

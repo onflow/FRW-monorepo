@@ -27,13 +27,30 @@ jobs:
           TAG_NAME="${{ github.event.release.tag_name }}"
           echo "Processing release: $TAG_NAME"
 
-          # Get previous tag to find commit range
-          PREVIOUS_TAG=$(git describe --tags --abbrev=0 "$TAG_NAME^" 2>/dev/null || echo "")
+          # Extract the tag prefix for monorepo (e.g., "release/rn" from "release/rn-0.0.2")
+          TAG_PREFIX=""
+          if [[ "$TAG_NAME" =~ ^(.*)-([0-9]+\.[0-9]+\.[0-9]+.*) ]]; then
+            TAG_PREFIX="${BASH_REMATCH[1]}"
+            TAG_VERSION="${BASH_REMATCH[2]}"
+            echo "Detected monorepo tag - Prefix: $TAG_PREFIX, Version: $TAG_VERSION"
+          else
+            echo "Standard tag format detected: $TAG_NAME"
+          fi
+
+          # Find previous tag with same prefix for monorepo
+          if [ -n "$TAG_PREFIX" ]; then
+            # For monorepo, find the previous tag with the same prefix
+            PREVIOUS_TAG=$(git tag --list "${TAG_PREFIX}-*" --sort=-version:refname | grep -v "^${TAG_NAME}$" | head -n 1 || echo "")
+            echo "Looking for previous tag with prefix: ${TAG_PREFIX}-*"
+          else
+            # Standard tag handling
+            PREVIOUS_TAG=$(git describe --tags --abbrev=0 "$TAG_NAME^" 2>/dev/null || echo "")
+          fi
 
           if [ -z "$PREVIOUS_TAG" ]; then
-            echo "No previous tag found, using last 20 commits"
+            echo "No previous tag found, analyzing all commits since repository start"
             COMMIT_RANGE=""
-            COMMITS=$(git log --pretty=format:'%H|%s|%b|%an|%ad' --date=short --no-merges -20)
+            COMMITS=$(git log --pretty=format:'%H|%s|%b|%an|%ad' --date=short --no-merges)
           else
             echo "Previous tag: $PREVIOUS_TAG"
             COMMIT_RANGE="$PREVIOUS_TAG..$TAG_NAME"
@@ -156,7 +173,12 @@ jobs:
             echo "$RESPONSE"
             
             # Fallback: Create basic release notes
-            RELEASE_NOTES="## What's Changed"$'\n\n'"This release includes ${COMMIT_COUNT} improvements and updates to the Flow Reference Wallet."$'\n\n'"**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREVIOUS_TAG}...${{ steps.collect-commits.outputs.TAG_NAME }}"$'\n\n'"---"$'\n'"Thank you for using Flow Reference Wallet! 🚀"
+            if [ -n "$PREVIOUS_TAG" ]; then
+              CHANGELOG_LINK="**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREVIOUS_TAG}...${{ steps.collect-commits.outputs.TAG_NAME }}"
+            else
+              CHANGELOG_LINK="**Full Changelog**: https://github.com/${{ github.repository }}/commits/${{ steps.collect-commits.outputs.TAG_NAME }}"
+            fi
+            RELEASE_NOTES="## What's Changed"$'\n\n'"This release includes ${COMMIT_COUNT} improvements and updates to the Flow Reference Wallet."$'\n\n'"${CHANGELOG_LINK}"$'\n\n'"---"$'\n'"Thank you for using Flow Reference Wallet! 🚀"
           fi
 
           # Save the generated release notes
