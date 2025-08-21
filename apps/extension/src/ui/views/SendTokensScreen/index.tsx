@@ -1,5 +1,5 @@
 import { IconButton } from '@mui/material';
-import { CloseIcon } from '@onflow/frw-icons';
+import { Close } from '@onflow/frw-icons';
 import { SendTokensScreen, type TokenModel, type WalletAccount } from '@onflow/frw-screens';
 import React, { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
@@ -285,7 +285,7 @@ const SendTokensScreenView = () => {
               navigate('/dashboard');
             }}
           >
-            <CloseIcon sx={{ color: 'icon.navi' }} />
+            <Close sx={{ color: 'icon.navi' }} />
           </IconButton>
         }
       />

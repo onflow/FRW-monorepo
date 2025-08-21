@@ -49,7 +49,6 @@ export function AccountCard({
           <Avatar
             src={account.avatar}
             fallback={account.name?.charAt(0) || '?'}
-            size={36}
             borderColor="$primary"
             borderWidth={1}
           />
@@ -57,12 +56,12 @@ export function AccountCard({
           {/* Account Details */}
           <YStack width={151.34} gap={2}>
             {/* Account Name */}
-            <Text color="$white" fontSize="$3" fontWeight="600" lineHeight={17} numberOfLines={1}>
+            <Text color="$white" fontSize="$3" fontWeight="600" numberOfLines={1}>
               {account.name || 'Unnamed Account'}
             </Text>
 
             {/* Account Address */}
-            <AddressText address={account.address} truncate={true} startLength={6} endLength={4} />
+            <AddressText fontSize="$1" address={account.address} truncate={false} />
 
             {/* Balance */}
             {isLoading ? (
@@ -71,7 +70,7 @@ export function AccountCard({
               <Text
                 color="$textMuted"
                 fontWeight="400"
-                fontSize="$2"
+                fontSize="$1"
                 lineHeight={17}
                 mb="$3"
                 numberOfLines={1}
@@ -84,8 +83,8 @@ export function AccountCard({
 
         {/* Edit Icon */}
         {showEditButton && (
-          <XStack width={24} height={24} items="center" justify="center" mt={6}>
-            <Edit size={24} color="#767676" theme="outline" />
+          <XStack width="$6" height="$6" items="center" justify="center" mt={6}>
+            <Edit size="$4.5" color="#767676" theme="outline" />
           </XStack>
         )}
       </XStack>

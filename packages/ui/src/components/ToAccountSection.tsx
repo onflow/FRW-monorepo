@@ -50,8 +50,8 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
       <div
         style={{
           height: '0',
-          paddingTop: '0px',
-          margin: '0',
+          paddingTop: '$0',
+          margin: '$0',
           position: 'relative',
           top: '-48px',
         }}

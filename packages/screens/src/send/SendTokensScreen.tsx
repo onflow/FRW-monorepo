@@ -208,27 +208,29 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
             </Stack>
 
             {/* Transaction Fee Section */}
-            <TransactionFeeSection
-              flowFee={transactionFee || '0.001 FLOW'}
-              usdFee={usdFee}
-              isFree={isFeesFree}
-              showCovered={true}
-              title="Transaction Fee"
-              backgroundColor="black"
-              borderRadius={16}
-              contentPadding={16}
-            />
-          </YStack>
+            <YStack paddingBlock={16} gap={2}>
+              <TransactionFeeSection
+                flowFee={transactionFee || '0.001 FLOW'}
+                usdFee={usdFee}
+                isFree={isFeesFree}
+                showCovered={true}
+                title="Transaction Fee"
+                backgroundColor="black"
+                borderRadius={16}
+                // contentPadding={16}
+              />
 
-          {/* Storage Warning */}
-          {showStorageWarning && (
-            <StorageWarning
-              message={storageWarningMessage}
-              showIcon={true}
-              title="Storage warning"
-              visible={true}
-            />
-          )}
+              {/* Storage Warning */}
+              {showStorageWarning && (
+                <StorageWarning
+                  message={storageWarningMessage}
+                  showIcon={true}
+                  title="Storage warning"
+                  visible={true}
+                />
+              )}
+            </YStack>
+          </YStack>
         </ScrollView>
 
         {/* Send Button */}
