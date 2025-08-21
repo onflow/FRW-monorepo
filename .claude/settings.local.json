@@ -51,6 +51,10 @@
       "Bash(git submodule:*)",
       "Bash(./android/gradlew:*)",
       "Bash(adb:*)",
+      "Bash(pntml lint:*)",
+      "Bash(avdmanager list:*)",
+      "Bash($ANDROID_HOME/cmdline-tools/latest/bin/avdmanager list:*)",
+      "Bash(./gradlew:*)"
       "Bash(./gradlew:*)",
       "WebFetch(domain:api.github.com)",
       "Bash(npx react-native:*)"

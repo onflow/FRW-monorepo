@@ -157,13 +157,15 @@ export const AccountCard = ({
             )}
 
             {/* Main account icon */}
-            <WalletAvatar
-              value={account.avatar || account.emojiInfo?.emoji || '👤'}
-              fallback={account.emojiInfo?.emoji || '👤'}
-              size={40}
-              highlight={account.isActive}
-              backgroundColor={account.emojiInfo?.color}
-            />
+            <View className="w-10 h-10 items-center justify-center">
+              <WalletAvatar
+                value={account.avatar || account.emojiInfo?.emoji || '👤'}
+                fallback={account.emojiInfo?.emoji || '👤'}
+                size={36}
+                highlight={account.isActive}
+                backgroundColor={account.emojiInfo?.color}
+              />
+            </View>
           </View>
 
           {/* Account Details */}
@@ -173,15 +175,15 @@ export const AccountCard = ({
               <View className="flex-row items-center gap-1">
                 {isLinkedAccount((account as any).type) && (
                   <View className="mr-0.5">
-                    <Link width={14} height={14} />
+                    <Link width={16} height={16} />
                   </View>
                 )}
                 <Text
                   className="text-fg-1"
                   style={{
                     fontSize: 14,
-                    fontWeight: 'semibold',
-                    lineHeight: 20,
+                    fontWeight: '600', // semi-bold
+                    lineHeight: 17,
                     letterSpacing: -0.084,
                     includeFontPadding: false,
                     textAlignVertical: 'center',
@@ -196,6 +198,8 @@ export const AccountCard = ({
               <AddressText
                 style={{
                   fontSize: 12,
+                  fontWeight: '400',
+                  lineHeight: 17,
                 }}
                 value={account.address}
                 className="text-fg-2"
@@ -207,7 +211,13 @@ export const AccountCard = ({
                   <Skeleton isDark={isDark} className="h-4 w-24" />
                 ) : displayText ? (
                   <Text
-                    className="text-fg-2 font-normal text-xs leading-relaxed"
+                    className="text-fg-2"
+                    style={{
+                      fontSize: 12,
+                      fontWeight: '400',
+                      lineHeight: 17,
+                      includeFontPadding: false,
+                    }}
                     disableAndroidFix={true}
                   >
                     {displayText}

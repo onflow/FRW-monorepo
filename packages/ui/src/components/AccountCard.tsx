@@ -142,7 +142,7 @@ export function AccountCard({
             <YStack gap={16}>
               {/* Header */}
               <XStack items="center" justify="space-between" pt={10} position="relative">
-                <Text fontSize={14} fontWeight="400" color="$white">
+                <Text fontSize={12} fontWeight="400" color="$white">
                   {modalTitle}
                 </Text>
 
@@ -178,7 +178,7 @@ export function AccountCard({
                               <Avatar
                                 src={acc.avatar}
                                 fallback={acc.name?.charAt(0) || '?'}
-                                size={53.44}
+                                size={36}
                                 borderColor={isSelected ? '$primary' : undefined}
                                 borderWidth={isSelected ? 1 : undefined}
                               />
@@ -199,7 +199,7 @@ export function AccountCard({
                                   truncate={true}
                                   startLength={6}
                                   endLength={4}
-                                  fontSize={14}
+                                  fontSize={12}
                                   fontWeight="400"
                                   color="rgba(255, 255, 255, 0.8)"
                                 />

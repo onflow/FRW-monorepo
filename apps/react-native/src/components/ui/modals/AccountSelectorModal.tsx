@@ -17,6 +17,7 @@ import { ActivityIndicator, SafeAreaView, Text, TouchableOpacity, View } from 'r
 import NativeFRWBridge from '@/bridge/NativeFRWBridge';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAndroidTextFix } from '@/lib';
+import { CheckCircleFill as CheckCircleFillIcon } from 'icons';
 
 import { WalletAccountSection } from '../index';
 
@@ -350,31 +351,14 @@ export const AccountSelectorModal = forwardRef<AccountSelectorModalRef, AccountS
             account={account}
             onAccountPress={() => handleAccountPress(account)}
             useLetterAvatar={false}
+            isSelectedFromAccount={isSelected}
           />
         </View>
 
         {/* Selection indicator */}
         {isSelected && (
-          <View
-            style={{
-              width: 20,
-              height: 20,
-              borderRadius: 10,
-              backgroundColor: accentGreen,
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginLeft: 8,
-            }}
-          >
-            <Text
-              style={{
-                color: '#FFFFFF',
-                fontSize: 12,
-                fontWeight: 'bold',
-              }}
-            >
-              ✓
-            </Text>
+          <View style={{ marginLeft: 8 }}>
+            <CheckCircleFillIcon width={24} height={24} />
           </View>
         )}
       </TouchableOpacity>
@@ -396,29 +380,6 @@ export const AccountSelectorModal = forwardRef<AccountSelectorModalRef, AccountS
           style={{ flex: 1, paddingTop: 12, paddingHorizontal: 16, paddingBottom: 24 }}
         >
           <SafeAreaView style={{ flex: 1 }}>
-            {/* Header */}
-            <View
-              style={{
-                alignItems: 'center',
-                marginBottom: 16,
-              }}
-            >
-              <Text
-                style={[
-                  androidTextFix,
-                  {
-                    fontSize: 18,
-                    fontWeight: '700',
-                    color: isDark ? '#FFFFFF' : '#000000',
-                    lineHeight: 24,
-                    textAlign: 'center',
-                  },
-                ]}
-              >
-                Select Account
-              </Text>
-            </View>
-
             {/* Account List */}
             <View style={{ flex: 1 }}>
               {isLoading ? (

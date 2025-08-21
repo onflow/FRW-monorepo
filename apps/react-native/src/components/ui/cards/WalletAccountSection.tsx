@@ -145,12 +145,18 @@ const WalletAccountSectionComponent: React.FC<WalletAccountSectionProps> = ({
                   >
                     {isLinkedAccount(account.type) && (
                       <View className="mr-0.5">
-                        <Link width={12} height={12} />
+                        <Link width={16} height={16} />
                       </View>
                     )}
                     <Text
-                      className="text-fg-1 font-semibold text-sm leading-4"
-                      style={NAME_TEXT_STYLE}
+                      className="text-fg-1"
+                      style={{
+                        fontSize: 14,
+                        fontWeight: '600', // semi-bold
+                        lineHeight: 17,
+                        letterSpacing: -0.084,
+                        flexShrink: 1,
+                      }}
                       numberOfLines={1}
                       ellipsizeMode="tail"
                     >
@@ -162,7 +168,12 @@ const WalletAccountSectionComponent: React.FC<WalletAccountSectionProps> = ({
                   {/* Account Address */}
                   <AddressText
                     value={account.address}
-                    className="text-fg-2 text-xs leading-4 min-w-[120px]"
+                    className="text-fg-2 min-w-[120px]"
+                    style={{
+                      fontSize: 12,
+                      fontWeight: '400',
+                      lineHeight: 17,
+                    }}
                   />
 
                   {/* Balance display */}
@@ -171,7 +182,14 @@ const WalletAccountSectionComponent: React.FC<WalletAccountSectionProps> = ({
                       {isBalanceLoading ? (
                         <Skeleton isDark={isDark} className="h-4 w-20" />
                       ) : (
-                        <Text className="text-fg-2 text-xs leading-4">
+                        <Text
+                          className="text-fg-2"
+                          style={{
+                            fontSize: 12,
+                            fontWeight: '400',
+                            lineHeight: 17,
+                          }}
+                        >
                           {balanceData || '0 FLOW'}
                         </Text>
                       )}
