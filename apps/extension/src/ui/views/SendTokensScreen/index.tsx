@@ -5,7 +5,6 @@ import { useNavigate, useParams } from 'react-router';
 import { INITIAL_TRANSACTION_STATE, transactionReducer } from '@/reducers';
 import { type FlowNetwork, type WalletAddress } from '@/shared/types';
 import { isValidAddress, isValidFlowAddress } from '@/shared/utils';
-import { LLHeader } from '@/ui/components/LLHeader';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -291,7 +290,6 @@ const SendTokensScreenView = () => {
         width: '100%',
       }}
     >
-      <LLHeader title={chrome.i18n.getMessage('Send_to')} help={true} />
       <div style={{ flex: 1, overflow: 'auto' }}>
         <SendTokensScreen {...screenProps} />
       </div>

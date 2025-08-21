@@ -1,3 +1,4 @@
+import { bridge } from '@onflow/frw-context';
 import { type WalletAccount } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
@@ -11,6 +12,7 @@ import {
   TransactionFeeSection,
   SendArrowDivider,
   StorageWarning,
+  ExtensionHeader,
   type TokenModel,
   type TransactionFormData,
   Text,
@@ -103,8 +105,12 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
     transactionFee: transactionFee || '~0.001 FLOW',
   };
 
+  // Check if we're running in extension platform
+  const isExtension = bridge.getPlatform() === 'extension';
+
   return (
     <BackgroundWrapper backgroundColor={backgroundColor}>
+      {isExtension && <ExtensionHeader title="Send to" help={true} />}
       <YStack flex={1} p="$4">
         <YStack gap={0}>
           <YStack mx="$2" rounded={16} background="$background4" mb="$1">

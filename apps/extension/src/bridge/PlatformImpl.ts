@@ -1,10 +1,10 @@
 import { type PlatformSpec, type Storage } from '@onflow/frw-context';
-import type {
+import {
   Platform,
-  RecentContactsResponse,
-  WalletAccount,
-  WalletAccountsResponse,
-  Currency,
+  type RecentContactsResponse,
+  type WalletAccount,
+  type WalletAccountsResponse,
+  type Currency,
 } from '@onflow/frw-types';
 
 import { chromeStorage } from '@/extension-shared/chrome-storage';
