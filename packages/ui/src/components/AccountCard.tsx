@@ -49,7 +49,7 @@ export function AccountCard({
           {/* Account Avatar */}
           <Avatar
             src={account.avatar}
-            fallback={account.name?.charAt(0) || '?'}
+            fallback={account.emoji || account.name?.charAt(0) || '?'}
             size={36}
             borderColor="$primary"
             borderWidth={1}
@@ -178,7 +178,7 @@ export function AccountCard({
                               {/* Account Avatar */}
                               <Avatar
                                 src={acc.avatar}
-                                fallback={acc.name?.charAt(0) || '?'}
+                                fallback={acc.emoji || acc.name?.charAt(0) || '?'}
                                 size={53.44}
                                 borderColor={isSelected ? '$primary' : undefined}
                                 borderWidth={isSelected ? 1 : undefined}

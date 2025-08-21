@@ -88,15 +88,29 @@ const SendToScreenView = () => {
 
   const { selectedToken } = useSendStore();
 
-  // Get token ID from URL params, selected token, or default to 'flow'
-  const tokenId = params.id || selectedToken?.symbol?.toLowerCase() || 'flow';
+  // Debug logging
+  console.log('SendToScreenView - selectedToken:', selectedToken);
+  console.log('SendToScreenView - params.id:', params.id);
+  console.log('SendToScreenView - current URL:', window.location.pathname);
 
-  // Redirect to proper token route if accessed via wrong URL
+  // Get token ID from URL params first (as source of truth), then selected token, or default to 'flow'
+  const tokenId = params.id || selectedToken?.symbol?.toLowerCase() || 'flow';
+  console.log('SendToScreenView - computed tokenId:', tokenId);
+
+  // Redirect to proper token route if accessed via wrong URL or if we have a selected token but wrong URL
   useEffect(() => {
-    if (!params.id && window.location.pathname.includes('sendtoscreen')) {
-      navigate(`/dashboard/token/flow/send`, { replace: true });
+    const currentPath = window.location.pathname;
+    const hasSelectedToken = selectedToken?.symbol;
+    const selectedTokenId = hasSelectedToken ? selectedToken.symbol.toLowerCase() : 'flow';
+
+    if (!params.id && currentPath.includes('sendtoscreen')) {
+      // If no token ID in URL, redirect to the selected token or flow as fallback
+      navigate(`/dashboard/token/${selectedTokenId}/send`, { replace: true });
+    } else if (params.id && hasSelectedToken && params.id !== selectedTokenId) {
+      // If URL has different token ID than selected token, update URL to match selected token
+      navigate(`/dashboard/token/${selectedTokenId}/send`, { replace: true });
     }
-  }, [params.id, navigate]);
+  }, [params.id, navigate, selectedToken]);
 
   // Load balances when accounts become available
   useEffect(() => {
@@ -438,7 +452,17 @@ const SendToScreenView = () => {
         if (screen === 'SendTokens') {
           const address = screenParams?.address;
           if (address) {
-            navigate(`/dashboard/token/${tokenId}/send-tokens/${address}`);
+            // Get the current token ID from URL params first (as source of truth), then selected token
+            const currentTokenId = params.id || selectedToken?.symbol?.toLowerCase() || 'flow';
+            console.log(
+              'SendTokens navigation - using tokenId:',
+              currentTokenId,
+              'selectedToken:',
+              selectedToken,
+              'params.id:',
+              params.id
+            );
+            navigate(`/dashboard/token/${currentTokenId}/send-tokens/${address}`);
           }
         }
       },
@@ -465,7 +489,7 @@ const SendToScreenView = () => {
         };
       },
     }),
-    [navigate, tokenId]
+    [navigate, selectedToken, params.id]
   );
 
   // Translation function using chrome i18n
