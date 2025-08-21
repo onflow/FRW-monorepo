@@ -15,9 +15,11 @@ const NavigationTitle: React.FC<NavigationTitleProps> = ({ title }) => {
     <View className="flex-row items-center justify-center">
       <Text
         style={{
-          fontSize: 17,
+          fontSize: 18,
           fontWeight: '600',
           color: isDark ? '#FFFFFF' : '#000000',
+          textAlign: 'center',
+          minWidth: '100%',
         }}
       >
         {title}
