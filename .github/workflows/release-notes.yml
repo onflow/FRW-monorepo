@@ -166,10 +166,11 @@ jobs:
           # This avoids command substitution issues with large or special content
           jq --rawfile content claude_prompt.md '.messages[0].content = $content' claude_request_template.json > claude_request_final.json
 
-          # Use curl with file input for better security
+          # Use curl with file input and environment variable for maximum security
+          ANTHROPIC_API_KEY="${{ secrets.ANTHROPIC_API_KEY }}"
           RESPONSE=$(curl -s -X POST https://api.anthropic.com/v1/messages \
             -H "Content-Type: application/json" \
-            -H "x-api-key: ${{ secrets.ANTHROPIC_API_KEY }}" \
+            -H "x-api-key: ${ANTHROPIC_API_KEY}" \
             -H "anthropic-version: 2023-06-01" \
             -d @claude_request_final.json)
 
