@@ -54,8 +54,10 @@
       "Bash(pntml lint:*)",
       "Bash(avdmanager list:*)",
       "Bash($ANDROID_HOME/cmdline-tools/latest/bin/avdmanager list:*)",
+      "Bash(./gradlew:*)"
       "Bash(./gradlew:*)",
-      "Bash(pntml typecheck:*)"
+      "WebFetch(domain:api.github.com)",
+      "Bash(npx react-native:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
