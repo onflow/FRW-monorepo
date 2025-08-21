@@ -60,47 +60,67 @@ separation between View, ViewModel, Network, and Model layers.
 The project includes automated GitHub Actions workflows for improved development
 efficiency:
 
-### Release Notes Generation (`.github/workflows/release-notes.yml`)
+### AI-Powered Release Notes Generation (`.github/workflows/release-notes.yml`)
 
-Automatically generates user-friendly release notes when creating GitHub
-releases:
+Automatically generates engaging, user-friendly release notes using Claude AI
+when creating GitHub releases:
 
-**Features:**
+**🤖 AI Features:**
 
-- Parses conventional commits and transforms them into user-friendly language
-- Categorizes changes into sections (New Features, Bug Fixes, Improvements,
-  etc.)
-- Handles edge cases (no commits, duplicate releases)
+- Uses Claude AI (Claude-3.5-Sonnet) to intelligently analyze commits
+- Transforms technical commit messages into user-friendly language
+- Focuses on end-user benefits rather than technical details
+- Automatically categorizes and prioritizes changes
+- Generates engaging, marketing-friendly descriptions
+- Handles any commit format (conventional commits or free-form)
+
+**🔧 Technical Features:**
+
+- Collects commit titles, descriptions, authors, and dates
+- Analyzes commit range between releases
+- Provides comprehensive context about Flow Reference Wallet to Claude
+- Includes fallback mechanism if AI is unavailable
 - Updates release notes via GitHub API
-- Supports both mobile app and browser extension releases
 
-**Trigger:** Runs automatically when a release is published or created
+**⚙️ Configuration:**
 
-**Configuration:** Customizable via `.github/release-notes-template.yml`
+- **Required:** `ANTHROPIC_API_KEY` secret must be set in repository
+- **Trigger:** Runs automatically when a release is published or created
+- **Customization:** Modify the AI prompt in the workflow file
 
-**Example Output:**
+**📝 Example AI-Generated Output:**
 
 ```markdown
-## 🆕 New Features
+## 🆕 What's New
 
-- Added biometric authentication for enhanced security
-
-## 🐛 Bug Fixes
-
-- Fixed issue where token balances weren't displaying correctly
+- Enjoy faster transaction processing with our improved Flow blockchain
+  integration
+- New biometric authentication keeps your wallet secure and convenient
 
 ## 🔧 Improvements
 
-- Updated underlying dependencies for better performance
+- Smoother user interface with enhanced animations and responsiveness
+- Better error messages help you understand and resolve issues quickly
+
+## 🐛 Bug Fixes
+
+- Fixed rare issue where token balances might display incorrectly
+- Resolved connection problems on slower networks
+
+---
+
+Thank you for using Flow Reference Wallet! 🚀
 ```
 
-**Conventional Commit Support:**
+**🧠 AI Prompt Engineering:**
 
-- `feat:` → New Features
-- `fix:` → Bug Fixes
-- `perf:`, `refactor:`, `style:` → Improvements
-- Breaking changes (with `!`) → Breaking Changes section
-- Other types categorized appropriately
+The workflow provides Claude with:
+
+- Repository context (Flow Reference Wallet, blockchain, mobile/extension)
+- Target audience (end users, not developers)
+- Commit analysis with titles, descriptions, authors, and dates
+- Clear guidelines for user-focused, engaging language
+- Structured output format with appropriate emojis
 
 ## Tamagui V4 Shorthands
 
