@@ -56,7 +56,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
           top: '-48px',
         }}
       >
-        <SendArrowDivider variant="text" />
+        <SendArrowDivider variant="arrow" />
       </div>
 
       <Text

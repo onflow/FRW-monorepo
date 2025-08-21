@@ -15,6 +15,7 @@ import {
   Text,
   Separator,
   Stack,
+  ScrollView,
 } from '@onflow/frw-ui';
 import React from 'react';
 
@@ -37,7 +38,6 @@ export interface SendTokensScreenProps {
   onTokenSelect?: (token: TokenModel) => void;
   onAmountChange?: (amount: string) => void;
   onToggleInputMode?: () => void;
-  onMaxPress?: () => void;
   onSendPress?: () => void;
   onTokenSelectorOpen?: () => void;
   onTokenSelectorClose?: () => void;
@@ -80,7 +80,6 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
   onTokenSelect,
   onAmountChange,
   onToggleInputMode,
-  onMaxPress,
   onSendPress,
   onTokenSelectorOpen,
   onTokenSelectorClose,
@@ -186,7 +185,6 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
                   isTokenMode={isTokenMode}
                   onToggleInputMode={onToggleInputMode}
                   onTokenSelectorPress={onTokenSelectorOpen}
-                  onMaxPress={onMaxPress}
                   placeholder="0.00"
                   showBalance={true}
                   showConverter={true}
@@ -195,18 +193,8 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
               </YStack>
             </YStack>
 
-            {/* Storage Warning */}
-            {showStorageWarning && (
-              <StorageWarning
-                message={storageWarningMessage}
-                showIcon={true}
-                title="Storage warning"
-                visible={true}
-              />
-            )}
-
             {/* To Account Section */}
-            <Stack px="$2">
+            <Stack>
               {toAccount && (
                 <ToAccountSection
                   account={toAccount}
@@ -231,6 +219,16 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
               contentPadding={16}
             />
           </YStack>
+
+          {/* Storage Warning */}
+          {showStorageWarning && (
+            <StorageWarning
+              message={storageWarningMessage}
+              showIcon={true}
+              title="Storage warning"
+              visible={true}
+            />
+          )}
         </ScrollView>
 
         {/* Send Button */}

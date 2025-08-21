@@ -2,6 +2,7 @@ import { ArrowDown } from '@onflow/frw-icons';
 import React from 'react';
 import { YStack } from 'tamagui';
 
+import { Text } from '../foundation/Text';
 export interface SendArrowDividerProps {
   size?: number;
   backgroundColor?: string;

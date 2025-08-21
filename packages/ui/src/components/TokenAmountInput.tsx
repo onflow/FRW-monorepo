@@ -13,7 +13,6 @@ export function TokenAmountInput({
   isTokenMode = true,
   onToggleInputMode,
   onTokenSelectorPress,
-  onMaxPress,
   placeholder = '0.00',
   showBalance = true,
   showConverter = true,
@@ -26,14 +25,14 @@ export function TokenAmountInput({
   const tokenSymbol = selectedToken?.symbol || 'Token';
   const tokenBalance = selectedToken?.balance || '0';
   return (
-    <YStack pt="$2" px="$2" pb="$2" gap={4} width="100%" {...props}>
+    <YStack p="$4" gap={4} width="100%" {...props}>
       {/* Header */}
       <Text fontSize={12} fontWeight="400" color="rgba(255, 255, 255, 0.8)">
         Send Tokens
       </Text>
 
       {/* Main Input Row */}
-      <XStack alignItems="center" justifyContent="space-between" gap={1}>
+      <XStack py={10} alignItems="center" justifyContent="space-between" gap={1}>
         {/* Token Icon */}
         <Avatar
           src={selectedToken?.logo || selectedToken?.logoURI}
@@ -56,6 +55,8 @@ export function TokenAmountInput({
             keyboardType="numeric"
             fontSize={32}
             fontWeight="500"
+            lineHeight={35}
+            height={35}
             color="$white"
             textAlign="left"
             borderWidth={0}
@@ -86,42 +87,6 @@ export function TokenAmountInput({
             disabled={disabled}
             selectTextOnFocus
           />
-
-          {/* Amount Input - fixed width 169px, height 26px */}
-          <XStack items="center" width={169} height={26}>
-            {!isTokenMode && (
-              <Text fontSize={28} fontWeight="500" color="$white" lineHeight={16} mr={4}>
-                $
-              </Text>
-            )}
-            <Input
-              value={displayAmount}
-              onChangeText={onAmountChange}
-              placeholder={placeholder}
-              keyboardType="numeric"
-              fontSize={28}
-              fontWeight="500"
-              color="$white"
-              lineHeight={35}
-              height={35}
-              width={!isTokenMode ? 145 : 169}
-              borderWidth={0}
-              bg="transparent"
-              p={0}
-              m={0}
-              focusStyle={{
-                borderColor: 'transparent',
-                borderWidth: 0,
-                outlineWidth: 0,
-                boxShadow: 'none',
-              }}
-              onFocus={() => setFocused(true)}
-              onBlur={() => setFocused(false)}
-              disabled={disabled}
-              selectTextOnFocus
-              textAlign="left"
-            />
-          </XStack>
         </XStack>
 
         {/* Token Selector - exactly 85px width, 35.2px height */}
@@ -202,19 +167,6 @@ export function TokenAmountInput({
               {tokenBalance} {tokenSymbol}
             </Text>
           )}
-          <YStack
-            bg={'rgba(255, 255, 255, 0.2)'}
-            rounded={40}
-            height="$6"
-            items="center"
-            pressStyle={{ opacity: 0.8 }}
-            onPress={onMaxPress}
-            px="$2.5"
-          >
-            <Text fontSize="$3" fontWeight="600">
-              MAX
-            </Text>
-          </YStack>
         </XStack>
       </XStack>
     </YStack>
