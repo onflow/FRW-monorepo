@@ -54,10 +54,17 @@
     "pnpm": ">=9.0.0"
   },
   "packageManager": "pnpm@10.14.0",
+  "dependencies": {
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "react-native": "0.79.2",
+    "@tamagui/animations-react-native": "^1.132.20"
+  },
   "pnpm": {
     "overrides": {
-      "react": "19.1.0",
-      "react-dom": "19.1.0"
+      "react": "19.0.0",
+      "react-dom": "19.0.0",
+      "react-native": "0.79.2"
     }
   }
 }

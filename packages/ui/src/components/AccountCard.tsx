@@ -1,11 +1,11 @@
-import { Edit, CheckCircle, Close } from '@onflow/frw-icons';
+import { CheckCircle, Close, Edit } from '@onflow/frw-icons';
 import React, { useState } from 'react';
-import { XStack, YStack, ScrollView } from 'tamagui';
+import { ScrollView, XStack, YStack } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
 import { Skeleton } from '../foundation/Skeleton';
 import { Text } from '../foundation/Text';
-import type { AccountCardProps, Account } from '../types';
+import type { Account, AccountCardProps } from '../types';
 import { AddressText } from './AddressText';
 
 export function AccountCard({

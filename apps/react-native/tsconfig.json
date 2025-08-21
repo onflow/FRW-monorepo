@@ -14,6 +14,7 @@
       "@onflow/frw-cadence": ["../../packages/cadence/src"],
       "@onflow/frw-context": ["../../packages/context/src"],
       "@onflow/frw-services": ["../../packages/services/src"],
+      "@onflow/frw-screens": ["../../packages/screens/src"],
       "@onflow/frw-stores": ["../../packages/stores/src"],
       "@onflow/frw-types": ["../../packages/types/src"],
       "@onflow/frw-utils": ["../../packages/utils/src"],

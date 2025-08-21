@@ -1,13 +1,13 @@
 import { type PlatformSpec, type Storage } from '@onflow/frw-context';
 import type {
   Currency,
-  Platform,
   RecentContactsResponse,
   WalletAccount,
   WalletAccountsResponse,
 } from '@onflow/frw-types';
+import { Platform } from '@onflow/frw-types';
 import { isTransactionId } from '@onflow/frw-utils';
-import { GAS_LIMITS } from '@onflow/frw-workflow';
+// import { GAS_LIMITS } from '@onflow/frw-workflow';
 import Instabug from 'instabug-reactnative';
 import { Platform as RNPlatform } from 'react-native';
 import { MMKV } from 'react-native-mmkv';
@@ -18,6 +18,7 @@ import { bridgeAuthorization, payer, proposer } from './signWithRole';
 
 class PlatformImpl implements PlatformSpec {
   private debugMode: boolean = __DEV__;
+  private instabugInitialized: boolean = false;
 
   log(level: 'debug' | 'info' | 'warn' | 'error' = 'debug', message: string, ...args: any[]): void {
     if (level === 'debug' && !this.debugMode) {
@@ -27,48 +28,56 @@ class PlatformImpl implements PlatformSpec {
     const prefix = `[FRW-${level.toUpperCase()}]`;
     const fullMessage = args.length > 0 ? `${message} ${args.join(' ')}` : message;
 
-    // Console logging for development
+    // Console logging for development - always use console directly
     switch (level) {
       case 'debug':
+        // eslint-disable-next-line no-console
         console.log(prefix, message, ...args);
         break;
       case 'info':
+        // eslint-disable-next-line no-console
         console.info(prefix, message, ...args);
         break;
       case 'warn':
+        // eslint-disable-next-line no-console
         console.warn(prefix, message, ...args);
         break;
       case 'error':
+        // eslint-disable-next-line no-console
         console.error(prefix, message, ...args);
         break;
     }
 
-    // Instabug logging for all environments
-    try {
-      const instabugMessage = `${prefix} ${fullMessage}`;
+    // Instabug logging only if initialized
+    if (this.instabugInitialized) {
+      try {
+        const instabugMessage = `${prefix} ${fullMessage}`;
 
-      switch (level) {
-        case 'debug':
-          // Only send debug logs in debug mode to avoid spam
-          if (this.debugMode) {
-            Instabug.logDebug(instabugMessage);
-          }
-          break;
-        case 'info':
-          Instabug.logInfo(instabugMessage);
-          break;
-        case 'warn':
-          Instabug.logWarn(instabugMessage);
-          break;
-        case 'error':
-          Instabug.logError(instabugMessage);
-          break;
+        switch (level) {
+          case 'debug':
+            // Only send debug logs in debug mode to avoid spam
+            if (this.debugMode) {
+              Instabug.logDebug(instabugMessage);
+            }
+            break;
+          case 'info':
+            Instabug.logInfo(instabugMessage);
+            break;
+          case 'warn':
+            Instabug.logWarn(instabugMessage);
+            break;
+          case 'error':
+            Instabug.logError(instabugMessage);
+            break;
+        }
+      } catch (error) {
+        // Silently fail - don't use console.warn here to avoid recursion
       }
-    } catch (error) {
-      // Fallback to console if Instabug fails (e.g., not initialized yet)
-
-      console.warn('[PlatformImpl] Failed to log to Instabug:', error);
     }
+  }
+
+  setInstabugInitialized(initialized: boolean): void {
+    this.instabugInitialized = initialized;
   }
 
   isDebug(): boolean {
@@ -117,8 +126,13 @@ class PlatformImpl implements PlatformSpec {
   }
 
   getInstabugToken(): string {
-    const env = NativeFRWBridge.getEnv();
-    return env.INSTABUG_TOKEN;
+    try {
+      const env = NativeFRWBridge.getEnv();
+      return env.INSTABUG_TOKEN || '';
+    } catch (error) {
+      this.log('warn', '[PlatformImpl] Failed to get Instabug token from native bridge:', error);
+      return '';
+    }
   }
 
   getStorage(): Storage {
@@ -168,7 +182,8 @@ class PlatformImpl implements PlatformSpec {
     // Configure gas limits
     cadenceService.useRequestInterceptor(async (config: any) => {
       if (config.type === 'transaction') {
-        config.limit = GAS_LIMITS.CADENCE_DEFAULT;
+        // config.limit = GAS_LIMITS.CADENCE_DEFAULT;
+        config.limit = 9999;
         config.payer = payer;
         config.proposer = proposer;
       }
