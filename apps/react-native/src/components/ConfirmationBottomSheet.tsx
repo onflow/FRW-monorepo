@@ -1,6 +1,13 @@
-import BottomSheet, { BottomSheetView, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
-import React, { useCallback, useMemo, useRef, forwardRef, useImperativeHandle } from 'react';
-import { StyleSheet } from 'react-native';
+import React, {
+  useState,
+  forwardRef,
+  useImperativeHandle,
+  useCallback,
+  useRef,
+  useMemo,
+} from 'react';
+import { StyleSheet, View } from 'react-native';
+import Modal from 'react-native-modal';
 
 import { useTheme } from '@/contexts/ThemeContext';
 
@@ -18,94 +25,142 @@ export const ConfirmationBottomSheet = forwardRef<
   ConfirmationBottomSheetRef,
   ConfirmationBottomSheetProps
 >(({ children, onClose }, ref) => {
-  const bottomSheetRef = useRef<BottomSheet>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const [isContentReady, setIsContentReady] = useState(false);
   const { isDark } = useTheme();
 
-  // Calculate snap points - 85% for confirmation drawer to show more content
-  const snapPoints = useMemo(() => ['85%'], []);
+  // Add a flag to prevent double triggering
+  const presentingRef = useRef(false);
 
-  const handleSheetChanges = useCallback(
-    (index: number) => {
-      if (index === -1) {
-        onClose?.();
-      }
-    },
-    [onClose]
+  const handleClose = useCallback(() => {
+    setIsVisible(false);
+    setIsContentReady(false);
+    presentingRef.current = false;
+    onClose?.();
+  }, [onClose]);
+
+  const present = useCallback(() => {
+    // Prevent double triggering
+    if (presentingRef.current) return;
+    presentingRef.current = true;
+    setIsContentReady(true);
+    // Small delay to ensure content is ready
+    requestAnimationFrame(() => {
+      setIsVisible(true);
+    });
+  }, []);
+
+  const dismiss = useCallback(() => {
+    setIsVisible(false);
+    setIsContentReady(false);
+    presentingRef.current = false;
+  }, []);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      present,
+      dismiss,
+    }),
+    [present, dismiss]
   );
 
-  const renderBackdrop = useCallback(
-    (props: React.ComponentProps<typeof BottomSheetBackdrop>) => (
-      <BottomSheetBackdrop
-        {...props}
-        disappearsOnIndex={-1}
-        appearsOnIndex={0}
-        opacity={0.5}
-        pressBehavior="close"
-      />
-    ),
+  const containerStyle = {
+    ...styles.container,
+    backgroundColor: isDark ? '#1a1a1a' : '#ffffff',
+  };
+
+  // Custom animation with ease-out curve
+  const customSlideInUp = useMemo(
+    () => ({
+      from: {
+        translateY: 600,
+      },
+      to: {
+        translateY: 0,
+      },
+    }),
     []
   );
 
-  useImperativeHandle(ref, () => ({
-    present: () => {
-      bottomSheetRef.current?.snapToIndex(0);
-    },
-    dismiss: () => {
-      if (bottomSheetRef.current && typeof bottomSheetRef.current.dismiss === 'function') {
-        bottomSheetRef.current.dismiss();
-      } else {
-        // Fallback: try to close by setting index to -1
-        bottomSheetRef.current?.snapToIndex(-1);
-      }
-    },
-  }));
-
-  const backgroundStyle = useMemo(
+  const customSlideOutDown = useMemo(
     () => ({
-      backgroundColor: isDark ? '#1a1a1a' : '#ffffff',
+      from: {
+        translateY: 0,
+      },
+      to: {
+        translateY: 600,
+      },
     }),
-    [isDark]
-  );
-
-  const handleStyle = useMemo(
-    () => ({
-      backgroundColor: isDark ? '#1a1a1a' : '#ffffff',
-      borderTopLeftRadius: 16,
-      borderTopRightRadius: 16,
-      paddingTop: 8,
-    }),
-    [isDark]
+    []
   );
 
   return (
-    <BottomSheet
-      ref={bottomSheetRef}
-      index={-1}
-      snapPoints={snapPoints}
-      enablePanDownToClose
-      backdropComponent={renderBackdrop}
-      backgroundStyle={backgroundStyle}
-      handleStyle={handleStyle}
-      onChange={handleSheetChanges}
-      style={styles.bottomSheet}
+    <Modal
+      isVisible={isVisible}
+      onBackdropPress={handleClose}
+      onBackButtonPress={handleClose}
+      onSwipeComplete={handleClose}
+      swipeDirection={['down']}
+      style={styles.modal}
+      backdropOpacity={0.5}
+      animationIn={customSlideInUp}
+      animationOut={customSlideOutDown}
+      animationInTiming={380}
+      animationOutTiming={300}
+      backdropTransitionInTiming={380}
+      backdropTransitionOutTiming={300}
+      useNativeDriverForBackdrop={true}
+      useNativeDriver={true}
+      hideModalContentWhileAnimating={false}
+      propagateSwipe={true}
+      avoidKeyboard={false}
+      statusBarTranslucent={false}
+      customBackdrop={undefined}
+      onModalShow={() => {
+        presentingRef.current = false;
+      }}
     >
-      <BottomSheetView style={styles.contentContainer}>{children}</BottomSheetView>
-    </BottomSheet>
+      <View style={containerStyle}>
+        <View style={styles.handle} />
+        <View style={styles.contentContainer}>
+          {isContentReady ? children : <View style={{ minHeight: 200 }} />}
+        </View>
+      </View>
+    </Modal>
   );
 });
 
 ConfirmationBottomSheet.displayName = 'ConfirmationBottomSheet';
 
 const styles = StyleSheet.create({
-  bottomSheet: {
+  modal: {
+    justifyContent: 'flex-end',
+    margin: 0,
+  },
+  container: {
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    maxHeight: '85%',
+    minHeight: '50%',
+    paddingTop: 8,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: -8,
     },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 12,
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  handle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#D1D5DB',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: 8,
+    opacity: 0.6,
   },
   contentContainer: {
     flex: 1,

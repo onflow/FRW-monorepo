@@ -1,5 +1,13 @@
 import type { NFTModel, TokenModel, WalletAccount } from '@onflow/frw-types';
-import React, { createContext, type ReactNode, useContext, useRef, useState } from 'react';
+import React, {
+  createContext,
+  type ReactNode,
+  useContext,
+  useRef,
+  useState,
+  useLayoutEffect,
+} from 'react';
+import { View } from 'react-native';
 
 import {
   ConfirmationBottomSheet,
@@ -42,10 +50,20 @@ export const ConfirmationDrawerProvider: React.FC<ConfirmationDrawerProviderProp
   const bottomSheetRef = useRef<ConfirmationBottomSheetRef>(null);
   const [confirmationData, setConfirmationData] = useState<ConfirmationData | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [shouldPresent, setShouldPresent] = useState(false);
+
+  // Use useLayoutEffect for synchronous DOM updates before paint
+  useLayoutEffect(() => {
+    if (shouldPresent && confirmationData) {
+      bottomSheetRef.current?.present();
+      setShouldPresent(false);
+    }
+  }, [shouldPresent, confirmationData]);
 
   const openConfirmation = (data: ConfirmationData) => {
+    // Set data and trigger present in next layout effect
     setConfirmationData(data);
-    bottomSheetRef.current?.present();
+    setShouldPresent(true);
   };
 
   const closeConfirmation = () => {
@@ -78,9 +96,9 @@ export const ConfirmationDrawerProvider: React.FC<ConfirmationDrawerProviderProp
     <ConfirmationDrawerContext.Provider value={contextValue}>
       {children}
       <ConfirmationBottomSheet ref={bottomSheetRef} onClose={closeConfirmation}>
-        {confirmationData && (
+        {confirmationData ? (
           <ConfirmationDrawerContent
-            key={`${confirmationData.fromAccount.address}-${Date.now()}`}
+            key={`confirmation-${confirmationData.fromAccount.address}-${confirmationData.toAccount.address}`}
             fromAccount={confirmationData.fromAccount}
             toAccount={confirmationData.toAccount}
             transactionType={confirmationData.transactionType}
@@ -92,6 +110,9 @@ export const ConfirmationDrawerProvider: React.FC<ConfirmationDrawerProviderProp
             onConfirm={handleConfirm}
             isProcessing={isProcessing}
           />
+        ) : (
+          // Render empty container to maintain consistent modal height
+          <View style={{ minHeight: 200, flex: 1 }} />
         )}
       </ConfirmationBottomSheet>
     </ConfirmationDrawerContext.Provider>

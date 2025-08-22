@@ -1,18 +1,14 @@
-import BottomSheet, {
-  BottomSheetBackdrop,
-  BottomSheetScrollView,
-  BottomSheetView,
-} from '@gorhom/bottom-sheet';
 import type { WalletAccount } from '@onflow/frw-types';
-import React, {
-  forwardRef,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from 'react';
-import { ActivityIndicator, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useState } from 'react';
+import {
+  ActivityIndicator,
+  SafeAreaView,
+  Text,
+  TouchableOpacity,
+  View,
+  ScrollView,
+} from 'react-native';
+import Modal from 'react-native-modal';
 
 import NativeFRWBridge from '@/bridge/NativeFRWBridge';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -36,29 +32,25 @@ export const AccountSelectorModal = forwardRef<AccountSelectorModalRef, AccountS
   ({ onAccountSelect, currentAccount, onClose }, ref) => {
     const { isDark } = useTheme();
     const androidTextFix = useAndroidTextFix();
-    const bottomSheetRef = useRef<BottomSheet>(null);
     const [accounts, setAccounts] = useState<WalletAccount[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [isOpen, setIsOpen] = useState(false);
-
-    // Theme-aware accent green color
-    const accentGreen = isDark ? '#00EF8B' : '#00B877';
+    const [isVisible, setIsVisible] = useState(false);
 
     // Cache for full account list to ensure we always have complete data
     const [fullAccountsCache, setFullAccountsCache] = useState<WalletAccount[]>([]);
 
     // Load accounts when modal opens
     useEffect(() => {
-      if (isOpen) {
+      if (isVisible) {
         loadAccounts(0);
       }
-    }, [isOpen]);
+    }, [isVisible]);
 
     // Ensure we always have at least the current account when modal opens (only after load attempt)
     useEffect(() => {
       // Only trigger fallback after a reasonable delay to allow normal loading to complete
       const timeoutId = setTimeout(() => {
-        if (isOpen && accounts.length === 0 && !isLoading && currentAccount) {
+        if (isVisible && accounts.length === 0 && !isLoading && currentAccount) {
           console.log(
             '[AccountSelector] No accounts loaded but have currentAccount, using as fallback'
           );
@@ -77,7 +69,7 @@ export const AccountSelectorModal = forwardRef<AccountSelectorModalRef, AccountS
       }, 1000); // Wait 1 second before applying fallback
 
       return () => clearTimeout(timeoutId);
-    }, [isOpen, accounts.length, isLoading, currentAccount]);
+    }, [isVisible, accounts.length, isLoading, currentAccount]);
 
     const loadAccounts = useCallback(
       async (retryCount = 0) => {
@@ -210,110 +202,42 @@ export const AccountSelectorModal = forwardRef<AccountSelectorModalRef, AccountS
       [currentAccount, fullAccountsCache]
     );
 
-    // Bottom sheet handlers
-    const handleSheetChanges = useCallback(
-      (index: number) => {
-        if (index === -1) {
-          setIsOpen(false);
-          onClose?.();
-        }
-      },
-      [onClose]
-    );
+    // Modal close handler
+    const handleClose = useCallback(() => {
+      setIsVisible(false);
+      onClose?.();
+    }, [onClose]);
 
-    const renderBackdrop = useCallback(
-      (props: React.ComponentProps<typeof BottomSheetBackdrop>) => (
-        <BottomSheetBackdrop
-          {...props}
-          disappearsOnIndex={-1}
-          appearsOnIndex={0}
-          opacity={0.6}
-          pressBehavior="close"
-        />
-      ),
-      []
-    );
-
-    // Fixed snap points - multiple options to choose from
-    const snapPoints = React.useMemo(() => {
-      return ['40%', '55%', '70%', '85%']; // Fixed set of snap points
-    }, []);
-
-    // Calculate which snap point index to use based on account count
-    const getTargetSnapIndex = React.useCallback(() => {
-      if (accounts.length === 0) return 1; // 55% while loading
-
-      if (accounts.length <= 2) return 1; // 55% for 1-2 accounts
-      if (accounts.length <= 4) return 2; // 70% for 3-4 accounts
-      if (accounts.length <= 6) return 3; // 85% for 5-6 accounts
-      return 3; // 85% for 7+ accounts
+    // Calculate modal height based on account count
+    const getModalHeight = React.useCallback(() => {
+      if (accounts.length === 0) return '55%'; // while loading
+      if (accounts.length <= 2) return '55%'; // for 1-2 accounts
+      if (accounts.length <= 4) return '70%'; // for 3-4 accounts
+      if (accounts.length <= 6) return '85%'; // for 5-6 accounts
+      return '85%'; // for 7+ accounts
     }, [accounts.length]);
 
-    const backgroundStyle = React.useMemo(
-      () => ({
-        backgroundColor: isDark ? '#1A1A1A' : '#FFFFFF',
-      }),
-      [isDark]
-    );
-
-    const handleStyle = React.useMemo(
+    const containerStyle = React.useMemo(
       () => ({
         backgroundColor: isDark ? '#1A1A1A' : '#FFFFFF',
         borderTopLeftRadius: 16,
         borderTopRightRadius: 16,
+        height: getModalHeight(),
         paddingTop: 8,
       }),
-      [isDark]
+      [isDark, getModalHeight]
     );
-
-    // Snap to appropriate height based on account count
-    useEffect(() => {
-      if (isOpen && accounts.length > 0) {
-        const targetIndex = getTargetSnapIndex();
-        console.log(
-          `[AccountSelector] Snapping to index ${targetIndex} (${snapPoints[targetIndex]}) for ${accounts.length} accounts`
-        );
-
-        setTimeout(() => {
-          bottomSheetRef.current?.snapToIndex(targetIndex);
-        }, 100);
-      }
-    }, [accounts.length, isOpen, getTargetSnapIndex, snapPoints]);
 
     // Create a dismiss function we can call directly
     const dismissModal = useCallback(() => {
       console.log('[AccountSelector] Dismissing modal');
-      setIsOpen(false);
-
-      // Try multiple methods to close the bottom sheet
-      if (bottomSheetRef.current) {
-        console.log('[AccountSelector] Trying snapToIndex(-1)');
-        bottomSheetRef.current.snapToIndex(-1);
-
-        // Try other potential methods
-        setTimeout(() => {
-          if (bottomSheetRef.current) {
-            console.log('[AccountSelector] Trying close() method');
-            (bottomSheetRef.current as any).close?.();
-
-            setTimeout(() => {
-              console.log('[AccountSelector] Trying forceClose() method');
-              (bottomSheetRef.current as any).forceClose?.();
-            }, 100);
-          }
-        }, 50);
-      }
+      setIsVisible(false);
       onClose?.();
     }, [onClose]);
 
     useImperativeHandle(ref, () => ({
       present: () => {
-        setIsOpen(true);
-        // The index prop will handle opening to the correct position
-        setTimeout(() => {
-          const targetIndex = getTargetSnapIndex();
-          bottomSheetRef.current?.snapToIndex(targetIndex);
-        }, 100);
+        setIsVisible(true);
       },
       dismiss: dismissModal,
     }));
@@ -365,21 +289,44 @@ export const AccountSelectorModal = forwardRef<AccountSelectorModalRef, AccountS
     );
 
     return (
-      <BottomSheet
-        ref={bottomSheetRef}
-        index={isOpen ? 1 : -1} // Sync with isOpen state
-        snapPoints={snapPoints}
-        enablePanDownToClose
-        backdropComponent={renderBackdrop}
-        backgroundStyle={backgroundStyle}
-        handleStyle={handleStyle}
-        onChange={handleSheetChanges}
-        key={`bottomsheet-${isOpen ? 'open' : 'closed'}`} // Use state-based key
+      <Modal
+        isVisible={isVisible}
+        onBackdropPress={handleClose}
+        onBackButtonPress={handleClose}
+        onSwipeComplete={handleClose}
+        swipeDirection={['down']}
+        style={{
+          justifyContent: 'flex-end',
+          margin: 0,
+        }}
+        backdropOpacity={0.6}
+        animationIn="slideInUp"
+        animationOut="slideOutDown"
+        animationInTiming={300}
+        animationOutTiming={250}
+        backdropTransitionInTiming={300}
+        backdropTransitionOutTiming={250}
+        useNativeDriverForBackdrop={true}
+        hideModalContentWhileAnimating={false}
+        propagateSwipe={true}
+        avoidKeyboard={true}
       >
-        <BottomSheetView
-          style={{ flex: 1, paddingTop: 12, paddingHorizontal: 16, paddingBottom: 24 }}
-        >
-          <SafeAreaView style={{ flex: 1 }}>
+        <View style={containerStyle}>
+          {/* Handle */}
+          <View
+            style={{
+              width: 40,
+              height: 4,
+              backgroundColor: '#D1D5DB',
+              borderRadius: 2,
+              alignSelf: 'center',
+              marginBottom: 8,
+            }}
+          />
+
+          <SafeAreaView
+            style={{ flex: 1, paddingTop: 12, paddingHorizontal: 16, paddingBottom: 24 }}
+          >
             {/* Account List */}
             <View style={{ flex: 1 }}>
               {isLoading ? (
@@ -433,9 +380,10 @@ export const AccountSelectorModal = forwardRef<AccountSelectorModalRef, AccountS
                   </Text>
                 </View>
               ) : (
-                <BottomSheetScrollView
+                <ScrollView
                   showsVerticalScrollIndicator={true}
                   contentContainerStyle={{ paddingBottom: 12 }}
+                  style={{ flex: 1 }}
                 >
                   {accounts.map(account => {
                     const isSelected = currentAccount?.address === account.address;
@@ -447,12 +395,12 @@ export const AccountSelectorModal = forwardRef<AccountSelectorModalRef, AccountS
                       />
                     );
                   })}
-                </BottomSheetScrollView>
+                </ScrollView>
               )}
             </View>
           </SafeAreaView>
-        </BottomSheetView>
-      </BottomSheet>
+        </View>
+      </Modal>
     );
   }
 );
