@@ -58,16 +58,17 @@ export * from './components/SelectableNFTImage';
 export * from './components/SendArrowDivider';
 export * from './components/SendSectionHeader';
 export * from './components/StorageWarning';
+export * from './components/StorageExceededAlert';
 export * from './components/ToAccountSection';
 export * from './components/TokenCard';
 export * from './components/TokenSelectorModal';
 export * from './components/TransactionConfirmationModal';
 export * from './components/TransactionFeeSection';
 export * from './components/ToAccountSection';
-export * from './components/StorageWarning';
 export * from './components/ErrorDialog';
 export * from './components/ConfirmAddressDialog';
 export * from './components/ExtensionHeader';
+export * from './components/Modal';
 export * from './foundation/SegmentedControl';
 
 export * from './components/TokenAmountInput';

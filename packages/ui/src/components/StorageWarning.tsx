@@ -21,6 +21,10 @@ export interface StorageWarningProps {
    * Whether to show the warning
    */
   visible?: boolean;
+  /**
+   * Whether to show the warning modal
+   */
+  setIsStorageExceededWarningShow: (isStorageExceededWarningShow: boolean) => void;
 }
 
 export const StorageWarning: React.FC<StorageWarningProps> = ({
@@ -28,6 +32,7 @@ export const StorageWarning: React.FC<StorageWarningProps> = ({
   showIcon = true,
   title = 'Storage warning',
   visible = true,
+  setIsStorageExceededWarningShow = (isStorageExceededWarningShow: boolean) => {},
 }) => {
   if (!visible) {
     return null;
@@ -40,7 +45,13 @@ export const StorageWarning: React.FC<StorageWarningProps> = ({
         <Text fontSize="$2" fontWeight="400" color="$white" lineHeight={16}>
           {title}
         </Text>
-        {showIcon && <InfoIcon size={15} color="rgba(255, 255, 255, 0.4)" />}
+        {showIcon && (
+          <InfoIcon
+            onClick={() => setIsStorageExceededWarningShow(true)}
+            size={15}
+            color="rgba(255, 255, 255, 0.4)"
+          />
+        )}
       </XStack>
 
       {/* Warning message */}

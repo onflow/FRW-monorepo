@@ -11,6 +11,7 @@ import {
   ToAccountSection,
   TransactionFeeSection,
   StorageWarning,
+  StorageExceededAlert,
   ExtensionHeader,
   type TokenModel,
   type TransactionFormData,
@@ -19,7 +20,7 @@ import {
   Stack,
   ScrollView,
 } from '@onflow/frw-ui';
-import React from 'react';
+import React, { useState } from 'react';
 
 export interface SendTokensScreenProps {
   // Core data
@@ -107,6 +108,7 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
   onEditAccountPress,
   onLearnMorePress,
 }) => {
+  const [isStorageExceededWarningShow, setIsStorageExceededWarningShow] = useState<boolean>(false);
   // Helper functions
   const handleTokenSelect =
     onTokenSelect ||
@@ -222,6 +224,7 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
                   showIcon={true}
                   title="Storage warning"
                   visible={true}
+                  setIsStorageExceededWarningShow={setIsStorageExceededWarningShow}
                 />
               )}
             </YStack>
@@ -266,6 +269,10 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
           onClose={handleConfirmationClose}
         />
       </YStack>
+      <StorageExceededAlert
+        visible={isStorageExceededWarningShow}
+        onClose={() => setIsStorageExceededWarningShow(false)}
+      />
     </BackgroundWrapper>
   );
 };
