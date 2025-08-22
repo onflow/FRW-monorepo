@@ -25,6 +25,10 @@ separation between View, ViewModel, Network, and Model layers.
 - `pnpm dev` - Watch build all packages in parallel
 - `pnpm dev:packages` - Watch build packages only
 - `pnpm clean` - Clean build artifacts and reinstall
+- `pnpm clean:rn` - Interactive React Native project cleaning (caches, builds,
+  modules)
+- `pnpm clean:rn:auto` - Automated React Native project cleaning
+  (non-interactive)
 
 ### Platform-Specific Commands
 
