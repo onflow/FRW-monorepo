@@ -141,8 +141,8 @@ const styles = StyleSheet.create({
   container: {
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
-    maxHeight: '85%',
-    minHeight: '50%',
+    maxHeight: '80%',
+    minHeight: '70%',
     paddingTop: 8,
     shadowColor: '#000',
     shadowOffset: {
