@@ -169,7 +169,7 @@ export function TokenAmountInput({
             </Text>
           )}
           <YStack
-            bg={'rgba(255, 255, 255, 0.2)'}
+            bg={'$bg1'}
             rounded={40}
             height="$6"
             items="center"

@@ -22,15 +22,11 @@ export const StorageExceededAlert: React.FC<StorageExceededAlertProps> = ({ visi
   return (
     <Modal
       visible={visible}
-      // onClose={onClose}
       width={'100%'}
       height={'100%'}
-      // backgroundColor="$bg2"
-      // overlayColor="$dark40"
       backgroundColor="$bg2"
       padding="$5"
       gap="$4"
-      // borderRadius="$4"
       zIndex={5}
     >
       <Card backgroundColor="$bg2" p="$6" m="$6" style={{ borderRadius: '$5' }}>
@@ -44,12 +40,7 @@ export const StorageExceededAlert: React.FC<StorageExceededAlertProps> = ({ visi
             </Stack>
 
             {/* Close Icon */}
-            <Stack
-              cursor="pointer"
-              items="flex-end"
-              // pressStyle={{ opacity: 0.7 }}
-              onPress={onClose}
-            >
+            <Stack cursor="pointer" items="flex-end" onPress={onClose}>
               <Close size={20} style={{ color: '$white' }} />
             </Stack>
           </XStack>
