@@ -13,6 +13,7 @@ export function TokenAmountInput({
   isTokenMode = true,
   onToggleInputMode,
   onTokenSelectorPress,
+  onMaxPress,
   placeholder = '0.00',
   showBalance = true,
   showConverter = true,
@@ -28,7 +29,7 @@ export function TokenAmountInput({
     <YStack p="$4" gap={4} width="100%" {...props}>
       {/* Header */}
       <Text fontSize={12} fontWeight="400" color="rgba(255, 255, 255, 0.8)">
-        Send Tokens
+        {chrome.i18n.getMessage('Send')}
       </Text>
 
       {/* Main Input Row */}
@@ -167,6 +168,19 @@ export function TokenAmountInput({
               {tokenBalance} {tokenSymbol}
             </Text>
           )}
+          <YStack
+            bg={'rgba(255, 255, 255, 0.2)'}
+            rounded={40}
+            height="$6"
+            items="center"
+            pressStyle={{ opacity: 0.8 }}
+            onPress={onMaxPress}
+            px="$2.5"
+          >
+            <Text fontSize="$3" fontWeight="600">
+              MAX
+            </Text>
+          </YStack>
         </XStack>
       </XStack>
     </YStack>

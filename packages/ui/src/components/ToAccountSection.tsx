@@ -16,7 +16,7 @@ export interface ToAccountSectionProps {
   showEditButton?: boolean;
   title?: string;
   backgroundColor?: string;
-  borderRadius?: string | number;
+  borderRadius?: number;
   contentPadding?: number;
   showAvatar?: boolean;
   avatarSize?: number;
@@ -29,7 +29,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
   onLearnMorePress,
   showEditButton = true,
   title = 'To account',
-  backgroundColor = 'rgba(255, 255, 255, 0.1)',
+  backgroundColor = '$light10',
   borderRadius = 16,
   contentPadding: _contentPadding = 16,
   showAvatar = true,
@@ -42,7 +42,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
       gap={12}
       p={16}
       pb={24}
-      w={343}
+      width="100%"
       mt={5}
       style={{ position: 'relative' }}
     >
@@ -62,7 +62,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
       <Text
         fontSize={12}
         fontWeight="400"
-        color="rgba(255, 255, 255, 0.8)"
+        color="$textSecondary"
         lineHeight="1.33"
         alignSelf="stretch"
       >
@@ -72,14 +72,14 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
       {/* Incompatible Account Header */}
       {isAccountIncompatible && (
         <XStack justify="space-between" items="flex-end">
-          <Text fontSize="$3" fontWeight="400" color="rgba(255, 255, 255, 0.8)" lineHeight={16}>
+          <Text fontSize="$3" fontWeight="400" color="$textSecondary" lineHeight={16}>
             Incompatible Account
           </Text>
           {onLearnMorePress && (
             <Text
               fontSize="$3"
               fontWeight="400"
-              color="#16FF99"
+              color="$primary"
               lineHeight={16}
               onPress={onLearnMorePress}
               cursor="pointer"
@@ -107,7 +107,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
                 src={account.avatar}
                 fallback={(account as any)?.emoji || account.name?.charAt(0) || 'A'}
                 size={avatarSize}
-                borderColor={isAccountIncompatible ? '#D9D9D9' : '#00EF8B'}
+                borderColor={isAccountIncompatible ? '$textSecondary' : '$primary'}
                 borderWidth={1}
               />
             </XStack>
@@ -144,7 +144,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
             >
               <Edit
                 size={24}
-                color={isAccountIncompatible ? '#FFFFFF' : '#767676'}
+                color={isAccountIncompatible ? '$white' : '$textSecondary'}
                 theme="outline"
               />
             </XStack>
