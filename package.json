@@ -15,7 +15,7 @@
     "dev:rn:full": "pnpm -F './packages/**' --parallel build:watch & pnpm -F FRWRN start",
     "clean": "pnpm -r clean && rm -rf **/node_modules && pnpm install",
     "clean:rn": "react-native-clean-project",
-    "clean:rn:auto": "react-native clean-project-auto",
+    "clean:rn:auto": "react-native-clean-project auto",
     "test": "pnpm -r --filter='!FRWRN' test",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
