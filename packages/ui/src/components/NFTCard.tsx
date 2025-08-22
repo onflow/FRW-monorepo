@@ -24,12 +24,12 @@ export function NFTCard({
   accountEmoji,
   accountAvatar,
 }: NFTCardProps) {
-  const width = size === 'large' ? 200 : size === 'medium' ? 164 : 120;
+  const width = size === 'large' ? '$50' : size === 'medium' ? '$41' : '$30';
 
   return (
     <YStack
       width={width}
-      gap={7}
+      gap="$1.5"
       pressStyle={{ bg: 'transparent' }}
       onPress={onPress}
       position="relative"
@@ -60,26 +60,26 @@ export function NFTCard({
         {/* Selection Indicator - top right corner */}
         {selected && (
           <YStack position="absolute" top="$0.5" right="$0.5">
-            <CheckCircle size={20} color="#00EF8B" theme="filled" />
+            <CheckCircle size="$5" color="#00EF8B" theme="filled" />
           </YStack>
         )}
       </YStack>
 
       {/* NFT Info */}
-      <YStack gap={-3}>
+      <YStack gap="$-0.75">
         {/* NFT Name */}
-        <Text fontSize="$5" fontWeight="600" color="$white" numberOfLines={1}>
+        <Text fontSize="$5" fontWeight="600" color="$text" numberOfLines={1}>
           {nft.name || 'Unnamed NFT'}
         </Text>
 
         {/* Collection Info with Account Avatar/Emoji */}
         {nft.collection && (
-          <XStack items="center" gap={4}>
+          <XStack items="center" gap="$1">
             {/* Account Avatar/Emoji - only show if available */}
             {accountEmoji && (
               <YStack
-                width={15.36}
-                height={15.36}
+                width="$4"
+                height="$4"
                 bg="$warning"
                 rounded="$12"
                 items="center"
@@ -90,9 +90,9 @@ export function NFTCard({
                 </Text>
               </YStack>
             )}
-            {accountAvatar && <Image src={accountAvatar} width={20} height={20} rounded="$6" />}
+            {accountAvatar && <Image src={accountAvatar} width="$5" height="$5" rounded="$6" />}
             {!accountEmoji && !accountAvatar && collectionAvatar && (
-              <Image src={collectionAvatar} width={20} height={20} rounded="$6" />
+              <Image src={collectionAvatar} width="$5" height="$5" rounded="$6" />
             )}
 
             {/* Collection Name */}

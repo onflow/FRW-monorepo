@@ -12,22 +12,22 @@ export interface NFTPropertiesGridProps {
   properties: NFTProperty[];
   title?: string;
   columns?: number;
-  gap?: number;
-  propertyGap?: number;
+  gap?: string;
+  propertyGap?: string;
   variant?: 'default' | 'compact';
   showTitle?: boolean;
-  titleSpacing?: number;
+  titleSpacing?: string;
 }
 
 export function NFTPropertiesGrid({
   properties,
   title = 'Properties',
   columns = 2,
-  gap = 8,
+  gap = '$2',
   propertyGap,
   variant = 'default',
   showTitle = true,
-  titleSpacing = 13,
+  titleSpacing = '$3.5',
 }: NFTPropertiesGridProps) {
   if (properties.length === 0) {
     return null;
@@ -42,7 +42,7 @@ export function NFTPropertiesGrid({
   return (
     <YStack gap={titleSpacing}>
       {showTitle && (
-        <Text fontSize={14} fontWeight="500" lineHeight={19.6} color="$color">
+        <Text fontSize="$4" fontWeight="500" color="$color">
           {title}
         </Text>
       )}

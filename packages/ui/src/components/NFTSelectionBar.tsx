@@ -11,7 +11,7 @@ export interface NFTSelectionBarProps {
   onContinue?: () => void;
   continueText?: string;
   isEditing?: boolean;
-  maxHeight?: number;
+  maxHeight?: string;
 }
 
 export function NFTSelectionBar({
@@ -20,7 +20,7 @@ export function NFTSelectionBar({
   onContinue,
   continueText = 'Continue',
   isEditing = false,
-  maxHeight = 300,
+  maxHeight = '$20',
 }: NFTSelectionBarProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -33,17 +33,17 @@ export function NFTSelectionBar({
   };
 
   const renderNFTItem = (nft: NFTData) => (
-    <XStack key={nft.id} items="center" justify="space-between" gap={8}>
-      <XStack items="center" gap={8}>
+    <XStack key={nft.id} items="center" justify="space-between" gap="$2">
+      <XStack items="center" gap="$2">
         {/* NFT Image */}
-        <YStack borderRadius={16} overflow="hidden" width={53.44} height={53.44} bg="$light5">
+        <YStack borderRadius="$4" overflow="hidden" width="$13" height="$13" bg="$background4">
           <Image
             src={nft.thumbnail || nft.image}
             width="100%"
             height="100%"
             resizeMode="cover"
             fallback={
-              <YStack flex={1} items="center" justify="center" bg="$light10">
+              <YStack flex={1} items="center" justify="center" bg="$bg1">
                 <Text fontSize="$2" color="$textTertiary">
                   NFT
                 </Text>
@@ -53,13 +53,13 @@ export function NFTSelectionBar({
         </YStack>
 
         {/* NFT Info */}
-        <YStack gap={6} width={201} height={35} justify="center">
-          <Text fontSize={14} fontWeight="600" color="$light80" numberOfLines={1}>
+        <YStack gap="$1.5" flex={1} justify="center">
+          <Text fontSize="$4" fontWeight="600" color="$text2" numberOfLines={1}>
             {nft.name}
           </Text>
 
           {nft.collection && (
-            <Text fontSize={14} fontWeight="400" color="$light80" numberOfLines={1}>
+            <Text fontSize="$4" fontWeight="400" color="$text2" numberOfLines={1}>
               {nft.collection}
             </Text>
           )}
@@ -68,8 +68,8 @@ export function NFTSelectionBar({
 
       {/* Remove Button */}
       {onRemoveNFT && (
-        <XStack width={24} height={24} onPress={() => onRemoveNFT(nft.id)} cursor="pointer">
-          <Trash size={24} color="#767676" />
+        <XStack width="$6" height="$6" onPress={() => onRemoveNFT(nft.id)} cursor="pointer">
+          <Trash size="$6" color="#767676" />
         </XStack>
       )}
     </XStack>
@@ -81,52 +81,48 @@ export function NFTSelectionBar({
       bottom={0}
       left={0}
       right={0}
-      width={375}
+      width="100%"
       bg="$bg2"
-      borderTopLeftRadius={16}
-      borderTopRightRadius={16}
+      borderTopLeftRadius="$4"
+      borderTopRightRadius="$4"
       shadowColor="$shadowColor"
       shadowOffset={{ width: 0, height: -2 }}
       shadowOpacity={0.1}
-      shadowRadius={8}
+      shadowRadius="$2"
       elevation={8}
-      pt={12}
-      px={16}
-      pb={20}
+      pt="$3"
+      px="$4"
+      pb="$5"
     >
-      <YStack gap={16}>
+      <YStack gap="$4">
         {/* Header */}
-        <XStack items="center" justify="space-between" pt={10} position="relative">
-          <Text fontSize={16} fontWeight="600" color="$white">
+        <XStack items="center" justify="space-between" pt="$2.5" position="relative">
+          <Text fontSize="$3.5" fontWeight="400" color="$text">
             {selectedNFTs.length} Selected NFT{selectedNFTs.length === 1 ? '' : 's'}
           </Text>
 
           <XStack
             position="absolute"
             right={0}
-            top={10}
+            top="$2.5"
             onPress={handleToggleExpanded}
             cursor="pointer"
           >
-            {isExpanded ? (
-              <ChevronDown size={24} color="#FFFFFF" />
-            ) : (
-              <ChevronUp size={24} color="#FFFFFF" />
-            )}
+            {isExpanded ? <ChevronDown size={24} /> : <ChevronUp size={24} />}
           </XStack>
         </XStack>
 
         {/* Expandable Content */}
         {isExpanded && (
-          <YStack maxHeight={maxHeight} bg="#141415" borderRadius={16} gap={2} pb={8}>
+          <YStack maxHeight={maxHeight} bg="$backgroundStrong" borderRadius="$4" gap="$0.5" pb="$2">
             <ScrollView showsVerticalScrollIndicator={false}>
               <YStack>
                 {selectedNFTs.map((nft, index) => (
                   <React.Fragment key={nft.id}>
                     {renderNFTItem(nft)}
                     {index < selectedNFTs.length - 1 && (
-                      <YStack py={8} items="center">
-                        <YStack height={1} bg="$light10" width={343} />
+                      <YStack py="$2" items="center">
+                        <YStack height="$0.25" bg="$background4" width="100%" />
                       </YStack>
                     )}
                   </React.Fragment>
@@ -145,11 +141,11 @@ export function NFTSelectionBar({
             disabled={selectedNFTs.length === 0}
             onPress={onContinue}
             bg="$white"
-            borderColor="$white"
-            borderWidth={1}
-            borderRadius={16}
+            borderColor="$bg1"
+            borderWidth="$0.25"
+            borderRadius="$4"
           >
-            <Text fontSize={16} fontWeight="600" color="$black">
+            <Text fontSize="$5" fontWeight="600" color="$black">
               Confirm {selectedNFTs.length} NFT{selectedNFTs.length === 1 ? '' : 's'}
             </Text>
           </Button>
