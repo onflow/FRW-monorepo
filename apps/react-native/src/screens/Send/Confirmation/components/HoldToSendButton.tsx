@@ -227,7 +227,7 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
                     cx={12}
                     cy={12}
                     r={CIRCLE_RADIUS}
-                    stroke="#4C4C4C"
+                    stroke="#1A1A1A"
                     strokeWidth={4}
                     fill="none"
                     strokeDasharray={CIRCLE_CIRCUMFERENCE}
@@ -240,7 +240,7 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
                   />
                 </Svg>
               ) : (
-                <View className="w-5 h-5 border-4 border-gray-300 border-t-gray-600 rounded-full" />
+                <View className="w-5 h-5 border-4 border-gray-300 rounded-full" />
               )}
             </View>
             <Text
