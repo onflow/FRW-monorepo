@@ -5,9 +5,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // Import translation files
 import en from '../locales/en.json';
 import es from '../locales/es.json';
-import ja from '../locales/ja.json';
-import ru from '../locales/ru.json';
-import zh from '../locales/zh.json';
 
 const resources = {
   en: {
@@ -16,19 +13,18 @@ const resources = {
   es: {
     translation: es,
   },
-  ja: {
-    translation: ja,
-  },
-  ru: {
-    translation: ru,
-  },
-  zh: {
-    translation: zh,
-  },
 };
 
-const initI18n = async (language?: string) => {
-  const savedLanguage = language || 'en';
+const initI18n = async () => {
+  let savedLanguage = 'en';
+  try {
+    const storedLanguage = await AsyncStorage.getItem('@frw_language');
+    if (storedLanguage) {
+      savedLanguage = storedLanguage;
+    }
+  } catch (error) {
+    console.warn('Failed to load saved language, using default:', error);
+  }
 
   await i18n.use(initReactI18next).init({
     resources,
@@ -50,4 +46,6 @@ const initI18n = async (language?: string) => {
 };
 
 // Initialize i18n
-export default initI18n;
+initI18n();
+
+export default i18n;
