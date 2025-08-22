@@ -9,6 +9,7 @@ import React, {
 } from 'react';
 import { View } from 'react-native';
 
+import NativeFRWBridge from '@/bridge/NativeFRWBridge';
 import {
   ConfirmationBottomSheet,
   type ConfirmationBottomSheetRef,
@@ -78,13 +79,26 @@ export const ConfirmationDrawerProvider: React.FC<ConfirmationDrawerProviderProp
   const handleConfirm = async () => {
     if (!confirmationData || isProcessing) return;
 
+    // Set processing state BEFORE starting async operation
+    setIsProcessing(true);
+
     try {
+      // Execute the confirmation action
+      console.log('[ConfirmationDrawer] Executing onConfirm...');
       await confirmationData.onConfirm();
-      setIsProcessing(true);
+
+      // After successful confirmation, close the entire React Native view
+      // Don't call closeConfirmation() as we're closing the entire view
+      console.log('[ConfirmationDrawer] Closing React Native view...');
+      NativeFRWBridge.closeRN();
+    } catch (error) {
+      // If confirmation fails, just close the bottom sheet
+      console.error('Confirmation failed:', error);
       closeConfirmation();
-    } finally {
+      // Reset processing state on error
       setIsProcessing(false);
     }
+    // Note: Don't reset isProcessing in finally block since the view is closing
   };
 
   const contextValue: ConfirmationDrawerContextType = {
