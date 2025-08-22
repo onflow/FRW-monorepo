@@ -22,7 +22,7 @@
     "bundle:android": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res",
     "bundle:android:sourcemap": "react-native bundle --platform android --entry-file index.js --dev false --bundle-output android/app/src/main/assets/index.android.bundle --sourcemap-output ./android-sourcemap.json",
     "clean:rn": "react-native-clean-project",
-    "clean:rn:auto": "react-native-clean-project auto",
+    "clean:rn:auto": "react-native-clean-project-auto",
     "icon": "node scripts/icon-generator.js",
     "icon:force": "node scripts/icon-generator.js --force"
   },
