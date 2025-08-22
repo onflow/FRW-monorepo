@@ -96,6 +96,10 @@ const SendTokensScreenView = () => {
     dispatch({ type: 'switchFiatOrCoin' });
   }, []);
 
+  const handleMaxPress = useCallback(() => {
+    dispatch({ type: 'setAmountToMax' });
+  }, []);
+
   const handleSendPress = useCallback(() => {
     setIsConfirmationVisible(true);
   }, []);
@@ -250,6 +254,7 @@ const SendTokensScreenView = () => {
       onTokenSelect: handleTokenSelect,
       onAmountChange: handleAmountChange,
       onToggleInputMode: handleToggleInputMode,
+      onMaxPress: handleMaxPress,
       onSendPress: handleSendPress,
       onTokenSelectorOpen: () => setIsTokenSelectorVisible(true),
       onTokenSelectorClose: () => setIsTokenSelectorVisible(false),
@@ -270,6 +275,7 @@ const SendTokensScreenView = () => {
       handleTokenSelect,
       handleAmountChange,
       handleToggleInputMode,
+      handleMaxPress,
       handleSendPress,
       handleTransactionConfirm,
       convertExtendedTokenInfoToTokenModel,

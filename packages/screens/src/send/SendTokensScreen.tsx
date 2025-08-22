@@ -41,6 +41,7 @@ export interface SendTokensScreenProps {
   onTokenSelect?: (token: TokenModel) => void;
   onAmountChange?: (amount: string) => void;
   onToggleInputMode?: () => void;
+  onMaxPress?: () => void;
   onSendPress?: () => void;
   onTokenSelectorOpen?: () => void;
   onTokenSelectorClose?: () => void;
@@ -84,6 +85,7 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
   onTokenSelect,
   onAmountChange,
   onToggleInputMode,
+  onMaxPress,
   onSendPress,
   onTokenSelectorOpen,
   onTokenSelectorClose,
@@ -148,7 +150,7 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
         <ScrollView showsVerticalScrollIndicator={false}>
           <YStack p={contentPadding}>
             {/* Main Transaction Card */}
-            <YStack bg="rgba(255, 255, 255, 0.1)" rounded="$5" overflow="hidden">
+            <YStack bg="$light10" rounded="$5" overflow="hidden">
               {/* From Account Section */}
               {fromAccount && (
                 <AccountCard
@@ -182,6 +184,7 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
                   isTokenMode={isTokenMode}
                   onToggleInputMode={onToggleInputMode}
                   onTokenSelectorPress={onTokenSelectorOpen}
+                  onMaxPress={onMaxPress}
                   placeholder="0.00"
                   showBalance={true}
                   showConverter={true}
@@ -212,7 +215,7 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
                 isFree={isFeesFree}
                 showCovered={true}
                 title="Transaction Fee"
-                backgroundColor="black"
+                backgroundColor="$black"
                 borderRadius={16}
                 // contentPadding={16}
               />
@@ -234,7 +237,7 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
         {/* Send Button */}
         <View p={contentPadding} pt="$2">
           <YStack
-            bg={isSendDisabled ? 'rgba(255, 255, 255, 0.2)' : 'white'}
+            bg={isSendDisabled ? '$light25' : '$white'}
             rounded="$4"
             p="$1"
             items="center"
@@ -243,7 +246,7 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
             onPress={isSendDisabled ? undefined : onSendPress}
             cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
           >
-            <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '$white' : 'black'}>
+            <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '$white' : '$black'}>
               Send Tokens
             </Text>
           </YStack>
