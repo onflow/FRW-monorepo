@@ -210,9 +210,9 @@ export const AccountSelectorModal = forwardRef<AccountSelectorModalRef, AccountS
 
     // Calculate modal height based on account count
     const getModalHeight = React.useCallback(() => {
-      if (accounts.length === 0) return '55%'; // while loading
-      if (accounts.length <= 2) return '55%'; // for 1-2 accounts
-      if (accounts.length <= 4) return '70%'; // for 3-4 accounts
+      if (accounts.length === 0) return '20%'; // while loading
+      if (accounts.length <= 2) return '30%'; // for 1-2 accounts
+      if (accounts.length <= 4) return '40%'; // for 3-4 accounts
       if (accounts.length <= 6) return '85%'; // for 5-6 accounts
       return '85%'; // for 7+ accounts
     }, [accounts.length]);
@@ -325,10 +325,10 @@ export const AccountSelectorModal = forwardRef<AccountSelectorModalRef, AccountS
           />
 
           <SafeAreaView
-            style={{ flex: 1, paddingTop: 12, paddingHorizontal: 16, paddingBottom: 24 }}
+            style={{ flex: 1, paddingTop: 16, paddingHorizontal: 16, paddingBottom: 24 }}
           >
             {/* Account List */}
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1, paddingTop: 12, paddingHorizontal: 16 }}>
               {isLoading ? (
                 <View
                   style={{
