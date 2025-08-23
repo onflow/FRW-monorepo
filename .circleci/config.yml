@@ -4,7 +4,6 @@ version: 2.1
 orbs:
   node: circleci/node@6.1.0
   android: circleci/android@2.5.0
-  react-native: react-native-community/react-native@6.2.0
 
 # Executors - execution environments
 executors:
