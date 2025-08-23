@@ -1,0 +1,439 @@
+version: 2.1
+
+# Orbs - reusable packages of configuration
+orbs:
+  node: circleci/node@6.1.0
+  android: circleci/android@2.5.0
+  react-native: react-native-community/react-native@6.2.0
+
+# Executors - execution environments
+executors:
+  # Node.js environment for React Native builds
+  node-executor:
+    docker:
+      - image: cimg/node:20.17
+    working_directory: ~/project
+
+  # Android build environment
+  android-executor:
+    docker:
+      - image: cimg/android:2024.01.1-node
+    working_directory: ~/project
+    resource_class: large
+
+  # macOS environment for iOS builds
+  macos-executor:
+    macos:
+      xcode: "15.4.0"
+    working_directory: ~/project
+    resource_class: macos.m1.large.gen1
+
+# Commands - reusable command sets
+commands:
+  # Setup project dependencies
+  setup-project:
+    description: "Setup monorepo with pnpm and submodules"
+    steps:
+      - checkout
+      - run:
+          name: Initialize and update submodules
+          command: |
+            git submodule update --init --recursive
+            # Sync submodule branches to latest
+            git submodule foreach --recursive 'git fetch && git checkout $1' -- $(git config -f .gitmodules --name-only --get-regexp path | sed 's/.*\.//') || true
+      - run:
+          name: Install pnpm
+          command: |
+            corepack enable
+            corepack prepare pnpm@latest --activate
+      - restore_cache:
+          keys:
+            - pnpm-{{ checksum "pnpm-lock.yaml" }}-{{ .Environment.CACHE_VERSION }}
+            - pnpm-
+      - run:
+          name: Install dependencies
+          command: pnpm install --frozen-lockfile
+      - save_cache:
+          key: pnpm-{{ checksum "pnpm-lock.yaml" }}-{{ .Environment.CACHE_VERSION }}
+          paths:
+            - ~/.local/share/pnpm/store
+      - run:
+          name: Build packages
+          command: pnpm build:packages
+
+  # Check for changes in specified paths
+  check-changes:
+    parameters:
+      paths:
+        type: string
+        default: "."
+    description: "Check if there are changes in specified paths since last successful build"
+    steps:
+      - run:
+          name: Check for changes
+          command: |
+            # Get the last successful commit from CircleCI API
+            LAST_SUCCESS=$(curl -s -H "Circle-Token: $CIRCLE_TOKEN" \
+              "https://circleci.com/api/v2/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pipeline" \
+              | jq -r '.items[] | select(.state == "success") | .vcs.revision' | head -1)
+
+            if [ -z "$LAST_SUCCESS" ]; then
+              echo "No previous successful build found, proceeding with build"
+              echo "true" > /tmp/should-build
+              exit 0
+            fi
+
+            # Check if there are changes in the specified paths
+            CHANGES=$(git diff --name-only $LAST_SUCCESS HEAD | grep -E "<< parameters.paths >>" || true)
+
+            if [ -n "$CHANGES" ]; then
+              echo "Changes detected in << parameters.paths >>:"
+              echo "$CHANGES"
+              echo "true" > /tmp/should-build
+            else
+              echo "No changes detected in << parameters.paths >>, skipping build"
+              echo "false" > /tmp/should-build
+            fi
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - should-build
+
+  # Setup iOS signing and configuration
+  setup-ios-signing:
+    parameters:
+      scheme:
+        type: string
+        default: "FlowWallet-dev"
+    description: "Setup iOS signing certificates and provisioning profiles"
+    steps:
+      - run:
+          name: Decode and install certificates
+          command: |
+            # Create keychain
+            security create-keychain -p "$KEYCHAIN_PASSWORD" temp.keychain
+            security default-keychain -s temp.keychain
+            security unlock-keychain -p "$KEYCHAIN_PASSWORD" temp.keychain
+            security set-keychain-settings -t 3600 -u temp.keychain
+
+            # Decode and install certificates
+            echo "$IOS_CERT_P12_BASE64" | base64 --decode > cert.p12
+            security import cert.p12 -k temp.keychain -P "$IOS_CERT_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
+            security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" temp.keychain
+
+            # Install provisioning profile
+            mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+            echo "$IOS_PROVISIONING_PROFILE_BASE64" | base64 --decode > "~/Library/MobileDevice/Provisioning Profiles/profile.mobileprovision"
+      - run:
+          name: Setup iOS configuration files
+          command: |
+            cd apps/react-native/ios
+
+            # Decode configuration files from environment variables
+            # Following the same pattern as iOS CI/CD documentation
+            if [ ! -z "$IOS_LOCAL_ENV_BASE64" ]; then
+              echo "$IOS_LOCAL_ENV_BASE64" | base64 --decode > LocalEnv
+            fi
+
+            if [ ! -z "$IOS_CONFIG_PLIST_BASE64" ]; then
+              echo "$IOS_CONFIG_PLIST_BASE64" | base64 --decode > FRW/Foundation/Config.plist
+            fi
+
+  # Setup Android signing and configuration
+  setup-android-signing:
+    parameters:
+      build_type:
+        type: string
+        default: "dev"
+    description: "Setup Android signing and configuration files"
+    steps:
+      - run:
+          name: Setup Android configuration files
+          command: |
+            cd apps/react-native/android
+
+            # Setup keystore
+            if [ "<< parameters.build_type >>" = "release" ]; then
+              echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > app/keystore.jks
+              echo "$ANDROID_KEY_PROPERTIES" > key.properties
+              echo "$ANDROID_GOOGLE_SERVICES_RELEASE" > app/src/release/google-services.json
+              echo "$FASTLANE_SERVICE_ACCOUNT_JSON" > fastlane/service-account.json
+            else
+              # Generate temporary keystore for dev builds
+              keytool -genkeypair -v \
+                -keystore app/keystore.jks \
+                -storepass "password" \
+                -alias "alias_name" \
+                -keypass "password" \
+                -keyalg RSA \
+                -keysize 2048 \
+                -validity 10000 \
+                -dname "CN=CircleCI, OU=DevEx, O=Flow Foundation, L=Ottawa, S=Ontario, C=CA"
+              
+              echo "$ANDROID_KEY_PROPERTIES_DEV" > key.properties
+              echo "$ANDROID_GOOGLE_SERVICES_DEV" > app/src/dev/google-services.json
+            fi
+
+            echo "$ANDROID_LOCAL_PROPERTIES" > local.properties
+
+# Jobs - individual tasks
+jobs:
+  # Check if we should build based on changes
+  check-dev-changes:
+    executor: node-executor
+    steps:
+      - check-changes:
+          paths: "(apps/react-native|packages)"
+
+  check-prod-changes:
+    executor: node-executor
+    steps:
+      - check-changes:
+          paths: "(apps/react-native|packages)"
+
+  # iOS Development Build
+  build-ios-dev:
+    executor: macos-executor
+    environment:
+      FL_OUTPUT_DIR: output
+    steps:
+      - setup-project
+      - attach_workspace:
+          at: /tmp
+      - run:
+          name: Check if should build
+          command: |
+            if [ "$(cat /tmp/should-build)" = "false" ]; then
+              echo "No changes detected, skipping iOS dev build"
+              circleci step halt
+            fi
+      - setup-ios-signing:
+          scheme: "FlowWallet-dev"
+      - run:
+          name: Install iOS dependencies
+          command: |
+            cd apps/react-native
+            bundle install
+            cd ios && bundle exec pod install --repo-update
+      - run:
+          name: Build and archive iOS app (Dev)
+          command: |
+            cd apps/react-native/ios
+            xcodebuild -workspace FRW.xcworkspace \
+              -scheme FlowWallet-dev \
+              -configuration Debug \
+              -archivePath build/FRW-dev.xcarchive \
+              archive
+      - run:
+          name: Export IPA for TestFlight
+          command: |
+            cd apps/react-native/ios
+            xcodebuild -exportArchive \
+              -archivePath build/FRW-dev.xcarchive \
+              -exportPath build \
+              -exportOptionsPlist ExportOptions-dev.plist
+      - run:
+          name: Upload to TestFlight
+          command: |
+            cd apps/react-native/ios
+            xcrun altool --upload-app \
+              --type ios \
+              --file "build/FlowWallet-dev.ipa" \
+              --username "$APPLE_ID" \
+              --password "$APPLE_APP_PASSWORD"
+      - store_artifacts:
+          path: apps/react-native/ios/build
+          destination: ios-build-artifacts
+
+  # iOS Production Build
+  build-ios-prod:
+    executor: macos-executor
+    environment:
+      FL_OUTPUT_DIR: output
+    steps:
+      - setup-project
+      - setup-ios-signing:
+          scheme: "FlowWallet"
+      - run:
+          name: Install iOS dependencies
+          command: |
+            cd apps/react-native
+            bundle install
+            cd ios && bundle exec pod install --repo-update
+      - run:
+          name: Build and archive iOS app (Production)
+          command: |
+            cd apps/react-native/ios
+            xcodebuild -workspace FRW.xcworkspace \
+              -scheme FlowWallet \
+              -configuration Release \
+              -archivePath build/FRW-prod.xcarchive \
+              archive
+      - run:
+          name: Export IPA for App Store
+          command: |
+            cd apps/react-native/ios
+            xcodebuild -exportArchive \
+              -archivePath build/FRW-prod.xcarchive \
+              -exportPath build \
+              -exportOptionsPlist ExportOptions-prod.plist
+      - run:
+          name: Upload to App Store
+          command: |
+            cd apps/react-native/ios
+            xcrun altool --upload-app \
+              --type ios \
+              --file "build/FlowWallet.ipa" \
+              --username "$APPLE_ID" \
+              --password "$APPLE_APP_PASSWORD"
+      - store_artifacts:
+          path: apps/react-native/ios/build
+          destination: ios-build-artifacts
+
+  # Android Development Build
+  build-android-dev:
+    executor: android-executor
+    steps:
+      - setup-project
+      - attach_workspace:
+          at: /tmp
+      - run:
+          name: Check if should build
+          command: |
+            if [ "$(cat /tmp/should-build)" = "false" ]; then
+              echo "No changes detected, skipping Android dev build"
+              circleci step halt
+            fi
+      - setup-android-signing:
+          build_type: "dev"
+      - run:
+          name: Set up Android environment
+          command: |
+            echo 'export ANDROID_HOME=$ANDROID_SDK_ROOT' >> $BASH_ENV
+            echo 'export PATH=$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools:$PATH' >> $BASH_ENV
+            source $BASH_ENV
+      - run:
+          name: Accept Android SDK licenses
+          command: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+      - run:
+          name: Build Android APK (Dev)
+          command: |
+            cd apps/react-native/android
+            ./gradlew assembleDev
+      - run:
+          name: Upload to Firebase App Distribution (Dev)
+          command: |
+            cd apps/react-native/android
+            ./gradlew appDistributionUploadDev
+      - run:
+          name: Cleanup sensitive files
+          command: |
+            cd apps/react-native/android
+            rm -f app/keystore.jks key.properties local.properties
+            rm -f app/src/dev/google-services.json
+      - store_artifacts:
+          path: apps/react-native/android/app/build/outputs
+          destination: android-build-artifacts
+
+  # Android Production Build
+  build-android-prod:
+    executor: android-executor
+    steps:
+      - setup-project
+      - setup-android-signing:
+          build_type: "release"
+      - run:
+          name: Set up Android environment
+          command: |
+            echo 'export ANDROID_HOME=$ANDROID_SDK_ROOT' >> $BASH_ENV
+            echo 'export PATH=$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools:$PATH' >> $BASH_ENV
+            source $BASH_ENV
+      - run:
+          name: Accept Android SDK licenses
+          command: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+      - run:
+          name: Build Android APK and AAB (Release)
+          command: |
+            cd apps/react-native/android
+            ./gradlew clean assembleRelease bundleRelease
+      - run:
+          name: Upload to Firebase App Distribution (Release)
+          command: |
+            cd apps/react-native/android
+            ./gradlew appDistributionUploadRelease
+      - run:
+          name: Upload to Google Play Store (Internal Track)
+          command: |
+            cd apps/react-native/android
+            bundle install
+            bundle exec fastlane internal
+      - run:
+          name: Cleanup sensitive files
+          command: |
+            cd apps/react-native/android
+            rm -f app/keystore.jks key.properties local.properties
+            rm -f app/src/release/google-services.json
+            rm -f fastlane/service-account.json
+      - store_artifacts:
+          path: apps/react-native/android/app/build/outputs
+          destination: android-build-artifacts
+
+# Workflows - orchestrate jobs
+workflows:
+  # Development builds - scheduled for 00:00 and 12:00 daily, only if changes detected
+  daily-dev-builds:
+    triggers:
+      - schedule:
+          cron: "0 0,12 * * *" # At 00:00 and 12:00 UTC every day
+          filters:
+            branches:
+              only: dev
+    jobs:
+      - check-dev-changes
+      - build-ios-dev:
+          requires:
+            - check-dev-changes
+          context:
+            - frw-ios-dev
+          filters:
+            branches:
+              only: dev
+      - build-android-dev:
+          requires:
+            - check-dev-changes
+          context:
+            - frw-android-dev
+          filters:
+            branches:
+              only: dev
+
+  # Production builds - triggered by release tags
+  production-release:
+    jobs:
+      - build-ios-prod:
+          context:
+            - frw-ios-prod
+          filters:
+            tags:
+              only: /^release\/rn-.*/
+            branches:
+              ignore: /.*/
+      - build-android-prod:
+          context:
+            - frw-android-prod
+          filters:
+            tags:
+              only: /^release\/rn-.*/
+            branches:
+              ignore: /.*/
+
+  # Regular CI checks for PRs and pushes (non-scheduled)
+  ci-checks:
+    jobs:
+      - check-prod-changes:
+          filters:
+            branches:
+              ignore:
+                - dev
+                - main
+      # Add lint/test jobs here if needed
