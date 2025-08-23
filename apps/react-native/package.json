@@ -27,7 +27,6 @@
     "icon:force": "node scripts/icon-generator.js --force"
   },
   "dependencies": {
-    "@gorhom/bottom-sheet": "^5.1.8",
     "@onflow/fcl": "^1.19.0",
     "@onflow/frw-api": "workspace:*",
     "@onflow/frw-cadence": "workspace:*",
@@ -66,6 +65,7 @@
     "react-native-gesture-handler": "^2.27.2",
     "react-native-get-random-values": "^1.11.0",
     "react-native-mmkv": "^3.3.0",
+    "react-native-modal": "14.0.0-rc.1",
     "react-native-reanimated": "4.0.1",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "^4.11.1",
