@@ -73,7 +73,7 @@ commands:
           command: |
             # Get the last successful commit from CircleCI API
             LAST_SUCCESS=$(curl -s -H "Circle-Token: $CIRCLE_TOKEN" \
-              "https://circleci.com/api/v2/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pipeline" \
+              "https://circleci.com/api/v2/project/github/onflow/FRW-monorepo/pipeline" \
               | jq -r '.items[] | select(.state == "success") | .vcs.revision' | head -1)
 
             if [ -z "$LAST_SUCCESS" ]; then
