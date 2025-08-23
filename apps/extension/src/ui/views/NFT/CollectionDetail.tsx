@@ -1,129 +1,58 @@
-import React, { useCallback, useEffect } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router';
+import { NFTListScreen } from '@onflow/frw-screens';
+import { type CollectionModel } from '@onflow/frw-types';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useParams } from 'react-router';
 
-import { consoleError } from '@/shared/utils';
-import CollectionDetailGrid from '@/ui/components/NFTs/CollectionDetailGrid';
-import GridView from '@/ui/components/NFTs/GridView';
-import { useWallet } from '@/ui/hooks/use-wallet';
-import { useNftHook } from '@/ui/hooks/useNftHook';
-
-// import InfiniteScroll from 'react-infinite-scroller';
-
-interface CollectionDisplay {
-  name: string;
-  squareImage: SquareImage;
-  externalURL: string;
-}
-
-interface Info {
-  collectionDisplay: CollectionDisplay;
-}
-
-interface File {
-  url: string;
-}
-
-interface SquareImage {
-  file: File;
-}
-
-interface CollectionDetailState {
-  collection: any;
-  ownerAddress: any;
-  accessible: any;
-}
 
 const NFTCollectionDetail = () => {
-  const usewallet = useWallet();
   const location = useParams();
   const uselocation = useLocation();
-  const navigate = useNavigate();
+  const [collection, setCollection] = useState<CollectionModel | undefined>(undefined);
+  const [address, setAddress] = useState<string | undefined>(undefined);
 
-  const collection_info = location['collection_address_name']?.split('.') || [];
-  const address = collection_info[0];
-  const collection_name = collection_info[1];
-  const nftCount = collection_info[2];
-
-  const getCollection = useCallback(
-    async (ownerAddress, collection, offset) => {
-      return await usewallet.getCadenceCollectionNfts(ownerAddress, collection, offset);
-    },
-    [usewallet]
-  );
-
-  const refreshCollection = useCallback(
-    async (ownerAddress, collection, offset) => {
-      return await usewallet.refreshSingleCollection(ownerAddress, collection, offset);
-    },
-    [usewallet]
-  );
-
-  const {
-    list,
-    allNfts,
-    info,
-    total,
-    loading,
-    isLoadingAll,
-    loadingMore,
-    refreshCollectionImpl,
-    searchTerm,
-    setSearchTerm,
-  } = useNftHook({
-    getCollection,
-    refreshCollection,
-    ownerAddress: address,
-    collectionName: collection_name,
-    isEvm: false,
-  });
-
-  // Check for saved state when returning from NFT detail view
+  // Extract collection data from URL params or location state
   useEffect(() => {
-    const savedState = localStorage.getItem('nftDetailState');
-    if (savedState) {
-      try {
-        const parsedState = JSON.parse(savedState);
-        if (parsedState.searchTerm && setSearchTerm) {
-          setSearchTerm(parsedState.searchTerm);
-        }
-        localStorage.setItem('nftDetailState', '');
-      } catch (e) {
-        consoleError('Error parsing saved state:', e);
-      }
+    // First try to get from location state
+    if (uselocation.state?.collection) {
+      setCollection(uselocation.state.collection);
+      setAddress(uselocation.state.ownerAddress);
+      return;
     }
-  }, [setSearchTerm]);
 
-  const createGridCard = (data, index) => {
-    return (
-      <GridView
-        data={data}
-        blockList={[]}
-        accessible={uselocation.state ? uselocation.state.accessible : []}
-        key={`${data.collectionName}_${data.id}`}
-        index={index}
-        ownerAddress={address}
-        collectionInfo={info}
-        isEvm={false}
-        searchTerm={searchTerm}
-      />
-    );
-  };
+    // Fallback to URL params
+    const collection_info = location['collection_address_name']?.split('.') || [];
+    if (collection_info.length >= 3) {
+      const ownerAddress = collection_info[0];
+      const collection_name = collection_info[1];
+      const nftCount = parseInt(collection_info[2], 10);
 
-  return (
-    <CollectionDetailGrid
-      info={info}
-      list={list}
-      allNfts={allNfts}
-      total={total}
-      loading={loading}
-      loadingMore={loadingMore}
-      isLoadingAll={isLoadingAll}
-      refreshCollectionImpl={refreshCollectionImpl}
-      createGridCard={createGridCard}
-      searchTerm={searchTerm}
-      setSearchTerm={setSearchTerm}
-    />
-  );
+      // Create a basic collection model from URL params
+      const collectionModel: CollectionModel = {
+        id: collection_name,
+        name: collection_name,
+        contractName: collection_name,
+        count: nftCount,
+        type: 'cadence', // Default to cadence
+        logo: '', // Will be loaded by the screen
+        banner: '',
+        description: '',
+        path: {
+          storage_path: '',
+          public_path: '',
+        },
+        evmAddress: '',
+        official_website: '',
+        socials: {},
+      };
+
+      setCollection(collectionModel);
+      setAddress(ownerAddress);
+    }
+  }, [location, uselocation.state]);
+
+  // The NFTListScreen from packages handles all the logic internally
+  // No props are passed except the collection and address - the screen manages its own state
+  return <NFTListScreen collection={collection} address={address} />;
 };
 
 export default NFTCollectionDetail;
