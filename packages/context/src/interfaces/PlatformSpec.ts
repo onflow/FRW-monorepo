@@ -46,6 +46,18 @@ export interface PlatformSpec {
   getRecentContacts(): Promise<RecentContactsResponse>;
   getWalletAccounts(): Promise<WalletAccountsResponse>;
   getSelectedAccount(): Promise<WalletAccount>;
+  
+  // Get parent address for transaction proposer
+  getParentAddress(): Promise<string | null>;
+  
+  // Token and account data methods
+  getCoins(): Promise<any[] | null>;
+  getAccountInfo(address: string): Promise<any>;
+  
+  // Transaction monitoring and post-transaction actions
+  listenTransaction?(txId: string, showNotification: boolean, title: string, message: string, icon?: string): void;
+  setRecent?(contact: any): Promise<void>;
+  setDashIndex?(index: number): Promise<void>;
 
   // CadenceService configuration using interceptor pattern
   // This method allows the bridge to configure all FCL-related functionality

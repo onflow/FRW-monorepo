@@ -8,6 +8,7 @@ import {
 } from '@onflow/frw-types';
 
 import { chromeStorage } from '@/extension-shared/chrome-storage';
+import { userWalletService } from '@/core/service';
 
 import { extensionNavigation } from './ExtensionNavigation';
 
@@ -45,6 +46,9 @@ class ExtensionPlatformImpl implements PlatformSpec {
   }
 
   async getJWT(): Promise<string> {
+    if (!this.walletController) {
+      throw new Error('Wallet controller not initialized');
+    }
     return await this.walletController.getJWT();
   }
 
@@ -108,10 +112,34 @@ class ExtensionPlatformImpl implements PlatformSpec {
   }
 
   async getWalletAccounts(): Promise<WalletAccountsResponse> {
+    this.log('debug', 'getWalletAccounts called, walletController:', typeof this.walletController);
+    if (!this.walletController) {
+      throw new Error('Wallet controller not initialized');
+    }
+    this.log(
+      'debug',
+      'walletController.getWalletAccounts type:',
+      typeof this.walletController.getWalletAccounts
+    );
+    if (!this.walletController.getWalletAccounts) {
+      throw new Error('getWalletAccounts method not available on wallet controller');
+    }
     return await this.walletController.getWalletAccounts();
   }
 
   async getSelectedAccount(): Promise<WalletAccount> {
+    this.log('debug', 'getSelectedAccount called, walletController:', typeof this.walletController);
+    if (!this.walletController) {
+      throw new Error('Wallet controller not initialized');
+    }
+    this.log(
+      'debug',
+      'walletController.getSelectedAccount type:',
+      typeof this.walletController.getSelectedAccount
+    );
+    if (!this.walletController.getSelectedAccount) {
+      throw new Error('getSelectedAccount method not available on wallet controller');
+    }
     return await this.walletController.getSelectedAccount();
   }
 
@@ -138,16 +166,255 @@ class ExtensionPlatformImpl implements PlatformSpec {
     return [];
   }
 
+  // Token and account data methods (required by PlatformSpec)
+  // Note: For extension, this should be overridden by PlatformContext to use useCoins() hook data
+  async getCoins(): Promise<any[] | null> {
+    this.log('warn', 'Extension getCoins() called - should be overridden by PlatformContext');
+    return null;
+  }
+
+  async getParentAddress(): Promise<string | null> {
+    this.log(
+      'warn',
+      'Extension getParentAddress() called - should be overridden by PlatformContext'
+    );
+    if (!this.walletController) return null;
+    try {
+      return await this.walletController.getMainAddress();
+    } catch (error) {
+      this.log('warn', 'Failed to get parent address:', error);
+      return null;
+    }
+  }
+
+  async getAccountInfo(address: string): Promise<any> {
+    if (!this.walletController) return null;
+    try {
+      return await this.walletController.getAccountInfo(address);
+    } catch (error) {
+      this.log('warn', 'Failed to get account info for address:', address, error);
+      return null;
+    }
+  }
+
+  listenTransaction?(
+    txId: string,
+    showNotification: boolean,
+    title: string,
+    message: string,
+    icon?: string
+  ): void {
+    if (!this.walletController) {
+      this.log('warn', 'Cannot listen transaction - wallet controller not initialized');
+      return;
+    }
+    if (!this.walletController.listenTransaction) {
+      this.log('warn', 'listenTransaction method not available on wallet controller');
+      return;
+    }
+
+    this.log('debug', 'Extension listenTransaction called:', { txId, showNotification, title });
+
+    try {
+      this.walletController.listenTransaction(txId, showNotification, title, message, icon);
+    } catch (error) {
+      this.log('error', 'Extension listenTransaction failed:', error);
+    }
+  }
+
+  async setRecent?(contact: any): Promise<void> {
+    if (!this.walletController) {
+      this.log('warn', 'Cannot set recent contact - wallet controller not initialized');
+      return;
+    }
+    if (!this.walletController.setRecent) {
+      this.log('warn', 'setRecent method not available on wallet controller');
+      return;
+    }
+
+    this.log('debug', 'Extension setRecent called:', contact);
+
+    try {
+      await this.walletController.setRecent(contact);
+    } catch (error) {
+      this.log('error', 'Extension setRecent failed:', error);
+    }
+  }
+
+  async setDashIndex?(index: number): Promise<void> {
+    if (!this.walletController) {
+      this.log('warn', 'Cannot set dash index - wallet controller not initialized');
+      return;
+    }
+    if (!this.walletController.setDashIndex) {
+      this.log('warn', 'setDashIndex method not available on wallet controller');
+      return;
+    }
+
+    this.log('debug', 'Extension setDashIndex called:', index);
+
+    try {
+      await this.walletController.setDashIndex(index);
+    } catch (error) {
+      this.log('error', 'Extension setDashIndex failed:', error);
+    }
+  }
+
   // CadenceService configuration
   configureCadenceService(cadenceService: any): void {
-    // Configure FCL and other Cadence-related services for extension
-    // This method allows the bridge to set up authorization, proposer, payer, etc.
+    const version = this.getVersion();
+    const buildNumber = this.getBuildNumber();
+    const network = this.getNetwork();
 
-    // Note: FCL configuration is handled by the cadence package's configureFCL function
-    // The CadenceService doesn't have config or currentUser methods
-    // Instead, we can add interceptors or other configuration here if needed
+    this.log('debug', 'Configuring CadenceService for extension', { network, version });
 
-    // For now, we'll just log that the service is configured
+    // Add version and platform headers to transactions
+    cadenceService.useRequestInterceptor(async (config: any) => {
+      if (config.type === 'transaction') {
+        const platform = 'extension';
+        const versionHeader = `// Flow Wallet Monorepo - ${network} Script - ${config.name} - Extension - ${version}`;
+        const platformHeader = `// Platform: ${platform} - ${version} - ${buildNumber}`;
+        config.cadence = versionHeader + '\n' + platformHeader + '\n\n' + config.cadence;
+      }
+      return config;
+    });
+
+    // Configure gas limits and authorization functions using extension's existing functions
+    cadenceService.useRequestInterceptor(async (config: any) => {
+      if (config.type === 'transaction') {
+        config.limit = 9999;
+
+        // Create proposer authorization function using parent address from hooks
+        config.proposer = async (account: any) => {
+          const address = await this.getParentAddress(); // Always use parent Flow address
+          const keyId = this.getSignKeyIndex();
+          const ADDRESS = address?.startsWith('0x') ? address : `0x${address}`;
+          const KEY_ID = Number(keyId) || 0;
+
+          return {
+            ...account,
+            tempId: `${ADDRESS}-${KEY_ID}`,
+            addr: ADDRESS.replace('0x', ''),
+            keyId: KEY_ID,
+            signingFunction: async (signable: { message: string }) => {
+              return {
+                addr: ADDRESS,
+                keyId: KEY_ID,
+                signature: await this.sign(signable.message),
+              };
+            },
+          };
+        };
+
+        // Determine payer function based on transaction name and fee coverage logic
+        const shouldCoverFee = config.name && config.name.endsWith('WithPayer');
+
+        if (shouldCoverFee) {
+          // Use bridge fee payer function
+          const { address: payerAddress, keyId: payerKeyId } =
+            await this.walletController.getBridgeFeePayerAddressAndKeyId();
+          config.payer = async (account: any) => {
+            const ADDRESS = payerAddress?.startsWith('0x') ? payerAddress : `0x${payerAddress}`;
+            const KEY_ID = Number(payerKeyId) || 0;
+
+            return {
+              ...account,
+              tempId: `${ADDRESS}-${KEY_ID}`,
+              addr: ADDRESS.replace('0x', ''),
+              keyId: KEY_ID,
+              signingFunction: async (signable: any) => {
+                return {
+                  addr: ADDRESS,
+                  keyId: KEY_ID,
+                  signature: await this.walletController.signPayer(signable),
+                };
+              },
+            };
+          };
+
+          // Set authorizations array with both proposer and payer
+          config.authorizations = [config.proposer, config.payer];
+        } else {
+          // Check if free gas is allowed
+          const allowed = await this.walletController.allowLilicoPay();
+
+          if (allowed) {
+            // Use regular payer function
+            const { address: payerAddress, keyId: payerKeyId } =
+              await this.walletController.getPayerAddressAndKeyId();
+            config.payer = async (account: any) => {
+              const ADDRESS = payerAddress?.startsWith('0x') ? payerAddress : `0x${payerAddress}`;
+              const KEY_ID = Number(payerKeyId) || 0;
+
+              return {
+                ...account,
+                tempId: `${ADDRESS}-${KEY_ID}`,
+                addr: ADDRESS.replace('0x', ''),
+                keyId: KEY_ID,
+                signingFunction: async (signable: any) => {
+                  return {
+                    addr: ADDRESS,
+                    keyId: KEY_ID,
+                    signature: await this.walletController.signPayer(signable),
+                  };
+                },
+              };
+            };
+          } else {
+            // Use proposer as payer (user pays)
+            config.payer = config.proposer;
+          }
+
+          // Set authorizations array with just proposer
+          config.authorizations = [config.proposer];
+        }
+      }
+      return config;
+    });
+
+    // Configure response interceptor for transaction monitoring
+    cadenceService.useResponseInterceptor(async (config: any, response: any) => {
+      let txId: string | null = null;
+
+      if (config.type === 'transaction') {
+        // Handle bypassed extension transactions
+        if (response && response.__EXTENSION_SUCCESS__) {
+          txId = response.result;
+          this.log('debug', 'Extension bypassed transaction completed with ID:', txId);
+
+          // Return the transaction ID as the response
+          response = txId;
+        } else if (response && typeof response === 'string') {
+          // Handle normal FCL transactions
+          txId = response;
+          this.log('debug', 'FCL transaction completed with ID:', txId);
+        }
+
+        if (txId) {
+          try {
+            // Start transaction monitoring
+            if (this.walletController && this.walletController.listenTransaction) {
+              this.walletController.listenTransaction(txId);
+              this.log('debug', 'Extension transaction monitoring started for:', txId);
+            }
+
+            // Navigate to transaction complete
+            const navigation = this.getNavigation();
+            if (navigation && navigation.navigate) {
+              navigation.navigate('TransactionComplete', {
+                txId: txId,
+              });
+              this.log('debug', 'Navigation to TransactionComplete triggered');
+            }
+          } catch (error) {
+            this.log('error', 'Failed to execute post-transaction actions:', error);
+          }
+        }
+      }
+
+      return { config, response };
+    });
+
     this.log('debug', 'CadenceService configured for extension');
   }
 
@@ -224,28 +491,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
   getNavigation() {
     // Return the extension navigation implementation
     return extensionNavigation;
-  }
-
-  // Helper methods
-  private getAuthorization() {
-    return async (account: any) => {
-      const address = this.getSelectedAddress();
-      const keyId = this.getSignKeyIndex();
-
-      return {
-        ...account,
-        addr: address,
-        keyId: keyId,
-        signingFunction: async (signable: any) => {
-          const signature = await this.sign(signable.message);
-          return {
-            addr: address,
-            keyId: keyId,
-            signature: signature,
-          };
-        },
-      };
-    };
   }
 }
 

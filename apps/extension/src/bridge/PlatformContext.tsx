@@ -18,6 +18,8 @@ type PlatformBridge = {
   getNetwork(): string;
   getCurrency(): any;
   getCoins?(): any[] | null;
+  getSelectedAccount?(): Promise<any>;
+  getAccountInfo?(address: string): Promise<any>;
 };
 type TranslationFunction = (key: string) => string;
 
@@ -29,6 +31,7 @@ import { useProfiles } from '@/ui/hooks/useProfileHook';
 
 import { extensionNavigation } from './ExtensionNavigation';
 import { initializePlatform } from './PlatformImpl';
+import { isValidEthereumAddress } from '@/shared/utils/address';
 
 /**
  * Platform context that provides the full PlatformSpec implementation
@@ -53,19 +56,122 @@ const PlatformContext = createContext<PlatformContextValue | null>(null);
 export const PlatformProvider = ({ children }: { children: ReactNode }) => {
   const { network } = useNetwork();
   const userWallets = useUserWallets();
-  const { currentWallet } = useProfiles();
+  const { currentWallet, mainAddress } = useProfiles();
   const wallet = useWallet();
   const { coins } = useCoins();
+  console.log('🐛 PlatformContext useCoins result:', { coins, type: typeof coins, isArray: Array.isArray(coins), length: coins?.length });
+  console.log('🐛 PlatformContext full coins data:', coins);
   const navigate = useNavigate();
   const location = useLocation();
 
   // Initialize platform singleton
   const platform = initializePlatform();
 
-  // Initialize ServiceContext with platform
+  // Initialize ServiceContext with enhanced platform that includes hook data
   useEffect(() => {
-    ServiceContext.initialize(platform);
-  }, [platform]);
+    console.log('🔄 ServiceContext effect triggered, coins:', coins?.length || 'undefined');
+
+    // Create enhanced platform that overrides methods to use hook data
+    const enhancedPlatform = Object.create(platform);
+
+    enhancedPlatform.getCoins = async () => {
+      console.log('🪙 Enhanced platform getCoins called, coins from hook:', coins?.length || 'undefined');
+      return coins || null;
+    };
+
+    enhancedPlatform.getWalletAccounts = async () => {
+      console.log('👛 userWallets data:', userWallets);
+
+      // Always ensure there's a main account from mainAddress (parent Flow address)
+      const accountsArray: any[] = [];
+
+      // Add main Flow account first (from mainAddress)
+      if (mainAddress) {
+        accountsArray.push({
+          address: mainAddress,
+          name: 'Main Account',
+          type: 'main',
+          balance: '0',
+          avatar: currentWallet?.avatar || '',
+          emoji: currentWallet?.emoji || '',
+          emojiInfo: currentWallet?.emojiInfo || null
+        });
+      }
+
+      // Add userWallets accounts if they exist and are different from main
+      if (Array.isArray(userWallets)) {
+        userWallets.forEach(wallet => {
+          if (!accountsArray.find(acc => acc.address === wallet.address)) {
+            const isEVMWallet = isValidEthereumAddress(wallet.address);
+            accountsArray.push({
+              ...wallet,
+              type: wallet.type || (isEVMWallet ? 'evm' : 'main'),
+              parentAddress: isEVMWallet ? mainAddress : undefined
+            });
+          }
+        });
+      }
+
+      // Add current wallet if it's not already present and different from main
+      if (currentWallet && currentWallet.address !== mainAddress && !accountsArray.find(acc => acc.address === currentWallet.address)) {
+        const isEVMAccount = isValidEthereumAddress(currentWallet.address);
+        const accountType = isEVMAccount ? 'evm' : 'main';
+
+        accountsArray.push({
+          address: currentWallet.address,
+          name: currentWallet.name || 'Current Account',
+          type: accountType,
+          balance: '0',
+          avatar: currentWallet.avatar || '',
+          emoji: currentWallet.emoji || '',
+          emojiInfo: currentWallet.emojiInfo || null,
+          parentAddress: isEVMAccount ? mainAddress : undefined
+        });
+      }
+
+      console.log('👛 Returning accounts array:', accountsArray.length, 'accounts');
+      console.log('👛 All accounts:', accountsArray);
+      console.log('👛 Main accounts:', accountsArray.filter(acc => acc.type === 'main'));
+      console.log('👛 EVM accounts with parentAddress:', accountsArray.filter(acc => acc.type === 'evm' && acc.parentAddress));
+
+      return {
+        accounts: accountsArray,
+        total: accountsArray.length
+      };
+    };
+
+    enhancedPlatform.getParentAddress = async () => {
+
+      console.log('🏠 Parent address found:', mainAddress);
+      return mainAddress;
+    };
+
+    enhancedPlatform.getSelectedAccount = async () => {
+      console.log('🎯 Enhanced platform getSelectedAccount called, currentWallet:', currentWallet?.address || 'undefined');
+      if (!currentWallet) {
+        throw new Error('No selected account available');
+      }
+
+      // Determine account type based on address format
+      const isEVMAccount = isValidEthereumAddress(currentWallet.address);
+      const accountType = isEVMAccount ? 'evm' : 'main';
+
+      return {
+        address: currentWallet.address,
+        name: currentWallet.name || 'My Account',
+        type: accountType,
+        balance: '0',
+        avatar: currentWallet.avatar || '',
+        emoji: currentWallet.emoji || '',
+        emojiInfo: currentWallet.emojiInfo || null,
+        parentAddress: isEVMAccount ? mainAddress : undefined
+      };
+    };
+
+    // Always reinitialize ServiceContext when data changes
+    ServiceContext.initialize(enhancedPlatform);
+    console.log('✅ ServiceContext reinitialized with coins:', coins?.length || 'undefined', 'wallets:', userWallets?.length || 'undefined');
+  }, [platform, coins, userWallets, currentWallet]);
 
   // Keep platform synchronized with extension state
   useEffect(() => {
@@ -152,7 +258,29 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
     getNetwork: () => platform.getNetwork(),
     getCurrency: () => platform.getCurrency(),
     getCoins: () => {
+      // Use the coins data from useCoins hook instead of trying to fetch from platform
+      console.log('🪙 PlatformContext getCoins called, coins data:', coins);
       return coins || null;
+    },
+    getSelectedAccount: async () => {
+      try {
+        return await platform.getSelectedAccount();
+      } catch (error) {
+        console.warn('Failed to get selected account from platform:', error);
+        throw error;
+      }
+    },
+    getAccountInfo: async (address: string) => {
+      try {
+        const platformImpl = platform as any;
+        if (platformImpl.getAccountInfo && typeof platformImpl.getAccountInfo === 'function') {
+          return await platformImpl.getAccountInfo(address);
+        }
+        return null;
+      } catch (error) {
+        console.warn('Failed to get account info from platform:', error);
+        return null;
+      }
     },
   });
 

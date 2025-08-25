@@ -1422,6 +1422,18 @@ export class WalletController extends BaseController {
     return await userWalletService.signProposer(signable);
   };
 
+  getAuthorizationFunction = async () => {
+    return userWalletService.authorizationFunction.bind(userWalletService);
+  };
+
+  getPayerAuthFunction = async () => {
+    return userWalletService.payerAuthFunction.bind(userWalletService);
+  };
+
+  getBridgeFeePayerAuthFunction = async () => {
+    return userWalletService.bridgeFeePayerAuthFunction.bind(userWalletService);
+  };
+
   updateProfilePreference = async (privacy: number) => {
     await openapiService.updateProfilePreference(privacy);
   };
