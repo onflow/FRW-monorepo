@@ -1,6 +1,6 @@
 import { InfoIcon } from '@onflow/frw-icons';
 import React from 'react';
-import { XStack, YStack } from 'tamagui';
+import { Stack, XStack, YStack } from 'tamagui';
 
 import { Text } from '../foundation/Text';
 
@@ -46,11 +46,9 @@ export const StorageWarning: React.FC<StorageWarningProps> = ({
           {title}
         </Text>
         {showIcon && (
-          <InfoIcon
-            onClick={() => setIsStorageExceededWarningShow(true)}
-            size={15}
-            color="rgba(255, 255, 255, 0.4)"
-          />
+          <Stack color={'$light40'}>
+            <InfoIcon onClick={() => setIsStorageExceededWarningShow(true)} size={15} />
+          </Stack>
         )}
       </XStack>
 

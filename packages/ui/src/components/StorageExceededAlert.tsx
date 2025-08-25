@@ -1,11 +1,39 @@
 import { navigation } from '@onflow/frw-context';
 import { Close } from '@onflow/frw-icons';
 import React from 'react';
-import { YStack, XStack, Stack } from 'tamagui';
+import { Dialog, YStack, XStack, Button, Adapt, Sheet } from 'tamagui';
 
-import { Modal } from './Modal';
-import { Card } from '../foundation/Card';
 import { Text } from '../foundation/Text';
+
+// Type declaration for chrome extension API
+declare global {
+  interface Window {
+    chrome?: {
+      i18n?: {
+        getMessage: (key: string) => string;
+      };
+    };
+  }
+
+  const chrome:
+    | {
+        i18n?: {
+          getMessage: (key: string) => string;
+        };
+      }
+    | undefined;
+}
+
+// Helper to safely access chrome.i18n
+const getChromeMessage = (key: string, fallback: string): string => {
+  if (typeof window !== 'undefined' && window.chrome?.i18n) {
+    return window.chrome.i18n.getMessage(key);
+  }
+  if (typeof chrome !== 'undefined' && chrome?.i18n) {
+    return chrome.i18n.getMessage(key);
+  }
+  return fallback;
+};
 
 export interface StorageExceededAlertProps {
   visible: boolean;
@@ -13,75 +41,143 @@ export interface StorageExceededAlertProps {
   title?: string;
 }
 
-export const StorageExceededAlert: React.FC<StorageExceededAlertProps> = ({ visible, onClose }) => {
+export const StorageExceededAlert: React.FC<StorageExceededAlertProps> = ({
+  visible,
+  onClose,
+  title,
+}) => {
   const handleBuyFlow = () => {
     onClose();
-    navigation.navigate('/dashboard?onramp=true');
+    navigation.navigate('Home');
+  };
+
+  const getTitle = () => {
+    if (title) return title;
+    return getChromeMessage('Insufficient_Storage', 'Storage Limitation Warning');
   };
 
   return (
-    <Modal
-      visible={visible}
-      width={'100%'}
-      height={'100%'}
-      backgroundColor="$bg2"
-      padding="$5"
-      gap="$4"
-      zIndex={5}
-    >
-      <Card backgroundColor="$bg2" p="$6" m="$6" style={{ borderRadius: '$5' }}>
-        <YStack flex={1} gap="$4">
-          <XStack justify="space-between" items="center">
-            {/* Title */}
-            <Stack flex={1} items="center">
-              <Text fontSize="$7" fontWeight="600" color="$white">
-                {chrome.i18n.getMessage('Insufficient_Storage')}
+    <Dialog modal open={visible} onOpenChange={(open) => !open && onClose()}>
+      <Dialog.Portal>
+        <Dialog.Overlay
+          key="overlay"
+          animation="quick"
+          opacity={0.5}
+          enterStyle={{ opacity: 0 }}
+          exitStyle={{ opacity: 0 }}
+        />
+        <Dialog.Content
+          key="content"
+          animation={[
+            'quick',
+            {
+              opacity: {
+                overshootClamping: true,
+              },
+            },
+          ]}
+          enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
+          exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
+          x={0}
+          scale={1}
+          opacity={1}
+          y={0}
+        >
+          <YStack bg="$bg2" p="$6" rounded="$5" gap="$4">
+            {/* Header with title and close button */}
+            <XStack justify="space-between" items="center">
+              <Dialog.Title flex={1} items="center">
+                <YStack items="center">
+                  <Text fontSize="$7" fontWeight="600" color="$white">
+                    {getTitle()}
+                  </Text>
+                </YStack>
+              </Dialog.Title>
+
+              <Dialog.Close asChild items="flex-end">
+                <Button
+                  elevate
+                  size="$6"
+                  circular
+                  icon={<Close size={24} />}
+                  chromeless
+                  pressStyle={{ opacity: 0.7 }}
+                />
+              </Dialog.Close>
+            </XStack>
+
+            {/* Main content */}
+            <Dialog.Description>
+              <YStack gap="$4" items="center">
+                <YStack items="center">
+                  <Text
+                    fontSize="$5"
+                    color="$white"
+                    lineHeight="$1"
+                    style={{ textAlign: 'center' }}
+                  >
+                    {getChromeMessage(
+                      'Transaction_failed_storage_exceeded',
+                      'Transaction failed due to storage exceeded'
+                    )}
+                  </Text>
+                </YStack>
+
+                <YStack items="center">
+                  <Text
+                    fontSize="$5"
+                    color="$warning"
+                    lineHeight="$1"
+                    style={{ textAlign: 'center' }}
+                  >
+                    {getChromeMessage(
+                      'Must_have_minimum_flow_storage',
+                      'Must have minimum Flow for storage'
+                    )}
+                  </Text>
+                </YStack>
+
+                <YStack items="center" py="$2">
+                  <Text
+                    fontSize="$5"
+                    color="$white"
+                    textDecorationLine="underline"
+                    cursor="pointer"
+                    pressStyle={{ opacity: 0.7 }}
+                    style={{ textAlign: 'center' }}
+                  >
+                    {getChromeMessage('Learn__more', 'Learn more')}
+                  </Text>
+                </YStack>
+              </YStack>
+            </Dialog.Description>
+
+            {/* Action button */}
+            <YStack
+              bg="$white"
+              rounded="$4"
+              onPress={handleBuyFlow}
+              p="$2"
+              items="center"
+              pressStyle={{ opacity: 0.8 }}
+            >
+              <Text fontSize="$5" fontWeight="600" color="$black">
+                {getChromeMessage('BUY_FLOW', 'Buy Flow')}
               </Text>
-            </Stack>
-
-            {/* Close Icon */}
-            <Stack cursor="pointer" items="flex-end" onPress={onClose}>
-              <Close size={20} style={{ color: '$white' }} />
-            </Stack>
-          </XStack>
-
-          {/* Main content */}
-          <YStack gap="$4" py="$2" items="center">
-            <Text fontSize="$5" color="$white" lineHeight="$1" style={{ textAlign: 'center' }}>
-              {chrome.i18n.getMessage('Transaction_failed_storage_exceeded')}
-            </Text>
-
-            <Text fontSize="$5" color="$warning" lineHeight="$1" style={{ textAlign: 'center' }}>
-              {chrome.i18n.getMessage('Must_have_minimum_flow_storage')}
-            </Text>
-
-            <Stack items="center" py="$2">
-              <Text
-                fontSize="$5"
-                color="$white"
-                style={{ textAlign: 'center', textDecoration: 'underline' }}
-                cursor="pointer"
-                pressStyle={{ opacity: 0.7 }}
-              >
-                {chrome.i18n.getMessage('Learn__more')}
-              </Text>
-            </Stack>
+            </YStack>
           </YStack>
+        </Dialog.Content>
+      </Dialog.Portal>
 
-          <YStack
-            bg="$white"
-            rounded="$4"
-            onPress={handleBuyFlow}
-            p="$2"
-            items="center"
-            pressStyle={{ opacity: 0.8 }}
-          >
-            <Text fontSize="$5" fontWeight="600" color="$black">
-              {chrome.i18n.getMessage('BUY_FLOW')}
-            </Text>
-          </YStack>
-        </YStack>
-      </Card>
-    </Modal>
+      {/* Adapt for mobile - shows as sheet on small screens */}
+      <Adapt when="sm" platform="touch">
+        <Sheet animation="medium" zIndex={200000} modal dismissOnSnapToBottom>
+          <Sheet.Frame p="$4" gap="$4" bg="$bg2">
+            <Adapt.Contents />
+          </Sheet.Frame>
+          <Sheet.Overlay animation="lazy" enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
+        </Sheet>
+      </Adapt>
+    </Dialog>
   );
 };

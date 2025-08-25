@@ -217,7 +217,6 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
                 title="Transaction Fee"
                 backgroundColor="$black"
                 borderRadius={16}
-                // contentPadding={16}
               />
 
               {/* Storage Warning */}

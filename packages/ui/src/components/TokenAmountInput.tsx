@@ -1,3 +1,4 @@
+import { bridge } from '@onflow/frw-context';
 import { SwitchVertical, ChevronDown, CheckCircle } from '@onflow/frw-icons';
 import React, { useState } from 'react';
 import { Input, XStack, YStack } from 'tamagui';
@@ -25,6 +26,8 @@ export function TokenAmountInput({
   const displayAmount = amount || '';
   const tokenSymbol = selectedToken?.symbol || 'Token';
   const tokenBalance = selectedToken?.balance || '0';
+  const isExtension = bridge.getPlatform() === 'extension';
+
   return (
     <YStack p="$4" gap={4} width="100%" {...props}>
       {/* Header */}
@@ -168,19 +171,21 @@ export function TokenAmountInput({
               {tokenBalance} {tokenSymbol}
             </Text>
           )}
-          <YStack
-            bg={'$bg1'}
-            rounded={40}
-            height="$6"
-            items="center"
-            pressStyle={{ opacity: 0.8 }}
-            onPress={onMaxPress}
-            px="$2.5"
-          >
-            <Text fontSize="$3" fontWeight="600">
-              MAX
-            </Text>
-          </YStack>
+          {!isExtension && (
+            <YStack
+              bg={'$bg1'}
+              rounded={40}
+              height="$6"
+              items="center"
+              pressStyle={{ opacity: 0.8 }}
+              onPress={onMaxPress}
+              px="$2.5"
+            >
+              <Text fontSize="$3" fontWeight="600">
+                MAX
+              </Text>
+            </YStack>
+          )}
         </XStack>
       </XStack>
     </YStack>
