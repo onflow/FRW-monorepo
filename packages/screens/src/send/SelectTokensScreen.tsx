@@ -134,25 +134,8 @@ export function SelectTokensScreen(): React.ReactElement {
         const coinsData = await bridge.getCoins();
 
         if (coinsData && Array.isArray(coinsData) && coinsData.length > 0) {
-          // Convert coins data to TokenModel format
-          const tokenModels: TokenModel[] = coinsData.map((coin: any) => ({
-            name: coin.name || 'Unknown Token',
-            symbol: coin.symbol || '',
-            balance: coin.balance || '0',
-            priceInUSD: coin.price || coin.priceInUSD || '0',
-            decimals: coin.decimals || 8,
-            logoURI: coin.logoURI || coin.icon || '',
-            address: coin.address || '',
-            isVerified: coin.isVerified || false,
-            identifier: coin.identifier || null,
-            contractAddress: coin.contractAddress || coin.address || '',
-            contractName: coin.contractName || coin.name || '',
-            displayBalance: coin.displayBalance || coin.balance || '0',
-            icon: coin.logoURI || coin.icon || '',
-            usdValue: coin.usdValue || coin.priceInUSD || '0',
-            change: coin.change || '0',
-          }));
-          setTokens(tokenModels);
+          // Bridge now returns data in TokenModel format, use directly
+          setTokens(coinsData);
         } else {
           // Fallback to original TokenService logic
           const network = bridge.getNetwork();

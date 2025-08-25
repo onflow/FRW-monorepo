@@ -23,6 +23,7 @@ type PlatformBridge = {
 };
 type TranslationFunction = (key: string) => string;
 
+import { isValidEthereumAddress } from '@/shared/utils/address';
 import { useUserWallets } from '@/ui/hooks/use-account-hooks';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useCoins } from '@/ui/hooks/useCoinHook';
@@ -31,7 +32,6 @@ import { useProfiles } from '@/ui/hooks/useProfileHook';
 
 import { extensionNavigation } from './ExtensionNavigation';
 import { initializePlatform } from './PlatformImpl';
-import { isValidEthereumAddress } from '@/shared/utils/address';
 
 /**
  * Platform context that provides the full PlatformSpec implementation
@@ -59,7 +59,12 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
   const { currentWallet, mainAddress } = useProfiles();
   const wallet = useWallet();
   const { coins } = useCoins();
-  console.log('🐛 PlatformContext useCoins result:', { coins, type: typeof coins, isArray: Array.isArray(coins), length: coins?.length });
+  console.log('🐛 PlatformContext useCoins result:', {
+    coins,
+    type: typeof coins,
+    isArray: Array.isArray(coins),
+    length: coins?.length,
+  });
   console.log('🐛 PlatformContext full coins data:', coins);
   const navigate = useNavigate();
   const location = useLocation();
@@ -75,8 +80,37 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
     const enhancedPlatform = Object.create(platform);
 
     enhancedPlatform.getCoins = async () => {
-      console.log('🪙 Enhanced platform getCoins called, coins from hook:', coins?.length || 'undefined');
-      return coins || null;
+      console.log(
+        '🪙 Enhanced platform getCoins called, coins from hook:',
+        coins?.length || 'undefined'
+      );
+
+      if (!coins || coins.length === 0) {
+        return null;
+      }
+
+      // Convert ExtendedTokenInfo[] to TokenModel format for consistent use across clients
+      const convertedCoins = coins.map((coin) => ({
+        name: coin.name || 'Unknown Token',
+        symbol: coin.symbol || '',
+        balance: coin.balance || '0',
+        priceInUSD: coin.priceInUSD || coin.price || '0',
+        decimals: coin.decimals || 8,
+        logoURI: coin.logoURI || coin.icon || '',
+        address: coin.address || '',
+        isVerified: coin.isVerified || false,
+        identifier: coin.id || null,
+        contractAddress: coin.address || '',
+        contractName: coin.contractName || coin.name || '',
+        displayBalance: coin.balance || '0',
+        icon: coin.logoURI || coin.icon || '',
+        usdValue: coin.balanceInUSD || coin.priceInUSD || '0',
+        change: coin.change24h?.toString() || '0',
+        availableBalanceToUse: coin.availableBalance || coin.balance || '0',
+      }));
+
+      console.log('🪙 Converted coins to TokenModel format:', convertedCoins.length, 'tokens');
+      return convertedCoins;
     };
 
     enhancedPlatform.getWalletAccounts = async () => {
@@ -94,26 +128,30 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
           balance: '0',
           avatar: currentWallet?.avatar || '',
           emoji: currentWallet?.emoji || '',
-          emojiInfo: currentWallet?.emojiInfo || null
+          emojiInfo: currentWallet?.emojiInfo || null,
         });
       }
 
       // Add userWallets accounts if they exist and are different from main
       if (Array.isArray(userWallets)) {
-        userWallets.forEach(wallet => {
-          if (!accountsArray.find(acc => acc.address === wallet.address)) {
+        userWallets.forEach((wallet) => {
+          if (!accountsArray.find((acc) => acc.address === wallet.address)) {
             const isEVMWallet = isValidEthereumAddress(wallet.address);
             accountsArray.push({
               ...wallet,
               type: wallet.type || (isEVMWallet ? 'evm' : 'main'),
-              parentAddress: isEVMWallet ? mainAddress : undefined
+              parentAddress: isEVMWallet ? mainAddress : undefined,
             });
           }
         });
       }
 
       // Add current wallet if it's not already present and different from main
-      if (currentWallet && currentWallet.address !== mainAddress && !accountsArray.find(acc => acc.address === currentWallet.address)) {
+      if (
+        currentWallet &&
+        currentWallet.address !== mainAddress &&
+        !accountsArray.find((acc) => acc.address === currentWallet.address)
+      ) {
         const isEVMAccount = isValidEthereumAddress(currentWallet.address);
         const accountType = isEVMAccount ? 'evm' : 'main';
 
@@ -125,29 +163,37 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
           avatar: currentWallet.avatar || '',
           emoji: currentWallet.emoji || '',
           emojiInfo: currentWallet.emojiInfo || null,
-          parentAddress: isEVMAccount ? mainAddress : undefined
+          parentAddress: isEVMAccount ? mainAddress : undefined,
         });
       }
 
       console.log('👛 Returning accounts array:', accountsArray.length, 'accounts');
       console.log('👛 All accounts:', accountsArray);
-      console.log('👛 Main accounts:', accountsArray.filter(acc => acc.type === 'main'));
-      console.log('👛 EVM accounts with parentAddress:', accountsArray.filter(acc => acc.type === 'evm' && acc.parentAddress));
+      console.log(
+        '👛 Main accounts:',
+        accountsArray.filter((acc) => acc.type === 'main')
+      );
+      console.log(
+        '👛 EVM accounts with parentAddress:',
+        accountsArray.filter((acc) => acc.type === 'evm' && acc.parentAddress)
+      );
 
       return {
         accounts: accountsArray,
-        total: accountsArray.length
+        total: accountsArray.length,
       };
     };
 
     enhancedPlatform.getParentAddress = async () => {
-
       console.log('🏠 Parent address found:', mainAddress);
       return mainAddress;
     };
 
     enhancedPlatform.getSelectedAccount = async () => {
-      console.log('🎯 Enhanced platform getSelectedAccount called, currentWallet:', currentWallet?.address || 'undefined');
+      console.log(
+        '🎯 Enhanced platform getSelectedAccount called, currentWallet:',
+        currentWallet?.address || 'undefined'
+      );
       if (!currentWallet) {
         throw new Error('No selected account available');
       }
@@ -164,13 +210,18 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
         avatar: currentWallet.avatar || '',
         emoji: currentWallet.emoji || '',
         emojiInfo: currentWallet.emojiInfo || null,
-        parentAddress: isEVMAccount ? mainAddress : undefined
+        parentAddress: isEVMAccount ? mainAddress : undefined,
       };
     };
 
     // Always reinitialize ServiceContext when data changes
     ServiceContext.initialize(enhancedPlatform);
-    console.log('✅ ServiceContext reinitialized with coins:', coins?.length || 'undefined', 'wallets:', userWallets?.length || 'undefined');
+    console.log(
+      '✅ ServiceContext reinitialized with coins:',
+      coins?.length || 'undefined',
+      'wallets:',
+      userWallets?.length || 'undefined'
+    );
   }, [platform, coins, userWallets, currentWallet]);
 
   // Keep platform synchronized with extension state
