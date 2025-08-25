@@ -46,7 +46,6 @@
     "husky": "^9.1.7",
     "lint-staged": "^15.2.10",
     "prettier": "^3.4.2",
-    "react-native": "0.79.2",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.19.0"
   },
@@ -58,13 +57,21 @@
   "dependencies": {
     "react": "19.0.0",
     "react-dom": "19.0.0",
+    "react-native": "0.79.2",
     "@tamagui/animations-react-native": "^1.132.20"
   },
   "pnpm": {
     "overrides": {
       "react": "19.0.0",
       "react-dom": "19.0.0",
-      "react-native": "0.79.2"
+      "react-native": "0.79.2",
+      "@react-native/gradle-plugin": "0.79.2",
+      "@react-native/codegen": "0.79.2",
+      "@react-native/assets-registry": "0.79.2",
+      "@react-native/js-polyfills": "0.79.2",
+      "@react-native/normalize-colors": "0.79.2",
+      "@react-native/virtualized-lists": "0.79.2",
+      "typescript": "5.7.2"
     }
   }
 }
