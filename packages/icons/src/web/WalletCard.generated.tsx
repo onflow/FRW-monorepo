@@ -3,7 +3,6 @@ import { IconWrapper, type IconWrapperProps } from '../IconWrapper';
 const WalletCard = (props: IconWrapperProps) => (
   <IconWrapper viewBox="0 0 146 156" {...props}>
     <path
-      data-figma-bg-blur-radius="49.9052"
       d="M13.7044 79.5554C11.9669 73.2654 14.9864 66.6342 20.8718 63.8153L63.6871 43.308C71.2557 39.6828 80.2612 43.7835 82.4957 51.8726L102.194 123.183C104.176 130.356 99.967 137.777 92.7939 139.759L47.7508 152.201C40.5778 154.183 33.1565 149.974 31.1751 142.801L13.7044 79.5554Z"
       fill="white"
       fillOpacity="0.05"
@@ -31,7 +30,6 @@ const WalletCard = (props: IconWrapperProps) => (
       fill="#00EF8B"
     />
     <path
-      data-figma-bg-blur-radius="49.9052"
       d="M16.4608 89.2511C14.4793 82.0781 18.688 74.6568 25.861 72.6754L110.295 49.3518C117.468 47.3704 124.889 51.579 126.87 58.7521L141.657 112.283C143.639 119.456 139.43 126.877 132.257 128.858L47.8235 152.182C40.6505 154.163 33.2293 149.955 31.2478 142.782L16.4608 89.2511Z"
       fill="white"
       fillOpacity="0.05"
@@ -39,7 +37,6 @@ const WalletCard = (props: IconWrapperProps) => (
       strokeWidth="0.499052"
     />
     <path
-      data-figma-bg-blur-radius="13.6241"
       d="M111.889 87.1211C111.176 84.4588 112.756 81.7223 115.418 81.009L131.758 76.6306L136.101 92.8358L119.76 97.2142C117.098 97.9275 114.362 96.3476 113.648 93.6853L111.889 87.1211Z"
       stroke="white"
       strokeWidth="0.499052"
