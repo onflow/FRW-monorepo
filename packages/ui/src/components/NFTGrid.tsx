@@ -39,7 +39,7 @@ export interface NFTGridProps {
   onClearSearch?: () => void;
 
   // Layout
-  gap?: number;
+  gap?: string;
   aspectRatio?: number;
 }
 
@@ -57,7 +57,7 @@ export function NFTGrid({
   onNFTPress,
   onRetry,
   onClearSearch,
-  gap = 12,
+  gap = '$3',
   aspectRatio = 1,
 }: NFTGridProps) {
   const columns = 2;
@@ -67,23 +67,23 @@ export function NFTGrid({
     const skeletonRows = [];
     for (let i = 0; i < 6; i += columns) {
       const rowItems = Array.from({ length: Math.min(columns, 6 - i) }, (_, index) => (
-        <YStack key={`skeleton-${i + index}`} gap={7}>
-          <Skeleton width={164} height={164} borderRadius="$4" />
-          <YStack gap={-3}>
-            <Skeleton height={24} width="80%" mb="$2" />
-            <Skeleton height={20} width="60%" />
+        <YStack key={`skeleton-${i + index}`} gap="$1.5">
+          <Skeleton width="$41" height="$41" borderRadius="$4" />
+          <YStack gap="$-0.75">
+            <Skeleton height="$6" width="80%" mb="$2" />
+            <Skeleton height="$5" width="60%" />
           </YStack>
         </YStack>
       ));
 
       skeletonRows.push(
-        <XStack key={`skeleton-row-${i}`} justify="space-between" width={343}>
+        <XStack key={`skeleton-row-${i}`} justify="space-between" width="100%">
           {rowItems}
         </XStack>
       );
     }
 
-    return <YStack gap={25}>{skeletonRows}</YStack>;
+    return <YStack gap="$6">{skeletonRows}</YStack>;
   };
 
   // Error state
@@ -103,7 +103,7 @@ export function NFTGrid({
         {emptyTitle || 'No NFTs Found'}
       </Text>
 
-      <Text fontSize="$4" color="$textSecondary" mb="$6" textAlign="center" maxWidth={280}>
+      <Text fontSize="$4" color="$textSecondary" mb="$6" textAlign="center" maxWidth="$20">
         {emptyMessage || 'No NFTs available in this collection.'}
       </Text>
 
@@ -144,9 +144,9 @@ export function NFTGrid({
 
   // Main grid content
   return (
-    <YStack gap={25}>
+    <YStack gap="$6">
       {rows.map((row, rowIndex) => (
-        <XStack key={`row-${rowIndex}`} justify="space-between" width={343}>
+        <XStack key={`row-${rowIndex}`} justify="space-between" width="100%">
           {row.map((nft) => (
             <NFTCard
               key={nft.id}

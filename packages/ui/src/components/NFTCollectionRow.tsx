@@ -24,7 +24,7 @@ export function NFTCollectionRow({
         items="center"
         gap="$4.5"
         py="$4.5"
-        px={0}
+        px="$0"
         width="100%"
         justify="space-between"
         {...(onPress && {
@@ -38,15 +38,15 @@ export function NFTCollectionRow({
           <Avatar
             src={collection.logoURI || collection.logo}
             fallback={collection.name?.charAt(0) || 'N'}
-            size={53}
+            size="$13"
           />
 
           {/* Collection Info */}
           <YStack flex={1} gap="$1">
-            <Text color="$color" fontWeight="600" fontSize={16}>
+            <Text color="$color" fontWeight="600" fontSize="$5">
               {collection.name}
             </Text>
-            <Text color="rgba(255, 255, 255, 0.8)" fontSize={14}>
+            <Text color="$textSecondary" fontSize="$4">
               {count}
             </Text>
           </YStack>
@@ -55,7 +55,7 @@ export function NFTCollectionRow({
         <ChevronRight size={24} />
       </XStack>
 
-      {showDivider && <Separator />}
+      {showDivider && <Separator borderColor="$bg1" />}
     </YStack>
   );
 }

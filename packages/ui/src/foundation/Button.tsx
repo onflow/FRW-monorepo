@@ -31,7 +31,7 @@ export function Button({
       buttonSize = '$3';
       break;
     case 'large':
-      buttonSize = '$5';
+      buttonSize = '$14';
       break;
     default:
       buttonSize = '$4';
