@@ -1,4 +1,4 @@
-import { bridge } from '@onflow/frw-context';
+import { bridge, navigation } from '@onflow/frw-context';
 import { type WalletAccount } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
@@ -110,7 +110,14 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
 
   return (
     <BackgroundWrapper backgroundColor={backgroundColor}>
-      {isExtension && <ExtensionHeader title="Send to" help={true} />}
+      {isExtension && (
+        <ExtensionHeader
+          title="Send to"
+          help={true}
+          onGoBack={() => navigation.goBack()}
+          onNavigate={(link: string) => navigation.navigate(link)}
+        />
+      )}
       <YStack flex={1} p="$4">
         <YStack gap={0}>
           <YStack mx="$2" rounded={16} background="$background4" mb="$1">
