@@ -1,7 +1,7 @@
 {
   "navigation": {
     "home": "ホーム",
-    "selectTokens": "トークンを選択",
+    "selectTokens": "送信",
     "sendTo": "送信先",
     "confirmation": "確認",
     "colorDemo": "カラーデモ",
