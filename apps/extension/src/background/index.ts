@@ -177,7 +177,7 @@ chrome.runtime.onConnect.addListener((port: chrome.runtime.Port) => {
 
   if (port.name === 'popup' || port.name === 'notification' || port.name === 'tab') {
     const pm = new PortMessage(port);
-    pm.listen((data) => {
+    pm.listen(async (data) => {
       if (data?.type) {
         switch (data.type) {
           case 'broadcast':
@@ -190,6 +190,29 @@ chrome.runtime.onConnect.addListener((port: chrome.runtime.Port) => {
             break;
           case 'controller':
           default:
+            // Handle JWT token requests first
+            if (data.method === 'getJWT') {
+              try {
+                const auth = authenticationService.getAuth();
+
+                if (!auth.currentUser) {
+                  throw new Error('No authenticated user available');
+                }
+
+                const idToken = await auth.currentUser.getIdToken();
+
+                if (!idToken) {
+                  throw new Error('Failed to get ID token from Firebase');
+                }
+
+                return idToken;
+              } catch (error) {
+                console.error('Failed to get JWT token:', error);
+                throw error;
+              }
+            }
+
+            // Handle other controller methods
             if (data.method) {
               return walletController[data.method].apply(null, data.params);
             }

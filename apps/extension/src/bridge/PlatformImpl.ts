@@ -7,8 +7,8 @@ import {
   type Currency,
 } from '@onflow/frw-types';
 
-import { authenticationService } from '@/core/service';
 import { chromeStorage } from '@/extension-shared/chrome-storage';
+import { Message } from '@/extension-shared/messaging';
 
 import { extensionNavigation } from './ExtensionNavigation';
 
@@ -47,18 +47,22 @@ class ExtensionPlatformImpl implements PlatformSpec {
 
   async getJWT(): Promise<string> {
     try {
-      const auth = authenticationService.getAuth();
+      // Create a PortMessage instance for communication
+      const { PortMessage } = Message;
+      const portMessage = new PortMessage();
+      portMessage.connect('popup'); // Connect to the popup port
 
-      if (!auth.currentUser) {
-        throw new Error('No authenticated user available');
+      // Get JWT token from background script via PortMessage
+      const response = await portMessage.request({
+        type: 'controller',
+        method: 'getJWT',
+      });
+
+      if (response && typeof response === 'string') {
+        return response;
+      } else {
+        throw new Error('Invalid JWT token response from background script');
       }
-
-      const idToken = await auth.currentUser.getIdToken();
-      if (!idToken) {
-        throw new Error('Failed to get ID token from Firebase');
-      }
-
-      return idToken;
     } catch (error) {
       this.log('error', 'Failed to get JWT token:', error);
       throw new Error('Failed to get JWT token: ' + (error as Error).message);
