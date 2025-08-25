@@ -1,5 +1,4 @@
-import { bridge } from '@onflow/frw-context';
-import { useSendStore } from '@onflow/frw-stores';
+import { bridge, navigation } from '@onflow/frw-context';
 import { type WalletAccount } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
@@ -85,7 +84,7 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = (props) => {
     setToAccount: setStoreToAccount,
     updateFormData,
     executeTransaction,
-    isLoading: storeLoading
+    isLoading: storeLoading,
   } = useSendStore();
 
   // Simple initialization without complex bridge calls
@@ -117,11 +116,15 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = (props) => {
         while (!coinsData && retryCount < maxRetries) {
           try {
             coinsData = await bridge.getCoins();
-            console.log(`🪙 Got coins data from bridge (attempt ${retryCount + 1}):`, coinsData?.length || 0, 'tokens');
+            console.log(
+              `🪙 Got coins data from bridge (attempt ${retryCount + 1}):`,
+              coinsData?.length || 0,
+              'tokens'
+            );
 
             if (!coinsData && retryCount < maxRetries - 1) {
               console.log('🔄 Coins data not ready, retrying in 500ms...');
-              await new Promise(resolve => setTimeout(resolve, 500));
+              await new Promise((resolve) => setTimeout(resolve, 500));
               retryCount++;
             } else {
               break;
@@ -130,7 +133,7 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = (props) => {
             console.warn(`Failed to get coins from bridge (attempt ${retryCount + 1}):`, error);
             retryCount++;
             if (retryCount < maxRetries) {
-              await new Promise(resolve => setTimeout(resolve, 500));
+              await new Promise((resolve) => setTimeout(resolve, 500));
             }
           }
         }
@@ -156,12 +159,12 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = (props) => {
           // Set initial token based on prop or default to FLOW
           let defaultToken: TokenModel | undefined;
           if (initialTokenSymbol) {
-            defaultToken = tokenModels.find(token =>
-              token.symbol.toLowerCase() === initialTokenSymbol.toLowerCase()
+            defaultToken = tokenModels.find(
+              (token) => token.symbol.toLowerCase() === initialTokenSymbol.toLowerCase()
             );
           }
           if (!defaultToken) {
-            const flowToken = tokenModels.find(token => token.symbol.toLowerCase() === 'flow');
+            const flowToken = tokenModels.find((token) => token.symbol.toLowerCase() === 'flow');
             defaultToken = flowToken || tokenModels[0];
           }
           if (defaultToken) {
@@ -210,7 +213,7 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = (props) => {
   }, []);
 
   const handleToggleInputMode = useCallback(() => {
-    setIsTokenMode(prev => !prev);
+    setIsTokenMode((prev) => !prev);
   }, []);
 
   const handleMaxPress = useCallback(() => {
@@ -256,7 +259,6 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = (props) => {
       const parentAddress = await bridge.getParentAddress();
       console.log('🔍 Parent address from bridge:', parentAddress);
 
-
       setStoreSelectedToken(selectedToken);
       if (parentAddress) {
         setStoreFromAccount({
@@ -280,7 +282,17 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = (props) => {
       // Keep modal open and show error - the modal should handle displaying the error
       throw error;
     }
-  }, [selectedToken, fromAccount, toAccount, amount, setStoreSelectedToken, setStoreFromAccount, setStoreToAccount, updateFormData, executeTransaction]);
+  }, [
+    selectedToken,
+    fromAccount,
+    toAccount,
+    amount,
+    setStoreSelectedToken,
+    setStoreFromAccount,
+    setStoreToAccount,
+    updateFormData,
+    executeTransaction,
+  ]);
 
   // Calculate if send button should be disabled
   const isSendDisabled = useMemo(() => {
@@ -288,14 +300,17 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = (props) => {
   }, [selectedToken, fromAccount, toAccount, amount]);
 
   // Create form data for transaction confirmation
-  const formData: TransactionFormData = useMemo(() => ({
-    tokenAmount: amount,
-    fiatAmount: selectedToken?.priceInUSD
-      ? (parseFloat(amount || '0') * parseFloat(selectedToken.priceInUSD)).toFixed(2)
-      : '0.00',
-    isTokenMode,
-    transactionFee: transactionFee,
-  }), [amount, selectedToken?.priceInUSD, isTokenMode, transactionFee]);
+  const formData: TransactionFormData = useMemo(
+    () => ({
+      tokenAmount: amount,
+      fiatAmount: selectedToken?.priceInUSD
+        ? (parseFloat(amount || '0') * parseFloat(selectedToken.priceInUSD)).toFixed(2)
+        : '0.00',
+      isTokenMode,
+      transactionFee: transactionFee,
+    }),
+    [amount, selectedToken?.priceInUSD, isTokenMode, transactionFee]
+  );
 
   // Show loading state
   if (loading) {
@@ -323,7 +338,14 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = (props) => {
 
   return (
     <BackgroundWrapper backgroundColor={backgroundColor}>
-      {isExtension && <ExtensionHeader title="Send to" help={true} />}
+      {isExtension && (
+        <ExtensionHeader
+          title="Send to"
+          help={true}
+          onGoBack={() => navigation.goBack()}
+          onNavigate={(link: string) => navigation.navigate(link)}
+        />
+      )}
       <YStack flex={1} p="$4">
         <YStack gap={0}>
           <YStack mx="$2" rounded={16} background="$background4" mb="$1">
@@ -343,16 +365,16 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = (props) => {
                 selectedToken={
                   selectedToken
                     ? {
-                      symbol: selectedToken.symbol,
-                      name: selectedToken.name,
-                      logo: selectedToken.logoURI,
-                      logoURI: selectedToken.logoURI,
-                      balance: selectedToken.balance?.toString(),
-                      price: selectedToken.priceInUSD
-                        ? parseFloat(selectedToken.priceInUSD)
-                        : undefined,
-                      isVerified: selectedToken.isVerified,
-                    }
+                        symbol: selectedToken.symbol,
+                        name: selectedToken.name,
+                        logo: selectedToken.logoURI,
+                        logoURI: selectedToken.logoURI,
+                        balance: selectedToken.balance?.toString(),
+                        price: selectedToken.priceInUSD
+                          ? parseFloat(selectedToken.priceInUSD)
+                          : undefined,
+                        isVerified: selectedToken.isVerified,
+                      }
                     : undefined
                 }
                 amount={amount}

@@ -60,6 +60,7 @@ const flowColors = {
   dark40: 'rgba(0, 0, 0, 0.4)', // 40% black
   dark25: 'rgba(0, 0, 0, 0.25)', // 25% black
   dark10: 'rgba(0, 0, 0, 0.1)', // 10% black
+  dark5: 'rgba(0, 0, 0, 0.05)', // 10% black
 
   darkBg1: 'rgba(255, 255, 255, 0.1)',
 

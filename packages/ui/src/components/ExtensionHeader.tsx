@@ -1,4 +1,3 @@
-import { navigation } from '@onflow/frw-context';
 import { ArrowBack, InfoIcon } from '@onflow/frw-icons';
 import React from 'react';
 import { View, XStack } from 'tamagui';
@@ -10,14 +9,16 @@ export interface ExtensionHeaderProps {
   help: boolean | React.ReactNode;
   goBackLink?: string;
   right?: React.ReactNode;
+  onGoBack?: () => void;
+  onNavigate?: (link: string) => void;
 }
 
 export const ExtensionHeader: React.FC<ExtensionHeaderProps> = (props) => {
   const handleGoBack = () => {
     if (props.goBackLink) {
-      navigation.navigate(props.goBackLink);
+      props.onNavigate?.(props.goBackLink);
     } else {
-      navigation.goBack();
+      props.onGoBack?.();
     }
   };
 
