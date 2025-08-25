@@ -14,9 +14,8 @@ import { ConfirmationDrawerProvider } from './contexts/ConfirmationDrawerContext
 import { ThemeProvider } from './contexts/ThemeContext';
 import './global.css';
 import { getGlobalTextProps } from './lib/androidTextFix';
+import { initI18n, validateI18n } from './lib/i18n';
 import AppNavigator from './navigation/AppNavigator';
-
-import './lib/i18n';
 
 // Configure default text props for Android to prevent text cutoff issues
 if (Platform.OS === 'android') {
@@ -44,9 +43,18 @@ const App = (props: AppProps) => {
       ServiceContext.initialize(platform);
       logger.debug('[App] Services initialized with RNBridge successfully');
 
+      // Initialize i18n FIRST before any UI rendering (now synchronous)
+      initI18n(props.language);
+      if (!validateI18n()) {
+        throw new Error('i18n initialization failed validation');
+      }
+      logger.debug('[App] i18n initialized and validated successfully');
+
       // Initialize Instabug after ServiceContext is ready
       initializeInstabug(props);
       logger.debug('[App] Instabug initialized successfully');
+
+      logger.debug('[App] i18n initialized and validated successfully');
 
       // Initialize walletStore when app starts to have account data ready
       await loadAccountsFromBridge();
