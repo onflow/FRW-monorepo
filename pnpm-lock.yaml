@@ -22,9 +22,6 @@ importers:
       react-dom:
         specifier: 19.0.0
         version: 19.0.0(react@19.0.0)
-      react-native:
-        specifier: 0.79.2
-        version: 0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.11)(react@19.0.0)
     devDependencies:
       '@commitlint/cli':
         specifier: ^19.6.0
@@ -83,6 +80,9 @@ importers:
       prettier:
         specifier: ^3.4.2
         version: 3.6.2
+      react-native:
+        specifier: 0.79.2
+        version: 0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.11)(react@19.0.0)
       typescript:
         specifier: ^5.7.2
         version: 5.9.2
@@ -579,6 +579,9 @@ importers:
       '@onflow/frw-utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      '@outblock/react-native-code-push':
+        specifier: ^1.2.2
+        version: 1.2.2(@types/node@22.17.2)
       '@react-native-async-storage/async-storage':
         specifier: ^2.2.0
         version: 2.2.0(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.11)(react@19.0.0))
@@ -594,9 +597,6 @@ importers:
       '@react-navigation/native-stack':
         specifier: ^7.1.13
         version: 7.3.25(@react-navigation/native@7.1.17(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0))(react-native-safe-area-context@5.4.0(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0))(react-native-screens@4.15.2(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0)
-      '@revopush/react-native-code-push':
-        specifier: ^1.2.0
-        version: 1.3.0(@types/node@22.17.2)
       '@tamagui/config':
         specifier: ^1.132.20
         version: 1.132.21(react-dom@19.0.0(react@19.0.0))(react-native-reanimated@4.0.2(@babel/core@7.28.3)(react-native-worklets@0.4.1(@babel/core@7.28.3)(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0)
@@ -3113,6 +3113,9 @@ packages:
     os: [darwin, linux, win32]
     hasBin: true
 
+  '@outblock/react-native-code-push@1.2.2':
+    resolution: {integrity: sha512-ZjXu0RMCH0JoUwf/guYMsko0z/pTNpLXZ3lwdp4wSpgZNeTU0aGNvRDhwSUItfdJHYb16pqlY2NEp8FpJuc/Gw==}
+
   '@paralleldrive/cuid2@2.2.2':
     resolution: {integrity: sha512-ZOBkgDwEdoYVlSeRbYYXs0S9MejQofiVYoTbKzy/6GQa39/q5tQU2IX46+shYnUkpEl3wc+J6wRlar7r2EK2xA==}
 
@@ -3357,9 +3360,6 @@ packages:
 
   '@reown/walletkit@1.2.10':
     resolution: {integrity: sha512-EwoCt2eb+jg1ezhXGcY2CsTUVbz9T1/0o8YQr/Lx+OTqRt1f0+FyZs6+eJ8UsgpbHnLUJ5lDgJj0p3rU1XNUrw==}
-
-  '@revopush/react-native-code-push@1.3.0':
-    resolution: {integrity: sha512-KqxSxaPC8J5KwcfyZALzCgm6UC1gTiaf+aFhtUmjlLmSm6ws5nY8vBrRmrNSNVZ77ZR65NfmICNCrRf6JLhfZA==}
 
   '@rollup/pluginutils@5.2.0':
     resolution: {integrity: sha512-qWJ2ZTbmumwiLFomfzTyt5Kng4hwPi9rwCYN4SHb6eaRU1KNO4ccxINHr/VhH4GgPlt1XfSTLX2LBTme8ne4Zw==}
@@ -14315,6 +14315,19 @@ snapshots:
 
   '@outblock/cadence-codegen@0.0.9': {}
 
+  '@outblock/react-native-code-push@1.2.2(@types/node@22.17.2)':
+    dependencies:
+      code-push: 4.2.3
+      glob: 7.2.3
+      hoist-non-react-statics: 3.3.2
+      inquirer: 8.2.7(@types/node@22.17.2)
+      plist: 3.1.0
+      semver: 7.7.2
+      xcode: 3.0.1
+    transitivePeerDependencies:
+      - '@types/node'
+      - supports-color
+
   '@paralleldrive/cuid2@2.2.2':
     dependencies:
       '@noble/hashes': 1.8.0
@@ -14900,19 +14913,6 @@ snapshots:
       - uploadthing
       - utf-8-validate
       - zod
-
-  '@revopush/react-native-code-push@1.3.0(@types/node@22.17.2)':
-    dependencies:
-      code-push: 4.2.3
-      glob: 7.2.3
-      hoist-non-react-statics: 3.3.2
-      inquirer: 8.2.7(@types/node@22.17.2)
-      plist: 3.1.0
-      semver: 7.7.2
-      xcode: 3.0.1
-    transitivePeerDependencies:
-      - '@types/node'
-      - supports-color
 
   '@rollup/pluginutils@5.2.0(rollup@4.48.1)':
     dependencies:
