@@ -82,7 +82,7 @@ class ExtensionNavigation implements Navigation {
       } else if (screen === 'NFTDetail' && params?.id) {
         path = `/dashboard/nested/nftdetail/${params.id}`;
       } else if (screen === 'NFTList' && params?.collection && params?.address) {
-        path = `/dashboard/nested/collectiondetail/${params.collection}_${params.address}`;
+        path = `/dashboard/nested/collectiondetail/${params.address}`;
       }
 
       console.log('[DEBUG] ExtensionNavigation navigating to:', path);

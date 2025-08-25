@@ -54,6 +54,7 @@ export function SelectTokensScreen(): React.ReactElement {
     setTransactionType,
     setCurrentStep,
     clearTransactionData,
+    setSelectedCollection,
     setFromAccount: setStoreFromAccount,
   } = useSendStore();
 
@@ -177,6 +178,17 @@ export function SelectTokensScreen(): React.ReactElement {
         setNftCollections([]);
       } finally {
         setNftLoading(false);
+        setNftCollections([
+          {
+            id: 'nba-topshot',
+            name: 'NBA Top Shot',
+            logoURI: 'https://assets.nba.com/media/nba-topshot/nba_logo.png',
+            count: 15,
+            contractName: 'TopShot',
+            type: 'FLOW',
+            address: '0x0b2a3299cc857e29',
+          },
+        ]);
       }
     },
     [bridge]
@@ -256,6 +268,7 @@ export function SelectTokensScreen(): React.ReactElement {
 
   // Handle NFT press
   const handleNFTPress = (collection: CollectionModel): void => {
+    setSelectedCollection(collection);
     const address = fromAccount?.address || bridge.getSelectedAddress();
     navigation.navigate('NFTList', { collection, address });
   };

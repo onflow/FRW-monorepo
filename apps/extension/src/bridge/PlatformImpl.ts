@@ -69,11 +69,8 @@ class ExtensionPlatformImpl implements PlatformSpec {
 
   // API endpoint methods
   getApiEndpoint(): string {
-    const network = this.getNetwork();
     // Return appropriate API endpoint based on network
-    return network === 'testnet'
-      ? 'https://rest-testnet.onflow.org'
-      : 'https://rest-mainnet.onflow.org';
+    return 'https://lilico.app';
   }
 
   getGoApiEndpoint(): string {
