@@ -1,4 +1,5 @@
 import { bridge, navigation } from '@onflow/frw-context';
+import { useSendStore } from '@onflow/frw-stores';
 import { type WalletAccount } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
@@ -99,12 +100,12 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = (props) => {
 
         if (currentAddress) {
           setFromAccount({
+            id: currentAddress,
             address: currentAddress,
             name: 'My Account',
-            balance: '0',
             avatar: '',
-            emoji: '',
-            emojiInfo: null,
+            emojiInfo: undefined,
+            isActive: true,
           });
         }
 
