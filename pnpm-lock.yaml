@@ -587,8 +587,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/utils
       '@outblock/react-native-code-push':
-        specifier: ^1.2.2
-        version: 1.2.2(@types/node@22.17.2)
+        specifier: ^1.2.3
+        version: 1.2.3(@types/node@22.17.2)
       '@react-native-async-storage/async-storage':
         specifier: ^2.2.0
         version: 2.2.0(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0))
@@ -3120,8 +3120,8 @@ packages:
     os: [darwin, linux, win32]
     hasBin: true
 
-  '@outblock/react-native-code-push@1.2.2':
-    resolution: {integrity: sha512-ZjXu0RMCH0JoUwf/guYMsko0z/pTNpLXZ3lwdp4wSpgZNeTU0aGNvRDhwSUItfdJHYb16pqlY2NEp8FpJuc/Gw==}
+  '@outblock/react-native-code-push@1.2.3':
+    resolution: {integrity: sha512-F+IPaKcM3pDbzp7xFIWf8O07OBgMBRdjpgx/eeTJU8pb4Epx3y+g1DQTrNDX1dxseEw3+JIN6d8lBmZ8krp0+w==}
 
   '@paralleldrive/cuid2@2.2.2':
     resolution: {integrity: sha512-ZOBkgDwEdoYVlSeRbYYXs0S9MejQofiVYoTbKzy/6GQa39/q5tQU2IX46+shYnUkpEl3wc+J6wRlar7r2EK2xA==}
@@ -14298,7 +14298,7 @@ snapshots:
 
   '@outblock/cadence-codegen@0.0.9': {}
 
-  '@outblock/react-native-code-push@1.2.2(@types/node@22.17.2)':
+  '@outblock/react-native-code-push@1.2.3(@types/node@22.17.2)':
     dependencies:
       code-push: 4.2.3
       glob: 7.2.3
