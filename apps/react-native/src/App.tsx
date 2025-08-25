@@ -17,7 +17,6 @@ import { getGlobalTextProps } from './lib/androidTextFix';
 import { initI18n, validateI18n } from './lib/i18n';
 import AppNavigator from './navigation/AppNavigator';
 
-
 // Configure default text props for Android to prevent text cutoff issues
 if (Platform.OS === 'android') {
   const defaultTextProps = (RNText as any).defaultProps || {};
@@ -44,15 +43,17 @@ const App = (props: AppProps) => {
       ServiceContext.initialize(platform);
       logger.debug('[App] Services initialized with RNBridge successfully');
 
-      // Initialize Instabug after ServiceContext is ready
-      initializeInstabug(props);
-      logger.debug('[App] Instabug initialized successfully');
-
       // Initialize i18n FIRST before any UI rendering (now synchronous)
       initI18n(props.language);
       if (!validateI18n()) {
         throw new Error('i18n initialization failed validation');
       }
+      logger.debug('[App] i18n initialized and validated successfully');
+
+      // Initialize Instabug after ServiceContext is ready
+      initializeInstabug(props);
+      logger.debug('[App] Instabug initialized successfully');
+
       logger.debug('[App] i18n initialized and validated successfully');
 
       // Initialize walletStore when app starts to have account data ready
