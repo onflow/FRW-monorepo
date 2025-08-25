@@ -7,8 +7,8 @@ import {
   type Currency,
 } from '@onflow/frw-types';
 
+import { authenticationService } from '@/core/service';
 import { chromeStorage } from '@/extension-shared/chrome-storage';
-import { userWalletService } from '@/core/service';
 
 import { extensionNavigation } from './ExtensionNavigation';
 
@@ -46,10 +46,23 @@ class ExtensionPlatformImpl implements PlatformSpec {
   }
 
   async getJWT(): Promise<string> {
-    if (!this.walletController) {
-      throw new Error('Wallet controller not initialized');
+    try {
+      const auth = authenticationService.getAuth();
+
+      if (!auth.currentUser) {
+        throw new Error('No authenticated user available');
+      }
+
+      const idToken = await auth.currentUser.getIdToken();
+      if (!idToken) {
+        throw new Error('Failed to get ID token from Firebase');
+      }
+
+      return idToken;
+    } catch (error) {
+      this.log('error', 'Failed to get JWT token:', error);
+      throw new Error('Failed to get JWT token: ' + (error as Error).message);
     }
-    return await this.walletController.getJWT();
   }
 
   getVersion(): string {
