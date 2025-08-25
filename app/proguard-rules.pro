@@ -308,3 +308,4 @@
 # Prevent Fabric C++ Props constructor crashes
 -keep class * extends com.facebook.react.** { *; }
 -keepattributes Signature,RuntimeVisibleAnnotations,RuntimeVisibleParameterAnnotations
+-dontwarn coil3.PlatformContext

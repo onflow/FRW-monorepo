@@ -14,7 +14,11 @@ plugins {
 //    id 'com.google.ar.sceneform.plugin'
 }
 
-apply from: "../../node_modules/@revopush/react-native-code-push/android/codepush.gradle"
+react {
+    autolinkLibrariesWithApp()
+}
+
+apply from: "../../node_modules/@outblock/react-native-code-push/android/codepush.gradle"
 
 def properties = new Properties()
 def inputStream = project.rootProject.file('local.properties').newDataInputStream()
@@ -44,10 +48,6 @@ def dropboxKeyDev = apiKeys.getProperty("DROPBOX_APP_KEY_DEV") ?: "fallbackDevKe
 def dropboxKeyProd = apiKeys.getProperty("DROPBOX_APP_KEY_PROD") ?: "fallbackProdKey"
 def codePushKeyStaging = apiKeys.getProperty("CODEPUSH_KEY_ANDROID_STAGING") ?: "staging-placeholder"
 def codePushKeyProduction = apiKeys.getProperty("CODEPUSH_KEY_ANDROID_PRODUCTION") ?: "production-placeholder"
-
-react {
-    autolinkLibrariesWithApp()
-}
 
 android {
     compileSdk 35
