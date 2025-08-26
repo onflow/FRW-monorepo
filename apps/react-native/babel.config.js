@@ -1,15 +1,14 @@
 module.exports = {
-  presets: ["module:@react-native/babel-preset", "nativewind/babel"],
+  presets: ['module:@react-native/babel-preset', 'nativewind/babel'],
   plugins: [
-    "react-native-worklets/plugin",
     [
-      "module-resolver",
+      'module-resolver',
       {
-        root: ["./src"],
+        root: ['./src'],
         alias: {
-          "@": "./src",
-          "ui": "./src/components/ui",
-          "icons": "./src/assets/icons",
+          '@': './src',
+          ui: './src/components/ui',
+          icons: './src/assets/icons',
         },
       },
     ],
