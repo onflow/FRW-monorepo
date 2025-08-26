@@ -8,7 +8,6 @@ import {
 } from '@onflow/frw-types';
 
 import { chromeStorage } from '@/extension-shared/chrome-storage';
-import { Message } from '@/extension-shared/messaging';
 
 import { extensionNavigation } from './ExtensionNavigation';
 
@@ -47,22 +46,20 @@ class ExtensionPlatformImpl implements PlatformSpec {
 
   async getJWT(): Promise<string> {
     try {
-      // Create a PortMessage instance for communication
-      const { PortMessage } = Message;
-      const portMessage = new PortMessage();
-      portMessage.connect('popup'); // Connect to the popup port
-
-      // Get JWT token from background script via PortMessage
-      const response = await portMessage.request({
-        type: 'controller',
-        method: 'getJWT',
-      });
-
-      if (response && typeof response === 'string') {
-        return response;
-      } else {
-        throw new Error('Invalid JWT token response from background script');
+      if (!this.walletController) {
+        this.log('warn', 'Cannot get JWT - wallet controller not initialized');
+        throw new Error('Wallet controller not initialized');
       }
+
+      if (!this.walletController.getJWT) {
+        this.log('warn', 'getJWT method not available on wallet controller');
+        throw new Error('getJWT method not available on wallet controller');
+      }
+
+      this.log('debug', 'Extension getJWT called via wallet controller');
+
+      const jwt = await this.walletController.getJWT();
+      return jwt;
     } catch (error) {
       this.log('error', 'Failed to get JWT token:', error);
       throw new Error('Failed to get JWT token: ' + (error as Error).message);

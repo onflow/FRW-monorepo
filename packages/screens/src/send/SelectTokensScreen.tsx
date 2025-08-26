@@ -166,25 +166,34 @@ export function SelectTokensScreen(): React.ReactElement {
 
       try {
         const targetAddress = accountAddress || bridge.getSelectedAddress();
-        const network = bridge.getNetwork();
 
         if (!targetAddress) {
           setNftCollections([]);
           return;
         }
 
-        const tokenStore = useTokenStore.getState();
+        // Try to get NFT collections from bridge first
+        const nftData = await bridge.getCache('nfts');
 
-        if (isRefreshAction) {
-          await tokenStore.forceRefresh(targetAddress, network || 'mainnet');
+        if (nftData && Array.isArray(nftData) && nftData.length > 0) {
+          // Bridge now returns data in CollectionModel format, use directly
+          setNftCollections(nftData);
         } else {
-          await tokenStore.fetchTokens(targetAddress, network || 'mainnet', true);
+          // Fallback to original TokenService logic
+          const network = bridge.getNetwork();
+          const tokenStore = useTokenStore.getState();
+
+          if (isRefreshAction) {
+            await tokenStore.forceRefresh(targetAddress, network || 'mainnet');
+          } else {
+            await tokenStore.fetchTokens(targetAddress, network || 'mainnet', true);
+          }
+
+          const collections =
+            tokenStore.getNFTCollectionsForAddress(targetAddress, network || 'mainnet') || [];
+
+          setNftCollections(collections || []);
         }
-
-        const collections =
-          tokenStore.getNFTCollectionsForAddress(targetAddress, network || 'mainnet') || [];
-
-        setNftCollections(collections || []);
       } catch (err: any) {
         const errorMessage = err?.message || err?.toString() || 'Unknown error';
         console.error('Failed to fetch NFT collections:', errorMessage);
