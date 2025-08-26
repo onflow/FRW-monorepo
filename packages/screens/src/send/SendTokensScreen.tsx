@@ -54,7 +54,6 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = (props) => {
     showStorageWarning = true,
     storageWarningMessage = 'Account balance will fall below the minimum FLOW required for storage after this transaction.',
     showEditButtons = true,
-    onEditTokenPress,
     onEditAccountPress,
     onLearnMorePress,
     isFeesFree = false,
@@ -110,18 +109,14 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = (props) => {
         }
 
         // Get coins data from bridge with retry logic
-        let coinsData = null;
+        let coinsData: TokenModel[] = [];
         let retryCount = 0;
         const maxRetries = 5;
 
-        while (!coinsData && retryCount < maxRetries) {
+        while ((!coinsData || coinsData.length === 0) && retryCount < maxRetries) {
           try {
-            coinsData = await bridge.getCoins();
-            console.log(
-              `🪙 Got coins data from bridge (attempt ${retryCount + 1}):`,
-              coinsData?.length || 0,
-              'tokens'
-            );
+            const result = await bridge.getCache('coins');
+            coinsData = result as TokenModel[];
 
             if (!coinsData && retryCount < maxRetries - 1) {
               console.log('🔄 Coins data not ready, retrying in 500ms...');
@@ -131,7 +126,6 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = (props) => {
               break;
             }
           } catch (error) {
-            console.warn(`Failed to get coins from bridge (attempt ${retryCount + 1}):`, error);
             retryCount++;
             if (retryCount < maxRetries) {
               await new Promise((resolve) => setTimeout(resolve, 500));
@@ -140,39 +134,24 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = (props) => {
         }
 
         if (coinsData && Array.isArray(coinsData) && coinsData.length > 0) {
-          console.log('🪙 Got coins data from bridge:', coinsData);
-          const tokenModels: TokenModel[] = coinsData.map((coin: any) => ({
-            name: coin.name || 'Unknown Token',
-            symbol: coin.symbol || '',
-            balance: coin.balance || '0',
-            priceInUSD: coin.price || coin.priceInUSD || '0',
-            decimals: coin.decimals || 8,
-            logoURI: coin.logoURI || coin.icon || '',
-            address: coin.address || '',
-            isVerified: coin.isVerified || false,
-            // Add required properties for getTokenResourceIdentifier
-            identifier: coin.identifier || null,
-            contractAddress: coin.contractAddress || coin.address || '',
-            contractName: coin.contractName || coin.name || '',
-          }));
-          setTokens(tokenModels);
+          setTokens(coinsData);
 
           // Set initial token based on prop or default to FLOW
           let defaultToken: TokenModel | undefined;
           if (initialTokenSymbol) {
-            defaultToken = tokenModels.find(
+            defaultToken = coinsData.find(
               (token) => token.symbol.toLowerCase() === initialTokenSymbol.toLowerCase()
             );
           }
           if (!defaultToken) {
-            const flowToken = tokenModels.find((token) => token.symbol.toLowerCase() === 'flow');
-            defaultToken = flowToken || tokenModels[0];
+            const flowToken = coinsData.find((token) => token.symbol.toLowerCase() === 'flow');
+            defaultToken = flowToken || coinsData[0];
           }
           if (defaultToken) {
             setSelectedToken(defaultToken);
           }
         } else {
-          console.log('🪙 No coins data found');
+          console.log('🪙 No coins data found ', coinsData);
           setTokens([]);
           setSelectedToken(null);
           setError('No tokens available. Please ensure your wallet has tokens to send.');
@@ -261,14 +240,7 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = (props) => {
       console.log('🔍 Parent address from bridge:', parentAddress);
 
       setStoreSelectedToken(selectedToken);
-      if (parentAddress) {
-        setStoreFromAccount({
-          ...fromAccount,
-          address: parentAddress, // Override with parent address
-        });
-      } else {
-        setStoreFromAccount(fromAccount);
-      }
+      setStoreFromAccount(fromAccount);
       setStoreToAccount(toAccount);
       updateFormData({ tokenAmount: amount });
 
@@ -331,7 +303,7 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = (props) => {
       <BackgroundWrapper backgroundColor={backgroundColor}>
         {isExtension && <ExtensionHeader title="Send to" help={true} />}
         <YStack flex={1} items="center" justify="center" p="$4">
-          <Text color="$red10">{error}</Text>
+          <Text color="$red500">{error}</Text>
         </YStack>
       </BackgroundWrapper>
     );

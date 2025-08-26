@@ -185,8 +185,8 @@ class ExtensionPlatformImpl implements PlatformSpec {
 
   // Token and account data methods (required by PlatformSpec)
   // Note: For extension, this should be overridden by PlatformContext to use useCoins() hook data
-  async getCoins(): Promise<any[] | null> {
-    this.log('warn', 'Extension getCoins() called - should be overridden by PlatformContext');
+  async getCache(key: string): Promise<any[] | null> {
+    this.log('warn', `Extension getCache(${key}) called - should be overridden by PlatformContext`);
     return null;
   }
 
@@ -282,8 +282,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
     const version = this.getVersion();
     const buildNumber = this.getBuildNumber();
     const network = this.getNetwork();
-
-    this.log('debug', 'Configuring CadenceService for extension', { network, version });
 
     // Add version and platform headers to transactions
     cadenceService.useRequestInterceptor(async (config: any) => {

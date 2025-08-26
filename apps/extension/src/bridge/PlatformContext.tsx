@@ -17,7 +17,7 @@ type PlatformBridge = {
   getSelectedAddress(): string | null;
   getNetwork(): string;
   getCurrency(): any;
-  getCoins?(): any[] | null;
+  getCache?(key: string): any[] | null;
   getSelectedAccount?(): Promise<any>;
   getAccountInfo?(address: string): Promise<any>;
 };
@@ -59,13 +59,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
   const { currentWallet, mainAddress } = useProfiles();
   const wallet = useWallet();
   const { coins } = useCoins();
-  console.log('🐛 PlatformContext useCoins result:', {
-    coins,
-    type: typeof coins,
-    isArray: Array.isArray(coins),
-    length: coins?.length,
-  });
-  console.log('🐛 PlatformContext full coins data:', coins);
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -74,43 +68,40 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
 
   // Initialize ServiceContext with enhanced platform that includes hook data
   useEffect(() => {
-    console.log('🔄 ServiceContext effect triggered, coins:', coins?.length || 'undefined');
-
     // Create enhanced platform that overrides methods to use hook data
     const enhancedPlatform = Object.create(platform);
 
-    enhancedPlatform.getCoins = async () => {
-      console.log(
-        '🪙 Enhanced platform getCoins called, coins from hook:',
-        coins?.length || 'undefined'
-      );
+    enhancedPlatform.getCache = async (key: string) => {
+      if (key === 'coins') {
+        if (!coins || coins.length === 0) {
+          return null;
+        }
 
-      if (!coins || coins.length === 0) {
-        return null;
+        // Convert ExtendedTokenInfo[] to TokenModel format for consistent use across clients
+        const convertedCoins = coins.map((coin) => ({
+          name: coin.name || 'Unknown Token',
+          symbol: coin.symbol || '',
+          balance: coin.balance || '0',
+          priceInUSD: coin.priceInUSD || coin.price || '0',
+          decimals: coin.decimals || 8,
+          logoURI: coin.logoURI || coin.icon || '',
+          address: coin.address || '',
+          isVerified: coin.isVerified || false,
+          identifier: coin.id || null,
+          contractAddress: coin.address || '',
+          contractName: coin.contractName || coin.name || '',
+          displayBalance: coin.balance || '0',
+          icon: coin.logoURI || coin.icon || '',
+          usdValue: coin.balanceInUSD || coin.priceInUSD || '0',
+          change: coin.change24h?.toString() || '0',
+          availableBalanceToUse: coin.availableBalance || coin.balance || '0',
+        }));
+
+        console.log('🪙 Converted coins to TokenModel format:', convertedCoins.length, 'tokens');
+        return convertedCoins;
       }
 
-      // Convert ExtendedTokenInfo[] to TokenModel format for consistent use across clients
-      const convertedCoins = coins.map((coin) => ({
-        name: coin.name || 'Unknown Token',
-        symbol: coin.symbol || '',
-        balance: coin.balance || '0',
-        priceInUSD: coin.priceInUSD || coin.price || '0',
-        decimals: coin.decimals || 8,
-        logoURI: coin.logoURI || coin.icon || '',
-        address: coin.address || '',
-        isVerified: coin.isVerified || false,
-        identifier: coin.id || null,
-        contractAddress: coin.address || '',
-        contractName: coin.contractName || coin.name || '',
-        displayBalance: coin.balance || '0',
-        icon: coin.logoURI || coin.icon || '',
-        usdValue: coin.balanceInUSD || coin.priceInUSD || '0',
-        change: coin.change24h?.toString() || '0',
-        availableBalanceToUse: coin.availableBalance || coin.balance || '0',
-      }));
-
-      console.log('🪙 Converted coins to TokenModel format:', convertedCoins.length, 'tokens');
-      return convertedCoins;
+      return null;
     };
 
     enhancedPlatform.getWalletAccounts = async () => {
@@ -308,10 +299,13 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
     },
     getNetwork: () => platform.getNetwork(),
     getCurrency: () => platform.getCurrency(),
-    getCoins: () => {
+    getCache: (key: string) => {
       // Use the coins data from useCoins hook instead of trying to fetch from platform
-      console.log('🪙 PlatformContext getCoins called, coins data:', coins);
-      return coins || null;
+      console.log(`🪙 PlatformContext getCache(${key}) called, coins data:`, coins);
+      if (key === 'coins') {
+        return coins || null;
+      }
+      return null;
     },
     getSelectedAccount: async () => {
       try {

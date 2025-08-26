@@ -58,13 +58,8 @@ export function SelectTokensScreen(): React.ReactElement {
   const [nftError, setNftError] = useState<string | null>(null);
 
   // Store hooks
-  const {
-    setSelectedToken,
-    setTransactionType,
-    setCurrentStep,
-    clearTransactionData,
-    setFromAccount: setStoreFromAccount,
-  } = useSendStore();
+  const { setSelectedToken, setTransactionType, setCurrentStep, clearTransactionData } =
+    useSendStore();
 
   const walletStoreState = useWalletStore();
 
@@ -122,7 +117,7 @@ export function SelectTokensScreen(): React.ReactElement {
       setError(null);
 
       try {
-        // Use bridge's getCoins method if available, otherwise fallback to TokenService
+        // Use bridge's getCache method if available, otherwise fallback to TokenService
         const targetAddress = accountAddress || bridge.getSelectedAddress();
 
         if (!targetAddress) {
@@ -131,7 +126,7 @@ export function SelectTokensScreen(): React.ReactElement {
         }
 
         // Try to get coins from bridge first
-        const coinsData = await bridge.getCoins();
+        const coinsData = await bridge.getCache('coins');
 
         if (coinsData && Array.isArray(coinsData) && coinsData.length > 0) {
           // Bridge now returns data in TokenModel format, use directly
@@ -200,28 +195,6 @@ export function SelectTokensScreen(): React.ReactElement {
       }
     },
     [bridge]
-  );
-
-  // Handle account selection
-  const handleAccountSelect = useCallback(
-    async (selectedAccount: WalletAccount) => {
-      try {
-        setLocalFromAccount(selectedAccount);
-        setStoreFromAccount(selectedAccount);
-        setNftLoading(true);
-        setNftError(null);
-
-        await updateFromAccountBalance(selectedAccount.address, selectedAccount.type, true);
-
-        await Promise.all([
-          fetchTokens(selectedAccount.address, selectedAccount.type),
-          fetchNFTCollections(selectedAccount.address, selectedAccount.type),
-        ]);
-      } catch (error) {
-        console.error('Failed to update account:', error);
-      }
-    },
-    [setStoreFromAccount, updateFromAccountBalance, fetchTokens, fetchNFTCollections]
   );
 
   // Initialize screen
