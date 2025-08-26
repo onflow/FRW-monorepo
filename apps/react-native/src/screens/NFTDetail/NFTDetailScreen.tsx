@@ -3,7 +3,7 @@ import { getNFTCover } from '@onflow/frw-utils';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, TouchableOpacity, Animated } from 'react-native';
+import { View, ScrollView, TouchableOpacity } from 'react-native';
 
 import BottomConfirmBar from '@/components/NFTList/BottomConfirmBar';
 import { IconView } from '@/components/ui/media/IconView';
@@ -33,41 +33,22 @@ export const NFTDetailScreen: React.FC = () => {
   const { nft, selectedNFTs, onSelectionChange } = route.params || {};
   const [isDrawerExpanded, setIsDrawerExpanded] = useState(false);
 
-  // Update header to match main content background and apply overlay when drawer is expanded
+  // Update header to match main content background
   useEffect(() => {
-    const baseBackgroundColor = isDark ? '#1A1A1A' : '#FFFFFF'; // Match bg-surface-1 and bg-white
+    const baseBackgroundColor = isDark ? '#121212' : '#FFFFFF'; // Match bg-surface-1 and bg-white (RGB 18,18,18)
 
     navigation.setOptions({
       headerStyle: {
         backgroundColor: baseBackgroundColor,
       },
-      headerBackground: () =>
-        isDrawerExpanded ? (
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: baseBackgroundColor,
-            }}
-          >
-            <View
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              }}
-            />
-          </View>
-        ) : (
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: baseBackgroundColor,
-            }}
-          />
-        ),
+      headerBackground: () => (
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: baseBackgroundColor,
+          }}
+        />
+      ),
     });
   }, [isDrawerExpanded, navigation, isDark]);
 
@@ -153,21 +134,6 @@ export const NFTDetailScreen: React.FC = () => {
 
   return (
     <>
-      {/* Dark Tint Overlay - positioned to cover entire screen including status bar */}
-      {isDrawerExpanded && (
-        <Animated.View
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            zIndex: 1000,
-          }}
-          pointerEvents="none"
-        />
-      )}
       <BackgroundWrapper>
         <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
           <View className="px-4 pt-6 pb-6">
