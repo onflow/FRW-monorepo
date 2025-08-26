@@ -29,6 +29,7 @@ import { useUserWallets } from '@/ui/hooks/use-account-hooks';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
+import { useCadenceNftCollectionsAndIds, useEvmNftCollectionsAndIds } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 
 import { extensionNavigation } from './ExtensionNavigation';
@@ -60,6 +61,20 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
   const { currentWallet, mainAddress } = useProfiles();
   const wallet = useWallet();
   const { coins } = useCoins();
+
+  // Use the appropriate NFT hook based on address type
+  const isEvmAddress = isValidEthereumAddress(currentWallet?.address || '');
+  const cadenceNftCollections = useCadenceNftCollectionsAndIds(
+    network,
+    isEvmAddress ? undefined : currentWallet?.address
+  );
+  const evmNftCollections = useEvmNftCollectionsAndIds(
+    network,
+    isEvmAddress ? currentWallet?.address : undefined
+  );
+
+  // Use the appropriate NFT collections based on address type
+  const nftCollectionsList = isEvmAddress ? evmNftCollections : cadenceNftCollections;
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -100,6 +115,46 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
 
         console.log('🪙 Converted coins to TokenModel format:', convertedCoins.length, 'tokens');
         return convertedCoins;
+      }
+
+      if (key === 'nfts') {
+        console.log(
+          '🖼️ NFT cache request - Address type:',
+          isEvmAddress ? 'EVM' : 'Cadence',
+          'Address:',
+          currentWallet?.address
+        );
+        console.log('🖼️ NFT collections from hook:', nftCollectionsList);
+
+        if (!nftCollectionsList || nftCollectionsList.length === 0) {
+          console.log('🖼️ No NFT collections found, returning null');
+          return null;
+        }
+
+        // Convert NftCollectionAndIds[] to CollectionModel format for screens package
+        const convertedCollections = nftCollectionsList.map((collection) => ({
+          id: collection.collection.id,
+          name: collection.collection.name,
+          contractName: collection.collection.contractName,
+          logo: collection.collection.logo,
+          banner: collection.collection.banner,
+          description: collection.collection.description,
+          address: collection.collection.address,
+          evmAddress: collection.collection.evmAddress,
+          flowIdentifier: collection.collection.flowIdentifier,
+          officialWebsite: collection.collection.officialWebsite,
+          socials: collection.collection.socials,
+          externalURL: collection.collection.externalURL,
+          count: collection.count,
+          ids: collection.ids,
+        }));
+
+        console.log(
+          '🖼️ Converted NFT collections to CollectionModel format:',
+          convertedCollections.length,
+          'collections'
+        );
+        return convertedCollections;
       }
 
       return null;
