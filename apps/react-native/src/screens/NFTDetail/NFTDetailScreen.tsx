@@ -2,12 +2,11 @@ import { useWalletStore } from '@onflow/frw-stores';
 import { getNFTCover } from '@onflow/frw-utils';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, ScrollView, TouchableOpacity, Animated } from 'react-native';
 
-import BottomConfirmBar from '@/components/NFTList/BottomConfirmBar';
+import BottomConfirmBar, { type BottomConfirmBarRef } from '@/components/NFTList/BottomConfirmBar';
 import { IconView } from '@/components/ui/media/IconView';
-import { useTheme } from '@/contexts/ThemeContext';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { CheckCircle as CheckCircleIcon, CheckCircleFill as CheckCircleFillIcon } from 'icons';
 import { BackgroundWrapper, Text, WalletAvatar } from 'ui';
@@ -27,11 +26,11 @@ const PropertyTag: React.FC<PropertyTagProps> = ({ label, value }) => (
 export const NFTDetailScreen: React.FC = () => {
   const route = useRoute<RouteProp<RootStackParamList, 'NFTDetail'>>();
   const navigation = useNavigation();
-  const { isDark } = useTheme();
   const { activeAccount } = useWalletStore();
 
   const { nft, selectedNFTs, onSelectionChange } = route.params || {};
   const [isDrawerExpanded, setIsDrawerExpanded] = useState(false);
+  const bottomConfirmBarRef = useRef<BottomConfirmBarRef>(null);
 
   // Ensure header uses the default background color from navigation theme
   useEffect(() => {
@@ -133,7 +132,11 @@ export const NFTDetailScreen: React.FC = () => {
             backgroundColor: 'rgba(0, 0, 0, 0.5)',
             zIndex: 10,
           }}
-          pointerEvents="none"
+          pointerEvents="auto"
+          onTouchEnd={() => {
+            setIsDrawerExpanded(false);
+            bottomConfirmBarRef.current?.collapse();
+          }}
         />
       )}
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
@@ -218,6 +221,7 @@ export const NFTDetailScreen: React.FC = () => {
       {/* Bottom Confirm Bar - only shown when selection is enabled and NFTs are selected */}
       {isSelectable && currentSelectedNFTs.length > 0 && (
         <BottomConfirmBar
+          ref={bottomConfirmBarRef}
           selectedNFTs={currentSelectedNFTs}
           onRemoveNFT={handleRemoveNFT}
           onExpandedChange={setIsDrawerExpanded}

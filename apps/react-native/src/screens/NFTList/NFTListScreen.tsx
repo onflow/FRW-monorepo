@@ -2,12 +2,12 @@ import { NFTService } from '@onflow/frw-services';
 import { sendSelectors, useSendStore } from '@onflow/frw-stores';
 import { type CollectionModel, type NFTModel, addressType } from '@onflow/frw-types';
 import { getCollectionLogo, getNFTId } from '@onflow/frw-utils';
-import { useRoute, useNavigation } from '@react-navigation/native';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useRoute } from '@react-navigation/native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Animated, Dimensions, FlatList, TouchableOpacity, View } from 'react-native';
 
-import BottomConfirmBar from '@/components/NFTList/BottomConfirmBar';
+import BottomConfirmBar, { type BottomConfirmBarRef } from '@/components/NFTList/BottomConfirmBar';
 import NFTListCard from '@/components/NFTList/NFTListCard';
 import { IconView } from '@/components/ui/media/IconView';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -17,7 +17,6 @@ import { BackgroundWrapper, Skeleton, Text } from 'ui';
 export default function NFTListScreen() {
   const { t } = useTranslation();
   const route = useRoute();
-  const navigation = useNavigation();
   const { isDark } = useTheme();
   // Get collection information from route parameters first
   const routeParams = route.params as
@@ -42,6 +41,7 @@ export default function NFTListScreen() {
 
   const [selectedIds, setSelectedIds] = useState<string[]>(preSelectedNFTIds);
   const [isDrawerExpanded, setIsDrawerExpanded] = useState(false);
+  const bottomConfirmBarRef = useRef<BottomConfirmBarRef>(null);
 
   // Keep default header configuration - no background changes needed
   // The header will use the default navigation theme colors
@@ -160,7 +160,11 @@ export default function NFTListScreen() {
             backgroundColor: 'rgba(0, 0, 0, 0.5)',
             zIndex: 10, // Lower z-index so it doesn't cover BottomConfirmBar
           }}
-          pointerEvents="none"
+          pointerEvents="auto"
+          onTouchEnd={() => {
+            setIsDrawerExpanded(false);
+            bottomConfirmBarRef.current?.collapse();
+          }}
         />
       )}
       {/* Main Content */}
@@ -435,6 +439,7 @@ export default function NFTListScreen() {
       </View>
       {/* Bottom Confirm Bar */}
       <BottomConfirmBar
+        ref={bottomConfirmBarRef}
         selectedNFTs={selectedNFTsList}
         onRemoveNFT={handleRemoveNFT}
         onExpandedChange={setIsDrawerExpanded}
