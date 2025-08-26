@@ -13,12 +13,7 @@ const SendTokensScreenView = () => {
       }}
     >
       <div style={{ flex: 1, overflow: 'auto' }}>
-        <SendTokensScreen
-          backgroundColor="$bg"
-          contentPadding={8} // Use smaller extension-specific padding
-          initialToAddress={params.toAddress}
-          initialTokenSymbol={params.id}
-        />
+        <SendTokensScreen initialToAddress={params.toAddress} initialTokenSymbol={params.id} />
       </div>
     </div>
   );
