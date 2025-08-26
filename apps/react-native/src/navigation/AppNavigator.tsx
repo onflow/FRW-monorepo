@@ -182,7 +182,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
                 headerLeft: () => <NavigationBackButton />,
                 headerRight: () => <NavigationCloseButton />,
                 headerStyle: {
-                  backgroundColor: isDark ? 'rgb(var(--surface-base))' : 'rgb(var(--surface-1))', // Use CSS variables from theme
+                  backgroundColor: isDark ? 'rgb(18, 18, 18)' : 'rgb(255, 255, 255)',
                 },
               }}
             >
