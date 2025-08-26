@@ -1,4 +1,4 @@
-import { navigation } from '@onflow/frw-context';
+import { navigation, bridge } from '@onflow/frw-context';
 import { NFTService } from '@onflow/frw-services';
 import { useSendStore } from '@onflow/frw-stores';
 import { type CollectionModel, type NFTModel, addressType } from '@onflow/frw-types';
@@ -10,6 +10,7 @@ import {
   CollectionHeader,
   type NFTData,
   YStack,
+  ExtensionHeader,
 } from '@onflow/frw-ui';
 import { getNFTId } from '@onflow/frw-utils';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -38,7 +39,7 @@ export function NFTListScreen({
 
   // Get store functions
   const { setSelectedNFTs, setCurrentStep } = useSendStore();
-
+  const isExtension = bridge.getPlatform() === 'extension';
   // Update current step when screen loads
   useEffect(() => {
     setCurrentStep('select-nfts');
@@ -151,6 +152,14 @@ export function NFTListScreen({
     <BackgroundWrapper backgroundColor="$background">
       <YStack flex={1}>
         {/* Collection Header */}
+        {isExtension && (
+          <ExtensionHeader
+            title={t('send.title')}
+            help={true}
+            onGoBack={() => navigation.goBack()}
+            onNavigate={(link: string) => navigation.navigate(link)}
+          />
+        )}
         {collection && (
           <YStack px="$4" pt="$2">
             <CollectionHeader
