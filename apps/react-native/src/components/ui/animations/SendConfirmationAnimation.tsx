@@ -3,13 +3,7 @@ import { getNFTCover, convertedSVGURL } from '@onflow/frw-utils';
 import LottieView from 'lottie-react-native';
 import React, { useRef, useEffect, useState } from 'react';
 import { type ViewStyle, View, Image } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withSequence,
-  Easing,
-} from 'react-native-reanimated';
+import { Animated, Easing } from 'react-native';
 
 import sendConfirmationAnimation from '@/assets/animations/send-confirmation.json';
 
@@ -146,10 +140,10 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
   ]);
 
   // Animation values for the token overlay
-  const translateX = useSharedValue(0);
-  const translateY = useSharedValue(0);
-  const rotation = useSharedValue(0);
-  const scale = useSharedValue(1);
+  const translateX = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(0)).current;
+  const rotation = useRef(new Animated.Value(0)).current;
+  const scale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     if (autoPlay) {
@@ -191,60 +185,76 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
       const firstPhaseRatio = 25 / 60; // 0.417 (41.7% of total time) - going up
       const secondPhaseRatio = 26 / 60; // 0.433 (43.3% of total time) - coming down much faster
 
-      // Horizontal movement matching Flow coin exactly
-      translateX.value = withSequence(
-        withTiming(relativeStartX, { duration: 0, easing: Easing.linear }),
-        withTiming(relativePeakX, {
+      // Set initial positions
+      translateX.setValue(relativeStartX);
+      translateY.setValue(relativeStartY);
+      rotation.setValue(-5);
+      scale.setValue(1);
+
+      // Create animated sequences
+      const horizontalAnimation = Animated.sequence([
+        Animated.timing(translateX, {
+          toValue: relativePeakX,
           duration: animationDuration * firstPhaseRatio,
           easing: Easing.bezier(0.667, 0.658, 0.333, 0),
+          useNativeDriver: true,
         }),
-        withTiming(relativeStartX, {
+        Animated.timing(translateX, {
+          toValue: relativeStartX,
           duration: animationDuration * secondPhaseRatio,
           easing: Easing.bezier(0.667, 1, 0.333, 0.686),
-        })
-      );
+          useNativeDriver: true,
+        }),
+      ]);
 
-      // Vertical movement matching Flow coin arc
-      translateY.value = withSequence(
-        withTiming(relativeStartY, { duration: 0, easing: Easing.linear }),
-        withTiming(relativePeakY, {
+      const verticalAnimation = Animated.sequence([
+        Animated.timing(translateY, {
+          toValue: relativePeakY,
           duration: animationDuration * firstPhaseRatio,
           easing: Easing.bezier(0.667, 0.658, 0.333, 0),
+          useNativeDriver: true,
         }),
-        withTiming(relativeStartY, {
+        Animated.timing(translateY, {
+          toValue: relativeStartY,
           duration: animationDuration * secondPhaseRatio,
           easing: Easing.bezier(0.667, 1, 0.333, 0.686),
-        })
-      );
+          useNativeDriver: true,
+        }),
+      ]);
 
-      // Rotation matching Flow coin exactly: -5° -> -19° -> -5°
-      rotation.value = withSequence(
-        withTiming(-5, { duration: 0, easing: Easing.linear }),
-        withTiming(-19, {
+      const rotationAnimation = Animated.sequence([
+        Animated.timing(rotation, {
+          toValue: -19,
           duration: animationDuration * firstPhaseRatio,
           easing: Easing.bezier(0.833, 1, 0.167, 0),
+          useNativeDriver: true,
         }),
-        withTiming(-5, {
+        Animated.timing(rotation, {
+          toValue: -5,
           duration: animationDuration * secondPhaseRatio,
           easing: Easing.bezier(0.833, 1, 0.519, 0),
-        })
-      );
+          useNativeDriver: true,
+        }),
+      ]);
 
-      // Scale stays at 1 (since we're already sizing the overlay correctly)
-      scale.value = withTiming(1, { duration: 0, easing: Easing.linear });
+      // Run all animations in parallel
+      Animated.parallel([horizontalAnimation, verticalAnimation, rotationAnimation]).start();
     }
   }, [autoPlay, translateX, translateY, rotation, scale, width, height]);
 
-  const animatedTokenStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { translateX: translateX.value },
-        { translateY: translateY.value },
-        { rotate: `${rotation.value}deg` },
-        { scale: scale.value },
-      ],
-    };
-  });
+  const animatedTokenStyle = {
+    transform: [
+      { translateX },
+      { translateY },
+      {
+        rotate: rotation.interpolate({
+          inputRange: [-360, 360],
+          outputRange: ['-360deg', '360deg'],
+        }),
+      },
+      { scale },
+    ],
+  };
 
   return (
     <View style={[{ width, height, position: 'relative', overflow: 'visible' }, style]}>
