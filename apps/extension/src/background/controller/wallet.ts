@@ -23,6 +23,7 @@ import {
   userInfoService,
   userWalletService,
   accountManagementService,
+  authenticationService,
 } from '@/core/service';
 import { retryOperation } from '@/core/utils';
 import {
@@ -1422,6 +1423,18 @@ export class WalletController extends BaseController {
     return await userWalletService.signProposer(signable);
   };
 
+  getAuthorizationFunction = async () => {
+    return userWalletService.authorizationFunction.bind(userWalletService);
+  };
+
+  getPayerAuthFunction = async () => {
+    return userWalletService.payerAuthFunction.bind(userWalletService);
+  };
+
+  getBridgeFeePayerAuthFunction = async () => {
+    return userWalletService.bridgeFeePayerAuthFunction.bind(userWalletService);
+  };
+
   updateProfilePreference = async (privacy: number) => {
     await openapiService.updateProfilePreference(privacy);
   };
@@ -1614,6 +1627,31 @@ export class WalletController extends BaseController {
   setChildAccountDescription = async (address: string, desc: string): Promise<void> => {
     if (!address) return;
     await setCachedData(childAccountDescKey(address), desc, 3600_000);
+  };
+
+  /**
+   * Get JWT token from Firebase authentication
+   * @returns Promise<string> - The JWT token
+   */
+  getJWT = async (): Promise<string> => {
+    try {
+      const auth = authenticationService.getAuth();
+
+      if (!auth.currentUser) {
+        throw new Error('No authenticated user available');
+      }
+
+      const idToken = await auth.currentUser.getIdToken();
+
+      if (!idToken) {
+        throw new Error('Failed to get ID token from Firebase');
+      }
+
+      return idToken;
+    } catch (error) {
+      console.error('Failed to get JWT token:', error);
+      throw error;
+    }
   };
 }
 

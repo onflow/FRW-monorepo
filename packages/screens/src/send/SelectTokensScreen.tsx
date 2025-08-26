@@ -3,7 +3,6 @@ import { TokenService } from '@onflow/frw-services';
 import { useSendStore, useTokenStore, useWalletStore } from '@onflow/frw-stores';
 import {
   addressType,
-  Platform,
   WalletType,
   type CollectionModel,
   type TokenModel,
@@ -15,6 +14,7 @@ import {
   BackgroundWrapper,
   Badge,
   Divider,
+  ExtensionHeader,
   NFTCollectionRow,
   RefreshView,
   ScrollView,
@@ -32,7 +32,16 @@ import type { TabType } from '../types';
 
 export function SelectTokensScreen(): React.ReactElement {
   // navigation is imported directly from ServiceContext
-  const { t } = useTranslation();
+  // Use bridge translation if available, otherwise fallback to react-i18next
+  const reactTranslation = useTranslation();
+  const t = (key: string) => {
+    // Try to get translation from bridge first (for extension)
+    if (bridge && typeof bridge === 'object' && 'getTranslation' in bridge) {
+      return (bridge as any).getTranslation(key);
+    }
+    // Fallback to react-i18next (for React Native)
+    return reactTranslation.t(key);
+  };
   // State management
   const [tab, setTab] = React.useState<TabType>('Tokens');
   const [tokens, setTokens] = React.useState<TokenModel[]>([]);
@@ -62,6 +71,9 @@ export function SelectTokensScreen(): React.ReactElement {
 
   // Tab options
   const TABS = [t('tabs.tokens'), t('tabs.nfts')] as const;
+
+  // Check if we're running in extension platform
+  const isExtension = bridge.getPlatform() === 'extension';
 
   // Fetch account balance
   const fetchAccountBalance = useCallback(
@@ -111,28 +123,36 @@ export function SelectTokensScreen(): React.ReactElement {
       setError(null);
 
       try {
-        // Fallback to original TokenService logic if bridge doesn't provide coins
+        // Use bridge's getCache method if available, otherwise fallback to TokenService
         const targetAddress = accountAddress || bridge.getSelectedAddress();
-        const network = bridge.getNetwork();
 
         if (!targetAddress) {
           setTokens([]);
           return;
         }
 
-        // Determine wallet type
-        let walletType: WalletType;
-        if (accountType === 'evm') {
-          walletType = WalletType.EVM;
-        } else if (accountType === 'main' || accountType === 'child') {
-          walletType = WalletType.Flow;
+        // Try to get coins from bridge first
+        const coinsData = await bridge.getCache('coins');
+
+        if (coinsData && Array.isArray(coinsData) && coinsData.length > 0) {
+          // Bridge now returns data in TokenModel format, use directly
+          setTokens(coinsData);
         } else {
-          walletType = addressType(targetAddress);
+          // Fallback to original TokenService logic
+          const network = bridge.getNetwork();
+          let walletType: WalletType;
+          if (accountType === 'evm') {
+            walletType = WalletType.EVM;
+          } else if (accountType === 'main' || accountType === 'child') {
+            walletType = WalletType.Flow;
+          } else {
+            walletType = addressType(targetAddress);
+          }
+          const currency = bridge.getCurrency();
+          const tokenService = new TokenService(walletType);
+          const tokenInfos = await tokenService.getTokenInfo(targetAddress, network, currency.name);
+          setTokens(tokenInfos);
         }
-        const currency = bridge.getCurrency();
-        const tokenService = new TokenService(walletType);
-        const tokenInfos = await tokenService.getTokenInfo(targetAddress, network, currency.name);
-        setTokens(tokenInfos);
       } catch (err: any) {
         console.error('Error fetching tokens:', err);
         setError(err.message || t('errors.failedToLoadTokens'));
@@ -152,25 +172,34 @@ export function SelectTokensScreen(): React.ReactElement {
 
       try {
         const targetAddress = accountAddress || bridge.getSelectedAddress();
-        const network = bridge.getNetwork();
 
         if (!targetAddress) {
           setNftCollections([]);
           return;
         }
 
-        const tokenStore = useTokenStore.getState();
+        // Try to get NFT collections from bridge first
+        const nftData = await bridge.getCache('nfts');
 
-        if (isRefreshAction) {
-          await tokenStore.forceRefresh(targetAddress, network || 'mainnet');
+        if (nftData && Array.isArray(nftData) && nftData.length > 0) {
+          // Bridge now returns data in CollectionModel format, use directly
+          setNftCollections(nftData);
         } else {
-          await tokenStore.fetchTokens(targetAddress, network || 'mainnet', true);
+          // Fallback to original TokenService logic
+          const network = bridge.getNetwork();
+          const tokenStore = useTokenStore.getState();
+
+          if (isRefreshAction) {
+            await tokenStore.forceRefresh(targetAddress, network || 'mainnet');
+          } else {
+            await tokenStore.fetchTokens(targetAddress, network || 'mainnet', true);
+          }
+
+          const collections =
+            tokenStore.getNFTCollectionsForAddress(targetAddress, network || 'mainnet') || [];
+
+          setNftCollections(collections || []);
         }
-
-        const collections =
-          tokenStore.getNFTCollectionsForAddress(targetAddress, network || 'mainnet') || [];
-
-        setNftCollections(collections || []);
       } catch (err: any) {
         const errorMessage = err?.message || err?.toString() || 'Unknown error';
         console.error('Failed to fetch NFT collections:', errorMessage);
@@ -178,59 +207,9 @@ export function SelectTokensScreen(): React.ReactElement {
         setNftCollections([]);
       } finally {
         setNftLoading(false);
-        setNftCollections([
-          {
-            id: 'FLOATCollectionStoragePath',
-            contract_name: 'FLOAT',
-            contractName: 'FLOAT',
-            address: '0x2d4c3caffbeab845',
-            name: 'FLOAT',
-            logo: 'https://i.imgur.com/v0Njnnk.png',
-            banner: 'https://i.imgur.com/ETeVZZU.jpg',
-            description: 'FLOAT is a proof of attendance platform on the Flow blockchain.',
-            path: {
-              storage_path: '/storage/FLOATCollectionStoragePath',
-              public_path: '/public/FLOATCollectionPublicPath',
-              private_path: 'deprecated/private_path',
-            },
-            socials: {
-              discord: {
-                url: 'https://discord.gg/emeraldcity',
-              },
-              twitter: {
-                url: 'https://twitter.com/emerald_dao',
-              },
-            },
-            externalURL: 'https://floats.city',
-            nftTypeId: 'A.2d4c3caffbeab845.FLOAT.NFT',
-            flowIdentifier: 'A.2d4c3caffbeab845.FLOAT.NFT',
-          },
-        ]);
       }
     },
     [bridge]
-  );
-
-  // Handle account selection
-  const handleAccountSelect = useCallback(
-    async (selectedAccount: WalletAccount) => {
-      try {
-        setLocalFromAccount(selectedAccount);
-        setStoreFromAccount(selectedAccount);
-        setNftLoading(true);
-        setNftError(null);
-
-        await updateFromAccountBalance(selectedAccount.address, selectedAccount.type, true);
-
-        await Promise.all([
-          fetchTokens(selectedAccount.address, selectedAccount.type),
-          fetchNFTCollections(selectedAccount.address, selectedAccount.type),
-        ]);
-      } catch (error) {
-        console.error('Failed to update account:', error);
-      }
-    },
-    [setStoreFromAccount, updateFromAccountBalance, fetchTokens, fetchNFTCollections]
   );
 
   // Initialize screen
@@ -245,18 +224,16 @@ export function SelectTokensScreen(): React.ReactElement {
 
         const activeAccount = walletStoreState.activeAccount || walletStoreState.accounts[0];
 
-        if (activeAccount) {
-          setLocalFromAccount(activeAccount);
-          setStoreFromAccount(activeAccount);
-          setIsAccountLoading(false);
+        // For extension, just fetch tokens directly without account logic
+        setIsAccountLoading(false);
+        const bridgeAddress = bridge.getSelectedAddress();
 
+        if (bridgeAddress) {
+          // Fetch tokens using bridge address
           await Promise.all([
-            updateFromAccountBalance(activeAccount.address, activeAccount.type),
-            fetchTokens(activeAccount.address, activeAccount.type),
-            fetchNFTCollections(activeAccount.address, activeAccount.type),
+            fetchTokens(bridgeAddress, 'main'),
+            fetchNFTCollections(bridgeAddress, 'main'),
           ]);
-        } else {
-          setIsAccountLoading(false);
         }
       } catch (error) {
         console.error('Error initializing account:', error);
@@ -311,30 +288,35 @@ export function SelectTokensScreen(): React.ReactElement {
     <BackgroundWrapper backgroundColor="$background">
       <YStack flex={1} px="$4" pt="$2">
         {/* Header */}
-        {bridge.getPlatform() === Platform.Extension && (
-          <XStack justify="center" items="center" py="$4" pos="relative">
-            <Text fontSize="$6" fontWeight="700" color="$color" lineHeight="$2" letterSpacing="$-1">
-              {t('send.title')}
-            </Text>
-          </XStack>
+        {isExtension && (
+          <ExtensionHeader
+            title={t('send.title')}
+            help={true}
+            onGoBack={() => navigation.goBack()}
+            onNavigate={(link: string) => navigation.navigate(link)}
+          />
         )}
 
-        {/* Account Card */}
-        {isAccountLoading ? (
-          <YStack bg="$bg2" rounded="$4" p="$4" my="$4" h="$10" justify="center" items="center">
-            <Text color="$textSecondary">{t('messages.loadingAccount')}</Text>
-          </YStack>
-        ) : fromAccount ? (
-          <AccountCard
-            account={{
-              ...fromAccount,
-              balance: isBalanceLoading ? t('messages.loading') : fromAccountBalance,
-            }}
-            title={t('labels.fromAccount')}
-            isLoading={isBalanceLoading}
-            showBackground={true}
-          />
-        ) : null}
+        {/* Account Card - Only show for non-extension platforms */}
+        {!isExtension && (
+          <>
+            {isAccountLoading ? (
+              <YStack bg="$bg2" rounded="$4" p="$4" my="$4" h="$10" justify="center" items="center">
+                <Text color="$textSecondary">{t('messages.loadingAccount')}</Text>
+              </YStack>
+            ) : fromAccount ? (
+              <AccountCard
+                account={{
+                  ...fromAccount,
+                  balance: isBalanceLoading ? t('messages.loading') : fromAccountBalance,
+                }}
+                title={t('labels.fromAccount')}
+                isLoading={isBalanceLoading}
+                showBackground={true}
+              />
+            ) : null}
+          </>
+        )}
 
         {/* Tab Selector */}
         <YStack my="$4">

@@ -12,7 +12,7 @@ import Enable from './Enable';
 import LinkedCollection from './Linked/LinkedCollection';
 import LinkedNftDetail from './Linked/LinkedNftDetail';
 import ManageToken from './ManageToken';
-// import CollectionDetail from './NFT/CollectionDetail';
+import CollectionDetail from './NFT/CollectionDetail';
 import Detail from './NFT/Detail';
 import AddList from './NFT/NFTList/AddList';
 import SendToAddress from './NFT/SendNFT/SendToAddress';
@@ -175,16 +175,16 @@ const InnerRoute = () => {
                 </PrivateRoute>
               }
             />
-            {/* <Route
+            <Route
               path="nested/collectiondetail/:collection_address_name"
               element={
                 <PrivateRoute>
                   <CollectionDetail />
                 </PrivateRoute>
               }
-            /> */}
+            />
             <Route
-              path="nested/collectiondetail/:address"
+              path="nested/nftlistscreen/:address"
               element={
                 <PrivateRoute>
                   <CollectionScreenView />

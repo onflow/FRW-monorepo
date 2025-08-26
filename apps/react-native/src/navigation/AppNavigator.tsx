@@ -10,7 +10,7 @@ import {
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useEffect, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
+// import { useTranslation } from 'react-i18next';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { reactNativeNavigation } from '@/bridge/ReactNativeNavigation';
@@ -55,7 +55,7 @@ interface AppNavigatorProps {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const AppNavigator: React.FC<AppNavigatorProps> = props => {
-  const { t } = useTranslation();
+  // const { t } = useTranslation();
   const { address, network, initialRoute, initialProps } = props;
   // const { isDark } = useTheme();
   const navigationRef = useRef<any>(null);

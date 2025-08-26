@@ -1,4 +1,5 @@
 import { ServiceContext, type PlatformSpec } from '@onflow/frw-context';
+import { type WalletAccount } from '@onflow/frw-types';
 import React, { createContext, useContext, useEffect, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
@@ -17,14 +18,18 @@ type PlatformBridge = {
   getSelectedAddress(): string | null;
   getNetwork(): string;
   getCurrency(): any;
-  getCoins?(): any[] | null;
+  getCache?(key: string): any | null;
+  getSelectedAccount?(): Promise<WalletAccount>;
+  getRouterValue?(): { [key: string]: any };
 };
 type TranslationFunction = (key: string) => string;
 
+import { isValidEthereumAddress } from '@/shared/utils/address';
 import { useUserWallets } from '@/ui/hooks/use-account-hooks';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
+import { useCadenceNftCollectionsAndIds, useEvmNftCollectionsAndIds } from '@/ui/hooks/useNftHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 
 import { extensionNavigation } from './ExtensionNavigation';
@@ -53,19 +58,213 @@ const PlatformContext = createContext<PlatformContextValue | null>(null);
 export const PlatformProvider = ({ children }: { children: ReactNode }) => {
   const { network } = useNetwork();
   const userWallets = useUserWallets();
-  const { currentWallet } = useProfiles();
+  const { currentWallet, mainAddress } = useProfiles();
   const wallet = useWallet();
   const { coins } = useCoins();
+
+  // Use the appropriate NFT hook based on address type
+  const isEvmAddress = isValidEthereumAddress(currentWallet?.address || '');
+  const cadenceNftCollections = useCadenceNftCollectionsAndIds(
+    network,
+    isEvmAddress ? undefined : currentWallet?.address
+  );
+  const evmNftCollections = useEvmNftCollectionsAndIds(
+    network,
+    isEvmAddress ? currentWallet?.address : undefined
+  );
+
+  // Use the appropriate NFT collections based on address type
+  const nftCollectionsList = isEvmAddress ? evmNftCollections : cadenceNftCollections;
+
   const navigate = useNavigate();
   const location = useLocation();
 
   // Initialize platform singleton
   const platform = initializePlatform();
 
-  // Initialize ServiceContext with platform
+  // Initialize ServiceContext with enhanced platform that includes hook data
   useEffect(() => {
-    ServiceContext.initialize(platform);
-  }, [platform]);
+    // Create enhanced platform that overrides methods to use hook data
+    const enhancedPlatform = Object.create(platform);
+
+    enhancedPlatform.getCache = async (key: string) => {
+      if (key === 'coins') {
+        if (!coins || coins.length === 0) {
+          return null;
+        }
+
+        // Convert ExtendedTokenInfo[] to TokenModel format for consistent use across clients
+        const convertedCoins = coins.map((coin) => ({
+          name: coin.name || 'Unknown Token',
+          symbol: coin.symbol || '',
+          balance: coin.balance || '0',
+          priceInUSD: coin.priceInUSD || coin.price || '0',
+          decimals: coin.decimals || 8,
+          logoURI: coin.logoURI || coin.icon || '',
+          address: coin.address || '',
+          isVerified: coin.isVerified || false,
+          identifier: coin.id || null,
+          contractAddress: coin.address || '',
+          contractName: coin.contractName || coin.name || '',
+          displayBalance: coin.balance || '0',
+          icon: coin.logoURI || coin.icon || '',
+          usdValue: coin.balanceInUSD || coin.priceInUSD || '0',
+          change: coin.change24h?.toString() || '0',
+          availableBalanceToUse: coin.availableBalance || coin.balance || '0',
+        }));
+
+        console.log('🪙 Converted coins to TokenModel format:', convertedCoins.length, 'tokens');
+        return convertedCoins;
+      }
+
+      if (key === 'nfts') {
+        console.log(
+          '🖼️ NFT cache request - Address type:',
+          isEvmAddress ? 'EVM' : 'Cadence',
+          'Address:',
+          currentWallet?.address
+        );
+        console.log('🖼️ NFT collections from hook:', nftCollectionsList);
+
+        if (!nftCollectionsList || nftCollectionsList.length === 0) {
+          console.log('🖼️ No NFT collections found, returning null');
+          return null;
+        }
+
+        // Convert NftCollectionAndIds[] to CollectionModel format for screens package
+        const convertedCollections = nftCollectionsList.map((collection) => ({
+          id: collection.collection.id,
+          name: collection.collection.name,
+          contractName: collection.collection.contractName,
+          logo: collection.collection.logo,
+          banner: collection.collection.banner,
+          description: collection.collection.description,
+          address: collection.collection.address,
+          evmAddress: collection.collection.evmAddress,
+          flowIdentifier: collection.collection.flowIdentifier,
+          officialWebsite: collection.collection.officialWebsite,
+          socials: collection.collection.socials,
+          externalURL: collection.collection.externalURL,
+          count: collection.count,
+          ids: collection.ids,
+        }));
+
+        console.log(
+          '🖼️ Converted NFT collections to CollectionModel format:',
+          convertedCollections.length,
+          'collections'
+        );
+        return convertedCollections;
+      }
+
+      return null;
+    };
+
+    enhancedPlatform.getWalletAccounts = async () => {
+      console.log('👛 userWallets data:', userWallets);
+
+      // Always ensure there's a main account from mainAddress (parent Flow address)
+      const accountsArray: any[] = [];
+
+      // Add main Flow account first (from mainAddress)
+      if (mainAddress) {
+        accountsArray.push({
+          address: mainAddress,
+          name: 'Main Account',
+          type: 'main',
+          balance: '0',
+          avatar: currentWallet?.avatar || '',
+          emoji: currentWallet?.emoji || '',
+          emojiInfo: currentWallet?.emojiInfo || null,
+        });
+      }
+
+      // Add userWallets accounts if they exist and are different from main
+      if (Array.isArray(userWallets)) {
+        userWallets.forEach((wallet) => {
+          if (!accountsArray.find((acc) => acc.address === wallet.address)) {
+            const isEVMWallet = isValidEthereumAddress(wallet.address);
+            accountsArray.push({
+              ...wallet,
+              type: wallet.type || (isEVMWallet ? 'evm' : 'main'),
+              parentAddress: isEVMWallet ? mainAddress : undefined,
+            });
+          }
+        });
+      }
+
+      // Add current wallet if it's not already present and different from main
+      if (
+        currentWallet &&
+        currentWallet.address !== mainAddress &&
+        !accountsArray.find((acc) => acc.address === currentWallet.address)
+      ) {
+        const isEVMAccount = isValidEthereumAddress(currentWallet.address);
+        const accountType = isEVMAccount ? 'evm' : 'main';
+
+        accountsArray.push({
+          address: currentWallet.address,
+          name: currentWallet.name || 'Current Account',
+          type: accountType,
+          balance: '0',
+          avatar: currentWallet.avatar || '',
+          emoji: currentWallet.emoji || '',
+          emojiInfo: currentWallet.emojiInfo || null,
+          parentAddress: isEVMAccount ? mainAddress : undefined,
+        });
+      }
+
+      console.log('👛 Returning accounts array:', accountsArray.length, 'accounts');
+      console.log('👛 All accounts:', accountsArray);
+      console.log(
+        '👛 Main accounts:',
+        accountsArray.filter((acc) => acc.type === 'main')
+      );
+      console.log(
+        '👛 EVM accounts with parentAddress:',
+        accountsArray.filter((acc) => acc.type === 'evm' && acc.parentAddress)
+      );
+
+      return {
+        accounts: accountsArray,
+        total: accountsArray.length,
+      };
+    };
+
+    enhancedPlatform.getSelectedAccount = async () => {
+      console.log(
+        '🎯 Enhanced platform getSelectedAccount called, currentWallet:',
+        currentWallet?.address || 'undefined'
+      );
+      if (!currentWallet) {
+        throw new Error('No selected account available');
+      }
+
+      // Determine account type based on address format
+      const isEVMAccount = isValidEthereumAddress(currentWallet.address);
+      const accountType = isEVMAccount ? 'evm' : 'main';
+
+      return {
+        address: currentWallet.address,
+        name: currentWallet.name || 'My Account',
+        type: accountType,
+        balance: '0',
+        avatar: currentWallet.avatar || '',
+        emoji: currentWallet.emoji || '',
+        emojiInfo: currentWallet.emojiInfo || null,
+        parentAddress: mainAddress,
+      };
+    };
+
+    // Always reinitialize ServiceContext when data changes
+    ServiceContext.initialize(enhancedPlatform);
+    console.log(
+      '✅ ServiceContext reinitialized with coins:',
+      coins?.length || 'undefined',
+      'wallets:',
+      userWallets?.length || 'undefined'
+    );
+  }, [platform, coins, userWallets, currentWallet]);
 
   // Keep platform synchronized with extension state
   useEffect(() => {
@@ -151,8 +350,21 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
     },
     getNetwork: () => platform.getNetwork(),
     getCurrency: () => platform.getCurrency(),
-    getCoins: () => {
-      return coins || null;
+    getCache: (key: string) => {
+      // Use the coins data from useCoins hook instead of trying to fetch from platform
+      console.log(`🪙 PlatformContext getCache(${key}) called, coins data:`, coins);
+      if (key === 'coins') {
+        return coins || null;
+      }
+      return null;
+    },
+    getSelectedAccount: async () => {
+      try {
+        return await platform.getSelectedAccount();
+      } catch (error) {
+        console.warn('Failed to get selected account from platform:', error);
+        throw error;
+      }
     },
   });
 

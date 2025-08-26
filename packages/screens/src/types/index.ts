@@ -8,7 +8,7 @@ export interface PlatformBridge {
   getSelectedAddress(): string | null;
   getNetwork(): string;
   getCurrency(): Currency;
-  getCoins?(): any[] | null;
+  getCache?(key: string): any[] | null;
 }
 
 // Theme interface
