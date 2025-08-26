@@ -53,8 +53,8 @@ export function NFTGrid({
   clearSearchText = 'Clear Search',
   error,
   retryText = 'Retry',
-  onNFTSelect,
-  onNFTPress,
+  onNFTSelect = () => {},
+  onNFTPress = () => {},
   onRetry,
   onClearSearch,
   gap = '$3',
@@ -146,14 +146,15 @@ export function NFTGrid({
   return (
     <YStack gap="$6">
       {rows.map((row, rowIndex) => (
-        <XStack key={`row-${rowIndex}`} justify="space-between" width="100%">
+        <XStack key={`row-${rowIndex}`} gap="$6" justify="center" width="100%">
           {row.map((nft) => (
             <NFTCard
               key={nft.id}
               nft={nft}
+              size="medium"
               selected={selectedIds.includes(nft.id)}
-              onPress={() => onNFTPress?.(nft)}
-              onSelect={() => onNFTSelect?.(nft.id)}
+              onPress={() => onNFTPress(nft)}
+              onSelect={() => onNFTSelect(nft.id)}
               showAmount={!!nft.amount}
               aspectRatio={aspectRatio}
             />

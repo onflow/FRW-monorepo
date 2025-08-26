@@ -180,13 +180,30 @@ export function SelectTokensScreen(): React.ReactElement {
         setNftLoading(false);
         setNftCollections([
           {
-            id: 'nba-topshot',
-            name: 'NBA Top Shot',
-            logoURI: 'https://assets.nba.com/media/nba-topshot/nba_logo.png',
-            count: 15,
-            contractName: 'TopShot',
-            type: 'FLOW',
-            address: '0x0b2a3299cc857e29',
+            id: 'FLOATCollectionStoragePath',
+            contract_name: 'FLOAT',
+            contractName: 'FLOAT',
+            address: '0x2d4c3caffbeab845',
+            name: 'FLOAT',
+            logo: 'https://i.imgur.com/v0Njnnk.png',
+            banner: 'https://i.imgur.com/ETeVZZU.jpg',
+            description: 'FLOAT is a proof of attendance platform on the Flow blockchain.',
+            path: {
+              storage_path: '/storage/FLOATCollectionStoragePath',
+              public_path: '/public/FLOATCollectionPublicPath',
+              private_path: 'deprecated/private_path',
+            },
+            socials: {
+              discord: {
+                url: 'https://discord.gg/emeraldcity',
+              },
+              twitter: {
+                url: 'https://twitter.com/emerald_dao',
+              },
+            },
+            externalURL: 'https://floats.city',
+            nftTypeId: 'A.2d4c3caffbeab845.FLOAT.NFT',
+            flowIdentifier: 'A.2d4c3caffbeab845.FLOAT.NFT',
           },
         ]);
       }

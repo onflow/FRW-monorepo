@@ -156,7 +156,7 @@ export function NFTListScreen({
             <CollectionHeader
               name={collectionName}
               image={collection.logoURI || collection.logo}
-              description={collection.description}
+              // description={collection.description}
               itemCount={nfts.length}
               isLoading={isLoading}
             />
@@ -173,7 +173,7 @@ export function NFTListScreen({
               searchPlaceholder={t('placeholders.searchNFTs')}
               showScanButton={false}
               onSearchChange={setSearchQuery}
-              tabSegments={[t('tabs.nfts')]}
+              tabSegments={[]}
               activeTab={t('tabs.nfts')}
               onTabChange={() => {}} // Single tab, no action needed
               contentPadding={0}
@@ -203,6 +203,7 @@ export function NFTListScreen({
           onContinue={handleContinue}
           continueText={t('buttons.continue')}
           isEditing={isEditing}
+          maxHeight={400}
         />
       </YStack>
     </BackgroundWrapper>

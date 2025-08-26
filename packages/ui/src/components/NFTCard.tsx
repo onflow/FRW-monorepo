@@ -7,6 +7,7 @@ export interface NFTCardProps {
   nft: NFTData;
   selected?: boolean;
   onPress?: () => void;
+  onSelect?: (string) => void;
   aspectRatio?: number;
   size?: 'small' | 'medium' | 'large';
   collectionAvatar?: string;
@@ -18,17 +19,19 @@ export function NFTCard({
   nft,
   selected = false,
   onPress,
+  onSelect = (id: string) => {},
   aspectRatio = 1,
   size = 'medium',
   collectionAvatar,
   accountEmoji,
   accountAvatar,
 }: NFTCardProps) {
-  const width = size === 'large' ? '$50' : size === 'medium' ? '$41' : '$30';
-
+  const width = size === 'large' ? '$50' : size === 'medium' ? 160 : '$30';
+  const height = size === 'large' ? '$50' : size === 'medium' ? 200 : '$30';
   return (
     <YStack
       width={width}
+      height={height}
       gap="$1.5"
       pressStyle={{ bg: 'transparent' }}
       onPress={onPress}
@@ -36,6 +39,8 @@ export function NFTCard({
     >
       {/* NFT Image */}
       <YStack
+        w={width}
+        h={height}
         rounded="$4"
         overflow="hidden"
         aspectRatio={aspectRatio}
@@ -58,18 +63,19 @@ export function NFTCard({
         )}
 
         {/* Selection Indicator - top right corner */}
-        {selected && (
-          <YStack position="absolute" top="$0.5" right="$0.5">
-            <CheckCircle size="$5" color="#00EF8B" theme="filled" />
-          </YStack>
-        )}
+
+        <YStack position="absolute" top="$2" right="$2" onPress={() => onSelect(nft.id)}>
+          <CheckCircle size={20} color={selected ? '#00EF8B' : 'gray'} theme="filled" />
+        </YStack>
       </YStack>
 
       {/* NFT Info */}
       <YStack gap="$-0.75">
         {/* NFT Name */}
-        <Text fontSize="$5" fontWeight="600" color="$text" numberOfLines={1}>
-          {nft.name || 'Unnamed NFT'}
+        <Text fontSize="$4" fontWeight="600" color="$text" numberOfLines={1}>
+          {nft.name && nft.name.length > 18
+            ? `${nft.name.slice(0, 18)}...`
+            : nft.name || 'Unnamed NFT'}
         </Text>
 
         {/* Collection Info with Account Avatar/Emoji */}
