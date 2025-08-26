@@ -85,9 +85,6 @@ const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({
     }
   };
 
-  // Debug logging
-  console.log('LoadingIndicator - isAnimating:', isAnimating, 'activeIndex:', activeIndex);
-
   return (
     <View flex={1} items="center" justify="center">
       <View
@@ -135,13 +132,11 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
   // Handle transaction confirmation
   const handleConfirm = async () => {
     try {
-      console.log('Setting internalIsSending to true');
       setInternalIsSending(true);
       await onConfirm?.();
     } catch (error) {
       console.error('Transaction failed:', error);
     } finally {
-      console.log('Setting internalIsSending to false');
       setInternalIsSending(false);
     }
   };
