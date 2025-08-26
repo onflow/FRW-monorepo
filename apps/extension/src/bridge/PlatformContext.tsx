@@ -113,19 +113,10 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
           availableBalanceToUse: coin.availableBalance || coin.balance || '0',
         }));
 
-        console.log('🪙 Converted coins to TokenModel format:', convertedCoins.length, 'tokens');
         return convertedCoins;
       }
 
       if (key === 'nfts') {
-        console.log(
-          '🖼️ NFT cache request - Address type:',
-          isEvmAddress ? 'EVM' : 'Cadence',
-          'Address:',
-          currentWallet?.address
-        );
-        console.log('🖼️ NFT collections from hook:', nftCollectionsList);
-
         if (!nftCollectionsList || nftCollectionsList.length === 0) {
           console.log('🖼️ No NFT collections found, returning null');
           return null;
@@ -133,26 +124,45 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
 
         // Convert NftCollectionAndIds[] to CollectionModel format for screens package
         const convertedCollections = nftCollectionsList.map((collection) => ({
-          id: collection.collection.id,
-          name: collection.collection.name,
-          contractName: collection.collection.contractName,
-          logo: collection.collection.logo,
-          banner: collection.collection.banner,
-          description: collection.collection.description,
-          address: collection.collection.address,
-          evmAddress: collection.collection.evmAddress,
-          flowIdentifier: collection.collection.flowIdentifier,
-          officialWebsite: collection.collection.officialWebsite,
-          socials: collection.collection.socials,
-          externalURL: collection.collection.externalURL,
-          count: collection.count,
-          ids: collection.ids,
+          // NFTCollection fields - handle null values
+          id: collection.collection.id || '',
+          name: collection.collection.name || '',
+          contractName: collection.collection.contractName || '',
+          contract_name: collection.collection.contractName || '',
+          logo: collection.collection.logo || '',
+          logoURI: collection.collection.logo || '',
+          banner: collection.collection.banner || '',
+          description: collection.collection.description || '',
+          address: collection.collection.address || '',
+          evmAddress: collection.collection.evmAddress || '',
+          flowIdentifier: collection.collection.flowIdentifier || '',
+          externalURL: collection.collection.externalURL || '',
+
+          // Handle contractType for EVM NFTs
+          ...(isEvmAddress &&
+            (collection.collection as any).contractType && {
+              contractType: (collection.collection as any).contractType,
+            }),
+
+          // Handle path for Cadence NFTs
+          ...(collection.collection.path && {
+            path: {
+              private_path: collection.collection.path.storagePath || '',
+              public_path: collection.collection.path.publicPath || '',
+              storage_path: collection.collection.path.storagePath || '',
+            },
+          }),
+
+          // CollectionModel additional fields
+          type: isEvmAddress ? 'evm' : 'flow',
+          count: collection.count || 0,
         }));
 
         console.log(
           '🖼️ Converted NFT collections to CollectionModel format:',
           convertedCollections.length,
-          'collections'
+          'collections',
+          convertedCollections
         );
         return convertedCollections;
       }
@@ -199,8 +209,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
         currentWallet.address !== mainAddress &&
         !accountsArray.find((acc) => acc.address === currentWallet.address)
       ) {
-        const isEVMAccount = isValidEthereumAddress(currentWallet.address);
-        const accountType = isEVMAccount ? 'evm' : 'main';
+        const accountType = isEvmAddress ? 'evm' : 'main';
 
         accountsArray.push({
           address: currentWallet.address,
@@ -210,7 +219,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
           avatar: currentWallet.avatar || '',
           emoji: currentWallet.emoji || '',
           emojiInfo: currentWallet.emojiInfo || null,
-          parentAddress: isEVMAccount ? mainAddress : undefined,
+          parentAddress: isEvmAddress ? mainAddress : undefined,
         });
       }
 
@@ -241,8 +250,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
       }
 
       // Determine account type based on address format
-      const isEVMAccount = isValidEthereumAddress(currentWallet.address);
-      const accountType = isEVMAccount ? 'evm' : 'main';
+      const accountType = isEvmAddress ? 'evm' : 'main';
 
       return {
         address: currentWallet.address,
