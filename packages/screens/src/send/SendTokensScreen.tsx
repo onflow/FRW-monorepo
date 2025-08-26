@@ -23,43 +23,32 @@ import {
 } from '@onflow/frw-ui';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 
-export interface SendTokensScreenProps {
-  // Configuration props only - no data props
-  backgroundColor?: string;
-  contentPadding?: number;
-  usdFee?: string;
-  // Enhanced component props
-  isAccountIncompatible?: boolean;
-  isBalanceLoading?: boolean;
-  showStorageWarning?: boolean;
-  storageWarningMessage?: string;
-  showEditButtons?: boolean;
-  onEditTokenPress?: () => void;
-  onEditAccountPress?: () => void;
-  onLearnMorePress?: () => void;
-  isFeesFree?: boolean;
-  // Optional initial values
-  initialToAddress?: string;
-  initialTokenSymbol?: string;
-}
-
-export const SendTokensScreen: React.FC<SendTokensScreenProps> = (props) => {
+export const SendTokensScreen = (props) => {
   // Use props for configuration only, fetch data from bridge
-  const {
-    backgroundColor = '$background',
-    contentPadding = 20,
-    usdFee = '$0.02',
-    isAccountIncompatible = false,
-    isBalanceLoading = false,
-    showStorageWarning = true,
-    storageWarningMessage = 'Account balance will fall below the minimum FLOW required for storage after this transaction.',
-    showEditButtons = true,
-    onEditAccountPress,
-    onLearnMorePress,
-    isFeesFree = false,
-    initialToAddress,
-    initialTokenSymbol,
-  } = props;
+  // Get router values from bridge
+  const routerValues = bridge.getRouterValue?.() || {};
+  const initialToAddress = routerValues.toAddress || null;
+  const initialTokenSymbol = routerValues.tokenSymbol || null;
+
+  // Default values for internal use
+  const backgroundColor = '$background';
+  const contentPadding = 20;
+  const usdFee = '$0.02';
+  const isAccountIncompatible = false;
+  const isBalanceLoading = false;
+  const showStorageWarning = true;
+  const storageWarningMessage =
+    'Account balance will fall below the minimum FLOW required for storage after this transaction.';
+  const showEditButtons = true;
+  const isFeesFree = false;
+
+  // Internal callback handlers
+  const onEditAccountPress = () => {
+    // Handle edit account press internally
+  };
+  const onLearnMorePress = () => {
+    // Handle learn more press internally
+  };
 
   // Internal state - no more props for data
   const [selectedToken, setSelectedToken] = useState<TokenModel | null>(null);
@@ -94,17 +83,18 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = (props) => {
         setLoading(true);
 
         // Get current selected account (this is the FROM account - the sender)
-        const currentAddress = bridge.getSelectedAddress();
-        console.log('🔍 Current address from bridge:', currentAddress);
+        const selectedAccount = await bridge.getSelectedAccount();
 
-        if (currentAddress) {
+        if (selectedAccount) {
           setFromAccount({
-            id: currentAddress,
-            address: currentAddress,
-            name: 'My Account',
-            avatar: '',
-            emojiInfo: undefined,
+            id: selectedAccount.address,
+            address: selectedAccount.address,
+            name: selectedAccount.name,
+            avatar: selectedAccount.avatar || '',
+            emojiInfo: selectedAccount.emojiInfo,
+            parentAddress: selectedAccount.parentAddress,
             isActive: true,
+            type: selectedAccount.type,
           });
         }
 
@@ -119,7 +109,6 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = (props) => {
             coinsData = result as TokenModel[];
 
             if (!coinsData && retryCount < maxRetries - 1) {
-              console.log('🔄 Coins data not ready, retrying in 500ms...');
               await new Promise((resolve) => setTimeout(resolve, 500));
               retryCount++;
             } else {
@@ -151,7 +140,6 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = (props) => {
             setSelectedToken(defaultToken);
           }
         } else {
-          console.log('🪙 No coins data found ', coinsData);
           setTokens([]);
           setSelectedToken(null);
           setError('No tokens available. Please ensure your wallet has tokens to send.');
@@ -171,7 +159,6 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = (props) => {
 
         setError(null);
       } catch (err) {
-        console.error('Failed to initialize SendTokensScreen data:', err);
         setError('Failed to load wallet data. Please try refreshing.');
       } finally {
         setLoading(false);
@@ -198,7 +185,7 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = (props) => {
 
   const handleMaxPress = useCallback(() => {
     if (selectedToken?.balance) {
-      setAmount(selectedToken.balance);
+      setAmount(selectedToken.balance.toString());
     }
   }, [selectedToken]);
 
@@ -223,36 +210,23 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = (props) => {
   }, []);
 
   const handleTransactionConfirm = useCallback(async () => {
+    if (!selectedToken || !fromAccount || !toAccount || !amount) {
+      throw new Error('Missing transaction data');
+    }
+
+    setStoreSelectedToken(selectedToken);
+    setStoreFromAccount(fromAccount);
+    setStoreToAccount(toAccount);
+    updateFormData({ tokenAmount: amount });
+
+    // Execute transaction using the store
+    console.log('🚀 Executing transaction using store executeTransaction...');
     try {
-      if (!selectedToken || !fromAccount || !toAccount || !amount) {
-        throw new Error('Missing transaction data');
-      }
-
-      console.log('🔄 Starting transaction...', {
-        token: selectedToken.symbol,
-        from: fromAccount.address,
-        to: toAccount.address,
-        amount,
-      });
-
-      // Set transaction data in the store
-      const parentAddress = await bridge.getParentAddress();
-      console.log('🔍 Parent address from bridge:', parentAddress);
-
-      setStoreSelectedToken(selectedToken);
-      setStoreFromAccount(fromAccount);
-      setStoreToAccount(toAccount);
-      updateFormData({ tokenAmount: amount });
-
-      // Execute transaction using the store
-      console.log('🚀 Executing transaction using store executeTransaction...');
       const result = await executeTransaction();
       console.log('✅ Transaction result:', result);
-
       return result;
     } catch (error) {
       console.error('❌ Transaction failed:', error);
-      // Keep modal open and show error - the modal should handle displaying the error
       throw error;
     }
   }, [

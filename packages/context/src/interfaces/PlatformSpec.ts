@@ -47,12 +47,11 @@ export interface PlatformSpec {
   getWalletAccounts(): Promise<WalletAccountsResponse>;
   getSelectedAccount(): Promise<WalletAccount>;
 
-  // Get parent address for transaction proposer
-  getParentAddress(): Promise<string | null>;
-
   // Token and account data methods
-  getCache(key: string): Promise<any[] | null>;
-  getAccountInfo(address: string): Promise<any>;
+  getCache(key: string): Promise<any | null>;
+
+  // Router values for screens
+  getRouterValue?(): { [key: string]: any };
 
   // Transaction monitoring and post-transaction actions
   listenTransaction?(

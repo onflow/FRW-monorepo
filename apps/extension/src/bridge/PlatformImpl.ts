@@ -190,28 +190,10 @@ class ExtensionPlatformImpl implements PlatformSpec {
     return null;
   }
 
-  async getParentAddress(): Promise<string | null> {
-    this.log(
-      'warn',
-      'Extension getParentAddress() called - should be overridden by PlatformContext'
-    );
-    if (!this.walletController) return null;
-    try {
-      return await this.walletController.getMainAddress();
-    } catch (error) {
-      this.log('warn', 'Failed to get parent address:', error);
-      return null;
-    }
-  }
-
-  async getAccountInfo(address: string): Promise<any> {
-    if (!this.walletController) return null;
-    try {
-      return await this.walletController.getAccountInfo(address);
-    } catch (error) {
-      this.log('warn', 'Failed to get account info for address:', address, error);
-      return null;
-    }
+  getRouterValue?(): { [key: string]: any } {
+    // Get from React Router values stored in window object
+    const routerValues = (window as any).__flowWalletRouterParams || {};
+    return routerValues;
   }
 
   listenTransaction?(
@@ -301,7 +283,8 @@ class ExtensionPlatformImpl implements PlatformSpec {
 
         // Create proposer authorization function using parent address from hooks
         config.proposer = async (account: any) => {
-          const address = await this.getParentAddress(); // Always use parent Flow address
+          const selectedAccount = await this.getSelectedAccount();
+          const address = selectedAccount.parentAddress;
           const keyId = this.getSignKeyIndex();
           const ADDRESS = address?.startsWith('0x') ? address : `0x${address}`;
           const KEY_ID = Number(keyId) || 0;

@@ -1,4 +1,5 @@
 import { ServiceContext, type PlatformSpec } from '@onflow/frw-context';
+import { type WalletAccount } from '@onflow/frw-types';
 import React, { createContext, useContext, useEffect, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
@@ -17,9 +18,9 @@ type PlatformBridge = {
   getSelectedAddress(): string | null;
   getNetwork(): string;
   getCurrency(): any;
-  getCache?(key: string): any[] | null;
-  getSelectedAccount?(): Promise<any>;
-  getAccountInfo?(address: string): Promise<any>;
+  getCache?(key: string): any | null;
+  getSelectedAccount?(): Promise<WalletAccount>;
+  getRouterValue?(): { [key: string]: any };
 };
 type TranslationFunction = (key: string) => string;
 
@@ -175,11 +176,6 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
       };
     };
 
-    enhancedPlatform.getParentAddress = async () => {
-      console.log('🏠 Parent address found:', mainAddress);
-      return mainAddress;
-    };
-
     enhancedPlatform.getSelectedAccount = async () => {
       console.log(
         '🎯 Enhanced platform getSelectedAccount called, currentWallet:',
@@ -201,7 +197,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
         avatar: currentWallet.avatar || '',
         emoji: currentWallet.emoji || '',
         emojiInfo: currentWallet.emojiInfo || null,
-        parentAddress: isEVMAccount ? mainAddress : undefined,
+        parentAddress: mainAddress,
       };
     };
 
@@ -313,18 +309,6 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
       } catch (error) {
         console.warn('Failed to get selected account from platform:', error);
         throw error;
-      }
-    },
-    getAccountInfo: async (address: string) => {
-      try {
-        const platformImpl = platform as any;
-        if (platformImpl.getAccountInfo && typeof platformImpl.getAccountInfo === 'function') {
-          return await platformImpl.getAccountInfo(address);
-        }
-        return null;
-      } catch (error) {
-        console.warn('Failed to get account info from platform:', error);
-        return null;
       }
     },
   });
