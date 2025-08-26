@@ -49,7 +49,12 @@
       "Bash(gh repo:*)",
       "Bash(rg:*)",
       "Bash(git submodule:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(npm view:*)",
+      "Bash(git log:*)",
+      "Bash(readlink:*)",
+      "Bash(./gradlew:*)",
+      "Bash(npx react-native build-android:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
