@@ -144,7 +144,7 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
         }
 
         // If we have an image to inject, use the advanced injection method
-        if (imageUri && !imageLoadError && !shouldShowFlowLogo && !isFlowToken) {
+        if (imageUri && !imageLoadError && !shouldShowFlowLogo) {
           const result = await injectImageWithFallbacks(baseAnimation, 'image_0', imageUri);
 
           setInjectionResult({
@@ -189,7 +189,7 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
   const willShowOverlay =
     !injectionResult.success &&
     ((isNFTTransaction && selectedNFTs && selectedNFTs.length > 0) ||
-      (imageUri && !imageLoadError && !shouldShowFlowLogo && !isFlowToken));
+      (imageUri && !imageLoadError && !shouldShowFlowLogo));
 
   // Reset error state when imageUri changes
   useEffect(() => {
