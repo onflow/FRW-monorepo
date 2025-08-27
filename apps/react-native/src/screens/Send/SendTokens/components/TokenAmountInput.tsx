@@ -93,7 +93,7 @@ export const TokenAmountInput = ({
                     lineHeight: 32,
                     fontWeight: '500',
                     includeFontPadding: false,
-                    color: isDark ? '#FFFFFF' : '#000D07',
+                    color: isDark ? 'rgb(255, 255, 255)' : 'rgb(0, 13, 7)',
                     marginRight: 0,
                   },
                 ]}
@@ -118,11 +118,13 @@ export const TokenAmountInput = ({
                   paddingVertical: 0,
                   margin: 0,
                   minHeight: 32,
-                  color: isDark ? '#FFFFFF' : '#000D07',
+                  color: isDark ? 'rgb(255, 255, 255)' : 'rgb(0, 13, 7)',
                 },
               ]}
-              placeholderTextColor={isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 13, 7, 0.5)'}
-              selectionColor={isDark ? '#00EF8B' : '#00B877'}
+              placeholderTextColor={
+                isDark ? 'rgba(179, 179, 179, 0.8)' : 'rgba(118, 118, 118, 0.8)'
+              }
+              selectionColor={isDark ? 'rgb(0, 239, 139)' : 'rgb(0, 184, 119)'}
               selectTextOnFocus={true}
             />
           </View>
@@ -135,7 +137,7 @@ export const TokenAmountInput = ({
             height: 35.2,
             borderRadius: 39,
             minWidth: 85,
-            backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : '#FFFFFF',
+            backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgb(255, 255, 255)',
           }}
           onPress={onTokenSelectorPress}
         >
@@ -242,7 +244,7 @@ export const TokenAmountInput = ({
           <TouchableOpacity
             className="items-center justify-center px-3 py-1"
             style={{
-              backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.1)',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
               borderRadius: 39,
               paddingHorizontal: 10,
               paddingVertical: 3,
@@ -258,7 +260,7 @@ export const TokenAmountInput = ({
                   lineHeight: 18,
                   fontWeight: '600',
                   includeFontPadding: false,
-                  color: isDark ? '#FFFFFF' : '#FFFFFF',
+                  color: 'rgb(255, 255, 255)',
                   minWidth: 35,
                 },
               ]}

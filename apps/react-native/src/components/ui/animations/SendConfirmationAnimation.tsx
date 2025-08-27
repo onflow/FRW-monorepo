@@ -3,15 +3,49 @@ import { getNFTCover, convertedSVGURL } from '@onflow/frw-utils';
 import LottieView from 'lottie-react-native';
 import React, { useRef, useEffect, useState } from 'react';
 import { type ViewStyle, View, Image } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withSequence,
-  Easing,
-} from 'react-native-reanimated';
+import { Animated, Easing } from 'react-native';
 
-import sendConfirmationAnimation from '@/assets/animations/send-confirmation.json';
+import sendConfirmationAnimationDynamic from '@/assets/animations/send-confirmation-dynamic.json';
+import sendConfirmationAnimationStatic from '@/assets/animations/send-confirmation.json';
+import { injectImageWithFallbacks } from '@/utils/lottie-image-injection';
+
+import { AnimationErrorBoundary } from './AnimationErrorBoundary';
+
+/**
+ * DYNAMIC LOTTIE ANIMATION APPROACH
+ * ================================
+ *
+ * Current Implementation:
+ * - Uses send-confirmation-dynamic.json which includes an image asset placeholder (image_0)
+ * - Still uses overlay approach due to lottie-react-native limitations for runtime asset injection
+ * - Matches exact positioning, timing, and rotation from the dynamic animation's image layer
+ *
+ * The Dynamic Animation Asset Structure:
+ * - Asset: {"id": "image_0", "w": 500, "h": 500, "u": "images/", "p": "img_0.png", "e": 0}
+ * - Image Layer: {"ind": 7, "ty": 2, "refId": "image_0"} with precise positioning data
+ * - Animation frames: 0->25->59 with positions [795.706,349.752] -> [829.597,172] -> [795.706,349.752]
+ * - Rotation: -5° -> -19° -> -5°, Scale: 46% of 500x500px asset
+ *
+ * Current Status (Experimental):
+ * - Attempts runtime JSON modification to inject image URIs into asset references
+ * - Falls back to precise overlay positioning if asset injection doesn't work
+ * - Logs experiments to console for debugging
+ *
+ * How to test if asset injection works:
+ * 1. Check console logs for "EXPERIMENTAL: Injecting image URI into Lottie JSON"
+ * 2. If image appears in animation without overlay visible, asset injection worked
+ * 3. If overlay is still visible, lottie-react-native doesn't support runtime assets
+ *
+ * Future Improvement Opportunities:
+ * 1. Monitor lottie-react-native updates for runtime asset replacement support
+ * 2. Custom native bridge for true asset injection if needed
+ * 3. Alternative: Pre-generate animation variants with common assets
+ *
+ * Benefits of current approach vs previous:
+ * - Uses animation file designed for dynamic content
+ * - Exact positioning match with built-in image layer
+ * - Foundation ready for true asset injection when supported
+ */
 
 interface SendConfirmationAnimationProps {
   width?: number;
@@ -36,6 +70,12 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
 }) => {
   const animationRef = useRef<LottieView>(null);
   const [imageLoadError, setImageLoadError] = useState(false);
+  const [animationError, setAnimationError] = useState(false);
+  const [injectionResult, setInjectionResult] = useState<{
+    method: 'base64' | 'url' | 'failed' | null;
+    success: boolean;
+  }>({ method: null, success: false });
+  const [isInjectionReady, setIsInjectionReady] = useState(false);
 
   // Determine what to show based on transaction type and available data
   const isNFTTransaction = transactionType?.includes('nft');
@@ -51,20 +91,13 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
       // Apply SVG conversion to ensure compatibility with React Native Image component
       const collectionSquareImage = firstNFT.collectionSquareImage?.trim();
       const collectionBannerImage = firstNFT.collectionBannerImage?.trim();
-      const collectionLogo = firstNFT.collection?.logo?.trim();
-      const collectionLogoURI = firstNFT.collection?.logoURI?.trim();
+      // Note: NFTModel doesn't have nested collection object, all properties are flattened
 
       if (collectionSquareImage) {
         return convertedSVGURL(collectionSquareImage);
       }
       if (collectionBannerImage) {
         return convertedSVGURL(collectionBannerImage);
-      }
-      if (collectionLogo) {
-        return convertedSVGURL(collectionLogo);
-      }
-      if (collectionLogoURI) {
-        return convertedSVGURL(collectionLogoURI);
       }
 
       // Fallback to NFT-specific images using the standard utility
@@ -93,46 +126,79 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
 
   const imageUri = getImageUri();
 
-  // Determine if overlay will be shown to adjust animation opacity
+  // Create dynamic animation JSON with proper image injection
+  const [dynamicAnimationData, setDynamicAnimationData] = useState<any>(null);
+
+  // Handle async image injection
+  useEffect(() => {
+    const createAnimationWithInjection = async () => {
+      try {
+        // Enable dynamic animation for true image injection
+        const baseAnimation = sendConfirmationAnimationDynamic;
+
+        // Validate that the base animation data exists and is valid
+        if (!baseAnimation || typeof baseAnimation !== 'object') {
+          console.warn('[SendConfirmationAnimation] Invalid base animation data, using fallback');
+          setDynamicAnimationData(sendConfirmationAnimationStatic);
+          return;
+        }
+
+        // If we have an image to inject, use the advanced injection method
+        if (imageUri && !imageLoadError && !shouldShowFlowLogo) {
+          const result = await injectImageWithFallbacks(baseAnimation, 'image_0', imageUri);
+
+          setInjectionResult({
+            method: result.method,
+            success: result.success,
+          });
+
+          if (result.success) {
+            setDynamicAnimationData(result.animationData);
+          } else {
+            console.log(
+              '[SendConfirmationAnimation] ❌ Image injection FAILED, using static animation'
+            );
+            setDynamicAnimationData(sendConfirmationAnimationStatic);
+          }
+          setIsInjectionReady(true);
+        } else {
+          // No image to inject, use dynamic animation as-is
+          console.log(
+            '[SendConfirmationAnimation] Using dynamic animation without image injection'
+          );
+          setDynamicAnimationData(baseAnimation);
+          setInjectionResult({ method: null, success: false });
+          setIsInjectionReady(true);
+        }
+      } catch (error) {
+        console.error(
+          '[SendConfirmationAnimation] Failed to create dynamic animation data:',
+          error
+        );
+        setAnimationError(true);
+        setDynamicAnimationData(sendConfirmationAnimationStatic);
+        setIsInjectionReady(true);
+      }
+    };
+
+    createAnimationWithInjection();
+  }, [imageUri, imageLoadError, shouldShowFlowLogo, isFlowToken]);
+
+  // Determine if overlay will be shown based on injection success
+  // If image injection succeeded, we don't need the overlay!
   const willShowOverlay =
-    (isNFTTransaction && selectedNFTs && selectedNFTs.length > 0) ||
-    (imageUri && !imageLoadError && !shouldShowFlowLogo && !isFlowToken);
+    !injectionResult.success &&
+    ((isNFTTransaction && selectedNFTs && selectedNFTs.length > 0) ||
+      (imageUri && !imageLoadError && !shouldShowFlowLogo));
 
   // Reset error state when imageUri changes
   useEffect(() => {
     setImageLoadError(false);
-
-    // Always log basic transaction info for debugging
-    console.log('[SendConfirmationAnimation] Transaction Debug:', {
-      transactionType,
-      isNFTTransaction,
-      hasSelectedNFTs: !!(selectedNFTs && selectedNFTs.length > 0),
-      selectedNFTsCount: selectedNFTs?.length || 0,
-      finalImageUri: imageUri,
-      imageLoadError,
-      shouldShowOverlay: willShowOverlay,
-    });
+    setAnimationError(false);
+    setIsInjectionReady(false);
 
     if (isNFTTransaction && selectedNFTs && selectedNFTs.length > 0) {
       const firstNFT = selectedNFTs[0];
-      console.log('[SendConfirmationAnimation] NFT Animation Debug:', {
-        finalImageUri: imageUri,
-        collectionSquareImage: firstNFT.collectionSquareImage,
-        collectionLogo: firstNFT.collection?.logo,
-        collectionLogoURI: firstNFT.collection?.logoURI,
-        nftCover: getNFTCover(firstNFT),
-        thumbnail: firstNFT.thumbnail,
-        postMediaImage: firstNFT.postMedia?.image,
-        hasNestedCollection: !!firstNFT.collection,
-        nftName: firstNFT.name,
-        collectionName: firstNFT.collectionName,
-        // Additional collection properties that might be available
-        collectionBannerImage: firstNFT.collectionBannerImage,
-        contractName: firstNFT.contractName,
-        collectionContractName: firstNFT.collectionContractName,
-        // Full nested collection object for debugging
-        fullNestedCollection: firstNFT.collection,
-      });
     }
   }, [
     imageUri,
@@ -146,25 +212,26 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
   ]);
 
   // Animation values for the token overlay
-  const translateX = useSharedValue(0);
-  const translateY = useSharedValue(0);
-  const rotation = useSharedValue(0);
-  const scale = useSharedValue(1);
+  const translateX = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(0)).current;
+  const rotation = useRef(new Animated.Value(0)).current;
+  const scale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    if (autoPlay) {
+    if (autoPlay && isInjectionReady) {
       const animationDuration = 2000;
 
       // Follow the Flow coin animation exactly for all overlays
       // Extract exact timing from Lottie animation: 60 frames at 29.97fps ≈ 2 seconds
 
-      // Flow coin position animation extracted from Lottie JSON:
-      // Original animation canvas: 1500x816, Flow coin moves from [795.706,349.752] to [829.597,172] to [795.706,349.752]
+      // Image animation extracted from dynamic Lottie JSON:
+      // Original animation canvas: 1500x816, image moves from [795.706,349.752] to [829.597,172] to [795.706,349.752]
+      // Image scale: 46% of original 500x500px asset, so final size is 230x230px in Lottie coordinate space
       // Our canvas: 399x148, so we need to scale coordinates
       const scaleX = 399 / 1500; // 0.266
       const scaleY = 148 / 816; // 0.181
 
-      // Flow coin positions from Lottie keyframes (on 1500x816 canvas)
+      // Image positions from dynamic Lottie keyframes (on 1500x816 canvas) - VERIFIED FROM DYNAMIC ANIMATION
       const lottieStartX = 795.706;
       const lottiePeakX = 829.597;
       const lottieStartY = 349.752;
@@ -181,173 +248,167 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
       const centerX = width / 2; // 199.5px
       const centerY = height / 2; // 74px
 
-      // Adjust positioning to ensure complete coverage of Flow coin
-      const relativeStartX = scaledStartX - centerX - 10; // Shift 10px left (reduced from 12px to slide right slightly)
-      const relativePeakX = scaledPeakX - centerX - 10;
-      const relativeStartY = scaledStartY - centerY - 8; // Shift 8px up to match Flow coin jump
-      const relativePeakY = scaledPeakY - centerY - 8;
+      // The dynamic animation has exact positioning - use precise offsets for perfect alignment
+      // Since we're matching the exact same coordinates as the built-in image layer
+      const relativeStartX = scaledStartX - centerX - 8; // Fine-tuned for perfect alignment
+      const relativePeakX = scaledPeakX - centerX - 8;
+      const relativeStartY = scaledStartY - centerY - 6; // Fine-tuned for perfect alignment
+      const relativePeakY = scaledPeakY - centerY - 6;
 
       // Timing based on exact frame positions but adjusted for better coverage: 0->25->59 frames
       const firstPhaseRatio = 25 / 60; // 0.417 (41.7% of total time) - going up
       const secondPhaseRatio = 26 / 60; // 0.433 (43.3% of total time) - coming down much faster
 
-      // Horizontal movement matching Flow coin exactly
-      translateX.value = withSequence(
-        withTiming(relativeStartX, { duration: 0, easing: Easing.linear }),
-        withTiming(relativePeakX, {
+      // Set initial positions - matching dynamic animation exactly
+      translateX.setValue(relativeStartX);
+      translateY.setValue(relativeStartY);
+      rotation.setValue(-5); // Exact value from dynamic animation
+      scale.setValue(1);
+
+      // Create animated sequences
+      const horizontalAnimation = Animated.sequence([
+        Animated.timing(translateX, {
+          toValue: relativePeakX,
           duration: animationDuration * firstPhaseRatio,
           easing: Easing.bezier(0.667, 0.658, 0.333, 0),
+          useNativeDriver: true,
         }),
-        withTiming(relativeStartX, {
+        Animated.timing(translateX, {
+          toValue: relativeStartX,
           duration: animationDuration * secondPhaseRatio,
           easing: Easing.bezier(0.667, 1, 0.333, 0.686),
-        })
-      );
+          useNativeDriver: true,
+        }),
+      ]);
 
-      // Vertical movement matching Flow coin arc
-      translateY.value = withSequence(
-        withTiming(relativeStartY, { duration: 0, easing: Easing.linear }),
-        withTiming(relativePeakY, {
+      const verticalAnimation = Animated.sequence([
+        Animated.timing(translateY, {
+          toValue: relativePeakY,
           duration: animationDuration * firstPhaseRatio,
           easing: Easing.bezier(0.667, 0.658, 0.333, 0),
+          useNativeDriver: true,
         }),
-        withTiming(relativeStartY, {
+        Animated.timing(translateY, {
+          toValue: relativeStartY,
           duration: animationDuration * secondPhaseRatio,
           easing: Easing.bezier(0.667, 1, 0.333, 0.686),
-        })
-      );
+          useNativeDriver: true,
+        }),
+      ]);
 
-      // Rotation matching Flow coin exactly: -5° -> -19° -> -5°
-      rotation.value = withSequence(
-        withTiming(-5, { duration: 0, easing: Easing.linear }),
-        withTiming(-19, {
+      const rotationAnimation = Animated.sequence([
+        Animated.timing(rotation, {
+          toValue: -19,
           duration: animationDuration * firstPhaseRatio,
           easing: Easing.bezier(0.833, 1, 0.167, 0),
+          useNativeDriver: true,
         }),
-        withTiming(-5, {
+        Animated.timing(rotation, {
+          toValue: -5,
           duration: animationDuration * secondPhaseRatio,
           easing: Easing.bezier(0.833, 1, 0.519, 0),
-        })
-      );
+          useNativeDriver: true,
+        }),
+      ]);
 
-      // Scale stays at 1 (since we're already sizing the overlay correctly)
-      scale.value = withTiming(1, { duration: 0, easing: Easing.linear });
+      // Run all animations in parallel
+      Animated.parallel([horizontalAnimation, verticalAnimation, rotationAnimation]).start();
     }
-  }, [autoPlay, translateX, translateY, rotation, scale, width, height]);
+  }, [autoPlay, isInjectionReady, translateX, translateY, rotation, scale, width, height]);
 
-  const animatedTokenStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { translateX: translateX.value },
-        { translateY: translateY.value },
-        { rotate: `${rotation.value}deg` },
-        { scale: scale.value },
-      ],
-    };
-  });
+  const animatedTokenStyle = {
+    transform: [
+      { translateX },
+      { translateY },
+      {
+        rotate: rotation.interpolate({
+          inputRange: [-360, 360],
+          outputRange: ['-360deg', '360deg'],
+        }),
+      },
+      { scale },
+    ],
+  };
 
   return (
-    <View style={[{ width, height, position: 'relative', overflow: 'visible' }, style]}>
-      {/* Static background for NFT transactions */}
-      {isNFTTransaction && (
-        <View
-          style={{
-            width,
-            height,
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            backgroundColor: 'transparent',
-            borderRadius: 12,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        />
-      )}
-
-      {/* Lottie Animation Background */}
-      <LottieView
-        ref={animationRef}
-        source={sendConfirmationAnimation}
-        autoPlay={autoPlay}
-        loop={loop}
-        style={{
-          width,
-          height,
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          // Reduce opacity when overlay is shown to minimize green shadow interference
-          opacity: willShowOverlay ? 0.3 : 1,
-        }}
-        resizeMode="contain"
-      />
-
-      {/* Animated Token/Coin Overlay - positioned to match Flow coin exactly */}
-      {/* Show overlay for NFT transactions (with fallback) or token transactions with valid image */}
-      {(isNFTTransaction && selectedNFTs && selectedNFTs.length > 0) ||
-      (imageUri && !imageLoadError && !shouldShowFlowLogo && !isFlowToken) ? (
-        <Animated.View
-          style={[
-            {
+    <AnimationErrorBoundary>
+      <View style={[{ width, height, position: 'relative', overflow: 'visible' }, style]}>
+        {/* Loading state - show transparent background until injection is ready */}
+        {!isInjectionReady && (
+          <View
+            style={{
+              width,
+              height,
               position: 'absolute',
-              top: '50%',
-              left: '50%',
-              width: 56,
-              height: 56,
-              marginLeft: -28,
-              marginTop: -28,
-              zIndex: 3,
-              // Remove borderRadius from container to prevent clipping
-              // Add padding to accommodate shadow
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: isNFTTransaction ? 4 : 3 },
-              shadowOpacity: isNFTTransaction ? 0.15 : 0.2,
-              shadowRadius: isNFTTransaction ? 8 : 6,
-              elevation: isNFTTransaction ? 8 : 6,
-            },
-            animatedTokenStyle,
-          ]}
-        >
-          {imageUri ? (
+              top: 0,
+              left: 0,
+              backgroundColor: 'transparent',
+              zIndex: 10,
+            }}
+          />
+        )}
+
+        {/* Static background for NFT transactions */}
+        {isNFTTransaction && isInjectionReady && (
+          <View
+            style={{
+              width,
+              height,
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              backgroundColor: 'transparent',
+              borderRadius: 12,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          />
+        )}
+
+        {/* Lottie Animation Background */}
+        {!animationError && dynamicAnimationData && isInjectionReady ? (
+          <LottieView
+            ref={animationRef}
+            source={dynamicAnimationData}
+            autoPlay={autoPlay && isInjectionReady}
+            loop={loop}
+            style={{
+              width,
+              height,
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              // When true injection works, show at full opacity. When using overlay, reduce opacity.
+              opacity: injectionResult.success ? 1 : willShowOverlay ? 0.3 : 1,
+            }}
+            resizeMode="contain"
+            onAnimationFailure={error => {
+              console.error('[SendConfirmationAnimation] Lottie animation failed:', error);
+              setAnimationError(true);
+            }}
+          />
+        ) : isInjectionReady ? (
+          // Fallback when animation fails
+          <View
+            style={{
+              width,
+              height,
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              backgroundColor: '#f3f4f6',
+              borderRadius: 12,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            {/* Simple fallback animation or static content */}
             <View
               style={{
-                width: 56,
-                height: 56,
-                borderRadius: 28, // Circular clipping container
-                backgroundColor: isNFTTransaction ? '#ffffff' : 'transparent', // White background for NFTs
-                borderWidth: isNFTTransaction ? 0.5 : 0,
-                borderColor: 'rgba(0, 0, 0, 0.1)',
-                overflow: 'hidden', // This ensures the image is clipped to the circle
-              }}
-            >
-              <Image
-                source={{ uri: imageUri }}
-                style={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: 0, // Remove border radius from image since container handles clipping
-                }}
-                resizeMode="cover"
-                onError={error => {
-                  console.log('[SendConfirmationAnimation] Failed to load image:', imageUri, error);
-                  console.log(
-                    '[SendConfirmationAnimation] Consider checking if the URL is valid and accessible'
-                  );
-                  setImageLoadError(true);
-                }}
-              />
-            </View>
-          ) : (
-            // Fallback placeholder for NFT transactions without images
-            <View
-              style={{
-                width: 56,
-                height: 56,
-                borderRadius: 28, // Always circular for both NFTs and tokens
-                backgroundColor: isNFTTransaction ? '#6366f1' : '#10b981',
-                borderWidth: isNFTTransaction ? 0.5 : 0,
-                borderColor: 'rgba(0, 0, 0, 0.1)',
+                width: 60,
+                height: 60,
+                backgroundColor: '#10b981',
+                borderRadius: 30,
                 justifyContent: 'center',
                 alignItems: 'center',
               }}
@@ -356,14 +417,106 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
                 style={{
                   width: 24,
                   height: 24,
-                  backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                  borderRadius: 12, // Make the inner icon circular too
+                  backgroundColor: 'white',
+                  borderRadius: 12,
                 }}
               />
             </View>
-          )}
-        </Animated.View>
-      ) : null}
-    </View>
+          </View>
+        ) : null}
+
+        {/* Animated Token/Coin Overlay - positioned to match Flow coin exactly */}
+        {/* ONLY show overlay when injection fails - this enables TRUE dynamic injection! */}
+        {willShowOverlay && isInjectionReady ? (
+          <Animated.View
+            style={[
+              {
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                width: 56, // Keep current size for now, matches well with the animation scale
+                height: 56,
+                marginLeft: -28,
+                marginTop: -28,
+                zIndex: 3,
+                // Remove borderRadius from container to prevent clipping
+                // Add padding to accommodate shadow
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: isNFTTransaction ? 4 : 3 },
+                shadowOpacity: isNFTTransaction ? 0.15 : 0.2,
+                shadowRadius: isNFTTransaction ? 8 : 6,
+                elevation: isNFTTransaction ? 8 : 6,
+              },
+              animatedTokenStyle,
+            ]}
+          >
+            {imageUri ? (
+              <View
+                style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: 28, // Circular clipping container
+                  backgroundColor: isNFTTransaction ? '#ffffff' : 'transparent', // White background for NFTs
+                  borderWidth: isNFTTransaction ? 0.5 : 0,
+                  borderColor: 'rgba(0, 0, 0, 0.1)',
+                  overflow: 'hidden', // This ensures the image is clipped to the circle
+                }}
+              >
+                <Image
+                  source={{ uri: imageUri }}
+                  style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: 28, // Apply circular border radius directly to image for reliable clipping
+                  }}
+                  resizeMode="cover"
+                  onError={error => {
+                    console.log(
+                      '[SendConfirmationAnimation] Failed to load image:',
+                      imageUri,
+                      error
+                    );
+                    console.log(
+                      '[SendConfirmationAnimation] Consider checking if the URL is valid and accessible'
+                    );
+                    setImageLoadError(true);
+                  }}
+                  onLoadStart={() => {
+                    //  console.log('[SendConfirmationAnimation] Started loading image:', imageUri);
+                  }}
+                  onLoadEnd={() => {
+                    //  console.log('[SendConfirmationAnimation] Finished loading image:', imageUri);
+                  }}
+                  defaultSource={undefined} // Ensure no default source conflicts
+                />
+              </View>
+            ) : (
+              // Fallback placeholder for NFT transactions without images
+              <View
+                style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: 28, // Always circular for both NFTs and tokens
+                  backgroundColor: isNFTTransaction ? '#6366f1' : '#10b981',
+                  borderWidth: isNFTTransaction ? 0.5 : 0,
+                  borderColor: 'rgba(0, 0, 0, 0.1)',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                <View
+                  style={{
+                    width: 24,
+                    height: 24,
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    borderRadius: 12, // Make the inner icon circular too
+                  }}
+                />
+              </View>
+            )}
+          </Animated.View>
+        ) : null}
+      </View>
+    </AnimationErrorBoundary>
   );
 };

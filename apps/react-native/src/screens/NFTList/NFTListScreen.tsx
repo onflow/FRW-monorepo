@@ -5,7 +5,7 @@ import { getCollectionLogo, getNFTId } from '@onflow/frw-utils';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Animated, Dimensions, FlatList, TouchableOpacity, View } from 'react-native';
+import { Alert, Dimensions, FlatList, TouchableOpacity, View } from 'react-native';
 
 import BottomConfirmBar from '@/components/NFTList/BottomConfirmBar';
 import NFTListCard from '@/components/NFTList/NFTListCard';
@@ -43,41 +43,22 @@ export default function NFTListScreen() {
   const [selectedIds, setSelectedIds] = useState<string[]>(preSelectedNFTIds);
   const [isDrawerExpanded, setIsDrawerExpanded] = useState(false);
 
-  // Update header to match main content background and apply overlay when drawer is expanded
+  // Update header to match main content background
   useEffect(() => {
-    const baseBackgroundColor = isDark ? '#1A1A1A' : '#FFFFFF'; // Match bg-surface-1 and bg-white
+    const baseBackgroundColor = isDark ? '#121212' : '#FFFFFF'; // Match bg-surface-1 and bg-white (RGB 18,18,18)
 
     navigation.setOptions({
       headerStyle: {
         backgroundColor: baseBackgroundColor,
       },
-      headerBackground: () =>
-        isDrawerExpanded ? (
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: baseBackgroundColor,
-            }}
-          >
-            <View
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              }}
-            />
-          </View>
-        ) : (
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: baseBackgroundColor,
-            }}
-          />
-        ),
+      headerBackground: () => (
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: baseBackgroundColor,
+          }}
+        />
+      ),
     });
   }, [isDrawerExpanded, navigation, isDark]);
 
@@ -183,21 +164,6 @@ export default function NFTListScreen() {
 
   return (
     <>
-      {/* Dark Tint Overlay - positioned to cover entire screen including status bar */}
-      {isDrawerExpanded && (
-        <Animated.View
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            zIndex: 1000,
-          }}
-          pointerEvents="none"
-        />
-      )}
       <BackgroundWrapper>
         {/* Main Content */}
         <View className={`flex-1 ${isDark ? 'bg-surface-1' : 'bg-white'}`}>

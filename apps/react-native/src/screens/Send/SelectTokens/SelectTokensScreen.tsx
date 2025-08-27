@@ -60,16 +60,24 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
   const [isAccountLoading, setIsAccountLoading] = React.useState(true);
   const { isDark } = useTheme();
 
-  // Safe currency access with fallback
-  const currency = (() => {
-    try {
-      return NativeFRWBridge.getCurrency();
-    } catch (error) {
-      console.error('Bridge getCurrency error:', error);
-      // Fallback to USD
-      return { name: 'USD', symbol: '$', rate: '1.0' };
-    }
-  })();
+  // Safe currency access with fallback - moved to async useEffect to prevent ANR
+  const [currency, setCurrency] = React.useState({ name: 'USD', symbol: '$', rate: '1.0' });
+
+  // Load currency asynchronously to prevent UI thread blocking
+  React.useEffect(() => {
+    const loadCurrency = () => {
+      try {
+        const curr = NativeFRWBridge.getCurrency();
+        setCurrency(curr);
+      } catch (error) {
+        console.error('Bridge getCurrency error:', error);
+        // Keep fallback USD value
+      }
+    };
+
+    // Use setTimeout to ensure this doesn't block the initial render
+    setTimeout(loadCurrency, 0);
+  }, []);
   // Send store actions
   const {
     setSelectedToken,
@@ -657,7 +665,7 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
                       refreshText={t('buttons.refresh')}
                     />
                   ) : (
-                    tokensWithBalance.safeMapTokens((token, idx) => (
+                    tokensWithBalance.map((token, idx) => (
                       <React.Fragment key={`token-${token.identifier || token.symbol}-${idx}`}>
                         <TokenCard
                           token={token}

@@ -222,7 +222,7 @@ export const AccountSelectorModal = forwardRef<AccountSelectorModalRef, AccountS
         backgroundColor: isDark ? '#1A1A1A' : '#FFFFFF',
         borderTopLeftRadius: 16,
         borderTopRightRadius: 16,
-        height: getModalHeight(),
+        height: getModalHeight() as any,
         paddingTop: 8,
       }),
       [isDark, getModalHeight]

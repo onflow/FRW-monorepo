@@ -155,8 +155,8 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
     ...DarkTheme,
     colors: {
       ...DarkTheme.colors,
-      background: 'rgb(0, 0, 0)', // --background-base dark
-      card: 'rgb(26, 26, 26)', // --background-muted dark
+      background: 'rgb(18, 18, 18)', // --surface-base dark (matches CSS variables)
+      card: 'rgb(18, 18, 18)', // --surface-1 dark (matches CSS variables)
       text: 'rgb(255, 255, 255)', // --forend-primary dark
       border: 'rgb(179, 179, 179)', // --forend-secondary dark
       primary: 'rgb(0, 255, 149)', // --primary
@@ -182,7 +182,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
                 headerLeft: () => <NavigationBackButton />,
                 headerRight: () => <NavigationCloseButton />,
                 headerStyle: {
-                  backgroundColor: isDark ? 'rgb(var(--surface-base))' : 'rgb(var(--surface-1))', // Use CSS variables from theme
+                  backgroundColor: isDark ? '#121212' : '#FFFFFF', // RGB(18,18,18) matches --surface-base in dark mode
                 },
               }}
             >

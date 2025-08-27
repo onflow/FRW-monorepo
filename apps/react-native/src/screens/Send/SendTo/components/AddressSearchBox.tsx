@@ -84,7 +84,7 @@ export const AddressSearchBox: React.FC<AddressSearchBoxProps> = ({
           value={value}
           onChangeText={onChangeText}
           placeholder={defaultPlaceholder}
-          placeholderTextColor={isDark ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)'}
+          placeholderTextColor={isDark ? 'rgba(179, 179, 179, 0.8)' : 'rgba(118, 118, 118, 0.8)'}
           autoCapitalize="none"
           autoCorrect={false}
         />
