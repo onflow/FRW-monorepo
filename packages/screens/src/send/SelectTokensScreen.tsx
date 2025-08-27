@@ -1,10 +1,6 @@
 import { bridge, navigation } from '@onflow/frw-context';
 import { useSendStore, useTokenStore, useWalletStore } from '@onflow/frw-stores';
-import {
-  type CollectionModel,
-  type TokenModel,
-  type WalletAccount,
-} from '@onflow/frw-types';
+import { type CollectionModel, type TokenModel, type WalletAccount } from '@onflow/frw-types';
 import {
   AccountCard,
   AddressText,
@@ -53,6 +49,7 @@ export function SelectTokensScreen(): React.ReactElement {
     setTransactionType,
     setCurrentStep,
     clearTransactionData,
+    setSelectedCollection,
     setFromAccount: setStoreFromAccount,
   } = useSendStore();
 
@@ -258,6 +255,8 @@ export function SelectTokensScreen(): React.ReactElement {
   // Handle NFT press
   const handleNFTPress = (collection: CollectionModel): void => {
     const address = fromAccount?.address || bridge.getSelectedAddress();
+    setSelectedCollection(collection);
+    setTransactionType('multiple-nfts');
     navigation.navigate('NFTList', { collection, address });
   };
 
