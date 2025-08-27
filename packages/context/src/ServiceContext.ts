@@ -51,8 +51,8 @@ export class ServiceContext {
     ServiceContext.instance._bridge = bridge;
 
     // Store storage and navigation instances from bridge
-    ServiceContext.instance._storage = bridge.getStorage();
-    ServiceContext.instance._navigation = bridge.getNavigation();
+    ServiceContext.instance._storage = bridge.storage();
+    ServiceContext.instance._navigation = bridge.navigation();
 
     // Configure API endpoints dynamically from bridge
     configureApiEndpoints(
