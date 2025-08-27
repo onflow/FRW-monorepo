@@ -8,6 +8,7 @@ import android.util.Log;
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
 import com.facebook.react.defaults.DefaultReactActivityDelegate;
+import com.facebook.react.ReactRootView;
 import com.flowfoundation.wallet.bridge.QRCodeScanManager;
 import com.flowfoundation.wallet.bridge.RNBridge;
 import com.flowfoundation.wallet.manager.wallet.WalletManager;
@@ -89,23 +90,113 @@ public class ReactNativeDemoActivity extends ReactActivity {
                 Log.d(TAG, "Launch options created with " + launchOptions.size() + " properties");
                 return launchOptions;
             }
+
+            @Override
+            protected ReactRootView createRootView() {
+                ReactRootView rootView = new ReactRootView(getContext()) {
+                    @Override
+                    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+                        try {
+                            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+                        } catch (Exception e) {
+                            Log.w(TAG, "Error in ReactRootView onMeasure, using default size: " + e.getMessage());
+                            // Set a default size if measurement fails
+                            setMeasuredDimension(
+                                MeasureSpec.getSize(widthMeasureSpec),
+                                MeasureSpec.getSize(heightMeasureSpec)
+                            );
+                        }
+                    }
+
+                    @Override
+                    protected void onAttachedToWindow() {
+                        try {
+                            super.onAttachedToWindow();
+                        } catch (Exception e) {
+                            Log.w(TAG, "Error attaching ReactRootView to window: " + e.getMessage());
+                        }
+                    }
+
+                    @Override
+                    protected void onDetachedFromWindow() {
+                        try {
+                            super.onDetachedFromWindow();
+                        } catch (Exception e) {
+                            Log.w(TAG, "Error detaching ReactRootView from window: " + e.getMessage());
+                        }
+                    }
+                };
+                return rootView;
+            }
         };
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate called");
-        super.onCreate(savedInstanceState);
-
-        // Log the intent extras for debugging
-        Intent intent = getIntent();
-        if (intent != null) {
-            Log.d(TAG, "Intent extras:");
-            Log.d(TAG, "  address: " + intent.getStringExtra("address"));
-            Log.d(TAG, "  network: " + intent.getStringExtra("network"));
-            Log.d(TAG, "  initialRoute: " + intent.getStringExtra("initialRoute"));
-            Log.d(TAG, "  screen: " + intent.getStringExtra("screen"));
-            Log.d(TAG, "  sendToConfig: " + intent.getStringExtra("sendToConfig"));
+        Log.d(TAG, "Build type: " + BuildConfig.BUILD_TYPE);
+        Log.d(TAG, "React Native version info: " + com.facebook.react.BuildConfig.VERSION_NAME);
+        
+        // Store the original exception handler
+        final Thread.UncaughtExceptionHandler originalHandler = Thread.getDefaultUncaughtExceptionHandler();
+        
+        // Set up custom exception handler for this activity
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread thread, Throwable ex) {
+                Log.e(TAG, "Uncaught exception in ReactNativeDemoActivity: " + ex.getMessage());
+                ex.printStackTrace();
+                
+                // Try to gracefully finish the activity
+                try {
+                    if (!isFinishing() && !isDestroyed()) {
+                        finish();
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to finish activity after uncaught exception: " + e.getMessage());
+                }
+                
+                // Call the original handler to maintain crash reporting
+                if (originalHandler != null) {
+                    originalHandler.uncaughtException(thread, ex);
+                }
+            }
+        });
+        
+        try {
+            Log.d(TAG, "Calling super.onCreate()...");
+            super.onCreate(savedInstanceState);
+            Log.d(TAG, "super.onCreate() completed successfully");
+            
+            
+            // Log the intent extras for debugging
+            Intent intent = getIntent();
+            if (intent != null) {
+                Log.d(TAG, "Intent extras:");
+                Log.d(TAG, "  address: " + intent.getStringExtra("address"));
+                Log.d(TAG, "  network: " + intent.getStringExtra("network"));
+                Log.d(TAG, "  initialRoute: " + intent.getStringExtra("initialRoute"));
+                Log.d(TAG, "  screen: " + intent.getStringExtra("screen"));
+                Log.d(TAG, "  sendToConfig: " + intent.getStringExtra("sendToConfig"));
+            }
+            
+            // Check if React context is available
+            Log.d(TAG, "Checking React Native initialization...");
+            if (getReactInstanceManager() != null) {
+                Log.d(TAG, "ReactInstanceManager is available");
+                if (getReactInstanceManager().getCurrentReactContext() != null) {
+                    Log.d(TAG, "React context is available");
+                } else {
+                    Log.w(TAG, "React context is null");
+                }
+            } else {
+                Log.w(TAG, "ReactInstanceManager is null");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error in onCreate: " + e.getMessage());
+            e.printStackTrace();
+            // If React Native fails to initialize, finish the activity
+            finish();
         }
     }
 
@@ -145,24 +236,6 @@ public class ReactNativeDemoActivity extends ReactActivity {
         super.onResume();
     }
 
-    @Override
-    public void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        Log.d(TAG, "onNewIntent called");
-        
-        // Set the new intent so it can be processed by React Native
-        setIntent(intent);
-        
-        // Log the new intent extras for debugging
-        if (intent != null) {
-            Log.d(TAG, "New Intent extras:");
-            Log.d(TAG, "  address: " + intent.getStringExtra("address"));
-            Log.d(TAG, "  network: " + intent.getStringExtra("network"));
-            Log.d(TAG, "  initialRoute: " + intent.getStringExtra("initialRoute"));
-            Log.d(TAG, "  screen: " + intent.getStringExtra("screen"));
-            Log.d(TAG, "  sendToConfig: " + intent.getStringExtra("sendToConfig"));
-        }
-    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -199,11 +272,8 @@ public class ReactNativeDemoActivity extends ReactActivity {
 
         Intent intent = new Intent(context, ReactNativeDemoActivity.class);
 
-        // Add flags to ensure the activity comes to the foreground prominently
-        // Use SINGLE_TOP to avoid creating multiple instances that can cause crashes
+        // Add flags for standard launch mode
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         if (address != null) {
             intent.putExtra("address", address);
@@ -219,7 +289,14 @@ public class ReactNativeDemoActivity extends ReactActivity {
             intent.putExtra("screen", screenString);
             intent.putExtra("initialRoute", routeName);
         }
-        context.startActivity(intent);
+        // Add a small delay to ensure any previous React Native instances are fully cleaned up
+        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+            try {
+                context.startActivity(intent);
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to start activity: " + e.getMessage());
+            }
+        }, 200);
     }
 
     /**
@@ -233,11 +310,8 @@ public class ReactNativeDemoActivity extends ReactActivity {
 
         Intent intent = new Intent(context, ReactNativeDemoActivity.class);
 
-        // Add flags to ensure the activity comes to the foreground prominently
-        // Use SINGLE_TOP to avoid creating multiple instances that can cause crashes
+        // Add flags for standard launch mode
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         if (address != null) {
             intent.putExtra("address", address);
@@ -272,7 +346,14 @@ public class ReactNativeDemoActivity extends ReactActivity {
             Log.d(TAG, "  sendToConfig JSON: " + sendToConfigJson);
         }
 
-        context.startActivity(intent);
+        // Add a small delay to ensure any previous React Native instances are fully cleaned up
+        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+            try {
+                context.startActivity(intent);
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to start activity: " + e.getMessage());
+            }
+        }, 200);
     }
 
     /**

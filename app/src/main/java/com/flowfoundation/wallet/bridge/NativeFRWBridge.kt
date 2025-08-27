@@ -46,24 +46,52 @@ import android.os.Bundle
 
 class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSpec(reactContext) {
 
-    override fun getName() = NAME
+    private val TAG = "NativeFRWBridge"
+
+    init {
+        android.util.Log.d(TAG, "NativeFRWBridge initialized with context: ${reactContext != null}")
+        android.util.Log.d(TAG, "React context hasCurrentReactInstance: ${reactContext.hasCurrentReactInstance()}")
+    }
+
+    override fun getName(): String {
+        android.util.Log.d(TAG, "getName() called, returning: $NAME")
+        return NAME
+    }
 
     override fun getSelectedAddress(): String? {
-        return WalletManager.selectedWalletAddress()
+        try {
+            val address = WalletManager.selectedWalletAddress()
+            android.util.Log.d(TAG, "getSelectedAddress() called, returning: $address")
+            return address
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "getSelectedAddress() error: ${e.message}")
+            return null
+        }
     }
 
     override fun getNetwork(): String {
-        return chainNetWorkString()
+        try {
+            val network = chainNetWorkString()
+            android.util.Log.d(TAG, "getNetwork() called, returning: $network")
+            return network
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "getNetwork() error: ${e.message}")
+            return "mainnet"
+        }
     }
 
     override fun getJWT(promise: Promise) {
+        android.util.Log.d(TAG, "getJWT() called")
         ioScope {
             try {
+                android.util.Log.d(TAG, "getJWT() - getting Firebase JWT...")
                 val jwt = getFirebaseJwt()
+                android.util.Log.d(TAG, "getJWT() - JWT obtained successfully")
                 uiScope {
                     promise.resolve(jwt)
                 }
             } catch (e: Exception) {
+                android.util.Log.e(TAG, "getJWT() - error: ${e.message}")
                 uiScope {
                     promise.reject("JWT_ERROR", "Failed to get Firebase JWT: ${e.message}", e)
                 }
@@ -261,8 +289,8 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         try {
             val currentActivity = reactApplicationContext.currentActivity
             if (currentActivity != null && !currentActivity.isFinishing && !currentActivity.isDestroyed) {
-                // Add a small delay to allow React Native cleanup to complete
-                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                // Use runOnUiThread to ensure activity operations run on main thread
+                currentActivity.runOnUiThread {
                     try {
                         if (!currentActivity.isFinishing && !currentActivity.isDestroyed) {
                             // Use finishAndRemoveTask() to completely remove the activity from recents
@@ -274,14 +302,8 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                         }
                     } catch (e: Exception) {
                         println("Failed to finish activity on UI thread: ${e.message}")
-                        // Fallback to regular finish
-                        try {
-                            currentActivity.finish()
-                        } catch (e2: Exception) {
-                            println("Fallback finish also failed: ${e2.message}")
-                        }
                     }
-                }, 100) // 100ms delay to allow React Native cleanup
+                }
             } else {
                 println("Activity is null, finishing, or destroyed - skipping closeRN")
             }
@@ -345,15 +367,19 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     }
 
     override fun getSelectedAccount(promise: Promise) {
+        android.util.Log.d(TAG, "getSelectedAccount() called")
         ioScope {
             try {
+                android.util.Log.d(TAG, "getSelectedAccount() - getting selected address...")
                 val selectedAddress = WalletManager.selectedWalletAddress()
                 if (selectedAddress.isNullOrEmpty()) {
+                    android.util.Log.w(TAG, "getSelectedAccount() - no selected address found")
                     uiScope {
                         promise.reject("NO_SELECTED_ACCOUNT", "No wallet address selected", null)
                     }
                     return@ioScope
                 }
+                android.util.Log.d(TAG, "getSelectedAccount() - selected address: $selectedAddress")
 
                 // Determine account type based on address using utility methods
                 val mainAddress = WalletManager.wallet()?.walletAddress()
@@ -378,10 +404,13 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 )
 
                 val result = bridgeModelToWritableMap(selectedAccount)
+                android.util.Log.d(TAG, "getSelectedAccount() - account mapped successfully")
                 uiScope {
                     promise.resolve(result)
                 }
             } catch (e: Exception) {
+                android.util.Log.e(TAG, "getSelectedAccount() - error: ${e.message}")
+                e.printStackTrace()
                 uiScope {
                     promise.reject("SELECTED_ACCOUNT_ERROR", "Failed to get selected account: ${e.message}", e)
                 }
