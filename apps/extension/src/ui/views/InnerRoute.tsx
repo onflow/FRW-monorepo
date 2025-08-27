@@ -280,14 +280,6 @@ const InnerRoute = () => {
               }
             />
             <Route
-              path="token/:id/send/:toAddress"
-              element={
-                <PrivateRoute>
-                  <SendTo />
-                </PrivateRoute>
-              }
-            />
-            <Route
               path="token/:id/send-tokens/:toAddress"
               element={
                 <PrivateRoute>
@@ -296,18 +288,10 @@ const InnerRoute = () => {
               }
             />
             <Route
-              path="sendtoscreen"
+              path="token/:id/send/:toAddress"
               element={
                 <PrivateRoute>
-                  <SendToScreenView />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="token/:id/sendtoscreen"
-              element={
-                <PrivateRoute>
-                  <SendToScreenView />
+                  <SendTo />
                 </PrivateRoute>
               }
             />
