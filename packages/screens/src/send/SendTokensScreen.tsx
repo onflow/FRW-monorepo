@@ -260,6 +260,30 @@ export const SendTokensScreen = (props) => {
     [amount, selectedToken?.priceInUSD, isTokenMode, transactionFee]
   );
 
+  // Show loading state
+  if (loading) {
+    return (
+      <BackgroundWrapper backgroundColor={backgroundColor}>
+        {isExtension && <ExtensionHeader title="Send to" help={true} />}
+        <YStack flex={1} items="center" justify="center" p="$4">
+          <Text>Loading wallet data...</Text>
+        </YStack>
+      </BackgroundWrapper>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <BackgroundWrapper backgroundColor={backgroundColor}>
+        {isExtension && <ExtensionHeader title="Send to" help={true} />}
+        <YStack flex={1} items="center" justify="center" p="$4">
+          <Text color="$red500">{error}</Text>
+        </YStack>
+      </BackgroundWrapper>
+    );
+  }
+
   return (
     <BackgroundWrapper backgroundColor={backgroundColor}>
       {isExtension && (
