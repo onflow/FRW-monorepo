@@ -11,7 +11,7 @@ import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
 import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.page.browser.openBrowser
-import com.flowfoundation.wallet.ReactNativeDemoActivity
+import com.flowfoundation.wallet.reactnative.ReactNativeActivity
 import com.flowfoundation.wallet.bridge.RNBridge
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.wallet.WalletManager
@@ -228,7 +228,7 @@ private fun dispatchSend(uri: Uri, recipient: String, network: String?, value: B
             }
         } else {
             // Launch React Native send workflow instead of native SendAmountActivity
-            ReactNativeDemoActivity.launch(it, RNBridge.ScreenType.SEND_ASSET)
+            ReactNativeActivity.launch(it, RNBridge.ScreenType.SEND_ASSET)
         }
     }
 }

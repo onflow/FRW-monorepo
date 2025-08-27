@@ -1,4 +1,4 @@
-package com.flowfoundation.wallet
+package com.flowfoundation.wallet.reactnative
 
 import android.app.Application
 import com.facebook.react.PackageList
@@ -15,6 +15,8 @@ import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.bridge.NativeFRWBridgePackage
 import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
+import com.microsoft.codepush.react.CodePush
+import com.flowfoundation.wallet.BuildConfig
 
 class FlowWalletApplication : Application(), ReactApplication {
 
@@ -31,9 +33,9 @@ class FlowWalletApplication : Application(), ReactApplication {
 
             override fun getUseDeveloperSupport(): Boolean = BuildConfig.DEBUG
 
-//            override fun getJSBundleFile(): String {
-//              return CodePush.getJSBundleFile()
-//            }
+            override fun getJSBundleFile(): String {
+              return CodePush.getJSBundleFile()
+            }
 
             override val isNewArchEnabled: Boolean = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED
             override val isHermesEnabled: Boolean = BuildConfig.IS_HERMES_ENABLED

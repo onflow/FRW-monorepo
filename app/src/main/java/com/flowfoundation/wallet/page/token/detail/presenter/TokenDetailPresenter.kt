@@ -22,7 +22,7 @@ import com.flowfoundation.wallet.page.evm.EnableEVMActivity
 import com.flowfoundation.wallet.page.profile.subpage.currency.model.selectedCurrency
 import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollectionManager
 import com.flowfoundation.wallet.page.receive.ReceiveActivity
-import com.flowfoundation.wallet.ReactNativeDemoActivity
+import com.flowfoundation.wallet.reactnative.ReactNativeActivity
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.bridge.RNBridge
@@ -64,7 +64,7 @@ class TokenDetailPresenter(
             btnSend.setOnClickListener {
                 // Launch React Native token send workflow with token data
                 val tokenModel = token.toRNBridgeTokenModel()
-                ReactNativeDemoActivity.launchTokenSend(activity, tokenModel)
+                ReactNativeActivity.launchTokenSend(activity, tokenModel)
             }
             ivVerified.setVisible(token.isVerified)
             ivVerifiedSecondary.setVisible(token.isVerified)
