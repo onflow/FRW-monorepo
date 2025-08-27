@@ -33,15 +33,8 @@ import type { TabType } from '../types';
 export function SelectTokensScreen(): React.ReactElement {
   // navigation is imported directly from ServiceContext
   // Use bridge translation if available, otherwise fallback to react-i18next
-  const reactTranslation = useTranslation();
-  const t = (key: string) => {
-    // Try to get translation from bridge first (for extension)
-    if (bridge && typeof bridge === 'object' && 'getTranslation' in bridge) {
-      return (bridge as any).getTranslation(key);
-    }
-    // Fallback to react-i18next (for React Native)
-    return reactTranslation.t(key);
-  };
+  const { t } = useTranslation();
+
   // State management
   const [tab, setTab] = React.useState<TabType>('Tokens');
   const [tokens, setTokens] = React.useState<TokenModel[]>([]);
