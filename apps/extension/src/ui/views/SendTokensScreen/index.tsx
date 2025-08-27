@@ -26,8 +26,6 @@ const SendTokensScreenView = () => {
         display: 'flex',
         flexDirection: 'column',
         width: '100%',
-        padding: '15px',
-        background: 'black',
       }}
     >
       <div style={{ flex: 1, overflow: 'auto' }}>

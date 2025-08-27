@@ -1,6 +1,5 @@
 import { Edit } from '@onflow/frw-icons';
 import { type WalletAccount } from '@onflow/frw-types';
-import { SendArrowDivider } from '@onflow/frw-ui';
 import React from 'react';
 import { YStack, XStack } from 'tamagui';
 
@@ -16,7 +15,7 @@ export interface ToAccountSectionProps {
   showEditButton?: boolean;
   title?: string;
   backgroundColor?: string;
-  borderRadius?: number;
+  borderRadius?: string | number;
   contentPadding?: number;
   showAvatar?: boolean;
   avatarSize?: number;
@@ -47,25 +46,8 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
       style={{ position: 'relative' }}
     >
       {/* Section Header */}
-      <div
-        style={{
-          height: '0',
-          paddingTop: '$0',
-          margin: '$0',
-          position: 'relative',
-          top: '-48px',
-        }}
-      >
-        <SendArrowDivider variant="arrow" />
-      </div>
 
-      <Text
-        fontSize={12}
-        fontWeight="400"
-        color="$textSecondary"
-        lineHeight="1.33"
-        alignSelf="stretch"
-      >
+      <Text fontSize={12} fontWeight="400" color="$textSecondary" lineHeight={16}>
         {title}
       </Text>
 
