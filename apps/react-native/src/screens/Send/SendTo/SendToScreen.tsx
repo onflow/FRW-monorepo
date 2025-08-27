@@ -69,7 +69,7 @@ const SendToScreen = () => {
         <View className={`flex-1 ${isDark ? 'bg-surface-1' : 'bg-white'}`}>
           <View className="flex-1 px-5 pt-4">
             {/* Search box area */}
-            <View className="mb-6">
+            <View className="mb-8">
               <AddressSearchBox
                 value={searchQuery}
                 onChangeText={setSearchQuery}
@@ -78,7 +78,7 @@ const SendToScreen = () => {
             </View>
 
             {/* Tab area */}
-            <View className="mb-4">
+            <View className="mb-5">
               <SegmentedControl
                 segments={tabTitles}
                 value={getTitleByType(activeTab)}

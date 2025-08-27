@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { useTheme } from '@/contexts/ThemeContext';
@@ -14,7 +15,7 @@ export const ConfirmationHeader: React.FC<ConfirmationHeaderProps> = ({
   onClose: _onClose,
 }) => {
   const { isDark } = useTheme();
-
+  const { t } = useTranslation();
   return (
     <View className="h-12 mb-4 items-center justify-center">
       <Text
@@ -25,7 +26,7 @@ export const ConfirmationHeader: React.FC<ConfirmationHeaderProps> = ({
           includeFontPadding: false,
         }}
       >
-        Summary
+        {t('send.confirmation')}
       </Text>
     </View>
   );

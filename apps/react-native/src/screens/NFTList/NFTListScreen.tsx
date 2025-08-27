@@ -2,12 +2,12 @@ import { NFTService } from '@onflow/frw-services';
 import { sendSelectors, useSendStore } from '@onflow/frw-stores';
 import { type CollectionModel, type NFTModel, addressType } from '@onflow/frw-types';
 import { getCollectionLogo, getNFTId } from '@onflow/frw-utils';
-import { useRoute, useNavigation } from '@react-navigation/native';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useRoute } from '@react-navigation/native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Dimensions, FlatList, TouchableOpacity, View } from 'react-native';
 
-import BottomConfirmBar from '@/components/NFTList/BottomConfirmBar';
+import BottomConfirmBar, { type BottomConfirmBarRef } from '@/components/NFTList/BottomConfirmBar';
 import NFTListCard from '@/components/NFTList/NFTListCard';
 import { IconView } from '@/components/ui/media/IconView';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -17,7 +17,6 @@ import { BackgroundWrapper, Skeleton, Text } from 'ui';
 export default function NFTListScreen() {
   const { t } = useTranslation();
   const route = useRoute();
-  const navigation = useNavigation();
   const { isDark } = useTheme();
   // Get collection information from route parameters first
   const routeParams = route.params as
@@ -42,25 +41,10 @@ export default function NFTListScreen() {
 
   const [selectedIds, setSelectedIds] = useState<string[]>(preSelectedNFTIds);
   const [isDrawerExpanded, setIsDrawerExpanded] = useState(false);
+  const bottomConfirmBarRef = useRef<BottomConfirmBarRef>(null);
 
-  // Update header to match main content background
-  useEffect(() => {
-    const baseBackgroundColor = isDark ? '#121212' : '#FFFFFF'; // Match bg-surface-1 and bg-white (RGB 18,18,18)
-
-    navigation.setOptions({
-      headerStyle: {
-        backgroundColor: baseBackgroundColor,
-      },
-      headerBackground: () => (
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: baseBackgroundColor,
-          }}
-        />
-      ),
-    });
-  }, [isDrawerExpanded, navigation, isDark]);
+  // Keep default header configuration - no background changes needed
+  // The header will use the default navigation theme colors
 
   const selectNFT = useCallback(
     (id: string) => {
@@ -163,288 +147,304 @@ export default function NFTListScreen() {
   const itemWidth = (screenWidth - containerPadding - gap) / 2;
 
   return (
-    <>
-      <BackgroundWrapper>
-        {/* Main Content */}
-        <View className={`flex-1 ${isDark ? 'bg-surface-1' : 'bg-white'}`}>
-          {/* Content Container with proper padding */}
-          <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 6 }}>
-            {/* Collection Info */}
-            <View
-              style={{
-                marginBottom: 20,
-                paddingVertical: 8,
-                flexDirection: 'row',
-                alignItems: 'flex-start', // Align icon with header text
-                gap: 16,
-                width: '100%',
-                minHeight: 80,
-              }}
-            >
-              {/* Larger Collection Image */}
-              <IconView
-                src={collectionImage}
-                size={64}
-                borderRadius={32}
-                backgroundColor={isDark ? '#3A3A3E' : '#E9ECEF'}
-                resizeMode="cover"
-              />
+    <BackgroundWrapper>
+      {/* Dark Tint Overlay - covers main content but not the BottomConfirmBar */}
+      {isDrawerExpanded && (
+        <Animated.View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 10, // Lower z-index so it doesn't cover BottomConfirmBar
+          }}
+          pointerEvents="auto"
+          onTouchEnd={() => {
+            setIsDrawerExpanded(false);
+            bottomConfirmBarRef.current?.collapse();
+          }}
+        />
+      )}
+      {/* Main Content */}
+      <View className={`flex-1 ${isDark ? 'bg-surface-1' : 'bg-white'}`}>
+        {/* Content Container with proper padding */}
+        <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 6 }}>
+          {/* Collection Info */}
+          <View
+            style={{
+              marginBottom: 20,
+              paddingVertical: 8,
+              flexDirection: 'row',
+              alignItems: 'flex-start', // Align icon with header text
+              gap: 16,
+              width: '100%',
+              minHeight: 80,
+            }}
+          >
+            {/* Larger Collection Image */}
+            <IconView
+              src={collectionImage}
+              size={64}
+              borderRadius={32}
+              backgroundColor={isDark ? '#3A3A3E' : '#E9ECEF'}
+              resizeMode="cover"
+            />
 
-              {/* Collection Info */}
-              <View style={{ flex: 1, gap: 6 }}>
+            {/* Collection Info */}
+            <View style={{ flex: 1, gap: 6 }}>
+              <Text
+                className="text-fg-1"
+                disableAndroidFix={true}
+                style={{
+                  fontFamily: 'Inter',
+                  fontWeight: '600', // semi-bold
+                  fontSize: 16,
+                  lineHeight: 19,
+                  includeFontPadding: false,
+                }}
+                numberOfLines={2}
+                ellipsizeMode="tail"
+              >
+                {collectionName}
+              </Text>
+              {!nftLoading && (
                 <Text
-                  className="text-fg-1"
+                  className="text-fg-2"
                   disableAndroidFix={true}
                   style={{
                     fontFamily: 'Inter',
-                    fontWeight: '600', // semi-bold
-                    fontSize: 16,
-                    lineHeight: 19,
+                    fontWeight: '400', // regular
+                    fontSize: 12,
+                    lineHeight: 15,
+                    includeFontPadding: false,
+                  }}
+                >
+                  {nfts.length} {nfts.length === 1 ? t('common.item') : t('common.items')}
+                </Text>
+              )}
+              {collection?.description && (
+                <Text
+                  className="text-fg-3"
+                  disableAndroidFix={true}
+                  style={{
+                    fontFamily: 'Inter',
+                    fontWeight: '400', // regular
+                    fontSize: 14,
+                    lineHeight: 17,
                     includeFontPadding: false,
                   }}
                   numberOfLines={2}
                   ellipsizeMode="tail"
                 >
-                  {collectionName}
+                  {collection.description}
                 </Text>
-                {!nftLoading && (
-                  <Text
-                    className="text-fg-2"
-                    disableAndroidFix={true}
-                    style={{
-                      fontFamily: 'Inter',
-                      fontWeight: '400', // regular
-                      fontSize: 12,
-                      lineHeight: 15,
-                      includeFontPadding: false,
-                    }}
-                  >
-                    {nfts.length} {nfts.length === 1 ? t('common.item') : t('common.items')}
-                  </Text>
-                )}
-                {collection?.description && (
-                  <Text
-                    className="text-fg-3"
-                    disableAndroidFix={true}
-                    style={{
-                      fontFamily: 'Inter',
-                      fontWeight: '400', // regular
-                      fontSize: 14,
-                      lineHeight: 17,
-                      includeFontPadding: false,
-                    }}
-                    numberOfLines={2}
-                    ellipsizeMode="tail"
-                  >
-                    {collection.description}
-                  </Text>
-                )}
-              </View>
+              )}
             </View>
+          </View>
 
-            {/* Search Bar */}
-            <View style={{ marginBottom: 16 }}>
-              <AddressSearchBox
-                value={search}
-                onChangeText={setSearch}
-                placeholder={t('placeholders.searchNFTs')}
-                showScanButton={false}
-              />
-            </View>
+          {/* Search Bar */}
+          <View style={{ marginBottom: 16 }}>
+            <AddressSearchBox
+              value={search}
+              onChangeText={setSearch}
+              placeholder={t('placeholders.searchNFTs')}
+              showScanButton={false}
+            />
+          </View>
 
-            {/* NFT Grid */}
-            {nftLoading ? (
-              <View>
-                {/* Skeleton placeholder grid */}
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    flexWrap: 'wrap',
-                    justifyContent: 'space-between',
-                    paddingBottom: 80,
-                  }}
-                >
-                  {[1, 2, 3, 4, 5, 6].map(index => (
-                    <View
-                      key={index}
-                      style={{
-                        width: '48%',
-                        marginBottom: 16,
-                        backgroundColor: isDark
-                          ? 'rgba(255, 255, 255, 0.05)'
-                          : 'rgba(0, 0, 0, 0.05)',
-                        borderRadius: 12,
-                        padding: 12,
-                      }}
-                    >
-                      {/* Skeleton NFT image */}
-                      <Skeleton
-                        isDark={isDark}
-                        style={{
-                          width: '100%',
-                          aspectRatio: 1,
-                          borderRadius: 8,
-                          marginBottom: 12,
-                        }}
-                      />
-                      {/* Skeleton title */}
-                      <Skeleton
-                        isDark={isDark}
-                        style={{
-                          height: 16,
-                          borderRadius: 4,
-                          marginBottom: 8,
-                        }}
-                      />
-                      {/* Skeleton author */}
-                      <Skeleton
-                        isDark={isDark}
-                        style={{
-                          height: 12,
-                          width: '60%',
-                          borderRadius: 4,
-                        }}
-                      />
-                    </View>
-                  ))}
-                </View>
-              </View>
-            ) : nftError ? (
-              <View className="flex-1 justify-center items-center py-8">
-                <Text className="text-error text-center mb-4">{nftError}</Text>
-                <TouchableOpacity onPress={fetchNFTs} className="bg-primary px-4 py-2 rounded-lg">
-                  <Text className="text-white">{t('buttons.retry')}</Text>
-                </TouchableOpacity>
-              </View>
-            ) : !nftLoading && filteredNFTs.length === 0 ? (
+          {/* NFT Grid */}
+          {nftLoading ? (
+            <View>
+              {/* Skeleton placeholder grid */}
               <View
-                className="flex-1 justify-center items-center"
-                style={{ paddingVertical: 20, marginTop: -260 }}
+                style={{
+                  flexDirection: 'row',
+                  flexWrap: 'wrap',
+                  justifyContent: 'space-between',
+                  paddingBottom: 80,
+                }}
               >
-                {/* Title */}
-                <Text
-                  className="text-fg-1 text-center mb-2"
-                  disableAndroidFix={true}
-                  style={{
-                    fontFamily: 'Inter',
-                    fontWeight: '600',
-                    fontSize: 18,
-                    lineHeight: 24,
-                    includeFontPadding: false,
-                  }}
-                >
-                  {search ? t('messages.noSearchResults') : t('messages.noNFTsFound')}
-                </Text>
-
-                {/* Description */}
-                <Text
-                  className="text-fg-2 text-center mb-6"
-                  disableAndroidFix={true}
-                  style={{
-                    fontFamily: 'Inter',
-                    fontWeight: '400',
-                    fontSize: 15,
-                    lineHeight: 20,
-                    includeFontPadding: false,
-                    maxWidth: 280,
-                  }}
-                >
-                  {search
-                    ? t('messages.noNFTsMatchSearch', { search })
-                    : t('messages.collectionEmpty')}
-                </Text>
-
-                {/* Action Button */}
-                {search ? (
-                  <TouchableOpacity
-                    onPress={() => setSearch('')}
+                {[1, 2, 3, 4, 5, 6].map(index => (
+                  <View
+                    key={index}
                     style={{
-                      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)',
-                      paddingHorizontal: 16,
-                      paddingVertical: 10,
-                      borderRadius: 10,
-                      borderWidth: 1,
-                      borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-                    }}
-                  >
-                    <Text
-                      className="text-fg-1 text-center"
-                      disableAndroidFix={true}
-                      style={{
-                        fontFamily: 'Inter',
-                        fontWeight: '500',
-                        fontSize: 15,
-                        includeFontPadding: false,
-                      }}
-                    >
-                      {t('buttons.clearSearch')}
-                    </Text>
-                  </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity
-                    onPress={fetchNFTs}
-                    style={{
-                      backgroundColor: '#FFFFFF', // White background
-                      paddingHorizontal: 24,
-                      paddingVertical: 12,
+                      width: '48%',
+                      marginBottom: 16,
+                      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
                       borderRadius: 12,
-                      alignItems: 'center', // Center text horizontally
-                      justifyContent: 'center', // Center text vertically
+                      padding: 12,
                     }}
                   >
-                    <Text
-                      disableAndroidFix={true}
+                    {/* Skeleton NFT image */}
+                    <Skeleton
+                      isDark={isDark}
                       style={{
-                        fontFamily: 'Inter',
-                        fontWeight: '600', // Semi-bold
-                        fontSize: 15,
-                        color: '#000000', // Black text
-                        includeFontPadding: false,
-                        textAlign: 'center',
+                        width: '100%',
+                        aspectRatio: 1,
+                        borderRadius: 8,
+                        marginBottom: 12,
                       }}
-                    >
-                      {t('buttons.refresh')}
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            ) : (
-              <FlatList
-                data={filteredNFTs}
-                keyExtractor={item => getNFTId(item)}
-                numColumns={2}
-                columnWrapperStyle={{ gap: 16 }}
-                ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
-                renderItem={({ item }) => (
-                  <View style={{ width: itemWidth }}>
-                    <NFTListCard
-                      nft={item}
-                      selected={isSelected(getNFTId(item))}
-                      onSelect={() =>
-                        isSelected(getNFTId(item))
-                          ? unselectNFT(getNFTId(item))
-                          : selectNFT(getNFTId(item))
-                      }
-                      fromAccount={fromAccountForCard || undefined}
-                      selectedNFTs={nfts.filter((nft: NFTModel) => isSelected(getNFTId(nft)))}
-                      onSelectionChange={handleSelectionChange}
+                    />
+                    {/* Skeleton title */}
+                    <Skeleton
+                      isDark={isDark}
+                      style={{
+                        height: 16,
+                        borderRadius: 4,
+                        marginBottom: 8,
+                      }}
+                    />
+                    {/* Skeleton author */}
+                    <Skeleton
+                      isDark={isDark}
+                      style={{
+                        height: 12,
+                        width: '60%',
+                        borderRadius: 4,
+                      }}
                     />
                   </View>
-                )}
-                contentContainerStyle={{ paddingBottom: 80 }} // Space for bottom bar
-                showsVerticalScrollIndicator={false}
-              />
-            )}
-          </View>
+                ))}
+              </View>
+            </View>
+          ) : nftError ? (
+            <View className="flex-1 justify-center items-center py-8">
+              <Text className="text-error text-center mb-4">{nftError}</Text>
+              <TouchableOpacity onPress={fetchNFTs} className="bg-primary px-4 py-2 rounded-lg">
+                <Text className="text-white">{t('buttons.retry')}</Text>
+              </TouchableOpacity>
+            </View>
+          ) : !nftLoading && filteredNFTs.length === 0 ? (
+            <View
+              className="flex-1 justify-center items-center"
+              style={{ paddingVertical: 20, marginTop: -260 }}
+            >
+              {/* Title */}
+              <Text
+                className="text-fg-1 text-center mb-2"
+                disableAndroidFix={true}
+                style={{
+                  fontFamily: 'Inter',
+                  fontWeight: '600',
+                  fontSize: 18,
+                  lineHeight: 24,
+                  includeFontPadding: false,
+                }}
+              >
+                {search ? t('messages.noSearchResults') : t('messages.noNFTsFound')}
+              </Text>
+
+              {/* Description */}
+              <Text
+                className="text-fg-2 text-center mb-6"
+                disableAndroidFix={true}
+                style={{
+                  fontFamily: 'Inter',
+                  fontWeight: '400',
+                  fontSize: 15,
+                  lineHeight: 20,
+                  includeFontPadding: false,
+                  maxWidth: 280,
+                }}
+              >
+                {search
+                  ? t('messages.noNFTsMatchSearch', { search })
+                  : t('messages.collectionEmpty')}
+              </Text>
+
+              {/* Action Button */}
+              {search ? (
+                <TouchableOpacity
+                  onPress={() => setSearch('')}
+                  style={{
+                    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)',
+                    paddingHorizontal: 16,
+                    paddingVertical: 10,
+                    borderRadius: 10,
+                    borderWidth: 1,
+                    borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                  }}
+                >
+                  <Text
+                    className="text-fg-1 text-center"
+                    disableAndroidFix={true}
+                    style={{
+                      fontFamily: 'Inter',
+                      fontWeight: '500',
+                      fontSize: 15,
+                      includeFontPadding: false,
+                    }}
+                  >
+                    {t('buttons.clearSearch')}
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  onPress={fetchNFTs}
+                  style={{
+                    backgroundColor: '#FFFFFF', // White background
+                    paddingHorizontal: 24,
+                    paddingVertical: 12,
+                    borderRadius: 12,
+                    alignItems: 'center', // Center text horizontally
+                    justifyContent: 'center', // Center text vertically
+                  }}
+                >
+                  <Text
+                    disableAndroidFix={true}
+                    style={{
+                      fontFamily: 'Inter',
+                      fontWeight: '600', // Semi-bold
+                      fontSize: 15,
+                      color: '#000000', // Black text
+                      includeFontPadding: false,
+                      textAlign: 'center',
+                    }}
+                  >
+                    {t('buttons.refresh')}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          ) : (
+            <FlatList
+              data={filteredNFTs}
+              keyExtractor={item => getNFTId(item)}
+              numColumns={2}
+              columnWrapperStyle={{ gap: 16 }}
+              ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
+              renderItem={({ item }) => (
+                <View style={{ width: itemWidth }}>
+                  <NFTListCard
+                    nft={item}
+                    selected={isSelected(getNFTId(item))}
+                    onSelect={() =>
+                      isSelected(getNFTId(item))
+                        ? unselectNFT(getNFTId(item))
+                        : selectNFT(getNFTId(item))
+                    }
+                    fromAccount={fromAccountForCard || undefined}
+                    selectedNFTs={nfts.filter((nft: NFTModel) => isSelected(getNFTId(nft)))}
+                    onSelectionChange={handleSelectionChange}
+                  />
+                </View>
+              )}
+              contentContainerStyle={{ paddingBottom: 80 }} // Space for bottom bar
+              showsVerticalScrollIndicator={false}
+            />
+          )}
         </View>
-        {/* Bottom Confirm Bar */}
-        <BottomConfirmBar
-          selectedNFTs={selectedNFTsList}
-          onRemoveNFT={handleRemoveNFT}
-          onExpandedChange={setIsDrawerExpanded}
-          isEditing={isEditing}
-        />
-      </BackgroundWrapper>
-    </>
+      </View>
+      {/* Bottom Confirm Bar */}
+      <BottomConfirmBar
+        ref={bottomConfirmBarRef}
+        selectedNFTs={selectedNFTsList}
+        onRemoveNFT={handleRemoveNFT}
+        onExpandedChange={setIsDrawerExpanded}
+        isEditing={isEditing}
+      />
+    </BackgroundWrapper>
   );
 }

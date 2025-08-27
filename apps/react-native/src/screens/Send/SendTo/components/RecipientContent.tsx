@@ -289,7 +289,7 @@ export const RecipientContent: React.FC<RecipientContentProps> = React.memo(
     return (
       <View className="flex-1">
         {/* Divider - only show when there's content */}
-        <View className="mb-2 mx-5" style={dividerStyle} />
+        <View className=" mx-5" style={dividerStyle} />
         <FlatList
           ref={flatListRef}
           data={listData}

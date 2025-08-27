@@ -2,12 +2,11 @@ import { useWalletStore } from '@onflow/frw-stores';
 import { getNFTCover } from '@onflow/frw-utils';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
-import React, { useState, useEffect } from 'react';
-import { View, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, ScrollView, TouchableOpacity, Animated } from 'react-native';
 
-import BottomConfirmBar from '@/components/NFTList/BottomConfirmBar';
+import BottomConfirmBar, { type BottomConfirmBarRef } from '@/components/NFTList/BottomConfirmBar';
 import { IconView } from '@/components/ui/media/IconView';
-import { useTheme } from '@/contexts/ThemeContext';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { CheckCircle as CheckCircleIcon, CheckCircleFill as CheckCircleFillIcon } from 'icons';
 import { BackgroundWrapper, Text, WalletAvatar } from 'ui';
@@ -27,30 +26,17 @@ const PropertyTag: React.FC<PropertyTagProps> = ({ label, value }) => (
 export const NFTDetailScreen: React.FC = () => {
   const route = useRoute<RouteProp<RootStackParamList, 'NFTDetail'>>();
   const navigation = useNavigation();
-  const { isDark } = useTheme();
   const { activeAccount } = useWalletStore();
 
   const { nft, selectedNFTs, onSelectionChange } = route.params || {};
   const [isDrawerExpanded, setIsDrawerExpanded] = useState(false);
+  const bottomConfirmBarRef = useRef<BottomConfirmBarRef>(null);
 
-  // Update header to match main content background
+  // Ensure header uses the default background color from navigation theme
   useEffect(() => {
-    const baseBackgroundColor = isDark ? '#121212' : '#FFFFFF'; // Match bg-surface-1 and bg-white (RGB 18,18,18)
-
-    navigation.setOptions({
-      headerStyle: {
-        backgroundColor: baseBackgroundColor,
-      },
-      headerBackground: () => (
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: baseBackgroundColor,
-          }}
-        />
-      ),
-    });
-  }, [isDrawerExpanded, navigation, isDark]);
+    // Reset to default by not setting any custom headerStyle
+    navigation.setOptions({});
+  }, [navigation]);
 
   // Determine if selection is enabled: selection is allowed when selectedNFTs is not undefined/null
   const isSelectable = selectedNFTs !== undefined && selectedNFTs !== null;
@@ -133,97 +119,115 @@ export const NFTDetailScreen: React.FC = () => {
   const properties = getProperties();
 
   return (
-    <>
-      <BackgroundWrapper>
-        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-          <View className="px-4 pt-6 pb-6">
-            {/* NFT Image */}
-            <View className="relative mb-6">
-              <View className="w-full aspect-square bg-sf-1 rounded-2xl mb-6 overflow-hidden">
-                <IconView
-                  src={getNFTCover(nft)}
-                  borderRadius={16}
-                  resizeMode="cover"
-                  fillContainer={true}
-                />
-              </View>
-
-              {/* Selection Button - only shown when selection is enabled */}
-              {isSelectable && (
-                <TouchableOpacity
-                  onPress={toggleSelection}
-                  className="absolute top-3 right-3"
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                >
-                  {isSelected ? (
-                    <CheckCircleFillIcon width={24} height={24} />
-                  ) : (
-                    <CheckCircleIcon width={24} height={24} />
-                  )}
-                </TouchableOpacity>
-              )}
+    <BackgroundWrapper>
+      {/* Dark Tint Overlay - only covers the main content area, not the BottomConfirmBar */}
+      {isDrawerExpanded && (
+        <Animated.View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 10,
+          }}
+          pointerEvents="auto"
+          onTouchEnd={() => {
+            setIsDrawerExpanded(false);
+            bottomConfirmBarRef.current?.collapse();
+          }}
+        />
+      )}
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        <View className="px-4 pt-6 pb-6">
+          {/* NFT Image */}
+          <View className="relative mb-6">
+            <View className="w-full aspect-square bg-sf-1 rounded-2xl mb-6 overflow-hidden">
+              <IconView
+                src={getNFTCover(nft)}
+                borderRadius={16}
+                resizeMode="cover"
+                fillContainer={true}
+              />
             </View>
 
-            {/* NFT Info */}
-            <View className="mb-8">
-              <View className="mb-5">
-                <View className="flex-row items-center justify-between mb-2">
-                  <Text className="text-fg-1 text-2xl font-semibold">
-                    {nft.name || 'Untitled NFT'}
-                  </Text>
-                  {activeAccount && (
-                    <WalletAvatar
-                      value={activeAccount.avatar || activeAccount.emojiInfo?.emoji || '👤'}
-                      fallback={activeAccount.emojiInfo?.emoji || '👤'}
-                      size={24}
-                      backgroundColor={activeAccount.emojiInfo?.color}
-                    />
-                  )}
-                </View>
-                <Text className="text-fg-2 text-sm">{nft.collectionName || ' '}</Text>
-              </View>
-
-              {/* About Section */}
-              {nft.description && (
-                <View className="mb-5">
-                  <Text className="text-fg-1 text-sm font-medium mb-2">About</Text>
-                  <Text className="text-fg-2 text-sm font-light leading-5">{nft.description}</Text>
-                </View>
-              )}
-
-              {/* Properties Section */}
-              {properties.length > 0 && (
-                <View>
-                  <Text className="text-fg-1 text-sm font-medium mb-2">Properties</Text>
-                  <View className="gap-y-2">
-                    {properties.map((row, rowIndex) => (
-                      <View key={rowIndex} className="flex-row gap-x-2 flex-wrap">
-                        {row.map((property, propIndex) => (
-                          <PropertyTag
-                            key={`${rowIndex}-${propIndex}`}
-                            label={property.label}
-                            value={property.value}
-                          />
-                        ))}
-                      </View>
-                    ))}
-                  </View>
-                </View>
-              )}
-            </View>
+            {/* Selection Button - only shown when selection is enabled */}
+            {isSelectable && (
+              <TouchableOpacity
+                onPress={toggleSelection}
+                className="absolute top-3 right-3"
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                {isSelected ? (
+                  <CheckCircleFillIcon width={24} height={24} />
+                ) : (
+                  <CheckCircleIcon width={24} height={24} />
+                )}
+              </TouchableOpacity>
+            )}
           </View>
-        </ScrollView>
 
-        {/* Bottom Confirm Bar - only shown when selection is enabled and NFTs are selected */}
-        {isSelectable && currentSelectedNFTs.length > 0 && (
-          <BottomConfirmBar
-            selectedNFTs={currentSelectedNFTs}
-            onRemoveNFT={handleRemoveNFT}
-            onExpandedChange={setIsDrawerExpanded}
-          />
-        )}
-      </BackgroundWrapper>
-    </>
+          {/* NFT Info */}
+          <View className="mb-8">
+            <View className="mb-5">
+              <View className="flex-row items-center justify-between mb-2">
+                <Text className="text-fg-1 text-2xl font-semibold">
+                  {nft.name || 'Untitled NFT'}
+                </Text>
+                {activeAccount && (
+                  <WalletAvatar
+                    value={activeAccount.avatar || activeAccount.emojiInfo?.emoji || '👤'}
+                    fallback={activeAccount.emojiInfo?.emoji || '👤'}
+                    size={24}
+                    backgroundColor={activeAccount.emojiInfo?.color}
+                  />
+                )}
+              </View>
+              <Text className="text-fg-2 text-sm">{nft.collectionName || ' '}</Text>
+            </View>
+
+            {/* About Section */}
+            {nft.description && (
+              <View className="mb-5">
+                <Text className="text-fg-1 text-sm font-medium mb-2">About</Text>
+                <Text className="text-fg-2 text-sm font-light leading-5">{nft.description}</Text>
+              </View>
+            )}
+
+            {/* Properties Section */}
+            {properties.length > 0 && (
+              <View>
+                <Text className="text-fg-1 text-sm font-medium mb-2">Properties</Text>
+                <View className="gap-y-2">
+                  {properties.map((row, rowIndex) => (
+                    <View key={rowIndex} className="flex-row gap-x-2 flex-wrap">
+                      {row.map((property, propIndex) => (
+                        <PropertyTag
+                          key={`${rowIndex}-${propIndex}`}
+                          label={property.label}
+                          value={property.value}
+                        />
+                      ))}
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+          </View>
+        </View>
+      </ScrollView>
+
+      {/* Bottom Confirm Bar - only shown when selection is enabled and NFTs are selected */}
+      {isSelectable && currentSelectedNFTs.length > 0 && (
+        <BottomConfirmBar
+          ref={bottomConfirmBarRef}
+          selectedNFTs={currentSelectedNFTs}
+          onRemoveNFT={handleRemoveNFT}
+          onExpandedChange={setIsDrawerExpanded}
+        />
+      )}
+    </BackgroundWrapper>
   );
 };
 
