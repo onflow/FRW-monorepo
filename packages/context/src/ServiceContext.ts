@@ -4,7 +4,7 @@ import { createLogger, setGlobalLogger, type Logger } from '@onflow/frw-utils';
 
 import type { Navigation } from './interfaces/Navigation';
 import type { PlatformSpec } from './interfaces/PlatformSpec';
-import type { Storage } from './interfaces/Storage';
+import type { Storage } from './interfaces/storage/Storage';
 
 /**
  * Service Context - Provides centralized access to all services
