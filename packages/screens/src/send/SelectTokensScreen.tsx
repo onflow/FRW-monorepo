@@ -64,34 +64,9 @@ export function SelectTokensScreen(): React.ReactElement {
   // Check if we're running in extension platform
   const isExtension = bridge.getPlatform() === 'extension';
 
-  // Fetch account balance
-  const fetchAccountBalance = useCallback(
-    async (
-      accountAddress: string,
-      accountType?: string,
-      forceFresh: boolean = false
-    ): Promise<string> => {
-      try {
-        const network = bridge.getNetwork();
-        const tokenStore = useTokenStore.getState();
-
-        const result = forceFresh
-          ? await tokenStore.getBalance(accountAddress, accountType, { fresh: true })
-          : await tokenStore.getAccountBalance(accountAddress, accountType, network || 'mainnet');
-
-        return result.balance;
-      } catch (error) {
-        console.error(`Failed to fetch balance for ${accountAddress}:`, error);
-        return '0 FLOW';
-      }
-    },
-    [bridge]
-  );
-
   // Fetch tokens
   const fetchTokens = useCallback(
     async (accountAddress?: string, accountType?: string, isRefreshAction = false) => {
-      console.log('🔄 fetchTokens called, isRefreshAction:', isRefreshAction);
       setIsLoading(!isRefreshAction);
       setIsAccountLoading(true);
       setError(null);
@@ -112,29 +87,21 @@ export function SelectTokensScreen(): React.ReactElement {
         const cachedTokens = getTokensForAddress(targetAddress, network);
 
         if (!cachedTokens || cachedTokens.length === 0) {
-          console.log('📡 Fetching tokens from store...');
           // Only fetch if we don't have cached data
           await fetchTokensFromStore(targetAddress, network, false);
-        } else {
-          console.log('💾 Using cached tokens:', cachedTokens.length);
         }
-
         // Get tokens from cache (either existing or newly fetched)
         const coinsData = getTokensForAddress(targetAddress, network);
 
         if (coinsData && coinsData.length > 0) {
-          console.log('✅ Tokens loaded:', coinsData.length);
           setTokens(coinsData);
         } else {
-          console.log('❌ No tokens found');
           setTokens([]);
         }
       } catch (err: any) {
-        console.error('Error fetching tokens:', err);
         setError(err.message || t('errors.failedToLoadTokens'));
         setTokens([]);
       } finally {
-        console.log('🏁 fetchTokens completed, setting loading to false');
         setIsLoading(false);
         setIsAccountLoading(false);
       }
@@ -203,32 +170,24 @@ export function SelectTokensScreen(): React.ReactElement {
     setCurrentStep('select-tokens');
 
     const initializeActiveAccount = async (): Promise<void> => {
-      console.log('🚀 initializeActiveAccount called, hasInitialized:', hasInitialized.current);
       try {
         if (walletStoreState.isLoading) {
-          console.log('⏳ Wallet store is still loading, skipping initialization');
           return;
         }
 
         hasInitialized.current = true;
         setIsLoading(true);
-        console.log('✅ Setting loading state to true');
 
         const bridgeAddress = bridge.getSelectedAddress();
-        console.log('📍 Bridge address:', bridgeAddress);
 
         if (bridgeAddress) {
           // Fetch tokens and NFT collections sequentially to avoid race conditions
-          console.log('📡 Starting token fetch...');
           await fetchTokens(bridgeAddress, 'main');
-          console.log('📡 Starting NFT collections fetch...');
           await fetchNFTCollections(bridgeAddress, 'main');
-          console.log('✅ All data fetched successfully');
         }
       } catch (error) {
         console.error('❌ Error initializing account:', error);
       } finally {
-        console.log('🏁 Initialization completed, setting loading to false');
         setIsLoading(false);
       }
     };

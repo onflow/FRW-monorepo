@@ -260,16 +260,8 @@ export const SendTokensScreen = (props) => {
       setTransactionType(transactionType);
     }
 
-    // Execute transaction using the store
-    console.log('🚀 Executing transaction using store executeTransaction...');
-    try {
-      const result = await executeTransaction();
-      console.log('✅ Transaction result:', result);
-      return result;
-    } catch (error) {
-      console.error('❌ Transaction failed:', error);
-      throw error;
-    }
+    const result = await executeTransaction();
+    return result;
   }, [
     transactionType,
     selectedToken,
