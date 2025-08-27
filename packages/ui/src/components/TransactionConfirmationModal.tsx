@@ -1,5 +1,5 @@
 import { ChevronDown, WalletCard, Close, FlowLogo } from '@onflow/frw-icons';
-import { type WalletAccount } from '@onflow/frw-types';
+import { type WalletAccount, type TransactionType } from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack, View } from 'tamagui';
 
@@ -17,7 +17,7 @@ export interface TransactionFormData {
 
 export interface TransactionConfirmationModalProps {
   visible: boolean;
-  transactionType: 'tokens' | 'nfts';
+  transactionType: TransactionType;
   selectedToken?: TokenModel | null;
   fromAccount?: WalletAccount | null;
   toAccount?: WalletAccount | null;

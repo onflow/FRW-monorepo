@@ -1,6 +1,10 @@
 import { bridge, navigation } from '@onflow/frw-context';
 import { useSendStore } from '@onflow/frw-stores';
-import { type WalletAccount } from '@onflow/frw-types';
+import {
+  type WalletAccount,
+  type NFTModel,
+  type CollectionModel,
+} from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -20,15 +24,36 @@ import {
   Separator,
   XStack,
   Stack,
+  // NFT-related components
+  MultipleNFTsPreview,
+  SendSectionHeader,
 } from '@onflow/frw-ui';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 
 export const SendTokensScreen = (props) => {
   // Use props for configuration only, fetch data from bridge
   // Get router values from bridge
+  // Check if we're running in extension platform
+  const isExtension = bridge.getPlatform() === 'extension';
+
+  // Get send store
+  const {
+    setSelectedToken: setStoreSelectedToken,
+    setSelectedNFTs,
+    setTransactionType,
+    transactionType,
+    setFromAccount: setStoreFromAccount,
+    setToAccount: setStoreToAccount,
+    updateFormData,
+    executeTransaction,
+    isLoading: storeLoading,
+    selectedNFTs,
+  } = useSendStore();
   const routerValues = bridge.getRouterValue?.() || {};
   const initialToAddress = routerValues.toAddress || null;
   const initialTokenSymbol = routerValues.tokenSymbol || null;
+
+  console.log('storeSelectedNFTs:', selectedNFTs);
 
   // Default values for internal use
   const backgroundColor = '$background';
@@ -63,18 +88,10 @@ export const SendTokensScreen = (props) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Check if we're running in extension platform
-  const isExtension = bridge.getPlatform() === 'extension';
-
-  // Get send store
-  const {
-    setSelectedToken: setStoreSelectedToken,
-    setFromAccount: setStoreFromAccount,
-    setToAccount: setStoreToAccount,
-    updateFormData,
-    executeTransaction,
-    isLoading: storeLoading,
-  } = useSendStore();
+  const [nftCollections, setNftCollections] = useState<CollectionModel[]>([]);
+  const [availableNFTs, setAvailableNFTs] = useState<NFTModel[]>([]);
+  const [isNFTSelectorVisible, setIsNFTSelectorVisible] = useState(false);
+  const [isCollectionSelectorVisible, setIsCollectionSelectorVisible] = useState(false);
 
   // Simple initialization without complex bridge calls
   useEffect(() => {
@@ -145,6 +162,16 @@ export const SendTokensScreen = (props) => {
           setError('No tokens available. Please ensure your wallet has tokens to send.');
         }
 
+        // Fetch NFT collections
+        try {
+          const nftData = await bridge.getCache('nfts');
+          if (nftData && Array.isArray(nftData)) {
+            setNftCollections(nftData);
+          }
+        } catch (error) {
+          console.warn('Failed to fetch NFT collections:', error);
+        }
+
         // Set initial recipient if provided
         if (initialToAddress) {
           setToAccount({
@@ -170,7 +197,7 @@ export const SendTokensScreen = (props) => {
   }, [initialToAddress, initialTokenSymbol]);
 
   // Handler functions - now internal to the screen
-  const handleTokenSelect = useCallback((token: TokenModel) => {
+  const handleTokenSelect = useCallback((token: any) => {
     setSelectedToken(token);
     setIsTokenSelectorVisible(false);
   }, []);
@@ -209,15 +236,31 @@ export const SendTokensScreen = (props) => {
     setIsConfirmationVisible(false);
   }, []);
 
-  const handleTransactionConfirm = useCallback(async () => {
-    if (!selectedToken || !fromAccount || !toAccount || !amount) {
-      throw new Error('Missing transaction data');
-    }
+  const handleNFTRemove = useCallback((nftId: string) => {
+    setSelectedNFTs((prev) => prev.filter((nft) => nft.id !== nftId));
+  }, []);
 
-    setStoreSelectedToken(selectedToken);
-    setStoreFromAccount(fromAccount);
-    setStoreToAccount(toAccount);
-    updateFormData({ tokenAmount: amount });
+  const handleTransactionConfirm = useCallback(async () => {
+    if (transactionType === 'tokens') {
+      if (!selectedToken || !fromAccount || !toAccount || !amount) {
+        throw new Error('Missing transaction data');
+      }
+
+      setStoreSelectedToken(selectedToken);
+      setStoreFromAccount(fromAccount);
+      setStoreToAccount(toAccount);
+      setTransactionType('tokens');
+      updateFormData({ tokenAmount: amount });
+    } else {
+      if (!selectedNFTs.length || !fromAccount || !toAccount) {
+        throw new Error('Missing NFT transaction data');
+      }
+
+      setSelectedNFTs(selectedNFTs);
+      setStoreFromAccount(fromAccount);
+      setStoreToAccount(toAccount);
+      setTransactionType(transactionType);
+    }
 
     // Execute transaction using the store
     console.log('🚀 Executing transaction using store executeTransaction...');
@@ -230,11 +273,15 @@ export const SendTokensScreen = (props) => {
       throw error;
     }
   }, [
+    transactionType,
     selectedToken,
+    selectedNFTs,
     fromAccount,
     toAccount,
     amount,
     setStoreSelectedToken,
+    setSelectedNFTs,
+    setTransactionType,
     setStoreFromAccount,
     setStoreToAccount,
     updateFormData,
@@ -243,20 +290,32 @@ export const SendTokensScreen = (props) => {
 
   // Calculate if send button should be disabled
   const isSendDisabled = useMemo(() => {
-    return !selectedToken || !fromAccount || !toAccount || parseFloat(amount || '0') <= 0;
-  }, [selectedToken, fromAccount, toAccount, amount]);
+    if (transactionType === 'tokens') {
+      return !selectedToken || !fromAccount || !toAccount || parseFloat(amount || '0') <= 0;
+    } else {
+      return !selectedNFTs.length || !fromAccount || !toAccount;
+    }
+  }, [transactionType, selectedToken, selectedNFTs, fromAccount, toAccount, amount]);
 
   // Create form data for transaction confirmation
   const formData: TransactionFormData = useMemo(
     () => ({
-      tokenAmount: amount,
-      fiatAmount: selectedToken?.priceInUSD
-        ? (parseFloat(amount || '0') * parseFloat(selectedToken.priceInUSD)).toFixed(2)
-        : '0.00',
+      tokenAmount: transactionType === 'tokens' ? amount : selectedNFTs.length.toString(),
+      fiatAmount:
+        transactionType === 'tokens' && selectedToken?.priceInUSD
+          ? (parseFloat(amount || '0') * parseFloat(selectedToken.priceInUSD)).toFixed(2)
+          : '0.00',
       isTokenMode,
       transactionFee: transactionFee,
     }),
-    [amount, selectedToken?.priceInUSD, isTokenMode, transactionFee]
+    [
+      transactionType,
+      amount,
+      selectedToken?.priceInUSD,
+      selectedNFTs.length,
+      isTokenMode,
+      transactionFee,
+    ]
   );
 
   // Show loading state
@@ -305,37 +364,67 @@ export const SendTokensScreen = (props) => {
               />
             )}
             <Separator mx="$4" my={-1} borderColor="$textTertiary" />
+            {transactionType === 'tokens' ? (
+              /* Token Amount Input Section */
+              <YStack gap="$3">
+                <TokenAmountInput
+                  selectedToken={
+                    selectedToken
+                      ? {
+                          symbol: selectedToken.symbol,
+                          name: selectedToken.name,
+                          logo: selectedToken.logoURI,
+                          logoURI: selectedToken.logoURI,
+                          balance: selectedToken.balance?.toString(),
+                          price: selectedToken.priceInUSD
+                            ? parseFloat(selectedToken.priceInUSD)
+                            : undefined,
+                          isVerified: selectedToken.isVerified,
+                        }
+                      : undefined
+                  }
+                  amount={amount}
+                  onAmountChange={handleAmountChange}
+                  isTokenMode={isTokenMode}
+                  onToggleInputMode={handleToggleInputMode}
+                  onTokenSelectorPress={handleTokenSelectorOpen}
+                  onMaxPress={handleMaxPress}
+                  placeholder="0.00"
+                  showBalance={true}
+                  showConverter={true}
+                  disabled={false}
+                />
+              </YStack>
+            ) : (
+              /* NFTs Section */
+              selectedNFTs &&
+              selectedNFTs.length > 0 && (
+                <YStack bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$4" gap="$3">
+                  {/* Section Header */}
+                  <SendSectionHeader
+                    title={`Send NFTs (${selectedNFTs.length})`}
+                    onEditPress={() => {}}
+                    showEditButton={showEditButtons}
+                    editButtonText="Edit"
+                  />
 
-            {/* Token Amount Input Section */}
-            <YStack gap="$3">
-              <TokenAmountInput
-                selectedToken={
-                  selectedToken
-                    ? {
-                        symbol: selectedToken.symbol,
-                        name: selectedToken.name,
-                        logo: selectedToken.logoURI,
-                        logoURI: selectedToken.logoURI,
-                        balance: selectedToken.balance?.toString(),
-                        price: selectedToken.priceInUSD
-                          ? parseFloat(selectedToken.priceInUSD)
-                          : undefined,
-                        isVerified: selectedToken.isVerified,
-                      }
-                    : undefined
-                }
-                amount={amount}
-                onAmountChange={handleAmountChange}
-                isTokenMode={isTokenMode}
-                onToggleInputMode={handleToggleInputMode}
-                onTokenSelectorPress={handleTokenSelectorOpen}
-                onMaxPress={handleMaxPress}
-                placeholder="0.00"
-                showBalance={true}
-                showConverter={true}
-                disabled={false}
-              />
-            </YStack>
+                  {/* NFTs Preview */}
+                  <MultipleNFTsPreview
+                    nfts={selectedNFTs.map((nft) => ({
+                      id: nft.id || '',
+                      name: nft.name || '',
+                      image: nft.thumbnail || '',
+                      collection: nft.collectionName || '',
+                      collectionContractName: nft.collectionContractName || '',
+                      description: nft.description || '',
+                    }))}
+                    onRemoveNFT={handleNFTRemove}
+                    maxVisibleThumbnails={3}
+                    expandable={true}
+                  />
+                </YStack>
+              )
+            )}
           </YStack>
 
           {/* Arrow Down Indicator */}
@@ -412,7 +501,7 @@ export const SendTokensScreen = (props) => {
         {/* Transaction Confirmation Modal */}
         <TransactionConfirmationModal
           visible={isConfirmationVisible}
-          transactionType="tokens"
+          transactionType={transactionType}
           selectedToken={selectedToken}
           fromAccount={fromAccount}
           toAccount={toAccount}
