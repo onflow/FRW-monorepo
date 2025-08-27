@@ -4,8 +4,6 @@ import {
   type WalletAccount,
   type NFTModel,
   type CollectionModel,
-  type TransactionType,
-  WalletType,
 } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
@@ -35,18 +33,27 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 export const SendTokensScreen = (props) => {
   // Use props for configuration only, fetch data from bridge
   // Get router values from bridge
+  // Check if we're running in extension platform
+  const isExtension = bridge.getPlatform() === 'extension';
+
+  // Get send store
+  const {
+    setSelectedToken: setStoreSelectedToken,
+    setSelectedNFTs,
+    setTransactionType,
+    transactionType,
+    setFromAccount: setStoreFromAccount,
+    setToAccount: setStoreToAccount,
+    updateFormData,
+    executeTransaction,
+    isLoading: storeLoading,
+    selectedNFTs,
+  } = useSendStore();
   const routerValues = bridge.getRouterValue?.() || {};
   const initialToAddress = routerValues.toAddress || null;
   const initialTokenSymbol = routerValues.tokenSymbol || null;
-  console.log('routerValues', routerValues);
-  // Detect if this is an NFT route based on router values
-  const isNFTRoute =
-    routerValues.id && routerValues.toAddress && routerValues['*']?.startsWith('nft/');
 
-  const initialTransactionType = isNFTRoute ? 'multiple-nfts' : 'tokens';
-  console.log('isNFTRoute:', isNFTRoute, 'initialTransactionType:', initialTransactionType);
-  const initialSelectedNFTs = [];
-  const initialSelectedCollection = routerValues.selectedCollection || null;
+  console.log('storeSelectedNFTs:', selectedNFTs);
 
   // Default values for internal use
   const backgroundColor = '$background';
@@ -81,67 +88,10 @@ export const SendTokensScreen = (props) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const mockSelectedNFTs: NFTModel[] = [
-    {
-      id: '1',
-      name: 'FLOAT #1',
-      description: 'FLOAT is a proof of attendance platform on the Flow blockchain.',
-      thumbnail: 'https://i.imgur.com/v0Njnnk.png',
-      collectionName: 'FLOAT',
-      collectionContractName: 'FLOAT',
-      flowIdentifier: 'A.2d4c3caffbeab845.FLOAT.NFT',
-      address: '0x2d4c3caffbeab845',
-      contractName: 'FLOAT',
-      type: WalletType.Flow,
-    },
-    {
-      id: '2',
-      name: 'FLOAT #2',
-      description: 'FLOAT is a proof of attendance platform on the Flow blockchain.',
-      thumbnail: 'https://i.imgur.com/v0Njnnk.png',
-      collectionName: 'FLOAT',
-      collectionContractName: 'FLOAT',
-      flowIdentifier: 'A.2d4c3caffbeab845.FLOAT.NFT',
-      address: '0x2d4c3caffbeab845',
-      contractName: 'FLOAT',
-      type: WalletType.Flow,
-    },
-  ];
-
-  // NFT-specific state
-  const [transactionType, setTransactionType] = useState<TransactionType>('tokens');
-  const [selectedNFTs, setSelectedNFTs] = useState<NFTModel[]>(mockSelectedNFTs);
-  const [selectedCollection, setSelectedCollection] = useState<CollectionModel | null>(
-    initialSelectedCollection
-  );
   const [nftCollections, setNftCollections] = useState<CollectionModel[]>([]);
   const [availableNFTs, setAvailableNFTs] = useState<NFTModel[]>([]);
   const [isNFTSelectorVisible, setIsNFTSelectorVisible] = useState(false);
   const [isCollectionSelectorVisible, setIsCollectionSelectorVisible] = useState(false);
-
-  // Check if we're running in extension platform
-  const isExtension = bridge.getPlatform() === 'extension';
-
-  // Get send store
-  const {
-    setSelectedToken: setStoreSelectedToken,
-    setSelectedNFTs: setStoreSelectedNFTs,
-    setTransactionType: setStoreTransactionType,
-    setFromAccount: setStoreFromAccount,
-    setToAccount: setStoreToAccount,
-    updateFormData,
-    executeTransaction,
-    isLoading: storeLoading,
-  } = useSendStore();
-
-  // Set transaction type based on router values
-  useEffect(() => {
-    if (isNFTRoute) {
-      setTransactionType('multiple-nfts');
-    } else {
-      setTransactionType('tokens');
-    }
-  }, [isNFTRoute]);
 
   // Simple initialization without complex bridge calls
   useEffect(() => {
@@ -217,25 +167,6 @@ export const SendTokensScreen = (props) => {
           const nftData = await bridge.getCache('nfts');
           if (nftData && Array.isArray(nftData)) {
             setNftCollections(nftData);
-
-            // If this is an NFT route, try to set the initial collection
-            if (isNFTRoute && nftData.length > 0) {
-              // Try to find the collection based on the router ID
-              const routeId = routerValues.id || '';
-              const matchingCollection = nftData.find(
-                (collection) =>
-                  collection.id === routeId ||
-                  collection.contractName === routeId ||
-                  collection.name?.toLowerCase().includes(routeId.toLowerCase())
-              );
-
-              if (matchingCollection) {
-                setSelectedCollection(matchingCollection);
-              } else {
-                // Fallback to first collection
-                setSelectedCollection(nftData[0]);
-              }
-            }
           }
         } catch (error) {
           console.warn('Failed to fetch NFT collections:', error);
@@ -318,17 +249,17 @@ export const SendTokensScreen = (props) => {
       setStoreSelectedToken(selectedToken);
       setStoreFromAccount(fromAccount);
       setStoreToAccount(toAccount);
-      setStoreTransactionType('tokens');
+      setTransactionType('tokens');
       updateFormData({ tokenAmount: amount });
     } else {
       if (!selectedNFTs.length || !fromAccount || !toAccount) {
         throw new Error('Missing NFT transaction data');
       }
 
-      setStoreSelectedNFTs(selectedNFTs);
+      setSelectedNFTs(selectedNFTs);
       setStoreFromAccount(fromAccount);
       setStoreToAccount(toAccount);
-      setStoreTransactionType(transactionType);
+      setTransactionType(transactionType);
     }
 
     // Execute transaction using the store
@@ -349,8 +280,8 @@ export const SendTokensScreen = (props) => {
     toAccount,
     amount,
     setStoreSelectedToken,
-    setStoreSelectedNFTs,
-    setStoreTransactionType,
+    setSelectedNFTs,
+    setTransactionType,
     setStoreFromAccount,
     setStoreToAccount,
     updateFormData,
