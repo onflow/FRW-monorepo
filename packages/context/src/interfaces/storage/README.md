@@ -61,15 +61,19 @@ Defines all available storage keys and their corresponding data types.
 
 ```typescript
 export interface Storage {
-  get<K extends keyof StorageKeyMap>(key: K): StorageKeyMap[K] | undefined;
+  get<K extends keyof StorageKeyMap>(
+    key: K
+  ): Promise<StorageKeyMap[K] | undefined>;
   set<K extends keyof StorageKeyMap>(
     key: K,
     value: Omit<StorageKeyMap[K], 'version' | 'createdAt' | 'updatedAt'>
-  ): void;
-  has<K extends keyof StorageKeyMap>(key: K): boolean;
-  delete<K extends keyof StorageKeyMap>(key: K): void;
-  getAllKeys(): (keyof StorageKeyMap)[];
-  clearAll(): void;
+  ): Promise<void>;
+  has<K extends keyof StorageKeyMap>(key: K): Promise<boolean>;
+  delete<K extends keyof StorageKeyMap>(key: K): Promise<void>;
+  getAllKeys(): Promise<(keyof StorageKeyMap)[]>;
+  clearAll(): Promise<void>;
+  recrypt?(key: string | undefined): Promise<void>;
+  trim?(): Promise<void>;
 }
 ```
 
@@ -78,28 +82,30 @@ export interface Storage {
 ```typescript
 import { getStorage } from '@onflow/frw-context';
 
-const storage = getStorage();
+async function example() {
+  const storage = getStorage();
 
-// Store data (metadata added automatically)
-storage.set('user', {
-  id: '123',
-  name: 'John Doe',
-  email: 'john@example.com',
-});
+  // Store data (metadata added automatically)
+  await storage.set('user', {
+    id: '123',
+    name: 'John Doe',
+    email: 'john@example.com',
+  });
 
-// Retrieve data (full type safety)
-const user = storage.get('user'); // Type: StorageData<User> | undefined
-if (user) {
-  console.log(`User: ${user.name}, Created: ${new Date(user.createdAt)}`);
+  // Retrieve data (full type safety)
+  const user = await storage.get('user'); // Type: StorageData<User> | undefined
+  if (user) {
+    console.log(`User: ${user.name}, Created: ${new Date(user.createdAt)}`);
+  }
+
+  // Check if key exists
+  if (await storage.has('tokens')) {
+    const tokens = await storage.get('tokens');
+  }
+
+  // Delete data
+  await storage.delete('cache');
 }
-
-// Check if key exists
-if (storage.has('tokens')) {
-  const tokens = storage.get('tokens');
-}
-
-// Delete data
-storage.delete('cache');
 ```
 
 ## Platform Implementations
@@ -229,7 +235,9 @@ export class ReactNativeStorage implements Storage {
     });
   }
 
-  get<K extends keyof StorageKeyMap>(key: K): StorageKeyMap[K] | undefined {
+  async get<K extends keyof StorageKeyMap>(
+    key: K
+  ): Promise<StorageKeyMap[K] | undefined> {
     try {
       const data = this.mmkv.getString(key as string);
       return data ? JSON.parse(data) : undefined;
@@ -239,13 +247,13 @@ export class ReactNativeStorage implements Storage {
     }
   }
 
-  set<K extends keyof StorageKeyMap>(
+  async set<K extends keyof StorageKeyMap>(
     key: K,
     value: Omit<StorageKeyMap[K], 'version' | 'createdAt' | 'updatedAt'>
-  ): void {
+  ): Promise<void> {
     try {
       const now = Date.now();
-      const existingData = this.get(key);
+      const existingData = await this.get(key);
 
       const dataWithMetadata = {
         ...value,
@@ -261,27 +269,27 @@ export class ReactNativeStorage implements Storage {
     }
   }
 
-  has<K extends keyof StorageKeyMap>(key: K): boolean {
+  async has<K extends keyof StorageKeyMap>(key: K): Promise<boolean> {
     return this.mmkv.contains(key as string);
   }
 
-  delete<K extends keyof StorageKeyMap>(key: K): void {
+  async delete<K extends keyof StorageKeyMap>(key: K): Promise<void> {
     this.mmkv.delete(key as string);
   }
 
-  getAllKeys(): (keyof StorageKeyMap)[] {
+  async getAllKeys(): Promise<(keyof StorageKeyMap)[]> {
     return this.mmkv.getAllKeys() as (keyof StorageKeyMap)[];
   }
 
-  clearAll(): void {
+  async clearAll(): Promise<void> {
     this.mmkv.clearAll();
   }
 
-  recrypt(key: string | undefined): void {
+  async recrypt(key: string | undefined): Promise<void> {
     this.mmkv.recrypt(key);
   }
 
-  trim(): void {
+  async trim(): Promise<void> {
     this.mmkv.trim();
   }
 }
@@ -335,22 +343,24 @@ export interface StorageKeyMap {
 
 ```typescript
 // Automatically type-safe!
-const storage = getStorage();
+async function handleNotifications() {
+  const storage = getStorage();
 
-// Store notifications
-storage.set('notifications', [
-  {
-    id: '1',
-    title: 'Welcome!',
-    message: 'Welcome to FRW',
-    type: 'info',
-    read: false,
-    createdAt: Date.now(),
-  },
-]);
+  // Store notifications
+  await storage.set('notifications', [
+    {
+      id: '1',
+      title: 'Welcome!',
+      message: 'Welcome to FRW',
+      type: 'info',
+      read: false,
+      createdAt: Date.now(),
+    },
+  ]);
 
-// Retrieve notifications (fully typed)
-const notifications = storage.get('notifications'); // StorageData<NotificationModel[]> | undefined
+  // Retrieve notifications (fully typed)
+  const notifications = await storage.get('notifications'); // StorageData<NotificationModel[]> | undefined
+}
 ```
 
 ## Migration and Versioning
@@ -358,13 +368,15 @@ const notifications = storage.get('notifications'); // StorageData<NotificationM
 The storage system automatically handles versioning. For data migrations:
 
 ```typescript
-const storage = getStorage();
-const userData = storage.get('user');
+async function handleMigration() {
+  const storage = getStorage();
+  const userData = await storage.get('user');
 
-if (userData && userData.version !== CURRENT_VERSION) {
-  // Perform migration
-  const migratedData = migrateUserData(userData);
-  storage.set('user', migratedData);
+  if (userData && userData.version !== CURRENT_VERSION) {
+    // Perform migration
+    const migratedData = migrateUserData(userData);
+    await storage.set('user', migratedData);
+  }
 }
 ```
 
@@ -372,7 +384,7 @@ if (userData && userData.version !== CURRENT_VERSION) {
 
 ```typescript
 try {
-  storage.set('user', userData);
+  await storage.set('user', userData);
 } catch (error) {
   console.error('Storage failed:', error);
   // Handle storage failure (show user message, retry, etc.)
@@ -395,11 +407,13 @@ try {
 class MockStorage implements Storage {
   private data = new Map();
 
-  get<K extends keyof StorageKeyMap>(key: K) {
+  async get<K extends keyof StorageKeyMap>(
+    key: K
+  ): Promise<StorageKeyMap[K] | undefined> {
     return this.data.get(key);
   }
 
-  set<K extends keyof StorageKeyMap>(key: K, value: any) {
+  async set<K extends keyof StorageKeyMap>(key: K, value: any): Promise<void> {
     this.data.set(key, {
       ...value,
       version: '1.0.0',

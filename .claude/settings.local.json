@@ -54,7 +54,8 @@
       "Bash(git log:*)",
       "Bash(readlink:*)",
       "Bash(./gradlew:*)",
-      "Bash(npx react-native build-android:*)"
+      "Bash(npx react-native build-android:*)",
+      "Bash(git stash push:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

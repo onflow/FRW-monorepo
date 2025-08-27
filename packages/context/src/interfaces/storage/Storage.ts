@@ -3,14 +3,15 @@ import type { StorageKeyMap } from './StorageKeyMap';
 /**
  * Type-safe storage interface with unified get/set methods
  * Automatically handles versioning and metadata for all stored data
+ * All operations are async to support different storage implementations
  */
 export interface Storage {
   /**
    * Get typed data for the given storage key
    * @param key - Storage key from StorageKeyMap
-   * @returns The stored data with proper typing, or undefined if not found
+   * @returns Promise resolving to the stored data with proper typing, or undefined if not found
    */
-  get<K extends keyof StorageKeyMap>(key: K): StorageKeyMap[K] | undefined;
+  get<K extends keyof StorageKeyMap>(key: K): Promise<StorageKeyMap[K] | undefined>;
 
   /**
    * Set typed data for the given storage key
@@ -22,29 +23,41 @@ export interface Storage {
   set<K extends keyof StorageKeyMap>(
     key: K,
     value: Omit<StorageKeyMap[K], 'version' | 'createdAt' | 'updatedAt'>
-  ): void;
+  ): Promise<void>;
 
   /**
    * Check if a storage key exists
    * @param key - Storage key to check
-   * @returns true if the key exists
+   * @returns Promise resolving to true if the key exists
    */
-  has<K extends keyof StorageKeyMap>(key: K): boolean;
+  has<K extends keyof StorageKeyMap>(key: K): Promise<boolean>;
 
   /**
    * Delete data for the given storage key
    * @param key - Storage key to delete
    */
-  delete<K extends keyof StorageKeyMap>(key: K): void;
+  delete<K extends keyof StorageKeyMap>(key: K): Promise<void>;
 
   /**
    * Get all storage keys
-   * @returns Array of all storage keys
+   * @returns Promise resolving to array of all storage keys
    */
-  getAllKeys(): (keyof StorageKeyMap)[];
+  getAllKeys(): Promise<(keyof StorageKeyMap)[]>;
 
   /**
    * Clear all stored data
    */
-  clearAll(): void;
+  clearAll(): Promise<void>;
+
+  /**
+   * Set or update the encryption key for all data (platform-specific)
+   * @param key - Encryption key (max 16 bytes) or undefined to remove encryption
+   * @throws Error if the instance cannot be recrypted
+   */
+  recrypt?(key: string | undefined): Promise<void>;
+
+  /**
+   * Optimize storage space and clear memory cache (platform-specific)
+   */
+  trim?(): Promise<void>;
 }
