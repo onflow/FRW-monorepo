@@ -8,7 +8,8 @@ const CONFIG = {
   input: '../../packages/types/src/Bridge.ts',
   output: {
     swift: 'ios/FRW/Foundation/Bridge/BridgeModels.swift',
-    kotlin: 'android/app/src/main/java/com/flowfoundation/wallet/bridge/BridgeModels.kt',
+    kotlin:
+      'android/app/src/main/java/com/flowfoundation/wallet/reactnative/bridge/BridgeModels.kt',
   },
 };
 
