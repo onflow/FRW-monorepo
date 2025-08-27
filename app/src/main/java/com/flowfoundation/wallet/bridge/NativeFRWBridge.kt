@@ -260,10 +260,35 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     override fun closeRN(id: String?) {
         try {
             val currentActivity = reactApplicationContext.currentActivity
-            currentActivity?.finish()
+            if (currentActivity != null && !currentActivity.isFinishing && !currentActivity.isDestroyed) {
+                // Add a small delay to allow React Native cleanup to complete
+                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                    try {
+                        if (!currentActivity.isFinishing && !currentActivity.isDestroyed) {
+                            // Use finishAndRemoveTask() to completely remove the activity from recents
+                            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                                currentActivity.finishAndRemoveTask()
+                            } else {
+                                currentActivity.finish()
+                            }
+                        }
+                    } catch (e: Exception) {
+                        println("Failed to finish activity on UI thread: ${e.message}")
+                        // Fallback to regular finish
+                        try {
+                            currentActivity.finish()
+                        } catch (e2: Exception) {
+                            println("Fallback finish also failed: ${e2.message}")
+                        }
+                    }
+                }, 100) // 100ms delay to allow React Native cleanup
+            } else {
+                println("Activity is null, finishing, or destroyed - skipping closeRN")
+            }
         } catch (e: Exception) {
             // If finishing activity fails, log error but don't crash
             println("Failed to close React Native activity: ${e.message}")
+            e.printStackTrace()
         }
     }
 

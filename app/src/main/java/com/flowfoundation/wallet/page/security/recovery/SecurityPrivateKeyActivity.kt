@@ -12,8 +12,10 @@ import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
 import com.flowfoundation.wallet.page.restore.keystore.PrivateKeyStoreCryptoProvider
 import com.flowfoundation.wallet.utils.extensions.res2String
+import com.flowfoundation.wallet.utils.isNightMode
 import com.flowfoundation.wallet.utils.textToClipboard
 import com.flowfoundation.wallet.utils.toast
+import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 
 class SecurityPrivateKeyActivity : BaseActivity() {
 
@@ -23,6 +25,11 @@ class SecurityPrivateKeyActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivitySecurityPrivateKeyBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        
+        // Configure status bar to prevent overlap with system UI
+        UltimateBarX.with(this).fitWindow(false).light(!isNightMode(this)).applyStatusBar()
+        UltimateBarX.with(this).fitWindow(true).light(!isNightMode(this)).applyNavigationBar()
+        
         setupToolbar()
         initPrivateKey()
     }

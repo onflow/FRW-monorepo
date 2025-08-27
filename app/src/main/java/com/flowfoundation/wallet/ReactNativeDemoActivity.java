@@ -110,6 +110,61 @@ public class ReactNativeDemoActivity extends ReactActivity {
     }
 
     @Override
+    protected void onDestroy() {
+        Log.d(TAG, "onDestroy called");
+        try {
+            // Check if React context is still valid before destroying
+            if (getReactInstanceManager() != null && getReactInstanceManager().getCurrentReactContext() != null) {
+                Log.d(TAG, "React context is active, proceeding with normal destroy");
+                super.onDestroy();
+            } else {
+                Log.d(TAG, "React context is null, skipping React cleanup");
+                // Call Activity.onDestroy() directly to avoid React cleanup issues
+                try {
+                    super.onDestroy();
+                } catch (Exception e) {
+                    Log.w(TAG, "Even direct destroy failed: " + e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Error during onDestroy: " + e.getMessage());
+            // Don't call super.onDestroy() if React context is problematic
+            // Just let the activity die naturally
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        Log.d(TAG, "onPause called");
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        Log.d(TAG, "onResume called");
+        super.onResume();
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        Log.d(TAG, "onNewIntent called");
+        
+        // Set the new intent so it can be processed by React Native
+        setIntent(intent);
+        
+        // Log the new intent extras for debugging
+        if (intent != null) {
+            Log.d(TAG, "New Intent extras:");
+            Log.d(TAG, "  address: " + intent.getStringExtra("address"));
+            Log.d(TAG, "  network: " + intent.getStringExtra("network"));
+            Log.d(TAG, "  initialRoute: " + intent.getStringExtra("initialRoute"));
+            Log.d(TAG, "  screen: " + intent.getStringExtra("screen"));
+            Log.d(TAG, "  sendToConfig: " + intent.getStringExtra("sendToConfig"));
+        }
+    }
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
@@ -145,9 +200,10 @@ public class ReactNativeDemoActivity extends ReactActivity {
         Intent intent = new Intent(context, ReactNativeDemoActivity.class);
 
         // Add flags to ensure the activity comes to the foreground prominently
+        // Use SINGLE_TOP to avoid creating multiple instances that can cause crashes
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
-        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         if (address != null) {
             intent.putExtra("address", address);
@@ -178,9 +234,10 @@ public class ReactNativeDemoActivity extends ReactActivity {
         Intent intent = new Intent(context, ReactNativeDemoActivity.class);
 
         // Add flags to ensure the activity comes to the foreground prominently
+        // Use SINGLE_TOP to avoid creating multiple instances that can cause crashes
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
-        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         if (address != null) {
             intent.putExtra("address", address);
@@ -191,7 +248,19 @@ public class ReactNativeDemoActivity extends ReactActivity {
 
         // Convert screen enum to string and set both screen and initialRoute
         String screenString = screenType == RNBridge.ScreenType.SEND_ASSET ? "send-asset" : "token-detail";
-        String routeName = screenType == RNBridge.ScreenType.SEND_ASSET ? "SelectTokens" : "Home";
+        String routeName;
+        
+        if (screenType == RNBridge.ScreenType.SEND_ASSET) {
+            // If NFTs are pre-selected, navigate to SendTo (recipient selection)
+            // The user needs to select recipient before going to the final send screen
+            if (sendToConfig != null && sendToConfig.selectedNFTs != null && !sendToConfig.selectedNFTs.isEmpty()) {
+                routeName = "SendTo";
+            } else {
+                routeName = "SelectTokens";
+            }
+        } else {
+            routeName = "Home";
+        }
 
         intent.putExtra("screen", screenString);
         intent.putExtra("initialRoute", routeName);
@@ -222,6 +291,8 @@ public class ReactNativeDemoActivity extends ReactActivity {
     public static void launchNFTSend(Context context, List<RNBridge.NFTModel> nfts) {
         String address = WalletUtilsKt.toAddress(WalletManager.INSTANCE.selectedWalletAddress());
         String network = ChainNetworkKt.chainNetWorkString();
+        
+        // Let React Native handle from account selection via bridge.getSelectedAccount()
         RNBridge.SendToConfig sendToConfig = new RNBridge.SendToConfig(null, null, nfts, null);
         launchWithConfig(context, RNBridge.ScreenType.SEND_ASSET, sendToConfig, address, network);
     }

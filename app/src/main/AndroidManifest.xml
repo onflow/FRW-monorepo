@@ -74,7 +74,9 @@
             android:launchMode="singleTop"
             android:theme="@style/AppTheme"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize|uiMode"
-            android:windowSoftInputMode="adjustResize"/>
+            android:windowSoftInputMode="adjustResize"
+            android:excludeFromRecents="true"
+            android:noHistory="true"/>
 
         <activity
             android:name=".manager.drive.GoogleDriveAuthActivity"

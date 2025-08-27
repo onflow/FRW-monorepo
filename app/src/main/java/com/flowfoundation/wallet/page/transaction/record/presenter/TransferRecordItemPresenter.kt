@@ -31,7 +31,11 @@ class TransferRecordItemPresenter(
             if (model.logo().isEmpty()) {
                 iconView.setImageResource(R.drawable.ic_transaction_default)
             } else {
-                Glide.with(iconView).load(model.logo().svgToPng()).into(iconView)
+                Glide.with(iconView)
+                    .load(model.logo().svgToPng())
+                    .error(R.drawable.ic_transaction_default)
+                    .placeholder(R.drawable.ic_transaction_default)
+                    .into(iconView)
             }
             transferTypeView.rotation = if (model.transferType == TRANSFER_TYPE_SEND) 0.0f else 180.0f
             titleView.text = model.title ?: ""
