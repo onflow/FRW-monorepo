@@ -1,13 +1,5 @@
-import React, {
-  useState,
-  forwardRef,
-  useImperativeHandle,
-  useCallback,
-  useRef,
-  useMemo,
-} from 'react';
-import { StyleSheet, View } from 'react-native';
-import Modal from 'react-native-modal';
+import React, { useState, forwardRef, useImperativeHandle, useCallback, useRef } from 'react';
+import { StyleSheet, View, Modal, Pressable, Animated } from 'react-native';
 
 import { useTheme } from '@/contexts/ThemeContext';
 
@@ -29,6 +21,10 @@ export const ConfirmationBottomSheet = forwardRef<
   const [isContentReady, setIsContentReady] = useState(false);
   const { isDark } = useTheme();
 
+  // Animation values
+  const slideAnim = useRef(new Animated.Value(600)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+
   // Add a flag to prevent double triggering
   const presentingRef = useRef(false);
 
@@ -44,17 +40,42 @@ export const ConfirmationBottomSheet = forwardRef<
     if (presentingRef.current) return;
     presentingRef.current = true;
     setIsContentReady(true);
-    // Small delay to ensure content is ready
-    requestAnimationFrame(() => {
-      setIsVisible(true);
-    });
-  }, []);
+    setIsVisible(true);
+
+    // Animate in
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 380,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 0.5,
+        duration: 380,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [slideAnim, opacityAnim]);
 
   const dismiss = useCallback(() => {
-    setIsVisible(false);
-    setIsContentReady(false);
-    presentingRef.current = false;
-  }, []);
+    // Animate out
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: 600,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setIsVisible(false);
+      setIsContentReady(false);
+      presentingRef.current = false;
+    });
+  }, [slideAnim, opacityAnim]);
 
   useImperativeHandle(
     ref,
@@ -68,64 +89,24 @@ export const ConfirmationBottomSheet = forwardRef<
   const containerStyle = {
     ...styles.container,
     backgroundColor: isDark ? '#1a1a1a' : '#ffffff',
+    transform: [{ translateY: slideAnim }],
   };
 
-  // Custom animation with ease-out curve
-  const customSlideInUp = useMemo(
-    () => ({
-      from: {
-        translateY: 600,
-      },
-      to: {
-        translateY: 0,
-      },
-    }),
-    []
-  );
-
-  const customSlideOutDown = useMemo(
-    () => ({
-      from: {
-        translateY: 0,
-      },
-      to: {
-        translateY: 600,
-      },
-    }),
-    []
-  );
-
   return (
-    <Modal
-      isVisible={isVisible}
-      onBackdropPress={handleClose}
-      onBackButtonPress={handleClose}
-      onSwipeComplete={handleClose}
-      swipeDirection={['down']}
-      style={styles.modal}
-      backdropOpacity={0.5}
-      animationIn={customSlideInUp}
-      animationOut={customSlideOutDown}
-      animationInTiming={380}
-      animationOutTiming={300}
-      backdropTransitionInTiming={380}
-      backdropTransitionOutTiming={300}
-      useNativeDriverForBackdrop={true}
-      useNativeDriver={true}
-      hideModalContentWhileAnimating={false}
-      propagateSwipe={true}
-      avoidKeyboard={false}
-      statusBarTranslucent={false}
-      customBackdrop={undefined}
-      onModalShow={() => {
-        presentingRef.current = false;
-      }}
-    >
-      <View style={containerStyle}>
-        <View style={styles.handle} />
-        <View style={styles.contentContainer}>
-          {isContentReady ? children : <View style={{ minHeight: 200 }} />}
-        </View>
+    <Modal transparent={true} visible={isVisible} animationType="none" onRequestClose={handleClose}>
+      {/* Backdrop */}
+      <Pressable style={styles.backdrop} onPress={handleClose}>
+        <Animated.View style={[styles.backdrop, { opacity: opacityAnim }]} />
+      </Pressable>
+
+      {/* Bottom Sheet Container */}
+      <View style={styles.modal}>
+        <Animated.View style={containerStyle}>
+          <View style={styles.handle} />
+          <View style={styles.contentContainer}>
+            {isContentReady ? children : <View style={{ minHeight: 200 }} />}
+          </View>
+        </Animated.View>
       </View>
     </Modal>
   );
@@ -134,9 +115,19 @@ export const ConfirmationBottomSheet = forwardRef<
 ConfirmationBottomSheet.displayName = 'ConfirmationBottomSheet';
 
 const styles = StyleSheet.create({
+  backdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
   modal: {
+    flex: 1,
     justifyContent: 'flex-end',
     margin: 0,
+    pointerEvents: 'box-none',
   },
   container: {
     borderTopLeftRadius: 16,

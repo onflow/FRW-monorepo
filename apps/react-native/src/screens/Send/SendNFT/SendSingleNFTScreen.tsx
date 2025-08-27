@@ -28,11 +28,20 @@ const SendSingleNFTScreen = ({ navigation }: { navigation: NavigationProp }) => 
   const { openConfirmation } = useConfirmationDrawer();
   const [transactionFee] = useState('0.001');
   const { isModalVisible, closeModal } = useAccountCompatibilityModal();
+  const [isLoading, setIsLoading] = useState(true);
 
   // Get data from sendStore
   const selectedNFTs = useSendStore(sendSelectors.selectedNFTs);
   const fromAccount = useSendStore(sendSelectors.fromAccount);
   const toAccount = useSendStore(sendSelectors.toAccount);
+
+  // Add debugging
+  console.log('[SendSingleNFTScreen] Render with:', {
+    selectedNFTsLength: selectedNFTs?.length || 0,
+    hasFromAccount: !!fromAccount,
+    hasToAccount: !!toAccount,
+    isLoading,
+  });
 
   // State for account balance and NFT data
   const [, setFromAccountBalance] = useState({ displayBalance: '0 FLOW' });
@@ -73,9 +82,41 @@ const SendSingleNFTScreen = ({ navigation }: { navigation: NavigationProp }) => 
 
   const [isAccountIncompatible] = useState(false);
 
-  // If no NFT is selected, show error or navigate back
+  // Wait for data to load before checking NFT availability
+  useEffect(() => {
+    // If we have NFT data or enough time has passed, stop loading
+    if (selectedNFTs.length > 0 || fromAccount) {
+      setIsLoading(false);
+    } else {
+      // Give some time for async data loading, then stop loading
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [selectedNFTs.length, fromAccount]);
+
+  // If still loading, show loading state
+  if (isLoading) {
+    return (
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: isDark ? 'rgb(18, 18, 18)' : 'rgb(255, 255, 255)' }}
+      >
+        <Text className="text-center mt-8">Loading...</Text>
+      </SafeAreaView>
+    );
+  }
+
+  // If no NFT is selected after loading, navigate back or close app
   if (!selectedNFT) {
-    navigation.goBack();
+    console.log('[SendSingleNFTScreen] No NFT selected after loading, exiting');
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      // If launched directly from native, close the app
+      NativeFRWBridge.closeRN(null);
+    }
     return null;
   }
 

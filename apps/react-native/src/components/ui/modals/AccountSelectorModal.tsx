@@ -1,5 +1,12 @@
 import type { WalletAccount } from '@onflow/frw-types';
-import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useState } from 'react';
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useState,
+  useRef,
+} from 'react';
 import {
   ActivityIndicator,
   SafeAreaView,
@@ -7,8 +14,10 @@ import {
   TouchableOpacity,
   View,
   ScrollView,
+  Modal,
+  Pressable,
+  Dimensions,
 } from 'react-native';
-import Modal from 'react-native-modal';
 
 import NativeFRWBridge from '@/bridge/NativeFRWBridge';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -35,6 +44,10 @@ export const AccountSelectorModal = forwardRef<AccountSelectorModalRef, AccountS
     const [accounts, setAccounts] = useState<WalletAccount[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
+
+    // Generate a unique instance ID to force recreation of animated values
+    const instanceId = useRef(Math.random().toString(36)).current;
+    const [modalKey, setModalKey] = useState(0);
 
     // Cache for full account list to ensure we always have complete data
     const [fullAccountsCache, setFullAccountsCache] = useState<WalletAccount[]>([]);
@@ -210,23 +223,25 @@ export const AccountSelectorModal = forwardRef<AccountSelectorModalRef, AccountS
 
     // Calculate modal height based on account count
     const getModalHeight = React.useCallback(() => {
-      if (accounts.length === 0) return '20%'; // while loading
-      if (accounts.length <= 2) return '30%'; // for 1-2 accounts
-      if (accounts.length <= 4) return '40%'; // for 3-4 accounts
-      if (accounts.length <= 6) return '85%'; // for 5-6 accounts
-      return '85%'; // for 7+ accounts
+      const screenHeight = Dimensions.get('window').height;
+      if (accounts.length === 0) return screenHeight * 0.35; // while loading
+      if (accounts.length <= 2) return screenHeight * 0.45; // for 1-2 accounts
+      if (accounts.length <= 4) return screenHeight * 0.55; // for 3-4 accounts
+      if (accounts.length <= 6) return screenHeight * 0.7; // for 5-6 accounts
+      return screenHeight * 0.8; // for 7+ accounts
     }, [accounts.length]);
 
-    const containerStyle = React.useMemo(
-      () => ({
+    const containerStyle = React.useMemo(() => {
+      const screenHeight = Dimensions.get('window').height;
+      return {
         backgroundColor: isDark ? '#1A1A1A' : '#FFFFFF',
         borderTopLeftRadius: 16,
         borderTopRightRadius: 16,
-        height: getModalHeight() as any,
+        maxHeight: screenHeight * 0.75,
+        minHeight: screenHeight * 0.4,
         paddingTop: 8,
-      }),
-      [isDark, getModalHeight]
-    );
+      };
+    }, [isDark]);
 
     // Create a dismiss function we can call directly
     const dismissModal = useCallback(() => {
@@ -237,6 +252,8 @@ export const AccountSelectorModal = forwardRef<AccountSelectorModalRef, AccountS
 
     useImperativeHandle(ref, () => ({
       present: () => {
+        // Force recreation of modal by incrementing key
+        setModalKey(prev => prev + 1);
         setIsVisible(true);
       },
       dismiss: dismissModal,
@@ -290,116 +307,113 @@ export const AccountSelectorModal = forwardRef<AccountSelectorModalRef, AccountS
 
     return (
       <Modal
-        isVisible={isVisible}
-        onBackdropPress={handleClose}
-        onBackButtonPress={handleClose}
-        onSwipeComplete={handleClose}
-        swipeDirection={['down']}
-        style={{
-          justifyContent: 'flex-end',
-          margin: 0,
-        }}
-        backdropOpacity={0.6}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
-        animationInTiming={300}
-        animationOutTiming={250}
-        backdropTransitionInTiming={300}
-        backdropTransitionOutTiming={250}
-        useNativeDriverForBackdrop={true}
-        hideModalContentWhileAnimating={false}
-        propagateSwipe={true}
-        avoidKeyboard={true}
+        visible={isVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={handleClose}
       >
-        <View style={containerStyle}>
-          {/* Handle */}
-          <View
-            style={{
-              width: 40,
-              height: 4,
-              backgroundColor: '#D1D5DB',
-              borderRadius: 2,
-              alignSelf: 'center',
-              marginBottom: 8,
-            }}
-          />
+        <Pressable
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            justifyContent: 'flex-end',
+          }}
+          onPress={handleClose}
+        >
+          <Pressable onPress={e => e.stopPropagation()}>
+            <View style={containerStyle}>
+              {/* Handle */}
+              <View
+                style={{
+                  width: 40,
+                  height: 4,
+                  backgroundColor: '#D1D5DB',
+                  borderRadius: 2,
+                  alignSelf: 'center',
+                  marginBottom: 8,
+                }}
+              />
 
-          <SafeAreaView
-            style={{ flex: 1, paddingTop: 16, paddingHorizontal: 16, paddingBottom: 24 }}
-          >
-            {/* Account List */}
-            <View style={{ flex: 1, paddingTop: 12, paddingHorizontal: 16 }}>
-              {isLoading ? (
-                <View
-                  style={{
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    paddingVertical: 24,
-                  }}
-                >
-                  <ActivityIndicator
-                    size="large"
-                    color={isDark ? '#FFFFFF' : '#000000'}
-                    style={{ marginBottom: 16 }}
-                  />
-                  <Text
-                    style={[
-                      androidTextFix,
-                      {
-                        color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
-                        fontSize: 16,
-                        fontWeight: '500',
-                        minWidth: 150,
-                        textAlign: 'center',
-                      },
-                    ]}
-                  >
-                    Loading accounts...
-                  </Text>
-                </View>
-              ) : accounts.length === 0 ? (
-                <View
-                  style={{
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    paddingVertical: 24,
-                  }}
-                >
-                  <Text
-                    style={[
-                      androidTextFix,
-                      {
-                        color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
-                        fontSize: 16,
-                        textAlign: 'center',
-                        minWidth: 150,
-                      },
-                    ]}
-                  >
-                    No accounts available
-                  </Text>
-                </View>
-              ) : (
-                <ScrollView
-                  showsVerticalScrollIndicator={true}
-                  contentContainerStyle={{ paddingBottom: 12 }}
-                  style={{ flex: 1 }}
-                >
-                  {accounts.map(account => {
-                    const isSelected = currentAccount?.address === account.address;
-                    return (
-                      <AccountItem
-                        key={account.id || account.address}
-                        account={account}
-                        isSelected={isSelected}
+              <SafeAreaView
+                style={{ flex: 1, paddingTop: 8, paddingHorizontal: 16, paddingBottom: 0 }}
+              >
+                {/* Account List */}
+                <View style={{ flex: 1, paddingTop: 8, paddingHorizontal: 8 }}>
+                  {isLoading ? (
+                    <View
+                      style={{
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        paddingVertical: 24,
+                      }}
+                    >
+                      <ActivityIndicator
+                        size="large"
+                        color={isDark ? '#FFFFFF' : '#000000'}
+                        style={{ marginBottom: 16 }}
                       />
-                    );
-                  })}
-                </ScrollView>
-              )}
+                      <Text
+                        style={[
+                          androidTextFix,
+                          {
+                            color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
+                            fontSize: 16,
+                            fontWeight: '500',
+                            minWidth: 150,
+                            textAlign: 'center',
+                          },
+                        ]}
+                      >
+                        Loading accounts...
+                      </Text>
+                    </View>
+                  ) : accounts.length === 0 ? (
+                    <View
+                      style={{
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        paddingVertical: 24,
+                      }}
+                    >
+                      <Text
+                        style={[
+                          androidTextFix,
+                          {
+                            color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
+                            fontSize: 16,
+                            textAlign: 'center',
+                            minWidth: 150,
+                          },
+                        ]}
+                      >
+                        No accounts available
+                      </Text>
+                    </View>
+                  ) : (
+                    <ScrollView
+                      showsVerticalScrollIndicator={true}
+                      contentContainerStyle={{
+                        paddingBottom: 20,
+                      }}
+                      style={{ flex: 1 }}
+                    >
+                      {accounts.map(account => {
+                        const isSelected = currentAccount?.address === account.address;
+                        return (
+                          <AccountItem
+                            key={account.id || account.address}
+                            account={account}
+                            isSelected={isSelected}
+                          />
+                        );
+                      })}
+                    </ScrollView>
+                  )}
+                </View>
+              </SafeAreaView>
             </View>
-          </SafeAreaView>
-        </View>
+          </Pressable>
+        </Pressable>
       </Modal>
     );
   }
