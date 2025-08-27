@@ -432,7 +432,7 @@ export const useTokenStore = create<TokenStore>((set, get) => ({
     }
 
     // Avoid duplicate requests if already loading
-    if (cached?.isLoading) return;
+    // if (cached?.isLoading) return;
 
     // Set loading state
     set((state) => ({

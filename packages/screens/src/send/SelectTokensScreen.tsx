@@ -58,8 +58,14 @@ export function SelectTokensScreen(): React.ReactElement {
   const [nftError, setNftError] = useState<string | null>(null);
 
   // Store hooks
-  const { setSelectedToken, setTransactionType, setCurrentStep, clearTransactionData } =
-    useSendStore();
+  const {
+    setSelectedToken,
+    setTransactionType,
+    setCurrentStep,
+    clearTransactionData,
+    setSelectedCollection,
+    setFromAccount: setStoreFromAccount,
+  } = useSendStore();
 
   const walletStoreState = useWalletStore();
 
@@ -256,6 +262,7 @@ export function SelectTokensScreen(): React.ReactElement {
 
   // Handle NFT press
   const handleNFTPress = (collection: CollectionModel): void => {
+    setSelectedCollection(collection);
     const address = fromAccount?.address || bridge.getSelectedAddress();
     navigation.navigate('NFTList', { collection, address });
   };

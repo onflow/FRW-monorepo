@@ -74,7 +74,7 @@ class ExtensionNavigation implements Navigation {
       } else if (screen === 'NFTDetail' && params?.id) {
         path = `/dashboard/nested/nftdetail/${params.id}`;
       } else if (screen === 'NFTList' && params?.collection && params?.address) {
-        path = `/dashboard/nested/collectiondetail/${params.collection}_${params.address}`;
+        path = `/dashboard/nested/nftlistscreen/${params.address}`;
       } else if (screen === 'TransactionComplete' && params?.txId) {
         // Navigate to dashboard with activity tab and transaction ID
         path = `/dashboard?activity=1&txid=${params.txId}`;
@@ -167,7 +167,7 @@ class ExtensionNavigation implements Navigation {
       SendMultipleNFTs: '/dashboard/nft/send',
       SendNftEvm: '/dashboard/nftevm/send',
       NFTDetail: '/dashboard/nested/nftdetail',
-      NFTList: '/dashboard/nested/collectiondetail',
+      NFTList: '/dashboard/nested/nftlistscreen',
       TransactionComplete: '/dashboard', // Navigate to dashboard for transaction complete
     };
 
@@ -185,7 +185,7 @@ class ExtensionNavigation implements Navigation {
       '/dashboard/nft/send': 'SendSingleNFT',
       '/dashboard/nftevm/send': 'SendNftEvm',
       '/dashboard/nested/nftdetail': 'NFTDetail',
-      '/dashboard/nested/collectiondetail': 'NFTList',
+      '/dashboard/nested/nftlistscreen': 'NFTList',
     };
 
     return pathMapping[path] || path.replace('/dashboard/', '');
