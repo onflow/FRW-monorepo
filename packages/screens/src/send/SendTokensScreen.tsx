@@ -1,10 +1,6 @@
 import { bridge, navigation } from '@onflow/frw-context';
 import { useSendStore } from '@onflow/frw-stores';
-import {
-  type WalletAccount,
-  type NFTModel,
-  type CollectionModel,
-} from '@onflow/frw-types';
+import { type WalletAccount, type NFTModel, type CollectionModel } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -49,7 +45,7 @@ export const SendTokensScreen = (props) => {
     isLoading: storeLoading,
     selectedNFTs,
   } = useSendStore();
-  const routerValues = bridge.getRouterValue?.() || {};
+  const routerValues = navigation.getRouteParams();
   const initialToAddress = routerValues.toAddress || null;
   const initialTokenSymbol = routerValues.tokenSymbol || null;
 
