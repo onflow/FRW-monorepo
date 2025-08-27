@@ -32,7 +32,6 @@ class ExtensionNavigation implements Navigation {
   }
 
   navigate(screen: string, params?: Record<string, unknown>): void {
-    console.log('[DEBUG] ExtensionNavigation.navigate called:', screen, params);
     if (this.navigateCallback) {
       // Convert screen name to path and include params as state
       let path = this.convertScreenToPath(screen);
@@ -66,13 +65,6 @@ class ExtensionNavigation implements Navigation {
 
         tokenId = tokenId || 'flow'; // Final fallback
 
-        console.log('[DEBUG] SendTokens tokenId resolution:', {
-          paramsTokenId: params.tokenId,
-          extractedTokenId: tokenId,
-          currentPath: this.locationRef?.current?.pathname,
-          windowPath: typeof window !== 'undefined' ? window.location.pathname : 'undefined',
-        });
-
         const address = params.address;
         if (address) {
           path = `/dashboard/token/${tokenId}/send-tokens/${address}`;
@@ -82,10 +74,12 @@ class ExtensionNavigation implements Navigation {
       } else if (screen === 'NFTDetail' && params?.id) {
         path = `/dashboard/nested/nftdetail/${params.id}`;
       } else if (screen === 'NFTList' && params?.collection && params?.address) {
-        path = `/dashboard/nested/collectiondetail/${params.collection}_${params.address}`;
+        path = `/dashboard/nested/nftlistscreen/${params.address}`;
+      } else if (screen === 'TransactionComplete' && params?.txId) {
+        // Navigate to dashboard with activity tab and transaction ID
+        path = `/dashboard?activity=1&txid=${params.txId}`;
       }
 
-      console.log('[DEBUG] ExtensionNavigation navigating to:', path);
       this.navigateCallback(path, { state: params });
     } else {
       console.warn('[ExtensionNavigation] Navigation attempted but no navigate callback available');
@@ -93,13 +87,10 @@ class ExtensionNavigation implements Navigation {
   }
 
   goBack(): void {
-    console.log('[DEBUG] ExtensionNavigation.goBack called');
     if (typeof window !== 'undefined' && window.history) {
-      console.log('[DEBUG] ExtensionNavigation using window.history.back()');
       window.history.back();
     } else if (this.navigateCallback) {
       // Fallback - navigate to dashboard
-      console.log('[DEBUG] ExtensionNavigation fallback to dashboard');
       this.navigateCallback('/dashboard');
     } else {
       console.warn('[ExtensionNavigation] goBack attempted but no history available');
@@ -176,7 +167,8 @@ class ExtensionNavigation implements Navigation {
       SendMultipleNFTs: '/dashboard/nft/send',
       SendNftEvm: '/dashboard/nftevm/send',
       NFTDetail: '/dashboard/nested/nftdetail',
-      NFTList: '/dashboard/nested/collectiondetail',
+      NFTList: '/dashboard/nested/nftlistscreen',
+      TransactionComplete: '/dashboard', // Navigate to dashboard for transaction complete
     };
 
     return screenMapping[screen] || `/dashboard/${screen.toLowerCase()}`;
@@ -193,7 +185,7 @@ class ExtensionNavigation implements Navigation {
       '/dashboard/nft/send': 'SendSingleNFT',
       '/dashboard/nftevm/send': 'SendNftEvm',
       '/dashboard/nested/nftdetail': 'NFTDetail',
-      '/dashboard/nested/collectiondetail': 'NFTList',
+      '/dashboard/nested/nftlistscreen': 'NFTList',
     };
 
     return pathMapping[path] || path.replace('/dashboard/', '');

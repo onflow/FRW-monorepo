@@ -89,14 +89,18 @@ export function SearchableTabLayout({
         </YStack>
 
         {/* Tabs */}
-        <YStack mb={tabSpacing}>
-          <SegmentedControl
-            segments={tabSegments}
-            value={activeTab}
-            onChange={onTabChange}
-            fullWidth={fullWidthTabs}
-          />
-        </YStack>
+        {tabSegments.length > 0 ? (
+          <YStack mb={tabSpacing}>
+            <SegmentedControl
+              segments={tabSegments}
+              value={activeTab}
+              onChange={onTabChange}
+              fullWidth={fullWidthTabs}
+            />
+          </YStack>
+        ) : (
+          ''
+        )}
 
         {/* Content */}
         <YStack flex={1}>{children}</YStack>

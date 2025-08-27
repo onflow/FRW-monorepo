@@ -1,6 +1,11 @@
 import { bridge, cadence } from '@onflow/frw-context';
 import { flowService } from '@onflow/frw-services';
-import { type NFTModel, type TokenModel, addressType } from '@onflow/frw-types';
+import {
+  type NFTModel,
+  type TokenModel,
+  addressType,
+  type CollectionModel,
+} from '@onflow/frw-types';
 import { getNFTResourceIdentifier, getTokenResourceIdentifier, logger } from '@onflow/frw-utils';
 import {
   type SendPayload,
@@ -41,6 +46,7 @@ export const useSendStore = create<SendState>((set, get) => ({
   transactionType: 'tokens',
   formData: defaultFormData,
   selectedNFTs: [],
+  selectedCollection: null,
   currentStep: 'select-tokens',
   isLoading: false,
   error: null,
@@ -90,6 +96,8 @@ export const useSendStore = create<SendState>((set, get) => ({
     })),
 
   setSelectedNFTs: (nfts: NFTModel[]) => set({ selectedNFTs: nfts, error: null }),
+  setSelectedCollection: (collection: CollectionModel) =>
+    set({ selectedCollection: collection, error: null }),
 
   addSelectedNFT: (nft: NFTModel) =>
     set((state) => {

@@ -39,7 +39,7 @@ indent_style = space
 indent_size = 4
 
 # Java files (Android)
-[*.java]
+[*.{java,kt}]
 indent_style = space
 indent_size = 4
 

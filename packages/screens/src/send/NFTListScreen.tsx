@@ -1,4 +1,4 @@
-import { navigation } from '@onflow/frw-context';
+import { navigation, bridge } from '@onflow/frw-context';
 import { NFTService } from '@onflow/frw-services';
 import { useSendStore } from '@onflow/frw-stores';
 import { type CollectionModel, type NFTModel, addressType } from '@onflow/frw-types';
@@ -10,6 +10,7 @@ import {
   CollectionHeader,
   type NFTData,
   YStack,
+  ExtensionHeader,
 } from '@onflow/frw-ui';
 import { getNFTId } from '@onflow/frw-utils';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -38,7 +39,7 @@ export function NFTListScreen({
 
   // Get store functions
   const { setSelectedNFTs, setCurrentStep } = useSendStore();
-
+  const isExtension = bridge.getPlatform() === 'extension';
   // Update current step when screen loads
   useEffect(() => {
     setCurrentStep('select-nfts');
@@ -151,12 +152,20 @@ export function NFTListScreen({
     <BackgroundWrapper backgroundColor="$background">
       <YStack flex={1}>
         {/* Collection Header */}
+        {isExtension && (
+          <ExtensionHeader
+            title={t('send.title')}
+            help={true}
+            onGoBack={() => navigation.goBack()}
+            onNavigate={(link: string) => navigation.navigate(link)}
+          />
+        )}
         {collection && (
           <YStack px="$4" pt="$2">
             <CollectionHeader
               name={collectionName}
               image={collection.logoURI || collection.logo}
-              description={collection.description}
+              // description={collection.description}
               itemCount={nfts.length}
               isLoading={isLoading}
             />
@@ -173,7 +182,7 @@ export function NFTListScreen({
               searchPlaceholder={t('placeholders.searchNFTs')}
               showScanButton={false}
               onSearchChange={setSearchQuery}
-              tabSegments={[t('tabs.nfts')]}
+              tabSegments={[]}
               activeTab={t('tabs.nfts')}
               onTabChange={() => {}} // Single tab, no action needed
               contentPadding={0}
@@ -203,6 +212,7 @@ export function NFTListScreen({
           onContinue={handleContinue}
           continueText={t('buttons.continue')}
           isEditing={isEditing}
+          maxHeight={400}
         />
       </YStack>
     </BackgroundWrapper>

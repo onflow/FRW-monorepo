@@ -24,8 +24,6 @@ onlyBuiltDependencies:
   - "@swc/core"
   - "@tsparticles/engine"
   - bufferutil
-  - electron
-  - esbuild
   - keccak
   - protobufjs
   - secp256k1

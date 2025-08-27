@@ -1,4 +1,5 @@
 import { bridge } from '@onflow/frw-context';
+import { useSendStore } from '@onflow/frw-stores';
 import { type WalletAccount } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
@@ -19,129 +20,245 @@ import {
   Separator,
   Stack,
   ScrollView,
+  SendArrowDivider,
 } from '@onflow/frw-ui';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 
-export interface SendTokensScreenProps {
-  // Core data
-  selectedToken: TokenModel | null;
-  fromAccount: WalletAccount | null;
-  toAccount: WalletAccount | null;
-  amount: string;
-  tokens?: TokenModel[];
+export const SendTokensScreen = (props) => {
+  // Use props for configuration only, fetch data from bridge
+  // Get router values from bridge
+  const routerValues = bridge.getRouterValue?.() || {};
+  const initialToAddress = routerValues.toAddress || null;
+  const initialTokenSymbol = routerValues.tokenSymbol || null;
 
-  // Input configuration
-  isTokenMode?: boolean;
+  // Default values for internal use
+  const backgroundColor = '$background';
+  const contentPadding = 20;
+  const usdFee = '$0.02';
+  const isAccountIncompatible = false;
+  const isBalanceLoading = false;
+  const showStorageWarning = true;
+  const storageWarningMessage =
+    'Account balance will fall below the minimum FLOW required for storage after this transaction.';
+  const showEditButtons = true;
+  const isFeesFree = false;
 
-  // Modal states
-  isTokenSelectorVisible?: boolean;
-  isConfirmationVisible?: boolean;
-
-  // Event handlers
-  onTokenSelect?: (token: TokenModel) => void;
-  onAmountChange?: (amount: string) => void;
-  onToggleInputMode?: () => void;
-  onMaxPress?: () => void;
-  onSendPress?: () => void;
-  onTokenSelectorOpen?: () => void;
-  onTokenSelectorClose?: () => void;
-  onConfirmationOpen?: () => void;
-  onConfirmationClose?: () => void;
-  onTransactionConfirm?: () => Promise<void>;
-  onEditAccountPress?: () => void;
-  onLearnMorePress?: () => void;
-
-  // Styling
-  backgroundColor?: string;
-  contentPadding?: number;
-
-  // Transaction details
-  transactionFee?: string;
-  usdFee?: string;
-  isFeesFree?: boolean;
-
-  // UI states
-  isAccountIncompatible?: boolean;
-  isBalanceLoading?: boolean;
-  showStorageWarning?: boolean;
-  storageWarningMessage?: string;
-  showEditButtons?: boolean;
-}
-
-export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
-  // Core data
-  selectedToken,
-  fromAccount,
-  toAccount,
-  amount,
-  isTokenMode = true,
-  tokens = [],
-
-  // Modal states
-  isTokenSelectorVisible = false,
-  isConfirmationVisible = false,
-
-  // Event handlers
-  onTokenSelect,
-  onAmountChange,
-  onToggleInputMode,
-  onMaxPress,
-  onSendPress,
-  onTokenSelectorOpen,
-  onTokenSelectorClose,
-  onConfirmationClose,
-  onTransactionConfirm,
-
-  // Styling
-  backgroundColor = '$background',
-  contentPadding = 20,
-
-  // Transaction details
-  transactionFee,
-  usdFee = '$0.02',
-  isFeesFree = false,
-
-  // UI states
-  isAccountIncompatible = false,
-  isBalanceLoading = false,
-  showStorageWarning = true,
-  storageWarningMessage = 'Account balance will fall below the minimum FLOW required for storage after this transaction.',
-  showEditButtons = true,
-  onEditAccountPress,
-  onLearnMorePress,
-}) => {
-  const [isStorageExceededWarningShow, setIsStorageExceededWarningShow] = useState<boolean>(false);
-  // Helper functions
-  const handleTokenSelect =
-    onTokenSelect ||
-    ((_token: TokenModel): void => {
-      /* no-op */
-    });
-  const handleTokenSelectorClose =
-    onTokenSelectorClose ||
-    ((): void => {
-      /* no-op */
-    });
-  const handleConfirmationClose =
-    onConfirmationClose ||
-    ((): void => {
-      /* no-op */
-    });
-
-  // Computed values
-  const isSendDisabled =
-    !selectedToken || !fromAccount || !toAccount || parseFloat(amount || '0') <= 0;
-
-  const formData: TransactionFormData = {
-    tokenAmount: amount,
-    fiatAmount: selectedToken?.priceInUSD
-      ? (parseFloat(amount || '0') * parseFloat(selectedToken.priceInUSD)).toFixed(2)
-      : '0.00',
-    isTokenMode,
-    transactionFee: transactionFee || '~0.001 FLOW',
+  // Internal callback handlers
+  const onEditAccountPress = () => {
+    // Handle edit account press internally
+  };
+  const onLearnMorePress = () => {
+    // Handle learn more press internally
   };
 
+  // Internal state - no more props for data
+  const [selectedToken, setSelectedToken] = useState<TokenModel | null>(null);
+  const [fromAccount, setFromAccount] = useState<WalletAccount | null>(null);
+  const [toAccount, setToAccount] = useState<WalletAccount | null>(null);
+  const [amount, setAmount] = useState<string>('');
+  const [isTokenMode, setIsTokenMode] = useState<boolean>(true);
+  const [tokens, setTokens] = useState<TokenModel[]>([]);
+  const [isTokenSelectorVisible, setIsTokenSelectorVisible] = useState(false);
+  const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
+  const [transactionFee, setTransactionFee] = useState<string>('~0.001 FLOW');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Check if we're running in extension platform
   const isExtension = bridge.getPlatform() === 'extension';
+
+  // Get send store
+  const {
+    setSelectedToken: setStoreSelectedToken,
+    setFromAccount: setStoreFromAccount,
+    setToAccount: setStoreToAccount,
+    updateFormData,
+    executeTransaction,
+    isLoading: storeLoading,
+  } = useSendStore();
+
+  // Simple initialization without complex bridge calls
+  useEffect(() => {
+    const initializeData = async () => {
+      try {
+        setLoading(true);
+
+        // Get current selected account (this is the FROM account - the sender)
+        const selectedAccount = await bridge.getSelectedAccount();
+
+        if (selectedAccount) {
+          setFromAccount({
+            id: selectedAccount.address,
+            address: selectedAccount.address,
+            name: selectedAccount.name,
+            avatar: selectedAccount.avatar || '',
+            emojiInfo: selectedAccount.emojiInfo,
+            parentAddress: selectedAccount.parentAddress,
+            isActive: true,
+            type: selectedAccount.type,
+          });
+        }
+
+        // Get coins data from bridge with retry logic
+        let coinsData: TokenModel[] = [];
+        let retryCount = 0;
+        const maxRetries = 5;
+
+        while ((!coinsData || coinsData.length === 0) && retryCount < maxRetries) {
+          try {
+            const result = await bridge.getCache('coins');
+            coinsData = result as TokenModel[];
+
+            if (!coinsData && retryCount < maxRetries - 1) {
+              await new Promise((resolve) => setTimeout(resolve, 500));
+              retryCount++;
+            } else {
+              break;
+            }
+          } catch (error) {
+            retryCount++;
+            if (retryCount < maxRetries) {
+              await new Promise((resolve) => setTimeout(resolve, 500));
+            }
+          }
+        }
+
+        if (coinsData && Array.isArray(coinsData) && coinsData.length > 0) {
+          setTokens(coinsData);
+
+          // Set initial token based on prop or default to FLOW
+          let defaultToken: TokenModel | undefined;
+          if (initialTokenSymbol) {
+            defaultToken = coinsData.find(
+              (token) => token.symbol.toLowerCase() === initialTokenSymbol.toLowerCase()
+            );
+          }
+          if (!defaultToken) {
+            const flowToken = coinsData.find((token) => token.symbol.toLowerCase() === 'flow');
+            defaultToken = flowToken || coinsData[0];
+          }
+          if (defaultToken) {
+            setSelectedToken(defaultToken);
+          }
+        } else {
+          setTokens([]);
+          setSelectedToken(null);
+          setError('No tokens available. Please ensure your wallet has tokens to send.');
+        }
+
+        // Set initial recipient if provided
+        if (initialToAddress) {
+          setToAccount({
+            address: initialToAddress,
+            name: 'Recipient',
+            balance: '0',
+            avatar: '',
+            emoji: '',
+            emojiInfo: null,
+          });
+        }
+
+        setError(null);
+      } catch (err) {
+        setError('Failed to load wallet data. Please try refreshing.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Call async initialization
+    initializeData();
+  }, [initialToAddress, initialTokenSymbol]);
+
+  // Handler functions - now internal to the screen
+  const handleTokenSelect = useCallback((token: TokenModel) => {
+    setSelectedToken(token);
+    setIsTokenSelectorVisible(false);
+  }, []);
+
+  const handleAmountChange = useCallback((newAmount: string) => {
+    setAmount(newAmount);
+  }, []);
+
+  const handleToggleInputMode = useCallback(() => {
+    setIsTokenMode((prev) => !prev);
+  }, []);
+
+  const handleMaxPress = useCallback(() => {
+    if (selectedToken?.balance) {
+      setAmount(selectedToken.balance.toString());
+    }
+  }, [selectedToken]);
+
+  const handleSendPress = useCallback(() => {
+    setIsConfirmationVisible(true);
+  }, []);
+
+  const handleTokenSelectorOpen = useCallback(() => {
+    setIsTokenSelectorVisible(true);
+  }, []);
+
+  const handleTokenSelectorClose = useCallback(() => {
+    setIsTokenSelectorVisible(false);
+  }, []);
+
+  const handleConfirmationOpen = useCallback(() => {
+    setIsConfirmationVisible(true);
+  }, []);
+
+  const handleConfirmationClose = useCallback(() => {
+    setIsConfirmationVisible(false);
+  }, []);
+
+  const handleTransactionConfirm = useCallback(async () => {
+    if (!selectedToken || !fromAccount || !toAccount || !amount) {
+      throw new Error('Missing transaction data');
+    }
+
+    setStoreSelectedToken(selectedToken);
+    setStoreFromAccount(fromAccount);
+    setStoreToAccount(toAccount);
+    updateFormData({ tokenAmount: amount });
+
+    // Execute transaction using the store
+    console.log('🚀 Executing transaction using store executeTransaction...');
+    try {
+      const result = await executeTransaction();
+      console.log('✅ Transaction result:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ Transaction failed:', error);
+      throw error;
+    }
+  }, [
+    selectedToken,
+    fromAccount,
+    toAccount,
+    amount,
+    setStoreSelectedToken,
+    setStoreFromAccount,
+    setStoreToAccount,
+    updateFormData,
+    executeTransaction,
+  ]);
+  const [isStorageExceededWarningShow, setIsStorageExceededWarningShow] = useState<boolean>(false);
+  // Calculate if send button should be disabled
+  const isSendDisabled = useMemo(() => {
+    return !selectedToken || !fromAccount || !toAccount || parseFloat(amount || '0') <= 0;
+  }, [selectedToken, fromAccount, toAccount, amount]);
+
+  // Create form data for transaction confirmation
+  const formData: TransactionFormData = useMemo(
+    () => ({
+      tokenAmount: amount,
+      fiatAmount: selectedToken?.priceInUSD
+        ? (parseFloat(amount || '0') * parseFloat(selectedToken.priceInUSD)).toFixed(2)
+        : '0.00',
+      isTokenMode,
+      transactionFee: transactionFee,
+    }),
+    [amount, selectedToken?.priceInUSD, isTokenMode, transactionFee]
+  );
 
   return (
     <BackgroundWrapper backgroundColor={backgroundColor}>
@@ -180,11 +297,11 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
                       : undefined
                   }
                   amount={amount}
-                  onAmountChange={onAmountChange}
+                  onAmountChange={handleAmountChange}
                   isTokenMode={isTokenMode}
-                  onToggleInputMode={onToggleInputMode}
-                  onTokenSelectorPress={onTokenSelectorOpen}
-                  onMaxPress={onMaxPress}
+                  onToggleInputMode={handleToggleInputMode}
+                  onTokenSelectorPress={handleTokenSelectorOpen}
+                  onMaxPress={handleMaxPress}
                   placeholder="0.00"
                   showBalance={true}
                   showConverter={true}
@@ -192,6 +309,15 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
                 />
               </YStack>
             </YStack>
+
+            {/* Storage Warning */}
+
+            {/* Arrow Down Indicator */}
+            <Stack position="relative" height={0}>
+              <Stack width="100%" position="absolute" t={-35} justify="center">
+                <SendArrowDivider variant="text" />
+              </Stack>
+            </Stack>
 
             {/* To Account Section */}
             <Stack>
@@ -208,18 +334,17 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
             </Stack>
 
             {/* Transaction Fee Section */}
-            <YStack paddingBlock={16} gap={2}>
-              <TransactionFeeSection
-                flowFee={transactionFee || '0.001 FLOW'}
-                usdFee={usdFee}
-                isFree={isFeesFree}
-                showCovered={true}
-                title="Transaction Fee"
-                backgroundColor="$black"
-                borderRadius={16}
-              />
-
-              {/* Storage Warning */}
+            <TransactionFeeSection
+              flowFee={transactionFee}
+              usdFee={usdFee}
+              isFree={isFeesFree}
+              showCovered={true}
+              title="Transaction Fee"
+              backgroundColor="transparent"
+              borderRadius={16}
+              contentPadding={16}
+            />
+            <Stack p="$4">
               {showStorageWarning && (
                 <StorageWarning
                   message={storageWarningMessage}
@@ -229,47 +354,47 @@ export const SendTokensScreen: React.FC<SendTokensScreenProps> = ({
                   setIsStorageExceededWarningShow={setIsStorageExceededWarningShow}
                 />
               )}
+            </Stack>
+          </YStack>
+
+          {/* Send Button */}
+          <View p={contentPadding} pt="$2">
+            <YStack
+              bg={isSendDisabled ? '$light25' : '$white'}
+              rounded="$4"
+              p="$1"
+              items="center"
+              opacity={isSendDisabled ? 0.5 : 1}
+              pressStyle={{ opacity: 0.8 }}
+              onPress={isSendDisabled ? undefined : handleSendPress}
+              cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
+            >
+              <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '$white' : '$black'}>
+                Send Tokens
+              </Text>
             </YStack>
-          </YStack>
+          </View>
+
+          {/* Modals */}
+          <TokenSelectorModal
+            visible={isTokenSelectorVisible}
+            selectedToken={selectedToken}
+            tokens={tokens}
+            onTokenSelect={handleTokenSelect}
+            onClose={handleTokenSelectorClose}
+          />
+
+          <TransactionConfirmationModal
+            visible={isConfirmationVisible}
+            transactionType="tokens"
+            selectedToken={selectedToken}
+            fromAccount={fromAccount}
+            toAccount={toAccount}
+            formData={formData}
+            onConfirm={handleTransactionConfirm}
+            onClose={handleConfirmationClose}
+          />
         </ScrollView>
-
-        {/* Send Button */}
-        <View p={contentPadding} pt="$2">
-          <YStack
-            bg={isSendDisabled ? '$light25' : '$white'}
-            rounded="$4"
-            p="$1"
-            items="center"
-            opacity={isSendDisabled ? 0.5 : 1}
-            pressStyle={{ opacity: 0.8 }}
-            onPress={isSendDisabled ? undefined : onSendPress}
-            cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
-          >
-            <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '$white' : '$black'}>
-              Send Tokens
-            </Text>
-          </YStack>
-        </View>
-
-        {/* Modals */}
-        <TokenSelectorModal
-          visible={isTokenSelectorVisible}
-          selectedToken={selectedToken}
-          tokens={tokens}
-          onTokenSelect={handleTokenSelect}
-          onClose={handleTokenSelectorClose}
-        />
-
-        <TransactionConfirmationModal
-          visible={isConfirmationVisible}
-          transactionType="tokens"
-          selectedToken={selectedToken}
-          fromAccount={fromAccount}
-          toAccount={toAccount}
-          formData={formData}
-          onConfirm={onTransactionConfirm}
-          onClose={handleConfirmationClose}
-        />
       </YStack>
       <StorageExceededAlert
         visible={isStorageExceededWarningShow}

@@ -95,6 +95,7 @@ export interface SendState {
   transactionType: TransactionType;
   formData: SendFormData;
   selectedNFTs: NFTModel[];
+  selectedCollection: CollectionModel | null;
 
   // Balance management
   balances: {
