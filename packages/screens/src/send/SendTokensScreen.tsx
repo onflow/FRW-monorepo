@@ -59,6 +59,7 @@ export const SendTokensScreen = (props) => {
   const routerValues = bridge.getRouterValue?.() || {};
   const initialToAddress = routerValues.toAddress || null;
   const initialTokenSymbol = routerValues.tokenSymbol || null;
+  const network = bridge.getNetwork() || 'mainnet';
 
   // Default values for internal use
   const backgroundColor = '$background';
@@ -126,15 +127,14 @@ export const SendTokensScreen = (props) => {
 
           // Get tokens from tokenStore for the selected account
           // Check if we already have cached data first
-          const cachedTokens = getTokensForAddress(selectedAccount.address);
+          const cachedTokens = getTokensForAddress(selectedAccount.address, network);
 
           if (!cachedTokens || cachedTokens.length === 0) {
-            const network = bridge.getNetwork() || 'mainnet';
             await fetchTokens(selectedAccount.address, network, false);
           }
 
           // Get tokens from cache (either existing or newly fetched)
-          const coinsData = getTokensForAddress(selectedAccount.address);
+          const coinsData = getTokensForAddress(selectedAccount.address, network);
 
           if (coinsData && coinsData.length > 0) {
             setTokens(coinsData);

@@ -64,6 +64,9 @@ export function SelectTokensScreen(): React.ReactElement {
   // Check if we're running in extension platform
   const isExtension = bridge.getPlatform() === 'extension';
 
+  // Get tokens from tokenStore for the account
+  const network = bridge.getNetwork() || 'mainnet';
+
   // Fetch tokens
   const fetchTokens = useCallback(
     async (accountAddress?: string, accountType?: string, isRefreshAction = false) => {
@@ -79,9 +82,6 @@ export function SelectTokensScreen(): React.ReactElement {
           setTokens([]);
           return;
         }
-
-        // Get tokens from tokenStore for the account
-        const network = bridge.getNetwork() || 'mainnet';
 
         // Check if we already have cached data first
         const cachedTokens = getTokensForAddress(targetAddress, network);
