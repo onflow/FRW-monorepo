@@ -38,7 +38,7 @@ export function NFTListScreen({
   const [selectedIds, setSelectedIds] = useState<string[]>(selectedNFTIds);
 
   // Get store functions
-  const { setSelectedNFTs, setCurrentStep } = useSendStore();
+  const { setSelectedNFTs, setCurrentStep, setTransactionType } = useSendStore();
   const isExtension = bridge.getPlatform() === 'extension';
   // Update current step when screen loads
   useEffect(() => {
@@ -102,6 +102,7 @@ export function NFTListScreen({
 
   // Handle NFT selection
   const handleNFTSelect = useCallback((nftId: string) => {
+    setTransactionType('multiple-nfts');
     setSelectedIds((prev) => {
       const isSelected = prev.includes(nftId);
       if (isSelected) {
