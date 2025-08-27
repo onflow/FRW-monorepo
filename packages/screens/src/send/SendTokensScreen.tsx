@@ -4,6 +4,7 @@ import {
   type WalletAccount,
   type NFTModel,
   type CollectionModel,
+  type TokenModel,
 } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
@@ -18,7 +19,6 @@ import {
   SendArrowDivider,
   StorageWarning,
   ExtensionHeader,
-  type TokenModel,
   type TransactionFormData,
   Text,
   Separator,
@@ -38,22 +38,21 @@ export const SendTokensScreen = (props) => {
 
   // Get send store
   const {
-    setSelectedToken: setStoreSelectedToken,
+    setSelectedToken,
     setSelectedNFTs,
     setTransactionType,
     transactionType,
+    selectedNFTs,
+    selectedToken,
     setFromAccount: setStoreFromAccount,
     setToAccount: setStoreToAccount,
     updateFormData,
     executeTransaction,
     isLoading: storeLoading,
-    selectedNFTs,
   } = useSendStore();
   const routerValues = bridge.getRouterValue?.() || {};
   const initialToAddress = routerValues.toAddress || null;
   const initialTokenSymbol = routerValues.tokenSymbol || null;
-
-  console.log('storeSelectedNFTs:', selectedNFTs);
 
   // Default values for internal use
   const backgroundColor = '$background';
@@ -76,7 +75,6 @@ export const SendTokensScreen = (props) => {
   };
 
   // Internal state - no more props for data
-  const [selectedToken, setSelectedToken] = useState<TokenModel | null>(null);
   const [fromAccount, setFromAccount] = useState<WalletAccount | null>(null);
   const [toAccount, setToAccount] = useState<WalletAccount | null>(null);
   const [amount, setAmount] = useState<string>('');
@@ -116,29 +114,7 @@ export const SendTokensScreen = (props) => {
         }
 
         // Get coins data from bridge with retry logic
-        let coinsData: TokenModel[] = [];
-        let retryCount = 0;
-        const maxRetries = 5;
-
-        while ((!coinsData || coinsData.length === 0) && retryCount < maxRetries) {
-          try {
-            const result = await bridge.getCache('coins');
-            coinsData = result as TokenModel[];
-
-            if (!coinsData && retryCount < maxRetries - 1) {
-              await new Promise((resolve) => setTimeout(resolve, 500));
-              retryCount++;
-            } else {
-              break;
-            }
-          } catch (error) {
-            retryCount++;
-            if (retryCount < maxRetries) {
-              await new Promise((resolve) => setTimeout(resolve, 500));
-            }
-          }
-        }
-
+        const coinsData = await bridge.getCache('coins');
         if (coinsData && Array.isArray(coinsData) && coinsData.length > 0) {
           setTokens(coinsData);
 
@@ -246,7 +222,7 @@ export const SendTokensScreen = (props) => {
         throw new Error('Missing transaction data');
       }
 
-      setStoreSelectedToken(selectedToken);
+      setSelectedToken(selectedToken);
       setStoreFromAccount(fromAccount);
       setStoreToAccount(toAccount);
       setTransactionType('tokens');
@@ -279,7 +255,7 @@ export const SendTokensScreen = (props) => {
     fromAccount,
     toAccount,
     amount,
-    setStoreSelectedToken,
+    setSelectedToken,
     setSelectedNFTs,
     setTransactionType,
     setStoreFromAccount,
