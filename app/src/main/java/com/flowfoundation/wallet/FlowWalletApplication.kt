@@ -1,4 +1,4 @@
-package com.flowfoundation.wallet.reactnative
+package com.flowfoundation.wallet
 
 import android.app.Application
 import com.facebook.react.PackageList
@@ -16,7 +16,6 @@ import com.flowfoundation.wallet.reactnative.bridge.NativeFRWBridgePackage
 import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
 import com.microsoft.codepush.react.CodePush
-import com.flowfoundation.wallet.BuildConfig
 
 class FlowWalletApplication : Application(), ReactApplication {
 

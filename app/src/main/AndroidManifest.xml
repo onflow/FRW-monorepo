@@ -26,7 +26,7 @@
         android:required="false"/>
 
     <application
-        android:name=".reactnative.FlowWalletApplication"
+        android:name=".FlowWalletApplication"
         android:allowBackup="false"
         android:fullBackupContent="false"
         android:hardwareAccelerated="true"
