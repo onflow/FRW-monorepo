@@ -1,5 +1,5 @@
 import { bridge, navigation } from '@onflow/frw-context';
-import { useSendStore } from '@onflow/frw-stores';
+import { useSendStore, useTokenStore } from '@onflow/frw-stores';
 import {
   type WalletAccount,
   type NFTModel,
@@ -50,6 +50,12 @@ export const SendTokensScreen = (props) => {
     executeTransaction,
     isLoading: storeLoading,
   } = useSendStore();
+
+  // Get token store
+  const { getTokensForAddress, fetchTokens } = useTokenStore();
+
+  // Add a ref to track if we've already initialized
+  const hasInitialized = React.useRef(false);
   const routerValues = bridge.getRouterValue?.() || {};
   const initialToAddress = routerValues.toAddress || null;
   const initialTokenSymbol = routerValues.tokenSymbol || null;
@@ -93,8 +99,14 @@ export const SendTokensScreen = (props) => {
 
   // Simple initialization without complex bridge calls
   useEffect(() => {
+    // Prevent multiple initializations
+    if (hasInitialized.current) {
+      return;
+    }
+
     const initializeData = async () => {
       try {
+        hasInitialized.current = true;
         setLoading(true);
 
         // Get current selected account (this is the FROM account - the sender)
@@ -111,31 +123,41 @@ export const SendTokensScreen = (props) => {
             isActive: true,
             type: selectedAccount.type,
           });
-        }
 
-        // Get coins data from bridge with retry logic
-        const coinsData = await bridge.getCache('coins');
-        if (coinsData && Array.isArray(coinsData) && coinsData.length > 0) {
-          setTokens(coinsData);
+          // Get tokens from tokenStore for the selected account
+          // Check if we already have cached data first
+          const cachedTokens = getTokensForAddress(selectedAccount.address);
 
-          // Set initial token based on prop or default to FLOW
-          let defaultToken: TokenModel | undefined;
-          if (initialTokenSymbol) {
-            defaultToken = coinsData.find(
-              (token) => token.symbol.toLowerCase() === initialTokenSymbol.toLowerCase()
-            );
+          if (!cachedTokens || cachedTokens.length === 0) {
+            const network = bridge.getNetwork() || 'mainnet';
+            await fetchTokens(selectedAccount.address, network, false);
           }
-          if (!defaultToken) {
-            const flowToken = coinsData.find((token) => token.symbol.toLowerCase() === 'flow');
-            defaultToken = flowToken || coinsData[0];
+
+          // Get tokens from cache (either existing or newly fetched)
+          const coinsData = getTokensForAddress(selectedAccount.address);
+
+          if (coinsData && coinsData.length > 0) {
+            setTokens(coinsData);
+
+            // Set initial token based on prop or default to FLOW
+            let defaultToken: TokenModel | undefined;
+            if (initialTokenSymbol) {
+              defaultToken = coinsData.find(
+                (token) => token.symbol?.toLowerCase() === initialTokenSymbol.toLowerCase()
+              );
+            }
+            if (!defaultToken) {
+              const flowToken = coinsData.find((token) => token.symbol?.toLowerCase() === 'flow');
+              defaultToken = flowToken || coinsData[0];
+            }
+            if (defaultToken) {
+              setSelectedToken(defaultToken);
+            }
+          } else {
+            setTokens([]);
+            setSelectedToken(null);
+            setError('No tokens available. Please ensure your wallet has tokens to send.');
           }
-          if (defaultToken) {
-            setSelectedToken(defaultToken);
-          }
-        } else {
-          setTokens([]);
-          setSelectedToken(null);
-          setError('No tokens available. Please ensure your wallet has tokens to send.');
         }
 
         // Fetch NFT collections
