@@ -143,11 +143,13 @@ export const SendTokensScreen = (props) => {
             let defaultToken: TokenModel | undefined;
             if (initialTokenSymbol) {
               defaultToken = coinsData.find(
-                (token) => token.symbol?.toLowerCase() === initialTokenSymbol.toLowerCase()
+                (token) => (token.symbol || '').toLowerCase() === initialTokenSymbol.toLowerCase()
               );
             }
             if (!defaultToken) {
-              const flowToken = coinsData.find((token) => token.symbol?.toLowerCase() === 'flow');
+              const flowToken = coinsData.find(
+                (token) => (token.symbol || '').toLowerCase() === 'flow'
+              );
               defaultToken = flowToken || coinsData[0];
             }
             if (defaultToken) {
