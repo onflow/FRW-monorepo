@@ -312,10 +312,6 @@
             android:screenOrientation="portrait"/>
 
         <activity
-            android:name=".page.ar.ArActivity"
-            android:screenOrientation="portrait"/>
-
-        <activity
             android:name=".page.swap.SwapActivity"
             android:screenOrientation="portrait"/>
 
@@ -463,14 +459,11 @@
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="@string/notification_channel_id"/>
 
-        <meta-data
-            android:name="com.google.ar.core"
-            android:value="optional"/>
         <!--suppress AndroidDomInspection -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_api_key"/>
-        
+
         <meta-data
             android:name="com.microsoft.codepush.react.CodePushDeploymentKey"
             android:value="YOUR_CODEPUSH_DEPLOYMENT_KEY" />
