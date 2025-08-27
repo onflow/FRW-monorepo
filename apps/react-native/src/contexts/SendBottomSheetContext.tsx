@@ -34,14 +34,29 @@ export const SendBottomSheetProvider: React.FC<SendBottomSheetProviderProps> = (
   };
 
   const closeSend = () => {
-    bottomSheetRef.current?.dismiss();
-    setTimeout(() => {
+    try {
+      bottomSheetRef.current?.dismiss();
+
+      // Cleanup timeout to ensure state is reset even if sheet dismiss fails
+      setTimeout(() => {
+        try {
+          setIsOpen(false);
+          setCurrentStep('SelectTokens');
+          setCurrentParams(null);
+          // Clear form data including amount field when workflow closes
+          clearTransactionData();
+        } catch (error) {
+          console.warn('[SendBottomSheetContext] Error during cleanup:', error);
+        }
+      }, 300);
+    } catch (error) {
+      console.warn('[SendBottomSheetContext] Error closing send workflow:', error);
+      // Force cleanup even if dismiss fails
       setIsOpen(false);
       setCurrentStep('SelectTokens');
       setCurrentParams(null);
-      // Clear form data including amount field when workflow closes
       clearTransactionData();
-    }, 300);
+    }
   };
 
   const navigateToStep = (step: SendWorkflowStep, params?: Record<string, unknown>) => {

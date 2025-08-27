@@ -90,7 +90,7 @@ export const ConfirmationDrawerProvider: React.FC<ConfirmationDrawerProviderProp
       // After successful confirmation, close the entire React Native view
       // Don't call closeConfirmation() as we're closing the entire view
       console.log('[ConfirmationDrawer] Closing React Native view...');
-      NativeFRWBridge.closeRN();
+      NativeFRWBridge.closeRN(null);
     } catch (error) {
       // If confirmation fails, just close the bottom sheet
       console.error('Confirmation failed:', error);

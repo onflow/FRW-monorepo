@@ -81,6 +81,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
     setFromAccount,
     setSelectedNFTs,
     setToAccount,
+    clearTransactionData,
   } = useSendStore();
 
   // Initialize SendTo flow if requested
@@ -90,6 +91,12 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
       hasSendToConfig: !!initialProps?.sendToConfig,
       sendToConfig: initialProps?.sendToConfig,
     });
+
+    // Clear any existing transaction state before initializing new flow
+    if (initialProps?.screen === 'send-asset') {
+      console.log('🚀 DEBUG: Clearing existing send state before initialization');
+      clearTransactionData();
+    }
 
     if (initialProps?.screen === 'send-asset') {
       let sendToConfig = initialProps?.sendToConfig;
