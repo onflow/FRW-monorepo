@@ -193,15 +193,6 @@ export class ExtensionStorage implements Storage {
       console.error('Failed to clear storage:', error);
     }
   }
-
-  // Extension-specific methods (not applicable)
-  recrypt(): void {
-    console.warn('recrypt() not supported in Extension storage');
-  }
-
-  trim(): void {
-    console.warn('trim() not supported in Extension storage');
-  }
 }
 ```
 
@@ -283,14 +274,6 @@ export class ReactNativeStorage implements Storage {
 
   async clearAll(): Promise<void> {
     this.mmkv.clearAll();
-  }
-
-  async recrypt(key: string | undefined): Promise<void> {
-    this.mmkv.recrypt(key);
-  }
-
-  async trim(): Promise<void> {
-    this.mmkv.trim();
   }
 }
 ```

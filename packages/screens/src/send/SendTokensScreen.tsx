@@ -24,6 +24,7 @@ import {
   MultipleNFTsPreview,
   SendSectionHeader,
 } from '@onflow/frw-ui';
+import { logger } from '@onflow/frw-utils';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 
 export const SendTokensScreen = (props) => {
@@ -45,11 +46,11 @@ export const SendTokensScreen = (props) => {
     isLoading: storeLoading,
     selectedNFTs,
   } = useSendStore();
-  const routerValues = navigation.getRouteParams();
+  const routerValues = navigation.getRouteParams() || {};
   const initialToAddress = routerValues.toAddress || null;
   const initialTokenSymbol = routerValues.tokenSymbol || null;
 
-  console.log('storeSelectedNFTs:', selectedNFTs);
+  logger.info('storeSelectedNFTs:', selectedNFTs);
 
   // Default values for internal use
   const backgroundColor = '$background';
@@ -259,13 +260,13 @@ export const SendTokensScreen = (props) => {
     }
 
     // Execute transaction using the store
-    console.log('🚀 Executing transaction using store executeTransaction...');
+    logger.info('🚀 Executing transaction using store executeTransaction...');
     try {
       const result = await executeTransaction();
-      console.log('✅ Transaction result:', result);
+      logger.info('✅ Transaction result:', result);
       return result;
     } catch (error) {
-      console.error('❌ Transaction failed:', error);
+      logger.error('❌ Transaction failed:', error);
       throw error;
     }
   }, [
