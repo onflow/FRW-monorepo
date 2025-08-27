@@ -12,7 +12,7 @@ import com.facebook.react.defaults.DefaultReactNativeHost
 import com.flowfoundation.wallet.crowdin.crowdinInitialize
 import com.flowfoundation.wallet.manager.LaunchManager
 import com.flowfoundation.wallet.utils.Env
-import com.flowfoundation.wallet.bridge.NativeFRWBridgePackage
+import com.flowfoundation.wallet.reactnative.bridge.NativeFRWBridgePackage
 import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
 import com.microsoft.codepush.react.CodePush

@@ -7,8 +7,8 @@ import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
-import com.flowfoundation.wallet.bridge.QRCodeScanManager
-import com.flowfoundation.wallet.bridge.RNBridge
+import com.flowfoundation.wallet.reactnative.bridge.QRCodeScanManager
+import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.wallet.toAddress

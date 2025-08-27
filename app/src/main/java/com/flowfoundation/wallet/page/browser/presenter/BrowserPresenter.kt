@@ -15,7 +15,7 @@ import com.flowfoundation.wallet.page.browser.widgets.BrowserPopupMenu
 import com.flowfoundation.wallet.page.browser.widgets.WebviewCallback
 import com.flowfoundation.wallet.page.evm.EnableEVMDialog
 import com.flowfoundation.wallet.reactnative.ReactNativeActivity
-import com.flowfoundation.wallet.bridge.RNBridge
+import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.page.window.WindowFrame

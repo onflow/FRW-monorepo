@@ -1,4 +1,4 @@
-package com.flowfoundation.wallet.bridge
+package com.flowfoundation.wallet.reactnative.bridge
 
 import com.facebook.react.BaseReactPackage
 import com.facebook.react.bridge.NativeModule

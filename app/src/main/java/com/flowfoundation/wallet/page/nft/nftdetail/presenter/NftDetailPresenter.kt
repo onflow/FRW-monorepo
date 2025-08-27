@@ -46,7 +46,7 @@ import com.google.android.exoplayer2.MediaItem
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import jp.wasabeef.glide.transformations.BlurTransformation
 import com.flowfoundation.wallet.reactnative.ReactNativeActivity
-import com.flowfoundation.wallet.bridge.toRNBridgeNFTModel
+import com.flowfoundation.wallet.reactnative.bridge.toRNBridgeNFTModel
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 
 import java.net.URL

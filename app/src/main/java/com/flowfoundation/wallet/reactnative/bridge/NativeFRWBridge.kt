@@ -1,4 +1,4 @@
-package com.flowfoundation.wallet.bridge
+package com.flowfoundation.wallet.reactnative.bridge
 
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
@@ -7,7 +7,7 @@ import com.facebook.react.bridge.WritableNativeArray
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.WritableMap
 import com.flow.wallet.errors.WalletError
-import com.flowfoundation.wallet.bridge.NativeFRWBridgeSpec
+import com.flowfoundation.wallet.reactnative.bridge.NativeFRWBridgeSpec
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager

@@ -25,8 +25,8 @@ import com.flowfoundation.wallet.page.receive.ReceiveActivity
 import com.flowfoundation.wallet.reactnative.ReactNativeActivity
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.wallet.toAddress
-import com.flowfoundation.wallet.bridge.RNBridge
-import com.flowfoundation.wallet.bridge.toRNBridgeTokenModel
+import com.flowfoundation.wallet.reactnative.bridge.RNBridge
+import com.flowfoundation.wallet.reactnative.bridge.toRNBridgeTokenModel
 import com.flowfoundation.wallet.page.staking.openStakingPage
 import com.flowfoundation.wallet.page.token.detail.model.TokenDetailModel
 import com.flowfoundation.wallet.page.wallet.dialog.SwapDialog

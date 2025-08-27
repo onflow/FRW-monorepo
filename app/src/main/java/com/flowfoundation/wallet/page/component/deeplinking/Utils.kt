@@ -12,7 +12,7 @@ import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
 import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.page.browser.openBrowser
 import com.flowfoundation.wallet.reactnative.ReactNativeActivity
-import com.flowfoundation.wallet.bridge.RNBridge
+import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.wallet.dialog.SwapDialog

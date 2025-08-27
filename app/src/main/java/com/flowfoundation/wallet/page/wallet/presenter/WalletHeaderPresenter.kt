@@ -10,7 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.reactnative.ReactNativeActivity
 import com.flowfoundation.wallet.base.presenter.BasePresenter
-import com.flowfoundation.wallet.bridge.RNBridge
+import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.LayoutWalletCoordinatorHeaderBinding

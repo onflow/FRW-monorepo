@@ -1,4 +1,4 @@
-package com.flowfoundation.wallet.bridge
+package com.flowfoundation.wallet.reactnative.bridge
 
 import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.manager.token.model.FungibleTokenType

@@ -1,4 +1,4 @@
-package com.flowfoundation.wallet.bridge
+package com.flowfoundation.wallet.reactnative.bridge
 
 import android.app.Activity
 import android.content.Intent
