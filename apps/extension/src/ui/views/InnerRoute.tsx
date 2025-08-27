@@ -288,14 +288,6 @@ const InnerRoute = () => {
               }
             />
             <Route
-              path="nft/:id/send-nfts/:toAddress"
-              element={
-                <PrivateRoute>
-                  <SendTokensScreenView />
-                </PrivateRoute>
-              }
-            />
-            <Route
               path="token/:id/send/:toAddress"
               element={
                 <PrivateRoute>
