@@ -151,7 +151,7 @@ export function NFTListScreen({
 
   return (
     <BackgroundWrapper backgroundColor="$background">
-      <YStack flex={1}>
+      <YStack flex={1} position="relative">
         {/* Collection Header */}
         {isExtension && (
           <ExtensionHeader
@@ -213,7 +213,6 @@ export function NFTListScreen({
           onContinue={handleContinue}
           continueText={t('buttons.continue')}
           isEditing={isEditing}
-          maxHeight={400}
         />
       </YStack>
     </BackgroundWrapper>

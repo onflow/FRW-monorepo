@@ -114,14 +114,21 @@ export function NFTSelectionBar({
 
         {/* Expandable Content */}
         {isExpanded && (
-          <YStack maxHeight={maxHeight} bg="$backgroundStrong" borderRadius="$4" gap="$0.5" pb="$2">
+          <YStack
+            maxH={maxHeight}
+            minH={30 + selectedNFTs.length * 50}
+            bg="$backgroundStrong"
+            borderRadius="$4"
+            gap="$0.5"
+            pb="$2"
+          >
             <ScrollView showsVerticalScrollIndicator={false}>
               <YStack>
                 {selectedNFTs.map((nft, index) => (
                   <React.Fragment key={nft.id}>
                     {renderNFTItem(nft)}
                     {index < selectedNFTs.length - 1 && (
-                      <YStack py="$2" items="center">
+                      <YStack py="$2" items="center" width="100%">
                         <YStack height="$0.25" bg="$background4" width="100%" />
                       </YStack>
                     )}
