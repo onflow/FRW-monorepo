@@ -4,36 +4,7 @@ import React from 'react';
 import { Dialog, YStack, XStack, Button, Adapt, Sheet } from 'tamagui';
 
 import { Text } from '../foundation/Text';
-
-// Type declaration for chrome extension API
-declare global {
-  interface Window {
-    chrome?: {
-      i18n?: {
-        getMessage: (key: string) => string;
-      };
-    };
-  }
-
-  const chrome:
-    | {
-        i18n?: {
-          getMessage: (key: string) => string;
-        };
-      }
-    | undefined;
-}
-
-// Helper to safely access chrome.i18n
-const getChromeMessage = (key: string, fallback: string): string => {
-  if (typeof window !== 'undefined' && window.chrome?.i18n) {
-    return window.chrome.i18n.getMessage(key);
-  }
-  if (typeof chrome !== 'undefined' && chrome?.i18n) {
-    return chrome.i18n.getMessage(key);
-  }
-  return fallback;
-};
+import { usePlatformTranslation } from '../hooks/usePlatformTranslation';
 
 export interface StorageExceededAlertProps {
   visible: boolean;
@@ -46,6 +17,8 @@ export const StorageExceededAlert: React.FC<StorageExceededAlertProps> = ({
   onClose,
   title,
 }) => {
+  const { t } = usePlatformTranslation();
+
   const handleBuyFlow = () => {
     onClose();
     navigation.navigate('Home');
@@ -53,7 +26,7 @@ export const StorageExceededAlert: React.FC<StorageExceededAlertProps> = ({
 
   const getTitle = () => {
     if (title) return title;
-    return getChromeMessage('Insufficient_Storage', 'Storage Limitation Warning');
+    return t('Insufficient_Storage', 'Storage Limitation Warning');
   };
 
   return (
@@ -116,7 +89,7 @@ export const StorageExceededAlert: React.FC<StorageExceededAlertProps> = ({
                     lineHeight="$1"
                     style={{ textAlign: 'center' }}
                   >
-                    {getChromeMessage(
+                    {t(
                       'Transaction_failed_storage_exceeded',
                       'Transaction failed due to storage exceeded'
                     )}
@@ -130,10 +103,7 @@ export const StorageExceededAlert: React.FC<StorageExceededAlertProps> = ({
                     lineHeight="$1"
                     style={{ textAlign: 'center' }}
                   >
-                    {getChromeMessage(
-                      'Must_have_minimum_flow_storage',
-                      'Must have minimum Flow for storage'
-                    )}
+                    {t('Must_have_minimum_flow_storage', 'Must have minimum Flow for storage')}
                   </Text>
                 </YStack>
 
@@ -146,7 +116,7 @@ export const StorageExceededAlert: React.FC<StorageExceededAlertProps> = ({
                     pressStyle={{ opacity: 0.7 }}
                     style={{ textAlign: 'center' }}
                   >
-                    {getChromeMessage('Learn__more', 'Learn more')}
+                    {t('Learn__more', 'Learn more')}
                   </Text>
                 </YStack>
               </YStack>
@@ -162,7 +132,7 @@ export const StorageExceededAlert: React.FC<StorageExceededAlertProps> = ({
               pressStyle={{ opacity: 0.8 }}
             >
               <Text fontSize="$5" fontWeight="600" color="$black">
-                {getChromeMessage('BUY_FLOW', 'Buy Flow')}
+                {t('BUY_FLOW', 'Buy Flow')}
               </Text>
             </YStack>
           </YStack>

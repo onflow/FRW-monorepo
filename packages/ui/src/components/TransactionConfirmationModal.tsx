@@ -1,4 +1,4 @@
-import { ChevronDown, WalletCard, Close, FlowLogo } from '@onflow/frw-icons';
+import { ChevronDown, CloseIcon, FlowLogo, WalletCard } from '@onflow/frw-icons';
 import { type WalletAccount, type TransactionType } from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack, View } from 'tamagui';
@@ -200,7 +200,7 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
             e.target.style.backgroundColor = 'transparent';
           }}
         >
-          <Close size={20} color="#ffffff" />
+          <CloseIcon size={20} color="#ffffff" />
         </button>
       </XStack>
 

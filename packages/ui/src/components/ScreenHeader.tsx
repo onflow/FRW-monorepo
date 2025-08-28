@@ -1,4 +1,3 @@
-import { ArrowBack, Close } from '@onflow/frw-icons';
 import React from 'react';
 import { XStack, Stack } from 'tamagui';
 

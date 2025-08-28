@@ -1,3 +1,6 @@
+// Import polyfills first to ensure Node.js modules are available
+import './polyfills';
+
 // Export Tamagui base components (excluding components we've customized)
 export {
   H1,

@@ -1,4 +1,4 @@
-import { ArrowBack, InfoIcon } from '@onflow/frw-icons';
+import { InfoIcon } from '@onflow/frw-icons';
 import React from 'react';
 import { View, XStack } from 'tamagui';
 

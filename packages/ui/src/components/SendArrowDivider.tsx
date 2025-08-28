@@ -1,4 +1,3 @@
-import { ArrowDown } from '@onflow/frw-icons';
 import React from 'react';
 import { YStack } from 'tamagui';
 

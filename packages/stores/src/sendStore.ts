@@ -96,7 +96,7 @@ export const useSendStore = create<SendState>((set, get) => ({
     })),
 
   setSelectedNFTs: (nfts: NFTModel[]) => set({ selectedNFTs: nfts, error: null }),
-  setSelectedCollection: (collection: CollectionModel) =>
+  setSelectedCollection: (collection: CollectionModel | null) =>
     set({ selectedCollection: collection, error: null }),
 
   addSelectedNFT: (nft: NFTModel) =>
