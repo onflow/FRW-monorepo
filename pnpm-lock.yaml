@@ -661,12 +661,6 @@ importers:
       react-native-get-random-values:
         specifier: ^1.11.0
         version: 1.11.0(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))
-      react-native-mmkv:
-        specifier: ^2.12.2
-        version: 2.12.2(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0)
-      react-native-modal:
-        specifier: 13.0.1
-        version: 13.0.1(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0)
       react-native-reanimated:
         specifier: ^3.8.1
         version: 3.19.1(@babel/core@7.28.0)(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0)
@@ -10475,9 +10469,6 @@ packages:
   react-is@19.1.1:
     resolution: {integrity: sha512-tr41fA15Vn8p4X9ntI+yCyeGSf1TlYaY5vlTZfQmeLBrFo3psOPX6HhTDnFNL9uj3EhP0KAQ80cugCl4b4BERA==}
 
-  react-native-animatable@1.3.3:
-    resolution: {integrity: sha512-2ckIxZQAsvWn25Ho+DK3d1mXIgj7tITkrS4pYDvx96WyOttSvzzFeQnM2od0+FUMzILbdHDsDEqZvnz1DYNQ1w==}
-
   react-native-css-interop@0.1.22:
     resolution: {integrity: sha512-Mu01e+H9G+fxSWvwtgWlF5MJBJC4VszTCBXopIpeR171lbeBInHb8aHqoqRPxmJpi3xIHryzqKFOJYAdk7PBxg==}
     engines: {node: '>=18'}
@@ -10516,18 +10507,6 @@ packages:
     peerDependencies:
       react: 19.1.0
       react-native: '*'
-
-  react-native-mmkv@2.12.2:
-    resolution: {integrity: sha512-6058Aq0p57chPrUutLGe9fYoiDVDNMU2PKV+lLFUJ3GhoHvUrLdsS1PDSCLr00yqzL4WJQ7TTzH+V8cpyrNcfg==}
-    peerDependencies:
-      react: 19.1.0
-      react-native: '>=0.71.0'
-
-  react-native-modal@13.0.1:
-    resolution: {integrity: sha512-UB+mjmUtf+miaG/sDhOikRfBOv0gJdBU2ZE1HtFWp6UixW9jCk/bhGdHUgmZljbPpp0RaO/6YiMmQSSK3kkMaw==}
-    peerDependencies:
-      react: 19.1.0
-      react-native: '>=0.65.0'
 
   react-native-reanimated@3.19.1:
     resolution: {integrity: sha512-ILL0FSNzSVIg6WuawrsMBvNxk2yJFiTUcahimXDAeNiE/09eagVUlHhYWXAAmH0umvAOafBaGjO7YfBhUrf5ZQ==}
@@ -25306,10 +25285,6 @@ snapshots:
 
   react-is@19.1.1: {}
 
-  react-native-animatable@1.3.3:
-    dependencies:
-      prop-types: 15.8.1
-
   react-native-css-interop@0.1.22(react-native-reanimated@3.19.1(@babel/core@7.28.0)(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0))(react-native-safe-area-context@5.4.0(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0))(react-native-svg@15.12.1(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0))(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0)(tailwindcss@3.4.17(ts-node@10.9.2(@swc/core@1.13.3)(@types/node@22.17.0)(typescript@5.0.4))):
     dependencies:
       '@babel/helper-module-imports': 7.27.1
@@ -25355,18 +25330,6 @@ snapshots:
     dependencies:
       react: 19.1.0
       react-native: 0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.9.2))(@types/react@19.1.9)(react@19.1.0)
-
-  react-native-mmkv@2.12.2(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0):
-    dependencies:
-      react: 19.1.0
-      react-native: 0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0)
-
-  react-native-modal@13.0.1(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0):
-    dependencies:
-      prop-types: 15.8.1
-      react: 19.1.0
-      react-native: 0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0)
-      react-native-animatable: 1.3.3
 
   react-native-reanimated@3.19.1(@babel/core@7.28.0)(react-native@0.80.1(@babel/core@7.28.0)(@react-native-community/cli@19.0.0(typescript@5.0.4))(@types/react@19.1.9)(react@19.1.0))(react@19.1.0):
     dependencies:
