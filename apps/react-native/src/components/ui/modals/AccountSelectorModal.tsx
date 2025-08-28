@@ -21,6 +21,7 @@ import {
 
 import NativeFRWBridge from '@/bridge/NativeFRWBridge';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useLanguage } from '@/hooks/useLanguage';
 import { useAndroidTextFix } from '@/lib';
 import { CheckCircleFill as CheckCircleFillIcon } from 'icons';
 
@@ -41,6 +42,7 @@ export const AccountSelectorModal = forwardRef<AccountSelectorModalRef, AccountS
   ({ onAccountSelect, currentAccount, onClose }, ref) => {
     const { isDark } = useTheme();
     const androidTextFix = useAndroidTextFix();
+    const { t } = useLanguage();
     const [accounts, setAccounts] = useState<WalletAccount[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
@@ -386,7 +388,7 @@ export const AccountSelectorModal = forwardRef<AccountSelectorModalRef, AccountS
                           },
                         ]}
                       >
-                        No accounts available
+                        {t('noAccountsAvailable')}
                       </Text>
                     </View>
                   ) : (
