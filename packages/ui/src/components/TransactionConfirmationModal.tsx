@@ -1,4 +1,4 @@
-import { ChevronDown, WalletCard, FlowLogo } from '@onflow/frw-icons';
+import { ChevronDown, WalletCard, FlowLogo, CloseIcon } from '@onflow/frw-icons';
 import { type WalletAccount, type TransactionType, type TokenModel } from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack, View } from 'tamagui';
