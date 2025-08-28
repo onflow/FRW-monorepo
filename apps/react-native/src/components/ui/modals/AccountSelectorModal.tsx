@@ -8,13 +8,14 @@ import {
   View,
   ScrollView,
 } from 'react-native';
-import Modal from 'react-native-modal';
+
 
 import NativeFRWBridge from '@/bridge/NativeFRWBridge';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAndroidTextFix } from '@/lib';
 import { CheckCircleFill as CheckCircleFillIcon } from 'icons';
 
+import { BottomModal } from './BottomModal';
 import { WalletAccountSection } from '../index';
 
 interface AccountSelectorModalProps {
@@ -208,25 +209,13 @@ export const AccountSelectorModal = forwardRef<AccountSelectorModalRef, AccountS
       onClose?.();
     }, [onClose]);
 
-    // Calculate modal height based on account count
-    const getModalHeight = React.useCallback(() => {
-      if (accounts.length === 0) return '20%'; // while loading
-      if (accounts.length <= 2) return '30%'; // for 1-2 accounts
-      if (accounts.length <= 4) return '40%'; // for 3-4 accounts
-      if (accounts.length <= 6) return '85%'; // for 5-6 accounts
-      return '85%'; // for 7+ accounts
+    // Calculate modal max height based on account count
+    const getModalMaxHeight = React.useCallback(() => {
+      if (accounts.length === 0) return 300; // while loading
+      if (accounts.length <= 2) return 400; // for 1-2 accounts
+      if (accounts.length <= 4) return 500; // for 3-4 accounts
+      return '80%'; // for 5+ accounts (use percentage for many accounts)
     }, [accounts.length]);
-
-    const containerStyle = React.useMemo(
-      () => ({
-        backgroundColor: isDark ? '#1A1A1A' : '#FFFFFF',
-        borderTopLeftRadius: 16,
-        borderTopRightRadius: 16,
-        height: getModalHeight() as any,
-        paddingTop: 8,
-      }),
-      [isDark, getModalHeight]
-    );
 
     // Create a dismiss function we can call directly
     const dismissModal = useCallback(() => {
@@ -289,118 +278,108 @@ export const AccountSelectorModal = forwardRef<AccountSelectorModalRef, AccountS
     );
 
     return (
-      <Modal
-        isVisible={isVisible}
-        onBackdropPress={handleClose}
-        onBackButtonPress={handleClose}
-        onSwipeComplete={handleClose}
-        swipeDirection={['down']}
-        style={{
-          justifyContent: 'flex-end',
-          margin: 0,
+      <BottomModal
+        visible={isVisible}
+        onClose={handleClose}
+        showCloseButton={false}
+        showHandle={true}
+        contentStyle={{
+          maxHeight: getModalMaxHeight(),
+          paddingTop: 8,
+          // Remove fixed height, let content determine the size
         }}
-        backdropOpacity={0.6}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
-        animationInTiming={300}
-        animationOutTiming={250}
-        backdropTransitionInTiming={300}
-        backdropTransitionOutTiming={250}
-        useNativeDriverForBackdrop={true}
-        hideModalContentWhileAnimating={false}
-        propagateSwipe={true}
-        avoidKeyboard={true}
       >
-        <View style={containerStyle}>
-          {/* Handle */}
-          <View
-            style={{
-              width: 40,
-              height: 4,
-              backgroundColor: '#D1D5DB',
-              borderRadius: 2,
-              alignSelf: 'center',
-              marginBottom: 8,
-            }}
-          />
-
-          <SafeAreaView
-            style={{ flex: 1, paddingTop: 16, paddingHorizontal: 16, paddingBottom: 24 }}
-          >
-            {/* Account List */}
-            <View style={{ flex: 1, paddingTop: 12, paddingHorizontal: 16 }}>
-              {isLoading ? (
-                <View
-                  style={{
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    paddingVertical: 24,
-                  }}
+        <SafeAreaView style={{ paddingTop: 16, paddingHorizontal: 16, paddingBottom: 24 }}>
+          {/* Account List */}
+          <View style={{ paddingTop: 12, paddingHorizontal: 16 }}>
+            {isLoading ? (
+              <View
+                style={{
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  paddingVertical: 24,
+                }}
+              >
+                <ActivityIndicator
+                  size="large"
+                  color={isDark ? '#FFFFFF' : '#000000'}
+                  style={{ marginBottom: 16 }}
+                />
+                <Text
+                  style={[
+                    androidTextFix,
+                    {
+                      color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
+                      fontSize: 16,
+                      fontWeight: '500',
+                      minWidth: 150,
+                      textAlign: 'center',
+                    },
+                  ]}
                 >
-                  <ActivityIndicator
-                    size="large"
-                    color={isDark ? '#FFFFFF' : '#000000'}
-                    style={{ marginBottom: 16 }}
-                  />
-                  <Text
-                    style={[
-                      androidTextFix,
-                      {
-                        color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
-                        fontSize: 16,
-                        fontWeight: '500',
-                        minWidth: 150,
-                        textAlign: 'center',
-                      },
-                    ]}
-                  >
-                    Loading accounts...
-                  </Text>
-                </View>
-              ) : accounts.length === 0 ? (
-                <View
-                  style={{
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    paddingVertical: 24,
-                  }}
+                  Loading accounts...
+                </Text>
+              </View>
+            ) : accounts.length === 0 ? (
+              <View
+                style={{
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  paddingVertical: 24,
+                }}
+              >
+                <Text
+                  style={[
+                    androidTextFix,
+                    {
+                      color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
+                      fontSize: 16,
+                      textAlign: 'center',
+                      minWidth: 150,
+                    },
+                  ]}
                 >
-                  <Text
-                    style={[
-                      androidTextFix,
-                      {
-                        color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
-                        fontSize: 16,
-                        textAlign: 'center',
-                        minWidth: 150,
-                      },
-                    ]}
-                  >
-                    No accounts available
-                  </Text>
-                </View>
-              ) : (
-                <ScrollView
-                  showsVerticalScrollIndicator={true}
-                  contentContainerStyle={{ paddingBottom: 12 }}
-                  style={{ flex: 1 }}
-                >
-                  {accounts.map(account => {
-                    const isSelected = currentAccount?.address === account.address;
-                    return (
-                      <AccountItem
-                        key={account.id || account.address}
-                        account={account}
-                        isSelected={isSelected}
-                      />
-                    );
-                  })}
-                </ScrollView>
-              )}
-            </View>
-          </SafeAreaView>
-        </View>
-      </Modal>
+                  No accounts available
+                </Text>
+              </View>
+            ) : accounts.length <= 4 ? (
+              // For few accounts, show them without scrolling
+              <View>
+                {accounts.map(account => {
+                  const isSelected = currentAccount?.address === account.address;
+                  return (
+                    <AccountItem
+                      key={account.id || account.address}
+                      account={account}
+                      isSelected={isSelected}
+                    />
+                  );
+                })}
+              </View>
+            ) : (
+              // For many accounts, use ScrollView with fixed height
+              <ScrollView
+                showsVerticalScrollIndicator={true}
+                contentContainerStyle={{ paddingBottom: 12 }}
+                style={{
+                  maxHeight: 400, // Max height for scrollable content
+                }}
+              >
+                {accounts.map(account => {
+                  const isSelected = currentAccount?.address === account.address;
+                  return (
+                    <AccountItem
+                      key={account.id || account.address}
+                      account={account}
+                      isSelected={isSelected}
+                    />
+                  );
+                })}
+              </ScrollView>
+            )}
+          </View>
+        </SafeAreaView>
+      </BottomModal>
     );
   }
 );

@@ -23,8 +23,14 @@ export {
   AccountCompatibilityModal,
   AccountSelectorModal,
   AccountSelectorModalRef,
+  ActionSheet,
+  AlertModal,
+  BaseModal,
+  BottomModal,
+  ConfirmModal,
   StorageInfoModal,
   TokenSelectorModal,
+  type ActionSheetItem,
 } from './modals';
 
 // Cards & Sections
