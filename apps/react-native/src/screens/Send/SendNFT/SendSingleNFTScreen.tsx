@@ -28,11 +28,20 @@ const SendSingleNFTScreen = ({ navigation }: { navigation: NavigationProp }) => 
   const { openConfirmation } = useConfirmationDrawer();
   const [transactionFee] = useState('0.001');
   const { isModalVisible, closeModal } = useAccountCompatibilityModal();
+  const [isLoading, setIsLoading] = useState(true);
 
   // Get data from sendStore
   const selectedNFTs = useSendStore(sendSelectors.selectedNFTs);
   const fromAccount = useSendStore(sendSelectors.fromAccount);
   const toAccount = useSendStore(sendSelectors.toAccount);
+
+  // Add debugging
+  console.log('[SendSingleNFTScreen] Render with:', {
+    selectedNFTsLength: selectedNFTs?.length || 0,
+    hasFromAccount: !!fromAccount,
+    hasToAccount: !!toAccount,
+    isLoading,
+  });
 
   // State for account balance and NFT data
   const [, setFromAccountBalance] = useState({ displayBalance: '0 FLOW' });
@@ -73,9 +82,49 @@ const SendSingleNFTScreen = ({ navigation }: { navigation: NavigationProp }) => 
 
   const [isAccountIncompatible] = useState(false);
 
-  // If no NFT is selected, show error or navigate back
+  // Wait for data to load before checking NFT availability
+  useEffect(() => {
+    // If we have NFT data or enough time has passed, stop loading
+    if (selectedNFTs.length > 0 || fromAccount) {
+      setIsLoading(false);
+    } else {
+      // Give some time for async data loading, then stop loading
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [selectedNFTs.length, fromAccount]);
+
+  // If still loading, show loading state
+  if (isLoading) {
+    return (
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: isDark ? 'rgb(18, 18, 18)' : 'rgb(255, 255, 255)' }}
+      >
+        <Text
+          style={{
+            textAlign: 'center',
+            marginTop: 32,
+            color: isDark ? 'rgb(255, 255, 255)' : 'rgb(0, 0, 0)',
+          }}
+        >
+          Loading...
+        </Text>
+      </SafeAreaView>
+    );
+  }
+
+  // If no NFT is selected after loading, navigate back or close app
   if (!selectedNFT) {
-    navigation.goBack();
+    console.log('[SendSingleNFTScreen] No NFT selected after loading, exiting');
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      // If launched directly from native, close the app
+      NativeFRWBridge.closeRN(null);
+    }
     return null;
   }
 
@@ -109,33 +158,72 @@ const SendSingleNFTScreen = ({ navigation }: { navigation: NavigationProp }) => 
           }
         },
         children: (
-          <View className="w-full p-4 bg-surface-2 rounded-2xl">
-            <Text className="text-fg-1 font-semibold text-base mb-2">Transaction Details</Text>
-            <View className="flex-row justify-between">
-              <Text className="text-fg-2">NFT</Text>
+          <View
+            style={{
+              width: '100%',
+              padding: 16,
+              backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+              borderRadius: 16,
+            }}
+          >
+            <Text
+              style={{
+                color: isDark ? 'rgb(255, 255, 255)' : 'rgb(0, 0, 0)',
+                fontWeight: '600',
+                fontSize: 16,
+                marginBottom: 8,
+              }}
+            >
+              Transaction Details
+            </Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <Text style={{ color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)' }}>
+                NFT
+              </Text>
               <Text
-                className="text-fg-1 font-semibold flex-1 text-right"
                 numberOfLines={2}
                 ellipsizeMode="tail"
-                style={{ marginLeft: 8 }}
+                style={{
+                  color: isDark ? 'rgb(255, 255, 255)' : 'rgb(0, 0, 0)',
+                  fontWeight: '600',
+                  flex: 1,
+                  textAlign: 'right',
+                  marginLeft: 8,
+                }}
               >
                 {selectedNFT.name || 'NFT'}
               </Text>
             </View>
-            <View className="flex-row justify-between mt-2">
-              <Text className="text-fg-2">Collection</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 }}>
+              <Text style={{ color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)' }}>
+                Collection
+              </Text>
               <Text
-                className="text-fg-1 font-semibold flex-1 text-right"
                 numberOfLines={1}
                 ellipsizeMode="tail"
-                style={{ marginLeft: 8 }}
+                style={{
+                  color: isDark ? 'rgb(255, 255, 255)' : 'rgb(0, 0, 0)',
+                  fontWeight: '600',
+                  flex: 1,
+                  textAlign: 'right',
+                  marginLeft: 8,
+                }}
               >
                 {selectedNFT.collectionName || 'Unknown'}
               </Text>
             </View>
-            <View className="flex-row justify-between mt-2">
-              <Text className="text-fg-2">Network Fee</Text>
-              <Text className="text-fg-1 font-semibold">~{transactionFee} FLOW</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 }}>
+              <Text style={{ color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)' }}>
+                Network Fee
+              </Text>
+              <Text
+                style={{
+                  color: isDark ? 'rgb(255, 255, 255)' : 'rgb(0, 0, 0)',
+                  fontWeight: '600',
+                }}
+              >
+                ~{transactionFee} FLOW
+              </Text>
             </View>
           </View>
         ),
@@ -144,13 +232,24 @@ const SendSingleNFTScreen = ({ navigation }: { navigation: NavigationProp }) => 
   };
 
   return (
-    <View className={isDark ? 'dark' : ''} style={{ flex: 1 }}>
-      <SafeAreaView className="flex-1 bg-surface-base">
+    <View style={{ flex: 1 }}>
+      <SafeAreaView
+        style={{
+          flex: 1,
+          backgroundColor: isDark ? 'rgb(18, 18, 18)' : 'rgb(255, 255, 255)',
+        }}
+      >
         <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
 
         {/* Main Content */}
-        <View className={`flex-1 ${isDark ? 'bg-surface-1' : 'bg-white'} pt-4`}>
-          <ScrollView className="flex-1 px-5 pt-2">
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: isDark ? 'rgb(18, 18, 18)' : 'rgb(255, 255, 255)',
+            paddingTop: 16,
+          }}
+        >
+          <ScrollView style={{ flex: 1, paddingHorizontal: 20, paddingTop: 8 }}>
             {/* From Account Container */}
             {currentFromAccount && (
               <ContentContainer>

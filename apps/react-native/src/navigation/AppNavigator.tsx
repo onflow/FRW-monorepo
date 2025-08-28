@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import NativeFRWBridge from '@/bridge/NativeFRWBridge';
 import NavigationBackButton from '@/components/NavigationBackButton';
 import NavigationCloseButton from '@/components/NavigationCloseButton';
 import NavigationTitle from '@/components/NavigationTitle';
@@ -80,55 +81,106 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
     setFromAccount,
     setSelectedNFTs,
     setToAccount,
+    clearTransactionData,
   } = useSendStore();
 
   // Initialize SendTo flow if requested
   useEffect(() => {
+    console.log('🚀 DEBUG: AppNavigator useEffect triggered', {
+      screen: initialProps?.screen,
+      hasSendToConfig: !!initialProps?.sendToConfig,
+      sendToConfig: initialProps?.sendToConfig,
+    });
+
+    // Clear any existing transaction state before initializing new flow
     if (initialProps?.screen === 'send-asset') {
-      const sendToConfig = initialProps?.sendToConfig;
+      console.log('🚀 DEBUG: Clearing existing send state before initialization');
+      clearTransactionData();
+    }
+
+    if (initialProps?.screen === 'send-asset') {
+      let sendToConfig = initialProps?.sendToConfig;
       if (!sendToConfig) {
+        console.log('🚀 DEBUG: No sendToConfig found!');
         return;
       }
-      try {
-        if (sendToConfig.fromAccount) {
-          console.log('🚀 DEBUG: Setting from account', sendToConfig.fromAccount);
-          const walletAccount = createWalletAccountFromConfig(sendToConfig.fromAccount);
-          setFromAccount(walletAccount);
-        }
-        if (sendToConfig.selectedToken) {
-          console.log('🚀 DEBUG: Setting selected token', sendToConfig.selectedToken);
-          // Convert to TokenInfo type
-          const tokenInfo = createTokenModelFromConfig(sendToConfig.selectedToken);
-          setSelectedToken(tokenInfo);
-          setCurrentStep('send-to');
-        }
 
-        if (sendToConfig.selectedNFTs && Array.isArray(sendToConfig.selectedNFTs)) {
-          // Set selected NFTs if provided
-          console.log('🚀 DEBUG: Setting selected NFTs', sendToConfig.selectedNFTs);
-          const nftModels = createNFTModelsFromConfig(sendToConfig.selectedNFTs);
-          setSelectedNFTs(nftModels);
+      // Parse sendToConfig if it's a JSON string
+      if (typeof sendToConfig === 'string') {
+        try {
+          sendToConfig = JSON.parse(sendToConfig);
+          console.log('🚀 DEBUG: Parsed sendToConfig from JSON string', sendToConfig);
+        } catch (error) {
+          console.error('🚀 ERROR: Failed to parse sendToConfig JSON', error);
+          return;
         }
-
-        if (sendToConfig.targetAddress) {
-          const walletAccount = createWalletAccountFromConfig({
-            address: sendToConfig.targetAddress,
-            name: sendToConfig.targetAddress,
-            emojiInfo: { emoji: '', name: '', color: '' },
-          });
-          setToAccount(walletAccount);
-          setTransactionType('tokens');
-          setCurrentStep('send-tokens');
-        } else if (sendToConfig.selectedNFTs?.length === 1) {
-          setTransactionType('single-nft');
-          setCurrentStep('send-to');
-        } else if (sendToConfig.selectedNFTs && sendToConfig.selectedNFTs.length > 1) {
-          setTransactionType('multiple-nfts');
-          setCurrentStep('send-to');
-        }
-      } catch (error) {
-        console.error('Failed to initialize SendTo flow:', error);
+      } else {
+        console.log('🚀 DEBUG: Processing sendToConfig object', sendToConfig);
       }
+
+      const initializeFlow = async () => {
+        try {
+          // 1. First determine transaction type and set assets
+          if (sendToConfig.selectedNFTs && Array.isArray(sendToConfig.selectedNFTs)) {
+            console.log('🚀 DEBUG: Setting selected NFTs', sendToConfig.selectedNFTs);
+            const nftModels = createNFTModelsFromConfig(sendToConfig.selectedNFTs);
+            console.log('🚀 DEBUG: Created NFT models', nftModels);
+            setSelectedNFTs(nftModels);
+
+            // Set NFT transaction type immediately
+            if (sendToConfig.selectedNFTs.length === 1) {
+              console.log('🚀 DEBUG: Setting transaction type to single-nft');
+              setTransactionType('single-nft');
+            } else if (sendToConfig.selectedNFTs.length > 1) {
+              console.log('🚀 DEBUG: Setting transaction type to multiple-nfts');
+              setTransactionType('multiple-nfts');
+            }
+          } else if (sendToConfig.selectedToken) {
+            console.log('🚀 DEBUG: Setting selected token', sendToConfig.selectedToken);
+            const tokenInfo = createTokenModelFromConfig(sendToConfig.selectedToken);
+            setSelectedToken(tokenInfo);
+            setTransactionType('tokens');
+          }
+
+          // 2. Then set from account
+          if (sendToConfig.fromAccount) {
+            console.log('🚀 DEBUG: Setting from account', sendToConfig.fromAccount);
+            const walletAccount = createWalletAccountFromConfig(sendToConfig.fromAccount);
+            setFromAccount(walletAccount);
+          } else {
+            // Fetch current selected account from bridge when no fromAccount is provided
+            console.log('🚀 DEBUG: No fromAccount provided, fetching selected account from bridge');
+            try {
+              const selectedAccount = await NativeFRWBridge.getSelectedAccount();
+              console.log('🚀 DEBUG: Setting selected account from bridge', selectedAccount);
+              setFromAccount(selectedAccount);
+            } catch (error) {
+              console.error('Failed to get selected account from bridge:', error);
+            }
+          }
+
+          // 3. Finally set target address and navigation
+          if (sendToConfig.targetAddress) {
+            const walletAccount = createWalletAccountFromConfig({
+              address: sendToConfig.targetAddress,
+              name: sendToConfig.targetAddress,
+              emojiInfo: { emoji: '', name: '', color: '' },
+            });
+            setToAccount(walletAccount);
+            setTransactionType('tokens'); // Override to tokens when target is specified
+            setCurrentStep('send-tokens');
+          } else {
+            // Navigate to send-to screen for recipient selection
+            // This works for both tokens and NFTs without target address
+            setCurrentStep('send-to');
+          }
+        } catch (error) {
+          console.error('Failed to initialize SendTo flow:', error);
+        }
+      };
+
+      // Execute the initialization
+      initializeFlow();
     }
   }, [
     initialProps?.sendToConfig,

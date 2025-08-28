@@ -99,6 +99,17 @@ export function AccountCard({
     setModalOpen(false);
   };
 
+  // Calculate dynamic height based on account count
+  // Each account item is ~60px (36px avatar + padding), plus separators and container padding
+  const calculateDynamicHeight = (accountCount: number): number => {
+    const itemHeight = 60; // Approximate height per account item
+    const separatorHeight = 17; // Height of separator (8px padding top + 1px line + 8px padding bottom)
+    const containerPadding = 32; // Top and bottom padding
+    
+    const contentHeight = (accountCount * itemHeight) + ((accountCount - 1) * separatorHeight) + containerPadding;
+    return Math.min(contentHeight, 400); // Cap at 400px max
+  };
+
   return (
     <>
       {content}
@@ -158,8 +169,18 @@ export function AccountCard({
               </XStack>
 
               {/* Account List */}
-              <YStack maxH={400} bg="$bg2" rounded={16} gap={2} pb={8}>
-                <ScrollView showsVerticalScrollIndicator={false}>
+              <YStack 
+                h={calculateDynamicHeight(accounts.length)}
+                bg="$bg2" 
+                rounded={16} 
+                gap={2} 
+                pb={8}
+                alignSelf="flex-start"
+              >
+                <ScrollView 
+                  showsVerticalScrollIndicator={false}
+                  scrollEnabled={accounts.length > 5}
+                >
                   <YStack>
                     {accounts.map((acc, index) => {
                       const isSelected = account?.address === acc.address;

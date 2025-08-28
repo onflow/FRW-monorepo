@@ -67,8 +67,12 @@ const SendMultipleNFTsScreen = ({ navigation }: { navigation: NavigationProp }) 
     // Update transaction type based on remaining NFTs
     const remainingNFTs = selectedNFTs.filter(nft => nft.id !== nftId);
     if (remainingNFTs.length === 0) {
-      // Navigate back if no NFTs remain
-      navigation.goBack();
+      // Navigate back if no NFTs remain, or close app if launched from native
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+      } else {
+        NativeFRWBridge.closeRN(null);
+      }
     } else if (remainingNFTs.length === 1) {
       // Switch to single NFT flow
       setTransactionType('single-nft');
@@ -89,9 +93,14 @@ const SendMultipleNFTsScreen = ({ navigation }: { navigation: NavigationProp }) 
 
   const [isAccountIncompatible] = useState(false);
 
-  // If no NFTs are selected, show error or navigate back
+  // If no NFTs are selected, navigate back or close app
   if (!selectedNFTs || selectedNFTs.length === 0) {
-    navigation.goBack();
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      // If launched directly from native, close the app
+      NativeFRWBridge.closeRN(null);
+    }
     return null;
   }
 

@@ -280,23 +280,29 @@ export const useSendStore = create<SendState>((set, get) => ({
     });
   },
 
-  resetSendFlow: () =>
-    set({
-      selectedToken: null,
-      fromAccount: null,
-      toAccount: null,
-      transactionType: 'tokens',
-      formData: defaultFormData,
-      selectedNFTs: [],
-      currentStep: 'select-tokens',
-      isLoading: false,
-      error: null,
-      balances: {
-        coa: {},
-        evm: {},
-      },
-      accessibleAssetStores: {},
-    }),
+  resetSendFlow: () => {
+    // Clear any pending timeouts or intervals that might cause memory leaks
+    try {
+      set({
+        selectedToken: null,
+        fromAccount: null,
+        toAccount: null,
+        transactionType: 'tokens',
+        formData: defaultFormData,
+        selectedNFTs: [],
+        currentStep: 'select-tokens',
+        isLoading: false,
+        error: null,
+        balances: {
+          coa: {},
+          evm: {},
+        },
+        accessibleAssetStores: {},
+      });
+    } catch (error) {
+      console.error('[SendStore] Error during resetSendFlow:', error);
+    }
+  },
 
   // Clear transaction-specific data while preserving accounts
   clearTransactionData: () =>
@@ -419,9 +425,13 @@ export const useSendStore = create<SendState>((set, get) => ({
 
       logger.debug('[SendStore] Transaction result:', result);
 
-      // Reset flow on success
+      // Set loading to false first, then reset flow to avoid state conflicts
       set({ isLoading: false });
-      state.resetSendFlow();
+
+      // Use setTimeout to ensure state updates complete before reset
+      setTimeout(() => {
+        state.resetSendFlow();
+      }, 50);
 
       return result;
     } catch (error) {
