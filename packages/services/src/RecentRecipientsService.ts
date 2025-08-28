@@ -87,7 +87,8 @@ export class RecentRecipientsService {
       const recents = await this.storage.get('recentRecipients');
       if (!recents) return [];
 
-      return recents.sort((a, b) => b.lastUsed - a.lastUsed); // Most recent first
+      const recipientsArray = Array.isArray(recents) ? recents : [];
+      return recipientsArray.sort((a, b) => b.lastUsed - a.lastUsed);
     } catch (_error) {
       logger.error('Catch block error', _error);
       return [];
