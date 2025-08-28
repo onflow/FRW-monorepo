@@ -10,10 +10,11 @@ import { isTransactionId } from '@onflow/frw-utils';
 import { GAS_LIMITS } from '@onflow/frw-workflow';
 import Instabug from 'instabug-reactnative';
 import { Platform as RNPlatform } from 'react-native';
-import { MMKV } from 'react-native-mmkv';
+
 
 import NativeFRWBridge from './NativeFRWBridge';
 import { bridgeAuthorization, payer, proposer } from './signWithRole';
+import { storage as asyncStorageWrapper } from '../lib/storage';
 
 class PlatformImpl implements PlatformSpec {
   private debugMode: boolean = __DEV__;
@@ -198,5 +199,5 @@ class PlatformImpl implements PlatformSpec {
   }
 }
 
-export const storage = new MMKV();
+export const storage = asyncStorageWrapper;
 export const platform = new PlatformImpl();

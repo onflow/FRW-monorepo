@@ -5,13 +5,13 @@ export { getAndroidTextFix, useAndroidTextFix, getGlobalTextProps } from './andr
 export { useAccountCompatibilityModal } from './useAccountCompatibilityModal';
 
 // Storage utilities
-export { storage, mmkvStorage } from './storage';
+export { storage, asyncStorage } from './storage';
 
 // Utility functions
 export { cn, truncateAddress, truncateAddressByType, isEVMAccount } from './utils';
 
-// Zustand MMKV adapter
-export { mmkvStorageAdapter } from './zustand-mmkv';
+// Zustand AsyncStorage adapter
+export { asyncStorageAdapter, mmkvStorageAdapter } from './zustand-mmkv';
 
 // Flow balance hooks - DEPRECATED: Use sendStore balance management instead
 // export { useCoaBalance, useEvmBalance, useEvmAddress } from './useFlowBalance';
