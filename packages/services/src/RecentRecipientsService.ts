@@ -146,8 +146,7 @@ export class RecentRecipientsService {
       // Add new entry at the beginning
       const updated: RecentRecipient[] = [newRecent, ...filtered].slice(0, MAX_RECENT_RECIPIENTS);
 
-      // Save to storage
-      await this.storage.set('recentRecipients', updated);
+      await this.storage.set<'recentRecipients'>('recentRecipients', updated);
 
       logger.debug('Added recent recipient', { name: recipient.name, address: recipient.address });
     } catch (_error) {
